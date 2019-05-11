@@ -1,3 +1,4 @@
+.gitignore
 api/
 api_legacy/
 build/
