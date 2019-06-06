@@ -783,7 +783,7 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
                 final OnClickListener listener) {
             P.mItems = P.mContext.getResources().getTextArray(itemsId);
             P.mOnClickListener = listener;
-            P.mOnClickListener = listener;
+
             P.mCheckedItem = checkedItem;
             P.mIsSingleChoice = true;
             return this;

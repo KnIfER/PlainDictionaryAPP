@@ -151,7 +151,6 @@ public class ActionMenuItemView extends AppCompatTextView
 
     @Override
     public void onClick(View v) {
-        Log.e("fatal","onClickonClick");
         if (mItemInvoker != null) {
             mItemInvoker.invokeItem(mItemData);
         }
@@ -159,7 +158,6 @@ public class ActionMenuItemView extends AppCompatTextView
 
     @Override
     public boolean onLongClick(View v) {
-        Log.e("fatal","onLongClickonLongClick");
         if (mItemInvoker != null) {
             return mItemInvoker.pushItem(mItemData);
         }

@@ -1325,8 +1325,6 @@ public class ListPopupWindow implements ShowableListMenu {
         mOverlapAnchor = overlapAnchor;
     }
 
-
-
     private class PopupDataSetObserver extends DataSetObserver {
         PopupDataSetObserver() {
         }
