@@ -50,6 +50,7 @@ public abstract class BaseMenuPresenter implements MenuPresenter {
     protected MenuView mMenuView;
 
     private int mId;
+    public boolean bReverseActionViews;
 
     /**
      * Construct a new BaseMenuPresenter.
@@ -97,7 +98,10 @@ public abstract class BaseMenuPresenter implements MenuPresenter {
             ArrayList<MenuItemImpl> visibleItems = mMenu.getVisibleItems();
             final int itemCount = visibleItems.size();
             for (int i = 0; i < itemCount; i++) {
-                MenuItemImpl item = visibleItems.get(i);
+                int idx=i;
+                if(bReverseActionViews)
+                    idx=itemCount-1-idx;
+                MenuItemImpl item = visibleItems.get(idx);
                 if (shouldIncludeItem(childIndex, item)) {
                     final View convertView = parent.getChildAt(childIndex);
                     final MenuItemImpl oldItem = convertView instanceof MenuView.ItemView ?

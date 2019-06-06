@@ -37,6 +37,7 @@ import android.widget.ListView;
 import androidx.annotation.ArrayRes;
 import androidx.annotation.AttrRes;
 import androidx.annotation.DrawableRes;
+import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
@@ -782,9 +783,15 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
                 final OnClickListener listener) {
             P.mItems = P.mContext.getResources().getTextArray(itemsId);
             P.mOnClickListener = listener;
+            P.mOnClickListener = listener;
             P.mCheckedItem = checkedItem;
             P.mIsSingleChoice = true;
             return this;
+        }
+
+
+        public void setSingleChoiceLayout(@LayoutRes int layout) {
+            P.mSingleChoiceItemLayout = layout;
         }
 
         /**

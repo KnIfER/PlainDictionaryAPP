@@ -23,9 +23,11 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -41,7 +43,8 @@ import androidx.appcompat.widget.TooltipCompat;
  */
 @RestrictTo(LIBRARY_GROUP)
 public class ActionMenuItemView extends AppCompatTextView
-        implements MenuView.ItemView, View.OnClickListener, ActionMenuView.ActionMenuChildView {
+        implements MenuView.ItemView,  ActionMenuView.ActionMenuChildView ,
+        View.OnClickListener,View.OnLongClickListener{
 
     private static final String TAG = "ActionMenuItemView";
 
@@ -82,6 +85,7 @@ public class ActionMenuItemView extends AppCompatTextView
         mMaxIconSize = (int) (MAX_ICON_SIZE * density + 0.5f);
 
         setOnClickListener(this);
+        setOnLongClickListener(this);
 
         mSavedPaddingLeft = -1;
         setSaveEnabled(false);
@@ -147,9 +151,19 @@ public class ActionMenuItemView extends AppCompatTextView
 
     @Override
     public void onClick(View v) {
+        Log.e("fatal","onClickonClick");
         if (mItemInvoker != null) {
             mItemInvoker.invokeItem(mItemData);
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        Log.e("fatal","onLongClickonLongClick");
+        if (mItemInvoker != null) {
+            return mItemInvoker.pushItem(mItemData);
+        }
+        return false;
     }
 
     public void setItemInvoker(MenuBuilder.ItemInvoker invoker) {
@@ -202,6 +216,7 @@ public class ActionMenuItemView extends AppCompatTextView
         }
 
         final CharSequence tooltipText = mItemData.getTooltipText();
+        if (Build.VERSION.SDK_INT >= 26)
         if (TextUtils.isEmpty(tooltipText)) {
             // Use the uncondensed title for tooltip, but only if the title is not shown already.
             TooltipCompat.setTooltipText(this, visible ? null : mItemData.getTitle());
@@ -231,6 +246,10 @@ public class ActionMenuItemView extends AppCompatTextView
         setCompoundDrawables(icon, null, null, null);
 
         updateTextButtonVisibility();
+    }
+
+    public Drawable getIcon(){
+        return mIcon;
     }
 
     public boolean hasText() {

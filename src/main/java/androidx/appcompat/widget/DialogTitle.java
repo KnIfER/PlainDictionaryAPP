@@ -53,6 +53,7 @@ public class DialogTitle extends TextView {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
+        if(true) return;
         final Layout layout = getLayout();
         if (layout != null) {
             final int lineCount = layout.getLineCount();

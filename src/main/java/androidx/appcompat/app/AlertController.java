@@ -907,6 +907,7 @@ class AlertController {
         public AdapterView.OnItemSelectedListener mOnItemSelectedListener;
         public OnPrepareListViewListener mOnPrepareListViewListener;
         public boolean mRecycleOnMeasure = true;
+        public int mSingleChoiceItemLayout;
 
         /**
          * Interface definition for a callback to be invoked before the ListView
@@ -943,6 +944,9 @@ class AlertController {
                 if (mIconAttrId != 0) {
                     dialog.setIcon(dialog.getIconAttributeResId(mIconAttrId));
                 }
+            }
+            if(mSingleChoiceItemLayout!=0){
+                dialog.mSingleChoiceItemLayout=mSingleChoiceItemLayout;
             }
             if (mMessage != null) {
                 dialog.setMessage(mMessage);

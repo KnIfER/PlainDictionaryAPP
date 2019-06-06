@@ -185,6 +185,7 @@ public class Toolbar extends ViewGroup {
 
     private boolean mEatingTouch;
     private boolean mEatingHover;
+    public boolean bReverseActionViews;
 
     // Clear me after use.
     private final ArrayList<View> mTempViews = new ArrayList<View>();
@@ -1034,6 +1035,7 @@ public class Toolbar extends ViewGroup {
         if (mMenuView.peekMenu() == null) {
             // Initialize a new menu for the first time.
             final MenuBuilder menu = (MenuBuilder) mMenuView.getMenu();
+            mMenuView.mPresenter.bReverseActionViews=bReverseActionViews;
             if (mExpandedMenuPresenter == null) {
                 mExpandedMenuPresenter = new ExpandedActionViewMenuPresenter();
             }
@@ -1361,6 +1363,7 @@ public class Toolbar extends ViewGroup {
         if (mNavButtonView == null) {
             mNavButtonView = new AppCompatImageButton(getContext(), null,
                     R.attr.toolbarNavigationButtonStyle);
+            mNavButtonView.setId(R.id.home);
             final LayoutParams lp = generateDefaultLayoutParams();
             lp.gravity = GravityCompat.START | (mButtonGravity & Gravity.VERTICAL_GRAVITY_MASK);
             mNavButtonView.setLayoutParams(lp);

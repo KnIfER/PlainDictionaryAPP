@@ -244,6 +244,7 @@ final class CascadingMenuPopup extends MenuPopup implements MenuPresenter, OnKey
                 mContext, null, mPopupStyleAttr, mPopupStyleRes);
         popupWindow.setHoverListener(mMenuItemHoverListener);
         popupWindow.setOnItemClickListener(this);
+        popupWindow.setOnItemLongClickListener(this);
         popupWindow.setOnDismissListener(this);
         popupWindow.setAnchorView(mAnchorView);
         popupWindow.setDropDownGravity(mDropDownGravity);

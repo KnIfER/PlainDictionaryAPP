@@ -641,7 +641,7 @@ class ActionMenuPresenter extends BaseMenuPresenter
 
         public OverflowMenuButton(Context context) {
             super(context, null, R.attr.actionOverflowButtonStyle);
-
+            setId(R.id.action_menu_presenter);
             setClickable(true);
             setFocusable(true);
             setVisibility(VISIBLE);

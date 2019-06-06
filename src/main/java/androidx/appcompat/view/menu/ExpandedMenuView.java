@@ -87,6 +87,11 @@ public final class ExpandedMenuView extends ListView
     }
 
     @Override
+    public boolean pushItem(MenuItemImpl item) {
+        return false;
+    }
+
+    @Override
     @SuppressWarnings("rawtypes")
     public void onItemClick(AdapterView parent, View v, int position, long id) {
         invokeItem((MenuItemImpl) getAdapter().getItem(position));

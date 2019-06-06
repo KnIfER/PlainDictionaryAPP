@@ -46,9 +46,9 @@ import androidx.core.internal.view.SupportMenuItem;
 import androidx.core.view.ActionProvider;
 
 /**
- * @hide
+ * @no hide
  */
-@RestrictTo(LIBRARY_GROUP)
+//@RestrictTo(LIBRARY_GROUP)
 public final class MenuItemImpl implements SupportMenuItem {
 
     private static final String TAG = "MenuItemImpl";
@@ -106,6 +106,7 @@ public final class MenuItemImpl implements SupportMenuItem {
 
     private int mShowAsAction = SHOW_AS_ACTION_NEVER;
 
+    public boolean isLongClicked;
     private View mActionView;
     private ActionProvider mActionProvider;
     private MenuItem.OnActionExpandListener mOnActionExpandListener;

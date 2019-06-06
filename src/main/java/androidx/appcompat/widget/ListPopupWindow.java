@@ -131,6 +131,7 @@ public class ListPopupWindow implements ShowableListMenu {
     private Drawable mDropDownListHighlight;
 
     private AdapterView.OnItemClickListener mItemClickListener;
+    private AdapterView.OnItemLongClickListener mItemLongClickListener;
     private OnItemSelectedListener mItemSelectedListener;
 
     final ResizePopupRunnable mResizePopupRunnable = new ResizePopupRunnable();
@@ -601,6 +602,10 @@ public class ListPopupWindow implements ShowableListMenu {
      */
     public void setOnItemClickListener(@Nullable AdapterView.OnItemClickListener clickListener) {
         mItemClickListener = clickListener;
+    }
+
+    public void setOnItemLongClickListener(@Nullable AdapterView.OnItemLongClickListener clickListener) {
+        mItemLongClickListener = clickListener;
     }
 
     /**
@@ -1161,6 +1166,7 @@ public class ListPopupWindow implements ShowableListMenu {
             }
             mDropDownList.setAdapter(mAdapter);
             mDropDownList.setOnItemClickListener(mItemClickListener);
+            mDropDownList.setOnItemLongClickListener(mItemLongClickListener);
             mDropDownList.setFocusable(true);
             mDropDownList.setFocusableInTouchMode(true);
             mDropDownList.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -1318,6 +1324,8 @@ public class ListPopupWindow implements ShowableListMenu {
         mOverlapAnchorSet = true;
         mOverlapAnchor = overlapAnchor;
     }
+
+
 
     private class PopupDataSetObserver extends DataSetObserver {
         PopupDataSetObserver() {

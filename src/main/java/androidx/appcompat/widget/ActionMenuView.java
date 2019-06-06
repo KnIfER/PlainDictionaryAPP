@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.Menu;
@@ -33,6 +34,7 @@ import android.view.accessibility.AccessibilityEvent;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.StyleRes;
+import androidx.appcompat.R;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
@@ -62,7 +64,7 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
     private int mPopupTheme;
 
     private boolean mReserveOverflow;
-    private ActionMenuPresenter mPresenter;
+    protected ActionMenuPresenter mPresenter;
     private MenuPresenter.Callback mActionMenuPresenterCallback;
     MenuBuilder.Callback mMenuBuilderCallback;
     private boolean mFormatItems;
@@ -625,6 +627,11 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
         return mMenu.performItemAction(item, 0);
     }
 
+    @Override
+    public boolean pushItem(MenuItemImpl item) {
+        return mMenu.dispatchMenuItemLongClicked(mMenu,item);
+    }
+
     /** @hide */
     @Override
     @RestrictTo(LIBRARY_GROUP)
@@ -653,6 +660,7 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
             mMenu = new MenuBuilder(context);
             mMenu.setCallback(new MenuBuilderCallback());
             mPresenter = new ActionMenuPresenter(context);
+            //mPresenter.bReverseActionViews=true;
             mPresenter.setReserveOverflow(true);
             mPresenter.setCallback(mActionMenuPresenterCallback != null
                     ? mActionMenuPresenterCallback : new ActionMenuPresenterCallback());

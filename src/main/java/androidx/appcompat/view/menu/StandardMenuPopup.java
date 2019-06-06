@@ -156,6 +156,7 @@ final class StandardMenuPopup extends MenuPopup implements OnDismissListener, On
 
         mPopup.setOnDismissListener(this);
         mPopup.setOnItemClickListener(this);
+        mPopup.setOnItemLongClickListener(this);
         mPopup.setModal(true);
 
         final View anchor = mShownAnchorView;

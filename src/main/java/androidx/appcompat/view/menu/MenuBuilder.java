@@ -224,6 +224,7 @@ public class MenuBuilder implements SupportMenu {
     @RestrictTo(LIBRARY_GROUP)
     public interface ItemInvoker {
         boolean invokeItem(MenuItemImpl item);
+        boolean pushItem(MenuItemImpl item);
     }
 
     public MenuBuilder(Context context) {
@@ -837,6 +838,12 @@ public class MenuBuilder implements SupportMenu {
     }
 
     boolean dispatchMenuItemSelected(MenuBuilder menu, MenuItem item) {
+        ((MenuItemImpl)item).isLongClicked=false;
+        return mCallback != null && mCallback.onMenuItemSelected(menu, item);
+    }
+
+    public  boolean dispatchMenuItemLongClicked(MenuBuilder menu, MenuItem item) {
+        ((MenuItemImpl)item).isLongClicked=true;
         return mCallback != null && mCallback.onMenuItemSelected(menu, item);
     }
 
@@ -995,12 +1002,12 @@ public class MenuBuilder implements SupportMenu {
         if (itemImpl.hasCollapsibleActionView()) {
             invoked |= itemImpl.expandActionView();
             if (invoked) {
-                close(true /* closeAllMenus */);
+                //close(true /* closeAllMenus */);
             }
         } else if (itemImpl.hasSubMenu() || providerHasSubMenu) {
             if ((flags & SupportMenu.FLAG_KEEP_OPEN_ON_SUBMENU_OPENED) == 0) {
                 // If we're not flagged to keep the menu open, close it
-                close(false);
+                //close(false);
             }
 
             if (!itemImpl.hasSubMenu()) {
@@ -1013,11 +1020,11 @@ public class MenuBuilder implements SupportMenu {
             }
             invoked |= dispatchSubMenuSelected(subMenu, preferredPresenter);
             if (!invoked) {
-                close(true /* closeAllMenus */);
+                //close(true /* closeAllMenus */);
             }
         } else {
             if ((flags & FLAG_PERFORM_NO_CLOSE) == 0) {
-                close(true /* closeAllMenus */);
+                //close(true /* closeAllMenus */);
             }
         }
 

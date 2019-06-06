@@ -37,7 +37,7 @@ import androidx.core.internal.view.SupportMenu;
  * environment.
  */
 abstract class MenuPopup implements ShowableListMenu, MenuPresenter,
-        AdapterView.OnItemClickListener {
+        AdapterView.OnItemClickListener,AdapterView.OnItemLongClickListener {
     private Rect mEpicenterBounds;
 
     public abstract void setForceShowIcon(boolean forceShow);
@@ -131,6 +131,14 @@ abstract class MenuPopup implements ShowableListMenu, MenuPresenter,
                 closeMenuOnSubMenuOpened() ? 0 : SupportMenu.FLAG_KEEP_OPEN_ON_SUBMENU_OPENED);
     }
 
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        ListAdapter outerAdapter = (ListAdapter) parent.getAdapter();
+        MenuAdapter wrappedAdapter = toMenuAdapter(outerAdapter);
+        boolean ret = wrappedAdapter.mAdapterMenu.dispatchMenuItemLongClicked(wrappedAdapter.mAdapterMenu, (MenuItem) outerAdapter.getItem(position));
+
+        return ret;
+    }
     /**
      * Measures the width of the given menu view.
      *
