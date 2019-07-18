@@ -789,8 +789,9 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
         }
 
 
-        public void setSingleChoiceLayout(@LayoutRes int layout) {
+        public Builder setSingleChoiceLayout(@LayoutRes int layout) {
             P.mSingleChoiceItemLayout = layout;
+            return this;
         }
 
         /**
