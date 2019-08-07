@@ -43,7 +43,7 @@ import java.lang.reflect.Field;
  * displayed on screen within a drop down. The focus is never actually
  * passed to the drop down in this mode; the list only looks focused.</p>
  */
-class DropDownListView extends ListView {
+public class DropDownListView extends ListView {
     public static final int INVALID_POSITION = -1;
     public static final int NO_POSITION = -1;
 
@@ -311,6 +311,7 @@ class DropDownListView extends ListView {
 
         View child = null;
         int viewType = 0;
+        int maxWidth=0;
         int count = adapter.getCount();
         for (int i = 0; i < count; i++) {
             int newType = adapter.getItemViewType(i);
@@ -347,6 +348,7 @@ class DropDownListView extends ListView {
             }
 
             returnedHeight += child.getMeasuredHeight();
+            //maxWidth = Math.max(maxWidth,child.getMeasuredWidth());
 
             if (returnedHeight >= maxHeight) {
                 // We went over, figure out which height to return.  If returnedHeight >

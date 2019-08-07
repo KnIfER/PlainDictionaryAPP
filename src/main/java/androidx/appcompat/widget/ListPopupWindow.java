@@ -23,7 +23,9 @@ import android.content.res.TypedArray;
 import android.database.DataSetObserver;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Handler;
+import android.transition.Transition;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -101,9 +103,12 @@ public class ListPopupWindow implements ShowableListMenu {
         }
     }
 
+    public int mMarginTop;
+    public int mMarginShrinkin;
+
     private Context mContext;
     private ListAdapter mAdapter;
-    DropDownListView mDropDownList;
+    public DropDownListView mDropDownList;
 
     private int mDropDownHeight = ViewGroup.LayoutParams.WRAP_CONTENT;
     private int mDropDownWidth = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -152,7 +157,7 @@ public class ListPopupWindow implements ShowableListMenu {
 
     private boolean mModal;
 
-    PopupWindow mPopup;
+    public PopupWindow mPopup;
 
     /**
      * The provided prompt view should appear above list content.
@@ -436,6 +441,19 @@ public class ListPopupWindow implements ShowableListMenu {
         mPopup.setAnimationStyle(animationStyle);
     }
 
+    public void setEnterTransition(@Nullable Transition enterTransition) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mPopup.setEnterTransition(null);
+            //mPopup.setExitTransition(null);
+        }
+    }
+
+    public void setExitTransition(@Nullable Transition enterTransition) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mPopup.setExitTransition(null);
+        }
+    }
+
     /**
      * Returns the animation style that will be used when the popup window is
      * shown or dismissed.
@@ -643,6 +661,8 @@ public class ListPopupWindow implements ShowableListMenu {
         mHandler.post(mShowDropDownRunnable);
     }
 
+    public boolean cliptoscreen=true;
+    public boolean scrolltoend=false;
     /**
      * Show the popup list. If the list is already showing, this method
      * will recalculate the popup's size and position.
@@ -693,8 +713,8 @@ public class ListPopupWindow implements ShowableListMenu {
             mPopup.setOutsideTouchable(!mForceIgnoreOutsideTouch && !mDropDownAlwaysVisible);
 
             mPopup.update(getAnchorView(), mDropDownHorizontalOffset,
-                            mDropDownVerticalOffset, (widthSpec < 0)? -1 : widthSpec,
-                            (heightSpec < 0)? -1 : heightSpec);
+                            mDropDownVerticalOffset, (widthSpec < 0)? widthSpec : widthSpec,
+                            (heightSpec < 0)? heightSpec : heightSpec);
         } else {
             final int widthSpec;
             if (mDropDownWidth == ViewGroup.LayoutParams.MATCH_PARENT) {
@@ -720,7 +740,7 @@ public class ListPopupWindow implements ShowableListMenu {
 
             mPopup.setWidth(widthSpec);
             mPopup.setHeight(heightSpec);
-            setPopupClipToScreenEnabled(true);
+            setPopupClipToScreenEnabled(cliptoscreen);
 
             // use outside touchable to dismiss drop down when touching outside of it, so
             // only set this if the dropdown is not always visible
@@ -738,7 +758,10 @@ public class ListPopupWindow implements ShowableListMenu {
             }
             PopupWindowCompat.showAsDropDown(mPopup, getAnchorView(), mDropDownHorizontalOffset,
                     mDropDownVerticalOffset, mDropDownGravity);
-            mDropDownList.setSelection(ListView.INVALID_POSITION);
+            if(scrolltoend)
+                mDropDownList.setSelection(mAdapter.getCount()-1);
+            else
+                mDropDownList.setSelection(ListView.INVALID_POSITION);
 
             if (!mModal || mDropDownList.isInTouchMode()) {
                 clearListSelection();
@@ -1278,7 +1301,7 @@ public class ListPopupWindow implements ShowableListMenu {
         final boolean ignoreBottomDecorations =
                 mPopup.getInputMethodMode() == PopupWindow.INPUT_METHOD_NOT_NEEDED;
         final int maxHeight = getMaxAvailableHeight(getAnchorView(), mDropDownVerticalOffset,
-                ignoreBottomDecorations);
+                ignoreBottomDecorations)-mMarginTop;
         if (mDropDownAlwaysVisible || mDropDownHeight == ViewGroup.LayoutParams.MATCH_PARENT) {
             return maxHeight + padding;
         }

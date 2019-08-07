@@ -4,9 +4,9 @@ apply plugin: 'com.android.library'
 android {
 
     defaultConfig {
-        compileSdkVersion 28
-        targetSdkVersion 28
-        minSdkVersion 19
+        compileSdkVersion ver_compileSdkVersion as int
+        targetSdkVersion ver_aimsdk
+        minSdkVersion ver_minsdk
         vectorDrawables.useSupportLibrary = true
 
     }
@@ -29,12 +29,12 @@ android {
 
 
 dependencies {
-    api ('androidx.appcompat:appcompat-resources:1.1.0-alpha05')
+    api (libs_appres)
     //api 'androidx.annotation:annotation:1.1.0-rc01'
     //api 'androidx.core:core:1.2.0-alpha01'
     //api 'androidx.collection:collection:1.1.0-rc01'
-    api 'androidx.drawerlayout:drawerlayout:1.1.0-alpha01'
-    api 'androidx.cursoradapter:cursoradapter:1.0.0'
-    api 'androidx.fragment:fragment:1.1.0-alpha08'
+    api libs_drawer
+    api libs_cursor
+    api libs_fragment
 
 }
