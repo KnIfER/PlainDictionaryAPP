@@ -758,7 +758,7 @@ public class ListPopupWindow implements ShowableListMenu {
             }
             PopupWindowCompat.showAsDropDown(mPopup, getAnchorView(), mDropDownHorizontalOffset,
                     mDropDownVerticalOffset, mDropDownGravity);
-            if(scrolltoend)
+            if(scrolltoend && mAdapter!=null)
                 mDropDownList.setSelection(mAdapter.getCount()-1);
             else
                 mDropDownList.setSelection(ListView.INVALID_POSITION);
