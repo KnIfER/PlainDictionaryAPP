@@ -16,7 +16,7 @@
 
 package androidx.appcompat.view.menu;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -41,7 +41,7 @@ import androidx.appcompat.widget.TooltipCompat;
 /**
  * @hide
  */
-@RestrictTo(LIBRARY_GROUP)
+@RestrictTo(LIBRARY_GROUP_PREFIX)
 public class ActionMenuItemView extends AppCompatTextView
         implements MenuView.ItemView,  ActionMenuView.ActionMenuChildView ,
         View.OnClickListener,View.OnLongClickListener{

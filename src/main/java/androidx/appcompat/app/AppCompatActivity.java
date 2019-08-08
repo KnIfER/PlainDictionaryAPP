@@ -16,6 +16,7 @@
 
 package androidx.appcompat.app;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -30,11 +31,13 @@ import android.view.ViewGroup;
 import android.view.Window;
 
 import androidx.annotation.CallSuper;
+import androidx.annotation.ContentView;
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
+import androidx.appcompat.app.AppCompatDelegate.NightMode;
 import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.VectorEnabledTintResources;
@@ -63,33 +66,50 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
         TaskStackBuilder.SupportParentable, ActionBarDrawerToggle.DelegateProvider {
 
     private AppCompatDelegate mDelegate;
-    private int mThemeId = 0;
     private Resources mResources;
+
+    /**
+     * Default constructor for AppCompatActivity. All Activities must have a default constructor
+     * for API 27 and lower devices or when using the default
+     * {@link android.app.AppComponentFactory}.
+     */
+    public AppCompatActivity() {
+        super();
+    }
+
+    /**
+     * Alternate constructor that can be used to provide a default layout
+     * that will be inflated as part of <code>super.onCreate(savedInstanceState)</code>.
+     *
+     * <p>This should generally be called from your constructor that takes no parameters,
+     * as is required for API 27 and lower or when using the default
+     * {@link android.app.AppComponentFactory}.
+     *
+     * @see #AppCompatActivity()
+     */
+    @ContentView
+    public AppCompatActivity(@LayoutRes int contentLayoutId) {
+        super(contentLayoutId);
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(newBase);
+        getDelegate().attachBaseContext(newBase);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         final AppCompatDelegate delegate = getDelegate();
         delegate.installViewFactory();
         delegate.onCreate(savedInstanceState);
-        if (delegate.applyDayNight() && mThemeId != 0) {
-            // If DayNight has been applied, we need to re-apply the theme for
-            // the changes to take effect. On API 23+, we should bypass
-            // setTheme(), which will no-op if the theme ID is identical to the
-            // current theme ID.
-            if (Build.VERSION.SDK_INT >= 23) {
-                onApplyThemeResource(getTheme(), mThemeId, false);
-            } else {
-                setTheme(mThemeId);
-            }
-        }
         super.onCreate(savedInstanceState);
     }
 
     @Override
-    public void setTheme(@StyleRes final int resid) {
-        super.setTheme(resid);
-        // Keep hold of the theme id so that we can re-set it later if needed
-        mThemeId = resid;
+    public void setTheme(@StyleRes final int resId) {
+        super.setTheme(resId);
+        getDelegate().setTheme(resId);
     }
 
     @Override
@@ -130,6 +150,7 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
         getDelegate().setSupportActionBar(toolbar);
     }
 
+    @NonNull
     @Override
     public MenuInflater getMenuInflater() {
         return getDelegate().getMenuInflater();
@@ -156,15 +177,17 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        getDelegate().onConfigurationChanged(newConfig);
+
         if (mResources != null) {
             // The real (and thus managed) resources object was already updated
             // by ResourcesManager, so pull the current metrics from there.
             final DisplayMetrics newMetrics = super.getResources().getDisplayMetrics();
             mResources.updateConfiguration(newConfig, newMetrics);
         }
+
+        getDelegate().onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -192,7 +215,7 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
     }
 
     @Override
-    public final boolean onMenuItemSelected(int featureId, android.view.MenuItem item) {
+    public final boolean onMenuItemSelected(int featureId, @NonNull android.view.MenuItem item) {
         if (super.onMenuItemSelected(featureId, item)) {
             return true;
         }
@@ -501,12 +524,12 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
      * {@link AppCompatDelegate#FEATURE_SUPPORT_ACTION_BAR FEATURE_SUPPORT_ACTION_BAR}.</p>
      */
     @Override
-    public void onPanelClosed(int featureId, Menu menu) {
+    public void onPanelClosed(int featureId, @NonNull Menu menu) {
         super.onPanelClosed(featureId, menu);
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         getDelegate().onSaveInstanceState(outState);
     }
@@ -588,5 +611,14 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
                 && (actionBar == null || !actionBar.closeOptionsMenu())) {
             super.closeOptionsMenu();
         }
+    }
+
+    /**
+     * Called when the night mode has changed. See {@link AppCompatDelegate#applyDayNight()} for
+     * more information.
+     *
+     * @param mode the night mode which has been applied
+     */
+    protected void onNightModeChanged(@NightMode int mode) {
     }
 }

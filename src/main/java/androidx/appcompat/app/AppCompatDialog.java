@@ -16,12 +16,13 @@
 
 package androidx.appcompat.app;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -31,6 +32,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
 import androidx.appcompat.view.ActionMode;
+import androidx.core.view.KeyEventDispatcher;
 
 /**
  * Base class for AppCompat themed {@link android.app.Dialog}s.
@@ -39,6 +41,14 @@ public class AppCompatDialog extends Dialog implements AppCompatCallback {
 
     private AppCompatDelegate mDelegate;
 
+    // Until KeyEventDispatcher is un-hidden, it can't be implemented directly,
+    private final KeyEventDispatcher.Component mKeyDispatcher = new KeyEventDispatcher.Component() {
+        @Override
+        public boolean superDispatchKeyEvent(KeyEvent event) {
+            return AppCompatDialog.this.superDispatchKeyEvent(event);
+        }
+    };
+
     public AppCompatDialog(Context context) {
         this(context, 0);
     }
@@ -46,14 +56,15 @@ public class AppCompatDialog extends Dialog implements AppCompatCallback {
     public AppCompatDialog(Context context, int theme) {
         super(context, getThemeResId(context, theme));
 
+        final AppCompatDelegate delegate = getDelegate();
+        // Make sure we provide the delegate with the current theme res id
+        delegate.setTheme(getThemeResId(context, theme));
+
         // This is a bit weird, but Dialog's are typically created and setup before being shown,
         // which means that we can't rely on onCreate() being called before a content view is set.
         // To workaround this, we call onCreate(null) in the ctor, and then again as usual in
         // onCreate().
-        getDelegate().onCreate(null);
-
-        // Apply AppCompat's DayNight resources if needed
-        getDelegate().applyDayNight();
+        delegate.onCreate(null);
     }
 
     protected AppCompatDialog(Context context, boolean cancelable,
@@ -146,7 +157,7 @@ public class AppCompatDialog extends Dialog implements AppCompatCallback {
      * @hide
      */
     @Override
-    @RestrictTo(LIBRARY_GROUP)
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
     public void invalidateOptionsMenu() {
         getDelegate().invalidateOptionsMenu();
     }
@@ -183,5 +194,16 @@ public class AppCompatDialog extends Dialog implements AppCompatCallback {
     @Override
     public ActionMode onWindowStartingSupportActionMode(ActionMode.Callback callback) {
         return null;
+    }
+
+    @SuppressWarnings("WeakerAccess") /* synthetic access */
+    boolean superDispatchKeyEvent(KeyEvent event) {
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        View decor = getWindow().getDecorView();
+        return KeyEventDispatcher.dispatchKeyEvent(mKeyDispatcher, decor, this, event);
     }
 }

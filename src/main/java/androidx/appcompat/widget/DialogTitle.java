@@ -16,14 +16,13 @@
 
 package androidx.appcompat.widget;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.text.Layout;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.widget.TextView;
 
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
@@ -34,8 +33,8 @@ import androidx.appcompat.R;
  *
  * @hide
  */
-@RestrictTo(LIBRARY_GROUP)
-public class DialogTitle extends TextView {
+@RestrictTo(LIBRARY_GROUP_PREFIX)
+public class DialogTitle extends AppCompatTextView {
 
     public DialogTitle(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);

@@ -16,24 +16,29 @@
 
 package androidx.appcompat.widget;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.text.Editable;
 import android.util.AttributeSet;
+import android.view.ActionMode;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.textclassifier.TextClassifier;
 import android.widget.EditText;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
-import androidx.core.os.BuildCompat;
 import androidx.core.view.TintableBackgroundView;
+import androidx.core.widget.TextViewCompat;
 
 /**
  * A {@link EditText} which supports compatible features on older versions of the platform,
@@ -54,6 +59,7 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
 
     private final AppCompatBackgroundHelper mBackgroundTintHelper;
     private final AppCompatTextHelper mTextHelper;
+    private final AppCompatTextClassifierHelper mTextClassifierHelper;
 
     public AppCompatEditText(Context context) {
         this(context, null);
@@ -72,6 +78,8 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
         mTextHelper = new AppCompatTextHelper(this);
         mTextHelper.loadFromAttributes(attrs, defStyleAttr);
         mTextHelper.applyCompoundDrawablesTints();
+
+        mTextClassifierHelper = new AppCompatTextClassifierHelper(this);
     }
 
     /**
@@ -80,7 +88,7 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
      */
     @Override
     @Nullable public Editable getText() {
-        if (BuildCompat.isAtLeastP()) {
+        if (Build.VERSION.SDK_INT >= 28) {
             return super.getText();
         }
         // A bug pre-P makes getText() crash if called before the first setText due to a cast, so
@@ -110,7 +118,7 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
      *
      * @hide
      */
-    @RestrictTo(LIBRARY_GROUP)
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
     @Override
     public void setSupportBackgroundTintList(@Nullable ColorStateList tint) {
         if (mBackgroundTintHelper != null) {
@@ -124,7 +132,7 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
      *
      * @hide
      */
-    @RestrictTo(LIBRARY_GROUP)
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
     @Override
     @Nullable
     public ColorStateList getSupportBackgroundTintList() {
@@ -138,7 +146,7 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
      *
      * @hide
      */
-    @RestrictTo(LIBRARY_GROUP)
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
     @Override
     public void setSupportBackgroundTintMode(@Nullable PorterDuff.Mode tintMode) {
         if (mBackgroundTintHelper != null) {
@@ -152,7 +160,7 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
      *
      * @hide
      */
-    @RestrictTo(LIBRARY_GROUP)
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
     @Override
     @Nullable
     public PorterDuff.Mode getSupportBackgroundTintMode() {
@@ -183,5 +191,45 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         return AppCompatHintHelper.onCreateInputConnection(super.onCreateInputConnection(outAttrs),
                 outAttrs, this);
+    }
+
+    /**
+     * See
+     * {@link TextViewCompat#setCustomSelectionActionModeCallback(TextView, ActionMode.Callback)}
+     */
+    @Override
+    public void setCustomSelectionActionModeCallback(ActionMode.Callback actionModeCallback) {
+        super.setCustomSelectionActionModeCallback(TextViewCompat
+                .wrapCustomSelectionActionModeCallback(this, actionModeCallback));
+    }
+
+    /**
+     * Sets the {@link TextClassifier} for this TextView.
+     */
+    @Override
+    @RequiresApi(api = 26)
+    public void setTextClassifier(@Nullable TextClassifier textClassifier) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P || mTextClassifierHelper == null) {
+            super.setTextClassifier(textClassifier);
+            return;
+        }
+        mTextClassifierHelper.setTextClassifier(textClassifier);
+    }
+
+    /**
+     * Returns the {@link TextClassifier} used by this TextView.
+     * If no TextClassifier has been set, this TextView uses the default set by the
+     * {@link android.view.textclassifier.TextClassificationManager}.
+     */
+    @Override
+    @NonNull
+    @RequiresApi(api = 26)
+    public TextClassifier getTextClassifier() {
+        // The null check is necessary because getTextClassifier is called when we are invoking
+        // the super class's constructor.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P || mTextClassifierHelper == null) {
+            return super.getTextClassifier();
+        }
+        return mTextClassifierHelper.getTextClassifier();
     }
 }

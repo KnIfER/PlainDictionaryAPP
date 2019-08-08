@@ -30,9 +30,6 @@ android {
 
 dependencies {
     api (libs_appres)
-    //api 'androidx.annotation:annotation:1.1.0-rc01'
-    //api 'androidx.core:core:1.2.0-alpha01'
-    //api 'androidx.collection:collection:1.1.0-rc01'
     api libs_drawer
     api libs_cursor
     api libs_fragment

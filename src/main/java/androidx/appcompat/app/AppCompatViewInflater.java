@@ -42,6 +42,7 @@ import androidx.appcompat.widget.AppCompatRatingBar;
 import androidx.appcompat.widget.AppCompatSeekBar;
 import androidx.appcompat.widget.AppCompatSpinner;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.appcompat.widget.AppCompatToggleButton;
 import androidx.appcompat.widget.TintContextWrapper;
 import androidx.collection.ArrayMap;
 import androidx.core.view.ViewCompat;
@@ -59,7 +60,7 @@ import java.util.Map;
  */
 public class AppCompatViewInflater {
 
-    private static final Class<?>[] sConstructorSignature = new Class[]{
+    private static final Class<?>[] sConstructorSignature = new Class<?>[]{
             Context.class, AttributeSet.class};
     private static final int[] sOnClickAttrs = new int[]{android.R.attr.onClick};
 
@@ -148,6 +149,10 @@ public class AppCompatViewInflater {
                 break;
             case "SeekBar":
                 view = createSeekBar(context, attrs);
+                verifyNotNull(view, name);
+                break;
+            case "ToggleButton":
+                view = createToggleButton(context, attrs);
                 verifyNotNull(view, name);
                 break;
             default:
@@ -239,6 +244,11 @@ public class AppCompatViewInflater {
         return new AppCompatSeekBar(context, attrs);
     }
 
+    @NonNull
+    protected AppCompatToggleButton createToggleButton(Context context, AttributeSet attrs) {
+        return new AppCompatToggleButton(context, attrs);
+    }
+
     private void verifyNotNull(View view, String name) {
         if (view == null) {
             throw new IllegalStateException(this.getClass().getName()
@@ -313,8 +323,10 @@ public class AppCompatViewInflater {
         try {
             if (constructor == null) {
                 // Class not found in the cache, see if it's real, and try to add it
-                Class<? extends View> clazz = context.getClassLoader().loadClass(
-                        prefix != null ? (prefix + name) : name).asSubclass(View.class);
+                Class<? extends View> clazz = Class.forName(
+                        prefix != null ? (prefix + name) : name,
+                        false,
+                        context.getClassLoader()).asSubclass(View.class);
 
                 constructor = clazz.getConstructor(sConstructorSignature);
                 sConstructorMap.put(name, constructor);
