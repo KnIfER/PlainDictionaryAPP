@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+	<PreferenceCategory
+		android:key="cat_prog"
+		android:title="Program Settings"
+		>
+		<SwitchPreference
+			android:defaultValue="false"
+			android:key="GKCS"
+			android:summary="If enabled, keycase insensitivity only applys to A-Z&amp;a-z globally to conform with the old mdxbuilder. Can Specify it independently(per-dict) though"
+			android:title="Use Classical Keycase sorting Policy"/>
+		<!-- <SwitchPreference
+		   android:key="SFTL"
+		   android:title="Single webview use software layer"
+		   android:summary="Although software layer is less powerful than hardware layer, but it can reduce flickers on page turning"
+		   android:defaultValue="true"
+			/-->
+		<EditTextPreference
+			android:defaultValue="100"
+			android:key="def_fontscale"
+			android:summary="The default font scale(%) for webview"
+			android:title="Global Font Scale : "/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="GPBC"
+			android:title="Global Webview Background: "
+			android:summary="The default page background"
+			android:defaultValue="@integer/COLOR_GREEN"
+			/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="BCM"
+			android:title="Main Application Background: "
+			android:summary="App background"
+			android:defaultValue="@integer/COLOR_PRI"
+			/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="BCF"
+			android:title="Float SearchView Background: "
+			android:summary="FLoat background (colordict or text process)"
+			android:defaultValue="@integer/COLOR_PRI"
+			/>
+
+	</PreferenceCategory>
+
+
+
+
+
+</PreferenceScreen>

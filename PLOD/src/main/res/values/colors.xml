@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<color name="colorPrimary">#8f8f8f</color>
+	<color name="colorPrimary0">#3F51B5</color>
+	<color name="colorPrimary1">#aa3F51B5</color>
+	<color name="colorPrimaryDark">#00303F9F</color>
+	<color name="colorAccent">#FF4081</color>
+	
+   <color name="colorHeaderBlue">#2b4381</color>
+   <color name="SelHeaderBlue">#4F7FDF</color>
+   <color name="ShallowHeaderBlue">#a82b43e1</color>
+   <color name="OldHeaderBlue">#2b43c1</color>
+   <color name="colorHeaderBlueT">#ca2b4381</color>
+   <color name="lightFloatBlue">#80e0f0</color>
+   <color name="colorCoverBlue">#2a417e</color>
+   
+   <color name="colorControlHighlight">#4F7FDF</color>
+   
+   
+   <color name="brightBGrey">#a04F5F6F</color>
+   
+	<color name="green">#0b00f0ff</color>
+	<color name="green2">#aa00f0ff</color>
+	<color name="green3">#3300f0ff</color>
+	<color name="gray">#2a8f8f8f</color>  
+	
+    <color name="ripple_light">#aaaaff</color>
+    <color name="main_dark_blue">#ff00002f</color>
+    
+    <color name="popup_background">#CCCCCC</color>
+    <color name="transparentp">#aa8f8f8f</color>
+    
+    
+    <color name="cst">#daff</color>
+    <color name="cst2">#dd85f5f5</color>
+    <color name="cst3">#cca0f0f0</color>
+    <color name="zumulv">#009688</color>
+    
+    <color name="whitehalf">#a0ffffff</color>
+</resources>

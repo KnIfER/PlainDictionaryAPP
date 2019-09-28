@@ -1,0 +1,30 @@
+
+
+
+include ':recyclerViewFastScroller'
+
+include ':drag_sort_lib'
+
+include ':topsnackbar'
+
+include ':twowaygridview'
+
+include ':PLOD'
+
+
+include ':AxtAppCompat'
+include ':AweDesigner'
+include ':AppPreference'
+include ':libvlc'
+
+include ':drag_sort_lib'
+include ':filepicker'
+include ':colorpicker'
+
+include ':glide'
+include ':gif_decoder'
+include ':gif_encoder'
+include ':annotation'
+include ':annotation:compiler'
+include ':disklrucache'
+include ':GestureView'

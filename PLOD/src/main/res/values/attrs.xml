@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="app">
+        <attr name="contentInsetStartWithNavigation" format="dimension|reference"/>
+    </declare-styleable>
+    
+    <declare-styleable name="MaterialScrollBar">
+        <attr name="msb_recyclerView" format="reference"/>
+        <attr name="msb_lightOnTouch" format="boolean|reference"/>
+        <attr name="msb_handleColor" format="color|reference"/>
+        <attr name="msb_barColor" format="color|reference"/>
+        <attr name="msb_handleOffColor" format="color|reference"/>
+        <attr name="msb_textColor" format="color|reference"/>
+        <attr name="msb_barThickness" format="dimension|reference"/>
+        <attr name="msb_rightToLeft" format="boolean|reference"/>
+    </declare-styleable>
+
+    <declare-styleable name="CheckableImageview">
+        <attr name="CheckedTint" format="color|reference"/>
+    </declare-styleable>
+    
+    <declare-styleable name="TouchScrollBar">
+        <attr name="msb_hideDelayInMilliseconds" format="integer|reference"/>
+        <attr name="msb_autoHide" format="boolean|reference"/>
+    </declare-styleable>
+    
+    
+    
+    <declare-styleable name="SplitView">
+        <attr name="handle" format="reference" />
+        <attr name="primaryContent" format="reference"/>
+        <attr name="secondaryContent" format="reference"/>
+        
+        <attr name="CompensationTop" format="dimension"/>
+        <attr name="CompensationBottom" format="dimension"/>
+        <attr name="ReservationLeft" format="dimension"/>
+        <attr name="ReservationRight" format="dimension"/>
+    </declare-styleable>
+    
+    <declare-styleable name="DynListPref">
+        <attr name="key" format="string" />
+        <attr name="summary" format="string"/>
+        <attr name="title" format="string"/>
+    </declare-styleable>
+    
+    
+    
+    <declare-styleable name="UIStyles">
+        <attr name="dim0" format="dimension"/>
+        <attr name="dim1" format="dimension"/>
+    </declare-styleable>
+    
+    
+    
+    
+    
+    
+    
+    <declare-styleable name="constances">
+        <attr name="_0" format="integer" />
+    </declare-styleable>
+    
+    <declare-styleable name="single">
+        <attr name="s0" format="reference|color" />
+    </declare-styleable>
+    
+    <declare-styleable name="dual">
+        <attr name="d0" format="integer" />
+        <attr name="d1" format="integer" />
+    </declare-styleable>
+    
+   <declare-styleable name="triple">
+        <attr name="t1" format="integer" />
+        <attr name="t2" format="integer" />
+        <attr name="t3" format="integer" />
+    </declare-styleable>
+</resources>

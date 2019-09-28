@@ -1,0 +1,304 @@
+<FrameLayout
+   xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+    xmlns:splitview="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/root"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:gravity="top"
+	>
+	
+	
+	<com.knziha.plod.widgets.TextViewmy
+		android:id="@+id/MANITV"
+		android:layout_height="match_parent"
+		android:layout_width="wrap_content" 
+		android:textSize="19sp"
+		android:text="dear my love\r\nbe happy always"
+		android:visibility="gone"
+		/>
+         			
+	<LinearLayout 
+	   android:id="@+id/main"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:background="@drawable/popup_background"
+       android:layout_gravity="top"
+       android:gravity="bottom"
+       android:orientation="vertical"
+      >
+      
+		<androidx.appcompat.widget.Toolbar
+			android:id="@+id/toolbar"
+			android:layout_width="match_parent"
+			android:layout_height="@dimen/_50_"
+			android:theme="@style/popuptoolbarTheme"
+			app:contentInsetLeft="0dp"
+			app:contentInsetStart="0dp"
+			android:contentInsetRight="0dp"
+			android:contentInsetEnd="0dp"
+			 >
+    
+     			<LinearLayout
+                   android:layout_width="match_parent"
+                   android:layout_height="match_parent"
+                   android:orientation="horizontal"
+                   >
+	            <ImageView 
+	                  android:id="@+id/move0"
+	                  android:layout_width="@dimen/_40_"
+	                  android:layout_height="49dp"
+	                  android:src="@drawable/move"
+	                  android:scaleType="centerCrop"
+	                  android:layout_gravity="center"
+	                  />
+	            
+
+	        <FrameLayout android:id="@+id/rlSearchFrameDelete"  
+	            android:layout_width="match_parent"  
+	            android:layout_height="match_parent"
+	            >
+					<com.knizha.wangYiLP.ui.EditTextmy
+					    android:id="@+id/etSearch"
+					    android:layout_width="fill_parent"
+					    android:layout_height="match_parent"
+					    android:textColor="#ffffff"
+						android:singleLine="true" 
+						android:paddingRight="53dp" 
+					 />
+					
+                
+		         <LinearLayout 
+  	                android:layout_width="wrap_content"  
+	                android:layout_height="match_parent" 
+	                android:layout_gravity="right"  
+				    >
+					<ImageView 
+			            android:id="@+id/ivBack"  
+		                android:layout_width="wrap_content"  
+		                android:layout_height="match_parent" 
+		                android:src="@drawable/search_toolbar"
+		                android:paddingLeft="4dp"  
+		                android:paddingRight="10dp"  
+		                android:visibility="visible"
+		                />
+							 
+			         <ImageView 
+			             android:id="@+id/ivDeleteText"  
+		                android:layout_width="wrap_content"  
+		                android:layout_height="match_parent" 
+		                android:src="@drawable/close_toobar"  
+		                android:paddingRight="8dp"  
+		                android:visibility="visible"/> 
+                </LinearLayout>
+		         
+			</FrameLayout> 
+			
+	        
+			</LinearLayout>
+		</androidx.appcompat.widget.Toolbar>
+
+		<FrameLayout
+            android:id="@+id/mainframe"
+			android:layout_width="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1"
+			android:background="#ffffff"
+			>
+				<ListView
+					android:layout_height="match_parent"
+					android:layout_width="match_parent"
+					android:id="@+id/main_list"
+					android:drawSelectorOnTop="true"
+					android:listSelector="@drawable/color_double_list_bg"
+					/>
+				<ListView
+					android:layout_height="match_parent"
+					android:layout_width="match_parent"
+					android:id="@+id/sub_list"
+					android:drawSelectorOnTop="true"
+					android:background="@android:color/white"
+					android:listSelector="@drawable/color_double_list_bg"
+					android:visibility="invisible"
+					/>
+					
+	        <com.knziha.plod.widgets.SplitView
+                android:id="@+id/webcontentlister"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+        		android:fitsSystemWindows="true" 
+        		android:orientation="vertical"
+				android:visibility="gone"
+        		
+			    splitview:primaryContent="@+id/bottombar2"
+			    splitview:handle="@+id/bottombar2"
+			    splitview:secondaryContent="@+id/cover"
+                >
+	        
+				<com.knziha.plod.widgets.RLContainerSlider
+           			android:id="@+id/cover"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1"
+					>
+						<FrameLayout 
+							android:id="@+id/webSingleholder"
+							android:layout_width="match_parent"
+							android:layout_height="match_parent"
+							android:descendantFocusability="blocksDescendants"
+							>
+						</FrameLayout>
+						<com.knziha.plod.widgets.ScrollViewmy
+							android:layout_height="match_parent"
+							android:layout_width="match_parent" 
+							android:focusable="true"
+							android:descendantFocusability="blocksDescendants"
+							android:scrollbars="@null"
+							>
+							<LinearLayout
+								android:id="@+id/webholder"
+								android:layout_width="match_parent"
+								android:layout_height="match_parent"
+								android:focusable="true"
+								android:focusableInTouchMode="true"
+								android:descendantFocusability="blocksDescendants"
+								android:orientation="vertical"
+								>
+							</LinearLayout>
+							</com.knziha.plod.widgets.ScrollViewmy>
+
+								
+						<android.widget.ImageView
+			                android:id="@+id/browser_widget14"
+			                android:layout_width="34dp"
+			                android:layout_height="34dp"
+			                android:background="@drawable/listviewselector2"
+			                android:clickable="true"
+			                android:src="@drawable/chevron_up" 
+				        android:layout_gravity="bottom|right"
+				        android:layout_marginBottom="64dp"
+				        android:layout_marginRight="10dp"
+			                />
+						<android.widget.ImageView
+			                android:id="@+id/browser_widget13"
+			                android:layout_width="34dp"
+			                android:layout_height="34dp"
+			                android:background="@drawable/listviewselector2"
+			                android:clickable="true"
+			                android:src="@drawable/chevron_btm" 
+				        android:layout_gravity="bottom|right"
+				        android:layout_marginBottom="20dp"
+				        android:layout_marginRight="10dp"
+				        />
+				
+					    <View
+							android:id="@+id/IMPageCover"
+							android:layout_width="match_parent"
+							android:layout_height="match_parent"
+							android:background="@drawable/shixian2"
+							android:visibility="gone"
+							/>
+						<com.knziha.plod.widgets.SumsungLikeScrollBar
+							android:id="@+id/dragScrollBar"
+							android:layout_width="match_parent"
+							android:layout_height="match_parent"
+							android:gravity="right"
+							android:layout_marginRight="10dp"/>
+						<ProgressBar
+				        	android:id="@+id/main_progress_bar"
+					        android:layout_width="wrap_content"
+					        android:layout_height="wrap_content"
+					        android:layout_gravity="center_vertical|center_horizontal"
+						    android:visibility="gone"
+						    android:layout_centerVertical="true"
+					        android:layout_centerHorizontal="true"/>
+				</com.knziha.plod.widgets.RLContainerSlider>
+						
+		<LinearLayout
+        android:id="@+id/bottombar2"
+        android:layout_width="match_parent"
+        android:layout_height="20dip"
+        android:orientation="horizontal"
+        android:background="@color/colorPrimary"
+        android:theme="@style/AppTheme"
+        android:gravity="center_vertical|fill_horizontal"
+        >
+            <android.widget.ImageView
+                android:id="@+id/browser_widget7"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+	            android:background="@drawable/surrtrip1"
+                android:clickable="true"
+                android:src="@drawable/back_ic" />
+            <android.widget.ImageView
+                android:id="@+id/browser_widget8"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+	            android:background="@drawable/surrtrip1"
+                android:clickable="true"
+                android:src="@drawable/star_ic" />
+            <android.widget.ImageView
+                android:id="@+id/browser_widget9"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+	            android:background="@drawable/surrtrip1"
+                android:clickable="true"
+                android:src="@drawable/list_ic" />
+            <android.widget.ImageView
+                android:id="@+id/browser_widget10"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+	            android:background="@drawable/surrtrip1"
+                android:clickable="true"
+                android:src="@drawable/chevron_left" />
+				<android.widget.ImageView
+                android:id="@+id/browser_widget11"
+                android:layout_width="wrap_content"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+	            android:background="@drawable/surrtrip1"
+                android:clickable="true"
+                android:src="@drawable/chevron_right" />
+            <android.widget.ImageView
+                android:id="@+id/browser_widget12"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+	            android:background="@drawable/surrtrip1"
+                android:clickable="true"
+                android:src="@drawable/voice_ic"
+                />
+
+    </LinearLayout>
+      
+    
+      </com.knziha.plod.widgets.SplitView>
+      
+				
+				
+				
+		</FrameLayout>
+	</LinearLayout>
+	
+	<LinearLayout
+	    android:layout_gravity="center"
+		android:id="@+id/dialog_"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:background="@drawable/popup_background3"
+		android:layout_marginLeft="28dp"
+		android:layout_marginRight="28dp"
+		android:layout_marginTop="43dp"
+		android:layout_marginBottom="45dp"
+		android:minHeight="110dp"
+		android:clickable="true"
+		android:visibility="gone"
+		/>
+			
+</FrameLayout>

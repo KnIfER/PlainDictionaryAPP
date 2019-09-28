@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>  
+<CheckBox 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/checker"
+    android:layout_width="wrap_content"  
+    android:layout_height="wrap_content"
+    android:buttonTint="#ffff0000"
+    android:text="Pin"
+    android:textColor="#ffff0000"
+    >  
+
+
+</CheckBox>  

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu 
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   app:showAsAction="never"
+   xmlns:app="http://schemas.android.com/apk/res-auto">
+
+     <item
+        android:id="@+id/toolbar_action0"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="Commit"
+        app:showAsAction="never"/>
+        
+    <item
+        android:id="@+id/toolbar_action1"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="Refresh"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/toolbar_action2"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="Reset"
+        app:showAsAction="never"/>
+    
+       <item
+        android:id="@+id/toolbar_action3"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="Save As"
+        app:showAsAction="never"/>
+        
+       <item
+        android:id="@+id/toolbar_action4"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="Disable All"
+        app:showAsAction="never"/>
+         
+       <item
+        android:id="@+id/toolbar_action5"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="Enable All"
+        app:showAsAction="never"/>
+       
+        <item
+        android:id="@+id/toolbar_action6"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="Show All Dicts"
+        app:showAsAction="never"/>
+    
+       <item
+	        android:id="@+id/toolbar_action7"
+	        android:icon="@drawable/ic_btn_siglemode"
+	        android:title="Select All"
+	        app:showAsAction="never"
+	        android:visible="false"/>
+       <item
+	        android:id="@+id/toolbar_action8"
+	        android:icon="@drawable/ic_btn_siglemode"
+	        android:title="Select All Invalid"
+	        app:showAsAction="never"
+	        android:visible="false"/>
+        <item
+	        android:id="@+id/toolbar_action9"
+	        android:icon="@drawable/ic_btn_siglemode"
+	        android:title="Add Selection to Set"
+	        app:showAsAction="never"
+	        android:visible="false"/>
+        
+        <item
+	        android:id="@+id/toolbar_action10"
+	        android:icon="@drawable/ic_btn_siglemode"
+	        android:title="Remove Selection from Set"
+	        app:showAsAction="never"
+	        android:visible="false"/>
+        
+        <item
+	        android:id="@+id/toolbar_action11"
+	        android:icon="@drawable/ic_btn_siglemode"
+	        android:title="Remove Record(s)"
+	        app:showAsAction="never"
+	        android:visible="false"/>
+        
+        <item
+	        android:id="@+id/toolbar_action12"
+	        android:icon="@drawable/ic_btn_siglemode"
+	        android:title="Move File(s)"
+	        app:showAsAction="never"
+	        android:visible="false"/> 
+	        
+         <item
+	        android:id="@+id/toolbar_action13"
+	        android:icon="@drawable/ic_btn_siglemode"
+	        android:title="Fold All"
+	        app:showAsAction="never"
+	        android:visible="false"/>
+        
+        <item
+	        android:id="@+id/toolbar_action14"
+	        android:icon="@drawable/ic_btn_siglemode"
+	        android:title="Unfold All"
+	        app:showAsAction="never"
+	        android:visible="false"/>
+        
+        <item
+	        android:id="@+id/toolbar_action15"
+	        android:icon="@drawable/ic_btn_siglemode"
+	        android:title="New..."
+	        app:showAsAction="never"
+	        android:visible="false"/>
+        
+        <item
+	        android:id="@+id/action_search"
+	        android:title="menu_search"
+	        app:actionViewClass="androidx.appcompat.widget.SearchView"
+	        android:showAsAction="always"/>
+ </menu>

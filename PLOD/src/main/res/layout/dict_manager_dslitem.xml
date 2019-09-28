@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:background="@drawable/dragmy4"
+  android:layout_height="wrap_content"
+  android:orientation="horizontal"
+  android:minHeight="@dimen/item_height"
+  >
+<TextView 
+    android:id="@+id/text"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:textAppearance="?android:attr/textAppearanceMedium"
+    android:layout_gravity="center_vertical"
+    android:text="aaaa"
+  	android:background="@drawable/listviewselector0"
+    android:paddingLeft="9dp"
+    />
+  <ImageView
+    android:id="@id/drag_handle"
+    android:src="@drawable/dragneo"
+    android:paddingRight="5dp"
+    android:paddingLeft="2dp"
+    android:layout_marginRight="8dp"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_weight="0" />
+</LinearLayout>

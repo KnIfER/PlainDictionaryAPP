@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:descendantFocusability="beforeDescendants"
+    >
+    
+	    <View 
+	        android:id="@+id/shelfright"
+		    android:layout_width="1dp"  
+		    android:layout_height="match_parent"  
+		    android:layout_toRightOf="@+id/sideBarp"
+		    android:background="#2b43c1"
+	        />
+    
+    		<ScrollView
+				    android:id="@+id/sideBarp"
+				    android:layout_width="35dp"  
+				    android:layout_height="match_parent"
+				    android:scrollbars="@null"
+				    >
+    		    <com.knziha.ankislicer.customviews.ShelfLinearLayout
+				    android:id="@+id/sideBar"
+				    android:layout_width="match_parent"  
+				    android:layout_height="match_parent"  
+				    android:orientation="vertical"
+				    android:showDividers="middle"
+				    android:divider="@drawable/divider"
+				     >
+				     
+    		    
+    		    <ImageView
+				         android:id="@+id/tools0"
+					     android:layout_width="match_parent"  
+					     android:layout_height="35dp" 
+					     android:background="@drawable/ic_pan_tool_black_24dp"
+					     android:clickable="true"
+					     android:padding="5dp"
+				         />
+    		    <ImageView
+				         android:id="@+id/tools001"
+					     android:layout_width="match_parent"  
+					     android:layout_height="35dp" 
+					     android:background="@drawable/ic_peruse_pan"
+					     android:clickable="true"
+					     android:padding="5dp"
+				         />
+    		    <ImageView
+				         android:id="@+id/toolbar_action2"
+					     android:layout_width="match_parent"  
+					     android:layout_height="35dp" 
+					     android:background="@drawable/txtdropper"
+					     android:clickable="true"
+				         />
+    		    <ImageView
+				         android:id="@+id/tools1"
+					     android:layout_width="match_parent"  
+					     android:layout_height="35dp" 
+					     android:background="@drawable/select"
+					     android:clickable="true"
+					     android:padding="5dp"
+				         />
+    		    <View
+					     android:layout_width="match_parent"  
+					     android:layout_height="0dp" 
+    		        />
+    		    <ImageView
+				         android:id="@+id/toolbar_action1"
+					     android:layout_width="match_parent"  
+					     android:layout_height="35dp" 
+					     android:src="@drawable/ic_btn_siglemode"
+					     android:clickable="true"
+					     android:tint="#000"
+					     android:background="@drawable/surrtrip2"
+				         />
+    		    
+    		    <ImageView
+				         android:id="@+id/tools3"
+					     android:layout_width="match_parent"  
+					     android:layout_height="35dp" 
+					     android:background="@drawable/delete"
+					     android:clickable="true"
+					     android:padding="5dp"
+				         />
+				     
+    		    
+    		    
+    		    
+   				    <ImageView
+				        android:id="@+id/search"
+					    android:layout_width="match_parent"  
+					    android:layout_height="35dp" 
+					    android:background="@drawable/ic_search"
+					    android:backgroundTint="#000000"
+					    android:clickable="true"
+				        />
+   				    
+	    		    <FrameLayout
+						    android:layout_width="match_parent"  
+						    android:layout_height="35dp"  
+	    		        >
+		    		     <ImageView
+						        android:id="@+id/bookmark0"
+							    android:layout_width="match_parent"  
+							    android:layout_height="0dp" 
+							    android:clickable="true"
+						         />
+		    		     <ImageView
+						         android:id="@+id/bookmark"
+							    android:layout_width="match_parent"  
+							    android:layout_height="match_parent" 
+							    android:background="@drawable/bookmark"
+							    android:clickable="true"
+						         />
+	    		    </FrameLayout>
+    		    
+   				     
+    		    
+    		    <ToggleButton 
+    		        	android:id="@+id/tg2"
+					    android:layout_width="match_parent"  
+					    android:layout_height="35dp"
+					    android:textOn="Ø"
+					    android:textOff=""
+					    android:textColor="#ffaaaa"
+					    android:textSize="25sp"
+					    android:gravity="center"
+					    android:background="@drawable/ver"
+    		        />
+    		    
+    		    
+				     <ImageView
+				         android:id="@+id/choosed"
+					    android:layout_width="match_parent"  
+					    android:layout_height="35dp" 
+					    android:background="@drawable/choosed"
+					    android:clickable="true"
+				         />
+	    		    <ImageView
+					         android:id="@+id/changed"
+						    android:layout_width="match_parent"  
+						    android:layout_height="35dp" 
+						    android:background="@drawable/movec"
+						    android:clickable="true"
+					         />
+    		    </com.knziha.ankislicer.customviews.ShelfLinearLayout>
+    		</ScrollView>
+    		
+    		    
+       <com.afollestad.dragselectrecyclerview.DragSelectRecyclerView
+			 	android:id="@+id/main_list"
+		        android:layout_width="match_parent"
+		        android:layout_height="match_parent"
+		        android:background="#ffffff" 
+		        android:layout_toRightOf="@+id/shelfright"
+        	/>
+       	    
+      <com.knziha.ankislicer.customviews.VerticalRecyclerViewFastScrollermy
+	      android:id="@+id/fast_scroller"
+	      android:layout_width="35dp"
+	      android:layout_height="match_parent"
+	      android:layout_alignParentRight="true"
+      />
+    
+      
+    
+    <androidx.appcompat.widget.Toolbar
+	        android:id="@+id/toolbar"
+	        android:layout_width="match_parent"
+	        android:layout_height="40dp"
+	        android:minHeight="40dp"
+	        android:theme="@style/ToolBarTheme"
+	        android:background="#a0a0a0ae"
+	        android:visibility="gone"
+	         />
+    
+      
+    <include layout="@layout/anki_progress"/>
+    
+
+
+   			 <android.widget.ImageView
+	                android:id="@+id/browser_widget14"
+	                android:layout_width="34dp"
+	                android:layout_height="34dp"
+	                android:background="@drawable/listviewselector2"
+	                android:clickable="true"
+	                android:src="@drawable/chevron_up" 
+		        android:layout_alignParentBottom="true"
+		        android:layout_alignParentRight="true"
+		        android:layout_marginBottom="64dp"
+		        android:layout_marginRight="10dp"
+	                />
+				<android.widget.ImageView
+	                android:id="@+id/browser_widget13"
+	                android:layout_width="34dp"
+	                android:layout_height="34dp"
+	                android:background="@drawable/listviewselector2"
+	                android:clickable="true"
+	                android:src="@drawable/chevron_btm" 
+		        android:layout_alignParentBottom="true"
+		        android:layout_alignParentRight="true"
+		        android:layout_marginBottom="20dp"
+		        android:layout_marginRight="10dp"
+		        />
+				
+       		 <TextView
+		        android:id="@+id/counter"
+			    android:layout_width="wrap_content"  
+			    android:layout_height="wrap_content" 
+			    android:clickable="true"
+			    android:text="0/1000000"
+			    android:textColor="@color/colorHeaderBlue"
+		        android:layout_alignParentBottom="true"
+		        android:layout_alignParentRight="true"
+		        android:layout_marginBottom="0dp"
+		        android:layout_marginRight="10dp"
+	         	/>
+    
+<FrameLayout         
+    	android:id="@+id/listHolder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        >
+    <ListView
+        android:id="@+id/left_drawer"
+        android:layout_width="240dp"
+        android:layout_height="match_parent"
+        android:choiceMode="singleChoice"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp"
+        android:background="@color/whitehalf"
+        android:layout_marginLeft="35dp"
+        />
+</FrameLayout>
+    
+<FrameLayout     
+        android:id="@+id/toast_layout_rootmy" 
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        >
+<TextView 
+   		  android:id="@+id/message"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:padding="5dp"
+          android:background="#2b4391"
+          android:layout_marginBottom="15dp"
+          android:text="favorite"
+          android:textColor="#ffffff"
+          android:layout_gravity="bottom|center"
+          />
+</FrameLayout>
+  
+<FrameLayout     
+        android:id="@+id/snack_root" 
+        android:layout_toRightOf="@+id/sideBarp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+</RelativeLayout>

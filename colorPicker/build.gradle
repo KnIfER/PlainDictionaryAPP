@@ -1,0 +1,76 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion ver_compileSdkVersion as int
+
+    sourceSets {
+      main {
+        manifest.srcFile 'AndroidManifest_as.xml'
+        java.srcDirs = ['src']
+        resources.srcDirs = ['src']
+        aidl.srcDirs = ['src']
+        renderscript.srcDirs = ['src']
+        res.srcDirs = ['res']
+        assets.srcDirs = ['assets']
+      }
+      androidTest.setRoot('tests')
+    }
+
+    defaultConfig {
+        minSdkVersion ver_minsdk
+        targetSdkVersion ver_aimsdk
+        vectorDrawables.generatedDensities = ['hdpi']
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+  //signingConfigs {
+  //  release {
+  //    keyAlias 'xxx'
+  //    keyPassword 'xxx'
+  //    storeFile file('/Users/xxx/work/keystore/xxx.key')
+  //    storePassword 'xxx'
+  //  }
+  //}
+
+  lintOptions {
+    abortOnError false
+  }
+
+  buildTypes {
+    release {
+        minifyEnabled false
+        useProguard = false
+        //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
+        //signingConfig signingConfigs.release
+    }
+  }
+
+  lintOptions {
+    abortOnError false
+  }
+
+}
+
+dependencies {
+    if(use_compat_official=='1'){
+        api (libs_compat)
+    }else{
+        implementation  project(':AxtAppCompat')
+        implementation (libs_appres)
+        configurations {
+            //all*.exclude group: 'androidx.appcompat'
+        }
+    }
+    if(use_prefer_official=='1'){
+        api (libs_prefer){
+            exclude module: "appcompat"
+            exclude module: "appcompat-resources"
+        }
+    }else{
+        api (project(':AppPreference'))
+    }
+    api (libs_anno)
+}

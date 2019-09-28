@@ -1,0 +1,39 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion ver_compileSdkVersion as int
+
+    defaultConfig {
+        minSdkVersion ver_minsdk
+        targetSdkVersion ver_aimsdk
+        vectorDrawables.generatedDensities = ['hdpi']
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    api (libs_v4)
+    if(use_compat_official=='1'){
+        api (libs_compat)
+    }else{
+        implementation  project(':AxtAppCompat')
+        implementation (libs_appres)
+        configurations {
+            //all*.exclude group: 'androidx.appcompat'
+        }
+    }
+    if(use_prefer_official=='1'){
+        api (libs_prefer){
+            exclude module: "appcompat"
+            exclude module: "appcompat-resources"
+        }
+    }else{
+        api (project(':AppPreference'))
+    }
+}

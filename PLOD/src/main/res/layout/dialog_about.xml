@@ -1,0 +1,53 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialog"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="18dp"
+    android:layout_marginRight="18dp"
+    android:orientation="vertical">
+
+    
+    
+        <TextView
+        android:layout_margin="8dp"
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:textSize="18sp"
+        android:text="@string/about"
+        android:textColor="@android:color/black"
+    	/>
+        
+
+	<ScrollView
+        android:id="@+id/resultNP"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        >
+    <com.knziha.ankislicer.customviews.UnCrashableSpannedTextView
+        android:layout_margin="8dp"
+        android:id="@+id/resultN"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textIsSelectable="false"
+        android:textColor="@color/colorHeaderBlue"
+    	/>
+    </ScrollView>
+    
+    <Button
+        android:textColor="@color/zumulv"
+        android:id="@+id/cancel"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+		android:layout_gravity="end"
+        android:layout_margin="8dp"
+        android:text="@string/confirm" />
+
+</LinearLayout>
+
+
+

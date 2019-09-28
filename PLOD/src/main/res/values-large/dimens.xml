@@ -1,0 +1,16 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="dictitle">40dp</dimen>
+    <dimen name="dtcover">30dp</dimen>
+    <dimen name="dtcoverL">4dp</dimen>
+    
+    <dimen name="sz_valve">30dp</dimen>
+    
+    <dimen name="_50_">55dp</dimen>
+    <dimen name="_40_">45dp</dimen>
+    <dimen name="abarmin">45dp</dimen>
+    <dimen name="abarmax">50dp</dimen>
+    
+    <dimen name="lvtextsize">21dp</dimen>
+    <dimen name="lvsubtextsize">14dp</dimen>
+</resources>

@@ -1,0 +1,31 @@
+<FrameLayout
+   		xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+    >
+	<TextView 
+	    android:id="@+id/text1"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:textAppearance="?android:attr/textAppearanceListItemSmall"
+	    android:gravity="center_vertical"
+	    android:paddingLeft="16dp"
+	    android:paddingRight="16dp"
+	    android:textColor="@color/colorHeaderBlue"
+	    android:background="?android:attr/activatedBackgroundIndicator"
+	    android:theme="@style/DrawerList"
+	    android:minHeight="38dp"
+	    />
+	<ImageView
+	    android:id="@+id/del"
+	    android:layout_width="wrap_content"
+	    android:layout_height="match_parent"
+	    android:src="@drawable/icon_denglu_close"
+	    android:tint="#000"
+	    android:padding="6dp"
+	    android:visibility="gone"
+	    android:clickable="true"
+	    android:layout_gravity="right"
+	    />
+</FrameLayout>

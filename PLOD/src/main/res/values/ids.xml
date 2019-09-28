@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="drag_handle" />
+    <item type="id" name="click_remove" />
+    <item type="id" name="position" />
+    <item type="id" name="lvitems" />
+    <item type="id" name="nxt_plain" />
+    <item type="id" name="lst_plain" />
+    <item type="id" name="sub_list1" />
+    <item type="id" name="sub_list2" />
+    <item type="id" name="deld" />
+    
+
+</resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!--右侧搜索操作条目-->
+    <item
+        android:id="@+id/action_search"
+        android:title="menu_search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        android:showAsAction="always"/>
+
+    <!--右侧设置条目，收起-->
+    <item
+        android:id="@+id/action_setting"
+        android:title="menu_setting"
+        android:visible="false"
+        android:showAsAction="never" />
+
+</menu>

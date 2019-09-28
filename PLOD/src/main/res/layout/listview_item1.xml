@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="horizontal"
+	android:background="@drawable/listviewselector1"
+	>
+	
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="match_parent"
+		android:text="absolve"
+		android:id="@+id/text"
+		android:layout_marginLeft="10dp"
+		android:layout_marginTop="5dp"
+		android:layout_marginBottom="2dp"	
+		android:textColor="#000"
+		android:textSize="@dimen/lvtextsize"
+		
+		/>
+
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="match_parent"
+		android:text=""
+		android:id="@+id/subtext"
+		android:layout_marginLeft="10dp"
+		android:layout_marginTop="2dp"
+		android:paddingBottom ="5dp"	
+		android:textSize="@dimen/lvsubtextsize"
+		android:textColor="#99a"
+		android:layout_below="@+id/text"
+		/>
+	
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:text="00"
+		android:id="@+id/counter"
+		android:paddingLeft ="5dp"	
+		android:paddingRight="5dp"	
+		android:layout_marginRight="5dp"	
+		android:textSize="10dp"
+		android:textColor="#ffffff"
+		android:layout_alignParentRight="true"
+		android:layout_centerVertical="true"
+		android:background="@drawable/round"
+		/>
+</RelativeLayout>
+

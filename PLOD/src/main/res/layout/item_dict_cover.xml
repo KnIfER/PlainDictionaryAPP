@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout 
+    android:theme="@style/AppTheme"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/listviewselector0"
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="horizontal">
+    <ImageView
+        android:id="@+id/img"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        />
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="词典名称"
+        android:textSize="28dp"
+        android:textColor="#110022" />
+    <TextView
+        android:id="@+id/totalEntries"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1218"
+        android:textColor="?attr/colorPrimary"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_alignParentBottom="true"
+        android:background="#8f110022"
+        />
+</RelativeLayout>
+

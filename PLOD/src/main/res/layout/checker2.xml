@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    android:layout_width="match_parent"  
+    android:layout_height="30dp"
+    android:background="@drawable/surrtrip2"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+    
+	<com.knziha.plod.widgets.CheckableImageView
+	    android:id="@+id/checker"
+	    android:layout_width="30dp"  
+	    android:layout_height="30dp"
+	    android:padding="2dp"
+        android:src="@drawable/pin"
+	    />
+	
+	<LinearLayout 
+	    android:id="@+id/checkerr"
+	    android:orientation="horizontal"
+	    android:layout_width="wrap_content"  
+	    android:layout_height="match_parent"
+	    android:layout_gravity="end"
+	    >
+	    
+	    <ImageView 
+    		android:id="@+id/color"
+		    android:layout_width="30dp"  
+		    android:layout_height="30dp"
+		    android:padding="4dp"
+            android:src="@drawable/color_sheet"
+            android:layout_marginRight="5dp"
+	        />
+	    
+	    <ImageView 
+    		android:id="@+id/settings"
+		    android:layout_width="30dp"  
+		    android:layout_height="30dp"
+		    android:padding="4dp"
+            android:src="@drawable/tools_toolbar"
+            android:layout_marginRight="5dp"
+	        />
+	    
+  	   <ImageView 
+    		android:id="@+id/appsettings"
+		    android:layout_width="30dp"  
+		    android:layout_height="30dp"
+		    android:padding="4dp"
+            android:src="@drawable/drawer_menu_icon_setting"
+	        />
+	    
+	    	   
+	    <ImageView 
+    		android:id="@+id/lock"
+		    android:layout_width="30dp"  
+		    android:layout_height="30dp"
+		    android:padding="4dp"
+            android:src="@drawable/un_locked"
+	        />
+
+	</LinearLayout>
+
+
+
+</FrameLayout>

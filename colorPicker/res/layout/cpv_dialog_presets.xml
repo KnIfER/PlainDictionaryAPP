@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:layout_gravity="bottom"
+	android:gravity="bottom"
+	>
+
+	<View
+		android:id="@+id/clicker"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_above="@id/views_holder0"
+		/>
+
+	<com.jaredrummler.colorpicker.ProtectiveScrollView
+		android:id="@+id/views_holder0"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom"
+		android:descendantFocusability="afterDescendants"
+		android:layout_above="@+id/bottom"
+		android:background="#fff"
+		>
+
+		<LinearLayout
+			android:id="@+id/views_holder"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:padding="0dp">
+
+
+			<HorizontalScrollView
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:overScrollMode="never"
+				android:scrollbars="none">
+
+				<LinearLayout
+					android:id="@+id/shades_layout"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"/>
+
+			</HorizontalScrollView>
+
+			<View
+				android:id="@+id/shades_divider"
+				android:layout_width="match_parent"
+				android:layout_height="1dp"
+				android:background="#000000"/>
+
+
+
+			<com.jaredrummler.colorpicker.NestedGridView
+				android:id="@+id/gridView"
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/cpv_column_widthX2"
+				android:cacheColorHint="@android:color/transparent"
+				android:clickable="false"
+				android:columnWidth="@dimen/cpv_column_width"
+				android:horizontalSpacing="4dp"
+				android:paddingTop="1dp"
+				android:listSelector="@android:color/transparent"
+				android:numColumns="6"
+				android:stretchMode="columnWidth"
+				android:focusableInTouchMode="true"
+				android:verticalSpacing="8dp"/>
+		</LinearLayout>
+	</com.jaredrummler.colorpicker.ProtectiveScrollView>
+
+	<LinearLayout
+		android:id="@+id/bottom"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:layout_alignParentBottom="true"
+		android:background="#fff"
+		>
+		<Button
+			android:id="@+id/color"
+			style="?android:attr/buttonBarButtonStyle"
+			android:text="自定义颜色"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+		<ImageView
+			android:layout_width="0dp"
+			android:layout_height="match_parent"
+			android:clickable="true"
+			android:layout_weight="1"/>
+		<Button
+			android:id="@+id/confirm"
+			style="?android:attr/buttonBarButtonStyle"
+			android:text="确认"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+	</LinearLayout>
+
+</RelativeLayout>

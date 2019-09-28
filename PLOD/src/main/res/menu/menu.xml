@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu 
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/toolbar_action1"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title=""
+        app:showAsAction="always"/>
+    
+    <item
+        android:id="@+id/toolbar_action0"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="折叠全部"
+        android:visible="false"
+        app:showAsAction="never"/>
+
+
+    <item
+      android:id="@+id/toolbar_action6"
+      android:icon="@drawable/ic_btn_siglemode"
+      android:title="翻页前记忆位置 "
+      app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/toolbar_action2"
+        android:icon="@drawable/ic_search_24k"
+        android:title="@string/search"
+        app:showAsAction="never"/>
+    
+    <item
+     android:id="@+id/toolbar_action5"
+     android:icon="@drawable/ic_btn_siglemode"
+     android:title="提示结果 "
+     app:showAsAction="never"/>
+    <item
+     android:id="@+id/toolbar_action11"
+     android:icon="@drawable/ic_btn_siglemode"
+     android:title="词条着色 "
+     app:showAsAction="never"/>
+    <item
+     android:id="@+id/toolbar_action10"
+     android:icon="@drawable/ic_btn_siglemode"
+     android:title="提示模式 "
+     app:showAsAction="never"/>
+    
+    <item
+        android:id="@+id/toolbar_action3"
+        android:icon="@drawable/ic_search_24k"
+        android:title="@string/perWSearch"
+        app:showAsAction="never"/>
+    
+    <item
+        android:id="@+id/toolbar_action4"
+        android:icon="@drawable/ic_search_24k"
+        android:title="@string/peruseToggle"
+        app:showAsAction="never"/>
+    
+    <item
+        android:id="@+id/toolbar_action7"
+        android:icon="@drawable/ic_search_24k"
+        android:title="切换词典"
+        app:showAsAction="never"/>
+    
+    <item
+        android:id="@+id/toolbar_action8"
+        android:icon="@drawable/ic_search_24k"
+        android:title="切换分组"
+        app:showAsAction="never"/>
+    
+    <item
+        android:id="@+id/toolbar_action9"
+        android:icon="@drawable/ic_search_24k"
+        android:title="存书签"
+        app:showAsAction="never"/>
+ </menu>

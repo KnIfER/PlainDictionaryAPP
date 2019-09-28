@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:tools="http://schemas.android.com/tools"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	package="com.knziha.plod.PlainDict">
+           
+	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>	
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/> 
+
+    <application
+        android:name="com.knziha.plod.PlainDict.AgentApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:hardwareAccelerated="true"
+		tools:ignore="GoogleAppIndexingWarning"
+		android:requestLegacyExternalStorage="true">
+		<uses-library android:name="com.sec.android.app.multiwindow" android:required="false" />
+		<meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
+		<meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_W" android:value="632.0dip" />
+		<meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_H" android:value="598.0dip" />
+		<meta-data android:name="com.sec.android.multiwindow.MINIMUM_SIZE_W" android:value="632.0dip" />
+		<meta-data android:name="com.sec.android.multiwindow.MINIMUM_SIZE_H" android:value="598.0dip" />
+		<activity android:name="com.knziha.plod.PlainDict.PDICMainActivity"
+            android:theme="@style/AppTheme"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+			android:hardwareAccelerated="true"
+			>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+		 <activity android:name="com.knziha.plod.PlainDict.CuteFileManager"
+			android:theme="@style/AppTheme"
+			android:configChanges="keyboardHidden|orientation|screenSize"
+			android:hardwareAccelerated="true"
+			>
+		</activity>
+        
+        <activity android:name="com.knziha.plod.PlainDict.FloatSearchActivity"
+            	android:theme="@style/FloatAppTheme"
+            	android:configChanges="keyboardHidden|orientation|screenSize"
+				android:hardwareAccelerated="true"
+				android:windowSoftInputMode="adjustPan"
+				>
+            <intent-filter>
+                <action android:name="colordict.intent.action.SEARCH"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+        
+        <activity android:name="com.knziha.plod.settings.SettingsActivity"
+            android:theme="@style/SettingAppTheme"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+			android:windowSoftInputMode="adjustPan"
+			android:hardwareAccelerated="true"/>
+        
+        <activity android:name="com.knziha.plod.PlainDict.PhotoBrowserActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@android:style/Animation.Dialog" 
+            />
+        
+        <activity android:name="com.knziha.plod.dictsmanager.dict_manager_activity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/AppThemeRaw" 
+            />
+    </application>
+
+    
+   
+	
+</manifest>

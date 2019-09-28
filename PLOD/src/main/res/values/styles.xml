@@ -1,0 +1,264 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="Widget.Design.Snackbar" parent="android:Widget">
+        <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark</item>
+        <item name="android:minWidth">-1px</item>
+        <item name="android:maxWidth">-1px</item>
+        <item name="android:background">@color/colorHeaderBlueT</item>
+        <item name="android:paddingLeft">@dimen/design_snackbar_padding_horizontal</item>
+        <item name="android:paddingRight">@dimen/design_snackbar_padding_horizontal</item>
+        <item name="elevation">@dimen/design_snackbar_elevation</item>
+        <item name="maxActionInlineWidth">@dimen/design_snackbar_action_inline_max_width</item>
+    </style>
+
+    
+    <!--  parent="android:Widget.Material.FastScroll"><-->
+    <style name="FastScrollStyle" >
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">88dp</item>
+    </style>
+    
+    <style name="AppTheme" parent="AppTheme.Base">
+        <item name="colorAccent">@color/colorAccent</item> 
+        
+    </style>
+    
+     <style name="UrlTextStyle"  parent="AppTheme.Base">
+        <item name="colorAccent">@android:color/white</item> 
+    </style>
+    
+    
+      <style name="AppBright" parent="AppTheme.Base">
+        <item name="colorAccent">@android:color/white</item>  
+        
+    </style>
+    
+    <style name="scroll" parent="AppTheme.Base">
+   			<item name="colorPrimary">@android:color/white</item>
+    </style>
+    
+    <style name="DrawerList" parent="AppTheme.Base">
+        <item name="colorAccent">@color/brightBGrey</item>
+        
+    </style>
+    <style name="PlainAppTheme" parent="AppTheme">
+         <item name="android:windowBackground">@null</item>
+    </style>
+    
+    <style name="FloatAppTheme" parent="AppTheme">
+         <item name="android:windowBackground">@android:color/transparent</item>
+         <item name="android:windowIsTranslucent">true</item>
+    </style>
+    
+    <style name="AppTheme0" parent="AppTheme.Base">
+        <item name="colorAccent">@color/colorHeaderBlue</item>
+    </style>
+    
+    
+    <style name="MyEditText2" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">@android:color/transparent</item>
+        <item name="colorControlActivated">#0000ff</item>
+    </style>
+    
+    <style name="MyEditText3" parent="Theme.AppCompat.Light">
+        <item name="colorAccent">@android:color/black</item>
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+    
+    <style name="AppTheme.Base" parent="AppThemeRaw">
+         <item name="android:windowBackground">@drawable/flash_screen</item>
+    </style> 
+    
+   <style name="AppThemeRaw" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item> 
+         <!--item name="android:windowBackground">@android:color/transparent</item-->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowBackground">@null</item>
+    </style>
+    
+   <style name="SettingAppTheme" parent="AppThemeRaw">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorHeaderBlue</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorHeaderBlue</item>
+    </style>
+
+    <style name="AppTheme.DrawerArrowToggle" parent="Base.Widget.AppCompat.DrawerArrowToggle">
+        <item name="color">@android:color/white</item>
+    </style>
+
+    
+    <style name="toolbarTheme2" parent="AppTheme">
+         <item name="android:textColorSecondary">@android:color/white</item>
+         <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:background">@color/colorHeaderBlue</item>
+    </style>
+    
+
+    
+<style name="ToolBar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:id">@id/toolbar</item>
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="theme">@style/ToolBarTheme</item>
+        <!--貌似无效 -->
+        <item name="popupTheme">@style/ToolBarPopupTheme</item>
+        <item name="android:actionButtonStyle">@style/ActionButtonStyle22222</item>
+        
+    </style>
+
+<style name="ActionButtonStyle22222" parent="@android:style/Widget.Holo.Light.ActionButton">
+        <item name="android:minWidth">1000dip</item>
+        <item name="android:padding">100dip</item>
+    </style> 
+    
+
+
+
+    
+    
+    
+       
+   <style name="MenuItemLayoutStyle">  
+       <item name="android:layout_width">match_parent</item>  
+       <item name="android:layout_height">wrap_content</item>  
+       <item name="android:minHeight">55dip</item>  
+       <item name="android:gravity">center_vertical</item>  
+       <item name="android:orientation">horizontal</item>  
+       <item name="android:paddingLeft">15dip</item>  
+       <item name="android:paddingRight">15dip</item>  
+   </style>  
+    <!-- 菜单ImageView的样式 -->  
+   <style name="MenuItemImageViewStyle">  
+       <item name="android:layout_width">24dip</item>  
+       <item name="android:layout_height">24dip</item>  
+   </style>  
+  
+   <!-- 菜单TextView的样式 -->  
+   <style name="MenuItemTextViewStyle">  
+       <item name="android:layout_width">wrap_content</item>  
+       <item name="android:layout_height">wrap_content</item>  
+       <item name="android:drawablePadding">10.0dip</item>  
+       <item name="android:textSize">24.0dp</item>  
+       <item name="android:textAppearance">?android:attr/textAppearanceLarge</item>  
+   </style>
+   
+   
+    <style name="DialogStyle2Line" parent="Design.Dialog">
+        <item name="android:layout_marginTop">-4dp</item>
+    </style>  
+<!--     parent="ThemeOverlay.AppCompat.Dialog.Alert" -->
+    <style name="DialogStyle3Line" >
+        <item name="android:textColorSecondary">#FFFFFF</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColorAlertDialogListItem">#FFFFFF</item>
+    </style>  
+<!--     parent="ThemeOverlay.AppCompat.Dialog.Alert" -->
+    <style name="DialogStyle4Line" >
+        <item name="android:textColorSecondary">#FFFFFF</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:textColorAlertDialogListItem">#000000</item>
+    </style>  
+    
+    <style name="Design.Dialog" parent="DialogStyle">
+    	<item name="android:backgroundDimEnabled">false</item>
+	    <!--item name="android:windowMinWidthMajor">100%</item>item name="android:windowMinWidthMinor">100%</item-->
+    </style>  
+    
+   <style name="DialogStyle" parent="@android:style/Theme.Holo.Light.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+	　　<item name="android:windowTitleStyle">@style/windowTitleStylemy</item>
+	　　<item name="android:windowContentOverlay">@null</item>
+        <item name="android:layout_marginTop">-8dp</item>
+        <item name="android:windowAnimationStyle">@style/windowAnimationStylemy</item>
+        <item name="android:listDividerAlertDialog">@null</item>
+	    
+    </style>
+    
+    <style name="windowTitleBackgroundStylemy" parent="*android:WindowTitleBackground">
+        <item name="android:background">@color/colorPrimary</item>
+    </style>
+    <style name="windowTitleStylemy">
+        <item name="android:textSize">20sp</item> 
+        <item name="android:layout_marginTop">8dp</item> 
+        <item name="android:layout_marginLeft">2dp</item> 
+    </style>
+    <style name="windowAnimationStylemy" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/dialog_in</item>
+        <item name="android:windowExitAnimation">@anim/dialog_out</item>
+    </style>
+   
+     <style name="fscroll" parent="AppTheme.Base">
+         <item name="android:fastScrollThumbDrawable">@mipmap/ic_launcher</item>
+        <item name="android:fastScrollTrackDrawable">@mipmap/ic_launcher</item>
+        <item name="android:track">@mipmap/ic_launcher</item>
+         
+         
+     </style>
+
+    <style name="toolbarBaseTheme" parent="AppTheme">
+        <item name="android:textColorSecondary">@android:color/white</item>
+        <item name="colorAccent">@color/colorHeaderBlue</item>
+        <item name="actionOverflowMenuStyle">@style/OverflowMenuStyle</item>
+        <item name="android:actionButtonStyle">@style/ActionButtonStyle</item>
+	    <item name="android:minWidth">0dip</item>
+<!-- 	    <item name="contentInsetStartWithNavigation">0dip</item> -->
+    </style>
+    
+    <style name="toolbarTheme" parent="toolbarBaseTheme">
+        <item name="android:textColorSecondary">@android:color/white</item>
+        <item name="colorAccent">@color/colorHeaderBlue</item>
+        <!--item name="android:popupBackground">@android:color/white</item-->
+    </style>
+    <style name="popuptoolbarTheme" parent="toolbarTheme">
+        <item name="colorAccent">@color/colorHeaderBlue</item>
+	    <item name="android:minHeight">0dip</item>
+        <item name="android:actionButtonStyle">@style/ActionButtonStyle</item>
+    </style>
+    
+    <style name="ActionButtonStyle" parent="@android:style/Widget.Holo.Light.ActionButton">
+	    <item name="android:minWidth">@dimen/abarmin</item>
+        <item name="android:maxWidth">@dimen/abarmax</item>
+	    <item name="android:paddingLeft">0dip</item>
+	    <item name="android:paddingRight">0dip</item>                  
+	</style>
+    
+    <style name="OverflowMenuStyle" parent="Base.Widget.AppCompat.ListView.Menu">
+        <item name="overlapAnchor">true</item>
+        <item name="android:dropDownVerticalOffset">0dip</item>
+        <item name="android:dropDownHorizontalOffset">15dip</item>
+        <item name="android:popupBackground">@drawable/popup_shadow</item>
+    </style>
+    
+   <style name="ToolBarTheme" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:textColorPrimary">@color/abc_primary_text_material_dark</item>
+        <item name="android:textColorSecondary">@color/abc_primary_text_material_dark</item>
+        <item name="android:colorBackground">@color/colorPrimary</item>
+    </style>
+
+    <style name="ToolBarPopupTheme" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:textColorPrimary">@color/abc_primary_text_material_light</item>
+        <item name="android:textColorSecondary">@color/abc_primary_text_material_light</item>
+        <item name="android:colorBackground">@color/colorPrimary</item>
+    </style>
+    
+
+
+    
+</resources>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,30 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" 
+	android:layout_width="match_parent" 
+	android:layout_height="wrap_content" 
+	android:orientation="horizontal"
+    >
+<EditText 
+	android:id="@+id/edt_input" 
+	android:layout_width="match_parent" 
+	android:layout_weight="1"
+	android:layout_height="wrap_content" 
+	android:layout_centerInParent="true" 
+	android:layout_marginLeft="20dp" 
+	android:background="#fff" 
+	android:gravity="center" 
+	android:padding="8dp" 
+	android:textColor="@android:color/black" 
+	android:textSize="18sp"
+    android:imeOptions="actionDone"
+/> 
+<ImageView
+	android:id="@+id/done" 
+	android:layout_width="wrap_content" 
+	android:layout_height="wrap_content"
+	android:clickable="true"
+	android:src="@mipmap/yeah"
+	android:layout_gravity="center_vertical"
+    />
+    
+</LinearLayout>

@@ -1,0 +1,12 @@
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_height="match_parent"
+	android:layout_width="match_parent"
+	android:id="@+id/text1"
+	android:drawSelectorOnTop="true"
+	android:textColor="#000000"
+	android:text="asd"
+    android:paddingTop="5dp"
+    android:gravity="center"
+    android:background="@drawable/round_corner_card"
+	/>

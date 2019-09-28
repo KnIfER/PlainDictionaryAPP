@@ -1,0 +1,156 @@
+<resources>
+    <string-array name="share_pre_empt"> 
+	    <item name="shan">Delete Text</item>
+	    <item name="to1">Send to Front extra</item>
+	    <item name="to2">Send to Back extra </item>
+	    <item name="expand_share">↓↓↓Unfold</item>
+    </string-array> 
+    
+    
+    <string-array name="mnstyle"> 
+	    <item >Clikable Cloze</item>
+	    <item >背景高亮</item>
+	    <item >加粗 </item>
+	    <item >前景色</item>
+	    <item >下划线</item>
+    </string-array> 
+    
+    <string-array name="mnstyle_"> 
+	    <item >1</item>
+	    <item >2</item>
+	    <item >3 </item>
+	    <item >4</item>
+	    <item >5</item>
+    </string-array>
+    
+    <string-array name="selection_tweak"> 
+		<item>Select All</item>
+		<item>Cancel Selection</item>
+		<item>Invert Selection</item>
+		<item>Remove Mode</item>
+	</string-array>
+	
+    <string-array name="choosed_tweak"> 
+		<item>Browse All Decks</item>
+		<item>Refresh Current Deck</item>
+	</string-array>
+	
+    <string-array name="bookmark0_tweak"> 
+		<item>Update bookmark</item>
+		<item>Jump</item>
+	</string-array>
+	
+    <string-array name="ver_tweak"> 
+		<item>Strict Mode</item>
+		<item>Loose Mode</item>
+	</string-array>
+	
+    
+  	<string-array name="drawer_items">
+        <item>固定搜索词: YES</item>             
+		<item>Wildcard Match Entry</item>                      
+		<item>Full Text Search</item>     
+		<item>d</item>
+		<item>Bookmark History</item>   
+		<item>Lastest Bookmark</item>        
+		<item>d</item>
+		<item>Add .mdx Dictionaries</item>                                  
+		<item>Pick Main Folder</item>                                
+		<item>Dictionary Manager</item>                              
+		<item>Switch Favorite</item>                          
+		<item>d</item>
+		<item>Settings</item>
+	</string-array>
+    
+    
+    <string-array name="drawer_hints"> 
+		<item>功能暂未实现</item>    
+		<item>Currently implemented: \'.\' (to match any character), \'*\' (to match any string)</item>    
+		<item>Find in all scoped dictionaries\' Html contents. Can use wildcards as well, but may be slow.</item>    
+		<item>d</item>
+		<item>Show the lastest 20 bookmarks</item>    
+		<item>Add bookmarks in the dialog from the icon-button on the top-left of the webview content UI</item>    
+		<item>d</item>
+		<item>Won\'t modify current configuration unless commit it in the dictionary manager</item>    
+		<item>Dicts\' relative pathname will be saved when it\'s in the main path</item>    
+		<item>Also try long-press on the 2nd btn of the bottom bar</item>    
+		<item>Also try long-press on the last 2nd btn of the bottom bar</item>
+		<item>d</item>
+		<item>d</item>
+	</string-array>
+    
+
+
+   	<string-array name="dicts_option"> 
+    	<item>Rename</item>
+    	<item>Move To Top</item>
+    	<item>Move To Bottom</item>
+	</string-array> 
+
+	
+  	<string-array name="module_sets_option"> 
+	    <item>Rename</item>
+	    <item>Delete</item>
+	    <item>Duplicate</item>
+	</string-array> 
+    
+    <string-array name="dict_spec"> 
+	    <item>Global_Independent_Java API_Classical_None_RAM_GPU</item>
+	    <item>Background Color:</item>
+	    <item>Text Zoom:</item>
+	    <item>Keycase Insensitive Policy:</item>
+	    <item>Single webview cache layer type:</item>
+	    <item>Forbid Contextial Seconary Index:</item>
+	</string-array>
+
+    <string-array name="app_spec"> 
+	    <item>开_关_跟随底栏_退回列表再记</item>
+	    <item>全屏:</item>
+	    <item>页面覆盖搜索框:</item>
+	    <item>黑暗模式:</item>
+	    <item>使用音量键:</item>
+	    <item>暂时隐藏词典标题栏:切换</item>
+	    <item>(单本阅读)延用上一页的页面缩放 :</item>
+	    <item>(联合搜索)上下导航的按钮放到顶部:</item>
+	    <item>(单本阅读)隐藏页面滚动条:</item>
+	    <item>(联合搜索)隐藏页面滚动条:</item>
+	    <item>(阅览模式)隐藏页面滚动条:</item>
+	    <item>(单本阅读)禁用翻页:</item>
+	    <item>(联合搜索)禁用翻页:</item>
+	    <item>(阅览模式)禁用翻页:</item>
+	    <item>历史纪录策略0(不做任何记录):</item>
+	    <item>历史纪录策略1(记忆通配、全文、分词搜索语句):</item>
+	    <item>历史纪录策略2(记忆通配、全文、分词的列表点击):</item>
+	    <item>历史纪录策略3(记忆阅览模式的搜索):</item>
+	    <item>历史纪录策略4(记忆阅览模式的列表点击):</item>
+	    <item>历史纪录策略5(记忆主程序、浮动程序在普通模式的搜索): 强制开，除非关闭历史纪录</item>
+	    <item>历史纪录策略6(记忆主程序、浮动程序在普通模式的列表点击):</item>
+	    <item>历史纪录策略7(记忆浮动搜索程序启动时获得的关键词):</item>
+	    <item>历史纪录策略8(前后翻页记忆模式):</item>
+
+	</string-array>
+	
+    <string-array name="dict_tweak_arr">
+        <item>Add BookMark</item>
+	    <item>BookMark List..</item>
+	    <item>Font size++</item>
+	    <item>Font size - -</item>
+    </string-array>
+    <string-array name="dict_tweak_arr2">
+        <item>收藏选中文本</item>
+	    <item>范围内高亮</item>
+	    <item>清除 范围内高亮</item>
+	    <item>选择标注颜色</item>
+	    <item>范围内下划线</item>
+	    <item>清除 范围内下划线</item>
+    </string-array>
+    
+    
+  	<string-array name="internal_favor_dirs"> 
+	    <item>/storage/emulated/0</item>
+	    <item>/data/data/com.knziha</item>
+	    <item>/data/user/0/com.knziha</item>
+    </string-array> 
+    
+        
+</resources>

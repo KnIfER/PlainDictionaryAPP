@@ -1,0 +1,87 @@
+apply plugin: 'com.android.application'
+
+android {
+    lintOptions {
+        tasks.lint.enabled = false
+    }
+    compileSdkVersion ver_compileSdkVersion as int
+
+    defaultConfig {
+        applicationId "com.knziha.plod.plaindict"
+        minSdkVersion ver_minsdk
+        targetSdkVersion ver_aimsdk
+        versionCode 1
+        versionName "1.0"
+        vectorDrawables.generatedDensities = ['hdpi']
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
+        }
+    }
+}
+
+dependencies {
+
+    compile project(':recyclerViewFastScroller')
+
+    compile project(':twowaygridview')
+
+
+    compile project(':topsnackbar')
+
+
+
+    compile files('libs/commons-lang-2.1.jar')
+
+
+    compile files('libs/lzo-core-1.0.5.jar')
+
+
+    compile files('libs/universal-image-loader-1.9.4.jar')
+
+
+
+    if(use_compat_official=='1'){
+        api (libs_compat)
+    }else{
+        implementation  project(':AxtAppCompat')
+        implementation (libs_appres)
+        configurations {
+            //all*.exclude group: 'androidx.appcompat'
+        }
+    }
+    if(use_mat_official=='1'){
+        api (libs_mat){
+            exclude module: "appcompat"
+            exclude module: "appcompat-resources"
+        }
+    }else{
+        implementation  project(':AweDesigner')
+    }
+    if(use_prefer_official=='1'){
+        api (libs_prefer){
+            exclude module: "appcompat"
+            exclude module: "appcompat-resources"
+        }
+    }else{
+        api (project(':AppPreference'))
+    }
+
+    api (project(':glide'))
+    api (project(':drag_sort_lib'))
+    api (project(':colorpicker'))
+    api (project(':filepicker'))
+    api fileTree(dir: 'libs', include: ['*.jar'])
+    api (libs_anno)
+    api ('com.google.android.exoplayer:exoplayer-core:2.10.3')
+    testImplementation 'junit:junit:4.12'
+
+    implementation 'me.weishu:free_reflection:2.1.0'
+    implementation 'androidx.palette:palette:1.0.0'
+}

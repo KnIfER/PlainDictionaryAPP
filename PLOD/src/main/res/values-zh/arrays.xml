@@ -1,0 +1,126 @@
+<resources>
+	<string-array name="share_pre_empt"> 
+		    <item name="shan">删除文本</item>
+		    <item name="to1">誊至正面新卡</item>
+		    <item name="to2">誊至背面新卡</item>
+		    <item name="expand_share">↓↓↓展开</item>
+	</string-array> 
+	
+    <string-array name="selection_tweak"> 
+		<item>全选</item>
+		<item>全不选</item>
+		<item>反选</item>
+		<item>剔除</item>
+	</string-array>
+	
+    <string-array name="choosed_tweak"> 
+		<item>浏览全部牌组</item>
+		<item>刷新当前牌组</item>
+	</string-array>
+	
+    
+   <string-array name="bookmark0_tweak"> 
+		<item>更新书签位置</item>
+		<item>跳转到书签</item>
+	</string-array>
+	
+   
+   
+   	<string-array name="drawer_items">
+        <item>固定搜索词: YES</item>             
+		<item>通配搜索</item>                      
+		<item>全文搜索</item>     
+		<item>d</item>
+		<item>书签历史</item>   
+		<item>最近书签</item>        
+		<item>d</item>
+		<item>添加词典</item>                                  
+		<item>选择主目录</item>                                
+		<item>词典管理中心</item>                              
+		<item>切换生词本</item>                          
+		<item>d</item>
+		<item>设置</item>
+	</string-array>
+    
+    
+    <string-array name="drawer_hints"> 
+		<item>功能暂未实现</item>
+		<item>用\'.\'  匹配任意一个字符,  \'*\'  匹配任意长的字符串</item>
+		<item>同上支持通配符</item>
+		<item>d</item>
+		<item>显示最近添加的20条书签</item>
+		<item>点击内容页左上角图标, 在弹出对话框中添加书签</item>
+		<item>d</item>
+		<item>只有在词典管理中心提交, 才会保存到到分组配置里</item>
+		<item>主目录下的词典将以相对路径记录, 提高效率</item>
+		<item>亦可长按底部工具栏第二个图标</item>
+		<item>亦可长按底部工具栏倒数第二个图标</item>
+		<item>d</item>
+		<item>d</item>
+	</string-array>
+	
+  	<string-array name="dicts_option"> 
+		    <item name="shan">重命名</item>
+    	<item name="to1">移至顶部</item>
+    	<item name="to2">移至底部</item>
+	</string-array> 
+	
+  	<string-array name="module_sets_option"> 
+		    <item name="shan">重命名</item>
+		    <item name="to1">删除</item>
+		    <item name="to2">复制</item>
+	</string-array> 
+	
+   <string-array name="dict_spec"> 
+	    <item>全局_特定_现代_经典_不缓存_内存_显存</item>
+	    <item>背景色:</item>
+	    <item>字体缩放:</item>
+	    <item>大小写转换策略:</item>
+	    <item>单本阅读时绘制层缓存在:</item>
+	    <item>强制关闭二级索引:</item>
+	</string-array> 
+    
+    <string-array name="app_spec"> 
+	    <item>开_关_跟随底栏_退回列表再记</item>
+	    <item>(单本阅读) 延用上一页页面缩放 :</item>
+	    <item>(联合搜索) 上下导航的按钮放到顶部:</item>
+	    <item>(单本阅读) 放大状态下的边缘滑动翻页（不稳定）:</item>
+	    <item>(单本阅读)隐藏页面滚动条:</item>
+	    <item>(联合搜索)隐藏页面滚动条:</item>
+	    <item>(阅览模式)隐藏页面滚动条:</item>
+	    <item>历史纪录策略0(不做任何记录):</item>
+	    <item>历史纪录策略1(记忆通配、全文、分词搜索语句):</item>
+	    <item>历史纪录策略2(记忆上三类的列表点击):</item>
+	    <item>历史纪录策略3(记忆阅览模式的搜索):</item>
+	    <item>历史纪录策略4(记忆阅览模式的列表点击):</item>
+	    <item>历史纪录策略5(记忆主程序、浮动程序在普通模式的搜索): 强制开，除非关闭历史纪录</item>
+	    <item>历史纪录策略6(记忆主程序、浮动程序在普通模式的列表点击) :</item>
+	    <item>历史纪录策略7(记忆浮动搜索程序启动时获得的关键词) :</item>
+	    <item>历史纪录策略8(前后翻页记忆模式) :</item>
+	    
+	    
+	    
+	</string-array> 
+	
+    <string-array name="ver_tweak"> 
+		<item>严格模式</item>
+		<item>宽松模式</item>
+	</string-array>
+	
+    <string-array name="dict_tweak_arr">
+        <item>添加书签</item>
+	    <item>书签列表..</item>
+	    <item>增大字体++</item>
+	    <item>减小字体- -</item>
+    </string-array>
+    
+    <string-array name="dict_tweak_arr2">
+        <item>收藏选中文本</item>
+	    <item>高亮</item>
+	    <item>下划线</item>
+	    <item>清除高亮</item>
+	    <item>清除下划线</item>
+	    <item>选择标注颜色</item>
+    </string-array>
+    
+</resources>
