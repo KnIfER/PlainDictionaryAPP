@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/green" >
+    <!-- <item android:drawable="@color/listjijing_txt_bg_normal" />-->
+    <!--这种方式有问题，会出现点击时这一item内容消失的情况-->
+    <!--http://blog.csdn.net/u013325929/article/details/50522824-->
+
+    <item android:id="@android:id/mask"><!--不加id或id不为mask则也会出现点击时内容消失的情况-->
+        <shape android:shape="rectangle">
+            <solid android:color="@color/green2" />
+        </shape>
+    </item>
+</ripple>

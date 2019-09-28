@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:focusable="true"
+    android:clickable="true"
+    
+    android:descendantFocusability="beforeDescendants"
+    >
+<LinearLayout
+	android:id="@+id/sub_list"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="vertical"
+	android:background="@drawable/listviewselector0"
+	>
+	
+	<com.knziha.ankislicer.customviews.wahahaTextView
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:text="absolve"
+		android:padding="2dp"
+		android:id="@android:id/text1"
+		android:layout_marginLeft="10dp"
+		android:layout_marginTop="5dp"
+		android:layout_marginBottom="2dp"	
+		android:textColor="#000"
+		android:textSize="@dimen/lvtextsize"
+        android:focusable="true"
+        android:textIsSelectable="true"
+		
+		/>
+
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="match_parent"
+		android:id="@+id/subtext1"
+		android:layout_marginLeft="10dp"
+		android:layout_marginTop="2dp"
+		android:paddingBottom ="5dp"	
+		android:textSize="@dimen/lvsubtextsize"
+		android:textColor="#2b4391"
+		android:layout_below="@+id/text"
+		/>
+	
+
+</LinearLayout>
+      <ImageView
+	    android:layout_width="match_parent"
+	    android:layout_height="1dp"
+	    android:background="#2b4391"
+        />
+      
+       <ImageView
+	    android:layout_width="match_parent"
+	    android:layout_height="100dp"
+	    android:id="@+id/p"
+	    android:layout_alignBottom="@+id/sub_list"
+	    android:layout_alignTop="@+id/sub_list"
+	    android:background="#00ff0000"
+        />
+      
+</RelativeLayout>

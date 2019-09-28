@@ -1,0 +1,5 @@
+<resources>
+   
+    <string name="cbflowersnstr">已检索 <![CDATA[<%1$s>]]> %2$d本词典，得 %3$d 项</string>
+    
+</resources>

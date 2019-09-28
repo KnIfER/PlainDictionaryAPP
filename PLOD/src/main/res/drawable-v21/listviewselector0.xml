@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+	android:color="@color/green3"
+	android:exitFadeDuration="@android:integer/config_shortAnimTime">
+	<!-- Use this to define the shape of the ripple effect (rectangle, oval, ring or line). The color specified here isn't used anyway -->
+	<item android:id="@android:id/mask">
+		<shape android:shape="rectangle">
+			<corners android:radius="3dp"/>
+			<!-- This color is needed to be set - doesn't affect anything -->
+			<solid android:color="@android:color/white"/>
+		</shape>
+	</item>
+
+	<!-- This is the background for your button -->
+	<item>
+		<!-- Use the shape you want here -->
+		<shape android:shape="rectangle">
+			<!-- Use the solid tag to define the background color you want -->
+			<solid android:color="@android:color/transparent"/>
+		</shape>
+	</item>
+</ripple>

@@ -1,0 +1,94 @@
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/dialog"
+	android:layout_width="match_parent"
+	android:layout_height="250dp"
+	android:layout_marginLeft="18dp"
+	android:layout_marginRight="18dp"
+	android:paddingTop="15dp"
+	android:paddingBottom="15dp"
+	>
+
+	<TextView
+		android:id="@+id/tv"
+		android:textColor="@color/zumulv"
+		style="?android:attr/buttonBarButtonStyle"
+		android:layout_margin="6dp"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentLeft="true"
+		android:text="10/100"
+		android:maxLines="2"
+		android:minLines="2"
+		/>
+
+	<androidx.appcompat.widget.AppCompatTextView
+		android:layout_margin="8dp"
+		android:id="@+id/title"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentTop="true"
+		android:layout_alignParentLeft="true"
+		android:textSize="18sp"
+		android:text="羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典"
+		android:maxLines="2"
+		android:ellipsize="end"
+		android:textColor="@android:color/black"
+		android:gravity="center_vertical"
+		/>
+
+	<SeekBar
+		android:id="@+id/seekbar"
+		android:layout_below="@+id/title"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:minHeight="50dp"
+		android:maxHeight="50dp"
+		/>
+
+	<TextView
+		android:layout_margin="8dp"
+		android:id="@+id/resultN"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/cancel"
+		android:layout_alignParentLeft="true"
+		android:text="进度:"
+		android:textColor="@android:color/black"
+		/>
+	<TextView
+		android:layout_margin="8dp"
+		android:id="@+id/progressFrac"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/cancel"
+		android:layout_alignParentRight="true"
+		android:text="1000/123213"
+		android:textColor="@android:color/black"
+		/>
+	<Button
+		android:id="@+id/skip"
+		android:textColor="@color/zumulv"
+		style="?android:attr/buttonBarButtonStyle"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_centerHorizontal="true"
+		android:layout_margin="8dp"
+		android:text="跳过" />
+	<Button
+		android:textColor="@color/zumulv"
+		android:id="@+id/cancel"
+		style="?android:attr/buttonBarButtonStyle"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentRight="true"
+		android:layout_margin="8dp"
+		android:text="取消" />
+
+</RelativeLayout>
+
+
+

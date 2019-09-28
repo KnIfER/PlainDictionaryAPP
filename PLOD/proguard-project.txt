@@ -1,0 +1,3 @@
+-dontwarn javax.annotation.**
+-dontwarn org.apache.commons.**
+-keep class android.support.v7.widget.** {*;}

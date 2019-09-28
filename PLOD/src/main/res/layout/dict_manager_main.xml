@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?><!--androidx.drawerlayout.widget.DrawerLayout  xml version="1.0" encoding="utf-8"?-->
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/drawer_layout"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="#8f8f8f"
+	android:orientation="vertical"
+	android:fitsSystemWindows="true"
+	>
+			
+			<LinearLayout
+					android:id="@+id/rlSearchFrameDelete"
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:layout_centerVertical="true"
+					android:orientation="vertical"
+					android:gravity="center_vertical">
+			<androidx.appcompat.widget.Toolbar
+				android:id="@+id/toolbar"
+				android:layout_width="match_parent"
+				android:layout_height="51dp"
+				android:title="配置管理"
+	        android:theme="@style/toolbarTheme" 
+				/>
+			
+	        	<com.google.android.material.tabs.TabLayout
+			     android:id="@+id/mTabLayout"
+			     android:layout_width="match_parent"
+			     android:layout_height="30dp"
+			     app:tabTextColor="@android:color/white" 
+            	 app:tabSelectedTextColor="@android:color/white"
+			     />
+			</LinearLayout>
+
+    		<FrameLayout 
+				    android:id="@+id/toastmaker"
+				    android:layout_width="match_parent"  
+				    android:layout_weight="1"
+				    android:layout_height="0dp"
+				    android:background="@android:color/white"
+    		    >
+    		    <androidx.viewpager.widget.ViewPager  
+				    android:id="@+id/viewpager"
+				    android:layout_width="match_parent"  
+				    android:layout_height="match_parent"
+				    android:flipInterval="30"  
+				    android:persistentDrawingCache="animation"
+		    		/>
+    		</FrameLayout>
+
+</LinearLayout>

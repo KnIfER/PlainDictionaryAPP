@@ -1,0 +1,121 @@
+<resources>
+    <string name="app_name">PlainDict</string>
+    <string name="open">open</string>
+    <string name="close">close</string>
+    
+    <string name="wenj_fugai">File exists already,Over write？</string>
+    <string name="delete">Delete</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancle">Cancle</string>
+    <string name="continueit">Continue</string>
+    <string name="warn_delete">Are you sure to delete selected %d cards?(can\'t undo)</string>
+    <string name="warnDelete">Are you sure to delete the dictionary configuration set %s?</string>
+    <string name="warn_move">Are you sure to move %1$d word collections from [ %2$s ] to [ %3$s ]?</string>
+    <string name="warn_exit0">Are you sure to exit?</string>
+    <string name="surerrecords">Are you sure to delete selected %d records?(won\'t effect file system)</string>
+    <string name="applyallset">Apply to All Sets</string>
+    <string name="pickdestineFolder">Select Destine Folder</string>
+    <string name="warn_exit1">[Clear History]\r\n\r\n(Exit All Instances by 1/0)</string>
+	<string name="noseletion">Noting Selected</string>
+    <string name="bookmarkupdated">Bookmark updated as: %s</string>
+    <string name="bookmarkup">Bookmark updated!</string>
+    <string name="bookmarkjumped">Jumped to: %s</string>
+    <string name="bookmarkfailed">Bookmark not found: %s</string>
+    <string name="endr">End Reached</string>
+    <string name="cbflowersnstr">Set <![CDATA[<%1$s>]]> of size %2$d returned %3$d item(s)</string>
+    <string name="vbflowersnstr">%1$d word(s) in total , matched %2$d</string>
+    <string name="BGMSG">Assigning Page Background of <![CDATA[<%s>]]></string>
+    <string name="BGMSG2">GLobal Page Background</string>
+    <string name="PT1">Page Turning On</string>
+    <string name="PT2">Page Turning Off</string>
+    <string name="fc">Found %d item(s).</string>
+    <string name="fn">Found nothing here.</string>
+    
+    <string name="maniDel">Canceled %1$d/%2$d item(s) collected!</string>
+    <string name="maniFavor">%1$s (%2$d collection items)</string>
+    <string name="maniFavor2">%1$s (%2$d records)</string>
+    <string name="currFavor">Current collection name: %s</string>
+    <string name="resCount">Search done!Found %s items</string>
+    <string name="searchFailed">Search failed: %s</string>
+    
+    
+    <string name="removed">Removed</string>
+    <string name="toRemove">to be removed...</string>
+    <string name="added">Added Successfully!</string>
+    
+    
+    <string name="dictManTi">Dictionary Manager</string>
+    <string name="jumpfail">Link invalid!</string>
+    <string name="favorRecon">default favorite db reconstructed!</string>
+    
+    
+    <string name="fuzzyfill">Fuzzy search done! Time %1$1.2fs, Found  %2$d items!</string>
+    <string name="fullfill">Fulltext retrieval done! Time %1$1.2fs, Found  %2$d items!</string>
+    <string name="fullret">Fulltext retrieval</string>
+    <string name="fuzzyret">Entry Wildcard Match</string>
+    <string name="about">About</string>
+    <string name="exit">Exit</string>
+    <string name="warn_exit">Click again to exit!</string>
+    
+    
+    <string name="pmfolder">Pick Main Folder</string>
+    <string name="relaunch">Relaunch to take effect!</string>
+    <string name="addd">Add Mdx Dictionary</string>
+    <string name="nothingR">Nothing recorded</string>
+    <string name="bookmarkH">Bookmark History</string>
+    <string name="clearsucc">Done！</string>
+    <string name="clearfail">Error occurred！</string>
+    <string name="donate">Donate：Launching Alipay...</string>
+    <string name="donatefail">Oops, alipay is not installed</string>
+    <string name="permission">Permission: need 2 permissions...</string>
+    
+    <string name="endendr">@string/endr</string>
+    <string name="toptopr">@string/endr</string>
+    <string name="coverr">Cover reached!</string>
+    <string name="try_longpress">invalid, please try long-press</string>
+    
+    <string name="err">Load Error! %1$s @%2$s : %3$s</string>
+    <string name="loadconfig">Load A Dictionary Set</string>
+    <string name="pickfavor">Pick Favorite Collection</string>
+    <string name="newfc">Create</string>
+    <string name="loadsucc">Load successfully！</string>
+    <string name="loadsucc2">Loaded<![CDATA[<<]]> %1$s</string>
+    <string name="savedone">%1$s <![CDATA[>>]]> saved</string>
+    <string name="loadfail2">Load Error: missing \:\:  %1$s</string>
+    <string name="renamefail0">Name Invalid</string>
+    <string name="saveas_done">Save as done!</string>
+    <string name="renamefail">File already exists,rename failed!</string>
+    <string name="search">SEARCH</string>
+    <string name="perWSearch">PER-WORD SEARCH</string>
+    <string name="perWSTag">per</string>
+    <string name="peruseToggle">PERUSE MODE</string>
+    
+    
+    <string name="currentPlan">Current( %d )</string>
+    <string name="allPlans">All sets</string>
+    <string name="defPlan">Default set</string>
+    <string name="pLoadDone">Set %1$s loaded! (%2$d/%3$d)</string>
+    <string name="dupicateD">dupicated!</string>
+    <string name="renD">rename done！</string>
+    <string name="delD">delete done!</string>
+    <string name="delDone">deleted</string>
+    <string name="bmAdded">Bookmark added !</string>
+    <string name="dictOpt">Dictionary options...</string>
+    <string name="setOpt">Configuration Set options...</string>
+    <string name="newName">new name...</string>
+    
+    <string name="bm">BookMarks</string>
+    <string name="bmSub">Delete BookMark</string>
+    
+    <string name="AAllow">Do you allow this app to create folders in /SDCARD/PLOD？</string>
+    
+    <string name="all">Apply to All Sets</string>
+    <string name="GL">Global</string>
+    <string name="tools">Tools</string>
+
+	<string name="stg_require">Please grant storage permission.</string>
+	<string name="stg_statement">This app cannot work without storage permission.</string>
+	<string name="stg_grantnow">Grant now</string>
+	<string name="trialin">Trial…… #</string>
+	<string name="stgerr_fail">Sorry, but cannot use this app on you device.</string>
+</resources>

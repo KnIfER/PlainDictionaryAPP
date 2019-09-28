@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="horizontal"
+	android:background="@drawable/item_selector"
+	>
+	
+		<ImageView
+		    android:id="@+id/del"
+		    android:layout_width="23dp"
+		    android:layout_height="match_parent"
+		    android:src="@drawable/dragneo2"
+		    android:clickable="true"
+		    android:gravity="center"
+		    android:paddingLeft="3dp"
+		    android:layout_marginRight="3dp"
+		    />
+		
+		<TextView
+			android:layout_height="wrap_content"
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:text="absolve"
+			android:id="@+id/text"	
+			android:textColor="#fff"
+			android:textSize="23dp"
+			/>
+	
+</LinearLayout>
+

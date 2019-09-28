@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu 
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/toolbar_action1"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title=""
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/toolbar_action2"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title=""
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/toolbar_action3"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title=""
+        app:showAsAction="always"/>
+        <item
+        android:id="@+id/toolbar_action4"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title=""
+        app:showAsAction="always"/>
+            <item
+        android:id="@+id/toolbar_action5"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title=""
+        app:showAsAction="always"/>
+                <item
+        android:id="@+id/toolbar_action6"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title=""
+        app:showAsAction="always"/>
+ </menu>

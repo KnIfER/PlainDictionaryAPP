@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu 
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+        android:id="@+id/toolbar_action1"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="Action"
+        app:showAsAction="always"/>
+    
+    
+    <item
+        android:id="@+id/toolbar_action2"
+        android:title="切换词典"
+        app:showAsAction="never"/>
+    
+    <item
+        android:id="@+id/toolbar_action3"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="切换分组"
+        app:showAsAction="never"/>
+    
+    <item
+        android:id="@+id/toolbar_action4"
+        android:icon="@drawable/ic_btn_siglemode"
+        android:title="收藏"
+        app:showAsAction="never"/>
+
+ </menu>
