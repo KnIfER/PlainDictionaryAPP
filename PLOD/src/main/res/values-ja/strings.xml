@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">今すぐ付与</string>
 	<string name="trialin">試用……＃</string>
 	<string name="stgerr_fail">申し訳ありませんが、お使いのデバイスではこのアプリを使用できません。</string>
+	<string name="bmSub">ブックマークを削除</string>
+	<string name="bmAdd">ブックマークを追加</string>
 </resources>

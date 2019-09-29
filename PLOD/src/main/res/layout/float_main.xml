@@ -47,7 +47,7 @@
                    >
 	            <ImageView 
 	                  android:id="@+id/move0"
-	                  android:layout_width="@dimen/_40_"
+	                  android:layout_width="@dimen/_50_"
 	                  android:layout_height="49dp"
 	                  android:src="@drawable/move"
 	                  android:scaleType="centerCrop"

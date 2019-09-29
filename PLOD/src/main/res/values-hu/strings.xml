@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Adj most</string>
 	<string name="trialin">Próba…… #</string>
 	<string name="stgerr_fail">Sajnáljuk, de nem használhatjuk ezt az alkalmazást a készüléken.</string>
+	<string name="bmSub">Törölje a könyvjelzőt</string>
+	<string name="bmAdd">Könyvjelző hozzáadása</string>
 </resources>

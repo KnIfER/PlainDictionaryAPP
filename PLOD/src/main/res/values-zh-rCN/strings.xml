@@ -119,4 +119,5 @@
 	<string name="stgerr_fail">抱歉，无法在您的设备上使用</string>
 	<string name="infoStr">平典——安卓平台的查词软件。\n\n相关软件\：Bluedict(启发) 、MdictPC(起源) \n\n[开源组件] \n\n[反馈]</string>
 	<string name="licence">开源许可证</string>
+	<string name="bmAdd">添加书签</string>
 </resources>

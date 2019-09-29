@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">منحة الآن</string>
 	<string name="trialin">التجربة…… #</string>
 	<string name="stgerr_fail">عذرا ، لكن لا يمكن استخدام هذا التطبيق على جهازك.</string>
+	<string name="bmSub">حذف إشارة مرجعية</string>
+	<string name="bmAdd">اضافة للمفضلة</string>
 </resources>

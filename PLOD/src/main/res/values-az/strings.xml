@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">İndi verin</string>
 	<string name="trialin">Sınaq…… #</string>
 	<string name="stgerr_fail">Üzr istəyirik, lakin bu tətbiq cihazınızda istifadə edilə bilməz.</string>
+	<string name="bmSub">Əlfəcin silin</string>
+	<string name="bmAdd">Əlfəcin əlavə edin</string>
 </resources>

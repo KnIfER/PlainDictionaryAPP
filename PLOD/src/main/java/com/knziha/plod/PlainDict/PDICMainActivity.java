@@ -2,6 +2,7 @@ package com.knziha.plod.PlainDict;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -20,6 +21,7 @@ import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -40,6 +42,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -59,6 +62,7 @@ import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -90,6 +94,7 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 import com.androidadvance.topsnackbar.TSnackbar;
 import com.bumptech.glide.load.engine.cache.DiskCache;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.dictionary.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -154,7 +159,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public ListView mlv1;
 	public ListView mlv2;
 
-	public ListViewAdapter2 adaptermy2 = new ListViewAdapter2(R.layout.listview_item1);
 	public ListViewAdapter2 adaptermy4 = new ListViewAdapter2();
 	//mdict md = null;
 	public String lastFuzzyKeyword;
@@ -559,7 +563,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						if(remcount>0) webSingleholder.removeAllViews();
 
 						if(currentDictionary!=null) currentDictionary.expectedPos=0;
-						adaptermy2.expectedPos=0;
+						((ListViewAdapter2)adaptermy2).expectedPos=0;
 						if(drawerFragment.d!=null) {
 							drawerFragment.d.show();
 						}
@@ -1103,7 +1107,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//mDrawerLayout.setScrimColor(0x00ffffff);
 
 		lv.setAdapter(adaptermy= new ListViewAdapter());
-		lv2.setAdapter(adaptermy2);
+		lv2.setAdapter(adaptermy2 = new ListViewAdapter2(R.layout.listview_item1));
 		lv2.setOnItemClickListener(adaptermy2);
 		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2());
 		mlv1.setOnItemClickListener(adaptermy3);
@@ -1248,7 +1252,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//tg
 
 		//showAppTweaker();
-		if(CMN.testFLoatSearch)
+		//if(CMN.testFLoatSearch)
 			startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 		//Intent i = new Intent(this,dict_manager_activity.class); startActivity(i);
 		processIntent(getIntent());
@@ -1338,15 +1342,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public String getSearchTerm(){
 		return etSearch.getText().toString();
 	}
-
-	public int split_dict_thread_number;
-	public void countDelta(int delta) {
-		Lock lock = new ReentrantLock();
-		lock.lock();
-		poolEUSize+=delta;
-		lock.unlock();
-	}
-	public volatile int poolEUSize;
 
 	TextWatcher tw1=new TextWatcher() {
 		public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -2963,12 +2958,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 					favoriteCon = new LexicalDBHelper(PDICMainActivity.this,opt.currFavoriteDBName);
 
-					view.post(new Runnable() {
-						@Override
-						public void run() {
-							d.dismiss();
-							show(R.string.currFavor,opt.currFavoriteDBName.substring(10));
-						}
+					view.post(() -> {
+						d.dismiss();
+						show(R.string.currFavor,opt.currFavoriteDBName.substring(10));
 					});
 				});
 				d.setOnDismissListener(dialog -> {
@@ -2987,43 +2979,36 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				d.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(PDICMainActivity.this,R.color.colorHeaderBlue));
 				d.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.RED);
 				d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v12 -> {
-					ViewGroup dv = (ViewGroup) getLayoutInflater().inflate(R.layout.fp_edittext, null);
-					final EditText etNew = dv.findViewById(R.id.edt_input);
-					final View btn_Done = dv.findViewById(R.id.done);
-					AlertDialog.Builder builder1 = new AlertDialog.Builder(PDICMainActivity.this).setView(dv);
-					final AlertDialog dd = builder1.create();
-					btn_Done.setOnClickListener(new OnClickListener() {
-						@Override
-						public void onClick(View v12) {
-							new LexicalDBHelper(PDICMainActivity.this,favorTag+etNew.getText().toString()).close();
-							dd.dismiss();
-							ada.notifyDataSetChanged();
-						}});
-					etNew.setOnEditorActionListener(new OnEditorActionListener(){
+					ViewGroup dv = (ViewGroup) getLayoutInflater().inflate(R.layout.fp_edittext, root, false);
+					EditText etNew = dv.findViewById(R.id.edt_input);
+					View btn_Done = dv.findViewById(R.id.done);
+					dv.findViewById(R.id.toolbar_action1).setVisibility(View.GONE);
 
-						@Override
-						public boolean onEditorAction(TextView v12, int actionId, KeyEvent event) {
-							if(actionId == EditorInfo.IME_ACTION_DONE ||actionId==EditorInfo.IME_ACTION_UNSPECIFIED) {
-								btn_Done.performClick();
-								return true;
-							}
-							return false;
-						}});
+					Dialog dd = new GoodKeyboardDialog(PDICMainActivity.this);
+					dd.requestWindowFeature(Window.FEATURE_NO_TITLE);
+					dd.setContentView(dv);
 
-					//imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-					//imm.showSoftInput(etNew, InputMethodManager.SHOW_FORCED);
-					dd.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+					btn_Done.setOnClickListener(v121 -> {
+						new LexicalDBHelper(PDICMainActivity.this,favorTag+etNew.getText().toString()).close();
+						dd.dismiss();
+						ada.notifyDataSetChanged();
+					});
+					etNew.setOnEditorActionListener((v1212, actionId, event) -> {
+						if(actionId == EditorInfo.IME_ACTION_DONE ||actionId==EditorInfo.IME_ACTION_UNSPECIFIED) {
+							btn_Done.performClick();
+							return true;
+						}
+						return false;
+					});
+
+					Window win = dd.getWindow();
+					win.setGravity(Gravity.TOP);
+					win.getAttributes().width=d.getListView().getWidth();
+					win.setAttributes(win.getAttributes());
+					win.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+					win.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
 					dd.show();
-
-					dd.setOnDismissListener(new OnDismissListener() {
-						@Override
-						public void onDismiss(DialogInterface dialog) {
-							//imm.showSoftInput(etNew, InputMethodManager.SHOW_FORCED);
-							//dd.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-							imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0); //only this works but this is 'TOGGLE',not hide.
-						}});
-
 				});
 				return true;
 			case R.id.browser_widget7:
@@ -3116,7 +3101,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				case R.id.toolbar_action6:
 					ActivedAdapter.avoyager.clear();
 					showT("已重置页面位置");
-					return true;
+				return true;
 			}
 		}
 		switch(id){
@@ -3131,7 +3116,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				for(int i=0;i<webholder.getChildCount();i++) {
 					webholder.getChildAt(i).findViewById(R.id.webviewmy).setVisibility(targetVis);
 				}
-				break;
+			break;
 			case R.id.toolbar_action5://提示结果
 				if(opt.toggleNotifyComboRes()) {
 					item.setTitle(item.getTitle()+" √");
@@ -3139,7 +3124,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					item.setTitle(item.getTitle().subSequence(0, item.getTitle().length()-2));
 				}
 
-				break;
+			break;
 			case R.id.toolbar_action6://翻页前记忆位置
 				boolean val=ActivedAdapter!=adaptermy2?opt.setRemPos(!opt.getRemPos()):opt.setRemPos2(!opt.getRemPos2());
 				if(val) {
@@ -3147,13 +3132,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}else {
 					item.setTitle(item.getTitle().subSequence(0, item.getTitle().length()-2));
 				}
-				break;
+			break;
 			case R.id.toolbar_action7://切换词典
 				findViewById(R.id.browser_widget1).performClick();
-				break;
+			break;
 			case R.id.toolbar_action8://切换切换分组
 				findViewById(R.id.browser_widget2).performClick();
-				break;
+			break;
 			case R.id.toolbar_action9://存书签
 				if(ActivedAdapter!=null && ActivedAdapter!=adaptermy2) {
 					if(webSingleholder.getVisibility()==View.VISIBLE){
@@ -3174,7 +3159,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 					}
 				}
-				break;
+			break;
 			case R.id.toolbar_action10://切换提示模式
 				if(opt.toggleHintSearchMode()) {
 					item.setTitle(item.getTitle()+" √");
@@ -3184,7 +3169,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}else {
 					item.setTitle(item.getTitle().subSequence(0, item.getTitle().length()-2));
 				}
-				break;
+			break;
 			case R.id.toolbar_action11://切换着色
 				if(TintWildResult.first=opt.toggleTintWildRes()) {
 					item.setTitle(item.getTitle()+" √");
@@ -3192,7 +3177,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					item.setTitle(item.getTitle().subSequence(0, item.getTitle().length()-2));
 				}
 				adaptermy3.notifyDataSetChanged();
-				break;
+			break;
 			case R.id.toolbar_action2:
 				if(CurrentViewPage==1) {//viewPager
 					tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
@@ -3206,7 +3191,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}else
 					etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
 				mDrawerLayout.closeDrawer(GravityCompat.START);
-				break;
+			break;
 			case R.id.toolbar_action3://per-word searching
 				//etSearch.getText().toString().startsWith("")
 				String text = etSearch.getText().toString().trim();
@@ -3219,7 +3204,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 				}
 				etSearch.setText(ToTag(perWSTag)+text);
-				break;
+			break;
 			case R.id.toolbar_action4:
 				if(bInPeruseModeToggleManifested) {
 					findViewById(R.id.browser_widget0).setVisibility(View.GONE);
@@ -3233,10 +3218,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				opt.setInPeruseModeTM(bInPeruseModeToggleManifested=!bInPeruseModeToggleManifested);
 				opt.putFirstFlag();
-				break;
+			break;
 		}
-		if(!((MenuItemImpl) item).isActionButton())
-			toolbar.getMenu().close();
+		closeIfNoActionView(mmi);
 		return false;
 	}
 

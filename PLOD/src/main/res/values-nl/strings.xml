@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Grant nu</string>
 	<string name="trialin">Trial ... #</string>
 	<string name="stgerr_fail">Sorry, maar kan deze app niet op uw apparaat gebruiken.</string>
+	<string name="bmSub">Bladwijzer verwijderen</string>
+	<string name="bmAdd">Voeg bladwijzer toe</string>
 </resources>

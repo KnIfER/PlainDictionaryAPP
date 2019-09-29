@@ -131,7 +131,7 @@
 	</string-array>
 	
     <string-array name="dict_tweak_arr">
-        <item>Add BookMark</item>
+        <item>@string/bmAdd</item>
 	    <item>BookMark List..</item>
 	    <item>Font size++</item>
 	    <item>Font size - -</item>

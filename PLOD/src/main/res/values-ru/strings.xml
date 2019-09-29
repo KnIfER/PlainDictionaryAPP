@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Грант сейчас</string>
 	<string name="trialin">Пробный…… #</string>
 	<string name="stgerr_fail">Извините, но не можете использовать это приложение на вашем устройстве.</string>
+	<string name="bmSub">Удалить закладку</string>
+	<string name="bmAdd">Добавить закладку</string>
 </resources>

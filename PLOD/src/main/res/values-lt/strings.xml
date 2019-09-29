@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Suteik dabar</string>
 	<string name="trialin">Bandomoji versija ...</string>
 	<string name="stgerr_fail">Atsiprašome, bet negaliu naudoti šios programos savo įrenginyje.</string>
+	<string name="bmSub">Ištrinti žymą</string>
+	<string name="bmAdd">Pridėti žymą</string>
 </resources>

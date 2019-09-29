@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Concedi ora</string>
 	<string name="trialin">Prova…… #</string>
 	<string name="stgerr_fail">Siamo spiacenti, ma non posso usare questa app sul tuo dispositivo.</string>
+	<string name="bmSub">Elimina segnalibro</string>
+	<string name="bmAdd">Aggiungi segnalibro</string>
 </resources>

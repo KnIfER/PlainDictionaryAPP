@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Anna nyt</string>
 	<string name="trialin">Koe ...</string>
 	<string name="stgerr_fail">Anteeksi, mutta et voi käyttää tätä sovellusta laitteellasi.</string>
+	<string name="bmSub">Poista kirjanmerkki</string>
+	<string name="bmAdd">Lisää kirjanmerkki</string>
 </resources>

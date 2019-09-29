@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Грант нов</string>
 	<string name="trialin">Пробни рад ...... #</string>
 	<string name="stgerr_fail">Жао нам је, али не можете да користите ову апликацију на свом уређају.</string>
+	<string name="bmSub">Избриши обележивач</string>
+	<string name="bmAdd">Додај обележивач</string>
 </resources>

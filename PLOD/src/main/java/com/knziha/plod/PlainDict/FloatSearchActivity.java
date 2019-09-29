@@ -1,39 +1,13 @@
 package com.knziha.plod.PlainDict;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import com.androidadvance.topsnackbar.TSnackbar;
-import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.widgets.RLContainerSlider;
-import com.knziha.plod.widgets.SplitView;
-import com.knziha.plod.widgets.TextViewmy;
-import com.knziha.plod.dictionary.Flag;
-import com.knziha.plod.dictionary.myCpr;
-import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.resultRecorderCombined;
-import com.knziha.rbtree.RBTree_additive;
-import com.knziha.rbtree.additiveMyCpr1;
-
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
-import androidx.appcompat.widget.Toolbar;
-
 import android.text.Editable;
 import android.text.Html;
 import android.text.Spannable;
@@ -41,6 +15,7 @@ import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.style.ImageSpan;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -51,58 +26,42 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.ValueCallback;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.view.menu.MenuItemImpl;
+
+import com.androidadvance.topsnackbar.TSnackbar;
+import com.knziha.plod.dictionary.Flag;
+import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.resultRecorderCombined;
+import com.knziha.plod.searchtasks.CombinedSearchTask;
+import com.knziha.plod.widgets.RLContainerSlider;
+import com.knziha.rbtree.additiveMyCpr1;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.List;
 
 
 /**
  * Created by KnIfER on 2018
  */
 public class FloatSearchActivity extends MainActivityUIBase {
-    RelativeLayout layout_back;
-    ImageView img_browser_back;
-    ImageView img_browser_next;
-    
-
-    //mdict md = null;
-    //private String module_Set0_fn;
-    //public List<mdict> md = new ArrayList<mdict>();//Collections.synchronizedList();
-    //public List<myCpr<String,Boolean>> module_set = new ArrayList<myCpr<String,Boolean>>();//Collections.synchronizedList();
-	RBTree_additive combining_search_tree = new RBTree_additive();
-	ArrayList<additiveMyCpr1> combining_search_result = new ArrayList<additiveMyCpr1>();
-    mdict md2 = null;
     private ViewGroup mainfv;
-    private TextViewmy manifestTV;
-    
-    public static long stst;
 	private long exitTime = 0;
-	
+
 	boolean FVDOCKED=false;
-	//boolean bREMUDSIZE=true;
 	int FVW,FVH,FVTX,FVTY,FVW_UNDOCKED,FVH_UNDOCKED;
 	final static int FVMINWIDTH=133;
 	final static int FVMINHEIGHT=50;
 
 	protected float _50_;
-    
-    int split_dict_thread_number;
-    void countDelta(int delta) {
-        Lock lock = new ReentrantLock();
-        lock.lock();
-        try {
-            poolEUSize+=delta;
-        } catch (Exception e) {
-        }finally {
-            lock.unlock();
-        }
-    }
-    volatile int poolEUSize;
-    
+	
 	private final TextWatcher tw1 = new TextWatcher() {
         public void onTextChanged(CharSequence s, int start, int before, int count) {
         	String keyTmp = mdict.processText(s.toString());
@@ -116,122 +75,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 						lianHeTask.cancel(false);
 					}
 					if(!checkDics()) return;
-					lianHeTask = new AsyncTask<String,Integer, resultRecorderCombined>() {
-					    RBTree_additive additive_combining_search_tree = new RBTree_additive();
 
-						@Override
-						protected void onPreExecute() {
-							 for(mdict mdTmp:md) {
-								 mdTmp.combining_search_list = new ArrayList<>();
-							 }
-							 additive_combining_search_tree.clear();
-							 if(lv2.getVisibility()==View.INVISIBLE)
-								 lv2.setVisibility(View.VISIBLE);
-						}
-						String keyword;
-						@Override
-						protected resultRecorderCombined doInBackground(String... params) {
-					    	stst=System.currentTimeMillis();
-							keyword=params[0];
-							
-							split_dict_thread_number = md.size()<6?1:(int) (md.size()/6);
-					        split_dict_thread_number = split_dict_thread_number>16?6:split_dict_thread_number;
-					        split_dict_thread_number = 2;
-					        
-					        final int thread_number = Runtime.getRuntime().availableProcessors()/2*2-1;Math.min(Runtime.getRuntime().availableProcessors()/2*2+0, split_dict_thread_number);
-					        
-					        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(thread_number);
-					        final int step = (int) (md.size()/split_dict_thread_number);
-					    	final int yuShu=(int) (md.size()%split_dict_thread_number);
-					    	
-							for(int i=0;i<split_dict_thread_number;i++){
-								if(isCancelled()) break;
-								if(split_dict_thread_number>thread_number) while (poolEUSize>=thread_number) {
-									  try {
-										Thread.sleep(1);
-										} catch (InterruptedException e) {
-											e.printStackTrace();
-										}  
-									} 
-								
-								final int it=i;
-								if(split_dict_thread_number>thread_number) countDelta(1);
-								
-								fixedThreadPool.execute(new Runnable() {
-									@Override
-									public void run() {
-										int jiaX=0;
-							            if(it==split_dict_thread_number-1) jiaX=yuShu;
-						            	for(int i=it*step; i<it*step+step+jiaX; i++) {
-											if(isCancelled()) break;
-											md.get(i).size_confined_lookUp5(keyword,null,i,15);
-						            	}
-										if(split_dict_thread_number>thread_number) countDelta(-1);
-								}});
-								
-								if(isCancelled()) break;
-								//long sl = System.currentTimeMillis();
-								//Log.e("sadasd",md.get(i)._Dictionary_fName+"time: "+(System.currentTimeMillis()-sl));	
-							}
-							fixedThreadPool.shutdown();
-							try {
-								fixedThreadPool.awaitTermination(1, TimeUnit.MINUTES);
-							} catch (InterruptedException e1) {
-								e1.printStackTrace();
-							}
-							return null;
-						}
-						
-						@Override
-				        protected void onPostExecute(resultRecorderCombined rec) {
-							additive_combining_search_tree = new RBTree_additive();
-							for(int i=0; i<md.size(); i++) {
-								for(myCpr<String, Integer> dataI:md.get(i).combining_search_list) {
-									additive_combining_search_tree.insert(dataI.key, i, dataI.value);
-								}
-							}
-							
-							
-							rec = new resultRecorderCombined(FloatSearchActivity.this,additive_combining_search_tree.flatten(),md);
-
-					        //CMN.show("联合搜索 时间： "+(System.currentTimeMillis()-stst)+"ms "+rec.size()); 
-
-					        if(lv2.getVisibility()!=View.VISIBLE)
-								lv2.setVisibility(View.VISIBLE);
-					        ListViewAdapter2.combining_search_result = rec;
-					        ListViewAdapter2.notifyDataSetChanged();
-					        
-							float fval = 0.5f;
-			        		//CMN.show("asd"+bWantsSelection);
-							//showT(proceed+"{"+bWantsSelection+" "+mdict.processText(mdict.processText(rec.getResAt(0)))+"=="+mdict.processText(keyword)+"  "+webSingleholder.getChildCount());
-
-					        if(bWantsSelection||bIsFirstLaunch) {
-					        	if(mdict.processText(rec.getResAt(0)).equals(mdict.processText(keyword))) {
-					        		boolean proceed = true;
-					        		if(webcontentlist.getVisibility()==View.VISIBLE) {
-					        			proceed &= (ListViewAdapter2.currentKeyText==null || !keyword.trim().equals(ListViewAdapter2.currentKeyText.trim()));
-					        		}
-
-					        		if(proceed) {
-						        		lv2.performItemClick(ListViewAdapter2.getView(0, null, null), 0, lv2.getItemIdAtPosition(0));
-					        		}
-					        	}
-					        	fval=1f;
-					        }
-					        
-					        bIsFirstLaunch=false;
-					        
-					        TSnackbar snack = TSnackbar.makeraw(main_succinct, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),rec.size()),TSnackbar.LENGTH_LONG);
-							snack.getView().setAlpha(fval);
-							snack.show();
-							
-				        }
-						
-						
-					};
-					lianHeTask.execute(s.toString());
-					
-					
+					if(lv2.getVisibility()==View.INVISIBLE)
+						lv2.setVisibility(View.VISIBLE);
+					lianHeTask = new CombinedSearchTask(FloatSearchActivity.this).execute(s.toString());
 				}else
 				try {
 					if(!checkDics()) return;
@@ -244,7 +91,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				        	if(mdict.processText(currentDictionary.getEntryAt(res)).equals(keyTmp)) {
 				        		boolean proceed = true;
 				        		if(webcontentlist.getVisibility()==View.VISIBLE) {//webSingleholder.getChildCount()!=1
-				        			proceed &= (adaptermy.currentKeyText==null || !keyTmp.equals(adaptermy.currentKeyText.trim()));
+				        			proceed = (adaptermy.currentKeyText == null || !keyTmp.equals(adaptermy.currentKeyText.trim()));
 				        		}
 
 					        	if(proceed) {
@@ -271,16 +118,28 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	if (s.length() != 0) ivDeleteText.setVisibility(View.VISIBLE);
         }  
     };
-    
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+	private int touch_id;
+
+	@Override
+	public void NotifyComboRes(int size) {
+		if(opt.getNotifyComboRes()) {
+			float fval = 0.5f;
+			if(bIsFirstLaunch||bWantsSelection) {
+				fval=1f;
+			}
+			Snack(main_succinct, fval, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size),TSnackbar.LENGTH_LONG);
+		}
+	}
+
+	@Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
         // Checks the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-        	
-        }
+
+
+
+
         if(chooseDFragment!=null) {
 	        chooseDFragment.width=(int) (dm.widthPixels-2.5*getResources().getDimension(R.dimen.diagMarginHor));
 	        chooseDFragment.height=(int) (dm.heightPixels-2*getResources().getDimension(R.dimen.diagMarginVer));
@@ -308,8 +167,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
     	long cur = System.currentTimeMillis();
-    	//Toast.makeText(this,(savedInstanceState==null)+"", Toast.LENGTH_SHORT).show();
-    	//Toast.makeText(this, (cur-CMN.FloatLastInvokerTime)+"", Toast.LENGTH_SHORT).show();
     	if(cur-CMN.FloatLastInvokerTime<524) {
     		super.onCreate(savedInstanceState);
     		finish();
@@ -321,24 +178,20 @@ public class FloatSearchActivity extends MainActivityUIBase {
         super.onCreate(savedInstanceState);
 
     	overridePendingTransition(R.anim.budong,0);
-        //disable keyboard auto pop up feature
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//去掉信息栏
-        
-        
+
         setContentView(R.layout.float_main);
 		_50_= (FVMINHEIGHT*dm.density);
         wm = getWindowManager();
-		CMN.dm_density=dm.density;
 
-        mainfv = (ViewGroup) findViewById(R.id.main);
-        
-        
+        mainfv = findViewById(R.id.main);
+
 		FVDOCKED=opt.getFVDocked();
+		//showT("FVDOCKED"+FVDOCKED);
 		FVH=opt.defaultReader.getInt("FVH",(int) (500*dm.density));
 		FVW=opt.defaultReader.getInt("FVW",dm.widthPixels);
-		//bREMUDSIZE=opt.getBoolean("REMUDS",true);
 		FVH_UNDOCKED=opt.defaultReader.getInt("UDFVH",-1);
 		FVW_UNDOCKED=opt.defaultReader.getInt("UDFVW",-1);
 		FVTX=Math.min(Math.max(opt.defaultReader.getInt("FVTX",0), 0), (int) (dm.widthPixels-_50_));
@@ -346,13 +199,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		
 		mainfv.setTranslationY(FVTY);
 		mainfv.setTranslationX(FVTX);
-        
-		//showT("FVDOCKED"+FVDOCKED);
-		
-		checkLaunch(savedInstanceState);
-		
+
+		checkLog(savedInstanceState);
     }
-    
    
     private void setDocked(boolean docked) {
     	LinearLayout.LayoutParams lp = (android.widget.LinearLayout.LayoutParams) main_succinct.getLayoutParams();
@@ -366,36 +215,30 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		main_succinct.setLayoutParams(lp);
 	}
 
-
 	@Override
 	protected void onDestroy(){
     	if(systemIntialized) {
-    		dumpSettiings();
+    		dumpSettings();
         	root.getViewTreeObserver().removeOnGlobalLayoutListener(keyObserver);
         	keyObserver=null;
     	}
     	super.onDestroy();
     }
 
-    
 	@Override
 	protected void scanSettings(){
 		super.scanSettings();
 		new File(opt.pathTo().toString()).mkdirs();
 		CMN.FloatBackground = MainBackground = opt.getFloatBackground();
-        getWindow().setNavigationBarColor(MainBackground);
-        //文件网络
-		//SharedPreferences read = getSharedPreferences("lock", MODE_PRIVATE);
-		//isCombinedSearching = opt.isCombinedSearching();
-		//opt.globalTextZoom = read.getInt("globalTextZoom",dm.widthPixels>900?50:80);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			getWindow().setNavigationBarColor(MainBackground);
+		}
 		opt.getLastMdlibPath();
 		if(opt.lastMdlibPath==null || !new File(opt.lastMdlibPath).exists()) {
 			opt.lastMdlibPath = opt.pathToMain()+"mdicts";
 	    	new File(opt.lastMdlibPath).mkdirs();
 		}
 	}
-    
-	
 
     View IMPageCover;
 	private OnGlobalLayoutListener keyObserver;
@@ -404,9 +247,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
         contentview = findViewById(R.id.cover);
         PageSlider = (RLContainerSlider)  contentview;
         IMPageCover = findViewById(R.id.IMPageCover);
-        toolbar =  (Toolbar) findViewById(R.id.toolbar);
-        webcontentlist = (SplitView)findViewById(R.id.webcontentlister);
-        bottombar2 = (ViewGroup) webcontentlist.findViewById(R.id.bottombar2);
+        toolbar = findViewById(R.id.toolbar);
+        webcontentlist = findViewById(R.id.webcontentlister);
+        bottombar2 = webcontentlist.findViewById(R.id.bottombar2);
         toolbar.inflateMenu(R.menu.float_menu);
         CachedBBSize=opt.getFloatBottombarSize((int) (20*dm.density));
     	super.further_loading(savedInstanceState);
@@ -417,11 +260,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
         lv2 = findViewById(R.id.sub_list);
         lv.setAdapter(adaptermy = new ListViewAdapter()); 
         lv.setOnItemClickListener(adaptermy);
-        lv2.setAdapter(ListViewAdapter2);
-        lv2.setOnItemClickListener(ListViewAdapter2);
+        lv2.setAdapter(adaptermy2 = new ListViewAdapter2());
+        lv2.setOnItemClickListener(adaptermy2);
 
-        
-			
 			Intent intent = getIntent();
 	        String keytmp =	intent.getStringExtra("EXTRA_QUERY");
 	        if(keytmp==null) {
@@ -443,6 +284,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         //IMPageCover.getBackground().setTint(FloatBackground);
         mainfv.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
 
+        //键盘监听器
         root.getViewTreeObserver().addOnGlobalLayoutListener(keyObserver=new OnGlobalLayoutListener(){
 			boolean keyBoardFlipper=false;
         	@Override
@@ -450,8 +292,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				//showT("onGlobalLayout");
         		int kb_height=isKeyboardShown(root);
         		if(keyBoardFlipper) {
-        			if(kb_height>0) {
-					}else {
+        			if(kb_height<=0){
 						keyBoardFlipper=false;
 						//showT("onGlobalLayout_kn_hide");
 					}
@@ -474,8 +315,29 @@ public class FloatSearchActivity extends MainActivityUIBase {
         		}
 			}});
 
-        
-		
+		GestureDetector mGestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
+			public boolean onDoubleTap(MotionEvent e) {
+				return false;
+			}
+
+			@Override
+			public boolean onSingleTapUp(MotionEvent e) {
+				if (true && touch_id!=R.id.move0) {
+					finish();
+					return true;
+				}
+				return super.onSingleTapUp(e);
+			}
+
+			@Override
+			public boolean onSingleTapConfirmed(MotionEvent e) {
+				if (false) {
+					finish();
+					return true;
+				}
+				return super.onSingleTapConfirmed(e);
+			}
+		});
 
 		OnTouchListener Toucher = new OnTouchListener(){
         	float lastX;
@@ -487,64 +349,64 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			@Override 
 			public boolean onTouch(View v, MotionEvent e) {
 				DedockTheta=_50_/2;
+				touch_id=v.getId();
+				mGestureDetector.onTouchEvent(e);
 				ViewGroup.LayoutParams  lpmy = mainfv.getLayoutParams();
 				getWindowManager().getDefaultDisplay().getMetrics(dm);
 				switch(e.getAction()){
-					case MotionEvent.ACTION_DOWN:
+					case MotionEvent.ACTION_DOWN:{
 						lastX = e.getRawX();
 						lastY = e.getRawY();
 						DedockAcc=0;
-						break;
-					case MotionEvent.ACTION_MOVE:
+					} break;
+					case MotionEvent.ACTION_MOVE:{
 						int dy = (int) (e.getRawY() - lastY);
 						int dx = (int) (e.getRawX() - lastX);
 						boolean bProceed=true;
 						boolean MOT=false,MOB=false,MOL=false,MOR=false;
 						wantsMaximize=false;
-						OUT:
-						if(v.getId()==R.id.move0) {
-							MOT=true;
-							if(FVDOCKED) {//解Dock
-								DedockAcc+=dx;
+						if (touch_id == R.id.move0) {
+							MOT = true;
+							if (FVDOCKED) {//解Dock
+								DedockAcc += dx;
 							}
-							if(DedockAcc>DedockTheta) {
-								if(FVDOCKED)
-								if(true) {//bREMUDSIZE
-									if(FVW_UNDOCKED!=-1 && FVH_UNDOCKED!=-1) {
-										lpmy.width=FVW_UNDOCKED;
-										lpmy.height=FVH_UNDOCKED;
+							if (DedockAcc > DedockTheta) {
+								if (FVDOCKED)
+									//if (bREMUDSIZE) {
+									if (FVW_UNDOCKED != -1 && FVH_UNDOCKED != -1) {
+										lpmy.width = FVW_UNDOCKED;
+										lpmy.height = FVH_UNDOCKED;
 										mainfv.setLayoutParams(lpmy);
 									}
-								}
-								opt.setFVDocked(FVDOCKED=false);
+								opt.setFVDocked(FVDOCKED = false);
 							}
-							
-							if(!FVDOCKED) {//未停靠
-								bProceed=false;
-								mainfv.setTranslationY(Math.min(dm.heightPixels-_50_, Math.max(mainfv.getTranslationY()+dy, 0)));
-								mainfv.setTranslationX(Math.min(dm.widthPixels-_50_, Math.max(mainfv.getTranslationX()+dx+DedockAcc, 0)));//应用累积项
-								DedockAcc=0;
+
+							if (!FVDOCKED) {//未停靠
+								bProceed = false;
+								mainfv.setTranslationY(Math.min(dm.heightPixels - _50_, Math.max(mainfv.getTranslationY() + dy, 0)));
+								mainfv.setTranslationX(Math.min(dm.widthPixels - _50_, Math.max(mainfv.getTranslationX() + dx + DedockAcc, 0)));//应用累积项
+								DedockAcc = 0;
 								setDocked(false);
-								if(mainfv.getTranslationX()<=1.45) {
-									wantsMaximize=true;
-									if(!wantedMaximize) {
-										lpmy.width=(int) (lpmy.width+_50_);
-										lpmy.height=(int) (lpmy.height+_50_);
+								if (mainfv.getTranslationX() <= 1.45) {
+									wantsMaximize = true;
+									if (!wantedMaximize) {
+										lpmy.width = (int) (lpmy.width + _50_);
+										lpmy.height = (int) (lpmy.height + _50_);
 										mainfv.setLayoutParams(lpmy);
-										wantedMaximize=true;
+										wantedMaximize = true;
 									}
-								}else if(wantedMaximize) {
-									lpmy.width=(int) (lpmy.width-_50_);
-									lpmy.height=(int) (lpmy.height-_50_);
+								} else if (wantedMaximize) {
+									lpmy.width = (int) (lpmy.width - _50_);
+									lpmy.height = (int) (lpmy.height - _50_);
 									setDocked(true);
 									mainfv.setLayoutParams(lpmy);
-									wantedMaximize=false;
+									wantedMaximize = false;
 								}
 							}
 						}
 						if(bProceed){
 							if(MOT) {
-								
+
 							}else {
 								if(lastY<=mainfv.getTranslationY())
 									MOT=true;
@@ -555,7 +417,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 								if(lastX>=mainfv.getTranslationX()+lpmy.width)
 									MOR=true;
 							}
-							
+
 							if(MOT) {//move on the top
 								if(lpmy.height-dy<=_50_ && dy>0) {//size trim
 									dy=(int) (lpmy.height-_50_);
@@ -564,7 +426,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 								int newTransY = (int) (mainfv.getTranslationY()+dy);
 								lpmy.height=Math.min(lpmy.height-dy, dm.heightPixels-newTransY-(DockerMarginB+DockerMarginT));//screen culling
 								mainfv.setLayoutParams(lpmy);
-								
+
 								//int newTop = (int) (mainfv.getTop() + dy);
 								mainfv.setTranslationY(newTransY);
 							}else if(MOB){//move on the bottom
@@ -573,8 +435,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 								}
 								lpmy.height=lpmy.height+dy;
 								mainfv.setLayoutParams(lpmy);
-							} 
-							
+							}
+
 							if(MOL){//move on the left
 								if(lpmy.width-dx<=FVMINWIDTH*dm.density) {//size trim
 									dx=(int) (lpmy.width-FVMINWIDTH*dm.density);
@@ -590,20 +452,16 @@ public class FloatSearchActivity extends MainActivityUIBase {
 								lpmy.width=lpmy.width+dx;
 								mainfv.setLayoutParams(lpmy);
 							}
-							
-							
 						}
-						
 						//mainfv.setBottom(dm.heightPixels);
 						//ViewGroup.LayoutParams  lpmy = mainfv.getLayoutParams();
 						//lpmy.height=newTop;
 						//mainfv.setLayoutParams(lpmy);
 						//mainfv.postInvalidate();
-						
 						lastX = e.getRawX();
 						lastY = e.getRawY();
-						break;
-					case MotionEvent.ACTION_UP:
+					} break;
+					case MotionEvent.ACTION_UP:{
 						if(wantsMaximize) {
 							FVW_UNDOCKED=(int) (lpmy.width-_50_);
 							FVH_UNDOCKED=(int) (lpmy.height-_50_);
@@ -616,16 +474,15 @@ public class FloatSearchActivity extends MainActivityUIBase {
 							wantedMaximize=false;
 							opt.setFVDocked(FVDOCKED=true);
 						}
-						break;
+					} break;
 					default:
-						break;
+					break;
 				}
 				return true;
 			
 		}};
 		findViewById(R.id.move0).setOnTouchListener(Toucher);
         root.setOnTouchListener(Toucher);
-  
 
         findViewById(R.id.toolbar_action1).setOnLongClickListener(this);
         
@@ -650,12 +507,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 										DockerMarginT = lp.topMargin=Integer.valueOf(arr[0]);
 										DockerMarginB = lp.bottomMargin=Integer.valueOf(arr[1]);
 										root.setLayoutParams(lp);
-									} catch (Exception e1) {}
+									} catch (Exception ignored) {}
 								}
 							}
 						}
 					}
-			} catch (Exception e) {}
+			} catch (Exception ignored) {}
 		}
 
 
@@ -677,15 +534,13 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 
 	private int isKeyboardShown(View rootView) {
-		final int softKeyboardHeight = 100;
 		Rect r = new Rect();
 		rootView.getWindowVisibleDisplayFrame(r);
-		int heightDiff = rootView.getBottom() - r.bottom;
-		return heightDiff;// > softKeyboardHeight * CMN.dm_density;
+		return rootView.getBottom() - r.bottom;// > softKeyboardHeight * CMN.dm_density;
 	}
 	
 
-	private void dumpSettiings(){
+	private void dumpSettings(){
 		if(systemIntialized) {
 			android.view.ViewGroup.LayoutParams lp = mainfv.getLayoutParams();
 
@@ -718,17 +573,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.toolbar_action1:
-                // do something
-                return true;
-            default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
-
-        }
-    }
+		if (item.getItemId() == R.id.toolbar_action1) {// do something
+			return true;
+		}// If we got here, the user's action was not recognized.
+		// Invoke the superclass to handle it.
+		return super.onOptionsItemSelected(item);
+	}
 
     @Override
     protected void onPause() {
@@ -788,26 +638,26 @@ public class FloatSearchActivity extends MainActivityUIBase {
         public long getItemId(int position) {    
           return position;    
         }  
-        Flag mflag = new Flag();
+        Flag mFlag = new Flag();
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
         	viewHolder vh;
-        	String currentKeyText = currentDictionary.getEntryAt(position,mflag);
+        	String currentKeyText = currentDictionary.getEntryAt(position, mFlag);
 	        //String keyText = md.get(adapter_idx).getEntryAt(position);
 	        if(convertView!=null){
         		vh=(viewHolder)convertView.getTag();
         	}else{
         		convertView = View.inflate(getApplicationContext(), R.layout.listview_item0, null);
         		vh=new viewHolder();
-        		vh.title = (TextView) convertView.findViewById(R.id.text);  
-        		vh.subtitle = (TextView) convertView.findViewById(R.id.subtext);
+        		vh.title = convertView.findViewById(R.id.text);
+        		vh.subtitle = convertView.findViewById(R.id.subtext);
                 convertView.setTag(vh);
         	}
 	        
 
             vh.title.setText(currentKeyText);
-            if(mflag.data!=null)
-                vh.subtitle.setText(Html.fromHtml(currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+mflag.data+" ></font >"));
+            if(mFlag.data!=null)
+                vh.subtitle.setText(Html.fromHtml(currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+ mFlag.data+" ></font >"));
             else
             	vh.subtitle.setText(currentDictionary._Dictionary_fName);
         	//convertView.setTag(R.id.position,position);
@@ -869,7 +719,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
     
     }
     
-    private final BasicAdapter ListViewAdapter2 = new  BasicAdapter(){
+    class ListViewAdapter2 extends  BasicAdapter{
     	int itemId = R.layout.listview_item1;
         //构造函数
         
@@ -901,8 +751,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	        		convertView = View.inflate(getApplicationContext(),itemId, null);
 	    			//convertView.setOnClickListener(this);
 	        		vh=new viewHolder();
-	        		vh.title = (TextView) convertView.findViewById(R.id.text);  
-	        		vh.subtitle = (TextView) convertView.findViewById(R.id.subtext);  
+	        		vh.title = convertView.findViewById(R.id.text);
+	        		vh.subtitle = convertView.findViewById(R.id.subtext);
                 	vh.cc = convertView.findViewById(R.id.counter);
 	                convertView.setTag(vh);
 	        	}
@@ -977,23 +827,23 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	public void onClick(View v) {
 		int id=v.getId();
 		switch(id) {
-			case R.id.toolbar_action1:
+			case R.id.toolbar_action1:{
 				opt.setCombinedSearching(isCombinedSearching = !isCombinedSearching);
 				if(isCombinedSearching){
 					if(webcontentlist.getVisibility()==View.VISIBLE)
-						ListViewAdapter2.currentKeyText=null;
-					((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action1)).setIcon((getResources().getDrawable(R.drawable.ic_btn_multimode)));
+						adaptermy2.currentKeyText=null;
+					toolbar.getMenu().findItem(R.id.toolbar_action1).setIcon((getResources().getDrawable(R.drawable.ic_btn_multimode)));
 					lv2.setVisibility(View.VISIBLE);
 				}else{
 					if(webcontentlist.getVisibility()==View.VISIBLE)
 						adaptermy.currentKeyText=null;
-					((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action1)).setIcon((getResources().getDrawable(R.drawable.ic_btn_siglemode)));
+					toolbar.getMenu().findItem(R.id.toolbar_action1).setIcon((getResources().getDrawable(R.drawable.ic_btn_siglemode)));
 					lv2.setVisibility(View.GONE);
-				}	
+				}
 				if(opt.auto_seach_on_switch)
 					tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
-			break;
-			case R.id.ivDeleteText:
+			} break;
+			case R.id.ivDeleteText:{
 				if((etSearch_toolbarMode&2)==0) {//delete
 					String SearchTmp = etSearch.getText().toString().trim();
 					if(SearchTmp.equals("")) {
@@ -1007,8 +857,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					etSearch.setText(lastEtString);
 					//etSearch_ToToolbarMode(3);
 				}
-			break;
-			case R.id.ivBack:
+			} break;
+			case R.id.ivBack:{
 				if((etSearch_toolbarMode&1)==0) {//search
 					//bWantsSelection=true;
 					if(etSearch.getText().toString().trim().length()>0) {
@@ -1024,13 +874,13 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					webholder.removeAllViews();
 					etSearch_ToToolbarMode(0);
 				}
-			break;
+			} break;
 			case R.id.browser_widget7:
 				exitTime=0;
 				etSearch_ToToolbarMode(0);
 	        	webcontentlist.setVisibility(View.GONE);
 			break;
-			case R.id.browser_widget8://favorite
+			case R.id.browser_widget8:{//favorite
 				if(star_ic==null) {
 					star_ic = getResources().getDrawable(R.drawable.star_ic_solid);
 					star = favoriteBtn.getDrawable();
@@ -1059,18 +909,18 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					favoriteBtn.setImageDrawable(star_ic);
 					show(R.string.added);
 				}
-			break;
-			case R.id.browser_widget9://view outline
-				if(ActivedAdapter==ListViewAdapter2) {
+			} break;
+			case R.id.browser_widget9:{//view outline
+				if(ActivedAdapter==adaptermy2) {
 					final resultRecorderCombined res;
-					int idx = 0;
-					res = (resultRecorderCombined) ListViewAdapter2.combining_search_result;					
-					idx = ListViewAdapter2.lastClickedPos;
+					int idx;
+					res = (resultRecorderCombined) adaptermy2.combining_search_result;
+					idx = adaptermy2.lastClickedPos;
 					if(idx<0 || idx>=res.list().size())
 						return;
 
-					additiveMyCpr1 contentIndexs = res.list().get(idx);
-					List<Integer> vals = (List<Integer>)contentIndexs.value;
+					additiveMyCpr1 contentIndexes = res.list().get(idx);
+					List<Integer> vals = (List<Integer>)contentIndexes.value;
 					CharSequence[] items = new CharSequence[webholder.getChildCount()];
 					int c=0;
 					int totalHeight=0;
@@ -1098,34 +948,30 @@ public class FloatSearchActivity extends MainActivityUIBase {
 							items[c] = mdTmp._Dictionary_fName;
 						c++;
 					}
-			        AlertDialog.Builder builder = new AlertDialog.Builder(this,R.style.DialogStyle);
-			        builder.setTitle("跳转");
-			        builder.setSingleChoiceItems(items, selectedPos,
-			                new DialogInterface.OnClickListener() {
-			                    @Override
-			                    public void onClick(DialogInterface dialog, int pos) {
-			                    	int totalHeight=0;
-			                    	for(int i=0;i<pos;i++) {
-			    						totalHeight+=webholder.getChildAt(i).getHeight();
-			    					}
-			                    	
-			                    	//((ScrollView)webholder.getParent()).setScrollY(totalHeight);
-			                    	((ScrollView)webholder.getParent()).smoothScrollTo(0, totalHeight);
-			                    	d.dismiss();
-			                    }
-			                });
-			        d=builder.create();
-			        d.setCanceledOnTouchOutside(true);
-			        d.show();
+					AlertDialog.Builder builder = new AlertDialog.Builder(this,R.style.DialogStyle);
+					builder.setTitle("跳转");
+					builder.setSingleChoiceItems(items, selectedPos, (dialog, pos) -> {
+						int totalHeight1 =0;
+						for(int i=0;i<pos;i++) {
+							totalHeight1 +=webholder.getChildAt(i).getHeight();
+						}
+
+						//((ScrollView)webholder.getParent()).setScrollY(totalHeight);
+						((ScrollView)webholder.getParent()).smoothScrollTo(0, totalHeight1);
+						d.dismiss();
+					});
+					d=builder.create();
+					d.setCanceledOnTouchOutside(true);
+					d.show();
 				}else
 					showX(R.string.try_longpress,0);
-			break;
+			} break;
 			case R.id.browser_widget13:
-			case R.id.browser_widget14:
+			case R.id.browser_widget14:{
 				boolean is_14=id==R.id.browser_widget14;
 				final int currentHeight=((ScrollView)webholder.getParent()).getScrollY();
 				int totalHeight=0;
-            	for(int i=0;i<webholder.getChildCount();i++) {
+				for(int i=0;i<webholder.getChildCount();i++) {
 					totalHeight+=webholder.getChildAt(i).getHeight();
 					if(totalHeight+(is_14?1:0)>currentHeight) {
 						if(is_14)
@@ -1133,19 +979,19 @@ public class FloatSearchActivity extends MainActivityUIBase {
 						break;
 					}
 				}
-            	
-            	//((ScrollView)webholder.getParent()).setScrollY(totalHeight);
-            	((ScrollView)webholder.getParent()).smoothScrollTo(0, totalHeight);
-            	
-			break;
+
+				//((ScrollView)webholder.getParent()).setScrollY(totalHeight);
+				((ScrollView)webholder.getParent()).smoothScrollTo(0, totalHeight);
+
+			} break;
 			case R.id.browser_widget10:
-			case R.id.browser_widget11://左zuo
+			case R.id.browser_widget11:{//左zuo
 				int toPos = ActivedAdapter.lastClickedPos+(v.getId()==R.id.browser_widget10?-1:1);
 				if(toPos<-1) {
 					show(R.string.coverr);
 					break;
 				}
-				if(toPos==-1 && ListViewAdapter2==ActivedAdapter) {
+				if(toPos==-1 && adaptermy2==ActivedAdapter) {
 					show(R.string.toptopr);
 					break;
 				}
@@ -1160,36 +1006,34 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				//Log.e("browser_widget10","browser_widget10"+ActivedAdapter.lastClickedPos);
 				//webholder.removeViews(1, webholder.getChildCount()-1);
 				ActivedAdapter.onItemClick(toPos);
-			break;
-			case R.id.browser_widget12:
+			} break;
+			case R.id.browser_widget12:{
 				if(currentDictionary!=null) {
 					boolean played=false;
-					mdict Actor = null;
-					if(ActivedAdapter!=ListViewAdapter2) {
+					mdict Actor;
+					if(ActivedAdapter!=adaptermy2) {
 						Actor=currentDictionary;
 					}else {
-						Actor=md.get(ListViewAdapter2.combining_search_result.getRecordAt(ListViewAdapter2.lastClickedPos).get(0));
+						Actor=md.get(adaptermy2.combining_search_result.getRecordAt(adaptermy2.lastClickedPos).get(0));
 					}
 					if(Actor.mdd!=null) {
-						String skey = ActivedAdapter.currentKeyText+".mp3";
-						int idx = Actor.mdd.lookUp(skey);
+						String sKey = ActivedAdapter.currentKeyText+".mp3";
+						int idx = Actor.mdd.lookUp(sKey);
 						if(idx!=-1) {
-							Actor.mWebView.evaluateJavascript("var audio = new Audio(\""+skey+"\");audio.play();", null);
+							Actor.mWebView.evaluateJavascript("var audio = new Audio(\""+sKey+"\");audio.play();", null);
 							played=true;
 						}
 						if(!played) {
 							Log.e("dsa_evaluateJavascript","asd");
-							Actor.mWebView.evaluateJavascript("(function(){var hrefs = document.getElementsByTagName('a'); for(var i=0;i<hrefs.length;i++){ if(hrefs[i].attributes['href']){ if(hrefs[i].attributes['href'].value.indexOf('sound')!=-1){ hrefs[i].click(); return 10; } } }return null;})();",new ValueCallback<String>(){
-								@Override
-								public void onReceiveValue(String value) {
-									if(!value.equals("10")) {
-										showT("找不到音频");
-									}
-								}} );
+							Actor.mWebView.evaluateJavascript("(function(){var hrefs = document.getElementsByTagName('a'); for(var i=0;i<hrefs.length;i++){ if(hrefs[i].attributes['href']){ if(hrefs[i].attributes['href'].value.indexOf('sound')!=-1){ hrefs[i].click(); return 10; } } }return null;})();", value -> {
+								if(!value.equals("10")) {
+									showT("找不到音频");
+								}
+							});
 						}
 					}
 				}
-			break;
+			} break;
 		}
 	}
 
@@ -1197,13 +1041,13 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		boolean longclick=false;
-		if(longclick) return false;
+		MenuItemImpl mmi = (MenuItemImpl)item;
+		boolean isLongClicked=mmi.isLongClicked;
 		switch (item.getItemId()) {
             case R.id.toolbar_action2://切换词典
             	if(chooseDFragment==null) {
             		chooseDFragment = new DictPicker(FloatSearchActivity.this);
-    		        chooseDFragment.setStyle(R.style.DialogStyle, 0);//DialogFragment.STYLE_NO_TITLE
+    		        //chooseDFragment.setStyle(R.style.DialogStyle, 0);//DialogFragment.STYLE_NO_TITLE
     		        chooseDFragment.bShouldCloseAfterChoose=true;
     		        //chooseDFragment.setCancelable(true);
     		        //chooseDFragment.setOnViewCreatedListener(new OnViewCreatedListener() {
@@ -1234,39 +1078,38 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				}
 				else//没办法..
 					pickDictDialog.refresh();*/
-            return true;
+				break;
             case R.id.toolbar_action3://切换分组
             	showChooseSetDialog();
-            return true;
+				break;
             case R.id.toolbar_action4:
             	String keyword = etSearch.getText().toString().trim();
-            	favoriteCon.insertUpdate(keyword);
-            	showT("已收藏！");
-            return true;
+            	if(favoriteCon.insertUpdate(keyword)>0)
+            		showT("已收藏！");
+            break;
         }
-		return false;//super.onOptionsItemSelected(item);
+		closeIfNoActionView(mmi);
+		return false;
 	}
 
 	@Override
 	public boolean onLongClick(View v) {
 		switch(v.getId()) {
 			case R.id.toolbar_action1:
-	            //dumpSettiings();
+	            //dumpSettings();
 				finish();
 				//System.exit(0);
 			break;
 			case R.id.browser_widget9://long-click view outline
-				if(ActivedAdapter==ListViewAdapter2) {
+				if(ActivedAdapter==adaptermy2) {
 					resultRecorderCombined res;
-					int idx = 0;
+					int idx;
 					
-					res = (resultRecorderCombined) ListViewAdapter2.combining_search_result;					
-					idx = ListViewAdapter2.lastClickedPos;
+					res = (resultRecorderCombined) adaptermy2.combining_search_result;					
+					idx = adaptermy2.lastClickedPos;
 					if(idx<0 || idx>=res.list().size())
 						return true;
 	
-					additiveMyCpr1 contentIndexs = res.list().get(idx);
-					List<Integer> vals = (List<Integer>)contentIndexs.value;
 					int totalHeight=0;
 					int selectedPos=-1;
 					final int currentHeight=((ScrollView)webholder.getParent()).getScrollY();
@@ -1288,11 +1131,4 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			}
 		return false;
 	}
-    
-
-	
 }
-
-
-
-

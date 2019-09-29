@@ -51,6 +51,7 @@ import android.webkit.WebViewClient;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Checkable;
 import android.widget.FrameLayout;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
@@ -64,6 +65,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
@@ -71,6 +73,7 @@ import androidx.core.graphics.ColorUtils;
 import com.androidadvance.topsnackbar.TSnackbar;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialogListener;
+import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.myCpr;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
@@ -112,6 +115,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import db.LexicalDBHelper;
 import db.MdxDBHelper;
@@ -141,6 +146,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 
 	public ListViewmy lv,lv2;
 	BasicAdapter adaptermy;
+	public BasicAdapter adaptermy2;
 	public BasicAdapter adaptermy3;
 	public BasicAdapter PrevActivedAdapter;
 	public BasicAdapter ActivedAdapter;
@@ -169,7 +175,6 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 	public boolean bWantsSelection;
 	public boolean bIsFirstLaunch=true;
 
-	AsyncTask lianHeTask;
 	public RLContainerSlider PageSlider;
 	public boolean TurnPageEnabled;
 
@@ -183,6 +188,16 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 	Canvas mPageCanvas=new Canvas();
 	Matrix HappyMatrix = new Matrix();
 	BitmapDrawable mPageDrawable;
+
+	AsyncTask lianHeTask;
+	public int split_dict_thread_number;
+	public void countDelta(int delta) {
+		Lock lock = new ReentrantLock();
+		lock.lock();
+		poolEUSize+=delta;
+		lock.unlock();
+	}
+	public volatile int poolEUSize;
 
 	public void jump(int pos,mdict md) {
 
@@ -232,6 +247,10 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		super.onCreate(savedInstanceState);
 	}
 
+
+	void closeIfNoActionView(MenuItemImpl mi) {
+		if(!mi.isActionButton()) toolbar.getMenu().close();
+	}
 
 
 	@SuppressLint("ClickableViewAccessibility")
@@ -827,12 +846,32 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		return new mdict(fn,THIS);
 	}
 
+	public void NotifyComboRes(int size) {
+		if(opt.getNotifyComboRes()) {
+			float fval = 0.5f;
+			ViewGroup sv;
+			if(bIsFirstLaunch||bWantsSelection) {
+				sv=contentview;
+				fval=.8f;
+			}else {
+				sv=main_succinct;
+			}
+			Snack(sv, fval, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size),TSnackbar.LENGTH_LONG);
+		}
+	}
+
+	void Snack(ViewGroup vg, float alpha, String msg, int len) {
+		snack=TSnackbar.makeraw(vg, msg, len);
+		snack.getView().setAlpha(alpha);
+		snack.show();
+	}
+
 
 	public final class UniCoverClicker implements OnClickListener{
 		mdict invoker;
 		MdxDBHelper con;
 		AlertDialog d;
-		CheckableImageView cb;
+		CircleCheckBox cb;
 		ImageView tools_lock;
 		UniCoverClicker(){
 			final Resources r = getResources();
@@ -859,7 +898,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		@Override
 		public void onClick(View v) {
 			switch(v.getId()) {
-				case R.id.color:
+				case R.id.color:{
 					String msg;
 					if(invoker.bUseInternalBG) {
 						//正在为词典  <![CDATA[<%1$s>]]> 指定背景颜色...
@@ -945,14 +984,14 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					});
 					asd.show(getSupportFragmentManager(),"color-picker-dialog");
 
-
-					return;
+				}
+				return;
 				case R.id.settings:
 					invoker.showDictTweaker(MainActivityUIBase.this);
-					return;
+				return;
 				case R.id.appsettings:
 					showAppTweaker();
-					return;
+				return;
 				case R.id.lock:
 					if(PageSlider.TurnPageEnabled=!PageSlider.TurnPageEnabled)
 						tools_lock.setImageResource(R.drawable.un_locked);
@@ -961,7 +1000,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					opt.setTurnPageEnabled(TurnPageEnabled=PageSlider.TurnPageEnabled);
 					opt.putFirstFlag();
 					DialogSnack(d,getResources().getString(PageSlider.TurnPageEnabled?R.string.PT1:R.string.PT2));
-					return;
+				return;
 			}
 			imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 			bFromWebView=v.getTag()!=null;
@@ -1009,19 +1048,20 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 
 				cb = bottomView.findViewById(R.id.checker);
 				tools_lock  = bottomView.findViewById(R.id.lock);
-
+				if(GlobalOptions.isDark)
+					cb.drawInnerForEmptyState=true;
+				else
+					cb.circle_shrinkage=2;
 				cb.setChecked(opt.getPinDialog());
 				cb.setOnClickListener(v12 -> {
 					cb.toggle();
 					opt.setPinDialog(cb.isChecked());
-					opt.putFirstFlag();
 				});
 
 				d.setOnDismissListener(dialog -> {
 					if(doCloseOnDiss && bResposibleForCon) {
 						invoker.closeCon();
 					}
-
 				});
 
 				if(PageSlider!=null) {

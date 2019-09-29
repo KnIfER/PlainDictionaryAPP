@@ -548,13 +548,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
     			myWebColor=ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
 			mWebView.setBackgroundColor(myWebColor);
     	}else
-    		mWebView.setBackgroundColor(Color.TRANSPARENT);
+    		mWebView.setBackgroundColor(a.GlobalPageBackground);
     	
     	mWebView.setBackground(null);
     	
-    	CMN.Log(mWebView.getBackground());
-    	
-    	
+    	//CMN.Log(mWebView.getBackground());
+
 
 		mWebView.clearHistory();
     	//mWebView.clearMatches();
@@ -1162,12 +1161,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 
 	boolean isDirty=false;
 	public void showDictTweaker(MainActivityUIBase dict_Activity_ui_base) {
-
 		String[] DictOpt = a.getResources().getStringArray(R.array.dict_spec);
 		final String[] Coef = DictOpt[0].split("_");
 		final View dv = a.inflater.inflate(R.layout.dialog_about,null);
 		final SpannableStringBuilder ssb = new SpannableStringBuilder();
-		final TextView tv = ((TextView)dv.findViewById(R.id.resultN));
+		final TextView tv = dv.findViewById(R.id.resultN);
 		TextView title = ((TextView)dv.findViewById(R.id.title));
 		title.setText("词典设定");//"词典设定"
 		title.setTextColor(a.AppBlack);
@@ -1228,40 +1226,18 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 				//WriteConfigFF();
 			}},start2,ssb.toString().length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		ssb.append("\r\n").append("\r\n");
-		
-		if(false) {
-			final int start3=ssb.toString().length();
-			ssb.append("[").append(DictOpt[4]).append(WebSingleLayerType==3?Coef[0]:Coef[WebSingleLayerType+4]).append("]");
-			ssb.setSpan(new ClickableSpan() {//硬件加速
-				@Override
-				public void onClick(View widget) {
-					WebSingleLayerType+=1;
-					WebSingleLayerType%=4;
-					String now = ssb.toString();
-					int fixedRange = now.indexOf(":", now.indexOf(":", now.indexOf(":",now.indexOf(":")+1)+1)+1);
-					ssb.delete(fixedRange+1, now.indexOf("]",fixedRange));
-					ssb.insert(fixedRange+1, WebSingleLayerType==3?Coef[0]:Coef[WebSingleLayerType+4]);
-					tv.setText(ssb);
-					isDirty=true;
-					WriteConfigFF();
-				}},start3,ssb.toString().length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			ssb.append("\r\n").append("\r\n");
-		}
-		
+
 		tv.setText(ssb);
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
 		AlertDialog.Builder builder2 = new AlertDialog.Builder(a,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
 		builder2.setView(dv);
 		final AlertDialog d = builder2.create();
 		d.setCanceledOnTouchOutside(true);
-		//d.setCanceledOnTouchOutside(false);
-		d.setOnDismissListener(new AlertDialog.OnDismissListener(){
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				if(isDirty) {
-					//FF(len) [|color |zoom ||case]  int.BG int.ZOOM
-					WriteConfigFF();
-				}
+
+		d.setOnDismissListener(dialog -> {
+			if(isDirty) {
+				//FF(len) [|color |zoom ||case]  int.BG int.ZOOM
+				WriteConfigFF();
 			}
 		});
 		dv.findViewById(R.id.cancel).setOnClickListener(new OnClickListener() {

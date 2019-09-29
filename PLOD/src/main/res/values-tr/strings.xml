@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Şimdi ver</string>
 	<string name="trialin">Deneme…… #</string>
 	<string name="stgerr_fail">Üzgünüz, bu uygulamayı cihazınızda kullanamıyorum.</string>
+	<string name="bmSub">Yer İşaretini Sil</string>
+	<string name="bmAdd">İmi eklemek</string>
 </resources>

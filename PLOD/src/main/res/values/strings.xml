@@ -120,4 +120,5 @@
 	<string name="stgerr_fail">Sorry, but cannot use this app on you device.</string>
 	<string name="infoStr">Plain Dictionary —— Mini android text search engine designed for mdx。\n\nOthers\：Bluedict(Inspired by) 、MdictPC(Originates from) \n\n[Open Source] \n\n[Feedback]</string>
 	<string name="licence">Open Source Licences</string>
+	<string name="bmAdd">Add Bookmark</string>
 </resources>

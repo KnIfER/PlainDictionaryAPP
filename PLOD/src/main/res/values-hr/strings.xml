@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Dodijeli odmah</string>
 	<string name="trialin">Probno ...... #</string>
 	<string name="stgerr_fail">Nažalost, ali ne možete koristiti ovu aplikaciju na svom uređaju.</string>
+	<string name="bmSub">Izbriši oznaku</string>
+	<string name="bmAdd">Dodajte oznaku</string>
 </resources>

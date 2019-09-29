@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Χορηγήστε τώρα</string>
 	<string name="trialin">Δοκιμή…… #</string>
 	<string name="stgerr_fail">Λυπούμαστε, αλλά δεν μπορείτε να χρησιμοποιήσετε αυτήν την εφαρμογή στη συσκευή σας.</string>
+	<string name="bmSub">Διαγραφή σελιδοδείκτη</string>
+	<string name="bmAdd">Πρόσθεσε σελιδοδείκτη</string>
 </resources>

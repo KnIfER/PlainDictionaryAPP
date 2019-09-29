@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.androidadvance.topsnackbar.TSnackbar;
+import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.PDICMainActivity;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.myCpr;
@@ -19,17 +20,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorderCombined> {
-	private final WeakReference<PDICMainActivity> activity;
-	String CurrentSearchText;
+	private final WeakReference<MainActivityUIBase> activity;
 	RBTree_additive additive_combining_search_tree = new RBTree_additive();
-	
-	public CombinedSearchTask(PDICMainActivity a) {
+	String CurrentSearchText;
+	private long stst;
+
+	public CombinedSearchTask(MainActivityUIBase a) {
 		activity = new WeakReference<>(a);
 	}
 
 	@Override
 	protected void onPreExecute() {
-		PDICMainActivity a;
+		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
 		for(mdict mdTmp:a.md) {
 			mdTmp.combining_search_list = new ArrayList<>();
@@ -39,9 +41,9 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 	
 	@Override
 	protected resultRecorderCombined doInBackground(String... params) {
-		PDICMainActivity a;
+		MainActivityUIBase a;
 		if((a=activity.get())==null) return null;
-		PDICMainActivity.stst=System.currentTimeMillis();
+		stst=System.currentTimeMillis();
 		CurrentSearchText=params[0];
 
 		a.split_dict_thread_number = a.md.size()<6?1: (a.md.size()/6);
@@ -92,7 +94,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 
 	@Override
 	protected void onPostExecute(resultRecorderCombined rec) {
-		PDICMainActivity a;
+		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
 		additive_combining_search_tree = new RBTree_additive();
 		for(int i=0; i<a.md.size(); i++) {
@@ -110,8 +112,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		a.adaptermy2.notifyDataSetChanged();
 		a.lv2.setSelection(0);
 		//showT(""+bWantsSelection);
-		ViewGroup sv;
-		float fval = 0.5f;
+
 		if(a.bIsFirstLaunch||a.bWantsSelection) {
 			if(mdict.processText(rec.getResAt(0)).equals(mdict.processText(CurrentSearchText))) {
 				boolean proceed = true;
@@ -121,17 +122,8 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 				if(proceed)
 					a.lv2.performItemClick(a.adaptermy2.getView(0, null, null), 0, a.lv2.getItemIdAtPosition(0));
 			}
-			sv=a.contentview;
-			fval=.8f;
-		}else {
-			sv=a.main_succinct;
 		}
+		a.NotifyComboRes(rec.size());
 		a.bIsFirstLaunch=false;
-
-		if(a.opt.getNotifyComboRes()) {
-			a.snack = TSnackbar.makeraw(sv, a.getResources().getString(R.string.cbflowersnstr,a.opt.lastMdPlanName,a.md.size(),rec.size()),TSnackbar.LENGTH_LONG);
-			a.snack.getView().setAlpha(fval);
-			a.snack.show();
-		}
 	}
 }

@@ -28,8 +28,8 @@ public class EditTextmy extends androidx.appcompat.widget.AppCompatEditText{
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        super.onTouchEvent(event);
-        return isEnabled();
+		super.onTouchEvent(event);
+		return isEnabled();
     }
     
  

@@ -29,7 +29,6 @@ public class CMN{
 	//public static LayoutInflater inflater;
 	//protected static ViewPager viewPager;
 	public static int dbVersionCode = 1;
-	public static float dm_density;
 	public static long FloatLastInvokerTime=-1;
 	public static int ShallowHeaderBlue;
 	

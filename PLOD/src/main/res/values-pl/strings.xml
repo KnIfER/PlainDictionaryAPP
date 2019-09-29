@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Udziel teraz</string>
 	<string name="trialin">Wersja próbna …… #</string>
 	<string name="stgerr_fail">Przepraszamy, ale nie można korzystać z tej aplikacji na urządzeniu.</string>
+	<string name="bmSub">Usuń zakładkę</string>
+	<string name="bmAdd">Dodaj zakładkę</string>
 </resources>

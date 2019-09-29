@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Надайте зараз</string>
 	<string name="trialin">Випробування …… #</string>
 	<string name="stgerr_fail">На жаль, не можна використовувати цю програму на своєму пристрої.</string>
+	<string name="bmSub">Видалити закладку</string>
+	<string name="bmAdd">Додати закладку</string>
 </resources>

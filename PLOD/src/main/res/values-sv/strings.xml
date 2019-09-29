@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Bevilja nu</string>
 	<string name="trialin">Prövning …… #</string>
 	<string name="stgerr_fail">Tyvärr, men kan inte använda den här appen på din enhet.</string>
+	<string name="bmSub">Radera bokmärke</string>
+	<string name="bmAdd">Lägg till bokmärke</string>
 </resources>

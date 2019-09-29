@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Atorga ara</string>
 	<string name="trialin">Prova ....... #</string>
 	<string name="stgerr_fail">Ho sentim, però no podeu utilitzar aquesta aplicació al vostre dispositiu.</string>
+	<string name="bmSub">Suprimeix el marcador</string>
+	<string name="bmAdd">Afegir Punt de llibre</string>
 </resources>

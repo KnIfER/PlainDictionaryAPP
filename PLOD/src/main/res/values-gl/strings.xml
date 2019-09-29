@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Concede agora</string>
 	<string name="trialin">Proba ....... #</string>
 	<string name="stgerr_fail">Sentímolo, pero non pode usar esta aplicación no teu dispositivo.</string>
+	<string name="bmSub">Eliminar marcador</string>
+	<string name="bmAdd">Engadir marcador</string>
 </resources>

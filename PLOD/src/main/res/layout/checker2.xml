@@ -4,14 +4,20 @@
     android:layout_height="30dp"
     android:background="@drawable/surrtrip2"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    >
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:UIStyles="http://schemas.android.com/apk/res-auto"
+	>
     
-	<com.knziha.plod.widgets.CheckableImageView
+	<com.knziha.filepicker.widget.CircleCheckBox
 	    android:id="@+id/checker"
 	    android:layout_width="30dp"  
 	    android:layout_height="30dp"
-	    android:padding="2dp"
-        android:src="@drawable/pin"
+		UIStyles:dim1="6dp"
+		app:color_background="#FF3F51B5"
+		app:color_border="#FFF"
+		app:size="25dp"
+		android:src="@drawable/clippin"
+		android:layout_marginStart="8dp"
 	    />
 	
 	<LinearLayout 

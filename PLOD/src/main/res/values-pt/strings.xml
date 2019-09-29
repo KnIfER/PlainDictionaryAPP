@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Conceder agora</string>
 	<string name="trialin">Tentativas…… #</string>
 	<string name="stgerr_fail">Desculpe, mas não é possível usar este aplicativo no seu dispositivo.</string>
+	<string name="bmSub">Excluir marcador</string>
+	<string name="bmAdd">Adicionar marcador</string>
 </resources>

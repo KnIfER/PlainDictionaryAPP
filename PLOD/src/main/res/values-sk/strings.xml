@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Udeľte teraz</string>
 	<string name="trialin">Skúšobná …… #</string>
 	<string name="stgerr_fail">Ľutujeme, ale túto aplikáciu nemôžete používať na vašom zariadení.</string>
+	<string name="bmSub">Odstrániť záložku</string>
+	<string name="bmAdd">Pridať záložku</string>
 </resources>

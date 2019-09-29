@@ -6,4 +6,6 @@
 	<string name="stg_grantnow">Grant maintenant</string>
 	<string name="trialin">Procès…… #</string>
 	<string name="stgerr_fail">Désolé, mais vous ne pouvez pas utiliser cette application sur votre appareil.</string>
+	<string name="bmSub">Supprimer le signet</string>
+	<string name="bmAdd">Ajouter un marque-page</string>
 </resources>

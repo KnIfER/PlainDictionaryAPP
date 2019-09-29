@@ -17,7 +17,7 @@
     
     <dimen name="_50_">50dp</dimen>
     <dimen name="_40_">40dp</dimen>
-    <dimen name="abarmin">0dp</dimen>
+    <dimen name="abarmin">1dp</dimen>
     <dimen name="abarmax">32dp</dimen>
     
     
