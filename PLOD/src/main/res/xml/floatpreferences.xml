@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+	<PreferenceCategory
+		android:key="cat_prog"
+		android:title="Program Settings"
+		>
+		<SwitchPreference
+			android:defaultValue="false"
+			android:persistent="false"
+			android:key="11"
+			android:summary=""
+			android:title="点击空白区域退出浮动搜索"/>
+
+		<SwitchPreference
+			android:defaultValue="false"
+			android:persistent="false"
+			android:key="22"
+			android:summary=""
+			android:title="仅当确认单击时才退出"/>
+
+
+		<SwitchPreference
+			android:defaultValue="false"
+			android:persistent="false"
+			android:key="22"
+			android:summary="设置此项自动使开启上一项"
+			android:title="双击空白区域切换最大化"/>
+
+		<SwitchPreference
+			android:defaultValue="false"
+			android:persistent="false"
+			android:key="22"
+			android:summary=""
+			android:title="双击移动按钮切换最大化"/>
+
+
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="BCF"
+			android:title="Float SearchView Background: "
+			android:summary="FLoat background (colordict or text process)"
+			android:defaultValue="@integer/COLOR_PRI"
+			/>
+
+
+	</PreferenceCategory>
+
+
+</PreferenceScreen>

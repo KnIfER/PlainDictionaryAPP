@@ -347,7 +347,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 				    			htmlBuilder.setLength(htmlHeader.length());
 				    			mWebView.setInitialScale((int) (100*(initialScale/mdict.def_zoom)*opt.dm.density));//(int) (100*(mWebView.webScale/mdict.def_zoom)*opt.dm.density)
 								mWebView.loadDataWithBaseURL(baseUrl,
-										 htmlBuilder.append(mdict.htmlTitleEndTag).append((a.AppWhite==Color.BLACK)? MainActivityUIBase.DarkModeIncantation_l:"").append(mdict.htmlHeader2)
+										 htmlBuilder.append(mdict.htmlTitleEndTag).append((GlobalOptions.isDark)? MainActivityUIBase.DarkModeIncantation_l:"").append(mdict.htmlHeader2)
 										 			.append(getRecordsAt(pos))
 													.append(js)
 													.append(mdd!=null?"<div class='MddExist'/>":"")
@@ -409,7 +409,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 				    			htmlBuilder.setLength(htmlHeader.length());
 				    			mWebView.setInitialScale((int) (100*(initialScale/mdict.def_zoom)*opt.dm.density));
 								mWebView.loadDataWithBaseURL(baseUrl,
-										 htmlBuilder.append(mdict.htmlTitleEndTag).append((a.AppWhite==Color.BLACK)? MainActivityUIBase.DarkModeIncantation_l:"").append(mdict.htmlHeader2)
+										 htmlBuilder.append(mdict.htmlTitleEndTag).append((GlobalOptions.isDark)? MainActivityUIBase.DarkModeIncantation_l:"").append(mdict.htmlHeader2)
 										 			.append(getRecordsAt(pos))
 													.append(js)
 													.append(mdd!=null?"<div class='MddExist'/>":"")
@@ -544,11 +544,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
     	
     	if(bUseInternalBG) {
     		int myWebColor = bgColor;
-    		if(a.AppWhite==Color.BLACK)
+    		if(GlobalOptions.isDark)
     			myWebColor=ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
 			mWebView.setBackgroundColor(myWebColor);
     	}else
-    		mWebView.setBackgroundColor(a.GlobalPageBackground);
+    		mWebView.setBackgroundColor(Color.TRANSPARENT);
     	
     	mWebView.setBackground(null);
     	

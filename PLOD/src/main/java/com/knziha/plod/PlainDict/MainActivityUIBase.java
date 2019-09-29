@@ -773,6 +773,24 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		}
 	}
 
+	static void decorateBackground(View v) {
+		boolean bNoKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+		Drawable background = v.getBackground();
+		if(bNoKitKat){
+			if(GlobalOptions.isDark){
+				background.setColorFilter(GlobalOptions.NEGATIVE);
+			} else{
+				background.clearColorFilter();
+			}
+		}else{
+			if(GlobalOptions.isDark){
+				v.setTag(R.id.drawer_layout, background);
+				v.setBackground(null);
+			} else{
+				v.setBackground((Drawable) v.getTag(R.id.drawer_layout));
+			}
+		}
+	}
 
 	public void decorateContentviewByKey(ImageView favoriteBtn,String key) {
 		if(favoriteBtn==null) favoriteBtn=this.favoriteBtn;

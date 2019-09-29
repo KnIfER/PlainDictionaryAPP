@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.os.Build;
@@ -32,7 +33,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.core.graphics.ColorUtils;
 
 import com.androidadvance.topsnackbar.TSnackbar;
 import com.knziha.plod.dictionary.Flag;
@@ -529,9 +532,26 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
         if(!opt.getFloatBottombarOnBottom())
         	webcontentlist.SwitchingSides();
+
+		refreshUIColors();
     }
 
-	
+	void refreshUIColors() {
+		boolean isHalo=!GlobalOptions.isDark;
+		int filteredColor = isHalo?MainBackground: ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
+		lv2.setBackgroundColor(AppWhite);
+		if(GlobalOptions.isDark)
+			mainfv.getBackground().setColorFilter(filteredColor, PorterDuff.Mode.SRC_IN);
+		else
+			mainfv.getBackground().clearColorFilter();
+
+		bottombar2.setBackgroundColor(filteredColor);
+
+		filteredColor = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
+		WHP.setBackgroundColor(filteredColor);
+		webSingleholder.setBackgroundColor(filteredColor);
+	}
+
 
 	private int isKeyboardShown(View rootView) {
 		Rect r = new Rect();
@@ -597,7 +617,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	        }
         }
     }
-	
+
 	@Override
     protected void onRestart() {
 		Log.e("onRestart","onRestart");
@@ -641,19 +661,19 @@ public class FloatSearchActivity extends MainActivityUIBase {
         Flag mFlag = new Flag();
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
-        	viewHolder vh;
+        	PDICMainActivity.ViewHolder vh;
         	String currentKeyText = currentDictionary.getEntryAt(position, mFlag);
 	        //String keyText = md.get(adapter_idx).getEntryAt(position);
 	        if(convertView!=null){
-        		vh=(viewHolder)convertView.getTag();
+        		vh=(PDICMainActivity.ViewHolder)convertView.getTag();
         	}else{
-        		convertView = View.inflate(getApplicationContext(), R.layout.listview_item0, null);
-        		vh=new viewHolder();
-        		vh.title = convertView.findViewById(R.id.text);
-        		vh.subtitle = convertView.findViewById(R.id.subtext);
-                convertView.setTag(vh);
+        		vh=new PDICMainActivity.ViewHolder(getApplicationContext(), R.layout.listview_item0, null);
         	}
-	        
+
+			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
+				decorateBackground(vh.itemView);
+				vh.title.setTextColor(AppBlack);
+			}
 
             vh.title.setText(currentKeyText);
             if(mFlag.data!=null)
@@ -661,7 +681,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
             else
             	vh.subtitle.setText(currentDictionary._Dictionary_fName);
         	//convertView.setTag(R.id.position,position);
-        	return convertView;
+        	return vh.itemView;
         }
     
         @Override
@@ -732,43 +752,40 @@ public class FloatSearchActivity extends MainActivityUIBase {
         @Override
         public View getItem(int position) {
 			return null;
-			}    
+		}
         @Override
         public long getItemId(int position) {    
           return position;    
         }  
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
-        	viewHolder vh;
+        	PDICMainActivity.ViewHolder vh;
 
         	CharSequence currentKeyText = combining_search_result.getResAt(position);
 	        
 	        if(convertView!=null){
-	        		//标题
-	        		vh=(viewHolder)convertView.getTag();
+	        		vh=(PDICMainActivity.ViewHolder)convertView.getTag();
 	        	}else{
-	                //标题
-	        		convertView = View.inflate(getApplicationContext(),itemId, null);
-	    			//convertView.setOnClickListener(this);
-	        		vh=new viewHolder();
-	        		vh.title = convertView.findViewById(R.id.text);
-	        		vh.subtitle = convertView.findViewById(R.id.subtext);
-                	vh.cc = convertView.findViewById(R.id.counter);
-	                convertView.setTag(vh);
-	        	}
-	        
-	        if(combining_search_result.dictIdx>=md.size()) return convertView;//不要Crash哇
-        	
-	        vh.title.setText(currentKeyText);
+					vh=new PDICMainActivity.ViewHolder(getApplicationContext(), itemId, null);
+					if(itemId==R.layout.listview_item1)
+						vh.subtitle.setTag(vh.itemView.findViewById(R.id.counter));
+			}
+			if(combining_search_result.dictIdx>=md.size()) return vh.itemView;//不要Crash哇
+			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
+				decorateBackground(vh.itemView);
+				vh.title.setTextColor(AppBlack);
+			}
+			vh.title.setText(currentKeyText);
             mdict _currentDictionary = md.get(combining_search_result.dictIdx);
             if(combining_search_result.mflag.data!=null)
                 vh.subtitle.setText(Html.fromHtml(_currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
             else
                 vh.subtitle.setText(_currentDictionary._Dictionary_fName);
 
-        	vh.cc.setText(combining_search_result.count);
-
-	        return convertView;
+			if(combining_search_result.getClass()==resultRecorderCombined.class)
+				((TextView)vh.subtitle.getTag()).setText(((resultRecorderCombined)combining_search_result).count);
+			//vh.itemView.setTag(R.id.position,position);
+			return vh.itemView;
         }
         
         @Override
@@ -816,12 +833,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			bWantsSelection=true;
         }
     };
-    
-    static class viewHolder{
-    	private TextView title;
-    	private TextView subtitle;
-    	private TextView cc;
-    }
+
 
 	@Override
 	public void onClick(View v) {

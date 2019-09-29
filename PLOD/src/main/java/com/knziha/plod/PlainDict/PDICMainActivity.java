@@ -1252,7 +1252,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//tg
 
 		//showAppTweaker();
-		//if(CMN.testFLoatSearch)
+		if(CMN.testFLoatSearch)
 			startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 		//Intent i = new Intent(this,dict_manager_activity.class); startActivity(i);
 		processIntent(getIntent());
@@ -1721,7 +1721,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	void refreshUIColors() {
-		boolean isHalo=AppWhite==Color.WHITE;
+		boolean isHalo=!GlobalOptions.isDark;
 		int filteredColor = isHalo?MainBackground:ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);//CU.MColor(MainBackground,ColorMultiplier);
 		viewPager.setBackgroundColor(AppWhite);
 		lv2.setBackgroundColor(AppWhite);
@@ -1749,7 +1749,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		WHP.setBackgroundColor(filteredColor);
 		webSingleholder.setBackgroundColor(filteredColor);
 		//showT(Integer.toHexString(filteredColor)+" "+Integer.toHexString(GlobalPageBackground));
-
 	}
 
 	public void animateUIColorChanges() {
@@ -2085,25 +2084,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 	}
 
-	static void decorateBackground(View v) {
-		boolean bNoKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
-		Drawable background = v.getBackground();
-		if(bNoKitKat){
-			if(GlobalOptions.isDark){
-				background.setColorFilter(GlobalOptions.NEGATIVE);
-			} else{
-				background.clearColorFilter();
-			}
-		}else{
-			if(GlobalOptions.isDark){
-				v.setTag(R.id.drawer_layout, background);
-				v.setBackground(null);
-			} else{
-				v.setBackground((Drawable) v.getTag(R.id.drawer_layout));
-			}
-		}
-	}
-
 	public class ListViewAdapter2 extends BasicAdapter {
 		int itemId = R.layout.listview_item0;
 		public ListViewAdapter2(int resId)
@@ -2139,14 +2119,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(itemId==R.layout.listview_item1)
 					vh.subtitle.setTag(vh.itemView.findViewById(R.id.counter));
 			}
-
 			if(combining_search_result.dictIdx>=md.size()) return vh.itemView;//不要Crash哇
-
-			vh.title.setText(currentKeyText);
 			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
 				decorateBackground(vh.itemView);
 				vh.title.setTextColor(AppBlack);
 			}
+			vh.title.setText(currentKeyText);
 			mdict _currentDictionary = md.get(combining_search_result.dictIdx);
 			if(combining_search_result.mflag.data!=null)
 				vh.subtitle.setText(Html.fromHtml(_currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
@@ -3243,9 +3221,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 
 
-
-
-
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent duco) {
 		super.onActivityResult(requestCode, resultCode, duco);
@@ -3579,7 +3554,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if((!opt.getPicDictAutoSer() || isCombinedSearching) && currentDictionary!=null) {
 			lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
 		}
-		if(!opt.getPinPicDictDialog()) {
+		if(pickDictDialog!=null && !opt.getPinPicDictDialog()) {
 			if(pickDictDialog.isDirty)  {opt.putFirstFlag();pickDictDialog.isDirty=false;}
 			if(objectAnimator!=null) objectAnimator.cancel();
 			objectAnimator = ObjectAnimator.ofFloat(dialogHolder,"alpha",1,0.6f);
