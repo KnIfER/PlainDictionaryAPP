@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Locale;
 
 import com.androidadvance.topsnackbar.TSnackbar;
 import com.knziha.filepicker.utils.CMNF;
@@ -112,6 +113,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		   CrashHandler.getInstance(this, opt).register(getApplicationContext());
 	   }
 
+	   checkLanguage();
    }
 
 	@Override
@@ -180,6 +182,34 @@ public class Toastable_Activity extends AppCompatActivity {
 		return true;
 	}
 
+	protected void checkLanguage() {
+		PDICMainAppOptions.locale =null;
+		String language=opt.getLocale();
+		if(language!=null){
+			Locale locale = null;
+			if(language.length()==0){
+				locale=Locale.getDefault();
+			}else try {
+				if(language.contains("-r")){
+					String[] arr=language.split("-r");
+					if(arr.length==2){
+						locale=new Locale(arr[0], arr[1]);
+					}
+				}else
+					locale=new Locale(language);
+			} catch (Exception ignored) { }
+			CMN.Log("language is : ", language, locale);
+			if(locale!=null)
+				forceLocale(this, locale);
+		}
+	}
+
+	protected void forceLocale(Context context, Locale locale) {
+		Configuration conf = context.getResources().getConfiguration();
+		conf.setLocale(locale);
+		context.getResources().updateConfiguration(conf, context.getResources().getDisplayMetrics());
+	}
+
 	protected void checkLaunch(Bundle savedInstanceState) {
    	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//大于 23 时
 		if (checkSelfPermission(permissions[0]) != PackageManager.PERMISSION_GRANTED) {
@@ -208,6 +238,8 @@ public class Toastable_Activity extends AppCompatActivity {
 		}else {pre_further_loading(savedInstanceState);}
 	}else {pre_further_loading(savedInstanceState);}
 	}
+
+
 
 	// 动态获取权限
 	@RequiresApi(api = Build.VERSION_CODES.M)

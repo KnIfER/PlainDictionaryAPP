@@ -665,8 +665,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		super.onCreate(null);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,  WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
 
-		checkLanguage();
-
 		setTheme(R.style.PlainAppTheme);
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -1689,35 +1687,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				refreshUIColors();
 			}
 		}
-	}
-
-
-	private void checkLanguage() {
-		PDICMainAppOptions.locale =null;
-		String language=opt.getLocale();
-		if(language!=null){
-			Locale locale = null;
-			if(language.length()==0){
-				locale=Locale.getDefault();
-			}else try {
-				if(language.contains("-r")){
-					String[] arr=language.split("-r");
-					if(arr.length==2){
-						locale=new Locale(arr[0], arr[1]);
-					}
-				}else
-					locale=new Locale(language);
-			} catch (Exception ignored) { }
-			CMN.Log("language is : ", language, locale);
-			if(locale!=null)
-				forceLocale(this, locale);
-		}
-	}
-
-	public void forceLocale(Context context, Locale locale) {
-		Configuration conf = context.getResources().getConfiguration();
-		conf.setLocale(locale);
-		context.getResources().updateConfiguration(conf, context.getResources().getDisplayMetrics());
 	}
 
 	void refreshUIColors() {
