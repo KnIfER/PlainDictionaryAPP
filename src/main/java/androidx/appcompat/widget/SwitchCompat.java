@@ -858,10 +858,13 @@ public class SwitchCompat extends CompoundButton {
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
+        //android.util.Log.e("fatal mSwitchHeight", ""+mSwitchHeight, mSwitchHeight+getPaddingTop()+getPaddingBottom());
         final int measuredHeight = getMeasuredHeight();
         if (measuredHeight < switchHeight) {
             setMeasuredDimension(getMeasuredWidthAndState(), switchHeight);
         }
+        if (Build.VERSION.SDK_INT >= 19)
+            setMeasuredDimension(getMeasuredWidthAndState(), mSwitchHeight+getPaddingTop()+getPaddingBottom());
     }
 
     @Override

@@ -25,6 +25,7 @@ import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
@@ -76,8 +77,10 @@ public class AppCompatDialog extends Dialog implements AppCompatCallback {
     protected void onCreate(Bundle savedInstanceState) {
         getDelegate().installViewFactory();
         super.onCreate(savedInstanceState);
-        getDelegate().onCreate(savedInstanceState);
-    }
+		getDelegate().onCreate(savedInstanceState);
+		if(getWindow()!=null)
+			getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,  WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+	}
 
     /**
      * Support library version of {@link android.app.Dialog#getActionBar}.

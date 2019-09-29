@@ -22,6 +22,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
@@ -54,6 +56,7 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.R;
 import androidx.appcompat.widget.LinearLayoutCompat;
@@ -548,8 +551,15 @@ class AlertController {
             listView.setAdapter(mAdapter);
             final int checkedItem = mCheckedItem;
             if (checkedItem > -1) {
-                listView.setItemChecked(checkedItem, true);
-                listView.setSelection(checkedItem);
+				listView.setItemChecked(checkedItem, true);
+				listView.post(new Runnable() {
+					@Override public void run() {
+						int count=listView.getChildCount()-2;
+						if(checkedItem>=count){
+							listView.setSelection(checkedItem-2);
+						}
+					}
+				});
             }
         }
     }
@@ -670,6 +680,7 @@ class AlertController {
     }
 
     private void setupTitle(ViewGroup topPanel) {
+		boolean darkIs=GlobalOptions.isDark;
         if (mCustomTitleView != null) {
             // Add the custom title view directly to the topPanel layout
             LayoutParams lp = new LayoutParams(
@@ -688,12 +699,28 @@ class AlertController {
                 // Display the title if a title is supplied, else hide it.
                 mTitleView = (TextView) mWindow.findViewById(R.id.alertTitle);
                 mTitleView.setText(mTitle);
-
+				if(darkIs){
+					mTitleView.setTextColor(Color.WHITE);
+				}
                 // Do this last so that if the user has supplied any icons we
                 // use them instead of the default ones. If the user has
                 // specified 0 then make it disappear.
                 if (mIconId != 0) {
                     mIconView.setImageResource(mIconId);
+                    View pv= (View) mIconView.getParent();
+					pv.setPadding(pv.getPaddingLeft()/2, pv.getPaddingTop(), pv.getPaddingRight(), pv.getBottom());
+                	if(mIconId==R.drawable.abc_ic_ab_back_material){
+						mIconView.setBackgroundResource(R.drawable.abc_action_bar_item_background_material);
+						mIconView.setOnClickListener(new View.OnClickListener() {
+							@Override
+							public void onClick(View view) {
+								mDialog.dismiss();
+							}
+						});
+						if(darkIs){
+							mIconView.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+						}
+					}
                 } else if (mIcon != null) {
                     mIconView.setImageDrawable(mIcon);
                 } else {
@@ -1006,6 +1033,8 @@ class AlertController {
                                     listView.setItemChecked(position, true);
                                 }
                             }
+                            if(GlobalOptions.isDark)
+                            	((TextView)view.findViewById(android.R.id.text1)).setTextColor(Color.WHITE);
                             return view;
                         }
                     };
@@ -1027,6 +1056,8 @@ class AlertController {
                             text.setText(cursor.getString(mLabelIndex));
                             listView.setItemChecked(cursor.getPosition(),
                                     cursor.getInt(mIsCheckedIndex) == 1);
+							if(GlobalOptions.isDark)
+								text.setTextColor(Color.WHITE);
                         }
 
                         @Override
@@ -1047,11 +1078,27 @@ class AlertController {
 
                 if (mCursor != null) {
                     adapter = new SimpleCursorAdapter(mContext, layout, mCursor,
-                            new String[] { mLabelColumn }, new int[] { android.R.id.text1 });
+                            new String[] { mLabelColumn }, new int[] { android.R.id.text1 }){
+						@NonNull
+						@Override
+						public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+							View view = super.getView(position, convertView, parent);
+							if(GlobalOptions.isDark)
+								((TextView)view.findViewById(android.R.id.text1)).setTextColor(Color.WHITE);
+							return view;						}
+					};
                 } else if (mAdapter != null) {
                     adapter = mAdapter;
                 } else {
-                    adapter = new CheckedItemAdapter(mContext, layout, android.R.id.text1, mItems);
+                    adapter = new CheckedItemAdapter(mContext, layout, android.R.id.text1, mItems){
+						@NonNull
+						@Override
+						public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+							View view = super.getView(position, convertView, parent);
+							if(GlobalOptions.isDark)
+								((TextView)view.findViewById(android.R.id.text1)).setTextColor(Color.WHITE);
+							return view;						}
+					};
                 }
             }
 
