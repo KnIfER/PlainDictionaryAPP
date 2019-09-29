@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Zəhmət olmasa saxlama icazəsi verin.</string>
+	<string name="stg_statement">Bu tətbiq yaddaş icazəsi olmadan işləyə bilməz.</string>
+	<string name="stg_grantnow">İndi verin</string>
+	<string name="trialin">Sınaq…… #</string>
+	<string name="stgerr_fail">Üzr istəyirik, lakin bu tətbiq cihazınızda istifadə edilə bilməz.</string>
+</resources>

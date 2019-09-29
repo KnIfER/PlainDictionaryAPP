@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Udělte prosím oprávnění ke skladování.</string>
+	<string name="stg_statement">Tato aplikace nemůže fungovat bez povolení úložiště.</string>
+	<string name="stg_grantnow">Grant nyní</string>
+	<string name="trialin">Zkušební …… #</string>
+	<string name="stgerr_fail">Je nám líto, ale tuto aplikaci na vašem zařízení nemůžeme použít.</string>
+</resources>

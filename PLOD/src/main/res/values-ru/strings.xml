@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Пожалуйста, дайте разрешение на хранение.</string>
+	<string name="stg_statement">Это приложение не может работать без разрешения на хранение.</string>
+	<string name="stg_grantnow">Грант сейчас</string>
+	<string name="trialin">Пробный…… #</string>
+	<string name="stgerr_fail">Извините, но не можете использовать это приложение на вашем устройстве.</string>
+</resources>

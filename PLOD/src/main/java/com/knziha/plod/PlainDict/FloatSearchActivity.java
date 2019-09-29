@@ -401,7 +401,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	private OnGlobalLayoutListener keyObserver;
 	@Override
     protected void further_loading(final Bundle savedInstanceState) {
-        contentview = (ViewGroup) findViewById(R.id.cover);
+        contentview = findViewById(R.id.cover);
         PageSlider = (RLContainerSlider)  contentview;
         IMPageCover = findViewById(R.id.IMPageCover);
         toolbar =  (Toolbar) findViewById(R.id.toolbar);

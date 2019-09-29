@@ -2,7 +2,6 @@ package com.knziha.plod.PlainDict;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
@@ -63,6 +62,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
@@ -76,7 +77,7 @@ import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_asset;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
-import com.knziha.plod.dictsmanager.files.BooleanSingleton;
+import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.widgets.ArrayAdaptermy;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.CheckedTextViewmy;
@@ -163,7 +164,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 
 	SplitView webcontentlist;
 	protected IMPageSlider IMPageCover;
-	protected com.knziha.plod.PlainDict.PeruseView PeruseView;
+	protected PeruseView PeruseView;
 	public ViewGroup bottombar2;
 	public boolean bWantsSelection;
 	public boolean bIsFirstLaunch=true;
@@ -838,7 +839,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			itemsA = r.getStringArray(R.array.dict_tweak_arr);
 			itemsB = r.getStringArray(R.array.dict_tweak_arr2);
 			bmAdd=itemsA[0];
-			lastInDark=AppBlack==Color.WHITE;
+			lastInDark= GlobalOptions.isDark;
 		}
 		public void setInvoker(mdict mdict) {
 			invoker=mdict;
@@ -891,7 +892,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 
 						@Override
 						public void onPreviewSelectedColor(ColorPickerDialog dialogInterface, int color) {
-							if(AppBlack==Color.WHITE)
+							if(GlobalOptions.isDark)
 								color=ColorUtils.blendARGB(color, Color.BLACK, ColorMultiplier_Web);
 							WebViewmy mWebView=bFromPeruseView?PeruseView.mWebView:invoker.mWebView;
 							ViewGroup webSingleholder=bFromPeruseView?PeruseView.webSingleholder: MainActivityUIBase.this.webSingleholder;
@@ -910,7 +911,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 							WebViewmy mWebView=bFromPeruseView?PeruseView.mWebView:invoker.mWebView;
 							int ManFt_invoker_bgColor=invoker.bgColor;
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
-							if(AppBlack==Color.WHITE) {
+							if(GlobalOptions.isDark) {
 								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web);
 								ManFt_GlobalPageBackground=ColorUtils.blendARGB(ManFt_GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 							};
@@ -974,9 +975,8 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				itemsA[0]=getString(R.string.bmSub);
 			}else
 				itemsA[0]=bmAdd;
-			boolean inDark=AppBlack==Color.WHITE;
-			if(inDark!=lastInDark || needReCreateUcc || d==null) {
-				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this,inDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);//,
+			if(GlobalOptions.isDark!=lastInDark || needReCreateUcc || d==null) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);//,
 				builder.setItems(bFromWebView?itemsB:itemsA,null);
 				d = builder.create();
 
@@ -1222,7 +1222,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 
 			d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
-			if(lastInDark=inDark) {
+			if(lastInDark=GlobalOptions.isDark) {
 				d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_d);
 			}else {
 				d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
@@ -1641,10 +1641,9 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			}},start1,ssb.toString().length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		ssb.append("\r\n").append("\r\n");
 
-		boolean inDark=AppBlack==Color.WHITE;
 		tv.setText(ssb);
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
-		AlertDialog.Builder builder2 = new AlertDialog.Builder(this,inDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
+		AlertDialog.Builder builder2 = new AlertDialog.Builder(this,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
 		builder2.setView(dv);
 		final AlertDialog d = builder2.create();
 		d.setCanceledOnTouchOutside(true);
@@ -1656,7 +1655,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		});
 
 		dv.findViewById(R.id.cancel).setOnClickListener(v -> d.dismiss());
-		d.getWindow().setBackgroundDrawableResource(inDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
+		d.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
 		//d.getWindow().setDimAmount(0);
 		//d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 		d.show();
@@ -1732,11 +1731,9 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				line = in.readLine();
 			}
 			in.close();
-		} catch (Exception ignored) {
-		}
+		} catch (Exception ignored) { }
 
-		new File(opt.pathToMain()+"CONFIG").listFiles(pathname -> {
-			String name = pathname.getName();
+		new File(opt.pathToMain()+"CONFIG").list((dir,name) -> {
 			if(name.endsWith(".set")) {
 				name = name.substring(0,name.length()-4);
 				if(!con.contains(name)) {
@@ -1749,11 +1746,8 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			return false;
 		});
 
-		boolean inDark=AppBlack==Color.WHITE;
-		AlertDialog.Builder builder2 = new AlertDialog.Builder(this,inDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);//
-		builder2.setTitle(R.string.loadconfig)
-				.setSingleChoiceItems(new String[] {}, 0,
-						(dialog, pos) -> {
+		AlertDialog.Builder builder2 = new AlertDialog.Builder(this,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);//
+		builder2.setTitle(R.string.loadconfig).setSingleChoiceItems(new String[] {}, 0, (dialog, pos) -> {
 							try {
 								HashMap<String,mdict> mdict_cache = new HashMap<>();
 								for(mdict mdTmp:md) {
@@ -1816,12 +1810,12 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 						});
 
 		AlertDialog dTmp = builder2.create();
-		dTmp.getWindow().setBackgroundDrawableResource(inDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
+		dTmp.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
 
 		dTmp.show();
-		d=dTmp;
-
+		//d=dTmp;
 		dTmp.setOnDismissListener(this);
+
 		dTmp.getListView().setAdapter(new ArrayAdapter<String>(getApplicationContext(),
 				R.layout.singlechoice, android.R.id.text1, scanInList) {
 			@NonNull
@@ -1834,31 +1828,23 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					ret.setTag(tv = ret.findViewById(android.R.id.text1));
 				else
 					tv = (CheckedTextViewmy)ret.getTag();
-				if(AppBlack==Color.WHITE)
-					tv.setTextColor(Color.WHITE);
-				else
-					tv.setTextColor(Color.BLACK);
+				tv.setTextColor(AppBlack);
 				tv.setText(scanInList.get(position));
 				return ret;
 			}
 		});
 
+
 		final int maxHeight = (int) (root.getHeight()-root.getPaddingTop()-2.8*getResources().getDimension(R.dimen._50_));
 		dTmp.getListView().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
 			@Override
-			public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
-									   int oldRight, int oldBottom) {
-				//CMN.Log(root.getHeight()-root.getPaddingTop()+" "+dm.heightPixels+" onLayoutChange "+v.getHeight()+" "+maxHeight);
+			public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,int oldRight, int oldBottom) {
 				if (v.getMeasuredHeight() > maxHeight) {
 					v.getLayoutParams().height=maxHeight;
-					//LayoutParams lp = v.getLayoutParams();
-					//lp.height=maxHeight;
-					//v.setLayoutParams(lp);
 				}
 				v.removeOnLayoutChangeListener(this);
 			}
 		});
-
 
 
 		if(lastCheckedPos!=-1) {

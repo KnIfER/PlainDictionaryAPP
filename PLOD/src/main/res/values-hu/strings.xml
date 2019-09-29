@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Kérjük, adjon tárolási engedélyt.</string>
+	<string name="stg_statement">Ez az alkalmazás nem működik tárolási engedély nélkül.</string>
+	<string name="stg_grantnow">Adj most</string>
+	<string name="trialin">Próba…… #</string>
+	<string name="stgerr_fail">Sajnáljuk, de nem használhatjuk ezt az alkalmazást a készüléken.</string>
+</resources>

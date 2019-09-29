@@ -7,7 +7,9 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import com.androidadvance.topsnackbar.TSnackbar;
+import com.knziha.filepicker.utils.CMNF;
 import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.settings.SettingsActivity;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
@@ -16,6 +18,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +26,7 @@ import android.os.Environment;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -78,7 +82,9 @@ public class Toastable_Activity extends AppCompatActivity {
     
 	public Dialog d;
 	public View dv;
-	
+	Configuration mConfiguration;
+	boolean isDarkStamp;
+
    @Override
     protected void onCreate(Bundle savedInstanceState) {
        opt = new PDICMainAppOptions(this);
@@ -91,12 +97,19 @@ public class Toastable_Activity extends AppCompatActivity {
 	   inflater=getLayoutInflater();
        imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
-	   AppBlack=opt.getInDarkMode()?Color.WHITE:Color.BLACK;
-	   AppWhite=opt.getInDarkMode()?Color.BLACK:Color.WHITE;
+	   mConfiguration = new Configuration(getResources().getConfiguration());
+	   if(Build.VERSION.SDK_INT>=29){
+		   GlobalOptions.isDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
+	   }else
+		   GlobalOptions.isDark = false;
+	   opt.getInDarkMode();
+	   isDarkStamp = GlobalOptions.isDark;
+	   AppBlack=GlobalOptions.isDark?Color.WHITE:Color.BLACK;
+	   AppWhite=GlobalOptions.isDark?Color.BLACK:Color.WHITE;
 
 	   if(opt.getUseCustomCrashCatcher()){
-		   CrashHandler.getInstance(opt).TurnOff();
-		   CrashHandler.getInstance(opt).register(getApplicationContext());
+		   CrashHandler.getInstance(this, opt).TurnOff();
+		   CrashHandler.getInstance(this, opt).register(getApplicationContext());
 	   }
 
    }
@@ -104,7 +117,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		CrashHandler.getInstance(opt).TurnOn();
+		CrashHandler.getInstance(this, opt).TurnOn();
 	}
 
 	@Override
@@ -124,7 +137,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		if(DoesActivityCheckLog()){
 			if(opt.getLogToFile()){
 				try {
-					File log=new File(CrashHandler.getInstance(opt).getLogFile());
+					File log=new File(CrashHandler.getInstance(this, opt).getLogFile());
 					File lock;
 					if(log.exists()){
 						if((lock=new File(log.getParentFile(),"lock")).exists()){
@@ -157,7 +170,7 @@ public class Toastable_Activity extends AppCompatActivity {
 			}
 		}else{
 			File lock;
-			File log=new File(CrashHandler.getInstance(opt).getLogFile());
+			File log=new File(CrashHandler.getInstance(this, opt).getLogFile());
 			if((lock=new File(log.getParentFile(),"lock")).exists())
 				lock.delete();
 		}
@@ -275,26 +288,20 @@ public class Toastable_Activity extends AppCompatActivity {
 			}
 			new AlertDialog.Builder(this)//ask the user
 			.setTitle(getResources().getString(R.string.AAllow))
-			.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					if((mainfolder.exists()&&mainfolder.isDirectory()) || mainfolder.mkdirs()) {//建立文件夹
-						opt.rootPath=path;
-						further_loading(savedInstanceState);
-						
-					}else {showT("未知错误：SD卡:文件夹建立失败");finish();}
-				}
+			.setPositiveButton(R.string.yes, (dialog, which) -> {
+				if((mainfolder.exists()&&mainfolder.isDirectory()) || mainfolder.mkdirs()) {//建立文件夹
+					opt.rootPath=path;
+					further_loading(savedInstanceState);
+
+				}else {showT("未知错误：SD卡:文件夹建立失败");finish();}
 			})
-			.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					if((subfolder.exists()&&subfolder.isDirectory()) || subfolder.mkdirs()) {//建立文件夹
-						showT("配置存储在 标准 缓存目录");
-						opt.rootPath=getExternalFilesDir("").getAbsolutePath();
-						further_loading(savedInstanceState);
-						
-					}else {showT("未知错误：内部存储:文件夹建立失败");finish();}
-				}
+			.setNegativeButton(R.string.no, (dialog, which) -> {
+				if((subfolder.exists()&&subfolder.isDirectory()) || subfolder.mkdirs()) {//建立文件夹
+					showT("配置存储在 标准 缓存目录");
+					opt.rootPath=getExternalFilesDir("").getAbsolutePath();
+					further_loading(savedInstanceState);
+
+				}else {showT("未知错误：内部存储:文件夹建立失败");finish();}
 			}).setCancelable(false).show();
 			
 		}else//Folder /sdcard/PLOD already exists. nothing to ask for.

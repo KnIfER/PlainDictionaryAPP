@@ -16,6 +16,8 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+
+import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -213,7 +215,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
         		}
         	}
     		holder.tv.setText(name);
-	        if(a.AppBlack==Color.WHITE) {
+	        if(GlobalOptions.isDark) {
 	        	holder.tv.setTextColor(Color.WHITE);
 			}
     		
@@ -289,7 +291,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
 		if(a.dialogHolder!=null)
 			a.dialogHolder.setVisibility(View.VISIBLE);
 
-		if(a.opt.getInDarkMode()) {
+		if(GlobalOptions.isDark) {
 			try {
 				Object Scrollbar = a.ScrollCacheField.get(mRecyclerView);
 				Drawable ScrollbarDrawable = (Drawable) a.ScrollBarDrawableField.get(Scrollbar);

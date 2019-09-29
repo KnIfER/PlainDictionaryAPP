@@ -1,6 +1,9 @@
 package com.knziha.plod.PlainDict;
 import java.io.File;
 
+import com.knziha.filepicker.model.GlideCacheModule;
+import com.knziha.filepicker.settings.FilePickerOptions;
+import com.knziha.filepicker.utils.CMNF;
 import com.knziha.plod.PlainDict.R;
 
 import android.app.Activity;
@@ -11,11 +14,16 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.GlobalOptions;
+
 public class PDICMainAppOptions
 {
 	//SharedPreferences reader;
 	SharedPreferences reader2;
 	SharedPreferences defaultReader;
+	public static String locale;
+
 	public PDICMainAppOptions(Context a_){
 		reader2 = a_.getSharedPreferences("SizeChangablePrefs",Activity.MODE_PRIVATE);
 
@@ -53,32 +61,14 @@ public class PDICMainAppOptions
 	public String getString(String key) {
 		return reader2.getString(key, null);
 	}
-	/*
-		public void putString(String key, String val) {
-			reader.edit().putString(key, val).commit();
-		}
-		public String getString(String key) {
-			return reader.getString(key, null);
-		}
-		public void putBoolean(String key, boolean val) {
-			reader.edit().putBoolean(key, val).commit();
-		}
-		public boolean getBoolean(String key) {
-			return reader.getBoolean(key, false);
-		}
-		public boolean getBoolean(String key,boolean val) {
-			return reader.getBoolean(key, val);
-		}
-		public int getInt(String key, int i) {
-			return reader.getInt(key, i);
-		}
-		public Editor putter() {
-			return reader.edit();
-		}*/
+
 	public Editor defaultputter() {
 		return defaultReader.edit();
 	}
 
+	public String getLocale() {
+		return locale!=null?locale:(locale=defaultReader.getString("locale",""));
+	}
 
 	public String getLastMdlibPath() {
 		return lastMdlibPath=defaultReader.getString("lastMdlibPath",null);
@@ -162,6 +152,17 @@ public class PDICMainAppOptions
 
 
 
+
+	public void setFlags(Editor editor, int CommitOrApplyOrNothing) {
+		if(editor==null){
+			editor = defaultReader.edit();
+			CommitOrApplyOrNothing=1;
+		}
+		editor.putLong("MFF", FirstFlag).putLong("MSF", SecondFlag);//.putLong("MTF", ThirdFlag());
+		if(CommitOrApplyOrNothing==1) editor.apply();
+		else if(CommitOrApplyOrNothing==2) editor.commit();
+		CMN.Log("apply changes");
+	}
 	//////////First Boolean Flag//////////
 	// ||||||||    ||||||||	    |FVDOCKED|PBOB|Ficb|FBOB|ForceSearch|showFSroll|showBD|showBA	|ToD|ToR|ToL|InPeruseTM|InPeruse|SlideTURNP|BOB|icb
 	//                              0        1     0    1      0             0         0     0            0 1 0          0   1         1   0   0
@@ -170,16 +171,16 @@ public class PDICMainAppOptions
 	private static Long FirstFlag=null;
 	public long getFirstFlag() {
 		if(FirstFlag==null) {
-			return FirstFlag=defaultReader.getLong("MFF",98380);//76+32768+65536
+			return CMNF.FirstFlag=FirstFlag=defaultReader.getLong("MFF",98380);//76+32768+65536
 		}
 		return FirstFlag;
 	}
 	private void putFirstFlag(long val) {
-		defaultReader.edit().putLong("MFF",FirstFlag=val).commit();
+		defaultReader.edit().putLong("MFF",FirstFlag=val).apply();
 	}
 
 	public void putFlags() {
-		defaultReader.edit().putLong("MFF",FirstFlag).putLong("MSF",SecondFlag).commit();
+		defaultReader.edit().putLong("MFF",FirstFlag).putLong("MSF",SecondFlag).apply();
 	}
 
 	public void putFirstFlag() {
@@ -345,9 +346,12 @@ public class PDICMainAppOptions
 	}
 
 	public boolean getInDarkMode() {
-		return (FirstFlag & 0x80000) == 0x80000;
+		boolean ret = (FirstFlag & 0x80000) == 0x80000;
+		GlobalOptions.isDark |= ret;
+		return ret;
 	}
 	public boolean setInDarkMode(boolean val) {
+		GlobalOptions.isDark |= val;
 		updateFFAt(0x80000,val);//0x‭80000
 		return val;
 	}
@@ -599,7 +603,7 @@ public class PDICMainAppOptions
 	private static Long SecondFlag=null;
 	public long getSecondFlag() {
 		if(SecondFlag==null) {
-			return SecondFlag=defaultReader.getLong("MSF",98380);//76+32768+65536
+			return FilePickerOptions.SecondFlag=SecondFlag=defaultReader.getLong("MSF",98380);//76+32768+65536
 		}
 		return SecondFlag;
 	}
@@ -611,6 +615,9 @@ public class PDICMainAppOptions
 	}
 	public Long SecondFlag() {
 		return SecondFlag;
+	}
+	public static void SecondFlag(long _SecondFlag) {
+		SecondFlag=_SecondFlag;
 	}
 	private void updateSFAt(int o, boolean val) {
 		SecondFlag &= (~o);
@@ -684,15 +691,21 @@ public class PDICMainAppOptions
 		updateSFAt(0x80,val);
 		return val;
 	}
-	public boolean getPageTurn3() {
-		return (SecondFlag & 0x100) == 0x100;
+
+
+	public boolean getUseLruDiskCache() {
+		return (SecondFlag & 0x100) != 0x100;
 	}
 
-	public boolean setPageTurn3(boolean val) {
-		updateSFAt(0x100,val);
-		return val;
-	}
-
+	//public boolean getPageTurn3() {
+	//	return (SecondFlag & 0x100) == 0x100;
+	//}
+//
+	//public boolean setPageTurn3(boolean val) {
+	//	updateSFAt(0x100,val);
+	//	return val;
+	//}
+//
 	public boolean getHistoryStrategy0() {
 		return (SecondFlag & 0x200) == 0x200;
 	}
@@ -788,12 +801,18 @@ public class PDICMainAppOptions
 		updateSFAt(0x100000l,!val);
 		return val;
 	}
+
+	/** ffmr */
+	public boolean getFFmpegThumbsGeneration(){
+		return (SecondFlag & 0x200000)!=0;
+	}
+
 	public boolean getLogToFile() {
-		return (SecondFlag & 0x200000l) != 0x200000l;
+		return (SecondFlag & 0x400000l) != 0x400000l;
 	}
 
 	public boolean setLogToFile(boolean val) {
-		updateSFAt(0x200000l,!val);
+		updateSFAt(0x400000l,!val);
 		return val;
 	}
 	//end crash handler settings
@@ -823,6 +842,11 @@ public class PDICMainAppOptions
 		return pathTo().toString().substring(0,pathToL-6);
 	}
 
+	public String pathToGlide(@NonNull Context context) {
+		return defaultReader.getString("cache_p", GlideCacheModule.DEFAULT_GLIDE_PATH=context.getExternalCacheDir().getAbsolutePath()+"/thumnails/");
+	}
 
-
+	public Editor edit() {
+		return defaultReader.edit();
+	}
 }

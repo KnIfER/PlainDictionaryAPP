@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">يرجى منح إذن التخزين.</string>
+	<string name="stg_statement">لا يمكن لهذا التطبيق العمل دون إذن تخزين.</string>
+	<string name="stg_grantnow">منحة الآن</string>
+	<string name="trialin">التجربة…… #</string>
+	<string name="stgerr_fail">عذرا ، لكن لا يمكن استخدام هذا التطبيق على جهازك.</string>
+</resources>

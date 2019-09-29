@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Giv lagringstilladelse.</string>
+	<string name="stg_statement">Denne app kan ikke fungere uden tilladelse til opbevaring.</string>
+	<string name="stg_grantnow">Giv nu</string>
+	<string name="trialin">Prøve …… #</string>
+	<string name="stgerr_fail">Beklager, men kan ikke bruge denne app på din enhed.</string>
+</resources>

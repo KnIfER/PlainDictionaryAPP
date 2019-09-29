@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Bitte Speichererlaubnis erteilen.</string>
+	<string name="stg_statement">Diese App kann ohne Speichererlaubnis nicht funktionieren.</string>
+	<string name="stg_grantnow">Grant jetzt</string>
+	<string name="trialin">Versuch…… #</string>
+	<string name="stgerr_fail">Diese App kann auf Ihrem Gerät leider nicht verwendet werden.</string>
+</resources>

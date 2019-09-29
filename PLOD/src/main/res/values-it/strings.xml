@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Si prega di concedere l\'autorizzazione allo stoccaggio.</string>
+	<string name="stg_statement">Questa app non può funzionare senza il permesso di archiviazione.</string>
+	<string name="stg_grantnow">Concedi ora</string>
+	<string name="trialin">Prova…… #</string>
+	<string name="stgerr_fail">Siamo spiacenti, ma non posso usare questa app sul tuo dispositivo.</string>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Antakaa säilytyslupa.</string>
+	<string name="stg_statement">Tämä sovellus ei voi toimia ilman tallennuslupaa.</string>
+	<string name="stg_grantnow">Anna nyt</string>
+	<string name="trialin">Koe ...</string>
+	<string name="stgerr_fail">Anteeksi, mutta et voi käyttää tätä sovellusta laitteellasi.</string>
+</resources>

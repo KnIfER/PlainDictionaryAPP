@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Prašau suteikti saugojimo leidimą.</string>
+	<string name="stg_statement">Ši programa negali veikti be saugojimo leidimo.</string>
+	<string name="stg_grantnow">Suteik dabar</string>
+	<string name="trialin">Bandomoji versija ...</string>
+	<string name="stgerr_fail">Atsiprašome, bet negaliu naudoti šios programos savo įrenginyje.</string>
+</resources>

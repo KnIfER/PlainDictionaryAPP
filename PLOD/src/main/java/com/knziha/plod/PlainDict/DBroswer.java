@@ -669,8 +669,8 @@ public class DBroswer extends Fragment implements
 			holder.webView.setText(text.trim());
 
 			PDICMainActivity a = (PDICMainActivity) getActivity();
-			boolean inDark=a.AppBlack==Color.WHITE;
-			if(inDark) {
+
+			if(GlobalOptions.isDark) {
 				if(holder.webView.getTextColors().getDefaultColor()!=a.AppBlack) {
 					holder.itemView.findViewById(R.id.sub_list).getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 					holder.webView.setTextColor(a.AppBlack);
@@ -689,7 +689,7 @@ public class DBroswer extends Fragment implements
 			//holder.webView.setText("a\n\ns\nd\n"+position);
 
 			if(Selection.contains(position))//
-				holder.itemView.setBackgroundColor(inDark?0xFF4F7FDF:0xa04F5F6F);//FF4081 4F7FDF
+				holder.itemView.setBackgroundColor(GlobalOptions.isDark?0xFF4F7FDF:0xa04F5F6F);//FF4081 4F7FDF
 			else
 				holder.itemView.setBackgroundColor(0x00a0f0f0);//aaa0f0f0
 

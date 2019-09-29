@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Vänligen ge lagringstillstånd.</string>
+	<string name="stg_statement">Denna app kan inte fungera utan lagringstillstånd.</string>
+	<string name="stg_grantnow">Bevilja nu</string>
+	<string name="trialin">Prövning …… #</string>
+	<string name="stgerr_fail">Tyvärr, men kan inte använda den här appen på din enhet.</string>
+</resources>

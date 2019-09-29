@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Будь ласка, надайте дозвіл на зберігання.</string>
+	<string name="stg_statement">Ця програма не може працювати без дозволу на зберігання.</string>
+	<string name="stg_grantnow">Надайте зараз</string>
+	<string name="trialin">Випробування …… #</string>
+	<string name="stgerr_fail">На жаль, не можна використовувати цю програму на своєму пристрої.</string>
+</resources>

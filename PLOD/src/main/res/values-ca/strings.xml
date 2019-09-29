@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Concediu permís d’emmagatzematge.</string>
+	<string name="stg_statement">Aquesta aplicació no pot funcionar sense permís d\'emmagatzematge.</string>
+	<string name="stg_grantnow">Atorga ara</string>
+	<string name="trialin">Prova ....... #</string>
+	<string name="stgerr_fail">Ho sentim, però no podeu utilitzar aquesta aplicació al vostre dispositiu.</string>
+</resources>

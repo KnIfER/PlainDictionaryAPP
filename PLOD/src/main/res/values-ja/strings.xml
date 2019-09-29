@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">ストレージの許可を付与してください。</string>
+	<string name="stg_statement">このアプリは保存許可なしでは機能しません。</string>
+	<string name="stg_grantnow">今すぐ付与</string>
+	<string name="trialin">試用……＃</string>
+	<string name="stgerr_fail">申し訳ありませんが、お使いのデバイスではこのアプリを使用できません。</string>
+</resources>

@@ -7,7 +7,9 @@ import java.util.List;
 import android.app.Activity;
 import android.app.Application;
 
+import com.knziha.filepicker.utils.CMNF;
 import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.settings.SettingsActivity;
 
 public class AgentApplication extends Application {
     private List<Activity> activities = new ArrayList<Activity>();  
@@ -16,6 +18,7 @@ public class AgentApplication extends Application {
 	public HashSet<String> mdlibsCon;
 
 	static {
+		CMNF.settings_class= SettingsActivity.class.getName();
 	//	StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
 	//            .detectAll()//监测所有内容
 	 //           .penaltyLog()//违规对log日志

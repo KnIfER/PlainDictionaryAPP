@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Udeľte povolenie na ukladanie.</string>
+	<string name="stg_statement">Táto aplikácia nemôže fungovať bez povolenia na ukladanie.</string>
+	<string name="stg_grantnow">Udeľte teraz</string>
+	<string name="trialin">Skúšobná …… #</string>
+	<string name="stgerr_fail">Ľutujeme, ale túto aplikáciu nemôžete používať na vašom zariadení.</string>
+</resources>

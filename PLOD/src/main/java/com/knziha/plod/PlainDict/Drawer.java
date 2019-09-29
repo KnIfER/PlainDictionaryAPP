@@ -1,5 +1,55 @@
 package com.knziha.plod.PlainDict;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
+import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLayoutChangeListener;
+import android.view.View.OnLongClickListener;
+import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.fragment.app.Fragment;
+
+import com.knziha.filepicker.model.DialogConfigs;
+import com.knziha.filepicker.model.DialogProperties;
+import com.knziha.filepicker.model.DialogSelectionListener;
+import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymanager.files.mFile;
+import com.knziha.plod.settings.SettingsActivity;
+import com.knziha.plod.widgets.CheckedTextViewmy;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,66 +67,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-import com.knziha.plod.PlainDict.R;
-import com.knziha.filepicker.model.DialogConfigs;
-import com.knziha.filepicker.model.DialogProperties;
-import com.knziha.filepicker.model.DialogSelectionListener;
-import com.knziha.filepicker.view.FilePickerDialog;
-import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictsmanager.files.mFile;
-import com.knziha.plod.widgets.CheckedTextViewmy;
-import com.knziha.plod.settings.SettingsActivity;
-
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.AlertDialog;
-import android.app.Fragment;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-
-import androidx.appcompat.app.GlobalOptions;
-import androidx.core.content.ContextCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.widget.SwitchCompat;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLayoutChangeListener;
-import android.view.View.OnLongClickListener;
-import android.view.ViewGroup;
-import android.view.ViewGroup.MarginLayoutParams;
-import android.view.Window;
-import android.view.WindowManager;
-import android.view.WindowManager.LayoutParams;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
 
 
-
-/**
- * @author KnIfER
- *
- */
+/** @author KnIfER */
 public class Drawer extends Fragment implements
 		OnClickListener, OnDismissListener, OnCheckedChangeListener, OnLongClickListener {
      AlertDialog d;
@@ -84,9 +77,7 @@ public class Drawer extends Fragment implements
      String[] hints;
 	 private ListView mDrawerList;
 	 View mDrawerListView;
-	 private View mFragmentContainerView;
 	 MyAdapter myAdapter;
-	 boolean exitAll=false;
 	 
 	public EditText etAdditional;
 
@@ -104,6 +95,7 @@ public class Drawer extends Fragment implements
 	}
 	
 	public Drawer() {
+		super();
 	}
 
 	@Override
@@ -115,13 +107,13 @@ public class Drawer extends Fragment implements
 		FooterView.findViewById(R.id.menu_item_setting).setOnClickListener(this);
 		mDrawerListView.findViewById(R.id.menu_item_exit).setOnClickListener(this);
 		mDrawerListView.findViewById(R.id.menu_item_exit).setOnLongClickListener(this);
-		mDrawerList = (ListView) mDrawerListView.findViewById(R.id.left_drawer);
+		mDrawerList = mDrawerListView.findViewById(R.id.left_drawer);
 
 		String[] items = getResources().getStringArray(R.array.drawer_items);
 		
         myAdapter = new MyAdapter(Arrays.asList(items));
-        
         mDrawerList.setAdapter(myAdapter);
+        
         HeaderView = inflater.inflate(R.layout.drawer_fc_header, null);
         mDrawerList.addHeaderView(HeaderView);
         //etAdditional = (EditText)mDrawerList.findViewById(R.id.etAdditional);
@@ -157,7 +149,6 @@ public class Drawer extends Fragment implements
 
 
     class MyAdapter extends ArrayAdapter<String> {
-        
 		public MyAdapter(List<String> mdicts) {
 			super(getActivity(),R.layout.listview_item0, R.id.text, mdicts);
         }
@@ -176,30 +167,24 @@ public class Drawer extends Fragment implements
         }
         @Override
         public boolean isEnabled(int position) {
-    		return !getItem(position).equals("d"); // 如果-开头，则该项不可选
+    		return !"d".equals(getItem(position)); // 如果-开头，则该项不可选
         }
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        @NonNull
+		@Override
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
     	  position+=1;
-          if(getItem(position).equals("d")){//是标签项
+          if("d".equals(getItem(position))){//是标签项
         	  return (convertView!=null && convertView.getTag()==null)?convertView:LayoutInflater.from(getContext()).inflate(R.layout.listview_sep, null);
           }
-    	  viewHolder vh = null;
+    	  PDICMainActivity.ViewHolder vh = null;
     	  if(convertView!=null)
-    		  vh=(viewHolder)convertView.getTag();
+    		  vh=(PDICMainActivity.ViewHolder)convertView.getTag();
           if(vh==null) {
-        	  	vh=new viewHolder();
-        	  	convertView = LayoutInflater.from(getContext()).inflate(R.layout.listview_item0, null);
-        	  	convertView.setTag(vh);
-        	  	vh.title = (TextView) convertView.findViewById(R.id.text);
-        	  	vh.subtitle = (TextView) convertView.findViewById(R.id.subtext);
+        	  	vh=new PDICMainActivity.ViewHolder(getContext(),R.layout.listview_item0, parent);
         	  	vh.subtitle.setTextColor(ContextCompat.getColor(a, R.color.colorHeaderBlue));
           }
           if( vh.title.getTextColors().getDefaultColor()!=a.AppBlack) {
-        	  if(a.AppBlack==Color.WHITE)
-        	  	    convertView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-	        	else
-	        		convertView.getBackground().setColorFilter(null);
+        	  PDICMainActivity.decorateBackground(vh.itemView);
               vh.title.setTextColor(a.AppBlack);
           }
           
@@ -210,16 +195,12 @@ public class Drawer extends Fragment implements
   			  if(!hints[position].equals("d"))
   				  vh.subtitle.setText(hints[position]);
   		  }
-  		  convertView.setTag(R.id.position,position);
-	  	  convertView.setOnClickListener(Drawer.this);
+			vh.itemView.setTag(R.id.position,position);
+			vh.itemView.setOnClickListener(Drawer.this);
 
-          return convertView;
+          return vh.itemView;
         }
       }
-    static class viewHolder{
-    	private TextView title;
-    	private TextView subtitle;
-    }
 
     
 	@Override
@@ -237,42 +218,42 @@ public class Drawer extends Fragment implements
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		a = ((PDICMainActivity)getActivity());
-		myAdapter.show_hints = true;//a.opt.isDrawer_Showhints();
 		a.drawerFragment = this;
-		if(myAdapter.show_hints)
-			getExtraHints();
+		myAdapter.show_hints = true;
+		getExtraHints();
 		//mDrawerListView.setBackgroundColor(a.AppWhite);
 		//HeaderView.setBackgroundColor(a.AppWhite);
 		//FooterView.setBackgroundColor(a.AppWhite);
 		
 
-        sw1 = (SwitchCompat)HeaderView.findViewById(R.id.sw1);
+        sw1 = HeaderView.findViewById(R.id.sw1);
 		sw1.setOnCheckedChangeListener(this);
         sw1.setChecked(a.opt.isFullScreen());
-		sw1.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				
-			}});
+		sw1.setOnClickListener(v -> {
+			// TODO Auto-generated method stub
 
-        sw2 = (SwitchCompat)HeaderView.findViewById(R.id.sw2);
+		});
+
+        sw2 = HeaderView.findViewById(R.id.sw2);
         sw2.setOnCheckedChangeListener(this);
         sw2.setChecked(!a.opt.isContentBow());
         
-        sw3 = (SwitchCompat)HeaderView.findViewById(R.id.sw3);
+        sw3 = HeaderView.findViewById(R.id.sw3);
         sw3.setOnCheckedChangeListener(this);
         sw3.setChecked(!a.opt.isViewPagerEnabled());
         
-		sw4 = ((SwitchCompat) HeaderView.findViewById(R.id.sw4));
-		sw4.setChecked(a.opt.getInDarkMode());
+		sw4 = HeaderView.findViewById(R.id.sw4);
+		boolean val = a.opt.getInDarkMode();
+		sw4.setChecked(!val);
+		sw4.setTag(false);
 		sw4.setOnCheckedChangeListener(this);
+		sw4.setChecked(val);
 
-		sw5 = ((SwitchCompat) HeaderView.findViewById(R.id.sw5));
+		sw5 = HeaderView.findViewById(R.id.sw5);
 		sw5.setChecked(a.opt.get_use_volumeBtn());
 		sw5.setOnCheckedChangeListener(this);
 		
-		if(a.opt.getInDarkMode()) {
+		if(GlobalOptions.isDark) {
 			mDrawerListView.setBackgroundColor(Color.BLACK);
 			HeaderView.setBackgroundColor(a.AppWhite);
 			FooterView.setBackgroundColor(a.AppWhite);
@@ -285,11 +266,10 @@ public class Drawer extends Fragment implements
 	
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 	}
-	private final String infoStr = "感谢使用平典，安卓平台的检索查词软件。\r\n\r\n相关软件：Bluedict(启发) 、MdictPC(起源) \r\n\r\n[开源组件] \r\n\r\n[帮助与问题反馈(贴吧)]";
-	private final String infoStr_en = "Thanks for choosing/tesing/playing Plain Dictionary for Android。\r\n\r\nRelated Softwares：Bluedict(Inspired by) 、MdictPC(Originates in) \r\n\r\n[OpenSource Compenents] \r\n\r\n[Feedback1(Tieba)]\r\n\r\n[Feedback2(Github)]";
+	//private final String infoStr = "";
 
 	boolean isDirty;
 	
@@ -299,99 +279,37 @@ public class Drawer extends Fragment implements
 		int id = v.getId();
 		switch(id) {
 			case R.id.menu_item_setting:
-			PackageInfo packageInfo;
-	        
-				//a.mDrawerLayout.closeDrawer(Gravity.LEFT);
+
+				//a.mDrawerLayout.closeDrawer(GravityCompat.START);
 				final View dv = a.inflater.inflate(R.layout.dialog_about,null);
-				
+
+				String infoStr = getString(R.string.infoStr);
 				final SpannableStringBuilder ssb = new SpannableStringBuilder(infoStr);
 				final String languageName = Locale.getDefault().getLanguage();
 
-		        if(!languageName.equals("zh")){
-		        	ssb.clear(); ssb.append(infoStr_en);
-		        }
-		        
-				int start = ssb.toString().indexOf("欢迎打");
-				final TextView tv = ((TextView)dv.findViewById(R.id.resultN));
+				final TextView tv = dv.findViewById(R.id.resultN);
 				tv.setPadding(0, 0, 0, 50);
-				if(start!=-1) {
-					int len=5;
-			        if(!languageName.equals("zh")){
-			        	ssb.clear(); ssb.append(infoStr_en);
-			        	start = ssb.toString().indexOf("Please do");
-			        	len=34;
-			        }
-					ssb.setSpan(new ClickableSpan() {
-						@Override
-						public void onClick(View widget) {
-							ssb.clear(); ssb.append("捐赠:\n\n	🐏1\n\n	\n	🐏5\n\n	\n	🐏10\n\n	\n	🐏自定义\n\n\n");
-							if(!languageName.equals("zh")){
-								ssb.clear(); ssb.append("Donate:\n\n	🐏1\n\n	\n	🐏5\n\n	\n	🐏10\n\n	\n	🐏Customise\n\n\n");
-							}
-							int idx = ssb.toString().indexOf("🐏");
-							int iiddxx=0;
-							while(idx>0) {
-								final int cc = iiddxx;
-								ssb.setSpan(new ClickableSpan() {
-									@Override
-									public void onClick(View widget) {
-										launchDonate(cc);
-									}},idx,ssb.toString().indexOf("\n",idx),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-								idx =  ssb.toString().indexOf("🐏",idx+3);
-								iiddxx++;
-							}
-								
-							tv.setText(ssb);
-						}
-						String[] qrcodes =  new String[]{"HTTPS://QR.ALIPAY.COM/FKX02170S9R0BFEPOVHKBA",
-								"HTTPS://QR.ALIPAY.COM/FKX04640O8PJTGIRHFKE73",
-								"HTTPS://QR.ALIPAY.COM/FKX07825BSNCJQYUYBVAE5",
-								"HTTPS://QR.ALIPAY.COM/FKX01270UNJTIC0LONPFE1"};
-						private void launchDonate(int idx) {
-							a.show(R.string.donate);
-							if(hasInstalledAlipayClient(getActivity())) {
-								Intent i = new Intent(Intent.ACTION_VIEW);
-								
-								String url = "alipayqr://platformapi/startapp?saId=10000007&clientVersion=3.7.0.0718&qrcode="+qrcodes[idx];
-								i.setData(Uri.parse(url));
-								startActivity(i);
-							}else {
-								a.show(R.string.donatefail);
-							}						
-						}}, start, start+len, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-				}
+
 				int startss = ssb.toString().indexOf("[");
 				int endss = ssb.toString().indexOf("]",startss);
-				
+
 				ssb.setSpan(new ClickableSpan() {
 					@Override
-					public void onClick(View widget) {
-						ssb.clear();
-						ssb
-						   .append("KnIfER/mdict-java (GPL)").append("\n\n")
-						   .append("Xiaoqiang Wang/python mdict-analysis (bitbucket2017)").append("\n\n")
-						   .append("fengdh/mdict-js (Github2018)").append("\n\n")
-						   .append("AndreiD/TSnackBar (Github2019)").append("\n\n")
-						   .append("jess-anders/two-way-gridview (Github2019)").append("\n\n")
-						   .append("IDFDeveloper/android-resize-view (Github2019)").append("\n\n")
-						   .append("Angads25/android-filepicker (apache2)").append("\n\n")
-						   .append("com.mobeta.android.dslv(Dragsort ListView)(Github2018)").append("\n\n")
-						   .append("danoz73/RecyclerViewFastScroller (apache2)").append("\n\n")
-						   .append("org.jvcompress.lzo(mini lzo)(GPL)").append("\n\n")
-						   .append("org.apache.commons.lang (apache2)").append("\n\n")
-						   .append("Powered by Android and Eclispe").append("\n\n")
-						   ;
-						tv.setText(ssb.toString());
-						tv.setTextIsSelectable(true);
+					public void onClick(@NonNull View widget) {
+						Intent intent = new Intent();
+						intent.putExtra("realm",6);
+						intent.setClass(a, SettingsActivity.class);
+						a.startActivity(intent);
 					}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				
 
 				startss = ssb.toString().indexOf("[",endss);
 				endss = ssb.toString().indexOf("]",startss);
-				
+
+				if(false)
 				ssb.setSpan(new ClickableSpan() {
 					@Override
-					public void onClick(View widget) {
+					public void onClick(@NonNull View widget) {
 						Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
 		    			Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 		    			startActivity(intent);
@@ -401,9 +319,11 @@ public class Drawer extends Fragment implements
 				startss = ssb.toString().indexOf("[",endss);
 				endss = ssb.toString().indexOf("]",startss);
 				if(endss>startss && startss>0)
+
+					if(false)
 				ssb.setSpan(new ClickableSpan() {
 					@Override
-					public void onClick(View widget) {
+					public void onClick(@NonNull View widget) {
 						Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
 		    			Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 		    			startActivity(intent);
@@ -417,119 +337,52 @@ public class Drawer extends Fragment implements
 				final AlertDialog d = builder2.create();
 				d.setCanceledOnTouchOutside(true);
 				//d.setCanceledOnTouchOutside(false);
-				d.setOnDismissListener(new AlertDialog.OnDismissListener(){
-					@Override
-					public void onDismiss(DialogInterface dialog) {
-					}
+				d.setOnDismissListener(dialog -> {
 				});
-				dv.findViewById(R.id.cancel).setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						d.dismiss();
-					}});
+				dv.findViewById(R.id.cancel).setOnClickListener(v1 -> d.dismiss());
 				d.show();
-				android.view.WindowManager.LayoutParams lp = d.getWindow().getAttributes();  //获取对话框当前的参数值
-				lp.height = -2;
-				d.getWindow().setAttributes(lp);
+				//android.view.WindowManager.LayoutParams lp = d.getWindow().getAttributes();  //获取对话框当前的参数值
+				//lp.height = -2;
+				//d.getWindow().setAttributes(lp);
 				
 				return;
 			case R.id.menu_item_exit://退出
-				//a.mDrawerLayout.closeDrawer(Gravity.LEFT);
 				final View dv1 = a.inflater.inflate(R.layout.dialog_about,null);
 				
 				final SpannableStringBuilder ssb1 = new SpannableStringBuilder(getResources().getString(R.string.warn_exit1));
 				int start1 = ssb1.toString().indexOf("[");
-				final TextView tv1 = ((TextView)dv1.findViewById(R.id.resultN));
+				final TextView tv1 = dv1.findViewById(R.id.resultN);
 				((TextView)dv1.findViewById(R.id.title)).setText(R.string.warn_exit0);
 				tv1.setPadding(0, 0, 0, 50);
 				ssb1.setSpan(new ClickableSpan() {
 					@Override
-					public void onClick(View widget) {
-						if(a.deleteHistory()) 
-							a.show(R.string.clearsucc);
-						else
-							a.show(R.string.clearfail);
+					public void onClick(@NonNull View widget) {
+						a.show(a.deleteHistory()?R.string.clearsucc:R.string.clearfail);
 					}					
 					}, start1,  ssb1.toString().indexOf("]",start1)+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-				start1 = ssb1.toString().indexOf("(");
-				final int stf =start1;
-				exitAll=false;
-				ssb1.setSpan(new ClickableSpan() {
-					char[] acc=new char[1];
-					@Override
-					public void onClick(View widget) {
-						ssb1.getChars(stf, stf+1, acc, 0);
-						if(acc[0]=='(') {
-							ssb1.replace(stf, stf+1, "[", 0, 1);
-							int xx = ssb1.toString().indexOf(")",stf);
-							ssb1.replace(xx, xx+1, "]", 0, 1);
-							final String languageName = Locale.getDefault().getLanguage();
-							ssb1.insert(stf+1, languageName.equals("zh")?"将 ":"Will ");
-							exitAll=true;
-						}else {
-							ssb1.replace(stf, stf+1, "(", 0, 1);
-							int xx = ssb1.toString().indexOf("]",stf);
-							ssb1.replace(xx, xx+1, ")", 0, 1);
-							ssb1.delete(stf+1, ssb1.toString().indexOf(" ",stf+1)+1);
-						}
-						tv1.setText(ssb1);
-					}					
-					}, start1,  ssb1.toString().indexOf(")",start1)+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
 				tv1.setText(ssb1);
 				tv1.setMovementMethod(LinkMovementMethod.getInstance());
 				AlertDialog.Builder builder21 = new AlertDialog.Builder(a);
 				builder21.setView(dv1);
 				final AlertDialog d1 = builder21.create();
 				d1.setCanceledOnTouchOutside(true);
-				d1.setOnDismissListener(new AlertDialog.OnDismissListener(){
-					@Override
-					public void onDismiss(DialogInterface dialog) {
-					}
-				});
-				dv1.findViewById(R.id.cancel).setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						//a.finish();
-						//d1.dismiss();
-						if(exitAll) {
-							//int xx=1/0;
-							 /*
-					        // 1. 通过Context获取ActivityManager
-					        ActivityManager activityManager = (ActivityManager) a.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
-
-					        // 2. 通过ActivityManager获取任务栈
-					        List<ActivityManager.AppTask> appTaskList = activityManager.getAppTasks();
-					        
-					        // 3. 逐个关闭Activity
-					        for (ActivityManager.AppTask appTask : appTaskList) {
-					            appTask.finishAndRemoveTask();
-					        }
-					        */
-							ActivityManager manager = (ActivityManager) a.getSystemService(Context.ACTIVITY_SERVICE); 
-							manager.restartPackage(a.getPackageName());
-							manager.killBackgroundProcesses(a.getPackageName()); 
-							android.os.Process.killProcess(android.os.Process.myPid());
-					        //android.os.Process.killProcess(android.os.Process.myPid());
-							//System.exit(0);
-						}
-					}});
 				d1.show();
 				
 				return;
 		}
 		int position = (int) v.getTag(R.id.position);
-		LayoutParams attr;
 		int BKHistroryVagranter;
 		switch(position) {
 			case 1://模糊搜索
 				a.switchToSearchModeDelta(100);
-				a.mDrawerLayout.closeDrawer(Gravity.LEFT);
+				a.mDrawerLayout.closeDrawer(GravityCompat.START);
 				a.etSearch.requestFocus();
 				((InputMethodManager)a.getSystemService( Context.INPUT_METHOD_SERVICE )).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 			break;
 			case 2://全文搜索
 				a.switchToSearchModeDelta(-100);
-				a.mDrawerLayout.closeDrawer(Gravity.LEFT);
+				a.mDrawerLayout.closeDrawer(GravityCompat.START);
 				a.etSearch.requestFocus();
 				((InputMethodManager)a.getSystemService( Context.INPUT_METHOD_SERVICE )).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 			break;
@@ -560,33 +413,28 @@ public class Drawer extends Fragment implements
 		        AlertDialog.Builder builder = new AlertDialog.Builder(a);
 		        builder.setTitle(R.string.bookmarkH);
 		        builder.setSingleChoiceItems(new String[] {}, 0,
-		                new DialogInterface.OnClickListener() {
-		                    @Override
-		                    public void onClick(DialogInterface dialog, final int position) {
-		                    	d.getListView().postDelayed(new Runnable() {
-									@Override
-									public void run() {
-				                    	String id = items[position];
-										mdict mdTmp = mdictInternal.get(id);
-										if(mdTmp!=null) {
-											if(!a.md.contains(mdTmp)) {
-												a.md.add(mdTmp);
-												a.switchToDictIdx(a.md.size()-1);
-											}else {
-												a.switchToDictIdx(a.md.indexOf(mdTmp));
-											}
-											if(a.pickDictDialog!=null) a.pickDictDialog.isDirty=true;
-											int toPos = pos[position];
-											a.bWantsSelection=false;
-											a.bNeedReAddCon=false;
-											a.adaptermy.onItemClick(toPos);
-											a.lv.setSelection(toPos);
-											d.hide();
-										}}
-		                    		
-		                    	}, 0);
-		                    }
-		                });
+						(dialog, position1) -> d.getListView().postDelayed(new Runnable() {
+							@Override
+							public void run() {
+								String id1 = items[position1];
+								mdict mdTmp = mdictInternal.get(id1);
+								if(mdTmp!=null) {
+									if(!a.md.contains(mdTmp)) {
+										a.md.add(mdTmp);
+										a.switchToDictIdx(a.md.size()-1);
+									}else {
+										a.switchToDictIdx(a.md.indexOf(mdTmp));
+									}
+									if(a.pickDictDialog!=null) a.pickDictDialog.isDirty=true;
+									int toPos = pos[position1];
+									a.bWantsSelection=false;
+									a.bNeedReAddCon=false;
+									a.adaptermy.onItemClick(toPos);
+									a.lv.setSelection(toPos);
+									d.hide();
+								}}
+
+						}, 0));
 		        d=builder.create();
 		        d.show();
 		        
@@ -594,10 +442,10 @@ public class Drawer extends Fragment implements
         		//attr.dimAmount=0;
         		//d.getWindow().setAttributes(attr);
     	    	d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        		if(a.AppBlack==Color.WHITE) {
+        		if(GlobalOptions.isDark) {
         	    	//d.setTitle(Html.fromHtml("<span style='color:#ffffff;'>"+getResources().getString(R.string.loadconfig)+"</span>"));
         	        View tv = d.getWindow().findViewById(Resources.getSystem().getIdentifier("alertTitle","id", "android"));
-        			if(TextView.class.isInstance(tv))((TextView) tv).setTextColor(Color.WHITE);
+        			if(tv instanceof TextView)((TextView) tv).setTextColor(Color.WHITE);
         	    	//d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_d);
         			d.getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));//(R.drawable.popup_shadow_d);
         	    }
@@ -605,9 +453,10 @@ public class Drawer extends Fragment implements
 		        d.setOnDismissListener(Drawer.this);
 		        d.getListView().setAdapter(new ArrayAdapter<String>(a,
 			            R.layout.singlechoice, android.R.id.text1, items) {
-				    @Override
-				    public View getView(int position,  View convertView,
-				             ViewGroup parent) {
+				    @NonNull
+					@Override
+				    public View getView(int position, View convertView,
+										@NonNull ViewGroup parent) {
 				    	View ret =  super.getView(position, convertView, parent);
 				    	CheckedTextViewmy tv;
 				        if(ret.getTag()==null)
@@ -623,7 +472,7 @@ public class Drawer extends Fragment implements
 				    		return ret;
 				    	}
 				    	
-				    	if(a.AppBlack==Color.WHITE)
+				    	if(GlobalOptions.isDark)
 				    		tv.setTextColor(Color.WHITE);
 				    	
 				    	
@@ -654,7 +503,7 @@ public class Drawer extends Fragment implements
 				String lastBookMark = a.opt.getString("bkh"+BKHistroryVagranter);
 				//CMN.show(lastBookMark);
 				if(lastBookMark!=null) {
-					String[] l = lastBookMark.split("\\/\\?Pos=");
+					String[] l = lastBookMark.split("/\\?Pos=");
 					int pos1 = Integer.valueOf(l[1]);
 					lastBookMark = l[0];
 					String fn = new File(lastBookMark).getName();
@@ -775,7 +624,7 @@ public class Drawer extends Fragment implements
 										String name = pathname.getName();
 										if(name.endsWith(".set")) {
 											return true;
-										}	
+										}
 										return false;
 									}});
 					        	moduleFullScannerArr = new ArrayList<File>(Arrays.asList(moduleFullScanner));
@@ -814,7 +663,7 @@ public class Drawer extends Fragment implements
 								}
 						        renameList.clear();
 						        renameList=null;
-						        
+
                     		} catch (IOException e1) {
                     			e1.printStackTrace();
                     		}
@@ -865,7 +714,7 @@ public class Drawer extends Fragment implements
                     	if(files.length>0) {
                     		a.opt.setLastMdlibPath(new File(files[0]).getAbsolutePath());
                     		a.show(R.string.relaunch);
-                    		a.mDrawerLayout.closeDrawer(Gravity.LEFT);
+                    		a.mDrawerLayout.closeDrawer(GravityCompat.START);
                         }
                     }
 
@@ -900,46 +749,12 @@ public class Drawer extends Fragment implements
 			break;
 		}
 	}
-	
-	 /**
-     * Users of this fragment must call this method to set up the navigation
-     * drawer interactions.
-     * 
-     * @param fragmentId
-     *            The android:id of this fragment in its activity's layout.
-     * @param drawerLayout
-     *            The DrawerLayout containing this fragment's UI.
-     */
-    //Users of this fragment must call this method to set up the navigation
-
-	public void setUp(int fragmentId, DrawerLayout drawerLayout) {
-    	
-    	mFragmentContainerView = a.findViewById(fragmentId);
-    	//mDrawerLayout = drawerLayout;
-
-    	// set a custom shadow that overlays the main content when the drawer
-    	// opens
-    	//mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow,GravityCompat.START);
-    	// set up the drawer's list view with items and click listener
-
-    }
 
 	@Override
 	public void onDismiss(DialogInterface dialog) {
 		d = null;
 	}
-	
 
-    public boolean hasInstalledAlipayClient(Context context) {
-        PackageManager pm = context.getPackageManager();
-        try {
-            PackageInfo info = pm.getPackageInfo("com.eg.android.AlipayGphone", 0);
-            return info != null;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -952,39 +767,48 @@ public class Drawer extends Fragment implements
 					a.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 				}
 				a.opt.setFullScreen(isChecked);
-				isDirty=true;
 			break;
 			case R.id.sw2:
 				a.opt.setContentBow(!isChecked);
 				a.setContentBow(!isChecked);
-				isDirty=true;
 			break;
 			case R.id.sw3:
 				a.opt.setViewPagerEnabled(!isChecked);
 				a.viewPager.setNoScroll(isChecked);
-				isDirty=true;
 			break;
 			case R.id.sw4:
+				if(Build.VERSION.SDK_INT<29){
+					GlobalOptions.isDark = false;
+				}
+
 				a.opt.setInDarkMode(isChecked);
-				a.AppBlack=isChecked?Color.WHITE:Color.BLACK;
-				a.AppWhite=isChecked?Color.BLACK:Color.WHITE;
-				mDrawerListView.setBackgroundColor(isChecked?Color.BLACK:0xffe2e2e2);
-				HeaderView.setBackgroundColor(a.AppWhite);
-				FooterView.setBackgroundColor(a.AppWhite);
-				a.adaptermy.notifyDataSetChanged();
-				a.adaptermy2.notifyDataSetChanged();
-				a.adaptermy3.notifyDataSetChanged();
-				a.adaptermy4.notifyDataSetChanged();
-				if(a.isFragInitiated)a.pickDictDialog.adapter().notifyDataSetChanged();
-				myAdapter.notifyDataSetChanged();
-				//a.refreshUIColors();
-				a.animateUIColorChanges();
-				isDirty=true;
+				if(buttonView.getTag()==null || GlobalOptions.isDark)
+					changeToDarkMode();
+				buttonView.setTag(null);
 			break;
 			case R.id.sw5:
 				a.opt.set_use_volumeBtn(isChecked);
-				isDirty=true;
 			break;
+		}
+	}
+
+	void changeToDarkMode() {
+		try {
+			a.AppBlack=GlobalOptions.isDark?Color.WHITE:Color.BLACK;
+			a.AppWhite=GlobalOptions.isDark?Color.BLACK:Color.WHITE;
+			mDrawerListView.setBackgroundColor(GlobalOptions.isDark?Color.BLACK:0xffe2e2e2);
+			HeaderView.setBackgroundColor(a.AppWhite);
+			FooterView.setBackgroundColor(a.AppWhite);
+			a.adaptermy.notifyDataSetChanged();
+			a.adaptermy2.notifyDataSetChanged();
+			a.adaptermy3.notifyDataSetChanged();
+			a.adaptermy4.notifyDataSetChanged();
+			if(a.isFragInitiated)a.pickDictDialog.adapter().notifyDataSetChanged();
+			myAdapter.notifyDataSetChanged();
+			//a.refreshUIColors();
+			a.animateUIColorChanges();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

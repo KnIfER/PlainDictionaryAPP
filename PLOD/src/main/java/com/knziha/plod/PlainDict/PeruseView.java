@@ -29,6 +29,8 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.Fragment;
 import androidx.core.graphics.ColorUtils;
 import androidx.appcompat.widget.AppCompatImageButton;
@@ -578,9 +580,9 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(getView()!=null && getView().getParent()!=null)//already attached.
 		if(contentview!=null && contentview.getParent()!=null) ((ViewGroup) contentview.getParent()).removeView(contentview);
-		contentview = (ViewGroup) a.inflater.inflate(R.layout.contentview, null,false);
-		rl = (ViewGroup) a.inflater.inflate(R.layout.contentview_item, null,false);
-		mBar = (SumsungLikeScrollBar)contentview.findViewById(R.id.dragScrollBar);
+		contentview = (ViewGroup) a.inflater.inflate(R.layout.contentview, root,false);
+		rl = (ViewGroup) a.inflater.inflate(R.layout.contentview_item, root,false);
+		mBar = contentview.findViewById(R.id.dragScrollBar);
 		webSingleholder = contentview.findViewById(R.id.webSingleholder);
 		webSingleholder.setBackgroundColor(a.GlobalPageBackground);
 			mWebView = rl.findViewById(R.id.webviewmy);
@@ -592,7 +594,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
     		mBar.scrollee=mWebView;
     		mWebView.getSettings().setSupportZoom(true);
     		
-	        toolbar_web= (ViewGroup)rl.findViewById(R.id.toolbar);
+	        toolbar_web= rl.findViewById(R.id.toolbar);
 	        toolbar_title = ((TextView)toolbar_web.findViewById(R.id.toolbar_title));
 			toolbar_cover = (ImageView)toolbar_web.findViewById(R.id.cover);
 			ucc = a.getUcc();
@@ -634,38 +636,36 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 					}
 			}});
 			forward=toolbar_web.findViewById(R.id.forward);
-			forward.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					//CMN.show(""+HistoryVagranter);
-					if(HistoryVagranter<=History.size()-2) {
+			forward.setOnClickListener(v -> {
+				//CMN.show(""+HistoryVagranter);
+				if(HistoryVagranter<=History.size()-2) {
+					try {
+						if(!mWebView.isloading)
+							if(HistoryVagranter>=0) History.get(HistoryVagranter).value=mWebView.getScrollY();
+						int pos=-1;
 						try {
-							if(!mWebView.isloading)
-								if(HistoryVagranter>=0) History.get(HistoryVagranter).value=mWebView.getScrollY();
-							int pos=-1;
-							try {
-								pos = Integer.valueOf(History.get(++HistoryVagranter).key);
-							} catch (NumberFormatException e) {
-								//e.printStackTrace();
-							}
-							expectedPos = History.get(HistoryVagranter).value;
-							//a.showT("expectedPos"+expectedPos);
-							if(pos!=-1) {
-								setCurrentDis(currentDictionary,pos, 0);
-								currentDictionary.htmlBuilder.setLength(currentDictionary.htmlHeader.length());
-								mWebView.loadDataWithBaseURL(currentDictionary.baseUrl,
-										currentDictionary.htmlBuilder.append(currentDictionary.getRecordsAt(pos))
-													.append(currentDictionary.js)
-													.append(currentDictionary.htmlTailer).toString()
-										,null, "UTF-8", null);
-							}else {
-								mWebView.loadUrl(History.get(HistoryVagranter).key);//
-							}
-						} catch (IOException e) {
-							e.printStackTrace();
+							pos = Integer.valueOf(History.get(++HistoryVagranter).key);
+						} catch (NumberFormatException e) {
+							//e.printStackTrace();
 						}
+						expectedPos = History.get(HistoryVagranter).value;
+						//a.showT("expectedPos"+expectedPos);
+						if(pos!=-1) {
+							setCurrentDis(currentDictionary,pos, 0);
+							currentDictionary.htmlBuilder.setLength(currentDictionary.htmlHeader.length());
+							mWebView.loadDataWithBaseURL(currentDictionary.baseUrl,
+									currentDictionary.htmlBuilder.append(currentDictionary.getRecordsAt(pos))
+												.append(currentDictionary.js)
+												.append(currentDictionary.htmlTailer).toString()
+									,null, "UTF-8", null);
+						}else {
+							mWebView.loadUrl(History.get(HistoryVagranter).key);//
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
-			}});
+				}
+		});
 			
 			
 		webholder = contentview.findViewById(R.id.webholder);
@@ -678,7 +678,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
         if(ToL||ToR) {
 			bottombar2.setBackgroundColor(bottombar2BaseColor);
 		}else {
-			bottombar2.setBackgroundColor(a.opt.getInDarkMode()?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
+			bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
 		}
 		mlp.removeView(contentview);
         
@@ -1426,7 +1426,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 				}else {
 					intenToLeft.setBackgroundResource(R.drawable.upward);	
 					mlp.removeView(contentview);
-	        		bottombar2.setBackgroundColor(a.opt.getInDarkMode()?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
+	        		bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
 				}
 				a.opt.setPerUseToL(ToL);
 				a.opt.putFirstFlag();
@@ -1438,7 +1438,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 				}else {
 					intenToRight.setBackgroundResource(R.drawable.downward);
 					slp.removeView(contentview);
-	        		bottombar2.setBackgroundColor(a.opt.getInDarkMode()?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
+	        		bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
 				}
 				a.opt.setPerUseToR(ToR);
 				a.opt.putFirstFlag();

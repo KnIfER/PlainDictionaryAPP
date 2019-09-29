@@ -28,7 +28,7 @@
 		<meta-data android:name="com.sec.android.multiwindow.MINIMUM_SIZE_H" android:value="598.0dip" />
 		<activity android:name="com.knziha.plod.PlainDict.PDICMainActivity"
             android:theme="@style/AppTheme"
-            android:configChanges="keyboardHidden|orientation|screenSize"
+			android:configChanges="orientation|keyboardHidden|screenSize|uiMode|locale|layoutDirection"
 			android:hardwareAccelerated="true"
 			>
             <intent-filter>
@@ -73,12 +73,22 @@
             android:theme="@android:style/Animation.Dialog" 
             />
         
-        <activity android:name="com.knziha.plod.dictsmanager.dict_manager_activity"
+        <activity android:name="com.knziha.plod.dictionarymanager.dict_manager_activity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/AppThemeRaw" 
             />
-    </application>
 
+		<activity android:name="com.knziha.plod.PlainDict.MainShareActivity"
+			android:theme="@style/FloatAppTheme"
+			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
+			android:launchMode="singleTask">
+			<intent-filter>
+				<action android:name="android.intent.action.SEND"/>
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="text/plain" />
+			</intent-filter>
+		</activity>
+    </application>
     
    
 	

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Lütfen depolama izni verin.</string>
+	<string name="stg_statement">Bu uygulama depolama izni olmadan çalışamaz.</string>
+	<string name="stg_grantnow">Şimdi ver</string>
+	<string name="trialin">Deneme…… #</string>
+	<string name="stgerr_fail">Üzgünüz, bu uygulamayı cihazınızda kullanamıyorum.</string>
+</resources>

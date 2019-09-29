@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Proszę przyznać pozwolenie na przechowywanie.</string>
+	<string name="stg_statement">Ta aplikacja nie może działać bez pozwolenia na przechowywanie.</string>
+	<string name="stg_grantnow">Udziel teraz</string>
+	<string name="trialin">Wersja próbna …… #</string>
+	<string name="stgerr_fail">Przepraszamy, ale nie można korzystać z tej aplikacji na urządzeniu.</string>
+</resources>

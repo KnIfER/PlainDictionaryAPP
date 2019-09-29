@@ -37,9 +37,9 @@ public class CrashHandler implements UncaughtExceptionHandler {
 	private boolean registered;
 	private boolean turnedon;
 
-	public static CrashHandler getInstance(PDICMainAppOptions opt) {
+	public static CrashHandler getInstance(Context contex, PDICMainAppOptions opt) {
 		if(instance == null)
-			instance = new CrashHandler(opt);
+			instance = new CrashHandler(contex,opt);
 		return instance;
 	}
 
@@ -47,13 +47,13 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		return log_path;
 	}
 
-	private CrashHandler(PDICMainAppOptions opt){
+	private CrashHandler(Context contex, PDICMainAppOptions opt){
 		mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler();
 		bSilentExitBypassingSystem = true;//opt.getSilentExitBypassingSystem();
 		bLogToFile = opt.getLogToFile();
 		info_builder=new StringBuilder();
 		info_builder.setLength(0);
-		info_builder.append("[device_n.").append(Build.VERSION.CODENAME)
+		info_builder.append(contex.getResources().getString(R.string.app_name)).append("[device_n.").append(Build.VERSION.CODENAME)
 			.append(", v.").append(Build.VERSION.SDK_INT);
 	}
 

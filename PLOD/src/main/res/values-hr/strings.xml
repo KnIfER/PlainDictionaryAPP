@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Molimo dajte dozvolu za pohranu.</string>
+	<string name="stg_statement">Ova aplikacija ne može raditi bez dopuštenja za pohranu.</string>
+	<string name="stg_grantnow">Dodijeli odmah</string>
+	<string name="trialin">Probno ...... #</string>
+	<string name="stgerr_fail">Nažalost, ali ne možete koristiti ovu aplikaciju na svom uređaju.</string>
+</resources>

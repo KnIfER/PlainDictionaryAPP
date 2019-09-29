@@ -41,6 +41,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 
+import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
 import android.text.Spannable;
@@ -609,7 +610,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
     		//mWebView.setInitialScale((int) (100*(2)));//opt.dm.density
     		
 			mWebView.loadDataWithBaseURL(baseUrl,//.append(mWebView==this.mWebView?"":(SelfIdx+":"))    .append(position[0])
-					htmlBuilder.append(htmlTitleEndTag).append(a.opt.getInDarkMode()? MainActivityUIBase.DarkModeIncantation_l:"").append(htmlHeader2)
+					htmlBuilder.append(htmlTitleEndTag).append(GlobalOptions.isDark? MainActivityUIBase.DarkModeIncantation_l:"").append(htmlHeader2)
 								.append(htmlCode)
 								.append(js)
 								.append(mdd!=null?"<div class='MddExist'/>":"")
@@ -1003,8 +1004,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 
 
 
-
-
 	public void dumpViewStates() {
 		try {
 			long time = System.currentTimeMillis();
@@ -1030,7 +1029,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			fo.writeInt(lvPosOff);
 			CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff);
 			
-			if(viewsHolderReady) {
+			if(viewsHolderReady && mWebView!=null) {
 				expectedPosX=mWebView.getScrollX();
 				expectedPos=mWebView.getScrollY();
 			}
@@ -1042,10 +1041,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			fo.flush();
 			fo.close();
 			CMN.Log(_Dictionary_fName+"单典配置保存耗时",System.currentTimeMillis()-time);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} catch (Exception e) { e.printStackTrace(); }
     	
 	}
 	
@@ -1252,10 +1248,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			ssb.append("\r\n").append("\r\n");
 		}
 		
-		boolean inDark=a.AppBlack==Color.WHITE;
 		tv.setText(ssb);
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
-		AlertDialog.Builder builder2 = new AlertDialog.Builder(a,inDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
+		AlertDialog.Builder builder2 = new AlertDialog.Builder(a,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
 		builder2.setView(dv);
 		final AlertDialog d = builder2.create();
 		d.setCanceledOnTouchOutside(true);
@@ -1274,7 +1269,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			public void onClick(View v) {
 				d.dismiss();
 			}});
-        d.getWindow().setBackgroundDrawableResource(inDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
+        d.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
 		//d.getWindow().setDimAmount(0);
     	//d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 		d.show();

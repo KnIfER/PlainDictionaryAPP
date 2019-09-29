@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">S\'il vous plaît accorder une autorisation de stockage.</string>
+	<string name="stg_statement">Cette application ne peut pas fonctionner sans autorisation de stockage.</string>
+	<string name="stg_grantnow">Grant maintenant</string>
+	<string name="trialin">Procès…… #</string>
+	<string name="stgerr_fail">Désolé, mais vous ne pouvez pas utiliser cette application sur votre appareil.</string>
+</resources>

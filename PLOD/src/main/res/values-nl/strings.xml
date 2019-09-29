@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Geef opslagrechten.</string>
+	<string name="stg_statement">Deze app kan niet werken zonder opslagmachtiging.</string>
+	<string name="stg_grantnow">Grant nu</string>
+	<string name="trialin">Trial ... #</string>
+	<string name="stgerr_fail">Sorry, maar kan deze app niet op uw apparaat gebruiken.</string>
+</resources>

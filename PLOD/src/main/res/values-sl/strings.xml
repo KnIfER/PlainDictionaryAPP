@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Prosimo, da odobrite dovoljenje za shranjevanje.</string>
+	<string name="stg_statement">Ta aplikacija ne more delovati brez dovoljenja za shranjevanje.</string>
+	<string name="stg_grantnow">Podelite zdaj</string>
+	<string name="trialin">Sojenje …… #</string>
+	<string name="stgerr_fail">Žal te aplikacije ni mogoče uporabljati v vaši napravi.</string>
+</resources>

@@ -4,8 +4,7 @@
     <string name="close">close</string>
     
     <string name="wenj_fugai">File exists already,Over write？</string>
-    <string name="delete">Delete</string>
-    <string name="confirm">Confirm</string>
+	<string name="confirm">Confirm</string>
     <string name="cancle">Cancle</string>
     <string name="continueit">Continue</string>
     <string name="warn_delete">Are you sure to delete selected %d cards?(can\'t undo)</string>
@@ -15,7 +14,7 @@
     <string name="surerrecords">Are you sure to delete selected %d records?(won\'t effect file system)</string>
     <string name="applyallset">Apply to All Sets</string>
     <string name="pickdestineFolder">Select Destine Folder</string>
-    <string name="warn_exit1">[Clear History]\r\n\r\n(Exit All Instances by 1/0)</string>
+    <string name="warn_exit1">[Clear History]</string>
 	<string name="noseletion">Noting Selected</string>
     <string name="bookmarkupdated">Bookmark updated as: %s</string>
     <string name="bookmarkup">Bookmark updated!</string>
@@ -100,9 +99,9 @@
     <string name="delD">delete done!</string>
     <string name="delDone">deleted</string>
     <string name="bmAdded">Bookmark added !</string>
-    <string name="dictOpt">Dictionary options...</string>
-    <string name="setOpt">Configuration Set options...</string>
-    <string name="newName">new name...</string>
+    <string name="dictOpt">Dictionary options…</string>
+    <string name="setOpt">Configuration Set options…</string>
+    <string name="newName">new name…</string>
     
     <string name="bm">BookMarks</string>
     <string name="bmSub">Delete BookMark</string>
@@ -113,9 +112,12 @@
     <string name="GL">Global</string>
     <string name="tools">Tools</string>
 
+	<string name="empty__" />
 	<string name="stg_require">Please grant storage permission.</string>
 	<string name="stg_statement">This app cannot work without storage permission.</string>
 	<string name="stg_grantnow">Grant now</string>
 	<string name="trialin">Trial…… #</string>
 	<string name="stgerr_fail">Sorry, but cannot use this app on you device.</string>
+	<string name="infoStr">Plain Dictionary —— Mini android text search engine designed for mdx。\n\nOthers\：Bluedict(Inspired by) 、MdictPC(Originates from) \n\n[Open Source] \n\n[Feedback]</string>
+	<string name="licence">Open Source Licences</string>
 </resources>

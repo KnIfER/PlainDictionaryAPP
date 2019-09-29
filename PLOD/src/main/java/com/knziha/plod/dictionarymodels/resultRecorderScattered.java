@@ -8,7 +8,7 @@ import java.util.regex.PatternSyntaxException;
 
 import com.knziha.plod.PlainDict.BasicAdapter;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.dictsmanager.files.BooleanSingleton;
+import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 
 import android.graphics.Color;
 import android.text.SpannableStringBuilder;

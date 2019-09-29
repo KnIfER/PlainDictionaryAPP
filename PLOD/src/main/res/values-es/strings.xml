@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Por favor otorgue permiso de almacenamiento.</string>
+	<string name="stg_statement">Esta aplicación no puede funcionar sin permiso de almacenamiento.</string>
+	<string name="stg_grantnow">Concede ahora</string>
+	<string name="trialin">Juicio…… #</string>
+	<string name="stgerr_fail">Lo sentimos, pero no puedo usar esta aplicación en tu dispositivo.</string>
+</resources>

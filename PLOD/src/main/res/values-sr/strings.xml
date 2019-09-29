@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Молимо дајте дозволу за складиштење.</string>
+	<string name="stg_statement">Ова апликација не може да ради без дозволе за складиштење.</string>
+	<string name="stg_grantnow">Грант нов</string>
+	<string name="trialin">Пробни рад ...... #</string>
+	<string name="stgerr_fail">Жао нам је, али не можете да користите ову апликацију на свом уређају.</string>
+</resources>

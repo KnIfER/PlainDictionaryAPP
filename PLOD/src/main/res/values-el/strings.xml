@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="stg_require">Παρακαλούμε παραχωρήστε άδεια αποθήκευσης.</string>
+	<string name="stg_statement">Αυτή η εφαρμογή δεν μπορεί να λειτουργήσει χωρίς άδεια αποθήκευσης.</string>
+	<string name="stg_grantnow">Χορηγήστε τώρα</string>
+	<string name="trialin">Δοκιμή…… #</string>
+	<string name="stgerr_fail">Λυπούμαστε, αλλά δεν μπορείτε να χρησιμοποιήσετε αυτήν την εφαρμογή στη συσκευή σας.</string>
+</resources>

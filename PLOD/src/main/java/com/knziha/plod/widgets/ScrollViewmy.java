@@ -1,6 +1,6 @@
 package com.knziha.plod.widgets;
 
-import com.knziha.plod.dictsmanager.files.BooleanSingleton;
+import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 
 import android.content.Context;
 import android.util.AttributeSet;
