@@ -8,7 +8,13 @@
         android:title="@string/search"
         app:showAsAction="never"/>
 
-    <item
+	<item
+		android:id="@+id/toolbar_action7"
+		android:icon="@drawable/downward"
+		android:title="显示全部词典"
+		app:showAsAction="never"/>
+
+	<item
         android:id="@+id/toolbar_action2"
         android:icon="@drawable/downward"
         android:title="显示书签添加按钮"

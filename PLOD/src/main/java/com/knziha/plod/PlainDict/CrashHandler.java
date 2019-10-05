@@ -119,7 +119,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 				Log.e(TAG, "an error occured while writing file...", e);
 			}
 		}
-		if(GlobalOptions.debug) CMN.Log("crash catched", info_builder.toString());
+		CMN.Log("crash catched", GlobalOptions.debug?info_builder.toString():"_"+exception);
 		postUncaughtException(thread, exception);
 	}
 

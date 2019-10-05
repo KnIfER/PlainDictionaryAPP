@@ -114,10 +114,6 @@ public class PDICMainAppOptions
 	public int getFloatBackground() {
 		return defaultReader.getInt("BCF",0xFF8f8f8f);
 	}
-	public boolean getClassicalKeycaseStrategy() {
-		return defaultReader.getBoolean("GKCS",false);
-	}
-
 
 	public boolean UseTripleClick() {
 		return false;
@@ -143,16 +139,15 @@ public class PDICMainAppOptions
 	//	return defaultReader.getBoolean("sh_dir_sear", false);
 	//}
 
-	public int getDefaultFontScale(String def) {
-		return Integer.valueOf(defaultReader.getString("def_fontscale", def));
+	public int getDefaultFontScale(int def) {
+		return defaultReader.getInt("f_size", def);
 	}
-	public void putDefaultFontScale(String def) {
-		defaultReader.edit().putString("def_fontscale", def).commit();
+	public void putDefaultFontScale(int def) {
+		defaultReader.edit().putInt("f_size", def).apply();
 	}
 
 
-
-
+	/** @param CommitOrApplyOrNothing 0=nothing;1=apply;2=commit*/
 	public void setFlags(Editor editor, int CommitOrApplyOrNothing) {
 		if(editor==null){
 			editor = defaultReader.edit();
@@ -171,7 +166,7 @@ public class PDICMainAppOptions
 	private static Long FirstFlag=null;
 	public long getFirstFlag() {
 		if(FirstFlag==null) {
-			return CMNF.FirstFlag=FirstFlag=defaultReader.getLong("MFF",98380);//76+32768+65536
+			return CMNF.FirstFlag=FirstFlag=defaultReader.getLong("MFF",0);
 		}
 		return FirstFlag;
 	}
@@ -215,10 +210,10 @@ public class PDICMainAppOptions
 		return val;
 	}
 	public boolean getTurnPageEnabled() {//true
-		return (FirstFlag & 4) == 4;
+		return (FirstFlag & 4) != 4;
 	}
 	public boolean setTurnPageEnabled(boolean val) {
-		updateFFAt(4,val);
+		updateFFAt(4,!val);
 		return val;
 	}
 
@@ -320,9 +315,6 @@ public class PDICMainAppOptions
 		return val;
 	}
 
-	//|pinDialog2|pinDialog|tintWRes|hintComRes|hintSMode|PZSlide|ZSlide|FremPageCom    |FremPageSin|PremPage|remPageCom|remPageSin|Dark|VPager|CBE|isFullScreen
-	//
-
 	public boolean isFullScreen() {
 		return (FirstFlag & 0x10000) == 0x10000;
 	}
@@ -331,17 +323,17 @@ public class PDICMainAppOptions
 		return val;
 	}
 	public boolean isContentBow() {
-		return (FirstFlag & 0x20000) == 0x20000;
+		return (FirstFlag & 0x20000) != 0x20000;
 	}
 	public boolean setContentBow(boolean val) {
-		updateFFAt(0x20000,val);
+		updateFFAt(0x20000,!val);
 		return val;
 	}
 	public boolean isViewPagerEnabled() {
-		return (FirstFlag & 0x40000) == 0x40000;
+		return (FirstFlag & 0x40000) != 0x40000;
 	}
 	public boolean setViewPagerEnabled(boolean val) {
-		updateFFAt(0x40000,val);//
+		updateFFAt(0x40000,!val);//
 		return val;
 	}
 
@@ -356,10 +348,10 @@ public class PDICMainAppOptions
 		return val;
 	}
 
-	public boolean getFanYeQianJiYiWeiZhi_1() {
+	public boolean getPeruseAddAll() {
 		return (FirstFlag & 0x100000) == 0x100000;
 	}
-	public boolean setFanYeQianJiYiWeiZhi_1(boolean val) {
+	public boolean setPeruseAddAll(boolean val) {
 		updateFFAt(0x100000,val);
 		return val;
 	}
@@ -495,6 +487,7 @@ public class PDICMainAppOptions
 		return val;
 	}
 
+	//0x3 模板
 	public int getDictManagerTap() {
 		return (int) ((FirstFlag >> 36) & 3);
 	}
@@ -603,7 +596,7 @@ public class PDICMainAppOptions
 	private static Long SecondFlag=null;
 	public long getSecondFlag() {
 		if(SecondFlag==null) {
-			return FilePickerOptions.SecondFlag=SecondFlag=defaultReader.getLong("MSF",98380);//76+32768+65536
+			return FilePickerOptions.SecondFlag=SecondFlag=defaultReader.getLong("MSF",0);
 		}
 		return SecondFlag;
 	}
@@ -624,7 +617,7 @@ public class PDICMainAppOptions
 		if(val) SecondFlag |= o;
 		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
 	}
-	private void updateSFAt(long o, boolean val) {
+	private static void updateSFAt(long o, boolean val) {
 		SecondFlag &= (~o);
 		if(val) SecondFlag |= o;
 		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
@@ -817,7 +810,115 @@ public class PDICMainAppOptions
 	}
 	//end crash handler settings
 
+	//start paste bin
+	public static boolean getShowPasteBin() {
+		return (SecondFlag & 0x800000l) == 0x800000l;
+	}
+	public static boolean getShowPasteBin(long SecondFlag) {
+		return (SecondFlag & 0x800000l) == 0x800000l;
+	}
+	public static boolean setShowPasteBin(boolean val) {
+		updateSFAt(0x800000l,val);
+		return val;
+	}
 
+	public boolean getPasteBinEnabled() {
+		return (SecondFlag & 0x1000000l) != 0x1000000l;
+	}
+	public boolean setPasteBinEnabled(boolean val) {
+		updateSFAt(0x1000000l,!val);
+		return val;
+	}
+
+	public boolean getPasteBinUpdateDirect() {
+		return (SecondFlag & 0x2000000l) != 0x2000000l;
+	}
+	public boolean setPasteBinUpdateDirect(boolean val) {
+		updateSFAt(0x2000000l,!val);
+		return val;
+	}
+
+	public boolean getPasteBinBringTaskToFront() {
+		return (SecondFlag & 0x4000000l) != 0x4000000l;
+	}
+	public boolean setPasteBinBringTaskToFront(boolean val) {
+		updateSFAt(0x4000000l,!val);
+		return val;
+	}
+
+	/** @return integer: 0=paste_to_main_program auto <br/>
+	 * 1=paste_to_main_program main  <br/>
+	 * 2=paste_to_main_program peruse mode  <br/>
+	 * 3=paste_to_float_search_program*/
+	public static int getPasteTarget() {
+		return (int) ((SecondFlag >> 29) & 3);
+	}
+	public static int setPasteTarget(int val) {
+		SecondFlag &= (~0x20000000l);
+		SecondFlag &= (~0x40000000l);
+		SecondFlag |= ((long)(val & 3)) << 29;
+		return val;
+	}
+
+	public static boolean getPasteToPeruseModeWhenFocued() {
+		return (SecondFlag & 0x80000000l) != 0x80000000l;
+	}
+	public static boolean setPasteToPeruseModeWhenFocued(boolean val) {
+		updateSFAt(0x80000000l,!val);
+		return val;
+	}
+
+
+	/** @return integer: 0=paste_to_main_program auto <br/>
+	 * 1=paste_to_main_program main  <br/>
+	 * 2=paste_to_main_program peruse mode  <br/>
+	 * 3=paste_to_float_search_program*/
+	public static int getShareTarget() {
+		return (int) ((SecondFlag >> 32) & 3);
+	}
+	public static int setShareTarget(int val) {
+		SecondFlag &= (~0x100000000l);
+		SecondFlag &= (~0x200000000l);
+		SecondFlag |= ((long)(val & 3)) << 32;
+		return val;
+	}
+
+	public static boolean getShareToPeruseModeWhenFocued() {
+		return (SecondFlag & 0x400000000l) != 0x400000000l;
+	}
+	public static boolean setShareToPeruseModeWhenFocued(boolean val) {
+		updateSFAt(0x400000000l,!val);
+		return val;
+	}
+
+	public static boolean getRoot() {
+		return (SecondFlag & 0x800000000l) == 0x800000000l;
+	}
+	public static boolean setRoot(boolean val) {
+		updateSFAt(0x800000000l,val);
+		return val;
+	}
+
+	//end paste bin
+
+	public static boolean getClassicalKeycaseStrategy() {
+		return (SecondFlag & 0x8000000l) != 0x8000000l;
+	}
+	public static boolean setClassicalKeycaseStrategy(boolean val) {
+		updateSFAt(0x8000000l,!val);
+		return val;
+	}
+
+	public static boolean getKeepScreen() {
+		return (SecondFlag & 0x10000000l) != 0x10000000l;
+	}
+	public static boolean getKeepScreen(long SecondFlag) {
+		return (SecondFlag & 0x10000000l) != 0x10000000l;
+	}
+	public static boolean setKeepScreen(boolean val) {
+		updateSFAt(0x10000000l,!val);
+		return val;
+	}
 
 
 	private final StringBuilder pathTo = new StringBuilder();//"/sdcard/PLOD/bmDBs/");

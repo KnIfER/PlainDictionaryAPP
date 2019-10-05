@@ -48,7 +48,6 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
 import com.afollestad.dragselectrecyclerview.IDragSelectAdapter;
-import com.androidadvance.topsnackbar.TSnackbar;
 import com.knziha.ankislicer.customviews.ArrayAdaptermy;
 import com.knziha.ankislicer.customviews.ShelfLinearLayout;
 import com.knziha.ankislicer.customviews.VerticalRecyclerViewFastScrollermy;
@@ -73,6 +72,7 @@ import db.LexicalDBHelper;
 @SuppressLint("SetTextI18n")
 public class DBroswer extends Fragment implements
 		View.OnClickListener, OnLongClickListener{
+	public int pendingDBClickPos=-1;
 	ArrayList<File> items;
 
 	public DBroswer(){
@@ -84,7 +84,7 @@ public class DBroswer extends Fragment implements
 	protected PDICMainAppOptions opt;
 
 	public String currentDisplaying = "";
-	public int currentPos;
+	public int currentPos=-1;
 
 	RecyclerView lv;
 
@@ -204,8 +204,7 @@ public class DBroswer extends Fragment implements
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-							 Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		main_clister_layout= inflater.inflate(R.layout.card_lister, container,false);
 
 		lv = main_clister_layout.findViewById(R.id.main_list);
@@ -575,6 +574,11 @@ public class DBroswer extends Fragment implements
 		if(opt.getDBMode()==3 && opt.getInRemoveMode()) {
 			sideBar.setSCC(opt.getInRemoveMode()?getResources().getColor(R.color.ShallowHeaderBlue):sideBar.ShelfDefaultGray);
 		}
+
+		if(pendingDBClickPos!=-1){
+			mainClicker.onItemClick(null, pendingDBClickPos);
+			pendingDBClickPos=-1;
+		}
 	}
 
 
@@ -911,10 +915,10 @@ public class DBroswer extends Fragment implements
 	boolean inSearch = false;
 	private int lastFallBackTarget=-100;
 	int SelectionMode;
-	final int SelectionMode_pan=0;
-	final int SelectionMode_peruseview=1;
-	final int SelectionMode_txtdropper=2;
-	final int SelectionMode_select=3;
+	final static int SelectionMode_pan=0;
+	final static int SelectionMode_peruseview=1;
+	final static int SelectionMode_txtdropper=2;
+	final static int SelectionMode_select=3;
 	/*神之显/隐体系*/
 	int revertage=0;
 	boolean should_hide_cd1,should_hide_cd2;
@@ -1172,9 +1176,7 @@ public class DBroswer extends Fragment implements
 		}
 
 		if(msg!=null) {
-			TSnackbar snack = TSnackbar.makeraw(snack_root,msg,TSnackbar.LENGTH_SHORT);
-			snack.getView().setAlpha(0.5f);
-			snack.show();
+			((MainActivityUIBase)getActivity()).showTopSnack(snack_root, msg, 0.5f, -1, -1);
 		}
 
 	}
@@ -1421,8 +1423,7 @@ public class DBroswer extends Fragment implements
 	int avoyagerIdx=0;
 	int adelta=0;
 
-	private OnItemClickListener mainClicker = new OnItemClickListener() {
-
+	OnItemClickListener mainClicker = new OnItemClickListener() {
 		@Override
 		public void onItemClick(View view, int position) {
 			PDICMainActivity a = (PDICMainActivity) getActivity();
@@ -1435,7 +1436,8 @@ public class DBroswer extends Fragment implements
 				avoyager.add(0);
 				//TODO retrieve from sibling views
 				currentDisplaying = ((TextView) view.findViewById(android.R.id.text1)).getText().toString();
-			}else {
+			}
+			else {
 				String text = null;long time = 0;
 				ItemCard mItemcard = mCards.get(position);
 				if(mItemcard==null) {
@@ -1456,7 +1458,7 @@ public class DBroswer extends Fragment implements
 			currentPos = position;
 
 			switch(SelectionMode) {
-				case SelectionMode_select:
+				case SelectionMode_select:{
 					if(!Selection.remove(position)) {
 						//if(!bIsInverseSelecting)
 						Selection.add(position);
@@ -1464,8 +1466,8 @@ public class DBroswer extends Fragment implements
 					counter.setText(Selection.size()+"/"+mCards_size);
 					counter.setVisibility(View.VISIBLE);
 					mAdapter.notifyItemChanged(position);
-					break;
-				case SelectionMode_pan:
+				} break;
+				case SelectionMode_pan:{
 					if(opt.getIsCombinedSearching()) {
 						ArrayList<Integer> records = new ArrayList<>();
 						additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
@@ -1543,8 +1545,9 @@ public class DBroswer extends Fragment implements
 								if(remcount>0) a.webSingleholder.removeViews(1, remcount);
 							}
 						}
-					}else {//单独搜索模式
-						//a.showT("单独搜索");
+					}
+					else {
+						//CMN.Log("单独搜索模式");
 						if(a.webSingleholder.getVisibility()!=View.VISIBLE)a.webSingleholder.setVisibility(View.VISIBLE);
 						if(a.WHP.getVisibility()==View.VISIBLE) {
 							if(a.webholder.getChildCount()!=0)
@@ -1663,8 +1666,8 @@ public class DBroswer extends Fragment implements
 							}
 						}
 					}
-					break;
-				case SelectionMode_peruseview:
+				} break;
+				case SelectionMode_peruseview:{
 					ArrayList<Integer> records = new ArrayList<>();
 					additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
 					ArrayList<additiveMyCpr1> data = new ArrayList<>();
@@ -1696,8 +1699,8 @@ public class DBroswer extends Fragment implements
 					a.getPeruseView().data = records;
 					a.getPeruseView().TextToSearch = currentDisplaying;
 					a.AttachPeruseView(true);
-					break;
-				case SelectionMode_txtdropper:
+				} break;
+				case SelectionMode_txtdropper:{
 					a.lastEtString=a.etSearch.getText().toString();
 					a.etSearch.setText(currentDisplaying);
 					a.etSearch_ToToolbarMode(4);
@@ -1707,7 +1710,7 @@ public class DBroswer extends Fragment implements
 						opt.putFirstFlag();
 						CMN.Log("DBROWSER写配置……");
 					}
-					break;
+				} break;
 			}
 		}};
 
@@ -1795,4 +1798,7 @@ public class DBroswer extends Fragment implements
 
 	}
 
+	public int getFragmentId() {
+		return 1;
+	}
 }

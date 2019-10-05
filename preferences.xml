@@ -8,12 +8,12 @@
 		>
 		<SwitchPreference
 			android:defaultValue="false"
-			android:key="GKCS"
+			android:key="classical_sort"
 			android:summary="词条的经典大小写转换仅支持26个英文字母，不利于拉丁文、俄文的排序。"
 			android:title="全局使用经典大小写转换"/>
 		<EditTextPreference
 			android:defaultValue="100"
-			android:key="def_fontscale"
+			android:key="f_size"
 			android:summary="默认的网页字体缩放(%)"
 			android:title="全局字体缩放 : "/>
 		<com.jaredrummler.colorpicker.ColorPickerPreference

@@ -1,5 +1,74 @@
 package com.knziha.plod.dictionarymanager;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.appcompat.widget.ActionMenuView.LayoutParams;
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
+import androidx.core.view.MenuItemCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.tabs.TabLayout;
+import com.knziha.filepicker.model.DialogConfigs;
+import com.knziha.filepicker.model.DialogProperties;
+import com.knziha.filepicker.model.DialogSelectionListener;
+import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.PlainDict.AgentApplication;
+import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.myCpr;
+import com.knziha.plod.dictionarymanager.files.mAssetFile;
+import com.knziha.plod.dictionarymanager.files.mFile;
+import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.mdict_nonexist;
+import com.knziha.plod.dictionarymodels.mdict_prempter;
+import com.knziha.plod.widgets.Toastable_FragmentActivity;
+import com.knziha.rbtree.RashSet;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,86 +87,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import com.androidadvance.topsnackbar.TSnackbar;
-import com.knziha.plod.PlainDict.AgentApplication;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
-import com.knziha.filepicker.model.DialogConfigs;
-import com.knziha.filepicker.model.DialogProperties;
-import com.knziha.filepicker.model.DialogSelectionListener;
-import com.knziha.filepicker.view.FilePickerDialog;
-import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict_nonexist;
-import com.knziha.plod.dictionarymodels.mdict_prempter;
-import com.knziha.plod.dictionarymanager.files.mAssetFile;
-import com.knziha.plod.dictionarymanager.files.mFile;
-import com.knziha.plod.widgets.Toastable_FragmentActivity;
-import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionary.myCpr;
-import com.knziha.rbtree.RashSet;
-
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
-import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import com.google.android.material.tabs.TabLayout;
-
-import androidx.appcompat.app.GlobalOptions;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.core.view.MenuItemCompat;
-import androidx.viewpager.widget.ViewPager;
-import androidx.appcompat.widget.ActionMenuView;
-import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.appcompat.widget.ActionMenuView.LayoutParams;
-import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
-import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.view.Gravity;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.BaseAdapter;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.PopupWindow;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.TextView.OnEditorActionListener;
-
 public class dict_manager_activity extends Toastable_FragmentActivity implements OnMenuItemClickListener
 {
+	Intent intent = new Intent();
+	private PopupWindow mPopup;
 	public interface transferRunnable{
-		public boolean transfer(File to);
-		public void afterTransfer();
+		boolean transfer(File to);
+		void afterTransfer();
 	}
-	
+
+	private boolean bIsNoNeedToTakeAfterPW=Build.VERSION.SDK_INT>Build.VERSION_CODES.LOLLIPOP_MR1;
     private ViewGroup toastmaker;
     private Toolbar toolbar;
     String dictQueryWord;
@@ -121,6 +120,11 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if(keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN){
+				if(mPopup!=null){
+					mPopup.dismiss();
+					mPopup=null;
+					return true;
+				}
 				if(viewPager.getCurrentItem()==2 && f3.SelectionMode) {
 					f3.Selection.clear();
 					f3.SelectionMode=false;
@@ -150,6 +154,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				        	String name = mdTmp.getPath();
 				        	if(name.startsWith(parent))
 				        		name = name.substring(parent.length());
+				        	if(f1.currentFilter==mdTmp)
+								out.write("[:F]");
 				        	out.write(name);
 				        	out.write("\n");
 				        }
@@ -198,8 +204,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					e.printStackTrace();
 				}
 	        }
-			
-            Intent intent = new Intent();
+
             intent.putExtra("result", f1.isDirty);
             intent.putExtra("result2", isDirty);
             setResult(RESULT_OK, intent);
@@ -253,16 +258,16 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
         findViewById(R.id.drawer_layout).setBackgroundColor(GlobalOptions.isDark?Color.BLACK: CMN.MainBackground);
         
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-        mTabLayout = (TabLayout) findViewById(R.id.mTabLayout);
+        viewPager = findViewById(R.id.viewpager);
+        mTabLayout = findViewById(R.id.mTabLayout);
 		inflater=LayoutInflater.from(getApplicationContext());
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.dict_manager);
 
         
  		toolbarmenu = toolbar.getMenu();
  		
-		List<Fragment> fragments=new ArrayList<Fragment>();
+		List<Fragment> fragments= new ArrayList<>();
 		
 	    String[] tabTitle = {getResources().getString(R.string.currentPlan,0),getResources().getString(R.string.allPlans),"全部词典"};
 	    mFile.parentPath=opt.lastMdlibPath.toLowerCase();
@@ -304,14 +309,11 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				}
 				if(!found) {
 					//show("adding new!"+fn.getAbsolutePath());
-					f3.mDslv.post(new Runnable() {
-						@Override
-						public void run() {
-							f1.adapter.add(new_mdict_preempter(fn,opt));
-			            	f1.refreshSize();
-			            	f1.adapter.notifyDataSetChanged();
-							f1.isDirty=true;
-						}
+					f3.mDslv.post(() -> {
+						f1.adapter.add(new_mdict_preempter(fn,opt));
+						f1.refreshSize();
+						f1.adapter.notifyDataSetChanged();
+						f1.isDirty=true;
 					});
 					return 1;
 				}else
@@ -385,16 +387,16 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				opt.setDictManagerTap(CurrentPage);
 	    	}
 	    });
-        
-	    for (int i=0; i<tabTitle.length; i++) 
+
+	    for (int i=0; i<tabTitle.length; i++)
             mTabLayout.addTab(mTabLayout.newTab().setText(tabTitle[i]));
-		    mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-	            @Override
-	            public void onTabSelected(TabLayout.Tab tab) {
-	            	viewPager.setCurrentItem(tab.getPosition());
-	            }
-	            @Override public void onTabUnselected(TabLayout.Tab tab) {}
-	            @Override public void onTabReselected(TabLayout.Tab tab) {}
+		mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+			@Override
+			public void onTabSelected(TabLayout.Tab tab) {
+				viewPager.setCurrentItem(tab.getPosition());
+			}
+			@Override public void onTabUnselected(TabLayout.Tab tab) {}
+			@Override public void onTabReselected(TabLayout.Tab tab) {}
         });
 		
 	    mTabLayout.setSelectedTabIndicatorColor(Color.parseColor("#2b4381"));
@@ -414,36 +416,33 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
         View vTmp = toolbar.getChildAt(toolbar.getChildCount()-1);
         if(vTmp!=null && vTmp.getClass()==AppCompatImageButton.class) {
 			AppCompatImageButton NavigationIcon = (AppCompatImageButton) vTmp;
-
-        	NavigationIcon.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					// TODO Auto-generated method stub
-					View vTmp = LayoutInflater.from(dict_manager_activity.this).inflate(R.layout.simple_add_menu,null);
-	            	final PopupWindow mPopup=new PopupWindow(vTmp, WindowManager.LayoutParams.WRAP_CONTENT,
-	        				WindowManager.LayoutParams.WRAP_CONTENT);
-	            	vTmp.setOnClickListener(new OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							mPopup.dismiss();
-							onKeyDown(KeyEvent.KEYCODE_BACK, MainActivityUIBase.BackEvent);
-							finish();
-						}});
-	            	((TextView) vTmp.findViewById(R.id.text1)).setText(R.string.exit);
-	            	((TextView) vTmp.findViewById(R.id.text1)).setTextColor(Color.WHITE);
-	        		mPopup.setBackgroundDrawable(new BitmapDrawable());
-	        		mPopup.setFocusable(false);
-	        		mPopup.setOutsideTouchable(true);
-	        		mPopup.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN); 
-	        		mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED); 
-	        		mPopup.setHeight(v.getHeight()*2/3);
-	        		mPopup.setWidth(v.getWidth());
-	        		mPopup.showAsDropDown(v, 0, -v.getHeight()*5/6, Gravity.TOP|Gravity.START);
-	        		mPopup.update(v, 0, -v.getHeight()*5/6, -1, -1); 
-				}});
+			NavigationIcon.setOnClickListener(v -> {
+				View vTmp1 = LayoutInflater.from(dict_manager_activity.this).inflate(R.layout.simple_add_menu,null);
+				mPopup=new PopupWindow(vTmp1, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT, true);
+				vTmp1.setOnClickListener(v1 -> {
+					mPopup.dismiss(); mPopup=null;
+					onKeyDown(KeyEvent.KEYCODE_BACK, MainActivityUIBase.BackEvent);
+					finish();
+				});
+				TextView tv = vTmp1.findViewById(R.id.text1);
+				tv.setText(R.string.exit);
+				tv.setTextColor(Color.WHITE);
+				mPopup.setHeight(v.getHeight()*2/3);
+				mPopup.setWidth(v.getWidth());
+				if(bIsNoNeedToTakeAfterPW) {
+					//mPopup.setTouchModal(true);
+					mPopup.setFocusable(true);
+					mPopup.setOutsideTouchable(false);
+				}else{
+					mPopup.setFocusable(false);
+					mPopup.setOutsideTouchable(false);
+				}
+				mPopup.showAsDropDown(v, 0, -v.getHeight()*5/6, Gravity.TOP|Gravity.START);
+				mPopup.update(v, 0, -v.getHeight()*5/6, -1, -1);
+			});
         }
         
-        toolbar.setTitle(R.string.dictManTi);
+        toolbar.setTitle(R.string.manager);
 
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -455,13 +454,11 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
  		//searchView.onActionViewExpanded();// 当展开无输入内容的时候，没有关闭的图标
  		//searchView.setIconifiedByDefault(true);//默认为true在框内，设置false则在框外
  		searchView.setSubmitButtonEnabled(false);//显示提交按钮
-        searchView.setOnSearchClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-		 		LayoutParams lp = new ActionMenuView.LayoutParams(getResources().getDisplayMetrics().widthPixels-200,-1);//500
-		 		lp.setMargins(0, 0, 50, 0);
-		 		searchView.setLayoutParams(lp);
-		 		}});
+        searchView.setOnSearchClickListener(v -> {
+			 LayoutParams lp = new LayoutParams(getResources().getDisplayMetrics().widthPixels-200,-1);//500
+			 lp.setMargins(0, 0, 50, 0);
+			 searchView.setLayoutParams(lp);
+			 });
 		searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 	        @Override
 	        public boolean onQueryTextSubmit(String query) {
@@ -490,12 +487,14 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	            		}
             		break;
 	            }
+//xxx
+        		//if(cc>0)
+        		//	TSnackbar.makeraw(toastmaker  , getResources().getString(R.string.fc,cc),TSnackbar.LENGTH_SHORT).show();
+        		//else
+        		//	TSnackbar.makeraw(toastmaker  , getResources().getString(R.string.fn) ,TSnackbar.LENGTH_SHORT).show();
 
-        		if(cc>0)
-        			TSnackbar.makeraw(toastmaker  , getResources().getString(R.string.fc,cc),TSnackbar.LENGTH_SHORT).show();
-        		else
-        			TSnackbar.makeraw(toastmaker  , getResources().getString(R.string.fn) ,TSnackbar.LENGTH_SHORT).show();
-        		
+
+
 	            ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
         	    return true;
 	        }
@@ -506,22 +505,18 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	        }
 	    });
 		
-		searchView.setOnCloseListener(new SearchView.OnCloseListener() {
-			
-			@Override
-			public boolean onClose() {
-		 		LayoutParams lp = new ActionMenuView.LayoutParams(-2,-1);
-		 		searchView.setLayoutParams(lp);
-	            isSearching = false;
-	            if(f1.adapter!=null)
-	            	f1.adapter.notifyDataSetChanged();
-	            if(f3.adapter!=null)
-	            	f3.adapter.notifyDataSetChanged();
-	    	    return false;
-			}
+		searchView.setOnCloseListener(() -> {
+			 LayoutParams lp = new LayoutParams(-2,-1);
+			 searchView.setLayoutParams(lp);
+			isSearching = false;
+			if(f1.adapter!=null)
+				f1.adapter.notifyDataSetChanged();
+			if(f3.adapter!=null)
+				f3.adapter.notifyDataSetChanged();
+			return false;
 		});
 		try {//设置字体颜色 隐藏搜索框内放大镜图标
-			EditText searchEditText = (EditText) searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+			EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
 			searchEditText.setTextColor(Color.WHITE);
 			
 		    Field mDrawable = SearchView.class.getDeclaredField("mSearchHintIcon");
@@ -555,28 +550,26 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	
 	protected void showRenameDialog(final String lastPlanName,final transferRunnable tr) {//哈哈这么长的代码。。。
 		View dialog = getLayoutInflater().inflate(R.layout.settings_dumping_dialog, null);
-        final ListView lv = (ListView) dialog.findViewById(R.id.lv);
-        final EditText et = (EditText) dialog.findViewById(R.id.et);
-        ImageView iv = (ImageView) dialog.findViewById(R.id.confirm);
+        final ListView lv = dialog.findViewById(R.id.lv);
+        final EditText et = dialog.findViewById(R.id.et);
+        ImageView iv = dialog.findViewById(R.id.confirm);
         File fSearchFile = new File(opt.pathToMain()+"CONFIG/"+lastPlanName+".set");//查找旧plan
         final String fSearch = lastPlanName+".set";//查找旧plan
         final myCpr<Boolean,Boolean> args = new myCpr<>(false,false);
-        File[] sets = new File(opt.pathToMain()+"CONFIG").listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File pathname) {
-				String name = pathname.getName();
-				if(name.endsWith(".set")) {
-					if(!args.value)
-					if(fSearch.equals(pathname.getName())) {
-						args.value=true;
-						return false;
-					}
-					return true;
+        File[] sets = new File(opt.pathToMain()+"CONFIG").listFiles(pathname -> {
+			String name = pathname.getName();
+			if(name.endsWith(".set")) {
+				if(!args.value)
+				if(fSearch.equals(pathname.getName())) {
+					args.value=true;
+					return false;
 				}
-				return false;
-			}});
+				return true;
+			}
+			return false;
+		});
         
-        final ArrayList<File> setsArr = new ArrayList<File>(Arrays.asList(sets));
+        final ArrayList<File> setsArr = new ArrayList<>(Arrays.asList(sets));
         
         if(args.value)
         	setsArr.add(0,fSearchFile);//让它出现在第一项
@@ -586,7 +579,6 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
         for(int i=0;i<setsArr.size();i++) {
         	File fi = setsArr.get(i);
         	if(fSearch.equals(fi)) {
-        		
         		break;
         	}
 		}
@@ -668,7 +660,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				if(convertView==null)
-					convertView =  getLayoutInflater().inflate(R.layout.list_item3, null);
+					convertView =  getLayoutInflater().inflate(R.layout.list_item3, parent, false);
 				myHolder holder;
 				if(convertView.getTag()==null) {
 					convertView.setTag(holder=new myHolder(convertView.findViewById(R.id.text),convertView.findViewById(R.id.remove),convertView.findViewById(R.id.modify)));
@@ -720,91 +712,71 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
         builder.setView(dialog);
         builder.setIcon(R.mipmap.ic_directory_parent);
         builder.setNeutralButton(R.string.delete,null);
-        builder.setPositiveButton(R.string.cancle,null);
+        builder.setPositiveButton(R.string.cancel,null);
         final AlertDialog d = builder.create();
         
   
-        d.setOnDismissListener(new OnDismissListener() {
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				tr.afterTransfer();
-			}
-        });
+        d.setOnDismissListener(dialog1 -> tr.afterTransfer());
         d.show();
-        iv.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				String newName = SU.trimStart(et.getText().toString());
-				if(newName.equals("")) {
-	            	show(R.string.renamefail0);
-					return;
-				}
-				final File newf = new File(opt.pathToMain()+"CONFIG/"+newName+".set");
-				if(!fSearch.equals(newf) && newf.exists()) {//覆盖
-					View dialog = getLayoutInflater().inflate(R.layout.dialog_about,null);
-                    AlertDialog.Builder builder = new AlertDialog.Builder(dict_manager_activity.this);
-                    TextView tvtv = ((TextView) dialog.findViewById(R.id.title));
-                    tvtv.setText(R.string.wenj_fugai);
-                    tvtv.setPadding(50, 50, 0, 0);
-                    builder.setView(dialog);
-                    final AlertDialog dd = builder.create();
-                    dialog.findViewById(R.id.cancel).setOnClickListener(new OnClickListener(){
-                    	 @Override
-                            public void onClick(View v) {
-                            	if(tr.transfer(newf)) {
-        							if(lastPlanName.equals(opt.getLastPlanName())) {
-	    								String name = newf.getName();
-	    								opt.putLastPlanName(f2.LastSelectedPlan=name.substring(0,name.length()-4));
-        							}
-    								d.dismiss();
-									dd.dismiss();
-								}else {
-									showT("文件写入失败_file_write_failure");
-								}
-                            }
-                    });
-                    if(Build.VERSION.SDK_INT<22) {//为什么：低版本不支持点击外部dimiss
-                        SpannableStringBuilder ssb = new SpannableStringBuilder(tvtv.getText());
-                        ssb.append("\n(否)");
-                        int idxNo = ssb.toString().indexOf("\n(否)");
-                        ssb.setSpan(new ClickableSpan() {
-        					@Override
-        					public void onClick(View widget) {
-        						dd.dismiss();
-        						}},idxNo,idxNo+"\n(否)".length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                        tvtv.setText(ssb);
-                        tvtv.setMovementMethod(LinkMovementMethod.getInstance());
-					}
-                    dd.show();
-                    
-				}else {
-						if(tr.transfer(newf)) {
-							if(lastPlanName.equals(opt.getLastPlanName())) {
-								String name = newf.getName();
-								opt.putLastPlanName(f2.LastSelectedPlan=name.substring(0,name.length()-4));
-							}
-							d.dismiss();
-						}else {
-							showT("文件写入失败_file_write_failure");
-						}
-				}
+        iv.setOnClickListener(v -> {
+			String newName = SU.trimStart(et.getText().toString());
+			if(newName.equals("")) {
+				show(R.string.renamefail0);
+				return;
 			}
+			final File newf = new File(opt.pathToMain()+"CONFIG/"+newName+".set");
+			if(!fSearch.equals(newf) && newf.exists()) {//覆盖
+				View dialog12 = getLayoutInflater().inflate(R.layout.dialog_about,null);
+AlertDialog.Builder builder1 = new AlertDialog.Builder(dict_manager_activity.this);
+TextView tvtv = dialog12.findViewById(R.id.title);
+tvtv.setText(R.string.wenj_fugai);
+tvtv.setPadding(50, 50, 0, 0);
+builder1.setView(dialog12);
+final AlertDialog dd = builder1.create();
+dialog12.findViewById(R.id.cancel).setOnClickListener(v12 -> {
+if(tr.transfer(newf)) {
+								if(lastPlanName.equals(opt.getLastPlanName())) {
+									String name = newf.getName();
+									opt.putLastPlanName(f2.LastSelectedPlan=name.substring(0,name.length()-4));
+								}
+								d.dismiss();
+								dd.dismiss();
+							}else {
+								showT("文件写入失败_file_write_failure");
+							}
+});
+if(Build.VERSION.SDK_INT<22) {//为什么：低版本不支持点击外部dimiss
+SpannableStringBuilder ssb = new SpannableStringBuilder(tvtv.getText());
+ssb.append("\n(否)");
+int idxNo = ssb.toString().indexOf("\n(否)");
+ssb.setSpan(new ClickableSpan() {
+						@Override
+						public void onClick(View widget) {
+							dd.dismiss();
+							}},idxNo,idxNo+"\n(否)".length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-			});
-        d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            	args.key = !args.key;
-            	((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
-            }
-        });
-        d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            	d.dismiss();
-            }
-        });		
+tvtv.setText(ssb);
+tvtv.setMovementMethod(LinkMovementMethod.getInstance());
+				}
+dd.show();
+
+			}else {
+					if(tr.transfer(newf)) {
+						if(lastPlanName.equals(opt.getLastPlanName())) {
+							String name = newf.getName();
+							opt.putLastPlanName(f2.LastSelectedPlan=name.substring(0,name.length()-4));
+						}
+						d.dismiss();
+					}else {
+						showT("文件写入失败_file_write_failure");
+					}
+			}
+		});
+        d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
+			args.key = !args.key;
+			((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
+		});
+        d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> d.dismiss());
 	}
 
 	
@@ -863,7 +835,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		}
 		return false;
 	}
-    private void notifyFileRemoved(File oldf, File newf) {
+
+	private void notifyFileRemoved(File oldf, File newf) {
     	String name = oldf.getName();
     	name = name.substring(0,name.length()-4);
     	if(newf!=null) {
@@ -890,8 +863,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		boolean longclick=false;
-		if(longclick) return false;
+		MenuItemImpl mmi = (MenuItemImpl)item;
+		boolean isLongClicked=mmi.isLongClicked;
 		AlertDialog d;
 		switch (item.getItemId()) {
             case R.id.toolbar_action1://刷新
@@ -1146,97 +1119,93 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
             	final View dv = inflater.inflate(R.layout.dialog_sure_and_all,null);
             	AlertDialog.Builder builder2 = new AlertDialog.Builder(dict_manager_activity.this);
 				builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords,f3.Selection.size()))
-						.setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								HashSet<String> removePool=new HashSet<>();
-								ArrayList<String> arr = f3.Selection.flatten();
-				            	for(int i=0;i<arr.size();i++) {
-				            		removePool.add(arr.get(i));
-				            	}
-				            	for(int i=0;i<f3.data.size();i++) {
-				            		mFile item = f3.data.getList().get(i);
-				            		if(item.getClass()==mAssetFile.class)
-				            			continue;
-				            		if(item.isDirectory())
-				            			continue;
-				            		if(removePool.contains(item.getAbsolutePath())) {
-					            		//if(item.getClass()==mAssetFile.class) {
-					            		//	removePool.remove(item.getAbsolutePath());
-					            		//	continue;
-					            		//}
-				            			f3.data.getList().remove(i);i--;
-				            			mdlibsCon.remove(mFile.tryDeScion(item, opt.lastMdlibPath));
-										f3.isDirty=true;
-				            			mFile p = item.getParentFile();
-				            			if(p!=null) {
-				            			int idx=f3.data.indexOf(p);
-				            			if(idx!=-1)
-				            			if(idx==f3.data.size()-1 ||!mFile.isDirScionOf(f3.data.getList().get(idx+1), p))
-				            				f3.data.getList().remove(idx);
-				            			}
-				            		}
-				            	}
-				            	f3.adapter.notifyDataSetChanged();
-								onMenuItemClick(toolbarmenu.getItem(10));
-								
-				            	
-						        ArrayList<File> moduleFullScannerArr;
-						        if(((CheckBox)dv.findViewById(R.id.ck)).isChecked()) {
-						        	File[] moduleFullScanner = new File(opt.pathToMain()+"CONFIG").listFiles(new FileFilter() {
-										@Override
-										public boolean accept(File pathname) {
-											String name = pathname.getName();
-											if(name.endsWith(".set")) {
-												return true;
-											}	
-											return false;
-										}});
-						        	moduleFullScannerArr = new ArrayList<File>(Arrays.asList(moduleFullScanner));
-						        }else
-						        	moduleFullScannerArr = new ArrayList<>();
-
-						        if(f3.isDirty)
-						        	moduleFullScannerArr.add(new File(opt.pathToMain()+"CONFIG/mdlibs.txt"));
-						        for(File fI:moduleFullScannerArr) {
-						        	InputStreamReader reader = null;
-						            StringBuffer sb= new StringBuffer(""); 
-						            String line = ""; 
-
-						            try {
-						                reader = new InputStreamReader(new FileInputStream(fI));
-						                BufferedReader br = new BufferedReader(reader); 
-						                while((line = br.readLine()) != null) {
-						                    try {
-						                    	String key=line.startsWith("/")?line:opt.lastMdlibPath+"/"+line;
-						                    	if(removePool.contains(key) ||
-						                    			removePool.contains(new File(key).getCanonicalPath())){
-							                        //System.out.println(line);
-							                        continue;
-							                        //System.out.println(line);
-							                    }}catch(Exception e) {}
-						                    sb.append(line).append("\n");
-						                } 
-						                br.close();
-						                reader.close();
-
-						                OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fI));
-						                BufferedWriter bw = new BufferedWriter(writer);
-						                bw.write(sb.toString());
-						                bw.flush();
-						                bw.close();
-						                writer.close();
-						            } catch (IOException e) {
-						                e.printStackTrace();
-						            }
+						.setPositiveButton(R.string.confirm, (dialog, which) -> {
+							HashSet<String> removePool=new HashSet<>();
+							ArrayList<String> arr1 = f3.Selection.flatten();
+							for(int i = 0; i< arr1.size(); i++) {
+								removePool.add(arr1.get(i));
+							}
+							for(int i=0;i<f3.data.size();i++) {
+								mFile item1 = f3.data.getList().get(i);
+								if(item1.getClass()==mAssetFile.class)
+									continue;
+								if(item1.isDirectory())
+									continue;
+								if(removePool.contains(item1.getAbsolutePath())) {
+									//if(item.getClass()==mAssetFile.class) {
+									//	removePool.remove(item.getAbsolutePath());
+									//	continue;
+									//}
+									f3.data.getList().remove(i);i--;
+									mdlibsCon.remove(mFile.tryDeScion(item1, opt.lastMdlibPath));
+									f3.isDirty=true;
+									mFile p = item1.getParentFile();
+									if(p!=null) {
+									int idx=f3.data.indexOf(p);
+									if(idx!=-1)
+									if(idx==f3.data.size()-1 ||!mFile.isDirScionOf(f3.data.getList().get(idx+1), p))
+										f3.data.getList().remove(idx);
+									}
 								}
-				            	showT("移除完毕!");
-							}})
-						.setNeutralButton(R.string.cancle, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								
-							}});
+							}
+							f3.adapter.notifyDataSetChanged();
+							onMenuItemClick(toolbarmenu.getItem(10));
+
+
+							ArrayList<File> moduleFullScannerArr;
+							if(((CheckBox)dv.findViewById(R.id.ck)).isChecked()) {
+								File[] moduleFullScanner = new File(opt.pathToMain()+"CONFIG").listFiles(new FileFilter() {
+									@Override
+									public boolean accept(File pathname) {
+										String name = pathname.getName();
+										if(name.endsWith(".set")) {
+											return true;
+										}
+										return false;
+									}});
+								moduleFullScannerArr = new ArrayList<File>(Arrays.asList(moduleFullScanner));
+							}else
+								moduleFullScannerArr = new ArrayList<>();
+
+							if(f3.isDirty)
+								moduleFullScannerArr.add(new File(opt.pathToMain()+"CONFIG/mdlibs.txt"));
+							for(File fI:moduleFullScannerArr) {
+								InputStreamReader reader = null;
+								StringBuffer sb= new StringBuffer("");
+								String line = "";
+
+								try {
+									reader = new InputStreamReader(new FileInputStream(fI));
+									BufferedReader br = new BufferedReader(reader);
+									while((line = br.readLine()) != null) {
+										try {
+											String key=line.startsWith("/")?line:opt.lastMdlibPath+"/"+line;
+											if(removePool.contains(key) ||
+													removePool.contains(new File(key).getCanonicalPath())){
+												//System.out.println(line);
+												continue;
+												//System.out.println(line);
+											}}catch(Exception e) {}
+										sb.append(line).append("\n");
+									}
+									br.close();
+									reader.close();
+
+									OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fI));
+									BufferedWriter bw = new BufferedWriter(writer);
+									bw.write(sb.toString());
+									bw.flush();
+									bw.close();
+									writer.close();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+							showT("移除完毕!");
+						})
+						.setNeutralButton(R.string.cancel, (dialog, which) -> {
+
+						});
 				d = builder2.create();
 				d.show();
             	return false;
@@ -1277,7 +1246,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
                     			File OldF = mdTmp.f();
                     			File toF = new File(p, OldF.getName());
                 				boolean ret = mdTmp.moveFileTo(toF);//厉害 存在的移动了
-                    			if(ret==true) {
+                    			if(ret) {
 			            			mdlibsCon.remove(mFile.tryDeScion(OldF, opt.lastMdlibPath));
 			            			mdlibsCon.add(mFile.tryDeScion(toF, opt.lastMdlibPath));
                     				f3.Selection.remove(sI);//移出f3的选择
@@ -1286,8 +1255,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
                     			}
                     		}
                     		mdict_cache.clear();
-                    		mdict_cache=null;
-                    		f1.isDirty=true;
+							f1.isDirty=true;
                     		renameList = renameLister.flatten();
                     		for(String fnI:renameList) {
                     			mFile fOld = new mFile(fnI).init();
@@ -1320,24 +1288,19 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
                     		
 					        ArrayList<File> moduleFullScannerArr;
 					        
-				        	File[] moduleFullScanner = new File(opt.pathToMain()+"CONFIG").listFiles(new FileFilter() {
-								@Override
-								public boolean accept(File pathname) {
-									String name = pathname.getName();
-									if(name.endsWith(".set")) {
-										return true;
-									}	
-									return false;
-								}});
-				        	moduleFullScannerArr = new ArrayList<File>(Arrays.asList(moduleFullScanner));
+				        	File[] moduleFullScanner = new File(opt.pathToMain()+"CONFIG").listFiles(pathname -> {
+								String name = pathname.getName();
+								return name.endsWith(".set");
+							});
+				        	moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
 					        moduleFullScannerArr.add(new File(getExternalFilesDir(null),"default.txt"));
 					        moduleFullScannerArr.add(new File(opt.pathToMain()+"CONFIG/mdlibs.txt"));
 					        HashSet<String> mdlibs = new HashSet<>();
 					        for(File fI:moduleFullScannerArr) {
 					        	mdlibs.clear();
-					        	InputStreamReader reader = null;
-					            StringBuffer sb= new StringBuffer(""); 
-					            String line = ""; 
+					        	InputStreamReader reader;
+					            StringBuffer sb= new StringBuffer();
+					            String line;
 					            
 					            try {
 					                reader = new InputStreamReader(new FileInputStream(fI));
@@ -1348,7 +1311,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					                    	if(renameLister.contains(key) ||
 					                    			renameLister.contains(new File(key).getCanonicalPath())){
 					                    		line = mFile.tryDeScion(new File(p, new File(key).getName()), opt.lastMdlibPath);
-						                    }}catch(Exception e) {}
+						                    }}catch(Exception ignored) {}
 					                    if(!mdlibs.contains(line)) {
 						                    sb.append(line).append("\n");
 						                	mdlibs.add(line);
@@ -1398,37 +1361,33 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
               	final View btn_Done = dv1.findViewById(R.id.done);
             	AlertDialog.Builder builder = new AlertDialog.Builder(this).setView(dv1);
             	final AlertDialog dd = builder.create();
-              	btn_Done.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						File source  = new File(opt.pathToMain()+"CONFIG/"+etNew.getText()+".set");
-						if(!mFile.isDirScionOf(source, opt.pathToMain()+"CONFIG/")) {
-							showT("名称非法！");
-							return;
-						}
-						if(source.exists()) {
-							showT("错误：文件已经存在！");
-							return;
-						}
-						try {
-							source.createNewFile();
-							f2.adapter.add(etNew.getText().toString());
-							dd.dismiss();
-							return;
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						showT("未知错误");
-				}});
-            	etNew.setOnEditorActionListener(new OnEditorActionListener(){
-					@Override
-					public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-						if(actionId == EditorInfo.IME_ACTION_DONE ||actionId==EditorInfo.IME_ACTION_UNSPECIFIED) {
-							btn_Done.performClick();
-							return true;
-						}
-						return false;
-					}});
+              	btn_Done.setOnClickListener(v -> {
+					  File source  = new File(opt.pathToMain()+"CONFIG/"+etNew.getText()+".set");
+					  if(!mFile.isDirScionOf(source, opt.pathToMain()+"CONFIG/")) {
+						  showT("名称非法！");
+						  return;
+					  }
+					  if(source.exists()) {
+						  showT("错误：文件已经存在！");
+						  return;
+					  }
+					  try {
+						  source.createNewFile();
+						  f2.adapter.add(etNew.getText().toString());
+						  dd.dismiss();
+						  return;
+					  } catch (IOException e) {
+						  e.printStackTrace();
+					  }
+					  showT("未知错误");
+			  });
+            	etNew.setOnEditorActionListener((v, actionId, event) -> {
+					if(actionId == EditorInfo.IME_ACTION_DONE ||actionId==EditorInfo.IME_ACTION_UNSPECIFIED) {
+						btn_Done.performClick();
+						return true;
+					}
+					return false;
+				});
 				//imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
             	//imm.showSoftInput(etNew, InputMethodManager.SHOW_FORCED);
             	dd.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);

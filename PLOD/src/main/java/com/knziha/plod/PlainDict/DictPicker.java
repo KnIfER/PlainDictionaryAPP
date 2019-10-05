@@ -103,7 +103,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
         //view.setMinimumWidth(getResources().getDisplayMetrics().widthPixels*2/3);
         //view.setLayoutParams(new LayoutParams(-2,-1));
         //getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        mRecyclerView = (RecyclerView) root.findViewById(R.id.choose_dict);
+        mRecyclerView = root.findViewById(R.id.choose_dict);
         lman = new LinearLayoutManager(a.getApplicationContext());
         mRecyclerView.setLayoutManager(lman);
         mRecyclerView.setAdapter(mAdapter = new HomeAdapter());
@@ -145,11 +145,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
 				    root.mMaxHeight=mMaxH;
 			    	window.setLayout(width,height);
 			    	
-			        getView().post(new Runnable() {
-						@Override
-						public void run() {
-							refresh();
-						}});
+			        getView().post(() -> refresh());
 			    }
 		    }
 		    getDialog().setCanceledOnTouchOutside(true);

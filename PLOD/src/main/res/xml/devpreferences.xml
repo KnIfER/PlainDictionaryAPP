@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:NumberPickerPreference="http://schemas.android.com/apk/res-auto"
+	>
+	<PreferenceCategory
+		android:key="category_program"
+		android:title="Developers"
+		app:icon="@drawable/tools_toolbar"
+		>
+		<Preference
+			android:key="app_settings"
+			android:title="App设置"
+			android:persistent="false"
+			/>
+		<Preference
+			android:key="system_dev"
+			android:title="系统开发者选项"
+			android:persistent="false"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="root"
+			android:title="开启Root"
+			android:persistent="false"
+			/>
+
+	</PreferenceCategory>
+
+
+</PreferenceScreen>

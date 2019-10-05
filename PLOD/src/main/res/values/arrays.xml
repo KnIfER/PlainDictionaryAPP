@@ -1,70 +1,43 @@
 <resources>
-    <string-array name="share_pre_empt"> 
-	    <item name="shan">Delete Text</item>
-	    <item name="to1">Send to Front extra</item>
-	    <item name="to2">Send to Back extra </item>
-	    <item name="expand_share">↓↓↓Unfold</item>
-    </string-array> 
-    
-    
-    <string-array name="mnstyle"> 
-	    <item >Clikable Cloze</item>
-	    <item >背景高亮</item>
-	    <item >加粗 </item>
-	    <item >前景色</item>
-	    <item >下划线</item>
-    </string-array> 
-    
-    <string-array name="mnstyle_"> 
-	    <item >1</item>
-	    <item >2</item>
-	    <item >3 </item>
-	    <item >4</item>
-	    <item >5</item>
-    </string-array>
-    
     <string-array name="selection_tweak"> 
-		<item>Select All</item>
-		<item>Cancel Selection</item>
-		<item>Invert Selection</item>
-		<item>Remove Mode</item>
+		<item>@string/select_all</item>
+		<item>@string/cancel_selection</item>
+		<item>@string/invert_selection</item>
+		<item>@string/remove_mode</item>
 	</string-array>
 	
     <string-array name="choosed_tweak"> 
-		<item>Browse All Decks</item>
-		<item>Refresh Current Deck</item>
+		<item>@string/browse_all_favorite_set</item>
+		<item>@string/refresh_current_favorite_set</item>
 	</string-array>
 	
     <string-array name="bookmark0_tweak"> 
-		<item>Update bookmark</item>
-		<item>Jump</item>
+		<item>@string/update_bookmark</item>
+		<item>@string/jump</item>
 	</string-array>
 	
     <string-array name="ver_tweak"> 
-		<item>Strict Mode</item>
-		<item>Loose Mode</item>
+		<item>@string/strict_mode</item>
+		<item>@string/loose_mode</item>
 	</string-array>
-	
-    
+
   	<string-array name="drawer_items">
-        <item>固定搜索词: YES</item>             
-		<item>Wildcard Match Entry</item>                      
-		<item>Full Text Search</item>     
+		<item>@string/fullret</item>
+		<item>@string/fuzzyret1</item>
 		<item>d</item>
-		<item>Bookmark History</item>   
-		<item>Lastest Bookmark</item>        
+		<item>@string/bookmarkH</item>
+		<item>@string/lastmarks</item>
 		<item>d</item>
-		<item>Add .mdx Dictionaries</item>                                  
-		<item>Pick Main Folder</item>                                
-		<item>Dictionary Manager</item>                              
-		<item>Switch Favorite</item>                          
+		<item>@string/addd</item>
+		<item>@string/pick_main</item>
+		<item>@string/manager</item>
+		<item>@string/switch_favor</item>
 		<item>d</item>
-		<item>Settings</item>
+		<item>@string/settings</item>
 	</string-array>
     
     
-    <string-array name="drawer_hints"> 
-		<item>功能暂未实现</item>    
+    <string-array name="drawer_hints">
 		<item>Currently implemented: \'.\' (to match any character), \'*\' (to match any string)</item>    
 		<item>Find in all scoped dictionaries\' Html contents. Can use wildcards as well, but may be slow.</item>    
 		<item>d</item>
@@ -78,29 +51,28 @@
 		<item>d</item>
 		<item>d</item>
 	</string-array>
-    
 
+   	<string-array name="dicts_option">
+    	<item>@string/rename</item>
+    	<item>@string/multi_select</item>
+    	<item>@string/move_top</item>
+    	<item>@string/move_bottom</item>
+    	<item>@string/set_filter</item>
+	</string-array>
 
-   	<string-array name="dicts_option"> 
-    	<item>Rename</item>
-    	<item>Move To Top</item>
-    	<item>Move To Bottom</item>
-	</string-array> 
-
-	
   	<string-array name="module_sets_option"> 
-	    <item>Rename</item>
-	    <item>Delete</item>
-	    <item>Duplicate</item>
+	    <item>@string/rename</item>
+	    <item>@string/delete</item>
+	    <item>@string/duplicate</item>
 	</string-array> 
     
     <string-array name="dict_spec"> 
 	    <item>Global_Independent_Java API_Classical_None_RAM_GPU</item>
-	    <item>Background Color:</item>
-	    <item>Text Zoom:</item>
-	    <item>Keycase Insensitive Policy:</item>
-	    <item>Single webview cache layer type:</item>
-	    <item>Forbid Contextial Seconary Index:</item>
+	    <item>@string/background_color</item>
+	    <item>@string/text_zoom</item>
+	    <item>@string/case_insensitive_policy</item>
+	    <item>Single web view cache layer type:</item>
+	    <item>Force Contextial Seconary Index:</item>
 	</string-array>
 
     <string-array name="app_spec"> 
@@ -127,15 +99,15 @@
 	    <item>历史纪录策略6(记忆主程序、浮动程序在普通模式的列表点击):</item>
 	    <item>历史纪录策略7(记忆浮动搜索程序启动时获得的关键词):</item>
 	    <item>历史纪录策略8(前后翻页记忆模式):</item>
-
 	</string-array>
 	
     <string-array name="dict_tweak_arr">
         <item>@string/bmAdd</item>
-	    <item>BookMark List..</item>
+	    <item>BookMark List…</item>
 	    <item>Font size++</item>
 	    <item>Font size - -</item>
     </string-array>
+
     <string-array name="dict_tweak_arr2">
         <item>收藏选中文本</item>
 	    <item>范围内高亮</item>
@@ -224,6 +196,17 @@
 		<item>中文繁体</item>
 	</string-array>
 
+	<string-array name="paste_target">
+		<item>0</item>
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+	</string-array>
 
-
+	<string-array name="paste_target_info">
+		<item>@string/to_main_auto</item>
+		<item>@string/to_main_main</item>
+		<item>@string/to_main_peruse</item>
+		<item>@string/to_float</item>
+	</string-array>
 </resources>

@@ -220,9 +220,7 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_gravity="center_vertical|center_horizontal"
-		android:visibility="gone"
-		android:layout_centerVertical="true"
-		android:layout_centerHorizontal="true"/>
+		android:visibility="gone"/>
 
 
 	<RelativeLayout
@@ -233,11 +231,11 @@
 		android:gravity="top"
 		android:background="#00303050"
 		android:visibility="gone"
+		android:layoutDirection="ltr"
 		>
 
 		<ImageView
 			android:id="@+id/cb1"
-			android:clickable="true"
 			android:layout_width="28dp"
 			android:layout_height="28dp"
 			android:layout_alignParentEnd="true"
@@ -252,7 +250,6 @@
 
 		<com.knziha.plod.widgets.CheckableImageView
 			android:id="@+id/cb3"
-			android:clickable="true"
 			android:layout_width="28dp"
 			android:layout_height="28dp"
 			android:layout_below="@+id/cb1"
@@ -267,7 +264,6 @@
 
 		<com.knziha.plod.widgets.CheckableImageView
 			android:id="@+id/cb2"
-			android:clickable="true"
 			android:layout_width="28dp"
 			android:layout_height="28dp"
 			android:layout_below="@+id/cb3"
@@ -292,7 +288,6 @@
 			android:layout_marginBottom="@dimen/diagMarginVer"
 			android:layout_centerVertical="true"
 			android:minHeight="110dp"
-			android:clickable="true"
 			/>
 	</RelativeLayout>
 

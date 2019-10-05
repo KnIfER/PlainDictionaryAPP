@@ -181,13 +181,13 @@ public class WebViewmy extends WebView {
     @Override
     protected void onSizeChanged(int w, int h, int ow, int oh) {
         super.onSizeChanged(w, h, ow, oh);
-        CMN.Log("onSizeChanged  ");
+        //CMN.Log("onSizeChanged  ");
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        CMN.Log("onMeasure  ");
+        //CMN.Log("onMeasure  ");
     }
     
     

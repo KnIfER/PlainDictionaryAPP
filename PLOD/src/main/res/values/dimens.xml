@@ -26,4 +26,5 @@
     
     <dimen name="lvtextsize">16dp</dimen>
     <dimen name="lvsubtextsize">9dp</dimen>
+	<dimen name="_35_">35dp</dimen>
 </resources>

@@ -82,11 +82,10 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 		a.adaptermy3.combining_search_result.SearchText=CurrentSearchText;
 		if(a.isCombinedSearching){
 			a.adaptermy3.combining_search_result.invalidate();
-			System.gc();
 		}else{//单独搜索
 			a.adaptermy3.combining_search_result.invalidate(a.adapter_idx);
-			System.gc();
 		}
+		System.gc();
 
 		a.show(R.string.fuzzyfill,(System.currentTimeMillis()-PDICMainActivity.stst)*1.f/1000,a.adaptermy3.getCount());
 

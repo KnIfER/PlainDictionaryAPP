@@ -4,9 +4,7 @@ import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.androidadvance.topsnackbar.TSnackbar;
 import com.knziha.plod.PlainDict.PDICMainActivity;
-import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.myCpr;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -119,9 +117,9 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 		}
 
 		if(a.opt.getNotifyComboRes()) {
-			a.snack = TSnackbar.makeraw(sv, a.getResources().getString(R.string.vbflowersnstr,verbatimCount,rec.size()),TSnackbar.LENGTH_LONG);
-			a.snack.getView().setAlpha(fval);
-			a.snack.show();
+			//a.snack = TSnackbar.makeraw(sv, a.getResources().getString(R.string.vbflowersnstr,verbatimCount,rec.size()),TSnackbar.LENGTH_LONG);
+			//a.snack.getView().setAlpha(fval);
+			//a.snack.show();
 		}
 
 	}

@@ -8,7 +8,7 @@
                 >
                 
 		<LinearLayout
-			android:id="@+id/toolbar"
+			android:id="@+id/lltoolbar"
 			android:layout_width="match_parent"
 			android:layout_height="@dimen/dictitle"
 	        android:paddingTop="0dp"

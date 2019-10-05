@@ -15,12 +15,18 @@
         android:visible="false"
         app:showAsAction="never"/>
 
+	<item
+		android:id="@+id/toolbar_action12"
+		android:icon="@drawable/ic_btn_siglemode"
+		android:title="翻阅模式"
+		app:showAsAction="never"/>
 
     <item
       android:id="@+id/toolbar_action6"
       android:icon="@drawable/ic_btn_siglemode"
-      android:title="翻页前记忆位置 "
+      android:title="记忆位置 "
       app:showAsAction="never"/>
+	<!--	翻页前记忆位置-->
 
     <item
         android:id="@+id/toolbar_action2"

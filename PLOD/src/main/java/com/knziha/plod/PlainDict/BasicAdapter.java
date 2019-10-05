@@ -11,10 +11,10 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.AdapterView.OnItemClickListener;
 
-public class BasicAdapter extends BaseAdapter
+public abstract class BasicAdapter extends BaseAdapter
     						implements OnClickListener,OnItemClickListener
     {
-		int lastClickedPos;
+		int lastClickedPos=-1;
 		public int lastClickedPosBeforePageTurn;
 
 		public final SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
@@ -76,5 +76,6 @@ public class BasicAdapter extends BaseAdapter
 			//CMN.show("onItemClick00");
 			onItemClick(lastClickedPos =pos);
 		}
-		
-    }
+
+		public abstract int getId();
+	}

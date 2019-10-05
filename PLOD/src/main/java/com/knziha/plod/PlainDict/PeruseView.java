@@ -1,54 +1,24 @@
 package com.knziha.plod.PlainDict;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import com.androidadvance.topsnackbar.TSnackbar;
-import com.jess.ui.TwoWayAdapterView;
-import com.jess.ui.TwoWayAdapterView.OnItemClickListener;
-import com.jess.ui.TwoWayGridView;
-import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.widgets.IMPageSlider;
-import com.knziha.plod.widgets.RLContainerSlider;
-import com.knziha.plod.widgets.SplitView;
-import com.knziha.plod.widgets.SplitView.PageSliderInf;
-import com.knziha.plod.widgets.SplitViewGuarder;
-import com.knziha.plod.widgets.SumsungLikeScrollBar;
-import com.knziha.plod.widgets.WebViewmy;
-import com.knziha.plod.dictionary.Flag;
-import com.knziha.plod.dictionary.myCpr;
-import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
-import com.knziha.plod.dictionarymodels.ScrollerRecord;
-import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict.MJavascriptInterface;
-
+import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.appcompat.app.GlobalOptions;
-import androidx.fragment.app.Fragment;
-import androidx.core.graphics.ColorUtils;
-import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.appcompat.widget.Toolbar;
-import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
-import android.view.View.OnTouchListener;
-import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -58,6 +28,37 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
+import androidx.core.graphics.ColorUtils;
+import androidx.fragment.app.Fragment;
+
+import com.jess.ui.TwoWayAdapterView;
+import com.jess.ui.TwoWayAdapterView.OnItemClickListener;
+import com.jess.ui.TwoWayGridView;
+import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
+import com.knziha.plod.dictionary.myCpr;
+import com.knziha.plod.dictionarymodels.ScrollerRecord;
+import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.mdict.MJavascriptInterface;
+import com.knziha.plod.widgets.IMPageSlider;
+import com.knziha.plod.widgets.RLContainerSlider;
+import com.knziha.plod.widgets.SplitView;
+import com.knziha.plod.widgets.SplitView.PageSliderInf;
+import com.knziha.plod.widgets.SplitViewGuarder;
+import com.knziha.plod.widgets.SumsungLikeScrollBar;
+import com.knziha.plod.widgets.WebViewmy;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class PeruseView extends Fragment implements OnClickListener, OnMenuItemClickListener, OnLongClickListener{
@@ -92,7 +93,9 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	
 
 	public View widget13,widget14;
-	private int adapter_idx;
+	int adapter_idx;
+	private int pendingClickPos=-1;
+
 	//构造
 	public PeruseView(){
 		super();
@@ -127,7 +130,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	boolean bExpanded=false;
 	TextWatcher tw1;
 	boolean ToL=false,ToR=false,ToD=false,LnW=false;
-	boolean showBA,showBD,showFastScroll,ForceSearch;
+	boolean showBA,showBD,showFastScroll,ForceSearch,addAll;
 	public int CachedBBSize=-1;
 	ViewGroup webSingleholder;
 	ViewGroup webholder;
@@ -147,15 +150,13 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	View recess;
 	View forward;
 	ViewGroup root;
-	private BasicAdapter ActivedAdapter;
+	BasicAdapter ActivedAdapter;
     
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		root=container;
 		main_pview_layout = inflater.inflate(R.layout.main_peruse_view, container,false);
-		//contentview = (ViewGroup) inflater.inflate(R.layout.contentview, container,false);
-		LvHeadline = (TwoWayGridView) main_pview_layout.findViewById(R.id.main_dict_lst);
+		LvHeadline = main_pview_layout.findViewById(R.id.main_dict_lst);
         LvHeadline.setHorizontalSpacing(0); 
         LvHeadline.setVerticalSpacing(0);
         LvHeadline.setHorizontalScroll(true);
@@ -166,11 +167,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
         LvHeadline.setSelector(getResources().getDrawable(R.drawable.listviewselector0));
         //LvHeadline.setDrawSelectorOnTop(false);
         
-		main_pview_layout.setOnTouchListener(new OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				return true;
-			}});
+		main_pview_layout.setOnTouchListener((v, event) -> true);
 
         toolbar = main_pview_layout.findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.pview_menu);
@@ -232,7 +229,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		lv2.setAdapter(bookMarkAdapter);
 		lv2.setOnItemClickListener(bookMarkAdapter);
 		
-        SplitViewGuarder svGuard = (SplitViewGuarder) main_pview_layout.findViewById(R.id.svGuard);
+        SplitViewGuarder svGuard = main_pview_layout.findViewById(R.id.svGuard);
         svGuard.SplitViewsToGuard.add(sp_main = main_pview_layout.findViewById(R.id.split_view));
         svGuard.SplitViewsToGuard.add(sp_sub = main_pview_layout.findViewById(R.id.secondary));
         sp_sub.addValve(intenToLeft = main_pview_layout.findViewById(R.id.valve0));
@@ -322,14 +319,12 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 				        //LvHeadline.postInvalidate();
 				        //LvHeadline.invalidate();
 				        
-				        LvHeadline.postDelayed(new Runnable() {
-							@Override
-							public void run() {
-						        for(int i=0;i<LvHeadline.getChildCount();i++) {
-						        	LvHeadline.getChildAt(i).setTop(0);
-						        	LvHeadline.getChildAt(i).setBottom((int) (lvHeaderItem_height * density));
-						        }
-							}},160);
+				        LvHeadline.postDelayed(() -> {
+							for(int i=0;i<LvHeadline.getChildCount();i++) {
+								LvHeadline.getChildAt(i).setTop(0);
+								LvHeadline.getChildAt(i).setBottom((int) (lvHeaderItem_height * density));
+							}
+						},160);
 					}
 				}
 				
@@ -397,7 +392,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	}
 	
 	@Override
-	public void onAttach(Context context){
+	public void onAttach(@NonNull Context context){
 		super.onAttach(context);
 		//CMN.show("onAttach");
 	}
@@ -407,7 +402,8 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
     
 	//instantiate views to populate in
 	public void onViewAttached(MainActivityUIBase a, boolean bRefresh){
-		a.PrevActivedAdapter = a.ActivedAdapter;
+		if(a.ActivedAdapter==null||a.ActivedAdapter.getId()<=4)
+			a.PrevActivedAdapter = a.ActivedAdapter;
 		a.ActivedAdapter = ActivedAdapter;
 		othermds.clear();
 		for(int i=0;i<md.size();i++) {
@@ -419,12 +415,8 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		
 		if(data==null || md==null) return;
 		if(data.size()==0) return;
-        //int itemWidth = (int) (lvHeaderItem_length * density);
-        //int itemHeight = (int) (lvHeaderItem_height * density);
-		if(a.opt.getHideScroll3())
-			mBar.setVisibility(View.GONE);
-		else
-			mBar.setVisibility(View.VISIBLE);
+
+		mBar.setVisibility(a.opt.getHideScroll3()?View.GONE:View.VISIBLE);
 			
 		if(bRefresh) {
 			etSearch.setText(TextToSearch);
@@ -452,7 +444,6 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	        	double size = Math.ceil(1.0 * data.size()/cc)*itemHeight;
 	        	if(sp_main.getPrimaryContentSize()>size) 
 	        		sp_main.setPrimaryContentSize((int)size);
-	        		
 	        }
 	        
 	        if(ToR || ToL) {
@@ -468,16 +459,21 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	        	voyager[i*VELESIZE]=-1;
 	        ada2.lastClickedPos=-1;
 	        ada.flip=true;
-	        ada.onItemClick(null,null,NumPreEmpter,0);
+	        int off=0;
+			for (int i = 0; i < data.size(); i++) {
+				if(data.get(i)==adapter_idx){
+					off=i;
+					break;
+				}
+			}
+	        ada.onItemClick(null,null,NumPreEmpter+off,0);
 	        //CMN.Log("clicked");
 		}
-        
-            
-        
-        
-        if(bRefresh) {
-	        
-        }
+		if(pendingClickPos!=-1){
+			ActivedAdapter = ada2;
+			ActivedAdapter.onItemClick(pendingClickPos);
+			pendingClickPos=-1;
+		}
         //contentview.findViewById(R.id.bottombar2).setBackgroundColor(0xFF808080);
 	}
 
@@ -496,7 +492,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		spsubs = sp_sub.getPrimaryContentSize()*1.f/dm.widthPixels;
 		
 		a.opt.defaultReader.edit().putFloat("spsubs", spsubs)
-		.putInt("PBBS", webcontentlist.getPrimaryContentSize()).commit();
+		.putInt("PBBS", webcontentlist.getPrimaryContentSize()).apply();
 		
 		a.opt.putFirstFlag();
 		//reset views back!
@@ -533,18 +529,22 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 			intenToDown.setBackgroundResource(R.drawable.stardn1);
 			intenToLeft.setVisibility(View.GONE);
 		}
-		
+
+		Menu ms = toolbar.getMenu();
+		if(addAll = a.opt.getShowBA()) {
+			onMenuItemClickmy(ms.getItem(1), false);
+		}
 		if(showBA = a.opt.getShowBA()) {
-			onMenuItemClick(toolbar.getMenu().getItem(1));
+			onMenuItemClickmy(ms.getItem(2), false);
 		}
 		if(showBD = a.opt.getShowBD()) {
-			onMenuItemClick(toolbar.getMenu().getItem(2));
+			onMenuItemClickmy(ms.getItem(3), false);
 		}
 		if(ForceSearch = a.opt.getForceSearch()) {
-			onMenuItemClick(toolbar.getMenu().getItem(3));
+			onMenuItemClickmy(ms.getItem(4), false);
 		}
 		if(showFastScroll = a.opt.getShowFScroll()) {
-			onMenuItemClick(toolbar.getMenu().getItem(4));
+			onMenuItemClickmy(ms.getItem(5), false);
 		}
 
 		vb = new View(a.getApplicationContext());
@@ -594,47 +594,44 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
     		mBar.scrollee=mWebView;
     		mWebView.getSettings().setSupportZoom(true);
     		
-	        toolbar_web= rl.findViewById(R.id.toolbar);
-	        toolbar_title = ((TextView)toolbar_web.findViewById(R.id.toolbar_title));
-			toolbar_cover = (ImageView)toolbar_web.findViewById(R.id.cover);
+	        toolbar_web= rl.findViewById(R.id.lltoolbar);
+	        toolbar_title = toolbar_web.findViewById(R.id.toolbar_title);
+			toolbar_cover = toolbar_web.findViewById(R.id.cover);
 			ucc = a.getUcc();
 			toolbar_cover.setOnClickListener(this);
 			toolbar_cover.setTag(R.id.position,false);
 			toolbar_title.setOnClickListener(this);
 			//toolbar.setTitle(this._Dictionary_FName.split(".mdx")[0]);
 			recess = toolbar_web.findViewById(R.id.recess);
-			recess.setOnClickListener(new OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					//CMN.show(""+HistoryVagranter+"asd"+mWebView.canGoBack());mWebView.goBack();
-					if(HistoryVagranter>0) {
+			recess.setOnClickListener(v -> {
+				//CMN.show(""+HistoryVagranter+"asd"+mWebView.canGoBack());mWebView.goBack();
+				if(HistoryVagranter>0) {
+					try {
+						if(!mWebView.isloading)
+							if(HistoryVagranter>=0) History.get(HistoryVagranter).value=mWebView.getScrollY();
+						int pos=-1;
 						try {
-							if(!mWebView.isloading)
-								if(HistoryVagranter>=0) History.get(HistoryVagranter).value=mWebView.getScrollY();
-							int pos=-1;
-							try {
-								pos = Integer.valueOf(History.get(--HistoryVagranter).key);
-							} catch (NumberFormatException e) {
-								//e.printStackTrace();
-							}
-							expectedPos = History.get(HistoryVagranter).value;
-							if(pos!=-1) {
-								setCurrentDis(currentDictionary,pos, 0);
-								currentDictionary.htmlBuilder.setLength(currentDictionary.htmlHeader.length());
-								mWebView.loadDataWithBaseURL(currentDictionary.baseUrl,
-										currentDictionary.htmlBuilder.append(currentDictionary.getRecordsAt(pos))
-													.append(currentDictionary.js)
-													.append(currentDictionary.htmlTailer).toString()
-										,null, "UTF-8", null);
-							}else {
-								mWebView.loadUrl(History.get(HistoryVagranter).key);//
-							}
-						} catch (IOException e) {
-							e.printStackTrace();
+							pos = Integer.valueOf(History.get(--HistoryVagranter).key);
+						} catch (NumberFormatException e) {
+							//e.printStackTrace();
 						}
+						expectedPos = History.get(HistoryVagranter).value;
+						if(pos!=-1) {
+							setCurrentDis(currentDictionary,pos, 0);
+							currentDictionary.htmlBuilder.setLength(currentDictionary.htmlHeader.length());
+							mWebView.loadDataWithBaseURL(currentDictionary.baseUrl,
+									currentDictionary.htmlBuilder.append(currentDictionary.getRecordsAt(pos))
+												.append(currentDictionary.js)
+												.append(currentDictionary.htmlTailer).toString()
+									,null, "UTF-8", null);
+						}else {
+							mWebView.loadUrl(History.get(HistoryVagranter).key);//
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
-			}});
+				}
+			});
 			forward=toolbar_web.findViewById(R.id.forward);
 			forward.setOnClickListener(v -> {
 				//CMN.show(""+HistoryVagranter);
@@ -671,10 +668,10 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		webholder = contentview.findViewById(R.id.webholder);
 		WHP = (ScrollView) webholder.getParent();
 		WHP.setVisibility(View.GONE);
-		webcontentlist = (SplitView)contentview.findViewById(R.id.webcontentlister);
+		webcontentlist = contentview.findViewById(R.id.webcontentlister);
         webcontentlist.multiplier=-1;
         webcontentlist.isSlik=true;
-        bottombar2 = (ViewGroup) webcontentlist.findViewById(R.id.bottombar2);
+        bottombar2 = webcontentlist.findViewById(R.id.bottombar2);
         if(ToL||ToR) {
 			bottombar2.setBackgroundColor(bottombar2BaseColor);
 		}else {
@@ -685,20 +682,23 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
         favoriteBtn = bottombar2.findViewById(R.id.browser_widget7);
         favoriteBtn.setOnClickListener(this);
         favoriteBtn.setOnLongClickListener(this);
+
         favoriteBtn = bottombar2.findViewById(R.id.browser_widget9);
         favoriteBtn.setOnLongClickListener(this);
         favoriteBtn.setOnClickListener(this);
+
         bottombar2.findViewById(R.id.browser_widget10).setOnClickListener(this);
         bottombar2.findViewById(R.id.browser_widget11).setOnClickListener(this);
         bottombar2.findViewById(R.id.browser_widget12).setOnClickListener(this);
-        favoriteBtn = (ImageView)bottombar2.findViewById(R.id.browser_widget8);
+
+        favoriteBtn = bottombar2.findViewById(R.id.browser_widget8);
 		favoriteBtn.setOnClickListener(this);
 		favoriteBtn.setOnLongClickListener(this);
 		
 
 
         IMPageCover = contentview.findViewById(R.id.cover);
-        PageSlider = (RLContainerSlider)  contentview.findViewById(R.id.PageSlider);
+        PageSlider = contentview.findViewById(R.id.PageSlider);
         PageSlider.IMSlider = IMPageCover;
         TurnPageEnabled=PageSlider.TurnPageEnabled=true;
         IMPageCover.setPageSliderInf(a.IMPageCover.inf);
@@ -714,7 +714,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 
 	public void refreshUIColors() {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		boolean isChecked = a.AppWhite==Color.BLACK;
+		boolean isChecked = GlobalOptions.isDark;
 		
 		mWebView.evaluateJavascript(isChecked? MainActivityUIBase.DarkModeIncantation: MainActivityUIBase.DeDarkModeIncantation, null);
 		main_pview_layout.setBackgroundColor(isChecked?Color.BLACK:0xff8f8f8f);
@@ -729,7 +729,40 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 
     BaseAdaptermy ada = new BaseAdaptermy();
 	public boolean bClickToggleView=false;
-	
+
+	public void prepareJump(MainActivityUIBase a, String content, ArrayList<Integer> _data, int _adapter_idx) {
+		if(_data==null) {
+			data = new ArrayList<>();
+			if (!a.opt.getPeruseAddAll()) data.add(a.adapter_idx);
+			for (int i = 0; i < a.md.size(); i++) {
+				if (a.opt.getPeruseAddAll()) {
+					data.add(i);
+					continue;
+				}
+				if (i == a.adapter_idx) continue;
+				mdict mdTmp = a.md.get(i);
+				int idx = mdTmp.lookUp(content);
+				if (idx >= 0)
+					if (mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(content)) {
+						data.add(i);
+					}
+			}
+		}
+		else {
+			adapter_idx=_adapter_idx;
+			data=_data;
+			for (int i=data.size()-1; i>=0; i--) {
+				if(data.get(i)<0||data.get(i)>=a.md.size())
+					data.remove(i);
+			}
+		}
+		TextToSearch = content;
+	}
+
+	public void prepareClick(int pos) {
+		pendingClickPos=pos;
+	}
+
 	//for top list
     public class BaseAdaptermy extends BaseAdapter implements OnItemClickListener
     {
@@ -796,7 +829,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 				if(view!=null) {//record our position
 					if(System.currentTimeMillis()-lastswicthtime>200) {
 						voyager[SelectedV*VELESIZE] = lv1.getFirstVisiblePosition();
-						voyager[SelectedV*VELESIZE+1] = (int) lv1.getChildAt(0).getTop();
+						voyager[SelectedV*VELESIZE+1] = lv1.getChildAt(0).getTop();
 						if(ada2.lastClickedPos!=-1)
 							voyager[SelectedV*VELESIZE+2] = ada2.lastClickedPos;
 						lastswicthtime=System.currentTimeMillis();
@@ -844,14 +877,11 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 				lv1.setSelectionFromTop(voyager[SelectedV*VELESIZE], voyager[SelectedV*VELESIZE+1]);
 				//if(lv1.getFirstVisiblePosition()!=voyager[SelectedV*3])//make it right
 				if(flip)
-				lv1.post(new Runnable() {
-					@Override
-					public void run() {
-						// lv1.setSelectionFromTop(voyager[SelectedV*3], voyager[SelectedV*3+1]);
-						// lv1.setSelection(voyager[SelectedV*3]);
-						lv1.setSelectionFromTop(voyager[SelectedV*VELESIZE], voyager[SelectedV*VELESIZE+1]);
-						flip=false;
-					}
+				lv1.post(() -> {
+					// lv1.setSelectionFromTop(voyager[SelectedV*3], voyager[SelectedV*3+1]);
+					// lv1.setSelection(voyager[SelectedV*3]);
+					lv1.setSelectionFromTop(voyager[SelectedV*VELESIZE], voyager[SelectedV*VELESIZE+1]);
+					flip=false;
 				});
 				if(voyager[SelectedV*VELESIZE+2]>=0) {
 					if(ToR && cvpolicy && contentview.getVisibility()==View.VISIBLE) {//water can flow, unless the valve is closed.
@@ -862,20 +892,11 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 					}
 				}
 			}
-			
-			mlp.post(new Runnable() {
-				//magic crash here.. without 'post' it will say(if you click very fast):
-				//Attempt to invoke virtual method 'int android.view.View.getVisibility()' on a null object reference
-		        //at android.widget.FrameLayout.layoutChildren
-				@Override
-				public void run() {
-					TSnackbar snack = TSnackbar.makeraw(mlp, currentDictionary._Dictionary_fName,TSnackbar.LENGTH_LONG);
-					((TextView)snack.getView().findViewById(R.id.snackbar_text)).setSingleLine();
-					snack.getView().setAlpha(0.8f);
-					snack.show();
-				}
-			});
-			
+
+			//mlp.post(() -> {
+				((MainActivityUIBase)getActivity()).showTopSnack(mlp, currentDictionary._Dictionary_fName
+						, 0.8f, -1, -1);
+			//});
 
         	mlp.removeView(contentview);
         	
@@ -884,7 +905,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
         			OldDictionary.bmCBI=lv2.getFirstVisiblePosition();
         			OldDictionary.bmCCI=bookMarkAdapter.lastClickedPos;
         		}
-        		pullBookMarks();//true
+        		pullBookMarks();
         	} 
         	
 			//oldV=view;
@@ -915,7 +936,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		public View getView(int position, View convertView, ViewGroup parent) {
 			viewholder vh;
 			if(convertView==null) {
-				convertView = getActivity().getLayoutInflater().inflate(R.layout.drawer_list_item, null);
+				convertView = getActivity().getLayoutInflater().inflate(R.layout.drawer_list_item, parent, false);
 				vh = new viewholder();
         		vh.tv=convertView.findViewById(R.id.text1);
         		vh.dv=convertView.findViewById(R.id.del);
@@ -1018,8 +1039,10 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
         				//slp.removeView();
         				return;
         			}
-            		if(contentview.getVisibility()!=View.VISIBLE) contentview.setVisibility(View.VISIBLE);
-            		if(webSingleholder.getVisibility()!=View.VISIBLE) webSingleholder.setVisibility(View.VISIBLE);
+            		if(contentview.getVisibility()!=View.VISIBLE)
+            			contentview.setVisibility(View.VISIBLE);
+            		if(webSingleholder.getVisibility()!=View.VISIBLE)
+            			webSingleholder.setVisibility(View.VISIBLE);
             		
             		
                     if(a.opt.getPeruseBottombarOnBottom() ^ (webcontentlist.getChildAt(0).getId()!=R.id.bottombar2))
@@ -1048,31 +1071,16 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
             	}
     			
             	lastClickedPos = pos;
-            	
-    			currentDictionary.initViewsHolder(a);
-            	currentDictionary.clearWebview();
-            	
-    			ViewGroup someView = currentDictionary.rl;//adaptively remove views?
-    			
-				if(someView.getParent()!=webSingleholder) {
-    				if(someView.getParent()!=null) ((ViewGroup)someView.getParent()).removeView(someView);
-    				webSingleholder.addView(someView);
-				}
-    			if(webSingleholder.getChildCount()>1) {
-    				for(int i=webSingleholder.getChildCount()-1;i>=0;i--)
-    					if(webSingleholder.getChildAt(i)!=currentDictionary.rl)
-    						((ViewGroup)someView.getParent()).removeViewAt(i);
-    			}
-    			if(WHP.getVisibility()==View.VISIBLE) {
-	    			if(webholder.getChildCount()>0)
-	    				webholder.removeAllViews();
-	    			WHP.setVisibility(View.GONE);
-    			}
-    			
-    			cr.moveToPosition(cr.getCount()-lastClickedPos-1);
-    			currentDictionary.renderContentAt(-1,adapter_idx,mWebView,cr.getInt(0));//bookmarks.get(lastClickedPos)
+
+				cr.moveToPosition(cr.getCount()-lastClickedPos-1);
+            	int actualPosition=cr.getInt(0);
+
+				setCurrentDis(currentDictionary, actualPosition);
+
+    			currentDictionary.renderContentAt(-1,adapter_idx,mWebView,actualPosition);//bookmarks.get(lastClickedPos)
     			
     			currentKeyText = currentDictionary.currentDisplaying;
+
     			String key = currentKeyText;
     			
     				int pos1 = currentDictionary.currentPos;
@@ -1087,14 +1095,14 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
     				
     			//voyager[SelectedV*3+2]=pos;
     			a.decorateContentviewByKey(favoriteBtn,key);
-    			currentDictionary.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-    			currentDictionary.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+    			rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+    			mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
         	}else {
         		ViewGroup p = (ViewGroup) vb.getParent();
     			if(p!=null) {
     				currentDictionary=null;
     				voyager[SelectedV*VELESIZE] = lv1.getFirstVisiblePosition();
-    				voyager[SelectedV*VELESIZE+1] = (int) lv1.getChildAt(0).getTop();
+    				voyager[SelectedV*VELESIZE+1] = lv1.getChildAt(0).getTop();
     				if(ada2.lastClickedPos!=-1)
     					voyager[SelectedV*VELESIZE+2] = ada2.lastClickedPos;
     				((TextView)p.findViewById(R.id.text)).setTextColor(Color.WHITE);
@@ -1116,24 +1124,26 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
         }
         
 		public void onClick(View v) {
-			switch(v.getId()) {
-    			case R.id.deld:
-    				int id = (int) v.getTag();
-    				currentDictionary.getCon();
-    				cr.moveToPosition(cr.getCount()-id-1);
-    				if(currentDictionary.con.remove(cr.getInt(0))>0) {
-            			//a.showX(R.string.delDone,0);
-            			pullBookMarks();
-            		}
-            		else
-    				((MainActivityUIBase) getActivity()).showT("删除失败,数据库出错...",0);
-				break;
+			if (v.getId() == R.id.deld) {
+				int id = (int) v.getTag();
+				currentDictionary.getCon();
+				cr.moveToPosition(cr.getCount() - id - 1);
+				if (currentDictionary.con.remove(cr.getInt(0)) > 0) {
+					//a.showX(R.string.delDone,0);
+					pullBookMarks();
+				} else
+					((MainActivityUIBase) getActivity()).showT("删除失败,数据库出错...", 0);
 			}
 		}
 		
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			click(position,false);
+		}
+
+		@Override
+		public int getId() {
+			return 6;
 		}
 	}
 
@@ -1160,7 +1170,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
         	else
         		return 0;
         }
-        Flag mflag = new Flag();
+
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {//length=1046; index=5173
         	String currentKeyText = currentDictionary.getEntryAt(position);
@@ -1179,7 +1189,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	        //int tagetMaxLn=LnW?-1:1;
 	        //if(vh.tv.getMaxLines()!=tagetMaxLn)
 	        //	vh.tv.setMaxLines(tagetMaxLn);
-	        vh.tv.setSingleLine(LnW?false:true);
+	        vh.tv.setSingleLine(!LnW);
 	        
     		vh.dv.setTag(position);
         	convertView.setTag(R.id.position,position);
@@ -1266,7 +1276,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		        			pagerec=new ScrollerRecord();
 		        			avoyager.put(lastClickedPosBeforePageTurn, pagerec);
 		        		}
-		        		pagerec.set((int) (mWebView.getScrollX()),(int) (mWebView.getScrollY()),webScale);
+		        		pagerec.set(mWebView.getScrollX(), mWebView.getScrollY(),webScale);
 		        	}
 					
 					a.lastClickTime=System.currentTimeMillis();
@@ -1276,7 +1286,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		        		expectedPos=pagerec.y;
 		        		expectedPosX=pagerec.x;
 		        		desiredScale=pagerec.scale;
-		        		a.showT(avoyager.size()+"~"+pos+"~取出旧值"+currentDictionary.expectedPos);
+		        		//a.showT(avoyager.size()+"~"+pos+"~取出旧值"+currentDictionary.expectedPos);
 	        		}else {
 			        	expectedPos=0;
 		        		expectedPosX=0;
@@ -1333,9 +1343,9 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
         	lastClickedPos = pos;
         	
         	setCurrentDis(currentDictionary, lastClickedPos);
-        	
+
         	currentDictionary.renderContentAt(desiredScale,adapter_idx,mWebView,lastClickedPos);
-			
+
 			currentKeyText = currentDisplaying;
 			String key = currentKeyText;
 			
@@ -1357,33 +1367,30 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		@Override
 		public void onClick(View v) {
 			MainActivityUIBase a = (MainActivityUIBase) getActivity();
-        	switch(v.getId()) {
-        		case R.id.del:
-        			int id = (int) v.getTag();
-        			//currentDictionary.getCon().insert(id)
-        			currentDictionary.getCon().prepareContain();
-        			int strid = R.string.bmAdded;
-        			if(currentDictionary.con.contains(id)) {
-        				strid = R.string.bookmarkup;
-        			}
-        			if(currentDictionary.con.insertUpdate(id)!=-1) {
-            			int BKHistroryVagranter = a.opt.getInt("bkHVgrt",-1);
-            			BKHistroryVagranter = (BKHistroryVagranter+1)%20;
-            			String rec = currentDictionary.f().getAbsolutePath()+"/?Pos="+id;
-            			a.opt.putter()//.putString("bkmk", rec)
-		                			.putString("bkh"+BKHistroryVagranter, rec)
-		                			.putInt("bkHVgrt", BKHistroryVagranter)
-		                			.commit();
-            			if(ToD) {
-	        				pullBookMarks();
-	            			bookMarkAdapter.notifyDataSetChanged();
-            			}
-            			a.showX(strid,0);
-            		}
-            		else
-            			a.showT("添加失败,数据库出错...",0);
-    			break;
-        	}
+			if (v.getId() == R.id.del) {
+				int id = (int) v.getTag();
+				//currentDictionary.getCon().insert(id)
+				currentDictionary.getCon().prepareContain();
+				int strid = R.string.bmAdded;
+				if (currentDictionary.con.contains(id)) {
+					strid = R.string.bookmarkup;
+				}
+				if (currentDictionary.con.insertUpdate(id) != -1) {
+					int BKHistroryVagranter = a.opt.getInt("bkHVgrt", -1);
+					BKHistroryVagranter = (BKHistroryVagranter + 1) % 20;
+					String rec = currentDictionary.f().getAbsolutePath() + "/?Pos=" + id;
+					a.opt.putter()//.putString("bkmk", rec)
+							.putString("bkh" + BKHistroryVagranter, rec)
+							.putInt("bkHVgrt", BKHistroryVagranter)
+							.commit();
+					if (ToD) {
+						pullBookMarks();
+						bookMarkAdapter.notifyDataSetChanged();
+					}
+					a.showX(strid, 0);
+				} else
+					a.showT("添加失败,数据库出错...", 0);
+			}
         }
         
 		@Override
@@ -1392,7 +1399,11 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 			click(position,false);
 			cvpolicy=true;
 		}
-		
+
+		@Override
+		public int getId() {
+			return 5;
+		}
     }
 	
     
@@ -1404,6 +1415,12 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		//a.showT(v.getId()+"asdasd"+android.R.id.home);
 		switch(v.getId()) {
+			case R.id.home:
+				if(getView() !=null && getView().getParent()!=null){
+					onViewDetached();
+					((ViewGroup)getView().getParent()).removeView(getView());
+				}
+			break;
 			case R.id.toolbar_title:
 			case R.id.cover:
 				ucc.setInvoker(currentDictionary);
@@ -1413,7 +1430,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 				contentview.setVisibility(View.VISIBLE);
 			break;
 			case -1:
-				a.onKeyDown(KeyEvent.KEYCODE_BACK, a.BackEvent);
+				a.onKeyDown(KeyEvent.KEYCODE_BACK, MainActivityUIBase.BackEvent);
 			break;
 			case R.id.ivDeleteText:
 				etSearch.setText(null);
@@ -1505,24 +1522,32 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 		if(currentDictionary!=null)
 		if(ToD) {
 			//a.showT(currentDictionary._Dictionary_fName+" "+currentDictionary.bmCBI);
-			lv2.post(new Runnable() {
-				@Override
-				public void run() {
-					if(currentDictionary!=null) {
-						lv2.setSelection(currentDictionary.bmCBI);
-					}
+			lv2.post(() -> {
+				if(currentDictionary!=null) {
+					lv2.setSelection(currentDictionary.bmCBI);
 				}
-				
 			});
 			bookMarkAdapter.lastClickedPos=currentDictionary.bmCCI;
 		}
 	}
 
 	@Override
-	public boolean onMenuItemClick(MenuItem m) {
-		boolean longclick=false;
-		if(longclick) return false;
-		return onMenuItemClickmy(m,true);
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		super.onSaveInstanceState(outState);
+		CMN.Log("P__onSaveInstanceState");
+	}
+
+	@Override
+	public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+		super.onViewStateRestored(savedInstanceState);
+		CMN.Log("P__onViewStateRestored");
+	}
+
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		MenuItemImpl mmi = (MenuItemImpl)item;
+		boolean isLongClicked=mmi.isLongClicked;
+		return onMenuItemClickmy(item,true);
 	}
 
 	public boolean onMenuItemClickmy(MenuItem m,boolean fromUser) {
@@ -1531,31 +1556,44 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 			case R.id.toolbar_action1:
 				tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 			break;
+			case R.id.toolbar_action7:
+				if(fromUser)addAll=!addAll;
+				if(addAll) {
+					m.setTitle(m.getTitle()+" √");
+				}else {
+					m.setTitle(m.getTitle().subSequence(0, m.getTitle().length()-2));
+				}
+				if(fromUser){
+					a.opt.setPeruseAddAll(addAll);
+					a.opt.putFirstFlag();
+				}
+			break;
 			case R.id.toolbar_action2:
 				if(fromUser)showBA=!showBA;
 				if(showBA) {
 					m.setTitle(m.getTitle()+" √");
-					ada2.notifyDataSetChanged();
 				}else {
 					m.setTitle(m.getTitle().subSequence(0, m.getTitle().length()-2));
-					ada2.notifyDataSetChanged();
 				}
-				a.opt.setShowBA(showBA);
-				a.opt.putFirstFlag();
+				ada2.notifyDataSetChanged();
+				if(fromUser){
+					a.opt.setShowBA(showBA);
+					a.opt.putFirstFlag();
+				}
 			break;
 			case R.id.toolbar_action3:
 				if(fromUser)showBD=!showBD;
 				if(showBD) {
 					m.setTitle(m.getTitle()+" √");
-					if(ToD)
-						bookMarkAdapter.notifyDataSetChanged();
 				}else {
-					if(ToD)
-						bookMarkAdapter.notifyDataSetChanged();
 					m.setTitle(m.getTitle().subSequence(0, m.getTitle().length()-2));
 				}
-				a.opt.setShowBD(showBD);
-				a.opt.putFirstFlag();
+				if(ToD)
+					bookMarkAdapter.notifyDataSetChanged();
+				if(fromUser){
+					a.opt.setShowBD(showBD);
+					a.opt.putFirstFlag();
+				}
 			break;
 			case R.id.toolbar_action4:
 				if(fromUser)ForceSearch=!ForceSearch;
@@ -1564,8 +1602,10 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 				}else {
 					m.setTitle(m.getTitle().subSequence(0, m.getTitle().length()-2));
 				}
-				a.opt.setForceSearch(ForceSearch);
-				a.opt.putFirstFlag();
+				if(fromUser){
+					a.opt.setForceSearch(ForceSearch);
+					a.opt.putFirstFlag();
+				}
 			break;
 			case R.id.toolbar_action5:
 				if(fromUser)showFastScroll=!showFastScroll;
@@ -1578,8 +1618,10 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 					lv1.setFastScrollEnabled(false);
 					lv2.setFastScrollEnabled(false);
 				}
-				a.opt.setShowFScroll(showFastScroll);
-				a.opt.putFirstFlag();
+				if(fromUser){
+					a.opt.setShowFScroll(showFastScroll);
+					a.opt.putFirstFlag();
+				}
 			break;
 			case R.id.toolbar_action6:
 				etSearch.setText(TextToSearch);
@@ -1593,17 +1635,18 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	String currentDisplaying;
 	int expectedPos=-1;
 	int expectedPosX;
-	ArrayList<myCpr<String,Integer>> History = new ArrayList<myCpr<String,Integer>>();
+	ArrayList<myCpr<String,Integer>> History = new ArrayList<>();
 	
 	HashMap<Integer,MJavascriptInterface> ImageHistory = new HashMap<>();
 	int HistoryVagranter=-1;
 
 	boolean isJumping = false;
 	public int bottombar2BaseColor=0xff8f8f8f;
-    void setCurrentDis(mdict invocker, int idx,int...flag) {
+    @SuppressLint("JavascriptInterface")
+	void setCurrentDis(mdict invocker, int idx, int...flag) {
 		currentPos = idx;
 		currentDisplaying = invocker.getEntryAt(currentPos);
-    	toolbar_title.setText(new StringBuilder(currentDisplaying.trim()).append(" - ").append(invocker._Dictionary_fName).toString());
+    	toolbar_title.setText(currentDisplaying.trim() + " - " + invocker._Dictionary_fName);
 
 		if(flag==null || flag.length==0) {//书签跳转等等
 			History.add(++HistoryVagranter,new myCpr<>(String.valueOf(idx),expectedPos));

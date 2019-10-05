@@ -245,8 +245,17 @@
         <item name="android:textColorSecondary">@color/abc_primary_text_material_light</item>
         <item name="android:colorBackground">@color/colorPrimary</item>
     </style>
-    
 
+	<style name="SimpleTextRow">
+		<item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="android:gravity">center|left</item>
+		<item name="android:background">@drawable/dm_dslitem_dragmy</item>
+		<item name="android:minHeight">@dimen/item_height</item>
+		<item name="android:paddingLeft">9dp</item>
+		<item name="android:textIsSelectable">true</item>
+		<item name="android:layout_width">match_parent</item>
+		<item name="android:layout_height">match_parent</item>
+	</style>
 
     
 </resources>

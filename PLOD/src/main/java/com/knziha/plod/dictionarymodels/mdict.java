@@ -1,49 +1,13 @@
 package com.knziha.plod.dictionarymodels;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Timer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringEscapeUtils;
-
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.PhotoBrowserActivity;
-import com.knziha.plod.PlainDict.R;
-import com.knziha.filepicker.utils.FU;
-import com.knziha.plod.dictionary.Utils.BU;
-import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.widgets.WebViewmy;
-import com.knziha.plod.dictionary.mdictRes;
-import com.knziha.plod.dictionary.myCpr;
-import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
-
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
-
-import androidx.appcompat.app.GlobalOptions;
-import androidx.core.graphics.ColorUtils;
-
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
@@ -63,6 +27,41 @@ import android.webkit.WebBackForwardList;
 import android.webkit.WebHistoryItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.appcompat.app.GlobalOptions;
+import androidx.core.graphics.ColorUtils;
+
+import com.knziha.filepicker.utils.FU;
+import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.PlainDict.PhotoBrowserActivity;
+import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.mdictRes;
+import com.knziha.plod.dictionary.myCpr;
+import com.knziha.plod.widgets.WebViewmy;
+
+import org.apache.commons.lang.StringEscapeUtils;
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Timer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import db.MdxDBHelper;
 
 /*
@@ -274,7 +273,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 					mWebView.evaluateJavascript("document.execCommand('Redo')", null);
 				}});
 	        
-			toolbar = (ViewGroup)rl.findViewById(R.id.toolbar);
+			toolbar = (ViewGroup)rl.findViewById(R.id.lltoolbar);
 			toolbar_title = ((TextView)toolbar.findViewById(R.id.toolbar_title));
 			toolbar_cover = (ImageView)toolbar.findViewById(R.id.cover);
 			if(cover!=null)
@@ -581,42 +580,29 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 		}
         lastLength=htmlCode.length();
         */
-		
-	    final String HeaderTag = "<head>";
-	    if(false && htmlCode.indexOf(HeaderTag)!=-1){
-	    	//showToast("!");
-			mWebView.loadDataWithBaseURL(baseUrl,htmlCode,null, "UTF-8", null);
-	    }else {
-	    	htmlBuilder.setLength(htmlHeader.length());
-	    	mWebView.isloading=true;
-	    	//mWebView.loadUrl("file:///sdcard/fond.mhtml");
-	    	if(false)mWebView.loadUrl("file:///sdcard/123.html");
-	    	CMN.Log("缩放是", initialScale);
-	    	if(initialScale!=-1)
-	    		mWebView.setInitialScale((int) (100*(initialScale/mdict.def_zoom)*opt.dm.density));//opt.dm.density
-	    	else {
-	    		if(false && Build.VERSION.SDK_INT<=23) {
-	    			//mWebView.zoomBy(0.02f);
-	    			mWebView.setTag(R.id.toolbar_action3,true);
-	    		}else
-	    			mWebView.setInitialScale(0);//opt.dm.density
-	    	}
 
-	    	//(int) (100 *opt.dm.density)+1
-	    	
-	    	//CMN.Log(initialScale+" :"+(int) (100 *opt.dm.density));
+		htmlBuilder.setLength(htmlHeader.length());
+		mWebView.isloading=true;
 
-    		//mWebView.setInitialScale((int) (100*(2)));//opt.dm.density
-    		
-			mWebView.loadDataWithBaseURL(baseUrl,//.append(mWebView==this.mWebView?"":(SelfIdx+":"))    .append(position[0])
-					htmlBuilder.append(htmlTitleEndTag).append(GlobalOptions.isDark? MainActivityUIBase.DarkModeIncantation_l:"").append(htmlHeader2)
-								.append(htmlCode)
-								.append(js)
-								.append(mdd!=null?"<div class='MddExist'/>":"")
-								.append(htmlTailer).toString(),null, "UTF-8", null);
-	    }
-		//mWebView.loadDataWithBaseURL(null,"<body>"+htmlCode+"</body>",null, "UTF-8", null);
-	    //////a.mBar.fadeOut();
+		//CMN.Log("缩放是", initialScale);
+
+		if(initialScale!=-1)
+			mWebView.setInitialScale((int) (100*(initialScale/mdict.def_zoom)*opt.dm.density));//opt.dm.density
+		else {
+			if(false && Build.VERSION.SDK_INT<=23) {
+				//mWebView.zoomBy(0.02f);
+				mWebView.setTag(R.id.toolbar_action3,true);
+			}else
+				mWebView.setInitialScale(0);//opt.dm.density
+		}
+
+
+		mWebView.loadDataWithBaseURL(baseUrl,//.append(mWebView==this.mWebView?"":(SelfIdx+":"))    .append(position[0])
+				htmlBuilder.append(htmlTitleEndTag).append(GlobalOptions.isDark? MainActivityUIBase.DarkModeIncantation_l:"").append(htmlHeader2)
+							.append(htmlCode)
+							.append(js)
+							.append(mdd!=null?"<div class='MddExist'/>":"")
+							.append(htmlTailer).toString(),null, "UTF-8", null);
 	}
     
 
@@ -838,7 +824,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
         
         @JavascriptInterface
         public void pageshow() {
-        	CMN.Log("pageshow");
+        	//CMN.Log("pageshow");
         	final int lalaX=IU.parsint(mWebView.getTag(R.id.toolbar_action1));
 			final int lalaY=IU.parsint(mWebView.getTag(R.id.toolbar_action2));
 			if(lalaY!=-1 && lalaX!=-1) {
@@ -854,7 +840,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 					//mWebView.getSettings().setSupportZoom(true);
 				}});
         	
-        	if(true) return;
+        	//if(true) return;
+
 			//mWebView.setAlpha(1.0f);
         	//mWebView.setVisibility(View.VISIBLE);
         	//mWebView.isloading=false;
@@ -866,7 +853,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
         	mWebView.postDelayed(new Runnable() {
 				@Override
 				public void run() {
-		    		//mWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+		    		mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 					mWebView.setAlpha(1.0f);
 		        	mWebView.setVisibility(View.VISIBLE);
 		        	mWebView.isloading=false;

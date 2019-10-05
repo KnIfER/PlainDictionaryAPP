@@ -1,0 +1,74 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:background="#e2e2e2"
+	android:id="@+id/drawer_f"
+	android:clickable="true"
+	>
+	<ListView
+		android:id="@+id/left_drawer"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_marginBottom="35dp"
+		android:choiceMode="singleChoice"
+		android:drawSelectorOnTop="true"
+		android:listSelector="@drawable/color_double_list_bg"
+		/>
+
+	<RelativeLayout
+		android:id="@+id/footer"
+		android:layout_width="match_parent"
+		android:layout_height="@dimen/_35_"
+		android:layout_gravity="bottom"
+		android:background="@android:color/white">
+
+		<LinearLayout
+			android:id="@+id/menu_item_exit"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentStart="true"
+			android:gravity="center"
+			android:orientation="horizontal"
+			android:background="@drawable/surrtrip1">
+			<ImageView
+				style="@style/MenuItemImageViewStyle"
+				android:background="@drawable/drawer_menu_icon_exit" />
+			<TextView
+				style="@style/MenuItemTextViewStyle"
+				android:text="@string/exit" />
+		</LinearLayout>
+
+		<LinearLayout
+			android:id="@+id/menu_item_setting"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentEnd="true"
+			android:gravity="center"
+			android:orientation="horizontal"
+			android:background="@drawable/surrtrip1"
+			>
+			<ImageView
+				style="@style/MenuItemImageViewStyle"
+				android:background="@drawable/info" />
+			<TextView
+				style="@style/MenuItemTextViewStyle"
+				android:text="@string/about"
+				/>
+		</LinearLayout>
+	</RelativeLayout>
+
+
+	<ImageView
+		android:id="@+id/pastebin"
+		android:layout_width="50dp"
+		android:layout_height="@dimen/_35_"
+		android:layout_gravity="center_horizontal|bottom"
+		android:layout_marginEnd="10dp"
+		android:background="@drawable/listviewselector0"
+		android:padding="4dp"
+		android:paddingBottom="2dp"
+		android:src="@drawable/ic_content_paste_black_24dp"
+		android:visibility="gone" />
+
+</FrameLayout>

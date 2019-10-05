@@ -51,7 +51,6 @@ import android.webkit.WebViewClient;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Checkable;
 import android.widget.FrameLayout;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
@@ -70,7 +69,6 @@ import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 
-import com.androidadvance.topsnackbar.TSnackbar;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialogListener;
 import com.knziha.filepicker.widget.CircleCheckBox;
@@ -82,10 +80,10 @@ import com.knziha.plod.dictionarymodels.mdict_asset;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.widgets.ArrayAdaptermy;
-import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.ListViewmy;
+import com.knziha.plod.widgets.ListSizeConfiner;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
@@ -153,6 +151,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 	public Handler hdl;
 
 	public mdict currentDictionary;
+	public mdict currentFilter;
 	public int adapter_idx;
 	HashSet<String> mdlibsCon;
 	public List<mdict> md = new ArrayList<>();//Collections.synchronizedList(new ArrayList<mdict>());
@@ -190,7 +189,11 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 	BitmapDrawable mPageDrawable;
 
 	AsyncTask lianHeTask;
+	public int[] pendingLv2Pos;
+	public int pendingLv2ClickPos=-1;
 	public int split_dict_thread_number;
+	public static final ListSizeConfiner mListsizeConfiner = new ListSizeConfiner();
+
 	public void countDelta(int delta) {
 		Lock lock = new ReentrantLock();
 		lock.lock();
@@ -276,7 +279,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		//CMN.show("isLarge"+isLarge);
 		mdict.def_zoom=dm.density;
 		mdict.optimal100 = opt.isLarge?150:100;
-		mdict.def_fontsize = opt.getDefaultFontScale(String.valueOf(mdict.optimal100));
+		mdict.def_fontsize = opt.getDefaultFontScale(mdict.optimal100);
 
 		opt.currFavoriteDBName = opt.getCurrFavoriteDBName();
 		if(opt.currFavoriteDBName==null || !opt.currFavoriteDBName.startsWith(favorTag))
@@ -299,18 +302,25 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			} catch (IOException e) {
 				Log.e("ffatal", "sda");
 			}
-		}else{
-			try {
+		}
+		else try {
 				BufferedReader in = new BufferedReader(new FileReader(def));
 				String line = in.readLine();
 				while(line!=null){
 					try {
+						boolean isFilter=false;
+						if(line.startsWith("[:F]")){
+							line = line.substring(4);
+							isFilter=true;
+						}
 						if(!line.startsWith("/"))
 							line=opt.lastMdlibPath+"/"+line;
 						mdict mdtmp = new_mdict(line,this);
 						if(mdtmp._Dictionary_fName.equals(opt.getLastMdFn()))
 							adapter_idx = md.size();
 						md.add(mdtmp);
+						if(isFilter)
+							currentFilter =mdtmp;
 					} catch (Exception e) {
 						e.printStackTrace();
 						if(trialCount==-1)if(bShowLoadErr)
@@ -319,10 +329,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					line = in.readLine();
 				}
 				in.close();
-			} catch (IOException e2) {
-				e2.printStackTrace();
-			}
-		}
+			} catch (IOException e2) { e2.printStackTrace(); }
 		//stst = System.currentTimeMillis();
 
 		//dbCon = new DBWangYiLPController(this,true);   getExternalFilesDir(null).getAbsolutePath()
@@ -348,7 +355,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			} catch (Exception e2) {
 				e2.printStackTrace();
 			}
-		{
+		else {
 			rec.getParentFile().mkdirs();
 			try {
 				rec.createNewFile();
@@ -410,7 +417,8 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		}
 
 
-
+		if(adapter_idx<0)
+			adapter_idx=0;
 		if(md.size()>0)
 			currentDictionary = md.get(adapter_idx);
 		//dbCon.refresh();
@@ -619,7 +627,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					if(lalaY!=-1 && lalaX!=-1) {
 						v.scrollTo(lalaX, lalaY);
 						v.setLayoutParams(v.getLayoutParams());
-						CMN.Log("scrolling to: "+lalaY);
+						//CMN.Log("scrolling to: "+lalaY);
 					}
 				}
 
@@ -699,7 +707,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		}
 	}
 
-	public boolean checkDics() {
+	public boolean checkDicts() {
 		if(md.size()>0) {
 			if(currentDictionary==null)
 				currentDictionary=md.get((adapter_idx<0||adapter_idx>=md.size())?0:adapter_idx);
@@ -743,7 +751,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				}
 			}
 		}
-		opt.putDefaultFontScale(String.valueOf(mdict.def_fontsize));
+		opt.putDefaultFontScale(mdict.def_fontsize);
 	}
 
 
@@ -874,14 +882,27 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			}else {
 				sv=main_succinct;
 			}
-			Snack(sv, fval, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size),TSnackbar.LENGTH_LONG);
+			showTopSnack(sv, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size), fval, -1, -1);
 		}
 	}
 
 	void Snack(ViewGroup vg, float alpha, String msg, int len) {
-		snack=TSnackbar.makeraw(vg, msg, len);
-		snack.getView().setAlpha(alpha);
-		snack.show();
+		//snack=TSnackbar.makeraw(vg, msg, len);
+		//snack.getView().setAlpha(alpha);
+		//snack.show();
+	}
+
+	public void restoreLv2States() {
+		if(pendingLv2Pos!=null){
+			int[] arr = pendingLv2Pos;
+			//lv2.post(() -> lv2.setSelectionFromTop(arr[0], arr[1]));
+			lv2.setSelectionFromTop(arr[0], arr[1]);
+			pendingLv2Pos=null;
+		}
+		if(pendingLv2ClickPos!=-1){
+			adaptermy2.onItemClick(pendingLv2ClickPos);
+			pendingLv2ClickPos=-1;
+		}
 	}
 
 
@@ -928,9 +949,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					//DialogSnack(d,msg);
 					d.hide();
 					ViewGroup target=bFromPeruseView?PeruseView.contentview:contentview;
-					TSnackbar snack = TSnackbar.makeraw(target, msg,TSnackbar.LENGTH_LONG);
-					snack.getView().setAlpha(0.8f);
-					snack.show();
+					showTopSnack(target, msg, 0.8f, -1, -1);
 
 					ColorPickerDialog asd =
 							ColorPickerDialog.newBuilder()
@@ -1017,7 +1036,8 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 						tools_lock.setImageResource(R.drawable.locked);
 					opt.setTurnPageEnabled(TurnPageEnabled=PageSlider.TurnPageEnabled);
 					opt.putFirstFlag();
-					DialogSnack(d,getResources().getString(PageSlider.TurnPageEnabled?R.string.PT1:R.string.PT2));
+					showTopSnack((ViewGroup) d.getListView().getRootView(), PageSlider.TurnPageEnabled?R.string.PT1:R.string.PT2
+							, 0.8f, LONG_DURATION_MS, -1);
 				return;
 			}
 			imm.hideSoftInputFromWindow(main.getWindowToken(),0);
@@ -1159,18 +1179,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 										//if(!cb.isChecked())
 										d.dismiss();
 									});
-
-									final int maxHeight = (int) (root.getHeight()-root.getPaddingTop()-4*getResources().getDimension(R.dimen._50_));
-									d.getListView().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-										@Override
-										public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
-																   int oldRight, int oldBottom) {
-											if (v.getMeasuredHeight() > maxHeight) {
-												v.getLayoutParams().height=maxHeight;
-											}
-											v.removeOnLayoutChangeListener(this);
-										}
-									});
+									d.getListView().addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (root.getHeight()-root.getPaddingTop()-2.8*getResources().getDimension(R.dimen._50_))));
 									d.getListView().setTag(con);
 									d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v13 -> {
 										mBookMarkAdapter.showDelete = !mBookMarkAdapter.showDelete;
@@ -1733,21 +1742,6 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		return ucc;
 	}
 
-	private View DialogSnack(AlertDialog d,String msg) {
-		TSnackbar snack = TSnackbar.make(d.getListView(), msg,TSnackbar.LENGTH_LONG);
-		FrameLayout.LayoutParams lp1 = (android.widget.FrameLayout.LayoutParams) snack.getView().getLayoutParams();
-		int generalPadding=(int) (4*getResources().getDisplayMetrics().density);
-		lp1.setMargins(0, generalPadding, 0, 0);
-		TextView sntv = snack.getView().findViewById(R.id.snackbar_text);
-		LinearLayout.LayoutParams lp2 = (android.widget.LinearLayout.LayoutParams) sntv.getLayoutParams();
-		lp2.setMargins(0, generalPadding, 0, generalPadding);
-		sntv.setLayoutParams(lp2);
-		sntv.setTextColor(Color.WHITE);
-		snack.getView().setLayoutParams(lp1);
-		snack.show();
-		return snack.getView();
-	}
-
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
@@ -1766,7 +1760,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 	}
 
 	int lastCheckedPos = -1;
-	public void showChooseSetDialog() {
+	public void showChooseSetDialog() {//切换分组
 		if(d!=null) {
 			d.dismiss();
 			d=null;
@@ -1876,10 +1870,8 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 
 		dTmp.getListView().setAdapter(new ArrayAdapter<String>(getApplicationContext(),
 				R.layout.singlechoice, android.R.id.text1, scanInList) {
-			@NonNull
-			@Override
-			public View getView(int position, View convertView,
-								@NonNull ViewGroup parent) {
+			@NonNull @Override
+			public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 				View ret =  super.getView(position, convertView, parent);
 				CheckedTextViewmy tv;
 				if(ret.getTag()==null)
@@ -1892,18 +1884,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			}
 		});
 
-
-		final int maxHeight = (int) (root.getHeight()-root.getPaddingTop()-2.8*getResources().getDimension(R.dimen._50_));
-		dTmp.getListView().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-			@Override
-			public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,int oldRight, int oldBottom) {
-				if (v.getMeasuredHeight() > maxHeight) {
-					v.getLayoutParams().height=maxHeight;
-				}
-				v.removeOnLayoutChangeListener(this);
-			}
-		});
-
+		dTmp.getListView().addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (root.getHeight()-root.getPaddingTop()-2.8*getResources().getDimension(R.dimen._50_))));
 
 		if(lastCheckedPos!=-1) {
 			dTmp.getListView().setSelection(lastCheckedPos);
@@ -1952,10 +1933,10 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				//if(fromPeruseView)PeruseView.webScale=mdict.def_zoom;else invoker.webScale=mdict.def_zoom;
 			}
 			if(view.getTag(R.id.toolbar_action3)!=null) {
-				CMN.Log("变小了吗？");
+				//CMN.Log("变小了吗？");
 				if(((WebViewmy)view).webScale!=opt.dm.density){
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-						CMN.Log("变小了");
+						//CMN.Log("变小了");
 						view.zoomBy(0.02f);
 					}
 				}
@@ -1983,9 +1964,9 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			mWebView.setTag(R.id.toolbar_action1,lalaX=fromPeruseView?PeruseView.expectedPosX:invoker.expectedPosX);
 			mWebView.setTag(R.id.toolbar_action2,lalaY=fromPeruseView?PeruseView.expectedPos:invoker.expectedPos);
 			//layoutScrollDisabled=true;
-			CMN.Log("initial_push: ",lalaX, lalaY);
+			//CMN.Log("initial_push: ",lalaX, lalaY);
 			mWebView.scrollTo(lalaX, lalaY);
-			//mWebView.setLayoutParams(mWebView.getLayoutParams());
+
 
 			NaugtyWeb=mWebView;
 			if(hdl!=null)
@@ -2044,7 +2025,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			Integer selfAtIdx = IU.parseInt(view.getTag());
 			if(selfAtIdx==null || selfAtIdx>=md.size() || selfAtIdx<0) return false;
 			final mdict invoker = md.get(selfAtIdx);
-			CMN.Log("chromium shouldOverrideUrlLoading_",url);
+			//CMN.Log("chromium shouldOverrideUrlLoading_",url);
 			boolean fromPeruseView=view.getTag(R.id.position)!=null;
 			if(url.startsWith("pdf://")) {
 				int end = url.lastIndexOf("#");
@@ -2066,7 +2047,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				return true;
 			}
 			if(url.startsWith("http://") || url.startsWith("https://") ) {
-				CMN.Log("shouldOverrideUrlLoading_http",url);
+				//CMN.Log("shouldOverrideUrlLoading_http",url);
 
 				if(opt.bShouldUseExternalBrowserApp) {
 					Uri uri = Uri.parse(url);
@@ -2098,7 +2079,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			else if(url.startsWith(soundTag)) {
 				try {
 					if(invoker.mdd!=null) {
-						CMN.Log("shouldOverrideUrlLoading_sound",url);
+						//CMN.Log("shouldOverrideUrlLoading_sound",url);
 						view.evaluateJavascript("var audioTag = document.getElementById(\"myAudio\");if(audioTag){audioTag.pause();}else {audioTag = document.createElement(\"AUDIO\");audioTag.id=\"myAudio\";document.body.appendChild(audioTag);} audioTag.setAttribute(\"src\", \""+URLDecoder.decode(url.substring(soundTag.length()),"UTF-8")+"\");audioTag.play();", null);
 					}else
 						view.evaluateJavascript("var hrefs = document.getElementsByTagName('a'); for(var i=0;i<hrefs.length;i++){ if(hrefs[i].attributes['href']){ if(hrefs[i].attributes['href'].value=='"+URLDecoder.decode(url,"UTF-8")+"'){ hrefs[i].removeAttribute('href'); hrefs[i].click(); break; } } }", null);
@@ -2236,7 +2217,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			Integer selfAtIdx = IU.parseInt(view.getTag());
 			if(selfAtIdx==null || selfAtIdx>=md.size() || selfAtIdx<0) return null;
 			mdict invoker = md.get(selfAtIdx);
-			CMN.Log("chromium shouldInterceptRequest__",url);
+			//CMN.Log("chromium shouldInterceptRequest__",url);
 			//boolean fromPeruseView=view.getTag(R.id.position)!=null;
 			//WebViewmy mWebView = (WebViewmy) view;
 			if(url.startsWith("http") && url.endsWith("mp3")) {
@@ -2252,7 +2233,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 
 					return new WebResourceResponse("audio/mpeg","UTF-8",inputStream);
 				} catch (IOException e) {
-					CMN.Log("shouldInterceptRequest__ffffff",url);
+					//CMN.Log("shouldInterceptRequest__ffffff",url);
 					e.printStackTrace();
 				}
 			}
@@ -2304,12 +2285,12 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			if(!key.startsWith(SepWindows)){
 				key=SepWindows+key;
 			}
-			CMN.Log("chrochro_inter_key is",key);
+			//CMN.Log("chrochro_inter_key is",key);
 
 			try {
 				int idx = invoker.mdd.lookUp(key);
 				if(idx==-1) {
-					CMN.Log("chrochro inter_ key is not find: ",key);
+					//CMN.Log("chrochro inter_ key is not find: ",key);
 					//return super.shouldInterceptRequest(view, url);
 				}
 				byte[] restmp=invoker.mdd.getRecordAt(idx);
@@ -2347,7 +2328,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					return new WebResourceResponse("audio/mpeg","UTF-8",new ByteArrayInputStream(restmp));
 
 				if(url.contains(".png") || url.contains(".jpg") || url.contains(".gif") || url.contains(".jpeg") ||url.contains(".tif")) {
-					CMN.Log("chrochrochrochrochrochro inter_ key is",key);
+					//CMN.Log("chrochrochrochrochrochro inter_ key is",key);
 					//BU.printFile(restmp,0,restmp.length,"/sdcard/0tmp/"+key.replace("\\", "_"));
 					return new WebResourceResponse("image/jpg","UTF-8",new ByteArrayInputStream(restmp));
 				}
@@ -2370,8 +2351,8 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this);
 			builder.setTitle("SSL Certificate Error");
 			builder.setMessage("code"+error.getPrimaryError()+"\ndo u want to continue anyway?");
-			builder.setPositiveButton(R.string.continueit, (dialog, which) -> mHandler.proceed());
-			builder.setNegativeButton(R.string.cancle, (dialog, which) -> mHandler.cancel());
+			builder.setPositiveButton(R.string.continue_, (dialog, which) -> mHandler.proceed());
+			builder.setNegativeButton(R.string.cancel, (dialog, which) -> mHandler.cancel());
 			builder.setOnKeyListener((dialog, keyCode, event) -> {
 				if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
 					mHandler.cancel();

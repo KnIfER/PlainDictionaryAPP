@@ -7,12 +7,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Locale;
 
-import com.androidadvance.topsnackbar.TSnackbar;
-import com.knziha.filepicker.utils.CMNF;
-import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.settings.SettingsActivity;
-
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -20,11 +17,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
@@ -33,12 +32,16 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.knziha.plod.widgets.SimpleTextNotifier;
 
 public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
@@ -79,14 +82,25 @@ public class Toastable_Activity extends AppCompatActivity {
     protected ImageView ivBack;
 
 	protected ObjectAnimator objectAnimator;
-	public TSnackbar snack;
     
 	public Dialog d;
 	public View dv;
 	Configuration mConfiguration;
 	boolean isDarkStamp;
 
-   @Override
+	boolean animationSnackOut;
+	SimpleTextNotifier topsnack;
+	Runnable snackWorker;
+	Runnable snackRemover= () -> {
+		if(topsnack!=null && topsnack.getParent()!=null)
+			((ViewGroup)topsnack.getParent()).removeView(topsnack);
+	};
+	private Animator.AnimatorListener topsnackListener;
+	static final int SHORT_DURATION_MS = 1500;
+	static final int LONG_DURATION_MS = 2355;
+	int NextSnackLength;
+
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
        opt = new PDICMainAppOptions(this);
        opt.dm = dm = new DisplayMetrics();
@@ -112,6 +126,9 @@ public class Toastable_Activity extends AppCompatActivity {
 		   CrashHandler.getInstance(this, opt).TurnOff();
 		   CrashHandler.getInstance(this, opt).register(getApplicationContext());
 	   }
+
+	   if(PDICMainAppOptions.getKeepScreen())
+		   getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
 	   checkLanguage();
    }
@@ -180,6 +197,33 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	protected boolean DoesActivityCheckLog() {
 		return true;
+	}
+
+	public void fix_full_screen(@Nullable View decorView) {
+		if(opt.isFullScreen() && false) {//opt.isFullscreenHideNavigationbar()
+			if(decorView==null) decorView=getWindow().getDecorView();
+			//int options = decorView.getSystemUiVisibility();
+			int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_LOW_PROFILE
+					| View.SYSTEM_UI_FLAG_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_IMMERSIVE
+					;
+			decorView.setSystemUiVisibility(uiOptions);
+		}
+	}
+
+	protected void checkFlags() {
+		if(checkFlagsChanged()){
+			opt.setFlags(null, 1);
+			FFStamp=opt.FirstFlag();
+			SFStamp=opt.SecondFlag();
+		}
+	}
+
+	protected boolean checkFlagsChanged() {
+		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag();// || TFStamp!=opt.getThirdFlag();
 	}
 
 	protected void checkLanguage() {
@@ -378,15 +422,73 @@ public class Toastable_Activity extends AppCompatActivity {
 
 
 
-	protected void cancleSnack() {
-		if(snack!=null) {
-			if(objectAnimator!=null) objectAnimator.cancel();
-			objectAnimator = ObjectAnimator.ofFloat(snack.getView(),"alpha",snack.getView().getAlpha(),0f);
-            objectAnimator.setDuration(240);
-            objectAnimator.start();
+
+	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity) {
+		if(objectAnimator!=null){
+			objectAnimator.cancel();
+			objectAnimator=null;
+		}
+		if(topsnack==null){
+			topsnack = new SimpleTextNotifier(getBaseContext());
+			Resources res = getResources();
+			topsnack.setTextColor(Color.WHITE);
+			topsnack.setBackgroundColor(res.getColor(R.color.colorHeaderBlueT));
+			int pad = (int) res.getDimension(R.dimen.design_snackbar_padding_horizontal);
+			topsnack.setPadding(pad,pad/2,pad,pad/2);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				topsnack.setElevation(res.getDimension(R.dimen.design_snackbar_elevation));
+			}
+		}else{
+			topsnack.removeCallbacks(snackRemover);
+			topsnack.setAlpha(1);
+		}
+		NextSnackLength=duration<0?SHORT_DURATION_MS:duration;
+		topsnack.getBackground().setAlpha((int) (alpha*255));
+		if(messageVal instanceof Integer)
+			topsnack.setText((int)messageVal);
+		else
+			topsnack.setText(String.valueOf(messageVal));
+		topsnack.setGravity(gravity==-1?Gravity.CENTER:gravity);
+		ViewGroup sp = (ViewGroup) topsnack.getParent();
+		if(sp!=null && sp!=parentView) sp.removeView(topsnack);
+		if(topsnack.getParent()!=parentView) {
+			topsnack.setVisibility(View.INVISIBLE);
+			parentView.addView(topsnack);
+			topsnack.getLayoutParams().height=-2;
+			topsnack.post(snackWorker);
+		}else{
+			topsnack.removeCallbacks(snackWorker);
+			snackWorker.run();
 		}
 	}
 
+	protected void cancleSnack() {
+		if(topsnack!=null && topsnack.getParent()!=null) {
+			if(objectAnimator!=null){
+				objectAnimator.removeAllListeners();
+				objectAnimator.cancel();
+			}
+			objectAnimator = ObjectAnimator.ofFloat(topsnack,"alpha",topsnack.getAlpha(),0f);
+            objectAnimator.setDuration(240);
+            objectAnimator.start();
+            if(topsnackListener==null){
+				topsnackListener = new Animator.AnimatorListener() {
+					@Override public void onAnimationStart(Animator animation) { }
+					@Override public void onAnimationEnd(Animator animation) {
+						removeSnackView();
+					}
+					@Override public void onAnimationCancel(Animator animation) { }
+					@Override public void onAnimationRepeat(Animator animation) { }
+				};
+			}
+			objectAnimator.addListener(topsnackListener);
+		}
+	}
+
+	void removeSnackView(){
+		topsnack.removeCallbacks(snackRemover);
+		topsnack.postDelayed(snackRemover, 2000);
+	}
 
 	protected void checkMargin() {
 		//File additional_config = new File(opt.pathToMain()+"appsettings.txt");

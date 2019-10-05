@@ -5,8 +5,6 @@ include ':recyclerViewFastScroller'
 
 include ':drag_sort_lib'
 
-include ':topsnackbar'
-
 include ':twowaygridview'
 
 include ':PLOD'
@@ -15,7 +13,6 @@ include ':PLOD'
 include ':AxtAppCompat'
 include ':AweDesigner'
 include ':AppPreference'
-include ':libvlc'
 
 include ':drag_sort_lib'
 include ':filepicker'

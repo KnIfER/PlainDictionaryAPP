@@ -1,50 +1,5 @@
 <resources>
-	<string-array name="share_pre_empt"> 
-		    <item name="shan">删除文本</item>
-		    <item name="to1">誊至正面新卡</item>
-		    <item name="to2">誊至背面新卡</item>
-		    <item name="expand_share">↓↓↓展开</item>
-	</string-array> 
-	
-    <string-array name="selection_tweak"> 
-		<item>全选</item>
-		<item>全不选</item>
-		<item>反选</item>
-		<item>剔除</item>
-	</string-array>
-	
-    <string-array name="choosed_tweak"> 
-		<item>浏览全部牌组</item>
-		<item>刷新当前牌组</item>
-	</string-array>
-	
-    
-   <string-array name="bookmark0_tweak"> 
-		<item>更新书签位置</item>
-		<item>跳转到书签</item>
-	</string-array>
-	
-   
-   
-   	<string-array name="drawer_items">
-        <item>固定搜索词: YES</item>             
-		<item>通配搜索</item>                      
-		<item>全文搜索</item>     
-		<item>d</item>
-		<item>书签历史</item>   
-		<item>最近书签</item>        
-		<item>d</item>
-		<item>添加词典</item>                                  
-		<item>选择主目录</item>                                
-		<item>词典管理中心</item>                              
-		<item>切换生词本</item>                          
-		<item>d</item>
-		<item>设置</item>
-	</string-array>
-    
-    
-    <string-array name="drawer_hints"> 
-		<item>功能暂未实现</item>
+    <string-array name="drawer_hints">
 		<item>用\'.\'  匹配任意一个字符,  \'*\'  匹配任意长的字符串</item>
 		<item>同上支持通配符</item>
 		<item>d</item>
@@ -59,12 +14,7 @@
 		<item>d</item>
 	</string-array>
 	
-  	<string-array name="dicts_option"> 
-		    <item name="shan">重命名</item>
-    	<item name="to1">移至顶部</item>
-    	<item name="to2">移至底部</item>
-	</string-array> 
-	
+
   	<string-array name="module_sets_option"> 
 		    <item name="shan">重命名</item>
 		    <item name="to1">删除</item>

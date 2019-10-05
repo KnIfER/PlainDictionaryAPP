@@ -37,7 +37,6 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 
-import com.androidadvance.topsnackbar.TSnackbar;
 import com.knziha.plod.dictionary.Flag;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -77,14 +76,14 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					if(lianHeTask!=null) {
 						lianHeTask.cancel(false);
 					}
-					if(!checkDics()) return;
+					if(!checkDicts()) return;
 
 					if(lv2.getVisibility()==View.INVISIBLE)
 						lv2.setVisibility(View.VISIBLE);
 					lianHeTask = new CombinedSearchTask(FloatSearchActivity.this).execute(s.toString());
 				}else
 				try {
-					if(!checkDics()) return;
+					if(!checkDicts()) return;
 					int res=currentDictionary.lookUp(""+s);
 					if(res!=-1){ 
 						lv.setSelection(res);
@@ -130,7 +129,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			if(bIsFirstLaunch||bWantsSelection) {
 				fval=1f;
 			}
-			Snack(main_succinct, fval, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size),TSnackbar.LENGTH_LONG);
+			showTopSnack(main_succinct, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size),
+					fval, -1, -1);
 		}
 	}
 
@@ -736,8 +736,13 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			currentDictionary.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 			currentDictionary.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
         }
-    
-    }
+
+		@Override
+		public int getId() {
+			return 1;
+		}
+
+	}
     
     class ListViewAdapter2 extends  BasicAdapter{
     	int itemId = R.layout.listview_item1;
@@ -832,7 +837,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			//showT("查时: "+(System.currentTimeMillis()-stst));
 			bWantsSelection=true;
         }
-    };
+
+		@Override
+		public int getId() {
+			return 2;
+		}
+	};
 
 
 	@Override

@@ -1,116 +1,109 @@
 <resources>
-    <string name="app_name">平典</string>
-    <string name="open">open</string>
-    <string name="close">close</string>
-    
+	<string name="app_name">平典</string>
+	<string name="open">open</string>
+	<string name="close">close</string>
 
-    <string name="wenj_fugai">文件已存在，覆盖保存？</string>
-	<string name="confirm">确认</string>
-    <string name="cancle">取消</string>
-    <string name="continueit">继续</string>
-    <string name="warn_delete">确认删除选中的  %d 项内容?(不可撤销)</string>
-    <string name="warnDelete">确认删除分组配置 %s?</string>
-    <string name="warn_move">确认将  %1$d 个收藏从 [ %2$s ] 移动到 [ %3$s ]?</string>
-    <string name="warn_exit0">确认退出?</string>
-    <string name="surerrecords">确认删除选中的 %d 项记录?(不会删除文件)</string>
-    <string name="applyallset">应用到所有配置</string>
-    <string name="pickdestineFolder">选择目标文件夹</string>
-    <string name="warn_exit1">[清空历史纪录]</string>
+
+	<string name="wenj_fugai">文件已存在，覆盖保存？</string>
+	<string name="confirm">确认</string>`
+	<string name="warn_delete">确认删除选中的  %d 项内容?(不可撤销)</string>
+	<string name="warnDelete">确认删除分组配置 %s?</string>
+	<string name="warn_move">确认将  %1$d 个收藏从 [ %2$s ] 移动到 [ %3$s ]?</string>
+	<string name="warn_exit0">确认退出?</string>
+	<string name="surerrecords">确认删除选中的 %d 项记录?(不会删除文件)</string>
+	<string name="applyallset">应用到所有配置</string>
+	<string name="pickdestineFolder">选择目标文件夹</string>
+	<string name="warn_exit1">[清空历史纪录]</string>
 	<string name="noseletion">无选中内容</string>
-    <string name="bookmarkupdated">书签已更新为: %s</string>
-    <string name="bookmarkup">书签已更新！</string>
-    <string name="bookmarkjumped">跳转至: %s</string>
-    <string name="bookmarkfailed">找不到书签: %s</string>
-    <string name="endr">到达端部</string>
-    <string name="cbflowersnstr">联合<![CDATA[<%1$s>]]> %2$d本，得 %3$d 项</string>
-    <string name="vbflowersnstr">分 %1$d 字，得  %2$d 项</string>
-    <string name="BGMSG">正在为词典  <![CDATA[<%1$s>]]> 指定背景颜色...</string>
-    <string name="BGMSG2">全局背景色</string>
-    <string name="PT1">√ 启用翻页</string>
-    <string name="PT2">禁用翻页</string>
-    <string name="fc">找到 %d 项.</string>
-    <string name="fn">什么都没有找到</string>
-    
-    
-    <string name="maniDel">已取消  %1$d/%2$d 项收藏!</string>
-    <string name="maniFavor">%1$s (%2$d项收藏)</string>
-    <string name="maniFavor2">%1$s (%2$d项记录)</string>
-    <string name="currFavor">切换至: %s</string>
-    <string name="resCount">搜索完成！结果数目： %s</string>
-    <string name="searchFailed">搜索失败: %s</string>
-    
-    
-    <string name="removed">已移除</string>
-    <string name="toRemove">待移除…</string>
-    <string name="added">收藏成功!</string>
-    
-    
-    <string name="dictManTi">词典管理中心</string>
-    <string name="jumpfail">未找到目标地址,跳转失败!</string>
-    <string name="favorRecon">已重建默认收藏夹</string>
-    
-    <string name="fuzzyfill">模糊搜索完成！ 耗时 %1$1.2fs,共搜索到 %2$d 个词条！</string>
-    <string name="fullfill">全文搜索完成！ 耗时 %1$1.2fs,共搜索到 %2$d 个词条！</string>
-    <string name="fullret">全文搜索</string>
-    <string name="fuzzyret">词条模糊搜索</string>
-    <string name="about">关于</string>
-    <string name="exit">退出</string>
-    <string name="warn_exit">再按一次退出！</string>
-    
-    <string name="pmfolder">选择词典主目录</string>
-    <string name="relaunch">重启生效</string>
-    <string name="addd">添加词典</string>
-    <string name="nothingR">无任何记录</string>
-    <string name="bookmarkH">书签历史</string>
-    <string name="clearsucc">清除成功！</string>
-    <string name="clearfail">清除失败！</string>
-    <string name="donate">捐赠：启动Alipay...</string>
-    <string name="donatefail">捐赠：骓芸付款未安装, 谢谢参与...</string>
-    <string name="permission">需要额外两个权限...</string>
-    
-    
-    <string name="endendr">到达末项</string>
-    <string name="toptopr">到达首项</string>
-    <string name="coverr">到达封皮</string>
-    <string name="try_longpress">无效操作, 请尝试长按</string>
-    
-    
-    <string name="err">词典 %1$s 加载失败!  @%2$s : %3$s</string>
-    <string name="loadconfig">加载词典配置</string>
-    <string name="pickfavor">选择生词本</string>
-    <string name="newfc">新建</string>
-    <string name="loadsucc">加载成功！</string>
-    <string name="loadsucc2">已载入 <![CDATA[<<]]> %1$s</string>
-    <string name="savedone">%1$s <![CDATA[>>]]> 已保存</string>
-    <string name="loadfail2">载入失败，文件丢失 \:\: %1$s</string>
-    <string name="saveas_done">另存为成功！</string>
-    <string name="renamefail0">名称无效</string>
-    <string name="renamefail">文件已存在，重命名失败！</string>
-    <string name="search">搜索</string>
-    <string name="perWSearch">分字搜索</string>
-    <string name="perWSTag">字</string>
-    <string name="peruseToggle">切换翻阅</string>
-    
-    <string name="currentPlan">当前配置(%d)</string>
-    <string name="allPlans">加载配置</string>
-    <string name="defPlan">默认分组</string>
-    <string name="pLoadDone">%1$s 加载完毕!(%2$d/%3$d)</string>
-    <string name="dupicateD">复制成功！</string>
-    <string name="renD">重命名成功！</string>
-    <string name="delD">删除成功！</string>
-    <string name="delDone">已删除</string>
-    <string name="bmAdded">书签已添加！</string>
-    <string name="dictOpt">词典选项…</string>
-    <string name="setOpt">分组配置选项…</string>
-    <string name="newName">输入新的名称…</string>
-    
-    <string name="bm">书签</string>
-    <string name="bmSub">删除书签</string>
-    
-    <string name="AAllow">是否允许平典在/Sdcard/PLOD建立目录？</string>
-    <string name="GL">全局</string>
-    <string name="tools">工具</string>
-    
+	<string name="bookmarkupdated">书签已更新为: %s</string>
+	<string name="bookmarkup">书签已更新！</string>
+	<string name="bookmarkjumped">跳转至: %s</string>
+	<string name="bookmarkfailed">找不到书签: %s</string>
+	<string name="endr">到达端部</string>
+	<string name="cbflowersnstr">联合<![CDATA[<%1$s>]]> %2$d本，得 %3$d 项</string>
+	<string name="vbflowersnstr">分 %1$d 字，得  %2$d 项</string>
+	<string name="BGMSG"><![CDATA[正在为词典  <%1$s> 指定背景颜色…]]></string>
+	<string name="BGMSG2">全局背景色</string>
+	<string name="PT1">√ 启用翻页</string>
+	<string name="PT2">禁用翻页</string>
+	<string name="fc">找到 %d 项.</string>
+	<string name="fn">什么都没有找到</string>
+
+
+	<string name="maniDel">已取消  %1$d/%2$d 项收藏!</string>
+	<string name="maniFavor">%1$s (%2$d项收藏)</string>
+	<string name="maniFavor2">%1$s (%2$d项记录)</string>
+	<string name="currFavor">切换至: %s</string>
+	<string name="resCount">搜索完成！结果数目： %s</string>
+	<string name="searchFailed">搜索失败: %s</string>
+
+
+	<string name="removed">已移除</string>
+	<string name="toRemove">待移除…</string>
+	<string name="added">收藏成功!</string>
+
+
+	<string name="jumpfail">未找到目标地址,跳转失败!</string>
+	<string name="favorRecon">已重建默认收藏夹</string>
+
+	<string name="fuzzyfill">模糊搜索完成！ 耗时 %1$1.2fs,共搜索到 %2$d 个词条！</string>
+	<string name="fullfill">全文搜索完成！ 耗时 %1$1.2fs,共搜索到 %2$d 个词条！</string>
+	<string name="fullret">全文搜索</string>
+	<string name="fuzzyret">词条通配搜索</string>
+	<string name="fuzzyret1">通配搜索</string>
+	<string name="about">关于</string>
+	<string name="exit">退出</string>
+	<string name="warn_exit">再按一次退出！</string>
+
+	<string name="relaunch">重启生效</string>
+	<string name="addd">添加词典</string>
+	<string name="nothingR">无任何记录</string>
+	<string name="bookmarkH">书签历史</string>
+	<string name="clearsucc">清除成功！</string>
+	<string name="clearfail">清除失败！</string>
+
+	<string name="endendr">到达末项</string>
+	<string name="toptopr">到达首项</string>
+	<string name="coverr">到达封皮</string>
+	<string name="try_longpress">无效操作, 请尝试长按</string>
+
+
+	<string name="err">词典 %1$s 加载失败!  @%2$s : %3$s</string>
+	<string name="loadconfig">加载词典配置</string>
+	<string name="pickfavor">选择生词本</string>
+	<string name="newfc">新建</string>
+	<string name="loadsucc">加载成功！</string>
+	<string name="loadsucc2">已载入 <![CDATA[<<]]> %1$s</string>
+	<string name="savedone">%1$s <![CDATA[>>]]> 已保存</string>
+	<string name="loadfail2">载入失败，文件丢失 \:\: %1$s</string>
+	<string name="saveas_done">另存为成功！</string>
+	<string name="renamefail0">名称无效</string>
+	<string name="renamefail">文件已存在，重命名失败！</string>
+	<string name="search">搜索</string>
+	<string name="perWSearch">分字搜索</string>
+	<string name="perWSTag">字</string>
+	<string name="peruseToggle">切换翻阅</string>
+
+	<string name="currentPlan">当前配置(%d)</string>
+	<string name="allPlans">加载配置</string>
+	<string name="defPlan">默认分组</string>
+	<string name="pLoadDone">%1$s 加载完毕!(%2$d/%3$d)</string>
+	<string name="dupicateD">复制成功！</string>
+	<string name="renD">重命名成功！</string>
+	<string name="delD">删除成功！</string>
+	<string name="delDone">已删除</string>
+	<string name="bmAdded">书签已添加！</string>
+	<string name="dictOpt">词典选项…</string>
+	<string name="setOpt">分组配置选项…</string>
+	<string name="newName">输入新的名称…</string>
+
+	<string name="bm">书签</string>
+	<string name="bmSub">删除书签</string>
+
+	<string name="AAllow">是否允许平典在/Sdcard/PLOD建立目录？</string>
+	<string name="GL">全局</string>
+	<string name="tools">工具</string>
+
 
 	<string name="stg_require">请赋予存储权限。</string>
 	<string name="stg_statement">如您不赋予，则无法正常使用此播放器。(但是可以进入试用模式)</string>
@@ -120,4 +113,45 @@
 	<string name="infoStr">平典——安卓平台的查词软件。\n\n相关软件\：Bluedict(启发) 、MdictPC(起源) \n\n[开源组件] \n\n[反馈]</string>
 	<string name="licence">开源许可证</string>
 	<string name="bmAdd">添加书签</string>
+	<string name="language">语言</string>
+	<string name="peruse_mode">翻阅模式</string>
+	<string name="applyall">适用于所有集合</string>
+	<string name="prog_settings">程序设置</string>
+	<string name="clipboard">监听剪贴板</string>
+	<string name="keep_screen_on">保持屏幕常亮</string>
+	<string name="classical_sort">使用经典大小写不敏感排序方法</string>
+	<string name="wv_background">全局Webview背景 : </string>
+	<string name="wv_font">全局Webview字体缩放 : </string>
+	<string name="m_background">主程序背景 : </string>
+	<string name="f_background">浮动搜索背景 : </string>
+	<string name="paste_target">粘贴目标 : </string>
+	<string name="share_target">分享目标 : </string>
+	<string name="p_paste_target">程序在前台时，剪贴板粘贴到翻阅模式</string>
+	<string name="dev">开发者选项</string>
+	<string name="lastmarks">最近书签</string>
+	<string name="pick_main">选择主目录</string>
+	<string name="manager">词典管理中心</string>
+	<string name="switch_favor">切换收藏夹</string>
+	<string name="multi_select">多选</string>
+	<string name="move_top">移至顶部</string>
+	<string name="move_bottom">移至底部</string>
+	<string name="set_filter">设为滤器</string>
+	<string name="duplicate">复制</string>
+	<string name="to_main_auto">主程序-自动</string>
+	<string name="to_main_main">主程序-搜索框</string>
+	<string name="to_main_peruse">主程序-翻阅模式</string>
+	<string name="to_float">浮动搜索</string>
+	<string name="update_bookmark">更新书签位置</string>
+	<string name="bookmarkL">书签列表..</string>
+	<string name="f_scale_up">增大字体++</string>
+	<string name="f_scale_down">减小字体- -</string>
+	<string name="background_color">背景颜色:</string>
+	<string name="text_zoom">字体缩放:</string>
+	<string name="case_insensitive_policy">大小写转换策略:</string>
+	<string name="remove_mode">剔除模式</string>
+	<string name="jump">跳转</string>
+	<string name="strict_mode">严格模式</string>
+	<string name="loose_mode">宽松模式</string>
+	<string name="browse_all_favorite_set">浏览全部牌组</string>
+	<string name="refresh_current_favorite_set">刷新当前牌组</string>
 </resources>

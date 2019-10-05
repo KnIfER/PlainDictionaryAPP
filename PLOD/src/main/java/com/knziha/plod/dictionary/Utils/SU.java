@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.zip.Adler32;
 import java.util.zip.InflaterOutputStream;
 
@@ -58,7 +59,22 @@ public class  SU{//StringUtils
         }
         return _lim==lim?0:len1 - len2;
     }
-	
+
+
+	public static void Log(Object... o) {
+		String msg="";
+		if(o!=null)
+			for(int i=0;i<o.length;i++) {
+				if(Exception.class.isInstance(o[i])) {
+					ByteArrayOutputStream s = new ByteArrayOutputStream();
+					PrintStream p = new PrintStream(s);
+					((Exception)o[i]).printStackTrace(p);
+					msg+=s.toString();
+				}
+				msg+=o[i]+" ";
+			}
+		System.out.println("fatal poison"+msg);
+	}
 }
 	
 

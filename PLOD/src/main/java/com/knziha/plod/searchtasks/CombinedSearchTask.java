@@ -2,17 +2,14 @@ package com.knziha.plod.searchtasks;
 
 import android.os.AsyncTask;
 import android.view.View;
-import android.view.ViewGroup;
 
-import com.androidadvance.topsnackbar.TSnackbar;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.PDICMainActivity;
-import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.myCpr;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.rbtree.RBTree_additive;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -31,6 +28,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 
 	@Override
 	protected void onPreExecute() {
+		//CMN.Log("开始联合搜索！");
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
 		for(mdict mdTmp:a.md) {
@@ -45,6 +43,14 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		if((a=activity.get())==null) return null;
 		stst=System.currentTimeMillis();
 		CurrentSearchText=params[0];
+		if(a.currentFilter!=null)
+		try {
+			Object rerouteTarget = a.currentFilter.ReRoute(CurrentSearchText);
+			if(rerouteTarget instanceof String)
+				CurrentSearchText = (String) rerouteTarget;
+			//CMN.Log(s, " >> " , rerouteTarget);
+		} catch (IOException ignored) { }
+
 
 		a.split_dict_thread_number = a.md.size()<6?1: (a.md.size()/6);
 		a.split_dict_thread_number = a.split_dict_thread_number>16?6:a.split_dict_thread_number;
@@ -104,7 +110,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		}
 		rec =  new resultRecorderCombined(a,additive_combining_search_tree.flatten(),a.md);
 
-		//CMN.show("联合搜索 时间： "+(System.currentTimeMillis()-stst)+"ms "+rec.size());
+		//CMN.Log("联合搜索 时间： " + (System.currentTimeMillis() - stst) + "ms " + rec.size());
 
 		if(a.lv2.getVisibility()!= View.VISIBLE)
 			a.lv2.setVisibility(View.VISIBLE);
@@ -125,5 +131,8 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		}
 		a.NotifyComboRes(rec.size());
 		a.bIsFirstLaunch=false;
+
+		if(a.pendingLv2Pos!=null)
+			a.restoreLv2States();
 	}
 }

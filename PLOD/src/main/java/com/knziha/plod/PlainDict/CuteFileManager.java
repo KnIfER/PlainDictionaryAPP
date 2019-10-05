@@ -3,7 +3,6 @@ package com.knziha.plod.PlainDict;
 import java.io.File;
 import java.util.ArrayList;
 
-import com.androidadvance.topsnackbar.TSnackbar;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
@@ -76,8 +75,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 	}
 
 
-	
-	public TSnackbar snack;
+
 	Configuration mConfiguration;
 	private View cb1;
 	

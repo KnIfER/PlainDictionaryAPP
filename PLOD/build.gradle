@@ -33,9 +33,6 @@ dependencies {
     compile project(':twowaygridview')
 
 
-    compile project(':topsnackbar')
-
-
 
     compile files('libs/commons-lang-2.1.jar')
 

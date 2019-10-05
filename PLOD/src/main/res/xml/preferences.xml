@@ -1,49 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
 	<PreferenceCategory
 		android:key="cat_prog"
-		android:title="Program Settings"
+		android:title="@string/prog_settings"
+		app:icon="@drawable/drawer_menu_icon_setting"
 		>
-		<SwitchPreference
+		<androidx.preference.ListPreference
+			android:defaultValue="@string/empty__"
+			android:key="locale"
+			android:persistent="true"
+			android:title="@string/language"
+			android:entryValues="@array/languages"
+			android:entries="@array/languages_info"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:persistent="false"
 			android:defaultValue="false"
-			android:key="GKCS"
-			android:summary="If enabled, keycase insensitivity only applys to A-Z&amp;a-z globally to conform with the old mdxbuilder. Can Specify it independently(per-dict) though"
-			android:title="Use Classical Keycase sorting Policy"/>
-		<EditTextPreference
+			android:key="enable_pastebin"
+			android:title="@string/clipboard"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:persistent="false"
+			android:defaultValue="false"
+			android:key="keep_screen"
+			android:title="@string/keep_screen_on"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:persistent="false"
+			android:defaultValue="false"
+			android:key="classical_sort"
+			android:title="@string/classical_sort"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"/>
+
+		<com.knziha.filepicker.settings.IntPreference
 			android:defaultValue="100"
-			android:key="def_fontscale"
-			android:summary="The default font scale(%) for webview"
-			android:title="Global Font Scale : "/>
+			android:key="f_size"
+			android:persistent="true"
+			android:title="@string/wv_font"
+			suffix=" %"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="GPBC"
-			android:title="Global Webview Background: "
-			android:summary="The default page background"
+			android:title="@string/wv_background"
+			android:summary="Page background"
 			android:defaultValue="@integer/COLOR_GREEN"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
 			/>
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="BCM"
-			android:title="Main Application Background: "
-			android:summary="App background"
+			android:title="@string/m_background"
 			android:defaultValue="@integer/COLOR_PRI"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
 			/>
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="BCF"
-			android:title="Float SearchView Background: "
-			android:summary="FLoat background (colordict or text process)"
+			android:title="@string/f_background"
 			android:defaultValue="@integer/COLOR_PRI"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
 			/>
 
+
+		<androidx.preference.ListPreference
+			android:defaultValue="0"
+			android:key="paste_target"
+			android:persistent="false"
+			android:title="@string/paste_target"
+			android:entryValues="@array/paste_target"
+			android:entries="@array/paste_target_info"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<androidx.preference.ListPreference
+			android:defaultValue="0"
+			android:key="share_target"
+			android:persistent="false"
+			android:title="@string/share_target"
+			android:entryValues="@array/paste_target"
+			android:entries="@array/paste_target_info"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:persistent="false"
+			android:defaultValue="true"
+			android:key="f_paste_peruse"
+			android:title="@string/p_paste_target"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+		<!--			android:persistent="false"-->
+		<!--			android:defaultValue="true"-->
+		<!--			android:key="f_share_peruse"-->
+		<!--			android:title="程序在前台时，分享到翻阅模式"-->
+		<!--			app:allowDividerAbove="true"-->
+		<!--			app:allowDividerBelow="true"-->
+		<!--			/>-->
+
+
+		<Preference
+			android:key="dev"
+			android:persistent="false"
+			android:title="@string/dev"
+			app:isPreferenceVisible="true"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
 	</PreferenceCategory>
 
 
-	<androidx.preference.ListPreference
-		android:defaultValue="@string/empty__"
-		android:key="locale"
-		android:persistent="true"
-		android:title="语言…"
-		android:entryValues="@array/languages"
-		android:entries="@array/languages_info"
-		/>
 
 
 </PreferenceScreen>

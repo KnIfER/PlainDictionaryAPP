@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -52,6 +53,9 @@ public class SettingsActivity extends Toastable_Activity {
 			case 3:
 				fragment = new FileChooser();
 			break;
+			case 4:
+				fragment = new DevoloperOptions();
+			break;
 			case 6:
 				fragment = new Licences();
 			break;
@@ -68,6 +72,6 @@ public class SettingsActivity extends Toastable_Activity {
 		if(realm_id==3){
 			PDICMainAppOptions.SecondFlag(FilePickerOptions.SecondFlag);
 		}
+		checkFlags();
 	}
-
 }

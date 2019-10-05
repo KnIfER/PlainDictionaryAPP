@@ -25,8 +25,8 @@ public class DHBroswer extends DBroswer {
 	
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		CMN.Log("onCreateViewonCreateView");
 		View ret = super.onCreateView(inflater, container, savedInstanceState);
 		main_clister_layout.findViewById(R.id.choosed).setVisibility(View.GONE);
 		main_clister_layout.findViewById(R.id.changed).setVisibility(View.GONE);
@@ -126,6 +126,9 @@ public class DHBroswer extends DBroswer {
 		}else if(a.star!=null)
 			a.favoriteBtn.setImageDrawable(a.star);			
 	}
-	
-	
+
+	@Override
+	public int getFragmentId() {
+		return 2;
+	}
 }

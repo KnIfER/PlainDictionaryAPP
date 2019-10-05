@@ -1,31 +1,23 @@
 package com.knziha.plod.settings;
 
-import android.graphics.drawable.Drawable;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.SpannedString;
-import android.text.style.ImageSpan;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.TextView;
 
-import androidx.core.app.ActivityCompat;
-import androidx.preference.EditTextPreference;
+import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
-import androidx.preference.Preference.OnPreferenceChangeListener;
 
-import com.jaredrummler.colorpicker.ColorPickerPreference;
-import com.knziha.plod.PlainDict.AgentApplication;
+import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
-import com.knziha.filepicker.settings.SettingsFragmentBase;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.mdict;
 
 import java.util.HashMap;
 
-public class MainProgram extends SettingsFragmentBase {
+public class MainProgram extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	private String localeStamp;
 	private static HashMap<String, String> nym;
 	StringBuilder flag_code= new StringBuilder();
@@ -50,88 +42,30 @@ public class MainProgram extends SettingsFragmentBase {
 	}
 
 	//初始化
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		init_switch_preference(this, "locale", null, getNameFlag(localeStamp = PDICMainAppOptions.locale), null);
+		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null);
+		init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null);
+		init_switch_preference(this, "classical_sort", PDICMainAppOptions.getClassicalKeycaseStrategy(), null, null);
+		init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null);
+		init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(CMN.MainBackground).toUpperCase(), null);
+		init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(CMN.FloatBackground).toUpperCase(), null);
+		init_number_info_preference(this, "paste_target", PDICMainAppOptions.getPasteTarget(), R.array.paste_target_info, null);
+		init_number_info_preference(this, "share_target", PDICMainAppOptions.getShareTarget(), R.array.paste_target_info, null);
+		//init_switch_preference(this, "f_share_peruse", PDICMainAppOptions.getShareToPeruseModeWhenFocued(), null, null);
+		init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null);
+CMN.Log("getShareToPeruseModeWhenFocued", PDICMainAppOptions.getShareToPeruseModeWhenFocued());
 
-	  init_switch_preference(this, "locale", null, getNameFlag(localeStamp = PDICMainAppOptions.locale));
-
-
-	  Preference pkey0 = (findPreference("GKCS"));
-      pkey0.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				mdict.bGlobalUseClassicalKeycase=(boolean) newValue;
-				return true;
-			}});
-      
-      ColorPickerPreference def_pagecolor = ((ColorPickerPreference)findPreference("GPBC"));
-      def_pagecolor.setTitle(def_pagecolor.getTitle().toString()+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase());
-      def_pagecolor.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				String name = preference.getTitle().toString();
-				preference.setTitle(name.substring(0, name.indexOf(": ")+2)+Integer.toHexString((int) newValue).toUpperCase());
-				CMN.GlobalPageBackground=(int) newValue;
-				return true;
-			}});
-      
-      def_pagecolor = ((ColorPickerPreference)findPreference("BCM"));
-      def_pagecolor.setTitle(def_pagecolor.getTitle().toString()+Integer.toHexString(CMN.MainBackground).toUpperCase());
-      def_pagecolor.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				String name = preference.getTitle().toString();
-				preference.setTitle(name.substring(0, name.indexOf(": ")+2)+Integer.toHexString((int) newValue).toUpperCase());
-				CMN.MainBackground=(int) newValue;
-				return true;
-			}});
-
-      def_pagecolor = ((ColorPickerPreference)findPreference("BCF"));
-      def_pagecolor.setTitle(def_pagecolor.getTitle().toString()+Integer.toHexString(CMN.FloatBackground).toUpperCase());
-      def_pagecolor.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				String name = preference.getTitle().toString();
-				preference.setTitle(name.substring(0, name.indexOf(": ")+2)+Integer.toHexString((int) newValue).toUpperCase());
-				CMN.FloatBackground=(int) newValue;
-				return true;
-			}});
-      
-     
-      EditTextPreference def_fontscale = ((EditTextPreference) findPreference("def_fontscale"));
-      //EditText editText = def_fontscale.getText()
-	  //String name = def_fontscale.getTitle().toString();
-	  //def_fontscale.setTitle(name+mdict.def_fontsize);
-	  //editText.setKeyListener(new NumberKeyListener() {
-	//		@Override
-	//		public int getInputType() {return InputType.TYPE_CLASS_NUMBER;}
-	//
-	//		@Override
-	//		protected char[] getAcceptedChars() {
-	//			return new String("1234567890").toCharArray();
-	//		}
-	  //});
-	  
-	  def_fontscale.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				String name = preference.getTitle().toString();
-				preference.setTitle(name.substring(0, name.indexOf(": ")+2)+newValue);
-				mdict.def_fontsize = Integer.valueOf((String) newValue);
-				return true;
-			}});
-	  
-	  
-	  
-  }
-
+		findPreference("dev").setOnPreferenceClickListener(this);
+	}
 
 	private String getNameFlag(String andoid_country_code) {
 		if(andoid_country_code==null || andoid_country_code.length()==0)
 			return null;
 		String name=andoid_country_code;
-		int idx=-1;
+		int idx;
 		if((idx = name.indexOf("-")) != -1.)
 			name=name.substring(0, idx);
 		else
@@ -157,48 +91,70 @@ public class MainProgram extends SettingsFragmentBase {
 	@Override
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
 		addPreferencesFromResource(R.xml.preferences);
-
 	}
-
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		AgentApplication agent = ((AgentApplication)getActivity().getApplication());
-		//findPreference("browse_instant_Srch").setEnabled(agent .opt.isBrowser_AffectEtSearch());
-		agent.clearNonsenses();
-		
+	public boolean onPreferenceClick(Preference preference) {
+		switch (preference.getKey()){
+			case "dev":
+				Intent intent = new Intent();
+				intent.putExtra("realm", 4);
+				intent.setClass(getContext(), SettingsActivity.class);
+				startActivityForResult(intent,111);
+			break;
+		}
+		return false;
 	}
-  
-  
-  
-  
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-          Bundle savedInstanceState) {
-      View v = super.onCreateView(inflater, container, savedInstanceState);
-      if(v != null) {
-          //ListView lv = (ListView) v.findViewById(android.R.id.list);
-          //lv.setPadding(0, 0, 0, 0);
-         // lv.setBackgroundColor(Color.WHITE);
-      }
-      
-      //if(Build.VERSION.SDK_INT >= 22) {
-		  SpannableStringBuilder ssb = new SpannableStringBuilder("| ");
-		  Drawable dSettings = ActivityCompat.getDrawable(getActivity(), R.drawable.drawer_menu_icon_setting);
-		  dSettings.setBounds(0,0,50,50);
-		  ssb.setSpan(new ImageSpan(dSettings), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-		  int baseLen = ssb.length();
-		  
-	      Preference cat_browser = findPreference("cat_prog");
-		  ssb.replace(baseLen, ssb.length(), cat_browser.getTitle());
-		  cat_browser.setTitle(new SpannedString(ssb));
-		  
 
-      return v;
-  }
-  
-  
-  
-  
+	//配置变化
+	@Override
+	public boolean onPreferenceChange(Preference preference, Object newValue) {
+		switch (preference.getKey()){
+			case "enable_pastebin":
+				PDICMainAppOptions.setShowPasteBin((Boolean) newValue);
+			break;
+			case "keep_screen":
+				PDICMainAppOptions.setKeepScreen((Boolean) newValue);
+			break;
+			case "classical_sort":
+				PDICMainAppOptions.setClassicalKeycaseStrategy(mdict.bGlobalUseClassicalKeycase=(Boolean) newValue);
+			break;
+			case "GPBC":
+				setColorPreferenceTitle(preference, newValue);
+				CMN.GlobalPageBackground=(int) newValue;
+			break;
+			case "BCM":
+				setColorPreferenceTitle(preference, newValue);
+				CMN.MainBackground=(int) newValue;
+			break;
+			case "BCF":
+				setColorPreferenceTitle(preference, newValue);
+				CMN.FloatBackground=(int) newValue;
+			break;
+			case "locale":
+				if(localeStamp!=null)
+					PDICMainAppOptions.locale=localeStamp.equals(newValue)?localeStamp:null;
+				preference.setSummary(getNameFlag((String) newValue));
+			break;
+			case "paste_target":
+				preference.setSummary(getResources().getStringArray(R.array.paste_target_info)[PDICMainAppOptions.setPasteTarget(IU.parsint(newValue))]);
+			break;
+			case "share_target":
+				preference.setSummary(getResources().getStringArray(R.array.paste_target_info)[PDICMainAppOptions.setShareTarget(IU.parsint(newValue))]);
+			break;
+			case "f_share_peruse":
+				PDICMainAppOptions.setShareToPeruseModeWhenFocued((Boolean) newValue);
+			break;
+			case "f_paste_peruse":
+				PDICMainAppOptions.setPasteToPeruseModeWhenFocued((Boolean) newValue);
+			break;
+		}
+		return true;
+	}
+
+	private void setColorPreferenceTitle(Preference preference, Object newValue) {
+		//String name = preference.getTitle().toString();
+		//preference.setTitle(name.substring(0, name.indexOf(": ")+2)+Integer.toHexString((int) newValue).toUpperCase());
+		preference.setSummary("0x"+Integer.toHexString((int) newValue).toUpperCase());
+	}
 }

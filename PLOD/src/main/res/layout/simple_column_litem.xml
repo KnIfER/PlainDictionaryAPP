@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    style="@style/SimpleTextRow"
+	android:background="@drawable/listviewselector0"
+	android:textIsSelectable="false"
+	android:textColor="#000"
+    />
