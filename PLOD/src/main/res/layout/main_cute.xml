@@ -118,7 +118,7 @@
 	            android:layout_height="wrap_content"
 	            android:layout_weight="1"
 	            android:background="@drawable/surrtrip1"
-	            android:src="@drawable/bunddle" />
+	            android:src="@drawable/bundle" />
 
 	        <android.widget.ImageView
 	            android:id="@+id/browser_widget3"

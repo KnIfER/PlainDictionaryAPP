@@ -19,8 +19,8 @@
     <string name="vbflowersnstr">%1$d word(s) in total , matched %2$d</string>
     <string name="BGMSG">Assigning Page Background of %s</string>
     <string name="BGMSG2">Global Page Background</string>
-    <string name="PT1">Page Turning On</string>
-    <string name="PT2">Page Turning Off</string>
+    <string name="PT1">Page Turn : On</string>
+    <string name="PT2">Page Turn : Off</string>
     <string name="fc">Found %d item(s).</string>
     <string name="fn">Found nothing here.</string>
     
@@ -72,11 +72,12 @@
     <string name="renamefail0">Name Invalid</string>
     <string name="saveas_done">Save as done!</string>
     <string name="renamefail">File already exists,rename failed!</string>
-    <string name="search">SEARCH</string>
-    <string name="perWSearch">PER-WORD SEARCH</string>
+    <string name="search">Search</string>
+    <string name="perWSearch">Per-word search</string>
     <string name="perWSTag">per</string>
-    <string name="peruseToggle">PERUSE MODE</string>
-    
+    <string name="peruseToggle">Peruse mode</string>
+    <string name="peruseToggle1">@string/peruseToggle</string>
+
     
     <string name="currentPlan" >Current( %d )</string>
     <string name="allPlans">All sets</string>
@@ -88,7 +89,7 @@
     <string name="delDone">deleted</string>
     <string name="bmAdded">Bookmark added !</string>
     <string name="dictOpt">Dictionary options…</string>
-    <string name="setOpt">Configuration Set options…</string>
+    <string name="setOpt">Dictionary Set options…</string>
     <string name="newName">new name…</string>
     
     <string name="bm">BookMarks</string>
@@ -149,4 +150,33 @@
 	<string name="loose_mode">Loose Mode</string>
 	<string name="browse_all_favorite_set">Browse All Decks</string>
 	<string name="refresh_current_favorite_set">Refresh Current Deck</string>
+	<string name="hint_mode">Hint search mode</string>
+	<string name="tint_result">Tint search result</string>
+	<string name="switch_dict">Switch dictionary</string>
+	<string name="switch_set">Switch dictionary set</string>
+	<string name="unfold_all">Unfold all</string>
+	<string name="rem_position">Remember page position</string>
+	<string name="direct_update">Update Directly</string>
+	<string name="bring_from_background">Awaken from background</string>
+	<string name="canceld_peruse_mode">Canceled peruse mode</string>
+	<string name="show_all_dictionaries">Show all dictionaries</string>
+	<string name="show_bookmark_add_button">Show bookmark add button</string>
+	<string name="show_bookmark_delete_button">Show bookmark delete button</string>
+	<string name="auto_search_on_switch">Auto search on switch</string>
+	<string name="show_fast_scroller">Show fast scroller</string>
+	<string name="reset_keyword">Reset keyword</string>
+	<string name="save_bookmark">Save bookmark</string>
+	<string name="hint_search_result">Hint search result</string>
+	<string name="fold_all">Fold all</string>
+	<string name="Commit">commit</string>
+	<string name="reset">Reset</string>
+	<string name="save_as">Save as</string>
+	<string name="disable_all">Disable all</string>
+	<string name="enable_all">Enable all</string>
+	<string name="select_all_invalid">Select All invalid</string>
+	<string name="add_selection_to_set">Add selection to set</string>
+	<string name="remove_selection_from_set">Remove selection from set</string>
+	<string name="remove_records">Remove record(s)</string>
+	<string name="move_files">Move file(s)</string>
+	<string name="new___">New…</string>
 </resources>

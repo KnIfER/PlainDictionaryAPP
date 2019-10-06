@@ -10,29 +10,18 @@
 	>
 	<CheckBox
 		android:id="@+id/CKPBEnable"
-		android:layout_width="0dp"
-		android:layout_height="wrap_content"
-		android:layout_weight="1"
 		android:text="@string/enabled"
-		android:singleLine="true"
-		android:textColor="#000"
+		style="@style/fourCharacterTextFixWidth"
+		android:autoSizeTextType="none"
 		/>
 	<CheckBox
 		android:id="@+id/CKPBUpdate"
-		android:layout_width="0dp"
-		android:layout_height="wrap_content"
-		android:layout_weight="1"
-		android:text="直接更新"
-		android:singleLine="true"
-		android:textColor="#000"
+		android:text="@string/direct_update"
+		style="@style/fourCharacterTextFixWidth"
 		/>
 	<CheckBox
 		android:id="@+id/CKPBBringBack"
-		android:layout_width="0dp"
-		android:layout_height="wrap_content"
-		android:layout_weight="1"
-		android:text="后台唤起"
-		android:singleLine="true"
-		android:textColor="#000"
+		android:text="@string/bring_from_background"
+		style="@style/fourCharacterTextFixWidth"
 		/>
 </LinearLayout>

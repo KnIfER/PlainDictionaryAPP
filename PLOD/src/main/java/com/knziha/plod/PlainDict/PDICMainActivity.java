@@ -2541,13 +2541,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		switch(v.getId()) {
 			case R.id.browser_widget0:
 				if(main.getChildCount()!=0) return;
-				String msg;
+				int msg;
 				if(bInPeruseMode) {
 					widget0.setImageResource(R.drawable.peruse_ic);
-					msg="已取消 翻阅模式";
+					msg=R.string.canceld_peruse_mode;
 				}else {
 					widget0.setImageResource(R.drawable.peruse_ic_on);
-					msg="翻阅模式";
+					msg=R.string.peruse_mode;
 				}
 				opt.setInPeruseMode(bInPeruseMode=!bInPeruseMode);
 				opt.putFirstFlag();
@@ -3370,8 +3370,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent duco) {
 		super.onActivityResult(requestCode, resultCode, duco);
+		CMN.Log("onActivityResult");
 		switch (requestCode) {
-			case 110:
+			case 110:{
 				String newFilterName = duco!=null?duco.getStringExtra(":F"):null;
 				if(":N".equals(newFilterName)){
 					currentFilter=null;
@@ -3422,8 +3423,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						CMN.Log("保存页码");
 					}
 				}
-				break;
-			case 123:
+			} break;
+			case 123:{
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 					int i = checkSelfPermission(permissions[0]);
 					if (i != PackageManager.PERMISSION_GRANTED) {
@@ -3437,8 +3438,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						pre_further_loading(null);
 					}
 				}
-				break;
-			case 700:
+			} break;
+			case 700:{
 				Uri uri = duco.getData();
 				getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 				//CMN.show(duco.getIntExtra("asd", -1)+"");
@@ -3447,7 +3448,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				//encryptMyFolderf.createDirectory("asd");
 				//CMN.show(encryptMyFolderf.exists()+"");
 				//DocumentFile.fromFile(new File("/storage/0DE6-2108/123.txt")).createFile("", null);
-				break;
+			} break;
 			case 111:
 				if (duco != null) {
 					if (duco.getBooleanExtra("DC", false))
@@ -3455,8 +3456,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			break;
 			case 1297:
-				FFStamp=opt.FirstFlag();
-				SFStamp=opt.SecondFlag();
+				checkColors();
 			break;
 		}
 		//TODO seal it

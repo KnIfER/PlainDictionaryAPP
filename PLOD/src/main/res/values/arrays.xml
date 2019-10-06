@@ -22,8 +22,8 @@
 	</string-array>
 
   	<string-array name="drawer_items">
-		<item>@string/fullret</item>
 		<item>@string/fuzzyret1</item>
+		<item>@string/fullret</item>
 		<item>d</item>
 		<item>@string/bookmarkH</item>
 		<item>@string/lastmarks</item>

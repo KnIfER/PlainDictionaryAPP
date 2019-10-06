@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
 	<string name="stg_require">Bitte Speichererlaubnis erteilen.</string>
 	<string name="stg_statement">Diese App kann ohne Speichererlaubnis nicht funktionieren.</string>
 	<string name="stg_grantnow">Grant jetzt</string>
@@ -59,11 +58,11 @@
 	<string name="browse_all_favorite_set">Alle durchsuchen Decks</string>
 	<string name="refresh_current_favorite_set">Aktualisieren Aktuelles Deck</string>
 	<string name="wenj_fugai">Datei bereits vorhanden ist, überschreiben?</string>
-	<string name="warn_delete">Sind Sie sicher, ausgewählt %d Karten löschen? (Kann \ 't rückgängig machen)</string>
+	<string name="warn_delete">Sind Sie sicher, ausgewählt %d Karten löschen? (Kann \'t rückgängig machen)</string>
 	<string name="warnDelete">Sind Sie sicher, dass das Wörterbuch Konfigurationssatz %s löschen?</string>
 	<string name="warn_move">Sind Sie sicher, %1$d Wort Sammlungen von [ %2$s] bis [ %3$s] zu bewegen?</string>
 	<string name="warn_exit0">Bist du sicher, dass du aufhören willst?</string>
-	<string name="surerrecords">Sind Sie sicher, ausgewählt %d Datensätze löschen? (Gewonnen \ 't Effekt Dateisystem)</string>
+	<string name="surerrecords">Sind Sie sicher, ausgewählt %d Datensätze löschen? (Gewonnen \'t Effekt Dateisystem)</string>
 	<string name="applyallset">Auf alle Sets</string>
 	<string name="pickdestineFolder">Wählen Destine Ordner</string>
 	<string name="warn_exit1">[Verlauf löschen]</string>
@@ -128,4 +127,33 @@
 	<string name="setOpt">Wörterbuch set-Optionen …</string>
 	<string name="newName">neuer Name…</string>
 	<string name="bm">Merke</string>
+	<string name="hint_mode">Hint-Suchmodus</string>
+	<string name="tint_result">Tint Sucher</string>
+	<string name="switch_dict">Switch-Wörterbuch</string>
+	<string name="switch_set">Schalten Wörterbuch Set</string>
+	<string name="unfold_all">entfalten Sie alle</string>
+	<string name="rem_position">Denken Sie daran, Seitenposition</string>
+	<string name="direct_update">Update direkt</string>
+	<string name="bring_from_background">Erwacht aus Hintergrund</string>
+	<string name="canceld_peruse_mode">Abgebrochen peruse Modus</string>
+	<string name="show_all_dictionaries">Alle Wörterbücher</string>
+	<string name="show_bookmark_add_button">Zeigen Sie Lesezeichen hinzufügen Schaltfläche</string>
+	<string name="show_bookmark_delete_button">Anzeigen Schaltfläche Lesezeichen löschen</string>
+	<string name="auto_search_on_switch">Automatische Suche auf dem Schalter</string>
+	<string name="show_fast_scroller">Zeigen Sie schnell scroller</string>
+	<string name="reset_keyword">Reset Stichwort</string>
+	<string name="save_bookmark">Als Favorit speichern</string>
+	<string name="hint_search_result">Hint Sucher</string>
+	<string name="fold_all">falten Sie alle</string>
+	<string name="Commit">verpflichten</string>
+	<string name="reset">rücksetzen</string>
+	<string name="save_as">Speichern als</string>
+	<string name="disable_all">Alle deaktivieren</string>
+	<string name="enable_all">Alles aktivieren</string>
+	<string name="select_all_invalid">Alle auswählen ungültig</string>
+	<string name="add_selection_to_set">In Auswahl zu treffen</string>
+	<string name="remove_selection_from_set">Entfernen Sie die Auswahl aus der Serie</string>
+	<string name="remove_records">entfernen Sie Aufzeichnungen</string>
+	<string name="move_files">verschieben von Dateien</string>
+	<string name="new___">Neu…</string>
 </resources>

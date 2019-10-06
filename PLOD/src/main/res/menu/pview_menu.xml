@@ -11,36 +11,36 @@
 	<item
 		android:id="@+id/toolbar_action7"
 		android:icon="@drawable/downward"
-		android:title="显示全部词典"
+		android:title="@string/show_all_dictionaries"
 		app:showAsAction="never"/>
 
 	<item
         android:id="@+id/toolbar_action2"
         android:icon="@drawable/downward"
-        android:title="显示书签添加按钮"
+        android:title="@string/show_bookmark_add_button"
         app:showAsAction="never"/>
     
     <item
         android:id="@+id/toolbar_action3"
         android:icon="@drawable/downward"
-        android:title="显示书签删除按钮"
+        android:title="@string/show_bookmark_delete_button"
         app:showAsAction="never"/>
        
      <item
         android:id="@+id/toolbar_action4"
         android:icon="@drawable/downward"
-        android:title="切换词典时自动搜索"
+        android:title="@string/auto_search_on_switch"
         app:showAsAction="never"/>
      
     <item
         android:id="@+id/toolbar_action5"
         android:icon="@drawable/downward"
-        android:title="显示列表快速滚动条"
+        android:title="@string/show_fast_scroller"
         app:showAsAction="never"/>
  
      <item
         android:id="@+id/toolbar_action6"
         android:icon="@drawable/downward"
-        android:title="重置搜索词"
+        android:title="@string/reset_keyword"
         app:showAsAction="never"/>
  </menu>

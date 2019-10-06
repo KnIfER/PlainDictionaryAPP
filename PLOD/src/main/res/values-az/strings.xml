@@ -62,7 +62,7 @@
 	<string name="warnDelete">Siz lüğət konfiqurasiya set %s silmək əminsinizmi?</string>
 	<string name="warn_move">Siz [%3$s] üçün [%2$s] olan %1$d söz kolleksiyaları hərəkət əminsinizmi?</string>
 	<string name="warn_exit0">Siz çıxmaq üçün əminsinizmi?</string>
-	<string name="surerrecords">Seçilmiş %d qeydləri silmək üçün əmin edir? (\ 't təsiri fayl sistemi qalib)</string>
+	<string name="surerrecords">Seçilmiş %d qeydləri silmək üçün əmin edir? (\'t təsiri fayl sistemi qalib)</string>
 	<string name="applyallset">Bütün Sets müraciət</string>
 	<string name="pickdestineFolder">Destine Qovluq seçin</string>
 	<string name="warn_exit1">[Clear History]</string>
@@ -127,4 +127,24 @@
 	<string name="setOpt">Lüğət set variantları …</string>
 	<string name="newName">yeni adı …</string>
 	<string name="bm">Bookmarks</string>
+	<string name="switch_dict">Switch lüğət</string>
+	<string name="switch_set">Lüğət dəsti Switch</string>
+	<string name="direct_update">Doğrudan Update</string>
+	<string name="show_all_dictionaries">bütün lüğətlər göstər</string>
+	<string name="show_bookmark_add_button">düyməsinə əlavə bookmark göstər</string>
+	<string name="auto_search_on_switch">keçid Auto axtarış</string>
+	<string name="save_bookmark">Save bookmark</string>
+	<string name="hint_search_result">Ip ucu axtarış nəticəsində</string>
+	<string name="fold_all">bütün Fold</string>
+	<string name="Commit">işləmək</string>
+	<string name="reset">Reset</string>
+	<string name="save_as">kimi saxla</string>
+	<string name="disable_all">Hamısını bağla</string>
+	<string name="enable_all">bütün Enable</string>
+	<string name="select_all_invalid">Bütün etibarsız seçin</string>
+	<string name="add_selection_to_set">təyin etmək seçimi əlavə</string>
+	<string name="remove_selection_from_set">set seçimi aradan qaldırılması</string>
+	<string name="remove_records">qeydlər aradan qaldırılması</string>
+	<string name="move_files">faylları Move</string>
+	<string name="new___">Yeni …</string>
 </resources>

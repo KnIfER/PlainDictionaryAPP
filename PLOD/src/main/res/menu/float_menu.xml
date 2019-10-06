@@ -13,19 +13,19 @@
     
     <item
         android:id="@+id/toolbar_action2"
-        android:title="切换词典"
+        android:title="@string/switch_dict"
         app:showAsAction="never"/>
     
     <item
         android:id="@+id/toolbar_action3"
-        android:icon="@drawable/ic_btn_siglemode"
-        android:title="切换分组"
+        android:icon="@drawable/songlist"
+        android:title="@string/switch_set"
         app:showAsAction="never"/>
     
     <item
         android:id="@+id/toolbar_action4"
-        android:icon="@drawable/ic_btn_siglemode"
-        android:title="收藏"
+        android:icon="@drawable/bundle"
+        android:title="@string/favorite"
         app:showAsAction="never"/>
 
  </menu>

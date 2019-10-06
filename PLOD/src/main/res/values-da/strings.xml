@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
 	<string name="stg_require">Giv lagringstilladelse.</string>
 	<string name="stg_statement">Denne app kan ikke fungere uden tilladelse til opbevaring.</string>
 	<string name="stg_grantnow">Giv nu</string>
@@ -59,11 +58,11 @@
 	<string name="browse_all_favorite_set">Gennemse alle dæk</string>
 	<string name="refresh_current_favorite_set">Opdater Aktuel Deck</string>
 	<string name="wenj_fugai">Fil eksisterer allerede, overskrive?</string>
-	<string name="warn_delete">Er du sikker på at slette udvalgte %d-kort? (Kan \ 't fortryde)</string>
+	<string name="warn_delete">Er du sikker på at slette udvalgte %d-kort? (Kan \'t fortryde)</string>
 	<string name="warnDelete">Er du sikker på at slette ordbogen konfiguration sæt %s?</string>
 	<string name="warn_move">Er du sikker på at flytte samlinger %1$d ord fra [%2$s] til [%3$s]?</string>
 	<string name="warn_exit0">Er du sikker på at afslutte?</string>
-	<string name="surerrecords">Er du sikker på at slette udvalgte %d optegnelser? (Vundet \ 't effekt filsystem)</string>
+	<string name="surerrecords">Er du sikker på at slette udvalgte %d optegnelser? (Vundet \'t effekt filsystem)</string>
 	<string name="applyallset">Anvend på alle sæt</string>
 	<string name="pickdestineFolder">Vælg afsætte Folder</string>
 	<string name="warn_exit1">[Ryd historik]</string>
@@ -128,4 +127,33 @@
 	<string name="setOpt">Ordbog sæt valgmuligheder …</string>
 	<string name="newName">nyt navn …</string>
 	<string name="bm">bogmærker</string>
+	<string name="hint_mode">søgetilstand Tip</string>
+	<string name="tint_result">Tint søgeresultat</string>
+	<string name="switch_dict">Skift ordbog</string>
+	<string name="switch_set">Skift ordbog sæt</string>
+	<string name="unfold_all">Fold alle</string>
+	<string name="rem_position">Husk side position</string>
+	<string name="direct_update">Opdater Direkte</string>
+	<string name="bring_from_background">Vågne fra baggrunden</string>
+	<string name="canceld_peruse_mode">Annulleret bladre-funktion</string>
+	<string name="show_all_dictionaries">Vis alle ordbøger</string>
+	<string name="show_bookmark_add_button">Vis bogmærke tilføje knappen</string>
+	<string name="show_bookmark_delete_button">Vis bogmærke slette knappen</string>
+	<string name="auto_search_on_switch">søgning Auto på skift</string>
+	<string name="show_fast_scroller">Vis hurtigt scroller</string>
+	<string name="reset_keyword">Nulstil søgeord</string>
+	<string name="save_bookmark">Gem bogmærke</string>
+	<string name="hint_search_result">Tip søgeresultat</string>
+	<string name="fold_all">Fold alle</string>
+	<string name="Commit">begå</string>
+	<string name="reset">Nulstil</string>
+	<string name="save_as">Gem som</string>
+	<string name="disable_all">Slå alt fra</string>
+	<string name="enable_all">Aktiver alle</string>
+	<string name="select_all_invalid">Marker alt ugyldig</string>
+	<string name="add_selection_to_set">Tilføj udvælgelse til at indstille</string>
+	<string name="remove_selection_from_set">Fjern markering fra sæt</string>
+	<string name="remove_records">Fjern optegnelser</string>
+	<string name="move_files">Flyt filer</string>
+	<string name="new___">Ny…</string>
 </resources>

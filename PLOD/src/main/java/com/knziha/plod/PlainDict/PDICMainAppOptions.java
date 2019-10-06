@@ -19,7 +19,6 @@ import androidx.appcompat.app.GlobalOptions;
 
 public class PDICMainAppOptions
 {
-	//SharedPreferences reader;
 	SharedPreferences reader2;
 	SharedPreferences defaultReader;
 	public static String locale;
@@ -30,18 +29,7 @@ public class PDICMainAppOptions
 		defaultReader = PreferenceManager.getDefaultSharedPreferences(a_);
 		magicStr=a_.getResources().getString(R.string.defPlan);
 	}
-
 	String magicStr;
-	//private final dict_Activity_ui_base a;
-	//public boolean isCreateWebViewEachTime=false;
-	public boolean isFloatVCombinedSearching=false;
-	public boolean IVFVCONFIG=false;
-	public String FLOATPLAN;
-	public String FLOATSERM;
-
-	public boolean FloatView_isCombinedSearching=false;
-
-	public int globalTextZoom;
 
 	public String lastMdlibPath;
 	public String lastMdPlanName;
@@ -75,14 +63,14 @@ public class PDICMainAppOptions
 	}
 
 	public void setLastMdlibPath(String lastMdlibPath) {
-		defaultReader.edit().putString("lastMdlibPath",lastMdlibPath).commit();
+		defaultReader.edit().putString("lastMdlibPath",lastMdlibPath).apply();
 	}
 	public String getCurrFavoriteDBName() {//currFavoriteDBName
 		return currFavoriteDBName=defaultReader.getString("CFDBN",null);
 	}
 
 	public void putCurrFavoriteDBName(String name) {
-		defaultReader.edit().putString("CFDBN",currFavoriteDBName=name).commit();
+		defaultReader.edit().putString("CFDBN",currFavoriteDBName=name).apply();
 	}
 
 	public String getLastMdFn() {
@@ -90,23 +78,21 @@ public class PDICMainAppOptions
 	}
 
 	public void putLastMd(String name) {
-		defaultReader.edit().putString("LastMdFn", name).commit();
+		defaultReader.edit().putString("LastMdFn", name).apply();
 	}
 	public void putLastPlanName(String name) {
-		defaultReader.edit().putString("LastPlanName", lastMdPlanName=name).commit();
+		defaultReader.edit().putString("LastPlanName", lastMdPlanName=name).apply();
 	}
 	public String getLastPlanName() {
 		return lastMdPlanName=defaultReader.getString("LastPlanName",magicStr);
 	}
 
 
-
-
 	public int getGlobalPageBackground() {
 		return defaultReader.getInt("GPBC",0xFFFFFFFF);//0xFFC7EDCC
 	}
 	public void putGlobalPageBackground(int val) {
-		defaultReader.edit().putInt("GPBC",val).commit();
+		defaultReader.edit().putInt("GPBC",val).apply();
 	}
 	public int getMainBackground() {
 		return defaultReader.getInt("BCM",0xFF8f8f8f);
@@ -219,14 +205,14 @@ public class PDICMainAppOptions
 
 
 	//
-	public boolean getInPeruseMode() {//true
-		return (FirstFlag & 8) == 8;
+	public boolean getInPeruseMode() {
+		return (FirstFlag & 8) != 8;
 	}
 	public boolean setInPeruseMode(boolean val) {
-		updateFFAt(8,val);
+		updateFFAt(8,!val);
 		return val;
 	}
-	public boolean getInPeruseModeTM() {//false
+	public boolean getInPeruseModeTM() {
 		return (FirstFlag & 16) == 16;
 	}
 	public boolean setInPeruseModeTM(boolean val) {
@@ -234,21 +220,21 @@ public class PDICMainAppOptions
 		return val;
 	}
 
-	public boolean getPerUseToL() {//true
-		return (FirstFlag & 32) == 32;
+	public boolean getPerUseToL() {
+		return (FirstFlag & 32) != 32;
 	}
 	public boolean setPerUseToL(boolean val) {
-		updateFFAt(32,val);
+		updateFFAt(32,!val);
 		return val;
 	}
-	public boolean getPerUseToR() {//true
-		return (FirstFlag & 64) == 64;
+	public boolean getPerUseToR() {
+		return (FirstFlag & 64) != 64;
 	}
 	public boolean setPerUseToR(boolean val) {
-		updateFFAt(64,val);
+		updateFFAt(64,!val);
 		return val;
 	}
-	public boolean getPerUseToD() {//false
+	public boolean getPerUseToD() {
 		return (FirstFlag & 128) == 128;
 	}
 	public boolean setPerUseToD(boolean val) {
@@ -256,28 +242,28 @@ public class PDICMainAppOptions
 		return val;
 	}
 
-	public boolean getShowBA() {//false
-		return (FirstFlag & 0x100) == 0x100;//256
+	public boolean getShowBA() {
+		return (FirstFlag & 0x100) == 0x100;
 	}
 	public boolean setShowBA(boolean val) {
 		updateFFAt(0x100,val);
 		return val;
 	}
-	public boolean getShowBD() {//false
+	public boolean getShowBD() {
 		return (FirstFlag & 0x200) == 0x200;
 	}
 	public boolean setShowBD(boolean val) {
 		updateFFAt(0x200,val);
 		return val;
 	}
-	public boolean getShowFScroll() {//false
+	public boolean getShowFScroll() {
 		return (FirstFlag & 0x400) == 0x400;
 	}
 	public boolean setShowFScroll(boolean val) {
 		updateFFAt(0x400,val);
 		return val;
 	}
-	public boolean getForceSearch() {//false
+	public boolean getForceSearch() {
 		return (FirstFlag & 0x800) == 0x800;
 	}
 	public boolean setForceSearch(boolean val) {
@@ -285,14 +271,14 @@ public class PDICMainAppOptions
 		return val;
 	}
 
-	public boolean getFloatBottombarOnBottom() {//false
+	public boolean getFloatBottombarOnBottom() {
 		return (FirstFlag & 0x1000) == 0x1000;
 	}
 	public boolean setFloatBottombarOnBottom(boolean val) {
 		updateFFAt(0x1000,val);
 		return val;
 	}
-	public boolean isFloatCombinedSearching() {//false
+	public boolean isFloatCombinedSearching() {
 		return (FirstFlag & 0x2000) == 0x2000;
 	}
 	public boolean setFloatCombinedSearching(boolean val) {
@@ -300,18 +286,18 @@ public class PDICMainAppOptions
 		return val;
 	}
 
-	public boolean getPeruseBottombarOnBottom() {//true
-		return (FirstFlag & 0x4000) == 0x4000;
+	public boolean getPeruseBottombarOnBottom() {
+		return (FirstFlag & 0x4000) != 0x4000;
 	}
 	public boolean setPeruseBottombarOnBottom(boolean val) {
-		updateFFAt(0x4000,val);
+		updateFFAt(0x4000,!val);
 		return val;
 	}
-	public boolean getFVDocked() {//true
-		return (FirstFlag & 0x8000) == 0x8000;
+	public boolean getFVDocked() {
+		return (FirstFlag & 0x8000) != 0x8000;
 	}
 	public boolean setFVDocked(boolean val) {
-		updateFFAt(0x8000,val);
+		updateFFAt(0x8000,!val);
 		return val;
 	}
 

@@ -62,7 +62,7 @@
 	<string name="warnDelete">Да ли сте сигурни да избришете речника конфигурација сет %s ?</string>
 	<string name="warn_move">Да ли сте сигурни да преместите колекције %1$d речи из [ %2$s ] у [ %3$s ]?</string>
 	<string name="warn_exit0">Да ли сте сигурни да изађете?</string>
-	<string name="surerrecords">Да ли сте сигурни да обришете одабране %d евиденцију? (Вилл нот ефекат систем датотека \ ')</string>
+	<string name="surerrecords">Да ли сте сигурни да обришете одабране %d евиденцију? (Вилл нот ефекат систем датотека \')</string>
 	<string name="applyallset">Примени на све Сетс</string>
 	<string name="pickdestineFolder">Изабери Дестине Фолдер</string>
 	<string name="warn_exit1">[Очисти историју]</string>
@@ -125,4 +125,24 @@
 	<string name="setOpt">Речник сет опције …</string>
 	<string name="newName">ново име…</string>
 	<string name="bm">Обележивача</string>
+	<string name="tint_result">Нијанса претрага резултат</string>
+	<string name="unfold_all">Унфолд све</string>
+	<string name="bring_from_background">Пробуди из позадине</string>
+	<string name="canceld_peruse_mode">Отказан прегледати режим</string>
+	<string name="show_bookmark_delete_button">Схов адресу поааљете дугме за брисање</string>
+	<string name="auto_search_on_switch">Ауто претрага на прекидач</string>
+	<string name="save_bookmark">Сачувати маркер</string>
+	<string name="hint_search_result">Хинт претрага резултат</string>
+	<string name="fold_all">fold све</string>
+	<string name="Commit">урадити</string>
+	<string name="reset">Ресетовање</string>
+	<string name="save_as">Сачувај као</string>
+	<string name="disable_all">Онемогући све</string>
+	<string name="enable_all">Омогућити све</string>
+	<string name="select_all_invalid">Селецт Алл неважећи</string>
+	<string name="add_selection_to_set">Додај избор за постављање</string>
+	<string name="remove_selection_from_set">Уклоните избор из скупа</string>
+	<string name="remove_records">uklonite записе</string>
+	<string name="move_files">Мове филес</string>
+	<string name="new___">Нова…</string>
 </resources>

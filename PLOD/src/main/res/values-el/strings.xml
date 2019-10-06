@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
 	<string name="stg_require">Παρακαλούμε παραχωρήστε άδεια αποθήκευσης.</string>
 	<string name="stg_statement">Αυτή η εφαρμογή δεν μπορεί να λειτουργήσει χωρίς άδεια αποθήκευσης.</string>
 	<string name="stg_grantnow">Χορηγήστε τώρα</string>
@@ -59,11 +58,11 @@
 	<string name="browse_all_favorite_set">Περιήγηση All Decks</string>
 	<string name="refresh_current_favorite_set">Ανανέωση Current Deck</string>
 	<string name="wenj_fugai">Υπάρχει αρχείο ήδη, να αντικαταστήσετε;</string>
-	<string name="warn_delete">Είστε σίγουροι ότι για να διαγράψετε το επιλεγμένο %d κάρτες; (να \ 't αναίρεση)</string>
+	<string name="warn_delete">Είστε σίγουροι ότι για να διαγράψετε το επιλεγμένο %d κάρτες; (να \'t αναίρεση)</string>
 	<string name="warnDelete">Είστε σίγουροι ότι για να διαγράψετε το λεξικό σύνολο των ρυθμίσεών %s;</string>
 	<string name="warn_move">Είστε βέβαιοι να μετακινήσετε συλλογές %1$d λέξη από το [ %2$s] στο [ %3$s];</string>
 	<string name="warn_exit0">Είστε βέβαιοι να βγείτε;</string>
-	<string name="surerrecords">Είστε σίγουροι ότι για να διαγράψετε το επιλεγμένο %d αρχεία; (κέρδισε σύστημα αρχείων επίδραση τ \ ')</string>
+	<string name="surerrecords">Είστε σίγουροι ότι για να διαγράψετε το επιλεγμένο %d αρχεία; (κέρδισε σύστημα αρχείων επίδραση τ \')</string>
 	<string name="applyallset">Εφαρμογή σε όλα τα σύνολα</string>
 	<string name="pickdestineFolder">Επιλέξτε προορίζω φακέλου</string>
 	<string name="warn_exit1">[Καθαρισμός ιστορικού]</string>
@@ -128,4 +127,19 @@
 	<string name="setOpt">Λεξικό επιλογές που …</string>
 	<string name="newName">νέο όνομα…</string>
 	<string name="bm">σελιδοδείκτες</string>
+	<string name="auto_search_on_switch">Αυτόματη αναζήτηση στο διακόπτη</string>
+	<string name="save_bookmark">Αποθήκευση σελιδοδεικτών</string>
+	<string name="hint_search_result">Συμβουλή αποτέλεσμα αναζήτησης</string>
+	<string name="fold_all">Διπλώστε όλα</string>
+	<string name="Commit">διαπράττω</string>
+	<string name="reset">Επαναφορά</string>
+	<string name="save_as">Αποθήκευση ως</string>
+	<string name="disable_all">Απενεργοποίηση όλων</string>
+	<string name="enable_all">Ενεργοποίηση όλων</string>
+	<string name="select_all_invalid">Επιλογή Όλων άκυρο</string>
+	<string name="add_selection_to_set">Προσθέστε την επιλογή για να ορίσετε</string>
+	<string name="remove_selection_from_set">Αφαιρέστε την επιλογή από το σύνολο</string>
+	<string name="remove_records">Αφαιρέστε τα αρχεία</string>
+	<string name="move_files">Μετακίνηση αρχείων</string>
+	<string name="new___">Νέος…</string>
 </resources>

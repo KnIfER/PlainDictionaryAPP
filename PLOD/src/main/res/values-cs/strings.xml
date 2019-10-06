@@ -59,11 +59,11 @@
 	<string name="browse_all_favorite_set">Procházet všech palubách</string>
 	<string name="refresh_current_favorite_set">Obnovení aktuálního Deck</string>
 	<string name="wenj_fugai">Soubor již existuje, přepsat?</string>
-	<string name="warn_delete">Opravdu chcete smazat vybrané %d karet? (Můžete \ 't vrátit zpět)</string>
+	<string name="warn_delete">Opravdu chcete smazat vybrané %d karet? (Můžete \'t vrátit zpět)</string>
 	<string name="warnDelete">Opravdu chcete smazat slovníku konfigurační soubor %s?</string>
 	<string name="warn_move">Opravdu chcete přesunout %1$d slovo kolekce z [%2$s] [%3$]?</string>
 	<string name="warn_exit0">Opravdu chcete ukončit?</string>
-	<string name="surerrecords">Opravdu chcete smazat vybrané %d záznamů? (Vyhrál t efekt souborového systému \ ')</string>
+	<string name="surerrecords">Opravdu chcete smazat vybrané %d záznamů? (Vyhrál t efekt souborového systému \')</string>
 	<string name="applyallset">Platí pro všechny soubory</string>
 	<string name="pickdestineFolder">Vyberte složku předurčuje</string>
 	<string name="warn_exit1">[Smazat historii]</string>
@@ -128,4 +128,21 @@
 	<string name="setOpt">Slovník nastavení možností …</string>
 	<string name="newName">nové jméno…</string>
 	<string name="bm">Záložky</string>
+	<string name="hint_mode">Režim vyhledávání Tip</string>
+	<string name="switch_set">Přepnout slovník sadu</string>
+	<string name="direct_update">aktualizovat Přímo</string>
+	<string name="save_bookmark">Uložit záložku</string>
+	<string name="hint_search_result">Výsledek vyhledávání Tip</string>
+	<string name="fold_all">fold all</string>
+	<string name="Commit">spáchat</string>
+	<string name="reset">resetovat</string>
+	<string name="save_as">Uložit jako</string>
+	<string name="disable_all">Vypnout všechno</string>
+	<string name="enable_all">umožnit všem</string>
+	<string name="select_all_invalid">Vybrat vše neplatné</string>
+	<string name="add_selection_to_set">Přidat výběr nastavení</string>
+	<string name="remove_selection_from_set">Odstraňte výběr ze sady</string>
+	<string name="remove_records">odstranit záznamy</string>
+	<string name="move_files">přesouvat soubory</string>
+	<string name="new___">Nový…</string>
 </resources>

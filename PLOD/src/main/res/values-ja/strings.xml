@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
 	<string name="stg_require">ストレージの許可を付与してください。</string>
 	<string name="stg_statement">このアプリは保存許可なしでは機能しません。</string>
 	<string name="stg_grantnow">今すぐ付与</string>
@@ -46,7 +45,7 @@
 	<string name="to_main_peruse">メインPERUSEモード</string>
 	<string name="to_float">フロート検索</string>
 	<string name="update_bookmark">ブックマークを更新</string>
-	<string name="bookmarkL">ブックマーク一覧...</string>
+	<string name="bookmarkL">ブックマーク一覧…</string>
 	<string name="f_scale_up">フォントサイズ++</string>
 	<string name="f_scale_down">フォントサイズ - -</string>
 	<string name="background_color">背景色：</string>
@@ -63,7 +62,7 @@
 	<string name="warnDelete">あなたは辞書構成セット％sが削除してもよろしいですか？</string>
 	<string name="warn_move">あなたは[ %3$s の]に[ %2$S ]から %1$d 個の単語コレクションを移動してもよろしいですか？</string>
 	<string name="warn_exit0">あなたが終了してもよろしいですか？</string>
-	<string name="surerrecords">あなたが選択した％d個のレコードを削除してもよろしいですか？（\ 'トンのエフェクトファイルシステムを獲得しました）</string>
+	<string name="surerrecords">あなたが選択した％d個のレコードを削除してもよろしいですか？（\'トンのエフェクトファイルシステムを獲得しました）</string>
 	<string name="applyallset">すべてのセットに適用されます</string>
 	<string name="pickdestineFolder">運命づけるフォルダを選択します</string>
 	<string name="bookmarkup">ブックマークが更新します！</string>
@@ -119,4 +118,33 @@
 	<string name="setOpt">辞書セットのオプション…</string>
 	<string name="newName">新しい名前…</string>
 	<string name="bm">ブックマーク</string>
+	<string name="hint_mode">ヒント検索モード</string>
+	<string name="tint_result">色合いの検索結果</string>
+	<string name="switch_dict">スイッチ辞書</string>
+	<string name="switch_set">辞書セットを切り替えます</string>
+	<string name="unfold_all">すべて展開</string>
+	<string name="rem_position">ページ位置を覚えておいてください</string>
+	<string name="direct_update">直接更新</string>
+	<string name="bring_from_background">背景から目覚めます</string>
+	<string name="canceld_peruse_mode">キャンセルPERUSEモード</string>
+	<string name="show_all_dictionaries">すべての辞書を表示します</string>
+	<string name="show_bookmark_add_button">ボタンを追加したブックマークを表示</string>
+	<string name="show_bookmark_delete_button">ボタンを表示するブックマーク削除</string>
+	<string name="auto_search_on_switch">スイッチの自動検索</string>
+	<string name="show_fast_scroller">高速なスクロールを表示</string>
+	<string name="reset_keyword">キーワードをリセット</string>
+	<string name="save_bookmark">ブックマークを保存</string>
+	<string name="hint_search_result">ヒント検索結果</string>
+	<string name="fold_all">すべて折りたたみ</string>
+	<string name="Commit">コミット</string>
+	<string name="reset">リセット</string>
+	<string name="save_as">新規保管</string>
+	<string name="disable_all">すべて無効にします</string>
+	<string name="enable_all">全て可能にする</string>
+	<string name="select_all_invalid">すべての無効を選択します</string>
+	<string name="add_selection_to_set">設定するために選択を追加</string>
+	<string name="remove_selection_from_set">セットから選択を削除</string>
+	<string name="remove_records">レコードを削除します</string>
+	<string name="move_files">ファイルを移動</string>
+	<string name="new___">新着…</string>
 </resources>

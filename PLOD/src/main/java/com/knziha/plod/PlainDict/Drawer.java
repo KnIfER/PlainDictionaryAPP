@@ -353,46 +353,50 @@ public class Drawer extends Fragment implements
 				final TextView tv = dv.findViewById(R.id.resultN);
 				tv.setPadding(0, 0, 0, 50);
 
-				int startss = ssb.toString().indexOf("[");
-				int endss = ssb.toString().indexOf("]",startss);
+				try {
+					int startss = ssb.toString().indexOf("[");
+					int endss = ssb.toString().indexOf("]",startss);
 
-				ssb.setSpan(new ClickableSpan() {
-					@Override
-					public void onClick(@NonNull View widget) {
-						Intent intent = new Intent();
-						intent.putExtra("realm",6);
-						intent.setClass(a, SettingsActivity.class);
-						a.startActivityForResult(intent, 1297);
-					}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-				
+					ssb.setSpan(new ClickableSpan() {
+						@Override
+						public void onClick(@NonNull View widget) {
+							Intent intent = new Intent();
+							intent.putExtra("realm",6);
+							intent.setClass(a, SettingsActivity.class);
+							a.startActivityForResult(intent, 1297);
+						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-				startss = ssb.toString().indexOf("[",endss);
-				endss = ssb.toString().indexOf("]",startss);
 
-				if(false)
-				ssb.setSpan(new ClickableSpan() {
-					@Override
-					public void onClick(@NonNull View widget) {
-						Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
-		    			Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-		    			startActivity(intent);
-					}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-				
-				
-				startss = ssb.toString().indexOf("[",endss);
-				endss = ssb.toString().indexOf("]",startss);
-				if(endss>startss && startss>0)
+					startss = ssb.toString().indexOf("[",endss);
+					endss = ssb.toString().indexOf("]",startss);
 
 					if(false)
-				ssb.setSpan(new ClickableSpan() {
-					@Override
-					public void onClick(@NonNull View widget) {
-						Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
-		    			Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-		    			startActivity(intent);
-					}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-				
-				
+					ssb.setSpan(new ClickableSpan() {
+						@Override
+						public void onClick(@NonNull View widget) {
+							Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
+							Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+							startActivity(intent);
+						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+
+					startss = ssb.toString().indexOf("[",endss);
+					endss = ssb.toString().indexOf("]",startss);
+					if(endss>startss && startss>0)
+
+						if(false)
+					ssb.setSpan(new ClickableSpan() {
+						@Override
+						public void onClick(@NonNull View widget) {
+							Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
+							Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+							startActivity(intent);
+						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+
 				tv.setText(ssb);
 				tv.setMovementMethod(LinkMovementMethod.getInstance());
 				AlertDialog.Builder builder2 = new AlertDialog.Builder(a);
