@@ -151,4 +151,5 @@
 	<string name="remove_records">odstrániť záznamy</string>
 	<string name="move_files">presúvať súbory</string>
 	<string name="new___">Nový…</string>
+	<string name="no_suitable_app">Nenašli sa žiadne vhodné aplikácie.</string>
 </resources>

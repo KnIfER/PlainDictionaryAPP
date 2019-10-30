@@ -11,6 +11,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -47,10 +48,11 @@ public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
 	protected String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
 
-	protected int DockerMarginL;
-	protected int DockerMarginR;
-	protected int DockerMarginT;
-	protected int DockerMarginB;
+	private static boolean MarginChecked;
+	private static int DockerMarginL;
+	private static int DockerMarginR;
+	private static int DockerMarginT;
+	private static int DockerMarginB;
 	protected ViewGroup root;
 	//public dictionary_App_Options opt;
     //public List<mdict> md = new ArrayList<mdict>();//Collections.synchronizedList(new ArrayList<mdict>());
@@ -438,7 +440,8 @@ public class Toastable_Activity extends AppCompatActivity {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				topsnack.setElevation(res.getDimension(R.dimen.design_snackbar_elevation));
 			}
-		}else{
+		}
+		else{
 			topsnack.removeCallbacks(snackRemover);
 			topsnack.setAlpha(1);
 		}
@@ -490,42 +493,56 @@ public class Toastable_Activity extends AppCompatActivity {
 		topsnack.postDelayed(snackRemover, 2000);
 	}
 
-	protected void checkMargin() {
-		//File additional_config = new File(opt.pathToMain()+"appsettings.txt");
-		File additional_config = new File(Environment.getExternalStorageDirectory(),"PLOD/appsettings.txt");
-		if(additional_config.exists()) {
-			try {
-				BufferedReader in = new BufferedReader(new FileReader(additional_config));
-				String line;
-				while ((line = in.readLine()) != null) {
-					String[] arr = line.split(":", 2);
-					if (arr.length == 2) {
-						switch (arr[0]) {
-							case "window margin":
-							case "窗体边框":
-								arr = arr[1].split(" ");
-								if (arr.length == 4) {
-									try {
-										ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) root.getLayoutParams();
-										DockerMarginL = lp.leftMargin = Integer.valueOf(arr[2]);
-										DockerMarginR = lp.rightMargin = Integer.valueOf(arr[3]);
-										DockerMarginT = lp.topMargin = Integer.valueOf(arr[0]);
-										DockerMarginB = lp.bottomMargin = Integer.valueOf(arr[1]);
-										if(root!=null){
-											root.setTag(false);
-											root.setLayoutParams(lp);
+
+	public static void checkMargin(Activity a) {
+		if(!MarginChecked) {
+			//File additional_config = new File(opt.pathToMain()+"appsettings.txt");
+			File additional_config = new File(Environment.getExternalStorageDirectory(), "PLOD/appsettings.txt");
+			if (additional_config.exists()) {
+				try {
+					BufferedReader in = new BufferedReader(new FileReader(additional_config));
+					String line;
+					while ((line = in.readLine()) != null) {
+						String[] arr = line.split(":", 2);
+						if (arr.length == 2) {
+							switch (arr[0]) {
+								case "window margin":
+								case "窗体边框":
+									arr = arr[1].split(" ");
+									if (arr.length == 4) {
+										try {
+											DockerMarginL = Integer.valueOf(arr[2]);
+											DockerMarginR = Integer.valueOf(arr[3]);
+											DockerMarginT = Integer.valueOf(arr[0]);
+											DockerMarginB = Integer.valueOf(arr[1]);
+										} catch (Exception e) {//CMN.Log(e);
 										}
-									} catch (Exception e) {//CMN.Log(e);
 									}
-								}
-								break;
+									break;
+							}
 						}
 					}
+				} catch (Exception ignored) {
 				}
-			} catch (Exception ignored) {
 			}
+			MarginChecked=true;
+		}
+		View targetView;
+		if(a instanceof Toastable_Activity)
+			targetView=((Toastable_Activity)a).root;
+		else
+			targetView=a.findViewById(R.id.root);
+		if(targetView != null && (DockerMarginL!=0 || DockerMarginR!=0 || DockerMarginT!=0 || DockerMarginB!=0)){
+			ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) targetView.getLayoutParams();
+			lp.leftMargin = DockerMarginL;
+			lp.rightMargin = DockerMarginR;
+			lp.topMargin = DockerMarginT;
+			lp.bottomMargin = DockerMarginB;
+			targetView.setTag(false);
+			targetView.setLayoutParams(lp);
 		}
 	}
+
 }
 
 

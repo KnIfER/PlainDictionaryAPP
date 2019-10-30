@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import com.knziha.plod.PlainDict.BasicAdapter;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.dictionary.Flag;
+import com.knziha.plod.dictionary.Utils.Flag;
 
 public class resultRecorderDiscrete {
 	public String count;

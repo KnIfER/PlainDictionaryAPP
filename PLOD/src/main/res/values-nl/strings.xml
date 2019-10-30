@@ -139,4 +139,5 @@
 	<string name="remove_records">Verwijder verslagen</string>
 	<string name="move_files">bestanden verplaatsen</string>
 	<string name="new___">Nieuw…</string>
+	<string name="no_suitable_app">Geen geschikte app gevonden.</string>
 </resources>

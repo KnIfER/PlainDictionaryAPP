@@ -147,4 +147,5 @@
 	<string name="remove_records">Ta bort poster</string>
 	<string name="move_files">flytta filer</string>
 	<string name="new___">Ny…</string>
+	<string name="no_suitable_app">Hittade ingen lämplig app.</string>
 </resources>

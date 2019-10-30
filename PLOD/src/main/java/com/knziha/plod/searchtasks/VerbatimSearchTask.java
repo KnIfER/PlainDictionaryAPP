@@ -5,7 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.knziha.plod.PlainDict.PDICMainActivity;
-import com.knziha.plod.dictionary.myCpr;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.rbtree.RBTree_additive;
@@ -15,7 +15,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorderCombined> {
-	static final String RegExp_VerbatimDelimiter = "[ `~!@#$%^&*()+=—|{}\":;.,\\[\\]<>/?！￥…（）【】‘；：”“’。，、？|-·]{1,}|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
+	static final String RegExp_VerbatimDelimiter = "[ `~!@#$%^&*()+=—|{}\":;.,\\[\\]<>/?！￥…（）【】‘；：”“’。，、？|-·]|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
 	private final WeakReference<PDICMainActivity> activity;
 	String CurrentSearchText;
 	private final boolean isStrict;

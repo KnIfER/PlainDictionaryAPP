@@ -60,19 +60,33 @@
     	<item>@string/set_filter</item>
 	</string-array>
 
-  	<string-array name="module_sets_option"> 
+	<string-array name="dicts_option1">
+		<item>在外部管理器打开路径</item>
+		<item>在内置管理器打开路径</item>
+		<item>定制词典</item>
+	</string-array>
+
+
+	<string-array name="module_sets_option">
 	    <item>@string/rename</item>
 	    <item>@string/delete</item>
 	    <item>@string/duplicate</item>
 	</string-array> 
     
     <string-array name="dict_spec"> 
-	    <item>Global_Independent_Java API_Classical_None_RAM_GPU</item>
+	    <item>@string/dict_specs</item>
 	    <item>@string/background_color</item>
 	    <item>@string/text_zoom</item>
 	    <item>@string/case_insensitive_policy</item>
-	    <item>Single web view cache layer type:</item>
-	    <item>Force Contextial Seconary Index:</item>
+	    <item>专用构词库:</item>
+	</string-array>
+
+    <string-array name="picture_spec">
+	    <item>关_开</item>
+		<item>保存图片</item>
+		<item>图片保存按钮:</item>
+	    <item>前后切换按钮:</item>
+	    <item>单击之后退出:</item>
 	</string-array>
 
     <string-array name="app_spec"> 

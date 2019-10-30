@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu 
-   xmlns:android="http://schemas.android.com/apk/res/android"
-   xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:tools="http://schemas.android.com/tools"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res-auto"
+	tools:ignore="AppCompatResource"
+	>
     <item
         android:id="@+id/toolbar_action1"
         android:icon="@drawable/ic_btn_siglemode"
@@ -71,8 +73,14 @@
         android:icon="@drawable/ic_search_24k"
         android:title="@string/switch_set"
         app:showAsAction="never"/>
-    
-    <item
+
+	<item
+		android:id="@+id/toolbar_action13"
+		android:icon="@drawable/ic_btn_siglemode"
+		android:title="页内查找…"
+		app:showAsAction="never" />
+
+	<item
         android:id="@+id/toolbar_action9"
         android:icon="@drawable/ic_search_24k"
         android:title="@string/save_bookmark"

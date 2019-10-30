@@ -156,4 +156,5 @@
 	<string name="remove_records">entfernen Sie Aufzeichnungen</string>
 	<string name="move_files">verschieben von Dateien</string>
 	<string name="new___">Neu…</string>
+	<string name="no_suitable_app">Keine passende App gefunden.</string>
 </resources>

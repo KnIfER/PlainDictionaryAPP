@@ -1,49 +1,67 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@@android:color/transparent">
+    android:background="#000">
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <ImageView
-        android:id="@+id/crossIv"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_horizontal_margin"
-        android:src="@drawable/cross" />
-
     <TextView
-        android:id="@+id/photoOrderTv"
+        android:id="@+id/indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|left"
+        android:layout_gravity="top|left"
         android:layout_margin="@dimen/activity_horizontal_margin"
-        android:padding="10dp"
-        android:textSize="14sp"
+        android:paddingStart="25dp"
+        android:paddingTop="30dp"
+        android:textSize="15sp"
+		android:text="1/12"
+		android:shadowRadius="5"
+		android:shadowColor="#000"
         android:textColor="@android:color/white" />
 
-    <TextView
-        android:id="@+id/saveTv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:layout_margin="@dimen/activity_horizontal_margin"
-        android:padding="10dp"
-        android:textSize="14sp"
-        android:text="保存"
-        android:textColor="@android:color/white" />
 
-    <ImageView
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:src="@drawable/loading"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        android:id="@+id/centerIv"/>
+	<LinearLayout
+		android:id="@+id/browser_widget12"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom|right"
+		android:orientation="horizontal"
+		android:layout_marginBottom="50dp"
+		android:paddingEnd="30dp"
+		android:paddingStart="25dp"
+		android:padding="10dp"
+		>
+		<android.widget.ImageView
+			android:id="@+id/browser_widget13"
+			android:layout_width="44dp"
+			android:layout_height="44dp"
+			android:background="@drawable/listviewselector2"
+			android:src="@drawable/chevron_backward"
+			android:layout_marginRight="10dp"
+			/>
+		<android.widget.ImageView
+			android:id="@+id/browser_widget14"
+			android:layout_width="44dp"
+			android:layout_height="44dp"
+			android:background="@drawable/listviewselector2"
+			android:src="@drawable/chevron_forward"
+			/>
+	</LinearLayout>
 
+	<android.widget.ImageView
+		android:id="@+id/browser_widget15"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:background="@drawable/listviewselector2"
+		android:src="@drawable/ic_file_download_black_24dp"
+		android:layout_gravity="bottom|start"
+		android:layout_marginBottom="50dp"
+		android:layout_marginStart="2px"
+		android:paddingStart="25dp"
+		android:padding="10dp"
+		/>
 </FrameLayout>

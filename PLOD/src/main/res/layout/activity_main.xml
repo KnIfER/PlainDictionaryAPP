@@ -7,6 +7,7 @@
 	android:layout_height="match_parent"
 	android:fitsSystemWindows="true"
 	android:background="?attr/colorPrimary">
+
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -65,8 +66,6 @@
 
 			</FrameLayout>
 		</androidx.appcompat.widget.Toolbar>
-
-
 		<androidx.drawerlayout.widget.DrawerLayout
 			android:id="@+id/drawer_layout"
 			android:layout_width="match_parent"
@@ -162,34 +161,6 @@
 					android:src="@drawable/peruse_ic"
 					android:layout_marginBottom="48dip"
 					/>
-
-				<!-- LinearLayout
-					   android:id="@+id/test"
-					   android:layout_width="50dp"
-					   android:layout_height="233dp"
-					   android:background="#a0ff0000"
-					   android:layout_gravity="bottom|center"
-					   android:orientation="vertical"
-					/>
-
-				<com.androidadvance.topsnackbar.SnackbarLayout
-					xmlns:android="http://schemas.android.com/apk/res/android"
-					 xmlns:tools="http://schemas.android.com/tools"
-					   android:layout_width="50dp"
-					   android:layout_height="233dp"
-					   android:layout_marginLeft="50dp"
-					android:layout_gravity="top"
-					android:clickable="false"
-					android:orientation="horizontal"
-					   android:background="#a00000ff"
-					 >
-							<TextView
-					android:id="@+id/snackbar_action2"
-					android:layout_width="150dp"
-					android:layout_height="150dp"
-					   android:background="#a0ff0000"
-					/>
-						</com.androidadvance.topsnackbar.SnackbarLayout> -->
 			</FrameLayout>
 
 			<fragment
@@ -202,18 +173,24 @@
 
 		</androidx.drawerlayout.widget.DrawerLayout>
 	</LinearLayout>
+
+	<include
+		android:visibility="gone"
+		layout="@layout/contentview" />
+
+	<FrameLayout
+		android:id="@+id/snack_holder"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:fitsSystemWindows="true"
+		/>
+
 	<FrameLayout
 		android:id="@+id/mainF"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:fitsSystemWindows="true"
-		>
-		<include
-			android:visibility="gone"
-			android:id="@+id/webcontent"
-			layout="@layout/contentview" />
-	</FrameLayout>
-
+		/>
 
 	<ProgressBar
 		android:id="@+id/main_progress_bar"
@@ -290,9 +267,5 @@
 			android:minHeight="110dp"
 			/>
 	</RelativeLayout>
-
-
-
-
 
 </FrameLayout>

@@ -10,8 +10,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 10
-        versionName "1.98"
+        versionCode 16
+        versionName "2.0"
         vectorDrawables.generatedDensities = ['hdpi']
     }
     compileOptions {
@@ -27,22 +27,19 @@ android {
 }
 
 dependencies {
-
-    compile project(':recyclerViewFastScroller')
-
-    compile project(':twowaygridview')
-
-
-
-    compile files('libs/commons-lang-2.1.jar')
-
+    compile project(path: ':GestureView')
+    testImplementation 'junit:junit:4.12'
+    compileOnly project(':multiline')
+    annotationProcessor project(':multiline')
+    testCompileOnly project(':multiline')
+    testAnnotationProcessor project(':multiline')
+    api ('org.apache.commons:commons-text:1.8')
+    api (libs_clang)
+    api project(':recyclerViewFastScroller')
+    api project(':twowaygridview')
 
     compile files('libs/lzo-core-1.0.5.jar')
-
-
     compile files('libs/universal-image-loader-1.9.4.jar')
-
-
 
     if(use_compat_official=='1'){
         api (libs_compat)
@@ -76,9 +73,8 @@ dependencies {
     api (project(':filepicker'))
     api fileTree(dir: 'libs', include: ['*.jar'])
     api (libs_anno)
-    api ('com.google.android.exoplayer:exoplayer-core:2.10.3')
-    testImplementation 'junit:junit:4.12'
+    //testImplementation 'junit:junit:4.12'
 
-    implementation 'me.weishu:free_reflection:2.1.0'
-    implementation 'androidx.palette:palette:1.0.0'
+    //implementation 'me.weishu:free_reflection:2.1.0'
+    api 'androidx.palette:palette:1.0.0'
 }

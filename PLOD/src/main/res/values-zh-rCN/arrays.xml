@@ -21,14 +21,15 @@
 		    <item name="to2">复制</item>
 	</string-array> 
 	
-   <string-array name="dict_spec"> 
+<!--   <string-array name="dict_spec">
 	    <item>全局_特定_现代_经典_不缓存_内存_显存</item>
 	    <item>背景色:</item>
 	    <item>字体缩放:</item>
 	    <item>大小写转换策略:</item>
+	    <item>专用:</item>
 	    <item>单本阅读时绘制层缓存在:</item>
 	    <item>强制关闭二级索引:</item>
-	</string-array> 
+	</string-array> -->
     
     <string-array name="app_spec">
 		<item>开_关_跟随底栏_退回列表再记</item>

@@ -156,4 +156,5 @@
 	<string name="remove_records">Poista Records</string>
 	<string name="move_files">siirtää tiedostoja</string>
 	<string name="new___">Uusi…</string>
+	<string name="no_suitable_app">Ei löytynyt sopivaa sovellusta.</string>
 </resources>

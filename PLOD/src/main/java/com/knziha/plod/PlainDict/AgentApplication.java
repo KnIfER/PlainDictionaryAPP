@@ -12,8 +12,9 @@ import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.settings.SettingsActivity;
 
 public class AgentApplication extends Application {
-    private List<Activity> activities = new ArrayList<Activity>();  
+	private List<Activity> activities = new ArrayList<Activity>();
     public List<mdict> md;
+	public List<mdict> filters;
     public PDICMainAppOptions opt;
 	public HashSet<String> mdlibsCon;
 
@@ -47,6 +48,7 @@ public class AgentApplication extends Application {
 
 		public void clearNonsenses() {
 			md=null;
+			filters=null;
 			opt=null;
 			mdlibsCon=null;
 		}  

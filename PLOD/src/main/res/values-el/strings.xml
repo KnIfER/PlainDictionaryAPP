@@ -142,4 +142,5 @@
 	<string name="remove_records">Αφαιρέστε τα αρχεία</string>
 	<string name="move_files">Μετακίνηση αρχείων</string>
 	<string name="new___">Νέος…</string>
+	<string name="no_suitable_app">Δεν βρέθηκε κατάλληλη εφαρμογή.</string>
 </resources>

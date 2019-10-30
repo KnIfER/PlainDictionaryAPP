@@ -62,18 +62,18 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-        
+
         <activity android:name="com.knziha.plod.settings.SettingsActivity"
             android:theme="@style/SettingAppTheme"
             android:configChanges="keyboardHidden|orientation|screenSize"
 			android:windowSoftInputMode="adjustPan"
 			android:hardwareAccelerated="true"/>
         
-        <activity android:name="com.knziha.plod.PlainDict.PhotoBrowserActivity"
+        <activity android:name="com.knziha.plod.slideshow.PhotoViewActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@android:style/Animation.Dialog" 
+            android:theme="@style/PictureTheme"
             />
-        
+
         <activity android:name="com.knziha.plod.dictionarymanager.dict_manager_activity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/AppThemeRaw" 
@@ -88,6 +88,23 @@
 				<category android:name="android.intent.category.DEFAULT" />
 				<data android:mimeType="text/plain" />
 			</intent-filter>
+		</activity>
+		<activity android:name="com.knziha.plod.PlainDict.FloatSearchHelper"
+			android:theme="@style/FloatAppTheme"
+			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
+			android:taskAffinity="com.knziha.plod.PlainDict.task01"
+			android:exported="true"
+			>
+		</activity>
+		<activity android:name="com.knziha.plod.PlainDict.FloatActivitySearch"
+			android:theme="@style/FloatAppTheme"
+			android:configChanges="keyboardHidden|orientation|screenSize"
+			android:hardwareAccelerated="true"
+			android:windowSoftInputMode="adjustPan"
+			android:launchMode="singleInstance"
+			android:taskAffinity=""
+			android:exported="true"
+			>
 		</activity>
     </application>
     

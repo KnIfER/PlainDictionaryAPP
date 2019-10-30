@@ -37,14 +37,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.appcompat.app.GlobalOptions;
 
-public class dict_Module_Manager_DSLFragment extends dict_manager_DSLFragmenr_base<String> {
+public class dict_manager_modules extends dict_manager_base<String> {
 
 	String LastSelectedPlan;
 	
@@ -163,66 +162,68 @@ public class dict_Module_Manager_DSLFragment extends dict_manager_DSLFragmenr_ba
         
         LastSelectedPlan = a.opt.getLastPlanName();
         
-        mDslv.setOnItemClickListener(new OnItemClickListener(){
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				if(position>=mDslv.getHeaderViewsCount()) {
-					position = position - mDslv.getHeaderViewsCount();
-					String name = adapter.getItem(position);
-					File newf = new File(a.opt.pathToMain()+"CONFIG/"+name+".set");
-			        int cc=0;
-					try {
-						dict_Manager_DSLFragment f1 = ((dict_manager_activity)getActivity()).f1;
-						f1.isDirty=true;
-						BufferedReader in = new BufferedReader(new FileReader(newf));
-				        String line = in.readLine();
-				        a.md.clear();
-				        f1.rejector.clear();
-				        a.ThisIsDirty=true;
-				        while(line!=null){
-				        	if(!line.trim().equals("")){
-				        		if(!line.startsWith("/"))
-				        			line=a.opt.lastMdlibPath+"/"+line;
-				        		String fnId = new File(line).getAbsolutePath();
-					        	mdict m;
-				        		if(f1.mdict_cache.containsKey(fnId))
-				        			m = f1.mdict_cache.get(fnId);
-				        		else if(!new File(line).exists() && !CMN.AssetMap.containsKey(fnId)) {
-				        				m = new mdict_nonexist(line,a.opt);
-	         	        		}else {
-	         	        			m = new mdict_prempter(line,a.opt);
-	         	        		}
-	         	        		a.md.add(m);
-    						}
-				        	line = in.readLine();
-				        }
-				        in.close();
-				        f1.refreshSize();
-				        ((dict_manager_activity)getActivity()).scrollTo(0);
-						a.opt.putLastPlanName(LastSelectedPlan = name);
-						File def = new File(a.getExternalFilesDir(null),"default.txt");
-                    	FileChannel inputChannel = null;    
-                	    FileChannel outputChannel = null;    
-                    	try {
-                    	    inputChannel = new FileInputStream(newf).getChannel();
-                    	    def.delete();
-                    	    outputChannel = new FileOutputStream(def).getChannel();
-                    	    outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
-                    	    inputChannel.close();
-                    	    outputChannel.close();
-                    	} catch (Exception e) {
-							e.printStackTrace();
-						} 
-						adapter.notifyDataSetChanged();
-						f1.adapter.notifyDataSetChanged();
-						a.show(R.string.pLoadDone,name,cc,a.md.size());
-					} catch (Exception e2) {
-						e2.printStackTrace();
-						a.showT("加载异常!LOAD ERRO: "+e2.getLocalizedMessage());
+        mDslv.setOnItemClickListener((parent, view, position, id) -> {
+			if(position>=mDslv.getHeaderViewsCount()) {
+				position = position - mDslv.getHeaderViewsCount();
+				String name = adapter.getItem(position);
+				File newf = new File(a.opt.pathToMain()+"CONFIG/"+name+".set");
+				int cc=0;
+				try {
+					dict_manager_main f1 = ((dict_manager_activity)getActivity()).f1;
+					f1.isDirty=true;
+					BufferedReader in = new BufferedReader(new FileReader(newf));
+					String line = in.readLine();
+					a.md.clear();
+					f1.rejector.clear();
+					a.ThisIsDirty=true;
+					while(line!=null){
+						if(!line.trim().equals("")){
+							boolean isFilter=false;
+							if(line.startsWith("[:F]")){
+								line = line.substring(4);
+								isFilter=true;
+							}
+							if(!line.startsWith("/"))
+								line=a.opt.lastMdlibPath+"/"+line;
+							String fnId = new File(line).getAbsolutePath();
+							mdict m = f1.mdict_cache.get(fnId);
+							if(m==null)
+							if(!new File(line).exists() && !CMN.AssetMap.containsKey(fnId)) {
+								m = new mdict_nonexist(line,a.opt);
+							 }else {
+								 m = new mdict_prempter(line,a.opt);
+							 }
+							m.tmpIsFilter=isFilter;
+							 a.md.add(m);
+						}
+						line = in.readLine();
 					}
+					in.close();
+					f1.refreshSize();
+					((dict_manager_activity)getActivity()).scrollTo(0);
+					a.opt.putLastPlanName(LastSelectedPlan = name);
+					File def = new File(a.getExternalFilesDir(null),"default.txt");
+FileChannel inputChannel = null;
+FileChannel outputChannel = null;
+try {
+inputChannel = new FileInputStream(newf).getChannel();
+def.delete();
+outputChannel = new FileOutputStream(def).getChannel();
+outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+inputChannel.close();
+outputChannel.close();
+} catch (Exception e) {
+						e.printStackTrace();
+					}
+					adapter.notifyDataSetChanged();
+					f1.adapter.notifyDataSetChanged();
+					a.show(R.string.pLoadDone,name,cc,a.md.size());
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					a.showT("加载异常!LOAD ERRO: "+e2.getLocalizedMessage());
 				}
-			}});
+			}
+		});
         
         mDslv.setOnItemLongClickListener(new OnItemLongClickListener() {
         	AlertDialog d;

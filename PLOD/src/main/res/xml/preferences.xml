@@ -105,6 +105,15 @@
 			app:allowDividerBelow="true"
 			/>
 
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:persistent="false"
+			android:defaultValue="true"
+			android:key="f_hide_recent"
+			android:title="从最近任务中隐藏浮动搜索"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
 		<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
 		<!--			android:persistent="false"-->
 		<!--			android:defaultValue="true"-->

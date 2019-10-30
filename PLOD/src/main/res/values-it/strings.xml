@@ -155,4 +155,5 @@
 	<string name="remove_records">rimuovere i record</string>
 	<string name="move_files">spostare i file</string>
 	<string name="new___">Nuovo…</string>
+	<string name="no_suitable_app">Non è stata trovata un\'app adatta.</string>
 </resources>

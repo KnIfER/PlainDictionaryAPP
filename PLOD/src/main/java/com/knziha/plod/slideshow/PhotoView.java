@@ -1,4 +1,4 @@
-package com.bm.library;
+package com.knziha.plod.slideshow;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -6,10 +6,8 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -19,13 +17,11 @@ import android.widget.ImageView;
 import android.widget.OverScroller;
 import android.widget.Scroller;
 
-/**
- * Created by liuheng on 2015/6/21.
- * <p></p>
- * 如有任何意见和建议可邮件  bmme@vip.qq.com
- */
-public class PhotoView extends ImageView {
+import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.PlainDict.R;
 
+/** Photo View for traditional viewpager.<br/> Original Author : liuheng(bmme@vip.qq.com) on 2015/6/21. */
+public class PhotoView extends ImageView {
     private final static int MIN_ROTATE = 35;
     private final static int ANIMA_DURING = 340;
     private final static float MAX_SCALE = 2.5f;
@@ -55,7 +51,6 @@ public class PhotoView extends ImageView {
     private boolean hasDrawable;
     private boolean isKnowSize;
     private boolean hasOverTranslate;
-    private boolean isEnable = false;
     private boolean isRotateEnable = false;
     private boolean isInit;
     private boolean mAdjustViewBounds;
@@ -96,33 +91,21 @@ public class PhotoView extends ImageView {
 
     public PhotoView(Context context) {
         super(context);
-        init();
-    }
+		super.setScaleType(ScaleType.MATRIX);
+		setId(R.id.browser_widget1);
+		if (mScaleType == null) mScaleType = ScaleType.CENTER_INSIDE;
+		mRotateDetector = new RotateGestureDetector(mRotateListener);
+		mDetector = new GestureDetector(getContext(), mGestureListener);
+		mScaleDetector = new ScaleGestureDetector(getContext(), mScaleListener);
+		float density = getResources().getDisplayMetrics().density;
+		MAX_OVER_SCROLL = (int) (density * 30);
+		MAX_FLING_OVER_SCROLL = (int) (density * 30);
+		MAX_OVER_RESISTANCE = (int) (density * 140);
 
-    public PhotoView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public PhotoView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    private void init() {
-        super.setScaleType(ScaleType.MATRIX);
-        if (mScaleType == null) mScaleType = ScaleType.CENTER_INSIDE;
-        mRotateDetector = new RotateGestureDetector(mRotateListener);
-        mDetector = new GestureDetector(getContext(), mGestureListener);
-        mScaleDetector = new ScaleGestureDetector(getContext(), mScaleListener);
-        float density = getResources().getDisplayMetrics().density;
-        MAX_OVER_SCROLL = (int) (density * 30);
-        MAX_FLING_OVER_SCROLL = (int) (density * 30);
-        MAX_OVER_RESISTANCE = (int) (density * 140);
-
-        mMinRotate = MIN_ROTATE;
-        mAnimaDuring = ANIMA_DURING;
-        mMaxScale = MAX_SCALE;
+		mMinRotate = MIN_ROTATE;
+		mAnimaDuring = ANIMA_DURING;
+		mMaxScale = MAX_SCALE;
+		setScaleType(ScaleType.FIT_CENTER);
     }
 
     /**
@@ -189,20 +172,6 @@ public class PhotoView extends ImageView {
      */
     public float getMaxScale() {
         return mMaxScale;
-    }
-
-    /**
-     * 启用缩放功能
-     */
-    public void enable() {
-        isEnable = true;
-    }
-
-    /**
-     * 禁用缩放功能
-     */
-    public void disenable() {
-        isEnable = false;
     }
 
     /**
@@ -579,22 +548,18 @@ public class PhotoView extends ImageView {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (isEnable) {
-            final int Action = event.getActionMasked();
-            if (event.getPointerCount() >= 2) hasMultiTouch = true;
+		final int Action = event.getActionMasked();
+		if (event.getPointerCount() >= 2) hasMultiTouch = true;
 
-            mDetector.onTouchEvent(event);
-            if (isRotateEnable) {
-                mRotateDetector.onTouchEvent(event);
-            }
-            mScaleDetector.onTouchEvent(event);
+		mDetector.onTouchEvent(event);
+		if (isRotateEnable) {
+			mRotateDetector.onTouchEvent(event);
+		}
+		mScaleDetector.onTouchEvent(event);
 
-            if (Action == MotionEvent.ACTION_UP || Action == MotionEvent.ACTION_CANCEL) onUp();
+		if (Action == MotionEvent.ACTION_UP || Action == MotionEvent.ACTION_CANCEL) onUp();
 
-            return true;
-        } else {
-            return super.dispatchTouchEvent(event);
-        }
+		return true;
     }
 
     private void onUp() {
@@ -684,8 +649,7 @@ public class PhotoView extends ImageView {
         return Math.abs(Math.round(rect.left) - (mWidgetRect.width() - rect.width()) / 2) < 1;
     }
 
-    private OnRotateListener mRotateListener = new OnRotateListener() {
-
+    private RotateGestureDetector.OnRotateListener mRotateListener = new RotateGestureDetector.OnRotateListener() {
         @Override
         public void onRotate(float degrees, float focusX, float focusY) {
             mRotateFlag += degrees;
@@ -705,10 +669,9 @@ public class PhotoView extends ImageView {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             float scaleFactor = detector.getScaleFactor();
-
+			CMN.Log("scale suck", scaleFactor);
             if (Float.isNaN(scaleFactor) || Float.isInfinite(scaleFactor))
                 return false;
-
             mScale *= scaleFactor;
 //            mScaleCenter.set(detector.getFocusX(), detector.getFocusY());
             mAnimaMatrix.postScale(scaleFactor, scaleFactor, detector.getFocusX(), detector.getFocusY());
@@ -739,25 +702,19 @@ public class PhotoView extends ImageView {
      * 匹配两个Rect的共同部分输出到out，若无共同部分则输出0，0，0，0
      */
     private void mapRect(RectF r1, RectF r2, RectF out) {
-
         float l, r, t, b;
-
         l = r1.left > r2.left ? r1.left : r2.left;
         r = r1.right < r2.right ? r1.right : r2.right;
-
         if (l > r) {
             out.set(0, 0, 0, 0);
             return;
         }
-
         t = r1.top > r2.top ? r1.top : r2.top;
         b = r1.bottom < r2.bottom ? r1.bottom : r2.bottom;
-
         if (t > b) {
             out.set(0, 0, 0, 0);
             return;
         }
-
         out.set(l, t, r, b);
     }
 
@@ -767,17 +724,7 @@ public class PhotoView extends ImageView {
         }
     }
 
-    private Runnable mClickRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (mClickListener != null) {
-                mClickListener.onClick(PhotoView.this);
-            }
-        }
-    };
-
     private GestureDetector.OnGestureListener mGestureListener = new GestureDetector.SimpleOnGestureListener() {
-
         @Override
         public void onLongPress(MotionEvent e) {
             if (mLongClick != null) {
@@ -790,7 +737,6 @@ public class PhotoView extends ImageView {
             hasOverTranslate = false;
             hasMultiTouch = false;
             canRotate = false;
-            removeCallbacks(mClickRunnable);
             return false;
         }
 
@@ -806,11 +752,9 @@ public class PhotoView extends ImageView {
             if (Math.round(mImgRect.left) >= mWidgetRect.left || Math.round(mImgRect.right) <= mWidgetRect.right) {
                 vx = 0;
             }
-
             if (Math.round(mImgRect.top) >= mWidgetRect.top || Math.round(mImgRect.bottom) <= mWidgetRect.bottom) {
                 vy = 0;
             }
-
             if (canRotate || mDegrees % 90 != 0) {
                 float toDegrees = (int) (mDegrees / 90) * 90;
                 float remainder = mDegrees % 90;
@@ -828,7 +772,6 @@ public class PhotoView extends ImageView {
             doTranslateReset(mImgRect);
 
             mTranslate.withFling(vx, vy);
-
             mTranslate.start();
             // onUp(e2);
             return super.onFling(e1, e2, velocityX, velocityY);
@@ -848,7 +791,8 @@ public class PhotoView extends ImageView {
 
                 mAnimaMatrix.postTranslate(-distanceX, 0);
                 mTranslateX -= distanceX;
-            } else if (imgLargeWidth || hasMultiTouch || hasOverTranslate) {
+            }
+            else if (imgLargeWidth || hasMultiTouch || hasOverTranslate) {
                 checkRect();
                 if (!hasMultiTouch) {
                     if (distanceX < 0 && mImgRect.left - distanceX > mCommonRect.left)
@@ -870,7 +814,8 @@ public class PhotoView extends ImageView {
 
                 mAnimaMatrix.postTranslate(0, -distanceY);
                 mTranslateY -= distanceY;
-            } else if (imgLargeHeight || hasOverTranslate || hasMultiTouch) {
+            }
+            else if (imgLargeHeight || hasOverTranslate || hasMultiTouch) {
                 checkRect();
                 if (!hasMultiTouch) {
                     if (distanceY < 0 && mImgRect.top - distanceY > mCommonRect.top)
@@ -890,13 +835,20 @@ public class PhotoView extends ImageView {
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            postDelayed(mClickRunnable, 250);
             return false;
         }
 
-        @Override
-        public boolean onDoubleTap(MotionEvent e) {
+		@Override
+		public boolean onSingleTapConfirmed(MotionEvent e) {
+			if (mClickListener != null) {
+				mClickListener.onClick(PhotoView.this);
+				return true;
+			}
+			return false;
+		}
 
+		@Override
+        public boolean onDoubleTap(MotionEvent e) {
             mTranslate.stop();
 
             float from = 1;
@@ -1410,4 +1362,35 @@ public class PhotoView extends ImageView {
         mAnimaMatrix.postRotate(degrees, centerX, centerY);
         executeTranslate();
     }
+
+    static class Info {
+		// 内部图片在整个手机界面的位置
+		RectF mRect = new RectF();
+
+		// 控件在窗口的位置
+		RectF mImgRect = new RectF();
+
+		RectF mWidgetRect = new RectF();
+
+		RectF mBaseRect = new RectF();
+
+		PointF mScreenCenter = new PointF();
+
+		float mScale;
+
+		float mDegrees;
+
+		ImageView.ScaleType mScaleType;
+
+		public Info(RectF rect, RectF img, RectF widget, RectF base, PointF screenCenter, float scale, float degrees, ImageView.ScaleType scaleType) {
+			mRect.set(rect);
+			mImgRect.set(img);
+			mWidgetRect.set(widget);
+			mScale = scale;
+			mScaleType = scaleType;
+			mDegrees = degrees;
+			mBaseRect.set(base);
+			mScreenCenter.set(screenCenter);
+		}
+	}
 }

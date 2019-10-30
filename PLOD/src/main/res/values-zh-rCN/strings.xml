@@ -87,6 +87,7 @@
 	<string name="delDone">已删除</string>
 	<string name="bmAdded">书签已添加！</string>
 	<string name="dictOpt">词典选项…</string>
+	<string name="dictOpt1">词典设定</string>
 	<string name="setOpt">分组配置选项…</string>
 	<string name="newName">输入新的名称…</string>
 
@@ -128,7 +129,7 @@
 	<string name="multi_select">多选</string>
 	<string name="move_top">移至顶部</string>
 	<string name="move_bottom">移至底部</string>
-	<string name="set_filter">设为滤器</string>
+	<string name="set_filter">设为构词库</string>
 	<string name="duplicate">复制</string>
 	<string name="to_main_auto">主程序-自动</string>
 	<string name="to_main_main">主程序-搜索框</string>
@@ -147,11 +148,11 @@
 	<string name="loose_mode">宽松模式</string>
 	<string name="browse_all_favorite_set">浏览全部牌组</string>
 	<string name="refresh_current_favorite_set">刷新当前牌组</string>
-	<string name="hint_mode">提示搜索模式</string>
+	<string name="hint_mode">提示模式</string>
 	<string name="tint_result">词条染色</string>
-	<string name="switch_dict">开关词典</string>
-	<string name="switch_set">开关字典集</string>
-	<string name="unfold_all">展开所有</string>
+	<string name="switch_dict">切换词典</string>
+	<string name="switch_set">切换分组</string>
+	<string name="unfold_all">展开全部</string>
 	<string name="rem_position">记忆位置</string>
 	<string name="direct_update">直接更新</string>
 	<string name="bring_from_background">后台唤醒</string>
@@ -163,7 +164,7 @@
 	<string name="show_fast_scroller">显示列表快速滚动条</string>
 	<string name="reset_keyword">重置搜索词</string>
 	<string name="save_bookmark">存书签</string>
-	<string name="hint_search_result">提示搜索结果</string>
+	<string name="hint_search_result">提示结果</string>
 	<string name="fold_all">折叠全部</string>
 	<string name="Commit">提交</string>
 	<string name="reset">重置</string>
@@ -176,4 +177,8 @@
 	<string name="remove_records">删除记录</string>
 	<string name="move_files">移动文件</string>
 	<string name="new___">新建</string>
+	<string name="dict_specs">全局_特定_现代_经典_否_是</string>
+	<string name="no_suitable_app">无可调用App</string>
+	<string name="multiple_vals">*多重*</string>
+	<string name="dv_select">选中</string>
 </resources>

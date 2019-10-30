@@ -30,7 +30,8 @@ import java.util.zip.InflaterOutputStream;
  * @author KnIfER
  * @date 2018/05/31
  */
-public class  SU{//StringUtils
+public class  SU{
+    public static boolean debug;//StringUtils
 
 	public static String trimStart(String input) {
 		int len = input.length();

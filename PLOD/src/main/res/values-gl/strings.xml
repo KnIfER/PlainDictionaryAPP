@@ -156,4 +156,5 @@
 	<string name="remove_records">eliminar rexistros</string>
 	<string name="move_files">mover ficheiros</string>
 	<string name="new___">New …</string>
+	<string name="no_suitable_app">Non se atopou ningunha aplicación adecuada.</string>
 </resources>

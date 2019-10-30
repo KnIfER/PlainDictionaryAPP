@@ -6,7 +6,7 @@ import android.graphics.Canvas;
 import android.widget.TextView;
 
 public class SimpleTextNotifier extends TextView {
-	public int offset;
+	public int offset=-1000;
 	public SimpleTextNotifier(Context context) {
 		super(context);
 	}

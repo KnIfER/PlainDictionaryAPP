@@ -1,7 +1,6 @@
 package com.knziha.plod.PlainDict;
 
 import android.annotation.SuppressLint;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -43,16 +42,16 @@ import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayAdapterView.OnItemClickListener;
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
-import com.knziha.plod.dictionary.myCpr;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict.MJavascriptInterface;
+import com.knziha.plod.dictionarymodels.mdict.AppHandler;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.SplitView.PageSliderInf;
 import com.knziha.plod.widgets.SplitViewGuarder;
-import com.knziha.plod.widgets.SumsungLikeScrollBar;
+import com.knziha.plod.widgets.SamsungLikeScrollBar;
 import com.knziha.plod.widgets.WebViewmy;
 
 import java.io.IOException;
@@ -99,6 +98,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	//构造
 	public PeruseView(){
 		super();
+		data=new ArrayList<>();
 		//this(null);
 	}
 	
@@ -146,7 +146,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	ImageView toolbar_cover;
 	TextView toolbar_title;
 	UniCoverClicker ucc;
-	SumsungLikeScrollBar mBar;
+	SamsungLikeScrollBar mBar;
 	View recess;
 	View forward;
 	ViewGroup root;
@@ -618,11 +618,10 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 						expectedPos = History.get(HistoryVagranter).value;
 						if(pos!=-1) {
 							setCurrentDis(currentDictionary,pos, 0);
-							currentDictionary.htmlBuilder.setLength(currentDictionary.htmlHeader.length());
+							currentDictionary.htmlBuilder.setLength(currentDictionary.htmlBaseLen);
 							mWebView.loadDataWithBaseURL(currentDictionary.baseUrl,
 									currentDictionary.htmlBuilder.append(currentDictionary.getRecordsAt(pos))
-												.append(currentDictionary.js)
-												.append(currentDictionary.htmlTailer).toString()
+												.append(currentDictionary.htmlEnd).toString()
 									,null, "UTF-8", null);
 						}else {
 							mWebView.loadUrl(History.get(HistoryVagranter).key);//
@@ -649,11 +648,10 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 						//a.showT("expectedPos"+expectedPos);
 						if(pos!=-1) {
 							setCurrentDis(currentDictionary,pos, 0);
-							currentDictionary.htmlBuilder.setLength(currentDictionary.htmlHeader.length());
+							currentDictionary.htmlBuilder.setLength(currentDictionary.htmlBaseLen);
 							mWebView.loadDataWithBaseURL(currentDictionary.baseUrl,
 									currentDictionary.htmlBuilder.append(currentDictionary.getRecordsAt(pos))
-												.append(currentDictionary.js)
-												.append(currentDictionary.htmlTailer).toString()
+												.append(currentDictionary.htmlEnd).toString()
 									,null, "UTF-8", null);
 						}else {
 							mWebView.loadUrl(History.get(HistoryVagranter).key);//
@@ -731,6 +729,8 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	public boolean bClickToggleView=false;
 
 	public void prepareJump(MainActivityUIBase a, String content, ArrayList<Integer> _data, int _adapter_idx) {
+		if(content==null)
+			return;
 		if(_data==null) {
 			data = new ArrayList<>();
 			if (!a.opt.getPeruseAddAll()) data.add(a.adapter_idx);
@@ -1637,7 +1637,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	int expectedPosX;
 	ArrayList<myCpr<String,Integer>> History = new ArrayList<>();
 	
-	HashMap<Integer,MJavascriptInterface> ImageHistory = new HashMap<>();
+	HashMap<Integer, AppHandler> ImageHistory = new HashMap<>();
 	int HistoryVagranter=-1;
 
 	boolean isJumping = false;
@@ -1654,7 +1654,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 				History.remove(i);
 		}else {//回溯 或 前瞻， 不改变历史
 			//取回
-        	MJavascriptInterface js = ImageHistory.get(HistoryVagranter);
+        	AppHandler js = ImageHistory.get(HistoryVagranter);
         	if(js!=null)
         	mWebView.removeJavascriptInterface("imagelistener");
 		    mWebView.addJavascriptInterface(js, "imagelistener");

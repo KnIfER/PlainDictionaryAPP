@@ -138,4 +138,5 @@
 	<string name="remove_records">Usuń rekordy</string>
 	<string name="move_files">Przenoszenie plików</string>
 	<string name="new___">Nowy…</string>
+	<string name="no_suitable_app">Nie znaleziono odpowiedniej aplikacji.</string>
 </resources>

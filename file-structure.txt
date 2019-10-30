@@ -13,3 +13,13 @@ modified androidx modules :
 --AppPreference
 --AweDesigner
 --AxtAppCompat
+
+PlainDict (android):
+--Multiline (string pre-processor)
+--Glide (It  is used to load images for filepicker and mdd pictures).
+--GestureView (only use in filepicker. For mdd pictures I am using another solution).
+--recyclerViewFastScroller
+--twowaygridview (for Top dictionary list of Peruse Mode).
+--drag_sort_lib (for dictionary manager)
+--colorPicker (still has some bugs)
+--filepicker

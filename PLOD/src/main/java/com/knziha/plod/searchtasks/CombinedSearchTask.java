@@ -4,7 +4,7 @@ import android.os.AsyncTask;
 import android.view.View;
 
 import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.dictionary.myCpr;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.rbtree.RBTree_additive;
@@ -45,10 +45,13 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		CurrentSearchText=params[0];
 		if(a.currentFilter!=null)
 		try {
-			Object rerouteTarget = a.currentFilter.ReRoute(CurrentSearchText);
-			if(rerouteTarget instanceof String)
-				CurrentSearchText = (String) rerouteTarget;
-			//CMN.Log(s, " >> " , rerouteTarget);
+			for (mdict mdTmp:a.currentFilter) {
+				Object rerouteTarget = mdTmp.ReRoute(CurrentSearchText);
+				if(rerouteTarget instanceof String){
+					CurrentSearchText = (String) rerouteTarget;
+					break;
+				}
+			}
 		} catch (IOException ignored) { }
 
 
@@ -134,5 +137,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 
 		if(a.pendingLv2Pos!=null)
 			a.restoreLv2States();
+
+		a.CombinedSearchTask_lastKey=CurrentSearchText;
 	}
 }

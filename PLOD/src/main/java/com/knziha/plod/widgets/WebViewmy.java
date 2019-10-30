@@ -140,7 +140,7 @@ public class WebViewmy extends WebView {
 
     
     //Checks each time the bar is laid out. If there are few enough view that
-    //they all fit on the screen then the bar is hidden. If a view is added which doesn't fit on
+    //they all fit on the screen then the bar is isHidden. If a view is added which doesn't fit on
     //the screen then the bar is unhidden.
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {

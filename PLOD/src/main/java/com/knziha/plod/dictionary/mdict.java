@@ -21,6 +21,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
@@ -33,14 +34,17 @@ import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
+import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionary.Utils.key_info_struct;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import org.anarres.lzo.LzoDecompressor1x;
 import org.anarres.lzo.lzo_uintp;
-import org.apache.commons.lang.StringEscapeUtils;
 
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.Utils.record_info_struct;
 import com.knziha.rbtree.RBTree_additive;
+import org.apache.commons.text.StringEscapeUtils;
 
 
 /**
@@ -54,8 +58,6 @@ import com.knziha.rbtree.RBTree_additive;
  */
 
 public class mdict extends mdBase{
-	private boolean isDedicatedFilter;
-
 	@Deprecated//dummy, don't call this.
 	public mdict(){};
 
@@ -71,7 +73,20 @@ public class mdict extends mdBase{
 	public String _Dictionary_Name;
 	public String _Dictionary_fSuffix;
 
-	public int KeycaseStrategy=0;//0:global 1:Java API 2:classical
+	public boolean getIsDedicatedFilter(){
+		return false;
+	}
+	public boolean getIsDedicatedFilter(byte firstFlag){
+		return false;
+	}
+	public void setIsDedicatedFilter(boolean val){
+	}
+	//public int KeycaseStrategy=0;//0:global 1:Java API 2:classical
+	public int getCaseStrategy(){
+		return 0;
+	}
+	public void setCaseStrategy(int val){
+	}
 	public static boolean bGlobalUseClassicalKeycase=false;
 
 	public String currentDisplaying;
@@ -110,8 +125,12 @@ public class mdict extends mdBase{
 
 	}
 
+	public String getCachedEntryAt(int pos) {
+		return currentDisplaying;
+	}
+
 	//for lv
-	public String getEntryAt(int position,Flag mflag) {
+	public String getEntryAt(int position, Flag mflag) {
 		if(position==-1) return "about:";
 		if(_key_block_info_list==null) read_key_block_info();
 		int blockId = accumulation_blockId_tree.xxing(new myCpr<>(position,1)).getKey().value;
@@ -363,7 +382,7 @@ public class mdict extends mdBase{
 			return -1;
 		}
 		String tmp = getRecordAt(i);
-		if(isDedicatedFilter)
+		if(getIsDedicatedFilter())
 			return tmp;
 		if(tmp.startsWith(linkRenderStr)) {
 			//SU.Log("rerouting",tmp);
@@ -416,7 +435,9 @@ public class mdict extends mdBase{
 				sb.append("<HR>");
 			c++;
 		}
-		return processStyleSheet(sb.toString());
+		sb.append("<div class='bd_body'/>");
+		if(mdd!=null) sb.append("<div class='MddExist'/>");
+		return processStyleSheet(sb.toString(), positions[0]);
 	}
 
 	public static int offsetByTailing(String token) {
@@ -522,7 +543,7 @@ public class mdict extends mdBase{
 						try {
 							int ret = inf.inflate(key_block,0,(int)(infoI.key_block_decompressed_size));
 						} catch (DataFormatException e) {e.printStackTrace();}
-					break;
+						break;
 				}
 				//!!spliting curr Key block
 
@@ -1530,19 +1551,22 @@ public class mdict extends mdBase{
 
 
 	public String getDictInfo(){
+		DecimalFormat numbermachine = new DecimalFormat("#.00");
 		return new StringBuilder()
 				.append("Engine Version: ").append(_version).append("<BR>")
 				.append("CreationDate: ").append((_header_tag.containsKey("CreationDate")?_header_tag.get("CreationDate"):"UNKNOWN")).append("<BR>")
 				.append("Charset &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ").append(this._encoding).append("<BR>")
-				.append("Num Entries: ").append(this._num_entries).append("<BR>")
-				.append("Num Key Blocks: ").append(this._num_key_blocks).append("<BR>")
-				.append("Num Rec Blocks: ").append(this._num_record_blocks).append("<BR>")
-				.append("Compact  排序: ").append(this.isCompact).append("<BR>")
-				.append("StripKey 排序: ").append(this.isStripKey).append("<BR>")
-				.append("Case Sensitive: ").append(this.isKeyCaseSensitive).append("<BR>")
+				.append("Num Entries: ").append(_num_entries).append("<BR>")
+				.append("Num Key Blocks: ").append(_num_key_blocks).append("<BR>")
+				.append("Num Rec Blocks: ").append(decode_record_block_size()).append("<BR>")
+				.append("Avg. Key Block Size: ").append(numbermachine.format(1.0*_key_block_size/_num_key_blocks/1024)).append(" kb, ").append(numbermachine.format(1.0*_num_entries/_num_key_blocks)).append(" items / block").append("<BR>")
+				.append("Avg. Rec Block Size: ").append(numbermachine.format(1.0*_record_block_size/_num_record_blocks/1024)).append(" kb, ").append(numbermachine.format(1.0*_num_entries/_num_record_blocks)).append(" items / block").append("<BR>")
+				.append("Compact  排序: ").append(isCompact).append("<BR>")
+				.append("StripKey 排序: ").append(isStripKey).append("<BR>")
+				.append("Case Sensitive: ").append(isKeyCaseSensitive).append("<BR>")
 				.append(mdd==null?"&lt;no assiciated mdRes&gt;":("MdResource count "+mdd.getNumberEntries()+","+mdd._encoding+","+mdd._num_key_blocks+","+mdd._num_record_blocks)).append("<BR>")
 				.append("Internal Name: ").append(_Dictionary_Name).append("<BR>")
-				.append("Path: ").append(this.getPath()).toString();
+				.append("Path: ").append(getPath()).toString();
 	}
 
 	static boolean EntryStartWith(byte[] source, int sourceOffset, int sourceCount, byte[][][] matchers) {
@@ -1594,6 +1618,7 @@ public class mdict extends mdBase{
 
 	public String processMyText(String input) {
 		String ret = isStripKey?replaceReg.matcher(input).replaceAll(emptyStr):input;
+		int KeycaseStrategy=getCaseStrategy();
 		return isKeyCaseSensitive?ret:(((KeycaseStrategy>0)?(KeycaseStrategy==2):bGlobalUseClassicalKeycase)?mOldSchoolToLowerCase(ret):ret.toLowerCase());
 	}
 
@@ -1606,7 +1631,7 @@ public class mdict extends mdBase{
 		return sb.toString();
 	}
 
-	public String processStyleSheet(String input) {
+	public String processStyleSheet(String input, int pos) {
 		if(_stylesheet.size()==0)
 			return input;
 		Matcher m = markerReg.matcher(input);
@@ -1619,8 +1644,8 @@ public class mdict extends mdBase{
 			String now = m.group(1);
 			String[] nowArr = _stylesheet.get(now);
 			if(nowArr==null)
-				if(now.equals("0") && currentDisplaying!=null) {
-					nowArr=new String[] {currentDisplaying,""};
+				if(now.equals("0")) {
+					nowArr=new String[] {getCachedEntryAt(pos),""};
 				}
 			if(nowArr==null) {
 				if(last!=null) {
@@ -1631,15 +1656,19 @@ public class mdict extends mdBase{
 			}
 			transcriptor.append(input, lastEnd, m.start());
 			if(last!=null) transcriptor.append(last);
-			transcriptor.append(StringEscapeUtils.unescapeHtml(nowArr[0]));
+			transcriptor.append(StringEscapeUtils.unescapeHtml3(nowArr[0]));
 			lastEnd = m.end();
-			last = StringEscapeUtils.unescapeHtml(nowArr[1]);
+			last = StringEscapeUtils.unescapeHtml3(nowArr[1]);
 			returnRaw=false;
 		}
 		if(returnRaw)
 			return input;
 		else
 			return transcriptor.append(last==null?"":last).append(input.substring(lastEnd)).toString();
+	}
+
+	public File f() {
+		return f;
 	}
 }
 

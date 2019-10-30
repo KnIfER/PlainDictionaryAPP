@@ -292,7 +292,7 @@ public class Drawer extends Fragment implements
 								ClipData pclip = cm.getPrimaryClip();
 								ClipData.Item firstItem = pclip.getItemAt(0);
 								String content = firstItem.getText().toString();
-								CMN.Log("剪贴板监听器:", content);
+								//CMN.Log("剪贴板监听器:", content);
 								if(System.currentTimeMillis()-a.lastClickTime<256 && content.equals(mPreviousCBContent))
 									return;
 								int i = 0;
@@ -306,11 +306,12 @@ public class Drawer extends Fragment implements
 									mClipboard.add(0, mClipboard.remove(i));
 								}
 								boolean focused=a.hasWindowFocus();
-								if (!focused && a.opt.getPasteBinBringTaskToFront()) {
+								boolean toFloat=PDICMainAppOptions.getPasteTarget()==3;
+								if (!toFloat && !focused && a.opt.getPasteBinBringTaskToFront()) {
 									ActivityManager manager = (ActivityManager) a.getSystemService(Context.ACTIVITY_SERVICE);
 									if(manager!=null) manager.moveTaskToFront(a.getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
 								}
-								if ((focused || a.opt.getPasteBinBringTaskToFront()) && a.opt.getPasteBinUpdateDirect())
+								if (toFloat || (focused || a.opt.getPasteBinBringTaskToFront()) && a.opt.getPasteBinUpdateDirect())
 									a.JumpToWord(content, focused?1:2);
 								else
 									a.textToSetOnFocus=content;
@@ -635,7 +636,7 @@ public class Drawer extends Fragment implements
 				}else
 					a.show(R.string.nothingR);
 			} break;
-			case 6:{//追加词典
+			case 6:{//追加词典 添加词典 打开
 				DialogProperties properties = new DialogProperties();
 				properties.selection_mode = DialogConfigs.SINGLE_MULTI_MODE;
 				properties.selection_type = DialogConfigs.FILE_SELECT;
@@ -658,6 +659,7 @@ public class Drawer extends Fragment implements
 							//File def = new File(a.opt.pathToMain()+"default.txt");      //!!!原配
 							final File def = new File(a.getExternalFilesDir(null),"default.txt");      //!!!原配
 							File rec = new File(a.opt.pathToMain()+"CONFIG/mdlibs.txt");
+							a.ReadInMdlibs(rec);
 							try {
 								BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
 								BufferedWriter output2 = new BufferedWriter(new FileWriter(def,true));

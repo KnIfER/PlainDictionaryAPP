@@ -1,5 +1,7 @@
 package com.knziha.plod.dictionarymodels;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +18,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import android.webkit.WebHistoryItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
@@ -36,14 +38,15 @@ import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.PhotoBrowserActivity;
+import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdictRes;
-import com.knziha.plod.dictionary.myCpr;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.widgets.WebViewmy;
 
+import org.adrianwalker.multilinestring.Multiline;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.BufferedReader;
@@ -56,9 +59,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,40 +70,277 @@ import db.MdxDBHelper;
  author:KnIfER
 */
 
-
 public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCallback<String>, OnClickListener{
-	public static String FileTag = "file://";
-	public final String baseUrl = "file:///";
-	public mdict(){};
+	public final static String FileTag = "file://";
+	public final static String baseUrl = "file:///";
+	public final static String  _404 = "<span style='color:#ff0000;'>Mdict 404 Error:</span> ";
+	/**
+	 mark {background: yellow; }
+	 mark.current {
+	 	 background: orange;
+	 	 border:1px solid #FF0000
+	 }
+	 </style>
+	 <script>
+	 	window.addEventListener('load',wrappedOnLoadFunc,false);
+		window.addEventListener('click',wrappedClickFunc);
+		function wrappedOnLoadFunc(){
+			console.log('mdpage loaded');
+			highlight(null);
+		}
+	 	function wrappedClickFunc(e){
+	 		if(e.srcElement.tagName=='IMG'){
+	 			var img=e.srcElement;
+				if(img.src && !img.onclick){
+					var lst = [];
+					var current=0;
+	 				var all = document.getElementsByTagName("img");
+					for(var i=0;i<all.length;i++){
+	 					lst.push(all[i].src);
+	 					if(all[i]==img)
+							current=i;
+	 				}
+	 				if(lst.length==0)
+	 					lst.push(img.src);
+					imagelistener.openImage(current, lst);
+				}
+	 		}
+	 	}
+
+		//!!!高亮开始
+		var bOnceHighlighted;
+		var MarkLoad,MarkInst;
+		var results=[], current,currentIndex = 0;
+		var currentClass = "current";
+
+		function jumpTo(d, desiredOffset, frameAt, HlightIdx, topOffset_frameAt) {
+			if (results.length) {
+				console.log('jumpTo received '+frameAt+'->'+HlightIdx+' '+(currentIndex+d)+'/'+(results.length)+' dir='+d);
+				var np=currentIndex+d;
+				var max=results.length - 1;
+				if (currentIndex > max) currentIndex=0;
+				if(desiredOffset>=0){
+					np=0;
+					if(frameAt<HlightIdx) return d;
+					var baseOffset=topOffset_frameAt;
+					for(;np>=0&&np<=max;np+=d){
+						if(baseOffset+pw_topOffset(results[np])>=desiredOffset)
+							break;
+					}
+					desiredOffset=-1;
+				}
+				if (np < 0) return -1;
+				if (np > max) return 1;
+				currentIndex=np;
+				if(current) removeClass(current, currentClass);
+				current = results[currentIndex];
+				if(current){
+					addClass(current, currentClass);
+					var position = topOffset(current);
+					//pw.scrollHighlight(position, d);
+					return 0;
+				}
+			}
+			return d;
+	 	}
+
+		function pw_topOffset(value){
+			var top=0;
+			while(value && value!=document.body){
+				top+=value.offsetTop;
+				value=value.offsetParent;
+			}
+			return top;
+		}
+
+		function topOffset(elem){
+			var top=0;
+			var add=1;
+			while(elem && elem!=document.body){
+				if(elem.style.display=='none'){
+					elem.style.display='block';
+				}
+				if(add){
+					top+=elem.offsetTop;
+					var tmp = elem.offsetParent;
+					if(!tmp) add=0;
+					else elem=tmp;
+				}
+				if(!add) elem=elem.parentNode;
+			}
+			return !add&&top==0?-1:top;
+		}
+
+		function quenchLight(){
+			if(current) removeClass(current, currentClass);
+		}
+
+		function resetLight(d){
+			if(d==1) currentIndex=-1;
+			else if(d==-1) currentIndex=results.length;
+			quenchLight();
+		}
+
+		function setAsEndLight(){
+			currentIndex=results.length-1;
+		}
+
+		function setAsStartLight(){
+			currentIndex=0;
+		}
+
+		function addClass(elem, className) {
+			if (!className) return;
+			const els = Array.isArray(elem) ? elem : [elem];
+			for(var i=0;i<els.length;i++){
+				els[i].className+=className;
+			}
+		}
+
+		function removeClass(elem, className) {
+			if (!className) return;
+			const els = Array.isArray(elem) ? elem : [elem];
+			for(var i=0;i<els.length;i++){
+				els[i].className=els[i].className.replace(className, '');
+			}
+		}
+
+		function clearHighlights(){
+			if(bOnceHighlighted && MarkInst && MarkLoad)
+			MarkInst.unmark({
+				done: function() {
+					results=[];
+					bOnceHighlighted=false;
+				}
+			});
+		}
+
+		function highlight(keyword){
+			var b1=keyword==null;
+			if(b1)
+				keyword=imagelistener.getCurrentPageKey();
+			if(keyword==null||b1&&keyword.trim().length==0)
+				return;
+			if(!MarkLoad){
+				loadJs('/MdbR/mark.js', function(){
+					MarkLoad=true;
+					do_highlight(keyword);
+				});
+			}else
+				do_highlight(keyword);
+		}
+
+		function do_highlight(keyword){
+			if(!MarkInst)
+				MarkInst = new Mark(document);
+			MarkInst.unmark({
+				done: function() {
+					bOnceHighlighted=false;
+					MarkInst.mark(keyword, {
+					separateWordSearch: true,'wildcards':'withSpaces',
+						done: function() {
+							bOnceHighlighted=true;
+							results = document.getElementsByTagName("mark");
+							currentIndex=-1;
+						}
+					});
+				}
+			});
+		}
+
+		function loadJs(url,callback){
+			var script=document.createElement('script');
+			script.type="text/javascript";
+			if(typeof(callback)!="undefined"){
+				if(script.readyState){
+					script.onreadystatechange=function(){
+						if(script.readyState == "loaded" || script.readyState == "complete"){
+							script.onreadystatechange=null;
+							callback();
+						}
+					}
+				}else{
+					script.onload=function(){
+						callback();
+					}
+				}
+			}
+			script.src=url;
+			document.body.appendChild(script);
+		}
+	 </script>
+	 */
+	@Multiline
+	public final static String js="SUBPAGEJS";
+	//
+
+	public mdict(){
+		htmlBaseLen=0;
+		//throw new IllegalStateException("wrong initializer");
+	}
 	public String _Dictionary_fName_Internal;
 	public WebViewmy mWebView;
     public ViewGroup rl;
-    //RelativeLayout.LayoutParams lp;
-    float zoomLevel=1;
     LayoutInflater inflater;
 
-    //boolean isWebHidden=false;
-	boolean isZooming=false;
-	public float flingDelta = 100;
-	float svx1 = 0,svy1=0,svx2=0,svy2=0;
-	float svFlingvelocityX;
 	public Drawable cover;
-	//static boolean isWebHeld;
 	
 	public static float def_zoom=1;
 	public static int def_fontsize = 100;
 	public static int optimal100;
 	public int internalScaleLevel=-1;
-	public boolean bUseInternalBG;
-	public boolean bUseInternalFS;
-	int WebSingleLayerType=3;//0 None 1 Software 2 Hardware
+	public boolean tmpIsFilter;
+	byte FFStamp;
+	byte firstFlag;
+	@Override
+	public int getCaseStrategy() {
+		return firstFlag&3;
+	}
+	@Override
+	public void setCaseStrategy(int val) {
+		firstFlag&=~3;
+		firstFlag|=val;
+	}
 
-    public int bmCBI=0,bmCCI=-1,CBI,CCI;
+	@Override
+	public boolean getIsDedicatedFilter(){
+		return (firstFlag & 0x40) == 0x40;
+	}
+	@Override
+	public void setIsDedicatedFilter(boolean val){
+		firstFlag&=~0x40;
+		if(val) firstFlag|=0x40;
+	}
+	public boolean getUseInternalBG(){
+		return (firstFlag & 0x20) == 0x20;
+	}
+	public boolean getUseInternalBG(byte firstFlag){
+		return (firstFlag & 0x20) == 0x20;
+	}
+	public void setUseInternalBG(boolean val){
+		firstFlag&=~0x20;
+		if(val) firstFlag|=0x20;
+	}
+	public boolean getUseInternalFS(){
+		return (firstFlag & 0x10) == 0x10;
+	}
+	public boolean getUseInternalFS(byte firstFlag){
+		return (firstFlag & 0x10) == 0x10;
+	}
+	public void setUseInternalFS(boolean val){
+		firstFlag&=~0x10;
+		if(val) firstFlag|=0x10;
+	}
+	//int WebSingleLayerType=3;//0 None 1 Software 2 Hardware
+
+    public int bmCBI=0,bmCCI=-1;
     public Integer bgColor=null;
     
-	public String js="";
-	public String htmlHeader="";
-	public String htmlTailer="";
+	private final static String htmlBase="<!DOCTYPE html><html><meta name='viewport' content='initial-scale=1,user-scalable=yes'><head><style>html,body{ width: auto; height: auto;} img{max-width:100%;}";
+	public final static String htmlHeadEndTag = "</head>";
+	public final static String htmlEnd="</html>";
+	public final int htmlBaseLen;
+	//TODO lazy load
     public StringBuilder htmlBuilder;
 
     public boolean bContentEditable=false;
@@ -111,105 +348,47 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
     public MainActivityUIBase a;
 	PDICMainAppOptions opt;
 
-	int SelfAtIdx=-1;
-	Timer timer;
-	public final static String htmlTitleEndTag="</title>";;
-	public final static String htmlHeader2 = "</head> <body onpageshow=\"window.imagelistener.pageshow();onpageshown();\" >";
 	//构造
-	public mdict(String fn, MainActivityUIBase a_) throws IOException {
-		a=a_;
+	@SuppressWarnings("deprecation")
+	public mdict(String fn, MainActivityUIBase _a) throws IOException {
+		a=_a;
 		init(fn);
 		fn = new File(fn).getAbsolutePath();
-		opt=a_.opt;
+		opt=_a.opt;
 		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
 		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
-		inflater=a_.inflater;
-		if(KeycaseStrategy==1) {
-			
-		}
-		else {//TODO
-			
-		}
-		js = "<script type=\"text/javascript\">var objs = document.getElementsByTagName(\"img\");for(var i=0;i<objs.length;i++){var img=objs[i];img.style.maxWidth = '100%';img.style.height='auto';if(img.onclick==null && img.parentNode.onclick==null)img.onclick=function(){window.imagelistener.openImage(this.src);}}</script>";
-		//objs = document.getElementsByTagName(\"video\");for(var i=0;i<objs.length;i++){var v=objs[i];v.play();}
-		//js="";
-		htmlHeader = "<meta name=\"viewport\" content=\"initial-scale=1, user-scalable=yes,\">  <style>html,body{ width: auto; height: auto;} img{max-width:100%;}</style> <head><title>";
-		htmlTailer="<div class='bd_body'/></body>";
-		
+		inflater=_a.inflater;
+		htmlBuilder=new StringBuilder(htmlBase);
         File p = f.getParentFile();
         if(p!=null) {
-            StringBuilder sb = new StringBuilder();//外挂css
-	        String cssPath = sb.append(p.getAbsolutePath()).append("//").append(_Dictionary_fName).append(".css").toString();
+			/* 外挂同名css */
+            StringBuilder sb = new StringBuilder(p.getAbsolutePath()).append("//").append(_Dictionary_fName);
+            int fileNameLen=sb.length();
+	        String cssPath = sb.append(".css").toString();
 	        if(new File(cssPath).exists()) {
-	        	sb.setLength(0);
-	        	sb.append("<meta name=\"viewport\" content=\"initial-scale=1, user-scalable=yes,\">  <style>html,body{ width: auto; height: auto;} img{max-width:100%;}");
 	        	BufferedReader in = new BufferedReader(new FileReader(cssPath));
-		        String line = in.readLine();
-		        while(line!=null){
-		        	sb.append(line = in.readLine());
-		        }
+		        String line;
+		        while((line = in.readLine())!=null)
+					htmlBuilder.append(line).append("\r\n");
 		        in.close();
-		        htmlHeader=sb.append("</style><head><title>").toString();
-		        //htmlTailer = "<div class='bd_body'/></body>";
 	        }
-	        sb.setLength(0);
-	        pngPath = sb.append(p.getAbsolutePath()).append("//").append(_Dictionary_fName).append(".png").toString();
+			/* 同名png图标 */
+	        sb.setLength(fileNameLen);
+	        pngPath = sb.append(".png").toString();
 	        if(new File(pngPath).exists()) {
 	        	cover = Drawable.createFromPath(pngPath);
 	        }
         }
+		htmlBuilder.append(js);
+		htmlBaseLen=htmlBuilder.length();
 
-        htmlBuilder = new StringBuilder(htmlHeader);
-        DataInputStream data_in1 = null;
-        try {
-        File SpecificationFile = new File(opt.pathTo().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
-        if(SpecificationFile.exists()) {
-        	long time=System.currentTimeMillis();
-        	//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
-        	data_in1 = new DataInputStream(new FileInputStream(SpecificationFile));
-        	int size = data_in1.readShort();
-        	if(size!=12) {
-        		data_in1.close();
-        		SpecificationFile.delete();
-        		return;
-        	}
-        	byte firstFlag = data_in1.readByte();
-        	bUseInternalBG = (firstFlag & 32) == 32;
-        	bUseInternalFS = (firstFlag & 16) == 16;
-    		KeycaseStrategy = firstFlag & 3;
-    		WebSingleLayerType = (firstFlag & 12) >> 2;
-    		//readinoptions
-    		//a.showT("bUseInternalBG:"+bUseInternalBG+" bUseInternalFS:"+bUseInternalFS+" KeycaseStrategy:"+KeycaseStrategy);
-			bgColor=data_in1.readInt();
-			internalScaleLevel=data_in1.readInt();
-
-			
-			lvPos = data_in1.readInt();
-			lvClickPos = data_in1.readInt();
-			lvPosOff = data_in1.readInt();
-			
-			CMN.Log(_Dictionary_fName+"列表位置",lvPos,lvClickPos,lvPosOff);
-			
-			expectedPosX = data_in1.readInt();
-			expectedPos = data_in1.readInt();
-			webScale = data_in1.readFloat();
-			
-			CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
-			
-
-    		data_in1.close();
-			CMN.Log(_Dictionary_fName+"单典配置加载耗时",System.currentTimeMillis()-time);
-        }
-        } catch (Exception e) {
-        	e.printStackTrace();
-        } finally{
-        	if(data_in1!=null) data_in1.close();
-        }
+        readInConfigs();
         
-    	if(bgColor==null) bgColor=CMN.GlobalPageBackground;
+    	if(bgColor==null)
+    		bgColor=CMN.GlobalPageBackground;
 	}
 
-	
+
 	public String pngPath;
 	
 	private boolean viewsHolderReady =  false;
@@ -224,22 +403,14 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			rl=(ViewGroup)inflater.inflate(R.layout.contentview_item,null);
 			
 	        if(mWebView==null){
-	           	//mWebView = new WebViewmy(a);
 	        	webScale = def_zoom;
 	           	mWebView = rl.findViewById(R.id.webviewmy);
-	           	//mWebView.setTag(this);
 	            a.initWebScrollChanged();//Strategy: use one webscroll listener
 	            mWebView.setOnSrollChangedListener(a.onWebScrollChanged);
-	            
 	            mWebView.setPadding(0, 0, 18, 0);
-
-	           	//mWebView.setOnTouchListener(a.mBar);
-	            mWebView.setOnTouchListener(a);
-	           	
-	            //lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-	            //lp.addRule(RelativeLayout.BELOW, R.id.toolbar);
-	            //lp.setMargins(0, 0, 18, 0);
-	            /////lp.setMargins(15, 20, 10, 15);
+				AppHandler mWebBridge = new AppHandler(a);
+				mWebView.addJavascriptInterface(mWebBridge, "imagelistener");
+	            //mWebView.setOnTouchListener(a);
 	        }
 	        rl.findViewById(R.id.undo).setOnClickListener(new OnClickListener(){
 				@Override
@@ -273,9 +444,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 					mWebView.evaluateJavascript("document.execCommand('Redo')", null);
 				}});
 	        
-			toolbar = (ViewGroup)rl.findViewById(R.id.lltoolbar);
-			toolbar_title = ((TextView)toolbar.findViewById(R.id.toolbar_title));
-			toolbar_cover = (ImageView)toolbar.findViewById(R.id.cover);
+			toolbar = rl.findViewById(R.id.lltoolbar);
+			toolbar_title = toolbar.findViewById(R.id.toolbar_title);
+			toolbar_cover = toolbar.findViewById(R.id.cover);
 			if(cover!=null)
 				toolbar_cover.setImageDrawable(cover);
 			ucc = a.getUcc();
@@ -293,12 +464,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 					mWebView.post(new Runnable() {
 						@Override
 						public void run() {
-							a.mBar.isWebHeld=true;
+							//a.mBar.isWebHeld=true;
 							if(a.mBar.timer!=null) a.mBar.timer.cancel();
-							a.mBar.fadeIn();
+							//a.mBar.fadeIn();
 							a.mBar.setMax(a.webholder.getMeasuredHeight()-((View) a.webholder.getParent()).getMeasuredHeight());
 							a.mBar.setProgress(((View) a.webholder.getParent()).getScrollY());
-							a.mBar.onTouch(null, MotionEvent.obtain(0,0,MotionEvent.ACTION_UP,0,0,0));
+							//a.mBar.onTouch(null, MotionEvent.obtain(0,0,MotionEvent.ACTION_UP,0,0,0));
 						}
 					});
 				}});
@@ -343,14 +514,13 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 							//CMN.Log(123,PageState,pos,PageState.scale);
 							if(pos!=-1) {
 								setCurrentDis(pos, 0);
-				    			htmlBuilder.setLength(htmlHeader.length());
+				    			htmlBuilder.setLength(htmlBaseLen);
 				    			mWebView.setInitialScale((int) (100*(initialScale/mdict.def_zoom)*opt.dm.density));//(int) (100*(mWebView.webScale/mdict.def_zoom)*opt.dm.density)
 								mWebView.loadDataWithBaseURL(baseUrl,
-										 htmlBuilder.append(mdict.htmlTitleEndTag).append((GlobalOptions.isDark)? MainActivityUIBase.DarkModeIncantation_l:"").append(mdict.htmlHeader2)
+										 htmlBuilder.append((GlobalOptions.isDark)? MainActivityUIBase.DarkModeIncantation_l:"")
+													.append(mdict.htmlHeadEndTag)
 										 			.append(getRecordsAt(pos))
-													.append(js)
-													.append(mdd!=null?"<div class='MddExist'/>":"")
-													.append(htmlTailer).toString()
+													.append(htmlEnd).toString()
 										,null, "UTF-8", null);
 							}else {
 								mWebView.loadUrl(History.get(HistoryVagranter).key);//
@@ -405,14 +575,13 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 							//a.showT("expectedPos"+expectedPos);
 							if(pos!=-1) {
 								setCurrentDis(pos, 0);
-				    			htmlBuilder.setLength(htmlHeader.length());
+				    			htmlBuilder.setLength(htmlBaseLen);
 				    			mWebView.setInitialScale((int) (100*(initialScale/mdict.def_zoom)*opt.dm.density));
 								mWebView.loadDataWithBaseURL(baseUrl,
-										 htmlBuilder.append(mdict.htmlTitleEndTag).append((GlobalOptions.isDark)? MainActivityUIBase.DarkModeIncantation_l:"").append(mdict.htmlHeader2)
-										 			.append(getRecordsAt(pos))
-													.append(js)
-													.append(mdd!=null?"<div class='MddExist'/>":"")
-													.append(htmlTailer).toString()
+										 htmlBuilder.append((GlobalOptions.isDark)? MainActivityUIBase.DarkModeIncantation_l:"")
+												 .append(mdict.htmlHeadEndTag)
+												 .append(getRecordsAt(pos))
+												 .append(htmlEnd).toString()
 										,null, "UTF-8", null);
 							}else {
 								mWebView.loadUrl(History.get(HistoryVagranter).key);//
@@ -428,50 +597,20 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 		recess.setVisibility(View.GONE);
 		forward.setVisibility(View.GONE);
 	}
-	
-	long baseTime;
+
 	public boolean isJumping = false;
-	public void clearWebview(){
-		if(mWebView!=null){
-			//CMN.show("asd");
-			mWebView.findAllAsync(null);
-			//mWebView.setLayoutParams(mWebView.getLayoutParams());
-			//mWebView.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0));
-			//mWebView.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE, 0, 1, 0));
-			//mWebView.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE, 0, 2, 0));
-			//mWebView.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE, 0, 3, 0));
-			//mWebView.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE, 0, 4, 0));
-			//mWebView.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE, 0, 5, 0));
-			//mWebView.getSettings().setLoadWithOverviewMode(false); //very hacky,very android... solution found on the SO.cheers!
-			//mWebView.loadUrl("about:blank");
-			//mWebView.clearCache(false);
-			//mWebView.loadDataWithBaseURL(baseUrl,"\n\n\n\n\n\n\n\n",null, "UTF-8", null);
-		}
-	}
-	//public void refreshWebview(){
-		//if(mWebView!=null) {
-			//mWebView.getSettings().setLoadWithOverviewMode(true);//very hacky,very android... solution found on the SO.cheers!
-			//mWebView.loadUrl("about:blank");
-		//}
-		//mWebView.setInitialScale(0);
-		//mWebView.df.reset();
-		//mWebView.pageUp(true);
-	//}
-	
-
-
 
 	public int currentPos;
 	public int lvPos,lvClickPos,lvPosOff;
 	public int expectedPos=-1;
 	public int expectedPosX=-1;
-	public ArrayList<myCpr<String,Integer>> History = new ArrayList<myCpr<String,Integer>>();
+	public ArrayList<myCpr<String,Integer>> History = new ArrayList<>();
 	
-	HashMap<Integer,MJavascriptInterface> ImageHistory = new HashMap<>();
 	public int HistoryVagranter=-1;
 	public SparseArray<ScrollerRecord> HistoryOOP = new SparseArray<>();//CurrentPageHistorian
 	
-    public void setCurrentDis(int idx, int... flag) {
+    @SuppressLint("JavascriptInterface")
+	public void setCurrentDis(int idx, int... flag) {
 		currentPos = idx;
 		currentDisplaying = getEntryAt(currentPos);
     	toolbar_title.setText(new StringBuilder(currentDisplaying.trim()).append(" - ").append(_Dictionary_fName).toString());
@@ -482,31 +621,19 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 				History.remove(i);
 		}else {//回溯 或 前瞻， 不改变历史
 			//取回
-        	MJavascriptInterface js = ImageHistory.get(HistoryVagranter);
-        	if(js!=null)
-        	mWebView.removeJavascriptInterface("imagelistener");
-		    mWebView.addJavascriptInterface(js, "imagelistener");
 		}
 	}
-    
-    Pattern htmlPattern;
-	private float ScaleMultiplier;
-    
+
     public void renderContentAt(float initialScale,int SelfIdx, WebViewmy mWebView,int ...position){
-		//a.showT("bUseInternalFS:"+bUseInternalFS+"-"+internalScaleLevel+"\r\n"+"bUseInternalBG:"+bUseInternalBG+"-"+Integer.toHexString(bgColor));	
     	isJumping=false;
     	HistoryVagranter=-1;
     	History.clear();
-    	ImageHistory.clear();
-
     	boolean resposibleForThisWeb = false;
     	if(mWebView==null) {
     		mWebView=this.mWebView;
     		resposibleForThisWeb=true;
     	}
-
     	mWebView.setTag(SelfIdx);
-    	
 		if(getFontSize()!=mWebView.getSettings().getTextZoom())
 			mWebView.getSettings().setTextZoom(getFontSize());
 		
@@ -527,7 +654,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 					a.mBar.setDelimiter("< >");
 		    		a.mBar.scrollee=mWebView;
 				}
-	    		//mWebView.getSettings().setSupportZoom(true);
 			}
 		}else {
 			mWebView.setTag(R.id.position,false);
@@ -535,57 +661,31 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
     	//mWebView.setVisibility(View.VISIBLE);
    	    //a.showT("mWebView:"+mWebView.isHardwareAccelerated());
 		PlayWithToolbar(a.hideDictToolbar,a);
-		
     	if(mWebView.wvclient!=a.myWebClient) {
 			mWebView.setWebChromeClient(a.myWebCClient);
 	   	    mWebView.setWebViewClient(a.myWebClient);
     	}
-    	
-    	if(bUseInternalBG) {
+    	if(getUseInternalBG()) {
     		int myWebColor = bgColor;
     		if(GlobalOptions.isDark)
     			myWebColor=ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
 			mWebView.setBackgroundColor(myWebColor);
     	}else
     		mWebView.setBackgroundColor(Color.TRANSPARENT);
-    	
     	mWebView.setBackground(null);
-    	
-    	//CMN.Log(mWebView.getBackground());
-
-
 		mWebView.clearHistory();
-    	//mWebView.clearMatches();
-    	//mWebView.findAllAsync(null);
 
-    	
-		String htmlCode=null;
-		String _404 = "<span style='color:#ff0000;'>Mdict 404 Error:</span> ";
+		String htmlCode;
 		try {
 	        htmlCode = getRecordsAt(position);
-		} catch (Exception e) {_404+=e.getLocalizedMessage();}
-		
-		if(htmlCode==null) htmlCode=_404;
-		
-	        
-        //if(htmlCode.indexOf("<body>")!=-1)//剥离 body
-        //	htmlCode = htmlCode.substring(htmlCode.indexOf("<body>")+6,htmlCode.indexOf("</body>"));
-        /*if(lastHeight!=-1) {
-        	int estimatedH = (int) (lastHeight * (htmlCode.length()*1.f/lastLength));
-        	if(estimatedH<lastLength) {
-	        	//mWebView.getLayoutParams().height = estimatedH;
-	        	//a.showT("lastHeight"+htmlCode.length());
-	        	//mWebView.setLayoutParams(mWebView.getLayoutParams());
-        	}
+		} catch (Exception e) {
+			htmlCode=_404+e.getLocalizedMessage();
 		}
-        lastLength=htmlCode.length();
-        */
 
-		htmlBuilder.setLength(htmlHeader.length());
+
 		mWebView.isloading=true;
 
 		//CMN.Log("缩放是", initialScale);
-
 		if(initialScale!=-1)
 			mWebView.setInitialScale((int) (100*(initialScale/mdict.def_zoom)*opt.dm.density));//opt.dm.density
 		else {
@@ -595,14 +695,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			}else
 				mWebView.setInitialScale(0);//opt.dm.density
 		}
-
-
-		mWebView.loadDataWithBaseURL(baseUrl,//.append(mWebView==this.mWebView?"":(SelfIdx+":"))    .append(position[0])
-				htmlBuilder.append(htmlTitleEndTag).append(GlobalOptions.isDark? MainActivityUIBase.DarkModeIncantation_l:"").append(htmlHeader2)
+		htmlBuilder.setLength(htmlBaseLen);
+		mWebView.loadDataWithBaseURL(baseUrl,
+				htmlBuilder.append(GlobalOptions.isDark? MainActivityUIBase.DarkModeIncantation_l:"")
+							.append(htmlHeadEndTag)
 							.append(htmlCode)
-							.append(js)
-							.append(mdd!=null?"<div class='MddExist'/>":"")
-							.append(htmlTailer).toString(),null, "UTF-8", null);
+							.append(htmlEnd).toString(),null, "UTF-8", null);
 	}
     
 
@@ -673,44 +771,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
     
     @Override
     public String getRecordsAt(int... positions) throws IOException {
-    	String ret;
-		if(positions[0]==-1) {
-			 //渲染封皮...
-			//Log.e("xdda",Build.VERSION.SDK_INT>=21?Html.fromHtml(_header_tag.get("Description"),Html.FROM_HTML_MODE_COMPACT).toString():Html.fromHtml(_header_tag.get("Description")).toString());
-			String cover = getAboutString();
-			
-			ret = new StringBuilder()
-				.append(cover)
+		return positions[0]==-1? new StringBuilder(getAboutString())
 				.append("<BR>").append("<HR>")
-				.append(getDictInfo()).toString();
-			//return ret;
-		}else
-			ret = super.getRecordsAt(positions);
-		//扫入图片
-		if(htmlPattern==null)
-    		htmlPattern = Pattern.compile("<img\\b[^>]*\\bsrc\\b\\s*=\\s*('|\")?([^'\"\n\r\f>]+(\\.jpg|\\.bmp|\\.eps|\\.gif|\\.mif|\\.miff|\\.png|\\.tif|\\.tiff|\\.svg|\\.wmf|\\.jpe|\\.jpeg|\\.dib|\\.ico|\\.tga|\\.cut|\\.pic|\\b)\\b)[^>]*>", Pattern.CASE_INSENSITIVE);
-        List<String> imageSrcList = new ArrayList<String>();
-        Matcher m = htmlPattern.matcher(ret);
-        String quote = null;
-        String src = null;
-        while (m.find()) {
-            quote = m.group(1);
-            src = (quote == null || quote.trim().length() == 0) ? m.group(2).split("\\s+")[0] : m.group(2);
-            imageSrcList.add(src);
-        }
-        if(mWebView!=null) {
-	        //if (imageSrcList.size() >= 0) {
-	        	MJavascriptInterface js = new MJavascriptInterface(a,imageSrcList.toArray(new String[] {}));
-	        	mWebView.removeJavascriptInterface("imagelistener");
-			    mWebView.addJavascriptInterface(js, "imagelistener");
-			    ImageHistory.put(HistoryVagranter, js);
-	        //}//else
-	        	//mWebView.removeJavascriptInterface("imagelistener");
-        }
-        
-	    return ret;
+				.append(getDictInfo()).toString(): super.getRecordsAt(positions);
     }
-    
 
     public String getAboutString() {
 		//return Build.VERSION.SDK_INT>=24?Html.fromHtml(_header_tag.get("Description"),Html.FROM_HTML_MODE_COMPACT).toString():Html.fromHtml(_header_tag.get("Description")).toString();
@@ -753,7 +817,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 		}
 	};
 	
-    public class MJavascriptInterface {
+    public class AppHandler {
         @JavascriptInterface
         public void dopagef() {
         	if(rl.getParent()!=null)
@@ -763,40 +827,43 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
         	}
         	//a.showT("scrolled"+expectedPos);
         }
-        
+
         @JavascriptInterface
         public void li(String val) {
         	Log.i("WEBCALL", "li"+val);
         }
+
+        @JavascriptInterface
+        public void log(String val) {
+        	CMN.Log(val);
+        }
         
         private Context context;
-        private String [] imageUrls;
         float scale;
         DisplayMetrics dm;
         
-        public MJavascriptInterface(Context context,String[] imageUrls) {
+        public AppHandler(Context context) {
             this.context = context;
-            this.imageUrls = imageUrls;
             scale = context.getResources().getDisplayMetrics().density;
-            //showToast(scale+"scale");
     		dm = new DisplayMetrics();
         }
 
         @JavascriptInterface
-        public void openImage(String img) {
+        public void openImage(int position, String... img) {
+        	CMN.Log(position, img);
             Intent intent = new Intent();
-            intent.putExtra("imageUrls", imageUrls);
-            try {
-            	//CMN.show(img+"asd"+imageUrls[0]);
-				intent.putExtra("curImageUrl", img);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-            PhotoBrowserActivity.mdd = mdd;
-            intent.setClass(context, PhotoBrowserActivity.class);
+            intent.putExtra("images", img);
+			intent.putExtra("current", position);
+            PhotoViewActivity.mdd = mdd;
+            intent.setClass(context, PhotoViewActivity.class);
             context.startActivity(intent);
         }
-        
+
+        @JavascriptInterface
+        public String getCurrentPageKey() {
+        	return  a.getCurrentPageKey();
+        }
+
         @JavascriptInterface 
         public int getDeviceHeight(){
     		a.getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -824,40 +891,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
         
         @JavascriptInterface
         public void pageshow() {
-        	//CMN.Log("pageshow");
-        	final int lalaX=IU.parsint(mWebView.getTag(R.id.toolbar_action1));
-			final int lalaY=IU.parsint(mWebView.getTag(R.id.toolbar_action2));
-			if(lalaY!=-1 && lalaX!=-1) {
-	    		//CMN.Log("initial_push2: ",lalaX,lalaY);
-	    		//mWebView.scrollTo(lalaX, lalaY);
-			}
-        	if(false)
-        	mWebView.post(new Runnable() {
-				@Override
-				public void run() {
-		        	//mWebView.evaluateJavascript("document.getElementsByTagName('body')[0].style.scale="+5, null);
 
-					//mWebView.getSettings().setSupportZoom(true);
-				}});
-        	
-        	//if(true) return;
-
-			//mWebView.setAlpha(1.0f);
-        	//mWebView.setVisibility(View.VISIBLE);
-        	//mWebView.isloading=false;
-        	//a.showT("showed " + System.currentTimeMillis());
-
-        	//mWebView.setScrollY(expectedPos);
-			
-        	if(false)
-        	mWebView.postDelayed(new Runnable() {
-				@Override
-				public void run() {
-		    		mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-					mWebView.setAlpha(1.0f);
-		        	mWebView.setVisibility(View.VISIBLE);
-		        	mWebView.isloading=false;
-				}},0);
         }
     }
 
@@ -966,9 +1000,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 	public boolean renameFile(String string) {
 		return renameFileTo(new File(f.getParent(),string+".mdx"));
 	}
-	public File f() {
-		return f;
-	}
 	
 
 	public void unload() {
@@ -997,13 +1028,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 	    	if(!SpecificationFile.getParentFile().exists())
 	    		SpecificationFile.getParentFile().mkdirs();
 	    	DataOutputStream fo = new DataOutputStream(new FileOutputStream(SpecificationFile));
-	    	byte firstFlag=0;
-			firstFlag |= KeycaseStrategy;
-			firstFlag |= (WebSingleLayerType << 2);
-			if(bUseInternalFS)
-				firstFlag |= 16;
-			if(bUseInternalBG)
-				firstFlag |= 32;
 			fo.writeShort(12);
 			fo.writeByte(firstFlag);
 			
@@ -1038,16 +1062,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 	        	File SpecificationFile = new File(opt.pathTo().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
 	        	if(!SpecificationFile.getParentFile().exists())
 		    		SpecificationFile.getParentFile().mkdirs();
-		        byte firstFlag=0;
-				firstFlag |= KeycaseStrategy;
-				firstFlag |= (WebSingleLayerType << 2);
-				if(bUseInternalFS)
-					firstFlag |= 16;
-				if(bUseInternalBG)
-					firstFlag |= 32;
 	        	RandomAccessFile outputter = new RandomAccessFile(SpecificationFile, "rw");
-	        	outputter.seek(2);
-	        	outputter.writeByte(firstFlag);
+	        	outputter.writeShort(12);
+	        	outputter.writeByte(FFStamp=firstFlag);
 	        	outputter.close();
 	        } catch (IOException e) {
 				e.printStackTrace();
@@ -1055,7 +1072,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 	}
 	
 	public int getFontSize() {
-		if(bUseInternalFS)
+		if(getUseInternalFS())
 			return internalScaleLevel>0?internalScaleLevel:(internalScaleLevel=def_fontsize);
 		return def_fontsize;
 	}
@@ -1077,6 +1094,50 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			}
 	}
 
+	protected void readInConfigs() throws IOException {
+		DataInputStream data_in1 = null;
+		try {
+			File SpecificationFile = new File(opt.pathTo().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
+			if(SpecificationFile.exists()) {
+				long time=System.currentTimeMillis();
+				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
+				data_in1 = new DataInputStream(new FileInputStream(SpecificationFile));
+				int size = data_in1.readShort();
+				if(size!=12) {
+					data_in1.close();
+					SpecificationFile.delete();
+					return;
+				}
+				FFStamp = firstFlag = data_in1.readByte();
+				//readinoptions
+				//a.showT("getUseInternalBG():"+getUseInternalBG()+" getUseInternalFS():"+getUseInternalFS()+" KeycaseStrategy:"+KeycaseStrategy);
+				bgColor=data_in1.readInt();
+				internalScaleLevel=data_in1.readInt();
+
+
+				lvPos = data_in1.readInt();
+				lvClickPos = data_in1.readInt();
+				lvPosOff = data_in1.readInt();
+
+				//CMN.Log(_Dictionary_fName+"列表位置",lvPos,lvClickPos,lvPosOff);
+
+				expectedPosX = data_in1.readInt();
+				expectedPos = data_in1.readInt();
+				webScale = data_in1.readFloat();
+
+				//CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
+
+
+				data_in1.close();
+				//CMN.Log(_Dictionary_fName+"单典配置加载耗时",System.currentTimeMillis()-time);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			if(data_in1!=null) data_in1.close();
+		}
+	}
+
 	protected int ReadConfigInt(int off) {
 		//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
 		int ret=0;
@@ -1093,39 +1154,17 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 		}
 		return ret;
 	}
-	
-	
-	
-	protected void xxInitializeBinary(File SpecificationFile) throws IOException {
-		DataOutputStream do_ = new DataOutputStream(new FileOutputStream(SpecificationFile));
-		byte firstFlag=0;
-		firstFlag |= KeycaseStrategy;
-		firstFlag |= (WebSingleLayerType << 2);
-		if(bUseInternalFS)
-			firstFlag |= 16;
-		if(bUseInternalBG)
-			firstFlag |= 32;
-		do_.writeShort(11);
-		do_.writeByte(firstFlag);
-		do_.writeInt(bgColor==null?(bgColor=CMN.GlobalPageBackground):bgColor);
-		do_.writeInt(internalScaleLevel==-1?(internalScaleLevel=def_fontsize):internalScaleLevel);
-		do_.flush();
-		do_.close();
-	}
-	
-
 
 	
 	public interface ViewLayoutListener{
 		void onLayoutDone(int size);
 	}public ViewLayoutListener vll;
-	
-	int lastLength,lastHeight=-1;
+
 	@Override
 	public void onReceiveValue(String value) {
 		Log.e("fatal_onReceiveValue", value);
 		if(value==null) return;
-		int val = 0;
+		int val;
 		try {
 			val = Integer.valueOf(value);
 		} catch (NumberFormatException e) {
@@ -1137,101 +1176,49 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 				//mWebView.setLayoutParams(mWebView.getLayoutParams());
 			}
 		}
-		//mWebView.invalidate(); 
-		
-		//mWebView.setTag(R.id.position,lastHeight=val);
 		
 		if(vll!=null)
 			vll.onLayoutDone(val);
 	}
 	
 
-	boolean isDirty=false;
-	public void showDictTweaker(MainActivityUIBase dict_Activity_ui_base) {
-		String[] DictOpt = a.getResources().getStringArray(R.array.dict_spec);
+	public static void showDictTweaker(Activity context, mdict...md) {
+		if(md.length==0) return;
+		mdict mdTmp = md[0];
+		String[] DictOpt = context.getResources().getStringArray(R.array.dict_spec);
 		final String[] Coef = DictOpt[0].split("_");
-		final View dv = a.inflater.inflate(R.layout.dialog_about,null);
-		final SpannableStringBuilder ssb = new SpannableStringBuilder();
+		final View dv = LayoutInflater.from(context).inflate(R.layout.dialog_about,null);
+		SpannableStringBuilder ssb = new SpannableStringBuilder();
 		final TextView tv = dv.findViewById(R.id.resultN);
-		TextView title = ((TextView)dv.findViewById(R.id.title));
-		title.setText("词典设定");//"词典设定"
-		title.setTextColor(a.AppBlack);
+		TextView title = dv.findViewById(R.id.title);
+		title.setText(R.string.dictOpt1);//词典设定
+		title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 		
-		if(opt.isLarge) tv.setTextSize(tv.getTextSize());
+		if(mdTmp.opt.isLarge) tv.setTextSize(tv.getTextSize());
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-		ssb.append("[").append(DictOpt[1]).append(bUseInternalBG?Coef[1]:Coef[0]).append("]");
-		ssb.setSpan(new ClickableSpan() {//背景色
-			@Override
-			public void onClick(View widget) {
-				bUseInternalBG=!bUseInternalBG;
-				String now = ssb.toString();
-				int fixedRange = now.indexOf(":");
-				ssb.delete(fixedRange+1, now.indexOf("]",fixedRange));
-				ssb.insert(fixedRange+1,bUseInternalBG?Coef[1]:Coef[0]);
-				tv.setText(ssb);
-				isDirty=true;
-				//WriteConfigFF();
-				if(bUseInternalBG) {
-					bgColor=ReadConfigInt(CONFIGPOS[0]);
-					mWebView.setBackgroundColor(bgColor);
-				}else
-					mWebView.setBackgroundColor(a.GlobalPageBackground);
-			}},0,ssb.toString().length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-		ssb.append("\r\n").append("\r\n");
-		
-		final int start1=ssb.toString().length();
-		ssb.append("[").append(DictOpt[2]).append(bUseInternalFS?Coef[1]:Coef[0]).append("]");
-		ssb.setSpan(new ClickableSpan() {//字体缩放
-			@Override
-			public void onClick(View widget) {
-				bUseInternalFS=!bUseInternalFS;
-				String now = ssb.toString();
-				int fixedRange = now.indexOf(":", now.indexOf(":")+1);
-				ssb.delete(fixedRange+1, now.indexOf("]",fixedRange));
-				ssb.insert(fixedRange+1, bUseInternalFS?Coef[1]:Coef[0]);
-				tv.setText(ssb);
-				isDirty=true;
-				//WriteConfigFF();
-				if(bUseInternalFS) internalScaleLevel=ReadConfigInt(CONFIGPOS[1]);
-				mWebView.getSettings().setTextZoom(getFontSize());
-			}},start1,ssb.toString().length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-		ssb.append("\r\n").append("\r\n");
 
-		final int start2=ssb.toString().length();
-		ssb.append("[").append(DictOpt[3]).append((KeycaseStrategy>0)?((KeycaseStrategy==1)?Coef[2]:Coef[3]):Coef[0]).append("]");
-		ssb.setSpan(new ClickableSpan() {//大小写转换策略
-			@Override
-			public void onClick(View widget) {
-				KeycaseStrategy+=1;
-				KeycaseStrategy%=3;
-				String now = ssb.toString();
-				int fixedRange = now.indexOf(":", now.indexOf(":",now.indexOf(":")+1)+1);
-				ssb.delete(fixedRange+1, now.indexOf("]",fixedRange));
-				ssb.insert(fixedRange+1, (KeycaseStrategy>0)?((KeycaseStrategy==1)?Coef[2]:Coef[3]):Coef[0]);
-				tv.setText(ssb);
-				isDirty=true;
-				//WriteConfigFF();
-			}},start2,ssb.toString().length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-		ssb.append("\r\n").append("\r\n");
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0x1, 5, 1,md);//0x20
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0x1, 4, 1,md);//0x10
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, new String[]{Coef[0], Coef[2], Coef[3]}, 0, 0x3, 0, 2,md);
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 4, 0x1, 6, 1,md);//0x40
 
+		ssb.delete(ssb.length()-4,ssb.length());
 		tv.setText(ssb);
 		tv.setMovementMethod(LinkMovementMethod.getInstance());
-		AlertDialog.Builder builder2 = new AlertDialog.Builder(a,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
+		AlertDialog.Builder builder2 = new AlertDialog.Builder(context,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
 		builder2.setView(dv);
 		final AlertDialog d = builder2.create();
 		d.setCanceledOnTouchOutside(true);
 
 		d.setOnDismissListener(dialog -> {
-			if(isDirty) {
-				//FF(len) [|color |zoom ||case]  int.BG int.ZOOM
-				WriteConfigFF();
+			for (int i = 0; i < md.length; i++) {
+				mdict mI = md[i];
+				if(mI.firstFlag != mI.FFStamp) {
+					mI.WriteConfigFF();
+				}
 			}
 		});
-		dv.findViewById(R.id.cancel).setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				d.dismiss();
-			}});
+		dv.findViewById(R.id.cancel).setOnClickListener(v -> d.dismiss());
         d.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
 		//d.getWindow().setDimAmount(0);
     	//d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
@@ -1240,9 +1227,68 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 		lp.height = -2;
 		d.getWindow().setAttributes(lp);
 	}
-	
-	
-	
+
+	private static void init_clickspan_with_bits_at(TextView tv, SpannableStringBuilder text,
+		 String[] dictOpt, int titleOff, String[] coef, int coefOff, int mask, int flagPosition, int flagMax
+			, mdict...md) {
+		mdict mdTmp = md[0];
+		boolean isSingle=true;
+		int val = (mdTmp.firstFlag>>flagPosition)&mask;
+		for (int i = 1; i < md.length; i++) {
+			if(((md[i].firstFlag>>flagPosition)&mask)!=val){
+				isSingle=false;
+				break;
+			}
+		}
+		int start = text.length();
+		int now = start+dictOpt[titleOff].length();
+		text.append("[").append(dictOpt[titleOff]).append(isSingle?coef[coefOff+val]:tv.getContext().getString(R.string.multiple_vals)).append("]");
+		text.setSpan(new ClickableSpan() {
+			@Override
+			public void onClick(@NonNull View widget) {
+				byte FFStamp = mdTmp.firstFlag;
+				int val = (mdTmp.firstFlag>>flagPosition)&mask;
+				val=(val+1)%(flagMax+1);
+				for (com.knziha.plod.dictionarymodels.mdict mdict : md) {
+					mdict.firstFlag &= ~(mask << flagPosition);
+					mdict.firstFlag |= (val << flagPosition);
+					mdict.validifyStates(FFStamp);
+				}
+				int fixedRange = indexOf(text, ':', now);
+				text.delete(fixedRange+1, indexOf(text, ']', fixedRange));
+				text.insert(fixedRange+1,coef[coefOff+val]);
+				tv.setText(text);
+			}},start,text.length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		text.append("\r\n").append("\r\n");
+	}
+
+	private void validifyStates(byte ffStamp) {
+		if(ffStamp!=firstFlag){
+			boolean bool;
+			if(getUseInternalBG(ffStamp)!=(bool=getUseInternalBG())){
+				if(bool) {
+					bgColor=ReadConfigInt(CONFIGPOS[0]);
+					mWebView.setBackgroundColor(bgColor);
+				}else
+					mWebView.setBackgroundColor(a.GlobalPageBackground);
+			}
+			if(getUseInternalFS(ffStamp)!=(bool=getUseInternalFS())){
+				if(bool)  internalScaleLevel=ReadConfigInt(CONFIGPOS[1]);
+				mWebView.getSettings().setTextZoom(getFontSize());
+			}
+		}
+	}
+
+	public static int indexOf(SpannableStringBuilder text, char cc, int now) {
+		for (int i = now; i < text.length(); i++) {
+			if(text.charAt(i)==cc){
+				return i;
+			}
+		}
+		return -1;
+	}
+
+
 	public boolean isViewInitialized() {
 		return viewsHolderReady;
 	}

@@ -121,8 +121,8 @@ public class DBroswer extends Fragment implements
 	public int try_goBack(){
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return 0;
-		if(a.main.getChildCount()>=2) {
-			a.main.removeViewAt(a.main.getChildCount()-1);
+		if(a.isContentViewAttached()) {
+			a.DetachContentView();
 			if(!isToDel || toDelete.size()==0) return 1;
 
 			//删除收藏

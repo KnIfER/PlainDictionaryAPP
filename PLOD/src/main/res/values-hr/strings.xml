@@ -155,4 +155,5 @@
 	<string name="remove_records">Uklanjanje zapisa</string>
 	<string name="move_files">Premještanje datoteke</string>
 	<string name="new___">Novi…</string>
+	<string name="no_suitable_app">Nije pronađena nijedna odgovarajuća aplikacija.</string>
 </resources>

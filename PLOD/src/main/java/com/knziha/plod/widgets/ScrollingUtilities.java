@@ -24,9 +24,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
  */
 class ScrollingUtilities {
 
-    private SumsungLikeScrollBar materialScrollBar;
+    private SamsungLikeScrollBar materialScrollBar;
 
-    ScrollingUtilities(SumsungLikeScrollBar msb){
+    ScrollingUtilities(SamsungLikeScrollBar msb){
         materialScrollBar = msb;
     }
 

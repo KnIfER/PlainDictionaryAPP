@@ -156,4 +156,5 @@
 	<string name="remove_records">Traieu els registres</string>
 	<string name="move_files">moure arxius</string>
 	<string name="new___">Nova …</string>
+	<string name="no_suitable_app">No s\'ha trobat cap aplicació adequada.</string>
 </resources>

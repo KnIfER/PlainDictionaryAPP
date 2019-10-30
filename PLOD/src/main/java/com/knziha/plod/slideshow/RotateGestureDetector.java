@@ -1,4 +1,4 @@
-package com.bm.library;
+package com.knziha.plod.slideshow;
 
 import android.util.Log;
 import android.view.MotionEvent;
@@ -60,8 +60,8 @@ public class RotateGestureDetector {
         y2 = event.getY(1);
         return (y2 - y1) / (x2 - x1);
     }
-}
 
-interface OnRotateListener {
-    void onRotate(float degrees, float focusX, float focusY);
+	public interface OnRotateListener {
+		void onRotate(float degrees, float focusX, float focusY);
+	}
 }

@@ -9,12 +9,13 @@ import android.view.View;
 import android.widget.ScrollView;
 
 public class ScrollViewmy extends ScrollView {// for mute it's scroll
+	public SamsungLikeScrollBar scrollbar2guard;
     public static OnTouchListener dummyOntouch = new OnTouchListener() {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			return true;
 		}};
-	private ScrollViewListener scrollViewListener = null;
+	private ListViewmy.OnScrollChangeListener scrollViewListener = null;
     public boolean bScrollEnabled=true;
 	public BooleanSingleton touchFlag=new BooleanSingleton(true);
     
@@ -31,7 +32,7 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
         super(context, attrs);
     }
 
-    public void setScrollViewListener(ScrollViewListener scrollViewListener) {
+    public void setScrollViewListener(ListViewmy.OnScrollChangeListener scrollViewListener) {
         this.scrollViewListener = scrollViewListener;
     }
 
@@ -39,26 +40,49 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
     protected void onScrollChanged(int x, int y, int oldx, int oldy) {
         super.onScrollChanged(x, y, oldx, oldy);
         if (scrollViewListener != null) {
-            scrollViewListener.onScrollChanged(this, x, y, oldx, oldy);
+            scrollViewListener.onScrollChange(this, x, y, oldx, oldy);
         }
     }
-    
-    public interface ScrollViewListener { 
-    	void onScrollChanged(View scrollView, int x, int y, int oldx, int oldy);
 
-    	}
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
     	if(touchFlag!=null) touchFlag.first=true;
+		switch (ev.getAction()) {
+			case MotionEvent.ACTION_DOWN:{
+
+			} break;
+			case MotionEvent.ACTION_UP:{
+				checkBar();
+			} break;
+		}
 		return super.onTouchEvent(ev);
     }    
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
     	if(touchFlag!=null) touchFlag.first=true;
+		switch (ev.getAction()) {
+			case MotionEvent.ACTION_DOWN:{
+				if(scrollbar2guard!=null && !scrollbar2guard.isHidden()){
+					scrollbar2guard.isWebHeld=true;
+					scrollbar2guard.cancelFadeOut();
+				}
+			} break;
+			case MotionEvent.ACTION_UP:{
+				checkBar();
+			} break;
+		}
     	if(bScrollEnabled) {
     		return super.onInterceptTouchEvent(ev);
     	}else {
     		return false;
     	}
     }
+
+
+	private void checkBar() {
+		if(scrollbar2guard!=null && !scrollbar2guard.isHidden()){
+			scrollbar2guard.isWebHeld=false;
+			scrollbar2guard.fadeOut();
+		}
+	}
 }

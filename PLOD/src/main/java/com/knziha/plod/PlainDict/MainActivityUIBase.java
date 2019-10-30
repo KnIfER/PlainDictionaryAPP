@@ -43,6 +43,7 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
@@ -54,7 +55,6 @@ import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -65,6 +65,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
@@ -73,7 +74,7 @@ import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialogListener;
 import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.myCpr;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_asset;
@@ -87,7 +88,7 @@ import com.knziha.plod.widgets.ListSizeConfiner;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
-import com.knziha.plod.widgets.SumsungLikeScrollBar;
+import com.knziha.plod.widgets.SamsungLikeScrollBar;
 import com.knziha.plod.widgets.WebViewmy;
 
 import java.io.BufferedReader;
@@ -130,10 +131,12 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 	public boolean hideDictToolbar=false;
 	boolean bShowLoadErr=true;
 	public boolean isCombinedSearching;
+	public String CombinedSearchTask_lastKey;
 
 	public int GlobalPageBackground=-1;
-	public SumsungLikeScrollBar mBar;
+	public SamsungLikeScrollBar mBar;
 	public ViewGroup main;
+	public ViewGroup mainF;
 	public ViewGroup webholder;
 	public ScrollViewmy WHP;
 	public ViewGroup webSingleholder;
@@ -148,10 +151,11 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 	public BasicAdapter adaptermy3;
 	public BasicAdapter PrevActivedAdapter;
 	public BasicAdapter ActivedAdapter;
-	public Handler hdl;
+	public BaseHandler hdl;
 
+	ViewGroup snack_holder;
 	public mdict currentDictionary;
-	public mdict currentFilter;
+	public ArrayList<mdict> currentFilter = new ArrayList<>();
 	public int adapter_idx;
 	HashSet<String> mdlibsCon;
 	public List<mdict> md = new ArrayList<>();//Collections.synchronizedList(new ArrayList<mdict>());
@@ -248,8 +252,33 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
        	  showT(""+cc);
        	  */
 		super.onCreate(savedInstanceState);
+		snackWorker = () -> {
+			animationSnackOut=false;
+			hdl.sendEmptyMessage(6657);
+			hdl.removeMessages(6658);
+			int height = topsnack.getHeight();
+			if(height>0){
+				if(topsnack.offset>0 || topsnack.offset<-height)
+					topsnack.offset=-height;
+				else
+					topsnack.offset=Math.min(-height/3, topsnack.offset);
+				topsnack.setTranslationY(topsnack.offset);
+				topsnack.setVisibility(View.VISIBLE);
+				hdl.animator=0.1f;
+				hdl.animatorD=0.08f*height;
+				hdl.sendEmptyMessage(6657);
+			}
+		};
 	}
 
+	public String getCurrentPageKey() {
+		return null;
+	}
+
+	static class BaseHandler extends Handler{
+		float animator = 0.1f;
+		float animatorD = 0.15f;
+	}
 
 	void closeIfNoActionView(MenuItemImpl mi) {
 		if(!mi.isActionButton()) toolbar.getMenu().close();
@@ -293,7 +322,6 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		new File(opt.pathToMain()).mkdirs();
 
 		final File def = new File(getExternalFilesDir(null),"default.txt");      //!!!原配
-		File rec = new File(opt.pathToMain()+"CONFIG/mdlibs.txt");
 		final boolean retrieve_all=!def.exists();
 
 		if(retrieve_all) {
@@ -304,146 +332,102 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			}
 		}
 		else try {
-				BufferedReader in = new BufferedReader(new FileReader(def));
-				String line = in.readLine();
-				while(line!=null){
-					try {
-						boolean isFilter=false;
-						if(line.startsWith("[:F]")){
-							line = line.substring(4);
-							isFilter=true;
-						}
-						if(!line.startsWith("/"))
-							line=opt.lastMdlibPath+"/"+line;
-						mdict mdtmp = new_mdict(line,this);
-						if(mdtmp._Dictionary_fName.equals(opt.getLastMdFn()))
-							adapter_idx = md.size();
-						md.add(mdtmp);
-						if(isFilter)
-							currentFilter =mdtmp;
-					} catch (Exception e) {
-						e.printStackTrace();
-						if(trialCount==-1)if(bShowLoadErr)
-							show(R.string.err, new File(line).getName(),line,e.getLocalizedMessage());
+			BufferedReader in = new BufferedReader(new FileReader(def));
+			String line = in.readLine();
+			while(line!=null){
+				try {
+					boolean isFilter=false;
+					if(line.startsWith("[:F]")){
+						line = line.substring(4);
+						isFilter=true;
 					}
-					line = in.readLine();
+					if(!line.startsWith("/"))
+						line=opt.lastMdlibPath+"/"+line;
+					mdict mdTmp = new_mdict(line,this);
+					boolean add=true;
+					if(isFilter){
+						mdTmp.tmpIsFilter=true;
+						currentFilter.add(mdTmp);
+						add=opt.getHideDedicatedFilter()&&!mdTmp.getIsDedicatedFilter();
+					}
+					if(add) {
+						if(mdTmp._Dictionary_fName.equals(opt.getLastMdFn()))
+							adapter_idx = md.size();
+						md.add(mdTmp);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					if(trialCount==-1)if(bShowLoadErr)
+						show(R.string.err, new File(line).getName(),line,e.getLocalizedMessage());
 				}
-				in.close();
-			} catch (IOException e2) { e2.printStackTrace(); }
+				line = in.readLine();
+			}
+			in.close();
+		} catch (IOException e2) { e2.printStackTrace(); }
 		//stst = System.currentTimeMillis();
 
 		//dbCon = new DBWangYiLPController(this,true);   getExternalFilesDir(null).getAbsolutePath()
-		mdlibsCon = new HashSet<>();
-		checker = new HashMap<>();
-		if(rec.exists())
-			try {
-				BufferedReader in = new BufferedReader(new FileReader(rec));
 
-				String line = in.readLine();
-				while(line!=null){
-					mdlibsCon.add(line);															   //!!!旧爱
-					File check;
-					if(!line.startsWith("/"))
-						check=new File(opt.lastMdlibPath,line);
-					else
-						check=new File(line);
-					if(!check.exists())
-						checker.put(check.getName(),check.getAbsolutePath());// check for mdict_noexists
-					line = in.readLine();
-				}
-				in.close();
-			} catch (Exception e2) {
-				e2.printStackTrace();
-			}
-		else {
-			rec.getParentFile().mkdirs();
-			try {
-				rec.createNewFile();
-			} catch (IOException ignored) {}
-		}
+		if(opt.getCheckMdlibs()){
+			File rec = new File(opt.pathToMain()+"CONFIG/mdlibs.txt");
+			ReadInMdlibs(rec);
+			File mdlib = new File(opt.lastMdlibPath);
+			if(mdlib.isDirectory() && mdlib.canRead())
+			{
+				File [] arr = mdlib.listFiles(pathname -> {
+					if(pathname.isFile()) {
+						String fn = pathname.getName();
+						if(fn.toLowerCase().endsWith(".mdx")) {
+							if(retrieve_all || !mdlibsCon.contains(fn)) {                                            //!!!新欢
+								try {
+									if(output2==null) {
+										output2 = new BufferedWriter(new FileWriter(def,true));
+										output = new BufferedWriter(new FileWriter(rec,true));
+									}
+									mdlibsCon.add(fn);//记录的时相对路径
+									output.write(fn);
+									output.write("\n");
 
-		try {
-			output = new BufferedWriter(new FileWriter(rec,true));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-
-
-		//	mdlibsCon.clear();
-		//dbCon.prepareContain();
-		File mdlib = new File(opt.lastMdlibPath);
-		if(mdlib.exists() && mdlib.isDirectory() && mdlib.canRead())
-		{
-			File [] arr = mdlib.listFiles(pathname -> {
-				if(pathname.isFile()) {
-					String fn = pathname.getName();
-					if(fn.toLowerCase().endsWith(".mdx")) {
-						if(retrieve_all || !mdlibsCon.contains(fn)) {                                            //!!!新欢
-							try {
-								if(output2==null) output2 = new BufferedWriter(new FileWriter(def,true));
-								mdlibsCon.add(fn);//记录的时相对路径
-								output.write(fn);
-								output.write("\n");
-
-								output2.write(fn);
-								output2.write("\n");
-							} catch (Exception ignored) {}//IOxE
-							return true;
+									output2.write(fn);
+									output2.write("\n");
+								} catch (Exception ignored) {}//IOxE
+								return true;
+							}
 						}
 					}
-				}
-				return false;
-			});
-			if(arr!=null)
-				for(final File i:arr){
-					try{
-						mdict mdtmp = new mdict(i.getAbsolutePath(),this);
-						md.add(mdtmp);
-					}catch (Exception e){
-						e.printStackTrace();
-						//show(R.string.err,i.getName(),i.getAbsolutePath(),e.getLocalizedMessage());
+					return false;
+				});
+				if(arr!=null)
+					for(final File i:arr){
+						try{
+							mdict mdtmp = new mdict(i.getAbsolutePath(),this);
+							md.add(mdtmp);
+						}catch (Exception e){
+							e.printStackTrace();
+							//show(R.string.err,i.getName(),i.getAbsolutePath(),e.getLocalizedMessage());
+						}
 					}
+				try {
+					if(output2!=null) {
+						output2.flush();
+						output2.close();
+						output.flush();
+						output.close();
+					}
+				} catch (IOException e1) {
+					e1.printStackTrace();
 				}
-			try {
-				if(output2!=null) {
-					output2.flush();
-					output2.close();
-				}
-				output.flush();
-				output.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
 			}
 		}
-
 
 		if(adapter_idx<0)
 			adapter_idx=0;
 		if(md.size()>0)
 			currentDictionary = md.get(adapter_idx);
-		//dbCon.refresh();
-		//Log.d("!!! dbTest111", (System.currentTimeMillis()-stst)+"");
-
-		//dbCon.getDB().execSQL("show index from mdictlib");
-
-
-		//String sql = "select * from " + dbCon.TABLE_MDXES;
-
-		//Cursor cursor = dbCon.getDB().rawQuery(sql, new String[]{});
-		//Log.e("dbTest", cursor.getCount()+"");
-		//while(cursor.moveToNext())
-		//	Log.e("dbTest", cursor.getString(0)+"");
-
-		//CMN.show("regTime: "+(System.currentTimeMillis()-st22));
 
 		root = findViewById(R.id.root);
-
 		findViewById(R.id.toolbar_action1).setOnClickListener(this);
 		toolbar.setOnMenuItemClickListener(this);
-		toolbar.setOnLongClickListener(v -> {
-			//md.showToast(""+v.getId());
-			return false;
-		});
 
 		R.styleable.single[0] = android.R.attr.actionBarSize;
 		TypedValue typedValue = new TypedValue();
@@ -523,14 +507,14 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				if(PeruseView!=null && PeruseView.getView().getParent()!=null)
 					IMPageCover_=PeruseView.IMPageCover;
 				IMPageCover_.setVisibility(View.GONE);
-				if(bPeruseIncharge) {
+
+				if(bPeruseIncharge)
 					opt.setPeruseBottombarOnBottom(webcontentlist.getChildAt(0).getId()!=R.id.bottombar2);
-				}else {
+				else
 					opt.setBottombarOnBottom(webcontentlist.getChildAt(0).getId()!=R.id.bottombar2);
-				}
-				if(opt.getNavigationBtnType()==2) {
+
+				if(opt.getNavigationBtnType()==2)
 					locateNaviIcon(widget13,widget14);
-				}
 			}
 
 			@Override
@@ -553,10 +537,13 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			public int preResizing(int size) {
 				boolean bPeruseIncahrge = PeruseView!=null && PeruseView.getView().getParent() !=null && (PeruseView.contentview.getParent()==PeruseView.slp || PeruseView.contentview.getParent()==PeruseView.mlp);
 				int ret = (int) Math.max(((bPeruseIncahrge&&!opt.getPeruseBottombarOnBottom())?30:20)*dm.density, Math.min(50*dm.density, size));
+				CMN.Log(ret);
 				if(bPeruseIncahrge) {
 					PeruseView.CachedBBSize = ret;
-				}else
+				}else{
 					CachedBBSize = ret;
+					webcontentlist.isDirty=true;
+				}
 				return ret;
 			}
 		});
@@ -580,7 +567,6 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		bottombar2.findViewById(R.id.browser_widget11).setOnClickListener(this);
 		bottombar2.findViewById(R.id.browser_widget12).setOnClickListener(this);
 
-
 		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
 		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
 
@@ -588,39 +574,54 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			toolbar.getMenu().findItem(R.id.toolbar_action1).setIcon((ContextCompat.getDrawable(this,R.drawable.ic_btn_multimode)));
 		//if(opt.isShowDirectSearch()) ((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action2)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-
 		etSearch = findViewById(R.id.etSearch);
-		/*try {//修改光标的颜色（反射）
-			Field field;// Get the cursor resource id
-			field = TextView.class.getDeclaredField("mEditor");// Get the etSearch_editor
-			field.setAccessible(true);
-			etSearch_editor = field.get(etSearch);
-			et_ed_field_mCursorDrawable = etSearch_editor.getClass().getDeclaredField("mCursorDrawable");// Get the drawable and set a color filter
-			et_ed_field_mCursorDrawable.setAccessible(true);
-			editext_cursor_oval = ContextCompat.getDrawable(etSearch.getContext(), R.drawable.editext_cursor);
-			//mCursorDrawable_Raw = (Drawable[]) et_ed_field_mCursorDrawable.get(etSearch_editor);
-			mCursorDrawable_RawLet = ContextCompat.getDrawable(etSearch.getContext(), R.drawable.editext_cursor_raw);
-
-			//field = editor.getClass().getDeclaredField("mSelectHandleCenter");
-			//field.setAccessible(true);
-			//Drawable mSelectHandleCenter = (Drawable) field.get(editor);
-			//mSelectHandleCenter.setColorFilter(Color.parseColor("#2b4381"), PorterDuff.Mode.SRC_IN);
-			//field.set(editor, mSelectHandleCenter);
-		} catch (Exception e) {}*/
+		etSearch.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
 
 		main_succinct = findViewById(R.id.mainframe);
 		main_progress_bar = findViewById(R.id.main_progress_bar);
+	}
 
+	void ReadInMdlibs(File rec) {
+		if(mdlibsCon==null){
+			mdlibsCon = new HashSet<>(md.size()*3);
+			checker = new HashMap<>();
+			if(rec.exists())
+				try {
+					BufferedReader in = new BufferedReader(new FileReader(rec));
+
+					String line;
+					while((line=in.readLine())!=null){
+						mdlibsCon.add(line);															   //!!!旧爱
+						File check;
+						if(!line.startsWith("/"))
+							check=new File(opt.lastMdlibPath,line);
+						else
+							check=new File(line);
+						if(!check.exists())
+							checker.put(check.getName(),check.getAbsolutePath());// check for mdict_noexists
+					}
+					in.close();
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+			else {
+				rec.getParentFile().mkdirs();
+				try {
+					rec.createNewFile();
+				} catch (IOException ignored) {}
+			}
+		}
 	}
 
 
 	int etSearch_toolbarMode=0;
 	public ListViewmy.OnScrollChangeListener onWebScrollChanged;
+	public ListViewmy.OnScrollChangeListener onWebHolderScrollChanged;
 	public void initWebScrollChanged() {
 		if(onWebScrollChanged==null) {
-			onWebScrollChanged= (v, l, t, oldl, oldt) -> {
+			onWebScrollChanged= (v, x, y, oldx, oldy) -> {
 				WebViewmy webview = (WebViewmy) v;
-				if(layoutScrollDisabled )
+				if(layoutScrollDisabled)
 				{
 					final int lalaX=IU.parsint(v.getTag(R.id.toolbar_action1));
 					final int lalaY=IU.parsint(v.getTag(R.id.toolbar_action2));
@@ -632,7 +633,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				}
 
 				boolean fromPeruseView=v.getTag(R.id.position)!=null;
-				SumsungLikeScrollBar mBar_=mBar;
+				SamsungLikeScrollBar _mBar=mBar;
 				float currentScale;
 				RLContainerSlider PageSlider_;
 				if(!fromPeruseView) {
@@ -647,15 +648,15 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 
 				if(currentScale>=mdict.def_zoom) {
 					if(fromPeruseView) {
-						mBar_= PeruseView.mBar;
+						_mBar= PeruseView.mBar;
 						if(opt.getZoomedInCanSlideTurnPage()) {
-							PageSlider_.LeftEndReached=l==0;
+							PageSlider_.LeftEndReached=x==0;
 							PageSlider_.RightEndReached=(v.getScrollX()+3+v.getMeasuredWidth())*dm.density+0.5f   >=  (int)(v.getMeasuredWidth()*currentScale);
 							//CMN.Log("page position: "+((v.getScrollX()+3+v.getMeasuredWidth())*dm.density+0.5f )  +":"+   (int)(v.getMeasuredWidth()*currentScale));
 						}
 					}else {
 						if(opt.getZoomedInCanSlideTurnPage()) {
-							PageSlider_.LeftEndReached=l==0;
+							PageSlider_.LeftEndReached=x==0;
 							PageSlider_.RightEndReached=(v.getScrollX()+3+v.getMeasuredWidth())*dm.density+0.5f   >= (int)(v.getMeasuredWidth()*currentScale);
 							//CMN.Log("page position: "+((v.getScrollX()+3+v.getMeasuredWidth())*dm.density+0.5f )  +":"+   (int)(v.getMeasuredWidth()*currentScale));
 						}
@@ -665,16 +666,47 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					PageSlider_.RightEndReached=false;
 				}
 
+
 				if(fromPeruseView || !isCombinedSearching || (ActivedAdapter!=null && !(ActivedAdapter.combining_search_result instanceof resultRecorderCombined))) {
-					mBar_.updateScrollState(v);
-					if(!mBar_.isHeld()){
-						mBar_.setMax(webview.getContentHeight()-v.getHeight());
-						mBar_.setProgress(webview.getContentOffset());
+					if(_mBar.isHidden()){
+						if(Math.abs(oldy-y)>=10*dm.density)
+							_mBar.fadeIn();
 					}
-					mBar_.fadeIn();
+					if(!_mBar.isHidden()){
+						if(!_mBar.isWebHeld)
+							_mBar.hiJackScrollFinishedFadeOut();
+						if(!_mBar.isDragging){
+							_mBar.setMax(webview.getContentHeight()-v.getHeight());
+							_mBar.setProgress(webview.getContentOffset());
+						}
+					}
 				}
 			};
 		}
+	}
+
+	public void initWebHolderScrollChanged() {
+		mBar.setVisibility(View.VISIBLE);
+		mBar.setDelimiter("|||");
+		if(onWebHolderScrollChanged==null){
+			WHP.scrollbar2guard=mBar;
+			WHP.setScrollViewListener(onWebHolderScrollChanged=(v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+				if(mBar.isHidden()){
+					if(Math.abs(oldScrollY-scrollY)>=10*dm.density)
+						mBar.fadeIn();
+				}
+				if(!mBar.isHidden()){
+					if(!mBar.isWebHeld)
+						mBar.hiJackScrollFinishedFadeOut();
+					if(!mBar.isDragging){
+						mBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
+						mBar.setProgress(WHP.getScrollY());
+					}
+				}
+			});
+		}
+		mBar.fadeOut();
+		mBar.scrollee=WHP;
 	}
 
 	boolean etSearch_ToToolbarMode(int mode) {
@@ -745,7 +777,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					try {
 						int dictIdx = (int)cv.getTag();
 						mdict mdTmp = md.get(dictIdx);
-						if(!mdTmp.bUseInternalFS)
+						if(!mdTmp.getUseInternalFS())
 							mdTmp.mWebView.getSettings().setTextZoom(targetLevel);
 					} catch (Exception ignored) {}
 				}
@@ -764,12 +796,23 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			if(bContentBow) {
 				lp.setMargins(0,actionBarSize, 0, 0);
 				contentview.setLayoutParams(lp);
+				RecalibrateContentSnacker(bContentBow);
 			}
 		}else {
 			if(!bContentBow) {
-				lp.setMargins(0,0, 0, 0);
+				lp.setMargins(0,Math.min(contentview.getTop(), bottombar2.getTop()), 0, 0);
 				contentview.setLayoutParams(lp);
+				RecalibrateContentSnacker(bContentBow);
 			}
+		}
+	}
+
+	Toolbar MainPageSearchbar;
+	void RecalibrateContentSnacker(boolean bContentBow) {
+		if(snack_holder!=null){
+			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) snack_holder.getLayoutParams();
+			lp.setMargins(0,(bContentBow?actionBarSize:0)+(MainPageSearchbar==null?0:MainPageSearchbar.getHeight()), 0, 0);
+			snack_holder.setLayoutParams(lp);
 		}
 	}
 
@@ -877,7 +920,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			float fval = 0.5f;
 			ViewGroup sv;
 			if(bIsFirstLaunch||bWantsSelection) {
-				sv=contentview;
+				sv=getContentviewSnackHolder();
 				fval=.8f;
 			}else {
 				sv=main_succinct;
@@ -886,10 +929,8 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		}
 	}
 
-	void Snack(ViewGroup vg, float alpha, String msg, int len) {
-		//snack=TSnackbar.makeraw(vg, msg, len);
-		//snack.getView().setAlpha(alpha);
-		//snack.show();
+	ViewGroup getContentviewSnackHolder() {
+		return contentview;
 	}
 
 	public void restoreLv2States() {
@@ -939,7 +980,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			switch(v.getId()) {
 				case R.id.color:{
 					String msg;
-					if(invoker.bUseInternalBG) {
+					if(invoker.getUseInternalBG()) {
 						//正在为词典  <![CDATA[<%1$s>]]> 指定背景颜色...
 						msg=getResources().getString(R.string.BGMSG,invoker._Dictionary_fName);
 					}
@@ -948,18 +989,18 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					}
 					//DialogSnack(d,msg);
 					d.hide();
-					ViewGroup target=bFromPeruseView?PeruseView.contentview:contentview;
+					ViewGroup target=bFromPeruseView?PeruseView.contentview:getContentviewSnackHolder();
 					showTopSnack(target, msg, 0.8f, -1, -1);
 
 					ColorPickerDialog asd =
 							ColorPickerDialog.newBuilder()
 									.setDialogId(123123)
-									.setInitialColor(invoker.bUseInternalBG?(invoker.bgColor==null?(invoker.bgColor=CMN.GlobalPageBackground):invoker.bgColor):GlobalPageBackground)
+									.setInitialColor(invoker.getUseInternalBG()?(invoker.bgColor==null?(invoker.bgColor=CMN.GlobalPageBackground):invoker.bgColor):GlobalPageBackground)
 									.create();
 					asd.setColorPickerDialogListener(new ColorPickerDialogListener() {
 						@Override
 						public void onColorSelected(ColorPickerDialog dialogInterface, int Color) {
-							if(invoker.bUseInternalBG)
+							if(invoker.getUseInternalBG())
 								invoker.bgColor=Color;
 							else
 								CMN.GlobalPageBackground=Color;
@@ -972,7 +1013,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 								color=ColorUtils.blendARGB(color, Color.BLACK, ColorMultiplier_Web);
 							WebViewmy mWebView=bFromPeruseView?PeruseView.mWebView:invoker.mWebView;
 							ViewGroup webSingleholder=bFromPeruseView?PeruseView.webSingleholder: MainActivityUIBase.this.webSingleholder;
-							if(invoker.bUseInternalBG) {
+							if(invoker.getUseInternalBG()) {
 								color=ColorUtils.blendARGB(color, Color.BLACK, ColorMultiplier_Web2);
 								if(mWebView!=null)
 									mWebView.setBackgroundColor(color);
@@ -992,7 +1033,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 								ManFt_GlobalPageBackground=ColorUtils.blendARGB(ManFt_GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 							};
 							if(isDirty) {
-								if(invoker.bUseInternalBG) {
+								if(invoker.getUseInternalBG()) {
 									ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web2);
 									invoker.WriteConfigInt(invoker.CONFIGPOS[0],invoker.bgColor);
 									if(mWebView!=null)
@@ -1005,7 +1046,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 									opt.putGlobalPageBackground(CMN.GlobalPageBackground);
 								}
 							}else {//fall back
-								if(invoker.bUseInternalBG) {
+								if(invoker.getUseInternalBG()) {
 									ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web2);
 									if(mWebView!=null)
 										mWebView.setBackgroundColor(ManFt_invoker_bgColor);
@@ -1024,7 +1065,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				}
 				return;
 				case R.id.settings:
-					invoker.showDictTweaker(MainActivityUIBase.this);
+					mdict.showDictTweaker(MainActivityUIBase.this, invoker);
 				return;
 				case R.id.appsettings:
 					showAppTweaker();
@@ -1201,14 +1242,14 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 									break;
 								case 2:
 								case 3:
-									int targetLevel=invoker.bUseInternalFS?invoker.mWebView.getSettings().getTextZoom():invoker.def_fontsize;
+									int targetLevel=invoker.getUseInternalFS()?invoker.mWebView.getSettings().getTextZoom():invoker.def_fontsize;
 									if(position==2) targetLevel+=10;
 									else targetLevel-=10;
 									targetLevel=targetLevel>500?500:targetLevel;
 									targetLevel=targetLevel<10?10:targetLevel;
 									WebView wv = bFromPeruseView?PeruseView.mWebView:invoker.mWebView;
 									wv.getSettings().setTextZoom(targetLevel);
-									if(invoker.bUseInternalFS) {
+									if(invoker.getUseInternalFS()) {
 										invoker.WriteConfigInt(invoker.CONFIGPOS[1], targetLevel);
 										showT((invoker.internalScaleLevel=targetLevel)+"%",0);
 									}else {
@@ -1261,7 +1302,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 									break;
 							}
 							if(targetLevel>0) {
-								if(invoker.bUseInternalFS) {
+								if(invoker.getUseInternalFS()) {
 									invoker.WriteConfigInt(invoker.CONFIGPOS[1], targetLevel);
 									showT((invoker.internalScaleLevel=targetLevel)+"%",0);
 								}else {
@@ -1800,66 +1841,78 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 
 		AlertDialog.Builder builder2 = new AlertDialog.Builder(this,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);//
 		builder2.setTitle(R.string.loadconfig).setSingleChoiceItems(new String[] {}, 0, (dialog, pos) -> {
-							try {
-								HashMap<String,mdict> mdict_cache = new HashMap<>();
-								for(mdict mdTmp:md) {
-									mdict_cache.put(mdTmp._Dictionary_fName, mdTmp);
-								}
-								md.clear();
-								File newf = new File(opt.pathToMain()+"CONFIG/"+scanInList.get(pos)+".set");
-								BufferedReader in = new BufferedReader(new FileReader(newf));
-								String line = in.readLine();
-								String lastMdName = opt.getLastMdFn();
-								int lastMdPos = 0;
-								while(line!=null){
-									if(!line.trim().equals("")){
-										if(!line.startsWith("/"))
-											line=opt.lastMdlibPath+"/"+line;
-										String fnId = new File(line).getAbsolutePath();
-										try {
-											if(mdict_cache.containsKey(fnId))
-												md.add(mdict_cache.get(fnId));
-											else
-												md.add(new_mdict(line, MainActivityUIBase.this));
-
-											if(md.get(md.size()-1)._Dictionary_fName.equals(lastMdName))
-												lastMdPos=md.size()-1;
-										} catch (Exception e) {
-											e.printStackTrace();
-											show(R.string.err,new File(line).getName(),line,e.getLocalizedMessage());
-										}
-									}
-									line = in.readLine();
-								}
-								in.close();
-								mdict_cache.clear();
-								opt.putLastPlanName(scanInList.get(pos));
-								if(md.size()>0) {
-									currentDictionary = md.get(adapter_idx=lastMdPos);
-								}else{
-									currentDictionary = null;
-								}
-								dialog.dismiss();
-								invalidAllLists();
-								show(R.string.loadsucc);
-								File def1 = new File(getExternalFilesDir(null),"default.txt");
-								FileChannel inputChannel = null;
-								FileChannel outputChannel = null;
-								try {
-									inputChannel = new FileInputStream(newf).getChannel();
-									def1.delete();
-									outputChannel = new FileOutputStream(def1).getChannel();
-									outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
-									inputChannel.close();
-									outputChannel.close();
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							}catch(Exception e) {
-								e.printStackTrace();
+				try {
+					currentFilter.clear();
+					HashMap<String,mdict> mdict_cache = new HashMap<>(md.size());
+					for(mdict mdTmp:md) {
+						mdict_cache.put(mdTmp._Dictionary_fName, mdTmp);
+					}
+					md.clear();
+					File newf = new File(opt.pathToMain()+"CONFIG/"+scanInList.get(pos)+".set");
+					BufferedReader in = new BufferedReader(new FileReader(newf));
+					String line = in.readLine();
+					String lastMdName = opt.getLastMdFn();
+					int lastMdPos = 0;
+					while(line!=null){
+						if(!line.trim().equals("")){
+							boolean isFilter=false;
+							if(line.startsWith("[:F]")){
+								line = line.substring(4);
+								isFilter=true;
 							}
+							if(!line.startsWith("/"))
+								line=opt.lastMdlibPath+"/"+line;
+							try {
+								mdict mdTmp=mdict_cache.get(new File(line).getAbsolutePath());
+								if(mdTmp==null)
+									mdTmp=new_mdict(line, MainActivityUIBase.this);
+								boolean add=true;
+								if(isFilter){
+									mdTmp.tmpIsFilter=true;
+									currentFilter.add(mdTmp);
+									add=opt.getHideDedicatedFilter()&&!mdTmp.getIsDedicatedFilter();
+								}
+								if(add) {
+									if(mdTmp._Dictionary_fName.equals(lastMdName))
+										lastMdPos=md.size()-1;
+									md.add(mdTmp);
+								}
+							} catch (Exception e) {
+								e.printStackTrace();
+								show(R.string.err,new File(line).getName(),line,e.getLocalizedMessage());
+							}
+						}
+						line = in.readLine();
+					}
+					in.close();
+					mdict_cache.clear();
+					opt.putLastPlanName(scanInList.get(pos));
+					if(md.size()>0) {
+						currentDictionary = md.get(adapter_idx=lastMdPos);
+					}else{
+						currentDictionary = null;
+					}
+					dialog.dismiss();
+					invalidAllLists();
+					show(R.string.loadsucc);
+					File def1 = new File(getExternalFilesDir(null),"default.txt");
+					FileChannel inputChannel = null;
+					FileChannel outputChannel = null;
+					try {
+						inputChannel = new FileInputStream(newf).getChannel();
+						def1.delete();
+						outputChannel = new FileOutputStream(def1).getChannel();
+						outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+						inputChannel.close();
+						outputChannel.close();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}catch(Exception e) {
+					e.printStackTrace();
+				}
 
-						});
+			});
 
 		AlertDialog dTmp = builder2.create();
 		dTmp.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
@@ -2118,24 +2171,23 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 							PeruseView.recess.setVisibility(View.VISIBLE);
 							PeruseView.forward.setVisibility(View.VISIBLE);
 							PeruseView.isJumping=true;
-							invoker.htmlBuilder.setLength(invoker.htmlHeader.length());
+							invoker.htmlBuilder.setLength(invoker.htmlBaseLen);
 							if(PeruseView.HistoryVagranter>=0) PeruseView.History.get(PeruseView.HistoryVagranter).value=PeruseView.mWebView.getScrollY();
 							PeruseView.setCurrentDis(invoker, pos);
 						}else {
 							invoker.recess.setVisibility(View.VISIBLE);
 							invoker.forward.setVisibility(View.VISIBLE);
 							invoker.isJumping=true;
-							invoker.htmlBuilder.setLength(invoker.htmlHeader.length());
+							invoker.htmlBuilder.setLength(invoker.htmlBaseLen);
 							if(invoker.HistoryVagranter>=0) invoker.History.get(invoker.HistoryVagranter).value=invoker.mWebView.getScrollY();
 							invoker.setCurrentDis(pos);
 						}
 
 						view.loadDataWithBaseURL(invoker.baseUrl,
-								invoker.htmlBuilder.append(mdict.htmlTitleEndTag).append((AppWhite==Color.BLACK)? MainActivityUIBase.DarkModeIncantation_l:"").append(mdict.htmlHeader2)
+								invoker.htmlBuilder.append((AppWhite==Color.BLACK)? MainActivityUIBase.DarkModeIncantation_l:"")
+										.append(mdict.htmlHeadEndTag)
 										.append(invoker.getRecordsAt(pos))
-										.append(invoker.js)
-										.append(invoker.mdd!=null?"<div class='MddExist'/>":"")
-										.append(invoker.htmlTailer).toString()
+										.append(invoker.htmlEnd).toString()
 								,null, "UTF-8", null);
 						jump(pos,invoker);
 						return true;
@@ -2149,7 +2201,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					//if(!opt.isCombinedSearching)
 					//	a.jumpHistory.add(new Pair(currentDisplaying, mWebView.getScrollY()));
 					//a.jump(url, mdict.this);
-					if(url.indexOf("#")!=-1) {
+					if(url.contains("#")) {
 						String tailDial = url.substring(url.indexOf("#"));
 						url = url.substring(0, url.indexOf("#"));
 					}
@@ -2176,13 +2228,12 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 							invoker.setCurrentDis(idx);
 						}
 
-						invoker.htmlBuilder.setLength(invoker.htmlHeader.length());
+						invoker.htmlBuilder.setLength(invoker.htmlBaseLen);
 						view.loadDataWithBaseURL(invoker.baseUrl,
-								invoker.htmlBuilder.append(mdict.htmlTitleEndTag).append((AppWhite==Color.BLACK)? MainActivityUIBase.DarkModeIncantation_l:"").append(mdict.htmlHeader2)
+								invoker.htmlBuilder.append((AppWhite==Color.BLACK)? MainActivityUIBase.DarkModeIncantation_l:"")
+										.append(mdict.htmlHeadEndTag)
 										.append(invoker.getRecordsAt(idx))
-										.append(invoker.js)
-										.append(invoker.mdd!=null?"<div class='MddExist'/>":"")
-										.append(invoker.htmlTailer).toString()
+										.append(invoker.htmlEnd).toString()
 								,null, "UTF-8", null);
 
 						return true;
@@ -2217,9 +2268,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			Integer selfAtIdx = IU.parseInt(view.getTag());
 			if(selfAtIdx==null || selfAtIdx>=md.size() || selfAtIdx<0) return null;
 			mdict invoker = md.get(selfAtIdx);
-			//CMN.Log("chromium shouldInterceptRequest__",url);
-			//boolean fromPeruseView=view.getTag(R.id.position)!=null;
-			//WebViewmy mWebView = (WebViewmy) view;
+
 			if(url.startsWith("http") && url.endsWith("mp3")) {
 				if(true)
 					return super.shouldInterceptRequest(view, url);
@@ -2256,11 +2305,6 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			}
 
 
-			if(invoker.mdd==null)
-				return null;
-			//Looper.prepare();
-			//showToast(url);
-			//Looper.loop();StringEscapeUtils.escapeHtml(
 			if(url.startsWith(soundTag)) {
 				url = url.substring(soundTag.length());
 			}
@@ -2269,23 +2313,39 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			} catch (UnsupportedEncodingException e1) {
 				e1.printStackTrace();
 			}
-			Log.e("chrochro inter_0",url);
+			Log.e("chrochro_inter_0",url);
 			String SepWindows = "\\";
 			String key=url;
 
 			int start = key.indexOf(invoker.FileTag);
 			if(start==-1){
 				if(key.startsWith("./"))
-					key = key.substring(1).replace("/", SepWindows);
+					key=key.substring(1);
 			}else{
-				key = key.substring(start+invoker.FileTag.length()).replace("/", SepWindows);
+				key = key.substring(start+invoker.FileTag.length());
 			}
-
+			key=key.replace("/", SepWindows);
 
 			if(!key.startsWith(SepWindows)){
 				key=SepWindows+key;
 			}
 			//CMN.Log("chrochro_inter_key is",key);
+
+			if(key.startsWith("\\MdbR\\")){
+				try {
+					key=key.substring(6);
+					CMN.Log("[fetching internal res : ]", key);
+					String mime="*/*";
+					if(key.endsWith(".css")) mime = "text/css";
+					if(key.endsWith(".js")) mime = "text/js";
+					return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(key));
+				} catch (Exception e) {
+					CMN.Log(""+e);
+				}
+			}
+
+			if(invoker.mdd==null)
+				return null;
 
 			try {
 				int idx = invoker.mdd.lookUp(key);
@@ -2340,10 +2400,23 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				return new WebResourceResponse("","UTF-8",new ByteArrayInputStream(restmp));
 
 
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				e.printStackTrace();
 				return super.shouldInterceptRequest(view, url);
 			}
+		}
+
+		HashMap<String, byte[]> CommonAssets = new HashMap<>();
+		private InputStream loadCommonAsset(String key) throws IOException {
+			byte[] data = CommonAssets.get(key);
+			if(data==null){
+				InputStream input = getResources().getAssets().open(key);
+				data = new byte[input.available()];
+				input.read(data);
+				CommonAssets.put(key, data);
+			}
+			return new ByteArrayInputStream(data);
 		}
 
 		@Override

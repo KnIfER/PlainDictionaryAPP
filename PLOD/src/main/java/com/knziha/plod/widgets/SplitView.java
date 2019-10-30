@@ -2,6 +2,7 @@ package com.knziha.plod.widgets;
 
 import java.util.ArrayList;
 
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.R;
 
 import android.content.Context;
@@ -14,7 +15,7 @@ import android.widget.LinearLayout;
 
 
 public class SplitView extends LinearLayout implements OnTouchListener {
-
+	public SamsungLikeScrollBar scrollbar2guard;
     private int mHandleId;
     private View mHandle;
 
@@ -137,11 +138,12 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     }
     
     @Override
-    public boolean onTouch(View view, MotionEvent ev) {
+	public boolean onTouch(View view, MotionEvent ev) {
         //if (view != mHandle) return false;
     	//Toast.makeText(view.getContext(), "onTouch", Toast.LENGTH_SHORT).show();
-        
-    	
+
+
+		//if(true) return false;
     	
         //Log.v("foo", "at "+SystemClock.elapsedRealtime()+" got touch event " + ev);
         switch(ev.getAction()) {
@@ -159,6 +161,8 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 	             }
         	break;
 	        case MotionEvent.ACTION_UP:
+	        	CMN.Log("!!!1");
+				checkBar();
 	        	mDragging = false;
 	        	if(view.getClass()==SplitViewGuarder.class) {
 	        		((SplitViewGuarder)view).dragIdx=-1;
@@ -203,7 +207,6 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     public boolean guarded=false,draged=false;
 
 	private float lastX,lastY,OrgX,OrgY;
-	boolean moved=false;
 	boolean twoFingerMode=false;
 	int OrgSize;
 	private static final float _5o12_=0.4166f;
@@ -211,6 +214,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 	
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+    	//if(true) return super.onInterceptTouchEvent(ev);
 		lastX=ev.getX();
 		lastY=ev.getY();
 		boolean yuexian = Math.abs(OrgY-lastY)>getHeight()*_5o12_;
@@ -220,6 +224,11 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     			case MotionEvent.ACTION_POINTER_DOWN:
     			break;
 		    	case MotionEvent.ACTION_DOWN:
+		    		//CMN.Log("???");
+					if(scrollbar2guard!=null && !scrollbar2guard.isHidden()){
+						scrollbar2guard.isWebHeld=true;
+						scrollbar2guard.cancelFadeOut();
+					}
 		    		OrgSize = getPrimaryContentSize();
 		    		OrgX=ev.getX();
 		    		OrgY=ev.getY();
@@ -229,21 +238,25 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 		    		//CMN.a.showT("getPointerCount"+ev.getPointerCount());
 		    	break;
 		    	case MotionEvent.ACTION_UP:
-		    		if(twoFingerMode) {
-		    			if(yuexian) {
-		    				SwitchingSides();
-		    				isDirty=true;
-		    			}
-			    		if(inf!=null)
-							inf.onPageTurn(this);
-		    		}
-		    		draged=false;
-		    		moved=false;
-		    		twoFingerMode=false;
+					//CMN.Log("!!!2");
+		    		checkBar();
+		    		if(draged) {
+						if (twoFingerMode) {
+							if (yuexian) {
+								SwitchingSides();
+								isDirty = true;
+							}
+							if (inf != null)
+								inf.onPageTurn(this);
+							twoFingerMode = false;
+						}
+						draged = false;
+					}
 		    	return ret;
 		    	case MotionEvent.ACTION_MOVE:
-					//CMN.show(judger+"=="+svI.getHandleTop()+"=="+svI.getHandleBottom());
+					//CMN.Log(judger,"==judger ", getHandleTop(), getHandleBottom(), getOrientation()==LinearLayout.VERTICAL?OrgY:OrgX);
 					if(judger) {
+						//CMN.Log("!!!3");
 			    		if(!draged) {
 			    			draged=Math.abs(lastY-OrgY)>100;
 			    			if(draged) {
@@ -264,7 +277,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 			}
     		if(draged) {
     			isDirty=true;
-    			//CMN.a.showT(""+Math.abs(OrgY-lastY)+"asd"+getHeight()*_5o12_);
+				//CMN.Log(Math.abs(OrgY - lastY), "asd", getHeight() * _5o12_);
     			if(ev.getPointerCount()==2) {
     				twoFingerMode=true;
     	    		if(draged) {
@@ -281,13 +294,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
         				}
         			}
         		}
-    			
-    			if(yuexian)
-    				decided=true;
-    			else
-    				decided=false;
-    			
-    			
+				decided= yuexian;
     			if(draged) {//已经移出一定距离moved，而且判正draged
     				if(twoFingerMode) {
     					if(inf!=null)
@@ -297,47 +304,20 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     				}
     				return ret;
     			}
-    			
     		}
     	}
-    	if(true) return ret;
-    	//Toast.makeText(getContext(), "onInterceptTouchEvent"+getId()+ret, Toast.LENGTH_SHORT).show();
-        int posY = (int) ev.getY();
-        int posX = (int) ev.getX();
-        int tol = 10;
-    	if(getOrientation()==LinearLayout.VERTICAL) {
-    		//int h = mPrimaryContent.getLayoutParams().height;
-    		int h = mHandle.getTop();
-    		if(posY> h && posY<h+100) {
-    			ret=true;
-    			if(!mDragging) {
-    				 mDragStartX = ev.getX();
-	   	             mDragStartY = ev.getY();
-	   	             if (getOrientation() == VERTICAL) {
-	   	                 mPointerOffset = ev.getRawY() - getPrimaryContentSize();
-	   	             } else {
-	   	                 mPointerOffset = ev.getRawX() - getPrimaryContentSize();
-	   	             }
-    			}
-    			mDragging = true;
-    			onTouch(null,ev);
-    			//Toast.makeText(getContext(), h+"onInterceptTouchEvent"+getId()+ret, Toast.LENGTH_SHORT).show();
-    		
-    		}
-    	}
-    	
-    	switch(ev.getAction()) {
-	    	case MotionEvent.ACTION_UP:
-	    		mDragging = false;
-	    	break;
-    	}
-    	return ret;
+		return ret;
     }
-    
-    
-    
-    
-    public View getHandle() {
+
+	private void checkBar() {
+		if(scrollbar2guard!=null && !scrollbar2guard.isHidden()){
+			scrollbar2guard.isWebHeld=false;
+			scrollbar2guard.fadeOut();
+		}
+	}
+
+
+	public View getHandle() {
         return mHandle;
     }
 
@@ -384,11 +364,9 @@ public class SplitView extends LinearLayout implements OnTouchListener {
         if (mSecondaryContent.getMeasuredHeight() < 1 && newHeight > params.height) {
             return false;
         }
-        if (newHeight >= 0) {
-            params.height = newHeight;
-            // set the primary content parameter to do not stretch anymore and use the height specified in the layout params
-            params.weight = 0;
-        }
+		params.height = newHeight;
+		// set the primary content parameter to do not stretch anymore and use the height specified in the layout params
+		params.weight = 0;
         mPrimaryContent.setLayoutParams(params);
 		for(View VI:valves) {
 			VI.setTranslationY(newHeight - sz_valv/2 +sz_hdl/2);
@@ -406,11 +384,9 @@ public class SplitView extends LinearLayout implements OnTouchListener {
         if (mSecondaryContent.getMeasuredWidth() < 1 && newWidth > params.width) {
             return false;
         }
-        if (newWidth >= 0) {
-            params.width = newWidth;
-            // set the primary content parameter to do not stretch anymore and use the width specified in the layout params
-            params.weight = 0;
-        }
+		params.width = newWidth;
+		// set the primary content parameter to do not stretch anymore and use the width specified in the layout params
+		params.weight = 0;
         mPrimaryContent.setLayoutParams(params);
 		for(View VI:valves) {
 			VI.setTranslationX(newWidth - sz_valv/2 +sz_hdl/2 );
@@ -419,12 +395,14 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     }
 
 	public int getHandleTop() {
-		int fixedVal = getOrientation()==LinearLayout.VERTICAL?mHandle.getTop()+getTop():mHandle.getLeft()+getLeft();
+		//int fixedVal = getOrientation()==LinearLayout.VERTICAL?mHandle.getTop()+getTop():mHandle.getLeft()+getLeft();
+		int fixedVal = getOrientation()==LinearLayout.VERTICAL?mHandle.getTop():mHandle.getLeft();
 		return fixedVal-CompensationTop;
 	}
 
 	public int getHandleBottom() {
-		int fixedVal = getOrientation()==LinearLayout.VERTICAL?mHandle.getBottom()+getTop():mHandle.getRight()+getLeft();
+		//int fixedVal = getOrientation()==LinearLayout.VERTICAL?mHandle.getBottom()+getTop():mHandle.getRight()+getLeft();
+		int fixedVal = getOrientation()==LinearLayout.VERTICAL?mHandle.getBottom():mHandle.getRight();
 		return fixedVal+CompensationBottom;
 	}
 
@@ -444,11 +422,12 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 
 	public void SwitchingSides() {
 		int cc = getChildCount();
-		View last = getChildAt(cc-1);
-		removeView(last);
-		addView(last,0);
-		multiplier*=-1;
-		
+		if(cc>=2) {
+			View last = getChildAt(cc - 1);
+			removeView(last);
+			addView(last, cc - 2);
+			multiplier *= -1;
+		}
 	}
   
 

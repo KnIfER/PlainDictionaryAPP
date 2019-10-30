@@ -9,6 +9,7 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Message;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Spannable;
@@ -37,7 +38,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 
-import com.knziha.plod.dictionary.Flag;
+import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
@@ -47,6 +48,7 @@ import com.knziha.rbtree.additiveMyCpr1;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 
@@ -81,8 +83,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					if(lv2.getVisibility()==View.INVISIBLE)
 						lv2.setVisibility(View.VISIBLE);
 					lianHeTask = new CombinedSearchTask(FloatSearchActivity.this).execute(s.toString());
-				}else
-				try {
+				}
+				else try {
 					if(!checkDicts()) return;
 					int res=currentDictionary.lookUp(""+s);
 					if(res!=-1){ 
@@ -139,8 +141,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
         super.onConfigurationChanged(newConfig);
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
         // Checks the orientation of the screen
-
-
 
 
         if(chooseDFragment!=null) {
@@ -203,6 +203,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		mainfv.setTranslationY(FVTY);
 		mainfv.setTranslationX(FVTX);
 
+		hdl = new MyHandler(this);
 		checkLog(savedInstanceState);
     }
    
@@ -236,6 +237,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			getWindow().setNavigationBarColor(MainBackground);
 		}
+		isCombinedSearching = opt.isFloatCombinedSearching();
 		opt.getLastMdlibPath();
 		if(opt.lastMdlibPath==null || !new File(opt.lastMdlibPath).exists()) {
 			opt.lastMdlibPath = opt.pathToMain()+"mdicts";
@@ -266,19 +268,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
         lv2.setAdapter(adaptermy2 = new ListViewAdapter2());
         lv2.setOnItemClickListener(adaptermy2);
 
-			Intent intent = getIntent();
-	        String keytmp =	intent.getStringExtra("EXTRA_QUERY");
-	        if(keytmp==null) {
-	            String type = intent.getType();
-		        if (Intent.ACTION_PROCESS_TEXT.equals(intent.getAction())) {
-		        	keytmp = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
-		        }
-	        }
-	        
-			etSearch.setText(keytmp);
+			String keytmp = processIntent(getIntent());
 	        etSearch.addTextChangedListener(tw1);  
 	        bWantsSelection=true;
-	    	tw1.onTextChanged(keytmp, 0, 0, 0);
+	        if(keytmp!=null)
+	    		tw1.onTextChanged(keytmp, 0, 0, 0);
 		
         //manifestTV = (TextViewmy) findViewById(R.id.MANITV);
         //manifestTV.doit();
@@ -536,6 +530,19 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		refreshUIColors();
     }
 
+    String processIntent(Intent intent) {
+		String keytmp =	intent.getStringExtra("EXTRA_QUERY");
+		if(keytmp==null) {
+			String type = intent.getType();
+			if (Intent.ACTION_PROCESS_TEXT.equals(intent.getAction())) {
+				keytmp = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
+			}
+		}
+
+		etSearch.setText(keytmp);
+		return keytmp;
+	}
+
 	void refreshUIColors() {
 		boolean isHalo=!GlobalOptions.isDark;
 		int filteredColor = isHalo?MainBackground: ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
@@ -576,7 +583,45 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			.putInt("FBBS",webcontentlist.getPrimaryContentSize())//FloatBottombarSize
 			.commit();
 		}
-	} 
+	}
+
+	private static class MyHandler extends BaseHandler {
+		private final WeakReference<Toastable_Activity> activity;
+		MyHandler(Toastable_Activity a) {
+			this.activity = new WeakReference<>(a);
+		}
+		@Override
+		public void handleMessage(@NonNull Message msg) {
+			if(activity.get()==null) return;
+			FloatSearchActivity a = ((FloatSearchActivity)activity.get());
+			switch (msg.what) {
+				case 6657:
+					removeMessages(6657);
+					a.topsnack.offset+=animatorD;
+					if(a.topsnack.offset<0)
+						sendEmptyMessage(6657);
+					else {
+						a.topsnack.offset = 0;
+						a.animationSnackOut=true;
+						sendEmptyMessageDelayed(6658, a.NextSnackLength);
+					}
+					a.topsnack.setTranslationY(a.topsnack.offset);
+					break;
+				case 6658:
+					removeMessages(6658);
+					if(a.animationSnackOut){
+						a.topsnack.offset-=animatorD;
+						if(a.topsnack.offset>-(a.topsnack.getHeight()+8*a.dm.density))
+							sendEmptyMessage(6658);
+						else{
+							a.removeSnackView();
+							break;
+						}
+						a.topsnack.setTranslationY(a.topsnack.offset);
+					}
+				break;
+			}
+	}}
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -602,13 +647,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
     @Override
     protected void onPause() {
-    	Log.e("onPause","onPause");
         super.onPause();
     }
 	
 	@Override
     protected void onResume() {
-		Log.e("onResume","onResume");
         super.onResume();
         if(systemIntialized) {
 	        if(CMN.FloatBackground != MainBackground) {
@@ -625,20 +668,16 @@ public class FloatSearchActivity extends MainActivityUIBase {
     }
 	@Override
     protected void onStart() {
-		//scanSettings();
-		Log.e("onStart","onStart");
         super.onStart();
     }	
 	@Override
     protected void onStop() {
 		super.onStop();
-		Log.e("onStop", "onStop");
 		//webholder.removeAllViews();
 		super.onStart();
 	}
 
     public class ListViewAdapter extends BasicAdapter {
-        //构造
         public ListViewAdapter() 
         {  
         }
@@ -850,7 +889,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		int id=v.getId();
 		switch(id) {
 			case R.id.toolbar_action1:{
-				opt.setCombinedSearching(isCombinedSearching = !isCombinedSearching);
+				opt.setFloatCombinedSearching(isCombinedSearching = !isCombinedSearching);
 				if(isCombinedSearching){
 					if(webcontentlist.getVisibility()==View.VISIBLE)
 						adaptermy2.currentKeyText=null;
@@ -1017,13 +1056,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					show(R.string.toptopr);
 					break;
 				}
-				if(lv2.getVisibility()==View.VISIBLE){
-					for(int i=0;i<md.size();i++){
-						md.get(i).clearWebview();
-					}
-				}else{
+				if(lv2.getVisibility()!=View.VISIBLE){
 					webholder.removeAllViews();
-					currentDictionary.clearWebview();
 				}
 				//Log.e("browser_widget10","browser_widget10"+ActivedAdapter.lastClickedPos);
 				//webholder.removeViews(1, webholder.getChildCount()-1);

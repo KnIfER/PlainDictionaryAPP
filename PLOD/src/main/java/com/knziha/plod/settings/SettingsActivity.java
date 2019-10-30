@@ -34,7 +34,7 @@ public class SettingsActivity extends Toastable_Activity {
 		}
 		win.getDecorView().setBackgroundColor(GlobalOptions.isDark? Color.BLACK:Color.WHITE);
 		root=win.getDecorView().findViewById(android.R.id.content);
-		checkMargin();
+		checkMargin(this);
 		if(Build.VERSION.SDK_INT>=21) {
 			win.setStatusBarColor(CMN.MainBackground);
 			win.setNavigationBarColor(CMN.MainBackground);

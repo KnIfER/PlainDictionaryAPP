@@ -1,0 +1,60 @@
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/dialog"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:paddingStart="15dp"
+	android:paddingBottom="15dp"
+	>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:gravity="center_vertical"
+		>
+		<CheckBox
+			android:id="@+id/check1"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="插入至当前配置第"
+			android:textAppearance="?android:attr/textAppearanceMedium"
+			android:checked="true"
+			/>
+		<NumberPicker
+			android:id="@+id/numberpicker"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="行"
+			android:textColor="#000"
+			android:textAppearance="?android:attr/textAppearanceMedium"
+			/>
+
+	</LinearLayout>
+
+	<CheckBox
+		android:id="@+id/check2"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="@string/dv_select"
+		android:layout_marginTop="110dp"
+		android:textAppearance="?android:attr/textAppearanceMedium"
+		android:layout_gravity="top"
+		android:checked="true"
+		/>
+	<Button
+		android:id="@+id/confirm"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom|right"
+		android:text="确定"
+		style="?android:attr/buttonBarButtonStyle"
+		/>
+</FrameLayout>
+
+
+

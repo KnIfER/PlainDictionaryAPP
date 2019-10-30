@@ -16,6 +16,8 @@ public abstract class BasicAdapter extends BaseAdapter
     {
 		int lastClickedPos=-1;
 		public int lastClickedPosBeforePageTurn;
+		int HlightIdx;
+		int acrarivacc;
 
 		public final SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
     	//int adelta=0;
@@ -69,6 +71,8 @@ public abstract class BasicAdapter extends BaseAdapter
 		public void onItemClick(int pos) {
         	lastClickedPos = Math.max(-1, pos);
         	lastClickedPos = Math.min(getCount(), lastClickedPos);
+			HlightIdx=0;
+			acrarivacc=0;
 			//ActivedAdapter=this;
 		}
 		@Override

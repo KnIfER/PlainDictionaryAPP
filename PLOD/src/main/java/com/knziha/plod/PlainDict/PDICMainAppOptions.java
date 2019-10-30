@@ -1,10 +1,8 @@
 package com.knziha.plod.PlainDict;
-import java.io.File;
 
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.settings.FilePickerOptions;
 import com.knziha.filepicker.utils.CMNF;
-import com.knziha.plod.PlainDict.R;
 
 import android.app.Activity;
 import android.content.Context;
@@ -301,7 +299,7 @@ public class PDICMainAppOptions
 		return val;
 	}
 
-	public boolean isFullScreen() {
+	public static boolean isFullScreen() {
 		return (FirstFlag & 0x10000) == 0x10000;
 	}
 	public boolean setFullScreen(boolean val) {
@@ -393,10 +391,10 @@ public class PDICMainAppOptions
 	}
 
 	public boolean getHintSearchMode() {
-		return (FirstFlag & 0x8000000) == 0x8000000;
+		return (FirstFlag & 0x8000000) != 0x8000000;
 	}
 	public boolean setHintSearchMode(boolean val) {
-		updateFFAt(0x8000000,val);
+		updateFFAt(0x8000000,!val);
 		return val;
 	}
 	public boolean toggleHintSearchMode() {
@@ -416,10 +414,10 @@ public class PDICMainAppOptions
 	}
 
 	public boolean getTintWildRes() {
-		return (FirstFlag & 0x20000000) == 0x20000000;
+		return (FirstFlag & 0x20000000) != 0x20000000;
 	}
 	public boolean setTintWildRes(boolean val) {
-		updateFFAt(0x20000000,val);
+		updateFFAt(0x20000000,!val);
 		return val;
 	}
 	public boolean toggleTintWildRes() {
@@ -579,7 +577,7 @@ public class PDICMainAppOptions
 
 	/////////////////////End First Flag////////////////////////////////////
 	/////////////////////Start Second Flag////////////////////////////////////
-	private static Long SecondFlag=null;
+	public static Long SecondFlag=null;
 	public long getSecondFlag() {
 		if(SecondFlag==null) {
 			return FilePickerOptions.SecondFlag=SecondFlag=defaultReader.getLong("MSF",0);
@@ -670,7 +668,6 @@ public class PDICMainAppOptions
 		updateSFAt(0x80,val);
 		return val;
 	}
-
 
 	public boolean getUseLruDiskCache() {
 		return (SecondFlag & 0x100) != 0x100;
@@ -905,12 +902,83 @@ public class PDICMainAppOptions
 		updateSFAt(0x10000000l,!val);
 		return val;
 	}
+	public static boolean getHideFloatFromRecent() {
+		return getHideFloatFromRecent(SecondFlag==null?0:SecondFlag);
+	}
+	public static boolean getHideFloatFromRecent(long SecondFlag) {
+		return (SecondFlag & 0x1000000000l) != 0x1000000000l;
+	}
+	public static boolean setHideFloatFromRecent(boolean val) {
+		updateSFAt(0x1000000000l,!val);
+		return val;
+	}
 
+	public static boolean getAutoAddDedicatedFilter() {
+		return (SecondFlag & 0x2000000000l) != 0x2000000000l;
+	}
+	public static boolean setAutoAddDedicatedFilter(boolean val) {
+		updateSFAt(0x2000000000l,!val);
+		return val;
+	}
+	public boolean getDictManager1MultiSelecting() {
+		return (SecondFlag & 0x4000000000l) == 0x4000000000l;
+	}
+	public boolean setDictManager1MultiSelecting(boolean val) {
+		updateSFAt(0x4000000000l,val);
+		return val;
+	}
 
+	public boolean getCheckMdlibs() {
+		return (SecondFlag & 0x8000000000l) != 0x8000000000l;
+	}
+	public boolean setCheckMdlibs(boolean val) {
+		updateSFAt(0x8000000000l,!val);
+		return val;
+	}
+
+	public boolean getHideDedicatedFilter() {
+		return (SecondFlag & 0x10000000000l) != 0x10000000000l;
+	}
+	public boolean setHideDedicatedFilter(boolean val) {
+		updateSFAt(0x10000000000l,!val);
+		return val;
+	}
+
+	public static boolean getShowImageBrowserFlipper() {
+		return (SecondFlag & 0x20000000000l) != 0x20000000000l;
+	}
+	public static boolean getShowImageBrowserFlipper(long SecondFlag) {
+		return (SecondFlag & 0x20000000000l) != 0x20000000000l;
+	}
+	public static boolean setShowImageBrowserFlipper(boolean val) {
+		updateSFAt(0x20000000000l,!val);
+		return val;
+	}
+
+	public static boolean getShowSaveImage() {
+		return (SecondFlag & 0x40000000000l) == 0x40000000000l;
+	}
+	public static boolean getShowSaveImage(long SecondFlag) {
+		return (SecondFlag & 0x40000000000l) == 0x40000000000l;
+	}
+	public static boolean setShowSaveImage(boolean val) {
+		updateSFAt(0x40000000000l,val);
+		return val;
+	}
+
+	public static boolean getClickDismissImageBrowser() {
+		return (SecondFlag & 0x80000000000l) == 0x80000000000l;
+	}
+	public static boolean setClickDismissImageBrowser(boolean val) {
+		updateSFAt(0x80000000000l,val);
+		return val;
+	}
+
+	//////
 	private final StringBuilder pathTo = new StringBuilder();//"/sdcard/PLOD/bmDBs/");
 	public String rootPath;
 	protected int pathToL = -1;//pathTo.toString().length();
-	public boolean isLarge;
+	public static boolean isLarge;
 	public DisplayMetrics dm;
 	public StringBuilder pathTo() {
 		if(pathToL==-1) {

@@ -56,7 +56,7 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 		init_number_info_preference(this, "share_target", PDICMainAppOptions.getShareTarget(), R.array.paste_target_info, null);
 		//init_switch_preference(this, "f_share_peruse", PDICMainAppOptions.getShareToPeruseModeWhenFocued(), null, null);
 		init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null);
-CMN.Log("getShareToPeruseModeWhenFocued", PDICMainAppOptions.getShareToPeruseModeWhenFocued());
+		init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null);
 
 		findPreference("dev").setOnPreferenceClickListener(this);
 	}
@@ -147,6 +147,9 @@ CMN.Log("getShareToPeruseModeWhenFocued", PDICMainAppOptions.getShareToPeruseMod
 			break;
 			case "f_paste_peruse":
 				PDICMainAppOptions.setPasteToPeruseModeWhenFocued((Boolean) newValue);
+			break;
+			case "f_hide_recent":
+				PDICMainAppOptions.setHideFloatFromRecent((Boolean) newValue);
 			break;
 		}
 		return true;

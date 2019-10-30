@@ -89,6 +89,7 @@
     <string name="delDone">deleted</string>
     <string name="bmAdded">Bookmark added !</string>
     <string name="dictOpt">Dictionary options…</string>
+    <string name="dictOpt1">@string/dictOpt</string>
     <string name="setOpt">Dictionary Set options…</string>
     <string name="newName">new name…</string>
     
@@ -160,8 +161,8 @@
 	<string name="bring_from_background">Awaken from background</string>
 	<string name="canceld_peruse_mode">Canceled peruse mode</string>
 	<string name="show_all_dictionaries">Show all dictionaries</string>
-	<string name="show_bookmark_add_button">Show bookmark add button</string>
-	<string name="show_bookmark_delete_button">Show bookmark delete button</string>
+	<string name="show_bookmark_add_button">Show bookmark add btn</string>
+	<string name="show_bookmark_delete_button">Show bookmark delete btn</string>
 	<string name="auto_search_on_switch">Auto search on switch</string>
 	<string name="show_fast_scroller">Show fast scroller</string>
 	<string name="reset_keyword">Reset keyword</string>
@@ -179,4 +180,8 @@
 	<string name="remove_records">Remove record(s)</string>
 	<string name="move_files">Move file(s)</string>
 	<string name="new___">New…</string>
+	<string name="dict_specs">Global_Independent_Java API_Classical_No_Yes</string>
+	<string name="no_suitable_app">Found no suitable App.</string>
+	<string name="multiple_vals">*多重*</string>
+	<string name="dv_select">@string/fp_select</string>
 </resources>

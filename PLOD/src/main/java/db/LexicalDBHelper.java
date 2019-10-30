@@ -44,7 +44,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 
     static String conduct(String path){
     	new File(path).getParentFile().mkdirs();
-    	CMN.Log("path is ",new File(path).getParentFile());
+    	//CMN.Log("path is ",new File(path).getParentFile());
     	return path;
     }
 

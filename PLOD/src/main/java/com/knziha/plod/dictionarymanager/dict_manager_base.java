@@ -1,7 +1,5 @@
 package com.knziha.plod.dictionarymanager;
 
-import java.util.ArrayList;
-
 import com.knziha.plod.PlainDict.R;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
@@ -14,28 +12,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
 
-public class dict_manager_DSLFragmenr_base<T> extends ListFragment {
-
+public class dict_manager_base<T> extends ListFragment {
     ArrayAdapter<T> adapter;
-
     boolean isDirty = false;
 	dict_manager_activity a;
-    
-    private String[] array;
-    private ArrayList<String> list;
-
-    private DragSortListView.DropListener onDrop =
-            new DragSortListView.DropListener() {
-                @Override
-                public void drop(int from, int to) {
-                    if (from != to) {
-                    	T item = adapter.getItem(from);
-                        adapter.remove(item);
-                        adapter.insert(item, to);
-                    }
-                }
-            };
-
     private DragSortListView.RemoveListener onRemove = 
             new DragSortListView.RemoveListener() {
                 @Override
@@ -72,8 +52,8 @@ public class dict_manager_DSLFragmenr_base<T> extends ListFragment {
     public boolean sortEnabled = true;
     public boolean dragEnabled = true;
 
-    public static dict_manager_DSLFragmenr_base newInstance(int headers, int footers) {
-        dict_manager_DSLFragmenr_base f = new dict_manager_DSLFragmenr_base();
+    public static dict_manager_base newInstance(int headers, int footers) {
+        dict_manager_base f = new dict_manager_base();
 
         Bundle args = new Bundle();
         args.putInt("headers", headers);
@@ -135,29 +115,23 @@ public class dict_manager_DSLFragmenr_base<T> extends ListFragment {
         //CMN.show("onActivityCreated");
         mDslv = (DragSortListView) getListView(); 
 
-        mDslv.setDropListener(onDrop);
+        mDslv.setDropListener(getDropListener());
         mDslv.setRemoveListener(onRemove);
-
-        Bundle args = getArguments();
-        int headers = 0;
-        int footers = 0;
-        if (args != null) {
-            headers = args.getInt("headers", 0);
-            footers = args.getInt("footers", 0);
-        }
 
         View v = getActivity().getLayoutInflater().inflate(R.layout.pad_five_dp, null);
         mDslv.addHeaderView(v);
-        //setListAdapter();
     }
 
-
-    @Override
-    public void onResume() {
-      //onResume happens after onStart and onActivityCreate
-      //setListAdapter();
-      super.onResume() ; 
-    }
-
+    DragSortListView.DropListener getDropListener() {
+		DragSortListView.DropListener onDrop =
+				(from, to) -> {
+					if (from != to) {
+						T item = adapter.getItem(from);
+						adapter.remove(item);
+						adapter.insert(item, to);
+					}
+				};
+		return onDrop;
+	}
 
 }

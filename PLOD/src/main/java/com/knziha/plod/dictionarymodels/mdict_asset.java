@@ -21,22 +21,14 @@ public class mdict_asset extends mdict {
 		super(processFileName(fn), a_);
 		_Dictionary_fName=_Dictionary_Name;
 	}
-		
-		
-
 
 	private static String processFileName(String fn) {
 		if(!fn.startsWith(AsstPrefix)) fn=AsstPrefix+fn;
 		return fn;
 	}
-	
-
 
 	@Override
     protected InputStream mOpenInputStream() throws IOException {
     	return a.getResources().getAssets().open(f.getAbsolutePath().substring(AsstPrefix.length()));
     }
-		
-		
-		
 }

@@ -75,7 +75,7 @@
 	<string name="pLoadDone">集合 %1$s 加載完畢！ </string>
 	<string name="bmAdded">新增書簽！</string>
 	<string name="bm">書簽</string>
-	<string name="hint_mode">提示搜索模式</string>
+	<string name="hint_mode">提示模式</string>
 	<string name="tint_result">詞條染色</string>
 	<string name="switch_dict">切換詞典</string>
 	<string name="switch_set">切換字典集</string>
@@ -91,7 +91,7 @@
 	<string name="show_fast_scroller">顯示快速滾動</string>
 	<string name="reset_keyword">復位關鍵詞</string>
 	<string name="save_bookmark">保存書籤</string>
-	<string name="hint_search_result">提示搜索結果</string>
+	<string name="hint_search_result">提示結果</string>
 	<string name="fold_all">折疊全部</string>
 	<string name="Commit">提交</string>
 	<string name="reset">重置</string>
@@ -104,4 +104,8 @@
 	<string name="remove_records">刪除記錄</string>
 	<string name="move_files">移動文件</string>
 	<string name="new___">新建</string>
+	<string name="dictOpt1">詞典設定</string>
+	<string name="no_suitable_app">找不到合適的App</string>
+	<string name="multiple_vals">*多重*</string>
+	<string name="dv_select">选中</string>
 </resources>

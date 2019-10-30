@@ -36,7 +36,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class dict_Manager_folderlike_DSLFragment extends ListFragment {
+public class dict_Manager_folderlike extends ListFragment {
 	String parentFile;
 	ArrayListTree<mFile> data=new ArrayListTree<>();
 	ArrayListTree<mFile> hiddenParents=new ArrayListTree<>();
@@ -44,6 +44,8 @@ public class dict_Manager_folderlike_DSLFragment extends ListFragment {
 	ArrayAdapter<mFile> adapter;
 	boolean isDirty = false;
 	dict_manager_activity a;
+	int[] lastClickedPos=new int[]{-1, -1};
+	int lastClickedPosIndex=0;
 	
 	public interface OnEnterSelectionListener{
 		public void onEnterSelection();
@@ -78,6 +80,9 @@ public class dict_Manager_folderlike_DSLFragment extends ListFragment {
 		        	boolean isForeign=false;
 		        	mFile fI;
 	        		if(!line.startsWith("/")) {//是相对路径
+						if(line.startsWith("[:F]")){
+							line = line.substring(4);
+						}
 	        			if(line.contains("/")) {
 		        			sb.setLength(baseL);
 		        			line=sb.append(line).toString();
@@ -116,7 +121,7 @@ public class dict_Manager_folderlike_DSLFragment extends ListFragment {
 	
 	
 	//构造
-	public dict_Manager_folderlike_DSLFragment(){
+	public dict_Manager_folderlike(){
 		super();
 	}
 	
@@ -342,7 +347,9 @@ public class dict_Manager_folderlike_DSLFragment extends ListFragment {
 	    							Selection.remove(item.getAbsolutePath());
 	    						}
 		    				}
-						}else {
+						}
+						else {
+							lastClickedPos[(++lastClickedPosIndex)%2]=position;
 							Selection.put(mdTmp.getAbsolutePath());
 		    				if(mdTmp.isDirectory()){
 	    						hiddenParents.remove(mdTmp);

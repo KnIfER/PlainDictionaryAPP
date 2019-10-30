@@ -156,4 +156,5 @@
 	<string name="remove_records">Fjern optegnelser</string>
 	<string name="move_files">Flyt filer</string>
 	<string name="new___">Ny…</string>
+	<string name="no_suitable_app">Fundet ingen passende app.</string>
 </resources>

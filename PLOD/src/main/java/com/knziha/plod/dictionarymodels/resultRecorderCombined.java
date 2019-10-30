@@ -1,29 +1,24 @@
 package com.knziha.plod.dictionarymodels;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-
-import com.knziha.plod.PlainDict.BasicAdapter;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.widgets.ScrollViewmy;
-import com.knziha.plod.widgets.ScrollViewmy.ScrollViewListener;
-import com.knziha.rbtree.additiveMyCpr1;
-
-
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 
+import com.knziha.plod.PlainDict.BasicAdapter;
+import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.rbtree.additiveMyCpr1;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+
+/** Recorder rendering search results as : LinearLayout {WebView, WebView, ... }  */
 public class resultRecorderCombined extends resultRecorderDiscrete {
-	Timer timer;
-	//BooleanSingleton touchFlag;
-	private List<additiveMyCpr1> data;public List<additiveMyCpr1> list(){return data;}
-	
+	private List<additiveMyCpr1> data;
+	public List<additiveMyCpr1> list(){return data;}
 	private List<mdict> md;
 
-			
 	@Override
 	public void invalidate() {}
 	
@@ -31,12 +26,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		super(a);
 		data=data_;
 		md=md_;
-		//touchFlag=new BooleanSingleton(false);
 	}
-	
-	//ArrayList<myCpr<Integer,int[]>> ArrayParsed;
-
-	public int currSubIdx;
 	
 	@Override
 	public ArrayList<Integer> getDictsAt(int pos) {
@@ -59,8 +49,6 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		count = String.format("%02d", l.size()/2);
 		return data.get(pos).key;
 	};
-	
-
 
 	OnLayoutChangeListener OLCL;
 
@@ -77,8 +65,6 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		
 		final List<Integer> vals = (List<Integer>) data.get(pos).value;
 		//String xxx=""; for(int i=0;i<vals.size();i+=2) xxx+=vals.get(i)+"-"+vals.get(i+1)+" ";
-
-
 
 		int lastVal=-1, valueCount=0;
 		int[] exempter = new int[vals.size()/2];
@@ -106,13 +92,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				}
 			}
 		}
-		
-		if(a.main_progress_bar!=null) {
-		if(expectedPos!=0)
-			a.main_progress_bar.setVisibility(View.VISIBLE);
-		else
-			a.main_progress_bar.setVisibility(View.GONE);
-		}
+
+		if(a.main_progress_bar!=null)
+			a.main_progress_bar.setVisibility(expectedPos==0?View.GONE:View.VISIBLE);
+
 		//if(false)
 		a.WHP.touchFlag.first=false;
 		if(OLCL==null) {
@@ -145,13 +128,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		}
 		
 		LHGEIGHT=0;
-		//if(expectedPos!=0) {
-			a.webholder.addOnLayoutChangeListener(OLCL);
-			//((ScrollViewmy)a.WHP).touchFlag=touchFlag;
-			scrolled=false;
-		//}else
-		//	scrolled=true;
-		
+		a.webholder.addOnLayoutChangeListener(OLCL);
+		scrolled=false;
 
 		ArrayList<Integer> valsTmp = new ArrayList<>();
 		valueCount=0;
@@ -195,41 +173,18 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			//mdtmp.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 			valueCount++;
 		}
-		
 
-		PlayWithMbar(a);
-	};
-	
-	public void PlayWithMbar(final MainActivityUIBase a) {
 		if(a.opt.getHideScroll1())
 			a.mBar.setVisibility(View.GONE);
 		else {
-			a.mBar.setVisibility(View.VISIBLE);
-			a.mBar.setDelimiter("|||");
-			((ScrollViewmy)a.WHP).setScrollViewListener(new ScrollViewListener() {
-				@Override
-				public void onScrollChanged(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-						a.mBar.updateScrollState(v);
-						if(!a.mBar.isHeld()) {
-							a.mBar.setMax(a.webholder.getMeasuredHeight()-((View) a.webholder.getParent()).getMeasuredHeight());
-							a.mBar.setProgress(((View) a.webholder.getParent()).getScrollY());
-						}
-						a.mBar.fadeIn();
-						//a.showT("scrolled");
-				}
-			});
-			a.WHP.setOnTouchListener(a.mBar);
-			a.mBar.fadeOut();
-			a.mBar.scrollee=(View) a.webholder.getParent();
+			a.initWebHolderScrollChanged();
 		}
-	}
+	};
 
 	@Override
 	public ArrayList<Integer> getRecordAt(int pos) {
 		return (ArrayList<Integer>) data.get(pos).value;
 	}
-
-
 
 	@Override
 	public int size(){
@@ -243,6 +198,4 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	public void shutUp() {
 		data.clear();
 	}
-
-	
 }

@@ -115,7 +115,7 @@
 	<string name="perWSearch">PER-WORD ARA</string>
 	<string name="perWSTag">için</string>
 	<string name="peruseToggle">incelemek MOD</string>
-	<string name="currentPlan">Akım ( %D )</string>
+	<string name="currentPlan">Akım ( %d )</string>
 	<string name="allPlans">Tüm setleri</string>
 	<string name="defPlan">Standart seti</string>
 	<string name="pLoadDone"> %S et 1 $ s yüklendi! </string>
@@ -156,4 +156,5 @@
 	<string name="remove_records">kayıtlarını kaldırın</string>
 	<string name="move_files">dosya taşıma</string>
 	<string name="new___">Yeni…</string>
+	<string name="no_suitable_app">Uygun bir uygulama bulunamadı.</string>
 </resources>

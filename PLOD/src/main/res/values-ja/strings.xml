@@ -58,11 +58,11 @@
 	<string name="browse_all_favorite_set">すべてのデッキをブラウズ</string>
 	<string name="refresh_current_favorite_set">現在のデッキを更新</string>
 	<string name="wenj_fugai">ファイルが既に存在する、上書き？</string>
-	<string name="warn_delete">選択した％dのカードを削除してもよろしいですか？（tは元に戻す "を\することができます）</string>
-	<string name="warnDelete">あなたは辞書構成セット％sが削除してもよろしいですか？</string>
+	<string name="warn_delete">選択した%dのカードを削除してもよろしいですか？（tは元に戻す "を\することができます）</string>
+	<string name="warnDelete">あなたは辞書構成セット%sが削除してもよろしいですか？</string>
 	<string name="warn_move">あなたは[ %3$s の]に[ %2$S ]から %1$d 個の単語コレクションを移動してもよろしいですか？</string>
 	<string name="warn_exit0">あなたが終了してもよろしいですか？</string>
-	<string name="surerrecords">あなたが選択した％d個のレコードを削除してもよろしいですか？（\'トンのエフェクトファイルシステムを獲得しました）</string>
+	<string name="surerrecords">あなたが選択した%d個のレコードを削除してもよろしいですか？（\'トンのエフェクトファイルシステムを獲得しました）</string>
 	<string name="applyallset">すべてのセットに適用されます</string>
 	<string name="pickdestineFolder">運命づけるフォルダを選択します</string>
 	<string name="bookmarkup">ブックマークが更新します！</string>
@@ -73,9 +73,9 @@
 	<string name="maniDel">キャンセル %1$d/%2$d のコレクション！</string>
 	<string name="maniFavor"> %1$s を（ %2$d のコレクションアイテム）</string>
 	<string name="maniFavor2"> %1$s を（ %2$s の思い出）</string>
-	<string name="currFavor">現在のコレクション名：％sの</string>
-	<string name="resCount">％sのアイテムを見つけて行わ検索！</string>
-	<string name="searchFailed">検索に失敗しました：％sの</string>
+	<string name="currFavor">現在のコレクション名：%sの</string>
+	<string name="resCount">%sのアイテムを見つけて行わ検索！</string>
+	<string name="searchFailed">検索に失敗しました：%sの</string>
 	<string name="removed">削除されました</string>
 	<string name="toRemove">削除されます…</string>
 	<string name="added">正常に追加！</string>
@@ -105,10 +105,10 @@
 	<string name="perWSearch">PER-WORD検索</string>
 	<string name="perWSTag">以下のために</string>
 	<string name="peruseToggle">PERUSEモード</string>
-	<string name="currentPlan">現在（％d）は</string>
+	<string name="currentPlan">現在（%d）は</string>
 	<string name="allPlans">すべてのセット</string>
 	<string name="defPlan">デフォルトセット</string>
-	<string name="pLoadDone">1 $ sのロードされた％を設定してください！ </string>
+	<string name="pLoadDone">1 $ sのロードされた%を設定してください！ </string>
 	<string name="dupicateD">重複して！</string>
 	<string name="renD">名前を変更やりました！</string>
 	<string name="delD">削除やりました！</string>
@@ -147,4 +147,5 @@
 	<string name="remove_records">レコードを削除します</string>
 	<string name="move_files">ファイルを移動</string>
 	<string name="new___">新着…</string>
+	<string name="no_suitable_app">適切なアプリが見つかりませんでした。</string>
 </resources>

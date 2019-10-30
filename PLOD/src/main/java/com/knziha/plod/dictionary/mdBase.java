@@ -30,11 +30,14 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterOutputStream;
 
+import com.knziha.plod.dictionary.Utils.key_info_struct;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import org.anarres.lzo.*;
 //import org.jvcompress.lzo.MiniLZO;
 //import org.jvcompress.util.MInt;
 
 import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.Utils.record_info_struct;
 import com.knziha.rbtree.RBTree;
 //import test.CMN;
 
@@ -382,6 +385,20 @@ class mdBase {
 		key_block_info=null;
 		//assert(accumulation_ == self._num_entries)
 		this._key_block_info_list =  _key_block_info_list;
+	}
+
+	long decode_record_block_size(){
+		if(_num_record_blocks==0){
+			try {
+				DataInputStream data_in1 = getStreamAt(_record_block_offset);
+				_num_record_blocks = _read_number(data_in1);
+				long num_entries = _read_number(data_in1);
+				long record_block_info_size = _read_number(data_in1);
+				_record_block_size = _read_number(data_in1);
+				data_in1.close();
+			} catch (IOException ignored) { }
+		}
+		return _num_record_blocks;
 	}
 
 	void decode_record_block_header() throws IOException{
