@@ -24,12 +24,6 @@
 			android:title="开启Root"
 			android:persistent="false"
 			/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="wform_hide"
-			android:title="隐藏专用构词库"
-			android:persistent="false"
-			/>
 	</PreferenceCategory>
 
 

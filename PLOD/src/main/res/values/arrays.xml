@@ -223,4 +223,29 @@
 		<item>@string/to_main_peruse</item>
 		<item>@string/to_float</item>
 	</string-array>
+
+	<string-array name="conext">
+		<item>0</item>
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+	</string-array>
+
+	<string-array name="conext_info">
+		<item>直接退出</item>
+		<item>顶部弹出确认</item>
+		<item>Toast确认</item>
+		<item>对话框确认</item>
+	</string-array>
+
+	<string-array name="conhom">
+		<item>4</item>
+		<item>5</item>
+	</string-array>
+
+	<string-array name="conhom_info">
+		<item>直接退出</item>
+		<item>沿用返回退出程序时的设置</item>
+	</string-array>
+
 </resources>

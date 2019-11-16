@@ -132,7 +132,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				fval=1f;
 			}
 			showTopSnack(main_succinct, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size),
-					fval, -1, -1);
+					fval, -1, -1, false);
 		}
 	}
 
@@ -764,7 +764,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	
 			currentDictionary.initViewsHolder(FloatSearchActivity.this);
 			webSingleholder.addView(md.get(adapter_idx).rl);
-			currentDictionary.renderContentAt(-1,adapter_idx,null,position);
+			currentDictionary.renderContentAt(-1,adapter_idx,0,null, position);
 			
         	
 			currentKeyText = currentDictionary.getEntryAt(position);
@@ -1048,12 +1048,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			case R.id.browser_widget10:
 			case R.id.browser_widget11:{//左zuo
 				int toPos = ActivedAdapter.lastClickedPos+(v.getId()==R.id.browser_widget10?-1:1);
-				if(toPos<-1) {
-					show(R.string.coverr);
-					break;
-				}
-				if(toPos==-1 && adaptermy2==ActivedAdapter) {
-					show(R.string.toptopr);
+
+				if(toPos<-1 || toPos==-1 && adaptermy2==ActivedAdapter) {
+					showTopSnack(main_succinct, R.string.endendr, -1, -1, -1, false);
 					break;
 				}
 				if(lv2.getVisibility()!=View.VISIBLE){
@@ -1072,10 +1069,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					}else {
 						Actor=md.get(adaptermy2.combining_search_result.getRecordAt(adaptermy2.lastClickedPos).get(0));
 					}
-					if(Actor.mdd!=null) {
+					if(Actor.hasMdd()) {
 						String sKey = ActivedAdapter.currentKeyText+".mp3";
-						int idx = Actor.mdd.lookUp(sKey);
-						if(idx!=-1) {
+						if(Actor.containsResourceKey(sKey)) {
 							Actor.mWebView.evaluateJavascript("var audio = new Audio(\""+sKey+"\");audio.play();", null);
 							played=true;
 						}

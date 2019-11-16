@@ -5,20 +5,20 @@
 
 	<uses-permission android:name="android.permission.REORDER_TASKS" />
 	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_STORAGE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/> 
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+	<uses-permission android:name="android.permission.READ_MEDIA_STORAGE"/>
+	<uses-permission android:name="android.permission.INTERNET"/>
+	<uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
 
-    <application
-        android:name="com.knziha.plod.PlainDict.AgentApplication"
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:hardwareAccelerated="true"
+	<application
+		android:name="com.knziha.plod.PlainDict.AgentApplication"
+		android:allowBackup="true"
+		android:icon="@mipmap/ic_launcher"
+		android:label="@string/app_name"
+		android:supportsRtl="true"
+		android:theme="@style/AppTheme"
+		android:hardwareAccelerated="true"
 		tools:ignore="GoogleAppIndexingWarning"
 		android:requestLegacyExternalStorage="true">
 		<uses-library android:name="com.sec.android.app.multiwindow" android:required="false" />
@@ -28,56 +28,56 @@
 		<meta-data android:name="com.sec.android.multiwindow.MINIMUM_SIZE_W" android:value="632.0dip" />
 		<meta-data android:name="com.sec.android.multiwindow.MINIMUM_SIZE_H" android:value="598.0dip" />
 		<activity android:name="com.knziha.plod.PlainDict.PDICMainActivity"
-            android:theme="@style/AppTheme"
+			android:theme="@style/AppTheme"
 			android:configChanges="orientation|keyboardHidden|screenSize|uiMode|locale|layoutDirection"
 			android:hardwareAccelerated="true"
 			>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN"/>
+				<category android:name="android.intent.category.LAUNCHER"/>
+			</intent-filter>
+		</activity>
 
-		 <activity android:name="com.knziha.plod.PlainDict.CuteFileManager"
+		<activity android:name="com.knziha.plod.PlainDict.CuteFileManager"
 			android:theme="@style/AppTheme"
 			android:configChanges="keyboardHidden|orientation|screenSize"
 			android:hardwareAccelerated="true"
 			>
 		</activity>
-        
-        <activity android:name="com.knziha.plod.PlainDict.FloatSearchActivity"
-            	android:theme="@style/FloatAppTheme"
-            	android:configChanges="keyboardHidden|orientation|screenSize"
-				android:hardwareAccelerated="true"
-				android:windowSoftInputMode="adjustPan"
-				>
-            <intent-filter>
-                <action android:name="colordict.intent.action.SEARCH"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.PROCESS_TEXT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-        </activity>
 
-        <activity android:name="com.knziha.plod.settings.SettingsActivity"
-            android:theme="@style/SettingAppTheme"
-            android:configChanges="keyboardHidden|orientation|screenSize"
+		<activity android:name="com.knziha.plod.PlainDict.FloatSearchActivity"
+			android:theme="@style/FloatAppTheme"
+			android:configChanges="keyboardHidden|orientation|screenSize"
+			android:hardwareAccelerated="true"
+			android:windowSoftInputMode="adjustPan"
+			>
+			<intent-filter>
+				<action android:name="colordict.intent.action.SEARCH"/>
+				<category android:name="android.intent.category.DEFAULT"/>
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.PROCESS_TEXT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="text/plain" />
+			</intent-filter>
+		</activity>
+
+		<activity android:name="com.knziha.plod.settings.SettingsActivity"
+			android:theme="@style/SettingAppTheme"
+			android:configChanges="keyboardHidden|orientation|screenSize"
 			android:windowSoftInputMode="adjustPan"
 			android:hardwareAccelerated="true"/>
-        
-        <activity android:name="com.knziha.plod.slideshow.PhotoViewActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/PictureTheme"
-            />
 
-        <activity android:name="com.knziha.plod.dictionarymanager.dict_manager_activity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/AppThemeRaw" 
-            />
+		<activity android:name="com.knziha.plod.slideshow.PhotoViewActivity"
+			android:configChanges="keyboardHidden|orientation|screenSize"
+			android:theme="@style/PictureTheme"
+			/>
+
+		<activity android:name="com.knziha.plod.dictionarymanager.dict_manager_activity"
+			android:configChanges="keyboardHidden|orientation|screenSize"
+			android:theme="@style/AppThemeRaw"
+			/>
 
 		<activity android:name="com.knziha.plod.PlainDict.MainShareActivity"
 			android:theme="@style/FloatAppTheme"
@@ -89,13 +89,6 @@
 				<data android:mimeType="text/plain" />
 			</intent-filter>
 		</activity>
-		<activity android:name="com.knziha.plod.PlainDict.FloatSearchHelper"
-			android:theme="@style/FloatAppTheme"
-			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
-			android:taskAffinity="com.knziha.plod.PlainDict.task01"
-			android:exported="true"
-			>
-		</activity>
 		<activity android:name="com.knziha.plod.PlainDict.FloatActivitySearch"
 			android:theme="@style/FloatAppTheme"
 			android:configChanges="keyboardHidden|orientation|screenSize"
@@ -106,8 +99,8 @@
 			android:exported="true"
 			>
 		</activity>
-    </application>
-    
-   
-	
+	</application>
+
+
+
 </manifest>

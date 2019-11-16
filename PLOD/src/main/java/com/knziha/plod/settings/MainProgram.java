@@ -59,6 +59,8 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 		init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null);
 
 		findPreference("dev").setOnPreferenceClickListener(this);
+		findPreference("sspec").setOnPreferenceClickListener(this);
+		findPreference("vspec").setOnPreferenceClickListener(this);
 	}
 
 	private String getNameFlag(String andoid_country_code) {
@@ -95,13 +97,23 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
+		int fragmentId=-1;
 		switch (preference.getKey()){
 			case "dev":
-				Intent intent = new Intent();
-				intent.putExtra("realm", 4);
-				intent.setClass(getContext(), SettingsActivity.class);
-				startActivityForResult(intent,111);
+				fragmentId=4;
 			break;
+			case "sspec":
+				fragmentId=7;
+			break;
+			case "vspec":
+				fragmentId=8;
+			break;
+		}
+		if(fragmentId!=-1){
+			Intent intent = new Intent();
+			intent.putExtra("realm", fragmentId);
+			intent.setClass(getContext(), SettingsActivity.class);
+			startActivity(intent);
 		}
 		return false;
 	}

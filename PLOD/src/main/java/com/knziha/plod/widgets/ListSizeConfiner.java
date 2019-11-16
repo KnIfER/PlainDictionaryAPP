@@ -14,6 +14,6 @@ public class ListSizeConfiner implements View.OnLayoutChangeListener {//画地�
 	public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
 		if (v.getMeasuredHeight() > maxHeight)
 			v.getLayoutParams().height=maxHeight;
-		v.removeOnLayoutChangeListener(this);
+		//v.removeOnLayoutChangeListener(this);
 	}
 }

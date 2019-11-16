@@ -9,7 +9,7 @@
 	android:clickable="true"
 	>
 
-	<com.knizha.wangYiLP.ui.EditTextmy
+	<com.knziha.plod.widgets.EditTextmy
 		android:id="@+id/text"
 		android:layout_height="wrap_content"
 		android:layout_width="0dp"

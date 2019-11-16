@@ -27,7 +27,7 @@
 	            android:layout_width="match_parent"  
 	            android:layout_height="match_parent"
 	            >
-					<com.knizha.wangYiLP.ui.EditTextmy
+					<com.knziha.plod.widgets.EditTextmy
 					    android:id="@+id/etSearch"
 					    android:layout_width="fill_parent"
 					    android:layout_height="match_parent"

@@ -40,8 +40,9 @@
 	<string name="jumpfail">未找到目标地址,跳转失败!</string>
 	<string name="favorRecon">已重建默认收藏夹</string>
 
-	<string name="fuzzyfill">模糊搜索完成！ 耗时 %1$1.2fs,共搜索到 %2$d 个词条！</string>
+	<string name="fuzzyfill">词条搜索完成！ 耗时 %1$1.2fs,共搜索到 %2$d 个词条！</string>
 	<string name="fullfill">全文搜索完成！ 耗时 %1$1.2fs,共搜索到 %2$d 个词条！</string>
+	<string name="regret">正则搜索</string>
 	<string name="fullret">全文搜索</string>
 	<string name="fuzzyret">词条通配搜索</string>
 	<string name="fuzzyret1">通配搜索</string>
@@ -54,8 +55,7 @@
 	<string name="clearsucc">清除成功！</string>
 	<string name="clearfail">清除失败！</string>
 
-	<string name="endendr">到达末项</string>
-	<string name="toptopr">到达首项</string>
+	<string name="endendr">没有更多了</string>
 	<string name="coverr">到达封皮</string>
 	<string name="try_longpress">无效操作, 请尝试长按</string>
 
@@ -113,7 +113,7 @@
 	<string name="prog_settings">程序设置</string>
 	<string name="clipboard">监听剪贴板</string>
 	<string name="keep_screen_on">保持屏幕常亮</string>
-	<string name="classical_sort">使用经典大小写不敏感排序方法</string>
+	<string name="classical_sort">使用旧版mdict大小写转换</string>
 	<string name="wv_background">全局Webview背景 : </string>
 	<string name="wv_font">全局Webview字体缩放 : </string>
 	<string name="m_background">主程序背景 : </string>
@@ -163,7 +163,7 @@
 	<string name="auto_search_on_switch">切换词典时自动搜索</string>
 	<string name="show_fast_scroller">显示列表快速滚动条</string>
 	<string name="reset_keyword">重置搜索词</string>
-	<string name="save_bookmark">存书签</string>
+	<string name="save_bookmark">保存书签</string>
 	<string name="hint_search_result">提示结果</string>
 	<string name="fold_all">折叠全部</string>
 	<string name="Commit">提交</string>
@@ -177,8 +177,9 @@
 	<string name="remove_records">删除记录</string>
 	<string name="move_files">移动文件</string>
 	<string name="new___">新建</string>
-	<string name="dict_specs">全局_特定_现代_经典_否_是</string>
+	<string name="dict_specs">全局_特定_现代_旧版_否_是</string>
 	<string name="no_suitable_app">无可调用App</string>
 	<string name="multiple_vals">*多重*</string>
 	<string name="dv_select">选中</string>
+	<string name="view_spec">视图设置</string>
 </resources>

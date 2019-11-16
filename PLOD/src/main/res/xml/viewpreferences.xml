@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+
+	<PreferenceCategory
+		android:key="cat_1"
+		android:title="页内查找"
+		app:icon="@drawable/ic_view_carousel_black_24dp"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="ps_audio_key"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用音量键跳转高亮位置"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="ps_hide_key"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="导航时自动隐藏键盘"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="ps_yicha"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="首次自动跳转->不显示'一查到底'"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="ps_border"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="显示高亮描边"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="ap_full"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="全文搜索完成后，自动启用页内查找"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="ap_click"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="点击列表后，自动启用页内查找"
+			app:allowDividerBelow="true"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat_1"
+		android:title="其他设置"
+		app:icon="@drawable/ic_view_carousel_black_24dp"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="noext"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="按返回退入后台，而不是退出程序"
+			/>
+		<androidx.preference.ListPreference
+			android:defaultValue="0"
+			android:key="conext"
+			android:persistent="false"
+			android:title="退出确认"
+			android:entryValues="@array/conext"
+			android:entries="@array/conext_info"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="hint_mod"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="在顶部提示搜索模式"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="hint_res"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="在顶部提示搜索结果"
+			app:allowDividerBelow="true"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat_prog"
+		android:title="Toast 设置"
+		app:icon="@drawable/ic_view_carousel_black_24dp"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="1toast"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="华为 Toast"
+			android:summary="若底部消息框不可见或只能弹出一次，开启此项"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="rtoast"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="圆角 Toast"
+			/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="TTB"
+			android:title="Toast 背景颜色"
+			android:defaultValue="@integer/COLOR_PRI"
+			/>
+		<com.jaredrummler.colorpicker.ColorPickerPreference
+			android:key="TTT"
+			android:title="Toast 字体颜色"
+			android:defaultValue="@integer/COLOR_PRI"
+			/>
+	</PreferenceCategory>
+</PreferenceScreen>

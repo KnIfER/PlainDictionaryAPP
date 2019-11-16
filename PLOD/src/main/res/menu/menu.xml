@@ -36,18 +36,19 @@
         android:title="@string/search"
         app:showAsAction="never"/>
     
-    <item
-     android:id="@+id/toolbar_action5"
-     android:icon="@drawable/ic_btn_siglemode"
-     android:title="@string/hint_search_result"
-     app:showAsAction="never"/>
+<!--    <item-->
+<!--     android:id="@+id/toolbar_action5"-->
+<!--     android:icon="@drawable/ic_btn_siglemode"-->
+<!--     android:title="@string/hint_search_result"-->
+<!--     app:showAsAction="never"/>-->
+<!--	-->
     <item
      android:id="@+id/toolbar_action11"
      android:title="@string/tint_result"
      app:showAsAction="never"/>
     <item
      android:id="@+id/toolbar_action10"
-     android:title="@string/hint_mode"
+     android:title="保存搜索…"
      app:showAsAction="never"/>
     
     <item
@@ -75,14 +76,14 @@
         app:showAsAction="never"/>
 
 	<item
-		android:id="@+id/toolbar_action13"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="页内查找…"
-		app:showAsAction="never" />
-
-	<item
         android:id="@+id/toolbar_action9"
         android:icon="@drawable/ic_search_24k"
         android:title="@string/save_bookmark"
         app:showAsAction="never"/>
- </menu>
+
+	<item
+		android:id="@+id/toolbar_action13"
+		android:icon="@drawable/ic_btn_siglemode"
+		android:title="页内查找…"
+		app:showAsAction="never" />
+</menu>

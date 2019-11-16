@@ -21,7 +21,7 @@
 
 	            <EditText
 	                android:id="@+id/etSearch"
-	    			android:layout_toLeftOf="@+id/forward"
+	    			android:layout_toLeftOf="@+id/indicator"
 	                android:layout_width="fill_parent"
 	                android:layout_height="?attr/actionBarSize"
 	                android:paddingRight="32dp"
@@ -43,12 +43,23 @@
 	                android:paddingBottom="8dp"
 	                android:src="@drawable/icon_denglu_close"
 	                />
-	            
-	             <ImageView
+
+				<TextView
+					android:id="@+id/indicator"
+					android:layout_marginRight="5dp"
+					android:layout_toLeftOf="@+id/forward"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text=""
+					android:layout_centerVertical="true"
+					android:textColor="#fff"
+				/>
+
+				<ImageView
 	                android:id="@+id/forward"
-	    			android:layout_marginRight="6dp"
 	    			android:layout_toLeftOf="@+id/recess"
-	                android:layout_width="28dp"
+					android:paddingRight="6dp"
+					android:layout_width="@dimen/_35_"
 	                android:layout_height="?attr/actionBarSize"
 	                android:layout_centerInParent="true"
 	                android:src="@drawable/toshn"
@@ -57,12 +68,11 @@
 	            <ImageView
 	                android:id="@+id/recess"
 	                android:layout_alignParentRight="true"
-	    			android:layout_marginRight="6dp"
-	                android:layout_width="28dp"
+	    			android:paddingRight="6dp"
+					android:layout_width="@dimen/_35_"
 	                android:layout_height="?attr/actionBarSize"
 	                android:layout_centerInParent="true"
 	                android:src="@drawable/toxia"
-	                android:clickable="true"
 	                />
 	        </RelativeLayout>
  </androidx.appcompat.widget.Toolbar>

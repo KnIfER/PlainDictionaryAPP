@@ -19,7 +19,7 @@ import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.PlainDict.R;
 
 public class SwitchCompatBeautiful extends SwitchCompat {
-    static boolean  bForbidRquestLayout;
+    public static boolean  bForbidRquestLayout;
     Drawable mHintDrawable;
     private int mHintLeftPadding,mHintSurrondingPad;
 

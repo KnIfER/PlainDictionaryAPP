@@ -314,7 +314,11 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				if(!found) {
 					//show("adding new!"+fn.getAbsolutePath());
 					f3.mDslv.post(() -> {
-						f1.adapter.add(new_mdict_preempter(fn,opt,2));
+						try {
+							f1.adapter.add(new_mdict_preempter(fn,opt,2));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 						f1.refreshSize();
 						f1.adapter.notifyDataSetChanged();
 						f1.isDirty=true;
@@ -1168,7 +1172,11 @@ dd.show();
 						File fn=new File(arr.get(i));//f3.adapter.getItem();
 						if(fn.isDirectory()) continue;
 						if(!f1.mdict_cache.containsKey(fn.getAbsolutePath())) {
-							f1.add(new_mdict_preempter(fn,opt,2));
+							try {
+								f1.add(new_mdict_preempter(fn,opt,2));
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
 							cc++;
 							f1.isDirty=true;
 						}else if(f1.rejector.contains(fn.getAbsolutePath())) {
@@ -1322,8 +1330,13 @@ dd.show();
 								if(mF.isDirectory()) continue;
 								if(f3.data.get(mF).isDirectory()) continue;
 								mdict mdTmp = mdict_cache.get(sI);
-								if(mdTmp==null)
-									mdTmp=new mdict_prempter(sI, opt);
+								if(mdTmp==null) {
+									try {
+										mdTmp=new mdict_prempter(sI, opt);
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+								}
 								File OldF = mdTmp.f();
 								File toF = new File(p, OldF.getName());
 								boolean ret = mdTmp.moveFileTo(toF);//厉害 存在的移动了
@@ -1490,7 +1503,7 @@ dd.show();
 		return ret;
 	}
 
-	public static mdict new_mdict_preempter(File f, PDICMainAppOptions opt, int isF) {
+	public static mdict new_mdict_preempter(File f, PDICMainAppOptions opt, int isF) throws IOException {
 		String fn = f.getAbsolutePath();
 		mdict_nonexist mdTmp = null;
 		if(fn.startsWith("/ASSET/")) {

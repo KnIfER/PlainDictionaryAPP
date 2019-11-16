@@ -47,7 +47,7 @@ import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.widgets.WebViewmy;
 
 import org.adrianwalker.multilinestring.Multiline;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -58,14 +58,18 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import db.MdxDBHelper;
 
 /*
- ui side of mdict
+ UI side of mdict
  date:2018.07.30
  author:KnIfER
 */
@@ -75,23 +79,18 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 	public final static String baseUrl = "file:///";
 	public final static String  _404 = "<span style='color:#ff0000;'>Mdict 404 Error:</span> ";
 	/**
-	 mark {background: yellow; }
-	 mark.current {
-	 	 background: orange;
-	 	 border:1px solid #FF0000
-	 }
 	 </style>
 	 <script>
 	 	window.addEventListener('load',wrappedOnLoadFunc,false);
 		window.addEventListener('click',wrappedClickFunc);
 		function wrappedOnLoadFunc(){
-			console.log('mdpage loaded');
+			//console.log('mdpage loaded');
 			highlight(null);
 		}
 	 	function wrappedClickFunc(e){
 	 		if(e.srcElement.tagName=='IMG'){
 	 			var img=e.srcElement;
-				if(img.src && !img.onclick){
+				if(img.src && !img.onclick && !(img.parentNode&&img.parentNode.tagName=="A")){
 					var lst = [];
 					var current=0;
 	 				var all = document.getElementsByTagName("img");
@@ -102,7 +101,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 	 				}
 	 				if(lst.length==0)
 	 					lst.push(img.src);
-					imagelistener.openImage(current, lst);
+					app.openImage(current, lst);
 				}
 	 		}
 	 	}
@@ -112,10 +111,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 		var MarkLoad,MarkInst;
 		var results=[], current,currentIndex = 0;
 		var currentClass = "current";
+	 	var frameAt;
 
-		function jumpTo(d, desiredOffset, frameAt, HlightIdx, topOffset_frameAt) {
+		function jumpTo(d, desiredOffset, frameAt, HlightIdx, reset, topOffset_frameAt) {
 			if (results.length) {
-				console.log('jumpTo received '+frameAt+'->'+HlightIdx+' '+(currentIndex+d)+'/'+(results.length)+' dir='+d);
+	 			if(reset) resetLight(d);
+				//console.log('jumpTo received reset='+reset+' '+frameAt+'->'+HlightIdx+' '+(currentIndex+d)+'/'+(results.length)+' dir='+d);
 				var np=currentIndex+d;
 				var max=results.length - 1;
 				if (currentIndex > max) currentIndex=0;
@@ -137,8 +138,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 				if(current){
 					addClass(current, currentClass);
 					var position = topOffset(current);
-					//pw.scrollHighlight(position, d);
-					return 0;
+	 				app.scrollHighlight(position, d);
+	 				return ''+currentIndex;
 				}
 			}
 			return d;
@@ -157,7 +158,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			var top=0;
 			var add=1;
 			while(elem && elem!=document.body){
-				if(elem.style.display=='none'){
+				if(elem.style.display=='none' || elem.style.display=='' && document.defaultView.getComputedStyle(elem,null).display=='none'){
 					elem.style.display='block';
 				}
 				if(add){
@@ -218,7 +219,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 		function highlight(keyword){
 			var b1=keyword==null;
 			if(b1)
-				keyword=imagelistener.getCurrentPageKey();
+				keyword=app.getCurrentPageKey();
 			if(keyword==null||b1&&keyword.trim().length==0)
 				return;
 			if(!MarkLoad){
@@ -229,24 +230,34 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			}else
 				do_highlight(keyword);
 		}
-
+		var rcsp=0;
 		function do_highlight(keyword){
 			if(!MarkInst)
 				MarkInst = new Mark(document);
+	 		bOnceHighlighted=false;
 			MarkInst.unmark({
 				done: function() {
-					bOnceHighlighted=false;
+					keyword=decodeURIComponent(keyword);
+	 				//console.log('highlighting...'+keyword);
+	 				if(rcsp&0x1)
+					MarkInst.markRegExp(new RegExp(keyword, (rcsp&0x2)?'m':'im'), {
+						done: done_highlight
+					});
+					else
 					MarkInst.mark(keyword, {
-					separateWordSearch: true,'wildcards':'withSpaces',
-						done: function() {
-							bOnceHighlighted=true;
-							results = document.getElementsByTagName("mark");
-							currentIndex=-1;
-						}
+						separateWordSearch: (rcsp&0x4)!=0,'wildcards':(rcsp&0x8)?'enabled':'withSpaces',done: done_highlight,
+						caseSensitive:(rcsp&0x2)!=0
 					});
 				}
 			});
 		}
+
+		 function done_highlight(){
+			 bOnceHighlighted=true;
+			 results = document.getElementsByTagName("mark");
+			 currentIndex=-1;
+			 if(app) app.onHighlightReady(frameAt, results.length);
+		 }
 
 		function loadJs(url,callback){
 			var script=document.createElement('script');
@@ -271,13 +282,15 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 	 </script>
 	 */
 	@Multiline
-	public final static String js="SUBPAGEJS";
-	//
+	public final static String js="SUBPAGE";
 
-	public mdict(){
-		htmlBaseLen=0;
-		//throw new IllegalStateException("wrong initializer");
-	}
+	/**
+	 var styleObj= document.styleSheets[0].cssRules[3].style;
+	 styleObj.setProperty("border", "1px solid #FF0000");
+	 */
+	@Multiline
+	public final static String border="border";
+
 	public String _Dictionary_fName_Internal;
 	public WebViewmy mWebView;
     public ViewGroup rl;
@@ -333,13 +346,24 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 	}
 	//int WebSingleLayerType=3;//0 None 1 Software 2 Hardware
 
-    public int bmCBI=0,bmCCI=-1;
+
+	@Override
+	protected boolean getUseJoniRegex(int id) {
+		return id==-1?PDICMainAppOptions.getUseRegex1():PDICMainAppOptions.getUseRegex2();
+	}
+
+	@Override
+	protected boolean getRegexAutoAddHead() {
+		return PDICMainAppOptions.getRegexAutoAddHead();
+	}
+
+	public int bmCBI=0,bmCCI=-1;
     public Integer bgColor=null;
     
-	private final static String htmlBase="<!DOCTYPE html><html><meta name='viewport' content='initial-scale=1,user-scalable=yes'><head><style>html,body{ width: auto; height: auto;} img{max-width:100%;}";
+	private final static String htmlBase="<!DOCTYPE html><html><meta name='viewport' content='initial-scale=1,user-scalable=yes'><head><style>html,body{width:auto;height:auto;}img{max-width:100%;}mark{background:yellow;}mark.current{background:orange;border:0px solid #FF0000}";
 	public final static String htmlHeadEndTag = "</head>";
 	public final static String htmlEnd="</html>";
-	public final int htmlBaseLen;
+	public int htmlBaseLen;
 	//TODO lazy load
     public StringBuilder htmlBuilder;
 
@@ -349,15 +373,16 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 	PDICMainAppOptions opt;
 
 	//构造
-	@SuppressWarnings("deprecation")
 	public mdict(String fn, MainActivityUIBase _a) throws IOException {
-		a=_a;
-		init(fn);
-		fn = new File(fn).getAbsolutePath();
-		opt=_a.opt;
+		super(fn);
+		if(_num_record_blocks==-1) return;
+		a = _a;
+		inflater = _a.inflater;
+		opt = _a.opt;
+		fn =f.getAbsolutePath();
 		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
 		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
-		inflater=_a.inflater;
+
 		htmlBuilder=new StringBuilder(htmlBase);
         File p = f.getParentFile();
         if(p!=null) {
@@ -409,7 +434,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 	            mWebView.setOnSrollChangedListener(a.onWebScrollChanged);
 	            mWebView.setPadding(0, 0, 18, 0);
 				AppHandler mWebBridge = new AppHandler(a);
-				mWebView.addJavascriptInterface(mWebBridge, "imagelistener");
+				mWebView.addJavascriptInterface(mWebBridge, "app");
 	            //mWebView.setOnTouchListener(a);
 	        }
 	        rl.findViewById(R.id.undo).setOnClickListener(new OnClickListener(){
@@ -425,7 +450,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 						public void onReceiveValue(String v) {
 							if(v!=null) {
 							   //v=removeUTFCharacters(v.substring(1,v.length()-1));
-							   v=StringEscapeUtils.unescapeJavaScript(v.substring(1,v.length()-1));
+							   v= StringEscapeUtils.unescapeJava(v.substring(1,v.length()-1));
 							   //a.showT(v);
 		                       try {
 		                    		FileOutputStream outputChannel = new FileOutputStream(new File("/sdcard/123.html"));
@@ -624,7 +649,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 		}
 	}
 
-    public void renderContentAt(float initialScale,int SelfIdx, WebViewmy mWebView,int ...position){
+    public void renderContentAt(float initialScale, int SelfIdx, int frameAt, WebViewmy mWebView, int... position){
     	isJumping=false;
     	HistoryVagranter=-1;
     	History.clear();
@@ -636,7 +661,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
     	mWebView.setTag(SelfIdx);
 		if(getFontSize()!=mWebView.getSettings().getTextZoom())
 			mWebView.getSettings().setTextZoom(getFontSize());
-		
+
 		if(mWebView==this.mWebView) {
 	    	setCurrentDis(position[0]);
 			if(((View) rl.getParent()).getId()==R.id.webholder) {
@@ -647,7 +672,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 					mWebView.getLayoutParams().height = 100;//on 4.4-Kitkat, height wont shrink down
 				}else
 					mWebView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
-			}else {
+			}
+			else {
 				if(a.opt.getHideScroll1()&&resposibleForThisWeb || !resposibleForThisWeb&&a.opt.getHideScroll3())
 					a.mBar.setVisibility(View.GONE);
 				else {
@@ -655,7 +681,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 		    		a.mBar.scrollee=mWebView;
 				}
 			}
-		}else {
+		}
+		else {
 			mWebView.setTag(R.id.position,false);
 		}
     	//mWebView.setVisibility(View.VISIBLE);
@@ -695,15 +722,35 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			}else
 				mWebView.setInitialScale(0);//opt.dm.density
 		}
+
+		boolean fromCombined = ((View)mWebView.getParent().getParent()).getId()==R.id.webholder;
+		if(!fromCombined) {
+			mWebView.setTag(R.id.toolbar_action5, a.hasCurrentPageKey() ? false : null);
+		}
+
 		htmlBuilder.setLength(htmlBaseLen);
+		if(GlobalOptions.isDark)
+			htmlBuilder.append(MainActivityUIBase.DarkModeIncantation_l);
+
+		htmlBuilder.append("<script>");
+		htmlBuilder.append("rcsp=").append(MakeRCSP()).append(";");
+		htmlBuilder.append("frameAt=").append(frameAt).append(";");
+		if(PDICMainAppOptions.getInPageSearchHighlightBorder())
+			htmlBuilder.append(border);
+		htmlBuilder.append("</script>");
 		mWebView.loadDataWithBaseURL(baseUrl,
-				htmlBuilder.append(GlobalOptions.isDark? MainActivityUIBase.DarkModeIncantation_l:"")
-							.append(htmlHeadEndTag)
+				htmlBuilder.append(htmlHeadEndTag)
 							.append(htmlCode)
 							.append(htmlEnd).toString(),null, "UTF-8", null);
 	}
-    
 
+	private int MakeRCSP() {
+		return opt.FetUseRegex3()|
+				opt.FetPageCaseSensitive()<<1|
+				opt.FetPageWildcardSplitKeywords()<<2|
+				opt.FetPageWildcardMatchNoSpace()<<3
+				;
+	}
 	
 	public void PlayWithToolbar(boolean hideDictToolbar,Context a) {
 		if(mWebView==null) return;
@@ -778,7 +825,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 
     public String getAboutString() {
 		//return Build.VERSION.SDK_INT>=24?Html.fromHtml(_header_tag.get("Description"),Html.FROM_HTML_MODE_COMPACT).toString():Html.fromHtml(_header_tag.get("Description")).toString();
-		return StringEscapeUtils.unescapeHtml(_header_tag.get("Description"));
+		return StringEscapeUtils.unescapeHtml3(_header_tag.get("Description"));
 	}
 	
 	public MdxDBHelper con;
@@ -816,7 +863,21 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			}
 		}
 	};
-	
+
+	public boolean hasMdd() {
+		return mdd!=null && mdd.size()>0;
+	}
+
+	public boolean containsResourceKey(String skey) {
+		if(mdd!=null)
+		for(mdictRes mddTmp:mdd){
+			if(mddTmp.lookUp(skey)>=0)
+				return true;
+		}
+		return  false;
+	}
+
+	@SuppressWarnings("unused")
     public class AppHandler {
         @JavascriptInterface
         public void dopagef() {
@@ -860,9 +921,19 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
         }
 
         @JavascriptInterface
-        public String getCurrentPageKey() {
-        	return  a.getCurrentPageKey();
+        public void scrollHighlight(int o, int d) {
+        	a.scrollHighlight(o, d);
         }
+
+        @JavascriptInterface
+        public String getCurrentPageKey() {
+			try {
+				return  a.getCurrentPageKey();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
 
         @JavascriptInterface 
         public int getDeviceHeight(){
@@ -893,6 +964,28 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
         public void pageshow() {
 
         }
+
+        @JavascriptInterface
+        public void onAudioPause() {
+			opt.isAudioActuallyPlaying=false;
+			a.transitAAdjustment();
+        }
+
+        @JavascriptInterface
+        public void onAudioPlay() {
+			opt.isAudioActuallyPlaying=opt.isAudioPlaying=true;
+        	a.removeAAdjustment();
+        }
+
+        @JavascriptInterface
+        public void jumpHighlight(int d) {
+        	a.jumpHighlight(d, true);
+        }
+
+        @JavascriptInterface
+        public void onHighlightReady(int idx, int number) {
+        	a.onHighlightReady(idx, number);
+        }
     }
 
 	public boolean renameFileTo(File newF) {
@@ -905,6 +998,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			int retret = FU.rename(a, f, newF);
 			Log.d("XXX-ret",""+retret);
 			//Log.e("XXX-ret",f.getParent()+"sad"+newF.getParent());
+			String oldName = _Dictionary_fName;
 			if(retret==0) {
 				_Dictionary_fName = newF.getName();
 		    	int tmpIdx = _Dictionary_fName.lastIndexOf(".");
@@ -913,17 +1007,24 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			    	_Dictionary_fName = _Dictionary_fName.substring(0, tmpIdx);
 		    	}
 				ret = true;
-				File mddF = new File(fP,BU.unwrapMdxName(f.getName())+".mdd");
-				File newMdd = new File(fP,BU.unwrapMdxName(newF.getName())+".mdd");
-				if(mddF.exists()) {
-					int ret1 = FU.rename(a, mddF, newMdd);
-					if(ret1==0 && mdd!=null) {
-						mdd.updateFile(newMdd);
+		    	if(mdd!=null)
+				for(mdictRes mddTmp:mdd){
+					File mddF = mddTmp.f();
+					String fn = BU.unwrapMddName(mddF.getName());
+					if(fn.startsWith(_Dictionary_fName)){
+						fn=fn.substring(_Dictionary_fName.length());
+						File newMdd = new File(fP,_Dictionary_fName+fn+".mdd");
+						if(mddF.exists()) {
+							int ret1 = FU.rename(a, mddF, newMdd);
+							if (ret1 == 0 && mdd != null) {
+								mddTmp.updateFile(newMdd);
+							}
+						}
 					}
 				}
-				if(mdd==null && newMdd.exists()) {
+				else if(new File(fP,_Dictionary_fName+".mdd").exists()) {
 					try {
-						mdd = new mdictRes(newMdd.getAbsolutePath());
+						mdd = Collections.singletonList(new mdictRes(new File(fP, _Dictionary_fName + ".mdd").getAbsolutePath()));
 						a.showT("找到了匹配的mdd！");
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -964,17 +1065,24 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			    	_Dictionary_fName = _Dictionary_fName.substring(0, tmpIdx);
 		    	}
 				ret = true;
-				File mddF = new File(f.getParentFile(),BU.unwrapMdxName(f.getName())+".mdd");
-				File newMdd = new File(fP,BU.unwrapMdxName(newF.getName())+".mdd");
-				if(mddF.exists()) {
-					int ret1 = FU.move(a, mddF, newMdd);
-					if(ret1==0 && mdd!=null) {
-						mdd.updateFile(newMdd);
+				if(mdd!=null)
+					for(mdictRes mddTmp:mdd){
+						File mddF = mddTmp.f();
+						String fn = BU.unwrapMddName(mddF.getName());
+						if(fn.startsWith(_Dictionary_fName)){
+							fn=fn.substring(_Dictionary_fName.length());
+							File newMdd = new File(fP,_Dictionary_fName+fn+".mdd");
+							if(mddF.exists()) {
+								int ret1 = FU.rename(a, mddF, newMdd);
+								if (ret1 == 0 && mdd != null) {
+									mddTmp.updateFile(newMdd);
+								}
+							}
+						}
 					}
-				}
-				if(mdd==null && newMdd.exists()) {
+				else if(new File(fP,_Dictionary_fName+".mdd").exists()) {
 					try {
-						mdd = new mdictRes(newMdd.getAbsolutePath());
+						mdd = Collections.singletonList(new mdictRes(new File(fP, _Dictionary_fName + ".mdd").getAbsolutePath()));
 						a.showT("找到了匹配的mdd！");
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -1037,7 +1145,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			fo.writeInt(lvPos);
 			fo.writeInt(lvClickPos);
 			fo.writeInt(lvPosOff);
-			CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff);
+			//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff);
 			
 			if(viewsHolderReady && mWebView!=null) {
 				expectedPosX=mWebView.getScrollX();
@@ -1046,11 +1154,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			fo.writeInt(expectedPosX);
 			fo.writeInt(expectedPos);
 			fo.writeFloat(webScale);
-			CMN.Log(_Dictionary_fName+"保存页面位置",expectedPosX,expectedPos,webScale);
+			//CMN.Log(_Dictionary_fName+"保存页面位置",expectedPosX,expectedPos,webScale);
 			
 			fo.flush();
 			fo.close();
-			CMN.Log(_Dictionary_fName+"单典配置保存耗时",System.currentTimeMillis()-time);
+			//CMN.Log(_Dictionary_fName+"单典配置保存耗时",System.currentTimeMillis()-time);
 		} catch (Exception e) { e.printStackTrace(); }
     	
 	}
@@ -1111,19 +1219,21 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 				FFStamp = firstFlag = data_in1.readByte();
 				//readinoptions
 				//a.showT("getUseInternalBG():"+getUseInternalBG()+" getUseInternalFS():"+getUseInternalFS()+" KeycaseStrategy:"+KeycaseStrategy);
-				bgColor=data_in1.readInt();
-				internalScaleLevel=data_in1.readInt();
+				if(data_in1.available()>4) {
+					bgColor = data_in1.readInt();
+					internalScaleLevel = data_in1.readInt();
 
 
-				lvPos = data_in1.readInt();
-				lvClickPos = data_in1.readInt();
-				lvPosOff = data_in1.readInt();
+					lvPos = data_in1.readInt();
+					lvClickPos = data_in1.readInt();
+					lvPosOff = data_in1.readInt();
 
-				//CMN.Log(_Dictionary_fName+"列表位置",lvPos,lvClickPos,lvPosOff);
+					//CMN.Log(_Dictionary_fName+"列表位置",lvPos,lvClickPos,lvPosOff);
 
-				expectedPosX = data_in1.readInt();
-				expectedPos = data_in1.readInt();
-				webScale = data_in1.readFloat();
+					expectedPosX = data_in1.readInt();
+					expectedPos = data_in1.readInt();
+					webScale = data_in1.readFloat();
+				}
 
 				//CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
 
@@ -1311,16 +1421,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict implements ValueCall
 			break;
 		}
 	}
-	
-	public static String removeUTFCharacters(String data) {
-        Pattern p = Pattern.compile("\\\\u(\\p{XDigit}{4})");
-        Matcher m = p.matcher(data);
-        StringBuffer buf = new StringBuffer(data.length()-2);
-        while (m.find()) {
-            String ch = String.valueOf((char) Integer.parseInt(m.group(1), 16));
-            m.appendReplacement(buf, Matcher.quoteReplacement(ch));
-        }
-        m.appendTail(buf);
-        return buf.toString();
-    }
+
+	@Override
+	protected ExecutorService OpenThreadPool(int thread_number) {
+		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+		//	return Executors.newWorkStealingPool();
+		//}
+		return Executors.newFixedThreadPool(thread_number);
+	}
 }

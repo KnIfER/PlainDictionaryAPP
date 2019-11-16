@@ -27,6 +27,7 @@ import android.view.View.OnLayoutChangeListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -53,6 +54,7 @@ import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.widgets.CheckedTextViewmy;
+import com.knziha.plod.widgets.SwitchCompatBeautiful;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -76,13 +78,14 @@ import java.util.Locale;
 /** @author KnIfER */
 public class Drawer extends Fragment implements
 		OnClickListener, OnDismissListener, OnCheckedChangeListener, OnLongClickListener {
-     AlertDialog d;
-    
-     String[] hints;
-	 private ListView mDrawerList;
-	 View mDrawerListView;
-	 MyAdapter myAdapter;
-	 
+	private boolean bIsFirstLayout=true;
+	AlertDialog d;
+
+	String[] hints;
+	private ListView mDrawerList;
+	View mDrawerListView;
+	MyAdapter myAdapter;
+
 	public EditText etAdditional;
 
 	SwitchCompat sw1,sw2,sw3,sw4,sw5;
@@ -96,20 +99,21 @@ public class Drawer extends Fragment implements
 	ClipboardManager.OnPrimaryClipChangedListener ClipListener;
 	private ListView ClipboardList;
 	private String mPreviousCBContent;
+	private ViewGroup swRow;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 	}
-	
+
 	public Drawer() {
 		super();
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+							 Bundle savedInstanceState) {
 		mDrawerListView = inflater.inflate(R.layout.activity_main_navi_drawer, container,false);
 		//mDrawerListView.setOnClickListener(this);
 		FooterView = mDrawerListView.findViewById(R.id.footer);
@@ -119,37 +123,36 @@ public class Drawer extends Fragment implements
 		mDrawerList = mDrawerListView.findViewById(R.id.left_drawer);
 
 		String[] items = getResources().getStringArray(R.array.drawer_items);
-		
-        myAdapter = new MyAdapter(Arrays.asList(items));
-        mDrawerList.setAdapter(myAdapter);
-        
-        HeaderView = inflater.inflate(R.layout.activity_main_navi_drawer_header, null);
-        mDrawerList.addHeaderView(HeaderView);
-        //etAdditional = (EditText)mDrawerList.findViewById(R.id.etAdditional);
+
+		myAdapter = new MyAdapter(Arrays.asList(items));
+		mDrawerList.setAdapter(myAdapter);
+
+		HeaderView = inflater.inflate(R.layout.activity_main_navi_drawer_header, null);
+		mDrawerList.addHeaderView(HeaderView);
+		//etAdditional = (EditText)mDrawerList.findViewById(R.id.etAdditional);
 		//CMN.show("onCreateView");
-        mDrawerListView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-        	int oldWidth;
+		mDrawerListView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+			int oldWidth;
 			@Override
 			public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
-					int oldRight, int oldBottom) {
-				int drawerWidth=right-left;
-				int width = (drawerWidth - sw1.getWidth()*5)/6;
-				MarginLayoutParams lp = (MarginLayoutParams) sw1.getLayoutParams();
-				lp.leftMargin = width;
-				if(drawerWidth!=oldWidth)sw1.setLayoutParams(sw1.getLayoutParams());
-				lp = (MarginLayoutParams) sw2.getLayoutParams();
-				lp.leftMargin = width;
-				if(drawerWidth!=oldWidth)sw2.setLayoutParams(sw2.getLayoutParams());
-				lp = (MarginLayoutParams) sw3.getLayoutParams();
-				lp.leftMargin = width;
-				if(drawerWidth!=oldWidth)sw3.setLayoutParams(sw3.getLayoutParams());
-				lp = (MarginLayoutParams) sw4.getLayoutParams();
-				lp.leftMargin = width;
-				if(drawerWidth!=oldWidth)sw4.setLayoutParams(sw4.getLayoutParams());
-				lp = (MarginLayoutParams) sw5.getLayoutParams();
-				lp.leftMargin = width;
-				if(drawerWidth!=oldWidth)sw5.setLayoutParams(sw5.getLayoutParams());
-				oldWidth=drawerWidth;
+									   int oldRight, int oldBottom) {
+				right=right-left;
+				if(swRow!=null && (right!=oldWidth || bIsFirstLayout)) {
+					if(bIsFirstLayout) SwitchCompatBeautiful.bForbidRquestLayout = true;
+					int width = (right - sw1.getWidth() * 5) / 6;
+					View vI;
+					for (int i = 0; i < swRow.getChildCount(); i++) {
+						vI=swRow.getChildAt(i);
+						MarginLayoutParams lp = (MarginLayoutParams) vI.getLayoutParams();
+						lp.leftMargin = width;
+						vI.setLayoutParams(lp);
+					}
+					oldWidth = right;
+					if(bIsFirstLayout) {
+						SwitchCompatBeautiful.bForbidRquestLayout = false;
+						bIsFirstLayout = false;
+					}
+				}
 			}
 		});
 		return mDrawerListView;
@@ -157,61 +160,61 @@ public class Drawer extends Fragment implements
 
 
 
-    class MyAdapter extends ArrayAdapter<String> {
+	class MyAdapter extends ArrayAdapter<String> {
 		public MyAdapter(List<String> mdicts) {
 			super(getActivity(),R.layout.listview_item0, R.id.text, mdicts);
-        }
+		}
 		boolean show_hints = true;
 		public void notifyDataSetChangedX() {
 			show_hints = true;//a.opt.isDrawer_Showhints();
 			super.notifyDataSetChanged();
 		}
-        @Override
-        public boolean areAllItemsEnabled() {
-          return false;
-        }
-        @Override
-        public int getCount() {
-          return super.getCount();
-        }
-        @Override
-        public boolean isEnabled(int position) {
-    		return !"d".equals(getItem(position)); // 如果-开头，则该项不可选
-        }
-        @NonNull
 		@Override
-        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-    	  //position+=1;
-          if("d".equals(getItem(position))){//是标签项
-        	  return (convertView!=null && convertView.getTag()==null)?convertView:LayoutInflater.from(getContext()).inflate(R.layout.listview_sep, null);
-          }
-    	  PDICMainActivity.ViewHolder vh = null;
-    	  if(convertView!=null)
-    		  vh=(PDICMainActivity.ViewHolder)convertView.getTag();
-          if(vh==null) {
-        	  	vh=new PDICMainActivity.ViewHolder(getContext(),R.layout.listview_item0, parent);
-        	  	vh.subtitle.setTextColor(ContextCompat.getColor(a, R.color.colorHeaderBlue));
-          }
-          if( vh.title.getTextColors().getDefaultColor()!=a.AppBlack) {
-        	  PDICMainActivity.decorateBackground(vh.itemView);
-              vh.title.setTextColor(a.AppBlack);
-          }
-          
-  		  vh.title.setText(getItem(position));
-          vh.subtitle.setText(null);
-  		  if(show_hints) {
-  			  getExtraHints();
-  			  if(!hints[position].equals("d"))
-  				  vh.subtitle.setText(hints[position]);
-  		  }
+		public boolean areAllItemsEnabled() {
+			return false;
+		}
+		@Override
+		public int getCount() {
+			return super.getCount();
+		}
+		@Override
+		public boolean isEnabled(int position) {
+			return !"d".equals(getItem(position)); // 如果-开头，则该项不可选
+		}
+		@NonNull
+		@Override
+		public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+			//position+=1;
+			if("d".equals(getItem(position))){//是标签项
+				return (convertView!=null && convertView.getTag()==null)?convertView:LayoutInflater.from(getContext()).inflate(R.layout.listview_sep, null);
+			}
+			PDICMainActivity.ViewHolder vh = null;
+			if(convertView!=null)
+				vh=(PDICMainActivity.ViewHolder)convertView.getTag();
+			if(vh==null) {
+				vh=new PDICMainActivity.ViewHolder(getContext(),R.layout.listview_item0, parent);
+				vh.subtitle.setTextColor(ContextCompat.getColor(a, R.color.colorHeaderBlue));
+			}
+			if( vh.title.getTextColors().getDefaultColor()!=a.AppBlack) {
+				PDICMainActivity.decorateBackground(vh.itemView);
+				vh.title.setTextColor(a.AppBlack);
+			}
+
+			vh.title.setText(getItem(position));
+			vh.subtitle.setText(null);
+			if(show_hints) {
+				getExtraHints();
+				if(!hints[position].equals("d"))
+					vh.subtitle.setText(hints[position]);
+			}
 			vh.itemView.setTag(R.id.position,position);
 			vh.itemView.setOnClickListener(Drawer.this);
 
-          return vh.itemView;
-        }
-      }
+			return vh.itemView;
+		}
+	}
 
-    
+
 	@Override
 	public View getView() {
 		return super.getView();
@@ -237,21 +240,22 @@ public class Drawer extends Fragment implements
 			SetupPasteBin();
 
 		sw1 = HeaderView.findViewById(R.id.sw1);
+		swRow = (ViewGroup) sw1.getParent();
 		sw1.setOnCheckedChangeListener(this);
-        sw1.setChecked(a.opt.isFullScreen());
+		sw1.setChecked(a.opt.isFullScreen());
 		sw1.setOnClickListener(v -> {
 			// TODO Auto-generated method stub
 
 		});
 
-        sw2 = HeaderView.findViewById(R.id.sw2);
-        sw2.setOnCheckedChangeListener(this);
-        sw2.setChecked(!a.opt.isContentBow());
-        
-        sw3 = HeaderView.findViewById(R.id.sw3);
-        sw3.setOnCheckedChangeListener(this);
-        sw3.setChecked(!a.opt.isViewPagerEnabled());
-        
+		sw2 = HeaderView.findViewById(R.id.sw2);
+		sw2.setOnCheckedChangeListener(this);
+		sw2.setChecked(!a.opt.isContentBow());
+
+		sw3 = HeaderView.findViewById(R.id.sw3);
+		sw3.setOnCheckedChangeListener(this);
+		sw3.setChecked(!a.opt.isViewPagerEnabled());
+
 		sw4 = HeaderView.findViewById(R.id.sw4);
 		boolean val = a.opt.getInDarkMode();
 		sw4.setChecked(!val);
@@ -262,7 +266,7 @@ public class Drawer extends Fragment implements
 		sw5 = HeaderView.findViewById(R.id.sw5);
 		sw5.setChecked(a.opt.get_use_volumeBtn());
 		sw5.setOnCheckedChangeListener(this);
-		
+
 		if(GlobalOptions.isDark) {
 			mDrawerListView.setBackgroundColor(Color.BLACK);
 			HeaderView.setBackgroundColor(a.AppWhite);
@@ -337,7 +341,7 @@ public class Drawer extends Fragment implements
 		super.onViewCreated(view, savedInstanceState);
 	}
 	//private final String infoStr = "";
-	
+
 	@Override
 	public void onClick(View v) {
 		if(!a.systemIntialized) return;
@@ -372,13 +376,13 @@ public class Drawer extends Fragment implements
 					endss = ssb.toString().indexOf("]",startss);
 
 					if(false)
-					ssb.setSpan(new ClickableSpan() {
-						@Override
-						public void onClick(@NonNull View widget) {
-							Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
-							Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-							startActivity(intent);
-						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+						ssb.setSpan(new ClickableSpan() {
+							@Override
+							public void onClick(@NonNull View widget) {
+								Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
+								Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+								startActivity(intent);
+							}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 
 					startss = ssb.toString().indexOf("[",endss);
@@ -386,13 +390,13 @@ public class Drawer extends Fragment implements
 					if(endss>startss && startss>0)
 
 						if(false)
-					ssb.setSpan(new ClickableSpan() {
-						@Override
-						public void onClick(@NonNull View widget) {
-							Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
-							Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-							startActivity(intent);
-						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+							ssb.setSpan(new ClickableSpan() {
+								@Override
+								public void onClick(@NonNull View widget) {
+									Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
+									Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+									startActivity(intent);
+								}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -412,33 +416,11 @@ public class Drawer extends Fragment implements
 				//android.view.WindowManager.LayoutParams lp = d.getWindow().getAttributes();  //获取对话框当前的参数值
 				//lp.height = -2;
 				//d.getWindow().setAttributes(lp);
-				
+
 				return;
 			case R.id.menu_item_exit://退出
-				final View dv1 = a.inflater.inflate(R.layout.dialog_about,null);
-				
-				final SpannableStringBuilder ssb1 = new SpannableStringBuilder(getResources().getString(R.string.warn_exit1));
-				int start1 = ssb1.toString().indexOf("[");
-				final TextView tv1 = dv1.findViewById(R.id.resultN);
-				((TextView)dv1.findViewById(R.id.title)).setText(R.string.warn_exit0);
-				(dv1.findViewById(R.id.cancel)).setOnClickListener(v12 -> {a.finish();});
-				tv1.setPadding(0, 0, 0, 50);
-				ssb1.setSpan(new ClickableSpan() {
-					@Override
-					public void onClick(@NonNull View widget) {
-						a.show(a.deleteHistory()?R.string.clearsucc:R.string.clearfail);
-					}					
-					}, start1,  ssb1.toString().indexOf("]",start1)+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-				tv1.setText(ssb1);
-				tv1.setMovementMethod(LinkMovementMethod.getInstance());
-				AlertDialog.Builder builder21 = new AlertDialog.Builder(a);
-				builder21.setView(dv1);
-				final AlertDialog d1 = builder21.create();
-				d1.setCanceledOnTouchOutside(true);
-				d1.show();
-				
-			return;
+				showExitDialog();
+				return;
 			case R.id.pastebin:{//剪贴板对话框
 				if(ClipboardList ==null){
 					ClipboardList = new ListView(a.getBaseContext());
@@ -482,7 +464,7 @@ public class Drawer extends Fragment implements
 				a.mDrawerLayout.closeDrawer(GravityCompat.START);
 				a.etSearch.requestFocus();
 				((InputMethodManager)a.getSystemService( Context.INPUT_METHOD_SERVICE )).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-			break;
+				break;
 			case 3:{//书签历史
 				final String[] items = new String[20];
 				final int[] pos = new int[20];
@@ -835,17 +817,42 @@ public class Drawer extends Fragment implements
 			} break;
 			case 8://词典管理中心
 				a.findViewById(R.id.browser_widget2).performLongClick();
-			break;
+				break;
 			case 9://切换生词本
 				a.findViewById(R.id.browser_widget5).performLongClick();
-			break;
+				break;
 			case 11://设置
-	            Intent intent = new Intent();
+				Intent intent = new Intent();
 				((AgentApplication)a.getApplication()).opt=a.opt;
-	            intent.setClass(a, SettingsActivity.class);
+				intent.setClass(a, SettingsActivity.class);
 				a.startActivityForResult(intent, 1297);
-			break;
+				break;
 		}
+	}
+
+	void showExitDialog() {
+		final View dv1 = a.inflater.inflate(R.layout.dialog_about,null);
+
+		final SpannableStringBuilder ssb1 = new SpannableStringBuilder(getResources().getString(R.string.warn_exit1));
+		int start1 = ssb1.toString().indexOf("[");
+		final TextView tv1 = dv1.findViewById(R.id.resultN);
+		((TextView)dv1.findViewById(R.id.title)).setText(R.string.warn_exit0);
+		(dv1.findViewById(R.id.cancel)).setOnClickListener(v12 -> {a.finish();});
+		tv1.setPadding(0, 0, 0, 50);
+		ssb1.setSpan(new ClickableSpan() {
+			@Override
+			public void onClick(@NonNull View widget) {
+				a.show(a.deleteHistory()?R.string.clearsucc:R.string.clearfail);
+			}
+		}, start1,  ssb1.toString().indexOf("]",start1)+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		tv1.setText(ssb1);
+		tv1.setMovementMethod(LinkMovementMethod.getInstance());
+		AlertDialog.Builder builder21 = new AlertDialog.Builder(a);
+		builder21.setView(dv1);
+		final AlertDialog d1 = builder21.create();
+		d1.setCanceledOnTouchOutside(true);
+		d1.show();
 	}
 
 	@Override
@@ -864,15 +871,15 @@ public class Drawer extends Fragment implements
 					a.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 				}
 				a.opt.setFullScreen(isChecked);
-			break;
+				break;
 			case R.id.sw2:
 				a.opt.setContentBow(!isChecked);
 				a.setContentBow(!isChecked);
-			break;
+				break;
 			case R.id.sw3:
 				a.opt.setViewPagerEnabled(!isChecked);
 				a.viewPager.setNoScroll(isChecked);
-			break;
+				break;
 			case R.id.sw4:
 				if(Build.VERSION.SDK_INT<29){
 					GlobalOptions.isDark = false;
@@ -882,10 +889,10 @@ public class Drawer extends Fragment implements
 				if(buttonView.getTag()==null || GlobalOptions.isDark)
 					changeToDarkMode();
 				buttonView.setTag(null);
-			break;
+				break;
 			case R.id.sw5:
 				a.opt.set_use_volumeBtn(isChecked);
-			break;
+				break;
 		}
 	}
 
@@ -902,6 +909,10 @@ public class Drawer extends Fragment implements
 			a.adaptermy4.notifyDataSetChanged();
 			if(a.isFragInitiated)a.pickDictDialog.adapter().notifyDataSetChanged();
 			myAdapter.notifyDataSetChanged();
+			if(a.setchooser!=null){
+				a.setchooser.clear();
+				a.setchooser=null;
+			}
 			//a.refreshUIColors();
 			a.animateUIColorChanges();
 		} catch (Exception e) {

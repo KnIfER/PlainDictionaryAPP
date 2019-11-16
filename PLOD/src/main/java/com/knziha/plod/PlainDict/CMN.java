@@ -10,11 +10,11 @@ import android.view.ViewGroup;
 
 //common
 public class CMN{
-    public final static String replaceReg =  " |:|\\.|,|-|\'|(|)";
-    public final static String emptyStr = "";
-    public static final HashMap<String, String> AssetMap = new HashMap<>();
+	public final static String replaceReg =  " |:|\\.|,|-|\'|(|)";
+	public final static String emptyStr = "";
+	public static final HashMap<String, String> AssetMap = new HashMap<>();
 	public static final Boolean OccupyTag = true;
-    
+
 	public static int GlobalPageBackground = 0;
 	public static int MainBackground = 0;
 	public static int FloatBackground;
@@ -24,16 +24,16 @@ public class CMN{
 	public static int lastHisLexicalEntry = -1;
 	public static int lastFavorLexicalEntryOff = 0;
 	public static int lastHisLexicalEntryOff = 0;
-    //static Boolean module_set_invalid = true;
+	//static Boolean module_set_invalid = true;
 	//public static dictionary_App_Options opt;
 	//public static LayoutInflater inflater;
 	//protected static ViewPager viewPager;
 	public static int dbVersionCode = 1;
 	public static long FloatLastInvokerTime=-1;
 	public static int ShallowHeaderBlue;
-	
-	
-	
+
+
+
 
 	///*[!0] Start debug flags and methods
 	public static boolean testFLoatSearch;
@@ -42,15 +42,15 @@ public class CMN{
 	public static void Log(Object... o) {
 		String msg="";
 		if(o!=null)
-		for(int i=0;i<o.length;i++) {
-			if(Exception.class.isInstance(o[i])) {
-				ByteArrayOutputStream s = new ByteArrayOutputStream();
-				PrintStream p = new PrintStream(s);
-				((Exception)o[i]).printStackTrace(p);
-				msg+=s.toString();
+			for(int i=0;i<o.length;i++) {
+				if(Exception.class.isInstance(o[i])) {
+					ByteArrayOutputStream s = new ByteArrayOutputStream();
+					PrintStream p = new PrintStream(s);
+					((Exception)o[i]).printStackTrace(p);
+					msg+=s.toString();
+				}
+				msg+=o[i]+" ";
 			}
-			msg+=o[i]+" ";
-		}
 		android.util.Log.d("fatal poison",msg);
 	}
 	public static void recurseLog(View v,String... depths) {
@@ -68,17 +68,31 @@ public class CMN{
 	public static void recurseLogCascade(View now) {
 		if(now==null) return;
 		while(now.getParent()!=null) {
-	    	if(!View.class.isInstance(now.getParent())) {
-	    		Log("-!-reached none view object or null : "+now.getParent());
-	    		break;
-	    	}
-	    	now=(View) now.getParent();
-	    }
+			if(!View.class.isInstance(now.getParent())) {
+				Log("-!-reached none view object or null : "+now.getParent());
+				break;
+			}
+			now=(View) now.getParent();
+		}
 		Log("Cascade Start Is : "+now+" == "+Integer.toHexString(now.getId())+"/"+now.getBackground());
 		recurseLog(now);
 		//now.setBackgroundResource(R.drawable.popup_shadow);
 	}
 	//[!1] End debug flags and methods*/
-	
-	
+
+	public static long stst;
+	public static void rt() {
+		stst = System.currentTimeMillis();
+	}
+	public static void pt(Object...args) {
+		CMN.Log(listToStr(args)+" "+(System.currentTimeMillis()-stst));
+	}
+
+	private static String listToStr(Object...args) {
+		String ret="";
+		for (int i = 0; i < args.length; i++) {
+			ret+=args[i];
+		}
+		return ret;
+	}
 }

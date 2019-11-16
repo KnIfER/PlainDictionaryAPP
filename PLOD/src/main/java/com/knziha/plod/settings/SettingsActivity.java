@@ -15,6 +15,7 @@ import com.knziha.filepicker.settings.FilePickerOptions;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.CrashHandler;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.PlainDict.Toastable_Activity;
 
 import java.io.File;
@@ -45,6 +46,7 @@ public class SettingsActivity extends Toastable_Activity {
 		if(lock.exists()) lock.delete();
 
 		PreferenceFragmentCompat fragment;
+		Bundle args = new Bundle();
 		switch (realm_id = getIntent().getIntExtra("realm", 0)){
 			default:
 			case 0:
@@ -59,8 +61,15 @@ public class SettingsActivity extends Toastable_Activity {
 			case 6:
 				fragment = new Licences();
 			break;
+			case 7:
+				fragment = new SearchSpecification();
+			break;
+			case 8:
+				fragment = new ViewSpecification();
+				args.putInt("title", R.string.view_spec);
+			break;
 		}
-
+		fragment.setArguments(args);
 		this.getSupportFragmentManager().beginTransaction()
 				.replace(android.R.id.content, fragment)
 				.commit();

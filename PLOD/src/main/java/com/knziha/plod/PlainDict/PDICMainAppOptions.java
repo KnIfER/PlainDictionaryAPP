@@ -17,6 +17,8 @@ import androidx.appcompat.app.GlobalOptions;
 
 public class PDICMainAppOptions
 {
+	public boolean isAudioPlaying;
+	public boolean isAudioActuallyPlaying;
 	SharedPreferences reader2;
 	SharedPreferences defaultReader;
 	public static String locale;
@@ -85,7 +87,6 @@ public class PDICMainAppOptions
 		return lastMdPlanName=defaultReader.getString("LastPlanName",magicStr);
 	}
 
-
 	public int getGlobalPageBackground() {
 		return defaultReader.getInt("GPBC",0xFFFFFFFF);//0xFFC7EDCC
 	}
@@ -97,6 +98,12 @@ public class PDICMainAppOptions
 	}
 	public int getFloatBackground() {
 		return defaultReader.getInt("BCF",0xFF8f8f8f);
+	}
+	public int getToastBackground() {
+		return defaultReader.getInt("TTB",0xFF000000);
+	}
+	public int getToastColor() {
+		return defaultReader.getInt("TTT",0xFFFFFFFF);
 	}
 
 	public boolean UseTripleClick() {
@@ -137,16 +144,12 @@ public class PDICMainAppOptions
 			editor = defaultReader.edit();
 			CommitOrApplyOrNothing=1;
 		}
-		editor.putLong("MFF", FirstFlag).putLong("MSF", SecondFlag);//.putLong("MTF", ThirdFlag());
+		editor.putLong("MFF", FirstFlag).putLong("MSF", SecondFlag).putLong("MTF", ThirdFlag);
 		if(CommitOrApplyOrNothing==1) editor.apply();
 		else if(CommitOrApplyOrNothing==2) editor.commit();
-		CMN.Log("apply changes");
+		//CMN.Log("apply changes");
 	}
-	//////////First Boolean Flag//////////
-	// ||||||||    ||||||||	    |FVDOCKED|PBOB|Ficb|FBOB|ForceSearch|showFSroll|showBD|showBA	|ToD|ToR|ToL|InPeruseTM|InPeruse|SlideTURNP|BOB|icb
-	//                              0        1     0    1      0             0         0     0            0 1 0          0   1         1   0   0
-	//||||||||    ||||||||CBE
-	//
+	//////////   First Boolean Flag   //////////
 	private static Long FirstFlag=null;
 	public long getFirstFlag() {
 		if(FirstFlag==null) {
@@ -159,7 +162,7 @@ public class PDICMainAppOptions
 	}
 
 	public void putFlags() {
-		defaultReader.edit().putLong("MFF",FirstFlag).putLong("MSF",SecondFlag).apply();
+		defaultReader.edit().putLong("MFF",FirstFlag).putLong("MSF",SecondFlag).putLong("MTF",ThirdFlag).apply();
 	}
 
 	public void putFirstFlag() {
@@ -168,7 +171,7 @@ public class PDICMainAppOptions
 	public Long FirstFlag() {
 		return FirstFlag;
 	}
-	private void updateFFAt(int o, boolean val) {
+	private static void updateFFAt(int o, boolean val) {
 		FirstFlag &= (~o);
 		if(val) FirstFlag |= o;
 		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
@@ -186,14 +189,14 @@ public class PDICMainAppOptions
 		updateFFAt(1,val);
 		return val;
 	}
-	public boolean getBottombarOnBottom() {//false
-		return (FirstFlag & 2) == 2;
+	public boolean getBottombarOnBottom() {
+		return (FirstFlag & 2) != 2;
 	}
 	public boolean setBottombarOnBottom(boolean val) {
-		updateFFAt(2,val);
+		updateFFAt(2,!val);
 		return val;
 	}
-	public boolean getTurnPageEnabled() {//true
+	public boolean getTurnPageEnabled() {
 		return (FirstFlag & 4) != 4;
 	}
 	public boolean setTurnPageEnabled(boolean val) {
@@ -390,29 +393,22 @@ public class PDICMainAppOptions
 		return val;
 	}
 
-	public boolean getHintSearchMode() {
+	public static boolean getHintSearchMode() {
 		return (FirstFlag & 0x8000000) != 0x8000000;
 	}
-	public boolean setHintSearchMode(boolean val) {
+	public static boolean setHintSearchMode(boolean val) {
 		updateFFAt(0x8000000,!val);
 		return val;
 	}
-	public boolean toggleHintSearchMode() {
-		return setHintSearchMode(!getHintSearchMode());
-	}
 
-
-	public boolean getNotifyComboRes() {
-		return (FirstFlag & 0x10000000) == 0x10000000;
+	//设置改动
+	public static boolean getNotifyComboRes() {
+		return (FirstFlag & 0x10000000) != 0x10000000;
 	}
-	public boolean setNotifyComboRes(boolean val) {
-		updateFFAt(0x10000000,val);
+	public static boolean setNotifyComboRes(boolean val) {
+		updateFFAt(0x10000000,!val);
 		return val;
 	}
-	public boolean toggleNotifyComboRes() {
-		return setNotifyComboRes(!getNotifyComboRes());
-	}
-
 	public boolean getTintWildRes() {
 		return (FirstFlag & 0x20000000) != 0x20000000;
 	}
@@ -971,6 +967,228 @@ public class PDICMainAppOptions
 	}
 	public static boolean setClickDismissImageBrowser(boolean val) {
 		updateSFAt(0x80000000000l,val);
+		return val;
+	}
+
+	public boolean getInPageSearchVisible() {
+		return (SecondFlag & 0x100000000000l) == 0x100000000000l;
+	}
+	public boolean setInPageSearchVisible(boolean val) {
+		updateSFAt(0x100000000000l,val);
+		return val;
+	}
+
+	public static boolean getUseRegex1() {
+		return (SecondFlag & 0x200000000000l) == 0x200000000000l;
+	}
+	public static boolean setUseRegex1(boolean val) {
+		updateSFAt(0x200000000000l,val);
+		return val;
+	}
+
+	public static boolean getUseRegex2() {
+		return (SecondFlag & 0x400000000000l) == 0x400000000000l;
+	}
+	public static boolean setUseRegex2(boolean val) {
+		updateSFAt(0x400000000000l,val);
+		return val;
+	}
+
+	public static boolean getUseRegex3() {
+		return (SecondFlag & 0x800000000000l) == 0x800000000000l;
+	}
+	public int FetUseRegex3() {
+		return (SecondFlag & 0x800000000000l)!=0?1:0;
+	}
+	public static boolean setUseRegex3(boolean val) {
+		updateSFAt(0x800000000000l,val);
+		return val;
+	}
+
+	public static boolean getRegexAutoAddHead() {
+		return (SecondFlag & 0x1000000000000l) != 0x1000000000000l;
+	}
+	public static boolean setRegexAutoAddHead(boolean val) {
+		updateSFAt(0x1000000000000l,!val);
+		return val;
+	}
+
+	public static boolean getJoniCaseSensitive() {
+		return (SecondFlag & 0x2000000000000l) == 0x2000000000000l;
+	}
+	public static boolean setJoniCaseSensitive(boolean val) {
+		updateSFAt(0x2000000000000l,val);
+		return val;
+	}
+
+	public static boolean getPageCaseSensitive() {
+		return (SecondFlag & 0x4000000000000l) == 0x4000000000000l;
+	}
+	public int FetPageCaseSensitive() {
+		return (SecondFlag & 0x4000000000000l)!=0?1<<1:0;
+	}
+	public static boolean setPageCaseSensitive(boolean val) {
+		updateSFAt(0x4000000000000l,val);
+		return val;
+	}
+
+	public static boolean getPageWildcardMatchNoSpace() {
+		return (SecondFlag & 0x8000000000000l) == 0x8000000000000l;
+	}
+	public int FetPageWildcardMatchNoSpace() {
+		return (SecondFlag & 0x8000000000000l)!=0?1<<3:0;
+	}
+	public static boolean setPageWildcardMatchNoSpace(boolean val) {
+		updateSFAt(0x8000000000000l,val);
+		return val;
+	}
+
+	public static boolean getPageWildcardSplitKeywords() {
+		return (SecondFlag & 0x10000000000000l) != 0x10000000000000l;
+	}
+	public int FetPageWildcardSplitKeywords() {
+		return (SecondFlag & 0x10000000000000l)==0?1<<2:0;
+	}
+	public static boolean setPageWildcardSplitKeywords(boolean val) {
+		updateSFAt(0x10000000000000l,!val);
+		return val;
+	}
+
+	public static boolean getRebuildToast() {
+		return (SecondFlag & 0x20000000000000l) == 0x20000000000000l;
+	}
+	public static boolean setRebuildToast(boolean val) {
+		updateSFAt(0x20000000000000l,val);
+		return val;
+	}
+
+
+	public static boolean getPageAutoScrollOnTurnPage() {
+		return (SecondFlag & 0x80000000000000l) == 0x80000000000000l;
+	}
+	public static boolean setPageAutoScrollOnTurnPage(boolean val) {
+		updateSFAt(0x80000000000000l,val);
+		return val;
+	}
+
+	public static boolean getPageAutoScrollOnType() {
+		return (SecondFlag & 0x100000000000000l) == 0x100000000000000l;
+	}
+	public static boolean setPageAutoScrollOnType(boolean val) {
+		updateSFAt(0x100000000000000l,val);
+		return val;
+	}
+
+	public static boolean getInPageSearchAutoHideKeyboard() {
+		return (SecondFlag & 0x200000000000000l) != 0x200000000000000l;
+	}
+	public static boolean setInPageSearchAutoHideKeyboard(boolean val) {
+		updateSFAt(0x200000000000000l,!val);
+		return val;
+	}
+
+	public static boolean getInPageSearchUseAudioKey() {
+		return (SecondFlag & 0x400000000000000l) == 0x400000000000000l;
+	}
+	public static boolean setInPageSearchUseAudioKey(boolean val) {
+		updateSFAt(0x400000000000000l,val);
+		return val;
+	}
+
+	public static boolean getInPageSearchShowNoNoMatch() {
+		return (SecondFlag & 0x800000000000000l) == 0x800000000000000l;
+	}
+	public static boolean setInPageSearchShowNoNoMatch(boolean val) {
+		updateSFAt(0x800000000000000l,val);
+		return val;
+	}
+
+	public static boolean getInPageSearchHighlightBorder() {
+		return (SecondFlag & 0x1000000000000000l) == 0x1000000000000000l;
+	}
+	public static boolean setInPageSearchHighlightBorder(boolean val) {
+		updateSFAt(0x1000000000000000l,val);
+		return val;
+	}
+
+	public static boolean getInPageSearchAutoUpdateAfterFulltext() {
+		return (SecondFlag & 0x2000000000000000l) != 0x2000000000000000l;
+	}
+	public static boolean setInPageSearchAutoUpdateAfterFulltext(boolean val) {
+		updateSFAt(0x2000000000000000l,!val);
+		return val;
+	}
+
+	public static boolean getInPageSearchAutoUpdateAfterClick() {
+		return (SecondFlag & 0x4000000000000000l) == 0x4000000000000000l;
+	}
+	public static boolean setInPageSearchAutoUpdateAfterClick(boolean val) {
+		updateSFAt(0x4000000000000000l,val);
+		return val;
+	}
+
+	public static boolean getBackToHomePage() {
+		return (SecondFlag & 0x8000000000000000l) == 0x8000000000000000l;
+	}
+	public static boolean setBackToHomePage(boolean val) {
+		updateSFAt(0x8000000000000000l,val);
+		return val;
+	}
+	///////////////////		End second flag		///////////////////////
+	///////////////////	 天高任鸟飞 标志随便写 ///////////////////////
+	///////////////////		Third Boolean Flag		///////////////////////
+	private static Long ThirdFlag=null;
+	public long getThirdFlag() {
+		if(ThirdFlag==null) {
+			return ThirdFlag=defaultReader.getLong("MTF",0);
+		}
+		return ThirdFlag;
+	}
+	private void putThirdFlag(long val) {
+		defaultReader.edit().putLong("MTF",ThirdFlag=val).apply();
+	}
+	public Long ThirdFlag() {
+		return ThirdFlag;
+	}
+	private void updateTFAt(int o, boolean val) {
+		ThirdFlag &= (~o);
+		if(val) ThirdFlag |= o;
+		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
+	}
+	private static void updateTFAt(long o, boolean val) {
+		ThirdFlag &= (~o);
+		if(val) ThirdFlag |= o;
+		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
+	}
+
+	/**
+	 *  Get Back Prevention Type. Default to 2<br/>
+	 *  @return 0=exit directly; 1=show top snack; 2=toast; 3=dialog;
+	 */
+	public static int getBackPrevention() {
+		return ((int)(ThirdFlag&3)+2)%4;
+	}
+
+	/** Set Back Prevention Type <br/> see {@link #getBackPrevention}*/
+	public static int setBackPrevention(int val) {
+		ThirdFlag = ThirdFlag&~0x1l&~0x2l
+				|(long)((val+2)%4 & 3);
+		return val;
+	}
+
+	public static boolean getBackToHomePagePreventBack() {
+		return (ThirdFlag & 0x4l) == 0x4l;
+	}
+	public static boolean setBackToHomePagePreventBack(boolean val) {
+		updateTFAt(0x4l,val);
+		return val;
+	}
+
+	public static boolean getToastRoundedCorner() {
+		return (ThirdFlag & 0x8l) == 0x8l;
+	}
+	public static boolean setToastRoundedCorner(boolean val) {
+		updateTFAt(0x8l,val);
 		return val;
 	}
 

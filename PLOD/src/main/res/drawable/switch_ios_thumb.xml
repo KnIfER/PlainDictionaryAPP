@@ -6,7 +6,7 @@
     <stroke
         android:width="3dp"
         android:color="#00000000" />
-    <size
-        android:width="20dp"
-        android:height="20dp" />
+	<size
+		android:width="@dimen/_20_"
+		android:height="@dimen/_20_" />
 </shape>

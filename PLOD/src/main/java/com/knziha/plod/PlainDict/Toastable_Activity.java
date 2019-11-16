@@ -20,6 +20,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -42,6 +44,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 
 public class Toastable_Activity extends AppCompatActivity {
@@ -101,6 +104,8 @@ public class Toastable_Activity extends AppCompatActivity {
 	static final int SHORT_DURATION_MS = 1500;
 	static final int LONG_DURATION_MS = 2355;
 	int NextSnackLength;
+	protected ViewGroup DefaultTSView;
+	long exitTime = 0;
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +115,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	   super.onCreate(savedInstanceState);
 	   FFStamp=opt.getFirstFlag();
 	   SFStamp=opt.getSecondFlag();
+	   TFStamp=opt.getThirdFlag();
 	   //TFStamp=opt.getThirdFlag();
 	   inflater=getLayoutInflater();
        imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -221,11 +227,12 @@ public class Toastable_Activity extends AppCompatActivity {
 			opt.setFlags(null, 1);
 			FFStamp=opt.FirstFlag();
 			SFStamp=opt.SecondFlag();
+			TFStamp=opt.ThirdFlag();
 		}
 	}
 
 	protected boolean checkFlagsChanged() {
-		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag();// || TFStamp!=opt.getThirdFlag();
+		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.getThirdFlag();
 	}
 
 	protected void checkLanguage() {
@@ -244,7 +251,7 @@ public class Toastable_Activity extends AppCompatActivity {
 				}else
 					locale=new Locale(language);
 			} catch (Exception ignored) { }
-			CMN.Log("language is : ", language, locale);
+			//CMN.Log("language is : ", language, locale);
 			if(locale!=null)
 				forceLocale(this, locale);
 		}
@@ -406,26 +413,40 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 	public void showT(String text,int len)
 	{
-		if(m_currentToast != null) {}//cancel个什么劲？？m_currentToast.cancel();
-		else {
-			toastV = getLayoutInflater().inflate(R.layout.toast,null);
-			toastTv = ((TextView) toastV.findViewById(R.id.message));
-			m_currentToast = new Toast(this);
+		if(m_currentToast == null || PDICMainAppOptions.getRebuildToast()){
+			if(m_currentToast!=null)
+				m_currentToast.cancel();
+			if(toastTv==null) {
+				toastV = getLayoutInflater().inflate(R.layout.toast, null);
+				toastTv = toastV.findViewById(R.id.message);
+			}else if(toastV.getParent() instanceof ViewGroup){
+				((ViewGroup)toastV.getParent()).removeView(toastV);
+			}
 
+			m_currentToast = new Toast(this);
 			m_currentToast.setGravity(Gravity.BOTTOM, 0, 135);
 			m_currentToast.setView(toastV);
 		}
+		if(toastV.getBackground() instanceof GradientDrawable){
+			GradientDrawable drawable = (GradientDrawable) toastV.getBackground();
+			drawable.setCornerRadius(PDICMainAppOptions.getToastRoundedCorner()?dm.density*15:0);
+			drawable.setColor(opt.getToastBackground());
+		}
 		m_currentToast.setDuration(len);
-		//m_currentToast = Toast.makeText(getContext(), text, Toast.LENGTH_SHORT);
 		toastTv.setText(text);
+		toastTv.setTextColor(opt.getToastColor());
 		m_currentToast.show();
 	}
+	public void cancleToast(){
+		if(m_currentToast!=null)
+			m_currentToast.cancel();
+	}
 
+	void showTopSnack(Object messageVal){
+		showTopSnack(DefaultTSView, messageVal, 0.8f, -1, -1, false);
+	}
 
-
-
-
-	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity) {
+	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity, boolean SingleLine) {
 		if(objectAnimator!=null){
 			objectAnimator.cancel();
 			objectAnimator=null;
@@ -447,10 +468,14 @@ public class Toastable_Activity extends AppCompatActivity {
 		}
 		NextSnackLength=duration<0?SHORT_DURATION_MS:duration;
 		topsnack.getBackground().setAlpha((int) (alpha*255));
-		if(messageVal instanceof Integer)
-			topsnack.setText((int)messageVal);
-		else
+		topsnack.setSingleLine(SingleLine);
+		if(messageVal instanceof Integer) {
+			topsnack.setText((int) messageVal);
+			topsnack.setTag(messageVal);
+		}else {
 			topsnack.setText(String.valueOf(messageVal));
+			topsnack.setTag(null);
+		}
 		topsnack.setGravity(gravity==-1?Gravity.CENTER:gravity);
 		ViewGroup sp = (ViewGroup) topsnack.getParent();
 		if(sp!=null && sp!=parentView) sp.removeView(topsnack);
@@ -471,6 +496,8 @@ public class Toastable_Activity extends AppCompatActivity {
 				objectAnimator.removeAllListeners();
 				objectAnimator.cancel();
 			}
+			//if(R.string.warn_exit== IU.parseInteger(topsnack.getTag(),0))
+			//	exitTime=0;
 			objectAnimator = ObjectAnimator.ofFloat(topsnack,"alpha",topsnack.getAlpha(),0f);
             objectAnimator.setDuration(240);
             objectAnimator.start();

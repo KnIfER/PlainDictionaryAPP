@@ -17,10 +17,7 @@
 
 package com.knziha.plod.dictionary.Utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.zip.Adler32;
 import java.util.zip.InflaterOutputStream;
 
@@ -47,7 +44,7 @@ public class  BU{//byteUtils
     @Deprecated
     public static byte[] zlib_decompress(byte[] encdata,int offset,int ln) {
 	    try {
-			    ByteArrayOutputStream out = new ByteArrayOutputStream(); 
+			    ByteArrayOutputStream out = new ByteArrayOutputStream();
 			    InflaterOutputStream inf = new InflaterOutputStream(out); 
 			    inf.write(encdata,offset, ln); 
 			    inf.close(); 
@@ -142,6 +139,10 @@ public class  BU{//byteUtils
 			e.printStackTrace();
 		}
     }
+    @Deprecated
+    public static void printFile(byte[] b, String path){
+		printFile(b,0,b.length,path);
+    }
     public static String byteTo16(byte bt){
         String[] strHex={"0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"};
         String resStr="";
@@ -162,7 +163,38 @@ public class  BU{//byteUtils
         }   
         return values;  
     }
-    //废弃
+
+
+	public static ByteArrayInputStream fileToBytes(File f) {
+		return new ByteArrayInputStream(fileToByteArr(f));
+	}
+
+	public static byte[] fileToByteArr(File f) {
+		try {
+			FileInputStream fin = new FileInputStream(f);
+			byte[] data = new byte[(int) f.length()];
+			fin.read(data);
+			return data;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static String fileToString(File f) {
+		try {
+			FileInputStream fin = new FileInputStream(f);
+			byte[] data = new byte[(int) f.length()];
+			fin.read(data);
+			return new String(data, "utf8");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+	@Deprecated
     public long toLong1(byte[] b,int offset)
 	{
 		long l = 0;
@@ -180,6 +212,11 @@ public class  BU{//byteUtils
     
     public static String unwrapMdxName(String in) {
     	if(in.toLowerCase().endsWith(".mdx"))
+    		return in.substring(0,in.length()-4);
+    	return in;
+    }
+    public static String unwrapMddName(String in) {
+    	if(in.toLowerCase().endsWith(".mdd"))
     		return in.substring(0,in.length()-4);
     	return in;
     }

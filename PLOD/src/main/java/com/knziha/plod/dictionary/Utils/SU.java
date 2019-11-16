@@ -18,12 +18,7 @@
 package com.knziha.plod.dictionary.Utils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.util.zip.Adler32;
-import java.util.zip.InflaterOutputStream;
 
 
 /**
@@ -74,7 +69,7 @@ public class  SU{
 				}
 				msg+=o[i]+" ";
 			}
-		System.out.println("fatal poison"+msg);
+		System.out.println(msg);
 	}
 }
 	

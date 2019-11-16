@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import com.knziha.plod.PlainDict.BasicAdapter;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
@@ -17,32 +16,29 @@ import android.text.style.ForegroundColorSpan;
 import android.view.ViewGroup;
 
 public class resultRecorderScattered extends resultRecorderDiscrete {
+	private final BooleanSingleton TintResult;
+	private final com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer layer;
 	private List<mdict> md;
-	private final BooleanSingleton TintWildResult;
-	
 	private int[] firstLookUpTable;
-	
 	private int size=0;
 	
 	@Override
 	public void invalidate() {
+		if(md.size()==0)
+			return;
 		if(firstLookUpTable.length<md.size())
 			firstLookUpTable = new int[md.size()];
 		
 		int resCount=0;
 		for(int i=0;i<md.size();i++){//遍历所有词典
 			mdict mdtmp = md.get(i);
-			//int baseCount=0;
-			//if(i!=0)
-			//	baseCount=firstLookUpTable[i-1];
-			if(mdtmp.combining_search_tree2==null) {
-			}
-			else
-    		for(int ti=0;ti<mdtmp.combining_search_tree2.length;ti++){//遍历搜索结果
-    			if(mdtmp.combining_search_tree2[ti]==null) {
+			ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
+			if(_combining_search_tree!=null)
+    		for(int ti=0;ti<_combining_search_tree.length;ti++){//遍历搜索结果
+    			if(_combining_search_tree[ti]==null) {
     				continue;
     			}
-    			resCount+=mdtmp.combining_search_tree2[ti].size();
+    			resCount+=_combining_search_tree[ti].size();
     		}
 			firstLookUpTable[i]=resCount;
 			
@@ -60,14 +56,14 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 
 		int resCount=0;
 		mdict mdtmp = md.get(idx);
-		
-		if(mdtmp.combining_search_tree2==null) {
-		}else
-		for(int ti=0;ti<mdtmp.combining_search_tree2.length;ti++){//遍历搜索结果
-			if(mdtmp.combining_search_tree2[ti]==null) {
+
+		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
+		if(_combining_search_tree!=null)
+		for(int ti=0;ti<_combining_search_tree.length;ti++){//遍历搜索结果
+			if(_combining_search_tree[ti]==null) {
 				continue;
 			}
-			resCount+=mdtmp.combining_search_tree2[ti].size();
+			resCount+=_combining_search_tree[ti].size();
 		}
 		
 		//firstLookUpTable[idx]=resCount;
@@ -80,11 +76,12 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		size=resCount;
 	}
 	
-	public resultRecorderScattered(MainActivityUIBase a, List<mdict> md_, BooleanSingleton tintWildResult){
+	public resultRecorderScattered(MainActivityUIBase a, List<mdict> md_, BooleanSingleton _TintResult, com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer _layer){
 		super(a);
-		TintWildResult=tintWildResult;
+		TintResult =_TintResult;
 		md=md_;
 		firstLookUpTable = new int[md_.size()];
+		layer=_layer;
 	}
 	
 	@Override
@@ -111,22 +108,19 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-1];
 		int idxCount = 0;
-		for(int ti=0;ti<mdtmp.combining_search_tree2.length;ti++){
-			if(mdtmp.combining_search_tree2[ti]==null)
+		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
+		for(int ti=0;ti<_combining_search_tree.length;ti++){
+			if(_combining_search_tree[ti]==null)
 				continue;
-			int max = mdtmp.combining_search_tree2[ti].size();
+			int max = _combining_search_tree[ti].size();
 			if(max==0)
 				continue;
 			if(pos-idxCount<max) {
-				String text = mdtmp.getEntryAt(mdtmp.combining_search_tree2[ti].get(pos-idxCount),mflag);
-				if(!TintWildResult.first) return text;
+				String text = mdtmp.getEntryAt(_combining_search_tree[ti].get(pos-idxCount),mflag);
+				if(!TintResult.first) return text;
 				SpannableStringBuilder result = new SpannableStringBuilder(text);
-				Pattern reg;
-				try {
-					reg = Pattern.compile(SearchText.replace("*", ".+?"),Pattern.CASE_INSENSITIVE);
-				} catch (PatternSyntaxException e) {
-					reg = Pattern.compile(SearchText,Pattern.CASE_INSENSITIVE|Pattern.LITERAL);
-				}
+				Pattern reg=layer.getBakedPattern();
+				if(reg==null) return text;
 				Matcher m = reg.matcher(text);
 				while(m.find()) {
 					result.setSpan(new ForegroundColorSpan(Color.RED), m.start(), m.end(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
@@ -150,10 +144,11 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-1];
 		int idxCount = 0;
-		for(int ti=0;ti<mdtmp.combining_search_tree2.length;ti++){
-			if(mdtmp.combining_search_tree2[ti]==null)
+		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
+		for(int ti=0;ti<_combining_search_tree.length;ti++){
+			if(_combining_search_tree[ti]==null)
 				continue;
-			int max = mdtmp.combining_search_tree2[ti].size();
+			int max = _combining_search_tree[ti].size();
 			if(max==0)
 				continue;
 			if(pos-idxCount<max) {
@@ -187,7 +182,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
         		}
 				
 
-				ViewGroup someView = (ViewGroup) mdtmp.rl;
+				ViewGroup someView = mdtmp.rl;
 				if(someView.getParent()!=a.webSingleholder) {
 					if(someView.getParent()!=null) ((ViewGroup)someView.getParent()).removeView(someView);
 					a.webSingleholder.addView(someView);
@@ -197,7 +192,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 					if(a.webSingleholder.getChildAt(i)!=someView) a.webSingleholder.removeViewAt(i);
 				}
 				
-				mdtmp.renderContentAt(desiredScale,Rgn,null,(int)(long) mdtmp.combining_search_tree2[ti].get(pos-idxCount));
+				mdtmp.renderContentAt(desiredScale,Rgn,0,null, (int)(long) _combining_search_tree[ti].get(pos-idxCount));
 				mdtmp.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				mdtmp.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				return;

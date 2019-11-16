@@ -37,8 +37,9 @@
 	<string name="jumpfail">Link invalid!</string>
     <string name="favorRecon">default favorite db reconstructed!</string>
 
-    <string name="fuzzyfill">Fuzzy search done! Time %1$1.2fs, Found  %2$d items!</string>
-    <string name="fullfill">Fulltext retrieval done! Time %1$1.2fs, Found  %2$d items!</string>
+    <string name="fuzzyfill">Entry search done! Time %1$1.2fs, Found  %2$d items!</string>
+    <string name="fullfill">Fulltext search done! Time %1$1.2fs, Found  %2$d items!</string>
+	<string name="regret">Regex Search</string>
     <string name="fullret">Fulltext retrieval</string>
     <string name="fuzzyret">Entry Wildcard Match</string>
 	<string name="fullret1">@string/fullret</string>
@@ -177,11 +178,13 @@
 	<string name="select_all_invalid">Select All invalid</string>
 	<string name="add_selection_to_set">Add selection to set</string>
 	<string name="remove_selection_from_set">Remove selection from set</string>
-	<string name="remove_records">Remove record(s)</string>
-	<string name="move_files">Move file(s)</string>
+	<string name="remove_records">Remove from record</string>
+	<string name="move_files">Move files to</string>
 	<string name="new___">New…</string>
 	<string name="dict_specs">Global_Independent_Java API_Classical_No_Yes</string>
 	<string name="no_suitable_app">Found no suitable App.</string>
 	<string name="multiple_vals">*多重*</string>
 	<string name="dv_select">@string/fp_select</string>
+	<string name="search_end">%1$s 一查到底 %2$s</string>
+	<string name="view_spec">视图设置</string>
 </resources>

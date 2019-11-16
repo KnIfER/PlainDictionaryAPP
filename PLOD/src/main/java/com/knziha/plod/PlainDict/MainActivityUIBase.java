@@ -37,7 +37,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLayoutChangeListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
@@ -52,6 +51,7 @@ import android.webkit.WebViewClient;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
@@ -62,6 +62,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
@@ -75,26 +76,35 @@ import com.jaredrummler.colorpicker.ColorPickerDialogListener;
 import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_asset;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
-import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.widgets.ArrayAdaptermy;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.IMPageSlider;
-import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.ListSizeConfiner;
+import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.RLContainerSlider;
+import com.knziha.plod.widgets.SamsungLikeScrollBar;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
-import com.knziha.plod.widgets.SamsungLikeScrollBar;
 import com.knziha.plod.widgets.WebViewmy;
+
+import org.adrianwalker.multilinestring.Multiline;
+import org.apache.commons.imaging.BufferedImage;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.ImagingConstants;
+import org.apache.commons.imaging.ManagedImageBufferedImageFactory;
+import org.xiph.speex.ByteArrayRandomOutputStream;
+import org.xiph.speex.manyclass.JSpeexDec;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -104,6 +114,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -114,8 +125,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import db.LexicalDBHelper;
 import db.MdxDBHelper;
@@ -197,14 +207,10 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 	public int pendingLv2ClickPos=-1;
 	public int split_dict_thread_number;
 	public static final ListSizeConfiner mListsizeConfiner = new ListSizeConfiner();
+	private Runnable NaughtyJumpper;
+	volatile long jumpNaughtyTimeToken;
 
-	public void countDelta(int delta) {
-		Lock lock = new ReentrantLock();
-		lock.lock();
-		poolEUSize+=delta;
-		lock.unlock();
-	}
-	public volatile int poolEUSize;
+	public AtomicInteger poolEUSize = new AtomicInteger(0);
 
 	public void jump(int pos,mdict md) {
 
@@ -271,8 +277,41 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		};
 	}
 
-	public String getCurrentPageKey() {
+	public String getCurrentPageKey() throws UnsupportedEncodingException {
 		return null;
+	}
+
+	public void scrollHighlight(int o, int d) {
+
+	}
+
+	public void prepareInPageSearch(String bakedPatternStr, boolean bNeedBringUp) {
+
+	}
+
+	private final Runnable resetVolumeAdjustment = () -> opt.isAudioPlaying=false;
+
+	public void removeAAdjustment() {
+		webSingleholder.removeCallbacks(resetVolumeAdjustment);
+	}
+
+	public void transitAAdjustment() {
+		removeAAdjustment();
+		if(!opt.isAudioActuallyPlaying)
+			webSingleholder.postDelayed(resetVolumeAdjustment, 800);
+	}
+
+	public void shuntAAdjustment() {
+		opt.isAudioActuallyPlaying=opt.isAudioPlaying=false;
+		removeAAdjustment();
+	}
+
+	public boolean hasCurrentPageKey() {
+		return false;
+	}
+
+	public void onHighlightReady(int idx, int number) {
+
 	}
 
 	static class BaseHandler extends Handler{
@@ -800,7 +839,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			}
 		}else {
 			if(!bContentBow) {
-				lp.setMargins(0,Math.min(contentview.getTop(), bottombar2.getTop()), 0, 0);
+				lp.setMargins(0,0, 0, 0);
 				contentview.setLayoutParams(lp);
 				RecalibrateContentSnacker(bContentBow);
 			}
@@ -808,6 +847,10 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 	}
 
 	Toolbar MainPageSearchbar;
+	EditText MainPageSearchetSearch;
+	TextView MainPageSearchindicator;
+	String MainPageSearchetSearchStartWord;
+	boolean HiFiJumpRequested;
 	void RecalibrateContentSnacker(boolean bContentBow) {
 		if(snack_holder!=null){
 			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) snack_holder.getLayoutParams();
@@ -925,7 +968,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			}else {
 				sv=main_succinct;
 			}
-			showTopSnack(sv, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size), fval, -1, -1);
+			showTopSnack(sv, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size), fval, -1, -1, false);
 		}
 	}
 
@@ -990,7 +1033,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					//DialogSnack(d,msg);
 					d.hide();
 					ViewGroup target=bFromPeruseView?PeruseView.contentview:getContentviewSnackHolder();
-					showTopSnack(target, msg, 0.8f, -1, -1);
+					showTopSnack(target, msg, 0.8f, -1, -1, false);
 
 					ColorPickerDialog asd =
 							ColorPickerDialog.newBuilder()
@@ -1078,7 +1121,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					opt.setTurnPageEnabled(TurnPageEnabled=PageSlider.TurnPageEnabled);
 					opt.putFirstFlag();
 					showTopSnack((ViewGroup) d.getListView().getRootView(), PageSlider.TurnPageEnabled?R.string.PT1:R.string.PT2
-							, 0.8f, LONG_DURATION_MS, -1);
+							, 0.8f, LONG_DURATION_MS, -1, false);
 				return;
 			}
 			imm.hideSoftInputFromWindow(main.getWindowToken(),0);
@@ -1800,86 +1843,90 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		return false;
 	}
 
+	WeakReference<AlertDialog> setchooser;
 	int lastCheckedPos = -1;
 	public void showChooseSetDialog() {//切换分组
 		if(d!=null) {
 			d.dismiss();
 			d=null;
 		}
-		File def = new File(opt.pathToMain()+"CONFIG/AllModuleSets.txt");      //!!!原配
-		final ArrayList<String> scanInList = new ArrayList<>();
-		final HashSet<String> con = new HashSet<>();
-		lastCheckedPos = -1;
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(def));
-			String line = in.readLine();
-			while(line!=null){
-				if(!con.contains(line))
-					if(new File(opt.pathToMain()+"CONFIG/"+line+".set").exists()) {
-						scanInList.add(line);
-						if(line.equals(opt.lastMdPlanName))
-							lastCheckedPos=scanInList.size()-1;
-					}
-				con.add(line);
-				line = in.readLine();
-			}
-			in.close();
-		} catch (Exception ignored) { }
-
-		new File(opt.pathToMain()+"CONFIG").list((dir,name) -> {
-			if(name.endsWith(".set")) {
-				name = name.substring(0,name.length()-4);
-				if(!con.contains(name)) {
-					scanInList.add(name);
-					con.add(name);
-					if(name.equals(opt.lastMdPlanName))
-						lastCheckedPos=scanInList.size()-1;
+		AlertDialog dTmp;
+		if(!(setchooser!=null&&(dTmp=setchooser.get())!=null)) {
+			File def = new File(opt.pathToMain() + "CONFIG/AllModuleSets.txt");      //!!!原配
+			final ArrayList<String> scanInList = new ArrayList<>();
+			final HashSet<String> con = new HashSet<>();
+			lastCheckedPos = -1;
+			try {
+				BufferedReader in = new BufferedReader(new FileReader(def));
+				String line = in.readLine();
+				while (line != null) {
+					if (!con.contains(line))
+						if (new File(opt.pathToMain() + "CONFIG/" + line + ".set").exists()) {
+							scanInList.add(line);
+							if (line.equals(opt.lastMdPlanName))
+								lastCheckedPos = scanInList.size() - 1;
+						}
+					con.add(line);
+					line = in.readLine();
 				}
+				in.close();
+			} catch (Exception ignored) {
 			}
-			return false;
-		});
 
-		AlertDialog.Builder builder2 = new AlertDialog.Builder(this,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);//
-		builder2.setTitle(R.string.loadconfig).setSingleChoiceItems(new String[] {}, 0, (dialog, pos) -> {
+			new File(opt.pathToMain() + "CONFIG").list((dir, name) -> {
+				if (name.endsWith(".set")) {
+					name = name.substring(0, name.length() - 4);
+					if (!con.contains(name)) {
+						scanInList.add(name);
+						con.add(name);
+						if (name.equals(opt.lastMdPlanName))
+							lastCheckedPos = scanInList.size() - 1;
+					}
+				}
+				return false;
+			});
+
+			AlertDialog.Builder builder2 = new AlertDialog.Builder(this, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);//
+			builder2.setTitle(R.string.loadconfig).setSingleChoiceItems(new String[]{}, -1, (dialog, pos) -> {
 				try {
 					currentFilter.clear();
-					HashMap<String,mdict> mdict_cache = new HashMap<>(md.size());
-					for(mdict mdTmp:md) {
+					HashMap<String, mdict> mdict_cache = new HashMap<>(md.size());
+					for (mdict mdTmp : md) {
 						mdict_cache.put(mdTmp._Dictionary_fName, mdTmp);
 					}
 					md.clear();
-					File newf = new File(opt.pathToMain()+"CONFIG/"+scanInList.get(pos)+".set");
+					File newf = new File(opt.pathToMain() + "CONFIG/" + scanInList.get(pos) + ".set");
 					BufferedReader in = new BufferedReader(new FileReader(newf));
 					String line = in.readLine();
 					String lastMdName = opt.getLastMdFn();
 					int lastMdPos = 0;
-					while(line!=null){
-						if(!line.trim().equals("")){
-							boolean isFilter=false;
-							if(line.startsWith("[:F]")){
+					while (line != null) {
+						if (!line.trim().equals("")) {
+							boolean isFilter = false;
+							if (line.startsWith("[:F]")) {
 								line = line.substring(4);
-								isFilter=true;
+								isFilter = true;
 							}
-							if(!line.startsWith("/"))
-								line=opt.lastMdlibPath+"/"+line;
+							if (!line.startsWith("/"))
+								line = opt.lastMdlibPath + "/" + line;
 							try {
-								mdict mdTmp=mdict_cache.get(new File(line).getAbsolutePath());
-								if(mdTmp==null)
-									mdTmp=new_mdict(line, MainActivityUIBase.this);
-								boolean add=true;
-								if(isFilter){
-									mdTmp.tmpIsFilter=true;
+								mdict mdTmp = mdict_cache.get(new File(line).getAbsolutePath());
+								if (mdTmp == null)
+									mdTmp = new_mdict(line, MainActivityUIBase.this);
+								boolean add = true;
+								if (isFilter) {
+									mdTmp.tmpIsFilter = true;
 									currentFilter.add(mdTmp);
-									add=opt.getHideDedicatedFilter()&&!mdTmp.getIsDedicatedFilter();
+									add = opt.getHideDedicatedFilter() && !mdTmp.getIsDedicatedFilter();
 								}
-								if(add) {
-									if(mdTmp._Dictionary_fName.equals(lastMdName))
-										lastMdPos=md.size()-1;
+								if (add) {
+									if (mdTmp._Dictionary_fName.equals(lastMdName))
+										lastMdPos = md.size();
 									md.add(mdTmp);
 								}
 							} catch (Exception e) {
 								e.printStackTrace();
-								show(R.string.err,new File(line).getName(),line,e.getLocalizedMessage());
+								show(R.string.err, new File(line).getName(), line, e.getLocalizedMessage());
 							}
 						}
 						line = in.readLine();
@@ -1887,16 +1934,18 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					in.close();
 					mdict_cache.clear();
 					opt.putLastPlanName(scanInList.get(pos));
-					if(md.size()>0) {
-						currentDictionary = md.get(adapter_idx=lastMdPos);
-					}else{
+					if (md.size() > 0) {
+						currentDictionary = md.get(adapter_idx = lastMdPos);
+					} else {
 						currentDictionary = null;
 					}
 					dialog.dismiss();
 					invalidAllLists();
-					show(R.string.loadsucc);
-					File def1 = new File(getExternalFilesDir(null),"default.txt");
-					FileChannel inputChannel = null;
+					//show(R.string.loadsucc);
+					showTopSnack(main_succinct, R.string.loadsucc
+							, -1, -1, Gravity.CENTER, false);
+					File def1 = new File(getExternalFilesDir(null), "default.txt");
+					FileChannel inputChannel;
 					FileChannel outputChannel = null;
 					try {
 						inputChannel = new FileInputStream(newf).getChannel();
@@ -1908,40 +1957,43 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-				}catch(Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 
 			});
 
-		AlertDialog dTmp = builder2.create();
-		dTmp.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
+			dTmp = builder2.create();
+			dTmp.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark ? R.drawable.popup_shadow_d : R.drawable.popup_shadow_l);
+			((AlertController.RecycleListView) dTmp.getListView())
+					.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_));
 
-		dTmp.show();
-		//d=dTmp;
-		dTmp.setOnDismissListener(this);
+			dTmp.show();
 
-		dTmp.getListView().setAdapter(new ArrayAdapter<String>(getApplicationContext(),
-				R.layout.singlechoice, android.R.id.text1, scanInList) {
-			@NonNull @Override
-			public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-				View ret =  super.getView(position, convertView, parent);
-				CheckedTextViewmy tv;
-				if(ret.getTag()==null)
-					ret.setTag(tv = ret.findViewById(android.R.id.text1));
-				else
-					tv = (CheckedTextViewmy)ret.getTag();
-				tv.setTextColor(AppBlack);
-				tv.setText(scanInList.get(position));
-				return ret;
+			dTmp.getListView().setAdapter(new ArrayAdapter<String>(getApplicationContext(),
+					R.layout.singlechoice, android.R.id.text1, scanInList) {
+				@NonNull
+				@Override
+				public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+					View ret = super.getView(position, convertView, parent);
+					CheckedTextViewmy tv;
+					if (ret.getTag() == null)
+						ret.setTag(tv = ret.findViewById(android.R.id.text1));
+					else
+						tv = (CheckedTextViewmy) ret.getTag();
+					tv.setTextColor(AppBlack);
+					tv.setText(scanInList.get(position));
+					return ret;
+				}
+			});
+
+			if(lastCheckedPos!=-1) {
+				dTmp.getListView().setItemChecked(lastCheckedPos, true);
 			}
-		});
-
-		dTmp.getListView().addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (root.getHeight()-root.getPaddingTop()-2.8*getResources().getDimension(R.dimen._50_))));
-
-		if(lastCheckedPos!=-1) {
-			dTmp.getListView().setSelection(lastCheckedPos);
-			dTmp.getListView().setItemChecked(lastCheckedPos, true);
+			setchooser = new WeakReference<>(dTmp);
+		}
+		else{
+			dTmp.show();
 		}
 	}
 
@@ -1974,10 +2026,10 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		public void onPageFinished(WebView view, String url) {
 			//CMN.Log("onPageFinished");
 			//if(true) return;
+
 			Integer selfAtIdx = IU.parseInt(view.getTag());
 			if(selfAtIdx==null || selfAtIdx>=md.size() || selfAtIdx<0) return;
 			final mdict invoker = md.get(selfAtIdx);
-			final WebViewmy mWebView = (WebViewmy) view;
 			boolean fromPeruseView=view.getTag(R.id.position)!=null;
 
 			if(fromPeruseView?PeruseView.webScale!=mdict.def_zoom:invoker.webScale!=mdict.def_zoom) {
@@ -1985,53 +2037,61 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				//	view.zoomBy(0.02f);//reset zoom!
 				//if(fromPeruseView)PeruseView.webScale=mdict.def_zoom;else invoker.webScale=mdict.def_zoom;
 			}
-			if(view.getTag(R.id.toolbar_action3)!=null) {
-				//CMN.Log("变小了吗？");
-				if(((WebViewmy)view).webScale!=opt.dm.density){
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-						//CMN.Log("变小了");
-						view.zoomBy(0.02f);
+			ViewGroup root = (ViewGroup) (fromPeruseView?PeruseView.rl:invoker.rl).getParent();
+			if(root!=null){
+				boolean fromCombined = root.getId()==R.id.webholder;
+
+				WebViewmy mWebView = (WebViewmy) view;
+				if(view.getTag(R.id.toolbar_action3)!=null) {
+					//CMN.Log("变小了吗？");
+					if(((WebViewmy)view).webScale!=opt.dm.density){
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+							//CMN.Log("变小了");
+							view.zoomBy(0.02f);
+						}
+					}
+					view.setTag(R.id.toolbar_action3,null);
+				}
+				boolean toHighLight = opt.getPageAutoScrollOnTurnPage() && view.getTag(R.id.toolbar_action5) != null;
+
+				if(!fromCombined) {
+					lastClickTime = System.currentTimeMillis();
+
+					String PagedoneIncantation = null;
+
+					if (CMN.editAll || invoker.bContentEditable) {
+						if (PagedoneIncantation == null)
+							PagedoneIncantation = "";
+						PagedoneIncantation += "document.body.contentEditable=true;";
+						ViewGroup VG = (ViewGroup) mWebView.getParent().getParent();
+						if (VG != null && VG.getId() == R.id.webholder)
+							VG.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+					}
+					if (PagedoneIncantation != null)
+						mWebView.evaluateJavascript(PagedoneIncantation, null);
+
+					//document.body.contentEditable=true;
+
+					if (!toHighLight) {
+						int lalaX, lalaY;
+						mWebView.setTag(R.id.toolbar_action1, lalaX = fromPeruseView ? PeruseView.expectedPosX : invoker.expectedPosX);
+						mWebView.setTag(R.id.toolbar_action2, lalaY = fromPeruseView ? PeruseView.expectedPos : invoker.expectedPos);
+						//layoutScrollDisabled=true;
+						//CMN.Log("initial_push: ",lalaX, lalaY);
+						mWebView.scrollTo(lalaX, lalaY);
+
+						NaugtyWeb = mWebView;
+						if (hdl != null)
+							hdl.sendEmptyMessage(778899);
+
+						layoutScrollDisabled = true;
 					}
 				}
-				view.setTag(R.id.toolbar_action3,null);
-			}
+				if(toHighLight){
+					jumpNaughtyFirstHighlight(mWebView);
+				}
 
-			lastClickTime=System.currentTimeMillis();
-
-			String PagedoneIncantation = null;
-
-			if(CMN.editAll || invoker.bContentEditable) {
-				if(PagedoneIncantation==null)
-					PagedoneIncantation="";
-				PagedoneIncantation+="document.body.contentEditable=true;";
-				ViewGroup VG = (ViewGroup) mWebView.getParent().getParent();
-				if(VG!=null && VG.getId()==R.id.webholder)
-					VG.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
-			}
-			if(PagedoneIncantation!=null)
-				mWebView.evaluateJavascript(PagedoneIncantation, null);
-
-			//document.body.contentEditable=true;
-
-			int lalaX,lalaY;
-			mWebView.setTag(R.id.toolbar_action1,lalaX=fromPeruseView?PeruseView.expectedPosX:invoker.expectedPosX);
-			mWebView.setTag(R.id.toolbar_action2,lalaY=fromPeruseView?PeruseView.expectedPos:invoker.expectedPos);
-			//layoutScrollDisabled=true;
-			//CMN.Log("initial_push: ",lalaX, lalaY);
-			mWebView.scrollTo(lalaX, lalaY);
-
-
-			NaugtyWeb=mWebView;
-			if(hdl!=null)
-				hdl.sendEmptyMessage(778899);
-
-			layoutScrollDisabled=true;
-
-			mWebView.isloading=false;
-
-			//super.onPageFinished(view, url);
-			if(!invoker.isJumping) {
-				//v.clearHistory();
+				mWebView.isloading = false;
 			}
 		}
 
@@ -2131,9 +2191,9 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			}
 			else if(url.startsWith(soundTag)) {
 				try {
-					if(invoker.mdd!=null) {
-						//CMN.Log("shouldOverrideUrlLoading_sound",url);
-						view.evaluateJavascript("var audioTag = document.getElementById(\"myAudio\");if(audioTag){audioTag.pause();}else {audioTag = document.createElement(\"AUDIO\");audioTag.id=\"myAudio\";document.body.appendChild(audioTag);} audioTag.setAttribute(\"src\", \""+URLDecoder.decode(url.substring(soundTag.length()),"UTF-8")+"\");audioTag.play();", null);
+					if(invoker.hasMdd()) {
+						//CMN.Log("hijacked sound playing : ",url);
+						view.evaluateJavascript(playsoundscript+("('"+URLDecoder.decode(url.substring(soundTag.length()),"UTF-8")+"')"), null);
 					}else
 						view.evaluateJavascript("var hrefs = document.getElementsByTagName('a'); for(var i=0;i<hrefs.length;i++){ if(hrefs[i].attributes['href']){ if(hrefs[i].attributes['href'].value=='"+URLDecoder.decode(url,"UTF-8")+"'){ hrefs[i].removeAttribute('href'); hrefs[i].click(); break; } } }", null);
 					return true;
@@ -2251,27 +2311,13 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 
 		@Override
 		public WebResourceResponse shouldInterceptRequest (final WebView view, String url) {
-    	/*if(url.startsWith(entryTag)){
-    		Log.e("chromium inter_entry",url);
-    		url = url.substring(entryTag.length());
-    		try {
-				Log.e("chromium inter_entry",URLDecoder.decode(url,"UTF-8"));
-				//CMN.a.ActivedAdapter.onItemClick(lookUp(URLDecoder.decode(url,"UTF-8")));
-				return null;//new WebResourceResponse("text/html","UTF-8",new ByteArrayInputStream(getRecordAt(lookUp(URLDecoder.decode(url,"UTF-8"))).getBytes()));
-    		} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-    	}
-    	*/
+			if(url.startsWith("data:"))
+				return super.shouldInterceptRequest(view, url);
 			Integer selfAtIdx = IU.parseInt(view.getTag());
 			if(selfAtIdx==null || selfAtIdx>=md.size() || selfAtIdx<0) return null;
 			mdict invoker = md.get(selfAtIdx);
 
-			if(url.startsWith("http") && url.endsWith("mp3")) {
-				if(true)
-					return super.shouldInterceptRequest(view, url);
+			if(url.startsWith("http") && url.endsWith(".mp3")) {
 				try {
 					HttpURLConnection conn;
 					URL webUrl = new URL(url);
@@ -2279,31 +2325,22 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 					conn.setConnectTimeout(2000);
 					conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
 					InputStream inputStream = conn.getInputStream();
-
 					return new WebResourceResponse("audio/mpeg","UTF-8",inputStream);
 				} catch (IOException e) {
 					//CMN.Log("shouldInterceptRequest__ffffff",url);
 					e.printStackTrace();
 				}
 			}
-			try {
-				if(url.toLowerCase().contains(".js")) {
-					Log.e("candi",url);
-					File candi = new File(invoker.f().getParentFile(),new File(url).getName());
-					if(candi.exists())
-						return new WebResourceResponse("text/x-javascript","UTF-8",new FileInputStream(candi));
-
-				}
-				if(url.toLowerCase().endsWith(".css")) {
-					Log.e("candi",url);
-					File candi = new File(invoker.f().getParentFile(),new File(url).getName());
-					if(candi.exists())
-						return new WebResourceResponse("text/css","UTF-8",new FileInputStream(candi));
-				}
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+			boolean b1;
+			if((b1=url.toLowerCase().contains(".js"))||url.toLowerCase().endsWith(".css")) {
+				File candi = new File(invoker.f().getParentFile(),new File(url).getName());
+				//CMN.Log("candi_csssj",url, candi.getAbsolutePath(), candi.exists());
+				if(candi.exists()) try {
+					return new WebResourceResponse(b1?"text/x-javascript":"text/css","UTF-8",new FileInputStream(candi));
+				} catch (FileNotFoundException ignored) { }
 			}
 
+			//CMN.Log("chrochro_inter_0",url);
 
 			if(url.startsWith(soundTag)) {
 				url = url.substring(soundTag.length());
@@ -2313,16 +2350,16 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			} catch (UnsupportedEncodingException e1) {
 				e1.printStackTrace();
 			}
-			Log.e("chrochro_inter_0",url);
+
 			String SepWindows = "\\";
 			String key=url;
 
-			int start = key.indexOf(invoker.FileTag);
+			int start = key.indexOf(mdict.FileTag);
 			if(start==-1){
 				if(key.startsWith("./"))
 					key=key.substring(1);
 			}else{
-				key = key.substring(start+invoker.FileTag.length());
+				key = key.substring(start+ mdict.FileTag.length());
 			}
 			key=key.replace("/", SepWindows);
 
@@ -2334,7 +2371,7 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 			if(key.startsWith("\\MdbR\\")){
 				try {
 					key=key.substring(6);
-					CMN.Log("[fetching internal res : ]", key);
+					//CMN.Log("[fetching internal res : ]", key);
 					String mime="*/*";
 					if(key.endsWith(".css")) mime = "text/css";
 					if(key.endsWith(".js")) mime = "text/js";
@@ -2344,18 +2381,13 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 				}
 			}
 
-			if(invoker.mdd==null)
+			if(!invoker.hasMdd())
 				return null;
 
 			try {
-				int idx = invoker.mdd.lookUp(key);
-				if(idx==-1) {
-					//CMN.Log("chrochro inter_ key is not find: ",key);
-					//return super.shouldInterceptRequest(view, url);
-				}
-				byte[] restmp=invoker.mdd.getRecordAt(idx);
-
+				InputStream restmp=invoker.getResourceByKey(key);
 				if(restmp==null) {
+					CMN.Log("chrochro inter_ key is not find: ",key);
 					if(url.startsWith("http://")) {
 						URL uurrll = new URL(url);
 						HttpURLConnection conn = (HttpURLConnection) uurrll.openConnection();
@@ -2367,39 +2399,57 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 						InputStream inStream = conn.getInputStream();
 						//conn.setRequestProperty("lfwywxqyh_token",toekn);
 						byte[] buffer = new byte[1024];
-						int len = 0;
+						int len;
 						ByteArrayOutputStream bos = new ByteArrayOutputStream();
 						while((len = inStream.read(buffer)) != -1) {
 							bos.write(buffer, 0, len);
 						}
 						bos.close();
-						restmp =  bos.toByteArray();
+						restmp = new ByteArrayInputStream(bos.toByteArray());
 						//return new WebResourceResponse("","UTF-8",inStream);
-					}else
-						return super.shouldInterceptRequest(view, url);
+					}
+					else return super.shouldInterceptRequest(view, url);
 				}
 
-				if(restmp==null) return super.shouldInterceptRequest(view, url);
-
 				if(url.contains(".mp4"))
-					return new WebResourceResponse("video/mp4","UTF-8",new ByteArrayInputStream(restmp));
+					return new WebResourceResponse("video/mp4","UTF-8",restmp);
 
 				if(url.contains(".mp3"))
-					return new WebResourceResponse("audio/mpeg","UTF-8",new ByteArrayInputStream(restmp));
+					return new WebResourceResponse("audio/mpeg","UTF-8",restmp);
+
+				if(url.endsWith(".spx")) {
+					//CMN.Log("spx : "+url);
+					ByteArrayRandomOutputStream bos = new ByteArrayRandomOutputStream();
+					JSpeexDec decoder = new JSpeexDec();
+					try {
+						decoder.decode(new DataInputStream(restmp) , bos, JSpeexDec.FILE_FORMAT_WAVE);
+						return new WebResourceResponse("audio/mpeg","UTF-8",new ByteArrayInputStream(bos.toByteArray()));
+					} catch (Exception e) { e.printStackTrace(); }
+				}
+
+
+				if(url.endsWith(".tif") || url.endsWith(".tiff")) {
+					//CMN.Log("tif : "+url); CMN.rt();
+					try {
+						BufferedImage image = Imaging.getBufferedImage(restmp, getTifConfig());
+						//CMN.pt("解码耗时 : "); CMN.rt();
+						ByteArrayRandomOutputStream bos = new ByteArrayRandomOutputStream((int) (restmp.available()*2.5));
+						image.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+						//CMN.pt("再编码耗时 : ");
+						return new WebResourceResponse("audio/jpeg","UTF-8",new ByteArrayInputStream(bos.toByteArray()));
+					} catch (Exception e) { e.printStackTrace(); }
+				}
 
 				if(url.contains(".png") || url.contains(".jpg") || url.contains(".gif") || url.contains(".jpeg") ||url.contains(".tif")) {
 					//CMN.Log("chrochrochrochrochrochro inter_ key is",key);
 					//BU.printFile(restmp,0,restmp.length,"/sdcard/0tmp/"+key.replace("\\", "_"));
-					return new WebResourceResponse("image/jpg","UTF-8",new ByteArrayInputStream(restmp));
+					return new WebResourceResponse("image/jpg","UTF-8",restmp);
 				}
 
 				if(url.contains(".js"))
-					return new WebResourceResponse("application/x-javascript","UTF-8",new ByteArrayInputStream(restmp));
+					return new WebResourceResponse("application/x-javascript","UTF-8",restmp);
 
-
-				return new WebResourceResponse("","UTF-8",new ByteArrayInputStream(restmp));
-
-
+				return new WebResourceResponse("","UTF-8",restmp);
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -2439,54 +2489,125 @@ public class MainActivityUIBase extends Toastable_Activity implements OnTouchLis
 		}
 	};
 
+	private static  HashMap mTifConfig;
+	public static HashMap<String, Object> getTifConfig() {
+		if(mTifConfig==null) {
+			HashMap<Object, Object> tifConfig = new HashMap<>();
+			tifConfig.put(ImagingConstants.BUFFERED_IMAGE_FACTORY, new ManagedImageBufferedImageFactory());
+			mTifConfig=tifConfig;
+		}
+		return mTifConfig;
+	}
+
+	void jumpNaughtyFirstHighlight(WebViewmy mWebView) {
+		long mJumpNaughtyTimeToken = jumpNaughtyTimeToken = System.currentTimeMillis();
+		NaughtyJumpper=()-> mWebView.evaluateJavascript("bOnceHighlighted", value -> {
+			if(mJumpNaughtyTimeToken!=jumpNaughtyTimeToken)
+				return;
+			if(!"true".equals(value)){
+				do_jumpNaughtyFirstHighlight(mWebView);
+			}else{
+				jumpHighlight(1, false);
+			}
+		});
+		do_jumpNaughtyFirstHighlight(mWebView);
+	}
+
+	private void do_jumpNaughtyFirstHighlight(WebViewmy mWebView) {
+		mWebView.removeCallbacks(NaughtyJumpper);
+		mWebView.post(NaughtyJumpper);
+	}
+
 	public void locateNaviIcon(View widget13,View widget14){
 		if(opt.getNavigationBtnType()==0 || (opt.getNavigationBtnType()==2 && !opt.getBottombarOnBottom())) {
 			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) widget13.getLayoutParams();
 			//if((lp.gravity&Gravity.TOP) != 0 ) return;
-			lp.gravity=Gravity.TOP|Gravity.RIGHT;
+			lp.gravity=Gravity.TOP|Gravity.END;
 			FrameLayout.LayoutParams lp1 = (FrameLayout.LayoutParams) widget14.getLayoutParams();
 			lp1.topMargin=lp.bottomMargin;
 			lp.topMargin=lp1.bottomMargin;
-			lp1.gravity=Gravity.TOP|Gravity.RIGHT;
+			lp1.gravity=Gravity.TOP|Gravity.END;
 			widget13.setLayoutParams(lp);
 			widget14.setLayoutParams(lp1);
 		}else {
 			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) widget13.getLayoutParams();
 			//if((lp.gravity&Gravity.BOTTOM) != 0 ) return;
-			lp.gravity=Gravity.BOTTOM|Gravity.RIGHT;
+			lp.gravity=Gravity.BOTTOM|Gravity.END;
 			widget13.setLayoutParams(lp);
 			lp = (FrameLayout.LayoutParams) widget14.getLayoutParams();
-			lp.gravity=Gravity.BOTTOM|Gravity.RIGHT;
+			lp.gravity=Gravity.BOTTOM|Gravity.END;
 			widget14.setLayoutParams(lp);
 		}
 	}
 
-	public OnLayoutChangeListener OLCL;
-	final static String DeDarkModeIncantation = "ssc=document.getElementsByTagName('style');for(var i=0;i<ssc.length;i++){if(ssc[i].innerHTML){if(new RegExp('^'+'html {-webkit-filter').test(ssc[i].innerHTML)){document.getElementsByTagName('head')[0].removeChild(ssc[i]);break;}}}";
-	public final static String DarkModeIncantation_l = "<style>html {-webkit-filter: invert(100%);"
-			+"-moz-filter:invert(100%);"
-			+"-o-filter:invert(100%);"
-			+"-ms-filter:invert(100%);}"
-			+ "</style>";
-	final static String DarkModeIncantation ="var css = 'html {-webkit-filter: invert(100%);' +"
-			+"    '-moz-filter: invert(100%);' + "
-			+"    '-o-filter: invert(100%);' + "
-			+"    '-ms-filter: invert(100%); }',"
+	/**
+	 var ssc=document.getElementsByTagName('style');
+	 for(var i=0;i<ssc.length;i++){
+		 if(ssc[i].innerHTML){
+			 if(new RegExp('^'+'html {-webkit-filter').test(ssc[i].innerHTML)){
+			 	document.getElementsByTagName('head')[0].removeChild(ssc[i]);
+	 			break;
+		 }
+	 }
+	 }
+	 */
+	@Multiline
+	final static String DeDarkModeIncantation = "DARK";
 
-			+"head = document.getElementsByTagName('head')[0],"
-			+"style = document.createElement('style');"
+	/**
+	 <style>html {-webkit-filter: invert(100%);
+		 -moz-filter:invert(100%);
+		 -o-filter:invert(100%);
+		 -ms-filter:invert(100%);
+	 }
+	 </style>
+	 */
+	@Multiline
+	public final static String DarkModeIncantation_l = "DARK";
 
-			//+"if (!window.counter) { window.counter = 1;} else  { window.counter ++;"
-			//+"if (window.counter % 2 == 0) { var css ='html {-webkit-filter: invert(0%); -moz-filter:    invert(0%); -o-filter: invert(0%); -ms-filter: invert(0%); }'}"
-			//+"};"
+	/**
+	 var css = 'html {-webkit-filter: invert(100%);\
+					 -moz-filter: invert(100%);\
+					 -o-filter: invert(100%);\
+					 -ms-filter: invert(100%);}',
+	 head = document.getElementsByTagName('head')[0],
+	 style = document.createElement('style');
+	 style.type = 'text/css';
+	 if (style.styleSheet){
+		 style.styleSheet.cssText = css;
+	 } else {
+	 	style.appendChild(document.createTextNode(css));
+	 }
+	 //injecting the css to the head
+	 head.appendChild(style);
+	 */
+	@Multiline
+	final static String DarkModeIncantation ="DARK";
 
-			+"style.type = 'text/css';"
-			+"if (style.styleSheet){"
-			+"style.styleSheet.cssText = css;"
-			+"} else {"
-			+"style.appendChild(document.createTextNode(css));"
-			+"}"
-			//injecting the css to the head
-			+"head.appendChild(style);";
+	/**
+	 (function(key){
+		var audioTag = document.getElementById("myAudio");
+		if(audioTag){
+	 		audioTag.pause();
+		}
+		else {
+			audioTag = document.createElement("AUDIO");
+	 		audioTag.addEventListener('pause', function () {
+	 			app.onAudioPause();
+	 		}, false);
+	 		audioTag.addEventListener('play', function () {
+	 			app.onAudioPlay();
+	 		}, false);
+			audioTag.id="myAudio";
+			document.body.appendChild(audioTag);
+		}
+		audioTag.setAttribute("src", key);
+		audioTag.play();
+	 })
+	 */
+	@Multiline
+	final static String playsoundscript="AUDIO";
 
+	public void jumpHighlight(int d, boolean calcIndicator){
+	}
 }

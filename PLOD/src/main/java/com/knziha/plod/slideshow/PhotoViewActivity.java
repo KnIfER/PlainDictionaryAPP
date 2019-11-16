@@ -24,7 +24,9 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.alexvasilkov.gestures.commons.DepthPageTransformer;
+import com.bumptech.glide.RequestManager;
 import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 import com.bumptech.glide.Glide;
@@ -38,18 +40,22 @@ import com.knziha.plod.dictionary.mdictRes;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.widgets.SimpleClickableSpan;
 
+import org.apache.commons.imaging.Imaging;
+
+import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 
 import static com.knziha.plod.PlainDict.Toastable_Activity.checkMargin;
 import static com.knziha.plod.dictionarymodels.mdict.indexOf;
 
 /** Photo View Activity.<br/> Original Author : someone on the internet. */
 public class PhotoViewActivity extends Activity implements View.OnClickListener, View.OnLongClickListener {
-	public static mdictRes mdd;
-	public mdictRes mdd_;
+	public static List<mdictRes> mdd;
+	public List<mdictRes> mdd_;
 	public static final int OffScreenViewPagerSize=5;
 	LinkedList<PhotoView> mViewCache = new LinkedList<>();
 	private String[] imageUrls;
@@ -84,7 +90,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 		mdd=null;
 		imageUrls = getIntent().getStringArrayExtra("images");
 		curPosition = getIntent().getIntExtra("current", 0);
-		CMN.Log(imageUrls, curPosition);
+
 		indicator = findViewById(R.id.indicator);
 		backward = findViewById(R.id.browser_widget13);
 		forward = findViewById(R.id.browser_widget14);
@@ -125,11 +131,9 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 					imageUrls[position] = ProcessUrl(imageUrls[position]);
 					processedRec.add(position);
 				}
-
-				CMN.Log("mdd","fetching res:"+imageUrls[position]);
+				String key=imageUrls[position];
 				try {
-					Glide.with(PhotoViewActivity.this)
-							.load(mdd_.getRecordAt(mdd_.lookUp(imageUrls[position])))
+					Glide.with(PhotoViewActivity.this).load(new MddPic(mdd_, key))
 							.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
 							.fitCenter()
 							.diskCacheStrategy(DiskCacheStrategy.NONE)

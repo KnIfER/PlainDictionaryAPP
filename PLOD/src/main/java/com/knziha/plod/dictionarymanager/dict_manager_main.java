@@ -390,7 +390,11 @@ public class dict_manager_main extends dict_manager_base<mdict> {
 													mdTmp.renameFileTo(to);
 													CMN.Log("重命名",mdTmp._Dictionary_fName_Internal);
 													adapter.remove(mdTmp);
-													adapter.insert(new mdict_prempter(to.getAbsolutePath(),a.opt), actualPosition);
+													try {
+														adapter.insert(new mdict_prempter(to.getAbsolutePath(),a.opt), actualPosition);
+													} catch (IOException e) {
+														e.printStackTrace();
+													}
 													suc=true;
 												}
 											}

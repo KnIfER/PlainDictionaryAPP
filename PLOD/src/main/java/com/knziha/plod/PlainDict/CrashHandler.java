@@ -54,7 +54,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		info_builder=new StringBuilder();
 		info_builder.setLength(0);
 		info_builder.append(contex.getResources().getString(R.string.app_name)).append("[device_n.").append(Build.VERSION.CODENAME)
-			.append(", v.").append(Build.VERSION.SDK_INT);
+				.append(", v.").append(Build.VERSION.SDK_INT);
 	}
 
 	public void register(Context context) {

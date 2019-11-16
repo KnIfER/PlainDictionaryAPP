@@ -6,12 +6,13 @@ import android.view.ViewGroup;
 import android.widget.ScrollView;
 
 import com.knziha.plod.PlainDict.BasicAdapter;
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.PlainDict.R;
 import com.knziha.rbtree.additiveMyCpr1;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 
 /** Recorder rendering search results as : LinearLayout {WebView, WebView, ... }  */
 public class resultRecorderCombined extends resultRecorderDiscrete {
@@ -52,19 +53,20 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 
 	OnLayoutChangeListener OLCL;
 
-	public boolean scrolled=false;
+	public boolean scrolled=false, toHighLight;
 	int LHGEIGHT;
 	
 	@Override
-	public void renderContentAt(int pos, final MainActivityUIBase a, BasicAdapter ADA){//,ViewGroup webholder
+	public void renderContentAt(int pos, final MainActivityUIBase a, BasicAdapter ADA){
 		final ScrollView sv = a.WHP;
-		if(expectedPos==0)
-			sv.smoothScrollTo(0, 0);
-		else
+		toHighLight=a.hasCurrentPageKey();
+		if(toHighLight || expectedPos==0)
+			sv.scrollTo(0, 0);
+		else{
 			sv.scrollTo(0, expectedPos);
+		}
 		
 		final List<Integer> vals = (List<Integer>) data.get(pos).value;
-		//String xxx=""; for(int i=0;i<vals.size();i+=2) xxx+=vals.get(i)+"-"+vals.get(i+1)+" ";
 
 		int lastVal=-1, valueCount=0;
 		int[] exempter = new int[vals.size()/2];
@@ -93,9 +95,6 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 		}
 
-		if(a.main_progress_bar!=null)
-			a.main_progress_bar.setVisibility(expectedPos==0?View.GONE:View.VISIBLE);
-
 		//if(false)
 		a.WHP.touchFlag.first=false;
 		if(OLCL==null) {
@@ -103,23 +102,23 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				@Override
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight,
 						int oldBottom) {
-					if(a.WHP.touchFlag.first) {
+					if (a.WHP.touchFlag.first) {
 						a.main_progress_bar.setVisibility(View.GONE);
-						a.webholder.removeOnLayoutChangeListener(this);
+						v.removeOnLayoutChangeListener(this);
 						return;
 					}
 					//if(expectedPos==0) return;
-					int HGEIGHT = bottom-top;
-					if(HGEIGHT<LHGEIGHT)
-						scrolled=false;
-					LHGEIGHT=HGEIGHT;
-					if(!scrolled) {
-						if(HGEIGHT>=expectedPos+sv.getMeasuredHeight()) {
+					int HGEIGHT = bottom - top;
+					if (HGEIGHT < LHGEIGHT)
+						scrolled = false;
+					LHGEIGHT = HGEIGHT;
+					if (!scrolled) {
+						if (HGEIGHT >= expectedPos + sv.getMeasuredHeight()) {
 							sv.scrollTo(0, expectedPos);//smooth
-							//a.showT(sv.getMeasuredHeight()+  "scrolled"+expectedPos);
-							if(sv.getScrollY()==expectedPos) {
+							CMN.Log(sv.getMeasuredHeight(), "scrolled", expectedPos);
+							if (sv.getScrollY() == expectedPos) {
 								a.main_progress_bar.setVisibility(View.GONE);
-								scrolled=true;
+								scrolled = true;
 							}
 						}
 					}
@@ -128,8 +127,13 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		}
 		
 		LHGEIGHT=0;
-		a.webholder.addOnLayoutChangeListener(OLCL);
-		scrolled=false;
+		a.webholder.removeOnLayoutChangeListener(OLCL);
+		if(!toHighLight){
+			a.webholder.addOnLayoutChangeListener(OLCL);
+			if(a.main_progress_bar!=null)
+				a.main_progress_bar.setVisibility(expectedPos==0?View.GONE:View.VISIBLE);
+			scrolled=false;
+		}
 
 		ArrayList<Integer> valsTmp = new ArrayList<>();
 		valueCount=0;
@@ -151,8 +155,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			//if(Build.VERSION.SDK_INT>=22)...// because kitkat's webview is not that adaptive for content height
 			mdtmp.initViewsHolder(a);
 			mdtmp.rl.setTag(toFind);
+			int frameAt=a.webholder.getChildCount();
+			frameAt=valueCount>frameAt?frameAt:valueCount;
 			if(mdtmp.rl.getParent()==null)
-				a.webholder.addView(mdtmp.rl,valueCount>a.webholder.getChildCount()?a.webholder.getChildCount():valueCount);
+				a.webholder.addView(mdtmp.rl,frameAt);
 			//else
 			//	a.showT("yes: "+mdtmp._Dictionary_fName);
 			mdtmp.rl.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -163,8 +169,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				mdtmp.mWebView.setLayerType(View.LAYER_TYPE_NONE, null);
 			*/
 			//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-			
-			mdtmp.renderContentAt(-1,toFind,null,d);
+			mdtmp.mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
+			mdtmp.renderContentAt(-1,toFind,frameAt,null, d);
 			
 			
 			mdtmp.mWebView.getSettings().setSupportZoom(false);

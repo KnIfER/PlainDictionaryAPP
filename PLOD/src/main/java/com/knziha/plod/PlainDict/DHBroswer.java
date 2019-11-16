@@ -18,11 +18,11 @@ public class DHBroswer extends DBroswer {
 	public DHBroswer(){
 		super();
 	}
-	
-	
+
+
 	//public Fragment_History_Broswer(MainActivity a_) {
 	//}
-	
+
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -33,7 +33,7 @@ public class DHBroswer extends DBroswer {
 		fastScroller.setBarColor(Color.parseColor("#2b4381"));
 		return ret;
 	}
-	
+
 	@Override
 	public void onDetach(){
 		super.onDetach();
@@ -44,9 +44,9 @@ public class DHBroswer extends DBroswer {
 			CMN.lastHisLexicalEntry=-1;
 			CMN.lastHisLexicalEntryOff = 0;
 		}
-		
+
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
@@ -55,45 +55,45 @@ public class DHBroswer extends DBroswer {
 		lastChecked=0;
 		super.onActivityCreated(savedInstanceState);
 	}
-	
+
 	@Override
 	protected void loadInDataBase(PDICMainActivity a) {
 		final File fi = new File(a.historyCon.pathName);
 		items.add(fi);
 	}
-	
+
 	protected void loadInAll(File filename) {
 		mLexiDB = new LexicalDBHelper((MainActivityUIBase)getActivity(),filename);
 		cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
 		mCards_size = cr.getCount();
-		
-		show(R.string.maniFavor2,boli(items.get(lastChecked).getName()),mCards_size);
-        mAdapter.notifyDataSetChanged();
-        lm.scrollToPositionWithOffset(lastFirst,CMN.lastHisLexicalEntryOff);
-        
-        hideProgressBar();
-	}
-	
 
-	
-	
-	
+		show(R.string.maniFavor2,boli(items.get(lastChecked).getName()),mCards_size);
+		mAdapter.notifyDataSetChanged();
+		lm.scrollToPositionWithOffset(lastFirst,CMN.lastHisLexicalEntryOff);
+
+		hideProgressBar();
+	}
+
+
+
+
+
 	@Override
 	public void toggleFavor() {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
-    	String text = mCards.get(currentPos).name;
-    	long time = mCards.get(currentPos).time;
-    	if(text==null) {
-    		cr.moveToPosition(currentPos);
-    		try {
-    			text=cr.getString(0);
-    			time=cr.getLong(1);
+		String text = mCards.get(currentPos).name;
+		long time = mCards.get(currentPos).time;
+		if(text==null) {
+			cr.moveToPosition(currentPos);
+			try {
+				text=cr.getString(0);
+				time=cr.getLong(1);
 			} catch (Exception e) {
 				text="!!!Error: "+e.getLocalizedMessage();
 			}
-    	}
-    	
+		}
+
 		a.favoriteCon.prepareContain();
 		if(a.favoriteCon.contains(text)) {//删除
 			a.favoriteCon.remove(text);
@@ -108,10 +108,10 @@ public class DHBroswer extends DBroswer {
 			a.favoriteBtn.setImageDrawable(a.star_ic);
 			a.show(R.string.added);
 		}
-		
-	
+
+
 	}
-	
+
 	@Override
 	public void processFavorite(int position,String key) {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
@@ -124,7 +124,7 @@ public class DHBroswer extends DBroswer {
 			}
 			a.favoriteBtn.setImageDrawable(a.star_ic);
 		}else if(a.star!=null)
-			a.favoriteBtn.setImageDrawable(a.star);			
+			a.favoriteBtn.setImageDrawable(a.star);
 	}
 
 	@Override

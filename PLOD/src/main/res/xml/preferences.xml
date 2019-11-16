@@ -125,6 +125,24 @@
 
 
 		<Preference
+			android:key="sspec"
+			android:persistent="false"
+			android:title="搜索设置"
+			app:isPreferenceVisible="true"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<Preference
+			android:key="vspec"
+			android:persistent="false"
+			android:title="视图杂项"
+			app:isPreferenceVisible="true"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<Preference
 			android:key="dev"
 			android:persistent="false"
 			android:title="@string/dev"

@@ -35,11 +35,6 @@ public class SplitViewGuarder extends View implements OnTouchListener{
         init();
     }
 
-	public SplitViewGuarder(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-		super(context, attrs, defStyleAttr, defStyleRes);
-		init();
-	}
-
 	Paint p;
 	
 	private void init() {

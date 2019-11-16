@@ -51,22 +51,22 @@ import android.widget.Toast;
 
 
 public class CuteFileManager extends Toastable_Activity implements OnClickListener, OnLongClickListener, OnMenuItemClickListener{
-	
-    
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if(mConfiguration.orientation!=newConfig.orientation) {
-        	mConfiguration = getResources().getConfiguration();
-        }
-    }
+
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		if(mConfiguration.orientation!=newConfig.orientation) {
+			mConfiguration = getResources().getConfiguration();
+		}
+	}
 
 	private final Handler mHandle = new Handler(){
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {}
-	}};
-	
+		}};
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		//showT("asdasd"+event);
@@ -78,65 +78,65 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 
 	Configuration mConfiguration;
 	private View cb1;
-	
 
-    ArrayList<FilePickerDialog> viewList;
-    NoScrollViewPager viewPager;
-    
 
-    ActionBarDrawerToggle mDrawerToggle;
-    DrawerLayout mDrawerLayout;
+	ArrayList<FilePickerDialog> viewList;
+	NoScrollViewPager viewPager;
+
+
+	ActionBarDrawerToggle mDrawerToggle;
+	DrawerLayout mDrawerLayout;
 
 	String lastPastedContent = "";
 	public Drawer drawerFragment;
 	private int CurrentViewPage;
 	private PagerAdapter PagerAdapter;
-	
-	
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-    	mConfiguration = getResources().getConfiguration();
-        super.onCreate(null);
 
-        setTheme(R.style.PlainAppTheme);
-        //disable keyboard auto-coming up feature
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        
-        //getWindow().setNavigationBarColor(Color.BLACK);
-        
-        setContentView(R.layout.main_cute);
 
-        setStatusBarColor();
-        
-		
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		mConfiguration = getResources().getConfiguration();
+		super.onCreate(null);
+
+		setTheme(R.style.PlainAppTheme);
+		//disable keyboard auto-coming up feature
+		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+		//getWindow().setNavigationBarColor(Color.BLACK);
+
+		setContentView(R.layout.main_cute);
+
+		setStatusBarColor();
+
+
 		checkLaunch(savedInstanceState);
 
-    }
-    
-    
-    
-    protected void further_loading(final Bundle savedInstanceState) {
-    	super.further_loading(savedInstanceState);
-    	
-    	contentview =  (ViewGroup) findViewById(R.id.webcontent);
+	}
+
+
+
+	protected void further_loading(final Bundle savedInstanceState) {
+		super.further_loading(savedInstanceState);
+
+		contentview =  (ViewGroup) findViewById(R.id.webcontent);
 		viewPager = (NoScrollViewPager) findViewById(R.id.viewpager);
 		findViewById(R.id.toolbar).setVisibility(View.GONE);
-		
+
 		final DialogProperties properties = new DialogProperties();
-        properties.selection_mode = DialogConfigs.MULTI_MODE;
-        properties.selection_type = DialogConfigs.FILE_SELECT;
-        properties.root = new File("/");
-        properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
-        //!!!
-        properties.offset = new File(
-        		opt.lastMdlibPath
-        		);
-        properties.opt_dir=new File(opt.pathTo()+"favorite_dirs/");
-        properties.opt_dir.mkdirs();
-        //properties.extensions = new String[] {"mdx"};
-        properties.title_id = 0;
-        
+		properties.selection_mode = DialogConfigs.MULTI_MODE;
+		properties.selection_type = DialogConfigs.FILE_SELECT;
+		properties.root = new File("/");
+		properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
+		//!!!
+		properties.offset = new File(
+				opt.lastMdlibPath
+		);
+		properties.opt_dir=new File(opt.pathTo()+"favorite_dirs/");
+		properties.opt_dir.mkdirs();
+		//properties.extensions = new String[] {"mdx"};
+		properties.title_id = 0;
+
 
 		viewList = new ArrayList<FilePickerDialog>();
 		FilePickerDialog dialog = new FilePickerDialog(this, properties);
@@ -144,8 +144,8 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 		dialog.init();
 		dialog.getView().findViewById(R.id.footer).setVisibility(View.GONE);
 		dialog.title.setText("高维宇宙异度空间CeShi");
-        viewList.add(dialog);    
-        
+		viewList.add(dialog);
+
 		findViewById(R.id.browser_widget6).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -154,181 +154,181 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 				dialog.init();
 				dialog.getView().findViewById(R.id.footer).setVisibility(View.GONE);
 				dialog.title.setText("高维宇宙异度空间CeShi"+viewList.size());
-		        viewList.add(dialog);  
-		        PagerAdapter.notifyDataSetChanged();
-		        viewPager.setCurrentItem(viewList.size()-1);
+				viewList.add(dialog);
+				PagerAdapter.notifyDataSetChanged();
+				viewPager.setCurrentItem(viewList.size()-1);
 			}});
-		
-		
-		
-	        PagerAdapter = new PagerAdapter() {
-	            @Override  
-	            public boolean isViewFromObject(View arg0, Object arg1) {  
-	                return arg0 == arg1;  
-	            }  
-	            @Override  
-	            public int getCount() {  
-	                return viewList.size();  
-	            }  
-	            @Override  
-	            public void destroyItem(ViewGroup container, int position,  
-	                    Object object) { 
-	            	//showT("destroyItem");
-	                container.removeView(viewList.get(position).getView());
-	            }  
-	            @Override  
-	            public int getItemPosition(Object object) {  
-	                return super.getItemPosition(object);  
-	            }  
-	            @Override  
-	            public Object instantiateItem(ViewGroup container, int position) {  
-	                container.addView(viewList.get(position).getView());  
-	                return viewList.get(position).getView();  
-	            }  
-	        }; 
-	        viewPager.setAdapter(PagerAdapter);
-	        viewPager.setCurrentItem(CurrentViewPage = 0);
-	        viewPager.setNoScroll(false);
-	        
-    	
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.open, R.string.close);
-        mDrawerToggle.syncState();// 添加按钮
-    	
-    }
-    
-    
 
 
-    
-	TextWatcher tw1=new TextWatcher() {  
-        public void onTextChanged(CharSequence s, int start, int before, int count) {}  
-        
-        public void beforeTextChanged(CharSequence s, int start, int count,  int after) {}  
-          
-        public void afterTextChanged(Editable s) {  
-            //if (s.length() == 0) ivDeleteText.setVisibility(View.GONE);  
-            //else ivDeleteText.setVisibility(View.VISIBLE);  
-        	if (s.length() != 0) ivDeleteText.setVisibility(View.VISIBLE);
-        }  
-    };
-    
-    
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
+
+		PagerAdapter = new PagerAdapter() {
+			@Override
+			public boolean isViewFromObject(View arg0, Object arg1) {
+				return arg0 == arg1;
+			}
+			@Override
+			public int getCount() {
+				return viewList.size();
+			}
+			@Override
+			public void destroyItem(ViewGroup container, int position,
+									Object object) {
+				//showT("destroyItem");
+				container.removeView(viewList.get(position).getView());
+			}
+			@Override
+			public int getItemPosition(Object object) {
+				return super.getItemPosition(object);
+			}
+			@Override
+			public Object instantiateItem(ViewGroup container, int position) {
+				container.addView(viewList.get(position).getView());
+				return viewList.get(position).getView();
+			}
+		};
+		viewPager.setAdapter(PagerAdapter);
+		viewPager.setCurrentItem(CurrentViewPage = 0);
+		viewPager.setNoScroll(false);
+
+
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.open, R.string.close);
+		mDrawerToggle.syncState();// 添加按钮
+
+	}
+
+
+
+
+
+	TextWatcher tw1=new TextWatcher() {
+		public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+		public void beforeTextChanged(CharSequence s, int start, int count,  int after) {}
+
+		public void afterTextChanged(Editable s) {
+			//if (s.length() == 0) ivDeleteText.setVisibility(View.GONE);
+			//else ivDeleteText.setVisibility(View.VISIBLE);
+			if (s.length() != 0) ivDeleteText.setVisibility(View.VISIBLE);
+		}
+	};
+
+
+	@Override
+	public void onSaveInstanceState(Bundle savedInstanceState) {
 
 		// Always call the superclass so it can save the view hierarchy state
-        super.onSaveInstanceState(savedInstanceState);
-       
-    }
-    
-    
-    
-	Drawable full_search_drawable;
-    Drawable fuzzy_search_drawable;
-    Drawable full_search_drawable_pressed;
-    Drawable fuzzy_search_drawable_pressed;
+		super.onSaveInstanceState(savedInstanceState);
 
-    
-    private void setStatusBarColor(){
-        Window window = getWindow();
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS  
-                | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);  
-        window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN  
-                        
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);  
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        if(Build.VERSION.SDK_INT>=21) {
-	        window.setStatusBarColor(Color.TRANSPARENT);  
-	        //window.setNavigationBarColor(Color.TRANSPARENT);  
-        }
-    }
-
-    @Override
-	protected void onDestroy(){
-    	//CMN.show("onDestroy");
-    	dumpSettiings();
-    	for(FilePickerDialog dia:viewList) {
-    		dia.cancel();
-    	}
-    	viewList.clear();
-    	viewPager.removeAllViews();
-    	super.onDestroy();
-    	System.gc();
-    }
-
-    @Override
-	protected void scanSettings(){
-    	super.scanSettings();
-		CMN.MainBackground = MainBackground = opt.getMainBackground();
-		
-		opt.getLastMdlibPath();
-        if(opt.lastMdlibPath==null || !new File(opt.lastMdlibPath).exists()) {
-			opt.lastMdlibPath = opt.pathToMain()+"mdicts";
-	    	new File(opt.lastMdlibPath).mkdirs();
-		}
-        
 	}
-    
-	private void dumpSettiings(){} 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        //getMenuInflater().inflate(R.menu.menu, menu);
-    	showT("onCreateOptionsMenu");
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.toolbar_action1:
-                // do something
-                return true;
-            default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
 
-        }
-    }
+	Drawable full_search_drawable;
+	Drawable fuzzy_search_drawable;
+	Drawable full_search_drawable_pressed;
+	Drawable fuzzy_search_drawable_pressed;
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-    	//removeBlack();
-    }
+
+	private void setStatusBarColor(){
+		Window window = getWindow();
+		window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+				| WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+		window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+
+				| View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+		window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+		if(Build.VERSION.SDK_INT>=21) {
+			window.setStatusBarColor(Color.TRANSPARENT);
+			//window.setNavigationBarColor(Color.TRANSPARENT);
+		}
+	}
+
+	@Override
+	protected void onDestroy(){
+		//CMN.show("onDestroy");
+		dumpSettiings();
+		for(FilePickerDialog dia:viewList) {
+			dia.cancel();
+		}
+		viewList.clear();
+		viewPager.removeAllViews();
+		super.onDestroy();
+		System.gc();
+	}
+
+	@Override
+	protected void scanSettings(){
+		super.scanSettings();
+		CMN.MainBackground = MainBackground = opt.getMainBackground();
+
+		opt.getLastMdlibPath();
+		if(opt.lastMdlibPath==null || !new File(opt.lastMdlibPath).exists()) {
+			opt.lastMdlibPath = opt.pathToMain()+"mdicts";
+			new File(opt.lastMdlibPath).mkdirs();
+		}
+
+	}
+
+	private void dumpSettiings(){}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		//getMenuInflater().inflate(R.menu.menu, menu);
+		showT("onCreateOptionsMenu");
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.toolbar_action1:
+				// do something
+				return true;
+			default:
+				// If we got here, the user's action was not recognized.
+				// Invoke the superclass to handle it.
+				return super.onOptionsItemSelected(item);
+
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		//removeBlack();
+	}
 
 
 
 	@Override
-    protected void onResume() {
-        super.onResume();
-        if(false) {
-        	ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            ClipData data = cm.getPrimaryClip();
-            if(data!=null) {
-    	        ClipData.Item item = data.getItemAt(0);
-    	        String content = item.getText().toString();
-    	        if(!lastPastedContent.equals(content)) {
-    	        	drawerFragment.etAdditional.setText(lastPastedContent = content);
-    	        }
-            }
-        }
-        if(systemIntialized) {
-	        if(CMN.MainBackground != MainBackground) {
-	        	MainBackground=CMN.MainBackground;
-	        	refreshUIColors();
-	        }
-        }
-    }
-	
-    void refreshUIColors() {
-    	boolean isHalo=AppWhite==Color.WHITE;
-    	int filteredColor = isHalo?MainBackground:ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);//CU.MColor(MainBackground,ColorMultiplier);
+	protected void onResume() {
+		super.onResume();
+		if(false) {
+			ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+			ClipData data = cm.getPrimaryClip();
+			if(data!=null) {
+				ClipData.Item item = data.getItemAt(0);
+				String content = item.getText().toString();
+				if(!lastPastedContent.equals(content)) {
+					drawerFragment.etAdditional.setText(lastPastedContent = content);
+				}
+			}
+		}
+		if(systemIntialized) {
+			if(CMN.MainBackground != MainBackground) {
+				MainBackground=CMN.MainBackground;
+				refreshUIColors();
+			}
+		}
+	}
+
+	void refreshUIColors() {
+		boolean isHalo=AppWhite==Color.WHITE;
+		int filteredColor = isHalo?MainBackground:ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);//CU.MColor(MainBackground,ColorMultiplier);
 		viewPager.setBackgroundColor(AppWhite);
 		root.setBackgroundColor(filteredColor);
-		
+
 
 		if(!isHalo) {
 			dialog_.setBackgroundResource(R.drawable.popup_shadow_l);
@@ -343,13 +343,13 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 			cb1.setLayoutParams(lp);
 		}
 
-	}	
-    
-    static class viewHolder{
-    	private TextView title;
-    	private TextView subtitle;
-    }
-    
+	}
+
+	static class viewHolder{
+		private TextView title;
+		private TextView subtitle;
+	}
+
 
 
 	@Override
@@ -365,7 +365,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 	public boolean onLongClick(View v) {
 		return systemIntialized;
 	}
-	
+
 
 	@Override
 	public boolean onMenuItemClick(MenuItem m) {
@@ -373,7 +373,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 		if(longclick) return false;
 		return systemIntialized;
 	}
-    
+
 
 
 	@Override
@@ -426,7 +426,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 						finish();
 					}
 				}).setCancelable(false).show();
-	
+
 	}
 	//权限申请回调
 	@Override
@@ -451,12 +451,12 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 			}
 		}
 	}
-	
 
 
-    
-    
-    
+
+
+
+
 
 }
 

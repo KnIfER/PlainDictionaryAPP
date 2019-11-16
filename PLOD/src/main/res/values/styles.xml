@@ -159,7 +159,7 @@
         <item name="android:textColorSecondary">#FFFFFF</item>
         <item name="android:textColor">#FFFFFF</item>
         <item name="android:textColorAlertDialogListItem">#FFFFFF</item>
-    </style>  
+    </style>
 <!--     parent="ThemeOverlay.AppCompat.Dialog.Alert" -->
     <style name="DialogStyle4Line" parent="ThemeOverlay.AppCompat.Dialog.Alert">
         <item name="android:textColorSecondary">#FFFFFF</item>

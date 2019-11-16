@@ -32,9 +32,9 @@
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
-			android:key="https://github.com/AndreiD/TSnackBar"
-			android:summary="Apache 2.0"
-			android:title="AndreiD/TSnackBar"/>
+			android:key="https://github.com/benelog/multiline"
+			android:summary="Public domain"
+			android:title="benelog/multiline"/>
 
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"

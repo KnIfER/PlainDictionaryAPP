@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainActivity;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.mdict;
@@ -45,7 +46,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 	protected resultRecorderCombined doInBackground(String...params) {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return null;
-		PDICMainActivity.stst=System.currentTimeMillis();
+		CMN.stst=System.currentTimeMillis();
 		CurrentSearchText=params[0];
 		String[] inputArray = CurrentSearchText.split(RegExp_VerbatimDelimiter);
 

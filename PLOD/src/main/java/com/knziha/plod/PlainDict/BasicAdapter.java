@@ -14,16 +14,16 @@ import android.widget.AdapterView.OnItemClickListener;
 public abstract class BasicAdapter extends BaseAdapter
     						implements OnClickListener,OnItemClickListener
     {
+		public ViewGroup webviewHolder;
 		int lastClickedPos=-1;
 		public int lastClickedPosBeforePageTurn;
 		int HlightIdx;
-		int acrarivacc;
+		int AcrArivAcc;
 
 		public final SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
     	//int adelta=0;
 
 		public void ClearVOA() {
-			CMN.Log("clearing!!!");
 			avoyager.clear();
 			//adelta=0;
 		}
@@ -69,16 +69,14 @@ public abstract class BasicAdapter extends BaseAdapter
         	onItemClick(lastClickedPos);
 		}
 		public void onItemClick(int pos) {
-        	lastClickedPos = Math.max(-1, pos);
-        	lastClickedPos = Math.min(getCount(), lastClickedPos);
+        	lastClickedPos = Math.min(getCount(), Math.max(-1, pos));
 			HlightIdx=0;
-			acrarivacc=0;
+			AcrArivAcc =0;
 			//ActivedAdapter=this;
 		}
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-			//CMN.show("onItemClick00");
-			onItemClick(lastClickedPos =pos);
+			onItemClick(pos);
 		}
 
 		public abstract int getId();

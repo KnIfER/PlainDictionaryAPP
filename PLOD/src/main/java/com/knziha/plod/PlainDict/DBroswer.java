@@ -1176,7 +1176,7 @@ public class DBroswer extends Fragment implements
 		}
 
 		if(msg!=null) {
-			((MainActivityUIBase)getActivity()).showTopSnack(snack_root, msg, 0.5f, -1, -1);
+			((MainActivityUIBase)getActivity()).showTopSnack(snack_root, msg, 0.5f, -1, -1, false);
 		}
 
 	}
@@ -1500,17 +1500,17 @@ public class DBroswer extends Fragment implements
 								avoyagerIdx=0;
 								avoyager.add(avoyagerIdx,0);
 								rec.expectedPos=avoyager.get(avoyagerIdx);
-								show("新的1"+rec.expectedPos);
+								//show("新的1"+rec.expectedPos);
 							}else if(avoyagerIdx+adelta>=avoyager.size()) {//新的
 								avoyagerIdx=avoyager.size();
 								avoyager.add(avoyagerIdx,0);
 								rec.expectedPos=avoyager.get(avoyagerIdx);
-								show("新的2"+rec.expectedPos);
+								//show("新的2"+rec.expectedPos);
 							}else {//取出旧值
 								avoyagerIdx+=adelta;
 								rec.expectedPos=avoyager.get(avoyagerIdx);
 								//currentDictionary.mWebView.setScrollY(currentDictionary.expectedPos);
-								show("取出旧值"+rec.expectedPos);
+								//show("取出旧值"+rec.expectedPos);
 							}
 							adelta=0;
 
@@ -1650,7 +1650,7 @@ public class DBroswer extends Fragment implements
 									if(a.webSingleholder.getChildAt(i)!=currentDictionary.rl) a.webSingleholder.removeViewAt(i);
 							}
 
-							currentDictionary.renderContentAt(-1,adapter_idx,null,idx);
+							currentDictionary.renderContentAt(-1,adapter_idx,0,null, idx);
 
 							currentDictionary.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 							currentDictionary.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -1752,7 +1752,7 @@ public class DBroswer extends Fragment implements
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
 		if(currentPos-1<0) {
-			a.show(R.string.toptopr);
+			a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, false);
 			return;
 		}
 		//int first = lm.findFirstVisibleItemPosition();

@@ -1,0 +1,78 @@
+package com.knziha.plod.settings;
+
+import android.os.Bundle;
+
+import androidx.preference.Preference;
+
+import com.knziha.filepicker.settings.SettingsFragmentBase;
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.PlainDict.R;
+
+public class SearchSpecification extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
+	StringBuilder flag_code= new StringBuilder();
+
+	//初始化
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		init_switch_preference(this, "enable_regex1", PDICMainAppOptions.getUseRegex1(), null, null);
+		init_switch_preference(this, "enable_regex2", PDICMainAppOptions.getUseRegex2(), null, null);
+		init_switch_preference(this, "enable_regex3", PDICMainAppOptions.getUseRegex3(), null, null);
+		init_switch_preference(this, "joni_head", PDICMainAppOptions.getRegexAutoAddHead(), null, null);
+		init_switch_preference(this, "joni_case", PDICMainAppOptions.getJoniCaseSensitive(), null, null);
+		init_switch_preference(this, "page_case", PDICMainAppOptions.getPageCaseSensitive(), null, null);
+		init_switch_preference(this, "page_nospc", PDICMainAppOptions.getPageWildcardMatchNoSpace(), null, null);
+		init_switch_preference(this, "page_spcdl", PDICMainAppOptions.getPageWildcardSplitKeywords(), null, null);
+		init_switch_preference(this, "pj_auto", PDICMainAppOptions.getPageAutoScrollOnTurnPage(), null, null);
+		init_switch_preference(this, "pj_type", PDICMainAppOptions.getPageAutoScrollOnType(), null, null);
+	}
+
+	//创建
+	@Override
+	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+		addPreferencesFromResource(R.xml.searchpreferences);
+	}
+
+	@Override
+	public boolean onPreferenceClick(Preference preference) {
+		return false;
+	}
+
+	//配置变化
+	@Override
+	public boolean onPreferenceChange(Preference preference, Object newValue) {
+		switch (preference.getKey()){
+			case "enable_regex1":
+				PDICMainAppOptions.setUseRegex1((Boolean) newValue);
+			break;
+			case "enable_regex2":
+				PDICMainAppOptions.setUseRegex2((Boolean) newValue);
+			break;
+			case "enable_regex3":
+				PDICMainAppOptions.setUseRegex3((Boolean) newValue);
+			break;
+			case "joni_head":
+				PDICMainAppOptions.setRegexAutoAddHead((Boolean) newValue);
+			break;
+			case "joni_case":
+				PDICMainAppOptions.setJoniCaseSensitive((Boolean) newValue);
+			break;
+			case "page_case":
+				PDICMainAppOptions.setPageCaseSensitive((Boolean) newValue);
+			break;
+			case "page_nospc":
+				PDICMainAppOptions.setPageWildcardMatchNoSpace((Boolean) newValue);
+			break;
+			case "page_spcdl":
+				PDICMainAppOptions.setPageWildcardSplitKeywords((Boolean) newValue);
+			break;
+			case "pj_auto":
+				PDICMainAppOptions.setPageAutoScrollOnTurnPage((Boolean) newValue);
+			break;
+			case "pj_type":
+				PDICMainAppOptions.setPageAutoScrollOnType((Boolean) newValue);
+			break;
+		}
+		return true;
+	}
+}

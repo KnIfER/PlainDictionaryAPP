@@ -65,9 +65,11 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		final int step = a.md.size()/a.split_dict_thread_number;
 		final int yuShu= a.md.size()%a.split_dict_thread_number;
 
+		a.poolEUSize.set(0);
+
 		for(int i=0;i<a.split_dict_thread_number;i++){
 			if(isCancelled()) break;
-			if(a.split_dict_thread_number>thread_number) while (a.poolEUSize>=thread_number) {
+			if(a.split_dict_thread_number>thread_number) while (a.poolEUSize.get()>=thread_number) {
 				try {
 					Thread.sleep(1);
 				} catch (InterruptedException e) {
@@ -76,7 +78,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 			}
 
 			final int it=i;
-			if(a.split_dict_thread_number>thread_number) a.countDelta(1);
+			if(a.split_dict_thread_number>thread_number) a.poolEUSize.addAndGet(1);
 
 			fixedThreadPool.execute(() -> {
 				int jiaX=0;
@@ -85,7 +87,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 					if(isCancelled()) break;
 					a.md.get(i1).size_confined_lookUp5(CurrentSearchText,null, i1,15);
 				}
-				if(a.split_dict_thread_number>thread_number) a.countDelta(-1);
+				if(a.split_dict_thread_number>thread_number) a.poolEUSize.addAndGet(-1);
 			});
 
 			if(isCancelled()) break;

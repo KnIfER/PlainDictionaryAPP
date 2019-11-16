@@ -12,6 +12,7 @@
 	<string name="GL">全局</string>
 	<string name="tools">工具</string>
 	<string name="AAllow">允許該應用創建/ SD卡/ PLOD文件夾？</string>
+	<string name="regret">正則搜索</string>
 	<string name="fullret">全文檢索</string>
 	<string name="fuzzyret">詞條通配搜索</string>
 	<string name="fuzzyret1">通配搜索</string>

@@ -32,13 +32,6 @@
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
-			android:key="https://github.com/AndreiD/TSnackBar"
-			android:summary="Apache 2.0"
-			android:title="AndreiD/TSnackBar"/>
-
-		<com.knziha.plod.settings.URLPreference
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			android:key="https://github.com/jess-anders/two-way-gridview"
 			android:summary="Public domain"
 			android:title="jess-anders/two-way-gridview"/>

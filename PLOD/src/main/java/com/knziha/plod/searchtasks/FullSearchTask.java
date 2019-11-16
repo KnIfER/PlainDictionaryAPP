@@ -3,10 +3,14 @@ package com.knziha.plod.searchtasks;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainActivity;
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.dictionarymodels.mdict;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 @SuppressLint("SetTextI18n")
 public class FullSearchTask extends AsyncTask<String, Integer, String > {
@@ -41,7 +45,7 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 			for(int i=0;i<a.md.size();i++){
 				try {
 					publishProgress(i);//_mega
-					a.md.get(i).flowerFindAllContents(CurrentSearchText,i,30);
+					a.md.get(i).flowerFindAllContents(CurrentSearchText,i,a.fullSearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {
@@ -52,7 +56,7 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 		}else {
 			try {
 				publishProgress(a.adapter_idx);
-				a.currentDictionary.flowerFindAllContents(CurrentSearchText,a.adapter_idx,30);
+				a.currentDictionary.flowerFindAllContents(CurrentSearchText,a.adapter_idx,a.fullSearchLayer);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -77,20 +81,22 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 		if((a=activity.get())==null) return;
 		if(a.timer!=null) { a.timer.cancel(); a.timer=null; }
 		if(a.d!=null) a.d.dismiss();
-		//if(adaptermy3.combining_search_result==null)
-		//	adaptermy3.combining_search_result = new resultRecoderScattered(md);
 
 		if(a.isCombinedSearching){
 			a.adaptermy4.combining_search_result.invalidate();
-			System.gc();
 		}else{//单独搜索
 			a.adaptermy4.combining_search_result.invalidate(a.adapter_idx);
-			System.gc();
 		}
-		a.show(R.string.fullfill,(System.currentTimeMillis()-PDICMainActivity.stst)*1.f/1000,a.adaptermy4.getCount());
+		a.show(R.string.fullfill
+				,(System.currentTimeMillis()-CMN.stst)*1.f/1000,a.adaptermy4.getCount());
 
+		a.fullSearchLayer.bakePattern(PDICMainAppOptions.getUseRegex2()?CurrentSearchText:CurrentSearchText.replace("*", ".+?"));
+		System.gc();
+		a.adaptermy4.ClearVOA();
 		a.adaptermy4.notifyDataSetChanged();
 		a.mlv2.setSelection(0);
+		if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterFulltext())
+			a.prepareInPageSearch(a.fullSearchLayer.getBakedPatternStr(), true);
 	}
 
 }

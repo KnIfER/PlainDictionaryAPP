@@ -45,7 +45,6 @@ import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict.AppHandler;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.SplitView;
@@ -56,7 +55,6 @@ import com.knziha.plod.widgets.WebViewmy;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 
@@ -139,7 +137,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	ViewGroup bottombar2;
 	RLContainerSlider PageSlider;
 	boolean TurnPageEnabled;
-	private ViewGroup rl;
+	ViewGroup rl;
 	WebViewmy mWebView;
 	float webScale;
 	ViewGroup toolbar_web;
@@ -893,10 +891,8 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 				}
 			}
 
-			//mlp.post(() -> {
-				((MainActivityUIBase)getActivity()).showTopSnack(mlp, currentDictionary._Dictionary_fName
-						, 0.8f, -1, -1);
-			//});
+			((MainActivityUIBase)getActivity()).showTopSnack(mlp, currentDictionary._Dictionary_fName
+					, 0.8f, -1, -1, true);
 
         	mlp.removeView(contentview);
         	
@@ -986,7 +982,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
         		//super.onItemClick(pos);
             	a.ActivedAdapter=this;
             	if(pos<0) {
-            		a.show(R.string.toptopr);
+					a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, false);
             		return;
             	}
             	//-1放行
@@ -1077,7 +1073,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 
 				setCurrentDis(currentDictionary, actualPosition);
 
-    			currentDictionary.renderContentAt(-1,adapter_idx,mWebView,actualPosition);//bookmarks.get(lastClickedPos)
+    			currentDictionary.renderContentAt(-1,adapter_idx,0,mWebView, actualPosition);//bookmarks.get(lastClickedPos)
     			
     			currentKeyText = currentDictionary.currentDisplaying;
 
@@ -1344,7 +1340,7 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
         	
         	setCurrentDis(currentDictionary, lastClickedPos);
 
-        	currentDictionary.renderContentAt(desiredScale,adapter_idx,mWebView,lastClickedPos);
+        	currentDictionary.renderContentAt(desiredScale,adapter_idx,0,mWebView, lastClickedPos);
 
 			currentKeyText = currentDisplaying;
 			String key = currentKeyText;
@@ -1636,8 +1632,6 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 	int expectedPos=-1;
 	int expectedPosX;
 	ArrayList<myCpr<String,Integer>> History = new ArrayList<>();
-	
-	HashMap<Integer, AppHandler> ImageHistory = new HashMap<>();
 	int HistoryVagranter=-1;
 
 	boolean isJumping = false;
@@ -1654,10 +1648,6 @@ public class PeruseView extends Fragment implements OnClickListener, OnMenuItemC
 				History.remove(i);
 		}else {//回溯 或 前瞻， 不改变历史
 			//取回
-        	AppHandler js = ImageHistory.get(HistoryVagranter);
-        	if(js!=null)
-        	mWebView.removeJavascriptInterface("imagelistener");
-		    mWebView.addJavascriptInterface(js, "imagelistener");
 		}
 	}
 

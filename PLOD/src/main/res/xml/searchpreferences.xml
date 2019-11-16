@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+	<PreferenceCategory
+		android:key="cat_prog"
+		android:title="搜索设置"
+		app:icon="@drawable/ic_search"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="enable_regex1"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用正则表达式1 (词条搜索)"
+			android:summary="Oniguruma-joni 正则引擎"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="enable_regex2"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用正则表达式2 (全文搜索)"
+			android:summary="Oniguruma-joni 正则引擎"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="enable_regex3"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用正则表达式3 (页内查找)"
+			android:summary="Javascript-mark.js 正则引擎"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="joni_head"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="自动为 Oniguruma-joni 引擎添加.*头"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="joni_case"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="区分大小写1 (Oniguruma-joni)"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="page_case"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="区分大小写2 (页内查找)"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+		
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="page_nospc"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="页内查找->通配符->.*不匹配空格"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="page_spcdl"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="页内查找->通配符->以空格分割关键词"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="pj_auto"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="页内查找->翻页时自动跳转"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="pj_type"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="页内查找->打字时自动跳转"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+	</PreferenceCategory>
+</PreferenceScreen>
