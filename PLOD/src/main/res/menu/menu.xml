@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:tools="http://schemas.android.com/tools"
 	xmlns:android="http://schemas.android.com/apk/res/android"
-   xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
 	tools:ignore="AppCompatResource"
 	>
     <item
@@ -63,12 +63,18 @@
         android:title="@string/peruseToggle"
         app:showAsAction="never"/>
     
-    <item
-        android:id="@+id/toolbar_action7"
-        android:icon="@drawable/ic_search_24k"
-        android:title="@string/switch_dict"
-        app:showAsAction="never"/>
-    
+<!--    <item-->
+<!--        android:id="@+id/toolbar_action7"-->
+<!--        android:icon="@drawable/ic_search_24k"-->
+<!--        android:title="@string/switch_dict"-->
+<!--        app:showAsAction="never"/>-->
+
+	<item
+		android:id="@+id/toolbar_action14"
+		android:icon="@drawable/ic_search_24k"
+		android:title="即点即译"
+		app:showAsAction="never"/>
+
     <item
         android:id="@+id/toolbar_action8"
         android:icon="@drawable/ic_search_24k"

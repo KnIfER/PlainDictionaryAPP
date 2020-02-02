@@ -3,6 +3,7 @@ import android.content.Context;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.AdapterView;
 
 
 public class RecyclerViewmy extends RecyclerView{
@@ -15,7 +16,7 @@ public class RecyclerViewmy extends RecyclerView{
 	public RecyclerViewmy(Context arg0, AttributeSet arg1, int arg2) {
 		super(arg0, arg1, arg2);
 	}
-	public interface OnItemClickListener{
+	public interface OnItemClickListener {
         void onItemClick(View view,int position);
     }
 

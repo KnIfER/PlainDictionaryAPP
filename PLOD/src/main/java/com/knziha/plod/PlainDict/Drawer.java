@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -27,7 +28,6 @@ import android.view.View.OnLayoutChangeListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
-import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -52,6 +52,7 @@ import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymanager.files.mFile;
+import com.knziha.plod.dictionarymodels.mdict_pdf;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
@@ -73,6 +74,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
+import static com.knziha.plod.PlainDict.MainActivityUIBase.new_mdict;
 
 
 /** @author KnIfER */
@@ -100,6 +102,8 @@ public class Drawer extends Fragment implements
 	private ListView ClipboardList;
 	private String mPreviousCBContent;
 	private ViewGroup swRow;
+	private boolean toPDF;
+	HashMap<String, mdict> mdictInternal = new HashMap<>();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -158,6 +162,13 @@ public class Drawer extends Fragment implements
 		return mDrawerListView;
 	}
 
+	public void setCheckedForce(SwitchCompat sw5, boolean b) {
+		if(sw5.isChecked()==b){
+			onCheckedChanged(sw5, b);
+		}else{
+			sw5.toggle();
+		}
+	}
 
 
 	class MyAdapter extends ArrayAdapter<String> {
@@ -193,6 +204,7 @@ public class Drawer extends Fragment implements
 				vh=(PDICMainActivity.ViewHolder)convertView.getTag();
 			if(vh==null) {
 				vh=new PDICMainActivity.ViewHolder(getContext(),R.layout.listview_item0, parent);
+				vh.itemView.setBackgroundResource(R.drawable.listviewselector1);
 				vh.subtitle.setTextColor(ContextCompat.getColor(a, R.color.colorHeaderBlue));
 			}
 			if( vh.title.getTextColors().getDefaultColor()!=a.AppBlack) {
@@ -209,6 +221,8 @@ public class Drawer extends Fragment implements
 			}
 			vh.itemView.setTag(R.id.position,position);
 			vh.itemView.setOnClickListener(Drawer.this);
+			if(position==6)
+				vh.itemView.setOnLongClickListener(Drawer.this);
 
 			return vh.itemView;
 		}
@@ -264,7 +278,7 @@ public class Drawer extends Fragment implements
 		sw4.setChecked(val);
 
 		sw5 = HeaderView.findViewById(R.id.sw5);
-		sw5.setChecked(a.opt.get_use_volumeBtn());
+		sw5.setChecked(a.opt.getUseVolumeBtn());
 		sw5.setOnCheckedChangeListener(this);
 
 		if(GlobalOptions.isDark) {
@@ -484,13 +498,15 @@ public class Drawer extends Fragment implements
 					}
 					cc++;
 				}
-				final HashMap<String, mdict> mdictInternal = new HashMap<>();
+
 				for(mdict mdTmp:a.md) {
-					mdictInternal.put(mdTmp.getPath(), mdTmp);
+					if(mdTmp!=null)
+						mdictInternal.put(mdTmp.getName(), mdTmp);
 				}
 
 				AlertDialog.Builder builder = new AlertDialog.Builder(a);
 				builder.setTitle(R.string.bookmarkH);
+				ArrayList<PlaceHolder> placeHolders = a.getLazyCC();
 				builder.setSingleChoiceItems(new String[] {}, 0,
 						(dialog, position1) -> d.getListView().postDelayed(new Runnable() {
 							@Override
@@ -498,17 +514,29 @@ public class Drawer extends Fragment implements
 								String id1 = items[position1];
 								mdict mdTmp = mdictInternal.get(id1);
 								if(mdTmp!=null) {
-									if(!a.md.contains(mdTmp)) {
+									String name = mdTmp._Dictionary_fName;
+									int i = 0;
+									for (; i < placeHolders.size(); i++) {
+										if(placeHolders.get(i).name.equals(name))
+											break;
+									}
+									if(i==placeHolders.size()) {
 										a.md.add(mdTmp);
-										a.switchToDictIdx(a.md.size()-1);
+										placeHolders.add(new PlaceHolder(mdTmp.getPath()));
+										a.switch_To_Dict_Idx(a.md.size()-1, true, false);
 									}else {
-										a.switchToDictIdx(a.md.indexOf(mdTmp));
+										if(a.md.get(i)==null){
+											a.md.set(i, mdTmp);
+										}
+										a.switch_To_Dict_Idx(i, true, false);
 									}
 									if(a.pickDictDialog!=null) a.pickDictDialog.isDirty=true;
 									int toPos = pos[position1];
 									a.bWantsSelection=false;
 									a.bNeedReAddCon=false;
+									a.bOnePageNav=mdTmp instanceof mdict_pdf;
 									a.adaptermy.onItemClick(toPos);
+									a.bOnePageNav=false;
 									a.lv.setSelection(toPos);
 									d.hide();
 								}}
@@ -517,9 +545,6 @@ public class Drawer extends Fragment implements
 				d=builder.create();
 				d.show();
 
-				//attr = d.getWindow().getAttributes();
-				//attr.dimAmount=0;
-				//d.getWindow().setAttributes(attr);
 				d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 				if(GlobalOptions.isDark) {
 					//d.setTitle(Html.fromHtml("<span style='color:#ffffff;'>"+getResources().getString(R.string.loadconfig)+"</span>"));
@@ -529,7 +554,7 @@ public class Drawer extends Fragment implements
 					d.getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));//(R.drawable.popup_shadow_d);
 				}
 
-				d.setOnDismissListener(Drawer.this);
+				d.setOnDismissListener(Drawer.this::onDismiss);
 				d.getListView().setAdapter(new ArrayAdapter<String>(a,
 						R.layout.singlechoice, android.R.id.text1, items) {
 					@NonNull
@@ -544,7 +569,6 @@ public class Drawer extends Fragment implements
 							tv = (CheckedTextViewmy)ret.getTag();
 
 						String id = items[position];
-						mdict mdTmp = null;
 						if(pos[position]==-2) {//无数据
 							tv.setText("N.A.");
 							tv.setSubText(null);
@@ -554,22 +578,25 @@ public class Drawer extends Fragment implements
 						if(GlobalOptions.isDark)
 							tv.setTextColor(Color.WHITE);
 
+						mdict mdTmp  = mdictInternal.get(id);
 
-						if(mdictInternal.containsKey(id))
-							mdTmp = mdictInternal.get(id);
-						else {
+						if(mdTmp==null) {
 							try {
-								mdictInternal.put(id, mdTmp = new mdict(id,a));
-							} catch (IOException e) {
+								String path=id;
+								if(!path.startsWith("/"))
+									path= a.opt.lastMdlibPath + "/" + path;
+								mdTmp = new_mdict(path, a);
+								mdictInternal.put(id, mdTmp);
+							} catch (Exception e) {
 								e.printStackTrace();
 							}
 						}
 
 						if(mdTmp!=null) {
-							tv.setSubText(mdTmp._Dictionary_fName);
-							tv.setText(mdTmp.getEntryAt(pos[position]));
+							tv.setSubText(mdTmp.getName());
+							tv.setText(mdTmp.getLexicalEntryAt(pos[position]));
 						}else {//获取词典失败
-							tv.setSubText(new File(id).getName());
+							tv.setSubText(id);
 							tv.setText("failed to fetch: "+id);
 						}
 						return ret;
@@ -591,9 +618,9 @@ public class Drawer extends Fragment implements
 					int c=0;
 					boolean suc=false;
 					int oldPos = a.adapter_idx;
-					for(mdict mdTmp:a.md) {
-						if(mdTmp._Dictionary_fName.equals(fn)) {
-							a.switchToDictIdx(c);
+					for(PlaceHolder phI:a.getLazyCC()) {
+						if(phI.name.equals(fn)) {
+							a.switch_To_Dict_Idx(c, true, false);
 							a.adaptermy.onItemClick(pos1);
 							a.lv.setSelection(pos1);
 							suc=true;
@@ -603,12 +630,15 @@ public class Drawer extends Fragment implements
 					}
 					if(!suc)
 						try {
-							a.md.add(new mdict(lastBookMark,a));
-							a.switchToDictIdx(a.md.size()-1);
+							String path=lastBookMark;
+							if(!path.startsWith("/"))
+								path= a.opt.lastMdlibPath + "/" + path;
+							a.md.add(new_mdict(path, a));
+							a.switch_To_Dict_Idx(a.md.size()-1, true, false);
 							a.adaptermy.onItemClick(pos1);
 							a.lv.setSelection(pos1);
 							suc=true;
-						} catch (IOException e) {
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 					if(suc) {
@@ -625,10 +655,15 @@ public class Drawer extends Fragment implements
 				properties.root = new File("/");
 				properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
 				properties.offset = new File(filepickernow!=null?filepickernow:a.opt.lastMdlibPath);
-				properties.opt_dir=new File(a.opt.pathTo()+"favorite_dirs/");
+				properties.opt_dir=new File(a.opt.pathToDatabases()+"favorite_dirs/");
 				properties.opt_dir.mkdirs();
 				properties.extensions = new HashSet<>();
 				properties.extensions.add(".mdx");
+				if(toPDF) {
+					properties.extensions.add(".pdf");
+					properties.extensions.add(".web");
+					properties.extensions.add(".mdd");
+				}
 				properties.title_id = R.string.addd;
 				properties.isDark = a.AppWhite==Color.BLACK;
 				FilePickerDialog dialog = new FilePickerDialog(a, properties);
@@ -638,9 +673,9 @@ public class Drawer extends Fragment implements
 					onSelectedFilePaths(String[] files,String now) { //files is the array of the paths of files selected by the Application User.
 						filepickernow = now;
 						if(files.length>0) {
-							//File def = new File(a.opt.pathToMain()+"default.txt");      //!!!原配
+							//File def = new File(a.opt.pathToMainFolder()+"default.txt");      //!!!原配
 							final File def = new File(a.getExternalFilesDir(null),"default.txt");      //!!!原配
-							File rec = new File(a.opt.pathToMain()+"CONFIG/mdlibs.txt");
+							File rec = new File(a.opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString());
 							a.ReadInMdlibs(rec);
 							try {
 								BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
@@ -648,8 +683,8 @@ public class Drawer extends Fragment implements
 								HashSet<String> mdictInternal = new HashSet<>();
 								HashSet<String> renameRec = new HashSet<>();
 								HashMap<String,String> renameList = new HashMap<>();
-								for(mdict mdTmp:a.md) {
-									mdictInternal.add(mdTmp.getPath());
+								for(PlaceHolder phI:a.CosyChair) {
+									mdictInternal.add(phI.getPath(a.opt));
 								}
 								int count=0;
 								for(String fnI:files) {
@@ -671,7 +706,9 @@ public class Drawer extends Fragment implements
 										try {
 											String raw=fnI;
 											fnI = mFile.tryDeScion(new File(fnI), a.opt.lastMdlibPath);
-											a.md.add(new mdict(raw, a));
+											PlaceHolder phI = new PlaceHolder(raw);
+											a.md.add(new_mdict(raw, a));
+											a.CosyChair.add(phI);
 											output2.write(fnI);
 											output2.write("\n");
 											output2.flush();
@@ -698,7 +735,7 @@ public class Drawer extends Fragment implements
 								renameRec.clear();
 								renameRec=null;
 								ArrayList<File> moduleFullScannerArr;
-								File[] moduleFullScanner = new File(a.opt.pathToMain()+"CONFIG").listFiles(new FileFilter() {
+								File[] moduleFullScanner = new File(a.opt.pathToMainFolder().append("CONFIG").toString()).listFiles(new FileFilter() {
 									@Override
 									public boolean accept(File pathname) {
 										String name = pathname.getName();
@@ -764,6 +801,11 @@ public class Drawer extends Fragment implements
 					public Activity getDialogActivity() {
 						return null;
 					}
+
+					@Override
+					public void onDismiss() {
+
+					}
 				});
 				dialog.show();
 				dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
@@ -782,7 +824,7 @@ public class Drawer extends Fragment implements
 						a.opt.lastMdlibPath
 				);
 				//CMN.show(a.opt.lastMdlibPath+":"+Environment.getExternalStorageDirectory().getAbsolutePath());
-				properties1.opt_dir=new File(a.opt.pathTo().append("favorite_dirs/").toString());
+				properties1.opt_dir=new File(a.opt.pathToDatabases().append("favorite_dirs/").toString());
 				properties1.opt_dir.mkdirs();
 				properties1.title_id=R.string.pick_main;
 				//properties1.extensions = new String[] {"mdx"};
@@ -811,6 +853,11 @@ public class Drawer extends Fragment implements
 					@Override
 					public Activity getDialogActivity() {
 						return null;
+					}
+
+					@Override
+					public void onDismiss() {
+
 					}
 				});
 				dialog1.show();
@@ -864,64 +911,62 @@ public class Drawer extends Fragment implements
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		switch(buttonView.getId()) {
-			case R.id.sw1:
+			case R.id.sw1:{
 				if(isChecked) {
 					a.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+					 {
+						View decorView = a.getWindow().getDecorView();
+						int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+								| View.SYSTEM_UI_FLAG_FULLSCREEN;
+						if(PDICMainAppOptions.isFullscreenHideNavigationbar()) uiOptions|=View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+								| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+								| View.SYSTEM_UI_FLAG_LOW_PROFILE
+								| View.SYSTEM_UI_FLAG_IMMERSIVE;
+						decorView.setSystemUiVisibility(uiOptions);
+					}
 				}else {
 					a.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+					View decorView = a.getWindow().getDecorView();
+					int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+					decorView.setSystemUiVisibility(uiOptions);
 				}
 				a.opt.setFullScreen(isChecked);
-				break;
-			case R.id.sw2:
+			} break;
+			case R.id.sw2:{
 				a.opt.setContentBow(!isChecked);
 				a.setContentBow(!isChecked);
-				break;
-			case R.id.sw3:
+			} break;
+			case R.id.sw3:{
 				a.opt.setViewPagerEnabled(!isChecked);
 				a.viewPager.setNoScroll(isChecked);
-				break;
-			case R.id.sw4:
+			} break;
+			case R.id.sw4:{
 				if(Build.VERSION.SDK_INT<29){
 					GlobalOptions.isDark = false;
+				}else{
+					GlobalOptions.isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
 				}
 
 				a.opt.setInDarkMode(isChecked);
-				if(buttonView.getTag()==null || GlobalOptions.isDark)
-					changeToDarkMode();
-				buttonView.setTag(null);
-				break;
-			case R.id.sw5:
-				a.opt.set_use_volumeBtn(isChecked);
-				break;
-		}
-	}
 
-	void changeToDarkMode() {
-		try {
-			a.AppBlack=GlobalOptions.isDark?Color.WHITE:Color.BLACK;
-			a.AppWhite=GlobalOptions.isDark?Color.BLACK:Color.WHITE;
-			mDrawerListView.setBackgroundColor(GlobalOptions.isDark?Color.BLACK:0xffe2e2e2);
-			HeaderView.setBackgroundColor(a.AppWhite);
-			FooterView.setBackgroundColor(a.AppWhite);
-			a.adaptermy.notifyDataSetChanged();
-			a.adaptermy2.notifyDataSetChanged();
-			a.adaptermy3.notifyDataSetChanged();
-			a.adaptermy4.notifyDataSetChanged();
-			if(a.isFragInitiated)a.pickDictDialog.adapter().notifyDataSetChanged();
-			myAdapter.notifyDataSetChanged();
-			if(a.setchooser!=null){
-				a.setchooser.clear();
-				a.setchooser=null;
-			}
-			//a.refreshUIColors();
-			a.animateUIColorChanges();
-		} catch (Exception e) {
-			e.printStackTrace();
+				if(buttonView.getTag()==null || GlobalOptions.isDark)
+					a.changeToDarkMode();
+				buttonView.setTag(null);
+			} break;
+			case R.id.sw5:{
+				a.opt.setUseVolumeBtn(isChecked);
+			} break;
 		}
 	}
 
 	@Override
 	public boolean onLongClick(View v) {
+		if(v.getTag(R.id.position)==(Integer)6){
+			toPDF=true;
+			((TextView)v.findViewById(R.id.subtext)).setText("Oh PDF !");
+			return false;
+		}
 		Intent i = new Intent(getActivity(), CuteFileManager.class);
 		startActivity(i);
 		return false;

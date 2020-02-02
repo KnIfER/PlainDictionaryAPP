@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu 
-   xmlns:android="http://schemas.android.com/apk/res/android"
-   xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <item
-        android:id="@+id/toolbar_action1"
-        android:title="@string/search"
-        app:showAsAction="never"/>
+<menu
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+	<item
+		android:id="@+id/toolbar_action1"
+		android:title="@string/search"
+		app:showAsAction="never"/>
 
 	<item
 		android:id="@+id/toolbar_action7"
@@ -15,32 +14,20 @@
 		app:showAsAction="never"/>
 
 	<item
-        android:id="@+id/toolbar_action2"
-        android:icon="@drawable/downward"
-        android:title="@string/show_bookmark_add_button"
-        app:showAsAction="never"/>
-    
-    <item
-        android:id="@+id/toolbar_action3"
-        android:icon="@drawable/downward"
-        android:title="@string/show_bookmark_delete_button"
-        app:showAsAction="never"/>
-       
-     <item
-        android:id="@+id/toolbar_action4"
-        android:icon="@drawable/downward"
-        android:title="@string/auto_search_on_switch"
-        app:showAsAction="never"/>
-     
-    <item
-        android:id="@+id/toolbar_action5"
-        android:icon="@drawable/downward"
-        android:title="@string/show_fast_scroller"
-        app:showAsAction="never"/>
- 
-     <item
-        android:id="@+id/toolbar_action6"
-        android:icon="@drawable/downward"
-        android:title="@string/reset_keyword"
-        app:showAsAction="never"/>
- </menu>
+		android:id="@+id/toolbar_action3"
+		android:icon="@drawable/downward"
+		android:title="设置翻阅"
+		app:showAsAction="never"/>
+
+	<item
+		android:id="@+id/toolbar_action2"
+		android:icon="@drawable/downward"
+		android:title="页内搜索"
+		app:showAsAction="never"/>
+
+	<item
+		android:id="@+id/toolbar_action6"
+		android:icon="@drawable/downward"
+		android:title="@string/reset_keyword"
+		app:showAsAction="never"/>
+</menu>

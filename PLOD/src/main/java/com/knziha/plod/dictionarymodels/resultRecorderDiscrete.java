@@ -13,6 +13,7 @@ public class resultRecorderDiscrete {
 	//dict_Activity_ui_base a;
 
 	public Flag mflag = new Flag();
+	public boolean allWebs;
 
 	public resultRecorderDiscrete(MainActivityUIBase a_){
 		//a=a_;
@@ -39,8 +40,20 @@ public class resultRecorderDiscrete {
 		return new ArrayList<>();
 	}
 
+	public int getOneDictAt(int pos) {
+		return 0;
+	}
+
+	@Deprecated
 	public ArrayList<Integer> getDictsAt(int pos) {
 		return new ArrayList<>();
 	}
 
+	public boolean checkAllWebs(ArrayList<mdict> md) {
+		return false;
+	}
+
+	public void syncToPeruseArr(ArrayList<Integer> pvdata, int pos) {
+		pvdata.clear();
+	}
 }

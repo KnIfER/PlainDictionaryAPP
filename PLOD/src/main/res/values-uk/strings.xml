@@ -48,9 +48,9 @@
 	<string name="bookmarkL">Список BookMark …</string>
 	<string name="f_scale_up">Розмір шрифту ++</string>
 	<string name="f_scale_down">Розмір шрифту - -</string>
-	<string name="background_color">Колір фону:</string>
-	<string name="text_zoom">Текст Zoom:</string>
-	<string name="case_insensitive_policy">Справа Нечутливість політика:</string>
+	<string name="background_color">Колір фону :</string>
+	<string name="text_zoom">Текст Zoom :</string>
+	<string name="case_insensitive_policy">Справа Нечутливість політика :</string>
 	<string name="remove_mode">видалити режим</string>
 	<string name="jump">Перейти</string>
 	<string name="strict_mode">суворий режим</string>
@@ -60,7 +60,7 @@
 	<string name="wenj_fugai">Файл вже існує, перезаписати?</string>
 	<string name="warn_delete">Ви дійсно хочете видалити обрані %d карти? (Може \'т скасувати)</string>
 	<string name="warnDelete">Ви впевнені, що видалити словниковий набір конфігурації %S ?</string>
-	<string name="warn_move">Ви впевнені, що для переміщення колекцій %1$d слів від [ %2$S ] на [% 3 $ з]?</string>
+	<string name="warn_move">Ви впевнені, що для переміщення колекцій %1$d слів від [%2$s] на [%3$s]?</string>
 	<string name="warn_exit0">Ви впевнені, що вийти?</string>
 	<string name="surerrecords">Ви дійсно хочете видалити обрані %d записів? (Виграв \'т файл ефект системи)</string>
 	<string name="applyallset">Застосувати до всіх наборів</string>

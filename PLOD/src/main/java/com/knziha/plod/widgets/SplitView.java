@@ -3,6 +3,7 @@ package com.knziha.plod.widgets;
 import java.util.ArrayList;
 
 import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 
 import android.content.Context;
@@ -41,8 +42,10 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 
     private float mPointerOffset;
     public boolean isSlik=false;
-    
-    public interface PageSliderInf{
+	public boolean canClickThrough;
+	private boolean clickThroughEntered;
+
+	public interface PageSliderInf{
 		void onPreparePage(int orgSize);
 		void onMoving(SplitView webcontentlist,float val);
 		void onPageTurn(SplitView webcontentlist);
@@ -79,20 +82,20 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 	        mHandleId = StyledAttributes.getResourceId(R.styleable.SplitView_handle, 0);
 	        if (mHandleId == 0) {
 	            e = new IllegalArgumentException(StyledAttributes.getPositionDescription() +
-	                                             ": The required attribute handle must refer to a valid child view.");
+	                                             ": Handle attribute must refer to a valid child.");
 	        }
 	
 	        mPrimaryContentId = StyledAttributes.getResourceId(R.styleable.SplitView_primaryContent, 0);
 	        if (mPrimaryContentId == 0 ) {
 	            e = new IllegalArgumentException(StyledAttributes.getPositionDescription() +
-	                                             ": The required attribute primaryContent must refer to a valid child view.");
+	                                             ": Handle attribute must refer to a valid child.");
 	        }
 	
 	
 	        mSecondaryContentId = StyledAttributes.getResourceId(R.styleable.SplitView_secondaryContent, 0);
 	        if (mSecondaryContentId == 0 ) {
 	            e = new IllegalArgumentException(StyledAttributes.getPositionDescription() +
-	                                             ": The required attribute secondaryContent must refer to a valid child view.");
+	                                             ": Secondary content must refer to a valid child.");
 	        }
 	
 	        StyledAttributes.recycle();
@@ -111,14 +114,14 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 	        mHandle = findViewById(mHandleId);
 	        if (mHandle == null ) {
 	            String name = getResources().getResourceEntryName(mHandleId);
-	            throw new RuntimeException("Your Panel must have a child View whose id attribute is 'R.id." + name + "'");
+	            throw new RuntimeException("Panel must have a child of id " + name + "'");
 	
 	        }
 	        
 	        mPrimaryContent = findViewById(mPrimaryContentId);
 	        if (mPrimaryContent == null ) {
 	            String name = getResources().getResourceEntryName(mPrimaryContentId);
-	            throw new RuntimeException("Your Panel must have a child View whose id attribute is 'R.id." + name + "'");
+	            throw new RuntimeException("Panel must have a child of id " + name + "'");
 	
 	        }
 	
@@ -128,7 +131,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 	        if (mSecondaryContent == null ) {
 	            String name = getResources().getResourceEntryName(mSecondaryContentId);
 	            if(!isInEditMode())
-	            throw new RuntimeException("Your Panel must have a child View whose id attribute is 'R.id." + name + "'");
+	            throw new RuntimeException("Panel must have a child of id" + name + "'");
 	
 	        }
 	
@@ -161,7 +164,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 	             }
         	break;
 	        case MotionEvent.ACTION_UP:
-	        	CMN.Log("!!!1");
+	        	//CMN.Log("!!!1");
 				checkBar();
 	        	mDragging = false;
 	        	if(view.getClass()==SplitViewGuarder.class) {
@@ -189,7 +192,8 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 		            if(ret<0) break OUT;
 	        		setPrimaryContentHeight(ret);
 		            if(inf!=null) inf.SizeChanged(ret,deltaY);
-	        	} else {
+	        	}
+	        	else {
 		        	float deltaX=ev.getRawX()-lastPosX;
 	        		ret = (int)(multiplier*ev.getRawX() - mPointerOffset);
 		            if(inf!=null) ret=inf.preResizing(ret);
@@ -210,7 +214,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 	boolean twoFingerMode=false;
 	int OrgSize;
 	private static final float _5o12_=0.4166f;
-	boolean judger;
+	public boolean judger;
 	
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -224,7 +228,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     			case MotionEvent.ACTION_POINTER_DOWN:
     			break;
 		    	case MotionEvent.ACTION_DOWN:
-		    		//CMN.Log("???");
+		    		//CMN.Log("SPLITVIEW ???");
 					if(scrollbar2guard!=null && !scrollbar2guard.isHidden()){
 						scrollbar2guard.isWebHeld=true;
 						scrollbar2guard.cancelFadeOut();
@@ -254,7 +258,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 					}
 		    	return ret;
 		    	case MotionEvent.ACTION_MOVE:
-					//CMN.Log(judger,"==judger ", getHandleTop(), getHandleBottom(), getOrientation()==LinearLayout.VERTICAL?OrgY:OrgX);
+					//CMN.Log("SPLITVIEW ACTION_MOVE ", judger, getHandleTop(), getHandleBottom(), getOrientation()==LinearLayout.VERTICAL?OrgY:OrgX);
 					if(judger) {
 						//CMN.Log("!!!3");
 			    		if(!draged) {
@@ -308,6 +312,37 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     	}
 		return ret;
     }
+
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent ev) {
+    	//if(true) return super.dispatchTouchEvent(ev);
+		//CMN.Log("dispatchTouchEvent",clickThrough, getAlpha(),ev.getY()<mPrimaryContent.getTop());
+    	if(canClickThrough){
+			if(ev.getAction()==MotionEvent.ACTION_DOWN){
+				clickThroughEntered=false;
+				float ey = ev.getY();
+				if (ey < mPrimaryContent.getTop()) {
+					if (PDICMainAppOptions.getIsoImgClickThrough() || getAlpha() == 0) {
+						clickThroughEntered = true;
+						return false;
+					}
+
+//					View sv = ((ViewGroup) findViewById(R.id.webSingleholder)).getChildAt(0);
+//					if (sv != null) {
+//						CMN.Log("sv", sv.getBottom(), ey);
+//						if (ey > sv.getBottom()) {
+//							clickThroughEntered = true;
+//							return false;
+//						}
+//					}
+				}
+			}
+			if(clickThroughEntered){
+				return false;
+			}
+		}
+    	return super.dispatchTouchEvent(ev);
+	}
 
 	private void checkBar() {
 		if(scrollbar2guard!=null && !scrollbar2guard.isHidden()){
@@ -406,6 +441,10 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 		return fixedVal+CompensationBottom;
 	}
 
+	public int getCompensationBottom() {
+		return CompensationBottom;
+	}
+
 	public float getHandleLeft() {
 		int fixedVal = getOrientation()==LinearLayout.VERTICAL?mHandle.getLeft()+getLeft():mHandle.getTop()+getTop();
 		return fixedVal+ReservationLeft;
@@ -429,11 +468,5 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 			multiplier *= -1;
 		}
 	}
-  
-
-
-    
-    
-    
 }
     

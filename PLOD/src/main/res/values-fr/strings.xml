@@ -48,9 +48,9 @@
 	<string name="bookmarkL">Liste BookMark …</string>
 	<string name="f_scale_up">taille de la police ++</string>
 	<string name="f_scale_down">Taille de police - -</string>
-	<string name="background_color">Couleur de l\'arrière plan:</string>
-	<string name="text_zoom">Texte Zoom:</string>
-	<string name="case_insensitive_policy">Cas Insensible Politique:</string>
+	<string name="background_color">Couleur de l\'arrière plan :</string>
+	<string name="text_zoom">Texte Zoom :</string>
+	<string name="case_insensitive_policy">Cas Insensible Politique :</string>
 	<string name="remove_mode">Retirer le mode</string>
 	<string name="jump">Saut</string>
 	<string name="strict_mode">mode strict</string>

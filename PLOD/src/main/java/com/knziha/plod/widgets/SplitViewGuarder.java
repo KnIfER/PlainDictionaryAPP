@@ -61,6 +61,8 @@ public class SplitViewGuarder extends View implements OnTouchListener{
 	
 	@Override
 	public boolean onTouch(View v,MotionEvent ev) {
+		//if(true) return false;
+
 		if(dragIdx!=-1) {
 			SplitViewsToGuard.get(dragIdx).onTouch(this, ev);
 			return true;

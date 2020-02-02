@@ -26,6 +26,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,6 +36,7 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.view.ViewGroup;
@@ -46,6 +48,7 @@ import android.widget.Toast;
 
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.SimpleTextNotifier;
+import com.knziha.plod.widgets.SplitView;
 
 public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
@@ -56,7 +59,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	private static int DockerMarginR;
 	private static int DockerMarginT;
 	private static int DockerMarginB;
-	protected ViewGroup root;
+	public ViewGroup root;
 	//public dictionary_App_Options opt;
     //public List<mdict> md = new ArrayList<mdict>();//Collections.synchronizedList(new ArrayList<mdict>());
 
@@ -68,9 +71,10 @@ public class Toastable_Activity extends AppCompatActivity {
 	
 	public long lastClickTime=0;
 
-	long FFStamp;
-	long SFStamp;
-	long TFStamp;
+	protected long FFStamp;
+	protected long SFStamp;
+	protected long TFStamp;
+	protected long QFStamp;
 	protected int MainBackground;
 	public int AppBlack;
 	public int AppWhite;
@@ -79,7 +83,6 @@ public class Toastable_Activity extends AppCompatActivity {
     public float ColorMultiplier_Web2=1;
 
 	public ViewGroup contentview;
-	protected ViewGroup dialogHolder;
 	protected ViewGroup dialog_;
     protected Toolbar toolbar;
     protected EditText etSearch;
@@ -116,7 +119,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	   FFStamp=opt.getFirstFlag();
 	   SFStamp=opt.getSecondFlag();
 	   TFStamp=opt.getThirdFlag();
-	   //TFStamp=opt.getThirdFlag();
+	   QFStamp=opt.getFourthFlag();
 	   inflater=getLayoutInflater();
        imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -208,31 +211,43 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 
 	public void fix_full_screen(@Nullable View decorView) {
-		if(opt.isFullScreen() && false) {//opt.isFullscreenHideNavigationbar()
-			if(decorView==null) decorView=getWindow().getDecorView();
+		do_fix_full_screen(decorView, false, false);
+	}
+
+	public static void do_fix_full_screen(@NonNull View decorView, boolean fullScreen, boolean hideNavigation) {
+		if(hideNavigation) {
 			//int options = decorView.getSystemUiVisibility();
-			int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+			int uiOptions =
+					View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
 					| View.SYSTEM_UI_FLAG_LOW_PROFILE
-					| View.SYSTEM_UI_FLAG_FULLSCREEN
 					| View.SYSTEM_UI_FLAG_IMMERSIVE
 					;
+			if(fullScreen) uiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_FULLSCREEN;
 			decorView.setSystemUiVisibility(uiOptions);
 		}
 	}
 
+	public static void setWindowsPadding(@NonNull View decorView) {
+		decorView.setPadding(DockerMarginL, DockerMarginT, DockerMarginR, DockerMarginB);
+	}
+
 	protected void checkFlags() {
 		if(checkFlagsChanged()){
+			notifyFlagChanged();
 			opt.setFlags(null, 1);
 			FFStamp=opt.FirstFlag();
 			SFStamp=opt.SecondFlag();
 			TFStamp=opt.ThirdFlag();
+			QFStamp=opt.FourthFlag();
 		}
 	}
 
+	protected void notifyFlagChanged() { }
+
 	protected boolean checkFlagsChanged() {
-		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.getThirdFlag();
+		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.getThirdFlag()|| QFStamp!=opt.getFourthFlag();
 	}
 
 	protected void checkLanguage() {
@@ -382,7 +397,7 @@ public class Toastable_Activity extends AppCompatActivity {
 			})
 			.setNegativeButton(R.string.no, (dialog, which) -> {
 				if((subfolder.exists()&&subfolder.isDirectory()) || subfolder.mkdirs()) {//建立文件夹
-					showT("配置存储在 标准 缓存目录");
+					showT("分组配置存储在 标准 缓存目录");
 					opt.rootPath=getExternalFilesDir("").getAbsolutePath();
 					further_loading(savedInstanceState);
 
@@ -400,7 +415,6 @@ public class Toastable_Activity extends AppCompatActivity {
 	Toast m_currentToast;
 	TextView toastTv;
 	View toastV;
-	public DictPicker pickDictDialog;
 	public void showX(int ResId,int len, Object...args) {
 		showT(getResources().getString(ResId,args),len);
 	}
@@ -444,6 +458,14 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	void showTopSnack(Object messageVal){
 		showTopSnack(DefaultTSView, messageVal, 0.8f, -1, -1, false);
+	}
+
+	void modifyTopSnack(Object messageVal){
+		if(messageVal instanceof Integer) {
+			topsnack.setText((int) messageVal);
+		}else {
+			topsnack.setText(String.valueOf(messageVal));
+		}
 	}
 
 	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity, boolean SingleLine) {
@@ -523,7 +545,7 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	public static void checkMargin(Activity a) {
 		if(!MarginChecked) {
-			//File additional_config = new File(opt.pathToMain()+"appsettings.txt");
+			//File additional_config = new File(opt.pathToMainFolder()+"appsettings.txt");
 			File additional_config = new File(Environment.getExternalStorageDirectory(), "PLOD/appsettings.txt");
 			if (additional_config.exists()) {
 				try {

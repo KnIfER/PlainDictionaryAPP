@@ -11,7 +11,7 @@ import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.PlainDict.Toastable_Activity;
 import com.knziha.plod.dictionary.Utils.IU;
 
-public class ViewSpecification extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
+public class ViewSpecification extends SettingsFragment implements Preference.OnPreferenceClickListener {
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -24,6 +24,7 @@ public class ViewSpecification extends SettingsFragmentBase implements Preferenc
 		init_switch_preference(this, "ap_full", PDICMainAppOptions.getInPageSearchAutoUpdateAfterFulltext(), null, null);
 		init_switch_preference(this, "ap_click", PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick(), null, null);
 		init_switch_preference(this, "noext", PDICMainAppOptions.getBackToHomePage(), null, null);
+		init_switch_preference(this, "clear_sel", PDICMainAppOptions.getUseBackKeyClearWebViewFocus(), null, null);
 		Preference p = init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null);
 		p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 										   @Override
@@ -83,6 +84,9 @@ public class ViewSpecification extends SettingsFragmentBase implements Preferenc
 			break;
 			case "noext":
 				PDICMainAppOptions.setBackToHomePage((Boolean) newValue);
+			break;
+			case "clear_sel":
+				PDICMainAppOptions.setUseBackKeyClearWebViewFocus((Boolean) newValue);
 			break;
 			case "conext":
 				int val = IU.parsint(newValue);

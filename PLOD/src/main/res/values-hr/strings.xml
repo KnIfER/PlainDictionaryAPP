@@ -47,9 +47,9 @@
 	<string name="bookmarkL">Bookmark List ...</string>
 	<string name="f_scale_up">Veličina slova ++</string>
 	<string name="f_scale_down">Veličina fonta - -</string>
-	<string name="background_color">Boja pozadine:</string>
-	<string name="text_zoom">Tekst zum:</string>
-	<string name="case_insensitive_policy">Velika i mala slova Politika:</string>
+	<string name="background_color">Boja pozadine :</string>
+	<string name="text_zoom">Tekst zum :</string>
+	<string name="case_insensitive_policy">Velika i mala slova Politika :</string>
 	<string name="remove_mode">Uklonite način rada</string>
 	<string name="jump">Skok</string>
 	<string name="strict_mode">Strogo način</string>

@@ -1,0 +1,28 @@
+<FrameLayout
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:splitview="http://schemas.android.com/apk/res-auto"
+		android:id="@+id/photo_viewpager_holder"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:fitsSystemWindows="true"
+		android:orientation="vertical"
+
+		splitview:primaryContent="@+id/bottombar2"
+		splitview:handle="@+id/bottombar2"
+		splitview:secondaryContent="@+id/PageSlider"
+		>
+
+	<ImageView
+		android:id="@+id/photo_background"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:scaleType="centerCrop"
+		/>
+
+	<androidx.viewpager.widget.ViewPager
+		android:id="@+id/photo_viewpager"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"/>
+
+
+</FrameLayout>

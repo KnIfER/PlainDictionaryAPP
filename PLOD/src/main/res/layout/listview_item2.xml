@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:orientation="horizontal"
 	android:background="@drawable/item_selector"
+	android:descendantFocusability="afterDescendants"
 	>
 	
 		<ImageView
@@ -14,18 +15,20 @@
 		    android:src="@drawable/dragneo2"
 		    android:clickable="true"
 		    android:gravity="center"
-		    android:paddingLeft="3dp"
-		    android:layout_marginRight="3dp"
+		    android:paddingStart="3dp"
+
 		    />
 		
-		<TextView
+		<com.knziha.plod.widgets.TextViewmy
 			android:layout_height="wrap_content"
-			android:layout_width="0dp"
-			android:layout_weight="1"
-			android:text="absolve"
+			android:layout_width="wrap_content"
+			tools:text="absolve"
 			android:id="@+id/text"	
 			android:textColor="#fff"
 			android:textSize="23dp"
+			android:focusable="true"
+			android:focusableInTouchMode="true"
+			android:textIsSelectable="true"
 			/>
 	
 </LinearLayout>

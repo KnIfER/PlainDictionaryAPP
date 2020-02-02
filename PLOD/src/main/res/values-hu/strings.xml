@@ -49,9 +49,9 @@
 	<string name="bookmarkL">Könyvjelzőlistához …</string>
 	<string name="f_scale_up">Betűméret ++</string>
 	<string name="f_scale_down">Betűméret - -</string>
-	<string name="background_color">Háttérszín:</string>
-	<string name="text_zoom">Text Zoom:</string>
-	<string name="case_insensitive_policy">Kis és nagybetűk feltételek:</string>
+	<string name="background_color">Háttérszín :</string>
+	<string name="text_zoom">Text Zoom :</string>
+	<string name="case_insensitive_policy">Kis és nagybetűk feltételek :</string>
 	<string name="remove_mode">Távolítsuk Mode</string>
 	<string name="jump">Ugrás</string>
 	<string name="strict_mode">szigorú üzemmód</string>

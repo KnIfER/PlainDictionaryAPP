@@ -4,8 +4,10 @@ import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
 import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.PDICMainActivity;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.PlainDict.PlaceHolder;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionarymodels.mdict;
 
@@ -43,11 +45,25 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 			return null;
 		PDICMainActivity a;
 		if((a=activity.get())==null) return null;
+
+		ArrayList<mdict> md = a.md;
+
 		if(a.isCombinedSearching){
-			for(int i=0;i<a.md.size();i++){
+			for(int i=0;i<md.size();i++){
 				try {
+					mdict mdTmp = md.get(i);
+					if(mdTmp==null){
+						PlaceHolder phI = a.getPlaceHolderAt(i);
+						if(phI!=null) {
+							try {
+								md.set(i, mdTmp= MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
+								mdTmp.tmpIsFlag = phI.tmpIsFlag;
+							} catch (Exception ignored) { }
+						}
+					}
 					publishProgress(i);
-					a.md.get(i).flowerFindAllKeys(CurrentSearchText,i,a.fuzzySearchLayer);
+					if(mdTmp!=null)
+						mdTmp.flowerFindAllKeys(CurrentSearchText,i,a.fuzzySearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {
@@ -57,8 +73,10 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 			System.gc();
 		}else {
 			try {
-				publishProgress(a.adapter_idx);
-				a.currentDictionary.flowerFindAllKeys(CurrentSearchText,a.adapter_idx,a.fuzzySearchLayer);
+				if(a.checkDicts()){
+					publishProgress(a.adapter_idx);
+					a.currentDictionary.flowerFindAllKeys(CurrentSearchText,a.adapter_idx,a.fuzzySearchLayer);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -76,7 +94,7 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 		harvest();
 	}
 
-	void harvest() {
+	public void harvest() {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
 		if(a.timer!=null) a.timer.cancel(); a.timer=null;

@@ -2,11 +2,11 @@
 	<string name="app_name">平典</string>
 	<string name="wenj_fugai">文件已存在，覆盖保存？</string>
 	<string name="warn_delete">确认删除选中的  %d 项内容?(不可撤销)</string>
-	<string name="warnDelete">确认删除分组配置 %s?</string>
+	<string name="warnDelete">确认删除分组 %s?</string>
 	<string name="warn_move">确认将  %1$d 个收藏从 [ %2$s ] 移动到 [ %3$s ]?</string>
 	<string name="warn_exit0">确认退出?</string>
 	<string name="surerrecords">确认删除选中的 %d 项记录?(不会删除文件)</string>
-	<string name="applyallset">应用到所有配置</string>
+	<string name="applyallset">应用到所有分组</string>
 	<string name="pickdestineFolder">选择目标文件夹</string>
 	<string name="warn_exit1">[清空历史纪录]</string>
 	<string name="bookmarkupdated">书签已更新为: %s</string>
@@ -37,7 +37,7 @@
 	<string name="added">收藏成功!</string>
 
 
-	<string name="jumpfail">未找到目标地址,跳转失败!</string>
+	<string name="jumpfail">未找到目标地址,跳转失败!&#160;</string>
 	<string name="favorRecon">已重建默认收藏夹</string>
 
 	<string name="fuzzyfill">词条搜索完成！ 耗时 %1$1.2fs,共搜索到 %2$d 个词条！</string>
@@ -61,7 +61,7 @@
 
 
 	<string name="err">词典 %1$s 加载失败!  @%2$s : %3$s</string>
-	<string name="loadconfig">加载词典配置</string>
+	<string name="loadconfig">加载词典分组</string>
 	<string name="pickfavor">选择生词本</string>
 	<string name="newfc">新建</string>
 	<string name="loadsucc">加载成功！</string>
@@ -77,8 +77,8 @@
 	<string name="peruseToggle">切换翻阅</string>
 	<string name="peruseToggle1">@string/peruse_mode</string>
 
-	<string name="currentPlan">当前配置(%d)</string>
-	<string name="allPlans">加载配置</string>
+	<string name="currentPlan">当前分组(%d)</string>
+	<string name="allPlans">加载分组</string>
 	<string name="defPlan">默认分组</string>
 	<string name="pLoadDone">%1$s 加载完毕!(%2$d/%3$d)</string>
 	<string name="dupicateD">复制成功！</string>
@@ -104,7 +104,7 @@
 	<string name="stg_grantnow">立即开启</string>
 	<string name="trialin">试用中…… #</string>
 	<string name="stgerr_fail">抱歉，无法在您的设备上使用</string>
-	<string name="infoStr">平典——安卓平台的查词软件。\n\n相关软件\：Bluedict(启发) 、MdictPC(起源) \n\n[开源组件] \n\n[反馈]</string>
+	<string name="infoStr">平典——安卓平台的开源查词软件。\n\n相关软件\：Bluedict(启发) 、Bing 词典(启发) 、MdictPC(起源) \n\n[开源组件] \n\n[反馈]</string>
 	<string name="licence">开源许可证</string>
 	<string name="bmAdd">添加书签</string>
 	<string name="language">语言</string>
@@ -139,9 +139,9 @@
 	<string name="bookmarkL">书签列表..</string>
 	<string name="f_scale_up">增大字体++</string>
 	<string name="f_scale_down">减小字体- -</string>
-	<string name="background_color">背景颜色:</string>
-	<string name="text_zoom">字体缩放:</string>
-	<string name="case_insensitive_policy">大小写转换策略:</string>
+	<string name="background_color">背景颜色 :</string>
+	<string name="text_zoom">字体缩放 :</string>
+	<string name="case_insensitive_policy">大小写转换策略 :</string>
 	<string name="remove_mode">剔除模式</string>
 	<string name="jump">跳转</string>
 	<string name="strict_mode">严格模式</string>
@@ -154,14 +154,15 @@
 	<string name="switch_set">切换分组</string>
 	<string name="unfold_all">展开全部</string>
 	<string name="rem_position">记忆位置</string>
+	<string name="rem_position_yes">记忆位置 √</string>
 	<string name="direct_update">直接更新</string>
 	<string name="bring_from_background">后台唤醒</string>
 	<string name="canceld_peruse_mode">已取消 翻阅模式</string>
-	<string name="show_all_dictionaries">显示全部词典</string>
-	<string name="show_bookmark_add_button">显示书签添加按钮</string>
-	<string name="show_bookmark_delete_button">显示书签删除按钮</string>
+	<string name="show_all_dictionaries">全部词典</string>
+	<string name="show_bookmark_add_button">书签添加按钮</string>
+	<string name="show_bookmark_delete_button">书签删除按钮</string>
 	<string name="auto_search_on_switch">切换词典时自动搜索</string>
-	<string name="show_fast_scroller">显示列表快速滚动条</string>
+	<string name="show_fast_scroller">列表快速滚动条</string>
 	<string name="reset_keyword">重置搜索词</string>
 	<string name="save_bookmark">保存书签</string>
 	<string name="hint_search_result">提示结果</string>
@@ -172,14 +173,18 @@
 	<string name="disable_all">禁用全部</string>
 	<string name="enable_all">启用全部</string>
 	<string name="select_all_invalid">选择失效项</string>
-	<string name="add_selection_to_set">添加选中词典到配置</string>
-	<string name="remove_selection_from_set">从当前配置移除选择</string>
+	<string name="add_selection_to_set">添加选中词典到分组</string>
+	<string name="remove_selection_from_set">从当前分组移除选择</string>
 	<string name="remove_records">删除记录</string>
 	<string name="move_files">移动文件</string>
 	<string name="new___">新建</string>
-	<string name="dict_specs">全局_特定_现代_旧版_否_是</string>
+	<string name="dict_specs">&#160;全局_ 特定_ 现代_ 旧版_ ×_ √</string>
 	<string name="no_suitable_app">无可调用App</string>
 	<string name="multiple_vals">*多重*</string>
 	<string name="dv_select">选中</string>
 	<string name="view_spec">视图设置</string>
+	<string name="backkey_web_goback">使用返回键倒退网页</string>
+	<string name="saved">已保存！</string>
+	<string name="saved_with_size">已保存！大小 = %d </string>
+	<string name="webscroll_apply_all">应用到全部</string>
 </resources>

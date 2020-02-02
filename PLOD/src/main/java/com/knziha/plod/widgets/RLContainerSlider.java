@@ -1,4 +1,5 @@
 package com.knziha.plod.widgets;
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
 
 import android.content.Context;
@@ -10,6 +11,8 @@ import android.widget.FrameLayout;
 
 
 public class RLContainerSlider extends FrameLayout{
+	private float density;
+
 	public RLContainerSlider(Context context) {
 		super(context);
 		init();
@@ -25,6 +28,7 @@ public class RLContainerSlider extends FrameLayout{
 
 	private void init() {
 		detector = new GestureDetector(getContext(), gl);
+		density = getContext().getResources().getDisplayMetrics().density;
 	}
 
 
@@ -59,7 +63,7 @@ public class RLContainerSlider extends FrameLayout{
 			}
 		}else
 			return true;
-		if(!IMSlider.decided) detector.onTouchEvent(ev);
+		//if(!IMSlider.decided) detector.onTouchEvent(ev);
 		if(isOnFlingDected) {
 			dragged=isOnFlingDected=false;
 			IMSlider.decided=false;
@@ -67,7 +71,7 @@ public class RLContainerSlider extends FrameLayout{
 		}
 		if(IMSlider!=null)
 			switch (ev.getAction()) {
-				case MotionEvent.ACTION_MOVE:{
+				case MotionEvent.ACTION_MOVE-100:{
 					int dx = (int) (ev.getRawX() - lastX);
 					int dy = (int) (ev.getRawY() - lastY);
 
@@ -75,10 +79,10 @@ public class RLContainerSlider extends FrameLayout{
 					if(!dragged) {
 						int dxdx = (int) (ev.getRawX() - OrgX);
 						int dydy = (int) (ev.getRawY() - OrgY);
+						IMSlider.OrgTX = IMSlider.getTranslationX();
 						if(Math.abs(dxdx)>100 && (Math.abs(dxdx/(dydy==0?1:dydy))>1.2)){
 							dragged=true;
-							//CMN.show("start dragging...");
-							Log.e("~~", "start dragging...");
+							CMN.Log("start dragging...");
 						}
 					}
 					if(dragged){
@@ -105,25 +109,28 @@ public class RLContainerSlider extends FrameLayout{
 	boolean isOnFlingDected;
 	GestureDetector detector;
 	GestureDetector.SimpleOnGestureListener gl = new GestureDetector.SimpleOnGestureListener() {
-		public boolean onFling(MotionEvent ev, MotionEvent e2, final float velocityX,final float velocityY) {
+		public boolean onFling(MotionEvent e1, MotionEvent e2, final float velocityX,final float velocityY) {
 			if(System.currentTimeMillis()-lastDownTime<=200) {//事件老死
-				if(!TurnPageEnabled) {
-					//if(LeftEndReached) {
-					//	if(ev.getX()>=getWidth()*1.f/3)
-					//		return false;
-					//}else if(RightEndReached) {
-					//	if(ev.getX()<=getWidth()*2.f/3)
-					//		return false;
-					//}else
+				if(!TurnPageEnabled) { //todo slide on zoomed page
 					return false;
 				}
 
-				if(Math.abs(velocityX)>7 && Math.abs(velocityX/(velocityY==0?0.000001:velocityY))>1.899) {
+				// 判断纵向滑动幅度是否过大, 过大的话不允许切换界面
+				if (Math.abs(e2.getRawY() - e1.getRawY()) > 35*density) {
+					//return true;
+				}
+				// 判断滑动是否过慢
+				if (Math.abs(velocityX) < 35*density) {
+					//return true;
+				}
+
+				if(Math.abs(velocityX)>8*density && Math.abs(velocityX/(velocityY==0?0.000001:velocityY))>1.899) {
 					//CMN.show("onFling");
 					isOnFlingDected=true;
 					//IMSlider.startdrag(ev);
-					if(IMSlider.inf!=null)
-						IMSlider.inf.onPreparePage(IMSlider);
+					//xxx
+					/////if(IMSlider.inf!=null)
+					/////	IMSlider.inf.onPreparePage(IMSlider);
 					IMSlider.setAlpha(1.f);
 					if(velocityX<0) {
 						IMSlider.decidedDir=true;
@@ -134,6 +141,7 @@ public class RLContainerSlider extends FrameLayout{
 						IMSlider.TargetX=IMSlider.getWidth();
 						IMSlider.TargetY=IMSlider.getTranslationY();
 					}
+					dragged=false;
 					IMSlider.decided=true;
 					IMSlider.RePosition();
 				}
@@ -152,8 +160,8 @@ public class RLContainerSlider extends FrameLayout{
 		if(!TurnPageEnabled && !LeftEndReached && !RightEndReached) return false;
 		//CMN.Log("onInterceptTouchEvent"+System.currentTimeMillis()+" TurnPageEnabled"+TurnPageEnabled+" LeftEndReached"+LeftEndReached+" RightEndReached"+RightEndReached);
 
-		if(ev.getPointerCount()==1)//单指相应
-			detector.onTouchEvent(ev);
+		//if(ev.getPointerCount()==1) detector.onTouchEvent(ev);
+
 		if(isOnFlingDected) {
 			dragged=
 					isOnFlingDected=false;

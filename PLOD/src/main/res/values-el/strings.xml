@@ -48,9 +48,9 @@
 	<string name="bookmarkL">Λίστα σελιδοδεικτών …</string>
 	<string name="f_scale_up">Μέγεθος γραμματοσειράς ++</string>
 	<string name="f_scale_down">Μέγεθος γραμματοσειράς - -</string>
-	<string name="background_color">Χρώμα του φόντου:</string>
-	<string name="text_zoom">Κείμενο Zoom:</string>
-	<string name="case_insensitive_policy">Υπόθεση Πολιτική αναίσθητος:</string>
+	<string name="background_color">Χρώμα του φόντου :</string>
+	<string name="text_zoom">Κείμενο Zoom :</string>
+	<string name="case_insensitive_policy">Υπόθεση Πολιτική αναίσθητος :</string>
 	<string name="remove_mode">Κατάργηση Λειτουργία</string>
 	<string name="jump">Αλμα</string>
 	<string name="strict_mode">Αυστηρή λειτουργία</string>

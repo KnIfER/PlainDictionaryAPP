@@ -792,9 +792,11 @@ public class DragSortListView extends ListView {
             }
         }
     }
-
+	public boolean noDraw=false;
     @Override
     protected void dispatchDraw(Canvas canvas) {
+    	if(noDraw)
+    		return;
         super.dispatchDraw(canvas);
 
         if (mDragState != IDLE) {
@@ -802,7 +804,7 @@ public class DragSortListView extends ListView {
             if (mFirstExpPos != mSrcPos) {
                 drawDivider(mFirstExpPos, canvas);
             }
-            if (mSecondExpPos != mFirstExpPos && mSecondExpPos != mSrcPos) {
+            if(mSecondExpPos != mFirstExpPos && mSecondExpPos != mSrcPos){
                 drawDivider(mSecondExpPos, canvas);
             }
         }

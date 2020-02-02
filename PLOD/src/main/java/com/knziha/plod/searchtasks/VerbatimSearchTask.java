@@ -5,7 +5,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.PDICMainActivity;
+import com.knziha.plod.PlainDict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -36,7 +38,8 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 		verbatimCount=0;
 		if(!isStrict) {
 			for(mdict mdTmp:a.md) {
-				mdTmp.combining_search_list = new ArrayList<>();
+				if(mdTmp!=null)
+					mdTmp.combining_search_list = new ArrayList<>();
 			}
 		}
 	}
@@ -50,33 +53,50 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 		CurrentSearchText=params[0];
 		String[] inputArray = CurrentSearchText.split(RegExp_VerbatimDelimiter);
 
+		ArrayList<mdict> md = a.md;
+
 		for(int i=0; i<inputArray.length; i++) {
 			if("".equals(inputArray[i])) continue;
 			verbatimCount++;
 			boolean created = false;
 			int start=0;
-			int end = a.md.size();
+			int end = md.size();
 			if(!a.isCombinedSearching) {
-				start = a.md.indexOf(a.currentDictionary);
-				end = start+1;
+				if(a.checkDicts()){
+					start = md.indexOf(a.currentDictionary);
+					end = start+1;
+				}
 			}
 			for(int j=start; j<end; j++) {
-				if(isStrict) {
-					int result = a.md.get(j).lookUp(inputArray[i], true);
-					if(result>=0) {
-						if(!created) {
-							ArrayList<Integer> arr = new ArrayList<>();
-							arr.add(j);arr.add(result);
-							additive_combining_search_tree.add(new additiveMyCpr1(inputArray[i],arr));
-							created=true;
-						}else {
-							ArrayList<Integer> arr = (ArrayList<Integer>) additive_combining_search_tree.get(additive_combining_search_tree.size()-1).value;
-							arr.add(j);arr.add(result);
-						}
+				mdict mdTmp = md.get(j);
+				if(mdTmp==null){
+					PlaceHolder phI = a.getPlaceHolderAt(j);
+					if(phI!=null) {
+						try {
+							md.set(j, mdTmp= MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
+							mdTmp.tmpIsFlag = phI.tmpIsFlag;
+							mdTmp.combining_search_list = new ArrayList<>();
+						} catch (Exception ignored) { }
 					}
-				}else {
-					if(isCancelled()) break;
-					a.md.get(j).size_confined_lookUp5(inputArray[i],null,i,15);
+				}
+				if(mdTmp!=null){
+					if(isStrict) {
+						int result = mdTmp.lookUp(inputArray[i], true);
+						if(result>=0) {
+							if(!created) {
+								ArrayList<Integer> arr = new ArrayList<>();
+								arr.add(j);arr.add(result);
+								additive_combining_search_tree.add(new additiveMyCpr1(inputArray[i],arr));
+								created=true;
+							}else {
+								ArrayList<Integer> arr = (ArrayList<Integer>) additive_combining_search_tree.get(additive_combining_search_tree.size()-1).value;
+								arr.add(j);arr.add(result);
+							}
+						}
+					}else {
+						if(isCancelled()) break;
+						mdTmp.size_confined_lookUp5(inputArray[i],null,i,15);
+					}
 				}
 			}
 		}
@@ -88,16 +108,18 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 	protected void onPostExecute(resultRecorderCombined rec) {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
+		ArrayList<mdict> md = a.md;
 		if(!isStrict) {
 			RBTree_additive additive_combining_search_tree_haha = new RBTree_additive();
-			for(int i=0; i<a.md.size(); i++) {
-				for(myCpr<String, Integer> dataI:a.md.get(i).combining_search_list) {
+			for(int i=0; i<md.size(); i++) {
+				if(md.get(i)!=null)
+				for(myCpr<String, Integer> dataI:md.get(i).combining_search_list) {
 					additive_combining_search_tree_haha.insert(dataI.key, i, dataI.value);
 				}
 			}
 			additive_combining_search_tree=additive_combining_search_tree_haha.flatten();
 		}
-		rec = new resultRecorderCombined(a,additive_combining_search_tree,a.md);
+		rec = new resultRecorderCombined(a,additive_combining_search_tree,md);
 		//CMN.show("逐字搜索 时间： "+(System.currentTimeMillis()-stst)+"ms "+rec.size());
 
 		a.main_progress_bar.setVisibility(View.GONE);

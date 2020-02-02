@@ -3,7 +3,6 @@ package com.knziha.plod.PlainDict;
 import java.io.File;
 import java.util.ArrayList;
 
-import com.knziha.plod.PlainDict.R;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.view.FilePickerDialog;
@@ -18,7 +17,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -119,7 +117,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 	protected void further_loading(final Bundle savedInstanceState) {
 		super.further_loading(savedInstanceState);
 
-		contentview =  (ViewGroup) findViewById(R.id.webcontent);
+		contentview = findViewById(R.id.webcontent);
 		viewPager = (NoScrollViewPager) findViewById(R.id.viewpager);
 		findViewById(R.id.toolbar).setVisibility(View.GONE);
 
@@ -132,7 +130,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 		properties.offset = new File(
 				opt.lastMdlibPath
 		);
-		properties.opt_dir=new File(opt.pathTo()+"favorite_dirs/");
+		properties.opt_dir=new File(opt.pathToDatabases()+"favorite_dirs/");
 		properties.opt_dir.mkdirs();
 		//properties.extensions = new String[] {"mdx"};
 		properties.title_id = 0;
@@ -264,7 +262,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 
 		opt.getLastMdlibPath();
 		if(opt.lastMdlibPath==null || !new File(opt.lastMdlibPath).exists()) {
-			opt.lastMdlibPath = opt.pathToMain()+"mdicts";
+			opt.lastMdlibPath = opt.pathToMainFolder()+"mdicts";
 			new File(opt.lastMdlibPath).mkdirs();
 		}
 

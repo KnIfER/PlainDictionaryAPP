@@ -1,0 +1,50 @@
+<vector android:viewportHeight="32.0"
+	android:viewportWidth="32.0"
+	android:width="96dp"
+	android:height="96dp"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:aapt="http://schemas.android.com/aapt">
+	<group
+        android:translateX="4.0"
+        android:translateY="4.0"
+        >
+    	<path android:pathData="M12,17.27L18.18,21l-1.64,-7.03L22,9.24l-7.19,-0.61L12,2 9.19,8.63 2,9.24l5.46,4.73L5.82,21z">
+			<aapt:attr name="android:fillColor">
+				<gradient
+					android:gradientRadius="25"
+					android:centerX="12"
+					android:centerY="12"
+					android:type="radial">
+					<item
+						android:color="#FFFF00"
+						android:offset="0.1" />
+					<item
+						android:color="#FF8400"
+						android:offset="0.9" />
+				</gradient>
+			</aapt:attr>
+		</path>
+	</group>
+
+
+	<group
+		android:translateX="4.0"
+		android:translateY="4.0"
+		>
+		<path android:fillColor="#80e0f0" android:pathData="M22,9.24l-7.19,-0.62L12,2 9.19,8.63 2,9.24l5.46,4.73L5.82,21 12,17.27 18.18,21l-1.63,-7.03L22,9.24z M12,16.82l-5.64,3.4 1.5,-6.42 -4.98,-4.32 6.57,-0.57L12,2.87l2.57,6.06 6.57,0.57 -4.98,4.32 1.5,6.42L12,16.82z
+"/>
+	</group>
+
+
+<!--	float viewportHeight=24, viewportWidth=24;-->
+<!--	float scaler =1.5f;-->
+<!--	float scalerY =scaler;-->
+<!--	float transX=0f;-->
+<!--	float transY=-0.28f;-->
+<!--	boolean transpose = false;-->
+<!--	boolean flipX = false;-->
+<!--	boolean flipY = false;-->
+<!--	boolean keep_rel_group = true;-->
+<!--	boolean shrink_orgs = true;-->
+<!--	M12,15.4l-3.76,2.27 1,-4.28 -3.32,-2.88 4.38,-0.38L12,6.1l1.71,4.04 4.38,0.38 -3.32,2.88 1,4.28L12,15.4z-->
+</vector>

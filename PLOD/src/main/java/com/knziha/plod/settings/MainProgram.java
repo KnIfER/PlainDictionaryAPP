@@ -1,14 +1,10 @@
 package com.knziha.plod.settings;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
@@ -17,12 +13,15 @@ import com.knziha.plod.dictionarymodels.mdict;
 
 import java.util.HashMap;
 
-public class MainProgram extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
+public class MainProgram extends SettingsFragment implements Preference.OnPreferenceClickListener {
 	private String localeStamp;
-	private static HashMap<String, String> nym;
+	private HashMap<String, String> nym;
 	StringBuilder flag_code= new StringBuilder();
 
-	static{
+
+	//初始化
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
 		nym=new HashMap<>(15);
 		nym.put("ar", "ae");
 		nym.put("zh", "cn");
@@ -39,11 +38,7 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 		nym.put("nb", "no");
 		nym.put("sr", "rs");
 		nym.put("uk", "ua");
-	}
 
-	//初始化
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "locale", null, getNameFlag(localeStamp = PDICMainAppOptions.locale), null);
 		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null);
@@ -79,6 +74,10 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 			flag_code= new StringBuilder();
 		flag_code.setLength(0);
 		flag_code.append(andoid_country_code).append("\t\t\t\t");
+		return getCountryFlag(flag_code, name).toString();
+	}
+
+	public static StringBuilder getCountryFlag(StringBuilder flag_code, String name) {
 		for (int i = 0; i < name.length(); i++) {
 			char cI = name.charAt(i);
 			if(cI>=0x61 && cI<=0x61+26){
@@ -86,7 +85,7 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 			}else
 				flag_code.append(cI);
 		}
-		return flag_code.toString();
+		return flag_code;
 	}
 
 	//创建

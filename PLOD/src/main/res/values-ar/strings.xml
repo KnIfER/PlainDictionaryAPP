@@ -48,9 +48,9 @@
 	<string name="bookmarkL">قائمة المرجعية ...</string>
 	<string name="f_scale_up">حجم الخط ++</string>
 	<string name="f_scale_down">حجم الخط - -</string>
-	<string name="background_color">لون الخلفية:</string>
-	<string name="text_zoom">تكبير النص:</string>
-	<string name="case_insensitive_policy">سياسة القاسي القضية:</string>
+	<string name="background_color">لون الخلفية :</string>
+	<string name="text_zoom">تكبير النص :</string>
+	<string name="case_insensitive_policy">سياسة القاسي القضية :</string>
 	<string name="remove_mode">إزالة الوضع</string>
 	<string name="jump">الانتقال السريع ل</string>
 	<string name="strict_mode">الوضع الصارم</string>

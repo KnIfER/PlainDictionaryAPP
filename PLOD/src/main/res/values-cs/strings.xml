@@ -49,9 +49,9 @@
 	<string name="bookmarkL">Seznam záložek …</string>
 	<string name="f_scale_up">Velikost písma ++</string>
 	<string name="f_scale_down">Velikost písma - -</string>
-	<string name="background_color">Barva pozadí:</string>
-	<string name="text_zoom">Text Zoom:</string>
-	<string name="case_insensitive_policy">Policy malá a velká písmena:</string>
+	<string name="background_color">Barva pozadí :</string>
+	<string name="text_zoom">Text Zoom :</string>
+	<string name="case_insensitive_policy">Policy malá a velká písmena :</string>
 	<string name="remove_mode">odebrat režim</string>
 	<string name="jump">Skok</string>
 	<string name="strict_mode">přísný režim</string>
@@ -61,7 +61,7 @@
 	<string name="wenj_fugai">Soubor již existuje, přepsat?</string>
 	<string name="warn_delete">Opravdu chcete smazat vybrané %d karet? (Můžete \'t vrátit zpět)</string>
 	<string name="warnDelete">Opravdu chcete smazat slovníku konfigurační soubor %s?</string>
-	<string name="warn_move">Opravdu chcete přesunout %1$d slovo kolekce z [%2$s] [%3$]?</string>
+	<string name="warn_move">Opravdu chcete přesunout %1$d slovo kolekce z [%2$s] [%3$s]?</string>
 	<string name="warn_exit0">Opravdu chcete ukončit?</string>
 	<string name="surerrecords">Opravdu chcete smazat vybrané %d záznamů? (Vyhrál t efekt souborového systému \')</string>
 	<string name="applyallset">Platí pro všechny soubory</string>

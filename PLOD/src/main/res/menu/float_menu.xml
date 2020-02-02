@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu 
-   xmlns:android="http://schemas.android.com/apk/res/android"
-   xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	tools:ignore="AppCompatResource"
+	>
 
+	<item
+		android:id="@+id/toolbar_action0"
+		android:title="@string/fold_all"
+		android:visible="false"
+		app:showAsAction="never"/>
 
     <item
         android:id="@+id/toolbar_action1"
@@ -10,19 +17,32 @@
         android:title="Action"
         app:showAsAction="always"/>
     
-    
-    <item
-        android:id="@+id/toolbar_action2"
-        android:title="@string/switch_dict"
-        app:showAsAction="never"/>
-    
+
     <item
         android:id="@+id/toolbar_action3"
         android:icon="@drawable/songlist"
         android:title="@string/switch_set"
         app:showAsAction="never"/>
-    
-    <item
+
+	<item
+		android:id="@+id/toolbar_action2"
+		android:title="@string/switch_dict"
+		app:showAsAction="never"/>
+
+	<item
+		android:id="@+id/toolbar_action5"
+		android:icon="@drawable/songlist"
+		android:title="页内查找"
+		app:showAsAction="never"/>
+
+<!--	<item-->
+<!--		android:id="@+id/toolbar_action6"-->
+<!--		android:icon="@drawable/songlist"-->
+<!--		android:title="即点即译"-->
+<!--		app:showAsAction="never"/>-->
+
+
+	<item
         android:id="@+id/toolbar_action4"
         android:icon="@drawable/bundle"
         android:title="@string/favorite"

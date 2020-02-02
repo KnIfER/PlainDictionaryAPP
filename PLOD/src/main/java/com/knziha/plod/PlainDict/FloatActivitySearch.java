@@ -60,7 +60,7 @@ public class FloatActivitySearch extends FloatSearchActivity {
 		ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
 		List<ActivityManager.AppTask> tasks = am.getAppTasks();
 		for (int i = 0; i < tasks.size(); i++) {
-			CMN.Log(tasks.get(i).getTaskInfo().id==getTaskId());
+			//CMN.Log(tasks.get(i).getTaskInfo().id==getTaskId());
 			if(tasks.get(i).getTaskInfo().id==getTaskId()){
 				tasks.get(i).setExcludeFromRecents(hidden);
 				break;

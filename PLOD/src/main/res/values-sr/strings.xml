@@ -48,9 +48,9 @@
 	<string name="bookmarkL">Боокмарк Лист ...</string>
 	<string name="f_scale_up">Фонт сизе ++</string>
 	<string name="f_scale_down">Фонт сизе - -</string>
-	<string name="background_color">Боја позадине:</string>
-	<string name="text_zoom">Текст зум:</string>
-	<string name="case_insensitive_policy">Усензитивитету Политика:</string>
+	<string name="background_color">Боја позадине :</string>
+	<string name="text_zoom">Текст зум :</string>
+	<string name="case_insensitive_policy">Усензитивитету Политика :</string>
 	<string name="remove_mode">ремове Моде</string>
 	<string name="jump">јумп</string>
 	<string name="strict_mode">строги режим</string>

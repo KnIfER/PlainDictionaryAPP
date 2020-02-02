@@ -1,32 +1,24 @@
 package com.knziha.plod.PlainDict;
 
-import java.io.File;
-
-import com.knziha.plod.PlainDict.R;
-
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.io.File;
+
 import db.LexicalDBHelper;
 
-
 public class DHBroswer extends DBroswer {
-
 	public DHBroswer(){
 		super();
 	}
 
 
-	//public Fragment_History_Broswer(MainActivity a_) {
-	//}
-
-
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		CMN.Log("onCreateViewonCreateView");
+		//CMN.Log("onCreateViewonCreateView");
 		View ret = super.onCreateView(inflater, container, savedInstanceState);
 		main_clister_layout.findViewById(R.id.choosed).setVisibility(View.GONE);
 		main_clister_layout.findViewById(R.id.changed).setVisibility(View.GONE);
@@ -97,15 +89,11 @@ public class DHBroswer extends DBroswer {
 		a.favoriteCon.prepareContain();
 		if(a.favoriteCon.contains(text)) {//删除
 			a.favoriteCon.remove(text);
-			a.favoriteBtn.setImageDrawable(a.star);
+			a.favoriteBtn.setImageResource(R.drawable.star_ic);
 			a.show(R.string.removed);
 		}else {//添加
 			a.favoriteCon.insert(text);
-			if(a.star_ic==null) {
-				a.star_ic = getResources().getDrawable(R.drawable.star_ic_solid);
-				a.star = a.favoriteBtn.getDrawable();
-			}
-			a.favoriteBtn.setImageDrawable(a.star_ic);
+			a.favoriteBtn.setImageResource(R.drawable.star_ic_solid);
 			a.show(R.string.added);
 		}
 
@@ -118,13 +106,9 @@ public class DHBroswer extends DBroswer {
 		if(a==null) return;
 		a.favoriteCon.prepareContain();
 		if(a.favoriteCon.contains(key)) {
-			if(a.star_ic==null) {
-				a.star_ic = getResources().getDrawable(R.drawable.star_ic_solid);
-				a.star = a.favoriteBtn.getDrawable();
-			}
-			a.favoriteBtn.setImageDrawable(a.star_ic);
-		}else if(a.star!=null)
-			a.favoriteBtn.setImageDrawable(a.star);
+			a.favoriteBtn.setImageResource(R.drawable.star_ic_solid);
+		}else
+			a.favoriteBtn.setImageResource(R.drawable.star_ic);
 	}
 
 	@Override

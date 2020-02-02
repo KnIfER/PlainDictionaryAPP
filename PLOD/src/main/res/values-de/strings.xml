@@ -48,9 +48,9 @@
 	<string name="bookmarkL">Lesezeichen-Liste …</string>
 	<string name="f_scale_up">Schriftgröße ++</string>
 	<string name="f_scale_down">Schriftgröße - -</string>
-	<string name="background_color">Hintergrundfarbe:</string>
-	<string name="text_zoom">Text Zoom:</string>
-	<string name="case_insensitive_policy">Case Insensitive-Politik:</string>
+	<string name="background_color">Hintergrundfarbe :</string>
+	<string name="text_zoom">Text Zoom :</string>
+	<string name="case_insensitive_policy">Case Insensitive-Politik :</string>
 	<string name="remove_mode">entfernen Sie Modus</string>
 	<string name="jump">Springen</string>
 	<string name="strict_mode">strikter Modus</string>

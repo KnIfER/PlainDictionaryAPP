@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,11 +23,6 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.alexvasilkov.gestures.commons.DepthPageTransformer;
-import com.bumptech.glide.RequestManager;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -36,13 +30,11 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.mdictRes;
-import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.widgets.SimpleClickableSpan;
 
-import org.apache.commons.imaging.Imaging;
-
-import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashSet;
@@ -66,7 +58,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 	private TextView indicator;
 	private View forward;
 	private View backward;
-	private RequestListener<Drawable> mGlideListener=new RequestListener<Drawable>() {
+	public static RequestListener<Drawable> mGlideListener=new RequestListener<Drawable>() {
 		@Override
 		public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
 			ImageView medium_thumbnail = ((ImageViewTarget<?>) target).getView();
@@ -90,10 +82,12 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 		mdd=null;
 		imageUrls = getIntent().getStringArrayExtra("images");
 		curPosition = getIntent().getIntExtra("current", 0);
-
 		indicator = findViewById(R.id.indicator);
 		backward = findViewById(R.id.browser_widget13);
 		forward = findViewById(R.id.browser_widget14);
+		if(imageUrls.length<2){
+			indicator.setVisibility(View.GONE);
+		}
 		mPager = findViewById(R.id.pager);
 		mPager.setPageTransformer(false, new DepthPageTransformer(), View.LAYER_TYPE_NONE);
 		mPager.setPageMargin((int) (getResources().getDisplayMetrics().density * 15));
@@ -133,7 +127,8 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 				}
 				String key=imageUrls[position];
 				try {
-					Glide.with(PhotoViewActivity.this).load(new MddPic(mdd_, key))
+					Glide.with(PhotoViewActivity.this)
+							.load(key.startsWith("/pdfimg/")?new PdfPic(key, getBaseContext()):new MddPic(mdd_, key))
 							.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
 							.fitCenter()
 							.diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -168,7 +163,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 
 			}
 		});
-		if(!PDICMainAppOptions.getShowImageBrowserFlipper()) setFlipperVis();
+		setFlipperVis();
 		View downloadBtn=findViewById(R.id.browser_widget15);
 		downloadBtn.setVisibility(PDICMainAppOptions.getShowSaveImage()?View.VISIBLE:View.GONE);
 		downloadBtn.setOnClickListener(this);
@@ -238,9 +233,9 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 
 			}
 		});
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0x1,41,1,1);
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0x1,42,1,0);
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 0x1,43,1,0);
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1,41,1,1);
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1,42,1,0);
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1,43,1,0);
 
 		ssb.delete(ssb.length()-4,ssb.length());
 		tv.setText(ssb);
@@ -271,12 +266,14 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 	}
 
 	private void init_clickspan_with_bits_at(TextView tv, SpannableStringBuilder text,
-													String[] dictOpt, int titleOff, String[] coef, int coefOff, long mask, int flagPosition, int flagMax, int valOff) {
+													String[] dictOpt, int titleOff,
+											 String[] coef, int coefOff, int coefShift,
+											 long mask, int flagPosition, int flagMax, int valOff) {
 		long val = (PDICMainAppOptions.SecondFlag>>flagPosition)&mask;
 		int index= (((int)val+valOff)%(flagMax+1));
 		int start = text.length();
 		int now = start+dictOpt[titleOff].length();
-		text.append("[").append(dictOpt[titleOff]).append(coef[(int) (coefOff+index)]).append("]");
+		text.append("[").append(dictOpt[titleOff]).append(coef[coefOff+(index+coefShift)%(flagMax+1)]).append("]");
 		text.setSpan(new SimpleClickableSpan(0xFFFF4081) {
 			@Override
 			public void onClick(@NonNull View widget) {
@@ -289,7 +286,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 				int fixedRange = indexOf(text, ':', now);
 				int index= (((int)val+valOff)%(flagMax+1));
 				text.delete(fixedRange+1, indexOf(text, ']', fixedRange));
-				text.insert(fixedRange+1,coef[(int) (coefOff+index)]);
+				text.insert(fixedRange+1,coef[coefOff+(index+coefShift)%(flagMax+1)]);
 				tv.setText(text);
 			}},start,text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		text.append("\r\n").append("\r\n");
@@ -305,7 +302,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 	}
 
 	private void setFlipperVis() {
-		int vis = PDICMainAppOptions.getShowImageBrowserFlipper()?View.VISIBLE:View.GONE;
+		int vis = imageUrls.length>2&&PDICMainAppOptions.getShowImageBrowserFlipper()?View.VISIBLE:View.GONE;
 		findViewById(R.id.browser_widget12).setVisibility(vis);
 		forward.setVisibility(vis);
 		backward.setVisibility(vis);

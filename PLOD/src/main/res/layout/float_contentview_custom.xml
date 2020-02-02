@@ -1,0 +1,124 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/webcontentlister"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:fitsSystemWindows="true"
+	android:orientation="vertical"
+	android:background="@drawable/floatcontent"
+	android:layout_margin="10dp"
+	android:elevation="6dp">
+
+	<com.knziha.plod.widgets.AppbarLinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			app:layout_scrollFlags="scroll|enterAlways"
+			>
+			<ImageView
+				android:id="@+id/popIvBack"
+				android:layout_width="50dp"
+				android:padding="10dp"
+				android:layout_height="match_parent"
+				android:src="@drawable/abc_ic_ab_back_material"
+				android:background="@drawable/abc_action_bar_item_background_material"
+				/>
+			<TextView
+				android:id="@+id/text1"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:gravity="center_vertical"
+				android:paddingTop="5dp"
+				android:text="Pop"
+				android:textSize="25sp"
+				android:paddingBottom="5dp"
+				/>
+			<android.widget.ImageView
+				android:id="@+id/browser_widget8"
+				android:layout_width="50dp"
+				android:layout_height="50dp"
+				android:src="@drawable/star_ic"
+				android:tint="@color/colorPrimary"
+				/>
+		</com.knziha.plod.widgets.AppbarLinearLayout>
+
+	<com.knziha.plod.widgets.AdvancedNestScrollWebView1
+		android:id="@+id/webviewmy"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:theme="@style/scroll"
+		android:fadingEdge="none"
+		android:overScrollMode="never"
+		android:focusable="true"
+		android:focusableInTouchMode="true"
+		app:layout_behavior="@string/appbar_scrolling_view_behavior"
+		/>
+
+	<FrameLayout
+		android:layout_width="match_parent"
+		android:layout_height="30dp"
+		xmlns:UIStyles="http://schemas.android.com/apk/res-auto"
+		android:layout_gravity="bottom"
+		android:background="#f2ffffff"
+		>
+
+		<com.knziha.filepicker.widget.CircleCheckBox
+			android:id="@+id/checker"
+			android:layout_width="30dp"
+			android:layout_height="30dp"
+			UIStyles:dim1="6dp"
+			app:color_background="#FF3F51B5"
+			app:color_border="#FFF"
+			app:size="25dp"
+			android:src="@drawable/clippin"
+			android:layout_marginStart="8dp"
+			/>
+
+		<LinearLayout
+			android:id="@+id/checkerr"
+			android:orientation="horizontal"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:layout_gravity="end"
+			>
+
+			<ImageView
+				android:id="@+id/color"
+				android:layout_width="30dp"
+				android:layout_height="30dp"
+				android:padding="4dp"
+				android:src="@drawable/color_sheet"
+				android:layout_marginRight="5dp"
+				/>
+
+			<ImageView
+				android:id="@+id/settings"
+				android:layout_width="30dp"
+				android:layout_height="30dp"
+				android:padding="4dp"
+				android:src="@drawable/tools_toolbar"
+				android:layout_marginRight="5dp"
+				/>
+
+			<ImageView
+				android:id="@+id/appsettings"
+				android:layout_width="30dp"
+				android:layout_height="30dp"
+				android:padding="4dp"
+				android:src="@drawable/drawer_menu_icon_setting"
+				/>
+
+
+			<ImageView
+				android:id="@+id/lock"
+				android:layout_width="30dp"
+				android:layout_height="30dp"
+				android:padding="4dp"
+				android:src="@drawable/un_locked"
+				/>
+
+		</LinearLayout>
+	</FrameLayout>
+
+</FrameLayout>

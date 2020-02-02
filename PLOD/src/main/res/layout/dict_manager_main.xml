@@ -21,17 +21,18 @@
 				android:id="@+id/toolbar"
 				android:layout_width="match_parent"
 				android:layout_height="51dp"
-				android:title="配置管理"
-	        android:theme="@style/toolbarTheme" 
+				android:title="分组管理"
+				android:theme="@style/toolbarTheme"
 				/>
-			
-	        	<com.google.android.material.tabs.TabLayout
-			     android:id="@+id/mTabLayout"
-			     android:layout_width="match_parent"
-			     android:layout_height="30dp"
-			     app:tabTextColor="@android:color/white" 
-            	 app:tabSelectedTextColor="@android:color/white"
-			     />
+
+				<com.google.android.material.tabs.TabLayout
+					android:id="@+id/mTabLayout"
+					android:layout_width="wrap_content"
+					android:layout_height="30dp"
+					app:tabTextColor="@android:color/white"
+					app:tabSelectedTextColor="@android:color/white"
+					app:tabMode="scrollable"
+					/>
 			</LinearLayout>
 
     		<FrameLayout 

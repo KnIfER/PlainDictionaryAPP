@@ -26,6 +26,7 @@ import java.io.PrintStream;
  * @date 2018/05/31
  */
 public class  SU{
+	public static Object UniversalObject;
     public static boolean debug;//StringUtils
 
 	public static String trimStart(String input) {
@@ -58,7 +59,7 @@ public class  SU{
 
 
 	public static void Log(Object... o) {
-		String msg="";
+		String msg="fatal_log_mdict : ";
 		if(o!=null)
 			for(int i=0;i<o.length;i++) {
 				if(Exception.class.isInstance(o[i])) {

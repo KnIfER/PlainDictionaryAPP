@@ -4,8 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.knziha.plod.dictionary.Utils.SU;
+
+import org.adrianwalker.multilinestring.Multiline;
 
 
 //common
@@ -13,6 +19,7 @@ public class CMN{
 	public final static String replaceReg =  " |:|\\.|,|-|\'|(|)";
 	public final static String emptyStr = "";
 	public static final HashMap<String, String> AssetMap = new HashMap<>();
+	public static final String AssetTag = "/ASSET/";
 	public static final Boolean OccupyTag = true;
 
 	public static int GlobalPageBackground = 0;
@@ -39,7 +46,13 @@ public class CMN{
 	public static boolean testFLoatSearch;
 	public static boolean editAll;
 	public static boolean darkRequest=true;
-	public static void Log(Object... o) {
+	public static int CheckSettings;
+
+	/** Is it not like the king? */
+	@Multiline
+	public static final String TestText="Happy";
+
+	public static String Log(Object... o) {
 		String msg="";
 		if(o!=null)
 			for(int i=0;i<o.length;i++) {
@@ -51,7 +64,12 @@ public class CMN{
 				}
 				msg+=o[i]+" ";
 			}
-		android.util.Log.d("fatal poison",msg);
+
+		if(SU.UniversalObject instanceof Exception)
+			System.out.println(msg);
+		else
+			android.util.Log.d("fatal poison",msg);
+		return msg;
 	}
 	public static void recurseLog(View v,String... depths) {
 		String depth = depths!=null && depths.length>0?depths[0]:"- ";
@@ -60,7 +78,13 @@ public class CMN{
 		ViewGroup vg = (ViewGroup) v;
 		for(int i=0;i<vg.getChildCount();i++) {
 			View CI = vg.getChildAt(i);
-			Log(depth+CI+" == "+Integer.toHexString(CI.getId())+"/"+CI.getBackground());
+			String CIS = "";
+			if(CI instanceof TextView) {
+				CIS = ((TextView)CI).getText().toString();
+				if(CIS.length()>10) CIS = CIS.substring(0, 10);
+			}
+			CIS = CIS+CI;
+			Log(depth+CIS+" == "+Integer.toHexString(CI.getId())+"/"+CI.getBackground()+"\\"+CI.getTag());
 			if(ViewGroup.class.isInstance(CI))
 				recurseLog(CI,depth_plus_1);
 		}
@@ -81,11 +105,17 @@ public class CMN{
 	//[!1] End debug flags and methods*/
 
 	public static long stst;
+	public static long stst_add;
 	public static void rt() {
 		stst = System.currentTimeMillis();
 	}
 	public static void pt(Object...args) {
 		CMN.Log(listToStr(args)+" "+(System.currentTimeMillis()-stst));
+	}
+	public static void tp(long stst, Object...args) {
+		long time = (System.currentTimeMillis() - stst);
+		CMN.Log(time+" "+listToStr(args));
+		stst_add+=time;
 	}
 
 	private static String listToStr(Object...args) {
@@ -94,5 +124,29 @@ public class CMN{
 			ret+=args[i];
 		}
 		return ret;
+	}
+
+	static Integer resourceId;
+	public static int getStatusBarHeight(Context a) {
+		if(resourceId==null)
+			try {
+				resourceId = a.getResources().getIdentifier("status_bar_height", "dimen", "android");
+			} catch (Exception e) {
+				resourceId=0;
+			}
+		if (resourceId > 0) {
+			return a.getResources().getDimensionPixelSize(resourceId);
+		}
+		return 0;
+	}
+
+	public static boolean checkRCSP() {
+		boolean ret = (CheckSettings&0x1)!=0;
+		if(ret) CheckSettings&=~0x1;
+		return ret;
+	}
+
+	public static void setCheckRcsp() {
+		CheckSettings|=0x1;
 	}
 }

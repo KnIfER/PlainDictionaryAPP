@@ -48,9 +48,9 @@
 	<string name="bookmarkL">Llista de marcadors …</string>
 	<string name="f_scale_up">Mida de la font ++</string>
 	<string name="f_scale_down">Mida de la font - -</string>
-	<string name="background_color">Color de fons:</string>
-	<string name="text_zoom">Text del mapa:</string>
-	<string name="case_insensitive_policy">Política cas Insensible:</string>
+	<string name="background_color">Color de fons :</string>
+	<string name="text_zoom">Text del mapa :</string>
+	<string name="case_insensitive_policy">Política cas Insensible :</string>
 	<string name="remove_mode">Traieu Mode</string>
 	<string name="jump">salt</string>
 	<string name="strict_mode">La manera estricte</string>
@@ -62,7 +62,7 @@
 	<string name="warnDelete">Esteu segur que voleu suprimir el diccionari conjunt de configuració %s?</string>
 	<string name="warn_move">¿Segur moure col·leccions %1$d paraula de [%2$s] a [%3$s]?</string>
 	<string name="warn_exit0">¿Segur per sortir?</string>
-	<string name="surerrecords">¿Segur d\'eliminar els registres%d seleccionats? (Bestiar sistema d\'arxius efecte t \')</string>
+	<string name="surerrecords">¿Segur d\'eliminar els registres %d seleccionats? (Bestiar sistema d\'arxius efecte t \')</string>
 	<string name="applyallset">Aplicar a tots conj</string>
 	<string name="pickdestineFolder">Seleccionar carpeta Destine</string>
 	<string name="warn_exit1">[Història clara]</string>

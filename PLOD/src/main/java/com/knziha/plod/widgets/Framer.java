@@ -23,11 +23,25 @@ public class Framer extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 	    //int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         if(mMaxHeight!=-1) {
-            if(heightSize>mMaxHeight) {
-            	heightMeasureSpec = mMaxHeight;
-            }
+			int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+			int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+			if (heightMode == MeasureSpec.EXACTLY) {
+				heightSize = heightSize <= mMaxHeight ? heightSize
+						: mMaxHeight;
+			}
+
+			if (heightMode == MeasureSpec.UNSPECIFIED) {
+				heightSize = heightSize <= mMaxHeight ? heightSize
+						: mMaxHeight;
+			}
+			if (heightMode == MeasureSpec.AT_MOST) {
+				heightSize = heightSize <= mMaxHeight ? heightSize
+						: mMaxHeight;
+			}
+
+			heightMeasureSpec = MeasureSpec.makeMeasureSpec(heightSize,heightMode);
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }

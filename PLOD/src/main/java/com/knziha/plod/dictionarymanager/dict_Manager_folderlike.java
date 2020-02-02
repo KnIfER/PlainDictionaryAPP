@@ -23,6 +23,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -36,7 +37,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class dict_Manager_folderlike extends ListFragment {
+public class dict_Manager_folderlike extends ListFragment implements dict_manager_base.SelectableFragment {
 	String parentFile;
 	ArrayListTree<mFile> data=new ArrayListTree<>();
 	ArrayListTree<mFile> hiddenParents=new ArrayListTree<>();
@@ -46,11 +47,35 @@ public class dict_Manager_folderlike extends ListFragment {
 	dict_manager_activity a;
 	int[] lastClickedPos=new int[]{-1, -1};
 	int lastClickedPosIndex=0;
-	
+
+	@Override
+	public boolean exitSelectionMode() {
+		if(Selection.size()>0) {
+			Selection.clear();
+			SelectionMode = false;
+			lastClickedPos[0] = -1;
+			lastClickedPos[1] = -1;
+			alreadySelectedAll = false;
+			adapter.notifyDataSetChanged();
+			Menu toolbarmenu = a.toolbarmenu;
+			toolbarmenu.getItem(7).setVisible(false);
+			toolbarmenu.getItem(8).setVisible(false);
+			toolbarmenu.getItem(9).setVisible(false);
+			toolbarmenu.getItem(10).setVisible(false);
+			toolbarmenu.getItem(11).setVisible(false);
+			toolbarmenu.getItem(12).setVisible(false);
+			toolbarmenu.getItem(13).setVisible(true);
+			toolbarmenu.getItem(14).setVisible(true);
+			toolbarmenu.getItem(15).setVisible(false);
+			return true;
+		}
+		return false;
+	}
+
 	public interface OnEnterSelectionListener{
-		public void onEnterSelection();
-		public int addIt(File fn);
-	}OnEnterSelectionListener oes;
+		void onEnterSelection();
+		int addIt(File fn);
+	} OnEnterSelectionListener oes;
 	
     public boolean SelectionMode=false;
     public RashSet<String> Selection = new RashSet<>();
@@ -69,7 +94,7 @@ public class dict_Manager_folderlike extends ListFragment {
 	boolean dataPrepared;
 	private void pullData() {
 		if(!dataPrepared) {
-			File rec = new File(a.opt.pathToMain()+"CONFIG/mdlibs.txt");
+			File rec = new File(a.opt.pathToMainFolder()+"CONFIG/mdlibs.txt");
 	        try {
 				BufferedReader in = new BufferedReader(new FileReader(rec));
 		        String line;
@@ -80,8 +105,11 @@ public class dict_Manager_folderlike extends ListFragment {
 		        	boolean isForeign=false;
 		        	mFile fI;
 	        		if(!line.startsWith("/")) {//是相对路径
-						if(line.startsWith("[:F]")){
-							line = line.substring(4);
+						if(line.startsWith("[:")){
+							int idx = line.indexOf("]",2);
+							if(idx>=2){
+								line = line.substring(idx+1);
+							}
 						}
 	        			if(line.contains("/")) {
 		        			sb.setLength(baseL);
@@ -391,14 +419,14 @@ public class dict_Manager_folderlike extends ListFragment {
     }
     
 
-    private static class ViewHolder{
+    public static class ViewHolder{
 		//int position;
-    	mFile dataLet;
-    	View folderIcon;
-    	View splitterIcon;
-    	View drag_handle;
-    	private TextView text;
-    	private CheckBox ck;
+    	public mFile dataLet;
+    	public View folderIcon;
+    	public View splitterIcon;
+    	public View drag_handle;
+    	public TextView text;
+    	public CheckBox ck;
     }
 
 

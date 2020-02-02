@@ -51,7 +51,7 @@ public class UnCrashableSpannedTextView extends TextView {
     		 return super.dispatchTouchEvent(event);
     	}catch(Exception e) {
     		e.printStackTrace();
-    		//CMN.show("fuck android");
+    		//CMN.show("fuck dispatchTouchEvent");
     	}
     	return false;
     }
@@ -62,7 +62,7 @@ public class UnCrashableSpannedTextView extends TextView {
 	   		   return super.onPreDraw();
 		   	}catch(Exception e) {
 		   		e.printStackTrace();
-		   		//CMN.show("fuck android");
+		   		//CMN.show("fuck onPreDraw");
 		   	}
         return false;
     }

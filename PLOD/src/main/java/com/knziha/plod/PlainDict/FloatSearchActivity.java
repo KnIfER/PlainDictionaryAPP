@@ -1,6 +1,5 @@
 package com.knziha.plod.PlainDict;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
@@ -12,12 +11,10 @@ import android.os.Bundle;
 import android.os.Message;
 import android.text.Editable;
 import android.text.Html;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
-import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -28,35 +25,39 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.widgets.RLContainerSlider;
-import com.knziha.rbtree.additiveMyCpr1;
+import com.knziha.plod.widgets.SplitView;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.List;
+import java.util.ArrayList;
 
 
 /**
  * Created by KnIfER on 2018
  */
 public class FloatSearchActivity extends MainActivityUIBase {
-    private ViewGroup mainfv;
+	ViewGroup mainfv;
 	private long exitTime = 0;
 
 	boolean FVDOCKED=false;
@@ -65,7 +66,40 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	final static int FVMINHEIGHT=50;
 
 	protected float _50_;
-	
+	public static ArrayList<PlaceHolder> CosyChair = new ArrayList<>();
+	public static ArrayList<PlaceHolder> CosySofa = new ArrayList<>();
+	public static ArrayList<PlaceHolder> HdnCmfrt = new ArrayList<>();
+	public static ArrayList<PlaceHolder> mCosyChair;
+	public static ArrayList<PlaceHolder> mCosySofa;
+	public static ArrayList<PlaceHolder> mHdnCmfrt;
+	private String Current0SearchText;
+	private boolean fullScreen;
+	private boolean hideNavigation;
+	private SplitView sp_main;
+
+	@Override
+	ArrayList<PlaceHolder> getLazyCC() {
+		return mCosyChair;
+	}
+
+	@Override
+	ArrayList<PlaceHolder> getLazyCS() {
+		return mCosySofa;
+	}
+
+	@Override
+	ArrayList<PlaceHolder> getLazyHC() {
+		return mHdnCmfrt;
+	}
+
+	@Override
+	public void onBackPressed() {
+		if(checkWebSelection())
+			return;
+		super.onBackPressed();
+	}
+
+	//tc
 	private final TextWatcher tw1 = new TextWatcher() {
         public void onTextChanged(CharSequence s, int start, int before, int count) {
         	String keyTmp = mdict.processText(s.toString());
@@ -79,10 +113,19 @@ public class FloatSearchActivity extends MainActivityUIBase {
 						lianHeTask.cancel(false);
 					}
 					if(!checkDicts()) return;
-
 					if(lv2.getVisibility()==View.INVISIBLE)
 						lv2.setVisibility(View.VISIBLE);
-					lianHeTask = new CombinedSearchTask(FloatSearchActivity.this).execute(s.toString());
+					String key = s.toString();
+					if(!key.equals(CombinedSearchTask_lastKey))
+						lianHeTask = new CombinedSearchTask(FloatSearchActivity.this).execute(key);
+					else if(bIsFirstLaunch){
+						/* 接管历史纪录 */
+						bIsFirstLaunch=false;
+						if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(0)))))
+						{
+							adaptermy2.onItemClick(null, adaptermy2.getView(0, null, null), 0, 0);
+						}
+					}
 				}
 				else try {
 					if(!checkDicts()) return;
@@ -90,28 +133,26 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					if(res!=-1){ 
 						lv.setSelection(res);
 						//showT(proceed+""+bWantsSelection+" "+mdict.processText(currentDictionary.getEntryAt(res))+"=="+mdict.processText(keyTmp));
-
 						if(bIsFirstLaunch||bWantsSelection) {
 				        	if(mdict.processText(currentDictionary.getEntryAt(res)).equals(keyTmp)) {
 				        		boolean proceed = true;
 				        		if(webcontentlist.getVisibility()==View.VISIBLE) {//webSingleholder.getChildCount()!=1
 				        			proceed = (adaptermy.currentKeyText == null || !keyTmp.equals(adaptermy.currentKeyText.trim()));
 				        		}
-
 					        	if(proceed) {
-									adaptermy.onItemClick(res);
+									/* 接管历史纪录 */
+									adaptermy.onItemClick(null, null, res, 0);
 					        	}
 				        	}
 				        }
-						
 	        			bIsFirstLaunch=false;
 					}
 				} catch (Exception e) {e.printStackTrace();}
 			}else if(lv2.getVisibility()==View.VISIBLE) 
 				lv2.setVisibility(View.INVISIBLE);
-        }  
-          
-        public void beforeTextChanged(CharSequence s, int start, int count,  
+        }
+
+        public void beforeTextChanged(CharSequence s, int start, int count,
                 int after) {  
               
         }  
@@ -122,6 +163,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	if (s.length() != 0) ivDeleteText.setVisibility(View.VISIBLE);
         }  
     };
+
+	private boolean isContentViewAttached() {
+		return webcontentlist.getVisibility()==View.VISIBLE;
+	}
+
 	private int touch_id;
 
 	@Override
@@ -131,9 +177,50 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			if(bIsFirstLaunch||bWantsSelection) {
 				fval=1f;
 			}
-			showTopSnack(main_succinct, getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size),
-					fval, -1, -1, false);
+			String val = recCom.allWebs&&isContentViewAttached()?"回车以搜索网络词典！":getResources().getString(R.string.cbflowersnstr,opt.getLastFloatPlanName(),md.size(),size);
+			showTopSnack(main_succinct, val, fval, -1, -1, false);
 		}
+	}
+
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if(systemIntialized && hasFocus){
+			fix_full_screen(getWindow().getDecorView());
+			if(CMN.FloatBackground != MainBackground || CMN.GlobalPageBackground!=GlobalPageBackground ) {
+				IMPageCover.setTag(false);
+				if(PeruseView!=null) PeruseView.IMPageCover.setTag(false);
+				GlobalPageBackground=CMN.GlobalPageBackground;
+				MainBackground=CMN.FloatBackground;
+				refreshUIColors();
+			}
+			checkFlags();
+			//file-based UI-less command tool
+		}
+	}
+
+	@Override
+	public void fix_full_screen(@Nullable View decorView) {
+		if(decorView==null) decorView=getWindow().getDecorView();
+		do_fix_full_screen(decorView, fullScreen, hideNavigation);
+	}
+
+	@Override
+	void switch_dark_mode(boolean val) {
+		if(Build.VERSION.SDK_INT<29){
+			GlobalOptions.isDark = false;
+		}else{
+			GlobalOptions.isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
+		}
+		opt.setInDarkMode(val);
+		changeToDarkMode();
+	}
+
+	@Override
+	public void animateUIColorChanges() {
+		fix_pw_color();
+		fix_dm_color();
+		refreshUIColors();
 	}
 
 	@Override
@@ -142,11 +229,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
         // Checks the orientation of the screen
 
-
-        if(chooseDFragment!=null) {
-	        chooseDFragment.width=(int) (dm.widthPixels-2.5*getResources().getDimension(R.dimen.diagMarginHor));
-	        chooseDFragment.height=(int) (dm.heightPixels-2*getResources().getDimension(R.dimen.diagMarginVer));
-	        chooseDFragment.onResume();
+        if(chooseDFragment!=null && chooseDFragment.get()!=null) {
+			chooseDFragment.clear();
+			chooseDFragment=null;
         }
     	if(mainfv.getTranslationY()<0)
     		mainfv.setTranslationY(0);
@@ -183,9 +268,29 @@ public class FloatSearchActivity extends MainActivityUIBase {
     	overridePendingTransition(R.anim.budong,0);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//去掉信息栏
+
+        Intent intent = getIntent();
+		fullScreen = intent==null? PDICMainAppOptions.getFloatFullScreen():intent.getBooleanExtra(EXTRA_FULLSCREEN, PDICMainAppOptions.getFloatFullScreen());
+		if(fullScreen){
+			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		}
+
+		hideNavigation = intent==null? PDICMainAppOptions.getFloatHideNavigation():intent.getBooleanExtra(EXTRA_HIDE_NAVIGATION, PDICMainAppOptions.getFloatHideNavigation());
+		if(hideNavigation){
+			View decorView = getWindow().getDecorView();
+			int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_LOW_PROFILE
+					| View.SYSTEM_UI_FLAG_IMMERSIVE;
+			if(fullScreen) uiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_FULLSCREEN;
+			decorView.setSystemUiVisibility(uiOptions);
+		}
 
         setContentView(R.layout.float_main);
+		//todo opt
+		sp_main = findViewById(R.id.webcontentlister);
+		contentview = (ViewGroup) sp_main.getChildAt(0);
 		_50_= (FVMINHEIGHT*dm.density);
         wm = getWindowManager();
 
@@ -229,18 +334,61 @@ public class FloatSearchActivity extends MainActivityUIBase {
     	super.onDestroy();
     }
 
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		//showT("asdasd"+event);
+		switch (keyCode) {
+			case KeyEvent.KEYCODE_VOLUME_DOWN: {
+				if (opt.getMakeWayForVolumeAjustmentsWhenAudioPlayed() && opt.isAudioPlaying) {
+					if (!opt.isAudioActuallyPlaying)
+						transitAAdjustment();
+					break;
+				}
+				if (opt.getUseVolumeBtn()) {
+					boolean toHighlight=MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && MainPageSearchbar.getParent()!=null;
+					if (webcontentlist.getVisibility()==View.VISIBLE) {
+						if(toHighlight) onIdClick(null, R.id.recess);
+						else bottombar2.findViewById(R.id.browser_widget11).performClick();
+						return true;
+					}
+				}
+			} break;
+			case KeyEvent.KEYCODE_VOLUME_UP: {
+				if (opt.getMakeWayForVolumeAjustmentsWhenAudioPlayed() && opt.isAudioPlaying) {
+					if (!opt.isAudioActuallyPlaying)
+						transitAAdjustment();
+					break;
+				}
+				if (opt.getUseVolumeBtn()) {
+					boolean toHighlight=MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && MainPageSearchbar.getParent()!=null;
+					if (webcontentlist.getVisibility()==View.VISIBLE) {
+						if(toHighlight) onIdClick(null, R.id.forward);
+						else bottombar2.findViewById(R.id.browser_widget10).performClick();
+						return true;
+					}
+				}
+			} break;
+			case KeyEvent.KEYCODE_BACK:
+				if(event.getAction() == KeyEvent.ACTION_DOWN) {
+					if(popupContentView!=null && popupContentView.getParent()!=null){
+						DetachClickTranslator();
+						return true;
+					}
+				}
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
 	@Override
 	protected void scanSettings(){
 		super.scanSettings();
-		new File(opt.pathTo().toString()).mkdirs();
+		new File(opt.pathToDatabases().toString()).mkdirs();
 		CMN.FloatBackground = MainBackground = opt.getFloatBackground();
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			getWindow().setNavigationBarColor(MainBackground);
-		}
 		isCombinedSearching = opt.isFloatCombinedSearching();
 		opt.getLastMdlibPath();
 		if(opt.lastMdlibPath==null || !new File(opt.lastMdlibPath).exists()) {
-			opt.lastMdlibPath = opt.pathToMain()+"mdicts";
+			opt.lastMdlibPath = opt.pathToMainFolder().append("mdicts").toString();
 	    	new File(opt.lastMdlibPath).mkdirs();
 		}
 	}
@@ -249,23 +397,28 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	private OnGlobalLayoutListener keyObserver;
 	@Override
     protected void further_loading(final Bundle savedInstanceState) {
-        contentview = findViewById(R.id.cover);
         PageSlider = (RLContainerSlider)  contentview;
         IMPageCover = findViewById(R.id.IMPageCover);
         toolbar = findViewById(R.id.toolbar);
         webcontentlist = findViewById(R.id.webcontentlister);
         bottombar2 = webcontentlist.findViewById(R.id.bottombar2);
         toolbar.inflateMenu(R.menu.float_menu);
+		iItem_FolderAll = toolbar.getMenu().findItem(R.id.toolbar_action0);
+		iItem_InPageSearch = toolbar.getMenu().findItem(R.id.toolbar_action5);
         CachedBBSize=opt.getFloatBottombarSize((int) (20*dm.density));
     	super.further_loading(savedInstanceState);
-    	
+
         main = main_succinct;
+		sp_main.scrollbar2guard = mBar;
+
+		if(opt.getInFloatPageSearchVisible())
+			toggleInPageSearch(false);
     	
         lv = findViewById(R.id.main_list);
         lv2 = findViewById(R.id.sub_list);
-        lv.setAdapter(adaptermy = new ListViewAdapter()); 
+        lv.setAdapter(adaptermy = new ListViewAdapter(webSingleholder));
         lv.setOnItemClickListener(adaptermy);
-        lv2.setAdapter(adaptermy2 = new ListViewAdapter2());
+        lv2.setAdapter(adaptermy2 = new ListViewAdapter2(webholder));
         lv2.setOnItemClickListener(adaptermy2);
 
 			String keytmp = processIntent(getIntent());
@@ -273,6 +426,19 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	        bWantsSelection=true;
 	        if(keytmp!=null)
 	    		tw1.onTextChanged(keytmp, 0, 0, 0);
+
+		//ea
+		etSearch.setOnEditorActionListener((v, actionId, event) -> {
+			if (actionId== EditorInfo.IME_ACTION_SEARCH||actionId==EditorInfo.IME_ACTION_UNSPECIFIED){
+				if(d!=null)
+					return true;
+				String key = String.valueOf(etSearch.getText()).trim();
+				if(key.length()>0) Current0SearchText=key;
+				bIsFirstLaunch=true;
+				tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
+			}
+			return true;
+		});
 		
         //manifestTV = (TextViewmy) findViewById(R.id.MANITV);
         //manifestTV.doit();
@@ -345,6 +511,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	float DedockAcc;
 			@Override 
 			public boolean onTouch(View v, MotionEvent e) {
+
+				CMN.Log(dm.heightPixels,  getWindow().findViewById(Window.ID_ANDROID_CONTENT).getHeight(), getWindow().getDecorView().getHeight());
+
+
 				DedockTheta=_50_/2;
 				touch_id=v.getId();
 				mGestureDetector.onTouchEvent(e);
@@ -421,7 +591,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 								}
 								if(lpmy.height-dy>dm.heightPixels) dy=0;
 								int newTransY = (int) (mainfv.getTranslationY()+dy);
-								lpmy.height=Math.min(lpmy.height-dy, dm.heightPixels-newTransY-(DockerMarginB+DockerMarginT));//screen culling
+								//lpmy.height=Math.min(lpmy.height-dy, root.getHeight()-newTransY-(DockerMarginB+DockerMarginT));//screen culling
+								lpmy.height=root.getHeight()-newTransY-(DockerMarginB+DockerMarginT);
 								mainfv.setLayoutParams(lpmy);
 
 								//int newTop = (int) (mainfv.getTop() + dy);
@@ -463,7 +634,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 							FVW_UNDOCKED=(int) (lpmy.width-_50_);
 							FVH_UNDOCKED=(int) (lpmy.height-_50_);
 							lpmy.width=dm.widthPixels-(DockerMarginR+DockerMarginL);
-							lpmy.height=(int) (dm.heightPixels-mainfv.getTranslationY()-(DockerMarginB+DockerMarginT));
+							lpmy.height=(int) (root.getHeight()-mainfv.getTranslationY()-(DockerMarginB+DockerMarginT));
 							mainfv.setTranslationX(0);
 							mainfv.setLayoutParams(lpmy);
 							setDocked(true);
@@ -482,11 +653,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
         root.setOnTouchListener(Toucher);
 
         findViewById(R.id.toolbar_action1).setOnLongClickListener(this);
-        
-        
+
     	systemIntialized=true;
     	
-		File additional_config = new File(opt.pathToMain()+"appsettings.txt");
+		File additional_config = new File(opt.pathToMainFolder().append("appsettings.txt").toString());
 		if(additional_config.exists()) {
 			try {
 				BufferedReader in = new BufferedReader(new FileReader(additional_config));
@@ -518,11 +688,16 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			lpmy.width=FVW_UNDOCKED;
 			lpmy.height=FVH_UNDOCKED;
 			setDocked(false);
-			mainfv.setLayoutParams(lpmy);
+			mainfv.requestLayout();
 		}else {
+			Rect rect = new Rect();
+			getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
 			lpmy.width=dm.widthPixels-(DockerMarginR+DockerMarginL);
-			lpmy.height=dm.heightPixels-FVTY-(DockerMarginB+DockerMarginT);
-			mainfv.setLayoutParams(lpmy);
+			if(hideNavigation){
+				getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+			}
+			lpmy.height=dm.heightPixels-(fullScreen||hideNavigation?0:CMN.getStatusBarHeight(this))-FVTY-rect.top-(DockerMarginB+DockerMarginT);
+			mainfv.requestLayout();
 		}
         if(!opt.getFloatBottombarOnBottom())
         	webcontentlist.SwitchingSides();
@@ -530,7 +705,78 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		refreshUIColors();
     }
 
-    String processIntent(Intent intent) {
+	@Override
+	protected View getIMPageCover() {
+		return IMPageCover;
+	}
+
+	@Override
+	protected File getStartupFile() {
+		File suf = new File(opt.pathToMainFolder().append("CONFIG/").append(opt.lastMdPlanName).append(".set").toString());
+		if(!suf.exists())
+			return super.getStartupFile();
+		return suf;
+	}
+
+	@Override
+	protected String getLastPlanName() {
+		return opt.getLastFloatPlanName();
+	}
+
+	@Override
+	protected void setLastPlanName(String setName) {
+		opt.putFloatPlanName(setName);
+	}
+
+	@Override
+	protected String getLastMdFn() {
+		return opt.getFloatMdFn();
+	}
+
+	@Override
+	public void setLastMdFn(String setName) {
+		opt.putFloatMd(setName);
+	}
+
+	static long currMdlTime;
+	static String lastLoadedModule;
+	static boolean lazyLoaded;
+	@Override
+	protected void LoadLazySlots(File modulePath, boolean lazyLoad, String moduleName) throws IOException {
+		long lm = modulePath.lastModified();
+		if(lm==currMdlTime
+				&& lazyLoaded==lazyLoad
+				&& moduleName.equals(lastLoadedModule)
+		){
+			mCosyChair=CosyChair;
+			mCosySofa=CosySofa;
+			mHdnCmfrt=HdnCmfrt;
+			filter_count = mCosySofa.size();
+			CMN.Log("直接返回！！！", filter_count);
+			currentFilter.ensureCapacity(filter_count);
+			for (int i = 0; i < filter_count; i++) {
+				currentFilter.add(null);
+				CMN.Log(mCosySofa.get(i).name);
+			}
+			return;
+		}
+		CMN.Log("LoadLazySlots…");
+		mCosyChair=new ArrayList<>();
+		mCosySofa=new ArrayList<>();
+		mHdnCmfrt=new ArrayList<>();
+		AgentApplication app = ((AgentApplication) getApplication());
+		ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(modulePath), app.get4kCharBuff(), 4096);
+		filter_count=hidden_count=0;
+		do_LoadLazySlots(in, mCosyChair);
+		CosyChair=mCosyChair;
+		CosySofa=mCosySofa;
+		HdnCmfrt=mHdnCmfrt;
+		currMdlTime=lm;
+		lastLoadedModule=moduleName;
+		lazyLoaded=lazyLoad;
+	}
+
+	String processIntent(Intent intent) {
 		String keytmp =	intent.getStringExtra("EXTRA_QUERY");
 		if(keytmp==null) {
 			String type = intent.getType();
@@ -538,6 +784,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				keytmp = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
 			}
 		}
+		if(keytmp!=null && !PDICMainAppOptions.getHistoryStrategy0()&& PDICMainAppOptions.getHistoryStrategy12()){
+			historyCon.insertUpdate(keytmp);
+		}
+
+		if(fullScreen)
+			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//去掉信息栏
 
 		etSearch.setText(keytmp);
 		return keytmp;
@@ -551,6 +803,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			mainfv.getBackground().setColorFilter(filteredColor, PorterDuff.Mode.SRC_IN);
 		else
 			mainfv.getBackground().clearColorFilter();
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			getWindow().setNavigationBarColor(filteredColor);
+		}
 
 		bottombar2.setBackgroundColor(filteredColor);
 
@@ -583,6 +839,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			.putInt("FBBS",webcontentlist.getPrimaryContentSize())//FloatBottombarSize
 			.commit();
 		}
+	}
+
+	public float getPadHoldingCS() {
+		//CMN.Log("caculation pad...", mainfv.getTranslationY(),toolbar.getHeight(),contentview.getTop());
+		return mainfv.getTranslationY()+toolbar.getHeight()+contentview.getTop();
 	}
 
 	private static class MyHandler extends BaseHandler {
@@ -678,8 +939,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 
     public class ListViewAdapter extends BasicAdapter {
-        public ListViewAdapter() 
-        {  
+        public ListViewAdapter(ViewGroup webSingleholder)
+        {
+			this.webviewHolder=webSingleholder;
         }
         
         @Override
@@ -710,7 +972,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	}
 
 			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
-				decorateBackground(vh.itemView);
+				//decorateBackground(vh.itemView);
 				vh.title.setTextColor(AppBlack);
 			}
 
@@ -722,15 +984,22 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	//convertView.setTag(R.id.position,position);
         	return vh.itemView;
         }
-    
+
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+			userCLick=true;
+			lastClickedPosBeforePageTurn=-1;
+			onItemClick(pos);
+		}
+
         @Override
         public void onItemClick(int position) {//lv1
-
         	super.onItemClick(position);
         	ActivedAdapter=this;
-        	if(position<-1)
-        		return;
-        	//-1放行
+        	if(position<-1){
+				show(R.string.endendr);
+				return;
+			}
         	if(position>=getCount()) {
         		lastClickedPos = getCount()-1;
         		show(R.string.endendr);
@@ -747,7 +1016,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	        	widget13.setVisibility(View.GONE);
 	        	widget14.setVisibility(View.GONE);
         	}
-        	
+
+			iItem_InPageSearch.setVisible(true);
+
         	webcontentlist.setVisibility(View.VISIBLE);
 			etSearch_ToToolbarMode(1);
         	//CMN.show("onItemClick"+position);
@@ -771,9 +1042,14 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			bWantsSelection=true;
 
 			decorateContentviewByKey(null,currentKeyText);
-			historyCon.insertUpdate(currentKeyText);
+			if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy6() &&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
+				historyCon.insertUpdate(currentKeyText);
+				//CMN.Log("浮动点击1", userCLick);
+			}
+			userCLick=false;
 			currentDictionary.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 			currentDictionary.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+			currentDictionary.mWebView.fromCombined=0;
         }
 
 		@Override
@@ -781,12 +1057,20 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			return 1;
 		}
 
+		@Override
+		public String currentKeyText() {
+			return currentDictionary.currentDisplaying;
+		}
+
 	}
     
     class ListViewAdapter2 extends  BasicAdapter{
     	int itemId = R.layout.listview_item1;
         //构造函数
-        
+		public ListViewAdapter2(ViewGroup vg)
+		{
+			this.webviewHolder=vg;
+		}
         @Override
         public int getCount() {
         	if(combining_search_result==null)
@@ -798,7 +1082,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			return null;
 		}
         @Override
-        public long getItemId(int position) {    
+        public long getItemId(int position) {
           return position;    
         }  
         @Override
@@ -816,39 +1100,55 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			}
 			if(combining_search_result.dictIdx>=md.size()) return vh.itemView;//不要Crash哇
 			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
-				decorateBackground(vh.itemView);
+				//decorateBackground(vh.itemView);
 				vh.title.setTextColor(AppBlack);
 			}
 			vh.title.setText(currentKeyText);
             mdict _currentDictionary = md.get(combining_search_result.dictIdx);
-            if(combining_search_result.mflag.data!=null)
-                vh.subtitle.setText(Html.fromHtml(_currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
-            else
-                vh.subtitle.setText(_currentDictionary._Dictionary_fName);
+            if(_currentDictionary!=null){
+				if(combining_search_result.mflag.data!=null)
+					vh.subtitle.setText(Html.fromHtml(_currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
+				else
+					vh.subtitle.setText(_currentDictionary._Dictionary_fName);
+			}
 
 			if(combining_search_result.getClass()==resultRecorderCombined.class)
 				((TextView)vh.subtitle.getTag()).setText(((resultRecorderCombined)combining_search_result).count);
 			//vh.itemView.setTag(R.id.position,position);
 			return vh.itemView;
         }
-        
+
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+			if(checkAllWebs(combining_search_result, view, pos)) return;
+			userCLick=true;
+			lastClickedPosBeforePageTurn=-1;
+			onItemClick(pos);
+		}
+
         @Override
         public void onItemClick(int pos){//lv2
         	super.onItemClick(pos);
         	ActivedAdapter=this;
         	webcontentlist.setVisibility(View.VISIBLE);
 			etSearch_ToToolbarMode(1);
-        	if(pos<0 )
-        		return;
+        	if(pos<0 ){
+				show(R.string.endendr);
+				return;
+			}
         	if(pos>=getCount()) {
         		lastClickedPos = getCount()-1;
         		show(R.string.endendr);
         		return;
     		}
+
+			iItem_FolderAll.setVisible(true);//折叠
+			iItem_InPageSearch.setVisible(true);
+
         	ActivedAdapter=this;
         	
         	if(WHP.getVisibility()!=View.VISIBLE)WHP.setVisibility(View.VISIBLE);
-        	WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+        	//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 	    	if(webSingleholder.getVisibility()==View.VISIBLE) {
 			    if(webSingleholder.getChildCount()!=0)
 			    	webSingleholder.removeAllViews();
@@ -865,15 +1165,17 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				imm.hideSoftInputFromWindow(mainfv.getWindowToken(),0);
 				etSearch.clearFocus();
         	}
-        	
-        	
+
 			combining_search_result.renderContentAt(lastClickedPos,FloatSearchActivity.this,this);//webholder
-			
-			decorateContentviewByKey(null,currentKeyText);
-			historyCon.insertUpdate(currentKeyText);
-			//CMN.lastHisLexicalEntry = null;
-			//historyCon.insertUpdate(currentKeyText);
-			//showT("查时: "+(System.currentTimeMillis()-stst));
+
+			decorateContentviewByKey(null,currentKeyText = combining_search_result.getResAt(pos).toString());
+			if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy5()) {
+				if(userCLick||PDICMainAppOptions.getHistoryStrategy8()==0){
+					historyCon.insertUpdate(currentKeyText);
+					//CMN.Log("浮动点击2", userCLick);
+				}
+			}
+			userCLick=false;
 			bWantsSelection=true;
         }
 
@@ -881,12 +1183,23 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		public int getId() {
 			return 2;
 		}
+
+		@Override
+		public String currentKeyText() {
+			return currentKeyText;
+		}
 	};
 
 
 	@Override
 	public void onClick(View v) {
+		super.onClick(v);
+		if(v.getTag(R.id.click_handled)!=null) return;
 		int id=v.getId();
+		onIdClick(v, id);
+	}
+
+	public void onIdClick(View v, int id){
 		switch(id) {
 			case R.id.toolbar_action1:{
 				opt.setFloatCombinedSearching(isCombinedSearching = !isCombinedSearching);
@@ -904,21 +1217,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				if(opt.auto_seach_on_switch)
 					tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 			} break;
-			case R.id.ivDeleteText:{
-				if((etSearch_toolbarMode&2)==0) {//delete
-					String SearchTmp = etSearch.getText().toString().trim();
-					if(SearchTmp.equals("")) {
-						ivDeleteText.setVisibility(View.GONE);
-					}else {
-						lastEtString=SearchTmp;
-						etSearch.setText(null);
-						etSearch_ToToolbarMode(4);
-					}
-				}else {//undo
-					etSearch.setText(lastEtString);
-					//etSearch_ToToolbarMode(3);
-				}
-			} break;
+			//返回
 			case R.id.ivBack:{
 				if((etSearch_toolbarMode&1)==0) {//search
 					//bWantsSelection=true;
@@ -936,185 +1235,100 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					etSearch_ToToolbarMode(0);
 				}
 			} break;
-			case R.id.browser_widget7:
-				exitTime=0;
-				etSearch_ToToolbarMode(0);
-	        	webcontentlist.setVisibility(View.GONE);
-			break;
-			case R.id.browser_widget8:{//favorite
-				if(star_ic==null) {
-					star_ic = getResources().getDrawable(R.drawable.star_ic_solid);
-					star = favoriteBtn.getDrawable();
-				}
-				favoriteBtn.setImageDrawable(star);
-				String key = ActivedAdapter.currentKeyText;
-				if(ActivedAdapter==adaptermy) {
-					int pos = currentDictionary.currentPos;
-					while(pos-1>=0 && currentDictionary.getEntryAt(pos-1).equals(key)) {
-						pos--;
-					}
-					pos = currentDictionary.currentPos - pos;
-					if(pos>0) {
-						for(int i=0;i<pos;i++)
-							key += "\n";
-					}
-					//CMN.show("pos"+pos);
-				}
-				favoriteCon.prepareContain();
-				if(favoriteCon.contains(key)) {
-					favoriteCon.remove(key);
-					favoriteBtn.setImageDrawable(star);
-					show(R.string.removed);
-				}else {
-					favoriteCon.insert(key);
-					favoriteBtn.setImageDrawable(star_ic);
-					show(R.string.added);
-				}
-			} break;
-			case R.id.browser_widget9:{//view outline
-				if(ActivedAdapter==adaptermy2) {
-					final resultRecorderCombined res;
-					int idx;
-					res = (resultRecorderCombined) adaptermy2.combining_search_result;
-					idx = adaptermy2.lastClickedPos;
-					if(idx<0 || idx>=res.list().size())
-						return;
-
-					additiveMyCpr1 contentIndexes = res.list().get(idx);
-					List<Integer> vals = (List<Integer>)contentIndexes.value;
-					CharSequence[] items = new CharSequence[webholder.getChildCount()];
-					int c=0;
-					int totalHeight=0;
-					int selectedPos=-1;
-					final int currentHeight=((ScrollView)webholder.getParent()).getScrollY();
-					for(int i=0;i<vals.size();i+=2) {
-						int lastIdx = vals.get(i);
-						i+=2;
-						while(i<vals.size() && lastIdx==vals.get(i))
-							i+=2;
-						i-=2;
-						if(selectedPos==-1) {
-							totalHeight+=webholder.getChildAt(c).getMeasuredHeight();
-							if(totalHeight>currentHeight)
-								selectedPos=c;
-						}
-						mdict mdTmp = md.get(lastIdx);
-						if(mdTmp.cover!=null) {
-							mdTmp.cover.setBounds(0, 0, 50, 50);
-							SpannableStringBuilder ssb = new SpannableStringBuilder("| ").append(mdTmp._Dictionary_fName);
-							ssb.setSpan(new ImageSpan(mdTmp.cover), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-							items[c] = ssb;
-						}
-						else
-							items[c] = mdTmp._Dictionary_fName;
-						c++;
-					}
-					AlertDialog.Builder builder = new AlertDialog.Builder(this,R.style.DialogStyle);
-					builder.setTitle("跳转");
-					builder.setSingleChoiceItems(items, selectedPos, (dialog, pos) -> {
-						int totalHeight1 =0;
-						for(int i=0;i<pos;i++) {
-							totalHeight1 +=webholder.getChildAt(i).getHeight();
-						}
-
-						//((ScrollView)webholder.getParent()).setScrollY(totalHeight);
-						((ScrollView)webholder.getParent()).smoothScrollTo(0, totalHeight1);
-						d.dismiss();
-					});
-					d=builder.create();
-					d.setCanceledOnTouchOutside(true);
-					d.show();
-				}else
-					showX(R.string.try_longpress,0);
-			} break;
-			case R.id.browser_widget13:
-			case R.id.browser_widget14:{
-				boolean is_14=id==R.id.browser_widget14;
-				final int currentHeight=((ScrollView)webholder.getParent()).getScrollY();
-				int totalHeight=0;
-				for(int i=0;i<webholder.getChildCount();i++) {
-					totalHeight+=webholder.getChildAt(i).getHeight();
-					if(totalHeight+(is_14?1:0)>currentHeight) {
-						if(is_14)
-							totalHeight-=webholder.getChildAt(i).getHeight();
-						break;
-					}
-				}
-
-				//((ScrollView)webholder.getParent()).setScrollY(totalHeight);
-				((ScrollView)webholder.getParent()).smoothScrollTo(0, totalHeight);
-
-			} break;
-			case R.id.browser_widget10:
-			case R.id.browser_widget11:{//左zuo
-				int toPos = ActivedAdapter.lastClickedPos+(v.getId()==R.id.browser_widget10?-1:1);
-
-				if(toPos<-1 || toPos==-1 && adaptermy2==ActivedAdapter) {
-					showTopSnack(main_succinct, R.string.endendr, -1, -1, -1, false);
-					break;
-				}
-				if(lv2.getVisibility()!=View.VISIBLE){
-					webholder.removeAllViews();
-				}
-				//Log.e("browser_widget10","browser_widget10"+ActivedAdapter.lastClickedPos);
-				//webholder.removeViews(1, webholder.getChildCount()-1);
-				ActivedAdapter.onItemClick(toPos);
-			} break;
-			case R.id.browser_widget12:{
-				if(currentDictionary!=null) {
-					boolean played=false;
-					mdict Actor;
-					if(ActivedAdapter!=adaptermy2) {
-						Actor=currentDictionary;
-					}else {
-						Actor=md.get(adaptermy2.combining_search_result.getRecordAt(adaptermy2.lastClickedPos).get(0));
-					}
-					if(Actor.hasMdd()) {
-						String sKey = ActivedAdapter.currentKeyText+".mp3";
-						if(Actor.containsResourceKey(sKey)) {
-							Actor.mWebView.evaluateJavascript("var audio = new Audio(\""+sKey+"\");audio.play();", null);
-							played=true;
-						}
-						if(!played) {
-							Log.e("dsa_evaluateJavascript","asd");
-							Actor.mWebView.evaluateJavascript("(function(){var hrefs = document.getElementsByTagName('a'); for(var i=0;i<hrefs.length;i++){ if(hrefs[i].attributes['href']){ if(hrefs[i].attributes['href'].value.indexOf('sound')!=-1){ hrefs[i].click(); return 10; } } }return null;})();", value -> {
-								if(!value.equals("10")) {
-									showT("找不到音频");
-								}
-							});
-						}
-					}
-				}
-			} break;
 		}
 	}
 
-	DictPicker chooseDFragment;
+	WeakReference<DictPicker> chooseDFragment;
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
-		MenuItemImpl mmi = (MenuItemImpl)item;
-		boolean isLongClicked=mmi.isLongClicked;
+		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
+		boolean isLongClicked=mmi==null?false:mmi.isLongClicked;
+		boolean closeMenu=true;
 		switch (item.getItemId()) {
+			case R.id.text_tools:{
+				handleTextTools();
+			} return true;
+			case R.id.toolbar_action0:{
+				if(isLongClicked) break;
+				toggleFoldAll();
+			} break;
             case R.id.toolbar_action2://切换词典
-            	if(chooseDFragment==null) {
-            		chooseDFragment = new DictPicker(FloatSearchActivity.this);
-    		        //chooseDFragment.setStyle(R.style.DialogStyle, 0);//DialogFragment.STYLE_NO_TITLE
-    		        chooseDFragment.bShouldCloseAfterChoose=true;
-    		        //chooseDFragment.setCancelable(true);
-    		        //chooseDFragment.setOnViewCreatedListener(new OnViewCreatedListener() {
-    				//	@Override
-    				//	public void OnViewCreated(Dialog dialog) {
-    				//		dialog.setCanceledOnTouchOutside(true);
-    				//		Window window = dialog.getWindow();
-    				//	}});
-    		        chooseDFragment.width=(int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor));
-    		        chooseDFragment.mMaxH=(int) (dm.heightPixels-2*getResources().getDimension(R.dimen.diagMarginVer));
-    		        chooseDFragment.height=-2;
-            	}
-		        chooseDFragment.show(getSupportFragmentManager(), "PickDictDialog");
+            	showChooseDictDialog(0);
+			break;
+            case R.id.toolbar_action3://切换分组
+            	showChooseSetDialog();
+			break;
+            case R.id.toolbar_action4:
+            	String keyword = etSearch.getText().toString().trim();
+            	if(favoriteCon.insertUpdate(keyword)>0)
+            		showT("已收藏！");
+            break;
+            case R.id.toolbar_action5:
+            	toggleInPageSearch(isLongClicked);
+            break;
+        }
+		if(closeMenu)
+			closeIfNoActionView(mmi);
+		return false;
+	}
 
-		        /*DidialogHolder = (ViewGroup) findViewById(R.id.dialog_); 
+	@Override
+	void contentviewAddView(View v, int i) {
+		webcontentlist.addView(v, i);
+	}
+
+	@Override
+	public void invalidAllLists() {
+		webSingleholder.removeAllViews();
+		webholder.removeAllViews();
+		bIsFirstLaunch = true;
+		//todo 有时白，fowhy.
+		CombinedSearchTask_lastKey = null;
+		tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
+	}
+
+	@Override
+	protected int getVisibleHeight() {
+		return root.getHeight();
+	}
+
+	@Override
+	public PlaceHolder getPlaceHolderAt(int idx) {
+		if(idx>=0 && idx<mCosyChair.size())
+			return mCosyChair.get(idx);
+		return null;
+	}
+
+	@Override
+	public ArrayList<PlaceHolder> getPlaceHolders() {
+		return mCosyChair;
+	}
+
+	@Override
+	void showChooseDictDialog(int reason) {
+		boolean needRefresh=pickTarget!=reason;
+		pickTarget=reason;
+		DictPicker chooseDialog;
+		if(chooseDFragment==null || chooseDFragment.get()==null) {
+			chooseDFragment = new WeakReference<>(chooseDialog = new DictPicker(this));
+			//chooseDFragment.setStyle(R.style.DialogStyle, 0);//DialogFragment.STYLE_NO_TITLE
+			chooseDialog.bShouldCloseAfterChoose=true;
+			//chooseDFragment.setCancelable(true);
+			//chooseDFragment.setOnViewCreatedListener(new OnViewCreatedListener() {
+			//	@Override
+			//	public void OnViewCreated(Dialog dialog) {
+			//		dialog.setCanceledOnTouchOutside(true);
+			//		Window window = dialog.getWindow();
+			//	}});
+			chooseDialog.width=(int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor));
+			chooseDialog.mMaxH=(int) (dm.heightPixels-2*getResources().getDimension(R.dimen.diagMarginVer));
+			chooseDialog.height=-2;
+		}else
+			chooseDialog = chooseDFragment.get();
+		chooseDialog.show(getSupportFragmentManager(), "PickDictDialog");
+
+		        /*DidialogHolder = (ViewGroup) findViewById(R.id.dialog_);
             	if(dialogHolder.getVisibility()==View.VISIBLE) {
 					dialogHolder.setVisibility(View.GONE);
 					break;
@@ -1122,7 +1336,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				if(!isFragInitiated) {
 					FragmentManager fragmentManager = getSupportFragmentManager();
 					FragmentTransaction transaction = fragmentManager.beginTransaction();
-					pickDictDialog = new DialogFragment1(this);  
+					pickDictDialog = new DialogFragment1(this);
 		            transaction.add(R.id.dialog_, pickDictDialog);
 		            transaction.commit();
 		            isFragInitiated=true;
@@ -1130,57 +1344,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				}
 				else//没办法..
 					pickDictDialog.refresh();*/
-				break;
-            case R.id.toolbar_action3://切换分组
-            	showChooseSetDialog();
-				break;
-            case R.id.toolbar_action4:
-            	String keyword = etSearch.getText().toString().trim();
-            	if(favoriteCon.insertUpdate(keyword)>0)
-            		showT("已收藏！");
-            break;
-        }
-		closeIfNoActionView(mmi);
-		return false;
+		if(needRefresh) chooseDialog.adapter().notifyDataSetChanged();
 	}
 
 	@Override
-	public boolean onLongClick(View v) {
-		switch(v.getId()) {
-			case R.id.toolbar_action1:
-	            //dumpSettings();
-				finish();
-				//System.exit(0);
-			break;
-			case R.id.browser_widget9://long-click view outline
-				if(ActivedAdapter==adaptermy2) {
-					resultRecorderCombined res;
-					int idx;
-					
-					res = (resultRecorderCombined) adaptermy2.combining_search_result;					
-					idx = adaptermy2.lastClickedPos;
-					if(idx<0 || idx>=res.list().size())
-						return true;
-	
-					int totalHeight=0;
-					int selectedPos=-1;
-					final int currentHeight=((ScrollView)webholder.getParent()).getScrollY();
-					View itemTo = null;
-					for(int i=0;i<webholder.getChildCount();i+=1) {
-						itemTo = webholder.getChildAt(i);
-						totalHeight+=itemTo.getMeasuredHeight();
-						if(totalHeight>currentHeight) {
-							selectedPos=i;
-							break;
-						}
-					}
-					if(selectedPos!=-1)
-						itemTo.findViewById(R.id.cover).performClick();
-					
-				}else
-					currentDictionary.rl.findViewById(R.id.cover).performClick();
-			return true;
-			}
-		return false;
+	void setContentBow(boolean bContentBow) {
 	}
 }

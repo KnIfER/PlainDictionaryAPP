@@ -33,6 +33,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -52,29 +53,45 @@ public class DictPicker extends DialogFragment implements OnClickListener
 	@Override
 	public void onAttach(Context context){
 		super.onAttach(context);
-		CMN.Log("onAttach");
+		//CMN.Log("dict picker onAttach");
 		refresh();
 	}
-
 	RecyclerView mRecyclerView;
 	LinearLayoutManager lman;
 	private List<String> mDatas;
 	public boolean bShouldCloseAfterChoose=false;
 	private HomeAdapter mAdapter;public HomeAdapter adapter(){return mAdapter;}
+
+	/** 词典选择器的点击事件 */
 	private OnItemClickListener OIC = new OnItemClickListener(){
 		@Override
 		public void onItemClick(View view, int position) {
-			int tmpPos = a.adapter_idx;
-			a.adapter_idx=position;
-			((MainActivityUIBase) a).switchToDictIdx(position);
-			mAdapter.notifyItemChanged(tmpPos);
-			mAdapter.notifyItemChanged(position);
-			if(bShouldCloseAfterChoose)
-				view.post(new Runnable() {
-					@Override
-					public void run() {
-						dismiss();
-					}});
+			if(a.dismissing_dh) return;
+			if(a.pickTarget==1){//点译上游
+				int tmpPos = a.currentClick_adapter_idx;
+				a.CCD=a.md_get(position);
+				a.CCD_ID=a.currentClick_adapter_idx = position;
+				a.popupWord(a.popupTextView.getText().toString(),-1,-1,-1);
+				mAdapter.notifyItemChanged(tmpPos);
+				mAdapter.notifyItemChanged(position);
+				if(a instanceof PDICMainActivity){
+					((PDICMainActivity)a).dismiss_dict_picker(R.anim.dp_dialog_exit);
+				}
+			}
+			else {//当前词典
+				int tmpPos = a.adapter_idx;
+				a.adapter_idx = position;
+				a.switch_To_Dict_Idx(position, true, true);
+				mAdapter.notifyItemChanged(tmpPos);
+				mAdapter.notifyItemChanged(position);
+				if (bShouldCloseAfterChoose)
+					view.post(new Runnable() {
+						@Override
+						public void run() {
+							dismiss();
+						}
+					});
+			}
 		}
 	};//public OnItemClickListener OIC(){return OIC;}
 	public boolean isDirty=false;
@@ -82,19 +99,22 @@ public class DictPicker extends DialogFragment implements OnClickListener
 	public void refresh() {
 		//if(!isDirty) return;
 		//isDirty=false;
+		int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
 		if(lman!=null)
-			if(a.adapter_idx>lman.findLastVisibleItemPosition() || a.adapter_idx<lman.findFirstVisibleItemPosition()) {
-				int target = Math.max(0, a.adapter_idx-5);
+			if(adapter_idx>lman.findLastVisibleItemPosition() || adapter_idx<lman.findFirstVisibleItemPosition()) {
+				int target = Math.max(0, adapter_idx-5);
 				lman.scrollToPositionWithOffset(target, 0);
 				CMN.Log("scrolled");
 			}
-		if(a.dialogHolder!=null) {
+		if(a instanceof PDICMainActivity) {
+			/*  词典选择器的动画效果(显示)  */
+			a.dialogHolder.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.dp_dialog_enter));
 			a.dialogHolder.setAlpha(1.0f);
 			a.dialogHolder.setVisibility(View.VISIBLE);
 		}
 		//mAdapter.notifyDataSetChanged();
-
 	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState)
@@ -112,8 +132,9 @@ public class DictPicker extends DialogFragment implements OnClickListener
 
 		mAdapter.setOnItemClickListener(OIC);
 		int LIP = lman.findLastVisibleItemPosition();
-		if(a.adapter_idx>LIP) {
-			int target = Math.max(0, a.adapter_idx-5);
+		int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
+		if(adapter_idx>LIP) {
+			int target = Math.max(0, adapter_idx-5);
 			lman.scrollToPositionWithOffset(target, 0);
 		}
 		//view.setBackgroundResource(R.drawable.popup_shadow_l);
@@ -195,14 +216,15 @@ public class DictPicker extends DialogFragment implements OnClickListener
 		@Override
 		public void onBindViewHolder(final MyViewHolder holder, final int position)
 		{
-			if(a.adapter_idx==position) {
+			int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
+			if(adapter_idx==position) {
 				holder.itemView.setBackgroundColor(Color.parseColor("#4F7FDF"));//FF4081
 				holder.tv.setTextColor(Color.WHITE);
 			}else {
 				holder.itemView.setBackgroundColor(Color.TRANSPARENT);//aaa0f0f0//Color.parseColor("#aaa0f0f0")
 				holder.tv.setTextColor(Color.BLACK);
 			}
-			CharSequence name = a.md.get(position)._Dictionary_fName;
+			CharSequence name = a.md_getName(position);
 			if(SearchIncantation!=null) {
 				Matcher m = SearchPattern.matcher(name);
 				name = new SpannableStringBuilder(name);
@@ -215,13 +237,8 @@ public class DictPicker extends DialogFragment implements OnClickListener
 				holder.tv.setTextColor(Color.WHITE);
 			}
 
-
 			holder.cover.setTag(position);
-
-			if(a.md.get(position).cover!=null)
-				holder.cover.setImageDrawable(a.md.get(position).cover);
-			else
-				holder.cover.setImageDrawable(null);
+			holder.cover.setImageDrawable(a.md_getCover(position));
 			//判断是否设置了监听器
 			if(mOnItemClickListener != null){
 				holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -309,7 +326,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
 					tv.setTextIsSelectable(true);
 					//404
 
-					tv.setText(Html.fromHtml(a.md.get(id).getAboutString(),Html.FROM_HTML_MODE_COMPACT));
+					tv.setText(Html.fromHtml(a.md_getAbout(id),Html.FROM_HTML_MODE_COMPACT));
 
 					tv.setMovementMethod(LinkMovementMethod.getInstance());
 					AlertDialog.Builder builder2 = new AlertDialog.Builder(a);

@@ -8,6 +8,8 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 
+import com.knziha.plod.PlainDict.CMN;
+
 
 public class IMPageSlider extends ImageView{
 	public IMPageSlider(Context context) {
@@ -19,10 +21,7 @@ public class IMPageSlider extends ImageView{
 	public IMPageSlider(Context arg0, AttributeSet arg1, int arg2) {
 		super(arg0, arg1, arg2);setAlpha(0.f);
 	}
-	
-	public IMPageSlider(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-		super(context, attrs, defStyleAttr, defStyleRes);setAlpha(0.f);
-	}
+
 	boolean decided=false;
 	boolean decidedDir;
 	public interface PageSliderInf{
@@ -35,8 +34,9 @@ public class IMPageSlider extends ImageView{
 	public void setPageSliderInf(PageSliderInf inf_) 
 	{
 		inf=inf_;
-	}	
-	float lastX,lastY,OrgX,OrgY;
+	}
+	int leftAcc;
+	float lastX,lastY,OrgTX,OrgX,OrgY;
 	private boolean dragged=false;
 	float width,height;
 	
@@ -88,6 +88,7 @@ public class IMPageSlider extends ImageView{
 	void RePosition() {
 		//CMN.show("RePosition called");
 		dragged=false;
+		leftAcc=0;
 		timeStamp = System.currentTimeMillis();
 		Message msg = new Message();
 		msg.what=3344;
@@ -105,6 +106,8 @@ public class IMPageSlider extends ImageView{
 	public void startdrag(MotionEvent ev) {
 		//CMN.show("startdrag called");
 		if(!dragged) {
+			leftAcc=0;
+			OrgTX = getTranslationX();
 			dragged=true;
 	    	OrgX = lastX = ev.getRawX();
 	    	OrgY = lastY = ev.getRawY();
@@ -115,6 +118,7 @@ public class IMPageSlider extends ImageView{
 	}
 	
 	public void handleDrag(int dx, int dy) {
+		//if(true) return;
     	setAlpha(1.f);
     	timeStamp = System.currentTimeMillis();
     	
@@ -122,16 +126,18 @@ public class IMPageSlider extends ImageView{
         int top = (int) (getTranslationY() + dy);
         //layout(left, top, right, bottom);
         setTranslationX(left);
+		leftAcc+=dx;
         setTranslationY(top);
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        if(left<-(2.0f*dm.widthPixels/12)) {
+		int w = dm.widthPixels;//getWidth();
+        if(leftAcc<-(2.0f*w/12)) {
         	TargetX=-getWidth();
         	TargetY = getTranslationY();
 			if(inf!=null) 
 				inf.onDecided(true,this);
 			decided=true;
 			decidedDir=true;
-        }else if(left>(2.0f*dm.widthPixels/12)){
+        }else if(leftAcc>(2.0f*w/12)){
         	TargetX=getWidth();
         	TargetY = getTranslationY();
 			if(inf!=null) 

@@ -34,7 +34,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
     
     //构造s
     public LexicalDBHelper(MainActivityUIBase context, String name) {
-        super(context, conduct(context.opt.pathToInternal().append(name).append(".sql").toString()), null, CMN.dbVersionCode);
+        super(context, conduct(context.opt.pathToInternalDatabases().append(name).append(".sql").toString()), null, CMN.dbVersionCode);
         DATABASE=name;
         c=context;
         database = getWritableDatabase();

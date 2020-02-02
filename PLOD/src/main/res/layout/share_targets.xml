@@ -1,0 +1,32 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/rlSearchFrameDelete"
+	android:layout_width="match_parent"
+	android:layout_height="@dimen/_50_"
+	>
+	<com.knziha.plod.widgets.EditTextmy
+		android:id="@+id/text1"
+		android:layout_width="0dp"
+		android:layout_height="match_parent"
+		android:layout_weight="1"
+		android:textColor="#000"
+		android:singleLine="true"
+		android:paddingStart="8dp"
+		android:background="@drawable/abc_edit_text_material"
+		tools:text="android.intent.extra.TEXT"
+		android:focusable="true"
+		android:focusableInTouchMode="true"
+		/>
+
+	<ImageView
+		android:id="@+id/ivDeleteText"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:src="@drawable/close_toobar"
+		android:layout_gravity="end"
+		android:paddingEnd="8dp"
+		android:paddingStart="8dp"
+		android:tint="#000"
+		/>
+
+</LinearLayout>

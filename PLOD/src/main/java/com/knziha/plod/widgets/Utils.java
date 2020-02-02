@@ -24,7 +24,7 @@ import android.view.View;
 
 import java.lang.reflect.ParameterizedType;
 
-class Utils {
+public class Utils {
 
     /**
      * @param dp Desired size in dp (density-independent pixels)
@@ -35,12 +35,7 @@ class Utils {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, v.getResources().getDisplayMetrics());
     }
 
-    /**
-     * @param dp Desired size in dp (density-independent pixels)
-     * @param c Context
-     * @return Number of corresponding density-dependent pixels for the given device
-     */
-    static int getDP(int dp, Context c){
+    static int getDP(float dp, Context c){
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, c.getResources().getDisplayMetrics());
     }
 
@@ -57,4 +52,11 @@ class Utils {
     static <T> String getGenericName(T object){
         return ((Class<T>) ((ParameterizedType) object.getClass().getGenericSuperclass()).getActualTypeArguments()[0]).getSimpleName();
     }
+
+    public static class DummyOnClick implements View.OnClickListener {
+		@Override
+		public void onClick(View v) {
+
+		}
+	}
 }

@@ -13,7 +13,7 @@
 		android:id="@+id/text"
 		android:layout_height="wrap_content"
 		android:layout_width="0dp"
-		android:text="配置1"
+		android:text="分组1"
 		android:textSize="20sp"
 		android:layout_centerVertical="true"
 		android:enabled="false"

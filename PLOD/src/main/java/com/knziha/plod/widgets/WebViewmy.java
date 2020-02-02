@@ -15,6 +15,7 @@ import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
@@ -22,36 +23,72 @@ import android.webkit.WebSettings;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
 
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.dictionarymodels.ScrollerRecord;
+import com.knziha.plod.dictionarymodels.mdict;
 
 import org.adrianwalker.multilinestring.Multiline;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class WebViewmy extends WebView {
+public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListener {
 	public Context context;
+	public int currentPos;
+	public int frameAt;
+	public String toTag;
+	public int SelfIdx;
+	/** 标记视图来源。 0=单本搜索; 1=联合搜索; 2=点译模式; 3=翻阅模式; 4=网络词典。*/
+	public int fromCombined;
+	public String word;
+	public int[] currentRendring;
+	public boolean awaiting;
 	int ContentHeight=0;
+	public int HistoryVagranter=-1;
+	public float webScale=0;
+	public int expectedPos=-1;
+	public int expectedPosX=-1;
+	public ArrayList<myCpr<String, ScrollerRecord>> History = new ArrayList<>();
+	public float lastX;
+	public float lastY;
+	public static Integer ShareString_Id;
 
 	public WebViewmy(Context context) {
 		this(context, null);
 	}
 
 	public WebViewmy(Context context, AttributeSet attrs) {
-		super(context, attrs);
+		this(context, attrs, 0);
+	}
+
+	public WebViewmy(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
 		this.context=context;
 		init();
 	}
 
+
 	private void init(){
+		//setWebContentsDebuggingEnabled(true);
+
 		//setBackgroundColor(Color.parseColor("#C7EDCC"));
 		//setBackgroundColor(0);
-		setVerticalScrollBarEnabled(false);
-		setHorizontalScrollBarEnabled(false);
+		//setVerticalScrollBarEnabled(true);
+		//setHorizontalScrollBarEnabled(true);
 		//setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
+		//setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
 		//网页设置初始化
 		final WebSettings settings = getSettings();
@@ -71,12 +108,14 @@ public class WebViewmy extends WebView {
 		//setInitialScale(25);
 
 		settings.setJavaScriptEnabled(true);
-		settings.setJavaScriptCanOpenWindowsAutomatically(true);
+		settings.setJavaScriptCanOpenWindowsAutomatically(false);
 		settings.setMediaPlaybackRequiresUserGesture(false);
 
 		settings.setAppCacheEnabled(true);
 		settings.setDatabaseEnabled(true);
 		settings.setDomStorageEnabled(true);
+
+		settings.setAllowFileAccess(true);
 
 		//settings.setUseWideViewPort(true);//设定支持viewport
 		//settings.setLoadWithOverviewMode(true);
@@ -85,8 +124,9 @@ public class WebViewmy extends WebView {
 
 		settings.setAllowUniversalAccessFromFileURLs(true);
 		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-		//mWebView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+		//getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
+		settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
 		//settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);  //设置 缓存模式
 
@@ -159,8 +199,7 @@ public class WebViewmy extends WebView {
 	@Override
 	public void loadUrl(String url) {
 		super.loadUrl(url);
-		//CMN.show(""+url.equals("about:blank"));
-		//if(!url.equals("about:blank"))
+		//CMN.Log("\n\nloadUrl", url);
 		isloading=true;
 	}
 
@@ -174,15 +213,79 @@ public class WebViewmy extends WebView {
 	@Override
 	protected void onCreateContextMenu(ContextMenu menu){
 		//Toast.makeText(getContext(), "ONCCM", 0).show();
+		//CMN.Log(menu.getItem(0).getTitle(), menu.getItem(0).get)
 		super.onCreateContextMenu(menu);
 	}
 
 	public boolean bIsActionMenuShown;
 	public callbackme callmeback;
+
+	/**
+	 *  回退/前进时记录历史 (缩放、位置)
+	 *  */
+	public ScrollerRecord saveHistory(ViewGroup WHP, long lastClickTime) {
+		if(!isloading && System.currentTimeMillis()-lastClickTime>300) {//save our postion
+			ScrollerRecord PageState = History.get(HistoryVagranter).value;
+			if (PageState == null)
+				History.set(HistoryVagranter, new myCpr<>(""+currentPos, PageState=new ScrollerRecord()));
+			if(WHP!=null){
+				PageState.x = 0;
+				PageState.y = WHP.getScrollY();
+				PageState.scale = mdict.def_zoom;
+			}else{
+				PageState.x = getScrollX();
+				PageState.y = getScrollY();
+				PageState.scale = webScale;
+				//CMN.Log("记录位置", PageState.x, PageState.y, webScale);
+			}
+			return PageState;
+		}
+		return null;
+	}
+
+	public void onFinishedPage() {
+		if(wvclient!=null)
+			wvclient.onPageFinished(this, "file:///");
+	}
+
+	public void addHistoryAt(int idx) {
+		//CMN.Log("创造历史！！！");
+		History.add(++HistoryVagranter,new myCpr<>(String.valueOf(idx),new ScrollerRecord(expectedPosX, expectedPos, -1)));
+		for(int i=History.size()-1;i>=HistoryVagranter+1;i--)
+			History.remove(i);
+	}
+
+	public void clearIfNewADA(int adapter_idx) {
+		if(SelfIdx!=adapter_idx){
+			//CMN.Log("清空历史!!!", adapter_idx, SelfIdx);
+			History.clear();
+			HistoryVagranter=-1;
+		}
+	}
+
+	public void shutDown() {
+		setWebChromeClient(null);
+		setWebViewClient(null);
+		setOnSrollChangedListener(null);
+		setOnTouchListener(null);
+		setOnLongClickListener(null);
+		removeAllViews();
+		if(getParent() instanceof ViewGroup)
+			((ViewGroup) getParent()).removeView(this);
+		stopLoading();
+		getSettings().setJavaScriptEnabled(false);
+		clearHistory();
+		destroy();
+	}
+
 	@RequiresApi(api = Build.VERSION_CODES.M)
-	private class callbackme extends ActionMode.Callback2{
+	private class callbackme extends ActionMode.Callback2 implements OnLongClickListener{
 		ActionMode.Callback callback;
-		public callbackme callhere(ActionMode.Callback callher) {callback=callher;return this;}
+		public callbackme callhere(ActionMode.Callback callher) {
+			if(callher!=null)
+				callback=callher;
+			return this;
+		}
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 			return bIsActionMenuShown=callback.onCreateActionMode(mode, menu);
@@ -194,31 +297,27 @@ public class WebViewmy extends WebView {
 		}
 
 		@Override
-		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			switch(item.getItemId()) {
-				case R.id.toolbar_action0:
-					evaluateJavascript(getHighLightIncantation()+"if(window.getSelection)sel.removeAllRanges();",new ValueCallback<String>() {
-						@Override
-						public void onReceiveValue(String value) {
-							invalidate();
-						}});
-
-					MyMenuinversed=!MyMenuinversed;
-					return true;
-				case R.id.toolbar_action1://工具复用，我真厉害啊啊啊啊！
-					//evaluateJavascript("document.execCommand('selectAll'); console.log('dsadsa')",null);
-					View cover=((ViewGroup) getParent()).getChildAt(0).findViewById(R.id.cover);
-					cover.setTag(0);
-					cover.performClick();
-					return false;
+		public boolean onLongClick(View v) {
+			switch(v.getId()) {
+				case R.id.toolbar_action0: {
+					//PopupDecorView s;
+				}
+				break;
 			}
-			return callback.onActionItemClicked(mode, item);
+			return false;
 		}
+
+		@Override
+		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+			return WebViewmy.this.onMenuItemClick(mode, item);
+		}
+
+
 		PopupWindow mPopup;
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
 			bIsActionMenuShown=false;
-			//Toast.makeText(getContext(),"onDestroyActionMode", 0).show();
+			//CMN.Log("onDestroyActionMode");
 		}
 
 		@Override
@@ -227,23 +326,147 @@ public class WebViewmy extends WebView {
 				((ActionMode.Callback2)callback).onGetContentRect(mode, view, outRect);
 			else
 				super.onGetContentRect(mode, view, outRect);
-			//Toast.makeText(getContext(),"onGetContentRect"+(view==WebViewmy.this), 0).show();
+			//CMN.Log("onGetContentRect", (view==WebViewmy.this));
 		}
 	}
+
+	private boolean onMenuItemClick(ActionMode mode, MenuItem item) {
+		//CMN.Log("onMenuItemClick", item.getClass(), item.getTitle(), item.getItemId(), android.R.id.copy);
+		int id = item.getItemId();
+		switch(id) {
+			case R.id.toolbar_action0:{
+				evaluateJavascript(getHighLightIncantation()+";sel.removeAllRanges();",new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String value) {
+						invalidate();
+					}});
+				MyMenuinversed=!MyMenuinversed;
+			} return true;
+			case R.id.toolbar_action1:{//工具复用，我真厉害啊啊啊啊！
+				//evaluateJavascript("document.execCommand('selectAll'); console.log('dsadsa')",null);
+				//From normal, from history, from peruse view, [from popup window]
+				/**
+				 * 收藏选中文本
+				 * 全选   | 选择标注颜色
+				 * 高亮   | 清除高亮
+				 * 下划线 | 清除下划线
+				 * 分享#1 | 分享…
+				 * 分享#2 | 分享#3
+				 */
+				View cover=((ViewGroup) getParent()).getChildAt(0).findViewById(R.id.cover);
+				cover.setTag(0);
+				cover.performClick();
+			} return false;
+			case R.id.toolbar_action3:{//TTS
+				evaluateJavascript("if(window.app)app.ReadText(''+window.getSelection())",null);
+			} return false;
+		}
+		if (mode!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			boolean ret = callmeback.callback.onActionItemClicked(mode, item);
+			if(id == 50856071 || id == android.R.id.copy){
+				clearFocus();
+				ret=true;
+			}
+			return ret;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		return onMenuItemClick(null, item);
+	}
+
 	//Viva Marshmallow!
-	@RequiresApi(api = Build.VERSION_CODES.M)
 	@Override
 	public ActionMode startActionMode(ActionMode.Callback callback, int type) {
-		MyMenuinversed=false;
-		if(callmeback==null) callmeback =new callbackme();
-		ActionMode mode = super.startActionMode(callmeback.callhere(callback),type);
-		//if(true) return mode;
-		//Toast.makeText(getContext(), mode.getTag()+"ONSACTM"+mode.hashCode(), 0).show();
-		//if(true) return mode;
-		//mode.setTag(110);
-		final Menu menu = mode.getMenu();
+		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M) {
+			MyMenuinversed = false;
+			if (callmeback == null) callmeback = new callbackme();
+			ActionMode mode = super.startActionMode(callmeback.callhere(callback), type);
+			//if(true) return mode;
+			//Toast.makeText(getContext(), mode.getTag()+"ONSACTM"+mode.hashCode(), 0).show();
+			//if(true) return mode;
+			//mode.setTag(110);
+			final Menu menu = mode.getMenu();
+			TweakWebviewContextMenu(menu);
+
+			//todo 添加长按事件
+			postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					//logAllViews();
+					ViewGroup vg;
+					List<View> views = getWindowManagerViews();
+					for(View vI:views){
+						//CMN.Log("\n\n\n\n\n::  "+vI);
+						//CMN.recurseLog(vI);
+						/* 📕📕📕阿西吧折叠空间打开术📕📕📕 */
+						if(vI instanceof FrameLayout){
+							vg = (ViewGroup) vI;
+							vI = vg.getChildAt(0);
+							if(vI instanceof FrameLayout){
+								vg = (ViewGroup) vI;
+								vI = vg.getChildAt(0);
+								if(vI instanceof LinearLayout){
+									vg = (ViewGroup) vI;
+									vI = vg.getChildAt(0);
+									if(vI instanceof RelativeLayout){
+										vg = (ViewGroup) vI;
+										for (int i = 0; i < vg.getChildCount(); i++) {
+											vI = vg.getChildAt(i);
+											//CMN.Log(vI);
+											//CMN.Log(vI instanceof LinearLayout);
+											if(vI instanceof LinearLayout){
+												vg = (ViewGroup) vI;
+												for (int j = 0; j < vg.getChildCount(); j++) {
+													vI = vg.getChildAt(j);
+													if(vI instanceof LinearLayout){
+														ViewGroup vgg = (ViewGroup) vI;
+														if(vgg.getChildAt(1) instanceof TextView){
+															TextView tv = (TextView) vgg.getChildAt(1);
+															//CMN.Log(tv.getText().length()==3, tv.getText().toString().equals("TTS"), tv.getText(),tv, "YES??");
+															if(tv.getText().length()==3 && tv.getText().toString().equals("TTS")){
+																//CMN.Log("yes tts!!!");
+																vgg.setOnLongClickListener(new OnLongClickListener() {
+																	@Override
+																	public boolean onLongClick(View v) {
+																		evaluateJavascript("if(window.app)app.setTTS()",null);
+																		return true;
+																	}
+																});
+															} else if(tv.getText().length()==2 && tv.getText().toString().equals("高亮")){
+																//CMN.Log("yes!!! 高亮");
+																vgg.setOnLongClickListener(new OnLongClickListener() {
+																	@Override
+																	public boolean onLongClick(View v) {
+																		evaluateJavascript(getUnderlineIncantation().toString(),null);
+																		return true;
+																	}
+																});
+															}
+														}
+													}
+												}
+
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}, 350);
+			return mode;
+		}
+		return super.startActionMode(callback, type);
+	}
+
+	public void TweakWebviewContextMenu(Menu menu) {
 		int gid=0;
 		if(menu.size()>0) {
+			/* remove artificial anti-intelligence */
 			MenuItem item0 = menu.getItem(0);
 			if(item0.getTitle().toString().startsWith("地") || item0.getTitle().toString().startsWith("Map"))
 				menu.removeItem(item0.getItemId());
@@ -254,7 +477,7 @@ public class WebViewmy extends WebView {
 		String ColorCurse = String.format("%06X", highlightColor&0xFFFFFF);
 		Spanned text = Html.fromHtml("<span style='background:#"+ColorCurse+"; color:#"+ColorCurse+";'>高亮</span>");
 
-		MenuItem MyMenu = menu.add(gid, R.id.toolbar_action0, 0, text);
+		MenuItem MyMenu = menu.add(0, R.id.toolbar_action0, 0, text);
 
 		//Toast.makeText(getContext(),""+MyMenu.view,0).show();
 		MyMenu = null;
@@ -265,13 +488,11 @@ public class WebViewmy extends WebView {
 		//Toast.makeText(getContext(), ""+getResources().getString(getReflactField("com.android.internal.R$string", "share")),0).show();
 		//Toast.makeText(getContext(),menu.getItem(3).getItemId()+"="+menu_share_id+"finding menu_share:"+menu.findItem(menu_share_id)+"="+android.R.id.shareText,0).show();
 
-		String shareText="分享";
-		int ShareString_Id=Resources.getSystem().getIdentifier("share","string", "android");
-		if(ShareString_Id!=0)
-			shareText=getResources().getString(ShareString_Id);
+		String shareText=getShareText();
 		String SelectAllText=getResources().getString(android.R.string.selectAll);
 		int findCount=2;
 		int ToolsOrder=0;
+		//if(false)
 		for(int i=0;i<menu.size();i++) {
 			String title = menu.getItem(i).getTitle().toString();
 			if(title.equals(shareText)) {
@@ -287,15 +508,21 @@ public class WebViewmy extends WebView {
 			if(findCount==0) break;
 		}
 
-		MyMenu=menu.add(gid,R.id.toolbar_action1,ToolsOrder+1,R.string.tools);
+		menu.add(0,R.id.toolbar_action1,++ToolsOrder,R.string.tools);
 
-
-
-		//Toast.makeText(menu.getItem(0).getTitle()).show();
-		return mode;
+		menu.add(0,R.id.toolbar_action3,++ToolsOrder,"TTS");
 	}
 
-   /**
+	public String getShareText() {
+		if(ShareString_Id==null)
+			ShareString_Id=Resources.getSystem().getIdentifier("share","string", "android");
+		if(ShareString_Id!=0)
+			return getResources().getString(ShareString_Id);
+		return "分享";
+	}
+
+
+	/**
 	function getNextNode(b) {
 		var a = b.firstChild;
 		if (a) {
@@ -415,31 +642,39 @@ public class WebViewmy extends WebView {
 	private static StringBuilder HighlightBuilder;
 
 	/**
-	 if (window.getSelection) {
-	 var spanner = document.createElement("span");
-	 spanner.className = "PLOD_HL";
-	 spanner.style = "background:#ffaaaa;";
-	 var sel = window.getSelection();
-	 var ranges = [];
-	 var range;
-	 for (var i = 0, len = sel.rangeCount; i < len; ++i) {
-	 ranges.push(sel.getRangeAt(i))
-	 } //sel.removeAllRanges();
-	 i = ranges.length;
-	 while (i--) {
-	 range = ranges[i];
-	 surroundRangeContents(range, spanner)
-	 }
-	 };
+	 (function(t){
+	     if (window.getSelection) {
+			var ann = document.createElement("span");
+			if(t==0){
+				ann.className = "PLOD_HL";
+				ann.style = "background:#ffaaaa;";
+	 		}else{
+				ann.className = "PLOD_UL";
+				//ann.style = "color:#ffaaaa;text-decoration: underline";
+				ann.style = "border-bottom:1px solid #ffaaaa";
+	 		}
+			var sel = window.getSelection();
+			var ranges = [];
+			var range;
+			for (var i = 0, len = sel.rangeCount; i < len; ++i) {
+				ranges.push(sel.getRangeAt(i))
+			} //sel.removeAllRanges();
+			i = ranges.length;
+			while (i--) {
+				range = ranges[i];
+				surroundRangeContents(range, ann)
+			}
+	 	}
+	 })(
 	 */
 	@Multiline(trim=true)
 	private final static  String HighLightIncantation="HI";
 	/**
-	function recurseDeWrap(b) {
+	function recurseDeWrap(b, t) {
 		if (b) {
 			for (var e = b.length - 1, d; e >= 0; e--) {
 				d = b[e];
-				if (d.className == "PLOD_HL") {
+				if (d.className == t) {
 					var c = 0;
 					for (var f = d.childNodes.length - 1; f >= 0; f--) {
 						var a = d.childNodes[f];
@@ -454,42 +689,79 @@ public class WebViewmy extends WebView {
 			}
 		}
 	}
-	if (window.getSelection) {
-		var spanner = document.createElement("span");
-		spanner.className = "highlight";
-		var sel = window.getSelection();
-		var ranges = [];
-		var range;
-		for (var i = 0, len = sel.rangeCount; i < len; ++i) {
-			ranges.push(sel.getRangeAt(i))
-		} //sel.removeAllRanges();
-		i = ranges.length;
-		while (i--) {
-			range = ranges[i];
-			var nodes = getNodesInRange(range);
-			recurseDeWrap(nodes)
-		}
-	};
+	(function(t){
+	 	if (window.getSelection) {
+			var ann = document.createElement("span");
+			ann.className = "highlight";
+			var sel = window.getSelection();
+			var ranges = [];
+			var range;
+			for (var i = 0, len = sel.rangeCount; i < len; ++i) {
+				ranges.push(sel.getRangeAt(i))
+			} //sel.removeAllRanges();
+			i = ranges.length;
+			while (i--) {
+				range = ranges[i];
+				var nodes = getNodesInRange(range);
+				recurseDeWrap(nodes, t)
+			}
+	 	}
+	 })(
 	 */
 	@Multiline(trim=true)
 	private final static  String DeHighLightIncantation="DEHI";
-	public float webScale=0;
-	public String getHighLightIncantation() {
+
+	private void prepareHighlightBuilder() {
 		if(commonIcanBaseLen==0){
 			HighlightBuilder = new StringBuilder(commonIcan);
 			commonIcanBaseLen=HighlightBuilder.length();
 		}
 		HighlightBuilder.setLength(commonIcanBaseLen);
-		return HighlightBuilder.append(HighLightIncantation).toString();
 	}
-	public String getDeHighLightIncantation() {
-		if(commonIcanBaseLen==0){
-			HighlightBuilder = new StringBuilder(commonIcan);
-			commonIcanBaseLen=HighlightBuilder.length();
-		}
-		HighlightBuilder.setLength(commonIcanBaseLen);
-		return HighlightBuilder.append(DeHighLightIncantation).toString();
+
+	public StringBuilder getHighLightIncantation() {
+		prepareHighlightBuilder();
+		return HighlightBuilder.append(HighLightIncantation).append("0);");
 	}
+
+	public StringBuilder getDeHighLightIncantation() {
+		prepareHighlightBuilder();
+		return HighlightBuilder.append(DeHighLightIncantation).append("'PLOD_HL');");
+	}
+
+	public StringBuilder getUnderlineIncantation() {
+		prepareHighlightBuilder();
+		return HighlightBuilder.append(HighLightIncantation).append("1);");
+	}
+
+	public StringBuilder getDeUnderlineIncantation() {
+		prepareHighlightBuilder();
+		return HighlightBuilder.append(DeHighLightIncantation).append("'PLOD_UL');");
+	}
+
+	/**
+		''+window.getSelection()
+	 */
+	@Multiline
+	public static final String CollectWord="CWJS";
+
+	/**
+		 var range=window.getSelection().getRangeAt(0);
+		 var flmstd = document.getElementById('_PDict_Renderer');
+	 	 if(!flmstd){
+		 	flmstd = document.createElement('div');
+			flmstd.id='_PDict_Renderer';
+		 } else {
+			flmstd.innerHTML='';
+		 }
+		flmstd.class='_PDict';
+		flmstd.appendChild(range.cloneContents());
+		flmstd.innerHTML;
+	 */
+	@Multiline
+	public static final String CollectHtml="CHJS";
+
+	public static final String SelectAll="document.execCommand('selectAll')";
 
 	public static int getReflactField(String className,String fieldName){
 		int result = 0;
@@ -523,4 +795,61 @@ public class WebViewmy extends WebView {
 	//	return false;
 	//}
 
+	public static void logAllViews(){
+		List<View> views = getWindowManagerViews();
+		for(View vI:views){
+			CMN.Log("\n\n\n\n\n::  "+vI);
+			CMN.recurseLog(vI);
+		}
+	}
+
+	public static List<View> getWindowManagerViews() {
+		try {
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH &&
+					Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+
+				// get the list from WindowManagerImpl.mViews
+				Class wmiClass = Class.forName("android.view.WindowManagerImpl");
+				Object wmiInstance = wmiClass.getMethod("getDefault").invoke(null);
+
+				return viewsFromWM(wmiClass, wmiInstance);
+
+			} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+
+				// get the list from WindowManagerGlobal.mViews
+				Class wmgClass = Class.forName("android.view.WindowManagerGlobal");
+				Object wmgInstance = wmgClass.getMethod("getInstance").invoke(null);
+
+				return viewsFromWM(wmgClass, wmgInstance);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return new ArrayList<View>();
+	}
+
+	private static List<View> viewsFromWM(Class wmClass, Object wmInstance) throws Exception {
+
+		Field viewsField = wmClass.getDeclaredField("mViews");
+		viewsField.setAccessible(true);
+		Object views = viewsField.get(wmInstance);
+
+		if (views instanceof List) {
+			return (List<View>) viewsField.get(wmInstance);
+		} else if (views instanceof View[]) {
+			return Arrays.asList((View[])viewsField.get(wmInstance));
+		}
+
+		return new ArrayList<View>();
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		lastX = event.getX();
+		lastY = event.getY();
+		return super.onTouchEvent(event);
+	}
 }

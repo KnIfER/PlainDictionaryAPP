@@ -19,7 +19,7 @@
 			android:key="ps_hide_key"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="导航时自动隐藏键盘"
+			android:title="导航时自动收起键盘"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="ps_yicha"
@@ -59,6 +59,12 @@
 			android:defaultValue="false"
 			android:title="按返回退入后台，而不是退出程序"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="clear_sel"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="返回键优先清除网页中的文本选择"
+			/>
 		<androidx.preference.ListPreference
 			android:defaultValue="0"
 			android:key="conext"
@@ -67,6 +73,7 @@
 			android:entryValues="@array/conext"
 			android:entries="@array/conext_info"
 			/>
+
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="hint_mod"
 			android:persistent="false"
@@ -91,7 +98,7 @@
 			android:key="1toast"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="华为 Toast"
+			android:title="Android 9 Toast"
 			android:summary="若底部消息框不可见或只能弹出一次，开启此项"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference

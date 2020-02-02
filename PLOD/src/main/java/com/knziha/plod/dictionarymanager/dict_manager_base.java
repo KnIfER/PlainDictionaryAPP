@@ -10,9 +10,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
+
+import java.util.HashSet;
 
 
-public class dict_manager_base<T> extends ListFragment {
+public abstract class dict_manager_base<T> extends ListFragment {
+	HashSet<String> selector = new HashSet<>();
+	public interface SelectableFragment{
+		boolean exitSelectionMode();
+	}
+	public CompoundButton.OnCheckedChangeListener checkChanged;
+	int[] lastClickedPos=new int[]{-1, -1};
+	int lastClickedPosIndex=0;
+
     ArrayAdapter<T> adapter;
     boolean isDirty = false;
 	dict_manager_activity a;
@@ -51,17 +62,6 @@ public class dict_manager_base<T> extends ListFragment {
     public int removeMode = DragSortController.FLING_REMOVE;
     public boolean sortEnabled = true;
     public boolean dragEnabled = true;
-
-    public static dict_manager_base newInstance(int headers, int footers) {
-        dict_manager_base f = new dict_manager_base();
-
-        Bundle args = new Bundle();
-        args.putInt("headers", headers);
-        args.putInt("footers", footers);
-        f.setArguments(args);
-
-        return f;
-    }
 
     public DragSortController getController() {
         return mController;
@@ -122,16 +122,7 @@ public class dict_manager_base<T> extends ListFragment {
         mDslv.addHeaderView(v);
     }
 
-    DragSortListView.DropListener getDropListener() {
-		DragSortListView.DropListener onDrop =
-				(from, to) -> {
-					if (from != to) {
-						T item = adapter.getItem(from);
-						adapter.remove(item);
-						adapter.insert(item, to);
-					}
-				};
-		return onDrop;
-	}
+    abstract DragSortListView.DropListener getDropListener();
+
 
 }

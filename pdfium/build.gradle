@@ -1,0 +1,36 @@
+apply plugin: 'com.android.library'
+
+
+android {
+
+    defaultConfig {
+        compileSdkVersion ver_compileSdkVersion as int
+        targetSdkVersion ver_aimsdk
+        minSdkVersion ver_minsdk
+        vectorDrawables.useSupportLibrary = true
+
+    }
+
+    //android:versionCode="1"
+    //android:versionName="1.9.0" 
+
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+
+
+}
+
+
+dependencies {
+
+
+}

@@ -12,8 +12,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 18
-        versionName "2.0"
+        versionCode 35
+        versionName "2.9.2"
         vectorDrawables.generatedDensities = ['hdpi']
     }
     compileOptions {
@@ -29,6 +29,8 @@ android {
 }
 
 dependencies {
+    api 'com.alibaba:fastjson:1.2.62'
+    api libs_coordinator
     api 'org.jruby.joni:joni:2.1.30'
     api 'org.anarres.lzo:lzo-core:1.0.6'
     api project(path: ':GestureView')
@@ -75,4 +77,8 @@ dependencies {
     //testImplementation 'junit:junit:4.12'
     //implementation 'me.weishu:free_reflection:2.1.0'
     api 'androidx.palette:palette:1.0.0'
+    api project(':pdfium')
+
+
+    //api ('com.github.barteksc:pdfium-android:1.9.0')
 }

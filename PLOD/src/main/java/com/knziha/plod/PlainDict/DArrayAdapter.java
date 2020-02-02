@@ -57,7 +57,7 @@ public class DArrayAdapter extends ArrayAdapter<File>{
 
 	@Override
 	public void notifyDataSetChanged(){
-		File[] fl = new File(((PDICMainActivity)getContext()).opt.pathToInternal().append("favorites/").toString()).listFiles(new FileFilter() {
+		File[] fl = new File(((PDICMainActivity)getContext()).opt.pathToInternalDatabases().append("favorites/").toString()).listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File pathname) {
 				if(pathname.getPath().endsWith(".sql")) return true;

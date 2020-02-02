@@ -9,6 +9,8 @@ include ':twowaygridview'
 
 include ':PLOD'
 
+include ':pdfium'
+
 
 include ':AxtAppCompat'
 include ':AweDesigner'

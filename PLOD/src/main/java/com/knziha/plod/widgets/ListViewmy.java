@@ -2,6 +2,7 @@ package com.knziha.plod.widgets;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ListView;
 

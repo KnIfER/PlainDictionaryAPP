@@ -62,7 +62,7 @@
 	<string name="warnDelete">あなたは辞書構成セット%sが削除してもよろしいですか？</string>
 	<string name="warn_move">あなたは[ %3$s の]に[ %2$S ]から %1$d 個の単語コレクションを移動してもよろしいですか？</string>
 	<string name="warn_exit0">あなたが終了してもよろしいですか？</string>
-	<string name="surerrecords">あなたが選択した%d個のレコードを削除してもよろしいですか？（\'トンのエフェクトファイルシステムを獲得しました）</string>
+	<string name="surerrecords">あなたが選択した %d 個のレコードを削除してもよろしいですか？（\'トンのエフェクトファイルシステムを獲得しました）</string>
 	<string name="applyallset">すべてのセットに適用されます</string>
 	<string name="pickdestineFolder">運命づけるフォルダを選択します</string>
 	<string name="bookmarkup">ブックマークが更新します！</string>

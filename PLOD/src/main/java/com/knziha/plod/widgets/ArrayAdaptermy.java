@@ -16,6 +16,8 @@ import db.MdxDBHelper;
 
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.mdict_pdf;
+import com.knziha.plod.dictionarymodels.mdict_web;
 
 /**
  * Created by ASDZXC on 2018/3/26.
@@ -25,6 +27,7 @@ public class ArrayAdaptermy extends BaseAdapter{
 	MdxDBHelper con;
 	public Cursor cr;
 	mdict md;
+	boolean isWeb;
 	public boolean showDelete;
 	private final SparseArray<String> DataRecord = new SparseArray<>();
 	int resourceID;
@@ -40,15 +43,17 @@ public class ArrayAdaptermy extends BaseAdapter{
     	md=md_;
     	con = con_;
     	StorageLevel=l;
-    	cr = con.getDB().rawQuery("select * from t1 ", null);
+	   isWeb = md instanceof mdict_web;
+    	cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
    }
 
 	public void refresh(mdict invoker, MdxDBHelper con_) {
 		if(invoker!=md || con!=con_ || cr==null) {
 	    	md=invoker;
+	    	isWeb = md instanceof mdict_web;
 	    	con = con_;
 	    	if(cr!=null) cr.close();
-	    	cr = con.getDB().rawQuery("select * from t1 ", null);
+	    	cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
 			DataRecord.clear();
 			notifyDataSetChanged();
 		}
@@ -62,7 +67,12 @@ public class ArrayAdaptermy extends BaseAdapter{
     	String LexicalText = DataRecord.get(position);
     	if(LexicalText==null) {
     		cr.moveToPosition(position);
-    		try {
+    		if(md instanceof mdict_pdf){
+				LexicalText="第"+cr.getInt(0)+"页";
+			}else if(isWeb){
+				LexicalText=cr.getString(1);
+			}
+    		else try {
 				LexicalText=md.getEntryAt(cr.getInt(0));
 			} catch (Exception e) {
 				LexicalText="!!!Error: "+e.getLocalizedMessage();
@@ -89,7 +99,10 @@ public class ArrayAdaptermy extends BaseAdapter{
 			public void onClick(View v) {
 				cr.moveToPosition(position);
 				DataRecord.clear();
-				con.remove(cr.getInt(0));
+				if(isWeb)
+					con.remove(cr.getInt(0));
+				else
+					con.removeUrl(cr.getString(0));
 				cr.close();
 				cr = con.getDB().rawQuery("select * from t1 ", null);
 				//items.remove(position);
@@ -133,5 +146,7 @@ public class ArrayAdaptermy extends BaseAdapter{
 
 	public void clear() {
 		DataRecord.clear();
+		cr.close();
+		cr=null;
 	}
 }

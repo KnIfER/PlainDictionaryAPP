@@ -63,7 +63,7 @@
     <string name="try_longpress">invalid, please try long-press</string>
     
     <string name="err">Load Error! %1$s @%2$s : %3$s</string>
-    <string name="loadconfig">Load A Dictionary Set</string>
+    <string name="loadconfig">Load Dictionary Set</string>
     <string name="pickfavor">Pick Favorite Collection</string>
     <string name="newfc">Create</string>
     <string name="loadsucc">Load successfully！</string>
@@ -109,7 +109,7 @@
 	<string name="stg_grantnow">Grant now</string>
 	<string name="trialin">Trial…… #</string>
 	<string name="stgerr_fail">Sorry, but cannot use this app on you device.</string>
-	<string name="infoStr">Plain Dictionary —— Mini android text search engine designed for mdx. \n\nOthers\：Bluedict(Inspired by) 、MdictPC(Originates from) \n\n[Open Source] \n\n[Feedback]</string>
+	<string name="infoStr">Plain Dictionary —— Mini android text search engine designed for mdx. \n\nOthers\：Bluedict(Inspired by) 、Bing dictionary(Inspired by) 、MdictPC(Origin) \n\n[Open Source] \n\n[Feedback]</string>
 	<string name="licence">Open Source Licences</string>
 	<string name="bmAdd">Add Bookmark</string>
 	<string name="language">Language</string>
@@ -143,9 +143,9 @@
 	<string name="bookmarkL">BookMark List…</string>
 	<string name="f_scale_up">Font size++</string>
 	<string name="f_scale_down">Font size - -</string>
-	<string name="background_color">Background Color:</string>
-	<string name="text_zoom">Text Zoom:</string>
-	<string name="case_insensitive_policy">Case Insensitive Policy:</string>
+	<string name="background_color">Background Color :</string>
+	<string name="text_zoom">Text Zoom :</string>
+	<string name="case_insensitive_policy">Case Insensitive Policy :</string>
 	<string name="remove_mode">Remove Mode</string>
 	<string name="jump">Jump</string>
 	<string name="strict_mode">Strict Mode</string>
@@ -155,9 +155,10 @@
 	<string name="hint_mode">Hint search mode</string>
 	<string name="tint_result">Tint search result</string>
 	<string name="switch_dict">Switch dictionary</string>
-	<string name="switch_set">Switch dictionary set</string>
+	<string name="switch_set">Switch set</string>
 	<string name="unfold_all">Unfold all</string>
 	<string name="rem_position">Remember page position</string>
+	<string name="rem_position_yes">Remember page position √</string>
 	<string name="direct_update">Update Directly</string>
 	<string name="bring_from_background">Awaken from background</string>
 	<string name="canceld_peruse_mode">Canceled peruse mode</string>
@@ -181,10 +182,21 @@
 	<string name="remove_records">Remove from record</string>
 	<string name="move_files">Move files to</string>
 	<string name="new___">New…</string>
-	<string name="dict_specs">Global_Independent_Java API_Classical_No_Yes</string>
+	<string name="dict_specs">&#160;&#160;&#160;Global_ Speicify_ Java API_Classical_ ×_ √</string>
 	<string name="no_suitable_app">Found no suitable App.</string>
 	<string name="multiple_vals">*多重*</string>
 	<string name="dv_select">@string/fp_select</string>
 	<string name="search_end">%1$s 一查到底 %2$s</string>
 	<string name="view_spec">视图设置</string>
+
+	<string name="package_name">程序包名</string>
+	<string name="activity_name">活动名称</string>
+	<string name="action_name">举措名称</string>
+	<string name="mime_type">MIME类型</string>
+	<string name="extra_key_name">字段%d键名</string>
+	<string name="extra_key_value">字段%d键值</string>
+	<string name="backkey_web_goback">使用返回键倒退网页</string>
+	<string name="saved">已保存！</string>
+	<string name="saved_with_size">已保存！大小 = %d </string>
+	<string name="webscroll_apply_all">应用到全部</string>
 </resources>

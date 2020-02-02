@@ -18,6 +18,7 @@
 package com.knziha.plod.dictionary.Utils;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.zip.Adler32;
 import java.util.zip.InflaterOutputStream;
 
@@ -129,9 +130,11 @@ public class  BU{//byteUtils
     	System.out.println();
     }
     @Deprecated
-    public static void printFile(byte[] b,int off,int ln,String path){
+    public static void printFile(byte[] b,int off,int ln,File path){
     	try {
-			FileOutputStream fo = new FileOutputStream(new File(path));
+			File p = path.getParentFile();
+			if(!p.exists()) p.mkdirs();
+			FileOutputStream fo = new FileOutputStream(path);
 			fo.write(b);
 			fo.flush();
 			fo.close();
@@ -141,8 +144,43 @@ public class  BU{//byteUtils
     }
     @Deprecated
     public static void printFile(byte[] b, String path){
+		printFile(b,0,b.length,new File(path));
+    }
+
+    @Deprecated
+    public static void printFile(byte[] b, File path){
 		printFile(b,0,b.length,path);
     }
+
+    @Deprecated
+    public static void printFileStream(InputStream b, File path){
+		try {
+			printStreamToFile(b,0,b.available(),path);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+    @Deprecated
+    public static void printStreamToFile(InputStream b, int start, int end,  File path){
+		try {
+			if(start>0)
+				b.skip(start);
+			File p = path.getParentFile();
+			if(!p.exists()) p.mkdirs();
+			FileOutputStream fo = new FileOutputStream(path);
+			byte[] data = new byte[4096];
+			int len;
+			while ((len=b.read(data))>0){
+				fo.write(data, 0, len);
+			}
+			fo.flush();
+			fo.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+
     public static String byteTo16(byte bt){
         String[] strHex={"0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"};
         String resStr="";
@@ -187,6 +225,21 @@ public class  BU{//byteUtils
 			byte[] data = new byte[(int) f.length()];
 			fin.read(data);
 			return new String(data, "utf8");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+	public static String fileToString(String path, byte[] buffer, ReusableByteOutputStream bo, Charset charset) {
+		try {
+			FileInputStream fin = new FileInputStream(path);
+			bo.reset();
+			int len;
+			while((len = fin.read(buffer))>0)
+				bo.write(buffer, 0, len);
+			return new String(bo.data(),0, bo.size(), charset);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

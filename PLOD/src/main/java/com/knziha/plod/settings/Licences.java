@@ -5,7 +5,7 @@ import android.os.Bundle;
 import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.PlainDict.R;
 
-public class Licences extends SettingsFragmentBase {
+public class Licences extends SettingsFragment {
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

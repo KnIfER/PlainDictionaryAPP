@@ -1,0 +1,358 @@
+package com.knziha.plod.dictionarymodels;
+
+import com.alibaba.fastjson.JSONObject;
+import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.ebook.Utils.BU;
+import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.rbtree.RBTree_additive;
+
+import org.adrianwalker.multilinestring.Multiline;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
+import static com.knziha.plod.PlainDict.CMN.AssetTag;
+import static com.knziha.plod.dictionarymodels.mdict_transient.goodNull;
+
+/*
+ Mdict hodling a PDFJS website.
+ date:2019.11.28
+ author:KnIfER
+*/
+public class mdict_pdf extends mdict {
+	mdictRes_asset _INTERNAL_PDFJS;
+	public String[] pdf_index;
+	boolean alphabetic;
+
+	/**
+	 <script>
+		window.addEventListener('click',wrappedClickFunc);
+	 	function wrappedClickFunc(e){
+			if(e.srcElement!=document.documentElement){
+				var s = window.getSelection();
+				if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
+					s.modify('extend', 'forward', 'word'); // first attempt
+					//if(1) return;
+					var an=s.anchorNode;
+					//console.log(s.anchorNode); console.log(s);  console.log(s.getRangeAt(0)); console.log(s+'');
+					fixPdfForword(s);
+					if(s.baseNode != document.body) {// immunize blank area
+						var scer=s.getRangeAt(0);
+						if(scer.startOffset==0){
+							scer=scer.startContainer;
+							if(scer.nodeType==3){
+								scer=scer.parentNode;
+							}
+							if(scer.previousSibling==null){
+								console.log(e.clientX-scer.offsetLeft, e.clientY-scer.offsetTop);
+								if(Math.abs(e.clientX-scer.offsetLeft)>50||Math.abs(e.clientY-scer.offsetTop)>50){
+									s.empty();
+									scer=null;
+								}
+							}
+						}
+						if(scer){
+							scer=0;
+							var text=s.toString(); // for word made up of just one character
+							if(text.length>0){
+								var re=/[\u4e00-\u9fa5]/g;
+								tillNext=text;
+								if(re.test(text.trim())){
+									scer=1;
+								}else{
+									var range = s.getRangeAt(0);  // first attempt, forward range
+									//console.log(range);
+									var lb='lineboundary';
+									s.collapseToStart();
+									s.modify('extend', 'forward', lb);
+									tillNextLine=s.toString();
+									var eN='word';
+									var eB='word';
+									if(tillNextLine.trim()!="") {
+										s.collapseToStart();
+										s.modify('extend', 'backward', 'word');
+										tillNext=s.toString();
+										s.collapseToEnd();
+										s.modify('extend', 'backward', lb);
+										tillNextLine=s.toString();
+
+										// !!!  !!! sometime in the pdf
+										// a lot of tags till be wrongly treated as in one line.
+										if(tillNextLine.length<tillNext.length){
+											var code=tillNextLine.charAt(0);
+											if(code.toUpperCase()===code && code.toLowerCase!=code) eB=lb;
+										}
+
+										s.empty(); s.addRange(range);
+										s.collapseToStart();
+
+
+										s.modify('move', 'backward', eB);
+
+										s.modify('extend', 'forward', 'word');
+										tillNext=s.toString();
+										s.collapseToStart();
+										s.modify('extend', 'forward', lb);
+										tillNextLine=s.toString();
+
+										// !!!  !!! sometime in the pdf
+										// a lot of tags till be wrongly treated as in one line.
+										if(tillNextLine.length<tillNext.length){
+											var code=tillNext.charAt(tillNextLine.length);
+											if(code.toUpperCase()==code && code.toLowerCase()!=code) eN=lb;
+										}
+										s.collapseToStart();
+
+										s.modify('extend', 'forward', eN);
+
+										text=s.toString();
+										scer=1;
+									}
+								}
+								if(scer){
+									console.log(text); // final output
+								}
+							}
+						}
+					}
+					//s.empty();
+				}
+			}
+	 	}
+		function fixPdfForword(s){
+			var r = s.getRangeAt(0);
+			if(r.startContainer!=r.endContainer){
+				r.setEndAfter(r.startContainer);
+			}
+		}
+		function fixPdfBackword(s){
+			var r = s.getRangeAt(0);
+			if(r.startContainer!=r.endContainer){
+				r.setStartBefore(r.endContainer);
+			}
+		}
+	 </script>
+	 */
+	@Multiline
+	public final static String js="SUBPAGE";
+	/**";</script><script src="pdfviewer.js"></script></head>*/
+
+	@Multiline
+	final static String tailing = "TAIL";
+
+	/**
+	var outlines = window.PDFViewerApplication.pdfOutlineViewer.outline;
+	var contents = new Array(outlines.length);
+
+	function extractContents(idx){
+		if(idx>=outlines.length) {harvest(idx);return;}
+		var item=outlines[idx]==null?null:outlines[idx].dest[0];
+		if(item!=null && item["num"]!=null)
+			window.PDFViewerApplication.pdfDocument.getPageIndex(item).then(
+				function(o){
+					contents[idx]=o;
+					try{ extractContents(idx+1); } catch(e){ harvest(idx);return; }
+				}
+			).catch(function(){harvest(idx)});
+		else
+			extractContents(idx+1);
+	}
+
+	function harvest(idx){
+		for(var i=0;i<outlines.length;i++){
+			if(contents[i]!=null)
+				contents[i]=outlines[i].title.replace("\n", "")+":"+contents[i];
+			else
+				contents[i]=outlines[i].title.replace("\n", "");
+		}
+		//console.log(contents.join("\n"));
+		if(window.app)
+			window.app.parseContent(idx, outlines.length, contents.join("\n"));
+	}
+
+	extractContents(0);
+	 */
+	@Multiline
+	final static String parseCatalogue = "CONTENTS";
+
+	private int targetPage;
+
+	//构造
+	public mdict_pdf(String fn, MainActivityUIBase _a) throws IOException {
+		super(goodNull(fn), _a);
+		a=_a;
+		opt=a.opt;
+		_Dictionary_fName=new File(fn).getName();
+		_INTERNAL_PDFJS=new mdictRes_asset(AssetTag +"pdf.mdd", _a);
+		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
+		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
+
+		htmlBuilder=new StringBuilder();
+
+		readInConfigs(false);
+
+		if(bgColor==null)
+			bgColor= com.knziha.plod.PlainDict.CMN.GlobalPageBackground;
+
+		File path = new File(a.getExternalFilesDir(".PDF_INDEX"), _Dictionary_fName);
+		if(path.exists()){
+			String data = BU.fileToString(path);
+			int idTmp=data.lastIndexOf("\r\n");
+			if(idTmp!=-1){
+				String jdata = data.substring(idTmp+2);
+				try {
+					JSONObject JO = JSONObject.parseObject(jdata);
+					alphabetic = JO.getBooleanValue("SORTED");
+					String SIP = JO.getString("ALPHABETICINDEX");
+					if(SIP!=null){
+
+					}
+					SIP = JO.getString("KEYWORDINDEX");
+					if(SIP!=null){
+
+					}
+					data=data.substring(0, idTmp);
+				} catch (Exception e) { e.printStackTrace(); }
+			}
+			pdf_index = data.split("\n");
+
+		}
+
+	}
+
+	public void parseContent() {
+		mWebView.evaluateJavascript(parseCatalogue, null);
+	}
+
+	@Override
+	protected void initLogically() {
+		_num_record_blocks=-1;
+		String fn = (String) SU.UniversalObject;
+		fn = new File(fn).getAbsolutePath();
+		f = new File(fn);
+		_Dictionary_fName = f.getName();
+	}
+
+	@Override
+	String getSimplestInjection() {
+		return js;
+	}
+
+	@Override
+	public long getNumberEntries() {
+		return 1+(pdf_index==null?0:pdf_index.length);
+	}
+
+
+	@Override
+	public void renderContentAt(float initialScale, int SelfIdx, int frameAt, WebViewmy mWebView, int... position) {
+		targetPage=position[0];
+		if(mWebView==null)
+			mWebView=this.mWebView;
+		Object youname=mWebView.getTag(R.id.dictName);
+		boolean proceed=!(_Dictionary_fName.equals(youname) &&(mWebView.getTag(R.id.virtualID)==(Integer)0));
+		if(proceed){
+			super.renderContentAt(-1, SelfIdx, frameAt, mWebView, 0);
+			mWebView.setTag(R.id.dictName, _Dictionary_fName);
+			mWebView.setTag(R.id.virtualID, 0);
+			mWebView.setTag(R.id.positionID, targetPage);
+		}
+		if(initialScale!=111){
+			if(targetPage>0 && pdf_index!=null){
+				if(targetPage<=pdf_index.length){
+					initialScale=111;
+					String entry = pdf_index[targetPage-1];
+					int pdf_idx = entry.lastIndexOf(":");
+					if(pdf_idx!=-1&&pdf_idx<entry.length()-1){
+						int page_idx = IU.parsint(entry.substring(pdf_idx+1), -1);
+						if(page_idx!=-1) targetPage=page_idx+1;
+						entry=entry.substring(0, pdf_idx);
+					}
+					if(title_builder==null) title_builder = new StringBuilder();
+					else title_builder.setLength(0);
+					toolbar_title.setText(title_builder.append(entry.trim()).append(" - ").append(_Dictionary_fName).toString());
+				}
+			}else{
+				targetPage=-1;
+			}
+		}
+		if(initialScale==111)
+			mWebView.evaluateJavascript("window.PDFViewerApplication.page=" + targetPage, null);
+	}
+
+	@Override
+	public String getEntryAt(int position) {
+		if(pdf_index!=null && position>0 && position<=pdf_index.length)
+			return pdf_index[position-1];
+		return "index";
+	}
+
+
+	@Override
+	public String getLexicalEntryAt(int position) {
+		return "第"+position+"页";
+	}
+
+
+	@Override
+	public String getEntryAt(int position, Flag mflag) {
+		return getEntryAt(position);
+	}
+
+	@Override
+	public int lookUp(String keyword, boolean isSrict) {
+		//if()
+		return -1;
+	}
+
+	@Override
+	public String getRecordsAt(int... positions) throws IOException {
+		return new String(_INTERNAL_PDFJS.getRecordData(_INTERNAL_PDFJS.lookUp("index")), StandardCharsets.UTF_8)+f.getAbsolutePath()+tailing;
+	}
+
+	@Override
+	public InputStream getResourceByKey(String key) {
+		int id=_INTERNAL_PDFJS.lookUp(key);
+		if(id>=0) {
+			try {
+				return _INTERNAL_PDFJS.getResourseAt(id);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public boolean hasMdd() {
+		return true;
+	}
+
+	@Override
+	protected InputStream mOpenInputStream(){
+		return null;
+	}
+
+	@Override
+	protected boolean StreamAvailable() {
+		return false;
+	}
+
+	@Override
+	public void size_confined_lookUp5(String keyword, RBTree_additive combining_search_tree, int SelfAtIdx, int theta) {
+	}
+
+	@Override
+	public void flowerFindAllContents(String key, int selfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
+	}
+
+	@Override
+	public void flowerFindAllKeys(String key, int SelfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher) {
+	}
+}

@@ -49,9 +49,9 @@
 	<string name="bookmarkL">Список BookMark …</string>
 	<string name="f_scale_up">Размер шрифта ++</string>
 	<string name="f_scale_down">Размер шрифта - -</string>
-	<string name="background_color">Фоновый цвет:</string>
-	<string name="text_zoom">Текст Zoom:</string>
-	<string name="case_insensitive_policy">Дело Нечувствительность политика:</string>
+	<string name="background_color">Фоновый цвет :</string>
+	<string name="text_zoom">Текст Zoom :</string>
+	<string name="case_insensitive_policy">Дело Нечувствительность политика :</string>
 	<string name="remove_mode">Удалить режим</string>
 	<string name="jump">Прыжок</string>
 	<string name="strict_mode">Строгий режим</string>

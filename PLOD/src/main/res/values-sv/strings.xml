@@ -49,9 +49,9 @@
 	<string name="bookmarkL">Bokmärkeslistan …</string>
 	<string name="f_scale_up">Teckenstorlek ++</string>
 	<string name="f_scale_down">Textstorlek - -</string>
-	<string name="background_color">Bakgrundsfärg:</string>
-	<string name="text_zoom">Text Zoom:</string>
-	<string name="case_insensitive_policy">Case Okänslig Regler:</string>
+	<string name="background_color">Bakgrundsfärg :</string>
+	<string name="text_zoom">Text Zoom :</string>
+	<string name="case_insensitive_policy">Case Okänslig Regler :</string>
 	<string name="remove_mode">Ta Läge</string>
 	<string name="jump">Hoppa</string>
 	<string name="strict_mode">strikt läge</string>

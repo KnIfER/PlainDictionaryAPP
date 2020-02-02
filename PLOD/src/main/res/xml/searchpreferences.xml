@@ -34,20 +34,20 @@
 			app:allowDividerBelow="true"
 			/>
 
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="joni_head"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="自动为 Oniguruma-joni 引擎添加.*头"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="joni_head"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="自动为 Oniguruma-joni 引擎添加.*头"-->
+<!--			app:allowDividerAbove="true"-->
+<!--			app:allowDividerBelow="true"-->
+<!--			/>-->
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="joni_case"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="区分大小写1 (Oniguruma-joni)"
+			android:title="区分大小写1 (全文、词条搜索)"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			/>
@@ -60,12 +60,30 @@
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="use_wildcard1"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用通配符1 (全文、词条搜索)"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="use_wildcard2"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用通配符2 (页内查找)"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
 		
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="page_nospc"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="页内查找->通配符->.*不匹配空格"
+			android:title="页内查找->通配符不匹配空格"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			/>
@@ -74,7 +92,7 @@
 			android:key="page_spcdl"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="页内查找->通配符->以空格分割关键词"
+			android:title="页内查找->以空格分割关键词"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			/>
@@ -93,6 +111,21 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="页内查找->打字时自动跳转"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="use_morph"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="使用构词库"/>
+
+		<Preference
+			android:key="vspec"
+			android:persistent="false"
+			android:title="视图杂项"
+			app:isPreferenceVisible="true"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			/>

@@ -48,9 +48,9 @@
 	<string name="bookmarkL">Lijst met bladwijzers …</string>
 	<string name="f_scale_up">Lettergrootte ++</string>
 	<string name="f_scale_down">Lettertypegrootte - -</string>
-	<string name="background_color">Achtergrond kleur:</string>
-	<string name="text_zoom">Tekst Zoom:</string>
-	<string name="case_insensitive_policy">HoofdletterONgevoelig Beleid:</string>
+	<string name="background_color">Achtergrond kleur :</string>
+	<string name="text_zoom">Tekst Zoom :</string>
+	<string name="case_insensitive_policy">HoofdletterONgevoelig Beleid :</string>
 	<string name="remove_mode">Verwijder Mode</string>
 	<string name="jump">Springen</string>
 	<string name="strict_mode">Strict Mode</string>

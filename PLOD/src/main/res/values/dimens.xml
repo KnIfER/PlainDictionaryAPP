@@ -17,6 +17,7 @@
     
     <dimen name="_50_">50dp</dimen>
     <dimen name="_40_">40dp</dimen>
+    <dimen name="_45_">45dp</dimen>
     <dimen name="abarmin">1dp</dimen>
     <dimen name="abarmax">32dp</dimen>
     
@@ -26,6 +27,13 @@
     
     <dimen name="lvtextsize">16dp</dimen>
     <dimen name="lvsubtextsize">9dp</dimen>
+	<dimen name="framew">10dp</dimen>
+
 	<dimen name="_20_">20dp</dimen>
+	<dimen name="_25_">25dp</dimen>
+	<dimen name="_30_">30dp</dimen>
 	<dimen name="_35_">35dp</dimen>
+	<dimen name="halfpopheader">32dp</dimen>
+	<dimen name="progress_inset">32dp</dimen>
+	<dimen name="scrollBarWidth">16dp</dimen>
 </resources>

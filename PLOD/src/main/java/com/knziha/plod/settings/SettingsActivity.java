@@ -3,10 +3,10 @@ package com.knziha.plod.settings;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -22,6 +22,31 @@ import java.io.File;
 
 public class SettingsActivity extends Toastable_Activity {
 	private int realm_id;
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (event.getAction() == KeyEvent.ACTION_DOWN) {
+			if (keyCode == KeyEvent.KEYCODE_BACK) {
+				checkBack();
+			}
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
+	public void checkBack() {
+		if(realm_id==3){
+			PDICMainAppOptions.SecondFlag(FilePickerOptions.SecondFlag);
+		}
+		else if(realm_id==7){
+			if(opt.CetUseRegex3(SFStamp)
+					|opt.CetPageCaseSensitive(SFStamp)
+					|opt.CetPageWildcardMatchNoSpace(SFStamp)
+					|opt.CetPageWildcardSplitKeywords(SFStamp)
+					|opt.CetInPageSearchUseWildcard(TFStamp)
+			)
+			CMN.setCheckRcsp();
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +93,12 @@ public class SettingsActivity extends Toastable_Activity {
 				fragment = new ViewSpecification();
 				args.putInt("title", R.string.view_spec);
 			break;
+			case 9:
+				fragment = new ClickSearch();
+			break;
+			case 10:
+				fragment = new HistoryPreference();
+			break;
 		}
 		fragment.setArguments(args);
 		this.getSupportFragmentManager().beginTransaction()
@@ -78,9 +109,6 @@ public class SettingsActivity extends Toastable_Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		if(realm_id==3){
-			PDICMainAppOptions.SecondFlag(FilePickerOptions.SecondFlag);
-		}
 		checkFlags();
 	}
 }

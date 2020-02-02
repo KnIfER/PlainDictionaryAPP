@@ -15,11 +15,9 @@ import android.widget.ScrollView;
 import androidx.core.view.ViewCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.R;
 
 import java.util.Timer;
-import java.util.TimerTask;
 
 
 public class SamsungLikeScrollBar extends RelativeLayout{
@@ -36,7 +34,7 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 	SwipeRefreshLayout swipeRefreshLayout;
 
 	public boolean isHidden(){
-		return handleThumb.getVisibility()!=View.VISIBLE;
+		return getVisibility()!=View.VISIBLE || handleThumb.getVisibility()!=View.VISIBLE;
 	}
 
 	//CHAPTER I - INITIAL SETUP
@@ -52,20 +50,28 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 
 		setUpProps(context, attributeSet); //Discovers and applies some XML attributes
 
+		desiredWidth = (int) getResources().getDimension(R.dimen.scrollBarWidth);
+
 		addView(setUpHandle(context, a.getBoolean(R.styleable.MaterialScrollBar_msb_lightOnTouch, true))); //Adds the handle
 	}
 
+	//xxx
 	public void setProgress(int val) {
 		mProgress=val;
 		//ViewCompat.setY(handleThumb, 1.f*val/mMax*getHeight());
-		int newTop = (int) (1.0f*val*(getHeight()-handleThumb.getHeight())/mMax);
-		newTop = Math.max(newTop, 0);
-		newTop = Math.min(newTop,  getHeight()-handleThumb.getHeight());
-		handleThumb.setBottom(newTop+handleThumb.getHeight());
+		int newTop = topByProgress(mProgress);
 		handleThumb.setTop(newTop);
+		handleThumb.setBottom(newTop+desiredHeight);
 		handleThumb.postInvalidate();
 
 	}
+
+	private int topByProgress(int mProgress) {
+		int max = getHeight()-desiredHeight;
+		int newTop = (int) (1.0*mProgress*max/mMax);
+		return Math.max(newTop, Math.min(newTop,  max));
+	}
+
 	public void setMax(int contentHeight) {
 		mMax=contentHeight;
 	}
@@ -78,14 +84,13 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 				0, 0);
 	}
 
-
-
-	int desiredWidth=18;
+	public int desiredWidth;
+	int desiredHeight=36;
 	//设置拉杆
 	SamsungLikeHandle setUpHandle(Context context, Boolean lightOnTouch){
 		handleThumb = new SamsungLikeHandle(context, 0);
-		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(Utils.getDP(desiredWidth, this),
-				Utils.getDP(38, this));
+		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(desiredWidth,
+				desiredHeight=Utils.getDP(36, this));
 		lp.addRule(ALIGN_PARENT_RIGHT);
 		handleThumb.setLayoutParams(lp);
 		handleThumb.setVisibility(View.GONE);
@@ -159,7 +164,6 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 	// Makes the bar render correctly for XML
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		desiredWidth = Utils.getDP(desiredWidth, this);
 		int desiredHeight = 100;
 
 		int widthMode = MeasureSpec.getMode(widthMeasureSpec);
@@ -198,17 +202,6 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 		setMeasuredDimension(width, height);
 	}
 
-	//CHAPTER II - ABSTRACTION FOR FLAVOUR DIFFERENTIATION
-
-
-
-	//CHAPTER III - CUSTOMISATION METHODS
-
-	private void checkCustomScrollingInterface(){
-
-	}
-
-
 
 	/**
 	 * The scrollBar should attempt to use dev provided scrolling logic and not default logic.
@@ -216,16 +209,13 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 	 * The adapter must implement {@link ICustomScroller}.
 	 */
 	private void checkCustomScrolling(){
-		if (ViewCompat.isAttachedToWindow(this))
-			checkCustomScrollingInterface();
-		else
+		if (!ViewCompat.isAttachedToWindow(this))
 			addOnLayoutChangeListener(new OnLayoutChangeListener()
 			{
 				@Override
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom)
 				{
 					SamsungLikeScrollBar.this.removeOnLayoutChangeListener(this);
-					checkCustomScrollingInterface();
 				}
 			});
 	}
@@ -296,23 +286,24 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 						if(opc!=null)
 							opc.OnProgressChanged(-1);
 					break;
-					case MotionEvent.ACTION_MOVE:
+					case MotionEvent.ACTION_MOVE://xxx
 						float dy = e.getRawY() - lastY;
-						//ViewCompat.setY(handleThumb,e.getRawY());
-						int newTop = (int) (handleThumb.getTop()+dy);
-						newTop = Math.max(newTop, 0);
-						newTop = Math.min(newTop,  getHeight()-handleThumb.getHeight());
-						handleThumb.setBottom(newTop+handleThumb.getHeight());
+						int max = getHeight()-desiredHeight;
+						int progress = (int) Math.max(0, Math.min(mProgress + dy*mMax/max, mMax));
+						int newTop = topByProgress(progress);
 						handleThumb.setTop(newTop);
+						handleThumb.setBottom(newTop+desiredHeight);
 						handleThumb.postInvalidate();
-						int progress = (int) (1.0f*mMax*newTop/(getHeight()-handleThumb.getHeight()));
-						if(opc!=null)
-							opc.OnProgressChanged(progress);
-						if(scrollee!=null) {
-							if(scrollee instanceof ScrollView)
-								((ScrollView)scrollee).smoothScrollTo(0, progress);
-							else
-								scrollee.setScrollY(progress);
+						if(progress!=mProgress) {
+							mProgress = progress;
+							if (opc != null)
+								opc.OnProgressChanged(progress);
+							if (scrollee != null) {
+								if (scrollee instanceof ScrollView)
+									((ScrollView) scrollee).smoothScrollTo(0, progress);
+								else
+									scrollee.setScrollY(progress);
+							}
 						}
 						lastY = e.getRawY();
 					break;
@@ -341,8 +332,9 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 	public boolean isWebHeld;
 	public Timer timer;
 
-	public void setDelimiter(String newShield) {
+	public void setDelimiter(String newShield, View _scrollee) {
 		handleThumb.setDelimiter(newShield);
+		scrollee = _scrollee;
 	}
 
 	public SamsungLikeHandle getHandle(){

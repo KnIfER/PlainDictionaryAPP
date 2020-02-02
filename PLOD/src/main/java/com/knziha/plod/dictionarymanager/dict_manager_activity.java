@@ -14,7 +14,6 @@ import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -56,15 +55,19 @@ import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.PlainDict.AgentApplication;
 import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.PlainDict.PlaceHolder;
 import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
+import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict_nonexist;
+import com.knziha.plod.dictionarymodels.mdict_manageable;
+import com.knziha.plod.dictionarymodels.mdict_transient;
 import com.knziha.plod.dictionarymodels.mdict_prempter;
 import com.knziha.plod.widgets.Toastable_FragmentActivity;
 import com.knziha.rbtree.RashSet;
@@ -80,6 +83,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,8 +93,12 @@ import java.util.List;
 
 public class dict_manager_activity extends Toastable_FragmentActivity implements OnMenuItemClickListener
 {
+	HashMap<String,mdict_transient> mdict_cache = new HashMap<>();
 	Intent intent = new Intent();
 	private PopupWindow mPopup;
+	public ArrayList<PlaceHolder> slots;
+	private ArrayList<Fragment> fragments;
+
 	public interface transferRunnable{
 		boolean transfer(File to);
 		void afterTransfer();
@@ -102,129 +110,168 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
     String dictQueryWord;
     boolean isSearching;
     private SearchView searchView;
-    private Menu toolbarmenu;
+    protected Menu toolbarmenu;
     dict_manager_main f1;
     dict_manager_modules f2;
     dict_Manager_folderlike f3;
-    ViewPager viewPager;  //对应的viewPager  
+	dict_manager_websites f4;
+    ViewPager viewPager;  //对应的viewPager
     TabLayout mTabLayout;
 	LayoutInflater inflater;
 
-	public List<mdict> md;
-	public List<mdict> filters;
-    public PDICMainAppOptions opt;
+	public ArrayList<mdict_transient> mdmng;
     public HashSet<String> mdlibsCon;
 	protected int CurrentPage;
 	//MainActivity a;
 	private boolean isDirty=false;
-	
+
 	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if(keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN){
-				if(mPopup!=null){
-					mPopup.dismiss();
-					mPopup=null;
-					return true;
+	public void onBackPressed() {
+		if(mPopup!=null){
+			mPopup.dismiss();
+			mPopup=null;
+			return;
+		}
+
+		int item = viewPager.getCurrentItem();
+		if(item<fragments.size() && fragments.get(item) instanceof dict_manager_base.SelectableFragment){
+			if(((dict_manager_base.SelectableFragment)fragments.get(item)).exitSelectionMode()){
+				return;
+			}
+		}
+
+		if(f1.mDslv!=null) {
+			f1.mDslv.noDraw=true;
+			f1.refreshDicts(f1.mDslv.bUnfinished=false);
+		}
+
+		checkAll();
+		//CMN.Log("terminating...", intent, intent.getBooleanExtra("changed", false));
+
+		super.onBackPressed();
+	}
+
+	private void checkAll() {
+		AgentApplication app = ((AgentApplication)getApplication());
+		if(f1.isDirty) {
+			intent.putExtra("result", true);
+			int size = mdmng.size();
+			boolean identical = size==slots.size();
+			int i;
+			for (i = 0; i < size; i++) {
+				mdict_transient mmTmp = mdmng.get(i);
+				mmTmp.mPhI.lineNumber=i;
+				if(identical){
+					if(!mmTmp.equalsToPlaceHolder(slots.get(i)))
+						identical=false;
 				}
-				if(viewPager.getCurrentItem()==2 && f3.SelectionMode) {
-					f3.Selection.clear();
-					f3.SelectionMode=false;
-					f3.lastClickedPos[0]=-1;
-					f3.lastClickedPos[1]=-1;
-					f3.alreadySelectedAll=false;
-					f3.adapter.notifyDataSetChanged();
-					toolbarmenu.getItem(7).setVisible(false);
-					toolbarmenu.getItem(8).setVisible(false);
-					toolbarmenu.getItem(9).setVisible(false);
-					toolbarmenu.getItem(10).setVisible(false);
-					toolbarmenu.getItem(11).setVisible(false);
-					toolbarmenu.getItem(12).setVisible(false);
-					toolbarmenu.getItem(13).setVisible(true);
-					toolbarmenu.getItem(14).setVisible(true);
-					toolbarmenu.getItem(15).setVisible(false);
-					return true;
+			}
+			if(identical){
+				CMN.Log("一成不变");
+			} else {
+				intent.putExtra("changed", true);
+				slots.clear();
+				for (mdict_manageable mmTmp:mdmng) {
+					slots.add(((mdict_transient)mmTmp).mPhI);
 				}
-				
-		        if(f1.mDslv!=null) f1.refreshDicts(f1.mDslv.bUnfinished=false);
-		        
-		        
-				if(f1.isDirty) {
-			        try {
-				        File def = new File(getExternalFilesDir(null),"default.txt");
-			        	BufferedWriter out = new BufferedWriter(new FileWriter(def));
-			        	String parent = new File(opt.lastMdlibPath).getAbsolutePath()+"/";
-				        for(mdict mdTmp:md) {
-				        	String name = mdTmp.getPath();
-				        	if(name.startsWith(parent))
-				        		name = name.substring(parent.length());
-				        	if(mdTmp.tmpIsFilter)
-								out.write("[:F]");
-				        	out.write(name);
-				        	out.write("\n");
-				        }
-				        out.flush();
-				        out.close();
-					} catch (IOException e2) {
-						e2.printStackTrace();
-					}
-				}
-				
-				if(f3.isDirty) {
-			        try {
-			        	mFile rec = new mFile(opt.pathToMain()+"CONFIG/mdlibs.txt");
-			        	BufferedWriter out = new BufferedWriter(new FileWriter(rec));
-			        	String parent = new File(opt.lastMdlibPath).getAbsolutePath()+"/";
-				        for(mFile mdTmp:f3.data.getList()) {
-				        	if(mdTmp.getClass()==mAssetFile.class) continue;
-				        	if(mdTmp.isDirectory()) continue;
-				        	String name = mdTmp.getPath();
-				        	if(name.startsWith(parent))
-				        		name = name.substring(parent.length());
-				        	out.write(name);
-				        	out.write("\n");
-				        }
-				        out.flush();
-				        out.close();
-					} catch (IOException e2) {
-						e2.printStackTrace();
-					}
-				}
-		        
-			
-			if(f2.isDirty) {
-	        	File def1 = new File(opt.pathToMain()+"CONFIG/AllModuleSets.txt");      //!!!原配
-	        	try {
-					BufferedWriter output = new BufferedWriter(new FileWriter(def1));
-					
-					for(int i=0;i<f2.adapter.getCount();i++) {
-						String fn = f2.adapter.getItem(i);
-						output.write(fn);
-						output.write("\n");
+				try {
+					File def = new File(getExternalFilesDir(null), "default.txt");
+					ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(def), app.get4kCharBuff(), 4096);
+					String parent = new File(opt.lastMdlibPath).getAbsolutePath() + "/";
+					output.write("[:S]");
+					output.write(Integer.toString(mdmng.size() - f1.rejector.size()));
+					output.write("\n");
+					for (mdict_manageable mmTmp : mdmng) {
+						writeForOneLine(output, mmTmp, parent);
 					}
 					output.flush();
 					output.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+				} catch (IOException e2) {
+					e2.printStackTrace();
 				}
-	        }
-
-            intent.putExtra("result", f1.isDirty);
-            intent.putExtra("result2", isDirty);
-            setResult(RESULT_OK, intent);
+			}
+			f1.isDirty=false;
 		}
-		return super.onKeyDown(keyCode, event);
+
+		if(f3.isDirty) {
+			try {
+				mFile rec = new mFile(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString());
+				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(rec), app.get4kCharBuff(), 4096);
+				String parent = new File(opt.lastMdlibPath).getAbsolutePath()+"/";
+				for(mFile mdTmp:f3.data.getList()) {
+					if(mdTmp.getClass()==mAssetFile.class) continue;
+					if(mdTmp.isDirectory()) continue;
+					String name = mdTmp.getPath();
+					if(name.startsWith(parent))
+						name = name.substring(parent.length());
+					output.write(name);
+					output.write("\n");
+				}
+				output.flush();
+				output.close();
+			} catch (IOException e2) {
+				e2.printStackTrace();
+			}
+			f3.isDirty=false;
+		}
+
+		if(f2.isDirty) {
+			intent.putExtra("result2", true);
+			File def1 = new File(opt.pathToMainFolder().append("CONFIG/AllModuleSets.txt").toString());      //!!!原配
+			try {
+				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(def1), app.get4kCharBuff(), 4096);
+				for(int i=0;i<f2.adapter.getCount();i++) {
+					String fn = f2.adapter.getItem(i);
+					output.write(fn);
+					output.write("\n");
+				}
+				output.flush();
+				output.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			f2.isDirty=false;
+		}
 	}
-	
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		checkAll();
+	}
+
+	private void writeForOneLine(Writer out, mdict_manageable mmTmp, String parent) throws IOException {
+		String name = mmTmp.getPath();
+		if(name.startsWith(parent))
+			name = name.substring(parent.length());
+		int tmpIsFlag = mmTmp.getTmpIsFlag();
+		if(tmpIsFlag!=0)
+			out.write("[:");
+		int tif = mmTmp.getTmpIsFlag();
+		if(PDICMainAppOptions.getTmpIsFiler(tif))
+			out.write("F");
+		else if(PDICMainAppOptions.getTmpIsAudior(tif))
+			out.write("A");
+		if(PDICMainAppOptions.getTmpIsClicker(tif))
+			out.write(":C");
+		if(PDICMainAppOptions.getTmpIsCollapsed(tif))
+			out.write(":Z");
+		if(PDICMainAppOptions.getTmpIsHidden(tif))
+			out.write(":H");
+		if(tmpIsFlag!=0)
+			out.write("]");
+		out.write(name);
+		out.write("\n");
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(null);
 		AgentApplication agent = ((AgentApplication)getApplication());
-		md=agent.md;
-		filters=agent.filters;
 		opt=agent.opt;
+		slots = agent.slots;
 		mdlibsCon=agent.mdlibsCon;
-		agent.clearNonsenses();
 		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.dict_manager_main);
@@ -233,25 +280,23 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
                 | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);  
         window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN  
                         
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);  
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);  
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         if(Build.VERSION.SDK_INT>=21) {
-	        window.setStatusBarColor(Color.parseColor("#8f8f8f"));  
+			window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+			window.setStatusBarColor(Color.parseColor("#8f8f8f"));
 	        window.setNavigationBarColor(Color.parseColor("#8f8f8f"));  
         }
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        	View decorView = this.getWindow().getDecorView();
-        	if (decorView != null) {
-        	int vis = decorView.getSystemUiVisibility();
-        	if (false) {
-        	vis |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-        	} else {
-        	vis &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-        	}
-        	decorView.setSystemUiVisibility(vis);
-        	}
-        }
+			View decorView = window.getDecorView();
+			int vis = decorView.getSystemUiVisibility();
+			if (false) {
+				vis |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+			} else {
+				vis &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+			}
+			decorView.setSystemUiVisibility(vis);
+		}
     	//a = ((MainActivity)CMN.a);
     	
 		//TypedValue tval = new TypedValue();
@@ -271,20 +316,23 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
         
  		toolbarmenu = toolbar.getMenu();
  		
-		List<Fragment> fragments= new ArrayList<>();
+		fragments= new ArrayList<>();
 		
-	    String[] tabTitle = {getResources().getString(R.string.currentPlan,0),getResources().getString(R.string.allPlans),"全部词典"};
+	    String[] tabTitle = {getResources().getString(R.string.currentPlan,0),getResources().getString(R.string.allPlans), "网络词典", "全部词典"};
 	    mFile.parentPath=opt.lastMdlibPath.toLowerCase();
 	    
 		f1 = new dict_manager_main();
 		f2 = new dict_manager_modules();
+		f4 = new dict_manager_websites();
 		f3 = new dict_Manager_folderlike();
 		f1.a=this;
 		f2.a=this;
+		f4.a=this;
 		f3.a=this;
 		fragments.add(f1);
-		fragments.add(f2);	
-		fragments.add(f3);	
+		fragments.add(f2);
+		fragments.add(f4);
+		fragments.add(f3);
 
 		f3.oes = new dict_Manager_folderlike.OnEnterSelectionListener() {
 			public void onEnterSelection(){
@@ -314,11 +362,9 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				if(!found) {
 					//show("adding new!"+fn.getAbsolutePath());
 					f3.mDslv.post(() -> {
-						try {
-							f1.adapter.add(new_mdict_preempter(fn,opt,2));
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+						mdict_transient mdTmp = new mdict_transient(fn.getPath(), opt, 0);
+						PDICMainAppOptions.setTmpIsFiler(mdTmp, mdTmp.getIsDedicatedFilter());
+						f1.adapter.add(mdTmp);
 						f1.refreshSize();
 						f1.adapter.notifyDataSetChanged();
 						f1.isDirty=true;
@@ -333,7 +379,9 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	    viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTabLayout) {
 	    	@Override
 	    	public void onPageSelected(int page) {
-	    		if(page==0) {
+				Fragment fI = fragments.get(page);
+				viewPager.setOffscreenPageLimit(Math.max(viewPager.getOffscreenPageLimit(), Math.max(1+page, 1)));
+	    		if(fI==f1) {
 	    			toolbarmenu.getItem(0).setVisible(true);
 	    			toolbarmenu.getItem(1).setVisible(true);
 	    			toolbarmenu.getItem(2).setVisible(true);
@@ -350,7 +398,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	    			toolbarmenu.getItem(13).setVisible(false);
 	    			toolbarmenu.getItem(14).setVisible(false);
 					toolbarmenu.getItem(15).setVisible(false);
-	    		}else if(page==1) {
+	    		}
+	    		else if(fI==f2) {
 	    			toolbarmenu.getItem(0).setVisible(true);
 	    			toolbarmenu.getItem(1).setVisible(false);
 	    			toolbarmenu.getItem(2).setVisible(false);
@@ -367,7 +416,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	    			toolbarmenu.getItem(13).setVisible(false);
 	    			toolbarmenu.getItem(14).setVisible(false);
 					toolbarmenu.getItem(15).setVisible(true);
-	    		}else if(page==2){
+	    		}
+	    		else if(fI==f3){
 	    			toolbarmenu.getItem(0).setVisible(false);
 	    			toolbarmenu.getItem(1).setVisible(false);
 	    			toolbarmenu.getItem(2).setVisible(false);
@@ -411,8 +461,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	    mTabLayout.setSelectedTabIndicatorHeight(3);
 	    
 	    viewPager.setCurrentItem(CurrentPage = opt.getDictManagerTap());
-	    if(CurrentPage==2)
-			viewPager.setOffscreenPageLimit(3);
+	    //if(CurrentPage==2)
+		viewPager.setOffscreenPageLimit(Math.max(viewPager.getOffscreenPageLimit(), 1+CurrentPage));
 
 	    toastmaker =  findViewById(R.id.toastmaker);
  
@@ -431,7 +481,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				mPopup=new PopupWindow(vTmp1, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT, true);
 				vTmp1.setOnClickListener(v1 -> {
 					mPopup.dismiss(); mPopup=null;
-					onKeyDown(KeyEvent.KEYCODE_BACK, MainActivityUIBase.BackEvent);
+					onBackPressed();
 					finish();
 				});
 				TextView tv = vTmp1.findViewById(R.id.text1);
@@ -486,7 +536,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	            switch(viewPager.getCurrentItem()){
 	            	case 0:
 	            		for(int i=0;i<f1.adapter.getCount();i++) {
-	            			if(f1.adapter.getItem(i)._Dictionary_fName.toLowerCase().contains(dictQueryWord))
+	            			if(f1.adapter.getItem(i).getName().toLowerCase().contains(dictQueryWord))
 	            				cc++;
 	            		}
             		break;
@@ -550,6 +600,14 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	        window.setStatusBarColor(Color.TRANSPARENT);  
 	        window.setNavigationBarColor(Color.BLACK);  
         }
+		setResult(RESULT_OK, intent);
+//		viewPager.postDelayed(new Runnable() {
+//			@Override
+//			public void run() {
+//				CMN.Log(viewPager.getChildCount(), viewPager.getOffscreenPageLimit());
+//			}
+//		}, 1000);
+
 	}
 	//onCreate结束
 	
@@ -563,10 +621,10 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
         final ListView lv = dialog.findViewById(R.id.lv);
         final EditText et = dialog.findViewById(R.id.et);
         ImageView iv = dialog.findViewById(R.id.confirm);
-        File fSearchFile = new File(opt.pathToMain()+"CONFIG/"+lastPlanName+".set");//查找旧plan
+        File fSearchFile = new File(opt.pathToMainFolder().append("CONFIG/").append(lastPlanName).append(".set").toString());//查找旧plan
         final String fSearch = lastPlanName+".set";//查找旧plan
         final myCpr<Boolean,Boolean> args = new myCpr<>(false,false);
-        File[] sets = new File(opt.pathToMain()+"CONFIG").listFiles(pathname -> {
+        File[] sets = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> {
 			String name = pathname.getName();
 			if(name.endsWith(".set")) {
 				if(!args.value)
@@ -734,7 +792,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				show(R.string.renamefail0);
 				return;
 			}
-			final File newf = new File(opt.pathToMain()+"CONFIG/"+newName+".set");
+			final File newf = new File(opt.pathToMainFolder().append("CONFIG/").append(newName).append(".set").toString());
 			if(!fSearch.equals(newf) && newf.exists()) {//覆盖
 				View dialog12 = getLayoutInflater().inflate(R.layout.dialog_about,null);
 AlertDialog.Builder builder1 = new AlertDialog.Builder(dict_manager_activity.this);
@@ -788,12 +846,6 @@ dd.show();
 		});
         d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> d.dismiss());
 	}
-
-	
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
 		
     public void showT(String text){
         if(m_currentToast != null)
@@ -824,21 +876,24 @@ dd.show();
     	}
 
     }
-    
+
+    /** 另存当前配置 */
     boolean try_write_configureLet(File newf) {
 		try {
-			BufferedWriter output = new BufferedWriter(new FileWriter(newf,false));
-		
-			for(mdict mdTmp:md)
-				if(!f1.rejector.contains(mdTmp)) {
-					String fn = mdTmp.getPath();
-					if(fn.startsWith(opt.lastMdlibPath))
-						fn = fn.substring(opt.lastMdlibPath.length()+1);
-					output.write(fn);
-					output.write("\n");
+			ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(newf,false), ((AgentApplication)getApplication()).get4kCharBuff(), 4096);
+			output.write("[:S]");
+			output.write(Integer.toString(mdmng.size()-f1.rejector.size()));
+			output.write("\n");
+			for(mdict_manageable mmTmp:mdmng) {
+				String fn = mmTmp.getPath();
+				String parent = new File(opt.lastMdlibPath).getAbsolutePath()+"/";
+				if (!f1.rejector.contains(fn)) {
+					writeForOneLine(output, mmTmp, parent);
 				}
+			}
 			output.flush();
 			output.close();
+			((AgentApplication)getApplication()).set4kCharBuff(output.cb);
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -880,20 +935,23 @@ dd.show();
 		AlertDialog d;
 		switch (item.getItemId()) {
 			case R.id.toolbar_action0:{//提交
-				if(isLongClicked) {ret=false; break;}
+				if(isLongClicked) {
+					f1.performLastItemLongClick();
+					ret=true; break;
+				}
 				try {
 					String name = opt.getLastPlanName();
-					File to = new File(opt.pathToMain()+"CONFIG/"+name+".set");
+					File to = new File(opt.pathToMainFolder().append("CONFIG/").append(name).append(".set").toString());
 					boolean shouldInsert = false;
 					if(!to.exists())
 						shouldInsert=true;
 					BufferedWriter output = new BufferedWriter(new FileWriter(to,false));
 
-					for(mdict md:md) {
-						if(!f1.rejector.contains(md.getPath())){
-							String pathname = mFile.tryDeScion(new File(md.getPath()), opt.lastMdlibPath);
-							output.write(pathname);
-							output.write("\n");
+					String parent = new File(opt.lastMdlibPath).getAbsolutePath()+"/";
+					for(mdict_manageable mmTmp:mdmng) {
+						if(!f1.rejector.contains(mmTmp.getPath())){
+							//String pathname = mFile.tryDeScion(new File(md.getPath()), opt.lastMdlibPath);
+							writeForOneLine(output, mmTmp, parent);
 						}
 					}
 
@@ -907,8 +965,8 @@ dd.show();
 			} break;
             case R.id.toolbar_action1:{//刷新
 				if(isLongClicked){
-					for (mdict mdTmp:md) {
-						f1.selector.add(mdTmp.f().getAbsolutePath());
+					for(mdict_manageable mmTmp:mdmng) {
+						f1.selector.add(mmTmp.getPath());
 					}
 					f1.adapter.notifyDataSetChanged();
 				}else {
@@ -924,36 +982,15 @@ dd.show();
 					ThisIsDirty = true;
 					try {
 						String name = opt.getLastPlanName();
-						File from = new File(opt.pathToMain() + "CONFIG/" + name + ".set");
+						File from = new File(opt.pathToMainFolder().append("CONFIG/").append(name).append(".set").toString());
 						if (from.exists()) {
-							BufferedReader in = new BufferedReader(new FileReader(from));
-							HashSet<String> con = new HashSet<>();
-							md.clear();
+							AgentApplication app = ((AgentApplication) getApplication());
+							ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(from), app.get4kCharBuff(), 4096);
 							f1.rejector.clear();
-							f1.adapter.notifyDataSetChanged();
-							String line = in.readLine();
-							while (line != null) {                                                       //!!!旧爱
-								try {
-									boolean isFilter = false;
-									if (line.startsWith("[:F]")) {
-										line = line.substring(4);
-										isFilter = true;
-									}
-									if (!line.startsWith("/"))
-										line = opt.lastMdlibPath + "/" + line;
-									mdict mdtmp;
-									mdtmp = f1.mdict_cache.get(line);
-									if (mdtmp == null)
-										mdtmp = new_mdict_preempter(new File(line), opt, isFilter ? 1 : 0);
-									f1.add(mdtmp);
-								} catch (Exception e) {
-									e.printStackTrace();
-									show(R.string.err, new File(line).getName(), new File(line).getAbsolutePath(), e.getLocalizedMessage());
-								}
-								line = in.readLine();
-							}
+							f1.adapter.clear();
+							do_Load_managee(in);
+							f1.isDirty=true;
 							f1.refreshSize();
-							in.close();
 							f1.adapter.notifyDataSetChanged();
 							show(R.string.loadsucc2, name);
 						} else {
@@ -983,12 +1020,11 @@ dd.show();
 
 					@Override
 					public void afterTransfer() {
-						// TODO Auto-generated method stub
-
 					}
 				});
 			} break;
             case R.id.toolbar_action4:{//禁用全部
+				f1.isDirty=true;
             	if(isLongClicked){
 					if(opt.getDictManager1MultiSelecting()){
 						f1.rejector.addAll(f1.selector);
@@ -996,8 +1032,8 @@ dd.show();
 						f1.adapter.notifyDataSetChanged();
 					}
 				}else{
-					for(mdict mdTmp:md) {
-						f1.rejector.add(mdTmp.getPath());
+					for(mdict_manageable mmTmp:mdmng) {
+						f1.rejector.add(mmTmp.getPath());
 					}
 					ThisIsDirty=true;
 					f1.adapter.notifyDataSetChanged();
@@ -1027,59 +1063,31 @@ dd.show();
 							int start=Math.min(positions[0], positions[1]);
 							int end=Math.max(positions[0], positions[1]);
 							for (int i = start; i < end; i++) {
-								f1.selector.add(md.get(i).f().getAbsolutePath());
+								f1.selector.add(mdmng.get(i).getPath());
 							}
 						}
 					}
 				}else {
-					File rec = new File(opt.pathToMain() + "CONFIG/mdlibs.txt");
-					HashSet<String> mdict_cache = new HashSet<>(md.size());
-					for (mdict mdTmp : md) {
-						mdict_cache.add(mdTmp.getPath());
-					}
+					File rec = new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString());
+
 					try {
 						BufferedReader in = new BufferedReader(new FileReader(rec));
-						String line = in.readLine();
-						HashSet<String> con = new HashSet<>();
-						StringBuffer sb = new StringBuffer("");
-						boolean needRewrite = false;
-						while (line != null) {
-							if (line.startsWith("[:F]")) {
-								line = line.substring(4);
-								needRewrite = true;
-							}
-							if (con.contains(line)) {
-								needRewrite = true;
-							} else {
-								con.add(line);
-								sb.append(line).append("\n");
-							}
+						String line;
+						while ((line = in.readLine()) != null) {
 							if (!line.startsWith("/"))
 								line = opt.lastMdlibPath + "/" + line;
-							if (!mdict_cache.contains(line)) {
-								mdict m = f1.mdict_cache.get(new File(line).getAbsolutePath());
+							line = new File(line).getAbsolutePath();
+							if (!mdict_cache.containsKey(line)) {
+								mdict_transient m = mdict_cache.get(line);
 								if (m == null)
-									if (!new File(line).exists()) {
-										m = new mdict_nonexist(line, opt);
-									} else {
-										m = new_mdict_preempter(new File(line), opt, 2);
-									}
+									m = new mdict_transient(line, opt);
 								f1.add(m);
-								f1.rejector.add(m.getPath());
-								mdict_cache.add(line);
+								f1.rejector.add(line);
+								mdict_cache.put(line, m);
 							}
-							line = in.readLine();
 						}
 						//mTabLayout.getTabAt(0).setText(getResources().getString(R.string.currentPlan,md.size()-f1.rejector.size()));
 						in.close();
-						if (needRewrite) {
-							OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(rec));
-							BufferedWriter bw = new BufferedWriter(writer);
-							bw.write(sb.toString());
-							bw.flush();
-							bw.close();
-							writer.close();
-						}
 					} catch (Exception e2) {
 						e2.printStackTrace();
 					}
@@ -1156,7 +1164,7 @@ dd.show();
 
 					View dv = getLayoutInflater().inflate(R.layout.dialog_move_to_line, null);
 					NumberPicker np = dv.findViewById(R.id.numberpicker);
-					np.setMaxValue(md.size());
+					np.setMaxValue(mdmng.size());
 
 					AlertDialog dTmp = builder2.setView(dv).create();
 					Window win = dTmp.getWindow();
@@ -1171,14 +1179,12 @@ dd.show();
 					for(int i=0;i<arr.size();i++) {
 						File fn=new File(arr.get(i));//f3.adapter.getItem();
 						if(fn.isDirectory()) continue;
-						if(!f1.mdict_cache.containsKey(fn.getAbsolutePath())) {
-							try {
-								f1.add(new_mdict_preempter(fn,opt,2));
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
+						String key = fn.getPath();
+						if(!mdict_cache.containsKey(key)) {
+							mdict_transient m = new mdict_transient(key, opt);
 							cc++;
 							f1.isDirty=true;
+							mdict_cache.put(key, m);
 						}else if(f1.rejector.contains(fn.getAbsolutePath())) {
 							f1.rejector.remove(fn.getAbsolutePath());
 							cc++;
@@ -1192,7 +1198,7 @@ dd.show();
 			} break;
             case R.id.toolbar_action10:{//移除
 				int cc1 = 0;
-				for(int i=0;i<md.size();i++) {
+				for(int i=0;i<mdmng.size();i++) {
 					if(f3.Selection.contains(f1.adapter.getItem(i).getPath())) {
 						f1.rejector.add(f1.adapter.getItem(i).getPath());
 						cc1++;
@@ -1243,7 +1249,7 @@ dd.show();
 
 							ArrayList<File> moduleFullScannerArr;
 							if(((CheckBox)dv.findViewById(R.id.ck)).isChecked()) {
-								File[] moduleFullScanner = new File(opt.pathToMain()+"CONFIG").listFiles(new FileFilter() {
+								File[] moduleFullScanner = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(new FileFilter() {
 									@Override
 									public boolean accept(File pathname) {
 										String name = pathname.getName();
@@ -1257,7 +1263,7 @@ dd.show();
 								moduleFullScannerArr = new ArrayList<>();
 
 							if(f3.isDirty)
-								moduleFullScannerArr.add(new File(opt.pathToMain()+"CONFIG/mdlibs.txt"));
+								moduleFullScannerArr.add(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
 							for(File fI:moduleFullScannerArr) {
 								InputStreamReader reader = null;
 								StringBuffer sb= new StringBuffer("");
@@ -1305,7 +1311,7 @@ dd.show();
 				properties.root = new File("/");
 				properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
 				properties.offset = new File(opt.lastMdlibPath);
-				properties.opt_dir=new File(opt.pathTo()+"favorite_dirs/");
+				properties.opt_dir=new File(opt.pathToDatabases()+"favorite_dirs/");
 				properties.opt_dir.mkdirs();
 				FilePickerDialog dialog = new FilePickerDialog(this, properties);
 				dialog.setTitle(R.string.pickdestineFolder);
@@ -1318,9 +1324,10 @@ dd.show();
 							ArrayList<String> arr = f3.Selection.flatten();
 							RashSet<String> renameList = new RashSet<>();
 							ArrayList<String> renameListe;
-							HashMap<String, mdict> mdict_cache = new HashMap<>(md.size());
-							for(mdict mdTmp:md) {
-								mdict_cache.put(mdTmp.getPath(),mdTmp);
+							HashMap<String, mdict> mdict_cache = new HashMap<>(mdmng.size());
+							for(mdict_manageable mmTmp:mdmng) {
+								if(mmTmp instanceof mdict)
+									mdict_cache.put(mmTmp.getPath(), (mdict) mmTmp);
 							}
 							int cc=0;
 							for(String sI:arr) {//do actual rename. rename a lot of files..
@@ -1329,17 +1336,17 @@ dd.show();
 								//if(sI.startsWith("/ASSET/") && CMN.AssetMap.containsKey(sI)) continue;
 								if(mF.isDirectory()) continue;
 								if(f3.data.get(mF).isDirectory()) continue;
-								mdict mdTmp = mdict_cache.get(sI);
-								if(mdTmp==null) {
+								mdict_manageable mmTmp = mdict_cache.get(sI);
+								if(mmTmp==null) {
 									try {
-										mdTmp=new mdict_prempter(sI, opt);
+										mmTmp=new mdict_prempter(sI, opt);
 									} catch (IOException e) {
 										e.printStackTrace();
 									}
 								}
-								File OldF = mdTmp.f();
+								File OldF = mmTmp.f();
 								File toF = new File(p, OldF.getName());
-								boolean ret = mdTmp.moveFileTo(toF);//厉害 存在的移动了
+								boolean ret = mmTmp.moveFileTo(toF);//厉害 存在的移动了
 								if(ret) {
 									mdlibsCon.remove(mFile.tryDeScion(OldF, opt.lastMdlibPath));
 									mdlibsCon.add(mFile.tryDeScion(toF, opt.lastMdlibPath));
@@ -1382,13 +1389,13 @@ dd.show();
 
 							ArrayList<File> moduleFullScannerArr;
 
-							File[] moduleFullScanner = new File(opt.pathToMain()+"CONFIG").listFiles(pathname -> {
+							File[] moduleFullScanner = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> {
 								String name = pathname.getName();
 								return name.endsWith(".set");
 							});
 							moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
 							moduleFullScannerArr.add(new File(getExternalFilesDir(null),"default.txt"));
-							moduleFullScannerArr.add(new File(opt.pathToMain()+"CONFIG/mdlibs.txt"));
+							moduleFullScannerArr.add(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
 							HashSet<String> mdlibs = new HashSet<>();
 							for(File fI:moduleFullScannerArr) {
 								boolean modified=false;
@@ -1400,9 +1407,30 @@ dd.show();
 									BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fI)));
 									while((line = br.readLine()) != null) {
 										boolean isFilter=false;
-										if(line.startsWith("[:F]")){
-											line = line.substring(4);
-											isFilter=true;
+										boolean isClicker=false;
+										boolean isAudio=false;
+										if(line.startsWith("[:")){
+											int idx = line.indexOf("]",2);
+											if(idx>=2){
+												String[] arr2 = line.substring(2, idx).split(":");
+												line = line.substring(idx+1);
+												for (String pI:arr2) {
+													switch (pI){
+														case "F":
+															isFilter=true;
+														break;
+														case "C":
+															isClicker=true;
+														break;
+														case "A":
+															isAudio=true;
+														break;
+														case "Z":
+															//flag|=0x10;
+														break;
+													}
+												}
+											}
 										}
 										try {
 											String key=line.startsWith("/")?line:opt.lastMdlibPath+"/"+line;
@@ -1410,9 +1438,15 @@ dd.show();
 												modified=true;
 												line = mFile.tryDeScion(new File(p, new File(key).getName()), opt.lastMdlibPath);//搬到新家
 											}}catch(Exception ignored) {}
+										//todo wtf???
 										if(!mdlibs.contains(line)) {//避免重复
 											sb.append(line).append("\n");
-											if(isFilter) line="[:F]"+line;
+											String prefix="";
+											if(isFilter) prefix+=":F";
+											if(isClicker) prefix+=":C";
+											if(isAudio) prefix+=":A";
+											if(prefix.length()>0)
+												line="["+prefix+"]"+line;
 											mdlibs.add(line);
 										}
 									}
@@ -1451,6 +1485,11 @@ dd.show();
 					public Activity getDialogActivity() {
 						return null;
 					}
+
+					@Override
+					public void onDismiss() {
+
+					}
 				});
 				dialog.show();
 
@@ -1462,8 +1501,8 @@ dd.show();
 				AlertDialog.Builder builder = new AlertDialog.Builder(this).setView(dv1);
 				final AlertDialog dd = builder.create();
 				btn_Done.setOnClickListener(v -> {
-					File source  = new File(opt.pathToMain()+"CONFIG/"+etNew.getText()+".set");
-					if(!mFile.isDirScionOf(source, opt.pathToMain()+"CONFIG/")) {
+					File source  = new File(opt.pathToMainFolder().append("CONFIG/").append(etNew.getText()).append(".set").toString());
+					if(!mFile.isDirScionOf(source, opt.pathToMainFolder().append("CONFIG/").toString())) {
 						showT("名称非法！");
 						return;
 					}
@@ -1503,25 +1542,55 @@ dd.show();
 		return ret;
 	}
 
-	public static mdict new_mdict_preempter(File f, PDICMainAppOptions opt, int isF) throws IOException {
-		String fn = f.getAbsolutePath();
-		mdict_nonexist mdTmp = null;
-		if(fn.startsWith("/ASSET/")) {
-			String AssetInternalname =  CMN.AssetMap.get(f.getAbsolutePath());
-			if(AssetInternalname!=null) {
-				mdTmp = new mdict_prempter(fn,opt);
-				mdTmp.isAsset=true;
-				mdTmp._Dictionary_fName=AssetInternalname;
+
+	protected void do_Load_managee(ReusableBufferedReader in) throws IOException {
+		String line;
+		int cc=0;
+		mdmng.clear();
+		ReadLines:
+		while((line = in.readLine())!=null){
+			int flag = 0;
+			if(line.startsWith("[:")){
+				int idx = line.indexOf("]",2);
+				if(idx>=2){
+					String[] arr = line.substring(2, idx).split(":");
+					line = line.substring(idx+1);
+					for (String pI:arr) {
+						switch (pI){
+							case "F":
+								flag|=0x1;
+							break;
+							case "C":
+								flag|=0x2;
+							break;
+							case "A":
+								flag|=0x4;
+							break;
+							case "H":
+								flag|=0x8;
+							break;
+							case "Z":
+								flag|=0x10;
+							break;
+							case "S":
+								int size = IU.parsint(line);
+								if(size>0) mdmng.ensureCapacity(size);
+							continue ReadLines;
+						}
+					}
+				}
 			}
+			if (!line.startsWith("/"))
+				line = opt.lastMdlibPath + "/" + line;
+			mdict_transient mmtmp = mdict_cache.get(line);
+			if (mmtmp == null)
+				mmtmp = new mdict_transient(line, opt, 0);
+			if(!mmtmp.isMddResource()) flag&=~0x4;
+			mmtmp.setTmpIsFlag(flag);
+			mdmng.add(mmtmp);
 		}
-		boolean isFilter=isF==1;
-		if(mdTmp==null)
-			mdTmp=f.exists()?new mdict_prempter(fn,opt,isFilter):new mdict_nonexist(fn,opt,isFilter);
-		if(isF==2)
-			mdTmp.tmpIsFilter=mdTmp.getIsDedicatedFilter() && PDICMainAppOptions.getAutoAddDedicatedFilter();
-		return mdTmp;
+		in.close();
 	}
-	
 }
 
 

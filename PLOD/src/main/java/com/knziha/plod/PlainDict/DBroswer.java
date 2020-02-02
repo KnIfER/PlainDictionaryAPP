@@ -52,8 +52,11 @@ import com.knziha.ankislicer.customviews.ArrayAdaptermy;
 import com.knziha.ankislicer.customviews.ShelfLinearLayout;
 import com.knziha.ankislicer.customviews.VerticalRecyclerViewFastScrollermy;
 import com.knziha.ankislicer.customviews.wahahaTextView;
+import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
+import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTNode;
 import com.knziha.rbtree.RashSet;
@@ -74,6 +77,7 @@ public class DBroswer extends Fragment implements
 		View.OnClickListener, OnLongClickListener{
 	public int pendingDBClickPos=-1;
 	ArrayList<File> items;
+	ViewGroup webviewHolder;
 
 	public DBroswer(){
 		super();
@@ -122,6 +126,13 @@ public class DBroswer extends Fragment implements
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return 0;
 		if(a.isContentViewAttached()) {
+			if(opt.getUseBackKeyGoWebViewBack()){
+				WebViewmy view = a.getCurrentWebContext();
+				if(view!=null && view.canGoBack()){
+					view.goBack();
+					return 1;
+				}
+			}
 			a.DetachContentView();
 			if(!isToDel || toDelete.size()==0) return 1;
 
@@ -198,7 +209,7 @@ public class DBroswer extends Fragment implements
 		}
 		if(isDirty) {
 			opt.putFirstFlag();
-			CMN.Log("DBROWSER写配置……");
+			//CMN.Log("DBROWSER写配置……");
 		}
 		return 0;
 	}
@@ -217,7 +228,7 @@ public class DBroswer extends Fragment implements
 
 		lv.setAdapter(mAdapter);
 
-		mAdapter.setOnItemClickListener(mainClicker );
+		mAdapter.setOnItemClickListener(mainClicker);
 
 		mAdapter.setOnItemLongClickListener(new OnItemLongClickListener() {
 			int lastDragPos=-1;
@@ -581,11 +592,9 @@ public class DBroswer extends Fragment implements
 		}
 	}
 
-
-
 	protected void loadInDataBase(PDICMainActivity a) {
 		final File fi = new File(a.favoriteCon.pathName);
-		new File(opt.pathToInternal().append("favorites/").toString()).listFiles(pathname -> {
+		new File(opt.pathToInternalDatabases().append("favorites/").toString()).listFiles(pathname -> {
 			if(pathname.getName().toLowerCase().endsWith(".sql") || pathname.getName().toLowerCase().endsWith(".sql.db")) {//MIMU will add db suffix
 				items.add(pathname);
 				if(pathname.equals(fi))
@@ -639,17 +648,17 @@ public class DBroswer extends Fragment implements
 		@Override
 		public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
 		{
-			MyViewHolder holder = new MyViewHolder(LayoutInflater.from(getActivity().getApplicationContext()).inflate(R.layout.card_list_item, parent,false));
+			MyViewHolder holder = new MyViewHolder(LayoutInflater.from(getActivity()).inflate(R.layout.card_list_item, parent,false));
 			//holder.setIsRecyclable(false);
 			//if Recyclable, then setText in onBindViewHolder makes textviews unSelectable.
 			//details on this bug:
 			//https://blog.csdn.net/huawuque183/article/details/78563977
-			//issue solved(私以为).
+			//issue solved.
 			holder.itemView.setOnLongClickListener(longClicker);
 			holder.p.setOnLongClickListener(longClicker);
 			return holder;
 		}
-		//Bind
+
 		@Override
 		public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position)
 		{
@@ -687,10 +696,6 @@ public class DBroswer extends Fragment implements
 				day_.setTime(time);
 				holder.time.setText(date.format(day_));
 			}
-
-			//CMN.show(asd.get("a"));
-			//holder.webView.loadDataWithBaseURL("file:///",asd.get("a"),null, "UTF-8", null);
-			//holder.webView.setText("a\n\ns\nd\n"+position);
 
 			if(Selection.contains(position))//
 				holder.itemView.setBackgroundColor(GlobalOptions.isDark?0xFF4F7FDF:0xa04F5F6F);//FF4081 4F7FDF
@@ -1419,9 +1424,14 @@ public class DBroswer extends Fragment implements
 		return name.substring(0,ln-4);
 	}
 
-	ArrayList<Integer> avoyager = new ArrayList<>();
+	public final SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
 	int avoyagerIdx=0;
 	int adelta=0;
+
+	public void resetPageMemorization(){
+		avoyager.clear();
+		avoyagerIdx=adelta=0;
+	}
 
 	OnItemClickListener mainClicker = new OnItemClickListener() {
 		@Override
@@ -1429,11 +1439,8 @@ public class DBroswer extends Fragment implements
 			PDICMainActivity a = (PDICMainActivity) getActivity();
 			if(a==null) return;
 			a.setContentBow(false);
-
 			if(view!=null) {
-				avoyager.clear();
-				avoyagerIdx=adelta=0;
-				avoyager.add(0);
+				adelta=0;
 				//TODO retrieve from sibling views
 				currentDisplaying = ((TextView) view.findViewById(android.R.id.text1)).getText().toString();
 			}
@@ -1455,12 +1462,13 @@ public class DBroswer extends Fragment implements
 				}
 			}
 
+			int lastClickedPosBeforePageTurn = position - adelta;
+			ScrollerRecord pagerec=null;
 			currentPos = position;
 
 			switch(SelectionMode) {
 				case SelectionMode_select:{
 					if(!Selection.remove(position)) {
-						//if(!bIsInverseSelecting)
 						Selection.add(position);
 					}
 					counter.setText(Selection.size()+"/"+mCards_size);
@@ -1475,51 +1483,57 @@ public class DBroswer extends Fragment implements
 						data.add(datalet);
 						String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
 						for(int dIdx=0;dIdx<a.md.size();dIdx++) {//联合搜索
-							mdict mdTmp = a.md.get(dIdx);
-							int idx = mdTmp.lookUp(currentDisplaying__);
-							if(idx>=0)
-								while(idx<mdTmp.getNumberEntries()) {
-									if(mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
-										records.add(dIdx);
-										records.add(idx);
-									}else
-										break;
-									idx++;
-								}
+							mdict mdTmp = a.md_get(dIdx);
+							if(mdTmp!=null) {
+								int idx = mdTmp.lookUp(currentDisplaying__);
+								if (idx >= 0)
+									while (idx < mdTmp.getNumberEntries()) {
+										if (mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+											records.add(dIdx);
+											records.add(idx);
+										} else
+											break;
+										idx++;
+									}
+							}
 						}
 
+						webviewHolder = a.webholder;
+						ViewGroup anothorHolder = a.webSingleholder;
 						if(records.size()>0) {
-							rec = new resultRecorderCombined(a,data,a.md);
-
+							a.recCom = rec = new resultRecorderCombined(a,data,a.md);
+							ScrollViewmy WHP = a.WHP;
+							OUT:
 							if(adelta!=0 && System.currentTimeMillis()-a.lastClickTime>300) {//save our postion
-								avoyager.set(avoyagerIdx, a.WHP.getScrollY());
+								pagerec = avoyager.get(lastClickedPosBeforePageTurn);
+								if (pagerec == null) {
+									if (WHP.getScrollY() != 0) {
+										pagerec = new ScrollerRecord();
+										avoyager.put(lastClickedPosBeforePageTurn, pagerec);
+									} else
+										break OUT;
+								}
+								pagerec.set(0, WHP.getScrollY(), 1);
 							}
+
+							adelta=0;
 							a.lastClickTime=System.currentTimeMillis();
 
-							if(avoyagerIdx+adelta<0) {//新的
-								avoyagerIdx=0;
-								avoyager.add(avoyagerIdx,0);
-								rec.expectedPos=avoyager.get(avoyagerIdx);
-								//show("新的1"+rec.expectedPos);
-							}else if(avoyagerIdx+adelta>=avoyager.size()) {//新的
-								avoyagerIdx=avoyager.size();
-								avoyager.add(avoyagerIdx,0);
-								rec.expectedPos=avoyager.get(avoyagerIdx);
-								//show("新的2"+rec.expectedPos);
-							}else {//取出旧值
-								avoyagerIdx+=adelta;
-								rec.expectedPos=avoyager.get(avoyagerIdx);
+							pagerec = avoyager.get(position);
+							if (pagerec != null) {
+								rec.expectedPos = pagerec.y;
 								//currentDictionary.mWebView.setScrollY(currentDictionary.expectedPos);
-								//show("取出旧值"+rec.expectedPos);
+								//CMN.Log("取出旧值", combining_search_result.expectedPos, pos, avoyager.size());
+							} else {
+								rec.expectedPos = 0;
+								//CMN.Log("新建", combining_search_result.expectedPos, pos);
 							}
-							adelta=0;
 
-							if(a.WHP.getVisibility()!=View.VISIBLE)a.WHP.setVisibility(View.VISIBLE);
-							a.WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
-							if(a.webSingleholder.getVisibility()==View.VISIBLE) {
-								if(a.webSingleholder.getChildCount()!=0)
-									a.webSingleholder.removeAllViews();
-								a.webSingleholder.setVisibility(View.GONE);
+							if(WHP.getVisibility()!=View.VISIBLE) WHP.setVisibility(View.VISIBLE);
+							if(anothorHolder.getVisibility()==View.VISIBLE) {
+								if(anothorHolder.getChildCount()!=0)
+									anothorHolder.removeAllViews();
+								anothorHolder.setVisibility(View.GONE);
 							}
 
 							a.widget13.setVisibility(View.VISIBLE);
@@ -1535,29 +1549,22 @@ public class DBroswer extends Fragment implements
 							rec.renderContentAt(0, a,null);
 
 							processFavorite(position, currentDisplaying);
-						}else {
+						}
+						else {
 							if(a.main.getChildCount()==1) {
 								show(R.string.searchFailed, currentDisplaying);
 							}else {
 								a.show(R.string.searchFailed, currentDisplaying);
-								a.webholder.removeAllViews();
-								int remcount = a.webSingleholder.getChildCount()-1;
-								if(remcount>0) a.webSingleholder.removeViews(1, remcount);
+								webviewHolder.removeAllViews();
+								int remcount = anothorHolder.getChildCount()-1;
+								if(remcount>0) anothorHolder.removeViews(1, remcount);
 							}
 						}
 					}
 					else {
 						//CMN.Log("单独搜索模式");
-						if(a.webSingleholder.getVisibility()!=View.VISIBLE)a.webSingleholder.setVisibility(View.VISIBLE);
-						if(a.WHP.getVisibility()==View.VISIBLE) {
-							if(a.webholder.getChildCount()!=0)
-								a.webholder.removeAllViews();
-							a.WHP.setVisibility(View.GONE);
-						}
-						if(a.widget14.getVisibility()==View.VISIBLE) {
-							a.widget13.setVisibility(View.GONE);
-							a.widget14.setVisibility(View.GONE);
-						}
+						float desiredScale=-1;
+						a.TransientIntoSingleExplanation();
 
 						String key = currentDisplaying;
 						int offset = mdict.offsetByTailing(key);
@@ -1570,56 +1577,65 @@ public class DBroswer extends Fragment implements
 						if(idx<0) {
 							for(adapter_idx=0;adapter_idx<a.md.size();adapter_idx++) {
 								if(adapter_idx!=a.adapter_idx) {
-									currentDictionary=a.md.get(adapter_idx);
-									idx=currentDictionary.lookUp(key,true);
+									currentDictionary=a.md_get(adapter_idx);
+									if(currentDictionary!=null)
+										idx=currentDictionary.lookUp(key,true);
 									if(idx>=0) break;
 								}
 							}
 						}
 
-						if(avoyagerIdx+adelta<0) {//新的
-							avoyagerIdx=0;
-							avoyager.add(avoyagerIdx,0);
-							//a.showT("新的1"+currentDictionary.expectedPos);
-						}else if(avoyagerIdx+adelta>=avoyager.size()) {//新的
-							avoyagerIdx=avoyager.size();
-							avoyager.add(avoyagerIdx,0);
-							//a.showT("新的2"+currentDictionary.expectedPos);
-						}else {//取出旧值
-							avoyagerIdx+=adelta;
-							//a.showT(avoyager.size()+"~"+adelta+"~"+avoyagerIdx+"~取出旧值"+avoyager.get(avoyagerIdx));
-						}
-
+						webviewHolder = a.webSingleholder;
+						ViewGroup anothorHolder = a.webholder;
 						if(idx>=0){
-							if(true) {
+							if(opt.getRemPos()) {
 								currentDictionary.initViewsHolder(a);
 								currentDictionary.rl.setTag(adapter_idx);
+								OUT:
 								if(System.currentTimeMillis()-a.lastClickTime>300)//save our postion
-									if(adelta!=0 && a.webSingleholder.getChildCount()!=0) {
-										View s_rl = a.webSingleholder.getChildAt(0);
-										int tag=-1;
-										try {
-											tag=(int) s_rl.getTag();
-										} catch (Exception ignored) {}
-										if(tag!=-1) {
-											mdict lastDictionary = a.md.get(tag);
+								if(webviewHolder.getChildCount()!=0) {
+									View s_rl = webviewHolder.getChildAt(0);
+									int tag= IU.parsint(s_rl.getTag(), -1);
+									if(tag!=-1) {
+										mdict lastDictionary = a.md_get(tag);
+										if(lastDictionary!=null) {
 											WebViewmy current_webview = lastDictionary.mWebView;
-											if(current_webview!=null && !current_webview.isloading) {
-												if(currentDictionary.webScale==0) lastDictionary.webScale=a.dm.density;//sanity check
-												avoyager.set(avoyagerIdx-adelta,(int) (current_webview.getScrollY()/(lastDictionary.webScale/a.dm.density)));
-												//a.showT("保存位置");
+											if (adelta != 0 && current_webview != null && !current_webview.isloading) {
+												if (lastDictionary.webScale == 0)
+													lastDictionary.webScale = a.dm.density;//sanity check
+												//CMN.Log("保存位置", lastDictionary._Dictionary_fName, tag);
+
+												pagerec = avoyager.get(lastClickedPosBeforePageTurn);
+												if (pagerec == null) {
+													if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || currentDictionary.webScale != mdict.def_zoom) {
+														pagerec = new ScrollerRecord();
+														avoyager.put(lastClickedPosBeforePageTurn, pagerec);
+													} else
+														break OUT;
+												}
+
+												pagerec.set(current_webview.getScrollX(), current_webview.getScrollY(), lastDictionary.webScale);
 											}
 										}
 									}
+								}
+
 								adelta=0;
 								a.lastClickTime=System.currentTimeMillis();
 
-								currentDictionary.expectedPos=avoyager.get(avoyagerIdx);
-
-								adelta=0;
+								pagerec = avoyager.get(position);
 								//a.showT(""+currentDictionary.expectedPos);
-							}else
-								currentDictionary.expectedPos=0;
+							}
+
+							if(pagerec!=null) {
+								currentDictionary.mWebView.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+								currentDictionary.mWebView.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+								desiredScale=pagerec.scale;
+								CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+currentDictionary.mWebView.expectedPos+" scale:"+pagerec.scale);
+							}else {
+								currentDictionary.mWebView.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+								currentDictionary.mWebView.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+							}
 
 							imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
 							ViewGroup somp = (ViewGroup) a.contentview.getParent();
@@ -1641,28 +1657,29 @@ public class DBroswer extends Fragment implements
 							}
 
 							ViewGroup someView = currentDictionary.rl;
-							if(someView.getParent()!=a.webSingleholder) {
+							if(someView.getParent()!=webviewHolder) {
 								if(someView.getParent()!=null) ((ViewGroup)someView.getParent()).removeView(someView);
-								a.webSingleholder.addView(currentDictionary.rl);
+								webviewHolder.addView(currentDictionary.rl);
 							}
-							if(a.webSingleholder.getChildCount()>1) {
-								for(int i=a.webSingleholder.getChildCount()-1;i>=0;i--)
-									if(a.webSingleholder.getChildAt(i)!=currentDictionary.rl) a.webSingleholder.removeViewAt(i);
+							if(webviewHolder.getChildCount()>1) {
+								for(int i=webviewHolder.getChildCount()-1;i>=0;i--)
+									if(webviewHolder.getChildAt(i)!=currentDictionary.rl) webviewHolder.removeViewAt(i);
 							}
 
-							currentDictionary.renderContentAt(-1,adapter_idx,0,null, idx);
+							currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, idx);
 
 							currentDictionary.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 							currentDictionary.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 							processFavorite(position, currentDisplaying);
-						}else {
+						}
+						else {
 							if(a.main.getChildCount()==1) {
 								show(R.string.searchFailed, currentDisplaying);
 							}else {
 								a.show(R.string.searchFailed, currentDisplaying);
-								a.webholder.removeAllViews();
-								int remcount = a.webSingleholder.getChildCount()-1;
-								if(remcount>0) a.webSingleholder.removeViews(1, remcount);
+								anothorHolder.removeAllViews();
+								int remcount = webviewHolder.getChildCount()-1;
+								if(remcount>0) webviewHolder.removeViews(1, remcount);
 							}
 						}
 					}
@@ -1676,6 +1693,10 @@ public class DBroswer extends Fragment implements
 					boolean reorded=false;
 					for(int i=0;i<a.md.size();i++) {//联合搜索
 						int dIdx=i;
+						if(opt.getPeruseAddAll()){
+							records.add(dIdx);
+							continue;
+						}
 						if(!opt.getIsCombinedSearching()) {
 							if(dIdx==0)if(a.adapter_idx>0 && a.adapter_idx<a.md.size()) {
 								dIdx=a.adapter_idx;
@@ -1684,18 +1705,19 @@ public class DBroswer extends Fragment implements
 								dIdx-=1;
 							}
 						}
-						mdict mdTmp = a.md.get(dIdx);
-						int idx = mdTmp.lookUp(currentDisplaying__);
-						if(idx>=0)
-							while(idx<mdTmp.getNumberEntries()) {
-								if(mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
-									records.add(dIdx);
-								}else
-									break;
-								idx++;
-							}
+						mdict mdTmp = a.md_get(dIdx);
+						if(mdTmp!=null) {
+							int idx = mdTmp.lookUp(currentDisplaying__);
+							if (idx >= 0)
+								while (idx < mdTmp.getNumberEntries()) {
+									if (mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+										records.add(dIdx);
+									} else
+										break;
+									idx++;
+								}
+						}
 					}
-
 					a.getPeruseView().data = records;
 					a.getPeruseView().TextToSearch = currentDisplaying;
 					a.AttachPeruseView(true);
@@ -1708,7 +1730,7 @@ public class DBroswer extends Fragment implements
 					a.DBrowser=null;
 					if(isDirty) {
 						opt.putFirstFlag();
-						CMN.Log("DBROWSER写配置……");
+						//CMN.Log("DBROWSER写配置……");
 					}
 				} break;
 			}
@@ -1718,18 +1740,14 @@ public class DBroswer extends Fragment implements
 	public void toggleFavor() {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
-		if(a.star_ic==null) {
-			a.star_ic = getResources().getDrawable(R.drawable.star_ic_solid);
-			a.star = a.favoriteBtn.getDrawable();
-		}
-		a.favoriteBtn.setImageDrawable(a.star);
+		a.favoriteBtn.setImageResource(R.drawable.star_ic);
 		if(toDelete.get(currentPos)==null) {
-			a.favoriteBtn.setImageDrawable(a.star);
+			a.favoriteBtn.setImageResource(R.drawable.star_ic);
 			toDelete.put(currentPos,currentDisplaying);
 			isToDel=true; a.show(R.string.toRemove);
 		}else {
 			toDelete.remove(currentPos);
-			a.favoriteBtn.setImageDrawable(a.star_ic);
+			a.favoriteBtn.setImageResource(R.drawable.star_ic_solid);
 			a.show(R.string.added);
 		}
 	}
@@ -1738,52 +1756,56 @@ public class DBroswer extends Fragment implements
 	protected void processFavorite(int position,String key) {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
-		if(a.star_ic==null) {
-			a.star_ic = getResources().getDrawable(R.drawable.star_ic_solid);
-			a.star = a.favoriteBtn.getDrawable();
-		}
 		if(toDelete.get(currentPos)==null) {
-			a.favoriteBtn.setImageDrawable(a.star_ic);
-		}else if(a.star!=null)
-			a.favoriteBtn.setImageDrawable(a.star);
+			a.favoriteBtn.setImageResource(R.drawable.star_ic_solid);
+		}else
+			a.favoriteBtn.setImageResource(R.drawable.star_ic);
 	}
 
 	public void goBack() {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
-		if(currentPos-1<0) {
-			a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, false);
-			return;
+		if(opt.getBottomNavigationMode()==0) {
+			if (currentPos - 1 < 0) {
+				a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, false);
+				return;
+			}
+			//int first = lm.findFirstVisibleItemPosition();
+			if (currentPos < lm.findFirstVisibleItemPosition())
+				lm.scrollToPositionWithOffset(currentPos, 0);
+			adelta = -1;
+			mainClicker.onItemClick(null, --currentPos);
+		} else {
+			a.GoBackOrForward(webviewHolder, -1);
 		}
-		//int first = lm.findFirstVisibleItemPosition();
-		if(currentPos<lm.findFirstVisibleItemPosition())
-			lm.scrollToPositionWithOffset(currentPos, 0);
-		adelta=-1;
-		mainClicker.onItemClick(null, --currentPos);
 	}
 
 	public void goQiak() {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
-		if(currentPos+1>mCards_size-1) {
-			a.show(R.string.endendr);
-			return;
-		}
-		currentPos+=1;
-		int last = lm.findLastVisibleItemPosition();
-		boolean hei = false;
-		if(currentPos == last) {
-			if(lv.getChildAt(last)!=null) {
-				hei = lv.getHeight() - lv.getChildAt(last).getTop() < lv.getChildAt(last).getHeight()*2/3;
+		if(opt.getBottomNavigationMode()==0) {
+			if (currentPos + 1 > mCards_size - 1) {
+				a.show(R.string.endendr);
+				return;
 			}
-		}else
-			hei = currentPos > last;
+			currentPos += 1;
+			int last = lm.findLastVisibleItemPosition();
+			boolean hei = false;
+			if (currentPos == last) {
+				if (lv.getChildAt(last) != null) {
+					hei = lv.getHeight() - lv.getChildAt(last).getTop() < lv.getChildAt(last).getHeight() * 2 / 3;
+				}
+			} else
+				hei = currentPos > last;
 
-		if(hei) {
-			lm.scrollToPositionWithOffset(currentPos, 0);
+			if (hei) {
+				lm.scrollToPositionWithOffset(currentPos, 0);
+			}
+			adelta = 1;
+			mainClicker.onItemClick(null, currentPos);
+		} else {
+			a.GoBackOrForward(webviewHolder, 1);
 		}
-		adelta=1;
-		mainClicker.onItemClick(null, currentPos);
 	}
 
 	class ItemCard {

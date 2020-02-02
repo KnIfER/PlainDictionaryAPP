@@ -5,10 +5,13 @@
 	<color name="colorPrimary1">#aa3F51B5</color>
 	<color name="colorPrimaryDark">#00303F9F</color>
 	<color name="colorAccent">#FF4081</color>
-	
+	<color name="ThinAccent">#49FF4081</color>
+
    <color name="colorHeaderBlue">#2b4381</color>
    <color name="SelHeaderBlue">#4F7FDF</color>
    <color name="ShallowHeaderBlue">#a82b43e1</color>
+   <color name="ThinHeaderBlue">#497C7CB7</color>
+   <color name="DeapDanger">#FF3F51B5</color>
    <color name="OldHeaderBlue">#2b43c1</color>
    <color name="colorHeaderBlueT">#ca2b4381</color>
    <color name="lightFloatBlue">#80e0f0</color>
@@ -37,4 +40,5 @@
     <color name="zumulv">#009688</color>
     
     <color name="whitehalf">#a0ffffff</color>
+	<color name="seek_bar_secondary_progress">#3399CC</color>
 </resources>

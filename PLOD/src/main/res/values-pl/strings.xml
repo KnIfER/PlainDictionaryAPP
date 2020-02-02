@@ -49,9 +49,9 @@
 	<string name="bookmarkL">Lista zakładek …</string>
 	<string name="f_scale_up">Rozmiar czcionki ++</string>
 	<string name="f_scale_down">Rozmiar czcionki - -</string>
-	<string name="background_color">Kolor tła:</string>
-	<string name="text_zoom">Tekst zoom:</string>
-	<string name="case_insensitive_policy">Wielkość liter ma znaczenie polityki:</string>
+	<string name="background_color">Kolor tła :</string>
+	<string name="text_zoom">Tekst zoom :</string>
+	<string name="case_insensitive_policy">Wielkość liter ma znaczenie polityki :</string>
 	<string name="remove_mode">Usuń Tryb</string>
 	<string name="jump">Skok</string>
 	<string name="strict_mode">tryb ścisły</string>

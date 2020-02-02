@@ -3,10 +3,13 @@ package com.knziha.plod.widgets;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
+
+import androidx.annotation.NonNull;
 
 public class ScrollViewmy extends ScrollView {// for mute it's scroll
 	public SamsungLikeScrollBar scrollbar2guard;
@@ -78,11 +81,16 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
     	}
     }
 
-
 	private void checkBar() {
 		if(scrollbar2guard!=null && !scrollbar2guard.isHidden()){
 			scrollbar2guard.isWebHeld=false;
 			scrollbar2guard.fadeOut();
 		}
+	}
+
+	/** Reject idiot's behaviour. */
+	@Override
+	protected int computeScrollDeltaToGetChildRectOnScreen(Rect rect) {
+		return 0;
 	}
 }

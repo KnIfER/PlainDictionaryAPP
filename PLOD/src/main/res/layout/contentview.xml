@@ -33,16 +33,14 @@
 				android:layout_height="match_parent"
 				android:layout_width="match_parent"
 				android:focusable="true"
-				android:scrollbars="@null"
 				android:background="#C7EDCC"
 				>
 				<LinearLayout
 					android:id="@+id/webholder"
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:descendantFocusability="blocksDescendants"
+					android:descendantFocusability="afterDescendants"
 					android:orientation="vertical" >
-
 				</LinearLayout>
 			</com.knziha.plod.widgets.ScrollViewmy>
 
@@ -56,12 +54,13 @@
 
 			<com.knziha.plod.widgets.SamsungLikeScrollBar
 				android:id="@+id/dragScrollBar"
-				android:layout_width="match_parent"
+				android:layout_width="@dimen/scrollBarWidth"
 				android:layout_height="match_parent"
-				android:layout_alignParentEnd="true"
 				android:layout_marginTop="35dp"
 				android:layout_marginBottom="5dp"
 				android:layout_marginRight="4dp"
+				android:layout_marginLeft="4dp"
+				android:layout_gravity="right"
 				/>
 
 			<android.widget.ImageView

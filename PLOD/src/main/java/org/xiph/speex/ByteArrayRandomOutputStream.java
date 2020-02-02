@@ -12,6 +12,10 @@ import java.util.Arrays;
 
 public class ByteArrayRandomOutputStream extends OutputStream {
 	protected byte buf[];
+
+	public byte[] bytes(){
+		return buf;
+	}
 	
 	protected int count;
 	protected int offset;

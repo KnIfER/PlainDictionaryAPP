@@ -20,6 +20,7 @@
 		android:theme="@style/AppTheme"
 		android:hardwareAccelerated="true"
 		tools:ignore="GoogleAppIndexingWarning"
+		android:usesCleartextTraffic="true"
 		android:requestLegacyExternalStorage="true">
 		<uses-library android:name="com.sec.android.app.multiwindow" android:required="false" />
 		<meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
@@ -53,6 +54,10 @@
 			>
 			<intent-filter>
 				<action android:name="colordict.intent.action.SEARCH"/>
+				<category android:name="android.intent.category.DEFAULT"/>
+			</intent-filter>
+			<intent-filter>
+				<action android:name="plaindict.intent.action.SEARCH"/>
 				<category android:name="android.intent.category.DEFAULT"/>
 			</intent-filter>
 			<intent-filter>

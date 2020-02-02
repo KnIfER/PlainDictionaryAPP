@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+
+	<PreferenceCategory
+		android:key="cat_1"
+		android:title="即点即译"
+		app:icon="@drawable/drawer_menu_icon_setting"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="coord_view"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="沉浸式滚动"
+			/>
+
+
+
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="multi_cs"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="多重点译"-->
+<!--			/>-->
+
+
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="skip_nom"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="跳过无匹配的词典"/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="use_morph"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="使用构词库"/>
+
+		<androidx.preference.ListPreference
+			android:key="mode_cs"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="查询模式 :"
+			android:entryValues="@array/click_search_mode"
+			android:entries="@array/click_search_mode_info"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="top_resize"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="靠顶放大"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="double_resize"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="双击放大"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="reset_pos"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="弹出时重置位置"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="reset_max"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="弹出时重置放大"/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="switch_top"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="点击顶栏切换词典"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="switch_bottom"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="点击底栏切换词典"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="pin_upstream"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="固定轮询上游"/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="switch_nav"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="上下切换词典时更改询上游"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="delay_diss"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="延时空白区域的点击"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="click_tts"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="自动发音"
+			/>
+
+	</PreferenceCategory>
+
+</PreferenceScreen>

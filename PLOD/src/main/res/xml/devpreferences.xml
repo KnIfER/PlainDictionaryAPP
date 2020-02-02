@@ -24,6 +24,60 @@
 			android:title="开启Root"
 			android:persistent="false"
 			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="lazyLoad"
+			android:title="词典懒加载"
+			android:persistent="false"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="keep_hide"
+			android:title="管理词典时保留禁用项"
+			android:persistent="false"
+			/>
+
+		<com.knziha.plod.settings.WarnPreference
+			android:key="clear_cache1"
+			android:title="清理网页缓存（仅内存）"
+			android:persistent="false"
+			/>
+
+		<com.knziha.plod.settings.WarnPreference
+			android:key="clear_cache2"
+			android:title="清理网页缓存（所有文件）"
+			android:persistent="false"
+			/>
+
+		<com.knziha.plod.settings.WarnPreference
+			android:key="clear_cache3"
+			android:title="清理表单数据"
+			android:persistent="false"
+			/>
+
+		<com.knziha.plod.settings.WarnPreference
+			android:key="clear_cache4"
+			android:title="清理SSL处理记录"
+			android:persistent="false"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="enable_web_debug"
+			android:title="允许网页调试"
+			android:persistent="false"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="cache_mp3"
+			android:title="预先缓存Mdd音频到文件"
+			android:persistent="false"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="sounds_first"
+			android:title="点击按钮发音时，优先使用发音库而非发音链接"
+			android:persistent="false"
+			/>
 	</PreferenceCategory>
 
 

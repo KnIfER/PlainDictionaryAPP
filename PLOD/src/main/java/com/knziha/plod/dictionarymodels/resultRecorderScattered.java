@@ -6,7 +6,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.knziha.plod.PlainDict.BasicAdapter;
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.PlainDict.PDICMainActivity;
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 
 import android.graphics.Color;
@@ -32,16 +36,17 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		int resCount=0;
 		for(int i=0;i<md.size();i++){//遍历所有词典
 			mdict mdtmp = md.get(i);
-			ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
-			if(_combining_search_tree!=null)
-    		for(int ti=0;ti<_combining_search_tree.length;ti++){//遍历搜索结果
-    			if(_combining_search_tree[ti]==null) {
-    				continue;
-    			}
-    			resCount+=_combining_search_tree[ti].size();
-    		}
+			if(mdtmp!=null) {
+				ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
+				if (_combining_search_tree != null)
+				for (int ti = 0; ti < _combining_search_tree.length; ti++) {//遍历搜索结果
+					if (_combining_search_tree[ti] == null) {
+						continue;
+					}
+					resCount += _combining_search_tree[ti].size();
+				}
+			}
 			firstLookUpTable[i]=resCount;
-			
 		}
 		
 		size=resCount;
@@ -56,14 +61,15 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 
 		int resCount=0;
 		mdict mdtmp = md.get(idx);
-
-		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
-		if(_combining_search_tree!=null)
-		for(int ti=0;ti<_combining_search_tree.length;ti++){//遍历搜索结果
-			if(_combining_search_tree[ti]==null) {
-				continue;
+		if(mdtmp!=null) {
+			ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
+			if (_combining_search_tree != null)
+			for (int ti = 0; ti < _combining_search_tree.length; ti++) {//遍历搜索结果
+				if (_combining_search_tree[ti] == null) {
+					continue;
+				}
+				resCount += _combining_search_tree[ti].size();
 			}
-			resCount+=_combining_search_tree[ti].size();
 		}
 		
 		//firstLookUpTable[idx]=resCount;
@@ -95,7 +101,24 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		ret.add(Rgn);
 		return ret;
 	}
-	
+
+	@Override
+	public int getOneDictAt(int pos) {
+		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
+		if(Rgn<0 || Rgn>md.size()-1)
+			return 0;
+		return Rgn;
+	}
+
+	@Override
+	public void syncToPeruseArr(ArrayList<Integer> pvdata, int pos) {
+		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
+		pvdata.clear();
+		if(Rgn<0 || Rgn>md.size()-1)
+			return;
+		pvdata.add(Rgn);
+	}
+
 	@Override
 	public CharSequence getResAt(int pos) {
 		if(size<=0 || pos<0 || pos>size-1)
@@ -104,6 +127,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		if(Rgn<0 || Rgn>md.size()-1)
 			return "!!! Error: code 2 Rgn="+Rgn+" size="+md.size();
 		mdict mdtmp = md.get(Rgn);
+		if(mdtmp==null) return "!!! Error: lazy load error failed.";
 		dictIdx=Rgn;
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-1];
@@ -131,7 +155,14 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		}
 		return "!!! Error: code 3 ";
 	};
-	
+
+	public String getCurrentKeyText(int pos) {
+		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
+		if(Rgn<0 || Rgn>md.size()-1 || md.get(Rgn)==null)
+			return null;
+		return md.get(Rgn).currentDisplaying;
+	}
+
 	@Override
 	public void renderContentAt(int pos, MainActivityUIBase a, BasicAdapter ADA){//ViewGroup X
 		getResAt(pos);
@@ -141,6 +172,10 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		if(Rgn<0 || Rgn>md.size()-1)
 			return;
 		mdict mdtmp = md.get(Rgn);
+		if(mdtmp==null){
+			CMN.Log("!!! Error: lazy load error failed.");
+			return;
+		}
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-1];
 		int idxCount = 0;
@@ -154,33 +189,44 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			if(pos-idxCount<max) {
 				dictIdx=Rgn;
 				mdtmp.initViewsHolder(a);
-				float desiredScale=-1;
-				ScrollerRecord pagerec;
-				
-				if(System.currentTimeMillis()-a.lastClickTime>400) //save our postion
-	        	if((mdtmp.mWebView==null || !mdtmp.mWebView.isloading) && ADA.lastClickedPosBeforePageTurn>=0 && a.webSingleholder.getChildCount()!=0) {
-					//ADA.avoyager.get(ADA.avoyagerIdx).set(mdtmp.mWebView.getScrollX(), mdtmp.mWebView.getScrollY(), mdtmp.webScale);
-		        	
-	        		pagerec = ADA.avoyager.get(ADA.lastClickedPosBeforePageTurn);
-	        		if(pagerec==null) {
-	        			pagerec=new ScrollerRecord();
-	        			ADA.avoyager.put(ADA.lastClickedPosBeforePageTurn, pagerec);
-	        		}
-	        		pagerec.set(mdtmp.mWebView.getScrollX(), mdtmp.mWebView.getScrollY(), mdtmp.webScale);
+				PDICMainActivity aa= (PDICMainActivity) a;
+				float desiredScale = -1;
+				if(a.opt.getRemPos()) {
+					ScrollerRecord pagerec;
+					if (System.currentTimeMillis() - a.lastClickTime > 400) //save our postion
+						if ((mdtmp.mWebView == null || !mdtmp.mWebView.isloading) && ADA.lastClickedPosBeforePageTurn >= 0 && a.webSingleholder.getChildCount() != 0) {
+							//ADA.avoyager.get(ADA.avoyagerIdx).set(mdtmp.mWebView.getScrollX(), mdtmp.mWebView.getScrollY(), mdtmp.webScale);
+
+							pagerec = ADA.avoyager.get(ADA.lastClickedPosBeforePageTurn);
+							if (pagerec == null) {
+								pagerec = new ScrollerRecord();
+								ADA.avoyager.put(ADA.lastClickedPosBeforePageTurn, pagerec);
+							}
+							pagerec.set(mdtmp.mWebView.getScrollX(), mdtmp.mWebView.getScrollY(), mdtmp.webScale);
+						}
+					a.lastClickTime = System.currentTimeMillis();
+
+					pagerec = ADA.avoyager.get(pos);
+
+					if (pagerec != null) {
+						mdtmp.mWebView.expectedPos = pagerec.y;
+						mdtmp.mWebView.expectedPosX = pagerec.x;
+						desiredScale = pagerec.scale;
+					} else {
+						mdtmp.mWebView.expectedPos = 0;
+						mdtmp.mWebView.expectedPosX = 0;
+					}
+					if(aa.rem_res!=R.string.rem_position_yes){
+						aa.iItem_aPageRemember.setTitle(aa.rem_res=R.string.rem_position_yes);
+					}
+				}else{
+					mdtmp.mWebView.expectedPos = 0;
+					mdtmp.mWebView.expectedPosX = 0;
+					if(aa.rem_res!=R.string.rem_position){
+						aa.iItem_aPageRemember.setTitle(aa.rem_res=R.string.rem_position);
+					}
 				}
-				a.lastClickTime=System.currentTimeMillis();
-				
-				
-				pagerec = ADA.avoyager.get(pos);
-				if(pagerec!=null) {
-					mdtmp.expectedPos=pagerec.y;
-					mdtmp.expectedPosX=pagerec.x;
-	        		desiredScale=pagerec.scale;
-        		}else {
-        			mdtmp.expectedPos=0;
-					mdtmp.expectedPosX=0;
-        		}
-				
+				mdtmp.mWebView.fromCombined=0;
 
 				ViewGroup someView = mdtmp.rl;
 				if(someView.getParent()!=a.webSingleholder) {
@@ -191,7 +237,10 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 					for(int i=a.webSingleholder.getChildCount()-1;i>=0;i--)
 					if(a.webSingleholder.getChildAt(i)!=someView) a.webSingleholder.removeViewAt(i);
 				}
-				
+
+				if(a.opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(mdtmp.tmpIsFlag)){
+					mdtmp.mWebView.setTag(R.drawable.voice_ic, false);
+				}
 				mdtmp.renderContentAt(desiredScale,Rgn,0,null, (int)(long) _combining_search_tree[ti].get(pos-idxCount));
 				mdtmp.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				mdtmp.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -251,7 +300,5 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
     	}
 		return low;
     }
-    
-   
-	
+
 }

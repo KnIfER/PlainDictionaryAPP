@@ -48,9 +48,9 @@
 	<string name="bookmarkL">Kirjanmerkkiluettelo ...</string>
 	<string name="f_scale_up">Fonttikoko ++</string>
 	<string name="f_scale_down">Fonttikoko - -</string>
-	<string name="background_color">Taustaväri:</string>
-	<string name="text_zoom">Teksti Zoom:</string>
-	<string name="case_insensitive_policy">Kirjainkoosta Policy:</string>
+	<string name="background_color">Taustaväri :</string>
+	<string name="text_zoom">Teksti Zoom :</string>
+	<string name="case_insensitive_policy">Kirjainkoosta Policy :</string>
 	<string name="remove_mode">Poista tila</string>
 	<string name="jump">Hypätä</string>
 	<string name="strict_mode">tiukka tila</string>

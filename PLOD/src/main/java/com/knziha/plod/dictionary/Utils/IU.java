@@ -187,5 +187,28 @@ the valueOf method.
         return ret;
     }
 
+	/**
+	 * 把阿拉伯数字转换为罗马数字
+	 *
+	 * @param number
+	 * @return
+	 */
+	public static String a2r(int number) {
+		String rNumber = "";
+		int[] aArray = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
+		String[] rArray = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X",
+				"IX", "V", "IV", "I" };
+		if (number < 1 || number > 3999) {
+			rNumber = "0x"+Integer.toHexString(number);
+		} else {
+			for (int i = 0; i < aArray.length; i++) {
+				while (number >= aArray[i]) {
+					rNumber += rArray[i];
+					number -= aArray[i];
+				}
+			}
+		}
+		return rNumber;
+	}
 
 }

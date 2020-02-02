@@ -49,9 +49,9 @@
 	<string name="bookmarkL">Lista de marcadores ...</string>
 	<string name="f_scale_up">Tamanho da fonte ++</string>
 	<string name="f_scale_down">Tamanho da fonte - -</string>
-	<string name="background_color">Cor de fundo:</string>
-	<string name="text_zoom">Texto Zoom:</string>
-	<string name="case_insensitive_policy">Caso Política Insensitive:</string>
+	<string name="background_color">Cor de fundo :</string>
+	<string name="text_zoom">Texto Zoom :</string>
+	<string name="case_insensitive_policy">Caso Política Insensitive :</string>
 	<string name="remove_mode">Remover Modo</string>
 	<string name="jump">Saltar</string>
 	<string name="strict_mode">modo estrito</string>
