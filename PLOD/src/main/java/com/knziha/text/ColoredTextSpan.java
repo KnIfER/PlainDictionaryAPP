@@ -9,7 +9,6 @@ import android.text.style.UpdateAppearance;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.R;
 
 import java.lang.reflect.InvocationTargetException;

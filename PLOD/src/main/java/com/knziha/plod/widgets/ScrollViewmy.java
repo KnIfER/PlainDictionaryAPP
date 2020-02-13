@@ -9,8 +9,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
 
-import androidx.annotation.NonNull;
-
 public class ScrollViewmy extends ScrollView {// for mute it's scroll
 	public SamsungLikeScrollBar scrollbar2guard;
     public static OnTouchListener dummyOntouch = new OnTouchListener() {

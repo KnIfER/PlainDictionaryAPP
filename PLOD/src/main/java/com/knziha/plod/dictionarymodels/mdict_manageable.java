@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionarymodels;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
@@ -10,11 +11,12 @@ import java.io.File;
 /** Transient object for managing dictionary lists. */
 public interface mdict_manageable {
 	String getPath();
-	public boolean moveFileTo(File newF);
+	boolean moveFileTo(Context c, File newF);
 	void unload();
 	Drawable getCover();
 	String getName();
 	int getTmpIsFlag();
+	@Deprecated
 	boolean getIsDedicatedFilter();
 	boolean isMddResource();
 	void setTmpIsFlag(int val);
@@ -24,7 +26,7 @@ public interface mdict_manageable {
 	void validifyValueForFlag(WebViewmy view, int val, int mask, int flagPosition, int processId);
 	PDICMainAppOptions getOpt();
 
-	boolean renameFileTo(File to);
+	boolean renameFileTo(Context c, File to);
 
 	boolean exists();
 

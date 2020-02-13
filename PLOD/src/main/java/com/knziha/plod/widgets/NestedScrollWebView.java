@@ -1,13 +1,11 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
-import android.webkit.WebView;
 import android.widget.OverScroller;
 
 import androidx.annotation.NonNull;

@@ -1,7 +1,9 @@
 package com.knziha.plod.dictionarymodels;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 
+import com.knziha.filepicker.utils.FU;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.PlaceHolder;
@@ -32,110 +34,113 @@ public class mdict_transient implements mdict_manageable {
 	List<mdictRes_prempter> mdd;
 
 	//构造
-	public mdict_transient(String fn, PDICMainAppOptions opt_) {
-		this(fn, opt_, 0);
+	public mdict_transient(Context a, String fn, PDICMainAppOptions opt_) {
+		this(a, fn, opt_, 0);
 	}
 
-	public mdict_transient(String fn, PDICMainAppOptions opt_, int isF) {
-		this(new PlaceHolder(fn), opt_);
+	public mdict_transient(Context a,String fn, PDICMainAppOptions opt_, int isF) {
+		this(a, new PlaceHolder(fn), opt_);
 		mPhI.tmpIsFlag=TIFStamp=isF;
 	}
 
-	public mdict_transient(PlaceHolder phI, PDICMainAppOptions opt_) {
+	public mdict_transient(Context a,PlaceHolder phI, PDICMainAppOptions opt_) {
 		opt=opt_;
 		mPhI = phI;
 		String fn = mPhI.getPath(opt);
 		f = new File(fn);
 		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
 		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
+
+		justifyInternal(a, "."+mPhI.name);
+		
 		try {
 			readInConfigs();
 		} catch (IOException ignored) { }
 		TIFStamp=mPhI.tmpIsFlag;
 	}
 
-	protected void readInConfigs() throws IOException {
-		String path = getPath();
-		if(path.endsWith(".web")){
-			Long ff = PDICMainAppOptions.ChangedMap.get(path);
-			FFStamp = firstFlag = ff==null?0:ff;
+	protected void justifyInternal(Context a, String dictionary_fName) {
+		String path = opt.pathToDatabases().append(_Dictionary_fName_Internal).toString();
+		File from = new File(path);
+		File to = new File( opt.pathToDatabases().append(_Dictionary_fName_Internal=dictionary_fName).toString());
+		//CMN.Log("移动??", from, to, from.exists());
+		if(from.exists()){
+			FU.move3(a, from, to);
 		}
-		else {
-			DataInputStream data_in1 = null;
-			try {
-				File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
-				if(SpecificationFile.exists()) {
-					long time=System.currentTimeMillis();
-					//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
-					data_in1 = new DataInputStream(new FileInputStream(SpecificationFile));
-					int size = data_in1.readShort();
-					if(size!=12) {
-						data_in1.close();
-						SpecificationFile.delete();
-						return;
-					}
-					byte _firstFlag = data_in1.readByte();
-					if(_firstFlag!=0){
-						firstFlag |= _firstFlag;
-					}
-					//readinoptions
-					//a.showT("getUseInternalBG():"+getUseInternalBG()+" getUseInternalFS():"+getUseInternalFS()+" KeycaseStrategy:"+KeycaseStrategy);
-					if(data_in1.available()>4) {
-//					bgColor = data_in1.readInt();
-//					internalScaleLevel = data_in1.readInt();
-//
-//
-//					lvPos = data_in1.readInt();
-//					lvClickPos = data_in1.readInt();
-//					lvPosOff = data_in1.readInt();
-//
-//					//CMN.Log(_Dictionary_fName+"列表位置",lvPos,lvClickPos,lvPosOff);
-//					if(data_in1.available()>0) {
-//						initArgs = new int[]{data_in1.readInt(), data_in1.readInt()}; //28
-//						webScale = data_in1.readFloat();//4
-//					}
-						if(data_in1.skipBytes(32)==32 && data_in1.available()>0) {
-							//CMN.Log("摄政傀儡");
-							firstFlag |= data_in1.readLong();
-						}
-					}
-
-					//CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
-
+	}
+	
+	protected void readInConfigs() throws IOException {
+		DataInputStream data_in1 = null;
+		try {
+			File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
+			if(SpecificationFile.exists()) {
+				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
+				data_in1 = new DataInputStream(new FileInputStream(SpecificationFile));
+				int size = data_in1.readShort();
+				if(size!=12) {
 					data_in1.close();
-					//CMN.Log(_Dictionary_fName+"单典配置加载耗时",System.currentTimeMillis()-time);
+					SpecificationFile.delete();
+					return;
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally{
-				FFStamp = firstFlag;
-				if(data_in1!=null) data_in1.close();
+				byte _firstFlag = data_in1.readByte();
+				if(_firstFlag!=0){
+					firstFlag |= _firstFlag;
+				}
+				//readinoptions
+				//a.showT("getUseInternalBG():"+getUseInternalBG()+" getUseInternalFS():"+getUseInternalFS()+" KeycaseStrategy:"+KeycaseStrategy);
+				if(data_in1.available()>4) {
+					if(data_in1.skipBytes(32)==32 && data_in1.available()>0) {
+						//CMN.Log("摄政傀儡");
+						firstFlag |= data_in1.readLong();
+					}
+				}
+				//CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
+				data_in1.close();
+				//CMN.Log(_Dictionary_fName+"单典配置加载耗时",System.currentTimeMillis()-time);
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			FFStamp = firstFlag;
+			if(data_in1!=null) data_in1.close();
 		}
 	}
 
 	@Override
-	public boolean moveFileTo(File newF) {
-		File fP = newF.getParentFile();
-		fP.mkdirs();
-		boolean ret = false;
-		//boolean pass = !f.exists();
-		if(fP.exists() && fP.isDirectory()) {
-			ret=true;
-			String filename = newF.getName();
-			mPhI.pathname = newF.getAbsolutePath();
+	public boolean renameFileTo(Context c, File to) {
+		if(FU.rename5(c, f, to)>=0) {
+			f = to;
+			String filename = to.getName();
+			mPhI.pathname = to.getPath();
 			mPhI.name = filename;
+			int tmpIdx = filename.length()-4;
+			if(tmpIdx>0){
+				if(filename.charAt(tmpIdx)=='.' && filename.regionMatches(true, tmpIdx+1, "md" ,0, 2)){
+					boolean isResourceFile = Character.toLowerCase(filename.charAt(tmpIdx + 3)) == 'd';
+					if(!isResourceFile){
+						mPhI.name = filename.substring(0, tmpIdx);
+					}
+				}
+			}
+			String _Dictionary_fName_InternalOld = _Dictionary_fName_Internal;
+			_Dictionary_fName_Internal = "."+mPhI.name;
+			new File(opt.pathToDatabases().append(_Dictionary_fName_InternalOld).toString()).renameTo(new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).toString()));
+			return true;
 		}
-		String _Dictionary_fName_InternalOld = _Dictionary_fName_Internal;
-		if(ret) {
-			f=newF;
-			String fn = newF.getAbsolutePath();
-			_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
-			_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
-		}
-		new File(opt.pathToDatabases().append(_Dictionary_fName_InternalOld).toString()).renameTo(new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).toString()));
+		return false;
+	}
 
-		return ret;
+	@Override
+	public boolean moveFileTo(Context c, File to) {
+		File fP = to.getParentFile();
+		fP.mkdirs();
+		int ret = FU.move3(c, f, to);
+		if(ret>=0) {
+			f=to;
+			mPhI.pathname = to.getPath();
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -164,6 +169,10 @@ public class mdict_transient implements mdict_manageable {
 	@Override
 	public boolean getIsDedicatedFilter() {
 		return (firstFlag & 0x40) == 0x40;
+	}
+
+	public boolean isMdictFile() {
+		return !mPhI.pathname.endsWith(mPhI.name);
 	}
 
 	@Override
@@ -196,8 +205,8 @@ public class mdict_transient implements mdict_manageable {
 			String path = getPath();
 			if(!path.endsWith(".web"))
 				WriteConfigFF();
-			if(opt.ChangedMap==null) opt.ChangedMap=new HashMap<>();
-			opt.ChangedMap.put(path, FFStamp=firstFlag);
+//			if(opt.ChangedMap==null) opt.ChangedMap=new HashMap<>();
+//			opt.ChangedMap.put(path, FFStamp=firstFlag);
 		}
 	}
 
@@ -233,11 +242,6 @@ public class mdict_transient implements mdict_manageable {
 	@Override
 	public PDICMainAppOptions getOpt() {
 		return opt;
-	}
-
-	@Override
-	public boolean renameFileTo(File to) {
-		return moveFileTo(to);
 	}
 
 	@Override

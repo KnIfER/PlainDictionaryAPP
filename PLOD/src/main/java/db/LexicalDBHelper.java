@@ -1,17 +1,16 @@
 package db;
 
-import java.io.File;
-
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
-import android.widget.Toast;
+
+import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
+
+import java.io.File;
 
 /**
  * Created by KnIfER on 2018/8/4.
@@ -19,10 +18,9 @@ import android.widget.Toast;
  */
 
 public class LexicalDBHelper extends SQLiteOpenHelper {
-    private final Context c;
-    
     public final String DATABASE;
-    private SQLiteDatabase database;
+	public boolean lastAdded;
+	private SQLiteDatabase database;
     public SQLiteDatabase getDB(){return database;}
     
     public static final String TABLE_MARKS = "t1";
@@ -31,33 +29,36 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
     public static final String Date = "date"; //路径
     
     public final String pathName;
-    
-    //构造s
-    public LexicalDBHelper(MainActivityUIBase context, String name) {
-        super(context, conduct(context.opt.pathToInternalDatabases().append(name).append(".sql").toString()), null, CMN.dbVersionCode);
+
+	/** 创建收藏夹数据库（从名称） */
+    public LexicalDBHelper(Context context, PDICMainAppOptions opt, String name) {
+        super(context, opt.pathToFavoriteDatabases().append(name).toString(), null, CMN.dbVersionCode);
         DATABASE=name;
-        c=context;
         database = getWritableDatabase();
         pathName = database.getPath();
         oldVersion=CMN.dbVersionCode;
+        prepareContain();
     }
 
-    static String conduct(String path){
-    	new File(path).getParentFile().mkdirs();
-    	//CMN.Log("path is ",new File(path).getParentFile());
-    	return path;
-    }
-
-	public LexicalDBHelper(MainActivityUIBase context, File file) {
+	/** 创建收藏夹数据库（从文件） */
+	public LexicalDBHelper(Context context, File file) {
         super(context, file.getAbsolutePath(), null, CMN.dbVersionCode);
         DATABASE=file.getName();
-        c=context;
         database = getWritableDatabase();
         pathName = database.getPath();
         oldVersion=CMN.dbVersionCode;
+		prepareContain();
 	}
 
-
+	/** 创建历史纪录数据库 */
+	public LexicalDBHelper(Context context, PDICMainAppOptions opt) {
+		super(context, opt.pathToInternalDatabases().append("history.sql").toString(), null, CMN.dbVersionCode);
+		DATABASE="history.sql";
+		database = getWritableDatabase();
+		pathName = database.getPath();
+		oldVersion=CMN.dbVersionCode;
+		prepareContain();
+	}
 
 	@Override
     public void onCreate(SQLiteDatabase db) {//第一次
@@ -71,54 +72,24 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
         db.execSQL(sqlBuilder.toString());
     }
 
-    
-    
-    
-    
-    
     @Override
     public void onUpgrade(SQLiteDatabase db, int _oldVersion, int newVersion) {
         //在setVersion前已经调用
         oldVersion=_oldVersion;
-        Toast.makeText(c,"编辑器：项目系统的数据库架构需要更新，请随便保存一个项目以更新",Toast.LENGTH_LONG).show();
         //Toast.makeText(c,oldVersion+":"+newVersion+":"+db.getVersion(),Toast.LENGTH_SHORT).show();
 
     }
+
     //lazy Upgrade
+	boolean isDirty=false;
     int oldVersion=1;
     @Override
     public void onOpen(SQLiteDatabase db) {
         db.setVersion(oldVersion);
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
-
-
-
-    
-    
     /////
-    
-    
-    
+
     public boolean contains(String id) {
 		//preparedSelectExecutor.clearBindings();
 		preparedSelectExecutor.bindString(1, ""+id);
@@ -129,8 +100,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		}catch(Exception e){}
 		return false;
 	}
-    
-	
+
 	public boolean containsRaw(String lex) {
      	boolean ret = false;
      	String sql = "select * from " + TABLE_MARKS + " where " + Key_ID + " = ? ";
@@ -139,6 +109,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
      	c.close();
 		return ret;
 	}
+
 	public boolean containsOld(String fn) {
      	boolean ret = false;
      	Cursor c = database.query(TABLE_MARKS, new String[]{Key_ID}, Key_ID + " = ? ", new String[] {fn}, null, null, null) ;
@@ -146,26 +117,29 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
      	c.close();
 		return ret;
 	}	
-	
-	boolean isDirty=false;
+
 	public long insert(String lex) {
 		isDirty=true;
+		lastAdded=true;
 		ContentValues values = new ContentValues();
 		values.put(Key_ID, lex);
 		values.put(Date, System.currentTimeMillis());
 		return database.insert(TABLE_MARKS, null, values);
 	}
+
 	public int remove(String id) {
 		return database.delete(TABLE_MARKS, Key_ID + " = ? ", new String[]{id});
 	}
+
 	public void refresh() {
 		preparedSelectExecutor.close();
 		if(isDirty) {
 			//database.execSQL("CREATE UNIQUE INDEX idxmy ON "+TABLE_MDXES+" ("+NAME+"); ");
 		}
 	}
+
 	public long insertUpdate (String lex) {
-		prepareContain();
+		lastAdded=true;
 		long ret=-1;
 		if(!contains(lex)) {
 			ret = insert(lex);
@@ -178,13 +152,12 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	}
 	
 	SQLiteStatement preparedSelectExecutor;
-	public void prepareContain() {
+	private void prepareContain() {
 		if(preparedSelectExecutor==null) {
 	     	String sql = "select * from " + TABLE_MARKS + " where " + Key_ID + " = ? ";
 			preparedSelectExecutor = database.compileStatement(sql);
 		}
 	}
-
 
 	public long updateBookMark(String key){
 		StringBuilder sqlBuilder = new StringBuilder("create table if not exists ")
@@ -203,7 +176,6 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
         
         return database.insert("b", null, cv);
 	}
-
 
 	public String getLastBookMark() {
 		try {
@@ -224,10 +196,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			preparedSelectExecutor.close();
 	}
 
-
-	public boolean isFileExsits() {
-		return new File(pathName).exists();
+	public boolean wipeData() {
+		return database.delete(TABLE_MARKS, null, null)>0;
 	}
-	
-
 }

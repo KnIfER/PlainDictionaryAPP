@@ -12,10 +12,8 @@ import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionarymodels.mdict;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @SuppressLint("SetTextI18n")
 public class FullSearchTask extends AsyncTask<String, Integer, String > {
@@ -119,7 +117,8 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 			cancel(true);
 		}
 		if(a.timer!=null) { a.timer.cancel(); a.timer=null; }
-		if(a.d!=null) a.d.dismiss();
+		if(a.taskd!=null) a.taskd.dismiss();
+		a.mAsyncTask=null;
 
 		if(a.isCombinedSearching){
 			a.adaptermy4.combining_search_result.invalidate();
@@ -129,13 +128,14 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 		a.show(R.string.fullfill
 				,(System.currentTimeMillis()-CMN.stst)*1.f/1000,a.adaptermy4.getCount());
 
-		a.fullSearchLayer.bakePattern(PDICMainAppOptions.getUseRegex2()?CurrentSearchText:CurrentSearchText.replace("*", ".+?"));
+		a.fullSearchLayer.bakePattern(CurrentSearchText, PDICMainAppOptions.getUseRegex2()?CurrentSearchText:CurrentSearchText.replace("*", ".+?"));
 		System.gc();
 		a.adaptermy4.ClearVOA();
 		a.adaptermy4.notifyDataSetChanged();
 		a.mlv2.setSelection(0);
+		//准备页内搜索
 		if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterFulltext())
-			a.prepareInPageSearch(a.fullSearchLayer.getBakedPatternStr(), true);
+			a.prepareInPageSearch(a.fullSearchLayer.getBakedPatternStr(PDICMainAppOptions.getUseRegex3()), true);
 		a.fullSearchLayer.currentThreads=null;
 	}
 

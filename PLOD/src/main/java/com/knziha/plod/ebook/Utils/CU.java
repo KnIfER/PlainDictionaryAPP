@@ -13,7 +13,6 @@ package com.knziha.plod.ebook.Utils;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.ebook.Utils.BU.MOBIHuffCdic;
 import com.knziha.plod.ebook.mobi.*;
-import com.knziha.plod.ebook.mobi.MOBIBuffer;
 
 public class CU {
 	/** 

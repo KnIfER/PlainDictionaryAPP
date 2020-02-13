@@ -101,7 +101,6 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 
-
 /**
  * **Mdict Java Library**<br/><br/>
  * <b>FEATURES</b>:<br/>
@@ -153,17 +152,7 @@ public class mdict extends mdBase{
 	public mdict(String fn) throws IOException {
 		super(fn);
 		if(_num_record_blocks==-1) return;
-		String filename = f.getName();
-		_Dictionary_fName = filename;
-		int tmpIdx = filename.length()-4;
-		if(tmpIdx>0){
-			if(filename.charAt(tmpIdx)=='.' && filename.regionMatches(true, tmpIdx+1, "md" ,0, 2)){
-				isResourceFile = Character.toLowerCase(filename.charAt(tmpIdx+3))=='d';
-				if(!isResourceFile){
-					_Dictionary_fName = filename.substring(0, tmpIdx);
-				}
-			}
-		}
+		calcFName();
 	}
 
 	protected mdict(mdict master, DataInputStream data_in, long _ReadOffset) throws IOException {
@@ -180,41 +169,7 @@ public class mdict extends mdBase{
 		// ![0] load options
 		ScanSettings();
 		// ![1] load mdds
-		String fnTMP = f.getName();
-		File p=f.getParentFile();
-		if(p!=null && _num_record_blocks>=0) {
-			String fname = fnTMP;
-			int idx = fnTMP.lastIndexOf(".");
-			if(idx!=-1){
-				fname=fnTMP.substring(0,idx);
-			}
-			if(!isResourceFile){
-				File f2 = new File(p.getAbsolutePath(), fname + ".0.txt");
-				if(f2.exists()){
-					ftd = new ArrayList<>();
-					try {
-						BufferedReader br = new BufferedReader(new FileReader(f2));
-						String line;
-						while((line=br.readLine())!=null){
-							handleDebugLines(line.trim());
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				f2 = new File(p.getAbsolutePath(), fname + ".mdd");
-				if (f2.exists()) {
-					mdd = new ArrayList<>();
-					mdd.add(new mdictRes(f2.getAbsolutePath()));
-					int cc = 1;
-					while ((f2 = new File(p.getAbsolutePath(), fname + "." + (cc++) + ".mdd")).exists()) {
-						mdd.add(new mdictRes(f2.getAbsolutePath()));
-					}
-				}
-				//if(_header_tag.containsKey("SharedMdd")) {
-				//}
-			}
-		}
+		loadInResourcesFiles(null);
 		calcFuzzySpace();
 		if(_header_tag.containsKey("hasSlavery")){
 			try {
@@ -833,7 +788,7 @@ public class mdict extends mdBase{
 	}
 
 
-	int split_recs_thread_number;
+	protected int split_recs_thread_number;
 	public void flowerFindAllContents(String key, int selfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException{
 		//SU.Log("Find In All Contents Stated");
 		byte[][][] matcher=null;
@@ -909,7 +864,6 @@ public class mdict extends mdBase{
 
 			Regex finalJoniregex = Joniregex;
 			byte[][][] finalMatcher = matcher;
-			String finalKey = key;
 			//Thread t;
 			//fixedThreadPool.add(t=new Thread(
 			fixedThreadPool.execute(
@@ -1250,7 +1204,7 @@ public class mdict extends mdBase{
 
 		public Object currentThreads;
 
-		protected ArrayList<ArrayList<Integer>[]> combining_search_tree;
+		public ArrayList<ArrayList<Integer>[]> combining_search_tree;
 
 		public abstract ArrayList<Integer>[] getCombinedTree(int DX);
 
@@ -1260,9 +1214,9 @@ public class mdict extends mdBase{
 
 		public abstract Pattern getBakedPattern();
 
-		public abstract void bakePattern(String currentSearchText);
+		public abstract void bakePattern(String plainPattern, String currentSearchText);
 
-		public abstract String getBakedPatternStr();
+		public abstract String getBakedPatternStr(boolean useInPageRegex);
 	}
 
 	public int thread_number,step,yuShu;
@@ -1498,7 +1452,7 @@ public class mdict extends mdBase{
 	/** *is 越级天才, i.e., super super genius leap */
 	HashSet<Integer> yueji = new HashSet<>();
 
-	int flowerIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][][] matchers,int marcherOffest, int fromIndex)
+	protected int flowerIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][][] matchers, int marcherOffest, int fromIndex)
 	{
 		int lastSeekLetSize=0;
 		while(fromIndex<sourceCount) {
@@ -1590,7 +1544,7 @@ public class mdict extends mdBase{
 	}
 
 	/** Disperse an search term into a 2D byte array. */
-	private byte[][] flowerSanLieZhi(String str) {
+	protected byte[][] flowerSanLieZhi(String str) {
 		miansi.clear();
 		yueji.clear();
 		int len=str.length();
@@ -2038,6 +1992,95 @@ public class mdict extends mdBase{
 	@Override
 	public String toString() {
 		return _Dictionary_fName+"("+hashCode()+")";
+	}
+
+	public void Rebase(File newPath) {
+		if(!f.equals(newPath)) {
+			String OldFName = _Dictionary_fName;
+			f = newPath;
+			calcFName();
+			HashSet<String> mddCon = new HashSet<>();
+			if(mdd!=null) {
+				for (mdictRes md : mdd) {
+					MoveOrRenameResourceLet(md, OldFName,_Dictionary_fName, newPath);
+					mddCon.add(md.getPath());
+				}
+			}
+			try {
+				loadInResourcesFiles(mddCon);
+			} catch (IOException ignored) {  }
+		}
+	}
+
+	protected void MoveOrRenameResourceLet(mdictRes md, String token, String pattern, File newPath) {
+		File f = md.f();
+		String tokee = f().getName();
+		if(tokee.startsWith(token) && tokee.charAt(Math.min(token.length(), tokee.length()))=='.'){
+			String suffix = tokee.substring(token.length());
+			String np = f.getParent();
+			File mnp;
+			if(np!=null && np.equals(np=newPath.getParent())){ //重命名
+				mnp=new File(np, pattern+suffix);
+			} else {
+				mnp=new File(np, f.getName());
+			}
+			if(mnp!=null && f.renameTo(mnp)){
+				md.Rebase(mnp);
+			}
+		}
+	}
+
+	private void loadInResourcesFiles(HashSet<String> mddCon) throws IOException {
+		if(!isResourceFile){
+			String fnTMP = f.getName();
+			File p=f.getParentFile();
+			if(p!=null && _num_record_blocks>=0) {
+				String fname = fnTMP;
+				int idx = fnTMP.lastIndexOf(".");
+				if(idx!=-1){
+					fname=fnTMP.substring(0,idx);
+				}
+				File f2 = new File(p.getAbsolutePath(), fname + ".0.txt");
+				if(f2.exists()){
+					ftd = new ArrayList<>();
+					try {
+						BufferedReader br = new BufferedReader(new FileReader(f2));
+						String line;
+						while((line=br.readLine())!=null){
+							handleDebugLines(line.trim());
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				f2 = new File(p.getAbsolutePath(), fname + ".mdd");
+				if (f2.exists() && (mddCon==null||!mddCon.contains(f2.getPath()))) {
+					mdd = new ArrayList<>();
+					mdd.add(new mdictRes(f2.getAbsolutePath()));
+					int cc = 1;
+					while ((f2 = new File(p.getAbsolutePath(), fname + "." + (cc++) + ".mdd")).exists()) {
+						if(mddCon==null||!mddCon.contains(f2.getPath()))
+							mdd.add(new mdictRes(f2.getAbsolutePath()));
+					}
+				}
+				//if(_header_tag.containsKey("SharedMdd")) {
+				//}
+			}
+		}
+	}
+
+	protected void calcFName() {
+		String filename = f.getName();
+		_Dictionary_fName = filename;
+		int tmpIdx = filename.length()-4;
+		if(tmpIdx>0){
+			if(filename.charAt(tmpIdx)=='.' && filename.regionMatches(true, tmpIdx+1, "md" ,0, 2)){
+				isResourceFile = Character.toLowerCase(filename.charAt(tmpIdx+3))=='d';
+				if(!isResourceFile){
+					_Dictionary_fName = filename.substring(0, tmpIdx);
+				}
+			}
+		}
 	}
 }
 

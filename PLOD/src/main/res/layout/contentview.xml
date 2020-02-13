@@ -95,54 +95,50 @@
 			android:background="@color/colorPrimary"
 			android:theme="@style/AppTheme"
 			android:gravity="center_vertical|fill_horizontal"
+			android:paddingStart="2dp"
+			android:paddingEnd="2dp"
 			>
 			<android.widget.ImageView
 				android:id="@+id/browser_widget7"
-				android:layout_width="wrap_content"
+				android:layout_width="0dp"
 				android:layout_height="match_parent"
 				android:layout_weight="1"
 				android:background="@drawable/surrtrip1"
-				android:clickable="true"
 				android:src="@drawable/back_ic" />
 			<android.widget.ImageView
 				android:id="@+id/browser_widget8"
-				android:layout_width="wrap_content"
+				android:layout_width="0dp"
 				android:layout_height="match_parent"
 				android:layout_weight="1"
 				android:background="@drawable/surrtrip1"
-				android:clickable="true"
 				android:src="@drawable/star_ic" />
 			<android.widget.ImageView
 				android:id="@+id/browser_widget9"
-				android:layout_width="wrap_content"
+				android:layout_width="0dp"
 				android:layout_height="match_parent"
 				android:layout_weight="1"
 				android:background="@drawable/surrtrip1"
-				android:clickable="true"
 				android:src="@drawable/list_ic" />
 			<android.widget.ImageView
 				android:id="@+id/browser_widget10"
-				android:layout_width="wrap_content"
+				android:layout_width="0dp"
 				android:layout_height="match_parent"
 				android:layout_weight="1"
 				android:background="@drawable/surrtrip1"
-				android:clickable="true"
 				android:src="@drawable/chevron_left" />
 			<android.widget.ImageView
 				android:id="@+id/browser_widget11"
-				android:layout_width="wrap_content"
+				android:layout_width="0dp"
 				android:layout_weight="1"
 				android:layout_height="match_parent"
 				android:background="@drawable/surrtrip1"
-				android:clickable="true"
 				android:src="@drawable/chevron_right" />
 			<android.widget.ImageView
 				android:id="@+id/browser_widget12"
-				android:layout_width="wrap_content"
+				android:layout_width="0dp"
 				android:layout_height="match_parent"
 				android:layout_weight="1"
 				android:background="@drawable/surrtrip1"
-				android:clickable="true"
 				android:src="@drawable/voice_ic"
 				/>
 

@@ -55,7 +55,7 @@ class ScrollingUtilities {
             constant = scrollPosState.rowHeight * scrollPosState.rowIndex;
         }
         scrollBarY = (int) getScrollPosition();
-        ViewCompat.setY(materialScrollBar.handleThumb, scrollBarY);
+        materialScrollBar.handleThumb.setY(scrollBarY);
         materialScrollBar.handleThumb.invalidate();
     }
 
@@ -77,8 +77,6 @@ class ScrollingUtilities {
     int getAvailableScrollBarHeight() {
         return materialScrollBar.getHeight() - materialScrollBar.handleThumb.getHeight();
     }
-
-    void scrollToPositionAtProgress(float touchFraction) {}
 
     int getAvailableScrollHeight() {
         int visibleHeight = materialScrollBar.getHeight();

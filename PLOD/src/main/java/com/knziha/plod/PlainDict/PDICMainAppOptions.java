@@ -27,7 +27,7 @@ public class PDICMainAppOptions
 {
 	public boolean isAudioPlaying;
 	public boolean isAudioActuallyPlaying;
-	public static HashMap<String, Long> ChangedMap;
+	//public static HashMap<String, Long> ChangedMap;
 	SharedPreferences reader2;
 	SharedPreferences defaultReader;
 	public static String locale;
@@ -43,7 +43,6 @@ public class PDICMainAppOptions
 	public String lastMdlibPath;
 	public String lastMdPlanName;
 	public boolean auto_seach_on_switch=true;
-	public String currFavoriteDBName;
 	protected boolean bShouldUseExternalBrowserApp=true;
 
 
@@ -54,7 +53,7 @@ public class PDICMainAppOptions
 		return reader2.edit();
 	}
 	public void putString(String key, String val) {
-		reader2.edit().putString(key, val).commit();
+		reader2.edit().putString(key, val).apply();
 	}
 	public String getString(String key) {
 		return reader2.getString(key, null);
@@ -76,11 +75,11 @@ public class PDICMainAppOptions
 		defaultReader.edit().putString("lastMdlibPath",lastMdlibPath).apply();
 	}
 	public String getCurrFavoriteDBName() {//currFavoriteDBName
-		return currFavoriteDBName=defaultReader.getString("CFDBN",null);
+		return defaultReader.getString("DB1",null);
 	}
 
 	public void putCurrFavoriteDBName(String name) {
-		defaultReader.edit().putString("CFDBN",currFavoriteDBName=name).apply();
+		defaultReader.edit().putString("DB1",name).apply();
 	}
 
 	public String getLastMdFn() {
@@ -605,7 +604,7 @@ public class PDICMainAppOptions
 		return SecondFlag;
 	}
 	private void putSecondFlag(long val) {
-		defaultReader.edit().putLong("MSF",SecondFlag=val).commit();
+		defaultReader.edit().putLong("MSF",SecondFlag=val).apply();
 	}
 	public void putSecondFlag() {
 		putFirstFlag(SecondFlag);
@@ -1819,6 +1818,90 @@ public class PDICMainAppOptions
 		return val;
 	}
 
+	public boolean getDatabaseRestoreListPosition() {
+		return (FourthFlag & 0x800l) == 0x800l;
+	}
+	public boolean setDatabaseRestoreListPosition(boolean val) {
+		updateQFAt(0x800l,val);
+		return val;
+	}
+
+	public boolean getDatabaseRestoreListPosition1() {
+		return (FourthFlag & 0x1000l) == 0x1000l;
+	}
+	public boolean setDatabaseRestoreListPosition1(boolean val) {
+		updateQFAt(0x1000l,val);
+		return val;
+	}
+
+	public boolean getDatabaseEnterAnimation() {
+		return (FourthFlag & 0x2000l) == 0x2000l;
+	}
+	public boolean setDatabaseEnterAnimation(boolean val) {
+		updateQFAt(0x2000l,val);
+		return val;
+	}
+
+	public boolean getDatabaseEnterAnimation1() {
+		return (FourthFlag & 0x4000l) == 0x4000l;
+	}
+	public boolean setDatabaseEnterAnimation1(boolean val) {
+		updateQFAt(0x4000l,val);
+		return val;
+	}
+
+	public boolean getDatabaseListUseVolumeKeyToNavigate() {
+		return (FourthFlag & 0x8000l) == 0x8000l;
+	}
+	public boolean setDatabaseListUseVolumeKeyToNavigate(boolean val) {
+		updateQFAt(0x8000l,val);
+		return val;
+	}
+
+	public boolean getDatabaseListUseVolumeKeyToNavigate1() {
+		return (FourthFlag & 0x10000l) == 0x10000l;
+	}
+	public boolean setDatabaseListUseVolumeKeyToNavigate1(boolean val) {
+		updateQFAt(0x10000l,val);
+		return val;
+	}
+
+	public boolean getDatabaseDelayPullData() {
+		return (FourthFlag & 0x20000l) == 0x20000l;
+	}
+	public boolean setDatabaseDelayPullData(boolean val) {
+		updateQFAt(0x20000l,val);
+		return val;
+	}
+
+	public boolean getDatabaseDelayPullData1() {
+		return (FourthFlag & 0x40000l) == 0x40000l;
+	}
+	public boolean setDatabaseDelayPullData1(boolean val) {
+		updateQFAt(0x40000l,val);
+		return val;
+	}
+
+	public static boolean getFloatClickHideToBackground() {
+		return (FourthFlag & 0x80000l) != 0x80000l;
+	}
+	public static boolean setFloatClickHideToBackground(boolean val) {
+		updateQFAt(0x80000l,!val);
+		return val;
+	}
+
+	public static boolean getSimpleMode() {
+		return (FourthFlag & 0x100000l) == 0x100000l;
+	}
+	public static boolean getSimpleMode(long FourthFlag) {
+		return (FourthFlag & 0x100000l) == 0x100000l;
+	}
+	public static boolean setSimpleMode(boolean val) {
+		updateQFAt(0x100000l,val);
+		return val;
+	}
+
+
 	///////
 	///////
 	public static void setTmpIsFlag(mdict mdTmp, int val) {
@@ -1951,6 +2034,9 @@ public class PDICMainAppOptions
 	}
 	public StringBuffer pathToInternalDatabases() {
 		return pathToMainFolder().append("INTERNAL/");
+	}
+	public StringBuffer pathToFavoriteDatabases() {
+		return pathToMainFolder().append("INTERNAL/").append("favorites/");
 	}
 	public StringBuffer pathToMainFolder() {
 		if(pathToL==-1) {

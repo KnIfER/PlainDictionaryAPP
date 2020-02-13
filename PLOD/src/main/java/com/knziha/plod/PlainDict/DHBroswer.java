@@ -6,88 +6,69 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.io.File;
-
-import db.LexicalDBHelper;
+import com.knziha.plod.dictionary.Utils.MyIntPair;
 
 public class DHBroswer extends DBroswer {
 	public DHBroswer(){
 		super();
 	}
 
-
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		//CMN.Log("onCreateViewonCreateView");
-		View ret = super.onCreateView(inflater, container, savedInstanceState);
-		main_clister_layout.findViewById(R.id.choosed).setVisibility(View.GONE);
-		main_clister_layout.findViewById(R.id.changed).setVisibility(View.GONE);
+		if(main_clister_layout!=null)
+			return main_clister_layout;
+		View _main_clister_layout = super.onCreateView(inflater, container, savedInstanceState);
+		_main_clister_layout.findViewById(R.id.choosed).setVisibility(View.GONE);
+		_main_clister_layout.findViewById(R.id.changed).setVisibility(View.GONE);
 		fastScroller.setBarColor(Color.parseColor("#2b4381"));
-		return ret;
-	}
-
-	@Override
-	public void onDetach(){
-		super.onDetach();
-		if(cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0) {
-			CMN.lastHisLexicalEntry = lm.findFirstVisibleItemPosition();
-			CMN.lastHisLexicalEntryOff = lv.getChildAt(0).getTop();
-		}else {
-			CMN.lastHisLexicalEntry=-1;
-			CMN.lastHisLexicalEntryOff = 0;
-		}
-
+		return main_clister_layout=_main_clister_layout;
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		PDICMainActivity a = (PDICMainActivity) getActivity();
-		mLexiDB = a.historyCon;
-		fastScroller.setHandleBackground(a.getResources().getDrawable(R.drawable.ghour));
-		lastChecked=0;
+		if(!initialized){
+			PDICMainActivity a = (PDICMainActivity) getActivity();
+			mLexiDB = a.prepareHistroyCon();
+			fastScroller.setHandleBackground(a.getResources().getDrawable(R.drawable.ghour));
+			lastChecked=0;
+		}
 		super.onActivityCreated(savedInstanceState);
 	}
 
-	@Override
-	protected void loadInDataBase(PDICMainActivity a) {
-		final File fi = new File(a.historyCon.pathName);
-		items.add(fi);
-	}
-
-	protected void loadInAll(File filename) {
-		mLexiDB = new LexicalDBHelper((MainActivityUIBase)getActivity(),filename);
+	protected void loadInAll(MainActivityUIBase a) {
 		cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
 		mCards_size = cr.getCount();
-
-		show(R.string.maniFavor2,boli(items.get(lastChecked).getName()),mCards_size);
+		itemCount = mCards_size;
+		//itemCount=Math.min(lastFirst, mCards_size);
+		//lv.post(mPullViewsRunnable);
+		int offset = 0;
+		lastFirst = 0;
+		if(true){
+			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
+			if(lcibdfn!=null){
+				lastFirst = Math.min(lcibdfn.key, mCards_size);
+				offset =  lcibdfn.value;
+			}
+		}
+		if(getDelayPullData()) {
+			itemCount = lastFirst;
+			lv.post(mPullViewsRunnable);
+		} else {
+			itemCount = mCards_size;
+		}
+		String name = CMN.unwrapDatabaseName(mLexiDB.DATABASE);
+		toolbar.setTitle(name);
+		show(R.string.maniFavor2,name,mCards_size);
 		mAdapter.notifyDataSetChanged();
-		lm.scrollToPositionWithOffset(lastFirst,CMN.lastHisLexicalEntryOff);
-
-		hideProgressBar();
+		lm.scrollToPositionWithOffset(lastFirst,offset);
 	}
-
-
-
-
 
 	@Override
 	public void toggleFavor() {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
-		String text = mCards.get(currentPos).name;
-		long time = mCards.get(currentPos).time;
-		if(text==null) {
-			cr.moveToPosition(currentPos);
-			try {
-				text=cr.getString(0);
-				time=cr.getLong(1);
-			} catch (Exception e) {
-				text="!!!Error: "+e.getLocalizedMessage();
-			}
-		}
-
-		a.favoriteCon.prepareContain();
-		if(a.favoriteCon.contains(text)) {//删除
+		String text = currentDisplaying;
+		if(a.prepareFavoriteCon().contains(text)) {//删除
 			a.favoriteCon.remove(text);
 			a.favoriteBtn.setImageResource(R.drawable.star_ic);
 			a.show(R.string.removed);
@@ -96,16 +77,13 @@ public class DHBroswer extends DBroswer {
 			a.favoriteBtn.setImageResource(R.drawable.star_ic_solid);
 			a.show(R.string.added);
 		}
-
-
 	}
 
 	@Override
 	public void processFavorite(int position,String key) {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
-		a.favoriteCon.prepareContain();
-		if(a.favoriteCon.contains(key)) {
+		if(a.prepareFavoriteCon().contains(key)) {
 			a.favoriteBtn.setImageResource(R.drawable.star_ic_solid);
 		}else
 			a.favoriteBtn.setImageResource(R.drawable.star_ic);

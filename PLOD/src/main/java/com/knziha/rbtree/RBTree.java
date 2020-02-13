@@ -131,39 +131,37 @@ public class RBTree<T extends Comparable<T>> {
     ///情况二///cur///情况一/
     private RBTNode<T> downwardNeighbour(RBTNode<T> du,T val) {
         int cmp;
-        RBTNode<T> x = du;
-        RBTNode<T> tmpnode = null;
+		RBTNode<T> tmpnode;
 
-        if (x==null)
+        if (du ==null)
             return null;
 
-        cmp = val.compareTo(x.key);
+        cmp = val.compareTo(du.key);
         if (cmp < 0)//情况一
-            return downwardNeighbour(x.left, val);
+            return downwardNeighbour(du.left, val);
         else// if (cmp >= 0)//情况二
         {
-            if(x.right==null ) return x;
-            tmpnode = downwardNeighbour(x.right, val);
-            if (tmpnode==null) return x;
+            if(du.right==null ) return du;
+            tmpnode = downwardNeighbour(du.right, val);
+            if (tmpnode==null) return du;
             else return tmpnode;
         }
     }
     protected RBTNode<T> downwardNeighbour_skipego(RBTNode<T> du, T val) {
         int cmp;
-        RBTNode<T> x = du;
-        RBTNode<T> tmpnode = null;
+		RBTNode<T> tmpnode;
 
-        if (x==null)
+        if (du ==null)
             return null;
 
-        cmp = val.compareTo(x.key);
+        cmp = val.compareTo(du.key);
         if (cmp <= 0)//情况一
-            return downwardNeighbour_skipego(x.left, val);
+            return downwardNeighbour_skipego(du.left, val);
         else// if (cmp >= 0)//情况二
         {
-            if(x.right==null ) return x;
-            tmpnode = downwardNeighbour_skipego(x.right, val);
-            if (tmpnode==null) return x;
+            if(du.right==null ) return du;
+            tmpnode = downwardNeighbour_skipego(du.right, val);
+            if (tmpnode==null) return du;
             else return tmpnode;
         }
     }
@@ -181,39 +179,37 @@ public class RBTree<T extends Comparable<T>> {
     ///情况一////cur///////情况二//
     private RBTNode<T> upwardNeighbour(RBTNode<T> du,T val) {
         int cmp;
-        RBTNode<T> x = du;
-        RBTNode<T> tmpnode = null;
+		RBTNode<T> tmpnode;
 
-        if (x==null)
+        if (du ==null)
             return null;
 
-        cmp = val.compareTo(x.key);
+        cmp = val.compareTo(du.key);
         if (cmp > 0)//情况一
-            return upwardNeighbour(x.right, val);
+            return upwardNeighbour(du.right, val);
         else// if (cmp =< 0)//情况二
         {
-            if(x.left==null ) return x;
-            tmpnode = upwardNeighbour(x.left, val);
-            if (tmpnode==null) return x;
+            if(du.left==null ) return du;
+            tmpnode = upwardNeighbour(du.left, val);
+            if (tmpnode==null) return du;
             else return tmpnode;
         }
     }
     protected RBTNode<T> upwardNeighbour_skipego(RBTNode<T> du,T val) {
         int cmp;
-        RBTNode<T> x = du;
-        RBTNode<T> tmpnode = null;
+		RBTNode<T> tmpnode;
 
-        if (x==null)
+        if (du ==null)
             return null;
 
-        cmp = val.compareTo(x.key);
+        cmp = val.compareTo(du.key);
         if (cmp >= 0)//情况一
-            return upwardNeighbour_skipego(x.right, val);
+            return upwardNeighbour_skipego(du.right, val);
         else// if (cmp =< 0)//情况二
         {
-            if(x.left==null ) return x;
-            tmpnode = upwardNeighbour_skipego(x.left, val);
-            if (tmpnode==null) return x;
+            if(du.left==null ) return du;
+            tmpnode = upwardNeighbour_skipego(du.left, val);
+            if (tmpnode==null) return du;
             else return tmpnode;
         }
     }

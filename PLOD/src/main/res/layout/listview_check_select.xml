@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="horizontal"
+	android:background="@drawable/activated_background_selector"
+	>
+	<CheckedTextView
+		tools:text="absolve"
+		android:id="@android:id/text1"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:minHeight="?attr/listPreferredItemHeightSmall"
+		android:textAppearance="?android:attr/textAppearanceMedium"
+		android:textColor="#000"
+		android:gravity="center_vertical"
+		android:paddingStart="@dimen/abc_select_dialog_padding_start_material"
+		android:paddingEnd="?attr/dialogPreferredPadding"
+		android:drawableStart="?android:attr/listChoiceIndicatorMultiple"
+		android:drawablePadding="20dp"
+		android:ellipsize="marquee"
+		android:checkMarkTint="@android:color/white"
+		android:checkMarkTintMode="src_in"
+		android:checked="false"
+		/>
+
+	<ImageView
+		android:id="@+id/ivDeleteText_ADA"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:src="@drawable/abc_ic_go_search_api_material"
+		android:tint="#000"
+		android:padding="6dp"
+		android:clickable="true"
+		android:layout_gravity="right"
+		/>
+</LinearLayout>
+

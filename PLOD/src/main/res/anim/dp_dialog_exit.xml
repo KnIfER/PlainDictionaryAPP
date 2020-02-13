@@ -7,7 +7,7 @@
 		/>-->
 
 	<scale
-		android:duration="240"
+		android:duration="200"
 		android:toXScale="0.85"
 		android:toYScale="0.85"
 		android:fromXScale="1"
@@ -17,7 +17,7 @@
 		/>
 
 	<alpha
-		android:duration="240"
+		android:duration="125"
 		android:fromAlpha="1"
 		android:toAlpha="0"
 		/>

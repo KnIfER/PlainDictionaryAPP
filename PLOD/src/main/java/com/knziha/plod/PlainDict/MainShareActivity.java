@@ -1,6 +1,8 @@
 package com.knziha.plod.PlainDict;
 
+import android.app.ActivityManager;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 
@@ -11,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class MainShareActivity extends AppCompatActivity {
 	private String debugString;
+	static ActivityManager.AppTask hiddenId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -23,17 +26,23 @@ public class MainShareActivity extends AppCompatActivity {
 	public void ProcessIntent(Intent intent) {
 		debugString=null;
 		if(intent!=null) {
-			String type = intent.getType();
-			if(type!=null)
-				if (type.contains("text/plain"))
-					debugString = intent.getStringExtra(Intent.EXTRA_TEXT);
+			debugString = intent.getStringExtra(Intent.EXTRA_TEXT);
 		}
 		if(debugString!=null){
 			PDICMainAppOptions opt = new PDICMainAppOptions(this);
 			opt.getSecondFlag();
 			int ShareTarget = PDICMainAppOptions.getShareTarget();
 			if(ShareTarget==3){//浮动搜索
-				startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", debugString));
+				//getApplicationContext().startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", debugString));
+				if (PDICMainAppOptions.getHideFloatFromRecent() && hiddenId!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					MainShareActivity.hiddenId.setExcludeFromRecents(false);
+				}
+				Intent popup = new Intent().setClassName("com.knziha.plod.plaindict", "com.knziha.plod.PlainDict.FloatActivitySearch").putExtra("EXTRA_QUERY", debugString);
+				//this, FloatActivitySearch.class
+				popup.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				popup.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+				CMN.Log("pop that way!");
+				getApplicationContext().startActivity(popup);
 			}else{//主程序
 				Intent newTask = new Intent(Intent.ACTION_MAIN);
 				newTask.setType(intent.getType());

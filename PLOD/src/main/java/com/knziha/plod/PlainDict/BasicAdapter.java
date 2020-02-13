@@ -1,15 +1,14 @@
 package com.knziha.plod.PlainDict;
 
-import com.knziha.plod.dictionarymodels.ScrollerRecord;
-import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
-
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
+
+import com.knziha.plod.dictionarymodels.ScrollerRecord;
+import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 
 public abstract class BasicAdapter extends BaseAdapter
     						implements OnItemClickListener

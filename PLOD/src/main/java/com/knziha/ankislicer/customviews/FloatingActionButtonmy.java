@@ -9,7 +9,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.view.View;
 
 

@@ -25,7 +25,8 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 	private List<mdict> md;
 	private int[] firstLookUpTable;
 	private int size=0;
-	
+	private boolean mShouldSaveHistory;
+
 	@Override
 	public void invalidate() {
 		if(md.size()==0)
@@ -176,6 +177,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			CMN.Log("!!! Error: lazy load error failed.");
 			return;
 		}
+		mShouldSaveHistory = !(mdtmp instanceof mdict_txt);
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-1];
 		int idxCount = 0;
@@ -249,7 +251,12 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			idxCount+=max;
 		}
 	};
-	
+
+	@Override
+	public boolean shouldSaveHistory() {
+		return mShouldSaveHistory;
+	}
+
 	@Override
 	public int size(){
 		return size;

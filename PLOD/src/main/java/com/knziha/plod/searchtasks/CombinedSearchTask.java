@@ -11,7 +11,6 @@ import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.rbtree.RBTree_additive;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;

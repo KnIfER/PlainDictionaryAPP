@@ -4,16 +4,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.ParcelFileDescriptor;
 
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.mdictRes;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 
 public class PdfPic {
 	final String path;

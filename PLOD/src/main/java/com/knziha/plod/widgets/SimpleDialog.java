@@ -10,7 +10,6 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.Toastable_Activity;
 
 public class SimpleDialog extends Dialog {
@@ -48,11 +47,6 @@ public class SimpleDialog extends Dialog {
 		if(mBCL!=null && mBCL.onKeyDown(keyCode, event))
 			return true;
 		return super.onKeyDown(keyCode, event);
-	}
-
-	@Override
-	protected void onStart() {
-		super.onStart();
 	}
 
 	@Override

@@ -1,20 +1,15 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.GravityCompat;
 
 
 import com.knziha.plod.PlainDict.CMN;
-
-import java.util.ArrayList;
 
 public class DrawerLayoutmy extends androidx.drawerlayout.widget.DrawerLayout {
     public SamsungLikeScrollBar scrollbar2guard;

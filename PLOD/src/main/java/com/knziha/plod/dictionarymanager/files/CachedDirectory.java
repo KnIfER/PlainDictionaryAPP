@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 
 public class CachedDirectory extends File{

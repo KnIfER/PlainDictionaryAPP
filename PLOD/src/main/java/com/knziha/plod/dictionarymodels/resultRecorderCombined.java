@@ -6,9 +6,9 @@ import android.view.ViewGroup;
 import android.widget.ScrollView;
 
 import com.knziha.plod.PlainDict.BasicAdapter;
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
 
 import java.util.ArrayList;
@@ -19,9 +19,6 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	private List<additiveMyCpr1> data;
 	public List<additiveMyCpr1> list(){return data;}
 	private List<mdict> md;
-
-	@Override
-	public void invalidate() {}
 	
 	public resultRecorderCombined(MainActivityUIBase a, List<additiveMyCpr1> data_, List<mdict> md_){
 		super(a);
@@ -196,14 +193,15 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				mdtmp.mWebView.setTag(R.drawable.voice_ic, false);
 				checkReadEntry=false;
 			}
-			mdtmp.rl.setTag(toFind);
+			ViewGroup rl = mdtmp.rl;
+			WebViewmy mWebView = mdtmp.mWebView;
+			rl.setTag(toFind);
 			int frameAt=a.webholder.getChildCount();
 			frameAt=valueCount>frameAt?frameAt:valueCount;
-			if(mdtmp.rl.getParent()==null)
-				a.webholder.addView(mdtmp.rl,frameAt);
+			if(rl.getParent()==null)
+				a.webholder.addView(rl,frameAt);
 			//else
 			//	a.showT("yes: "+mdtmp.getPath());
-			mdtmp.rl.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 			//mdtmp.vll=vll;
 
 			/*//for debug usage
@@ -211,8 +209,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				mdtmp.mWebView.setLayerType(View.LAYER_TYPE_NONE, null);
 			*/
 			//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-			mdtmp.mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
-			mdtmp.mWebView.fromCombined=1;
+			mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
+			mWebView.fromCombined=1;
 			if(mdtmp instanceof mdict_web){
 				mdict_web webx = (mdict_web)mdtmp;
 				webx.searchKey = result.key;
@@ -220,10 +218,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 
 			mdtmp.renderContentAt(-1,toFind,frameAt,null, d);
 
-			mdtmp.mWebView.fromCombined=1;
-			if(false && mdtmp.mWebView.getVisibility()!=View.VISIBLE)
-				mdtmp.mWebView.setVisibility(View.VISIBLE);
-			//mdtmp.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+			mWebView.fromCombined=1;
 			valueCount++;
 		}
 		a.RecalibrateWebScrollbar(null);

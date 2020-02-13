@@ -51,6 +51,7 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 		init_number_info_preference(this, "share_target", PDICMainAppOptions.getShareTarget(), R.array.paste_target_info, null);
 		//init_switch_preference(this, "f_share_peruse", PDICMainAppOptions.getShareToPeruseModeWhenFocued(), null, null);
 		init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null);
+		init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null);
 		init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null);
 
 		findPreference("dev").setOnPreferenceClickListener(this);
@@ -158,6 +159,9 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 			break;
 			case "f_paste_peruse":
 				PDICMainAppOptions.setPasteToPeruseModeWhenFocued((Boolean) newValue);
+			break;
+			case "f_move_bg":
+				PDICMainAppOptions.setFloatClickHideToBackground((Boolean) newValue);
 			break;
 			case "f_hide_recent":
 				PDICMainAppOptions.setHideFloatFromRecent((Boolean) newValue);

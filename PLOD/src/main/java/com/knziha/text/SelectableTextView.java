@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 

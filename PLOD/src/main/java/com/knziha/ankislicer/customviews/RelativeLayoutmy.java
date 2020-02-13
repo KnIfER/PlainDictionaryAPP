@@ -1,8 +1,11 @@
 package com.knziha.ankislicer.customviews;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.RelativeLayout;
+
+import androidx.annotation.RequiresApi;
 
 /**
  * Created by KnIfER on 2018/3/30.
@@ -24,7 +27,8 @@ public class RelativeLayoutmy extends RelativeLayout {
         super(context, attrs, defStyleAttr);
     }
 
-    public RelativeLayoutmy(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+	public RelativeLayoutmy(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 

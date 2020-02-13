@@ -13,7 +13,6 @@
 	<string name="bookmarkup">书签已更新！</string>
 	<string name="bookmarkjumped">跳转至: %s</string>
 	<string name="bookmarkfailed">找不到书签: %s</string>
-	<string name="endr">到达端部</string>
 	<string name="cbflowersnstr">联合<![CDATA[<%1$s>]]> %2$d本，得 %3$d 项</string>
 	<string name="vbflowersnstr">分 %1$d 字，得  %2$d 项</string>
 	<string name="BGMSG"><![CDATA[正在为词典  <%1$s> 指定背景颜色…]]></string>
@@ -161,8 +160,8 @@
 	<string name="show_all_dictionaries">全部词典</string>
 	<string name="show_bookmark_add_button">书签添加按钮</string>
 	<string name="show_bookmark_delete_button">书签删除按钮</string>
-	<string name="auto_search_on_switch">切换词典时自动搜索</string>
-	<string name="show_fast_scroller">列表快速滚动条</string>
+	<string name="auto_search_on_switch">切换时搜索</string>
+	<string name="show_fast_scroller">快速滚动条</string>
 	<string name="reset_keyword">重置搜索词</string>
 	<string name="save_bookmark">保存书签</string>
 	<string name="hint_search_result">提示结果</string>

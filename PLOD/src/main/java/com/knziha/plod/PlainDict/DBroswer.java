@@ -14,23 +14,18 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -39,7 +34,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.util.Pair;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -53,22 +47,22 @@ import com.knziha.ankislicer.customviews.ShelfLinearLayout;
 import com.knziha.ankislicer.customviews.VerticalRecyclerViewFastScrollermy;
 import com.knziha.ankislicer.customviews.wahahaTextView;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.MyIntPair;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.ScrollViewmy;
+import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTNode;
 import com.knziha.rbtree.RashSet;
 import com.knziha.rbtree.additiveMyCpr1;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 
 import db.LexicalDBHelper;
 
@@ -76,12 +70,29 @@ import db.LexicalDBHelper;
 public class DBroswer extends Fragment implements
 		View.OnClickListener, OnLongClickListener{
 	public int pendingDBClickPos=-1;
-	ArrayList<File> items;
 	ViewGroup webviewHolder;
+	protected boolean initialized;
+	protected int itemCount;
+	protected Runnable mPullViewsRunnable = new Runnable() {
+		@Override
+		public void run() {
+			if(mCards_size>itemCount){
+				itemCount+=1;
+				mAdapter.notifyItemChanged(itemCount);
+				View lc = lv.getChildAt(lv.getChildCount()-2);
+				if(lc!=null && lc.getBottom()>=lv.getHeight()){
+					CMN.Log("停止拉取", ((MyViewHolder)lc.getTag()).webView.getText());
+					itemCount = mCards_size;
+				}
+				if(mCards_size>itemCount){
+					lv.postDelayed(mPullViewsRunnable, 15);
+				}
+			}
+		}
+	};
 
 	public DBroswer(){
 		super();
-		items = new ArrayList<>();
 		mAdapter = new main_list_Adapter();
 	}
 
@@ -95,10 +106,9 @@ public class DBroswer extends Fragment implements
 	main_list_Adapter mAdapter;
 
 	View main_clister_layout;
+	View progressBar;
 	ToggleButton tg2;
 	ImageView toolbar_action1;
-	ListView mDrawerList;
-	View listHolder;
 	Toolbar toolbar;
 	ShelfLinearLayout sideBar;
 	TextView counter;
@@ -111,7 +121,6 @@ public class DBroswer extends Fragment implements
 	public int StoragePolicy;
 	boolean isToDel = false;
 
-
 	LinearLayoutManager lm;
 	VerticalRecyclerViewFastScrollermy fastScroller;
 	ViewGroup snack_root;
@@ -119,8 +128,6 @@ public class DBroswer extends Fragment implements
 	SearchView searchView;
 	InputMethodManager imm;
 	private View bookmark;
-	//MainActivity a;
-
 
 	public int try_goBack(){
 		PDICMainActivity a = (PDICMainActivity) getActivity();
@@ -171,11 +178,6 @@ public class DBroswer extends Fragment implements
 
 			return 1;
 		}
-		if(listHolder.getVisibility()==View.VISIBLE) {
-			listHolder.setVisibility(View.GONE);
-			should_hide_cd1=false;
-			return 1;
-		}
 		if(inSearch) {
 			main_clister_layout.findViewById(R.id.search).performClick();
 			return 1;
@@ -189,13 +191,13 @@ public class DBroswer extends Fragment implements
 				switch(lastFallBackTarget) {
 					case SelectionMode_peruseview:
 						taregtID=R.id.tools001;
-						break;
+					break;
 					case SelectionMode_txtdropper:
 						taregtID=R.id.toolbar_action2;
-						break;
+					break;
 					case SelectionMode_pan:
 						taregtID=R.id.tools0;
-						break;
+					break;
 				}
 				if(taregtID!=0) {// taregtID=R.id.tools0;
 					View target = main_clister_layout.findViewById(taregtID);
@@ -216,20 +218,27 @@ public class DBroswer extends Fragment implements
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		main_clister_layout= inflater.inflate(R.layout.card_lister, container,false);
-
-		lv = main_clister_layout.findViewById(R.id.main_list);
-
-		snack_root = main_clister_layout.findViewById(R.id.snack_root);
-		fastScroller = main_clister_layout.findViewById(R.id.fast_scroller);
-		//bookMarker = (BookMarkView) main_clister_layout.findViewById(R.id.fast_scroller);
+		if(main_clister_layout!=null)
+			return main_clister_layout;
+		//CMN.Log("onCreateView!!!");
+		View _main_clister_layout= inflater.inflate(R.layout.card_lister, container,false);
+		progressBar = _main_clister_layout.findViewById(R.id.progress_bar);
+		progressBar.setVisibility(View.GONE);
+		lv = _main_clister_layout.findViewById(R.id.main_list);
+		snack_root = _main_clister_layout.findViewById(R.id.snack_root);
+		fastScroller = _main_clister_layout.findViewById(R.id.fast_scroller);
 		fastScroller.setRecyclerView(lv);
 		lv.addOnScrollListener(fastScroller.getOnScrollListener());
-
+		lv.setLayoutManager(lm = new LinearLayoutManager(inflater.getContext()));
 		lv.setAdapter(mAdapter);
 
-		mAdapter.setOnItemClickListener(mainClicker);
+		RecyclerView.RecycledViewPool pool = lv.getRecycledViewPool();
+		pool.setMaxRecycledViews(0,10);
+		for(int index =0;index < 10;index++) {
+			 pool.putRecycledView(mAdapter.createViewHolder(lv,0));
+		}
 
+		mAdapter.setOnItemClickListener(mainClicker);
 		mAdapter.setOnItemLongClickListener(new OnItemLongClickListener() {
 			int lastDragPos=-1;
 			@Override
@@ -238,7 +247,7 @@ public class DBroswer extends Fragment implements
 				((DragSelectRecyclerView)lv).setDragSelectActive(true, lastDragPos = position);
 				if(SelectionMode!=SelectionMode_select) {
 					int tmpVal = SelectionMode;
-					View target = main_clister_layout.findViewById(R.id.tools1);
+					View target = _main_clister_layout.findViewById(R.id.tools1);
 					target.setTag(false);
 					target.performClick();
 					lastFallBackTarget=tmpVal;
@@ -250,47 +259,47 @@ public class DBroswer extends Fragment implements
 				return true;
 			}});
 
-		toolbar_action1=main_clister_layout.findViewById(R.id.toolbar_action1);
+		toolbar_action1=_main_clister_layout.findViewById(R.id.toolbar_action1);
 		//toolbar_action1.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 		toolbar_action1.setOnClickListener(this);
 		toolbar_action1.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 
-
-		main_clister_layout.findViewById(R.id.tools0).setOnClickListener(this);
-		main_clister_layout.findViewById(R.id.tools001).setOnClickListener(this);
-		main_clister_layout.findViewById(R.id.toolbar_action2).setOnClickListener(this);
-		View select_cards = main_clister_layout.findViewById(R.id.tools1);
+		_main_clister_layout.findViewById(R.id.tools0).setOnClickListener(this);
+		_main_clister_layout.findViewById(R.id.tools001).setOnClickListener(this);
+		_main_clister_layout.findViewById(R.id.toolbar_action2).setOnClickListener(this);
+		View select_cards = _main_clister_layout.findViewById(R.id.tools1);
 		select_cards.setOnClickListener(this);
 		select_cards.setOnLongClickListener(this);
-		main_clister_layout.findViewById(R.id.tools3).setOnClickListener(this);
+		_main_clister_layout.findViewById(R.id.tools3).setOnClickListener(this);
 
+		_main_clister_layout.findViewById(R.id.choosed).setOnClickListener(this);
+		_main_clister_layout.findViewById(R.id.changed).setOnClickListener(this);
+		bookmark = _main_clister_layout.findViewById(R.id.bookmark);
+		bookmark.setOnClickListener(v -> onLongClick(_main_clister_layout.findViewById(R.id.bookmark0)));
+		_main_clister_layout.findViewById(R.id.search).setOnClickListener(this);
 
-
-		main_clister_layout.findViewById(R.id.choosed).setOnClickListener(this);
-		main_clister_layout.findViewById(R.id.changed).setOnClickListener(this);
-		bookmark = main_clister_layout.findViewById(R.id.bookmark);
-		bookmark.setOnClickListener(v -> onLongClick(main_clister_layout.findViewById(R.id.bookmark0)));
-		main_clister_layout.findViewById(R.id.search).setOnClickListener(this);
-
-		tg2 = main_clister_layout.findViewById(R.id.tg2);
+		tg2 = _main_clister_layout.findViewById(R.id.tg2);
 		tg2.setOnClickListener(checkViewOnClick);
 		tg2.setOnLongClickListener(this);
 		//main_clister_layout.findViewById(R.id.choosed).setOnLongClickListener(this);
 
+		_main_clister_layout.findViewById(R.id.browser_widget15).setOnClickListener(new Utils.DummyOnClick());
+		_main_clister_layout.findViewById(R.id.browser_widget14).setOnClickListener(this);
+		_main_clister_layout.findViewById(R.id.browser_widget13).setOnClickListener(this);
 
-
-		main_clister_layout.findViewById(R.id.browser_widget14).setOnClickListener(this);
-		main_clister_layout.findViewById(R.id.browser_widget13).setOnClickListener(this);
-
-		toolbar = main_clister_layout.findViewById(R.id.toolbar);
+		toolbar = _main_clister_layout.findViewById(R.id.toolbar);
 		//sideBarPopHolder = (Toolbar) main_clister_layout.findViewById(R.id.sideBarPopHolder);
 		toolbar.inflateMenu(R.menu.menu_search_view);
+		toolbar.setBackgroundColor(0xcc000000|(CMN.MainBackground&0xffffff));
 		Menu toolbarmenu = toolbar.getMenu();
 		MenuItem searchItem = toolbarmenu.getItem(0);
-		searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-		ImageView iv_submit = searchView.findViewById(R.id.search_go_btn);
-		//这样就可以修改图片了
-		iv_submit.setImageResource(R.drawable.enter);
+
+		searchView = (SearchView) searchItem.getActionView();
+
+		//ImageView iv_submit = searchView.findViewById(R.id.search_go_btn);
+		////这样就可以修改图片了
+		//iv_submit.setImageResource(R.drawable.ic_directions_black_24dp);//enter
+
 		searchView.setIconified(false);//设置searchView处于展开状态
 		searchView.onActionViewExpanded();// 当展开无输入内容的时候，没有关闭的图标
 		searchView.setIconifiedByDefault(false);//默认为true在框内，设置false则在框外
@@ -303,6 +312,7 @@ public class DBroswer extends Fragment implements
 				searchView.findViewById(R.id.submit_area).setVisibility(View.VISIBLE);
 			}, 50);
 		});
+
 		searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
@@ -328,31 +338,14 @@ public class DBroswer extends Fragment implements
 		});
 		searchView.clearFocus();
 
-		mDrawerList = main_clister_layout.findViewById(R.id.left_drawer);
-		listHolder = main_clister_layout.findViewById(R.id.listHolder);
-		listHolder.setOnTouchListener(new OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				last_listHolder_tt = System.currentTimeMillis();
-				listHolder.setVisibility(View.INVISIBLE);
-				revertage = should_hide_cd1 ?1:2;
-				should_hide_cd1=should_hide_cd2=false;
-				//counterHolder.setBackground(null);
-				shelfright.setBackgroundColor(Color.parseColor("#707070"));
-				return false;
-			}});
-		sideBar = main_clister_layout.findViewById(R.id.sideBar);
-		counter =  main_clister_layout.findViewById(R.id.counter);
+		sideBar = _main_clister_layout.findViewById(R.id.sideBar);
+		counter =  _main_clister_layout.findViewById(R.id.counter);
 		counter.setVisibility(View.GONE);
-		shelfright = main_clister_layout.findViewById(R.id.shelfright);
+		shelfright = _main_clister_layout.findViewById(R.id.shelfright);
 		newStart = true;
-		return main_clister_layout;
+		return main_clister_layout = _main_clister_layout;
 	}
 	boolean newStart;
-	@Override
-	public void onStart() {
-		super.onStart();
-	}
 
 	long last_listHolder_tt;
 	private OnClickListener checkViewOnClick = new OnClickListener() {
@@ -378,230 +371,174 @@ public class DBroswer extends Fragment implements
 
 	int lastChecked = 0;
 
-	private android.widget.AdapterView.OnItemClickListener chooseDeckListener = new ListView.OnItemClickListener() {
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			if(lastChecked!=position) {
-				File lf = items.get(lastChecked=position);
-				loadInAll(lf);
-				Selection.clear();
-				counter.setText(0 +"/"+mCards_size);
-			}
-			mDrawerList.setItemChecked(lastChecked, true);
-			//view.setSelected(true);
-			//mSettings.putLong("browser_deckIDSelected",mDeckIds[position]);
-
-		}},
-			changeDeckListener = new ListView.OnItemClickListener() {
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-					//if(lastChecked==position) return;
-					if(lastChecked!=-1)
-						mDrawerList.setItemChecked(lastChecked, true);//revert
-					else
-						mDrawerList.setItemChecked(position, false);//revert
-					if(Selection.size()==0) {
-						show(R.string.noseletion);
-						return;
-					}
-					new AlertDialog.Builder(getActivity())
-							.setMessage(getResources().getString(R.string.warn_move, Selection.size(),lastChecked!=-1?boli(items.get(lastChecked).getName()):"unknown",boli(items.get(position).getName())))
-							.setIcon(android.R.drawable.ic_dialog_alert)
-							.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-								PDICMainActivity a = (PDICMainActivity) getActivity();
-								if(a==null) return;
-								//final long[] ids = new long[l.size()];
-
-								String sql = "delete from t1 where lex = ? ";
-								SQLiteStatement preparedDeleteExecutor = mLexiDB.getDB().compileStatement(sql);
-								mLexiDB.getDB().beginTransaction();  //开启事务
-
-
-								LexicalDBHelper toDB = new LexicalDBHelper(a,items.get(position));
-								String sql2 = "insert into t1(lex, date) values(?,?)";
-								SQLiteStatement preparedInsertExecutor = toDB.getDB().compileStatement(sql2);
-								toDB.getDB().beginTransaction();  //开启事务
-
-								List delList = new ArrayList();
-								try {
-									for(int position1 :Selection) {//移动
-										String text;long time = 0;
-										ItemCard mItemcard = mCards.get(position1);
-										if(mItemcard==null) {
-											cr.moveToPosition(position1);
-											try {
-												text=cr.getString(0);
-												time=cr.getLong(1);
-											} catch (Exception e) {
-												text="!!!Error: "+e.getLocalizedMessage();
-											}
-										}else{
-											text=mItemcard.name;
-											time=mItemcard.time;
-										}
-
-										preparedDeleteExecutor.bindString(1, text);
-										if(preparedDeleteExecutor.executeUpdateDelete()!=-1) {
-											delList.add(position1);
-											mCards.remove(position1);
-											mCards_size--;
-										}
-
-										preparedInsertExecutor.bindString(1, text);
-										preparedInsertExecutor.bindLong(2, time);
-										preparedInsertExecutor.executeInsert();
-
-									}
-
-									Selection.removeAll(delList);
-									mAdapter.notifyDataSetChanged();
-
-									preparedDeleteExecutor.close();
-									preparedInsertExecutor.close();
-									mLexiDB.getDB().setTransactionSuccessful();  //控制回滚
-									toDB.getDB().setTransactionSuccessful();  //控制回滚
-								} catch (Exception e) {
-									e.printStackTrace();
-								} finally {
-									mLexiDB.getDB().endTransaction();  //事务提交
-									toDB.getDB().endTransaction();  //事务提交
-									toDB.close();
-								}
-
-
-
-								mAdapter.notifyDataSetChanged();
-								counter.setText(0 +"/"+mCards_size);
-								listHolder.setVisibility(View.INVISIBLE);
-								//mCol.remCards(ids);
-							}).show();
-				}
-
-			}
-					;
 	protected int mCards_size;
 	@Override
 	public void onDetach(){
 		super.onDetach();
 		if(cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0) {
-			CMN.lastFavorLexicalEntry = lm.findFirstVisibleItemPosition();
-			if(lv.getChildAt(0)!=null) CMN.lastFavorLexicalEntryOff = lv.getChildAt(0).getTop();
-		}else {
-			CMN.lastFavorLexicalEntry=-1;
-			CMN.lastFavorLexicalEntryOff = 0;
+			View v = lv.getChildAt(0);
+			((AgentApplication)getActivity().getApplication()).putLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE, lm.findFirstVisibleItemPosition(), v==null?0:v.getTop());
 		}
-		//CMN.show(CMN.lastFavorLexicalEntry);
 	}
 
-	protected void loadInAll(File filename) {
-		//new SearchCardsHandler().execute(lf);
-		mLexiDB = new LexicalDBHelper((MainActivityUIBase)getActivity(),filename);
+	private void rebuildCursor(MainActivityUIBase a) {
+		mCards.clear();
 		cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
 		mCards_size = cr.getCount();
-
-		show(R.string.maniFavor,boli(items.get(lastChecked).getName()),mCards_size);
+		//todo 记忆 lastFirst
+		int offset = 0;
+		lastFirst = 0;
+		if(true){
+			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
+			if(lcibdfn!=null){
+				lastFirst = Math.min(lcibdfn.key, mCards_size);
+				offset =  lcibdfn.value;
+			}
+		}
+		if(getDelayPullData()) {
+			itemCount = lastFirst;
+			lv.post(mPullViewsRunnable);
+		} else {
+			itemCount = mCards_size;
+		}
 		mAdapter.notifyDataSetChanged();
-		lm.scrollToPositionWithOffset(lastFirst,CMN.lastFavorLexicalEntryOff);
+		lm.scrollToPositionWithOffset(lastFirst,offset);
+		lm.setInitialPrefetchItemCount(10);
+	}
 
-		hideProgressBar();
+	protected void loadInAll(MainActivityUIBase a) {
+		mLexiDB = a.prepareFavoriteCon();
+		rebuildCursor(a);
+		String name = CMN.unwrapDatabaseName(mLexiDB.DATABASE);
+		toolbar.setTitle(name);
+		show(R.string.maniFavor,name,mCards_size);
+		progressBar.setVisibility(View.GONE);
+		mLexiDB.lastAdded = false;
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		PDICMainActivity a = (PDICMainActivity) getActivity();
-		opt = a.opt;
-		imm = a.imm;
 		super.onActivityCreated(savedInstanceState);
-
-		if(opt.getIsCombinedSearching()) {
-			toolbar_action1.setImageResource(R.drawable.ic_btn_multimode);
-		}
-
-		loadInDataBase(a);
-
-		//((DefaultItemAnimator) lv.getItemAnimator()).setSupportsChangeAnimations(false);//取消更新item时闪烁
-		lm = new LinearLayoutManager(a.getApplicationContext());
-		lv.setLayoutManager(lm);
-		fastScroller.setConservativeScroll(opt.getShelfStrictScroll());
-		if(opt.getScrollShown()) {
-			tg2.setChecked(true);
-			fastScroller.setVisibility(View.GONE);
-		}
-
-
-		mRestrictOnDeck = "";
-
-
-		wahahaTextView.mR=main_clister_layout.getRootView();
-
-
-		mDrawerList.setAdapter(new ArrayAdapter<File>(getActivity(),
-				R.layout.drawer_list_item, R.id.text1, items) {
-			@NonNull
-			@Override
-			public View getView(int position, View convertView,
-								@NonNull ViewGroup parent) {
-				View ret =  super.getView(position, convertView, parent);
-				TextView tv;
-				if(ret.getTag()==null)
-					ret.setTag(tv = ret.findViewById(R.id.text1));
-				else
-					tv = (TextView)ret.getTag();
-				String name = items.get(position).getName();
-				tv.setText(name.substring(0,name.length()-4));
-				return ret;
+		PDICMainActivity a = (PDICMainActivity) getActivity();
+		if(!initialized){
+			opt = a.opt;
+			imm = a.imm;
+			if(opt.getIsCombinedSearching()) {
+				toolbar_action1.setImageResource(R.drawable.ic_btn_multimode);
 			}
-		});
-		mDrawerList.setItemChecked(lastChecked,true);
-
-		loadInAll(items.get(lastChecked));
-
-
-		ColorMatrixColorFilter NEGATIVE = GlobalOptions.NEGATIVE;
-		final boolean inDark=a.AppWhite==Color.BLACK;
-		if(inDark) {
-			main_clister_layout.setBackgroundColor(Color.BLACK);
-			lv.setBackgroundColor(Color.BLACK);
-			for(int i=0;i<sideBar.getChildCount();i++) {
-				Drawable bg = sideBar.getChildAt(i).getBackground();
-				if(bg!=null)
-					bg.setColorFilter(NEGATIVE);
+			//((DefaultItemAnimator) lv.getItemAnimator()).setSupportsChangeAnimations(false);//取消更新item时闪烁
+			fastScroller.setConservativeScroll(opt.getShelfStrictScroll());
+			if(opt.getScrollShown()) {
+				tg2.setChecked(true);
+				fastScroller.setVisibility(View.GONE);
 			}
-			toolbar_action1.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-			toolbar_action1.getBackground().setColorFilter(NEGATIVE);
-			bookmark.getBackground().setColorFilter(NEGATIVE);
-			sideBar.setSCC(sideBar.ShelfDefaultGray=0xFF4F7FDF);
-			counter.setTextColor(Color.WHITE);
-		}else {
-			for(int i=0;i<sideBar.getChildCount();i++) {
-				Drawable bg = sideBar.getChildAt(i).getBackground();
-				if(bg!=null)
-					bg.setColorFilter(null);
+			mRestrictOnDeck = "";
+			wahahaTextView.mR=main_clister_layout.getRootView();
+			loadInAll(a);
+			ColorMatrixColorFilter NEGATIVE = GlobalOptions.NEGATIVE;
+			final boolean inDark=a.AppWhite==Color.BLACK;
+			if(inDark) {
+				main_clister_layout.setBackgroundColor(Color.BLACK);
+				lv.setBackgroundColor(Color.BLACK);
+				for(int i=0;i<sideBar.getChildCount();i++) {
+					Drawable bg = sideBar.getChildAt(i).getBackground();
+					if(bg!=null)
+						bg.setColorFilter(NEGATIVE);
+				}
+				toolbar_action1.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+				toolbar_action1.getBackground().setColorFilter(NEGATIVE);
+				bookmark.getBackground().setColorFilter(NEGATIVE);
+				sideBar.setSCC(sideBar.ShelfDefaultGray=0xFF4F7FDF);
+				counter.setTextColor(Color.WHITE);
 			}
-			bookmark.getBackground().setColorFilter(null);
+			else {
+				for(int i=0;i<sideBar.getChildCount();i++) {
+					Drawable bg = sideBar.getChildAt(i).getBackground();
+					if(bg!=null)
+						bg.setColorFilter(null);
+				}
+				bookmark.getBackground().setColorFilter(null);
+			}
+			SelectionMode = opt.getDBMode();
+			main_clister_layout.post(() -> sideBar.setRbyPos(opt.getDBMode()));
+			if(opt.getDBMode()==3 && opt.getInRemoveMode()) {
+				sideBar.setSCC(opt.getInRemoveMode()?getResources().getColor(R.color.ShallowHeaderBlue):sideBar.ShelfDefaultGray);
+			}
+			if(pendingDBClickPos!=-1){
+				mainClicker.onItemClick(null, pendingDBClickPos);
+				pendingDBClickPos=-1;
+			}
+			initialized = true;
 		}
-		SelectionMode = opt.getDBMode();
-		main_clister_layout.post(() -> sideBar.setRbyPos(opt.getDBMode()));
-		if(opt.getDBMode()==3 && opt.getInRemoveMode()) {
-			sideBar.setSCC(opt.getInRemoveMode()?getResources().getColor(R.color.ShallowHeaderBlue):sideBar.ShelfDefaultGray);
-		}
-
-		if(pendingDBClickPos!=-1){
-			mainClicker.onItemClick(null, pendingDBClickPos);
-			pendingDBClickPos=-1;
+		else{
+			boolean pull = mLexiDB==null || getAutoRefreshOnAttach() && mLexiDB.lastAdded
+					|| /*保证一致性*/ getFragmentId()==1 && a.favoriteCon!=mLexiDB;
+			if(pull)
+				loadInAll(a);
 		}
 	}
 
-	protected void loadInDataBase(PDICMainActivity a) {
-		final File fi = new File(a.favoriteCon.pathName);
-		new File(opt.pathToInternalDatabases().append("favorites/").toString()).listFiles(pathname -> {
-			if(pathname.getName().toLowerCase().endsWith(".sql") || pathname.getName().toLowerCase().endsWith(".sql.db")) {//MIMU will add db suffix
-				items.add(pathname);
-				if(pathname.equals(fi))
-					lastChecked = items.size()-1;
-			}
-			return false;
-		});
+	protected boolean getAutoRefreshOnAttach() {
+		return true;
+	}
+
+	public void moveSelectedardsToDataBase(LexicalDBHelper toDB) {
+		if(Selection.size()==0) {
+			show(R.string.noseletion);
+			return;
+		}
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
+		if(a==null) return;
+		new AlertDialog.Builder(a)
+			.setMessage(getResources().getString(R.string.warn_move, Selection.size(),CMN.unwrapDatabaseName(a.favoriteCon.DATABASE),CMN.unwrapDatabaseName(toDB.DATABASE)))
+			.setIcon(android.R.drawable.ic_dialog_alert)
+			.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+				//final long[] ids = new long[l.size()];
+				String sql = "delete from t1 where lex = ? ";
+				SQLiteStatement preparedDeleteExecutor = mLexiDB.getDB().compileStatement(sql);
+				mLexiDB.getDB().beginTransaction();  //开启事务
+
+				String sql2 = "insert into t1(lex, date) values(?,?)";
+				SQLiteStatement preparedInsertExecutor = toDB.getDB().compileStatement(sql2);
+				toDB.getDB().beginTransaction();  //开启事务
+				try {
+					for(int position1 :Selection) {//移动
+						String text;long time = 0;
+						ItemCard mItemcard = mCards.get(position1);
+						if(mItemcard==null) {
+							cr.moveToPosition(position1);
+							try {
+								text=cr.getString(0);
+								time=cr.getLong(1);
+							} catch (Exception e) {
+								text="!!!Error: "+e.getLocalizedMessage();
+							}
+						}else{
+							text=mItemcard.name;
+							time=mItemcard.time;
+						}
+						preparedInsertExecutor.bindString(1, text);
+						preparedInsertExecutor.bindLong(2, time);
+						if(preparedInsertExecutor.executeInsert()!=-1) {
+							preparedDeleteExecutor.bindString(1, text);
+							preparedDeleteExecutor.executeUpdateDelete();
+						}
+					}
+					Selection.clear();
+
+					preparedDeleteExecutor.close();
+					preparedInsertExecutor.close();
+					mLexiDB.getDB().setTransactionSuccessful();  //控制回滚
+					toDB.getDB().setTransactionSuccessful();  //控制回滚
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					mLexiDB.getDB().endTransaction();  //事务提交
+					toDB.getDB().endTransaction();  //事务提交
+				}
+				rebuildCursor(a);
+				counter.setText(0 +"/"+mCards_size);
+			}).show();
 	}
 
 	//for main list
@@ -620,7 +557,7 @@ public class DBroswer extends Fragment implements
 		@Override
 		public int getItemCount()
 		{
-			return mCards_size;
+			return getDelayPullData()?itemCount+1:itemCount;
 		}
 
 		private OnItemClickListener mOnItemClickListener;
@@ -629,7 +566,7 @@ public class DBroswer extends Fragment implements
 
 			@Override
 			public boolean onLongClick(View v) {
-				return mOnItemLongClickListener.onItemLongClick(v, (int) v.getTag());
+				return mOnItemLongClickListener.onItemLongClick(v, (Integer) v.getTag(R.id.position));
 			}};
 
 		//单机
@@ -654,14 +591,30 @@ public class DBroswer extends Fragment implements
 			//details on this bug:
 			//https://blog.csdn.net/huawuque183/article/details/78563977
 			//issue solved.
+			holder.itemView.setTag(holder);
 			holder.itemView.setOnLongClickListener(longClicker);
 			holder.p.setOnLongClickListener(longClicker);
 			return holder;
 		}
 
 		@Override
+		public int getItemViewType(int position) {
+			if(position==itemCount && getDelayPullData())
+				return 1;
+			return 0;
+		}
+
+		@Override
 		public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position)
 		{
+			holder.itemView.setTag(R.id.position, position);
+			holder.p.setTag(R.id.position, position);
+			if(position==itemCount && getDelayPullData()){
+				holder.itemView.getLayoutParams().height=-1;
+				holder.itemView.setVisibility(View.GONE);
+				return;
+			}
+			//if(true) return;
 			String text;long time = 0;
 			ItemCard mItemcard = mCards.get(position);
 			if(mItemcard==null) {
@@ -716,12 +669,10 @@ public class DBroswer extends Fragment implements
 				holder.p.setVisibility(View.GONE);
 			}
 			holder.p.setTag(position);
-			holder.itemView.setTag(position);
 		}
 
 		@Override
 		public void setSelected(int index, boolean selected) {
-			CMN.Log("setSelected");
 			boolean alreadyselected=Selection.contains(index);
 			boolean needUpdate = false;
 			if(opt.getInRemoveMode()) {//bIsInverseSelecting
@@ -761,7 +712,9 @@ public class DBroswer extends Fragment implements
 		//}
 	}
 
-
+	protected boolean getDelayPullData() {
+		return opt.getDatabaseDelayPullData();
+	}
 
 
 	public interface OnItemClickListener{
@@ -783,73 +736,6 @@ public class DBroswer extends Fragment implements
 			webView.setTextIsSelectable(true);
 		}
 	}
-
-	public void showProgressBar() {
-		ProgressBar progressBar = main_clister_layout.findViewById(R.id.progress_bar);
-		if (progressBar != null) {
-			progressBar.setVisibility(View.VISIBLE);
-		}
-	}
-	public void hideProgressBar() {
-		ProgressBar progressBar = main_clister_layout.findViewById(R.id.progress_bar);
-		if (progressBar != null) {
-			progressBar.setVisibility(View.GONE);
-		}
-	}
-
-	public class SearchCardsHandler extends AsyncTask<File,Integer,ArrayList>{
-		SearchCardsHandler(){
-		}
-
-		@Override
-		protected ArrayList doInBackground(File... files) {
-			PDICMainActivity a = (PDICMainActivity) getActivity();
-			if(a==null) return null;
-			mLexiDB = new LexicalDBHelper(a,files[0]);
-
-			Cursor c = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
-
-			lastFirst = 0;
-
-			ArrayList<Pair<String, Integer>> mc = new ArrayList<>();
-			while(c.moveToNext()) {
-				String tmp = c.getString(0);
-				mc.add(0,new Pair(tmp,c.getLong(1)));
-				if(lastFirst==0)
-					if(tmp.equals(CMN.lastFavorLexicalEntry))
-						lastFirst = mc.size();
-			}
-			if(lastFirst!=0)
-				lastFirst = mc.size() - lastFirst;
-			return mc;
-		}
-
-		@Override
-		public void onProgressUpdate(Integer... values) {}
-
-
-		@Override
-		public void onPreExecute() {
-			showProgressBar();
-		}
-
-
-		@Override
-		public void onPostExecute(ArrayList result) {
-			//mCards = result;
-			Log.i("","CardBrowser:: Completed doInBackgroundSearchCards Successfuly");
-			hideProgressBar();
-			if(items.size()>0)
-				show(R.string.maniFavor,boli(items.get(lastChecked).getName()), mCards.size());
-			mAdapter.notifyDataSetChanged();
-			lm.scrollToPositionWithOffset(lastFirst, CMN.lastFavorLexicalEntryOff);
-		}
-
-		@Override
-		public void onCancelled(){
-			Log.i("","doInBackgroundSearchCards onCancelled() called");
-		}
-	};
 
 	RashSet<Integer> mSearchResTree = new RashSet<>();
 
@@ -891,13 +777,13 @@ public class DBroswer extends Fragment implements
 
 		@Override
 		public void onPreExecute() {
-			showProgressBar();
+			progressBar.setVisibility(View.VISIBLE);
 		}
 
 
 		@Override
 		public void onPostExecute(Void result) {
-			hideProgressBar();
+			progressBar.setVisibility(View.GONE);
 			if(mSearchResTree.getRoot()!=null)
 				lm.scrollToPositionWithOffset(mSearchResTree.minimum(), toolbar.getHeight());
 			fastScroller.setTree(mSearchResTree);
@@ -929,6 +815,7 @@ public class DBroswer extends Fragment implements
 	boolean should_hide_cd1,should_hide_cd2;
 	private boolean isDirty;
 	/*hide/show system by a God*/
+	//click
 	@Override
 	public void onClick(final View v) {
 		int pos;
@@ -1083,35 +970,20 @@ public class DBroswer extends Fragment implements
 						}).show();
 				d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
 				break;
-			case R.id.choosed://choose deck
+			case R.id.choosed:{//choose deck
 				if(System.currentTimeMillis()-last_listHolder_tt<150 && revertage==1) {//too fast from last hide
 					should_hide_cd1=true;
 				}
-				mDrawerList.setOnItemClickListener(chooseDeckListener);
-				listHolder.setVisibility((listHolder.getVisibility()!=View.VISIBLE && !should_hide_cd1)?View.VISIBLE:View.GONE);
-				should_hide_cd1 = listHolder.getVisibility()==View.VISIBLE;
-				if(should_hide_cd1) {
-					should_hide_cd2=false;
-					//counterHolder.setBackground(null);
-					shelfright.setBackgroundColor(Color.parseColor("#707070"));
-				}
-				break;
-			case R.id.changed://change deck
+				MainActivityUIBase a = (MainActivityUIBase) getActivity();
+				a.showChooseFavorDialog(1);
+			} break;
+			case R.id.changed:{//change deck
 				if(System.currentTimeMillis()-last_listHolder_tt<150 && revertage==2) {//too fast from last hide
 					should_hide_cd2=true;
 				}
-				mDrawerList.setOnItemClickListener(changeDeckListener);
-				listHolder.setVisibility((listHolder.getVisibility()!=View.VISIBLE && !should_hide_cd2)?View.VISIBLE:View.GONE);
-				should_hide_cd2 = listHolder.getVisibility()==View.VISIBLE;
-				if(should_hide_cd2) {
-					should_hide_cd1=false;
-					//counterHolder.setBackground(getResources().getDrawable(R.drawable.movec2));
-					shelfright.setBackgroundColor(Color.parseColor("#ff0000"));
-				}else {
-					//counterHolder.setBackground(null);
-					shelfright.setBackgroundColor(Color.parseColor("#707070"));
-				}
-				break;
+				MainActivityUIBase a = (MainActivityUIBase) getActivity();
+				a.showChooseFavorDialog(2);
+			} break;
 			case R.id.search:
 				toolbar.setVisibility(toolbar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
 				if(toolbar.getVisibility()==View.VISIBLE) {
@@ -1131,7 +1003,7 @@ public class DBroswer extends Fragment implements
 					lv.scrollBy(0, +toolbar.getHeight());
 					RBTNode<Integer> searchTmp = mSearchResTree.xxing_samsara(lm.findFirstVisibleItemPosition());
 					if(searchTmp==null) {
-						show(R.string.endr);
+						show(R.string.endendr);
 						lv.scrollBy(0, -toolbar.getHeight());
 						break;
 					}
@@ -1147,7 +1019,7 @@ public class DBroswer extends Fragment implements
 				}
 				pos = lm.findFirstVisibleItemPosition()-1;
 				if(pos<0) {
-					show(R.string.endr);
+					show(R.string.endendr);
 				}else
 					lm.scrollToPositionWithOffset(pos,offset);
 				break;
@@ -1158,7 +1030,7 @@ public class DBroswer extends Fragment implements
 					lv.scrollBy(0, +toolbar.getHeight());
 					RBTNode<Integer> searchTmp1 = mSearchResTree.sxing_samsara(lm.findFirstVisibleItemPosition());
 					if(searchTmp1==null) {
-						show(R.string.endr);
+						show(R.string.endendr);
 						lv.scrollBy(0, -toolbar.getHeight());
 						break;
 					}
@@ -1174,7 +1046,7 @@ public class DBroswer extends Fragment implements
 				}
 				pos = lm.findFirstVisibleItemPosition()+1;
 				if(pos>=mAdapter.getItemCount()) {
-					show(R.string.endr);
+					show(R.string.endendr);
 				}else
 					lm.scrollToPositionWithOffset(pos,offset);
 				break;
@@ -1418,10 +1290,6 @@ public class DBroswer extends Fragment implements
 		toastV.setVisibility(View.VISIBLE);
 		toastTv.setText(text);
 		toastTv.startAnimation(fadeAnima);
-	}
-	String boli(String name) {
-		int ln = name.length();
-		return name.substring(0,ln-4);
 	}
 
 	public final SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
@@ -1725,7 +1593,7 @@ public class DBroswer extends Fragment implements
 				case SelectionMode_txtdropper:{
 					a.lastEtString=a.etSearch.getText().toString();
 					a.etSearch.setText(currentDisplaying);
-					a.etSearch_ToToolbarMode(4);
+					a.etSearch_ToToolbarMode(2);
 					a.getSupportFragmentManager().beginTransaction().remove(DBroswer.this).commit();
 					a.DBrowser=null;
 					if(isDirty) {

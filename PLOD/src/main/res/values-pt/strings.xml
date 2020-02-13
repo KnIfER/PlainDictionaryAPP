@@ -71,7 +71,7 @@
 	<string name="PT1">Página Ligar</string>
 	<string name="PT2">Página Desligar</string>
 	<string name="fc">Encontrado item (s) %d .</string>
-	<string name="maniFavor"> %1$S (% 2 $ itens d) recolha</string>
+	<string name="maniFavor"> %1$s (%2$ itens)</string>
 	<string name="maniFavor2"> %1$S ( %2$s ) memórias</string>
 	<string name="currFavor">Actual coleção: %s </string>
 	<string name="resCount">itens de pesquisa feito!% Encontrado s</string>

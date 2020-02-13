@@ -9,7 +9,6 @@ import java.util.Locale;
 
 import android.Manifest;
 import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -21,7 +20,6 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -36,19 +34,15 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.SimpleTextNotifier;
-import com.knziha.plod.widgets.SplitView;
 
 public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
@@ -288,11 +282,11 @@ public class Toastable_Activity extends AppCompatActivity {
 				for(File mf:fs) {
 					if(!mf.isDirectory()) {
 						String fn=mf.getName();
-						if(fn.indexOf(".")==-1)
+						if(!fn.contains("."))
 						try {
 							trialCount=Integer.valueOf(fn);
 							break;
-						}catch(NumberFormatException e){}
+						}catch(NumberFormatException ignored){}
 					}
 				}
 			}

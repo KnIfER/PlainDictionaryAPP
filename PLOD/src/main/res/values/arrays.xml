@@ -184,6 +184,9 @@
 		<item>页内搜索</item>
 		<item>黑暗模式</item>
 		<item>文本可选择</item>
+		<item>记忆页面位置</item>
+		<item>允许滑动翻页</item>
+		<item>动态搜索词</item>
 	</string-array>
 
     <string-array name="sound_spec">

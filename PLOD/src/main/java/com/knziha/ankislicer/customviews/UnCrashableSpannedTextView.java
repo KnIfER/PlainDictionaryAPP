@@ -2,9 +2,12 @@ package com.knziha.ankislicer.customviews;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.TextView;
+
+import androidx.annotation.RequiresApi;
 
 public class UnCrashableSpannedTextView extends TextView {  
     public UnCrashableSpannedTextView(Context context) {  
@@ -22,7 +25,8 @@ public class UnCrashableSpannedTextView extends TextView {
         super(context, attrs, defStyleAttr);  
         init(context);  
     }  
-    public UnCrashableSpannedTextView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+	public UnCrashableSpannedTextView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 	}
 

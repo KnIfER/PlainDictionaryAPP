@@ -11,6 +11,9 @@ import android.graphics.drawable.Drawable;
 
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.widget.ImageViewCompat;
 
 import android.util.AttributeSet;
 
@@ -56,7 +59,7 @@ public class SwitchCompatmy extends SwitchCompat {
 		if(mHintDrawable!=null) {
 			mHintDrawable=mHintDrawable.mutate();
 			resizeHintDrawable();
-			mHintDrawable.setTint(CMN.ShallowHeaderBlue);
+			DrawableCompat.setTint(mHintDrawable, CMN.ShallowHeaderBlue);
 		}
 	}
 
@@ -69,7 +72,7 @@ public class SwitchCompatmy extends SwitchCompat {
 			int b=getPaddingTop();
 			int a=getPaddingLeft()+(checked?mHintLeftPadding:(-mHintLeftPadding+getWidth()/2));
 			resizeHintDrawable();
-			mHintDrawable.setTint(checked?Color.WHITE:CMN.ShallowHeaderBlue);
+			 DrawableCompat.setTint(mHintDrawable, checked?Color.WHITE:CMN.ShallowHeaderBlue);
 		 }
 	}
 	 

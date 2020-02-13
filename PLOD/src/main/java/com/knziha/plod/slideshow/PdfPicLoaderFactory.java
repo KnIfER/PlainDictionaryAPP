@@ -8,8 +8,6 @@ import com.bumptech.glide.load.model.ModelLoader;
 import com.bumptech.glide.load.model.ModelLoaderFactory;
 import com.bumptech.glide.load.model.MultiModelLoaderFactory;
 
-import java.io.InputStream;
-
 public class PdfPicLoaderFactory implements ModelLoaderFactory<PdfPic, Bitmap> {
 
 	@NonNull

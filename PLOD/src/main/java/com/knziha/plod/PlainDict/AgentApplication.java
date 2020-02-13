@@ -5,26 +5,43 @@ import android.graphics.Bitmap;
 
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.utils.CMNF;
+import com.knziha.plod.dictionary.Utils.MyIntPair;
+import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict_manageable;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.slideshow.MddPic;
 import com.knziha.plod.slideshow.MddPicLoaderFactory;
 import com.knziha.plod.slideshow.PdfPic;
 import com.knziha.plod.slideshow.PdfPicLoaderFactory;
+import com.knziha.rbtree.RashMap;
 
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashMap;
+
+import db.LexicalDBHelper;
 
 public class AgentApplication extends Application {
+	/** transient */
 	public HashMap<String,mdict> mdict_cache = new HashMap<>();
+	/** per-dictionary configurations */
+	public LinkedHashMap<String,byte[]> UIProjects = new LinkedHashMap<>();
+	public HashSet<String> dirtyMap = new HashSet<>();
 	public PDICMainAppOptions opt;
 	public HashSet<String> mdlibsCon;
+	/** 控制所有实例只扫描一遍收藏夹 */
+	public boolean bNeedPullFavorites =true;
+	/** 退出全部实例时关闭、清理 */
+	ArrayList<MyPair<String, LexicalDBHelper>> AppDatabases = new ArrayList<>();
+	/** 退出全部实例时保留 */
+	HashSet<Integer> selectedPositions;
+	/** 退出全部实例时仍然保留 */
+	HashMap<String, MyIntPair> databaseConext = new HashMap<>();
+	/** 退出全部实例时关闭、清理 */
+	LexicalDBHelper historyCon;
 
 	static {
 		GlideCacheModule.mOnGlideRegistry =
@@ -53,8 +70,8 @@ public class AgentApplication extends Application {
 
 	public void clearNonsenses() {
 		mdict_cache=null;
-		opt=null;
 		mdlibsCon=null;
+		opt=null;
 	}
 
 	public char[] get4kCharBuff() {
@@ -64,5 +81,35 @@ public class AgentApplication extends Application {
 
 	public void set4kCharBuff(char[] cb) {
 		_4kCharBuff=new SoftReference<>(cb);
+	}
+
+	public HashSet<Integer> selectedPositions() {
+		return selectedPositions!=null?selectedPositions:(selectedPositions=new HashSet<>(AppDatabases.size()));
+	}
+
+	public MyIntPair getLastContextualIndexByDatabaseFileName(String database) {
+		return databaseConext.get(database);
+	}
+
+	public void putLastContextualIndexByDatabaseFileName(String database, int idx, int offset) {
+		MyIntPair val = databaseConext.get(database);
+		if(val!=null)
+			val.set(idx, offset);
+		else {
+			val = new MyIntPair(idx, offset);
+			databaseConext.put(database, val);
+		}
+	}
+
+	public void closeDataBases() {
+		//CMN.Log("关闭数据库");
+		LexicalDBHelper vI;
+		for(MyPair<String, LexicalDBHelper> itemI:AppDatabases){
+			vI = itemI.value;
+			if(vI!=null){
+				itemI.value=null;
+				vI.close();
+			}
+		}
 	}
 }

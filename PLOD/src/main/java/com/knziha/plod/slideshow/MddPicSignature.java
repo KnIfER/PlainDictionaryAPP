@@ -2,7 +2,6 @@ package com.knziha.plod.slideshow;
 
 import com.bumptech.glide.load.Key;
 
-import java.io.File;
 import java.security.MessageDigest;
 
 public class MddPicSignature implements Key {

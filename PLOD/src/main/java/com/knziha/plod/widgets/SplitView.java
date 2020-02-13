@@ -2,7 +2,6 @@ package com.knziha.plod.widgets;
 
 import java.util.ArrayList;
 
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 

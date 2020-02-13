@@ -128,20 +128,19 @@ public class RBTree_additive {
      ///情况二///cur///情况一/
     private RBTNode<additiveMyCpr1> downwardNeighbour(RBTNode<additiveMyCpr1> du,additiveMyCpr1 val) {
         int cmp;
-        RBTNode<additiveMyCpr1> x = du;
-        RBTNode<additiveMyCpr1> tmpnode = null;
+		RBTNode<additiveMyCpr1> tmpnode;
         
-        if (x==null)
+        if (du ==null)
             return null;
 
-        cmp = val.compareTo(x.key);
+        cmp = val.compareTo(du.key);
         if (cmp < 0)//情况一
-            return downwardNeighbour(x.left, val);
+            return downwardNeighbour(du.left, val);
         else// if (cmp >= 0)//情况二
         	{
-        	if(x.right==null ) return x;
-        	tmpnode = downwardNeighbour(x.right, val);
-        	if (tmpnode==null) return x;
+        	if(du.right==null ) return du;
+        	tmpnode = downwardNeighbour(du.right, val);
+        	if (tmpnode==null) return du;
         	else return tmpnode;
         	}
     }
@@ -154,20 +153,19 @@ public class RBTree_additive {
      ///情况一////cur///////情况二//
     private RBTNode<additiveMyCpr1> upwardNeighbour(RBTNode<additiveMyCpr1> du,additiveMyCpr1 val) {
         int cmp;
-        RBTNode<additiveMyCpr1> x = du;
-        RBTNode<additiveMyCpr1> tmpnode = null;
+		RBTNode<additiveMyCpr1> tmpnode;
         
-        if (x==null)
+        if (du ==null)
             return null;
 
-        cmp = val.compareTo(x.key); 
+        cmp = val.compareTo(du.key);
         if (cmp > 0)//情况一
-            return upwardNeighbour(x.right, val);
+            return upwardNeighbour(du.right, val);
         else// if (cmp =< 0)//情况二
         	{
-        	if(x.left==null ) return x;
-        	tmpnode = upwardNeighbour(x.left, val);
-        	if (tmpnode==null) return x;
+        	if(du.left==null ) return du;
+        	tmpnode = upwardNeighbour(du.left, val);
+        	if (tmpnode==null) return du;
         	else return tmpnode;
         	}
     }  

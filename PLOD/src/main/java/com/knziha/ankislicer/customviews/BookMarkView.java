@@ -1,17 +1,17 @@
 package com.knziha.ankislicer.customviews;
 
 
-import com.knziha.rbtree.RBTNode;
-import com.knziha.rbtree.RBTree;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
+
+import com.knziha.rbtree.RBTNode;
+import com.knziha.rbtree.RBTree;
+
 import xyz.danoz.recyclerviewfastscroller.AbsRecyclerViewFastScroller;
-import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 public class BookMarkView extends View {
 	public RBTree<Integer> tree;//bookMarkTree;

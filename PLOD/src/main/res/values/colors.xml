@@ -21,7 +21,9 @@
    
    
    <color name="brightBGrey">#a04F5F6F</color>
-   
+   <color name="HoloBGrey">#A29EDCFF</color>
+   <color name="HoloBGrey1">#A0979797</color>
+
 	<color name="green">#0b00f0ff</color>
 	<color name="green2">#aa00f0ff</color>
 	<color name="green3">#3300f0ff</color>

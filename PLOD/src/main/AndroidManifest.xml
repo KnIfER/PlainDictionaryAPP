@@ -72,7 +72,10 @@
 			android:theme="@style/SettingAppTheme"
 			android:configChanges="keyboardHidden|orientation|screenSize"
 			android:windowSoftInputMode="adjustPan"
-			android:hardwareAccelerated="true"/>
+			android:hardwareAccelerated="true"
+			android:launchMode="standard"
+			android:taskAffinity=""
+			/>
 
 		<activity android:name="com.knziha.plod.slideshow.PhotoViewActivity"
 			android:configChanges="keyboardHidden|orientation|screenSize"
@@ -87,7 +90,9 @@
 		<activity android:name="com.knziha.plod.PlainDict.MainShareActivity"
 			android:theme="@style/FloatAppTheme"
 			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
-			android:launchMode="singleTask">
+			android:launchMode="standard"
+			android:taskAffinity=""
+			>
 			<intent-filter>
 				<action android:name="android.intent.action.SEND"/>
 				<category android:name="android.intent.category.DEFAULT" />

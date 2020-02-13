@@ -465,7 +465,7 @@ public static boolean buffer_match_magic(MOBIBuffer buf, byte[] magic) {
   return compareByteArrayIsPara(buf.data, (int) buf.offset, magic);
 }
  
-final static boolean compareByteArrayIsPara(byte[] A,int offA,byte[] B){
+static boolean compareByteArrayIsPara(byte[] A,int offA,byte[] B){
 	if(offA+B.length>A.length)
 		return false;
 	for(int i=0;i<B.length;i++){

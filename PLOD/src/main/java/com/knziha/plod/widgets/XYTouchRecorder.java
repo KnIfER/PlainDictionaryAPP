@@ -8,8 +8,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
-import com.knziha.plod.PlainDict.CMN;
-
 public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListener {
 	public float x0;
 	public float y0;

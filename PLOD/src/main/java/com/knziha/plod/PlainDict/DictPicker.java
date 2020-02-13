@@ -18,6 +18,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.appcompat.app.GlobalOptions;
+import androidx.core.text.HtmlCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,6 +34,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -40,6 +42,7 @@ import android.widget.TextView;
 public class DictPicker extends DialogFragment implements OnClickListener
 {
 	MainActivityUIBase a;
+	private AnimationSet animation;
 
 	public DictPicker() {
 		this(null);
@@ -54,7 +57,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
 	public void onAttach(Context context){
 		super.onAttach(context);
 		//CMN.Log("dict picker onAttach");
-		refresh();
+		refresh(true);
 	}
 	RecyclerView mRecyclerView;
 	LinearLayoutManager lman;
@@ -75,7 +78,9 @@ public class DictPicker extends DialogFragment implements OnClickListener
 				mAdapter.notifyItemChanged(tmpPos);
 				mAdapter.notifyItemChanged(position);
 				if(a instanceof PDICMainActivity){
-					((PDICMainActivity)a).dismiss_dict_picker(R.anim.dp_dialog_exit);
+					((PDICMainActivity)a).dismissDictPicker(R.anim.dp_dialog_exit);
+				}else {
+					dismiss();
 				}
 			}
 			else {//当前词典
@@ -96,7 +101,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
 	};//public OnItemClickListener OIC(){return OIC;}
 	public boolean isDirty=false;
 	private Framer root;
-	public void refresh() {
+	public void refresh(boolean firstAttach) {
 		//if(!isDirty) return;
 		//isDirty=false;
 		int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
@@ -108,8 +113,10 @@ public class DictPicker extends DialogFragment implements OnClickListener
 			}
 		if(a instanceof PDICMainActivity) {
 			/*  词典选择器的动画效果(显示)  */
-			a.dialogHolder.setAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.dp_dialog_enter));
-			a.dialogHolder.setAlpha(1.0f);
+			if(animation==null)
+				animation = (AnimationSet) AnimationUtils.loadAnimation(a, R.anim.dp_dialog_enter);
+			animation.getAnimations().get(0).setDuration(firstAttach ? 200 : 200);
+			a.dialogHolder.startAnimation(animation);
 			a.dialogHolder.setVisibility(View.VISIBLE);
 		}
 		//mAdapter.notifyDataSetChanged();
@@ -141,6 +148,11 @@ public class DictPicker extends DialogFragment implements OnClickListener
 		return root;
 	}
 
+	public void notifyDataSetChanged() {
+		if(mAdapter!=null)
+			mAdapter.notifyDataSetChanged();
+	}
+
 	public interface OnViewCreatedListener{
 		void OnViewCreated(Dialog dialog);
 	}
@@ -166,7 +178,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
 						root.mMaxHeight=mMaxH;
 						window.setLayout(width,height);
 
-						getView().post(() -> refresh());
+						getView().post(() -> refresh(false));
 					}
 				}
 				getDialog().setCanceledOnTouchOutside(true);
@@ -184,8 +196,6 @@ public class DictPicker extends DialogFragment implements OnClickListener
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		// Hide title of the dialog
 		setStyle(STYLE_NO_FRAME, 0);
 	}
 
@@ -208,9 +218,8 @@ public class DictPicker extends DialogFragment implements OnClickListener
 		@Override
 		public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
 		{
-			MyViewHolder holder = new MyViewHolder(getActivity().getLayoutInflater().inflate(R.layout.diag1_fc_list_item, parent,
+			return new MyViewHolder(getActivity().getLayoutInflater().inflate(R.layout.diag1_fc_list_item, parent,
 					false));
-			return holder;
 		}
 
 		@Override
@@ -301,9 +310,6 @@ public class DictPicker extends DialogFragment implements OnClickListener
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		a=(MainActivityUIBase) getActivity();
-		if(a.dialogHolder!=null)
-			a.dialogHolder.setVisibility(View.VISIBLE);
-
 		if(GlobalOptions.isDark) {
 			try {
 				Object Scrollbar = a.ScrollCacheField.get(mRecyclerView);
@@ -326,7 +332,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
 					tv.setTextIsSelectable(true);
 					//404
 
-					tv.setText(Html.fromHtml(a.md_getAbout(id),Html.FROM_HTML_MODE_COMPACT));
+					tv.setText(HtmlCompat.fromHtml(a.md_getAbout(id),HtmlCompat.FROM_HTML_MODE_COMPACT));
 
 					tv.setMovementMethod(LinkMovementMethod.getInstance());
 					AlertDialog.Builder builder2 = new AlertDialog.Builder(a);

@@ -80,7 +80,7 @@
 	<string name="fc">Trobat element %d (s).</string>
 	<string name="fn">Trobat res aquí.</string>
 	<string name="maniDel"> %1$d / %2$d col·leccions cancel·lat!</string>
-	<string name="maniFavor"> %1$s ( %2$d ) elements de la col·lecció</string>
+	<string name="maniFavor"> %1$s ( %2$d elements )</string>
 	<string name="maniFavor2">%1$s (%2$d records)</string>
 	<string name="currFavor">Actual nom de la col·lecció: %s </string>
 	<string name="resCount">Cercar fet! %S trobat articles</string>

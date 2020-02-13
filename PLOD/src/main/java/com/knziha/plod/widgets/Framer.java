@@ -1,8 +1,11 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
+
+import androidx.annotation.RequiresApi;
 
 public class Framer extends FrameLayout {
 	public Framer(Context context) {
@@ -14,6 +17,7 @@ public class Framer extends FrameLayout {
 	public Framer(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 	}
+	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	public Framer(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 	}

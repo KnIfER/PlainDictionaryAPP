@@ -1,9 +1,6 @@
 package com.knziha.plod.dictionarymanager;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,14 +55,13 @@ public class dict_manager_websites extends ListFragment {
 	public boolean alreadySelectedAll;
 
 	@Override
-	public void setUserVisibleHint(boolean isVisibleToUser) {
-		Log.d("setUserVisibleHint"," setUserVisibleHint() --> isVisibleToUser = " + isVisibleToUser);
-
-		if (isVisibleToUser) {
+	public void onHiddenChanged(boolean hidden) {
+		if (!hidden) {
 			pullData();
 		}
-		super.setUserVisibleHint(isVisibleToUser);
+		super.onHiddenChanged(hidden);
 	}
+
 	boolean dataPrepared;
 	private void pullData() {
 		if(!dataPrepared) {

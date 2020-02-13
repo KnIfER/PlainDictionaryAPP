@@ -80,7 +80,7 @@
 	<string name="fc">Atopar elemento (s) %d.</string>
 	<string name="fn">Non atopou nada aquí.</string>
 	<string name="maniDel">Canceladas %1$d / %2$d coleccións!</string>
-	<string name="maniFavor"> %1$s (% 2 $ elementos d) recollida</string>
+	<string name="maniFavor"> %1$s (% 2 $ elementos)</string>
 	<string name="maniFavor2"> %1$s ( %2$s ) memorias</string>
 	<string name="currFavor">Actual colección: %s </string>
 	<string name="resCount">elementos de investigación feito!% atopou s</string>

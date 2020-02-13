@@ -8,8 +8,6 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 
-import com.knziha.plod.PlainDict.CMN;
-
 
 public class IMPageSlider extends ImageView{
 	public IMPageSlider(Context context) {

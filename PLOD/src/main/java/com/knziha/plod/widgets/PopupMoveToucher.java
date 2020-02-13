@@ -1,7 +1,5 @@
 package com.knziha.plod.widgets;
 
-import android.content.Context;
-import android.graphics.drawable.RippleDrawable;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,8 +10,6 @@ import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
-
-import static com.knziha.plod.widgets.ScrollViewmy.dummyOntouch;
 
 public class PopupMoveToucher implements View.OnTouchListener {
 	public float lastX;

@@ -87,6 +87,13 @@
 			android:title="在顶部提示搜索结果"
 			app:allowDividerBelow="true"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="simple"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="不搜索无列表(极简模式)"
+			app:allowDividerBelow="true"
+			/>
 	</PreferenceCategory>
 
 	<PreferenceCategory

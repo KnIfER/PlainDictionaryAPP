@@ -35,6 +35,8 @@
     <string-array name="ver_tweak"> 
 		<item>严格模式</item>
 		<item>宽松模式</item>
+		<item>前往顶部</item>
+		<item>前往底部</item>
 	</string-array>
 	
     <string-array name="dict_tweak_arr">

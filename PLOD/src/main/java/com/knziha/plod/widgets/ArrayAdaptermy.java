@@ -3,24 +3,27 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckedTextView;
+import android.widget.ImageView;
 import android.widget.TextView;
-import db.MdxDBHelper;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_pdf;
 import com.knziha.plod.dictionarymodels.mdict_web;
 
+import db.MdxDBHelper;
+
 /**
- * Created by ASDZXC on 2018/3/26.
+ * Created by KnIfER on 2018/3/26.
  */
 
 public class ArrayAdaptermy extends BaseAdapter{
@@ -43,7 +46,7 @@ public class ArrayAdaptermy extends BaseAdapter{
     	md=md_;
     	con = con_;
     	StorageLevel=l;
-	   isWeb = md instanceof mdict_web;
+	    isWeb = md instanceof mdict_web;
     	cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
    }
 
@@ -58,12 +61,34 @@ public class ArrayAdaptermy extends BaseAdapter{
 			notifyDataSetChanged();
 		}
 	}
-	
+
+	public static class ViewHolder_TvAndDel {
+		TextView title;
+		ImageView ivDel;
+		ViewHolder_TvAndDel(ArrayAdaptermy a, View itemView) {
+			itemView.setTag(this);
+			title = itemView.findViewById(R.id.text1);
+			ivDel = itemView.findViewById(R.id.del);
+			ivDel.setOnClickListener(v -> {
+				int position = (int) v.getTag();
+				Cursor cr = a.cr;
+				MdxDBHelper con = a.con;
+				cr.moveToPosition(position);
+				a.DataRecord.clear();
+				if(a.isWeb)
+					con.remove(cr.getInt(0));
+				else
+					con.removeUrl(cr.getString(0));
+				cr.close();
+				a.cr = con.getDB().rawQuery("select * from t1 ", null);
+				a.notifyDataSetChanged();
+			});
+		}
+	}
 
     @Override
     public View getView(final int position, @Nullable View convertView,
                         @NonNull ViewGroup parent) {
-    	
     	String LexicalText = DataRecord.get(position);
     	if(LexicalText==null) {
     		cr.moveToPosition(position);
@@ -78,53 +103,18 @@ public class ArrayAdaptermy extends BaseAdapter{
 				LexicalText="!!!Error: "+e.getLocalizedMessage();
 			}
     		if(StorageLevel==2) DataRecord.put(position, LexicalText);
-    		//CMN.Log("putting new vals");
     	}
-    	//else CMN.Log("using old vals");
-    		
-    	convertView = LayoutInflater.from(c).inflate(resourceID, parent, false);
-    	TextView tv = ((TextView)(convertView.findViewById(R.id.text1)));
+
+		ViewHolder_TvAndDel vh = (ViewHolder_TvAndDel) (convertView==null?null:convertView.getTag());
+		if(vh==null)
+			vh = new ViewHolder_TvAndDel(this, convertView=LayoutInflater.from(parent.getContext()).inflate(resourceID, parent, false));
+    	TextView tv = vh.title;
     	tv.setText(LexicalText);
     	if(darkMode)
     		tv.setTextColor(Color.WHITE);
+        View remove = vh.ivDel;
+		remove.setVisibility(showDelete?View.VISIBLE:View.GONE);
 
-        View remove = convertView.findViewById(R.id.del);
-        if(showDelete)
-        	remove.setVisibility(View.VISIBLE);
-        else
-        	remove.setVisibility(View.GONE);
-        
-        remove.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				cr.moveToPosition(position);
-				DataRecord.clear();
-				if(isWeb)
-					con.remove(cr.getInt(0));
-				else
-					con.removeUrl(cr.getString(0));
-				cr.close();
-				cr = con.getDB().rawQuery("select * from t1 ", null);
-				//items.remove(position);
-				notifyDataSetChanged();
-			}});
-        
-        /*((TextView)(ret.findViewById(R.id.text1))).setText(md.getEntryAt(getItem(position)));
-        View remove = ret.findViewById(R.id.del);
-        if(showDelete)
-        	remove.setVisibility(View.VISIBLE);
-        else
-        	remove.setVisibility(View.GONE);
-        remove.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				cr.moveToPosition(position);
-				con.remove(cr.getInt(0));
-				//items.remove(position);
-				notifyDataSetChanged();
-			}});*/
-    	
-        //ret.setBackgroundColor(Color.parseColor("#000000"));
         return convertView;
     }
 

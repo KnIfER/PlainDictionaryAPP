@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.PlainDict.Toastable_Activity;
@@ -44,6 +43,7 @@ public class ViewSpecification extends SettingsFragment implements Preference.On
 									   });
 		init_switch_preference(this, "hint_mod", PDICMainAppOptions.getHintSearchMode(), null, null);
 		init_switch_preference(this, "hint_res", PDICMainAppOptions.getNotifyComboRes(), null, null);
+		init_switch_preference(this, "simple", PDICMainAppOptions.getSimpleMode(), null, null);
 		init_switch_preference(this, "1toast", PDICMainAppOptions.getRebuildToast(), null, null);
 		init_switch_preference(this, "rtoast", PDICMainAppOptions.getToastRoundedCorner(), null, null);
 
@@ -102,6 +102,9 @@ public class ViewSpecification extends SettingsFragment implements Preference.On
 			break;
 			case "hint_res":
 				PDICMainAppOptions.setNotifyComboRes((Boolean) newValue);
+			break;
+			case "simple":
+				PDICMainAppOptions.setSimpleMode((Boolean) newValue);
 			break;
 			case "1toast":
 				PDICMainAppOptions.setRebuildToast((Boolean) newValue);

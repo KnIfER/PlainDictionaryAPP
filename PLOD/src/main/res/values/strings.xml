@@ -4,6 +4,7 @@
     <string name="wenj_fugai">File exists already, overwrite？</string>
     <string name="warn_delete">Are you sure to delete selected %d cards?(can\'t undo)</string>
     <string name="warnDelete">Are you sure to delete the dictionary configuration set %s?</string>
+    <string name="warnDeleteMultiple">Are you sure to delete %d selected groups?</string>
     <string name="warn_move">Are you sure to move %1$d word collections from [ %2$s ] to [ %3$s ]?</string>
     <string name="warn_exit0">Are you sure to exit?</string>
     <string name="surerrecords">Are you sure to delete selected %d records?(won\'t effect file system)</string>
@@ -25,7 +26,7 @@
     <string name="fn">Found nothing here.</string>
     
     <string name="maniDel">Canceled %1$d/%2$d item(s) collected!</string>
-    <string name="maniFavor">%1$s (%2$d collection items)</string>
+    <string name="maniFavor">%1$s (%2$d items)</string>
     <string name="maniFavor2">%1$s (%2$d records)</string>
     <string name="currFavor">Current collection name: %s</string>
     <string name="resCount">Search done!Found %s items</string>
@@ -54,7 +55,6 @@
     <string name="bookmarkH">Bookmark History</string>
     <string name="clearsucc">Done！</string>
     <string name="clearfail">Error occurred！</string>
-
 
 
     <string name="endendr">@string/endr</string>

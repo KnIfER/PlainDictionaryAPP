@@ -65,7 +65,7 @@
 	<string name="fc">Znaleziono elementu (ów) %d .</string>
 	<string name="fn">tutaj nic nie znalazłem.</string>
 	<string name="maniDel">Zlikwidowano %1$d / %2$d zbiory!</string>
-	<string name="maniFavor"> %1$s ( %2$d elementów kolekcji)</string>
+	<string name="maniFavor"> %1$s ( %2$d elementów)</string>
 	<string name="maniFavor2"> %1$S ( %2$s pamięci)</string>
 	<string name="currFavor">Obecna nazwa kolekcji: %s </string>
 	<string name="resCount">Szukane zrobić! Znaleziono %s przedmiotów</string>

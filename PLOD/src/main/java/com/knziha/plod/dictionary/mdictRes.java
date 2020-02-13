@@ -17,19 +17,10 @@
 
 package com.knziha.plod.dictionary;
 
-import com.knziha.plod.dictionary.Utils.BSI;
-import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.filepicker.utils.FU;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.HashMap;
-import java.util.zip.InflaterOutputStream;
-
-import com.knziha.plod.dictionary.Utils.key_info_struct;
-import com.knziha.plod.dictionary.Utils.record_info_struct;
-import org.anarres.lzo.LzoDecompressor1x;
-import org.anarres.lzo.lzo_uintp;
 
 //import org.jvcompress.lzo.MiniLZO;
 //import org.jvcompress.util.MInt;
@@ -45,10 +36,7 @@ import org.anarres.lzo.lzo_uintp;
  */
 
 public class mdictRes extends mdBase{
-
 	HashMap<Integer,String[]> _stylesheet = new HashMap<>();
-
-
     //构造
 	public mdictRes(String fn) throws IOException{
 		super(fn);
@@ -60,6 +48,8 @@ public class mdictRes extends mdBase{
 		super.init(data_in);
 		data_in.close();
 	}
+
+	public void Rebase(File mnp) {
+		f = mnp;
+	}
 }
-
-

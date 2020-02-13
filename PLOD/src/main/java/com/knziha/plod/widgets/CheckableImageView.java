@@ -5,9 +5,12 @@ import com.knziha.plod.PlainDict.R;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.Checkable;
 import android.widget.ImageView;
+
+import androidx.annotation.RequiresApi;
 
 public class CheckableImageView extends ImageView implements Checkable{
 	private int CheckedColor=0;
@@ -24,6 +27,7 @@ public class CheckableImageView extends ImageView implements Checkable{
 		super(context, attrs, defStyleAttr);
 		init(context, attrs, defStyleAttr);
 	}
+	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	public CheckableImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 		init(context, attrs, defStyleAttr);

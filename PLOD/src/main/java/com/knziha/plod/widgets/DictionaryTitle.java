@@ -5,8 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.view.ActionMode;
-import android.view.MotionEvent;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;

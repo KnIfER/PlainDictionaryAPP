@@ -22,7 +22,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -40,28 +39,24 @@ import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.PlaceHolder;
 import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
+import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
 import com.knziha.plod.dictionarymodels.mdict_prempter;
 import com.knziha.plod.dictionarymodels.mdict_transient;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
-import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.DictionaryTitle;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -77,7 +72,9 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 		super();
 		checkChanged=(buttonView, isChecked) -> {
 			ViewHolder vh = (ViewHolder) ((View)buttonView.getParent()).getTag();
-			lastClickedPos[(++lastClickedPosIndex)%2]=vh.position;
+			if(lastClickedPos[lastClickedPosIndex%2]!=vh.position) {
+				lastClickedPos[(++lastClickedPosIndex) % 2] = vh.position;
+			}
 			mdict_manageable mdTmp = adapter.getItem(vh.position);
 			String key = mdTmp.getPath();
 			if(isChecked)
@@ -231,102 +228,108 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 								final AlertDialog dd = builder.create();
 
 								iv.setOnClickListener(v -> {
-									String oldEUFn = mmTmp.getPath();
-									String oldFn = mFile.tryDeScion(new File(oldEUFn), a.opt.lastMdlibPath);
-									File to = new File(mmTmp.f().getParent(), et.getText().toString() + ".mdx");
-									//Log.e("XXX-filepath", to.getAbsolutePath());
-									try {
-										to = to.getCanonicalFile();
-									} catch (IOException e1) {
-										e1.printStackTrace();
-									}
-									//Log.e("XXX-filepath2", to.getAbsolutePath());
-									String toFn = to.getAbsolutePath();
-									if (toFn.startsWith(a.opt.lastMdlibPath))
-										toFn = toFn.substring(a.opt.lastMdlibPath.length() + 1);
-
 									boolean suc = false;
-									if (to.equals(mmTmp.f())) {//就是自己
-										suc = true;
-									} else if (new File(mmTmp.getPath()).exists()) {//正常重命名
-										if (to.exists()) {
-											a.showT("文件已存在，重命名失败！");
-										} else if (mmTmp.renameFileTo(to)) {//正常重命名成功
-											suc = true;
-										}
-									} else {
-										if (to.exists() && !a.mdict_cache.containsKey(to.getAbsolutePath())) {//关联已存在的文件
-											mmTmp.renameFileTo(to);
-											CMN.Log("重命名", mmTmp.getName());
-											adapter.remove(mmTmp);
-											try {
-												adapter.insert(new mdict_prempter(to.getAbsolutePath(), a.opt), actualPosition);
-											} catch (IOException e) {
-												e.printStackTrace();
+									String newName = et.getText().toString();
+									String newPath = newName;
+									if(!newPath.contains("/")){
+										if(newName.endsWith(".mdx"))
+											newName = newName.substring(0, newName.length()-4);
+										else if(mmTmp.isMdictFile())
+											newPath+=".mdx";
+										if(newName.length()>0){
+											String oldPath = mmTmp.getPath();
+											File oldf = mmTmp.f();
+											String oldFn = oldf.getName();
+											String OldFName = mmTmp.getName();
+											int oldFnLen = oldFn.length();
+
+											File to = new File(mmTmp.f().getParent(), newPath);
+											String toFn = to.getPath();
+											if (toFn.startsWith(a.opt.lastMdlibPath))
+												toFn = toFn.substring(a.opt.lastMdlibPath.length() + 1);
+											if (to.equals(mmTmp.f())) {//就是自己
+												suc = true;
+											} else if (new File(mmTmp.getPath()).exists()) {//正常重命名
+												if (to.exists()) {
+													a.showT("文件已存在，重命名失败！");
+												} else if (mmTmp.renameFileTo(getActivity(), to)) {//正常重命名成功
+													suc = true;
+												}
+											} else {
+												if (to.exists() && !a.mdict_cache.containsKey(to.getAbsolutePath())) {//关联已存在的文件
+													mmTmp.renameFileTo(getActivity(), to);
+													CMN.Log("重命名", mmTmp.getName());
+													adapter.remove(mmTmp);
+													try {
+														adapter.insert(new mdict_prempter(a, to.getAbsolutePath(), a.opt), actualPosition);
+													} catch (IOException e) {
+														e.printStackTrace();
+													}
+													suc = true;
+												}
 											}
-											suc = true;
+											if (suc) {
+												a.RebasePath(oldf, OldFName, to, newName);
+												if (rejector.contains(oldPath)) {
+													rejector.remove(oldPath);
+													rejector.add(to.getAbsolutePath());
+												}
+												adapter.notifyDataSetChanged();
+												isDirty = true;
+												d.dismiss();
+												dd.dismiss();
+												a.show(R.string.renD);
+												File[] moduleFullScanner = new File(a.opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> pathname.getPath().endsWith(".set"));
+												ArrayList<File> moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
+												moduleFullScannerArr.add(new File(a.opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
+												AgentApplication app = ((AgentApplication) getActivity().getApplication());
+												char[] cb = app.get4kCharBuff();
+												for (File fI : moduleFullScannerArr) {
+													StringBuilder sb = new StringBuilder();
+													String line;
+
+													try {
+														ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
+														boolean bNeedReWrite = false;
+														while ((line = br.readLine()) != null) {
+															/* 含名俱重 */
+															try {
+																if (line.endsWith(oldFn)) {
+																	int ll = line.length();
+																	if (ll == oldFnLen || line.charAt(ll - oldFnLen) == '/') {
+																		line = ll == oldFnLen ? toFn : (line.substring(0, ll - oldFnLen) + toFn);
+																		bNeedReWrite = true;
+																	}
+																}
+															} catch (Exception ignored) {
+															}
+															sb.append(line).append("\n");
+														}
+														br.close();
+														cb = br.cb;
+														if (bNeedReWrite) {
+															ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
+															bw.write(sb.toString());
+															bw.flush();
+															bw.close();
+															cb = br.cb;
+														}
+													} catch (IOException e) {
+														e.printStackTrace();
+													}
+												}
+												app.set4kCharBuff(cb);
+												dict_Manager_folderlike f3 = ((dict_manager_activity) getActivity()).f3;
+												if (f3.dataPrepared) {
+													int idx = f3.data.remove(new mFile(oldPath));
+													if (idx != -1) {
+														f3.data.insert(new mFile(to).init());
+													}
+												}
+											}
 										}
 									}
-									if (suc) {
-										if (rejector.contains(oldEUFn)) {
-											rejector.remove(oldEUFn);
-											rejector.add(to.getAbsolutePath());
-										}
-										adapter.notifyDataSetChanged();
-										isDirty = true;
-										d.dismiss();
-										dd.dismiss();
-										a.show(R.string.renD);
-										File[] moduleFullScanner = new File(a.opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> {
-											String name = pathname.getName();
-											if (name.endsWith(".set")) {
-												return true;
-											}
-											return false;
-										});
-										ArrayList<File> moduleFullScannerArr = new ArrayList<File>(Arrays.asList(moduleFullScanner));
-										moduleFullScannerArr.add(new File(a.opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
-										for (File fI : moduleFullScannerArr) {
-											InputStreamReader reader = null;
-											StringBuffer sb = new StringBuffer("");
-											String line = "";
-
-											try {
-												reader = new InputStreamReader(new FileInputStream(fI));
-												BufferedReader br = new BufferedReader(reader);
-												while ((line = br.readLine()) != null) {
-													try {
-														if (line.equals(oldFn) || new File(line).getCanonicalPath().equals(oldFn)) {
-															//System.out.println(line);
-															line = toFn;
-															//System.out.println(line);
-														}
-													} catch (Exception e) {
-													}
-													sb.append(line).append("\n");
-												}
-												br.close();
-												reader.close();
-
-												OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fI));
-												BufferedWriter bw = new BufferedWriter(writer);
-												bw.write(sb.toString());
-												bw.flush();
-												bw.close();
-												writer.close();
-											} catch (IOException e) {
-												e.printStackTrace();
-											}
-										}
-										dict_Manager_folderlike f3 = ((dict_manager_activity) getActivity()).f3;
-										if (f3.dataPrepared) {
-											//int idx = f3.data.indexOf(new mFile(oldEUFn));
-											int idx = f3.data.remove(new mFile(oldEUFn));
-											if (idx != -1) {
-												f3.data.insert(new mFile(to).init());
-											}
-										}
-									} else {
+									if(!suc) {
 										a.showT("重命名失败!");
 									}
 								});
@@ -466,9 +469,10 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 
 	public void performLastItemLongClick() {
 		if(adapter.getCount()>0){
-			int idx = lastClickedPos[lastClickedPosIndex%2];
-			if(idx<0||idx>=adapter.getCount())
-				idx = 0;
+			int idx = lastClickedPos[(lastClickedPosIndex+1)%2];
+			if(idx<0||idx>=adapter.getCount()){
+				idx = getListView().getHeaderViewsCount();
+			}
 			onItemLongClick(null, null, idx, 0);
 		}
 	}
@@ -536,13 +540,10 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			if(PDICMainAppOptions.getTmpIsFiler(mdTmp.getTmpIsFlag())){
 				if(convertView.getTag(R.drawable.filter)!=(Integer)R.drawable.filter) {
 					needSet = true;
-					leftDrawableSlot = getResources().getDrawable(R.drawable.filter).mutate();
+					leftDrawableSlot = getResources().getDrawable(R.drawable.filter);
+					leftDrawableSlot.setColorFilter(0xFFFFEB3B, PorterDuff.Mode.SRC_IN);
 					int h = vh.title.getLineHeight();
 					leftDrawableSlot.setBounds(new Rect(0, 0, h, h));
-					if (mdTmp.getIsDedicatedFilter()) {
-						leftDrawableSlot.setColorFilter(0xFFFFEB3B, PorterDuff.Mode.SRC_IN);
-					} else
-						leftDrawableSlot.clearColorFilter();
 					convertView.setTag(R.drawable.filter, R.drawable.filter);
 				}
 			}
@@ -592,17 +593,15 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		a=(dict_manager_activity) getActivity();
-		AgentApplication app = ((AgentApplication) a.getApplication());
-		if(app.mdict_cache!=null) {
+		if(a!=null) {
 			ArrayList<PlaceHolder> slots = a.slots;
 			manager_group = a.mdmng = new ArrayList<>(a.mdict_cache.size());
-
 			//TODO 省去这一步的IO？
 			//策略：缓存 placeholder，建立transient管理中间体时直接引用 placeholder。
 			a.mdict_cache.clear();
 			manager_group.ensureCapacity(slots.size());
 			for (PlaceHolder phI : slots) {
-				mdict_transient mmTmp = new mdict_transient(phI, a.opt);
+				mdict_transient mmTmp = new mdict_transient(a, phI, a.opt);
 				if (!mmTmp.isMddResource()) PDICMainAppOptions.setTmpIsAudior(mmTmp, false);
 				if(PDICMainAppOptions.getTmpIsHidden(mmTmp.getTmpIsFlag()))
 					rejector.add(mmTmp.getPath());
@@ -629,37 +628,33 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			mDslv.setOnItemLongClickListener(this);
 			setListAdapter();
 			refreshSize();
-			AgentApplication agent = ((AgentApplication) a.getApplication());
-			agent.clearNonsenses();
 		}
 	}
 
 	@Override
 	DragSortListView.DropListener getDropListener() {
-		DragSortListView.DropListener onDrop =
-				(from, to) -> {
-					//CMN.Log("to", to);
-					//if(true) return;
-					if(a.opt.getDictManager1MultiSelecting() && selector.contains(manager_group.get(from).getPath())){
-						ArrayList<mdict_transient> md_selected = new ArrayList<>(selector.size());
-						if(to>from) to++;
-						for (int i = manager_group.size()-1; i >= 0; i--) {
-							mdict_manageable mmTmp = manager_group.get(i);
-							if(selector.contains(mmTmp.getPath())){
-								md_selected.add(0, manager_group.remove(i));
-								if(i<to) to--;
-							}
-						}
-						manager_group.addAll(to, md_selected);
-						adapter.notifyDataSetChanged();
+		return (from, to) -> {
+			//CMN.Log("to", to);
+			//if(true) return;
+			if(a.opt.getDictManager1MultiSelecting() && selector.contains(manager_group.get(from).getPath())){
+				ArrayList<mdict_transient> md_selected = new ArrayList<>(selector.size());
+				if(to>from) to++;
+				for (int i = manager_group.size()-1; i >= 0; i--) {
+					mdict_manageable mmTmp = manager_group.get(i);
+					if(selector.contains(mmTmp.getPath())){
+						md_selected.add(0, manager_group.remove(i));
+						if(i<to) to--;
 					}
-					else if (from != to) {
-						mdict_transient mdTmp = manager_group.remove(from);
-						manager_group.add(to, mdTmp);
-						adapter.notifyDataSetChanged();
-					}
-				};
-		return onDrop;
+				}
+				manager_group.addAll(to, md_selected);
+				adapter.notifyDataSetChanged();
+			}
+			else if (from != to) {
+				mdict_transient mdTmp = manager_group.remove(from);
+				manager_group.add(to, mdTmp);
+				adapter.notifyDataSetChanged();
+			}
+		};
 	}
 
 	private class MyDSController extends DragSortController {

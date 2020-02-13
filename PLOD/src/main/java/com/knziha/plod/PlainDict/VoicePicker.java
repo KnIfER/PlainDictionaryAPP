@@ -116,7 +116,6 @@ public class VoicePicker extends DialogFragment
 	public void onAttach(Context context){
 		super.onAttach(context);
 		//CMN.Log("dict picker onAttach");
-		refresh();
 	}
 	ListView mListView;
 
@@ -130,8 +129,6 @@ public class VoicePicker extends DialogFragment
 
 	public boolean isDirty=false;
 	private Framer root;
-	public void refresh() {
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)

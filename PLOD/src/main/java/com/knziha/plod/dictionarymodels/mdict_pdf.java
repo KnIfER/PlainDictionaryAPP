@@ -193,9 +193,11 @@ public class mdict_pdf extends mdict {
 		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
 		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
 
+		justifyInternal(_Dictionary_fName_Internal);
+
 		htmlBuilder=new StringBuilder();
 
-		readInConfigs(false);
+		readInConfigs();
 
 		if(bgColor==null)
 			bgColor= com.knziha.plod.PlainDict.CMN.GlobalPageBackground;

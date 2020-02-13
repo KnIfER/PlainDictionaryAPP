@@ -1,6 +1,5 @@
 package com.knziha.plod.widgets;
 
-import android.graphics.Color;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.view.View;

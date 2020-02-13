@@ -10,7 +10,6 @@ import android.text.style.UpdateAppearance;
 import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
 
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.R;
 
 /**
@@ -39,9 +38,6 @@ public class SubtitlesTextSpan extends CharacterStyle
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-    }
-
-    public void writeToParcelInternal(@NonNull Parcel dest, int flags) {
     }
 
     @Override

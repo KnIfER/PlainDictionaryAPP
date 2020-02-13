@@ -1,7 +1,5 @@
 package com.knziha.plod.PlainDict;
 
-import com.knziha.plod.dictionarymodels.mdict;
-
 import java.util.ArrayList;
 
 public class PlaceHolder {

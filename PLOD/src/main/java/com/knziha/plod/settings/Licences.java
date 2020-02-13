@@ -2,7 +2,6 @@ package com.knziha.plod.settings;
 
 import android.os.Bundle;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.PlainDict.R;
 
 public class Licences extends SettingsFragment {

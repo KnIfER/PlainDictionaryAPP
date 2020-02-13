@@ -5,8 +5,10 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
@@ -119,7 +121,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 
 		//settings.setUseWideViewPort(true);//设定支持viewport
 		//settings.setLoadWithOverviewMode(true);
-		settings.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
+		//settings.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
 		//settings.setSupportZoom(support);
 
 		settings.setAllowUniversalAccessFromFileURLs(true);
@@ -213,7 +215,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	@Override
 	protected void onCreateContextMenu(ContextMenu menu){
 		//Toast.makeText(getContext(), "ONCCM", 0).show();
-		//CMN.Log(menu.getItem(0).getTitle(), menu.getItem(0).get)
+		CMN.Log("webview onCreateContextMenu");
 		super.onCreateContextMenu(menu);
 	}
 
@@ -335,11 +337,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		int id = item.getItemId();
 		switch(id) {
 			case R.id.toolbar_action0:{
-				evaluateJavascript(getHighLightIncantation()+";sel.removeAllRanges();",new ValueCallback<String>() {
-					@Override
-					public void onReceiveValue(String value) {
-						invalidate();
-					}});
+				evaluateJavascript(getHighLightIncantation().toString(), value -> invalidate());
 				MyMenuinversed=!MyMenuinversed;
 			} return true;
 			case R.id.toolbar_action1:{//工具复用，我真厉害啊啊啊啊！
@@ -647,11 +645,11 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			var ann = document.createElement("span");
 			if(t==0){
 				ann.className = "PLOD_HL";
-				ann.style = "background:#ffaaaa;";
+	 			ann.setAttribute("style", "background:#ffaaaa;");
 	 		}else{
 				ann.className = "PLOD_UL";
 				//ann.style = "color:#ffaaaa;text-decoration: underline";
-				ann.style = "border-bottom:1px solid #ffaaaa";
+	 			ann.setAttribute("style", "border-bottom:1px solid #ffaaaa");
 	 		}
 			var sel = window.getSelection();
 			var ranges = [];
@@ -805,25 +803,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 
 	public static List<View> getWindowManagerViews() {
 		try {
-
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH &&
-					Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-
-				// get the list from WindowManagerImpl.mViews
-				Class wmiClass = Class.forName("android.view.WindowManagerImpl");
-				Object wmiInstance = wmiClass.getMethod("getDefault").invoke(null);
-
-				return viewsFromWM(wmiClass, wmiInstance);
-
-			} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-
-				// get the list from WindowManagerGlobal.mViews
-				Class wmgClass = Class.forName("android.view.WindowManagerGlobal");
-				Object wmgInstance = wmgClass.getMethod("getInstance").invoke(null);
-
-				return viewsFromWM(wmgClass, wmgInstance);
-			}
-
+			// get the list from WindowManagerGlobal.mViews
+			Class wmgClass = Class.forName("android.view.WindowManagerGlobal");
+			Object wmgInstance = wmgClass.getMethod("getInstance").invoke(null);
+			return viewsFromWM(wmgClass, wmgInstance);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

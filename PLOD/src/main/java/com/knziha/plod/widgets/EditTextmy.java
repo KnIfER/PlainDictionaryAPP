@@ -3,7 +3,6 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.EditText;
 
 /**
  * Created by KnIfER on 2018/4/20.

@@ -80,7 +80,7 @@
 	<string name="fc">Знайдено %d елемент (и).</string>
 	<string name="fn">нічого не знайшли тут.</string>
 	<string name="maniDel">Скасовано %1$d / %2$D колекції!</string>
-	<string name="maniFavor"> %1$s (% 2 $ пунктів збору д)</string>
+	<string name="maniFavor"> %1$s (% 2 $ пунктів)</string>
 	<string name="maniFavor2"> %1$s ( %2$S спогадів)</string>
 	<string name="currFavor">Поточне назва колекції: %s </string>
 	<string name="removed">вилучені</string>

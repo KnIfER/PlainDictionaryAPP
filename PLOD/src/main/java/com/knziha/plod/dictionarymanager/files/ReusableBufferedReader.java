@@ -27,6 +27,8 @@
 package com.knziha.plod.dictionarymanager.files;
 
 
+import android.os.Build;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -111,7 +113,7 @@ public class ReusableBufferedReader extends Reader {
 			nextChar = nChars = 0;
 		} else {
 			cb = _cb;
-			nextChar = nChars = _cb.length;
+			nextChar = nChars = 0;
 		}
     }
 
@@ -537,66 +539,5 @@ public class ReusableBufferedReader extends Reader {
                 cb = null;
             }
         }
-    }
-
-    /**
-     * Returns a {@code Stream}, the elements of which are lines read from
-     * this {@code ReusableBufferedReader}.  The {@link Stream} is lazily populated,
-     * i.e., read only occurs during the
-     * <a href="../util/stream/package-summary.html#StreamOps">terminal
-     * stream operation</a>.
-     *
-     * <p> The reader must not be operated on during the execution of the
-     * terminal stream operation. Otherwise, the result of the terminal stream
-     * operation is undefined.
-     *
-     * <p> After execution of the terminal stream operation there are no
-     * guarantees that the reader will be at a specific position from which to
-     * read the next character or line.
-     *
-     * <p> If an {@link IOException} is thrown when accessing the underlying
-     * {@code ReusableBufferedReader}, it is wrapped in an {@link
-     * UncheckedIOException} which will be thrown from the {@code Stream}
-     * method that caused the read to take place. This method will return a
-     * Stream if invoked on a ReusableBufferedReader that is closed. Any operation on
-     * that stream that requires reading from the ReusableBufferedReader after it is
-     * closed, will cause an UncheckedIOException to be thrown.
-     *
-     * @return a {@code Stream<String>} providing the lines of text
-     *         described by this {@code ReusableBufferedReader}
-     *
-     * @since 1.8
-     */
-    public Stream<String> lines() {
-        Iterator<String> iter = new Iterator<String>() {
-            String nextLine = null;
-
-            @Override
-            public boolean hasNext() {
-                if (nextLine != null) {
-                    return true;
-                } else {
-                    try {
-                        nextLine = readLine();
-                        return (nextLine != null);
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
-                }
-            }
-
-            @Override
-            public String next() {
-                if (nextLine != null || hasNext()) {
-                    String line = nextLine;
-                    nextLine = null;
-                    return line;
-                } else {
-                    throw new NoSuchElementException();
-                }
-            }
-        };
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
-                iter, Spliterator.ORDERED | Spliterator.NONNULL), false);
     }
 }

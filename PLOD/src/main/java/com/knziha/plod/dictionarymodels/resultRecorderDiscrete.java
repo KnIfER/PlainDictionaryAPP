@@ -56,4 +56,8 @@ public class resultRecorderDiscrete {
 	public void syncToPeruseArr(ArrayList<Integer> pvdata, int pos) {
 		pvdata.clear();
 	}
+
+	public boolean shouldSaveHistory() {
+		return true;
+	}
 }

@@ -1,14 +1,12 @@
 package com.knziha.plod.slideshow;
 
 import android.graphics.Bitmap;
-import android.media.MediaMetadataRetriever;
 
 import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.data.DataFetcher;
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.dictionary.mdictRes;
 

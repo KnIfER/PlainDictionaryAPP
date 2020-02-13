@@ -12,7 +12,6 @@ import android.os.Message;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -40,6 +39,7 @@ import androidx.core.graphics.ColorUtils;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.mdict_txt;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.widgets.RLContainerSlider;
@@ -54,11 +54,13 @@ import java.util.ArrayList;
 
 
 /**
+ * 多实例浮动搜索<br/>
+ * Multi-Instance Float Activity that adheres to 3rd party intent invokers，<br/>
+ * 			and that can be launched by android text process protocol or colordict intents.<br/>
  * Created by KnIfER on 2018
  */
 public class FloatSearchActivity extends MainActivityUIBase {
 	ViewGroup mainfv;
-	private long exitTime = 0;
 
 	boolean FVDOCKED=false;
 	int FVW,FVH,FVTX,FVTY,FVW_UNDOCKED,FVH_UNDOCKED;
@@ -148,8 +150,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	        			bIsFirstLaunch=false;
 					}
 				} catch (Exception e) {e.printStackTrace();}
-			}else if(lv2.getVisibility()==View.VISIBLE) 
-				lv2.setVisibility(View.INVISIBLE);
+			}else{
+				if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && mdict.class.equals(currentDictionary.getClass()))
+					adaptermy.notifyDataSetChanged();
+				if(lv2.getVisibility()==View.VISIBLE)
+					lv2.setVisibility(View.INVISIBLE);
+			}
         }
 
         public void beforeTextChanged(CharSequence s, int start, int count,
@@ -486,7 +492,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			@Override
 			public boolean onSingleTapUp(MotionEvent e) {
 				if (true && touch_id!=R.id.move0) {
-					finish();
+					exit();
 					return true;
 				}
 				return super.onSingleTapUp(e);
@@ -495,7 +501,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			@Override
 			public boolean onSingleTapConfirmed(MotionEvent e) {
 				if (false) {
-					finish();
+					exit();
 					return true;
 				}
 				return super.onSingleTapConfirmed(e);
@@ -511,10 +517,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	float DedockAcc;
 			@Override 
 			public boolean onTouch(View v, MotionEvent e) {
-
-				CMN.Log(dm.heightPixels,  getWindow().findViewById(Window.ID_ANDROID_CONTENT).getHeight(), getWindow().getDecorView().getHeight());
-
-
 				DedockTheta=_50_/2;
 				touch_id=v.getId();
 				mGestureDetector.onTouchEvent(e);
@@ -705,6 +707,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		refreshUIColors();
     }
 
+	protected void exit() {
+		finish();
+	}
+
 	@Override
 	protected View getIMPageCover() {
 		return IMPageCover;
@@ -712,7 +718,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	@Override
 	protected File getStartupFile() {
-		File suf = new File(opt.pathToMainFolder().append("CONFIG/").append(opt.lastMdPlanName).append(".set").toString());
+		File suf = new File(opt.pathToMainFolder().append("CONFIG/").append(opt.getLastFloatPlanName()).append(".set").toString());
 		if(!suf.exists())
 			return super.getStartupFile();
 		return suf;
@@ -756,7 +762,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			currentFilter.ensureCapacity(filter_count);
 			for (int i = 0; i < filter_count; i++) {
 				currentFilter.add(null);
-				CMN.Log(mCosySofa.get(i).name);
+				//CMN.Log(mCosySofa.get(i).name);
 			}
 			return;
 		}
@@ -774,6 +780,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		currMdlTime=lm;
 		lastLoadedModule=moduleName;
 		lazyLoaded=lazyLoad;
+		app.set4kCharBuff(in.cb);
 	}
 
 	String processIntent(Intent intent) {
@@ -785,7 +792,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			}
 		}
 		if(keytmp!=null && !PDICMainAppOptions.getHistoryStrategy0()&& PDICMainAppOptions.getHistoryStrategy12()){
-			historyCon.insertUpdate(keytmp);
+			prepareHistroyCon().insertUpdate(keytmp);
 		}
 
 		if(fullScreen)
@@ -852,6 +859,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			this.activity = new WeakReference<>(a);
 		}
 		@Override
+		public void clearActivity() {
+			activity.clear();
+		}
+		@Override
 		public void handleMessage(@NonNull Message msg) {
 			if(activity.get()==null) return;
 			FloatSearchActivity a = ((FloatSearchActivity)activity.get());
@@ -906,11 +917,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		return super.onOptionsItemSelected(item);
 	}
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-	
 	@Override
     protected void onResume() {
         super.onResume();
@@ -922,34 +928,20 @@ public class FloatSearchActivity extends MainActivityUIBase {
         }
     }
 
-	@Override
-    protected void onRestart() {
-		Log.e("onRestart","onRestart");
-        super.onRestart();
-    }
-	@Override
-    protected void onStart() {
-        super.onStart();
-    }	
-	@Override
-    protected void onStop() {
-		super.onStop();
-		//webholder.removeAllViews();
-		super.onStart();
-	}
-
     public class ListViewAdapter extends BasicAdapter {
         public ListViewAdapter(ViewGroup webSingleholder)
         {
 			this.webviewHolder=webSingleholder;
         }
-        
         @Override
-        public int getCount() {  
-        	if(md.size()>0 && currentDictionary!=null)
-        		return (int) currentDictionary.getNumberEntries();
-        	else
-        		return 0;
+        public int getCount() {
+			if(md.size()>0 && currentDictionary!=null) {
+				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && mdict.class.equals(currentDictionary.getClass()))
+					return 0;
+				return (int) currentDictionary.getNumberEntries();
+			}else{
+				return 0;
+			}
         }  
         @Override
         public View getItem(int position) {
@@ -970,12 +962,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	}else{
         		vh=new PDICMainActivity.ViewHolder(getApplicationContext(), R.layout.listview_item0, null);
         	}
-
 			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
 				//decorateBackground(vh.itemView);
 				vh.title.setTextColor(AppBlack);
 			}
-
             vh.title.setText(currentKeyText);
             if(mFlag.data!=null)
                 vh.subtitle.setText(Html.fromHtml(currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+ mFlag.data+" ></font >"));
@@ -1034,6 +1024,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	}
         	
 			currentDictionary.initViewsHolder(FloatSearchActivity.this);
+			currentDictionary.mWebView.fromCombined=0;
 			webSingleholder.addView(md.get(adapter_idx).rl);
 			currentDictionary.renderContentAt(-1,adapter_idx,0,null, position);
 			
@@ -1042,14 +1033,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			bWantsSelection=true;
 
 			decorateContentviewByKey(null,currentKeyText);
-			if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy6() &&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
-				historyCon.insertUpdate(currentKeyText);
+			if(!(currentDictionary instanceof mdict_txt) && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy6() &&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
+				prepareHistroyCon().insertUpdate(currentKeyText);
 				//CMN.Log("浮动点击1", userCLick);
 			}
 			userCLick=false;
-			currentDictionary.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-			currentDictionary.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-			currentDictionary.mWebView.fromCombined=0;
         }
 
 		@Override
@@ -1171,7 +1159,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			decorateContentviewByKey(null,currentKeyText = combining_search_result.getResAt(pos).toString());
 			if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy5()) {
 				if(userCLick||PDICMainAppOptions.getHistoryStrategy8()==0){
-					historyCon.insertUpdate(currentKeyText);
+					prepareHistroyCon().insertUpdate(currentKeyText);
 					//CMN.Log("浮动点击2", userCLick);
 				}
 			}
@@ -1244,33 +1232,39 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	public boolean onMenuItemClick(MenuItem item) {
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
 		boolean isLongClicked=mmi==null?false:mmi.isLongClicked;
-		boolean closeMenu=true;
+		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
+		boolean ret = !isLongClicked;
+		boolean closeMenu=ret;
 		switch (item.getItemId()) {
 			case R.id.text_tools:{
+				if(isLongClicked) break;
 				handleTextTools();
 			} return true;
 			case R.id.toolbar_action0:{
 				if(isLongClicked) break;
 				toggleFoldAll();
 			} break;
-            case R.id.toolbar_action2://切换词典
-            	showChooseDictDialog(0);
-			break;
-            case R.id.toolbar_action3://切换分组
-            	showChooseSetDialog();
-			break;
+            case R.id.toolbar_action2:{//切换词典
+				if(isLongClicked) break;
+				showChooseDictDialog(0);
+			} break;
+            case R.id.toolbar_action3:{//切换分组
+				if(isLongClicked) break;
+				showChooseSetDialog();
+			} break;
             case R.id.toolbar_action4:
+				if(isLongClicked) break;
             	String keyword = etSearch.getText().toString().trim();
-            	if(favoriteCon.insertUpdate(keyword)>0)
+            	if(prepareHistroyCon().insertUpdate(keyword)>0)
             		showT("已收藏！");
             break;
             case R.id.toolbar_action5:
-            	toggleInPageSearch(isLongClicked);
+            	toggleInPageSearch(ret=isLongClicked);
             break;
         }
 		if(closeMenu)
 			closeIfNoActionView(mmi);
-		return false;
+		return ret;
 	}
 
 	@Override
@@ -1344,7 +1338,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				}
 				else//没办法..
 					pickDictDialog.refresh();*/
-		if(needRefresh) chooseDialog.adapter().notifyDataSetChanged();
+		if(needRefresh) chooseDialog.notifyDataSetChanged();
 	}
 
 	@Override

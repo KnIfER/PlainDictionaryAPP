@@ -13,7 +13,6 @@ import com.knziha.plod.dictionarymodels.mdict;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 @SuppressLint("SetTextI18n")
 public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
@@ -98,7 +97,8 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
 		if(a.timer!=null) a.timer.cancel(); a.timer=null;
-		if(a.d!=null) a.d.dismiss();
+		if(a.taskd!=null) a.taskd.dismiss();
+		a.mAsyncTask=null;
 
 		a.adaptermy3.combining_search_result.SearchText=CurrentSearchText;
 		if(a.isCombinedSearching){
@@ -111,7 +111,7 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 				,a.adaptermy3.getCount());
 
 		System.gc();
-		a.fuzzySearchLayer.bakePattern(PDICMainAppOptions.getUseRegex1()?CurrentSearchText:CurrentSearchText.replace("*", ".+?"));
+		a.fuzzySearchLayer.bakePattern(CurrentSearchText, PDICMainAppOptions.getUseRegex1()?CurrentSearchText:CurrentSearchText.replace("*", ".+?"));
 		a.adaptermy3.notifyDataSetChanged();
 		a.mlv1.setSelection(0);
 	}

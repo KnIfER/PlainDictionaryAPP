@@ -79,7 +79,7 @@
 	<string name="PT2">Страница Искључивање</string>
 	<string name="fc">Фоунд %d итем (с).</string>
 	<string name="fn">Нашао ништа овде.</string>
-	<string name="maniFavor"> %1$s ( %2$d прикупљање ставки)</string>
+	<string name="maniFavor"> %1$s (%2$d прикупљање)</string>
 	<string name="maniFavor2"> %1$s ( %2$s сећања)</string>
 	<string name="resCount">Сеарцх урадио! Фоунд %s ставке</string>
 	<string name="searchFailed">Претрага није успела:% и</string>

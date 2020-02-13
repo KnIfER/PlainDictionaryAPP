@@ -4,8 +4,11 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.CheckedTextView;
+
+import androidx.annotation.RequiresApi;
 
 public class CheckedTextViewmy extends CheckedTextView {
 	public CheckedTextViewmy(Context context) {
@@ -17,6 +20,7 @@ public class CheckedTextViewmy extends CheckedTextView {
 	public CheckedTextViewmy(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 	}
+	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	public CheckedTextViewmy(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 	}

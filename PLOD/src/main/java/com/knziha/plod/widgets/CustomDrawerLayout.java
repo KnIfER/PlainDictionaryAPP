@@ -44,7 +44,7 @@ public class CustomDrawerLayout extends DrawerLayout {
  public boolean onTouchEvent(MotionEvent ev) {
   try {
    return super.onTouchEvent(ev);
-  } catch (IllegalArgumentException ex) {
+  } catch (IllegalArgumentException ignored) {
   }
   return false;
  }

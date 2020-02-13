@@ -81,7 +81,7 @@
 	<string name="fc">Bulunan %d öğe (ler).</string>
 	<string name="fn">Burada hiçbir şey bulundu.</string>
 	<string name="maniDel">İptal edilen %1$d / %2$d koleksiyonları!</string>
-	<string name="maniFavor"> %1$s ( %2$d toplama öğe)</string>
+	<string name="maniFavor"> %1$s ( %2$d öğe)</string>
 	<string name="maniFavor2"> %1$s ( %2$s anıları)</string>
 	<string name="currFavor">Güncel koleksiyon adı: %s </string>
 	<string name="resCount">Arama bitti! Bulundu %s öğe</string>

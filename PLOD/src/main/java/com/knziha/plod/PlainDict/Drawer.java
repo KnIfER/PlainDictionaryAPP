@@ -50,6 +50,8 @@ import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
+import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.mdict_pdf;
@@ -57,16 +59,14 @@ import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -184,10 +184,10 @@ public class Drawer extends Fragment implements
 		public boolean areAllItemsEnabled() {
 			return false;
 		}
-		@Override
-		public int getCount() {
-			return super.getCount();
-		}
+//		@Override
+//		public int getCount() {
+//			return super.getCount();
+//		}
 		@Override
 		public boolean isEnabled(int position) {
 			return !"d".equals(getItem(position)); // 如果-开头，则该项不可选
@@ -226,12 +226,6 @@ public class Drawer extends Fragment implements
 
 			return vh.itemView;
 		}
-	}
-
-
-	@Override
-	public View getView() {
-		return super.getView();
 	}
 
 	public void getExtraHints() {
@@ -649,6 +643,7 @@ public class Drawer extends Fragment implements
 					a.show(R.string.nothingR);
 			} break;
 			case 6:{//追加词典 添加词典 打开
+				boolean AutoFixLostRecords = true;
 				DialogProperties properties = new DialogProperties();
 				properties.selection_mode = DialogConfigs.SINGLE_MULTI_MODE;
 				properties.selection_type = DialogConfigs.FILE_SELECT;
@@ -663,6 +658,7 @@ public class Drawer extends Fragment implements
 					properties.extensions.add(".pdf");
 					properties.extensions.add(".web");
 					properties.extensions.add(".mdd");
+					properties.extensions.add(".txt");
 				}
 				properties.title_id = R.string.addd;
 				properties.isDark = a.AppWhite==Color.BLACK;
@@ -673,114 +669,119 @@ public class Drawer extends Fragment implements
 					onSelectedFilePaths(String[] files,String now) { //files is the array of the paths of files selected by the Application User.
 						filepickernow = now;
 						if(files.length>0) {
-							//File def = new File(a.opt.pathToMainFolder()+"default.txt");      //!!!原配
 							final File def = new File(a.getExternalFilesDir(null),"default.txt");      //!!!原配
 							File rec = new File(a.opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString());
 							a.ReadInMdlibs(rec);
+							HashMap<String, String> checker = a.checker;
+
+							HashSet<String> mdictInternal = new HashSet<>();
+							HashSet<String> renameRec = new HashSet<>();
+							HashMap<String,String> renameList = new HashMap<>();
+							for(PlaceHolder phI:a.CosyChair) {
+								mdictInternal.add(phI.getPath(a.opt));
+							}
+							for(mdict mdTmp:a.currentFilter) {
+								if(mdTmp!=null)
+									mdictInternal.add(mdTmp.getPath());
+							}
+							for(mdict mdTmp:Drawer.this.mdictInternal.values()) {
+								if(mdTmp!=null)
+									mdictInternal.add(mdTmp.getPath());
+							}
+
 							try {
 								BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
-								BufferedWriter output2 = new BufferedWriter(new FileWriter(def,true));
-								HashSet<String> mdictInternal = new HashSet<>();
-								HashSet<String> renameRec = new HashSet<>();
-								HashMap<String,String> renameList = new HashMap<>();
-								for(PlaceHolder phI:a.CosyChair) {
-									mdictInternal.add(phI.getPath(a.opt));
-								}
-								int count=0;
+								BufferedWriter output2 = null;
+								int countAdd=0;
+								int countRename=0;
+								String removedAPath;
 								for(String fnI:files) {
 									File fI = new File(fnI);
-									if(fI.isDirectory())
-										continue;
-									if(a.checker.containsKey(fI.getName())) {//大小写敏感
-										String removedAPath = a.checker.remove(fI.getName());
+									if(fI.isDirectory()) continue;
+									/* 检查文件名称是否乃记录之中已失效项，有则需重命名。*/
+									if(AutoFixLostRecords && (removedAPath=checker.get(fI.getName()))!=null) {
 										renameList.put(removedAPath, fnI);
 										renameRec.add(fnI);
 									}
-								}
-								for(String fnI:files) {
-									//CMN.show(a.checker.containsKey(new File(fnI).getName())+"");
-									File fI = new File(fnI);
-									if(fI.isDirectory())
-										continue;
-									if(!mdictInternal.contains(new File(fnI).getAbsolutePath())) {//当前配置的disk cache 和全部词典的记录。
+									/* 追加不存于当前分组的全部词典至全部记录与缓冲组。 */
+									else if(!mdictInternal.contains(fI.getPath())) {
 										try {
-											String raw=fnI;
-											fnI = mFile.tryDeScion(new File(fnI), a.opt.lastMdlibPath);
-											PlaceHolder phI = new PlaceHolder(raw);
-											a.md.add(new_mdict(raw, a));
+											PlaceHolder phI = new PlaceHolder(fnI);
+											a.md.add(new_mdict(fnI, a));
 											a.CosyChair.add(phI);
+											String raw=fnI;
+											fnI = mFile.tryDeScion(fI, a.opt.lastMdlibPath);
+											if(output2==null)
+												output2 = prepareDefaultGroup(def);
 											output2.write(fnI);
 											output2.write("\n");
 											output2.flush();
-											if(!a.mdlibsCon.contains(fnI) && !renameRec.contains(raw)) {
-												a.mdlibsCon.add(fnI);
+											/* 需追加至全部记录而无须重命名者 */
+											if(a.mdlibsCon.add(fnI) && !renameRec.contains(raw)) {
 												output.write(fnI);
 												output.write("\n");
 												output.flush();
 											}
-											count++;
+											countAdd++;
 										} catch (Exception e) {
 											e.printStackTrace();
 											a.showT("词典 "+new File(fnI).getName()+" 加载失败 @"+fnI+" Load Error！ "+e.getLocalizedMessage());
 										}
 									}
 								}
-								a.showT("新加入"+count+"本词典！");
 								if(a.pickDictDialog!=null) {
 									a.pickDictDialog.adapter().notifyDataSetChanged();
 									a.pickDictDialog.isDirty=true;
 								}
 								output.close();
-								output2.close();
+								if(output2!=null)output2.close();
 								renameRec.clear();
-								renameRec=null;
-								ArrayList<File> moduleFullScannerArr;
-								File[] moduleFullScanner = new File(a.opt.pathToMainFolder().append("CONFIG").toString()).listFiles(new FileFilter() {
-									@Override
-									public boolean accept(File pathname) {
-										String name = pathname.getName();
-										if(name.endsWith(".set")) {
-											return true;
-										}
-										return false;
-									}});
-								moduleFullScannerArr = new ArrayList<File>(Arrays.asList(moduleFullScanner));
-								moduleFullScannerArr.add(rec);
-								moduleFullScannerArr.add(def);
-								StringBuffer sb= new StringBuffer();
-								for(File fI:moduleFullScannerArr) {
-									InputStreamReader reader = null;
-									sb.setLength(0);
-									String line = "";
-
-									try {
-										reader = new InputStreamReader(new FileInputStream(fI));
-										BufferedReader br = new BufferedReader(reader);
-										while((line = br.readLine()) != null) {
-											String key=line.startsWith("/")?line:a.opt.lastMdlibPath+"/"+line;
-											String finder = renameList.get(new File(key).getAbsolutePath());
-											if(finder!=null){//当重命名之
-												line=mFile.tryDeScion(new File(finder), a.opt.lastMdlibPath);
-												System.out.println("当重命名之"+line);
+								if(AutoFixLostRecords && renameList.size()>0){
+									ArrayList<File> moduleFullScannerArr;
+									File[] moduleFullScanner = new File(a.opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> pathname.getPath().endsWith(".set"));
+									moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
+									moduleFullScannerArr.add(rec);
+									moduleFullScannerArr.add(def);
+									StringBuilder sb = new StringBuilder();
+									AgentApplication app = ((AgentApplication) a.getApplication());
+									char[] cb = app.get4kCharBuff();
+									for(File fI:moduleFullScannerArr) {
+										sb.setLength(0);
+										String line;
+										boolean bNeedRewrite=false;
+										try {
+											ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
+											while((line = br.readLine()) != null) {
+												/* from old path to neo path */
+												String finder = renameList.get(line.startsWith("/")?line:a.opt.lastMdlibPath+"/"+line);
+												if(finder!=null){
+													line=mFile.tryDeScion(new File(finder), a.opt.lastMdlibPath);
+													bNeedRewrite = true;
+													countRename++;
+													//CMN.Log(fI.getName(), "{当重命名之}", finder, line);
+												}
+												sb.append(line).append("\n");
 											}
-											sb.append(line).append("\n");
+											br.close();
+											cb=br.cb;
+											if(bNeedRewrite) {
+												ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
+												bw.write(sb.toString());
+												bw.flush(); bw.close();
+												cb=br.cb;
+											}
+										} catch (IOException e) {
+											e.printStackTrace();
 										}
-										br.close();
-										reader.close();
-
-										OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fI));
-										BufferedWriter bw = new BufferedWriter(writer);
-										bw.write(sb.toString());
-										bw.flush();
-										bw.close();
-										writer.close();
-									} catch (IOException e) {
-										e.printStackTrace();
 									}
+									app.set4kCharBuff(cb);
+									renameList.clear();
+									checker.clear();
 								}
-								renameList.clear();
-								renameList=null;
-
+								if(countRename>0)
+									a.showT("新加入"+countAdd+"本词典, 重命名"+countRename+"次！");
+								else
+									a.showT("新加入"+countAdd+"本词典！");
 							} catch (IOException e1) {
 								e1.printStackTrace();
 							}
@@ -875,6 +876,21 @@ public class Drawer extends Fragment implements
 				a.startActivityForResult(intent, 1297);
 				break;
 		}
+	}
+
+	private BufferedWriter prepareDefaultGroup(File def) throws IOException {
+		if(def.length()<=0){
+			try {
+				FileChannel inputChannel = new FileInputStream(new File(a.opt.pathToMainFolder().append("CONFIG/").append(a.opt.getLastPlanName()).append(".set").toString())).getChannel();
+				FileChannel outputChannel = new FileOutputStream(def).getChannel();
+				outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+				inputChannel.close();
+				outputChannel.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return new BufferedWriter(new FileWriter(def,true));
 	}
 
 	void showExitDialog() {

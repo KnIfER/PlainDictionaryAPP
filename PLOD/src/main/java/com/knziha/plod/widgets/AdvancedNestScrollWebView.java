@@ -61,7 +61,7 @@ public class AdvancedNestScrollWebView extends WebViewmy implements NestedScroll
 	public boolean onTouchEvent(MotionEvent event) {
 		MotionEvent trackedEvent = MotionEvent.obtain(event);
 
-		final int action = MotionEventCompat.getActionMasked(event);
+		final int action = event.getActionMasked();
 
 		if (action == MotionEvent.ACTION_DOWN) {
 			mNestedYOffset = 0;

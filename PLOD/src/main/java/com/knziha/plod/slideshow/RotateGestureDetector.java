@@ -1,6 +1,5 @@
 package com.knziha.plod.slideshow;
 
-import android.util.Log;
 import android.view.MotionEvent;
 
 /**

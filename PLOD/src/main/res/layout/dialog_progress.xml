@@ -1,13 +1,12 @@
-<RelativeLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:id="@+id/dialog"
 	android:layout_width="match_parent"
 	android:layout_height="250dp"
 	android:layout_marginLeft="18dp"
 	android:layout_marginRight="18dp"
 	android:paddingTop="15dp"
-	android:paddingBottom="15dp"
-	>
+	android:paddingBottom="15dp">
 
 	<TextView
 		android:id="@+id/tv"
@@ -31,7 +30,7 @@
 		android:layout_alignParentTop="true"
 		android:layout_alignParentLeft="true"
 		android:textSize="18sp"
-		android:text="羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典"
+		tools:text="羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典羊津高阶双语词典"
 		android:maxLines="2"
 		android:ellipsize="end"
 		android:textColor="@android:color/black"

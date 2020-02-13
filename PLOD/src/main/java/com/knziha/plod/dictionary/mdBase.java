@@ -59,9 +59,9 @@ import static com.knziha.plod.dictionary.Utils.BU.calcChecksum;
 abstract class mdBase {
 	//TODO Standardize
 	/** 标准究竟是怎样的呢？ 添加@_，俩符号会在词块trailer和header中出现，不参与排序。暂时禁用了isCompat标志 */
-	public final static Pattern replaceReg = Pattern.compile("[ @_&:$/.,\\-'()\\[\\]#<>!\\n]");
+	public final static Pattern replaceReg = Pattern.compile("[ @_=&:$/.,\\-'()\\[\\]#<>!\\n]");
 	public final static Pattern replaceReg2 = Pattern.compile("[ \\-]");
-	public final static Pattern numSuffixedReg = Pattern.compile(".+?([0-9]{1,})");
+	public final static Pattern numSuffixedReg = Pattern.compile(".+?([0-9]+)");
 	public final static Pattern markerReg = Pattern.compile("`([\\w\\W]{1,3}?)`");// for `1` `2`...
 	public final static String linkRenderStr = "@@@LINK=";
 	public final static HashMap<String, byte[]> linkRenderByts = new  HashMap<>();
@@ -582,7 +582,6 @@ abstract class mdBase {
 		}
 	}
 
-
 	static class cached_rec_block{
 		byte[] record_block_;
 		int blockOff;
@@ -892,7 +891,7 @@ abstract class mdBase {
 		return r;
 	}
 	//per-byte byte array comparing
-	final static int compareByteArray(byte[] A,byte[] B){
+	static int compareByteArray(byte[] A,byte[] B){
 		int la = A.length,lb = B.length;
 		for(int i=0;i<Math.min(la, lb);i++){
 			int cpr = (int)(A[i]&0xff)-(int)(B[i]&0xff);
@@ -905,14 +904,14 @@ abstract class mdBase {
 		else return la>lb?1:-1;
 	}
 	//per-byte byte array comparing
-	final static boolean compareByteArrayIsPara(byte[] A,byte[] B){
+	static boolean compareByteArrayIsPara(byte[] A,byte[] B){
 		for(int i=0;i<A.length;i++){
 			if(A[i]!=B[i])
 				return false;
 		}
 		return true;
 	}
-	final static boolean compareByteArrayIsPara(byte[] A,int offA,byte[] B){
+	static boolean compareByteArrayIsPara(byte[] A,int offA,byte[] B){
 		if(offA+B.length>A.length)
 			return false;
 		for(int i=0;i<B.length;i++){

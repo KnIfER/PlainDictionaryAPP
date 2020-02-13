@@ -105,6 +105,16 @@
 			app:allowDividerBelow="true"
 			/>
 
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:persistent="false"
+			android:defaultValue="true"
+			android:key="f_move_bg"
+			android:title="浮动搜索退入后台而不是直接退出"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:persistent="false"
 			android:defaultValue="true"

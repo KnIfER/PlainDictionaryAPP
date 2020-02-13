@@ -22,6 +22,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
@@ -51,12 +52,14 @@ import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -123,20 +126,26 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialogListener;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.MyPair;
+import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_asset;
 import com.knziha.plod.dictionarymodels.mdict_pdf;
+import com.knziha.plod.dictionarymodels.mdict_txt;
 import com.knziha.plod.dictionarymodels.mdict_web;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
@@ -196,6 +205,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -203,11 +213,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -226,10 +237,11 @@ import static com.knziha.plod.dictionarymodels.mdict.indexOf;
 import static com.knziha.plod.slideshow.PdfPic.MaxBitmapRam;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
 
-/**
+/** 程序基类<br/>
+ *  Class for all dictionary activities. <br/>
  * Created by KnIfER on 2018
  */
-@SuppressLint({"SetTextI18bbn","Registered", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
+@SuppressLint({"ResourceType", "SetTextI18bbn","Registered", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
 public abstract class MainActivityUIBase extends Toastable_Activity implements OnTouchListener, OnLongClickListener, OnClickListener, OnMenuItemClickListener, OnDismissListener, MenuItem.OnMenuItemClickListener {
 	//private static final String RegExp_VerbatimDelimiter = "[ ]{1,}|\\pP{1,}|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
 	private static final Pattern RegImg = Pattern.compile("(png$)|(jpg$)|(jpeg$)|(tiff$)|(tif$)|(bmp$)|(webp$)", Pattern.CASE_INSENSITIVE);
@@ -257,6 +269,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	boolean bShowLoadErr=true;
 	public boolean isCombinedSearching;
 	public String CombinedSearchTask_lastKey;
+	public HashMap<String,byte[]> UIProjects;
+	public HashSet<String> dirtyMap;
 
 	public Drawer drawerFragment;
 	public DictPicker pickDictDialog;
@@ -292,13 +306,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	HashSet<String> mdlibsCon;
 	public ArrayList<mdict> md = new ArrayList<>();//Collections.synchronizedList(new ArrayList<mdict>());
 
+	public Dialog taskd;
+	DArrayAdapter AppDataAdapter;
 	BufferedWriter output;
 	BufferedWriter output2;
 	public final static String ce_on="document.body.contentEditable=!0";
 	public final static String ce_off="document.body.contentEditable=!1";
-	final String favorTag = "favorites/";
 	LexicalDBHelper favoriteCon;//public LexicalDBHelper getFDB(){return favoriteCon;};
 	LexicalDBHelper historyCon;
+	/** Use a a filename-directory map to keep a record of lost files so that users could add them back without the need of restore every specific directory.  */
 	HashMap<String,String> checker;
 
 	ImageView favoriteBtn;
@@ -357,6 +373,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected CircleCheckBox popupChecker;
 	WeakReference<ViewGroup> popupCrdCloth;
 	WeakReference<ViewGroup> popupCmnCloth;
+	WeakReference<AlertDialog> setchooser;
+	int lastCheckedPos = -1;
+	private WeakReference<BottomSheetDialog> bottomPlaylist;
+	WeakReference<DBroswer> DBrowser_holder;
+	WeakReference<DBroswer> DHBrowser_holder;
+	WeakReference<AlertDialog> ChooseFavorDialog;
+	DBroswer DBrowser;
 	public PopupGuarder popupGuarder;
 	public String currentClickDisplaying;
 	public int currentClickDictionary_currentPos;
@@ -449,7 +472,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public HashMap<String,mdict> mdict_cache = new HashMap<>();
 	protected int filter_count;
 	protected int hidden_count;
-	DBroswer DBrowser;
 	@Multiline
 	private static final String PDFPage="PAGE";
 	public resultRecorderCombined recCom;
@@ -497,6 +519,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						md.set(i, currentDictionary = new_mdict(phTmp.getPath(opt), this));
 						currentDictionary.tmpIsFlag = phTmp.tmpIsFlag;
 					} catch (Exception e) {
+						invalidate = systemIntialized;
 						if (bShowLoadErr)
 							show(R.string.err, phTmp.name, phTmp.pathname, e.getLocalizedMessage());
 					}
@@ -510,7 +533,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					//lv.setSelection(currentDictionary.lvPos);
 					lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
 				} else {
-					adaptermy.shutUp();
+					adaptermy.notifyDataSetChanged();
 				}
 			}
 		}
@@ -547,7 +570,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public String md_getName(int i) {
-		if(i>0 && i<md.size()){
+		if(i>=0 && i<md.size()){
 			mdict mdTmp = md.get(i);
 			if(mdTmp!=null) return mdTmp._Dictionary_fName;
 			ArrayList<PlaceHolder> CosyChair = getLazyCC();
@@ -579,8 +602,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	@Override
 	public void onActionModeStarted(ActionMode mode) {
-		//CMN.Log("-->onActionModeStarted");
 		View v = getCurrentFocus();
+		CMN.Log("-->onActionModeStarted", v);
 		Menu menu = null;
 		if(v instanceof WebViewmy && Build.VERSION.SDK_INT<=Build.VERSION_CODES.M) {
 			mode.setTitle(null);
@@ -674,7 +697,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	/*
-	* 多维分享 ( Handle A Share Intent )
+	* 多维分享 ( MDCCSP Handling A Share Intent )
 	*  {p:程序包名 m:活动名称 a:举措名称 t:MIME类型 k1:字段1键名 v1:字段1键值…}x8
 	*  7 8 9 10   11 12 13 14
 	* */
@@ -859,7 +882,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void onCreate(Bundle savedInstanceState) {
 	   /*if(opt.FirstFlag()==null)
 		   showT("first flag");
-
        ActivityManager manager = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
        	  List<RunningTaskInfo> ri = manager.getRunningTasks(100);
        	  int cc=0;
@@ -867,6 +889,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
        		  cc+=ri.get(i).numActivities;
        	  showT(""+cc);
        	  */
+	    CMN.instanceCount++;
+	    //CMN.Log("instanceCount", CMN.instanceCount);
 		super.onCreate(savedInstanceState);
 		snackWorker = () -> {
 			animationSnackOut=false;
@@ -888,6 +912,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(PDICMainAppOptions.getEnableWebDebug()){
 			WebView.setWebContentsDebuggingEnabled(true);
 		}
+		StringBuffer sb = opt.pathToInternalDatabases();
+		File checkDirs = new File(sb.toString());
+		if(!checkDirs.isDirectory())
+			checkDirs.mkdirs();
+		sb.append("favorites/");
+		checkDirs = new File(sb.toString());
+		if(!checkDirs.isDirectory())
+			checkDirs.mkdir();
 	}
 
 	public void onAudioPause() {
@@ -950,6 +982,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void fix_pw_color() {
+		if(bottomPlaylist!=null){
+			bottomPlaylist.clear();
+			bottomPlaylist=null;
+		}
+		if(ChooseFavorDialog!=null){
+			ChooseFavorDialog.clear();
+			ChooseFavorDialog=null;
+		}
 		if(popupWebView!=null)
 		if(GlobalOptions.isDark){
 			popupContentView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
@@ -976,7 +1016,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							targetRoot = PeruseView.root;
 						int size = md.size();
 						if(size<=0) return;
-						CMN.Log("popupWord", popupKey, x, y, frameAt);
+						//CMN.Log("popupWord", popupKey, x, y, frameAt);
 						boolean isNewHolder = false;
 						boolean isInit = false;
 						// 初始化核心组件
@@ -1234,7 +1274,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							currentClickDisplaying = popupKey;
 							decorateContentviewByKey(popupStar, currentClickDisplaying, R.drawable.star_ic_solid_framed, R.drawable.star_ic_grey);
 							if (!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy10())
-								historyCon.insertUpdate(popupKey);
+								insertUpdate_histroy(popupKey);
 						}
 
 						// 初次添加请指明方位
@@ -1559,9 +1599,132 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
+	/** Just mark as dirty. */
+	public void putUIProject(String fname, byte[] data) {
+		CMN.Log("putted", fname);
+		dirtyMap.add(fname);
+		UIProjects.put(fname, data);
+	}
+
+	/** Batch save all */
+	public void  dumpViewStates() {
+		AgentApplication app = ((AgentApplication) getApplication());
+		HashMap<String, byte[]> mdict_projects = app.UIProjects;
+		try {
+			File SpecificationFile = new File(opt.pathToDatabases().append(".spec.bin").toString());
+			FileOutputStream fout = new FileOutputStream(SpecificationFile);
+			ReusableByteOutputStream bos = new ReusableByteOutputStream(SpecificationBlockSize);
+			byte[] source = bos.getBytes();
+			int count=0;
+			boolean init=false;
+			byte[] name, data;
+			for(String kI:mdict_projects.keySet()){
+				//CMN.Log("写入……kI=", kI);
+				if(!init){
+					name = Integer.toString(ConfigSize).getBytes(StandardCharsets.UTF_8);
+					data = "/\n".getBytes();
+					bos.write(name);
+					bos.write(data);
+					count+=name.length+data.length;
+					init = true;
+				}
+				name = kI.getBytes(StandardCharsets.UTF_8);
+				data = mdict_projects.get(kI);
+				if(data!=null) {
+					if(data.length-ConfigExtra< ConfigSize){
+						byte[] newData = new byte[ConfigSize + ConfigExtra];
+						System.arraycopy(data, 0, newData, 0, data.length);
+						mdict_projects.put(kI, data = newData);
+					}
+					int ReadOffset=count+name.length+targetCount;
+					int size = name.length + data.length + 2 - ConfigExtra;
+					if (count + size > SpecificationBlockSize) { //溢出写入
+						Arrays.fill(source, count, SpecificationBlockSize, (byte) 0);
+						fout.write(source);
+						fout.flush();
+						bos.reset();
+						count = 0;
+					}
+					bos.write(name);
+					bos.write("/".getBytes());
+					bos.write(data, ConfigExtra, data.length-ConfigExtra);
+					bos.write("\n".getBytes());
+					for (int k = 0; k < 4; k++) {
+						data[k] = (byte) (ReadOffset>>(k*8)&0xff);
+					}
+					data[5]=0;
+					count += size;
+				}
+			}
+			if(count>0 && count<SpecificationBlockSize) { //正常写入
+				fout.write(source ,0, count);
+				fout.flush();
+				fout.close();
+			}
+			mConfigSize=ConfigSize;
+			CMN.LastConfigReadTime = System.currentTimeMillis();
+		}
+		catch (Exception e){
+			CMN.Log(e);
+		}
+	}
+
+	/** Save just one. */
+	public boolean SolveOneUIProject(String fname) {
+		CMN.Log("solveOnUIProject");
+		try {
+			byte[] name = fname.getBytes(StandardCharsets.UTF_8);
+			byte[] data = UIProjects.get(fname);
+			if(data!=null){
+				File SpecificationFile = new File(opt.pathToDatabases().append(".spec.bin").toString());
+				int RealOffset=0;
+				for (int k = 0; k < 4; k++)
+					RealOffset |= (data[k]&0xff)<<(k*8);
+				if(RealOffset<1){ //append
+					CMN.Log("追加成功???");
+					FileOutputStream fout = new FileOutputStream(SpecificationFile, true);
+					int size = name.length + data.length + 2;
+					long count = SpecificationFile.length();
+					long left = SpecificationBlockSize - count%SpecificationBlockSize;
+					if(left<size)//填充0
+						for (int i = 0; i < left; i++) fout.write(0);
+					fout.write(name);
+					fout.write(target);
+					count += name.length + targetCount;
+					for (int k = 0; k < 4; k++)
+						data[k] = (byte) (count>>(k*8)&0xff);
+					fout.write(data, ConfigExtra, data.length-ConfigExtra);
+					fout.write(separator);
+					CMN.Log("追加成功！");
+					CMN.LastConfigReadTime = System.currentTimeMillis();
+					return true;
+				} else {  //in place re-write
+					RandomAccessFile raf = new RandomAccessFile(SpecificationFile, "rw");
+					raf.seek(RealOffset-1);
+					if(raf.read()==(target[targetCount-1]&0xff)){//sanity check A
+						raf.write(data, ConfigExtra, data.length-ConfigExtra);
+						CMN.Log("写入成功???");
+						if(raf.read()==(separator[0]&0xff)){//sanity check B
+							CMN.Log("写入成功!!!");
+							CMN.LastConfigReadTime = System.currentTimeMillis();
+							return true;
+						}
+					}
+					raf.close();
+				}
+			}
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		CMN.Log("override !!!");
+		return false;
+	}
+
 	static class BaseHandler extends Handler{
 		float animator = 0.1f;
 		float animatorD = 0.15f;
+		public void clearActivity() { }
 	}
 
 	void closeIfNoActionView(MenuItemImpl mi) {
@@ -1582,6 +1745,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		getLastPlanName();
 	}
 
+	public static byte[] target = "/".getBytes(StandardCharsets.UTF_8);
+	public static byte[] separator = "\n".getBytes(StandardCharsets.UTF_8);
+	public static int separatorCount = separator.length;
+	public static int targetCount = target.length;
+	public static int ConfigSize = 50;
+	public static int ConfigExtra = 5;
+	public static int SpecificationBlockSize = 4096;
+
+	public int mConfigSize = 0;
+
 	@Override
 	protected void further_loading(Bundle savedInstanceState) {
 		//stst = System.currentTimeMillis();
@@ -1596,19 +1769,104 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		iItem_InPageSearch.setVisible(false);
 		if(iItem_ClickSearch!=null)
 			iItem_ClickSearch.setVisible(false);
-		opt.currFavoriteDBName = opt.getCurrFavoriteDBName();
-		if(opt.currFavoriteDBName==null || !opt.currFavoriteDBName.startsWith(favorTag))
-			opt.currFavoriteDBName = "favorites/favorite";
-		new File(opt.pathToInternalDatabases().append("favorites").toString()).mkdirs();
-		new File(opt.pathToMainFolder().append("CONFIG").toString()).mkdirs();
 
-		favoriteCon = new LexicalDBHelper(this,opt.currFavoriteDBName);
-		historyCon = new LexicalDBHelper(this,"history");
+		StringBuffer pmf = opt.pathToMainFolder();
+		int pmfLen = pmf.length();
+		new File(pmf.append("CONFIG").toString()).mkdirs();
+		pmf.setLength(pmfLen);
 
-		new File(opt.pathToMainFolder().toString()).mkdirs();
+		AgentApplication app = ((AgentApplication) getApplication());
+		UIProjects = app.UIProjects;
+		dirtyMap = app.dirtyMap;
+		CMN.rt();
+		File SpecificationFile = new File(pmf.append("bmDBs/.spec.bin").toString());
+		if(SpecificationFile.exists()){ // 读取逐词典配置。
+			if(CMN.LastConfigReadTime<SpecificationFile.lastModified()) {
+				if(!(CMN.bForbidOneSpecFile = SpecificationFile.isDirectory()))
+				try {
+					//todo 文件大于 Integer.MAX_VALUE 时，应用银河软件标准。
+					FileInputStream fin = new FileInputStream(SpecificationFile);
+					int i, j, sourceOffset, sourceCount, max, end, RealOffset, trimStart;
+					byte first = target[0];
+					int prevBlock = 0;
+					byte[] oldData = null;
+					byte[] source = new byte[SpecificationBlockSize];
+					//4k对齐读取。
+					ReadBlocks:
+					while ((sourceCount = fin.read(source)) > 0) {
+						sourceOffset = 0;
+						FindItems:
+						while (sourceOffset < sourceCount) {
+							//CMN.Log("开查……", sourceOffset);
+							/* 先查 /，前进固定长度(第一行所定义的[50 Bytes])，得遇 \n。  */
+							max = sourceCount - targetCount;
+							for (i = sourceOffset; i <= max; i++) {
+								/* Look for first character. */
+								if (source[i] != first) {
+									while (++i <= max && source[i] != first) ;
+								}
+								/* Found first character, now look at the rest of v2 */
+								if (i <= max) {
+									j = i + 1;
+									end = j + targetCount - 1;
+									for (int k = 1; j < end && source[j] == target[k]; j++, k++) ;
+									if (j == end) {
+										/* Found whole string. */
+										//return i - sourceOffset;
+										end = i + targetCount;
+										j = end + mConfigSize;
+										if (j < sourceCount && source[j] == separator[0]) {
+											trimStart = 0;
+											while ((source[sourceOffset + 1] & 0xff) == 0) {
+												++trimStart;
+												++sourceOffset;
+											}
+											if (oldData != null) {
+												oldData[4] = (byte) trimStart;
+											}
+											String fn = new String(source, sourceOffset, i - sourceOffset, StandardCharsets.UTF_8);
+											if (mConfigSize == 0) {
+												mConfigSize = IU.parseInt(fn);
+												if (mConfigSize < 50) {
+													break ReadBlocks;
+												}
+												CMN.Log("配置大小 =", mConfigSize);
+											} else {
+												i += targetCount;
+												RealOffset = prevBlock * SpecificationBlockSize + i;
+												//CMN.Log("读取!!!", fn, RealOffset, new String(source, i - 1, 1));
+												byte[] data = new byte[ConfigExtra + mConfigSize];
+												for (int k = 0; k < 4; k++) {
+													data[k] = (byte) (RealOffset >> (k * 8) & 0xff);
+												}
+												System.arraycopy(source, i, data, ConfigExtra, mConfigSize);
+												oldData = data;
+												app.UIProjects.put(fn, data);
+											}
+											end = j + separatorCount;
+										}
+										sourceOffset = end;
+										continue FindItems;
+									}
+								}
+							}
+							break;
+						}
+						++prevBlock;
+						if (sourceCount < SpecificationBlockSize)
+							break;
+					}
+					fin.close();
+					CMN.LastConfigReadTime = System.currentTimeMillis();
+				} catch (Exception e) {
+					CMN.Log(e);
+				}
+			}
+		}
+		CMN.pt("单典配置总初始化时间：");
 
 		final File def = getStartupFile();      //!!!原配
-		final boolean retrieve_all=!def.exists();
+		final boolean retrieve_all=def==null || !def.exists();
 
 		ArrayList<PlaceHolder> CC = getLazyCC();
 		if(retrieve_all) {
@@ -1616,7 +1874,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				md.add(new mdict_asset("liba.mdx", this));
 				CC.add(new PlaceHolder(CMN.AssetTag + "liba.mdx", CC));
 			} catch (IOException e) {
-				Log.e("ffatal", "sda");
+				Log.e("fatal", "sda");
 			}
 		}
 		else try {
@@ -1626,14 +1884,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			buildUpDictionaryList(lazyLoad, null);
 		} catch (IOException e2) { e2.printStackTrace(); }
 
-		//stst = System.currentTimeMillis();
-
 		if(opt.getCheckMdlibs()){
 			File rec = new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString());
 			ReadInMdlibs(rec);
 			File mdlib = new File(opt.lastMdlibPath);
 			if(mdlib.isDirectory() && mdlib.canRead())
 			{
+				//todo 交换顺序，先新建，再写入（新建失败的也写入）。
 				File [] arr = mdlib.listFiles(pathname -> {
 					if(pathname.isFile()) {
 						String fn = pathname.getName();
@@ -1849,7 +2106,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected abstract View getIMPageCover();
 
 	protected File getStartupFile(){
-		return new File(getExternalFilesDir(null),"default.txt");
+		File def = new File(getExternalFilesDir(null),"default.txt");
+		if(def.length()<=0){
+			def = new File(opt.pathToMainFolder().append("CONFIG/").append(opt.getLastPlanName()).append(".set").toString());
+		}
+		return def;
 	}
 
 	protected abstract String getLastPlanName();
@@ -1964,7 +2225,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(rec.exists())
 				try {
 					BufferedReader in = new BufferedReader(new FileReader(rec));
-
 					String line;
 					while((line=in.readLine())!=null){
 						mdlibsCon.add(line);															   //!!!旧爱
@@ -1973,7 +2233,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							check=new File(opt.lastMdlibPath,line);
 						else
 							check=new File(line);
-						if(!check.exists())
+						if(!line.startsWith("/ASSET/") && !check.exists())
 							checker.put(check.getName(),check.getAbsolutePath());// check for mdict_noexists
 					}
 					in.close();
@@ -2146,6 +2406,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	@Override
 	protected void onDestroy(){
+		CMN.instanceCount--;
 		if(systemIntialized) {
 			for(mdict mdTmp:md) {
 				if(mdTmp!=null) {
@@ -2155,8 +2416,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 			md.clear();
-			if(favoriteCon!=null) favoriteCon.close();
-			if(historyCon!=null)  historyCon.close();
 			webSingleholder.removeAllViews();
 			webholder.removeAllViews();
 
@@ -2164,12 +2423,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				ucc.invoker=null;
 				ucc=null;
 			}
-
 			if(TTSController_engine !=null){
 				TTSController_engine.stop();
 				TTSController_engine.shutdown();
 			}
+			if(CMN.instanceCount<=0){
+				((AgentApplication)getApplication()).closeDataBases();
+			}
+			hdl.clearActivity();
+			WeakReference[] holders = new WeakReference[]{popupCrdCloth, popupCmnCloth, setchooser, bottomPlaylist, DBrowser_holder, DHBrowser_holder};
+			for(WeakReference hI:holders){
+				if(hI!=null)
+					hI.clear();
+			}
 		}
+		if(CMN.instanceCount<0) CMN.instanceCount=0;
 		super.onDestroy();
 	}
 
@@ -2191,23 +2459,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		opt.putDefaultFontScale(mdict.def_fontsize);
 	}
 
-
-
 	protected int actionBarSize;
 	void setContentBow(boolean bContentBow) {
 		//actionBarSize=toolbar.getHeight();
 		FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) contentview.getLayoutParams();
 		if(lp.topMargin==0) {
 			if(bContentBow) {
-				lp.setMargins(0,actionBarSize, 0, 0);
-				contentview.setLayoutParams(lp);
+				lp.setMargins(0,toolbar.getHeight(), 0, 0);
+				contentview.requestLayout();
 				//if(PhotoPagerHolder!=null) PhotoPagerHolder.setLayoutParams(lp);
 				RecalibrateContentSnacker(bContentBow);
 			}
 		}else {
 			if(!bContentBow) {
 				lp.setMargins(0,0, 0, 0);
-				contentview.setLayoutParams(lp);
+				contentview.requestLayout();
 				//if(PhotoPagerHolder!=null) PhotoPagerHolder.setLayoutParams(lp);
 				RecalibrateContentSnacker(bContentBow);
 			}
@@ -2231,7 +2497,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	void refreshContentBow(boolean bContentBow) {
 		if(bContentBow) {
 			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) contentview.getLayoutParams();
-			lp.setMargins(0,actionBarSize, 0, 0);
+			lp.setMargins(0,toolbar.getHeight(), 0, 0);
 			contentview.setLayoutParams(lp);
 		}
 	}
@@ -2261,13 +2527,71 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public void decorateContentviewByKey(ImageView favoriteBtn,String key, int activeResId, int inactiveResId) {
 		if(favoriteBtn==null) favoriteBtn=this.favoriteBtn;
-		favoriteCon.prepareContain();
-		if(favoriteCon.contains(key)) {
+		if(prepareFavoriteCon().contains(key)) {
 			favoriteBtn.setImageResource(activeResId==0?R.drawable.star_ic_solid:activeResId);
 		}else
 			favoriteBtn.setImageResource(inactiveResId==0?R.drawable.star_ic:inactiveResId);
 	}
 
+	protected LexicalDBHelper prepareFavoriteCon() {
+		if(favoriteCon!=null) return favoriteCon;
+		ArrayList<MyPair<String, LexicalDBHelper>> slots = ((AgentApplication) getApplication()).AppDatabases;
+		String name = opt.getCurrFavoriteDBName();
+		int selectedPos=-1;
+		int candidate=-1;
+		boolean fading = false;
+		String dateBaseName = "favorite.sql";
+		if(slots.size()>0){
+			for (int i = 0; i < slots.size() & selectedPos==-1; i++) {
+				if(name!=null && slots.get(i).key.equals(name))
+					selectedPos = i;
+				if(slots.get(i).value != null)
+					candidate = i;
+			}
+			if(selectedPos==-1){
+				selectedPos=candidate;
+				fading=true;
+			}
+		}
+		LexicalDBHelper _favoriteCon = null;
+		if(selectedPos!=-1){
+			dateBaseName = slots.get(selectedPos).key;
+			_favoriteCon = slots.get(selectedPos).value;
+			if(_favoriteCon!=null){
+				if(!new File(_favoriteCon.pathName).exists())
+					_favoriteCon=null;
+			}
+		}
+		if(fading || selectedPos==-1)
+			opt.putCurrFavoriteDBName(dateBaseName);
+		if(_favoriteCon==null) {
+			_favoriteCon = new LexicalDBHelper(getApplicationContext(), opt, dateBaseName);
+			if(selectedPos!=-1){
+				slots.get(selectedPos).value = _favoriteCon;
+			} else {
+				slots.add(new MyPair<>(dateBaseName, _favoriteCon));
+			}
+		}
+		return favoriteCon = _favoriteCon;
+	}
+
+	protected LexicalDBHelper prepareHistroyCon() {
+		if(historyCon!=null) return historyCon;
+		AgentApplication app = ((AgentApplication) getApplication());
+		LexicalDBHelper _historyCon = app.historyCon;
+		if(_historyCon!=null){
+			if(!new File(_historyCon.pathName).exists())
+				_historyCon=null;
+		}
+		if(_historyCon==null){
+			app.historyCon = _historyCon = new LexicalDBHelper(getApplicationContext(),opt);
+		}
+		return historyCon = _historyCon;
+	}
+
+	protected void insertUpdate_histroy(String key) {
+		prepareHistroyCon().insertUpdate(key);
+	}
 
 	Field FastScrollField;
 	Field TrackDrawableField;
@@ -2328,6 +2652,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				new mdict_pdf(fn, THIS)
 				:fn.endsWith(".web")?
 				new mdict_web(fn, THIS)
+				:fn.endsWith(".txt")?
+				new mdict_txt(fn, THIS)
 				:new mdict(fn, THIS);
 	}
 
@@ -2435,7 +2761,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ViewGroup bottomView;
 		RecyclerView twoColumnView;
 		TwoColumnAdapter twoColumnAda;
-		private int currentPos;
 		boolean lastInDark;
 		protected ObjectAnimator objectAnimator;
 		int lastBookMarkPosition;
@@ -2479,13 +2804,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					asd.setColorPickerDialogListener(new ColorPickerDialogListener() {
 						@Override
 						public void onColorSelected(ColorPickerDialog dialogInterface, int color) {
+							//CMN.Log("onColorSelected");
 							if(invoker.getUseInternalBG())
 								invoker.bgColor=color;
 							else{
-								CMN.GlobalPageBackground=color;
+								GlobalPageBackground=CMN.GlobalPageBackground=color;
 							}
-							isDirty=true;
-
 							WebViewmy mWebView=bFromPeruseView?PeruseView.mWebView:invoker.mWebView;
 							int ManFt_invoker_bgColor=invoker.bgColor;
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
@@ -2495,8 +2819,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							};
 							boolean apply = bFromPeruseView || widget12.getTag(R.id.image)==null;
 							if(invoker.getUseInternalBG()) {
-								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web2);
-								invoker.WriteConfigInt(invoker.CONFIGPOS[0],invoker.bgColor);
+								invoker.dumpViewStates();
 								if(apply && mWebView!=null)
 									mWebView.setBackgroundColor(ManFt_invoker_bgColor);
 							}else {
@@ -2510,7 +2833,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
 							}
 						}
-
 						@Override
 						public void onPreviewSelectedColor(ColorPickerDialog dialogInterface, int color) {
 							if(bFromPeruseView || widget12.getTag(R.id.image)==null) {
@@ -2519,7 +2841,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								WebViewmy mWebView = bFromPeruseView ? PeruseView.mWebView : invoker.mWebView;
 								ViewGroup webSingleholder = bFromPeruseView ? PeruseView.webSingleholder : MainActivityUIBase.this.webSingleholder;
 								if (invoker.getUseInternalBG()) {
-									color = ColorUtils.blendARGB(color, Color.BLACK, ColorMultiplier_Web2);
 									if (mWebView != null)
 										mWebView.setBackgroundColor(color);
 								} else {
@@ -2529,9 +2850,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								}
 							}
 						}
-
 						@Override
 						public void onDialogDismissed(ColorPickerDialog dialogInterface, int color) {
+							CMN.Log("onDialogDismissed");
 							d.show();
 							WebViewmy mWebView=bFromPeruseView?PeruseView.mWebView:invoker.mWebView;
 							int ManFt_invoker_bgColor=invoker.bgColor;
@@ -2541,11 +2862,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								ManFt_GlobalPageBackground=ColorUtils.blendARGB(ManFt_GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 							};
 							boolean apply = bFromPeruseView || widget12.getTag(R.id.image)==null;
-							if(isDirty) {
-
-							}else {//fall back
+							if(!isDirty){//fall back
 								if(invoker.getUseInternalBG()) {
-									ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web2);
 									if(apply && mWebView!=null)
 										mWebView.setBackgroundColor(ManFt_invoker_bgColor);
 								}else {
@@ -2557,7 +2875,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								}
 							}
 						}
-
 						boolean isDirty;
 					});
 					asd.show(getSupportFragmentManager(),"color-picker-dialog");
@@ -2590,16 +2907,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				bFromPeruseView=v.getTag(R.id.position)!=null;
 				v.setTag(null);
 			}
-			if(invoker instanceof mdict_pdf){
-				((WebView)((ViewGroup)v.getParent().getParent().getParent()).findViewById(R.id.webviewmy)).evaluateJavascript(PDFPage, value -> {
-					currentPos = IU.parsint(value);
-					//CMN.Log(currentPos,"currentPoscurrentPos", value);
+			if (!bFromWebView && mWebView!=null && invoker instanceof mdict_pdf) {
+				mWebView.evaluateJavascript(PDFPage, value -> {
+					mWebView.currentPos = IU.parsint(value);
 					build_further_dialog();
 				});
-			}
-			else{
-				currentPos=bFromPeruseView?PeruseView.currentPos:
-						invoker==null?0:invoker.currentPos;
+			} else {
 				build_further_dialog();
 			}
 		}
@@ -2619,464 +2932,471 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		public boolean onItemClick(AdapterView<?> parent, View view, int position, long id, boolean isLongClicked) {
 			//CMN.Log("数据库 ", itemsA[0], getString(R.string.bmSub), itemsA[0].equals(getString(R.string.bmSub)));
-			if(!bFromWebView && !bFromTextView) {
-				WebViewmy _mWebView = mWebView;
-				if(_mWebView==null) _mWebView=invoker.mWebView;
-				if(_mWebView==null) {
-					showT("错误!!! 网页找不到了");
-					return true;
-				}
-				switch (position) {
-					/* 书签 */
-					case 0: {
-						if (isLongClicked) return false;
-						if (itemsA[0].equals(getString(R.string.bmSub))) {
-							boolean succ = false;
-							if (con != null) {
-								if (isWeb) {
-									mdict_web webx = ((mdict_web) invoker);
-									if (webx.removeCurrentUrl(con, _mWebView.getUrl())) {
+			try {
+				//if(isLongClicked) CMN.Log("长按开始……");
+				if(!bFromWebView && !bFromTextView) {
+					WebViewmy _mWebView = mWebView;
+					if(_mWebView==null) _mWebView=invoker.mWebView;
+					if(_mWebView==null) {
+						showT("错误!!! 网页找不到了");
+						return true;
+					}
+					switch (position) {
+						/* 书签 */
+						case 0: {
+							if (isLongClicked) return false;
+							if (itemsA[0].equals(getString(R.string.bmSub))) {
+								boolean succ = false;
+								if (con != null) {
+									if (isWeb) {
+										mdict_web webx = ((mdict_web) invoker);
+										if (webx.removeCurrentUrl(con, _mWebView.getUrl())) {
+											succ = true;
+										}
+									} else if (con.remove(_mWebView.currentPos) > 0) {
 										succ = true;
 									}
-								} else if (con.remove(currentPos) > 0) {
-									succ = true;
 								}
-							}
-							if (succ) {
-								((TextView) view.findViewById(android.R.id.text1)).setText(itemsA[0] = bmAdd);
-								showX(R.string.delDone, 0);
-							} else
-								showT("删除失败,数据库出错...", 0);
-						} else {// add
-							boolean succ = false;
-							if (con == null) con = invoker.getCon(true);
-							try {
-								if (isWeb) {
-									mdict_web webx = ((mdict_web) invoker);
-									if (webx.saveCurrentUrl(con, _mWebView.getUrl()) != -1)
-										succ = true;
+								if (succ) {
+									((TextView) view.findViewById(android.R.id.text1)).setText(itemsA[0] = bmAdd);
+									showX(R.string.delDone, 0);
+								} else
+									showT("删除失败,数据库出错...", 0);
+							} else {// add
+								boolean succ = false;
+								if (con == null) con = invoker.getCon(true);
+								try {
+									if (isWeb) {
+										mdict_web webx = ((mdict_web) invoker);
+										if (webx.saveCurrentUrl(con, _mWebView.getUrl()) != -1)
+											succ = true;
+									} else {
+										if (con.insert(_mWebView.currentPos) != -1) {
+											succ = true;
+											int BKHistroryVagranter = opt.getInt("bkHVgrt", -1);
+											BKHistroryVagranter = (BKHistroryVagranter + 1) % 20;
+											String rec = invoker.getName() + "/?Pos=" + _mWebView.currentPos;
+											opt.putter()
+													.putString("bkh" + BKHistroryVagranter, rec)
+													.putInt("bkHVgrt", BKHistroryVagranter)
+													.apply();
+										}
+									}
+								} catch (Exception e) {
+									CMN.Log(e);
+								}
+								if (succ) {
+									showX(R.string.bmAdded, 0);
+									((TextView) view.findViewById(android.R.id.text1)).setText(itemsA[0] = getString(R.string.bmSub));
 								} else {
-									if (con.insert(currentPos) != -1) {
-										succ = true;
-										int BKHistroryVagranter = opt.getInt("bkHVgrt", -1);
-										BKHistroryVagranter = (BKHistroryVagranter + 1) % 20;
-										String rec = invoker.getName() + "/?Pos=" + currentPos;
-										opt.putter()
-												.putString("bkh" + BKHistroryVagranter, rec)
-												.putInt("bkHVgrt", BKHistroryVagranter)
-												.apply();
-									}
+									showT("添加失败,数据库出错...", 0);
 								}
-							} catch (Exception e) {
-								CMN.Log(e);
 							}
-							if (succ) {
-								showX(R.string.bmAdded, 0);
-								((TextView) view.findViewById(android.R.id.text1)).setText(itemsA[0] = getString(R.string.bmSub));
+							if (mBookMarkAdapter != null)
+								if (mBookMarkAdapter.cr != null) {
+									mBookMarkAdapter.cr.close();
+									mBookMarkAdapter.cr = null;
+								}
+						}
+						break;
+						/* 书签列表 */
+						case 1: {//书签列表
+							if (isLongClicked) return false;
+							//stst = System.currentTimeMillis();
+							//ArrayList<Integer> result = new ArrayList<>();
+
+							//Cursor cr;
+							//cr = con.getDB().rawQuery("select * from t1 ", null);
+							//SparseArray<String> DataRecord = new SparseArray<>();
+
+							//cr = con.getDB().query("t1", null,null,null,null,null,"path");
+							//while(cr.moveToNext()){
+							//	result.add(0,cr.getInt(0));
+							//}
+							//cr.close();
+							if (con == null) {
+								showT("没有书签", 0);
+								break;
+							}
+							AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this, lastInDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);//,R.style.DialogStyle2Line);
+							builder.setTitle(invoker._Dictionary_fName + " -> " + getString(R.string.bm));
+							builder.setItems(new String[]{}, null);
+							builder.setNeutralButton(R.string.delete, null);
+							final AlertDialog d = builder.create();
+
+							d.getWindow().setBackgroundDrawableResource(lastInDark ? R.drawable.popup_shadow_d : R.drawable.popup_shadow_l);
+							d.show();
+							d.getListView().setAdapter(getBookMarkAdapter(lastInDark, invoker, con));
+							//d.getListView().setFastScrollEnabled(true);
+
+							if (lastBookMarkPosition != -1) {
+								d.getListView().setSelection(lastBookMarkPosition);
+							}
+
+
+							d.getListView().setOnItemClickListener((parent1, view1, position1, id1) -> {
+								int id11 = (int) mBookMarkAdapter.getItem(position1);
+								myWebClient.shouldOverrideUrlLoading(bFromPeruseView ? PeruseView.mWebView : invoker.mWebView, "entry://@" + id11);
+								opt.putString("bkmk", invoker.f().getAbsolutePath() + "/?Pos=" + id11);
+								//if(!cb.isChecked())
+								d.dismiss();
+							});
+							d.getListView().addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_))));
+							//d.getListView().setTag(con);
+							d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v13 -> {
+								mBookMarkAdapter.showDelete = !mBookMarkAdapter.showDelete;
+								mBookMarkAdapter.notifyDataSetChanged();
+							});
+							d.setOnDismissListener(dialog -> {
+								lastBookMarkPosition = d.getListView().getFirstVisiblePosition();
+								mBookMarkAdapter.clear();
+							});
+						}
+						break;
+						/* 文字缩放级别 */
+						case 2:
+						case 3: {
+							if (isLongClicked) {
+								int targetLevel = invoker.getFontSize();
+								switch (position) {
+									case 2:
+										if (targetLevel < mdict.optimal100) {
+											_mWebView.getSettings().setTextZoom(targetLevel = mdict.optimal100);
+										} else if (targetLevel < 500) {
+											_mWebView.getSettings().setTextZoom(targetLevel = 500);
+										} else
+											targetLevel = -1;
+										break;
+									case 3:
+										if (targetLevel > mdict.optimal100) {
+											_mWebView.getSettings().setTextZoom(targetLevel = mdict.optimal100);
+										} else if (targetLevel > 10) {
+											_mWebView.getSettings().setTextZoom(targetLevel = 10);
+										} else
+											targetLevel = -2;
+										break;
+								}
+								if (targetLevel > 0) {
+									if (invoker.getUseInternalFS()) {
+										showT((invoker.internalScaleLevel = targetLevel) + "%", 0);
+										invoker.dumpViewStates();
+									} else {
+										notifyGLobalFSChanged(targetLevel);
+										showT("(全局) " + (targetLevel) + "%", 0);//"(全局) "
+									}
+								} else if (targetLevel == -2)
+									showT("min scale level", 0);
+								else
+									showT("max level reached", 0);
+								return true;
 							} else {
-								showT("添加失败,数据库出错...", 0);
-							}
-						}
-						if (mBookMarkAdapter != null)
-							if (mBookMarkAdapter.cr != null) {
-								mBookMarkAdapter.cr.close();
-								mBookMarkAdapter.cr = null;
-							}
-					}
-					break;
-					/* 书签列表 */
-					case 1: {//书签列表
-						if (isLongClicked) return false;
-						//stst = System.currentTimeMillis();
-						//ArrayList<Integer> result = new ArrayList<>();
-
-						//Cursor cr;
-						//cr = con.getDB().rawQuery("select * from t1 ", null);
-						//SparseArray<String> DataRecord = new SparseArray<>();
-
-						//cr = con.getDB().query("t1", null,null,null,null,null,"path");
-						//while(cr.moveToNext()){
-						//	result.add(0,cr.getInt(0));
-						//}
-						//cr.close();
-						if (con == null) {
-							showT("没有书签", 0);
-							break;
-						}
-						AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this, lastInDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);//,R.style.DialogStyle2Line);
-						builder.setTitle(invoker._Dictionary_fName + " -> " + getString(R.string.bm));
-						builder.setItems(new String[]{}, null);
-						builder.setNeutralButton(R.string.delete, null);
-						final AlertDialog d = builder.create();
-
-						d.getWindow().setBackgroundDrawableResource(lastInDark ? R.drawable.popup_shadow_d : R.drawable.popup_shadow_l);
-						d.show();
-						d.getListView().setAdapter(getBookMarkAdapter(lastInDark, invoker, con));
-						//d.getListView().setFastScrollEnabled(true);
-
-						if (lastBookMarkPosition != -1) {
-							d.getListView().setSelection(lastBookMarkPosition);
-						}
-
-
-						d.getListView().setOnItemClickListener((parent1, view1, position1, id1) -> {
-							int id11 = (int) mBookMarkAdapter.getItem(position1);
-							myWebClient.shouldOverrideUrlLoading(bFromPeruseView ? PeruseView.mWebView : invoker.mWebView, "entry://@" + id11);
-							opt.putString("bkmk", invoker.f().getAbsolutePath() + "/?Pos=" + id11);
-							//if(!cb.isChecked())
-							d.dismiss();
-						});
-						d.getListView().addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_))));
-						//d.getListView().setTag(con);
-						d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v13 -> {
-							mBookMarkAdapter.showDelete = !mBookMarkAdapter.showDelete;
-							mBookMarkAdapter.notifyDataSetChanged();
-						});
-						d.setOnDismissListener(dialog -> {
-							lastBookMarkPosition = d.getListView().getFirstVisiblePosition();
-							mBookMarkAdapter.clear();
-						});
-					}
-					break;
-					/* 文字缩放级别 */
-					case 2:
-					case 3: {
-						if (isLongClicked) {
-							int targetLevel = invoker.getFontSize();
-							switch (position) {
-								case 2:
-									if (targetLevel < mdict.optimal100) {
-										_mWebView.getSettings().setTextZoom(targetLevel = mdict.optimal100);
-									} else if (targetLevel < 500) {
-										_mWebView.getSettings().setTextZoom(targetLevel = 500);
-									} else
-										targetLevel = -1;
-									break;
-								case 3:
-									if (targetLevel > mdict.optimal100) {
-										_mWebView.getSettings().setTextZoom(targetLevel = mdict.optimal100);
-									} else if (targetLevel > 10) {
-										_mWebView.getSettings().setTextZoom(targetLevel = 10);
-									} else
-										targetLevel = -2;
-									break;
-							}
-							if (targetLevel > 0) {
+								int targetLevel = invoker.getUseInternalFS() ? _mWebView.getSettings().getTextZoom() : mdict.def_fontsize;
+								if (position == 2) targetLevel += 10;
+								else targetLevel -= 10;
+								targetLevel = targetLevel > 500 ? 500 : targetLevel;
+								targetLevel = targetLevel < 10 ? 10 : targetLevel;
+								_mWebView.getSettings().setTextZoom(targetLevel);
 								if (invoker.getUseInternalFS()) {
-									invoker.WriteConfigInt(invoker.CONFIGPOS[1], targetLevel);
 									showT((invoker.internalScaleLevel = targetLevel) + "%", 0);
+									invoker.dumpViewStates();
 								} else {
 									notifyGLobalFSChanged(targetLevel);
-									showT("(全局) " + (targetLevel) + "%", 0);//"(全局) "
+									showT("(" + getResources().getString(R.string.GL) + ") " + (targetLevel) + "%", 0);//全局
 								}
-							} else if (targetLevel == -2)
-								showT("min scale level", 0);
-							else
-								showT("max level reached", 0);
-							return true;
-						} else {
-							int targetLevel = invoker.getUseInternalFS() ? _mWebView.getSettings().getTextZoom() : mdict.def_fontsize;
-							if (position == 2) targetLevel += 10;
-							else targetLevel -= 10;
-							targetLevel = targetLevel > 500 ? 500 : targetLevel;
-							targetLevel = targetLevel < 10 ? 10 : targetLevel;
-							_mWebView.getSettings().setTextZoom(targetLevel);
-							if (invoker.getUseInternalFS()) {
-								invoker.WriteConfigInt(invoker.CONFIGPOS[1], targetLevel);
-								showT((invoker.internalScaleLevel = targetLevel) + "%", 0);
-							} else {
-								notifyGLobalFSChanged(targetLevel);
-								showT("(" + getResources().getString(R.string.GL) + ") " + (targetLevel) + "%", 0);//全局
 							}
 						}
-					}
-					break;
-				}
-			}else {
-				if((bFromTextView && (position<7||!opt.getToTextShare2()) || !bFromTextView && opt.getToTextShare()))
-					position+=11;
-				switch (position) {//xx
-					/* 收藏 */
-					case 11:
-					case 0: {
-						if (bFromTextView) {
-							if (CurrentSelected.length() > 0 && favoriteCon.insertUpdate(CurrentSelected) > 0)
-								showT(CurrentSelected + " 已收藏");
-						} else {
-							mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-								if (word.length() > 2) {
-									if (favoriteCon.insertUpdate(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1))) > 0)
-										showT(word + " 已收藏");
-								}
-							});
-						}
-					}
-					break;
-					/* 全选 */
-					case 1: {
-						if (isLongClicked) {
-							mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-								if (word.length() > 2) {
-									ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
-								}
-							});
-							return true;
-						} else {
-							mWebView.evaluateJavascript(WebViewmy.SelectAll, null);
-						}
-					}
-					break;
-					/* 颜色 */
-					case 2:
 						break;
-					/* 高亮 */
-					case 3: {
-						mWebView.evaluateJavascript(mWebView.getHighLightIncantation().toString(), null);
 					}
-					break;
-					/* 清除高亮 */
-					case 4: {
-						mWebView.evaluateJavascript(mWebView.getDeHighLightIncantation().toString(), null);
-					}
-					break;
-					/* 下划线 */
-					case 5: {
-						mWebView.evaluateJavascript(mWebView.getUnderlineIncantation().toString(), null);
-					}
-					break;
-					/* 清除下划线 */
-					case 6: {
-						mWebView.evaluateJavascript(mWebView.getDeUnderlineIncantation().toString(), null);
-					}
-					break;
-					case 18://分享#4
-					case 19://分享'
-					case 20://分享#5
-					case 21://分享#6
-					case 7://分享#1
-					case 8://分享
-					case 9://分享#2
-					case 10: //分享#3
-					{
-						if (isLongClicked && (position == 19 || position == 8)) {
-							return true;
-						}
-						JSONObject json = opt.getDimensionalSharePatternByIndex(position - 7);
-						boolean putDefault = json == null;
-						if (putDefault) {
-							json = new JSONObject();
-						} else {
-							putDefault = json.has("b")||json.length()==0;
-						}
-						if (putDefault) {
-							putDefaultSharePattern(json, position);
-						}
-						/* 将 json 散列为数组。 */
-						ArrayList<String> data = new ArrayList<>(8);
-						serializeSharePattern(json, data);
-						if (!isLongClicked) {
-							HandleShareIntent(data);
-						}
-						/* 对话框定义多维分享 */
-						else {
-							Context context = MainActivityUIBase.this;
-							AlertController.RecycleListView customList = new AlertController.RecycleListView(context);
-							AlertController.RecycleListView customNameList = new AlertController.RecycleListView(context);
-							customNameList.mMaxHeight = customList.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 3.8 * getResources().getDimension(R.dimen._50_));
-							customNameList.setTag(false);
-							customNameList.setVerticalScrollBarEnabled(false);
-
-							CustomShareAdapter csa = new CustomShareAdapter(data);
-							customList.setAdapter(csa);
-							customNameList.setAdapter(csa);
-							customList.setDivider(null);
-							customNameList.setDivider(null);
-
-							AlertDialog.Builder builder2 = new AlertDialog.Builder(context, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);
-							builder2.setTitle("制定分享目标");
-							builder2.setNeutralButton("添加字段", null);
-							builder2.setNegativeButton("测试", null);
-							int finalPosition = position;
-							builder2.setPositiveButton("保存", null);
-
-							TableLayout dv = new TableLayout(context);
-
-							dv.setOrientation(LinearLayout.HORIZONTAL);
-							dv.addView(customNameList);
-							View delimiter = new View(context);
-							/* 分割线 */
-							dv.addView(delimiter, new LinearLayout.LayoutParams((int) (1 * dm.density), LayoutParams.MATCH_PARENT));
-							/* 键盘能够弹出 */
-							dv.addView(new EditText(context), new LinearLayout.LayoutParams(0, 0));
-							delimiter.setBackgroundColor(0xffcccccc);
-							LinearLayout.LayoutParams lpmy;
-							dv.addView(customList, lpmy = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT));
-							lpmy.weight = 1;
-							customNameList.getLayoutParams().width
-									= (int) ((TextView) csa.getView(0, null, customNameList)).getPaint().measureText(getResources().getString(R.string.extra_key_value, 1001));
-							builder2.setView(dv);
-
-							AlertDialog dTmp = builder2.create();
-							dTmp.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark ? R.drawable.popup_shadow_d : R.drawable.popup_shadow_l);
-
-							dTmp.show();
-
-							OnClickListener mClicker = new OnClickListener() {
-								@Override
-								public void onClick(View v) {
-									boolean isLongClicked = v.getTag(R.id.long_clicked) != null;
-									switch (v.getId()) {
-										case android.R.id.button1://+
-											if (isLongClicked) {
-												android.app.AlertDialog.Builder builder21 = new android.app.AlertDialog.Builder(inflater.getContext());
-												android.app.AlertDialog d1 = builder21.setTitle("确认删除并恢复默认值？")
-														.setPositiveButton(R.string.confirm, (dialog, which) -> {
-															opt.putDimensionalSharePatternByIndex(finalPosition - 7, null);
-															JSONObject json = new JSONObject();
-															data.clear();
-															putDefaultSharePattern(json, finalPosition);
-															serializeSharePattern(json, data);
-															csa.notifyDataSetChanged();
-														})
-														.create();
-												d1.show();
-											} else try {
-												JSONObject neo = packoutNeoJson(data);
-												JSONObject original = new JSONObject();
-												putDefaultSharePattern(original, finalPosition);
-												if (baseOnDefaultSharePattern(neo, original)) {
-													neo = packoutNeoJson(data);
-												}
-												opt.putDimensionalSharePatternByIndex(finalPosition - 7, neo);
-												showT("保存成功！");
-												dTmp.dismiss();
-											} catch (Exception e) {
-												CMN.Log(e);
-												showT("保存失败！" + e);
-											}
-										break;
-										case android.R.id.button2://-
-											if (isLongClicked) break;
-											HandleShareIntent(data);
-										break;
-										case android.R.id.button3://|
-											if (isLongClicked) break;
-											data.add(null);
-											data.add(null);
-											csa.notifyDataSetChanged();
-										break;
-									}
-								}
-							};
-
-							Button btnTmp = dTmp.getButton(DialogInterface.BUTTON_POSITIVE);
-							btnTmp.setOnClickListener(mClicker);
-							btnTmp.setOnLongClickListener(new MultiplexLongClicker());
-							dTmp.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(mClicker);
-							dTmp.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(mClicker);
-						}
-					}
-					break;
-					/* 页内搜索 */
-					case 12: {
-						if (isLongClicked) return false;
-						if (bFromTextView) {
-							if (CurrentSelected.length() > 0)
-								HandleLocateTextInPage(CurrentSelected);
-						} else {
-							mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-								if (word.length() > 2) {
-									HandleLocateTextInPage(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
-								}
-							});
-						}
-						d.dismiss();
-					}
-					break;
-					/* TTS */
-					case 13: {
-						if (isLongClicked) return false;
-						if (bFromTextView) {
-							if (CurrentSelected.length() > 0)
-								ReadText(CurrentSelected, null);
-						} else {
-							mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-								if (word.length() > 2) {
-									ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
-								}
-							});
-						}
-						if (!opt.getPinDialog()) d.dismiss();
-					}
-					break;
-					/* 点译 */
-					case 14: {
-						if (isLongClicked) return false;
-						if (bFromTextView) {
-							if (CurrentSelected.length() > 0)
-								popupWord(CurrentSelected, 0, mActionModeHeight, -1);
-						} else {
-							mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-								if (word.length() > 2) {
-									popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), 0, 0, mWebView.frameAt);
-								}
-							});
-						}
-						d.dismiss();
-					}
-					break;
-					/* 翻阅模式 */
-					case 15: {
-						if (isLongClicked) return false;
-						if (bFromTextView) {
-							if (CurrentSelected.length() > 0)
-								JumpToPeruseModeWithWord(CurrentSelected);
-						} else {
-							mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-								if (word.length() > 2) {
-									JumpToPeruseModeWithWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
-								}
-							});
-						}
-						d.dismiss();
-					}
-					break;
-					/* 搜索框 */
-					case 16: {
-						if (isLongClicked) return false;
-						if (bFromTextView) {
-							if (CurrentSelected.length() > 0)
-								HandleSearch(CurrentSelected);
-						} else {
-							mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-								if (word.length() > 2) {
-									HandleSearch(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
-								}
-							});
-						}
-						d.dismiss();
-					}
-					break;
-					/* 浮动搜索 */
-					case 17: {
-						if (isLongClicked) return false;
-						if (bFromTextView) {
-							if (CurrentSelected.length() > 0)
-								JumpToFloatSearch(CurrentSelected);
-						} else {
-							mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
-								if (word.length() > 2) {
-									JumpToFloatSearch(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
-								}
-							});
-						}
-						d.dismiss();
-					}
-					break;
 				}
+				else {
+					if((bFromTextView && (position<7||!opt.getToTextShare2()) || !bFromTextView && opt.getToTextShare()))
+						position+=11;
+					switch (position) {//xx
+						/* 收藏 */
+						case 11:
+						case 0: {
+							if (bFromTextView) {
+								if (CurrentSelected.length() > 0 && prepareFavoriteCon().insertUpdate(CurrentSelected) > 0)
+									showT(CurrentSelected + " 已收藏");
+							} else {
+								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+									if (word.length() > 2) {
+										if (prepareFavoriteCon().insertUpdate(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1))) > 0)
+											showT(word + " 已收藏");
+									}
+								});
+							}
+						}
+						break;
+						/* 全选 */
+						case 1: {
+							if (isLongClicked) {
+								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+									if (word.length() > 2) {
+										ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
+									}
+								});
+								return true;
+							} else {
+								mWebView.evaluateJavascript(WebViewmy.SelectAll, null);
+							}
+						}
+						break;
+						/* 颜色 */
+						case 2:
+							break;
+						/* 高亮 */
+						case 3: {
+							mWebView.evaluateJavascript(mWebView.getHighLightIncantation().toString(), null);
+						}
+						break;
+						/* 清除高亮 */
+						case 4: {
+							mWebView.evaluateJavascript(mWebView.getDeHighLightIncantation().toString(), null);
+						}
+						break;
+						/* 下划线 */
+						case 5: {
+							mWebView.evaluateJavascript(mWebView.getUnderlineIncantation().toString(), null);
+						}
+						break;
+						/* 清除下划线 */
+						case 6: {
+							mWebView.evaluateJavascript(mWebView.getDeUnderlineIncantation().toString(), null);
+						}
+						break;
+						case 18://分享#4
+						case 19://分享'
+						case 20://分享#5
+						case 21://分享#6
+						case 7://分享#1
+						case 8://分享
+						case 9://分享#2
+						case 10: //分享#3
+						{
+							if (isLongClicked && (position == 19 || position == 8)) {
+								return true;
+							}
+							JSONObject json = opt.getDimensionalSharePatternByIndex(position - 7);
+							boolean putDefault = json == null;
+							if (putDefault) {
+								json = new JSONObject();
+							} else {
+								putDefault = json.has("b")||json.length()==0;
+							}
+							if (putDefault) {
+								putDefaultSharePattern(json, position);
+							}
+							/* 将 json 散列为数组。 */
+							ArrayList<String> data = new ArrayList<>(8);
+							serializeSharePattern(json, data);
+							if (!isLongClicked) {
+								HandleShareIntent(data);
+							}
+							/* 对话框定义多维分享 */
+							/* Customizable parts of MDCCSP ( from Share#0-Share#5 )*/
+							else {
+								Context context = MainActivityUIBase.this;
+								AlertController.RecycleListView customList = new AlertController.RecycleListView(context);
+								AlertController.RecycleListView customNameList = new AlertController.RecycleListView(context);
+								customNameList.mMaxHeight = customList.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 3.8 * getResources().getDimension(R.dimen._50_));
+								customNameList.setTag(false);
+								customNameList.setVerticalScrollBarEnabled(false);
+
+								CustomShareAdapter csa = new CustomShareAdapter(data);
+								customList.setAdapter(csa);
+								customNameList.setAdapter(csa);
+								customList.setDivider(null);
+								customNameList.setDivider(null);
+
+								AlertDialog.Builder builder2 = new AlertDialog.Builder(context, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);
+								builder2.setTitle("制定分享目标");
+								builder2.setNeutralButton("添加字段", null);
+								builder2.setNegativeButton("测试", null);
+								int finalPosition = position;
+								builder2.setPositiveButton("保存", null);
+
+								TableLayout dv = new TableLayout(context);
+
+								dv.setOrientation(LinearLayout.HORIZONTAL);
+								dv.addView(customNameList);
+								View delimiter = new View(context);
+								/* 分割线 */
+								dv.addView(delimiter, new LinearLayout.LayoutParams((int) (1 * dm.density), LayoutParams.MATCH_PARENT));
+								/* 键盘能够弹出 */
+								dv.addView(new EditText(context), new LinearLayout.LayoutParams(0, 0));
+								delimiter.setBackgroundColor(0xffcccccc);
+								LinearLayout.LayoutParams lpmy;
+								dv.addView(customList, lpmy = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT));
+								lpmy.weight = 1;
+								customNameList.getLayoutParams().width
+										= (int) ((TextView) csa.getView(0, null, customNameList)).getPaint().measureText(getResources().getString(R.string.extra_key_value, 1001));
+								builder2.setView(dv);
+
+								AlertDialog dTmp = builder2.create();
+								dTmp.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark ? R.drawable.popup_shadow_d : R.drawable.popup_shadow_l);
+
+								dTmp.show();
+
+								OnClickListener mClicker = new OnClickListener() {
+									@Override
+									public void onClick(View v) {
+										boolean isLongClicked = v.getTag(R.id.long_clicked) != null;
+										switch (v.getId()) {
+											case android.R.id.button1://+
+												if (isLongClicked) {
+													android.app.AlertDialog.Builder builder21 = new android.app.AlertDialog.Builder(inflater.getContext());
+													android.app.AlertDialog d1 = builder21.setTitle("确认删除并恢复默认值？")
+															.setPositiveButton(R.string.confirm, (dialog, which) -> {
+																opt.putDimensionalSharePatternByIndex(finalPosition - 7, null);
+																JSONObject json = new JSONObject();
+																data.clear();
+																putDefaultSharePattern(json, finalPosition);
+																serializeSharePattern(json, data);
+																csa.notifyDataSetChanged();
+															})
+															.create();
+													d1.show();
+												} else try {
+													JSONObject neo = packoutNeoJson(data);
+													JSONObject original = new JSONObject();
+													putDefaultSharePattern(original, finalPosition);
+													if (baseOnDefaultSharePattern(neo, original)) {
+														neo = packoutNeoJson(data);
+													}
+													opt.putDimensionalSharePatternByIndex(finalPosition - 7, neo);
+													showT("保存成功！");
+													dTmp.dismiss();
+												} catch (Exception e) {
+													CMN.Log(e);
+													showT("保存失败！" + e);
+												}
+											break;
+											case android.R.id.button2://-
+												if (isLongClicked) break;
+												HandleShareIntent(data);
+											break;
+											case android.R.id.button3://|
+												if (isLongClicked) break;
+												data.add(null);
+												data.add(null);
+												csa.notifyDataSetChanged();
+											break;
+										}
+									}
+								};
+
+								Button btnTmp = dTmp.getButton(DialogInterface.BUTTON_POSITIVE);
+								btnTmp.setOnClickListener(mClicker);
+								btnTmp.setOnLongClickListener(new MultiplexLongClicker());
+								dTmp.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(mClicker);
+								dTmp.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(mClicker);
+							}
+						}
+						break;
+						/* 页内搜索 */
+						case 12: {
+							if (isLongClicked) return false;
+							if (bFromTextView) {
+								if (CurrentSelected.length() > 0)
+									HandleLocateTextInPage(CurrentSelected);
+							} else {
+								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+									if (word.length() > 2) {
+										HandleLocateTextInPage(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
+									}
+								});
+							}
+							d.dismiss();
+						}
+						break;
+						/* TTS */
+						case 13: {
+							if (isLongClicked) return false;
+							if (bFromTextView) {
+								if (CurrentSelected.length() > 0)
+									ReadText(CurrentSelected, null);
+							} else {
+								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+									if (word.length() > 2) {
+										ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
+									}
+								});
+							}
+							if (!opt.getPinDialog()) d.dismiss();
+						}
+						break;
+						/* 点译 */
+						case 14: {
+							if (isLongClicked) return false;
+							if (bFromTextView) {
+								if (CurrentSelected.length() > 0)
+									popupWord(CurrentSelected, 0, mActionModeHeight, -1);
+							} else {
+								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+									if (word.length() > 2) {
+										popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), 0, 0, mWebView.frameAt);
+									}
+								});
+							}
+							d.dismiss();
+						}
+						break;
+						/* 翻阅模式 */
+						case 15: {
+							if (isLongClicked) return false;
+							if (bFromTextView) {
+								if (CurrentSelected.length() > 0)
+									JumpToPeruseModeWithWord(CurrentSelected);
+							} else {
+								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+									if (word.length() > 2) {
+										JumpToPeruseModeWithWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
+									}
+								});
+							}
+							d.dismiss();
+						}
+						break;
+						/* 搜索框 */
+						case 16: {
+							if (isLongClicked) return false;
+							if (bFromTextView) {
+								if (CurrentSelected.length() > 0)
+									HandleSearch(CurrentSelected);
+							} else {
+								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+									if (word.length() > 2) {
+										HandleSearch(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
+									}
+								});
+							}
+							d.dismiss();
+						}
+						break;
+						/* 浮动搜索 */
+						case 17: {
+							if (isLongClicked) return false;
+							if (bFromTextView) {
+								if (CurrentSelected.length() > 0)
+									JumpToFloatSearch(CurrentSelected);
+							} else {
+								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
+									if (word.length() > 2) {
+										JumpToFloatSearch(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)));
+									}
+								});
+							}
+							d.dismiss();
+						}
+						break;
+					}
+				}
+				if(!cb.isChecked())
+					d.dismiss();
+			} catch (Exception e){
+				CMN.Log(e);
 			}
-			if(!cb.isChecked())
-				d.dismiss();
 			return false;
 		}
 
@@ -3116,15 +3436,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		protected void build_further_dialog(){
 			boolean needRecreate=bLastFromWebView!=bFromWebView||bFromTextView;
-			if(!bFromTextView)
-				con = invoker.getCon(false);
-			itemsA[0]=bmAdd;
-			if(con!=null){
-				if(isWeb){
-					if(((mdict_web)invoker).containsCurrentUrl(con, invoker.mWebView.getUrl()))
+			if(!bFromWebView && mWebView!=null){
+				if(!bFromTextView)
+					con = invoker.getCon(false);
+				itemsA[0]=bmAdd;
+				if(con!=null){
+					if(isWeb){
+						if(((mdict_web)invoker).containsCurrentUrl(con, mWebView.getUrl()))
+							itemsA[0]=getString(R.string.bmSub);
+					} else if(con.containsRaw(mWebView.currentPos)){
 						itemsA[0]=getString(R.string.bmSub);
-				}else if(con.containsRaw(currentPos)){
-					itemsA[0]=getString(R.string.bmSub);
+					}
 				}
 			}
 
@@ -3374,7 +3696,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				/* 分享#1 */
 				case 7:
 					if(!json.has("k1")) json.put("k1", "_data");
-					if(!json.has("v1")) json.put("v1", "https://www.baidu.com/s?wd=%s");
+					if(!json.has("v1")) json.put("v1", position==9?"https://translate.google.cn/#view=home&op=translate&sl=auto&tl=zh-CN&text=%s":"https://www.baidu.com/s?wd=%s");
 					if(!json.has("k2")) json.put("k2", "_chooser");
 					if(!json.has("v2")) json.put("v2", position==9?"c/q":"/");
 				break;
@@ -3483,7 +3805,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		text.append("\r\n").append("\r\n");
 	}
 
-	private void processSomthingChanged(int processId ,int val) {
+	private void processSomthingChanged(int processId , int val) {
 		switch (processId){
 			case 0:
 				if(drawerFragment!=null) {
@@ -3891,7 +4213,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					CCD.renderContentAt(-1, CCD_ID, -1, popupWebView, currentClickDictionary_currentPos=np);
 					decorateContentviewByKey(popupStar, currentClickDisplaying, R.drawable.star_ic_solid_framed, R.drawable.star_ic_grey);
 					if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy10() && PDICMainAppOptions.getHistoryStrategy11())
-						historyCon.insertUpdate(currentClickDisplaying);
+						insertUpdate_histroy(currentClickDisplaying);
 				}
 			} break;
 			case R.id.popNxtDict:
@@ -3970,7 +4292,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				jumpHighlight(next?1:-1, true);
 			} break;
-			//清零
+			/* 清零 */
 			case R.id.ivDeleteText:{
 				if((etSearch_toolbarMode&2)==0) {//delete
 					String SearchTmp = etSearch.getText().toString().trim();
@@ -3978,12 +4300,41 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						ivDeleteText.setVisibility(View.GONE);
 					}else {
 						lastEtString=SearchTmp;
+						CombinedSearchTask_lastKey=null;
 						etSearch.setText(null);
 						etSearch_ToToolbarMode(4);
 					}
 				}else {//undo
 					etSearch.setText(lastEtString);
 					//etSearch_ToToolbarMode(3);
+				}
+			}break;
+			/* 删除/选择收藏夹 */
+			case R.id.ivDeleteText_ADA:{
+				View p = (View) v.getParent();
+				DArrayAdapter.ViewHolder vh = (DArrayAdapter.ViewHolder) p.getTag();
+				int position = vh.position;
+				int id_ = ((ViewGroup)p.getParent()).getId();
+				MyPair<String, LexicalDBHelper> item = AppDataAdapter.items.get(position);
+				if(p.getParent() instanceof ViewGroup)
+				if(id_==R.id.favorList){//选择
+					//CMN.Log("选择!!!");
+					opt.putCurrFavoriteDBName(item.key);
+					favoriteCon = null;
+					prepareFavoriteCon();
+					AppDataAdapter.notifyDataSetChanged();
+				} else if(id_==R.id.click_remove){//删除
+					LexicalDBHelper vI = item.value;
+					if(vI!=null){
+						if(vI==favoriteCon)
+							favoriteCon=null;
+						vI.close();
+						item.value=null;
+					}
+					File fi = new File(opt.pathToInternalDatabases().append("favorites/").append(item.key).toString());
+					fi.delete();
+					new File(fi.getAbsolutePath()+"-journal").delete();
+					AppDataAdapter.remove(position);
 				}
 			}break;
 			//返回
@@ -4113,8 +4464,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					ImageView favoriteBtn = (ImageView) v;
 					String key = ActivedAdapter.currentKeyText.trim();
-					favoriteCon.prepareContain();
-					if (favoriteCon.contains(key)) {
+					if (prepareFavoriteCon().contains(key)) {
 						favoriteCon.remove(key);
 						favoriteBtn.setImageResource(R.drawable.star_ic);
 						show(R.string.removed);
@@ -4310,8 +4660,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(inactiveResId==0) inactiveResId=R.drawable.star_ic;
 		favoriteBtn.setImageResource(inactiveResId);
 		key = key.trim();
-		favoriteCon.prepareContain();
-		if(favoriteCon.contains(key)) {
+		if(prepareFavoriteCon().contains(key)) {
 			favoriteCon.remove(key);
 			favoriteBtn.setImageResource(inactiveResId);
 			if(toast)show(R.string.removed);
@@ -4326,6 +4675,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override @SuppressLint("ResourceType")
 	public boolean onLongClick(View v) {
 		switch(v.getId()) {
+			/* long-click favorite */
+			case R.id.browser_widget8:{
+				String text=null;
+				if(PeruseViewAttached())
+					text=PeruseView.currentDisplaying;
+				else if(DBrowser!=null)
+					text=DBrowser.currentDisplaying;
+				else if(ActivedAdapter!=null)
+					text=ActivedAdapter.currentKeyText;
+				if(text!=null)
+					showMultipleCollection(text);
+			} return true;
 			/* long-click view outline */
 			case R.id.browser_widget9:{
 				if(PeruseViewAttached()) {
@@ -4866,11 +5227,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
-
-
-
-	WeakReference<AlertDialog> setchooser;
-	int lastCheckedPos = -1;
 	public void showChooseSetDialog() {//切换分组
 		if(d!=null) {
 			d.dismiss();
@@ -4949,14 +5305,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(this instanceof PDICMainActivity) {
 						// todo 干掉缓冲组
 						File def1 = new File(getExternalFilesDir(null), "default.txt");
-						try {
-							FileChannel inputChannel = new FileInputStream(newf).getChannel();
-							FileChannel outputChannel = new FileOutputStream(def1).getChannel();
-							outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
-							inputChannel.close();
-							outputChannel.close();
-						} catch (Exception e) {
-							e.printStackTrace();
+						if(def1.length()>0) {
+							FileOutputStream fout = new FileOutputStream(def1);
+							fout.flush();
+							fout.close();
 						}
 					}
 				} catch (Exception e) {
@@ -5130,14 +5482,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			*  II、进入黑暗模式([0,1,2,3],[4])、编辑模式(0,1,3,[4])。*/
 			OUT:
 			if(from!=2){
-				Integer selfAtIdx = IU.parseInt(view.getTag());
-				if(selfAtIdx==null || selfAtIdx>=md.size() || selfAtIdx<0) return;
+				int selfAtIdx = mWebView.SelfIdx;
+				if(selfAtIdx>=md.size() || selfAtIdx<0) return;
 				final mdict invoker = md.get(selfAtIdx);
 				if(invoker instanceof mdict_web){
 					((mdict_web)invoker).onPageFinished(view, url, true);
 					break OUT;
 				}
-				//CMN.Log(selfAtIdx, "selfAtIdx", adapter_idx);
+				if(invoker==null){
+					//root.post(() -> showT("OPF 错误!!!"));
+					return;
+				}
 				boolean fromPeruseView=view.getTag(R.id.position)!=null;
 				boolean editing = invoker.getContentEditable() && invoker.getEditingContents();
 
@@ -5172,9 +5527,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										WHP.smoothScrollTo(0, invoker.rl.getTop());
 									});
 								} else
-									view.evaluateJavascript("document.getElementsByName(\"" + toTag + "\")[0].getBoundingClientRect().top;"
+									view.evaluateJavascript("var item=document.getElementsByName(\"" + toTag + "\")[0];item?item.getBoundingClientRect().top:-1;"
 											, v -> {
-												WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + (int) (float) (Float.valueOf(v) * getResources().getDisplayMetrics().density));//
+												int to = (int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
+												if(to>=0)
+													WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
 											});
 
 						}
@@ -5391,15 +5748,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return true;
 			}
 			else if (url.startsWith(entryTag)) {
+				try {
+					url = URLDecoder.decode(url, "UTF-8");
+				} catch (Exception ignored) { }
 				/* 页内跳转 */
 				if (url.startsWith("entry://#")) {
 					//Log.e("chromium inter_ entry3", url);
-					if (!fromCombined) {
+					if (!fromCombined) {// 三种情况：normal，peruseview， popup查询。
+						/* '代管'之含义：在网页前进/后退之时，不适用系统缓存，而是手动加载、手动定位。 */
 						ScrollerRecord PageState;
 						if (mWebView.HistoryVagranter >= 0) {
 							(PageState = mWebView.History.get(mWebView.HistoryVagranter).value).set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
 							if (mWebView.HistoryVagranter == 0) {
-								invoker.HistoryOOP.put(invoker.currentPos, PageState);
+								invoker.HistoryOOP.put(mWebView.currentPos, PageState);
 							}
 						}
 						mWebView.expectedPos = -100;
@@ -5410,12 +5771,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (mWebView.HistoryVagranter >= 0) {
 							mWebView.History.get(mWebView.HistoryVagranter).value.set(0, WHP.getScrollY(), mWebView.webScale);
 						}
-						view.evaluateJavascript("document.getElementsByName(\"" + url.substring(entryTag.length() + 1) + "\")[0].getBoundingClientRect().top;"
+						view.evaluateJavascript("var item=document.getElementsByName(\"" + url.substring(entryTag.length() + 1) + "\")[0]; item?item.getBoundingClientRect().top:-1;"
 								, v -> {
-									WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + (int) (float) (Float.valueOf(v) * getResources().getDisplayMetrics().density));//
+									int to=(int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
+									if(to>=0)
+										WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
 								});
 					}
-					invoker.setCurrentDis(mWebView, invoker.currentPos);
+					if(fromPeruseView)
+						PeruseView.setCurrentDis(invoker, mWebView.currentPos);
+					else if(mWebView.fromCombined<=1)
+						invoker.setCurrentDis(mWebView, mWebView.currentPos);
 					return true;
 				}
 				/* 书签跳转 */
@@ -5477,8 +5843,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						int idx = invoker.lookUp(invoker.processMyText(URLDecoder.decode(url, "UTF-8")), true);
 						//CMN.Log("查询跳转目标 : ", idx, URLDecoder.decode(url,"UTF-8"), processText(URLDecoder.decode(url,"UTF-8")));
 						if (idx >= 0) {//idx != -1
-							mWebView.currentPos = idx;
 							if(!fromPopup) {
+								/* 除点译弹窗与网络词典，代管所有网页的前进/后退。 */
 								if (fromPeruseView) {
 									PeruseView.isJumping = true;
 									if (mWebView.HistoryVagranter >= 0)
@@ -5492,7 +5858,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										if (mWebView.HistoryVagranter >= 0)
 											(PageState = mWebView.History.get(mWebView.HistoryVagranter).value).set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
 										if (mWebView.HistoryVagranter == 0)
-											invoker.HistoryOOP.put(invoker.currentPos, PageState);
+											invoker.HistoryOOP.put(mWebView.currentPos, PageState);
 									} else if (mWebView.HistoryVagranter >= 0) {
 										mWebView.History.get(mWebView.HistoryVagranter).value.set(0, WHP.getScrollY(), mWebView.webScale);
 									}
@@ -5507,6 +5873,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									/* 什么都不要做 */
 									mWebView.expectedPos = -100;
 								}
+							} else {
+								mWebView.currentPos = idx;
 							}
 							float initialScale = mdict.def_zoom;
 							mWebView.setInitialScale((int) (100 * (initialScale / mdict.def_zoom) * opt.dm.density));
@@ -5565,8 +5933,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			return shouldInterceptRequestCompat(view, Url, null, null, null, null);
 		}
 
-		@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP) @Override
 		public WebResourceResponse shouldInterceptRequest (final WebView view, WebResourceRequest request) {
+			if(Build.VERSION.SDK_INT<Build.VERSION_CODES.LOLLIPOP)
+				return super.shouldInterceptRequest(view, request);
 			Map<String, String> keyset = request.getRequestHeaders();
 			//for (String key:keyset.keySet()) CMN.Log(request.getUrl(), "keyset : ", key, " :: ",keyset.get(key),request.getMethod());
 			return shouldInterceptRequestCompat(view, request.getUrl().toString(), keyset.get("Accept"), keyset.get("Referer"), keyset.get("Origin"), request);
@@ -5575,7 +5944,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
 			//CMN.Log("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
-
 			if(url.startsWith("data:")) return null;
 
 			if(url.startsWith("mdbr://")){
@@ -5600,7 +5968,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(invoker instanceof mdict_web){
 				if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
 					mdict_web webx = ((mdict_web) invoker);
-					long stst = System.currentTimeMillis();
 					boolean proceed = true;
 					String[] shWebsite = webx.cleanExtensions;
 					if(shWebsite!=null){
@@ -5751,21 +6118,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(url.startsWith("http") && url.endsWith(".mp3")) {
 				return null;
 			}
-			boolean b1;
-			if((b1=url.contains(".js"))||url.endsWith(".css")) {
-				File candi = new File(invoker.f().getParentFile(),new File(url).getName());
-				//CMN.Log("candi_csssj",url, candi.getAbsolutePath(), candi.exists());
-				if(candi.exists()) try {
-					return new WebResourceResponse(b1?"text/x-javascript":"text/css","UTF-8",new FileInputStream(candi));
-				} catch (FileNotFoundException ignored) { }
-			}
 
 			//CMN.Log("chrochro_inter_0",url);
 
 			if(url.startsWith(soundTag)) {
 				url = url.substring(soundTag.length());
 			}
-			if(url.startsWith(soundsTag)) {
+			else if(url.startsWith(soundsTag)) {
 				url = url.substring(soundsTag.length());
 				try {
 					url = URLDecoder.decode(url,"UTF-8");
@@ -5813,16 +6172,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			String key=url;
 			try {
 				key = URLDecoder.decode(url,"UTF-8");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			} catch (Exception ignored) { }
 
 			int start = key.indexOf(mdict.FileTag);
 			if(start==-1){
 				if(key.startsWith("./"))
 					key=key.substring(1);
 			}else{
-				key = key.substring(start+ mdict.FileTag.length());
+				key = key.substring(start+mdict.FileTag.length());
 			}
 			if(url.startsWith("/MdbR/")){
 				try {
@@ -5836,7 +6193,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					CMN.Log(e);
 				}
 			}
-			if(key.startsWith("/pdfimg/")){
+			else if(key.startsWith("/pdfimg/")){
 				String urlkey=key.substring("/pdfimg/".length());
 				int idx = urlkey.lastIndexOf("#");
 				int page = 0;
@@ -5894,12 +6251,46 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					ex.printStackTrace();
 				}
 			}
+
 			key=key.replace("/", SepWindows);
+
+			//CMN.Log("chrochro_inter_key is",key);
 
 			if(!key.startsWith(SepWindows)){
 				key=SepWindows+key;
 			}
-			//CMN.Log("chrochro_inter_key is",key);
+
+			int suffixIdx = key.lastIndexOf(".");
+			String suffix = null;
+			String mime = null;
+			if(suffixIdx!=-1){
+				suffix = key.substring(suffixIdx).toLowerCase();
+				suffixIdx = key.indexOf("?");
+				if(suffixIdx!=-1){
+					suffix = key.substring(suffixIdx);
+				}
+			}
+			if(suffix!=null)
+			switch (suffix){
+				case ".ini":
+				case ".js":
+					mime = "text/x-javascript";
+				break;
+				case ".png":
+					mime = "image/png";
+				break;
+				case ".css":
+					mime = "text/css";
+				break;
+			}
+			//检查后缀，js，ini,png,css,直接路径。
+			if(mime!=null && key.lastIndexOf(SepWindows)==0){
+				File candi = new File(invoker.f().getParentFile(),new File(url).getName());
+				//CMN.Log("candi_csssj",url, candi.getAbsolutePath(), candi.exists());
+				if(candi.exists()) try {
+					return new WebResourceResponse(mime,"UTF-8",new FileInputStream(candi));
+				} catch (FileNotFoundException ignored) { }
+			}
 
 			if(!invoker.hasMdd())
 				return null;
@@ -5921,7 +6312,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						conn.setConnectTimeout(3 * 1000);
 						conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
 
-
 						conn.setRequestMethod("GET");
 						InputStream inStream = conn.getInputStream();
 						//conn.setRequestProperty("lfwywxqyh_token",toekn);
@@ -5938,42 +6328,41 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					else return super.shouldInterceptRequest(view, url);
 				}
 
-				if(url.contains(".mp4"))
-					return new WebResourceResponse("video/mp4","UTF-8",restmp);
-
-				if(url.contains(".mp3")) {
-					return new WebResourceResponse("audio/mpeg", "UTF-8", restmp);
+				if(mime==null && suffix!=null)
+				switch (suffix){
+					case ".mp4":
+						mime = "video/mp4";
+					break;
+					case ".mp3":
+						mime = "audio/mpeg";
+					break;
+					case ".spx":{
+						mime = "audio/*";
+						WebResourceResponse ret = decodeSpxStream(restmp);
+						CMN.Log(url, "spx : ", ret);
+						if(ret!=null) return ret;
+					} break;
+					case ".tif":
+					case ".tiff":{
+						mime = "image/*";
+						try {
+							BufferedImage image = Imaging.getBufferedImage(restmp, getTifConfig());
+							//CMN.pt("解码耗时 : "); CMN.rt();
+							ByteArrayRandomOutputStream bos = new ByteArrayRandomOutputStream((int) (restmp.available()*2.5));
+							image.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+							//CMN.pt("再编码耗时 : ");
+							return new WebResourceResponse("image/jpeg","UTF-8",new ByteArrayInputStream(bos.toByteArray()));
+						} catch (Exception e) { e.printStackTrace(); }
+					} break;
+					case ".jpg":
+					case ".gif":
+					case ".jpeg":
+						mime = "audio/mpeg";
+					break;
 				}
-
-				if(url.endsWith(".spx")) {
-					WebResourceResponse ret = decodeSpxStream(restmp);
-					CMN.Log(url, "spx : ", ret);
-					if(ret!=null) return ret;
-				}
-
-
-				if(url.endsWith(".tif") || url.endsWith(".tiff")) {
-					//CMN.Log("tif : "+url); CMN.rt();
-					try {
-						BufferedImage image = Imaging.getBufferedImage(restmp, getTifConfig());
-						//CMN.pt("解码耗时 : "); CMN.rt();
-						ByteArrayRandomOutputStream bos = new ByteArrayRandomOutputStream((int) (restmp.available()*2.5));
-						image.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-						//CMN.pt("再编码耗时 : ");
-						return new WebResourceResponse("image/jpeg","UTF-8",new ByteArrayInputStream(bos.toByteArray()));
-					} catch (Exception e) { e.printStackTrace(); }
-				}
-
-				if(url.contains(".png") || url.contains(".jpg") || url.contains(".gif") || url.contains(".jpeg") ||url.contains(".tif")) {
-					//CMN.Log("chrochrochrochrochrochro inter_ key is",key);
-					//BU.printFile(restmp,0,restmp.length,"/sdcard/0tmp/"+key.replace("\\", "_"));
-					return new WebResourceResponse("image/jpg","UTF-8",restmp);
-				}
-
-				if(url.contains(".js"))
-					return new WebResourceResponse("application/x-javascript","UTF-8",restmp);
-
-				return new WebResourceResponse("","UTF-8",restmp);
+				if(mime==null)
+					mime="";
+				return new WebResourceResponse(mime,"UTF-8",restmp);
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -6201,7 +6590,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	void jumpNaughtyFirstHighlight(WebViewmy mWebView) {
 		long mJumpNaughtyTimeToken = jumpNaughtyTimeToken = System.currentTimeMillis();
-		NaughtyJumpper=()-> mWebView.evaluateJavascript("bOnceHighlighted", value -> {
+		NaughtyJumpper=()-> mWebView.evaluateJavascript("window.bOnceHighlighted", value -> {
 			if(mJumpNaughtyTimeToken!=jumpNaughtyTimeToken)
 				return;
 			if(!"true".equals(value)){
@@ -7051,7 +7440,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	/** 接管跳转翻阅。来自包括分享中枢、get12菜单。*/
 	public void JumpToPeruseModeWithWord(String content) {
-		CMN.Log(" Jump To Peruse ...  ", content);
+		//CMN.Log(" Jump To Peruse ...  ", content);
 		getPeruseView().prepareJump(this, content, null, 0);
 		AttachPeruseView(content!=null);
 	}
@@ -7078,13 +7467,188 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} else { // 5.0 以前
 				mSoundPool = new SoundPool(16, AudioManager.STREAM_MUSIC, 0);  // 创建SoundPool
 			}
-
 			//mSoundPool.setOnLoadCompleteListener(this);  // 设置加载完成监听
 		}
-
-
 	}
 
+	protected ListAdapter AppDataAdapter() {
+		if(AppDataAdapter==null)
+			AppDataAdapter = new DArrayAdapter(this);
+		return AppDataAdapter;
+	}
 
+	protected void showCreateNewFavoriteDialog(int width) {
+		ViewGroup dv = (ViewGroup) getLayoutInflater().inflate(R.layout.fp_edittext, root, false);
+		EditText etNew = dv.findViewById(R.id.edt_input);
+		View btn_Done = dv.findViewById(R.id.done);
+		dv.findViewById(R.id.toolbar_action1).setVisibility(View.GONE);
+		Dialog dd = new GoodKeyboardDialog(MainActivityUIBase.this);
+		dd.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		dd.setContentView(dv);
+		btn_Done.setOnClickListener(v121 -> {
+			AppDataAdapter.createNewDatabase(etNew.getText().toString());
+			dd.dismiss();
+		});
+		etNew.setOnEditorActionListener((v1212, actionId, event) -> {
+			if(actionId == EditorInfo.IME_ACTION_DONE ||actionId==EditorInfo.IME_ACTION_UNSPECIFIED) {
+				btn_Done.performClick();
+				return true;
+			}
+			return false;
+		});
+		Window win = dd.getWindow();
+		win.setGravity(Gravity.TOP);
+		win.getAttributes().width=width;
+		win.setAttributes(win.getAttributes());
+		win.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+		win.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+		dd.show();
+		if(true){
+			dd.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+			etNew.requestFocus();
+		}
+	}
 
+	public void showMultipleCollection(String text) {
+		//showT(text);
+		BottomSheetDialog _bottomPlaylist = bottomPlaylist==null?null:bottomPlaylist.get();
+		if(_bottomPlaylist==null) {
+			CMN.Log("重建底部弹出");
+			bottomPlaylist = new WeakReference<>(_bottomPlaylist = new BottomSheetDialog(this));
+			View ll = LayoutInflater.from(this).inflate(R.layout.favorite_bottom_sheet, null);
+			ListView lv = ll.findViewById(R.id.favorList);
+			lv.setAdapter(AppDataAdapter());
+			lv.setOnItemClickListener((parent, view, position, id) -> {
+				CheckedTextView tv = view.findViewById(android.R.id.text1);
+				tv.toggle();
+				tv.jumpDrawablesToCurrentState();
+				AppDataAdapter.setChecked(position, tv.isChecked());
+			});
+			BottomSheetDialog final_bottomPlaylist = _bottomPlaylist;
+			OnClickListener clicker = v -> {
+				switch (v.getId()) {
+					case R.id.cancel:
+						final_bottomPlaylist.dismiss();
+					break;
+					case R.id.confirm:
+						ArrayList<MyPair<String, LexicalDBHelper>> items = AppDataAdapter.items;
+						HashSet<Integer> selection = AppDataAdapter.selectedPositions;
+						if(selection.size()>0) {
+							File fp = new File(opt.pathToFavoriteDatabases().toString());
+							int cc=0;
+							for (int i = 0; i < items.size(); i++) {
+								if (selection.contains(i)) {
+									try {
+										MyPair<String, LexicalDBHelper> iI = items.get(i);
+										LexicalDBHelper db = iI.value;
+										if (db == null) {
+											db = iI.value = new LexicalDBHelper(getApplicationContext(), new File(fp, iI.key));
+										}
+										if(db.insertUpdate(text)>0)
+											cc++;
+									} catch (Exception ignored) { }
+								}
+							}
+							showT("添加完毕！("+cc+"/"+selection.size()+")");
+						}
+						final_bottomPlaylist.dismiss();
+					break;
+					case R.id.new_folder:
+						showCreateNewFavoriteDialog((int) (ll.getWidth() - getResources().getDimension(R.dimen._35_)));
+					break;
+				}
+			};
+			ll.findViewById(R.id.cancel).setOnClickListener(clicker);
+			ll.findViewById(R.id.confirm).setOnClickListener(clicker);
+			ll.findViewById(R.id.new_folder).setOnClickListener(clicker);
+			_bottomPlaylist.setContentView(ll);
+			_bottomPlaylist.getWindow().setDimAmount(0.2f);
+			//bottomPlaylist.getWindow().setBackgroundDrawable(null);
+			//bottomPlaylist.getWindow().getDecorView().setBackground(null);
+			////bottomPlaylist.getWindow().findViewById(R.id.design_bottom_sheet).setBackground(null);
+			//fix_full_screen(bottomPlaylist.getWindow().getDecorView());
+			_bottomPlaylist.getWindow().getDecorView().setTag(lv);
+			//CMN.recurseLogCascade(lv);
+			_bottomPlaylist.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
+			if(GlobalOptions.isDark){
+				ll.setBackgroundColor(Color.BLACK);
+				((TextView)ll.findViewById(R.id.title)).setTextColor(Color.WHITE);
+				ll.findViewById(R.id.bottombar).getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+			}
+		}
+		View v = (View) _bottomPlaylist.getWindow().getDecorView().getTag();
+		DisplayMetrics dm2 = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getRealMetrics(dm2);
+		v.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * _bottomPlaylist.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
+		v.requestLayout();
+		_bottomPlaylist.show();
+	}
+
+	/** @param reason: 0=切换收藏夹; 1=切换收藏夹(收藏夹视图); 2=移动收藏 */
+	public void showChooseFavorDialog(int reason) {
+		AlertDialog d = ChooseFavorDialog==null?null:ChooseFavorDialog.get();
+		if(d==null){
+			CMN.Log("重建选择器……");
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.pickfavor);
+			builder.setPositiveButton(R.string.newfc, null);
+			builder.setNeutralButton(R.string.delete, null);
+			builder.setItems(new String[] {},null);
+			d=builder.create();
+			d.show();
+			ListView litsView = d.getListView();
+			litsView.setId(R.id.click_remove);
+			litsView.setAdapter(AppDataAdapter());
+			AlertDialog finalD = d;
+			litsView.setOnItemClickListener((parent, view, position, id) -> {
+				int reason1 = (int) parent.getTag();
+				MyPair<String, LexicalDBHelper> item = AppDataAdapter.items.get(position);
+				String name = item.key;
+				File fd = new File(opt.pathToFavoriteDatabases().append(name).toString());
+				LexicalDBHelper _favoriteCon = item.value;
+				if(_favoriteCon==null){
+					_favoriteCon = item.value = new LexicalDBHelper(getApplicationContext(), fd);
+				}
+				if(reason1!=2 && DBrowser!=null && DBrowser.getFragmentId()==1){
+					// 加载收藏夹
+					opt.putCurrFavoriteDBName(name);
+					favoriteCon = _favoriteCon;
+					DBrowser.loadInAll(this);
+				} else if(reason1==2 && DBrowser!=null){
+					DBrowser.moveSelectedardsToDataBase(_favoriteCon);
+				}
+				if(reason1!=2)
+					view.post(() -> {
+						finalD.dismiss();
+						if(reason1==0)
+							show(R.string.currFavor,CMN.unwrapDatabaseName(name));
+					});
+			});
+			d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v1 -> {
+				AppDataAdapter.showDelete = !AppDataAdapter.showDelete;
+				AppDataAdapter.notifyDataSetChanged();
+			});
+			d.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+			d.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(MainActivityUIBase.this,R.color.colorHeaderBlue));
+			d.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.RED);
+			d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v12 -> {
+				showCreateNewFavoriteDialog(finalD.getListView().getWidth());
+			});
+			if(GlobalOptions.isDark){
+				d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_d);
+				((TextView)d.getWindow().findViewById(R.id.alertTitle)).setTextColor(Color.WHITE);
+				d.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE);
+			}
+			ChooseFavorDialog = new WeakReference<>(d);
+		}
+		else {
+			d.show();
+		}
+		d.getWindow().setLayout((int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor)), -2);
+		d.getListView().setTag(reason);
+		if(reason==2)
+			d.setTitle("移动到…");
+		else
+			d.setTitle(R.string.pickfavor);
+	}
 }

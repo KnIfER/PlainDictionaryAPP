@@ -5,7 +5,6 @@ import android.content.Context;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.dictionary.mdictRes;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 

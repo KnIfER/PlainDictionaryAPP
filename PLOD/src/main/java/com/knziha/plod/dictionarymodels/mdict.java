@@ -11,9 +11,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
@@ -42,6 +40,7 @@ import androidx.core.graphics.ColorUtils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.filepicker.utils.FU;
+import com.knziha.plod.PlainDict.AgentApplication;
 import com.knziha.plod.PlainDict.BasicAdapter;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
@@ -49,6 +48,7 @@ import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.PlainDict.PDICMainActivity;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.PlaceHolder;
+import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.PlainDict.R;
@@ -59,10 +59,12 @@ import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
 import org.adrianwalker.multilinestring.Multiline;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -76,8 +78,11 @@ import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -222,7 +227,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	 	}
 
 		//!!!高亮开始
-		var bOnceHighlighted;
 		var MarkLoad,MarkInst;
 		var results=[], current,currentIndex = 0;
 		var currentClass = "current";
@@ -322,11 +326,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 
 		function clearHighlights(){
-			if(bOnceHighlighted && MarkInst && MarkLoad)
+			if(w.bOnceHighlighted && MarkInst && MarkLoad)
 			MarkInst.unmark({
 				done: function() {
 					results=[];
-					bOnceHighlighted=false;
+					w.bOnceHighlighted=false;
 				}
 			});
 		}
@@ -349,7 +353,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		function do_highlight(keyword){
 			if(!MarkInst)
 				MarkInst = new Mark(document);
-	 		bOnceHighlighted=false;
+	 		w.bOnceHighlighted=false;
 			MarkInst.unmark({
 				done: function() {
 	 				var rcsp=w.rcsp;
@@ -369,7 +373,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 
 		 function done_highlight(){
-			 bOnceHighlighted=true;
+			 w.bOnceHighlighted=true;
 			 results = document.getElementsByTagName("mark");
 			 currentIndex=-1;
 			 if(app) app.onHighlightReady(frameAt, results.length);
@@ -471,7 +475,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	 	var saveTag=document.getElementsByTagName('PLODSAVE');
 	 	if(saveTag.length==0){
 	 		saveTag=document.createElement('PLODSAVE');
-	 		document.body.append(saveTag);
+	 		document.body.appendChild(saveTag);
 	 		saveTag.innerText='0';
 	 	}else{
 			saveTag=saveTag[0];
@@ -573,6 +577,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
 		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
 
+		justifyInternal("."+_Dictionary_fName);
+
 		htmlBuilder=new StringBuilder(htmlBase);
         File p = f.getParentFile();
         if(p!=null) {
@@ -597,7 +603,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		htmlBuilder.append(js);
 		htmlBaseLen=htmlBuilder.length();
 
-        readInConfigs(false);
+        readInConfigs();
         
     	if(bgColor==null)
     		bgColor=CMN.GlobalPageBackground;
@@ -746,9 +752,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 							//a.showT(CMN.Log(initialScale+" :: "+th+" :: "+pos+" :: expectedPos" + (isRecess ? " <- " : " -> ") + mWebView.expectedPos));
 
 							if (pos != -1) {
+								boolean render = mWebView.currentPos != pos || mWebView.isloading;
 								setCurrentDis(mWebView, pos, 0);
-								if (mWebView.currentPos != pos || mWebView.isloading) {
-									/*BUG::多重结果变成成单一结果*/
+								if (render) {
+									//CMN.Log("/*BUG::多重结果变成成单一结果*/");
 									renderContentAt_internal(mWebView,initialScale, fromCombined, false, rl.getLayoutParams().height>0, pos);
 								} else {
 									//CMN.Log("还是在这个页面");
@@ -1136,10 +1143,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		String url=getSaveUrl(mWebView);
 		if(url!=null && url.length()>0)
 		mWebView.evaluateJavascript(save_js, v -> {
-			if(v!=null) {
+			if(v!=null && v.startsWith("\"")) {
 				v=StringEscapeUtils.unescapeJava(v.substring(1,v.length()-1));
 				v=RemoveApplicationTags(v);
-				//CMN.Log("结果Html，", v);
+				CMN.Log("结果Html，", v);
 				//CMN.Log("结果长度，", v.length()); CMN.Log("");
 				String title=currentDisplaying;
 				if(mWebView!=this.mWebView && a.PeruseView!=null)
@@ -1205,13 +1212,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	}
 
 	protected String getSaveUrl(WebViewmy mWebView) {
-		if(mWebView==this.mWebView){
-			return Integer.toString(currentPos);
-		} else {
-			if(a.PeruseView!=null)
-				return Integer.toString(a.PeruseView.currentPos);
-		}
-		return null;
+		return Integer.toString(mWebView.currentPos);
 	}
 
 	protected void onPageSaved() {
@@ -1292,7 +1293,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 	public boolean isJumping = false;
 
-	public int currentPos;
+	//public int currentPos;
 	public int lvPos,lvClickPos,lvPosOff;
 	StringBuilder title_builder;
 	/** Current Page Historian */
@@ -1300,8 +1301,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	
     @SuppressLint("JavascriptInterface")
 	public void setCurrentDis(WebViewmy mWebView, int idx, int... flag) {
-		currentPos = idx;
-		mWebView.word = currentDisplaying = getEntryAt(currentPos);
+		if(flag==null || flag.length==0) {//书签跳转等等
+			mWebView.addHistoryAt(idx);
+		}
+		/* 回溯 或 前瞻， 不改变历史 */
+		mWebView.word = currentDisplaying = getEntryAt(mWebView.currentPos = idx);
 		if(hasVirtualIndex()){
 			int tailIdx=currentDisplaying.lastIndexOf(":");
 			if(tailIdx>0)
@@ -1313,12 +1317,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			title_builder.setLength(0);
     	toolbar_title.setText(title_builder.append(currentDisplaying.trim()).append(" - ").append(_Dictionary_fName).toString());
 
-		if(flag==null || flag.length==0) {//书签跳转等等
-			mWebView.addHistoryAt(idx);
-		}
-		else {
-			/* 回溯 或 前瞻， 不改变历史 */
-		}
 		if(mWebView.History.size()>2){
 			recess.setVisibility(View.VISIBLE);
 			forward.setVisibility(View.VISIBLE);
@@ -1342,6 +1340,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		if(SelfIdx!=-1){
 			mWebView.setTag(mWebView.SelfIdx=SelfIdx);
 			if(resposibleForThisWeb) rl.setTag(SelfIdx);
+			//todo 是否记忆临时的折叠状态？
 			//todo 是否为常规的页面开放连续的历史纪录？
 			mWebView.clearIfNewADA(resposibleForThisWeb?-100:SelfIdx);
 			mWebView.currentPos=position[0];
@@ -1360,6 +1359,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			initialScale = -1;
 			frameAt = mWebView.frameAt;
 		}
+		if(mWebView.getVisibility()!=View.VISIBLE)
+			mWebView.setVisibility(View.VISIBLE);
 
 		if(getFontSize()!=mWebView.getSettings().getTextZoom())
 			mWebView.getSettings().setTextZoom(getFontSize());
@@ -1367,16 +1368,13 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		boolean fromPopup = mWebView.fromCombined==2;
 
 		boolean mIsolateImages=false;
-		if(mWebView==this.mWebView) {
+		if(resposibleForThisWeb) {
 	    	setCurrentDis(mWebView, position[0]);
 			if(fromCombined) {
 				if(rl.getLayoutParams()!=null) {
 					rl.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 				}
-				if(Build.VERSION.SDK_INT<=19) {
-					mWebView.getLayoutParams().height = 100;//on 4.4-Kitkat, height wont shrink down
-				}else
-					mWebView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+				mWebView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 			}
 			else {
 				if(mIsolateImages=getIsolateImages()){
@@ -1388,6 +1386,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 					a.PageSlider.TurnPageEnabled=false;
 					mWebView.setBackgroundColor(Color.TRANSPARENT);
 					a.initPhotoViewPager();
+				} else {
+					rl.getLayoutParams().height = LayoutParams.MATCH_PARENT;
+					mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				}
 				a.RecalibrateWebScrollbar(mWebView);
 			}
@@ -1478,6 +1479,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				LoadPagelet(mWebView, htmlBuilder, htmlCode);
 			}
 			else{
+				CMN.Log("fullpageString");
 				int headidx = htmlCode.indexOf("<head>");
 				boolean b1=headidx==-1;
 				if(true){
@@ -1600,7 +1602,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				getCon(true).enssurePageTable();
 				con.preparePageContain();
 				if(con.containsPage(url)){
-					if(!pExists) return new String(con.getPageString(url, _charset));
+					if(!pExists) return con.getPageString(url, StandardCharsets.UTF_8);
 					else{
 						Object[] results=con.getPageAndTime(url);
 						if(results!=null) {
@@ -1632,7 +1634,17 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		if(ret==null) ret="";
 		return StringEscapeUtils.unescapeHtml3(ret);
 	}
-	
+
+	protected void justifyInternal(String dictionary_fName) {
+		String path = opt.pathToDatabases().append(_Dictionary_fName_Internal).toString();
+		File from = new File(path);
+		File to = new File( opt.pathToDatabases().append(_Dictionary_fName_Internal=dictionary_fName).toString());
+		//CMN.Log("移动??", from, to, from.exists());
+		if(from.exists()){
+			FU.move3(a, from, to);
+		}
+	}
+
 	public MdxDBHelper con;
 	public MdxDBHelper getCon(boolean open) {
 		if(con==null){
@@ -1656,28 +1668,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			con1.close();
 		}
 	}
-   
-	private final Handler mHandle = new Handler(){
-		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-				case 1:
-					int fint = (int) msg.obj;
-		        	a.showT("showed to " + fint);
-		        	//mWebView.scrollTo(0, fint);
-		        	mWebView.setScrollY(fint);
-		        	//mWebView.setLayoutParams(mWebView.getLayoutParams());
-				break;
-				case 2:
-					//a.showT("dopagef");
-					//for KitKat
-					mWebView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
-		        	mWebView.setLayoutParams(mWebView.getLayoutParams());
-					//mWebView.setAlpha(0.998f);
-				break;
-			}
-		}
-	};
 
 	public boolean hasMdd() {
 		return mdd!=null && mdd.size()>0 || ftd!=null && ftd.size()>0 || isResourceFile;
@@ -1713,7 +1703,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	@Override
 	public void checkFlag() {
 		if(FFStamp!=firstFlag)
-			WriteConfigFF();
+			dumpViewStates();
 	}
 
 	@Override
@@ -1813,17 +1803,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
         @JavascriptInterface
         public void showTo(int val) {
         	if(true) return;
-        	//a.showT("showed to " + val);
-        	//mWebView
-        	Message msg = new Message();
-        	msg.what=1;msg.obj=val;
-        	mdx.mHandle.removeMessages(1);
-        	mdx.mHandle.sendMessage(msg);
-        }
-        
-        @JavascriptInterface
-        public void pageshow() {
-
         }
 
         @JavascriptInterface
@@ -1901,7 +1880,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 	}
 
-	public boolean renameFileTo(File newF) {
+	public boolean renameFileTo(Context c, File newF) {
 		File fP = newF.getParentFile();
 		fP.mkdirs();
 		boolean ret = false;
@@ -1953,8 +1932,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		if(ret || pass) {
 			f=newF;
 			String fn = newF.getAbsolutePath();
-			_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
-			_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
+			_Dictionary_fName_Internal = "."+_Dictionary_fName;
 		}
 		new File(opt.pathToDatabases().append(_Dictionary_fName_InternalOld).toString()).renameTo(new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).toString()));
 		
@@ -1973,17 +1951,14 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		return placeHolder.pathname.equals(f.getPath());
 	}
 
-	public boolean moveFileTo(File newF) {
+	public boolean moveFileTo(Context c, File newF) {
 		File fP = newF.getParentFile();
 		fP.mkdirs();
 		boolean ret = false;
-		boolean pass = !f.exists();
-		String _Dictionary_fName_InternalOld = _Dictionary_fName_Internal;
 		if(fP.exists() && fP.isDirectory()) {
-			int retret = FU.move(a, f, newF);
-			Log.d("XXX-ret",""+retret);
-			//Log.e("XXX-ret",f.getParent()+"sad"+newF.getParent());
-			if(retret==0) {
+			int retret = FU.move3(a, f, newF);
+			CMN.Log("XXX-ret",""+retret);
+			if(retret>=0) {
 				String filename = newF.getName();
 				_Dictionary_fName = newF.getName();
 				int tmpIdx = filename.length()-4;
@@ -2017,18 +1992,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 						e.printStackTrace();
 					}
 				}
-			}else if(retret==-123) {
+				f=newF;
+			}
+			else if(retret==-123) {
 				a.showT("错误：不恰当的路径分隔符");
 			}
 		}
-		if(ret || pass) {
-			f=newF;
-			String fn = newF.getAbsolutePath();
-			_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
-			_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
-		}
-		new File(opt.pathToDatabases().append(_Dictionary_fName_InternalOld).toString()).renameTo(new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).toString()));
-		
 		if(a.currentDictionary==this)
 			a.setLastMdFn(_Dictionary_fName);
 		return ret;
@@ -2058,61 +2027,87 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 	public void dumpViewStates() {
 		try {
-			long time = System.currentTimeMillis();
-	    	File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
-	    	if(!SpecificationFile.getParentFile().exists())
-	    		SpecificationFile.getParentFile().mkdirs();
-	    	DataOutputStream fo = new DataOutputStream(new FileOutputStream(SpecificationFile));
-			fo.writeShort(12);
-			fo.writeByte(0);
-			
-			fo.writeInt(bgColor);
-			fo.writeInt(internalScaleLevel);
-			
-			fo.writeInt(lvPos);
-			fo.writeInt(lvClickPos);
-			fo.writeInt(lvPosOff);
+			DataOutputStream data_out;
+			byte[] data = null;
+	    	if(CMN.bForbidOneSpecFile){
+				File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
+				File parentFile = SpecificationFile.getParentFile();
+				if(!parentFile.exists()) parentFile.mkdirs();
+				data_out = new DataOutputStream(new FileOutputStream(SpecificationFile));
+			} else {
+				AgentApplication app = ((AgentApplication) a.getApplication());
+				ReusableByteOutputStream bos = new ReusableByteOutputStream(app.UIProjects.get(f.getName()), MainActivityUIBase.ConfigSize + MainActivityUIBase.ConfigExtra);
+				data = bos.getBytes();
+				bos.precede(MainActivityUIBase.ConfigExtra);
+				data_out = new DataOutputStream(bos);
+			}
+			data_out.writeShort(12);
+			data_out.writeByte(0);
+			data_out.writeInt(bgColor);
+			data_out.writeInt(internalScaleLevel);
+			data_out.writeInt(lvPos);
+			data_out.writeInt(lvClickPos);
+			data_out.writeInt(lvPosOff);
 			//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, _Dictionary_fName);
-
 			int ex=0,e=0;
-			if(viewsHolderReady && mWebView!=null) {
+			if(mWebView!=null) {
 				ex=mWebView.getScrollX();
 				e=mWebView.getScrollY();
 			}else if(initArgs!=null && initArgs.length==2){
 				ex=initArgs[0];
 				e=initArgs[1];
 			}
-			fo.writeInt(ex);
-			fo.writeInt(e);
-			fo.writeFloat(webScale);
+			data_out.writeInt(ex);
+			data_out.writeInt(e);
+			data_out.writeFloat(webScale);
 			//CMN.Log(_Dictionary_fName+"保存页面位置",expectedPosX,expectedPos,webScale);
-
-			fo.writeLong(firstFlag);
-
-			fo.flush();
-			fo.close();
-			//CMN.Log(_Dictionary_fName+"单典配置保存耗时",System.currentTimeMillis()-time);
+			data_out.writeLong(firstFlag);
+			data_out.close();
+			if(!CMN.bForbidOneSpecFile)
+				a.putUIProject(f.getName(), data);
 			isDirty = false;
-		} catch (Exception e) { e.printStackTrace(); }
+		} catch (Exception e) { CMN.Log(e); }
 	}
-	
-	
-	protected void WriteConfigFF() {
-		//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM lv[int int int] page[int int float]
-		 try {
-	        	File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
-	        	if(!SpecificationFile.getParentFile().exists())
-		    		SpecificationFile.getParentFile().mkdirs();
-	        	RandomAccessFile outputter = new RandomAccessFile(SpecificationFile, "rw");
-			 	outputter.seek(35);
-			 	if(outputter.getFilePointer()==35){
-					outputter.writeLong(FFStamp=firstFlag);
-				}
-	        	outputter.close();
-			 	FFStamp = firstFlag;
-	        } catch (IOException e) {
-			 	CMN.Log(e);
-			}
+
+	public void putSates() throws IOException {
+		ReusableByteOutputStream bos = new ReusableByteOutputStream(50);
+		DataOutputStream fo = new DataOutputStream(bos);
+		fo.writeShort(12);
+		fo.writeByte(0);
+
+		fo.writeInt(bgColor);
+		fo.writeInt(internalScaleLevel);
+
+		fo.writeInt(lvPos);
+		fo.writeInt(lvClickPos);
+		fo.writeInt(lvPosOff);
+		//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, _Dictionary_fName);
+
+		int ex=0,e=0;
+		if(viewsHolderReady && mWebView!=null) {
+			ex=mWebView.getScrollX();
+			e=mWebView.getScrollY();
+		}else if(initArgs!=null && initArgs.length==2){
+			ex=initArgs[0];
+			e=initArgs[1];
+		}
+		fo.writeInt(ex);
+		fo.writeInt(e);
+		fo.writeFloat(webScale);
+		//CMN.Log(_Dictionary_fName+"保存页面位置",expectedPosX,expectedPos,webScale);
+
+		fo.writeLong(firstFlag);
+
+
+		byte[] data = bos.getBytes();
+		byte[] oldData = new byte[data.length + MainActivityUIBase.ConfigExtra];
+		for (int k = 0; k < 4; k++) {
+			oldData[k] = 0;
+		}
+		System.arraycopy(data, 0, oldData, MainActivityUIBase.ConfigExtra, data.length);
+
+		AgentApplication app = ((AgentApplication) a.getApplication());
+		app.UIProjects.put(f.getName(), oldData);
 	}
 	
 	public int getFontSize() {
@@ -2120,107 +2115,62 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			return internalScaleLevel>0?internalScaleLevel:(internalScaleLevel=def_fontsize);
 		return def_fontsize;
 	}
-	
-	public final int[] CONFIGPOS= {3,7};
-	public float webScale=0;
-	public void WriteConfigInt(int off, int val) {
-		//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
-		 try {
-	        	File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
-	        	if(!SpecificationFile.getParentFile().exists())
-		    		SpecificationFile.getParentFile().mkdirs();
-	        	RandomAccessFile outputter = new RandomAccessFile(SpecificationFile, "rw");
-	        	outputter.seek(off);
-	        	outputter.writeInt(val);
-	        	outputter.close();
-	        } catch (IOException e) {
-				e.printStackTrace();
-			}
-	}
 
-	public void readInConfigs(boolean check) throws IOException {
+	public float webScale=0;
+
+	public void readInConfigs() throws IOException {
 		DataInputStream data_in1 = null;
 		try {
 			File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
-			if(SpecificationFile.exists()) {
-				long time = SpecificationFile.lastModified();
-				if(check){
-					if(opt.ChangedMap!=null){
-						Long newVal = opt.ChangedMap.get(getPath());
-						if(newVal!=null){
-							firstFlag = newVal;
-							refresh_eidt_kit(getContentEditable(), getEditingContents(), true);
-						}
-					}
-				} else {
-					//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
-					data_in1 = new DataInputStream(new FileInputStream(SpecificationFile));
-					int size = data_in1.readShort();
-					if(size!=12) {
-						data_in1.close();
-						SpecificationFile.delete();
-						return;
-					}
-					byte _firstFlag = data_in1.readByte();
-					if(_firstFlag!=0){
-						firstFlag |= _firstFlag;
-					}
-					//readinoptions
-					//a.showT("getUseInternalBG():"+getUseInternalBG()+" getUseInternalFS():"+getUseInternalFS()+" KeycaseStrategy:"+KeycaseStrategy);
-					if(data_in1.available()>4) {
-						bgColor = data_in1.readInt();
-						internalScaleLevel = data_in1.readInt();
-
-
-						lvPos = data_in1.readInt();
-						lvClickPos = data_in1.readInt();
-						lvPosOff = data_in1.readInt();
-
-						//CMN.Log(_Dictionary_fName+"列表位置",lvPos,lvClickPos,lvPosOff);
-						if(data_in1.available()>0) {
-							initArgs = new int[]{data_in1.readInt(), data_in1.readInt()};
-							webScale = data_in1.readFloat();
-						}
-
-						if(data_in1.available()>0) {
-							firstFlag |= data_in1.readLong();
-						}
-					}
-
-					//CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
-
-
-					data_in1.close();
-					//CMN.Log(_Dictionary_fName+"单典配置加载耗时",System.currentTimeMillis()-time);
+			CMN.rt();
+			if(CMN.bForbidOneSpecFile  && SpecificationFile.exists()){
+				data_in1 = new DataInputStream(new FileInputStream(SpecificationFile));
+			} else {
+				SpecificationFile.delete();
+				File parentFile = SpecificationFile.getParentFile();
+				if(ArrayUtils.isEmpty(parentFile.list()))
+					parentFile.delete();
+				byte[] data = a.UIProjects.get(f.getName());
+				if(data!=null){
+					int extra = MainActivityUIBase.ConfigExtra;
+					data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
 				}
 			}
-			else if(_header_tag!=null){//TODO figure out null ex
-				//CMN.Log("tag say editable : ", _header_tag.get("editable"));
-				setContentEditable("yes".equals(_header_tag.get("editable")));
+			if(data_in1!=null){
+				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
+				int size = data_in1.readShort();
+				if(CMN.bForbidOneSpecFile && size!=12) {
+					data_in1.close();
+					SpecificationFile.delete();
+					return;
+				}
+				byte _firstFlag = data_in1.readByte();
+				if(_firstFlag!=0){
+					firstFlag |= _firstFlag;
+				}
+				bgColor = data_in1.readInt();
+				internalScaleLevel = data_in1.readInt();
+				lvPos = data_in1.readInt();
+				lvClickPos = data_in1.readInt();
+				lvPosOff = data_in1.readInt();
+				//CMN.Log(_Dictionary_fName+"列表位置",lvPos,lvClickPos,lvPosOff);
+				if(data_in1.available()>0) {
+					initArgs = new int[]{data_in1.readInt(), data_in1.readInt()};
+					webScale = data_in1.readFloat();
+				}
+				if(data_in1.available()>0) {
+					firstFlag |= data_in1.readLong();
+				}
+				data_in1.close();
 			}
+			//CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
+			//CMN.pt(_Dictionary_fName+"单典配置加载耗时");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
 			FFStamp = firstFlag;
 			if(data_in1!=null) data_in1.close();
 		}
-	}
-
-	protected int ReadConfigInt(int off) {
-		//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
-		int ret=0;
-		try {
-        	File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
-        	if(!SpecificationFile.getParentFile().exists())
-	    		SpecificationFile.getParentFile().mkdirs();
-        	RandomAccessFile outputter = new RandomAccessFile(SpecificationFile, "r");
-        	outputter.seek(off);
-        	ret = outputter.readInt();
-        	outputter.close();
-        } catch (IOException e) {
-			e.printStackTrace();
-		}
-		return ret;
 	}
 
 	public interface ViewLayoutListener{
@@ -2387,7 +2337,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			case R.id.cover:
 				if(v.getTag(R.id.toolbar_action1)!=null) {//add It!
 					boolean resposible=con==null;
-					if(getCon(true).insertUpdate(currentPos)!=-1)
+					if(getCon(true).insertUpdate(mWebView.currentPos)!=-1)
 						v.setTag(R.id.toolbar_action2,CMN.OccupyTag);
 					if(resposible) closeCon();
 					v.setTag(R.id.toolbar_action1,null);
@@ -2422,5 +2372,24 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			}
 		}
 		return false;
+	}
+
+	@Override
+	protected void MoveOrRenameResourceLet(mdictRes md, String token, String pattern, File newPath) {
+		File f = md.f();
+		String tokee = f().getName();
+		if(tokee.startsWith(token) && tokee.charAt(Math.min(token.length(), tokee.length()))=='.'){
+			String suffix = tokee.substring(token.length());
+			String np = f.getParent();
+			if(np!=null && np.equals(np=newPath.getParent())){ //重命名
+				File mnp=new File(np, pattern+suffix);
+				if(FU.rename5(a, f, mnp)>=0)
+					md.Rebase(mnp);
+			} else {
+				File mnp=new File(np, f.getName());
+				if(FU.move3(a, f, mnp)>=0)
+					md.Rebase(mnp);
+			}
+		}
 	}
 }

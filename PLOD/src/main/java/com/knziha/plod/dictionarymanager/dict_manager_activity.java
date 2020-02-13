@@ -3,7 +3,6 @@ package com.knziha.plod.dictionarymanager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -42,7 +41,6 @@ import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
-import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -52,6 +50,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
+import com.knziha.filepicker.utils.FU;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.PlainDict.AgentApplication;
 import com.knziha.plod.PlainDict.CMN;
@@ -67,8 +66,8 @@ import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
-import com.knziha.plod.dictionarymodels.mdict_transient;
 import com.knziha.plod.dictionarymodels.mdict_prempter;
+import com.knziha.plod.dictionarymodels.mdict_transient;
 import com.knziha.plod.widgets.Toastable_FragmentActivity;
 import com.knziha.rbtree.RashSet;
 
@@ -76,13 +75,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -98,6 +93,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	private PopupWindow mPopup;
 	public ArrayList<PlaceHolder> slots;
 	private ArrayList<Fragment> fragments;
+	private HashMap<String, mdict> app_mdict_cache;
 
 	public interface transferRunnable{
 		boolean transfer(File to);
@@ -269,34 +265,13 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	{
 		super.onCreate(null);
 		AgentApplication agent = ((AgentApplication)getApplication());
+		app_mdict_cache=agent.mdict_cache;
 		opt=agent.opt;
 		slots = agent.slots;
 		mdlibsCon=agent.mdlibsCon;
 		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.dict_manager_main);
-		Window window = getWindow();
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS  
-                | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);  
-        window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN  
-                        
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-        if(Build.VERSION.SDK_INT>=21) {
-			window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-			window.setStatusBarColor(Color.parseColor("#8f8f8f"));
-	        window.setNavigationBarColor(Color.parseColor("#8f8f8f"));  
-        }
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			View decorView = window.getDecorView();
-			int vis = decorView.getSystemUiVisibility();
-			if (false) {
-				vis |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-			} else {
-				vis &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-			}
-			decorView.setSystemUiVisibility(vis);
-		}
     	//a = ((MainActivity)CMN.a);
     	
 		//TypedValue tval = new TypedValue();
@@ -362,9 +337,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				if(!found) {
 					//show("adding new!"+fn.getAbsolutePath());
 					f3.mDslv.post(() -> {
-						mdict_transient mdTmp = new mdict_transient(fn.getPath(), opt, 0);
-						PDICMainAppOptions.setTmpIsFiler(mdTmp, mdTmp.getIsDedicatedFilter());
-						f1.adapter.add(mdTmp);
+						mdict_transient mmTmp = new mdict_transient(dict_manager_activity.this, fn.getPath(), opt, 0);
+						f1.adapter.add(mmTmp);
 						f1.refreshSize();
 						f1.adapter.notifyDataSetChanged();
 						f1.isDirty=true;
@@ -448,7 +422,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
 	    for (int i=0; i<tabTitle.length; i++)
             mTabLayout.addTab(mTabLayout.newTab().setText(tabTitle[i]));
-		mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+		mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 			@Override
 			public void onTabSelected(TabLayout.Tab tab) {
 				viewPager.setCurrentItem(tab.getPosition());
@@ -482,7 +456,6 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				vTmp1.setOnClickListener(v1 -> {
 					mPopup.dismiss(); mPopup=null;
 					onBackPressed();
-					finish();
 				});
 				TextView tv = vTmp1.findViewById(R.id.text1);
 				tv.setText(R.string.exit);
@@ -509,7 +482,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
  		MenuItem searchItem = toolbarmenu.getItem(16);
  		searchItem.setShowAsAction(2);
- 		searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+ 		searchView = (SearchView) searchItem.getActionView();
  		//searchView.setIconified(true);//设置搜索框直接展开显示。左侧有放大镜(在搜索框中) 右侧有叉叉 可以关闭搜索框
  		//searchView.onActionViewExpanded();// 当展开无输入内容的时候，没有关闭的图标
  		//searchView.setIconifiedByDefault(true);//默认为true在框内，设置false则在框外
@@ -547,13 +520,6 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	            		}
             		break;
 	            }
-//xxx
-        		//if(cc>0)
-        		//	TSnackbar.makeraw(toastmaker  , getResources().getString(R.string.fc,cc),TSnackbar.LENGTH_SHORT).show();
-        		//else
-        		//	TSnackbar.makeraw(toastmaker  , getResources().getString(R.string.fn) ,TSnackbar.LENGTH_SHORT).show();
-
-
 
 	            ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
         	    return true;
@@ -590,24 +556,30 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		} catch (Exception e) {
 		    e.printStackTrace();
 		}
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS  
+
+		Window window = getWindow();
+
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
                 | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);  
-        window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN  
-                        
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);  
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.getDecorView().setSystemUiVisibility(
+        		View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         if(Build.VERSION.SDK_INT>=21) {
+			window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 	        window.setStatusBarColor(Color.TRANSPARENT);  
-	        window.setNavigationBarColor(Color.BLACK);  
+	        window.setNavigationBarColor(Color.BLACK);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				View decorView = window.getDecorView();
+				int vis = decorView.getSystemUiVisibility();
+				if (false) {
+					vis |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+				} else {
+					vis &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+				}
+				decorView.setSystemUiVisibility(vis);
+			}
         }
 		setResult(RESULT_OK, intent);
-//		viewPager.postDelayed(new Runnable() {
-//			@Override
-//			public void run() {
-//				CMN.Log(viewPager.getChildCount(), viewPager.getOffscreenPageLimit());
-//			}
-//		}, 1000);
-
+        agent.clearNonsenses();
 	}
 	//onCreate结束
 	
@@ -748,8 +720,6 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	            holder.tv.setText(name.substring(0,name.length()-4));
 				return convertView;
 			}
-			ColorStateList filter_blue = new ColorStateList(new int[][]{new int[0]}, new int[]{0xff0000ff});
-			ColorStateList filter_red = new ColorStateList(new int[][]{new int[0]}, new int[]{0xffff0000});
 			private void decorateByViewHolder(myHolder holder) {
 				if(args.key)
 	            	holder.remove.setVisibility(View.VISIBLE);
@@ -782,62 +752,39 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
         builder.setNeutralButton(R.string.delete,null);
         builder.setPositiveButton(R.string.cancel,null);
         final AlertDialog d = builder.create();
-        
-  
+
         d.setOnDismissListener(dialog1 -> tr.afterTransfer());
         d.show();
         iv.setOnClickListener(v -> {
 			String newName = SU.trimStart(et.getText().toString());
-			if(newName.equals("")) {
+			if(newName.equals("") || newName.contains("/")) {
 				show(R.string.renamefail0);
 				return;
 			}
 			final File newf = new File(opt.pathToMainFolder().append("CONFIG/").append(newName).append(".set").toString());
 			if(!fSearch.equals(newf) && newf.exists()) {//覆盖
 				View dialog12 = getLayoutInflater().inflate(R.layout.dialog_about,null);
-AlertDialog.Builder builder1 = new AlertDialog.Builder(dict_manager_activity.this);
-TextView tvtv = dialog12.findViewById(R.id.title);
-tvtv.setText(R.string.wenj_fugai);
-tvtv.setPadding(50, 50, 0, 0);
-builder1.setView(dialog12);
-final AlertDialog dd = builder1.create();
-dialog12.findViewById(R.id.cancel).setOnClickListener(v12 -> {
-if(tr.transfer(newf)) {
-								if(lastPlanName.equals(opt.getLastPlanName())) {
-									String name = newf.getName();
-									opt.putLastPlanName(f2.LastSelectedPlan=name.substring(0,name.length()-4));
-								}
-								d.dismiss();
-								dd.dismiss();
-							}else {
-								showT("文件写入失败_file_write_failure");
-							}
-});
-if(Build.VERSION.SDK_INT<22) {//为什么：低版本不支持点击外部dimiss
-SpannableStringBuilder ssb = new SpannableStringBuilder(tvtv.getText());
-ssb.append("\n(否)");
-int idxNo = ssb.toString().indexOf("\n(否)");
-ssb.setSpan(new ClickableSpan() {
-						@Override
-						public void onClick(View widget) {
-							dd.dismiss();
-							}},idxNo,idxNo+"\n(否)".length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-tvtv.setText(ssb);
-tvtv.setMovementMethod(LinkMovementMethod.getInstance());
-				}
-dd.show();
-
-			}else {
+				AlertDialog.Builder builder1 = new AlertDialog.Builder(dict_manager_activity.this);
+				TextView tvtv = dialog12.findViewById(R.id.title);
+				tvtv.setText(R.string.wenj_fugai);
+				tvtv.setPadding(50, 50, 0, 0);
+				builder1.setView(dialog12);
+				final AlertDialog dd = builder1.create();
+				dialog12.findViewById(R.id.cancel).setOnClickListener(v12 -> {
 					if(tr.transfer(newf)) {
-						if(lastPlanName.equals(opt.getLastPlanName())) {
-							String name = newf.getName();
-							opt.putLastPlanName(f2.LastSelectedPlan=name.substring(0,name.length()-4));
-						}
 						d.dismiss();
+						dd.dismiss();
 					}else {
 						showT("文件写入失败_file_write_failure");
 					}
+				});
+				dd.show();
+			}else {
+				if(tr.transfer(newf)) {
+					d.dismiss();
+				} else {
+					showT("文件写入失败_file_write_failure");
+				}
 			}
 		});
         d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
@@ -857,11 +804,9 @@ dd.show();
 	boolean ThisIsDirty;
 
     public class FragAdapter extends FragmentPagerAdapter {
-
     	private List<Fragment> mFragments;
-    	
     	public FragAdapter(FragmentManager fm,List<Fragment> fragments) {
-    		super(fm);
+    		super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
     		mFragments=fragments;
     	}
 
@@ -1057,12 +1002,17 @@ dd.show();
 			} break;
             case R.id.toolbar_action6:{//显示全部
 				if(isLongClicked){
-					if(opt.getDictManager1MultiSelecting()){
+					if(opt.getDictManager1MultiSelecting()){//间选1
 						int[] positions = f1.lastClickedPos;
 						if(positions[0]!=-1 && positions[1]!=-1){
-							int start=Math.min(positions[0], positions[1]);
-							int end=Math.max(positions[0], positions[1]);
-							for (int i = start; i < end; i++) {
+							int start=positions[0];
+							int end=positions[1];
+							if(end<start){
+								int tmp=end;
+								end=start;
+								start=tmp;
+							}
+							for (int i = start; i <= end; i++) {
 								f1.selector.add(mdmng.get(i).getPath());
 							}
 						}
@@ -1080,7 +1030,7 @@ dd.show();
 							if (!mdict_cache.containsKey(line)) {
 								mdict_transient m = mdict_cache.get(line);
 								if (m == null)
-									m = new mdict_transient(line, opt);
+									m = new mdict_transient(dict_manager_activity.this, line, opt);
 								f1.add(m);
 								f1.rejector.add(line);
 								mdict_cache.put(line, m);
@@ -1124,14 +1074,21 @@ dd.show();
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
-            case R.id.toolbar_action7:{//全部选择
+			/* 全部选择 */
+            case R.id.toolbar_action7:{
             	if(isLongClicked){//间选
 					int[] positions = f3.lastClickedPos;
 					if(positions[0]!=-1 && positions[1]!=-1){
-						int start=Math.min(positions[0], positions[1]);
-						int end=Math.max(positions[0], positions[1]);
-						for (int i = start; i < end; i++) {
-							f3.Selection.put(f3.data.getList().get(i).getAbsolutePath());
+						int start=positions[0];
+						int end=positions[1];
+						if(end<start){
+							int tmp=end;
+							end=start;
+							start=tmp;
+						}
+						ArrayList<mFile> data = f3.data.getList();
+						for (int i = start; i <= end; i++) {
+							f3.Selection.put(data.get(i).getPath());
 						}
 					}
 				}
@@ -1146,57 +1103,136 @@ dd.show();
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
-            case R.id.toolbar_action8:{//全选失效项
-				if(isLongClicked) {ret=false; break;}
+			/* 全选失效项 */
+            case R.id.toolbar_action8:{
 				f3.Selection.clear();
+				ArrayList<mFile> data = f3.data.getList();
 				f3.alreadySelectedAll=false;
-				for(int i=0;i<f3.data.size();i++) {
-					mFile fI = f3.data.getList().get(i);
-					if(!fI.exists())
-						f3.Selection.put(fI.getAbsolutePath());
+				if(!isLongClicked) {
+					for(int i=0;i<f3.data.size();i++) {
+						mFile fI = data.get(i);
+						if(!fI.exists())
+							f3.Selection.put(fI.getAbsolutePath());
+					}
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
-            case R.id.toolbar_action9:{//添加
-				if(isLongClicked) {//添加到第几行
-					closeMenu=true;
+			/* 添加 */
+            case R.id.toolbar_action9:{
+				ArrayList<mdict_transient> data = f1.manager_group;
+				if(isLongClicked) {/* 添加到第几行 */
 					AlertDialog.Builder builder2 = new AlertDialog.Builder(dict_manager_activity.this);
-
 					View dv = getLayoutInflater().inflate(R.layout.dialog_move_to_line, null);
 					NumberPicker np = dv.findViewById(R.id.numberpicker);
+					CheckBox checker1 = dv.findViewById(R.id.check1);
+					CheckBox checker2 = dv.findViewById(R.id.check2);
 					np.setMaxValue(mdmng.size());
-
 					AlertDialog dTmp = builder2.setView(dv).create();
+					dv.findViewById(R.id.confirm).setOnClickListener(v -> {
+						int toPos = Math.min(data.size(), np.getValue());
+						int cc = 0;
+						ArrayList<String> arr = f3.Selection.flatten();
+						int count=arr.size();
+						boolean insert = checker1.isChecked();
+						if(insert) {
+							for (int i = 0; i < arr.size(); i++) {
+								File fn = new File(arr.get(i));
+								if (fn.isDirectory()) {
+									count--;
+									continue;
+								}
+								String key = fn.getPath();
+								mdict_transient m = null;
+								if (f1.rejector.contains(key)) {
+									f1.rejector.remove(key);
+								}
+								for (int j = 0; j < data.size(); j++) {
+									if (data.get(j).getPath().equals(key)) {
+										m = data.remove(j);
+										break;
+									}
+								}
+								if (m == null)
+									m = mdict_cache.get(key);
+								if (m == null) {
+									m = new mdict_transient(dict_manager_activity.this, key, opt);
+									mdict_cache.put(key, m);
+								}
+								data.add(Math.min(data.size(), toPos++), m);
+								cc++;
+								f1.isDirty = true;
+							}
+							f1.refreshSize();
+							ThisIsDirty = true;
+						}
+						if(checker2.isChecked()){//选中
+							//f1.selector.clear();
+							f1.selector.addAll(arr);
+						}
+						f1.adapter.notifyDataSetChanged();
+						if(insert) {
+							f1.getListView().setSelectionFromTop(toPos - cc, 0);
+						}
+						viewPager.setCurrentItem(0);
+						showT("添加完毕!("+cc+"/"+count+")");
+						toolbar.getMenu().close();
+						dTmp.dismiss();
+					});
+
 					Window win = dTmp.getWindow();
 					win.setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_ld:R.drawable.popup_shadow_l);
 					dTmp.show();
 					ViewGroup dvp = win.getDecorView().findViewById(R.id.dialog);
 					dvp.setPadding(0,0,0,0);
 					dv.setPadding((int) (15*opt.dm.density), 0,0,(int) (10*opt.dm.density));
-				}else{
+					closeMenu=false;
+				}
+				else {
 					int cc = 0;
 					ArrayList<String> arr = f3.Selection.flatten();
+					int count=arr.size();
 					for(int i=0;i<arr.size();i++) {
-						File fn=new File(arr.get(i));//f3.adapter.getItem();
-						if(fn.isDirectory()) continue;
+						File fn=new File(arr.get(i));
+						if(fn.isDirectory()) {
+							count--;
+							continue;
+						}
 						String key = fn.getPath();
-						if(!mdict_cache.containsKey(key)) {
-							mdict_transient m = new mdict_transient(key, opt);
-							cc++;
-							f1.isDirty=true;
-							mdict_cache.put(key, m);
-						}else if(f1.rejector.contains(fn.getAbsolutePath())) {
+						if(f1.rejector.contains(fn.getAbsolutePath())) {
 							f1.rejector.remove(fn.getAbsolutePath());
 							cc++;
 						}
+						else {
+							mdict_transient m=null;
+							for (int j = 0; j < data.size(); j++) {
+								if(data.get(j).getPath().equals(key)){
+									m=data.get(j);
+									break;
+								}
+							}
+							if(m==null){
+								m = mdict_cache.get(key);
+								if(m==null){
+									m = new mdict_transient(dict_manager_activity.this, key, opt);
+									mdict_cache.put(key, m);
+								}
+								data.add(m);
+								cc++;
+								f1.isDirty=true;
+							}
+						}
 					}
-					showT("添加完毕!("+cc+"/"+arr.size()+")");
+					showT("添加完毕!("+cc+"/"+count+")");
 					f1.refreshSize();
 					ThisIsDirty=true;
 					f1.adapter.notifyDataSetChanged();
 				}
 			} break;
-            case R.id.toolbar_action10:{//移除
+			/* 移除 */
+            case R.id.toolbar_action10:{
+				if(isLongClicked) {
+					ret=false;break;
+				}
 				int cc1 = 0;
 				for(int i=0;i<mdmng.size();i++) {
 					if(f3.Selection.contains(f1.adapter.getItem(i).getPath())) {
@@ -1210,291 +1246,294 @@ dd.show();
 				showT("移除完毕!("+cc1+"/"+f3.Selection.size()+")");
 				f1.adapter.notifyDataSetChanged();
 			} break;
-            case R.id.toolbar_action11:{//清除记录
-				final View dv = inflater.inflate(R.layout.dialog_sure_and_all,null);
-				AlertDialog.Builder builder2 = new AlertDialog.Builder(dict_manager_activity.this);
-				builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords,f3.Selection.size()))
-						.setPositiveButton(R.string.confirm, (dialog, which) -> {
-							HashSet<String> removePool=new HashSet<>();
-							ArrayList<String> arr1 = f3.Selection.flatten();
-							for(int i = 0; i< arr1.size(); i++) {
-								removePool.add(arr1.get(i));
-							}
-							for(int i=0;i<f3.data.size();i++) {
-								mFile item1 = f3.data.getList().get(i);
-								if(item1.getClass()==mAssetFile.class)
-									continue;
-								if(item1.isDirectory())
-									continue;
-								if(removePool.contains(item1.getAbsolutePath())) {
-									//if(item.getClass()==mAssetFile.class) {
-									//	removePool.remove(item.getAbsolutePath());
-									//	continue;
-									//}
-									f3.data.getList().remove(i);i--;
-									mdlibsCon.remove(mFile.tryDeScion(item1, opt.lastMdlibPath));
-									f3.isDirty=true;
-									mFile p = item1.getParentFile();
-									if(p!=null) {
-										int idx=f3.data.indexOf(p);
-										if(idx!=-1)
-											if(idx==f3.data.size()-1 ||!mFile.isDirScionOf(f3.data.getList().get(idx+1), p))
-												f3.data.getList().remove(idx);
-									}
+			/* 清除记录 */
+            case R.id.toolbar_action11:{
+				if(isLongClicked) {
+					ret=false;break;
+				}
+				else {
+					final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
+					AlertDialog.Builder builder2 = new AlertDialog.Builder(dict_manager_activity.this);
+					builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords, f3.Selection.size()))
+							.setPositiveButton(R.string.confirm, (dialog, which) -> {
+								HashSet<String> removePool = new HashSet<>();
+								ArrayList<String> arr1 = f3.Selection.flatten();
+								for (int i = 0; i < arr1.size(); i++) {
+									removePool.add(arr1.get(i));
 								}
-							}
-							f3.adapter.notifyDataSetChanged();
-							onMenuItemClick(toolbarmenu.getItem(10));
-
-
-							ArrayList<File> moduleFullScannerArr;
-							if(((CheckBox)dv.findViewById(R.id.ck)).isChecked()) {
-								File[] moduleFullScanner = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(new FileFilter() {
-									@Override
-									public boolean accept(File pathname) {
-										String name = pathname.getName();
-										if(name.endsWith(".set")) {
-											return true;
+								for (int i = 0; i < f3.data.size(); i++) {
+									mFile item1 = f3.data.getList().get(i);
+									if (item1.getClass() == mAssetFile.class)
+										continue;
+									if (item1.isDirectory())
+										continue;
+									if (removePool.contains(item1.getAbsolutePath())) {
+										//if(item.getClass()==mAssetFile.class) {
+										//	removePool.remove(item.getAbsolutePath());
+										//	continue;
+										//}
+										f3.data.getList().remove(i);
+										i--;
+										mdlibsCon.remove(mFile.tryDeScion(item1, opt.lastMdlibPath));
+										f3.isDirty = true;
+										mFile p = item1.getParentFile();
+										if (p != null) {
+											int idx = f3.data.indexOf(p);
+											if (idx != -1)
+												if (idx == f3.data.size() - 1 || !mFile.isDirScionOf(f3.data.getList().get(idx + 1), p))
+													f3.data.getList().remove(idx);
 										}
-										return false;
-									}});
-								moduleFullScannerArr = new ArrayList<File>(Arrays.asList(moduleFullScanner));
-							}else
-								moduleFullScannerArr = new ArrayList<>();
-
-							if(f3.isDirty)
-								moduleFullScannerArr.add(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
-							for(File fI:moduleFullScannerArr) {
-								InputStreamReader reader = null;
-								StringBuffer sb= new StringBuffer("");
-								String line = "";
-
-								try {
-									reader = new InputStreamReader(new FileInputStream(fI));
-									BufferedReader br = new BufferedReader(reader);
-									while((line = br.readLine()) != null) {
-										try {
-											String key=line.startsWith("/")?line:opt.lastMdlibPath+"/"+line;
-											if(removePool.contains(key) ||
-													removePool.contains(new File(key).getCanonicalPath())){
-												//System.out.println(line);
-												continue;
-												//System.out.println(line);
-											}}catch(Exception e) {}
-										sb.append(line).append("\n");
 									}
-									br.close();
-									reader.close();
-
-									OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fI));
-									BufferedWriter bw = new BufferedWriter(writer);
-									bw.write(sb.toString());
-									bw.flush();
-									bw.close();
-									writer.close();
-								} catch (IOException e) {
-									e.printStackTrace();
 								}
-							}
-							showT("移除完毕!");
-						})
-						.setNeutralButton(R.string.cancel, (dialog, which) -> {
+								f3.adapter.notifyDataSetChanged();
+								onMenuItemClick(toolbarmenu.getItem(10));
 
-						});
-				d = builder2.create();
-				d.show();
-			} break;
-            case R.id.toolbar_action12:{//移动文件
-				DialogProperties properties = new DialogProperties();
-				properties.selection_mode = DialogConfigs.SINGLE_MODE;
-				properties.selection_type = DialogConfigs.DIR_SELECT;
-				properties.root = new File("/");
-				properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
-				properties.offset = new File(opt.lastMdlibPath);
-				properties.opt_dir=new File(opt.pathToDatabases()+"favorite_dirs/");
-				properties.opt_dir.mkdirs();
-				FilePickerDialog dialog = new FilePickerDialog(this, properties);
-				dialog.setTitle(R.string.pickdestineFolder);
-				dialog.setDialogSelectionListener(new DialogSelectionListener() {
-					@Override
-					public void
-					onSelectedFilePaths(String[] files, String n) {
-						File p=new File(files[0]);//新家
-						if(p.isDirectory()) {
-							ArrayList<String> arr = f3.Selection.flatten();
-							RashSet<String> renameList = new RashSet<>();
-							ArrayList<String> renameListe;
-							HashMap<String, mdict> mdict_cache = new HashMap<>(mdmng.size());
-							for(mdict_manageable mmTmp:mdmng) {
-								if(mmTmp instanceof mdict)
-									mdict_cache.put(mmTmp.getPath(), (mdict) mmTmp);
-							}
-							int cc=0;
-							for(String sI:arr) {//do actual rename. rename a lot of files..
-								mFile mF = new mFile(sI).init();
-								//ommitting directory.
-								//if(sI.startsWith("/ASSET/") && CMN.AssetMap.containsKey(sI)) continue;
-								if(mF.isDirectory()) continue;
-								if(f3.data.get(mF).isDirectory()) continue;
-								mdict_manageable mmTmp = mdict_cache.get(sI);
-								if(mmTmp==null) {
+								ArrayList<File> moduleFullScannerArr;
+								if (((CheckBox) dv.findViewById(R.id.ck)).isChecked()) {
+									File[] moduleFullScanner = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(new FileFilter() {
+										@Override
+										public boolean accept(File pathname) {
+											String name = pathname.getName();
+											if (name.endsWith(".set")) {
+												return true;
+											}
+											return false;
+										}
+									});
+									moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
+								} else
+									moduleFullScannerArr = new ArrayList<>();
+
+								if (f3.isDirty)
+									moduleFullScannerArr.add(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
+								AgentApplication app = ((AgentApplication) getApplication());
+								char[] cb = app.get4kCharBuff();
+								boolean bNeedRewrite;
+								for (File fI : moduleFullScannerArr) {
+									StringBuilder sb = new StringBuilder();
+									String line;
 									try {
-										mmTmp=new mdict_prempter(sI, opt);
+										ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
+										bNeedRewrite = false;
+										while ((line = br.readLine()) != null) {
+											try {
+												String key = line;
+												if(key.startsWith("[:")){
+													int idx = key.indexOf("]",2);
+													if(idx>=2) key = key.substring(idx+1);
+												}
+												key = key.startsWith("/") ? key : opt.lastMdlibPath + "/" + key;
+												if (removePool.contains(key) || removePool.contains(new File(key).getCanonicalPath())) {
+													bNeedRewrite = true;
+													continue;
+												}
+											} catch (Exception ignored) {
+											}
+											sb.append(line).append("\n");
+										}
+										br.close();
+										cb = br.cb;
+										if (bNeedRewrite) {
+											ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
+											bw.write(sb.toString());
+											bw.flush();
+											bw.close();
+											cb = br.cb;
+										}
 									} catch (IOException e) {
 										e.printStackTrace();
 									}
 								}
-								File OldF = mmTmp.f();
-								File toF = new File(p, OldF.getName());
-								boolean ret = mmTmp.moveFileTo(toF);//厉害 存在的移动了
-								if(ret) {
-									mdlibsCon.remove(mFile.tryDeScion(OldF, opt.lastMdlibPath));
-									mdlibsCon.add(mFile.tryDeScion(toF, opt.lastMdlibPath));
-									f3.Selection.remove(sI);//移出f3的选择
-									renameList.put(sI);//然后记录
-									cc++;
+								app.set4kCharBuff(cb);
+								showT("移除完毕!");
+							})
+							.setNeutralButton(R.string.cancel, null);
+					d = builder2.create();
+					d.show();
+				}
+			} break;
+			/* 移动文件 */
+            case R.id.toolbar_action12:{
+				if(isLongClicked) {
+					ret=false;break;
+				}
+				else {
+					DialogProperties properties = new DialogProperties();
+					properties.selection_mode = DialogConfigs.SINGLE_MODE;
+					properties.selection_type = DialogConfigs.DIR_SELECT;
+					properties.root = new File("/");
+					properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
+					properties.offset = new File(opt.lastMdlibPath);
+					properties.opt_dir = new File(opt.pathToDatabases() + "favorite_dirs/");
+					properties.opt_dir.mkdirs();
+					FilePickerDialog dialog = new FilePickerDialog(this, properties);
+					dialog.setTitle(R.string.pickdestineFolder);
+					dialog.setDialogSelectionListener(new DialogSelectionListener() {
+						@Override
+						public void
+						onSelectedFilePaths(String[] files, String n) {
+							File p = new File(files[0]);//新家
+							if (p.isDirectory()) {
+								ArrayList<String> arr = f3.Selection.flatten();
+								RashSet<String> renameList = new RashSet<>();
+								ArrayList<String> renameListe;
+								HashMap<String, mdict_manageable> mdict_cache = new HashMap<>(mdmng.size());
+								for (mdict_manageable mmTmp : mdmng) {
+									//if (mmTmp instanceof mdict)
+										mdict_cache.put(mmTmp.getPath(), mmTmp);
 								}
-							}
-							mdict_cache.clear();
-							f1.isDirty=true;
-							renameListe = renameList.flatten();
-							for(String fnI:renameListe) {
-								mFile fOld = new mFile(fnI).init();
-								int idx = f3.data.remove(fOld);
-								if(idx!=-1) {
-									mFile p2 = fOld.getParentFile().init();
-									if(p2!=null) {
-										int idx2=f3.data.indexOf(p2);
-										if(idx2!=-1) {//如有必要，移除多余的父文件夹
-											if(idx2==f3.data.size()-1 ||!mFile.isDirScionOf(f3.data.getList().get(idx2+1), p2))
-												f3.data.getList().remove(idx2);
-											f3.data.OverFlow.remove(p2);
+								//todo 保证mdict移动文件的同时性。
+								int cc = 0;
+								for (String sI : arr) {//do actual rename. rename a lot of files..
+									mFile mF = new mFile(sI).init();
+									//ommitting directory.
+									//if(sI.startsWith("/ASSET/") && CMN.AssetMap.containsKey(sI)) continue;
+									if (mF.isDirectory()) continue;
+									if (f3.data.get(mF).isDirectory()) continue;
+									mdict_manageable mmTmp = mdict_cache.get(sI);
+									if (mmTmp == null) {
+										try {
+											mmTmp = new mdict_prempter(dict_manager_activity.this, sI, opt);
+										} catch (IOException e) {
+											e.printStackTrace();
 										}
-										//showT(System.currentTimeMillis()+" "+idx2);
-									}else {
-										f3.data.OverFlow.remove(p2);
-										//f3.data.OverFlow.clear();
 									}
-									//f3.data.OverFlow.clear();
-
-									mFile val = new mFile(p, new File(fnI).getName());
-									f3.data.insert(val.init());
-									f3.Selection.insert(val.getAbsolutePath());
-									if(!mFile.isDirScionOf(val, opt.lastMdlibPath))
-										f3.data.insertOverFlow(val.getParentFile().init());
+									File OldF = mmTmp.f();
+									String OldFName = mmTmp.getName();
+									File toF = new File(p, OldF.getName());
+									boolean ret = mmTmp.moveFileTo(dict_manager_activity.this, toF);
+									//CMN.Log("移动？？？", ret, toF);
+									if (ret) {
+										RebasePath(OldF, OldFName, toF, null);
+										mdlibsCon.remove(mFile.tryDeScion(OldF, opt.lastMdlibPath));
+										mdlibsCon.add(mFile.tryDeScion(toF, opt.lastMdlibPath));
+										f3.Selection.remove(sI);//移出f3的选择
+										renameList.put(sI);//然后记录
+										cc++;
+									}
 								}
-							}
-							f3.adapter.notifyDataSetChanged();
-							f3.isDirty=true;
+								mdict_cache.clear();
+								f1.isDirty = true;
+								renameListe = renameList.flatten();
+								for (String fnI : renameListe) {
+									mFile fOld = new mFile(fnI).init();
+									int idx = f3.data.remove(fOld);
+									if (idx != -1) {
+										mFile p2 = fOld.getParentFile().init();
+										if (p2 != null) {
+											int idx2 = f3.data.indexOf(p2);
+											if (idx2 != -1) {//如有必要，移除多余的父文件夹
+												if (idx2 == f3.data.size() - 1 || !mFile.isDirScionOf(f3.data.getList().get(idx2 + 1), p2))
+													f3.data.getList().remove(idx2);
+												f3.data.OverFlow.remove(p2);
+											}
+											//showT(System.currentTimeMillis()+" "+idx2);
+										} else {
+											f3.data.OverFlow.remove(p2);
+											//f3.data.OverFlow.clear();
+										}
+										//f3.data.OverFlow.clear();
+										mFile val = new mFile(p, new File(fnI).getName());
+										f3.data.insert(val.init());
+										f3.Selection.insert(val.getAbsolutePath());
+										if (!mFile.isDirScionOf(val, opt.lastMdlibPath))
+											f3.data.insertOverFlow(val.getParentFile().init());
+									}
+								}
+								f3.adapter.notifyDataSetChanged();
+								f3.isDirty = true;
 
-							ArrayList<File> moduleFullScannerArr;
+								ArrayList<File> moduleFullScannerArr;
 
-							File[] moduleFullScanner = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> {
-								String name = pathname.getName();
-								return name.endsWith(".set");
-							});
-							moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
-							moduleFullScannerArr.add(new File(getExternalFilesDir(null),"default.txt"));
-							moduleFullScannerArr.add(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
-							HashSet<String> mdlibs = new HashSet<>();
-							for(File fI:moduleFullScannerArr) {
-								boolean modified=false;
-								mdlibs.clear();
-								StringBuffer sb= new StringBuffer();
-								String line;
-
-								try {
-									BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fI)));
-									while((line = br.readLine()) != null) {
-										boolean isFilter=false;
-										boolean isClicker=false;
-										boolean isAudio=false;
-										if(line.startsWith("[:")){
-											int idx = line.indexOf("]",2);
-											if(idx>=2){
-												String[] arr2 = line.substring(2, idx).split(":");
-												line = line.substring(idx+1);
-												for (String pI:arr2) {
-													switch (pI){
-														case "F":
-															isFilter=true;
-														break;
-														case "C":
-															isClicker=true;
-														break;
-														case "A":
-															isAudio=true;
-														break;
-														case "Z":
-															//flag|=0x10;
-														break;
+								File[] moduleFullScanner = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> pathname.getPath().endsWith(".set"));
+								moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
+								File def = new File(getExternalFilesDir(null), "default.txt");
+								if(def.length()>0) moduleFullScannerArr.add(def);
+								moduleFullScannerArr.add(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
+								HashSet<String> mdlibs = new HashSet<>();
+								AgentApplication app = ((AgentApplication) getApplication());
+								char[] cb = app.get4kCharBuff();
+								for (File fI : moduleFullScannerArr) {
+									boolean modified = false;
+									mdlibs.clear();
+									StringBuilder sb = new StringBuilder();
+									String line;
+									try {
+										ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
+										while ((line = br.readLine()) != null) {
+											String key = line;
+											String prefix = null;
+											try {
+												if(key.startsWith("[:")){
+													int idx = key.indexOf("]",2);
+													if(idx>=2) {
+														idx+=1;
+														prefix = key.substring(0, idx);
+														key = key.substring(idx);
 													}
 												}
+												line = key;
+												key = key.startsWith("/") ? key : (opt.lastMdlibPath + "/" + key);
+												if (renameList.contains(key)) {// 搬到新家
+													modified = true;
+													key = mFile.tryDeScion(new File(p, new File(key).getName()), opt.lastMdlibPath);
+												} else { //复原
+													key = line;
+												}
+											} catch (Exception ignored) { }
+											if (!mdlibs.contains(key)) {
+												mdlibs.add(key);
+												if (prefix!=null)
+													key = prefix + key;
+												sb.append(key).append("\n");
+											} else {
+												modified = true;
 											}
 										}
-										try {
-											String key=line.startsWith("/")?line:opt.lastMdlibPath+"/"+line;
-											if(renameList.contains(key) || renameList.contains(new File(key).getCanonicalPath())){
-												modified=true;
-												line = mFile.tryDeScion(new File(p, new File(key).getName()), opt.lastMdlibPath);//搬到新家
-											}}catch(Exception ignored) {}
-										//todo wtf???
-										if(!mdlibs.contains(line)) {//避免重复
-											sb.append(line).append("\n");
-											String prefix="";
-											if(isFilter) prefix+=":F";
-											if(isClicker) prefix+=":C";
-											if(isAudio) prefix+=":A";
-											if(prefix.length()>0)
-												line="["+prefix+"]"+line;
-											mdlibs.add(line);
+										br.close();
+										cb = br.cb;
+										if (modified) {
+											ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
+											bw.write(sb.toString());
+											bw.flush(); bw.close();
+											cb = br.cb;
 										}
 									}
-									br.close();
-
-									if(modified){
-										OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fI));
-										BufferedWriter bw = new BufferedWriter(writer);
-										bw.write(sb.toString());
-										bw.flush();
-										bw.close();
-										writer.close();
+									catch (IOException e) {
+										CMN.Log(e);
 									}
-								} catch (IOException e) {
-									e.printStackTrace();
 								}
+								app.set4kCharBuff(cb);
+								renameList.clear();
+								renameListe.clear();
 							}
-							renameList.clear();
-							renameList=null;
-							renameListe.clear();
-							renameListe=null;
 						}
-					}
 
-					@Override
-					public void onEnterSlideShow(Window win, int delay) {
+						@Override
+						public void onEnterSlideShow(Window win, int delay) {
 
-					}
+						}
 
-					@Override
-					public void onExitSlideShow() {
+						@Override
+						public void onExitSlideShow() {
 
-					}
+						}
 
-					@Override
-					public Activity getDialogActivity() {
-						return null;
-					}
+						@Override
+						public Activity getDialogActivity() {
+							return null;
+						}
 
-					@Override
-					public void onDismiss() {
+						@Override
+						public void onDismiss() {
 
-					}
-				});
-				dialog.show();
-
+						}
+					});
+					dialog.show();
+				}
 			} break;
-            case R.id.toolbar_action15:{//新建
+			/* 新建 */
+            case R.id.toolbar_action15:{
 				ViewGroup dv1 = (ViewGroup) getLayoutInflater().inflate(R.layout.fp_edittext, null);
 				final EditText etNew = dv1.findViewById(R.id.edt_input);
 				final View btn_Done = dv1.findViewById(R.id.done);
@@ -1584,12 +1623,45 @@ dd.show();
 				line = opt.lastMdlibPath + "/" + line;
 			mdict_transient mmtmp = mdict_cache.get(line);
 			if (mmtmp == null)
-				mmtmp = new mdict_transient(line, opt, 0);
+				mmtmp = new mdict_transient(dict_manager_activity.this, line, opt, 0);
 			if(!mmtmp.isMddResource()) flag&=~0x4;
 			mmtmp.setTmpIsFlag(flag);
 			mdmng.add(mmtmp);
 		}
 		in.close();
+	}
+
+	public void RebasePath(File oldPath, String OldFName, File newPath, String MoveOrRename){
+		CMN.Log("RebasePath");
+    	mdict mdTmp = app_mdict_cache.remove(oldPath);
+		File p = oldPath.getParentFile();
+		File p2 = newPath.getParentFile();
+		if(p!=null){
+			int cc=0;
+			File f2;
+			if(MoveOrRename==null){//移动
+				CMN.Log("//移动ASDASD", new File(p, OldFName+"."+(cc++)+".mdd"));
+				String fName;
+				while((f2 = new File(p, fName=OldFName+(cc==0?"":"."+cc)+".mdd")).exists()){
+					if(FU.move3(this, f2, new File(p2, fName))<0)
+						break;
+					++cc;
+				}
+			} else {
+				//CMN.Log("//重命名ASDASD", new File(p, OldFName+((cc==0?"":"."+cc)+".mdd")).exists());
+				//CMN.Log("//重命名ASDASD", FU.exsists(this, f2 = new File(p, OldFName+((cc==0?"":"."+cc)+".mdd"))), f2);
+				String fName;
+				while((f2 = new File(p, OldFName+(fName=(cc==0?"":"."+cc)+".mdd"))).exists()){
+					if(FU.rename5(this, f2, new File(p2, MoveOrRename+fName))<0)
+						break;
+					++cc;
+				}
+			}
+		}
+		if(mdTmp!=null){
+			mdTmp.Rebase(newPath);
+			app_mdict_cache.put(newPath.getPath(), mdTmp);
+		}
 	}
 }
 

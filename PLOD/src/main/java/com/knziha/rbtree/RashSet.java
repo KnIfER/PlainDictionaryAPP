@@ -1,7 +1,5 @@
 package com.knziha.rbtree;
 
-import java.util.ArrayList;
-
 
 /**
  * Java 语言: 红黑树
@@ -49,18 +47,12 @@ public class RashSet<T1 extends Comparable<T1>>
 	
 	@Override
     public RBTNode<T1> xxing_samsara(T1 val){
-        RBTNode<T1> tmpnode =downwardNeighbour_skipego(this.mRoot,val);
-        
-        //	return this.maximum(this.mRoot);
-        return tmpnode;
+        return downwardNeighbour_skipego(this.mRoot,val);
     }
 	
 	@Override
     public RBTNode<T1> sxing_samsara(T1 val){
-        RBTNode<T1> tmpnode =upwardNeighbour_skipego(this.mRoot,val);
-        
-        //	return this.minimum(this.mRoot);
-        return tmpnode;
+        return upwardNeighbour_skipego(this.mRoot,val);
     }
 
 	@Override

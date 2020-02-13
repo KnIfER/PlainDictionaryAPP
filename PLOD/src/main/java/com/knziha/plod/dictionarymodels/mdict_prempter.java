@@ -1,5 +1,7 @@
 package com.knziha.plod.dictionarymodels;
 
+import android.content.Context;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -15,12 +17,12 @@ public class mdict_prempter extends mdict_transient {
 	public boolean isAsset;
 
 	//构造
-	public mdict_prempter(String fn, PDICMainAppOptions opt_) throws IOException {
-		this(fn, opt_, 0);
+	public mdict_prempter(Context a, String fn, PDICMainAppOptions opt_) throws IOException {
+		this(a, fn, opt_, 0);
 	}
 
-	public mdict_prempter(String fn, PDICMainAppOptions opt_, int isF) throws IOException {
-		super(fn, opt_, isF);
+	public mdict_prempter(Context a,String fn, PDICMainAppOptions opt_, int isF) throws IOException {
+		super(a, fn, opt_, isF);
 		String fnTMP = f.getName();
 
 		File f2 = new File(f.getParentFile().getAbsolutePath()+"/"+fnTMP.substring(0,fnTMP.lastIndexOf("."))+".mdd");

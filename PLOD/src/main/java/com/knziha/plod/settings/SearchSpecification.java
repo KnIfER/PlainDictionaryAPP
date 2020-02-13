@@ -5,8 +5,6 @@ import android.os.Bundle;
 
 import androidx.preference.Preference;
 
-import com.knziha.filepicker.settings.SettingsFragmentBase;
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 

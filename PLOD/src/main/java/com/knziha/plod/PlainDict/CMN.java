@@ -18,6 +18,7 @@ import org.adrianwalker.multilinestring.Multiline;
 public class CMN{
 	public final static String replaceReg =  " |:|\\.|,|-|\'|(|)";
 	public final static String emptyStr = "";
+	public static volatile int instanceCount;
 	public static final HashMap<String, String> AssetMap = new HashMap<>();
 	public static final String AssetTag = "/ASSET/";
 	public static final Boolean OccupyTag = true;
@@ -27,10 +28,6 @@ public class CMN{
 	public static int FloatBackground;
 	public static boolean touchThenSearch=true;
 	public static int actionBarHeight;
-	public static int lastFavorLexicalEntry = -1;
-	public static int lastHisLexicalEntry = -1;
-	public static int lastFavorLexicalEntryOff = 0;
-	public static int lastHisLexicalEntryOff = 0;
 	//static Boolean module_set_invalid = true;
 	//public static dictionary_App_Options opt;
 	//public static LayoutInflater inflater;
@@ -51,6 +48,8 @@ public class CMN{
 	/** Is it not like the king? */
 	@Multiline
 	public static final String TestText="Happy";
+	public static boolean bForbidOneSpecFile;
+	public static long LastConfigReadTime;
 
 	public static String Log(Object... o) {
 		String msg="";
@@ -148,5 +147,11 @@ public class CMN{
 
 	public static void setCheckRcsp() {
 		CheckSettings|=0x1;
+	}
+
+	public static String unwrapDatabaseName(String name) {
+		if(name.endsWith(".sql")) return name.substring(0, name.length()-4);
+		if(name.endsWith(".sql.db")) return name.substring(0, name.length()-7);
+		return name;
 	}
 }

@@ -76,7 +76,7 @@
 	<string name="fc">Найдено %d элемент (ы).</string>
 	<string name="fn">ничего не нашли здесь.</string>
 	<string name="maniDel">Отменено %1$d / %2$D коллекции!</string>
-	<string name="maniFavor"> %1$s (% 2 $ пунктов сбора д)</string>
+	<string name="maniFavor"> %1$s (%2$ пунктов)</string>
 	<string name="maniFavor2"> %1$s ( %2$S воспоминаний)</string>
 	<string name="currFavor">Текущее название коллекции: %s </string>
 	<string name="resCount">Поиск сделано! Найдено %S пунктов</string>

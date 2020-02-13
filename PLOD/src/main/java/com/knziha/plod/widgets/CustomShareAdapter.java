@@ -1,8 +1,5 @@
 package com.knziha.plod.widgets;
 
-import android.content.Context;
-import android.content.Intent;
-import android.database.DataSetObserver;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -10,18 +7,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.dictionary.Utils.IU;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /* Custom Share Adapter */
 public class CustomShareAdapter extends BaseAdapter {

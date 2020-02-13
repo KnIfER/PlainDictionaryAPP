@@ -720,13 +720,11 @@ public class PhotoView extends ImageView {
     };
 
     private float resistanceScrollByX(float overScroll, float detalX) {
-        float s = detalX * (Math.abs(Math.abs(overScroll) - MAX_OVER_RESISTANCE) / (float) MAX_OVER_RESISTANCE);
-        return s;
+		return detalX * (Math.abs(Math.abs(overScroll) - MAX_OVER_RESISTANCE) / (float) MAX_OVER_RESISTANCE);
     }
 
     private float resistanceScrollByY(float overScroll, float detalY) {
-        float s = detalY * (Math.abs(Math.abs(overScroll) - MAX_OVER_RESISTANCE) / (float) MAX_OVER_RESISTANCE);
-        return s;
+		return detalY * (Math.abs(Math.abs(overScroll) - MAX_OVER_RESISTANCE) / (float) MAX_OVER_RESISTANCE);
     }
 
     /**

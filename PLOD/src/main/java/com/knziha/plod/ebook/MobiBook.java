@@ -393,14 +393,14 @@ public class MobiBook extends mdict {
 		return false;
 	}
 
-	final static boolean compareByteArrayIsPara(byte[] A,byte[] B,int len){
+	static boolean compareByteArrayIsPara(byte[] A,byte[] B,int len){
 		for(int i=0;i<len;i++){
 			if(A[i]!=B[i])
 				return false;
 		}
 		return true;
 	}
-	final static boolean compareByteArrayIsPara(byte[] A,int offA,byte[] B){
+	static boolean compareByteArrayIsPara(byte[] A,int offA,byte[] B){
 		if(offA+B.length>A.length)
 			return false;
 		for(int i=0;i<B.length;i++){

@@ -244,8 +244,6 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 
 	@Override
 	protected void onDestroy(){
-		//CMN.show("onDestroy");
-		dumpSettiings();
 		for(FilePickerDialog dia:viewList) {
 			dia.cancel();
 		}
@@ -268,8 +266,6 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 
 	}
 
-	private void dumpSettiings(){}
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		//getMenuInflater().inflate(R.menu.menu, menu);
@@ -290,14 +286,6 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 
 		}
 	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		//removeBlack();
-	}
-
-
 
 	@Override
 	protected void onResume() {

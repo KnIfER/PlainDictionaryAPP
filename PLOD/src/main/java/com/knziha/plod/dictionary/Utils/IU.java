@@ -138,10 +138,10 @@ the valueOf method.
             return phrase.compareTo(numOrder[start])==0?start:-1;
         }
     }
-    static final Pattern hanziDelimeter = Pattern.compile("[十|百|千|万]",Pattern.DOTALL);
-    public static final Pattern hanshuzi = Pattern.compile("[一七三两九二五八六四零十百千万]{1,}",Pattern.DOTALL);
-    public static final Pattern shuzi = Pattern.compile("[0-9]{1,}",Pattern.DOTALL);
-    static final Pattern supportedHanShuZi = Pattern.compile("[十|百|千|万]",Pattern.DOTALL);
+    static final Pattern hanziDelimeter = Pattern.compile("[十百千万]",Pattern.DOTALL);
+    public static final Pattern hanshuzi = Pattern.compile("[一七三两九二五八六四零十百千万]+",Pattern.DOTALL);
+    public static final Pattern shuzi = Pattern.compile("[0-9]+",Pattern.DOTALL);
+    static final Pattern supportedHanShuZi = Pattern.compile("[十百千万]",Pattern.DOTALL);
     static final String[] numOrder = {"一","七","三","两","九","二","五","八","六","四","零"};
     static final int[] Numbers = {1,7,3,2,9,2,5,8,6,4,0};
     static final int[] Levels = {1,10,100,1000,10000};

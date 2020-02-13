@@ -16,30 +16,21 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.PlainDict.AgentApplication;
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionarymanager.dict_manager_activity.transferRunnable;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
-import com.knziha.plod.dictionarymodels.mdict_manageable;
-import com.knziha.plod.dictionarymodels.mdict_transient;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
-import com.knziha.plod.widgets.CheckedTextViewmy;
-import com.knziha.plod.widgets.DictionaryTitle;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -117,8 +108,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 
 	@Override
 	public DragSortController buildController(DragSortListView dslv) {
-		MyDSController c = new MyDSController(dslv);
-		return c;
+		return new MyDSController(dslv);
 	}
 
 	@Override
@@ -298,40 +288,32 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 												}});
 											break;
 										case 1:
+											boolean deleteMultiple = a.opt.getDictManager1MultiSelecting() && selector.size()>0 && selector.contains(name);
 											View dialog1 = getActivity().getLayoutInflater().inflate(R.layout.dialog_about,null);
 											AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 											TextView tvtv = dialog1.findViewById(R.id.title);
-											tvtv.setText(getResources().getString(R.string.warnDelete,name));
+											tvtv.setText(deleteMultiple?getResources().getString(R.string.warnDeleteMultiple,selector.size())
+													:getResources().getString(R.string.warnDelete,name)
+													);
 											tvtv.setPadding(50, 50, 0, 0);
 											builder.setView(dialog1);
 											final AlertDialog dd = builder.create();
-											dialog1.findViewById(R.id.cancel).setOnClickListener(new OnClickListener(){
-												@Override
-												public void onClick(View v) {
-													if(try_delete_configureLet(name)) {
-														a.show(R.string.delD);
-														adapter.remove(name);
-														d.dismiss();
-														dd.dismiss();
-													}else {
-														a.showT("文件删除失败_file_del_failure");
+											dialog1.findViewById(R.id.cancel).setOnClickListener(v -> {
+												if(deleteMultiple){
+													for(String nI:selector){
+														try_delete_configureLet(nI);
+														scanInList.remove(nI);
 													}
+													selector.clear();
+													adapter.notifyDataSetChanged();
+												} else if(try_delete_configureLet(name)) {
+													selector.remove(name);
+													adapter.remove(name);
 												}
-
+												d.dismiss();
+												dd.dismiss();
+												a.show(R.string.delD);
 											});
-											if(Build.VERSION.SDK_INT<22) {//为什么：低版本不支持点击外部dimiss
-												SpannableStringBuilder ssb = new SpannableStringBuilder(tvtv.getText());
-												ssb.append("\n(否)");
-												int idxNo = ssb.toString().indexOf("\n(否)");
-												ssb.setSpan(new ClickableSpan() {
-													@Override
-													public void onClick(View widget) {
-														dd.dismiss();
-													}},idxNo,idxNo+"\n(否)".length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-												tvtv.setText(ssb);
-												tvtv.setMovementMethod(LinkMovementMethod.getInstance());
-											}
 											dd.show();
 											break;
 										case 2://复制;
@@ -395,29 +377,27 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 //						adapter.insert(item, to);
 //					}
 //				};
-		DragSortListView.DropListener onDrop =
-				(from, to) -> {
-					//CMN.Log("to", to);
-					//if(true) return;
-					if(a.opt.getDictManager1MultiSelecting() && selector.contains(scanInList.get(from))){
-						ArrayList<String> md_selected = new ArrayList<>(selector.size());
-						if(to>from) to++;
-						for (int i = scanInList.size()-1; i >= 0; i--) {
-							String mmTmp = scanInList.get(i);
-							if(selector.contains(mmTmp)){
-								md_selected.add(0, scanInList.remove(i));
-								if(i<to) to--;
-							}
-						}
-						scanInList.addAll(to, md_selected);
-						adapter.notifyDataSetChanged();
+		return (from, to) -> {
+			//CMN.Log("to", to);
+			//if(true) return;
+			if(a.opt.getDictManager1MultiSelecting() && selector.contains(scanInList.get(from))){
+				ArrayList<String> md_selected = new ArrayList<>(selector.size());
+				if(to>from) to++;
+				for (int i = scanInList.size()-1; i >= 0; i--) {
+					String mmTmp = scanInList.get(i);
+					if(selector.contains(mmTmp)){
+						md_selected.add(0, scanInList.remove(i));
+						if(i<to) to--;
 					}
-					else if (from != to) {
-						String mdTmp = scanInList.remove(from);
-						scanInList.add(to, mdTmp);
-						adapter.notifyDataSetChanged();
-					}
-				};
-		return onDrop;
+				}
+				scanInList.addAll(to, md_selected);
+				adapter.notifyDataSetChanged();
+			}
+			else if (from != to) {
+				String mdTmp = scanInList.remove(from);
+				scanInList.add(to, mdTmp);
+				adapter.notifyDataSetChanged();
+			}
+		};
 	}
 }

@@ -11,21 +11,13 @@ public class ScrollViewHolder extends ScrollView {
     SelectableTextView tv2guard;
     public ScrollViewHolder(Context context) {
         super(context);
-        init();
     }
     public ScrollViewHolder(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init();
     }
 
     public ScrollViewHolder(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
-    }
-
-
-    private void init() {
-        //setOnClickListener(this);
     }
 
     @Override

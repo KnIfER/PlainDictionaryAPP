@@ -80,7 +80,7 @@
 	<string name="fc">Encontrado elemento %d (s).</string>
 	<string name="fn">Encontrado nada aquí.</string>
 	<string name="maniDel"> %1$d / %2$d colecciones cancelado!</string>
-	<string name="maniFavor"> %1$s ( %2$d ) elementos de la colección</string>
+	<string name="maniFavor"> %1$s ( %2$d elementos)</string>
 	<string name="maniFavor2"> %1$s ( %2$d recuerdos)</string>
 	<string name="currFavor">Actual nombre de la colección: %s </string>
 	<string name="resCount">Buscar hecho! %S encontrado artículos</string>

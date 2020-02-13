@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.R;
 
 public class TwoColumnAdapter extends RecyclerView.Adapter {

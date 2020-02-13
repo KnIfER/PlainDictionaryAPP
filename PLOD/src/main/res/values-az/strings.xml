@@ -80,7 +80,7 @@
 	<string name="fc">Found %d maddə (lər).</string>
 	<string name="fn">burada heç bir şey tapılmadı.</string>
 	<string name="maniDel">Ləğv %1$d / %2$d kolleksiyaları!</string>
-	<string name="maniFavor"> %1$s ( %2$d kolleksiya items)</string>
+	<string name="maniFavor"> %1$s ( %2$d items)</string>
 	<string name="maniFavor2"> %1$s ( %2$s xatirələrini)</string>
 	<string name="currFavor">Cari kolleksiyası adı: %s </string>
 	<string name="resCount">Axtar işlər! Tapıldı %s maddələr</string>

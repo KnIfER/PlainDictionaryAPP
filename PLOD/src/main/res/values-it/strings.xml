@@ -115,7 +115,7 @@
 	<string name="newName">nuovo nome…</string>
 	<string name="bm">BookMarks</string>
 	<string name="maniDel">Annullati %1$d / %2$d collezioni!</string>
-	<string name="maniFavor"> %1$s ( %2$d elementi di raccolta)</string>
+	<string name="maniFavor"> %1$s ( %2$d elementi )</string>
 	<string name="maniFavor2"> %1$s ( %2$s memorie)</string>
 	<string name="currFavor">Attuale nome della raccolta: %s </string>
 	<string name="resCount">articoli di ricerca fatto!% Trovato s</string>

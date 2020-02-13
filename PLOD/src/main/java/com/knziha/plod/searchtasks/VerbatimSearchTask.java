@@ -16,9 +16,11 @@ import com.knziha.rbtree.additiveMyCpr1;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorderCombined> {
 	static final String RegExp_VerbatimDelimiter = "[ `~!@#$%^&*()+=—|{}\":;.,\\[\\]<>/?！￥…（）【】‘；：”“’。，、？|-·]|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
+	public static final Pattern Pattern_VerbatimDelimiter = Pattern.compile(RegExp_VerbatimDelimiter);
 	private final WeakReference<PDICMainActivity> activity;
 	String CurrentSearchText;
 	private final boolean isStrict;

@@ -1,7 +1,6 @@
 package com.knziha.plod.PlainDict;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
@@ -15,7 +14,6 @@ import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -54,12 +52,10 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,7 +63,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
@@ -75,7 +70,6 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -87,7 +81,6 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 
 import com.bumptech.glide.load.engine.cache.DiskCache;
 import com.knziha.filepicker.view.FilePickerDialog;
-import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionarymanager.dict_manager_activity;
@@ -98,6 +91,7 @@ import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_asset;
 import com.knziha.plod.dictionarymodels.mdict_pdf;
+import com.knziha.plod.dictionarymodels.mdict_txt;
 import com.knziha.plod.dictionarymodels.mdict_web;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
@@ -132,7 +126,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
@@ -140,8 +133,11 @@ import java.util.TimerTask;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import db.LexicalDBHelper;
-
+/**
+ * 主程序 - 单实例<br/>
+ * Our single instanced Main Interface.<br/>
+ * Created by KnIfER on 2018.
+ */
 @SuppressLint({"SetTextI18n", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
 public class PDICMainActivity extends MainActivityUIBase implements OnClickListener, OnLongClickListener, OnMenuItemClickListener{
 	public String textToSetOnFocus;
@@ -149,6 +145,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public static int taskCounter = 0;
 	public Timer timer;
 	public int currentSearchingDictIdx;
+	public TextView dvTitle;
 	public SeekBar dvSeekbar;
 	public TextView dvProgressFrac;
 	public TextView dvResultN;
@@ -174,12 +171,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public boolean bNeedReAddCon;
 	public boolean bOnePageNav;
 	private MyHandler mHandle;
-	private AsyncTask<String, Integer, String> mAsyncTask;
+	public AsyncTask<String, Integer, String> mAsyncTask;
 	boolean focused;
 	public int rem_res=R.string.rem_position;
 	public static ArrayList<PlaceHolder> CosyChair = new ArrayList<>();
 	public static ArrayList<PlaceHolder> CosySofa = new ArrayList<>();
 	public static ArrayList<PlaceHolder> HdnCmfrt = new ArrayList<>();
+	private Animation animaExit;
 
 	@Override
 	ArrayList<PlaceHolder> getLazyCC() {
@@ -271,7 +269,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	public void exitFFSearch() {
-		d = null;
+		taskd=null;
+		if(mAsyncTask!=null)
+			mAsyncTask.cancel(true);
 		dvSeekbar = null;
 		dvProgressFrac = null;
 		dvResultN = null;
@@ -281,9 +281,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public void OnEnterFullSearchTask(AsyncTask task) {
 		taskCounter=md.size();
 		AdvancedSearchLogicLayer _currentSearchLayer = currentSearchLayer = fullSearchLayer;
-		_currentSearchLayer.dirtyProgressCounter=0;
+		_currentSearchLayer.dirtyProgressCounter=
+		_currentSearchLayer.dirtyResultCounter=0;
 		_currentSearchLayer.IsInterrupted=false;
-		_currentSearchLayer.bakePattern(null);
+		_currentSearchLayer.bakePattern(null, null);
 		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
 			if(!_currentSearchLayer.IsInterrupted){
 				_currentSearchLayer.IsInterrupted=true;
@@ -292,6 +293,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				task.cancel(true);
 				((FullSearchTask)task).harvest(true);
 				mAsyncTask=null;
+				if(taskd!=null){
+					taskd.dismiss();
+					taskd=null;
+				}
 				showT("强制关闭");
 			}
 		});
@@ -313,9 +318,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public void OnEnterFuzzySearchTask(AsyncTask task) {
 		taskCounter=md.size();
 		currentSearchLayer=fuzzySearchLayer;
-		fuzzySearchLayer.dirtyProgressCounter=0;
+		fuzzySearchLayer.dirtyProgressCounter=
+		fuzzySearchLayer.dirtyResultCounter=0;
 		fuzzySearchLayer.IsInterrupted=false;
-		fuzzySearchLayer.bakePattern(null);
+		fuzzySearchLayer.bakePattern(null, null);
 		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
 			if(!fuzzySearchLayer.IsInterrupted){
 				task.cancel(false);
@@ -354,10 +360,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			win.getAttributes().height = (int) (250*dm.density);
 			win.setAttributes(win.getAttributes());
 		}
-		d = dTmp;
+		taskd = dTmp;
+		dvTitle = a_dv.findViewById(R.id.title);
 		dvSeekbar = a_dv.findViewById(R.id.seekbar);
 		dvProgressFrac = a_dv.findViewById(R.id.progressFrac);
 		dvResultN = a_dv.findViewById(R.id.resultN);
+		if(currentDictionary!=null)
+			dvTitle.setText(currentDictionary._Dictionary_fName);
 		/* 跳过 */
 		a_dv.findViewById(R.id.skip).setOnClickListener(v14 -> {
 			if(currentSearchingDictIdx<md.size()){
@@ -381,13 +390,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	public void updateFFSearch(Integer index) {
 		try {
-			if(d!=null){
-				mdict m = md.get(index);
-				currentSearchingDictIdx =index;
-				dvSeekbar.setMax((int) m.getNumberEntries());
-				((TextView)d.findViewById(R.id.title)).setText(m._Dictionary_fName);
-				((TextView)d.findViewById(R.id.tv)).setText(currentSearchingDictIdx+"/"+PDICMainActivity.taskCounter);
-			}
+			mdict m = md.get(index);
+			currentSearchingDictIdx =index;
+			dvSeekbar.setMax((int) m.getNumberEntries());
+			dvTitle.setText(m._Dictionary_fName);
+			dvProgressFrac.setText(currentSearchingDictIdx+"/"+PDICMainActivity.taskCounter);
 		} catch (Exception ignored) { }
 	}
 
@@ -407,7 +414,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				.putExtra(EXTRA_HIDE_NAVIGATION, PDICMainAppOptions.isFullscreenHideNavigationbar());
 			}
 			//popup.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
+			//CMN.Log("pop this way!");
 			getApplicationContext().startActivity(popup);
 			return;
 		}
@@ -434,6 +441,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		private final WeakReference<Toastable_Activity> activity;
 		MyHandler(Toastable_Activity a) {
 			this.activity = new WeakReference<>(a);
+		}
+		@Override
+		public void clearActivity() {
+			activity.clear();
 		}
 		@Override
 		public void handleMessage(@NonNull Message msg) {
@@ -568,16 +579,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		else if(DBrowser !=null){
 			if(DBrowser.try_goBack()!=0)
 				return;
-			File newFavor = DBrowser.items.get(DBrowser.lastChecked);
-			if(!(DBrowser instanceof DHBroswer))
-				if(!newFavor.equals(new File(favoriteCon.pathName))) {//或许需要重载收藏夹
-					favoriteCon.close();
-					favoriteCon = new LexicalDBHelper(this, newFavor);
-					String name = new File(favoriteCon.pathName).getName();
-					//opt.putString("currFavoriteDBName", opt.currFavoriteDBName=);
-					opt.putCurrFavoriteDBName(favorTag+name.substring(0,name.length()-4));
-					show(R.string.currFavor, DBrowser.boli(newFavor.getName()));
-				}
+			//File newFavor = DBrowser.items.get(DBrowser.lastChecked);
+			//xxx
+//			if(!(DBrowser instanceof DHBroswer))
+//				if(!newFavor.equals(new File(favoriteCon.pathName))) {//或许需要重载收藏夹
+//					favoriteCon.close();
+//					favoriteCon = new LexicalDBHelper(this, newFavor);
+//					String name = new File(favoriteCon.pathName).getName();
+//					//opt.putString("currFavoriteDBName", opt.currFavoriteDBName=);
+//					opt.putCurrFavoriteDBName(favorTag+name.substring(0,name.length()-4));
+//					show(R.string.currFavor, DBrowser.boli(newFavor.getName()));
+//				}
 			webholder.removeAllViews();
 			FragmentTransaction transaction = getSupportFragmentManager()
 					.beginTransaction().remove(DBrowser);
@@ -589,12 +601,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			//DBroswer.onDetach();
 			//todo 增设选项
 			if(!TextUtils.isEmpty(DBrowser.currentDisplaying)) {
-				if(!opt.getBrowser_AffectInstant()) etSearch.removeTextChangedListener(tw1);
-				//if(etSearch_ToToolbarMode(4))
-				//	lastEtString=etSearch.getText().toString();
-				etSearch.setText(DBrowser.currentDisplaying);
-				ivDeleteText.setVisibility(View.VISIBLE);
-				if(!opt.getBrowser_AffectInstant()) etSearch.addTextChangedListener(tw1);
+				//if(!opt.getBrowser_AffectInstant()) etSearch.removeTextChangedListener(tw1);
+				//etSearch.setText(DBrowser.currentDisplaying);
+				//ivDeleteText.setVisibility(View.VISIBLE);
+				//if(!opt.getBrowser_AffectInstant()) etSearch.addTextChangedListener(tw1);
 			}
 			DBrowser = null;
 		}
@@ -674,6 +684,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			//else main.removeViews(3,count-1);
 			ActivedAdapter=null;
+		}
+		else if(contentview.getParent()!=null){/* avoid stuck */
+			DetachContentView();
 		}
 		else{
 			//mainF.removeAllViews();
@@ -798,7 +811,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public String Current0SearchText;
 
 	private View cb1;
-	protected boolean nNeedSaveViewStates;
+	protected boolean bNeedSaveViewStates;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -887,7 +900,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		dialogHolder = findViewById(R.id.dialogHolder);
 		dialog_ = findViewById(R.id.dialog_);
 		dialogHolder.setOnTouchListener((v, event) -> {
-			dismiss_dict_picker(R.anim.dp_dialog_exit2);
+			dismissDictPicker(R.anim.dp_dialog_exit);
 			//if(pickDictDialog!=null) if(pickDictDialog.isDirty) {opt.putFirstFlag();pickDictDialog.isDirty=false;}
 			return true;
 		});
@@ -957,17 +970,22 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			protected Bitmap PageCache;
 			@Override
 			public void onPreparePage(final IMPageSlider IMPageCover) {
-				CMN.Log("onPreparePage!!!");
-				mPageCanvas.drawColor(Color.WHITE);
-				currentPos=currentDictionary.currentPos;
+				//CMN.Log("onPreparePage!!!");
+				//mPageCanvas.drawColor(Color.WHITE);
+				currentPos=0;
+				if(currentDictionary!=null&&currentDictionary.mWebView!=null){
+					currentPos=currentDictionary.mWebView.currentPos;
+				}
+				if(Build.VERSION.SDK_INT>23){
+					IMPageCover.getForeground().setAlpha(0);
+					IMPageCover.setBackground(null);
+				}
 				if(IMPageCover.getTag()==null) {
 					if(Build.VERSION.SDK_INT>23)
 						IMPageCover.getForeground().setTint(0x662b4381);
-					IMPageCover.getBackground().setColorFilter(0x662b4381, PorterDuff.Mode.SRC_IN);
+					//IMPageCover.getBackground().setColorFilter(0x662b4381, PorterDuff.Mode.SRC_IN);
 					IMPageCover.setTag(false);
 				}
-				if(Build.VERSION.SDK_INT>23)
-					IMPageCover.getForeground().setAlpha(0);
 				IMPageCover.setTranslationY(0);
 				RLContainerSlider PageSlider_ = PageSlider;
 				if(PeruseView!=null && ActivedAdapter==PeruseView.leftLexicalAdapter)
@@ -991,33 +1009,41 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					//PageCache.setWidth(PageSlider_.getWidth());
 				}
 
+				int painter = 0;
+				int painterHash;
+				if(PeruseViewAttached()) {
+					painter=1;
+				} else if(webholder.getChildCount()!=0) {
+					painter=2;
+				} else {
+					painter=3;
+				};
+
+				// 重绘
 				mPageCanvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.SRC_IN);
 
-				if(PeruseView!=null && ActivedAdapter==PeruseView.leftLexicalAdapter) {
+				if(painter==1) {
 					PeruseView.webSingleholder.post(() -> {
 						//if(PageCache.isRecycled())PageCache = Bitmap.createBitmap(PageCache.getWidth(), PageCache.getHeight(), Bitmap.Config.ARGB_8888);
 						PeruseView.webSingleholder.draw(mPageCanvas);
 					});
-				}else {
-					if(webholder.getChildCount()!=0) {
-						webholder.post(() -> {
-							ScrollView sv = (ScrollView) webholder.getParent();
-							mPageCanvas.translate(0, -sv.getScrollY());
-							sv.draw(mPageCanvas);
-							mPageCanvas.translate(0, sv.getScrollY());
-						});
-					}else
-						webSingleholder.draw(new Canvas(PageCache));
+				} else if(painter==2){
+					webholder.post(() -> {
+						mPageCanvas.translate(0, -WHP.getScrollY());
+						WHP.draw(mPageCanvas);
+						mPageCanvas.translate(0, WHP.getScrollY());
+					});
+				} else {
+					webSingleholder.draw(new Canvas(PageCache));
 				}
 
 				IMPageCover.setVisibility(View.VISIBLE);
 				IMPageCover.setAlpha(1.0f);
-				//IMPageCover.setBackgroundDrawable(new BitmapDrawable(getResources(),PageCache));
-				LayoutParams lpp = IMPageCover.getLayoutParams();
-				if(lpp.height!=-1) {
-					lpp.height=-1;
-					IMPageCover.setLayoutParams(lpp);
+				if(IMPageCover.getLayoutParams().height!=-1) {
+					IMPageCover.getLayoutParams().height=-1;
+					IMPageCover.requestLayout();
 				}
+
 				//CMN.Log("drawed");
 			}
 
@@ -1034,7 +1060,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			@Override
 			public void onMoving(float val,IMPageSlider IMPageCover) {
 				if(ActivedAdapter==adaptermy && currentDictionary.isViewInitialized()) {
-					int pos = currentDictionary.currentPos+(Math.abs(val)>20*dm.density?(val<0?1:-1):0);
+					int pos = currentDictionary.mWebView.currentPos+(Math.abs(val)>20*dm.density?(val<0?1:-1):0);
 					if(pos>=-1 && pos<currentDictionary.getNumberEntries()) {
 						if(currentPos!=pos)
 							currentDictionary.toolbar_title.setText(currentDictionary.getEntryAt(pos).trim()+" - "+currentDictionary._Dictionary_fName);
@@ -1059,7 +1085,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					contentview_=PeruseView.contentview;
 				if(Dir==1) {contentview_.findViewById(R.id.browser_widget11).performClick();}
 				else if(Dir==0) contentview_.findViewById(R.id.browser_widget10).performClick();
-				else if(ActivedAdapter==adaptermy && !there) {if(currentPos!=currentDictionary.currentPos) currentDictionary.toolbar_title.setText(currentDictionary.currentDisplaying.trim()+" - "+currentDictionary._Dictionary_fName);}
+				else if(ActivedAdapter==adaptermy && !there) {if(currentPos!=currentDictionary.mWebView.currentPos) currentDictionary.toolbar_title.setText(currentDictionary.currentDisplaying.trim()+" - "+currentDictionary._Dictionary_fName);}
 			}});
 
 		viewPager.setOnTouchListener((v, event) -> {
@@ -1197,24 +1223,20 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			ReadInMdlibs(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
 			AgentApplication app = ((AgentApplication) getApplication());
 			app.mdict_cache = mdict_cache;
-			PDICMainAppOptions.ChangedMap = new HashMap<>();
 			for(mdict mdTmp:md) {
 				if(mdTmp!=null){
 					mdict_cache.put(mdTmp.getPath(),mdTmp);
-					if(mdTmp instanceof mdict_web) putFlags(mdTmp);
 				}
 			}
 			for(mdict mdTmp:currentFilter) {
 				if(mdTmp!=null){
 					mdict_cache.put(mdTmp.getPath(),mdTmp);
-					if(mdTmp instanceof mdict_web) putFlags(mdTmp);
 				}
 			}
 			if(drawerFragment!=null)
 			for(mdict mdTmp:drawerFragment.mdictInternal.values()) {
 				if(mdTmp!=null){
 					mdict_cache.put(mdTmp.getPath(),mdTmp);
-					if(mdTmp instanceof mdict_web) putFlags(mdTmp);
 				}
 			}
 			/* 合符而继统 */
@@ -1224,6 +1246,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			app.slots=CosyChair;
 			app.opt=opt;
 			app.mdlibsCon=mdlibsCon;
+			app.mdict_cache=mdict_cache;
 			CosySofa.clear();
 			HdnCmfrt.clear();
 			lastLoadedModule=null;
@@ -1305,14 +1328,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//ea
 		etSearch.setOnEditorActionListener((v, actionId, event) -> {
 			if (actionId==EditorInfo.IME_ACTION_SEARCH||actionId==EditorInfo.IME_ACTION_UNSPECIFIED){
-				if(d!=null)
+				if(taskd!=null){
 					return true;
-				String key = String.valueOf(etSearch.getText()).trim();
+				}
+				String key = etSearch.getText().toString().trim();
 				if(key.length()>0) Current0SearchText=key;
 				int tmp = viewPager.getCurrentItem();
 				if(tmp==0 || tmp==2) {
 					if(!PDICMainAppOptions.getHistoryStrategy0() /*&& PDICMainAppOptions.getHistoryStrategy1()*/)
-						historyCon.insertUpdate(etSearch.getText().toString().trim());
+						insertUpdate_histroy(key);
 					if(!checkDicts()) return true;
 					//模糊搜索 & 全文搜索
 					if(mAsyncTask!=null)
@@ -1323,13 +1347,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				else {
 					if(!PDICMainAppOptions.getHistoryStrategy0() /*&& (PDICMainAppOptions.getHistoryStrategy2()&&isCombinedSearching|| PDICMainAppOptions.getHistoryStrategy3()&&!isCombinedSearching)*/)
-						historyCon.insertUpdate(key);
+						insertUpdate_histroy(key);
 					if(key.length()>0){
 						if(!isCombinedSearching && currentDictionary instanceof mdict_web){
 							mdict_web webx = ((mdict_web) currentDictionary);
 							webx.searchKey = key;
 							adaptermy.onItemClick(0);
-							CMN.Log("???");
 						}else{
 							bIsFirstLaunch=true;
 							tw1.onTextChanged(key, 0, 0, 0);
@@ -1361,6 +1384,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						, 1.f, -1, Gravity.CENTER, false);
 			}
 		}
+		if(PDICMainAppOptions.getSimpleMode() && PDICMainAppOptions.getHintSearchMode())
+			showTopSnack(main_succinct, "极简模式"
+					, 0.5f, -1, Gravity.CENTER, false);
 
 		if(savedInstanceState!=null) {
 			for(int i=0;i<md.size();i++){//遍历所有词典
@@ -1509,7 +1535,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 
 		//tg
+//		try {
+//			md.add(new mdict_txt("/sdcard/1.txt", this));
+//			switch_To_Dict_Idx(md.size()-1, false, false);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+
 		//startActivity(new Intent().putExtra("realm",8).setClass(this, SettingsActivity.class));
+		//popupWord("History of love", 0, 0, -1);
 
 /*		Intent intent = new Intent();
 		intent.setAction(Intent.ACTION_SEND);
@@ -1520,7 +1554,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		startActivity(intent);*/
 
 		//bottombar.findViewById(R.id.browser_widget2).performLongClick();
-		//bottombar.findViewById(R.id.browser_widget5).performClick();
+		//bottombar.findViewById(R.id.browser_widget5).performLongClick();
 
 		//etSearch.setText("fair use");
 		//if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("15");
@@ -1594,10 +1628,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 	}
 
-	private void putFlags(mdict mdTmp) {
-		PDICMainAppOptions.ChangedMap.put(mdTmp.getPath(), mdTmp.getFirstFlag());
-	}
-
 	@Override
 	protected View getIMPageCover() {
 		return IMPageCover;
@@ -1665,7 +1695,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(lastVisible!=-1)
 					if(lv.getChildAt(0)!=null) {
 						if(lv.getFirstVisiblePosition()!=lastVisible || lv.getChildAt(0).getTop()!=lastOff) {
-							nNeedSaveViewStates=true;
+							bNeedSaveViewStates =true;
 						}
 						lastOff=lv.getChildAt(0).getTop();
 					}
@@ -1682,6 +1712,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		final PDICMainAppOptions opt;
 		Pattern currentPattern;
 		private String currentSearchText;
+		private String currentPlainText;
 
 		public AdvancedSearchLogicLayer(PDICMainAppOptions opt, ArrayList<mdict> md, int type) {
 			this.opt = opt;
@@ -1712,11 +1743,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 
 		@Override
-		public void bakePattern(String _currentSearchText) {
+		public void bakePattern(String plainPattern, String _currentSearchText) {
+			currentPlainText=plainPattern;
 			currentSearchText=_currentSearchText;
 			if(currentSearchText==null)
 				currentPattern=null;
 			else{
+				currentPlainText = VerbatimSearchTask.Pattern_VerbatimDelimiter.matcher(currentPlainText).replaceAll(" ");
 				try {
 					currentPattern = Pattern.compile(currentSearchText, Pattern.CASE_INSENSITIVE);
 				} catch (PatternSyntaxException e) {
@@ -1726,8 +1759,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 
 		@Override
-		public String getBakedPatternStr() {
-			return currentSearchText;
+		public String getBakedPatternStr(boolean useInPageRegex) {
+			return useInPageRegex?currentSearchText:currentPlainText;
 		}
 	}
 
@@ -1777,7 +1810,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		return etSearch.getText().toString();
 	}
 
-	TextWatcher tw1=new TextWatcher() {
+	TextWatcher tw1=new TextWatcher() { //tw
 		//tc
 		public void onTextChanged(CharSequence s, int start, int before, int count) {
 			if(s.length()>0){
@@ -1856,8 +1889,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						}
 					} catch (Exception e) { e.printStackTrace(); }
 				}
-			}else if(lv2.getVisibility()==View.VISIBLE)
-				lv2.setVisibility(View.INVISIBLE);
+			}else {
+				if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && mdict.class.equals(currentDictionary.getClass()))
+					adaptermy.notifyDataSetChanged();
+				if(lv2.getVisibility()==View.VISIBLE)
+					lv2.setVisibility(View.INVISIBLE);
+			}
 		}
 
 		public void beforeTextChanged(CharSequence s, int start, int count,  int after) {}
@@ -1875,31 +1912,32 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//CMN.Log("----->onSaveInstanceState");
 		super.onSaveInstanceState(savedInstanceState);
 
-		if(DBrowser!=null){
-			savedInstanceState.putInt("DB",DBrowser.getFragmentId());
-			savedInstanceState.putInt("DBPos",DBrowser.currentPos);
-		}
+		if(systemIntialized){
+			if(DBrowser!=null){
+				savedInstanceState.putInt("DB",DBrowser.getFragmentId());
+				savedInstanceState.putInt("DBPos",DBrowser.currentPos);
+			}
 
-		View VZero = lv2.getChildAt(0);
-		if(VZero!=null)
-			savedInstanceState.putIntArray("P_L2",new int[] {lv2.getFirstVisiblePosition(),VZero.getTop()});
+			View VZero = lv2==null?null:lv2.getChildAt(0);
+			if(VZero!=null)
+				savedInstanceState.putIntArray("P_L2",new int[] {lv2.getFirstVisiblePosition(),VZero.getTop()});
 
+			if(PrevActivedAdapter!=null){
+				savedInstanceState.putInt("lv_id", PrevActivedAdapter.getId());
+				savedInstanceState.putInt("lv_pos", PrevActivedAdapter.lastClickedPos);
+			}else if(ActivedAdapter!=null){
+				savedInstanceState.putInt("lv_id", ActivedAdapter.getId());
+				savedInstanceState.putInt("lv_pos", ActivedAdapter.lastClickedPos);
+			}
 
-		if(PrevActivedAdapter!=null){
-			savedInstanceState.putInt("lv_id", PrevActivedAdapter.getId());
-			savedInstanceState.putInt("lv_pos", PrevActivedAdapter.lastClickedPos);
-		}else if(ActivedAdapter!=null){
-			savedInstanceState.putInt("lv_id", ActivedAdapter.getId());
-			savedInstanceState.putInt("lv_pos", ActivedAdapter.lastClickedPos);
-		}
-
-		if(PeruseViewAttached()){
-			savedInstanceState.putIntegerArrayList("p_data", PeruseView.data);
-			savedInstanceState.putString("p_key", PeruseView.etSearch.getText().toString());
-			savedInstanceState.putInt("p_adaidx", PeruseView.adapter_idx);
-			if(PeruseView.ActivedAdapter != null){
-				savedInstanceState.putInt("lvp_id", PeruseView.ActivedAdapter.getId());
-				savedInstanceState.putInt("lvp_pos", PeruseView.ActivedAdapter.lastClickedPos);
+			if(PeruseViewAttached()){
+				savedInstanceState.putIntegerArrayList("p_data", PeruseView.data);
+				savedInstanceState.putString("p_key", PeruseView.etSearch.getText().toString());
+				savedInstanceState.putInt("p_adaidx", PeruseView.adapter_idx);
+				if(PeruseView.ActivedAdapter != null){
+					savedInstanceState.putInt("lvp_id", PeruseView.ActivedAdapter.getId());
+					savedInstanceState.putInt("lvp_pos", PeruseView.ActivedAdapter.lastClickedPos);
+				}
 			}
 		}
 	}
@@ -1985,7 +2023,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	protected void onDestroy(){
 		//CMN.Log("main_onDestroy");
-		checkDictionaryProject();
 		dumpSettiings();
 		new File(opt.pathToMainFolder().toString()).setLastModified(System.currentTimeMillis());
 		FilePickerDialog.clearMemory(getBaseContext());
@@ -2057,8 +2094,31 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			PeruseView.dismissDialogOnly();
 		//removeBlack();
 		if(systemIntialized)
-			checkDictionaryProject();
+			checkDictionaryProject(true);
 
+		//pg
+//		CMN.rt();
+//		for(mdict mdTmp:md){
+//			try {
+//				mdTmp.putSates();
+//			} catch (IOException e) {
+//				CMN.Log(e);
+//			}
+//		}
+//		CMN.pt(md.size(), "put 时间：");
+//		CMN.rt();
+//		dumpViewStates();
+//		CMN.pt(md.size()+" 单典写入时间：");
+
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if(bNeedSaveViewStates && systemIntialized && currentDictionary!=null && !PDICMainAppOptions.getSimpleMode()){
+			bNeedSaveViewStates=false;
+			currentDictionary.lvPos = lv.getFirstVisiblePosition();
+		}
 	}
 
 	@Override
@@ -2068,13 +2128,25 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		} catch (Exception ignored) { }
 	}
 
-	private void checkDictionaryProject() {
-		if(nNeedSaveViewStates) {
-			currentDictionary.lvPos=lv.getFirstVisiblePosition();
-			if(lv.getChildCount()>=0) currentDictionary.lvPosOff=lv.getChildAt(0).getTop();
-			currentDictionary.dumpViewStates();
-			nNeedSaveViewStates=false;
-			//CMN.Log("onPause saving dictionary states");
+	private void checkDictionaryProject(boolean performSave) {
+		if(bNeedSaveViewStates && currentDictionary!=null) {
+			int pos = lv.getFirstVisiblePosition();
+			if(currentDictionary.lvPos != pos && !PDICMainAppOptions.getSimpleMode()){
+				currentDictionary.lvPos = pos;
+				if(lv.getChildAt(0)!=null) currentDictionary.lvPosOff=lv.getChildAt(0).getTop();
+				currentDictionary.dumpViewStates();
+			}
+			bNeedSaveViewStates =false;
+		}
+		if(performSave && dirtyMap.size()>0){
+			CMN.rt();
+			if(dirtyMap.size()==1 && SolveOneUIProject(dirtyMap.iterator().next())){
+				CMN.pt(currentDictionary+" 一典配置保存耗时：");
+			} else {
+				dumpViewStates();
+				CMN.pt("dumpViewStates耗时：");
+			}
+			dirtyMap.clear();
 		}
 	}
 
@@ -2126,6 +2198,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 				}
 			}
+			if(PDICMainAppOptions.getSimpleMode()!=PDICMainAppOptions.getSimpleMode(QFStamp)){
+				adaptermy.notifyDataSetChanged();
+			}
 			if(CMN.CheckSettings!=0){
 				if(CMN.checkRCSP()){
 					if(ActivedAdapter!=null){
@@ -2162,11 +2237,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			checkFlags();
 		}
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
 	}
 
 	void refreshUIColors() {
@@ -2249,10 +2319,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		@Override
 		public int getCount() {
-			if(md.size()>0 && currentDictionary!=null)
+			if(md.size()>0 && currentDictionary!=null) {
+				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && mdict.class.equals(currentDictionary.getClass()))
+					return 0;
 				return (int) currentDictionary.getNumberEntries();
-			else
+			}else{
 				return 0;
+			}
 		}
 
 		Flag mflag = new Flag();
@@ -2275,7 +2348,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			vh.title.setText(currentKeyText);
 			if(position==0 && mdict_asset.class==currentDictionary.getClass()) {
 				vh.subtitle.setText(Html.fromHtml("<font color='#2B4391'> < "+"欢迎使用平典"+packageName()+" ></font >"));
-			}else {
+			}
+			else {
 				if(mflag.data!=null)
 					vh.subtitle.setText(Html.fromHtml(currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+mflag.data+" ></font >"));
 				else
@@ -2306,8 +2380,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 				lastClickTime=System.currentTimeMillis();
 			}
-			if(!opt.getHistoryStrategy0() && opt.getHistoryStrategy6() && opt.getHistoryStrategy8()==2)
-				historyCon.insertUpdate(currentDictionary.currentDisplaying);
+			if(!(currentDictionary instanceof mdict_txt) && !opt.getHistoryStrategy0() && opt.getHistoryStrategy6() && opt.getHistoryStrategy8()==2)
+				insertUpdate_histroy(currentDictionary.currentDisplaying);
 		}
 
 		@Override
@@ -2338,7 +2412,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
 				getPeruseView().ScanSearchAllByText(currentDictionary.getEntryAt(pos), PDICMainActivity.this, true, updateAI);
 				AttachPeruseView(true);
-				CMN.Log(PeruseView.data);
+				//CMN.Log(PeruseView.data);
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 				return;
 			}
@@ -2466,16 +2540,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			ViewGroup someView = currentDictionary.rl;
 			if(someView.getParent()!=webSingleholder) {
 				if(someView.getParent()!=null) ((ViewGroup)someView.getParent()).removeView(someView);
-				webSingleholder.addView(currentDictionary.rl);
+				webSingleholder.addView(someView);
 			}
 			if(webSingleholder.getChildCount()>1) {
 				for(int i=webSingleholder.getChildCount()-1;i>=0;i--)
-					if(webSingleholder.getChildAt(i)!=currentDictionary.rl)
+					if(webSingleholder.getChildAt(i)!=someView)
 						webSingleholder.removeViewAt(i);
 			}
-
-			currentDictionary.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-			currentDictionary.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+			currentDictionary.mWebView.fromCombined=0;
 
 			TurnPageEnabled=opt.getPageTurn1();
 			PageSlider.TurnPageEnabled=TurnPageEnabled&&opt.getTurnPageEnabled();
@@ -2491,10 +2563,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			String key = currentKeyText = currentDictionary.currentDisplaying;
 
 			decorateContentviewByKey(null,key);
-			if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy6() &&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0) && (!shunt && pos==0)) {
-				historyCon.insertUpdate(key);
+			if(!(currentDictionary instanceof mdict_txt) && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy6() &&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0) && (!shunt && pos==0)) {
+				insertUpdate_histroy(key);
 			}
-			CMN.lastHisLexicalEntry = -1;
 			//showT("查时: "+(System.currentTimeMillis()-stst));
 
 			bWantsSelection=currentDictionary.mWebView.fromCombined==0;
@@ -2611,9 +2682,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			}
 			lastClickTime=System.currentTimeMillis();
-			boolean Kustice = (this!=adaptermy2 && PDICMainAppOptions.getHistoryStrategy4()) || (this==adaptermy2 && PDICMainAppOptions.getHistoryStrategy5());
+			boolean Kustice = (this!=adaptermy2 && PDICMainAppOptions.getHistoryStrategy4() && combining_search_result.shouldSaveHistory()) || (this==adaptermy2 && PDICMainAppOptions.getHistoryStrategy5());
 			if(!PDICMainAppOptions.getHistoryStrategy0() && Kustice && PDICMainAppOptions.getHistoryStrategy8()==2)
-				historyCon.insertUpdate(currentKeyText);
+				insertUpdate_histroy(currentKeyText);
 		}
 
 		@Override
@@ -2758,14 +2829,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 			decorateContentviewByKey(null,currentKeyText = combining_search_result.getResAt(pos).toString());
 			if(!PDICMainAppOptions.getHistoryStrategy0()) {
-				boolean Kustice = (this!=adaptermy2 && PDICMainAppOptions.getHistoryStrategy4()) || (this==adaptermy2 && PDICMainAppOptions.getHistoryStrategy5());
+				boolean Kustice = (this!=adaptermy2 && PDICMainAppOptions.getHistoryStrategy4() && combining_search_result.shouldSaveHistory()) || (this==adaptermy2 && PDICMainAppOptions.getHistoryStrategy5());
 				if(Kustice) {
 					if(userCLick||PDICMainAppOptions.getHistoryStrategy8()==0)
-						historyCon.insertUpdate(currentKeyText);
+						insertUpdate_histroy(currentKeyText);
 				}
 			}
 
-			CMN.lastHisLexicalEntry = -1;
 			userCLick=false;
 			bWantsSelection=true;
 			if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick()){
@@ -2931,22 +3001,23 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			case R.id.browser_widget5:{
 				if(mainF.getChildCount()!=0) return;
 				if(DBrowser==null) {
-					DBrowser = new DBroswer();
-					FragmentManager fragmentManager = getSupportFragmentManager();
-					FragmentTransaction transaction = fragmentManager.beginTransaction();
-					transaction.add(R.id.mainF, DBrowser);
-					transaction.commit();
+					if(DBrowser_holder!=null) DBrowser=DBrowser_holder.get();
+					if(DBrowser==null){
+						CMN.Log("重建收藏夹");
+						DBrowser_holder = new WeakReference<>(DBrowser = new DBroswer());
+					}
+					AttachDBrowser();
 				}
 			} break;
 			case R.id.browser_widget6:{
 				if(mainF.getChildCount()!=0) return;
 				if(DBrowser==null) {
-					DBrowser = new DHBroswer();
-					FragmentManager fragmentManager = getSupportFragmentManager();
-					FragmentTransaction transaction = fragmentManager.beginTransaction();
-					transaction.add(R.id.mainF, DBrowser);
-					//transaction.addToBackStack("DHBroswer");
-					transaction.commit();
+					if(DHBrowser_holder!=null) DBrowser=DHBrowser_holder.get();
+					if(DBrowser==null){
+						//CMN.Log("重建历史纪录");
+						DHBrowser_holder = new WeakReference<>(DBrowser = new DHBroswer());
+					}
+					AttachDBrowser();
 				}
 			} break;
 			//搜索词典
@@ -3046,6 +3117,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 	}
 
+	private void AttachDBrowser() {
+		if(DBrowser!=null)
+		if(!DBrowser.isAdded()) {
+			FragmentManager fragmentManager = getSupportFragmentManager();
+			FragmentTransaction transaction = fragmentManager.beginTransaction();
+			transaction.setCustomAnimations(R.anim.history_enter, R.anim.history_enter);
+			transaction.add(R.id.mainF, DBrowser);
+			transaction.commit();
+		} else {
+			mainF.addView(DBrowser.getView());
+		}
+	}
+
 	void AttachContentView() {
 		root.addView(contentview, PhotoPager!=null&&PhotoPager.getParent()!=null?2:1);
 		viewPager.setVisibility(View.INVISIBLE);
@@ -3108,76 +3192,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				AttachPeruseView(false);
 			} break;
 			case R.id.browser_widget5:{
-				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setTitle(R.string.pickfavor);
-				builder.setPositiveButton(R.string.newfc, null);
-				builder.setNeutralButton(R.string.delete, null);
-				builder.setItems(new String[] {},null);
-				final AlertDialog d=builder.create();
-				d.show();
-				final DArrayAdapter ada = new DArrayAdapter(this,R.layout.drawer_list_item,R.id.text1, new ArrayList<>());
-				d.getListView().setAdapter(ada);
-				d.getListView().setOnItemClickListener((parent, view, position, id) -> {
-					ada.setSelection(position);
-					favoriteCon.close();
-					String name = ada.getItem(position).getName();
-					//opt.putString("currFavoriteDBName", opt.currFavoriteDBName=favorTag+name.substring(0,name.length()-4));
-					opt.putCurrFavoriteDBName(favorTag+name.substring(0,name.length()-4));
-
-					favoriteCon = new LexicalDBHelper(PDICMainActivity.this,opt.currFavoriteDBName);
-
-					view.post(() -> {
-						d.dismiss();
-						show(R.string.currFavor,opt.currFavoriteDBName.substring(10));
-					});
-				});
-				d.setOnDismissListener(dialog -> {
-					if(!favoriteCon.isFileExsits()) {
-						opt.currFavoriteDBName = "favorites/favorite";
-						favoriteCon = new LexicalDBHelper(PDICMainActivity.this,opt.currFavoriteDBName);
-						show(R.string.favorRecon);
-					}
-				});
-				ada.notifyDataSetChanged();
-				d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v1 -> {
-					ada.showDelete = !ada.showDelete;
-					ada.notifyDataSetChanged();
-				});
-				d.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-				d.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(PDICMainActivity.this,R.color.colorHeaderBlue));
-				d.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(Color.RED);
-				d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v12 -> {
-					ViewGroup dv = (ViewGroup) getLayoutInflater().inflate(R.layout.fp_edittext, root, false);
-					EditText etNew = dv.findViewById(R.id.edt_input);
-					View btn_Done = dv.findViewById(R.id.done);
-					dv.findViewById(R.id.toolbar_action1).setVisibility(View.GONE);
-
-					Dialog dd = new GoodKeyboardDialog(PDICMainActivity.this);
-					dd.requestWindowFeature(Window.FEATURE_NO_TITLE);
-					dd.setContentView(dv);
-
-					btn_Done.setOnClickListener(v121 -> {
-						new LexicalDBHelper(PDICMainActivity.this,favorTag+etNew.getText().toString()).close();
-						dd.dismiss();
-						ada.notifyDataSetChanged();
-					});
-					etNew.setOnEditorActionListener((v1212, actionId, event) -> {
-						if(actionId == EditorInfo.IME_ACTION_DONE ||actionId==EditorInfo.IME_ACTION_UNSPECIFIED) {
-							btn_Done.performClick();
-							return true;
-						}
-						return false;
-					});
-
-					Window win = dd.getWindow();
-					win.setGravity(Gravity.TOP);
-					win.getAttributes().width=d.getListView().getWidth();
-					win.setAttributes(win.getAttributes());
-					win.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-					win.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-					dd.show();
-				});
+				showChooseFavorDialog(0);
 			} return true;
 			case R.id.lvitems:{
 				callDrawerIconAnima();
@@ -3278,7 +3293,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			isFragInitiated=true;
 			//pickDictDialog.mRecyclerView.scrollToPosition(adapter_idx);
 		}
-		else pickDictDialog.refresh();
+		else pickDictDialog.refresh(false);
 		if(needRefresh) pickDictDialog.adapter().notifyDataSetChanged();
 	}
 
@@ -3312,8 +3327,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			/* 跳转翻阅模式 */
 			case R.id.toolbar_action12:{
-				CMN.Log(getCurrentFocus());
-				String nowKey=isLongClicked?null:ActivedAdapter.currentKeyText();
+				ret = closeMenu = true;
+				isLongClicked &= ActivedAdapter!=null;
+				String nowKey=isLongClicked?null:(ActivedAdapter.currentKeyText());
 				boolean proceed=true;
 				if(true && !isLongClicked){
 					WebViewmy currentWebFocus;
@@ -3342,7 +3358,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			/* 页内查找 */
 			case R.id.toolbar_action13:{
-				toggleInPageSearch(isLongClicked);
+				toggleInPageSearch(ret=isLongClicked);
 			} break;
 			/* 即点即译 */
 			case R.id.toolbar_action14:{
@@ -3392,6 +3408,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				showTopSnack("功能尚未成功");
 			} break;
 			case R.id.toolbar_action11:{//切换着色
+				if(isLongClicked){ ret=false; break;}
 				if(TintWildResult.first=opt.toggleTintWildRes()) {
 					item.setTitle(item.getTitle()+" √");
 				}else {
@@ -3402,15 +3419,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			case R.id.toolbar_action2:{
 				if(isLongClicked) {
 					launchSettings(7);
+					ret=true;
 				}else{
 					if (CurrentViewPage == 1) {//viewPager
 						tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 						if (!opt.getHistoryStrategy0()) {
-							if (!etSearch.getText().toString().trim().contains("<分>")) {
-								historyCon.insertUpdate(etSearch.getText().toString().trim());
-							} else /*if (opt.getHistoryStrategy1()) */{
-								historyCon.insertUpdate(etSearch.getText().toString().trim());
-							}
+							insertUpdate_histroy(etSearch.getText().toString().trim());
 						}
 					} else
 						etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
@@ -3418,6 +3432,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			} break;
 			case R.id.toolbar_action3:{//per-word searching
+				if(isLongClicked){ break;}
 				CombinedSearchTask_lastKey=null;
 				String text = etSearch.getText().toString().trim();
 				String perWSTag = getResources().getString(R.string.perWSTag);
@@ -3431,17 +3446,22 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				etSearch.setText(ToTag(perWSTag)+text);
 			} break;
 			case R.id.toolbar_action4:{
-				if(opt.getInPeruseModeTM()) {
-					findViewById(R.id.browser_widget0).setVisibility(View.GONE);
-				}else {
-					widget0.setVisibility(View.VISIBLE);
-					if(opt.getInPeruseMode()) {
-						widget0.setImageResource(R.drawable.peruse_ic_on);
-						showTopSnack(main_succinct, R.string.peruse_mode
-								, 1f, LONG_DURATION_MS, Gravity.CENTER, false);
+				if(isLongClicked){
+					AttachPeruseView(false);
+					ret=true;
+				} else {
+					if (opt.getInPeruseModeTM()) {
+						findViewById(R.id.browser_widget0).setVisibility(View.GONE);
+					} else {
+						widget0.setVisibility(View.VISIBLE);
+						if (opt.getInPeruseMode()) {
+							widget0.setImageResource(R.drawable.peruse_ic_on);
+							showTopSnack(main_succinct, R.string.peruse_mode
+									, 1f, LONG_DURATION_MS, Gravity.CENTER, false);
+						}
 					}
+					opt.setInPeruseModeTM(!opt.getInPeruseModeTM());
 				}
-				opt.setInPeruseModeTM(!opt.getInPeruseModeTM());
 			} break;
 		}
 		if(closeMenu)
@@ -3499,25 +3519,25 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					invalidAllLists();
 					CMN.Log("变化了", md.size(), currentFilter.size());
 				}
-				if(opt.ChangedMap!=null){
-					for (int i = 0; i < md.size(); i++) {
-						mdict mdTmp = md.get(i);
-						if(mdTmp!=null){
-							try {
-								mdTmp.readInConfigs(true);
-							} catch (IOException ignored) { }
-						} else if(i<CosyChair.size()){
-							PlaceHolder phI = CosyChair.get(i);
-							String path = phI.getPath(opt);
-							if(path.endsWith(".web") && opt.ChangedMap.containsKey(path))
-							try {
-								md.set(i, mdTmp=new_mdict(phI.getPath(opt), this));
-								mdTmp.tmpIsFlag = phI.tmpIsFlag;
-							} catch (Exception ignored) { }
-						}
-					}
-					opt.ChangedMap = null;
-				}
+//				if(opt.ChangedMap!=null){
+//					for (int i = 0; i < md.size(); i++) {
+//						mdict mdTmp = md.get(i);
+//						if(mdTmp!=null){
+//							try {
+//								mdTmp.readInConfigs(true);
+//							} catch (IOException ignored) { }
+//						} else if(i<CosyChair.size()){
+//							PlaceHolder phI = CosyChair.get(i);
+//							String path = phI.getPath(opt);
+//							if(path.endsWith(".web") && opt.ChangedMap.containsKey(path))
+//							try {
+//								md.set(i, mdTmp=new_mdict(phI.getPath(opt), this));
+//								mdTmp.tmpIsFlag = phI.tmpIsFlag;
+//							} catch (Exception ignored) { }
+//						}
+//					}
+//					opt.ChangedMap = null;
+//				}
 				if (duco!=null && duco.getBooleanExtra("result2", false)) {
 					opt.putFirstFlag();
 					CMN.Log("保存页码");
@@ -3652,11 +3672,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	public boolean deleteHistory() {
-		boolean ret = new File(opt.pathToInternalDatabases().append("history").append(".sql").toString()).delete();
-		if(ret) {
-			historyCon = new LexicalDBHelper(this,"history");
-		}
-		return ret;
+		try {
+			return prepareHistroyCon().wipeData();
+		} catch (Exception ignored) { }
+		return false;
 	}
 
 	View mView;
@@ -3666,19 +3685,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	int last1,last2;
 	int deltaY;
 
-	float lastSX=-1,lastSY;
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		if(v.getId()==R.id.webviewmy) {
-			WebViewmy vTmp = (WebViewmy) v;
-			if(lastSX!=-1)
-				if(lastSX!=vTmp.getScrollX() || lastSY!=vTmp.getScrollY()) {
-					nNeedSaveViewStates=true;
-				}
-			lastSX=vTmp.getScrollX();
-			lastSY=vTmp.getScrollY();
-		}
-
 		if(opt.UseTripleClick())
 			switch(event.getAction()) {
 				case MotionEvent.ACTION_DOWN:
@@ -3793,15 +3801,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	@Override
 	public void switch_To_Dict_Idx(int i, boolean invalidate, boolean putName){
-		if(invalidate) {
-			if (currentDictionary != null) {//save dict position!
-				currentDictionary.lvPos = lv.getFirstVisiblePosition();
-				if (lv.getChildCount() > 0) currentDictionary.lvPosOff = lv.getChildAt(0).getTop();
-				currentDictionary.dumpViewStates();
-			}
-		}
+		if(invalidate) checkDictionaryProject(false);
 		super.switch_To_Dict_Idx(i, invalidate, putName);
-
 		if(invalidate) {
 			if (opt.getPicDictAutoSer()) {
 				//CMN.Log("changing text!......");
@@ -3811,45 +3812,44 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
 			}
 			if (!opt.getPinPicDictDialog())
-				dismiss_dict_picker(R.anim.dp_dialog_exit);
+				dismissDictPicker(R.anim.dp_dialog_exit);
 		}
 	}
 
-	void dismiss_dict_picker(int animationRes) {
+	void dismissDictPicker(int animationRes) {
 		if(dismissing_dh) return;
 		dismissing_dh=true;
 		if(pickDictDialog!=null) {
 			if(pickDictDialog.isDirty)  {opt.putFirstFlag();pickDictDialog.isDirty=false;}
 			dialogHolder.clearAnimation();
 			/*  词典选择器的动画效果(消失)  */
-			Animation anima = AnimationUtils.loadAnimation(this, animationRes);
-			dialogHolder.setAnimation(anima);
-			//anima.setFillAfter(true);
-			anima.setAnimationListener(new Animation.AnimationListener() {
-				@Override
-				public void onAnimationStart(Animation animation) {
-				}
-				@Override
-				public void onAnimationEnd(Animation animation) {
-					dialogHolder.setVisibility(View.GONE);
-				}
-				@Override
-				public void onAnimationRepeat(Animation animation) {
-				}
-			});
+			if(animaExit==null) {
+				animaExit = AnimationUtils.loadAnimation(this, animationRes);
+				animaExit.setAnimationListener(new Animation.AnimationListener() {
+					@Override
+					public void onAnimationStart(Animation animation) {
+					}
 
-//			if(objectAnimator!=null) objectAnimator.cancel();
-//			objectAnimator = ObjectAnimator.ofFloat(dialogHolder,"alpha",1,0.6f);
-//			objectAnimator.setDuration(240);
-			//objectAnimator.start();
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						dialogHolder.setVisibility(View.GONE);
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+					}
+				});
+			}
+			dialogHolder.startAnimation(animaExit);
 		}
 	}
 
 	@Override
 	public void onCreateContextMenu (ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo){
 		//Context menu
-		CMN.Log("onCreateContextMenu");
+		CMN.Log("onCreateContextMenu", getCurrentFocus());
 	}
+
 
 	ViewGroup getContentviewSnackHolder() {
 		return snack_holder;

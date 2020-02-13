@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -397,9 +398,11 @@ public class mdict_web extends mdict {
 		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
 		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
 
+		justifyInternal("."+_Dictionary_fName);
+
 		htmlBuilder=new StringBuilder();
 
-		readInConfigs(false);
+		readInConfigs();
 
 		if(bgColor==null)
 			bgColor= CMN.GlobalPageBackground;
@@ -458,9 +461,9 @@ public class mdict_web extends mdict {
 		return !hosts.contains(url);
 	}
 
-	/** 简便起见，直接将修改的配置存于HashMap */
+/*	*//** 简便起见，直接将修改的配置存于HashMap *//*
 	@Override
-	public void readInConfigs(boolean check) throws IOException {
+	public void readInConfigs() throws IOException {
 		if(!check){
 			firstFlag = website.getLongValue("MFF");
 			if(website.containsKey("BG"))
@@ -475,60 +478,55 @@ public class mdict_web extends mdict {
 			webScale = website.getIntValue("args");
 		}
 
-		if(opt.ChangedMap!=null){
-			Long newVal = opt.ChangedMap.remove(getPath());
-			if(newVal!=null && newVal!=firstFlag){
-				website.put("MFF", firstFlag = newVal);
-				CMN.Log("保存！！！"+this);
-				dumpViewStates();
-				refresh_eidt_kit(getContentEditable(), getEditingContents(), true);
-			}
-		}
-	}
-
-	@Override
-	protected void WriteConfigFF() {
-		dumpViewStates();
-	}
+//		if(opt.ChangedMap!=null){
+//			Long newVal = opt.ChangedMap.remove(getPath());
+//			if(newVal!=null && newVal!=firstFlag){
+//				website.put("MFF", firstFlag = newVal);
+//				CMN.Log("保存！！！"+this);
+//				dumpViewStates();
+//				refresh_eidt_kit(getContentEditable(), getEditingContents(), true);
+//			}
+//		}
+	}*/
 
 	/** 保存网站定义 */
-	@Override
-	public void dumpViewStates() {
-		try {
-			website.put("BG", bgColor);
-			website.put("TextZoom", internalScaleLevel);
-			website.put("lvPos", lvPos);
-			website.put("lvClk", lvClickPos);
-			website.put("lvOff", lvPosOff);
-			int ex=0,e=0;
-			if(viewsHolderReady && mWebView!=null) {
-				ex=mWebView.getScrollX();
-				e=mWebView.getScrollY();
-			}else if(initArgs!=null && initArgs.length==2){
-				ex=initArgs[0];
-				e=initArgs[1];
-			}
-			website.put("argx", ex);
-			website.put("argy", e);
-			website.put("args", webScale);
-			website.put("MFF", firstFlag);
-			if(entrance.size()>0)
-				website.put("entrance", StringUtils.join(entrance, '\n'));
-			if(cacheExtensions!=null)
-				website.put("cacheRes", StringUtils.join(cacheExtensions, '|'));
-			//if(cleanExtensions!=null)
-			//	website.put("CDROPT", StringUtils.join(cleanExtensions, '|'));
-
-			FileOutputStream fo = new FileOutputStream(f);
-			String v=website.toString();
-			v=v.replace("\\n", "\n");
-			fo.write(v.getBytes());
-			fo.flush();
-			fo.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	@Override
+//	public void dumpViewStates() {
+//		try {
+//			website.put("BG", bgColor);
+//			website.put("TextZoom", internalScaleLevel);
+//			website.put("lvPos", lvPos);
+//			website.put("lvClk", lvClickPos);
+//			website.put("lvOff", lvPosOff);
+//			int ex=0,e=0;
+//			if(viewsHolderReady && mWebView!=null) {
+//				ex=mWebView.getScrollX();
+//				e=mWebView.getScrollY();
+//			}else if(initArgs!=null && initArgs.length==2){
+//				ex=initArgs[0];
+//				e=initArgs[1];
+//			}
+//			website.put("argx", ex);
+//			website.put("argy", e);
+//			website.put("args", webScale);
+//			website.put("MFF", firstFlag);
+//			if(entrance.size()>0)
+//				website.put("entrance", StringUtils.join(entrance, '\n'));
+//			if(cacheExtensions!=null)
+//				website.put("cacheRes", StringUtils.join(cacheExtensions, '|'));
+//			//if(cleanExtensions!=null)
+//			//	website.put("CDROPT", StringUtils.join(cleanExtensions, '|'));
+//
+//			FileOutputStream fo = new FileOutputStream(f);
+//			String v=website.toString();
+//			v=v.replace("\\n", "\n");
+//			fo.write(v.getBytes());
+//			fo.flush();
+//			fo.close();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 	//Todo let's make dice
 	String getRandomHost() {
@@ -565,7 +563,9 @@ public class mdict_web extends mdict {
 		int end = needTrim?finalUrl.indexOf("?"):finalUrl.length();
 		if(end<0) end=finalUrl.length();
 		String name=finalUrl.substring(start, end);
-		name=URLDecoder.decode(name);
+		try {
+			name=URLDecoder.decode(name, "utf8");
+		} catch (UnsupportedEncodingException e) { }
 		if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
 		if(name.length()>64){
 			name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
@@ -668,7 +668,7 @@ public class mdict_web extends mdict {
 				if (pos>=0 && pos < PageCursor.getCount()) {
 					PageCursor.moveToPosition(pos);
 					url = PageCursor.getString(0);
-					CMN.Log("数据库取出的数据：", URLDecoder.decode(url));
+					//CMN.Log("数据库取出的数据：", URLDecoder.decode(url));
 					if(!url.contains("://"))
 						url=host+url;
 					if(resposibleForThisWeb)
@@ -968,7 +968,7 @@ public class mdict_web extends mdict {
 			if (onstart != null) jsCode += onstart;
 			view.evaluateJavascript(jsCode, null);
 		}
-		CMN.Log("onPageStarted\n\nonPageStarted -- ", url);CMN.rt();CMN.stst_add=0;
+		//CMN.Log("onPageStarted\n\nonPageStarted -- ", url);CMN.rt();CMN.stst_add=0;
 	}
 
 	public void onProgressChanged(WebViewmy view, int newProgress) {

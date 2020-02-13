@@ -79,7 +79,7 @@
 	<string name="fc">Nađeno %d točka (e).</string>
 	<string name="fn">Pronađeno ništa.</string>
 	<string name="maniDel">Poništene %1$d / %2$d kolekcije!</string>
-	<string name="maniFavor"> %1$s 2% ($ d) proizvodi skupljanje</string>
+	<string name="maniFavor"> %1$s 2% ($ d) proizvodi</string>
 	<string name="maniFavor2"> %1$s ( %2$s ) sjećanja</string>
 	<string name="currFavor">Trenutni naziv kolekcije: %s </string>
 	<string name="resCount">Ključna učinio! Pronađeno %s stavke</string>

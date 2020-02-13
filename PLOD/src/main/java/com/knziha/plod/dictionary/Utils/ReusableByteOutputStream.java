@@ -22,10 +22,17 @@ public class ReusableByteOutputStream extends OutputStream {
         this(1024);
     }
 
-    public ReusableByteOutputStream(int size) {
-        this.count = 0;
-        this.buf = new byte[size];
-    }
+	public ReusableByteOutputStream(int size) {
+		this.count = 0;
+		this.buf = new byte[size];
+	}
+
+	public ReusableByteOutputStream(byte[] buf, int size) {
+		this.count = 0;
+		this.buf = buf;
+		if(buf==null || buf.length!=size)
+			this.buf = new byte[size];
+	}
 
     public void write(InputStream in) throws IOException {
         int cap;
@@ -75,22 +82,6 @@ public class ReusableByteOutputStream extends OutputStream {
         this.write(b, 0, b.length);
     }
 
-    public void writeAsAscii(String s) {
-        int len = s.length();
-        this.ensureCapacity(len);
-        int ptr = this.count;
-
-        for(int i = 0; i < len; ++i) {
-            this.buf[ptr++] = (byte)s.charAt(i);
-        }
-
-        this.count = ptr;
-    }
-
-    public void writeTo(OutputStream out) throws IOException {
-        out.write(this.buf, 0, this.count);
-    }
-
     public void reset() {
         this.count = 0;
     }
@@ -120,4 +111,10 @@ public class ReusableByteOutputStream extends OutputStream {
     public int getCount() {
         return this.count;
     }
+
+	public void precede(int add) {
+		if(count+add<buf.length){
+			count+=add;
+		}
+	}
 }

@@ -3,11 +3,9 @@ package com.knziha.plod.settings;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -22,9 +20,6 @@ import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 
 import java.io.DataOutputStream;
-import java.io.File;
-
-import static com.knziha.filepicker.model.GlideCacheModule.DEFAULT_GLIDE_PATH;
 
 /** Devoloper Options */
 public class DevoloperOptions extends SettingsFragment implements Preference.OnPreferenceClickListener {

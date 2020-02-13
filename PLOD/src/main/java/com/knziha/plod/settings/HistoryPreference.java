@@ -2,13 +2,10 @@ package com.knziha.plod.settings;
 
 import android.os.Bundle;
 
-import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.PlainDict.Toastable_Activity;
 import com.knziha.plod.dictionary.Utils.IU;
 
 public class HistoryPreference extends SettingsFragment implements Preference.OnPreferenceClickListener {

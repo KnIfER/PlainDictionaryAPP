@@ -14,6 +14,10 @@ import java.util.List;
 
 
 /**
+ * 单实例浮动搜索 <br/>
+ * Single Instance Float Activity that can be launched by paste bin monitor、<br/>
+ * 		by 3rd party share intent to PlainDict and of course <br/>
+ * 		by our internal multi-dimensionally customizable central share panel. ( MDCCSP )<br/>
  * Created by 2019 on KnIfER
  */
 public class FloatActivitySearch extends FloatSearchActivity {
@@ -48,7 +52,7 @@ public class FloatActivitySearch extends FloatSearchActivity {
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			boolean newHidden=PDICMainAppOptions.getHideFloatFromRecent();
-			if(hidden!=newHidden) {
+			if(hidden!=newHidden || MainShareActivity.hiddenId!=null) {
 				setTaskHidden(newHidden);
 			}
 		}
@@ -60,11 +64,38 @@ public class FloatActivitySearch extends FloatSearchActivity {
 		ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
 		List<ActivityManager.AppTask> tasks = am.getAppTasks();
 		for (int i = 0; i < tasks.size(); i++) {
-			//CMN.Log(tasks.get(i).getTaskInfo().id==getTaskId());
 			if(tasks.get(i).getTaskInfo().id==getTaskId()){
+				MainShareActivity.hiddenId=tasks.get(i);
 				tasks.get(i).setExcludeFromRecents(hidden);
 				break;
 			}
 		}
+	}
+
+	@Override
+	public void onBackPressed() {
+		if(checkWebSelection())
+			return;
+		if(PDICMainAppOptions.getFloatClickHideToBackground()){
+			moveTaskToBack(false);
+			return;
+		}
+		super.onBackPressed();
+	}
+
+	@Override
+	protected void exit() {
+		if(PDICMainAppOptions.getFloatClickHideToBackground()){
+			moveTaskToBack(false);
+		} else {
+			super.exit();
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		//CMN.Log("onDestroy");
+		MainShareActivity.hiddenId=null;
+		super.onDestroy();
 	}
 }

@@ -80,7 +80,7 @@
 	<string name="fc">Ευρεθείσα αντικείμενο (α) %d.</string>
 	<string name="fn">Βρέθηκαν τίποτα εδώ.</string>
 	<string name="maniDel">Ακυρώθηκε %1$d / %2$d συλλογές!</string>
-	<string name="maniFavor"> %1$s (% 2 $ αντικείμενα δ συλλογής)</string>
+	<string name="maniFavor"> %1$s (%2$ αντικείμεν)</string>
 	<string name="maniFavor2"> %1$s ( %2$s μνήμες)</string>
 	<string name="currFavor">Τρέχουσα όνομα της συλλογής: %s </string>
 	<string name="resCount">Αναζήτηση γίνει! Βρέθηκαν %s στοιχεία</string>

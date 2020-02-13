@@ -32,14 +32,12 @@ public class  BU{//byteUtils
 	public static int calcChecksum(byte[] bytes) {
         Adler32 a32 = new Adler32();
         a32.update(bytes);
-        int sum = (int) a32.getValue();
-        return sum;
+		return (int) a32.getValue();
     }
 	public static int calcChecksum(byte[] bytes,int off,int len) {
         Adler32 a32 = new Adler32();
         a32.update(bytes,off,len);
-        int sum = (int) a32.getValue();
-        return sum;
+		return (int) a32.getValue();
     }
     //解压等utils
     @Deprecated
