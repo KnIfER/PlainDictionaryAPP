@@ -12,8 +12,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 42
-        versionName "3.4.1"
+        versionCode 49
+        versionName "3.8"
         vectorDrawables.generatedDensities = ['hdpi']
     }
     compileOptions {
@@ -54,6 +54,7 @@ dependencies {
             //all*.exclude group: 'androidx.appcompat'
         }
     }
+
     if (use_mat_official == '1') {
         api(libs_mat) {
             exclude module: "appcompat"

@@ -1350,6 +1350,7 @@ public class DBroswer extends Fragment implements
 						ArrayList<additiveMyCpr1> data = new ArrayList<>();
 						data.add(datalet);
 						String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
+						a.bShowLoadErr=false;
 						for(int dIdx=0;dIdx<a.md.size();dIdx++) {//联合搜索
 							mdict mdTmp = a.md_get(dIdx);
 							if(mdTmp!=null) {
@@ -1365,7 +1366,7 @@ public class DBroswer extends Fragment implements
 									}
 							}
 						}
-
+						a.bShowLoadErr=true;
 						webviewHolder = a.webholder;
 						ViewGroup anothorHolder = a.webSingleholder;
 						if(records.size()>0) {

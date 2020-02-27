@@ -450,8 +450,16 @@ public class Toastable_Activity extends AppCompatActivity {
 			m_currentToast.cancel();
 	}
 
-	void showTopSnack(Object messageVal){
+	ViewGroup getContentviewSnackHolder() {
+		return contentview;
+	}
+
+	public void showTopSnack(Object messageVal){
 		showTopSnack(DefaultTSView, messageVal, 0.8f, -1, -1, false);
+	}
+
+	public void showContentSnack(Object messageVal){
+		showTopSnack(getContentviewSnackHolder(), messageVal, 0.6f, -1, -1, false);
 	}
 
 	void modifyTopSnack(Object messageVal){

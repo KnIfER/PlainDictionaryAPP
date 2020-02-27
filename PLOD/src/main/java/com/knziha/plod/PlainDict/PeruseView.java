@@ -89,7 +89,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	SplitView sp_sub;
 	ViewGroup mlp;
 	ViewGroup slp;
-	Toolbar toolbar;
+	public Toolbar toolbar;
 	
 	TwoWayGridView LvHeadline;
 	ListView lv1;
@@ -550,47 +550,51 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			
 		if(bRefresh) {
 			etSearch.setText(TextToSearch);
-			NumPreEmpter=0;
-	        int NumToAdd = data.size()-recyclerBin.size();
-	
-			for(int i=0;i<NumToAdd;i++) {
-				View vt = a.getLayoutInflater().inflate(R.layout.main_peruse_dictlet, null);
-		        TwoWayGridView.LayoutParams lp = new TwoWayGridView.LayoutParams(itemWidth, itemHeight);
-		        vt.setLayoutParams(lp);
-		        vt.setTag(data.get(i));
-				recyclerBin.add(vt);
-	        }
-			booksShelfAdapter.notifyDataSetChanged();
-			if(!bExpanded)
-				LvHeadline.setSelection(0);
-	        LvHeadline.getLayoutParams().width = dm.widthPixels;
-			LvHeadline.requestLayout();
-			cc = dm.widthPixels/itemWidth; //一行容纳几列
-	        if(dm.widthPixels - cc*itemWidth>0.85*itemWidth) cc+=1;
-	        if(bExpanded) {
-	        	double size = Math.ceil(1.0 * data.size()/cc)*itemHeight;
-	        	if(sp_main.getPrimaryContentSize()>size) 
-	        		sp_main.setPrimaryContentSize((int)size);
-	        }
-	        
-	        if(ToR || ToL) {
-				if(a.opt.getPeruseBottombarOnBottom() ^ (webcontentlist.getChildAt(webcontentlist.getChildCount()-1).getId()==R.id.bottombar2))
-	            	webcontentlist.SwitchingSides();
-	    		if(CachedBBSize==-1) CachedBBSize=a.opt.getPeruseBottombarSize((int) (35*density));
-	    		CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, 50*dm.density));
-				webcontentlist.setPrimaryContentSize(CachedBBSize,true);
-	        }
-	        
-			voyager=new int[data.size()*VELESIZE];
-	        for(int i=0;i<data.size();i++)
-	        	voyager[i*VELESIZE]=-1;
-	        leftLexicalAdapter.lastClickedPos=-1;
-	        booksShelfAdapter.flip=true;
-	        int off=data.indexOf(adapter_idx);
-			if(off==-1) off=0;
-			mWebView.clearIfNewADA(data.get(off));
-	        booksShelfAdapter.onItemClick(null,null,NumPreEmpter+off,0);
+			RefreshBookShelf(a);
 		}
+	}
+
+	private void RefreshBookShelf(MainActivityUIBase a) {
+		NumPreEmpter=0;
+		int NumToAdd = data.size()-recyclerBin.size();
+
+		for(int i=0;i<NumToAdd;i++) {
+			View vt = a.getLayoutInflater().inflate(R.layout.main_peruse_dictlet, null);
+			TwoWayGridView.LayoutParams lp = new TwoWayGridView.LayoutParams(itemWidth, itemHeight);
+			vt.setLayoutParams(lp);
+			vt.setTag(data.get(i));
+			recyclerBin.add(vt);
+		}
+		booksShelfAdapter.notifyDataSetChanged();
+		if(!bExpanded)
+			LvHeadline.setSelection(0);
+		LvHeadline.getLayoutParams().width = dm.widthPixels;
+		LvHeadline.requestLayout();
+		cc = dm.widthPixels/itemWidth; //一行容纳几列
+		if(dm.widthPixels - cc*itemWidth>0.85*itemWidth) cc+=1;
+		if(bExpanded) {
+			double size = Math.ceil(1.0 * data.size()/cc)*itemHeight;
+			if(sp_main.getPrimaryContentSize()>size)
+				sp_main.setPrimaryContentSize((int)size);
+		}
+
+		if(ToR || ToL) {
+			if(a.opt.getPeruseBottombarOnBottom() ^ (webcontentlist.getChildAt(webcontentlist.getChildCount()-1).getId()==R.id.bottombar2))
+				webcontentlist.SwitchingSides();
+			if(CachedBBSize==-1) CachedBBSize=a.opt.getPeruseBottombarSize((int) (35*density));
+			CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, 50*dm.density));
+			webcontentlist.setPrimaryContentSize(CachedBBSize,true);
+		}
+
+		voyager=new int[data.size()*VELESIZE];
+		for(int i=0;i<data.size();i++)
+			voyager[i*VELESIZE]=-1;
+		leftLexicalAdapter.lastClickedPos=-1;
+		booksShelfAdapter.flip=true;
+		int off=data.indexOf(adapter_idx);
+		if(off==-1) off=0;
+		mWebView.clearIfNewADA(off<data.size()?data.get(off):-1);
+		booksShelfAdapter.onItemClick(null,null,NumPreEmpter+off,0);
 	}
 
 	void RecalibrateWebScrollbar() {
@@ -695,7 +699,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		title.setText("翻阅设定");//"词典设定"
 		title.setTextColor(a.AppBlack);
 
-		if(PDICMainAppOptions.isLarge) tv.setTextSize(tv.getTextSize());
+		if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
 
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
@@ -1167,11 +1171,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if (idx >= 0){
 				String toCompare = mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase();
 				int len = text.length();
-				if(len>0 && len>=toCompare.length() && text.charAt(0)==toCompare.charAt(0)){
+				int len2 = toCompare.length();
+				if(len>0 && len2>0 && len>=toCompare.length() && text.charAt(0)==toCompare.charAt(0)){
 					if(len==1){
 						data.add(i);
 						bakedGroup.add(i);
 					} else {
+						len = Math.min(len, len2);
 						int cidx = 1;
 						for (; cidx < len; cidx++) {
 							if (text.charAt(cidx) != toCompare.charAt(cidx))
@@ -1523,7 +1529,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				setCurrentDis(currentDictionary, actualPosition);
 
 				if(a.opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(currentDictionary.tmpIsFlag)){
-					mWebView.setTag(R.drawable.voice_ic, false);
+					mWebView.bRequestedSoundPlayback=true;
 				}
 
     			currentDictionary.renderContentAt(-1,adapter_idx,0,mWebView, actualPosition);//bookmarks.get(lastClickedPos)
@@ -1814,7 +1820,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         	setCurrentDis(currentDictionary, lastClickedPos);
 
 			if(a.opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(currentDictionary.tmpIsFlag)){
-				mWebView.setTag(R.drawable.voice_ic, false);
+				mWebView.bRequestedSoundPlayback=true;
 			}
 
         	currentDictionary.renderContentAt(desiredScale,adapter_idx,0,mWebView, lastClickedPos);
@@ -2051,7 +2057,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					for (int i = 0; i*VELESIZE < voyager.length; i+=3) {
 						voyager[i*VELESIZE] = -1;
 					}
-					a.showT("已更新搜索词！");
+					if(!addAll){ //要更新全部哟！
+						bakeCurrentGroup(a, false, TextToSearch);
+						RefreshBookShelf(a);
+						a.showT("已重新搜索全部词典！");
+					} else {
+						a.showT("已更新搜索词！");
+					}
 				}
 				tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 			break;
@@ -2075,9 +2087,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				if(isLongClicked) break;
 				if(fromUser)addAll=!addAll;
 				if(addAll) {
-					m.setTitle(m.getTitle()+" √");
+					m.setTitle(getResources().getString(R.string.show_all_dictionaries)+" √");
 				}else {
-					m.setTitle(m.getTitle().subSequence(0, m.getTitle().length()-2));
+					m.setTitle(R.string.show_all_dictionaries);
 				}
 				if(fromUser){
 					a.opt.setPeruseAddAll(addAll);

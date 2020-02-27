@@ -44,7 +44,7 @@ public class RashMap<T1 extends Comparable<T1>,T2>
 	}
 	
 	@Override
-	public void insert(myCpr<T1,T2> data) {
+	public RBTNode insert(myCpr<T1,T2> data) {
 		//myCpr<T1,T2> data = new myCpr<T1,T2>(key,val);
 		RBTNode<myCpr<T1,T2>> node=new RBTNode<myCpr<T1,T2>>(data,BLACK,null,null,null);
 		int cmp;
@@ -59,7 +59,7 @@ public class RashMap<T1 extends Comparable<T1>,T2>
                 x = x.left;
             else if(cmp > 0)
                 x = x.right;
-            else return;
+            else return x;
         }
         treeSize++;
         node.parent = y;
@@ -78,7 +78,8 @@ public class RashMap<T1 extends Comparable<T1>,T2>
 
         // 3. 将它重新修正为一颗二叉查找树
         insertFixUp(node);
-        
+
+        return node;
 	}
 
 	@Override

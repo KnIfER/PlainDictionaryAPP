@@ -93,6 +93,12 @@ public class CharsetDetector {
         
         return this;
     }
+
+    public CharsetDetector setText(byte [] in, int len) {
+        fRawInput  = in;
+        fRawLength = len;
+        return this;
+    }
     
     private static final int kBufSize = 8000;
 

@@ -15,6 +15,7 @@ import android.widget.ScrollView;
 import androidx.core.view.ViewCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.R;
 
 import java.util.Timer;
@@ -274,6 +275,7 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 		handleThumb.setVisibility(View.VISIBLE);
 	}
 
+	private boolean synced;
 	void setTouchIntercept() {
 		OnTouchListener otl = new OnTouchListener() {
 			@Override
@@ -285,6 +287,8 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 						lastY = e.getRawY();
 						if(opc!=null)
 							opc.OnProgressChanged(-1);
+						synced=false;
+						//scrollee.startNestedScroll(SCROLL_AXIS_VERTICAL);
 					break;
 					case MotionEvent.ACTION_MOVE://xxx
 						float dy = e.getRawY() - lastY;
@@ -299,9 +303,13 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 							if (opc != null)
 								opc.OnProgressChanged(progress);
 							if (scrollee != null) {
-								if (scrollee instanceof ScrollView)
+								if (scrollee instanceof ScrollView) {
 									((ScrollView) scrollee).smoothScrollTo(0, progress);
-								else
+									if(!synced){
+										//((AdvancedNestScrollView) scrollee).SyncNestedScroll(0);
+										synced=true;
+									}
+								}else
 									scrollee.setScrollY(progress);
 							}
 						}
@@ -312,6 +320,11 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 						isDragging =false;
 						if(opc!=null)
 							opc.OnProgressChanged(-2);
+						if(scrollee instanceof AdvancedNestScrollView){
+							//((AdvancedNestScrollView) scrollee).SyncNestedScroll(0-mProgress);
+							//scrollee.stopNestedScroll();
+							CMN.Log("scrollee.stopNestedScroll()");
+						}
 					break;
 					default:
 					break;

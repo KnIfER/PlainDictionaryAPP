@@ -3,21 +3,23 @@ package com.knziha.plod.settings;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 
+import com.knziha.filepicker.settings.FilePickerPreference;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.mdict;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class MainProgram extends SettingsFragment implements Preference.OnPreferenceClickListener {
 	private String localeStamp;
 	private HashMap<String, String> nym;
 	StringBuilder flag_code= new StringBuilder();
-
 
 	//初始化
 	@Override
@@ -174,5 +176,14 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 		//String name = preference.getTitle().toString();
 		//preference.setTitle(name.substring(0, name.indexOf(": ")+2)+Integer.toHexString((int) newValue).toUpperCase());
 		preference.setSummary("0x"+Integer.toHexString((int) newValue).toUpperCase());
+	}
+
+	@Override
+	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		PDICMainAppOptions opt =((SettingsActivity)getActivity()).opt;
+		FilePickerPreference fpp = findPreference("fntlb");
+		fpp.setDefaultValue(opt.getFontLibPath());
+		fpp.properties.opt_dir=new File(opt.pathToDatabases().append("favorite_dirs/").toString());
 	}
 }

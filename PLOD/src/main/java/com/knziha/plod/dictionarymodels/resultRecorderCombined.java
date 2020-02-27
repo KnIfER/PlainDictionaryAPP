@@ -7,6 +7,7 @@ import android.widget.ScrollView;
 
 import com.knziha.plod.PlainDict.BasicAdapter;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
@@ -17,6 +18,8 @@ import java.util.List;
 /** Recorder rendering search results as : LinearLayout {WebView, WebView, ... }  */
 public class resultRecorderCombined extends resultRecorderDiscrete {
 	private List<additiveMyCpr1> data;
+	private View scrollTarget;
+
 	public List<additiveMyCpr1> list(){return data;}
 	private List<mdict> md;
 	
@@ -64,7 +67,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		pvdata.ensureCapacity(data.size()/2);
 		for(int i=0;i<data.size();i+=2) {
 			if(last!=data.get(i))
-				pvdata.add(data.get(i));
+				pvdata.add(last=data.get(i));
 		}
 	}
 
@@ -85,6 +88,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	
 	@Override
 	public void renderContentAt(int pos, final MainActivityUIBase a, BasicAdapter ADA){
+		scrollTarget=null;
 		final ScrollView sv = a.WHP;
 		toHighLight=a.hasCurrentPageKey();
 		if(toHighLight || expectedPos==0)
@@ -145,6 +149,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 					if (HGEIGHT < LHGEIGHT)
 						scrolled = false;
 					LHGEIGHT = HGEIGHT;
+					if(scrollTarget!=null)
+						expectedPos=scrollTarget.getTop();
 					if (!scrolled) {
 						if (HGEIGHT >= expectedPos + sv.getMeasuredHeight()) {
 							sv.scrollTo(0, expectedPos);//smooth
@@ -171,6 +177,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		ArrayList<Integer> valsTmp = new ArrayList<>();
 		valueCount=0;
 		boolean checkReadEntry = a.opt.getAutoReadEntry();
+		boolean bNeedExpand=true;
+		ViewGroup webholder = a.webholder;
 		for(int i=0;i<vals.size();i+=2){
 			valsTmp.clear();
 			int toFind=vals.get(i);
@@ -189,17 +197,13 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			
 			//if(Build.VERSION.SDK_INT>=22)...// because kitkat's webview is not that adaptive for content height
 			mdtmp.initViewsHolder(a);
-			if(checkReadEntry){
-				mdtmp.mWebView.setTag(R.drawable.voice_ic, false);
-				checkReadEntry=false;
-			}
 			ViewGroup rl = mdtmp.rl;
 			WebViewmy mWebView = mdtmp.mWebView;
 			rl.setTag(toFind);
-			int frameAt=a.webholder.getChildCount();
+			int frameAt=webholder.getChildCount();
 			frameAt=valueCount>frameAt?frameAt:valueCount;
 			if(rl.getParent()==null)
-				a.webholder.addView(rl,frameAt);
+				webholder.addView(rl,frameAt);
 			//else
 			//	a.showT("yes: "+mdtmp.getPath());
 			//mdtmp.vll=vll;
@@ -217,9 +221,21 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 
 			mdtmp.renderContentAt(-1,toFind,frameAt,null, d);
-
+			if(!mWebView.awaiting){
+				bNeedExpand=false;
+				if(checkReadEntry){
+					mdtmp.mWebView.bRequestedSoundPlayback=true;
+					checkReadEntry=false;
+				}
+			}
 			mWebView.fromCombined=1;
 			valueCount++;
+		}
+		if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
+			View viewById = webholder.findViewById(R.id.toolbar_title);
+			if (viewById != null) {
+				viewById.performClick();
+			}
 		}
 		a.RecalibrateWebScrollbar(null);
 	};
@@ -240,5 +256,14 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	@Override
 	public void shutUp() {
 		data.clear();
+	}
+
+	public void scrollTo(View _scrollTarget, MainActivityUIBase a) {
+		a.WHP.touchFlag.first=false;
+		scrollTarget=_scrollTarget;
+		LHGEIGHT=a.WHP.getHeight();
+		a.webholder.removeOnLayoutChangeListener(OLCL);
+		a.webholder.addOnLayoutChangeListener(OLCL);
+		scrolled=false;
 	}
 }

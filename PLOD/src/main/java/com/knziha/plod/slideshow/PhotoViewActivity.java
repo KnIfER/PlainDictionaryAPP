@@ -224,7 +224,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 		title.setText("图片");
 		title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 
-		if(PDICMainAppOptions.isLarge) tv.setTextSize(tv.getTextSize());
+		if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
 		init_clickspan(ssb, DictOpt, 1, new View.OnClickListener() {

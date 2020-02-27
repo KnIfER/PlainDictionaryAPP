@@ -138,12 +138,14 @@ import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
+import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_asset;
+import com.knziha.plod.dictionarymodels.mdict_dsl;
 import com.knziha.plod.dictionarymodels.mdict_pdf;
 import com.knziha.plod.dictionarymodels.mdict_txt;
 import com.knziha.plod.dictionarymodels.mdict_web;
@@ -154,6 +156,7 @@ import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.slideshow.MddPic;
 import com.knziha.plod.slideshow.PdfPic;
 import com.knziha.plod.slideshow.PhotoView;
+import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.ArrayAdaptermy;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckedTextViewmy;
@@ -203,6 +206,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -296,6 +300,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BasicAdapter ActivedAdapter;
 	public BaseHandler hdl;
 	public int  CurrentViewPage = 0;
+	public String fontFaces;
 
 	ViewGroup dialogHolder;
 	boolean dismissing_dh;
@@ -324,10 +329,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public PeruseView PeruseView;
 	public ViewGroup bottombar2;
 	public ViewGroup bottombar;
+
 	public ImageView widget7;
+	public ImageView widget8;
+	public ImageView widget9;
 	public ImageView widget10;
 	public ImageView widget11;
 	public ImageView widget12;
+
 	public boolean bWantsSelection;
 	public boolean bIsFirstLaunch=true;
 
@@ -458,6 +467,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	};
 
+	/**
+	 var panel=document.createElement("div");
+	 panel.style="position:absolute;top:0px;left:0px;width:100%;height:100%;background-color:rgba(218,218,218,0.5);z-index:1000;text-align:center;";
+	 panel.class="_PDict";
+	 panel.id="_PDict_info_panel";
+	 var info=document.createElement("p");
+	 info.style="position:relative;top:10px;font-size:28px;color:#FFFFFF;";
+	 info.innerText="无匹配";
+	 panel.noword=!0;
+	 info.noword=!0;
+	 panel.onclick=function(e){document.body.removeChild(e.srcElement)};
+	 panel.appendChild(info);
+	 document.body.appendChild(panel);
+	 */
+	@Multiline()
+	private static final String js_no_match="js_no_match";
+	private boolean bHasDedicatedSeachGroup;
+	private File fontlibs;
+
 	public boolean checkWebSelection() {
 		if(getCurrentFocus() instanceof WebViewmy && opt.getUseBackKeyClearWebViewFocus()){
 			WebViewmy wv = ((WebViewmy)getCurrentFocus());
@@ -519,6 +547,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						md.set(i, currentDictionary = new_mdict(phTmp.getPath(opt), this));
 						currentDictionary.tmpIsFlag = phTmp.tmpIsFlag;
 					} catch (Exception e) {
+						if(GlobalOptions.debug) CMN.Log(e);
 						invalidate = systemIntialized;
 						if (bShowLoadErr)
 							show(R.string.err, phTmp.name, phTmp.pathname, e.getLocalizedMessage());
@@ -957,6 +986,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	protected abstract int getVisibleHeight();
 
+	void setStatusBarColor(int color){
+		Window window = getWindow();
+		window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+				| WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+		window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+
+				| View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+			window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+		if(Build.VERSION.SDK_INT>=21) {
+			//color = ColorUtils.blendARGB(color, Color.BLACK, 0.14f);
+			window.setStatusBarColor(color);
+			if(true){
+				//color = ColorUtils.blendARGB(color, Color.BLACK, 0.14f);
+				window.setNavigationBarColor(color);
+				//window.setNavigationBarColor(0xff2b4381);
+			}
+		}
+	}
+
 	public void fix_dm_color() {
 		CMN.Log("fix_dm_color");
 		boolean isChecked = AppWhite==Color.BLACK;
@@ -1011,6 +1060,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mPopupRunnable = new Runnable() {
 					@Override
 					public void run() {
+						CMN.Log("\nmPopupRunnable run!!!");
 						ViewGroup targetRoot = root;
 						if(PeruseViewAttached())
 							targetRoot = PeruseView.root;
@@ -1035,6 +1085,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							mPopupWebView.setTag(R.id.disallow_scroll, false);
 							mPopupWebView.addJavascriptInterface(popuphandler, "app");
 							mPopupWebView.setBackgroundColor(Color.TRANSPARENT);
+							((AdvancedNestScrollWebView)mPopupWebView).setNestedScrollingEnabled(true);
 							popCover = popupToolbar.findViewById(R.id.cover);
 							popCover.setOnClickListener(MainActivityUIBase.this);
 							popIvBack = popupToolbar.findViewById(R.id.popIvBack);
@@ -1142,6 +1193,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							mdict_web webx = null;
 							boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
 							int SearchMode = PDICMainAppOptions.getClickSearchMode();
+							CMN.Log("SearchMode", SearchMode);
+							boolean bForceJump = false;
 							if (SearchMode == 2) {/* 仅搜索当前词典 */
 								CCD = md_get(CCD_ID);
 								if (CCD != null) {
@@ -1158,52 +1211,75 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										}
 									}
 								}
-							} else {
+							}
+							else {
 								boolean proceed = true;
 								if (SearchMode == 1) {/* 仅搜索指定点译词典 */
-									mdict mdTmp;
-									int CSID;
-									for (int i = 0; i < md.size(); i++) {
-										CSID = (i + CCD_ID) % md.size();
-										ArrayList<PlaceHolder> CosyChair = getLazyCC();
-										if (CSID < CosyChair.size()) {
-											PlaceHolder phTmp = CosyChair.get(CSID);
-											if (phTmp != null) {
-												if (PDICMainAppOptions.getTmpIsClicker(phTmp.tmpIsFlag)) {
-													mdTmp = md.get(CSID);
-													if (mdTmp == null) {
-														try {
-															md.set(CSID, mdTmp = new_mdict(phTmp.getPath(opt), MainActivityUIBase.this));
-															mdTmp.tmpIsFlag = phTmp.tmpIsFlag;
-														} catch (Exception e) {
-														}
-													}
-													if (mdTmp != null) {
-														proceed = false;
-														if (mdTmp instanceof mdict_web) {
-															webx = (mdict_web) mdTmp;
-															if (webx.takeWord(popupKey)) {
-																break;
-															}
-															webx = null;
-														} else {
-															idx = mdTmp.lookUp(popupKey, true);
-															if (idx < -1 && use_morph) {
-																keykey = ReRouteKey(popupKey, true);
-																if (keykey != null)
-																	idx = mdTmp.lookUp(keykey, true);
-															}
-															if (idx >= 0) {
-																CCD_ID = (i + CCD_ID) % md.size();
-																CCD = mdTmp;
-																break;
+									bHasDedicatedSeachGroup=false;
+									mdict firstAttemp = null;
+									FindCSD:
+									while(true) {
+										mdict mdTmp;
+										int CSID;
+										for (int i = 0; i < md.size(); i++) {
+											mdTmp = null;
+											CSID = (i + CCD_ID) % md.size();
+											ArrayList<PlaceHolder> CosyChair = getLazyCC();
+											if (CSID < CosyChair.size()) {
+												PlaceHolder phTmp = CosyChair.get(CSID);
+												if (phTmp != null) {
+													if (PDICMainAppOptions.getTmpIsClicker(phTmp.tmpIsFlag)) {
+														mdTmp = md.get(CSID);
+														if (mdTmp == null) {
+															try {
+																md.set(CSID, mdTmp = new_mdict(phTmp.getPath(opt), MainActivityUIBase.this));
+																mdTmp.tmpIsFlag = phTmp.tmpIsFlag;
+															} catch (Exception e) {
 															}
 														}
 													}
 												}
 											}
+											if (mdTmp != null) {
+												if (!bForceJump && firstAttemp == null)
+													firstAttemp = mdTmp;
+												bHasDedicatedSeachGroup=true;
+												proceed=false;
+												if (mdTmp instanceof mdict_web) {
+													webx = (mdict_web) mdTmp;
+													if (bForceJump || webx.takeWord(popupKey)) {
+														break;
+													}
+													webx = null;
+												} else {
+													idx = mdTmp.lookUp(popupKey, true);
+													if (idx < -1 && use_morph) {
+														keykey = ReRouteKey(popupKey, true);
+														if (keykey != null)
+															idx = mdTmp.lookUp(keykey, true);
+													}
+													if(idx<0 && bForceJump){
+														idx = -1-idx;
+													}
+													if (idx >= 0) {
+														CCD_ID = (i + CCD_ID) % md.size();
+														CCD = mdTmp;
+														break FindCSD;
+													}
+													if(bForceJump){
+														break FindCSD;
+													}
+												}
+											}
+										}
+										if (firstAttemp != null && md.size()>0) {
+											bForceJump=true;
+											firstAttemp=null;
+										} else {
+											break;
 										}
 									}
+
 								}
 								boolean reject_morph = false;
 								if (proceed)/* 未指定点译词典 */
@@ -1260,13 +1336,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							//CMN.Log(CCD, "应用轮询结果", webx, idx);
 
 							if (idx >= 0 && CCD != null) {
+								if(bForceJump && SearchMode==1)
+									popupWebView.setTag(R.id.js_no_match, false);
 								popupHistory.add(++popupHistoryVagranter, new myCpr<>(popupKey, new int[]{CCD_ID, idx}));
 								if (popupHistory.size() > popupHistoryVagranter + 1) {
 									popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
 								}
 								popuphandler.setDict(CCD);
 								if (PDICMainAppOptions.getClickSearchAutoReadEntry())
-									popupWebView.setTag(R.drawable.voice_ic, false);
+									popupWebView.bRequestedSoundPlayback=true;
 								popupWebView.fromCombined = 2;
 								CCD.renderContentAt(-1, CCD_ID, -1, popupWebView, currentClickDictionary_currentPos = idx);
 							}
@@ -1656,7 +1734,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					count += size;
 				}
 			}
-			if(count>0 && count<SpecificationBlockSize) { //正常写入
+			if(count>0 && count<=SpecificationBlockSize) { //正常写入
 				fout.write(source ,0, count);
 				fout.flush();
 				fout.close();
@@ -1677,6 +1755,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			byte[] data = UIProjects.get(fname);
 			if(data!=null){
 				File SpecificationFile = new File(opt.pathToDatabases().append(".spec.bin").toString());
+				if(SpecificationFile.length()==0) return false;
 				int RealOffset=0;
 				for (int k = 0; k < 4; k++)
 					RealOffset |= (data[k]&0xff)<<(k*8);
@@ -1759,10 +1838,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void further_loading(Bundle savedInstanceState) {
 		//stst = System.currentTimeMillis();
 		super.further_loading(savedInstanceState);
-		PDICMainAppOptions.isLarge = (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >=3 ;
+		GlobalOptions.isLarge = (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >=3 ;
 		//CMN.show("isLarge"+isLarge);
 		mdict.def_zoom=dm.density;
-		mdict.optimal100 = PDICMainAppOptions.isLarge ?150:100;
+		mdict.optimal100 = GlobalOptions.isLarge ?150:100;
 		mdict.def_fontsize = opt.getDefaultFontScale(mdict.optimal100);
 
 
@@ -1779,7 +1858,45 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		UIProjects = app.UIProjects;
 		dirtyMap = app.dirtyMap;
 		CMN.rt();
+		File fontlibs = new File(opt.getFontLibPath());
+		if(fontlibs.isDirectory()) {
+			HashMap<String, String> fontNames = app.fontNames;
+			fontlibs.listFiles(new FilenameFilter() {
+				ReusableBufferedInputStream bin = null;
+				@Override public boolean accept(File dir, String fName) {
+					if (!fontNames.containsKey(fName))
+						try {
+							if (fName.regionMatches(true, fName.length() - 4, ".ttf", 0, 4)) {
+								File fI = new File(dir, fName);
+								FileInputStream fin = new FileInputStream(fI);
+								if (bin == null) bin = new ReusableBufferedInputStream(fin, 4096);
+								else bin.reset(fin);
+								String name = BU.parseFontName(bin);
+								if (name != null)
+									fontNames.put(fName, name);
+								//CMN.Log("fontName:", name, System.currentTimeMillis());
+							}
+						} catch (Exception e) {
+							CMN.Log(e);
+						}
+					return false;
+				}
+			});
+			if(fontNames.size()>0){
+				StringBuilder mFontFaces=new StringBuilder(512);
+				for (Map.Entry<String, String> entry : fontNames.entrySet()) {
+					mFontFaces.append("@font-face{")
+							.append("font-family: '").append(entry.getValue()).append("';")
+							.append("src: url('font://").append(entry.getKey()).append("');}");
+				}
+				fontFaces = mFontFaces.toString();
+			}
+			this.fontlibs=fontlibs;
+		}
+
+		pmf.setLength(pmfLen);
 		File SpecificationFile = new File(pmf.append("bmDBs/.spec.bin").toString());
+		CMN.Log(CMN.LastConfigReadTime, SpecificationFile.lastModified());
 		if(SpecificationFile.exists()){ // 读取逐词典配置。
 			if(CMN.LastConfigReadTime<SpecificationFile.lastModified()) {
 				if(!(CMN.bForbidOneSpecFile = SpecificationFile.isDirectory()))
@@ -1861,9 +1978,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} catch (Exception e) {
 					CMN.Log(e);
 				}
+				if (mConfigSize < 50) {
+					SpecificationFile.delete();
+				}
 			}
 		}
-		CMN.pt("单典配置总初始化时间：");
 
 		final File def = getStartupFile();      //!!!原配
 		final boolean retrieve_all=def==null || !def.exists();
@@ -2072,22 +2191,29 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ivBack.setOnClickListener(this);
 
 		widget7=bottombar2.findViewById(R.id.browser_widget7);
-		widget7.setOnClickListener(this);
-		bottombar2.findViewById(R.id.browser_widget7).setOnLongClickListener(this);
-		favoriteBtn = bottombar2.findViewById(R.id.browser_widget8);
-		favoriteBtn.setOnClickListener(this);
-		favoriteBtn.setOnLongClickListener(this);
-		bottombar2.findViewById(R.id.browser_widget9).setOnLongClickListener(this);
-		bottombar2.findViewById(R.id.browser_widget9).setOnClickListener(this);
+		widget8 = favoriteBtn = bottombar2.findViewById(R.id.browser_widget8);
+		widget9 = bottombar2.findViewById(R.id.browser_widget9);
 		widget10=bottombar2.findViewById(R.id.browser_widget10);
+		widget11=bottombar2.findViewById(R.id.browser_widget11);
+		widget12=bottombar2.findViewById(R.id.browser_widget12);
+
+		widget7.setOnClickListener(this);
+		widget7.setOnLongClickListener(this);
+		widget8.setOnClickListener(this);
+		widget8.setOnLongClickListener(this);
+		widget9.setOnLongClickListener(this);
+		widget9.setOnClickListener(this);
 		widget10.setOnClickListener(this);
 		widget10.setOnLongClickListener(this);
-		widget11=bottombar2.findViewById(R.id.browser_widget11);
 		widget11.setOnClickListener(this);
 		widget11.setOnLongClickListener(this);
-		widget12=bottombar2.findViewById(R.id.browser_widget12);
 		widget12.setOnClickListener(this);
 		widget12.setOnLongClickListener(this);
+
+		// 返回列表7 收藏词条8 跳转词典9 上一词条10 下一词条11 发音按钮12
+		// 退离程序 打开侧栏 随机词条 上一词典 下一词典 自动发音 自动浏览 全文朗读 进入收藏 进入历史 调整亮度 定制颜色 定制底栏
+
+
 
 		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
 		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
@@ -2097,7 +2223,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//if(opt.isShowDirectSearch()) ((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action2)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
 		etSearch = findViewById(R.id.etSearch);
-		etSearch.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
 
 		main_succinct = findViewById(R.id.mainframe);
 		main_progress_bar = findViewById(R.id.main_progress_bar);
@@ -2462,16 +2587,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected int actionBarSize;
 	void setContentBow(boolean bContentBow) {
 		//actionBarSize=toolbar.getHeight();
-		FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) contentview.getLayoutParams();
-		if(lp.topMargin==0) {
-			if(bContentBow) {
+		bContentBow=true;
+		ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) contentview.getLayoutParams();
+		if(lp.topMargin!=toolbar.getHeight()) {
+			if(bContentBow&&!PDICMainAppOptions.getEnableSuperImmersiveScrollMode()) {
 				lp.setMargins(0,toolbar.getHeight(), 0, 0);
+				CMN.Log("setContentBow...", toolbar.getHeight());
 				contentview.requestLayout();
 				//if(PhotoPagerHolder!=null) PhotoPagerHolder.setLayoutParams(lp);
 				RecalibrateContentSnacker(bContentBow);
 			}
-		}else {
-			if(!bContentBow) {
+		} else {
+			if(!bContentBow||PDICMainAppOptions.getEnableSuperImmersiveScrollMode()) {
 				lp.setMargins(0,0, 0, 0);
 				contentview.requestLayout();
 				//if(PhotoPagerHolder!=null) PhotoPagerHolder.setLayoutParams(lp);
@@ -2489,15 +2616,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(snack_holder!=null){
 			CMN.Log("RecalibrateContentSnacker");
 			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) snack_holder.getLayoutParams();
-			lp.setMargins(0,(bContentBow?actionBarSize:0)+(MainPageSearchbar==null||MainPageSearchbar.getParent()==null?0:MainPageSearchbar.getHeight()), 0, 0);
+			lp.setMargins(0,((bContentBow&&!PDICMainAppOptions.getEnableSuperImmersiveScrollMode())?actionBarSize:0)+(MainPageSearchbar==null||MainPageSearchbar.getParent()==null?0:MainPageSearchbar.getHeight()), 0, 0);
 			snack_holder.requestLayout();
 		}
 	}
 
-	void refreshContentBow(boolean bContentBow) {
-		if(bContentBow) {
+	void refreshContentBow(boolean bContentBow, int actionBarSize) {
+		if(bContentBow&&!PDICMainAppOptions.getEnableSuperImmersiveScrollMode()) {
 			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) contentview.getLayoutParams();
-			lp.setMargins(0,toolbar.getHeight(), 0, 0);
+			lp.setMargins(0,actionBarSize, 0, 0);
 			contentview.setLayoutParams(lp);
 		}
 	}
@@ -2654,6 +2781,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				new mdict_web(fn, THIS)
 				:fn.endsWith(".txt")?
 				new mdict_txt(fn, THIS)
+				:fn.endsWith(".dsl")?
+				new mdict_dsl(fn, THIS)
 				:new mdict(fn, THIS);
 	}
 
@@ -2680,10 +2809,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			String val = recCom.allWebs?"回车以搜索网络词典！":getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size);
 			showTopSnack(sv, val, fval, -1, -1, false);
 		}
-	}
-
-	ViewGroup getContentviewSnackHolder() {
-		return contentview;
 	}
 
 	public void restoreLv2States() {
@@ -2845,7 +2970,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										mWebView.setBackgroundColor(color);
 								} else {
 									webSingleholder.setBackgroundColor(color);
-									if (mWebView != null)
+									if (Build.VERSION.SDK_INT<21 && mWebView != null)
 										mWebView.setBackgroundColor(color);
 								}
 							}
@@ -2870,7 +2995,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 									WHP.setBackgroundColor(ManFt_GlobalPageBackground);
 									if(bFromPeruseView)PeruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
-									if(apply && mWebView!=null)
+									if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
 										mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
 								}
 							}
@@ -3980,7 +4105,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		title.setText("程序设定");//"词典设定"
 		title.setTextColor(AppBlack);
 
-		if(PDICMainAppOptions.isLarge) tv.setTextSize(tv.getTextSize());
+		if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
 
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
@@ -4038,7 +4163,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		title.setText("语音设定等");//"词典设定"
 		title.setTextColor(AppBlack);
 
-		if(PDICMainAppOptions.isLarge) tv.setTextSize(tv.getTextSize());
+		if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
 
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
@@ -4208,7 +4333,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					popuphandler.setDict(CCD);
 					if(PDICMainAppOptions.getClickSearchAutoReadEntry())
-						popupWebView.setTag(R.drawable.voice_ic, false);
+						popupWebView.bRequestedSoundPlayback=true;
 					popupWebView.fromCombined=2;
 					CCD.renderContentAt(-1, CCD_ID, -1, popupWebView, currentClickDictionary_currentPos=np);
 					decorateContentviewByKey(popupStar, currentClickDisplaying, R.drawable.star_ic_solid_framed, R.drawable.star_ic_grey);
@@ -4221,9 +4346,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				int idx=-1, cc=0;
 				String key=popupTextView.getText().toString().trim();
 				if(key.length()>0) {
+					ArrayList<PlaceHolder> ph = getLazyCC();
 					String keykey;
 					int OldCCD=CCD_ID;
 					boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
+					int SearchMode = PDICMainAppOptions.getClickSearchMode();
+					boolean hasDedicatedSeachGroup = SearchMode==1&&bHasDedicatedSeachGroup;
 					boolean reject_morph = false;
 					//轮询开始
 					while(true){
@@ -4234,10 +4362,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(CCD_ID<0)CCD_ID+=md.size();
 						}
 						CCD_ID=CCD_ID%md.size();
+
+						if(hasDedicatedSeachGroup && CCD_ID<ph.size() && !PDICMainAppOptions.getTmpIsClicker(ph.get(CCD_ID).tmpIsFlag))
+							continue;
 						CCD=md_get(CCD_ID);
 						cc++;
-						if(!PDICMainAppOptions.getSkipClickSearch())
-							break;
 						if(cc>md.size())
 							break;
 						if(CCD instanceof mdict_web){
@@ -4246,7 +4375,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								webx.searchKey=key;
 								idx=0;
 							}
-						} else if (CCD!=null) {
+						}
+						else if (CCD!=null) {
 							idx=CCD.lookUp(key, true);
 							if(idx<0){
 								if(!reject_morph&&use_morph){
@@ -4258,9 +4388,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								}
 							}
 						}
-						if(idx>=0)
+
+						if(idx>=0 || hasDedicatedSeachGroup && CCD!=null ||  !PDICMainAppOptions.getSkipClickSearch())
 							break;
 					}
+
 					//应用轮询结果
 					if(OldCCD!=CCD_ID && CCD!=null){
 						if(PDICMainAppOptions.getSwichClickSearchDictOnNav()){
@@ -4268,6 +4400,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						popupIndicator.setText(CCD._Dictionary_fName);
 
+						if(idx<0 && hasDedicatedSeachGroup){
+							idx = -1-idx;
+							popupWebView.setTag(R.id.js_no_match, false);
+						}
 						if (idx >= 0) {
 							popupHistory.add(++popupHistoryVagranter,new myCpr<>(currentClickDisplaying,new int[]{CCD_ID, idx}));
 							if (popupHistory.size() > popupHistoryVagranter + 1) {
@@ -4275,7 +4411,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 							popuphandler.setDict(CCD);
 							if(PDICMainAppOptions.getClickSearchAutoReadEntry())
-								popupWebView.setTag(R.drawable.voice_ic, false);
+								popupWebView.bRequestedSoundPlayback=true;
 							popupWebView.fromCombined=2;
 							CCD.renderContentAt(-1, CCD_ID, -1, popupWebView, currentClickDictionary_currentPos=idx);
 						}
@@ -4481,7 +4617,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					v.performLongClick();
 					break;
 				}
-				if(WHP.getChildCount()!=0) {
+				if(webholder.getChildCount()!=0) {
 					imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 					final CharSequence[] items = new CharSequence[webholder.getChildCount()];//Build.VERSION.SDK_INT>=22
 					int c=0;
@@ -4507,7 +4643,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					builder.setTitle("跳转");
 					builder.setSingleChoiceItems(items, 0,
 							(dialog, pos) -> {
-								WHP.smoothScrollTo(0, webholder.getChildAt(pos).getTop());
+								View childAt = webholder.getChildAt(pos);
+								scrollToWebChild(childAt);
+								recCom.scrollTo(childAt, MainActivityUIBase.this);
 								d.dismiss();
 							}).setOnDismissListener(dialog -> {
 						for(int idxTmp=md.size()-1;idxTmp>=0;idxTmp--) {
@@ -4576,24 +4714,67 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//上下导航
 			case R.id.browser_widget13:
 			case R.id.browser_widget14:{
-				boolean is_14=id==R.id.browser_widget14;
-				final int currentHeight=((ScrollView)webholder.getParent()).getScrollY();
-				int totalHeight=0;
-				for(int i=0;i<webholder.getChildCount();i++) {
-					totalHeight+=webholder.getChildAt(i).getHeight();
-					if(totalHeight+(is_14?1:0)>currentHeight) {
-						if(is_14)
-							totalHeight-=webholder.getChildAt(i).getHeight();
+				boolean nxt = id == R.id.browser_widget14;
+				final int currentHeight=WHP.getScrollY();
+				int cc=webholder.getChildCount();
+				int childAtIdx=cc;
+				int top;
+				for(int i=0;i<cc;i++) {
+					top = webholder.getChildAt(i).getTop();
+					if(top>=currentHeight){
+						childAtIdx=i;
+						if(top!=currentHeight && !nxt) --childAtIdx;
 						break;
 					}
 				}
-
-				//((ScrollView)webholder.getParent()).setScrollY(totalHeight);
-				((ScrollView)webholder.getParent()).smoothScrollTo(0, totalHeight);
-				//CMN.show(""+is_14);
+				childAtIdx+=nxt?-1:1;
+				if(childAtIdx>=cc){
+					scrollToPagePosition(webholder.getChildAt(cc-1).getBottom());
+				} else {
+					scrollToWebChild(webholder.getChildAt(childAtIdx));
+				}
 			} break;
 		}
 		v.setTag(R.id.click_handled, false);
+	}
+
+	private void scrollToWebChild(View childAt) {
+		if(childAt!=null) {
+			View postTarget = null;
+			int delay = 100;
+			if(PDICMainAppOptions.getScrollAutoExpand())
+			try {
+				mdict mdTmp = md.get((int) childAt.getTag());
+				if (mdTmp != null && mdTmp.mWebView.getVisibility() != View.VISIBLE) {
+					postTarget = mdTmp.mWebView;
+					mdTmp.toolbar_title.performClick();
+					if (mdTmp.mWebView.awaiting)
+						delay = 350;
+				}
+			} catch (Exception ignored) { }
+			if (postTarget != null) {
+				postTarget.postDelayed(() -> {
+					scrollToPageTop(childAt);
+				}, delay);
+			} else {
+				scrollToPageTop(childAt);
+			}
+		}
+	}
+
+	private void scrollToPageTop(View childAt) {
+		if(PDICMainAppOptions.getScrollAnimation())
+			WHP.smoothScrollTo(0, childAt.getTop());
+		else
+			WHP.scrollTo(0, childAt.getTop());
+	}
+
+	private void scrollToPagePosition(int offset) {
+		if(PDICMainAppOptions.getScrollAnimation())
+			WHP.smoothScrollTo(0, offset);
+		else
+			WHP.scrollTo(0, offset);
+
 	}
 
 	void GoBackOrForward(ViewGroup webviewHolder, int delta) {
@@ -4803,7 +4984,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 			for (int i = 0; i < cc; i++) {
-				webholder.getChildAt(i).findViewById(R.id.webviewmy).setVisibility(targetVis);
+				View childAt = webholder.getChildAt(i);
+				View targetView = childAt.findViewById(R.id.webviewmy);
+				if(targetVis==View.GONE)
+					targetView.setVisibility(targetVis);
+				else if(targetView.getVisibility()!=View.VISIBLE){
+					childAt.findViewById(R.id.toolbar_title).performClick();
+				}
 			}
 		}
 	}
@@ -5420,7 +5607,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 
-
 		@Override
 		public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
 			//CMN.Log(fileChooserParams.getAcceptTypes());
@@ -5470,9 +5656,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public WebViewClient myWebClient = new WebViewClient() {
 		public void onPageFinished(WebView view, String url) {
-			//CMN.Log("chromium page finished ==> ", url, view.getProgress(), CMN.stst_add);
-			//CMN.pt("chromium page finished ==> ");
 			WebViewmy mWebView = (WebViewmy) view;
+			//CMN.Log("chromium page finished ==> ", url, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
 			int from = mWebView.fromCombined;
 			mWebView.isloading = false;
 			if((view.getTag(R.id.loading)==null) && from!=4) return;
@@ -5588,17 +5773,36 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					jumpNaughtyFirstHighlight(mWebView);
 				}
 			}
+			else if(mWebView.getTag(R.id.js_no_match)!=null){
+				mWebView.evaluateJavascript(js_no_match, null);
+				mWebView.setTag(R.id.js_no_match, null);
+			}
 			/* 自动播放声音 */
-			if(mWebView.getTag(R.drawable.voice_ic)!=null){
+			if(mWebView.bRequestedSoundPlayback){
+				mWebView.bRequestedSoundPlayback=false;
 				if(mWebView==popupWebView)
 					widget12.setTag(R.drawable.ic_click_search, false);
-				mWebView.setTag(R.drawable.voice_ic, null);
-				if(opt.getAutoReadEntry())
-					postReadEntry();
+				postReadEntry();
 			}
 			if(mWebView.getTag(R.id.clearHistory)!=null && from!=4){
 				mWebView.setTag(R.id.clearHistory, null);
 				mWebView.clearHistory();
+			}
+			/* 延迟加载 */
+			if(from==1 && PDICMainAppOptions.getDelaySecondPageLoading() && !PDICMainAppOptions.getOnlyExpandTopPage()){
+				int next = mWebView.frameAt+1;
+ 				if(next < webholder.getChildCount()){
+					View childAt;
+					try {
+						while ((childAt=webholder.getChildAt(next++))!=null) {
+							mdict invoker = md.get((int) childAt.getTag());
+							if(!PDICMainAppOptions.getTmpIsCollapsed(invoker.tmpIsFlag) && invoker.mWebView.awaiting){
+								invoker.toolbar_title.performClick();
+								break;
+							}
+						}
+					} catch (Exception ignored) {  }
+				}
 			}
 		}
 
@@ -5840,7 +6044,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						if(url.endsWith("/")) url=url.substring(0, url.length()-1);
 						/* 查询跳转目标 */
-						int idx = invoker.lookUp(invoker.processMyText(URLDecoder.decode(url, "UTF-8")), true);
+						int idx = invoker.lookUp(URLDecoder.decode(url, "UTF-8"), true);
 						//CMN.Log("查询跳转目标 : ", idx, URLDecoder.decode(url,"UTF-8"), processText(URLDecoder.decode(url,"UTF-8")));
 						if (idx >= 0) {//idx != -1
 							if(!fromPopup) {
@@ -6119,6 +6323,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return null;
 			}
 
+			if(url.startsWith("font://") && fontlibs!=null){
+				url=url.substring(7);
+				try {
+					return new WebResourceResponse("font/*", "UTF-8", new FileInputStream(new File(fontlibs, url)));
+				} catch (Exception ignored) {  }
+				return null;
+			}
 			//CMN.Log("chrochro_inter_0",url);
 
 			if(url.startsWith(soundTag)) {
@@ -6424,7 +6635,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	/**  进化的路线充满了崎岖与坎坷，但我仍要致君尧舜上，登辉煌、临绝巅。 */
 	private void ReadEntryPlanB_internal(String url) {
-		String msg = "找不到音频 "+url;
+		String msg = "找不到音频";
 		if(opt.getUseTTSToReadEntry()){
 			ReadText(url, null);
 			msg = opt.getHintTTSReading()?("正在使用 TTS"):null;

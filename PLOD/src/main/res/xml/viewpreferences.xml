@@ -97,6 +97,48 @@
 	</PreferenceCategory>
 
 	<PreferenceCategory
+		android:key="cat_1"
+		android:title="多页面设置（联合搜索）"
+		app:icon="@drawable/ic_view_carousel_black_24dp"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="turbo_top"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="延迟页面加载，加快显示首项。"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="expand_ao"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="保证至少有一项展开"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="expand_top"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="仅展开第一项"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="scranima"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="滚动切换时使用动画"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="scrautex"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="滚动切换时自动展开"
+			app:allowDividerBelow="true"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
 		android:key="cat_prog"
 		android:title="Toast 设置"
 		app:icon="@drawable/ic_view_carousel_black_24dp"

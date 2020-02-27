@@ -17,33 +17,11 @@
 
 package com.knziha.plod.dictionary;
 
-import androidx.annotation.NonNull;
-
-import com.knziha.plod.dictionary.Utils.BSI;
-import com.knziha.plod.dictionary.Utils.BU;
-import com.knziha.plod.dictionary.Utils.F1ag;
-import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionary.Utils.key_info_struct;
-import com.knziha.plod.dictionary.Utils.myCpr;
-import com.knziha.plod.dictionary.Utils.record_info_struct;
+import com.knziha.plod.dictionary.Utils.*;
 import com.knziha.rbtree.RBTree;
+import org.anarres.lzo.*;
 
-import org.anarres.lzo.LzoAlgorithm;
-import org.anarres.lzo.LzoDecompressor;
-import org.anarres.lzo.LzoDecompressor1x;
-import org.anarres.lzo.LzoInputStream;
-import org.anarres.lzo.LzoLibrary;
-import org.anarres.lzo.lzo_uintp;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -56,7 +34,7 @@ import java.util.zip.InflaterOutputStream;
 
 import static com.knziha.plod.dictionary.Utils.BU.calcChecksum;
 
-abstract class mdBase {
+public abstract class mdBase {
 	//TODO Standardize
 	/** 标准究竟是怎样的呢？ 添加@_，俩符号会在词块trailer和header中出现，不参与排序。暂时禁用了isCompat标志 */
 	public final static Pattern replaceReg = Pattern.compile("[ @_=&:$/.,\\-'()\\[\\]#<>!\\n]");
@@ -164,6 +142,14 @@ abstract class mdBase {
 		_header_tag= (HashMap<String, String>) master._header_tag.clone();
 		_header_tag.remove("hasSlavery");
 		init(data_in);
+	}
+
+	public void Reload() {
+		try {
+			_num_record_blocks=0;
+			if(StreamAvailable())
+				init(getStreamAt(0));
+		} catch (IOException e) { SU.Log(e); }
 	}
 
 	protected boolean StreamAvailable() {
@@ -519,21 +505,11 @@ abstract class mdBase {
 		else
 			return sf.getLong();
 	}
-	long _read_number(DataInputStream  sf) {
+	long _read_number(DataInputStream  sf) throws IOException {
 		if(_number_width==4)
-			try {
-				return sf.readInt();
-			} catch (IOException e) {
-				e.printStackTrace();
-				return 0;
-			}
+			return sf.readInt();
 		else
-			try {
-				return sf.readLong();
-			} catch (IOException e) {
-				e.printStackTrace();
-				return 0;
-			}
+			return sf.readLong();
 	}
 
 	public static byte[] zlib_decompress(byte[] encdata,int offset) {
@@ -818,7 +794,7 @@ abstract class mdBase {
 					key_end_index,
 					keyCounter = 0;
 
-			while(key_start_index < BlockLen){
+			while(key_start_index < BlockLen && keyCounter<infoI.num_entries){// 莫须有小于
 				long key_id = _version<2 ?BU.toInt(key_block, BlockOff+key_start_index)
 							:BU.toLong(key_block, BlockOff+key_start_index);
 
@@ -911,8 +887,17 @@ abstract class mdBase {
 		}
 		return true;
 	}
-	static boolean compareByteArrayIsPara(byte[] A,int offA,byte[] B){
+	public static boolean compareByteArrayIsPara(byte[] A,int offA,byte[] B){
 		if(offA+B.length>A.length)
+			return false;
+		for(int i=0;i<B.length;i++){
+			if(A[offA+i]!=B[i])
+				return false;
+		}
+		return true;
+	}
+	public static boolean compareByteArrayIsPara(byte[] A,int offA,int sizeA, byte[] B){
+		if(offA+B.length>sizeA)
 			return false;
 		for(int i=0;i<B.length;i++){
 			if(A[offA+i]!=B[i])
@@ -1012,7 +997,6 @@ abstract class mdBase {
 		}
 	}
 
-	@NonNull
 	@Override
 	public String toString() {
 		return super.toString()+"::"+f.getName();

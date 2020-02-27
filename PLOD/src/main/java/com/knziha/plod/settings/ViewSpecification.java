@@ -44,6 +44,11 @@ public class ViewSpecification extends SettingsFragment implements Preference.On
 		init_switch_preference(this, "hint_mod", PDICMainAppOptions.getHintSearchMode(), null, null);
 		init_switch_preference(this, "hint_res", PDICMainAppOptions.getNotifyComboRes(), null, null);
 		init_switch_preference(this, "simple", PDICMainAppOptions.getSimpleMode(), null, null);
+		init_switch_preference(this, "expand_ao", PDICMainAppOptions.getEnsureAtLeatOneExpandedPage(), null, null);
+		init_switch_preference(this, "expand_top", PDICMainAppOptions.getOnlyExpandTopPage(), null, null);
+		init_switch_preference(this, "scranima", PDICMainAppOptions.getScrollAnimation(), null, null);
+		init_switch_preference(this, "scrautex", PDICMainAppOptions.getScrollAutoExpand(), null, null);
+		init_switch_preference(this, "turbo_top", PDICMainAppOptions.getDelaySecondPageLoading(), null, null);
 		init_switch_preference(this, "1toast", PDICMainAppOptions.getRebuildToast(), null, null);
 		init_switch_preference(this, "rtoast", PDICMainAppOptions.getToastRoundedCorner(), null, null);
 
@@ -105,6 +110,21 @@ public class ViewSpecification extends SettingsFragment implements Preference.On
 			break;
 			case "simple":
 				PDICMainAppOptions.setSimpleMode((Boolean) newValue);
+			break;
+			case "expand_ao":
+				PDICMainAppOptions.setEnsureAtLeatOneExpandedPage((Boolean) newValue);
+			break;
+			case "expand_top":
+				PDICMainAppOptions.setOnlyExpandTopPage((Boolean) newValue);
+			break;
+			case "scranima":
+				PDICMainAppOptions.setScrollAnimation((Boolean) newValue);
+			break;
+			case "scrautex":
+				PDICMainAppOptions.setScrollAutoExpand((Boolean) newValue);
+			break;
+			case "turbo_top":
+				PDICMainAppOptions.setDelaySecondPageLoading((Boolean) newValue);
 			break;
 			case "1toast":
 				PDICMainAppOptions.setRebuildToast((Boolean) newValue);

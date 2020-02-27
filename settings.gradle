@@ -3,8 +3,6 @@
 
 include ':recyclerViewFastScroller'
 
-include ':drag_sort_lib'
-
 include ':twowaygridview'
 
 include ':PLOD'

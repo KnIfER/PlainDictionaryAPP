@@ -28,8 +28,9 @@ public class AgentApplication extends Application {
 	/** transient */
 	public HashMap<String,mdict> mdict_cache = new HashMap<>();
 	/** per-dictionary configurations */
-	public LinkedHashMap<String,byte[]> UIProjects = new LinkedHashMap<>();
+	public HashMap<String,byte[]> UIProjects = new HashMap<>();
 	public HashSet<String> dirtyMap = new HashSet<>();
+	public HashMap<String,String> fontNames = new HashMap<>();
 	public PDICMainAppOptions opt;
 	public HashSet<String> mdlibsCon;
 	/** 控制所有实例只扫描一遍收藏夹 */

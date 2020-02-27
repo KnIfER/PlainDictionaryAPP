@@ -3,6 +3,7 @@ package com.knziha.ankislicer.customviews;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
 
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 
 public class wahahaTextView extends TextView  implements MenuItem.OnMenuItemClickListener{
@@ -107,5 +109,15 @@ public class wahahaTextView extends TextView  implements MenuItem.OnMenuItemClic
 				super.onGetContentRect(mode, view, outRect);
 			//CMN.Log("onGetContentRect", (view==wahahaTextView.this));
 		}
+	}
+
+	@Override
+	public TextPaint getPaint() {
+		if(PDICMainAppOptions.getHackDisableMagnifier()){
+			TextPaint tp = new TextPaint();
+			tp.setTextSize(1000);
+			return tp;
+		}
+		return super.getPaint();
 	}
 }

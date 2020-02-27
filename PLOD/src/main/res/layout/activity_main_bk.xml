@@ -1,0 +1,278 @@
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:CheckableImageview="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/root"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:fitsSystemWindows="true"
+	android:paddingTop="0dp"
+	>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
+		android:fitsSystemWindows="true"
+		>
+		<androidx.appcompat.widget.Toolbar
+			android:id="@+id/toolbar"
+			android:layout_width="match_parent"
+			android:layout_height="?attr/actionBarSize"
+			android:minHeight="?attr/actionBarSize"
+			android:theme="@style/toolbarBaseTheme"
+			app:contentInsetLeft="0dp"
+			app:contentInsetStart="0dp"
+			app:contentInsetStartWithNavigation="0dp"
+			android:background="?attr/colorPrimary"
+			>
+
+			<FrameLayout android:id="@+id/rlSearchFrameDelete"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				>
+				<com.knziha.plod.widgets.EditTextmy
+					android:id="@+id/etSearch"
+					android:layout_width="fill_parent"
+					android:layout_height="match_parent"
+					android:textColor="#ffffff"
+					android:singleLine="true"
+					android:paddingStart="4dp"
+					android:paddingEnd="53dp"
+					android:imeOptions="actionSearch"
+					android:background="@drawable/abc_edit_text_material"
+					/>
+
+
+				<LinearLayout
+					android:layout_width="wrap_content"
+					android:layout_height="match_parent"
+					android:layout_gravity="end"
+					>
+					<ImageView
+						android:id="@+id/ivBack"
+						android:layout_width="wrap_content"
+						android:layout_height="match_parent"
+						android:src="@drawable/search_toolbar"
+						android:paddingStart="4dp"
+						android:paddingEnd="10dp"
+						android:visibility="visible"
+						/>
+
+					<ImageView
+						android:id="@+id/ivDeleteText"
+						android:layout_width="wrap_content"
+						android:layout_height="match_parent"
+						android:src="@drawable/close_toobar"
+						android:paddingEnd="8dp"
+						android:visibility="gone"/>
+				</LinearLayout>
+
+			</FrameLayout>
+		</androidx.appcompat.widget.Toolbar>
+		<androidx.drawerlayout.widget.DrawerLayout
+			android:id="@+id/drawer_layout"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			>
+
+			<FrameLayout
+				android:id="@+id/mainframe"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				>
+
+				<LinearLayout
+					android:id="@+id/main"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:fitsSystemWindows="true"
+					android:orientation="vertical">
+
+					<com.knziha.plod.widgets.NoScrollViewPager
+						android:id="@+id/viewpager"
+						android:layout_width="wrap_content"
+						android:layout_height="0dp"
+						android:layout_weight="1"
+						android:background="#ffffff"
+						/>
+
+
+					<LinearLayout
+						android:id="@+id/bottombar"
+						android:layout_width="match_parent"
+						android:layout_height="48dip"
+						android:gravity="center_vertical|fill_horizontal"
+						android:orientation="horizontal"
+						android:background="?attr/colorPrimary"
+						>
+
+						<android.widget.ImageView
+							android:id="@+id/browser_widget1"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:background="@drawable/surrtrip1"
+							android:src="@drawable/songlist" />
+
+						<android.widget.ImageView
+							android:id="@+id/browser_widget2"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:background="@drawable/surrtrip1"
+							android:src="@drawable/bundle" />
+
+						<android.widget.ImageView
+							android:id="@+id/browser_widget3"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:background="@drawable/surrtrip1"
+							android:src="@drawable/fuzzy_search" />
+
+						<android.widget.ImageView
+							android:id="@+id/browser_widget4"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:background="@drawable/surrtrip1"
+							android:src="@drawable/full_search" />
+
+						<android.widget.ImageView
+							android:id="@+id/browser_widget5"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:background="@drawable/surrtrip1"
+							android:src="@drawable/favoriteg" />
+
+						<android.widget.ImageView
+							android:id="@+id/browser_widget6"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:background="@drawable/surrtrip1"
+							android:src="@drawable/historyg" />
+					</LinearLayout>
+
+				</LinearLayout>
+
+				<android.widget.ImageView
+					android:id="@+id/browser_widget0"
+					android:visibility="gone"
+					android:layout_width="50dp"
+					android:layout_height="32dp"
+					android:layout_gravity="bottom|center"
+					android:background="@drawable/perusetoggle"
+					android:src="@drawable/peruse_ic"
+					android:layout_marginBottom="48dip"
+					/>
+			</FrameLayout>
+
+			<fragment
+				android:id="@+id/navigation_drawer"
+				android:name="com.knziha.plod.PlainDict.Drawer"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:layout_gravity="start"
+				/>
+
+		</androidx.drawerlayout.widget.DrawerLayout>
+	</LinearLayout>
+
+	<include
+		android:visibility="gone"
+		layout="@layout/contentview"
+		/>
+
+	<FrameLayout
+		android:id="@+id/snack_holder"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:fitsSystemWindows="true"
+		/>
+
+	<FrameLayout
+		android:id="@+id/mainF"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:fitsSystemWindows="true"
+		/>
+
+	<ProgressBar
+		android:id="@+id/main_progress_bar"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center_vertical|center_horizontal"
+		android:visibility="gone"/>
+
+	<RelativeLayout
+		android:id="@+id/dialogHolder"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
+		android:gravity="top"
+		android:background="#00303050"
+		android:visibility="gone"
+		android:layoutDirection="ltr"
+		android:elevation="6dp"
+		>
+
+		<ImageView
+			android:id="@+id/cb1"
+			android:layout_width="28dp"
+			android:layout_height="28dp"
+			android:layout_alignParentEnd="true"
+			android:layout_alignTop="@+id/dialog_"
+			android:background="@drawable/popup_background4"
+			android:layout_marginTop="10dp"
+			android:layout_marginEnd="3dp"
+			android:src="@drawable/search_toolbar"
+			android:padding="5dp"
+			/>
+
+
+		<com.knziha.plod.widgets.CheckableImageView
+			android:id="@+id/cb3"
+			android:layout_width="28dp"
+			android:layout_height="28dp"
+			android:layout_below="@+id/cb1"
+			android:layout_alignParentEnd="true"
+			android:background="@drawable/popup_background5"
+			android:layout_marginTop="2dp"
+			android:layout_marginEnd="3dp"
+			android:src="@drawable/sel_auto_search"
+			CheckableImageview:CheckedTint="@color/ShallowHeaderBlue"
+			android:padding="5dp"
+			/>
+
+		<com.knziha.plod.widgets.CheckableImageView
+			android:id="@+id/cb2"
+			android:layout_width="28dp"
+			android:layout_height="28dp"
+			android:layout_below="@+id/cb3"
+			android:layout_alignParentEnd="true"
+			android:background="@drawable/popup_background6"
+			android:layout_marginTop="2dp"
+			android:layout_marginEnd="3dp"
+			android:src="@drawable/sel_pin_vc"
+			android:padding="5dp"
+			/>
+
+		<LinearLayout
+			android:layout_gravity="center"
+			android:id="@+id/dialog_"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:background="@drawable/popup_background3"
+			android:layout_marginLeft="@dimen/diagMarginHor"
+			android:layout_marginRight="@dimen/diagMarginHor"
+			android:layout_marginTop="43dp"
+			android:layout_marginBottom="@dimen/diagMarginVer"
+			android:layout_centerVertical="true"
+			android:minHeight="110dp"
+			/>
+	</RelativeLayout>
+</FrameLayout>

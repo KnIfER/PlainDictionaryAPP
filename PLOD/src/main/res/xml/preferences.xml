@@ -96,6 +96,17 @@
 			app:allowDividerBelow="true"
 			/>
 
+		<com.knziha.filepicker.settings.FilePickerPreference
+			android:defaultValue="@null"
+			android:key="fntlb"
+			android:persistent="true"
+			android:title="音标字体路径"
+			app:selection_type="dir_select"
+			app:selection_mode="single_mode"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:persistent="false"
 			android:defaultValue="true"

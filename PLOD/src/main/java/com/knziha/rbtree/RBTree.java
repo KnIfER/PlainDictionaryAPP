@@ -553,7 +553,7 @@ public class RBTree<T extends Comparable<T>> {
      * 参数说明：
      *     node 插入的结点        // 对应《算法导论》中的node
      */
-    private void insert(RBTNode<T> node) {
+    private RBTNode<T> insert(RBTNode<T> node) {
         int cmp;
         RBTNode<T> y = null;
         RBTNode<T> x = this.mRoot;
@@ -566,7 +566,7 @@ public class RBTree<T extends Comparable<T>> {
                 x = x.left;
             else if(cmp > 0)
                 x = x.right;
-            else return;
+            else return x;
         }
 
         node.parent = y;
@@ -585,6 +585,8 @@ public class RBTree<T extends Comparable<T>> {
 
         // 3. 将它重新修正为一颗二叉查找树
         insertFixUp(node);
+
+        return node;
     }
 
     /*
@@ -593,12 +595,9 @@ public class RBTree<T extends Comparable<T>> {
      * 参数说明：
      *     key 插入结点的键值
      */
-    public void insert(T key) {
+    public RBTNode<T> insert(T key) {
         RBTNode<T> node=new RBTNode<T>(key,BLACK,null,null,null);
-
-        // 如果新建结点失败，则返回。
-        if (node != null)
-            insert(node);
+		return insert(node);
     }
 
 

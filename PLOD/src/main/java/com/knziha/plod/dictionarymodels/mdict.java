@@ -37,6 +37,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
+import androidx.core.view.NestedScrollingChildHelper;
 
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.filepicker.utils.FU;
@@ -55,6 +56,7 @@ import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdictRes;
+import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
@@ -76,6 +78,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -179,7 +182,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	 				return false;
 	 			}
 	 		}
-			if(curr!=document.documentElement  && e.srcElement.nodeName!='INPUT' && w.rcsp&0x20){
+	 		console.log('popuping...');
+	 		console.log(curr);
+			if(curr!=document.documentElement && curr.nodeName!='INPUT' && w.rcsp&0x20 && !curr.noword){
 				var s = w.getSelection();
 				if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
 					s.modify('extend', 'forward', 'word'); // first attempt
@@ -400,14 +405,14 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			document.body.appendChild(script);
 		}
 	 </script>*/
-	@Multiline(trim = false)
+	@Multiline()
 	public final static String js="SUBPAGE";
 
 	/**
 	 	<script class="_PDict">
 			window.addEventListener('click',wrappedClickFunc);
 			function wrappedClickFunc(e){
-				if(e.srcElement!=document.documentElement && e.srcElement.nodeName!='INPUT'){
+				if(e.srcElement!=document.documentElement && e.srcElement.nodeName!='INPUT' && !curr.noword){
 					var s = window.getSelection();
 					if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
 						s.modify('extend', 'forward', 'word'); // first attempt
@@ -460,7 +465,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
     public ViewGroup rl;
 
 	public Drawable cover;
-	
+
 	public static float def_zoom=1;
 	public static int def_fontsize = 100;
 	public static int optimal100;
@@ -554,7 +559,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 	public int bmCBI=0,bmCCI=-1;
     public Integer bgColor=null;
-    
+
 	protected final static String htmlBase="<!DOCTYPE html><html><meta name='viewport' content='initial-scale=1,user-scalable=yes' class=\"_PDict\"><head><style class=\"_PDict\">html,body{width:auto;height:auto;}img{max-width:100%;}mark{background:yellow;}mark.current{background:orange;border:0px solid #FF0000}";
 	public final static String htmlHeadEndTag = "</head>";
 	public final static String htmlEnd="</html>";
@@ -604,14 +609,14 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		htmlBaseLen=htmlBuilder.length();
 
         readInConfigs();
-        
+
     	if(bgColor==null)
     		bgColor=CMN.GlobalPageBackground;
 	}
 
 
 	public String pngPath;
-	
+
 	protected boolean viewsHolderReady =  false;
 	public TextView toolbar_title;
 	View ic_undo;
@@ -625,21 +630,23 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public void initViewsHolder(final MainActivityUIBase a){
 		if(!viewsHolderReady) {
 			rl=(ViewGroup)a.getLayoutInflater().inflate(R.layout.contentview_item,null);
-			
+
 	        if(mWebView==null){
 	        	webScale = def_zoom;
-	           	mWebView = rl.findViewById(R.id.webviewmy);
+	           	AdvancedNestScrollWebView _mWebView = rl.findViewById(R.id.webviewmy);
+				_mWebView.setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 	           	if(initArgs!=null && initArgs.length==2){
-					mWebView.expectedPosX=initArgs[0];
-					mWebView.expectedPos=initArgs[1];
+					_mWebView.expectedPosX=initArgs[0];
+					_mWebView.expectedPos=initArgs[1];
 				}
 	            a.initWebScrollChanged();//Strategy: use one webscroll listener
 				if(!(this instanceof mdict_pdf))
-	            	mWebView.setOnSrollChangedListener(a.onWebScrollChanged);
-	            //mWebView.setPadding(0, 0, 18, 0);
+					_mWebView.setOnSrollChangedListener(a.onWebScrollChanged);
+	            //_mWebView.setPadding(0, 0, 18, 0);
 				mWebBridge = new AppHandler(this);
-				mWebView.addJavascriptInterface(mWebBridge, "app");
-	            //mWebView.setOnTouchListener(a);
+				_mWebView.addJavascriptInterface(mWebBridge, "app");
+				mWebView = _mWebView;
+	            //_mWebView.setOnTouchListener(a);
 	        }
 			ic_undo=rl.findViewById(R.id.undo);
 			ic_save=rl.findViewById(R.id.save);
@@ -666,7 +673,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			ic_redo.setOnClickListener(clicker);
 			setIcSaveLongClickListener(ic_save);
 			setWebLongClickListener(mWebView, a);
-	        
+
 			toolbar = rl.findViewById(R.id.lltoolbar);
 			toolbar_title = toolbar.findViewById(R.id.toolbar_title);
 			toolbar_cover = toolbar.findViewById(R.id.cover);
@@ -687,7 +694,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 					}//((View)rl.getParent()).getId()==R.id.webholder
 					else if(rl.getParent()==a.webholder) mWebView.setVisibility(View.GONE);
 					else toolbar_cover.performClick();
-					
+
 					mWebView.post(new Runnable() {
 						@Override
 						public void run() {
@@ -1298,7 +1305,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	StringBuilder title_builder;
 	/** Current Page Historian */
 	public SparseArray<ScrollerRecord> HistoryOOP = new SparseArray<>();
-	
+
     @SuppressLint("JavascriptInterface")
 	public void setCurrentDis(WebViewmy mWebView, int idx, int... flag) {
 		if(flag==null || flag.length==0) {//书签跳转等等
@@ -1325,6 +1332,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 	//todo frameAt=-1
     public void renderContentAt(float initialScale, int SelfIdx, int frameAt, WebViewmy mWebView, int... position){
+    	//CMN.Log("renderContentAt!!!...");
     	isJumping=false;
     	boolean resposibleForThisWeb = false;
     	if(mWebView==null) {
@@ -1346,7 +1354,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			mWebView.currentPos=position[0];
 			mWebView.currentRendring=position;
 			mWebView.frameAt = frameAt;
-			if(resposibleForThisWeb && fromCombined && PDICMainAppOptions.getTmpIsCollapsed(tmpIsFlag)){/* 自动折叠 */
+			mWebView.awaiting = false;
+			if(resposibleForThisWeb && fromCombined && (PDICMainAppOptions.getTmpIsCollapsed(tmpIsFlag) || frameAt>0&&(PDICMainAppOptions.getDelaySecondPageLoading()||PDICMainAppOptions.getOnlyExpandTopPage()))){/* 自动折叠 */
 				mWebView.awaiting = true;
 				mWebView.setVisibility(View.GONE);
 				setCurrentDis(mWebView, mWebView.currentPos);
@@ -1372,9 +1381,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	    	setCurrentDis(mWebView, position[0]);
 			if(fromCombined) {
 				if(rl.getLayoutParams()!=null) {
-					rl.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+					rl.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
 				}
-				mWebView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+				mWebView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
 			}
 			else {
 				if(mIsolateImages=getIsolateImages()){
@@ -1401,15 +1410,26 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			int globalPageBackground = a.GlobalPageBackground;
 			if (getUseInternalBG()) {
 				myWebColor = bgColor;
-				if (GlobalOptions.isDark)
-					myWebColor = ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
-				if(mWebView.fromCombined==1){// 背景转移至全局
-					globalPageBackground = myWebColor;
-					myWebColor = Color.TRANSPARENT;
-				}
+				//if(mWebView.fromCombined==1){// 背景转移至全局
+				//	globalPageBackground = myWebColor;
+				//	myWebColor = Color.TRANSPARENT;
+				//}
+			} else if(Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT){
+				myWebColor = globalPageBackground;
 			}
+			if (myWebColor!=0 && GlobalOptions.isDark)
+				myWebColor = ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
 			a.guaranteeBackground(globalPageBackground);
 			mWebView.setBackgroundColor(myWebColor);
+			ViewGroup mToolbar=null;
+			if(resposibleForThisWeb)
+				mToolbar = toolbar;
+			else if(a.PeruseViewAttached()&&mWebView==a.PeruseView.mWebView)
+				mToolbar = a.PeruseView.toolbar;
+			if(mToolbar!=null) {
+				myWebColor = ColorUtils.blendARGB(myWebColor, Color.BLACK, 0.28f);
+				mToolbar.setBackgroundColor(myWebColor);
+			}
 		}
 
     	//mWebView.setVisibility(View.VISIBLE);
@@ -1500,6 +1520,16 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 	}
 
+	/**
+	 @font-face
+	 {
+		 font-family: 'Kingsoft Phonetic Plain';
+		 src: url('android_asset/fonts/myfontmyfont.ttf');
+	 }
+	 */
+	@Multiline
+	final static String cssfont = "sss";
+
 	/** Let's call and call and call and call!!! */
 	public void AddPlodStructure(WebViewmy mWebView, StringBuilder htmlBuilder, boolean fromPopup, boolean mIsolateImages) {
     	//CMN.Log("MakeRCSP(opt)??", MakeRCSP(opt),MakeRCSP(opt)>>5);
@@ -1507,6 +1537,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		if (fromPopup) {
 			htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;
 			htmlBuilder.append("body{ margin-top:0px; margin-bottom:").append(30).append("px }");
+		}
+		if (a.fontFaces!=null) {
+			if(!styleOpened) htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;
+			htmlBuilder.append(a.fontFaces);
 		}
 		if(mIsolateImages) {
 			if(!styleOpened){ htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;}
@@ -1549,7 +1583,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				opt.FetIsDark()
 				;
 	}
-	
+
 	public void PlayWithToolbar(boolean hideDictToolbar,Context a) {
 		if(mWebView==null) return;
 		View sp = (View) mWebView.getParent().getParent();
@@ -1687,7 +1721,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	}
 
 	public boolean hasCover() {
-		return true;
+		return cover!=null;
 	}
 
 	@Override
@@ -1753,10 +1787,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict
         public void log(String val) {
         	CMN.Log(val);
         }
-        
+
         float scale;
         DisplayMetrics dm;
-        
+
         public AppHandler(mdict _mdx) {
 			mdx=_mdx;
             scale = mdx.a.getResources().getDisplayMetrics().density;
@@ -1786,20 +1820,20 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			return mdx.a.getCurrentPageKey();
 		}
 
-        @JavascriptInterface 
+        @JavascriptInterface
         public int getDeviceHeight(){
 			mdx.a.getWindowManager().getDefaultDisplay().getMetrics(dm);
     		//return (int) (1.0f*dm.heightPixels/ scale + 0.5f);
     		return (int) (dm.heightPixels/scale*1.5);
     		//return (int) (dm.heightPixels);
         }
-        @JavascriptInterface 
+        @JavascriptInterface
         public float getDeviceRatio(){
     		DisplayMetrics dm = new DisplayMetrics();
 			mdx.a.getWindowManager().getDefaultDisplay().getMetrics(dm);
     		return 1.0f*dm.heightPixels/dm.widthPixels;
         }
-        
+
         @JavascriptInterface
         public void showTo(int val) {
         	if(true) return;
@@ -1878,6 +1912,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		public void setTTS() {
 			mdx.a.root.post(() -> mdx.a.showTTS());
 		}
+
+		@JavascriptInterface
+		public void snack(String val) {
+			mdx.a.root.post(() -> mdx.a.showContentSnack(val));
+		}
 	}
 
 	public boolean renameFileTo(Context c, File newF) {
@@ -1935,7 +1974,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			_Dictionary_fName_Internal = "."+_Dictionary_fName;
 		}
 		new File(opt.pathToDatabases().append(_Dictionary_fName_InternalOld).toString()).renameTo(new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).toString()));
-		
+
 		if(a.currentDictionary==this)
 			a.setLastMdFn(_Dictionary_fName);
 		return ret;
@@ -2109,7 +2148,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		AgentApplication app = ((AgentApplication) a.getApplication());
 		app.UIProjects.put(f.getName(), oldData);
 	}
-	
+
 	public int getFontSize() {
 		if(getUseInternalFS())
 			return internalScaleLevel>0?internalScaleLevel:(internalScaleLevel=def_fontsize);
@@ -2153,7 +2192,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				lvPos = data_in1.readInt();
 				lvClickPos = data_in1.readInt();
 				lvPosOff = data_in1.readInt();
-				//CMN.Log(_Dictionary_fName+"列表位置",lvPos,lvClickPos,lvPosOff);
+				//CMN.Log(_Dictionary_fName,"列表位置",lvPos,lvClickPos,lvPosOff);
 				if(data_in1.available()>0) {
 					initArgs = new int[]{data_in1.readInt(), data_in1.readInt()};
 					webScale = data_in1.readFloat();
@@ -2163,10 +2202,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				}
 				data_in1.close();
 			}
-			//CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
-			//CMN.pt(_Dictionary_fName+"单典配置加载耗时");
+			//CMN.pt(_Dictionary_fName+" 单典配置加载耗时");
 		} catch (Exception e) {
-			e.printStackTrace();
+			CMN.Log(e);
 		} finally{
 			FFStamp = firstFlag;
 			if(data_in1!=null) data_in1.close();
@@ -2193,7 +2231,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				//mWebView.setLayoutParams(mWebView.getLayoutParams());
 			}
 		}
-		
+
 		if(vll!=null)
 			vll.onLayoutDone(val);
 	}
@@ -2218,8 +2256,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		TextView title = dv.findViewById(R.id.title);
 		title.setText(R.string.dictOpt1);//词典设定
 		title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
-		
-		if(PDICMainAppOptions.isLarge) tv.setTextSize(tv.getTextSize());
+
+		if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
 		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 5, 1,1,md);//背景
@@ -2301,6 +2339,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			switch(processId){
 				case 1:
 					if (getUseInternalBG()) {
+						if(PDICMainAppOptions.getInheritGlobleWebcolorBeforeSwichingToInternal())
+							bgColor = a.GlobalPageBackground;
 						if (!(a.isCombinedViewAvtive() && getIsolateImages()))
 							mWebView.setBackgroundColor(bgColor);
 					} else if (!(a.isCombinedViewAvtive() && getIsolateImages()))
@@ -2366,10 +2406,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 					setIsolateImages(true);
 				return true;
 			}
-			if(line.startsWith("/")){
-				ftd.add(line);
-				return true;
-			}
 		}
 		return false;
 	}
@@ -2390,6 +2426,36 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				if(FU.move3(a, f, mnp)>=0)
 					md.Rebase(mnp);
 			}
+		}
+	}
+
+	@Override
+	public void Reload() {
+		super.Reload();
+		if(mWebView!=null) {
+			mWebView.setTag(null);
+			mWebView.loadUrl("about:blank");
+			mWebView.clearCache(false);
+			try {
+				Field f_mKeyedTags = View.class.getDeclaredField("mKeyedTags");
+				f_mKeyedTags.setAccessible(true);
+				SparseArray tags = (SparseArray) f_mKeyedTags.get(mWebView);
+				tags.clear();
+			} catch (Exception e) { CMN.Log(e); }
+			if(a.currentDictionary==this){
+				a.adaptermy.notifyDataSetChanged();
+				if(a.ActivedAdapter==a.adaptermy) {
+					mWebView.awaiting = true;
+					mWebView.setVisibility(View.GONE);
+					toolbar_title.performClick();
+				}
+			}
+		}
+	}
+
+	public void setNestedScrollingEnabled(boolean enabled) {
+		if(mWebView!=null){
+			((AdvancedNestScrollWebView)mWebView).setNestedScrollingEnabled(enabled);
 		}
 	}
 }

@@ -218,6 +218,29 @@ public class RBTree_additive {
             return x;
     }
 
+    /*
+     * (递归实现)查找"红黑树x"中键值为key的节点
+     */
+    private RBTNode<additiveMyCpr1> searchByString(RBTNode<additiveMyCpr1> x, String key) {
+        if (x==null)
+            return x;
+
+        int cmp = key.compareToIgnoreCase(x.key.key);
+        if (cmp < 0)
+            return searchByString(x.left, key);
+        else if (cmp > 0)
+            return searchByString(x.right, key);
+        else
+            return x;
+    }
+
+    /*
+     * (递归实现)查找"红黑树x"中键值为key的节点
+     */
+	public RBTNode<additiveMyCpr1> searchByString(String key) {
+		return searchByString(mRoot, key);
+    }
+
     public RBTNode<additiveMyCpr1> search(additiveMyCpr1 key) {
         return search(mRoot, key);
     }
@@ -540,7 +563,7 @@ public class RBTree_additive {
 			}
     	});
     }
-    public void insert(String key,int...val) {
+    public void insert(String key,Object...val) {
         int cmp;
         //key=key.toLowerCase().replaceAll(replaceReg,emptyStr);
         RBTNode<additiveMyCpr1> y = null;
@@ -557,13 +580,13 @@ public class RBTree_additive {
             else if(cmp > 0)
                 x = x.right;
             else{//key 相等，value数组叠加
-        		for(int i:val) ((ArrayList<Integer>) x.key.value).add(i);
+        		for(Object i:val) ((ArrayList) x.key.value).add(i);
             	return;//here
             }
         }
 
-        additiveMyCpr1 node_key = new additiveMyCpr1(key,new ArrayList<Integer>());
-        for(int i:val) ((ArrayList<Integer>) node_key.value).add(i);//here
+        additiveMyCpr1 node_key = new additiveMyCpr1(key,new ArrayList());
+        for(Object i:val) ((ArrayList) node_key.value).add(i);//here
         RBTNode<additiveMyCpr1> node = new RBTNode<additiveMyCpr1>(node_key,BLACK,null,null,null);
 
         // 如果新建结点失败，则返回。

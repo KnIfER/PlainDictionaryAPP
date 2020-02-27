@@ -49,10 +49,6 @@
 		<item name="android:windowIsTranslucent">true</item>
 	</style>
 
-	<style name="AppTheme0" parent="AppTheme.Base">
-		<item name="colorAccent">@color/colorHeaderBlue</item>
-	</style>
-
 
 	<style name="MyEditText2" parent="Theme.AppCompat.Light">
 		<item name="colorControlNormal">@android:color/transparent</item>
@@ -80,8 +76,8 @@
 	</style>
 
 	<style name="SettingAppTheme" parent="AppThemeRaw">
-		<item name="colorPrimary">@color/colorHeaderBlue</item>
 		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="colorPrimary">@color/colorHeaderBlue</item>
 		<item name="colorAccent">@color/colorHeaderBlue</item>
 	</style>
 
@@ -92,14 +88,6 @@
 	<style name="AppTheme.DrawerArrowToggle" parent="Base.Widget.AppCompat.DrawerArrowToggle">
 		<item name="color">@android:color/white</item>
 	</style>
-
-
-	<style name="toolbarTheme2" parent="AppTheme">
-		<item name="android:textColorSecondary">@android:color/white</item>
-		<item name="android:textColorPrimary">@android:color/white</item>
-		<item name="android:background">@color/colorHeaderBlue</item>
-	</style>
-
 
 
 	<style name="ToolBar">
@@ -225,7 +213,6 @@
 
 	<style name="toolbarBaseTheme_dark" parent="AppTheme">
 		<item name="android:textColorSecondary">@android:color/white</item>
-		<item name="colorAccent">@color/colorHeaderBlue</item>
 		<item name="actionOverflowMenuStyle">@style/OverflowMenuStyle_dark</item>
 		<item name="android:actionButtonStyle">@style/ActionButtonStyle</item>
 		<item name="android:minWidth">0dip</item>
@@ -234,11 +221,9 @@
 
 	<style name="toolbarTheme" parent="toolbarBaseTheme">
 		<item name="android:textColorSecondary">@android:color/white</item>
-		<item name="colorAccent">@color/colorHeaderBlue</item>
 		<!--item name="android:popupBackground">@android:color/white</item-->
 	</style>
 	<style name="popuptoolbarTheme" parent="toolbarTheme">
-		<item name="colorAccent">@color/colorHeaderBlue</item>
 		<item name="android:minHeight">0dip</item>
 		<item name="android:actionButtonStyle">@style/ActionButtonStyle</item>
 	</style>
@@ -254,6 +239,7 @@
 		<item name="overlapAnchor">true</item>
 		<item name="android:dropDownVerticalOffset">0dip</item>
 		<item name="android:dropDownHorizontalOffset">15dip</item>
+<!--		<item name="android:popupBackground">@drawable/popup_shadow</item>-->
 		<item name="android:popupBackground">@drawable/popup_shadow</item>
 	</style>
 

@@ -32,6 +32,13 @@
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
+			android:key="https://github.com/tobiasrohloff/NestedScrollWebView"
+			android:summary="Apache License 2.0"
+			android:title="tobiasrohloff/NestedScrollWebView"/>
+
+		<com.knziha.plod.settings.URLPreference
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
 			android:key="https://github.com/benelog/multiline"
 			android:summary="Public domain"
 			android:title="benelog/multiline"/>

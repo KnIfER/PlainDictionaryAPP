@@ -1,5 +1,6 @@
 package com.knziha.plod.widgets;
 
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 
 import android.content.Context;
@@ -8,6 +9,8 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
+
+import androidx.core.view.ViewCompat;
 
 public class ScrollViewmy extends ScrollView {// for mute it's scroll
 	public SamsungLikeScrollBar scrollbar2guard;
@@ -57,12 +60,18 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
 			} break;
 		}
 		return super.onTouchEvent(ev);
-    }    
+    }
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
     	if(touchFlag!=null) touchFlag.first=true;
 		switch (ev.getAction()) {
 			case MotionEvent.ACTION_DOWN:{
+				CMN.Log("!!!ACTION_DOWN");
+				if(this instanceof AdvancedNestScrollView){
+					AdvancedNestScrollView sv = ((AdvancedNestScrollView) this);
+					sv.mLastMotionY = (int) ev.getY();
+					sv.startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
+				}
 				if(scrollbar2guard!=null && !scrollbar2guard.isHidden()){
 					scrollbar2guard.isWebHeld=true;
 					scrollbar2guard.cancelFadeOut();
@@ -90,5 +99,8 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
 	@Override
 	protected int computeScrollDeltaToGetChildRectOnScreen(Rect rect) {
 		return 0;
+	}
+
+	public void scrollTo(int bottom) {
 	}
 }

@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
@@ -268,7 +269,7 @@ public class SelectableTextView extends TextView implements View.OnClickListener
         handleRight=getResources().getDrawable(R.drawable.abc_text_select_handle_right_mtrl_dark);
         setOnClickListener(this);
         setOnLongClickListener(this);
-        if(PDICMainAppOptions.isLarge){
+        if(GlobalOptions.isLarge){
             drawableScale=1.5f;
         }
         handleLeft.setAlpha(200);
@@ -284,7 +285,7 @@ public class SelectableTextView extends TextView implements View.OnClickListener
         if(textCover2!=null) textCover2.tv = this;
         if(textCover2!=null) textCover2.sv = sv;
         textCover.magH = (int) (getLineHeight()*3.f/2);
-        textCover.magW = (int) (83*getResources().getDisplayMetrics().density*(PDICMainAppOptions.isLarge?2:1));
+        textCover.magW = (int) (83*getResources().getDisplayMetrics().density*(GlobalOptions.isLarge?2:1));
         sv.tv2guard = this;
     }
 

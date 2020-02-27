@@ -241,7 +241,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 				}
 
 				if(a.opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(mdtmp.tmpIsFlag)){
-					mdtmp.mWebView.setTag(R.drawable.voice_ic, false);
+					mdtmp.mWebView.bRequestedSoundPlayback=true;
 				}
 				mdtmp.renderContentAt(desiredScale,Rgn,0,null, (int)(long) _combining_search_tree[ti].get(pos-idxCount));
 				mdtmp.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;

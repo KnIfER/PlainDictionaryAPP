@@ -328,7 +328,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
 					final TextView tv = ((TextView)dv.findViewById(R.id.resultN));
 					TextView title = ((TextView)dv.findViewById(R.id.title));
 					title.setText("词典信息");
-					if(a.opt.isLarge) tv.setTextSize(tv.getTextSize());
+					if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
 					tv.setTextIsSelectable(true);
 					//404
 

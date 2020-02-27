@@ -16,6 +16,7 @@ import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.jcodings.specific.GB18030Encoding;
 import org.joni.Option;
 import org.joni.Regex;
 
@@ -54,6 +55,26 @@ public class mdict_txt extends mdict {
 		int breakIndex=-1;
 		int blockSize;
 		byte[] data = new byte[mBlockSize];
+		public void findBreakIndex(){
+			if(blockIndex==0)
+				breakIndex=0;
+			else {
+				int lastIndex=0;
+				while((lastIndex=mdict.indexOf(data, 0, blockSize, lineBreakText, 0, lineBreakText.length, lastIndex))>=0){
+					if(true)
+						break;
+				}
+				if(lastIndex==-1){
+					int idx = 0;
+					if(encoding!=null)
+						while(encoding.length(data, idx, blockSize)<0){
+							idx++;
+						}
+					lastIndex=idx;
+				}
+				breakIndex = lastIndex;
+			}
+		}
 		@NonNull
 		@Override
 		public String toString() {
@@ -105,47 +126,46 @@ public class mdict_txt extends mdict {
 			}
 		}
 		int centerBlock = position;
-		FileInputStream fin = new FileInputStream(f);
+		FileInputStream fin = null;
 		TextBlock tmpBlock;
-		int toSkip;
+		int toSkip = mBlockSize * centerBlock;
 		textScope[0] = block_cache.get(centerBlock);
 		if(textScope[0]==null){
 			tmpBlock = new TextBlock();
 			tmpBlock.blockIndex = centerBlock;
-			toSkip = mBlockSize *tmpBlock.blockIndex;
-			if(toSkip>0)
-				fin.skip(toSkip);
+			fin = new FileInputStream(f);
+			BU.SafeSkipReam(fin, toSkip);
+			toSkip=0;
 			tmpBlock.blockSize=fin.read(tmpBlock.data);
+			tmpBlock.findBreakIndex();
 			textScope[0]=tmpBlock;
 		}
+		if(textScope[0].breakIndex==-1)
+			textScope[0].findBreakIndex();
 
 		textScope[1] = block_cache.get(centerBlock+1);
 		if(textScope[1]==null && centerBlock+1<_num_entries){
 			tmpBlock = new TextBlock();
 			tmpBlock.blockIndex = centerBlock+1;
-			toSkip = mBlockSize - textScope[0].blockSize;
-			if(toSkip>0)
-				fin.skip(toSkip);
+			if(fin==null) {
+				toSkip += textScope[0].blockSize;
+				fin = new FileInputStream(f);
+			}
+			BU.SafeSkipReam(fin, toSkip);
 			tmpBlock.blockSize=fin.read(tmpBlock.data);
+			tmpBlock.findBreakIndex();
 			textScope[1]=tmpBlock;
 		}
+		if(fin!=null) fin.close();
 
 		ReusableByteOutputStream bos = new ReusableByteOutputStream(mBlockSize *2);
 		bos.reset();
 		tmpBlock = textScope[0];
 		if(tmpBlock!=null){
-			if(tmpBlock.blockIndex==0)
-				tmpBlock.breakIndex=0;
-			if(tmpBlock.breakIndex==-1)
-				tmpBlock.breakIndex=mdict.indexOf(tmpBlock.data, 0, tmpBlock.blockSize, lineBreakText, 0, lineBreakText.length, 0);
-			if(tmpBlock.breakIndex==-1)
-				tmpBlock.breakIndex=0;
 			bos.write(tmpBlock.data, tmpBlock.breakIndex, tmpBlock.blockSize-tmpBlock.breakIndex);
 		}
 		tmpBlock = textScope[1];
 		if(tmpBlock!=null){
-			if(tmpBlock.breakIndex==-1)
-				tmpBlock.breakIndex=mdict.indexOf(tmpBlock.data, 0, tmpBlock.blockSize, lineBreakText, 0, lineBreakText.length, 0);
 			if(tmpBlock.breakIndex>0)
 				bos.write(tmpBlock.data, 0, tmpBlock.breakIndex);
 		}
@@ -177,7 +197,6 @@ public class mdict_txt extends mdict {
 
 		justifyInternal("."+_Dictionary_fName);
 
-		mBlockSize = 1*block_size;
 
 		htmlBuilder=new StringBuilder(htmlBase);
 		htmlBuilder.append(js);
@@ -185,28 +204,51 @@ public class mdict_txt extends mdict {
 
 		readInConfigs();
 
-		//chatsetDec cd = new chatsetDec();
-		//Toast.makeText(this,cd.guessFileEncoding(subscript_file),Toast.LENGTH_SHORT).show();
-		//charset = isPlayingAsset?"utf8":cd.guessFileEncoding(subscript_file).split(",")[0];
-		//if(charset.startsWith("windows"))
-		//    charset = "UTF-16LE";
-
-		block_cache = new LinkastReUsageHashMap<>(mCacheItemCount);
-
 		FileInputStream fis = new FileInputStream(f);
 		TextBlock tmpBlock=new TextBlock();
 		tmpBlock.blockSize = fis.read(tmpBlock.data);
 
-		block_cache.put(0, tmpBlock);
-
 		CharsetDetector detector = new CharsetDetector();
-		detector.setText(tmpBlock.data);
+		detector.setText(tmpBlock.data, tmpBlock.blockSize);
 		CharsetMatch match = detector.detect();
 		String charset = "utf8";
 		if(match!=null && match.getConfidence()>=75)
 			charset = match.getName();
-		//CMN.Log("检测结果：", charset);
+
+		CMN.Log("检测结果：", charset, match.getConfidence());
 		_charset = Charset.forName(charset);
+
+		float factor=1;
+		byte[] PatternA = "·".getBytes(_charset);
+		byte[] PatternB = "-".getBytes(_charset);
+		BU.printBytes3(PatternA);
+		BU.printBytes3(PatternB);
+		BU.printBytes(tmpBlock.data,0,10);
+		int seekStart=0;
+		if(compareByteArrayIsPara(tmpBlock.data, seekStart, PatternA) || compareByteArrayIsPara(tmpBlock.data, seekStart+=2, PatternA)){
+			seekStart+=PatternA.length;
+			float fmod = 0;
+			while(compareByteArrayIsPara(tmpBlock.data, seekStart, PatternB)){
+				seekStart+=PatternB.length;
+				fmod+=0.25;
+			}
+			if(fmod>0 && fmod<=20 && compareByteArrayIsPara(tmpBlock.data, seekStart, PatternA)){
+				factor = fmod;
+				CMN.Log("修改块大小：", factor);
+			}
+		}
+
+		mBlockSize = (int) (factor*block_size);
+		mCacheItemCount = 1024*1024/mBlockSize;
+		block_cache = new LinkastReUsageHashMap<>(mCacheItemCount);
+
+		if(mBlockSize==block_size){
+			tmpBlock.blockIndex = 0;
+			block_cache.put(0, tmpBlock);
+		}
+
+
+		bakeJoniEncoding();
 		lineBreakText = "\n".getBytes(_charset);
 		file_length = f.length();
 		_num_record_blocks=
@@ -214,7 +256,6 @@ public class mdict_txt extends mdict {
 		if(bgColor==null)
 			bgColor=CMN.GlobalPageBackground;
 
-		mCacheItemCount = DefaultCacheItemCount;
 	}
 
 	@Override
@@ -389,7 +430,7 @@ public class mdict_txt extends mdict {
 						{
 							InputStream data_in = mOpenInputStream();
 							long seekTarget=it*step* mBlockSize;
-							data_in.skip(seekTarget);
+							BU.SafeSkipReam(data_in, seekTarget);
 							int jiaX=0;
 							if(it==split_recs_thread_number-1) jiaX=yuShu;
 							TextBlock lastBlock=null;
@@ -410,10 +451,7 @@ public class mdict_txt extends mdict {
 									tmpBlockA.blockSize=data_in.read(tmpBlockA.data);
 									if(tmpBlockA.blockSize>0) {
 										seekTarget += tmpBlockA.blockSize;
-										if (tmpBlockA.blockIndex == 0) tmpBlockA.breakIndex = 0;
-										if (tmpBlockA.breakIndex == -1)
-											tmpBlockA.breakIndex = mdict.indexOf(tmpBlockA.data, 0, tmpBlockA.blockSize, lineBreakText, 0, lineBreakText.length, 0);
-										if (tmpBlockA.breakIndex == -1) tmpBlockA.breakIndex = 0;
+										tmpBlockA.findBreakIndex();
 									}
 								}
 								bos.write(tmpBlockA.data, tmpBlockA.breakIndex, tmpBlockA.blockSize-tmpBlockA.breakIndex);
@@ -424,9 +462,7 @@ public class mdict_txt extends mdict {
 									tmpBlockB.blockSize=data_in.read(tmpBlockB.data);
 									if(tmpBlockB.blockSize>0) {
 										seekTarget += tmpBlockB.blockSize;
-										if (tmpBlockB.breakIndex == -1)
-											tmpBlockB.breakIndex = mdict.indexOf(tmpBlockB.data, 0, tmpBlockB.blockSize, lineBreakText, 0, lineBreakText.length, 0);
-										if (tmpBlockA.breakIndex == -1) tmpBlockA.breakIndex = 0;
+										tmpBlockB.findBreakIndex();
 										if (tmpBlockB.breakIndex > 0)
 											bos.write(tmpBlockB.data, 0, tmpBlockB.breakIndex);
 										lastBlock = tmpBlockB;

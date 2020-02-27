@@ -1,15 +1,21 @@
 package com.knziha.plod.dictionarymodels;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import com.knziha.filepicker.utils.FU;
+import com.knziha.plod.PlainDict.AgentApplication;
 import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.widgets.WebViewmy;
 
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,7 +30,7 @@ import java.util.List;
  author:KnIfER
 */
 public class mdict_transient implements mdict_manageable {
-	public final PlaceHolder mPhI;
+	public PlaceHolder mPhI;
 	protected File f;
 	public String _Dictionary_fName_Internal;
 	PDICMainAppOptions opt;
@@ -32,18 +38,42 @@ public class mdict_transient implements mdict_manageable {
 	long FFStamp;
 	long firstFlag;
 	List<mdictRes_prempter> mdd;
+	boolean keepOrgHolder=true;
+
+	public void Rebase(File f){
+		CMN.Log("MT0Rebase!!!");
+		if(keepOrgHolder){
+			PlaceHolder phI = new PlaceHolder();
+			phI.lineNumber = mPhI.lineNumber;
+			phI.name = mPhI.name;
+			phI.tmpIsFlag = mPhI.tmpIsFlag;
+			mPhI=phI;
+			keepOrgHolder=false;
+		}
+		String line = f.getPath();
+		int start = line.lastIndexOf("/");
+		if(start<0) start=0; else start++;
+		int end = line.length();
+		int tmpIdx = line.length()-4;
+		if(tmpIdx>0
+				&& line.charAt(tmpIdx)=='.' && line.regionMatches(true, tmpIdx+1, "mdx" ,0, 3)){
+			end -= 4;
+		}
+		mPhI.pathname = line;
+		mPhI.name = line.substring(start, end);
+	}
 
 	//构造
-	public mdict_transient(Context a, String fn, PDICMainAppOptions opt_) {
+	public mdict_transient(Activity a, String fn, PDICMainAppOptions opt_) {
 		this(a, fn, opt_, 0);
 	}
 
-	public mdict_transient(Context a,String fn, PDICMainAppOptions opt_, int isF) {
+	public mdict_transient(Activity a,String fn, PDICMainAppOptions opt_, int isF) {
 		this(a, new PlaceHolder(fn), opt_);
 		mPhI.tmpIsFlag=TIFStamp=isF;
 	}
 
-	public mdict_transient(Context a,PlaceHolder phI, PDICMainAppOptions opt_) {
+	public mdict_transient(Activity a,PlaceHolder phI, PDICMainAppOptions opt_) {
 		opt=opt_;
 		mPhI = phI;
 		String fn = mPhI.getPath(opt);
@@ -54,7 +84,7 @@ public class mdict_transient implements mdict_manageable {
 		justifyInternal(a, "."+mPhI.name);
 		
 		try {
-			readInConfigs();
+			readInConfigs(((AgentApplication)a.getApplication()).UIProjects);
 		} catch (IOException ignored) { }
 		TIFStamp=mPhI.tmpIsFlag;
 	}
@@ -69,34 +99,47 @@ public class mdict_transient implements mdict_manageable {
 		}
 	}
 	
-	protected void readInConfigs() throws IOException {
+	protected void readInConfigs(HashMap<String,byte[]> UIProjects) throws IOException {
 		DataInputStream data_in1 = null;
 		try {
 			File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
 			if(SpecificationFile.exists()) {
 				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
-				data_in1 = new DataInputStream(new FileInputStream(SpecificationFile));
-				int size = data_in1.readShort();
-				if(size!=12) {
-					data_in1.close();
+				if(CMN.bForbidOneSpecFile  && SpecificationFile.exists()){
+					data_in1 = new DataInputStream(new FileInputStream(SpecificationFile));
+				} else {
 					SpecificationFile.delete();
-					return;
-				}
-				byte _firstFlag = data_in1.readByte();
-				if(_firstFlag!=0){
-					firstFlag |= _firstFlag;
-				}
-				//readinoptions
-				//a.showT("getUseInternalBG():"+getUseInternalBG()+" getUseInternalFS():"+getUseInternalFS()+" KeycaseStrategy:"+KeycaseStrategy);
-				if(data_in1.available()>4) {
-					if(data_in1.skipBytes(32)==32 && data_in1.available()>0) {
-						//CMN.Log("摄政傀儡");
-						firstFlag |= data_in1.readLong();
+					File parentFile = SpecificationFile.getParentFile();
+					if(ArrayUtils.isEmpty(parentFile.list()))
+						parentFile.delete();
+					byte[] data = UIProjects.get(f.getName());
+					if(data!=null){
+						int extra = MainActivityUIBase.ConfigExtra;
+						data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
 					}
 				}
-				//CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
-				data_in1.close();
-				//CMN.Log(_Dictionary_fName+"单典配置加载耗时",System.currentTimeMillis()-time);
+				if(data_in1!=null) {
+					int size = data_in1.readShort();
+					if (CMN.bForbidOneSpecFile && size != 12) {
+						data_in1.close();
+						SpecificationFile.delete();
+						return;
+					}
+					byte _firstFlag = data_in1.readByte();
+					if (_firstFlag != 0) {
+						firstFlag |= _firstFlag;
+					}
+					//readinoptions
+					//a.showT("getUseInternalBG():"+getUseInternalBG()+" getUseInternalFS():"+getUseInternalFS()+" KeycaseStrategy:"+KeycaseStrategy);
+					if (data_in1.available() > 4) {
+						if (data_in1.skipBytes(32) == 32 && data_in1.available() > 0) {
+							CMN.Log("摄政傀儡");
+							firstFlag |= data_in1.readLong();
+						}
+					}
+					//CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
+					//CMN.Log(_Dictionary_fName+"单典配置加载耗时",System.currentTimeMillis()-time);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -111,8 +154,7 @@ public class mdict_transient implements mdict_manageable {
 		if(FU.rename5(c, f, to)>=0) {
 			f = to;
 			String filename = to.getName();
-			mPhI.pathname = to.getPath();
-			mPhI.name = filename;
+			Rebase(to);
 			int tmpIdx = filename.length()-4;
 			if(tmpIdx>0){
 				if(filename.charAt(tmpIdx)=='.' && filename.regionMatches(true, tmpIdx+1, "md" ,0, 2)){

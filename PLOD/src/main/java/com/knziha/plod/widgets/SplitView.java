@@ -393,17 +393,19 @@ public class SplitView extends LinearLayout implements OnTouchListener {
         newHeight = Math.max(0, newHeight);
         // bottom handler always visible 
         //newHeight = Math.min(newHeight, getMeasuredHeight() - mHandle.getMeasuredHeight());
-        LayoutParams params = (LayoutParams) mPrimaryContent.getLayoutParams();
-        if(x.length==0)
-        if (mSecondaryContent.getMeasuredHeight() < 1 && newHeight > params.height) {
-            return false;
-        }
-		params.height = newHeight;
-		// set the primary content parameter to do not stretch anymore and use the height specified in the layout params
-		params.weight = 0;
-        mPrimaryContent.setLayoutParams(params);
-		for(View VI:valves) {
-			VI.setTranslationY(newHeight - sz_valv/2 +sz_hdl/2);
+		if(mPrimaryContent.getParent()==this) {
+			LayoutParams params = (LayoutParams) mPrimaryContent.getLayoutParams();
+			if (x.length == 0)
+				if (mSecondaryContent.getMeasuredHeight() < 1 && newHeight > params.height) {
+					return false;
+				}
+			params.height = newHeight;
+			// set the primary content parameter to do not stretch anymore and use the height specified in the layout params
+			params.weight = 0;
+			mPrimaryContent.setLayoutParams(params);
+			for (View VI : valves) {
+				VI.setTranslationY(newHeight - sz_valv / 2 + sz_hdl / 2);
+			}
 		}
         return true;
     }
@@ -413,17 +415,19 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     	newWidth = Math.max(0, newWidth);
         // width minus handler width to make the handler always visible 
     	//newWidth = Math.min(newWidth, getMeasuredWidth() - mHandle.getMeasuredWidth());
-        LayoutParams params = (LayoutParams) mPrimaryContent.getLayoutParams();
-        if(x.length==0)
-        if (mSecondaryContent.getMeasuredWidth() < 1 && newWidth > params.width) {
-            return false;
-        }
-		params.width = newWidth;
-		// set the primary content parameter to do not stretch anymore and use the width specified in the layout params
-		params.weight = 0;
-        mPrimaryContent.setLayoutParams(params);
-		for(View VI:valves) {
-			VI.setTranslationX(newWidth - sz_valv/2 +sz_hdl/2 );
+		if(mPrimaryContent.getParent()==this) {
+			LayoutParams params = (LayoutParams) mPrimaryContent.getLayoutParams();
+			if (x.length == 0)
+				if (mSecondaryContent.getMeasuredWidth() < 1 && newWidth > params.width) {
+					return false;
+				}
+			params.width = newWidth;
+			// set the primary content parameter to do not stretch anymore and use the width specified in the layout params
+			params.weight = 0;
+			mPrimaryContent.setLayoutParams(params);
+			for (View VI : valves) {
+				VI.setTranslationX(newWidth - sz_valv / 2 + sz_hdl / 2);
+			}
 		}
         return true;
     }

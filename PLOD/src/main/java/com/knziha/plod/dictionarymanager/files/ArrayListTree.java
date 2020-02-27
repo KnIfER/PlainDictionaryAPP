@@ -1,5 +1,7 @@
 package com.knziha.plod.dictionarymanager.files;
 
+import com.knziha.plod.dictionarymodels.mdict_dsl;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -12,7 +14,11 @@ public class ArrayListTree<T extends Comparable<? super T>> {
 	public ArrayListTree(){
 		data = new  ArrayList<>();
 	}
-	
+
+	public ArrayListTree(ArrayList<T> _data) {
+		data = _data;
+	}
+
 	public int insert(T val){
 		if(data.size()==0 || data.get(data.size()-1).compareTo(val)<0) {//!!!不允许重复
 			data.add(data.size(),val);
@@ -110,6 +116,7 @@ public class ArrayListTree<T extends Comparable<? super T>> {
 		return -1;
 	}
 
+
 	public int remove(T val) {
 		if(data.size()==0) return -1;
 		int idx = reduce(val,0,data.size());
@@ -124,7 +131,13 @@ public class ArrayListTree<T extends Comparable<? super T>> {
 	public void clear() {
 		data.clear();
 	}
-	
-	
-	
+
+
+	public T itemAt(int position) {
+		return data.get(position);
+	}
+
+	public void append(T entry) {
+		data.add(entry);
+	}
 }

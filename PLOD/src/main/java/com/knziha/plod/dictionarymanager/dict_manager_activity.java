@@ -8,10 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -94,6 +90,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	public ArrayList<PlaceHolder> slots;
 	private ArrayList<Fragment> fragments;
 	private HashMap<String, mdict> app_mdict_cache;
+	public HashMap<String,byte[]> UIProjects;
+	public HashSet<String> dirtyMap;
 
 	public interface transferRunnable{
 		boolean transfer(File to);
@@ -266,9 +264,12 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		super.onCreate(null);
 		AgentApplication agent = ((AgentApplication)getApplication());
 		app_mdict_cache=agent.mdict_cache;
+		UIProjects=agent.UIProjects;
+		dirtyMap=agent.dirtyMap;
 		opt=agent.opt;
 		slots = agent.slots;
 		mdlibsCon=agent.mdlibsCon;
+
 		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.dict_manager_main);
@@ -1404,7 +1405,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 									boolean ret = mmTmp.moveFileTo(dict_manager_activity.this, toF);
 									//CMN.Log("移动？？？", ret, toF);
 									if (ret) {
-										RebasePath(OldF, OldFName, toF, null);
+										RebasePath(OldF, OldFName, toF, null, OldF.getName());
 										mdlibsCon.remove(mFile.tryDeScion(OldF, opt.lastMdlibPath));
 										mdlibsCon.add(mFile.tryDeScion(toF, opt.lastMdlibPath));
 										f3.Selection.remove(sI);//移出f3的选择
@@ -1631,15 +1632,17 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		in.close();
 	}
 
-	public void RebasePath(File oldPath, String OldFName, File newPath, String MoveOrRename){
-		CMN.Log("RebasePath");
-    	mdict mdTmp = app_mdict_cache.remove(oldPath);
+	public void RebasePath(File oldPath, String OldFName, File newPath, String MoveOrRename, String oldName){
+
+    	mdict mdTmp = app_mdict_cache.remove(oldPath.getPath());
 		File p = oldPath.getParentFile();
 		File p2 = newPath.getParentFile();
+		boolean move = MoveOrRename==null;
+
 		if(p!=null){
 			int cc=0;
 			File f2;
-			if(MoveOrRename==null){//移动
+			if(move){//移动
 				CMN.Log("//移动ASDASD", new File(p, OldFName+"."+(cc++)+".mdd"));
 				String fName;
 				while((f2 = new File(p, fName=OldFName+(cc==0?"":"."+cc)+".mdd")).exists()){
@@ -1659,8 +1662,17 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			}
 		}
 		if(mdTmp!=null){
+			CMN.Log("RebasePath!!!");
 			mdTmp.Rebase(newPath);
 			app_mdict_cache.put(newPath.getPath(), mdTmp);
+		}
+		if(!move){
+			byte[] data = UIProjects.remove(oldName);
+			if(data!=null){
+				String name = newPath.getName();
+				UIProjects.put(name, data);
+				dirtyMap.add(name);
+			}
 		}
 	}
 }

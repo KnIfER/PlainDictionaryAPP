@@ -115,10 +115,10 @@ public class RLContainerSlider extends FrameLayout{
 				}
 
 				//x轴速度
-				if (Math.abs(vx) < 50*density) {
+				if (Math.abs(vx) < 3.25*50*density) {
 					return true;
 				}
-				//CMN.Log("SimpleOnGestureListener", velocityX, vx, 50*density);
+				//CMN.Log("SimpleOnGestureListener", velocityX, vx, 3*50*density);
 				if(Math.abs(velocityX/(velocityY==0?0.000001:velocityY))>1.699) {
 					//CMN.show("onFling");
 					isOnFlingDected=true;

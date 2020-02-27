@@ -1,5 +1,7 @@
 package com.knziha.plod.PlainDict;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 
 public class PlaceHolder {
@@ -28,10 +30,20 @@ public class PlaceHolder {
 		}
 	}
 
+	public PlaceHolder() {
+
+	}
+
 
 	public String getPath(PDICMainAppOptions opt) {
 		if (!pathname.startsWith("/"))
 			pathname = opt.lastMdlibPath + "/" + pathname;
 		return pathname;
+	}
+
+	@NonNull
+	@Override
+	public String toString() {
+		return pathname+" : "+name;
 	}
 }

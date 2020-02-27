@@ -6,7 +6,7 @@
 	android:id="@+id/drawer_f"
 	android:clickable="true"
 	>
-	<ListView
+	<com.knziha.plod.widgets.AdvancedNestScrollListview
 		android:id="@+id/left_drawer"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"

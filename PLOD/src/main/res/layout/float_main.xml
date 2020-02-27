@@ -65,6 +65,7 @@
 						android:layout_height="match_parent"
 						android:textColor="#ffffff"
 						android:singleLine="true"
+						android:imeOptions="actionSearch"
 						android:paddingRight="53dp"
 						/>
 

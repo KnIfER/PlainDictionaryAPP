@@ -12,7 +12,6 @@
 		splitview:secondaryContent="@+id/PageSlider"
 		>
 
-
 		<com.knziha.plod.widgets.RLContainerSlider
 			android:id="@+id/PageSlider"
 			android:layout_width="match_parent"
@@ -29,7 +28,7 @@
 
 			</FrameLayout>
 
-			<com.knziha.plod.widgets.ScrollViewmy
+			<com.knziha.plod.widgets.AdvancedNestScrollView
 				android:layout_height="match_parent"
 				android:layout_width="match_parent"
 				android:focusable="true"
@@ -42,7 +41,7 @@
 					android:descendantFocusability="afterDescendants"
 					android:orientation="vertical" >
 				</LinearLayout>
-			</com.knziha.plod.widgets.ScrollViewmy>
+			</com.knziha.plod.widgets.AdvancedNestScrollView>
 
 			<com.knziha.plod.widgets.IMPageSlider
 				android:id="@+id/cover"
@@ -97,6 +96,7 @@
 			android:gravity="center_vertical|fill_horizontal"
 			android:paddingStart="2dp"
 			android:paddingEnd="2dp"
+			android:elevation="5dp"
 			>
 			<android.widget.ImageView
 				android:id="@+id/browser_widget7"

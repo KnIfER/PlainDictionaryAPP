@@ -117,4 +117,10 @@ public class ReusableByteOutputStream extends OutputStream {
 			count+=add;
 		}
 	}
+
+	public void recess(int sub) {
+		if(count-sub>0){
+			count-=sub;
+		}
+	}
 }

@@ -56,7 +56,7 @@ public class RashSet<T1 extends Comparable<T1>>
     }
 
 	@Override
-	public void insert(T1 data) {
+	public RBTNode insert(T1 data) {
 		//T1 data = new T1(key,val);
 		RBTNode<T1> node=new RBTNode<T1>(data,BLACK,null,null,null);
 		int cmp;
@@ -71,7 +71,7 @@ public class RashSet<T1 extends Comparable<T1>>
                 x = x.left;
             else if(cmp > 0)
                 x = x.right;
-            else return;
+            else return x;
         }
         treeSize++;
         node.parent = y;
@@ -90,7 +90,8 @@ public class RashSet<T1 extends Comparable<T1>>
 
         // 3. 将它重新修正为一颗二叉查找树
         insertFixUp(node);
-        
+
+        return node;
 	}
 
 	@Override

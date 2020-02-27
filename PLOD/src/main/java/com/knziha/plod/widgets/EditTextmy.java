@@ -1,8 +1,11 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
 
 /**
  * Created by KnIfER on 2018/4/20.
@@ -31,7 +34,14 @@ public class EditTextmy extends androidx.appcompat.widget.AppCompatEditText{
 		super.onTouchEvent(event);
 		return isEnabled();
     }
-    
- 
-    
+
+	@Override
+	public TextPaint getPaint() {
+    	if(PDICMainAppOptions.getHackDisableMagnifier()){
+			TextPaint tp = new TextPaint();
+			tp.setTextSize(1000);
+			return tp;
+		}
+		return super.getPaint();
+	}
 }

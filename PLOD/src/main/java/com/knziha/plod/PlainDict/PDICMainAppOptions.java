@@ -96,6 +96,13 @@ public class PDICMainAppOptions
 		defaultReader.edit().putString("LastPlanName", lastMdPlanName=name).apply();
 	}
 
+	public String getFontLibPath() {
+		return defaultReader.getString("fntlb",pathToMainFolder().append("Fonts").toString());
+	}
+	public void setFontLibPath(String name) {
+		defaultReader.edit().putString("fntlb", name).apply();
+	}
+
 	public String getFloatMdFn() {
 		return defaultReader.getString("FltMdFn",getLastMdFn());
 	}
@@ -107,6 +114,13 @@ public class PDICMainAppOptions
 	}
 	public void putFloatPlanName(String name) {
 		defaultReader.edit().putString("FltPlanName", lastMdPlanName=name).apply();
+	}
+
+	public String getAppBottomBarProject() {
+		return defaultReader.getString("appbar",null);
+	}
+	public void setAppBottomBarProject(String name) {
+		defaultReader.edit().putString("appbar", lastMdPlanName=name).apply();
 	}
 
 	public int getGlobalPageBackground() {
@@ -1901,6 +1915,84 @@ public class PDICMainAppOptions
 		return val;
 	}
 
+	public static boolean getEnsureAtLeatOneExpandedPage() {
+		return (FourthFlag & 0x200000l) != 0x200000l;
+	}
+	public static boolean setEnsureAtLeatOneExpandedPage(boolean val) {
+		updateQFAt(0x200000l,!val);
+		return val;
+	}
+
+	public static boolean getOnlyExpandTopPage() {
+		return (FourthFlag & 0x400000l) == 0x400000l;
+	}
+	public static boolean setOnlyExpandTopPage(boolean val) {
+		updateQFAt(0x400000l,val);
+		return val;
+	}
+
+	public static boolean getDelaySecondPageLoading() {
+		return (FourthFlag & 0x800000l) != 0x800000l;
+	}
+	public static boolean setDelaySecondPageLoading(boolean val) {
+		updateQFAt(0x800000l,!val);
+		return val;
+	}
+
+	public static boolean getScrollAnimation() {
+		return (FourthFlag & 0x1000000l) != 0x1000000l;
+	}
+	public static boolean setScrollAnimation(boolean val) {
+		updateQFAt(0x1000000l,!val);
+		return val;
+	}
+
+	public static boolean getScrollAutoExpand() {
+		return (FourthFlag & 0x2000000l) != 0x2000000l;
+	}
+	public static boolean setScrollAutoExpand(boolean val) {
+		updateQFAt(0x2000000l,!val);
+		return val;
+	}
+
+
+	public static boolean getEnableResumeDebug() {
+		return (FourthFlag & 0x4000000l) == 0x4000000l;
+	}
+	public static boolean setEnableResumeDebug(boolean val) {
+		updateQFAt(0x4000000l,val);
+		return val;
+	}
+
+	public static boolean getEnableSuperImmersiveScrollMode() {
+		return (FourthFlag & 0x8000000l) != 0x8000000l;
+	}
+	public static boolean setEnableSuperImmersiveScrollMode(boolean val) {
+		updateQFAt(0x8000000l,!val);
+		return val;
+	}
+
+	public static boolean getInheritGlobleWebcolorBeforeSwichingToInternal() {
+		return (FourthFlag & 0x10000000l) == 0x10000000l;
+	}
+	public static boolean setInheritGlobleWebcolorBeforeSwichingToInternal(boolean val) {
+		updateQFAt(0x10000000l,val);
+		return val;
+	}
+
+	public static boolean getHackDisableMagnifier() {
+		return (FourthFlag & 0x20000000l) == 0x20000000l;
+	}
+	public static boolean setHackDisableMagnifier(boolean val) {
+		updateQFAt(0x20000000l,val);
+		return val;
+	}
+
+
+
+	//EQ
+	///////////////////// End Quart Flag////////////////////////////////////
+	//EQ
 
 	///////
 	///////
@@ -2021,7 +2113,6 @@ public class PDICMainAppOptions
 	private final StringBuffer pathTo = new StringBuffer(255);
 	public String rootPath;
 	protected int pathToL = -1;
-	public static boolean isLarge;
 	public DisplayMetrics dm;
 	public StringBuffer pathToDatabases_safe() {
 		if(rootPath==null) rootPath=Environment.getExternalStorageDirectory().getPath();

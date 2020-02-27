@@ -56,6 +56,7 @@ import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.mdict_pdf;
 import com.knziha.plod.settings.SettingsActivity;
+import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
 
@@ -125,6 +126,7 @@ public class Drawer extends Fragment implements
 		mDrawerListView.findViewById(R.id.menu_item_exit).setOnClickListener(this);
 		mDrawerListView.findViewById(R.id.menu_item_exit).setOnLongClickListener(this);
 		mDrawerList = mDrawerListView.findViewById(R.id.left_drawer);
+		((AdvancedNestScrollListview)mDrawerList).setNestedScrollingEnabled(true);
 
 		String[] items = getResources().getStringArray(R.array.drawer_items);
 
@@ -256,16 +258,17 @@ public class Drawer extends Fragment implements
 
 		});
 
+		boolean val = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
 		sw2 = HeaderView.findViewById(R.id.sw2);
+		sw2.setChecked(val);
 		sw2.setOnCheckedChangeListener(this);
-		sw2.setChecked(!a.opt.isContentBow());
 
 		sw3 = HeaderView.findViewById(R.id.sw3);
 		sw3.setOnCheckedChangeListener(this);
 		sw3.setChecked(!a.opt.isViewPagerEnabled());
 
 		sw4 = HeaderView.findViewById(R.id.sw4);
-		boolean val = a.opt.getInDarkMode();
+		val = a.opt.getInDarkMode();
 		sw4.setChecked(!val);
 		sw4.setTag(false);
 		sw4.setOnCheckedChangeListener(this);
@@ -659,6 +662,7 @@ public class Drawer extends Fragment implements
 					properties.extensions.add(".web");
 					properties.extensions.add(".mdd");
 					properties.extensions.add(".txt");
+					properties.extensions.add(".dsl");
 				}
 				properties.title_id = R.string.addd;
 				properties.isDark = a.AppWhite==Color.BLACK;
@@ -950,8 +954,7 @@ public class Drawer extends Fragment implements
 				a.opt.setFullScreen(isChecked);
 			} break;
 			case R.id.sw2:{
-				a.opt.setContentBow(!isChecked);
-				a.setContentBow(!isChecked);
+				a.setNestedScrollingEnabled(a.opt.setEnableSuperImmersiveScrollMode(isChecked));
 			} break;
 			case R.id.sw3:{
 				a.opt.setViewPagerEnabled(!isChecked);

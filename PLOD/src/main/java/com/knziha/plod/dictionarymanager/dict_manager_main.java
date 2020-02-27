@@ -269,7 +269,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 												}
 											}
 											if (suc) {
-												a.RebasePath(oldf, OldFName, to, newName);
+												a.RebasePath(oldf, OldFName, to, newName, oldFn);
 												if (rejector.contains(oldPath)) {
 													rejector.remove(oldPath);
 													rejector.add(to.getAbsolutePath());
@@ -459,7 +459,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			TextView titleView = d.getWindow().getDecorView().findViewById(R.id.alertTitle);
 			titleView.setSingleLine(false);
 			titleView.setMovementMethod(LinkMovementMethod.getInstance());
-			if (!a.opt.isLarge) titleView.setMaxLines(5);
+			if (!GlobalOptions.isLarge) titleView.setMaxLines(5);
 
 			d.getListView().setAdapter(new ArrayAdapterHardCheckMark<>(getActivity(),
 					R.layout.singlechoice, android.R.id.text1, arrMenu));

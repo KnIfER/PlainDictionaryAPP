@@ -19,6 +19,14 @@
 	<item name="clearHistory" type="id" />
 	<item name="text_tools" type="id" />
 	<item name="long_clicked" type="id" />
+	<item name="js_no_match" type="id" />
+	<item name="exitApp" type="id" />
+	<item name="random_entry" type="id" />
+	<item name="prv_dict" type="id" />
+	<item name="nxt_dict" type="id" />
+	<item name="brightness" type="id" />
+	<item name="colorize" type="id" />
+	<item name="manage" type="id" />
 
 
 </resources>

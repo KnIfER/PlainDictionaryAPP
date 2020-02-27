@@ -43,6 +43,7 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -70,6 +71,7 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -80,9 +82,11 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 
 import com.bumptech.glide.load.engine.cache.DiskCache;
+import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymanager.dict_manager_activity;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymanager.files.IntegerSingleton;
@@ -101,7 +105,10 @@ import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
+import com.knziha.plod.widgets.AdvancedNestScrollListview;
+import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
+import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.IMPageSlider.PageSliderInf;
@@ -126,6 +133,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
@@ -178,6 +187,47 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public static ArrayList<PlaceHolder> CosySofa = new ArrayList<>();
 	public static ArrayList<PlaceHolder> HdnCmfrt = new ArrayList<>();
 	private Animation animaExit;
+	private ViewGroup webcoord;
+	private ViewGroup main_content_succinct;
+	private LinearLayout weblist;
+	private View appbar;
+
+	HashSet<Integer> LongclickableMap = new HashSet<>();
+	int[] BottombarBtnIcons = new int[]{
+		R.drawable.songlist,
+		R.drawable.bundle,
+		R.drawable.fuzzy_search,
+		R.drawable.full_search,
+		R.drawable.favoriteg,
+		R.drawable.historyg,
+		R.drawable.ic_exit_to_app_grey_24dp,//6
+		R.drawable.ic_menu_grey_24dp,//7
+		R.drawable.ic_shuffle_black_24dp,//8
+		R.drawable.chevron_grey_top22,//9
+		R.drawable.chevron_grey_bottom22,//10
+		R.drawable.ic_brightness_low_black_24dp,//11
+		R.drawable.customizebtmbr,//12
+		R.drawable.color_grey_sheet,//13
+		R.drawable.bundle2,//14
+		R.drawable.ic_settings_black_24dp,//15
+		} ;
+	ImageView[] BottombarBtns = new ImageView[16];
+	static HashMap<Integer, Integer> mWidgetIdMap = new HashMap<>(16);
+	static HashMap<Integer, Integer> mWidgetPaddingMap = new HashMap<>(16);
+	static{
+		mWidgetIdMap.put(6, R.id.exitApp);
+		mWidgetIdMap.put(7, R.id.drawer_layout);
+		mWidgetIdMap.put(8, R.id.random_entry);
+		mWidgetIdMap.put(9, R.id.prv_dict);
+		mWidgetIdMap.put(10, R.id.nxt_dict);
+		mWidgetIdMap.put(11, R.id.brightness);
+		mWidgetIdMap.put(12, R.id.bottombar);
+		mWidgetIdMap.put(13, R.id.colorize);
+		mWidgetIdMap.put(14, R.id.manage);
+		mWidgetIdMap.put(15, R.id.settings);
+		mWidgetPaddingMap.put(13,6);
+		mWidgetPaddingMap.put(14,8);
+	}
 
 	@Override
 	ArrayList<PlaceHolder> getLazyCC() {
@@ -193,7 +243,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	ArrayList<PlaceHolder> getLazyHC() {
 		return HdnCmfrt;
 	}
-
 
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -217,7 +266,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				DockerMarginR=mB;
 				lp.leftMargin =   DockerMarginL;
 				lp.rightMargin =  DockerMarginR;
-				lp.topMargin =    DockerMarginT;
+				lp.topMargin =    0;
 				lp.bottomMargin = DockerMarginB;
 				root.setLayoutParams(lp);
 			}
@@ -229,10 +278,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			array.recycle();
 			//CMN.Log("actionBarSize ; ", actionBarSize);
 
-			LayoutParams lp = toolbar.getLayoutParams();
-			lp.height=actionBarSize;
-			toolbar.setLayoutParams(lp);
-			refreshContentBow(opt.isContentBow());
+			toolbar.getLayoutParams().height=actionBarSize;
+			toolbar.requestLayout();
+			if(PDICMainAppOptions.getEnableSuperImmersiveScrollMode()){
+				appbar.getLayoutParams().height=actionBarSize;
+				appbar.requestLayout();
+				refreshContentBow(opt.isContentBow(), actionBarSize);
+			}
 
 			if(d!=null) {
 				if(d instanceof WindowChangeHandler)
@@ -724,7 +776,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 					else if (contentview.getParent() != null) {
 						if(toHighlight) onIdClick(null, R.id.recess);
-						else contentview.findViewById(R.id.browser_widget11).performClick();
+						else widget11.performClick();
 						return true;
 					}
 					else if (!mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -764,7 +816,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						return true;
 					} else if (contentview.getParent() != null) {
 						if(toHighlight) onIdClick(null, R.id.forward);
-						else contentview.findViewById(R.id.browser_widget10).performClick();
+						else widget10.performClick();
 						return true;
 					} else if (!mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
 						ListView lvlv = lv;
@@ -838,6 +890,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		snack_holder = findViewById(R.id.snack_holder);
 
 		toolbar = findViewById(R.id.toolbar);
+		appbar = findViewById(R.id.appbar);
 		toolbar.setTag(R.id.action_context_bar, false);
 		toolbar.inflateMenu(R.menu.menu);
 
@@ -864,7 +917,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		toolbar.addNavigationOnClickListener(v -> {
 			if(!mDrawerLayout.isDrawerVisible(GravityCompat.START)) {
-				if(contentview.getParent()==main) {
+				if(contentview.getParent()!=null) {
 					DetachContentView();
 					bNeedReAddCon=true;
 				}
@@ -939,14 +992,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	protected void further_loading(final Bundle savedInstanceState) {
 		//CMN.Log("Main Ac further_loading!!!");
+		webcoord = findViewById(R.id.webcoord);
 		IMPageCover = contentview.findViewById(R.id.cover);
 		PageSlider = contentview.findViewById(R.id.PageSlider);
 		mainF = findViewById(R.id.mainF);
 		main = root = findViewById(R.id.root);
 		webcontentlist = contentview.findViewById(R.id.webcontentlister);
 		bottombar2 = contentview.findViewById(R.id.bottombar2);
-		browser_widget3 = findViewById(R.id.browser_widget3);
-		browser_widget4 = findViewById(R.id.browser_widget4);
 		CachedBBSize=opt.getBottombarSize((int) (50*dm.density));
 		super.further_loading(savedInstanceState);
 
@@ -1083,8 +1135,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				ViewGroup contentview_ = contentview;
 				if(there)
 					contentview_=PeruseView.contentview;
-				if(Dir==1) {contentview_.findViewById(R.id.browser_widget11).performClick();}
-				else if(Dir==0) contentview_.findViewById(R.id.browser_widget10).performClick();
+				if(Dir==1) {widget11.performClick();}
+				else if(Dir==0) widget10.performClick();
 				else if(ActivedAdapter==adaptermy && !there) {if(currentPos!=currentDictionary.mWebView.currentPos) currentDictionary.toolbar_title.setText(currentDictionary.currentDisplaying.trim()+" - "+currentDictionary._Dictionary_fName);}
 			}});
 
@@ -1173,7 +1225,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				listViewStrictScroll(mlv2,true);
 				listViewStrictScroll(lv,true);
 			}
-
+		main_content_succinct = findViewById(R.id.main);
+		setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 		//listViewStrictScroll(lv2,true);
 
 		viewList = new ArrayList<>();
@@ -1204,64 +1257,64 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				return viewList.get(position);
 			}
 		};
-		viewPager.setAdapter(pagerAdapter);
-		viewPager.setCurrentItem(CurrentViewPage = 1);
 
-		//main_content_succinct = (ViewGroup) findViewById(R.id.main);
 		widget0= findViewById(R.id.browser_widget0);
 		widget0.setOnClickListener(this);
 		widget0.setOnLongClickListener(this);
 		//widget0.getBackground().setTint(MainBackground);
 		//widget0.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
 		//ViewCompat.setBackgroundTintList(widget0, ColorStateList.valueOf(MainBackground));
+		LongclickableMap.addAll(Arrays.asList(2, 5, 6));
+		// 选择词典1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6
+		// 退离程序7 打开侧栏8 随机词条9 上一词典10 下一词典11 调整亮度12 定制底栏13 定制颜色14 管理词典15 进入设置16
+		boolean bNeedAdd = mWidgetIdMap.size()<16;
+		for (int i = 0; i < 6; i++) {
+			ImageView iv = (ImageView) bottombar.getChildAt(i);
+			if(bNeedAdd) mWidgetIdMap.put(i, iv.getId());
+			BottombarBtns[i]=iv;
+			iv.setOnClickListener(this);
+			if(LongclickableMap.contains(i))
+				iv.setOnLongClickListener(this);
+		}
+		browser_widget3 = BottombarBtns[2];
+		browser_widget4 = BottombarBtns[3];
 
-		View favoriteFolderBtn = findViewById(R.id.browser_widget1);
-		favoriteFolderBtn.setOnClickListener(this);
-		favoriteFolderBtn = findViewById(R.id.browser_widget2);
-		favoriteFolderBtn.setOnClickListener(this);
-		favoriteFolderBtn.setOnLongClickListener(v -> {//长按管理词典
-			ReadInMdlibs(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
-			AgentApplication app = ((AgentApplication) getApplication());
-			app.mdict_cache = mdict_cache;
-			for(mdict mdTmp:md) {
-				if(mdTmp!=null){
-					mdict_cache.put(mdTmp.getPath(),mdTmp);
+		String appproject = opt.getAppBottomBarProject();
+		appproject="0|1|2|3|4|5|6|7|8|9|10|11|13|14|15";
+		appproject="0|1|2|3|4|5|6";
+		//appproject="9|10|11|13|14|15";
+		if(appproject!=null){
+			bottombar.removeAllViews();
+			String[] arr = appproject.split("\\|");
+			for (int i = 0; i < arr.length; i++) {
+				int id = IU.parsint(arr[i], -1);
+				if(id>=0 && id<BottombarBtns.length){
+					ImageView iv = BottombarBtns[id];
+					if(iv==null){
+						iv = new ImageView(this);
+						iv.setImageResource(BottombarBtnIcons[id]);
+						iv.setBackgroundResource(R.drawable.surrtrip1);
+						iv.setLayoutParams(browser_widget3.getLayoutParams());
+						iv.setId(mWidgetIdMap.get(id));
+						iv.setOnClickListener(this);
+						if(mWidgetPaddingMap.containsKey(id)){
+							//int pad = (int) (mWidgetPaddingMap.get(id)*dm.density);
+							//iv.setPadding(pad, pad, pad, pad);
+						}
+						if(LongclickableMap.contains(i))
+							iv.setOnLongClickListener(this);
+						BottombarBtns[id]=iv;
+					} else {
+						ViewGroup svp = (ViewGroup) iv.getParent();
+						if(svp!=null) svp.removeView(iv);
+					}
+					bottombar.addView(iv);
 				}
 			}
-			for(mdict mdTmp:currentFilter) {
-				if(mdTmp!=null){
-					mdict_cache.put(mdTmp.getPath(),mdTmp);
-				}
-			}
-			if(drawerFragment!=null)
-			for(mdict mdTmp:drawerFragment.mdictInternal.values()) {
-				if(mdTmp!=null){
-					mdict_cache.put(mdTmp.getPath(),mdTmp);
-				}
-			}
-			/* 合符而继统 */
-			for(PlaceHolder phI:HdnCmfrt) {
-				CosyChair.add(Math.min(phI.lineNumber, CosyChair.size()), phI);
-			}
-			app.slots=CosyChair;
-			app.opt=opt;
-			app.mdlibsCon=mdlibsCon;
-			app.mdict_cache=mdict_cache;
-			CosySofa.clear();
-			HdnCmfrt.clear();
-			lastLoadedModule=null;
-			Intent intent = new Intent();
-			intent.setClass(PDICMainActivity.this, dict_manager_activity.class);
-			startActivityForResult(intent, 110);
-			return false;
-		});
-		browser_widget3.setOnClickListener(this);
-		browser_widget4.setOnClickListener(this);
-		favoriteFolderBtn=findViewById(R.id.browser_widget5);
-		favoriteFolderBtn.setOnClickListener(this); favoriteFolderBtn.setOnLongClickListener(this);
-		favoriteFolderBtn = findViewById(R.id.browser_widget6);
-		favoriteFolderBtn.setOnClickListener(this); favoriteFolderBtn.setOnLongClickListener(this);
+		}
 
+		viewPager.setAdapter(pagerAdapter);
+		viewPager.setCurrentItem(CurrentViewPage = 1);
 		if(opt.getRemPos()) iItem_aPageRemember.setTitle(rem_res=R.string.rem_position_yes);
 		if(opt.getClickSearchEnabled()) iItem_ClickSearch.setTitle(iItem_ClickSearch.getTitle()+" √");
 		iItem_aPageRemember.setVisible(false);//翻忆
@@ -1536,9 +1589,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		//tg
 //		try {
-//			md.add(new mdict_txt("/sdcard/1.txt", this));
+//			md.add(new mdict_dsl("/sdcard/En-En-Longman_Activator.dsl", this));
 //			switch_To_Dict_Idx(md.size()-1, false, false);
-//		} catch (IOException e) {
+//		} catch (Exception e) {
 //			e.printStackTrace();
 //		}
 
@@ -1595,7 +1648,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//lv.setScrollBarStyle(R.style.AppTheme);
 		//lv.setVerticalScrollBarEnabled(true);
 		//lv.invalidate();
-
 
 		if(GlobalOptions.isDark)
 			try {
@@ -1691,7 +1743,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			int lastVisible=-1;
 			int lastOff=-1;
 			@Override
-		public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
 				if(lastVisible!=-1)
 					if(lv.getChildAt(0)!=null) {
 						if(lv.getFirstVisiblePosition()!=lastVisible || lv.getChildAt(0).getTop()!=lastOff) {
@@ -2005,21 +2057,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				, 0.5f, -1, Gravity.CENTER, false);
 	}
 
-	private void setStatusBarColor(){
-		Window window = getWindow();
-		window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
-				| WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-		window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-
-				| View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-			window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-		if(Build.VERSION.SDK_INT>=21) {
-			window.setStatusBarColor(MainBackground);
-			//window.setNavigationBarColor(Color.TRANSPARENT);
-		}
-	}
-
 	@Override
 	protected void onDestroy(){
 		//CMN.Log("main_onDestroy");
@@ -2049,7 +2086,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			new File(opt.lastMdlibPath).mkdirs();
 		}
 
-		setStatusBarColor();
+		setStatusBarColor(MainBackground);
 	}
 
 	private void dumpSettiings(){
@@ -2115,9 +2152,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if(bNeedSaveViewStates && systemIntialized && currentDictionary!=null && !PDICMainAppOptions.getSimpleMode()){
-			bNeedSaveViewStates=false;
+		if (bNeedSaveViewStates && systemIntialized &&!PDICMainAppOptions.getSimpleMode()){
+			bNeedSaveViewStates = false;
 			currentDictionary.lvPos = lv.getFirstVisiblePosition();
+		}
+		if(PDICMainAppOptions.getEnableResumeDebug() && currentDictionary!=null){
+			currentDictionary.Reload();
 		}
 	}
 
@@ -2260,6 +2300,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			cb1.setLayoutParams(lp);
 		}
 
+		setStatusBarColor(filteredColor);
 		bottombar2.setBackgroundColor(filteredColor);
 		if(MainPageSearchbar!=null)
 			MainPageSearchbar.setBackgroundColor(filteredColor);
@@ -2417,7 +2458,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				return;
 			}
 			etSearch_ToToolbarMode(1);
-			setContentBow(opt.isContentBow());
 			if(DBrowser!=null) return;
 			lastClickedPosBeforePageTurn = lastClickedPos;
 			super.onItemClick(pos);
@@ -2530,11 +2570,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				etSearch.clearFocus();
 			}
 
-			ViewGroup somp = (ViewGroup) contentview.getParent();//sanity check
-			if(somp!=main){
-				if(somp!=null) DetachContentView();;
-				AttachContentView();
-			}
+			AttachContentView();
 
 			//webholder.addView(md.rl);
 			ViewGroup someView = currentDictionary.rl;
@@ -2556,7 +2592,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(bOnePageNav)
 				desiredScale=111;
 			if(opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(currentDictionary.tmpIsFlag))
-				currentDictionary.mWebView.setTag(R.drawable.voice_ic, false);
+				currentDictionary.mWebView.bRequestedSoundPlayback=true;
 			currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, lastClickedPos);
 			contentview.setTag(R.id.image, PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null?false:null);
 
@@ -2712,7 +2748,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				return;
 			}
 			etSearch_ToToolbarMode(1);
-			setContentBow(opt.isContentBow());
 			if(DBrowser!=null) return;
 
 			lastClickedPosBeforePageTurn = lastClickedPos;
@@ -2818,11 +2853,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				etSearch.clearFocus();
 			}
 
-			ViewGroup somp = (ViewGroup) contentview.getParent();//sanity check
-			if(somp!=main){
-				if(somp!=null) DetachContentView();
-				AttachContentView();
-			}
+			AttachContentView();
 
 			combining_search_result.renderContentAt(lastClickedPos, PDICMainActivity.this,this);
 
@@ -2883,6 +2914,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		onIdClick(v, v.getId());
 	}
 
+	//click
 	public void onIdClick(View v, int id){
 		layoutScrollDisabled=false;
 		cancleSnack();
@@ -2916,10 +2948,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				int msg;
 				if(opt.setInPeruseMode(!opt.getInPeruseMode())) {
 					widget0.setImageResource(R.drawable.peruse_ic_on);
-					msg=R.string.canceld_peruse_mode;
+					msg=R.string.peruse_mode;
 				}else {
 					widget0.setImageResource(R.drawable.peruse_ic);
-					msg=R.string.peruse_mode;
+					msg=R.string.canceld_peruse_mode;
 				}
 				showTopSnack(main_succinct, msg
 						, 0.5f, -1, Gravity.CENTER, false);
@@ -3114,6 +3146,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				opt.setPinPicDictDialog(cb.isChecked());
 				if(pickDictDialog!=null) pickDictDialog.isDirty=true;
 			} break;
+			case R.id.exitApp:{
+				v.getBackground().jumpToCurrentState();
+				moveTaskToBack(false);
+			} break;
 		}
 	}
 
@@ -3130,8 +3166,92 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 	}
 
+	/** 切换主界面沉浸式 */
+	public void setNestedScrollingEnabled(boolean bImmersive) {
+		if(systemIntialized)
+		for (mdict mdTmp:md) {
+			if(mdTmp!=null)
+				mdTmp.setNestedScrollingEnabled(bImmersive);
+		}
+		((AdvancedNestScrollView)WHP).setNestedScrollingEnabled(bImmersive);
+		((AdvancedNestScrollListview)lv).setNestedScrollingEnabled(bImmersive);
+		((AdvancedNestScrollListview)lv2).setNestedScrollingEnabled(bImmersive);
+		((AdvancedNestScrollListview)mlv1).setNestedScrollingEnabled(bImmersive);
+		((AdvancedNestScrollListview)mlv2).setNestedScrollingEnabled(bImmersive);
+		if(!bImmersive) {
+			if(weblist==null){
+				weblist = new LinearLayout(this);
+				weblist.setOrientation(LinearLayout.VERTICAL);
+			}
+			bottombar.setTranslationY(0);
+			bottombar2.setTranslationY(0);
+		}
+		ViewGroup contentHolder = bImmersive ? webcoord : weblist;
+		ViewParent sp = mDrawerLayout.getParent();
+		if(sp!=contentHolder) {
+			if(sp!=null) {
+				((ViewGroup) sp).removeView(mDrawerLayout);
+				((ViewGroup) sp).removeView(appbar);
+				root.removeView((View) sp);
+			}
+			if(contentHolder.getParent()==null)
+				root.addView(contentHolder, 0);
+			contentHolder.addView(appbar, 0);
+			contentHolder.addView(mDrawerLayout, 1);
+			if(bImmersive) {
+				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)mDrawerLayout.getLayoutParams());
+				((CoordinatorLayout.LayoutParams)mDrawerLayout.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(getBaseContext(), null));
+			}
+		}
+
+		contentHolder = bImmersive ? webcoord : main_content_succinct;
+		sp = bottombar.getParent();
+		if(sp!=contentHolder) {
+			if(sp!=null) ((ViewGroup) sp).removeView(bottombar);
+			if(bImmersive) {
+				contentHolder.addView(bottombar, 2);
+				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)bottombar.getLayoutParams());
+				lp.gravity=Gravity.BOTTOM;
+				((CoordinatorLayout.LayoutParams)bottombar.getLayoutParams()).setBehavior(new BottomNavigationBehavior(getBaseContext(), null));
+			}else{
+				contentHolder.addView(bottombar, 1);
+				LayoutParams lp = bottombar.getLayoutParams();
+				lp.height = (int) getResources().getDimension(R.dimen._50_);
+			}
+		}
+		setContentBow(opt.isContentBow());
+	}
+
 	void AttachContentView() {
-		root.addView(contentview, PhotoPager!=null&&PhotoPager.getParent()!=null?2:1);
+		boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
+		ViewGroup contentHolder = bImmersive ? webcoord : root;
+		ViewParent sp = contentview.getParent();
+		if(sp!=contentHolder) {
+			if(sp!=null) ((ViewGroup) sp).removeView(bottombar2);
+			if(bImmersive) {
+				contentHolder.addView(contentview, 2);
+				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)contentview.getLayoutParams());
+				lp.gravity=Gravity.BOTTOM;
+				((CoordinatorLayout.LayoutParams)contentview.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(getBaseContext(), null));
+			}else{
+				contentHolder.addView(contentview, PhotoPager!=null&&PhotoPager.getParent()!=null?2:1);
+			}
+			setContentBow(opt.isContentBow());
+		}
+
+		contentHolder = bImmersive ? webcoord : contentview;
+		sp = bottombar2.getParent();
+		if(sp!=contentHolder) {
+			if(sp!=null) ((ViewGroup) sp).removeView(bottombar2);
+			contentHolder.addView(bottombar2, bImmersive?3:1);
+			if(bImmersive) {
+				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams) bottombar2.getLayoutParams());
+				lp.gravity = Gravity.BOTTOM;
+				lp.setBehavior(new BottomNavigationBehavior(getBaseContext(), null));
+				bottombar2.setTranslationY(bottombar.getTranslationY());
+			}
+		}
+
 		viewPager.setVisibility(View.INVISIBLE);
 		bottombar.setVisibility(View.INVISIBLE);
 		if(popupContentView!=null && popupContentView.getParent()!=null && popupContentView.getVisibility()==View.GONE){
@@ -3153,9 +3273,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	void DetachContentView() {
+		boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
 		viewPager.setVisibility(View.VISIBLE);
 		bottombar.setVisibility(View.VISIBLE);
-		root.removeView(contentview);
+		//xxroot.removeView(contentview);
+		((ViewGroup)contentview.getParent()).removeView(contentview);
+		if(bImmersive && bottombar2.getParent()!=null) ((ViewGroup) bottombar2.getParent()).removeView(bottombar2);
 //		ObjectAnimator fadeOutContents = ObjectAnimator.ofFloat(contentview, "alpha", 1, 0);
 //		fadeOutContents.setDuration(100);
 //		fadeOutContents.addListener(new Animator.AnimatorListener() {
@@ -3191,6 +3314,41 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				//getPeruseView().TextToSearch = currentDictionary.getEntryAt(pos);
 				AttachPeruseView(false);
 			} break;
+			case R.id.browser_widget2:{
+				ReadInMdlibs(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
+				AgentApplication app = ((AgentApplication) getApplication());
+				app.mdict_cache = mdict_cache;
+				for(mdict mdTmp:md) {
+					if(mdTmp!=null){
+						mdict_cache.put(mdTmp.getPath(),mdTmp);
+					}
+				}
+				for(mdict mdTmp:currentFilter) {
+					if(mdTmp!=null){
+						mdict_cache.put(mdTmp.getPath(),mdTmp);
+					}
+				}
+				if(drawerFragment!=null)
+					for(mdict mdTmp:drawerFragment.mdictInternal.values()) {
+						if(mdTmp!=null){
+							mdict_cache.put(mdTmp.getPath(),mdTmp);
+						}
+					}
+				/* 合符而继统 */
+				for(PlaceHolder phI:HdnCmfrt) {
+					CosyChair.add(Math.min(phI.lineNumber, CosyChair.size()), phI);
+				}
+				app.slots=CosyChair;
+				app.opt=opt;
+				app.mdlibsCon=mdlibsCon;
+				app.mdict_cache=mdict_cache;
+				CosySofa.clear();
+				HdnCmfrt.clear();
+				lastLoadedModule=null;
+				Intent intent = new Intent();
+				intent.setClass(PDICMainActivity.this, dict_manager_activity.class);
+				startActivityForResult(intent, 110);
+			} return true;
 			case R.id.browser_widget5:{
 				showChooseFavorDialog(0);
 			} return true;
@@ -3240,8 +3398,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					TextView titleView = d.getWindow().getDecorView().findViewById(R.id.alertTitle);
 					titleView.setSingleLine(false);
 					titleView.setMovementMethod(LinkMovementMethod.getInstance());
-					if (!PDICMainAppOptions.isLarge) titleView.setMaxLines(5);
-
+					if (!GlobalOptions.isLarge) titleView.setMaxLines(5);
 
 					d.getListView().setAdapter(new ArrayAdapterHardCheckMark<>(this,
 							R.layout.singlechoice, android.R.id.text1, arrMenu));

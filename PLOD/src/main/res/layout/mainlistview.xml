@@ -3,7 +3,7 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	>
-	<com.knziha.plod.widgets.ListViewmy
+	<com.knziha.plod.widgets.AdvancedNestScrollListview
 		android:layout_height="match_parent"
 		android:layout_width="match_parent"
 		android:id="@+id/main_list"
@@ -13,7 +13,7 @@
 		android:fastScrollEnabled="true"
 		android:descendantFocusability="beforeDescendants"
 		android:paddingLeft="10dp"/>
-	<com.knziha.plod.widgets.ListViewmy
+	<com.knziha.plod.widgets.AdvancedNestScrollListview
 		android:layout_height="match_parent"
 		android:layout_width="match_parent"
 		android:id="@+id/sub_list"

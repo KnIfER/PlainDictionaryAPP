@@ -17,7 +17,6 @@
 
 package com.knziha.plod.dictionary;
 
-import androidx.annotation.NonNull;
 
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -121,7 +120,7 @@ public class mdict extends mdBase{
 	/** Packed mdd files. */
 	protected List<mdictRes> mdd;
 	/** Unpacked file tree. */
-	protected List<String> ftd;
+	protected List<File> ftd;
 
 	protected mdict virtualIndex;
 
@@ -176,6 +175,7 @@ public class mdict extends mdBase{
 				long skip = data_in.skipBytes((int) _key_block_size);
 				decode_record_block_size(data_in);
 				int toTail=(int) (_record_block_size+_record_block_info_size);
+				//SU.Log("Slavery.Init ...", skip, _key_block_size, ReadOffset, _record_block_offset, _version, toTail);
 				skip+=data_in.skipBytes(toTail);
 				if(skip==_key_block_size + toTail && data_in.available()>0){
 					virtualIndex = new mdict(this, data_in, ReadOffset+_record_block_offset+(_version>=2?32:16)+toTail);
@@ -183,14 +183,21 @@ public class mdict extends mdBase{
 				}
 			} catch (IOException e) {
 				SU.Log("Slavery.Init Error");
-				e.printStackTrace();
+				SU.Log(e);
 			}
 		}
 		data_in.close();
 	}
 
 	protected boolean handleDebugLines(String line) {
-		if(line.length()>0 && !line.startsWith("//")){
+		if(line.length()>0){
+			File p = f.getParentFile();
+			if(line.startsWith("\\")){
+				File f = new File(p, line.substring(1));
+				if(f.isDirectory())
+					ftd.add(f);
+				return true;
+			}
 			if(line.startsWith("`")&&line.length()>1){
 				int nxt=line.indexOf("`", 1);
 				_stylesheet.put(line.substring(1,nxt), line.substring(nxt+1).trim().split("`",2));
@@ -218,7 +225,7 @@ public class mdict extends mdBase{
 		else {
 			if(ftd !=null && ftd.size()>0){
 				String keykey = key.replace("\\",File.separator);
-				for(String froot: ftd){
+				for(File froot: ftd){
 					File ft= new File(froot, keykey);
 					//SU.Log(ft.getAbsolutePath(), ft.exists());
 					if(ft.exists()) {
@@ -394,6 +401,7 @@ public class mdict extends mdBase{
 			System.out.println("search failed!"+keyword);
 			return -1;
 		}
+		//SU.Log(keyword, res, getEntryAt((int) (res+infoI.num_entries_accumulator)));
 		////if(isCompact) //compatibility fix
 		String other_key = new String(infoI_cache.keys[res],_charset);
 		String looseMatch = processMyText(other_key);
@@ -544,9 +552,9 @@ public class mdict extends mdBase{
 				sb.append("<HR>");
 			c++;
 		}
-		sb.append("<div class=\"_PDict\"><p class='bd_body'/>");
+		sb.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
 		if(mdd!=null && mdd.size()>0) sb.append("<p class='MddExist'/>");
-		sb.append("<div/>");
+		sb.append("</div>");
 		return processStyleSheet(sb.toString(), positions[0]);
 	}
 
@@ -584,9 +592,9 @@ public class mdict extends mdBase{
 				sb.append("<HR>");
 			c++;
 		}
-		sb.append("<div class=\"_PDict\"><p class='bd_body'/>");
+		sb.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
 		if(mdd!=null && mdd.size()>0) sb.append("<p class='MddExist'/>");
-		sb.append("<div/>");
+		sb.append("</div>");
 		return processStyleSheet(sb.toString(), positions[0]);
 	}
 
@@ -653,7 +661,7 @@ public class mdict extends mdBase{
 	public String getRecordAt(int position) throws IOException {
 		if(ftd!=null && ftd.size()>0 && ReadOffset==0){
 			File ft;
-			for(String f:ftd){
+			for(File f:ftd){
 				ft=new File(f, ""+position);
 				//SU.Log(ft.getAbsolutePath(), ft.exists());
 				if(ft.exists())
@@ -710,7 +718,7 @@ public class mdict extends mdBase{
 	@Override
 	public String decodeRecordData(int position, Charset charset) {
 		if(ftd !=null && ftd.size()>0){
-			for(String froot: ftd){
+			for(File froot: ftd){
 				File ft= new File(froot, ""+position);
 				if(ft.exists()) {
 					try {
@@ -1696,6 +1704,11 @@ public class mdict extends mdBase{
 	public void size_confined_lookUp5(String keyword,
 									  RBTree_additive combining_search_tree, int SelfAtIdx, int theta) //多线程
 	{
+		if(virtualIndex!=null){
+			virtualIndex.combining_search_list=combining_search_list;
+			virtualIndex.size_confined_lookUp5(keyword, combining_search_tree, SelfAtIdx, theta);
+			return;
+		}
 		int[][] scaler_ = null;
 		byte[] key_block_cache_ = null;
 		ArrayList<myCpr<String, Integer>> _combining_search_list = combining_search_list;
@@ -1988,7 +2001,6 @@ public class mdict extends mdBase{
 			return transcriptor.append(last==null?"":last).append(input.substring(lastEnd)).toString();
 	}
 
-	@NonNull
 	@Override
 	public String toString() {
 		return _Dictionary_fName+"("+hashCode()+")";
