@@ -1601,43 +1601,42 @@ public class mdict extends mdBase{
 				Matched = false;
 				if(isSeeking) {
 					int seekPos=-1;
-					for(byte[] marchLet:matchers[lexiPartIdx]) {
-						//if(marchLet==null) break;
-						int newSeekPos = indexOf(source, sourceOffset, sourceCount, marchLet, 0, marchLet.length, fromIndex_);
-						if (newSeekPos >= fromIndex_) {
-							//todo verify first match
-							pass = true;
-							if (checkEven != 0 && (len = newSeekPos - fromIndex_) != 0) {
-								if (checkEven == 2) {
-									pass = len % 4 == 0;
-								} else if (checkEven == 1 && len % 2 != 0) {
-									pass = false;
-								} else {
-									len = sourceOffset + newSeekPos;
-									int start = (checkEven == 3) ? Math.max(sourceOffset + fromIndex_, sourceOffset + newSeekPos - maxEB) : (sourceOffset + fromIndex_);
-									//int start = Math.max(sourceOffset+fromIndex_, sourceOffset+newSeekPos-4);
-									len = len - start;
-									String validfyCode = new String(source, start, len, _charset);
-									//SU.Log("validfyCode", validfyCode);
-									len = validfyCode.length();
-									pass = len > 0 && validfyCode.charAt(len - 1) != 65533;
-								}
+					int	newSeekPos = kalyxIndexOf(source, sourceOffset, sourceCount, matchers[lexiPartIdx], fromIndex_, flag);
+					//if(newSeekPos>=0)
+					//SU.Log("newSeekPos", newSeekPos);
+					if(newSeekPos>=fromIndex_){
+						//todo verify first match
+						pass = true;
+						if (checkEven != 0 && (len = newSeekPos - fromIndex_) != 0) {
+							if (checkEven == 2) {
+								pass = len % 4 == 0;
+							} else if (checkEven == 1 && len % 2 != 0) {
+								pass = false;
+							} else {
+								len = sourceOffset + newSeekPos;
+								int start = (checkEven == 3) ? Math.max(sourceOffset + fromIndex_, sourceOffset + newSeekPos - maxEB) : (sourceOffset + fromIndex_);
+								//int start = Math.max(sourceOffset+fromIndex_, sourceOffset+newSeekPos-4);
+								len = len - start;
+								String validfyCode = new String(source, start, len, _charset);
+								//SU.Log("validfyCode", validfyCode);
+								len = validfyCode.length();
+								pass = len > 0 && validfyCode.charAt(len - 1) != 65533;
 							}
-							if (pass && (seekPos==-1||newSeekPos<seekPos)) {
-								if (bSearchInContents) {
-									//todo skip html tags 检查不在<>之中。 往前找>，截止于<>两者。若找先到<则放行。
-									//									若找先到>则需要进一步检查。
-									//									往后找<，截止于<>两者。若找先到>则放行。
-									//									若找先到<则简单认为需要跳过。
-									//if (bingStartWith(source, sourceOffset, sourceCount, htmlOpenTag, 0, htmlOpenTag.length, newSeekPos+marchLet.length)) {
+						}
+						if (pass) {
+							if(bSearchInContents){
+								//todo skip html tags 检查不在<>之中。 往前找>，截止于<>两者。若找先到<则放行。
+								//									若找先到>则需要进一步检查。
+								//									往后找<，截止于<>两者。若找先到>则放行。
+								//									若找先到<则简单认为需要跳过。
+								//if (bingStartWith(source, sourceOffset, sourceCount, htmlOpenTag, 0, htmlOpenTag.length, newSeekPos+marchLet.length)) {
 									//CMN.Log("found htmlOpenTag!!!");
-									//}
+								//}
 
-								}
-								seekPos = newSeekPos;
-								lastSeekLetSize = matchers[lexiPartIdx][flag.val].length;
-								Matched = true;
 							}
+							seekPos = newSeekPos;
+							lastSeekLetSize = matchers[lexiPartIdx][flag.val].length;
+							Matched = true;
 						}
 					}
 					//SU.Log("seekPos:"+seekPos+" fromIndex_: "+fromIndex_);
