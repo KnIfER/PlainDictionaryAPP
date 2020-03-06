@@ -1,5 +1,6 @@
 package com.knziha.plod.PlainDict;
 
+import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -24,6 +25,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -93,13 +95,11 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
@@ -130,6 +130,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialogListener;
+import com.knziha.ankislicer.customviews.ShelfLinearLayout;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
@@ -142,6 +143,7 @@ import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
+import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_asset;
@@ -181,6 +183,8 @@ import com.knziha.text.SelectableTextView;
 import com.knziha.text.SelectableTextViewBackGround;
 import com.knziha.text.SelectableTextViewCover;
 import com.knziha.text.TTSMoveToucher;
+import com.mobeta.android.dslv.DragSortListView;
+import com.mobeta.android.dslv.SimpleFloatViewManager;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 
@@ -217,12 +221,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -270,6 +274,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int pickTarget;
 	public boolean isBrowsingImgs;
 	public OnLongClickListener mdict_web_lcl;
+	public int defbarcustpos;
+	public String cbar_key;
 	boolean bShowLoadErr=true;
 	public boolean isCombinedSearching;
 	public String CombinedSearchTask_lastKey;
@@ -331,12 +337,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public ViewGroup bottombar;
 
 	public ImageView widget7;
-	public ImageView widget8;
-	public ImageView widget9;
 	public ImageView widget10;
 	public ImageView widget11;
 	public ImageView widget12;
 
+
+	public boolean bRequestedCleanSearch;
 	public boolean bWantsSelection;
 	public boolean bIsFirstLaunch=true;
 
@@ -404,6 +410,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	PagerAdapter PhotoAdapter;
 	LinkedList<PhotoView> mViewCache = new LinkedList<>();
 	String new_photo;
+
+	public int AutoBrowseTimeOut = 500;
+	public int AutoBrowseCount;
+	public boolean AutoBrowsePaused=true;
+	public boolean bThenReadContent;
+	public WebViewmy pendingWebView;
+	public int mThenReadEntryCount;
+	public boolean background;
 
 	protected TextView TTSController_tvHandle;
 	protected TTSMoveToucher TTSController_moveToucher;
@@ -952,11 +966,33 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void onAudioPause() {
-		opt.isAudioActuallyPlaying=false;
-		transitAAdjustment();
+		CMN.Log("onAudioPause", !AutoBrowsePaused, opt.isAudioActuallyPlaying, mThenReadEntryCount);
+		if(!AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething()){
+			if(true || opt.isAudioActuallyPlaying || background){
+				if(mThenReadEntryCount>0){
+					//CMN.Log(root.post(this::performReadEntry), "posting...");
+					CMN.Log("posting...3322123");
+					hdl.sendEmptyMessage(3322123);
+				} else {
+					opt.isAudioActuallyPlaying=false;
+					CMN.Log("posting...3322124");
+					hdl.sendEmptyMessage(3322124);
+					//root.post(this::enqueueNextAutoReadProcess);
+				}
+			}
+		} else {
+			opt.isAudioActuallyPlaying=false;
+			transitAAdjustment();
+		}
 	}
 
 	public void onAudioPlay() {
+		CMN.Log("onAudioPlay", forbidVolumeAjustmentsForTextRead, !AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething());
+		if(!AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething()){
+			opt.isAudioActuallyPlaying=opt.isAudioPlaying=true;
+			removeAAdjustment();
+			return;
+		}
 		if(!opt.getMakeWayForVolumeAjustmentsWhenAudioPlayed()) return;
 		if(forbidVolumeAjustmentsForTextRead){
 			forbidVolumeAjustmentsForTextRead =false;
@@ -1060,7 +1096,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mPopupRunnable = new Runnable() {
 					@Override
 					public void run() {
-						CMN.Log("\nmPopupRunnable run!!!");
+						//CMN.Log("\nmPopupRunnable run!!!");
 						ViewGroup targetRoot = root;
 						if(PeruseViewAttached())
 							targetRoot = PeruseView.root;
@@ -1800,6 +1836,172 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return false;
 	}
 
+
+
+	private ObjectAnimator mAutoReadProgressAnimator;
+	private View mAutoReadProgressView;
+	boolean animateProgress = true;
+	boolean bRequestingAutoReading;
+	public void startAutoReadProcess(){
+		CMN.Log("发起 startAutoReadProcess");
+		bThenReadContent=false;
+		bRequestingAutoReading=true;
+		//animation delay
+		if(animateProgress){
+			if(mAutoReadProgressView==null){
+				mAutoReadProgressView = LayoutInflater.from(this).inflate(R.layout.progressbar_item, contentview, false);
+			}
+			LayerDrawable d = (LayerDrawable) mAutoReadProgressView.getBackground();
+			d.setLevel(0);
+			if(mAutoReadProgressAnimator!=null) {
+				mAutoReadProgressAnimator.pause();
+				mAutoReadProgressAnimator.setIntValues(0, 10000);
+			} else {
+				mAutoReadProgressAnimator = ObjectAnimator.ofInt(d,"level", 0, 10000);
+				mAutoReadProgressAnimator.setDuration(AutoBrowseTimeOut);
+				mAutoReadProgressAnimator.addListener(new Animator.AnimatorListener() {
+					@Override public void onAnimationStart(Animator animation) {  }
+					@Override public void onAnimationCancel(Animator animation) {  }
+					@Override public void onAnimationRepeat(Animator animation) { }
+					@Override public void onAnimationEnd(Animator animation) {
+						performAutoReadProcess();
+					}
+				});
+			}
+			if(mAutoReadProgressView.getParent()==null){
+				d.findDrawableByLayerId(android.R.id.background).setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
+				d.findDrawableByLayerId(android.R.id.progress).setColorFilter(ColorUtils.blendARGB(MainBackground, Color.BLACK, 0.28f), PorterDuff.Mode.SRC_IN);
+				contentviewAddView(mAutoReadProgressView, 0);
+			}
+			mAutoReadProgressAnimator.start();
+		}
+		else {
+			hdl.sendEmptyMessage(332211123);
+		}
+	}
+
+	public void stopAutoReadProcess(){
+		showT("已停止自动浏览");
+		bThenReadContent=
+		bRequestingAutoReading=false;
+		AutoBrowsePaused=true;
+		hdl.removeMessages(332211);
+		if(mAutoReadProgressAnimator!=null){
+			mAutoReadProgressAnimator.pause();
+			if(mAutoReadProgressView.getParent()!=null)
+				((ViewGroup)mAutoReadProgressView.getParent()).removeView(mAutoReadProgressView);
+		}
+	}
+
+	public void interruptAutoReadProcess(boolean forceClose){
+		hdl.removeMessages(332211);
+		if(TTSController_engine!=null){
+			if(forceClose){
+				TTSController_engine.setOnUtteranceProgressListener(null);
+				TTSController_engine.stop();
+			}
+		}
+		if(mAutoReadProgressAnimator!=null && mAutoReadProgressAnimator.isRunning()){
+			mAutoReadProgressAnimator.pause();
+			try {
+				mAutoReadProgressView.getBackground().setLevel(0);
+			} catch (Exception ignored) {  }
+		}
+	}
+
+	long lastreadtime;
+	public void performAutoReadProcess(){
+		CMN.Log("自动读下一个", opt.isAudioActuallyPlaying);
+		long now = System.currentTimeMillis();
+		if(now-lastreadtime<AutoBrowseTimeOut){
+			CMN.Log("abuse detected!!!!");
+			return;
+		}
+		lastreadtime = now;
+		if(bRequestingAutoReading){
+			AutoBrowsePaused=false;
+			AutoBrowseCount=0;
+			bRequestingAutoReading=false;
+
+		}
+		boolean ar = PDICMainAppOptions.getAutoBrowsingReadSomething();
+		if(!(ar&&opt.isAudioActuallyPlaying))
+		if(ActivedAdapter!=null){
+			if(!AutoBrowsePaused){
+				++AutoBrowseCount;
+				interruptAutoReadProcess(true);
+				if(mAutoReadProgressView!=null) mAutoReadProgressView.getBackground().setLevel(0);
+				ActivedAdapter.onItemClick(ActivedAdapter.lastClickedPos+1);
+				if(!ar){
+					enqueueNextAutoReadProcess();
+				}
+			}
+		}
+	}
+
+	void enqueueNextAutoReadProcess() {
+		if(bThenReadContent && pendingWebView!=null){
+			performReadContent(pendingWebView);
+			bThenReadContent=false;
+		} else {
+			if (animateProgress) {
+				if(mAutoReadProgressAnimator != null){
+					if (mAutoReadProgressAnimator.isPaused()) {
+						mAutoReadProgressAnimator.removeAllListeners();
+						mAutoReadProgressAnimator.setTarget(null);
+						mAutoReadProgressAnimator.cancel();
+						mAutoReadProgressAnimator = null;
+						CMN.Log("如果能重来");
+						startAutoReadProcess();
+					} else {
+						mAutoReadProgressAnimator.pause();
+						mAutoReadProgressAnimator.setIntValues(0, 10000);
+						mAutoReadProgressAnimator.start();
+					}
+				}
+			} else {
+				hdl.sendEmptyMessageDelayed(332211, AutoBrowseTimeOut);
+			}
+		}
+	}
+
+	public SparseArrayMap jnFanMap;
+	public SparseArrayMap fanJnMap;
+	public void ensureTSHanziSheet(PDICMainActivity.AdvancedSearchLogicLayer SearchLayer) {
+		if(jnFanMap==null) {
+			try {
+				SparseArrayMap _jnFanMap = new SparseArrayMap(2670);
+				fanJnMap = new SparseArrayMap(2780);
+				InputStream fin = getResources().getAssets().open("Kasemap.ali");
+				byte[] buffer = new byte[4096];
+				Charset _charset = StandardCharsets.UTF_8;
+				byte[] linebreak = "\n".getBytes(_charset);
+				int breakIdx;
+				int now;
+				int blockSize;
+				while ((blockSize = fin.read(buffer)) > 0) {
+					now = 0;
+					while ((breakIdx = mdict.indexOf(buffer, 0, blockSize, linebreak, 0, linebreak.length, now)) > 0) {
+						String val = new String(buffer, now, breakIdx - now, _charset);
+						_jnFanMap.put(val.charAt(0), val);
+						int len = val.length();
+						for (int i = 1; i < len; i++) {
+							fanJnMap.put(val.charAt(i), val);
+						}
+						now = breakIdx + linebreak.length;
+					}
+				}
+				jnFanMap=_jnFanMap;
+			} catch (IOException e) { CMN.Log(e); }
+		}
+		if(jnFanMap==null) {
+			PDICMainAppOptions.setEnableFanjnConversion(false);
+		} else {
+			SearchLayer.jnFanMap = jnFanMap;
+			SearchLayer.fanJnMap = fanJnMap;
+		}
+	}
+
 	static class BaseHandler extends Handler{
 		float animator = 0.1f;
 		float animatorD = 0.15f;
@@ -2089,7 +2291,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		webcontentlist.multiplier=-1;
 		webcontentlist.isSlik=true;
 
-		CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, 50*dm.density));
+		CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, getResources().getDimension(R.dimen._bottombarheight_)));
 		webcontentlist.setPrimaryContentSize(CachedBBSize,true);
 
 		webcontentlist.setPageSliderInf(new SplitView.PageSliderInf() {//这是底栏的动画特效
@@ -2171,7 +2373,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			@Override
 			public int preResizing(int size) {
 				boolean bPeruseIncahrge = PeruseViewAttached() && (PeruseView.contentview.getParent()==PeruseView.slp || PeruseView.contentview.getParent()==PeruseView.mlp);
-				int ret = (int) Math.max(((bPeruseIncahrge&&!opt.getPeruseBottombarOnBottom())?30:20)*dm.density, Math.min(50*dm.density, size));
+				int ret = (int) Math.max(((bPeruseIncahrge&&!opt.getPeruseBottombarOnBottom())?30:20)*dm.density, Math.min(getResources().getDimension(R.dimen._bottombarheight_), size));//50*dm.density
 				CMN.Log(ret);
 				if(bPeruseIncahrge) {
 					PeruseView.CachedBBSize = ret;
@@ -2190,30 +2392,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ivDeleteText.setOnClickListener(this);
 		ivBack.setOnClickListener(this);
 
-		widget7=bottombar2.findViewById(R.id.browser_widget7);
-		widget8 = favoriteBtn = bottombar2.findViewById(R.id.browser_widget8);
-		widget9 = bottombar2.findViewById(R.id.browser_widget9);
-		widget10=bottombar2.findViewById(R.id.browser_widget10);
-		widget11=bottombar2.findViewById(R.id.browser_widget11);
-		widget12=bottombar2.findViewById(R.id.browser_widget12);
-
-		widget7.setOnClickListener(this);
-		widget7.setOnLongClickListener(this);
-		widget8.setOnClickListener(this);
-		widget8.setOnLongClickListener(this);
-		widget9.setOnLongClickListener(this);
-		widget9.setOnClickListener(this);
-		widget10.setOnClickListener(this);
-		widget10.setOnLongClickListener(this);
-		widget11.setOnClickListener(this);
-		widget11.setOnLongClickListener(this);
-		widget12.setOnClickListener(this);
-		widget12.setOnLongClickListener(this);
-
-		// 返回列表7 收藏词条8 跳转词典9 上一词条10 下一词条11 发音按钮12
-		// 退离程序 打开侧栏 随机词条 上一词典 下一词典 自动发音 自动浏览 全文朗读 进入收藏 进入历史 调整亮度 定制颜色 定制底栏
-
-
+		boolean tint = true||PDICMainAppOptions.getTintIconForeground();
+		for (int i = 0; i < 6; i++) {
+			ImageView iv = (ImageView) bottombar2.getChildAt(i);
+			ContentbarBtns[i]=iv;
+			iv.setOnClickListener(this);
+			if(tint) iv.setColorFilter(ForegroundTint, PorterDuff.Mode.SRC_IN);
+			iv.setOnLongClickListener(this);
+		}
+		widget7=ContentbarBtns[0];
+		favoriteBtn=ContentbarBtns[1];
+		widget10=ContentbarBtns[3];
+		widget11=ContentbarBtns[4];
+		widget12=ContentbarBtns[5];
+		String appproject = opt.getAppContentBarProject(cbar_key);
+		if(appproject!=null) {
+			contentbar_project = new AppUIProject(cbar_key, ContentbarBtnIcons, ContentbarBtnIds, appproject, bottombar2, ContentbarBtns);
+			RebuildBottombarIcons(contentbar_project, mConfiguration);
+		}
 
 		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
 		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
@@ -2521,11 +2717,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		background=false;
+	}
+
+	@Override
 	protected void onPause() {
 		super.onPause();
+		background=true;
 		if(TTSController_engine!=null && !opt.getTTSBackgroundPlay()){
 			pauseTTS();
 			pauseTTSCtrl(true);
+		}
+		if((!AutoBrowsePaused || bRequestingAutoReading) && !opt.getTTSBackgroundPlay()){
+			stopAutoReadProcess();
 		}
 	}
 
@@ -2954,7 +3160,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								WHP.setBackgroundColor(ManFt_GlobalPageBackground);
 								if(bFromPeruseView)PeruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 								opt.putGlobalPageBackground(CMN.GlobalPageBackground);
-								if(apply && mWebView!=null)
+								if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
 									mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
 							}
 						}
@@ -4563,6 +4769,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				layoutScrollDisabled=false;
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 				boolean bPeruseInCharge = PeruseViewAttached();
+				if(!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething()){
+					interruptAutoReadProcess(true);
+				}
 				/* 正常翻页 */
 				if(bPeruseInCharge&&opt.getBottomNavigationMode1()==0 || !bPeruseInCharge&&opt.getBottomNavigationMode()==0){
 					int toPos = ActivedAdapter.lastClickedPos+delta;
@@ -4579,7 +4788,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					GoBackOrForward(webviewHolder, delta);
 				}
 			} break;
-			//发音
+			/* 发音 */
 			case R.id.browser_widget12:{
 				if(webSingleholder.getChildCount()==1 && widget12.getTag(R.id.image)!=null){
 					if((int)widget12.getTag(R.id.image)==R.drawable.ic_fullscreen_black_96dp){
@@ -4592,7 +4801,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					performReadEntry();
 				}
 			} break;
-			//切换收藏
+			/* 切换收藏 */
 			case R.id.browser_widget8:{//favorite
 				if(ActivedAdapter==null){
 					if(DBrowser!=null)
@@ -4611,7 +4820,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			} break;
-			//跳转
+			/* 跳转 */
 			case R.id.browser_widget9:{//view outlinexxx
 				if(ActivedAdapter instanceof com.knziha.plod.PlainDict.PeruseView.LeftViewAdapter) {
 					v.performLongClick();
@@ -4711,7 +4920,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			} break;
-			//上下导航
+			/* 上下导航 */
 			case R.id.browser_widget13:
 			case R.id.browser_widget14:{
 				boolean nxt = id == R.id.browser_widget14;
@@ -4733,6 +4942,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					scrollToWebChild(webholder.getChildAt(childAtIdx));
 				}
+			} break;
+			/* 自动浏览 */
+			case R.id.auto_browse:{
+				if(bRequestingAutoReading || !AutoBrowsePaused){
+					stopAutoReadProcess();
+				} else {
+					showT("自动浏览");
+					opt.isAudioActuallyPlaying=false;
+					startAutoReadProcess();
+				}
+			} break;
+			/* 全文朗读 */
+			case R.id.tts_readAll:{
+				showMT("  全文朗读  ");
+				performReadContent(getCurrentWebContext());
 			} break;
 		}
 		v.setTag(R.id.click_handled, false);
@@ -5777,13 +6001,34 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mWebView.evaluateJavascript(js_no_match, null);
 				mWebView.setTag(R.id.js_no_match, null);
 			}
-			/* 自动播放声音 */
+			/* 自动播放声音自动播报 */
 			if(mWebView.bRequestedSoundPlayback){
 				mWebView.bRequestedSoundPlayback=false;
 				if(mWebView==popupWebView)
 					widget12.setTag(R.drawable.ic_click_search, false);
-				postReadEntry();
+
+				if(AutoBrowsePaused||(!PDICMainAppOptions.getAutoBrowsingReadSomething())){
+					postReadEntry();
+				} else {
+					//faking opf
+					//mThenReadEntryCount=2;
+					if(mThenReadEntryCount==0){
+						bThenReadContent=PDICMainAppOptions.getAutoBrowsingReadContent();
+					}
+					if(TTSController_engine!=null){
+						TTSController_engine.setOnUtteranceProgressListener(null);
+						TTSController_engine.stop();
+					}
+					if(PDICMainAppOptions.getAutoBrowsingReadEntry()){
+						postReadEntry();
+					}else if(bThenReadContent){
+						bThenReadContent = false;
+						postReadContent(mWebView);
+					}
+					pendingWebView=mWebView;
+				}
 			}
+
 			if(mWebView.getTag(R.id.clearHistory)!=null && from!=4){
 				mWebView.setTag(R.id.clearHistory, null);
 				mWebView.clearHistory();
@@ -5959,7 +6204,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if (url.startsWith("entry://#")) {
 					//Log.e("chromium inter_ entry3", url);
 					if (!fromCombined) {// 三种情况：normal，peruseview， popup查询。
-						/* '代管'之含义：在网页前进/后退之时，不适用系统缓存，而是手动加载、手动定位。 */
+						/* '代管'之含义：在网页前进/后退之时，不使用系统缓存，而是手动加载、手动定位。 */
 						ScrollerRecord PageState;
 						if (mWebView.HistoryVagranter >= 0) {
 							(PageState = mWebView.History.get(mWebView.HistoryVagranter).value).set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
@@ -6333,6 +6578,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//CMN.Log("chrochro_inter_0",url);
 
 			if(url.startsWith(soundTag)) {
+				opt.supressAudioResourcePlaying=false;
 				url = url.substring(soundTag.length());
 			}
 			else if(url.startsWith(soundsTag)) {
@@ -6341,7 +6587,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					url = URLDecoder.decode(url,"UTF-8");
 				} catch (Exception ignored) { }
 				String soundKey="\\"+url+".";
-				//CMN.Log("接收到发音任务！", soundKey, "::", invoker._Dictionary_fName);
+				CMN.Log("接收到发音任务！", soundKey, "::", invoker._Dictionary_fName);
 				InputStream restmp=null;
 				WebResourceResponse ret=null;
 				mdict mdTmp;
@@ -6360,7 +6606,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (spx) {
 								try {
 									ret = decodeSpxStream(restmp);
-									if (ret != null) return ret;
+									if (ret != null) break;
 								} catch (Exception e) {
 									CMN.Log(e);
 								}
@@ -6371,6 +6617,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				if(ret!=null){
+					CMN.Log("返回音频");
 					return ret;
 				} else {
 					ReadEntryPlanB(mWebView, url);
@@ -6614,7 +6861,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	};
 
 	private void ReadEntryPlanB(WebViewmy mWebView, String url) {
-		if(PDICMainAppOptions.getUseSoundsPlaybackFirst() && hasMddForWeb(mWebView)){
+		opt.supressAudioResourcePlaying=!AutoBrowsePaused;
+		CMN.Log("ReadEntryPlanB");
+		if(AutoBrowsePaused /*自动读时绕过*/ && PDICMainAppOptions.getUseSoundsPlaybackFirst() && hasMddForWeb(mWebView)){
 			root.post(() -> mWebView.evaluateJavascript(WebviewSoundJS, value -> {
 				if (!"10".equals(value)) {
 					ReadEntryPlanB_internal(url);
@@ -6636,7 +6885,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	/**  进化的路线充满了崎岖与坎坷，但我仍要致君尧舜上，登辉煌、临绝巅。 */
 	private void ReadEntryPlanB_internal(String url) {
 		String msg = "找不到音频";
-		if(opt.getUseTTSToReadEntry()){
+		if(!AutoBrowsePaused/*自动读时强制*/ || opt.getUseTTSToReadEntry()){
 			ReadText(url, null);
 			msg = opt.getHintTTSReading()?("正在使用 TTS"):null;
 		}
@@ -6722,7 +6971,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			playCachedSoundFile_internal(tmpPath);
 		}
-
 	}
 
 	private void playCachedSoundFile_internal(File tmpPath) throws IOException {
@@ -6948,7 +7196,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					parms.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, Integer.toString(i));
 					parms.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, Float.toString(TTSVolume));
 					TTSController_engine.speak(speakPool[i].trim(),TextToSpeech.QUEUE_ADD, parms);
-					//CMN.Log("缓存了句子", i, speakPool[i]);
+					CMN.Log("缓存了句子", i, speakPool[i]);
 				}
 				if(TTSController_!=null && TTSController_.getParent()!=null && speakText instanceof SpannableString){
 					TTSController_tvHandle.setText(speakPool[start]);
@@ -7000,6 +7248,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	/** 重新开始TTS读网页句子。 */
 	public void ReadText(String text, WebViewmy mWebView){
+		if(!AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething())
+			interruptAutoReadProcess(true);
 		if(text!=null) {
 			speakText = text;
 			speakPool = text.split(delimiter);
@@ -7024,7 +7274,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			TTSController_engine = new TextToSpeech(this, status -> {
 				TTSReady = true;
 				mPullReadTextRunnable.run();
-			}, "com.google.android.tts");
+			}, null); //"com.google.android.tts"
 			TTSController_engine.setSpeechRate(TTS_LEVLES_SPEED[TTSSpeed]);
 			TTSController_engine.setPitch(TTS_LEVLES_SPEED[TTSPitch]);
 
@@ -7032,7 +7282,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				@Override
 				public void onStart(String utteranceId) {
 					speakPoolIndex = IU.parsint(utteranceId);
-					//CMN.Log("tts onStart" ,speakPoolIndex);
+					CMN.Log("tts onStart" ,speakPoolIndex);
 					if(opt.getTTSHighlightWebView()) {
 						if(mCurrentReadContext!=null)
 							mCurrentReadContext.post(new Runnable() {
@@ -7049,10 +7299,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				public void onDone(String utteranceId) {
 					speakPoolEndIndex = IU.parsint(utteranceId);
 					int speakPoolIndex = speakPoolEndIndex+1;
-					//CMN.Log("tts onDone" ,speakPoolIndex, speakCacheEndIndex);
-					if(speakPoolIndex>=speakCacheEndIndex)
+					CMN.Log("tts onDone" ,speakPoolIndex, speakCacheEndIndex);
+					if(speakPoolIndex>=speakCacheEndIndex){
 						mPullReadTextRunnable.run();
-					onAudioPause();
+					}
+					if(speakPoolIndex>=speakPool.length){
+						onAudioPause();
+						CMN.Log("tts onPause");
+					}
+					//onAudioPause();
 				}
 
 				@Override
@@ -7434,6 +7689,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void performReadEntry() {
+		mThenReadEntryCount--;
 		mdict mCurrentDictionary;
 		WebViewmy wv;
 		String target;
@@ -7485,7 +7741,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			target = currentClickDisplaying;
 			wv = popupWebView;
 		}
-		//showT(mCurrentDictionary._Dictionary_fName+"-"+wv+"-"+target);
+		//showT("PRE", mCurrentDictionary._Dictionary_fName+"-"+wv+"-"+target);
 		if(mCurrentDictionary!=null && wv!=null && target!=null) {
 			if (mCurrentDictionary.isMddResource() && target.length() > 1) {
 				int end = target.lastIndexOf(".");
@@ -7496,7 +7752,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(PDICMainAppOptions.getUseSoundsPlaybackFirst()){
 				requestSoundPlayBack(finalTarget, mCurrentDictionary, wv);
 			}
-			else if (mCurrentDictionary.hasMdd()) {
+			else if (AutoBrowsePaused /*自动读时绕过*/ && mCurrentDictionary.hasMdd()) {
 				/* 倾向于已经制定发音按钮 */
 				wv.evaluateJavascript(WebviewSoundJS, value -> {
 					//CMN.Log("WebviewSoundJS", value);
@@ -7511,12 +7767,31 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void postReadEntry() {
-		//CMN.Log("postReadEntry");
+		CMN.Log("postReadEntry");
 		if(opt.getUseTTSToReadEntry()){
 			pauseTTS();
 		}
 		//bottombar2.findViewById(R.id.browser_widget12).performClick();
-		root.postDelayed(() -> performReadEntry(), 100);
+		//root.postDelayed(() -> performReadEntry(), 100);
+		hdl.sendEmptyMessage(3322123);
+	}
+
+	public void postReadContent(WebViewmy mWebView) {
+		//CMN.Log("postReadEntry");
+		if(opt.getUseTTSToReadEntry()){
+			pauseTTS();
+		}
+		root.postDelayed(() -> performReadContent(mWebView), 100);
+	}
+
+	private void performReadContent(WebViewmy mWebView) {
+		CMN.Log("bThenReadContent");
+		if(mWebView!=null){
+			mWebView.evaluateJavascript("document.documentElement.innerText", value -> {
+				value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+				ReadText(value, mWebView);
+			});
+		}
 	}
 
 	private mdict getCurrentReadContext() {
@@ -7587,6 +7862,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				CMN.Log(e);
 			}
 		} else {
+			opt.supressAudioResourcePlaying=false;
 			soundKey=soundsTag+soundKey; /* CMN.Log("发音任务丢给资源拦截器", soundKey); */
 			wv.evaluateJavascript(playsoundscript + ("(\"" + soundKey + "\")") , null);
 		}
@@ -7861,5 +8137,276 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			d.setTitle("移动到…");
 		else
 			d.setTitle(R.string.pickfavor);
+	}
+
+
+	static HashSet<Integer> LongclickableMap = new HashSet<>();
+	ArrayList<Integer> NoTintMap = new ArrayList<>(Arrays.asList(13, 14));
+	static class IconData{
+		int number;
+		/** 0=hide; 1=normal; 2=only in horizontal mode */
+		int tmpIsFlag;
+		final static int tmpFlagLen=2;
+		IconData(int _number, int _tmpIsFlag){
+			number = _number;
+			tmpIsFlag = _tmpIsFlag;
+			//CMN.Log("最大值：", 1<<6-1);
+		}
+		@Override
+		public String toString() {
+			String ret = Integer.toString(number);
+			if(tmpIsFlag==0)
+				ret = "\\"+ret;
+			else if(tmpIsFlag==2)
+				ret = "\\\\"+ret;
+			return ret;
+		}
+
+		public void addString(StringBuilder sb) {
+			if(tmpIsFlag==0)
+				sb.append("\\");
+			else if(tmpIsFlag==2)
+				sb.append("\\\\");
+			sb.append(number);
+		}
+	}
+
+	static class AppUIProject{
+		public String key;
+		public boolean bNeedCheckOrientation;
+		String currentValue;
+		ViewGroup bottombar;
+		ImageView[] btns;
+		int[] icons;
+		int[] ids;
+
+		ArrayList<IconData> iconData;
+		String[] titles;
+
+		public AppUIProject(String _key, int[] _icons, int[] _ids, String customize_str, ViewGroup _bottombar, ImageView[] _btns) {
+			key = _key;
+			icons = _icons;
+			ids = _ids;
+			currentValue = customize_str;
+			bottombar = _bottombar;
+			btns = _btns;
+		}
+
+		public void instantiate(String[] _titles) {
+			titles = _titles;
+			int projectSize = btns.length;
+			ArrayList<IconData> _iconData = new ArrayList<>(projectSize);
+			if(currentValue!=null) {
+				String[] arr = currentValue.split("\\|");
+				for (int i = 0; i < arr.length; i++) {
+					String val = arr[i];
+					int start = 0;
+					int end = val.length();
+					if (end > 0) {
+						while (start < end && val.charAt(start) == '\\') ++start;
+						if (start > 0) val = val.substring(start, end);
+						int id = IU.parsint(val, -1);
+						_iconData.add(new IconData(id, start==0?1:start==1?0:start));
+					}
+				}
+			}
+			if(_iconData.size()<projectSize){// 查漏补缺
+				ArrayList<Integer> iconDataExtra = new ArrayList<>();
+				for (int i = 0; i < projectSize; i++) {
+					iconDataExtra.add(i);
+				}
+				for (int i = 0; i < _iconData.size(); i++) {
+					iconDataExtra.remove((Integer) _iconData.get(i).number);
+				}
+				boolean initialise = _iconData.size()==0;
+				for (int i = 0; i < iconDataExtra.size(); i++) {
+					int number = iconDataExtra.get(i);
+					int start = initialise&&number<6?0:1;
+					_iconData.add(new IconData(number, start==0?1:0));
+				}
+			}
+			iconData = _iconData;
+		}
+
+		public boolean getTint() {
+			return false;
+		}
+
+		public void clear() {
+			iconData=null;
+		}
+	}
+	int ForegroundTint = 0xffffffff;
+	//iii
+	ImageView[] ContentbarBtns = new ImageView[20];
+	/**  定制底栏一：<br/>
+	 * 返回列表7 收藏词条8 跳转词典9 上一词条10 下一词条11 发音按钮12 <br/>
+	 * 退离程序13 打开侧栏14 随机词条15 上一词典16 下一词典17  自动浏览18 全文朗读19 进入收藏20 进入历史21 调整亮度22 夜间模式23 切换横屏24 定制颜色25 定制底栏26 切换沉浸 切换全屏 多维分享 空格键 方向键⬅ 方向键➡ 方向键⬆ 方向键⬇ W键 A键 S键 D键 C键 Z键 CTRL键 SHIFT键 鼠标左击 鼠标右击 <br/>*/
+	int[] ContentbarBtnIcons = new int[]{
+			R.drawable.back_ic,
+			R.drawable.star_ic,
+			R.drawable.list_ic,
+			R.drawable.chevron_left,
+			R.drawable.chevron_right,
+			R.drawable.voice_ic,
+			R.drawable.ic_exit_to_app,//13
+			R.drawable.ic_menu_grey_24dp,//14
+			R.drawable.ic_shuffle,//15
+			R.drawable.chevron_top22,//16
+			R.drawable.chevron_bottom22,//17
+			R.drawable.ic_skip_next_white,//18
+			R.drawable.ic_fulltext_reader,//19
+			R.drawable.favoriteg,//20
+			R.drawable.historyg,//21
+			R.drawable.ic_brightness_low_black_bk,//22
+			R.drawable.dark_mode_small,//23
+			R.drawable.ic_swich_landscape_black_24dp,//24
+			R.drawable.color_grey_sheet,//25
+			R.drawable.customizebtmbr,//26
+	};
+	static{
+		LongclickableMap.addAll(Arrays.asList(107, 108, 109, 110, 111, 112, 114, 118, 119));
+	}
+	int[] ContentbarBtnIds = new int[]{
+			R.id.browser_widget7,
+			R.id.browser_widget8,
+			R.id.browser_widget9,
+			R.id.browser_widget10,
+			R.id.browser_widget11,
+			R.id.browser_widget12,
+			R.id.exitApp,
+			R.id.drawer_layout,
+			R.id.random_entry,
+			R.id.prv_dict,
+			R.id.nxt_dict,
+			R.id.auto_browse,
+			R.id.tts_readAll,
+			R.id.go_favorite,
+			R.id.go_history,
+			R.id.brightness,
+			R.id.night_mode,
+			R.id.switch_landscape,
+			R.id.colorize,
+			R.id.bottombar,
+	};
+
+	/** Rebuild Bottom Icons<br/>
+	 * 定制底栏：一  见 {@link PDICMainActivity#BottombarBtnIcons}<br/>
+	 * 定制底栏：二 见 {@link MainActivityUIBase#ContentbarBtnIcons}<br/>
+	 */
+	void RebuildBottombarIcons(AppUIProject bottombar_project, Configuration config) {
+		String appproject = bottombar_project.currentValue;
+		boolean tint = bottombar_project.getTint();
+		if(appproject==null) appproject="0|1|2|3|4|5";
+		//appproject="0|1|2|3|4|5|6|7|8|9|10|11|13|14|\\\\15";
+		//appproject="0|1|2|3|4|5|6";
+		//appproject="9|10|11|13|14|15";
+		int idStart=0;
+		ViewGroup bottombar = bottombar_project.bottombar;
+		bottombar.removeAllViews();
+		if(bottombar.getId()==R.id.bottombar2)
+			idStart=107;
+		boolean isHorizontal = config.orientation==Configuration.ORIENTATION_LANDSCAPE;
+		String[] arr = appproject.split("\\|");
+		ImageView[] BottombarBtns = bottombar_project.btns;
+		int[] BottombarBtnIcons = bottombar_project.icons;
+		CMN.rt();
+		for (int i = 0; i < arr.length; i++) {
+			String val = arr[i];
+			int start = 0;
+			int end = val.length();
+			if(end>0) {
+				while (start<end && val.charAt(start)=='\\') {
+					++start;
+				}
+				if(start>0){
+					val = val.substring(start, end);
+					if(start==2) bottombar_project.bNeedCheckOrientation=true;
+				}
+				if(start==0||start==2&&isHorizontal){
+					int id = IU.parsint(val, -1);
+					if (id >= 0 && id < BottombarBtns.length) {
+						ImageView iv = BottombarBtns[id];
+						if (iv == null) {
+							iv = new ImageView(this);
+							iv.setImageResource(BottombarBtnIcons[id]);
+							iv.setBackgroundResource(R.drawable.surrtrip1);
+							iv.setLayoutParams(widget10.getLayoutParams());
+							iv.setId(bottombar_project.ids[id]);
+							iv.setOnClickListener(this);
+							if(tint&&!NoTintMap.contains(id)) iv.setColorFilter(ForegroundTint, PorterDuff.Mode.SRC_IN);
+							if (LongclickableMap.contains(idStart+i))
+								iv.setOnLongClickListener(this);
+							BottombarBtns[id] = iv;
+						}
+						else {
+							ViewGroup svp = (ViewGroup) iv.getParent();
+							if (svp != null) svp.removeView(iv);
+						}
+						bottombar.addView(iv);
+					}
+				}
+			}
+		}
+		CMN.pt("重排耗时");
+	}
+
+	AppUIProject contentbar_project;
+
+	void showIconCustomizator() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		AlertDialog dialog = builder.setView(R.layout.carst_btns)
+				.setTitle("定制底栏")
+				.setIcon(R.drawable.settings)
+				.setPositiveButton(R.string.confirm, null)
+				.setNegativeButton(R.string.cancel, null).create();
+		dialog.getWindow().setBackgroundDrawableResource(R.drawable.frame_white_bg);
+		dialog.show();
+
+		ShelfLinearLayout sideBar = dialog.findViewById(R.id.sideBar);
+		DragSortListView main_list = dialog.findViewById(R.id.main_list);
+		sideBar.setRbyPos(0);
+		sideBar.setSCC(sideBar.ShelfDefaultGray=0xFF4F7FDF);
+
+		sideBar.getChildAt(2).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				sideBar.setRbyView(v);
+				dialog.findViewById(R.id.customPanel).setTag(R.id.position, v.getWidth());
+				showTopSnack(dialog.findViewById(R.id.customPanel), "浮动搜索", 0.35f, FLASH_DURATION_MS, -1,true);
+			}
+		});
+
+
+		BottombarTweakerAdapter ada = new BottombarTweakerAdapter(dialog, this);
+		//ada.projectContext = bottombar_project;
+		main_list.setAdapter(ada);
+		main_list.setDragListener(ada);
+		main_list.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 4 * getResources().getDimension(R.dimen._50_));
+		((SimpleFloatViewManager)main_list.mFloatViewManager).mFloatBGColor=0xff3185F7;
+
+
+		sideBar.getChildAt(0).setOnClickListener(ada);
+		sideBar.getChildAt(1).setOnClickListener(ada);
+		sideBar.getChildAt(2).setOnClickListener(ada);
+		sideBar.getChildAt(3).setOnClickListener(ada);
+		int pos = defbarcustpos;
+		if(PeruseViewAttached()){
+			pos = 2;
+		} else if(this instanceof PDICMainActivity && contentview.getParent()!=null){
+			pos = 1;
+		}
+		int finalPos = pos;
+		sideBar.getChildAt(finalPos).performClick();
+		sideBar.postDelayed(() -> sideBar.setRbyPos(finalPos), 350);
+		View btn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+		btn.setId(DialogInterface.BUTTON_POSITIVE);
+		btn.setOnLongClickListener(ada);
+		btn.setOnClickListener(ada);
+		btn = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+		btn.setId(DialogInterface.BUTTON_NEGATIVE);
+		btn.setOnLongClickListener(ada);
+		btn.setOnClickListener(ada);
+		//main_list.setDragListener(enw );
 	}
 }

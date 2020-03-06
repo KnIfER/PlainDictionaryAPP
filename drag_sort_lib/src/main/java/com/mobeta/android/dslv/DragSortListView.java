@@ -57,7 +57,7 @@ import java.util.ArrayList;
  *
  */
 public class DragSortListView extends ListView {
-    
+	public int mMaxHeight=0;
     
     /**
      * The View that floats above the ListView and represents
@@ -2135,7 +2135,28 @@ public class DragSortListView extends ListView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		if(mMaxHeight>0){
+			int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+			int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+			if (heightMode == MeasureSpec.EXACTLY) {
+				heightSize = heightSize <= mMaxHeight ? heightSize
+						: mMaxHeight;
+			}
+
+			if (heightMode == MeasureSpec.UNSPECIFIED) {
+				heightSize = heightSize <= mMaxHeight ? heightSize
+						: mMaxHeight;
+			}
+			if (heightMode == MeasureSpec.AT_MOST) {
+				heightSize = heightSize <= mMaxHeight ? heightSize
+						: mMaxHeight;
+			}
+			heightMeasureSpec = MeasureSpec.makeMeasureSpec(heightSize,heightMode);
+		}
+
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
         // Log.d("mobeta", "onMeasure called");
         if (mFloatView != null) {
             if (mFloatView.isLayoutRequested()) {

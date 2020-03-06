@@ -89,7 +89,7 @@
 		<LinearLayout
 			android:id="@+id/bottombar2"
 			android:layout_width="match_parent"
-			android:layout_height="50dip"
+			android:layout_height="@dimen/_bottombarheight_"
 			android:orientation="horizontal"
 			android:background="@color/colorPrimary"
 			android:theme="@style/AppTheme"

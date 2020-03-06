@@ -407,4 +407,46 @@
 		<item>沿用返回退出程序时的设置</item>
 	</string-array>
 
+	<string-array name="customize_btm">
+		<item>选择词典</item>
+		<item>选择分组</item>
+		<item>全词搜索</item>
+		<item>全文搜索</item>
+		<item>进入收藏</item>
+		<item>进入历史</item>
+		<item>退离程序</item>
+		<item>打开侧栏</item>
+		<item>随机词条</item>
+		<item>上一词典</item>
+		<item>下一词典</item>
+		<item>调整亮度</item>
+		<item>定制底栏</item>
+		<item>定制颜色</item>
+		<item>管理词典</item>
+		<item>进入设置</item>
+	</string-array>
+
+	<string-array name="customize_ctn">
+		<item>返回列表</item>
+		<item>收藏词条</item>
+		<item>跳转词典</item>
+		<item>上一词条</item>
+		<item>下一词条</item>
+		<item>发音按钮</item>
+		<item>退离程序</item>
+		<item>打开侧栏</item>
+		<item>随机词条</item>
+		<item>上一词典</item>
+		<item>下一词典</item>
+		<item>自动浏览</item>
+		<item>全文朗读</item>
+		<item>进入收藏</item>
+		<item>进入历史</item>
+		<item>调整亮度</item>
+		<item>夜间模式</item>
+		<item>切换横屏</item>
+		<item>定制颜色</item>
+		<item>定制底栏</item>
+	</string-array>
+
 </resources>

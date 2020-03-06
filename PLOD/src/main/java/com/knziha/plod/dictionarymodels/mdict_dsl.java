@@ -858,9 +858,9 @@ public class mdict_dsl extends mdict {
 			String keyword = key.toLowerCase();
 			String upperKey = keyword.toUpperCase();
 			matcher = new byte[upperKey.equals(keyword)?1:2][][];
-			matcher[0] = flowerSanLieZhi(keyword);
+			matcher[0] = flowerSanLieZhi(keyword, SearchLauncher);
 			if(matcher.length==2)
-				matcher[1] = flowerSanLieZhi(upperKey);
+				matcher[1] = flowerSanLieZhi(upperKey, SearchLauncher);
 		}
 
 		split_recs_thread_number = _num_entries<6?1:(int) (_num_entries/6);//Runtime.getRuntime().availableProcessors()/2*2+10;
@@ -916,6 +916,7 @@ public class mdict_dsl extends mdict {
 						final ReusableByteOutputStream bos = new ReusableByteOutputStream(mBlockSize *2);//!!!避免反复申请内存
 						try
 						{
+							Flag flag = new Flag();
 							long toSkip=it*step* mBlockSize;
 							InputStream data_in = BU.SafeSkipReam(new FileInputStream(f), toSkip);
 							int jiaX=0;
@@ -971,7 +972,7 @@ public class mdict_dsl extends mdict {
 								if(SearchLauncher.IsInterrupted  || searchCancled ) break;
 
 								int try_idx=Jonimatcher==null?
-										flowerIndexOf(record_block_,0,recordodKeyLen, finalMatcher,0,0)
+										flowerIndexOf(record_block_,0,recordodKeyLen, finalMatcher,0,0, SearchLauncher, flag)
 										:Jonimatcher.searchInterruptible(0, recordodKeyLen, Option.DEFAULT)
 										;
 								//SU.Log(try_idx, record_block_.length, recordodKeyLen);

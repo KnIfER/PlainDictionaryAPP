@@ -41,7 +41,7 @@ public class MainShareActivity extends AppCompatActivity {
 				//this, FloatActivitySearch.class
 				popup.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				popup.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-				CMN.Log("pop that way!");
+				//CMN.Log("pop that way!");
 				getApplicationContext().startActivity(popup);
 			}else{//主程序
 				Intent newTask = new Intent(Intent.ACTION_MAIN);
@@ -49,7 +49,8 @@ public class MainShareActivity extends AppCompatActivity {
 				newTask.putExtra(Intent.EXTRA_TEXT,debugString);
 				newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
 				newTask.setClass(getBaseContext(),PDICMainActivity.class);
-				newTask.setFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP|Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+				//|Intent.FLAG_ACTIVITY_CLEAR_TASK
+				newTask.setFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP|Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 				startActivity(newTask);
 			}
 		}

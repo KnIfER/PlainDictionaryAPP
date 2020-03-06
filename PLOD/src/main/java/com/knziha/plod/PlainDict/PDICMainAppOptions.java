@@ -21,12 +21,14 @@ import androidx.appcompat.app.GlobalOptions;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class PDICMainAppOptions
 {
 	public boolean isAudioPlaying;
 	public boolean isAudioActuallyPlaying;
+	public boolean supressAudioResourcePlaying;
 	//public static HashMap<String, Long> ChangedMap;
 	SharedPreferences reader2;
 	SharedPreferences defaultReader;
@@ -37,6 +39,18 @@ public class PDICMainAppOptions
 
 		defaultReader = PreferenceManager.getDefaultSharedPreferences(a_);
 		magicStr=a_.getResources().getString(R.string.defPlan);
+
+		int max = 1<<7;
+		byte[]  bytes = new byte[max];
+		for (int i = 1; i < max; i++) {
+			bytes[i] = (byte) i;
+		}
+		CMN.Log(max, 0x7e);
+
+		String str = new String(bytes, 1, max-1, StandardCharsets.UTF_8);
+		String store = defaultReader.getString("test", null);
+		defaultReader.edit().putString("test", null).apply();
+		CMN.Log("===", str.equals(store));
 	}
 	String magicStr;
 
@@ -117,10 +131,15 @@ public class PDICMainAppOptions
 	}
 
 	public String getAppBottomBarProject() {
-		return defaultReader.getString("appbar",null);
+		return defaultReader.getString("btmprj",null);
 	}
-	public void setAppBottomBarProject(String name) {
-		defaultReader.edit().putString("appbar", lastMdPlanName=name).apply();
+
+	public String getAppContentBarProject(String key) {
+		return defaultReader.getString(key,null);
+	}
+
+	public void putAppProject(MainActivityUIBase.AppUIProject projectContext) {
+		defaultReader.edit().putString(projectContext.key, projectContext.currentValue).apply();
 	}
 
 	public int getGlobalPageBackground() {
@@ -1985,6 +2004,44 @@ public class PDICMainAppOptions
 	}
 	public static boolean setHackDisableMagnifier(boolean val) {
 		updateQFAt(0x20000000l,val);
+		return val;
+	}
+
+	public static boolean getTintIconForeground() {
+		return (FourthFlag & 0x40000000l) == 0x40000000l;
+	}
+	public static boolean setTintIconForeground(boolean val) {
+		updateQFAt(0x40000000l,val);
+		return val;
+	}
+
+	public static boolean getAutoBrowsingReadEntry() {
+		return false;//(FourthFlag & 0x80000000l) == 0x80000000l;
+	}
+	public static boolean setAutoBrowsingReadEntry(boolean val) {
+		updateQFAt(0x80000000l,val);
+		return val;
+	}
+
+	public static boolean getAutoBrowsingReadContent() {
+		return false;//(FourthFlag & 0x100000000l) == 0x100000000l;
+	}
+	public static boolean setAutoBrowsingReadContent(boolean val) {
+		updateQFAt(0x100000000l,val);
+		return val;
+	}
+
+	public static boolean getAutoBrowsingReadSomething() {
+		return getAutoBrowsingReadContent()||getAutoBrowsingReadEntry();//(FourthFlag & 0x80000000l) == 0x80000000l;
+	}
+
+
+
+	public static boolean getEnableFanjnConversion() {
+		return true;//(FourthFlag & 0x200000000l) == 0x200000000l;
+	}
+	public static boolean setEnableFanjnConversion(boolean val) {
+		updateQFAt(0x200000000l,val);
 		return val;
 	}
 

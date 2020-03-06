@@ -18,9 +18,16 @@
 package com.knziha.plod.dictionary;
 
 
+import android.util.SparseArray;
+
+import androidx.appcompat.app.GlobalOptions;
+
 import com.alibaba.fastjson.JSONObject;
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionary.Utils.GetIndexedString;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.key_info_struct;
@@ -88,6 +95,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -798,7 +807,8 @@ public class mdict extends mdBase{
 
 	protected int split_recs_thread_number;
 	public void flowerFindAllContents(String key, int selfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException{
-		//SU.Log("Find In All Contents Stated");
+		//SU.Log("Find In All Contents Started");
+		if(isResourceFile) return;
 		byte[][][] matcher=null;
 		Regex Joniregex = null;
 		if(getUseJoniRegex(1)){
@@ -810,14 +820,7 @@ public class mdict extends mdBase{
 				Joniregex = new Regex(pattern, 0, pattern.length, getRegexOption(), encoding);
 			}
 		}
-		if(Joniregex==null){
-			String keyword = key.toLowerCase();
-			String upperKey = keyword.toUpperCase();
-			matcher = new byte[upperKey.equals(keyword)?1:2][][];
-			matcher[0] = flowerSanLieZhi(keyword);
-			if(matcher.length==2)
-				matcher[1] = flowerSanLieZhi(upperKey);
-		}
+		if(Joniregex==null) matcher =  leafSanLieZhi(SearchLauncher);
 
 		if(_key_block_info_list==null) read_key_block_info(null);
 
@@ -827,6 +830,7 @@ public class mdict extends mdBase{
 
 		split_recs_thread_number = _num_record_blocks<6?1:(int) (_num_record_blocks/6);//Runtime.getRuntime().availableProcessors()/2*2+10;
 		split_recs_thread_number = split_keys_thread_number>16?6:split_keys_thread_number;
+		//split_recs_thread_number = 1;
 		final int thread_number = Math.min(Runtime.getRuntime().availableProcessors()/2*2+2, split_keys_thread_number);
 		//SU.Log("fatal_","split_recs_thread_number"+split_recs_thread_number);
 		//SU.Log("fatal_","thread_number"+thread_number);
@@ -881,9 +885,11 @@ public class mdict extends mdBase{
 					if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
 					final byte[] record_block_compressed = new byte[(int) maxComRecSize];//!!!避免反复申请内存
 					final byte[] record_block_ = new byte[(int) maxDecompressedSize];//!!!避免反复申请内存
+					F1ag flag = new F1ag();
+					InputStream data_in = null;
 					try
 					{
-						InputStream data_in = mOpenInputStream();
+						data_in = mOpenInputStream();
 						long seekTarget=_record_info_struct_list[it*step].compressed_size_accumulator+_record_block_offset+_number_width*4+_num_record_blocks*2*_number_width;
 						long seek = data_in.skip(seekTarget);
 						//if(seek!=seekTarget)
@@ -950,15 +956,21 @@ public class mdict extends mdBase{
 
 									try_idx=(int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator);
 
-									//SU.Log("full res ::", i, try_idx, try_idx+recordodKeyLen, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator), record_block_.length, recordodKeyLen, finalKey);
+									GlobalOptions.debug=relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator==47952;
+//									if(GlobalOptions.debug){
+//										SU.Log("full res ::str", new String(record_block_, try_idx, recordodKeyLen, _charset));
+//										SU.Log("full res ::relative_pos", relative_pos, "kos_len", ko.length-1, "key_block_id", key_block_id, "keyBlocksHeaderTextKeyID_len", keyBlocksHeaderTextKeyID.length-1);
+//										SU.Log("full res ::start-len", try_idx, recordodKeyLen, record_block_.length);
+//									} else continue;
 
 									try_idx=Jonimatcher==null?
-											flowerIndexOf(record_block_,try_idx,recordodKeyLen, finalMatcher,0,0)
+											flowerIndexOf(record_block_,try_idx,recordodKeyLen, finalMatcher,0,0, SearchLauncher, flag)
 											:Jonimatcher.searchInterruptible(try_idx, try_idx+recordodKeyLen, Option.DEFAULT)
 											;
-									//Jonimatcher.searchInterruptible()
+
 									if(SearchLauncher.IsInterrupted || searchCancled) break;
-									//SU.Log("full res ::", try_idx, finalKey, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator), recordodKeyLen, record_block_.length);
+
+									//if(GlobalOptions.debug) SU.Log("full res ::", try_idx, key, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator), recordodKeyLen, record_block_.length);
 
 									if(try_idx!=-1) {
 										//SU.Log("full res ::", try_idx, finalKey, new String(record_block_, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator)+try_idx-100, 200, _charset));
@@ -974,9 +986,12 @@ public class mdict extends mdBase{
 						data_in.close();
 
 					} catch (Exception e) {
+						try {
+							if(data_in!=null) data_in.close();
+						} catch (IOException ignored) {  }
 						//BU.printBytes(record_block_compressed,0,4);
 						//CMN.Log(record_block_compressed[0]|record_block_compressed[1]<<8|record_block_compressed[2]<<16|record_block_compressed[3]<<32);
-						e.printStackTrace();
+						SU.Log(e);
 					}
 					SearchLauncher.thread_number_count--;
 					if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(-1);
@@ -1129,6 +1144,47 @@ public class mdict extends mdBase{
 		}
 	}
 
+	/** derived */
+	public static int kalyxIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][] targets, int fromIndex, F1ag seelHolder) {
+		int targetCounts = targets.length;
+		byte[] target;
+		int targetCount;
+		int lookat=0;
+		byte sI;
+		int max1 = sourceOffset + sourceCount -1;
+		int i = sourceOffset + fromIndex;
+		while(i <= max1) {
+			for (; i <= max1; i++) {//亦步亦趋求首项
+				/* Look for first character. */
+				sI = source[i];
+				for (lookat = 0; lookat < targetCounts && sI != targets[lookat][0]; lookat++)
+					;
+				if(lookat < targetCounts) break;
+			}
+			if(lookat>=targetCounts)/* 开始即结束 */ return -1;
+			for (; lookat < targetCounts; lookat++){
+				if (source[i] == targets[lookat][0]) {
+					target = targets[lookat];
+					targetCount = target.length;
+					/* Found first character, now look at the rest of v2 */
+					int j = i + 1;
+					int end = j + targetCount - 1;
+					if(end<=max1 - targetCount) {
+						for (int k = 1; j < end && source[j] == target[k]; j++, k++)
+							;
+						if (j == end) {
+							/* Found whole string. */
+							seelHolder.val = lookat;
+							return i - sourceOffset;//试之得
+						}
+					}
+					//试之不得
+				}
+			}
+			i++;
+		}
+		return -1;
+	}
 
 	/*
 	 * https://stackoverflow.com/questions/21341027/find-indexof-a-byte-array-within-another-byte-array
@@ -1202,11 +1258,56 @@ public class mdict extends mdBase{
 		public volatile boolean IsInterrupted;
 		public volatile String ErrorMessage=null;
 		public volatile int thread_number_count = 1;
+		public GetIndexedString jnFanMap;
+		public GetIndexedString fanJnMap;
+		/** .is 免死金牌  that exempt you from death for just one time */
+		HashSet<Integer> miansi = new HashSet<>();
+		/** *is 越级天才, i.e., super super genius leap */
+		HashSet<Integer> yueji = new HashSet<>();
 
 		public volatile int dirtyResultCounter;
 		public volatile int dirtyProgressCounter;
 		public long st;
 		public String key;
+
+		ArrayList<String>[] mParallelKeys;
+
+		/** Disperse an search term into a 2D byte array. */
+		public void flowerSanLieZhi(String str) {
+			miansi.clear();
+			yueji.clear();
+			int len=str.length();
+			mParallelKeys = new ArrayList[len];
+			for(int i=0;i<len;i++){
+				char ch = str.charAt(i);
+				if(ch=='.')
+					miansi.add(i);
+				else if(ch=='*')
+					yueji.add(i);
+				else{
+					ArrayList<String> lexipart = new ArrayList<>();
+					String mLexicalPart = str.substring(i, i+1);
+					lexipart.add(mLexicalPart);
+					String val=null;
+					if(getEnableFanjnConversion()){ //繁简一
+						if((val=jnFanMap.get(ch))!=null){
+							for (int j = 1; j < val.length(); j++) {
+								lexipart.add(val.substring(j, j+1));
+							}
+						} else if((val=fanJnMap.get(ch))!=null){
+							lexipart.add(val.substring(0, 1));
+						}
+					}
+					if(val==null){ //忽略大小写
+						String UpperKey = mLexicalPart.toUpperCase();
+						if(!UpperKey.equals(mLexicalPart)){
+							lexipart.add(UpperKey);
+						}
+					}
+					mParallelKeys[i] = lexipart;
+				}
+			}
+		}
 
 		public AtomicInteger poolEUSize = new AtomicInteger(0);
 
@@ -1219,6 +1320,8 @@ public class mdict extends mdBase{
 		public abstract void setCombinedTree(int DX, ArrayList<Integer>[] val);
 
 		public abstract ArrayList<Integer>[] getInternalTree(mdict mdtmp);
+
+		public abstract boolean getEnableFanjnConversion();
 
 		public abstract Pattern getBakedPattern();
 
@@ -1281,17 +1384,14 @@ public class mdict extends mdBase{
 				Joniregex = new Regex(pattern, 0, pattern.length, getRegexOption()|Option.SINGLELINE, encoding);
 			}
 		}
+
 		if(Joniregex==null){
 			String keyword = key.toLowerCase();
 			try {
 				keyPattern=Pattern.compile(regexIntent?keyword:keyword.replace("*", ".+?"),Pattern.CASE_INSENSITIVE);
 			}catch(Exception ignored) {}
 
-			String upperKey = keyword.toUpperCase();
-			matcher = new byte[upperKey.equals(keyword)?1:2][][];
-			matcher[0] = flowerSanLieZhi(keyword);
-			if(matcher.length==2)
-				matcher[1] = flowerSanLieZhi(upperKey);
+			matcher =  leafSanLieZhi(SearchLauncher);
 		}
 
 		if(_key_block_info_list==null) read_key_block_info(null);
@@ -1455,27 +1555,26 @@ public class mdict extends mdBase{
 		return Executors.newFixedThreadPool(thread_number);
 	}
 
-	/** .is 免死金牌  that exempt you from death for just one time */
-	HashSet<Integer> miansi = new HashSet<>();
-	/** *is 越级天才, i.e., super super genius leap */
-	HashSet<Integer> yueji = new HashSet<>();
-
-	protected int flowerIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][][] matchers, int marcherOffest, int fromIndex)
+	protected int flowerIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][][] matchers, int marcherOffest, int fromIndex, AbsAdvancedSearchLogicLayer searchLauncher, F1ag flag)
 	{
+		//if(GlobalOptions.debug)SU.Log("flowerIndexOf", sourceOffset, sourceCount);
 		int lastSeekLetSize=0;
+		int totalLen = matchers.length;
+		boolean bSearchInContents = searchLauncher.type==2||searchLauncher.type==-2;
 		while(fromIndex<sourceCount) {
 			//SU.Log("==");
 			//int idx = -1;
 			int fromIndex_=fromIndex;
 			boolean isSeeking=true;
 			boolean Matched = false;
-			for(int lexiPartIdx=marcherOffest;lexiPartIdx<matchers[0].length;lexiPartIdx++) {
+			boolean pass; int len;
+			for(int lexiPartIdx=marcherOffest;lexiPartIdx<totalLen;lexiPartIdx++) {
 				//if(fromIndex_>sourceCount-1) return -1;
 				//SU.Log("stst: "+sourceCount+"::"+(fromIndex_+seekPos)+" fromIndex_: "+fromIndex_+" seekPos: "+seekPos+" lexiPartIdx: "+lexiPartIdx);
 
 				//SU.Log("seekPos: "+seekPos+" lexiPartIdx: "+lexiPartIdx+" fromIndex_: "+fromIndex_);
-				if(miansi.contains(lexiPartIdx)) {
-					if(lexiPartIdx==matchers[0].length-1) {
+				if(searchLauncher.miansi.contains(lexiPartIdx)) {
+					if(lexiPartIdx==totalLen-1) {
 						if(fromIndex_>=sourceCount)
 							return -1;
 						return fromIndex-lastSeekLetSize;//HERE
@@ -1491,10 +1590,10 @@ public class mdict extends mdBase{
 					int jumpShort = c.substring(0, 1).getBytes(_charset).length;
 					fromIndex_+=jumpShort;
 					continue;
-				}else if(yueji.contains(lexiPartIdx)) {
-					if(lexiPartIdx==matchers[0].length-1)
+				} else if(searchLauncher.yueji.contains(lexiPartIdx)) {
+					if(lexiPartIdx==totalLen-1)
 						return fromIndex-lastSeekLetSize;//HERE
-					if(flowerIndexOf(source, sourceOffset+fromIndex_,sourceCount-(fromIndex_), matchers,lexiPartIdx+1, 0)!=-1){
+					if(flowerIndexOf(source, sourceOffset+fromIndex_,sourceCount-(fromIndex_), matchers,lexiPartIdx+1, 0, searchLauncher, flag)!=-1){
 						return fromIndex-lastSeekLetSize;
 					}
 					return -1;
@@ -1502,18 +1601,43 @@ public class mdict extends mdBase{
 				Matched = false;
 				if(isSeeking) {
 					int seekPos=-1;
-					int newSeekPos=-1;
-					for(byte[][] marchLet:matchers) {
+					for(byte[] marchLet:matchers[lexiPartIdx]) {
 						//if(marchLet==null) break;
-						if(newSeekPos==-1)
-							newSeekPos = indexOf(source, sourceOffset, sourceCount, marchLet[lexiPartIdx],0,marchLet[lexiPartIdx].length, fromIndex_);
-						else
-							newSeekPos = indexOf(source, sourceOffset, newSeekPos, marchLet[lexiPartIdx],0,marchLet[lexiPartIdx].length, fromIndex_);
-						//Lala=MinimalIndexOf(source, sourceOffset, sourceCount, new byte[][] {matchers[0][lexiPartIdx],matchers[1][lexiPartIdx]},0,-1,fromIndex_+seekPos);
-						if(newSeekPos!=-1) {
-							seekPos=newSeekPos;
-							lastSeekLetSize=matchers[0][lexiPartIdx].length;
-							Matched=true;
+						int newSeekPos = indexOf(source, sourceOffset, sourceCount, marchLet, 0, marchLet.length, fromIndex_);
+						if (newSeekPos >= fromIndex_) {
+							//todo verify first match
+							pass = true;
+							if (checkEven != 0 && (len = newSeekPos - fromIndex_) != 0) {
+								if (checkEven == 2) {
+									pass = len % 4 == 0;
+								} else if (checkEven == 1 && len % 2 != 0) {
+									pass = false;
+								} else {
+									len = sourceOffset + newSeekPos;
+									int start = (checkEven == 3) ? Math.max(sourceOffset + fromIndex_, sourceOffset + newSeekPos - maxEB) : (sourceOffset + fromIndex_);
+									//int start = Math.max(sourceOffset+fromIndex_, sourceOffset+newSeekPos-4);
+									len = len - start;
+									String validfyCode = new String(source, start, len, _charset);
+									//SU.Log("validfyCode", validfyCode);
+									len = validfyCode.length();
+									pass = len > 0 && validfyCode.charAt(len - 1) != 65533;
+								}
+							}
+							if (pass && (seekPos==-1||newSeekPos<seekPos)) {
+								if (bSearchInContents) {
+									//todo skip html tags 检查不在<>之中。 往前找>，截止于<>两者。若找先到<则放行。
+									//									若找先到>则需要进一步检查。
+									//									往后找<，截止于<>两者。若找先到>则放行。
+									//									若找先到<则简单认为需要跳过。
+									//if (bingStartWith(source, sourceOffset, sourceCount, htmlOpenTag, 0, htmlOpenTag.length, newSeekPos+marchLet.length)) {
+									//CMN.Log("found htmlOpenTag!!!");
+									//}
+
+								}
+								seekPos = newSeekPos;
+								lastSeekLetSize = matchers[lexiPartIdx][flag.val].length;
+								Matched = true;
+							}
 						}
 					}
 					//SU.Log("seekPos:"+seekPos+" fromIndex_: "+fromIndex_);
@@ -1523,46 +1647,74 @@ public class mdict extends mdBase{
 					fromIndex=fromIndex_=seekPos;
 					isSeeking=false;
 					continue;
-				}
+				}/* End seek */
 				else {
 					//SU.Log("deadline"+fromIndex_+" "+sourceCount);
 					if(fromIndex_>sourceCount-1) {
-						//SU.Log("deadline reached"+fromIndex_+" "+sourceCount);
+						//if(GlobalOptions.debug) SU.Log("deadline reached"+fromIndex_+" "+sourceCount);
 						return -1;
 					}
-					for(byte[][] marchLet:matchers) {
+//					if(GlobalOptions.debug) {
+//						SU.Log("matchedHonestily? ", lexiPartIdx, searchLauncher.mParallelKeys[lexiPartIdx].get(0));
+//						CMN.Log("matchedHonestily? str", new String(source, sourceOffset+fromIndex_, 100, _charset));
+//					}
+					for(byte[] marchLet:matchers[lexiPartIdx]) {
 						if(marchLet==null) break;
-						if(bingStartWith(source,sourceOffset,marchLet[lexiPartIdx],0,-1,fromIndex_)) {
+						if(bingStartWith(source,sourceOffset, sourceCount, marchLet,0,marchLet.length,fromIndex_)) {
 							Matched=true;
-							//SU.Log("matchedHonestily: ",sourceCount,"::",(fromIndex_+seekPos)," fromIndex_: ",fromIndex_+" seekPos: "+seekPos);
-							//SU.Log("matchedHonestily: ",lexiPartIdx);
+//							if(GlobalOptions.debug) {
+//								SU.Log("matchedHonestily: ", sourceCount, "::", " fromIndex_: ", fromIndex_ + " seekPos: ");
+//								SU.Log("matchedHonestily: ", lexiPartIdx, searchLauncher.mParallelKeys[lexiPartIdx].get(0));
+//							}
+							fromIndex_+=marchLet.length;
+							break;
 						}
 					}
-				}
+					if(!Matched && bSearchInContents) {
+						//todo skip html tags 三步，检查紧邻< ，搜索>，而后推进fromIndex_
+
+					}
+				}/* End honest match */
 				if(!Matched) {
 					//SU.Log("Matched failed this round: "+lexiPartIdx);
 					break;
 				}
-				fromIndex_+=matchers[0][lexiPartIdx].length;
-			}
+				//fromIndex_+=matchers[lexiPartIdx][0].length;
+			}/* End lexical parts loop */
 			if(Matched)
 				return fromIndex-lastSeekLetSize;
 		}
 		return -1;
 	}
 
+	protected byte[][][] leafSanLieZhi(AbsAdvancedSearchLogicLayer searchLauncher) {
+		ArrayList<String>[] pm = searchLauncher.mParallelKeys;
+		byte[][][] res = new byte[pm.length][][];
+		for (int i = 0; i < pm.length; i++) {
+			if(pm[i]!=null){
+				int size = pm[i].size();
+				byte[][] lexipart = new byte[size][];
+				for (int j = 0; j < size; j++) {
+					lexipart[j] = pm[i].get(j).getBytes(_charset);
+				}
+				res[i] = lexipart;
+			}
+		}
+		return res;
+	}
+
 	/** Disperse an search term into a 2D byte array. */
-	protected byte[][] flowerSanLieZhi(String str) {
-		miansi.clear();
-		yueji.clear();
+	protected byte[][] flowerSanLieZhi(String str, AbsAdvancedSearchLogicLayer searchLauncher) {
+		searchLauncher.miansi.clear();
+		searchLauncher.yueji.clear();
 		int len=str.length();
 		byte[][] res = new byte[len][];
 		for(int i=0;i<len;i++){
 			char ch = str.charAt(i);
 			if(ch=='.')
-				miansi.add(i);
+				searchLauncher.miansi.add(i);
 			else if(ch=='*')
-				yueji.add(i);
+				searchLauncher.yueji.add(i);
 			else
 				res[i] = str.substring(i, i+1).getBytes(_charset);
 		}
@@ -1579,7 +1731,7 @@ public class mdict extends mdBase{
 		//String delimiter;
 		int key_end_index;
 		//int keyCounter = 0;
-
+		Flag flag = new Flag();
 		//ByteBuffer sf = ByteBuffer.wrap(key_block);//must outside of while...
 		int keyCounter = 0;
 		while(key_start_index < infoI.key_block_decompressed_size){
@@ -1609,20 +1761,22 @@ public class mdict extends mdBase{
 				//TODO: alter
 				//xxxx
 				int try_idx = JoniRegx==null?
-						flowerIndexOf(key_block,key_start_index+_number_width, key_end_index-(key_start_index+_number_width), matcher,0,0)
+						flowerIndexOf(key_block,key_start_index+_number_width, key_end_index-(key_start_index+_number_width), matcher,0,0, SearchLauncher, flag)
 						:JoniRegx.matcher(key_block, key_start_index+_number_width, key_end_index).search(key_start_index+_number_width, key_end_index, Option.SINGLELINE)
 						;
 
 				if(try_idx!=-1){
 					//复核 re-collate
+					if(false)
 					if (keyPattern != null){
 						String LexicalEntry = new String(key_block, key_start_index + _number_width, key_end_index - (key_start_index + _number_width), _charset);
 						//SU.Log("checking ", LexicalEntry);
 						if (!keyPattern.matcher(LexicalEntry).find()) {
-							key_start_index = key_end_index + delimiter_width;
-							SearchLauncher.dirtyProgressCounter++;
-							keyCounter++;
-							continue;
+							CMN.Log("发现错匹！！！", LexicalEntry, _Dictionary_fName);
+//							key_start_index = key_end_index + delimiter_width;
+//							SearchLauncher.dirtyProgressCounter++;
+//							keyCounter++;
+//							continue;
 						}
 					}
 					//StringBuilder sb = new StringBuilder(LexicalEntry);
@@ -1936,14 +2090,14 @@ public class mdict extends mdBase{
 				.append("Path: ").append(getPath()).toString();
 	}
 
-	static boolean bingStartWith(byte[] source, int sourceOffset,byte[] target, int targetOffset, int targetCount, int fromIndex) {
-		if (fromIndex >= source.length) {
-			return false;
-		}
-		if(targetCount<=-1)
-			targetCount=target.length;
-		if(sourceOffset+targetCount>=source.length)
-			return false;
+	static boolean bingStartWith(byte[] source, int sourceOffset, int sourceCount,byte[] target, int targetOffset, int targetCount, int fromIndex) {
+		//if (fromIndex >= sourceCount || targetCount+fromIndex >= sourceCount) { // || targetCount+fromIndex>=sourceCount || fromIndex>=sourceCount
+		//	return false;
+		//}
+		//if(targetCount<=-1)
+		//	targetCount=target.length;
+		//if(sourceOffset+targetCount>=source.length)
+		//	return false;
 		int i = sourceOffset+fromIndex;
 		int v1 = i+targetCount-1, v2=targetOffset-i;
 		for (; i <= v1 && source[i] == target[i+v2]; i++);

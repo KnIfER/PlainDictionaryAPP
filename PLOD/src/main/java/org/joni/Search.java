@@ -19,6 +19,8 @@
  */
 package org.joni;
 
+import com.knziha.plod.dictionary.Utils.SU;
+
 import org.jcodings.Encoding;
 import org.jcodings.IntHolder;
 
@@ -208,22 +210,10 @@ final class Search {
 					s += enc.length(text, s, textEnd);
 				}
 			} else {
-				int count = s;
 				while (s < textRange) {
 					if (lowerCaseMatch(target, targetP, targetEnd, text, s, textEnd, enc, buf, regex.caseFoldFlag)) return s;
-					int val = enc.length(text, s, textEnd);
-					if (val > 0) {
-						s += val;
-						count += val;
-					} else {
-						if (max + s + val < count) { //I believe it shouldn't lag too much behind ?
-							s += 1;
-							count = s;
-						} else {
-							s += val;
-							count += 1;
-						}
-					}
+					int val = Math.max(1, enc.length(text, s, textEnd));//I believe
+					s += val;
 				}
 			}
             return -1;
@@ -598,22 +588,10 @@ final class Search {
                     s += enc.length(text, s, textEnd);
                 }
             } else {
-                int count = s;
                 while (s < textRange) {
                     if (map[text[s] & 0xff] != 0) return s;
-                    int val = enc.length(text, s, textEnd);
-                    if (val > 0) {
-                        s += val;
-                        count += val;
-                    } else {
-                        if (max + s + val < count) { //I believe it shouldn't lag too much behind ?
-                            s += 1;
-                            count = s;
-                        } else {
-                            s += val;
-                            count += 1;
-                        }
-                    }
+                    int val = Math.max(1, enc.length(text, s, textEnd)); //I believe
+					s += val;
                 }
             }
             return -1;

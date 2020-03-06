@@ -36,4 +36,5 @@
 	<dimen name="halfpopheader">32dp</dimen>
 	<dimen name="progress_inset">32dp</dimen>
 	<dimen name="scrollBarWidth">16dp</dimen>
+	<dimen name="_bottombarheight_">48dp</dimen>
 </resources>

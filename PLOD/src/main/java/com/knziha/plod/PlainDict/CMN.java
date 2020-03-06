@@ -104,12 +104,13 @@ public class CMN{
 	//[!1] End debug flags and methods*/
 
 	public static long stst;
+	public static long ststrt;
 	public static long stst_add;
 	public static void rt() {
-		stst = System.currentTimeMillis();
+		ststrt = System.currentTimeMillis();
 	}
 	public static void pt(Object...args) {
-		CMN.Log(listToStr(args)+" "+(System.currentTimeMillis()-stst));
+		CMN.Log(listToStr(args)+" "+(System.currentTimeMillis()-ststrt));
 	}
 	public static void tp(long stst, Object...args) {
 		long time = (System.currentTimeMillis() - stst);

@@ -4,7 +4,7 @@
 	android:height="101px"
 	xmlns:android="http://schemas.android.com/apk/res/android">
 	<!--背景颜色-->
-<!--	<path android:fillColor="#ffff00" android:pathData="M0,0 L24,0 24,24 0,24"/>-->
+<!--	<path android:fillColor="#92AAFF" android:pathData="M0,0 L24,0 24,24 0,24"/>-->
 <!--	<path android:fillColor="#EEEE00" android:pathData="M13.51,14.84L12.39,15.95l-3.95,-3.95 3.95,-3.95 1.11,1.11L11.47,11.21H19.11v1.58h-7.64l2.04,2.05zM6.47,4.89H17.53c0.88,0 1.58,0.71 1.58,1.58v3.16h-1.58V6.47h-11.06v11.06H17.53v-3.16H19.11v3.16c-0,0.87 -0.7,1.58 -1.58,1.58h-11.06c-0.87,0 -1.58,-0.71 -1.58,-1.58V6.47c-0,-0.87 0.71,-1.58 1.58,-1.58z "/>-->
 
 

@@ -161,17 +161,27 @@ public class CharsetDetector {
      * @stable ICU 3.4
      */
     public CharsetMatch detect() {
-//   TODO:  A better implementation would be to copy the detect loop from
-//          detectAll(), and cut it short as soon as a match with a high confidence
-//          is found.  This is something to be done later, after things are otherwise
-//          working.
-        CharsetMatch matches[] = detectAll();
-        
-        if (matches == null || matches.length == 0) {
-            return null;
-        }
-        
-        return matches[0];
+		ArrayList<CharsetMatch>         matches = new ArrayList<CharsetMatch>();
+
+		MungeInput();  // Strip html markup, collect byte stats.
+
+		//  Iterate over all possible charsets, remember all that
+		//    give a match quality > 0.
+		for (int i = 0; i < ALL_CS_RECOGNIZERS.size(); i++) {
+			CSRecognizerInfo rcinfo = ALL_CS_RECOGNIZERS.get(i);
+			boolean active = (fEnabledRecognizers != null) ? fEnabledRecognizers[i] : rcinfo.isDefaultEnabled;
+			if (active) {
+				CharsetMatch m = rcinfo.recognizer.match(this);
+				if (m != null) {
+					matches.add(m);
+				}
+			}
+		}
+		if(matches.size()>0){
+			Collections.sort(matches);      // CharsetMatch compares on confidence
+			return matches.get(matches.size()-1);
+		}
+		return null;
      }
     
     /**

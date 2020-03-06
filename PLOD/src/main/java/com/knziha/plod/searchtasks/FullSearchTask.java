@@ -52,6 +52,16 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 
 		ArrayList<mdict> md = a.md;
 
+		String SearchTerm = CurrentSearchText;
+
+		if(!PDICMainAppOptions.getJoniCaseSensitive())
+			SearchTerm = SearchTerm.toLowerCase();
+
+		if(PDICMainAppOptions.getEnableFanjnConversion())
+			a.ensureTSHanziSheet(a.fullSearchLayer);
+
+		a.fullSearchLayer.flowerSanLieZhi(SearchTerm);
+
 		if(a.isCombinedSearching){
 			for(int i=0;i<md.size();i++){
 				try {
@@ -67,7 +77,7 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 					}
 					publishProgress(i);//_mega
 					if(mdTmp!=null)
-						mdTmp.flowerFindAllContents(CurrentSearchText,i,a.fullSearchLayer);
+						mdTmp.flowerFindAllContents(SearchTerm,i,a.fullSearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {
@@ -80,7 +90,7 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 				if(a.checkDicts()){
 					publishProgress(a.adapter_idx);
 					//CMN.Log("Find In All Conten??");
-					a.currentDictionary.flowerFindAllContents(CurrentSearchText,a.adapter_idx,a.fullSearchLayer);
+					a.currentDictionary.flowerFindAllContents(SearchTerm,a.adapter_idx,a.fullSearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -127,6 +137,8 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 		}
 		a.show(R.string.fullfill
 				,(System.currentTimeMillis()-CMN.stst)*1.f/1000,a.adaptermy4.getCount());
+
+		CMN.Log((System.currentTimeMillis()-CMN.stst)*1.f/1000, "此即搜索时间。", a.adaptermy4.getCount());
 
 		a.fullSearchLayer.bakePattern(CurrentSearchText, PDICMainAppOptions.getUseRegex2()?CurrentSearchText:CurrentSearchText.replace("*", ".+?"));
 		System.gc();

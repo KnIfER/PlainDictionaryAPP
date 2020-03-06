@@ -126,7 +126,7 @@
 		<LinearLayout
 			android:id="@+id/bottombar"
 			android:layout_width="match_parent"
-			android:layout_height="48dip"
+			android:layout_height="@dimen/_bottombarheight_"
 			android:layout_gravity="bottom"
 			android:gravity="center_vertical|fill_horizontal"
 			android:orientation="horizontal"

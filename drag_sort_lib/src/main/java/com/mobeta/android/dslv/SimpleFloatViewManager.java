@@ -19,7 +19,7 @@ public class SimpleFloatViewManager implements DragSortListView.FloatViewManager
 
     private ImageView mImageView;
 
-    private int mFloatBGColor = Color.BLACK;
+	public int mFloatBGColor = Color.BLACK;
 
     private ListView mListView;
 

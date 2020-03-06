@@ -833,4 +833,13 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		lastY = event.getY();
 		return super.onTouchEvent(event);
 	}
+
+	@Override
+	public void pauseTimers() {
+
+	}
+
+	@Override
+	public void onPause() {
+	}
 }

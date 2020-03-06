@@ -47,6 +47,16 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 
 		ArrayList<mdict> md = a.md;
 
+		String SearchTerm = CurrentSearchText;
+
+		if(!PDICMainAppOptions.getJoniCaseSensitive())
+			SearchTerm = SearchTerm.toLowerCase();
+
+		if(PDICMainAppOptions.getEnableFanjnConversion())
+			a.ensureTSHanziSheet(a.fuzzySearchLayer);
+
+		a.fuzzySearchLayer.flowerSanLieZhi(SearchTerm);
+
 		if(a.isCombinedSearching){
 			for(int i=0;i<md.size();i++){
 				try {
@@ -62,7 +72,7 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 					}
 					publishProgress(i);
 					if(mdTmp!=null)
-						mdTmp.flowerFindAllKeys(CurrentSearchText,i,a.fuzzySearchLayer);
+						mdTmp.flowerFindAllKeys(SearchTerm,i,a.fuzzySearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {
@@ -74,7 +84,7 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 			try {
 				if(a.checkDicts()){
 					publishProgress(a.adapter_idx);
-					a.currentDictionary.flowerFindAllKeys(CurrentSearchText,a.adapter_idx,a.fuzzySearchLayer);
+					a.currentDictionary.flowerFindAllKeys(SearchTerm,a.adapter_idx,a.fuzzySearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -110,8 +120,11 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 		a.show(R.string.fuzzyfill,(System.currentTimeMillis()-CMN.stst)*1.f/1000
 				,a.adaptermy3.getCount());
 
+		CMN.Log((System.currentTimeMillis()-CMN.stst)*1.f/1000, "此即搜索时间。", a.adaptermy3.getCount());
+
 		System.gc();
-		a.fuzzySearchLayer.bakePattern(CurrentSearchText, PDICMainAppOptions.getUseRegex1()?CurrentSearchText:CurrentSearchText.replace("*", ".+?"));
+		if(CurrentSearchText!=null)
+			a.fuzzySearchLayer.bakePattern(CurrentSearchText, PDICMainAppOptions.getUseRegex1()?CurrentSearchText:CurrentSearchText.replace("*", ".+?"));
 		a.adaptermy3.notifyDataSetChanged();
 		a.mlv1.setSelection(0);
 	}

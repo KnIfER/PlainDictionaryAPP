@@ -140,6 +140,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 					proceed = (a.adaptermy2.currentKeyText == null || !mdict.processText(CurrentSearchText).equals(mdict.processText(a.adaptermy2.currentKeyText)));
 				}
 				if(proceed){
+					a.bRequestedCleanSearch=a.bIsFirstLaunch;
 					/* 接管历史纪录 */
 					a.adaptermy2.onItemClick(null, null, 0, 0);
 				}

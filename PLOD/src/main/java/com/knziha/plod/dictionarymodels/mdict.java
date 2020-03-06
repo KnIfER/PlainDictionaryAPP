@@ -49,8 +49,10 @@ import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.PlainDict.PDICMainActivity;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.PlaceHolder;
+import com.knziha.plod.dictionary.Utils.GetIndexedString;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionarymanager.files.CachedDirectory;
+import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -82,9 +84,11 @@ import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -1452,6 +1456,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public void renderContentAt_internal(WebViewmy mWebView,float initialScale, boolean fromCombined, boolean fromPopup, boolean mIsolateImages, int...position) {
 		mWebView.isloading=true;
 		mWebView.currentPos = position[0];
+		if(!a.AutoBrowsePaused&&a.background&&PDICMainAppOptions.getAutoBrowsingReadSomething())
+			mWebView.resumeTimers();
     	String htmlCode = null ,JS=null;
 		try {
 			if(virtualIndex!=null)
@@ -1841,12 +1847,14 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
         @JavascriptInterface
         public void onAudioPause() {
-			mdx.a.onAudioPause();
+			if(!mdx.a.opt.supressAudioResourcePlaying)
+				mdx.a.onAudioPause();
         }
 
         @JavascriptInterface
         public void onAudioPlay() {
-        	mdx.a.onAudioPlay();
+        	if(!mdx.a.opt.supressAudioResourcePlaying)
+        		mdx.a.onAudioPlay();
         }
 
         @JavascriptInterface

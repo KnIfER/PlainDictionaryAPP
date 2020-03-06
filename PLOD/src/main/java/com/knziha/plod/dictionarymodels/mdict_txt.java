@@ -16,7 +16,6 @@ import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.jcodings.specific.GB18030Encoding;
 import org.joni.Option;
 import org.joni.Regex;
 
@@ -221,11 +220,11 @@ public class mdict_txt extends mdict {
 		float factor=1;
 		byte[] PatternA = "·".getBytes(_charset);
 		byte[] PatternB = "-".getBytes(_charset);
-		BU.printBytes3(PatternA);
-		BU.printBytes3(PatternB);
+		//BU.printBytes3(PatternA);
+		//BU.printBytes3(PatternB);
 		BU.printBytes(tmpBlock.data,0,10);
 		int seekStart=0;
-		if(compareByteArrayIsPara(tmpBlock.data, seekStart, PatternA) || compareByteArrayIsPara(tmpBlock.data, seekStart+=2, PatternA)){
+		if(compareByteArrayIsPara(tmpBlock.data, seekStart, PatternA) || compareByteArrayIsPara(tmpBlock.data, seekStart+=2, PatternA) || compareByteArrayIsPara(tmpBlock.data, seekStart+=1, PatternA)){
 			seekStart+=PatternA.length;
 			float fmod = 0;
 			while(compareByteArrayIsPara(tmpBlock.data, seekStart, PatternB)){
@@ -368,9 +367,9 @@ public class mdict_txt extends mdict {
 			String keyword = key.toLowerCase();
 			String upperKey = keyword.toUpperCase();
 			matcher = new byte[upperKey.equals(keyword)?1:2][][];
-			matcher[0] = flowerSanLieZhi(keyword);
+			matcher[0] = flowerSanLieZhi(keyword, SearchLauncher);
 			if(matcher.length==2)
-				matcher[1] = flowerSanLieZhi(upperKey);
+				matcher[1] = flowerSanLieZhi(upperKey, SearchLauncher);
 		}
 
 		split_recs_thread_number = _num_record_blocks<6?1:(int) (_num_record_blocks/6);//Runtime.getRuntime().availableProcessors()/2*2+10;
@@ -426,6 +425,7 @@ public class mdict_txt extends mdict {
 					{
 						if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
 						final ReusableByteOutputStream bos = new ReusableByteOutputStream(mBlockSize *2);//!!!避免反复申请内存
+						Flag flag = new Flag();
 						try
 						{
 							InputStream data_in = mOpenInputStream();
@@ -479,7 +479,7 @@ public class mdict_txt extends mdict {
 								if(SearchLauncher.IsInterrupted  || searchCancled ) break;
 
 								int try_idx=Jonimatcher==null?
-										flowerIndexOf(record_block_,0,recordodKeyLen, finalMatcher,0,0)
+										flowerIndexOf(record_block_,0,recordodKeyLen, finalMatcher,0,0, SearchLauncher, flag)
 										:Jonimatcher.searchInterruptible(0, recordodKeyLen, Option.DEFAULT)
 								;
 								//SU.Log(try_idx, record_block_.length, recordodKeyLen);

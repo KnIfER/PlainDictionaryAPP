@@ -31,7 +31,9 @@ import java.io.Reader;
 public class CharsetMatch implements Comparable<CharsetMatch> {
 
 
-    /**
+	protected int priority;
+
+	/**
      * Create a java.io.Reader for reading the Unicode character data corresponding
      * to the original byte data supplied to the Charset detect operation.
      * <p>
@@ -184,7 +186,11 @@ public class CharsetMatch implements Comparable<CharsetMatch> {
             compareResult = 1;
         } else if (this.fConfidence < other.fConfidence) {
             compareResult = -1;
-        }
+        } else if(this.priority > other.priority){
+			compareResult = 1;
+		} else if(this.priority < other.priority){
+			compareResult = -1;
+		}
         return compareResult;
     }
 

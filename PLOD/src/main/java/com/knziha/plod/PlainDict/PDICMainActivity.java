@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -86,7 +87,6 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.dictionary.Utils.Flag;
-import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymanager.dict_manager_activity;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymanager.files.IntegerSingleton;
@@ -133,8 +133,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
@@ -157,12 +155,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public TextView dvTitle;
 	public SeekBar dvSeekbar;
 	public TextView dvProgressFrac;
+	public TextView dvDictFrac;
 	public TextView dvResultN;
 
 	ViewGroup mlv;
 	public ListView mlv1;
 	public ListView mlv2;
-
 
 	public String lastFuzzyKeyword;
 	public String lastFullKeyword;
@@ -192,42 +190,49 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private LinearLayout weblist;
 	private View appbar;
 
-	HashSet<Integer> LongclickableMap = new HashSet<>();
+	/** 定制底栏一：<br/>
+	 * 选择词典1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6 <br/>
+	 * 退离程序7 打开侧栏8 随机词条9 上一词典10 下一词典11 调整亮度12 定制底栏13 定制颜色14 管理词典15 进入设置16<br/>*/
 	int[] BottombarBtnIcons = new int[]{
-		R.drawable.songlist,
-		R.drawable.bundle,
-		R.drawable.fuzzy_search,
-		R.drawable.full_search,
-		R.drawable.favoriteg,
-		R.drawable.historyg,
-		R.drawable.ic_exit_to_app_grey_24dp,//6
-		R.drawable.ic_menu_grey_24dp,//7
-		R.drawable.ic_shuffle_black_24dp,//8
-		R.drawable.chevron_grey_top22,//9
-		R.drawable.chevron_grey_bottom22,//10
-		R.drawable.ic_brightness_low_black_24dp,//11
-		R.drawable.customizebtmbr,//12
-		R.drawable.color_grey_sheet,//13
-		R.drawable.bundle2,//14
-		R.drawable.ic_settings_black_24dp,//15
-		} ;
+			R.drawable.songlist,
+			R.drawable.bundle,
+			R.drawable.fuzzy_search,
+			R.drawable.full_search,
+			R.drawable.favoriteg,
+			R.drawable.historyg,
+			R.drawable.ic_exit_to_app_grey_24dp,//6
+			R.drawable.ic_menu_grey_24dp,//7
+			R.drawable.ic_shuffle_black_24dp,//8
+			R.drawable.chevron_grey_top22,//9
+			R.drawable.chevron_grey_bottom22,//10
+			R.drawable.ic_brightness_low_black_24dp,//11
+			R.drawable.customizebtmbr,//12
+			R.drawable.color_grey_sheet,//13
+			R.drawable.bundle2,//14
+			R.drawable.ic_settings_black_24dp,//15
+	};
+
+	int[] BottombarBtnIds = new int[]{
+			R.id.browser_widget1,
+			R.id.browser_widget2,
+			R.id.browser_widget3,
+			R.id.browser_widget4,
+			R.id.browser_widget5,
+			R.id.browser_widget6,
+			R.id.exitApp,
+			R.id.drawer_layout,
+			R.id.random_entry,
+			R.id.prv_dict,
+			R.id.nxt_dict,
+			R.id.brightness,
+			R.id.bottombar,
+			R.id.colorize,
+			R.id.manage,
+			R.id.settings,
+	};
+
 	ImageView[] BottombarBtns = new ImageView[16];
-	static HashMap<Integer, Integer> mWidgetIdMap = new HashMap<>(16);
-	static HashMap<Integer, Integer> mWidgetPaddingMap = new HashMap<>(16);
-	static{
-		mWidgetIdMap.put(6, R.id.exitApp);
-		mWidgetIdMap.put(7, R.id.drawer_layout);
-		mWidgetIdMap.put(8, R.id.random_entry);
-		mWidgetIdMap.put(9, R.id.prv_dict);
-		mWidgetIdMap.put(10, R.id.nxt_dict);
-		mWidgetIdMap.put(11, R.id.brightness);
-		mWidgetIdMap.put(12, R.id.bottombar);
-		mWidgetIdMap.put(13, R.id.colorize);
-		mWidgetIdMap.put(14, R.id.manage);
-		mWidgetIdMap.put(15, R.id.settings);
-		mWidgetPaddingMap.put(13,6);
-		mWidgetPaddingMap.put(14,8);
-	}
+	AppUIProject bottombar_project;
 
 	@Override
 	ArrayList<PlaceHolder> getLazyCC() {
@@ -296,6 +301,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						d.getWindow().setAttributes(d.getWindow().getAttributes());
 					}
 				}
+			}
+
+			if(bottombar_project!=null&&bottombar_project.bNeedCheckOrientation){
+				RebuildBottombarIcons(bottombar_project, newConfig);
 			}
 		}
 		mConfiguration.setTo(newConfig);
@@ -417,6 +426,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		dvSeekbar = a_dv.findViewById(R.id.seekbar);
 		dvProgressFrac = a_dv.findViewById(R.id.progressFrac);
 		dvResultN = a_dv.findViewById(R.id.resultN);
+		dvDictFrac = a_dv.findViewById(R.id.tv);
 		if(currentDictionary!=null)
 			dvTitle.setText(currentDictionary._Dictionary_fName);
 		/* 跳过 */
@@ -433,10 +443,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				hdl.removeMessages(1008601, null);
-				hdl.sendEmptyMessage(1008601);
+				if(!background) hdl.sendEmptyMessage(1008601);
 			}
-		},0,100);
+		},0,180);
 		return a_dv;
 	}
 
@@ -446,7 +455,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			currentSearchingDictIdx =index;
 			dvSeekbar.setMax((int) m.getNumberEntries());
 			dvTitle.setText(m._Dictionary_fName);
-			dvProgressFrac.setText(currentSearchingDictIdx+"/"+PDICMainActivity.taskCounter);
+			dvDictFrac.setText(currentSearchingDictIdx+"/"+PDICMainActivity.taskCounter);
 		} catch (Exception ignored) { }
 	}
 
@@ -480,8 +489,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				;
 		if(toPeruseView){
 			JumpToPeruseModeWithWord(content);
-		}else
+		}else{
 			etSearch.setText(content);
+			//todo opt
+			if(PeruseView!=null)
+				PeruseView.dismiss();
+		}
 	}
 
 	public void forceFullscreen(boolean val) {
@@ -536,6 +549,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					//((TextView)dv.findViewById(R.id.tv)).setText("0/"+System.currentTimeMillis());
 					if(a.currentSearchingDictIdx>=a.md.size())
 						return;
+					removeMessages(1008601);
 					mdict m = a.md.get(a.currentSearchingDictIdx);
 					if(a.dvSeekbar!=null)
 					try {
@@ -560,7 +574,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						a.hdl.sendEmptyMessage(112233);
 					}else
 						a.mDrawerToggle.onDrawerClosed(a.mDrawerLayout);
-					break;
+				break;
+				case 3322123:
+					a.performReadEntry();
+				break;
+				case 3322124:
+					a.enqueueNextAutoReadProcess();
+				break;
+				case 332211123:
+				case 332211:
+					removeMessages(332211);
+					a.performAutoReadProcess();
+				break;
 				case 331122:
 					animator+=animatorD;
 					if(animator>=1) {
@@ -601,6 +626,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		else if(popupContentView!=null && popupContentView.getParent()!=null){
 			DetachClickTranslator();
+		}
+		else if(!AutoBrowsePaused || bRequestingAutoReading){
+			stopAutoReadProcess();
 		}
 		else if(mainF.getChildCount()==0 && !isContentViewAttached()){//
 			if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -873,6 +901,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		cbar_key="ctnprj";
 		R.styleable.constances[0]=0;
 		bIsFirstLaunch=false;
 		focused=true;
@@ -917,23 +946,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		toolbar.addNavigationOnClickListener(v -> {
 			if(!mDrawerLayout.isDrawerVisible(GravityCompat.START)) {
-				if(contentview.getParent()!=null) {
-					DetachContentView();
-					bNeedReAddCon=true;
-				}
-				imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
-				cancleSnack();
-				if(popupContentView!=null && popupContentView.getParent()!=null)
-					popupContentView.setVisibility(View.GONE);
+				onDrawerOpened();
 			}
 		});
+		toolbar.mNavButtonView.setOnLongClickListener(this);
 
 		View vTmp = toolbar.getChildAt(toolbar.getChildCount()-1);
 		if(vTmp instanceof ImageButton && vTmp.getId()==R.id.home) {
 			ImageButton NavigationIcon=(ImageButton) vTmp;
 			NavigationIcon.getLayoutParams().width=(int) (45*dm.density);
 			NavigationIcon.setLayoutParams(NavigationIcon.getLayoutParams());
-
 			//ViewGroup Menu=(ViewGroup) toolbar.getChildAt(toolbar.getChildCount()-2);
 			//if(Menu!=null){
 			//	View OverflowIcon=Menu.getChildAt(Menu.getChildCount()-1);
@@ -964,6 +986,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		CrashHandler.getInstance(this, opt).TurnOn();
 	}
 
+	void onDrawerOpened() {
+		if(contentview.getParent()!=null) {
+			DetachContentView();
+			bNeedReAddCon=true;
+		}
+		imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+		cancleSnack();
+		if(popupContentView!=null && popupContentView.getParent()!=null)
+			popupContentView.setVisibility(View.GONE);
+	}
+
 	@Override
 	protected int getVisibleHeight() {
 		return root.getChildAt(0).getHeight();
@@ -985,6 +1018,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(intent !=null){
 			if(intent.hasExtra(Intent.EXTRA_TEXT))
 				debugString = intent.getStringExtra(Intent.EXTRA_TEXT);
+			//if(!bWantsSelection) bWantsSelection = intent.hasExtra(Intent.EXTRA_SHORTCUT_ID);
+			if(intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)){
+				adaptermy2.avoyager.remove(0);
+				//todo opt
+				if(contentview.getParent()!=null)
+					DetachContentView();
+			}
+			bIsFirstLaunch=true;
 		}
 		if(debugString!=null)
 			JumpToWord(debugString, 0);
@@ -999,7 +1040,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		main = root = findViewById(R.id.root);
 		webcontentlist = contentview.findViewById(R.id.webcontentlister);
 		bottombar2 = contentview.findViewById(R.id.bottombar2);
-		CachedBBSize=opt.getBottombarSize((int) (50*dm.density));
+		CachedBBSize=opt.getBottombarSize((int) getResources().getDimension(R.dimen._bottombarheight_));
 		super.further_loading(savedInstanceState);
 
 		CheckGlideJournal();
@@ -1264,53 +1305,27 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//widget0.getBackground().setTint(MainBackground);
 		//widget0.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
 		//ViewCompat.setBackgroundTintList(widget0, ColorStateList.valueOf(MainBackground));
-		LongclickableMap.addAll(Arrays.asList(2, 5, 6));
-		// 选择词典1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6
-		// 退离程序7 打开侧栏8 随机词条9 上一词典10 下一词典11 调整亮度12 定制底栏13 定制颜色14 管理词典15 进入设置16
-		boolean bNeedAdd = mWidgetIdMap.size()<16;
+		boolean tint = PDICMainAppOptions.getTintIconForeground();
+		LongclickableMap.addAll(Arrays.asList(1, 4));
 		for (int i = 0; i < 6; i++) {
 			ImageView iv = (ImageView) bottombar.getChildAt(i);
-			if(bNeedAdd) mWidgetIdMap.put(i, iv.getId());
 			BottombarBtns[i]=iv;
 			iv.setOnClickListener(this);
+			if(tint) {
+				if(i==2||i==3){
+
+				}
+				iv.setColorFilter(ForegroundTint, PorterDuff.Mode.SRC_IN);
+			}
 			if(LongclickableMap.contains(i))
 				iv.setOnLongClickListener(this);
 		}
 		browser_widget3 = BottombarBtns[2];
 		browser_widget4 = BottombarBtns[3];
-
 		String appproject = opt.getAppBottomBarProject();
-		appproject="0|1|2|3|4|5|6|7|8|9|10|11|13|14|15";
-		appproject="0|1|2|3|4|5|6";
-		//appproject="9|10|11|13|14|15";
-		if(appproject!=null){
-			bottombar.removeAllViews();
-			String[] arr = appproject.split("\\|");
-			for (int i = 0; i < arr.length; i++) {
-				int id = IU.parsint(arr[i], -1);
-				if(id>=0 && id<BottombarBtns.length){
-					ImageView iv = BottombarBtns[id];
-					if(iv==null){
-						iv = new ImageView(this);
-						iv.setImageResource(BottombarBtnIcons[id]);
-						iv.setBackgroundResource(R.drawable.surrtrip1);
-						iv.setLayoutParams(browser_widget3.getLayoutParams());
-						iv.setId(mWidgetIdMap.get(id));
-						iv.setOnClickListener(this);
-						if(mWidgetPaddingMap.containsKey(id)){
-							//int pad = (int) (mWidgetPaddingMap.get(id)*dm.density);
-							//iv.setPadding(pad, pad, pad, pad);
-						}
-						if(LongclickableMap.contains(i))
-							iv.setOnLongClickListener(this);
-						BottombarBtns[id]=iv;
-					} else {
-						ViewGroup svp = (ViewGroup) iv.getParent();
-						if(svp!=null) svp.removeView(iv);
-					}
-					bottombar.addView(iv);
-				}
-			}
+		if(appproject!=null) {
+			bottombar_project = new AppUIProject("btmprj", BottombarBtnIcons, BottombarBtnIds, appproject, bottombar, BottombarBtns);
+			RebuildBottombarIcons(bottombar_project, mConfiguration);
 		}
 
 		viewPager.setAdapter(pagerAdapter);
@@ -1355,8 +1370,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						}
 						etSearch_ToToolbarMode(1);
 						bNeedReAddCon=false;
-					}else
+					} else {
 						etSearch_ToToolbarMode(0);
+					}
 				}
 				checkFlags();
 			}});
@@ -1588,6 +1604,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 
 		//tg
+		//showIconCustomizator();
 //		try {
 //			md.add(new mdict_dsl("/sdcard/En-En-Longman_Activator.dsl", this));
 //			switch_To_Dict_Idx(md.size()-1, false, false);
@@ -1790,6 +1807,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 
 		@Override
+		public boolean getEnableFanjnConversion() {
+			return PDICMainAppOptions.getEnableFanjnConversion();
+		}
+
+		@Override
 		public Pattern getBakedPattern() {
 			return currentPattern;
 		}
@@ -1892,6 +1914,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							lianHeTask = new CombinedSearchTask(PDICMainActivity.this).execute(key);
 						else if(bIsFirstLaunch){
 							/* 接管历史纪录 */
+							bRequestedCleanSearch=bIsFirstLaunch;
 							bIsFirstLaunch=false;
 							if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(0)))))
 							{
@@ -1932,6 +1955,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 										proceed = (adaptermy.currentKeyText == null || !looseKey.equals(mdict.processText(adaptermy.currentKeyText)));
 									}
 									if(proceed) {
+										bRequestedCleanSearch=bIsFirstLaunch;
 										/* 接管历史纪录 */
 										adaptermy.onItemClick(null, null, idx, 0);
 									}
@@ -2462,7 +2486,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			lastClickedPosBeforePageTurn = lastClickedPos;
 			super.onItemClick(pos);
 			ActivedAdapter=this;
-			boolean shunt=currentDictionary instanceof mdict_web;
+			boolean shunt=currentDictionary instanceof mdict_web||bRequestedCleanSearch;
 			if(pos<0){
 				if(pos<-1||shunt){
 					show(R.string.endendr);
@@ -2559,6 +2583,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(rem_res!=R.string.rem_position){
 					iItem_aPageRemember.setTitle(rem_res=R.string.rem_position);
 				}
+				bRequestedCleanSearch=false;
 			}
 
 			if(opt.getInheritePageScale())
@@ -2591,8 +2616,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			layoutScrollDisabled=true;
 			if(bOnePageNav)
 				desiredScale=111;
-			if(opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(currentDictionary.tmpIsFlag))
+			if(opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(currentDictionary.tmpIsFlag)
+				||!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething())
 				currentDictionary.mWebView.bRequestedSoundPlayback=true;
+
 			currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, lastClickedPos);
 			contentview.setTag(R.id.image, PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null?false:null);
 
@@ -2603,7 +2630,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				insertUpdate_histroy(key);
 			}
 			//showT("查时: "+(System.currentTimeMillis()-stst));
-
 			bWantsSelection=currentDictionary.mWebView.fromCombined==0;
 			userCLick=false;
 			if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick()){
@@ -2800,7 +2826,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 			ScrollerRecord pagerec;
 			if(this==adaptermy2) {
-				if(opt.getRemPos2()) {
+				boolean shunt = bRequestedCleanSearch;
+				if(opt.getRemPos2() && !shunt) {
 					OUT:
 					if (((resultRecorderCombined) combining_search_result).scrolled
 							&& lastClickedPosBeforePageTurn >= 0
@@ -2838,6 +2865,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if(rem_res!=R.string.rem_position){
 						iItem_aPageRemember.setTitle(rem_res=R.string.rem_position);
 					}
+					bRequestedCleanSearch=false;
 				}
 			}
 
@@ -3150,6 +3178,35 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				v.getBackground().jumpToCurrentState();
 				moveTaskToBack(false);
 			} break;
+			case R.id.bottombar:{
+				showIconCustomizator();
+			} break;
+			case R.id.settings:{
+
+			} break;
+			case R.id.drawer_layout:{
+				if (mDrawerLayout.isDrawerVisible(GravityCompat.START)) {
+					mDrawerLayout.closeDrawer(GravityCompat.START);
+				} else {
+					mDrawerLayout.openDrawer(GravityCompat.START);
+					onDrawerOpened();
+				}
+			} break;
+			case R.id.switch_landscape:{
+				int ori = mConfiguration.orientation;
+				int DesiredDir;
+				if (ori == Configuration.ORIENTATION_LANDSCAPE) {
+					DesiredDir=2;
+					//bScreenLocked = DesiredDir!=2;
+					DesiredDir=DesiredDir==0? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:DesiredDir==1?ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT:ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+				} else if (ori == Configuration.ORIENTATION_PORTRAIT) {
+					DesiredDir=2;
+					//bScreenLocked = DesiredDir!=2;
+					DesiredDir=DesiredDir==0?ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:DesiredDir==1?ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE:ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+				}
+			} break;
 		}
 	}
 
@@ -3310,6 +3367,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		boolean ret = super.onLongClick(v);
 		if(ret) return ret;
 		switch(v.getId()) {
+			case R.id.home:{
+				//getPeruseView().TextToSearch = currentDictionary.getEntryAt(pos);
+				showIconCustomizator();
+			} break;
 			case R.id.browser_widget0:{
 				//getPeruseView().TextToSearch = currentDictionary.getEntryAt(pos);
 				AttachPeruseView(false);
@@ -3405,6 +3466,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					//drawerFragment.etAdditional.setText(((TextView)v.findViewById(R.id.text)).getText());
 				}
 			} return false;
+			case R.id.drawer_layout:{
+				showIconCustomizator();
+			}  return true;
+			case R.id.tts_readAll:{
+				toggleTTS();
+			}  return true;
 		}
 		return false;
 	}

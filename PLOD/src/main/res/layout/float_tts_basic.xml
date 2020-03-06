@@ -60,7 +60,7 @@
 			android:id="@+id/tts_NxtUtterance"
 			android:layout_width="45dp"
 			android:layout_height="match_parent"
-			android:src="@drawable/ic_skip_next_black_24dp"
+			android:src="@drawable/ic_skip_next"
 			android:background="@drawable/surrtrip1"
 			android:padding="7dp"
 			/>

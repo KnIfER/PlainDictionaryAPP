@@ -12,7 +12,7 @@
 	<string name="GL">Globaal</string>
 	<string name="tools">Hulpmiddelen</string>
 	<string name="AAllow">Laat u deze app om mappen in / SDCard / PLOD creëren?</string>
-	<string name="fullret">Fulltext retrieval</string>
+	<string name="fullret">Fulltext search</string>
 	<string name="fuzzyret">Entry Wildcard Match</string>
 	<string name="infoStr">Plain Woordenboek - Mini android text search engine ontworpen voor mdx. </string>
 	<string name="licence">Open Source Licenties</string>
@@ -75,7 +75,7 @@
 	<string name="jumpfail">Link ongeldig!</string>
 	<string name="favorRecon">default favoriete db gereconstrueerd!</string>
 	<string name="fuzzyfill">Fuzzy search gedaan! </string>
-	<string name="fullfill">Fulltext retrieval gedaan! </string>
+	<string name="fullfill">Fulltext search gedaan! </string>
 	<string name="warn_exit">Klik hier om af te sluiten!</string>
 	<string name="relaunch">Start opnieuw door te voeren!</string>
 	<string name="nothingR">niets opgenomen</string>

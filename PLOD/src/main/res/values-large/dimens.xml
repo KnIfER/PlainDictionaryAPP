@@ -16,4 +16,5 @@
 	<dimen name="_20_">26dp</dimen>
 	<dimen name="_35_">45dp</dimen>
 	<dimen name="scrollBarWidth">16dp</dimen>
+	<dimen name="_bottombarheight_">65dp</dimen>
 </resources>

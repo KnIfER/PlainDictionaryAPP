@@ -42,6 +42,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 
 public class Toastable_Activity extends AppCompatActivity {
@@ -98,6 +99,7 @@ public class Toastable_Activity extends AppCompatActivity {
 			((ViewGroup)topsnack.getParent()).removeView(topsnack);
 	};
 	private Animator.AnimatorListener topsnackListener;
+	static final int FLASH_DURATION_MS = 800;
 	static final int SHORT_DURATION_MS = 1500;
 	static final int LONG_DURATION_MS = 2355;
 	int NextSnackLength;
@@ -430,11 +432,10 @@ public class Toastable_Activity extends AppCompatActivity {
 			}else if(toastV.getParent() instanceof ViewGroup){
 				((ViewGroup)toastV.getParent()).removeView(toastV);
 			}
-
 			m_currentToast = new Toast(this);
-			m_currentToast.setGravity(Gravity.BOTTOM, 0, 135);
 			m_currentToast.setView(toastV);
 		}
+		m_currentToast.setGravity(Gravity.BOTTOM, 0, 135);
 		if(toastV.getBackground() instanceof GradientDrawable){
 			GradientDrawable drawable = (GradientDrawable) toastV.getBackground();
 			drawable.setCornerRadius(PDICMainAppOptions.getToastRoundedCorner()?dm.density*15:0);
@@ -444,6 +445,10 @@ public class Toastable_Activity extends AppCompatActivity {
 		toastTv.setText(text);
 		toastTv.setTextColor(opt.getToastColor());
 		m_currentToast.show();
+	}
+	public void showMT(String text){
+		showT(text);
+		m_currentToast.setGravity(Gravity.CENTER, 0, 0);
 	}
 	public void cancleToast(){
 		if(m_currentToast!=null)
@@ -506,7 +511,11 @@ public class Toastable_Activity extends AppCompatActivity {
 		if(topsnack.getParent()!=parentView) {
 			topsnack.setVisibility(View.INVISIBLE);
 			parentView.addView(topsnack);
-			topsnack.getLayoutParams().height=-2;
+			ViewGroup.LayoutParams lp = topsnack.getLayoutParams();
+			lp.height=-2;
+			if(lp instanceof ViewGroup.MarginLayoutParams){
+				((ViewGroup.MarginLayoutParams)lp).leftMargin = parentView.getTag(R.id.position)!=null?IU.parsint(parentView.getTag(R.id.position)):0;
+			}
 			topsnack.post(snackWorker);
 		}else{
 			topsnack.removeCallbacks(snackWorker);

@@ -260,6 +260,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+		cbar_key="ctnfrj";
+		defbarcustpos=3;
     	long cur = System.currentTimeMillis();
     	if(cur-CMN.FloatLastInvokerTime<524) {
     		super.onCreate(savedInstanceState);
@@ -411,7 +413,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         toolbar.inflateMenu(R.menu.float_menu);
 		iItem_FolderAll = toolbar.getMenu().findItem(R.id.toolbar_action0);
 		iItem_InPageSearch = toolbar.getMenu().findItem(R.id.toolbar_action5);
-        CachedBBSize=opt.getFloatBottombarSize((int) (20*dm.density));
+        CachedBBSize=opt.getFloatBottombarSize((int) getResources().getDimension(R.dimen._bottombarheight_));
     	super.further_loading(savedInstanceState);
 
         main = main_succinct;

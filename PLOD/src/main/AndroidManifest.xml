@@ -3,13 +3,12 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	package="com.knziha.plod.PlainDict">
 
-	<uses-permission android:name="android.permission.REORDER_TASKS" />
-	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 	<uses-permission android:name="android.permission.READ_MEDIA_STORAGE"/>
 	<uses-permission android:name="android.permission.INTERNET"/>
-	<uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
+
+	<uses-permission android:name="android.permission.WAKE_LOCK"/>
 
 	<application
 		android:name="com.knziha.plod.PlainDict.AgentApplication"
@@ -30,8 +29,9 @@
 		<meta-data android:name="com.sec.android.multiwindow.MINIMUM_SIZE_H" android:value="598.0dip" />
 		<activity android:name="com.knziha.plod.PlainDict.PDICMainActivity"
 			android:theme="@style/AppTheme"
-			android:configChanges="orientation|keyboardHidden|screenSize|uiMode|locale|layoutDirection"
+			android:configChanges="orientation|keyboardHidden|screenSize|uiMode|locale|layoutDirection|screenSize"
 			android:hardwareAccelerated="true"
+			android:launchMode="singleInstance"
 			>
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
@@ -74,7 +74,6 @@
 			android:windowSoftInputMode="adjustPan"
 			android:hardwareAccelerated="true"
 			android:launchMode="standard"
-			android:taskAffinity=""
 			/>
 
 		<activity android:name="com.knziha.plod.slideshow.PhotoViewActivity"

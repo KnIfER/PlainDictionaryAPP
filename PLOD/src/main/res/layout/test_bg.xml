@@ -6,13 +6,11 @@
 	<SeekBar
 		android:layout_width="match_parent"
 		android:layout_height="60dp"
-		android:progressDrawable="@drawable/progressbar"
+		android:progressDrawable="@drawable/contentprogressbar"
 		android:splitTrack="false"
-		android:progress="80"
+		android:progress="10"
 		android:max="100"
 		android:thumb="@null"
 		android:layout_gravity="center_vertical"
 		/>
-
-
 </FrameLayout>

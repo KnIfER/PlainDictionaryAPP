@@ -27,6 +27,12 @@
 	<item name="brightness" type="id" />
 	<item name="colorize" type="id" />
 	<item name="manage" type="id" />
+	<item name="auto_browse" type="id" />
+	<item name="tts_readAll" type="id" />
+	<item name="go_favorite" type="id" />
+	<item name="go_history" type="id" />
+	<item name="night_mode" type="id" />
+	<item name="switch_landscape" type="id" />
 
 
 </resources>

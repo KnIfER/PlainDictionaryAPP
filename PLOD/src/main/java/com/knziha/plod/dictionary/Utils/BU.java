@@ -116,18 +116,24 @@ public class  BU{//byteUtils
     		System.out.print((int)(b[i]&0xff)+",");
     	System.out.println();
 	}
-	public static void printBytes3(byte[] b){
-		String val="";
-		for(int i=0;i<b.length;i++)
-			val+="0x"+byteTo16(b[i])+",";
-		SU.Log(val);
-	}
     @Deprecated
     public static void printBytes(byte[] b){
     	for(int i=0;i<b.length;i++)
     		System.out.print("0x"+byteTo16(b[i])+",");
     	System.out.println();
     }
+
+	public static void LogBytes(byte[] b){
+		LogBytes(b, 0, b.length);
+	}
+
+	public static void LogBytes(byte[] b,int off,int ln){
+		String val="";
+		ln+=off;
+		for(int i=off;i<ln;i++)
+			val+="0x"+byteTo16(b[i])+",";
+		SU.Log(val);
+	}
     @Deprecated
     public static void printBytes(byte[] b,int off,int ln){
     	for(int i=off;i<off+ln;i++)

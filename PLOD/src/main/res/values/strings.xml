@@ -41,7 +41,7 @@
     <string name="fuzzyfill">Entry search done! Time %1$1.2fs, Found  %2$d items!</string>
     <string name="fullfill">Fulltext search done! Time %1$1.2fs, Found  %2$d items!</string>
 	<string name="regret">Regex Search</string>
-    <string name="fullret">Fulltext retrieval</string>
+    <string name="fullret">Fulltext search</string>
     <string name="fuzzyret">Entry Wildcard Match</string>
 	<string name="fullret1">@string/fullret</string>
 	<string name="fuzzyret1">@string/fuzzyret</string>

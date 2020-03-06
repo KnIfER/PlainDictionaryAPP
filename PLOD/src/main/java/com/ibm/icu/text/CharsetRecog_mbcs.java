@@ -9,6 +9,8 @@
  */
 package com.ibm.icu.text;
 
+import com.bumptech.glide.Priority;
+
 import java.util.Arrays;
 
 /**
@@ -548,7 +550,12 @@ abstract class CharsetRecog_mbcs extends CharsetRecognizer {
          @Override
         CharsetMatch match(CharsetDetector det) {
              int confidence = match(det, commonChars);
-             return confidence == 0 ? null : new CharsetMatch(det, this, confidence);
+             if(confidence!=0){
+				 CharsetMatch ret = new CharsetMatch(det, this, confidence);
+				 ret.priority=100;
+				 return ret;
+			 }
+             return null;
          }
 
          @Override
@@ -557,6 +564,4 @@ abstract class CharsetRecog_mbcs extends CharsetRecognizer {
              return "zh";
          }
      }
-
-
 }
