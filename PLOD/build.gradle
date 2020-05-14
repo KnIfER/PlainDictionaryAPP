@@ -35,6 +35,7 @@ dependencies {
     api 'org.jruby.jcodings:jcodings:1.0.45'
 
     api 'org.anarres.lzo:lzo-core:1.0.6'
+    api project(path: ':viewpager')
     api project(path: ':GestureView')
     testImplementation 'junit:junit:4.12'
     compileOnly project(':multiline')
@@ -71,7 +72,7 @@ dependencies {
     } else {
         api(project(':AppPreference'))
     }
-    api project(':glide')
+    api project(':GlideModule:glide')
     api project(':drag_sort_lib')
     api project(':colorpicker')
     api project(':filepicker')
