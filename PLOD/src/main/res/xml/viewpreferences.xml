@@ -94,6 +94,20 @@
 			android:title="不搜索无列表(极简模式)"
 			app:allowDividerBelow="true"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="magny"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="搜索框无放大镜 *"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="magny2"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="文本列表无放大镜 *"
+			app:allowDividerBelow="true"
+			/>
 	</PreferenceCategory>
 
 	<PreferenceCategory

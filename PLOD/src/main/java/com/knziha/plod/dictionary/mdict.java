@@ -18,8 +18,6 @@
 package com.knziha.plod.dictionary;
 
 
-import android.util.SparseArray;
-
 import androidx.appcompat.app.GlobalOptions;
 
 import com.alibaba.fastjson.JSONObject;
@@ -95,8 +93,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -135,14 +131,10 @@ public class mdict extends mdBase{
 
 	public String _Dictionary_fName;
 	public /*final*/ boolean isResourceFile;
-
-	public boolean getIsDedicatedFilter(){
-		return false;
-	}
+	private EncodeChecker encodeChecker;
+	
 	public boolean getIsDedicatedFilter(byte firstFlag){
 		return false;
-	}
-	public void setIsDedicatedFilter(boolean val){
 	}
 	//public int KeycaseStrategy=0;//0:global 1:Java API 2:classical
 	public int getCaseStrategy(){
@@ -150,11 +142,27 @@ public class mdict extends mdBase{
 	}
 	public void setCaseStrategy(int val){
 	}
+	
+	public boolean getOnlyContainsImg(){
+		return false;
+	}
+	
 	public static boolean bGlobalUseClassicalKeycase=false;
 
 	public String currentDisplaying;
 
 	public volatile boolean searchCancled;
+
+	/** validation schema<br/>
+	 * 0=none; 1=check even; 2=check four; 3=check direct; 4=check direct for all; 5=1/3; */
+	protected int checkEven;
+	protected int maxEB;
+
+	public byte[] htmlOpenTag;
+	public byte[] htmlCloseTag;
+	public byte[][] htmlTags;
+	public byte[][] htmlTagsA;
+	public byte[][] htmlTagsB;
 
 	//构造
 	public mdict(String fn) throws IOException {
@@ -808,10 +816,10 @@ public class mdict extends mdBase{
 	protected int split_recs_thread_number;
 	public void flowerFindAllContents(String key, int selfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException{
 		//SU.Log("Find In All Contents Started");
-		if(isResourceFile) return;
-		byte[][][] matcher=null;
+		if(isResourceFile||getOnlyContainsImg()) return;
+		byte[][][][][] matcher=null;
 		Regex Joniregex = null;
-		if(getUseJoniRegex(1)){
+		if(SearchLauncher.getSearchType()==1){
 			if(encoding==null) bakeJoniEncoding();
 			if(encoding!=null) {
 				//if (getRegexAutoAddHead() && !key.startsWith(".*"))
@@ -830,7 +838,7 @@ public class mdict extends mdBase{
 
 		split_recs_thread_number = _num_record_blocks<6?1:(int) (_num_record_blocks/6);//Runtime.getRuntime().availableProcessors()/2*2+10;
 		split_recs_thread_number = split_keys_thread_number>16?6:split_keys_thread_number;
-		//split_recs_thread_number = 1;
+		//split_recs_thread_number = Runtime.getRuntime().availableProcessors();
 		final int thread_number = Math.min(Runtime.getRuntime().availableProcessors()/2*2+2, split_keys_thread_number);
 		//SU.Log("fatal_","split_recs_thread_number"+split_recs_thread_number);
 		//SU.Log("fatal_","thread_number"+thread_number);
@@ -875,9 +883,7 @@ public class mdict extends mdBase{
 			if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(1);
 
 			Regex finalJoniregex = Joniregex;
-			byte[][][] finalMatcher = matcher;
-			//Thread t;
-			//fixedThreadPool.add(t=new Thread(
+			byte[][][][][] finalMatcher = matcher;
 			fixedThreadPool.execute(
 					//(
 				new Runnable(){@Override public void run()
@@ -898,7 +904,7 @@ public class mdict extends mdBase{
 						if(it==split_recs_thread_number-1) jiaX=yuShu;
 						for(int i=it*step; i<it*step+step+jiaX; i++)//_num_record_blocks
 						{
-							if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
+							//if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
 							record_info_struct RinfoI = _record_info_struct_list[i];
 
 							int compressed_size = (int) RinfoI.compressed_size;
@@ -954,19 +960,36 @@ public class mdict extends mdBase{
 									if(!dump.exists()) //块调试器
 										BU.printFile(record_block_, 0, decompressed_size, dump);*/
 
-									try_idx=(int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator);
+									int start=(int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator);
 
-									GlobalOptions.debug=relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator==47952;
+//									GlobalOptions.debug=relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator==1844;
 //									if(GlobalOptions.debug){
-//										SU.Log("full res ::str", new String(record_block_, try_idx, recordodKeyLen, _charset));
+//										SU.Log("full res ::str", new String(record_block_, start, recordodKeyLen, _charset));
 //										SU.Log("full res ::relative_pos", relative_pos, "kos_len", ko.length-1, "key_block_id", key_block_id, "keyBlocksHeaderTextKeyID_len", keyBlocksHeaderTextKeyID.length-1);
-//										SU.Log("full res ::start-len", try_idx, recordodKeyLen, record_block_.length);
+//										SU.Log("full res ::start-len", start, recordodKeyLen, record_block_.length);
 //									} else continue;
 
-									try_idx=Jonimatcher==null?
-											flowerIndexOf(record_block_,try_idx,recordodKeyLen, finalMatcher,0,0, SearchLauncher, flag)
-											:Jonimatcher.searchInterruptible(try_idx, try_idx+recordodKeyLen, Option.DEFAULT)
-											;
+									if(Jonimatcher==null){
+										try_idx=-1;
+										ArrayList<ArrayList<Object>> mpk;
+										ArrayList<Object> mParallelKeys;
+										for (int j = 0; j < finalMatcher.length; j++) { // and group
+											mpk = SearchLauncher.mParallelKeys.get(j);
+											for (int k = 0; k < finalMatcher[j].length; k++) { // or group
+												mParallelKeys = mpk.get(k);
+												int len = finalMatcher[j][k].length;
+												int[] jumpMap = (int[]) mParallelKeys.get(len);
+												try_idx=flowerIndexOf(record_block_,start,recordodKeyLen, finalMatcher[j][k],0,0, SearchLauncher, flag, mParallelKeys, jumpMap);
+												//SU.Log("and_group>>"+j, "or_group#"+k, try_idx, nna);
+												if(try_idx<0 ^ (jumpMap[len]&4)==0) break;
+											}
+											if(try_idx<0){
+												break;
+											}
+										}
+									} else {
+										try_idx=Jonimatcher.searchInterruptible(start, start+recordodKeyLen, Option.DEFAULT);
+									}
 
 									if(SearchLauncher.IsInterrupted || searchCancled) break;
 
@@ -1144,32 +1167,44 @@ public class mdict extends mdBase{
 		}
 	}
 
+	public static int kalyxIndexOf2(byte[] source, int sourceOffset, int sourceCount, byte[][] targets, int fromIndex, F1ag seelHolder) {
+		int ldx=-1;
+		for (int i = 0; i < targets.length; i++) {
+			int idx=indexOf(source, sourceOffset, sourceCount, targets[i], 0, targets[i].length, fromIndex);
+			if(idx>=fromIndex&&(ldx==-1||idx<ldx)) {
+				seelHolder.val=i;
+				ldx=idx;
+				if(idx==fromIndex) break;
+				//break;
+			}
+		}
+		return ldx;
+	}
+
 	/** derived */
 	public static int kalyxIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][] targets, int fromIndex, F1ag seelHolder) {
 		int targetCounts = targets.length;
-		byte[] target;
-		int targetCount;
-		int lookat=0;
-		byte sI;
-		int max1 = sourceOffset + sourceCount -1;
+		int lookat=targetCounts;
+		int max = sourceOffset + sourceCount;
 		int i = sourceOffset + fromIndex;
-		while(i <= max1) {
-			for (; i <= max1; i++) {//亦步亦趋求首项
+		byte sI=0;
+		while(i < max) {
+			for (; i < max; i++) {//亦步亦趋求首项
 				/* Look for first character. */
-				sI = source[i];
-				for (lookat = 0; lookat < targetCounts && sI != targets[lookat][0]; lookat++)
+				sI=source[i];
+				for (lookat = 0; lookat < targetCounts && sI!=targets[lookat][0]; lookat++)
 					;
 				if(lookat < targetCounts) break;
 			}
 			if(lookat>=targetCounts)/* 开始即结束 */ return -1;
 			for (; lookat < targetCounts; lookat++){
-				if (source[i] == targets[lookat][0]) {
-					target = targets[lookat];
-					targetCount = target.length;
+				byte[] target = targets[lookat];
+				if (sI == target[0]) {
 					/* Found first character, now look at the rest of v2 */
-					int j = i + 1;
-					int end = j + targetCount - 1;
-					if(end<=max1 - targetCount) {
+					int targetCount = target.length;
+					if(i<=max-targetCount) {
+						int j = i + 1;
+						int end = j + targetCount - 1;
 						for (int k = 1; j < end && source[j] == target[k]; j++, k++)
 							;
 						if (j == end) {
@@ -1182,6 +1217,125 @@ public class mdict extends mdBase{
 				}
 			}
 			i++;
+		}
+		return -1;
+	}
+
+	public int safeKalyxIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][] targets, int fromIndex, F1ag seelHolder) {
+		int fromIndex_ = fromIndex;
+		int ret, len;
+		boolean pass=true;
+		while((ret = kalyxIndexOf(source, sourceOffset, sourceCount, targets, fromIndex, seelHolder))>=fromIndex){
+			len = ret-fromIndex_;
+			//if(false)
+			if (checkEven != 0 && ret>fromIndex_) {
+				if (checkEven == 2) {
+					pass = len % 4 == 0;
+				} else if (checkEven == 1 && len % 2 != 0) {
+					pass = false;
+				} else {
+					if(encodeChecker !=null)
+						pass = encodeChecker.checkBefore(source, sourceOffset, fromIndex_, ret);
+					else{
+						int start;
+						for (int i = 1; i < maxEB; i++) {
+							if(checkEven==1&&i==1/*二四变长编码*/
+									|| checkEven!=5&&i==3/*一二四变长编码*/) i++;
+							if (ret - i < 0) break;
+							start = sourceOffset + ret - i;
+							len = sourceOffset + ret - start;
+							String validfyCode = new String(source, start, len, _charset);
+							len = validfyCode.length();
+							pass = len > 0 && (validfyCode.charAt(len - 1) != 65533);
+							//SU.Log("validfyCode", validfyCode, validfyCode.charAt(len - 1) == 65533, pass);
+							if(pass) break;
+						}
+					}
+				}
+			}
+			if(pass) return ret;
+			fromIndex = ret + targets[seelHolder.val].length;
+		}
+		return -1;
+	}
+
+	public int safeKalyxLastIndexOf(byte[] source, int sourceOffset, int sourceStart, byte[][] targets, int fromIndex, F1ag seelHolder) {
+		//if(true) return -1;
+		int fromIndex_ = fromIndex;
+		int ret, len;
+		boolean pass=true;
+		while((ret = kalyxLastIndexOf(source, sourceOffset, sourceStart, targets, fromIndex, seelHolder))>=0){
+			len = fromIndex_-ret;
+			if(ret<fromIndex_){
+				if (checkEven == 2) {
+					pass = len % 4 == 0;
+				} else if (checkEven == 1 && len % 2 != 0) {
+					pass = false;
+				} else {
+					if(encodeChecker !=null)
+						pass = encodeChecker.checkAfter(source, sourceOffset, fromIndex, ret);
+					else{
+						int start =  ret + targets[seelHolder.val].length;
+						for (int i = 1; i < maxEB; i++) {
+							if(checkEven==1&&i==1/*二四变长编码*/
+									|| checkEven!=5&&i==3/*一二四变长编码*/) i++;
+							if(start+i>fromIndex+1) break;
+							String validfyCode = new String(source, sourceOffset+start, i, _charset);
+							len = validfyCode.length();
+							pass = len > 0 && (validfyCode.charAt(len - 1) != 65533);
+							//SU.Log("validfyCode", validfyCode, validfyCode.charAt(len - 1) == 65533, pass);
+							if(pass) break;
+						}
+					}
+//					int start = sourceOffset + ret + targets[seelHolder.val].length;
+//					len = maxEB;
+//					String validfyCode = new String(source, start, len, _charset);
+//					//SU.Log("validfyCode", validfyCode);
+//					pass = validfyCode.length() > 0 && validfyCode.charAt(0) != 65533;
+				}
+			}
+
+			if(pass) return ret;
+			fromIndex = ret - targets[seelHolder.val].length;
+		}
+		return -1;
+	}
+
+	public static int kalyxLastIndexOf(byte[] source, int sourceOffset, int sourceStart, byte[][] targets, int fromIndex, F1ag seelHolder) {
+		int targetCounts = targets.length;
+		byte[] target;
+		int lookat=0;
+		byte sI=0;
+		int i = sourceOffset + fromIndex;
+		while(i >= sourceStart) {
+			for (; i >= sourceStart; i--) {//亦步亦趋求首项
+				/* Look for first character. */
+				sI = source[i];
+				for (lookat = 0; lookat < targetCounts && sI != (target=targets[lookat])[target.length-1]; lookat++)
+					;
+				if(lookat < targetCounts) break;
+			}
+			if(lookat>=targetCounts)/* 开始即结束 */ return -1;
+			for (; lookat < targetCounts; lookat++){
+				target = targets[lookat];
+				if (sI == target[target.length-1]) {
+					/* Found first character, now look at the rest of v2 */
+					int targetCount = target.length;
+					if(i+1>=sourceStart+targetCount) {
+						int j = i - 1;
+						int end = j - targetCount + 1;
+						for (int k = target.length-2; j > end && source[j] == target[k]; j--, k--)
+							;
+						if (j == end) {
+							/* Found whole string. */
+							seelHolder.val = lookat;
+							return i - sourceOffset;//试之得
+						}
+					}
+					//试之不得
+				}
+			}
+			i--;
 		}
 		return -1;
 	}
@@ -1260,34 +1414,106 @@ public class mdict extends mdBase{
 		public volatile int thread_number_count = 1;
 		public GetIndexedString jnFanMap;
 		public GetIndexedString fanJnMap;
-		/** .is 免死金牌  that exempt you from death for just one time */
-		HashSet<Integer> miansi = new HashSet<>();
-		/** *is 越级天才, i.e., super super genius leap */
-		HashSet<Integer> yueji = new HashSet<>();
-
 		public volatile int dirtyResultCounter;
 		public volatile int dirtyProgressCounter;
 		public long st;
 		public String key;
 
-		ArrayList<String>[] mParallelKeys;
+		public ArrayList<ArrayList<ArrayList<Object>>> mParallelKeys = new ArrayList<>();
 
-		/** Disperse an search term into a 2D byte array. */
+		private boolean trimStart;
+		private int trimEnd;
+
+		/** .is 免死金牌  that exempt you from death for just one time */
+		private HashSet<Integer> miansi = new HashSet<>();
+		/** *is 越级天才, i.e., super super genius leap */
+		private HashSet<Integer> yueji = new HashSet<>();
+
+		/** Spray a search term into a 2D byte array. */
 		public void flowerSanLieZhi(String str) {
-			miansi.clear();
-			yueji.clear();
+			trimStart=false;
+			trimEnd=-1;
+			mParallelKeys.clear();
 			int len=str.length();
-			mParallelKeys = new ArrayList[len];
+			String character;
+			ArrayList<ArrayList<Object>> currAndGroup = new ArrayList<>(2);
+			ArrayList<Object> currOrGroup = new ArrayList<>(2);
 			for(int i=0;i<len;i++){
 				char ch = str.charAt(i);
-				if(ch=='.')
-					miansi.add(i);
-				else if(ch=='*')
-					yueji.add(i);
-				else{
-					ArrayList<String> lexipart = new ArrayList<>();
-					String mLexicalPart = str.substring(i, i+1);
-					lexipart.add(mLexicalPart);
+				if(i<len-1 && ch>>10==0b110110 && str.charAt(i+1)>>10==0b110111){//surrogate pair
+					character = str.substring(i, i+2);
+					i++;
+				} else{
+					character = str.substring(i, i+1);
+				}
+				boolean process=false;
+				switch (character){
+					case "|"://新开或组
+						MiansiYueji(currOrGroup, false);
+						currAndGroup.add(currOrGroup);
+						currOrGroup = new ArrayList<>(1);
+					break;
+					case "&"://新开与组
+						if(i<len-1 && str.charAt(i+1)=='&'){//新开与与组
+							MiansiYueji(currOrGroup, true);
+							currAndGroup.add(currOrGroup);
+							currOrGroup = new ArrayList<>(1);
+							i+=1;
+						} else {
+							MiansiYueji(currOrGroup, false);
+							currAndGroup.add(currOrGroup);
+							mParallelKeys.add(currAndGroup);
+							currOrGroup = new ArrayList<>(1);
+							currAndGroup = new ArrayList<>(1);
+						}
+					break;
+					case ".":{
+						miansi.add(currOrGroup.size());
+						int size=1;
+						if(i<len-1 && str.charAt(i+1)=='('){ // quantifier
+							int nextParenthese = str.indexOf(')', i+2);
+							if(nextParenthese>0){
+								int sz = IU.parsint(str.substring(i+2, nextParenthese), -1);
+								if(sz>0){
+									size = sz;
+								}
+								i=nextParenthese;
+							}
+						}
+						currOrGroup.add(size);
+					} break;
+					case "*":{
+						yueji.add(currOrGroup.size());
+						int size=1;
+						if(i<len-1 && str.charAt(i+1)=='('){ // quantifier
+							int nextParenthese = str.indexOf(')', i+2);
+							if(nextParenthese>0){
+								int sz = IU.parsint(str.substring(i+2, nextParenthese), -1);
+								if(sz>0){
+									size = sz+1;
+								}
+								i=nextParenthese;
+							}
+						}
+						currOrGroup.add(size);
+					} break;
+					case "^"://起始
+						if(currOrGroup.size()==0){
+							trimStart=true;
+						}
+					break;
+					case "$"://终止
+						trimEnd=i;
+					break;
+					case "\\"://转义
+					break;
+					default:
+						process=true;
+					break;
+				}
+				if(process){
+					ArrayList<String> lexipart = new ArrayList<>(2);
+					lexipart.add(character);
 					String val=null;
 					if(getEnableFanjnConversion()){ //繁简一
 						if((val=jnFanMap.get(ch))!=null){
@@ -1299,14 +1525,58 @@ public class mdict extends mdBase{
 						}
 					}
 					if(val==null){ //忽略大小写
-						String UpperKey = mLexicalPart.toUpperCase();
-						if(!UpperKey.equals(mLexicalPart)){
+						String UpperKey = character.toUpperCase();
+						if(!UpperKey.equals(character)){
 							lexipart.add(UpperKey);
 						}
 					}
-					mParallelKeys[i] = lexipart;
+					currOrGroup.add(lexipart);
 				}
 			}
+			if(currOrGroup.size()>0){
+				MiansiYueji(currOrGroup, false);
+				currAndGroup.add(currOrGroup);
+			}
+			mParallelKeys.add(currAndGroup);
+//			CMN.Log("与组共：", mParallelKeys.size());
+//			for (int i = 0; i < mParallelKeys.size(); i++) {
+//				CMN.Log("-->与组第：", i); CMN.Log("---->或组共：", mParallelKeys.get(i).size());
+//				for (int j = 0; j < mParallelKeys.get(i).size(); j++) {
+//					ArrayList<Object> mParallelKeys_ = mParallelKeys.get(i).get(j);
+//					CMN.Log("---->或组第：", j, "长", mParallelKeys_.size());
+//					for (int k = 0; k < mParallelKeys_.size(); k++) {
+//						if(mParallelKeys_.get(k) instanceof ArrayList){
+//							ArrayList<String> item = (ArrayList<String>) mParallelKeys_.get(k);
+//							CMN.Log("-------->", item.toString());
+//						}
+//					}
+//				}
+//
+//			}
+		}
+
+		private void MiansiYueji(ArrayList<Object> currOrGroup, boolean Andand) {
+			int[] jumpMap = new int[currOrGroup.size()+1];
+			for (int i = 0; i < jumpMap.length-1; i++) {
+				if(miansi.contains(i)){
+					jumpMap[i]=(int)currOrGroup.get(i);
+				} else if(yueji.contains(i)){
+					jumpMap[i]=-(int)currOrGroup.get(i);
+				}
+			}
+			int val=0;
+			if(trimStart)
+				val=1;
+			if(trimEnd==jumpMap.length-1)
+				val|=2;
+			if(Andand)
+				val|=4;
+			jumpMap[jumpMap.length-1]=val;
+			currOrGroup.add(jumpMap);
+			miansi.clear();
+			yueji.clear();
+			trimStart=false;
+			trimEnd=-1;
 		}
 
 		public AtomicInteger poolEUSize = new AtomicInteger(0);
@@ -1324,10 +1594,12 @@ public class mdict extends mdBase{
 		public abstract boolean getEnableFanjnConversion();
 
 		public abstract Pattern getBakedPattern();
+		
+		public abstract String getPagePattern();
 
-		public abstract void bakePattern(String plainPattern, String currentSearchText);
-
-		public abstract String getBakedPatternStr(boolean useInPageRegex);
+		public abstract void setCurrentPhrase(String currentPhrase);
+		
+		public abstract int getSearchType();
 	}
 
 	public int thread_number,step,yuShu;
@@ -1344,12 +1616,6 @@ public class mdict extends mdBase{
 		step = (int) (_num_key_blocks/split_keys_thread_number);
 		yuShu=(int) (_num_key_blocks%split_keys_thread_number);
 
-	}
-
-	protected boolean getUseJoniRegex(int mode){
-		if(parent!=null)
-			return parent.getUseJoniRegex(mode);
-		return true;
 	}
 
 	protected boolean getRegexAutoAddHead(){
@@ -1372,9 +1638,9 @@ public class mdict extends mdBase{
 			return;
 		}
 		Pattern keyPattern=null;//用于 复核 ，并不直接参与搜索
-		byte[][][] matcher=null;
+		byte[][][][][] matcher=null;
 		Regex Joniregex = null;
-		boolean regexIntent=getUseJoniRegex(-1);
+		boolean regexIntent=SearchLauncher.getSearchType()==1;
 		if(regexIntent){
 			if(encoding==null) bakeJoniEncoding();
 			if(encoding!=null) {
@@ -1446,7 +1712,7 @@ public class mdict extends mdBase{
 			final int it = ti;
 			Regex finalJoniregex = Joniregex;
 			Pattern finalKeyPattern = keyPattern;
-			byte[][][] finalMatcher = matcher;
+			byte[][][][][] finalMatcher = matcher;
 			ArrayList<Integer>[] final_combining_search_tree = _combining_search_tree;
 			fixedThreadPoolmy.execute(
 					new Runnable(){@Override public void run()
@@ -1555,25 +1821,30 @@ public class mdict extends mdBase{
 		return Executors.newFixedThreadPool(thread_number);
 	}
 
-	protected int flowerIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][][] matchers, int marcherOffest, int fromIndex, AbsAdvancedSearchLogicLayer searchLauncher, F1ag flag)
+	protected int flowerIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][][] matchers, int marcherOffest, int fromIndex, AbsAdvancedSearchLogicLayer launcher, F1ag flag, ArrayList<Object> mParallelKeys, int[] jumpMap)
 	{
-		//if(GlobalOptions.debug)SU.Log("flowerIndexOf", sourceOffset, sourceCount);
+		int tagCheckFrame = 64;
 		int lastSeekLetSize=0;
 		int totalLen = matchers.length;
-		boolean bSearchInContents = searchLauncher.type==2||searchLauncher.type==-2;
+		boolean bSearchInContents = launcher.type==2||launcher.type==-2;
+		boolean bCheckTags = bSearchInContents;
+		boolean trimStart = fromIndex==0 && (jumpMap[matchers.length]&1)!=0;
+		int hudieling;
+		//if(true) checkEven=0;
 		while(fromIndex<sourceCount) {
 			//SU.Log("==");
 			//int idx = -1;
 			int fromIndex_=fromIndex;
-			boolean isSeeking=true;
+			boolean isSeeking=!trimStart;
 			boolean Matched = false;
 			boolean pass; int len;
-			for(int lexiPartIdx=marcherOffest;lexiPartIdx<totalLen;lexiPartIdx++) {
+			int lexiPartIdx;
+			for(lexiPartIdx=marcherOffest;lexiPartIdx<totalLen;lexiPartIdx++) {
 				//if(fromIndex_>sourceCount-1) return -1;
 				//SU.Log("stst: "+sourceCount+"::"+(fromIndex_+seekPos)+" fromIndex_: "+fromIndex_+" seekPos: "+seekPos+" lexiPartIdx: "+lexiPartIdx);
-
 				//SU.Log("seekPos: "+seekPos+" lexiPartIdx: "+lexiPartIdx+" fromIndex_: "+fromIndex_);
-				if(searchLauncher.miansi.contains(lexiPartIdx)) {
+				hudieling = jumpMap[lexiPartIdx];
+				if(hudieling>0) {
 					if(lexiPartIdx==totalLen-1) {
 						if(fromIndex_>=sourceCount)
 							return -1;
@@ -1582,18 +1853,22 @@ public class mdict extends mdBase{
 					//SU.Log("miansi: "+lexiPartIdx);
 					//SU.Log("miansi: "+sourceCount+"::"+(fromIndex_+seekPos)+"sourceL: "+source.length);
 					//SU.Log("jumpped c is: "+new String(source,fromIndex_+seekPos,Math.min(4, sourceCount-(fromIndex_+seekPos-sourceOffset)),_encoding).substring(0, 1));
-					int newSrcCount = Math.min(4, sourceCount-(fromIndex_));
-					if(newSrcCount<=0)
-						return -1;
+					int newSrcCount = Math.min(maxEB*hudieling, sourceCount-(fromIndex_));
+					if(newSrcCount<=0) return -1;
 					//TODO calc char length for different charsets.
 					String c = new String(source,sourceOffset+fromIndex_,newSrcCount,_charset);
-					int jumpShort = c.substring(0, 1).getBytes(_charset).length;
+					if(hudieling>c.length()) return -1;
+					int jumpShort = c.substring(0, hudieling).getBytes(_charset).length;
 					fromIndex_+=jumpShort;
 					continue;
-				} else if(searchLauncher.yueji.contains(lexiPartIdx)) {
+				}
+				else if(hudieling<0) {
 					if(lexiPartIdx==totalLen-1)
 						return fromIndex-lastSeekLetSize;//HERE
-					if(flowerIndexOf(source, sourceOffset+fromIndex_,sourceCount-(fromIndex_), matchers,lexiPartIdx+1, 0, searchLauncher, flag)!=-1){
+					int newSrcCount=sourceCount;
+					hudieling*=-1;//todo 边界处理
+					if(hudieling>1) newSrcCount=fromIndex_+hudieling-1;
+					if(flowerIndexOf(source, sourceOffset,newSrcCount, matchers,lexiPartIdx+1, fromIndex_, launcher, flag, mParallelKeys, jumpMap)!=-1){
 						return fromIndex-lastSeekLetSize;
 					}
 					return -1;
@@ -1607,36 +1882,98 @@ public class mdict extends mdBase{
 					if(newSeekPos>=fromIndex_){
 						//todo verify first match
 						pass = true;
-						if (checkEven != 0 && (len = newSeekPos - fromIndex_) != 0) {
-							if (checkEven == 2) {
-								pass = len % 4 == 0;
-							} else if (checkEven == 1 && len % 2 != 0) {
-								pass = false;
-							} else {
-								len = sourceOffset + newSeekPos;
-								int start = (checkEven == 3) ? Math.max(sourceOffset + fromIndex_, sourceOffset + newSeekPos - maxEB) : (sourceOffset + fromIndex_);
-								//int start = Math.max(sourceOffset+fromIndex_, sourceOffset+newSeekPos-4);
-								len = len - start;
-								String validfyCode = new String(source, start, len, _charset);
-								//SU.Log("validfyCode", validfyCode);
-								len = validfyCode.length();
-								pass = len > 0 && validfyCode.charAt(len - 1) != 65533;
+						//if(false)
+						lastSeekLetSize = matchers[lexiPartIdx][flag.val].length;
+						if (checkEven != 0 ) {//zzz
+							if((len = newSeekPos - fromIndex_) != 0) {
+								if (checkEven == 2) {
+									pass = len % 4 == 0;
+								} else if (checkEven == 1 && len % 2 != 0) {
+									pass = false;
+								} else {
+									if(encodeChecker !=null)
+										pass = encodeChecker.checkBefore(source, sourceOffset, fromIndex_, newSeekPos);
+									else {
+										//len = sourceOffset + newSeekPos;
+										int start;// = (checkEven == 3 || bSearchInContents) ? Math.max(sourceOffset + fromIndex_, sourceOffset + newSeekPos - maxEB) : (sourceOffset + fromIndex_);
+										//start = (sourceOffset + fromIndex_) ;
+										//int start = Math.max(sourceOffset+fromIndex_, sourceOffset+newSeekPos-4);
+										for (int i = 1; i < maxEB; i++) {
+											if (checkEven == 1 && i == 1/*二四变长编码*/
+													|| checkEven != 5 && i == 3/*一二四变长编码*/) i++;
+											if (newSeekPos - i < 0) break;
+											start = sourceOffset + newSeekPos - i;
+											//if (start > sourceOffset + fromIndex_) break;
+											len = sourceOffset + newSeekPos - start;
+											String validfyCode = new String(source, start, len, _charset);
+											len = validfyCode.length();
+											pass = len > 0 && (validfyCode.charAt(len - 1) != 65533);
+											//SU.Log("validfyCode", validfyCode, validfyCode.charAt(len - 1) == 65533, pass);
+											if (pass) break;
+										}
+										//}
+										//								if(pass){
+										//									validfyCode = new String(source, sourceOffset+newSeekPos+matchers[lexiPartIdx][flag.val].length, maxEB, _charset);
+										//									//SU.Log("validfyCode", validfyCode);
+										//									len = validfyCode.length();
+										//									pass = len > 0 && validfyCode.charAt(0) != 65533;
+										//								}
+									}
+								}
 							}
+//							else if((len = sourceCount - newSeekPos - matchers[lexiPartIdx][flag.val].length) != 0){
+//								int start = newSeekPos+matchers[lexiPartIdx][flag.val].length;
+//								len = Math.min(start+maxEB, len);
+//								String validfyCode = new String(source, start, len, _charset);
+//								SU.Log("validfyCode2", validfyCode, validfyCode.charAt(len - 1) == 65533);
+//								pass = validfyCode.length() > 0 && validfyCode.charAt(0) != 65533;
+//							}
 						}
 						if (pass) {
-							if(bSearchInContents){
+							if(bCheckTags){
 								//todo skip html tags 检查不在<>之中。 往前找>，截止于<>两者。若找先到<则放行。
-								//									若找先到>则需要进一步检查。
-								//									往后找<，截止于<>两者。若找先到>则放行。
+								//									若找先到>则需要进一步检查。 [36]
+								//									往后找<，截止于<>两者。若找先到>则放行。[36]
 								//									若找先到<则简单认为需要跳过。
-								//if (bingStartWith(source, sourceOffset, sourceCount, htmlOpenTag, 0, htmlOpenTag.length, newSeekPos+marchLet.length)) {
-									//CMN.Log("found htmlOpenTag!!!");
-								//}
+								int from = newSeekPos+lastSeekLetSize;
+								int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlTags, from, flag);
 
+								if (htmlForward>=from) {
+									if(flag.val==1){ // x >
+										from = newSeekPos-1;
+										int htmlBackward = safeKalyxLastIndexOf(source, sourceOffset, sourceOffset+Math.max(0, from-tagCheckFrame), htmlTags, from, flag);
+										if(htmlBackward>=0){
+											if(flag.val==0){ // < x
+												fromIndex=fromIndex_=htmlForward+htmlTags[flag.val].length;
+												lexiPartIdx--;
+												continue;
+											}
+										}
+									} else if(htmlForward==from){// 紧邻<
+										while(bingStartWith(source,sourceOffset,sourceCount,htmlOpenTag, 0,htmlOpenTag.length,from)){
+											from+=htmlOpenTag.length;
+											htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlTagsB, from, flag);
+											if(htmlForward>=from+htmlCloseTag.length){
+												from=htmlForward+htmlCloseTag.length;
+												newSeekPos=from-lastSeekLetSize;
+												//CMN.Log("跳过！");
+											} else break;
+										}
+//										from = htmlForward+htmlTags[flag.val].length;
+//										htmlForward = safeKalyxIndexOf(source, sourceOffset, from+36, htmlTagsB, from, flag);
+//										if(htmlForward>=from){
+//											newSeekPos = htmlForward+htmlTagsB[0].length-lastSeekLetSize;
+//										}
+									}
+								}
 							}
 							seekPos = newSeekPos;
-							lastSeekLetSize = matchers[lexiPartIdx][flag.val].length;
 							Matched = true;
+						}
+						else {
+							fromIndex=fromIndex_=newSeekPos + lastSeekLetSize;
+							lexiPartIdx--;
+							continue;
 						}
 					}
 					//SU.Log("seekPos:"+seekPos+" fromIndex_: "+fromIndex_);
@@ -1654,7 +1991,7 @@ public class mdict extends mdBase{
 						return -1;
 					}
 //					if(GlobalOptions.debug) {
-//						SU.Log("matchedHonestily? ", lexiPartIdx, searchLauncher.mParallelKeys[lexiPartIdx].get(0));
+//						SU.Log("matchedHonestily? ", lexiPartIdx, launcher.mParallelKeys[lexiPartIdx].get(0));
 //						CMN.Log("matchedHonestily? str", new String(source, sourceOffset+fromIndex_, 100, _charset));
 //					}
 					for(byte[] marchLet:matchers[lexiPartIdx]) {
@@ -1663,65 +2000,66 @@ public class mdict extends mdBase{
 							Matched=true;
 //							if(GlobalOptions.debug) {
 //								SU.Log("matchedHonestily: ", sourceCount, "::", " fromIndex_: ", fromIndex_ + " seekPos: ");
-//								SU.Log("matchedHonestily: ", lexiPartIdx, searchLauncher.mParallelKeys[lexiPartIdx].get(0));
+//								SU.Log("matchedHonestily: ", lexiPartIdx, launcher.mParallelKeys[lexiPartIdx].get(0));
 //							}
 							fromIndex_+=marchLet.length;
 							break;
 						}
 					}
-					if(!Matched && bSearchInContents) {
+					if(Matched && bCheckTags) {
 						//todo skip html tags 三步，检查紧邻< ，搜索>，而后推进fromIndex_
-
+						while(bingStartWith(source,sourceOffset,sourceCount,htmlOpenTag, 0,htmlOpenTag.length,fromIndex_)){
+							int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, fromIndex_+htmlOpenTag.length+tagCheckFrame), htmlTagsB, fromIndex_+htmlOpenTag.length, flag);
+							if(htmlForward>=fromIndex_+htmlOpenTag.length){
+								fromIndex_=htmlForward+htmlCloseTag.length;
+								//CMN.Log("跳过！");
+							} else break;
+						}
 					}
 				}/* End honest match */
 				if(!Matched) {
 					//SU.Log("Matched failed this round: "+lexiPartIdx);
 					break;
 				}
-				//fromIndex_+=matchers[lexiPartIdx][0].length;
 			}/* End lexical parts loop */
-			if(Matched)
+			if(Matched){
+				if((jumpMap[matchers.length]&2)!=0&&fromIndex_<sourceCount)
+					return -1;
 				return fromIndex-lastSeekLetSize;
+			}
+			else if(trimStart)
+				return -1;
 		}
 		return -1;
 	}
 
-	protected byte[][][] leafSanLieZhi(AbsAdvancedSearchLogicLayer searchLauncher) {
-		ArrayList<String>[] pm = searchLauncher.mParallelKeys;
-		byte[][][] res = new byte[pm.length][][];
-		for (int i = 0; i < pm.length; i++) {
-			if(pm[i]!=null){
-				int size = pm[i].size();
-				byte[][] lexipart = new byte[size][];
-				for (int j = 0; j < size; j++) {
-					lexipart[j] = pm[i].get(j).getBytes(_charset);
+	protected byte[][][][][] leafSanLieZhi(AbsAdvancedSearchLogicLayer searchLauncher) {
+		ArrayList<ArrayList<ArrayList<Object>>> pm = searchLauncher.mParallelKeys;
+		byte[][][][][] res = new byte[pm.size()][][][][];
+		ArrayList<String> item;
+		for (int i = 0; i < pm.size(); i++) {
+			ArrayList<ArrayList<Object>> andGroup = pm.get(i);
+			res[i] = new byte[andGroup.size()][][][];
+			for (int j = 0; j < andGroup.size(); j++) {
+				ArrayList<Object> orGroup = andGroup.get(j);
+				res[i][j] = new byte[orGroup.size()-1][][];
+				for (int k = 0; k < orGroup.size()-1; k++) {
+					if(orGroup.get(k) instanceof ArrayList){
+						item = (ArrayList<String>)orGroup.get(k);
+						int size = item.size();
+						byte[][] lexipart = new byte[size][];
+						for (int l = 0; l < size; l++) {
+							lexipart[l] = item.get(l).getBytes(_charset);
+						}
+						res[i][j][k] = lexipart;
+					}
 				}
-				res[i] = lexipart;
 			}
 		}
 		return res;
 	}
 
-	/** Disperse an search term into a 2D byte array. */
-	protected byte[][] flowerSanLieZhi(String str, AbsAdvancedSearchLogicLayer searchLauncher) {
-		searchLauncher.miansi.clear();
-		searchLauncher.yueji.clear();
-		int len=str.length();
-		byte[][] res = new byte[len][];
-		for(int i=0;i<len;i++){
-			char ch = str.charAt(i);
-			if(ch=='.')
-				searchLauncher.miansi.add(i);
-			else if(ch=='*')
-				searchLauncher.yueji.add(i);
-			else
-				res[i] = str.substring(i, i+1).getBytes(_charset);
-		}
-		return res;
-	}
-
-
-	protected void find_in_keyBlock(Regex JoniRegx, Pattern keyPattern, byte[] key_block, key_info_struct infoI, byte[][][] matcher, int SelfAtIdx, ArrayList<Integer> it, AbsAdvancedSearchLogicLayer SearchLauncher) {
+	protected void find_in_keyBlock(Regex JoniRegx, Pattern keyPattern, byte[] key_block, key_info_struct infoI, byte[][][][][] matcher, int SelfAtIdx, ArrayList<Integer> it, AbsAdvancedSearchLogicLayer SearchLauncher) {
 		//org.joni.Matcher Jonimatcher = null;
 		//if(JoniRegx!=null)
 		//	Jonimatcher = JoniRegx.matcher(key_block);
@@ -1759,10 +2097,38 @@ public class mdict extends mdBase{
 			try {
 				//TODO: alter
 				//xxxx
-				int try_idx = JoniRegx==null?
-						flowerIndexOf(key_block,key_start_index+_number_width, key_end_index-(key_start_index+_number_width), matcher,0,0, SearchLauncher, flag)
-						:JoniRegx.matcher(key_block, key_start_index+_number_width, key_end_index).search(key_start_index+_number_width, key_end_index, Option.SINGLELINE)
-						;
+//				int try_idx = -1;
+//						JoniRegx==null?
+//						flowerIndexOf(key_block,key_start_index+_number_width, key_end_index-(key_start_index+_number_width), matcher,0,0, SearchLauncher, flag, mParallelKeys)
+//						:JoniRegx.matcher(key_block, key_start_index+_number_width, key_end_index).search(key_start_index+_number_width, key_end_index, Option.SINGLELINE)
+//						;
+//				try_idx=-1;
+
+//				GlobalOptions.debug=(infoI.num_entries_accumulator+keyCounter)==34;
+//				if(GlobalOptions.debug){
+//				} else {key_start_index = key_end_index + delimiter_width; SearchLauncher.dirtyProgressCounter++; keyCounter++; continue;}
+
+				ArrayList<ArrayList<Object>> mpk;
+				ArrayList<Object> mParallelKeys;
+				int try_idx = -1;
+				if(JoniRegx==null) {
+					for (int j = 0; j < matcher.length; j++) { // and group
+						mpk = SearchLauncher.mParallelKeys.get(j);
+						for (int k = 0; k < matcher[j].length; k++) { // or group
+							mParallelKeys = mpk.get(k);
+							int len = matcher[j][k].length;
+							int[] jumpMap = (int[]) mParallelKeys.get(len);
+							try_idx = flowerIndexOf(key_block, key_start_index+_number_width, key_end_index-(key_start_index+_number_width), matcher[j][k], 0, 0, SearchLauncher, flag, mParallelKeys, jumpMap);
+							//SU.Log("and_group>>"+j, "or_group#"+k, try_idx, nna);
+							if (try_idx < 0 ^ (jumpMap[len] & 4) == 0) break;
+						}
+						if (try_idx < 0) {
+							break;
+						}
+					}
+				} else {
+					try_idx = JoniRegx.matcher(key_block, key_start_index+_number_width, key_end_index).search(key_start_index+_number_width, key_end_index, Option.SINGLELINE);
+				}
 
 				if(try_idx!=-1){
 					//复核 re-collate
@@ -2027,7 +2393,7 @@ public class mdict extends mdBase{
 		return processMyText(new String(in,_charset));
 	}
 
-	public static int  binary_find_closest(long[] array,long val){
+	public static int binary_find_closest(long[] array,long val){
 		int middle;
 		int iLen ;
 		if(array==null || (iLen=array.length)<1){
@@ -2090,9 +2456,9 @@ public class mdict extends mdBase{
 	}
 
 	static boolean bingStartWith(byte[] source, int sourceOffset, int sourceCount,byte[] target, int targetOffset, int targetCount, int fromIndex) {
-		//if (fromIndex >= sourceCount || targetCount+fromIndex >= sourceCount) { // || targetCount+fromIndex>=sourceCount || fromIndex>=sourceCount
-		//	return false;
-		//}
+		if (fromIndex >= sourceCount || targetCount+fromIndex >= sourceCount) { // || targetCount+fromIndex>=sourceCount || fromIndex>=sourceCount
+			return false;
+		}
 		//if(targetCount<=-1)
 		//	targetCount=target.length;
 		//if(sourceOffset+targetCount>=source.length)
@@ -2245,6 +2611,129 @@ public class mdict extends mdBase{
 					_Dictionary_fName = filename.substring(0, tmpIdx);
 				}
 			}
+		}
+	}
+
+	@Override
+	protected void postGetCharset() {
+		htmlOpenTag = "<".getBytes(_charset);
+		htmlCloseTag = ">".getBytes(_charset);
+		htmlTags = new byte[][]{htmlOpenTag, htmlCloseTag};
+		htmlTagsA = new byte[][]{htmlOpenTag};
+		htmlTagsB = new byte[][]{htmlCloseTag};
+		switch (_charset.name()){
+			case "EUC-JP":
+				checkEven=5;
+				maxEB = 3;
+			break;
+			case "EUC-KR":
+			case "x-EUC-TW":
+			case "Shift_JIS":
+			case "Windows-31j":
+				checkEven=3;
+				maxEB = 2;
+			break;
+			case "GB2312"://1981 unsafe double bytes
+			case "GBK"://1995 unsafe double bytes
+				checkEven=4;
+				maxEB = 2;
+			break;
+			case "GB18030"://2000 unsafe double bytes
+				checkEven=4;
+				maxEB = 4;
+				encodeChecker = new EncodeChecker();
+			break;
+			case "UTF-16BE":
+			case "UTF-16LE":
+				checkEven=1;
+				maxEB = 4;
+			break;
+			case "UTF-32BE":
+			case "UTF-32LE":
+				checkEven=2;
+				maxEB = 4;
+			break;
+			case "Big5":// safe double bytes?
+			case "Big5-HKSCS":// safe double bytes?
+				checkEven=3;
+			break;
+			case "UTF-8":// safe tripple bytes?
+				//checkEven=3;
+				maxEB = 4;
+			break;
+			default:
+				maxEB = 1;
+			break;
+		}
+	}
+
+	class EncodeChecker{
+		public boolean checkBefore(byte[] source, int sourceOffset, int fromIndex_, int ret) {
+			try {
+				int code = source[sourceOffset + ret - 1]&0xff;
+				if(code<=0x7F){//1
+					return true;
+				}
+
+				if(ret-2>=0)
+				if((code>=0x40&&code<=0xFE&&code!=0x7F)){//2
+					code = source[sourceOffset + ret - 2]&0xff;//1
+					if((code>=0x81&&code<=0xFE)){
+						return true;
+					}
+				}
+
+				if(ret-4>=0)
+				if((code>=0x30&&code<=0x39)) {//4
+					code = source[sourceOffset + ret - 2]&0xff;
+					if ((code >= 0x81 && code <= 0xFE)) {//3
+						code = source[sourceOffset + ret - 3]&0xff;
+						if ((code >= 0x30 && code <= 0x39)) {//2
+							code = source[sourceOffset + ret - 4]&0xff;
+							if ((code >= 0x81 && code <= 0xFE)) {//1
+								return true;
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				SU.Log(e);
+			}
+			return false;
+		}
+
+		public boolean checkAfter(byte[] source, int sourceOffset, int toIndex, int ret) {
+			try {
+				int code = source[sourceOffset + ret]&0xff;
+				if(code<=0x7F){//1
+					return true;
+				}
+
+				if(ret + 1<=toIndex)
+				if((code>=0x40&&code<=0xFE&&code!=0x7F)){//2
+					code = source[sourceOffset + ret + 1]&0xff;//1
+					if((code>=0x81&&code<=0xFE)){
+						return true;
+					}
+				}
+
+				if(ret + 3<=toIndex)
+				if ((code >= 0x81 && code <= 0xFE)) {//1
+					code = source[sourceOffset + ret + 1]&0xff;
+					if ((code >= 0x30 && code <= 0x39)) {//2
+						code = source[sourceOffset + ret + 2]&0xff;
+						if ((code >= 0x81 && code <= 0xFE)) {//3
+							code = source[sourceOffset + ret + 3]&0xff;
+							if((code>=0x30&&code<=0x39)) {//4
+								return true;
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				SU.Log(e);
+			}
+			return false;
 		}
 	}
 }

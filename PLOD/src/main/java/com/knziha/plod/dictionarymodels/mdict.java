@@ -9,8 +9,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.os.Looper;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -35,9 +38,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
-import androidx.core.view.NestedScrollingChildHelper;
 
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.filepicker.utils.FU;
@@ -49,10 +52,9 @@ import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.PlainDict.PDICMainActivity;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.PlaceHolder;
-import com.knziha.plod.dictionary.Utils.GetIndexedString;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionarymanager.files.CachedDirectory;
-import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
+import com.knziha.plod.settings.DictOpitonContainer;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -79,17 +81,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -131,6 +129,13 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			console.log('mdpage loaded dark:'+(w.rcsp&0x40));
 	 		document.body.contentEditable=!1;
 	 		highlight(null);
+			var vi = document.getElementsByTagName('video');
+			for(var i=0;i<vi.length;i++){if(!vi[i]._fvwhl){vi[i].addEventListener("webkitfullscreenchange", wrappedFscrFunc, false);vi[i]._fvwhl=1;}}
+		}
+	 	function wrappedFscrFunc(e){
+			//console.log('begin fullscreen!!!');
+			var se = e.srcElement;
+			if(se.webkitDisplayingFullscreen&&app) app.onRequestFView(se.videoWidth, se.videoHeight);
 		}
 		function wrappedOnDownFunc(e){
 	 		if(!w._touchtarget_lck && e.touches.length==1){
@@ -473,12 +478,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public static float def_zoom=1;
 	public static int def_fontsize = 100;
 	public static int optimal100;
-	public int internalScaleLevel=-1;
 	public int tmpIsFlag;
 	long FFStamp;
 	long firstFlag;
 	public AppHandler mWebBridge;
-	protected int[] initArgs;
+	public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
 
 	/**
 	 	var saveTag=document.getElementsByTagName('PLODSAVE');
@@ -506,6 +510,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	protected boolean bNeedCheckSavePathName;
 	public boolean isDirty;
 	public boolean editingState=true;
+	public static int _req_fvw;
+	public static int _req_fvh;
 
 	@Override
 	public int getCaseStrategy() {
@@ -517,7 +523,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		firstFlag|=val;
 	}
 	public boolean getIsolateImages(){
-		return (firstFlag & 0x2) == 0x2;
+		return (firstFlag & 0x2) != 0;
 	}
 	public void setIsolateImages(boolean val){
 		firstFlag&=~0x2;
@@ -525,7 +531,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	}
 	/** 内容可重载（检查数据库或文件系统中的重载内容） */
 	public boolean getContentEditable(){
-		return (firstFlag & 0x80) == 0x80;
+		return (firstFlag & 0x80) != 0;
 	}
 	public void setContentEditable(boolean val){
 		firstFlag&=~0x80;
@@ -533,36 +539,44 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	}
 	/** 内容可编辑（处于编辑状态） */
 	public boolean getEditingContents(){
-		return (firstFlag & 0x100) == 0x100;
+		return (firstFlag & 0x100) != 0;
 	}
-	@Override
-	public boolean getIsDedicatedFilter(){
-		return (firstFlag & 0x40) == 0x40;
-	}
-	@Override
+	
+	@Deprecated
 	public void setIsDedicatedFilter(boolean val){
 		firstFlag&=~0x40;
 		if(val) firstFlag|=0x40;
 	}
+	
 	public boolean getUseInternalBG(){
-		return (firstFlag & 0x20) == 0x20;
+		return (firstFlag & 0x20) != 0;
 	}
 	public boolean getUseInternalFS(){
-		return (firstFlag & 0x10) == 0x10;
+		return (firstFlag & 0x10) != 0;
 	}
-	//int WebSingleLayerType=3;//0 None 1 Software 2 Hardware
+	public boolean getUseInternalTBG(){
+		return (firstFlag & 0x200) != 0;
+	}
+	public boolean getOnlyContainsImg(){
+		return (firstFlag & 0x800) != 0;
+	}
+	public boolean getEntryJumpList(){
+		return (firstFlag & 0x40000) != 0;
+	}
+	
+	public boolean getPopEntry(){
+		return (firstFlag & 0x80000) != 0;
+	}
 
 	public boolean getSavePageToDatabase(){
 		return true;
 	}
-
-	@Override
-	protected boolean getUseJoniRegex(int id) {
-		return id==-1?PDICMainAppOptions.getUseRegex1():PDICMainAppOptions.getUseRegex2();
-	}
-
 	public int bmCBI=0,bmCCI=-1;
+	
+	public PhotoBrowsingContext IBC = new PhotoBrowsingContext();
     public Integer bgColor=null;
+    public int TIBGColor;
+    public int TIFGColor;
 
 	protected final static String htmlBase="<!DOCTYPE html><html><meta name='viewport' content='initial-scale=1,user-scalable=yes' class=\"_PDict\"><head><style class=\"_PDict\">html,body{width:auto;height:auto;}img{max-width:100%;}mark{background:yellow;}mark.current{background:orange;border:0px solid #FF0000}";
 	public final static String htmlHeadEndTag = "</head>";
@@ -612,10 +626,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		htmlBuilder.append(js);
 		htmlBaseLen=htmlBuilder.length();
 
-        readInConfigs();
-
-    	if(bgColor==null)
-    		bgColor=CMN.GlobalPageBackground;
+        readInConfigs(a.UIProjects);
 	}
 
 
@@ -639,18 +650,13 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	        	webScale = def_zoom;
 	           	AdvancedNestScrollWebView _mWebView = rl.findViewById(R.id.webviewmy);
 				_mWebView.setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
-	           	if(initArgs!=null && initArgs.length==2){
-					_mWebView.expectedPosX=initArgs[0];
-					_mWebView.expectedPos=initArgs[1];
-				}
-	            a.initWebScrollChanged();//Strategy: use one webscroll listener
+				a.initWebScrollChanged();//Strategy: use one webscroll listener
 				if(!(this instanceof mdict_pdf))
-					_mWebView.setOnSrollChangedListener(a.onWebScrollChanged);
+					_mWebView.setOnScrollChangedListener(a.onWebScrollChanged);
 	            //_mWebView.setPadding(0, 0, 18, 0);
 				mWebBridge = new AppHandler(this);
 				_mWebView.addJavascriptInterface(mWebBridge, "app");
 				mWebView = _mWebView;
-	            //_mWebView.setOnTouchListener(a);
 	        }
 			ic_undo=rl.findViewById(R.id.undo);
 			ic_save=rl.findViewById(R.id.save);
@@ -679,6 +685,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			setWebLongClickListener(mWebView, a);
 
 			toolbar = rl.findViewById(R.id.lltoolbar);
+			mWebView.IBC = IBC;
+			mWebView.titleBar = toolbar;
+			mWebView.toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar.getBackground()).getDrawable(0);
+			mWebView.toolbarBG.setColors(mWebView.ColorShade);
+			
+			//toolbarBG.setColors(ColorSolid);
 			toolbar_title = toolbar.findViewById(R.id.toolbar_title);
 			toolbar_cover = toolbar.findViewById(R.id.cover);
 			if(cover!=null)
@@ -770,7 +782,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 									renderContentAt_internal(mWebView,initialScale, fromCombined, false, rl.getLayoutParams().height>0, pos);
 								} else {
 									//CMN.Log("还是在这个页面");
-									mWebView.setTag(R.id.loading, false);
+									mWebView.isloading = true;
 									mWebView.onFinishedPage();
 								}
 							} else {
@@ -1305,6 +1317,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public boolean isJumping = false;
 
 	//public int currentPos;
+	public int internalScaleLevel=-1;
 	public int lvPos,lvClickPos,lvPosOff;
 	StringBuilder title_builder;
 	/** Current Page Historian */
@@ -1333,21 +1346,61 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			forward.setVisibility(View.VISIBLE);
 		}
 	}
+	
+	
+	
+	public void checkTint() {
+		if(mWebView!=null)
+			tintBackground(mWebView);
+	}
+	
+	public void tintBackground(WebViewmy mWebView) {
+    	//CMN.rt();
+		int globalPageBackground = a.GlobalPageBackground;
+		boolean useInternal = getUseInternalBG();
+		boolean isDark = GlobalOptions.isDark;
+		int myWebColor = useInternal?bgColor:globalPageBackground;
+		if (isDark)
+			myWebColor = ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
+		a.guaranteeBackground(globalPageBackground);
+		mWebView.setBackgroundColor((getIsolateImages()||useInternal||Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT)?myWebColor:Color.TRANSPARENT);
+		/* check and set colors for toolbar title Background*/
+		GradientDrawable toolbarBG = mWebView.toolbarBG;
+		if(toolbarBG!=null){
+			useInternal = getUseInternalTBG();
+			//CMN.Log("使用内置标题栏颜色：", useInternal);
+			myWebColor = isDark?Color.BLACK:useInternal?TIBGColor:PDICMainAppOptions.getTitlebarUseGlobalUIColor()?a.MainBackground:opt.getTitlebarBackgroundColor();
+			int colorTop = PDICMainAppOptions.getTitlebarUseGradient()?ColorUtils.blendARGB(myWebColor, Color.WHITE, 0.08f):myWebColor;
+			int[] ColorShade = mWebView.ColorShade;
+			if(ColorShade[1]!=myWebColor||ColorShade[0]!=colorTop){
+				ColorShade[1] = myWebColor;
+				ColorShade[0] = colorTop;
+				toolbarBG.setColors(ColorShade);
+			}
+			myWebColor = isDark?Color.WHITE:useInternal?TIFGColor:opt.getTitlebarForegroundColor();
+			mWebView.setTitlebarForegroundColor(myWebColor);
+		}
+		//CMN.pt("设置颜色：");
+	}
 
 	//todo frameAt=-1
     public void renderContentAt(float initialScale, int SelfIdx, int frameAt, WebViewmy mWebView, int... position){
     	//CMN.Log("renderContentAt!!!...");
     	isJumping=false;
-    	boolean resposibleForThisWeb = false;
     	if(mWebView==null) {
     		mWebView=this.mWebView;
-    	} else if(mWebView!=this.mWebView && mWebView.getTag(R.id.position)!=null && a.PeruseView != null){
+    	} else if(mWebView!=this.mWebView && mWebView.fromPeruseview && a.PeruseView != null){
 			setIcSaveLongClickListener(a.PeruseView.ic_save);
 			a.PeruseView.refresh_eidt_kit(getContentEditable(), getEditingContents());
 		}
-		resposibleForThisWeb=mWebView==this.mWebView;
+		boolean resposibleForThisWeb=mWebView==this.mWebView;
 
 		boolean fromCombined = mWebView.fromCombined==1;
+		boolean fromPopup = mWebView.fromCombined==2;
+
+		boolean mIsolateImages=resposibleForThisWeb&&!fromCombined&&getIsolateImages();
+		/* 为了避免画面层叠带来的过度重绘，网页背景保持透明？。 */
+		tintBackground(mWebView);
 
 		if(SelfIdx!=-1){
 			mWebView.setTag(mWebView.SelfIdx=SelfIdx);
@@ -1378,19 +1431,15 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		if(getFontSize()!=mWebView.getSettings().getTextZoom())
 			mWebView.getSettings().setTextZoom(getFontSize());
 
-		boolean fromPopup = mWebView.fromCombined==2;
-
-		boolean mIsolateImages=false;
 		if(resposibleForThisWeb) {
 	    	setCurrentDis(mWebView, position[0]);
 			if(fromCombined) {
-				if(rl.getLayoutParams()!=null) {
+				if(rl.getLayoutParams()!=null)
 					rl.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
-				}
 				mWebView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
 			}
 			else {
-				if(mIsolateImages=getIsolateImages()){
+				if(mIsolateImages){
 					/* 只有在单本阅读的时候才可以进入图文分离模式。包括三种情况。 */
 					//PDICMainAppOptions.getIsoImgLimitTextHight()  强定高度
 					rl.getLayoutParams().height = (int) (150*opt.dm.density);//文本限高模式
@@ -1407,34 +1456,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			}
 		}
 
-		/* 为了避免画面层叠带来的过度重绘，网页背景保持透明？。 */
-		if(!fromPopup || PDICMainAppOptions.getAllowTintClickSearchBG())
-		if(!mIsolateImages){
-			int myWebColor = Color.TRANSPARENT;
-			int globalPageBackground = a.GlobalPageBackground;
-			if (getUseInternalBG()) {
-				myWebColor = bgColor;
-				//if(mWebView.fromCombined==1){// 背景转移至全局
-				//	globalPageBackground = myWebColor;
-				//	myWebColor = Color.TRANSPARENT;
-				//}
-			} else if(Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT){
-				myWebColor = globalPageBackground;
-			}
-			if (myWebColor!=0 && GlobalOptions.isDark)
-				myWebColor = ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
-			a.guaranteeBackground(globalPageBackground);
-			mWebView.setBackgroundColor(myWebColor);
-			ViewGroup mToolbar=null;
-			if(resposibleForThisWeb)
-				mToolbar = toolbar;
-			else if(a.PeruseViewAttached()&&mWebView==a.PeruseView.mWebView)
-				mToolbar = a.PeruseView.toolbar;
-			if(mToolbar!=null) {
-				myWebColor = ColorUtils.blendARGB(myWebColor, Color.BLACK, 0.28f);
-				mToolbar.setBackgroundColor(myWebColor);
-			}
-		}
 
     	//mWebView.setVisibility(View.VISIBLE);
    	    //a.showT("mWebView:"+mWebView.isHardwareAccelerated());
@@ -1444,10 +1465,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	   	    mWebView.setWebViewClient(a.myWebClient);
     	}
 
-    	//mWebView.setBackground(ngetToastColorull);
-
 		if(!fromPopup) {
-			mWebView.setTag(R.id.clearHistory, false);
+			mWebView.clearHistory = true;
 		}
 
 		renderContentAt_internal(mWebView, initialScale, fromCombined, fromPopup, mIsolateImages, position);
@@ -1456,8 +1475,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public void renderContentAt_internal(WebViewmy mWebView,float initialScale, boolean fromCombined, boolean fromPopup, boolean mIsolateImages, int...position) {
 		mWebView.isloading=true;
 		mWebView.currentPos = position[0];
-		if(!a.AutoBrowsePaused&&a.background&&PDICMainAppOptions.getAutoBrowsingReadSomething())
-			mWebView.resumeTimers();
+		//if(!a.AutoBrowsePaused&&a.background&&PDICMainAppOptions.getAutoBrowsingReadSomething())
+		//	mWebView.resumeTimers();
     	String htmlCode = null ,JS=null;
 		try {
 			if(virtualIndex!=null)
@@ -1497,7 +1516,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		if(!fromCombined) {
 			mWebView.setTag(R.id.toolbar_action5, a.hasCurrentPageKey() ? false : null);
 		}
-		mWebView.setTag(R.id.loading, false);
+		mWebView.isloading = true;
 		if(htmlCode!=null)
 			if(!htmlCode.startsWith(fullpageString)) {
 				htmlBuilder.setLength(htmlBaseLen);
@@ -1560,7 +1579,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			htmlBuilder.append(MainActivityUIBase.DarkModeIncantation_l);
 
 		htmlBuilder.append("<script class=\"_PDict\">");
-		htmlBuilder.append("rcsp=").append(MakeRCSP(opt)).append(";");
+		int rcsp = MakeRCSP(opt);
+		if(mWebView==a.popupWebView) rcsp|=1<<5;
+		htmlBuilder.append("rcsp=").append(rcsp).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
 
 		if (PDICMainAppOptions.getInPageSearchHighlightBorder())
@@ -1741,14 +1762,20 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	}
 
 	@Override
-	public void checkFlag() {
-		if(FFStamp!=firstFlag)
-			dumpViewStates();
+	public void checkFlag(Activity context) {
+		if(FFStamp!=firstFlag || isDirty)
+			dumpViewStates(a.UIProjects);
 	}
 
 	@Override
 	public long getFirstFlag() {
 		return firstFlag;
+	}
+	
+	@Override
+	public void setFirstFlag(long val){
+		IBC.firstFlag = firstFlag = val;
+		checkTint();
 	}
 
 	@Override
@@ -1784,7 +1811,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 		return null;
 	}
-
+	
 	@SuppressWarnings("unused")
     public static class AppHandler {
 		mdict mdx;
@@ -1806,15 +1833,24 @@ public class mdict extends com.knziha.plod.dictionary.mdict
         @JavascriptInterface
         public void openImage(int position, String... img) {
         	//CMN.Log(position, img, mdx._Dictionary_fName_Internal);
-        	if(mdx.a.isBrowsingImgs) return;
-			mdx.a.isBrowsingImgs=true;
-            Intent intent = new Intent();
-            intent.putExtra("images", img);
-			intent.putExtra("current", position);
-            PhotoViewActivity.mdd = mdx.mdd;
-            intent.setClass(mdx.a, PhotoViewActivity.class);
-			mdx.a.startActivityForResult(intent,0);
-        }
+			MainActivityUIBase aa = mdx.a;
+			Runnable mOpenImgRunnable = new Runnable(){
+				@Override
+				public void run() {
+					if(aa.PageSlider.lastZoomTime>0 && (System.currentTimeMillis()-aa.PageSlider.lastZoomTime)<500) return;
+					if(aa.isBrowsingImgs) return;
+					aa.isBrowsingImgs=true;
+					Intent intent = new Intent();
+					intent.putExtra("images", img);
+					intent.putExtra("current", position);
+					PhotoViewActivity.mdd = mdx.mdd;
+					PhotoViewActivity.IBC = mdx.IBC;
+					intent.setClass(aa, PhotoViewActivity.class);
+					aa.startActivityForResult(intent,0);
+				}
+			};
+			aa.root.postDelayed(mOpenImgRunnable, 100);
+		}
 
         @JavascriptInterface
         public void scrollHighlight(int o, int d) {
@@ -1869,7 +1905,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
         @JavascriptInterface
         public void popupWord(String key, int x, int y, int frameAt) {
-			mdx.a.popupWord(key, x, y, frameAt);
+			mdx.a.popupWord(key, -1, frameAt);
         }
 
         @JavascriptInterface
@@ -1924,6 +1960,22 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		@JavascriptInterface
 		public void snack(String val) {
 			mdx.a.root.post(() -> mdx.a.showContentSnack(val));
+		}
+
+		@JavascriptInterface
+		public void onRequestFView(int w, int h) {
+        	//CMN.Log("onRequestFView", w, h, w>h);
+			_req_fvw=w;
+			_req_fvh=h;
+			if(mdx.a.opt.getFullScreenLandscapeMode()==2)
+				((Handler)mdx.a.hdl).sendEmptyMessage(7658942);
+		}
+		
+		@JavascriptInterface
+		public void onExitFView() {
+        	//CMN.Log("onExitFView");
+			MainActivityUIBase.CustomViewHideTime = System.currentTimeMillis();
+			((Handler)mdx.a.hdl).sendEmptyMessageDelayed(7658941, 600);
 		}
 	}
 
@@ -2072,7 +2124,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		return tmpIsFlag;
 	}
 
-	public void dumpViewStates() {
+	public void dumpViewStates(HashMap<String,byte[]> UIProjects) {
+		setIsDedicatedFilter(false);
 		try {
 			DataOutputStream data_out;
 			byte[] data = null;
@@ -2082,13 +2135,13 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				if(!parentFile.exists()) parentFile.mkdirs();
 				data_out = new DataOutputStream(new FileOutputStream(SpecificationFile));
 			} else {
-				AgentApplication app = ((AgentApplication) a.getApplication());
-				ReusableByteOutputStream bos = new ReusableByteOutputStream(app.UIProjects.get(f.getName()), MainActivityUIBase.ConfigSize + MainActivityUIBase.ConfigExtra);
+				ReusableByteOutputStream bos = new ReusableByteOutputStream(UIProjects.get(f.getName()), MainActivityUIBase.ConfigSize + MainActivityUIBase.ConfigExtra);
 				data = bos.getBytes();
 				bos.precede(MainActivityUIBase.ConfigExtra);
 				data_out = new DataOutputStream(bos);
 			}
-			data_out.writeShort(12);
+			data_out.writeByte((int) (255*IBC.doubleClickXOffset));
+			data_out.writeByte((int) (255*IBC.doubleClickPresetXOffset));
 			data_out.writeByte(0);
 			data_out.writeInt(bgColor);
 			data_out.writeInt(internalScaleLevel);
@@ -2096,24 +2149,35 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			data_out.writeInt(lvClickPos);
 			data_out.writeInt(lvPosOff);
 			//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, _Dictionary_fName);
-			int ex=0,e=0;
-			if(mWebView!=null) {
-				ex=mWebView.getScrollX();
-				e=mWebView.getScrollY();
-			}else if(initArgs!=null && initArgs.length==2){
-				ex=initArgs[0];
-				e=initArgs[1];
+			ScrollerRecord record = avoyager.get(lvClickPos);
+			if(record!=null){
+				data_out.writeInt(record.x);
+				data_out.writeInt(record.y);
+				data_out.writeFloat(record.scale);
+			} else {
+				data_out.writeInt(0);
+				data_out.writeInt(0);
+				data_out.writeFloat(webScale);
 			}
-			data_out.writeInt(ex);
-			data_out.writeInt(e);
-			data_out.writeFloat(webScale);
 			//CMN.Log(_Dictionary_fName+"保存页面位置",expectedPosX,expectedPos,webScale);
 			data_out.writeLong(firstFlag);
+			data_out.writeInt(TIBGColor);
+			data_out.writeInt(TIFGColor);
+			data_out.writeFloat(IBC.doubleClickZoomRatio);
+			data_out.writeFloat(IBC.doubleClickZoomLevel1);
+			data_out.writeFloat(IBC.doubleClickZoomLevel2);
+			
 			data_out.close();
-			if(!CMN.bForbidOneSpecFile)
-				a.putUIProject(f.getName(), data);
+			
+			String fname = f.getName();
+			/* Just mark as dirty. */
+			if(!CMN.bForbidOneSpecFile && a!=null){
+				CMN.Log("putted", fname);
+				a.dirtyMap.add(fname);
+			}
+			UIProjects.put(fname, data);
 			isDirty = false;
-		} catch (Exception e) { CMN.Log(e); }
+		} catch (Exception e) { if(GlobalOptions.debug) CMN.Log(e); }
 	}
 
 	public void putSates() throws IOException {
@@ -2131,16 +2195,16 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, _Dictionary_fName);
 
 		int ex=0,e=0;
-		if(viewsHolderReady && mWebView!=null) {
-			ex=mWebView.getScrollX();
-			e=mWebView.getScrollY();
-		}else if(initArgs!=null && initArgs.length==2){
-			ex=initArgs[0];
-			e=initArgs[1];
+		ScrollerRecord record = avoyager.get(lvClickPos);
+		if(record!=null){
+			fo.writeInt(record.x);
+			fo.writeInt(record.y);
+			fo.writeFloat(record.scale);
+		} else {
+			fo.writeInt(0);
+			fo.writeInt(0);
+			fo.writeFloat(webScale);
 		}
-		fo.writeInt(ex);
-		fo.writeInt(e);
-		fo.writeFloat(webScale);
 		//CMN.Log(_Dictionary_fName+"保存页面位置",expectedPosX,expectedPos,webScale);
 
 		fo.writeLong(firstFlag);
@@ -2165,7 +2229,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 	public float webScale=0;
 
-	public void readInConfigs() throws IOException {
+	public void readInConfigs(HashMap<String,byte[]> UIProjects) throws IOException {
 		DataInputStream data_in1 = null;
 		try {
 			File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
@@ -2177,7 +2241,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				File parentFile = SpecificationFile.getParentFile();
 				if(ArrayUtils.isEmpty(parentFile.list()))
 					parentFile.delete();
-				byte[] data = a.UIProjects.get(f.getName());
+				byte[] data = UIProjects.get(f.getName());
 				if(data!=null){
 					int extra = MainActivityUIBase.ConfigExtra;
 					data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
@@ -2185,13 +2249,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			}
 			if(data_in1!=null){
 				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
-				int size = data_in1.readShort();
-				if(CMN.bForbidOneSpecFile && size!=12) {
-					data_in1.close();
-					SpecificationFile.delete();
-					return;
-				}
+				IBC.doubleClickXOffset = ((float)Math.round(((float)data_in1.read())/255*1000))/1000;
+				IBC.doubleClickPresetXOffset = ((float)Math.round(((float)data_in1.read())/255*1000))/1000;
 				byte _firstFlag = data_in1.readByte();
+				firstFlag=0;
 				if(_firstFlag!=0){
 					firstFlag |= _firstFlag;
 				}
@@ -2202,20 +2263,30 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				lvPosOff = data_in1.readInt();
 				//CMN.Log(_Dictionary_fName,"列表位置",lvPos,lvClickPos,lvPosOff);
 				if(data_in1.available()>0) {
-					initArgs = new int[]{data_in1.readInt(), data_in1.readInt()};
-					webScale = data_in1.readFloat();
+					ScrollerRecord record = new ScrollerRecord(data_in1.readInt(), data_in1.readInt(), webScale = data_in1.readFloat());
+					avoyager.put(lvClickPos, record);
 				}
-				if(data_in1.available()>0) {
-					firstFlag |= data_in1.readLong();
-				}
-				data_in1.close();
+				firstFlag |= data_in1.readLong();
+				TIBGColor = data_in1.readInt();
+				TIFGColor = data_in1.readInt();
+				IBC.doubleClickZoomRatio = data_in1.readFloat();
+				IBC.doubleClickZoomLevel1  = data_in1.readFloat();
+				IBC.doubleClickZoomLevel2  = data_in1.readFloat();
 			}
 			//CMN.pt(_Dictionary_fName+" 单典配置加载耗时");
 		} catch (Exception e) {
-			CMN.Log(e);
+			if(GlobalOptions.debug) CMN.Log(e);
 		} finally{
 			FFStamp = firstFlag;
 			if(data_in1!=null) data_in1.close();
+		}
+		IBC.firstFlag = firstFlag;
+		if(bgColor==null) bgColor=CMN.GlobalPageBackground;
+		if(IBC.doubleClickZoomRatio==0||IBC.doubleClickZoomLevel1==0) {
+			IBC.doubleClickZoomLevel1=2f;
+			IBC.doubleClickZoomRatio=2.25f;
+			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?CMN.MainBackground:opt.getTitlebarBackgroundColor();
+			TIFGColor = opt.getTitlebarForegroundColor();
 		}
 	}
 
@@ -2264,41 +2335,62 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		TextView title = dv.findViewById(R.id.title);
 		title.setText(R.string.dictOpt1);//词典设定
 		title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
+		
+		title.setTextSize(20f);
+		//title.getPaint().setFakeBoldText(true);
+		int topad = (int) context.getResources().getDimension(R.dimen._18_);
+		((ViewGroup)title.getParent()).setPadding(topad*3/5, topad/2, 0, 0);
 
 		if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
 		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 5, 1,1,md);//背景
+		ssb.append("  ");
 		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 4, 1,2,md);//缩放
-		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 3, new String[]{Coef[0], Coef[2], Coef[3]}, 0, 0, 0x3, 0, 2,0,md);//大小写
-		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 4, Coef, 4, 0, 0x1, 6, 1,0,md);//专用构词库
-		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 5, Coef, 4, 0, 0x1, 7, 1,3,md);//内容可重载
-		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 6, Coef, 4, 0, 0x1, 8, 1,4,md);//内容可编辑
-		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 7, Coef, 4, 0, 0x1, 1, 1,0,md);//图文分离
-
-		ssb.delete(ssb.length()-4,ssb.length());
+		
+		ssb.append("\r\n\r\n");
+		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 5, Coef, 4, 0, 0x1, 8, 1,4,md);//内容可编辑
+		ssb.append("  ");
+		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 4, Coef, 4, 0, 0x1, 7, 1,3,md);//内容可重载
+		
+		ssb.append("\r\n\r\n");
+		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 6, Coef, 4, 0, 0x1, 1, 1,0,md);//图文分离
+		ssb.append("  ");
+		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 3, Coef, 4, 0, 0x1, 10, 1,5,md);//双击放大
+		
+		ssb.append("\r\n\r\n");
+		int start = ssb.length();
+		ssb.append("[").append(DictOpt[7]).append("]");
+		if(context instanceof AppCompatActivity)
+		ssb.setSpan(new ClickableSpan() {
+			@Override
+			public void onClick(@NonNull View widget) {
+				DictOpitonContainer dialog = new DictOpitonContainer();
+				AppCompatActivity a = ((AppCompatActivity)context);
+				a.getWindow().getDecorView().setTag(md);
+				dialog.show(a.getSupportFragmentManager(), "");
+			}},start,ssb.length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		
 		tv.setTextSize(17f);
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
 		XYTouchRecorder xyt = mdTmp.getOpt().XYTouchRecorder();
-		tv.setOnTouchListener(xyt);
 		tv.setOnClickListener(xyt);
+		tv.setOnTouchListener(xyt);
 		AlertDialog.Builder builder2 = new AlertDialog.Builder(context,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
 		builder2.setView(dv);
 		final AlertDialog d = builder2.create();
 		d.setCanceledOnTouchOutside(true);
 
 		d.setOnDismissListener(dialog -> {
-			for (int i = 0; i < md.length; i++) {
-				mdict_manageable mI = md[i];
-				mI.checkFlag();
+			for (mdict_manageable mI : md) {
+				mI.checkFlag(context);
 			}
 		});
 		dv.findViewById(R.id.cancel).setOnClickListener(v -> d.dismiss());
-        d.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
 		//d.getWindow().setDimAmount(0);
     	//d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 		d.show();
+		//tofo
 		android.view.WindowManager.LayoutParams lp = d.getWindow().getAttributes();  //获取对话框当前的参数值
 		lp.height = -2;
 		d.getWindow().setAttributes(lp);
@@ -2307,6 +2399,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	private static void init_clickspan_with_bits_at(WebViewmy view, TextView tv, SpannableStringBuilder text,
 													String[] dictOpt, int titleOff, String[] coef, int coefOff, int coefShift, int mask, int flagPosition, int flagMax
 			, int processId, mdict_manageable... md) {
+		CMN.Log("init_clickspan_with_bits_at", md[0]);
 		mdict_manageable mdTmp = md[0];
 		boolean isSingle=true;
 		int val = (int) ((mdTmp.getFirstFlag()>>flagPosition)&mask);
@@ -2318,24 +2411,32 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 		int start = text.length();
 		int now = start+dictOpt[titleOff].length();
-		text.append("[").append(dictOpt[titleOff]).append(isSingle?coef[coefOff+(val+coefShift)%(flagMax+1)]:"**").append("]");
+		text.append("[").append(dictOpt[titleOff]).append(coef==null?"":isSingle?coef[coefOff+(val+coefShift)%(flagMax+1)]:"**").append("]");
 		text.setSpan(new ClickableSpan() {
 			@Override
 			public void onClick(@NonNull View widget) {
-				int val = (int) ((mdTmp.getFirstFlag()>>flagPosition)&mask);
-				val=(val+1)%(flagMax+1);
-				for (mdict_manageable mmTmp : md) {
-					mmTmp.validifyValueForFlag(view, val, mask, flagPosition, processId);
+				if(coef==null){
+					ConfigSomething(tv, processId, md);
+				} else {
+					int val = (int) ((mdTmp.getFirstFlag()>>flagPosition)&mask);
+					val=(val+1)%(flagMax+1);
+					for (mdict_manageable mmTmp : md) {
+						mmTmp.validifyValueForFlag(view, val, mask, flagPosition, processId);
+					}
+					int fixedRange = indexOf(text, ':', now);
+					text.delete(fixedRange+1, indexOf(text, ']', fixedRange));
+					text.insert(fixedRange+1,coef[coefOff+(val+coefShift)%(flagMax+1)]);
+					tv.setText(text);
 				}
-				int fixedRange = indexOf(text, ':', now);
-				text.delete(fixedRange+1, indexOf(text, ']', fixedRange));
-				text.insert(fixedRange+1,coef[coefOff+(val+coefShift)%(flagMax+1)]);
-				tv.setText(text);
 			}},start,text.length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-		text.append("\r\n").append("\r\n");
 	}
-
-
+	
+	private static void ConfigSomething(TextView tv, int processId, mdict_manageable[] md) {
+		if(processId==6){
+		
+		}
+	}
+			
 	@Override
 	public void validifyValueForFlag(WebViewmy mWebView, int val, int mask, int flagPosition, int processId) {
 		firstFlag &= ~(mask << flagPosition);
@@ -2360,6 +2461,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				case 3:
 				case 4:
 					refresh_eidt_kit(getContentEditable(), getEditingContents(), true);
+				break;
+				case 5:
+					IBC.firstFlag=firstFlag;
 				break;
 			}
 		}
@@ -2402,6 +2506,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	@Override
 	protected ExecutorService OpenThreadPool(int thread_number) {
 		return Executors.newFixedThreadPool(thread_number);
+		//return Executors.newCachedThreadPool();
+		//return Executors.newScheduledThreadPool(thread_number);
+		//return Executors.newWorkStealingPool();
 	}
 
 	@Override

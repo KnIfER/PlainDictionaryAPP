@@ -34,6 +34,7 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.view.ViewGroup;
@@ -44,6 +45,7 @@ import android.widget.Toast;
 
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.SimpleTextNotifier;
+import com.sun.tools.internal.xjc.reader.gbind.ElementSets;
 
 public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
@@ -70,7 +72,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected long SFStamp;
 	protected long TFStamp;
 	protected long QFStamp;
-	protected int MainBackground;
+	public int MainBackground;
 	public int AppBlack;
 	public int AppWhite;
     public float ColorMultiplier_Wiget=0.9f;
@@ -111,11 +113,11 @@ public class Toastable_Activity extends AppCompatActivity {
        opt = new PDICMainAppOptions(this);
        opt.dm = dm = new DisplayMetrics();
 	   getWindowManager().getDefaultDisplay().getMetrics(dm);
-	   super.onCreate(savedInstanceState);
 	   FFStamp=opt.getFirstFlag();
 	   SFStamp=opt.getSecondFlag();
 	   TFStamp=opt.getThirdFlag();
 	   QFStamp=opt.getFourthFlag();
+	   super.onCreate(savedInstanceState);
 	   inflater=getLayoutInflater();
        imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -171,20 +173,17 @@ public class Toastable_Activity extends AppCompatActivity {
 							int len = new FileInputStream(log).read(buffer);
 							String message=new String(buffer,0,len);
 							launching[0]=true;
-							Dialog d = new androidx.appcompat.app.AlertDialog.Builder(this)
-									.setMessage(message)
-									.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-										lock.delete();
-										dialog.dismiss();
-										checkLaunch(savedInstanceState);
-									})
-									.setTitle("检测到异常捕获。（如发现仍不能启动，可尝试重新初始化）")
-									.setCancelable(false)
-									.show();
-							//.create();
-							((TextView)d.findViewById(R.id.alertTitle)).setSingleLine(false);
-							((TextView)d.findViewById(android.R.id.message)).setTextIsSelectable(true);
-							//FilePickerDialog.stylize_simple_message_dialog(d, getApplicationContext());
+							setStatusBarColor(0xff8f8f8f);
+							new androidx.appcompat.app.AlertDialog.Builder(this)
+								.setMessage(message)
+								.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+									lock.delete();
+									dialog.dismiss();
+									checkLaunch(savedInstanceState);
+								})
+								.setTitle("天哪，崩溃了……")
+								.setCancelable(false)
+								.show();
 						}
 					}
 				} catch (Exception e) { CMN.Log(e); }finally {
@@ -201,7 +200,27 @@ public class Toastable_Activity extends AppCompatActivity {
 				lock.delete();
 		}
 	}
-
+	
+	void setStatusBarColor(int color){
+		Window window = getWindow();
+		window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+				| WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+		window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				
+				| View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+			window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+		if(Build.VERSION.SDK_INT>=21) {
+			//color = ColorUtils.blendARGB(color, Color.BLACK, 0.14f);
+			window.setStatusBarColor(color);
+			if(true){
+				//color = ColorUtils.blendARGB(color, Color.BLACK, 0.14f);
+				window.setNavigationBarColor(color);
+				//window.setNavigationBarColor(0xff2b4381);
+			}
+		}
+	}
+	
 	protected boolean DoesActivityCheckLog() {
 		return true;
 	}
@@ -275,32 +294,34 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 
 	protected void checkLaunch(Bundle savedInstanceState) {
-   	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//大于 23 时
-		if (checkSelfPermission(permissions[0]) != PackageManager.PERMISSION_GRANTED) {
-			File trialPath = getExternalFilesDir("Trial");
-			boolean b1=trialPath.exists()&&trialPath.isDirectory();
-			if(b1) {
-				File[] fs = trialPath.listFiles();
-				for(File mf:fs) {
-					if(!mf.isDirectory()) {
-						String fn=mf.getName();
-						if(!fn.contains("."))
-						try {
-							trialCount=Integer.valueOf(fn);
-							break;
-						}catch(NumberFormatException ignored){}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//大于 23 时
+			if (checkSelfPermission(permissions[0]) != PackageManager.PERMISSION_GRANTED) {
+				setStatusBarColor(0xff8f8f8f);
+				File trialPath = getExternalFilesDir("Trial");
+				if(trialPath!=null){
+					if(trialPath.isDirectory()) {
+						File[] fs = trialPath.listFiles();
+						for(File mf:fs) {
+							if(!mf.isDirectory()) {
+								String fn=mf.getName();
+								if(!fn.contains("."))
+									try {
+										trialCount=Integer.parseInt(fn);
+										break;
+									}catch(NumberFormatException ignored){}
+							}
+						}
+					}
+					if(trialCount>=2) {
+						opt.rootPath=trialPath.getAbsolutePath();
+						showT("存储受限，持续试用中……");
+						pre_further_loading(savedInstanceState);
+						return;
 					}
 				}
-			}
-			if(trialCount>=2) {
-				opt.rootPath=trialPath.getAbsolutePath();
-				showT("存储受限，持续试用中……");
-				pre_further_loading(savedInstanceState);
-				return;
-			}
-			showDialogTipUserRequestPermission();
+				showDialogTipUserRequestPermission();
+			}else {pre_further_loading(savedInstanceState);}
 		}else {pre_further_loading(savedInstanceState);}
-	}else {pre_further_loading(savedInstanceState);}
 	}
 
 
@@ -317,45 +338,44 @@ public class Toastable_Activity extends AppCompatActivity {
 						requestPermissions(permissions, 321);
 					}
 				})
-				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						File trialPath = getExternalFilesDir("Trial");
-						int trialCount=-1;
-						boolean b1=trialPath.exists()&&trialPath.isDirectory();
-						if(b1) {
-							File[] fs = trialPath.listFiles();
-							if(fs!=null) for(File mf:fs) {
-								if(!mf.isDirectory()) {
-									String fn=mf.getName();
-									if(!fn.contains("."))
-										try {
-											trialCount=Integer.valueOf(fn);
-											break;
-										}catch(NumberFormatException ignored){}
-								}
-							}
-						}
-						if(b1 || trialPath.mkdirs()) {
-							opt.rootPath=getExternalFilesDir("").getAbsolutePath();
-							try {
-								if(trialCount!=-1) {
-									new File(trialPath,String.valueOf(trialCount))
-											.renameTo(new File(trialPath,String.valueOf(++trialCount)));
-								}else
-									new File(trialPath,String.valueOf(trialCount=0)).createNewFile();
-							} catch (IOException ignored) {}
-							pre_further_loading(null);
-							showT(getResources().getString(R.string.trialin)+trialCount);
-						}
-						else {
-							Toast.makeText(Toastable_Activity.this, R.string.stgerr_fail, Toast.LENGTH_SHORT).show();
-							finish();
-						}
-					}
-				}).setCancelable(false).show().getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
+				.setNegativeButton(R.string.cancel, (dialog, which) -> EnterTrialMode()).setCancelable(false).show().getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
 	}
-
+	
+	protected void EnterTrialMode() {
+		File trialPath = getExternalFilesDir("Trial");
+		int trialCount=-1;
+		boolean b1=trialPath.exists()&&trialPath.isDirectory();
+		if(b1) {
+			File[] fs = trialPath.listFiles();
+			if(fs!=null) for(File mf:fs) {
+				if(!mf.isDirectory()) {
+					String fn=mf.getName();
+					if(!fn.contains("."))
+						try {
+							trialCount=Integer.valueOf(fn);
+							break;
+						}catch(NumberFormatException ignored){}
+				}
+			}
+		}
+		if(b1 || trialPath.mkdirs()) {
+			opt.rootPath=getExternalFilesDir("").getAbsolutePath();
+			try {
+				if(trialCount!=-1) {
+					new File(trialPath,String.valueOf(trialCount))
+							.renameTo(new File(trialPath,String.valueOf(++trialCount)));
+				}else
+					new File(trialPath,String.valueOf(trialCount=0)).createNewFile();
+			} catch (IOException ignored) {}
+			pre_further_loading(null);
+			showT(getResources().getString(R.string.trialin)+trialCount);
+		}
+		else {
+			Toast.makeText(Toastable_Activity.this, R.string.stgerr_fail, Toast.LENGTH_SHORT).show();
+			finish();
+		}
+	}
+	
 	protected void scanSettings() {
 
 	}
@@ -374,8 +394,8 @@ public class Toastable_Activity extends AppCompatActivity {
 		}}
 				
 		final String path = Environment.getExternalStorageDirectory().getPath();
-		final File mainfolder = new File(path+"/PLOD/");
-		if(!(mainfolder.exists()&&mainfolder.isDirectory())) {
+		final File mainfolder = new File(path, "PLOD");
+		if(!mainfolder.isDirectory()) {
 			final File subfolder = new File(getExternalFilesDir("")+"/PLOD/");
 			if(subfolder.exists() && subfolder.isDirectory()) {//look if the an Internal files system created.
 				opt.rootPath=getExternalFilesDir("").getAbsolutePath();
@@ -385,19 +405,19 @@ public class Toastable_Activity extends AppCompatActivity {
 			new AlertDialog.Builder(this)//ask the user
 			.setTitle(getResources().getString(R.string.AAllow))
 			.setPositiveButton(R.string.yes, (dialog, which) -> {
-				if((mainfolder.exists()&&mainfolder.isDirectory()) || mainfolder.mkdirs()) {//建立文件夹
+				if(mainfolder.mkdirs() || mainfolder.isDirectory()) {//建立文件夹
 					opt.rootPath=path;
 					further_loading(savedInstanceState);
 
-				}else {showT("未知错误：SD卡:文件夹建立失败");finish();}
+				}else {showT("未知错误：配置存储目录建立失败！");finish();}
 			})
 			.setNegativeButton(R.string.no, (dialog, which) -> {
 				if((subfolder.exists()&&subfolder.isDirectory()) || subfolder.mkdirs()) {//建立文件夹
-					showT("分组配置存储在 标准 缓存目录");
+					showT("配置存储在标准目录");
 					opt.rootPath=getExternalFilesDir("").getAbsolutePath();
 					further_loading(savedInstanceState);
 
-				}else {showT("未知错误：内部存储:文件夹建立失败");finish();}
+				}else {showT("未知错误：配置存储目录建立失败！");finish();}
 			}).setCancelable(false).show();
 			
 		}else//Folder /sdcard/PLOD already exists. nothing to ask for.
@@ -505,21 +525,18 @@ public class Toastable_Activity extends AppCompatActivity {
 			topsnack.setText(String.valueOf(messageVal));
 			topsnack.setTag(null);
 		}
-		topsnack.setGravity(gravity==-1?Gravity.CENTER:gravity);
+		topsnack.setGravity(gravity==-1||gravity==-10?Gravity.CENTER:gravity);
 		ViewGroup sp = (ViewGroup) topsnack.getParent();
-		if(sp!=null && sp!=parentView) sp.removeView(topsnack);
-		if(topsnack.getParent()!=parentView) {
+		if(sp!=parentView) {
+			if(sp!=null) sp.removeView(topsnack);
 			topsnack.setVisibility(View.INVISIBLE);
 			parentView.addView(topsnack);
-			ViewGroup.LayoutParams lp = topsnack.getLayoutParams();
-			lp.height=-2;
-			if(lp instanceof ViewGroup.MarginLayoutParams){
-				((ViewGroup.MarginLayoutParams)lp).leftMargin = parentView.getTag(R.id.position)!=null?IU.parsint(parentView.getTag(R.id.position)):0;
-			}
+			topsnack.getLayoutParams().height=-2;
 			topsnack.post(snackWorker);
 		}else{
 			topsnack.removeCallbacks(snackWorker);
-			snackWorker.run();
+			if(gravity==-10) topsnack.post(snackWorker);
+			else snackWorker.run();
 		}
 	}
 

@@ -1,7 +1,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:SwitchCompat="http://schemas.android.com/apk/res-auto"
-    xmlns:UIStyles="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
@@ -14,63 +14,62 @@
         android:layout_height="wrap_content"
         android:thumb="@drawable/switch_ios_thumb"
         SwitchCompat:track="@drawable/switch_ios_track_selector" 
-        UIStyles:dim0="1dp"
-        UIStyles:dim1="-2dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@drawable/ic_fullscreen_black_24dp"
+        app:dim0="1dp"
+        app:dim1="-2dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+		app:src0="@drawable/ic_fullscreen_black_24dp"
         />
     <com.knziha.plod.widgets.SwitchCompatBeautiful
 	    android:id="@+id/sw2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:thumb="@drawable/switch_ios_thumb"
-        SwitchCompat:track="@drawable/switch_ios_track_selector" 
-        UIStyles:dim0="2dp"
-        UIStyles:dim1="-2dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@drawable/ic_fullscreen2_01"
+        SwitchCompat:track="@drawable/switch_ios_track_selector"
+        app:dim0="2dp"
+        app:dim1="-2dp"
+		android:paddingTop="8dp"
+		android:paddingBottom="8dp"
+		app:src0="@drawable/ic_fullscreen2_01"
         />
-	
+
 	<com.knziha.plod.widgets.SwitchCompatBeautiful
 	    android:id="@+id/sw4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:thumb="@drawable/switch_ios_thumb"
-        SwitchCompat:track="@drawable/switch_ios_track_selector" 
-        UIStyles:dim0="2dp"
-        UIStyles:dim1="1dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@drawable/darkmode"
+        SwitchCompat:track="@drawable/switch_ios_track_selector"
+        app:dim0="2dp"
+        app:dim1="1dp"
+		android:paddingTop="8dp"
+		android:paddingBottom="8dp"
+		app:src0="@drawable/darkmode"
         />
-    
+
 	<com.knziha.plod.widgets.SwitchCompatBeautiful
 	    android:id="@+id/sw3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:thumb="@drawable/switch_ios_thumb"
-        SwitchCompat:track="@drawable/switch_ios_track_selector" 
-        UIStyles:dim0="2dp"
-        UIStyles:dim1="1dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@drawable/viewpager_locker"
+        SwitchCompat:track="@drawable/switch_ios_track_selector"
+        app:dim0="2dp"
+        app:dim1="1dp"
+		android:paddingTop="8dp"
+		android:paddingBottom="8dp"
+		app:src0="@drawable/viewpager_locker"
         />
-	
-	
-	
+
+
 	<com.knziha.plod.widgets.SwitchCompatBeautiful
 	    android:id="@+id/sw5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:thumb="@drawable/switch_ios_thumb"
-        SwitchCompat:track="@drawable/switch_ios_track_selector" 
-        UIStyles:dim0="2dp"
-        UIStyles:dim1="-3dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@drawable/voice_ic"
+        SwitchCompat:track="@drawable/switch_ios_track_selector"
+        app:dim0="2dp"
+        app:dim1="-3dp"
+		android:paddingTop="8dp"
+		android:paddingBottom="8dp"
+		app:src0="@drawable/voice_ic"
         />
 </LinearLayout>

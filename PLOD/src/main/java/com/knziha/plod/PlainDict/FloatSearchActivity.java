@@ -260,7 +260,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-		cbar_key="ctnfrj";
+		cbar_key=2;
 		defbarcustpos=3;
     	long cur = System.currentTimeMillis();
     	if(cur-CMN.FloatLastInvokerTime<524) {
@@ -1030,7 +1030,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			webSingleholder.addView(md.get(adapter_idx).rl);
 			currentDictionary.renderContentAt(-1,adapter_idx,0,null, position);
 			
-        	
 			currentKeyText = currentDictionary.getEntryAt(position);
 			bWantsSelection=true;
 
@@ -1341,9 +1340,5 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				else//没办法..
 					pickDictDialog.refresh();*/
 		if(needRefresh) chooseDialog.notifyDataSetChanged();
-	}
-
-	@Override
-	void setContentBow(boolean bContentBow) {
 	}
 }

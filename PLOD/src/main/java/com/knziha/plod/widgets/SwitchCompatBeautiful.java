@@ -15,7 +15,6 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 
 import com.knziha.filepicker.utils.CMNF;
-import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.PlainDict.R;
 
 public class SwitchCompatBeautiful extends SwitchCompat {
@@ -38,17 +37,10 @@ public class SwitchCompatBeautiful extends SwitchCompat {
     private void init(Context context, AttributeSet attrs, int defStyleAttr) {
 		if(CMNF.ShallowHeaderBlue==0)
 			CMNF.ShallowHeaderBlue = ContextCompat.getColor(getContext(), R.color.ShallowHeaderBlue);
-		//int src_resource = attrs.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "src", 0);
-		CircleCheckBox.fetch_android_src_id();
-		int[] fetcherHolder=R.styleable.triple;
-		fetcherHolder[0]= CMNF.constants;
-		fetcherHolder[1]=R.styleable.UIStyles[0];
-		fetcherHolder[2]=R.styleable.UIStyles[1];
-
-		TypedArray a = context.getTheme().obtainStyledAttributes(attrs, fetcherHolder, defStyleAttr, 0);
-		mHintDrawable = a.getDrawable(0);
-		mHintLeftPadding = (int) a.getDimension(1, 0);
-		mHintSurrondingPad = (int) a.getDimension(2, 0);
+		TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.CircleCheckBox, defStyleAttr, 0);
+		mHintDrawable = a.getDrawable(R.styleable.CircleCheckBox_src0);
+		mHintLeftPadding = (int) a.getDimension(R.styleable.CircleCheckBox_dim0, 0);
+		mHintSurrondingPad = (int) a.getDimension(R.styleable.CircleCheckBox_dim1, 0);
 		//CMN.Log(mHintDrawable, mHintLeftPadding, mHintSurrondingPad);
 		a.recycle();
 

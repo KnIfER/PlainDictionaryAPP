@@ -9,6 +9,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 public class ShelfLinearLayout extends LinearLayout {
@@ -68,5 +69,20 @@ public class ShelfLinearLayout extends LinearLayout {
 	public void setRbyPos(int i) {
 		setRbyView(getChildAt(i));
 	}
-
+	
+	@Override
+	public void setOnClickListener(@Nullable OnClickListener l) {
+		int cc = getChildCount();
+		for (int i = 0; i < cc; i++) {
+			getChildAt(i).setOnClickListener(l);
+		}
+	}
+	
+	@Override
+	public void setOnLongClickListener(@Nullable OnLongClickListener l) {
+		int cc = getChildCount();
+		for (int i = 0; i < cc; i++) {
+			getChildAt(i).setOnLongClickListener(l);
+		}
+	}
 }

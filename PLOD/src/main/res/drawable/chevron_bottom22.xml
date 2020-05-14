@@ -2,8 +2,7 @@
 	android:viewportHeight="24.0" android:viewportWidth="24.0"
 	android:width="96dp"
 	android:height="96dp"
+	android:tint="#8f8f8f"
 	xmlns:android="http://schemas.android.com/apk/res/android">`
-<!--背景颜色-->
-<!--	<path android:fillColor="#92AAFF" android:pathData="M0,0 L24,0 24,24 0,24"/>-->`
 	<path android:fillColor="#FFF" android:pathData="M6.07,7L7.41,6.59 12,11.17l4.59,-4.58L18,7l-6,6zM6.07,11L7.41,10.59 12,15.17 l4.59,-4.58L18,11l-6,6z"/>
 </vector>

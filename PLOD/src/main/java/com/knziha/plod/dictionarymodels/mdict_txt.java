@@ -201,7 +201,7 @@ public class mdict_txt extends mdict {
 		htmlBuilder.append(js);
 		htmlBaseLen=htmlBuilder.length();
 
-		readInConfigs();
+		readInConfigs(a.UIProjects);
 
 		FileInputStream fis = new FileInputStream(f);
 		TextBlock tmpBlock=new TextBlock();
@@ -216,6 +216,7 @@ public class mdict_txt extends mdict {
 
 		CMN.Log("检测结果：", charset, match.getConfidence());
 		_charset = Charset.forName(charset);
+		postGetCharset();
 
 		float factor=1;
 		byte[] PatternA = "·".getBytes(_charset);
@@ -352,9 +353,9 @@ public class mdict_txt extends mdict {
 	@Override
 	public void flowerFindAllContents(String key, int selfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
 		//SU.Log("Find In All Contents Stated");
-		byte[][][] matcher=null;
+		byte[][][][][] matcher=null;
 		Regex Joniregex = null;
-		if(getUseJoniRegex(1)){
+		if(SearchLauncher.getSearchType()==1){
 			if(encoding==null) bakeJoniEncoding();
 			if(encoding!=null) {
 				//if (getRegexAutoAddHead() && !key.startsWith(".*"))
@@ -363,14 +364,7 @@ public class mdict_txt extends mdict {
 				Joniregex = new Regex(pattern, 0, pattern.length, getRegexOption(), encoding);
 			}
 		}
-		if(Joniregex==null){
-			String keyword = key.toLowerCase();
-			String upperKey = keyword.toUpperCase();
-			matcher = new byte[upperKey.equals(keyword)?1:2][][];
-			matcher[0] = flowerSanLieZhi(keyword, SearchLauncher);
-			if(matcher.length==2)
-				matcher[1] = flowerSanLieZhi(upperKey, SearchLauncher);
-		}
+		if(Joniregex==null) matcher =  leafSanLieZhi(SearchLauncher);
 
 		split_recs_thread_number = _num_record_blocks<6?1:(int) (_num_record_blocks/6);//Runtime.getRuntime().availableProcessors()/2*2+10;
 		split_recs_thread_number = split_recs_thread_number>16?6:split_recs_thread_number;
@@ -416,7 +410,7 @@ public class mdict_txt extends mdict {
 			if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(1);
 
 			Regex finalJoniregex = Joniregex;
-			byte[][][] finalMatcher = matcher;
+			byte[][][][][] finalMatcher = matcher;
 			//Thread t;
 			//fixedThreadPool.add(t=new Thread(
 			fixedThreadPool.execute(
@@ -478,10 +472,33 @@ public class mdict_txt extends mdict {
 									Jonimatcher = finalJoniregex.matcher(record_block_);
 								if(SearchLauncher.IsInterrupted  || searchCancled ) break;
 
-								int try_idx=Jonimatcher==null?
-										flowerIndexOf(record_block_,0,recordodKeyLen, finalMatcher,0,0, SearchLauncher, flag)
-										:Jonimatcher.searchInterruptible(0, recordodKeyLen, Option.DEFAULT)
-								;
+//								int try_idx=Jonimatcher==null?
+//										flowerIndexOf(record_block_,0,recordodKeyLen, finalMatcher,0,0, SearchLauncher, flag)
+//										:Jonimatcher.searchInterruptible(0, recordodKeyLen, Option.DEFAULT)
+//										;
+								int try_idx;
+								if(Jonimatcher==null){
+									try_idx=-1;
+									ArrayList<ArrayList<Object>> mpk;
+									ArrayList<Object> mParallelKeys;
+									for (int j = 0; j < finalMatcher.length; j++) { // and group
+										mpk = SearchLauncher.mParallelKeys.get(j);
+										for (int k = 0; k < finalMatcher[j].length; k++) { // or group
+											mParallelKeys = mpk.get(k);
+											int len = finalMatcher[j][k].length;
+											int[] jumpMap = (int[]) mParallelKeys.get(len);
+											try_idx=flowerIndexOf(record_block_,0,recordodKeyLen, finalMatcher[j][k],0,0, SearchLauncher, flag, mParallelKeys, jumpMap);
+											//SU.Log("and_group>>"+j, "or_group#"+k, try_idx, nna);
+											if(try_idx<0 ^ (jumpMap[len]&4)==0) break;
+										}
+										if(try_idx<0){
+											break;
+										}
+									}
+								} else {
+									try_idx=Jonimatcher.searchInterruptible(0, recordodKeyLen, Option.DEFAULT);
+								}
+
 								//SU.Log(try_idx, record_block_.length, recordodKeyLen);
 								if(try_idx!=-1) {
 									SearchLauncher.dirtyResultCounter++;

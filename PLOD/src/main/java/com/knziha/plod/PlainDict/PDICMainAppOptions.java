@@ -3,6 +3,7 @@ package com.knziha.plod.PlainDict;
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.settings.FilePickerOptions;
 import com.knziha.filepicker.utils.CMNF;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
 import com.knziha.plod.widgets.XYTouchRecorder;
@@ -23,13 +24,14 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class PDICMainAppOptions
 {
 	public boolean isAudioPlaying;
 	public boolean isAudioActuallyPlaying;
 	public boolean supressAudioResourcePlaying;
-	//public static HashMap<String, Long> ChangedMap;
+	public static HashSet<String> ChangedMap;
 	SharedPreferences reader2;
 	SharedPreferences defaultReader;
 	public static String locale;
@@ -133,14 +135,74 @@ public class PDICMainAppOptions
 	public String getAppBottomBarProject() {
 		return defaultReader.getString("btmprj",null);
 	}
-
-	public String getAppContentBarProject(String key) {
-		return defaultReader.getString(key,null);
+	
+	
+	public String getAppContentBarProject(int idx) {
+		return getAppContentBarProject("ctnp#"+idx);
 	}
-
+	
+	public String getAppContentBarProject(String key) {
+		String ret = defaultReader.getString(key, null);
+		if(ret!=null && ret.startsWith("ref")){
+			int ref = IU.parsint(ret.substring(3));
+			if(ref<0||ref>10) return null;
+			int ref_tree = 1<<ref;
+			return getContextbarProjectRecursive(ref, ref_tree);
+		}
+		return ret;
+	}
+	
+	private String getContextbarProjectRecursive(int idx, int ref_tree) {
+		String current = defaultReader.getString("ctnp#"+idx, null);
+		if(current!=null && current.startsWith("ref")){
+			int ref = IU.parsint(current.substring(3));
+			if(ref<0||ref>10) return null;
+			int ref_leaf = 1<<ref;
+			if((ref_tree&ref_leaf)!=0) return null;
+			ref_tree |= ref_leaf;
+			return getContextbarProjectRecursive(ref, ref_tree);
+		}
+		return current;
+	}
+	
+	private int getContextbarProjectRecursive1(int idx, int ref_tree) {
+		String current = defaultReader.getString("ctnp#"+idx, null);
+		if(current!=null && current.startsWith("ref")){
+			int ref = IU.parsint(current.substring(3));
+			if(ref<0||ref>10) return -1;
+			int ref_leaf = 1<<ref;
+			if((ref_tree&ref_leaf)!=0) return -1;
+			ref_tree |= ref_leaf;
+			return getContextbarProjectRecursive1(ref, ref_tree);
+		}
+		return idx;
+	}
+	
+	public void linkContentbarProject(int idx, int linkTo) {
+		defaultReader.edit()
+				.putString("ctnp#"+idx , getLinkContentBarProj()?("ref"+linkTo):getAppContentBarProject(linkTo))
+				.apply();
+	}
+	
 	public void putAppProject(MainActivityUIBase.AppUIProject projectContext) {
 		defaultReader.edit().putString(projectContext.key, projectContext.currentValue).apply();
 	}
+	
+	public boolean isAppContentBarProjectRelative(int idx) {
+		String ret = defaultReader.getString("ctnp#"+idx, null);
+		return ret!=null && ret.startsWith("ref");
+	}
+	
+	public boolean isAppContentBarProjectReferTo(String key, int ref_idx) {
+		String ret = defaultReader.getString(key, null);
+		if(ret!=null && ret.startsWith("ref")){
+			int ref = IU.parsint(ret.substring(3));
+			int ref_tree = 1<<ref;
+			return ref_idx == getContextbarProjectRecursive1(ref, ref_tree);
+		}
+		return false;
+	}
+	
 
 	public int getGlobalPageBackground() {
 		return defaultReader.getInt("GPBC",0xFFC7EDCC);
@@ -159,6 +221,12 @@ public class PDICMainAppOptions
 	}
 	public int getToastColor() {
 		return defaultReader.getInt("TTT",0xFF0D2F4B);
+	}
+	public int getTitlebarForegroundColor() {
+		return defaultReader.getInt("TIF",0xFFffffff);
+	}
+	public int getTitlebarBackgroundColor() {
+		return defaultReader.getInt("TIB",0xFF8f8f8f);
 	}
 
 	public boolean UseTripleClick() {
@@ -523,10 +591,13 @@ public class PDICMainAppOptions
 		return val;
 	}
 
+	
 	//0x3 模板
+	@Deprecated
 	public int getDictManagerTap() {
 		return (int) ((FirstFlag >> 36) & 3);
 	}
+	@Deprecated
 	public int setDictManagerTap(int val) {
 		//updateFFAt(0x1000000000l,val);
 		FirstFlag &= (~0x1000000000l);
@@ -953,7 +1024,7 @@ public class PDICMainAppOptions
 		return val;
 	}
 	public static boolean getHideFloatFromRecent() {
-		return getHideFloatFromRecent(SecondFlag==null?0:SecondFlag);
+		return getHideFloatFromRecent(SecondFlag);//SecondFlag==null?0:
 	}
 	public static boolean getHideFloatFromRecent(long SecondFlag) {
 		return (SecondFlag & 0x1000000000l) != 0x1000000000l;
@@ -2008,7 +2079,7 @@ public class PDICMainAppOptions
 	}
 
 	public static boolean getTintIconForeground() {
-		return (FourthFlag & 0x40000000l) == 0x40000000l;
+		return true;//(FourthFlag & 0x40000000l) == 0x40000000l;
 	}
 	public static boolean setTintIconForeground(boolean val) {
 		updateQFAt(0x40000000l,val);
@@ -2016,7 +2087,7 @@ public class PDICMainAppOptions
 	}
 
 	public static boolean getAutoBrowsingReadEntry() {
-		return false;//(FourthFlag & 0x80000000l) == 0x80000000l;
+		return true;//(FourthFlag & 0x80000000l) == 0x80000000l;
 	}
 	public static boolean setAutoBrowsingReadEntry(boolean val) {
 		updateQFAt(0x80000000l,val);
@@ -2036,7 +2107,6 @@ public class PDICMainAppOptions
 	}
 
 
-
 	public static boolean getEnableFanjnConversion() {
 		return true;//(FourthFlag & 0x200000000l) == 0x200000000l;
 	}
@@ -2046,7 +2116,64 @@ public class PDICMainAppOptions
 	}
 
 
-
+	/** Get FullScreen Landscape Mode for h5 video tags.
+	 * @return integer: 0=force landscape <br/>
+	 * 1=no change <br/>
+	 * 2=auto detect <br/>
+	 */
+	public int getFullScreenLandscapeMode() {
+		return (int) ((FourthFlag >> 32) & 3);
+	}
+	public int setFullScreenLandscapeMode(int val) {
+		FourthFlag &= (~0x400000000l);
+		FourthFlag &= (~0x800000000l);
+		FourthFlag |= ((long)(val & 3)) << 32;
+		return val;
+	}
+	
+	public static boolean getEtSearchNoMagnifier() {
+		return (FourthFlag & 0x1000000000l) == 0x1000000000l;
+	}
+	public static boolean setEtSearchNoMagnifier(boolean val) {
+		updateQFAt(0x1000000000l,val);
+		return val;
+	}
+	
+	public static boolean getTitlebarUseGlobalUIColor() {
+		return (FourthFlag & 0x2000000000l) != 0x2000000000l;
+	}
+	public static boolean setTitlebarUseGlobalUIColor(boolean val) {
+		updateQFAt(0x2000000000l,!val);
+		return val;
+	}
+	
+	public static boolean getTitlebarUseGradient() {
+		return (FourthFlag & 0x4000000000l) != 0x4000000000l;
+	}
+	public static boolean setTitlebarUseGradient(boolean val) {
+		updateQFAt(0x4000000000l,!val);
+		return val;
+	}
+	
+	public static boolean getTransitSplashScreen() {
+		return (FourthFlag & 0x8000000000l) != 0x8000000000l;
+	}
+	public static boolean setTransitSplashScreen(boolean val) {
+		updateQFAt(0x8000000000l,!val);
+		return val;
+	}
+	
+	public boolean getShuntDownVMOnExit() {
+		return (FourthFlag & 0x10000000000l) == 0x10000000000l;
+	}
+	
+	public boolean getLinkContentBarProj() {
+		return (FourthFlag & 0x20000000000l) == 0x20000000000l;
+	}
+	
+	public boolean getDeletHistoryOnExit() {
+		return (FourthFlag & 0x40000000000l) == 0x40000000000l;
+	}
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////
 	//EQ
@@ -2187,11 +2314,13 @@ public class PDICMainAppOptions
 		return pathToMainFolder().append("INTERNAL/").append("favorites/");
 	}
 	public StringBuffer pathToMainFolder() {
-		if(pathToL==-1) {
+		//if(pathToL==-1) {
+			//CMN.Log("pathToMainFolder", rootPath);
+			pathTo.setLength(0);
 			if(rootPath==null) rootPath=Environment.getExternalStorageDirectory().getPath();
 			pathTo.append(rootPath).append("/PLOD/");
 			pathToL = pathTo.length();
-		}
+		//}
 		pathTo.setLength(pathToL);
 		return pathTo;
 	}
@@ -2212,6 +2341,8 @@ public class PDICMainAppOptions
 			return SecondFlag;
 			case 3:
 			return ThirdFlag;
+			case 4:
+			return FourthFlag;
 		}
 		return 0;
 	}
@@ -2226,6 +2357,9 @@ public class PDICMainAppOptions
 			break;
 			case 3:
 				ThirdFlag=val;
+			break;
+			case 4:
+				FourthFlag=val;
 			break;
 		}
 	}

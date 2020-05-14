@@ -3,6 +3,9 @@ package com.knziha.plod.searchtasks;
 import android.os.AsyncTask;
 import android.view.View;
 
+import androidx.appcompat.app.GlobalOptions;
+
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.PlaceHolder;
@@ -92,7 +95,12 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 						}
 					}
 					if(mdTmp!=null)
-						mdTmp.size_confined_lookUp5(CurrentSearchText,null, i1,15);
+						try {
+							mdTmp.size_confined_lookUp5(CurrentSearchText,null, i1,15);
+						} catch (Exception e) {
+							if(GlobalOptions.debug)
+								CMN.Log("搜索出错！！！", mdTmp._Dictionary_fName, e);
+						}
 				}
 				if(a.split_dict_thread_number>thread_number) a.poolEUSize.addAndGet(-1);
 			});

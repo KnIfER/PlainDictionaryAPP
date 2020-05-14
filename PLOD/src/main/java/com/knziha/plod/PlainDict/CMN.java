@@ -83,7 +83,7 @@ public class CMN{
 				if(CIS.length()>10) CIS = CIS.substring(0, 10);
 			}
 			CIS = CIS+CI;
-			Log(depth+CIS+" == "+Integer.toHexString(CI.getId())+"/"+CI.getBackground()+"\\"+CI.getTag());
+			Log(depth+CIS+" == "+Integer.toHexString(CI.getId())+"/"+CI.getBackground()+"\\"+CI.getTag()+(CI instanceof TextView?("@font"+((TextView)CI).getTextSize()):""));
 			if(ViewGroup.class.isInstance(CI))
 				recurseLog(CI,depth_plus_1);
 		}

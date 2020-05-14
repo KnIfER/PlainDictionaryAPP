@@ -172,7 +172,7 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 		return true;
 	}
 
-	private void setColorPreferenceTitle(Preference preference, Object newValue) {
+	static  void setColorPreferenceTitle(Preference preference, Object newValue) {
 		//String name = preference.getTitle().toString();
 		//preference.setTitle(name.substring(0, name.indexOf(": ")+2)+Integer.toHexString((int) newValue).toUpperCase());
 		preference.setSummary("0x"+Integer.toHexString((int) newValue).toUpperCase());

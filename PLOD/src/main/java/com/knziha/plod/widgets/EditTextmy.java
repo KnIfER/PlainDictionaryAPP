@@ -13,10 +13,7 @@ import com.knziha.plod.PlainDict.PDICMainAppOptions;
  * when a ET is disabled,it is expected to behave the same way as a TV
  * com.knizha.wangYiLP.ui
  */
-
 public class EditTextmy extends androidx.appcompat.widget.AppCompatEditText{
-
-
     public EditTextmy(Context context) {
         super(context);
     }
@@ -34,13 +31,16 @@ public class EditTextmy extends androidx.appcompat.widget.AppCompatEditText{
 		super.onTouchEvent(event);
 		return isEnabled();
     }
-
+	
+	public static TextPaint hackTp;
 	@Override
 	public TextPaint getPaint() {
-    	if(PDICMainAppOptions.getHackDisableMagnifier()){
-			TextPaint tp = new TextPaint();
-			tp.setTextSize(1000);
-			return tp;
+    	if(PDICMainAppOptions.getEtSearchNoMagnifier()){
+			if(hackTp==null){
+				hackTp = new TextPaint();
+				hackTp.setTextSize(1000);
+			};
+			return hackTp;
 		}
 		return super.getPaint();
 	}

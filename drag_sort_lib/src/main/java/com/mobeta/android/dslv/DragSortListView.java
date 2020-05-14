@@ -2169,9 +2169,11 @@ public class DragSortListView extends ListView {
 
     @Override
     protected void layoutChildren() {
-        super.layoutChildren();
-
-        if (mFloatView != null) {
+		try {
+			super.layoutChildren();
+		} catch (Exception ignored) { }
+	
+		if (mFloatView != null) {
             if (mFloatView.isLayoutRequested() && !mFloatViewOnMeasured) {
                 // Have to measure here when usual android measure
                 // pass is skipped. This happens during a drag-sort

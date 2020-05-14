@@ -68,7 +68,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 		//String[] array = getResources().getStringArray(R.array.jazz_artist_names);
 		//ArrayList<String> list = new ArrayList<String>(Arrays.asList(array));
 		File def = new File(a.opt.pathToMainFolder().append("CONFIG/AllModuleSets.txt").toString());      //!!!原配
-		scanInList = new ArrayList<String>();
+		scanInList = new ArrayList<>();
 		final HashSet<String> con = new HashSet<>();
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(def));
@@ -345,9 +345,6 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 							});
 
 					d = builder2.create();
-					if(GlobalOptions.isDark) {
-						d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_d);
-					}
 					String[] Menus = getResources().getStringArray(
 							R.array.module_sets_option);
 					List<String> arrMenu = Arrays.asList(Menus);

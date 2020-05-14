@@ -1,12 +1,14 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.res.Resources;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuffXfermode;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
@@ -23,16 +25,20 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.view.ContextThemeWrapper;
 
 import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 
@@ -41,21 +47,21 @@ import org.adrianwalker.multilinestring.Multiline;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListener {
-	public Context context;
 	public int currentPos;
 	public int frameAt;
 	public String toTag;
 	public int SelfIdx;
 	/** 标记视图来源。 0=单本搜索; 1=联合搜索; 2=点译模式; 3=翻阅模式; 4=网络词典。*/
 	public int fromCombined;
+	public boolean fromPeruseview;
 	public String word;
 	public int[] currentRendring;
 	public boolean awaiting;
 	public boolean bRequestedSoundPlayback;
-	int ContentHeight=0;
 	public int HistoryVagranter=-1;
 	public float webScale=0;
 	public int expectedPos=-1;
@@ -64,7 +70,16 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public float lastX;
 	public float lastY;
 	public static Integer ShareString_Id;
-
+	
+	public PhotoBrowsingContext IBC;
+	
+	public GradientDrawable toolbarBG;
+	public ViewGroup titleBar;
+	public final int[] ColorShade = new int[]{0xff4F7FDF, 0xff2b4381};
+	public boolean clearHistory;
+	private int mForegroundColor = 0xffffffff;
+	private PorterDuffColorFilter ForegroundFilter;
+	
 	public WebViewmy(Context context) {
 		this(context, null);
 	}
@@ -75,7 +90,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 
 	public WebViewmy(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		this.context=context;
 		init();
 	}
 
@@ -100,9 +114,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		settings.setSupportZoom(true);
 		settings.setBuiltInZoomControls(true);
 		settings.setDisplayZoomControls(false);
-		settings.setDefaultTextEncodingName("UTF-8");
+		//settings.setDefaultTextEncodingName("UTF-8");
 
-		settings.setNeedInitialFocus(false);
+		//settings.setNeedInitialFocus(false);
+
 		//settings.setDefaultFontSize(40);
 		//settings.setTextZoom(100);
 		//setInitialScale(25);
@@ -111,79 +126,71 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		settings.setJavaScriptCanOpenWindowsAutomatically(false);
 		settings.setMediaPlaybackRequiresUserGesture(false);
 
-		settings.setAppCacheEnabled(true);
-		settings.setDatabaseEnabled(true);
-		settings.setDomStorageEnabled(true);
+//		settings.setAppCacheEnabled(true);
+//		settings.setDatabaseEnabled(true);
+//		settings.setDomStorageEnabled(true);
 
 		settings.setAllowFileAccess(true);
 
-		//settings.setUseWideViewPort(true);//设定支持viewport
-		//settings.setLoadWithOverviewMode(true);
-		//settings.setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
-		//settings.setSupportZoom(support);
-
-		settings.setAllowUniversalAccessFromFileURLs(true);
-		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-		//getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+//		settings.setUseWideViewPort(true);//设定支持viewport
+//		settings.setLoadWithOverviewMode(true);
+//		settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+//
+//		settings.setAllowUniversalAccessFromFileURLs(true);
+//		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+//			settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
 		settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
 		//settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);  //设置 缓存模式
 
-		p2 = new Paint();
-		p3 = new Paint();
-		p2.setColor(Color.parseColor("#ffffff"));
-		p2.setXfermode(new PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
-		p3.setColor(Color.YELLOW);
-		p3.setXfermode(new PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
 		//setLayerType(View.LAYER_TYPE_HARDWARE, null);
 		webScale=getResources().getDisplayMetrics().density;
 	}
 	public int getContentHeight(){
-		//if(ContentHeight==0)
-		ContentHeight = computeVerticalScrollRange();
-		return ContentHeight;
+		return computeVerticalScrollRange();
 	}
+	
+	public int getContentWidth(){
+		return computeHorizontalScrollRange();
+	}
+	
 	public int getContentOffset(){
 		return this.computeVerticalScrollOffset();
-	}
-
-	Paint p2,p3;
-
-	//onDraw表示显示完毕
-	@Override
-	protected void onDraw(Canvas canvas) {
-		//canvas.drawRect(0,0,200,200, p3);
-		//canvas.drawPath(path, paint);
-		super.onDraw(canvas);
-		// canvas.drawRect(0,0,200,200, p2);
-	}
-
-	@Override
-	public void scrollTo(int x, int y) {
-		//CMN.Log("webscrollTo "+x+" TO "+y);
-		super.scrollTo(x, y);
 	}
 
 	@Override
 	protected void onScrollChanged(int l, int t, int oldl, int oldt) {
 		super.onScrollChanged(l, t, oldl, oldt);
-		if(SrollChanged!=null)
-			SrollChanged.onScrollChange(this,l,t,oldl,oldt);
+		if(mOnScrollChangeListener !=null)
+			mOnScrollChangeListener.onScrollChange(this,l,t,oldl,oldt);
 	}
-	public void setOnSrollChangedListener(ListViewmy.OnScrollChangeListener onSrollChangedListener) {
-		SrollChanged=onSrollChangedListener;
+	public void setOnScrollChangedListener(OnScrollChangedListener onSrollChangedListener) {
+		mOnScrollChangeListener =onSrollChangedListener;
 	}
-	ListViewmy.OnScrollChangeListener SrollChanged;
+	OnScrollChangedListener mOnScrollChangeListener;
 
 	public boolean isloading=false;
 	@Override
 	public void loadDataWithBaseURL(String baseUrl,String data,String mimeType,String encoding,String historyUrl) {
+		loadUrl("about:blank");
 		super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
 		//if(!baseUrl.equals("about:blank"))
+		CMN.Log("loadDataWithBaseURL...");
 		isloading=true;
 	}
-
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+	}
+	
+	@Override
+	public void onPause() {
+		CMN.Log("onPauseonPauseonPause");
+		super.onPause();
+	}
+	
 	@Override
 	protected void onSizeChanged(int w, int h, int ow, int oh) {
 		super.onSizeChanged(w, h, ow, oh);
@@ -266,7 +273,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public void shutDown() {
 		setWebChromeClient(null);
 		setWebViewClient(null);
-		setOnSrollChangedListener(null);
+		setOnScrollChangedListener(null);
 		setOnTouchListener(null);
 		setOnLongClickListener(null);
 		removeAllViews();
@@ -277,7 +284,43 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		clearHistory();
 		destroy();
 	}
-
+	
+	public void SafeScrollTo(int x, int y) {
+		OnScrollChangedListener mScrollChanged = mOnScrollChangeListener;
+		mOnScrollChangeListener =null;
+		scrollTo(x, y);
+		mOnScrollChangeListener =mScrollChanged;
+	}
+	
+	public void setTitlebarForegroundColor(int foregroundColor) {
+		if(mForegroundColor!=foregroundColor){
+			LinkedList<ViewGroup> linkedList = new LinkedList<>();
+			linkedList.add(titleBar);
+			View cI;
+			ForegroundFilter = new PorterDuffColorFilter(foregroundColor, PorterDuff.Mode.SRC_IN);
+			while (!linkedList.isEmpty()) {
+				ViewGroup current = linkedList.removeFirst();
+				for (int i = 0; i < current.getChildCount(); i++) {
+					cI = current.getChildAt(i);
+					if (cI instanceof ViewGroup) {
+						linkedList.addLast((ViewGroup) current.getChildAt(i));
+					} else {
+						if(cI instanceof ImageView){
+							if(cI.getBackground() instanceof BitmapDrawable){
+								cI.getBackground().setColorFilter(ForegroundFilter);
+							} else {
+								((ImageView)cI).setColorFilter(ForegroundFilter);
+							}
+						} else if(cI instanceof TextView){
+							((TextView)cI).setTextColor(foregroundColor);
+						}
+					}
+				}
+			}
+			mForegroundColor = foregroundColor;
+		}
+	}
+	
 	@RequiresApi(api = Build.VERSION_CODES.M)
 	private class callbackme extends ActionMode.Callback2 implements OnLongClickListener{
 		ActionMode.Callback callback;
@@ -350,7 +393,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				 * 分享#2 | 分享#3
 				 */
 				View cover=((ViewGroup) getParent()).getChildAt(0).findViewById(R.id.cover);
-				cover.setTag(0);
+				cover.setTag(1);
 				cover.performClick();
 			} return false;
 			case R.id.toolbar_action3:{//TTS
@@ -437,6 +480,32 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																	@Override
 																	public boolean onLongClick(View v) {
 																		evaluateJavascript(getUnderlineIncantation().toString(),null);
+																		return true;
+																	}
+																});
+															} else if(tv.getText().length()==2 && tv.getText().toString().equals("工具")){
+																CMN.Log("yes!!! 工具");
+																vgg.setOnLongClickListener(new OnLongClickListener() {
+																	@Override
+																	public boolean onLongClick(View v) {
+																		/* 📕📕📕 微空间内爆术 📕📕📕 */
+																		Context c = getContext();
+																		CMN.Log(c);
+																		if(c instanceof ContextWrapper && !(c instanceof MainActivityUIBase)){
+																			c = ((ContextWrapper)c).getBaseContext();
+																		}
+																		if(c instanceof MainActivityUIBase){
+																			MainActivityUIBase a = (MainActivityUIBase) c;
+																			if(MainActivityUIBase.PreferredToolId !=-1){
+																				mdict invoker = null;
+																				if(SelfIdx<a.md.size()){
+																					invoker = a.md.get(SelfIdx);
+																				}
+																				MainActivityUIBase.UniCoverClicker ucc = a.getUcc(); ucc.bFromWebView=true; ucc.bFromPeruseView=WebViewmy.this.fromPeruseview;
+																				ucc.setInvoker(invoker, WebViewmy.this, null, null);
+																				ucc.onItemClick(null, null, MainActivityUIBase.PreferredToolId, -1, false);
+																			}
+																		}
 																		return true;
 																	}
 																});
@@ -832,14 +901,5 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		lastX = event.getX();
 		lastY = event.getY();
 		return super.onTouchEvent(event);
-	}
-
-	@Override
-	public void pauseTimers() {
-
-	}
-
-	@Override
-	public void onPause() {
 	}
 }

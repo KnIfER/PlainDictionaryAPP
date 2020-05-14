@@ -1,6 +1,5 @@
 package com.knziha.plod.widgets;
 
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 
 import android.content.Context;
@@ -19,7 +18,7 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
 		public boolean onTouch(View v, MotionEvent event) {
 			return true;
 		}};
-	private ListViewmy.OnScrollChangeListener scrollViewListener = null;
+	private OnScrollChangedListener scrollViewListener = null;
     public boolean bScrollEnabled=true;
 	public BooleanSingleton touchFlag=new BooleanSingleton(true);
     
@@ -36,7 +35,7 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
         super(context, attrs);
     }
 
-    public void setScrollViewListener(ListViewmy.OnScrollChangeListener scrollViewListener) {
+    public void setScrollViewListener(OnScrollChangedListener scrollViewListener) {
         this.scrollViewListener = scrollViewListener;
     }
 
@@ -66,7 +65,7 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
     	if(touchFlag!=null) touchFlag.first=true;
 		switch (ev.getAction()) {
 			case MotionEvent.ACTION_DOWN:{
-				CMN.Log("!!!ACTION_DOWN");
+				//CMN.Log("!!!ACTION_DOWN");
 				if(this instanceof AdvancedNestScrollView){
 					AdvancedNestScrollView sv = ((AdvancedNestScrollView) this);
 					sv.mLastMotionY = (int) ev.getY();

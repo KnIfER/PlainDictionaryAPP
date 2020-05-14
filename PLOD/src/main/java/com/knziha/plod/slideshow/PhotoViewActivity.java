@@ -33,6 +33,7 @@ import com.bumptech.glide.request.target.Target;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.mdictRes;
+import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.widgets.SimpleClickableSpan;
 
 import java.io.UnsupportedEncodingException;
@@ -47,7 +48,9 @@ import static com.knziha.plod.dictionarymodels.mdict.indexOf;
 /** Photo View Activity.<br/> Original Author : someone on the internet. */
 public class PhotoViewActivity extends Activity implements View.OnClickListener, View.OnLongClickListener {
 	public static List<mdictRes> mdd;
+	public static PhotoBrowsingContext IBC;
 	public List<mdictRes> mdd_;
+	public PhotoBrowsingContext IBC_;
 	public static final int OffScreenViewPagerSize=5;
 	LinkedList<PhotoView> mViewCache = new LinkedList<>();
 	private String[] imageUrls;
@@ -79,6 +82,8 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_photo_browser);
 		mdd_=mdd;
+		IBC_=IBC;
+		IBC=null;
 		mdd=null;
 		imageUrls = getIntent().getStringArrayExtra("images");
 		curPosition = getIntent().getIntExtra("current", 0);
@@ -125,6 +130,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 					imageUrls[position] = ProcessUrl(imageUrls[position]);
 					processedRec.add(position);
 				}
+				pv.IBC = IBC_;
 				String key=imageUrls[position];
 				try {
 					Glide.with(PhotoViewActivity.this)
@@ -244,7 +250,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 				.setView(dv).create();
 		d.setCanceledOnTouchOutside(true);
 		dv.findViewById(R.id.cancel).setOnClickListener(v1 -> d.dismiss());
-		d.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
+		//tofo
 		android.view.WindowManager.LayoutParams lp = d.getWindow().getAttributes();  //获取对话框当前的参数值
 		lp.height = -2; lp.width=(int) (getResources().getDisplayMetrics().widthPixels*0.8);
 		d.getWindow().setAttributes(lp);

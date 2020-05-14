@@ -74,7 +74,7 @@ public class FloatActivitySearch extends FloatSearchActivity {
 
 	@Override
 	public void onBackPressed() {
-		if(checkWebSelection())
+		if(PDICMainAppOptions.getUseBackKeyClearWebViewFocus() && checkWebSelection())
 			return;
 		if(PDICMainAppOptions.getFloatClickHideToBackground()){
 			moveTaskToBack(false);

@@ -285,8 +285,7 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 						isHeld =true;
 						isDragging =true;
 						lastY = e.getRawY();
-						if(opc!=null)
-							opc.OnProgressChanged(-1);
+						if(opc!=null) opc.OnProgressChanged(-1);
 						synced=false;
 						//scrollee.startNestedScroll(SCROLL_AXIS_VERTICAL);
 					break;
@@ -300,8 +299,7 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 						handleThumb.postInvalidate();
 						if(progress!=mProgress) {
 							mProgress = progress;
-							if (opc != null)
-								opc.OnProgressChanged(progress);
+							//if (opc != null) opc.OnProgressChanged(progress);
 							if (scrollee != null) {
 								if (scrollee instanceof ScrollView) {
 									((ScrollView) scrollee).smoothScrollTo(0, progress);
@@ -318,8 +316,7 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 					case MotionEvent.ACTION_UP:
 						isHeld =false;
 						isDragging =false;
-						if(opc!=null)
-							opc.OnProgressChanged(-2);
+						if(opc!=null) opc.OnProgressChanged(-2);
 						if(scrollee instanceof AdvancedNestScrollView){
 							//((AdvancedNestScrollView) scrollee).SyncNestedScroll(0-mProgress);
 							//scrollee.stopNestedScroll();
@@ -335,12 +332,15 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 		handleThumb.setOnTouchListener(otl);
 	}
 
-	public void setOnProgressChangedListener(
-			OnProgressChangedListener onProgressChangedListener) {
+	public void setOnProgressChangedListener(OnProgressChangedListener onProgressChangedListener) {
 		opc = onProgressChangedListener;
-	}public interface OnProgressChangedListener {
+	}
+	
+	public interface OnProgressChangedListener {
 		void OnProgressChanged(int _mProgress);
-	}OnProgressChangedListener opc;
+	}
+	
+	OnProgressChangedListener opc;
 
 	public boolean isWebHeld;
 	public Timer timer;

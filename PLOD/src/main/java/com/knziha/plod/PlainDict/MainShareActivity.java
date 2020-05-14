@@ -49,8 +49,8 @@ public class MainShareActivity extends AppCompatActivity {
 				newTask.putExtra(Intent.EXTRA_TEXT,debugString);
 				newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
 				newTask.setClass(getBaseContext(),PDICMainActivity.class);
-				//|Intent.FLAG_ACTIVITY_CLEAR_TASK
-				newTask.setFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP|Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+//				//|Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+				newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				startActivity(newTask);
 			}
 		}

@@ -1609,14 +1609,13 @@ public class DBroswer extends Fragment implements
 	public void toggleFavor() {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
-		a.favoriteBtn.setImageResource(R.drawable.star_ic);
 		if(toDelete.get(currentPos)==null) {
-			a.favoriteBtn.setImageResource(R.drawable.star_ic);
+			a.favoriteBtn.setActivated(false);
 			toDelete.put(currentPos,currentDisplaying);
 			isToDel=true; a.show(R.string.toRemove);
 		}else {
 			toDelete.remove(currentPos);
-			a.favoriteBtn.setImageResource(R.drawable.star_ic_solid);
+			a.favoriteBtn.setActivated(true);
 			a.show(R.string.added);
 		}
 	}
@@ -1625,10 +1624,7 @@ public class DBroswer extends Fragment implements
 	protected void processFavorite(int position,String key) {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
-		if(toDelete.get(currentPos)==null) {
-			a.favoriteBtn.setImageResource(R.drawable.star_ic_solid);
-		}else
-			a.favoriteBtn.setImageResource(R.drawable.star_ic);
+		a.favoriteBtn.setActivated(toDelete.get(currentPos)==null);
 	}
 
 	public void goBack() {

@@ -44,6 +44,8 @@ public class ViewSpecification extends SettingsFragment implements Preference.On
 		init_switch_preference(this, "hint_mod", PDICMainAppOptions.getHintSearchMode(), null, null);
 		init_switch_preference(this, "hint_res", PDICMainAppOptions.getNotifyComboRes(), null, null);
 		init_switch_preference(this, "simple", PDICMainAppOptions.getSimpleMode(), null, null);
+		init_switch_preference(this, "magny", PDICMainAppOptions.getEtSearchNoMagnifier(), null, null);
+		init_switch_preference(this, "magny2", PDICMainAppOptions.getHackDisableMagnifier(), null, null);
 		init_switch_preference(this, "expand_ao", PDICMainAppOptions.getEnsureAtLeatOneExpandedPage(), null, null);
 		init_switch_preference(this, "expand_top", PDICMainAppOptions.getOnlyExpandTopPage(), null, null);
 		init_switch_preference(this, "scranima", PDICMainAppOptions.getScrollAnimation(), null, null);
@@ -110,6 +112,12 @@ public class ViewSpecification extends SettingsFragment implements Preference.On
 			break;
 			case "simple":
 				PDICMainAppOptions.setSimpleMode((Boolean) newValue);
+			break;
+			case "magny":
+				PDICMainAppOptions.setEtSearchNoMagnifier((Boolean) newValue);
+			break;
+			case "magny2":
+				PDICMainAppOptions.setHackDisableMagnifier((Boolean) newValue);
 			break;
 			case "expand_ao":
 				PDICMainAppOptions.setEnsureAtLeatOneExpandedPage((Boolean) newValue);

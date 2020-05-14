@@ -788,11 +788,15 @@ public class RBTree<T extends Comparable<T>> {
      *     tree 红黑树的根结点
      *     z 删除的结点
      */
-    public void remove(T key) {
+    public boolean remove(T key) {
         RBTNode<T> node;
 
-        if ((node = search(mRoot, key)) != null)
-            remove(node);
+        if ((node = search(mRoot, key)) != null){
+			remove(node);
+			return true;
+		}
+  
+		return false;
     }
 
     /*

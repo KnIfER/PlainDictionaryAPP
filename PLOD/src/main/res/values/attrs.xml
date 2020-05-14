@@ -42,36 +42,8 @@
         <attr name="summary" format="string"/>
         <attr name="title" format="string"/>
     </declare-styleable>
-    
-    
-    
-    <declare-styleable name="UIStyles">
-        <attr name="dim0" format="dimension"/>
-        <attr name="dim1" format="dimension"/>
-    </declare-styleable>
-    
-    
-    
-    
-    
-    
-    
-    <declare-styleable name="constances">
-        <attr name="_0" format="integer" />
-    </declare-styleable>
-    
-    <declare-styleable name="single">
-        <attr name="s0" format="reference|color" />
-    </declare-styleable>
-    
-    <declare-styleable name="dual">
-        <attr name="d0" format="integer" />
-        <attr name="d1" format="integer" />
-    </declare-styleable>
-    
-   <declare-styleable name="triple">
-        <attr name="t1" format="integer" />
-        <attr name="t2" format="integer" />
-        <attr name="t3" format="integer" />
+
+    <declare-styleable name="ActivatableImageView">
+        <attr name="src0" format="reference" />
     </declare-styleable>
 </resources>

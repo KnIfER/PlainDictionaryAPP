@@ -8,7 +8,7 @@
 	<string name="surerrecords">确认删除选中的 %d 项记录?(不会删除文件)</string>
 	<string name="applyallset">应用到所有分组</string>
 	<string name="pickdestineFolder">选择目标文件夹</string>
-	<string name="warn_exit1">[清空历史纪录]</string>
+	<string name="warn_exit1">清空历史纪录</string>
 	<string name="bookmarkupdated">书签已更新为: %s</string>
 	<string name="bookmarkup">书签已更新！</string>
 	<string name="bookmarkjumped">跳转至: %s</string>
@@ -85,6 +85,7 @@
 	<string name="delD">删除成功！</string>
 	<string name="delDone">已删除</string>
 	<string name="bmAdded">书签已添加！</string>
+	<string name="AppOpt">程序设定</string>
 	<string name="dictOpt">词典选项…</string>
 	<string name="dictOpt1">词典设定</string>
 	<string name="setOpt">分组配置选项…</string>
@@ -99,7 +100,7 @@
 
 
 	<string name="stg_require">请赋予存储权限。</string>
-	<string name="stg_statement">如您不赋予，则无法正常使用此播放器。(但是可以进入试用模式)</string>
+	<string name="stg_statement">如您不赋予，则无法正常打开外部词库，只可试用。</string>
 	<string name="stg_grantnow">立即开启</string>
 	<string name="trialin">试用中…… #</string>
 	<string name="stgerr_fail">抱歉，无法在您的设备上使用</string>
@@ -186,4 +187,7 @@
 	<string name="saved">已保存！</string>
 	<string name="saved_with_size">已保存！大小 = %d </string>
 	<string name="webscroll_apply_all">应用到全部</string>
+	<string name="warn_copyconfrom">确认要从 %s 拷贝配置吗？</string>
+	<string name="linkedft"><![CDATA[已关联 %s >>  %s]]></string>
+	<string name="copyedft"><![CDATA[已复制到 %s <<  %s]]></string>
 </resources>

@@ -2,7 +2,6 @@ package com.knziha.plod.PlainDict;
 
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -10,9 +9,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +29,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -40,6 +38,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
@@ -72,7 +71,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 
 import static com.knziha.plod.PlainDict.MainActivityUIBase.new_mdict;
@@ -81,12 +79,13 @@ import static com.knziha.plod.PlainDict.MainActivityUIBase.new_mdict;
 /** @author KnIfER */
 public class Drawer extends Fragment implements
 		OnClickListener, OnDismissListener, OnCheckedChangeListener, OnLongClickListener {
+	private PDICMainActivity a;
 	private boolean bIsFirstLayout=true;
 	AlertDialog d;
 
 	String[] hints;
 	private ListView mDrawerList;
-	View mDrawerListView;
+	View mDrawerListLayout;
 	MyAdapter myAdapter;
 
 	public EditText etAdditional;
@@ -111,57 +110,54 @@ public class Drawer extends Fragment implements
 		super.onCreate(savedInstanceState);
 
 	}
-
-	public Drawer() {
-		super();
-	}
-
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState) {
-		mDrawerListView = inflater.inflate(R.layout.activity_main_navi_drawer, container,false);
-		//mDrawerListView.setOnClickListener(this);
-		FooterView = mDrawerListView.findViewById(R.id.footer);
-		FooterView.findViewById(R.id.menu_item_setting).setOnClickListener(this);
-		mDrawerListView.findViewById(R.id.menu_item_exit).setOnClickListener(this);
-		mDrawerListView.findViewById(R.id.menu_item_exit).setOnLongClickListener(this);
-		mDrawerList = mDrawerListView.findViewById(R.id.left_drawer);
-		((AdvancedNestScrollListview)mDrawerList).setNestedScrollingEnabled(true);
+		//if(true) return new View(inflater.getContext());
+		if(mDrawerListLayout ==null){
+			mDrawerListLayout = inflater.inflate(R.layout.activity_main_navi_drawer, container,false);
+			FooterView = mDrawerListLayout.findViewById(R.id.footer);
+			FooterView.findViewById(R.id.menu_item_setting).setOnClickListener(this);
+			mDrawerListLayout.findViewById(R.id.menu_item_exit).setOnClickListener(this);
+			mDrawerListLayout.findViewById(R.id.menu_item_exit).setOnLongClickListener(this);
+			mDrawerList = mDrawerListLayout.findViewById(R.id.left_drawer);
+			((AdvancedNestScrollListview)mDrawerList).setNestedScrollingEnabled(true);
+			
+			myAdapter = new MyAdapter(getResources().getStringArray(R.array.drawer_items));
+			
+			mDrawerList.setAdapter(myAdapter);
+			
+			HeaderView = inflater.inflate(R.layout.activity_main_navi_drawer_header, null);
+			
+			mDrawerList.addHeaderView(HeaderView);
 
-		String[] items = getResources().getStringArray(R.array.drawer_items);
-
-		myAdapter = new MyAdapter(Arrays.asList(items));
-		mDrawerList.setAdapter(myAdapter);
-
-		HeaderView = inflater.inflate(R.layout.activity_main_navi_drawer_header, null);
-		mDrawerList.addHeaderView(HeaderView);
-		//etAdditional = (EditText)mDrawerList.findViewById(R.id.etAdditional);
-		//CMN.show("onCreateView");
-		mDrawerListView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-			int oldWidth;
-			@Override
-			public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
-									   int oldRight, int oldBottom) {
-				right=right-left;
-				if(swRow!=null && (right!=oldWidth || bIsFirstLayout)) {
-					if(bIsFirstLayout) SwitchCompatBeautiful.bForbidRquestLayout = true;
-					int width = (right - sw1.getWidth() * 5) / 6;
-					View vI;
-					for (int i = 0; i < swRow.getChildCount(); i++) {
-						vI=swRow.getChildAt(i);
-						MarginLayoutParams lp = (MarginLayoutParams) vI.getLayoutParams();
-						lp.leftMargin = width;
-						vI.setLayoutParams(lp);
-					}
-					oldWidth = right;
-					if(bIsFirstLayout) {
-						SwitchCompatBeautiful.bForbidRquestLayout = false;
-						bIsFirstLayout = false;
+			mDrawerListLayout.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+				int oldWidth;
+				@Override
+				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
+										   int oldRight, int oldBottom) {
+					right=right-left;
+					if(swRow!=null && (right!=oldWidth || bIsFirstLayout)) {
+						//if(bIsFirstLayout) SwitchCompatBeautiful.bForbidRquestLayout = true;
+						int width = (right - sw1.getWidth() * 5) / 6;
+						View vI;
+						for (int i = 0; i < swRow.getChildCount(); i++) {
+							vI=swRow.getChildAt(i);
+							MarginLayoutParams lp = (MarginLayoutParams) vI.getLayoutParams();
+							lp.leftMargin = width;
+							vI.setLayoutParams(lp);
+						}
+						oldWidth = right;
+						if(bIsFirstLayout) {
+							SwitchCompatBeautiful.bForbidRquestLayout = false;
+							bIsFirstLayout = false;
+						}
 					}
 				}
-			}
-		});
-		return mDrawerListView;
+			});
+		}
+		return mDrawerListLayout;
 	}
 
 	public void setCheckedForce(SwitchCompat sw5, boolean b) {
@@ -172,10 +168,10 @@ public class Drawer extends Fragment implements
 		}
 	}
 
-
-	class MyAdapter extends ArrayAdapter<String> {
-		public MyAdapter(List<String> mdicts) {
-			super(getActivity(),R.layout.listview_item0, R.id.text, mdicts);
+	class MyAdapter extends BaseAdapter {
+		String[] items;
+		public MyAdapter(String[] items) {
+			this.items = items;
 		}
 		boolean show_hints = true;
 		public void notifyDataSetChangedX() {
@@ -186,73 +182,90 @@ public class Drawer extends Fragment implements
 		public boolean areAllItemsEnabled() {
 			return false;
 		}
-//		@Override
-//		public int getCount() {
-//			return super.getCount();
-//		}
+		@Override
+		public int getCount() {
+			return items.length;
+		}
 		@Override
 		public boolean isEnabled(int position) {
-			return !"d".equals(getItem(position)); // 如果-开头，则该项不可选
+			return items[position].length()>0;
 		}
+		
+		@Override
+		public int getViewTypeCount() {
+			return 2;
+		}
+		
+		@Override
+		public int getItemViewType(int position) {
+			return items[position].length()==0?1:0;
+		}
+		
+		@Override
+		public String getItem(int position) {
+			return items[position];
+		}
+		
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+		
 		@NonNull
 		@Override
 		public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-			//position+=1;
-			if("d".equals(getItem(position))){//是标签项
-				return (convertView!=null && convertView.getTag()==null)?convertView:LayoutInflater.from(getContext()).inflate(R.layout.listview_sep, null);
+			if(items[position].length()==0){
+				/* divider border */
+				return convertView!=null?convertView:LayoutInflater.from(getContext()).inflate(R.layout.listview_sep, parent, false);
 			}
-			PDICMainActivity.ViewHolder vh = null;
-			if(convertView!=null)
+			PDICMainActivity.ViewHolder vh;
+			if(convertView!=null){
 				vh=(PDICMainActivity.ViewHolder)convertView.getTag();
-			if(vh==null) {
+			} else {
 				vh=new PDICMainActivity.ViewHolder(getContext(),R.layout.listview_item0, parent);
 				vh.itemView.setBackgroundResource(R.drawable.listviewselector1);
+				vh.itemView.setOnClickListener(Drawer.this);
 				vh.subtitle.setTextColor(ContextCompat.getColor(a, R.color.colorHeaderBlue));
 			}
+			vh.position=position;
+			vh.itemView.setOnLongClickListener((position==6)?Drawer.this:null);
 			if( vh.title.getTextColors().getDefaultColor()!=a.AppBlack) {
 				PDICMainActivity.decorateBackground(vh.itemView);
 				vh.title.setTextColor(a.AppBlack);
 			}
 
-			vh.title.setText(getItem(position));
-			vh.subtitle.setText(null);
+			vh.title.setText(items[position]);
+			
 			if(show_hints) {
-				getExtraHints();
-				if(!hints[position].equals("d"))
-					vh.subtitle.setText(hints[position]);
+				if(hints==null)
+					hints = getResources().getStringArray(R.array.drawer_hints);
+				vh.subtitle.setText(hints[position]);
+			} else {
+				vh.subtitle.setText(null);
 			}
-			vh.itemView.setTag(R.id.position,position);
-			vh.itemView.setOnClickListener(Drawer.this);
-			if(position==6)
-				vh.itemView.setOnLongClickListener(Drawer.this);
 
 			return vh.itemView;
 		}
 	}
 
-	public void getExtraHints() {
-		if(hints==null)
-			hints = getResources().getStringArray(R.array.drawer_hints);
-	}
-
-	PDICMainActivity a;
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
+		CMN.Log("Drawer onActivityCreated");
 		super.onActivityCreated(savedInstanceState);
 		a = ((PDICMainActivity)getActivity());
 		a.drawerFragment = this;
+		
+		if(HeaderView==null) return;
+		
 		myAdapter.show_hints = true;
-		getExtraHints();
-		//mDrawerListView.setBackgroundColor(a.AppWhite);
-		//HeaderView.setBackgroundColor(a.AppWhite);
-		//FooterView.setBackgroundColor(a.AppWhite);
+		
 		if(PDICMainAppOptions.getShowPasteBin())
 			SetupPasteBin();
 
 		sw1 = HeaderView.findViewById(R.id.sw1);
 		swRow = (ViewGroup) sw1.getParent();
 		sw1.setOnCheckedChangeListener(this);
-		sw1.setChecked(a.opt.isFullScreen());
+		sw1.setChecked(PDICMainAppOptions.isFullScreen());
 		sw1.setOnClickListener(v -> {
 			// TODO Auto-generated method stub
 
@@ -279,20 +292,20 @@ public class Drawer extends Fragment implements
 		sw5.setOnCheckedChangeListener(this);
 
 		if(GlobalOptions.isDark) {
-			mDrawerListView.setBackgroundColor(Color.BLACK);
+			mDrawerListLayout.setBackgroundColor(Color.BLACK);
 			HeaderView.setBackgroundColor(a.AppWhite);
 			FooterView.setBackgroundColor(a.AppWhite);
 		}
 		//test groups
-		//View v = new View(a);v.setTag(R.id.position,7);onClick(v);
-		//View v = new View(a);v.setTag(R.id.position,9);onClick(v);
+		//PDICMainActivity.ViewHolder vh = new PDICMainActivity.ViewHolder(a, R.layout.listview_item0, null);
+		//View v = new View(a);v.setTag(vh);onClick(v);
 	}
 
 	void SetupPasteBin() {
 		ClipboardManager clipboardManager = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
 		if(clipboardManager!=null){
 			if(pasteBin==null){
-				pasteBin = mDrawerListView.findViewById(R.id.pastebin);
+				pasteBin = mDrawerListLayout.findViewById(R.id.pastebin);
 				pasteBin.setOnClickListener(this);
 				mClipboard=new ArrayList<>(12);
 				//mClipboard.add("Happy");
@@ -345,13 +358,6 @@ public class Drawer extends Fragment implements
 			}
 		}
 	}
-
-
-	@Override
-	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-	}
-	//private final String infoStr = "";
 
 	@Override
 	public void onClick(View v) {
@@ -430,7 +436,7 @@ public class Drawer extends Fragment implements
 
 				return;
 			case R.id.menu_item_exit://退出
-				showExitDialog();
+				a.showAppExit();
 				return;
 			case R.id.pastebin:{//剪贴板对话框
 				if(ClipboardList ==null){
@@ -456,7 +462,6 @@ public class Drawer extends Fragment implements
 				androidx.appcompat.app.AlertDialog dTmp = dialog_builder.create();
 				Window win = dTmp.getWindow();
 				if (win != null) {
-					win.setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
 					a.fix_full_screen(win.getDecorView());
 					win.setDimAmount(0);
 				}
@@ -466,7 +471,7 @@ public class Drawer extends Fragment implements
 				ClipboardList.addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (a.root.getHeight()-a.root.getPaddingTop()-2.8*getResources().getDimension(R.dimen._50_))));
 			} return;
 		}
-		int position = (int) v.getTag(R.id.position);
+		int position = ((PDICMainActivity.ViewHolder)v.getTag()).position;
 		int BKHistroryVagranter;
 		switch(position) {
 			case 0://模糊搜索
@@ -543,14 +548,6 @@ public class Drawer extends Fragment implements
 				d.show();
 
 				d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-				if(GlobalOptions.isDark) {
-					//d.setTitle(Html.fromHtml("<span style='color:#ffffff;'>"+getResources().getString(R.string.loadconfig)+"</span>"));
-					View tv = d.getWindow().findViewById(Resources.getSystem().getIdentifier("alertTitle","id", "android"));
-					if(tv instanceof TextView)((TextView) tv).setTextColor(Color.WHITE);
-					//d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_d);
-					d.getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));//(R.drawable.popup_shadow_d);
-				}
-
 				d.setOnDismissListener(Drawer.this::onDismiss);
 				d.getListView().setAdapter(new ArrayAdapter<String>(a,
 						R.layout.singlechoice, android.R.id.text1, items) {
@@ -566,14 +563,16 @@ public class Drawer extends Fragment implements
 							tv = (CheckedTextViewmy)ret.getTag();
 
 						String id = items[position];
+						
+						if(GlobalOptions.isDark)
+							tv.setTextColor(Color.WHITE);
+						
 						if(pos[position]==-2) {//无数据
 							tv.setText("N.A.");
 							tv.setSubText(null);
 							return ret;
 						}
 
-						if(GlobalOptions.isDark)
-							tv.setTextColor(Color.WHITE);
 
 						mdict mdTmp  = mdictInternal.get(id);
 
@@ -702,6 +701,7 @@ public class Drawer extends Fragment implements
 								for(String fnI:files) {
 									File fI = new File(fnI);
 									if(fI.isDirectory()) continue;
+									//checker.put("sound_us.mdd", "/storage/emulated/0/PLOD/mdicts/发音库/sound_us.mdd");
 									/* 检查文件名称是否乃记录之中已失效项，有则需重命名。*/
 									if(AutoFixLostRecords && (removedAPath=checker.get(fI.getName()))!=null) {
 										renameList.put(removedAPath, fnI);
@@ -733,6 +733,8 @@ public class Drawer extends Fragment implements
 										}
 									}
 								}
+								CMN.Log(checker);
+								CMN.Log(renameRec.toString());
 								if(a.pickDictDialog!=null) {
 									a.pickDictDialog.adapter().notifyDataSetChanged();
 									a.pickDictDialog.isDirty=true;
@@ -740,6 +742,17 @@ public class Drawer extends Fragment implements
 								output.close();
 								if(output2!=null)output2.close();
 								renameRec.clear();
+								
+								for (ArrayList<PlaceHolder> phII: PDICMainActivity.PlaceHolders) {
+									for (PlaceHolder phI:phII){
+										String newPath = renameList.get(phI.getPath(a.opt));
+										if(newPath!=null){
+											PlaceHolder phTmp = new PlaceHolder(newPath);
+											phI.pathname = phTmp.pathname;
+										}
+									}
+								}
+								
 								if(AutoFixLostRecords && renameList.size()>0){
 									ArrayList<File> moduleFullScannerArr;
 									File[] moduleFullScanner = new File(a.opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> pathname.getPath().endsWith(".set"));
@@ -756,13 +769,26 @@ public class Drawer extends Fragment implements
 										try {
 											ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
 											while((line = br.readLine()) != null) {
+												String prefix = null;
+												if(line.startsWith("[:")){
+													int idx = line.indexOf("]",2);
+													if(idx>=2) {
+														idx+=1;
+														prefix = line.substring(0, idx);
+														line = line.substring(idx);
+													}
+												}
 												/* from old path to neo path */
 												String finder = renameList.get(line.startsWith("/")?line:a.opt.lastMdlibPath+"/"+line);
+												CMN.Log(fI.getName(), "{重命名??}", finder, line);
 												if(finder!=null){
 													line=mFile.tryDeScion(new File(finder), a.opt.lastMdlibPath);
+													if(prefix!=null){
+														line=prefix+line;
+													}
 													bNeedRewrite = true;
 													countRename++;
-													//CMN.Log(fI.getName(), "{当重命名之}", finder, line);
+													CMN.Log(fI.getName(), "{当重命名之}", finder, line);
 												}
 												sb.append(line).append("\n");
 											}
@@ -783,7 +809,7 @@ public class Drawer extends Fragment implements
 									checker.clear();
 								}
 								if(countRename>0)
-									a.showT("新加入"+countAdd+"本词典, 重命名"+countRename+"次！");
+									a.showT("新加入"+countAdd+"本词典, 重定位"+countRename+"次！");
 								else
 									a.showT("新加入"+countAdd+"本词典！");
 							} catch (IOException e1) {
@@ -897,36 +923,10 @@ public class Drawer extends Fragment implements
 		return new BufferedWriter(new FileWriter(def,true));
 	}
 
-	void showExitDialog() {
-		final View dv1 = a.inflater.inflate(R.layout.dialog_about,null);
-
-		final SpannableStringBuilder ssb1 = new SpannableStringBuilder(getResources().getString(R.string.warn_exit1));
-		int start1 = ssb1.toString().indexOf("[");
-		final TextView tv1 = dv1.findViewById(R.id.resultN);
-		((TextView)dv1.findViewById(R.id.title)).setText(R.string.warn_exit0);
-		(dv1.findViewById(R.id.cancel)).setOnClickListener(v12 -> {a.finish();});
-		tv1.setPadding(0, 0, 0, 50);
-		ssb1.setSpan(new ClickableSpan() {
-			@Override
-			public void onClick(@NonNull View widget) {
-				a.show(a.deleteHistory()?R.string.clearsucc:R.string.clearfail);
-			}
-		}, start1,  ssb1.toString().indexOf("]",start1)+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-		tv1.setText(ssb1);
-		tv1.setMovementMethod(LinkMovementMethod.getInstance());
-		AlertDialog.Builder builder21 = new AlertDialog.Builder(a);
-		builder21.setView(dv1);
-		final AlertDialog d1 = builder21.create();
-		d1.setCanceledOnTouchOutside(true);
-		d1.show();
-	}
-
 	@Override
 	public void onDismiss(DialogInterface dialog) {
 		d = null;
 	}
-
 
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -954,7 +954,7 @@ public class Drawer extends Fragment implements
 				a.opt.setFullScreen(isChecked);
 			} break;
 			case R.id.sw2:{
-				a.setNestedScrollingEnabled(a.opt.setEnableSuperImmersiveScrollMode(isChecked));
+				a.setNestedScrollingEnabled(PDICMainAppOptions.setEnableSuperImmersiveScrollMode(isChecked));
 			} break;
 			case R.id.sw3:{
 				a.opt.setViewPagerEnabled(!isChecked);
@@ -981,7 +981,7 @@ public class Drawer extends Fragment implements
 
 	@Override
 	public boolean onLongClick(View v) {
-		if(v.getTag(R.id.position)==(Integer)6){
+		if(((PDICMainActivity.ViewHolder)v.getTag()).position==6){
 			toPDF=true;
 			((TextView)v.findViewById(R.id.subtext)).setText("Oh PDF !");
 			return false;
@@ -990,8 +990,7 @@ public class Drawer extends Fragment implements
 		startActivity(i);
 		return false;
 	}
-
-
+	
 	public void decorateHeader(View footchechers) {
 		PDICMainActivity a = ((PDICMainActivity) getActivity()); if(a==null) return;
 		View.OnClickListener clicker = v -> {
@@ -1030,8 +1029,7 @@ public class Drawer extends Fragment implements
 		ck.setChecked(a.opt.getPasteBinBringTaskToFront());
 		ck.setOnClickListener(clicker);
 	}
-
-
+	
 	@Override
 	public void onDestroy() {
 		super.onDestroy();

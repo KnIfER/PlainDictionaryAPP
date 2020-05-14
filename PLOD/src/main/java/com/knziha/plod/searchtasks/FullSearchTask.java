@@ -49,6 +49,7 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 		if(params.length==0) return null;
 		if((CurrentSearchText=params[0])==null || CurrentSearchText.length()==0)
 			return null;
+		a.fullSearchLayer.setCurrentPhrase(CurrentSearchText);
 
 		ArrayList<mdict> md = a.md;
 
@@ -139,15 +140,16 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 				,(System.currentTimeMillis()-CMN.stst)*1.f/1000,a.adaptermy4.getCount());
 
 		CMN.Log((System.currentTimeMillis()-CMN.stst)*1.f/1000, "此即搜索时间。", a.adaptermy4.getCount());
-
-		a.fullSearchLayer.bakePattern(CurrentSearchText, PDICMainAppOptions.getUseRegex2()?CurrentSearchText:CurrentSearchText.replace("*", ".+?"));
+		
 		System.gc();
 		a.adaptermy4.ClearVOA();
 		a.adaptermy4.notifyDataSetChanged();
 		a.mlv2.setSelection(0);
 		//准备页内搜索
-		if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterFulltext())
-			a.prepareInPageSearch(a.fullSearchLayer.getBakedPatternStr(PDICMainAppOptions.getUseRegex3()), true);
+		if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterFulltext()){
+			a.fullSearchLayer.getBakedPattern();
+			a.prepareInPageSearch(a.fullSearchLayer.getPagePattern(), true);
+		}
 		a.fullSearchLayer.currentThreads=null;
 	}
 

@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionarymodels;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
@@ -16,13 +17,12 @@ public interface mdict_manageable {
 	Drawable getCover();
 	String getName();
 	int getTmpIsFlag();
-	@Deprecated
-	boolean getIsDedicatedFilter();
 	boolean isMddResource();
 	void setTmpIsFlag(int val);
 	File f();
-	void checkFlag();
+	void checkFlag(Activity context);
 	long getFirstFlag();
+	void setFirstFlag(long val);
 	void validifyValueForFlag(WebViewmy view, int val, int mask, int flagPosition, int processId);
 	PDICMainAppOptions getOpt();
 

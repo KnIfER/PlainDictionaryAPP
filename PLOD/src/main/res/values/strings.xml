@@ -89,6 +89,7 @@
     <string name="delD">delete done!</string>
     <string name="delDone">deleted</string>
     <string name="bmAdded">Bookmark added !</string>
+	<string name="AppOpt">Application Tweaks</string>
     <string name="dictOpt">Dictionary options…</string>
     <string name="dictOpt1">@string/dictOpt</string>
     <string name="setOpt">Dictionary Set options…</string>
@@ -199,4 +200,7 @@
 	<string name="saved">已保存！</string>
 	<string name="saved_with_size">已保存！大小 = %d </string>
 	<string name="webscroll_apply_all">应用到全部</string>
+	<string name="warn_copyconfrom">确认要从 %s 拷贝配置吗？</string>
+	<string name="linkedft"><![CDATA[已关联 %s >>  %s]]></string>
+	<string name="copyedft"><![CDATA[已复制到 %s <<  %s]]></string>
 </resources>

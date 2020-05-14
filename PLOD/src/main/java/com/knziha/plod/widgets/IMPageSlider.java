@@ -115,7 +115,7 @@ public class IMPageSlider extends ImageView{
 		}
 	}
 	
-	public void handleDrag(int dx, int dy) {
+	public void handleDrag(float dx, float dy) {
 		//if(true) return;
     	setAlpha(1.f);
     	timeStamp = System.currentTimeMillis();

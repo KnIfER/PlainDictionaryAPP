@@ -44,6 +44,7 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 			return null;
 		PDICMainActivity a;
 		if((a=activity.get())==null) return null;
+		a.fuzzySearchLayer.setCurrentPhrase(CurrentSearchText);
 
 		ArrayList<mdict> md = a.md;
 
@@ -123,8 +124,6 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 		CMN.Log((System.currentTimeMillis()-CMN.stst)*1.f/1000, "此即搜索时间。", a.adaptermy3.getCount());
 
 		System.gc();
-		if(CurrentSearchText!=null)
-			a.fuzzySearchLayer.bakePattern(CurrentSearchText, PDICMainAppOptions.getUseRegex1()?CurrentSearchText:CurrentSearchText.replace("*", ".+?"));
 		a.adaptermy3.notifyDataSetChanged();
 		a.mlv1.setSelection(0);
 	}

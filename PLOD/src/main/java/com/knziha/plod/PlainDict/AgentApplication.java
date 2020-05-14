@@ -8,6 +8,7 @@ import com.knziha.filepicker.utils.CMNF;
 import com.knziha.plod.dictionary.Utils.MyIntPair;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.settings.DictOptions;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.slideshow.MddPic;
 import com.knziha.plod.slideshow.MddPicLoaderFactory;
@@ -43,6 +44,7 @@ public class AgentApplication extends Application {
 	HashMap<String, MyIntPair> databaseConext = new HashMap<>();
 	/** 退出全部实例时关闭、清理 */
 	LexicalDBHelper historyCon;
+	
 
 	static {
 		GlideCacheModule.mOnGlideRegistry =

@@ -61,15 +61,9 @@ public class dict_Manager_folderlike extends ListFragment implements dict_manage
 				lastClickedPos[1] = -1;
 				alreadySelectedAll = false;
 				Menu toolbarmenu = a.toolbarmenu;
-				toolbarmenu.getItem(7).setVisible(false);
-				toolbarmenu.getItem(8).setVisible(false);
-				toolbarmenu.getItem(9).setVisible(false);
-				toolbarmenu.getItem(10).setVisible(false);
-				toolbarmenu.getItem(11).setVisible(false);
-				toolbarmenu.getItem(12).setVisible(false);
-				toolbarmenu.getItem(13).setVisible(true);
-				toolbarmenu.getItem(14).setVisible(true);
-				toolbarmenu.getItem(15).setVisible(false);
+				for (int i = 7; i <= 15; i++) {
+					toolbarmenu.getItem(15).setVisible(i==13||i==14);
+				}
 			}
 			adapter.notifyDataSetChanged();
 			return true;
@@ -293,13 +287,13 @@ public class dict_Manager_folderlike extends ListFragment implements dict_manage
 			//	((TextView)v.findViewById(R.id.text)).setText(ssb);
 			//}else
 			String AssetInternalname = null;
-			if(mdTmp.getClass() == mAssetFile.class)
+			if(mdTmp instanceof mAssetFile)
 				AssetInternalname = CMN.AssetMap.get(mdTmp.getAbsolutePath());
 			if(mdTmp.exists() || (AssetInternalname!=null))
 				vh.text.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 			else
 				vh.text.setTextColor(Color.RED);
-			if(a.isSearching && mdTmp.getName().toLowerCase().contains(a.dictQueryWord))
+			if(dict_manager_activity.dictQueryWord!=null && mdTmp.getName().toLowerCase().contains(dict_manager_activity.dictQueryWord))
 				vh.text.setBackgroundResource(R.drawable.xuxian2);
 			else
 				vh.text.setBackground(null);

@@ -8,7 +8,7 @@ import com.knziha.plod.PlainDict.R;
 public class SettingsFragment extends SettingsFragmentBase {
 	@Override
 	public void onClick(View view) {
-		if(view.getId()== R.id.home){
+		if(view.getId()== R.id.home && getActivity() instanceof SettingsActivity){
 			SettingsActivity a = (SettingsActivity) getActivity();
 			a.checkBack();
 			a.finish();

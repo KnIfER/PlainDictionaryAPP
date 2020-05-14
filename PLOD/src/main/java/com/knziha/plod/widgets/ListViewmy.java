@@ -2,21 +2,16 @@ package com.knziha.plod.widgets;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.ListView;
 
 public class ListViewmy extends ListView {
-	public interface OnScrollChangeListener {
-		void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY);
-	}
-	OnScrollChangeListener mOnScrollChangeListener;
+	OnScrollChangedListener mOnScrollChangeListener;
 	public ListViewmy(Context context) {
 		this(context, null);
 	}
 	public ListViewmy(Context context, AttributeSet attrs) {
 		this(context, attrs, android.R.attr.listViewStyle);
 	}
-
 	public ListViewmy(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 	}
@@ -26,8 +21,7 @@ public class ListViewmy extends ListView {
     //    return 50;
     //}
 
-	public void setOnScrollChangeListener(OnScrollChangeListener l) {
-		//super.setOnScrollChangeListener(l);
+	public void setOnScrollChangedListener(OnScrollChangedListener l) {
 		mOnScrollChangeListener=l;
 	}
 
@@ -37,5 +31,4 @@ public class ListViewmy extends ListView {
 		if(mOnScrollChangeListener!=null)
 			mOnScrollChangeListener.onScrollChange(this, l, t, oldl, oldt);
 	}
-
 }

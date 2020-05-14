@@ -67,7 +67,7 @@
 	<string name="surerrecords">確定要刪除所選 %d 的記錄？（不會刪除文件）</string>
 	<string name="applyallset">適用於所有集合</string>
 	<string name="pickdestineFolder">選擇目標文件夾</string>
-	<string name="warn_exit1">[清除歷史記錄]</string>
+	<string name="warn_exit1">清除歷史記錄</string>
 	<string name="loadsucc">加載成功！</string>
 	<string name="renamefail0">名稱無效</string>
 	<string name="search">搜索</string>

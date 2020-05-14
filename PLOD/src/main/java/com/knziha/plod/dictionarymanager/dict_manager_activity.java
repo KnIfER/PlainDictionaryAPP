@@ -2,12 +2,14 @@ package com.knziha.plod.dictionarymanager;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Message;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,14 +31,15 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.ActionMenuView.LayoutParams;
-import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
+import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -49,6 +52,7 @@ import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.utils.FU;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.PlainDict.AgentApplication;
+import com.knziha.plod.PlainDict.BaseHandler;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.PlaceHolder;
@@ -62,8 +66,10 @@ import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
+import com.knziha.plod.dictionarymodels.mdict_nonexist;
 import com.knziha.plod.dictionarymodels.mdict_prempter;
 import com.knziha.plod.dictionarymodels.mdict_transient;
+import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.knziha.plod.widgets.Toastable_FragmentActivity;
 import com.knziha.rbtree.RashSet;
 
@@ -75,7 +81,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.Field;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -92,17 +98,18 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	private HashMap<String, mdict> app_mdict_cache;
 	public HashMap<String,byte[]> UIProjects;
 	public HashSet<String> dirtyMap;
-
+	mdict_nonexist mninstance = new mdict_nonexist();
+	
+	public dict_manager_activity() throws IOException { }
+	
 	public interface transferRunnable{
 		boolean transfer(File to);
 		void afterTransfer();
 	}
 
-	private boolean bIsNoNeedToTakeAfterPW=Build.VERSION.SDK_INT>Build.VERSION_CODES.LOLLIPOP_MR1;
     private ViewGroup toastmaker;
     private Toolbar toolbar;
-    String dictQueryWord;
-    boolean isSearching;
+    static String dictQueryWord;
     private SearchView searchView;
     protected Menu toolbarmenu;
     dict_manager_main f1;
@@ -116,8 +123,6 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	public ArrayList<mdict_transient> mdmng;
     public HashSet<String> mdlibsCon;
 	protected int CurrentPage;
-	//MainActivity a;
-	private boolean isDirty=false;
 
 	@Override
 	public void onBackPressed() {
@@ -173,7 +178,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(def), app.get4kCharBuff(), 4096);
 					String parent = new File(opt.lastMdlibPath).getAbsolutePath() + "/";
 					output.write("[:S]");
-					output.write(Integer.toString(mdmng.size() - f1.rejector.size()));
+					output.write(Integer.toString(mdmng.size()));
 					output.write("\n");
 					for (mdict_manageable mmTmp : mdmng) {
 						writeForOneLine(output, mmTmp, parent);
@@ -232,6 +237,9 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	protected void onDestroy() {
 		super.onDestroy();
 		checkAll();
+		hdl.clearActivity();
+		viewPager.clearOnPageChangeListeners();
+		mTabLayout.clearOnTabSelectedListeners();
 	}
 
 	private void writeForOneLine(Writer out, mdict_manageable mmTmp, String parent) throws IOException {
@@ -269,15 +277,9 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		opt=agent.opt;
 		slots = agent.slots;
 		mdlibsCon=agent.mdlibsCon;
-
 		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.dict_manager_main);
-    	//a = ((MainActivity)CMN.a);
-    	
-		//TypedValue tval = new TypedValue();
-		//if (a.getTheme().resolveAttribute(android.R.attr.actionBarSize, tval, true))
-		//	CMN.actionBarHeight = TypedValue.complexToDimensionPixelSize(tval.data,getResources().getDisplayMetrics());
 		
         getWindowManager().getDefaultDisplay().getMetrics(opt.dm);
 
@@ -297,30 +299,12 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	    String[] tabTitle = {getResources().getString(R.string.currentPlan,0),getResources().getString(R.string.allPlans), "网络词典", "全部词典"};
 	    mFile.parentPath=opt.lastMdlibPath.toLowerCase();
 	    
-		f1 = new dict_manager_main();
-		f2 = new dict_manager_modules();
-		f4 = new dict_manager_websites();
-		f3 = new dict_Manager_folderlike();
-		f1.a=this;
-		f2.a=this;
-		f4.a=this;
-		f3.a=this;
-		fragments.add(f1);
-		fragments.add(f2);
-		fragments.add(f4);
-		fragments.add(f3);
+		fragments.addAll(Arrays.asList(f1 = new dict_manager_main(), f2 = new dict_manager_modules(), f4 = new dict_manager_websites(), f3 = new dict_Manager_folderlike()));
+		f1.a=f2.a=f4.a=f3.a=this;
 
 		f3.oes = new dict_Manager_folderlike.OnEnterSelectionListener() {
 			public void onEnterSelection(){
-				toolbarmenu.getItem(7).setVisible(true);
-				toolbarmenu.getItem(8).setVisible(true);
-				toolbarmenu.getItem(9).setVisible(true);
-				toolbarmenu.getItem(10).setVisible(true);
-				toolbarmenu.getItem(11).setVisible(true);
-				toolbarmenu.getItem(12).setVisible(true);
-				toolbarmenu.getItem(13).setVisible(false);
-				toolbarmenu.getItem(14).setVisible(false);
-				toolbarmenu.getItem(15).setVisible(false);
+				for (int i = 7; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i<=12);
 			}
 			public int addIt(final File fn) {
 				boolean found=false;
@@ -338,7 +322,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				if(!found) {
 					//show("adding new!"+fn.getAbsolutePath());
 					f3.mDslv.post(() -> {
-						mdict_transient mmTmp = new mdict_transient(dict_manager_activity.this, fn.getPath(), opt, 0);
+						mdict_transient mmTmp = new mdict_transient(dict_manager_activity.this, fn.getPath(), opt, 0, mninstance);
 						f1.adapter.add(mmTmp);
 						f1.refreshSize();
 						f1.adapter.notifyDataSetChanged();
@@ -352,77 +336,29 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		FragAdapter adapterf = new FragAdapter(getSupportFragmentManager(), fragments);
 		viewPager.setAdapter(adapterf);
 	    viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTabLayout) {
-	    	@Override
-	    	public void onPageSelected(int page) {
+	    	@Override public void onPageSelected(int page) {
 				Fragment fI = fragments.get(page);
 				viewPager.setOffscreenPageLimit(Math.max(viewPager.getOffscreenPageLimit(), Math.max(1+page, 1)));
 	    		if(fI==f1) {
-	    			toolbarmenu.getItem(0).setVisible(true);
-	    			toolbarmenu.getItem(1).setVisible(true);
-	    			toolbarmenu.getItem(2).setVisible(true);
-	    			toolbarmenu.getItem(3).setVisible(true);
-	    			toolbarmenu.getItem(4).setVisible(true);
-	    			toolbarmenu.getItem(5).setVisible(true);
-	    			toolbarmenu.getItem(6).setVisible(true);
-	    			toolbarmenu.getItem(7).setVisible(false);
-	    			toolbarmenu.getItem(8).setVisible(false);
-	    			toolbarmenu.getItem(9).setVisible(false);
-	    			toolbarmenu.getItem(10).setVisible(false);
-	    			toolbarmenu.getItem(11).setVisible(false);
-	    			toolbarmenu.getItem(12).setVisible(false);
-	    			toolbarmenu.getItem(13).setVisible(false);
-	    			toolbarmenu.getItem(14).setVisible(false);
-					toolbarmenu.getItem(15).setVisible(false);
+					for (int i = 0; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i<=6);
 	    		}
 	    		else if(fI==f2) {
-	    			toolbarmenu.getItem(0).setVisible(true);
-	    			toolbarmenu.getItem(1).setVisible(false);
-	    			toolbarmenu.getItem(2).setVisible(false);
-	    			toolbarmenu.getItem(3).setVisible(true);
-	    			toolbarmenu.getItem(4).setVisible(false);
-	    			toolbarmenu.getItem(5).setVisible(false);
-	    			toolbarmenu.getItem(6).setVisible(false);
-	    			toolbarmenu.getItem(7).setVisible(false);
-	    			toolbarmenu.getItem(8).setVisible(false);
-	    			toolbarmenu.getItem(9).setVisible(false);
-	    			toolbarmenu.getItem(10).setVisible(false);
-	    			toolbarmenu.getItem(11).setVisible(false);
-	    			toolbarmenu.getItem(12).setVisible(false);
-	    			toolbarmenu.getItem(13).setVisible(false);
-	    			toolbarmenu.getItem(14).setVisible(false);
-					toolbarmenu.getItem(15).setVisible(true);
+					for (int i = 0; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i==0||i==3||i==15);
 	    		}
 	    		else if(fI==f3){
-	    			toolbarmenu.getItem(0).setVisible(false);
-	    			toolbarmenu.getItem(1).setVisible(false);
-	    			toolbarmenu.getItem(2).setVisible(false);
-	    			toolbarmenu.getItem(3).setVisible(false);
-	    			toolbarmenu.getItem(4).setVisible(false);
-	    			toolbarmenu.getItem(5).setVisible(false);
-	    			toolbarmenu.getItem(6).setVisible(false);
+					for (int i = 0; i <= 6; i++) toolbarmenu.getItem(i).setVisible(false);
 	    			boolean setter=f3.SelectionMode;
-	    			toolbarmenu.getItem(7).setVisible(setter);
-	    			toolbarmenu.getItem(8).setVisible(setter);
-	    			toolbarmenu.getItem(9).setVisible(setter);
-	    			toolbarmenu.getItem(10).setVisible(setter);
-	    			toolbarmenu.getItem(11).setVisible(setter);
-	    			toolbarmenu.getItem(12).setVisible(setter);
-	    			toolbarmenu.getItem(13).setVisible(!setter);
-	    			toolbarmenu.getItem(14).setVisible(!setter);
+					for (int i = 7; i <= 14; i++) toolbarmenu.getItem(i).setVisible((i <= 12) == setter);
 					toolbarmenu.getItem(15).setVisible(false);
 	    		}
-				//mTabLayout.getTabAt(page).select();
-	    		if(viewPager.getTag()==null)
-	    			viewPager.setTag(false);
-	    		else
-	    			isDirty=true;
 				super.onPageSelected(CurrentPage = page);
 				opt.setDictManagerTap(CurrentPage);
 	    	}
 	    });
-
-	    for (int i=0; i<tabTitle.length; i++)
-            mTabLayout.addTab(mTabLayout.newTab().setText(tabTitle[i]));
+		
+		for (String s : tabTitle) {
+			mTabLayout.addTab(mTabLayout.newTab().setText(s));
+		}
 		mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 			@Override
 			public void onTabSelected(TabLayout.Tab tab) {
@@ -432,97 +368,63 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			@Override public void onTabReselected(TabLayout.Tab tab) {}
         });
 		
-	    mTabLayout.setSelectedTabIndicatorColor(Color.parseColor("#2b4381"));
-	    mTabLayout.setSelectedTabIndicatorHeight(3);
+	    mTabLayout.setSelectedTabIndicatorColor(ColorUtils.blendARGB(CMN.MainBackground, Color.BLACK, 0.28f));
 	    
+	    mTabLayout.setSelectedTabIndicatorHeight((int) (3.8*opt.dm.density));
+	    
+	    //tofo
 	    viewPager.setCurrentItem(CurrentPage = opt.getDictManagerTap());
-	    //if(CurrentPage==2)
-		viewPager.setOffscreenPageLimit(Math.max(viewPager.getOffscreenPageLimit(), 1+CurrentPage));
+		
+	    viewPager.setOffscreenPageLimit(Math.max(viewPager.getOffscreenPageLimit(), 1+CurrentPage));
 
 	    toastmaker =  findViewById(R.id.toastmaker);
- 
-		if(GlobalOptions.isDark)
-			toastmaker.setBackgroundColor(Color.BLACK);
-			
+	    
         toolbar.setOnMenuItemClickListener(this);
         toolbar.setTitleTextColor(Color.WHITE);
-        toolbar.setNavigationIcon(R.drawable.ic_flag_24dp);
-
-        View vTmp = toolbar.getChildAt(toolbar.getChildCount()-1);
-        if(vTmp!=null && vTmp.getClass()==AppCompatImageButton.class) {
-			AppCompatImageButton NavigationIcon = (AppCompatImageButton) vTmp;
-			NavigationIcon.setOnClickListener(v -> {
-				View vTmp1 = LayoutInflater.from(dict_manager_activity.this).inflate(R.layout.simple_add_menu,null);
-				mPopup=new PopupWindow(vTmp1, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT, true);
-				vTmp1.setOnClickListener(v1 -> {
-					mPopup.dismiss(); mPopup=null;
-					onBackPressed();
-				});
-				TextView tv = vTmp1.findViewById(R.id.text1);
-				tv.setText(R.string.exit);
-				tv.setTextColor(Color.WHITE);
-				mPopup.setHeight(v.getHeight()*2/3);
-				mPopup.setWidth(v.getWidth());
-				if(bIsNoNeedToTakeAfterPW) {
-					//mPopup.setTouchModal(true);
-					mPopup.setFocusable(true);
-					mPopup.setOutsideTouchable(false);
-				}else{
-					mPopup.setFocusable(false);
-					mPopup.setOutsideTouchable(false);
-				}
-				mPopup.showAsDropDown(v, 0, -v.getHeight()*5/6, Gravity.TOP|Gravity.START);
-				mPopup.update(v, 0, -v.getHeight()*5/6, -1, -1);
-			});
-        }
+		toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material); //ic_flag_24dp
+		toolbar.setNavigationOnClickListener(v1 -> {
+			onBackPressed();
+		});
         
         toolbar.setTitle(R.string.manager);
-
-
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
+        
  		MenuItem searchItem = toolbarmenu.getItem(16);
  		searchItem.setShowAsAction(2);
  		searchView = (SearchView) searchItem.getActionView();
- 		//searchView.setIconified(true);//设置搜索框直接展开显示。左侧有放大镜(在搜索框中) 右侧有叉叉 可以关闭搜索框
- 		//searchView.onActionViewExpanded();// 当展开无输入内容的时候，没有关闭的图标
- 		//searchView.setIconifiedByDefault(true);//默认为true在框内，设置false则在框外
- 		searchView.setSubmitButtonEnabled(false);//显示提交按钮
+ 		searchView.setSubmitButtonEnabled(false);
         searchView.setOnSearchClickListener(v -> {
-			 LayoutParams lp = new LayoutParams(getResources().getDisplayMetrics().widthPixels-200,-1);//500
-			 lp.setMargins(0, 0, 50, 0);
-			 searchView.setLayoutParams(lp);
-			 });
+        	LayoutParams lp = (LayoutParams) searchView.getLayoutParams();
+			lp.width=getResources().getDisplayMetrics().widthPixels*2/3;
+			lp.setMargins(0, 0, 50, 0);
+			searchView.requestLayout();
+        });
 		searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 	        @Override
 	        public boolean onQueryTextSubmit(String query) {
-	            dictQueryWord = query.trim().toLowerCase();
-	            if(dictQueryWord.equals(""))
-					isSearching = false;
-	            else
-	            	isSearching = true;
+				query = query.trim().toLowerCase();
+	            if(query.equals("")) query=null;
+				dictQueryWord=query;
 	            if(f1.adapter!=null)
 	            	f1.adapter.notifyDataSetChanged();
 	            if(f3.adapter!=null)
 	            	f3.adapter.notifyDataSetChanged();
-
-        		int cc=0;
-	            switch(viewPager.getCurrentItem()){
-	            	case 0:
-	            		for(int i=0;i<f1.adapter.getCount();i++) {
-	            			if(f1.adapter.getItem(i).getName().toLowerCase().contains(dictQueryWord))
-	            				cc++;
-	            		}
-            		break;
-	            	case 2:
-	            		for(int i=0;i<f3.adapter.getCount();i++) {
-	            			if(f3.adapter.getItem(i).getName().toLowerCase().contains(dictQueryWord))
-	            				cc++;
-	            		}
-            		break;
-	            }
-
-	            ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+				if(dictQueryWord!=null){
+					int cc=0;
+					Fragment fI = fragments.get(viewPager.getCurrentItem());
+					if (fI==f1) {
+						for (int i = 0; i < f1.adapter.getCount(); i++) {
+							if (f1.adapter.getItem(i).getName().toLowerCase().contains(query))
+								cc++;
+						}
+					} else if (fI==f3) {
+						for (int i = 0; i < f3.adapter.getCount(); i++) {
+							if (f3.adapter.getItem(i).getName().toLowerCase().contains(query))
+								cc++;
+						}
+					}
+					((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+					showTopSnack(toastmaker, cc==0?getResources().getString(R.string.fn):("找到"+cc+"项"));
+				}
         	    return true;
 	        }
 
@@ -531,45 +433,34 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	            return true;
 	        }
 	    });
-		
 		searchView.setOnCloseListener(() -> {
-			 LayoutParams lp = new LayoutParams(-2,-1);
-			 searchView.setLayoutParams(lp);
-			isSearching = false;
-			if(f1.adapter!=null)
-				f1.adapter.notifyDataSetChanged();
-			if(f3.adapter!=null)
-				f3.adapter.notifyDataSetChanged();
+			dictQueryWord=null;
+			searchView.getLayoutParams().width=-2;
+			searchView.requestLayout();
+			if(f1.adapter!=null) f1.adapter.notifyDataSetChanged();
+			if(f3.adapter!=null) f3.adapter.notifyDataSetChanged();
 			return false;
 		});
-		try {//设置字体颜色 隐藏搜索框内放大镜图标
-			EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
-			searchEditText.setTextColor(Color.WHITE);
-			
-		    Field mDrawable = SearchView.class.getDeclaredField("mSearchHintIcon");
-		    mDrawable.setAccessible(true);
-		    Drawable drawable =  (Drawable)mDrawable.get(searchView);
-		    drawable.setAlpha(0);
-		    
-		    //SearchView.SearchAutoComplete searchAutoComplete = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
-		    //searchAutoComplete.styl
-		    //searchAutoComplete.setEnabled(false);
-		} catch (Exception e) {
-		    e.printStackTrace();
+		if(dictQueryWord!=null){
+			searchView.mSearchSrcTextView.setText(dictQueryWord);
+			searchView.onSearchClicked(false);
 		}
+		searchView.mSearchSrcTextView.setTextColor(Color.WHITE);
+		searchView.mSearchSrcTextView.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 
-		Window window = getWindow();
+		Window win = getWindow();
+		win.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+        win.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
                 | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);  
-        window.getDecorView().setSystemUiVisibility(
+        win.getDecorView().setSystemUiVisibility(
         		View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         if(Build.VERSION.SDK_INT>=21) {
-			window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-	        window.setStatusBarColor(Color.TRANSPARENT);  
-	        window.setNavigationBarColor(Color.BLACK);
+			win.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+	        win.setStatusBarColor(Color.TRANSPARENT);
+	        win.setNavigationBarColor(Color.BLACK);
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				View decorView = window.getDecorView();
+				View decorView = win.getDecorView();
 				int vis = decorView.getSystemUiVisibility();
 				if (false) {
 					vis |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
@@ -804,14 +695,15 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	public boolean isDebug=false;
 	boolean ThisIsDirty;
 
-    public class FragAdapter extends FragmentPagerAdapter {
+    public static class FragAdapter extends FragmentPagerAdapter {
     	private List<Fragment> mFragments;
     	public FragAdapter(FragmentManager fm,List<Fragment> fragments) {
     		super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
     		mFragments=fragments;
     	}
 
-    	@Override
+    	@NonNull
+		@Override
     	public Fragment getItem(int arg0) {
     		return mFragments.get(arg0);
     	}
@@ -826,20 +718,18 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
     /** 另存当前配置 */
     boolean try_write_configureLet(File newf) {
 		try {
-			ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(newf,false), ((AgentApplication)getApplication()).get4kCharBuff(), 4096);
+			AgentApplication app = ((AgentApplication) getApplication());
+			ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(newf,false), app.get4kCharBuff(), 4096);
 			output.write("[:S]");
-			output.write(Integer.toString(mdmng.size()-f1.rejector.size()));
+			output.write(Integer.toString(mdmng.size()));
 			output.write("\n");
+			String parent = new File(opt.lastMdlibPath).getAbsolutePath()+"/";
 			for(mdict_manageable mmTmp:mdmng) {
-				String fn = mmTmp.getPath();
-				String parent = new File(opt.lastMdlibPath).getAbsolutePath()+"/";
-				if (!f1.rejector.contains(fn)) {
-					writeForOneLine(output, mmTmp, parent);
-				}
+				writeForOneLine(output, mmTmp, parent);
 			}
 			output.flush();
 			output.close();
-			((AgentApplication)getApplication()).set4kCharBuff(output.cb);
+			app.set4kCharBuff(output.cb);
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -868,8 +758,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	}
 
 	public void scrollTo(int i) {
-		viewPager.setCurrentItem(0);
-		mTabLayout.getTabAt(0).select();
+		viewPager.setCurrentItem(i);
+		mTabLayout.getTabAt(i).select();
 	}
 
 	@Override
@@ -953,12 +843,15 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				showRenameDialog(oldFn,new transferRunnable() {
 					@Override
 					public boolean transfer(File to) {
-						if(to.exists())//文件覆盖已预先处理。
-							f2.adapter.remove(to.getName().substring(0,to.getName().length()-4));
+						String newItem = to.getName().substring(0,to.getName().length()-4);
+						boolean append=false;
+						if(to.exists()) {//文件覆盖已预先处理。
+							append = f2.adapter.getPosition(newItem)==-1;
+						}
+						
 						boolean ret = try_write_configureLet(to);
 						if(ret) {
-							String name = to.getName();
-							f2.adapter.add(name.substring(0,name.length()-4));
+							if(append) f2.adapter.add(newItem);
 							show(R.string.saveas_done);
 						}
 						return ret;
@@ -1031,7 +924,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 							if (!mdict_cache.containsKey(line)) {
 								mdict_transient m = mdict_cache.get(line);
 								if (m == null)
-									m = new mdict_transient(dict_manager_activity.this, line, opt);
+									m = new mdict_transient(dict_manager_activity.this, line, opt, mninstance);
 								f1.add(m);
 								f1.rejector.add(line);
 								mdict_cache.put(line, m);
@@ -1156,7 +1049,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 								if (m == null)
 									m = mdict_cache.get(key);
 								if (m == null) {
-									m = new mdict_transient(dict_manager_activity.this, key, opt);
+									m = new mdict_transient(dict_manager_activity.this, key, opt, mninstance);
 									mdict_cache.put(key, m);
 								}
 								data.add(Math.min(data.size(), toPos++), m);
@@ -1214,7 +1107,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 							if(m==null){
 								m = mdict_cache.get(key);
 								if(m==null){
-									m = new mdict_transient(dict_manager_activity.this, key, opt);
+									m = new mdict_transient(dict_manager_activity.this, key, opt, mninstance);
 									mdict_cache.put(key, m);
 								}
 								data.add(m);
@@ -1232,22 +1125,29 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			/* 移除 */
             case R.id.toolbar_action10:{
 				if(isLongClicked) {
-					ret=false;break;
-				}
-				int cc1 = 0;
-				for(int i=0;i<mdmng.size();i++) {
-					if(f3.Selection.contains(f1.adapter.getItem(i).getPath())) {
-						f1.rejector.add(f1.adapter.getItem(i).getPath());
-						cc1++;
-						f1.isDirty=true;
+					new AlertDialog.Builder(dict_manager_activity.this)
+							.setTitle(R.string.surerrecords)
+							.setPositiveButton(R.string.confirm, (dialog, which) -> {
+								deleteRecordsHard();
+								dialog.dismiss();
+							})
+					.create().show();
+				} else {
+					int cc1 = 0;
+					for(int i=0;i<mdmng.size();i++) {
+						if(f3.Selection.contains(f1.adapter.getItem(i).getPath())) {
+							f1.rejector.add(f1.adapter.getItem(i).getPath());
+							cc1++;
+							f1.isDirty=true;
+						}
 					}
+					ThisIsDirty=true;
+					f1.refreshSize();
+					showT("移除完毕!("+cc1+"/"+f3.Selection.size()+")");
+					f1.adapter.notifyDataSetChanged();
 				}
-				ThisIsDirty=true;
-				f1.refreshSize();
-				showT("移除完毕!("+cc1+"/"+f3.Selection.size()+")");
-				f1.adapter.notifyDataSetChanged();
 			} break;
-			/* 清除记录 */
+			/* 删除记录 */
             case R.id.toolbar_action11:{
 				if(isLongClicked) {
 					ret=false;break;
@@ -1262,45 +1162,35 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 								for (int i = 0; i < arr1.size(); i++) {
 									removePool.add(arr1.get(i));
 								}
-								for (int i = 0; i < f3.data.size(); i++) {
-									mFile item1 = f3.data.getList().get(i);
-									if (item1.getClass() == mAssetFile.class)
+								ArrayList<mFile> list = f3.data.getList();
+								int s2 = list.size();
+								for (int i = 0; i < s2; i++) {
+									mFile item1 = list.get(i);
+									if (item1 instanceof mAssetFile)
 										continue;
 									if (item1.isDirectory())
 										continue;
 									if (removePool.contains(item1.getAbsolutePath())) {
-										//if(item.getClass()==mAssetFile.class) {
-										//	removePool.remove(item.getAbsolutePath());
-										//	continue;
-										//}
-										f3.data.getList().remove(i);
-										i--;
+										list.remove(i--);
+										s2--;
 										mdlibsCon.remove(mFile.tryDeScion(item1, opt.lastMdlibPath));
 										f3.isDirty = true;
 										mFile p = item1.getParentFile();
 										if (p != null) {
 											int idx = f3.data.indexOf(p);
 											if (idx != -1)
-												if (idx == f3.data.size() - 1 || !mFile.isDirScionOf(f3.data.getList().get(idx + 1), p))
-													f3.data.getList().remove(idx);
+												if (idx == s2 - 1 || !mFile.isDirScionOf(list.get(idx + 1), p)){
+													list.remove(i--);
+													s2--;
+												}
 										}
 									}
 								}
-								f3.adapter.notifyDataSetChanged();
-								onMenuItemClick(toolbarmenu.getItem(10));
+								deleteRecordsHard();
 
 								ArrayList<File> moduleFullScannerArr;
 								if (((CheckBox) dv.findViewById(R.id.ck)).isChecked()) {
-									File[] moduleFullScanner = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(new FileFilter() {
-										@Override
-										public boolean accept(File pathname) {
-											String name = pathname.getName();
-											if (name.endsWith(".set")) {
-												return true;
-											}
-											return false;
-										}
-									});
+									File[] moduleFullScanner = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> pathname.getPath().endsWith(".set"));
 									moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
 								} else
 									moduleFullScannerArr = new ArrayList<>();
@@ -1394,7 +1284,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 									mdict_manageable mmTmp = mdict_cache.get(sI);
 									if (mmTmp == null) {
 										try {
-											mmTmp = new mdict_prempter(dict_manager_activity.this, sI, opt);
+											mmTmp = new mdict_prempter(dict_manager_activity.this, sI, opt, mninstance);
 										} catch (IOException e) {
 											e.printStackTrace();
 										}
@@ -1581,8 +1471,35 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			toolbar.getMenu().close();
 		return ret;
 	}
-
-
+	
+	private void deleteRecordsHard() {
+		int cc1 = 0;
+		int size = mdmng.size();
+		int total = f3.Selection.size();
+		for(int i=0;i<size;i++) {
+			if(f3.Selection.remove(mdmng.get(i).getPath())) {
+				mdmng.remove(i--);
+				size--;
+				cc1++;
+				f1.isDirty=true;
+			}
+		}
+		if(f3.Selection.size()>0){
+			ArrayList<mFile> list = f3.data.getList();
+			int s2 = list.size();
+			for (int i = 0; i < s2; i++) {
+				if(f3.Selection.contains(list.get(i).getPath()))
+					total--;
+			}
+		}
+		ThisIsDirty=true;
+		f1.refreshSize();
+		showT("移除完毕!("+cc1+"/"+total+")");
+		f1.adapter.notifyDataSetChanged();
+		f3.adapter.notifyDataSetChanged();
+	}
+	
+	
 	protected void do_Load_managee(ReusableBufferedReader in) throws IOException {
 		String line;
 		int cc=0;
@@ -1624,16 +1541,120 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				line = opt.lastMdlibPath + "/" + line;
 			mdict_transient mmtmp = mdict_cache.get(line);
 			if (mmtmp == null)
-				mmtmp = new mdict_transient(dict_manager_activity.this, line, opt, 0);
+				mmtmp = new mdict_transient(dict_manager_activity.this, line, opt, 0, mninstance);
 			if(!mmtmp.isMddResource()) flag&=~0x4;
 			mmtmp.setTmpIsFlag(flag);
 			mdmng.add(mmtmp);
 		}
 		in.close();
 	}
-
+	
+	void showTopSnack(ViewGroup parentView, Object messageVal) {
+		if(topsnack==null){
+			topsnack = new SimpleTextNotifier(getBaseContext());
+			Resources res = getResources();
+			topsnack.setTextColor(Color.WHITE);
+			topsnack.setBackgroundColor(res.getColor(R.color.colorHeaderBlueT));
+			int pad = (int) res.getDimension(R.dimen.design_snackbar_padding_horizontal);
+			topsnack.setPadding(pad,pad/2,pad,pad/2);
+			topsnack.getBackground().setAlpha((int) (0.5*255));
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				topsnack.setElevation(res.getDimension(R.dimen.design_snackbar_elevation));
+			}
+		}
+		else{
+			topsnack.removeCallbacks(snackRemover);
+			topsnack.setAlpha(1);
+		}
+		if(messageVal instanceof Integer) {
+			topsnack.setText((int) messageVal);
+			topsnack.setTag(messageVal);
+		}else {
+			topsnack.setText(String.valueOf(messageVal));
+			topsnack.setTag(null);
+		}
+		topsnack.setGravity(Gravity.CENTER);
+		ViewGroup sp = (ViewGroup) topsnack.getParent();
+		if(sp!=parentView) {
+			if(sp!=null) sp.removeView(topsnack);
+			topsnack.setVisibility(View.INVISIBLE);
+			parentView.addView(topsnack);
+			ViewGroup.LayoutParams lp = topsnack.getLayoutParams();
+			lp.height=-2;
+			topsnack.post(snackWorker);
+		}else{
+			topsnack.removeCallbacks(snackWorker);
+			snackWorker.run();
+		}
+	}
+	
+	public BaseHandler hdl = new MyHandler(this);
+	boolean animationSnackOut;
+	SimpleTextNotifier topsnack;
+	final int NextSnackLength = 1500;
+	
+	Runnable snackWorker = () -> {
+		hdl.sendEmptyMessage(6657);
+		hdl.removeMessages(6658);
+		int height = topsnack.getHeight();
+		if(height>0){
+			if(topsnack.offset>0 || topsnack.offset<-height)
+				topsnack.offset=-height;
+			else
+				topsnack.offset=Math.min(-height/3, topsnack.offset);
+			topsnack.setTranslationY(topsnack.offset);
+			topsnack.setVisibility(View.VISIBLE);
+			hdl.animator=0.1f;
+			hdl.animatorD=0.08f*height;
+			hdl.sendEmptyMessage(6657);
+		}
+	};
+	
+	Runnable snackRemover= () -> {
+		if(topsnack!=null && topsnack.getParent()!=null)
+			((ViewGroup)topsnack.getParent()).removeView(topsnack);
+	};
+	
+	void removeSnackView(){
+		topsnack.removeCallbacks(snackRemover);
+		topsnack.postDelayed(snackRemover, 2000);
+	}
+	
+	private static class MyHandler extends BaseHandler {
+		private final WeakReference<dict_manager_activity> activity;
+		MyHandler(dict_manager_activity a) { this.activity = new WeakReference<>(a); }
+		@Override public void clearActivity() { activity.clear(); }
+		@Override public void handleMessage(@NonNull Message msg) {
+			dict_manager_activity a = activity.get();
+			if(a==null) return;
+			if (msg.what == 6657) {
+				removeMessages(6657);
+				a.topsnack.offset += animatorD;
+				if (a.topsnack.offset < 0)
+					sendEmptyMessage(6657);
+				else {
+					a.topsnack.offset = 0;
+					a.animationSnackOut = true;
+					sendEmptyMessageDelayed(6658, a.NextSnackLength);
+				}
+				a.topsnack.setTranslationY(a.topsnack.offset);
+			} else if (msg.what == 6658) {
+				removeMessages(6658);
+				if (a.animationSnackOut) {
+					a.topsnack.offset -= animatorD;
+					if (a.topsnack.offset > -(a.topsnack.getHeight() + 8 * a.opt.dm.density))
+						sendEmptyMessage(6658);
+					else {
+						a.removeSnackView();
+						return;
+					}
+					a.topsnack.setTranslationY(a.topsnack.offset);
+				}
+			}
+		}
+	}
+	
 	public void RebasePath(File oldPath, String OldFName, File newPath, String MoveOrRename, String oldName){
-
     	mdict mdTmp = app_mdict_cache.remove(oldPath.getPath());
 		File p = oldPath.getParentFile();
 		File p2 = newPath.getParentFile();

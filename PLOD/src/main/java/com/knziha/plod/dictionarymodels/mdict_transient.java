@@ -3,25 +3,23 @@ package com.knziha.plod.dictionarymodels;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.util.SparseArray;
+
+import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.filepicker.utils.FU;
 import com.knziha.plod.PlainDict.AgentApplication;
 import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.widgets.WebViewmy;
 
-import org.apache.commons.lang3.ArrayUtils;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -29,7 +27,7 @@ import java.util.List;
  data:2020.01.12
  author:KnIfER
 */
-public class mdict_transient implements mdict_manageable {
+public class mdict_transient implements mdict_manageable{
 	public PlaceHolder mPhI;
 	protected File f;
 	public String _Dictionary_fName_Internal;
@@ -39,7 +37,18 @@ public class mdict_transient implements mdict_manageable {
 	long firstFlag;
 	List<mdictRes_prempter> mdd;
 	boolean keepOrgHolder=true;
-
+	
+	public final PhotoBrowsingContext IBC = new PhotoBrowsingContext();
+	public Integer bgColor=null;
+	public int TIBGColor;
+	public int TIFGColor;
+	public int internalScaleLevel=-1;
+	public int lvPos,lvClickPos,lvPosOff;
+	private float webScale;
+	public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
+	final mdict_nonexist MNINSTANCE;
+	public boolean isDirty;
+	
 	public void Rebase(File f){
 		CMN.Log("MT0Rebase!!!");
 		if(keepOrgHolder){
@@ -64,18 +73,19 @@ public class mdict_transient implements mdict_manageable {
 	}
 
 	//构造
-	public mdict_transient(Activity a, String fn, PDICMainAppOptions opt_) {
-		this(a, fn, opt_, 0);
+	public mdict_transient(Activity a, String fn, PDICMainAppOptions opt_, mdict_nonexist mninstance) {
+		this(a, fn, opt_, 0, mninstance);
 	}
 
-	public mdict_transient(Activity a,String fn, PDICMainAppOptions opt_, int isF) {
-		this(a, new PlaceHolder(fn), opt_);
+	public mdict_transient(Activity a, String fn, PDICMainAppOptions opt_, int isF, mdict_nonexist mninstance) {
+		this(a, new PlaceHolder(fn), opt_, mninstance);
 		mPhI.tmpIsFlag=TIFStamp=isF;
 	}
 
-	public mdict_transient(Activity a,PlaceHolder phI, PDICMainAppOptions opt_) {
+	public mdict_transient(Activity a, PlaceHolder phI, PDICMainAppOptions opt_, mdict_nonexist mninstance) {
 		opt=opt_;
 		mPhI = phI;
+		MNINSTANCE = mninstance;
 		String fn = mPhI.getPath(opt);
 		f = new File(fn);
 		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
@@ -84,8 +94,26 @@ public class mdict_transient implements mdict_manageable {
 		justifyInternal(a, "."+mPhI.name);
 		
 		try {
-			readInConfigs(((AgentApplication)a.getApplication()).UIProjects);
-		} catch (IOException ignored) { }
+			mninstance.opt=opt;
+			MNINSTANCE._Dictionary_fName_Internal=_Dictionary_fName_Internal;
+			MNINSTANCE._Dictionary_fName=mPhI.name;
+			MNINSTANCE.IBC=IBC;
+			MNINSTANCE.updateFile(f);
+			MNINSTANCE.avoyager=avoyager;
+			MNINSTANCE.readInConfigs(((AgentApplication)a.getApplication()).UIProjects);
+			bgColor=MNINSTANCE.bgColor;
+			TIBGColor=MNINSTANCE.TIBGColor;
+			TIFGColor=MNINSTANCE.TIFGColor;
+			internalScaleLevel=MNINSTANCE.internalScaleLevel;
+			lvPos=MNINSTANCE.lvPos;
+			lvClickPos=MNINSTANCE.lvClickPos;
+			lvPosOff=MNINSTANCE.lvPosOff;
+			webScale=MNINSTANCE.webScale;
+			firstFlag=MNINSTANCE.firstFlag;
+		} catch (IOException e) {
+			if(GlobalOptions.debug) CMN.Log(e);
+		}
+		FFStamp=firstFlag;
 		TIFStamp=mPhI.tmpIsFlag;
 	}
 
@@ -96,56 +124,6 @@ public class mdict_transient implements mdict_manageable {
 		//CMN.Log("移动??", from, to, from.exists());
 		if(from.exists()){
 			FU.move3(a, from, to);
-		}
-	}
-	
-	protected void readInConfigs(HashMap<String,byte[]> UIProjects) throws IOException {
-		DataInputStream data_in1 = null;
-		try {
-			File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
-			if(SpecificationFile.exists()) {
-				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
-				if(CMN.bForbidOneSpecFile  && SpecificationFile.exists()){
-					data_in1 = new DataInputStream(new FileInputStream(SpecificationFile));
-				} else {
-					SpecificationFile.delete();
-					File parentFile = SpecificationFile.getParentFile();
-					if(ArrayUtils.isEmpty(parentFile.list()))
-						parentFile.delete();
-					byte[] data = UIProjects.get(f.getName());
-					if(data!=null){
-						int extra = MainActivityUIBase.ConfigExtra;
-						data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
-					}
-				}
-				if(data_in1!=null) {
-					int size = data_in1.readShort();
-					if (CMN.bForbidOneSpecFile && size != 12) {
-						data_in1.close();
-						SpecificationFile.delete();
-						return;
-					}
-					byte _firstFlag = data_in1.readByte();
-					if (_firstFlag != 0) {
-						firstFlag |= _firstFlag;
-					}
-					//readinoptions
-					//a.showT("getUseInternalBG():"+getUseInternalBG()+" getUseInternalFS():"+getUseInternalFS()+" KeycaseStrategy:"+KeycaseStrategy);
-					if (data_in1.available() > 4) {
-						if (data_in1.skipBytes(32) == 32 && data_in1.available() > 0) {
-							CMN.Log("摄政傀儡");
-							firstFlag |= data_in1.readLong();
-						}
-					}
-					//CMN.Log(_Dictionary_fName+"页面位置",expectedPosX,expectedPos,webScale);
-					//CMN.Log(_Dictionary_fName+"单典配置加载耗时",System.currentTimeMillis()-time);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally{
-			FFStamp = firstFlag;
-			if(data_in1!=null) data_in1.close();
 		}
 	}
 
@@ -207,12 +185,7 @@ public class mdict_transient implements mdict_manageable {
 	public int getTmpIsFlag() {
 		return mPhI.tmpIsFlag;
 	}
-
-	@Override
-	public boolean getIsDedicatedFilter() {
-		return (firstFlag & 0x40) == 0x40;
-	}
-
+	
 	public boolean isMdictFile() {
 		return !mPhI.pathname.endsWith(mPhI.name);
 	}
@@ -242,31 +215,29 @@ public class mdict_transient implements mdict_manageable {
 	}
 
 	@Override
-	public void checkFlag() {
-		if(FFStamp!=firstFlag){
+	public void checkFlag(Activity context) {
+		if(isDirty||firstFlag!=FFStamp){
 			String path = getPath();
-			if(!path.endsWith(".web"))
-				WriteConfigFF();
-//			if(opt.ChangedMap==null) opt.ChangedMap=new HashMap<>();
-//			opt.ChangedMap.put(path, FFStamp=firstFlag);
-		}
-	}
-
-	protected void WriteConfigFF() {
-		//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM lv[int int int] page[int int float]
-		try {
-			File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
-			CMN.Log("保存标志容器中…", mPhI.name, SpecificationFile.getAbsolutePath());
-			if(!SpecificationFile.getParentFile().exists())
-				SpecificationFile.getParentFile().mkdirs();
-			RandomAccessFile outputter = new RandomAccessFile(SpecificationFile, "rw");
-			outputter.seek(35);
-			if(outputter.getFilePointer()==35){
-				outputter.writeLong(FFStamp=firstFlag);
-			}
-			outputter.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+			if(PDICMainAppOptions.ChangedMap ==null) PDICMainAppOptions.ChangedMap =new HashSet<>();
+			PDICMainAppOptions.ChangedMap.add(path);
+			
+			MNINSTANCE._Dictionary_fName_Internal=_Dictionary_fName_Internal;
+			MNINSTANCE._Dictionary_fName=mPhI.name;
+			MNINSTANCE.IBC=IBC;
+			MNINSTANCE.updateFile(f);
+			MNINSTANCE.avoyager=avoyager;
+			
+			MNINSTANCE.bgColor=bgColor;
+			MNINSTANCE.TIBGColor=TIBGColor;
+			MNINSTANCE.internalScaleLevel=internalScaleLevel;
+			MNINSTANCE.lvPos=lvPos;
+			MNINSTANCE.lvClickPos=lvClickPos;
+			MNINSTANCE.lvPosOff=lvPosOff;
+			MNINSTANCE.webScale=webScale;
+			MNINSTANCE.firstFlag=firstFlag;
+			MNINSTANCE.dumpViewStates(((AgentApplication)context.getApplication()).UIProjects);
+			FFStamp=firstFlag;
+			isDirty=false;
 		}
 	}
 
@@ -274,7 +245,12 @@ public class mdict_transient implements mdict_manageable {
 	public long getFirstFlag() {
 		return firstFlag;
 	}
-
+	
+	@Override
+	public void setFirstFlag(long val){
+		firstFlag = val;
+	}
+	
 	@Override
 	public void validifyValueForFlag(WebViewmy view, int val, int mask, int flagPosition, int pid) {
 		firstFlag &= ~(mask << flagPosition);

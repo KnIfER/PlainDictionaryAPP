@@ -10,12 +10,9 @@
     <item type="id" name="sub_list2" />
     <item type="id" name="deld" />
 	<item name="click_handled" type="id" />
-	<item name="disallow_scroll" type="id" />
 	<item name="virtualID" type="id" />
 	<item name="positionID" type="id" />
 	<item name="dictName" type="id" />
-	<item name="loading" type="id" />
-	<item name="clicksearch" type="id" />
 	<item name="clearHistory" type="id" />
 	<item name="text_tools" type="id" />
 	<item name="long_clicked" type="id" />

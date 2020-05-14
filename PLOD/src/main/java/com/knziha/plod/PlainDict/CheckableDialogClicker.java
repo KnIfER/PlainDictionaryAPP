@@ -13,7 +13,7 @@ class CheckableDialogClicker implements View.OnClickListener {
 	@Override
 	public void onClick(View v) {
 		if(v instanceof CheckedTextView) {
-			boolean PeruseIncharge = v.getTag(R.id.position) != null;
+			boolean PeruseIncharge = v.getTag() != null;
 			CheckedTextView cb = (CheckedTextView) v;
 			cb.toggle();
 			boolean val = cb.isChecked();

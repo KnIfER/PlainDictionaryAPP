@@ -12,6 +12,7 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import com.knziha.filepicker.settings.FileChooser;
 import com.knziha.filepicker.settings.FilePickerOptions;
+import com.knziha.plod.PlainDict.AgentApplication;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.CrashHandler;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;

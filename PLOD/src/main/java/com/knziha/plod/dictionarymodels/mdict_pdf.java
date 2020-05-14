@@ -197,7 +197,7 @@ public class mdict_pdf extends mdict {
 
 		htmlBuilder=new StringBuilder();
 
-		readInConfigs();
+		readInConfigs(a.UIProjects);
 
 		if(bgColor==null)
 			bgColor= com.knziha.plod.PlainDict.CMN.GlobalPageBackground;

@@ -23,7 +23,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
-import android.text.Html;
+
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
@@ -74,7 +74,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
 				int tmpPos = a.currentClick_adapter_idx;
 				a.CCD=a.md_get(position);
 				a.CCD_ID=a.currentClick_adapter_idx = position;
-				a.popupWord(a.popupTextView.getText().toString(),-1,-1,-1);
+				a.popupWord(a.popupTextView.getText().toString(),-1, -1);
 				mAdapter.notifyItemChanged(tmpPos);
 				mAdapter.notifyItemChanged(position);
 				if(a instanceof PDICMainActivity){

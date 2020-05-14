@@ -2,33 +2,47 @@ package com.knziha.plod.PlainDict;
 
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
+import android.text.SpannableStringBuilder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.CheckedTextView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.GlobalOptions;
 
 import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.knziha.ankislicer.customviews.ShelfLinearLayout;
 import com.knziha.filepicker.widget.CircleCheckBox;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.mobeta.android.dslv.DragSortListView;
 
 import static com.knziha.plod.PlainDict.Toastable_Activity.FLASH_DURATION_MS;
 
-class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListener, DragSortListView.DragSortListener, View.OnLongClickListener {
+class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListener, DragSortListView.DragSortListener, View.OnLongClickListener{
 	private final AlertDialog dialog;
 	private final MainActivityUIBase a;
 	private final PDICMainAppOptions opt;
 	public PDICMainActivity.AppUIProject projectContext;
 	public static int StateCount=2;
 	public boolean isDirty;
-
+	public Drawable switch_landscape;
+	PorterDuffColorFilter darkMask = new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
+	private String[] customize_ctn;
+	
 	public BottombarTweakerAdapter(AlertDialog d, MainActivityUIBase _a) {
 		dialog = d;
 		opt = _a.opt;
 		a = _a;
+		switch_landscape = _a.getResources().getDrawable(R.drawable.ic_screen_rotation_black_24dp);
 	}
 
 	public String MakeProject(){
@@ -71,14 +85,52 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 		vh.ccb_icon.setDrawable(0, res.getDrawable(projectContext.icons[id]));
 		vh.ccb_toggle.setChecked(item.tmpIsFlag,false);
 		vh.position = position;
+		vh.itemView.getBackground().setAlpha(GlobalOptions.isDark?15:255);
 		return vh.itemView;
 	}
 
 	@Override
 	public boolean onLongClick(View v) {
-		switch (v.getId()){
+		int id = v.getId();
+		switch (id){
+			default:
+				int currentType = projectContext.type;
+				if(currentType>=0){
+					int bottombar_copy_from=0;
+					if(id == R.id.customise_peruse_bar){
+						bottombar_copy_from=1;
+					} else if(id == R.id.customise_float_bar){
+						bottombar_copy_from=2;
+					}
+					if(bottombar_copy_from!=currentType){
+						String copy_from = a.getResources().getStringArray(R.array.bottombar_types)[bottombar_copy_from+1];
+						String copy_to = a.getResources().getStringArray(R.array.bottombar_types)[currentType+1];
+						int final_Bottombar_copy_from = bottombar_copy_from;
+						
+						String[] DictOpt = a.getResources().getStringArray(R.array.appbar_conf);
+						final String[] Coef = DictOpt[0].split("_");
+						final SpannableStringBuilder ssb = new SpannableStringBuilder();
+						
+						TextView tv = a.buildStandardConfigDialog(a, false, v12 -> {
+							opt.linkContentbarProject(currentType, final_Bottombar_copy_from);
+							projectContext.currentValue = opt.getAppContentBarProject(currentType);
+							isDirty = false;
+							projectContext.instantiate(customize_ctn);
+							notifyDataSetChanged();
+							a.showX(opt.getLinkContentBarProj()?R.string.linkedft:R.string.copyedft, Toast.LENGTH_LONG, copy_to, copy_from);
+						}, R.string.warn_copyconfrom, copy_from);
+						
+						a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 41, 1, 4, -1, true);
+						ssb.delete(ssb.length()-4,ssb.length());
+						
+						tv.setText(ssb, TextView.BufferType.SPANNABLE);
+						((AlertDialog) tv.getTag()).show();
+						tv.setTag(null);
+					}
+				}
+			break;
 			case DialogInterface.BUTTON_POSITIVE:{
-
+			
 			} break;
 			case DialogInterface.BUTTON_NEGATIVE:{
 				if(StateCount==2){
@@ -91,28 +143,32 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 		}
 		return true;
 	}
-
+	
 	@Override
 	public void onClick(View v) {
-		switch (v.getId()){
+		int id = v.getId();
+		switch (id){
 			case R.id.customise_main_bar:{
 				if(isDirty){
 					checkCurrentProject(v);
 					break;
 				}
-				ShelfLinearLayout sideBar = (ShelfLinearLayout) v.getParent();
 				if(a instanceof PDICMainActivity){
 					PDICMainActivity aa = (PDICMainActivity) a;
+					
 					if(aa.bottombar_project==null)
 						aa.bottombar_project = new MainActivityUIBase.AppUIProject("btmprj", aa.BottombarBtnIcons, aa.BottombarBtnIds, opt.getAppBottomBarProject(), aa.bottombar, aa.BottombarBtns);
+					
 					if(aa.bottombar_project.iconData==null)
 						aa.bottombar_project.instantiate(aa.getResources().getStringArray(R.array.customize_btm));
+					
 					projectContext=aa.bottombar_project;
-					sideBar.setRbyView(v);
-					a.showTopSnack(dialog.findViewById(R.id.snack_holder), "主程序", 0.6f, FLASH_DURATION_MS, -1,true);
+					((ShelfLinearLayout) v.getParent()).setRbyView(v);
+					dialog.setTitle("定制底栏-主程序");
 					notifyDataSetChanged();
-				} else {
-
+				}
+				else {
+					//tofo 跳转至主界面？
 				}
 			} break;
 			case R.id.customise_main_content_bar:{
@@ -120,19 +176,66 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 					checkCurrentProject(v);
 					break;
 				}
-				ShelfLinearLayout sideBar = (ShelfLinearLayout) v.getParent();
-				if(a.contentbar_project==null)
-					a.contentbar_project = new MainActivityUIBase.AppUIProject(a.cbar_key, a.ContentbarBtnIcons, a.ContentbarBtnIds, opt.getAppContentBarProject(a.cbar_key), a.bottombar2, a.ContentbarBtns);
-				if(a.contentbar_project.iconData==null)
-					a.contentbar_project.instantiate(a.getResources().getStringArray(R.array.customize_ctn));
-				projectContext=a.contentbar_project;
-				sideBar.setRbyView(v);
-				a.showTopSnack(dialog.findViewById(R.id.snack_holder), "主程序-解释页面", 0.6f, FLASH_DURATION_MS, -1,true);
+				
+				int bottombar_from=0;
+				if(id == R.id.customise_peruse_bar){
+					bottombar_from=1;
+				} else if(id == R.id.customise_float_bar){
+					bottombar_from=2;
+				}
+				
+				
+				MainActivityUIBase.AppUIProject projectContext=null;
+				
+				boolean isProjHost = bottombar_from==0?a instanceof PDICMainActivity:a instanceof FloatSearchActivity;
+				if(isProjHost){
+					projectContext = a.contentbar_project;
+				}
+				if(projectContext==null){
+					projectContext = new MainActivityUIBase.AppUIProject(0, a.opt, a.ContentbarBtnIcons, a.ContentbarBtnIds, isProjHost?a.bottombar2:null, isProjHost?a.ContentbarBtns:null);
+					if(isProjHost){
+						a.contentbar_project = projectContext;
+					}
+				}
+				if(projectContext.iconData==null){
+					if(customize_ctn==null)
+						customize_ctn=a.getResources().getStringArray(R.array.customize_ctn);
+					projectContext.instantiate(customize_ctn);
+				}
+				
+				this.projectContext = projectContext;
+				((ShelfLinearLayout) v.getParent()).setRbyView(v);
+				dialog.setTitle("定制底栏-"+a.getResources().getStringArray(R.array.bottombar_types)[bottombar_from+1]);
+				notifyDataSetChanged();
+			} break;
+			case R.id.customise_peruse_bar:{
+				if(isDirty){
+					checkCurrentProject(v);
+					break;
+				}
+				MainActivityUIBase.AppUIProject projectContext = a.peruseview_project;
+				if(projectContext==null){
+					projectContext = new MainActivityUIBase.AppUIProject(1, a.opt, a.ContentbarBtnIcons, a.ContentbarBtnIds, null, null);
+					a.peruseview_project = projectContext;
+				}
+				if(a.PeruseView != null && projectContext.btns==null){
+					projectContext.bottombar = a.PeruseView.bottombar2;
+					projectContext.btns = a.PeruseView.ContentbarBtns;
+				}
+				if(projectContext.iconData==null){
+					if(customize_ctn==null)
+						customize_ctn=a.getResources().getStringArray(R.array.customize_ctn);
+					projectContext.instantiate(customize_ctn);
+				}
+				
+				this.projectContext = projectContext;
+				((ShelfLinearLayout) v.getParent()).setRbyView(v);
+				dialog.setTitle("定制底栏-翻阅模式");
 				notifyDataSetChanged();
 			} break;
 			case DialogInterface.BUTTON_POSITIVE:{
 				if(projectContext==null) return;
-				checkCurrentProjectInternal();
+				checkCurrentProjectInternal(null);
 				dialog.dismiss();
 			} break;
 			case DialogInterface.BUTTON_NEGATIVE:{
@@ -162,15 +265,15 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 	}
 
 	void checkCurrentProject(View v) {
-		if(v!=null && projectContext!=null && !MakeProject().equals(projectContext.currentValue)){
+		String val = MakeProject();
+		if(v!=null && projectContext!=null && !val.equals(projectContext.currentValue)){
 			DialogInterface.OnClickListener ocl = (dialog, which) -> {
 				if (which == DialogInterface.BUTTON_POSITIVE) {
-					checkCurrentProjectInternal();
-					v.performClick();
+					checkCurrentProjectInternal(val);
 				} else if (which == DialogInterface.BUTTON_NEGATIVE) {
 					clearCurrentProject();
-					v.performClick();
 				}
+				v.performClick();
 				dialog.dismiss();
 			};
 			new AlertDialog.Builder(a)
@@ -180,7 +283,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 				.setNeutralButton(R.string.cancel, ocl)
 				.create().show();
 		} else {
-			checkCurrentProjectInternal();
+			checkCurrentProjectInternal(val);
 		}
 	}
 
@@ -193,19 +296,33 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 		isDirty=false;
 	}
 
-	void checkCurrentProjectInternal() {
+	void checkCurrentProjectInternal(String newVal) {
 		if(isDirty){
-			String val = MakeProject();
-			boolean bNeedSave = !val.equals(projectContext.currentValue);
+			if(newVal==null) newVal = MakeProject();
+			boolean bNeedSave = !newVal.equals(projectContext.currentValue);
 			if(bNeedSave){
-				projectContext.currentValue=val;
-				a.RebuildBottombarIcons(projectContext, a.mConfiguration);
+				projectContext.currentValue=newVal;
+				if(projectContext.bottombar!=null){
+					a.RebuildBottombarIcons(projectContext, a.mConfiguration);
+				}
+				if(projectContext.type>=0){
+					checkReferncedChange(a.contentbar_project, newVal);
+					checkReferncedChange(a.peruseview_project, newVal);
+				}
 				opt.putAppProject(projectContext);
 			}
 			isDirty=false;
 		}
 	}
-
+	
+	private void checkReferncedChange(MainActivityUIBase.AppUIProject checkNow, String newVal) {
+		if(checkNow!=null && checkNow!=projectContext && opt.isAppContentBarProjectReferTo(checkNow.key, projectContext.type)){
+			checkNow.currentValue=newVal;
+			checkNow.clear();
+			a.RebuildBottombarIcons(checkNow, a.mConfiguration);
+		}
+	}
+	
 	@Override
 	public void drag(int from, int to) {
 
@@ -223,7 +340,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 	}
 	@Override
 	public void remove(int which) {  }
-
+	
 	static class ViewHolder{
 		ViewHolder(ViewGroup v, BottombarTweakerAdapter biantai){
 			itemView=(ViewGroup)LayoutInflater.from(v.getContext()).inflate(R.layout.circle_checker_item, v, false);
@@ -236,9 +353,9 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 			ccb_icon.setOnClickListener(biantai);
 
 			ccb_toggle = (CircleCheckBox) itemView.getChildAt(1);
-			ccb_toggle.addStateWithDrawable(itemView.getResources().getDrawable(R.drawable.ic_screen_rotation_black_24dp).mutate());
 			ccb_toggle.drawIconForEmptyState=false;
 			ccb_toggle.circle_shrinkage=0.75f*biantai.opt.dm.density;
+			ccb_toggle.addStateWithDrawable(biantai.switch_landscape);
 			ccb_toggle.setOnClickListener(biantai);
 
 			tv = (TextView) itemView.getChildAt(2);

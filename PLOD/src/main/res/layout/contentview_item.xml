@@ -11,13 +11,13 @@
 		android:background="@drawable/progressbar"
 		android:paddingTop="0dp"
 		>
-		<ImageView
+		<com.knziha.plod.widgets.FtagImageView
 			android:id="@+id/cover"
 			android:layout_width="@dimen/dtcover"
 			android:layout_height="@dimen/dtcover"
 			android:layout_gravity="center_vertical"
-			android:background="@drawable/cover"
-			android:layout_marginLeft="@dimen/dtcoverL"
+			android:background="@drawable/title_cover"
+			android:layout_marginStart="@dimen/dtcoverL"
 			/>
 		<com.knziha.plod.widgets.SelectiveClickableTextView
 			android:id="@+id/toolbar_title"
@@ -114,7 +114,7 @@
 	<com.knziha.plod.widgets.AdvancedNestScrollWebView
 		android:id="@+id/webviewmy"
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
+		android:layout_height="match_parent"
 		android:fadingEdge="vertical"
 		android:overScrollMode="never"
 		android:focusable="true"

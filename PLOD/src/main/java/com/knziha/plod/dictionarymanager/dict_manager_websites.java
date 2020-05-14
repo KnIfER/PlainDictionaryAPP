@@ -222,7 +222,7 @@ public class dict_manager_websites extends ListFragment {
 				vh.text.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 			else
 				vh.text.setTextColor(Color.RED);
-			if(a.isSearching && mdTmp.getName().toLowerCase().contains(a.dictQueryWord))
+			if(dict_manager_activity.dictQueryWord!=null && mdTmp.getName().toLowerCase().contains(a.dictQueryWord))
 				vh.text.setBackgroundResource(R.drawable.xuxian2);
 			else
 				vh.text.setBackground(null);

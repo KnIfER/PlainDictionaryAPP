@@ -112,5 +112,6 @@
 		android:id="@+id/action_search"
 		android:title="menu_search"
 		app:actionViewClass="androidx.appcompat.widget.SearchView"
-		android:showAsAction="always"/>
+		android:showAsAction="always"
+		/>
 </menu>

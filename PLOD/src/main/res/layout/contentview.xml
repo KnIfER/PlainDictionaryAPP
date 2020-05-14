@@ -1,16 +1,15 @@
-<com.knziha.plod.widgets.SplitView
-		xmlns:android="http://schemas.android.com/apk/res/android"
-		xmlns:splitview="http://schemas.android.com/apk/res-auto"
-		android:id="@+id/webcontentlister"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:fitsSystemWindows="true"
-		android:orientation="vertical"
+<com.knziha.plod.widgets.SplitView xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:splitview="http://schemas.android.com/apk/res-auto"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/webcontentlister"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:fitsSystemWindows="true"
+	android:orientation="vertical"
 
-		splitview:primaryContent="@+id/bottombar2"
-		splitview:handle="@+id/bottombar2"
-		splitview:secondaryContent="@+id/PageSlider"
-		>
+	splitview:primaryContent="@+id/bottombar2"
+	splitview:handle="@+id/bottombar2"
+	splitview:secondaryContent="@+id/PageSlider">
 
 		<com.knziha.plod.widgets.RLContainerSlider
 			android:id="@+id/PageSlider"
@@ -24,10 +23,7 @@
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
 				android:background="#C7EDCC"
-				>
-
-			</FrameLayout>
-
+				/>
 			<com.knziha.plod.widgets.AdvancedNestScrollView
 				android:layout_height="match_parent"
 				android:layout_width="match_parent"
@@ -96,7 +92,6 @@
 			android:gravity="center_vertical|fill_horizontal"
 			android:paddingStart="2dp"
 			android:paddingEnd="2dp"
-			android:elevation="5dp"
 			>
 			<android.widget.ImageView
 				android:id="@+id/browser_widget7"
@@ -105,13 +100,15 @@
 				android:layout_weight="1"
 				android:background="@drawable/surrtrip1"
 				android:src="@drawable/back_ic" />
-			<android.widget.ImageView
+			<com.knziha.plod.widgets.ActivatableImageView
 				android:id="@+id/browser_widget8"
 				android:layout_width="0dp"
 				android:layout_height="match_parent"
 				android:layout_weight="1"
 				android:background="@drawable/surrtrip1"
-				android:src="@drawable/star_ic" />
+				android:src="@drawable/star_ic"
+				app:src0="@drawable/star_ic_solid"
+				/>
 			<android.widget.ImageView
 				android:id="@+id/browser_widget9"
 				android:layout_width="0dp"

@@ -173,22 +173,22 @@
 				android:id="@+id/ttsPin"
 				android:layout_width="30dp"
 				android:layout_height="match_parent"
-				UIStyles:dim1="6dp"
+				app:dim1="6dp"
 				app:color_background="#FF3F51B5"
 				app:color_border="#FFF"
 				app:size="25dp"
-				android:src="@drawable/ic_tune_black_24dp"
+				app:src0="@drawable/ic_tune_black_24dp"
 				android:layout_marginStart="8dp"
 				/>
 			<com.knziha.filepicker.widget.CircleCheckBox
 				android:id="@+id/ttsHighlight"
 				android:layout_width="30dp"
 				android:layout_height="match_parent"
-				UIStyles:dim1="6dp"
+				app:dim1="6dp"
 				app:color_background="#FF3F51B5"
 				app:color_border="#FFF"
 				app:size="25dp"
-				android:src="@drawable/ic_border_color_black_24dp"
+				app:src0="@drawable/ic_border_color_black_24dp"
 				android:layout_marginStart="8dp"
 				/>
 			<TextView

@@ -21,18 +21,26 @@
 		<item>@string/loose_mode</item>
 	</string-array>
 
+
+	<string-array name="bottombar_types">
+		<item>主程序</item>
+		<item>解释页面</item>
+		<item>翻阅模式</item>
+		<item>浮动搜索</item>
+	</string-array>
+
   	<string-array name="drawer_items">
 		<item>@string/fuzzyret1</item>
 		<item>@string/fullret</item>
-		<item>d</item>
+		<item></item>
 		<item>@string/bookmarkH</item>
 		<item>@string/lastmarks</item>
-		<item>d</item>
+		<item></item>
 		<item>@string/addd</item>
 		<item>@string/pick_main</item>
 		<item>@string/manager</item>
 		<item>@string/switch_favor</item>
-		<item>d</item>
+		<item></item>
 		<item>@string/settings</item>
 	</string-array>
     
@@ -40,16 +48,16 @@
     <string-array name="drawer_hints">
 		<item>Currently implemented: \'.\' (to match any character), \'*\' (to match any string)</item>    
 		<item>Find in all scoped dictionaries\' Html contents. Can use wildcards as well, but may be slow.</item>    
-		<item>d</item>
+		<item></item>
 		<item>Show the lastest 20 bookmarks</item>    
 		<item>Add bookmarks in the dialog from the icon-button on the top-left of the webview content UI</item>    
-		<item>d</item>
+		<item></item>
 		<item>Won\'t modify current configuration unless commit it in the dictionary manager</item>    
 		<item>Dicts\' relative pathname will be saved when it\'s in the main path</item>    
 		<item>Also try long-press on the 2nd btn of the bottom bar</item>    
 		<item>Also try long-press on the last 2nd btn of the bottom bar</item>
-		<item>d</item>
-		<item>d</item>
+		<item></item>
+		<item>asd</item>
 	</string-array>
 
 	<string-array name="pdf_option">
@@ -139,11 +147,11 @@
 	    <item>@string/dict_specs</item>
 	    <item>@string/background_color</item>
 	    <item>@string/text_zoom</item>
-	    <item>@string/case_insensitive_policy</item>
-	    <item>专用构词库 :</item>
+	    <item>双击放大 :</item>
 		<item>内容可重载 :</item>
 	    <item>内容可编辑 :</item>
 	    <item>图文分离 :</item>
+	    <item>⚙📕⚙更多设置……</item>
 	</string-array>
 
     <string-array name="picture_spec">
@@ -172,6 +180,18 @@
 		<item>关闭历史纪录 :</item>
 		<item>N./A. :</item>
 	    <item>历史纪录规则</item>
+	</string-array>
+
+	<!--tofo-->
+	<string-array name="app_exit">
+		<item>&#160;×_ √</item>
+		<item>@string/warn_exit1</item>
+		<item>关闭虚拟进程</item>
+	</string-array>
+
+	<string-array name="appbar_conf">
+		<item>&#160;×_ √</item>
+		<item>关联配置</item>
 	</string-array>
 
 	<string-array name="peruse_spec">
@@ -340,11 +360,17 @@
 		<item>中文繁体</item>
 	</string-array>
 
-	<string-array name="paste_target">
+	<string-array name="zero_three">
 		<item>0</item>
 		<item>1</item>
 		<item>2</item>
 		<item>3</item>
+	</string-array>
+
+	<string-array name="zero_two">
+		<item>0</item>
+		<item>1</item>
+		<item>2</item>
 	</string-array>
 
 	<string-array name="paste_target_info">
@@ -352,6 +378,25 @@
 		<item>@string/to_main_main</item>
 		<item>@string/to_main_peruse</item>
 		<item>@string/to_float</item>
+	</string-array>
+
+	<string-array name="d_zoom_mode_info">
+		<item>左右分栏</item>
+		<item>靠左</item>
+		<item>靠右</item>
+		<item>居中</item>
+	</string-array>
+
+	<string-array name="pzoom_info">
+		<item>无</item>
+		<item>第一级</item>
+		<item>第二级</item>
+	</string-array>
+
+	<string-array name="pzoom_mode_info">
+		<item>居中</item>
+		<item>靠左</item>
+		<item>靠右</item>
 	</string-array>
 
 	<string-array name="btm_navmode">

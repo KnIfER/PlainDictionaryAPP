@@ -36,11 +36,9 @@ import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.adrianwalker.multilinestring.Multiline;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -102,12 +100,17 @@ public class mdict_web extends mdict {
 		style.class = '_PDict';
 		style.innerHTML = "mark{background:yellow;}mark.current{background:orange;}";
 		document.head.appendChild(style);
-	 	w.addEventListener('load',wrappedOnLoadFunc,false);
+	 	//w.addEventListener('load',wrappedOnLoadFunc,false);
 		w.addEventListener('click',wrappedClickFunc);
 		w.addEventListener('touchstart',wrappedOnDownFunc);
-		function wrappedOnLoadFunc(){
-			//console.log('mdpage loaded');
-			document.body.contentEditable=!1;
+		//console.log('mdpage loaded');
+		document.body.contentEditable=!1;
+		var vi = document.getElementsByTagName('video');
+		for(var i=0;i<vi.length;i++){if(!vi[i]._fvwhl){vi[i].addEventListener("webkitfullscreenchange", wrappedFscrFunc);vi[i]._fvwhl=1;}}
+		function wrappedFscrFunc(e){
+			//console.log('begin fullscreen!!!');
+	 		var se = e.srcElement;
+	 		if(app)se.webkitDisplayingFullscreen?app.onRequestFView(se.videoWidth, se.videoHeight):app.onExitFView()
 		}
 		function wrappedOnDownFunc(e){
 	 		if(e.touches.length==1){
@@ -134,7 +137,7 @@ public class mdict_web extends mdict {
 	 		}
 		}
 	 	function wrappedClickFunc(e){
-	 		console.log('fatal wrappedClickFunc'+e);
+	 		//console.log('fatal wrappedClickFunc'+e);
 	 		var curr=e.srcElement;
 			if(curr!=document.documentElement  && e.srcElement.nodeName!='INPUT' && w.rcsp&0x20){
 				var s = w.getSelection();
@@ -353,6 +356,21 @@ public class mdict_web extends mdict {
 	 */
 	@Multiline(trim = false)
 	public final static String js="SUB PAGE";
+	/**
+	 	//if(!window._fvwhl){
+			var vi = document.getElementsByTagName('video');
+			for(var i=0;i<vi.length;i++){if(!vi[i]._fvwhl){vi[i].addEventListener("webkitfullscreenchange", wrappedFscrFunc, true);vi[i]._fvwhl=1;}}
+			function wrappedFscrFunc(e){
+				//console.log('begin fullscreen!!!');
+				var se = e.srcElement;
+				if(se.webkitDisplayingFullscreen&&app) app.onRequestFView(se.videoWidth, se.videoHeight);
+	 			return false;
+			}
+	 		window._fvwhl=1;
+	 	//}
+	 */
+	@Multiline(trim = false)
+	public final static String projs="SUB PAGE";
 	private final JSONObject website;
 	private ObjectAnimator progressProceed;
 	private ObjectAnimator progressTransient;
@@ -402,7 +420,7 @@ public class mdict_web extends mdict {
 
 		htmlBuilder=new StringBuilder();
 
-		readInConfigs();
+		readInConfigs(a.UIProjects);
 
 		if(bgColor==null)
 			bgColor= CMN.GlobalPageBackground;
@@ -631,6 +649,10 @@ public class mdict_web extends mdict {
 		if(mWebView==null)
 			mWebView=this.mWebView;
 		boolean resposibleForThisWeb = mWebView==this.mWebView;
+
+		if(resposibleForThisWeb||a.PeruseView!=null&&a.PeruseView.mWebView==mWebView)
+			tintBackground(mWebView);
+
 		if(SelfIdx!=-1){
 			preloading(mWebView, frameAt, SelfIdx, position);
 			if(resposibleForThisWeb && mWebView.fromCombined==1  && PDICMainAppOptions.getTmpIsCollapsed(tmpIsFlag)){/* 自动折叠 */
@@ -640,6 +662,7 @@ public class mdict_web extends mdict {
 			}
 		}
 		mWebView.fromCombined=4;
+		mWebView.clearHistory=false;
 		String key = null;
 		String url=null;
 		int pos=mWebView.currentRendring[0];
@@ -973,7 +996,7 @@ public class mdict_web extends mdict {
 
 	public void onProgressChanged(WebViewmy view, int newProgress) {
 		if(view == mWebView){
-			Drawable d = toolbar.getBackground().mutate();
+			Drawable d = toolbar.getBackground();
 			if(progressProceed !=null) {
 				progressProceed.cancel();
 				progressProceed.setIntValues(d.getLevel(), newProgress*100);
@@ -985,6 +1008,9 @@ public class mdict_web extends mdict {
 		}
 		if(newProgress>=99){
 			fadeOutProgressbar(view, false);
+		}
+		if(newProgress>=20){
+			//view.evaluateJavascript(projs, null);
 		}
 	}
 

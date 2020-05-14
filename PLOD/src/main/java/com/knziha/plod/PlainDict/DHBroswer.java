@@ -70,11 +70,11 @@ public class DHBroswer extends DBroswer {
 		String text = currentDisplaying;
 		if(a.prepareFavoriteCon().contains(text)) {//删除
 			a.favoriteCon.remove(text);
-			a.favoriteBtn.setImageResource(R.drawable.star_ic);
+			a.favoriteBtn.setActivated(false);
 			a.show(R.string.removed);
 		}else {//添加
 			a.favoriteCon.insert(text);
-			a.favoriteBtn.setImageResource(R.drawable.star_ic_solid);
+			a.favoriteBtn.setActivated(true);
 			a.show(R.string.added);
 		}
 	}
@@ -83,10 +83,7 @@ public class DHBroswer extends DBroswer {
 	public void processFavorite(int position,String key) {
 		PDICMainActivity a = (PDICMainActivity) getActivity();
 		if(a==null) return;
-		if(a.prepareFavoriteCon().contains(key)) {
-			a.favoriteBtn.setImageResource(R.drawable.star_ic_solid);
-		}else
-			a.favoriteBtn.setImageResource(R.drawable.star_ic);
+		a.favoriteBtn.setActivated(a.prepareFavoriteCon().contains(key));
 	}
 
 	@Override

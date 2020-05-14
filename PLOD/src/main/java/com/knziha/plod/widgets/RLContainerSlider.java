@@ -1,16 +1,24 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
+import com.knziha.plod.dictionarymodels.mdict;
 
 
 public class RLContainerSlider extends FrameLayout{
+	public boolean TurnPageSuppressed;
+	public WebViewmy WebContext;
 	private float density;
+	private int move_index;
+	private boolean bZoomOut;
 
 	public RLContainerSlider(Context context) {
 		super(context);
@@ -32,76 +40,64 @@ public class RLContainerSlider extends FrameLayout{
 
 	public IMPageSlider IMSlider;
 
+	int first_touch_id;
+
 	boolean bCanSlide=true;
 	private float lastX,lastY,OrgX,OrgY;
 	boolean dragged;
 	public boolean TurnPageEnabled=false;
-	public boolean LeftEndReached=false;
-	public boolean RightEndReached=false;
-
-	@Override
-	public boolean onTouchEvent(MotionEvent ev){
-		MainActivityUIBase.layoutScrollDisabled=false;
-		if(!TurnPageEnabled && !LeftEndReached && !RightEndReached)
-			return false;
-		if(dragged){
-			if(!TurnPageEnabled) {
-				if(LeftEndReached&&IMSlider.getTranslationX()<0 || RightEndReached&&IMSlider.getTranslationX()>0) {
-					//LeftEndReached=RightEndReached=false;
-					dragged=false;
-					IMSlider.decided=false;
-					IMSlider.RePosition();
-					return true;
-				}
-			}
-		}else
-			return true;
-		if(!IMSlider.decided) detector.onTouchEvent(ev);
-		if(isOnFlingDected) {
-			dragged=isOnFlingDected=false;
-			IMSlider.decided=false;
-			return true;
-		}
-		if(IMSlider!=null)
-			switch (ev.getAction()) {
-				case MotionEvent.ACTION_MOVE:{
-					int dx = (int) (ev.getRawX() - lastX);
-					int dy = (int) (ev.getRawY() - lastY);
-
-
-					if(!dragged) {
-						int dxdx = (int) (ev.getRawX() - OrgX);
-						int dydy = (int) (ev.getRawY() - OrgY);
-						IMSlider.OrgTX = IMSlider.getTranslationX();
-						if(Math.abs(dxdx)>100 && (Math.abs(dxdx/(dydy==0?1:dydy))>1.2)){
-							dragged=true;
-							//CMN.Log("start dragging...");
-						}
-					}
-					if(dragged){
-						IMSlider.startdrag(ev);
-						IMSlider.handleDrag(dx,dy);
-						if(IMSlider.inf!=null)
-							IMSlider.inf.onMoving(IMSlider.getTranslationX(),IMSlider);
-					}
-					lastX = ev.getRawX();
-					lastY = ev.getRawY();
-				} break;
-				case MotionEvent.ACTION_UP:{
-					if(dragged) {
-						dragged=false;
-						IMSlider.RePosition();
-					}
-				} break;
-			}
-		return dragged;
-	}
 
 	boolean isOnFlingDected;
+	public boolean isOnZoomingDected;
+	public long lastZoomTime;
 	GestureDetector detector;
 	GestureDetector.SimpleOnGestureListener gl = new GestureDetector.SimpleOnGestureListener() {
-		public boolean onFling(MotionEvent e1, MotionEvent e2, final float velocityX,final float velocityY) {
+		@Override
+		public boolean onDoubleTap(MotionEvent e) {
+			if(WebContext!=null && WebContext.IBC.getUseDoubleClick()){
+				PhotoBrowsingContext ibc = WebContext.IBC;
+				float targetZoom = ibc.doubleClickZoomRatio;
+				CMN.Log(targetZoom, WebContext.webScale/mdict.def_zoom);
+				if(WebContext.webScale/mdict.def_zoom<targetZoom){
+					if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+						WebContext.zoomBy(0.02f);
+						WebContext.zoomBy(targetZoom);
+						int zoomInType = ibc.getDoubleClickAlignment();
+						//((MainActivityUIBase)getContext()).showT("双击放大");
+						if(zoomInType<3){
+							int pad = WebContext.getWidth();
+							float ratio = ibc.doubleClickXOffset;
+							if(ratio<-1) ratio=-1;
+							if(zoomInType==0){
+								pad = (OrgX>pad/2?pad:0)+(int) (ratio * pad);
+							} else if(zoomInType==1){
+								pad = (int) (ratio * pad);
+							} else if(zoomInType==2){
+								pad = (int) (WebContext.getContentWidth()-pad*(1+ratio));
+							}
+							WebContext.setScrollX(pad);
+						}
+					} else {
+						WebContext.zoomIn();
+						WebContext.zoomIn();
+					}
+				} else {
+					if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+						WebContext.zoomBy(0.02f);
+					else{
+						WebContext.zoomOut();
+						WebContext.zoomOut();
+					}
+				}
+				isOnZoomingDected=true;
+				lastZoomTime=System.currentTimeMillis();
+			}
+			return false;
+		}
+
+		public boolean onFling(MotionEvent e1, MotionEvent e2, final float velocityX, final float velocityY) {
 			//if(System.currentTimeMillis()-lastDownTime<=200) //事件老死
+			if(false)
 			{
 				if(!TurnPageEnabled || e2.getPointerCount()>1) { //todo slide on zoomed page
 					return false;
@@ -150,55 +146,133 @@ public class RLContainerSlider extends FrameLayout{
 	public boolean enabled;
 
 	@Override
-	public boolean onInterceptTouchEvent(MotionEvent ev){
+	public boolean onTouchEvent(MotionEvent ev){
 		MainActivityUIBase.layoutScrollDisabled=false;
-		if(!TurnPageEnabled && !LeftEndReached && !RightEndReached) return false;
-		//CMN.Log("onInterceptTouchEvent"+System.currentTimeMillis()+" TurnPageEnabled"+TurnPageEnabled+" LeftEndReached"+LeftEndReached+" RightEndReached"+RightEndReached);
-
-		if(ev.getPointerCount()==1) detector.onTouchEvent(ev);
-
+		if(!TurnPageEnabled) return false;
+		if(!dragged) return true;
+		int actual_index = ev.getActionIndex();
+		int touch_id = ev.getPointerId(actual_index);
+		if(!IMSlider.decided && touch_id==first_touch_id) detector.onTouchEvent(ev);
 		if(isOnFlingDected) {
 			dragged=isOnFlingDected=false;
 			IMSlider.decided=false;
 			return true;
 		}
+		if(IMSlider!=null)
+			switch (ev.getActionMasked()) {
+				case MotionEvent.ACTION_MOVE:{
+					//CMN.Log("ACTION_MOVE", touch_id, actual_index);
+					if(first_touch_id==-1){
+						first_touch_id=touch_id;
+						OrgX = lastX = ev.getX(actual_index);
+						OrgY = lastY = ev.getY(actual_index);
+					}
+					move_index=0;
+					int pc = ev.getPointerCount();
+					if(pc>1)
+						for (int i = 0; i < pc; i++) {
+							if(ev.getPointerId(i)==first_touch_id){
+								move_index = i;
+							}
+						}
+					float nowX = ev.getX(move_index);
+					float nowY = ev.getY(move_index);
+
+//						if(!dragged) {
+//							float dx = nowX - OrgX;
+//							IMSlider.OrgTX = IMSlider.getTranslationX();
+//							if((dx>100||dx<-100)){
+//								float dy = nowY - OrgY; if(dy==0) dy=0.1f; dx = dx/dy;
+//								if(dx>1.2 || dx<=-1.2){
+//									dragged=true;
+//									//CMN.Log("start dragging...");
+//								}
+//							}
+//						}
+					if(dragged){
+						IMSlider.startdrag(ev);
+						IMSlider.handleDrag(nowX-lastX,nowY-lastY);
+						if(IMSlider.inf!=null)
+							IMSlider.inf.onMoving(IMSlider.getTranslationX(),IMSlider);
+					}
+					lastX = nowX;
+					lastY = nowY;
+				} break;
+				case MotionEvent.ACTION_UP:{
+					//CMN.Log("ACTION_UP", touch_id);
+					first_touch_id=-1;
+					if(dragged) {
+						dragged=false;
+						IMSlider.RePosition();
+					}
+				} break;
+				case MotionEvent.ACTION_POINTER_UP:{
+					//CMN.Log("ACTION_POINTER_UP??", touch_id, first_touch_id);
+					if(touch_id==first_touch_id){
+						//CMN.Log("ACTION_POINTER_UP!!!", touch_id, first_touch_id);
+						first_touch_id=-1;
+					}
+				}break;
+			}
+		return dragged;
+	}
+
+	@Override
+	public boolean onInterceptTouchEvent(MotionEvent ev){
+		MainActivityUIBase.layoutScrollDisabled=false;
+		if(!TurnPageEnabled || TurnPageSuppressed) return false;
+		bZoomOut = WebContext==null || WebContext.webScale <= mdict.def_zoom;
+//		if(zoomIn){ // 禁止放大翻页
+//			return false;
+//		}
+		//CMN.Log("onInterceptTouchEvent"+System.currentTimeMillis()+" TurnPageEnabled"+TurnPageEnabled+" LeftEndReached"+LeftEndReached+" RightEndReached"+RightEndReached);
+		int actual_index=ev.getActionIndex();
+		int touch_id = ev.getPointerId(actual_index);
+		if(touch_id==first_touch_id) {
+			detector.onTouchEvent(ev);
+			if(isOnFlingDected) {
+				dragged=isOnFlingDected=false;
+				IMSlider.decided=false;
+				return true;
+			}
+		}
+
 		boolean ret = super.onInterceptTouchEvent(ev);
 
 		if(!bCanSlide) {
 			return ret;
 		}
 		if(IMSlider!=null)
-			switch (ev.getAction()) {
+			switch (ev.getActionMasked()) {
 				case MotionEvent.ACTION_DOWN:
+					isOnZoomingDected=false;
+					//CMN.Log("ACTION_DOWN");
+					first_touch_id=touch_id;
+					detector.onTouchEvent(ev);
 					lastDownTime=System.currentTimeMillis();
-					OrgX = lastX = ev.getRawX();
-					OrgY = lastY = ev.getRawY();
-					if(OrgX>getWidth()/3*2) {
-						//dragged=true;
-						//IMSlider.setAlpha(1.f);
-					}else {
-						//dragged=false;
-					}
+					OrgX = lastX = ev.getX();
+					OrgY = lastY = ev.getY();
 				break;
 				case MotionEvent.ACTION_MOVE:
-					int dx = (int) (ev.getRawX() - lastX);
-					int dy = (int) (ev.getRawY() - lastY);
-					if(!dragged) {
-						int dxdx = (int) (ev.getRawX() - OrgX);
-						int dydy = (int) (ev.getRawY() - OrgY);
-						if(ev.getPointerCount()==1)
-							if((TurnPageEnabled?true:(LeftEndReached&&dxdx>0 || RightEndReached&&dxdx<0)) &&Math.abs(dxdx)>100 && (Math.abs(dxdx/(dydy==0?0.000001:dydy))>1.988)){//3.3
-								dragged=true;
+					if(ev.getPointerCount()==1) {
+						lastX = ev.getX();
+						lastY = ev.getY();
+						if (!dragged) {
+							float dx = lastX - OrgX;
+							if (bZoomOut && (dx > 100 || dx < -100) || !bZoomOut && (dx > 100 && WebContext.getScrollX()==0 || dx < -100 && WebContext.getScrollX()+WebContext.getWidth()==WebContext.getContentWidth())) {
+								float dy = lastY - OrgY;
+								if (dy == 0) dy = 0.000001f;
+								dx = dx / dy;
+								if (dx > 1.988 || dx <= -1.988) {//3.3
+									dragged = true;
+									//CMN.Log("start dragging...");
+								}
 							}
+						}
 					}
-					if(dragged){
-						//IMSlider.startdrag(ev);
-						//DragStart = ev.getRawX();
-					}
-					lastX = ev.getRawX();
-					lastY = ev.getRawY();
 				break;
 				case MotionEvent.ACTION_UP:
+					first_touch_id=-1;
 					if(dragged) {
 						dragged=false;
 						IMSlider.RePosition();

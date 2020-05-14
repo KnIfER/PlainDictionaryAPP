@@ -67,7 +67,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 	private boolean bDictTweakerOnceShowed;
 	public ArrayList<mdict_transient> manager_group;
 	AlertDialog d;
-
+	
 	public dict_manager_main(){
 		super();
 		checkChanged=(buttonView, isChecked) -> {
@@ -195,11 +195,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 					String[] Menus = getResources().getStringArray(
 							R.array.dicts_option1);
 					List<String> arrMenu = Arrays.asList(Menus);
-					AlertDialog dd = builder3.create();
-					if(GlobalOptions.isDark) {
-						dd.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_d);
-					}
-					dd.show();
+					AlertDialog dd = builder3.show();
 					dd.setOnDismissListener(dialog -> {
 						if (bDictTweakerOnceShowed) {
 							adapter.notifyDataSetChanged();
@@ -261,7 +257,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 													CMN.Log("重命名", mmTmp.getName());
 													adapter.remove(mmTmp);
 													try {
-														adapter.insert(new mdict_prempter(a, to.getAbsolutePath(), a.opt), actualPosition);
+														adapter.insert(new mdict_prempter(a, to.getAbsolutePath(), a.opt, a.mninstance), actualPosition);
 													} catch (IOException e) {
 														e.printStackTrace();
 													}
@@ -437,11 +433,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 											}
 											dialog3.dismiss();
 										});
-								AlertDialog dd = builder3.create();
-								if(GlobalOptions.isDark) {
-									dd.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_d);
-								}
-								dd.show();
+								AlertDialog dd = builder3.show();
 							}
 							break;
 						}
@@ -450,11 +442,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			String[] Menus = getResources().getStringArray(
 					R.array.dicts_option);
 			List<String> arrMenu = Arrays.asList(Menus);
-			d = builder2.create();
-			if(GlobalOptions.isDark) {
-				d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_d);
-			}
-			d.show();
+			d = builder2.show();
 
 			TextView titleView = d.getWindow().getDecorView().findViewById(R.id.alertTitle);
 			titleView.setSingleLine(false);
@@ -508,7 +496,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 				vh.title.setText(val);
 			}
 
-			if(aaa.isSearching && mdTmp.getName().toLowerCase().contains(aaa.dictQueryWord))
+			if(dict_manager_activity.dictQueryWord!=null && mdTmp.getName().toLowerCase().contains(aaa.dictQueryWord))
 				vh.title.setBackgroundResource(R.drawable.xuxian2);
 			else
 				vh.title.setBackground(null);
@@ -601,7 +589,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			a.mdict_cache.clear();
 			manager_group.ensureCapacity(slots.size());
 			for (PlaceHolder phI : slots) {
-				mdict_transient mmTmp = new mdict_transient(a, phI, a.opt);
+				mdict_transient mmTmp = new mdict_transient(a, phI, a.opt, a.mninstance);
 				if (!mmTmp.isMddResource()) PDICMainAppOptions.setTmpIsAudior(mmTmp, false);
 				if(PDICMainAppOptions.getTmpIsHidden(mmTmp.getTmpIsFlag()))
 					rejector.add(mmTmp.getPath());

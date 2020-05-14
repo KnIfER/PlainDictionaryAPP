@@ -1,0 +1,41 @@
+
+<!--   Copyright (C) 2020  KnIfER
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see https://www.gnu.org/licenses.
+    Colorful progressbar drawable for webview
+ANDROID IS POWERFUL——LET'S DEVELOP APPS ELEGANTLY AND PROFESSIONALLY! -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@android:id/background" >
+		<shape
+			android:shape="rectangle">
+			<corners android:radius="0dp"/>
+<!--			<solid-->
+<!--				android:color="@color/colorHeaderBlue"-->
+<!--				/>-->
+			<gradient
+				android:startColor="#e14F7FDF"
+				android:endColor="#2b4381"
+				android:type="linear"
+				android:angle="270"
+				/>
+		</shape>
+	</item>
+
+	<item
+		android:id="@android:id/progress"
+		>
+		<bitmap android:src="@drawable/fuzzy_search" android:gravity="center"></bitmap>
+	</item>
+
+
+</layer-list>

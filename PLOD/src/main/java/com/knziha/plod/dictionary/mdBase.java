@@ -57,14 +57,6 @@ public abstract class mdBase {
 	public byte[] linkRenderByt;
 	protected File f;
 	protected long ReadOffset;
-	/** validation schema<br/>
-	 * 0=none; 1=check even; 2=check four; 3=check direct; 4=check direct for all*/
-	protected int checkEven;
-	protected int maxEB;
-
-	public byte[] htmlOpenTag;
-	public byte[] htmlCloseTag;
-
 	public File f() {return f;}
 	final static byte[] _zero4 = new byte[]{0,0,0,0};
 	final static byte[] _1zero3 = new byte[]{1,0,0,0};
@@ -220,44 +212,7 @@ public abstract class mdBase {
 		if(_encoding.equals("UTF-16")) _encoding = "UTF-16LE"; //INCONGRUENT java charset
 
 		_charset = Charset.forName(_encoding);
-		htmlOpenTag = "<".getBytes(_charset);
-		htmlCloseTag = ">".getBytes(_charset);
-		switch (_charset.name()){
-			case "EUC-JP":
-			case "EUC-KR":
-			case "x-EUC-TW":
-			case "Shift_JIS":
-			case "Windows-31j":
-				checkEven=3;
-				maxEB = 2;
-			break;
-			case "GB2312"://1981 unsafe double bytes
-			case "GBK"://1995 unsafe double bytes
-			case "GB18030"://2000 unsafe double bytes
-				checkEven=4;
-				maxEB = 2;
-			break;
-			case "UTF-16BE":
-			case "UTF-16LE":
-				checkEven=1;
-				maxEB = 4;
-			break;
-			case "UTF-32BE":
-			case "UTF-32LE":
-				checkEven=2;
-				maxEB = 4;
-			break;
-			case "Big5":// safe double bytes?
-			case "Big5-HKSCS":// safe double bytes?
-				checkEven=3;
-			break;
-			case "UTF-8":// safe tripple bytes?
-				maxEB = 3;
-			break;
-			default:
-				maxEB = 1;
-			break;
-		}
+		postGetCharset();
 
 		linkRenderByt = RerouteHeader_forName(_encoding, _charset);
 
@@ -329,6 +284,8 @@ public abstract class mdBase {
 
 		read_key_block_info(data_in);
 	}
+
+	protected void postGetCharset(){};
 
 	public byte[] RerouteHeader_forName(String encoding, Charset _charset) {
 		linkRenderByt = linkRenderByts.get(encoding);

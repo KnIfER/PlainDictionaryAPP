@@ -12,11 +12,11 @@
 	    android:id="@+id/checker"
 	    android:layout_width="30dp"  
 	    android:layout_height="30dp"
-		UIStyles:dim1="6dp"
+		app:dim1="6dp"
 		app:color_background="#FF3F51B5"
 		app:color_border="#FFF"
 		app:size="25dp"
-		android:src="@drawable/clippin"
+		app:src0="@drawable/clippin"
 		android:layout_marginStart="8dp"
 	    />
 	

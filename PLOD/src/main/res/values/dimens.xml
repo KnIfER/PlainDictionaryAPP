@@ -14,7 +14,8 @@
     <dimen name="design_snackbar_padding_vertical_2lines">4dp</dimen>
     <dimen name="sz_valve">28dp</dimen>
     <dimen name="sz_handle">10dp</dimen>
-    
+
+	<dimen name="_18_">18dp</dimen>
     <dimen name="_50_">50dp</dimen>
     <dimen name="_40_">40dp</dimen>
     <dimen name="_45_">45dp</dimen>
