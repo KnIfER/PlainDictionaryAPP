@@ -8290,7 +8290,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			icons = _icons;
 			ids = _ids;
 			currentValue = opt.getAppContentBarProject(key);
-			CMN.Log("重新读取", key);
+			//CMN.Log("重新读取", key);
 			bottombar = _bottombar;
 			btns = _btns;
 		}
@@ -8474,47 +8474,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	AppUIProject contentbar_project;
 	
 	AppUIProject peruseview_project;
+	
+	WeakReference<BottombarTweakerAdapter> WR_BottombarTweaker;
 
 	void showIconCustomizator() {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		AlertDialog dialog = builder.setView(R.layout.customise_btns)
-				.setTitle("定制底栏")
-				.setIcon(R.drawable.settings)
-				.setPositiveButton(R.string.confirm, null)
-				.setNegativeButton(R.string.cancel, null)
-				.show();
-		
-		ShelfLinearLayout sideBar = dialog.findViewById(R.id.sideBar);
-		DragSortListView main_list = dialog.findViewById(R.id.main_list);
-		sideBar.setRbyPos(0);
-		sideBar.setSCC(sideBar.ShelfDefaultGray=0xFF4F7FDF);
-		
-		BottombarTweakerAdapter ada = new BottombarTweakerAdapter(dialog, this);
-		//ada.projectContext = bottombar_project;
-		main_list.setAdapter(ada);
-		main_list.setDragListener(ada);
-		main_list.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 4 * getResources().getDimension(R.dimen._50_));
-		((SimpleFloatViewManager)main_list.mFloatViewManager).mFloatBGColor=0xff3185F7;
-
-		sideBar.setOnClickListener(ada);
-		sideBar.setOnLongClickListener(ada);
-		
 		int pos = defbarcustpos;
 		if(PeruseViewAttached()){
 			pos = 2;
 		} else if(this instanceof PDICMainActivity && contentview.getParent()!=null){
 			pos = 1;
 		}
-		int finalPos = pos;
-		sideBar.getChildAt(finalPos).performClick();
-		sideBar.postDelayed(() -> sideBar.setRbyPos(finalPos), 350);
-		View btn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-		btn.setId(DialogInterface.BUTTON_POSITIVE);
-		btn.setOnLongClickListener(ada);
-		btn.setOnClickListener(ada);
-		btn = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-		btn.setId(DialogInterface.BUTTON_NEGATIVE);
-		btn.setOnLongClickListener(ada);
-		btn.setOnClickListener(ada);
+		
+		BottombarTweakerAdapter ada;
+		if(WR_BottombarTweaker==null || WR_BottombarTweaker.get()==null){
+			ada = new BottombarTweakerAdapter(this, pos);
+			WR_BottombarTweaker = new WeakReference<>(ada);
+		} else {
+			ada = WR_BottombarTweaker.get();
+			ada.show();
+			ada.onClick(pos);
+		}
+		
+		ada.main_list.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 4 * getResources().getDimension(R.dimen._50_));
 	}
 }
