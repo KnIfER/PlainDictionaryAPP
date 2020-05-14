@@ -194,6 +194,11 @@
 		<item>关联配置</item>
 	</string-array>
 
+	<string-array name="appbar_all">
+		<item>&#160;×_ √</item>
+		<item>应用到全部工具底栏</item>
+	</string-array>
+
 	<string-array name="peruse_spec">
 		<item>&#160;×_ √</item>
 		<item>@string/show_all_dictionaries</item>

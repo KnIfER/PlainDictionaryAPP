@@ -31,6 +31,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 	private final AlertDialog dialog;
 	private final MainActivityUIBase a;
 	private final PDICMainAppOptions opt;
+	private final String[] bottombar_types;
 	public PDICMainActivity.AppUIProject projectContext;
 	public static int StateCount=2;
 	public boolean isDirty;
@@ -43,6 +44,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 		opt = _a.opt;
 		a = _a;
 		switch_landscape = _a.getResources().getDrawable(R.drawable.ic_screen_rotation_black_24dp);
+		bottombar_types = a.getResources().getStringArray(R.array.bottombar_types);
 	}
 
 	public String MakeProject(){
@@ -94,6 +96,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 		int id = v.getId();
 		switch (id){
 			default:
+				/* 拷贝配置 */
 				int currentType = projectContext.type;
 				if(currentType>=0){
 					int bottombar_copy_from=0;
@@ -103,8 +106,8 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 						bottombar_copy_from=2;
 					}
 					if(bottombar_copy_from!=currentType){
-						String copy_from = a.getResources().getStringArray(R.array.bottombar_types)[bottombar_copy_from+1];
-						String copy_to = a.getResources().getStringArray(R.array.bottombar_types)[currentType+1];
+						String copy_from = bottombar_types[bottombar_copy_from+1];
+						String copy_to = bottombar_types[currentType+1];
 						int final_Bottombar_copy_from = bottombar_copy_from;
 						
 						String[] DictOpt = a.getResources().getStringArray(R.array.appbar_conf);
@@ -121,18 +124,37 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 						}, R.string.warn_copyconfrom, copy_from);
 						
 						a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 41, 1, 4, -1, true);
-						ssb.delete(ssb.length()-4,ssb.length());
 						
-						tv.setText(ssb, TextView.BufferType.SPANNABLE);
-						((AlertDialog) tv.getTag()).show();
-						tv.setTag(null);
+						MainActivityUIBase.showStandardConfigDialog(tv, ssb);
 					}
 				}
 			break;
 			case DialogInterface.BUTTON_POSITIVE:{
-			
+				/* 恢复默认 */
+				String[] DictOpt = a.getResources().getStringArray(R.array.appbar_all);
+				final String[] Coef = DictOpt[0].split("_");
+				final SpannableStringBuilder ssb = new SpannableStringBuilder();
+				
+				TextView tv = a.buildStandardConfigDialog(a, false, v13 -> {
+					opt.clearAppProjects(projectContext.key);
+					if(opt.getRestoreAllBottombarProj()){
+						if(a instanceof PDICMainActivity){
+							((PDICMainActivity)a).bottombar_project.clear(a);
+						}
+						a.contentbar_project.clear(a);
+						a.peruseview_project.clear(a);
+					}
+					projectContext.clear(a);
+					projectContext.instantiate(null);
+					notifyDataSetChanged();
+				}, R.string.warn_reconf);
+				
+				a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 43, 1, 4, -1, true);
+				
+				MainActivityUIBase.showStandardConfigDialog(tv, ssb);
 			} break;
 			case DialogInterface.BUTTON_NEGATIVE:{
+				/* 三态/二态切换 */
 				if(StateCount==2){
 					StateCount=1;
 				} else {
@@ -148,90 +170,68 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 	public void onClick(View v) {
 		int id = v.getId();
 		switch (id){
-			case R.id.customise_main_bar:{
+			default: {
 				if(isDirty){
 					checkCurrentProject(v);
 					break;
 				}
-				if(a instanceof PDICMainActivity){
-					PDICMainActivity aa = (PDICMainActivity) a;
-					
-					if(aa.bottombar_project==null)
-						aa.bottombar_project = new MainActivityUIBase.AppUIProject("btmprj", aa.BottombarBtnIcons, aa.BottombarBtnIds, opt.getAppBottomBarProject(), aa.bottombar, aa.BottombarBtns);
-					
-					if(aa.bottombar_project.iconData==null)
-						aa.bottombar_project.instantiate(aa.getResources().getStringArray(R.array.customize_btm));
-					
-					projectContext=aa.bottombar_project;
-					((ShelfLinearLayout) v.getParent()).setRbyView(v);
-					dialog.setTitle("定制底栏-主程序");
-					notifyDataSetChanged();
-				}
-				else {
-					//tofo 跳转至主界面？
-				}
-			} break;
-			case R.id.customise_main_content_bar:{
-				if(isDirty){
-					checkCurrentProject(v);
-					break;
-				}
-				
 				int bottombar_from=0;
-				if(id == R.id.customise_peruse_bar){
-					bottombar_from=1;
-				} else if(id == R.id.customise_float_bar){
-					bottombar_from=2;
-				}
-				
-				
 				MainActivityUIBase.AppUIProject projectContext=null;
-				
-				boolean isProjHost = bottombar_from==0?a instanceof PDICMainActivity:a instanceof FloatSearchActivity;
-				if(isProjHost){
-					projectContext = a.contentbar_project;
-				}
-				if(projectContext==null){
-					projectContext = new MainActivityUIBase.AppUIProject(0, a.opt, a.ContentbarBtnIcons, a.ContentbarBtnIds, isProjHost?a.bottombar2:null, isProjHost?a.ContentbarBtns:null);
-					if(isProjHost){
-						a.contentbar_project = projectContext;
+				if(id == R.id.customise_main_bar){
+					if(a instanceof PDICMainActivity){
+						PDICMainActivity aa = (PDICMainActivity) a;
+						projectContext = aa.bottombar_project;
+						if(projectContext==null){
+							aa.bottombar_project = projectContext = new MainActivityUIBase.AppUIProject("btmprj", aa.BottombarBtnIcons, aa.BottombarBtnIds, opt.getAppBottomBarProject(), aa.bottombar, aa.BottombarBtns);
+						}
+						if(projectContext.iconData==null){
+							projectContext.instantiate(aa.getResources().getStringArray(R.array.customize_btm));
+						}
+					}
+					else {
+						//tofo 跳转至主界面？
 					}
 				}
-				if(projectContext.iconData==null){
-					if(customize_ctn==null)
-						customize_ctn=a.getResources().getStringArray(R.array.customize_ctn);
-					projectContext.instantiate(customize_ctn);
+				else {
+					if(id == R.id.customise_peruse_bar){
+						bottombar_from=1;
+					} else if(id == R.id.customise_float_bar){
+						bottombar_from=2;
+					}
+					boolean isProjHost = false;
+					projectContext = bottombar_from==1?a.peruseview_project:
+							(isProjHost = bottombar_from==0?a instanceof PDICMainActivity:a instanceof FloatSearchActivity)?
+									a.contentbar_project:null;
+					
+					if(projectContext==null) {
+						projectContext = new MainActivityUIBase.AppUIProject(bottombar_from, a.opt, a.ContentbarBtnIcons, a.ContentbarBtnIds, null, null);
+						if(bottombar_from==1){
+							/* fyms */
+							a.peruseview_project = projectContext;
+							if(a.PeruseView != null && projectContext.btns==null){
+								projectContext.bottombar = a.PeruseView.bottombar2;
+								projectContext.btns = a.PeruseView.ContentbarBtns;
+							}
+						} else if(isProjHost){
+							projectContext.bottombar = a.bottombar2;
+							projectContext.btns = a.ContentbarBtns;
+							a.contentbar_project = projectContext;
+						}
+					}
+
+					if(projectContext.iconData==null){
+						if(customize_ctn==null)
+							customize_ctn=a.getResources().getStringArray(R.array.customize_ctn);
+						projectContext.instantiate(customize_ctn);
+					}
+					bottombar_from++;
 				}
-				
-				this.projectContext = projectContext;
-				((ShelfLinearLayout) v.getParent()).setRbyView(v);
-				dialog.setTitle("定制底栏-"+a.getResources().getStringArray(R.array.bottombar_types)[bottombar_from+1]);
-				notifyDataSetChanged();
-			} break;
-			case R.id.customise_peruse_bar:{
-				if(isDirty){
-					checkCurrentProject(v);
-					break;
+				if(projectContext!=null){
+					this.projectContext=projectContext;
+					((ShelfLinearLayout) v.getParent()).setRbyView(v);
+					dialog.setTitle("定制底栏-"+bottombar_types[bottombar_from]);
+					notifyDataSetChanged();
 				}
-				MainActivityUIBase.AppUIProject projectContext = a.peruseview_project;
-				if(projectContext==null){
-					projectContext = new MainActivityUIBase.AppUIProject(1, a.opt, a.ContentbarBtnIcons, a.ContentbarBtnIds, null, null);
-					a.peruseview_project = projectContext;
-				}
-				if(a.PeruseView != null && projectContext.btns==null){
-					projectContext.bottombar = a.PeruseView.bottombar2;
-					projectContext.btns = a.PeruseView.ContentbarBtns;
-				}
-				if(projectContext.iconData==null){
-					if(customize_ctn==null)
-						customize_ctn=a.getResources().getStringArray(R.array.customize_ctn);
-					projectContext.instantiate(customize_ctn);
-				}
-				
-				this.projectContext = projectContext;
-				((ShelfLinearLayout) v.getParent()).setRbyView(v);
-				dialog.setTitle("定制底栏-翻阅模式");
-				notifyDataSetChanged();
 			} break;
 			case DialogInterface.BUTTON_POSITIVE:{
 				if(projectContext==null) return;
@@ -273,8 +273,8 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 				} else if (which == DialogInterface.BUTTON_NEGATIVE) {
 					clearCurrentProject();
 				}
-				v.performClick();
 				dialog.dismiss();
+				v.performClick();
 			};
 			new AlertDialog.Builder(a)
 				.setTitle("配置已更改，是否应用？")
@@ -291,7 +291,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 		if(isDirty && projectContext!=null){
 			MainActivityUIBase.AppUIProject _projectContext = projectContext;
 			projectContext=null;
-			_projectContext.clear();
+			_projectContext.clear(null);
 		}
 		isDirty=false;
 	}
@@ -301,15 +301,16 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 			if(newVal==null) newVal = MakeProject();
 			boolean bNeedSave = !newVal.equals(projectContext.currentValue);
 			if(bNeedSave){
+				CMN.Log("保存配置……", projectContext.key);
 				projectContext.currentValue=newVal;
 				if(projectContext.bottombar!=null){
 					a.RebuildBottombarIcons(projectContext, a.mConfiguration);
 				}
+				opt.putAppProject(projectContext);
 				if(projectContext.type>=0){
 					checkReferncedChange(a.contentbar_project, newVal);
 					checkReferncedChange(a.peruseview_project, newVal);
 				}
-				opt.putAppProject(projectContext);
 			}
 			isDirty=false;
 		}
@@ -317,8 +318,9 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 	
 	private void checkReferncedChange(MainActivityUIBase.AppUIProject checkNow, String newVal) {
 		if(checkNow!=null && checkNow!=projectContext && opt.isAppContentBarProjectReferTo(checkNow.key, projectContext.type)){
+			CMN.Log(checkNow.key,  "refer to >> ", projectContext.key);
 			checkNow.currentValue=newVal;
-			checkNow.clear();
+			checkNow.clear(null);
 			a.RebuildBottombarIcons(checkNow, a.mConfiguration);
 		}
 	}

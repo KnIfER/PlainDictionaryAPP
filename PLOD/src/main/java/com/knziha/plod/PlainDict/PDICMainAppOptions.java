@@ -178,6 +178,7 @@ public class PDICMainAppOptions
 		return idx;
 	}
 	
+	/** 关联拷贝或数据拷贝 */
 	public void linkContentbarProject(int idx, int linkTo) {
 		defaultReader.edit()
 				.putString("ctnp#"+idx , getLinkContentBarProj()?("ref"+linkTo):getAppContentBarProject(linkTo))
@@ -186,6 +187,19 @@ public class PDICMainAppOptions
 	
 	public void putAppProject(MainActivityUIBase.AppUIProject projectContext) {
 		defaultReader.edit().putString(projectContext.key, projectContext.currentValue).apply();
+	}
+	
+	public void clearAppProjects(String key) {
+		Editor editor = defaultReader.edit();
+		if(getRestoreAllBottombarProj()){
+			editor.putString("btmprj", null);
+			for (int i = 0; i < 3; i++) {
+				editor.putString("ctnp#"+i, null);
+			}
+		} else {
+			editor.putString(key, null);
+		}
+		editor.apply();
 	}
 	
 	public boolean isAppContentBarProjectRelative(int idx) {
@@ -2167,12 +2181,17 @@ public class PDICMainAppOptions
 		return (FourthFlag & 0x10000000000l) == 0x10000000000l;
 	}
 	
+	/** 是否是关联拷贝 */
 	public boolean getLinkContentBarProj() {
 		return (FourthFlag & 0x20000000000l) == 0x20000000000l;
 	}
 	
 	public boolean getDeletHistoryOnExit() {
 		return (FourthFlag & 0x40000000000l) == 0x40000000000l;
+	}
+	
+	public boolean getRestoreAllBottombarProj() {
+		return (FourthFlag & 0x80000000000l) == 0x80000000000l;
 	}
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////

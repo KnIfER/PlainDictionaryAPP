@@ -881,7 +881,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		widget10=ContentbarBtns[3];
 		widget11=ContentbarBtns[4];
 		widget12=ContentbarBtns[5];
-		String contentkey = "ctnp#2";
+		String contentkey = "ctnp#"+1;
 		String appproject = opt.getAppContentBarProject(contentkey);
 		if(appproject!=null) {
 			MainActivityUIBase.AppUIProject content_project = a.peruseview_project;

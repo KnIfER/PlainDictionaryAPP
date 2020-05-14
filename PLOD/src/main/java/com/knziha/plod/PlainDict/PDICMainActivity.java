@@ -295,8 +295,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				else {
 					Window win = d.getWindow();
 					if(win!=null && win.getDecorView().getWidth()>dm.widthPixels) {
-						d.getWindow().getAttributes().width = (int) (dm.widthPixels-2.5*getResources().getDimension(R.dimen.diagMarginHor));
-						d.getWindow().setAttributes(d.getWindow().getAttributes());
+						win.getAttributes().width = (int) (dm.widthPixels-2.5*getResources().getDimension(R.dimen.diagMarginHor));
+						win.setAttributes(win.getAttributes());
 					}
 				}
 			}

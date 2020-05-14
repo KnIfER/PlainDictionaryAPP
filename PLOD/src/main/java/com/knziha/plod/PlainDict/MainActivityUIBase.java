@@ -3019,6 +3019,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	public static void showStandardConfigDialog(TextView tv, SpannableStringBuilder ssb) {
+		int length = ssb.length();
+		ssb.delete(length-4,length);
+		tv.setText(ssb, TextView.BufferType.SPANNABLE);
+		((AlertDialog) tv.getTag()).show();
+		tv.setTag(null);
+	}
+	
 	public final class UniCoverClicker implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
 		boolean isWeb;
 		mdict invoker;
@@ -4397,8 +4405,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}, R.string.warn_exit0);
 		
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 42, 1, 4, -1, true);//opt.isFullScreen()//全屏
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 40, 1, 4, 10090, true);//opt.isFullScreen()//全屏
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 42, 1, 4, -1, true);//清除历史
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 40, 1, 4, 10090, true);//彻底退出
 		ssb.delete(ssb.length()-4,ssb.length());
 		
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
@@ -8282,12 +8290,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			icons = _icons;
 			ids = _ids;
 			currentValue = opt.getAppContentBarProject(key);
+			CMN.Log("重新读取", key);
 			bottombar = _bottombar;
 			btns = _btns;
 		}
 		
 		public void instantiate(String[] _titles) {
-			titles = _titles;
+			if(_titles!=null){
+				titles = _titles;
+			}
 			int projectSize = icons.length;
 			ArrayList<IconData> _iconData = new ArrayList<>(projectSize);
 			if(currentValue!=null) {
@@ -8326,8 +8337,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			return false;
 		}
 
-		public void clear() {
-			iconData=null;
+		public void clear(MainActivityUIBase a) {
+			if(iconData!=null){
+				iconData=null;
+				if(a!=null){
+					currentValue=null;
+					a.RebuildBottombarIcons(this, a.mConfiguration);
+				}
+			}
 		}
 	}
 	int ForegroundTint = 0xffffffff;
@@ -8390,8 +8407,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 * 定制底栏：二 见 {@link MainActivityUIBase#ContentbarBtnIcons}<br/>
 	 */
 	void RebuildBottombarIcons(AppUIProject bottombar_project, Configuration config) {
-		ViewGroup bottombar = bottombar_project.bottombar;
-		if(bottombar==null) return;
+		ViewGroup bottombar;
+		if(bottombar_project==null || (bottombar = bottombar_project.bottombar)==null) {
+			return;
+		}
 		String appproject = bottombar_project.currentValue;
 		boolean tint = bottombar_project.getTint();
 		if(tint&&ForegroundFilter==null)
