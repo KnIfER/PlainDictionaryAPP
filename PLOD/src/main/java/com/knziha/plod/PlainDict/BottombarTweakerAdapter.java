@@ -27,6 +27,7 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.mobeta.android.dslv.DragSortListView;
 import com.mobeta.android.dslv.SimpleFloatViewManager;
 
+import static com.knziha.plod.PlainDict.MainActivityUIBase.init_clickspan_with_bits_at;
 import static com.knziha.plod.PlainDict.Toastable_Activity.FLASH_DURATION_MS;
 
 class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListener, DragSortListView.DragSortListener, View.OnLongClickListener{
@@ -149,7 +150,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 							a.showX(opt.getLinkContentBarProj()?R.string.linkedft:R.string.copyedft, Toast.LENGTH_LONG, copy_to, copy_from);
 						}, R.string.warn_copyconfrom, copy_from);
 						
-						a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 41, 1, 4, -1, true);
+						init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 41, 1, 4, -1, true);
 						
 						MainActivityUIBase.showStandardConfigDialog(tv, ssb);
 					}
@@ -175,7 +176,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 					notifyDataSetChanged();
 				}, R.string.warn_reconf);
 				
-				a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 43, 1, 4, -1, true);
+				init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 43, 1, 4, -1, true);
 				
 				MainActivityUIBase.showStandardConfigDialog(tv, ssb);
 			} break;

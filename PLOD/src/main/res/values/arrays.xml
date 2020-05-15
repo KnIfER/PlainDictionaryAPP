@@ -156,10 +156,15 @@
 
     <string-array name="picture_spec">
 	    <item>&#160;×_ √</item>
-		<item>保存图片</item>
-		<item>图片保存按钮:</item>
-	    <item>前后切换按钮:</item>
-	    <item>单击之后退出:</item>
+		<item>锁定X轴横向移动</item>
+	    <item>长按</item>
+	    <item>菜单按钮</item>
+		<item>单击之后退出</item>
+	    <item>前后切换按钮</item>
+		<item>保存</item>
+		<item>保存按钮</item>
+		<item>返回</item>
+		<item>返回按钮</item>
 	</string-array>
 
     <string-array name="app_spec"> 

@@ -41,7 +41,8 @@
     <color name="cst2">#dd85f5f5</color>
     <color name="cst3">#cca0f0f0</color>
     <color name="zumulv">#009688</color>
-    
+	<color name="shadoulv">#C7EDCC</color>
+
     <color name="whitehalf">#a0ffffff</color>
 	<color name="seek_bar_secondary_progress">#3399CC</color>
 </resources>

@@ -76,6 +76,7 @@ import java.util.HashMap;
 import db.MdxDBHelper;
 
 import static android.view.View.FOCUSABLE_AUTO;
+import static com.knziha.plod.PlainDict.MainActivityUIBase.init_clickspan_with_bits_at;
 
 /** 此之谓翻阅模式，以词典为单位，搜索词为中心，一一览读也。<br><br/> */
 public class PeruseView extends DialogFragment implements OnClickListener, OnMenuItemClickListener, OnLongClickListener{
@@ -705,28 +706,28 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 1, 0x1, 20, 1, 1, -1, true);//opt.getPeruseAddAll()//添加全部
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 1, Coef, 0, 1, 0x1, 20, 1, 1, -1, true);//opt.getPeruseAddAll()//添加全部
 
 
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, 19, 1, 1, 25, true);//opt.getInDarkMode()//
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, 19, 1, 1, 25, true);//opt.getInDarkMode()//
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 55, 1, 3, 26, true);//opt.getPeruseTextSelectable()//
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 55, 1, 3, 26, true);//opt.getPeruseTextSelectable()//
 
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 8, 1, 1, 20, true);//opt.getShowBA()//添加书签
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 8, 1, 1, 20, true);//opt.getShowBA()//添加书签
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 9, 1, 1, 21, true);//opt.getShowBD()//
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 9, 1, 1, 21, true);//opt.getShowBD()//
 
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 8, 1, 1, 20, true);//opt.getShowBA()//记忆页面位置
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 8, 1, 1, 20, true);//opt.getShowBA()//记忆页面位置
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 9, 1, 1, 21, true);//opt.getShowBD()//允许滑动翻页
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 9, 1, 1, 21, true);//opt.getShowBD()//允许滑动翻页
 
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 11, 1, 1, 22, true);//opt.getForceSearch()//
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 11, 1, 1, 22, true);//opt.getForceSearch()//
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 5, Coef, 0, 0, 0x1, 10, 1, 1, 23, true);//opt.getShowFScroll()//
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 5, Coef, 0, 0, 0x1, 10, 1, 1, 23, true);//opt.getShowFScroll()//
 
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 10, 1, 1, 23, true);//opt.getShowFScroll()//始终以搜索框内容为搜索词
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 10, 1, 1, 23, true);//opt.getShowFScroll()//始终以搜索框内容为搜索词
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		a.init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 54, 1, 3, 24, true);//opt.getPeruseInPageSearchVisible()//
+		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 54, 1, 3, 24, true);//opt.getPeruseInPageSearchVisible()//
 
 
 		ssb.delete(ssb.length()-4,ssb.length());

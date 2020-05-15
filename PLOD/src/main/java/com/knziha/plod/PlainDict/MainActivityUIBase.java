@@ -118,19 +118,11 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.alexvasilkov.gestures.commons.DepthPageTransformer;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.ImageViewTarget;
-import com.bumptech.glide.request.target.Target;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialogListener;
-import com.knziha.ankislicer.customviews.ShelfLinearLayout;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
@@ -155,9 +147,7 @@ import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.settings.SettingsActivity;
-import com.knziha.plod.slideshow.MddPic;
-import com.knziha.plod.slideshow.PdfPic;
-import com.knziha.plod.slideshow.PhotoView;
+import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.ArrayAdaptermy;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
@@ -178,15 +168,12 @@ import com.knziha.plod.widgets.TableLayout;
 import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
-import com.knziha.plod.widgets.XYTouchRecorder;
 import com.knziha.text.ColoredHighLightSpan;
 import com.knziha.text.ScrollViewHolder;
 import com.knziha.text.SelectableTextView;
 import com.knziha.text.SelectableTextViewBackGround;
 import com.knziha.text.SelectableTextViewCover;
 import com.knziha.text.TTSMoveToucher;
-import com.mobeta.android.dslv.DragSortListView;
-import com.mobeta.android.dslv.SimpleFloatViewManager;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 
@@ -252,7 +239,12 @@ import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
  * Created by KnIfER on 2018
  */
 @SuppressLint({"ResourceType", "SetTextI18bbn","Registered", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
-public abstract class MainActivityUIBase extends Toastable_Activity implements OnTouchListener, OnLongClickListener, OnClickListener, OnMenuItemClickListener, OnDismissListener, MenuItem.OnMenuItemClickListener {
+public abstract class MainActivityUIBase extends Toastable_Activity implements OnTouchListener,
+		OnLongClickListener,
+		OnClickListener,
+		OnMenuItemClickListener, OnDismissListener,
+		MenuItem.OnMenuItemClickListener,
+		OptionProcessor {
 	//private static final String RegExp_VerbatimDelimiter = "[ ]{1,}|\\pP{1,}|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
 	private static final Pattern RegImg = Pattern.compile("(png$)|(jpg$)|(jpeg$)|(tiff$)|(tif$)|(bmp$)|(webp$)", Pattern.CASE_INSENSITIVE);
 	private static Pattern bookMarkEntryPattern = Pattern.compile("entry://@[0-9]*");
@@ -409,7 +401,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	ImageView PhotoCover;
 	ArrayList<String> PhotoUrls = new ArrayList<>();
 	PagerAdapter PhotoAdapter;
-	LinkedList<PhotoView> mViewCache = new LinkedList<>();
+	LinkedList<PhotoViewActivity.PhotoHolder> mViewCache = new LinkedList<>();
 	String new_photo;
 
 	public int AutoBrowseTimeOut = 500;
@@ -1515,58 +1507,59 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				@NonNull
 				@Override
 				public Object instantiateItem(@NonNull ViewGroup container, int position) {
-					PhotoView pv;
-					if (mViewCache.size() > 0) {
-						pv = mViewCache.removeFirst();
-					} else {
-						pv = new PhotoView(container.getContext());
-						pv.setScaleType(ImageView.ScaleType.CENTER_CROP);
-//					pv.setOnClickListener(PhotoViewActivity.this);
-//					pv.setOnLongClickListener(PhotoViewActivity.this);
-					}
-					if (pv.getParent() != null)
-						((ViewGroup) pv.getParent()).removeView(pv);
-					container.addView(pv);
-					pv.setTag(position);
-					pv.IBC = currentDictionary.IBC;
-					String key = PhotoUrls.get(position);
-					try {
-						Glide.with(MainActivityUIBase.this)
-								.asBitmap()
-								.load(key.startsWith("/pdfimg/")?new PdfPic(key, pdfiumCore, cached_pdf_docs):new MddPic(currentDictionary.getMdd(), key))
-								.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-								.diskCacheStrategy(DiskCacheStrategy.NONE)
-								.listener(new RequestListener<Bitmap>() {
-									@Override
-									public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-										ImageView medium_thumbnail = ((ImageViewTarget<?>) target).getView();
-										medium_thumbnail.setImageResource(R.drawable.load_error);
-										return true;
-									}
-									@Override
-									public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-										if(PhotoCover.getTag()==null){
-											if(resource.getByteCount()< MaxBitmapRam){
-												PhotoCover.setImageBitmap(blurByGauss(resource, 50));
-											}else{
-												PhotoCover.setBackgroundColor(MainBackground);
-											}
-											PhotoCover.setTag(false);
-										}
-										return false;
-									}
-								}).into(pv);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					return pv;
+//					PhotoView pv;
+//					if (mViewCache.size() > 0) {
+//						pv = mViewCache.removeFirst();
+//					} else {
+//						pv = new PhotoView(container.getContext());
+//						pv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+////					pv.setOnClickListener(PhotoViewActivity.this);
+////					pv.setOnLongClickListener(PhotoViewActivity.this);
+//					}
+//					if (pv.getParent() != null)
+//						((ViewGroup) pv.getParent()).removeView(pv);
+//					container.addView(pv);
+//					pv.setTag(position);
+//					pv.IBC = currentDictionary.IBC;
+//					String key = PhotoUrls.get(position);
+//					try {
+//						Glide.with(MainActivityUIBase.this)
+//								.asBitmap()
+//								.load(key.startsWith("/pdfimg/")?new PdfPic(key, pdfiumCore, cached_pdf_docs):new MddPic(currentDictionary.getMdd(), key))
+//								.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+//								.diskCacheStrategy(DiskCacheStrategy.NONE)
+//								.listener(new RequestListener<Bitmap>() {
+//									@Override
+//									public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+//										ImageView medium_thumbnail = ((ImageViewTarget<?>) target).getView();
+//										medium_thumbnail.setImageResource(R.drawable.load_error);
+//										return true;
+//									}
+//									@Override
+//									public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+//										if(PhotoCover.getTag()==null){
+//											if(resource.getByteCount()< MaxBitmapRam){
+//												PhotoCover.setImageBitmap(blurByGauss(resource, 50));
+//											}else{
+//												PhotoCover.setBackgroundColor(MainBackground);
+//											}
+//											PhotoCover.setTag(false);
+//										}
+//										return false;
+//									}
+//								}).into(pv);
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//					return pv;
+					return null;
 				}
 
 
 				@Override
 				public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-					container.removeView((View) object);
-					mViewCache.add((PhotoView) object);
+					//container.removeView((View) object);
+					//mViewCache.add((PhotoView) object);
 				}
 			});
 			mPhotoPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -4084,12 +4077,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return mBookMarkAdapter;
 	}
 
-
-	void init_clickspan_with_bits_at(TextView tv, SpannableStringBuilder text,
+	public static void init_clickspan_with_bits_at(OptionProcessor optprs, TextView tv, SpannableStringBuilder text,
 									 String[] dictOpt, int titleOff, String[] coef, int coefOff,
 									 int coefShift, long mask,
 									 int flagPosition, int flagMax, int flagIndex,
 									 int processId, boolean addColon) {
+		PDICMainAppOptions opt = optprs.getOpt();
 		int start = text.length();
 		int now = start+dictOpt[titleOff].length();
 		text.append("[").append(dictOpt[titleOff]);
@@ -4103,7 +4096,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			@Override
 			public void onClick(@NonNull View widget) {
 				if(coef==null){
-					processSomthingChanged(processId , -1);
+					optprs.processOptionChanged(this, widget, processId , -1);
 					return;
 				}
 				long flag = opt.Flag(flagIndex);
@@ -4116,12 +4109,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				text.delete(fixedRange+1, indexOf(text, ']', fixedRange));
 				text.insert(fixedRange+1,coef[coefOff+(int) ((val)+coefShift)%(flagMax+1)]);
 				tv.setText(text);
-				processSomthingChanged(processId , (int) val);
+				optprs.processOptionChanged(this, widget, processId , (int) val);
 			}},start,text.length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		text.append("\r\n").append("\r\n");
 	}
-
-	private void processSomthingChanged(int processId , int val) {
+	
+	@Override
+	public void processOptionChanged(ClickableSpan clickableSpan, View widget, int processId, int val) {
 		switch (processId){
 			case 0:
 				if(drawerFragment!=null) {
@@ -4289,6 +4283,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	@Override
+	public PDICMainAppOptions getOpt() {
+		return opt;
+	}
+	
 	private void anyDialog() {
 		AlertDialog d = new AlertDialog.Builder(this)
 				.setTitle("确认退出？")
@@ -4322,17 +4321,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//((ViewGroup)title.getParent()).setClipToPadding(false);
 		//((ViewGroup.MarginLayoutParams)title.getLayoutParams()).setMarginStart(-topad/4);
 		
-		tv.setTextSize(17f);
-		if(GlobalOptions.isLarge) tv.setTextSize(17*3);
-		
-		XYTouchRecorder xyt = opt.XYTouchRecorder();
-		tv.setOnClickListener(xyt);
-		tv.setOnTouchListener(xyt);
-		//tv.setMovementMethod(LinkMovementMethod.getInstance());
-		
-		if(centerText){
-			tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-		}
+		opt.setAsLinkedTextView(tv, centerText);
 		
 		final AlertDialog configurableDialog =
 				new AlertDialog.Builder(context,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line)
@@ -4358,27 +4347,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		TextView tv = buildStandardConfigDialog(this, true, null, R.string.AppOpt);
 		Dialog configurableDialog = (Dialog) tv.getTag();
 
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 16, 1, 1, 0, false);//opt.isFullScreen()//全屏
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1, 17, 1, 1, 1, false);//opt.isContentBow()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 18, 1, 1, 2, false);//opt.getInDarkMode()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 46, 1, 1, 3, false);//opt.getUseVolumeBtn()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 16, 1, 1, 0, false);//opt.isFullScreen()//全屏
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1, 17, 1, 1, 1, false);//opt.isContentBow()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 18, 1, 1, 2, false);//opt.getInDarkMode()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 46, 1, 1, 3, false);//opt.getUseVolumeBtn()//
 		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 5, null, 0, 0, 0x1, 0, 1, 1, -1, false);//隐藏标题
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 0, 1, 2, -1, false);//opt.getInheritePageScale()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 5, null, 0, 0, 0x1, 0, 1, 1, -1, false);//隐藏标题
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 0, 1, 2, -1, false);//opt.getInheritePageScale()//
 		String[] Coef2 = new String[]{Coef[0], Coef[1], Coef[2]};
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 7, Coef2, 0, 0, 0x3, 0, 2, 2, 4, false);//opt.getNavigationBtnType()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 7, Coef2, 0, 0, 0x3, 0, 2, 2, 4, false);//opt.getNavigationBtnType()//
 		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 3, 1, 2, 5, false);//opt.getHideScroll1()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 4, 1, 2, 6, false);//opt.getHideScroll2()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 5, 1, 2, 7, false);//opt.getHideScroll3()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 3, 1, 2, 5, false);//opt.getHideScroll1()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 4, 1, 2, 6, false);//opt.getHideScroll2()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 5, 1, 2, 7, false);//opt.getHideScroll3()//
 		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 6, 1, 2, -1, false);//opt.getPageTurn1()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 12, Coef, 0, 0, 0x1, 7, 1, 2, -1, false);//opt.getPageTurn2()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 13, Coef, 0, 0, 0x1, 33, 1, 3, -1, false);//opt.getPageTurn3()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 6, 1, 2, -1, false);//opt.getPageTurn1()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 12, Coef, 0, 0, 0x1, 7, 1, 2, -1, false);//opt.getPageTurn2()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 13, Coef, 0, 0, 0x1, 33, 1, 3, -1, false);//opt.getPageTurn3()//
 		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 15, Coef, 0, 1, 0x1, 28, 1, 3, 8, false);//opt.getAllowContentEidt()//编辑页面
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 14, Coef, 0, 0, 0x1, 9, 1, 2, 10, false);//opt.setHistoryStrategy0()//关闭历史纪录
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 16, null, 0, 0, 0x1, 0, 1, 2, 9, false);//历史纪录规则
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 15, Coef, 0, 1, 0x1, 28, 1, 3, 8, false);//opt.getAllowContentEidt()//编辑页面
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 14, Coef, 0, 0, 0x1, 9, 1, 2, 10, false);//opt.setHistoryStrategy0()//关闭历史纪录
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 16, null, 0, 0, 0x1, 0, 1, 2, 9, false);//历史纪录规则
 		//CMN.Log("ssb len:", ssb.length());
 		tv.setTag(null);
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
@@ -4405,8 +4394,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}, R.string.warn_exit0);
 		
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 42, 1, 4, -1, true);//清除历史
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 40, 1, 4, 10090, true);//彻底退出
+		init_clickspan_with_bits_at(this, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 42, 1, 4, -1, true);//清除历史
+		init_clickspan_with_bits_at(this, tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 40, 1, 4, 10090, true);//彻底退出
 		ssb.delete(ssb.length()-4,ssb.length());
 		
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
@@ -4428,26 +4417,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 38, 1, 3, -1, false);//opt.getAutoReadEntry()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1, 36, 1, 3, -1, false);//opt.getUseTTSToReadEntry()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 37, 1, 3, -1, false);//opt.getHintTTSReading()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 38, 1, 3, -1, false);//opt.getAutoReadEntry()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1, 36, 1, 3, -1, false);//opt.getUseTTSToReadEntry()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 37, 1, 3, -1, false);//opt.getHintTTSReading()//
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1, 42, 1, 3, -1, false);//opt.getTTSBackgroundPlay()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1, 42, 1, 3, -1, false);//opt.getTTSBackgroundPlay()//
 
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 5, Coef, 0, 1, 0x1, 35, 1, 3, 12, false);//opt.getClickSearchEnabled()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 5, Coef, 0, 1, 0x1, 35, 1, 3, 12, false);//opt.getClickSearchEnabled()//
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, null, 0, 1, 0x1, 0, 1, 3, 15, false);
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 6, null, 0, 1, 0x1, 0, 1, 3, 15, false);
 
 		boolean flagCase = PeruseViewAttached();
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, flagCase?37:46, 1, flagCase?2:1, -1, false);//opt.getUseVolumeBtn()
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, flagCase?37:46, 1, flagCase?2:1, -1, false);//opt.getUseVolumeBtn()
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, Coef, 0, 1, 0x1, 39, 1, 3, -1, false);//opt.getMakeWayForVolumeAjustmentsWhenAudioPlayed()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 8, Coef, 0, 1, 0x1, 39, 1, 3, -1, false);//opt.getMakeWayForVolumeAjustmentsWhenAudioPlayed()//
 
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, null, 0, 0, 0x1, 44, 1, 3, 16, false);//滚动条
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 9, null, 0, 0, 0x1, 44, 1, 3, 16, false);//滚动条
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 44, 1, 3, 11, false);//opt.getTTSHighlightWebView()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 44, 1, 3, 11, false);//opt.getTTSHighlightWebView()//
 
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 11, null, 0, 0, 0x1, 0, 1, 3, 10, false);//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 11, null, 0, 0, 0x1, 0, 1, 3, 10, false);//
 
 		ssb.delete(ssb.length()-4, ssb.length());
 		tv.setTextSize(17f);

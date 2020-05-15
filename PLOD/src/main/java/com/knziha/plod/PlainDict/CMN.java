@@ -155,4 +155,8 @@ public class CMN{
 		if(name.endsWith(".sql.db")) return name.substring(0, name.length()-7);
 		return name;
 	}
+	
+	public static int Visible(boolean vis) {
+		return vis?View.VISIBLE:View.GONE;
+	}
 }

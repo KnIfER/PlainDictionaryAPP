@@ -28,6 +28,7 @@ public class UnCrashableSpannedTextView extends TextView {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	public UnCrashableSpannedTextView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
+		init(context);
 	}
 
 	private Context mContext;  

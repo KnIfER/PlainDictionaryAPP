@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin">
+
+	<TextView
+		android:id="@+id/color_view"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom"
+		android:layout_margin="10dp"
+		android:layout_weight="1"
+		android:textColor="#fff"
+		android:text="水太深、我不会、伤不起"
+		android:gravity="center"
+		android:background="#88888888"
+		/>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom"
+		android:layout_weight="1"
+		android:visibility="gone"
+		android:orientation="horizontal">
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:gravity="center"
+			android:text="色相:"
+			android:textAppearance="?android:attr/textAppearanceLarge" />
+
+		<com.knziha.plod.widgets.DomesticSeekDog
+			android:id="@+id/bar_hue"
+			android:layout_width="wrap_content"
+			android:layout_height="@dimen/_35_"
+			android:layout_gravity="center_vertical"
+			android:layout_weight="1"
+			android:max="255"
+			android:progress="128" />
+	</LinearLayout>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom"
+		android:layout_weight="1"
+		android:orientation="horizontal">
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:gravity="center"
+			android:text="红相:"
+			android:textColor="#fff"
+			android:textAppearance="?android:attr/textAppearanceLarge" />
+
+		<com.knziha.plod.widgets.DomesticSeekDog
+			android:id="@+id/bar_hue_r"
+			android:layout_width="wrap_content"
+			android:layout_height="@dimen/_35_"
+			android:layout_gravity="center_vertical"
+			android:layout_weight="1"
+			android:max="255"
+			android:progress="128" />
+	</LinearLayout>
+
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom"
+		android:layout_weight="1"
+		android:orientation="horizontal">
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:gravity="center"
+			android:text="绿相:"
+			android:textColor="#fff"
+			android:textAppearance="?android:attr/textAppearanceLarge" />
+
+		<com.knziha.plod.widgets.DomesticSeekDog
+			android:id="@+id/bar_hue_g"
+			android:layout_width="wrap_content"
+			android:layout_height="@dimen/_35_"
+			android:layout_gravity="center_vertical"
+			android:layout_weight="1"
+			android:max="255"
+			android:progress="128" />
+	</LinearLayout>
+
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom"
+		android:layout_weight="1"
+		android:orientation="horizontal">
+
+		<TextView
+			android:id="@+id/textView"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:gravity="center"
+			android:textColor="#fff"
+			android:text="蓝相:"
+			android:textAppearance="?android:attr/textAppearanceLarge" />
+
+		<com.knziha.plod.widgets.DomesticSeekDog
+			android:id="@+id/bar_hue_b"
+			android:layout_width="wrap_content"
+			android:layout_height="@dimen/_35_"
+			android:layout_gravity="center_vertical"
+			android:layout_weight="1"
+			android:max="255"
+			android:progress="128" />
+	</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="饱和:"
+			android:textColor="#fff"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <com.knziha.plod.widgets.DomesticSeekDog
+            android:id="@+id/bar_sat"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/_35_"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:max="255"
+            android:progress="128" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+			android:textColor="#fff"
+            android:text="明度:"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <com.knziha.plod.widgets.DomesticSeekDog
+            android:id="@+id/bar_lum"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/_35_"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:max="255"
+            android:progress="128" />
+    </LinearLayout>
+
+</LinearLayout>

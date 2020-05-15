@@ -8,6 +8,7 @@ import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -15,6 +16,8 @@ import android.content.SharedPreferences.Editor;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
@@ -1083,31 +1086,13 @@ public class PDICMainAppOptions
 	public static boolean getShowImageBrowserFlipper() {
 		return (SecondFlag & 0x20000000000l) != 0x20000000000l;
 	}
-	public static boolean getShowImageBrowserFlipper(long SecondFlag) {
-		return (SecondFlag & 0x20000000000l) != 0x20000000000l;
-	}
-	public static boolean setShowImageBrowserFlipper(boolean val) {
-		updateSFAt(0x20000000000l,!val);
-		return val;
-	}
 
 	public static boolean getShowSaveImage() {
 		return (SecondFlag & 0x40000000000l) == 0x40000000000l;
 	}
-	public static boolean getShowSaveImage(long SecondFlag) {
-		return (SecondFlag & 0x40000000000l) == 0x40000000000l;
-	}
-	public static boolean setShowSaveImage(boolean val) {
-		updateSFAt(0x40000000000l,val);
-		return val;
-	}
 
 	public static boolean getClickDismissImageBrowser() {
 		return (SecondFlag & 0x80000000000l) != 0x80000000000l;
-	}
-	public static boolean setClickDismissImageBrowser(boolean val) {
-		updateSFAt(0x80000000000l,!val);
-		return val;
 	}
 
 	public boolean getInPageSearchVisible() {
@@ -2193,6 +2178,19 @@ public class PDICMainAppOptions
 	public boolean getRestoreAllBottombarProj() {
 		return (FourthFlag & 0x80000000000l) == 0x80000000000l;
 	}
+	
+	public boolean getPhotoViewLockXMovement() {
+		return (FourthFlag & 0x100000000000l) == 0x100000000000l;
+	}
+	public boolean getPhotoViewLongclickable() {
+		return (FourthFlag & 0x200000000000l) != 0x200000000000l;
+	}
+	public boolean getPhotoViewShowFloatMenu() {
+		return (FourthFlag & 0x400000000000l) != 0x400000000000l;
+	}
+	public boolean getPhotoViewShowFloatExit() {
+		return (FourthFlag & 0x800000000000l) != 0x800000000000l;
+	}
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////
 	//EQ
@@ -2405,5 +2403,19 @@ public class PDICMainAppOptions
 	public void putDimensionalSharePatternByIndex(int position, JSONObject json) {
 		CMN.Log("保存", position);
 		defaultReader.edit().putString("dsp#"+position, json==null||json.length()==0?null:json.toString()).apply();
+	}
+	
+	@SuppressLint("ClickableViewAccessibility")
+	public void setAsLinkedTextView(TextView tv, boolean center) {
+		if(xyt==null) xyt = new XYTouchRecorder();
+		tv.setOnClickListener(xyt);
+		tv.setOnTouchListener(xyt);
+		tv.setTextSize(17f);
+		if(GlobalOptions.isLarge) {
+			tv.setTextSize(tv.getTextSize());
+		}
+		if(center) {
+			tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+		}
 	}
 }

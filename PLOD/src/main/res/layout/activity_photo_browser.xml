@@ -2,14 +2,21 @@
 	android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000">
+	>
+	<View
+		android:id="@+id/background"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:background="#000"
+		android:alpha="0"
+		/>
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+	<androidx.viewpager.widget.ViewPager
+		android:id="@+id/pager"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent" />
 
-    <TextView
+	<TextView
         android:id="@+id/indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -51,6 +58,29 @@
 			android:src="@drawable/chevron_right_framed"
 			/>
 	</LinearLayout>
+
+	<android.widget.ImageView
+		android:id="@+id/float_back"
+		android:layout_width="45dp"
+		android:layout_height="45dp"
+		android:background="@drawable/listviewselector2"
+		android:src="@drawable/round_back_ic"
+		android:layout_gravity="right|top"
+		android:layout_marginRight="@dimen/_25_"
+		android:layout_marginTop="@dimen/_30_"
+		/>
+
+
+	<android.widget.ImageView
+		android:id="@+id/float_menu"
+		android:layout_width="50dp"
+		android:layout_height="50dp"
+		android:background="@drawable/listviewselector3"
+		android:src="@drawable/ic_menu_round"
+		android:layout_gravity="right|center"
+		android:layout_marginRight="@dimen/_25_"
+		/>
+
 
 	<android.widget.ImageView
 		android:id="@+id/browser_widget15"
