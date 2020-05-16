@@ -52,8 +52,8 @@ public final class GestureDetectorCompat {
         void setIsLongpressEnabled(boolean enabled);
         void setOnDoubleTapListener(OnDoubleTapListener listener);
     }
-
-    static class GestureDetectorCompatImplBase implements GestureDetectorCompatImpl {
+	
+	public static class GestureDetectorCompatImplBase implements GestureDetectorCompatImpl {
         private int mTouchSlopSquare;
         private int mDoubleTapSlopSquare;
         private int mMinimumFlingVelocity;
@@ -74,6 +74,7 @@ public final class GestureDetectorCompat {
 
         boolean mStillDown;
         boolean mDeferConfirmSingleTap;
+		boolean mDelayConfirmSingleTap;
         private boolean mInLongPress;
         private boolean mAlwaysInTapRegion;
         private boolean mAlwaysInBiggerTapRegion;
@@ -86,6 +87,8 @@ public final class GestureDetectorCompat {
          * up events). Can only be true if there is a double tap listener attached.
          */
         private boolean mIsDoubleTapping;
+        
+		public boolean clickable;
 
         private float mLastFocusX;
         private float mLastFocusY;
@@ -98,8 +101,8 @@ public final class GestureDetectorCompat {
          * Determines speed during touch scrolling
          */
         private VelocityTracker mVelocityTracker;
-
-        private class GestureHandler extends Handler {
+		
+		private class GestureHandler extends Handler {
             GestureHandler() {
                 super();
             }
@@ -123,7 +126,8 @@ public final class GestureDetectorCompat {
                     // If the user's finger is still down, do not count it as a tap
                     if (mDoubleTapListener != null) {
                         if (!mStillDown) {
-                            mDoubleTapListener.onSingleTapConfirmed(mCurrentDownEvent);
+                        	if(mDelayConfirmSingleTap)
+                            	mDoubleTapListener.onSingleTapConfirmed(mCurrentDownEvent);
                         } else {
                             mDeferConfirmSingleTap = true;
                         }
@@ -299,7 +303,8 @@ public final class GestureDetectorCompat {
                             handled |= mDoubleTapListener.onDoubleTapEvent(ev);
                         } else {
                             // This is a first tap
-                            mHandler.sendEmptyMessageDelayed(TAP, DOUBLE_TAP_TIMEOUT);
+							mDelayConfirmSingleTap = clickable;
+							mHandler.sendEmptyMessageDelayed(TAP, DOUBLE_TAP_TIMEOUT);
                         }
                     }
 
@@ -461,8 +466,8 @@ public final class GestureDetectorCompat {
             mListener.onLongPress(mCurrentDownEvent);
         }
     }
-
-    static class GestureDetectorCompatImplJellybeanMr2 implements GestureDetectorCompatImpl {
+	
+	public static class GestureDetectorCompatImplJellybeanMr2 implements GestureDetectorCompatImpl {
         private final GestureDetector mDetector;
 
         GestureDetectorCompatImplJellybeanMr2(Context context, OnGestureListener listener,
@@ -490,8 +495,8 @@ public final class GestureDetectorCompat {
             mDetector.setOnDoubleTapListener(listener);
         }
     }
-
-    private final GestureDetectorCompatImpl mImpl;
+	
+	public final GestureDetectorCompatImplBase mImpl;
 
     /**
      * Creates a GestureDetectorCompat with the supplied listener.
@@ -517,11 +522,11 @@ public final class GestureDetectorCompat {
      * @param handler the handler that will be used for posting deferred messages
      */
     public GestureDetectorCompat(Context context, OnGestureListener listener, Handler handler) {
-        if (Build.VERSION.SDK_INT > 17) {
-            mImpl = new GestureDetectorCompatImplJellybeanMr2(context, listener, handler);
-        } else {
-            mImpl = new GestureDetectorCompatImplBase(context, listener, handler);
-        }
+        //if (Build.VERSION.SDK_INT > 17) {
+        //    mImpl = new GestureDetectorCompatImplJellybeanMr2(context, listener, handler);
+        //} else {
+             mImpl = new GestureDetectorCompatImplBase(context, listener, handler);
+        //}
     }
 
     /**
