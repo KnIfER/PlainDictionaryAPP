@@ -47,6 +47,8 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.sun.tools.internal.xjc.reader.gbind.ElementSets;
 
+import org.apache.commons.imaging.formats.tiff.photometricinterpreters.PhotometricInterpreterBiLevel;
+
 public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
 	protected String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
@@ -173,7 +175,7 @@ public class Toastable_Activity extends AppCompatActivity {
 							int len = new FileInputStream(log).read(buffer);
 							String message=new String(buffer,0,len);
 							launching[0]=true;
-							setStatusBarColor(0xff8f8f8f);
+							setStatusBarColor(getWindow(), 0xff8f8f8f);
 							new androidx.appcompat.app.AlertDialog.Builder(this)
 								.setMessage(message)
 								.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
@@ -201,8 +203,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		}
 	}
 	
-	void setStatusBarColor(int color){
-		Window window = getWindow();
+	public static void setStatusBarColor(Window window, int color){
 		window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
 				| WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
 		window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -242,6 +243,19 @@ public class Toastable_Activity extends AppCompatActivity {
 					| View.SYSTEM_UI_FLAG_FULLSCREEN;
 			decorView.setSystemUiVisibility(uiOptions);
 		}
+	}
+	
+	public static void fix_full_screen_global(@NonNull View decorView, boolean fullScreen, boolean hideNavigation) {
+		int uiOptions = 0;
+		if(fullScreen) uiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+		if(hideNavigation) uiOptions|=View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LOW_PROFILE
+				| View.SYSTEM_UI_FLAG_IMMERSIVE;
+		decorView.setSystemUiVisibility(uiOptions);
 	}
 
 	public static void setWindowsPadding(@NonNull View decorView) {
@@ -296,7 +310,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected void checkLaunch(Bundle savedInstanceState) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//大于 23 时
 			if (checkSelfPermission(permissions[0]) != PackageManager.PERMISSION_GRANTED) {
-				setStatusBarColor(0xff8f8f8f);
+				setStatusBarColor(getWindow(), 0xff8f8f8f);
 				File trialPath = getExternalFilesDir("Trial");
 				if(trialPath!=null){
 					if(trialPath.isDirectory()) {

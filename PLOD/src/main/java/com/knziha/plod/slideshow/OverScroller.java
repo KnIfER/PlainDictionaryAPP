@@ -400,7 +400,7 @@ public class OverScroller {
 
     public void fling(int startX, int startY, int velocityX, int velocityY,
             int minX, int maxX, int minY, int maxY, boolean SameDir) {
-        fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY, 0, 0, SameDir);
+        fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY, 0, 0, SameDir, 1, 1);
     }
 
     /**
@@ -431,7 +431,8 @@ public class OverScroller {
      *            direction will be possible.
      */
     public void fling(int startX, int startY, int velocityX, int velocityY,
-            int minX, int maxX, int minY, int maxY, int overX, int overY, boolean SameDir) {
+            int minX, int maxX, int minY, int maxY, int overX, int overY
+			, boolean SameDir,double distMulX, double distMulY) {
         // Continue a scroll or fling in progress
         if (mFlywheel && !isFinished()) {
             float oldVelocityX = mScrollerX.mCurrVelocity;
@@ -441,12 +442,14 @@ public class OverScroller {
 //                velocityY += oldVelocityY;
 //            }
         }
-        //int max=5000;
-		//if(velocityX>max) velocityX=max;
-		//if(velocityY>max) velocityY=max;
+//        int max=1000; // 5000
+//		if(velocityX>max) velocityX=max;
+//		if(velocityY>max) velocityY=max;
+		velocityX/=2;
+		velocityY/=2;
         mMode = FLING_MODE;
-        mScrollerX.fling(startX, velocityX, minX, maxX, overX);
-        mScrollerY.fling(startY, velocityY, minY, maxY, overY);
+        mScrollerX.fling(startX, velocityX, minX, maxX, overX, distMulX);
+        mScrollerY.fling(startY, velocityY, minY, maxY, overY, distMulY);
     }
 
     /**
@@ -486,7 +489,7 @@ public class OverScroller {
     /**
      * Returns whether the current Scroller is currently returning to a valid position.
      * Valid bounds were provided by the
-     * {@link #fling(int, int, int, int, int, int, int, int, int, int, boolean)} method.
+     * {@link #fling} method.
      *
      * One should check this value before calling
      * {@link #startScroll(int, int, int, int)} as the interpolation currently in progress
@@ -634,8 +637,10 @@ public class OverScroller {
             }
             SPLINE_POSITION[NB_SAMPLES] = SPLINE_TIME[NB_SAMPLES] = 1.0f;
         }
-
-        void setFriction(float friction) {
+	
+		private double mDistMul;
+	
+		void setFriction(float friction) {
             mFlingFriction = friction;
         }
 
@@ -744,8 +749,9 @@ public class OverScroller {
             mDuration = (int) (1000.0 * Math.sqrt(-2.0 * delta / mDeceleration));
         }
 
-        void fling(int start, int velocity, int min, int max, int over) {
-            mOver = over;
+        void fling(int start, int velocity, int min, int max, int over, double distMult) {
+			mDistMul = distMult;
+        	mOver = over;
             mFinished = false;
             mCurrVelocity = mVelocity = velocity;
             mDuration = mSplineDuration = 0;
@@ -761,8 +767,8 @@ public class OverScroller {
             double totalDistance = 0.0;
 
             if (velocity != 0) {
-                mDuration = mSplineDuration = getSplineFlingDuration(velocity);
-                totalDistance = getSplineFlingDistance(velocity);
+                mDuration = mSplineDuration = (int) (distMult*getSplineFlingDuration(velocity));
+                totalDistance = distMult*getSplineFlingDistance(velocity);
             }
 
             mSplineDistance = (int) (totalDistance * Math.signum(velocity));
@@ -833,7 +839,7 @@ public class OverScroller {
             } else {
                 final double totalDistance = getSplineFlingDistance(velocity);
                 if (totalDistance > Math.abs(overDistance)) {
-                    fling(start, velocity, positive ? min : start, positive ? start : max, mOver);
+                    fling(start, velocity, positive ? min : start, positive ? start : max, mOver, mDistMul);
                 } else {
                     startSpringback(start, edge, velocity);
                 }

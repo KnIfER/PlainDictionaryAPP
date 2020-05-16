@@ -163,8 +163,8 @@
 	    <item>前后切换按钮</item>
 		<item>保存</item>
 		<item>保存按钮</item>
-		<item>返回</item>
-		<item>返回按钮</item>
+		<item>立即返回</item>
+		<item>按钮</item>
 	</string-array>
 
     <string-array name="app_spec"> 

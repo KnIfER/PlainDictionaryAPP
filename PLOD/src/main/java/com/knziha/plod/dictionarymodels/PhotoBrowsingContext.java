@@ -1,10 +1,11 @@
 package com.knziha.plod.dictionarymodels;
 
 public class PhotoBrowsingContext {
+	public boolean lockX;
 	public long firstFlag;
 	public float doubleClickZoomRatio = 2.25f;
 	public float doubleClickXOffset = 0f;
-	public float doubleClickZoomLevel1 = 2f;
+	public float doubleClickZoomLevel1 = 0f;
 	public float doubleClickZoomLevel2 = 0f;
 	public float doubleClickPresetXOffset = 0f;
 	

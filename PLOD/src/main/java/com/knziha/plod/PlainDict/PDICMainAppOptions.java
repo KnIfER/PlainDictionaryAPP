@@ -527,7 +527,7 @@ public class PDICMainAppOptions
 	}
 
 	public static boolean isFullscreenHideNavigationbar() {
-		return (FirstFlag & 0x4000000) == 0x4000000;
+		return (FirstFlag & 0x4000000) != 0x4000000;
 	}
 	public static boolean setFullscreenHideNavigationbar(boolean val) {
 		updateFFAt(0x4000000,val);
@@ -2182,9 +2182,14 @@ public class PDICMainAppOptions
 	public boolean getPhotoViewLockXMovement() {
 		return (FourthFlag & 0x100000000000l) == 0x100000000000l;
 	}
+	
 	public boolean getPhotoViewLongclickable() {
 		return (FourthFlag & 0x200000000000l) != 0x200000000000l;
 	}
+	public void setPhotoViewLongclickable(boolean val) {
+		updateQFAt(0x200000000000l,!val);
+	}
+	
 	public boolean getPhotoViewShowFloatMenu() {
 		return (FourthFlag & 0x400000000000l) != 0x400000000000l;
 	}

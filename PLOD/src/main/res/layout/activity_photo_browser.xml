@@ -63,7 +63,7 @@
 		android:id="@+id/float_back"
 		android:layout_width="45dp"
 		android:layout_height="45dp"
-		android:background="@drawable/listviewselector2"
+		android:background="@drawable/listviewselector3"
 		android:src="@drawable/round_back_ic"
 		android:layout_gravity="right|top"
 		android:layout_marginRight="@dimen/_25_"

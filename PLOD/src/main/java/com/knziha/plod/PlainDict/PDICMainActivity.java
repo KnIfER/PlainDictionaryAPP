@@ -2189,7 +2189,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			new File(opt.lastMdlibPath).mkdirs();
 		}
 
-		setStatusBarColor(MainBackground);
+		setStatusBarColor(getWindow(), MainBackground);
 	}
 
 	private void dumpSettiings(){
@@ -2417,7 +2417,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			cb1.setLayoutParams(lp);
 		}
 
-		setStatusBarColor(filteredColor);
+		setStatusBarColor(getWindow(), filteredColor);
 		bottombar2.setBackgroundColor(filteredColor);
 		if(MainPageSearchbar!=null)
 			MainPageSearchbar.setBackgroundColor(filteredColor);

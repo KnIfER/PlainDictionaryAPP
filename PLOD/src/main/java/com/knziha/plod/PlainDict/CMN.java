@@ -50,6 +50,8 @@ public class CMN{
 	public static final String TestText="Happy";
 	public static boolean bForbidOneSpecFile;
 	public static long LastConfigReadTime;
+	
+	public static String sep = " ";
 
 	public static String Log(Object... o) {
 		String msg="";
@@ -61,15 +63,17 @@ public class CMN{
 					((Exception)o[i]).printStackTrace(p);
 					msg+=s.toString();
 				}
-				msg+=o[i]+" ";
+				msg+=o[i]+sep;
 			}
 
 		if(SU.UniversalObject instanceof Exception)
 			System.out.println(msg);
 		else
 			android.util.Log.d("fatal poison",msg);
+		sep = " ";
 		return msg;
 	}
+	
 	public static void recurseLog(View v,String... depths) {
 		String depth = depths!=null && depths.length>0?depths[0]:"- ";
 		String depth_plus_1=depth+"- ";

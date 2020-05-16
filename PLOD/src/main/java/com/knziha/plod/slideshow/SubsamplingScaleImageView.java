@@ -50,20 +50,25 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.core.widget.ImageViewCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.slideshow.decoder.CompatDecoderFactory;
 import com.knziha.plod.slideshow.decoder.DecoderFactory;
 import com.knziha.plod.slideshow.decoder.ImageDecoder;
 import com.knziha.plod.slideshow.decoder.ImageRegionDecoder;
 import com.knziha.plod.slideshow.decoder.SkiaImageDecoder;
 import com.knziha.plod.slideshow.decoder.SkiaImageRegionDecoder;
+import com.knziha.plod.widgets.FtagImageView;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -84,7 +89,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 @SuppressWarnings({"unused", "IntegerDivisionInFloatingPointContext"})
 public class SubsamplingScaleImageView extends View {
-	public ImageView view_to_guard;
+	public FtagImageView view_to_guard;
 	public TilesGridLayout view_to_paint;
 	public boolean paint_to_grid=false;
 	public ViewPager view_pager_toguard;
@@ -115,6 +120,8 @@ public class SubsamplingScaleImageView extends View {
 	public static final int ORIGIN_FLING = 3;
 	/** State change originated from a double tap zoom anim. */
 	public static final int ORIGIN_DOUBLE_TAP_ZOOM = 4;
+	
+	public PhotoBrowsingContext IBC;
 	
 	// Uri of full size image
 	private Uri uri;
@@ -164,7 +171,7 @@ public class SubsamplingScaleImageView extends View {
 	
 	// Double tap zoom behaviour
 	private float[] quickZoomLevels = new float[3];
-	private float quickZoomLevelCount = 2;
+	private int quickZoomLevelCount = 2;
 	
 	// Current scale and scale at start of zoom
 	public float scale;
@@ -207,7 +214,7 @@ public class SubsamplingScaleImageView extends View {
 	private int maxTouchCount;
 	
 	// Fling detector
-	private GestureDetector flingdetector;
+	private GestureDetectorCompat flingdetector;
 	
 	// Tile and image decoding
 	private ImageRegionDecoder decoder;
@@ -275,7 +282,7 @@ public class SubsamplingScaleImageView extends View {
 	private Runnable flingRunnable = new Runnable() {
 		@Override
 		public void run() {
-			removeCallbacks(this);
+			//removeCallbacks(this);
 			if(flingScroller.computeScrollOffset()){
 				int cfx = flingScroller.getCurrX();
 				int cfy = flingScroller.getCurrY();
@@ -289,14 +296,16 @@ public class SubsamplingScaleImageView extends View {
 				
 				int flag;
 				
-				vTranslate.x = vTranslate.x+(flingVx>0?x:-x);// fingStartX + cfx-flingScroller.getStartX();
+				if(!IBC.lockX){
+					vTranslate.x = vTranslate.x+(flingVx>0?x:-x);// fingStartX + cfx-flingScroller.getStartX();
+				}
 				vTranslate.y = vTranslate.y+(flingVy>0?y:-y);// fingStartY + cfy-flingScroller.getStartY();
 				
 				//if(isProxy)
 					handle_proxy_simul(scale, null, rotation);
 				//handle_proxy_view(view_pager_toguard, scale, null, rotation);
 				
-				handle_proxy_view(view_to_paint, scale, null, rotation);
+				//handle_proxy_view(view_to_paint, scale, null, rotation);
 				if(!isProxy){
 					refreshRequiredTiles(true); // flingScroller.getCurrVelocity()<2500
 					invalidate();
@@ -345,6 +354,8 @@ public class SubsamplingScaleImageView extends View {
 	private boolean isDown;
 	private OnClickListener mClickListener;
 	private boolean LongClickDetected;
+	private boolean clickable;
+	private boolean UseUserLevels;
 	
 	public SubsamplingScaleImageView(Context context) {
 		this(context, null);
@@ -352,14 +363,15 @@ public class SubsamplingScaleImageView extends View {
 	
 	public SubsamplingScaleImageView(Context context, AttributeSet attr) {
 		super(context, attr);
+		flingScroller = new OverScroller(getContext());
+		//flingScroller.setInterpolator(new LinearInterpolator());
 		density = getResources().getDisplayMetrics().density;
-		//setMinimumDpi(160);
+		//setMinimumDpi(160)(ViewGroup;
 		setMinimumTileDpi(320);
 		setGestureDetector(context);
 		createPaints();
 		this.handler = new Handler(new Handler.Callback() {
 			public boolean handleMessage(Message message) {
-				CMN.Log("长按了");
 				if (message.what == MESSAGE_LONG_CLICK && onLongClickListener != null) {
 					//maxTouchCount = 0;
 					LongClickDetected = true;
@@ -586,7 +598,7 @@ public class SubsamplingScaleImageView extends View {
 	private int MAX_FLING_OVER_SCROLL = (int) (30*getContext().getResources().getDisplayMetrics().density);
 	@SuppressWarnings("SuspiciousNameCombination")
 	private void setGestureDetector(final Context context) {
-		this.flingdetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+		this.flingdetector = new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
 			@Override
 			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 				onFlingDetected =true;
@@ -680,10 +692,18 @@ public class SubsamplingScaleImageView extends View {
 
 						mLastFlingY = mLastFlingX = 0;
 						//CMN.Log("fling 最终参数(vs, vy, distX, distY)", flingVx, flingVy, distanceX, distanceY);
-
+						if(distanceX!=0 || distanceY!=0)
+							clickable = false;
+						
+						double distMultY = 2.8;
+						double distMultX = 2.8;
+						if(sHeight>sWidth){
+							distMultX = distMultY*sWidth/sHeight;
+						}
+						
 						flingScroller.fling(mLastFlingX, mLastFlingY, (int) vX, (int) vY,
-								0, distanceX, 0, distanceY, overX, overY, SameDir);
-
+								0, distanceX, 0, distanceY, overX, overY, SameDir, distMultX, distMultY);
+						
 						post(flingRunnable);
 						return true;
 					}
@@ -693,7 +713,7 @@ public class SubsamplingScaleImageView extends View {
 			
 			@Override
 			public boolean onSingleTapConfirmed(MotionEvent e) {
-				if (mClickListener != null) {
+				if (mClickListener != null && !LongClickDetected) {
 					int tol = 6;
 					if(Math.abs(view_pager_toguard.lastX-view_pager_toguard_StartX)<=tol&&
 							Math.abs(view_pager_toguard.lastY-view_pager_toguard_StartY)<=tol){
@@ -789,17 +809,19 @@ public class SubsamplingScaleImageView extends View {
 		// During non-interruptible anims, ignore all touch events
 		int touch_type = event.getAction() & MotionEvent.ACTION_MASK;
 		boolean isDown = touch_type==MotionEvent.ACTION_DOWN||touch_type==MotionEvent.ACTION_POINTER_DOWN;
-		if(waitingNextTouchResume || LongClickDetected){
+
+		if(waitingNextTouchResume){
 			if(!isDown){
 				return true;
 			}
-			LongClickDetected=
 			waitingNextTouchResume=false;
 			//从善如流
 			touch_partisheet.add(0);
 		}
 		
 		if(isDown) {
+			flingdetector.mImpl.clickable = flingScroller.isFinished();
+			LongClickDetected=false;
 			isQuickScaling=quickScaleMoved=false;
 			if(touch_type==MotionEvent.ACTION_DOWN){
 				vCenterStart.set(event.getX(), event.getY());
@@ -807,11 +829,11 @@ public class SubsamplingScaleImageView extends View {
 			startTouchWithAnimation = anim != null;
 		}
 		
-		
 		// Abort if not ready
 		// Detect flings, taps and double taps
 		onFlingDetected =false;
 		boolean flingEvent = flingdetector.onTouchEvent(event);
+		
 		//if(!(onflingdetected && scale <= minScale())){
 		//	if (!isQuickScaling && flingEvent) {
 		//		isZooming = false;
@@ -820,6 +842,7 @@ public class SubsamplingScaleImageView extends View {
 		//		return true;
 		//	}
 		//}
+		
 		
 		if (anim != null){
 			if(!anim.interruptible) {
@@ -859,7 +882,7 @@ public class SubsamplingScaleImageView extends View {
 				isRotating = false;
 			}
 			case MotionEvent.ACTION_POINTER_DOWN:{
-				CMN.Log("ACTION_DOWN", touchCount);
+				//CMN.Log("ACTION_DOWN", touchCount);
 				doubleTapDetected=false;
 				flingScroller.abortAnimation();
 				if(touch_partisheet.size()==0 && touch_type==MotionEvent.ACTION_POINTER_DOWN) {
@@ -1127,7 +1150,7 @@ public class SubsamplingScaleImageView extends View {
 						// One finger pan - translate the image. We do this calculation even with pan disabled so click
 						// and long click behaviour is preserved.
 						
-						float offset = 0;//density * 5;
+						float offset = density * 15;
 						if (isPanning || Math.abs(view_pager_toguard.lastX-view_pager_toguard_StartX) > offset || Math.abs(event.getY() - vCenterStart.y) > offset) {
 							isPanning =
 							consumed = true;
@@ -1138,11 +1161,13 @@ public class SubsamplingScaleImageView extends View {
 							float dxR = (float) (dxRaw * cos - dyRaw * -sin);
 							float dyR = (float) (dxRaw * -sin + dyRaw * cos);
 							
-							vTranslate.x = vTranslate.x + dxR;
+							if(!IBC.lockX) {
+								vTranslate.x = vTranslate.x + dxR;
+							}
 							vTranslate.y = vTranslate.y + dyR;
 							//vTranslate.x = vTranslateStart.x + (event.getX() - vCenterStart.x);
 							//vTranslate.y = vTranslateStart.y + (event.getY() - vCenterStart.y);
-							
+
 							refreshRequiredTiles(eagerLoadingEnabled);
 						}
 					}
@@ -1531,16 +1556,14 @@ public class SubsamplingScaleImageView extends View {
 			if(false) {
 				view_to_guard.setScaleType(ImageView.ScaleType.MATRIX);
 				Matrix mat = new Matrix();
-				view_to_guard.setImageMatrix(mat);
-				mat.reset();
 				mat.postScale(scale / getMinScale(), scale / getMinScale());
 				//mat.postRotate(getRequiredRotation());
 				mat.postTranslate(vTranslate.x, vTranslate.y);
-				mat.postRotate((float) Math.toDegrees(rotation), getScreenWidth() / 2, getScreenHeight() / 2);
+				//mat.postRotate((float) Math.toDegrees(rotation), getScreenWidth() / 2, getScreenHeight() / 2);
 				//re-paint
+				view_to_guard.setImageMatrix(mat);
 				view_to_guard.invalidate();
 			}else{
-				//Rotacio is hard to take after, yet I have figured it out!
 				if(rotation!=rotationStamp)
 					view_to_guard.setRotation((float) ((rotation)/Math.PI*180)-sOrientation);
 				if(scale!=scaleStamp){
@@ -1557,11 +1580,16 @@ public class SubsamplingScaleImageView extends View {
 					vTranslateOrg.y = getScreenHeight()*1.0f/2-scale*sHeight/2;
 					float targetTransX = vTranslate.x - vTranslateOrg.x + vTranslateDelta.x;
 					float targetTransY = vTranslate.y - vTranslateOrg.y + vTranslateDelta.y;
-					if(view_to_guard.getTranslationX()!=targetTransX)view_to_guard.setTranslationX(targetTransX);
-					if(view_to_guard.getTranslationY()!=targetTransY)view_to_guard.setTranslationY(targetTransY);
+					view_to_guard.setTranslationX(targetTransX);
+					view_to_guard.setTranslationY(targetTransY);
 				}
 			}
 		}
+	}
+	
+	@Override
+	public void invalidate() {
+		super.invalidate();
 	}
 	
 	private void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
@@ -1571,7 +1599,7 @@ public class SubsamplingScaleImageView extends View {
 		}
 	}
 	
-	/** Compute Quick Double Tap Zoom Levels. see {@link #currentMinScale} */
+	/** Compute Dynamic Quick Double Tap Zoom Levels. see {@link #currentMinScale} */
 	private void computeQuickZoomLevels() {
 		int vPadding = getPaddingBottom() + getPaddingTop();
 		int hPadding = getPaddingLeft() + getPaddingRight();
@@ -1584,24 +1612,43 @@ public class SubsamplingScaleImageView extends View {
 		}
 		float scaleMin1 = (getScreenWidth() - hPadding) / (float) sw;
 		float scaleMin2 = (getScreenHeight() - vPadding) / (float) sh;
-		float zoomInLevel = 2.5f;
-		float level2;
-		if(scaleMin1<scaleMin2){
-			quickZoomLevels[0] = scaleMin1;
-			level2 = scaleMin2;
+		float MaxTol = 10;
+		if(IBC.doubleClickZoomLevel1>1){
+			/* User Levels */
+			UseUserLevels = true;
+			float scaleMin = Math.min(scaleMin1, scaleMin2);
+			quickZoomLevels[0] = scaleMin;
+			quickZoomLevels[1] = scaleMin*IBC.doubleClickZoomLevel1;
+			if(IBC.doubleClickZoomLevel2>IBC.doubleClickZoomLevel1){
+				quickZoomLevels[2] = scaleMin*IBC.doubleClickZoomLevel2;
+				maxScale = quickZoomLevels[2]*MaxTol;
+				quickZoomLevelCount = 3;
+			} else {
+				maxScale = quickZoomLevels[1]*MaxTol;
+				quickZoomLevelCount = 2;
+			}
 		} else {
-			quickZoomLevels[0] = scaleMin2;
-			level2 = scaleMin1;
-		}
-		if(level2<zoomInLevel*quickZoomLevels[0]){
-			quickZoomLevels[1] = level2*zoomInLevel;//1.2f*zoomInLevel*quickZoomLevels[0];
-			quickZoomLevelCount = 2;
-			maxScale = quickZoomLevels[1]*10;
-		} else {
-			quickZoomLevels[1] = level2;
-			quickZoomLevels[2] = level2*zoomInLevel;
-			quickZoomLevelCount = 3;
-			maxScale = quickZoomLevels[2]*10;
+			/* Auto Levels */
+			UseUserLevels = false;
+			float zoomInLevel = 2.5f;
+			float level2;
+			if(scaleMin1<scaleMin2){
+				quickZoomLevels[0] = scaleMin1;
+				level2 = scaleMin2;
+			} else {
+				quickZoomLevels[0] = scaleMin2;
+				level2 = scaleMin1;
+			}
+			if(level2<zoomInLevel*quickZoomLevels[0]){
+				quickZoomLevels[1] = level2*zoomInLevel;//1.2f*zoomInLevel*quickZoomLevels[0];
+				quickZoomLevelCount = 2;
+				maxScale = quickZoomLevels[1]*MaxTol;
+			} else {
+				quickZoomLevels[1] = level2;
+				quickZoomLevels[2] = level2*zoomInLevel;
+				quickZoomLevelCount = 3;
+				maxScale = quickZoomLevels[2]*MaxTol;
+			}
 		}
 	}
 	
@@ -2196,7 +2243,7 @@ public class SubsamplingScaleImageView extends View {
 	 * Sets scale and translate ready for the next draw.
 	 */
 	private void preDraw() {
-		//Log.e("fatal","preDraw");
+		CMN.Log("preDraw");
 		if (getScreenWidth() == 0 || getScreenHeight() == 0 || sWidth <= 0 || sHeight <= 0) {
 			return;
 		}
@@ -2236,11 +2283,30 @@ public class SubsamplingScaleImageView extends View {
 		// If waiting to translate to new center position, set translate now
 		if (_sPendingCenter != null && _pendingScale != null) {
 			scale = getMinScale();
-			//pendingScale = scale;
-			//sPendingCenter = _sPendingCenter;
-			Log.e("fatal","kiam preDraw2 scale="+scale+"  getWidth="+getScreenWidth()+"  getHeight="+getScreenHeight()+" width="+getWidth());
 			vTranslate.x = (getScreenWidth()*1.0f/2) - (scale * _sPendingCenter.x);
 			vTranslate.y = (getScreenHeight()*1.0f/2) - (scale * _sPendingCenter.y);
+			
+			int pzl = IBC.getPresetZoomLevel();
+			if(pzl!=0){
+				vTranslate.y = 0;
+				int pza = IBC.getPresetZoomAlignment();
+				if(pzl==1&&IBC.doubleClickZoomLevel1>1){
+					scale=scale*IBC.doubleClickZoomLevel1;
+					if(pza!=0){
+						float offset = dm.widthPixels*IBC.doubleClickPresetXOffset;
+						if(pza==1){
+							vTranslate.x = -offset;
+						} else {
+							vTranslate.x = getScreenWidth() - scale*sWidth + offset;
+						}
+					}
+				}
+			}
+			//pendingScale = scale;
+			//sPendingCenter = _sPendingCenter;
+			
+			CMN.Log("kiam preDraw2", "scale",scale, vTranslate.x);
+			
 			vTranslateOrg.set(vTranslate);
 			//Log.e("fatal poison", ""+getScreenWidth()+" x "+getScreenHeight());
 			Log.e("fatal","preDraw2 fitToBounds1");
@@ -2250,6 +2316,10 @@ public class SubsamplingScaleImageView extends View {
 		
 		// On first display of base image set up position, and in other cases make sure scale is correct.
 		fitToBounds(false,true);
+		
+		
+		handle_proxy_simul(0,null,rotation);
+		
 	}
 	
 	/**
@@ -2551,6 +2621,7 @@ public class SubsamplingScaleImageView extends View {
 		}
 		computeQuickZoomLevels();
 		CMN.Log("sampleSize：", calcSampleSize(scale), fullImageSampleSize, "dimension：", sWidth, sHeight, "setProxy time:"+(System.currentTimeMillis()-time));
+		
 	}
 	
 	/**
@@ -3418,7 +3489,7 @@ public class SubsamplingScaleImageView extends View {
 //		return +change * fluidInterpolator.getInterpolation(progress) + from;
 	}
 	
-	OverScroller flingScroller = new OverScroller(getContext());
+	OverScroller flingScroller;
 	DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(1f);
 	ViscousFluidInterpolator fluidInterpolator = new ViscousFluidInterpolator();
 	
@@ -3626,6 +3697,7 @@ public class SubsamplingScaleImageView extends View {
 		} else {
 			this.sPendingCenter = new PointF(0, 0);
 		}
+		
 		invalidate();
 	}
 	

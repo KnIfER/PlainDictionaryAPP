@@ -2,11 +2,15 @@ package com.knziha.plod.slideshow;
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.Spannable;
 import android.text.style.ClickableSpan;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
@@ -17,9 +21,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
@@ -36,10 +42,13 @@ import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.OptionProcessor;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.PlainDict.Toastable_Activity;
 import com.knziha.plod.dictionary.mdictRes;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
+import com.knziha.plod.widgets.FtagImageView;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashSet;
@@ -48,9 +57,12 @@ import java.util.List;
 
 import static com.knziha.plod.PlainDict.CMN.Visible;
 import static com.knziha.plod.PlainDict.Toastable_Activity.checkMargin;
+import static com.knziha.plod.PlainDict.Toastable_Activity.do_fix_full_screen;
+import static com.knziha.plod.PlainDict.Toastable_Activity.fix_full_screen_global;
+import static com.knziha.plod.PlainDict.Toastable_Activity.setStatusBarColor;
 
 /** Photo View Activity based on Subsampling-Scale-Image-View */
-public class PhotoViewActivity extends Activity implements View.OnClickListener,
+public class PhotoViewActivity extends AppCompatActivity implements View.OnClickListener,
 		View.OnLongClickListener,
 		OptionProcessor {
 	public View background;
@@ -84,14 +96,26 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 			return false;
 		}
 	};
-
+	
+	boolean backgounded;
+	
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if(hasFocus){
+			fix_full_screen_global(getWindow().getDecorView(), true, PDICMainAppOptions.isFullscreenHideNavigationbar());
+		}
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		opt = new PDICMainAppOptions(this);
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		if(PDICMainAppOptions.isFullScreen())
-			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		
+		setStatusBarColor(getWindow(), Color.TRANSPARENT);
+		
+		
 		setContentView(R.layout.activity_photo_browser);
 		mdd_=mdd;
 		IBC_=IBC;
@@ -108,8 +132,6 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 		background = findViewById(R.id.background);
 		float_menu = findViewById(R.id.float_menu);
 		float_exit = findViewById(R.id.float_back);
-		ObjectAnimator fadeInContents = ObjectAnimator.ofFloat(background, "alpha", 0, 1);
-		fadeInContents.start();
 		viewPager = findViewById(R.id.pager);
 		viewPager.setPageTransformer(false, new DepthPageTransformer(), View.LAYER_TYPE_NONE);
 		viewPager.setPageMargin((int) (getResources().getDisplayMetrics().density * 15));
@@ -144,6 +166,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 					vh.subview.view_pager_toguard = viewPager;
 					vh.subview.setOnClickListener(PhotoViewActivity.this);
 					vh.subview.setOnLongClickListener(PhotoViewActivity.this);
+					vh.subview.IBC = IBC_;
 				}
 				if (vh.itemView.getParent() != null)
 					((ViewGroup) vh.itemView.getParent()).removeView(vh.itemView);
@@ -161,13 +184,13 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 				}
 				String key=imageUrls[position];
 				vh.path = key;
-				//pv.IBC = IBC_;
 				try {
 					vh.subview.recycle();
 					vh.subview.dm = container.getContext().getResources().getDisplayMetrics();
 					if(CMCF!=null){
 						vh.pv.setColorFilter(CMCF);
 					}
+					vh.pv.drawable = true;
 					Glide.with(PhotoViewActivity.this)
 							.asBitmap()
 							.load(key.startsWith("/pdfimg/")?new PdfPic(key, getBaseContext()):new MddPic(mdd_, key))
@@ -189,6 +212,15 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 									ImageView iv = ((ImageViewTarget<?>) target).getView();
 									if(iv.getTag(R.id.home)==null){//true ||
 										return true;
+									}
+									if(!vh.pv.drawable){
+										vh.pv.drawable = true;
+										vh.pv.invalidate();
+									}
+									if(!backgounded){
+										backgounded = true;
+										ObjectAnimator fadeInContents = ObjectAnimator.ofFloat(background, "alpha", 0, 1);
+										fadeInContents.start();
 									}
 									getDimensionsAndOpenQuickScale(resource, iv);
 									return false;
@@ -229,10 +261,13 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 		downloadBtn.setVisibility(PDICMainAppOptions.getShowSaveImage()?View.VISIBLE:View.GONE);
 		downloadBtn.setOnClickListener(this);
 		checkMargin(this);
+		for (int i = 0; i <= 4; i++) {
+			processOptionChanged(null, null,  i, 0);
+		}
 	}
 	
 	private void getDimensionsAndOpenQuickScale(Bitmap resource, ImageView iv) {
-		PhotoHolder vh = (PhotoHolder) iv.getTag();
+		PhotoHolder vh = (PhotoHolder) ((ViewGroup)iv.getParent()).getTag();
 		int[] dimension = null;
 		SparseArray<int[]> bitmapDimensions = Glide.bitmapDimensions;
 		if(resource==null){
@@ -278,7 +313,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 		public String path;
 		ViewGroup itemView;
 		int position;
-		ImageView pv;
+		FtagImageView pv;
 		TilesGridLayout pg;
 		SubsamplingScaleImageView subview;
 		PhotoHolder(View v){
@@ -288,7 +323,6 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 			//pg = v.findViewById(R.id.grid);
 			subview = v.findViewById(R.id.subView);
 			itemView.setTag(this);
-			pv.setTag(this);
 			//pv.setColorFilter(SubsamplingScaleImageView.sample_fileter);
 			subview.view_to_guard = pv;
 			//subview.view_to_paint = pg;
@@ -323,6 +357,9 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 	@Override
 	public void onClick(View view) {
 		switch (view.getId()) {
+			case R.id.float_back:
+				finish();
+			break;
 			case R.id.float_menu:
 				showImageTweakerDialog();
 			break;
@@ -337,6 +374,7 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 				viewPager.setCurrentItem(curPosition+1, false);
 			break;
 			case R.id.browser_widget15:
+				SaveCurrentImg();
 			break;
 		}
 	}
@@ -355,37 +393,47 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 	ColorMatrixColorFilter CMCF;
 
 	void showImageTweakerDialog(){
-		final ViewPager dv = new ViewPager(this);
-		PhotoPagerAjuster ppa = new PhotoPagerAjuster(this);
+		final ViewPager viewPager = new ViewPager(this);
+		PhotoPagerAjuster ppa = new PhotoPagerAjuster(this, viewPager);
 		ppa.setOnColorFilterChangedListener(colorMatrix -> {
 			CMCF = new ColorMatrixColorFilter(colorMatrix);
-			int cc = viewPager.getChildCount();
+			int cc = this.viewPager.getChildCount();
 			for (int i = 0; i < cc; i++) {
-				View ca = viewPager.getChildAt(i);
+				View ca = this.viewPager.getChildAt(i);
 				ImageView iv = ca.findViewById(R.id.imageView);
 				if(iv!=null){
 					iv.setColorFilter(CMCF);
 				}
 			}
 		});
-		dv.setAdapter(ppa);
+		viewPager.setAdapter(ppa);
 		
 		BottomSheetDialog d = new BottomSheetDialog(this);
-		d.setContentView(dv);
 		Window win = d.getWindow();
 		win.setDimAmount(0.2f);
-		win.findViewById(R.id.design_bottom_sheet)
-			.setBackgroundResource(R.drawable.half_round_corner_frame);
 		d.setCanceledOnTouchOutside(true);
 		
-		d.show();
+		boolean hideNav = PDICMainAppOptions.isFullscreenHideNavigationbar();
+		if(hideNav){
+			fix_full_screen_global(win.getDecorView(), false, true);
+		}
 		
-		//View dv = (View) d.getWindow().getDecorView().getTag();
+		d.setOnDismissListener(ppa.OnDismissListener);
+		
+		d.setContentView(viewPager);
+		
+		win.findViewById(R.id.design_bottom_sheet)
+				.setBackgroundResource(R.drawable.half_round_corner_frame);
+		
+		try {
+			d.show();
+		} catch (Exception ignored) {  }
+		
+		viewPager.setCurrentItem(PhotoPagerAjuster.PBC_tab, false);
+		
 		DisplayMetrics dm2 = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getRealMetrics(dm2);
-		dv.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * d.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
-		
-		CMN.recurseLogCascade(dv);
+		viewPager.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * d.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
 	}
 	
 	@Override
@@ -395,25 +443,48 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 	
 	@Override
 	public void processOptionChanged(ClickableSpan clickableSpan, View widget, int processId, int val) {
+		boolean bool;
 		switch (processId){
-			case 0://长按
-				float_menu.setVisibility(Visible(opt.getPhotoViewShowFloatMenu()));
-			break;
+			case 0://锁定X
+				IBC_.lockX = opt.getPhotoViewLockXMovement();
+				break;
 			case 1://菜单按钮
-				float_menu.setVisibility(Visible(opt.getPhotoViewShowFloatMenu()));
+				bool = opt.getPhotoViewShowFloatMenu();
+				if(!bool && !opt.getPhotoViewLongclickable()){
+					if(widget!=null) {
+						TextView tv = (TextView) widget;
+						Spannable span = (Spannable) tv.getText();
+						ClickableSpan[] spans = span.getSpans(0, span.getSpanStart(clickableSpan), ClickableSpan.class);
+						spans[spans.length - 1].onClick(tv);
+					} else {
+						opt.setPhotoViewLongclickable(true);
+					}
+				}
+				float_menu.setVisibility(Visible(bool));
 			break;
-			case 2:
+			case 2://切换按钮
 				setFlipperVis();
 			break;
 			case 10://保存
-			break;
+				SaveCurrentImg();
+				break;
 			case 3://保存按钮
 				findViewById(R.id.browser_widget15).setVisibility(Visible(PDICMainAppOptions.getShowSaveImage()));
 			break;
 			case 11://返回
+				finish();
 			break;
 			case 4://返回按钮
 				float_exit.setVisibility(Visible(opt.getPhotoViewShowFloatExit()));
+			break;
+			case 12://长按
+				bool = opt.getPhotoViewLongclickable();
+				if(!bool && !opt.getPhotoViewShowFloatMenu()){
+					TextView tv = (TextView) widget;
+					Spannable span = (Spannable) tv.getText();
+					ClickableSpan[] spans = span.getSpans(span.getSpanEnd(clickableSpan), span.length(), ClickableSpan.class);
+					spans[0].onClick(tv);
+				}
 			break;
 		}
 	}
@@ -432,5 +503,27 @@ public class PhotoViewActivity extends Activity implements View.OnClickListener,
 			viewPager = null;
 		}
 		super.onDestroy();
+	}
+	
+	private void SaveCurrentImg() {
+		String PicPath = imageUrls[viewPager.getCurrentItem()];
+		try {
+			for(mdictRes mddTmp:mdd_){
+				int idx = mddTmp.lookUp(PicPath);
+				if(idx!=-1) {
+					byte[] resTmp = mddTmp.getRecordData(idx);
+					if (resTmp != null) {
+						File f = new File("/sdcard/download", PicPath);
+						if(!f.exists()){
+							FileOutputStream fout = new FileOutputStream(f);
+							fout.write(resTmp);
+							fout.close();
+							Toast.makeText(this, f.getName()+" 写入成功！", Toast.LENGTH_LONG).show();
+						}
+						break;
+					}
+				}
+			}
+		} catch (Exception ignored) {  }
 	}
 }

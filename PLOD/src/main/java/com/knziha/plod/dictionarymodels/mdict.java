@@ -2282,8 +2282,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 		IBC.firstFlag = firstFlag;
 		if(bgColor==null) bgColor=CMN.GlobalPageBackground;
-		if(IBC.doubleClickZoomRatio==0||IBC.doubleClickZoomLevel1==0) {
-			IBC.doubleClickZoomLevel1=2f;
+		if(IBC.doubleClickZoomRatio==0) {
+			/* initialise values */
 			IBC.doubleClickZoomRatio=2.25f;
 			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?CMN.MainBackground:opt.getTitlebarBackgroundColor();
 			TIFGColor = opt.getTitlebarForegroundColor();

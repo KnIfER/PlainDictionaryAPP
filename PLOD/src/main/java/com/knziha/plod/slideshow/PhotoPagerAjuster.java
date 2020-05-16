@@ -1,10 +1,10 @@
 package com.knziha.plod.slideshow;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.text.SpannableStringBuilder;
-import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,14 +13,11 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.GlobalOptions;
 import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
-import com.knziha.ankislicer.customviews.UnCrashableSpannedTextView;
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.OptionProcessor;
 import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.widgets.XYTouchRecorder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,14 +26,29 @@ import static com.knziha.plod.PlainDict.MainActivityUIBase.init_clickspan_with_b
 
 public class PhotoPagerAjuster extends PagerAdapter {
 	final OptionProcessor opr;
+	final ViewPager viewPager;
 	View[] items = new View[3];
 	SeekBar[] seekbars_scale;
 	SeekBar[] seekbars_hue;
 	ArrayList<SeekBar> seekbars_hue_rgb;
 	static ColorMatrix colorMatrix;
 	ColorMatrix colorMatrixTmp;
-	public PhotoPagerAjuster(OptionProcessor opr){
+	static int PBC_tvScroll;
+	static int PBC_tab;
+	
+	DialogInterface.OnDismissListener OnDismissListener = new DialogInterface.OnDismissListener(){
+		@Override
+		public void onDismiss(DialogInterface dialog) {
+			PBC_tab = viewPager.getCurrentItem();
+			if(items[0]!=null){
+				PBC_tvScroll = items[0].getScrollY();
+			}
+		}
+	};
+	
+	public PhotoPagerAjuster(OptionProcessor opr, ViewPager viewPager){
 		this.opr = opr;
+		this.viewPager = viewPager;
 		if(colorMatrix==null){
 			colorMatrix = new ColorMatrix();
 		}
@@ -68,8 +80,8 @@ public class PhotoPagerAjuster extends PagerAdapter {
 					tv.setLayoutParams(new ScrollView.LayoutParams(-1, -2));
 					sv.addView(tv);
 					ssb.append("\n");
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1,44,1,4, -1,true); //锁定X
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1,45,1,4, 0,true);//长按
+					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1,44,1,4, 0,true); //锁定X
+					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1,45,1,4, 12,true);//长按
 					ssb.delete(ssb.length()-4,ssb.length());
 					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 3, Coef, 0, 1, 0x1,46,1,4, 1,true);//菜单按钮
 					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1,43,1,2, -1,true);//单击
@@ -83,9 +95,16 @@ public class PhotoPagerAjuster extends PagerAdapter {
 					ssb.delete(ssb.length()-4,ssb.length()); ssb.append(" ");
 					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 9, Coef, 0, 1, 0x1,47,1,4, 4,true);//返回an
 					
+					for (int i = 0; i < 8; i++) {
+						ssb.append("\n");
+					}
+					
 					opr.getOpt().setAsLinkedTextView(tv, true);
 					tv.setLinkTextColor(Color.WHITE);
 					tv.setText(ssb, TextView.BufferType.SPANNABLE);
+					if(false){
+						tv.post(() -> sv.scrollTo(0, PBC_tvScroll));
+					}
 					item = sv;
 				} break;
 				/* 色彩偏向 */
