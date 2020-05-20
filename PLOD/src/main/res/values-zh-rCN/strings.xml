@@ -191,4 +191,5 @@
 	<string name="linkedft"><![CDATA[已关联 %s >>  %s]]></string>
 	<string name="copyedft"><![CDATA[已复制到 %s <<  %s]]></string>
 	<string name="warn_reconf">确认要恢复默认配置吗？</string>
+	<string name="SoundOpt">语音设定等</string>
 </resources>

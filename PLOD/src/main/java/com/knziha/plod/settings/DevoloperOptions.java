@@ -40,6 +40,7 @@ public class DevoloperOptions extends SettingsFragment implements Preference.OnP
 		init_switch_preference(this, "keep_hide", PDICMainAppOptions.getAllowHiddenRecords(), null, null);
 		init_switch_preference(this, "sounds_first", PDICMainAppOptions.getUseSoundsPlaybackFirst(), null, null);
 		init_switch_preference(this, "enable_web_debug", PDICMainAppOptions.getEnableWebDebug(), null, null);
+		init_switch_preference(this, "tts_reader", PDICMainAppOptions.getUseTTSToReadEntry(), null, null);
 		init_switch_preference(this, "cache_mp3", PDICMainAppOptions.getCacheSoundResInAdvance(), null, null);
 	}
 
@@ -93,6 +94,10 @@ public class DevoloperOptions extends SettingsFragment implements Preference.OnP
 			return true;
 			case "enable_web_debug": {
 				PDICMainAppOptions.setEnableWebDebug((boolean)newValue);
+			}
+			return true;
+			case "tts_reader": {
+				PDICMainAppOptions.setUseTTSToReadEntry((boolean)newValue);
 			}
 			return true;
 			case "cache_mp3": {

@@ -27,7 +27,7 @@ public class DHBroswer extends DBroswer {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		if(!initialized){
-			PDICMainActivity a = (PDICMainActivity) getActivity();
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 			mLexiDB = a.prepareHistroyCon();
 			fastScroller.setHandleBackground(a.getResources().getDrawable(R.drawable.ghour));
 			lastChecked=0;
@@ -65,7 +65,7 @@ public class DHBroswer extends DBroswer {
 
 	@Override
 	public void toggleFavor() {
-		PDICMainActivity a = (PDICMainActivity) getActivity();
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
 		String text = currentDisplaying;
 		if(a.prepareFavoriteCon().contains(text)) {//删除
@@ -81,7 +81,7 @@ public class DHBroswer extends DBroswer {
 
 	@Override
 	public void processFavorite(int position,String key) {
-		PDICMainActivity a = (PDICMainActivity) getActivity();
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
 		a.favoriteBtn.setActivated(a.prepareFavoriteCon().contains(key));
 	}

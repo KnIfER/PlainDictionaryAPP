@@ -659,7 +659,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(b1) moveTaskToBack(true);
 			else /*finish();*/ super.onBackPressed();
 		}
-		else if(DBrowser !=null){
+		else if(DBrowser != null){
 			if(DBrowser.try_goBack()!=0)
 				return;
 			//File newFavor = DBrowser.items.get(DBrowser.lastChecked);
@@ -1052,7 +1052,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		webcoord = findViewById(R.id.webcoord);
 		IMPageCover = contentview.findViewById(R.id.cover);
 		PageSlider = contentview.findViewById(R.id.PageSlider);
-		mainF = findViewById(R.id.mainF);
+		second_holder = root.findViewById(R.id.second_holder);
 		main = root;
 		webcontentlist = contentview.findViewById(R.id.webcontentlister);
 		bottombar2 = contentview.findViewById(R.id.bottombar2);
@@ -1592,9 +1592,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 
 		//tg
-		//if (!FcfrtAppBhUtils.isIgnoringBatteryOptimizations(this)){
-		//	FcfrtAppBhUtils.requestIgnoreBatteryOptimizations(this);
-		//}
+		//do_test_project_Test_Background_Loop();
 		
 		//showIconCustomizator();
 //		try {
@@ -1605,7 +1603,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		}
 
 		//startActivity(new Intent().putExtra("realm",8).setClass(this, SettingsActivity.class));
-		//popupWord("History of love", 0, 0, -1);
+		//popupWord("History of love", 0, 0);
 
 /*		Intent intent = new Intent();
 		intent.setAction(Intent.ACTION_SEND);
@@ -1618,7 +1616,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//bottombar.findViewById(R.id.browser_widget2).performLongClick();
 		//bottombar.findViewById(R.id.browser_widget5).performLongClick();
 
-		//etSearch.setText("fair use");
+		etSearch.setText("happy");
 		//if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("15");
 		//if(false)
 		root.postDelayed(() -> {
@@ -2170,7 +2168,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		super.onDestroy();
 	}
-
+	
 	@Override
 	protected void scanSettings(){
 		super.scanSettings();
@@ -2326,7 +2324,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	public void fix_full_screen(@Nullable View decorView) {
 		if(decorView==null) decorView=getWindow().getDecorView();
-		do_fix_full_screen(decorView, PDICMainAppOptions.isFullScreen(), PDICMainAppOptions.isFullscreenHideNavigationbar());
+		boolean fullScreen = PDICMainAppOptions.isFullScreen();
+		fix_full_screen_global(decorView, fullScreen, fullScreen&&PDICMainAppOptions.isFullscreenHideNavigationbar());
 	}
 
 	private void checkColors() {
@@ -2703,6 +2702,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 			PageSlider.TurnPageEnabled=opt.getPageTurn1()&&opt.getTurnPageEnabled();
 			PageSlider.WebContext = current_webview;
+			PageSlider.invalidateIBC();
 
 			layoutScrollDisabled=true;
 			if(bOnePageNav)
@@ -2993,6 +2993,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			contentview.setTag(R.id.image, PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null?false:null);
 			PageSlider.TurnPageEnabled=(this==adaptermy2?opt.getPageTurn2():opt.getPageTurn1())&&opt.getTurnPageEnabled();
+			PageSlider.WebContext = null;
+			PageSlider.invalidateIBC();
 		}
 
 
@@ -3159,17 +3161,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					AttachDBrowser();
 				}
 			} break;
-			case R.id.browser_widget6:{
-				if(mainF.getChildCount()!=0) return;
-				if(DBrowser==null) {
-					if(DHBrowser_holder!=null) DBrowser=DHBrowser_holder.get();
-					if(DBrowser==null){
-						//CMN.Log("重建历史纪录");
-						DHBrowser_holder = new WeakReference<>(DBrowser = new DHBroswer());
-					}
-					AttachDBrowser();
-				}
-			} break;
 			//搜索词典
 			case R.id.cb1:{
 				etSearch.clearFocus();
@@ -3268,9 +3259,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				v.getBackground().jumpToCurrentState();
 				moveTaskToBack(false);
 			} break;
-			case R.id.bottombar:{
-				showIconCustomizator();
-			} break;
 			case R.id.settings:{
 
 			} break;
@@ -3298,19 +3286,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 				}
 			} break;
-		}
-	}
-
-	private void AttachDBrowser() {
-		if(DBrowser!=null)
-		if(!DBrowser.isAdded()) {
-			FragmentManager fragmentManager = getSupportFragmentManager();
-			FragmentTransaction transaction = fragmentManager.beginTransaction();
-			transaction.setCustomAnimations(R.anim.history_enter, R.anim.history_enter);
-			transaction.add(R.id.mainF, DBrowser);
-			transaction.commit();
-		} else {
-			mainF.addView(DBrowser.getView());
 		}
 	}
 
@@ -3375,7 +3350,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		ViewGroup contentHolder = bImmersive ? webcoord : root;
 		ViewParent sp = contentview.getParent();
 		if(sp!=contentHolder) {
-			if(sp!=null) ((ViewGroup) sp).removeView(bottombar2);
+			if(sp!=null) ((ViewGroup) sp).removeView(contentview);
 			if(bImmersive) {
 				contentHolder.addView(contentview, 2);
 				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)contentview.getLayoutParams());
@@ -3387,8 +3362,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			setContentBow(opt.isContentBow());
 		}
 
-		contentHolder = bImmersive ? webcoord : contentview;
-		sp = bottombar2.getParent();
+		PlaceContentBottombar(bImmersive);
+
+		viewPager.setVisibility(View.INVISIBLE);
+		bottombar.setVisibility(View.INVISIBLE);
+		if(popupContentView!=null && popupContentView.getParent()!=null && popupContentView.getVisibility()==View.GONE){
+			popupContentView.setVisibility(View.VISIBLE);
+		}
+	}
+	
+	private void PlaceContentBottombar(boolean bImmersive) {
+		ViewGroup contentHolder = bImmersive ? webcoord : contentview;
+		ViewParent sp = bottombar2.getParent();
 		if(sp!=contentHolder) {
 			if(sp!=null) ((ViewGroup) sp).removeView(bottombar2);
 			contentHolder.addView(bottombar2, bImmersive?3:1);
@@ -3399,35 +3384,47 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				bottombar2.setTranslationY(bottombar.getTranslationY());
 			}
 		}
-
-		viewPager.setVisibility(View.INVISIBLE);
-		bottombar.setVisibility(View.INVISIBLE);
-		if(popupContentView!=null && popupContentView.getParent()!=null && popupContentView.getVisibility()==View.GONE){
-			popupContentView.setVisibility(View.VISIBLE);
+	}
+	
+	@Override
+	void DetachContentView() {
+		if(DBrowser!=null){
+			AttachContentView();
+		} else {
+			boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
+			viewPager.setVisibility(View.VISIBLE);
+			bottombar.setVisibility(View.VISIBLE);
+			//xxroot.removeView(contentview);
+			((ViewGroup)contentview.getParent()).removeView(contentview);
+			if(bImmersive && bottombar2.getParent()!=null) ((ViewGroup) bottombar2.getParent()).removeView(bottombar2);
+			if(PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null)
+				root.removeView(PhotoPagerHolder);
+			webcontentlist.canClickThrough=false;
 		}
 	}
 
-	void DetachContentView() {
-		boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
-		viewPager.setVisibility(View.VISIBLE);
-		bottombar.setVisibility(View.VISIBLE);
-		//xxroot.removeView(contentview);
-		((ViewGroup)contentview.getParent()).removeView(contentview);
-		if(bImmersive && bottombar2.getParent()!=null) ((ViewGroup) bottombar2.getParent()).removeView(bottombar2);
-		if(PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null)
-			root.removeView(PhotoPagerHolder);
-		webcontentlist.canClickThrough=false;
-	}
-
-	boolean isContentViewAttached() {
-		return contentview.getParent()!=null;
-	}
 
 	@Override
 	void contentviewAddView(View v, int i) {
 		contentview.addView(v, i);
 	}
-
+	
+	@Override
+	public boolean isContentViewAttachedForDB() {
+		return contentview.getParent()==second_holder;
+	}
+	
+	@Override
+	public void AttachContentViewForDB() {
+		//todo preserve context
+		ViewGroup somp = (ViewGroup) contentview.getParent();
+		if(somp!=second_holder){
+			PlaceContentBottombar(false);
+			if(somp!=null) somp.removeView(contentview);
+			second_holder.addView(contentview);
+		}
+	}
+	
 	//longclick
 	@Override
 	public boolean onLongClick(View v) {

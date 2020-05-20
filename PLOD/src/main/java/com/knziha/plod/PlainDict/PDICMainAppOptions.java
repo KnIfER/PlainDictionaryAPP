@@ -1626,10 +1626,10 @@ public class PDICMainAppOptions
 		return GlobalOptions.isDark?1<<6:0;
 	}
 
-	public boolean getUseTTSToReadEntry() {
+	public static boolean getUseTTSToReadEntry() {
 		return (ThirdFlag & 0x1000000000l) != 0x1000000000l;
 	}
-	public boolean setUseTTSToReadEntry(boolean val) {
+	public static boolean setUseTTSToReadEntry(boolean val) {
 		updateTFAt(0x1000000000l,!val);
 		return val;
 	}
@@ -2195,6 +2195,10 @@ public class PDICMainAppOptions
 	}
 	public boolean getPhotoViewShowFloatExit() {
 		return (FourthFlag & 0x800000000000l) != 0x800000000000l;
+	}
+	
+	public boolean getThenAutoReadContent() {
+		return (FourthFlag & 0x1000000000000l) == 0x1000000000000l;
 	}
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////

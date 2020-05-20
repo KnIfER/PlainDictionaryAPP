@@ -67,6 +67,13 @@
 			android:persistent="false"
 			/>
 
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="tts_reader"
+			android:title="音频库找不到时使用 TTS"
+			android:persistent="false"
+			/>
+
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="cache_mp3"
 			android:title="预先缓存Mdd音频到文件"

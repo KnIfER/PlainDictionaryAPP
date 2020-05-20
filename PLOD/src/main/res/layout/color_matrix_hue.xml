@@ -16,7 +16,7 @@
 		android:layout_margin="10dp"
 		android:layout_weight="1"
 		android:textColor="#fff"
-		android:text="水太深、我不会、伤不起"
+		android:text="色相"
 		android:gravity="center"
 		android:background="#88888888"
 		/>

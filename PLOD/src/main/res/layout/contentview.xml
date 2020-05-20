@@ -9,7 +9,8 @@
 
 	splitview:primaryContent="@+id/bottombar2"
 	splitview:handle="@+id/bottombar2"
-	splitview:secondaryContent="@+id/PageSlider">
+	splitview:secondaryContent="@+id/PageSlider"
+	>
 
 		<com.knziha.plod.widgets.RLContainerSlider
 			android:id="@+id/PageSlider"

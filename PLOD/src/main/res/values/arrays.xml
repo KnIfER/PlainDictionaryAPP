@@ -221,16 +221,16 @@
 
     <string-array name="sound_spec">
 	    <item>&#160;×_ √</item>
-	    <item>自动播放词条 :</item>
-	    <item>音频库找不到时使用 TTS :</item>
-	    <item>提示TTS播报 :</item>
-	    <item>后台播放TTS :</item>
-	    <item>网页即点即译 :</item>
+	    <item>自动播放词条</item>
+	    <item>然后自动用 TTS 朗读全文</item>
+	    <item>提示TTS播报</item>
+	    <item>后台播放TTS</item>
+	    <item>网页即点即译</item>
 	    <item>打开系统TTS设置</item>
-		<item>用音量键翻页 :</item>
-	    <item>优先调整音量 :</item>
+		<item>用音量键翻页</item>
+	    <item>优先调整音量</item>
 		<item>滚动条</item>
-	    <item>朗读时高亮网页 :</item>
+	    <item>朗读时高亮网页</item>
 	    <item>切换 TTS 控制器</item>
 	</string-array>
 

@@ -28,78 +28,28 @@ import androidx.core.view.ViewCompat;
  * https://github.com/tobiasrohloff/NestedScrollWebView/edit/master/lib/src/main/java/com/tobiasrohloff/view/NestedScrollWebView.java
  */
 public class AdvancedNestScrollWebView extends WebViewmy implements NestedScrollingChild {
-	private int mLastMotionY;
 	boolean mNestedScrollEnabled;
 
-	private final int[] mScrollOffset = new int[2];
-	private final int[] mScrollConsumed = new int[2];
-
-	private int mNestedYOffset;
-
-	private NestedScrollingChildHelper mChildHelper;
+	private final NestedScrollingChildHelper mChildHelper;
 
 	public AdvancedNestScrollWebView(Context context) {
-		super(context);
+		this(context, null);
 	}
 
 	public AdvancedNestScrollWebView(Context context, AttributeSet attrs) {
-		super(context, attrs);
+		this(context, attrs, 0);
 	}
 
 	public AdvancedNestScrollWebView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
+		mChildHelper = Utils.getNestedScrollingChildHelper();
+		//mChildHelper = new NestedScrollingChildHelper(null);
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if(fromCombined!=1&&mNestedScrollEnabled) {
-			MotionEvent trackedEvent = MotionEvent.obtain(event);
-
-			final int action = event.getActionMasked();
-
-			if (action == MotionEvent.ACTION_DOWN) {
-				mNestedYOffset = 0;
-			}
-
-			int y = (int) event.getY();
-
-			event.offsetLocation(0, mNestedYOffset);
-
-			switch (action) {
-				case MotionEvent.ACTION_DOWN:
-					mLastMotionY = y;
-					startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
-					break;
-				case MotionEvent.ACTION_MOVE:
-					int deltaY = mLastMotionY - y;
-
-					if (dispatchNestedPreScroll(0, deltaY, mScrollConsumed, mScrollOffset)) {
-						deltaY -= mScrollConsumed[1];
-						trackedEvent.offsetLocation(0, mScrollOffset[1]);
-						mNestedYOffset += mScrollOffset[1];
-					}
-
-					mLastMotionY = y - mScrollOffset[1];
-
-					int oldY = getScrollY();
-					int newScrollY = Math.max(0, oldY + deltaY);
-					int dyConsumed = newScrollY - oldY;
-					int dyUnconsumed = deltaY - dyConsumed;
-
-					if (dispatchNestedScroll(0, dyConsumed, 0, dyUnconsumed, mScrollOffset)) {
-						mLastMotionY -= mScrollOffset[1];
-						trackedEvent.offsetLocation(0, mScrollOffset[1]);
-						mNestedYOffset += mScrollOffset[1];
-					}
-					trackedEvent.recycle();
-					break;
-				case MotionEvent.ACTION_POINTER_DOWN:
-				case MotionEvent.ACTION_POINTER_UP:
-				case MotionEvent.ACTION_UP:
-				case MotionEvent.ACTION_CANCEL:
-					stopNestedScroll();
-					break;
-			}
+		if(mNestedScrollEnabled&&fromCombined!=1) {
+			mChildHelper.onTouchEvent(this, event);
 			//if(OrgTop-getTop()==0)
 			super.onTouchEvent(event);
 			return true;
@@ -112,52 +62,49 @@ public class AdvancedNestScrollWebView extends WebViewmy implements NestedScroll
 	@Override
 	public void setNestedScrollingEnabled(boolean enabled) {
 		mNestedScrollEnabled=enabled;
-		if(mChildHelper==null){
-			mChildHelper = new NestedScrollingChildHelper(this);
-			mChildHelper.setNestedScrollingEnabled(enabled);
-		} else {
-			mChildHelper.setNestedScrollingEnabled(enabled);
-		}
+		mChildHelper.setCurrentView(this);
+		mChildHelper.setNestedScrollingEnabled(enabled);
 	}
 
 	@Override
 	public boolean isNestedScrollingEnabled() {
-		return fromCombined!=1&&mNestedScrollEnabled&&mChildHelper.isNestedScrollingEnabled();
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.isNestedScrollingEnabled();
 	}
 
 	@Override
 	public boolean startNestedScroll(int axes) {
-		return mNestedScrollEnabled&&mChildHelper.startNestedScroll(axes);
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.startNestedScroll(axes, this);
 	}
 
 	@Override
 	public void stopNestedScroll() {
-		if(mChildHelper!=null)
+		if(fromCombined!=1){
 			mChildHelper.stopNestedScroll();
+		}
 	}
 
 	@Override
 	public boolean hasNestedScrollingParent() {
-		return mNestedScrollEnabled&&mChildHelper.hasNestedScrollingParent();
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.hasNestedScrollingParent();
 	}
 
 	@Override
 	public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int[] offsetInWindow) {
-		return mNestedScrollEnabled&&mChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
 	}
 
 	@Override
 	public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
-		return mNestedScrollEnabled&&mChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
 	}
 
 	@Override
 	public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
-		return mNestedScrollEnabled&&mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
 	}
 
 	@Override
 	public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
-		return mNestedScrollEnabled&&mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
 	}
 }

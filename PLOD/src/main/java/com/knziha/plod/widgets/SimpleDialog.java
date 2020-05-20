@@ -10,7 +10,10 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
+import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.Toastable_Activity;
+
+import static com.knziha.plod.PlainDict.MainActivityUIBase.fix_full_screen_global;
 
 public class SimpleDialog extends Dialog {
 	public void decorBright() {
@@ -66,7 +69,7 @@ public class SimpleDialog extends Dialog {
 		if(win!=null) {
 			boolean fullScreen=false;
 			boolean hideNavigation=false;
-			Toastable_Activity.do_fix_full_screen(getWindow().getDecorView(), fullScreen, hideNavigation);
+			fix_full_screen_global(getWindow().getDecorView(), fullScreen, hideNavigation);
 			if (fullScreen)
 				win.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 			else

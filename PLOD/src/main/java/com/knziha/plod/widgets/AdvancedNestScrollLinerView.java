@@ -19,47 +19,56 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.ListView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 import androidx.core.view.NestedScrollingChild;
 import androidx.core.view.NestedScrollingChildHelper;
 import androidx.core.view.ViewCompat;
 
+import com.knziha.plod.PlainDict.CMN;
+
 /**
  * https://github.com/tobiasrohloff/NestedScrollWebView/edit/master/lib/src/main/java/com/tobiasrohloff/view/NestedScrollWebView.java
  */
-public class AdvancedNestScrollListview extends ListViewmy implements NestedScrollingChild {
+public class AdvancedNestScrollLinerView extends LinearLayout implements NestedScrollingChild {
 	boolean mNestedScrollEnabled;
 
 	private NestedScrollingChildHelper mChildHelper;
+	
+	public int fromCombined;
 
-	public AdvancedNestScrollListview(Context context) {
+	public AdvancedNestScrollLinerView(Context context) {
 		this(context, null);
 	}
 
-	public AdvancedNestScrollListview(Context context, AttributeSet attrs) {
-		this(context, attrs, android.R.attr.listViewStyle);
+	public AdvancedNestScrollLinerView(Context context, AttributeSet attrs) {
+		this(context, attrs, 0);
 	}
 
-	public AdvancedNestScrollListview(Context context, AttributeSet attrs, int defStyleAttr) {
+	public AdvancedNestScrollLinerView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		mChildHelper = Utils.getNestedScrollingChildHelper();
+		setNestedScrollingEnabled(true);
 	}
-
+	
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		if(mNestedScrollEnabled) {
+	public boolean dispatchTouchEvent(MotionEvent event) {
+		if(mNestedScrollEnabled&&fromCombined!=1) {
 			mChildHelper.onTouchEvent(this, event);
-			super.onTouchEvent(event);
+			super.dispatchTouchEvent(event);
 			return true;
 		}
-		return super.onTouchEvent(event);
+		return super.dispatchTouchEvent(event);
 	}
 
 	// NestedScrollingChild
 
 	@Override
 	public void setNestedScrollingEnabled(boolean enabled) {
+		if(mNestedScrollEnabled){
+			ViewCompat.stopNestedScroll(this);
+		}
 		mNestedScrollEnabled=enabled;
 		mChildHelper.setCurrentView(this);
 		mChildHelper.setNestedScrollingEnabled(enabled);
@@ -67,41 +76,43 @@ public class AdvancedNestScrollListview extends ListViewmy implements NestedScro
 
 	@Override
 	public boolean isNestedScrollingEnabled() {
-		return mNestedScrollEnabled&&mChildHelper.isNestedScrollingEnabled();
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.isNestedScrollingEnabled();
 	}
 
 	@Override
 	public boolean startNestedScroll(int axes) {
-		return mNestedScrollEnabled&&mChildHelper.startNestedScroll(axes, this);
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.startNestedScroll(axes, this);
 	}
 
 	@Override
 	public void stopNestedScroll() {
-		mChildHelper.stopNestedScroll();
+		if(mNestedScrollEnabled&&mChildHelper.getCurrentView()==this){
+			mChildHelper.stopNestedScroll();
+		}
 	}
 
 	@Override
 	public boolean hasNestedScrollingParent() {
-		return mNestedScrollEnabled&&mChildHelper.hasNestedScrollingParent();
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.hasNestedScrollingParent();
 	}
 
 	@Override
 	public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int[] offsetInWindow) {
-		return mNestedScrollEnabled&&mChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
 	}
 
 	@Override
 	public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
-		return mNestedScrollEnabled&&mChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
 	}
 
 	@Override
 	public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
-		return mNestedScrollEnabled&&mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
 	}
 
 	@Override
 	public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
-		return mNestedScrollEnabled&&mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
+		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
 	}
 }

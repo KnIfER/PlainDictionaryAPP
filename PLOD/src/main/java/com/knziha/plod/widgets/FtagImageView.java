@@ -29,7 +29,7 @@ public class FtagImageView extends ImageView {
 	@Override
 	public void setTag(Object tag) {
 		int tagNew = (Integer) tag;
-		mTag = tagNew;
+		mTag |= tagNew;
 	}
 	
 	@Override

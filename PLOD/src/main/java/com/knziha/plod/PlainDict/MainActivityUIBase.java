@@ -112,6 +112,8 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
@@ -282,6 +284,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public SamsungLikeScrollBar mBar;
 	private FrameLayout.LayoutParams mBar_layoutParmas;
 	public ViewGroup main;
+	public ViewGroup second_holder;
 	public ViewGroup mainF;
 	public ViewGroup webholder;
 	public ScrollViewmy WHP;
@@ -368,9 +371,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	Runnable mPopupRunnable;
 	String popupKey;
+	int popupFrame;
+	int popupForceId;
 	protected TextView popupTextView;
 	protected PopupMoveToucher popupMoveToucher;
 	protected TextView popupIndicator;
+	public RLContainerSlider PopupPageSlider;
 	public WebViewmy popupWebView;
 	public mdict.AppHandler popuphandler;
 	public ImageView popIvBack;
@@ -954,7 +960,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void onAudioPause() {
-		CMN.Log("onAudioPause", !AutoBrowsePaused, opt.isAudioActuallyPlaying, mThenReadEntryCount);
+		CMN.Log("onAudioPause", !AutoBrowsePaused, opt.isAudioActuallyPlaying, mThenReadEntryCount, bThenReadContent);
 		if(!AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething()){
 			if(true || opt.isAudioActuallyPlaying || background){
 				if(mThenReadEntryCount>0){
@@ -969,8 +975,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		} else {
-			opt.isAudioActuallyPlaying=false;
-			transitAAdjustment();
+			if(bThenReadContent){
+				opt.isAudioActuallyPlaying=false;
+				CMN.Log("posting...3322124");
+				hdl.sendEmptyMessage(3322124);
+			} else {
+				opt.isAudioActuallyPlaying=false;
+				transitAAdjustment();
+			}
 		}
 	}
 
@@ -1058,18 +1070,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void popupWord(final String key, int forceStartId, int frameAt) {
+		//CMN.Log("popupWord frameAt", frameAt);
 		if(key==null || mdict.processText(key).length()>0) {
 			popupKey = key;
+			popupFrame = frameAt;
+			popupForceId = forceStartId;
 			if(mPopupRunnable==null){
 				mPopupRunnable = new Runnable() {
 					@Override
 					public void run() {
-						if (PageSlider.lastZoomTime > 0 && (System.currentTimeMillis() - PageSlider.lastZoomTime) < 500)
-							return;
+						boolean bPeruseViewAttached = PeruseViewAttached();
+						RLContainerSlider CheckSlider = popupFrame==-1?PopupPageSlider:bPeruseViewAttached?PeruseView.PageSlider:PageSlider;
+						if(CheckSlider!=null && CheckSlider.lastZoomTime > 0){
+							if (System.currentTimeMillis() - CheckSlider.lastZoomTime < 500){
+								return;
+							}
+							CheckSlider.lastZoomTime=0;
+						}
 						//CMN.Log("\nmPopupRunnable run!!!");
-						ViewGroup targetRoot = root;
-						if (PeruseViewAttached())
-							targetRoot = PeruseView.root;
+						ViewGroup targetRoot = bPeruseViewAttached?PeruseView.root:root;
 						int size = md.size();
 						if (size <= 0) return;
 						//CMN.Log("popupWord", popupKey, x, y, frameAt);
@@ -1086,11 +1105,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						popupContentView = holder == null ? null : holder.get();
 						boolean b1 = popupContentView == null;
 						isNewHolder = isNewHolder || b1;
-						if (b1 || popupContentView instanceof LinearLayout ^ popupWebView.getParent() instanceof LinearLayout) {
+						if (b1 || popupContentView instanceof LinearLayout ^ PopupPageSlider.getParent() instanceof LinearLayout) {
 							if (popupToolbar.getParent() != null)
 								((ViewGroup) popupToolbar.getParent()).removeView(popupToolbar);
-							if (popupWebView.getParent() != null)
-								((ViewGroup) popupWebView.getParent()).removeView(popupWebView);
+							if (PopupPageSlider.getParent() != null)
+								((ViewGroup) PopupPageSlider.getParent()).removeView(PopupPageSlider);
 							if (popupBottombar.getParent() != null)
 								((ViewGroup) popupBottombar.getParent()).removeView(popupBottombar);
 							if (mPopupContentView != null && mPopupContentView.getParent() != null)
@@ -1100,25 +1119,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										: (popupCrdCloth = new WeakReference<>((ViewGroup) getLayoutInflater()
 										.inflate(R.layout.float_contentview_coord, root, false))).get();
 								((ViewGroup) popupContentView.getChildAt(0)).addView(popupToolbar);
-								popupContentView.addView(popupWebView);
+								popupContentView.addView(PopupPageSlider);
 								popupContentView.addView(popupBottombar);
 								((CoordinatorLayout.LayoutParams) popupBottombar.getLayoutParams()).gravity = Gravity.BOTTOM;
 								((CoordinatorLayout.LayoutParams) popupBottombar.getLayoutParams()).setBehavior(new BottomNavigationBehavior(popupContentView.getContext(), null));
-								((CoordinatorLayout.LayoutParams) popupWebView.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(popupContentView.getContext(), null));
-								((CoordinatorLayout.LayoutParams) popupWebView.getLayoutParams()).height = LayoutParams.MATCH_PARENT;
+								((CoordinatorLayout.LayoutParams) PopupPageSlider.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(popupContentView.getContext(), null));
+								((CoordinatorLayout.LayoutParams) PopupPageSlider.getLayoutParams()).height = LayoutParams.MATCH_PARENT;
 								((AppBarLayout.LayoutParams) popupToolbar.getLayoutParams()).setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS | AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP);
 							} else {
 								popupContentView = (popupCmnCloth != null && popupCmnCloth.get() != null) ? popupCmnCloth.get()
 										: (popupCmnCloth = new WeakReference<>((ViewGroup) getLayoutInflater()
 										.inflate(R.layout.float_contentview_basic_outer, root, false))).get();
 								popupContentView.addView(popupToolbar);
-								popupContentView.addView(popupWebView);
+								popupContentView.addView(PopupPageSlider);
 								popupContentView.addView(popupBottombar);
 								popupToolbar.setTranslationY(0);
-								popupWebView.setTranslationY(0);
+								PopupPageSlider.setTranslationY(0);
 								popupBottombar.setTranslationY(0);
-								((LinearLayout.LayoutParams) popupWebView.getLayoutParams()).weight = 1;
-								((LinearLayout.LayoutParams) popupWebView.getLayoutParams()).height = 0;
+								((LinearLayout.LayoutParams) PopupPageSlider.getLayoutParams()).weight = 1;
+								((LinearLayout.LayoutParams) PopupPageSlider.getLayoutParams()).height = 0;
 							}
 						}
 
@@ -1143,8 +1162,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							popupTextView.setText(popupKey);
 							String keykey;
 							CCD_ID = currentClick_adapter_idx = Math.min(currentClick_adapter_idx, size-1);
-							if(forceStartId>=0 && forceStartId<size)
-								CCD_ID = forceStartId;
+							if(popupForceId>=0 && popupForceId<size)
+								CCD_ID = popupForceId;
 							//轮询开始
 							mdict_web webx = null;
 							boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
@@ -1301,7 +1320,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								popuphandler.setDict(CCD);
 								if (PDICMainAppOptions.getClickSearchAutoReadEntry())
 									popupWebView.bRequestedSoundPlayback=true;
-								popupWebView.fromCombined = 2;
+								popupWebView.IBC = CCD.IBC;
+								PopupPageSlider.invalidateIBC();
 								CCD.renderContentAt(-1, CCD_ID, -1, popupWebView, currentClickDictionary_currentPos = idx);
 							}
 
@@ -1324,13 +1344,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (popupKey!=null && (PDICMainAppOptions.getResetPosClickSearch() || isInit) && !popupMoveToucher.FVDOCKED) {
 								float ty = 0;
 								float now = 0;
-								if (ActivedAdapter != null || frameAt<0) {
+								if (ActivedAdapter != null || popupFrame<0) {
 									//CMN.Log("???", y, targetRoot.getHeight()-popupGuarder.getResources().getDimension(R.dimen.halfpopheader));
-									if(frameAt==-1){
+									if(popupFrame==-1){
 										now = mActionModeHeight;
 										CMN.Log(now, targetRoot.getHeight() / 2);
 									}
-									else if(PeruseViewAttached()){
+									else if(bPeruseViewAttached){
 										now = PeruseView.getWebTouchY();
 									}
 									else if (ActivedAdapter == adaptermy || ActivedAdapter == adaptermy3 || ActivedAdapter == adaptermy4) {
@@ -1347,8 +1367,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										}
 									}
 									else if (ActivedAdapter == adaptermy2) {
-										if (webholder.getChildAt(frameAt) instanceof LinearLayout) {
-											LinearLayout sv = (LinearLayout) webholder.getChildAt(frameAt);
+										if (webholder.getChildAt(popupFrame) instanceof LinearLayout) {
+											LinearLayout sv = (LinearLayout) webholder.getChildAt(popupFrame);
 											WebViewmy mWebView = sv.findViewById(R.id.webviewmy);
 											now = sv.getTop() + mWebView.lastY + sv.getChildAt(0).getHeight() - WHP.getScrollY();
 											now += ((ViewGroup.MarginLayoutParams) getContentviewSnackHolder().getLayoutParams()).topMargin;
@@ -1394,7 +1414,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					.inflate(R.layout.float_contentview_basic, root, false);
 			popupContentView.setOnClickListener(new Utils.DummyOnClick());
 			popupToolbar = (ViewGroup) popupContentView.getChildAt(0);
-			WebViewmy mPopupWebView = (WebViewmy) popupContentView.getChildAt(1);
+			PopupPageSlider = (RLContainerSlider) popupContentView.getChildAt(1);
+			WebViewmy mPopupWebView = (WebViewmy) PopupPageSlider.getChildAt(0);
+			mPopupWebView.fromCombined = 2;
+			PopupPageSlider.WebContext = mPopupWebView;
 			popupBottombar = (ViewGroup) popupContentView.getChildAt(2);
 			popuphandler = new mdict.AppHandler(currentDictionary);
 			mPopupWebView.addJavascriptInterface(popuphandler, "app");
@@ -1805,9 +1828,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		CMN.Log("override !!!");
 		return false;
 	}
-
-
-
+	
 	private ObjectAnimator mAutoReadProgressAnimator;
 	private View mAutoReadProgressView;
 	boolean animateProgress = true;
@@ -2291,6 +2312,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		switch_To_Dict_Idx(adapter_idx, false, false);
 
 		root = findViewById(R.id.root);
+		mainF = findViewById(R.id.mainF);
 		bottombar = findViewById(R.id.bottombar);
 		findViewById(R.id.toolbar_action1).setOnClickListener(this);
 		toolbar.setOnMenuItemClickListener(this);
@@ -2619,7 +2641,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				
-				boolean fromPeruseView=webview.fromPeruseview;
+				boolean fromPeruseView=webview.fromCombined==3;
 				SamsungLikeScrollBar _mBar=mBar;
 				float currentScale = webview.webScale;
 				//tofo
@@ -2741,6 +2763,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if((!AutoBrowsePaused || bRequestingAutoReading) && !opt.getTTSBackgroundPlay()){
 			stopAutoReadProcess();
+		}
+		if(Utils.mNestedScrollingChildHelper!=null){
+			Utils.mNestedScrollingChildHelper.setCurrentView(null);
 		}
 	}
 
@@ -3020,6 +3045,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		tv.setTag(null);
 	}
 	
+	public abstract boolean isContentViewAttachedForDB();
+	
+	public abstract void AttachContentViewForDB();
+	
 	public final class UniCoverClicker implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
 		boolean isWeb;
 		mdict invoker;
@@ -3221,8 +3250,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} return;
 			}
 			hideKeyboard();
-			if(!bFromTextView && v.getTag() instanceof Integer){
-				Integer ftag = (Integer) v.getTag();
+			Object tag = v.getTag();
+			if(!bFromTextView &&  tag instanceof Integer){
+				Integer ftag = (Integer) tag;
 				bFromWebView=(ftag&1)!=0;
 				bFromPeruseView=(ftag&2)!=0;
 			}
@@ -4065,8 +4095,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	boolean needReCreateUcc=false;
 	public UniCoverClicker ucc;
 	public int CachedBBSize=-1;
-
-
+	
+	public abstract void fix_full_screen(@Nullable View decorView);
+	
+	public static void fix_full_screen_global(@NonNull View decorView, boolean fullScreen, boolean hideNavigation) {
+		int uiOptions = 0;
+		if(fullScreen) uiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+		if(hideNavigation) uiOptions|=View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LOW_PROFILE
+				| View.SYSTEM_UI_FLAG_IMMERSIVE;
+		if(uiOptions!=0){
+			decorView.setSystemUiVisibility(uiOptions);
+		}
+	}
+	
 	ArrayAdaptermy mBookMarkAdapter;
 	public ListAdapter getBookMarkAdapter(boolean darkMode, mdict invoker, MdxDBHelper con) {
 		if(mBookMarkAdapter==null)
@@ -4312,9 +4358,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			title.setText(title_id);
 		}
-		title.setTextSize(20f);
+		title.setTextSize(18f);
 		title.setTextColor(AppBlack);
-		title.getPaint().setFakeBoldText(true);
+		//title.getPaint().setFakeBoldText(true);
 		
 		int topad = (int) getResources().getDimension(R.dimen._18_);
 		((ViewGroup)title.getParent()).setPadding(topad*3/5, topad/2, 0, 0);
@@ -4375,9 +4421,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 		configurableDialog.show();
 		//tofo
-		android.view.WindowManager.LayoutParams lp = configurableDialog.getWindow().getAttributes();  //获取对话框当前的参数值
-		lp.height = -2;
-		configurableDialog.getWindow().setAttributes(lp);
 	}
 	
 	void showAppExit() {
@@ -4406,56 +4449,37 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void showSoundTweaker() {
 		String[] DictOpt = getResources().getStringArray(R.array.sound_spec);
 		final String[] Coef = DictOpt[0].split("_");
-		final View dv = inflater.inflate(R.layout.dialog_about,null);
 		final SpannableStringBuilder ssb = new SpannableStringBuilder();
-		final TextView tv = dv.findViewById(R.id.resultN);
-		TextView title = dv.findViewById(R.id.title);
-		title.setText("语音设定等");//"词典设定"
-		title.setTextColor(AppBlack);
+		
+		TextView tv = buildStandardConfigDialog(this, true, null, R.string.SoundOpt);
+		Dialog configurableDialog = (Dialog) tv.getTag();
 
-		if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
-
-		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 38, 1, 3, -1, false);//opt.getAutoReadEntry()//
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1, 36, 1, 3, -1, false);//opt.getUseTTSToReadEntry()//
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 37, 1, 3, -1, false);//opt.getHintTTSReading()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 38, 1, 3, -1, true);//opt.getAutoReadEntry()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 48, 1, 4, -1, true);//opt.getThenAutoReadContent()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 37, 1, 3, -1, true);//opt.getHintTTSReading()//
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1, 42, 1, 3, -1, false);//opt.getTTSBackgroundPlay()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1, 42, 1, 3, -1, true);//opt.getTTSBackgroundPlay()//
 
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 5, Coef, 0, 1, 0x1, 35, 1, 3, 12, false);//opt.getClickSearchEnabled()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 5, Coef, 0, 1, 0x1, 35, 1, 3, 12, true);//opt.getClickSearchEnabled()//
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
 		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 6, null, 0, 1, 0x1, 0, 1, 3, 15, false);
 
 		boolean flagCase = PeruseViewAttached();
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, flagCase?37:46, 1, flagCase?2:1, -1, false);//opt.getUseVolumeBtn()
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, flagCase?37:46, 1, flagCase?2:1, -1, true);//opt.getUseVolumeBtn()
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 8, Coef, 0, 1, 0x1, 39, 1, 3, -1, false);//opt.getMakeWayForVolumeAjustmentsWhenAudioPlayed()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 8, Coef, 0, 1, 0x1, 39, 1, 3, -1, true);//opt.getMakeWayForVolumeAjustmentsWhenAudioPlayed()//
 
 		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 9, null, 0, 0, 0x1, 44, 1, 3, 16, false);//滚动条
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 44, 1, 3, 11, false);//opt.getTTSHighlightWebView()//
+		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 44, 1, 3, 11, true);//opt.getTTSHighlightWebView()//
 
 		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 11, null, 0, 0, 0x1, 0, 1, 3, 10, false);//
 
 		ssb.delete(ssb.length()-4, ssb.length());
-		tv.setTextSize(17f);
-		tv.setText(ssb);
-		tv.setMovementMethod(LinkMovementMethod.getInstance());
-		AlertDialog.Builder builder2 = new AlertDialog.Builder(this,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);
-		builder2.setView(dv);
-		final AlertDialog d = builder2.create();
-		d.setCanceledOnTouchOutside(true);
-		//d.setCanceledOnTouchOutside(false);
-
-		dv.findViewById(R.id.cancel).setOnClickListener(v -> d.dismiss());
-		//d.getWindow().setDimAmount(0);
-		//d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-		d.show();
-		//tofo
-		android.view.WindowManager.LayoutParams lp = d.getWindow().getAttributes();  //获取对话框当前的参数值
-		lp.height = -2;
-		d.getWindow().setAttributes(lp);
+		
+		tv.setTag(null);
+		tv.setText(ssb, TextView.BufferType.SPANNABLE);
+		configurableDialog.show();
 	}
 
 	abstract void switch_dark_mode(boolean val);
@@ -4495,7 +4519,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(ucc==null) ucc = new UniCoverClicker();
 		return ucc;
 	}
-
+	
+	boolean isContentViewAttached() {
+		return contentview.getParent()!=null;
+	}
+	
+	abstract void DetachContentView();
+	
+	void AttachDBrowser() {
+		if(DBrowser!=null){
+			if(!DBrowser.isAdded()) {
+				FragmentManager fragmentManager = getSupportFragmentManager();
+				FragmentTransaction transaction = fragmentManager.beginTransaction();
+				transaction.setCustomAnimations(R.anim.history_enter, R.anim.history_enter);
+				transaction.add(R.id.mainF, DBrowser);
+				transaction.commit();
+			} else {
+				mainF.addView(DBrowser.getView());
+			}
+		}
+	}
+	
 	//click
 	@Override
 	public void onClick(View v) {
@@ -4503,6 +4547,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		int id=v.getId();
 		switch (id){
 			default:return;
+			case R.id.bottombar:{
+				showIconCustomizator();
+			} break;
+			case R.id.go_history:
+			case R.id.browser_widget6:{
+				//todo to favorite
+				if(DBrowser==null) {
+					if(mainF.getChildCount()==0){
+						if(DHBrowser_holder!=null) DBrowser=DHBrowser_holder.get();
+						if(DBrowser==null){
+							//CMN.Log("重建历史纪录");
+							DHBrowser_holder = new WeakReference<>(DBrowser = new DHBroswer());
+						}
+						AttachDBrowser();
+					}
+				} else if(isContentViewAttachedForDB()){
+					DetachContentView();
+				}
+			} break;
 			case R.id.ttsPin:{
 				CircleCheckBox checker = (CircleCheckBox) v;
 				checker.toggle();
@@ -5888,7 +5951,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			WebViewmy mWebView = (WebViewmy) view;
 			//todo undo changes made to webview by web dictionaries.
 			//if(mWebView.fromCombined==4){
-			if(mWebView.fromCombined==4){
+			if(mWebView.fromNet){
 				int selfAtIdx = mWebView.SelfIdx;
 				if(selfAtIdx>=md.size() || selfAtIdx<0) return;
 				final mdict invoker = md.get(selfAtIdx);
@@ -5949,8 +6012,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public void onPageFinished(WebView view, String url) {
 			WebViewmy mWebView = (WebViewmy) view;
 			CMN.Log("chromium page finished ==> ", url, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
+			if(!mWebView.isloading && !mWebView.fromNet) return;
 			int from = mWebView.fromCombined;
-			if(!mWebView.isloading && from!=4) return;
 			mWebView.isloading = false;
 			//if(true) return;
 			/* I、接管页面缩放及(跳转)位置(0, 1, 3)
@@ -6063,7 +6126,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 			else {
-				if(from!=4) {
+				if(!mWebView.fromNet) {
 					if (mWebView.getTag(R.id.js_no_match) != null) {
 						mWebView.evaluateJavascript(js_no_match, null);
 						mWebView.setTag(R.id.js_no_match, null);
@@ -6081,6 +6144,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 				if(AutoBrowsePaused||(!PDICMainAppOptions.getAutoBrowsingReadSomething())){
 					postReadEntry();
+					CMN.Log("hey!!!", opt.getThenAutoReadContent());
+					if(bThenReadContent=opt.getThenAutoReadContent()){
+						pendingWebView=mWebView;
+					}
 				} else {
 					//faking opf
 					mThenReadEntryCount=2;
@@ -6161,7 +6228,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), md.get(selfAtIdx)._Dictionary_fName, selfAtIdx);
 			if(selfAtIdx>=md.size() || selfAtIdx<0) return false;
 			final mdict invoker = md.get(selfAtIdx);
-			int from = mWebView.fromCombined;
 			boolean fromPopup = view==popupWebView;
 			if(invoker instanceof mdict_web){
 				mdict_web webx = ((mdict_web) invoker);
@@ -6183,7 +6249,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			//CMN.Log("chromium shouldOverrideUrlLoading_",url);
 			//TODO::改写历史纪录方式，统一操作。
-			boolean fromPeruseView=mWebView.fromPeruseview;
+			int from = mWebView.fromCombined;
+			boolean fromPeruseView = from==3;
 			boolean fromCombined = from==1;
 			String msg=null;
 			if (url.startsWith("pdf://")) {
@@ -6745,7 +6812,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						pdf = pdfiumCore.newDocument(ParcelFileDescriptor.open(path, ParcelFileDescriptor.MODE_READ_ONLY));
 						cached_pdf_docs.put(urlkey, pdf);
 					}
-					if(mWebView.fromCombined==0  && !mWebView.fromPeruseview && invoker.getIsolateImages()){
+					if(mWebView.fromCombined==0  && !mWebView.fromNet && invoker.getIsolateImages()){
 						//CMN.Log("Pdf Isolating Images...");
 						new_photo = key;
 						PhotoPager.removeCallbacks(PhotoRunnable);
@@ -6826,7 +6893,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(!invoker.hasMdd())
 				return null;
 			key=mdict.requestPattern.matcher(key).replaceAll("");
-			if(mWebView.fromCombined==0 && !mWebView.fromPeruseview && invoker.getIsolateImages() && RegImg.matcher(key).find()){
+			if(mWebView.fromCombined==0 && !mWebView.fromNet && invoker.getIsolateImages() && RegImg.matcher(key).find()){
 				//CMN.Log("Isolating Images...");
 				new_photo = key;
 				PhotoPager.removeCallbacks(PhotoRunnable);

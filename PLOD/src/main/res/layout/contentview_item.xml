@@ -4,7 +4,7 @@
 	android:orientation="vertical"
 	android:clickable="true">
 
-	<LinearLayout
+	<com.knziha.plod.widgets.AdvancedNestScrollLinerView
 		android:id="@+id/lltoolbar"
 		android:layout_width="match_parent"
 		android:layout_height="@dimen/dictitle"
@@ -109,7 +109,7 @@
 			android:paddingStart="4dp"
 			android:background="@drawable/listviewselector0"
 			/>
-	</LinearLayout>
+	</com.knziha.plod.widgets.AdvancedNestScrollLinerView>
 
 	<com.knziha.plod.widgets.AdvancedNestScrollWebView
 		android:id="@+id/webviewmy"

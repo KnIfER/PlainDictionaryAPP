@@ -79,30 +79,35 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 			if(a.split_dict_thread_number>thread_number) a.poolEUSize.addAndGet(1);
 
 			fixedThreadPool.execute(() -> {
-				int jiaX=0;
-				if(it==a.split_dict_thread_number-1) jiaX=yuShu;
-				for(int i1 = it*step; i1 <it*step+step+jiaX; i1++) {
-					if(isCancelled()) break;
-					mdict mdTmp = md.get(i1);
-					if(mdTmp==null){
-						PlaceHolder phI = a.getPlaceHolderAt(i1);
-						if(phI!=null) {
+				try {
+					int jiaX=0;
+					if(it==a.split_dict_thread_number-1) jiaX=yuShu;
+					for(int i1 = it*step; i1 <it*step+step+jiaX; i1++) {
+						if(isCancelled()) break;
+						mdict mdTmp = md.get(i1);
+						if(mdTmp==null){
+							PlaceHolder phI = a.getPlaceHolderAt(i1);
+							if(phI!=null) {
+								try {
+									md.set(i1, mdTmp=MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
+									mdTmp.tmpIsFlag = phI.tmpIsFlag;
+									mdTmp.combining_search_list = new ArrayList<>();
+								} catch (Exception ignored) { }
+							}
+						}
+						if(mdTmp!=null)
 							try {
-								md.set(i1, mdTmp=MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
-								mdTmp.tmpIsFlag = phI.tmpIsFlag;
-								mdTmp.combining_search_list = new ArrayList<>();
-							} catch (Exception ignored) { }
-						}
+								mdTmp.size_confined_lookUp5(CurrentSearchText,null, i1,15);
+							} catch (Exception e) {
+								if(GlobalOptions.debug)
+									CMN.Log("搜索出错！！！", mdTmp._Dictionary_fName, e);
+							}
 					}
-					if(mdTmp!=null)
-						try {
-							mdTmp.size_confined_lookUp5(CurrentSearchText,null, i1,15);
-						} catch (Exception e) {
-							if(GlobalOptions.debug)
-								CMN.Log("搜索出错！！！", mdTmp._Dictionary_fName, e);
-						}
+					if(a.split_dict_thread_number>thread_number) a.poolEUSize.addAndGet(-1);
+				} catch (Exception e){
+					if(GlobalOptions.debug)
+						CMN.Log("搜索出错！！！",e);
 				}
-				if(a.split_dict_thread_number>thread_number) a.poolEUSize.addAndGet(-1);
 			});
 
 			if(isCancelled()) break;

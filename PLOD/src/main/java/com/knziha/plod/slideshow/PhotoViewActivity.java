@@ -56,9 +56,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.knziha.plod.PlainDict.CMN.Visible;
+import static com.knziha.plod.PlainDict.MainActivityUIBase.fix_full_screen_global;
 import static com.knziha.plod.PlainDict.Toastable_Activity.checkMargin;
-import static com.knziha.plod.PlainDict.Toastable_Activity.do_fix_full_screen;
-import static com.knziha.plod.PlainDict.Toastable_Activity.fix_full_screen_global;
 import static com.knziha.plod.PlainDict.Toastable_Activity.setStatusBarColor;
 
 /** Photo View Activity based on Subsampling-Scale-Image-View */

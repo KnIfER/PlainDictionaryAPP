@@ -130,9 +130,9 @@ public class DBroswer extends Fragment implements
 	private View bookmark;
 
 	public int try_goBack(){
-		PDICMainActivity a = (PDICMainActivity) getActivity();
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return 0;
-		if(a.isContentViewAttached()) {
+		if(a.isContentViewAttachedForDB()) {
 			if(opt.getUseBackKeyGoWebViewBack()){
 				WebViewmy view = a.getCurrentWebContext();
 				if(view!=null && view.canGoBack()){
@@ -419,7 +419,7 @@ public class DBroswer extends Fragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		PDICMainActivity a = (PDICMainActivity) getActivity();
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(!initialized){
 			opt = a.opt;
 			imm = a.imm;
@@ -633,8 +633,8 @@ public class DBroswer extends Fragment implements
 			}
 
 			holder.webView.setText(text.trim());
-
-			PDICMainActivity a = (PDICMainActivity) getActivity();
+			
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 
 			if(GlobalOptions.isDark) {
 				if(holder.webView.getTextColors().getDefaultColor()!=a.AppBlack) {
@@ -1085,7 +1085,7 @@ public class DBroswer extends Fragment implements
 				R.layout.popup_list_item);
 		shareList.setAdapter(shareListAda);
 		shareList.setOnItemClickListener((parent, view1, position, id) -> {
-			PDICMainActivity a = (PDICMainActivity) getActivity();
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 			if(a==null) return;
 			switch(position+onclickBase) {//处理点击事件
 				case 10://全选
@@ -1304,9 +1304,11 @@ public class DBroswer extends Fragment implements
 	OnItemClickListener mainClicker = new OnItemClickListener() {
 		@Override
 		public void onItemClick(View view, int position) {
-			PDICMainActivity a = (PDICMainActivity) getActivity();
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 			if(a==null) return;
-			a.setContentBow(false);
+			if(a instanceof PDICMainActivity){
+				((PDICMainActivity)a).setContentBow(false);
+			}
 			if(view!=null) {
 				adelta=0;
 				//TODO retrieve from sibling views
@@ -1507,11 +1509,7 @@ public class DBroswer extends Fragment implements
 							}
 
 							imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
-							ViewGroup somp = (ViewGroup) a.contentview.getParent();
-							if(somp!=a.main){
-								if(somp!=null) somp.removeView(a.contentview);
-								a.main.addView(a.contentview);
-							}
+							a.AttachContentViewForDB();
 
 							if(offset>0)//apply tailing offset
 								if(currentDictionary.getEntryAt(idx+offset).equals(key))
@@ -1607,7 +1605,7 @@ public class DBroswer extends Fragment implements
 
 
 	public void toggleFavor() {
-		PDICMainActivity a = (PDICMainActivity) getActivity();
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
 		if(toDelete.get(currentPos)==null) {
 			a.favoriteBtn.setActivated(false);
@@ -1622,13 +1620,13 @@ public class DBroswer extends Fragment implements
 
 
 	protected void processFavorite(int position,String key) {
-		PDICMainActivity a = (PDICMainActivity) getActivity();
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
 		a.favoriteBtn.setActivated(toDelete.get(currentPos)==null);
 	}
 
 	public void goBack() {
-		PDICMainActivity a = (PDICMainActivity) getActivity();
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
 		if(opt.getBottomNavigationMode()==0) {
 			if (currentPos - 1 < 0) {
@@ -1646,7 +1644,7 @@ public class DBroswer extends Fragment implements
 	}
 
 	public void goQiak() {
-		PDICMainActivity a = (PDICMainActivity) getActivity();
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
 		if(opt.getBottomNavigationMode()==0) {
 			if (currentPos + 1 > mCards_size - 1) {

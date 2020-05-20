@@ -60,6 +60,7 @@ import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdictRes;
+import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
@@ -686,7 +687,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 			toolbar = rl.findViewById(R.id.lltoolbar);
 			mWebView.IBC = IBC;
-			mWebView.titleBar = toolbar;
+			mWebView.titleBar = (AdvancedNestScrollLinerView) toolbar;
 			mWebView.toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar.getBackground()).getDrawable(0);
 			mWebView.toolbarBG.setColors(mWebView.ColorShade);
 			
@@ -708,8 +709,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 							renderContentAt(-1, -1, -1, null, mWebView.currentRendring);
 						}
 					}//((View)rl.getParent()).getId()==R.id.webholder
-					else if(rl.getParent()==a.webholder) mWebView.setVisibility(View.GONE);
-					else toolbar_cover.performClick();
+					else if(rl.getParent()==a.webholder) {
+						mWebView.setVisibility(View.GONE);
+					}
+					else {
+						toolbar_cover.performClick();
+					}
 
 					mWebView.post(new Runnable() {
 						@Override
@@ -1365,6 +1370,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		a.guaranteeBackground(globalPageBackground);
 		mWebView.setBackgroundColor((getIsolateImages()||useInternal||Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT)?myWebColor:Color.TRANSPARENT);
 		/* check and set colors for toolbar title Background*/
+		if(mWebView==this.mWebView){
+			mWebView.titleBar.fromCombined = mWebView.fromCombined;
+		}
 		GradientDrawable toolbarBG = mWebView.toolbarBG;
 		if(toolbarBG!=null){
 			useInternal = getUseInternalTBG();
@@ -1389,16 +1397,18 @@ public class mdict extends com.knziha.plod.dictionary.mdict
     	isJumping=false;
     	if(mWebView==null) {
     		mWebView=this.mWebView;
-    	} else if(mWebView!=this.mWebView && mWebView.fromPeruseview && a.PeruseView != null){
+    	} else if(a.PeruseView != null && mWebView==a.PeruseView.mWebView){
 			setIcSaveLongClickListener(a.PeruseView.ic_save);
 			a.PeruseView.refresh_eidt_kit(getContentEditable(), getEditingContents());
 		}
 		boolean resposibleForThisWeb=mWebView==this.mWebView;
+	
+		int from = mWebView.fromCombined;
+		mWebView.fromNet=false;
+		boolean fromCombined = from==1;
+		boolean fromPopup = from==2;
 
-		boolean fromCombined = mWebView.fromCombined==1;
-		boolean fromPopup = mWebView.fromCombined==2;
-
-		boolean mIsolateImages=resposibleForThisWeb&&!fromCombined&&getIsolateImages();
+		boolean mIsolateImages=/*resposibleForThisWeb&&*/from==0&&getIsolateImages();
 		/* 为了避免画面层叠带来的过度重绘，网页背景保持透明？。 */
 		tintBackground(mWebView);
 
@@ -1412,7 +1422,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			mWebView.currentRendring=position;
 			mWebView.frameAt = frameAt;
 			mWebView.awaiting = false;
-			if(resposibleForThisWeb && fromCombined && (PDICMainAppOptions.getTmpIsCollapsed(tmpIsFlag) || frameAt>0&&(PDICMainAppOptions.getDelaySecondPageLoading()||PDICMainAppOptions.getOnlyExpandTopPage()))){/* 自动折叠 */
+			if(/*resposibleForThisWeb && */fromCombined && (PDICMainAppOptions.getTmpIsCollapsed(tmpIsFlag) || frameAt>0&&(PDICMainAppOptions.getDelaySecondPageLoading()||PDICMainAppOptions.getOnlyExpandTopPage()))){/* 自动折叠 */
 				mWebView.awaiting = true;
 				mWebView.setVisibility(View.GONE);
 				setCurrentDis(mWebView, mWebView.currentPos);

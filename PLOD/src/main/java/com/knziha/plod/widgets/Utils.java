@@ -20,6 +20,8 @@ import android.content.Context;
 import android.util.TypedValue;
 import android.view.View;
 
+import androidx.core.view.NestedScrollingChildHelper;
+
 public class Utils {
 
     /**
@@ -34,8 +36,16 @@ public class Utils {
     static int getDP(float dp, Context c){
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, c.getResources().getDisplayMetrics());
     }
-
-    public static class DummyOnClick implements View.OnClickListener {
+	
+	public static NestedScrollingChildHelper mNestedScrollingChildHelper;
+ 
+	public static NestedScrollingChildHelper getNestedScrollingChildHelper() {
+		if(mNestedScrollingChildHelper==null)
+			mNestedScrollingChildHelper=new NestedScrollingChildHelper(null);
+		return mNestedScrollingChildHelper;
+	}
+	
+	public static class DummyOnClick implements View.OnClickListener {
 		@Override
 		public void onClick(View v) {
 

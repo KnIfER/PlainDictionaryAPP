@@ -1678,7 +1678,11 @@ public class SubsamplingScaleImageView extends View {
 			} else if(currentScale <= quickZoomLevels[2]-padding){
 				targetScale = quickZoomLevels[2];
 			} else {
-				targetScale = quickZoomLevels[0];
+				if(IBC.getDoubleClick12()){
+					targetScale = quickZoomLevels[1];
+				} else {
+					targetScale = quickZoomLevels[0];
+				}
 			}
 		}
 		
@@ -2317,9 +2321,7 @@ public class SubsamplingScaleImageView extends View {
 		// On first display of base image set up position, and in other cases make sure scale is correct.
 		fitToBounds(false,true);
 		
-		
 		handle_proxy_simul(0,null,rotation);
-		
 	}
 	
 	/**

@@ -55,9 +55,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public int frameAt;
 	public String toTag;
 	public int SelfIdx;
-	/** 标记视图来源。 0=单本搜索; 1=联合搜索; 2=点译模式; 3=翻阅模式; 4=网络词典。*/
+	/** 标记视图来源。 0=单本搜索; 1=联合搜索; 2=点译模式; 3=翻阅模式。*/
 	public int fromCombined;
-	public boolean fromPeruseview;
+	//public boolean fromPeruseview;
+	public boolean fromNet;
 	public String word;
 	public int[] currentRendring;
 	public boolean awaiting;
@@ -74,7 +75,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public PhotoBrowsingContext IBC;
 	
 	public GradientDrawable toolbarBG;
-	public ViewGroup titleBar;
+	public AdvancedNestScrollLinerView titleBar;
 	public final int[] ColorShade = new int[]{0xff4F7FDF, 0xff2b4381};
 	public boolean clearHistory;
 	private int mForegroundColor = 0xffffffff;
@@ -173,35 +174,34 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean isloading=false;
 	@Override
 	public void loadDataWithBaseURL(String baseUrl,String data,String mimeType,String encoding,String historyUrl) {
-		loadUrl("about:blank");
 		super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
 		//if(!baseUrl.equals("about:blank"))
-		CMN.Log("loadDataWithBaseURL...");
+		//CMN.Log("loadDataWithBaseURL...");
 		isloading=true;
 	}
 	
-	@Override
-	public void onResume() {
-		super.onResume();
-	}
+//	@Override
+//	public void onResume() {
+//		super.onResume();
+//	}
+//
+//	@Override
+//	public void onPause() {
+//		CMN.Log("onPauseonPauseonPause");
+//		super.onPause();
+//	}
 	
-	@Override
-	public void onPause() {
-		CMN.Log("onPauseonPauseonPause");
-		super.onPause();
-	}
-	
-	@Override
-	protected void onSizeChanged(int w, int h, int ow, int oh) {
-		super.onSizeChanged(w, h, ow, oh);
-		//CMN.Log("onSizeChanged  ");
-	}
+//	@Override
+//	protected void onSizeChanged(int w, int h, int ow, int oh) {
+//		super.onSizeChanged(w, h, ow, oh);
+//		//CMN.Log("onSizeChanged  ");
+//	}
 
-	@Override
-	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-		//CMN.Log("onMeasure  ");
-	}
+//	@Override
+//	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+//		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+//		//CMN.Log("onMeasure  ");
+//	}
 
 	@Override
 	public void loadUrl(String url) {
@@ -490,7 +490,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																	public boolean onLongClick(View v) {
 																		/* 📕📕📕 微空间内爆术 📕📕📕 */
 																		Context c = getContext();
-																		CMN.Log(c);
+																		//CMN.Log(c);
 																		if(c instanceof ContextWrapper && !(c instanceof MainActivityUIBase)){
 																			c = ((ContextWrapper)c).getBaseContext();
 																		}
@@ -501,7 +501,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																				if(SelfIdx<a.md.size()){
 																					invoker = a.md.get(SelfIdx);
 																				}
-																				MainActivityUIBase.UniCoverClicker ucc = a.getUcc(); ucc.bFromWebView=true; ucc.bFromPeruseView=WebViewmy.this.fromPeruseview;
+																				MainActivityUIBase.UniCoverClicker ucc = a.getUcc(); ucc.bFromWebView=true; ucc.bFromPeruseView=WebViewmy.this.fromCombined==3;
 																				ucc.setInvoker(invoker, WebViewmy.this, null, null);
 																				ucc.onItemClick(null, null, MainActivityUIBase.PreferredToolId, -1, false);
 																			}

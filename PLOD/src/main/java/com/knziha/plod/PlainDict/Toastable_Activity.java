@@ -138,8 +138,9 @@ public class Toastable_Activity extends AppCompatActivity {
 		   CrashHandler.getInstance(this, opt).register(getApplicationContext());
 	   }
 
-	   if(PDICMainAppOptions.getKeepScreen())
+	   if(PDICMainAppOptions.getKeepScreen()){
 		   getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+	   }
 
 	   checkLanguage();
    }
@@ -224,38 +225,6 @@ public class Toastable_Activity extends AppCompatActivity {
 	
 	protected boolean DoesActivityCheckLog() {
 		return true;
-	}
-
-	public void fix_full_screen(@Nullable View decorView) {
-		do_fix_full_screen(decorView, false, false);
-	}
-
-	public static void do_fix_full_screen(@NonNull View decorView, boolean fullScreen, boolean hideNavigation) {
-		if(hideNavigation) {
-			//int options = decorView.getSystemUiVisibility();
-			int uiOptions =
-					View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-					| View.SYSTEM_UI_FLAG_LOW_PROFILE
-					| View.SYSTEM_UI_FLAG_IMMERSIVE
-					;
-			if(fullScreen) uiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-					| View.SYSTEM_UI_FLAG_FULLSCREEN;
-			decorView.setSystemUiVisibility(uiOptions);
-		}
-	}
-	
-	public static void fix_full_screen_global(@NonNull View decorView, boolean fullScreen, boolean hideNavigation) {
-		int uiOptions = 0;
-		if(fullScreen) uiOptions |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-				| View.SYSTEM_UI_FLAG_FULLSCREEN
-				| View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-		if(hideNavigation) uiOptions|=View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-				| View.SYSTEM_UI_FLAG_LOW_PROFILE
-				| View.SYSTEM_UI_FLAG_IMMERSIVE;
-		decorView.setSystemUiVisibility(uiOptions);
 	}
 
 	public static void setWindowsPadding(@NonNull View decorView) {

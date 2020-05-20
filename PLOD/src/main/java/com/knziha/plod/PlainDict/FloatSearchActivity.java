@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.text.Editable;
 import android.text.Html;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.view.ViewParent;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.Window;
 import android.view.WindowManager;
@@ -35,6 +37,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
@@ -96,9 +99,45 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	@Override
 	public void onBackPressed() {
-		if(checkWebSelection())
+		if(checkWebSelection()){
 			return;
-		super.onBackPressed();
+		}
+		else if(DBrowser != null){
+			if(DBrowser.try_goBack()!=0)
+				return;
+			//File newFavor = DBrowser.items.get(DBrowser.lastChecked);
+			//xxx
+//			if(!(DBrowser instanceof DHBroswer))
+//				if(!newFavor.equals(new File(favoriteCon.pathName))) {//或许需要重载收藏夹
+//					favoriteCon.close();
+//					favoriteCon = new LexicalDBHelper(this, newFavor);
+//					String name = new File(favoriteCon.pathName).getName();
+//					//opt.putString("currFavoriteDBName", opt.currFavoriteDBName=);
+//					opt.putCurrFavoriteDBName(favorTag+name.substring(0,name.length()-4));
+//					show(R.string.currFavor, DBrowser.boli(newFavor.getName()));
+//				}
+			if(contentview.getParent()==main){
+			
+			}
+			FragmentTransaction transaction = getSupportFragmentManager()
+					.beginTransaction().remove(DBrowser);
+			transaction.commit();
+			
+			//getSupportFragmentManager().popBackStack();
+			
+			//main.removeView(DBroswer.getView());
+			//DBroswer.onDetach();
+			//todo 增设选项
+			if(!TextUtils.isEmpty(DBrowser.currentDisplaying)) {
+				//if(!opt.getBrowser_AffectInstant()) etSearch.removeTextChangedListener(tw1);
+				//etSearch.setText(DBrowser.currentDisplaying);
+				//ivDeleteText.setVisibility(View.VISIBLE);
+				//if(!opt.getBrowser_AffectInstant()) etSearch.addTextChangedListener(tw1);
+			}
+			DBrowser = null;
+		} else {
+			super.onBackPressed();
+		}
 	}
 
 	//tc
@@ -170,10 +209,39 @@ public class FloatSearchActivity extends MainActivityUIBase {
         }  
     };
 
-	private boolean isContentViewAttached() {
+	@Override
+	boolean isContentViewAttached() {
 		return webcontentlist.getVisibility()==View.VISIBLE;
 	}
-
+	
+	@Override
+	public void DetachContentView() {
+		if(DBrowser!=null){
+			ViewGroup sp = (ViewGroup) sp_main.getParent();
+			if(sp!=main){
+				if(sp!=null){
+					sp.removeView(sp_main);
+				}
+				main.addView(sp_main, 2);
+			}
+		}
+	}
+	
+	@Override
+	public boolean isContentViewAttachedForDB() {
+		return sp_main.getParent()==root;
+	}
+	
+	@Override
+	public void AttachContentViewForDB() {
+		//todo preserve context
+		ViewGroup somp = (ViewGroup) sp_main.getParent();
+		if(somp!=root){
+			if(somp!=null) somp.removeView(sp_main);
+			root.addView(sp_main);
+		}
+	}
+	
 	private int touch_id;
 
 	@Override
@@ -187,7 +255,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			showTopSnack(main_succinct, val, fval, -1, -1, false);
 		}
 	}
-
+	
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
@@ -208,7 +276,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	@Override
 	public void fix_full_screen(@Nullable View decorView) {
 		if(decorView==null) decorView=getWindow().getDecorView();
-		do_fix_full_screen(decorView, fullScreen, hideNavigation);
+		fix_full_screen_global(decorView, fullScreen, hideNavigation);
 	}
 
 	@Override

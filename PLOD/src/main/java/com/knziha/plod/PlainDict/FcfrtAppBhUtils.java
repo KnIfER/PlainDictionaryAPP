@@ -26,7 +26,7 @@ public class FcfrtAppBhUtils {
     }
 	
 	private static String getPackageName() {
-		return "com.knziha.vtech";
+		return "com.knziha.plod.plaindict";
 	}
 	
 	/**

@@ -661,7 +661,7 @@ public class mdict_web extends mdict {
 				return;
 			}
 		}
-		mWebView.fromCombined=4;
+		mWebView.fromNet=true;
 		mWebView.clearHistory=false;
 		String key = null;
 		String url=null;

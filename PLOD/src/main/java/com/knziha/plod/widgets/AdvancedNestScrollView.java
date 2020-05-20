@@ -19,95 +19,41 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.ListView;
+import android.view.View;
 
 import androidx.core.view.NestedScrollingChild;
 import androidx.core.view.NestedScrollingChildHelper;
-import androidx.core.view.ViewCompat;
-
-import com.knziha.plod.PlainDict.CMN;
 
 /**
  * https://github.com/tobiasrohloff/NestedScrollWebView/edit/master/lib/src/main/java/com/tobiasrohloff/view/NestedScrollWebView.java
  */
 public class AdvancedNestScrollView extends ScrollViewmy implements NestedScrollingChild {
-	int mLastMotionY;
 	boolean mNestedScrollEnabled;
+	
+	private final NestedScrollingChildHelper mChildHelper;
+	
+	int mLastMotionY;
 
-	private final int[] mScrollOffset = new int[2];
-	private final int[] mScrollConsumed = new int[2];
-
-	private int mNestedYOffset;
-
-	private NestedScrollingChildHelper mChildHelper;
 
 	public AdvancedNestScrollView(Context context) {
-		super(context);
+		this(context, null);
 	}
 
 	public AdvancedNestScrollView(Context context, AttributeSet attrs) {
-		super(context, attrs);
+		this(context, attrs, 0);
 	}
 
 	public AdvancedNestScrollView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
+		//mChildHelper = new NestedScrollingChildHelper(null);
+		mChildHelper = Utils.getNestedScrollingChildHelper();
 	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
+	public boolean dispatchTouchEvent(MotionEvent event) {
 		if(mNestedScrollEnabled) {
-			MotionEvent trackedEvent = MotionEvent.obtain(event);
-
-			final int action = event.getActionMasked();
-
-			if (action == MotionEvent.ACTION_DOWN) {
-				mNestedYOffset = 0;
-			}
-
-			int y = (int) event.getY();
-
-			event.offsetLocation(0, mNestedYOffset);
-
-			switch (action) {
-				case MotionEvent.ACTION_DOWN:
-					mLastMotionY = y;
-					startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
-					break;
-				case MotionEvent.ACTION_MOVE:
-					//CMN.Log("...ACTION_MOVE");
-					int deltaY = mLastMotionY - y;
-
-					if (dispatchNestedPreScroll(0, deltaY, mScrollConsumed, mScrollOffset)) {
-						deltaY -= mScrollConsumed[1];
-						trackedEvent.offsetLocation(0, mScrollOffset[1]);
-						mNestedYOffset += mScrollOffset[1];
-					}
-
-					mLastMotionY = y - mScrollOffset[1];
-
-					int oldY = getScrollY();
-					int newScrollY = Math.max(0, oldY + deltaY);
-					int dyConsumed = newScrollY - oldY;
-					int dyUnconsumed = deltaY - dyConsumed;
-
-					if (dispatchNestedScroll(0, dyConsumed, 0, dyUnconsumed, mScrollOffset)) {
-						mLastMotionY -= mScrollOffset[1];
-						trackedEvent.offsetLocation(0, mScrollOffset[1]);
-						mNestedYOffset += mScrollOffset[1];
-					}
-					trackedEvent.recycle();
-					break;
-				case MotionEvent.ACTION_POINTER_DOWN:
-				case MotionEvent.ACTION_POINTER_UP:
-				case MotionEvent.ACTION_UP:
-				case MotionEvent.ACTION_CANCEL:
-					//CMN.Log("ACTION_UP");
-					stopNestedScroll();
-					break;
-			}
-			//if(OrgTop-getTop()==0)
-			super.onTouchEvent(event);
-			return true;
+			mChildHelper.onTouchEvent(this, event);
+			return super.dispatchTouchEvent(event);
 		}
 		return super.onTouchEvent(event);
 	}
@@ -117,12 +63,8 @@ public class AdvancedNestScrollView extends ScrollViewmy implements NestedScroll
 	@Override
 	public void setNestedScrollingEnabled(boolean enabled) {
 		mNestedScrollEnabled=enabled;
-		if(mChildHelper==null){
-			mChildHelper = new NestedScrollingChildHelper(this);
-			mChildHelper.setNestedScrollingEnabled(enabled);
-		} else {
-			mChildHelper.setNestedScrollingEnabled(enabled);
-		}
+		mChildHelper.setCurrentView(this);
+		mChildHelper.setNestedScrollingEnabled(enabled);
 	}
 
 	@Override
@@ -137,10 +79,11 @@ public class AdvancedNestScrollView extends ScrollViewmy implements NestedScroll
 
 	@Override
 	public void stopNestedScroll() {
-		if(mChildHelper!=null)
+		if(mNestedScrollEnabled&&mChildHelper.getCurrentView()==this) {
 			mChildHelper.stopNestedScroll();
+		}
 	}
-
+	
 	@Override
 	public boolean hasNestedScrollingParent() {
 		return mNestedScrollEnabled&&mChildHelper.hasNestedScrollingParent();

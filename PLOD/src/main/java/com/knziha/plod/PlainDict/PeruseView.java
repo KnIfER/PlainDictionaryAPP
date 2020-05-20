@@ -61,6 +61,7 @@ import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_txt;
+import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.SimpleDialog;
@@ -536,14 +537,26 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			a.PrevActivedAdapter = a.ActivedAdapter;
 		a.ActivedAdapter = ActivedAdapter;
 		othermds.clear();
-		for(int i=0;i<md.size();i++) {
-			if(!data.contains(i)) {
-				othermds.add(i);
+		
+		if(addAll) {
+			othermds.clear();
+			if(data.size()!=md.size()){
+				data.clear();
+				for (int i = 0; i < md.size(); i++)
+					data.add(i);
+			}
+		} else {
+			for(int i=0;i<md.size();i++) {
+				if(!data.contains(i)) {
+					othermds.add(i);
+				}
 			}
 		}
-		if(!ToD) bookMarkAdapter.notifyDataSetChanged();
 		
-		if(data==null || md==null) return;
+		if(!ToD) {
+			bookMarkAdapter.notifyDataSetChanged();
+		}
+		
 		if(data.size()==0) {
 			booksShelfAdapter.notifyDataSetChanged();
 			return;
@@ -771,7 +784,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		bookMarkAdapter.webviewHolder = webSingleholder;
 		webSingleholder.setBackgroundColor(a.GlobalPageBackground);
 			mWebView = rl.findViewById(R.id.webviewmy);
-			mWebView.fromPeruseview = true;
+			//mWebView.fromPeruseview = true;
+			mWebView.fromCombined=3;
 			a.initWebScrollChanged();//Strategy: use one webscroll listener
 	        mWebView.setOnScrollChangedListener(a.onWebScrollChanged);
 	        mWebView.setPadding(0, 0, 18, 0);
@@ -811,7 +825,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			toolbar_cover.setTag(2);
 			toolbar_title.setOnClickListener(this);
 		
-			mWebView.titleBar = toolbar_web;
+			mWebView.titleBar = (AdvancedNestScrollLinerView) toolbar_web;
 			mWebView.toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar_web.getBackground()).getDrawable(0);
 			mWebView.toolbarBG.setColors(mWebView.ColorShade);
 			
@@ -1185,7 +1199,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				String toCompare = mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase();
 				int len = text.length();
 				int len2 = toCompare.length();
-				if(len>0 && len2>0 && len>=toCompare.length() && text.charAt(0)==toCompare.charAt(0)){
+				//CMN.Log("cidx??",mdTmp._Dictionary_fName, toCompare);
+				if(len>0 && len2>0/* && len>=toCompare.length()*/ && text.charAt(0)==toCompare.charAt(0)){
 					if(len==1){
 						data.add(i);
 						bakedGroup.add(i);
@@ -1197,9 +1212,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 								break;
 						}
 						cidx--;
-						//CMN.Log(cidx, text, toCompare);
+						//CMN.Log("cidx", cidx, text, toCompare, mdTmp._Dictionary_fName);
 						if (cidx > 0) {
-							if (len - cidx <= 4) {
+							if (len - cidx <= 4 || cidx>=len/2) {
 								data.add(i);
 								bakedGroup.add(i);
 							}
@@ -1441,6 +1456,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         
 		public void click(int pos,boolean ismachineClick) {//lv2
 			MainActivityUIBase a = (MainActivityUIBase) getActivity();
+			
+			PageSlider.WebContext = mWebView;
+			mWebView.IBC = currentDictionary.IBC;
+			PageSlider.invalidateIBC();
+			
         	if(ToD) {
         		//a.setContentBow(false);
         		//super.onItemClick(pos);
@@ -1722,6 +1742,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         		a.show(R.string.endendr);
         		return;
     		}
+      
+			PageSlider.WebContext = mWebView;
+			mWebView.IBC = currentDictionary.IBC;
+			PageSlider.invalidateIBC();
         	
         	if(widget14.getVisibility()==View.VISIBLE) {
         		widget13.setVisibility(View.GONE);
@@ -2067,6 +2091,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				if(isLongClicked){
 					TextToSearch = etSearch.getText().toString();
 					closeMenu = ret = true;
+					if(voyager!=null)
 					for (int i = 0; i*VELESIZE < voyager.length; i+=3) {
 						voyager[i*VELESIZE] = -1;
 					}
