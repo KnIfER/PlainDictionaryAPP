@@ -88,6 +88,7 @@ dependencies {
         exclude module:"core"
     }
     api project(':pdfium')
+    implementation 'org.jetbrains:annotations:15.0'
 
 
     //api ('com.github.barteksc:pdfium-android:1.9.0')

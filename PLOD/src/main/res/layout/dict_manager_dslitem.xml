@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="fill_parent"
 	android:background="@drawable/dragmy4"
 	android:layout_height="wrap_content"
@@ -16,17 +17,17 @@
 		android:gravity="center"
 		android:focusable="false"
 		/>
-	<com.knziha.plod.widgets.DictionaryTitle
+	<com.knziha.plod.widgets.FlowTextView
 		android:id="@+id/text"
-		android:layout_width="wrap_content"
+		android:layout_width="0dp"
 		android:layout_height="match_parent"
 		android:layout_weight="1"
 		android:textAppearance="?android:attr/textAppearanceMedium"
 		android:layout_gravity="center_vertical"
-		android:text="aaaa"
 		android:background="@drawable/listviewselector0"
 		android:paddingStart="9dp"
 		android:gravity="center_vertical"
+		tools:text="aaaa"
 		/>
 	<ImageView
 		android:id="@id/drag_handle"

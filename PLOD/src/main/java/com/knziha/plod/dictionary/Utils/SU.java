@@ -72,6 +72,21 @@ public class  SU{
 			}
 		System.out.println(msg);
 	}
+	
+	public boolean CharsequenceEqual(CharSequence cs1, CharSequence cs2) {
+		if(cs1!=null&&cs2!=null) {
+			int len1=cs1.length();
+			if(len1==cs2.length()) {
+				for (int i = 0; i < len1; i++) {
+					if(cs1.charAt(i)!=cs2.charAt(i)) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+		return false;
+	}
 }
 	
 

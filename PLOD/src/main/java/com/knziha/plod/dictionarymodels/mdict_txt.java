@@ -33,8 +33,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import static com.knziha.plod.dictionarymodels.mdict_transient.goodNull;
-
 /*
  Mdict point to local txt file.
  date:2019.11.28
@@ -186,20 +184,13 @@ public class mdict_txt extends mdict {
 	}
 
 	//构造
-	public mdict_txt(String fn, MainActivityUIBase _a) throws IOException {
-		super(goodNull(fn), _a);
+	public mdict_txt(File fn, MainActivityUIBase _a) throws IOException {
+		super(fn, _a, true);
 		a=_a;
 		opt=a.opt;
-		_Dictionary_fName=new File(fn).getName();
-		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
-		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
-
-		justifyInternal("."+_Dictionary_fName);
-
-
-		htmlBuilder=new StringBuilder(htmlBase);
-		htmlBuilder.append(js);
-		htmlBaseLen=htmlBuilder.length();
+		
+		_num_record_blocks=-1;
+		unwrapSuffix=false;
 
 		readInConfigs(a.UIProjects);
 
@@ -256,15 +247,6 @@ public class mdict_txt extends mdict {
 		if(bgColor==null)
 			bgColor=CMN.GlobalPageBackground;
 
-	}
-
-	@Override
-	protected void initLogically() {
-		_num_record_blocks=-1;
-		String fn = (String) SU.UniversalObject;
-		fn = new File(fn).getAbsolutePath();
-		f = new File(fn);
-		_Dictionary_fName = f.getName();
 	}
 
 	@Override

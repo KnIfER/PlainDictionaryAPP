@@ -46,4 +46,17 @@
     <declare-styleable name="ActivatableImageView">
         <attr name="src0" format="reference" />
     </declare-styleable>
+
+    <declare-styleable name="FlowTextView">
+        <attr name="android:src" format="reference" />
+		<attr name="android:textSize" format="dimension" />
+		<attr name="android:textColor" format="dimension" />
+		<attr name="android:lineSpacingExtra" format="dimension" />
+		<attr name="android:lineSpacingMultiplier" format="float" />
+		<attr name="starWidth" format="dimension" />
+		<attr name="android:text" format="string" />
+		<attr name="android:maxLines" format="integer" />
+		<attr name="margin" format="dimension" />
+		<attr name="rating" format="boolean" />
+    </declare-styleable>
 </resources>

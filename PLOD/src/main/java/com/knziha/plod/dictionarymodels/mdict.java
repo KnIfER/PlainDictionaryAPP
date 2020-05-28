@@ -55,30 +55,27 @@ import com.knziha.plod.PlainDict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.plod.settings.DictOpitonContainer;
-import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdictRes;
 import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
+import com.knziha.plod.widgets.FlowTextView;
+import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
 import org.adrianwalker.multilinestring.Multiline;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -205,30 +202,52 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 					if(s.baseNode != document.body) {// immunize blank area
 						var text=s.toString(); // for word made up of just one character
 						var range = s.getRangeAt(0);
+	 
+						var rrect = range.getBoundingClientRect();
+	 					var pX = rrect.x;
+	 					var pY = rrect.y;
+	 					var pW = rrect.width;
+	 					var pH = rrect.height;
+	 					var cprY = e.clientY;
+	 					var cprX = e.clientX;
 
-						s.collapseToStart();
-						s.modify('extend', 'forward', 'lineboundary');
-
-						if(s.toString().length>=text.length){
-							s.empty();
-							s.addRange(range);
-
-							s.modify('move', 'backward', 'word'); // now could noway be next line
-							s.modify('extend', 'forward', 'word');
-
-							if(s.getRangeAt(0).endContainer===range.endContainer&&s.getRangeAt(0).endOffset===range.endOffset){
-								// for word made up of multiple character
-								text=s.toString();
+	 
+						if(1||(cprY>pY-5 && cprY<pY+pH+5 && cprX>pX-5 && cprX<pX+pW+15)){
+							s.collapseToStart();
+							s.modify('extend', 'forward', 'lineboundary');
+		 
+							if(s.toString().length>=text.length){
+								s.empty();
+								s.addRange(range);
+	
+								s.modify('move', 'backward', 'word'); // now could noway be next line
+								s.modify('extend', 'forward', 'word');
+	
+								var range1 = s.getRangeAt(0);
+								if(range1.endContainer===range.endContainer&&range1.endOffset===range.endOffset){
+									// for word made up of multiple character
+									text=s.toString();
+									rrect = range1.getBoundingClientRect();
+									pX = rrect.x;
+									pY = rrect.y;
+									pW = rrect.width;
+									pH = rrect.height;
+								}
+	 
+								//网页内部的位置，与缩放无关
+								//console.log(rrect);
+								console.log(pX+' ~~ '+pY+' ~~ '+pW+' ~~ '+pH);
+								console.log(cprX+' :: '+cprY);
+	 
+								console.log(text); // final output
+								if(app){
+									app.popupWord(text, frameAt, w.document.documentElement.scrollLeft+pX, w.document.documentElement.scrollTop+pY, pW, pH);
+									w.popup=1;
+									s.empty();
+									return true;
+								}
 							}
-
-							console.log(text); // final output
-							if(app){
-	 							app.popupWord(text, e.clientX, e.screenY, frameAt);
-	 							w.popup=1;
-	 							s.empty();
-								return true;
-							}
-						}
+	 					}
 					}
 
 					//点击空白关闭点译弹窗
@@ -470,7 +489,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	@Multiline
 	public final static String hl_border ="hl_border";
 
-	public String _Dictionary_fName_Internal;
+	//public String _Dictionary_fName_Internal;
 	public WebViewmy mWebView;
     public ViewGroup rl;
 
@@ -568,7 +587,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public boolean getPopEntry(){
 		return (firstFlag & 0x80000) != 0;
 	}
-
+	
+//	public boolean getStarLevel(){
+//		0x100000~0x400000
+//	}
+	
 	public boolean getSavePageToDatabase(){
 		return true;
 	}
@@ -578,13 +601,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict
     public Integer bgColor=null;
     public int TIBGColor;
     public int TIFGColor;
-
-	protected final static String htmlBase="<!DOCTYPE html><html><meta name='viewport' content='initial-scale=1,user-scalable=yes' class=\"_PDict\"><head><style class=\"_PDict\">html,body{width:auto;height:auto;}img{max-width:100%;}mark{background:yellow;}mark.current{background:orange;border:0px solid #FF0000}";
+			
+	public final static String htmlBase="<!DOCTYPE html><html><meta name='viewport' content='initial-scale=1,user-scalable=yes' class=\"_PDict\"><head><style class=\"_PDict\">html,body{width:auto;height:auto;}img{max-width:100%;}mark{background:yellow;}mark.current{background:orange;border:0px solid #FF0000}";
 	public final static String htmlHeadEndTag = "</head>";
 	public final static String htmlEnd="</html>";
-	public int htmlBaseLen;
-	//TODO lazy load
-    public StringBuilder htmlBuilder;
 
     public MainActivityUIBase a;
 	protected PDICMainAppOptions opt;
@@ -592,49 +612,38 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	protected View.OnLongClickListener savelcl;
 
 	//构造
-	public mdict(String fn, MainActivityUIBase _a) throws IOException {
-		super(fn);
-		if(_num_record_blocks==-1) return;
-		a = _a;
-		opt = _a.opt;
-		fn =f.getAbsolutePath();
-		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
-		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
-
-		justifyInternal("."+_Dictionary_fName);
-
-		htmlBuilder=new StringBuilder(htmlBase);
+	public mdict(@NonNull File fn, MainActivityUIBase _a, boolean pseudoInit) throws IOException {
+		super(fn, pseudoInit, _a==null?null:_a.MainStringBuilder);
+		if(_a!=null){
+			a = _a;
+			opt = _a.opt;
+		}
+		if(pseudoInit) {
+			return;
+		}
+		
         File p = f.getParentFile();
         if(p!=null) {
+			StringBuilder fName_builder = getCleanDictionaryNameBuilder();
+			int bL = fName_builder.length();
 			/* 外挂同名css */
-            StringBuilder sb = new StringBuilder(p.getAbsolutePath()).append("//").append(_Dictionary_fName);
-            int fileNameLen=sb.length();
-	        String cssPath = sb.append(".css").toString();
-	        if(new File(cssPath).exists()) {
-	        	BufferedReader in = new BufferedReader(new FileReader(cssPath));
-		        String line;
-		        while((line = in.readLine())!=null)
-					htmlBuilder.append(line).append("\r\n");
-		        in.close();
+			File externalFile = new File(p, fName_builder.append(".css").toString());
+	        if(externalFile.exists()) {
+	        	//todo 插入 同名 css 文件？
 	        }
+	        fName_builder.setLength(bL);
+			externalFile = new File(p, fName_builder.append(".png").toString());
 			/* 同名png图标 */
-	        sb.setLength(fileNameLen);
-	        pngPath = sb.append(".png").toString();
-	        if(new File(pngPath).exists()) {
-	        	cover = Drawable.createFromPath(pngPath);
+	        if(externalFile.exists()) {
+	        	cover = Drawable.createFromPath(externalFile.getPath());
 	        }
         }
-		htmlBuilder.append(js);
-		htmlBaseLen=htmlBuilder.length();
 
         readInConfigs(a.UIProjects);
 	}
-
-
-	public String pngPath;
-
+	
 	protected boolean viewsHolderReady =  false;
-	public TextView toolbar_title;
+	public FlowTextView toolbar_title;
 	View ic_undo;
 	View ic_save;
 	View ic_redo;
@@ -688,11 +697,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			toolbar = rl.findViewById(R.id.lltoolbar);
 			mWebView.IBC = IBC;
 			mWebView.titleBar = (AdvancedNestScrollLinerView) toolbar;
-			mWebView.toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar.getBackground()).getDrawable(0);
+			mWebView.FindBGInTitle(toolbar);
 			mWebView.toolbarBG.setColors(mWebView.ColorShade);
 			
 			//toolbarBG.setColors(ColorSolid);
-			toolbar_title = toolbar.findViewById(R.id.toolbar_title);
+			mWebView.toolbar_title = toolbar_title = toolbar.findViewById(R.id.toolbar_title);
 			toolbar_cover = toolbar.findViewById(R.id.cover);
 			if(cover!=null)
 				toolbar_cover.setImageDrawable(cover);
@@ -701,6 +710,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			toolbar_title.setOnClickListener(new OnClickListener(){
 				@Override
 				public void onClick(View v) {
+					CMN.Log("toolbar_title onClick");
 					if(mWebView.getVisibility()!=View.VISIBLE) {
 						mWebView.setAlpha(1);
 						mWebView.setVisibility(View.VISIBLE);
@@ -736,6 +746,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			OnClickListener voyager = new OnClickListener() {
 				@Override
 				public void onClick(View v) {
+					CMN.Log("voyager onClick");
 					boolean isRecess = v.getId() == R.id.recess;
 					if (false) {
 						if (isRecess) if (mWebView.canGoBack()) mWebView.goBack();
@@ -833,7 +844,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 													try {
 														java.net.URL requestURL = new URL(url);
 														File pathDownload = new File("/storage/emulated/0/download");
-														if(!pathDownload.exists()) pathDownload.mkdirs();
+														pathDownload.mkdirs();
 														if(pathDownload.isDirectory()) {
 															File path;
 															int idx = url.indexOf("?");
@@ -843,8 +854,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 																msg="文件已存在！";
 															else {
 																String error=null;
-																HttpURLConnection urlConnection = null;
-																InputStream is = null;
+																HttpURLConnection urlConnection;
+																InputStream is;
 																FileOutputStream fout = null;
 																try {
 																	try {
@@ -1291,7 +1302,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				boolean mNeedCheckSavePathName = bNeedCheckSavePathName && name.contains("/");
 				if(mNeedCheckSavePathName){
 					File path = pathSave.getParentFile();
-					if(!path.exists()) path.mkdirs();
+					path.mkdirs();
 					proceed = pathSave.isDirectory();
 				}
 				if(proceed)
@@ -1324,7 +1335,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	//public int currentPos;
 	public int internalScaleLevel=-1;
 	public int lvPos,lvClickPos,lvPosOff;
-	StringBuilder title_builder;
 	/** Current Page Historian */
 	public SparseArray<ScrollerRecord> HistoryOOP = new SparseArray<>();
 
@@ -1340,10 +1350,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			if(tailIdx>0)
 				currentDisplaying=currentDisplaying.substring(0, tailIdx);
 		}
-		if(title_builder==null)
-			title_builder = new StringBuilder();
-		else
-			title_builder.setLength(0);
+		StringBuilder title_builder = AcquireStringBuffer(64);
     	toolbar_title.setText(title_builder.append(currentDisplaying.trim()).append(" - ").append(_Dictionary_fName).toString());
 
 		if(mWebView.History.size()>2){
@@ -1352,11 +1359,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 	}
 	
-	
-	
 	public void checkTint() {
-		if(mWebView!=null)
+		if(mWebView!=null) {
 			tintBackground(mWebView);
+		}
 	}
 	
 	public void tintBackground(WebViewmy mWebView) {
@@ -1365,25 +1371,38 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		boolean useInternal = getUseInternalBG();
 		boolean isDark = GlobalOptions.isDark;
 		int myWebColor = useInternal?bgColor:globalPageBackground;
-		if (isDark)
+		if (isDark) {
 			myWebColor = ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
+		}
 		a.guaranteeBackground(globalPageBackground);
 		mWebView.setBackgroundColor((getIsolateImages()||useInternal||Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT)?myWebColor:Color.TRANSPARENT);
 		/* check and set colors for toolbar title Background*/
 		if(mWebView==this.mWebView){
 			mWebView.titleBar.fromCombined = mWebView.fromCombined;
 		}
+		FlowTextView toolbar_title = mWebView.toolbar_title;
+		if(toolbar_title!=null) {
+			int StarLevel =  PDICMainAppOptions.getDFFStarLevel(firstFlag);
+			toolbar_title.StarLevel=StarLevel;
+			if(StarLevel>0) {
+				toolbar_title.setStarDrawables(a.getActiveStarDrawable(), toolbar_title==a.popupIndicator?a.getRatingDrawable():null);
+			}
+		}
 		GradientDrawable toolbarBG = mWebView.toolbarBG;
-		if(toolbarBG!=null){
+		if(toolbarBG!=null) {
 			useInternal = getUseInternalTBG();
-			//CMN.Log("使用内置标题栏颜色：", useInternal);
 			myWebColor = isDark?Color.BLACK:useInternal?TIBGColor:PDICMainAppOptions.getTitlebarUseGlobalUIColor()?a.MainBackground:opt.getTitlebarBackgroundColor();
+			CMN.Log("使用内置标题栏颜色：", useInternal, _Dictionary_fName, isDark, Integer.toHexString(myWebColor));
 			int colorTop = PDICMainAppOptions.getTitlebarUseGradient()?ColorUtils.blendARGB(myWebColor, Color.WHITE, 0.08f):myWebColor;
 			int[] ColorShade = mWebView.ColorShade;
 			if(ColorShade[1]!=myWebColor||ColorShade[0]!=colorTop){
 				ColorShade[1] = myWebColor;
 				ColorShade[0] = colorTop;
+				if(useInternal) {
+					toolbarBG = mWebView.MutateBGInTitle(mWebView.titleBar);
+				}
 				toolbarBG.setColors(ColorShade);
+				CMN.Log("设置了?");
 			}
 			myWebColor = isDark?Color.WHITE:useInternal?TIFGColor:opt.getTitlebarForegroundColor();
 			mWebView.setTitlebarForegroundColor(myWebColor);
@@ -1393,7 +1412,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 	//todo frameAt=-1
     public void renderContentAt(float initialScale, int SelfIdx, int frameAt, WebViewmy mWebView, int... position){
-    	//CMN.Log("renderContentAt!!!...");
+    	CMN.Log("renderContentAt!!!...", _Dictionary_fName);
     	isJumping=false;
     	if(mWebView==null) {
     		mWebView=this.mWebView;
@@ -1426,7 +1445,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				mWebView.awaiting = true;
 				mWebView.setVisibility(View.GONE);
 				setCurrentDis(mWebView, mWebView.currentPos);
-				//CMN.Log("折叠！！！");
+				CMN.Log("折叠！！！");
 				return;
 			}
 		}
@@ -1481,7 +1500,15 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 		renderContentAt_internal(mWebView, initialScale, fromCombined, fromPopup, mIsolateImages, position);
     }
-
+			
+	public StringBuilder AcquirePageBuilder() {
+		StringBuilder sb = AcquireStringBuffer(512);
+		sb.append(htmlBase);
+		//todo 插入 同名 css 文件？
+		sb.append(js);
+		return sb;
+	}
+	
 	public void renderContentAt_internal(WebViewmy mWebView,float initialScale, boolean fromCombined, boolean fromPopup, boolean mIsolateImages, int...position) {
 		mWebView.isloading=true;
 		mWebView.currentPos = position[0];
@@ -1520,7 +1547,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			}else
 				mWebView.setInitialScale(0);//opt.dm.density
 		}
-
+		
+		StringBuilder htmlBuilder = AcquirePageBuilder();
+		
 		//todo may allow ?
 		mWebView.getSettings().setSupportZoom(!fromCombined);
 		if(!fromCombined) {
@@ -1529,7 +1558,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		mWebView.isloading = true;
 		if(htmlCode!=null)
 			if(!htmlCode.startsWith(fullpageString)) {
-				htmlBuilder.setLength(htmlBaseLen);
 				AddPlodStructure(mWebView, htmlBuilder, fromPopup, mIsolateImages);
 				LoadPagelet(mWebView, htmlBuilder, htmlCode);
 			}
@@ -1538,7 +1566,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				int headidx = htmlCode.indexOf("<head>");
 				boolean b1=headidx==-1;
 				if(true){
-					StringBuilder htmlBuilder = new StringBuilder();
 					String start = b1?"<head>":htmlCode.substring(0, headidx+6);
 					String end =b1?htmlCode:htmlCode.substring(headidx+6);
 					htmlBuilder.append(start);
@@ -1554,7 +1581,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			mWebView.evaluateJavascript(JS, null);
 		}
 	}
-
+	
 	/**
 	 @font-face
 	 {
@@ -1701,33 +1728,22 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 	public String getAboutString() {
 		//return Build.VERSION.SDK_INT>=24?Html.fromHtml(_header_tag.get("Description"),Html.FROM_HTML_MODE_COMPACT).toString():Html.fromHtml(_header_tag.get("Description")).toString();
-		String ret=_header_tag.get("Description");
+		String ret=_header_tag==null?"":_header_tag.get("Description");
 		if(ret==null) ret="";
 		return StringEscapeUtils.unescapeHtml3(ret);
 	}
-
-	protected void justifyInternal(String dictionary_fName) {
-		String path = opt.pathToDatabases().append(_Dictionary_fName_Internal).toString();
-		File from = new File(path);
-		File to = new File( opt.pathToDatabases().append(_Dictionary_fName_Internal=dictionary_fName).toString());
-		//CMN.Log("移动??", from, to, from.exists());
-		if(from.exists()){
-			FU.move3(a, from, to);
-		}
-	}
-
+	
 	public MdxDBHelper con;
 	public MdxDBHelper getCon(boolean open) {
 		if(con==null){
-			String path = opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/bookmarks.sql").toString();
-			File filePath = new File(path);
+			File filePath = PathSubToDBStorage("bookmarks.sql");
 			if(!open && !filePath.exists())
 				return null;
-			filePath = filePath.getParentFile();
-			if(!filePath.exists())
-				filePath.mkdirs();
-			if(filePath.isDirectory())
-				con = new MdxDBHelper(a,path,opt);
+			File parent = filePath.getParentFile();
+			if(parent!=null){
+				parent.mkdirs();
+			}
+			con = new MdxDBHelper(a,filePath.getPath(),opt);
 		}
 		return con;
 	}
@@ -1822,6 +1838,14 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		return null;
 	}
 	
+	public void setToolbarTitleAt(int pos) {
+		String entry = pos>=-1?getEntryAt(pos).trim():currentDisplaying;
+		StringBuilder sb = AcquireStringBuffer(entry.length()+_Dictionary_fName.length()+5);
+		sb.append(entry).append(" - ");
+		appendCleanDictionaryName(sb);
+		toolbar_title.setText(sb.toString());
+	}
+	
 	@SuppressWarnings("unused")
     public static class AppHandler {
 		mdict mdx;
@@ -1837,29 +1861,20 @@ public class mdict extends com.knziha.plod.dictionary.mdict
         public AppHandler(mdict _mdx) {
 			mdx=_mdx;
             scale = mdx.a.getResources().getDisplayMetrics().density;
-    		dm = new DisplayMetrics();
+    		dm = mdx.opt.dm;
         }
 
         @JavascriptInterface
         public void openImage(int position, String... img) {
         	//CMN.Log(position, img, mdx._Dictionary_fName_Internal);
 			MainActivityUIBase aa = mdx.a;
-			Runnable mOpenImgRunnable = new Runnable(){
-				@Override
-				public void run() {
-					if(aa.PageSlider.lastZoomTime>0 && (System.currentTimeMillis()-aa.PageSlider.lastZoomTime)<500) return;
-					if(aa.isBrowsingImgs) return;
-					aa.isBrowsingImgs=true;
-					Intent intent = new Intent();
-					intent.putExtra("images", img);
-					intent.putExtra("current", position);
-					PhotoViewActivity.mdd = mdx.mdd;
-					PhotoViewActivity.IBC = mdx.IBC;
-					intent.setClass(aa, PhotoViewActivity.class);
-					aa.startActivityForResult(intent,0);
-				}
-			};
-			aa.root.postDelayed(mOpenImgRunnable, 100);
+			AgentApplication app = ((AgentApplication) aa.getApplication());
+			app.mdd = mdx.mdd;
+			app.IBC = mdx.IBC;
+			app.opt = mdx.opt;
+			app.Imgs = img;
+			app.currentImg = position;
+			aa.root.postDelayed(aa.getOpenImgRunnable(), 100);
 		}
 
         @JavascriptInterface
@@ -1914,8 +1929,21 @@ public class mdict extends com.knziha.plod.dictionary.mdict
         }
 
         @JavascriptInterface
-        public void popupWord(String key, int x, int y, int frameAt) {
-			mdx.a.popupWord(key, -1, frameAt);
+        public void popupWord(String key, int frameAt, float pX, float pY, float pW, float pH) {
+        	MainActivityUIBase a = mdx.a;
+			a.popupWord(key, -1, frameAt);
+			if(frameAt>=0 && pH!=0){
+				if(pW==0) pW=pH;
+				if(RLContainerSlider.lastZoomTime == 0 || System.currentTimeMillis() - RLContainerSlider.lastZoomTime > 500){
+					/* 只管去兮不管来 */
+					float density = dm.density;
+					//Utils.setFloatTextBG(new Random().nextInt());
+					WebViewmy mWebView = a.PeruseViewAttached()?a.PeruseView.mWebView:mdx.mWebView;
+					if(mWebView!=null){
+						mWebView.highRigkt_set(pX*density, pY*density, (pX+pW)*density, (pY+pH)*density);
+					}
+				}
+			}
         }
 
         @JavascriptInterface
@@ -1990,64 +2018,58 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	}
 
 	public boolean renameFileTo(Context c, File newF) {
-		File fP = newF.getParentFile();
-		fP.mkdirs();
-		boolean ret = false;
-		boolean pass = !f.exists();
-		String _Dictionary_fName_InternalOld = _Dictionary_fName_Internal;
-		if(fP.exists() && fP.isDirectory()) {
-			int retret = FU.rename(a, f, newF);
-			Log.d("XXX-ret",""+retret);
-			//Log.e("XXX-ret",f.getParent()+"sad"+newF.getParent());
-			String oldName = _Dictionary_fName;
-			if(retret==0) {
-				String filename = newF.getName();
-				_Dictionary_fName = newF.getName();
-				int tmpIdx = filename.length()-4;
-				if(tmpIdx>0){
-					if(filename.charAt(tmpIdx)=='.' && filename.regionMatches(true, tmpIdx+1, "mdx" ,0, 3)){
-						_Dictionary_fName = filename.substring(0, tmpIdx);
-					}
-				}
-				/* 重命名资源文件 */
-				ret = true;
-		    	if(mdd!=null)
-				for(mdictRes mddTmp:mdd){
-					File mddF = mddTmp.f();
-					String fn = BU.unwrapMddName(mddF.getName());
-					if(fn.startsWith(_Dictionary_fName)){
-						fn=fn.substring(_Dictionary_fName.length());
-						File newMdd = new File(fP,_Dictionary_fName+fn+".mdd");
-						if(mddF.exists()) {
-							int ret1 = FU.rename(a, mddF, newMdd);
-							if (ret1 == 0 && mdd != null) {
-								mddTmp.updateFile(newMdd);
-							}
-						}
-					}
-				}
-				else if(new File(fP,_Dictionary_fName+".mdd").exists()) {
-					try {
-						mdd = Collections.singletonList(new mdictRes(new File(fP, _Dictionary_fName + ".mdd").getAbsolutePath()));
-						a.showT("找到了匹配的mdd！");
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}else if(retret==-123) {
-				a.showT("错误：不恰当的路径分隔符");
-			}
-		}
-		if(ret || pass) {
-			f=newF;
-			String fn = newF.getAbsolutePath();
-			_Dictionary_fName_Internal = "."+_Dictionary_fName;
-		}
-		new File(opt.pathToDatabases().append(_Dictionary_fName_InternalOld).toString()).renameTo(new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).toString()));
-
-		if(a.currentDictionary==this)
-			a.setLastMdFn(_Dictionary_fName);
-		return ret;
+		//tofo_tofo
+//		File fP = newF.getParentFile();
+//		fP.mkdirs();
+//		boolean ret = false;
+//		boolean pass = !f.exists();
+//		String _Dictionary_fName_InternalOld = "."+_Dictionary_fName;
+//		if(fP.exists() && fP.isDirectory()) {
+//			int retret = FU.rename(a, f, newF);
+//			Log.d("XXX-ret",""+retret);
+//			//Log.e("XXX-ret",f.getParent()+"sad"+newF.getParent());
+//			String oldName = _Dictionary_fName;
+//			if(retret==0) {
+//				_Dictionary_fName = newF.getName();
+//				/* 重命名资源文件 */
+//				ret = true;
+//		    	if(mdd!=null)
+//				for(mdictRes mddTmp:mdd){
+//					File mddF = mddTmp.f();
+//					String fn = BU.unwrapMddName(mddF.getName());
+//					if(fn.startsWith(_Dictionary_fName)){
+//						fn=fn.substring(_Dictionary_fName.length());
+//						File newMdd = new File(fP,_Dictionary_fName+fn+".mdd");
+//						if(mddF.exists()) {
+//							int ret1 = FU.rename(a, mddF, newMdd);
+//							if (ret1 == 0 && mdd != null) {
+//								mddTmp.updateFile(newMdd);
+//							}
+//						}
+//					}
+//				}
+//				else if(new File(fP,_Dictionary_fName+".mdd").exists()) {
+//					try {
+//						mdd = Collections.singletonList(new mdictRes(new File(fP, _Dictionary_fName + ".mdd")));
+//						a.showT("找到了匹配的mdd！");
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}else if(retret==-123) {
+//				a.showT("错误：不恰当的路径分隔符");
+//			}
+//		}
+//		if(ret || pass) {
+//			f=newF;
+//			String fn = newF.getAbsolutePath();
+//		}
+//		new File(opt.pathToDatabases().append(_Dictionary_fName_InternalOld).toString()).renameTo(new File(opt.pathToDatabases().append("."+_Dictionary_fName).toString()));
+//
+//		if(a.currentDictionary==this)
+//			a.setLastMdFn(_Dictionary_fName);
+//		return ret;
+		return false;
 	}
 
 	@Override
@@ -2057,7 +2079,13 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 	@Override
 	public boolean equalsToPlaceHolder(PlaceHolder placeHolder) {
-		return placeHolder.pathname.equals(f.getPath());
+		String ThisPath = f.getPath();
+		String LibPath = opt.lastMdlibPath.getPath();
+		String OtherPath = placeHolder.pathname;
+		if(!OtherPath.startsWith("/") && ThisPath.startsWith(LibPath)){
+			return ThisPath.regionMatches(LibPath.length()+1, OtherPath, 0, OtherPath.length());
+		}
+		return placeHolder.getPath(opt).equals(f);
 	}
 
 	public boolean moveFileTo(Context c, File newF) {
@@ -2068,23 +2096,17 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			int retret = FU.move3(a, f, newF);
 			CMN.Log("XXX-ret",""+retret);
 			if(retret>=0) {
-				String filename = newF.getName();
 				_Dictionary_fName = newF.getName();
-				int tmpIdx = filename.length()-4;
-				if(tmpIdx>0){
-					if(filename.charAt(tmpIdx)=='.' && filename.regionMatches(true, tmpIdx+1, "mdx" ,0, 3)){
-						_Dictionary_fName = filename.substring(0, tmpIdx);
-					}
-				}
+				String clean_Dictionary_fName = getCleanDictionaryName(_Dictionary_fName);
 				/* 移动资源文件 */
 				ret = true;
 				if(mdd!=null)
 					for(mdictRes mddTmp:mdd){
 						File mddF = mddTmp.f();
-						String fn = BU.unwrapMddName(mddF.getName());
-						if(fn.startsWith(_Dictionary_fName)){
-							fn=fn.substring(_Dictionary_fName.length());
-							File newMdd = new File(fP,_Dictionary_fName+fn+".mdd");
+						String fn = mddF.getName();
+						if(fn.startsWith(clean_Dictionary_fName)){
+							fn=fn.substring(clean_Dictionary_fName.length());
+							File newMdd = new File(fP,clean_Dictionary_fName+fn);
 							if(mddF.exists()) {
 								int ret1 = FU.rename(a, mddF, newMdd);
 								if (ret1 == 0 && mdd != null) {
@@ -2093,22 +2115,26 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 							}
 						}
 					}
-				else if(new File(fP,_Dictionary_fName+".mdd").exists()) {
-					try {
-						mdd = Collections.singletonList(new mdictRes(new File(fP, _Dictionary_fName + ".mdd").getAbsolutePath()));
-						a.showT("找到了匹配的mdd！");
-					} catch (IOException e) {
-						e.printStackTrace();
+				else {
+					File mddNew = new File(fP,clean_Dictionary_fName+".mdd");
+					if(mddNew.exists()) {
+						try {
+							mdd = Collections.singletonList(new mdictRes(mddNew));
+							a.showT("找到了匹配的mdd！");
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 				f=newF;
 			}
 			else if(retret==-123) {
-				a.showT("错误：不恰当的路径分隔符");
+				a.showT("错误：不恰当的分隔符");
 			}
 		}
-		if(a.currentDictionary==this)
+		if(a.currentDictionary==this){
 			a.setLastMdFn(_Dictionary_fName);
+		}
 		return ret;
 	}
 
@@ -2134,22 +2160,19 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		return tmpIsFlag;
 	}
 
-	public void dumpViewStates(HashMap<String,byte[]> UIProjects) {
+	public void dumpViewStates(HashMap<CharSequence,byte[]> UIProjects) {
 		setIsDedicatedFilter(false);
 		try {
 			DataOutputStream data_out;
-			byte[] data = null;
-	    	if(CMN.bForbidOneSpecFile){
-				File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
-				File parentFile = SpecificationFile.getParentFile();
-				if(!parentFile.exists()) parentFile.mkdirs();
-				data_out = new DataOutputStream(new FileOutputStream(SpecificationFile));
-			} else {
-				ReusableByteOutputStream bos = new ReusableByteOutputStream(UIProjects.get(f.getName()), MainActivityUIBase.ConfigSize + MainActivityUIBase.ConfigExtra);
-				data = bos.getBytes();
-				bos.precede(MainActivityUIBase.ConfigExtra);
-				data_out = new DataOutputStream(bos);
-			}
+			byte[] data;
+			
+			String save_name = _Dictionary_fName;
+			
+			ReusableByteOutputStream bos = new ReusableByteOutputStream(UIProjects.get(save_name), MainActivityUIBase.ConfigSize + MainActivityUIBase.ConfigExtra);
+			data = bos.getBytes();
+			bos.precede(MainActivityUIBase.ConfigExtra);
+			data_out = new DataOutputStream(bos);
+			
 			data_out.writeByte((int) (255*IBC.doubleClickXOffset));
 			data_out.writeByte((int) (255*IBC.doubleClickPresetXOffset));
 			data_out.writeByte(0);
@@ -2179,13 +2202,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			
 			data_out.close();
 			
-			String fname = f.getName();
 			/* Just mark as dirty. */
 			if(!CMN.bForbidOneSpecFile && a!=null){
-				CMN.Log("putted", fname);
-				a.dirtyMap.add(fname);
+				CMN.Log("putted", save_name);
+				a.dirtyMap.add(save_name);
 			}
-			UIProjects.put(fname, data);
+			UIProjects.put(save_name, data);
 			isDirty = false;
 		} catch (Exception e) { if(GlobalOptions.debug) CMN.Log(e); }
 	}
@@ -2239,23 +2261,14 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 	public float webScale=0;
 
-	public void readInConfigs(HashMap<String,byte[]> UIProjects) throws IOException {
+	public void readInConfigs(HashMap<CharSequence,byte[]> UIProjects) throws IOException {
 		DataInputStream data_in1 = null;
 		try {
-			File SpecificationFile = new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/spec.bin").toString());
 			CMN.rt();
-			if(CMN.bForbidOneSpecFile  && SpecificationFile.exists()){
-				data_in1 = new DataInputStream(new FileInputStream(SpecificationFile));
-			} else {
-				SpecificationFile.delete();
-				File parentFile = SpecificationFile.getParentFile();
-				if(ArrayUtils.isEmpty(parentFile.list()))
-					parentFile.delete();
-				byte[] data = UIProjects.get(f.getName());
-				if(data!=null){
-					int extra = MainActivityUIBase.ConfigExtra;
-					data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
-				}
+			byte[] data = UIProjects.get(f.getName());
+			if(data!=null){
+				int extra = MainActivityUIBase.ConfigExtra;
+				data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
 			}
 			if(data_in1!=null){
 				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
@@ -2327,13 +2340,79 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 	public CachedDirectory getInternalResourcePath(boolean create) {
 		if(InternalResourcePath==null) {
-			InternalResourcePath = new CachedDirectory(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/Edits/").toString());
+			InternalResourcePath = CachedPathSubToDBStorage("Edits");
 			if (create && !InternalResourcePath.exists()) InternalResourcePath.mkdirs();
 		}
 		return InternalResourcePath;
 	}
-
-	/** Show Per-Dictionary settings dialog via peruseview, normal view. */
+	
+	boolean unwrapSuffix = true;
+			
+	protected String SubPathToDBStorage(String extra) {
+		String full_Dictionary_fName = _Dictionary_fName;
+		int end = full_Dictionary_fName.length();
+		StringBuilder sb = AcquireStringBuffer(end+10);
+		sb.append(".");
+		if(unwrapSuffix){
+			int idx = full_Dictionary_fName.lastIndexOf(".");
+			if(idx>0){
+				end=idx;
+			}
+		}
+		sb.append(full_Dictionary_fName,0, end);
+		if(extra!=null){
+			sb.append("/").append(extra);
+		}
+		return sb.toString();
+	}
+	
+	protected String getCleanDictionaryName(String full_Dictionary_fName) {
+		if(unwrapSuffix){
+			int idx = full_Dictionary_fName.lastIndexOf(".");
+			if(idx>0){
+				return full_Dictionary_fName.substring(0, idx);
+			}
+		}
+		return full_Dictionary_fName;
+	}
+	
+	protected StringBuilder getCleanDictionaryNameBuilder() {
+		String full_Dictionary_fName = _Dictionary_fName;
+		int end = full_Dictionary_fName.length();
+		StringBuilder sb = AcquireStringBuffer(end+10);
+		if(unwrapSuffix){
+			int idx = _Dictionary_fName.lastIndexOf(".");
+			if(idx>0){
+				end=idx;
+			}
+		}
+		sb.append(full_Dictionary_fName,0, end);
+		return sb;
+	}
+	
+	public StringBuilder appendCleanDictionaryName(StringBuilder input) {
+		if(input==null){
+			input = a.MainStringBuilder;
+		}
+		String full_Dictionary_fName = _Dictionary_fName;
+		if(unwrapSuffix){
+			int idx = full_Dictionary_fName.lastIndexOf(".");
+			if(idx>0){
+				return input.append(full_Dictionary_fName, 0, idx);
+			}
+		}
+		return input.append(full_Dictionary_fName);
+	}
+	
+	protected File PathSubToDBStorage(String extra) {
+		return new File(opt.fileToDatabases(), SubPathToDBStorage(extra));
+	}
+	
+	protected CachedDirectory CachedPathSubToDBStorage(String extra) {
+		return new CachedDirectory(opt.fileToDatabases(), SubPathToDBStorage(extra));
+	}
+			
+			/** Show Per-Dictionary settings dialog via peruseview, normal view. */
 	public static void showDictTweaker(WebViewmy view, Activity context, mdict_manageable...md) {
 		if(md.length==0) return;
 		mdict_manageable mdTmp = md[0];
@@ -2392,8 +2471,13 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		d.setCanceledOnTouchOutside(true);
 
 		d.setOnDismissListener(dialog -> {
+			boolean doit=true;
 			for (mdict_manageable mI : md) {
 				mI.checkFlag(context);
+				if(doit && mI instanceof mdict){
+					((mdict)mI).a.invalidAllPagers();
+					doit=false;
+				}
 			}
 		});
 		dv.findViewById(R.id.cancel).setOnClickListener(v -> d.dismiss());
@@ -2421,7 +2505,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 		int start = text.length();
 		int now = start+dictOpt[titleOff].length();
-		text.append("[").append(dictOpt[titleOff]).append(coef==null?"":isSingle?coef[coefOff+(val+coefShift)%(flagMax+1)]:"**").append("]");
+		text.append("[").append(dictOpt[titleOff]);
+		if(coef!=null){
+			text.append(" :").append(isSingle?coef[coefOff+(val+coefShift)%(flagMax+1)]:"**");
+		}
+		text.append("]");
 		text.setSpan(new ClickableSpan() {
 			@Override
 			public void onClick(@NonNull View widget) {
@@ -2497,6 +2585,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public void onClick(View v) {
 		switch(v.getId()) {
 			case R.id.cover:
+				if(true){
+					showDictTweaker(mWebView, a, this);
+					break;
+				}
 				if(v.getTag(R.id.toolbar_action1)!=null) {//add It!
 					boolean resposible=con==null;
 					if(getCon(true).insertUpdate(mWebView.currentPos)!=-1)

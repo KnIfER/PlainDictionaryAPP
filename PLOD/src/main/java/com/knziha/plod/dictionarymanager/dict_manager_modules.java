@@ -3,15 +3,9 @@ package com.knziha.plod.dictionarymanager;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -67,7 +61,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 	public void setListAdapter() {
 		//String[] array = getResources().getStringArray(R.array.jazz_artist_names);
 		//ArrayList<String> list = new ArrayList<String>(Arrays.asList(array));
-		File def = new File(a.opt.pathToMainFolder().append("CONFIG/AllModuleSets.txt").toString());      //!!!原配
+		File def = a.SecordFile;      //!!!原配
 		scanInList = new ArrayList<>();
 		final HashSet<String> con = new HashSet<>();
 		try {
@@ -77,7 +71,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 				if(con.contains(line))
 					isDirty=true;
 				else
-				if(new File(a.opt.pathToMainFolder().append("CONFIG/").append(line).append(".set").toString()).exists()) {
+				if(new File(a.ConfigFile, line+".set").exists()) {
 					scanInList.add(line);
 				}else {
 					isDirty=true;
@@ -89,7 +83,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 		} catch (Exception e2) {
 		}
 
-		new File(a.opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> {
+		a.ConfigFile.listFiles(pathname -> {
 			String name = pathname.getName();
 			if(name.endsWith(".set")) {
 				name = name.substring(0,name.length()-4);
@@ -206,7 +200,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 			if(position>=mDslv.getHeaderViewsCount()) {
 				position = position - mDslv.getHeaderViewsCount();
 				String name = adapter.getItem(position);
-				File newf = new File(a.opt.pathToMainFolder().append("CONFIG/").append(name).append(".set").toString());
+				File newf = new File(a.ConfigFile, name+".set");
 				int cc=0;
 				try {
 					dict_manager_main f1 = ((dict_manager_activity)getActivity()).f1;
@@ -247,7 +241,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 											((dict_manager_activity)getActivity()).showRenameDialog(name, new transferRunnable() {
 												@Override
 												public boolean transfer(File to) {
-													File p=new File(a.opt.pathToMainFolder().append("CONFIG/").toString());
+													File p=a.ConfigFile;
 													try {
 														if(!to.getParentFile().getCanonicalFile().getAbsolutePath().equals(p.getCanonicalFile().getAbsolutePath()))
 															return false;
@@ -275,6 +269,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 															newPos=newPos>adapter.getCount()?adapter.getCount():newPos;
 															adapter.insert(name.substring(0,name.length()-4), newPos);
 														}
+														isDirty=true;
 														a.show(R.string.renD);
 													}
 													return ret;
@@ -310,6 +305,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 													selector.remove(name);
 													adapter.remove(name);
 												}
+												isDirty=true;
 												d.dismiss();
 												dd.dismiss();
 												a.show(R.string.delD);
@@ -317,7 +313,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 											dd.show();
 											break;
 										case 2://复制;
-											File source  = new File(a.opt.pathToMainFolder().append("CONFIG/").append(name).append(".set").toString());
+											File source  = new File(a.ConfigFile, name+".set");
 											int try_idx=0;
 											File dest;
 											while(true) {
@@ -339,7 +335,8 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 											} catch (Exception e) {
 												e.printStackTrace();
 											}
-											break;
+											isDirty=true;
+										break;
 									}
 								}
 							});
@@ -362,7 +359,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 	}
 
 	private boolean try_delete_configureLet(String name) {
-		return new File(a.opt.pathToMainFolder().append("CONFIG/").append(name).append(".set").toString()).delete();
+		return a.fileToSet(name).delete();
 	}
 
 	DragSortListView.DropListener getDropListener() {

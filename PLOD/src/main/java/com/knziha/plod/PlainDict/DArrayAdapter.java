@@ -14,7 +14,6 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.dictionary.Utils.MyPair;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -120,23 +119,30 @@ public class DArrayAdapter extends BaseAdapter {
 	public void loadInFavorites(){
 		CMN.Log("扫描所有收藏夹……");
 		PDICMainAppOptions opt = a.opt;
-		HashMap<String, MyPair<String, LexicalDBHelper>> map = new HashMap<>();
+		HashMap<String, MyPair<String, LexicalDBHelper>> map = new HashMap<>(items.size());
 		for(MyPair<String, LexicalDBHelper> itemI:items){
 			map.put(itemI.key, itemI);
 		}
 		items.clear();
-		new File(opt.pathToFavoriteDatabases().toString()).list((path, name) -> {
-			if(name.endsWith(".sql") || name.endsWith(".sql.db")) {//MIMU will add db suffix
-				MyPair<String, LexicalDBHelper> item = map.get(name);
-				if(item==null)
-					item = new MyPair<>(name, null);
-				items.add(item);
+		
+		String[] names = opt.fileToDatabaseFavorites().list();
+		if(names!=null){
+			for (String nI:names) {
+				if(nI.endsWith(".sql") || nI.endsWith(".sql.db")) {//MIMU will add db suffix
+					MyPair<String, LexicalDBHelper> item = map.get(nI);
+					if(item==null){
+						item = new MyPair<>(nI, null);
+					}
+					items.add(item);
+				}
 			}
-			return false;
-		});
+		}
+		
 		if(items.size()>0 && opt.getCurrFavoriteDBName()==null){
 			opt.putCurrFavoriteDBName(items.get(0).key);
 		}
+		
+		map.clear();
 	}
 
 	public void createNewDatabase(String name) {

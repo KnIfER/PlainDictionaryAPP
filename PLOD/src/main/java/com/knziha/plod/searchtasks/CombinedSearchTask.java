@@ -130,9 +130,14 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		ArrayList<mdict> md = a.md;
 		additive_combining_search_tree = new RBTree_additive();
 		for(int i=0; i<md.size(); i++) {
-			if(md.get(i)!=null)
-			for(myCpr<String, Integer> dataI:md.get(i).combining_search_list) {
-				additive_combining_search_tree.insert(dataI.key, i, dataI.value);
+			mdict mdTmp = md.get(i);
+			if(mdTmp!=null){
+				ArrayList<myCpr<String, Integer>> combining_search_list = mdTmp.combining_search_list;
+				if(combining_search_list!=null) {
+					for (myCpr<String, Integer> dataI : combining_search_list) {
+						additive_combining_search_tree.insert(dataI.key, i, dataI.value);
+					}
+				}
 			}
 		}
 		rec =  new resultRecorderCombined(a,additive_combining_search_tree.flatten(),md);

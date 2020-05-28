@@ -24,7 +24,7 @@
  * questions.
  */
 
-package com.knziha.plod.slideshow;
+package com.knziha.plod.ArrayList;
 
 import java.util.AbstractList;
 import java.util.Arrays;
@@ -127,12 +127,8 @@ import java.util.Vector;
 public class ArrayListGood<E> extends AbstractList<E>
         implements List<E>, RandomAccess, Cloneable, java.io.Serializable
 {
-    private static final long serialVersionUID = 8683452581122892189L;
-
-    /**
-     * Default initial capacity.
-     */
-    private static final int DEFAULT_CAPACITY = 10;
+    private static final long serialVersionUID = 8683452581122892190L;
+    
 	private final ArrayCreator<E> mArrayCreator;
 	
 	/**
@@ -142,14 +138,14 @@ public class ArrayListGood<E> extends AbstractList<E>
      * will be expanded to DEFAULT_CAPACITY when the first element is added.
      */
     // Android-note: Also accessed from java.util.Collections
-	E[] elementData; // non-private to simplify nested class access
+	public E[] elementData; // non-private to simplify nested class access
 
     /**
      * The size of the ArrayList (the number of elements it contains).
      *
      * @serial
      */
-    private int size;
+    protected int size;
 	private E[] EMPTY_ELEMENTDATA;
 	
 	
@@ -194,24 +190,15 @@ public class ArrayListGood<E> extends AbstractList<E>
      * @param   minCapacity   the desired minimum capacity
      */
     public void ensureCapacity(int minCapacity) {
-        int minExpand = (true)//elementData != DEFAULTCAPACITY_EMPTY_ELEMENTDATA
-            // any size if not default element table
-            ? 0
-            // larger than default for default empty table. It's already
-            // supposed to be at default size.
-            : DEFAULT_CAPACITY;
-
-        if (minCapacity > minExpand) {
+        if (minCapacity > elementData.length) {
             ensureExplicitCapacity(minCapacity);
         }
     }
 
     private void ensureCapacityInternal(int minCapacity) {
-        if (false) {//elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA
-            minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
-        }
-
-        ensureExplicitCapacity(minCapacity);
+		if (minCapacity > elementData.length) {
+			ensureExplicitCapacity(minCapacity);
+		}
     }
 
     private void ensureExplicitCapacity(int minCapacity) {
@@ -712,239 +699,4 @@ public class ArrayListGood<E> extends AbstractList<E>
         }
         return modified;
     }
-
-    /**
-     * Save the state of the <tt>ArrayList</tt> instance to a stream (that
-     * is, serialize it).
-     *
-     * @serialData The length of the array backing the <tt>ArrayList</tt>
-     *             instance is emitted (int), followed by all of its elements
-     *             (each an <tt>Object</tt>) in the proper order.
-     */
-    private void writeObject(java.io.ObjectOutputStream s)
-        throws java.io.IOException{
-        // Write out element count, and any hidden stuff
-        int expectedModCount = modCount;
-        s.defaultWriteObject();
-
-        // Write out size as capacity for behavioural compatibility with clone()
-        s.writeInt(size);
-
-        // Write out all elements in the proper order.
-        for (int i=0; i<size; i++) {
-            s.writeObject(elementData[i]);
-        }
-
-        if (modCount != expectedModCount) {
-            throw new ConcurrentModificationException();
-        }
-    }
-
-    /**
-     * Reconstitute the <tt>ArrayList</tt> instance from a stream (that is,
-     * deserialize it).
-     */
-    private void readObject(java.io.ObjectInputStream s)
-        throws java.io.IOException, ClassNotFoundException {
-        elementData = EMPTY_ELEMENTDATA;
-
-        // Read in size, and any hidden stuff
-        s.defaultReadObject();
-
-        // Read in capacity
-        s.readInt(); // ignored
-
-        if (size > 0) {
-            // be like clone(), allocate array based upon size not capacity
-            ensureCapacityInternal(size);
-
-            Object[] a = elementData;
-            // Read in all elements in the proper order.
-            for (int i=0; i<size; i++) {
-                a[i] = s.readObject();
-            }
-        }
-    }
-
-//    /**
-//     * Returns a list iterator over the elements in this list (in proper
-//     * sequence), starting at the specified position in the list.
-//     * The specified index indicates the first element that would be
-//     * returned by an initial call to {@link ListIterator#next next}.
-//     * An initial call to {@link ListIterator#previous previous} would
-//     * return the element with the specified index minus one.
-//     *
-//     * <p>The returned list iterator is <a href="#fail-fast"><i>fail-fast</i></a>.
-//     *
-//     * @throws IndexOutOfBoundsException {@inheritDoc}
-//     */
-//    public ListIterator<E> listIterator(int index) {
-//        if (index < 0 || index > size)
-//            throw new IndexOutOfBoundsException("Index: "+index);
-//        return new ListItr(index);
-//    }
-//
-//    /**
-//     * Returns a list iterator over the elements in this list (in proper
-//     * sequence).
-//     *
-//     * <p>The returned list iterator is <a href="#fail-fast"><i>fail-fast</i></a>.
-//     *
-//     * @see #listIterator(int)
-//     */
-//    public ListIterator<E> listIterator() {
-//        return new ListItr(0);
-//    }
-
-//    /**
-//     * Returns an iterator over the elements in this list in proper sequence.
-//     *
-//     * <p>The returned iterator is <a href="#fail-fast"><i>fail-fast</i></a>.
-//     *
-//     * @return an iterator over the elements in this list in proper sequence
-//     */
-//    public Iterator<E> iterator() {
-//        return new Itr();
-//    }
-//
-//    /**
-//     * An optimized version of AbstractList.Itr
-//     */
-//    private class Itr implements Iterator<E> {
-//        // Android-changed: Add "limit" field to detect end of iteration.
-//        // The "limit" of this iterator. This is the size of the list at the time the
-//        // iterator was created. Adding & removing elements will invalidate the iteration
-//        // anyway (and cause next() to throw) so saving this value will guarantee that the
-//        // value of hasNext() remains stable and won't flap between true and false when elements
-//        // are added and removed from the list.
-//        protected int limit = ArrayListGood.this.size;
-//
-//        int cursor;       // index of next element to return
-//        int lastRet = -1; // index of last element returned; -1 if no such
-//        int expectedModCount = modCount;
-//
-//        public boolean hasNext() {
-//            return cursor < limit;
-//        }
-//
-//        @SuppressWarnings("unchecked")
-//        public E next() {
-//            if (modCount != expectedModCount)
-//                throw new ConcurrentModificationException();
-//            int i = cursor;
-//            if (i >= limit)
-//                throw new NoSuchElementException();
-//            Object[] elementData = ArrayListGood.this.elementData;
-//            if (i >= elementData.length)
-//                throw new ConcurrentModificationException();
-//            cursor = i + 1;
-//            return (E) elementData[lastRet = i];
-//        }
-//
-//        public void remove() {
-//            if (lastRet < 0)
-//                throw new IllegalStateException();
-//            if (modCount != expectedModCount)
-//                throw new ConcurrentModificationException();
-//
-//            try {
-//                ArrayListGood.this.remove(lastRet);
-//                cursor = lastRet;
-//                lastRet = -1;
-//                expectedModCount = modCount;
-//                limit--;
-//            } catch (IndexOutOfBoundsException ex) {
-//                throw new ConcurrentModificationException();
-//            }
-//        }
-//
-//        @Override
-//        @SuppressWarnings("unchecked")
-//        public void forEachRemaining(Consumer<? super E> consumer) {
-//            Objects.requireNonNull(consumer);
-//            final int size = ArrayListGood.this.size;
-//            int i = cursor;
-//            if (i >= size) {
-//                return;
-//            }
-//            final Object[] elementData = ArrayListGood.this.elementData;
-//            if (i >= elementData.length) {
-//                throw new ConcurrentModificationException();
-//            }
-//            while (i != size && modCount == expectedModCount) {
-//                consumer.accept((E) elementData[i++]);
-//            }
-//            // update once at end of iteration to reduce heap write traffic
-//            cursor = i;
-//            lastRet = i - 1;
-//
-//            if (modCount != expectedModCount)
-//                throw new ConcurrentModificationException();
-//        }
-//    }
-//
-//    /**
-//     * An optimized version of AbstractList.ListItr
-//     */
-//    private class ListItr extends Itr implements ListIterator<E> {
-//        ListItr(int index) {
-//            super();
-//            cursor = index;
-//        }
-//
-//        public boolean hasPrevious() {
-//            return cursor != 0;
-//        }
-//
-//        public int nextIndex() {
-//            return cursor;
-//        }
-//
-//        public int previousIndex() {
-//            return cursor - 1;
-//        }
-//
-//        @SuppressWarnings("unchecked")
-//        public E previous() {
-//            if (modCount != expectedModCount)
-//                throw new ConcurrentModificationException();
-//            int i = cursor - 1;
-//            if (i < 0)
-//                throw new NoSuchElementException();
-//            Object[] elementData = ArrayListGood.this.elementData;
-//            if (i >= elementData.length)
-//                throw new ConcurrentModificationException();
-//            cursor = i;
-//            return (E) elementData[lastRet = i];
-//        }
-//
-//        public void set(E e) {
-//            if (lastRet < 0)
-//                throw new IllegalStateException();
-//            if (modCount != expectedModCount)
-//                throw new ConcurrentModificationException();
-//
-//            try {
-//                ArrayListGood.this.set(lastRet, e);
-//            } catch (IndexOutOfBoundsException ex) {
-//                throw new ConcurrentModificationException();
-//            }
-//        }
-//
-//        public void add(E e) {
-//            if (modCount != expectedModCount)
-//                throw new ConcurrentModificationException();
-//
-//            try {
-//                int i = cursor;
-//                ArrayListGood.this.add(i, e);
-//                cursor = i + 1;
-//                lastRet = -1;
-//                expectedModCount = modCount;
-//                limit++;
-//            } catch (IndexOutOfBoundsException ex) {
-//                throw new ConcurrentModificationException();
-//            }
-//        }
-//    }
 }

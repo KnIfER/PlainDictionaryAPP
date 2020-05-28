@@ -2,7 +2,6 @@ package com.knziha.plod.dictionarymanager;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -76,7 +75,6 @@ import com.knziha.rbtree.RashSet;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -95,12 +93,23 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	private PopupWindow mPopup;
 	public ArrayList<PlaceHolder> slots;
 	private ArrayList<Fragment> fragments;
-	private HashMap<String, mdict> app_mdict_cache;
-	public HashMap<String,byte[]> UIProjects;
-	public HashSet<String> dirtyMap;
-	mdict_nonexist mninstance = new mdict_nonexist();
+	public HashMap<String, mdict> app_mdict_cache;
+	public HashMap<CharSequence,byte[]> UIProjects;
+	public HashSet<CharSequence> dirtyMap;
+	
+	public File ConfigFile;
+	
+	public File DecordFile;
+	
+	public File SecordFile;
+	
+	mdict_nonexist mninstance = new mdict_nonexist(new File("/N/A"));
 	
 	public dict_manager_activity() throws IOException { }
+	
+	public File fileToSet(String name) {
+		return opt.fileToSet(ConfigFile, name);
+	}
 	
 	public interface transferRunnable{
 		boolean transfer(File to);
@@ -176,7 +185,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				try {
 					File def = new File(getExternalFilesDir(null), "default.txt");
 					ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(def), app.get4kCharBuff(), 4096);
-					String parent = new File(opt.lastMdlibPath).getAbsolutePath() + "/";
+					String parent = opt.lastMdlibPath.getPath();
 					output.write("[:S]");
 					output.write(Integer.toString(mdmng.size()));
 					output.write("\n");
@@ -194,14 +203,13 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
 		if(f3.isDirty) {
 			try {
-				mFile rec = new mFile(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString());
-				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(rec), app.get4kCharBuff(), 4096);
-				String parent = new File(opt.lastMdlibPath).getAbsolutePath()+"/";
+				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(DecordFile), app.get4kCharBuff(), 4096);
+				String parent = opt.lastMdlibPath.getPath();
 				for(mFile mdTmp:f3.data.getList()) {
 					if(mdTmp.getClass()==mAssetFile.class) continue;
 					if(mdTmp.isDirectory()) continue;
 					String name = mdTmp.getPath();
-					if(name.startsWith(parent))
+					if(name.startsWith(parent) && name.length()>parent.length())
 						name = name.substring(parent.length());
 					output.write(name);
 					output.write("\n");
@@ -216,9 +224,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
 		if(f2.isDirty) {
 			intent.putExtra("result2", true);
-			File def1 = new File(opt.pathToMainFolder().append("CONFIG/AllModuleSets.txt").toString());      //!!!原配
 			try {
-				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(def1), app.get4kCharBuff(), 4096);
+				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(SecordFile), app.get4kCharBuff(), 4096);
 				for(int i=0;i<f2.adapter.getCount();i++) {
 					String fn = f2.adapter.getItem(i);
 					output.write(fn);
@@ -244,8 +251,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
 	private void writeForOneLine(Writer out, mdict_manageable mmTmp, String parent) throws IOException {
 		String name = mmTmp.getPath();
-		if(name.startsWith(parent))
-			name = name.substring(parent.length());
+		if(name.startsWith(parent) && name.length()>parent.length())
+			name = name.substring(parent.length()+1);
 		int tmpIsFlag = mmTmp.getTmpIsFlag();
 		if(tmpIsFlag!=0)
 			out.write("[:");
@@ -278,6 +285,12 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		slots = agent.slots;
 		mdlibsCon=agent.mdlibsCon;
 		
+		ConfigFile = opt.fileToConfig();
+		
+		DecordFile = opt.fileToDecords(ConfigFile);
+		
+		SecordFile = opt.fileToSecords(ConfigFile);
+		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.dict_manager_main);
 		
@@ -297,7 +310,6 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		fragments= new ArrayList<>();
 		
 	    String[] tabTitle = {getResources().getString(R.string.currentPlan,0),getResources().getString(R.string.allPlans), "网络词典", "全部词典"};
-	    mFile.parentPath=opt.lastMdlibPath.toLowerCase();
 	    
 		fragments.addAll(Arrays.asList(f1 = new dict_manager_main(), f2 = new dict_manager_modules(), f4 = new dict_manager_websites(), f3 = new dict_Manager_folderlike()));
 		f1.a=f2.a=f4.a=f3.a=this;
@@ -413,7 +425,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					Fragment fI = fragments.get(viewPager.getCurrentItem());
 					if (fI==f1) {
 						for (int i = 0; i < f1.adapter.getCount(); i++) {
-							if (f1.adapter.getItem(i).getName().toLowerCase().contains(query))
+							if (f1.adapter.getItem(i).getDictionaryName().toLowerCase().contains(query))
 								cc++;
 						}
 					} else if (fI==f3) {
@@ -485,10 +497,10 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
         final ListView lv = dialog.findViewById(R.id.lv);
         final EditText et = dialog.findViewById(R.id.et);
         ImageView iv = dialog.findViewById(R.id.confirm);
-        File fSearchFile = new File(opt.pathToMainFolder().append("CONFIG/").append(lastPlanName).append(".set").toString());//查找旧plan
+        File fSearchFile = new File(ConfigFile, lastPlanName+".set");//查找旧plan
         final String fSearch = lastPlanName+".set";//查找旧plan
         final myCpr<Boolean,Boolean> args = new myCpr<>(false,false);
-        File[] sets = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> {
+        File[] sets = ConfigFile.listFiles(pathname -> {
 			String name = pathname.getName();
 			if(name.endsWith(".set")) {
 				if(!args.value)
@@ -653,7 +665,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				show(R.string.renamefail0);
 				return;
 			}
-			final File newf = new File(opt.pathToMainFolder().append("CONFIG/").append(newName).append(".set").toString());
+			final File newf = new File(ConfigFile, newName+".set");
 			if(!fSearch.equals(newf) && newf.exists()) {//覆盖
 				View dialog12 = getLayoutInflater().inflate(R.layout.dialog_about,null);
 				AlertDialog.Builder builder1 = new AlertDialog.Builder(dict_manager_activity.this);
@@ -723,7 +735,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			output.write("[:S]");
 			output.write(Integer.toString(mdmng.size()));
 			output.write("\n");
-			String parent = new File(opt.lastMdlibPath).getAbsolutePath()+"/";
+			String parent = opt.lastMdlibPath.getPath();
 			for(mdict_manageable mmTmp:mdmng) {
 				writeForOneLine(output, mmTmp, parent);
 			}
@@ -777,13 +789,13 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				}
 				try {
 					String name = opt.getLastPlanName();
-					File to = new File(opt.pathToMainFolder().append("CONFIG/").append(name).append(".set").toString());
+					File to = new File(ConfigFile, name+".set");
 					boolean shouldInsert = false;
 					if(!to.exists())
 						shouldInsert=true;
 					BufferedWriter output = new BufferedWriter(new FileWriter(to,false));
-
-					String parent = new File(opt.lastMdlibPath).getAbsolutePath()+"/";
+					
+					String parent = opt.lastMdlibPath.getPath();
 					for(mdict_manageable mmTmp:mdmng) {
 						if(!f1.rejector.contains(mmTmp.getPath())){
 							//String pathname = mFile.tryDeScion(new File(md.getPath()), opt.lastMdlibPath);
@@ -818,7 +830,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					ThisIsDirty = true;
 					try {
 						String name = opt.getLastPlanName();
-						File from = new File(opt.pathToMainFolder().append("CONFIG/").append(name).append(".set").toString());
+						File from = new File(ConfigFile, name+".set");
 						if (from.exists()) {
 							AgentApplication app = ((AgentApplication) getApplication());
 							ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(from), app.get4kCharBuff(), 4096);
@@ -912,10 +924,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 						}
 					}
 				}else {
-					File rec = new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString());
-
 					try {
-						BufferedReader in = new BufferedReader(new FileReader(rec));
+						BufferedReader in = new BufferedReader(new FileReader(DecordFile));
 						String line;
 						while ((line = in.readLine()) != null) {
 							if (!line.startsWith("/"))
@@ -1190,13 +1200,13 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
 								ArrayList<File> moduleFullScannerArr;
 								if (((CheckBox) dv.findViewById(R.id.ck)).isChecked()) {
-									File[] moduleFullScanner = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> pathname.getPath().endsWith(".set"));
+									File[] moduleFullScanner = ConfigFile.listFiles(pathname -> pathname.getPath().endsWith(".set"));
 									moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
 								} else
 									moduleFullScannerArr = new ArrayList<>();
 
 								if (f3.isDirty)
-									moduleFullScannerArr.add(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
+									moduleFullScannerArr.add(DecordFile);
 								AgentApplication app = ((AgentApplication) getApplication());
 								char[] cb = app.get4kCharBuff();
 								boolean bNeedRewrite;
@@ -1254,7 +1264,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					properties.selection_type = DialogConfigs.DIR_SELECT;
 					properties.root = new File("/");
 					properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
-					properties.offset = new File(opt.lastMdlibPath);
+					properties.offset = opt.lastMdlibPath;
 					properties.opt_dir = new File(opt.pathToDatabases() + "favorite_dirs/");
 					properties.opt_dir.mkdirs();
 					FilePickerDialog dialog = new FilePickerDialog(this, properties);
@@ -1262,7 +1272,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					dialog.setDialogSelectionListener(new DialogSelectionListener() {
 						@Override
 						public void
-						onSelectedFilePaths(String[] files, String n) {
+						onSelectedFilePaths(String[] files, File n) {
 							File p = new File(files[0]);//新家
 							if (p.isDirectory()) {
 								ArrayList<String> arr = f3.Selection.flatten();
@@ -1276,7 +1286,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 								//todo 保证mdict移动文件的同时性。
 								int cc = 0;
 								for (String sI : arr) {//do actual rename. rename a lot of files..
-									mFile mF = new mFile(sI).init();
+									mFile mF = new mFile(sI).init(opt);
 									//ommitting directory.
 									//if(sI.startsWith("/ASSET/") && CMN.AssetMap.containsKey(sI)) continue;
 									if (mF.isDirectory()) continue;
@@ -1290,7 +1300,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 										}
 									}
 									File OldF = mmTmp.f();
-									String OldFName = mmTmp.getName();
+									String OldFName = mmTmp.getDictionaryName();
 									File toF = new File(p, OldF.getName());
 									boolean ret = mmTmp.moveFileTo(dict_manager_activity.this, toF);
 									//CMN.Log("移动？？？", ret, toF);
@@ -1307,10 +1317,10 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 								f1.isDirty = true;
 								renameListe = renameList.flatten();
 								for (String fnI : renameListe) {
-									mFile fOld = new mFile(fnI).init();
+									mFile fOld = new mFile(fnI).init(opt);
 									int idx = f3.data.remove(fOld);
 									if (idx != -1) {
-										mFile p2 = fOld.getParentFile().init();
+										mFile p2 = fOld.getParentFile().init(opt);
 										if (p2 != null) {
 											int idx2 = f3.data.indexOf(p2);
 											if (idx2 != -1) {//如有必要，移除多余的父文件夹
@@ -1325,10 +1335,10 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 										}
 										//f3.data.OverFlow.clear();
 										mFile val = new mFile(p, new File(fnI).getName());
-										f3.data.insert(val.init());
+										f3.data.insert(val.init(opt));
 										f3.Selection.insert(val.getAbsolutePath());
 										if (!mFile.isDirScionOf(val, opt.lastMdlibPath))
-											f3.data.insertOverFlow(val.getParentFile().init());
+											f3.data.insertOverFlow(val.getParentFile().init(opt));
 									}
 								}
 								f3.adapter.notifyDataSetChanged();
@@ -1336,11 +1346,11 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
 								ArrayList<File> moduleFullScannerArr;
 
-								File[] moduleFullScanner = new File(opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> pathname.getPath().endsWith(".set"));
+								File[] moduleFullScanner = ConfigFile.listFiles(pathname -> pathname.getPath().endsWith(".set"));
 								moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
 								File def = new File(getExternalFilesDir(null), "default.txt");
 								if(def.length()>0) moduleFullScannerArr.add(def);
-								moduleFullScannerArr.add(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
+								moduleFullScannerArr.add(DecordFile);
 								HashSet<String> mdlibs = new HashSet<>();
 								AgentApplication app = ((AgentApplication) getApplication());
 								char[] cb = app.get4kCharBuff();
@@ -1431,8 +1441,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				AlertDialog.Builder builder = new AlertDialog.Builder(this).setView(dv1);
 				final AlertDialog dd = builder.create();
 				btn_Done.setOnClickListener(v -> {
-					File source  = new File(opt.pathToMainFolder().append("CONFIG/").append(etNew.getText()).append(".set").toString());
-					if(!mFile.isDirScionOf(source, opt.pathToMainFolder().append("CONFIG/").toString())) {
+					File source  = new File(ConfigFile, etNew.getText()+".set");
+					if(!mFile.isDirScionOf(source, ConfigFile)) {
 						showT("名称非法！");
 						return;
 					}

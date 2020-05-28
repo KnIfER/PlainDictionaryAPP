@@ -17,14 +17,23 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.util.TypedValue;
 import android.view.View;
 
 import androidx.core.view.NestedScrollingChildHelper;
 
-public class Utils {
+import com.knziha.plod.PlainDict.CMN;
 
-    /**
+public class Utils {
+	public static float density;
+	
+	private static Paint mRectPaint;
+	
+	private static int FloatTextBG = 0xffffff00;
+	
+	
+	/**
      * @param dp Desired size in dp (density-independent pixels)
      * @param v View
      * @return Number of corresponding density-dependent pixels for the given device
@@ -43,6 +52,27 @@ public class Utils {
 		if(mNestedScrollingChildHelper==null)
 			mNestedScrollingChildHelper=new NestedScrollingChildHelper(null);
 		return mNestedScrollingChildHelper;
+	}
+	
+	public static Paint getRectPaint() {
+		if(mRectPaint==null) {
+			mRectPaint = new Paint();
+			mRectPaint.setColor(FloatTextBG);
+		}
+		return mRectPaint;
+	}
+	
+	public static void setFloatTextBG(int colorVal) {
+		FloatTextBG = colorVal;
+		if(mRectPaint!=null) {
+			mRectPaint.setColor(colorVal);
+		}
+	}
+	
+	public void Destory(){
+		mNestedScrollingChildHelper.Destory();
+		mNestedScrollingChildHelper = null;
+		mRectPaint = null;
 	}
 	
 	public static class DummyOnClick implements View.OnClickListener {

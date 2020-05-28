@@ -18,6 +18,8 @@
 package com.knziha.plod.dictionary;
 
 
+import android.os.Looper;
+
 import androidx.appcompat.app.GlobalOptions;
 
 import com.alibaba.fastjson.JSONObject;
@@ -163,12 +165,13 @@ public class mdict extends mdBase{
 	public byte[][] htmlTags;
 	public byte[][] htmlTagsA;
 	public byte[][] htmlTagsB;
-
+	
 	//构造
-	public mdict(String fn) throws IOException {
-		super(fn);
-		if(_num_record_blocks==-1) return;
-		calcFName();
+	public mdict(File fn, boolean pseudoInit, StringBuilder buffer) throws IOException {
+		super(fn, pseudoInit, buffer);
+		if(pseudoInit) {
+			_Dictionary_fName = f.getName();
+		}
 	}
 
 	protected mdict(mdict master, DataInputStream data_in, long _ReadOffset) throws IOException {
@@ -181,6 +184,7 @@ public class mdict extends mdBase{
 	@Override
 	protected void init(DataInputStream data_in) throws IOException {
 		super.init(data_in);
+		_Dictionary_fName = f.getName();
 		textLineBreak=lineBreakText.getBytes(_charset);
 		// ![0] load options
 		ScanSettings();
@@ -1398,7 +1402,7 @@ public class mdict extends mdBase{
 		return virtualIndex.getRecordAt(vi);
 	}
 
-	public String getName() {
+	public String getDictionaryName() {
 		return _Dictionary_fName;
 	}
 
@@ -2529,10 +2533,11 @@ public class mdict extends mdBase{
 		if(!f.equals(newPath)) {
 			String OldFName = _Dictionary_fName;
 			f = newPath;
-			calcFName();
+			_Dictionary_fName = f.getName();
 			HashSet<String> mddCon = new HashSet<>();
 			if(mdd!=null) {
 				for (mdictRes md : mdd) {
+					//todo file access
 					MoveOrRenameResourceLet(md, OldFName,_Dictionary_fName, newPath);
 					mddCon.add(md.getPath());
 				}
@@ -2560,18 +2565,34 @@ public class mdict extends mdBase{
 			}
 		}
 	}
-
+	
+	protected StringBuilder AcquireStringBuffer(int capacity) {
+		StringBuilder sb;
+		if(univeral_buffer != null && Looper.getMainLooper().getThread() == Thread.currentThread()){
+			sb = univeral_buffer;
+			sb.ensureCapacity(capacity);
+			sb.setLength(0);
+			CMN.Log("复用字符串构建器……");
+		} else {
+			sb = new StringBuilder(capacity);
+		}
+		return sb;
+	}
+	
 	private void loadInResourcesFiles(HashSet<String> mddCon) throws IOException {
 		if(!isResourceFile){
-			String fnTMP = f.getName();
 			File p=f.getParentFile();
 			if(p!=null && _num_record_blocks>=0) {
-				String fname = fnTMP;
-				int idx = fnTMP.lastIndexOf(".");
-				if(idx!=-1){
-					fname=fnTMP.substring(0,idx);
+				String full_Dictionary_fName = _Dictionary_fName;
+				StringBuilder sb = AcquireStringBuffer(full_Dictionary_fName.length()+15);
+				int idx = full_Dictionary_fName.lastIndexOf(".");
+				if(idx!=-1) {
+					sb.append(full_Dictionary_fName, 0, idx);
+				} else {
+					sb.append(full_Dictionary_fName);
 				}
-				File f2 = new File(p.getAbsolutePath(), fname + ".0.txt");
+				int base_full_name_L = sb.length();
+				File f2 = new File(p, sb.append(".0.txt").toString());
 				if(f2.exists()){
 					ftd = new ArrayList<>();
 					try {
@@ -2584,14 +2605,17 @@ public class mdict extends mdBase{
 						e.printStackTrace();
 					}
 				}
-				f2 = new File(p.getAbsolutePath(), fname + ".mdd");
+				sb.setLength(base_full_name_L);
+				f2 = new File(p, sb.append(".mdd").toString());
 				if (f2.exists() && (mddCon==null||!mddCon.contains(f2.getPath()))) {
 					mdd = new ArrayList<>();
-					mdd.add(new mdictRes(f2.getAbsolutePath()));
+					mdd.add(new mdictRes(f2));
 					int cc = 1;
-					while ((f2 = new File(p.getAbsolutePath(), fname + "." + (cc++) + ".mdd")).exists()) {
+					sb.setLength(base_full_name_L);
+					while ((f2 = new File(p, sb.append(".").append(cc++).append(".mdd").toString())).exists()) {
+						sb.setLength(base_full_name_L);
 						if(mddCon==null||!mddCon.contains(f2.getPath()))
-							mdd.add(new mdictRes(f2.getAbsolutePath()));
+							mdd.add(new mdictRes(f2));
 					}
 				}
 				//if(_header_tag.containsKey("SharedMdd")) {
@@ -2599,21 +2623,7 @@ public class mdict extends mdBase{
 			}
 		}
 	}
-
-	protected void calcFName() {
-		String filename = f.getName();
-		_Dictionary_fName = filename;
-		int tmpIdx = filename.length()-4;
-		if(tmpIdx>0){
-			if(filename.charAt(tmpIdx)=='.' && filename.regionMatches(true, tmpIdx+1, "md" ,0, 2)){
-				isResourceFile = Character.toLowerCase(filename.charAt(tmpIdx+3))=='d';
-				if(!isResourceFile){
-					_Dictionary_fName = filename.substring(0, tmpIdx);
-				}
-			}
-		}
-	}
-
+	
 	@Override
 	protected void postGetCharset() {
 		htmlOpenTag = "<".getBytes(_charset);

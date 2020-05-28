@@ -61,9 +61,11 @@ public class AdvancedNestScrollWebView extends WebViewmy implements NestedScroll
 
 	@Override
 	public void setNestedScrollingEnabled(boolean enabled) {
-		mNestedScrollEnabled=enabled;
-		mChildHelper.setCurrentView(this);
-		mChildHelper.setNestedScrollingEnabled(enabled);
+		if(mNestedScrollEnabled!=enabled){
+			mNestedScrollEnabled=enabled;
+			mChildHelper.setCurrentView(this);
+			mChildHelper.setNestedScrollingEnabled(enabled);
+		}
 	}
 
 	@Override

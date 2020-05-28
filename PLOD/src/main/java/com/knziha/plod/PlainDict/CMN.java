@@ -52,7 +52,8 @@ public class CMN{
 	public static long LastConfigReadTime;
 	
 	public static String sep = " ";
-
+	public static String BrandName = "PLOD";
+	
 	public static String Log(Object... o) {
 		String msg="";
 		if(o!=null)

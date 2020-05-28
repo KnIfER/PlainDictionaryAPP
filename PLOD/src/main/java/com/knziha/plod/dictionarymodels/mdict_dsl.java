@@ -40,8 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.knziha.plod.dictionarymodels.mdict_transient.goodNull;
-
 /**
  Model handling local lingvo-dsl files.<br/>
  date:2020.2.18<br/>
@@ -442,21 +440,15 @@ public class mdict_dsl extends mdict {
 	}
 
 	//构造
-	public mdict_dsl(String fn, MainActivityUIBase _a) throws IOException {
-		super(goodNull(fn), _a);
+	public mdict_dsl(File fn, MainActivityUIBase _a) throws IOException {
+		super(fn, _a, true);
 		a=_a;
 		opt=a.opt;
-		_Dictionary_fName=new File(fn).getName();
-		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
-		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
-
-		justifyInternal("."+_Dictionary_fName);
-
+		
+		_num_record_blocks=-1;
+		unwrapSuffix=false;
+		
 		mBlockSize = 1*block_size;
-
-		htmlBuilder=new StringBuilder(htmlBase);
-		htmlBuilder.append(js);
-		htmlBaseLen=htmlBuilder.length();
 
 		readInConfigs(a.UIProjects);
 
@@ -758,17 +750,7 @@ public class mdict_dsl extends mdict {
 			return true;
 		return false;
 	}
-
-
-	@Override
-	protected void initLogically() {
-		_num_record_blocks=-1;
-		String fn = (String) SU.UniversalObject;
-		fn = new File(fn).getAbsolutePath();
-		f = new File(fn);
-		_Dictionary_fName = f.getName();
-	}
-
+	
 	@Override
 	protected void onPageSaved() {
 		super.onPageSaved();

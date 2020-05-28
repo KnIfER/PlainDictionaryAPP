@@ -10,6 +10,8 @@ import android.database.sqlite.SQLiteStatement;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 
 /**
@@ -28,38 +30,29 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
     public static String Key_ID = "lex"; //主键
     public static final String Date = "date"; //路径
     
-    public final String pathName;
+    public String pathName;
 
 	/** 创建收藏夹数据库（从名称） */
     public LexicalDBHelper(Context context, PDICMainAppOptions opt, String name) {
-        super(context, opt.pathToFavoriteDatabases().append(name).toString(), null, CMN.dbVersionCode);
+        super(context, opt.pathToFavoriteDatabase(name), null, CMN.dbVersionCode);
         DATABASE=name;
-        database = getWritableDatabase();
-        pathName = database.getPath();
-        oldVersion=CMN.dbVersionCode;
-        prepareContain();
+		onConfigure();
     }
-
-	/** 创建收藏夹数据库（从文件） */
-	public LexicalDBHelper(Context context, File file) {
-        super(context, file.getAbsolutePath(), null, CMN.dbVersionCode);
-        DATABASE=file.getName();
-        database = getWritableDatabase();
-        pathName = database.getPath();
-        oldVersion=CMN.dbVersionCode;
-		prepareContain();
-	}
 
 	/** 创建历史纪录数据库 */
 	public LexicalDBHelper(Context context, PDICMainAppOptions opt) {
-		super(context, opt.pathToInternalDatabases().append("history.sql").toString(), null, CMN.dbVersionCode);
+		super(context, opt.pathToFavoriteDatabase(null), null, CMN.dbVersionCode);
 		DATABASE="history.sql";
+		onConfigure();
+	}
+	
+	void onConfigure() {
 		database = getWritableDatabase();
 		pathName = database.getPath();
 		oldVersion=CMN.dbVersionCode;
 		prepareContain();
 	}
-
+	
 	@Override
     public void onCreate(SQLiteDatabase db) {//第一次
     	StringBuilder sqlBuilder = new StringBuilder("create table if not exists ")

@@ -19,6 +19,7 @@ import com.knziha.plod.widgets.WebViewmy;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -48,28 +49,18 @@ public class mdict_transient implements mdict_manageable{
 	public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
 	final mdict_nonexist MNINSTANCE;
 	public boolean isDirty;
+	private boolean changeMap=true;
 	
 	public void Rebase(File f){
 		CMN.Log("MT0Rebase!!!");
 		if(keepOrgHolder){
 			PlaceHolder phI = new PlaceHolder();
 			phI.lineNumber = mPhI.lineNumber;
-			phI.name = mPhI.name;
 			phI.tmpIsFlag = mPhI.tmpIsFlag;
 			mPhI=phI;
 			keepOrgHolder=false;
 		}
-		String line = f.getPath();
-		int start = line.lastIndexOf("/");
-		if(start<0) start=0; else start++;
-		int end = line.length();
-		int tmpIdx = line.length()-4;
-		if(tmpIdx>0
-				&& line.charAt(tmpIdx)=='.' && line.regionMatches(true, tmpIdx+1, "mdx" ,0, 3)){
-			end -= 4;
-		}
-		mPhI.pathname = line;
-		mPhI.name = line.substring(start, end);
+		mPhI.Rebase(f);
 	}
 
 	//构造
@@ -86,17 +77,12 @@ public class mdict_transient implements mdict_manageable{
 		opt=opt_;
 		mPhI = phI;
 		MNINSTANCE = mninstance;
-		String fn = mPhI.getPath(opt);
-		f = new File(fn);
-		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
-		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
-
-		justifyInternal(a, "."+mPhI.name);
+		f = mPhI.getPath(opt);
+		_Dictionary_fName_Internal = "."+mPhI.getName();
 		
 		try {
 			mninstance.opt=opt;
-			MNINSTANCE._Dictionary_fName_Internal=_Dictionary_fName_Internal;
-			MNINSTANCE._Dictionary_fName=mPhI.name;
+			MNINSTANCE._Dictionary_fName=mPhI.getName().toString();
 			MNINSTANCE.IBC=IBC;
 			MNINSTANCE.updateFile(f);
 			MNINSTANCE.avoyager=avoyager;
@@ -117,33 +103,13 @@ public class mdict_transient implements mdict_manageable{
 		TIFStamp=mPhI.tmpIsFlag;
 	}
 
-	protected void justifyInternal(Context a, String dictionary_fName) {
-		String path = opt.pathToDatabases().append(_Dictionary_fName_Internal).toString();
-		File from = new File(path);
-		File to = new File( opt.pathToDatabases().append(_Dictionary_fName_Internal=dictionary_fName).toString());
-		//CMN.Log("移动??", from, to, from.exists());
-		if(from.exists()){
-			FU.move3(a, from, to);
-		}
-	}
-
 	@Override
 	public boolean renameFileTo(Context c, File to) {
 		if(FU.rename5(c, f, to)>=0) {
 			f = to;
-			String filename = to.getName();
 			Rebase(to);
-			int tmpIdx = filename.length()-4;
-			if(tmpIdx>0){
-				if(filename.charAt(tmpIdx)=='.' && filename.regionMatches(true, tmpIdx+1, "md" ,0, 2)){
-					boolean isResourceFile = Character.toLowerCase(filename.charAt(tmpIdx + 3)) == 'd';
-					if(!isResourceFile){
-						mPhI.name = filename.substring(0, tmpIdx);
-					}
-				}
-			}
 			String _Dictionary_fName_InternalOld = _Dictionary_fName_Internal;
-			_Dictionary_fName_Internal = "."+mPhI.name;
+			_Dictionary_fName_Internal = "."+mPhI.getName();
 			new File(opt.pathToDatabases().append(_Dictionary_fName_InternalOld).toString()).renameTo(new File(opt.pathToDatabases().append(_Dictionary_fName_Internal).toString()));
 			return true;
 		}
@@ -174,10 +140,10 @@ public class mdict_transient implements mdict_manageable{
 	}
 
 	@Override
-	public String getName() {
+	public String getDictionaryName() {
 		String ret = mPhI.pathname.startsWith(CMN.AssetTag)?CMN.AssetMap.get(mPhI.pathname):null;
 		if(ret==null)
-			ret=mPhI.name;
+			ret=mPhI.getName().toString();
 		return ret;
 	}
 
@@ -187,7 +153,10 @@ public class mdict_transient implements mdict_manageable{
 	}
 	
 	public boolean isMdictFile() {
-		return !mPhI.pathname.endsWith(mPhI.name);
+		String line = mPhI.pathname;
+		int tmpIdx = line.length()-4;
+		return tmpIdx>0
+				&& line.charAt(tmpIdx)=='.' && line.regionMatches(true, tmpIdx+1, "mdx" ,0, 3);
 	}
 
 	@Override
@@ -213,16 +182,24 @@ public class mdict_transient implements mdict_manageable{
 	public File f() {
 		return f;
 	}
-
+	
+	public void dumpViewStates(Activity context, int tmpIsFlag) {
+		isDirty=true;
+		firstFlag = tmpIsFlag;
+		changeMap = false;
+		checkFlag(context);
+	}
+	
 	@Override
 	public void checkFlag(Activity context) {
 		if(isDirty||firstFlag!=FFStamp){
-			String path = getPath();
-			if(PDICMainAppOptions.ChangedMap ==null) PDICMainAppOptions.ChangedMap =new HashSet<>();
-			PDICMainAppOptions.ChangedMap.add(path);
+			if(changeMap){
+				String path = getPath();
+				if(PDICMainAppOptions.ChangedMap ==null) PDICMainAppOptions.ChangedMap =new HashSet<>();
+				PDICMainAppOptions.ChangedMap.add(path);
+			}
 			
-			MNINSTANCE._Dictionary_fName_Internal=_Dictionary_fName_Internal;
-			MNINSTANCE._Dictionary_fName=mPhI.name;
+			MNINSTANCE._Dictionary_fName=mPhI.getName().toString();
 			MNINSTANCE.IBC=IBC;
 			MNINSTANCE.updateFile(f);
 			MNINSTANCE.avoyager=avoyager;
@@ -272,11 +249,6 @@ public class mdict_transient implements mdict_manageable{
 		return TIFStamp==mPhI.tmpIsFlag && (mPhI==other ||
 				mPhI.tmpIsFlag==other.tmpIsFlag &&
 						mPhI.pathname.equals(other.pathname));
-	}
-
-	public static String goodNull(String fn) {
-		SU.UniversalObject=fn;
-		return null;
 	}
 
 	@Override

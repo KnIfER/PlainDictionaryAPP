@@ -3,12 +3,14 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Resources;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
@@ -32,7 +34,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.view.ContextThemeWrapper;
 
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
@@ -64,7 +65,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean awaiting;
 	public boolean bRequestedSoundPlayback;
 	public int HistoryVagranter=-1;
-	public float webScale=0;
+	public float webScale=1;
 	public int expectedPos=-1;
 	public int expectedPosX=-1;
 	public ArrayList<myCpr<String, ScrollerRecord>> History = new ArrayList<>();
@@ -78,8 +79,15 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public AdvancedNestScrollLinerView titleBar;
 	public final int[] ColorShade = new int[]{0xff4F7FDF, 0xff2b4381};
 	public boolean clearHistory;
+	public FlowTextView toolbar_title;
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
+	
+	public boolean drawRect;
+	public float highRigkt_X;
+	public float highRigkt_Y;
+	public float highRigkt_R;
+	public float highRigkt_B;
 	
 	public WebViewmy(Context context) {
 		this(context, null);
@@ -91,38 +99,33 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 
 	public WebViewmy(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		init();
-	}
-
-
-	private void init(){
 		//setWebContentsDebuggingEnabled(true);
-
+		
 		//setBackgroundColor(Color.parseColor("#C7EDCC"));
 		//setBackgroundColor(0);
 		//setVerticalScrollBarEnabled(true);
 		//setHorizontalScrollBarEnabled(true);
 		//setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
 		//setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-
+		
 		//网页设置初始化
 		final WebSettings settings = getSettings();
-
+		
 		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 		//	settings.setSafeBrowsingEnabled(false);
 		//}
-
+		
 		settings.setSupportZoom(true);
 		settings.setBuiltInZoomControls(true);
 		settings.setDisplayZoomControls(false);
 		//settings.setDefaultTextEncodingName("UTF-8");
-
+		
 		//settings.setNeedInitialFocus(false);
-
+		
 		//settings.setDefaultFontSize(40);
 		//settings.setTextZoom(100);
 		//setInitialScale(25);
-
+		
 		settings.setJavaScriptEnabled(true);
 		settings.setJavaScriptCanOpenWindowsAutomatically(false);
 		settings.setMediaPlaybackRequiresUserGesture(false);
@@ -130,7 +133,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 //		settings.setAppCacheEnabled(true);
 //		settings.setDatabaseEnabled(true);
 //		settings.setDomStorageEnabled(true);
-
+		
 		settings.setAllowFileAccess(true);
 
 //		settings.setUseWideViewPort(true);//设定支持viewport
@@ -140,14 +143,15 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 //		settings.setAllowUniversalAccessFromFileURLs(true);
 //		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
 //			settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-
+		
 		settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-
+		
 		//settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);  //设置 缓存模式
-
+		
 		//setLayerType(View.LAYER_TYPE_HARDWARE, null);
-		webScale=getResources().getDisplayMetrics().density;
+		webScale=Utils.density;
 	}
+
 	public int getContentHeight(){
 		return computeVerticalScrollRange();
 	}
@@ -177,6 +181,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
 		//if(!baseUrl.equals("about:blank"))
 		//CMN.Log("loadDataWithBaseURL...");
+		drawRect=false;
 		isloading=true;
 	}
 	
@@ -207,6 +212,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public void loadUrl(String url) {
 		super.loadUrl(url);
 		//CMN.Log("\n\nloadUrl", url);
+		drawRect=false;
 		isloading=true;
 	}
 
@@ -307,18 +313,38 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 					} else {
 						if(cI instanceof ImageView){
 							if(cI.getBackground() instanceof BitmapDrawable){
-								cI.getBackground().setColorFilter(ForegroundFilter);
+								cI.getBackground().mutate().setColorFilter(ForegroundFilter);
 							} else {
 								((ImageView)cI).setColorFilter(ForegroundFilter);
 							}
 						} else if(cI instanceof TextView){
 							((TextView)cI).setTextColor(foregroundColor);
+						} else if(cI instanceof FlowTextView){
+							((FlowTextView)cI).setTextColor(foregroundColor);
 						}
 					}
 				}
 			}
 			mForegroundColor = foregroundColor;
 		}
+	}
+	
+	public void highRigkt_set(float x, float y, float r, float b) {
+		float pad = 2*Utils.density;
+		highRigkt_X = x-pad;
+		highRigkt_Y = y-pad;
+		highRigkt_R = r+pad;
+		highRigkt_B = b+pad;
+		drawRect = true;
+		postInvalidate();
+	}
+	
+	public void FindBGInTitle(ViewGroup toolbar_web) {
+		toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar_web.getBackground()).getDrawable(0);
+	}
+	
+	public GradientDrawable MutateBGInTitle(ViewGroup toolbar_web) {
+		return toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar_web.getBackground()).getDrawable(0).mutate();
 	}
 	
 	@RequiresApi(api = Build.VERSION_CODES.M)
@@ -392,9 +418,11 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				 * 分享#1 | 分享…
 				 * 分享#2 | 分享#3
 				 */
-				View cover=((ViewGroup) getParent()).getChildAt(0).findViewById(R.id.cover);
-				cover.setTag(1);
-				cover.performClick();
+				View cover=((ViewGroup) getParent()).getChildAt(fromCombined==2?1:0).findViewById(R.id.cover);
+				if(cover!=null){
+					cover.setTag(1);
+					cover.performClick();
+				}
 			} return false;
 			case R.id.toolbar_action3:{//TTS
 				evaluateJavascript("if(window.app)app.ReadText(''+window.getSelection())",null);
@@ -901,5 +929,15 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		lastX = event.getX();
 		lastY = event.getY();
 		return super.onTouchEvent(event);
+	}
+	
+	@Override
+	protected void onDraw(Canvas canvas) {
+		if(drawRect){
+			float scale = webScale/mdict.def_zoom;
+			//float roundVal = 10*Utils.density*scale;
+			canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale, Utils.getRectPaint());
+		}
+		super.onDraw(canvas);
 	}
 }

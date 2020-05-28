@@ -15,7 +15,7 @@ public interface mdict_manageable {
 	boolean moveFileTo(Context c, File newF);
 	void unload();
 	Drawable getCover();
-	String getName();
+	String getDictionaryName();
 	int getTmpIsFlag();
 	boolean isMddResource();
 	void setTmpIsFlag(int val);

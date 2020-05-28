@@ -1,9 +1,11 @@
 package com.knziha.plod.dictionarymanager;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -48,6 +50,7 @@ import com.knziha.plod.dictionarymodels.mdict_prempter;
 import com.knziha.plod.dictionarymodels.mdict_transient;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.knziha.plod.widgets.DictionaryTitle;
+import com.knziha.plod.widgets.FlowTextView;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
 
@@ -67,6 +70,10 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 	private boolean bDictTweakerOnceShowed;
 	public ArrayList<mdict_transient> manager_group;
 	AlertDialog d;
+	private Drawable mActiveDrawable;
+	private Drawable mFilterDrawable;
+	private Drawable mAudioDrawable;
+	private Drawable mRightDrawable;
 	
 	public dict_manager_main(){
 		super();
@@ -216,7 +223,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 								final ListView lv = dialog1.findViewById(R.id.lv);
 								final EditText et = dialog1.findViewById(R.id.et);
 								ImageView iv = dialog1.findViewById(R.id.confirm);
-								et.setText(manager_group.get(actualPosition).getName());
+								et.setText(manager_group.get(actualPosition).getDictionaryName());
 
 								AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 								builder.setView(dialog1);
@@ -236,13 +243,11 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 											String oldPath = mmTmp.getPath();
 											File oldf = mmTmp.f();
 											String oldFn = oldf.getName();
-											String OldFName = mmTmp.getName();
+											String OldFName = mmTmp.getDictionaryName();
 											int oldFnLen = oldFn.length();
 
 											File to = new File(mmTmp.f().getParent(), newPath);
-											String toFn = to.getPath();
-											if (toFn.startsWith(a.opt.lastMdlibPath))
-												toFn = toFn.substring(a.opt.lastMdlibPath.length() + 1);
+											String toFn = a.opt.tryGetDomesticFileName(to.getPath());
 											if (to.equals(mmTmp.f())) {//就是自己
 												suc = true;
 											} else if (new File(mmTmp.getPath()).exists()) {//正常重命名
@@ -254,7 +259,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 											} else {
 												if (to.exists() && !a.mdict_cache.containsKey(to.getAbsolutePath())) {//关联已存在的文件
 													mmTmp.renameFileTo(getActivity(), to);
-													CMN.Log("重命名", mmTmp.getName());
+													CMN.Log("重命名", mmTmp.getDictionaryName());
 													adapter.remove(mmTmp);
 													try {
 														adapter.insert(new mdict_prempter(a, to.getAbsolutePath(), a.opt, a.mninstance), actualPosition);
@@ -275,9 +280,9 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 												d.dismiss();
 												dd.dismiss();
 												a.show(R.string.renD);
-												File[] moduleFullScanner = new File(a.opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> pathname.getPath().endsWith(".set"));
+												File[] moduleFullScanner = a.ConfigFile.listFiles(pathname -> pathname.getPath().endsWith(".set"));
 												ArrayList<File> moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
-												moduleFullScannerArr.add(new File(a.opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
+												moduleFullScannerArr.add(a.DecordFile);
 												AgentApplication app = ((AgentApplication) getActivity().getApplication());
 												char[] cb = app.get4kCharBuff();
 												for (File fI : moduleFullScannerArr) {
@@ -319,7 +324,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 												if (f3.dataPrepared) {
 													int idx = f3.data.remove(new mFile(oldPath));
 													if (idx != -1) {
-														f3.data.insert(new mFile(to).init());
+														f3.data.insert(new mFile(to).init(a.opt));
 													}
 												}
 											}
@@ -483,20 +488,9 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			//v.getBackground().setLevel(1000);
 			//position = position - mDslv.getHeaderViewsCount();
 			mdict_manageable mdTmp = adapter.getItem(position);
-			vh.title.isFold = PDICMainAppOptions.getTmpIsCollapsed(mdTmp.getTmpIsFlag());
-			Drawable cover = mdTmp.getCover();
-			String tail="\t—<>—";
-			if(cover!=null) {
-				SpannableStringBuilder ssb = new SpannableStringBuilder("| ").append(aaa.isDebug?mdTmp.getPath():mdTmp.getName());
-				cover.setBounds(0, 0, 50, 50);
-				ssb.setSpan(new ImageSpan(cover), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-				vh.title.setText(ssb);
-			}else{
-				String val = aaa.isDebug?mdTmp.getPath():mdTmp.getName();
-				vh.title.setText(val);
-			}
+			
 
-			if(dict_manager_activity.dictQueryWord!=null && mdTmp.getName().toLowerCase().contains(aaa.dictQueryWord))
+			if(dict_manager_activity.dictQueryWord!=null && mdTmp.getDictionaryName().toLowerCase().contains(aaa.dictQueryWord))
 				vh.title.setBackgroundResource(R.drawable.xuxian2);
 			else
 				vh.title.setBackground(null);
@@ -521,55 +515,24 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			rgb.setLength(7);
 			vh.title.setTextColor(Color.parseColor(rgb.toString()));
 
-			Drawable[] ds = vh.title.getCompoundDrawables();
-			Drawable leftDrawableSlot=ds[0];
-			Drawable rightSlot=ds[1];
-			boolean needSet=false;
+			Drawable mLeftDrawable=null;
 			if(PDICMainAppOptions.getTmpIsFiler(mdTmp.getTmpIsFlag())){
-				if(convertView.getTag(R.drawable.filter)!=(Integer)R.drawable.filter) {
-					needSet = true;
-					leftDrawableSlot = getResources().getDrawable(R.drawable.filter);
-					leftDrawableSlot.setColorFilter(0xFFFFEB3B, PorterDuff.Mode.SRC_IN);
-					int h = vh.title.getLineHeight();
-					leftDrawableSlot.setBounds(new Rect(0, 0, h, h));
-					convertView.setTag(R.drawable.filter, R.drawable.filter);
-				}
+				mLeftDrawable=mFilterDrawable;
+			} else if(PDICMainAppOptions.getTmpIsAudior(mdTmp.getTmpIsFlag())){
+				mLeftDrawable=mAudioDrawable;
 			}
-			else if(PDICMainAppOptions.getTmpIsAudior(mdTmp.getTmpIsFlag())){
-				if(convertView.getTag(R.drawable.filter)!=(Integer)R.drawable.voice_ic_big) {
-					needSet = true;
-					leftDrawableSlot = getResources().getDrawable(R.drawable.voice_ic_big).mutate();
-					int h = vh.title.getLineHeight();
-					leftDrawableSlot.setBounds(new Rect(0, 0, h, h));
-					convertView.setTag(R.drawable.filter, R.drawable.voice_ic_big);
-				}
-			}
-			else if(convertView.getTag(R.drawable.filter)!=null){
-				needSet=true;
-				leftDrawableSlot=null;
-				convertView.setTag(R.drawable.filter, null);
-			}
-
-			if(PDICMainAppOptions.getTmpIsClicker(mdTmp.getTmpIsFlag())){
-				//if(v.getTag(R.drawable.ic_click_search)==null) {//发现量子波动bug，故释放之。
-					needSet=true;
-					rightSlot = getResources().getDrawable(R.drawable.ic_click_search).mutate();
-					int h = vh.title.getLineHeight();
-					rightSlot.setBounds(new Rect(0, 0, h, h));
-					convertView.setTag(R.drawable.ic_click_search, false);
-				//}
-			}
-			else if(convertView.getTag(R.drawable.ic_click_search)!=null){
-				needSet=true;
-				rightSlot=null;
-				convertView.setTag(R.drawable.ic_click_search, null);
-			}
-
 			
-
-			if(needSet)
-				vh.title.setCompoundDrawables(leftDrawableSlot, null, rightSlot, null);
-
+			mdict thereYouAre = a.app_mdict_cache.get(mdTmp.getPath());
+			
+			vh.title.setCover(thereYouAre==null?null:thereYouAre.getCover());
+			
+			vh.title.setCompoundDrawables(mActiveDrawable,
+					mLeftDrawable,
+					PDICMainAppOptions.getTmpIsClicker(mdTmp.getTmpIsFlag())?mRightDrawable:null,
+					PDICMainAppOptions.getTmpIsCollapsed(mdTmp.getTmpIsFlag())?"<>":null);
+			
+			vh.title.setText(mdTmp.getPath());
+			
 			if(GlobalOptions.isDark) {
 				convertView.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 			}
@@ -582,6 +545,11 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 		super.onActivityCreated(savedInstanceState);
 		a=(dict_manager_activity) getActivity();
 		if(a!=null) {
+			Resources resource = a.getResources();
+			mActiveDrawable = resource.getDrawable(R.drawable.star_ic_solid);
+			mFilterDrawable = resource.getDrawable(R.drawable.filter);
+			mAudioDrawable = resource.getDrawable(R.drawable.voice_ic_big);
+			mRightDrawable = resource.getDrawable(R.drawable.ic_click_search);
 			ArrayList<PlaceHolder> slots = a.slots;
 			manager_group = a.mdmng = new ArrayList<>(a.mdict_cache.size());
 			//TODO 省去这一步的IO？
@@ -594,7 +562,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 				if(PDICMainAppOptions.getTmpIsHidden(mmTmp.getTmpIsFlag()))
 					rejector.add(mmTmp.getPath());
 				manager_group.add(mmTmp);
-				a.mdict_cache.put(phI.getPath(a.opt), mmTmp);
+				a.mdict_cache.put(phI.getPath(a.opt).getPath(), mmTmp);
 			}
 
 			aaa = (dict_manager_activity) getActivity();
@@ -675,7 +643,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 	protected static class ViewHolder{
 		public int position;
 		ImageView handle;
-		DictionaryTitle title;
+		FlowTextView title;
 		CheckBox ck;
 
 		public ViewHolder(View v) {

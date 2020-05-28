@@ -44,7 +44,7 @@ public class RLContainerSlider extends FrameLayout{
 
 	boolean isOnFlingDected;
 	public boolean isOnZoomingDected;
-	public long lastZoomTime;
+	public static long lastZoomTime;
 	GestureDetector detector;
 	GestureDetector.SimpleOnGestureListener gl = new GestureDetector.SimpleOnGestureListener() {
 		@Override

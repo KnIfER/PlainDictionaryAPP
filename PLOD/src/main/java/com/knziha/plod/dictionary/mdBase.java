@@ -55,6 +55,7 @@ public abstract class mdBase {
 
 	public static String lineBreakText="\r\n\0";
 	public byte[] linkRenderByt;
+	protected StringBuilder univeral_buffer;
 	protected File f;
 	protected long ReadOffset;
 	public File f() {return f;}
@@ -115,8 +116,8 @@ public abstract class mdBase {
 	}
 
 	protected InputStream mOpenInputStream() throws IOException {
-		//return new FileInputStream(f);
-		return new BufferedInputStream(new FileInputStream(f));
+		return new FileInputStream(f);
+		//return new BufferedInputStream(new FileInputStream(f));
 	}
 
 
@@ -124,16 +125,15 @@ public abstract class mdBase {
 	public int lenSty=0;
 
 	//构造
-	mdBase(String fn) throws IOException  {
-		if(fn==null){
-			initLogically();
-			return;
-		}
+	mdBase(File fn, boolean pseudoInit, StringBuilder buffer) throws IOException  {
 		//![0]File in
-		f = new File(fn);
-
-		if(StreamAvailable())
+		f = fn;
+		
+		univeral_buffer = buffer;
+		
+		if(!pseudoInit && StreamAvailable()) {
 			init(getStreamAt(0));
+		}
 	}
 
 	mdBase(mdBase master, DataInputStream data_in) throws IOException  {
@@ -293,11 +293,6 @@ public abstract class mdBase {
 			linkRenderByts.put(encoding, linkRenderByt=linkRenderStr.getBytes(_charset));
 		}
 		return linkRenderByt;
-	}
-
-
-	protected void initLogically() {
-
 	}
 
 

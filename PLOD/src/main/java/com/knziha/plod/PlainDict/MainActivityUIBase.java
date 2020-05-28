@@ -50,10 +50,10 @@ import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.text.style.ImageSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -84,6 +84,7 @@ import android.webkit.WebViewClient;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -95,6 +96,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -111,6 +113,7 @@ import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
+import androidx.core.text.HtmlCompat;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -155,6 +158,8 @@ import com.knziha.plod.widgets.ArrayAdaptermy;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.CustomShareAdapter;
+import com.knziha.plod.widgets.FlowCheckedTextView;
+import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.ListSizeConfiner;
 import com.knziha.plod.widgets.ListViewmy;
@@ -170,6 +175,7 @@ import com.knziha.plod.widgets.TableLayout;
 import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.plod.widgets.XYTouchRecorder;
 import com.knziha.text.ColoredHighLightSpan;
 import com.knziha.text.ScrollViewHolder;
 import com.knziha.text.SelectableTextView;
@@ -272,11 +278,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public OnLongClickListener mdict_web_lcl;
 	public int defbarcustpos;
 	public int cbar_key;
+	public StringBuilder MainStringBuilder = new StringBuilder(40960);
 	boolean bShowLoadErr=true;
 	public boolean isCombinedSearching;
 	public String CombinedSearchTask_lastKey;
-	public HashMap<String,byte[]> UIProjects;
-	public HashSet<String> dirtyMap;
+	public HashMap<CharSequence,byte[]> UIProjects;
+	public HashSet<CharSequence> dirtyMap;
 
 	public Drawer drawerFragment;
 	public DictPicker pickDictDialog;
@@ -375,7 +382,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	int popupForceId;
 	protected TextView popupTextView;
 	protected PopupMoveToucher popupMoveToucher;
-	protected TextView popupIndicator;
+	public FlowTextView popupIndicator;
 	public RLContainerSlider PopupPageSlider;
 	public WebViewmy popupWebView;
 	public mdict.AppHandler popuphandler;
@@ -417,6 +424,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WebViewmy pendingWebView;
 	public int mThenReadEntryCount;
 	public boolean background;
+	protected boolean click_handled_not;
 
 	protected TextView TTSController_tvHandle;
 	protected TTSMoveToucher TTSController_moveToucher;
@@ -499,6 +507,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private boolean bHasDedicatedSeachGroup;
 	private File fontlibs;
 	public static int PreferredToolId=-1;
+	private Runnable mOpenImgRunnable;
+	private Drawable mActiveDrawable;
+	private Drawable mRatingDrawable;
+	private int CurrentDictInfoIdx;
+	private int StarLevelStamp;
 	
 	public boolean checkWebSelection() {
 		if(getCurrentFocus() instanceof WebViewmy && opt.getUseBackKeyClearWebViewFocus()){
@@ -564,14 +577,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(GlobalOptions.debug) CMN.Log(e);
 						invalidate = systemIntialized;
 						if (bShowLoadErr)
-							show(R.string.err, phTmp.name, phTmp.pathname, e.getLocalizedMessage());
+							show(R.string.err, phTmp.getName(), phTmp.pathname, e.getLocalizedMessage());
 					}
 				}
 			}
 			if (invalidate) {
 				if (currentDictionary != null) {
-					if(putName)
-						setLastMdFn(currentDictionary._Dictionary_fName);
+					if(putName) {
+						setLastMdFn(currentDictionary.getDictionaryName());
+					}
 					adaptermy.notifyDataSetChanged();
 					//lv.setSelection(currentDictionary.lvPos);
 					lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
@@ -583,7 +597,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void switchToSearchModeDelta(int i) {
-
+	
 	}
 
 	public mdict md_get(int i) {
@@ -594,15 +608,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(i<CosyChair.size()) {
 					PlaceHolder phTmp = CosyChair.get(i);
 					if (phTmp != null) {
-						String path = phTmp.pathname;
-						if (!path.startsWith("/"))
-							path = opt.lastMdlibPath + "/" + path;
+						File path = phTmp.getPath(opt);
 						try {
 							md.set(i, ret = new_mdict(path, this));
 							ret.tmpIsFlag = phTmp.tmpIsFlag;
 						} catch (Exception e) {
 							if (bShowLoadErr)
-								show(R.string.err, phTmp.name, path, e.getLocalizedMessage());
+								show(R.string.err, phTmp.getName(), path, e.getLocalizedMessage());
 						}
 					}
 				}
@@ -615,19 +627,113 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public String md_getName(int i) {
 		if(i>=0 && i<md.size()){
 			mdict mdTmp = md.get(i);
-			if(mdTmp!=null) return mdTmp._Dictionary_fName;
+			if(mdTmp!=null) return mdTmp.getDictionaryName();
 			ArrayList<PlaceHolder> CosyChair = getLazyCC();
 			if(i<CosyChair.size()){
 				PlaceHolder placeHolder = CosyChair.get(i);
-				if(placeHolder!=null) return placeHolder.name;
+				if(placeHolder!=null) return placeHolder.pathname;
 			}
 		}
 		return "Error!!!";
 	}
-
-	public String md_getAbout(int i) {
+	
+	public void md_set_StarLevel(int i, int val) {
+		long flag=0;
+		if(i>=0 && i<md.size()){
+			mdict mdTmp = md.get(i);
+			if(mdTmp!=null) {
+				flag = mdTmp.getFirstFlag();
+				mdTmp.setFirstFlag(flag=PDICMainAppOptions.setDFFStarLevel(flag, val));
+				mdTmp.dumpViewStates(UIProjects);
+			} else {
+				ArrayList<PlaceHolder> CosyChair = getLazyCC();
+				if(i<CosyChair.size()) {
+					PlaceHolder placeHolder = CosyChair.get(i);
+					if(placeHolder!=null) {
+						CharSequence name = placeHolder.getName();
+						flag =  md_get_firstFlag_internal(name);
+						flag = PDICMainAppOptions.setDFFStarLevel(flag, val);
+						md_set_firstFlag_internal(name, flag);
+						md_mark_dirty(name);
+					}
+				}
+			}
+			CMN.Log("新的星级", md_getName(i), PDICMainAppOptions.getDFFStarLevel(flag), val);
+		}
+	}
+	
+	private void md_mark_dirty(CharSequence name) {
+		dirtyMap.add(name);
+	}
+	
+	
+	public int md_get_StarLevel(int i) {
+		long flag = 0;
+		if(i>=0 && i<md.size()){
+			mdict mdTmp = md.get(i);
+			if(mdTmp!=null) {
+				flag =  mdTmp.getFirstFlag();
+			} else {
+				ArrayList<PlaceHolder> CosyChair = getLazyCC();
+				if(i<CosyChair.size()) {
+					PlaceHolder placeHolder = CosyChair.get(i);
+					if(placeHolder!=null) {
+						flag =  md_get_firstFlag_internal(placeHolder.getSoftName());
+					}
+				}
+			}
+		}
+		return PDICMainAppOptions.getDFFStarLevel(flag);
+	}
+	
+	
+	private void md_set_firstFlag_internal(CharSequence name, long val) {
+		byte[] data = UIProjects_get(name);
+		int pad = 8*4+3+ConfigExtra;
+		if(data.length>pad+8){
+			IU.writeLong(data, pad, val);
+		}
+	}
+	
+	private long md_get_firstFlag_internal(CharSequence name) {
+		byte[] data = UIProjects.get(name);
+		int pad = 8*4+3+ConfigExtra;
+//		CMN.Log("md_get_firstFlag name", name, data );
+//		if(name.equals("chinese_YGYL_2012.mdd")) {
+//			CMN.Log("md_get_firstFlag chinese_YGYL_2012.mdd", data , data==null?-1:PDICMainAppOptions.getDFFStarLevel(IU.readLong(data, pad)));
+//		}
+		if(data!=null && data.length>pad+8){
+			return IU.readLong(data, pad);
+		}
+		return 0;
+	}
+	
+	private byte[] UIProjects_get(CharSequence name) {
+		byte[] data = UIProjects.get(name);
+		if(data==null){
+			data = new byte[ConfigSize + ConfigExtra];
+			UIProjects.put(name.toString(), data);
+		}
+		return data;
+	}
+	
+	public CharSequence md_getAbout_Trim(int i) {
 		mdict mdTmp = md.get(i);
-		if(mdTmp!=null) return mdTmp.getAboutString();
+		if(mdTmp!=null) {
+			Spanned ret = HtmlCompat.fromHtml(mdTmp.getAboutString(), HtmlCompat.FROM_HTML_MODE_COMPACT);
+			int len = ret.length();
+			int st = 0;
+			while((st < len) && ret.charAt(st) <= ' '){
+				st++;
+			}
+			while ((st < len) && (ret.charAt(len - 1) <= ' ')) {
+				len--;
+			}
+			if(st>0){
+				return new SpannableStringBuilder(ret,st,len);
+			}
+			return ret;
+		}
 		return "未加载";
 	}
 
@@ -1024,26 +1130,28 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public void fix_dm_color() {
 		CMN.Log("fix_dm_color");
-		boolean isChecked = AppWhite==Color.BLACK;
+		boolean isDark = GlobalOptions.isDark;
 		boolean nii=widget12.getTag(R.id.image)==null;
 		ViewGroup[] holders = new ViewGroup[]{webSingleholder, webholder};
-		for (ViewGroup hI : holders)
+		for (ViewGroup hI : holders) {
 			for (int i = 0; i < hI.getChildCount(); i++) {
-				View vTmp = hI.getChildAt(i).findViewById(R.id.webviewmy);
-				if (vTmp instanceof WebViewmy) {
-					WebViewmy wv = (WebViewmy) vTmp;
-					wv.evaluateJavascript(isChecked ? DarkModeIncantation : DeDarkModeIncantation, null);
-					int selfAtIdx = wv.SelfIdx;
-					if (nii && selfAtIdx >= 0 && selfAtIdx < md.size()) {
-						if (md.get(selfAtIdx).getUseInternalBG()) {
-							int bg = md.get(selfAtIdx).bgColor;
-							wv.setBackgroundColor(isChecked ? ColorUtils.blendARGB(bg, Color.BLACK, ColorMultiplier_Web2) : bg);
+				Object tag = hI.getChildAt(i).getTag();
+				if(tag instanceof Integer){
+					int selfAtIdx = (int) tag;
+					if(selfAtIdx>=0&&selfAtIdx<md.size()) {
+						mdict mdTmp = md.get(selfAtIdx);
+						WebViewmy wv = mdTmp.mWebView;
+						if(wv!=null) {
+							wv.evaluateJavascript(isDark ? DarkModeIncantation : DeDarkModeIncantation, null);
+							mdTmp.tintBackground(wv);
 						}
 					}
 				}
 			}
-		if(PeruseView!=null)
+		}
+		if(PeruseView!=null) {
 			PeruseView.refreshUIColors();
+		}
 	}
 
 	public void fix_pw_color() {
@@ -1079,14 +1187,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mPopupRunnable = new Runnable() {
 					@Override
 					public void run() {
-						boolean bPeruseViewAttached = PeruseViewAttached();
-						RLContainerSlider CheckSlider = popupFrame==-1?PopupPageSlider:bPeruseViewAttached?PeruseView.PageSlider:PageSlider;
-						if(CheckSlider!=null && CheckSlider.lastZoomTime > 0){
-							if (System.currentTimeMillis() - CheckSlider.lastZoomTime < 500){
+						if(RLContainerSlider.lastZoomTime > 0){
+							if (System.currentTimeMillis() - RLContainerSlider.lastZoomTime < 500){
 								return;
 							}
-							CheckSlider.lastZoomTime=0;
+							RLContainerSlider.lastZoomTime=0;
 						}
+						boolean bPeruseViewAttached = PeruseViewAttached();
 						//CMN.Log("\nmPopupRunnable run!!!");
 						ViewGroup targetRoot = bPeruseViewAttached?PeruseView.root:root;
 						int size = md.size();
@@ -1363,7 +1470,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											//now -= sv.getChildAt(1).getScrollY();
 											now += sv.getChildAt(0).getHeight();
 											//CMN.Log("now",sv.getChildAt(0).getHeight(), ((ViewGroup.MarginLayoutParams) getContentviewSnackHolder().getLayoutParams()).topMargin);
-											now += ((ViewGroup.MarginLayoutParams) getContentviewSnackHolder().getLayoutParams()).topMargin;
 										}
 									}
 									else if (ActivedAdapter == adaptermy2) {
@@ -1371,8 +1477,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											LinearLayout sv = (LinearLayout) webholder.getChildAt(popupFrame);
 											WebViewmy mWebView = sv.findViewById(R.id.webviewmy);
 											now = sv.getTop() + mWebView.lastY + sv.getChildAt(0).getHeight() - WHP.getScrollY();
-											now += ((ViewGroup.MarginLayoutParams) getContentviewSnackHolder().getLayoutParams()).topMargin;
 										}
+									}
+									if(PDICMainAppOptions.getEnableSuperImmersiveScrollMode()){
+										now += webcontentlist.getTop();
+									} else {
+										now += ((ViewGroup.MarginLayoutParams) getContentviewSnackHolder().getLayoutParams()).topMargin;
 									}
 									float pad = 56 * dm.density;
 									if (MainActivityUIBase.this instanceof FloatSearchActivity)
@@ -1423,7 +1533,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			mPopupWebView.addJavascriptInterface(popuphandler, "app");
 			mPopupWebView.setBackgroundColor(Color.TRANSPARENT);
 			((AdvancedNestScrollWebView)mPopupWebView).setNestedScrollingEnabled(true);
-			popCover = popupToolbar.findViewById(R.id.cover);
+			popCover = PopupPageSlider.getChildAt(1);
 			popCover.setOnClickListener(MainActivityUIBase.this);
 			popIvBack = popupToolbar.findViewById(R.id.popIvBack);
 			popIvBack.setOnClickListener(MainActivityUIBase.this);
@@ -1439,7 +1549,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				popupChecker.circle_shrinkage = 2;
 			popupChecker.setOnClickListener(MainActivityUIBase.this);
 			popupTextView = popupToolbar.findViewById(R.id.popupText1);
-			popupIndicator = popupBottombar.findViewById(R.id.popupText2);
+			mPopupWebView.toolbar_title = popupIndicator = popupBottombar.findViewById(R.id.popupText2);
 			popupTextView.setOnClickListener(MainActivityUIBase.this);
 			View popupNxtD, popupLstD;
 			(popupNxtD = popupToolbar.findViewById(R.id.popNxtDict)).setOnClickListener(MainActivityUIBase.this);
@@ -1499,7 +1609,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(mdTmp!=null)
 				try {
 					Object rerouteTarget = mdTmp.ReRoute(key);
-					//CMN.Log(key, " >> " , rerouteTarget, mdTmp._Dictionary_fName, mdTmp.getIsDedicatedFilter());
+					//CMN.Log(key, " >> " , rerouteTarget, mdTmp.getName(), mdTmp.getIsDedicatedFilter());
 					if (rerouteTarget instanceof String)
 						return (String) rerouteTarget;
 				} catch (IOException ignored) { }
@@ -1716,16 +1826,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	/** Batch save all */
 	public void  dumpViewStates() {
 		AgentApplication app = ((AgentApplication) getApplication());
-		HashMap<String, byte[]> mdict_projects = app.UIProjects;
+		HashMap<CharSequence, byte[]> mdict_projects = app.UIProjects;
 		try {
-			File SpecificationFile = new File(opt.pathToDatabases().append(".spec.bin").toString());
+			File SpecificationFile = opt.SpecificationFile;
 			FileOutputStream fout = new FileOutputStream(SpecificationFile);
 			ReusableByteOutputStream bos = new ReusableByteOutputStream(SpecificationBlockSize);
 			byte[] source = bos.getBytes();
 			int count=0;
 			boolean init=false;
 			byte[] name, data;
-			for(String kI:mdict_projects.keySet()){
+			for(CharSequence kI:mdict_projects.keySet()){
 				//CMN.Log("写入……kI=", kI);
 				if(!init){
 					name = Integer.toString(ConfigSize).getBytes(StandardCharsets.UTF_8);
@@ -1735,7 +1845,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					count+=name.length+data.length;
 					init = true;
 				}
-				name = kI.getBytes(StandardCharsets.UTF_8);
+				name = kI.toString().getBytes(StandardCharsets.UTF_8);
 				data = mdict_projects.get(kI);
 				if(data!=null) {
 					if(data.length-ConfigExtra< ConfigSize){
@@ -1777,13 +1887,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	/** Save just one. */
-	public boolean SolveOneUIProject(String fname) {
+	public boolean SolveOneUIProject(CharSequence fname) {
 		CMN.Log("solveOnUIProject");
 		try {
-			byte[] name = fname.getBytes(StandardCharsets.UTF_8);
+			byte[] name = fname.toString().getBytes(StandardCharsets.UTF_8);
 			byte[] data = UIProjects.get(fname);
 			if(data!=null){
-				File SpecificationFile = new File(opt.pathToDatabases().append(".spec.bin").toString());
+				File SpecificationFile = opt.SpecificationFile;
 				if(SpecificationFile.length()==0) return false;
 				int RealOffset=0;
 				for (int k = 0; k < 4; k++)
@@ -2065,6 +2175,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		CMN.GlobalPageBackground = GlobalPageBackground = opt.getGlobalPageBackground();
 		mdict.bGlobalUseClassicalKeycase = PDICMainAppOptions.getClassicalKeycaseStrategy();
 		getLastPlanName();
+		new File(opt.pathToDatabases().toString()).mkdirs();
+		opt.CheckFileToDefaultMdlibs();
 	}
 
 	public static byte[] target = "/".getBytes(StandardCharsets.UTF_8);
@@ -2079,30 +2191,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	@Override
 	protected void further_loading(Bundle savedInstanceState) {
-		//stst = System.currentTimeMillis();
-		StringBuffer sb = opt.pathToInternalDatabases();
-		File checkDirs = new File(sb.toString());
-		if(!checkDirs.isDirectory()) checkDirs.mkdirs();
-		sb.append("favorites");
-		checkDirs = new File(sb.toString());
-		if(!checkDirs.isDirectory()) checkDirs.mkdir();
-		
 		super.further_loading(savedInstanceState);
 		GlobalOptions.isLarge = (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >=3 ;
 		//CMN.show("isLarge"+isLarge);
 		mdict.def_zoom=dm.density;
 		mdict.optimal100 = GlobalOptions.isLarge ?150:100;
 		mdict.def_fontsize = opt.getDefaultFontScale(mdict.optimal100);
-
-
+		
+		File ConfigFile = opt.fileToConfig();
+		
+		ConfigFile.mkdirs();
+		
 		iItem_InPageSearch.setVisible(false);
 		if(iItem_ClickSearch!=null)
 			iItem_ClickSearch.setVisible(false);
-
-		StringBuffer pmf = opt.pathToMainFolder();
-		int pmfLen = pmf.length();
-		new File(pmf.append("CONFIG").toString()).mkdirs();
-		pmf.setLength(pmfLen);
+		
 
 		AgentApplication app = ((AgentApplication) getApplication());
 		UIProjects = app.UIProjects;
@@ -2144,8 +2247,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			this.fontlibs=fontlibs;
 		}
 
-		pmf.setLength(pmfLen);
-		File SpecificationFile = new File(pmf.append("bmDBs/.spec.bin").toString());
+		File SpecificationFile =  opt.SpecificationFile = new File(opt.pathToDatabases().append("/.spec.bin").toString());
 		CMN.Log(CMN.LastConfigReadTime, SpecificationFile.lastModified());
 		if(SpecificationFile.exists()){ // 读取逐词典配置。
 			if(CMN.LastConfigReadTime<SpecificationFile.lastModified()) {
@@ -2237,13 +2339,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 
-		final File def = getStartupFile();      //!!!原配
+		final File def = getStartupFile(ConfigFile);      //!!!原配
 		final boolean retrieve_all=def==null || !def.exists();
 
 		ArrayList<PlaceHolder> CC = getLazyCC();
 		if(retrieve_all) {
 			try {
-				md.add(new mdict_asset("liba.mdx", this));
+				md.add(new mdict_asset(new File(CMN.AssetTag + "liba.mdx"), this));
 				CC.add(new PlaceHolder(CMN.AssetTag + "liba.mdx", CC));
 			} catch (IOException e) {
 				Log.e("fatal", "sda");
@@ -2257,9 +2359,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} catch (IOException e2) { e2.printStackTrace(); }
 
 		if(opt.getCheckMdlibs()){
-			File rec = new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString());
+			File rec = opt.fileToDecords(ConfigFile);
 			ReadInMdlibs(rec);
-			File mdlib = new File(opt.lastMdlibPath);
+			File mdlib = opt.lastMdlibPath;
 			if(mdlib.isDirectory() && mdlib.canRead())
 			{
 				//todo 交换顺序，先新建，再写入（新建失败的也写入）。
@@ -2289,7 +2391,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(arr!=null) {
 					for (final File i : arr) {
 						try {
-							mdict mdtmp = new mdict(i.getAbsolutePath(), this);
+							mdict mdtmp = new mdict(i, this, false);
 							md.add(mdtmp);
 							CC.add(new PlaceHolder(i.getName(), CC));
 						} catch (Exception e) { /*CMN.Log(e);*/ }
@@ -2474,10 +2576,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	protected abstract View getIMPageCover();
 
-	protected File getStartupFile(){
+	protected File getStartupFile(File ConfigFile){
 		File def = new File(getExternalFilesDir(null),"default.txt");
 		if(def.length()<=0){
-			def = new File(opt.pathToMainFolder().append("CONFIG/").append(opt.getLastPlanName()).append(".set").toString());
+			def = opt.fileToSet(ConfigFile, opt.getLastPlanName());
 		}
 		return def;
 	}
@@ -2518,7 +2620,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					CosyChair.remove(i--);
 					CMN.Log(e);
 					if (trialCount == -1) if (bShowLoadErr)
-						show(R.string.err, phI.name, phI.pathname, e.getLocalizedMessage());
+						show(R.string.err, phI.getName(), phI.pathname, e.getLocalizedMessage());
 					continue;
 				}
 			}
@@ -2531,13 +2633,31 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				CosySofa.add(phI);
 				CosyChair.remove(i--);
 			} else {
-				if (lastName!=null && lastName.equals(mdTmp==null?phI.name:mdTmp._Dictionary_fName))
+				if (md_name_match(lastName, mdTmp, phI)){
 					adapter_idx = md.size();
+				}
 				md.add(mdTmp);
 			}
 		}
 	}
-
+	
+	private boolean md_name_match(String lastName, mdict mdTmp, PlaceHolder phI) {
+		if(lastName!=null){
+			if(mdTmp!=null){
+				return mdTmp.getDictionaryName().equals(lastName);
+			}
+			if(phI!=null){
+				String pN = phI.pathname;
+				if(pN.endsWith(lastName)){
+					int len = lastName.length();
+					int lenN = pN.length();
+					return lenN>len&&pN.charAt(lenN-len-1)==File.separatorChar;
+				}
+			}
+		}
+		return false;
+	}
+	
 	protected abstract void LoadLazySlots(File def, boolean lazyLoad, String moduleName) throws IOException;
 
 	protected void do_LoadLazySlots(ReusableBufferedReader in, ArrayList<PlaceHolder> CosyChair) throws IOException {
@@ -2586,8 +2706,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		in.close();
 	}
-
+	
 	void ReadInMdlibs(File rec) {
+		if(rec==null){
+			rec = opt.fileToDecords(null);
+		}
 		if(mdlibsCon==null){
 			mdlibsCon = new HashSet<>(md.size()*3);
 			checker = new HashMap<>();
@@ -2871,7 +2994,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(futton==null) futton=this.favoriteBtn;
 		futton.setActivated(prepareFavoriteCon().contains(key));
 	}
-
+	
+	private void CheckInternalDataBaseDirExist() {
+		File checkDirs = opt.fileToDatabaseFavorites();
+		checkDirs.mkdirs();
+	}
+	
 	protected LexicalDBHelper prepareFavoriteCon() {
 		if(favoriteCon!=null) return favoriteCon;
 		ArrayList<MyPair<String, LexicalDBHelper>> slots = ((AgentApplication) getApplication()).AppDatabases;
@@ -2882,10 +3010,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		String dateBaseName = "favorite.sql";
 		if(slots.size()>0){
 			for (int i = 0; i < slots.size() & selectedPos==-1; i++) {
-				if(name!=null && slots.get(i).key.equals(name))
+				if(name!=null && slots.get(i).key.equals(name)){
 					selectedPos = i;
-				if(slots.get(i).value != null)
+				}
+				if(slots.get(i).value != null){
 					candidate = i;
+				}
 			}
 			if(selectedPos==-1){
 				selectedPos=candidate;
@@ -2901,10 +3031,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					_favoriteCon=null;
 			}
 		}
-		if(fading || selectedPos==-1)
+		if(fading || selectedPos==-1){
 			opt.putCurrFavoriteDBName(dateBaseName);
+		}
 		if(_favoriteCon==null) {
-			CMN.Log("打开数据库", opt.pathToFavoriteDatabases().append(dateBaseName).toString(), dateBaseName);
+			CMN.Log("打开数据库", dateBaseName, opt.getCurrFavoriteDBName());
+			CheckInternalDataBaseDirExist();
 			_favoriteCon = new LexicalDBHelper(getApplicationContext(), opt, dateBaseName);
 			if(selectedPos!=-1){
 				slots.get(selectedPos).value = _favoriteCon;
@@ -2914,7 +3046,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		return favoriteCon = _favoriteCon;
 	}
-
+	
 	protected LexicalDBHelper prepareHistroyCon() {
 		if(historyCon!=null) return historyCon;
 		AgentApplication app = ((AgentApplication) getApplication());
@@ -2924,6 +3056,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				_historyCon=null;
 		}
 		if(_historyCon==null){
+			CheckInternalDataBaseDirExist();
 			app.historyCon = _historyCon = new LexicalDBHelper(getApplicationContext(),opt);
 		}
 		return historyCon = _historyCon;
@@ -2981,24 +3114,51 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		return versionname;
 	}
-
-
-	public static mdict new_mdict(String fn, MainActivityUIBase THIS) throws IOException {
-		if(fn.startsWith(CMN.AssetTag)) {
-			if(CMN.AssetMap.containsKey(fn))
-				return new mdict_asset(fn.substring(7),THIS);
-		}
-		return fn.endsWith(".pdf")?
-				new mdict_pdf(fn, THIS)
-				:fn.endsWith(".web")?
-				new mdict_web(fn, THIS)
-				:fn.endsWith(".txt")?
-				new mdict_txt(fn, THIS)
-				:fn.endsWith(".dsl")?
-				new mdict_dsl(fn, THIS)
-				:new mdict(fn, THIS);
+	
+	public static mdict new_mdict(String pathFull, MainActivityUIBase THIS) throws IOException {
+		File fullPath = pathFull.startsWith("/")?new File(pathFull):new File(THIS.opt.lastMdlibPath, pathFull);
+		return new_mdict(fullPath, THIS);
 	}
-
+	
+	public static mdict new_mdict(File fullPath, MainActivityUIBase THIS) throws IOException {
+		String pathFull = fullPath.getPath();
+		if(pathFull.startsWith(CMN.AssetTag)) {
+			if(CMN.AssetMap.containsKey(pathFull))
+				return new mdict_asset(fullPath,THIS);
+		}
+		int sufixp = pathFull.lastIndexOf(".");
+		if(sufixp>0){
+			int hash = hashCode(pathFull, sufixp+1);
+			switch(hash){
+				case 107969:
+				case 107949:
+					return new mdict(fullPath, THIS, false);
+				case 117588:
+					return new mdict_web(fullPath, THIS);
+				case 110834:
+					return new mdict_pdf(fullPath, THIS);
+				case 115312:
+					return new mdict_txt(fullPath, THIS);
+				case 99773:
+					return new mdict_dsl(fullPath, THIS);
+				//case 120609:
+				//return new mdict_zip(fullPath, THIS);
+				//case 3088960:
+				//return new mdict_docx(fullPath, THIS);
+			}
+		}
+		return null;
+	}
+	
+	public static int hashCode(String toHash, int start) {
+		int h=0;
+		int len = toHash.length();
+		for (int i = start; i < len; i++) {
+			h = 31 * h + Character.toLowerCase(toHash.charAt(i));
+		}
+		return h;
+	}
+	
 	boolean checkAllWebs(resultRecorderDiscrete combining_search_result, View view, int pos) {
 		if(combining_search_result instanceof resultRecorderCombined && pos==0 && view==null){
 			if(combining_search_result.checkAllWebs(md)){
@@ -3049,6 +3209,154 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public abstract void AttachContentViewForDB();
 	
+	public void invalidAllPagers() {
+	
+	}
+	
+	public Runnable getOpenImgRunnable() {
+		if(mOpenImgRunnable==null){
+			mOpenImgRunnable = new Runnable(){
+				@Override
+				public void run() {
+					boolean abort = false;
+					if(RLContainerSlider.lastZoomTime >0) {
+						if((System.currentTimeMillis()-RLContainerSlider.lastZoomTime)<500){
+							abort=true;
+						} else {
+							RLContainerSlider.lastZoomTime=0;
+						}
+					}
+					if(isBrowsingImgs) {
+						abort=true;
+					}
+					if(abort){
+						((AgentApplication)getApplication()).clearNonsenses();
+					} else {
+						isBrowsingImgs=true;
+						startActivityForResult(new Intent()
+								.setClass(MainActivityUIBase.this
+										, PhotoViewActivity.class),0);
+					}
+				}
+			};
+		}
+		return mOpenImgRunnable;
+	}
+	
+	public Drawable getActiveStarDrawable() {
+		if(mActiveDrawable!=null) return mActiveDrawable;
+		return mActiveDrawable=getResources().getDrawable(R.drawable.star_ic_solid);
+	}
+	
+	public Drawable getRatingDrawable() {
+		if(mRatingDrawable==null) {
+			mRatingDrawable=getResources().getDrawable(R.drawable.star_ic_grey);
+			mRatingDrawable.setAlpha(128);
+		}
+		return mRatingDrawable;
+	}
+	
+	public void showAboutDictDialogAt(int id) {
+		if(id<0||id>=md.size()){
+			show(R.string.endendr);
+			return;
+		}
+		boolean create=true;
+		Window window;
+		TextView tv=null;
+		FlowTextView ftv=null;
+		Dialog d = this.d;
+		if(d!=null) {
+			window = d.getWindow();
+			if(window!=null) {
+				Object tag = window.getDecorView().getTag();
+				if(tag instanceof TextView){
+					tv = (TextView) tag;
+					tag = tv.getTag();
+					if(tag instanceof FlowTextView){
+						ftv = (FlowTextView) tag;
+						CheckStars(ftv.StarLevel);
+						create=false;
+						if(pickDictDialog!=null) {
+							//pickDictDialog.mRecyclerView.smoothScrollToPosition(id);
+							//pickDictDialog.lman.smoothScrollToPosition(pickDictDialog.mRecyclerView, null, id);
+							pickDictDialog.lman.scrollToPositionWithOffset(id, 0);
+						}
+						tag = ftv.getTag();
+						if(tag instanceof ScrollView) {
+							ScrollView sv = (ScrollView) tag;
+							sv.scrollTo(0,  0);
+						}
+						d.show();
+					}
+				}
+			}
+			if(create){
+				d.dismiss();
+			}
+		}
+		if(create){
+			ViewGroup dv = (ViewGroup) inflater.inflate(R.layout.dialog_about_star,null);
+			
+			dv.findViewById(R.id.about_popIvBack).setOnClickListener(this);
+			dv.findViewById(R.id.about_popLstDict).setOnClickListener(this);
+			dv.findViewById(R.id.about_popNxtDict).setOnClickListener(this);
+			
+			ftv = dv.findViewById(R.id.subtext);
+			ftv.mRatingDrawable = getRatingDrawable();
+			ftv.setCompoundDrawables(mActiveDrawable, null, null, null);
+			
+			XYTouchRecorder xyt = opt.XYTouchRecorder();
+			ftv.setOnTouchListener(xyt);
+			ftv.setOnClickListener(xyt);
+			
+			TextView title = dv.findViewById(R.id.title);
+			title.setText("词典信息");
+			tv = dv.findViewById(R.id.resultN);
+			if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
+			tv.setTextIsSelectable(true);
+			
+			tv.setMovementMethod(LinkMovementMethod.getInstance());
+			FlowTextView finalFtv = ftv;
+			d = new android.app.AlertDialog.Builder(this)
+					.setView(dv)
+					.setOnDismissListener(dialog -> {
+						CheckStars(finalFtv.StarLevel);
+						StarLevelStamp = -1;
+						this.d=null;
+					})
+					.create();
+			dv.findViewById(R.id.cancel).setOnClickListener(this);
+			window = d.getWindow();
+			window.setDimAmount(0);
+			window.getDecorView().setTag(tv);
+			tv.setTag(ftv);
+			ftv.setTag(dv.getChildAt(1));
+			d.setCanceledOnTouchOutside(true);
+			d.show();
+			this.d = d;
+		}
+		
+		CurrentDictInfoIdx = id;
+		
+		ftv.StarLevel = StarLevelStamp = md_get_StarLevel(id);
+		
+		ftv.setText(md_getName(id));
+		
+		tv.setText(md_getAbout_Trim(id));
+	}
+	
+	private void CheckStars(int newLevel) {
+		int oldId = CurrentDictInfoIdx;
+		if(oldId>=0&&oldId<md.size()&&StarLevelStamp>=0&&newLevel!=StarLevelStamp){
+			md_set_StarLevel(oldId, newLevel);
+			if(pickDictDialog!=null){
+				pickDictDialog.adapter().notifyItemChanged(oldId, null);
+				//pickDictDialog.notifyDataSetChanged();
+			}
+		}
+	}
+	
 	public final class UniCoverClicker implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
 		boolean isWeb;
 		mdict invoker;
@@ -3073,6 +3381,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			bmAdd=itemsA[0];
 			lastInDark = GlobalOptions.isDark;
 		}
+		
 		public void setInvoker(mdict mdict, WebViewmy _mWebView, TextView _tv, String text) {
 			invoker=mdict;
 			mWebView=_mWebView;
@@ -3135,7 +3444,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					String msg;
 					if(invoker.getUseInternalBG()) {
 						//正在为词典  <![CDATA[<%1$s>]]> 指定背景颜色...
-						msg=getResources().getString(R.string.BGMSG,invoker._Dictionary_fName);
+						msg=getResources().getString(R.string.BGMSG,invoker.getDictionaryName());
 					}
 					else {
 						msg=getResources().getString(R.string.BGMSG2);
@@ -3324,7 +3633,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											succ = true;
 											int BKHistroryVagranter = opt.getInt("bkHVgrt", -1);
 											BKHistroryVagranter = (BKHistroryVagranter + 1) % 20;
-											String rec = invoker.getName() + "/?Pos=" + _mWebView.currentPos;
+											String rec = invoker.getDictionaryName() + "/?Pos=" + _mWebView.currentPos;
 											opt.putter()
 													.putString("bkh" + BKHistroryVagranter, rec)
 													.putInt("bkHVgrt", BKHistroryVagranter)
@@ -3368,7 +3677,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								break;
 							}
 							AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this, lastInDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);//,R.style.DialogStyle2Line);
-							builder.setTitle(invoker._Dictionary_fName + " -> " + getString(R.string.bm));
+							builder.setTitle(invoker.appendCleanDictionaryName(MainStringBuilder).append(" -> ").append(getString(R.string.bm)).toString());
 							builder.setItems(new String[]{}, null);
 							builder.setNeutralButton(R.string.delete, null);
 							AlertDialog d = builder.show();
@@ -3900,7 +4209,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 
 			if(!bFromTextView)
-				d.setTitle(invoker._Dictionary_fName+" - "+(bFromPeruseView?PeruseView.currentDisplaying:invoker.currentDisplaying));
+				d.setTitle(invoker.appendCleanDictionaryName(MainStringBuilder).append(" - ").append((bFromPeruseView?PeruseView.currentDisplaying:invoker.currentDisplaying)).toString());
 			else
 				d.setTitle("文本操作");
 
@@ -4543,7 +4852,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	//click
 	@Override
 	public void onClick(View v) {
-		v.setTag(R.id.click_handled, null);
+		click_handled_not = true;
 		int id=v.getId();
 		switch (id){
 			default:return;
@@ -4711,7 +5020,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(PDICMainAppOptions.getSwichClickSearchDictOnNav()){
 							currentClick_adapter_idx = CCD_ID;
 						}
-						popupIndicator.setText(CCD._Dictionary_fName);
+						popupIndicator.setText(CCD.getDictionaryName());
 
 						if(idx<0 && hasDedicatedSeachGroup){
 							idx = -1-idx;
@@ -4734,6 +5043,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//in page search navigation
 			case R.id.recess:
 			case R.id.forward:{
+				if(v.getTag()!=null){
+					return;
+				}
 				boolean next=id==R.id.recess;
 				//CMN.Log("下一个");
 				if(PDICMainAppOptions.getInPageSearchAutoHideKeyboard()){
@@ -4743,6 +5055,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			/* 清零 */
 			case R.id.ivDeleteText:{
+				if(v.getTag()!=null){
+					return;
+				}
 				if((etSearch_toolbarMode&2)==0) {//delete
 					String SearchTmp = etSearch.getText().toString().trim();
 					if(SearchTmp.equals("")) {
@@ -4780,9 +5095,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						vI.close();
 						item.value=null;
 					}
-					File fi = new File(opt.pathToInternalDatabases().append("favorites/").append(item.key).toString());
+					File fi = opt.fileToFavoriteDatabases(item.key);
 					fi.delete();
-					new File(fi.getAbsolutePath()+"-journal").delete();
+					new File(fi.getPath()+"-journal").delete();
 					AppDataAdapter.remove(position);
 				}
 			}break;
@@ -4934,71 +5249,72 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				if(webholder.getChildCount()!=0) {
 					imm.hideSoftInputFromWindow(main.getWindowToken(),0);
-					final CharSequence[] items = new CharSequence[webholder.getChildCount()];//Build.VERSION.SDK_INT>=22
-					int c=0;
 					int selectedPos=-1;
 					final int currentHeight=WHP.getScrollY();
 					for(int i=0;i<webholder.getChildCount();i++) {
-						View CI = webholder.getChildAt(c);
-						int currIdx = (int) CI.getTag();
-						if(selectedPos==-1 && CI.getBottom()>currentHeight) {
-							selectedPos=c;
+						View CI = webholder.getChildAt(i);
+						if(CI.getBottom() > currentHeight) {
+							selectedPos=i;
+							break;
 						}
-						mdict mdTmp = md.get(currIdx);
-						if(mdTmp.cover!=null) {
-							mdTmp.cover.setBounds(0, 0, 50, 50);
-							SpannableStringBuilder ssb = new SpannableStringBuilder("| ").append(mdTmp._Dictionary_fName);
-							ssb.setSpan(new ImageSpan(mdTmp.cover), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-							items[c] = ssb;
-						}else
-							items[c] = mdTmp._Dictionary_fName;
-						c++;
 					}
-					AlertDialog.Builder builder = new AlertDialog.Builder(this);//,R.style.DialogStyle
-					builder.setTitle("跳转");
-					builder.setSingleChoiceItems(items, 0,
-							(dialog, pos) -> {
-								View childAt = webholder.getChildAt(pos);
-								scrollToWebChild(childAt);
-								recCom.scrollTo(childAt, MainActivityUIBase.this);
-								d.dismiss();
-							}).setOnDismissListener(dialog -> {
-						for(int idxTmp=md.size()-1;idxTmp>=0;idxTmp--) {
-							mdict mdTmp = md.get(idxTmp);
-							if(mdTmp!=null && mdTmp.cover!=null)
-								mdTmp.cover.setBounds(0, 0, mdTmp.cover.getIntrinsicWidth(),mdTmp.cover.getIntrinsicHeight());
+					int finalSelectedPos = selectedPos;
+					AlertDialog dTmp = new AlertDialog.Builder(this/*,R.style.DialogStyle*/)
+							.setTitle("跳转")
+					.setAdapter(new BaseAdapter() {
+						@Override public int getCount() { return webholder.getChildCount(); }
+						
+						@Override public Object getItem(int position) { return null; }
+						
+						@Override public long getItemId(int position) { return 0; }
+						
+						@NonNull
+						@Override
+						public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+							View CI = webholder.getChildAt(position);
+							int currIdx = (int) CI.getTag();
+							mdict mdTmp = md.get(currIdx);
+							
+							FlowCheckedTextView ret;
+							if(convertView!=null){
+								ret = (FlowCheckedTextView) convertView;
+							} else {
+								ret = (FlowCheckedTextView) inflater.inflate(R.layout.singlechoice_w, parent, false);
+								ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
+							}
+							if(mdTmp==null){
+								ret.setText("Error!!!");
+								return ret;
+							}
+							FlowTextView tv = ret.mFlowTextView;
+							tv.setCompoundDrawables(getActiveStarDrawable(), null, null, null);
+							tv.setCover(mdTmp.getCover());
+							tv.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
+							tv.StarLevel=0;
+							
+							ret.setChecked(position == finalSelectedPos);
+							
+							ret.setText(mdTmp.getDictionaryName());
+							
+							return ret;
 						}
-					});
-					AlertDialog dTmp = builder.create();
-					d=dTmp;
-					dTmp.show();
+					}, (dialog, pos) -> {
+						View childAt = webholder.getChildAt(pos);
+						if(childAt!=null) {
+							scrollToWebChild(childAt);
+							recCom.scrollTo(childAt, MainActivityUIBase.this);
+						}
+						dialog.dismiss();
+					}).create();
+					
 					dTmp.setCanceledOnTouchOutside(true);
+
+					dTmp.show();
+					
 					dTmp.getWindow().setLayout((int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor)), -2);
 
 					if(GlobalOptions.isDark) dTmp.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
-					dTmp.getListView().setAdapter(new ArrayAdapter<CharSequence>(getApplicationContext(),
-							R.layout.singlechoice_w, android.R.id.text1, Arrays.asList(items)) {
-						@NonNull
-						@Override
-						public View getView(int position, View convertView,
-											@NonNull ViewGroup parent) {
-							View ret =  super.getView(position, convertView, parent);
-							ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
-							CheckedTextViewmy tv;
-							if(ret.getTag()==null)
-								ret.setTag(tv = ret.findViewById(android.R.id.text1));
-							else
-								tv = (CheckedTextViewmy)ret.getTag();
-							if(GlobalOptions.isDark)
-								tv.setTextColor(Color.WHITE);
-							else
-								tv.setTextColor(Color.BLACK);
-							tv.setText(items[position]);
-
-							return ret;
-						}
-					});
 					if(selectedPos!=-1) {
 						dTmp.getListView().setSelection(selectedPos);
 						dTmp.getListView().setItemChecked(selectedPos, true);
@@ -5057,11 +5373,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				showMT("  全文朗读  ");
 				performReadContent(getCurrentWebContext());
 			} break;
+			/* 上一词典信息 */
+			case R.id.about_popLstDict:{
+				showAboutDictDialogAt(CurrentDictInfoIdx-1);
+			} break;
+			/* 下一词典信息 */
+			case R.id.about_popNxtDict:{
+				showAboutDictDialogAt(CurrentDictInfoIdx+1);
+			} break;
+			case R.id.about_popIvBack:
+			case R.id.cancel:{
+				if(d!=null){
+					d.dismiss();
+				}
+			} break;
 		}
-		v.setTag(R.id.click_handled, false);
+		click_handled_not = false;
 	}
 
 	private void scrollToWebChild(View childAt) {
+		CMN.Log("scrollToWebChild");
 		if(childAt!=null) {
 			View postTarget = null;
 			int delay = 100;
@@ -5145,7 +5476,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			popupTextView.setText(currentClickDisplaying=record.key);
 			popupWebView.SelfIdx = CCD_ID = record.value[0];
 			currentClickDictionary_currentPos = record.value[1];
-			popupIndicator.setText((CCD=md.get(CCD_ID))._Dictionary_fName);
+			popupIndicator.setText((CCD=md.get(CCD_ID)).getDictionaryName());
 			popuphandler.setDict(CCD);
 		} catch (Exception e) { CMN.Log(e); }
 	}
@@ -5746,103 +6077,69 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void showChooseSetDialog() {//切换分组
-		if(d!=null) {
-			d.dismiss();
-			d=null;
-		}
 		AlertDialog dTmp;
-		if(!(setchooser!=null&&(dTmp=setchooser.get())!=null)) {
-			File def = new File(opt.pathToMainFolder().append("CONFIG/AllModuleSets.txt").toString());      //!!!原配
-			final ArrayList<String> scanInList = new ArrayList<>();
-			final HashSet<String> con = new HashSet<>();
-			lastCheckedPos = -1;
-			try {
-				AgentApplication app = ((AgentApplication) getApplication());
-				ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(def), app.get4kCharBuff(), 4096);
-				String line = in.readLine();
-				while (line != null) {
-					if (!con.contains(line))
-						if (new File(opt.pathToMainFolder().append("CONFIG/").append(line).append(".set").toString()).exists()) {
-							scanInList.add(line);
-							if (line.equals(opt.lastMdPlanName))
-								lastCheckedPos = scanInList.size() - 1;
+		
+		if(setchooser==null||(dTmp=setchooser.get())==null) {
+			ArrayList<String> scanInList = new ArrayList<>();
+			dTmp = new AlertDialog.Builder(this, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line)
+						.setTitle(R.string.loadconfig)
+					.setSingleChoiceItems(new String[]{}, -1, (dialog, pos) -> {
+						try {
+							currentFilter.clear();
+							for (mdict mdTmp : md) {
+								if(mdTmp!=null)
+									mdict_cache.put(mdTmp.getPath(), mdTmp);
+							}
+							for (mdict mdTmp : currentFilter) {
+								if(mdTmp!=null)
+									mdict_cache.put(mdTmp.getPath(), mdTmp);
+							}
+							String setName = scanInList.get(pos);
+							File newf = opt.fileToSet(null, setName);
+							boolean lazyLoad = PDICMainAppOptions.getLazyLoadDicts();
+							LoadLazySlots(newf, lazyLoad, setName);
+							buildUpDictionaryList(lazyLoad, mdict_cache);
+							//todo 延时清空
+							//mdict_cache.clear();
+							//分组切换
+							setLastPlanName(setName);
+							if (adapter_idx<0) {
+								switch_To_Dict_Idx(0, true, false);
+							} else if(md.get(adapter_idx)!=currentDictionary){
+								switch_To_Dict_Idx(adapter_idx, true, false);
+							}
+							dialog.dismiss();
+							invalidAllLists();
+							//show(R.string.loadsucc);
+							showTopSnack(main_succinct, R.string.loadsucc
+									, -1, -1, Gravity.CENTER, false);
+							if(this instanceof PDICMainActivity) {
+								// todo 干掉缓冲组
+								File def1 = new File(getExternalFilesDir(null), "default.txt");
+								if(def1.length()>0) {
+									FileOutputStream fout = new FileOutputStream(def1);
+									fout.flush();
+									fout.close();
+								}
+							}
 						}
-					con.add(line);
-					line = in.readLine();
-				}
-				in.close();
-			}
-			catch (Exception ignored) {
-			}
-
-			if(false)
-			new File(opt.pathToMainFolder().append("CONFIG").toString()).list((dir, name) -> {
-				if (name.endsWith(".set")) {
-					name = name.substring(0, name.length() - 4);
-					if (!con.contains(name)) {
-						scanInList.add(name);
-						con.add(name);
-						if (name.equals(opt.lastMdPlanName))
-							lastCheckedPos = scanInList.size() - 1;
-					}
-				}
-				return false;
-			});
-
-			AlertDialog.Builder builder2 = new AlertDialog.Builder(this, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);//
-			builder2.setTitle(R.string.loadconfig).setSingleChoiceItems(new String[]{}, -1, (dialog, pos) -> {
-				try {
-					currentFilter.clear();
-					for (mdict mdTmp : md) {
-						if(mdTmp!=null)
-							mdict_cache.put(mdTmp.getPath(), mdTmp);
-					}
-					for (mdict mdTmp : currentFilter) {
-						if(mdTmp!=null)
-							mdict_cache.put(mdTmp.getPath(), mdTmp);
-					}
-					String setName = scanInList.get(pos);
-					File newf = new File(opt.pathToMainFolder().append("CONFIG/").append(setName).append(".set").toString());
-					boolean lazyLoad = PDICMainAppOptions.getLazyLoadDicts();
-					LoadLazySlots(newf, lazyLoad, setName);
-					buildUpDictionaryList(lazyLoad, mdict_cache);
-					//todo 延时清空
-					//mdict_cache.clear();
-					//分组切换
-					setLastPlanName(setName);
-					if (adapter_idx<0) {
-						switch_To_Dict_Idx(0, true, false);
-					} else if(md.get(adapter_idx)!=currentDictionary){
-						switch_To_Dict_Idx(adapter_idx, true, false);
-					}
-					dialog.dismiss();
-					invalidAllLists();
-					//show(R.string.loadsucc);
-					showTopSnack(main_succinct, R.string.loadsucc
-							, -1, -1, Gravity.CENTER, false);
-					if(this instanceof PDICMainActivity) {
-						// todo 干掉缓冲组
-						File def1 = new File(getExternalFilesDir(null), "default.txt");
-						if(def1.length()>0) {
-							FileOutputStream fout = new FileOutputStream(def1);
-							fout.flush();
-							fout.close();
+						catch (Exception e) {
+							e.printStackTrace();
+							showT(e.getLocalizedMessage());
 						}
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					showT(e.getLocalizedMessage());
-				}
-			});
-
-			dTmp = builder2.create();
+					})
+					.create();
 			
 			((AlertController.RecycleListView) dTmp.getListView())
 					.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_));
 
 			dTmp.show();
-
-			dTmp.getListView().setAdapter(new ArrayAdapter<String>(getApplicationContext(),
+			
+			ListView dlv = dTmp.getListView();
+			
+			dlv.setTag(scanInList);
+			
+			dlv.setAdapter(new ArrayAdapter<String>(getApplicationContext(),
 					R.layout.singlechoice, android.R.id.text1, scanInList) {
 				@NonNull
 				@Override
@@ -5860,13 +6157,43 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			});
 
 			if(lastCheckedPos!=-1) {
-				dTmp.getListView().setItemChecked(lastCheckedPos, true);
+				dlv.setItemChecked(lastCheckedPos, true);
 			}
 			setchooser = new WeakReference<>(dTmp);
 		}
-		else{
-			dTmp.show();
+		else if(dTmp.isShowing()){
+			return;
 		}
+		
+		ArrayList<String> scanInList = (ArrayList<String>) dTmp.getListView().getTag();
+		
+		scanInList.clear();
+		
+		File ConfigFile = opt.fileToConfig();
+		File def = opt.fileToSecords(ConfigFile);
+		final HashSet<String> con = new HashSet<>();
+		lastCheckedPos = -1;
+		try {
+			AgentApplication app = ((AgentApplication) getApplication());
+			ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(def), app.get4kCharBuff(), 4096);
+			String line = in.readLine();
+			while (line != null) {
+				if (!con.contains(line))
+					if (opt.fileToSet(ConfigFile, line).exists()) {
+						scanInList.add(line);
+						if (line.equals(opt.lastMdPlanName)){
+							lastCheckedPos = scanInList.size() - 1;
+						}
+					}
+				con.add(line);
+				line = in.readLine();
+			}
+			in.close();
+		}
+		catch (Exception ignored) {  }
+		CMN.Log("扫描分组……", scanInList.size());
+		((BaseAdapter)dTmp.getListView().getAdapter()).notifyDataSetChanged();
+		dTmp.show();
 	}
 
 
@@ -5898,7 +6225,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	@SuppressLint("SourceLockedOrientationActivity")
 	public WebChromeClient myWebCClient = new WebChromeClient() {
-		private String filepickernow;
+		private File filepickernow;
 		Dialog d; View cv;
 		@Override
 		public void onShowCustomView(View view, CustomViewCallback callback) {
@@ -5968,8 +6295,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			properties.selection_mode = DialogConfigs.SINGLE_MULTI_MODE;
 			properties.selection_type = DialogConfigs.FILE_SELECT;
 			properties.root = new File("/");
-			properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
-			properties.offset = new File(filepickernow!=null?filepickernow:opt.lastMdlibPath);
+			properties.error_dir = Environment.getExternalStorageDirectory();
+			properties.offset = filepickernow!=null?filepickernow:opt.lastMdlibPath;
 			properties.opt_dir=new File(opt.pathToDatabases()+"favorite_dirs/");
 			properties.opt_dir.mkdirs();
 			properties.extensions = new HashSet<>();
@@ -5979,7 +6306,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			FilePickerDialog dialog = new FilePickerDialog(MainActivityUIBase.this, properties);
 			dialog.setDialogSelectionListener(new DialogSelectionListener() {
 				@Override
-				public void onSelectedFilePaths(String[] files,String now) {
+				public void onSelectedFilePaths(String[] files,File now) {
 					filepickernow=now;
 					ArrayList<Uri> urls = new ArrayList<>(files.length);
 					for (int i = 0; i < files.length; i++) {
@@ -6182,6 +6509,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						while ((childAt=webholder.getChildAt(next++))!=null) {
 							mdict invoker = md.get((int) childAt.getTag());
 							if(!PDICMainAppOptions.getTmpIsCollapsed(invoker.tmpIsFlag) && invoker.mWebView.awaiting){
+								CMN.Log("/* 延迟加载 */", invoker.getDictionaryName());
 								invoker.toolbar_title.performClick();
 								break;
 							}
@@ -6225,7 +6553,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 			WebViewmy mWebView = (WebViewmy) view;
 			int selfAtIdx = mWebView.SelfIdx;
-			//CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), md.get(selfAtIdx)._Dictionary_fName, selfAtIdx);
+			//CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), md.get(selfAtIdx).getDictionaryName(), selfAtIdx);
 			if(selfAtIdx>=md.size() || selfAtIdx<0) return false;
 			final mdict invoker = md.get(selfAtIdx);
 			boolean fromPopup = view==popupWebView;
@@ -6379,20 +6707,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							PeruseView.recess.setVisibility(View.VISIBLE);
 							PeruseView.forward.setVisibility(View.VISIBLE);
 							PeruseView.isJumping = true;
-							invoker.htmlBuilder.setLength(invoker.htmlBaseLen);
 							if (mWebView.HistoryVagranter >= 0)
 								mWebView.History.get(PeruseView.mWebView.HistoryVagranter).value.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
 							PeruseView.setCurrentDis(invoker, pos);
 						} else {
 							invoker.isJumping = true;
-							invoker.htmlBuilder.setLength(invoker.htmlBaseLen);
 							if (mWebView.HistoryVagranter >= 0)
 								mWebView.History.get(mWebView.HistoryVagranter).value.set(mWebView.getScrollX(),mWebView.getScrollY(), mWebView.webScale);
 							invoker.setCurrentDis(mWebView, pos);
 						}
-
 						view.loadDataWithBaseURL(invoker.baseUrl,
-								invoker.htmlBuilder.append((AppWhite == Color.BLACK) ? MainActivityUIBase.DarkModeIncantation_l : "")
+								invoker.AcquirePageBuilder().append((AppWhite == Color.BLACK) ? MainActivityUIBase.DarkModeIncantation_l : "")
 										.append(mdict.htmlHeadEndTag)
 										.append(invoker.getRecordsAt(pos))
 										.append(invoker.htmlEnd).toString()
@@ -6467,8 +6792,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								float initialScale = mdict.def_zoom;
 								mWebView.setInitialScale((int) (100 * (initialScale / mdict.def_zoom) * opt.dm.density));
 								mWebView.isloading = true;
-								StringBuilder htmlBuilder = invoker.htmlBuilder;
-								htmlBuilder.setLength(invoker.htmlBaseLen);
+								StringBuilder htmlBuilder = invoker.AcquirePageBuilder();
 								if(fromPopup){
 									popupHistory.add(++popupHistoryVagranter, new myCpr<>(CCD!=null?CCD.getLexicalEntryAt(idx):currentClickDisplaying, new int[]{CCD_ID, idx}));
 									if (popupHistory.size() > popupHistoryVagranter + 1) {
@@ -6727,7 +7051,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					url = URLDecoder.decode(url,"UTF-8");
 				} catch (Exception ignored) { }
 				String soundKey="\\"+url+".";
-				CMN.Log("接收到发音任务！", soundKey, "::", invoker._Dictionary_fName);
+				CMN.Log("接收到发音任务！", soundKey, "::", invoker.getDictionaryName());
 				InputStream restmp=null;
 				WebResourceResponse ret=null;
 				mdict mdTmp;
@@ -7663,6 +7987,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode) {
+			case 0: {
+				isBrowsingImgs = false;
+			} break;
 			case 999:
 				if(PDICMainAppOptions.getImmersiveClickSearch()!=PDICMainAppOptions.getImmersiveClickSearch(TFStamp))
 					popupWord(null,-1, 0);
@@ -7894,7 +8221,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			target = currentClickDisplaying;
 			wv = popupWebView;
 		}
-		//showT("PRE", mCurrentDictionary._Dictionary_fName+"-"+wv+"-"+target);
+		//showT("PRE", mCurrentDictionary.getName()+"-"+wv+"-"+target);
 		if(mCurrentDictionary!=null && wv!=null && target!=null) {
 			if (mCurrentDictionary.isMddResource() && target.length() > 1) {
 				int end = target.lastIndexOf(".");
@@ -8174,7 +8501,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						ArrayList<MyPair<String, LexicalDBHelper>> items = AppDataAdapter.items;
 						HashSet<Integer> selection = AppDataAdapter.selectedPositions;
 						if(selection.size()>0) {
-							File fp = new File(opt.pathToFavoriteDatabases().toString());
 							int cc=0;
 							for (int i = 0; i < items.size(); i++) {
 								if (selection.contains(i)) {
@@ -8182,10 +8508,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										MyPair<String, LexicalDBHelper> iI = items.get(i);
 										LexicalDBHelper db = iI.value;
 										if (db == null) {
-											db = iI.value = new LexicalDBHelper(getApplicationContext(), new File(fp, iI.key));
+											db = iI.value = new LexicalDBHelper(getApplicationContext(), opt, iI.key);
 										}
-										if(db.insertUpdate(text)>0)
+										if(db.insertUpdate(text)>0){
 											cc++;
+										}
 									} catch (Exception ignored) { }
 								}
 							}
@@ -8244,10 +8571,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				int reason1 = (int) parent.getTag();
 				MyPair<String, LexicalDBHelper> item = AppDataAdapter.items.get(position);
 				String name = item.key;
-				File fd = new File(opt.pathToFavoriteDatabases().append(name).toString());
 				LexicalDBHelper _favoriteCon = item.value;
 				if(_favoriteCon==null){
-					_favoriteCon = item.value = new LexicalDBHelper(getApplicationContext(), fd);
+					_favoriteCon = item.value = new LexicalDBHelper(getApplicationContext(), opt, name);
 				}
 				if(reason1!=2 && DBrowser!=null && DBrowser.getFragmentId()==1){
 					// 加载收藏夹

@@ -7,6 +7,8 @@ import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.utils.CMNF;
 import com.knziha.plod.dictionary.Utils.MyIntPair;
 import com.knziha.plod.dictionary.Utils.MyPair;
+import com.knziha.plod.dictionary.mdictRes;
+import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.settings.DictOptions;
 import com.knziha.plod.settings.SettingsActivity;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import db.LexicalDBHelper;
 
@@ -29,8 +32,8 @@ public class AgentApplication extends Application {
 	/** transient */
 	public HashMap<String,mdict> mdict_cache = new HashMap<>();
 	/** per-dictionary configurations */
-	public HashMap<String,byte[]> UIProjects = new HashMap<>();
-	public HashSet<String> dirtyMap = new HashSet<>();
+	public HashMap<CharSequence,byte[]> UIProjects = new HashMap<>();
+	public HashSet<CharSequence> dirtyMap = new HashSet<>();
 	public HashMap<String,String> fontNames = new HashMap<>();
 	public PDICMainAppOptions opt;
 	public HashSet<String> mdlibsCon;
@@ -45,6 +48,10 @@ public class AgentApplication extends Application {
 	/** 退出全部实例时关闭、清理 */
 	LexicalDBHelper historyCon;
 	
+	public List<mdictRes> mdd;
+	public PhotoBrowsingContext IBC;
+	public String[] Imgs;
+	public int currentImg;
 
 	static {
 		GlideCacheModule.mOnGlideRegistry =
@@ -75,6 +82,9 @@ public class AgentApplication extends Application {
 		mdict_cache=null;
 		mdlibsCon=null;
 		opt=null;
+		mdd=null;
+		IBC=null;
+		Imgs=null;
 	}
 
 	public char[] get4kCharBuff() {

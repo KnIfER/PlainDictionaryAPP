@@ -245,7 +245,7 @@ public class dict_manager_websites extends ListFragment {
 					vh.text.setPadding(0, 0, 0, 0);
 					vh.text.setText(mdTmp.getAbsolutePath());
 				}
-				mFile p = data.get(mdTmp.getParentFile().init());
+				mFile p = data.get(mdTmp.getParentFile().init(a.opt));
 				if(p!=null) {//有父文件夹节点
 					vh.text.setPadding(5, 0, 0, 0);
 					vh.text.setText(BU.unwrapMdxName(mdTmp.getName()));
@@ -271,7 +271,7 @@ public class dict_manager_websites extends ListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		a = (dict_manager_activity) getActivity();
-		parentFile=a.opt.lastMdlibPath;
+		parentFile=a.opt.lastMdlibPath.getPath();
 		mDslv = getListView();
 		mDslv.setChoiceMode(mDslv.CHOICE_MODE_MULTIPLE);
 		View v = getActivity().getLayoutInflater().inflate(R.layout.pad_five_dp, null);

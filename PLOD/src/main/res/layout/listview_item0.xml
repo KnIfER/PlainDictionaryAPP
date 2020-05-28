@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:orientation="vertical"
-	>
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="vertical">
 
 	<TextView
 		android:layout_height="wrap_content"
 		android:layout_width="wrap_content"
-		android:text="absolve"
+		tools:text="absolve"
 		android:id="@+id/text"
 		android:layout_marginLeft="10dp"
 		android:layout_marginTop="5dp"
@@ -18,19 +17,18 @@
 		android:textSize="@dimen/lvtextsize"
 		/>
 
-	<TextView
+	<com.knziha.plod.widgets.FlowTextView
 		android:layout_height="wrap_content"
 		android:layout_width="match_parent"
 		android:text=""
 		android:id="@+id/subtext"
 		android:layout_marginLeft="10dp"
 		android:layout_marginTop="2dp"
-		android:paddingBottom ="5dp"
+		android:paddingBottom="5dp"
 		android:textSize="@dimen/lvsubtextsize"
 		android:textColor="#99a"
-		android:layout_below="@+id/text"
+		android:padding="0dp"
 		/>
-
 
 </LinearLayout>
 

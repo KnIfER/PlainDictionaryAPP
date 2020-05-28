@@ -127,9 +127,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 		properties.root = new File("/");
 		properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
 		//!!!
-		properties.offset = new File(
-				opt.lastMdlibPath
-		);
+		properties.offset = opt.lastMdlibPath;
 		properties.opt_dir=new File(opt.pathToDatabases()+"favorite_dirs/");
 		properties.opt_dir.mkdirs();
 		//properties.extensions = new String[] {"mdx"};
@@ -258,11 +256,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 		super.scanSettings();
 		CMN.MainBackground = MainBackground = opt.getMainBackground();
 
-		opt.getLastMdlibPath();
-		if(opt.lastMdlibPath==null || !new File(opt.lastMdlibPath).exists()) {
-			opt.lastMdlibPath = opt.pathToMainFolder()+"mdicts";
-			new File(opt.lastMdlibPath).mkdirs();
-		}
+		opt.CheckFileToDefaultMdlibs();
 
 	}
 

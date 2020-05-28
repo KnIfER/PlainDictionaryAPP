@@ -11,7 +11,6 @@ import com.knziha.plod.PlainDict.CMN;
 
 public class FtagImageView extends ImageView {
 	protected Integer mTag = 0;
-	public boolean drawable = true;
 	private final static int mTransientMask = ~1;
 	
 	public FtagImageView(Context context) {

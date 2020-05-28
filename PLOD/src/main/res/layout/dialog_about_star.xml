@@ -1,0 +1,97 @@
+<com.knziha.plod.widgets.MinHeightLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/dialog"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:layout_marginLeft="18dp"
+	android:layout_marginRight="18dp"
+	android:orientation="vertical">
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="45dp"
+		android:orientation="horizontal"
+		>
+		<ImageView
+			android:id="@+id/about_popIvBack"
+			android:layout_width="50dp"
+			android:padding="6dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/abc_ic_ab_back_material_simple_compat"
+			android:background="@drawable/abc_action_bar_item_background_material"
+			/>
+		<TextView
+			android:layout_margin="8dp"
+			android:id="@+id/title"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="25dp"
+			android:layout_weight="1"
+			android:textSize="18sp"
+			android:text="@string/about"
+			android:textColor="@android:color/black"
+			/>
+
+		<android.widget.ImageView
+			android:id="@+id/about_popLstDict"
+			android:layout_width="45dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/chevron_top22"
+			android:background="@drawable/surrtrip1"
+			android:padding="3dp"
+			/>
+		<android.widget.ImageView
+			android:id="@+id/about_popNxtDict"
+			android:layout_width="45dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/chevron_bottom22"
+			android:background="@drawable/surrtrip1"
+			android:padding="3dp"
+			/>
+	</LinearLayout>
+
+	<ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        >
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical">
+			<com.knziha.plod.widgets.FlowTextView
+				android:id="@+id/subtext"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:textAppearance="?android:attr/textAppearanceMedium"
+				android:textSize="@dimen/abc_text_size_title_material"
+				android:paddingStart="12dp"
+				app:rating="true"
+				tools:text="牛津无敌词典"
+				/>
+			<com.knziha.ankislicer.customviews.UnCrashableSpannedTextView
+				android:layout_margin="8dp"
+				android:id="@+id/resultN"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:textIsSelectable="false"
+				android:textColor="@color/colorHeaderBlue"
+				/>
+		</LinearLayout>
+    </ScrollView>
+    
+    <Button
+        android:textColor="@color/zumulv"
+        android:id="@+id/cancel"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+		android:layout_gravity="end"
+        android:layout_margin="8dp"
+        android:text="@string/confirm" />
+
+</com.knziha.plod.widgets.MinHeightLinearLayout>
+
+
+

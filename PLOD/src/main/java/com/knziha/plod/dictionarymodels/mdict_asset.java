@@ -14,17 +14,10 @@ import static com.knziha.plod.PlainDict.CMN.AssetTag;
  author:KnIfER
 */
 public class mdict_asset extends mdict {
-
 	//构造
-	public mdict_asset(String fn, MainActivityUIBase a_) throws IOException {
-		super(processFileName(fn), a_);
-		_Dictionary_fName=new File(fn).getName();
+	public mdict_asset(File fn, MainActivityUIBase a_) throws IOException {
+		super(fn, a_, true);
 		init(getStreamAt(0));
-	}
-
-	private static String processFileName(String fn) {
-		if(!fn.startsWith(AssetTag)) fn= AssetTag +fn;
-		return fn;
 	}
 
 	@Override

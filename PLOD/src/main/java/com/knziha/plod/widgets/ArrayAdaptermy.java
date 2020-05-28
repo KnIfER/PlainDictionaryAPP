@@ -39,15 +39,15 @@ public class ArrayAdaptermy extends BaseAdapter{
 	public boolean darkMode;
 	public int StorageLevel=2;
    public ArrayAdaptermy(Context a, int resource,int textViewResourceId, mdict md_,MdxDBHelper con_, int l) {
-    	//this(a,resource,textViewResourceId,objects);
-	    c=a;
-    	resourceID=resource;
-    	textViewResourceID=textViewResourceId;
-    	md=md_;
-    	con = con_;
-    	StorageLevel=l;
-	    isWeb = md instanceof mdict_web;
-    	cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
+		//this(a,resource,textViewResourceId,objects);
+		c=a;
+		resourceID=resource;
+		textViewResourceID=textViewResourceId;
+		md=md_;
+		con = con_;
+		StorageLevel=l;
+		isWeb = md instanceof mdict_web;
+		cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
    }
 
 	public void refresh(mdict invoker, MdxDBHelper con_) {
@@ -120,7 +120,7 @@ public class ArrayAdaptermy extends BaseAdapter{
 
 	@Override
 	public int getCount() {
-		return cr.getCount();
+		return cr==null?0:cr.getCount();
 	}
 
 	@Override

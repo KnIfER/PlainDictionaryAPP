@@ -5,6 +5,7 @@ import android.content.Context;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.dictionary.mdictRes;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -19,15 +20,10 @@ public class mdictRes_asset extends mdictRes {
 	Context context;
 
 	//构造
-	public mdictRes_asset(String fn, MainActivityUIBase a_) throws IOException {
-		super(processFileName(fn));
+	public mdictRes_asset(File fn, MainActivityUIBase a_) throws IOException {
+		super(fn);
 		context=a_.getBaseContext();
 		init(getStreamAt(0));
-	}
-
-	private static String processFileName(String fn) {
-		if(!fn.startsWith(AssetTag)) fn=AssetTag+fn;
-		return fn;
 	}
 
 	@Override

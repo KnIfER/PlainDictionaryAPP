@@ -31,8 +31,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import static com.knziha.plod.dictionarymodels.mdict_transient.goodNull;
-
 public class MobiBook extends mdict {
 	long file_size;
 	MOBIData m;
@@ -43,14 +41,18 @@ public class MobiBook extends mdict {
 	ArrayList<MOBIPdbRecord> RecordInfos;
 	WeakReference<ReusableByteOutputStream> bos_buffer = new WeakReference<>(new ReusableByteOutputStream());
 
-	public MobiBook(String file, com.knziha.plod.PlainDict.PDICMainActivity _a) throws IOException{
-		super(goodNull(file), _a);
+	public MobiBook(File fn, com.knziha.plod.PlainDict.PDICMainActivity _a) throws IOException{
+		super(fn, _a, true);
 		a=_a;
 		opt = _a.opt;
 		m = new MOBIData();
-		f = new File(file);
+		
+		_num_record_blocks=-1;
+		f = fn;
+		_Dictionary_fName = f.getName();
+		
 		file_size=f.length();
-		FileInputStream data_in = new FileInputStream(file);
+		FileInputStream data_in = new FileInputStream(f);
 
 //** mobi_load_pdbheader
 //**Read palm database header from file into MOBIData structure (MOBIPdbHeader)
@@ -191,15 +193,6 @@ public class MobiBook extends mdict {
 		//SU.Log(text_rec_count, RecordInfos.size());
 		parseContent();
 		buildContents();
-	}
-
-	@Override
-	protected void initLogically() {
-		_num_record_blocks=-1;
-		String fn = (String) SU.UniversalObject;
-		fn = new File(fn).getAbsolutePath();
-		f = new File(fn);
-		_Dictionary_fName = f.getName();
 	}
 
 	/**

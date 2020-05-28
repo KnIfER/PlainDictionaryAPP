@@ -139,9 +139,9 @@
 	<string name="bookmarkL">书签列表..</string>
 	<string name="f_scale_up">增大字体++</string>
 	<string name="f_scale_down">减小字体- -</string>
-	<string name="background_color">背景颜色 :</string>
-	<string name="text_zoom">字体缩放 :</string>
-	<string name="case_insensitive_policy">大小写转换策略 :</string>
+	<string name="background_color">背景颜色</string>
+	<string name="text_zoom">字体缩放</string>
+	<string name="case_insensitive_policy">大小写转换策略</string>
 	<string name="remove_mode">剔除模式</string>
 	<string name="jump">跳转</string>
 	<string name="strict_mode">严格模式</string>

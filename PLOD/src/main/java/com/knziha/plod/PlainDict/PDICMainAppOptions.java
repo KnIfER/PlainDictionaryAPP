@@ -1,13 +1,5 @@
 package com.knziha.plod.PlainDict;
 
-import com.knziha.filepicker.model.GlideCacheModule;
-import com.knziha.filepicker.settings.FilePickerOptions;
-import com.knziha.filepicker.utils.CMNF;
-import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict_manageable;
-import com.knziha.plod.widgets.XYTouchRecorder;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -22,11 +14,20 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.filepicker.model.GlideCacheModule;
+import com.knziha.filepicker.settings.FilePickerOptions;
+import com.knziha.filepicker.utils.CMNF;
+import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.mdict_manageable;
+import com.knziha.plod.widgets.XYTouchRecorder;
+
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class PDICMainAppOptions
@@ -35,6 +36,7 @@ public class PDICMainAppOptions
 	public boolean isAudioActuallyPlaying;
 	public boolean supressAudioResourcePlaying;
 	public static HashSet<String> ChangedMap;
+	public File SpecificationFile;
 	SharedPreferences reader2;
 	SharedPreferences defaultReader;
 	public static String locale;
@@ -59,7 +61,7 @@ public class PDICMainAppOptions
 	}
 	String magicStr;
 
-	public String lastMdlibPath;
+	public File lastMdlibPath;
 	public String lastMdPlanName;
 	public boolean auto_seach_on_switch=true;
 	protected boolean bShouldUseExternalBrowserApp=true;
@@ -86,8 +88,9 @@ public class PDICMainAppOptions
 		return locale!=null?locale:(locale=defaultReader.getString("locale",""));
 	}
 
-	public String getLastMdlibPath() {
-		return lastMdlibPath=defaultReader.getString("lastMdlibPath",null);
+	public File getLastMdlibPath() {
+		String path = defaultReader.getString("lastMdlibPath",null);
+		return path==null?null:(lastMdlibPath=new File(path));
 	}
 
 	public void setLastMdlibPath(String lastMdlibPath) {
@@ -128,6 +131,7 @@ public class PDICMainAppOptions
 	public void putFloatMd(String name) {
 		defaultReader.edit().putString("FltMdFn", name).apply();
 	}
+	
 	public String getLastFloatPlanName() {
 		return lastMdPlanName=defaultReader.getString("FltPlanName",getLastPlanName());
 	}
@@ -2200,6 +2204,10 @@ public class PDICMainAppOptions
 	public boolean getThenAutoReadContent() {
 		return (FourthFlag & 0x1000000000000l) == 0x1000000000000l;
 	}
+	
+	public static boolean getForceFloatSingletonSearch() {
+		return (FourthFlag & 0x2000000000000l) == 0x2000000000000l;
+	}
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////
 	//EQ
@@ -2319,38 +2327,101 @@ public class PDICMainAppOptions
 		return setTmpIsCollapsed(mdTmp, !getTmpIsCollapsed(mdTmp.getTmpIsFlag()));
 	}
 	
+	public static int getDFFStarLevel(long tmpIsFlag) {
+		return (int) ((tmpIsFlag>>20)&7);
+	}
+	
+	public static long setDFFStarLevel(long flag, int val) {
+		long valex = (val&7)<<20;
+		long mask = ~(7<<20);
+		flag = flag&mask|valex;
+		return flag;
+	}
+	
 	//////
 	private final StringBuffer pathTo = new StringBuffer(255);
-	public String rootPath;
+	public File rootPath;
 	protected int pathToL = -1;
 	public DisplayMetrics dm;
-	public StringBuffer pathToDatabases_safe() {
-		if(rootPath==null) rootPath=Environment.getExternalStorageDirectory().getPath();
-		StringBuffer pathTo = new StringBuffer(rootPath).append("/PLOD/");
-		pathToL = pathTo.length();
-		return pathTo.append("bmDBs/");
-	}
 	public StringBuffer pathToDatabases() {
 		return pathToMainFolder().append("bmDBs/");
 	}
-	public StringBuffer pathToInternalDatabases() {
-		return pathToMainFolder().append("INTERNAL/");
+	File FileDatabases;
+	public File fileToDatabases() {
+		if(FileDatabases==null){
+			FileDatabases = new File(pathToMainFolder().append("bmDBs").toString());
+		}
+		return FileDatabases;
 	}
-	public StringBuffer pathToFavoriteDatabases() {
-		return pathToMainFolder().append("INTERNAL/").append("favorites/");
+	private String pathToFavoriteDatabases(String name) {
+		StringBuffer InternalPath = pathToMainFolder().append("INTERNAL/");
+		if(name!=null){
+			InternalPath.append("favorites/").append(name);
+		} else {
+			InternalPath.append("history.sql");
+		}
+		return InternalPath.toString();
 	}
+	public String pathToFavoriteDatabase(String name) {
+		return pathToFavoriteDatabases(name);
+	}
+	public File fileToFavoriteDatabases(String name) {
+		return new File(pathToFavoriteDatabases(name));
+	}
+	public File fileToDatabaseFavorites() {
+		return new File(pathToFavoriteDatabases(StringUtils.EMPTY));
+	}
+	
 	public StringBuffer pathToMainFolder() {
-		//if(pathToL==-1) {
-			//CMN.Log("pathToMainFolder", rootPath);
+		if(rootPath!=null){
 			pathTo.setLength(0);
-			if(rootPath==null) rootPath=Environment.getExternalStorageDirectory().getPath();
-			pathTo.append(rootPath).append("/PLOD/");
+			pathTo.append(rootPath).append("/").append(CMN.BrandName).append("/");
 			pathToL = pathTo.length();
-		//}
+			rootPath=null;
+		} else if(pathToL==-1) {
+			rootPath=Environment.getExternalStorageDirectory();
+			return pathToMainFolder();
+		}
 		pathTo.setLength(pathToL);
+		//CMN.Log("pathToMainFolder :: ", pathTo);
 		return pathTo;
 	}
+	
 
+	public File fileToConfig() {
+		return new File(pathToMainFolder().append("CONFIG").toString());
+	}
+	
+	public void CheckFileToDefaultMdlibs() {
+		getLastMdlibPath();
+		if(lastMdlibPath==null || !lastMdlibPath.exists()) {
+			lastMdlibPath = new File(pathToMainFolder().append("mdicts").toString());
+			lastMdlibPath.mkdirs();
+		}
+	}
+	
+	public File fileToSet(File ConfigFile, String name) {
+		if(ConfigFile==null){
+			ConfigFile = fileToConfig();
+		}
+		StringBuffer buffer = pathToMainFolder().append(name).append(".set");
+		return new File(ConfigFile, buffer.substring(pathToL));
+	}
+	
+	public File fileToDecords(File ConfigFile) {
+		if(ConfigFile==null){
+			ConfigFile = fileToConfig();
+		}
+		return new File(ConfigFile, "mdlibs.txt");
+	}
+	
+	public File fileToSecords(File ConfigFile) {
+		if(ConfigFile==null){
+			ConfigFile = fileToConfig();
+		}
+		return new File(ConfigFile, "AllModuleSets.txt");
+	}
+	
 	public String pathToGlide(@NonNull Context context) {
 		return defaultReader.getString("cache_p", GlideCacheModule.DEFAULT_GLIDE_PATH=context.getExternalCacheDir().getAbsolutePath()+"/thumnails/");
 	}
@@ -2426,5 +2497,13 @@ public class PDICMainAppOptions
 		if(center) {
 			tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 		}
+	}
+	
+	public String tryGetDomesticFileName(String path) {
+		String parent = lastMdlibPath.getPath();
+		if(path.startsWith(parent)&&path.length()>parent.length()){
+			path = path.substring(parent.length()+1);
+		}
+		return path;
 	}
 }

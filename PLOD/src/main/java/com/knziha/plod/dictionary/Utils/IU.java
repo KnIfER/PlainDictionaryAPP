@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionary.Utils;
 
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 public class IU {
@@ -210,5 +211,26 @@ the valueOf method.
 		}
 		return rNumber;
 	}
-
+	
+	public static long readLong(byte[] readBuffer, int start) {
+		return  (((long)readBuffer[start+0] << 56) +
+				((long)(readBuffer[start+1] & 255) << 48) +
+				((long)(readBuffer[start+2] & 255) << 40) +
+				((long)(readBuffer[start+3] & 255) << 32) +
+				((long)(readBuffer[start+4] & 255) << 24) +
+					  ((readBuffer[start+5] & 255) << 16) +
+					  ((readBuffer[start+6] & 255) <<  8) +
+					  ((readBuffer[start+7] & 255) <<  0));
+	}
+	
+	public static final void writeLong(byte[] writeBuffer, int pad, long v) {
+		writeBuffer[pad+0] = (byte)(v >>> 56);
+		writeBuffer[pad+1] = (byte)(v >>> 48);
+		writeBuffer[pad+2] = (byte)(v >>> 40);
+		writeBuffer[pad+3] = (byte)(v >>> 32);
+		writeBuffer[pad+4] = (byte)(v >>> 24);
+		writeBuffer[pad+5] = (byte)(v >>> 16);
+		writeBuffer[pad+6] = (byte)(v >>>  8);
+		writeBuffer[pad+7] = (byte)(v >>>  0);
+	}
 }

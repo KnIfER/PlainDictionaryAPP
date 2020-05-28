@@ -55,7 +55,7 @@ public class AdvancedNestScrollView extends ScrollViewmy implements NestedScroll
 			mChildHelper.onTouchEvent(this, event);
 			return super.dispatchTouchEvent(event);
 		}
-		return super.onTouchEvent(event);
+		return super.dispatchTouchEvent(event);
 	}
 
 	// NestedScrollingChild

@@ -26,7 +26,7 @@
     <dimen name="diagMarginHor">28dp</dimen>
     <dimen name="diagMarginVer">45dp</dimen>
     
-    <dimen name="lvtextsize">16dp</dimen>
+    <dimen name="lvtextsize">16sp</dimen>
     <dimen name="lvsubtextsize">9dp</dimen>
 	<dimen name="framew">10dp</dimen>
 

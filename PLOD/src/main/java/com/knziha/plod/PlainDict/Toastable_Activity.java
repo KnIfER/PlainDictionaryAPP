@@ -45,6 +45,7 @@ import android.widget.Toast;
 
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.SimpleTextNotifier;
+import com.knziha.plod.widgets.Utils;
 import com.sun.tools.internal.xjc.reader.gbind.ElementSets;
 
 import org.apache.commons.imaging.formats.tiff.photometricinterpreters.PhotometricInterpreterBiLevel;
@@ -115,6 +116,7 @@ public class Toastable_Activity extends AppCompatActivity {
        opt = new PDICMainAppOptions(this);
        opt.dm = dm = new DisplayMetrics();
 	   getWindowManager().getDefaultDisplay().getMetrics(dm);
+	   Utils.density = dm.density;
 	   FFStamp=opt.getFirstFlag();
 	   SFStamp=opt.getSecondFlag();
 	   TFStamp=opt.getThirdFlag();
@@ -296,7 +298,7 @@ public class Toastable_Activity extends AppCompatActivity {
 						}
 					}
 					if(trialCount>=2) {
-						opt.rootPath=trialPath.getAbsolutePath();
+						opt.rootPath=trialPath;
 						showT("存储受限，持续试用中……");
 						pre_further_loading(savedInstanceState);
 						return;
@@ -342,7 +344,7 @@ public class Toastable_Activity extends AppCompatActivity {
 			}
 		}
 		if(b1 || trialPath.mkdirs()) {
-			opt.rootPath=getExternalFilesDir("").getAbsolutePath();
+			opt.rootPath=getExternalFilesDir("");
 			try {
 				if(trialCount!=-1) {
 					new File(trialPath,String.valueOf(trialCount))
@@ -376,35 +378,39 @@ public class Toastable_Activity extends AppCompatActivity {
 					mf.delete();
 		}}
 				
-		final String path = Environment.getExternalStorageDirectory().getPath();
-		final File mainfolder = new File(path, "PLOD");
-		if(!mainfolder.isDirectory()) {
-			final File subfolder = new File(getExternalFilesDir("")+"/PLOD/");
-			if(subfolder.exists() && subfolder.isDirectory()) {//look if the an Internal files system created.
-				opt.rootPath=getExternalFilesDir("").getAbsolutePath();
+		final File SdcardStorage = Environment.getExternalStorageDirectory();
+		final File IdlDwlng = new File(SdcardStorage, CMN.BrandName);
+		if(!IdlDwlng.isDirectory()) {
+			File InternalAppStorage = getExternalFilesDir("");
+			final File subfolder = new File(InternalAppStorage, CMN.BrandName);
+			if(subfolder.exists() && subfolder.isDirectory()) {
+				/* look if the an Internal files system created. */
+				opt.rootPath=InternalAppStorage;
 				further_loading(savedInstanceState);
 				return;
 			}
 			new AlertDialog.Builder(this)//ask the user
-			.setTitle(getResources().getString(R.string.AAllow))
-			.setPositiveButton(R.string.yes, (dialog, which) -> {
-				if(mainfolder.mkdirs() || mainfolder.isDirectory()) {//建立文件夹
-					opt.rootPath=path;
-					further_loading(savedInstanceState);
-
-				}else {showT("未知错误：配置存储目录建立失败！");finish();}
-			})
+				.setTitle(getResources().getString(R.string.AAllow))
+				.setPositiveButton(R.string.yes, (dialog, which) -> {
+					if(IdlDwlng.mkdirs() || IdlDwlng.isDirectory()) {//建立文件夹
+						opt.rootPath=SdcardStorage;
+						further_loading(savedInstanceState);
+	
+					}else {showT("未知错误：配置存储目录建立失败！");finish();}
+				})
 			.setNegativeButton(R.string.no, (dialog, which) -> {
 				if((subfolder.exists()&&subfolder.isDirectory()) || subfolder.mkdirs()) {//建立文件夹
 					showT("配置存储在标准目录");
-					opt.rootPath=getExternalFilesDir("").getAbsolutePath();
+					opt.rootPath=InternalAppStorage;
 					further_loading(savedInstanceState);
 
 				}else {showT("未知错误：配置存储目录建立失败！");finish();}
 			}).setCancelable(false).show();
 			
-		}else//Folder /sdcard/PLOD already exists. nothing to ask for.
+		}else{
+			/* Ideal Dwelling (/sdcard/PLOD) already exists. nothing to ask for. */
 			further_loading(savedInstanceState);
+		}
 	}
 	
 	protected void further_loading(Bundle savedInstanceState) {

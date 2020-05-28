@@ -50,16 +50,15 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
-import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
-import androidx.core.widget.ImageViewCompat;
 import androidx.viewpager.widget.ViewPager;
 
+import com.knziha.plod.ArrayList.ArrayListGood;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.slideshow.decoder.CompatDecoderFactory;
@@ -68,7 +67,6 @@ import com.knziha.plod.slideshow.decoder.ImageDecoder;
 import com.knziha.plod.slideshow.decoder.ImageRegionDecoder;
 import com.knziha.plod.slideshow.decoder.SkiaImageDecoder;
 import com.knziha.plod.slideshow.decoder.SkiaImageRegionDecoder;
-import com.knziha.plod.widgets.FtagImageView;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -89,7 +87,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 @SuppressWarnings({"unused", "IntegerDivisionInFloatingPointContext"})
 public class SubsamplingScaleImageView extends View {
-	public FtagImageView view_to_guard;
+	public ImageView view_to_guard;
 	public TilesGridLayout view_to_paint;
 	public boolean paint_to_grid=false;
 	public ViewPager view_pager_toguard;

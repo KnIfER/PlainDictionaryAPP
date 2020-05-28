@@ -1,106 +1,74 @@
 package com.knziha.plod.PlainDict;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.widgets.Framer;
-import com.knziha.plod.widgets.RecyclerViewmy.OnItemClickListener;
-
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-
-import androidx.appcompat.app.GlobalOptions;
-import androidx.core.text.HtmlCompat;
-import androidx.fragment.app.DialogFragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.ViewHolder;
-
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-public class DictPicker extends DialogFragment implements OnClickListener
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.GlobalOptions;
+import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
+import androidx.recyclerview.widget.SimpleItemAnimator;
+
+import com.knziha.plod.widgets.FlowTextView;
+import com.knziha.plod.widgets.Framer;
+
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+public class DictPicker extends DialogFragment implements View.OnClickListener
 {
+	public boolean PostEnabled=true;
 	MainActivityUIBase a;
 	private AnimationSet animation;
-
+	private Drawable mActiveDrawable;
+	
+	public boolean isDirty=false;
+	private Framer root;
+	
+	RecyclerView mRecyclerView;
+	LinearLayoutManager lman;
+	public boolean bShouldCloseAfterChoose=false;
+	private HomeAdapter mAdapter;
+	
+	public String SearchIncantation;
+	public Pattern SearchPattern;
+	public int LastSearchScrollItem;
+	
 	public DictPicker() {
 		this(null);
 	}
 	DictPicker(MainActivityUIBase a_){
 		super();
-		if(a_!=null)
+		if(a_!=null){
 			a = a_;
+			mActiveDrawable = a.getActiveStarDrawable();
+		}
 	}
 
 	@Override
-	public void onAttach(Context context){
-		super.onAttach(context);
+	public void onAttach(@NonNull Context context){
 		//CMN.Log("dict picker onAttach");
+		super.onAttach(context);
 		refresh(true);
 	}
-	RecyclerView mRecyclerView;
-	LinearLayoutManager lman;
-	private List<String> mDatas;
-	public boolean bShouldCloseAfterChoose=false;
-	private HomeAdapter mAdapter;public HomeAdapter adapter(){return mAdapter;}
-
-	/** 词典选择器的点击事件 */
-	private OnItemClickListener OIC = new OnItemClickListener(){
-		@Override
-		public void onItemClick(View view, int position) {
-			if(a.dismissing_dh) return;
-			if(a.pickTarget==1){//点译上游
-				int tmpPos = a.currentClick_adapter_idx;
-				a.CCD=a.md_get(position);
-				a.CCD_ID=a.currentClick_adapter_idx = position;
-				a.popupWord(a.popupTextView.getText().toString(),-1, -1);
-				mAdapter.notifyItemChanged(tmpPos);
-				mAdapter.notifyItemChanged(position);
-				if(a instanceof PDICMainActivity){
-					((PDICMainActivity)a).dismissDictPicker(R.anim.dp_dialog_exit);
-				}else {
-					dismiss();
-				}
-			}
-			else {//当前词典
-				int tmpPos = a.adapter_idx;
-				a.adapter_idx = position;
-				a.switch_To_Dict_Idx(position, true, true);
-				mAdapter.notifyItemChanged(tmpPos);
-				mAdapter.notifyItemChanged(position);
-				if (bShouldCloseAfterChoose)
-					view.post(new Runnable() {
-						@Override
-						public void run() {
-							dismiss();
-						}
-					});
-			}
-		}
-	};//public OnItemClickListener OIC(){return OIC;}
-	public boolean isDirty=false;
-	private Framer root;
+	
+	public HomeAdapter adapter(){
+		return mAdapter;
+	}
+	
 	public void refresh(boolean firstAttach) {
 		//if(!isDirty) return;
 		//isDirty=false;
@@ -108,7 +76,7 @@ public class DictPicker extends DialogFragment implements OnClickListener
 		if(lman!=null)
 			if(adapter_idx>lman.findLastVisibleItemPosition() || adapter_idx<lman.findFirstVisibleItemPosition()) {
 				int target = Math.max(0, adapter_idx-5);
-				lman.scrollToPositionWithOffset(target, 0);
+				lman.scrollToPositionWithOffset(a.pickTarget==1?a.CCD_ID:target, 0);
 				CMN.Log("scrolled");
 			}
 		if(a instanceof PDICMainActivity) {
@@ -134,10 +102,14 @@ public class DictPicker extends DialogFragment implements OnClickListener
 		lman = new LinearLayoutManager(a.getApplicationContext());
 		mRecyclerView.setLayoutManager(lman);
 		mRecyclerView.setAdapter(mAdapter = new HomeAdapter());
+		RecyclerView.ItemAnimator itemAnimator = mRecyclerView.getItemAnimator();
+		if(itemAnimator instanceof SimpleItemAnimator) {
+			((SimpleItemAnimator)itemAnimator).setSupportsChangeAnimations(false);
+		}
+		
+		
 		mRecyclerView.setMinimumWidth(getResources().getDisplayMetrics().widthPixels*2/3);
 		mRecyclerView.setVerticalScrollBarEnabled(true);
-
-		mAdapter.setOnItemClickListener(OIC);
 		int LIP = lman.findLastVisibleItemPosition();
 		int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
 		if(adapter_idx>LIP) {
@@ -151,14 +123,6 @@ public class DictPicker extends DialogFragment implements OnClickListener
 	public void notifyDataSetChanged() {
 		if(mAdapter!=null)
 			mAdapter.notifyDataSetChanged();
-	}
-
-	public interface OnViewCreatedListener{
-		void OnViewCreated(Dialog dialog);
-	}
-	OnViewCreatedListener ovcl;
-	public void setOnViewCreatedListener(OnViewCreatedListener onViewCreatedListener) {
-		ovcl=onViewCreatedListener;
 	}
 
 	int  width=-1,height=-1,mMaxH=-1;
@@ -186,126 +150,129 @@ public class DictPicker extends DialogFragment implements OnClickListener
 	}
 
 	@Override
-	public void onViewCreated(final View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-		if(ovcl!=null)
-			ovcl.OnViewCreated(getDialog());
-
-	}
-
-	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setStyle(STYLE_NO_FRAME, 0);
 	}
-
-	public interface OnItemLongClickListener{
-		void onItemLongClick(View view,int position);
-	}
-	class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.MyViewHolder>
+	
+	class HomeAdapter extends RecyclerView.Adapter<MyViewHolder>
 	{
-
-		private OnItemClickListener mOnItemClickListener;
-		private OnItemLongClickListener mOnItemLongClickListener;
-
-		public void setOnItemClickListener(OnItemClickListener mOnItemClickListener){
-			this.mOnItemClickListener = mOnItemClickListener;
-		}
-
-		public void setOnItemLongClickListener(OnItemLongClickListener mOnItemLongClickListener) {
-			this.mOnItemLongClickListener = mOnItemLongClickListener;
-		}
 		@Override
-		public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
-		{
-			return new MyViewHolder(getActivity().getLayoutInflater().inflate(R.layout.diag1_fc_list_item, parent,
-					false));
-		}
-
-		@Override
-		public void onBindViewHolder(final MyViewHolder holder, final int position)
-		{
-			int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
-			if(adapter_idx==position) {
-				holder.itemView.setBackgroundColor(Color.parseColor("#4F7FDF"));//FF4081
-				holder.tv.setTextColor(Color.WHITE);
-			}else {
-				holder.itemView.setBackgroundColor(Color.TRANSPARENT);//aaa0f0f0//Color.parseColor("#aaa0f0f0")
-				holder.tv.setTextColor(Color.BLACK);
-			}
-			CharSequence name = a.md_getName(position);
-			if(SearchIncantation!=null) {
-				Matcher m = SearchPattern.matcher(name);
-				name = new SpannableStringBuilder(name);
-				while(m.find()){
-					((SpannableStringBuilder) name).setSpan(new ForegroundColorSpan(Color.RED), m.start(), m.end(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-				}
-			}
-			holder.tv.setText(name);
-			if(GlobalOptions.isDark) {
-				holder.tv.setTextColor(Color.WHITE);
-			}
-
-			holder.cover.setTag(position);
-			holder.cover.setImageDrawable(a.md_getCover(position));
-			//判断是否设置了监听器
-			if(mOnItemClickListener != null){
-				holder.itemView.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						//int position = holder.getLayoutPosition(); // 1
-						mOnItemClickListener.onItemClick(holder.itemView,position); // 2
-					}
-				});
-			}
-			if(mOnItemLongClickListener != null){
-				holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-					@Override
-					public boolean onLongClick(View v) {
-						int position = holder.getLayoutPosition();
-						mOnItemLongClickListener.onItemLongClick(holder.itemView,position);
-						return true;
-					}
-				});
-			}
-
-		}
-
-		@Override
-		public int getItemCount()
-		{
+		public int getItemCount() {
 			return a.md.size();
 		}
+		
+		@NonNull
+		@Override
+		public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			//CMN.Log("onCreateViewHolder...");
+			MyViewHolder ret = new MyViewHolder(
+					LayoutInflater.from(parent.getContext())
+							.inflate(R.layout.diag1_fc_list_item, parent, false));
+			ret.coverp.setOnClickListener(DictPicker.this);
+			ret.itemView.setOnClickListener(DictPicker.this);
+			return ret;
+		}
 
-		class MyViewHolder extends ViewHolder
-		{
-			TextView tv;
-			ImageView cover;
-			public MyViewHolder(View view)
-			{
-				super(view);
-				tv = (TextView) view.findViewById(R.id.id_num);
-				cover = (ImageView) view.findViewById(R.id.cover);
-				cover.setOnClickListener(DictPicker.this);
-				//tv.setTextColor(Color.parseColor("#ff000000"));
-				//tv.setTextSize(TypedValue.COMPLEX_UNIT_PX,a.scale(81));//TODO: optimize
+		@Override
+		public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position) {
+			int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
+			FlowTextView tv = holder.tv;
+			if(adapter_idx==position) {
+				holder.itemView.setBackgroundColor(Color.parseColor("#4F7FDF"));//FF4081
+				tv.setTextColor(Color.WHITE);
+			}else {
+				holder.itemView.setBackgroundColor(Color.TRANSPARENT);//aaa0f0f0//Color.parseColor("#aaa0f0f0")
+				tv.setTextColor(Color.BLACK);
 			}
+			holder.position = position;
+			if(GlobalOptions.isDark) {
+				tv.setTextColor(Color.WHITE);
+			}
+			
+			tv.PostEnabled = PostEnabled;
+			
+			tv.StarLevel = a.md_get_StarLevel(position);
+			
+			tv.setCompoundDrawables(mActiveDrawable, null, null, null);
+			
+			tv.setText(a.md_getName(position));
+			
+			tv.SetSearchPattern(SearchPattern);
+			
+			holder.coverp.setTag(position);
+			
+			holder.cover.setImageDrawable(a.md_getCover(position));
 		}
 	}
-
-	public String SearchIncantation;
-	public Pattern SearchPattern;
+	
+	@Override
+	public void onClick(View v) {
+		Object tag = v.getTag();
+		if(tag instanceof MyViewHolder){
+			int position = ((MyViewHolder) tag).position;
+			if(a.dismissing_dh) return;
+			if(a.pickTarget==1){//点译上游
+				int tmpPos = a.currentClick_adapter_idx;
+				a.CCD=a.md_get(position);
+				a.CCD_ID=a.currentClick_adapter_idx = position;
+				a.popupWord(a.popupTextView.getText().toString(),-1, -1);
+				mAdapter.notifyItemChanged(tmpPos);
+				mAdapter.notifyItemChanged(position);
+				if(a instanceof PDICMainActivity){
+					((PDICMainActivity)a).dismissDictPicker(R.anim.dp_dialog_exit);
+				}else {
+					dismiss();
+				}
+			}
+			else {//当前词典
+				int tmpPos = a.adapter_idx;
+				a.adapter_idx = position;
+				a.switch_To_Dict_Idx(position, true, true);
+				mAdapter.notifyItemChanged(tmpPos);
+				if(tmpPos!=position){
+					mAdapter.notifyItemChanged(position);
+				}
+				if (bShouldCloseAfterChoose) {
+					v.post(this::dismiss);
+				}
+			}
+		} else if(tag instanceof Integer) {
+			a.showAboutDictDialogAt((int)tag);
+		}
+	}
 
 	public void SetSearchIncantation(String pattern) {
-		SearchIncantation = pattern;
-		try {
-			SearchPattern = Pattern.compile(SearchIncantation,Pattern.CASE_INSENSITIVE);
-		} catch (PatternSyntaxException e) {
-			SearchPattern = Pattern.compile(SearchIncantation, Pattern.CASE_INSENSITIVE|Pattern.LITERAL);
+		if(!pattern.equals(SearchIncantation)){
+			SearchIncantation = pattern;
+			if(pattern.length()==0) {
+				SearchPattern=null;
+			} else {
+				try {
+					SearchPattern = Pattern.compile(SearchIncantation,Pattern.CASE_INSENSITIVE);
+				} catch (PatternSyntaxException e) {
+					SearchPattern = Pattern.compile(SearchIncantation, Pattern.CASE_INSENSITIVE|Pattern.LITERAL);
+				}
+			}
+			LastSearchScrollItem=-1;
 		}
 	}
-
-
+	
+	static class MyViewHolder extends ViewHolder
+	{
+		public int position;
+		FlowTextView tv;
+		ImageView cover;
+		View coverp;
+		public MyViewHolder(View view)
+		{
+			super(view);
+			tv = view.findViewById(R.id.id_num);
+			cover = view.findViewById(R.id.cover);
+			coverp = view.findViewById(R.id.coverp);
+			itemView.setTag(this);
+		}
+	}
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -318,40 +285,4 @@ public class DictPicker extends DialogFragment implements OnClickListener
 			} catch (Exception e) {}
 		}
 	}
-	@Override
-	public void onClick(View v) {
-		switch(v.getId()) {
-			case R.id.cover:
-				Integer id = IU.parseInt(String.valueOf(v.getTag()));
-				if(id!=null) {
-					final View dv = a.inflater.inflate(R.layout.dialog_about,null);
-					final TextView tv = ((TextView)dv.findViewById(R.id.resultN));
-					TextView title = ((TextView)dv.findViewById(R.id.title));
-					title.setText("词典信息");
-					if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
-					tv.setTextIsSelectable(true);
-					//404
-
-					tv.setText(HtmlCompat.fromHtml(a.md_getAbout(id),HtmlCompat.FROM_HTML_MODE_COMPACT));
-
-					tv.setMovementMethod(LinkMovementMethod.getInstance());
-					AlertDialog.Builder builder2 = new AlertDialog.Builder(a);
-					builder2.setView(dv);
-					final AlertDialog d = builder2.create();
-					dv.findViewById(R.id.cancel).setOnClickListener(new OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							d.dismiss();
-						}});
-					d.getWindow().setDimAmount(0);
-					d.setCanceledOnTouchOutside(true);
-					d.show();
-					android.view.WindowManager.LayoutParams lp = d.getWindow().getAttributes();  //获取对话框当前的参数值
-					lp.height = -2;
-					d.getWindow().setAttributes(lp);
-				}
-				break;
-		}
-	}
-
 }  

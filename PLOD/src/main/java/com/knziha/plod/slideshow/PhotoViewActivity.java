@@ -1,14 +1,10 @@
 package com.knziha.plod.slideshow;
 
 import android.animation.ObjectAnimator;
-import android.app.Activity;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.style.ClickableSpan;
@@ -18,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,14 +33,13 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.knziha.plod.PlainDict.AgentApplication;
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.OptionProcessor;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.PlainDict.Toastable_Activity;
 import com.knziha.plod.dictionary.mdictRes;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
-import com.knziha.plod.widgets.FtagImageView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,13 +61,12 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 	public View background;
 	public View float_menu;
 	public View float_exit;
-	public static List<mdictRes> mdd;
-	public static PhotoBrowsingContext IBC;
 	public List<mdictRes> mdd_;
 	public PhotoBrowsingContext IBC_;
 	public static final int OffScreenViewPagerSize=5;
 	private String[] imageUrls;
 	private int curPosition = -1;
+	private DisplayMetrics dm;
 	PDICMainAppOptions opt;
 
 	LinkedList<PhotoHolder> mViewCache = new LinkedList<>();
@@ -83,20 +76,31 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 	private TextView indicator;
 	private View forward;
 	private View backward;
-	public static RequestListener<Drawable> mGlideListener=new RequestListener<Drawable>() {
+	boolean backgounded;
+	private RequestListener<Bitmap> mGListener = new RequestListener<Bitmap>() {
 		@Override
-		public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-			ImageView medium_thumbnail = ((ImageViewTarget<?>) target).getView();
-			medium_thumbnail.setImageResource(R.drawable.load_error);
+		public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+			ImageView iv = ((ImageViewTarget<?>) target).getView();
+			//iv.setImageDrawable(getResources().getDrawable(R.drawable.sky_background));
+			getDimensionsAndOpenQuickScale(null, iv);
+			iv.setImageResource(R.drawable.load_error);
 			return true;
 		}
+		
 		@Override
-		public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+		public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+			ImageView iv = ((ImageViewTarget<?>) target).getView();
+			//if(iv.getTag()==null) return true;
+			//PhotoHolder vh = (PhotoHolder) ((ViewGroup)iv.getParent()).getTag();
+			if(!backgounded){
+				backgounded = true;
+				ObjectAnimator fadeInContents = ObjectAnimator.ofFloat(background, "alpha", 0, 1);
+				fadeInContents.start();
+			}
+			getDimensionsAndOpenQuickScale(resource, iv);
 			return false;
 		}
 	};
-	
-	boolean backgounded;
 	
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
@@ -108,20 +112,25 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		opt = new PDICMainAppOptions(this);
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		
+		AgentApplication agent = ((AgentApplication)getApplication());
+		imageUrls = agent.Imgs;
+		opt=agent.opt;
+		mdd_=agent.mdd;
+		IBC_=agent.IBC;
+		curPosition = agent.currentImg;
+		agent.clearNonsenses();
+		
+		if(imageUrls==null){
+			finish();
+			return;
+		}
+		
 		setStatusBarColor(getWindow(), Color.TRANSPARENT);
-		
-		
 		setContentView(R.layout.activity_photo_browser);
-		mdd_=mdd;
-		IBC_=IBC;
-		IBC=null;
-		mdd=null;
-		imageUrls = getIntent().getStringArrayExtra("images");
-		curPosition = getIntent().getIntExtra("current", 0);
+		dm = opt.dm;
 		indicator = findViewById(R.id.indicator);
 		backward = findViewById(R.id.browser_widget13);
 		forward = findViewById(R.id.browser_widget14);
@@ -133,7 +142,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 		float_exit = findViewById(R.id.float_back);
 		viewPager = findViewById(R.id.pager);
 		viewPager.setPageTransformer(false, new DepthPageTransformer(), View.LAYER_TYPE_NONE);
-		viewPager.setPageMargin((int) (getResources().getDisplayMetrics().density * 15));
+		viewPager.setPageMargin((int) (dm.density * 15));
 		forward.setOnClickListener(this);
 		backward.setOnClickListener(this);
 		float_menu.setOnClickListener(this);
@@ -161,7 +170,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 				} else {
 					vh = new PhotoHolder(LayoutInflater.from(container.getContext()).inflate(R.layout.photo_view_pager_page, container, false));
 					//pv.setMaxTileSize(1024);
-					vh.subview.dm = getResources().getDisplayMetrics();
+					vh.subview.dm = dm;
 					vh.subview.view_pager_toguard = viewPager;
 					vh.subview.setOnClickListener(PhotoViewActivity.this);
 					vh.subview.setOnLongClickListener(PhotoViewActivity.this);
@@ -171,12 +180,12 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 					((ViewGroup) vh.itemView.getParent()).removeView(vh.itemView);
 				container.addView(vh.itemView);
 				vh.position=position;
-				vh.pv.setTranslationX(0);
-				vh.pv.setTranslationY(0);
-				vh.pv.setScaleX(1);
-				vh.pv.setScaleY(1);
-				vh.pv.setRotation(0);
-				vh.pv.setTag(R.id.home, false);
+				ImageView imageView = vh.pv;
+				imageView.setTranslationX(0);
+				imageView.setTranslationY(0);
+				imageView.setScaleX(1);
+				imageView.setScaleY(1);
+				imageView.setRotation(0);
 				if(!processedRec.contains(position)){
 					imageUrls[position] = ProcessUrl(imageUrls[position]);
 					processedRec.add(position);
@@ -185,46 +194,17 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 				vh.path = key;
 				try {
 					vh.subview.recycle();
-					vh.subview.dm = container.getContext().getResources().getDisplayMetrics();
+					vh.subview.dm = dm;
 					if(CMCF!=null){
-						vh.pv.setColorFilter(CMCF);
+						imageView.setColorFilter(CMCF);
 					}
-					vh.pv.drawable = true;
 					Glide.with(PhotoViewActivity.this)
 							.asBitmap()
 							.load(key.startsWith("/pdfimg/")?new PdfPic(key, getBaseContext()):new MddPic(mdd_, key))
 							.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
 							.fitCenter()
 							.diskCacheStrategy(DiskCacheStrategy.NONE)
-							.listener(new RequestListener<Bitmap>() {
-								@Override
-								public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-									ImageView iv = ((ImageViewTarget<?>) target).getView();
-									//iv.setImageDrawable(getResources().getDrawable(R.drawable.sky_background));
-									getDimensionsAndOpenQuickScale(null, iv);
-									CMN.Log("onLoadFailed");
-									return true;
-								}
-								
-								@Override
-								public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-									ImageView iv = ((ImageViewTarget<?>) target).getView();
-									if(iv.getTag(R.id.home)==null){//true ||
-										return true;
-									}
-									if(!vh.pv.drawable){
-										vh.pv.drawable = true;
-										vh.pv.invalidate();
-									}
-									if(!backgounded){
-										backgounded = true;
-										ObjectAnimator fadeInContents = ObjectAnimator.ofFloat(background, "alpha", 0, 1);
-										fadeInContents.start();
-									}
-									getDimensionsAndOpenQuickScale(resource, iv);
-									return false;
-								}
-							}).into(vh.pv);//mGlideListener
+							.listener(mGListener).into(imageView);//mGlideListener
 				}catch (Exception e){ CMN.Log(e); }
 				return vh.itemView;
 			}
@@ -283,8 +263,6 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 			CMN.Log("手动获取", dimension);
 		}
 		if(dimension!=null){
-			
-			DisplayMetrics dm = getResources().getDisplayMetrics();
 			//vh.subview.orientation = rotation;
 			vh.subview.setProxy(dimension, -1, resource, vh.path);
 			vh.subview.ImgSrc =vh.path;
@@ -312,7 +290,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 		public String path;
 		ViewGroup itemView;
 		int position;
-		FtagImageView pv;
+		ImageView pv;
 		TilesGridLayout pg;
 		SubsamplingScaleImageView subview;
 		PhotoHolder(View v){
@@ -430,9 +408,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 		
 		viewPager.setCurrentItem(PhotoPagerAjuster.PBC_tab, false);
 		
-		DisplayMetrics dm2 = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getRealMetrics(dm2);
-		viewPager.getLayoutParams().height = (int) (Math.max(dm2.heightPixels, dm2.widthPixels) * d.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
+		viewPager.getLayoutParams().height = (int) (Math.max(dm.heightPixels, dm.widthPixels) * d.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
 	}
 	
 	@Override

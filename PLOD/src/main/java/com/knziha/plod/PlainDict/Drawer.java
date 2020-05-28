@@ -61,12 +61,9 @@ import com.knziha.plod.widgets.SwitchCompatBeautiful;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -96,7 +93,7 @@ public class Drawer extends Fragment implements
 	View pasteBin;
 
 	ViewGroup FooterView;
-	private String filepickernow;
+	private File filepickernow;
 	public  ArrayList<String> mClipboard;
 	ClipboardManager.OnPrimaryClipChangedListener ClipListener;
 	private ListView ClipboardList;
@@ -503,7 +500,7 @@ public class Drawer extends Fragment implements
 
 				for(mdict mdTmp:a.md) {
 					if(mdTmp!=null)
-						mdictInternal.put(mdTmp.getName(), mdTmp);
+						mdictInternal.put(mdTmp.getDictionaryName(), mdTmp);
 				}
 
 				AlertDialog.Builder builder = new AlertDialog.Builder(a);
@@ -516,10 +513,10 @@ public class Drawer extends Fragment implements
 								String id1 = items[position1];
 								mdict mdTmp = mdictInternal.get(id1);
 								if(mdTmp!=null) {
-									String name = mdTmp._Dictionary_fName;
+									String name = mdTmp.getDictionaryName();
 									int i = 0;
 									for (; i < placeHolders.size(); i++) {
-										if(placeHolders.get(i).name.equals(name))
+										if(placeHolders.get(i).getName().equals(name))
 											break;
 									}
 									if(i==placeHolders.size()) {
@@ -579,8 +576,6 @@ public class Drawer extends Fragment implements
 						if(mdTmp==null) {
 							try {
 								String path=id;
-								if(!path.startsWith("/"))
-									path= a.opt.lastMdlibPath + "/" + path;
 								mdTmp = new_mdict(path, a);
 								mdictInternal.put(id, mdTmp);
 							} catch (Exception e) {
@@ -589,7 +584,7 @@ public class Drawer extends Fragment implements
 						}
 
 						if(mdTmp!=null) {
-							tv.setSubText(mdTmp.getName());
+							tv.setSubText(mdTmp.getDictionaryName());
 							tv.setText(mdTmp.getLexicalEntryAt(pos[position]));
 						}else {//获取词典失败
 							tv.setSubText(id);
@@ -615,7 +610,7 @@ public class Drawer extends Fragment implements
 					boolean suc=false;
 					int oldPos = a.adapter_idx;
 					for(PlaceHolder phI:a.getLazyCC()) {
-						if(phI.name.equals(fn)) {
+						if(phI.getName().equals(fn)) {
 							a.switch_To_Dict_Idx(c, true, false);
 							a.adaptermy.onItemClick(pos1);
 							a.lv.setSelection(pos1);
@@ -626,10 +621,7 @@ public class Drawer extends Fragment implements
 					}
 					if(!suc)
 						try {
-							String path=lastBookMark;
-							if(!path.startsWith("/"))
-								path= a.opt.lastMdlibPath + "/" + path;
-							a.md.add(new_mdict(path, a));
+							a.md.add(new_mdict(lastBookMark, a));
 							a.switch_To_Dict_Idx(a.md.size()-1, true, false);
 							a.adaptermy.onItemClick(pos1);
 							a.lv.setSelection(pos1);
@@ -651,7 +643,7 @@ public class Drawer extends Fragment implements
 				properties.selection_type = DialogConfigs.FILE_SELECT;
 				properties.root = new File("/");
 				properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
-				properties.offset = new File(filepickernow!=null?filepickernow:a.opt.lastMdlibPath);
+				properties.offset = filepickernow!=null?filepickernow:a.opt.lastMdlibPath;
 				properties.opt_dir=new File(a.opt.pathToDatabases()+"favorite_dirs/");
 				properties.opt_dir.mkdirs();
 				properties.extensions = new HashSet<>();
@@ -669,11 +661,12 @@ public class Drawer extends Fragment implements
 				dialog.setDialogSelectionListener(new DialogSelectionListener() {
 					@Override
 					public void
-					onSelectedFilePaths(String[] files,String now) { //files is the array of the paths of files selected by the Application User.
+					onSelectedFilePaths(String[] files,File now) { //files is the array of the paths of files selected by the Application User.
 						filepickernow = now;
 						if(files.length>0) {
 							final File def = new File(a.getExternalFilesDir(null),"default.txt");      //!!!原配
-							File rec = new File(a.opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString());
+							File ConfigFile = a.opt.fileToConfig();
+							File rec = a.opt.fileToDecords(ConfigFile);
 							a.ReadInMdlibs(rec);
 							HashMap<String, String> checker = a.checker;
 
@@ -681,7 +674,7 @@ public class Drawer extends Fragment implements
 							HashSet<String> renameRec = new HashSet<>();
 							HashMap<String,String> renameList = new HashMap<>();
 							for(PlaceHolder phI:a.CosyChair) {
-								mdictInternal.add(phI.getPath(a.opt));
+								mdictInternal.add(phI.getPath(a.opt).getPath());
 							}
 							for(mdict mdTmp:a.currentFilter) {
 								if(mdTmp!=null)
@@ -715,8 +708,10 @@ public class Drawer extends Fragment implements
 											a.CosyChair.add(phI);
 											String raw=fnI;
 											fnI = mFile.tryDeScion(fI, a.opt.lastMdlibPath);
-											if(output2==null)
-												output2 = prepareDefaultGroup(def);
+											if(output2==null){
+												//tofo check
+												output2 = new BufferedWriter(new FileWriter(def,true));
+											}
 											output2.write(fnI);
 											output2.write("\n");
 											output2.flush();
@@ -755,7 +750,7 @@ public class Drawer extends Fragment implements
 								
 								if(AutoFixLostRecords && renameList.size()>0){
 									ArrayList<File> moduleFullScannerArr;
-									File[] moduleFullScanner = new File(a.opt.pathToMainFolder().append("CONFIG").toString()).listFiles(pathname -> pathname.getPath().endsWith(".set"));
+									File[] moduleFullScanner = ConfigFile.listFiles(pathname -> pathname.getPath().endsWith(".set"));
 									moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
 									moduleFullScannerArr.add(rec);
 									moduleFullScannerArr.add(def);
@@ -851,9 +846,7 @@ public class Drawer extends Fragment implements
 				properties1.selection_type = DialogConfigs.DIR_SELECT;
 				properties1.root = new File("/");
 				properties1.error_dir = Environment.getExternalStorageDirectory();
-				properties1.offset = new File(
-						a.opt.lastMdlibPath
-				);
+				properties1.offset = a.opt.lastMdlibPath;
 				//CMN.show(a.opt.lastMdlibPath+":"+Environment.getExternalStorageDirectory().getAbsolutePath());
 				properties1.opt_dir=new File(a.opt.pathToDatabases().append("favorite_dirs/").toString());
 				properties1.opt_dir.mkdirs();
@@ -863,7 +856,7 @@ public class Drawer extends Fragment implements
 				dialog1.setDialogSelectionListener(new DialogSelectionListener() {
 					@Override
 					public void
-					onSelectedFilePaths(String[] files, String n) { //files is the array of the paths of files selected by the Application User.
+					onSelectedFilePaths(String[] files, File n) { //files is the array of the paths of files selected by the Application User.
 						if(files.length>0) {
 							a.opt.setLastMdlibPath(new File(files[0]).getAbsolutePath());
 							a.show(R.string.relaunch);
@@ -907,22 +900,7 @@ public class Drawer extends Fragment implements
 				break;
 		}
 	}
-
-	private BufferedWriter prepareDefaultGroup(File def) throws IOException {
-		if(def.length()<=0){
-			try {
-				FileChannel inputChannel = new FileInputStream(new File(a.opt.pathToMainFolder().append("CONFIG/").append(a.opt.getLastPlanName()).append(".set").toString())).getChannel();
-				FileChannel outputChannel = new FileOutputStream(def).getChannel();
-				outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
-				inputChannel.close();
-				outputChannel.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return new BufferedWriter(new FileWriter(def,true));
-	}
-
+	
 	@Override
 	public void onDismiss(DialogInterface dialog) {
 		d = null;

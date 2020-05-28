@@ -11,7 +11,7 @@
     <dimen name="abarmin">45dp</dimen>
     <dimen name="abarmax">50dp</dimen>
     
-    <dimen name="lvtextsize">21dp</dimen>
+    <dimen name="lvtextsize">21sp</dimen>
     <dimen name="lvsubtextsize">14dp</dimen>
 	<dimen name="_20_">26dp</dimen>
 	<dimen name="_35_">45dp</dimen>

@@ -9,25 +9,35 @@
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:minHeight="45dp"
-    android:foreground="@drawable/diag1_selector">  
+    android:foreground="@drawable/diag1_selector"
+	>
 
-     <ImageView
-        android:id="@+id/cover"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:layout_marginLeft="5dp"
-		android:layout_gravity="center_vertical"
-        android:background="@drawable/cover"
-        />
+	<FrameLayout
+		android:id="@+id/coverp"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:paddingStart="5dp"
+		android:paddingEnd="5dp"
+		>
+		<ImageView
+			android:id="@+id/cover"
+			android:layout_width="35dp"
+			android:layout_height="35dp"
+			android:layout_gravity="center_vertical"
+			android:background="@drawable/cover"
+			android:clickable="false"
+			/>
+	</FrameLayout>
 
-    <TextView
+    <com.knziha.plod.widgets.FlowTextView
         android:id="@+id/id_num"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
+        android:layout_marginLeft="5dp"
         android:layout_gravity="center_vertical"
-        android:text="简明"
-        android:textColor="#000"
         android:textSize="@dimen/lvtextsize"
+		app:starWidth="35dp"
+		tools:text="简明"
+		tools:src="@drawable/star_ic_solid"
         />
 </LinearLayout>

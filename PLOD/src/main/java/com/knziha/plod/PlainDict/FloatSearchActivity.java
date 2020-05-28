@@ -47,6 +47,7 @@ import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.SplitView;
+import com.knziha.plod.widgets.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -324,6 +325,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			lpmy.height=(int) (dm.heightPixels-mainfv.getTranslationY())-(DockerMarginB+DockerMarginT);
     		mainfv.setLayoutParams(lpmy);
 		}
+		Utils.density = dm.density;
     }
     
     @Override
@@ -331,15 +333,25 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		cbar_key=2;
 		defbarcustpos=3;
     	long cur = System.currentTimeMillis();
-    	if(cur-CMN.FloatLastInvokerTime<524) {
-    		super.onCreate(savedInstanceState);
-    		finish();
-    		return;
-    	}
+		super.onCreate(savedInstanceState);
+    	if(getClass()==FloatSearchActivity.class) {
+			if(PDICMainAppOptions.getForceFloatSingletonSearch()) {
+				Intent thisIntent = getIntent();
+				startActivity((thisIntent==null?new Intent():new Intent(getIntent()))
+						.setClass(this, FloatActivitySearch.class)
+						.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+				defbarcustpos=-1;
+			} else if(cur-CMN.FloatLastInvokerTime<524) {
+				defbarcustpos=-1;
+			}
+			if(defbarcustpos==-1) {
+				finish();
+				return;
+			}
+		}
+    	
     	CMN.FloatLastInvokerTime=cur;
         bShowLoadErr=false;
-        
-        super.onCreate(savedInstanceState);
 
     	overridePendingTransition(R.anim.budong,0);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -459,14 +471,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	@Override
 	protected void scanSettings(){
 		super.scanSettings();
-		new File(opt.pathToDatabases().toString()).mkdirs();
 		CMN.FloatBackground = MainBackground = opt.getFloatBackground();
 		isCombinedSearching = opt.isFloatCombinedSearching();
 		opt.getLastMdlibPath();
-		if(opt.lastMdlibPath==null || !new File(opt.lastMdlibPath).exists()) {
-			opt.lastMdlibPath = opt.pathToMainFolder().append("mdicts").toString();
-	    	new File(opt.lastMdlibPath).mkdirs();
-		}
 	}
 
     View IMPageCover;
@@ -787,10 +794,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 
 	@Override
-	protected File getStartupFile() {
-		File suf = new File(opt.pathToMainFolder().append("CONFIG/").append(opt.getLastFloatPlanName()).append(".set").toString());
+	protected File getStartupFile(File ConfigFile) {
+		File suf = new File(ConfigFile, opt.getLastFloatPlanName());
 		if(!suf.exists())
-			return super.getStartupFile();
+			return super.getStartupFile(ConfigFile);
 		return suf;
 	}
 
@@ -865,10 +872,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			prepareHistroyCon().insertUpdate(keytmp);
 		}
 
-		if(fullScreen)
+		if(fullScreen) {
 			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//去掉信息栏
-
-		etSearch.setText(keytmp);
+		}
+		if(etSearch!=null) {
+			etSearch.setText(keytmp);
+		}
 		return keytmp;
 	}
 
@@ -1037,10 +1046,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				vh.title.setTextColor(AppBlack);
 			}
             vh.title.setText(currentKeyText);
-            if(mFlag.data!=null)
-                vh.subtitle.setText(Html.fromHtml(currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+ mFlag.data+" ></font >"));
-            else
-            	vh.subtitle.setText(currentDictionary._Dictionary_fName);
+//            if(mFlag.data!=null)
+//                vh.subtitle.setText(Html.fromHtml(currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+ mFlag.data+" ></font >"));
+//            else
+			vh.subtitle.setText(currentDictionary.getDictionaryName());
         	//convertView.setTag(R.id.position,position);
         	return vh.itemView;
         }
@@ -1162,12 +1171,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			}
 			vh.title.setText(currentKeyText);
             mdict _currentDictionary = md.get(combining_search_result.dictIdx);
-            if(_currentDictionary!=null){
-				if(combining_search_result.mflag.data!=null)
-					vh.subtitle.setText(Html.fromHtml(_currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
-				else
-					vh.subtitle.setText(_currentDictionary._Dictionary_fName);
-			}
+//            if(_currentDictionary!=null){
+//				if(combining_search_result.mflag.data!=null)
+//					vh.subtitle.setText(Html.fromHtml(_currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
+//				else
+//			}
+			vh.subtitle.setText(_currentDictionary.getDictionaryName());
 
 			if(combining_search_result.getClass()==resultRecorderCombined.class)
 				((TextView)vh.subtitle.getTag()).setText(((resultRecorderCombined)combining_search_result).count);
@@ -1251,9 +1260,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	@Override
 	public void onClick(View v) {
 		super.onClick(v);
-		if(v.getTag(R.id.click_handled)!=null) return;
-		int id=v.getId();
-		onIdClick(v, id);
+		if(click_handled_not) {
+			int id=v.getId();
+			onIdClick(v, id);
+		}
 	}
 
 	public void onIdClick(View v, int id){

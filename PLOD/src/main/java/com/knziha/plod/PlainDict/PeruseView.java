@@ -62,6 +62,7 @@ import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_txt;
 import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
+import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.SimpleDialog;
@@ -167,7 +168,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public WebViewmy mWebView;
 	ViewGroup toolbar_web;
 	ImageView toolbar_cover;
-	TextView toolbar_title;
+	FlowTextView toolbar_title;
 	View ic_undo;
 	public View ic_save;
 	View ic_redo;
@@ -826,7 +827,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			toolbar_title.setOnClickListener(this);
 		
 			mWebView.titleBar = (AdvancedNestScrollLinerView) toolbar_web;
-			mWebView.toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar_web.getBackground()).getDrawable(0);
+			toolbar_web.getBackground().mutate();
+			mWebView.FindBGInTitle(toolbar_web);
 			mWebView.toolbarBG.setColors(mWebView.ColorShade);
 			
 			recess = toolbar_web.findViewById(R.id.recess);
@@ -1273,7 +1275,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	        mdict mdTmp = md.get(mdIdx);
 	        ImageView iv = ItemView.findViewById(R.id.image);
 	        TextView tv = ItemView.findViewById(R.id.text);
-	        tv.setText(ph.get(mdIdx).name);
+	        tv.setText(ph.get(mdIdx).pathname);
 	        if(mdTmp!=null && mdTmp.cover!=null)
 	        	iv.setImageDrawable(mdTmp.cover);
 	        else
@@ -1431,7 +1433,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				vh.tv.setText(currentDictionary.getEntryAt(cr.getInt(0)));//bookmarks.get(position)
 				vh.tv.setSingleLine(false);
 			}else {
-				vh.tv.setText(ph.get(othermds.get(position)).name);
+				vh.tv.setText(ph.get(othermds.get(position)).pathname);
 				vh.tv.setSingleLine();
 			}
 			
@@ -1888,7 +1890,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				if (currentDictionary.con.insertUpdate(id) != -1) {
 					int BKHistroryVagranter = a.opt.getInt("bkHVgrt", -1);
 					BKHistroryVagranter = (BKHistroryVagranter + 1) % 20;
-					String rec = currentDictionary.getName() + "/?Pos=" + id;
+					String rec = currentDictionary.getDictionaryName() + "/?Pos=" + id;
 					a.opt.putter()//.putString("bkmk", rec)
 							.putString("bkh" + BKHistroryVagranter, rec)
 							.putInt("bkHVgrt", BKHistroryVagranter)

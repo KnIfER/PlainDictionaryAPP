@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static com.knziha.plod.PlainDict.CMN.AssetTag;
-import static com.knziha.plod.dictionarymodels.mdict_transient.goodNull;
 
 /*
  Mdict hodling a PDFJS website.
@@ -184,19 +183,16 @@ public class mdict_pdf extends mdict {
 	private int targetPage;
 
 	//构造
-	public mdict_pdf(String fn, MainActivityUIBase _a) throws IOException {
-		super(goodNull(fn), _a);
+	public mdict_pdf(File fn, MainActivityUIBase _a) throws IOException {
+		super(fn, _a, true);
 		a=_a;
 		opt=a.opt;
-		_Dictionary_fName=new File(fn).getName();
-		_INTERNAL_PDFJS=new mdictRes_asset(AssetTag +"pdf.mdd", _a);
-		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
-		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
-
-		justifyInternal(_Dictionary_fName_Internal);
-
-		htmlBuilder=new StringBuilder();
-
+		_Dictionary_fName=fn.getName();
+		_INTERNAL_PDFJS=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), _a);
+		
+		_num_record_blocks=-1;
+		unwrapSuffix=false;
+		
 		readInConfigs(a.UIProjects);
 
 		if(bgColor==null)
@@ -230,15 +226,6 @@ public class mdict_pdf extends mdict {
 
 	public void parseContent() {
 		mWebView.evaluateJavascript(parseCatalogue, null);
-	}
-
-	@Override
-	protected void initLogically() {
-		_num_record_blocks=-1;
-		String fn = (String) SU.UniversalObject;
-		fn = new File(fn).getAbsolutePath();
-		f = new File(fn);
-		_Dictionary_fName = f.getName();
 	}
 
 	@Override
@@ -276,8 +263,7 @@ public class mdict_pdf extends mdict {
 						if(page_idx!=-1) targetPage=page_idx+1;
 						entry=entry.substring(0, pdf_idx);
 					}
-					if(title_builder==null) title_builder = new StringBuilder();
-					else title_builder.setLength(0);
+					StringBuilder title_builder = AcquireStringBuffer(64);
 					toolbar_title.setText(title_builder.append(entry.trim()).append(" - ").append(_Dictionary_fName).toString());
 				}
 			}else{

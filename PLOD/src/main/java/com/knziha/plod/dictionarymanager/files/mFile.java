@@ -1,5 +1,9 @@
 package com.knziha.plod.dictionarymanager.files;
 
+import com.knziha.plod.PlainDict.PDICMainAppOptions;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -35,29 +39,22 @@ public class mFile extends File{
 		super(uri);
 	}
 	
-	public String CanonicalParentPath;
 	boolean cpr1,cpr2;
-	public mFile init() {
+	public mFile init(PDICMainAppOptions opt) {
 		//Log.e("init__fatal",getAbsolutePath());
 		isDirectory=isDirectory();
-		if(getAbsolutePath().length()>1) {
-			CanonicalParentPath=try_get_cannical().toLowerCase();
+		if(getPath().length()>1) {
+			String ParentPath = getParent();
 			boolean isS,isDS;
-			if(CanonicalParentPath.startsWith(parentPath.toLowerCase())) {
+			String parent = opt.lastMdlibPath.getPath();
+			if(ParentPath.startsWith(parent)) {
 				isS=true;
-				isDS=CanonicalParentPath.length()==parentPath.length();
+				isDS=ParentPath.length()==parent.length();
 				cpr1=(!isDS||isDirectory);
 				cpr2=isDS&&!isDirectory;
 			}
 		}
 		return this;
-	}
-
-	private String try_get_cannical() {
-		try{return getParentFile().getCanonicalPath();}catch(Exception e) {
-			//Log.e("try_get_cannicalfatal",getAbsolutePath());
-		}
-		return getParentFile().getAbsolutePath();
 	}
 
 	private static String getEUPath(File fn) {
@@ -75,7 +72,6 @@ public class mFile extends File{
 		return super.isDirectory();
 	}
 	
-	public static String parentPath="/storage/emulated/0/Download";
 	@Override
 	public int compareTo(File other) {
 		mFile THIS = this;
@@ -91,17 +87,6 @@ public class mFile extends File{
 				return 1;
 			}
 		//}
-		
-		if(false) {
-			//制定的策略是：孙系文件比子系文件小，任意系的后代文件夹比子系文件小。
-			if(isScionOf(THIS,parentPath)&&isDirScionOf(other,parentPath)&&!other.isDirectory()&&(!isDirScionOf(THIS,parentPath)||THIS.isDirectory())) {
-				return -1;
-			}
-			if(isScionOf(other,parentPath)&&isDirScionOf(THIS,parentPath)&&!THIS.isDirectory()&&(!isDirScionOf(other,parentPath)||other.isDirectory())) {
-				return 1;
-			}
-		}
-
 		
 		boolean b1=other.isDirectory(),b2=this.isDirectory();
 		if(!b1 && !b2 ){
@@ -147,8 +132,6 @@ public class mFile extends File{
 	public static String tryDeScion(File fin, String parentFile) {
 		return tryDeScion(fin,new File(parentFile));
 	}
-	
-	
 	
 	public static boolean isDirScionOf(File fin,File parentFile) {
 		try {return fin.getParentFile().getCanonicalPath().toLowerCase().equals(parentFile.getCanonicalPath().toLowerCase());}catch(Exception e) {}

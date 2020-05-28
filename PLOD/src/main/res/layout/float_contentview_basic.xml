@@ -17,11 +17,6 @@
 		android:orientation="horizontal"
 		app:layout_scrollFlags="scroll|enterAlways"
 		>
-		<View
-			android:id="@+id/cover"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:visibility="gone"/>
 
 		<ImageView
 			android:id="@+id/popIvBack"
@@ -89,6 +84,11 @@
 			android:fadingEdge="none"
 			android:overScrollMode="never"
 		/>
+		<View
+			android:id="@+id/cover"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:visibility="gone"/>
 	</com.knziha.plod.widgets.RLContainerSlider>
 
 	<LinearLayout
@@ -111,16 +111,16 @@
 				app:src0="@drawable/clippin"
 				android:layout_marginStart="8dp"
 				/>
-			<TextView
+			<com.knziha.plod.widgets.FlowTextView
 				android:id="@+id/popupText2"
 				android:layout_width="0dp"
 				android:layout_height="match_parent"
 				android:layout_weight="1"
-				android:gravity="bottom"
-				android:padding="5dp"
+				android:padding="1dp"
 				android:textColor="@color/OldHeaderBlue"
-				android:singleLine="true"
 				android:ellipsize="end"
+				android:maxLines="1"
+				tools:text="嘿你个小可爱"
 				/>
 
 			<ImageView

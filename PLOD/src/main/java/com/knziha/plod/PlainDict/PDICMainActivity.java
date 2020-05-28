@@ -25,11 +25,8 @@ import android.os.LocaleList;
 import android.os.Message;
 import android.provider.Settings;
 import android.text.Editable;
-import android.text.Html;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -95,7 +92,6 @@ import com.knziha.plod.dictionarymanager.files.IntegerSingleton;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict_asset;
 import com.knziha.plod.dictionarymodels.mdict_pdf;
 import com.knziha.plod.dictionarymodels.mdict_txt;
 import com.knziha.plod.dictionarymodels.mdict_web;
@@ -113,6 +109,7 @@ import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckableImageView;
+import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.IMPageSlider.PageSliderInf;
 import com.knziha.plod.widgets.NoScrollViewPager;
@@ -237,7 +234,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	ImageView[] BottombarBtns = new ImageView[16];
 	AppUIProject bottombar_project;
-
+	private EditText etSearchDict;
+	private boolean SearchDictPatternChanged;
+	
 	@Override
 	ArrayList<PlaceHolder> getLazyCC() {
 		return CosyChair;
@@ -315,6 +314,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(GlobalOptions.isDark!=isDarkStamp)
 			changeToDarkMode();
 		isDarkStamp=GlobalOptions.isDark;
+		Utils.density = dm.density;
 	}
 
 	private boolean isLocalesEqual(Configuration oldConfig, Configuration newConfig) {
@@ -621,7 +621,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(removeBlack())
 			return;
 		cancleSnack();
-		ViewGroup sm;
 		if(dialogHolder.getVisibility()==View.VISIBLE) {
 			dialogHolder.setVisibility(View.GONE);
 			if(pickDictDialog!=null) if(pickDictDialog.isDirty)  {opt.putFirstFlag();pickDictDialog.isDirty=false;}
@@ -677,18 +676,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			FragmentTransaction transaction = getSupportFragmentManager()
 					.beginTransaction().remove(DBrowser);
 			transaction.commit();
-
-			//getSupportFragmentManager().popBackStack();
-
-			//main.removeView(DBroswer.getView());
-			//DBroswer.onDetach();
-			//todo 增设选项
-			if(!TextUtils.isEmpty(DBrowser.currentDisplaying)) {
-				//if(!opt.getBrowser_AffectInstant()) etSearch.removeTextChangedListener(tw1);
-				//etSearch.setText(DBrowser.currentDisplaying);
-				//ivDeleteText.setVisibility(View.VISIBLE);
-				//if(!opt.getBrowser_AffectInstant()) etSearch.addTextChangedListener(tw1);
-			}
 			DBrowser = null;
 		}
 		else if(ActivedAdapter!=null && contentview.getParent()!=null) {
@@ -1118,8 +1105,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					//PageCache.setWidth(PageSlider_.getWidth());
 				}
 
-				int painter = 0;
-				int painterHash;
+				int painter;
 				if(PeruseViewAttached()) {
 					painter=1;
 				} else if(webholder.getChildCount()!=0) {
@@ -1171,8 +1157,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(ActivedAdapter==adaptermy && currentDictionary.isViewInitialized()) {
 					int pos = currentDictionary.mWebView.currentPos+(Math.abs(val)>20*dm.density?(val<0?1:-1):0);
 					if(pos>=-1 && pos<currentDictionary.getNumberEntries()) {
-						if(currentPos!=pos)
-							currentDictionary.toolbar_title.setText(currentDictionary.getEntryAt(pos).trim()+" - "+currentDictionary._Dictionary_fName);
+						if(currentPos!=pos) {
+							currentDictionary.setToolbarTitleAt(pos);
+						}
 						currentPos=pos;
 					}
 				}
@@ -1189,12 +1176,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(Build.VERSION.SDK_INT>23)
 					IMPageCover.getForeground().setAlpha(0);
 				boolean there = ActivedAdapter instanceof com.knziha.plod.PlainDict.PeruseView.LeftViewAdapter;
-				ViewGroup contentview_ = contentview;
-				if(there)
-					contentview_=PeruseView.contentview;
 				if(Dir==1) {widget11.performClick();}
 				else if(Dir==0) widget10.performClick();
-				else if(ActivedAdapter==adaptermy && !there) {if(currentPos!=currentDictionary.mWebView.currentPos) currentDictionary.toolbar_title.setText(currentDictionary.currentDisplaying.trim()+" - "+currentDictionary._Dictionary_fName);}
+				else if(ActivedAdapter==adaptermy && !there) {
+					if(currentPos!=currentDictionary.mWebView.currentPos){
+						currentDictionary.setToolbarTitleAt(-2);
+					}
+				}
 			}});
 
 		viewPager.setOnTouchListener((v, event) -> {
@@ -1252,11 +1240,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			}});
 
-		mlv = (ViewGroup) inflater.inflate(R.layout.mainlistview,null);
+		mlv = (ViewGroup) inflater.inflate(R.layout.mainlistview,viewPager, false);
 		lv = mlv.findViewById(R.id.main_list);
 		lv2 = mlv.findViewById(R.id.sub_list);
-		mlv1 = (ListView) inflater.inflate(R.layout.sublistview,null);mlv1.setId(R.id.sub_list1);
-		mlv2 = (ListView) inflater.inflate(R.layout.sublistview,null);mlv2.setId(R.id.sub_list2);
+		mlv1 = (ListView) inflater.inflate(R.layout.sublistview, viewPager, false);mlv1.setId(R.id.sub_list1);
+		mlv2 = (ListView) inflater.inflate(R.layout.sublistview, viewPager, false);mlv2.setId(R.id.sub_list2);
 		//tofo
 		if(Build.VERSION.SDK_INT >= 24)
 			if(true) {//opt.is_strict_scroll()
@@ -1452,21 +1440,22 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			for(int i=0;i<md.size();i++){//遍历所有词典
 				mdict mdtmp = md.get(i);
 				if(mdtmp!=null) {
-					if (savedInstanceState.containsKey("sizeOf" + mdtmp._Dictionary_fName)) {
-						int size = savedInstanceState.getInt("sizeOf" + mdtmp._Dictionary_fName);
+					String full_Dictionary_fName = mdtmp._Dictionary_fName;
+					if (savedInstanceState.containsKey("sizeOf" + full_Dictionary_fName)) {
+						int size = savedInstanceState.getInt("sizeOf" + full_Dictionary_fName);
 						mdtmp.combining_search_tree2 = new ArrayList[size];
 						for (int ti = 0; ti < size; ti++) {//遍历搜索结果
-							if (savedInstanceState.containsKey(mdtmp._Dictionary_fName + "@" + ti)) {
-								mdtmp.combining_search_tree2[ti] = savedInstanceState.getIntegerArrayList(mdtmp._Dictionary_fName + "@" + ti);
+							if (savedInstanceState.containsKey(full_Dictionary_fName + "@" + ti)) {
+								mdtmp.combining_search_tree2[ti] = savedInstanceState.getIntegerArrayList(full_Dictionary_fName + "@" + ti);
 							}
 						}
 					}
-					if (savedInstanceState.containsKey("sizeOf_4" + mdtmp._Dictionary_fName)) {
-						int size = savedInstanceState.getInt("sizeOf_4" + mdtmp._Dictionary_fName);
+					if (savedInstanceState.containsKey("sizeOf_4" + full_Dictionary_fName)) {
+						int size = savedInstanceState.getInt("sizeOf_4" + full_Dictionary_fName);
 						mdtmp.combining_search_tree_4 = new ArrayList[size];
 						for (int ti = 0; ti < size; ti++) {//遍历搜索结果
-							if (savedInstanceState.containsKey(mdtmp._Dictionary_fName + "@_4" + ti)) {
-								mdtmp.combining_search_tree_4[ti] = savedInstanceState.getIntegerArrayList(mdtmp._Dictionary_fName + "@_4" + ti);
+							if (savedInstanceState.containsKey(full_Dictionary_fName + "@_4" + ti)) {
+								mdtmp.combining_search_tree_4[ti] = savedInstanceState.getIntegerArrayList(full_Dictionary_fName + "@_4" + ti);
 							}
 						}
 					}
@@ -1551,10 +1540,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							if(arr.length==4) {
 								try {
 									MarginLayoutParams lp = (MarginLayoutParams) root.getLayoutParams();
-									DockerMarginL = lp.leftMargin=Integer.valueOf(arr[2]);
-									DockerMarginR = lp.rightMargin=Integer.valueOf(arr[3]);
-									DockerMarginT = lp.topMargin=Integer.valueOf(arr[0]);
-									DockerMarginB = lp.bottomMargin=Integer.valueOf(arr[1]);
+									DockerMarginL = lp.leftMargin=Integer.parseInt(arr[2]);
+									DockerMarginR = lp.rightMargin=Integer.parseInt(arr[3]);
+									DockerMarginT = lp.topMargin=Integer.parseInt(arr[0]);
+									DockerMarginB = lp.bottomMargin=Integer.parseInt(arr[1]);
 									root.setLayoutParams(lp);
 								} catch (Exception ignored) {}
 							}
@@ -1616,7 +1605,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//bottombar.findViewById(R.id.browser_widget2).performLongClick();
 		//bottombar.findViewById(R.id.browser_widget5).performLongClick();
 
-		etSearch.setText("happy");
+		//etSearch.setText("happy");
 		//if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("15");
 		//if(false)
 		root.postDelayed(() -> {
@@ -1929,11 +1918,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	/** 如有必要，重建日志文件 */
 	private void CheckGlideJournal() {
-		String path=opt.pathToGlide(getApplicationContext());
-		File thumbs_dir=new File(path);
-		if(!thumbs_dir.isDirectory())
-			thumbs_dir.mkdirs();
-		File journal_file = new File(path, "journal");
+		File thumbs_dir=new File(opt.pathToGlide(getApplicationContext()));
+		thumbs_dir.mkdirs();
+		File journal_file = new File(thumbs_dir, "journal");
 		if(opt.getUseLruDiskCache()){
 			if(!journal_file.exists()){
 				Pattern p = Pattern.compile("[a-z0-9_-]+\\.[0-9]{1,3}");
@@ -1963,7 +1950,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					} catch (Exception ignored) {}
 				}
 			}
-		}else{
+		} else {
 			journal_file.delete();
 		}
 	}
@@ -2017,7 +2004,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						if(PDICMainAppOptions.getSearchUseMorphology())
 							key = ReRouteKey(key, false);
 						int idx=currentDictionary.lookUp(key);
-						//CMN.show("单本搜索 ： "+idx);
+						CMN.Log("单本搜索 ： "+idx, currentDictionary.getEntryAt(idx));
 						if(idx!=-1){
 							int tmpIdx = idx;
 							String looseKey = mdict.processText(key);
@@ -2025,17 +2012,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							String LMT = looseMatch;
 							if(!mdict.processText(looseMatch).startsWith(looseKey))
 								idx--;
-							else while(true) {
-								if(looseMatch.startsWith(key)) {
-									idx=tmpIdx;
-									break;
-								}
-								if(tmpIdx>=currentDictionary.getNumberEntries()-1)
-									break;
-								looseMatch = currentDictionary.getEntryAt(++tmpIdx);
-								if(!mdict.processText(looseMatch).startsWith(looseKey))
-									break;
-							}
+//							else while(true) {
+//								if(looseMatch.startsWith(key)) {
+//									idx=tmpIdx;
+//									break;
+//								}
+//								if(tmpIdx>=currentDictionary.getNumberEntries()-1)
+//									break;
+//								looseMatch = currentDictionary.getEntryAt(++tmpIdx);
+//								if(!mdict.processText(looseMatch).startsWith(looseKey))
+//									break;
+//							}
 							lv.setSelection(idx);
 							if(bIsFirstLaunch||bWantsSelection) {
 								if(LMT.equals(looseKey)) {
@@ -2175,17 +2162,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		CMN.MainBackground = MainBackground = opt.getMainBackground();
 		//getWindow().setNavigationBarColor(MainBackground);
 		CMN.FloatBackground = opt.getFloatBackground();
-
-		new File(opt.pathToDatabases().toString()).mkdirs();
 		//文件网络
 		//SharedPreferences read = getSharedPreferences("lock", MODE_PRIVATE);
 		isCombinedSearching = opt.isCombinedSearching();
 		//opt.globalTextZoom = read.getInt("globalTextZoom",dm.widthPixels>900?50:80);
-		opt.getLastMdlibPath();
-		if(opt.lastMdlibPath==null || !new File(opt.lastMdlibPath).exists()) {
-			opt.lastMdlibPath = opt.pathToMainFolder().append("mdicts").toString();
-			new File(opt.lastMdlibPath).mkdirs();
-		}
 
 		setStatusBarColor(getWindow(), MainBackground);
 	}
@@ -2424,7 +2404,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		filteredColor = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 		WHP.setBackgroundColor(filteredColor);
-		if(widget12.getTag(R.id.image)==null){
+		if(widget12.getTag(R.id.image)==null) {
 			webSingleholder.setBackgroundColor(filteredColor);
 		}
 		//showT(Integer.toHexString(filteredColor)+" "+Integer.toHexString(GlobalPageBackground));
@@ -2503,15 +2483,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 
 			vh.title.setText(currentKeyText);
-			if(position==0 && mdict_asset.class==currentDictionary.getClass()) {
-				vh.subtitle.setText(Html.fromHtml("<font color='#2B4391'> < "+"欢迎使用平典"+packageName()+" ></font >"));
-			}
-			else {
-				if(mflag.data!=null)
-					vh.subtitle.setText(Html.fromHtml(currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+mflag.data+" ></font >"));
-				else
-					vh.subtitle.setText(currentDictionary._Dictionary_fName);
-			}
+//			if(position==0 && mdict_asset.class==currentDictionary.getClass()) {
+//				vh.subtitle.setText(Html.fromHtml("<font color='#2B4391'> < "+"欢迎使用平典"+packageName()+" ></font >"));
+//			}
+//			else {
+//				if(mflag.data!=null){
+//					vh.subtitle.setText(Html.fromHtml(currentDictionary.appendCleanDictionaryName(null).append("<font color='#2B4391'> < ").append(mflag.data).append(" ></font >").toString()));
+//				} else {
+//
+//				}
+//			}
+			//tofo
+			vh.subtitle.setText(currentDictionary.getDictionaryName());
 			vh.itemView.setTag(R.id.position,position);
 
 			return vh.itemView;
@@ -2537,8 +2520,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 					lastClickTime = System.currentTimeMillis();
 				}
-				if (!(currentDictionary instanceof mdict_txt) && !opt.getHistoryStrategy0() && opt.getHistoryStrategy6() && opt.getHistoryStrategy8() == 2)
+				if (!(currentDictionary instanceof mdict_txt) && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy6() && PDICMainAppOptions.getHistoryStrategy8() == 2) {
 					insertUpdate_histroy(currentDictionary.currentDisplaying);
+				}
 			}
 		}
 
@@ -2781,10 +2765,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			vh.title.setText(currentKeyText);
 			mdict _currentDictionary = md.get(combining_search_result.dictIdx);
-			if(combining_search_result.mflag.data!=null)
-				vh.subtitle.setText(Html.fromHtml(_currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
-			else
-				vh.subtitle.setText(_currentDictionary._Dictionary_fName);
+//			if(combining_search_result.mflag.data!=null){
+//				vh.subtitle.setText(Html.fromHtml(currentDictionary.appendCleanDictionaryName(null).append("<font color='#2B4391'> < ").append(combining_search_result.mflag.data).append(" ></font >").toString()));
+//			} else {
+//
+//			}
+			vh.subtitle.setText(_currentDictionary.getDictionaryName());
 			if(combining_search_result.getClass()==resultRecorderCombined.class)
 				((TextView)vh.subtitle.getTag()).setText(((resultRecorderCombined)combining_search_result).count);
 			//vh.itemView.setTag(R.id.position,position);
@@ -3015,7 +3001,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		int position;
 		final View itemView;
 		TextView title;
-		TextView subtitle;
+		FlowTextView subtitle;
 
 		public ViewHolder(Context context, int resId, ViewGroup parent) {
 			itemView = LayoutInflater.from(context).inflate(resId, parent, false);
@@ -3026,13 +3012,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 	}
 
-
-
 	@Override
 	public void onClick(View v) {
 		super.onClick(v);
-		if(v.getTag(R.id.click_handled)!=null) return;
-		onIdClick(v, v.getId());
+		if(click_handled_not) {
+			onIdClick(v, v.getId());
+		}
 	}
 
 	//click
@@ -3043,13 +3028,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		OUT:
 		if(DBrowser!=null) {
 			switch(id) {
-				case R.id.browser_widget7: break OUT;
+//				case R.id.browser_widget7:
+//				case R.id.browser_widget13:
+//				case R.id.browser_widget14:
+//				case R.id.browser_widget9:
+				default:
+					break OUT;
 				case R.id.browser_widget8:
 					DBrowser.toggleFavor();
 					break;
-				case R.id.browser_widget13:
-				case R.id.browser_widget14:
-				case R.id.browser_widget9: break OUT;
 				case R.id.browser_widget10:
 					if(ActivedAdapter instanceof PeruseView.LeftViewAdapter) break OUT;
 					DBrowser.goBack();
@@ -3165,7 +3152,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			case R.id.cb1:{
 				etSearch.clearFocus();
 				if(Searchbar ==null) {
-					Toolbar searchbar = (Toolbar) getLayoutInflater().inflate(R.layout.searchbar, null);
+					Toolbar searchbar = (Toolbar) getLayoutInflater().inflate(R.layout.searchbar, dialogHolder, false);
 					searchbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);//abc_ic_ab_back_mtrl_am_alpha
 					searchbar.setNavigationOnClickListener(v1 -> {
 						searchbar.setVisibility(View.GONE);
@@ -3184,51 +3171,22 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					searchbar.setContentInsetsAbsolute(0, 0);
 					searchbar.setLayoutParams(toolbar.getLayoutParams());
 					searchbar.setBackgroundColor(MainBackground);
-					searchbar.findViewById(R.id.recess).setOnClickListener(v12 -> {
-						pickDictDialog.SetSearchIncantation(((EditText) searchbar.findViewById(R.id.etSearch)).getText().toString());
-						int fvp = pickDictDialog.lman.findFirstVisibleItemPosition();
-						int sep = CosyChair.size()-fvp;
-						boolean found=false;
-						for(int i=0,j;i<CosyChair.size();i++) {
-							if(i>=sep) j=i-sep;
-							else j=i+fvp;
-							if(pickDictDialog.SearchPattern.matcher(CosyChair.get(j).name).find()) {
-								pickDictDialog.lman.scrollToPositionWithOffset(j, (int) (45*dm.density/3));
-								found=true;
-								break;
-							}
-						}
-						if(!found) showT("什么都没有找到");
-						imm.hideSoftInputFromWindow(searchbar.findViewById(R.id.etSearch).getWindowToken(), 0);
-						pickDictDialog.adapter().notifyDataSetChanged();
-					});
-					searchbar.findViewById(R.id.forward).setOnClickListener(v13 -> {
-						pickDictDialog.SetSearchIncantation(((EditText) searchbar.findViewById(R.id.etSearch)).getText().toString());
-						int fvp = pickDictDialog.lman.findFirstCompletelyVisibleItemPosition();
-						int sep = CosyChair.size()-fvp-1;
-						boolean found=false;
-						for(int i=CosyChair.size()-1,j;i>=0;i--) {
-							if(i>=sep) j=i-sep;
-							else j=i+fvp;
-							if(pickDictDialog.SearchPattern.matcher(CosyChair.get(j).name).find()) {
-								pickDictDialog.lman.scrollToPositionWithOffset(j, (int) (45*dm.density/3));
-								found=true;
-								break;
-							}
-						}
-						if(!found) showT("什么都没有找到");
-						imm.hideSoftInputFromWindow(searchbar.findViewById(R.id.etSearch).getWindowToken(), 0);
-						pickDictDialog.adapter().notifyDataSetChanged();
-					});
-					searchbar.findViewById(R.id.ivDeleteText).setOnClickListener(v14 -> {
-						pickDictDialog.SearchIncantation = null;
-						((EditText) searchbar.findViewById(R.id.etSearch)).setText("");
-						imm.hideSoftInputFromWindow(searchbar.findViewById(R.id.etSearch).getWindowToken(), 0);
-						pickDictDialog.adapter().notifyDataSetChanged();
-					});
+					
+					SetTagSetClickListener(searchbar.findViewById(R.id.recess));
+					SetTagSetClickListener(searchbar.findViewById(R.id.forward));
+					SetTagSetClickListener(searchbar.findViewById(R.id.ivDeleteText));
+					
 					dialogHolder.addView(searchbar);
-
-					searchbar.findViewById(R.id.etSearch).requestFocus();
+					
+					etSearchDict = searchbar.findViewById(R.id.etSearch);
+					etSearchDict.requestFocus();
+					etSearchDict.addTextChangedListener(new TextWatcher() {
+						@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+						@Override public void onTextChanged(CharSequence s, int start, int before, int count) {  }
+						@Override public void afterTextChanged(Editable s) {
+							SearchDictPatternChanged = true;
+						}
+					});
 					this.Searchbar =searchbar;
 					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 				}
@@ -3254,6 +3212,66 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				cb.toggle();
 				opt.setPinPicDictDialog(cb.isChecked());
 				if(pickDictDialog!=null) pickDictDialog.isDirty=true;
+			} break;
+			case R.id.recess:
+			case R.id.forward:{
+				if(Searchbar!=null) {
+					if(SearchDictPatternChanged) {
+						pickDictDialog.SetSearchIncantation(etSearchDict.getText().toString());
+						SearchDictPatternChanged=false;
+					}
+					//pickDictDialog.SetSearchIncantation("中");
+					int fullSize = CosyChair.size();
+					int pad = (int) (10*dm.density);
+					int delta = id==R.id.recess?1:-1;
+					int fvp;
+					if(pickDictDialog.LastSearchScrollItem>=0) {
+						fvp = pickDictDialog.LastSearchScrollItem+delta;
+					} else {
+						fvp = pickDictDialog.lman.findFirstVisibleItemPosition()+delta;
+						if(pickDictDialog.mRecyclerView.getChildAt(1).getTop()<=pad){
+							fvp++;
+						}
+					}
+					
+					int sep=fullSize-fvp;
+					int st=0;
+					if(delta<0) {
+						sep -= 1;
+						st = fullSize-1;
+					}
+					boolean found=false;
+					for(int i=st,j;delta<0?i>=0:i<fullSize;i+=delta) {
+						if(i>=sep) {
+							j=i-sep;
+						} else {
+							j=i+fvp;
+						}
+						if(delta>0&&j==fullSize-1||delta<0&&j==0) {
+							show(R.string.endendr);
+							return;
+						}
+						if(pickDictDialog.SearchPattern==null || pickDictDialog.SearchPattern.matcher(CosyChair.get(j).pathname).find()) {
+							pickDictDialog.lman.scrollToPositionWithOffset(j, pad);
+							pickDictDialog.LastSearchScrollItem=j;
+							found=true;
+							break;
+						}
+					}
+					if(!found) {
+						showT("什么都没有找到");
+					}
+					imm.hideSoftInputFromWindow(Searchbar.findViewById(R.id.etSearch).getWindowToken(), 0);
+					pickDictDialog.adapter().notifyDataSetChanged();
+				}
+			} break;
+			case R.id.ivDeleteText:{
+				if(Searchbar!=null) {
+					pickDictDialog.SearchIncantation = null;
+					((EditText) Searchbar.findViewById(R.id.etSearch)).setText("");
+					imm.hideSoftInputFromWindow(Searchbar.findViewById(R.id.etSearch).getWindowToken(), 0);
+					pickDictDialog.adapter().notifyDataSetChanged();
+				}
 			} break;
 			case R.id.exitApp:{
 				v.getBackground().jumpToCurrentState();
@@ -3288,7 +3306,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 		}
 	}
-
+	
+	private void SetTagSetClickListener(View view) {
+		view.setTag(false);
+		view.setOnClickListener(this);
+	}
+	
 	/** 切换主界面沉浸式 */
 	public void setNestedScrollingEnabled(boolean bImmersive) {
 		if(systemIntialized)
@@ -3322,7 +3345,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			contentHolder.addView(appbar, 0);
 			contentHolder.addView(mDrawerLayout, 1);
 			if(bImmersive) {
-				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)mDrawerLayout.getLayoutParams());
 				((CoordinatorLayout.LayoutParams)mDrawerLayout.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(getBaseContext(), null));
 			}
 		}
@@ -3440,7 +3462,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				AttachPeruseView(false);
 			} break;
 			case R.id.browser_widget2:{
-				ReadInMdlibs(new File(opt.pathToMainFolder().append("CONFIG/mdlibs.txt").toString()));
+				ReadInMdlibs(null);
 				AgentApplication app = ((AgentApplication) getApplication());
 				app.mdict_cache = mdict_cache;
 				for(mdict mdTmp:md) {
@@ -3493,17 +3515,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 											showT("目录尚未加载!");
 											return;
 										}
-										((mdict_pdf) pdx).parseContent();
+										pdx.parseContent();
 									}
 									break;
 									case 1: {//保存目录
 										if(pdx.pdf_index!=null){
 											File path = getExternalFilesDir(".PDF_INDEX");
-											if(!path.exists()) path.mkdirs();
-											path = new File(path, pdx.getName());
+											path.mkdirs();
+											path = new File(path, pdx.getDictionaryName());
 											BU.printFile(StringUtils.join(pdx.pdf_index, "\n").getBytes(), path);
-											if(path.exists())
+											if(path.exists()) {
 												showT("保存成功");
+											}
 										}
 									}
 									break;
@@ -3579,6 +3602,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			transaction.add(R.id.dialog_, pickDictDialog);
 			findViewById(R.id.dialog_).setOnClickListener(new Utils.DummyOnClick());
 			transaction.commit();
+			root.postDelayed(() -> pickDictDialog.PostEnabled=false, 1000);
 			isFragInitiated=true;
 			//pickDictDialog.mRecyclerView.scrollToPosition(adapter_idx);
 		}
@@ -3590,7 +3614,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public boolean onMenuItemClick(MenuItem item) {
 		int id = item.getItemId();
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
-		boolean isLongClicked=mmi==null?false:mmi.isLongClicked;
+		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;
@@ -3712,7 +3736,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}else{
 					if (CurrentViewPage == 1) {//viewPager
 						tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
-						if (!opt.getHistoryStrategy0()) {
+						if (!PDICMainAppOptions.getHistoryStrategy0()) {
 							insertUpdate_histroy(etSearch.getText().toString().trim());
 						}
 					} else
@@ -3774,9 +3798,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		super.onActivityResult(requestCode, resultCode, duco);
 		//CMN.Log("onActivityResult");
 		switch (requestCode) {
-			case 0: {
-				isBrowsingImgs = false;
-			} break;
 			case 110:{
 				boolean changed = duco!=null && duco.getBooleanExtra("changed", false);
 				if(!changed){
@@ -3806,7 +3827,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						switch_To_Dict_Idx(0, false, false);
 					}
 					invalidAllLists();
-					CMN.Log("变化了", md.size(), currentFilter.size());
+					//CMN.Log("变化了", md.size(), currentFilter.size());
 				}
 				if(PDICMainAppOptions.ChangedMap !=null && PDICMainAppOptions.ChangedMap.size()>0){
 					for(String path: PDICMainAppOptions.ChangedMap) {
@@ -3845,13 +3866,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			case 700:{
 				Uri uri = duco.getData();
-				getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-				//CMN.show(duco.getIntExtra("asd", -1)+"");
-				Log.e("uri", uri.toString());
-				//DocumentFile encryptMyFolderf = DocumentFile.fromTreeUri(this, uri);
-				//encryptMyFolderf.createDirectory("asd");
-				//CMN.show(encryptMyFolderf.exists()+"");
-				//DocumentFile.fromFile(new File("/storage/0DE6-2108/123.txt")).createFile("", null);
+				if(uri!=null) {
+					getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+					//CMN.show(duco.getIntExtra("asd", -1)+"");
+					//DocumentFile encryptMyFolderf = DocumentFile.fromTreeUri(this, uri);
+					//encryptMyFolderf.createDirectory("asd");
+					//CMN.show(encryptMyFolderf.exists()+"");
+					//DocumentFile.fromFile(new File("/storage/0DE6-2108/123.txt")).createFile("", null);
+					//CMN.Log(uri);
+				}
 			} break;
 			case 111:
 				if (duco != null) {
@@ -4032,6 +4055,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			String title = "即点即译";
 			if(val) title+=" √";
 			toolbar.getMenu().findItem(R.id.toolbar_action14).setTitle(title);
+		}
+	}
+	
+	@Override
+	public void invalidAllPagers() {
+		PageSlider.invalidateIBC();
+		if(PeruseView!=null){
+			PeruseView.PageSlider.invalidateIBC();
+		}
+		if(PopupPageSlider!=null){
+			PageSlider.invalidateIBC();
 		}
 	}
 }

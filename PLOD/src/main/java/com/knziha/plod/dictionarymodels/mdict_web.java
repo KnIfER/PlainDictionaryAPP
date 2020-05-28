@@ -54,8 +54,6 @@ import javax.net.ssl.X509TrustManager;
 
 import db.MdxDBHelper;
 
-import static com.knziha.plod.dictionarymodels.mdict_transient.goodNull;
-
 /*
  Mdict point to online website.
  date:2019.11.28
@@ -377,10 +375,14 @@ public class mdict_web extends mdict {
 	private boolean isListDirty;
 
 	//构造
-	public mdict_web(String fn, MainActivityUIBase _a) throws IOException {
-		super(goodNull(fn), _a);
+	public mdict_web(File fn, MainActivityUIBase _a) throws IOException {
+		super(fn, _a, true);
 		a=_a;
 		opt=a.opt;
+		
+		_num_record_blocks=-1;
+		unwrapSuffix=false;
+		
 		website = JSONObject.parseObject(BU.fileToString(f));
 		String _host = website.getString("host");
 		if(_host==null) _host=getRandomHost();
@@ -412,18 +414,13 @@ public class mdict_web extends mdict {
 		if(_entrance!=null){
 			entrance = new ArrayList<>(Arrays.asList(_entrance.split("\n")));
 		}
-		_Dictionary_fName=new File(fn).getName();
-		_Dictionary_fName_Internal = fn.startsWith(opt.lastMdlibPath)?fn.substring(opt.lastMdlibPath.length()):fn;
-		_Dictionary_fName_Internal = _Dictionary_fName_Internal.replace("/", ".");
-
-		justifyInternal("."+_Dictionary_fName);
-
-		htmlBuilder=new StringBuilder();
+		_Dictionary_fName=f.getName();
 
 		readInConfigs(a.UIProjects);
 
-		if(bgColor==null)
+		if(bgColor==null) {
 			bgColor= CMN.GlobalPageBackground;
+		}
 
 		if(excludeAll){
 			canExcludeUrl=true;
@@ -444,8 +441,7 @@ public class mdict_web extends mdict {
 		if(_extensions!=null){
 			cacheExtensions = _extensions.split("\\|");
 			canSaveResource=true;
-			InternalResourcePath = new CachedDirectory(opt.pathToDatabases().append(_Dictionary_fName_Internal).append("/Caches/").toString());
-			if(!InternalResourcePath.exists()) InternalResourcePath.mkdirs();
+			InternalResourcePath = CachedPathSubToDBStorage("Caches");
 		}
 
 		if(_exclude_db_save_extensions!=null){
@@ -549,15 +545,6 @@ public class mdict_web extends mdict {
 	//Todo let's make dice
 	String getRandomHost() {
 		return "";
-	}
-
-	@Override
-	protected void initLogically() {
-		_num_record_blocks=-1;
-		String fn = (String) SU.UniversalObject;
-		fn = new File(fn).getAbsolutePath();
-		f = new File(fn);
-		_Dictionary_fName = f.getName();
 	}
 
 	@Override
@@ -1116,14 +1103,21 @@ public class mdict_web extends mdict {
 		if(getContentEditable()){
 			if(url.startsWith(host))
 				url=url.substring(host.length());
-			getCon(true).enssurePageTable();
-			return con.getPageStream(url);
+			CMN.Log("web enssurePageTable");
+			MdxDBHelper con = getCon(false);
+			if(con!=null){
+				con.enssurePageTable();
+				return con.getPageStream(url);
+			}
 		}
 		return null;
 	}
 
 	@Override
 	public CachedDirectory getInternalResourcePath(boolean create) {
+		if(create && InternalResourcePath!=null){
+			InternalResourcePath.mkdirs();
+		}
 		return InternalResourcePath;
 	}
 

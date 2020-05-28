@@ -31,7 +31,10 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 
 	@Override
 	public void onClick(View v) {
-		if(distance()<35*v.getResources().getDisplayMetrics().density) {
+		if(v instanceof FlowTextView) {
+			((FlowTextView) v).setStarLevelByClickOffset(x0, x);
+		}
+		else if(distance()<35*v.getResources().getDisplayMetrics().density) {
 			TextView widget = (TextView) v;
 			CharSequence text = widget.getText();
 			//CMN.Log("onClickonClick", text instanceof Spannable);

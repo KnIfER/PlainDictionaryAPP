@@ -19,14 +19,9 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.fragment.app.ListFragment;
-import androidx.lifecycle.Lifecycle;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -100,13 +95,12 @@ public class dict_Manager_folderlike extends ListFragment implements dict_manage
 	private void pullData() {
 		if(!dataPrepared) {
 			//CMN.Log("拉取数据！");
-			File rec = new File(a.opt.pathToMainFolder()+"CONFIG/mdlibs.txt");
+			File rec = a.DecordFile;
 			try {
 				BufferedReader in = new BufferedReader(new FileReader(rec));
 				String line;
 				//int idx=0;
-				StringBuilder sb = new StringBuilder(a.opt.lastMdlibPath).append("/");
-				int baseL = a.opt.lastMdlibPath.length()+1;
+				String lastMdlibPath = a.opt.lastMdlibPath.getPath();
 				while((line=in.readLine())!=null){
 					boolean isForeign=false;
 					mFile fI;
@@ -118,30 +112,33 @@ public class dict_Manager_folderlike extends ListFragment implements dict_manage
 							}
 						}
 						if(line.contains("/")) {
-							sb.setLength(baseL);
-							line=sb.append(line).toString();
-							fI = new mFile(line);
-							fI.bInIntrestedDir=true;
+							//wtf???
+							if(line.startsWith("/")) {
+								fI = new mFile(line);
+							} else {
+								fI = new mFile(a.opt.lastMdlibPath, line);
+								fI.bInIntrestedDir=true;
+							}
 							isForeign=true;
-						}else {
-							fI = new mFile(a.opt.lastMdlibPath,line);
+						} else {
+							fI = new mFile(a.opt.lastMdlibPath, line);
 							fI.bInIntrestedDir=true;
 						}
-					}else {
-						if(!line.startsWith(a.opt.lastMdlibPath))
+					} else {
+						if(!line.startsWith(lastMdlibPath))
 							isForeign=true;
 						fI = new mFile(line);
 					}
 
-					if(data.insert(fI.init())==-1)
+					if(data.insert(fI.init(a.opt))==-1)
 						isDirty=true;
 					else if(isForeign)
-						data.insertOverFlow(fI.getParentFile().init());
+						data.insertOverFlow(fI.getParentFile().init(a.opt));
 					//idx++;
 				}
 				in.close();
 
-				data.insert(new mAssetFile("/ASSET/liba.mdx").init());
+				data.insert(new mAssetFile("/ASSET/liba.mdx").init(a.opt));
 
 			} catch (IOException e2) {
 				e2.printStackTrace();
@@ -316,7 +313,7 @@ public class dict_Manager_folderlike extends ListFragment implements dict_manage
 					vh.text.setPadding(0, 0, 0, 0);
 					vh.text.setText(mdTmp.getAbsolutePath());
 				}
-				mFile p = data.get(mdTmp.getParentFile().init());
+				mFile p = data.get(mdTmp.getParentFile().init(a.opt));
 				if(p!=null) {//有父文件夹节点
 					vh.text.setPadding(5, 0, 0, 0);
 					vh.text.setText(BU.unwrapMdxName(mdTmp.getName()));
@@ -342,7 +339,7 @@ public class dict_Manager_folderlike extends ListFragment implements dict_manage
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		a = (dict_manager_activity) getActivity();
-		parentFile=a.opt.lastMdlibPath;
+		parentFile=a.opt.lastMdlibPath.getPath();
 		mDslv = getListView();
 		mDslv.setChoiceMode(mDslv.CHOICE_MODE_MULTIPLE);
 		View v = getActivity().getLayoutInflater().inflate(R.layout.pad_five_dp, null);

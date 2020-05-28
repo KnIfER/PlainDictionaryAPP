@@ -1,15 +1,11 @@
 package com.knziha.plod.dictionarymodels;
 
+import java.io.File;
 import java.io.IOException;
 
 public class mdict_nonexist extends mdict {
 	//构造
-	public mdict_nonexist() throws IOException {
-		super(null, null);
-	}
-
-	@Override
-	protected void initLogically() {
-		_num_record_blocks=-1;
+	public mdict_nonexist(File fn) throws IOException {
+		super(fn, null, true);
 	}
 }
