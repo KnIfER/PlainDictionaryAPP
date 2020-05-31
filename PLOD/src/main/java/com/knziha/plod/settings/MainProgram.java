@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.FilePickerPreference;
@@ -56,6 +57,8 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 		init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null);
 		init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null);
 
+		findPreference("f_size").setDefaultValue(GlobalOptions.isLarge?150:125);
+		
 		findPreference("dev").setOnPreferenceClickListener(this);
 		findPreference("sspec").setOnPreferenceClickListener(this);
 		findPreference("vspec").setOnPreferenceClickListener(this);

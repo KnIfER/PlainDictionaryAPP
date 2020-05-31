@@ -53,7 +53,8 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     	void SizeChanged(int newSize,float delta);
     	void onDrop(int size);
     	int preResizing(int size);
-	}public PageSliderInf inf;
+	}
+	public PageSliderInf inf;
 	public void setPageSliderInf(PageSliderInf inf_) 
 	{
 		inf=inf_;

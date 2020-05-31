@@ -2,6 +2,7 @@ package com.knziha.plod.PlainDict;
 
 import android.app.ActivityManager;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
@@ -26,6 +27,21 @@ public class MainShareActivity extends AppCompatActivity {
 	public void ProcessIntent(Intent intent) {
 		debugString=null;
 		if(intent!=null) {
+			String action = intent.getAction();
+			if(action!=null && action.equals(Intent.ACTION_VIEW)) {
+				Uri url = intent.getData();
+				if(url!=null) {
+					CMN.Log("ProcessIntent_url", url);
+					Intent newTask = new Intent(Intent.ACTION_MAIN);
+					newTask.setType(Intent.CATEGORY_DEFAULT);
+					newTask.putExtra(Intent.EXTRA_TEXT,debugString);
+					newTask.setClass(getBaseContext(),PDICMainActivity.class);
+					newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					newTask.setData(url);
+					startActivity(newTask);
+					return;
+				}
+			}
 			debugString = intent.getStringExtra(Intent.EXTRA_TEXT);
 		}
 		if(debugString!=null){

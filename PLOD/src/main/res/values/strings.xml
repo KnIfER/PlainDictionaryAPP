@@ -119,7 +119,7 @@
 	<string name="clipboard">Enable clipboard monitor</string>
 	<string name="keep_screen_on">Keep screen on</string>
 	<string name="classical_sort">Classical case-insensitivity sorting method</string>
-	<string name="wv_font">Global web view font scale:</string>
+	<string name="wv_font">Global webview font scale:</string>
 	<string name="wv_background">Global web view background:</string>
 	<string name="m_background">Main application background:</string>
 	<string name="f_background">Float search background:</string>

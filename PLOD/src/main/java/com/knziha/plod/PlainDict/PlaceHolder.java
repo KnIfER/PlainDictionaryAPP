@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class PlaceHolder {
 	public String pathname;
+	public String ErrorMsg;
 	private CharSequenceKey name;
 	public int tmpIsFlag;
 	public int lineNumber;

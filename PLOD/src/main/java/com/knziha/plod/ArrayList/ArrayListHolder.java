@@ -15,17 +15,17 @@ public class ArrayListHolder extends ArrayListGood<FlowTextView.LineObject> {
 		size = 0;
 	}
 	
-	public void add(int charOffsetStart, int charOffsetEnd, float yOffset) {
+	public void add(int charOffsetStart, int charOffsetEnd, float xOffset, float yOffset) {
 		int size1=size;
 		FlowTextView.LineObject[] elementData = this.elementData;
 		if(size1<elementData.length) {
 			FlowTextView.LineObject lineObject = elementData[size1];
 			if(lineObject!=null) {
-				lineObject.set(charOffsetStart, charOffsetEnd, yOffset);
+				lineObject.set(charOffsetStart, charOffsetEnd, xOffset, yOffset);
 				size=size1+1;
 				return;
 			}
 		}
-		super.add(new FlowTextView.LineObject(charOffsetStart, charOffsetEnd, yOffset));
+		super.add(new FlowTextView.LineObject(charOffsetStart, charOffsetEnd, xOffset, yOffset));
 	}
 }

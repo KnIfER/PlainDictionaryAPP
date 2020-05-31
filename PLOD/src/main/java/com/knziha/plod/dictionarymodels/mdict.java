@@ -13,6 +13,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Spannable;
@@ -621,6 +622,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		if(pseudoInit) {
 			return;
 		}
+		
+		//init(getStreamAt(0)); // MLSN
 		
         File p = f.getParentFile();
         if(p!=null) {
@@ -2675,4 +2678,28 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			((AdvancedNestScrollWebView)mWebView).setNestedScrollingEnabled(enabled);
 		}
 	}
+	
+// My life shouldn't waste on these android shits.
+// MLSN
+	
+//	String externalstorage = "content://com.android.externalstorage.documents/document/primary%3A";
+//
+//	String storagepath = "/storage/emulated/0/";
+//
+//	@Override
+//	protected InputStream mOpenInputStream() throws IOException {
+//		//return super.mOpenInputStream()
+//		Uri url = Uri.parse(externalstorage+f.getPath().substring(storagepath.length()).replace("/", FU.SLANT));
+//
+//		url = Uri.parse(externalstorage+Uri.encode(f.getPath().substring(storagepath.length())));
+//
+//		//url = Uri.parse("content://com.android.externalstorage.documents/document/primary%3ADownload%2F%E8%8B%B1%E8%AF%AD%E6%9E%84%E8%AF%8D%E6%B3%95.mdx");
+//
+//		return a.getContentResolver().openInputStream(url);
+//	}
+//
+//	@Override
+//	protected boolean StreamAvailable() {
+//		return a!=null;
+//	}
 }

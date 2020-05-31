@@ -41,7 +41,7 @@
 			app:allowDividerBelow="true"/>
 
 		<com.knziha.filepicker.settings.IntPreference
-			android:defaultValue="100"
+			android:defaultValue="@integer/MIN"
 			android:key="f_size"
 			android:persistent="true"
 			android:title="@string/wv_font"

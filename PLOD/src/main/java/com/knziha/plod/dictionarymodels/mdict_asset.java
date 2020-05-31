@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.knziha.plod.PlainDict.CMN.AssetMap;
 import static com.knziha.plod.PlainDict.CMN.AssetTag;
 
 /*
@@ -28,5 +29,14 @@ public class mdict_asset extends mdict {
 	@Override
 	protected boolean StreamAvailable() {
 		return a!=null;
+	}
+	
+	@Override
+	public String getDictionaryName() {
+		String name = AssetMap.get(f.getPath());
+		if(name!=null) {
+			return name;
+		}
+		return super.getDictionaryName();
 	}
 }

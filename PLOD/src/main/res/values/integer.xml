@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <integer name="COLOR_BLACK">0xff000000</integer>
-    <integer name="COLOR_GREEN">0xFFC7EDCC</integer>
-    <integer name="COLOR_PRI">0xFF8f8f8f</integer>
-</resources>

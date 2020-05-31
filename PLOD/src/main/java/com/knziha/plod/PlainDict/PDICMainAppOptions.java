@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Color;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
@@ -226,16 +227,16 @@ public class PDICMainAppOptions
 	
 
 	public int getGlobalPageBackground() {
-		return defaultReader.getInt("GPBC",0xFFC7EDCC);
+		return defaultReader.getInt("GPBC", Color.WHITE); //0xFFC7EDCC
 	}
 	public void putGlobalPageBackground(int val) {
 		defaultReader.edit().putInt("GPBC",val).apply();
 	}
 	public int getMainBackground() {
-		return defaultReader.getInt("BCM",0xFF8f8f8f);
+		return defaultReader.getInt("BCM",Constants.DefaultMainBG);
 	}
 	public int getFloatBackground() {
-		return defaultReader.getInt("BCF",0xFF8f8f8f);
+		return defaultReader.getInt("BCF",Constants.DefaultMainBG);
 	}
 	public int getToastBackground() {
 		return defaultReader.getInt("TTB",0xFFBFDEF8);
@@ -247,7 +248,7 @@ public class PDICMainAppOptions
 		return defaultReader.getInt("TIF",0xFFffffff);
 	}
 	public int getTitlebarBackgroundColor() {
-		return defaultReader.getInt("TIB",0xFF8f8f8f);
+		return defaultReader.getInt("TIB",Constants.DefaultMainBG);
 	}
 
 	public boolean UseTripleClick() {

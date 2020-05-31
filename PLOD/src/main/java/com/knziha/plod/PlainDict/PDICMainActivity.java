@@ -3,6 +3,7 @@ package com.knziha.plod.PlainDict;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
@@ -82,6 +83,7 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 
 import com.bumptech.glide.load.engine.cache.DiskCache;
 import com.google.android.material.appbar.AppBarLayout;
+import com.knziha.filepicker.utils.FU;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.dictionary.Utils.Flag;
@@ -124,9 +126,12 @@ import org.apache.commons.text.StringEscapeUtils;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -1019,6 +1024,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	private void processIntent(Intent intent) {
 		if(intent !=null){
+			Uri url = intent.getData();
+			if(url!=null) {
+				HandleOpenUrl(url);
+			}
 			if(intent.hasExtra(Intent.EXTRA_TEXT))
 				debugString = intent.getStringExtra(Intent.EXTRA_TEXT);
 			//if(!bWantsSelection) bWantsSelection = intent.hasExtra(Intent.EXTRA_SHORTCUT_ID);
@@ -1033,7 +1042,33 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(debugString!=null)
 			JumpToWord(debugString, 0);
 	}
-
+	
+	private void HandleOpenUrl(Uri url) {
+		if(url==null) {
+			return;
+		}
+		CMN.Log("接收到!!!", url, url.getPath());
+		if(false)
+		root.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					// MLSN
+					Uri url = Uri.parse("content://com.android.externalstorage.documents/document/primary%3ADownload%2F%E8%8B%B1%E8%AF%AD%E6%9E%84%E8%AF%8D%E6%B3%95.mdx");
+					
+					InputStream fin = getContentResolver().openInputStream(url);
+					
+					byte[] buffer = new byte[512];
+					fin.read(buffer);
+					CMN.Log("接收到!!!", new String(buffer, 0, 512, StandardCharsets.UTF_16LE));
+					
+				} catch (Exception e) {
+					CMN.Log(e);
+				}
+			}
+		}, 5000);
+	}
+	
 	protected void further_loading(final Bundle savedInstanceState) {
 		//CMN.Log("Main Ac further_loading!!!");
 		webcoord = findViewById(R.id.webcoord);
@@ -1582,6 +1617,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		//tg
 		//do_test_project_Test_Background_Loop();
+		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
+		String[] array = getResources().getStringArray(R.array.drawer_hints);
+		CMN.Log("==??", array[2], array[5], array[2]==array[5], array[2].equals(array[5]), System.identityHashCode(array[2]), System.identityHashCode(array[5]));
+		
+		// MLSN
+		/* CMN.Log("SDK_INT", Build.VERSION.SDK_INT);
+		Uri url = Uri.parse("content://com.android.externalstorage.documents/document/primary%3ADownload%2F%E8%8B%B1%E8%AF%AD%E6%9E%84%E8%AF%8D%E6%B3%95.mdx");
+		getLazyCC().add(new PlaceHolder("/storage/emulated/0/Download/英语构词法.mdx"));
+		md.add(null);*/
 		
 		//showIconCustomizator();
 //		try {
@@ -3798,6 +3842,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		super.onActivityResult(requestCode, resultCode, duco);
 		//CMN.Log("onActivityResult");
 		switch (requestCode) {
+			case Constants.OpenBookRequset:{  // MLSN
+				if(duco!=null) {
+					HandleOpenUrl(duco.getData());
+				}
+			} break;  // MLSN
+			case Constants.OpenBooksRequset:{
+				if(duco!=null) {
+					CMN.Log("已获取目录权限", duco.getData());
+				}
+			} break;
 			case 110:{
 				boolean changed = duco!=null && duco.getBooleanExtra("changed", false);
 				if(!changed){

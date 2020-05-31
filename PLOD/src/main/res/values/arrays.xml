@@ -49,7 +49,7 @@
 		<item>Currently implemented: \'.\' (to match any character), \'*\' (to match any string)</item>    
 		<item>Find in all scoped dictionaries\' Html contents. Can use wildcards as well, but may be slow.</item>    
 		<item></item>
-		<item>Show the lastest 20 bookmarks</item>    
+		<item>Show the latest 20 bookmarks</item>
 		<item>Add bookmarks in the dialog from the icon-button on the top-left of the webview content UI</item>    
 		<item></item>
 		<item>Won\'t modify current configuration unless commit it in the dictionary manager</item>    
@@ -57,7 +57,7 @@
 		<item>Also try long-press on the 2nd btn of the bottom bar</item>    
 		<item>Also try long-press on the last 2nd btn of the bottom bar</item>
 		<item></item>
-		<item>asd</item>
+		<item>&#160;</item>
 	</string-array>
 
 	<string-array name="pdf_option">

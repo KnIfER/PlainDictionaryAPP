@@ -57,6 +57,7 @@ import com.knziha.plod.dictionarymodels.mdict_pdf;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
+import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
 
 import java.io.BufferedWriter;
@@ -225,7 +226,7 @@ public class Drawer extends Fragment implements
 				vh.subtitle.setTextColor(ContextCompat.getColor(a, R.color.colorHeaderBlue));
 			}
 			vh.position=position;
-			vh.itemView.setOnLongClickListener((position==6)?Drawer.this:null);
+			vh.itemView.setOnLongClickListener((position==6||position==7)?Drawer.this:null);
 			if( vh.title.getTextColors().getDefaultColor()!=a.AppBlack) {
 				PDICMainActivity.decorateBackground(vh.itemView);
 				vh.title.setTextColor(a.AppBlack);
@@ -637,208 +638,223 @@ public class Drawer extends Fragment implements
 					a.show(R.string.nothingR);
 			} break;
 			case 6:{//追加词典 添加词典 打开
-				boolean AutoFixLostRecords = true;
-				DialogProperties properties = new DialogProperties();
-				properties.selection_mode = DialogConfigs.SINGLE_MULTI_MODE;
-				properties.selection_type = DialogConfigs.FILE_SELECT;
-				properties.root = new File("/");
-				properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
-				properties.offset = filepickernow!=null?filepickernow:a.opt.lastMdlibPath;
-				properties.opt_dir=new File(a.opt.pathToDatabases()+"favorite_dirs/");
-				properties.opt_dir.mkdirs();
-				properties.extensions = new HashSet<>();
-				properties.extensions.add(".mdx");
-				if(toPDF) {
-					properties.extensions.add(".pdf");
-					properties.extensions.add(".web");
-					properties.extensions.add(".mdd");
-					properties.extensions.add(".txt");
-					properties.extensions.add(".dsl");
+				if(false) { // MLSN
+					a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT)
+							.addCategory(Intent.CATEGORY_OPENABLE)
+							.setType("*/*"), Constants.OpenBookRequset);
 				}
-				properties.title_id = R.string.addd;
-				properties.isDark = a.AppWhite==Color.BLACK;
-				FilePickerDialog dialog = new FilePickerDialog(a, properties);
-				dialog.setDialogSelectionListener(new DialogSelectionListener() {
-					@Override
-					public void
-					onSelectedFilePaths(String[] files,File now) { //files is the array of the paths of files selected by the Application User.
-						filepickernow = now;
-						if(files.length>0) {
-							final File def = new File(a.getExternalFilesDir(null),"default.txt");      //!!!原配
-							File ConfigFile = a.opt.fileToConfig();
-							File rec = a.opt.fileToDecords(ConfigFile);
-							a.ReadInMdlibs(rec);
-							HashMap<String, String> checker = a.checker;
-
-							HashSet<String> mdictInternal = new HashSet<>();
-							HashSet<String> renameRec = new HashSet<>();
-							HashMap<String,String> renameList = new HashMap<>();
-							for(PlaceHolder phI:a.CosyChair) {
-								mdictInternal.add(phI.getPath(a.opt).getPath());
-							}
-							for(mdict mdTmp:a.currentFilter) {
-								if(mdTmp!=null)
-									mdictInternal.add(mdTmp.getPath());
-							}
-							for(mdict mdTmp:Drawer.this.mdictInternal.values()) {
-								if(mdTmp!=null)
-									mdictInternal.add(mdTmp.getPath());
-							}
-
-							try {
-								BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
-								BufferedWriter output2 = null;
-								int countAdd=0;
-								int countRename=0;
-								String removedAPath;
-								for(String fnI:files) {
-									File fI = new File(fnI);
-									if(fI.isDirectory()) continue;
-									//checker.put("sound_us.mdd", "/storage/emulated/0/PLOD/mdicts/发音库/sound_us.mdd");
-									/* 检查文件名称是否乃记录之中已失效项，有则需重命名。*/
-									if(AutoFixLostRecords && (removedAPath=checker.get(fI.getName()))!=null) {
-										renameList.put(removedAPath, fnI);
-										renameRec.add(fnI);
-									}
-									/* 追加不存于当前分组的全部词典至全部记录与缓冲组。 */
-									else if(!mdictInternal.contains(fI.getPath())) {
-										try {
-											PlaceHolder phI = new PlaceHolder(fnI);
-											a.md.add(new_mdict(fnI, a));
-											a.CosyChair.add(phI);
-											String raw=fnI;
-											fnI = mFile.tryDeScion(fI, a.opt.lastMdlibPath);
-											if(output2==null){
-												//tofo check
-												output2 = new BufferedWriter(new FileWriter(def,true));
-											}
-											output2.write(fnI);
-											output2.write("\n");
-											output2.flush();
-											/* 需追加至全部记录而无须重命名者 */
-											if(a.mdlibsCon.add(fnI) && !renameRec.contains(raw)) {
-												output.write(fnI);
-												output.write("\n");
-												output.flush();
-											}
-											countAdd++;
-										} catch (Exception e) {
-											e.printStackTrace();
-											a.showT("词典 "+new File(fnI).getName()+" 加载失败 @"+fnI+" Load Error！ "+e.getLocalizedMessage());
-										}
-									}
-								}
-								CMN.Log(checker);
-								CMN.Log(renameRec.toString());
-								if(a.pickDictDialog!=null) {
-									a.pickDictDialog.adapter().notifyDataSetChanged();
-									a.pickDictDialog.isDirty=true;
-								}
-								output.close();
-								if(output2!=null)output2.close();
-								renameRec.clear();
+				else {
+					boolean AutoFixLostRecords = true;
+					DialogProperties properties = new DialogProperties();
+					properties.selection_mode = DialogConfigs.SINGLE_MULTI_MODE;
+					properties.selection_type = DialogConfigs.FILE_SELECT;
+					properties.root = new File("/");
+					properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
+					properties.offset = filepickernow!=null?filepickernow:a.opt.lastMdlibPath;
+					properties.opt_dir=new File(a.opt.pathToDatabases()+"favorite_dirs/");
+					properties.opt_dir.mkdirs();
+					properties.extensions = new HashSet<>();
+					properties.extensions.add(".mdx");
+					if(toPDF) {
+						properties.extensions.add(".pdf");
+						properties.extensions.add(".web");
+						properties.extensions.add(".mdd");
+						properties.extensions.add(".txt");
+						properties.extensions.add(".dsl");
+					}
+					properties.title_id = R.string.addd;
+					properties.isDark = a.AppWhite==Color.BLACK;
+					FilePickerDialog dialog = new FilePickerDialog(a, properties);
+					dialog.setDialogSelectionListener(new DialogSelectionListener() {
+						@Override
+						public void
+						onSelectedFilePaths(String[] files, File now) {
+							CMN.Log(files);
+							filepickernow = now;
+							if(files.length>0) {
+								final File def = new File(a.getExternalFilesDir(null),"default.txt");      //!!!原配
+								File ConfigFile = a.opt.fileToConfig();
+								File rec = a.opt.fileToDecords(ConfigFile);
+								a.ReadInMdlibs(rec);
+								HashMap<String, String> checker = a.checker;
 								
-								for (ArrayList<PlaceHolder> phII: PDICMainActivity.PlaceHolders) {
-									for (PlaceHolder phI:phII){
-										String newPath = renameList.get(phI.getPath(a.opt));
-										if(newPath!=null){
-											PlaceHolder phTmp = new PlaceHolder(newPath);
-											phI.pathname = phTmp.pathname;
-										}
-									}
+								HashSet<String> mdictInternal = new HashSet<>();
+								HashSet<String> renameRec = new HashSet<>();
+								HashMap<String,String> renameList = new HashMap<>();
+								for(PlaceHolder phI:a.CosyChair) {
+									mdictInternal.add(phI.getPath(a.opt).getPath());
+								}
+								for(mdict mdTmp:a.currentFilter) {
+									if(mdTmp!=null)
+										mdictInternal.add(mdTmp.getPath());
+								}
+								for(mdict mdTmp:Drawer.this.mdictInternal.values()) {
+									if(mdTmp!=null)
+										mdictInternal.add(mdTmp.getPath());
 								}
 								
-								if(AutoFixLostRecords && renameList.size()>0){
-									ArrayList<File> moduleFullScannerArr;
-									File[] moduleFullScanner = ConfigFile.listFiles(pathname -> pathname.getPath().endsWith(".set"));
-									moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
-									moduleFullScannerArr.add(rec);
-									moduleFullScannerArr.add(def);
-									StringBuilder sb = new StringBuilder();
-									AgentApplication app = ((AgentApplication) a.getApplication());
-									char[] cb = app.get4kCharBuff();
-									for(File fI:moduleFullScannerArr) {
-										sb.setLength(0);
-										String line;
-										boolean bNeedRewrite=false;
-										try {
-											ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
-											while((line = br.readLine()) != null) {
-												String prefix = null;
-												if(line.startsWith("[:")){
-													int idx = line.indexOf("]",2);
-													if(idx>=2) {
-														idx+=1;
-														prefix = line.substring(0, idx);
-														line = line.substring(idx);
+								try {
+									BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
+									BufferedWriter output2 = null;
+									int countAdd=0;
+									int countRename=0;
+									String removedAPath;
+									for(String fnI:files) {
+										File fI = new File(fnI);
+										CMN.Log("AddFiles", fnI, mdictInternal.contains(fI.getPath()));
+										if(fI.isDirectory()) continue;
+										//checker.put("sound_us.mdd", "/storage/emulated/0/PLOD/mdicts/发音库/sound_us.mdd");
+										/* 检查文件名称是否乃记录之中已失效项，有则需重命名。*/
+										if(AutoFixLostRecords && (removedAPath=checker.get(fI.getName()))!=null) {
+											renameList.put(removedAPath, fnI);
+											renameRec.add(fnI);
+										}
+										/* 追加不存于当前分组的全部词典至全部记录与缓冲组。 */
+										else if(!mdictInternal.contains(fI.getPath())) {
+											try {
+												a.md.add(new_mdict(fnI, a));
+												PlaceHolder phI = new PlaceHolder(fnI);
+												a.CosyChair.add(phI);
+												String raw=fnI;
+												fnI = mFile.tryDeScion(fI, a.opt.lastMdlibPath);
+												if(output2==null){
+													boolean def_exists = def.exists();
+													//tofo check
+													output2 = new BufferedWriter(new FileWriter(def,true));
+													if(!def_exists) {
+														String path = CMN.AssetTag + "liba.mdx";
+														output2.write(path);
+														output2.write("\n");
 													}
 												}
-												/* from old path to neo path */
-												String finder = renameList.get(line.startsWith("/")?line:a.opt.lastMdlibPath+"/"+line);
-												CMN.Log(fI.getName(), "{重命名??}", finder, line);
-												if(finder!=null){
-													line=mFile.tryDeScion(new File(finder), a.opt.lastMdlibPath);
-													if(prefix!=null){
-														line=prefix+line;
-													}
-													bNeedRewrite = true;
-													countRename++;
-													CMN.Log(fI.getName(), "{当重命名之}", finder, line);
+												output2.write(fnI);
+												output2.write("\n");
+												output2.flush();
+												/* 需追加至全部记录而无须重命名者 */
+												if(a.mdlibsCon.add(fnI) && !renameRec.contains(raw)) {
+													output.write(fnI);
+													output.write("\n");
 												}
-												sb.append(line).append("\n");
+												countAdd++;
+											} catch (Exception e) {
+												e.printStackTrace();
+												a.showT("词典 "+new File(fnI).getName()+" 加载失败 @"+fnI+" Load Error！ "+e.getLocalizedMessage());
 											}
-											br.close();
-											cb=br.cb;
-											if(bNeedRewrite) {
-												ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
-												bw.write(sb.toString());
-												bw.flush(); bw.close();
+										}
+									}
+									CMN.Log(checker);
+									CMN.Log(renameRec.toString());
+									if(a.pickDictDialog!=null) {
+										a.pickDictDialog.adapter().notifyDataSetChanged();
+										a.pickDictDialog.isDirty=true;
+									}
+									output.close();
+									if(output2!=null) {
+										output2.close();
+									}
+									renameRec.clear();
+									
+									for (ArrayList<PlaceHolder> phII: PDICMainActivity.PlaceHolders) {
+										for (PlaceHolder phI:phII){
+											String newPath = renameList.get(phI.getPath(a.opt));
+											if(newPath!=null){
+												PlaceHolder phTmp = new PlaceHolder(newPath);
+												phI.pathname = phTmp.pathname;
+											}
+										}
+									}
+									
+									if(AutoFixLostRecords && renameList.size()>0){
+										ArrayList<File> moduleFullScannerArr;
+										File[] moduleFullScanner = ConfigFile.listFiles(pathname -> pathname.getPath().endsWith(".set"));
+										moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
+										moduleFullScannerArr.add(rec);
+										moduleFullScannerArr.add(def);
+										StringBuilder sb = new StringBuilder();
+										AgentApplication app = ((AgentApplication) a.getApplication());
+										char[] cb = app.get4kCharBuff();
+										for(File fI:moduleFullScannerArr) {
+											sb.setLength(0);
+											String line;
+											boolean bNeedRewrite=false;
+											try {
+												ReusableBufferedReader br = new ReusableBufferedReader(new FileReader(fI), cb, 4096);
+												while((line = br.readLine()) != null) {
+													String prefix = null;
+													if(line.startsWith("[:")){
+														int idx = line.indexOf("]",2);
+														if(idx>=2) {
+															idx+=1;
+															prefix = line.substring(0, idx);
+															line = line.substring(idx);
+														}
+													}
+													/* from old path to neo path */
+													String finder = renameList.get(line.startsWith("/")?line:a.opt.lastMdlibPath+"/"+line);
+													CMN.Log(fI.getName(), "{重命名??}", finder, line);
+													if(finder!=null){
+														line=mFile.tryDeScion(new File(finder), a.opt.lastMdlibPath);
+														if(prefix!=null){
+															line=prefix+line;
+														}
+														bNeedRewrite = true;
+														countRename++;
+														CMN.Log(fI.getName(), "{当重命名之}", finder, line);
+													}
+													sb.append(line).append("\n");
+												}
+												br.close();
 												cb=br.cb;
+												if(bNeedRewrite) {
+													ReusableBufferedWriter bw = new ReusableBufferedWriter(new FileWriter(fI), cb, 4096);
+													bw.write(sb.toString());
+													bw.flush(); bw.close();
+													cb=br.cb;
+												}
+											} catch (IOException e) {
+												e.printStackTrace();
 											}
-										} catch (IOException e) {
-											e.printStackTrace();
 										}
+										app.set4kCharBuff(cb);
+										renameList.clear();
+										checker.clear();
 									}
-									app.set4kCharBuff(cb);
-									renameList.clear();
-									checker.clear();
+									if(countRename>0)
+										a.showT("新加入"+countAdd+"本词典, 重定位"+countRename+"次！");
+									else
+										a.showT("新加入"+countAdd+"本词典！");
+								} catch (IOException e1) {
+									e1.printStackTrace();
 								}
-								if(countRename>0)
-									a.showT("新加入"+countAdd+"本词典, 重定位"+countRename+"次！");
-								else
-									a.showT("新加入"+countAdd+"本词典！");
-							} catch (IOException e1) {
-								e1.printStackTrace();
 							}
 						}
-					}
-
-					@Override
-					public void onEnterSlideShow(Window win, int delay) {
-
-					}
-
-					@Override
-					public void onExitSlideShow() {
-
-					}
-
-					@Override
-					public Activity getDialogActivity() {
-						return null;
-					}
-
-					@Override
-					public void onDismiss() {
-
-					}
-				});
-				dialog.show();
-				dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
-
-				a.d = dialog;
+						
+						@Override
+						public void onEnterSlideShow(Window win, int delay) {
+						
+						}
+						
+						@Override
+						public void onExitSlideShow() {
+						
+						}
+						
+						@Override
+						public Activity getDialogActivity() {
+							return null;
+						}
+						
+						@Override
+						public void onDismiss() {
+						
+						}
+					});
+					dialog.show();
+					dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+					
+					a.d = dialog;
+				}
 				//.dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
-
 			} break;
 			case 7:{//主目录
 				DialogProperties properties1 = new DialogProperties();
@@ -959,10 +975,20 @@ public class Drawer extends Fragment implements
 
 	@Override
 	public boolean onLongClick(View v) {
-		if(((PDICMainActivity.ViewHolder)v.getTag()).position==6){
+		int position = ((PDICMainActivity.ViewHolder) v.getTag()).position;
+		if(position==6) {
 			toPDF=true;
-			((TextView)v.findViewById(R.id.subtext)).setText("Oh PDF !");
+			((FlowTextView)v.findViewById(R.id.subtext)).setText("Oh PDF !");
 			return false;
+		} else if(position==7) {
+			try { // MLSN
+				a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+						.addCategory(Intent.CATEGORY_OPENABLE)
+						.setType("*/*"), Constants.OpenBooksRequset);
+			} catch (Exception e) {
+				a.showT(e.getMessage());
+			}
+			return true;
 		}
 		Intent i = new Intent(getActivity(), CuteFileManager.class);
 		startActivity(i);

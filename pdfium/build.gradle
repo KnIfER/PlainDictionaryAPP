@@ -4,7 +4,7 @@ apply plugin: 'com.android.library'
 android {
 
     defaultConfig {
-        compileSdkVersion ver_compileSdkVersion as int
+        compileSdkVersion ver_compileSdkVersion
         targetSdkVersion ver_aimsdk
         minSdkVersion ver_minsdk
         vectorDrawables.useSupportLibrary = true

@@ -107,6 +107,13 @@
 				<category android:name="android.intent.category.DEFAULT" />
 				<data android:mimeType="text/plain" />
 			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW"/>
+				<category android:name="android.intent.category.DEFAULT"/>
+				<category android:name="android.intent.category.BROWSABLE"/>
+				<data android:mimeType="*/*"/>
+				<data android:pathPattern="*.mdx"/>
+			</intent-filter>
 		</activity>
 		<activity android:name="com.knziha.plod.PlainDict.FloatActivitySearch"
 			android:theme="@style/FloatAppTheme"

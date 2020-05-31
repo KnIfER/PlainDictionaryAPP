@@ -166,29 +166,24 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 		@Override
 		public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 			//CMN.Log("onCreateViewHolder...");
-			MyViewHolder ret = new MyViewHolder(
-					LayoutInflater.from(parent.getContext())
-							.inflate(R.layout.diag1_fc_list_item, parent, false));
-			ret.coverp.setOnClickListener(DictPicker.this);
-			ret.itemView.setOnClickListener(DictPicker.this);
+			MyViewHolder ret = new MyViewHolder(LayoutInflater.from(parent.getContext())
+							.inflate(R.layout.diag1_fc_list_item, parent, false), DictPicker.this);
 			return ret;
 		}
 
 		@Override
 		public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position) {
-			int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
-			FlowTextView tv = holder.tv;
-			if(adapter_idx==position) {
-				holder.itemView.setBackgroundColor(Color.parseColor("#4F7FDF"));//FF4081
-				tv.setTextColor(Color.WHITE);
-			}else {
-				holder.itemView.setBackgroundColor(Color.TRANSPARENT);//aaa0f0f0//Color.parseColor("#aaa0f0f0")
-				tv.setTextColor(Color.BLACK);
-			}
 			holder.position = position;
-			if(GlobalOptions.isDark) {
-				tv.setTextColor(Color.WHITE);
-			}
+			
+			int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
+			
+			FlowTextView tv = holder.tv;
+			
+			boolean isThisSelected = adapter_idx==position;
+			
+			holder.itemView.setBackgroundColor(isThisSelected?0xff4F7FDF:Color.TRANSPARENT);
+			
+			tv.setTextColor(GlobalOptions.isDark||isThisSelected?Color.WHITE:Color.BLACK);
 			
 			tv.PostEnabled = PostEnabled;
 			
@@ -196,11 +191,9 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 			
 			tv.setCompoundDrawables(mActiveDrawable, null, null, null);
 			
-			tv.setText(a.md_getName(position));
-			
 			tv.SetSearchPattern(SearchPattern);
 			
-			holder.coverp.setTag(position);
+			tv.setText(a.md_getName(position));
 			
 			holder.cover.setImageDrawable(a.md_getCover(position));
 		}
@@ -211,34 +204,36 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 		Object tag = v.getTag();
 		if(tag instanceof MyViewHolder){
 			int position = ((MyViewHolder) tag).position;
-			if(a.dismissing_dh) return;
-			if(a.pickTarget==1){//点译上游
-				int tmpPos = a.currentClick_adapter_idx;
-				a.CCD=a.md_get(position);
-				a.CCD_ID=a.currentClick_adapter_idx = position;
-				a.popupWord(a.popupTextView.getText().toString(),-1, -1);
-				mAdapter.notifyItemChanged(tmpPos);
-				mAdapter.notifyItemChanged(position);
-				if(a instanceof PDICMainActivity){
-					((PDICMainActivity)a).dismissDictPicker(R.anim.dp_dialog_exit);
-				}else {
-					dismiss();
-				}
-			}
-			else {//当前词典
-				int tmpPos = a.adapter_idx;
-				a.adapter_idx = position;
-				a.switch_To_Dict_Idx(position, true, true);
-				mAdapter.notifyItemChanged(tmpPos);
-				if(tmpPos!=position){
+			if(v.getId()==R.id.coverp) {
+				a.showAboutDictDialogAt(position);
+			} else {
+				if(a.dismissing_dh) return;
+				if(a.pickTarget==1){//点译上游
+					int tmpPos = a.currentClick_adapter_idx;
+					a.CCD=a.md_get(position);
+					a.CCD_ID=a.currentClick_adapter_idx = position;
+					a.popupWord(a.popupTextView.getText().toString(),-1, -1);
+					mAdapter.notifyItemChanged(tmpPos);
 					mAdapter.notifyItemChanged(position);
+					if(a instanceof PDICMainActivity){
+						((PDICMainActivity)a).dismissDictPicker(R.anim.dp_dialog_exit);
+					}else {
+						dismiss();
+					}
 				}
-				if (bShouldCloseAfterChoose) {
-					v.post(this::dismiss);
+				else {//当前词典
+					int tmpPos = a.adapter_idx;
+					a.adapter_idx = position;
+					a.switch_To_Dict_Idx(position, true, true);
+					mAdapter.notifyItemChanged(tmpPos);
+					if(tmpPos!=position){
+						mAdapter.notifyItemChanged(position);
+					}
+					if (bShouldCloseAfterChoose) {
+						v.post(this::dismiss);
+					}
 				}
 			}
-		} else if(tag instanceof Integer) {
-			a.showAboutDictDialogAt((int)tag);
 		}
 	}
 
@@ -263,16 +258,19 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 		public int position;
 		FlowTextView tv;
 		ImageView cover;
-		View coverp;
-		public MyViewHolder(View view)
+		public MyViewHolder(View view, View.OnClickListener onclick)
 		{
 			super(view);
 			tv = view.findViewById(R.id.id_num);
 			cover = view.findViewById(R.id.cover);
-			coverp = view.findViewById(R.id.coverp);
 			itemView.setTag(this);
+			itemView.setOnClickListener(onclick);
+			View coveronclick = view.findViewById(R.id.coverp);
+			coveronclick.setTag(this);
+			coveronclick.setOnClickListener(onclick);
 		}
 	}
+	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);

@@ -31,17 +31,17 @@ import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.knziha.plod.ArrayList.ArrayListHolder;
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.R;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -79,6 +79,7 @@ public class FlowTextView extends View {
 	private int mDesiredHeight = 100; // height of the whole view
 	private String mText = StringUtils.EMPTY;
 	private String mTail;
+	private int mGravity;
 	
 	private float mSpacingMult=1;
 	private float mSpacingAdd;
@@ -92,6 +93,10 @@ public class FlowTextView extends View {
 	private float mTailLength;
 	private RectF mCoverRect;
 	private boolean Rating;
+	private int lastMeasuredWidth;
+	private int mLineHeight;
+	private boolean mTextsize_MinueOne;
+	private boolean bNeedInvalidate;
 	
 	public FlowTextView(Context context) {
 		this(context, null);
@@ -114,6 +119,7 @@ public class FlowTextView extends View {
 			maxLines = ta.getInteger(R.styleable.FlowTextView_android_maxLines, -1);
 			margin = ta.getDimension(R.styleable.FlowTextView_margin, 0);
 			Rating = ta.getBoolean(R.styleable.FlowTextView_rating, false);
+			mGravity = ta.getInteger(R.styleable.FlowTextView_android_gravity, 0);
 			if(isInEditMode()){
 				mActiveDrawable = ta.getDrawable(R.styleable.FlowTextView_android_src);
 				setText(ta.getString(R.styleable.FlowTextView_android_text));
@@ -133,10 +139,11 @@ public class FlowTextView extends View {
 		
 		mTextMetrics = mTextPaint.getFontMetrics();
 		
-		mFocusPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-		mFocusPaint.density = dm.density;
-		mFocusPaint.setTextSize(mTextsize);
-		mFocusPaint.setColor(Color.RED);
+		onTextSizeChanged();
+	}
+	
+	private void onTextSizeChanged() {
+		mLineHeight = (int)((mTextMetrics.bottom-mTextMetrics.top) * mSpacingMult + mSpacingAdd);
 	}
 	
 	/* text content */
@@ -144,18 +151,22 @@ public class FlowTextView extends View {
 		if(text==null){
 			text = StringUtils.EMPTY;
 		}
-		mText = text;
-		mLength = text.length();
-		int suffix_index = text.lastIndexOf(".");
-		if(suffix_index>0 && text.regionMatches(true,suffix_index+1, "mdx", 0, 3)){
-			mLength-=4;
+		if(!mText.equals(text)) {
+			mText = text;
+			mLength = text.length();
+			int suffix_index = text.lastIndexOf(".");
+			if(suffix_index>0 && text.regionMatches(true,suffix_index+1, "mdx", 0, 3)){
+				mLength-=4;
+			}
+			mStart=0;
+			suffix_index = text.lastIndexOf("/", suffix_index>=0?suffix_index:text.length());
+			if(suffix_index>0){
+				mStart = suffix_index+1;
+			}
+			postCalcTextLayout();
+		} else if(bNeedInvalidate){
+			invalidate();
 		}
-		mStart=0;
-		suffix_index = text.lastIndexOf("/", suffix_index>=0?suffix_index:text.length());
-		if(suffix_index>0){
-			mStart = suffix_index+1;
-		}
-		postCalcTextLayout();
 	}
 	
 	public CharSequence getText() {
@@ -198,18 +209,22 @@ public class FlowTextView extends View {
 	}
 	
 	private void calcTextLayout() {
+		//CMN.Log("calcTextLayout", getText());
 		float space_width = getMeasuredWidth();
 		if(space_width==0){
 			postDelayed(this::calcTextLayout, 350);
 		}
-		space_width -= getPaddingLeft() + getPaddingRight() + pad_right;
+		float paddingStart = getPaddingStart();
+		float paddingEnd = getPaddingEnd();
+		space_width -= paddingStart + paddingEnd + pad_right;
 		postedCalcLayout = false;
 		// set up some counter and helper variables we will us to traverse through the string to be rendered
 		int charOffsetStart = mStart; // tells us where we are in the original string
 		int charOffsetEnd; // tells us where we are in the original string
 		int lineIndex = 0;
 		float yOffset = 0;
-		int lineHeight = getLineHeight(); // get the height in pixels of a line for our current TextPaint
+		float xOffset = 0;
+		int lineHeight = mLineHeight;// getLineHeight(); // get the height in pixels of a line for our current TextPaint
 		//int paddingTop = getPaddingTop();
 		float ascent = mTextPaint.getFontMetrics().ascent;
 		
@@ -228,21 +243,45 @@ public class FlowTextView extends View {
 		lineObjects.clear(); // this will get populated with special html objects we need to render
 		
 		if (mLength > 0) { // is some actual text
+			int textLeft = getPaddingLeft();
+			if(mLeftDrawable!=null){
+				textLeft+=mLineHeight;
+			}
+			if(mCoverBitmap !=null){
+				textLeft+=mLineHeight;
+			}
 			while (charOffsetStart < mLength && (maxLines<=0||lineIndex<maxLines)) { // churn through the block spitting it out onto seperate lines until there is nothing left to render
 				lineIndex++; // we need a new line
 				yOffset =  (lineIndex-1) * lineHeight - ascent; // calculate our new y position based on number of lines * line height
 				
 				charOffsetEnd = splitChunk(mText, charOffsetStart, space_width);
 				
-//				LineObject htmlLine = new LineObject(charOffsetStart, charOffsetEnd, yOffset);
-//
-//				lineObjects.add(htmlLine);
+				xOffset = textLeft;
 				
-				lineObjects.add(charOffsetStart, charOffsetEnd, yOffset);
+				if(mGravity == Gravity.CENTER) {
+					//CMN.Log("居中");
+					float len = mTextPaint.measureText(mText, charOffsetStart, charOffsetEnd);
+					if(len<space_width) {
+						xOffset = (int) (xOffset + (space_width-len)/2 - paddingStart);
+					}
+				}
 				
+				lineObjects.add(charOffsetStart, charOffsetEnd, xOffset, yOffset);
+
 				//if(htmlLine.end>mLength) htmlLine.end=mLength;
 				
 				charOffsetStart = charOffsetEnd;
+			}
+			if(maxLines==2) {
+				if(maxLines==lineIndex) {
+					float pad = 2.5f * mTextPaint.density;
+					mTextPaint.setTextSize(mTextsize-pad);
+					mTextsize_MinueOne = true;
+					lineObjects.get(1).yOffset -= pad;
+				} else if(mTextsize_MinueOne){
+					mTextPaint.setTextSize(mTextsize);
+					mTextsize_MinueOne = false;
+				}
 			}
 		}
 		
@@ -280,22 +319,14 @@ public class FlowTextView extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		LineObject htmlLine;
 		int size = lineObjects.size();
-		Matcher m=SearchMatcher;
-		if(m!=null){
-			m.reset();
-		}
-		int lastFind = -1;
 		int paddingTop = getPaddingTop();
 		int paddingLeft = getPaddingLeft();
 		int height = getMeasuredHeight();
 		int width = getMeasuredWidth();
 		
-		int lineHeight = (int)((mTextMetrics.bottom-mTextMetrics.top) * mSpacingMult + mSpacingAdd);
-		
 		if(mCoverBitmap !=null) {
-			int RWidth = lineHeight*5/6;
+			int RWidth = mLineHeight*5/6;
 			int RStart = paddingLeft;
 			int RTop = (height-RWidth)/2;
 			mCoverRect.set(RStart, RTop, RStart+RWidth, RTop+RWidth);
@@ -303,22 +334,22 @@ public class FlowTextView extends View {
 		}
 		
 		if(mLeftDrawable!=null) {
-			int RWidth = lineHeight*5/6;
+			int RWidth = mLineHeight*5/6;
 			int RStart = paddingLeft;
 			int RTop = (height-RWidth)/2;
 			if(mCoverBitmap!=null){
-				RStart += lineHeight;
+				RStart += mLineHeight;
 			}
 			mLeftDrawable.setBounds(RStart, RTop, RStart+RWidth, RTop+RWidth);
 			mLeftDrawable.draw(canvas);
 		}
 		
 		if(mRightDrawable!=null) {
-			int RWidth = lineHeight*5/6;
+			int RWidth = mLineHeight*5/6;
 			int RStart = width - RWidth;
 			int RTop = (height-RWidth)/2;
 			if(mTail!=null){
-				RTop -= lineHeight/6;
+				RTop -= mLineHeight/6;
 			}
 			mRightDrawable.setBounds(RStart, RTop, RStart+RWidth, RTop+RWidth);
 			mRightDrawable.draw(canvas);
@@ -331,34 +362,35 @@ public class FlowTextView extends View {
 				float distance = (mTextMetrics.bottom - mTextMetrics.top) / 2 - mTextMetrics.bottom;
 				baseline = baseline / 2 + distance;
 			} else {
-				baseline -= lineHeight/6;
+				baseline -= mLineHeight/6;
 			}
 			canvas.drawText(mTail, width-mTailLength, baseline, mTextPaint);
 		}
 		
 		/* stars */
 		if(mActiveDrawable!=null && (mRatingDrawable==null||!Rating) && StarLevel>0){
-			drawStars(canvas, width, height, paddingTop, lineHeight);
+			drawStars(canvas, width, height, paddingTop, mLineHeight);
 		}
 		
 		/* text */
-		int textTop = paddingTop + (height - (lineHeight-(int)(2*Utils.density))*size)/2;
-		int textLeft = getPaddingLeft();
-		if(mLeftDrawable!=null){
-			textLeft+=lineHeight;
+		if(SearchMatcher!=null){
+			initFocusedTextPainter();
 		}
-		if(mCoverBitmap !=null){
-			textLeft+=lineHeight;
-		}
-		for (int i = 0; i < size; i++) {
+		LineObject htmlLine;
+		int start;
+		int i=0;
+		float xOffset;
+		float textTop = paddingTop + (height - (mLineHeight-(2*Utils.density))*size)/2;
+		for (; i < size; i++) {
 			htmlLine = lineObjects.get(i);
-			int start=htmlLine.start;
-			int xOffset=textLeft;
-			if(m!=null) {
-				if((i==0&&find_m(m))||lastFind>=0)
+			start=htmlLine.start;
+			xOffset = htmlLine.xOffset;
+			if(SearchMatcher!=null) {
+				int lastFind = -1;
+				if((i==0&&find_m(SearchMatcher))||lastFind>=0)
 				do {
-					int now = m.start();
-					int end = m.end();
+					int now = SearchMatcher.start();
+					int end = SearchMatcher.end();
 					if(now>=htmlLine.start && now<htmlLine.end){// 如若落在这一行
 						canvas.drawText(mText, start, now, xOffset, textTop+htmlLine.yOffset, mTextPaint);
 						xOffset += mTextPaint.measureText(mText, start, now);
@@ -384,7 +416,7 @@ public class FlowTextView extends View {
 						lastFind = now;
 						break;
 					}
-				} while(find_m_nonnull(m));
+				} while(find_m_nonnull(SearchMatcher));
 			}
 			if(start<htmlLine.end && htmlLine.end<=mText.length()){
 				canvas.drawText(mText, start, htmlLine.end, xOffset, textTop+htmlLine.yOffset, mTextPaint);
@@ -393,9 +425,19 @@ public class FlowTextView extends View {
 		
 		/* stars */
 		if(Rating && mRatingDrawable!=null && mActiveDrawable!=null){
-			drawStars(canvas, width, height, paddingTop, lineHeight);
-			
+			drawStars(canvas, width, height, paddingTop, mLineHeight);
 		}
+	}
+	
+	private void initFocusedTextPainter() {
+		CMN.Log("initFocusedTextPainter");
+		if(mFocusPaint==null) {
+			mFocusPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+			mFocusPaint.density = mTextPaint.density;
+			mFocusPaint.setTextSize(mTextsize);
+			mFocusPaint.setColor(Color.RED);
+		}
+		SearchMatcher.reset();
 	}
 	
 	private void drawStars(Canvas canvas, int width, int height, int paddingTop, int lineHeight) {
@@ -428,6 +470,7 @@ public class FlowTextView extends View {
 	public void invalidate() {
 		super.invalidate();
 		mTextPaint.getFontMetrics(mTextMetrics);
+		bNeedInvalidate = false;
 	}
 	
 	/* MINOR VIEW EVENTS */
@@ -452,7 +495,7 @@ public class FlowTextView extends View {
 		if (widthMode == MeasureSpec.EXACTLY) {
 			// Parent has told us how big to be. So be it.
 			width = widthSize;
-			if(postedCalcLayout) {
+			if(postedCalcLayout && width!=lastMeasuredWidth) {
 				calcTextLayout();
 			}
 		} else {
@@ -466,7 +509,7 @@ public class FlowTextView extends View {
 			height = mDesiredHeight;
 		}
 		
-		setMeasuredDimension(width, height);
+		setMeasuredDimension(lastMeasuredWidth=width, height);
 	}
 	
 	// GETTERS AND SETTERS
@@ -490,6 +533,7 @@ public class FlowTextView extends View {
 		if(mTextColor!=color){
 			mTextColor = color;
 			mTextPaint.setColor(mTextColor);
+			bNeedInvalidate = true;
 		}
 	}
 	
@@ -568,13 +612,15 @@ public class FlowTextView extends View {
 		public int start;
 		public int end;
 		public float yOffset;
-		public LineObject(int start, int end, float yOffset) {
-			set(start, end, yOffset);
+		public float xOffset;
+		public LineObject(int start, int end, float xOffset, float yOffset) {
+			set(start, end, xOffset, yOffset);
 		}
 		
-		public void set(int start, int end, float yOffset) {
+		public void set(int start, int end, float xOffset, float yOffset) {
 			this.start = start;
 			this.end = end;
+			this.xOffset = xOffset;
 			this.yOffset = yOffset;
 		}
 	}
@@ -589,5 +635,11 @@ public class FlowTextView extends View {
 				return super.onTouchEvent(e);
 			return true;
 		}
+	}
+	
+	@Override
+	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+		super.onSizeChanged(w, h, oldw, oldh);
+		calcTextLayout();
 	}
 }

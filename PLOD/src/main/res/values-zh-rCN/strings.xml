@@ -59,7 +59,7 @@
 	<string name="try_longpress">无效操作, 请尝试长按</string>
 
 
-	<string name="err">词典 %1$s 加载失败!  @%2$s : %3$s</string>
+	<string name="err">加载失败</string>
 	<string name="loadconfig">加载词典分组</string>
 	<string name="pickfavor">选择生词本</string>
 	<string name="newfc">新建</string>

@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
@@ -85,6 +86,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public ArrayList<Integer> data = new ArrayList<>();
 	public ArrayList<Integer> bakedGroup = new ArrayList<>();
 	private boolean baked;
+	public ArrayList<View> cyclerBin = new ArrayList<>();
 	public ArrayList<View> recyclerBin = new ArrayList<>();
 	private ArrayList<mdict> md = new ArrayList<>();
 	public ArrayList<PlaceHolder> ph = new ArrayList<>();
@@ -123,7 +125,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	EditText PerusePageSearchetSearch;
 	TextView PerusePageSearchindicator;
 	String PerusePageSearchetSearchStartWord;
-
+	private View handle1;
+	private View handle2;
+	
 	//构造
 	public PeruseView(){
 		super();
@@ -320,7 +324,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			@Override
 			public void SizeChanged(int newSize,float MoveDelta) {
 				if(LvHeadline.getChildCount()<1) return;
-				getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
 		        cc = dm.widthPixels/itemWidth; //一行容纳几列
 		        if(dm.widthPixels - cc*itemWidth>0.85*itemWidth)
 		        	cc++;
@@ -335,6 +338,15 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 							PositionToSelect++;
 						
 						NumPreEmpter = (cc - PositionToSelect%cc)%cc;
+						for (int i = cyclerBin.size(); i < NumPreEmpter; i++) {
+							View vt = new View(getContext());
+							int itemWidth = (int) (lvHeaderItem_length * density);
+							int itemHeight = (int) (lvHeaderItem_height * density);
+							TwoWayGridView.LayoutParams lp = new TwoWayGridView.LayoutParams(itemWidth, itemHeight);
+							vt.setLayoutParams(lp);
+							vt.setOnClickListener(PeruseView.this);
+							cyclerBin.add(vt);
+						}
 						TargetRow = (PositionToSelect+NumPreEmpter)/cc;
 						NumRows =  (int) Math.ceil(((float)data.size()+NumPreEmpter)/cc);
 				        LvHeadline.setNumColumns(cc);
@@ -343,7 +355,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				        LvHeadline.setHorizontalScroll(false);
 			        	LvHeadline.setSelection(PositionToSelect+NumPreEmpter);
 					}
-				}else if(newSize>=1.2*itemHeight) {//transition
+				}
+				else if(newSize>=1.2*itemHeight) {
+					/* transition */
 					//a.showT("entering transition...");
 					if(!bExpanded) {
 						int FVP = LvHeadline.getFirstVisiblePosition();//当前行起始位置
@@ -361,7 +375,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						float Target = ((1-alpha)*transitionTarget+alpha*transitionStart);
 						LvHeadline.smoothScrollBy((int) (Target-CurrentScrollX),60);
 					}
-				}else if(newSize<=itemHeight+1){//collapse
+				}
+				else if(newSize<=itemHeight+1){
+					/* collapse */
 					if(bExpanded) {
 						//a.showT("collapsing..."+PositionToSelect);
 						bExpanded=false;
@@ -387,7 +403,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					}
 				}
 				
-				
 				if(bExpanded && newSize>HeadlineInitialSize) {
 					if(MoveDelta<0){//shrinking
 						int FVP = LvHeadline.getFirstVisiblePosition();//当前行起始位置
@@ -409,7 +424,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						//a.showT(TargetRowPos+":"+CurrentScrollYTop);
 					}
 				}
-				
 			}
 
 			@Override
@@ -437,8 +451,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 			@Override
 			public void onHesitate() {}});
-
-        main_pview_layout = peruse_content;
+		
+		handle1  = peruse_content.findViewById(R.id.handle);
+		
+		handle2  = peruse_content.findViewById(R.id.inner_handle);
+		
+		main_pview_layout = peruse_content;
+  
 
 		return container;
 	}
@@ -484,6 +503,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if(content!=null) {
 				root=content;
 			}
+			Toastable_Activity.setStatusBarColor(win, CMN.MainBackground);
+			//win.setStatusBarColor(CMN.MainBackground);
 			View view = win.getDecorView();
 			view.setBackground(null);
 
@@ -495,7 +516,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			win.setAttributes(layoutParams);
 
 			Toastable_Activity.setWindowsPadding(view);
-
 
 			View t = win.findViewById(android.R.id.title);
 			if(t!=null) t.setVisibility(View.GONE);
@@ -570,7 +590,26 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			RefreshBookShelf(a);
 		}
 	}
-
+	
+	static class DictTitleHolder
+	{
+		public int position;
+		FlowTextView tv;
+		ImageView cover;
+		public DictTitleHolder(int pos, View view)
+		{
+			position = pos;
+			tv = view.findViewById(R.id.text);
+			cover = view.findViewById(R.id.image);
+			view.setTag(this);
+		}
+		
+		public void setTextColor(int ColorInt) {
+			tv.setTextColor(ColorInt);
+			tv.invalidate();
+		}
+	}
+	
 	private void RefreshBookShelf(MainActivityUIBase a) {
 		NumPreEmpter=0;
 		int NumToAdd = data.size()-recyclerBin.size();
@@ -579,7 +618,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			View vt = a.getLayoutInflater().inflate(R.layout.main_peruse_dictlet, null);
 			TwoWayGridView.LayoutParams lp = new TwoWayGridView.LayoutParams(itemWidth, itemHeight);
 			vt.setLayoutParams(lp);
-			vt.setTag(data.get(i));
+			new DictTitleHolder(data.get(i), vt);
 			recyclerBin.add(vt);
 		}
 		booksShelfAdapter.notifyDataSetChanged();
@@ -671,7 +710,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(contentview==null)
 			inflateContentView(a);
 		
-		refreshUIColors();
+		refreshUIColors(a.MainBackground);
 		
         if(ToL = a.opt.getPerUseToL())
 			intenToLeft.setBackgroundResource(R.drawable.toleft);
@@ -1029,19 +1068,28 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 	}
 	
-	public void refreshUIColors() {
+	public void refreshUIColors(int MainBackground) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		boolean isChecked = GlobalOptions.isDark;
+		boolean isDark = GlobalOptions.isDark;
 
-		int filteredColor = isChecked?Color.BLACK:0xff8f8f8f;
+		int filteredColor = isDark?Color.BLACK:MainBackground; //0xff8f8f8f
 
 		if(PerusePageSearchbar!=null)
 			PerusePageSearchbar.setBackgroundColor(filteredColor);
+		
+		if(mDialog!=null)
+			Toastable_Activity.setStatusBarColor(mDialog.getWindow(), filteredColor);
+		
+		int f_b = ColorUtils.blendARGB(filteredColor, Color.WHITE, 0.20f);
+		
+		handle1.getBackground().setColorFilter(f_b, PorterDuff.Mode.LIGHTEN);
+		
+		handle2.getBackground().setColorFilter(f_b, PorterDuff.Mode.LIGHTEN);
 
-		mWebView.evaluateJavascript(isChecked? MainActivityUIBase.DarkModeIncantation: MainActivityUIBase.DeDarkModeIncantation, null);
+		mWebView.evaluateJavascript(isDark? MainActivityUIBase.DarkModeIncantation: MainActivityUIBase.DeDarkModeIncantation, null);
 		main_pview_layout.setBackgroundColor(filteredColor);
 		bottombar2.setBackgroundColor(bottombar2BaseColor = filteredColor);
-		webSingleholder.setBackgroundColor(isChecked?Color.BLACK:a.GlobalPageBackground);
+		webSingleholder.setBackgroundColor(isDark?Color.BLACK:a.GlobalPageBackground);
 	}
 
 	float spsubs;
@@ -1200,6 +1248,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if (idx >= 0){
 				String toCompare = mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase();
 				int len = text.length();
+				int len1 = len;
 				int len2 = toCompare.length();
 				//CMN.Log("cidx??",mdTmp._Dictionary_fName, toCompare);
 				if(len>0 && len2>0/* && len>=toCompare.length()*/ && text.charAt(0)==toCompare.charAt(0)){
@@ -1216,7 +1265,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						cidx--;
 						//CMN.Log("cidx", cidx, text, toCompare, mdTmp._Dictionary_fName);
 						if (cidx > 0) {
-							if (len - cidx <= 4 || cidx>=len/2) {
+							if (cidx>=len1/3 && (len - cidx <= 4 || cidx>=len2/2)) {
 								data.add(i);
 								bakedGroup.add(i);
 							}
@@ -1261,26 +1310,23 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
         	if(position<NumPreEmpter) {
-        		View vt = new View(parent.getContext());
-                int itemWidth = (int) (lvHeaderItem_length * density);
-                int itemHeight = (int) (lvHeaderItem_height * density);
-                TwoWayGridView.LayoutParams lp = new TwoWayGridView.LayoutParams(itemWidth, itemHeight);
-                vt.setLayoutParams(lp);
-                vt.setOnClickListener(PeruseView.this);
-        		return vt;
+        		return cyclerBin.get(position);
         	}
         	position-=NumPreEmpter;
         	View ItemView = recyclerBin.get(position);
+			DictTitleHolder holder = (DictTitleHolder) ItemView.getTag();
 			int mdIdx = data.get(position);
 	        mdict mdTmp = md.get(mdIdx);
-	        ImageView iv = ItemView.findViewById(R.id.image);
-	        TextView tv = ItemView.findViewById(R.id.text);
-	        tv.setText(ph.get(mdIdx).pathname);
-	        if(mdTmp!=null && mdTmp.cover!=null)
-	        	iv.setImageDrawable(mdTmp.cover);
-	        else
-	        	iv.setImageDrawable(null);
-	        
+			Drawable cover=null;
+			String pathname;
+			if(mdTmp!=null) {
+				pathname=mdTmp.getDictionaryName();
+				cover=mdTmp.cover;
+			} else {
+				pathname=ph.get(mdIdx).pathname;
+			}
+			holder.tv.setText(pathname);
+			holder.cover.setImageDrawable(cover);
 	        return ItemView;
         }
 
@@ -1304,7 +1350,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 					lastswicthtime=System.currentTimeMillis();
 				}
-				((TextView)p.findViewById(R.id.text)).setTextColor(Color.WHITE);
+				((DictTitleHolder)p.getTag()).setTextColor(Color.WHITE);
 				p.removeView(vb);
 			}
 			
@@ -1334,7 +1380,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			leftLexicalAdapter.DumpVOA(OldDictionary, currentDictionary);
 			leftLexicalAdapter.notifyDataSetChanged();
 			//todo also right
-			((TextView)view.findViewById(R.id.text)).setTextColor(headerblue);
+			((DictTitleHolder)view.getTag()).setTextColor(headerblue);
 			//notifyDataSetChanged();
 			//LvHeadline.setLayoutParams(LvHeadline.getLayoutParams());
 
@@ -1414,7 +1460,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		public View getView(int position, View convertView, ViewGroup parent) {
 			viewholder vh;
 			if(convertView==null) {
-				convertView = getActivity().getLayoutInflater().inflate(R.layout.drawer_list_item, parent, false);
+				convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.drawer_list_item, parent, false);
 				vh = new viewholder();
         		vh.tv=convertView.findViewById(R.id.text1);
         		vh.dv=convertView.findViewById(R.id.del);
@@ -1425,8 +1471,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         		vh.dv.setPadding(p, p, p, p);
         		vh.dv.setColorFilter(Color.RED);
 				convertView.setTag(vh);
-			}else
+			}else {
 				vh = (viewholder) convertView.getTag();
+			}
     		vh.dv.setTag(position);
 			if(ToD) {
 				cr.moveToPosition(cr.getCount()-position-1);
@@ -1440,8 +1487,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if(position==(ToD?lastClickedPos:lastClickedDictPos)) {//voyager[SelectedV*3+2]
         		//which color?
         		convertView.setBackgroundColor(0xff397CCD);//LB0xff397CCD  HB0xff2b4381
-        	}else
-        		convertView.setBackgroundColor(Color.TRANSPARENT);
+        	} else {
+				convertView.setBackgroundColor(Color.TRANSPARENT);
+			}
 			
 			if(ToD && opt.getShowBD()) {
 				vh.dv.setVisibility(View.VISIBLE);
@@ -2167,7 +2215,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public String currentDisplaying;
 
 	boolean isJumping = false;
-	public int bottombar2BaseColor=0xff8f8f8f;
+	public int bottombar2BaseColor=Constants.DefaultMainBG;
     @SuppressLint("JavascriptInterface")
 	void setCurrentDis(mdict invocker, int idx, int...flag) {
 		if(flag==null || flag.length==0) {//书签跳转等等

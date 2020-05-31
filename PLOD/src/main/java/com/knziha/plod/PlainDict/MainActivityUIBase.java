@@ -238,6 +238,8 @@ import javax.net.ssl.TrustManager;
 import db.LexicalDBHelper;
 import db.MdxDBHelper;
 
+import static com.knziha.plod.PlainDict.CMN.AssetMap;
+import static com.knziha.plod.PlainDict.CMN.AssetTag;
 import static com.knziha.plod.dictionarymodels.mdict.indexOf;
 import static com.knziha.plod.slideshow.PdfPic.MaxBitmapRam;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
@@ -576,21 +578,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					} catch (Exception e) {
 						if(GlobalOptions.debug) CMN.Log(e);
 						invalidate = systemIntialized;
-						if (bShowLoadErr)
-							show(R.string.err, phTmp.getName(), phTmp.pathname, e.getLocalizedMessage());
+						if (bShowLoadErr) {
+							phTmp.ErrorMsg = e.getLocalizedMessage();
+							show(R.string.err);
+						}
 					}
 				}
 			}
 			if (invalidate) {
+				adaptermy.notifyDataSetChanged();
 				if (currentDictionary != null) {
 					if(putName) {
 						setLastMdFn(currentDictionary.getDictionaryName());
 					}
-					adaptermy.notifyDataSetChanged();
 					//lv.setSelection(currentDictionary.lvPos);
 					lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
-				} else {
-					adaptermy.notifyDataSetChanged();
 				}
 			}
 		}
@@ -631,7 +633,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ArrayList<PlaceHolder> CosyChair = getLazyCC();
 			if(i<CosyChair.size()){
 				PlaceHolder placeHolder = CosyChair.get(i);
-				if(placeHolder!=null) return placeHolder.pathname;
+				if(placeHolder!=null) {
+					String name = placeHolder.pathname;
+					if(name!=null && name.startsWith(AssetTag) && AssetMap.containsKey(name)) {
+						name = AssetMap.get(name);
+					}
+					return name;
+				}
 			}
 		}
 		return "Error!!!";
@@ -718,9 +726,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public CharSequence md_getAbout_Trim(int i) {
+		ArrayList<PlaceHolder> placeHolders = getLazyCC();
+		PlaceHolder phTmp = placeHolders.get(i);
 		mdict mdTmp = md.get(i);
+		SpannableStringBuilder sb=null;
+		CharSequence ret=null;
 		if(mdTmp!=null) {
-			Spanned ret = HtmlCompat.fromHtml(mdTmp.getAboutString(), HtmlCompat.FROM_HTML_MODE_COMPACT);
+			ret = HtmlCompat.fromHtml(mdTmp.getAboutString(), HtmlCompat.FROM_HTML_MODE_COMPACT);
 			int len = ret.length();
 			int st = 0;
 			while((st < len) && ret.charAt(st) <= ' '){
@@ -729,12 +741,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			while ((st < len) && (ret.charAt(len - 1) <= ' ')) {
 				len--;
 			}
-			if(st>0){
-				return new SpannableStringBuilder(ret,st,len);
-			}
-			return ret;
+			sb = new SpannableStringBuilder(ret,st,len);
 		}
-		return "未加载";
+		if(ret==null) {
+			ret = "未加载";
+		}
+		String msg = phTmp.ErrorMsg;
+		if(msg!=null) {
+			if(sb==null) {
+				sb = new SpannableStringBuilder(ret==null?"":ret);
+			}
+			sb.append("\t").append("错误信息：");
+			sb.append(msg);
+			return sb;
+		}
+		return ret;
 	}
 
 	public Drawable md_getCover(int i) {
@@ -1150,7 +1171,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		if(PeruseView!=null) {
-			PeruseView.refreshUIColors();
+			PeruseView.refreshUIColors(MainBackground);
 		}
 	}
 
@@ -2195,7 +2216,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		GlobalOptions.isLarge = (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >=3 ;
 		//CMN.show("isLarge"+isLarge);
 		mdict.def_zoom=dm.density;
-		mdict.optimal100 = GlobalOptions.isLarge ?150:100;
+		mdict.optimal100 = GlobalOptions.isLarge ?150:125;
 		mdict.def_fontsize = opt.getDefaultFontScale(mdict.optimal100);
 		
 		File ConfigFile = opt.fileToConfig();
@@ -2203,8 +2224,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ConfigFile.mkdirs();
 		
 		iItem_InPageSearch.setVisible(false);
-		if(iItem_ClickSearch!=null)
+		if(iItem_ClickSearch!=null) {
 			iItem_ClickSearch.setVisible(false);
+		}
 		
 
 		AgentApplication app = ((AgentApplication) getApplication());
@@ -2340,15 +2362,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		final File def = getStartupFile(ConfigFile);      //!!!原配
-		final boolean retrieve_all=def==null || !def.exists();
+		final boolean retrieve_all=!def.exists();
 
 		ArrayList<PlaceHolder> CC = getLazyCC();
 		if(retrieve_all) {
 			try {
-				md.add(new mdict_asset(new File(CMN.AssetTag + "liba.mdx"), this));
-				CC.add(new PlaceHolder(CMN.AssetTag + "liba.mdx", CC));
+				String path = CMN.AssetTag + "liba.mdx";
+				md.add(new mdict_asset(new File(path), this));
+				CC.add(new PlaceHolder(path, CC));
 			} catch (IOException e) {
-				Log.e("fatal", "sda");
+				CMN.Log(e);
 			}
 		}
 		else try {

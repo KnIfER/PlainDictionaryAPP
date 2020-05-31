@@ -6,7 +6,7 @@ android {
         checkReleaseBuilds false
         abortOnError false
     }
-    compileSdkVersion ver_compileSdkVersion as int
+    compileSdkVersion ver_compileSdkVersion
 
     defaultConfig {
         applicationId "com.knziha.plod.plaindict"
