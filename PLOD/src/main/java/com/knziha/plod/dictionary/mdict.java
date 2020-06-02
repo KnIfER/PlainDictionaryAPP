@@ -150,6 +150,8 @@ public class mdict extends mdBase{
 	}
 	
 	public static boolean bGlobalUseClassicalKeycase=false;
+	
+	public boolean isGBoldCodec;
 
 	public String currentDisplaying;
 
@@ -208,6 +210,7 @@ public class mdict extends mdBase{
 			}
 		}
 		data_in.close();
+		isGBoldCodec = _encoding.startsWith("GB") && !_header_tag.containsKey("PLOD");
 	}
 
 	protected boolean handleDebugLines(String line) {
@@ -362,8 +365,11 @@ public class mdict extends mdBase{
 		byte[] kAB = keyword.getBytes(_charset);
 
 		int blockId = -1;
-
-		if(_encoding.startsWith("GB")) {
+		
+		//isGBoldCodec = true;
+		CMN.Log("isGBoldCodec", isGBoldCodec, _Dictionary_fName);
+		
+		if(isGBoldCodec) {
 			int boudaryCheck = compareByteArray(_key_block_info_list[(int)_num_key_blocks-1].tailerKeyText,kAB);
 			if(boudaryCheck<0)
 				return -1;
@@ -390,7 +396,7 @@ public class mdict extends mdBase{
 			if(boudaryCheck==0) return 0;
 		}
 		if(blockId==-1)
-			blockId = _encoding.startsWith("GB")?reduce_index2(keyword.getBytes(_charset),0,_key_block_info_list.length):reduce_index(keyword,0,_key_block_info_list.length);
+			blockId = isGBoldCodec?reduce_index2(keyword.getBytes(_charset),0,_key_block_info_list.length):reduce_index(keyword,0,_key_block_info_list.length);
 		if(blockId==-1) return blockId;
 
 		//SU.Log("blockId:",blockId, new String(_key_block_info_list[blockId].headerKeyText,_charset), new String(_key_block_info_list[blockId].tailerKeyText,_charset));
@@ -411,7 +417,7 @@ public class mdict extends mdBase{
 		cached_key_block infoI_cache = prepareItemByKeyInfo(infoI,blockId,null);
 
 		int res;
-		if(_encoding.startsWith("GB"))
+		if(isGBoldCodec)
 			//res = binary_find_closest2(infoI_cache.keys,keyword);//keyword
 			res = reduce_keys2(infoI_cache.keys,kAB,0,infoI_cache.keys.length);
 		else
@@ -429,44 +435,38 @@ public class mdict extends mdBase{
 		boolean bIsEqual = looseMatch.equals(keyword);
 
 		if(!bIsEqual){
-			boolean b1 = keyOrg.endsWith(">"),b2=false;
+			boolean b2=false;
 			Matcher m=null;
-			if(!b1) {
-				m = numSuffixedReg.matcher(keyOrg);
-				b2=m.find();
-			}
-			if((b1||b2) && other_key.endsWith(">")){
-				int idx3 = other_key.lastIndexOf("<", other_key.length() - 2);
-				int idx2 = b2?m.start(1):keyOrg.lastIndexOf("<",keyOrg.length()-2);
-				//CMN.Log(idx2,idx3,idx2,idx3);
-				if(idx2!=-1 && idx2==idx3) {
+			if(other_key.endsWith(">") && (keyOrg.endsWith(">")||(b2 = (m = numSuffixedReg.matcher(keyOrg)).find()))){
+				/* possible to be number-suffixed */
+				int idx2 = b2?m.start(1):keyOrg.lastIndexOf("<");
+				if(idx2>0 && idx2==other_key.lastIndexOf("<")) {
 					int start = parseint(other_key.substring(idx2+1,other_key.length()-1));
-					int target;
-					if(b2){
-						target = IU.parsint(m.group(1));
-					}else{
-						String itemA=keyOrg.substring(idx2+1,keyOrg.length()-1);
-						target = parseint(itemA);
-					}
+					int target = b2? IU.parsint(m.group(1))
+						:parseint(keyOrg.substring(idx2+1,keyOrg.length()-1));
 					//CMN.Log(keyOrg,other_key,start,target);
 					int PstPosition = (int) (infoI.num_entries_accumulator + res + (target-start));
 					String other_other_key = getEntryAt(PstPosition);
-					if(other_other_key.length()>idx2 && other_other_key.endsWith(">") && other_other_key.charAt(idx2)=='<')
-						if(keyOrg.startsWith(other_other_key.substring(0, idx2))){
-							String itemB=other_other_key.substring(idx2+1,other_other_key.length()-1);
-							int end = parseint(itemB);
-							if(target==end)
+					if(other_other_key.length()>idx2 && other_other_key.endsWith(">") && other_other_key.charAt(idx2)=='<') {
+						/* match end key's number */
+						//if(keyOrg.startsWith(other_other_key.substring(0, idx2))){
+						if(keyOrg.regionMatches(true, 0, other_other_key, 0, idx2)) {
+							int end = parseint(other_other_key.substring(idx2+1,other_other_key.length()-1));
+							if(target==end) {
+								CMN.Log("target==end", getEntryAt(PstPosition));
 								return PstPosition;
+							}
 						}
+					}
 				}
 			}
-		}
-
-		if(isSrict)
-			if(!bIsEqual) {
+			
+			if(isSrict) {
 				//SU.Log(res+"::"+Integer.toString(-1*(res+2)));
 				return -1*(int) ((infoI.num_entries_accumulator+res+2));
 			}
+		}
+		
 		//String KeyText= infoI_cache.keys[res];
 		//for(String ki:infoI.keys) SU.Log(ki);
 		//show("match key "+KeyText+" at "+res);
@@ -2242,7 +2242,7 @@ public class mdict extends mdBase{
 				return;
 			if(compareByteArray(_key_block_info_list[0].headerKeyText,kAB)>0)
 				return;
-		}else {
+		} else {
 			if((TailerTextStr==null? TailerTextStr =processMyText(new String(_key_block_info_list[(int)_num_key_blocks-1].tailerKeyText,_charset).toLowerCase()):TailerTextStr).compareTo(keyword)<0) {
 				return;
 			}

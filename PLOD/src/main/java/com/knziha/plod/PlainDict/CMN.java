@@ -16,8 +16,6 @@ import org.adrianwalker.multilinestring.Multiline;
 
 //common
 public class CMN{
-	public final static String replaceReg =  " |:|\\.|,|-|\'|(|)";
-	public final static String emptyStr = "";
 	public static volatile int instanceCount;
 	public static final HashMap<String, String> AssetMap = new HashMap<>();
 	public static final String AssetTag = "/ASSET/";

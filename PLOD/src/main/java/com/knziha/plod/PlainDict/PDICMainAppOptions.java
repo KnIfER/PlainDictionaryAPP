@@ -2207,7 +2207,7 @@ public class PDICMainAppOptions
 	}
 	
 	public static boolean getForceFloatSingletonSearch() {
-		return (FourthFlag & 0x2000000000000l) == 0x2000000000000l;
+		return (FourthFlag & 0x2000000000000l) != 0x2000000000000l;
 	}
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////

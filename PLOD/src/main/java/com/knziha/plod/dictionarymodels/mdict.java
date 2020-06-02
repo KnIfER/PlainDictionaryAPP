@@ -2662,7 +2662,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				SparseArray tags = (SparseArray) f_mKeyedTags.get(mWebView);
 				tags.clear();
 			} catch (Exception e) { CMN.Log(e); }
-			if(a.currentDictionary==this){
+			if(a.currentDictionary==this) {
 				a.adaptermy.notifyDataSetChanged();
 				if(a.ActivedAdapter==a.adaptermy) {
 					mWebView.awaiting = true;

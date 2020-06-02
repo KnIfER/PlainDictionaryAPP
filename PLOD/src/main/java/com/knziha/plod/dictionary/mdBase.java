@@ -146,8 +146,9 @@ public abstract class mdBase {
 	public void Reload() {
 		try {
 			_num_record_blocks=0;
-			if(StreamAvailable())
+			if(StreamAvailable()) {
 				init(getStreamAt(0));
+			}
 		} catch (IOException e) { SU.Log(e); }
 	}
 
@@ -183,7 +184,9 @@ public abstract class mdBase {
 		String headerString = new String(header_bytes, StandardCharsets.UTF_16LE);
 		//SU.Log("headerString::", headerString);
 		Matcher m = re.matcher(headerString);
-		if(_header_tag==null) _header_tag = new HashMap<>();
+		if(_header_tag==null) {
+			_header_tag = new HashMap<>();
+		}
 		while(m.find()) {
 			_header_tag.put(m.group(1), m.group(2));
 		}
@@ -867,15 +870,17 @@ public abstract class mdBase {
 	//per-byte byte array comparing
 	static int compareByteArray(byte[] A,byte[] B){
 		int la = A.length,lb = B.length;
-		for(int i=0;i<Math.min(la, lb);i++){
-			int cpr = (int)(A[i]&0xff)-(int)(B[i]&0xff);
-			if(cpr==0)
-				continue;
-			return cpr;
+		int lc = Math.min(la, lb);
+		for(int i=0;i<lc;i++){
+			int cpr = (A[i]&0xff) - (B[i]&0xff);
+			if(cpr!=0) {
+				return cpr;
+			}
 		}
-		if(la==lb)
+		if(la==lb) {
 			return 0;
-		else return la>lb?1:-1;
+		}
+		return la>lb?1:-1;
 	}
 	//per-byte byte array comparing
 	static boolean compareByteArrayIsPara(byte[] A,byte[] B){

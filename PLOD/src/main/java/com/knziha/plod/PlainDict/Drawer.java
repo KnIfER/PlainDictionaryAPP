@@ -638,9 +638,8 @@ public class Drawer extends Fragment implements
 					a.show(R.string.nothingR);
 			} break;
 			case 6:{//追加词典 添加词典 打开
-				if(false) { // MLSN
-					a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT)
-							.addCategory(Intent.CATEGORY_OPENABLE)
+				if(true) { // MLSN
+					a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
 							.setType("*/*"), Constants.OpenBookRequset);
 				}
 				else {

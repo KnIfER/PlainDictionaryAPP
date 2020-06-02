@@ -141,6 +141,7 @@ import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
+import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_asset;
@@ -561,7 +562,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		return Math.round(pxValue * scale * 0.5f);
 	}
-
+	
+	
+	private void reload_dict_at(int i) {
+		try {
+			ArrayList<PlaceHolder> CosyChair = getLazyCC();
+			PlaceHolder phTmp = CosyChair.get(i);
+			mdict mdTmp = md.get(i);
+			if(mdTmp!=null) {
+				mdTmp.Reload();
+			} else {
+				md.set(i, new_mdict(phTmp.getPath(opt), this));
+			}
+			showT("重新加载!");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void switch_To_Dict_Idx(int i, boolean invalidate, boolean putName) {
 		updateAI = true;
 		if(md.size()>0) {
@@ -729,35 +747,73 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ArrayList<PlaceHolder> placeHolders = getLazyCC();
 		PlaceHolder phTmp = placeHolders.get(i);
 		mdict mdTmp = md.get(i);
-		SpannableStringBuilder sb=null;
-		CharSequence ret=null;
-		if(mdTmp!=null) {
-			ret = HtmlCompat.fromHtml(mdTmp.getAboutString(), HtmlCompat.FROM_HTML_MODE_COMPACT);
-			int len = ret.length();
-			int st = 0;
-			while((st < len) && ret.charAt(st) <= ' '){
-				st++;
-			}
-			while ((st < len) && (ret.charAt(len - 1) <= ' ')) {
-				len--;
-			}
-			sb = new SpannableStringBuilder(ret,st,len);
-		}
-		if(ret==null) {
-			ret = "未加载";
-		}
 		String msg = phTmp.ErrorMsg;
-		if(msg!=null) {
-			if(sb==null) {
-				sb = new SpannableStringBuilder(ret==null?"":ret);
+		boolean show_info_extra = true||msg!=null;
+		boolean show_info_codec = true;
+		boolean show_info_reload = true;
+		boolean show_info_path = true;
+		SpannableStringBuilder sb=null;
+		if(show_info_extra) {
+			sb = new SpannableStringBuilder();
+			if(show_info_reload) {
+				sb.append("[重新加载");
 			}
-			sb.append("\t").append("错误信息：");
-			sb.append(msg);
-			return sb;
+			if(show_info_codec && mdTmp!=null) {
+				if(!show_info_reload) {
+					sb.append("编码");
+				}
+				sb.append("：");
+				sb.append(mdTmp.getCharset().name());
+			}
+			if(show_info_reload) {
+				sb.append("]");
+			}
+			sb.append("\n");
+			if(show_info_reload) {
+				sb.setSpan(new ClickableSpan() {
+					@Override public void onClick(@NonNull View widget) {
+						reload_dict_at(i);
+						showAboutDictDialogAt(i);
+					}
+				}, 0, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+		}
+		
+		CharSequence ret=mdTmp==null? "未加载"
+				:HtmlCompat.fromHtml(mdTmp.getAboutString(), HtmlCompat.FROM_HTML_MODE_COMPACT);
+		int len = ret.length();
+		int st = 0;
+		while((st < len) && ret.charAt(st) <= ' '){
+			st++;
+		}
+		while ((st < len) && (ret.charAt(len - 1) <= ' ')) {
+			len--;
+		}
+		
+		if(show_info_extra) {
+			sb.append(ret, st, len);
+			ret=sb;
+			if(msg!=null) {
+				sb.append("\t").append("错误信息：");
+				sb.append(msg);
+			}
+			if(show_info_path) {
+				sb.append("\n");
+				sb.append("路径").append("：");
+				st = sb.length();
+				sb.append(phTmp.pathname);
+				sb.setSpan(new ClickableSpan() {
+					@Override public void onClick(@NonNull View widget) {
+						showT("路径!");
+					}
+				}, st, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+		} else {
+			ret=ret.subSequence(st, len);
 		}
 		return ret;
 	}
-
+	
 	public Drawable md_getCover(int i) {
 		mdict mdTmp = md.get(i);
 		if(mdTmp!=null) return mdTmp.cover;
@@ -1224,9 +1280,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						boolean isInit;
 						// 初始化核心组件
 						isInit = isNewHolder = popupWebView == null||popupWebView.fromCombined!=2;
-						if (popupWebView == null){
-							init_popup_view();
-						}
+						init_popup_view();
 						// 给你换身衣裳
 						WeakReference<ViewGroup> holder = (PDICMainAppOptions.getImmersiveClickSearch() ? popupCrdCloth : popupCmnCloth);
 						ViewGroup mPopupContentView = popupContentView;
@@ -1564,12 +1618,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			popupBottombar.findViewById(R.id.popIvForward).setOnClickListener(MainActivityUIBase.this);
 			popupBottombar.findViewById(R.id.popIvSettings).setOnClickListener(MainActivityUIBase.this);
 			popupChecker = popupBottombar.findViewById(R.id.popChecker);
-			if (GlobalOptions.isDark)
-				popupChecker.drawInnerForEmptyState = true;
-			else
-				popupChecker.circle_shrinkage = 2;
 			popupChecker.setOnClickListener(MainActivityUIBase.this);
 			popupTextView = popupToolbar.findViewById(R.id.popupText1);
+			mPopupWebView.IBC = new PhotoBrowsingContext();
 			mPopupWebView.toolbar_title = popupIndicator = popupBottombar.findViewById(R.id.popupText2);
 			popupTextView.setOnClickListener(MainActivityUIBase.this);
 			View popupNxtD, popupLstD;
@@ -1593,6 +1644,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			popupStar.setOnTouchListener(popupMoveToucher);
 			// 缩放逻辑
 			popupWebView = mPopupWebView;
+		}
+		if (GlobalOptions.isDark) {
+			popupChecker.drawInnerForEmptyState = true;
+			popupChecker.circle_shrinkage = 0;
+		}
+		else {
+			popupChecker.drawInnerForEmptyState = false;
+			popupChecker.circle_shrinkage = 2;
 		}
 	}
 	
@@ -2662,6 +2721,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				md.add(mdTmp);
 			}
 		}
+		CMN.Log("buildUpDictionaryList", lastName, adapter_idx);
 	}
 	
 	private boolean md_name_match(String lastName, mdict mdTmp, PlaceHolder phI) {
@@ -2674,7 +2734,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(pN.endsWith(lastName)){
 					int len = lastName.length();
 					int lenN = pN.length();
-					return lenN>len&&pN.charAt(lenN-len-1)==File.separatorChar;
+					return lenN==len||pN.charAt(lenN-len-1)==File.separatorChar;
 				}
 			}
 		}

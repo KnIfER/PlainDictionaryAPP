@@ -297,7 +297,9 @@ public class Toastable_Activity extends AppCompatActivity {
 					}
 					if(trialCount>=2) {
 						opt.rootPath=trialPath;
-						showT("存储受限，持续试用中……");
+						if(Build.VERSION.SDK_INT<=30) {
+							showT("存储受限，持续试用中……");
+						}
 						pre_further_loading(savedInstanceState);
 						return;
 					}

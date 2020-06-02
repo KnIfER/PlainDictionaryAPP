@@ -963,12 +963,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		});
 		toolbar.mNavButtonView.setOnLongClickListener(this);
-
-		View vTmp = toolbar.getChildAt(toolbar.getChildCount()-1);
-		if(vTmp instanceof ImageButton && vTmp.getId()==R.id.home) {
-			ImageButton NavigationIcon=(ImageButton) vTmp;
-			NavigationIcon.getLayoutParams().width=(int) (45*dm.density);
-			NavigationIcon.requestLayout();
+		
+		if(dm.widthPixels/dm.density<365) {
+			View vTmp = toolbar.getChildAt(toolbar.getChildCount()-1);
+			if(vTmp instanceof ImageButton && vTmp.getId()==R.id.home) {
+				ImageButton NavigationIcon=(ImageButton) vTmp;
+				NavigationIcon.getLayoutParams().width=(int) (45*dm.density);
+				NavigationIcon.requestLayout();
+			}
 		}
 
 		cb1=findViewById(R.id.cb1);
@@ -982,10 +984,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		dialogHolder = findViewById(R.id.dialogHolder);
 		dialog_ = findViewById(R.id.dialog_);
-		dialogHolder.setOnTouchListener((v, event) -> {
-			dismissDictPicker(R.anim.dp_dialog_exit);
-			return true;
-		});
 
 		hdl = mHandle = new MyHandler(this);
 
@@ -1219,11 +1217,20 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 				}
 			}});
-
-		viewPager.setOnTouchListener((v, event) -> {
+		
+		View.OnTouchListener toucherTmp = (v, event) -> {
+			//int id = v.getId();
+			if(v.getId() == R.id.dialogHolder) {
+				dismissDictPicker(R.anim.dp_dialog_exit);
+				return true;
+			}
 			cancleSnack();
 			return false;
-		});
+		};
+		
+		dialogHolder.setOnTouchListener(toucherTmp);
+		
+		viewPager.setOnTouchListener(toucherTmp);
 
 		viewPager.addOnPageChangeListener(new OnPageChangeListener() {
 			@Override
@@ -1282,7 +1289,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		mlv2 = (ListView) inflater.inflate(R.layout.sublistview, viewPager, false);mlv2.setId(R.id.sub_list2);
 		//tofo
 		if(Build.VERSION.SDK_INT >= 24)
-			if(true) {//opt.is_strict_scroll()
+			if(false) {//opt.is_strict_scroll()
 				listViewStrictScroll(mlv1,true);
 				listViewStrictScroll(mlv2,true);
 				listViewStrictScroll(lv,true);
@@ -1452,7 +1459,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
 				setLv1ScrollChanged();
 			});
-		}else{
+		} else {
 			setLv1ScrollChanged();
 		}
 
@@ -1464,7 +1471,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(opt.getInPeruseMode()) {
 				widget0.setImageResource(R.drawable.peruse_ic_on);
 				showTopSnack(main_succinct, R.string.peruse_mode
-						, 1.f, -1, Gravity.CENTER, false);
+						, 0.5f, -1, Gravity.CENTER, false);
 			}
 		}
 		if(PDICMainAppOptions.getSimpleMode() && PDICMainAppOptions.getHintSearchMode())
@@ -1618,8 +1625,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//tg
 		//do_test_project_Test_Background_Loop();
 		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
-		String[] array = getResources().getStringArray(R.array.drawer_hints);
-		CMN.Log("==??", array[2], array[5], array[2]==array[5], array[2].equals(array[5]), System.identityHashCode(array[2]), System.identityHashCode(array[5]));
+		
+		//String[] array = getResources().getStringArray(R.array.drawer_hints);
+		//CMN.Log("==??", array[2], array[5], array[2]==array[5], array[2].equals(array[5]), System.identityHashCode(array[2]), System.identityHashCode(array[5]));
 		
 		// MLSN
 		/* CMN.Log("SDK_INT", Build.VERSION.SDK_INT);
@@ -2026,9 +2034,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						}
 					}
 					if(isCombinedSearching){
-						if(lianHeTask!=null)
+						if(lianHeTask!=null) {
 							lianHeTask.cancel(false);
-						if(!checkDicts()) return;
+						}
+						if(!checkDicts()) {
+							return;
+						}
 						String key = s.toString();
 						if(!key.equals(CombinedSearchTask_lastKey))
 							lianHeTask = new CombinedSearchTask(PDICMainActivity.this).execute(key);
@@ -2045,17 +2056,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					else try {
 						if(!checkDicts()) return;
 						String key = s.toString().trim();
-						if(PDICMainAppOptions.getSearchUseMorphology())
-							key = ReRouteKey(key, false);
-						int idx=currentDictionary.lookUp(key);
+						int idx=currentDictionary.lookUp(key, false);
+						if(idx==-1 && PDICMainAppOptions.getSearchUseMorphology()) {
+							key = ReRouteKey(key, true);
+							if(key!=null) {
+								idx=currentDictionary.lookUp(key, false);
+							}
+						}
 						CMN.Log("单本搜索 ： "+idx, currentDictionary.getEntryAt(idx));
 						if(idx!=-1){
 							int tmpIdx = idx;
-							String looseKey = mdict.processText(key);
-							String looseMatch = mdict.processText(currentDictionary.getEntryAt(idx));
-							String LMT = looseMatch;
-							if(!mdict.processText(looseMatch).startsWith(looseKey))
-								idx--;
+							if(idx<0) {
+								tmpIdx = -tmpIdx + 1;
+							}
 //							else while(true) {
 //								if(looseMatch.startsWith(key)) {
 //									idx=tmpIdx;
@@ -2067,12 +2080,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //								if(!mdict.processText(looseMatch).startsWith(looseKey))
 //									break;
 //							}
-							lv.setSelection(idx);
+							lv.setSelection(tmpIdx);
 							if(bIsFirstLaunch||bWantsSelection) {
-								if(LMT.equals(looseKey)) {
+								if(idx>=0) {
 									boolean proceed = true;
 									if(contentview.getParent()==main) {
-										proceed = (adaptermy.currentKeyText == null || !looseKey.equals(mdict.processText(adaptermy.currentKeyText)));
+										proceed = (currentDictionary.lvClickPos!=idx);
 									}
 									if(proceed) {
 										bRequestedCleanSearch=bIsFirstLaunch;

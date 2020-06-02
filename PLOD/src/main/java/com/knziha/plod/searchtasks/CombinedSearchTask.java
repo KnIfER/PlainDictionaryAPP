@@ -24,6 +24,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 	private final WeakReference<MainActivityUIBase> activity;
 	RBTree_additive additive_combining_search_tree = new RBTree_additive();
 	String CurrentSearchText;
+	String CurrentSearchText2;
 	private long stst;
 
 	public CombinedSearchTask(MainActivityUIBase a) {
@@ -48,8 +49,8 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		if((a=activity.get())==null) return null;
 		stst=System.currentTimeMillis();
 		CurrentSearchText=params[0];
-		if(PDICMainAppOptions.getSearchUseMorphology())
-			CurrentSearchText=a.ReRouteKey(CurrentSearchText, false);
+		CurrentSearchText2=PDICMainAppOptions.getSearchUseMorphology()?
+				a.ReRouteKey(CurrentSearchText, true):null;
 
 		ArrayList<mdict> md = a.md;
 
