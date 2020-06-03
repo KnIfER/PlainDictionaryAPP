@@ -102,11 +102,10 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 		lman = new LinearLayoutManager(a.getApplicationContext());
 		mRecyclerView.setLayoutManager(lman);
 		mRecyclerView.setAdapter(mAdapter = new HomeAdapter());
-		RecyclerView.ItemAnimator itemAnimator = mRecyclerView.getItemAnimator();
-		if(itemAnimator instanceof SimpleItemAnimator) {
-			((SimpleItemAnimator)itemAnimator).setSupportsChangeAnimations(false);
-		}
-		
+		//RecyclerView.ItemAnimator itemAnimator = mRecyclerView.getItemAnimator();
+		//if(itemAnimator instanceof SimpleItemAnimator)
+		//	((SimpleItemAnimator)itemAnimator).setSupportsChangeAnimations(false);
+		mRecyclerView.setItemAnimator(null);
 		
 		mRecyclerView.setMinimumWidth(getResources().getDisplayMetrics().widthPixels*2/3);
 		mRecyclerView.setVerticalScrollBarEnabled(true);
@@ -187,7 +186,7 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 			
 			tv.PostEnabled = PostEnabled;
 			
-			tv.StarLevel = a.md_get_StarLevel(position);
+			tv.setStarLevel(a.md_get_StarLevel(position));
 			
 			tv.setCompoundDrawables(mActiveDrawable, null, null, null);
 			

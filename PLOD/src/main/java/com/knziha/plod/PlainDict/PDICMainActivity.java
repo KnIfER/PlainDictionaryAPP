@@ -195,6 +195,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private ViewGroup main_content_succinct;
 	private LinearLayout weblist;
 	private View appbar;
+	
+	public MdictServer server;
 
 	/** 定制底栏一：<br/>
 	 * 选择词典1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6 <br/>
@@ -1626,6 +1628,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//do_test_project_Test_Background_Loop();
 		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
 		
+		server = new MdictServerMobile(8080, this, opt);
+		server.md = md;
+		try {
+			server.start();
+			showT("服务器启动成功");
+		} catch (Exception e) { CMN.Log(e); }
+		
 		//String[] array = getResources().getStringArray(R.array.drawer_hints);
 		//CMN.Log("==??", array[2], array[5], array[2]==array[5], array[2].equals(array[5]), System.identityHashCode(array[2]), System.identityHashCode(array[5]));
 		
@@ -2272,6 +2281,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			checkDictionaryProject(true);
 
 		//pg
+		if(currentDictionary!=null && currentDictionary.file_cache_map!=null)
+		CMN.Log("size", currentDictionary.file_cache_map.size());
 //		CMN.rt();
 //		for(mdict mdTmp:md){
 //			try {

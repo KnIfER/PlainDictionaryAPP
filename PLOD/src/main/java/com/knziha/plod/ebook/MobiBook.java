@@ -759,7 +759,7 @@ public class MobiBook extends mdict {
 	  * @throws IOException
 	 */
 	MOBI_RET mobi_load_recdata(MOBIPdbRecord rec) throws IOException {
-		DataInputStream data_in = getStreamAt(rec.offset);
+		DataInputStream data_in = getStreamAt(rec.offset, false);
 		rec.data = new byte[(int) rec.size];
 		long len = data_in.read(rec.data, 0, (int) rec.size);
 		if (len < rec.size) {
@@ -771,7 +771,7 @@ public class MobiBook extends mdict {
 
 
 	@Override
-	public DataInputStream getStreamAt(long off) throws IOException{
+	public DataInputStream getStreamAt(long off, boolean forceReal) throws IOException{
 		DataInputStream data_in = new DataInputStream(new FileInputStream(f));
 		data_in.skip(off);
 		return data_in;

@@ -313,7 +313,7 @@ public class FlowTextView extends View {
 		return false;
 	}
 	
-	public int StarLevel = 3;
+	private int StarLevel = 3;
 	public final int MaxStarLevel = 5;
 	/* INTERESTING DRAWING STUFF */
 	@Override
@@ -537,6 +537,13 @@ public class FlowTextView extends View {
 		}
 	}
 	
+	public void setStarLevel(int NewStarLevel) {
+		if(StarLevel!=NewStarLevel){
+			StarLevel = NewStarLevel;
+			bNeedInvalidate = true;
+		}
+	}
+	
 	/* typeface */
 	public Typeface getTypeFace() {
 		return typeFace;
@@ -606,6 +613,10 @@ public class FlowTextView extends View {
 	public void setStarDrawables(Drawable activeStarDrawable, Drawable ratingStarDrawable) {
 		mActiveDrawable = activeStarDrawable;
 		mRatingDrawable = ratingStarDrawable;
+	}
+	
+	public int getStarLevel() {
+		return StarLevel;
 	}
 	
 	public static class LineObject {

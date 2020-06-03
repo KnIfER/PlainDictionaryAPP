@@ -80,6 +80,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public final int[] ColorShade = new int[]{0xff4F7FDF, 0xff2b4381};
 	public boolean clearHistory;
 	public FlowTextView toolbar_title;
+	public int AlwaysCheckRange;
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
@@ -343,8 +344,12 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar_web.getBackground()).getDrawable(0);
 	}
 	
-	public GradientDrawable MutateBGInTitle(ViewGroup toolbar_web) {
-		return toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar_web.getBackground()).getDrawable(0).mutate();
+	public GradientDrawable MutateBGInTitle() {
+		return toolbarBG = (GradientDrawable) ((LayerDrawable)titleBar.getBackground()).getDrawable(0).mutate();
+	}
+	
+	public void CheckAlwaysCheckRange() {
+		AlwaysCheckRange = computeHorizontalScrollRange() > getWidth()?1:-1;
 	}
 	
 	@RequiresApi(api = Build.VERSION_CODES.M)

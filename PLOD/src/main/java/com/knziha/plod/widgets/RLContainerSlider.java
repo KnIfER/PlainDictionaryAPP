@@ -18,8 +18,10 @@ public class RLContainerSlider extends FrameLayout{
 	private float density;
 	private int move_index;
 	private boolean bZoomOut;
+	private boolean bZoomOutCompletely;
 	private boolean bNoDoubleClick;
 	private boolean bNoTurnPage;
+	private int WebContextWidth;
 	
 	public RLContainerSlider(Context context) {
 		this(context, null);
@@ -93,7 +95,7 @@ public class RLContainerSlider extends FrameLayout{
 
 		public boolean onFling(MotionEvent e1, MotionEvent e2, final float velocityX, final float velocityY) {
 			//if(System.currentTimeMillis()-lastDownTime<=200) //事件老死
-			if(bZoomOut && !bNoTurnPage)
+			if(bZoomOutCompletely && !bNoTurnPage)
 			{
 				if(!TurnPageEnabled || e2.getPointerCount()>1) { //todo slide on zoomed page
 					return false;
@@ -138,7 +140,6 @@ public class RLContainerSlider extends FrameLayout{
 		}
 	};
 
-	long lastDownTime;
 	public boolean enabled;
 
 	@Override
@@ -224,7 +225,19 @@ public class RLContainerSlider extends FrameLayout{
 			return false;
 		}
 		
-		bZoomOut = WebContext==null || WebContext.webScale <= mdict.def_zoom;
+		bZoomOut = bZoomOutCompletely = true;
+		
+		if(WebContext!=null) {
+			bZoomOut = WebContext.webScale <= mdict.def_zoom;
+			
+			if(WebContext.AlwaysCheckRange==0) {
+				WebContext.CheckAlwaysCheckRange();
+			}
+			
+			bZoomOutCompletely = bZoomOut && (WebContext.AlwaysCheckRange==-1
+					||WebContext.getScrollX()==0  && WebContext.getScrollX()+WebContext.getWidth()>=WebContextWidth);
+		}
+		
 		
 		int actionMasked = ev.getActionMasked();
 		
@@ -240,11 +253,10 @@ public class RLContainerSlider extends FrameLayout{
 		}
 		
 		if(actionMasked==MotionEvent.ACTION_DOWN){
-			lastDownTime=System.currentTimeMillis();
 			OrgX = lastX = ev.getX();
 		}
 		
-		if(bNoTurnPage){
+		if(bNoTurnPage) {
 			return false;
 		}
 
@@ -256,6 +268,9 @@ public class RLContainerSlider extends FrameLayout{
 		if(IMSlider!=null){
 			switch (actionMasked) {
 				case MotionEvent.ACTION_DOWN:
+					if(WebContext!=null) {
+						WebContextWidth = WebContext.getContentWidth();
+					}
 					isOnZoomingDected=false;
 					//CMN.Log("ACTION_DOWN");
 					first_touch_id=touch_id;
@@ -268,7 +283,9 @@ public class RLContainerSlider extends FrameLayout{
 						lastY = ev.getY();
 						if (!dragged) {
 							float dx = lastX - OrgX;
-							if (bZoomOut && (dx > 100 || dx < -100) || !bZoomOut && (dx > 100 && WebContext.getScrollX()==0 || dx < -100 && WebContext.getScrollX()+WebContext.getWidth()==WebContext.getContentWidth())) {
+							if (WebContext==null || (WebContext.AlwaysCheckRange==-1 && bZoomOut && (dx > 100 || dx < -100))
+									|| (WebContext.AlwaysCheckRange==1||!bZoomOut) &&
+									(dx > 100 && WebContext.getScrollX()==0 || dx < -100 && WebContext.getScrollX()+WebContext.getWidth()==WebContextWidth)) {
 								float dy = lastY - OrgY;
 								if (dy == 0) dy = 0.000001f;
 								dx = dx / dy;

@@ -1386,7 +1386,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		FlowTextView toolbar_title = mWebView.toolbar_title;
 		if(toolbar_title!=null) {
 			int StarLevel =  PDICMainAppOptions.getDFFStarLevel(firstFlag);
-			toolbar_title.StarLevel=StarLevel;
+			toolbar_title.setStarLevel(StarLevel);
 			if(StarLevel>0) {
 				toolbar_title.setStarDrawables(a.getActiveStarDrawable(), toolbar_title==a.popupIndicator?a.getRatingDrawable():null);
 			}
@@ -1402,7 +1402,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				ColorShade[1] = myWebColor;
 				ColorShade[0] = colorTop;
 				if(useInternal) {
-					toolbarBG = mWebView.MutateBGInTitle(mWebView.titleBar);
+					toolbarBG = mWebView.MutateBGInTitle();
 				}
 				toolbarBG.setColors(ColorShade);
 				CMN.Log("设置了?");
@@ -1847,6 +1847,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		sb.append(entry).append(" - ");
 		appendCleanDictionaryName(sb);
 		toolbar_title.setText(sb.toString());
+	}
+	
+	public String getCharsetName() {
+		return _charset.name();
 	}
 	
 	@SuppressWarnings("unused")

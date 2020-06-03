@@ -241,6 +241,7 @@ import db.MdxDBHelper;
 
 import static com.knziha.plod.PlainDict.CMN.AssetMap;
 import static com.knziha.plod.PlainDict.CMN.AssetTag;
+import static com.knziha.plod.PlainDict.MdictServer.getTifConfig;
 import static com.knziha.plod.dictionarymodels.mdict.indexOf;
 import static com.knziha.plod.slideshow.PdfPic.MaxBitmapRam;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
@@ -763,7 +764,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					sb.append("编码");
 				}
 				sb.append("：");
-				sb.append(mdTmp.getCharset().name());
+				sb.append(mdTmp.getCharsetName());
 			}
 			if(show_info_reload) {
 				sb.append("]");
@@ -2721,7 +2722,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				md.add(mdTmp);
 			}
 		}
-		CMN.Log("buildUpDictionaryList", lastName, adapter_idx);
+		//CMN.Log("buildUpDictionaryList", lastName, adapter_idx);
 	}
 	
 	private boolean md_name_match(String lastName, mdict mdTmp, PlaceHolder phI) {
@@ -2731,7 +2732,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if(phI!=null){
 				String pN = phI.pathname;
-				if(pN.endsWith(lastName)){
+				if(pN.endsWith(lastName)) {
 					int len = lastName.length();
 					int lenN = pN.length();
 					return lenN==len||pN.charAt(lenN-len-1)==File.separatorChar;
@@ -3358,7 +3359,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					tag = tv.getTag();
 					if(tag instanceof FlowTextView){
 						ftv = (FlowTextView) tag;
-						CheckStars(ftv.StarLevel);
+						CheckStars(ftv.getStarLevel());
 						create=false;
 						if(pickDictDialog!=null) {
 							//pickDictDialog.mRecyclerView.smoothScrollToPosition(id);
@@ -3404,7 +3405,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			d = new android.app.AlertDialog.Builder(this)
 					.setView(dv)
 					.setOnDismissListener(dialog -> {
-						CheckStars(finalFtv.StarLevel);
+						CheckStars(finalFtv.getStarLevel());
 						StarLevelStamp = -1;
 						this.d=null;
 					})
@@ -3422,7 +3423,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		CurrentDictInfoIdx = id;
 		
-		ftv.StarLevel = StarLevelStamp = md_get_StarLevel(id);
+		ftv.setStarLevel(StarLevelStamp = md_get_StarLevel(id));
 		
 		ftv.setText(md_getName(id));
 		
@@ -3433,8 +3434,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		int oldId = CurrentDictInfoIdx;
 		if(oldId>=0&&oldId<md.size()&&StarLevelStamp>=0&&newLevel!=StarLevelStamp){
 			md_set_StarLevel(oldId, newLevel);
-			if(pickDictDialog!=null){
-				pickDictDialog.adapter().notifyItemChanged(oldId, null);
+			if(pickDictDialog!=null) {
+				pickDictDialog.adapter().notifyItemChanged(oldId);
 				//pickDictDialog.notifyDataSetChanged();
 			}
 		}
@@ -5373,7 +5374,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							tv.setCompoundDrawables(getActiveStarDrawable(), null, null, null);
 							tv.setCover(mdTmp.getCover());
 							tv.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
-							tv.StarLevel=0;
+							tv.setStarLevel(0);
 							
 							ret.setChecked(position == finalSelectedPos);
 							
@@ -6425,6 +6426,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(!mWebView.isloading && !mWebView.fromNet) return;
 			int from = mWebView.fromCombined;
 			mWebView.isloading = false;
+			mWebView.AlwaysCheckRange = 0;
+			
 			//if(true) return;
 			/* I、接管页面缩放及(跳转)位置(0, 1, 3)
 			*  II、进入黑暗模式([0,1,2,3],[4])、编辑模式(0,1,3,[4])。*/
@@ -7582,16 +7585,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			decoder.decode(new DataInputStream(restmp) , f, JSpeexDec.FILE_FORMAT_WAVE);
 		} catch (Exception e) { CMN.Log(e); }
 		return null;
-	}
-
-	private static  HashMap mTifConfig;
-	public static HashMap<String, Object> getTifConfig() {
-		if(mTifConfig==null) {
-			HashMap<Object, Object> tifConfig = new HashMap<>();
-			tifConfig.put(ImagingConstants.BUFFERED_IMAGE_FACTORY, new ManagedImageBufferedImageFactory());
-			mTifConfig=tifConfig;
-		}
-		return mTifConfig;
 	}
 
 	void jumpNaughtyFirstHighlight(WebViewmy mWebView) {

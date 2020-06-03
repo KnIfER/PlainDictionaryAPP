@@ -23,7 +23,7 @@ public class mdictRes_asset extends mdictRes {
 	public mdictRes_asset(File fn, MainActivityUIBase a_) throws IOException {
 		super(fn);
 		context=a_.getBaseContext();
-		init(getStreamAt(0));
+		init(getStreamAt(0, true));
 	}
 
 	@Override

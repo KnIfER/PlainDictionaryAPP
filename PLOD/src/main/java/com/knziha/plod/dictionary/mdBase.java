@@ -25,7 +25,10 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
@@ -58,6 +61,9 @@ public abstract class mdBase {
 	protected StringBuilder univeral_buffer;
 	protected File f;
 	protected long ReadOffset;
+	/** 0=no cache; 1=lru cache; 2=unlimited */
+	protected int FileCacheStrategy = 2;
+	
 	public File f() {return f;}
 	final static byte[] _zero4 = new byte[]{0,0,0,0};
 	final static byte[] _1zero3 = new byte[]{1,0,0,0};
@@ -102,9 +108,15 @@ public abstract class mdBase {
 	public long maxComKeyBlockSize;
 	/** data buffer that holds one record bock of maximum possible size for this dictionary */
 
-	protected DataInputStream getStreamAt(long at) throws IOException {
+	protected DataInputStream getStreamAt(long at, boolean forceReal) throws IOException {
 		//SU.Log("getStreamAt", at, this);
-		DataInputStream data_in1 = new DataInputStream(mOpenInputStream());
+		DataInputStream data_in1;
+		//forceReal = true;
+		if(forceReal || FileCacheStrategy ==0) {
+			data_in1 = new DataInputStream(mOpenInputStream());
+		} else {
+			data_in1 = new DataInputStream(new LruInputStream());
+		}
 		at+=ReadOffset;
 		if(at>0) {
 			long yue=0;
@@ -119,6 +131,129 @@ public abstract class mdBase {
 		return new FileInputStream(f);
 		//return new BufferedInputStream(new FileInputStream(f));
 	}
+	
+	public Map<Integer, byte[]> file_cache_map;
+	
+	/** It turned out that disk accessing isn't the bottleneck for speed. */
+	class LruInputStream extends InputStream {
+		long skipped = 0;
+		private InputStream input_real;
+		
+		@Override
+		public int read() {
+			return 0;
+		}
+		
+		@Override
+		public long skip(long n) {
+			skipped+=n;
+			return skipped;
+		}
+		
+		@Override
+		public int read(byte[] b, int off, int len) throws IOException {
+			int token;
+			final int BlockSize = LinkastReUsageHashMap.BlockSize;
+			int newStart = (int)(skipped)/BlockSize*BlockSize;
+			int boost_ahead = (int) (skipped - newStart);
+			int end = (int) (skipped + len);
+			int newEnd = (int) (Math.ceil(1.0*end/BlockSize)*BlockSize);
+			int poost_atail = newEnd - end;
+			int newLen = len + boost_ahead + poost_atail;
+			long toSkip = skipped - boost_ahead;
+			if(file_cache_map==null) {
+				int cache_size = FileCacheStrategy == 1?LinkastReUsageHashMap.BlockCacheSize:0;
+				int perBlLockSize = BlockSize / 1024;
+				file_cache_map = Collections.synchronizedMap(new LinkastReUsageHashMap<>((cache_size==0?(int)f.length():cache_size)/perBlLockSize, cache_size, perBlLockSize));
+			} else {
+				ArrayList<byte[]> arr=null;
+				token = (int) toSkip;
+				while(token<newEnd) {
+					byte[] tmpData = file_cache_map.get(token);
+					if(tmpData==null) {
+						arr=null;
+						break;
+					} else {
+						if(arr==null) {
+							arr = new ArrayList<>(1+len/1024);
+						}
+						arr.add(tmpData);
+						token+=BlockSize;
+					}
+				}
+				if(arr!=null) {
+					SU.Log("取");
+					int length = 0;
+					int size = arr.size()-1;
+					for (int i = 0; i <= size; i++) {
+						byte[] dataI = arr.get(i);
+						int copyStart = 0;
+						int copyLen = dataI.length;
+						if(i==0) {
+							copyStart = boost_ahead;
+							copyLen -= boost_ahead;
+						} else if(i==size) {
+							copyLen -= poost_atail;
+						}
+						if (off + length + copyLen > b.length) {
+							copyLen = b.length - off - length;
+						}
+						System.arraycopy(dataI, copyStart, b, off + length, copyLen);
+						length += copyLen;
+					}
+					return length;
+				}
+			}
+			if(input_real==null) {
+				input_real = mOpenInputStream();
+			}
+			if(toSkip>0) {
+				long yue=0;
+				while(yue<toSkip) {
+					yue+=input_real.skip(toSkip-yue);
+				}
+			}
+			int essenceLen = len;
+			int length=0;
+			if(boost_ahead!=0) {
+				byte[] head = new byte[BlockSize];
+				input_real.read(head, 0, BlockSize);
+				int delta = BlockSize - boost_ahead;
+				off += delta;
+				essenceLen -= delta;
+				System.arraycopy(head, boost_ahead, b, 0, delta);
+				file_cache_map.put(newStart, head);
+			}
+			if(poost_atail!=0) {
+				essenceLen -= BlockSize-poost_atail;
+			}
+			length = input_real.read(b, off, essenceLen);
+			if(poost_atail!=0) {
+				byte[] tail = new byte[BlockSize];
+				input_real.read(tail, 0, BlockSize);
+				System.arraycopy(tail, 0, b, off+essenceLen, BlockSize-poost_atail);
+				file_cache_map.put(newEnd-BlockSize, tail);
+			}
+			
+			token = newStart;
+			if(boost_ahead!=0) {
+				token += BlockSize;
+			}
+			len = newEnd;
+			if(poost_atail!=0) {
+				newEnd -= BlockSize;
+			}
+			while(token<newEnd) {
+				SU.Log("存");
+				byte[] tmpData = new byte[BlockSize];
+				System.arraycopy(b, (int) (token-skipped), tmpData, 0, BlockSize);
+
+				file_cache_map.put(token, tmpData);
+				token+=BlockSize;
+			}
+			return len;
+		}
+	}
 
 
 	protected HashMap<String,String[]> _stylesheet = new HashMap<>();
@@ -132,7 +267,7 @@ public abstract class mdBase {
 		univeral_buffer = buffer;
 		
 		if(!pseudoInit && StreamAvailable()) {
-			init(getStreamAt(0));
+			init(getStreamAt(0, true));
 		}
 	}
 
@@ -147,7 +282,7 @@ public abstract class mdBase {
 		try {
 			_num_record_blocks=0;
 			if(StreamAvailable()) {
-				init(getStreamAt(0));
+				init(getStreamAt(0, true));
 			}
 		} catch (IOException e) { SU.Log(e); }
 	}
@@ -305,7 +440,7 @@ public abstract class mdBase {
 		//2.(compressed && decompressed size,which also have version differences, occupying either 4 or 8 bytes)
 		boolean responsibleForDataIn=data_in1==null;
 		try {
-			if(responsibleForDataIn) data_in1 = getStreamAt( _key_block_offset-_key_block_info_size);
+			if(responsibleForDataIn) data_in1 = getStreamAt( _key_block_offset-_key_block_info_size, true);
 			byte[] itemBuf = new byte[(int) _key_block_info_size];
 			data_in1.read(itemBuf, 0, (int) _key_block_info_size);
 			if(responsibleForDataIn) data_in1.close();
@@ -454,7 +589,7 @@ public abstract class mdBase {
 		if(_num_record_blocks==0){
 			try {
 				boolean responsibleForDataIn=data_in1==null;
-				if(responsibleForDataIn) data_in1 = getStreamAt(_record_block_offset);
+				if(responsibleForDataIn) data_in1 = getStreamAt(_record_block_offset, true);
 				_num_record_blocks = _read_number(data_in1);
 				long num_entries = _read_number(data_in1);
 				_record_block_info_size = _read_number(data_in1);
@@ -467,8 +602,8 @@ public abstract class mdBase {
 
 	void decode_record_block_header() throws IOException{
 		//![3]Decode_record_block_header
-		long start = System.currentTimeMillis();
-		DataInputStream data_in1 = getStreamAt(_record_block_offset);
+		//long start = System.currentTimeMillis();
+		DataInputStream data_in1 = getStreamAt(_record_block_offset, true);
 
 		_num_record_blocks = _read_number(data_in1);
 		long num_entries = _read_number(data_in1);
@@ -576,7 +711,7 @@ public abstract class mdBase {
 			RinfoI = _record_info_struct_list[Rinfo_id];
 
 		DataInputStream data_in = getStreamAt(_record_block_offset+_number_width*4+_num_record_blocks*2*_number_width+
-				RinfoI.compressed_size_accumulator);
+				RinfoI.compressed_size_accumulator, false);
 
 		int compressed_size = (int) RinfoI.compressed_size;
 		int decompressed_size = rec_decompressed_size = (int) RinfoI.decompressed_size;//用于验证
@@ -758,7 +893,7 @@ public abstract class mdBase {
 			else
 				compressedSize = _key_block_info_list[blockId+1].key_block_compressed_size_accumulator-infoI.key_block_compressed_size_accumulator;
 
-			DataInputStream data_in = getStreamAt(_key_block_offset+start);
+			DataInputStream data_in = getStreamAt(_key_block_offset+start, false);
 
 			byte[]  _key_block_compressed = new byte[(int) compressedSize];
 			data_in.read(_key_block_compressed, 0, _key_block_compressed.length);

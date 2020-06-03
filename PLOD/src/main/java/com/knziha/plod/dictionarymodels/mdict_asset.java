@@ -18,7 +18,7 @@ public class mdict_asset extends mdict {
 	//构造
 	public mdict_asset(File fn, MainActivityUIBase a_) throws IOException {
 		super(fn, a_, true);
-		init(getStreamAt(0));
+		init(getStreamAt(0, true));
 	}
 
 	@Override

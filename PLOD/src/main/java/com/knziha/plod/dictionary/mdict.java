@@ -777,7 +777,7 @@ public class mdict extends mdBase{
 				else
 					compressedSize = _key_block_info_list[blockId+1].key_block_compressed_size_accumulator-infoI.key_block_compressed_size_accumulator;
 
-				DataInputStream data_in = getStreamAt(_key_block_offset+start);
+				DataInputStream data_in = getStreamAt(_key_block_offset+start, false);
 
 				data_in.read(_key_block_compressed, 0,(int) compressedSize);
 				data_in.close();
@@ -1409,7 +1409,11 @@ public class mdict extends mdBase{
 	public List<mdictRes> getMdd() {
 		return mdd;
 	}
-
+	
+	public String getAboutHtml() {
+		return getAboutString();
+	}
+	
 	public static abstract class AbsAdvancedSearchLogicLayer{
 		public int type;
 		public int Idx;
@@ -1745,14 +1749,14 @@ public class mdict extends mdBase{
 						long start = _key_block_info_list[it*step].key_block_compressed_size_accumulator;
 
 						try {
-							DataInputStream data_in = getStreamAt(_key_block_offset+start);
+							DataInputStream data_in = getStreamAt(_key_block_offset+start, false);
 
 							byte[]  _key_block_compressed_many = new byte[ compressedSize_many];
 							data_in.read(_key_block_compressed_many, 0, _key_block_compressed_many.length);
 							data_in.close();
 							data_in=null;
 							//大循环
-							for(int blockId=it*step; blockId<it*step+step+jiaX; blockId++){
+							for(int blockId=it*step; blockId<it*step+step+jiaX; blockId++) {
 								if(SearchLauncher.IsInterrupted || searchCancled ) { SearchLauncher.poolEUSize.set(0); return; }
 
 								int compressedSize;
@@ -2273,7 +2277,7 @@ public class mdict extends mdBase{
 					else
 						compressedSize = _key_block_info_list[blockId+1].key_block_compressed_size_accumulator-infoI.key_block_compressed_size_accumulator;
 
-					DataInputStream data_in = getStreamAt(_key_block_offset+start);
+					DataInputStream data_in = getStreamAt(_key_block_offset+start, false);
 
 					byte[]  _key_block_compressed = new byte[(int) compressedSize];
 					data_in.read(_key_block_compressed, 0, _key_block_compressed.length);

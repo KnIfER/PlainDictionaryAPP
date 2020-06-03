@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<!--Copyright (c) 2019 Released by KnIfER under the GPL3.0 license based on previous work-->
+<!--Copyright (c) 2018 Released by KnIfER under the MIT license based on: mdict-broswer-->
+<html>
+<head>
+	<meta name="description" content="MDict JS">
+	<meta name="robots" content="noindex">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+
+	<script src="MdbR/jquery-1.11.3.min.js"></script>
+	<script src="MdbR/mark.js"></script>
+	<script src="MdbR/listview/jquery.mousewheel.js"></script>
+	<script src="MdbR/listview/seekbar.js"></script>
+	
+	<link rel="icon" href="MdbR/MdbR.png" type="image/x-icon"/>
+	<link rel="shortcut icon" href="MdbR/MdbR.png" type="image/x-icon"/>
+	
+	<link rel="stylesheet" type="text/css" href="MdbR/css/seekbar.css"/>
+	<style>
+    .cp:hover
+    {
+      background-color:#346eb4;
+    }
+	.sel{
+      -moz-user-select:text;
+      -webkit-user-select:text;
+      -ms-user-select:text;
+      -khtml-user-select:text;
+      user-select:text;
+	  position:static;
+	}
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      background-color: #B3E5EE;
+      -moz-user-select:none;
+      -webkit-user-select:none;
+      -ms-user-select:none;
+      -khtml-user-select:none;
+      user-select:none;
+    }
+    #parentR {
+      position: relative;
+      height: 100%;	/*NO!!!width: 100%;!!!*/
+      margin-left: 195px;
+      padding: 0;
+    }
+    .defP {
+      position:absolute;
+      top: 0px;
+      bottom: 0px;
+      margin-top:70px;
+      overflow:scroll;
+      width: 100%;	/*NO!!!height: 100%;!!!*/
+    }
+    .def {
+      position:absolute;
+      padding:4px 4px 100px 4px;
+    }
+    .navR{
+      margin: 0; 
+	  padding: 0;
+      height: 70px;
+      width: 100%;
+      background-color: rgba(133, 195, 255, 1);
+      white-space: nowrap;
+    }
+    .toolbar{
+      margin: 0; 
+	  padding: 0;
+      height: 70px;
+      width: 100%;
+      background-color: rgba(133, 195, 255, 1);
+      white-space: nowrap;
+	  display: flex;
+	  justify-content : space-between;
+    }
+    .btnFile{
+      margin: 0; 
+	  padding: 0;
+      width: 100%;
+      background-color: rgba(133, 195, 255, 1);
+      white-space: nowrap;
+	  display: flex;
+	  justify-content : flex-start;
+    }
+    #fileBtn{
+      position: relative;
+      margin-left: 4px;
+      width: 25px;
+      height: 25px;
+      bottom: -37px;
+      border-radius: 30%;
+      color: white;
+      z-index: 2;
+      float: left;
+      vertical-align: bottom;
+    }
+	#viewToggle{
+      position: relative;
+      margin-right: 4px;
+      width: 25px;
+      height: 25px;
+      bottom: -37px;
+      border-radius: 10%;
+      color: white;
+      z-index: 1;
+      float: right;
+      vertical-align: bottom;
+    }
+    #fileName{
+      position: relative;
+      height: 26px;
+      bottom: -41px;
+      float:left;
+      white-space: nowrap;
+      color: white;
+      z-index: 2;
+      float: left;
+      vertical-align: bottom;
+    }
+    .cp2
+    {
+      top:0;
+      background-color:#397CCD;
+      width:50px;
+      margin:20px 25px 0 0px;
+      display: inline-block;
+      overflow-x:hidden;
+      padding:10px 0 0px 0;
+      vertical-align: top;
+    }
+    .cp2:hover
+    {
+      white-space: pre-wrap;
+      overflow: visible;
+      word-wrap: break-word;
+      z-index: 1;
+      margin-right:5px;
+      width:70px;
+    }
+    .cp3
+    {
+      //background-color:#397CCD;
+      background:linear-gradient(to top, #3477C9 , #397CCD);
+      width:100%;
+      margin:0px 25px 0 0px;
+      display: inline-block;
+      color:white;
+      padding:10px;
+      -moz-user-select:none;
+      -webkit-user-select:none;
+      -ms-user-select:none;
+      -khtml-user-select:none;
+      user-select:none;
+    }
+    #dictsP{
+      white-space: nowrap;
+      position: absolute;
+      left:0;top:0;
+      margin-left: 30px;
+      margin-top:-15px;
+      overflow-y: hidden;
+      width:100%;
+      float: left;
+      vertical-align: top;
+    }
+    #ListView{
+      position: absolute; top: 0; left: 0;
+      width: 195px;
+      height: 100%;
+      box-sizing: border-box;
+      background: #191919;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    #lv {
+      position: absolute;
+      top:0;
+	  height: 100%;
+      right:20px;
+      float:left;
+      color: #dddddd;
+      overflow: hidden;
+      overflow-x:hidden;
+      white-space:nowrap;
+      padding: 0px;
+      padding-top:16px;
+      margin:0;
+      margin-left:5px;
+      margin-top: 10px;
+    }
+    #cover {
+      position: absolute;
+      top:0;
+	  height: 100%;
+      right:20px;
+      float:left;
+      color: #dddddd;
+      overflow: hidden;
+      overflow-x:hidden;
+      white-space:nowrap;
+      padding: 0px;
+      padding-top:16px;
+      margin:0;
+      margin-left:5px;
+      margin-top: 10px;
+    }
+    p{
+      width:100%;
+      font-size: 16px;
+      position: relative;
+      top:0;
+      margin: 0 0 0 25px  ;
+      padding:6px 0 6px 2px;
+    }
+    #seekbar_container {
+      position: absolute;
+	  top: 0;
+      right: -3px;
+      height: 100%;
+      width: 30px;
+      float:right;
+      padding-left:0;
+      margin-top: 10px;
+    }
+    #drag_resizer{
+      position: absolute;
+      top:0;
+      right: 0px;
+      height: 100%;
+      width: 4px;
+      float:right;
+      padding:0;
+      cursor: ew-resize;
+    }
+    #wordP{
+      position: absolute;
+      top:0;
+      right:5px;
+      padding-left: 10px;
+      margin: 0 0 0 10px ;
+      height: 40px;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+    }
+    #word{
+      float: left;
+      margin: 4px 0 0 10px ;
+      height: 15px;
+      width: 100%;
+      overflow: hidden;
+	  border:2px solid transparent;
+	  border-radius:25px;
+	  -moz-border-radius:25px;
+      padding-left: 5px;
+	  outline:none;
+    }
+	
+	#body{
+		width:70em;
+		max-width:100%;
+		margin:0 auto;
+	}
+	iframe{
+		scrolling:yes;
+		width: 100%;
+		overflow:scroll;
+	}
+	.ctx_menu{
+		position: absolute;
+		width: auto;
+		min-width: 200px;
+		height: auto;
+		border: 1px #ccc solid;
+		display: none;
+		padding:2px 0;
+		box-shadow: 5px 5px 5px #6666666a;
+		background-color: #fff;
+		z-index: 5;
+	}
+	.menu_item{
+		height: 25px;
+		margin:4px 0;
+		padding:0 10px;
+		cursor: pointer;
+	}
+	.menu_item:hover{
+		background-color: #ccc;
+	}
+	.menu_item_sep{
+		border-top:1px #ccc solid;
+		height:1px;
+	}
+	#toastview {
+	  display:none;
+	  position:fixed;
+	  left:50%;
+	  top:85%;
+	  width:100%;
+	  position:absolute;
+	  transform:translate(-50%,-50%);
+	  -webkit-transform:translate(-50%,-50%);
+	  overflow:auto;
+	  text-align:center;
+	  z-index:5;
+	}
+	#toasttext{
+	  display:inline-block;
+	  margin:0 0px;
+	  padding:7px 15px;
+	  font-size:16px;
+	  color:#FFFFFF;
+	  letter-spacing:0;
+	  line-height:22px;
+	  border-radius:30px;
+	  -moz-border-radius:30px;
+      -moz-user-select:text;
+      -webkit-user-select:text;
+      -ms-user-select:text;
+      -khtml-user-select:text;
+      user-select:text;
+	}
+	.warn{
+		background-image: linear-gradient(-45deg, #ff9569 0%, #e92758 100%);
+	}
+	.info{
+		background-image: linear-gradient(-75deg, #27bdc9 0%, #296ade 75%);
+	}
+	
+	#left {
+	  position: absolute;
+	  left:25px;
+	  content: "";
+	  width: 20px; height: 20px;
+	  border-left: 2px solid #fff;
+	  border-bottom: 2px solid #fff;
+	  top: 50%;
+	  -webkit-transform: rotate(45deg);
+	  -ms-transform: rotate(45deg);
+	  transform: rotate(45deg);
+	  -webkit-transform: translate(-50%, -50%) rotate(45deg);
+	  -ms-transform: translate(-50%, -50%) rotate(45deg);
+	  transform: translate(-50%, -50%) rotate(45deg);
+	}
+	#leftP{
+	  position: absolute;
+	  left:0px;
+	  top:35%;
+	  padding:20px;
+	  width:0px; height:24px;
+      background-color: #888888;
+	  opacity:0.6;
+	}
+	#leftP:hover{
+      opacity:1;
+	}
+	#right{
+	  position: absolute;
+	  right:15px;
+	  content: "";
+	  width:20px; height:20px;
+	  border-top: 2px solid #fff;
+	  border-right: 2px solid #fff;
+	  margin-left: -2px;
+	  -webkit-transform: rotate(45deg);
+	  -ms-transform: rotate(45deg);
+	  transform: rotate(45deg);
+	}
+	#rightP{
+	  position: absolute;
+	  top:35%;
+	  right:0px;
+	  padding:20px;
+	  width:0px; height:24px;
+      background-color: #888888;
+      opacity:0.6;
+	}
+	#rightP:hover{
+      opacity:1;
+	}
+	#about{
+	  position: absolute;
+	  width:80%;
+	  height:90%;
+	  left:10%;
+	  top:5%;
+	  border:"0";
+	  border-radius:50px;
+	  overflow-y:scroll;
+	}
+	#about::-webkit-scrollbar {
+	  display:none;
+	}
+	#aboutB{
+	  position: absolute;
+	  background:linear-gradient(-75deg, #27bdc9 0%, #296ade 75%);
+	  width:80%;
+	  height:90%;
+	  left:10%;
+	  top:5%;
+	  -webkit-filter: blur(10px);
+	  -moz-filter: blur(10px);
+	  -ms-filter: blur(10px);
+	  -o-filter: blur(10px);
+	  filter: blur(10px);
+	  border-radius:50px;
+	}
+	#aboutP {
+      position: absolute;
+      top: 0;
+      left: 0;
+	  width:100%;
+	  height:100%;
+	  background-color:rgba(218,218,218,0.85);
+	  z-index:4;
+	  display:none;
+	}
+	#closeP {
+	  position:absolute;
+	  top:8px;
+	  right:0px;
+      opacity:0.5;
+	}
+	#closeP:hover{
+      opacity:1;
+	}
+	#closeP:hover #close{
+	  background-color:red;
+	}
+	#closeP:hover #close:after{
+	  background-color:red;
+	}
+	#close{
+	  display:inline-block;
+	  width:45px;
+	  height:2px;
+	  line-height: 0;
+	  font-size:0;
+	  vertical-align: middle;
+	  background-color:#888;
+	  -webkit-transform: rotate(45deg);
+	  -webkit-transform: rotate(45deg);
+	  -ms-transform: rotate(45deg);
+	  transform: rotate(45deg);
+	}
+	#close:after{
+	  content:'/';
+	  display:block;
+	  width:45px;
+	  height:2px;
+	  background-color:#888;
+	  -webkit-transform:rotate(-90deg);
+	  -ms-transform:rotate(-90deg);
+	  transform:rotate(-90deg);
+	}
+	
+	#yesP{
+	  position:absolute;
+	  width:50px; height:50px;
+	  right:0px;
+	  bottom:0px;
+	  opacity:0.5;
+	}
+	#yesP:hover{
+      opacity:1;
+	}
+	#yesP:hover #yes{
+	  background-color:red;
+	}
+	#yesP:hover #yes:after{
+	  background-color:red;
+	}
+    #yes{
+	  display: inline-block;
+	  width:20px;
+	  height:3px;
+	  background:#888;
+	  line-height:0;
+	  font-size:0;
+	  vertical-align: middle;
+	  -webkit-transform:translateY(23px) rotate(45deg);
+	  -ms-transform:translateY(23px) rotate(45deg);
+	  transform:translateY(23px) rotate(45deg);
+    }
+	#yes:after{
+	  content:'/';
+	  display:block;
+	  width:42px;
+	  height:3px;
+	  background:#888;
+	  -webkit-transform:translateY(-20px) rotate(-90deg) translateY(-50%);
+	  -ms-transform:translateY(-20px) rotate(-90deg) translateY(-50%);
+	  transform:translateY(-20px) rotate(-90deg) translateY(-50%);
+	}
+	.contents {
+	  
+	}
+	</style>
+
+	<script>
+		var
+		  _cached_keys,             // cache latest keys
+		  _trail;                   // store latest visited record block & position when search for candidate keys
+		var lastDingX=0;
+		var pos = 0;
+		var pengDingPos = -1;
+		var lv  = document.getElementById("lv");
+		var defP;
+		var fileName;
+		var dictsP;
+		var seekBarmyCon  = document.getElementById("seekbar_container");
+		var capacity = 30;
+		var trueCapacity = 30;
+		var listSize = 100;
+		var seekBarmy;
+		var lastTarget,lastSelection_;
+		var currentDict;var currentDicts=[];
+		var currentDictPos;
+		var editText;
+		var chrome_ = 0;
+		var enter=0;
+		var app;
+		var iframes=[];
+	 		
+		var menu;
+		var dictTitleMenu;
+		var selectionMenu;
+		var contentMenu;
+		var entryMenu;
+		var coverMenu;
+		var tmpText;
+		var toastToken=-1;
+		var toastHolder;
+		var currentContext;
+	
+		var MultiSearchResult=[];
+		var MultiSearchResultStamp="";
+		var displayingMultiSearch=false;
+		
+		var aboutPage;
+		var type_bold;
+		var mobile;
+		var line_height;
+		var lastSelection;
+		//346eb4
+		var AC="#397CCD";
+		
+		var onmousewheelDown = function(event) {
+			event.preventDefault();
+			pos+=event.deltaY*-1;
+			//console.log("pos: "+pos);
+			seekBarmy.setValue(getListSize()-pos);
+			rePopulate();
+		}
+		$(function() {
+			mobile=(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent));
+			//bind mouse wheel
+			$('#lv').bind('mousewheel', onmousewheelDown);
+			$('#seekbar_container').bind('mousewheel', onmousewheelDown);
+			//bind Drag-Resizable items.  (via wuxinxi007)
+			bindResize(document.getElementById('drag_resizer'));
+			bindResize(document.getElementById('fileName'));
+			if(mobile){
+				var styleObj= document.styleSheets[1].cssRules[0].style;
+				styleObj.removeProperty('background-color');
+				bindTouchScroll();
+			}
+		});
+		
+		function bindTouchScroll(){
+			var lvP = document.getElementById('ListView');
+			var x = y = 0;
+			$(lvP).on('touchstart' ,function(e){
+				console.log("mousedown");
+				if(e.clientY==undefined)
+					e.clientY=e.originalEvent.changedTouches[0].clientY;
+				y = e.clientY;
+			});
+			$(lvP).on('touchmove' ,function(e){
+				console.log("mousedown");
+				if(e.clientY==undefined)
+					e.clientY=e.originalEvent.changedTouches[0].clientY;
+				var deltaY=y-e.clientY;
+				if(Math.abs(deltaY)>=line_height){
+					pos+=(deltaY>0?1:-1);
+					seekBarmy.setValue(getListSize()-pos);
+					rePopulate();
+					y=e.clientY;
+				}
+			});
+			
+		}
+	
+		function bindResize(el){
+			var lvP = document.getElementById('ListView');
+			var lvPs = lvP.style,
+					pRs = document.getElementById('parentR').style,
+					x = y = 0;
+			$(el).on('mousedown touchstart' ,function(e){
+				console.log("mousedown");
+				if(e.clientX==undefined)
+					e.clientX=e.originalEvent.changedTouches[0].clientX;
+				x = e.clientX - lvP.offsetWidth;
+				//e.preventDefault()
+				if(!mobile)
+				$(document).bind("mousemove",mouseMove).bind("mouseup",mouseUp)
+			});
+			if(mobile)
+			$(el).bind("touchmove",mouseMove).bind("touchend",mouseUp)
+			function mouseMove(e){
+				if(e.clientX==undefined)
+					e.clientX=e.originalEvent.changedTouches[0].clientX;
+				lvPs.width = e.clientX - x + 'px';
+				pRs.marginLeft = lvPs.width;
+				defP.style.visibility="hidden";
+				if(app) app.handleLvResize(e.clientX - x);
+		    }
+			function mouseUp(){
+				defP.style.visibility="visible";
+				if(!mobile)
+				$(document).unbind("mousemove touchmove", mouseMove).unbind("mouseup touchend", mouseUp);
+			}
+		}
+	    window.addEventListener("popstate",function(event){
+			var page=0;
+			if(event.state!==null){
+				page=event.state;
+				console.log('page:'+page);
+			}
+			console.log(event);
+			console.log(''+event);
+			console.log('page:'+page);
+		});
+		//simple listview
+		function rePopulate(){//TODO: optimise
+			//计算一屏能放下几行。
+			line_height=0;
+	
+			var tmp = $("p").css("font-size");
+			if(tmp.indexOf("px")!=-1)
+				line_height = parseFloat(tmp.substring(0,tmp.length-2));
+			tmp = $("p").css("padding-top");
+			if(tmp.indexOf("px")!=-1)
+				line_height += parseFloat(tmp.substring(0,tmp.length-2));
+	
+			trueCapacity=capacity=Math.floor($(window).innerHeight()/line_height);
+			//console.log("line_height: "+line_height);
+			//console.log("capacity: "+capacity);
+			//trueCapacity=capacity=12;
+			var lastSelection=-1;
+	
+			var _listSize=getListSize();
+			if(pos<0) pos=0;
+			if(pos>=_listSize) pos = _listSize-1;
+			var couterfeitCounter = pos+capacity;
+	
+			//if(couterfeitCounter>=Number.MAX_SAFE_INTEGER){
+			//    console.log("Integer Overflow Error! max is  "+Number.MAX_SAFE_INTEGER);
+			//    console.log("Integer Overflow Error! now has "+couterfeitCounter);
+			//    console.log("Integer Overflow Error! delta is"+(couterfeitCounter-Number.MAX_SAFE_INTEGER));
+			//    console.log("Integer Overflow Error! delta is"+(couterfeitCounter+100));
+			//    couterfeitCounter = Number.MAX_SAFE_INTEGER;
+			//}
+			//if(couterfeitCounter>_listSize) couterfeitCounter = _listSize;
+			if(pos+capacity>_listSize) capacity = _listSize-pos;
+			if(isMultiSearchView()){//联合
+				rePopulateByData(MultiSearchResult);
+			}
+			else if(currentDict){//请求数据
+				$("#jsonid").load("/MdbRGetEntries/"+encodeURIComponent(currentDict.name)+"/"+pos+"/"+capacity,
+					function(data){rePopulateByData(data.split('\n'));}
+				);
+			}
+			else{//demo items
+				if(lastTarget) lastSelection = parseInt(lastTarget.id);
+				else if(lastSelection_!=-1) lastSelection=lastSelection_;
+				if(lv.hasChildNodes()) {
+					var childs = lv.childNodes,
+							ln = childs.length;
+					for (var i = 0; i < ln; i++) {
+						lv.removeChild(childs[0]);
+					}
+				}
+				for (var i=0; i<capacity; i++){
+					var item = document.createElement('p');
+					item.id = pos+i;
+					item.className="cp";
+					item.onclick = p;
+					item.innerText = "N/A " + (pos+i);
+					//lv.append(item);
+					if(lastSelection==pos+i){
+						lastTarget = item;
+						item.style.setProperty("background-color",AC);
+					}
+					lv.appendChild(item);
+				}
+				lastSelection_=-1;
+			}
+		}
+		
+		function rePopulateByData(data) {
+			//if(lastTarget) lastSelection = parseInt(lastTarget.id);
+			if(lastSelection_!=-1) lastSelection=lastSelection_;
+			var isCombinedView = isMultiSearchView();
+			var startIndex=isCombinedView?pos:0;
+			var i = 0;
+			var end;
+			if(lv.hasChildNodes()) {
+				var childs = lv.childNodes, end = Math.min(capacity, childs.length);
+				for (; i < end; i++) {
+					var item = childs[i];
+					item.id = pos+i;
+					item.onclick = p;
+					item.innerText = isCombinedView?data[pos+i].split("\r")[0]:data[i];
+					if(!isCombinedView && currentDict.VI){
+						var lid=item.innerText.lastIndexOf(":");
+						if(lid) try{
+							item.VI=parseInt(item.innerText.substring(lid+1));
+							item.innerText = item.innerText.substring(0, lid);
+						}catch(e){}
+					}
+					item.style.display='block';
+					if(lastSelection==item.id){
+						lastTarget = item;
+						item.style.setProperty("background-color",AC);
+					}else{ 
+						item.removeAttribute("style");
+					}
+				}
+			}
+			
+			for(;i<capacity;i++){
+				var item = document.createElement('p');
+				item.id = pos+i;
+				item.className="cp";
+				item.onclick = p;
+				item.innerText = isCombinedView?data[pos+i].split("\r")[0]:data[i];
+				if(lastSelection==item.id){
+					lastTarget = item;
+					item.style.setProperty("background-color",AC);
+				}
+				lv.appendChild(item);
+			}
+			
+			end=lv.childNodes.length;
+			if(capacity<end)
+			for(;i<end;i++){
+				var item = lv.childNodes[i];
+				item.style.display='none';
+			}
+			lastSelection_=-1;
+		}
+
+		function isMultiSearchView(){
+			return displayingMultiSearch && MultiSearchResult!=undefined;
+		}
+
+		function reinitIframe3(){
+			for (var i=0; i<iframes.length; i++)
+			try{
+				if(scrollExpandAll() && iframes[i].scrollExpandAll){
+					/*let's take a step bold.  offsetHeight  clientHeight scrollHeight*/
+					var tbh=iframes[i].contentWindow;
+					if(tbh){
+						tbh = type_bold?(tbh.document.body.clientHeight+65):(tbh.document.body.scrollHeight);
+						iframes[i].scrolling="no";
+						iframes[i].height=tbh;
+					}
+				}else{
+					iframes[i].scrolling="yes";
+					iframes[i].height = "100%";// iframes.length==1?:500;
+				}
+			}catch (ex){/*console.log(ex);*/}
+		}
+		
+		window.setInterval("reinitIframe3()", 200);
+
+		function ClearAllPages(){
+			iframes.length=0;
+			HlightIdx=0;
+		}
+		
+		function p(e){//列表点击
+			//console.log("p: "+e.target.id+typeof(e.target.id));
+			//console.log(e.target.style);
+			if(lastTarget)
+				//lastTarget.style.setProperty("background-color", "transparent");
+				lastTarget.removeAttribute("style");
+			lastTarget=e.target;
+			lastTarget.style.setProperty("background-color",AC);
+			var logicalPos=lastTarget.id;
+			lastSelection=logicalPos;
+			onItemClick(logicalPos, e.target.VI);
+		}
+		
+		function EnterContent(newPos){
+			lastTarget=null;
+			onItemClick(lastSelection_=newPos);
+			enter=0;
+		}
+		
+		function onItemClick(logicalPos, VI){
+			//一框一典多释义并列
+			var contents;
+			ClearAllPages();
+			if(isMultiSearchView()){
+				processContents(contents=MultiSearchResult[logicalPos]);
+			}else if(currentDict){
+				contents=lastDingX+"@"+(VI!=undefined?VI:logicalPos);
+				processContent(contents, lastDingX, logicalPos);
+			}
+			history.pushState(null,null,'READ.jsp?FL='+flag+'&DX='+lastDingX+'&POS='+pos+'&AT='+lastSelection+'&CT='+encodeURIComponent(contents));
+			if(app && contents){
+				app.recordRecords(contents);
+			}
+		}
+		
+		/** Multi result format : entry1 \r 0@1@2 & 1@1@2 & 5@1024 \n entry2...
+			where 0@1@2 means contents at position entry#( 1 and 2 ) of dict#( 0 ) */
+		function processContents(e){
+			var arr = e.split("\r")[1].split("&");
+			var childs = defP.childNodes, ln = childs?childs.length:0;
+			for (var i = 0; i < ln; i++) {
+				childs[i].rendering=0;
+			}
+			for (var i = 0; i < arr.length; i++) {
+				var currentDing=parseInt(arr[i].split("")[0]);
+				var CDI=currentDicts[currentDing];
+				
+				var item;
+				if(!CDI.item){
+					CDI.item=document.createElement('iframe');
+					item=CDI.item;
+					item.id='md_'+(item.frameAt=lastDingX);
+					item.width="100%";
+					item.frameBorder=0;
+					item.className='contents';
+				}
+				item=CDI.item;
+				item.height=100;
+				item.scrollExpandAll=true;
+				item.rendering=true;
+				
+				// 不移不改，缺一不可
+				if(!item.parentNode || !CDI.title.parentNode){
+					if(!CDI.title){
+						CDI.title = document.createElement('div');
+						CDI.title.innerHTML=CDI.name;
+						CDI.title.className='cp3';
+						CDI.title.onclick=p3;
+						CDI.title.onselectstart=function(){return false;};
+					}
+					defP.appendChild(CDI.title);
+					defP.appendChild(item);
+				}
+				CDI.title.rendering=true;
+				e=arr[i];
+				if(CDI.VI){
+					e=e.substring(0, e.indexOf(":"));
+				}
+				if(item.innerHTML!=e){
+					item.innerHTML=e;
+					item.src="\\content\\"+arr[i];
+				}
+				
+
+				item.contentWindow.frameAt=i;
+				iframes.push(item);
+			}
+			childs = defP.childNodes, ln = childs?childs.length:0;
+			for (var i = ln-1; i >=0 ; i--) {
+				if(!childs[i].rendering){
+					defP.removeChild(childs[i]);
+				}
+			}
+		}
+
+		function processContent(e, DX, LP){
+			var item;
+			if(!currentDict.item){
+				currentDict.item=document.createElement('iframe');
+				item=currentDict.item;
+				item.id='md_'+(item.frameAt=lastDingX);
+				item.width="100%";
+				item.frameBorder=0;
+				item.className='contents';
+			}
+			item=currentDict.item;
+			item.height="100%";
+			item.scrollExpandAll=0;
+			if(defP.hasChildNodes()) {
+				var childs = defP.childNodes, ln = childs.length;
+				for (var i = 0; i < ln; i++) {
+					if(childs[0]!=item) defP.removeChild(childs[0]);
+				}
+			}
+			// 不移不改，缺一不可
+			if(!item.parentNode)defP.appendChild(item);
+			if(item.innerHTML!=e){
+				item.innerHTML=e;
+				item.src="\\content\\"+item.innerHTML+(currentDict.VI?(":"+LP):"");
+			}
+			else if(currentDict.VI){
+				//console.log("VIVIVI");
+				//var fv=arr[1];
+				//item.contentWindow._onloadchecks=[];
+				//item.contentWindow._onloadchecks.push(function(){loadVI(fv);});
+				if(item.contentWindow.loadVI){
+					item.contentWindow.loadVI(LP);
+				}
+			}
+			item.contentWindow.frameAt=0;
+			item.contentWindow.framed=1;
+			iframes.push(item);
+		}
+		
+		function handleMirror(e){
+			console.log('handling m'+e);
+			if(e.indexOf("\r")>0) processContents(e);
+			else processContent(e);
+		}
+		
+		function p2(e){//切换词典
+			if(currentDicts){
+				_cached_keys=_trail=undefined;
+				currentDicts[lastDingX].OldPos = pos;
+				currentDicts[lastDingX].OldKey = $("#word").val();
+				if(lastTarget)currentDicts[lastDingX].OldSel = parseInt(lastTarget.id);
+	
+				if(e.name!=undefined)
+					lastDingX = parseInt(e.name);
+				else if(e.target)
+					lastDingX = parseInt(e.target.id);
+				else
+					lastDingX = parseInt(e.id);
+					
+	
+				if(lastDingX!=Number.NaN){
+					currentDict = currentDicts[lastDingX];
+					if(app)
+						app.setLastMd(lastDingX);
+					//if(app) app.log("clicking dict: "+currentDict+currentDict.OldSel);
+				
+					if(currentDict.OldKey){
+						//TODO????? $("#word").val(currentDict.OldKey);
+					}
+					if(currentDict.OldSel){
+						lastSelection_ = currentDict.OldSel;
+						//currentDict.renderDef(currentDict.OldSel)
+					} else $(".def").html("");
+					
+					if(currentDict.OldPos)
+						pos=currentDict.OldPos;
+					else pos=0;
+	
+					if(pengDingPos!=-1)
+						pos = pengDingPos;
+					setListSize(currentDict.name);
+					$("#fileName").html(currentDict.name);
+				}
+			}
+			try{
+				e.stopPropagation();
+			}catch(e){}
+			//e.target.background("#0000ff");
+		}
+	
+		function p3(e){//折叠内容
+			var framei=e instanceof HTMLIFrameElement?e:e.srcElement.nextSibling;
+			if(framei instanceof HTMLIFrameElement){
+				framei.style.display=framei.style.display!='none'?'none':'block';
+				e.preventDefault();
+			}
+		}
+	
+		function Initialize() {
+			lv = document.getElementById("lv");
+			defP = document.getElementById("defP");
+			fileName = document.getElementById("fileName");
+			dictsP = document.getElementById("dictsP");
+			seekBarmyCon = document.getElementById("seekbar_container");
+			dictTitleMenu = document.getElementById("title_menu");
+			selectionMenu = document.getElementById("selection_menu");
+			contentMenu = document.getElementById("content_menu");
+			entryMenu = document.getElementById("entry_menu");
+			coverMenu = document.getElementById("cover_Menu");
+			tmpText = document.getElementById("tmpText");
+			toastHolder = document.getElementById("toastview");
+			aboutPage = document.getElementById("about");
+			//rePopulate();
+			seekBarmy = new Seekbar.Seekbar({
+					renderTo: "#seekbar_container",
+					minValue: 0, maxValue: 255,
+					valueListener: function (value) {
+				this.value = Math.round(value);
+				updateProgress();
+				//console.log("valueListener: ",value);
+			},
+			barSize:10,
+					needleSize:0.3,
+					thumbColor: '#00cccccc',
+					negativeColor: '#000',
+					positiveColor: '#000',
+					value: 0
+			});
+			seekBarmy.setValue(seekBarmy.maxValue)
+			setListSize(667);//900719925474101000
+	
+			editText = document.getElementById("word");
+	
+			if(document.all){
+				editText.onpropertychange=loookup;
+			}
+			else{
+				editText.oninput=loookup;
+			}
+			$(window).keyup(function(event){
+				switch(event.keyCode) {
+					case 27:
+					case 96:
+						console.log("ESC");
+					break;
+				}
+			});
+			document.onkeydown = function(e) {
+				var keyCode = e.keyCode || e.which || e.charCode;
+				var ctrlKey = e.ctrlKey || e.metaKey;
+				//console.log("word isFocused:",$("#word").is(':focus'));
+				if($(':focus').length==0){
+					if(!ctrlKey &&((keyCode<=90&&keyCode>=65))){//abc keyboard
+						$("#word").val("");
+						$("#word").focus();
+						return true;
+					}
+					//if(keyCode==32){//space
+					//    if(lastTarget){
+					//        pos=parseInt(lastTarget.id);
+					//        rePopulate();
+					//    }
+					//    return true;
+					//}
+					if(keyCode==8 ||keyCode==37||keyCode==39 ) {//left right
+						$("#word").focus();
+						return true;
+					}
+				}
+				//if($(':focus').length==0 || $("#word").is(':focus'))
+					var lastSelection=0;
+					if(lastTarget) lastSelection = parseInt(lastTarget.id);
+					else if(lastSelection_!=-1) lastSelection=lastSelection_;
+					var re=false;
+					if(keyCode==38){//up
+						if(lastSelection==0) return false;
+						lastSelection=lastSelection-1;
+						re=true;
+					}
+					if(keyCode==40){//down
+						if(lastSelection>=getListSize()-1) return false;
+						lastSelection=lastSelection+1;
+						re=true;
+					}
+					if(re){
+						lastSelection_=lastSelection;
+						lastTarget=null;
+						e.preventDefault();
+						if(lastSelection<=pos) pos=lastSelection;
+						else{
+							var ca =  trueCapacity - 6;
+							if(lastSelection>pos+ca)
+								pos=lastSelection-ca;
+							console.log(lastSelection+" : "+pos+" : "+(pos+ca));
+						}
+						if(currentDict){
+							console.log(""+lastSelection+" : "+getListSize());
+							onItemClick(lastSelection);
+						}
+						seekBarmy.setValue(listSize-pos);
+						rePopulate();
+						return;
+					}
+				return true;
+			}
+	
+			$(document.body).bind({
+					paste: function(e) {
+				if($(':focus').length==0){/*defaulf paste receptor*/
+					var clipboardData = window.clipboardData; /*ie*/
+					if (!clipboardData) { /*Cr*/
+						clipboardData = e.originalEvent.clipboardData
+					}
+					var data = clipboardData.getData('Text');
+					//console.log("bindp: ",data);
+					$("#word").val(data);
+					loookup();
+				}
+			}
+	
+			});
+			
+			var useagent=navigator.userAgent;
+			console.log(useagent);
+			type_bold = useagent.match(/Chrome/)||useagent.match(/JavaFX\/8.0/);
+			ScanInDicts();
+		}
+	
+		var postInit = function(){
+			if(app){
+				flag=app.getFlag();
+				if(isCombinedSeaching())
+					$(fileBtn)[0].src='MdbR/joint.png';
+				if(!scrollExpandAll())
+					$(viewToggle)[0].src='MdbR/viewSets.png';
+			}
+			if(mobile){
+				var lvP = document.getElementById('ListView');
+				var lvPs = lvP.style,pRs = document.getElementById('parentR').style;
+				lvPs.width = Math.floor($(window).innerWidth()*0.42) + 'px';
+				pRs.marginLeft = lvPs.width;
+			}
+			postInit=null;
+		/**/};
+		
+		var flag=0;
+		function updateFFAt(o, val) {
+			flag &= (~o);
+			if(val) flag |= o;
+			if(app){
+				app.setFlag(flag);
+			}
+		}
+		function isCombinedSeaching(){
+			return (flag&0x1)!=0;
+		}
+		function setCombinedSeaching(val){
+			updateFFAt(0x1, val);
+		}
+		function scrollExpandAll(){
+			return (flag&0x2)==0;
+		}
+		function setscrollExpandAll(val){
+			updateFFAt(0x2, !val);
+		}
+		
+	
+		function setListSize(name){
+			$("#jsonid").load("/MdbRSize/"+encodeURIComponent(name),
+					function(data) {
+				//alert(typeof(data));
+				if(data){
+					var size=parseInt(data);
+					listSize=size;
+					if(!isMultiSearchView()){
+						lastTarget= undefined;
+						adjustSeekbar(size);
+						rePopulate();
+					}
+				}
+			});
+		}
+		
+		function adjustSeekbar(size){
+			seekBarmy.maxValue=size;
+			seekBarmy.setValue(size);
+			seekBarmy.refresh();
+		}
+		
+		function getListSize(){
+			return isMultiSearchView()?MultiSearchResult.length:listSize;
+		}
+	
+		function setListPos(p){
+			//console.log("list pos is: ",getListSize()-p);
+			seekBarmy.setValue(getListSize()-p);
+			pos=p;
+			//seekBarmy.render();
+			rePopulate();
+		}
+		
+		function setDictAndPos(ding,p){
+			currentDicts[ding].OldSel=ding;
+			lastTarget=null;
+			lastSelection_=p;
+			if(lastDingX!=ding){
+				var e = [];
+				e.name=ding;
+				pengDingPos=p;
+				p2(e);
+			}else{
+				setListPos(p);
+			}
+		}
+	
+		function setCurrMdict(mdict){
+			//
+		}
+		
+		//scroll bar scrolled
+		function updateProgress() {
+			if(!seekBarmy) return;
+			pos = getListSize() - seekBarmy.value.toString(10);
+			rePopulate();
+			// $("#color-code").html(red);
+		}
+		
+		function loookup(){
+			lookup(app?app.getKeyWord():editText.value);
+		}
+	
+		function lookup(word){
+			if(word.trim()===""){
+				if(displayingMultiSearch)
+					displayingMultiSearch=false;
+				setListPos(0);
+				adjustSeekbar(listSize);
+				return;
+			}
+			if(currentDict){
+				if(isCombinedSeaching())
+				$("#jsonid").load("/MdbRJointQuery/"+encodeURIComponent(word),
+						function(data) {
+							//console.log("received 联合搜索: "+data);
+							MultiSearchResult = data.split('\n');
+							MultiSearchResultStamp=word;
+							displayingMultiSearch=true;
+							setListPos(0);
+							adjustSeekbar(MultiSearchResult.length);
+							if(enter)EnterContent(0);
+					});
+				else
+				$("#jsonid").load("/MdbRSingleQuery/"+lastDingX+"/"+encodeURIComponent(word),
+						function(data) {
+							console.log(typeof(data));
+							if(data){
+								displayingMultiSearch=false;
+								var newPos=parseInt(data);
+								setListPos(newPos);
+								if(enter)EnterContent(newPos);
+							}
+					});
+			}
+		}
+	
+	
+		updateProgress();
+		//$(window).on('resize', 0, function() {
+	
+		$(window).resize(function() {
+			if(seekBarmy){
+				if(seekBarmyCon.hasChildNodes()) {
+					//var childs = seekBarmyCon.childNodes,
+					//    ln = childs.length;
+					//console.log("del: ",ln);
+					//for (var i = 0; i < ln; i++) {
+					//    seekBarmyCon.removeChild(childs[0]);
+					//}
+				}
+				seekBarmy.refresh();
+			}
+			rePopulate();
+			//  alert($(window).width()); //浏览器时下窗口可视区域宽度
+			//  alert($(window).height()); //浏览器时下窗口可视区域高度
+			//  alert($(document).height()); //浏览器时下窗口文档的高度
+			//  alert($(document.body).height());//浏览器时下窗口文档body的高度
+			//  alert($(document.body).outerHeight(true));//浏览器时下窗口文档body的总高度 包括border padding margin
+			//
+			//  alert($(document).width());//浏览器时下窗口文档对于象宽度
+			//  alert($(document.body).width());//浏览器时下窗口文档body的高度
+			//  alert($(document.body).outerWidth(true));//浏览器时下窗口文档body的总宽度 包括border padding margin
+			////////////console.log("line: "+$(document).height());
+			////////////console.log("attr: "+document.getElementById("1").style.fontSize);
+			////////////console.log("attr2: "+document.getElementsByTagName("p")[1].getAttribute("font-size"));
+			////////////console.log("attr3: "+document.getElementsByTagName("p")[1].fontSize);
+	
+			//////console.log("attr4: "+$("p").css("margin"));//16 0 16 15 px
+			//////console.log("attr4: "+$("p").css("font-size"));//16 0 16 15 px
+			////////console.log("attr5: "+$("html").css("height"));
+			//////console.log("attr6: "+$(window).outerHeight());
+		});
+	
+	
+		function ScanInDicts(){
+			$("#jsonid").load("/dicts.json",
+					function(data) {
+				//console.log("ScanInDicts received");
+				if(data){
+					currentDicts.length=0;
+					dictsP.innerHTML="";
+					var e = [], argSep;
+					e.id=lastDingX;
+					var arr=data.split('\n');
+					for(var i=0;i<arr.length;i++){
+						argSep=arr[i].indexOf(':');
+						console.log(argSep);
+						console.log(arr[i].substring(0, argSep));
+						var CDI={};
+						if(argSep>=0){
+							CDI.name=arr[i].substring(0, argSep);
+							var args = arr[i].substring(argSep+1).split('&');
+							args.forEach(function(item, index){
+								if(item=='VI')
+									CDI.VI=1;
+							});
+						}else{
+							CDI.name=arr[i];
+						}
+						currentDicts.push(CDI);
+						var item = document.createElement('p');
+						var itemi = document.createElement('span');
+						itemi.style.setProperty("background-color","#4296FA");
+	
+						itemi.id=item.id=i;
+						item.className="cp2";
+						item.onclick=itemi.onclick = p2;
+						itemi.innerText = CDI.name;
+						itemi.cover=1;
+						item.cover=1;
+	
+						item.style.setProperty("background-color","#4296FA");
+						item.appendChild(itemi);
+						dictsP.appendChild(item);
+					}
+					p2(e);
+					if(postInit)
+						postInit();
+					rePopulate();
+				}
+			});
+		}
+	
+		function foldAll(){
+			for (var i=0; i<iframes.length; i++)
+				iframes[i].style.display="none";
+		}
+		function unFoldAll(){
+			for (var i=0; i<iframes.length; i++)
+				iframes[i].style.display="block";
+		}
+		function unFoldCurrent(){
+			if(currentContext){
+				for (var i=0; i<iframes.length; i++)
+					iframes[i].style.display=iframes[i]!=currentContext?"none":"block";
+				defP.scrollTo(0, currentContext.offsetTop);
+			}
+		}
+		function focusContent(d){
+			if(currentContext){
+				var current = iframes[currentContext.contentWindow.frameAt+d];
+				if(current){
+					current.style.display=d===0?"none":"block";
+					current=current.previousSibling.offsetTop;
+					if(current<defP.scrollTop-70 || current+50>defP.scrollTop-70+defP.offsetHeight)
+						defP.scrollTo(0, current);
+				}else{
+					defP.scrollTo(0, d==-1?0:(defP.scrollHeight-defP.offsetHeight));
+				}
+			}
+		}
+		function goBack(){
+			if(currentContext){
+				currentContext.contentWindow.history.back();
+			}
+		}
+		function goForward(){
+			if(currentContext){
+				currentContext.contentWindow.history.forward();
+			}
+		}
+		function saveCurrent(){
+			if(currentContext){
+				if(app)
+					app.saveCurrent(currentContext.innerHTML);
+				else{//ie only
+					if(currentContext.contentWindow.document.execCommand('SaveAs'))
+						toast(0,"保存成功！",0,1000);
+					else
+						toast(0,"未保存 (仅支持ie)",1,1000);
+				}
+			}
+		}
+		function acceptDict(){
+			if(currentContext){
+				if(aboutPage.context_idx>=0 && aboutPage.context_idx<currentDicts.length){
+					p2(document.getElementById(aboutPage.context_idx));
+				}
+			}
+		}
+		function showAbout(){
+			if(currentContext){
+				if(currentContext.frameAt) aboutPage.context_idx=currentContext.frameAt;
+				do_showAbout(0);
+			}
+		}
+		function reloadDict(){
+			if(app){
+				if(currentContext){
+					app.reloadDict(aboutPage.context_idx);
+				}
+			}
+		}
+		function openFolder(){
+			if(currentContext && app){
+				app.openFolder(aboutPage.context_idx);
+			}
+		}
+		function do_showAbout(d){
+			var DX=aboutPage.context_idx+d;
+			if(DX>=0 && DX<currentDicts.length){
+				aboutPage.context_idx=DX;
+				$('#aboutP')[0].style.display="block";
+				aboutPage.contentWindow.location.reload(true);
+				aboutPage.src="\\about\\"+(aboutPage.innerHTML=DX);
+				aboutPage.contentWindow.location.reload(true);
+				aboutPage.contentWindow.location.href=aboutPage.src;
+				//禁用连等
+				//console.log("???"+aboutPage.innerHTML);
+				//console.log("???"+aboutPage.src);
+				//console.log("???"+aboutPage.contentWindow.location.href);
+			}else{
+				toast($(aboutP)[0],"没有更多了", 1, 800);
+			}
+		}
+		function reloaded(idx){
+			aboutPage.contentWindow.location.reload(true);
+			aboutPage.src="\\about\\"+(aboutPage.innerHTML=idx);
+			aboutPage.contentWindow.location.reload(true);
+			var tp=$(aboutP)[0];
+			if(tp.style.display!='block')
+				tp=0;
+			toast(tp,currentDicts[idx].name+" 已重载!", 0, 1000);
+		}
+		function closeAbout(){
+			$('#aboutP')[0].style.display="none";
+		}
+		//if(0)
+		window.oncontextmenu = function(e){
+			dismiss_menu();
+			var fade=1;
+			if('cp3'==e.srcElement.className){
+				menu=dictTitleMenu;
+				currentContext=e.srcElement.nextSibling;
+			}
+			else if(e.srcElement==fileName){
+				if(iframes.length){
+					menu=dictTitleMenu;
+					currentContext=iframes[0];
+				}
+			}
+			else if(e.target instanceof HTMLIFrameElement && e.target!=aboutPage){
+				var sel=e.target.contentWindow.getSelection();
+				currentContext=e.target;
+				if(sel && (''+sel).length>0){
+					menu=selectionMenu;
+				}else{
+					menu=contentMenu;
+				}
+			}
+			else if(e.srcElement.className=='cp'){
+				menu=entryMenu;
+				menu.childNodes[1].innerHTML=e.srcElement.innerHTML;
+				currentContext=e.srcElement;
+			}
+			else if(e.srcElement.className=='menu_item'){
+				e.preventDefault();
+				if(e.srcElement==$(entry_menu)[0].childNodes[1]){
+					//setTimeout(copyText, 1000);
+					if(mobile) copyText();
+					fade=0;
+				}
+				if(e.srcElement==$(cover_Menu)[0].childNodes[1]){
+					//setTimeout(copyText, 1000);
+					if(mobile) copyText();
+					fade=0;
+				}
+			}
+			else if(e.srcElement.cover){
+				menu=coverMenu;
+				aboutPage.context_idx=e.srcElement.id;
+				menu.childNodes[1].innerHTML=e.srcElement.innerHTML;
+				currentContext=e.srcElement;
+			}
+			else  if(e.srcElement.id=='about'){
+				if(app){
+					menu=$(dict_menu)[0];
+					currentContext=e.srcElement;
+				}
+			}
+			if(menu!=null){
+				menu.style.display="block";
+				menu.style.left=e.clientX+"px";
+				menu.style.top=e.clientY+"px";
+				e.preventDefault();
+			}
+			if(fade){
+				if(toastToken!=-1)
+					fadeToast();
+			}
+		}
+		
+		window.onclick=function(e){
+			dismiss_menu();
+		}
+		
+		function copyText(){
+			if(currentContext instanceof HTMLIFrameElement){
+				if(currentContext.contentWindow.document.execCommand('copy'))
+					toast(0,'内容已复制',0,0)
+			}else if(currentContext && (currentContext.className=='cp'||currentContext.cover)){
+				tmpText.focus();
+				tmpText.innerHTML=currentContext.innerHTML;
+				const range = document.createRange();
+				range.selectNode(tmpText);
+				const selection = window.getSelection();
+				if(selection.rangeCount > 0) selection.removeAllRanges();
+				selection.addRange(range);
+				if(document.execCommand('copy'))
+					toast(0,tmpText.innerHTML+' 已复制',0,2000)
+			}
+		}
+		
+		function contextMouseDown(){
+			var btn = event.button;
+			var src = event.srcElement;
+			if(src==$(entry_menu)[0].childNodes[1]||src==$(cover_Menu)[0].childNodes[1]){
+				if(btn==1||btn==2){
+					copyText();
+				}
+			}
+			else if(src.id=="browserSearch"){
+				browserSearch(btn);
+			}
+		}
+		
+		function contextMouseDown1(){
+			var e=[];e.target=currentContext;
+			p(e);
+		}
+		
+		function dismiss_menu(){
+			if(menu){
+				menu.style.display="none";
+				menu=null;
+			}
+		}
+		
+		function browserSearch(slot){
+			var sel;
+			if(currentContext instanceof HTMLIFrameElement){
+				sel=currentContext.contentWindow.getSelection();
+			}else if(currentContext && currentContext.className=='cp'){
+				sel=currentContext.innerHTML;
+			}
+			if(sel){
+				if(app){
+					app.handleWebSearch(sel, slot);
+				}//else{
+				//	window.open("http://www.wlzhys.com"+sel);
+				//}
+			}
+		}
+		
+		function toggleSearchMode(e){
+			setCombinedSeaching(!isCombinedSeaching());
+			if(isCombinedSeaching()){
+				e.src='MdbR/joint.png';
+			}
+			else{
+				displayingMultiSearch=false;
+				e.src='MdbR/sin.png';
+				adjustSeekbar(listSize);
+			}
+			loookup();
+			
+			if(app)
+				app.setCombinedSeaching(isCombinedSeaching());
+		}
+		
+		function toggleViewMode(e){
+			setscrollExpandAll(!scrollExpandAll());
+			if(scrollExpandAll()){
+				e.src='MdbR/viewAll.png';
+				for (var i=0; i<iframes.length; i++)
+				iframes[i].height=100;
+			}
+			else{
+				e.src='MdbR/viewSets.png';
+			}
+		}
+		
+		function fadeToast() {
+			clearTimeout(toastToken);
+			toastToken=-1;
+			$(toastHolder).fadeOut('fast');
+		}
+		
+		function toast(parent, msg, severity, time){
+			clearTimeout(toastToken);
+			var p=toastHolder.parentNode;
+			if(!parent)
+				parent=$(parentR)[0];
+			if(p!=parent){
+				console.log("re-add");
+				if(p) p.removeChild(toastHolder);
+				parent.appendChild(toastHolder);
+			}
+			$(toasttext).text(msg);
+			$(toasttext)[0].className=severity>=1?"warn":"info";
+			$(toastHolder).fadeIn('fast');
+			toastToken=setTimeout(fadeToast, time?time:1500);
+		}
+		
+		function h5Test(){
+			toast(0, "hello world", 0, 0);
+		}
+	
+		// !!! 高亮代码
+		var jumper;
+		var HlightIdx=0;
+		var desiredOffset=-1;
+		var inlineJump=0;
+		var acrarivacc=0;
+		function inPageSearch(){
+			if(app)
+			if(currentContext instanceof HTMLIFrameElement){
+				var sel=currentContext.contentWindow.getSelection();
+				desiredOffset=defP.scrollTop;
+				HlightIdx=currentContext.contentWindow.frameAt;
+				console.log("inPageSearch desiredOffset "+desiredOffset+' '+sel.anchorNode+'  '+HlightIdx);
+				app.InPageSearch(sel);
+			}else if(currentContext!=null && currentContext.className=='cp'){
+				HlightIdx=0;
+				app.InPageSearch(currentContext.innerHTML);
+			}
+		}
+		function anchorPageSearch(){
+			if(app && currentContext instanceof HTMLIFrameElement){
+				var sel=currentContext.contentWindow.getSelection();
+				if(currentContext.height!="100%"){
+					desiredOffset=defP.scrollTop;
+				}else{
+					desiredOffset=currentContext.contentWindow.scrollTop;
+				}
+				HlightIdx=currentContext.contentWindow.frameAt;
+				console.log("inPageSearch desiredOffset "+desiredOffset+' '+sel.anchorNode+'  '+HlightIdx);
+			}
+		}
+		function topOffset(value){
+			if(typeof value == 'number'){
+				var target;
+				for (var i=0; i<iframes.length; i++){
+					target=iframes[i].contentWindow;
+					if(target.frameAt==value)
+						return target.height=="100%"?0:iframes[i].offsetTop;
+				}
+				return 0;
+			}
+			var top=0;
+			while(value && value!=document.body){
+				top+=value.offsetTop;
+				value=value.offsetParent;
+			}
+			return top;
+		}
+		function clearHighlights(){
+			for (var i=0; i<iframes.length; i++){
+				iframes[i].contentWindow.clearHighlights();
+			}
+		}
+		function highlight(keyword){
+			for (var i=0; i<iframes.length; i++){
+				var target=iframes[i].contentWindow;
+				if(target) target.highlight(keyword);
+			}
+		}
+		function jumpHighlight(d){
+			console.log('\njumpHighlight started...'+iframes.length);
+			var max=iframes.length;
+			inlineJump=1;
+			if(max){
+				var cc=0;
+				while(d!=0){
+					console.log('jumpHighlight... dir='+d+' framePos='+HlightIdx);
+					var b1=HlightIdx>=max,b2=HlightIdx<0;
+					console.log(b1+','+b2+','+d);
+					if(b1||b2) {
+						acrarivacc++;
+						if(b1&&d==-1) {
+							HlightIdx=iframes.length-1;
+							b1=false;
+						}	
+						else if(b2&&d==1){
+							HlightIdx=0;
+							b2=false;
+						}
+						if(acrarivacc<=2){
+							toast(0, "一查到底", 0, 800);
+							break;
+						}else{
+							acrarivacc=0;
+						}
+					}else{
+						acrarivacc=0;
+					}
+					if(jumper && jumper.quenchLight && jumper.frameAt!=HlightIdx)
+						jumper.quenchLight();
+					if(b1){
+						resetLights(d);
+						HlightIdx=0;
+						if(d==-1){
+							var dd=iframes.length-1;
+							if(dd>=0) iframes[dd].contentWindow.setAsEndLight(d);
+						}
+					}
+					else if(b2){
+						resetLights(d);
+						HlightIdx=iframes.length-1;
+						if(d==1){
+							if(HlightIdx>=0) iframes[0].contentWindow.setAsStartLight(d);
+						}
+					}
+					if(HlightIdx<0)HlightIdx=0;
+					jumper=iframes[HlightIdx].contentWindow;
+					if(cc>0 || desiredOffset>0) jumper.resetLight(d);
+					if(cc>0)inlineJump=0;
+					console.log('jumpTo framePos='+HlightIdx+' index='+(jumper?(jumper.currentIndex+'/'+jumper.results.length):'no way to find'));
+					d=jumper?jumper.jumpTo(d):d;
+					HlightIdx+=d;
+					if(HlightIdx>=max||HlightIdx<0){
+						acrarivacc++;
+					}
+					cc++;
+				}
+			}
+		}
+		function resetLights(d){
+			for (var i=0; i<iframes.length; i++){
+				if(iframes[i].contentWindow)
+					iframes[i].contentWindow.resetLight(d);
+			}
+		}
+		function scrollHighlight(o, d){
+			var max=iframes.length;
+			if(max){
+				var jumper=iframes[HlightIdx];
+				if(jumper){
+					if(jumper.height!="100%"){
+						var target=jumper.offsetTop;
+						console.log("scrollHighlight framePos="+HlightIdx+' offset='+o + ' preTarget='+target+' > '+(defP.scrollTop+defP.offsetHeight));
+						if(o==-1){
+							if(d==-1 || inlineJump) return;
+						}else{
+							target+=o;
+						}
+						if(target<defP.scrollTop || target+35>defP.scrollTop+defP.offsetHeight)
+							defP.scrollTo(0, target-50);
+					}else{
+						if(jumper.offsetTop+jumper.offsetHeight<=defP.scrollTop || jumper.offsetTop>=defP.scrollTop+defP.offsetHeight){
+							defP.scrollTo(0, (jumper.previousSibling?jumper.previousSibling:jumper).offsetTop);
+						}
+						if(o==-1){
+							return;
+						}
+						var target=jumper.contentWindow.document.body;
+						if(o<target.scrollTop || o+50>target.scrollTop+jumper.offsetHeight)
+							target.scrollTo(0, o-50);
+					}
+				}
+			}
+		}
+		function getContentToken(id){
+			var current = iframes[id];
+			return current?current.innerHTML:'';
+		}
+		
+	</script>
+	
+	
+	<title>平典 · MDict Browser</title>
+
+</head>
+<!--一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一-->
+<body id="body_" onload="Initialize()">
+
+
+<div id="parentR">
+	<div class="navR">
+		<div class="toolbar">
+			<div class="btnFile">
+				<image id="fileBtn" src='MdbR/sin.png' onclick="toggleSearchMode(this)"></image>
+				<div id="fileName" onclick="h5Test()">...</div>
+			</div>
+			<image id="viewToggle" src='MdbR/viewAll.png' onclick="toggleViewMode(this)"></image>
+		</div>
+		<div id="dictsP"></div>
+	</div>
+	
+	<div class='defP' id='defP' onscroll='dismiss_menu();'>
+		<div class='def' id='def'></div>
+		<!--iframe name="frame1" src="/content/x/0"></iframe-->
+	</div>
+	<div id="toastview">
+		<div id="toasttext"></div>
+	</div>
+</div>
+
+<div id="ListView">
+	<p id="lv"></p> 
+	<p id="seekbar_container"></p>
+	<p id="drag_resizer"></p>
+	
+	<div id="wordP" style="">
+		<input id="word" type="text" value="">
+	</div>
+</div>
+
+<div id="jsonid" style="display:none;"></div>
+
+<p id="tmpText" class="sel"></p>
+
+
+<div id="aboutP">
+	<div id="aboutB"></div>
+	<iframe id="about" frameborder="0"></iframe>
+	
+	<div id="yesP" onclick="acceptDict()"> <a id="yes"></a> </div>
+	<div id="leftP" onclick="do_showAbout(-1)"> <a id="left"></a> </div>
+	<div id="rightP" onclick="do_showAbout(1)"> <a id="right"></a> </div>
+	<div id="closeP" onclick="closeAbout()"> <a id="close"></a> </div>
+</div>
+<!--一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一-->
+<div id="title_menu" class='ctx_menu'>
+	<div class="menu_item" onclick="foldAll()">折叠全部</div>
+	<div class="menu_item" onclick="unFoldAll()">展开全部</div>
+	<div class="menu_item"  onclick="unFoldCurrent()">只展开当前页面</div>
+	<div class="menu_item_sep"></div>
+	<div class="menu_item" onclick="saveCurrent()">保存当前页面</div>
+	<div class="menu_item_sep"></div>
+	<div class="menu_item" onclick="showAbout()">关于…</div>
+</div>
+
+<div id="selection_menu" class='ctx_menu'>
+	<div class="menu_item" onclick="copyText()">复制文本</div>
+	<div class="menu_item" onclick="inPageSearch()">发送到页内搜索</div>
+	<div class="menu_item" onclick="anchorPageSearch()">锚点页内搜索</div>
+	<div class="menu_item" id="browserSearch" onclick="browserSearch(0)" onmousedown="contextMouseDown()">浏览器搜索</div>
+	<div class="menu_item" onclick="saveCurrent()">镜像搜索</div>
+</div>
+
+<div id="content_menu" class='ctx_menu'>
+	<div class="menu_item" onclick="goBack()">后退</div>
+	<div class="menu_item" onclick="goForward()">前进</div>
+	<div class="menu_item" onclick="focusContent(0)">折叠当前页面</div>
+	<div class="menu_item" onclick="focusContent(-1)">上一个</div>
+	<div class="menu_item" onclick="focusContent(1)">下一个</div>
+</div>
+
+
+<div id="entry_menu" class='ctx_menu'>
+	<div class="menu_item" onclick="contextMouseDown1()" onmousedown="contextMouseDown()">text</div>
+	<div class="menu_item" onclick="inPageSearch()">发送到页内搜索</div>
+	<div class="menu_item" onclick="focusContent(0)">发送到高级搜索</div>
+	<div class="menu_item" id="browserSearch" onclick="browserSearch(0)" onmousedown="contextMouseDown()">浏览器搜索</div>
+	<div class="menu_item" onclick="saveCurrent()">镜像搜索</div>
+</div>
+
+<div id="cover_Menu" class='ctx_menu'>
+	<div class="menu_item" onclick="contextMouseDown1()" onmousedown="contextMouseDown()">text</div>
+	<div class="menu_item" onclick="reloadDict()">重新加载词典</div>
+	<div class="menu_item" onclick="showAbout()">关于…</div>
+</div>
+
+<div id="dict_menu" class='ctx_menu'>
+	<div class="menu_item" onclick="reloadDict()">重新加载词典</div>
+	<div class="menu_item" onclick="openFolder()">打开所在文件夹</div>
+</div>
+
+
+</body>
+</html>

@@ -737,6 +737,7 @@ public class mdict_web extends mdict {
 				mWebView.goBackOrForward(isRecess);
 			}
 		};
+		mWebView.MutateBGInTitle();
 		recess.setOnClickListener(voyager);
 		forward.setOnClickListener(voyager);
 		setIcSaveLongClickListener(ic_save);
@@ -1147,5 +1148,10 @@ public class mdict_web extends mdict {
 		public X509Certificate[] getAcceptedIssuers() {
 			return new java.security.cert.X509Certificate[] {};
 		}
+	}
+	
+	@Override
+	public String getCharsetName() {
+		return "online";
 	}
 }
