@@ -1362,6 +1362,11 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 	}
 	
+	@Override
+	protected boolean isMainThread() {
+		return Looper.getMainLooper().getThread() == Thread.currentThread();
+	}
+	
 	public void checkTint() {
 		if(mWebView!=null) {
 			tintBackground(mWebView);
@@ -1768,10 +1773,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		if(con1!=null) {
 			con1.close();
 		}
-	}
-
-	public boolean hasMdd() {
-		return mdd!=null && mdd.size()>0 || ftd!=null && ftd.size()>0 || isResourceFile;
 	}
 
 	public boolean containsResourceKey(String skey) {
@@ -2603,7 +2604,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public void onClick(View v) {
 		switch(v.getId()) {
 			case R.id.cover:
-				if(true){
+				if(false){
 					showDictTweaker(mWebView, a, this);
 					break;
 				}

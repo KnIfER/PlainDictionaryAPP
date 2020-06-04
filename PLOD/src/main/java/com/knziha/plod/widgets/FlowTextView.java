@@ -34,6 +34,10 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.knziha.plod.ArrayList.ArrayListHolder;
 import com.knziha.plod.PlainDict.CMN;
@@ -97,6 +101,8 @@ public class FlowTextView extends View {
 	private int mLineHeight;
 	private boolean mTextsize_MinueOne;
 	private boolean bNeedInvalidate;
+	private int SearchIdentity;
+	public boolean bNeedPostLayout;
 	
 	public FlowTextView(Context context) {
 		this(context, null);
@@ -143,6 +149,7 @@ public class FlowTextView extends View {
 	}
 	
 	private void onTextSizeChanged() {
+		mTextPaint.getFontMetrics(mTextMetrics);
 		mLineHeight = (int)((mTextMetrics.bottom-mTextMetrics.top) * mSpacingMult + mSpacingAdd);
 	}
 	
@@ -210,6 +217,12 @@ public class FlowTextView extends View {
 	
 	private void calcTextLayout() {
 		//CMN.Log("calcTextLayout", getText());
+		//onTextSizeChanged();
+		if(mTextsize_MinueOne) {
+			mTextPaint.setTextSize(mTextsize);
+			mTextsize_MinueOne = false;
+		}
+		onTextSizeChanged();
 		float space_width = getMeasuredWidth();
 		if(space_width==0){
 			postDelayed(this::calcTextLayout, 350);
@@ -217,7 +230,6 @@ public class FlowTextView extends View {
 		float paddingStart = getPaddingStart();
 		float paddingEnd = getPaddingEnd();
 		space_width -= paddingStart + paddingEnd + pad_right;
-		postedCalcLayout = false;
 		// set up some counter and helper variables we will us to traverse through the string to be rendered
 		int charOffsetStart = mStart; // tells us where we are in the original string
 		int charOffsetEnd; // tells us where we are in the original string
@@ -272,27 +284,32 @@ public class FlowTextView extends View {
 				
 				charOffsetStart = charOffsetEnd;
 			}
-			if(maxLines==2) {
-				if(maxLines==lineIndex) {
-					float pad = 2.5f * mTextPaint.density;
-					mTextPaint.setTextSize(mTextsize-pad);
-					mTextsize_MinueOne = true;
-					lineObjects.get(1).yOffset -= pad;
-				} else if(mTextsize_MinueOne){
-					mTextPaint.setTextSize(mTextsize);
-					mTextsize_MinueOne = false;
-				}
+			if(maxLines==2 && maxLines==lineIndex) {
+				mTextsize_MinueOne = true;
+				float pad = 2.5f * Utils.density;
+				mTextPaint.setTextSize(mTextsize-pad);
+				int delta = mLineHeight;
+				onTextSizeChanged();
+				delta = delta - mLineHeight;
+				lineObjects.get(0).yOffset -= pad/2;
+				lineObjects.get(1).yOffset -= 2*pad + delta;
 			}
 		}
 		
-		int mDesiredHeight = (int) yOffset + lineHeight/2;
+		//CMN.Log("lineHeight", lineHeight, mLineHeight);
+		int mDesiredHeight = (int) yOffset + lineHeight;
 		if(mDesiredHeight != this.mDesiredHeight){
-			//CMN.Log("变化了", mDesiredHeight, this.mDesiredHeight, mText, "<"+hashCode()+">");
+			//CMN.Log("变化了", postedCalcLayout, mDesiredHeight, this.mDesiredHeight, mText, "<"+hashCode()+">");
 			this.mDesiredHeight = mDesiredHeight;
-			requestLayout();
+			if(PostEnabled && bNeedPostLayout) {
+				post(this::requestLayout);
+			} else {
+				requestLayout();
+			}
 		} else {
 			invalidate();
 		}
+		postedCalcLayout = false;
 	}
 	
 	private boolean find_m(Matcher m) {
@@ -319,6 +336,7 @@ public class FlowTextView extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
+		//onTextSizeChanged();
 		int size = lineObjects.size();
 		int paddingTop = getPaddingTop();
 		int paddingLeft = getPaddingLeft();
@@ -561,8 +579,15 @@ public class FlowTextView extends View {
 				+ mSpacingAdd);
 	}
 	
-	public void SetSearchPattern(Pattern SearchPattern) {
-		SearchMatcher = SearchPattern==null?null:SearchPattern.matcher(mText);
+	public void SetSearchPattern(Pattern SearchPattern, String newText) {
+		SearchMatcher = SearchPattern==null?null:SearchPattern.matcher(newText);
+		if(SearchMatcher!=null) {
+			int identity = System.identityHashCode(SearchMatcher);
+			if(identity!=SearchIdentity) {
+				bNeedInvalidate = true;
+				SearchIdentity =identity;
+			}
+		}
 	}
 	
 	public void setCompoundDrawables(Drawable StarDrawable, Drawable LeftDrawable, Drawable RightDrawable, String Tail) {

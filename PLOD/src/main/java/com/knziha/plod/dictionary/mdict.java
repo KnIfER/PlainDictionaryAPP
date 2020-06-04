@@ -17,13 +17,7 @@
 
 package com.knziha.plod.dictionary;
 
-
-import android.os.Looper;
-
-import androidx.appcompat.app.GlobalOptions;
-
 import com.alibaba.fastjson.JSONObject;
-import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.Flag;
@@ -169,6 +163,11 @@ public class mdict extends mdBase{
 	public byte[][] htmlTagsB;
 	
 	//构造
+	public mdict(String fn) throws IOException{
+		this(new File(fn), 0, null, null);
+	}
+	
+	//构造
 	public mdict(File fn, int pseudoInit, StringBuilder buffer, Object tag) throws IOException {
 		super(fn, pseudoInit, buffer, tag);
 		if(pseudoInit==1) {
@@ -236,6 +235,20 @@ public class mdict extends mdBase{
 	}
 
 	public InputStream getResourceByKey(String key) {
+		if(ftd !=null && ftd.size()>0){
+			String keykey = key.replace("\\",File.separator);
+			for(File froot: ftd){
+				File ft= new File(froot, keykey);
+				//SU.Log(ft.getAbsolutePath(), ft.exists());
+				if(ft.exists()) {
+					try {
+						return new FileInputStream(ft);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
 		if(isResourceFile){
 			int idx = lookUp(key);
 			if(idx>=0) {
@@ -245,34 +258,17 @@ public class mdict extends mdBase{
 					e.printStackTrace();
 				}
 			}
-		}
-		else {
-			if(ftd !=null && ftd.size()>0){
-				String keykey = key.replace("\\",File.separator);
-				for(File froot: ftd){
-					File ft= new File(froot, keykey);
-					//SU.Log(ft.getAbsolutePath(), ft.exists());
-					if(ft.exists()) {
-						try {
-							return new FileInputStream(ft);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+		} else if(mdd!=null && mdd.size()>0){
+			for(mdictRes mddTmp:mdd){
+				int idx = mddTmp.lookUp(key);
+				if(idx>=0) {
+					try {
+						return mddTmp.getResourseAt(idx);
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
 				}
-			}
-			if(mdd!=null && mdd.size()>0){
-				for(mdictRes mddTmp:mdd){
-					int idx = mddTmp.lookUp(key);
-					if(idx>=0) {
-						try {
-							return mddTmp.getResourseAt(idx);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-					//else SU.Log("chrochro inter_ key is not find:",_Dictionary_fName,key, idx);
-				}
+				//else SU.Log("chrochro inter_ key is not find:",_Dictionary_fName,key, idx);
 			}
 		}
 		return null;
@@ -367,7 +363,6 @@ public class mdict extends mdBase{
 		int blockId = -1;
 		
 		//isGBoldCodec = true;
-		CMN.Log("isGBoldCodec", isGBoldCodec, _Dictionary_fName);
 		
 		if(isGBoldCodec) {
 			int boudaryCheck = compareByteArray(_key_block_info_list[(int)_num_key_blocks-1].tailerKeyText,kAB);
@@ -453,7 +448,7 @@ public class mdict extends mdBase{
 						if(keyOrg.regionMatches(true, 0, other_other_key, 0, idx2)) {
 							int end = parseint(other_other_key.substring(idx2+1,other_other_key.length()-1));
 							if(target==end) {
-								CMN.Log("target==end", getEntryAt(PstPosition));
+								SU.Log("target==end", getEntryAt(PstPosition));
 								return PstPosition;
 							}
 						}
@@ -462,7 +457,7 @@ public class mdict extends mdBase{
 			}
 			
 			if(isSrict) {
-				//SU.Log(res+"::"+Integer.toString(-1*(res+2)));
+				SU.Log(getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
 				return -1*(int) ((infoI.num_entries_accumulator+res+2));
 			}
 		}
@@ -1409,7 +1404,11 @@ public class mdict extends mdBase{
 	public String getDictionaryName() {
 		return _Dictionary_fName;
 	}
-
+	
+	public boolean hasMdd() {
+		return mdd!=null && mdd.size()>0 || ftd!=null && ftd.size()>0 || isResourceFile;
+	}
+	
 	public List<mdictRes> getMdd() {
 		return mdd;
 	}
@@ -2149,7 +2148,7 @@ public class mdict extends mdBase{
 						String LexicalEntry = new String(key_block, key_start_index + _number_width, key_end_index - (key_start_index + _number_width), _charset);
 						//SU.Log("checking ", LexicalEntry);
 						if (!keyPattern.matcher(LexicalEntry).find()) {
-							CMN.Log("发现错匹！！！", LexicalEntry, _Dictionary_fName);
+							SU.Log("发现错匹！！！", LexicalEntry, _Dictionary_fName);
 //							key_start_index = key_end_index + delimiter_width;
 //							SearchLauncher.dirtyProgressCounter++;
 //							keyCounter++;
@@ -2576,15 +2575,19 @@ public class mdict extends mdBase{
 	
 	protected StringBuilder AcquireStringBuffer(int capacity) {
 		StringBuilder sb;
-		if(univeral_buffer != null && Looper.getMainLooper().getThread() == Thread.currentThread()){
+		if(univeral_buffer != null && isMainThread()){
 			sb = univeral_buffer;
 			sb.ensureCapacity(capacity);
 			sb.setLength(0);
-			CMN.Log("复用字符串构建器……");
+			SU.Log("复用字符串构建器……");
 		} else {
 			sb = new StringBuilder(capacity);
 		}
 		return sb;
+	}
+	
+	protected boolean isMainThread() {
+		return false;
 	}
 	
 	private void loadInResourcesFiles(HashSet<String> mddCon) throws IOException {

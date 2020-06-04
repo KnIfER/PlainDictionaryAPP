@@ -17,7 +17,7 @@ import org.xiph.speex.ByteArrayRandomOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import static com.knziha.plod.PlainDict.MdictServer.getTifConfig;
+import static com.knziha.plod.PlainDict.MdictServerMobile.getTifConfig;
 
 public class MddPicFetcher implements DataFetcher<InputStream> {
 

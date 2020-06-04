@@ -283,7 +283,7 @@ public class DBroswer extends Fragment implements
 		tg2.setOnLongClickListener(this);
 		//main_clister_layout.findViewById(R.id.choosed).setOnLongClickListener(this);
 
-		_main_clister_layout.findViewById(R.id.browser_widget15).setOnClickListener(new Utils.DummyOnClick());
+		_main_clister_layout.findViewById(R.id.browser_widget15).setOnClickListener(Utils.DummyOnClick);
 		_main_clister_layout.findViewById(R.id.browser_widget14).setOnClickListener(this);
 		_main_clister_layout.findViewById(R.id.browser_widget13).setOnClickListener(this);
 

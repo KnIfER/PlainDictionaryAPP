@@ -75,10 +75,9 @@ public class Utils {
 		mRectPaint = null;
 	}
 	
-	public static class DummyOnClick implements View.OnClickListener {
+	private static class DummyOnClick implements View.OnClickListener {
 		@Override
-		public void onClick(View v) {
-
-		}
+		public void onClick(View v) { }
 	}
+	public static View.OnClickListener DummyOnClick = new DummyOnClick();
 }

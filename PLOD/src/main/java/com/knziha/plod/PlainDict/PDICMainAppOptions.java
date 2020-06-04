@@ -31,7 +31,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 
-public class PDICMainAppOptions
+public class PDICMainAppOptions implements MdictServer.AppOptions
 {
 	public boolean isAudioPlaying;
 	public boolean isAudioActuallyPlaying;

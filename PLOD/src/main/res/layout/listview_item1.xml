@@ -13,7 +13,6 @@
 		android:id="@+id/text"
 		android:layout_marginLeft="10dp"
 		android:layout_marginTop="5dp"
-		android:layout_marginBottom="2dp"	
 		android:textColor="#000"
 		android:textSize="@dimen/lvtextsize"
 		
@@ -25,8 +24,6 @@
 		android:text=""
 		android:id="@+id/subtext"
 		android:layout_marginLeft="10dp"
-		android:layout_marginTop="2dp"
-		android:paddingBottom ="5dp"	
 		android:textSize="@dimen/lvsubtextsize"
 		android:textColor="#99a"
 		android:layout_below="@+id/text"

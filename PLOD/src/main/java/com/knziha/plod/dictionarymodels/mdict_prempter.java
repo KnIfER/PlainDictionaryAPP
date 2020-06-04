@@ -27,7 +27,7 @@ public class mdict_prempter extends mdict_transient {
 
 		File f2 = new File(f.getParentFile().getAbsolutePath()+"/"+fnTMP.substring(0,fnTMP.lastIndexOf("."))+".mdd");
 		if(f2.exists()){
-			mdd = Collections.singletonList(new mdictRes_prempter(f2.getAbsolutePath()));
+			mdd = Collections.singletonList(new mdictRes_prempter(f2));
 		}
 	}
 }

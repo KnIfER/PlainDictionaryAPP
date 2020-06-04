@@ -116,6 +116,12 @@ public class  BU{//byteUtils
     		System.out.print((int)(b[i]&0xff)+",");
     	System.out.println();
 	}
+	public static void printBytes3(byte[] b){
+		String val="";
+		for(int i=0;i<b.length;i++)
+			val+="0x"+byteTo16(b[i])+",";
+		SU.Log(val);
+	}
     @Deprecated
     public static void printBytes(byte[] b){
     	for(int i=0;i<b.length;i++)

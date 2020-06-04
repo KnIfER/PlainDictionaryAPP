@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.Framer;
+import com.knziha.plod.widgets.Utils;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -167,6 +168,7 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 			//CMN.Log("onCreateViewHolder...");
 			MyViewHolder ret = new MyViewHolder(LayoutInflater.from(parent.getContext())
 							.inflate(R.layout.diag1_fc_list_item, parent, false), DictPicker.this);
+			ret.tv.bNeedPostLayout = true;
 			return ret;
 		}
 
@@ -190,9 +192,11 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 			
 			tv.setCompoundDrawables(mActiveDrawable, null, null, null);
 			
-			tv.SetSearchPattern(SearchPattern);
+			String text = a.md_getName(position);
 			
-			tv.setText(a.md_getName(position));
+			tv.SetSearchPattern(SearchPattern, text);
+			
+			tv.setText(text);
 			
 			holder.cover.setImageDrawable(a.md_getCover(position));
 		}

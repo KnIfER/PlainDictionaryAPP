@@ -36,6 +36,11 @@ import java.util.HashMap;
 
 public class mdictRes extends mdBase{
 	HashMap<Integer,String[]> _stylesheet = new HashMap<>();
+	//构造
+	public mdictRes(String fn) throws IOException{
+		this(new File(fn));
+	}
+	
     //构造
 	public mdictRes(File fn) throws IOException{
 		super(fn, 0, null, null);

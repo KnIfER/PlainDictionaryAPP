@@ -2066,18 +2066,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					else try {
 						if(!checkDicts()) return;
 						String key = s.toString().trim();
-						int idx=currentDictionary.lookUp(key, false);
+						int idx=currentDictionary.lookUp(key, true);
 						if(idx==-1 && PDICMainAppOptions.getSearchUseMorphology()) {
 							key = ReRouteKey(key, true);
 							if(key!=null) {
-								idx=currentDictionary.lookUp(key, false);
+								idx=currentDictionary.lookUp(key, true);
 							}
 						}
-						CMN.Log("单本搜索 ： "+idx, currentDictionary.getEntryAt(idx));
+						CMN.Log("单本搜索 ： ", idx, idx<0?"":currentDictionary.getEntryAt(idx));
 						if(idx!=-1){
 							int tmpIdx = idx;
 							if(idx<0) {
-								tmpIdx = -tmpIdx + 1;
+								tmpIdx = -tmpIdx - 3;
 							}
 //							else while(true) {
 //								if(looseMatch.startsWith(key)) {
@@ -2106,7 +2106,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							}
 							bIsFirstLaunch=false;
 						}
-					} catch (Exception e) { e.printStackTrace(); }
+					} catch (Exception e) { CMN.Log(e); }
 				}
 			}else {
 				if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && mdict.class.equals(currentDictionary.getClass()))
@@ -3169,8 +3169,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						if(etSearch.getText().toString().trim().length()>0) {
 							etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
 						}
-					}else
+					} else {
 						etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
+					}
 					mDrawerLayout.closeDrawer(GravityCompat.START);
 				}else {//back
 					widget7.setTag(false);
@@ -3672,7 +3673,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			FragmentTransaction transaction = fragmentManager.beginTransaction();
 			pickDictDialog = new DictPicker(this);
 			transaction.add(R.id.dialog_, pickDictDialog);
-			findViewById(R.id.dialog_).setOnClickListener(new Utils.DummyOnClick());
+			findViewById(R.id.dialog_).setOnClickListener(Utils.DummyOnClick);
 			transaction.commit();
 			root.postDelayed(() -> pickDictDialog.PostEnabled=false, 1000);
 			isFragInitiated=true;

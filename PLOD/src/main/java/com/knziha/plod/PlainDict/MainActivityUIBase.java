@@ -242,7 +242,7 @@ import db.MdxDBHelper;
 import static com.bumptech.glide.util.Util.isOnMainThread;
 import static com.knziha.plod.PlainDict.CMN.AssetMap;
 import static com.knziha.plod.PlainDict.CMN.AssetTag;
-import static com.knziha.plod.PlainDict.MdictServer.getTifConfig;
+import static com.knziha.plod.PlainDict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.dictionarymodels.mdict.indexOf;
 import static com.knziha.plod.slideshow.PdfPic.MaxBitmapRam;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
@@ -1337,7 +1337,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (isNewHolder) {
 							popupWebView.fromCombined = 2;
 							fix_pw_color();
-							popupContentView.setOnClickListener(new Utils.DummyOnClick());
+							popupContentView.setOnClickListener(Utils.DummyOnClick);
 							FrameLayout.LayoutParams lp = ((FrameLayout.LayoutParams) popupContentView.getLayoutParams());
 							lp.height = popupMoveToucher.FVH_UNDOCKED = (int) (dm.heightPixels * 5.0 / 12 - getResources().getDimension(R.dimen._20_));
 							if (mPopupContentView != null && !isInit) {
@@ -1604,7 +1604,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (popupWebView == null) {
 			popupContentView = (ViewGroup) getLayoutInflater()
 					.inflate(R.layout.float_contentview_basic, root, false);
-			popupContentView.setOnClickListener(new Utils.DummyOnClick());
+			popupContentView.setOnClickListener(Utils.DummyOnClick);
 			popupToolbar = (ViewGroup) popupContentView.getChildAt(0);
 			PopupPageSlider = (RLContainerSlider) popupContentView.getChildAt(1);
 			WebViewmy mPopupWebView = (WebViewmy) PopupPageSlider.getChildAt(0);
@@ -2628,6 +2628,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ivBack = findViewById(R.id.ivBack);
 		ivDeleteText.setOnClickListener(this);
 		ivBack.setOnClickListener(this);
+		findViewById(R.id.pad).setOnClickListener(Utils.DummyOnClick);
 
 		boolean tint = PDICMainAppOptions.getTintIconForeground();
 		for (int i = 0; i < 6; i++) {
@@ -7914,7 +7915,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			isInit=isNewHolder=true;
 			TTSController_ = (ViewGroup) getLayoutInflater()
 					.inflate(R.layout.float_tts_basic, root, false);
-			TTSController_.setOnClickListener(new Utils.DummyOnClick());
+			TTSController_.setOnClickListener(Utils.DummyOnClick);
 			TTSController_toolbar = (ViewGroup) TTSController_.getChildAt(0);
 			ImageView TTSController_expand = TTSController_toolbar.findViewById(R.id.tts_expand);
 			TTSController_expand.setOnClickListener(this);
