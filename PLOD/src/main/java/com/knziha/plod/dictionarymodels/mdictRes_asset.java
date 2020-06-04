@@ -20,10 +20,8 @@ public class mdictRes_asset extends mdictRes {
 	Context context;
 
 	//构造
-	public mdictRes_asset(File fn, MainActivityUIBase a_) throws IOException {
-		super(fn);
-		context=a_.getBaseContext();
-		init(getStreamAt(0, true));
+	public mdictRes_asset(File fn, int pseudoInit, MainActivityUIBase a_) throws IOException {
+		super(fn, 0, a_);
 	}
 
 	@Override
@@ -33,6 +31,9 @@ public class mdictRes_asset extends mdictRes {
 
 	@Override
 	protected boolean StreamAvailable() {
+		if(tag instanceof Context) {
+			context = (Context) tag;
+		}
 		return context!=null;
 	}
 }

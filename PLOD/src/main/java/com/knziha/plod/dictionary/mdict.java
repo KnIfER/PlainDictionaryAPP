@@ -169,9 +169,9 @@ public class mdict extends mdBase{
 	public byte[][] htmlTagsB;
 	
 	//构造
-	public mdict(File fn, boolean pseudoInit, StringBuilder buffer) throws IOException {
-		super(fn, pseudoInit, buffer);
-		if(pseudoInit) {
+	public mdict(File fn, int pseudoInit, StringBuilder buffer, Object tag) throws IOException {
+		super(fn, pseudoInit, buffer, tag);
+		if(pseudoInit==1) {
 			_Dictionary_fName = f.getName();
 		}
 	}
@@ -565,18 +565,22 @@ public class mdict extends mdBase{
 	public String getRecordsAt(int... positions) throws IOException {
 		if(isResourceFile)
 			return constructLogicalPage(positions);
-		StringBuilder sb = new StringBuilder();
-		int c=0;
-		for(int i:positions) {
-			sb.append(getRecordAt(i));//.trim()
-			if(c!=positions.length-1)
-				sb.append("<HR>");
-			c++;
+		String ret;
+		int p0 = positions[0];
+		if(positions.length==1) {
+			ret = getRecordAt(p0);
+		} else {
+			StringBuilder sb = new StringBuilder();
+			int c=0;
+			for(int i:positions) {
+				sb.append(getRecordAt(i));//.trim()
+				if(c!=positions.length-1)
+					sb.append("<HR>");
+				c++;
+			}
+			ret = sb.toString();
 		}
-		sb.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
-		if(mdd!=null && mdd.size()>0) sb.append("<p class='MddExist'/>");
-		sb.append("</div>");
-		return processStyleSheet(sb.toString(), positions[0]);
+		return processStyleSheet(ret, p0);
 	}
 
 	/** @param positions virutal indexes*/

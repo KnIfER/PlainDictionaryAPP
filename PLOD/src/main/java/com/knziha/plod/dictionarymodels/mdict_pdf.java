@@ -184,11 +184,11 @@ public class mdict_pdf extends mdict {
 
 	//构造
 	public mdict_pdf(File fn, MainActivityUIBase _a) throws IOException {
-		super(fn, _a, true);
+		super(fn, _a, 1, null);
 		a=_a;
 		opt=a.opt;
 		_Dictionary_fName=fn.getName();
-		_INTERNAL_PDFJS=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), _a);
+		_INTERNAL_PDFJS=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), 2, _a);
 		
 		_num_record_blocks=-1;
 		unwrapSuffix=false;

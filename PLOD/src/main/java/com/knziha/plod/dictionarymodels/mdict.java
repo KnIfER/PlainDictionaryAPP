@@ -613,20 +613,20 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	protected View.OnLongClickListener savelcl;
 
 	//构造
-	public mdict(@NonNull File fn, MainActivityUIBase _a, boolean pseudoInit) throws IOException {
-		super(fn, pseudoInit, _a==null?null:_a.MainStringBuilder);
+	public mdict(@NonNull File fn, MainActivityUIBase _a, int pseudoInit, Object tag) throws IOException {
+		super(fn, pseudoInit, _a==null?null:_a.MainStringBuilder, tag);
 		if(_a!=null){
 			a = _a;
 			opt = _a.opt;
 		}
-		if(pseudoInit) {
+		if(pseudoInit==1) {
 			return;
 		}
 		
 		//init(getStreamAt(0)); // MLSN
 		
         File p = f.getParentFile();
-        if(p!=null) {
+        if(p!=null && p.exists()) {
 			StringBuilder fName_builder = getCleanDictionaryNameBuilder();
 			int bL = fName_builder.length();
 			/* 外挂同名css */
@@ -1569,13 +1569,19 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				int headidx = htmlCode.indexOf("<head>");
 				boolean b1=headidx==-1;
 				if(true){
-					String start = b1?"<head>":htmlCode.substring(0, headidx+6);
-					String end =b1?htmlCode:htmlCode.substring(headidx+6);
-					htmlBuilder.append(start);
+					if(b1) {
+						htmlBuilder.append("<head>");
+					} else {
+						htmlBuilder.append(htmlCode, 0, headidx+6);
+					}
 					AddPlodStructure(mWebView, htmlBuilder, fromPopup, mIsolateImages);
 					htmlBuilder.append(getSimplestInjection());
-					if(b1) htmlBuilder.append("</head>");
-					htmlBuilder.append(end);
+					if(b1) {
+						htmlBuilder.append("</head>");
+						htmlBuilder.append(htmlCode);
+					} else {
+						htmlBuilder.append(htmlCode, headidx+6, htmlCode.length());
+					}
 					htmlCode = htmlBuilder.toString();
 				}
 				mWebView.loadDataWithBaseURL(baseUrl,htmlCode,null, "UTF-8", null);
@@ -1598,6 +1604,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	/** Let's call and call and call and call!!! */
 	public void AddPlodStructure(WebViewmy mWebView, StringBuilder htmlBuilder, boolean fromPopup, boolean mIsolateImages) {
     	//CMN.Log("MakeRCSP(opt)??", MakeRCSP(opt),MakeRCSP(opt)>>5);
+		htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
+		if(mdd!=null && mdd.size()>0) htmlBuilder.append("<p class='MddExist'/>");
+		htmlBuilder.append("</div>");
 		boolean styleOpened=false;
 		if (fromPopup) {
 			htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;
@@ -1615,8 +1624,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			htmlBuilder.append("</style>");
 		}
 
-		if (GlobalOptions.isDark)
+		if (GlobalOptions.isDark) {
 			htmlBuilder.append(MainActivityUIBase.DarkModeIncantation_l);
+		}
 
 		htmlBuilder.append("<script class=\"_PDict\">");
 		int rcsp = MakeRCSP(opt);
@@ -1624,8 +1634,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		htmlBuilder.append("rcsp=").append(rcsp).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
 
-		if (PDICMainAppOptions.getInPageSearchHighlightBorder())
+		if (PDICMainAppOptions.getInPageSearchHighlightBorder()) {
 			htmlBuilder.append(hl_border);
+		}
 		htmlBuilder.append("</script>");
 	}
 

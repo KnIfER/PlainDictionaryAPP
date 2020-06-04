@@ -21,6 +21,7 @@ import android.graphics.Bitmap;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.mdictRes_asset;
 import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
 
@@ -45,6 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,28 +61,59 @@ import static org.nanohttpd.protocols.http.response.Response.newFixedLengthRespo
 /**
  * Mdict Server
  * @author KnIfER
- * @date 2018/09/19
+ * @date 2020/06/01
  */
 
 public class MdictServerMobile extends MdictServer {
 	private PDICMainActivity a;
 	
-	public MdictServerMobile(int port, PDICMainActivity _a, PDICMainAppOptions _opt) {
+	public MdictServerMobile(int port, PDICMainActivity _a, PDICMainAppOptions _opt) throws IOException {
 		super(port, _opt);
 		a = _a;
+		MdbServerLet = _a;
+		MdbResource = new mdictRes_asset(new File(CMN.AssetTag, "MdbR.mdd"),2, a);
+		setOnMirrorRequestListener((uri, mirror) -> {
+			if(uri==null)uri="";
+			String[] arr = uri.split("&");
+			HashMap<String, String> args = new HashMap<>(arr.length);
+			for (int i = 0; i < arr.length; i++) {
+				try {
+					String[] lst = arr[i].split("=");
+					args.put(lst[0], lst[1]);
+				} catch (Exception ignored) { }
+			}
+			int pos=IU.parsint(args.get("POS"), a.adaptermy.lastClickedPos);
+			int dx=IU.parsint(args.get("DX"), a.adapter_idx);
+			String key=a.etSearch.getText().toString();
+			try {
+				key= URLDecoder.decode(args.get("KEY"),"UTF-8");
+			}catch(Exception ignored) {}
+			String records=null;
+			if(!mirror)
+				records=args.get("CT");
+			if(records==null)
+				records=record_for_mirror();
+			CMN.Log("sending1..."+records);
+			{
+				try {
+					records=URLDecoder.decode(records, "UTF-8");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			CMN.Log("sending2...");
+			CMN.Log("sending2..."+records);
+			return newFixedLengthResponse(constructDerivedHtml(key, pos, dx,records));
+		});
 	}
 	
-	protected InputStream OpenMdbResourceById(int id) throws IOException {
-		InputStream ret = null;
-		switch (id) {
-			case ServerMainPage:
-				ret = a.getResources().getAssets().open("mdict_browser.html");
-			break;
-			case ServerSubPage:
-				ret = a.getResources().getAssets().open("MdbR/subpage.html");
-			break;
-		}
-		return ret;
+	private String record_for_mirror() {
+		return null;
 	}
 	
+	@Override
+	protected void handle_search_event(String text) {
+		a.root.post(() -> a.etSearch.setText(text));
+		CMN.Log("启动搜索 : ", text);
+	}
 }

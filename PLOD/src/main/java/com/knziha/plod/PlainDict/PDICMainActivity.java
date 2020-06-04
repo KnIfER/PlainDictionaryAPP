@@ -1628,12 +1628,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//do_test_project_Test_Background_Loop();
 		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
 		
-		server = new MdictServerMobile(8080, this, opt);
-		server.md = md;
 		try {
+			server = new MdictServerMobile(8080, this, opt);
 			server.start();
 			showT("服务器启动成功");
-		} catch (Exception e) { CMN.Log(e); }
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
 		
 		//String[] array = getResources().getStringArray(R.array.drawer_hints);
 		//CMN.Log("==??", array[2], array[5], array[2]==array[5], array[2].equals(array[5]), System.identityHashCode(array[2]), System.identityHashCode(array[5]));
@@ -2217,6 +2218,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			FilePickerDialog.clearMemory(getBaseContext());
 			drawerFragment.onDestroy();
+			if(server!=null) {
+				server.stop();
+			}
 			cancleToast();
 		}
 		super.onDestroy();

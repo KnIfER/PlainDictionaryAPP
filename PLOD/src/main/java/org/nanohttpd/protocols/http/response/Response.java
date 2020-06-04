@@ -142,6 +142,8 @@ public class Response implements Closeable {
         this.chunkedTransfer = this.contentLength < 0;
         this.keepAlive = true;
         this.cookieHeaders = new ArrayList(10);
+		addHeader("Access-Control-Allow-Origin", "*");
+		addHeader("Access-Control-Allow-Headers", "*");
     }
 
     @Override

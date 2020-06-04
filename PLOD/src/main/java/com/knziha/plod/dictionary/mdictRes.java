@@ -38,7 +38,13 @@ public class mdictRes extends mdBase{
 	HashMap<Integer,String[]> _stylesheet = new HashMap<>();
     //构造
 	public mdictRes(File fn) throws IOException{
-		super(fn, false, null);
+		super(fn, 0, null, null);
+        //decode_record_block_header();
+	}
+	
+    //构造
+	public mdictRes(File fn, int pseudoInit, Object tag) throws IOException{
+		super(fn, pseudoInit, null, tag);
         //decode_record_block_header();
 	}
 

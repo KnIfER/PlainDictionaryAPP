@@ -239,6 +239,7 @@ import javax.net.ssl.TrustManager;
 import db.LexicalDBHelper;
 import db.MdxDBHelper;
 
+import static com.bumptech.glide.util.Util.isOnMainThread;
 import static com.knziha.plod.PlainDict.CMN.AssetMap;
 import static com.knziha.plod.PlainDict.CMN.AssetTag;
 import static com.knziha.plod.PlainDict.MdictServer.getTifConfig;
@@ -256,7 +257,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		OnClickListener,
 		OnMenuItemClickListener, OnDismissListener,
 		MenuItem.OnMenuItemClickListener,
-		OptionProcessor {
+		OptionProcessor,
+		MdictServerLet {
 	//private static final String RegExp_VerbatimDelimiter = "[ ]{1,}|\\pP{1,}|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
 	private static final Pattern RegImg = Pattern.compile("(png$)|(jpg$)|(jpeg$)|(tiff$)|(tif$)|(bmp$)|(webp$)", Pattern.CASE_INSENSITIVE);
 	private static Pattern bookMarkEntryPattern = Pattern.compile("entry://@[0-9]*");
@@ -620,7 +622,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void switchToSearchModeDelta(int i) {
 	
 	}
-
+	
+	public int md_getSize(){
+		return md.size();
+	}
+	
 	public mdict md_get(int i) {
 		try {
 			mdict ret = md.get(i);
@@ -634,7 +640,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							md.set(i, ret = new_mdict(path, this));
 							ret.tmpIsFlag = phTmp.tmpIsFlag;
 						} catch (Exception e) {
-							if (bShowLoadErr)
+							if (bShowLoadErr && isOnMainThread())
 								show(R.string.err, phTmp.getName(), path, e.getLocalizedMessage());
 						}
 					}
@@ -2474,7 +2480,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(arr!=null) {
 					for (final File i : arr) {
 						try {
-							mdict mdtmp = new mdict(i, this, false);
+							mdict mdtmp = new mdict(i, this, 0, null);
 							md.add(mdtmp);
 							CC.add(new PlaceHolder(i.getName(), CC));
 						} catch (Exception e) { /*CMN.Log(e);*/ }
@@ -3216,7 +3222,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			switch(hash){
 				case 107969:
 				case 107949:
-					return new mdict(fullPath, THIS, false);
+					return new mdict(fullPath, THIS, 0, null);
 				case 117588:
 					return new mdict_web(fullPath, THIS);
 				case 110834:

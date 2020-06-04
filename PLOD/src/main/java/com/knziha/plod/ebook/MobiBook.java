@@ -42,7 +42,7 @@ public class MobiBook extends mdict {
 	WeakReference<ReusableByteOutputStream> bos_buffer = new WeakReference<>(new ReusableByteOutputStream());
 
 	public MobiBook(File fn, com.knziha.plod.PlainDict.PDICMainActivity _a) throws IOException{
-		super(fn, _a, true);
+		super(fn, _a, 1, null);
 		a=_a;
 		opt = _a.opt;
 		m = new MOBIData();

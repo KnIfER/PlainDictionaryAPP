@@ -217,8 +217,8 @@ public class  BU{//byteUtils
     }
 
 
-	public static ByteArrayInputStream fileToBytes(File f) {
-		return new ByteArrayInputStream(fileToByteArr(f));
+	public static ReusableByteInputStream fileToBytes(File f) {
+		return new ReusableByteInputStream(fileToByteArr(f));
 	}
 
 	public static byte[] fileToByteArr(File f) {

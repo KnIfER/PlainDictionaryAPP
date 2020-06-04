@@ -62,7 +62,8 @@ public abstract class mdBase {
 	protected File f;
 	protected long ReadOffset;
 	/** 0=no cache; 1=lru cache; 2=unlimited */
-	protected int FileCacheStrategy = 2;
+	protected int FileCacheStrategy = 0;
+	ByteArrayInputStream preparedStream;
 	
 	public File f() {return f;}
 	final static byte[] _zero4 = new byte[]{0,0,0,0};
@@ -107,12 +108,18 @@ public abstract class mdBase {
 	public long maxDecomKeyBlockSize;
 	public long maxComKeyBlockSize;
 	/** data buffer that holds one record bock of maximum possible size for this dictionary */
-
+	
+	protected Object tag;
+	
 	protected DataInputStream getStreamAt(long at, boolean forceReal) throws IOException {
 		//SU.Log("getStreamAt", at, this);
 		DataInputStream data_in1;
 		//forceReal = true;
-		if(forceReal || FileCacheStrategy ==0) {
+		if(preparedStream!=null) {
+			preparedStream.reset();
+			data_in1 = new DataInputStream(preparedStream);
+		}
+		else if(forceReal || FileCacheStrategy ==0) {
 			data_in1 = new DataInputStream(mOpenInputStream());
 		} else {
 			data_in1 = new DataInputStream(new LruInputStream());
@@ -130,6 +137,13 @@ public abstract class mdBase {
 	protected InputStream mOpenInputStream() throws IOException {
 		return new FileInputStream(f);
 		//return new BufferedInputStream(new FileInputStream(f));
+	}
+	
+	public void prepareFileStream() throws IOException {
+		InputStream input = mOpenInputStream();
+		byte[] buffer = new byte[input.available()];
+		input.read(buffer);
+		preparedStream = new ByteArrayInputStream(buffer);
 	}
 	
 	public Map<Integer, byte[]> file_cache_map;
@@ -260,14 +274,20 @@ public abstract class mdBase {
 	public int lenSty=0;
 
 	//构造
-	mdBase(File fn, boolean pseudoInit, StringBuilder buffer) throws IOException  {
+	mdBase(File fn, int pseudoInit, StringBuilder buffer, Object tag) throws IOException  {
 		//![0]File in
 		f = fn;
 		
-		univeral_buffer = buffer;
+		this.tag = tag;
 		
-		if(!pseudoInit && StreamAvailable()) {
-			init(getStreamAt(0, true));
+		univeral_buffer = buffer;
+		if(pseudoInit!=1) {
+			if(pseudoInit==2){
+				prepareFileStream();
+			}
+			if(StreamAvailable()) {
+				init(getStreamAt(0, true));
+			}
 		}
 	}
 
@@ -281,6 +301,9 @@ public abstract class mdBase {
 	public void Reload() {
 		try {
 			_num_record_blocks=0;
+			if(preparedStream!=null) {
+				prepareFileStream();
+			}
 			if(StreamAvailable()) {
 				init(getStreamAt(0, true));
 			}

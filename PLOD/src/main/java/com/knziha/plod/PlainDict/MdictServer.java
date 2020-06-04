@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.mdictRes;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
@@ -47,6 +48,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -68,13 +70,16 @@ public class MdictServer extends NanoHTTPD {
 	private final PDICMainAppOptions opt;
 
 	String baseHtml;
-    public ArrayList<mdict> md = new ArrayList<>();
 	public ArrayList<mdict> currentFilter = new ArrayList<>();
     int currentPage=0;
     RBTree_additive combining_search_tree = new RBTree_additive();
     StringBuilder sb = new StringBuilder();
 	protected final int ServerMainPage = 0;
 	protected final int ServerSubPage = 1;
+	
+	protected mdictRes MdbResource;
+	protected MdictServerLet MdbServerLet;
+	private int md_size;
 	
 	public MdictServer(int port, PDICMainAppOptions _opt) {
 		super(port);
@@ -85,7 +90,7 @@ public class MdictServer extends NanoHTTPD {
     public Response handle(IHTTPSession session) throws IOException {
     	int adapter_idx_ = 0;
     	String uri = session.getUri();
-		//CMN.Log("serving with honor : ", uri);
+		SU.Log("serving with honor : ", uri);
     	Map<String, String> headerTags = session.getHeaders();
     	String Acc = headerTags.get("accept");
     	String usr = headerTags.get("user-agent");
@@ -94,7 +99,8 @@ public class MdictServer extends NanoHTTPD {
 
     	if(uri.startsWith("/MdbR/")) {
     		//CMN.Log("[fetching internal res : ]", uri);
-    		InputStream candi = MdictServer.class.getResourceAsStream("Mdict-browser"+uri);
+    		//InputStream candi = MdictServer.class.getResourceAsStream("Mdict-browser"+uri);
+    		InputStream candi = OpenMdbResourceByName(uri.replace("/", "\\"));
 			if(candi!=null) {
 	    		String mime="*/*";
 	    		if(uri.contains(".css")) mime = "text/css";
@@ -112,8 +118,9 @@ public class MdictServer extends NanoHTTPD {
     		return newFixedLengthResponse(baseHtml);
     	}
     	if(uri.startsWith("/READ.jsp")) {
-    		if(om!=null)
-    			return om.onMirror(session.getQueryParameterString(), false);
+    		if(om!=null) {
+				return om.onMirror(session.getQueryParameterString(), false);
+			}
     		return newFixedLengthResponse(baseHtml);
     	}
     	
@@ -122,20 +129,19 @@ public class MdictServer extends NanoHTTPD {
 			//CMN.Log("MdbRSingleQuery: "+uri);
     		String[] list = uri.split("/");
     		adapter_idx_ = Integer.parseInt(list[0]);
-    		CMN.Log("/MdbRSingleQuery/:",uri.substring(list[0].length()+1),md.get(adapter_idx_).lookUp(Reroute(uri.substring(list[0].length()+1))));
-    		return newFixedLengthResponse(Integer.toString(md.get(adapter_idx_).lookUp(Reroute(uri.substring(list[0].length()+1)),false)));
+    		CMN.Log("/MdbRSingleQuery/:",uri.substring(list[0].length()+1),md_get(adapter_idx_).lookUp(Reroute(uri.substring(list[0].length()+1))));
+    		return newFixedLengthResponse(Integer.toString(md_get(adapter_idx_).lookUp(Reroute(uri.substring(list[0].length()+1)),false)));
     	}
     	else if(uri.startsWith("/MdbRJointQuery/")) {
     		uri = Reroute(uri.substring("/MdbRJointQuery/".length()));
     		//CMN.Log("MdbRJointQuery: "+uri);
     		RBTree_additive combining_search_tree_ = new RBTree_additive();
     		StringBuilder sb_ = new StringBuilder();
-			for(int i=0;i<md.size();i++){
+			for(int i=0;i<md_size();i++){
 				try {
-					md.get(i).size_confined_lookUp5(uri,combining_search_tree_,i,30);
+					md_get(i).size_confined_lookUp5(uri,combining_search_tree_,i,30);
 				} catch (Exception e) {
-					CMN.Log(md.get(i)._Dictionary_fName);
-					e.printStackTrace();
+					SU.Log(md_getName(i), e);
 				}
 			}
 			ArrayList<additiveMyCpr1> combining_search_result = combining_search_tree_.flatten();
@@ -170,11 +176,11 @@ public class MdictServer extends NanoHTTPD {
     		adapter_idx_ = Integer.parseInt(list[0]);
     		uri = uri.substring(list[0].length());
     		key = uri.replace("/", SepWindows);
-			mdict mdTmp = md.get(adapter_idx_);
+			mdict mdTmp = md_get(adapter_idx_);
     		if(list.length==1){
 				try {
 					int index = mdTmp.lookUp("index");
-					return newFixedLengthResponse(md.get(adapter_idx_).getRecordsAt(index>=0?index:0));
+					return newFixedLengthResponse(md_get(adapter_idx_).getRecordsAt(index>=0?index:0));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -183,7 +189,7 @@ public class MdictServer extends NanoHTTPD {
     			key = uri.substring(list[0].length()+1+3);
     			CMN.Log("rerouting..."+key);
         		try {
-					return newFixedLengthResponse(mdTmp.getRecordsAt(md.get(adapter_idx_).lookUp(key)));
+					return newFixedLengthResponse(mdTmp.getRecordsAt(md_get(adapter_idx_).lookUp(key)));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -213,7 +219,7 @@ public class MdictServer extends NanoHTTPD {
 	    		if(key.endsWith("\\"))
 	    			key=key.substring(0, key.length()-1);
 	    		CMN.Log("jumping...", key);
-				mdict mdTmp = md.get(adapter_idx_);
+				mdict mdTmp = md_get(adapter_idx_);
 	    		String res = mdTmp.getRecordsAt(mdTmp.lookUp(key));
 				return newFixedLengthResponse(constructMdPage(mdTmp, Integer.toString(adapter_idx_), res, b1));
 			} catch (IOException e) {
@@ -226,13 +232,13 @@ public class MdictServer extends NanoHTTPD {
     	try {
         	if(uri.toLowerCase().endsWith(".js")) {
 				//CMN.Log("candi",uri);
-				File candi = new File(new File(md.get(adapter_idx_).getPath()).getParentFile(),new File(uri).getName());
+				File candi = new File(new File(md_get(adapter_idx_).getPath()).getParentFile(),new File(uri).getName());
 				if(candi.exists())
 					return newFixedLengthResponse(Status.OK,"application/x-javascript",  new FileInputStream(candi), candi.length());
 					
 			}
         	else if(uri.toLowerCase().endsWith(".css")) {
-				File candi = new File(new File(md.get(adapter_idx_).getPath()).getParentFile(),new File(uri).getName());
+				File candi = new File(new File(md_get(adapter_idx_).getPath()).getParentFile(),new File(uri).getName());
 				CMN.Log("candi_css",uri,candi.getAbsolutePath(), candi.exists());
 				if(candi.exists()) {
 					return newFixedLengthResponse(Status.OK,"text/css",  new FileInputStream(candi), candi.length());
@@ -243,14 +249,18 @@ public class MdictServer extends NanoHTTPD {
 		}
 	
     	if(key.equals("\\dicts.json")) {
-    		if(md.size()>0) {
+    		if(md_size()>0) {
         		StringBuilder sb = new StringBuilder();
-        		for(mdict mdx:md){
-					sb.append(mdx._Dictionary_fName);
-					if(mdx.hasVirtualIndex())
-						sb.append(":VI&VI");
+        		
+				
+				for (int i = 0; i < md_size; i++) {
+					mdict mdx = md_get(i);
+					sb.append(mdx==null?"null":mdx.getDictionaryName());
+					
+					//sb.append(md_getName(i));
+					//if(mdx.hasVirtualIndex())
+					//	sb.append(":VI&VI");
 					sb.append("\n");
-
 				}
         		sb.setLength(sb.length()-1);
         		return newFixedLengthResponse(sb.toString()) ;
@@ -258,7 +268,7 @@ public class MdictServer extends NanoHTTPD {
 			return emptyResponse;
     	}
     	else if(key.startsWith("\\MdbRSize\\")) {
-    		if(md.size()>0) {
+    		if(md_size()>0) {
     			key = key.substring(10);
     			try {
 					//key = URLDecoder.decode(key, "UTF-8");
@@ -266,36 +276,41 @@ public class MdictServer extends NanoHTTPD {
 					e.printStackTrace();
 				}
         		long ret=0;
-        		for(mdict mdx:md)
-        			if(mdx._Dictionary_fName.equals(key))
-        				ret=mdx.getNumberEntries();
-        		//CMN.Log("ret: "+ret+key);
+				for (int i = 0; i < md_size; i++) {
+					mdict mdx = md_get(i);
+					if(mdx!=null && mdx.getDictionaryName().equals(key))
+						ret=mdx.getNumberEntries();
+				}
+        		SU.Log("MdbRSize ret: "+ret+key);
         		return newFixedLengthResponse(ret+"") ;
     		}
 			return emptyResponse;
     	}
     	else if(key.startsWith("\\MdbRGetEntries\\")) {
-    		if(md.size()>0) {
+    		if(md_size()>0) {
     			key = key.substring(16);
     			//CMN.Log(key);
     			String[] l = key.split("\\\\");
     			StringBuilder ret= new StringBuilder();
-    			for(mdict mdx:md)
-        			if(mdx._Dictionary_fName.equals(l[0])) {
-        				StringBuilder sb = new StringBuilder();
-        				//CMN.Log("capacity "+l[2]);
-        				int capacity=Integer.parseInt(l[2]);
-        				int base = Integer.parseInt(l[1]);
-        				for(int i=0;i<capacity;i++) {
-        					ret.append(mdx.getEntryAt(base + i));
-        					if(i<capacity-1)
-        						ret.append("\n");
-        					//sb.append(mdx.getEntryAt(base+i)).append("\n");
-        				}
-        				//sb.setLength(sb.length()-1);
-        				//ret = sb.toString();
-        				break;
-        			}
+				for (int i = 0; i < md_size; i++) {
+					mdict mdx = md_get(i);
+					if(mdx._Dictionary_fName.equals(l[0])) {
+						StringBuilder sb = new StringBuilder();
+						//CMN.Log("capacity "+l[2]);
+						int capacity=Integer.parseInt(l[2]);
+						int base = Integer.parseInt(l[1]);
+						for(int j=0;j<capacity;j++) {
+							ret.append(mdx.getEntryAt(base + j));
+							if(j<capacity-1)
+								ret.append("\n");
+							//sb.append(mdx.getEntryAt(base+i)).append("\n");
+						}
+						//sb.setLength(sb.length()-1);
+						//ret = sb.toString();
+						break;
+					}
+				}
+        		
         		return newFixedLengthResponse(ret.toString()) ;
     		}
 			return emptyResponse;
@@ -309,7 +324,7 @@ public class MdictServer extends NanoHTTPD {
 			CMN.Log("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
     		try {
             	if(true || baseHtml==null) {//rrr
-					InputStream fin = OpenMdbResourceById(ServerMainPage);
+					InputStream fin = OpenMdbResourceByName("\\mdict_browser.html");
 					byte[] data = new byte[fin.available()];
             		fin.read(data);
             		baseHtml = new String(data);
@@ -322,19 +337,16 @@ public class MdictServer extends NanoHTTPD {
     	}
     	
 		if(uri.startsWith("/PLOD/")) {
-			//CMN.Log("about received : ", uri);//  /content/1@6
-			uri = uri.substring(6);
-			try {
-				CMN.Log("启动搜索 : ", uri);
-				return null;
-			} catch (Exception ignored) { }
+			//CMN.Log("about received : ", uri);
+			handle_search_event(uri.substring(6));
+			return emptyResponse;
 		}
 		
     	if(uri.startsWith("/about/")) {
-    		//CMN.Log("about received : ", uri);//  /content/1@6
+    		//CMN.Log("about received : ", uri);
 			uri = uri.substring(7);
 			try {
-				mdict mdTmp = md.get(Integer.parseInt(uri));
+				mdict mdTmp = md_get(Integer.parseInt(uri));
 				return newFixedLengthResponse(mdTmp.getAboutHtml());
 			} catch (Exception ignored) { }
 		}
@@ -352,7 +364,7 @@ public class MdictServer extends NanoHTTPD {
 				}
 				try {
 					adapter_idx_ = Integer.parseInt(list[0]);
-					mdict mdTmp = md.get(adapter_idx_);
+					mdict mdTmp = md_get(adapter_idx_);
 					int[] list2 = new int[list.length-1];
 					for(int i=0;i<list.length-1;i++)
 						list2[i]=Integer.parseInt(list[i+1]);
@@ -361,11 +373,11 @@ public class MdictServer extends NanoHTTPD {
 					e.printStackTrace();
 				}
     		}
-			return newFixedLengthResponse(constructMdPage(md.get(adapter_idx_), 0+"","<div>ERROR FETCHING CONTENT:"+uri+"</div>", true));
+			return newFixedLengthResponse(constructMdPage(md_get(adapter_idx_), 0+"","<div>ERROR FETCHING CONTENT:"+uri+"</div>", true));
     	}
 
 		key = mdict.requestPattern.matcher(key).replaceAll("");
-		mdict mdTmp = md.get(adapter_idx_);
+		mdict mdTmp = md_get(adapter_idx_);
 		InputStream restmp = mdTmp.getResourceByKey(key);
 		CMN.Log("-----> /dictionary/", adapter_idx_, mdTmp._Dictionary_fName, key, restmp==null?-1:restmp.available());
 
@@ -403,7 +415,7 @@ public class MdictServer extends NanoHTTPD {
 
     	if(Acc.contains("image/") ) {
     		CMN.Log("Image request : ",Acc,key,mdTmp._Dictionary_fName);
-		
+			if(uri.endsWith(".tif")||uri.endsWith(".tiff"))
 			try {
 				BufferedImage image = Imaging.getBufferedImage(restmp, getTifConfig());
 				//CMN.pt("解码耗时 : "); CMN.rt();
@@ -419,17 +431,27 @@ public class MdictServer extends NanoHTTPD {
     	return newFixedLengthResponse(Status.OK,"*/*", restmp, restmp.available());
     }
 	
-	protected InputStream OpenMdbResourceById(int id) throws IOException {
+	protected void handle_search_event(String text) {
+	
+	}
+	
+	private String md_getName(int pos) {
+		return MdbServerLet.md_getName(pos);
+	}
+	
+	private mdict md_get(int pos) {
+		return MdbServerLet.md_get(pos);
+	}
+	
+	private int md_size() {
+		return md_size=MdbServerLet.md_getSize();
+	}
+	
+	protected InputStream OpenMdbResourceByName(String key) throws IOException {
 		InputStream ret = null;
-		switch (id) {
-			case ServerMainPage:
-				ret = SU.debug?new FileInputStream("D:\\Code\\tests\\recover_wrkst\\mdict-java\\src\\main\\java\\com\\knziha\\plod\\PlainDict\\Mdict-browser\\mdict_browser.html")
-						:MdictServer.class.getResourceAsStream("Mdict-browser/mdict_browser.html");
-			break;
-			case ServerSubPage:
-				ret = SU.debug ? new FileInputStream("D:\\Code\\tests\\recover_wrkst\\mdict-java\\src\\main\\java\\com\\knziha\\plod\\PlainDict\\Mdict-browser\\MdbR\\subpage.html")
-						: MdictServer.class.getResourceAsStream("Mdict-browser/MdbR/subpage.html");
-			break;
+		int id = MdbResource.lookUp(key);
+		if(id>=0) {
+			ret = MdbResource.getResourseAt(id);
 		}
 		return ret;
 	}
@@ -581,11 +603,11 @@ public class MdictServer extends NanoHTTPD {
 		//b1=true;
 		if(b1) {
 			StringBuilder MdPageBuilder = new StringBuilder(MdPageLength + record.length() + 5);
-			String MdPage_fragment1 = null, MdPage_fragment2 = null, MdPage_fragment3 = "</html>";
-			int MdPageBaseLen = -1; //rrr
+			//String MdPage_fragment1 = null, MdPage_fragment2 = null, MdPage_fragment3 = "</html>";
+			//int MdPageBaseLen = -1; //rrr
 			if (MdPageBaseLen == -1) {
 				try {
-					BufferedReader in = new BufferedReader(new InputStreamReader(OpenMdbResourceById(ServerSubPage)));
+					BufferedReader in = new BufferedReader(new InputStreamReader(OpenMdbResourceByName("\\MdbR\\subpage.html")));
 					String line;
 					while ((line = in.readLine()) != null) {
 						MdPageBuilder.append(line).append("\r\n");
@@ -599,9 +621,9 @@ public class MdictServer extends NanoHTTPD {
 						}
 					}
 					MdPage_fragment2 = MdPageBuilder.toString();
-					MdPageBaseLen = MdPage_fragment1.length();
 					MdPageBuilder.setLength(0);
 					MdPageLength = MdPage_fragment1.length() + MdPage_fragment2.length() + MdPage_fragment3.length();
+					MdPageBaseLen = MdPage_fragment1.length();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -619,8 +641,10 @@ public class MdictServer extends NanoHTTPD {
 					.append("</head>")
 					.append(record)
 					.append(MdPage_fragment3)
-					.toString()
 			;
+			MdPageBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
+			if(mdTmp.hasMdd()) MdPageBuilder.append("<p class='MddExist'/>");
+			MdPageBuilder.append("</div>");
 			return MdPageBuilder.toString();
 		}
 		else{

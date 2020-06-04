@@ -185,7 +185,7 @@ public class mdict_txt extends mdict {
 
 	//构造
 	public mdict_txt(File fn, MainActivityUIBase _a) throws IOException {
-		super(fn, _a, true);
+		super(fn, _a, 1, null);
 		a=_a;
 		opt=a.opt;
 		
