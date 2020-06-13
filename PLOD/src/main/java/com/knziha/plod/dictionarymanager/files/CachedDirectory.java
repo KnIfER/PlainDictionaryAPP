@@ -41,6 +41,6 @@ public class CachedDirectory extends File{
 
 	@Override
 	public boolean mkdirs() {
-		return exists==super.mkdirs();
+		return exists=super.mkdirs();
 	}
 }

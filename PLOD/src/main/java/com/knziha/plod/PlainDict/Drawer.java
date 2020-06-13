@@ -3,6 +3,7 @@ package com.knziha.plod.PlainDict;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -98,7 +99,7 @@ public class Drawer extends Fragment implements
 	public  ArrayList<String> mClipboard;
 	ClipboardManager.OnPrimaryClipChangedListener ClipListener;
 	private ListView ClipboardList;
-	private String mPreviousCBContent;
+	private CharSequence mPreviousCBContent;
 	private ViewGroup swRow;
 	private boolean toPDF;
 	HashMap<String, mdict> mdictInternal = new HashMap<>();
@@ -312,44 +313,54 @@ public class Drawer extends Fragment implements
 				pasteBin.setVisibility(View.VISIBLE);
 				if(ClipListener==null){
 					ClipListener = () -> {
-						if(a.opt.getPasteBinEnabled())
+						if (a.opt.getPasteBinEnabled())
 							try {
-								ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
-								ClipData pclip = cm.getPrimaryClip();
+								ClipData pclip = clipboardManager.getPrimaryClip();
 								ClipData.Item firstItem = pclip.getItemAt(0);
-								String content = firstItem.getText().toString();
+								CharSequence content = firstItem.getText();
 								//CMN.Log("剪贴板监听器:", content);
-								if(System.currentTimeMillis()-a.lastClickTime<256 && content.equals(mPreviousCBContent))
+								//a.showT(  GlobalOptions.chromium+"剪贴板监听器:" + content + System.identityHashCode(pclip));
+								
+								long timeDelta = System.currentTimeMillis() - a.lastClickTime;
+								if ((GlobalOptions.chromium || timeDelta < 256) && content.equals(mPreviousCBContent)){
 									return;
+								}
+								
+								String text = content.toString();
 								int i = 0;
 								for (; i < mClipboard.size(); i++) {
-									if(mClipboard.get(i).equals(content))
+									if (mClipboard.get(i).equals(text))
 										break;
 								}
-								if(i==mClipboard.size()) {
-									mClipboard.add(0, content);
-								}else {
+								if (i == mClipboard.size()) {
+									mClipboard.add(0, text);
+								} else {
 									mClipboard.add(0, mClipboard.remove(i));
 								}
-								boolean focused=a.hasWindowFocus();
-								boolean toFloat=PDICMainAppOptions.getPasteTarget()==3;
+								boolean focused = a.hasWindowFocus();
+								boolean toFloat = PDICMainAppOptions.getPasteTarget() == 3;
 								if (!toFloat && !focused && a.opt.getPasteBinBringTaskToFront()) {
 									ActivityManager manager = (ActivityManager) a.getSystemService(Context.ACTIVITY_SERVICE);
-									if(manager!=null) manager.moveTaskToFront(a.getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
+									if (manager != null)
+										manager.moveTaskToFront(a.getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
 								}
 								if (toFloat || (focused || a.opt.getPasteBinBringTaskToFront()) && a.opt.getPasteBinUpdateDirect())
-									a.JumpToWord(content, focused?1:2);
+									a.JumpToWord(text, focused ? 1 : 2);
 								else
-									a.textToSetOnFocus=content;
-								mPreviousCBContent=content;
-								a.lastClickTime=System.currentTimeMillis();
-							} catch (Exception e) { CMN.Log("ClipListener:"+e); }
+									a.textToSetOnFocus = text;
+								mPreviousCBContent = content;
+								a.lastClickTime = System.currentTimeMillis();
+							}
+							catch (Exception e) {
+								CMN.Log("ClipListener:" + e);
+							}
 					};
 				}
 				//CMN.Log("clipboardManager.addPrimaryClipChangedListener");
 				clipboardManager.removePrimaryClipChangedListener(ClipListener);
 				clipboardManager.addPrimaryClipChangedListener(ClipListener);
-			}else {
+			}
+			else {
 				pasteBin.setVisibility(View.GONE);
 				if(ClipListener!=null)
 					clipboardManager.removePrimaryClipChangedListener(ClipListener);
@@ -638,7 +649,7 @@ public class Drawer extends Fragment implements
 					a.show(R.string.nothingR);
 			} break;
 			case 6:{//追加词典 添加词典 打开
-				if(true) { // MLSN
+				if(false) { // MLSN
 					a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
 							.setType("*/*"), Constants.OpenBookRequset);
 				}

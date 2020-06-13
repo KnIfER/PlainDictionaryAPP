@@ -32,10 +32,14 @@
 
 	<dimen name="_20_">20dp</dimen>
 	<dimen name="_25_">25dp</dimen>
+	<dimen name="_14_">10dp</dimen>
+	<dimen name="_28_">28dp</dimen>
 	<dimen name="_30_">30dp</dimen>
 	<dimen name="_35_">35dp</dimen>
+	<dimen name="_110_">110dp</dimen>
 	<dimen name="halfpopheader">32dp</dimen>
 	<dimen name="progress_inset">32dp</dimen>
 	<dimen name="scrollBarWidth">16dp</dimen>
 	<dimen name="_bottombarheight_">48dp</dimen>
+	<dimen name="idealdpdp">450dp</dimen>
 </resources>

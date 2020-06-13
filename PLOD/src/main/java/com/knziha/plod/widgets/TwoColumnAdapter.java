@@ -56,6 +56,11 @@ public class TwoColumnAdapter extends RecyclerView.Adapter {
 						R.layout.select_dialog_item_material_bg, parent, false)
 
 		);
+		if(GlobalOptions.isLarge) {
+			vh.title.setTextSize(23);
+			int pad = (int) (GlobalOptions.density*20);
+			vh.title.setPadding(vh.title.getPaddingLeft(), pad, vh.title.getPaddingRight(), pad);
+		}
 		vh.itemView.setOnClickListener(v -> {
 			if (listener != null) listener.onItemClick(null, v, ((ViewHolder)v.getTag()).position, 0);
 		});

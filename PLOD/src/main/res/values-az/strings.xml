@@ -65,7 +65,7 @@
 	<string name="surerrecords">Seçilmiş %d qeydləri silmək üçün əmin edir? (\'t təsiri fayl sistemi qalib)</string>
 	<string name="applyallset">Bütün Sets müraciət</string>
 	<string name="pickdestineFolder">Destine Qovluq seçin</string>
-	<string name="warn_exit1">[Clear History]</string>
+	<string name="warn_exit1">Clean History</string>
 	<string name="bookmarkupdated">Bookmark yenilənir: %s</string>
 	<string name="bookmarkup">Bookmark yenilənir!</string>
 	<string name="bookmarkjumped">sıçradı:%s</string>

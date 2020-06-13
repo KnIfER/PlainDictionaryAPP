@@ -1,5 +1,7 @@
 package com.knziha.plod.PlainDict;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.inputmethod.EditorInfo;
 
@@ -18,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 
@@ -84,12 +88,34 @@ public class MdictServerMobile extends MdictServer {
 	}
 	
 	@Override
-	protected void handle_search_event(String text) {
-		a.root.post(() -> {
-			a.etSearch.setText(text);
-			a.etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
-		});
-		CMN.Log("启动搜索 : ", text);
+	protected void handle_search_event(Map<String, List<String>> parameters, InputStream inputStream) {
+		CMN.Log("接到了接到了");
+		List<String> target = parameters.get("f");
+		if(target!=null && target.size()>0) {
+			int sharetype = IU.parsint(target.get(0));
+			CMN.Log("sharetype", sharetype);
+			byte[] data;
+			try {
+				data = new byte[inputStream.available()];
+				inputStream.read(data);
+			} catch (IOException e) {
+				return;
+			}
+			String text = new String(data);
+			a.root.post(() -> {
+				if(sharetype==2) {
+					a.execVersatileShare(text, 5);
+				} else {
+					a.etSearch.setText(text);
+					a.etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
+					if(!a.focused) {
+						ActivityManager manager = (ActivityManager) a.getSystemService(Context.ACTIVITY_SERVICE);
+						if(manager!=null) manager.moveTaskToFront(a.getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
+					}
+				}
+			});
+			CMN.Log("启动搜索 : ", text);
+		}
 	}
 	
 	public static HashMap<String, Object> getTifConfig() {

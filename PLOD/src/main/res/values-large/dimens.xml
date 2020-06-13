@@ -7,7 +7,11 @@
     <dimen name="sz_valve">30dp</dimen>
     
     <dimen name="_50_">55dp</dimen>
+	<dimen name="_14_">17dp</dimen>
+	<dimen name="_28_">35dp</dimen>
+	<dimen name="_30_">38dp</dimen>
     <dimen name="_40_">45dp</dimen>
+	<dimen name="_110_">131dp</dimen>
     <dimen name="abarmin">45dp</dimen>
     <dimen name="abarmax">50dp</dimen>
     

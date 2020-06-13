@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 
 public class TableLayout extends LinearLayout {
 	public TableLayout(Context context) {
@@ -15,14 +16,18 @@ public class TableLayout extends LinearLayout {
 	}
 
 	public boolean onTouchEvent(MotionEvent event) {
-		float x = event.getX();
-		for (int i = 0; i < getChildCount(); i++) {
+		//float x = event.getX();
+		//int action = event.getAction();
+		int size = getChildCount()-1;
+		for (int i = size; i >= 0; i--) {
 			View child = getChildAt(i);
-			int action = event.getAction();
-			//if(action==MotionEvent.ACTION_MOVE ||action==MotionEvent.ACTION_DOWN||child.getLeft()<x && child.getRight()>x)
-			MotionEvent ev = MotionEvent.obtain(event);
-			ev.setLocation(ev.getX()-child.getLeft(), ev.getY());
-			child.dispatchTouchEvent(ev);
+			if(child instanceof ListView) {
+				MotionEvent ev = MotionEvent.obtain(event);
+				//if(action==MotionEvent.ACTION_MOVE ||action==MotionEvent.ACTION_DOWN||child.getLeft()<x && child.getRight()>x)
+				ev.setLocation(ev.getX()-child.getLeft(), ev.getY());
+				child.dispatchTouchEvent(ev);
+				ev.recycle();
+			}
 		}
 		return true;
 	}

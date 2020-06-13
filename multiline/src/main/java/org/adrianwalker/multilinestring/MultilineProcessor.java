@@ -25,10 +25,10 @@ public final class MultilineProcessor extends AbstractProcessor {
   }
   
   @Override 
-	public SourceVersion getSupportedSourceVersion() 
-	{
-      return SourceVersion.latest();
-	}
+  public SourceVersion getSupportedSourceVersion()
+  {
+  	return SourceVersion.latest();
+  }
 
   @Override
   public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {

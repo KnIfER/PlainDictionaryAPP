@@ -93,26 +93,23 @@
 		<item>默认折叠</item>
 	</string-array>
 
+	<!--web-->
 
 	<string-array name="config_web_pages">
 		<item>查看原网页</item>
 		<item>删除重载页面</item>
 		<item>添加为入口</item>
-	</string-array>
-
-	<string-array name="lexical_page_url_options">
-		<item>保存网页源代码</item>
-		<item>保存原网页代码</item>
-		<item>添加书签</item>
-		<item>复制文本</item>
+		<item>地址直达</item>
 	</string-array>
 
 	<string-array name="lexical_page_url_options2">
-		<item>保存网页源代码</item>
 		<item>使用浏览器打开</item>
+		<item>保存网页源代码</item>
 		<item>复制链接</item>
-		<item>复制文本</item>
+		<item>翻阅模式</item>
 	</string-array>
+
+	<!--mdx-->
 
 	<string-array name="config_pages">
 		<item>查看原网页</item>
@@ -120,14 +117,23 @@
 		<item>打开文本分享</item>
 	</string-array>
 
+	<string-array name="lexical_page_url_options">
+		<item>添加书签</item>
+		<item>复制文本</item>
+		<item>保存代码</item>
+		<item>翻阅模式</item>
+	</string-array>
+
 	<string-array name="config_images">
 		<item>下载图片</item>
+		<item>选择文本</item>
 	</string-array>
 
 	<string-array name="config_links">
 		<item>复制链接</item>
 		<item>复制文本</item>
 		<item>选择文本</item>
+		<item>翻阅模式</item>
 	</string-array>
 
 	<string-array name="config_md_links">
@@ -191,7 +197,7 @@
 	<string-array name="app_exit">
 		<item>&#160;×_ √</item>
 		<item>@string/warn_exit1</item>
-		<item>关闭虚拟进程</item>
+		<item>@string/shutdown_vm</item>
 	</string-array>
 
 	<string-array name="appbar_conf">

@@ -80,6 +80,7 @@ import db.MdxDBHelper;
 
 import static android.view.View.FOCUSABLE_AUTO;
 import static com.knziha.plod.PlainDict.MainActivityUIBase.init_clickspan_with_bits_at;
+import static com.knziha.plod.PlainDict.PDICMainActivity.ResizeNavigationIcon;
 
 /** 此之谓翻阅模式，以词典为单位，搜索词为中心，一一览读也。<br><br/> */
 public class PeruseView extends DialogFragment implements OnClickListener, OnMenuItemClickListener, OnLongClickListener{
@@ -218,25 +219,16 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		LvHeadline.setOnItemClickListener(booksShelfAdapter);
         LvHeadline.setScrollbarFadingEnabled(false);
         LvHeadline.setSelector(getResources().getDrawable(R.drawable.listviewselector0));
-
-		peruse_content.setOnTouchListener((v, event) -> true);
+        
+		peruse_content.setOnTouchListener((v, event) -> true);//tofo
 
         toolbar = peruse_content.findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.pview_menu);
         toolbar.setOnMenuItemClickListener(this);
         toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);//abc_ic_ab_back_mtrl_am_alpha
-        View vTmp = toolbar.getChildAt(toolbar.getChildCount()-1);
-        if(vTmp!=null && vTmp.getClass()==AppCompatImageButton.class) {
-        	AppCompatImageButton NavigationIcon=(AppCompatImageButton) vTmp;
-        	MarginLayoutParams lp = (MarginLayoutParams) NavigationIcon.getLayoutParams();
-        	//lp.setMargins(-10,-10,-10,-10);
-        	lp.width=(int) (45*dm.density);
-        	NavigationIcon.setLayoutParams(lp);
-        	//toolbar.removeView(NavigationIcon);
-        	//toolbar.addView(NavigationIcon,1);
-        }
+		ResizeNavigationIcon(toolbar);
         toolbar.setNavigationOnClickListener(this);
-		vTmp = toolbar.findViewById(R.id.action_menu_presenter);
+		View vTmp = toolbar.findViewById(R.id.action_menu_presenter);
 		if(vTmp!=null){
 			vTmp.setOnLongClickListener(this);
 		}

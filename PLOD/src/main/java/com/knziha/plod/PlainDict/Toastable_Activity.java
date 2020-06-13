@@ -31,6 +31,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -116,8 +117,13 @@ public class Toastable_Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
        opt = new PDICMainAppOptions(this);
        opt.dm = dm = new DisplayMetrics();
-	   getWindowManager().getDefaultDisplay().getMetrics(dm);
-	   Utils.density = dm.density;
+       Display display = getWindowManager().getDefaultDisplay();
+       if(GlobalOptions.realWidth<=0) {
+		   display.getRealMetrics(dm);
+		   GlobalOptions.realWidth = Math.min(dm.widthPixels, dm.heightPixels);
+	   }
+       display.getMetrics(dm);
+	   GlobalOptions.density = dm.density;
 	   FFStamp=opt.getFirstFlag();
 	   SFStamp=opt.getSecondFlag();
 	   TFStamp=opt.getThirdFlag();
@@ -147,7 +153,7 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	   checkLanguage();
    }
-
+   
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
@@ -261,21 +267,24 @@ public class Toastable_Activity extends AppCompatActivity {
 					if(arr.length==2){
 						locale=new Locale(arr[0], arr[1]);
 					}
-				}else
+				} else {
 					locale=new Locale(language);
+				}
 			} catch (Exception ignored) { }
 			//CMN.Log("language is : ", language, locale);
-			if(locale!=null)
+			if(locale!=null) {
 				forceLocale(this, locale);
+				forceLocale(getApplicationContext(), locale);
+			}
 		}
 	}
-
-	protected void forceLocale(Context context, Locale locale) {
+	
+	protected static void forceLocale(Context context, Locale locale) {
 		Configuration conf = context.getResources().getConfiguration();
 		conf.setLocale(locale);
 		context.getResources().updateConfiguration(conf, context.getResources().getDisplayMetrics());
 	}
-
+	
 	protected void checkLaunch(Bundle savedInstanceState) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {//大于 23 时
 			if (checkSelfPermission(permissions[0]) != PackageManager.PERMISSION_GRANTED) {

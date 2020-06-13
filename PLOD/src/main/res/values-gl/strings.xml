@@ -65,7 +65,7 @@
 	<string name="surerrecords">Seguro de querer borrar %d rexistros seleccionados? (Gañou System \ file efecto t)</string>
 	<string name="applyallset">Aplicar a todos Conj</string>
 	<string name="pickdestineFolder">Seleccione destine Cartafol</string>
-	<string name="warn_exit1">[Clear History]</string>
+	<string name="warn_exit1">Clean History</string>
 	<string name="bookmarkupdated">Bookmark actualizado como: %s</string>
 	<string name="bookmarkup">Bookmark actualizado!</string>
 	<string name="bookmarkjumped">Saltada a: %s</string>

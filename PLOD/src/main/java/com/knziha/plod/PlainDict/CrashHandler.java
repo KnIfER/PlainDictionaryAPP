@@ -53,8 +53,8 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		bLogToFile = opt.getLogToFile();
 		info_builder=new StringBuilder();
 		info_builder.setLength(0);
-		info_builder.append(contex.getResources().getString(R.string.app_name)).append("[device_n.").append(Build.VERSION.CODENAME)
-				.append(", v.").append(Build.VERSION.SDK_INT);
+		info_builder.append(contex.getResources().getString(R.string.app_name)).append("[device_").append(Build.MANUFACTURER)
+				.append(", v").append(Build.VERSION.SDK_INT).append("_").append(Build.VERSION.CODENAME);
 	}
 
 	public void register(Context context) {
@@ -65,8 +65,8 @@ public class CrashHandler implements UncaughtExceptionHandler {
 			PackageManager pm = context.getPackageManager();
 			PackageInfo program_info = pm.getPackageInfo(context.getPackageName(), PackageManager.GET_ACTIVITIES);
 			if (program_info != null) {
-				info_builder.append("][app_n.").append(program_info.versionName)
-						.append(", v.").append(program_info.versionCode).append("]\n")
+				info_builder.append("][PD_").append(program_info.versionName)
+						.append(", v").append(program_info.versionCode).append("]\n")
 				;
 				ApplicationInfo app_info = context.getApplicationInfo();
 				GlobalOptions.debug=(app_info.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;

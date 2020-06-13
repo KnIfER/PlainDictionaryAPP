@@ -120,8 +120,8 @@ public class CMN{
 		CMN.Log(time+" "+listToStr(args));
 		stst_add+=time;
 	}
-
-	private static String listToStr(Object...args) {
+	
+	public static String listToStr(Object...args) {
 		String ret="";
 		for (int i = 0; i < args.length; i++) {
 			ret+=args[i];

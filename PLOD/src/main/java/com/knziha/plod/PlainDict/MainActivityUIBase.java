@@ -51,6 +51,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
@@ -74,6 +75,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.webkit.JsPromptResult;
+import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -131,6 +134,7 @@ import com.jaredrummler.colorpicker.ColorPickerDialogListener;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
+import com.knziha.filepicker.model.GlideOptions;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.widget.CircleCheckBox;
@@ -194,9 +198,11 @@ import org.apache.commons.imaging.ManagedImageBufferedImageFactory;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.nanohttpd.protocols.http.ServerRunnable;
 import org.xiph.speex.ByteArrayRandomOutputStream;
 import org.xiph.speex.manyclass.JSpeexDec;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -216,11 +222,13 @@ import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -228,6 +236,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -518,6 +527,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private Drawable mRatingDrawable;
 	private int CurrentDictInfoIdx;
 	private int StarLevelStamp;
+	public long mid;
+	private static HashMap<String, String> CrossFireHeaders = new HashMap<>();
+	static {
+		CrossFireHeaders.put("Content-Type", "");
+		CrossFireHeaders.put("Access-Control-Allow-Origin", "*");
+	}
+	
+	private WebResourceResponse emptyResponse = new WebResourceResponse("", "", null);
 	
 	public boolean checkWebSelection() {
 		if(getCurrentFocus() instanceof WebViewmy && opt.getUseBackKeyClearWebViewFocus()){
@@ -1122,6 +1139,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
        		  cc+=ri.get(i).numActivities;
        	  showT(""+cc);
        	  */
+		mid = Thread.currentThread().getId();
 	    CMN.instanceCount++;
 	    //CMN.Log("instanceCount", CMN.instanceCount);
 		super.onCreate(savedInstanceState);
@@ -2279,6 +2297,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	protected void further_loading(Bundle savedInstanceState) {
 		super.further_loading(savedInstanceState);
+		opt.fileToDatabases();
 		GlobalOptions.isLarge = (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >=3 ;
 		//CMN.show("isLarge"+isLarge);
 		mdict.def_zoom=dm.density;
@@ -2989,8 +3008,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(systemIntialized) {
 			for(mdict mdTmp:md) {
 				if(mdTmp!=null) {
-					if (mdTmp.isDirty)
-						mdTmp.dumpViewStates(UIProjects);
 					mdTmp.unload();
 				}
 			}
@@ -3448,6 +3465,58 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	byte[] buffer = new byte[0];
+	byte[] buffer_server = new byte[0];
+	public byte[] AcquireCompressedBlockOfSize(int compressedSize, long max) {
+		long tid = Thread.currentThread().getId();
+		if(tid==mid) {
+			if(buffer.length<max) {
+				CMN.Log("扩容", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
+				buffer = new byte[(int) (max*1.2f)];
+			} else {
+				CMN.Log("复用缓存", max);
+			}
+			return buffer;
+		} else if(tid == ServerRunnable.tid) {
+			if(buffer_server.length<max) {
+				CMN.Log("服 务 器 扩容", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
+				buffer_server = new byte[(int) (max*1.2f)];
+			} else {
+				CMN.Log("服 务 器 复用缓存", max);
+			}
+			return buffer_server;
+		} else {
+			CMN.Log("复异步缓存", tid);
+			return new byte[compressedSize];
+		}
+	}
+	
+	byte[] buffer1 = new byte[0];
+	byte[] buffer1_server = new byte[0];
+	public byte[] AcquireDeCompressedKeyBlockOfSize(int decompressedSize, long max) {
+		long tid = Thread.currentThread().getId();
+		if(tid==mid) {
+			if(buffer1.length<max) {
+				CMN.Log("扩容 1", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
+				buffer1 = new byte[(int) (max*1.2f)];
+			} else {
+				CMN.Log("复用缓存 1", max);
+			}
+			return buffer1;
+		} else if(tid == ServerRunnable.tid) {
+			if(buffer1_server.length<max) {
+				CMN.Log("服 务 器 扩容 1", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
+				buffer1_server = new byte[(int) (max*1.2f)];
+			} else {
+				CMN.Log("服 务 器 复用缓存 1", max);
+			}
+			return buffer1_server;
+		} else {
+			CMN.Log("复异步缓存 1", tid);
+			return new byte[decompressedSize];
+		}
+	}
+	
 	public final class UniCoverClicker implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
 		boolean isWeb;
 		mdict invoker;
@@ -3515,6 +3584,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		int lastBookMarkPosition;
 		@Override
 		public void onClick(View v) {
+			if(v!=null)
 			switch(v.getId()) {
 				case R.id.iv_switch:{
 					if(bFromWebView){
@@ -3650,7 +3720,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} return;
 			}
 			hideKeyboard();
-			Object tag = v.getTag();
+			Object tag = v==null?null:v.getTag();
 			if(!bFromTextView &&  tag instanceof Integer){
 				Integer ftag = (Integer) tag;
 				bFromWebView=(ftag&1)!=0;
@@ -3920,120 +3990,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						case 9://分享#2
 						case 10: //分享#3
 						{
-							if (isLongClicked && (position == 19 || position == 8)) {
+							if(execVersatileShare(isLongClicked, position)) {
 								return true;
-							}
-							JSONObject json = opt.getDimensionalSharePatternByIndex(position - 7);
-							boolean putDefault = json == null;
-							if (putDefault) {
-								json = new JSONObject();
-							} else {
-								putDefault = json.has("b")||json.length()==0;
-							}
-							if (putDefault) {
-								putDefaultSharePattern(json, position);
-							}
-							/* 将 json 散列为数组。 */
-							ArrayList<String> data = new ArrayList<>(8);
-							serializeSharePattern(json, data);
-							if (!isLongClicked) {
-								HandleShareIntent(data);
-							}
-							/* 对话框定义多维分享 */
-							/* Customizable parts of MDCCSP ( from Share#0-Share#5 )*/
-							else {
-								Context context = MainActivityUIBase.this;
-								AlertController.RecycleListView customList = new AlertController.RecycleListView(context);
-								AlertController.RecycleListView customNameList = new AlertController.RecycleListView(context);
-								customNameList.mMaxHeight = customList.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 3.8 * getResources().getDimension(R.dimen._50_));
-								customNameList.setTag(false);
-								customNameList.setVerticalScrollBarEnabled(false);
-
-								CustomShareAdapter csa = new CustomShareAdapter(data);
-								customList.setAdapter(csa);
-								customNameList.setAdapter(csa);
-								customList.setDivider(null);
-								customNameList.setDivider(null);
-
-								AlertDialog.Builder builder2 = new AlertDialog.Builder(context, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);
-								builder2.setTitle("制定分享目标");
-								builder2.setNeutralButton("添加字段", null);
-								builder2.setNegativeButton("测试", null);
-								int finalPosition = position;
-								builder2.setPositiveButton("保存", null);
-
-								TableLayout dv = new TableLayout(context);
-
-								dv.setOrientation(LinearLayout.HORIZONTAL);
-								dv.addView(customNameList);
-								View delimiter = new View(context);
-								/* 分割线 */
-								dv.addView(delimiter, new LinearLayout.LayoutParams((int) (1 * dm.density), LayoutParams.MATCH_PARENT));
-								/* 键盘能够弹出 */
-								dv.addView(new EditText(context), new LinearLayout.LayoutParams(0, 0));
-								delimiter.setBackgroundColor(0xffcccccc);
-								LinearLayout.LayoutParams lpmy;
-								dv.addView(customList, lpmy = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT));
-								lpmy.weight = 1;
-								customNameList.getLayoutParams().width
-										= (int) ((TextView) csa.getView(0, null, customNameList)).getPaint().measureText(getResources().getString(R.string.extra_key_value, 1001));
-								builder2.setView(dv);
-
-								AlertDialog dTmp = builder2.show();
-
-								OnClickListener mClicker = new OnClickListener() {
-									@Override
-									public void onClick(View v) {
-										boolean isLongClicked = v.getTag(R.id.long_clicked) != null;
-										switch (v.getId()) {
-											case android.R.id.button1://+
-												if (isLongClicked) {
-													android.app.AlertDialog.Builder builder21 = new android.app.AlertDialog.Builder(inflater.getContext());
-													android.app.AlertDialog d1 = builder21.setTitle("确认删除并恢复默认值？")
-															.setPositiveButton(R.string.confirm, (dialog, which) -> {
-																opt.putDimensionalSharePatternByIndex(finalPosition - 7, null);
-																JSONObject json = new JSONObject();
-																data.clear();
-																putDefaultSharePattern(json, finalPosition);
-																serializeSharePattern(json, data);
-																csa.notifyDataSetChanged();
-															})
-															.create();
-													d1.show();
-												} else try {
-													JSONObject neo = packoutNeoJson(data);
-													JSONObject original = new JSONObject();
-													putDefaultSharePattern(original, finalPosition);
-													if (baseOnDefaultSharePattern(neo, original)) {
-														neo = packoutNeoJson(data);
-													}
-													opt.putDimensionalSharePatternByIndex(finalPosition - 7, neo);
-													showT("保存成功！");
-													dTmp.dismiss();
-												} catch (Exception e) {
-													CMN.Log(e);
-													showT("保存失败！" + e);
-												}
-											break;
-											case android.R.id.button2://-
-												if (isLongClicked) break;
-												HandleShareIntent(data);
-											break;
-											case android.R.id.button3://|
-												if (isLongClicked) break;
-												data.add(null);
-												data.add(null);
-												csa.notifyDataSetChanged();
-											break;
-										}
-									}
-								};
-
-								Button btnTmp = dTmp.getButton(DialogInterface.BUTTON_POSITIVE);
-								btnTmp.setOnClickListener(mClicker);
-								btnTmp.setOnLongClickListener(new MultiplexLongClicker());
-								dTmp.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(mClicker);
-								dTmp.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(mClicker);
 							}
 						}
 						break;
@@ -4142,7 +4100,112 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			return false;
 		}
+		
+		boolean execVersatileShare(boolean isLongClicked, int position) {
+			if (isLongClicked && (position == 19 || position == 8)) {
+				return true;
+			}
+			JSONObject json = opt.getDimensionalSharePatternByIndex(position - 7);
+			boolean putDefault = json == null;
+			if (putDefault) {
+				json = new JSONObject();
+			} else {
+				putDefault = json.has("b")||json.length()==0;
+			}
+			if (putDefault) {
+				putDefaultSharePattern(json, position);
+			}
+			/* 将 json 散列为数组。 */
+			ArrayList<String> data = new ArrayList<>(8);
+			serializeSharePattern(json, data);
+			if (!isLongClicked) {
+				HandleShareIntent(data);
+			}
+			/* 对话框定义多维分享 */
+			/* Customizable parts of MDCCSP ( from Share#0-Share#5 )*/
+			else {
+				Context context = MainActivityUIBase.this;
+				AlertController.RecycleListView customList = new AlertController.RecycleListView(context);
+				customList.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 3.8 * getResources().getDimension(R.dimen._50_));
 
+				CustomShareAdapter csa = new CustomShareAdapter(data);
+				customList.setAdapter(csa);
+				customList.setDivider(null);
+				
+				AlertDialog.Builder builder2 = new AlertDialog.Builder(context, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);
+				builder2.setTitle("制定分享目标");
+				builder2.setNeutralButton("添加字段", null);
+				builder2.setNegativeButton("测试", null);
+				builder2.setPositiveButton("保存", null);
+				
+				FrameLayout dv = new FrameLayout(context);
+				/* 键盘能够弹出 */
+				dv.addView(customList);
+				dv.addView(new EditText(context), new LinearLayout.LayoutParams(0, 0));
+				csa.nameWidth = (int) ((TextView) csa.getView(0, null, customList).findViewById(R.id.text2)).getPaint().measureText(getResources().getString(R.string.extra_key_value, 1001));
+				builder2.setView(dv);
+				
+				AlertDialog dTmp = builder2.show();
+				
+				OnClickListener mClicker = new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						boolean isLongClicked = v.getTag(R.id.long_clicked) != null;
+						switch (v.getId()) {
+							case android.R.id.button1://+
+								if (isLongClicked) {
+									android.app.AlertDialog.Builder builder21 = new android.app.AlertDialog.Builder(inflater.getContext());
+									android.app.AlertDialog d1 = builder21.setTitle("确认删除并恢复默认值？")
+											.setPositiveButton(R.string.confirm, (dialog, which) -> {
+												opt.putDimensionalSharePatternByIndex(position - 7, null);
+												JSONObject json = new JSONObject();
+												data.clear();
+												putDefaultSharePattern(json, position);
+												serializeSharePattern(json, data);
+												csa.notifyDataSetChanged();
+											})
+											.create();
+									d1.show();
+								}
+								else try {
+									JSONObject neo = packoutNeoJson(data);
+									JSONObject original = new JSONObject();
+									putDefaultSharePattern(original, position);
+									if (baseOnDefaultSharePattern(neo, original)) {
+										neo = packoutNeoJson(data);
+									}
+									opt.putDimensionalSharePatternByIndex(position - 7, neo);
+									showT("保存成功！");
+									dTmp.dismiss();
+								}
+								catch (Exception e) {
+									CMN.Log(e);
+									showT("保存失败！" + e);
+								}
+								break;
+							case android.R.id.button2://-
+								if (isLongClicked) break;
+								HandleShareIntent(data);
+								break;
+							case android.R.id.button3://|
+								if (isLongClicked) break;
+								data.add(null);
+								data.add(null);
+								csa.notifyDataSetChanged();
+								break;
+						}
+					}
+				};
+				
+				Button btnTmp = dTmp.getButton(DialogInterface.BUTTON_POSITIVE);
+				btnTmp.setOnClickListener(mClicker);
+				btnTmp.setOnLongClickListener(new MultiplexLongClicker());
+				dTmp.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(mClicker);
+				dTmp.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(mClicker);
+			}
+			return false;
+		}
+		
 		void HandleShareIntent(ArrayList<String> data) {
 			if(bFromTextView){
 				handleIntentShare(CurrentSelected, data);
@@ -4179,7 +4242,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		protected void build_further_dialog(){
 			boolean needRecreate=bLastFromWebView!=bFromWebView||bFromTextView;
-			if(!bFromWebView && mWebView!=null){
+			if(!bFromWebView && mWebView!=null) {
 				if(!bFromTextView)
 					con = invoker.getCon(false);
 				itemsA[0]=bmAdd;
@@ -4196,13 +4259,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(GlobalOptions.isDark!=lastInDark || needReCreateUcc || d==null) {
 				CMN.Log("重建对话框…");
 				needRecreate=false;
-				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);//,
-				builder.setItems((bFromWebView||bFromTextView)?itemsC:itemsA,null);
-				d = builder.create();
+				d = new AlertDialog.Builder(MainActivityUIBase.this
+						,GlobalOptions.isDark?R.style.DialogStyle3Line
+						:R.style.DialogStyle4Line)
+						.setItems((bFromWebView||bFromTextView)?itemsC:itemsA,null)
+						.create();
 
-				bottomView = (ViewGroup) inflater.inflate(R.layout.checker2,null);
-				//ImageView toolbar_settings = (ImageView)bottomView.findViewById(R.id.settings);
-				//ImageView toolbar_colors = (ImageView)bottomView.findViewById(R.id.color);
+				bottomView = (ViewGroup) inflater.inflate(R.layout.checker2,d.getListView(), false);
 				iv_settings = bottomView.findViewById(R.id.settings);
 				iv_app_settings = bottomView.findViewById(R.id.appsettings);
 				iv_color = bottomView.findViewById(R.id.color);
@@ -4227,7 +4290,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				cb = bottomView.findViewById(R.id.checker);
 				tools_lock  = bottomView.findViewById(R.id.lock);
 				if(GlobalOptions.isDark) cb.drawInnerForEmptyState=true;
-				else cb.circle_shrinkage=2;
+				else cb.circle_shrinkage=GlobalOptions.density/3*2;
 				cb.setOnClickListener(v12 -> {
 					cb.toggle();
 					opt.setPinDialog(cb.isChecked());
@@ -4237,8 +4300,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(!opt.getTurnPageEnabled()&&!bFromPeruseView||bFromPeruseView&&opt.getPageTurn3())
 						tools_lock.setImageResource(R.drawable.locked);
 					tools_lock.setOnClickListener(this);
-				}else
+				} else {
 					tools_lock.setVisibility(View.GONE);
+				}
 
 				ListView dialogList = d.getListView();
 				dialogList.setOnItemClickListener(this);
@@ -4299,12 +4363,34 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				dialogList.removeFooterView(twoColumnView);
 			}
 
-			if(!bFromTextView)
-				d.setTitle(invoker.appendCleanDictionaryName(MainStringBuilder).append(" - ").append((bFromPeruseView?PeruseView.currentDisplaying:invoker.currentDisplaying)).toString());
-			else
-				d.setTitle("文本操作");
-
+			if(!bFromTextView){
+				StringBuilder sb = invoker.appendCleanDictionaryName(null);
+				String text = bFromPeruseView ? PeruseView.currentDisplaying : invoker.currentDisplaying;
+				if(!TextUtils.isEmpty(text)) {
+					sb.append(" - ").append(text);
+				}
+				d.setTitle(sb.toString());
+			} else {
+				d.setTitle(R.string.text_operation);
+			}
+			
+			if(d.getWindow()!=null) {
+				d.getWindow().getAttributes().width = -2;
+			}
+			
 			d.show();
+			
+			((ViewGroup)d.findViewById(R.id.action_bar_root).getParent()).addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+				@Override
+				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+					double coord = 1.2*(bottom - top);
+					if(right-left >= coord) {
+						WindowManager.LayoutParams NaughtyDialogAttr = d.getWindow().getAttributes();
+						NaughtyDialogAttr.width = (int) coord;
+						d.getWindow().setAttributes(d.getWindow().getAttributes());
+					}
+				}
+			});
 
 			//if(getCurrentFocus()!=null && !(getCurrentFocus() instanceof WebView))
 			//	getCurrentFocus().clearFocus();
@@ -4332,7 +4418,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			firstCreateUcc=false;
 		};
 	}
-
+	
+	int[] VersatileShareSlots = new int[]{7,9,10,18,20,21};
+	
+	public void execVersatileShare(String text, int id) {
+		getUcc().setInvoker(null, null, null, text);
+		getUcc().execVersatileShare(false, VersatileShareSlots[id]);
+	}
+	
 	private JSONObject packoutNeoJson(ArrayList<String> data) throws JSONException {
 		JSONObject neo = new JSONObject();
 		neo.put("p", data.get(0));
@@ -4673,7 +4766,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				win.getDecorView().setBackgroundResource(R.drawable.dm_dslitem_dragmy);
 				win.getDecorView().getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 				win.getDecorView().getBackground().setAlpha(128);
-				AlertDialogLayout pp =  win.findViewById(R.id.parentPanel);
+				ViewGroup pp =  win.findViewById(R.id.parentPanel);
 				pp.addView(getLayoutInflater().inflate(R.layout.circle_checker_item_menu_titilebar,null),0);
 				((ViewGroup)pp.getChildAt(0)).removeViewAt(0);
 				((ViewGroup)pp.getChildAt(0)).removeViewAt(1);
@@ -4758,7 +4851,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			title.setText(title_id);
 		}
-		title.setTextSize(18f);
+		title.setTextSize(GlobalOptions.isLarge?19f:18f);
 		title.setTextColor(AppBlack);
 		//title.getPaint().setFakeBoldText(true);
 		
@@ -4817,15 +4910,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//CMN.Log("ssb len:", ssb.length());
 		tv.setTag(null);
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
-		//d.getWindow().setDimAmount(0);
-		//d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 		configurableDialog.show();
-		//tofo
 	}
 	
 	void showAppExit() {
-		String[] DictOpt = getResources().getStringArray(R.array.app_exit);
-		final String[] Coef = DictOpt[0].split("_");
+		String[] DictOpt = getResources().getStringArray(R.array.app_exit);		final String[] Coef = DictOpt[0].split("_");
 		final SpannableStringBuilder ssb = new SpannableStringBuilder();
 		
 		TextView tv = buildStandardConfigDialog(this, false, v12 -> {
@@ -5683,7 +5772,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				win.getDecorView().setBackgroundResource(R.drawable.dm_dslitem_dragmy);
 				win.getDecorView().getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 				win.getDecorView().getBackground().setAlpha(128);
-				AlertDialogLayout pp =  win.findViewById(R.id.parentPanel);
+				ViewGroup pp =  win.findViewById(R.id.parentPanel);
 				pp.addView(getLayoutInflater().inflate(R.layout.circle_checker_item_menu_titilebar,null),0);
 				((ViewGroup)pp.getChildAt(0)).removeViewAt(0);
 				((ViewGroup)pp.getChildAt(0)).removeViewAt(1);
@@ -5693,6 +5782,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				titlebar.setText("设置按钮功能");
 				dTmp.setCanceledOnTouchOutside(true);
 				dTmp.getListView().setPadding(0,0,0,0);
+				
 
 				if(!bPeruseIncharge) {
 					CheckedTextView cb0 = (CheckedTextView) getLayoutInflater().inflate(R.layout.select_dialog_multichoice_material, null);
@@ -6318,9 +6408,33 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WebChromeClient myWebCClient = new WebChromeClient() {
 		private File filepickernow;
 		Dialog d; View cv;
+		
+		@Override
+		public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+			CMN.Log("onJsPrompt 0");
+			result.confirm();
+			return true;
+		}
+		@Override
+		public boolean onJsConfirm(WebView view, String url, String message, JsResult result) {
+			CMN.Log("onJsPrompt 1");
+			result.confirm();
+			return true;
+		}
+		//@Override
+		//public boolean onJsTimeout() {
+		//	return false;
+		//}
+		@Override
+		public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
+			CMN.Log("onJsPrompt 2");
+			result.confirm(defaultValue);
+			return true;//super.onJsPrompt(view, url, message, defaultValue, result);
+		}
+		
 		@Override
 		public void onShowCustomView(View view, CustomViewCallback callback) {
-			//CMN.Log("onShowCustomView", mdict._req_fvw, mdict._req_fvh);
+			CMN.Log("onShowCustomView", mdict._req_fvw, mdict._req_fvh);
 			bShowCustomView = true;
 			if(opt.getFullScreenLandscapeMode()!=2)fixVideoFullScreen();
 			if(d ==null){
@@ -6619,7 +6733,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(selfAtIdx>=md.size() || selfAtIdx<0) return;
 			final mdict invoker = md.get(selfAtIdx);
 			if(invoker instanceof mdict_web){
-				((mdict_web)invoker).onPageStarted(view, url, false);
+				((mdict_web)invoker).onPageStarted(view, url, true);
 			}
 		}
 
@@ -6645,8 +6759,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 			WebViewmy mWebView = (WebViewmy) view;
+			if(mWebView.forbidLoading) {
+				return true;
+			}
 			int selfAtIdx = mWebView.SelfIdx;
-			//CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), md.get(selfAtIdx).getDictionaryName(), selfAtIdx);
+			CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), md.get(selfAtIdx).getDictionaryName(), selfAtIdx);
 			if(selfAtIdx>=md.size() || selfAtIdx<0) return false;
 			final mdict invoker = md.get(selfAtIdx);
 			boolean fromPopup = view==popupWebView;
@@ -6660,10 +6777,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					e.printStackTrace();
 				}
 				boolean ret = webx.canExcludeUrl && webx.shouldExcludeUrl(url);
-				if(!ret && fromPopup){
-					popupHistory.add(++popupHistoryVagranter, new myCpr<>(currentClickDisplaying, new int[]{CCD_ID, currentClickDictionary_currentPos}));
-					if (popupHistory.size() > popupHistoryVagranter + 1) {
-						popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
+				if(!ret){
+					if(webx.canRerouteUrl) {
+						String urlnew = webx.shouldRerouteUrl(url);
+						if(urlnew!=null) {
+							view.loadUrl(urlnew);
+							ret = true;
+						}
+					}
+					if (fromPopup) {
+						popupHistory.add(++popupHistoryVagranter, new myCpr<>(currentClickDisplaying, new int[]{CCD_ID, currentClickDictionary_currentPos}));
+						if (popupHistory.size() > popupHistoryVagranter + 1) {
+							popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
+						}
 					}
 				}
 				return ret;
@@ -6987,7 +7113,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 					if(proceed){
 						InputStream overridePage = webx.getPage(url);
-						//CMN.tp(stst, "webx getPage :: ", overridePage, url);
+						//CMN.tp(0, "webx getPage :: ", overridePage, url);
 						if(overridePage!=null){
 							return new WebResourceResponse("*","UTF-8",overridePage);
 						}
@@ -7002,22 +7128,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									File pathDownload = webx.getInternalResourcePath(true);
 									if(!pathDownload.exists()) pathDownload.mkdirs();
 									if(pathDownload.isDirectory()) {
-										boolean needTrim=!url.contains(".php");//动态资源需要保留参数
+										boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
 										File path;
 										int start = url.indexOf("://");
 										if(start<0) start=0; else start+=3;
 										start = Math.max(url.indexOf("/", start)+1, start);
-										int end = needTrim?url.indexOf("?"):url.length();
+										int end = needTrim?url.indexOf("?"):-1;
 										if(end<0) end=url.length();
 										String name=url.substring(start, end);
-										name=URLDecoder.decode(name);
+										try {
+											name=URLDecoder.decode(name, "utf8");
+										} catch (Exception e) { }
 										if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
 										if(name.length()==0){
 											name = "plod-index";
 										}
 										path=new File(pathDownload, name);
+										CMN.Log("pathDownload", path);
 										pathDownload = path.getParentFile();
-										if(!pathDownload.exists()) pathDownload.mkdirs();
+										boolean saveit = !webx.butReadonly;
+										if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
 										if(pathDownload.isDirectory())
 										{
 											name=path.getName();
@@ -7026,7 +7156,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 												path=new File(pathDownload, name);
 											}
 											/* 下载 */
-											if(!path.exists()) {
+											if(saveit && !path.exists()) {
 												CMN.Log("shouldInterceptRequest 下载中...！", url);
 												CMN.Log("shouldInterceptRequest 下载目标: ", name);
 												URL requestURL = new URL(url);
@@ -7035,7 +7165,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 												try {
 													try {
 														SSLContext sslcontext = SSLContext.getInstance("TLS");
-														sslcontext.init(null, new TrustManager[]{new mdict_web.MyX509TrustManager()}, new java.security.SecureRandom());
+														sslcontext.init(null, new TrustManager[]{new mdict_web.MyX509TrustManager()}, new SecureRandom());
 														HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
 													} catch (Exception ignored) {
 													}
@@ -7045,7 +7175,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 													if(accept!=null)urlConnection.setRequestProperty("Accept",accept);
 													if(refer!=null) urlConnection.setRequestProperty("Refer", refer);
 													if(origin!=null) urlConnection.setRequestProperty("Origin", origin);
-													if(request!=null && Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP){
+													if(request!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
 														Map<String, String> headers = request.getRequestHeaders();
 														urlConnection.setRequestProperty("X-Requested-With", headers.get("X-Requested-With"));
 														urlConnection.setRequestProperty("Content-Type", headers.get("Content-Type"));
@@ -7053,7 +7183,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 													}
 													urlConnection.setRequestProperty("Charset", "UTF-8");
 													urlConnection.setRequestProperty("Connection", "Keep-Alive");
-													urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
+													urlConnection.setRequestProperty("User-Agent", webx.computerFace?"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
+														:"Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
 													urlConnection.connect();
 													InputStream is = urlConnection.getInputStream();
 													byte[] buffer = new byte[4096];
@@ -7071,6 +7202,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 												} catch (Exception e) {
 													CMN.Log(e);
 													path.delete();
+													return emptyResponse;
 												}
 											}
 											/* 再构 */
@@ -7092,15 +7224,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 												}
 
 												WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
-												if(origin!=null && request!=null && Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP){
-													Map<String, String> headers = request.getRequestHeaders();
-													Map<String, String> keyset = ret.getResponseHeaders();
-													if(keyset==null){
-														keyset = new HashMap<>();
-														ret.setResponseHeaders(keyset);
-													}
-													keyset.put("Content-Type", headers.get("Content-Type"));
-													keyset.put("Access-Control-Allow-Origin", origin);
+												if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+													ret.setResponseHeaders(CrossFireHeaders);
 												}
 												return ret;
 											}
@@ -7383,18 +7508,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				e.printStackTrace();
 				return super.shouldInterceptRequest(view, url);
 			}
-		}
-
-		HashMap<String, byte[]> CommonAssets = new HashMap<>();
-		private InputStream loadCommonAsset(String key) throws IOException {
-			byte[] data = CommonAssets.get(key);
-			if(data==null){
-				InputStream input = getResources().getAssets().open(key);
-				data = new byte[input.available()];
-				input.read(data);
-				CommonAssets.put(key, data);
-			}
-			return new ByteArrayInputStream(data);
 		}
 
 		@Override
@@ -8961,5 +9074,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		ada.main_list.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 4 * getResources().getDimension(R.dimen._50_));
+	}
+	
+	private static final ConcurrentHashMap<String, byte[]> CommonAssets = new ConcurrentHashMap<>(10);
+	static {
+		CommonAssets.put("SUBPAGE.js", mdict.jsBytes);
+	}
+	private InputStream loadCommonAsset(String key) throws IOException {
+		byte[] data = CommonAssets.get(key);
+		if(data==null){
+			InputStream input = getResources().getAssets().open(key);
+			data = new byte[input.available()];
+			input.read(data);
+			CommonAssets.put(key, data);
+		}
+		return new ByteArrayInputStream(data);
 	}
 }

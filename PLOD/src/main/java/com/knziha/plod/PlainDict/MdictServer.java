@@ -24,6 +24,7 @@ import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
 
 import org.adrianwalker.multilinestring.Multiline;
+import org.apache.commons.lang3.StringUtils;
 import org.nanohttpd.protocols.http.IHTTPSession;
 import org.nanohttpd.protocols.http.NanoHTTPD;
 import org.nanohttpd.protocols.http.response.Response;
@@ -41,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -83,6 +85,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		SU.Log("serving with honor : ", uri);
 		Map<String, String> headerTags = session.getHeaders();
 		String Acc = headerTags.get("accept");
+		if(Acc==null) Acc= StringUtils.EMPTY;
 		String usr = headerTags.get("user-agent");
 		String key = uri.replace("/", SepWindows);
 		if(usr==null) return null;
@@ -316,7 +319,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		
 		if(uri.startsWith("/PLOD/")) {
 			//SU.Log("about received : ", uri);
-			handle_search_event(uri.substring(6));
+			handle_search_event(session.getParameters(), session.getInputStream());
 			return emptyResponse;
 		}
 		
@@ -407,7 +410,7 @@ public abstract class MdictServer extends NanoHTTPD {
 	
 	protected abstract InputStream convert_tiff_img(InputStream restmp) throws Exception;
 	
-	protected abstract void handle_search_event(String text);
+	protected abstract void handle_search_event(Map<String, List<String>> text, InputStream inputStream);
 	
 	private String md_getName(int pos) {
 		return MdbServerLet.md_getName(pos);

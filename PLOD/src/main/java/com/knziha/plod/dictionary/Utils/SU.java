@@ -17,6 +17,8 @@
 
 package com.knziha.plod.dictionary.Utils;
 
+import com.knziha.plod.PlainDict.CMN;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
@@ -28,7 +30,8 @@ import java.io.PrintStream;
 public class  SU{
 	public static Object UniversalObject;
     public static boolean debug;//StringUtils
-
+	public static byte[] EmptyBytes = new byte[0];
+	
 	public static String trimStart(String input) {
 		int len = input.length();
         int st = 0;
@@ -71,6 +74,16 @@ public class  SU{
 				msg+=o[i]+" ";
 			}
 		System.out.println(msg);
+	}
+	
+	public static long stst;
+	public static long ststrt;
+	public static long stst_add;
+	public static void rt() {
+		ststrt = System.currentTimeMillis();
+	}
+	public static void pt(Object...args) {
+		SU.Log(CMN.listToStr(args)+" "+(System.currentTimeMillis()-ststrt));
 	}
 	
 	public boolean CharsequenceEqual(CharSequence cs1, CharSequence cs2) {

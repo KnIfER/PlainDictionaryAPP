@@ -121,8 +121,9 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 	}
 
 	public void notifyDataSetChanged() {
-		if(mAdapter!=null)
+		if(mAdapter!=null) {
 			mAdapter.notifyDataSetChanged();
+		}
 	}
 
 	int  width=-1,height=-1,mMaxH=-1;

@@ -34,6 +34,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
@@ -72,6 +73,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public float lastX;
 	public float lastY;
 	public static Integer ShareString_Id;
+	public static Integer SelectString_Id;
+	public static Integer CopyString_Id;
 	
 	public PhotoBrowsingContext IBC;
 	
@@ -81,6 +84,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean clearHistory;
 	public FlowTextView toolbar_title;
 	public int AlwaysCheckRange;
+	public boolean forbidLoading;
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
@@ -150,7 +154,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		//settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);  //设置 缓存模式
 		
 		//setLayerType(View.LAYER_TYPE_HARDWARE, null);
-		webScale=Utils.density;
+		webScale=GlobalOptions.density;
 	}
 
 	public int getContentHeight(){
@@ -331,7 +335,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 	
 	public void highRigkt_set(float x, float y, float r, float b) {
-		float pad = 2*Utils.density;
+		float pad = 2*GlobalOptions.density;
 		highRigkt_X = x-pad;
 		highRigkt_Y = y-pad;
 		highRigkt_R = r+pad;
@@ -344,8 +348,11 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar_web.getBackground()).getDrawable(0);
 	}
 	
+	
 	public GradientDrawable MutateBGInTitle() {
-		return toolbarBG = (GradientDrawable) ((LayerDrawable)titleBar.getBackground()).getDrawable(0).mutate();
+		LayerDrawable d = ((LayerDrawable) titleBar.getBackground().mutate());
+		toolbarBG = (GradientDrawable) d.getDrawable(0);
+		return toolbarBG;
 	}
 	
 	public void CheckAlwaysCheckRange() {
@@ -435,7 +442,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 		if (mode!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			boolean ret = callmeback.callback.onActionItemClicked(mode, item);
-			if(id == 50856071 || id == android.R.id.copy){
+			if(id == 50856071 || id == android.R.id.copy || getCopyText().equals(item.getTitle())){
 				clearFocus();
 				ret=true;
 			}
@@ -448,7 +455,18 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean onMenuItemClick(MenuItem item) {
 		return onMenuItemClick(null, item);
 	}
-
+//
+//	@Override
+//	public boolean postDelayed(Runnable action, long delayMillis) {
+//		CMN.Log("postDelayed", action, delayMillis);
+//		return super.postDelayed(action, delayMillis);
+//	}
+//	@Override
+//	public boolean post(Runnable action) {
+//		CMN.Log("post", action);
+//		return super.post(action);
+//	}
+	
 	//Viva Marshmallow!
 	@Override
 	public ActionMode startActionMode(ActionMode.Callback callback, int type) {
@@ -587,7 +605,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		//Toast.makeText(getContext(),menu.getItem(3).getItemId()+"="+menu_share_id+"finding menu_share:"+menu.findItem(menu_share_id)+"="+android.R.id.shareText,0).show();
 
 		String shareText=getShareText();
-		String SelectAllText=getResources().getString(android.R.string.selectAll);
+		String SelectAllText=getSelectText();
+		CMN.Log("SelectAllText", SelectAllText, System.identityHashCode(SelectAllText));
 		int findCount=2;
 		int ToolsOrder=0;
 		//if(false)
@@ -597,7 +616,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				menu.removeItem(menu.getItem(i).getItemId());//移除 分享
 				i--;
 				findCount--;
-			}else if(title.equals(SelectAllText)) {
+			} else if(title.equals(SelectAllText)) {
 				ToolsOrder=menu.getItem(i).getOrder();
 				menu.removeItem(menu.getItem(i).getItemId());//移除 全选
 				i--;
@@ -610,16 +629,42 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 
 		menu.add(0,R.id.toolbar_action3,++ToolsOrder,"TTS");
 	}
-
-	public String getShareText() {
-		if(ShareString_Id==null)
-			ShareString_Id=Resources.getSystem().getIdentifier("share","string", "android");
-		if(ShareString_Id!=0)
-			return getResources().getString(ShareString_Id);
-		return "分享";
+	
+	
+	public String getSelectText() {
+		getSharedIds();
+		if(SelectString_Id!=0) {
+			return getResources().getString(SelectString_Id);
+		}
+		return getResources().getString(android.R.string.selectAll);
 	}
-
-
+	
+	public String getShareText() {
+		getSharedIds();
+		if(SelectString_Id!=0) {
+			return getResources().getString(SelectString_Id);
+		}
+		return getResources().getString(R.string.share);
+	}
+	
+	public String getCopyText() {
+		getSharedIds();
+		if(CopyString_Id!=0) {
+			return getResources().getString(CopyString_Id);
+		}
+		return getResources().getString(android.R.string.copy);
+	}
+	
+	private static void getSharedIds() {
+		if(ShareString_Id==null) {
+			Resources res = Resources.getSystem();
+			CopyString_Id=res.getIdentifier("copy","string", "android");
+			ShareString_Id=res.getIdentifier("share","string", "android");
+			SelectString_Id=res.getIdentifier("selectAll","string", "android");
+		}
+	}
+	
+	
 	/**
 	function getNextNode(b) {
 		var a = b.firstChild;
@@ -869,7 +914,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			field.setAccessible(true);
 			result = field.getInt(null);
 		} catch (Exception e) {
-			e.printStackTrace();
+			CMN.Log(e);
 		}
 		return result;
 	}
@@ -940,7 +985,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	protected void onDraw(Canvas canvas) {
 		if(drawRect){
 			float scale = webScale/mdict.def_zoom;
-			//float roundVal = 10*Utils.density*scale;
+			//float roundVal = 10*GlobalOptions.density*scale;
 			canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale, Utils.getRectPaint());
 		}
 		super.onDraw(canvas);

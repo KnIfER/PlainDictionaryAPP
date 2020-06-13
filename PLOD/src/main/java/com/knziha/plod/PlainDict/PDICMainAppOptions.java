@@ -2209,6 +2209,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public static boolean getForceFloatSingletonSearch() {
 		return (FourthFlag & 0x2000000000000l) != 0x2000000000000l;
 	}
+	
+	public static boolean isSingleThreadServer() {
+		return (FourthFlag & 0x4000000000000l) == 0x4000000000000l;
+	}
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////
 	//EQ
@@ -2491,7 +2495,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		if(xyt==null) xyt = new XYTouchRecorder();
 		tv.setOnClickListener(xyt);
 		tv.setOnTouchListener(xyt);
-		tv.setTextSize(17f);
+		tv.setTextSize(GlobalOptions.isLarge?22f:17f);
 		if(GlobalOptions.isLarge) {
 			tv.setTextSize(tv.getTextSize());
 		}

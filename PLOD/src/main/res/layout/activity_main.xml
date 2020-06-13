@@ -254,36 +254,32 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:orientation="vertical"
-		android:gravity="top"
 		android:background="#00303050"
-		android:visibility="gone"
 		android:layoutDirection="ltr"
 		android:elevation="6dp"
+		android:visibility="gone"
 		>
 
 		<ImageView
 			android:id="@+id/cb1"
-			android:layout_width="28dp"
-			android:layout_height="28dp"
-			android:layout_alignParentEnd="true"
+			android:layout_width="@dimen/_28_"
+			android:layout_height="@dimen/_28_"
+			android:layout_toEndOf="@+id/dialog_"
 			android:layout_alignTop="@+id/dialog_"
 			android:background="@drawable/popup_background4"
 			android:layout_marginTop="10dp"
-			android:layout_marginEnd="3dp"
 			android:src="@drawable/search_toolbar"
 			android:padding="5dp"
 			/>
 
-
 		<com.knziha.plod.widgets.CheckableImageView
 			android:id="@+id/cb3"
-			android:layout_width="28dp"
-			android:layout_height="28dp"
+			android:layout_width="@dimen/_28_"
+			android:layout_height="@dimen/_28_"
 			android:layout_below="@+id/cb1"
-			android:layout_alignParentEnd="true"
+			android:layout_toEndOf="@+id/dialog_"
 			android:background="@drawable/popup_background5"
 			android:layout_marginTop="2dp"
-			android:layout_marginEnd="3dp"
 			android:src="@drawable/sel_auto_search"
 			CheckableImageview:CheckedTint="@color/ShallowHeaderBlue"
 			android:padding="5dp"
@@ -291,30 +287,37 @@
 
 		<com.knziha.plod.widgets.CheckableImageView
 			android:id="@+id/cb2"
-			android:layout_width="28dp"
-			android:layout_height="28dp"
+			android:layout_width="@dimen/_28_"
+			android:layout_height="@dimen/_28_"
 			android:layout_below="@+id/cb3"
-			android:layout_alignParentEnd="true"
+			android:layout_toEndOf="@+id/dialog_"
 			android:background="@drawable/popup_background6"
 			android:layout_marginTop="2dp"
-			android:layout_marginEnd="3dp"
 			android:src="@drawable/sel_pin_vc"
 			android:padding="5dp"
 			/>
 
 		<LinearLayout
-			android:layout_gravity="center"
+			android:layout_centerInParent="true"
 			android:id="@+id/dialog_"
-			android:layout_width="match_parent"
+			android:layout_width="350dp"
 			android:layout_height="wrap_content"
 			android:orientation="vertical"
 			android:background="@drawable/popup_background3"
-			android:layout_marginLeft="@dimen/diagMarginHor"
-			android:layout_marginRight="@dimen/diagMarginHor"
 			android:layout_marginTop="43dp"
 			android:layout_marginBottom="@dimen/diagMarginVer"
+			android:layout_marginLeft="@dimen/_28_"
 			android:layout_centerVertical="true"
-			android:minHeight="110dp"
+			android:minHeight="@dimen/_110_"
 			/>
+
+		<ViewStub
+			android:id="@+id/view_stub"
+			android:layout_gravity="top|center"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:minHeight="?attr/actionBarSize"
+			android:theme="@style/toolbarBaseTheme"
+			android:layout="@layout/searchbar" />
 	</RelativeLayout>
 </FrameLayout>

@@ -4,6 +4,26 @@
 	android:layout_width="match_parent"
 	android:layout_height="@dimen/_50_"
 	>
+	<TextView
+		android:id="@+id/text2"
+		android:layout_width="@dimen/_50_"
+		android:layout_height="match_parent"
+		android:textColor="#000"
+		android:singleLine="true"
+		android:paddingStart="12dp"
+		android:background="@drawable/abc_edit_text_material"
+		tools:text="Name : "
+		/>
+
+	<View
+		android:layout_width="1dp"
+		android:layout_height="match_parent"
+		android:textColor="#000"
+		android:singleLine="true"
+		android:paddingStart="12dp"
+		android:background="#cccccc"
+		/>
+
 	<com.knziha.plod.widgets.EditTextmy
 		android:id="@+id/text1"
 		android:layout_width="0dp"

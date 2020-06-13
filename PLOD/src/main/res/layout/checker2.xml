@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
-    android:layout_width="match_parent"  
-    android:layout_height="30dp"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/_30_"
     android:background="@drawable/surrtrip2"
     xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:UIStyles="http://schemas.android.com/apk/res-auto"
+	android:paddingStart="8dp"
 	>
     
 	<com.knziha.filepicker.widget.CircleCheckBox
 	    android:id="@+id/checker"
-	    android:layout_width="30dp"  
-	    android:layout_height="30dp"
+	    android:layout_width="@dimen/_30_"
+	    android:layout_height="match_parent"
 		app:dim1="6dp"
 		app:color_background="#FF3F51B5"
 		app:color_border="#FFF"
 		app:size="25dp"
 		app:src0="@drawable/clippin"
-		android:layout_marginStart="8dp"
 	    />
 	
 	<LinearLayout 

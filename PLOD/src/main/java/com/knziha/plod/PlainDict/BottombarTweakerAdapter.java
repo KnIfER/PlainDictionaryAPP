@@ -399,7 +399,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 
 			ccb_toggle = (CircleCheckBox) itemView.getChildAt(1);
 			ccb_toggle.drawIconForEmptyState=false;
-			ccb_toggle.circle_shrinkage=0.75f*biantai.opt.dm.density;
+			ccb_toggle.circle_shrinkage=0.75f*GlobalOptions.density;
 			ccb_toggle.addStateWithDrawable(biantai.switch_landscape);
 			ccb_toggle.setOnClickListener(biantai);
 

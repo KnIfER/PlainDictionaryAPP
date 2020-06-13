@@ -17,6 +17,7 @@ import java.util.ArrayList;
 public class CustomShareAdapter extends BaseAdapter {
 	ArrayList<String> data;
 	private View.OnClickListener ocl=new OnClickListenermy();
+	public int nameWidth;
 
 	public CustomShareAdapter(ArrayList<String> _data){
 		data = _data;
@@ -36,17 +37,10 @@ public class CustomShareAdapter extends BaseAdapter {
 	public long getItemId(int position) {
 		return position;
 	}
-
-	private static class NameViewHolder{
-		TextView title;
-		NameViewHolder(ViewGroup parent){
-			title = (TextView) LayoutInflater.from(parent.getContext()).inflate(R.layout.share_names, parent, false);
-			title.setTag(this);
-		}
-	}
-
+	
 	private static class TargetViewHolder{
 		View itemView;
+		TextView name;
 		EditText title;
 		View deletText;
 		int position;
@@ -56,6 +50,7 @@ public class CustomShareAdapter extends BaseAdapter {
 			this.data = data;
 			itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.share_targets, parent, false);
 			itemView.setTag(this);
+			name = itemView.findViewById(R.id.text2);
 			title = itemView.findViewById(R.id.text1);
 			deletText = itemView.findViewById(R.id.ivDeleteText);
 			title.addTextChangedListener(tw = new TextWatcher(){
@@ -91,68 +86,69 @@ public class CustomShareAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		if(parent.getTag()==null) {
-			TargetViewHolder tvh = convertView == null ? new TargetViewHolder(parent, ocl, data) : (TargetViewHolder) convertView.getTag();
-			/** 至少六个可自定义的字段:<br/>
-			 * {p:程序包名 m:活动名称 a:举措名称 t:MIME类型 k1:字段1键名 v1:字段1键值…} */
-			String value = data.get(position);
-			if (value == null)
-			switch (position) {
-				case 0:
-				case 1:
-				break;
-				case 2:
-					//value = Intent.ACTION_VIEW;
-				break;
-				case 3:
-					//value = "text/plain";
-				break;
-				case 4:
-					//value = Intent.EXTRA_TEXT;
-				break;
-				case 5:
-					//value = "%s";
-				break;
-				default:
-					//if (position % 2 != 0) {
-					//	value = "%s";
-					//}
-				break;
-			}
-
-			EditText text = tvh.title;
-			text.clearFocus();
-			text.removeTextChangedListener(tvh.tw);
-			text.setText(value);
-			text.addTextChangedListener(tvh.tw);
-			tvh.position = position;
-			return tvh.itemView;
-		} else {
-			NameViewHolder nvh  = convertView == null ? new NameViewHolder(parent) : (NameViewHolder) convertView.getTag();
-
-			int value = 0;
-			TextView text = nvh.title;
-			switch (position) {
-				case 0:
-					value = R.string.package_name;
-				break;
-				case 1:
-					value = R.string.activity_name;
-				break;
-				case 2:
-					value = R.string.action_name;
-				break;
-				case 3:
-					value = R.string.mime_type;
-				break;
-				default:
-					text.setText(parent.getContext().getString(position%2==0?R.string.extra_key_name:R.string.extra_key_value, (position-4)/2+1));
-				break;
-			}
-			if(value!=0)
-				text.setText(value);
-
-			return text;
+		TargetViewHolder tvh = convertView == null ? new TargetViewHolder(parent, ocl, data) : (TargetViewHolder) convertView.getTag();
+		/** 至少六个可自定义的字段:<br/>
+		 * {p:程序包名 m:活动名称 a:举措名称 t:MIME类型 k1:字段1键名 v1:字段1键值…} */
+		String dataVal = data.get(position);
+		if (dataVal == null)
+		switch (position) {
+			case 0:
+			case 1:
+			break;
+			case 2:
+				//value = Intent.ACTION_VIEW;
+			break;
+			case 3:
+				//value = "text/plain";
+			break;
+			case 4:
+				//value = Intent.EXTRA_TEXT;
+			break;
+			case 5:
+				//value = "%s";
+			break;
+			default:
+				//if (position % 2 != 0) {
+				//	value = "%s";
+				//}
+			break;
 		}
+
+		TextView text = tvh.title;
+		text.clearFocus();
+		text.removeTextChangedListener(tvh.tw);
+		text.setText(dataVal);
+		text.addTextChangedListener(tvh.tw);
+		tvh.position = position;
+		
+		int value = 0;
+		text = tvh.name;
+		ViewGroup.LayoutParams lp = text.getLayoutParams();
+		if(lp.width!=nameWidth) {
+			lp.width=nameWidth;
+		}
+		switch (position) {
+			case 0:
+				value = R.string.package_name;
+			break;
+			case 1:
+				value = R.string.activity_name;
+			break;
+			case 2:
+				value = R.string.action_name;
+			break;
+			case 3:
+				value = R.string.mime_type;
+			break;
+			default:
+				text.setText(parent.getContext().getString(position%2==0?R.string.extra_key_name:R.string.extra_key_value, (position-4)/2+1));
+			break;
+		}
+		
+		if(value!=0) {
+			text.setText(value);
+		}
+
+		return tvh.itemView;
 	}
 }

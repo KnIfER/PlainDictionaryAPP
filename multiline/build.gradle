@@ -7,6 +7,7 @@ java {
 
 dependencies {
     api(libs_clang)
+    compile "com.squareup:javapoet:1.11.1"
     testImplementation 'junit:junit:4.12'
     //api files('libs/ecj-4.4.jar')
     api files(Jvm.current().getToolsJar())

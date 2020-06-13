@@ -14,7 +14,6 @@
 
 	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 	<uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
-	<uses-permission android:name="android.permission.WAKE_LOCK"/>
 
 	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
@@ -107,13 +106,13 @@
 				<category android:name="android.intent.category.DEFAULT" />
 				<data android:mimeType="text/plain" />
 			</intent-filter>
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW"/>
-				<category android:name="android.intent.category.DEFAULT"/>
-				<category android:name="android.intent.category.BROWSABLE"/>
-				<data android:mimeType="*/*"/>
-				<data android:pathPattern="*.mdx"/>
-			</intent-filter>
+<!--			<intent-filter>-->
+<!--				<action android:name="android.intent.action.VIEW"/>-->
+<!--				<category android:name="android.intent.category.DEFAULT"/>-->
+<!--				<category android:name="android.intent.category.BROWSABLE"/>-->
+<!--				<data android:mimeType="*/*"/>-->
+<!--				<data android:pathPattern="*.mdx"/>-->
+<!--			</intent-filter>-->
 		</activity>
 		<activity android:name="com.knziha.plod.PlainDict.FloatActivitySearch"
 			android:theme="@style/FloatAppTheme"

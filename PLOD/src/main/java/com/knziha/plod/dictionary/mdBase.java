@@ -101,8 +101,8 @@ public abstract class mdBase {
 	record_info_struct[] _record_info_struct_list;
 
 	int rec_decompressed_size;
-	long maxComRecSize;
-	long maxDecompressedSize;
+	protected long maxComRecSize;
+	protected long maxDecompressedSize;
 	//public long maxComKeyBlockSize;
 	/** Maximum size of one record block */
 	public long maxDecomKeyBlockSize;
@@ -282,10 +282,10 @@ public abstract class mdBase {
 		
 		univeral_buffer = buffer;
 		if(pseudoInit!=1) {
-			if(pseudoInit==2){
-				prepareFileStream();
-			}
 			if(StreamAvailable()) {
+				if(pseudoInit==2){
+					prepareFileStream();
+				}
 				init(getStreamAt(0, true));
 			}
 		}
@@ -739,7 +739,7 @@ public abstract class mdBase {
 		int compressed_size = (int) RinfoI.compressed_size;
 		int decompressed_size = rec_decompressed_size = (int) RinfoI.decompressed_size;//用于验证
 
-		byte[] record_block_compressed = new byte[compressed_size];
+		byte[] record_block_compressed = AcquireCompressedBlockOfSize(compressed_size);
 
 		int val = data_in.read(record_block_compressed);
 		data_in.close();
@@ -909,17 +909,17 @@ public abstract class mdBase {
 			infoI_cache.hearderText = infoI.headerKeyText;
 			infoI_cache.tailerKeyText = infoI.tailerKeyText;
 			long start = infoI.key_block_compressed_size_accumulator;
-			long compressedSize;
+			int compressedSize;
 
 			if(blockId==_key_block_info_list.length-1)
-				compressedSize = _key_block_size - _key_block_info_list[_key_block_info_list.length-1].key_block_compressed_size_accumulator;
+				compressedSize = (int) (_key_block_size - _key_block_info_list[_key_block_info_list.length-1].key_block_compressed_size_accumulator);
 			else
-				compressedSize = _key_block_info_list[blockId+1].key_block_compressed_size_accumulator-infoI.key_block_compressed_size_accumulator;
+				compressedSize = (int) (_key_block_info_list[blockId+1].key_block_compressed_size_accumulator-infoI.key_block_compressed_size_accumulator);
 
 			DataInputStream data_in = getStreamAt(_key_block_offset+start, false);
 
-			byte[]  _key_block_compressed = new byte[(int) compressedSize];
-			data_in.read(_key_block_compressed, 0, _key_block_compressed.length);
+			byte[]  _key_block_compressed = AcquireCompressedBlockOfSize(compressedSize);
+			data_in.read(_key_block_compressed, 0, compressedSize);
 			data_in.close();
 
 			//int adler32 = getInt(_key_block_compressed[+4],_key_block_compressed[+5],_key_block_compressed[+6],_key_block_compressed[+7]);
@@ -935,14 +935,14 @@ public abstract class mdBase {
 					BlockOff=8;
 				break;
 				case 1:
-					key_block = new byte[BlockLen];
-					new LzoDecompressor1x().decompress(_key_block_compressed, 8, (int)(compressedSize-8), key_block, 0,new lzo_uintp());
+					key_block = AcquireDeCompressedKeyBlockOfSize(BlockLen);
+					new LzoDecompressor1x().decompress(_key_block_compressed, 8, (compressedSize-8), key_block, 0,new lzo_uintp());
 				break;
 				case 2:
-					key_block = new byte[BlockLen];
+					key_block = AcquireDeCompressedKeyBlockOfSize(BlockLen);
 					//key_block = zlib_decompress(_key_block_compressed,(int) (start+8),(int)(compressedSize-8));
 					Inflater inf = new Inflater();
-					inf.setInput(_key_block_compressed, +8,(int)(compressedSize-8));
+					inf.setInput(_key_block_compressed, +8,(compressedSize-8));
 					try {
 						int ret = inf.inflate(key_block,0,(int)(infoI.key_block_decompressed_size));
 					} catch (DataFormatException e) {e.printStackTrace();}
@@ -993,7 +993,15 @@ public abstract class mdBase {
 		return infoI_cache;
 
 	}
-
+	
+	protected byte[] AcquireCompressedBlockOfSize(int compressedSize) {
+		return new byte[compressedSize];
+	}
+	
+	protected byte[] AcquireDeCompressedKeyBlockOfSize(int BlockSize) {
+		return new byte[BlockSize];
+	}
+	
 	@Deprecated
 	public void findAllKeys(String keyword){
 		keyword = mdict.processText(keyword);

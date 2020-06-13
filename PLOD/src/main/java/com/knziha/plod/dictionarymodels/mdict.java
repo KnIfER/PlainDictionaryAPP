@@ -5,15 +5,14 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Spannable;
@@ -31,6 +30,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.widget.ArrayAdapter;
@@ -54,6 +54,7 @@ import com.knziha.plod.PlainDict.PDICMainActivity;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.plod.settings.DictOpitonContainer;
 import com.knziha.plod.PlainDict.R;
@@ -116,10 +117,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public final static String FileTag = "file://";
 	public final static String baseUrl = "file:///";
 	public final static String  _404 = "<span style='color:#ff0000;'>Mdict 404 Error:</span> ";
-	/**
-	 </style>
-	 <script class="_PDict">
-	 	const w=window;
+	
+	/**</style><script class="_PDict" src="mdbr://SUBPAGE.js"></script>*/
+	@Multiline()
+	public final static String js="SUBPAGE";
+	
+	/** const w=window;
 	 	w.addEventListener('load',wrappedOnLoadFunc,false);
 		w.addEventListener('click',wrappedClickFunc);
 		w.addEventListener('touchstart',wrappedOnDownFunc);
@@ -134,26 +137,61 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	 	function wrappedFscrFunc(e){
 			//console.log('begin fullscreen!!!');
 			var se = e.srcElement;
-			if(se.webkitDisplayingFullscreen&&app) app.onRequestFView(se.videoWidth, se.videoHeight);
+			//if(se.webkitDisplayingFullscreen&&app) app.onRequestFView(se.videoWidth, se.videoHeight);
+			if(app)se.webkitDisplayingFullscreen?app.onRequestFView(se.videoWidth, se.videoHeight):app.onExitFView()
 		}
 		function wrappedOnDownFunc(e){
+	 		//console.log('fatal wrappedOnDownFunc');
 	 		if(!w._touchtarget_lck && e.touches.length==1){
 	 			w._touchtarget = e.touches[0].target;
 	 		}
 			//console.log('fatal wrappedOnDownFunc' +w._touchtarget);
 		}
-		function selectTouchtarget(){
+		function selectTouchtarget(e){
+	 		var ret = selectTouchtarget_internal(e);
+			if(ret<=0||e==1) {
+				w._touchtarget_lck=!1;
+	 			w._touchtarget=null;
+			}
+	 		return ret;
+		}
+		function NoneSelectable(e){
+	 		return getComputedStyle(e).userSelect=='none'
+	 	}
+		function selectTouchtarget_internal(e){
 			w._touchtarget_lck=!0;
 	 		var tt = w._touchtarget;
+	 		var t0 = tt;
 	 		if(tt){
-	 			w._touchtarget_href = tt.getAttribute("href");
-	 			tt.removeAttribute("href");
+				var fc = 0;
+	 			tt.userSelect='text';
+				while(tt.tagName!="A"&&(w==0||tt.tagName!="IMG")) {
+					tt = tt.parentElement;
+					if(tt==null||++fc>=9)return -3;
+	 				tt.userSelect='text';
+				}
+	 			if(NoneSelectable(tt)) {
+					var style1 = document.createElement("style");
+					style1.innerHTML = "*{user-select:text !important}";
+					document.head.appendChild(style1);
+					if(NoneSelectable(tt)) {
+						return -1;
+					}
+				}
+				if(fc>0) {
+					w._touchtarget=tt;
+				}
+	 			if(e==0)w._touchtarget_href = tt.getAttribute("href");
 				var sel = w.getSelection();
 				var range = document.createRange();
-				range.selectNodeContents(tt);
+				range.selectNodeContents(t0);
 				sel.removeAllRanges();
 				sel.addRange(range);
+	 			var ret = sel.toString().length;
+	 			if(e==0&&ret>0)tt.removeAttribute("href");
+	 			return ret;
 	 		}
+	 		return -2;
 		}
 		function restoreTouchtarget(){
 	 		var tt = w._touchtarget;
@@ -163,36 +201,40 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	 		w._touchtarget_lck=!1;
 		}
 	 	function wrappedClickFunc(e){
+	 		//console.log('fatal wrappedClickFunc');
 	 		var curr=e.srcElement;
-	 		if(curr.tagName=='IMG'){
-	 			var img=curr;
-				if(img.src && !img.onclick && !(img.parentNode&&img.parentNode.tagName=="A")){
-					var lst = [];
-					var current=0;
-	 				var all = document.getElementsByTagName("img");
-					for(var i=0;i<all.length;i++){
-	 					if(all[i].src){
-							lst.push(all[i].src);
-							if(all[i]==img)
-								current=i;
-	 					}
-	 				}
-	 				if(lst.length==0)
-	 					lst.push(img.src);
-					app.openImage(current, lst);
+	 		if(w.webx){
+				if(curr.tagName=='IMG'){
+					var img=curr;
+					if(img.src && !img.onclick && !(img.parentNode&&img.parentNode.tagName=="A")){
+						var lst = [];
+						var current=0;
+						var all = document.getElementsByTagName("img");
+						for(var i=0;i<all.length;i++){
+							if(all[i].src){
+								lst.push(all[i].src);
+								if(all[i]==img)
+									current=i;
+							}
+						}
+						if(lst.length==0)
+							lst.push(img.src);
+						app.openImage(current, lst);
+					}
 				}
-	 		}
-	 		else if(curr.tagName=='A'){
-	 			//console.log('fatal in wcl : '+curr.href);
-	 			var href=curr.href+'';
-				if(curr.href && href.startsWith('file:///#')){
-	 				curr.href='entry://#'+href.substring(9);
-	 				return false;
+				else if(curr.tagName=='A'){
+					//console.log('fatal in wcl : '+curr.href);
+					var href=curr.href+'';
+					if(curr.href && href.startsWith('file:///#')){
+						curr.href='entry://#'+href.substring(9);
+						return false;
+					}
 	 			}
-	 		}
+			}
 	 		console.log('popuping...');
-	 		console.log(curr);
+	 		console.log(w.rcsp);
 			if(curr!=document.documentElement && curr.nodeName!='INPUT' && w.rcsp&0x20 && !curr.noword){
+				//todo document.activeElement.tagName
 				var s = w.getSelection();
 				if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
 					s.modify('extend', 'forward', 'word'); // first attempt
@@ -384,7 +426,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			}else
 				do_highlight(keyword);
 		}
-		w.rcsp=0;
 		function do_highlight(keyword){
 			if(!MarkInst)
 				MarkInst = new Mark(document);
@@ -433,10 +474,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			}
 			script.src=url;
 			document.body.appendChild(script);
-		}
-	 </script>*/
+		}*/
 	@Multiline()
-	public final static String js="SUBPAGE";
+	public final static byte[] jsBytes=SU.EmptyBytes;
 
 	/**
 	 	<script class="_PDict">
@@ -533,7 +573,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public boolean editingState=true;
 	public static int _req_fvw;
 	public static int _req_fvh;
-
+	private CachedDirectory DataBasePath;
+	
 	@Override
 	public int getCaseStrategy() {
 		return (int) (firstFlag&3);
@@ -657,8 +698,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	private UniCoverClicker ucc;
 	public void initViewsHolder(final MainActivityUIBase a){
 		if(!viewsHolderReady) {
-			rl=(ViewGroup)a.getLayoutInflater().inflate(R.layout.contentview_item,null);
-
+			rl=(ViewGroup)a.getLayoutInflater().inflate(R.layout.contentview_item, a.webholder, false);
 	        if(mWebView==null){
 	        	webScale = def_zoom;
 	           	AdvancedNestScrollWebView _mWebView = rl.findViewById(R.id.webviewmy);
@@ -694,7 +734,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			ic_undo.setOnClickListener(clicker);
 			ic_save.setOnClickListener(clicker);
 			ic_redo.setOnClickListener(clicker);
-			setIcSaveLongClickListener(ic_save);
+			setSaveIconLongClick(ic_save);
 			setWebLongClickListener(mWebView, a);
 
 			toolbar = rl.findViewById(R.id.lltoolbar);
@@ -820,232 +860,384 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		//recess.setVisibility(View.GONE);
 		//forward.setVisibility(View.GONE);
 	}
-
-	public static void setWebLongClickListener(WebViewmy mWebView, MainActivityUIBase a) {
-		if(a.mdict_web_lcl==null){
-			a.mdict_web_lcl=new View.OnLongClickListener() {
+	
+	static void SelectHtmlObject(MainActivityUIBase a, WebViewmy final_mWebView, int source) {
+		final_mWebView.evaluateJavascript("selectTouchtarget("+source+")", new ValueCallback<String>() {
 			@Override
-			public boolean onLongClick(View v) {
-				WebViewmy _mWebView = (WebViewmy) v;
-				WebViewmy.HitTestResult result = _mWebView.getHitTestResult();
-				if (null == result) return false;
-				int type = result.getType();
-				//CMN.Log("getHitTestResult", type, result.getExtra());
-				switch (type) {
-					/* 长按下载图片 */
-					case WebViewmy.HitTestResult.SRC_IMAGE_ANCHOR_TYPE:
-					case WebViewmy.HitTestResult.IMAGE_TYPE:{
-						String url = result.getExtra();
-						AlertDialog.Builder builder3 = new AlertDialog.Builder(a);
-						builder3.setSingleChoiceItems(new String[] {}, 0,
-								(dialog, pos) -> {
-									switch(pos) {
-										case 0:{
-											new Thread(new Runnable() {
-												@Override
-												public void run() {
-													try {
-														java.net.URL requestURL = new URL(url);
-														File pathDownload = new File("/storage/emulated/0/download");
-														pathDownload.mkdirs();
-														if(pathDownload.isDirectory()) {
-															File path;
-															int idx = url.indexOf("?");
-															path=new File(pathDownload, new File(idx>0?url.substring(0, idx):url).getName());
-															String msg;
-															if(path.exists())
-																msg="文件已存在！";
-															else {
-																String error=null;
-																HttpURLConnection urlConnection;
-																InputStream is;
-																FileOutputStream fout = null;
-																try {
-																	try {
-																		SSLContext sslcontext = SSLContext.getInstance("TLS");
-																		sslcontext.init(null, new TrustManager[]{new mdict_web.MyX509TrustManager()}, new java.security.SecureRandom());
-																		HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
-																	} catch (Exception ignored) { }
-																	urlConnection = (HttpURLConnection) requestURL.openConnection();
-																	urlConnection.setRequestMethod("GET");
-																	urlConnection.setConnectTimeout(35000);
-																	//urlConnection.setRequestProperty("Charset", "UTF-8");
-																	//urlConnection.setRequestProperty("Connection", "Keep-Alive");
-																	urlConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
-																	urlConnection.connect();
-																	is = urlConnection.getInputStream();
-																	byte[] buffer = new byte[4096];
-																	int len;
-																	while ((len = is.read(buffer)) > 0) {
-																		if (fout == null)
-																			fout = new FileOutputStream(path);
-																		fout.write(buffer, 0, len);
-																	}
-																	fout.flush();
-																	fout.close();
-																	urlConnection.disconnect();
-																	is.close();
-																} catch (Exception e) {
-																	error = e.toString();
-																}
-																msg = error==null?"下载完成":("发生错误："+error);
-															}
-															if(msg!=null){
-																Looper.prepare();
-																a.showT(msg);
-																Looper.loop();
-															}
-														}
-													} catch (Exception e) {
-														e.printStackTrace();
-													}
-												}
-											}).start();
-										} break;
-									}
-									dialog.dismiss();
-								});
-						SpannableStringBuilder ssb = new SpannableStringBuilder();
-						int start = ssb.length();
-
-						ssb.append(url);
-						int end=ssb.length();
-
-						ssb.setSpan(new RelativeSizeSpan(0.63f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-						ssb.setSpan(new ClickableSpan() {
-							@Override
-							public void onClick(@NonNull View widget) {//打开链接
-								Intent intent = new Intent();
-								intent.setData(Uri.parse(url));
-								intent.setAction(Intent.ACTION_VIEW);
-								a.startActivity(intent);
-							}
-						}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-						builder3.setTitle(ssb);
-
-						String[] Menus = a.getResources().getStringArray(
-								R.array.config_images);
-						List<String> arrMenu = Arrays.asList(Menus);
-						AlertDialog dd = builder3.create();
-						dd.show();
-						dd.setOnDismissListener(dialog -> {
-						});
-						dd.getListView().setAdapter(new ArrayAdapter<>(a,
-								R.layout.singlechoice_plain, android.R.id.text1, arrMenu) );
-						View dcv = dd.getWindow().getDecorView();
-						TextView titleView = dcv.findViewById(R.id.alertTitle);
-						//titleView.setSingleLine(false);
-						dcv.findViewById(R.id.topPanel).getLayoutParams().height=titleView.getHeight()/2;
-						titleView.setMovementMethod(LinkMovementMethod.getInstance());
+			public void onReceiveValue(String value) {
+				CMN.Log("selectTouchtarget", value);
+				int len = IU.parsint(value, 0);
+				if(len>0) {
+					/* bring in action mode by a fake click on the programmatically  selected text. */
+					{
+						final_mWebView.forbidLoading=true;
+						final_mWebView.getSettings().setJavaScriptEnabled(false);
+						MotionEvent te = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, final_mWebView.lastX, final_mWebView.lastY, 0);
+						final_mWebView.dispatchTouchEvent(te);
+						te.setAction(MotionEvent.ACTION_UP);
+						final_mWebView.dispatchTouchEvent(te);
+						te.recycle();
+						/* restore href attribute */
 					}
-					return true;
-					/* 长按anchor */
-					case WebViewmy.HitTestResult.SRC_ANCHOR_TYPE:{
-						String url = result.getExtra();
-						AlertDialog.Builder builder3 = new AlertDialog.Builder(a);
-						builder3.setSingleChoiceItems(new String[] {}, 0,
-								(dialog, pos) -> {
-									switch(pos) {
-										/* 复制链接 */
-										case 0:{
-											ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
-											if(cm!=null){
-												cm.setPrimaryClip(ClipData.newPlainText("Label", url));
-												a.showT("已复制");
-											}
-										} break;
-										/* 复制链接文本 */
-										case 1:{
-											if(result.getExtra()!=null) {
-												_mWebView.evaluateJavascript("window._touchtarget?window._touchtarget.innerText:''", new ValueCallback<String>() {
-													@Override
-													public void onReceiveValue(String value) {
-														value= StringEscapeUtils.unescapeJava(value.substring(1,value.length()-1));
-														ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
-														if(cm!=null){
-															cm.setPrimaryClip(ClipData.newPlainText("Label", value));
-															a.showT(value);
-														}
-													}
-												});
-											}
-										} break;
-										/* 选择链接文本 */
-										case 2:{
-											if(result.getExtra()!=null) {
-												_mWebView.evaluateJavascript("selectTouchtarget()", new ValueCallback<String>() {
-													@Override
-													public void onReceiveValue(String value) {
-														/* bring in action mode by a fake click on the programmatically  selected text. */
-														MotionEvent te = MotionEvent.obtain(0, 0, KeyEvent.ACTION_DOWN, _mWebView.lastX, _mWebView.lastY, 0);
-														_mWebView.dispatchTouchEvent(te);
-														te.setAction(KeyEvent.ACTION_UP);
-														_mWebView.dispatchTouchEvent(te);
-														te.recycle();
-														/* restore href attribute */
-														_mWebView.postDelayed(() -> _mWebView.evaluateJavascript("restoreTouchtarget()", null), 100);
-													}
-												});
-											}
-										} break;
-									}
-									dialog.dismiss();
-								});
-						SpannableStringBuilder ssb = new SpannableStringBuilder();
-						int start = ssb.length();
-
-						ssb.append(url);
-						int end=ssb.length();
-
-						ssb.setSpan(new RelativeSizeSpan(0.63f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-						ssb.setSpan(new ClickableSpan() {
-							@Override
-							public void onClick(@NonNull View widget) {
-								/* 打开链接 */
-								boolean webUrl = url.startsWith("http") || url.startsWith("https") || url.startsWith("ftp") || url.startsWith("file");
-								if(webUrl){
-									try {
-										Intent intent = new Intent();
-										intent.setData(Uri.parse(url));
-										intent.setAction(Intent.ACTION_VIEW);
-										a.startActivity(intent);
-									} catch (Exception ignored) {  }
-								}
-								else {
-
-								}
-							}
-						}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-						builder3.setTitle(ssb);
-
-						String[] Menus = a.getResources().getStringArray(
-								R.array.config_links);
-						List<String> arrMenu = Arrays.asList(Menus);
-						AlertDialog dd = builder3.create();
-						dd.show();
-						dd.setOnDismissListener(dialog -> {
-						});
-						dd.getListView().setAdapter(new ArrayAdapter<>(a,
-								R.layout.singlechoice_plain, android.R.id.text1, arrMenu) );
-						View dcv = dd.getWindow().getDecorView();
-						TextView titleView = dcv.findViewById(R.id.alertTitle);
-						//titleView.setSingleLine(false);
-						dcv.findViewById(R.id.topPanel).getLayoutParams().height=titleView.getHeight()/2;
-						titleView.setMovementMethod(LinkMovementMethod.getInstance());
-
-					}
-					return true;
+				} else {
+					a.showT("选择失败");
 				}
-				return false;
+				final_mWebView.postDelayed(() -> {
+					final_mWebView.forbidLoading=false;
+					final_mWebView.getSettings().setJavaScriptEnabled(true);
+					final_mWebView.evaluateJavascript("restoreTouchtarget()", null);
+				}, 100);
+				
 			}
-		};
+		});
+	}
+	
+	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {
+		MainActivityUIBase a;
+		WebViewmy final_mWebView;
+		String url;
+		public OptionListHandler(MainActivityUIBase a, WebViewmy mWebView, String extra) {
+			this.a = a;
+			this.final_mWebView = mWebView;
+			this.url = extra;
+		}
+		
+		@Override
+		public void onClick(DialogInterface dialog, int pos) {
+			pos+=IU.parsint(((AlertDialog)dialog).getListView().getTag());
+			switch(pos) {
+				/* 复制链接 */
+				case 0:{
+					try {
+						ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
+						if(cm!=null){
+							cm.setPrimaryClip(ClipData.newPlainText(null, url));
+							a.showT("已复制");
+						}
+					} catch (Exception e) {
+						a.showT(e+"");
+					}
+				} break;
+				/* 复制链接文本 */
+				case 1:{
+					if(url!=null) {
+						final_mWebView.evaluateJavascript("window._touchtarget?window._touchtarget.innerText:''", new ValueCallback<String>() {
+							@Override
+							public void onReceiveValue(String value) {
+								value= StringEscapeUtils.unescapeJava(value.substring(1,value.length()-1));
+								ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
+								if(cm!=null){
+									cm.setPrimaryClip(ClipData.newPlainText(null, value));
+									a.showT(value);
+								}
+							}
+						});
+					}
+				} break;
+				/* 选择链接文本 */
+				case 2:{
+					if(url!=null) {
+						SelectHtmlObject(a, final_mWebView, 0);
+					}
+				} break;
+			}
+			dialog.dismiss();
+		}
+		
+		@Override
+		public void onClick(@NonNull View widget) {
+			/* 打开链接 */
+			boolean webUrl = url.startsWith("http") || url.startsWith("https") || url.startsWith("ftp") || url.startsWith("file");
+			if(webUrl){
+				try {
+					Intent intent = new Intent();
+					intent.setData(Uri.parse(url));
+					intent.setAction(Intent.ACTION_VIEW);
+					a.startActivity(intent);
+				} catch (Exception ignored) {  }
+			} else {
+			
+			}
+		}
+	}
+	
+	class OptionListHandlerDyn extends OptionListHandler {
+		public OptionListHandlerDyn(MainActivityUIBase a, WebViewmy mWebView, String extra) {
+			super(a, mWebView, extra);
+		}
+		
+		@Override
+		public void onClick(DialogInterface dialog, int _pos) {
+			int pos=_pos+IU.parsint(((AlertDialog)dialog).getListView().getTag());
+			switch (pos) {
+				/* 查看原网页 */
+				case 0:{
+					editingState=false;
+					try {
+						renderContentAt(-1, final_mWebView.SelfIdx, final_mWebView.frameAt, final_mWebView, final_mWebView.currentRendring);
+					} catch (Exception ignored) { }
+					editingState=true;
+				} break;
+				/* 删除重载页面 */
+				case 1:
+					if(final_mWebView.currentRendring!=null && final_mWebView.currentRendring.length>1){
+						a.showT("错误：多重词条内容不可保存");
+						break;
+					}
+				case 21:{
+					getCon(true).enssurePageTable();
+					String _url = getSaveUrl(final_mWebView);
+					if(_url!=null){
+						con.removePage(_url);
+						if(PageCursor!=null) PageCursor.close();
+						PageCursor = con.getPageCursor();
+						a.notifyDictionaryDatabaseChanged(mdict.this);
+					}
+					if(pos==1) {
+						renderContentAt(-1, final_mWebView.SelfIdx, final_mWebView.frameAt, final_mWebView, final_mWebView.currentRendring);
+					} else {
+						final_mWebView.reload();
+					}
+				} break;
+				/* 打开中枢 */
+				case 2:{
+					ucc.setInvoker(null, null, null, url);
+					ucc.onClick(null);
+				} break;
+				/* 保存网页源代码 */
+				case 10:
+				case 30:{
+					final_mWebView.evaluateJavascript(preview_js, v1 -> {
+						v1 =StringEscapeUtils.unescapeJava(v1.substring(1, v1.length()-1));
+						v1 =RemoveApplicationTags(v1);
+						StringBuffer sb = opt.pathToMainFolder().append("downloads/").append(final_mWebView.word)
+								.append(".");
+						if(pos==10) {
+							sb.append( StringUtils.join(final_mWebView.currentRendring, '|')).append(".");
+						}
+						int len = sb.length();
+						int cc=0;
+						sb.append("html");
+						while(new File(sb.toString()).exists()) {
+							sb.setLength(len);
+							sb.append(IU.a2r(++cc)).append(".html");
+						}
+						BU.printFile(v1.getBytes(), sb.toString());
+						a.showT(sb.append(" 已保存! "));
+					});
+				}
+				break;
+				/* 查看原网页代码 */
+				case 11: {
+				}
+				break;
+				/* 添加书签 */
+				case 12: {
+				}
+				break;
+				/* 词典设置 */
+				case 13:
+				break;
+			}
+			dialog.dismiss();
+		}
+		
+		@Override
+		public void onClick(@NonNull View widget) {
+			int pos = IU.parsint(widget.getTag(), 0);
+			if(pos==0) {
+				buildStandardOptionListDialog(a, R.string.abc_action_menu_overflow_description
+						, R.array.lexical_page_url_options, this, null, null, 10);
+			} else if(pos==20) {
+				buildStandardOptionListDialog(a, R.string.abc_action_menu_overflow_description
+						, R.array.lexical_page_url_options2
+						, this, null, null, 30);
+			}
+		}
+	}
+	
+	static class HtmlObjectHandler implements View.OnLongClickListener {
+		MainActivityUIBase a;
+		public HtmlObjectHandler(MainActivityUIBase a) {
+			this.a = a;
+		}
+		@Override
+		public boolean onLongClick(View v) {
+			WebViewmy _mWebView = (WebViewmy) v;
+			WebViewmy.HitTestResult result = _mWebView.getHitTestResult();
+			if (null == result) return false;
+			int type = result.getType();
+			//CMN.Log("getHitTestResult", type, result.getExtra());
+			switch (type) {
+				/* 长按下载图片 */
+				case WebViewmy.HitTestResult.SRC_IMAGE_ANCHOR_TYPE:
+				case WebViewmy.HitTestResult.IMAGE_TYPE:{
+					String url = result.getExtra();
+					AlertDialog.Builder builder3 = new AlertDialog.Builder(a);
+					builder3.setSingleChoiceItems(new String[] {}, 0,
+							(dialog, pos) -> {
+								switch(pos) {
+									case 0:{
+										new Thread(new Runnable() {
+											@Override
+											public void run() {
+												try {
+													java.net.URL requestURL = new URL(url);
+													File pathDownload = new File("/storage/emulated/0/download");
+													pathDownload.mkdirs();
+													if(pathDownload.isDirectory()) {
+														File path;
+														int idx = url.indexOf("?");
+														path=new File(pathDownload, new File(idx>0?url.substring(0, idx):url).getName());
+														String msg;
+														if(path.exists())
+															msg="文件已存在！";
+														else {
+															String error=null;
+															HttpURLConnection urlConnection;
+															InputStream is;
+															FileOutputStream fout = null;
+															try {
+																try {
+																	SSLContext sslcontext = SSLContext.getInstance("TLS");
+																	sslcontext.init(null, new TrustManager[]{new mdict_web.MyX509TrustManager()}, new java.security.SecureRandom());
+																	HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
+																} catch (Exception ignored) { }
+																urlConnection = (HttpURLConnection) requestURL.openConnection();
+																urlConnection.setRequestMethod("GET");
+																urlConnection.setConnectTimeout(35000);
+																//urlConnection.setRequestProperty("Charset", "UTF-8");
+																//urlConnection.setRequestProperty("Connection", "Keep-Alive");
+																urlConnection.setRequestProperty("User-agent", "Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
+																urlConnection.connect();
+																is = urlConnection.getInputStream();
+																byte[] buffer = new byte[4096];
+																int len;
+																while ((len = is.read(buffer)) > 0) {
+																	if (fout == null)
+																		fout = new FileOutputStream(path);
+																	fout.write(buffer, 0, len);
+																}
+																fout.flush();
+																fout.close();
+																urlConnection.disconnect();
+																is.close();
+															} catch (Exception e) {
+																error = e.toString();
+															}
+															msg = error==null?"下载完成":("发生错误："+error);
+														}
+														if(msg!=null){
+															Looper.prepare();
+															a.showT(msg);
+															Looper.loop();
+														}
+													}
+												} catch (Exception e) {
+													e.printStackTrace();
+												}
+											}
+										}).start();
+									} break;
+									case 1:{
+										SelectHtmlObject(a, _mWebView, 1);
+									} break;
+								}
+								dialog.dismiss();
+							});
+					SpannableStringBuilder ssb = new SpannableStringBuilder();
+					int start = ssb.length();
+					
+					ssb.append(url);
+					int end=ssb.length();
+					
+					ssb.setSpan(new RelativeSizeSpan(0.63f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+					ssb.setSpan(new ClickableSpan() {
+						@Override
+						public void onClick(@NonNull View widget) {//打开链接
+							Intent intent = new Intent();
+							intent.setData(Uri.parse(url));
+							intent.setAction(Intent.ACTION_VIEW);
+							a.startActivity(intent);
+						}
+					}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+					
+					builder3.setTitle(ssb);
+					
+					String[] Menus = a.getResources().getStringArray(
+							R.array.config_images);
+					List<String> arrMenu = Arrays.asList(Menus);
+					AlertDialog dd = builder3.create();
+					dd.show();
+					dd.setOnDismissListener(dialog -> {
+					});
+					dd.getListView().setAdapter(new ArrayAdapter<>(a,
+							R.layout.singlechoice_plain, android.R.id.text1, arrMenu) );
+					View dcv = dd.getWindow().getDecorView();
+					TextView titleView = dcv.findViewById(R.id.alertTitle);
+					//titleView.setSingleLine(false);
+					dcv.findViewById(R.id.topPanel).getLayoutParams().height=titleView.getHeight()/2;
+					titleView.setMovementMethod(LinkMovementMethod.getInstance());
+				}
+				return true;
+				/* 长按anchor */
+				case WebViewmy.HitTestResult.SRC_ANCHOR_TYPE:{
+					String url = result.getExtra();
+					OptionListHandler olh = new OptionListHandler(a, _mWebView, url);
+					buildStandardOptionListDialog(a, 0
+							, R.array.config_links
+							, olh, url, olh, 0);
+				}
+				return true;
+			}
+			return false;
+		}
+	}
+	
+	public static void setWebLongClickListener(WebViewmy mWebView, MainActivityUIBase a) {
+		if(a.mdict_web_lcl==null) {
+			a.mdict_web_lcl=new HtmlObjectHandler(a);
 		}
 		mWebView.setOnLongClickListener(a.mdict_web_lcl);
 	}
+	
+	public static void buildStandardOptionListDialog(MainActivityUIBase a, int title, int arrayId, DialogInterface.OnClickListener onItemSelected, String titletail, ClickableSpan clickableSpan, int tag) {
+		CharSequence titleStr = a.getString(title==0?R.string.empty__:title);
+		if(titletail!=null) {
+			SpannableStringBuilder ssb = new SpannableStringBuilder(titleStr);
+			int start = ssb.length();
+			ssb.append(titletail);
+			int end=ssb.length();
+			ssb.setSpan(new RelativeSizeSpan(0.63f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			ssb.setSpan(clickableSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			titleStr = ssb;
+		}
+		
+		AlertDialog dd = new AlertDialog.Builder(a)
+				.setSingleChoiceLayout(R.layout.singlechoice_plain)
+				.setSingleChoiceItems(arrayId, 0, onItemSelected)
+				.setTitle(titleStr).create();
+		
+		dd.show();
+		
+		Window win = dd.getWindow();
+		
+		if(win!=null) {
+			View dcv = win.getDecorView();
+			TextView titleView = dcv.findViewById(R.id.alertTitle);
+			if(titletail!=null) {
+				titleView.setMovementMethod(LinkMovementMethod.getInstance());
+			}
+			if(title==0) {
+				dcv.findViewById(R.id.topPanel).getLayoutParams().height=titleView.getHeight()/2;
+			}
+			titleView.setSingleLine(title==0);
+			titleView.setTag(tag);
+		}
+		dd.getListView().setTag(tag);
+	}
 
-	public void setIcSaveLongClickListener(View v) {
+	public void setSaveIconLongClick(View v) {
 		if(savelcl == null){
 			savelcl = new View.OnLongClickListener() {
 				@Override
@@ -1060,114 +1252,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 							return true;
 						}
 					}
-					WebViewmy final_mWebView = _mWebView;
-					androidx.appcompat.app.AlertDialog.Builder builder3 = new androidx.appcompat.app.AlertDialog.Builder(a);
-					String finalUrl = url;
-					builder3.setSingleChoiceItems(new String[] {}, 0,
-							(dialog, pos) -> {
-								switch(pos) {
-									case 0:{//查看原网页
-										editingState=false;
-										try {
-											renderContentAt(-1, final_mWebView.SelfIdx, final_mWebView.frameAt, final_mWebView, final_mWebView.currentRendring);
-										} catch (Exception ignored) { }
-										editingState=true;
-									} break;
-									case 1:{//删除重载页面
-										if(final_mWebView.currentRendring!=null && final_mWebView.currentRendring.length>1){
-											a.showT("错误：多重词条内容不可保存");
-											break;
-										}
-										getCon(true).enssurePageTable();
-										String _url = getSaveUrl(final_mWebView);
-										if(_url!=null){
-											con.removePage(_url);
-											if(PageCursor!=null)
-												PageCursor.close();
-											PageCursor = con.getPageCursor();
-											a.notifyDictionaryDatabaseChanged(mdict.this);
-										}
-										renderContentAt(-1, final_mWebView.SelfIdx, final_mWebView.frameAt, final_mWebView, final_mWebView.currentRendring);
-								} break;
-								case 2:{//打开中枢
-									ucc.setInvoker(null, null, null, finalUrl);
-									ucc.onClick(v);
-								} break;
-							}
-							dialog.dismiss();
-						});
-				SpannableStringBuilder ssb = new SpannableStringBuilder("页面选项");
-				int start = ssb.length();
-
-				ssb.append(url).append(", ").append(Arrays.toString(final_mWebView.currentRendring));
-				int end=ssb.length();
-
-				ssb.setSpan(new RelativeSizeSpan(0.63f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-					WebViewmy final_mWebView1 = _mWebView;
-					ssb.setSpan(new ClickableSpan() {
-					@Override
-					public void onClick(@NonNull View widget) {//打开链接
-						AlertDialog.Builder builder3 = new AlertDialog.Builder(a);
-						builder3.setTitle("更多选项");
-						builder3.setSingleChoiceItems(new String[]{}, 0,
-								(dialog, pos) -> {
-									//mdict_manageable mmTmp = manager_group.get(actualPosition);
-									switch (pos) {
-										case 0: {//查看网页源代码
-											final_mWebView1.evaluateJavascript(preview_js, v1 -> {
-												v1 =StringEscapeUtils.unescapeJava(v1.substring(1, v1.length()-1));
-												v1 =RemoveApplicationTags(v1);
-												StringBuffer sb = opt.pathToMainFolder().append("downloads/").append(final_mWebView.word)
-														.append(".").append( StringUtils.join(final_mWebView.currentRendring, '|')).append(".");
-												int len = sb.length();
-												int cc=0;
-												sb.append("html");
-												while(new File(sb.toString()).exists()){
-													sb.setLength(len);
-													sb.append(IU.a2r(++cc)).append(".html");
-												}
-												BU.printFile(v1.getBytes(), sb.toString());
-												a.showT(sb.append(" 已保存! "));
-											});
-										}
-										break;
-										case 1: {//查看原网页代码
-										}
-										break;
-										case 2: {//在内置管理器打开路径
-										}
-										break;
-										case 3://词典设置
-										break;
-									}
-								});
-
-						String[] Menus = a.getResources().getStringArray(
-								R.array.lexical_page_url_options);
-						List<String> arrMenu = Arrays.asList(Menus);
-						AlertDialog dd = builder3.create();
-						dd.show();
-
-						dd.getListView().setAdapter(new ArrayAdapter<>(a,
-								R.layout.singlechoice_plain, android.R.id.text1, arrMenu));
-					}
-				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-				builder3.setTitle(ssb);
-
-				String[] Menus = a.getResources().getStringArray(
-						R.array.config_pages);
-				List<String> arrMenu = Arrays.asList(Menus);
-				androidx.appcompat.app.AlertDialog dd = builder3.create();
-				dd.show();
-				dd.setOnDismissListener(dialog -> {
-				});
-				dd.getListView().setAdapter(new ArrayAdapter<>(a,
-						R.layout.singlechoice_plain, android.R.id.text1, arrMenu));
-
-				TextView titleView = dd.getWindow().getDecorView().findViewById(R.id.alertTitle);
-				titleView.setSingleLine(false);
-				titleView.setMovementMethod(LinkMovementMethod.getInstance());
+					OptionListHandlerDyn olhd = new OptionListHandlerDyn(a, _mWebView, url);
+					buildStandardOptionListDialog(a, R.string.page_options, R.array.config_pages
+							, olhd, url, olhd, 0);
 				return false;
 			}
 		};
@@ -1362,6 +1449,15 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 	}
 	
+	
+	protected byte[] AcquireCompressedBlockOfSize(int compressedSize) {
+		return a.AcquireCompressedBlockOfSize(compressedSize, Math.max(maxComKeyBlockSize, maxComRecSize));
+	}
+	
+	protected byte[] AcquireDeCompressedKeyBlockOfSize(int BlockSize) {
+		return a.AcquireDeCompressedKeyBlockOfSize(BlockSize, maxDecomKeyBlockSize);
+	}
+	
 	@Override
 	protected boolean isMainThread() {
 		return Looper.getMainLooper().getThread() == Thread.currentThread();
@@ -1425,7 +1521,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
     	if(mWebView==null) {
     		mWebView=this.mWebView;
     	} else if(a.PeruseView != null && mWebView==a.PeruseView.mWebView){
-			setIcSaveLongClickListener(a.PeruseView.ic_save);
+			setSaveIconLongClick(a.PeruseView.ic_save);
 			a.PeruseView.refresh_eidt_kit(getContentEditable(), getEditingContents());
 		}
 		boolean resposibleForThisWeb=mWebView==this.mWebView;
@@ -1638,6 +1734,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		if(mWebView==a.popupWebView) rcsp|=1<<5;
 		htmlBuilder.append("rcsp=").append(rcsp).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
+		if(!(this instanceof mdict_web)) {
+			htmlBuilder.append("webx=").append(1).append(";");
+		}
 
 		if (PDICMainAppOptions.getInPageSearchHighlightBorder()) {
 			htmlBuilder.append(hl_border);
@@ -1755,14 +1854,17 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public MdxDBHelper con;
 	public MdxDBHelper getCon(boolean open) {
 		if(con==null){
-			File filePath = PathSubToDBStorage("bookmarks.sql");
-			if(!open && !filePath.exists())
+			if(DataBasePath==null) {
+				DataBasePath = CachedPathSubToDBStorage("bookmarks.sql");
+			}
+			if(!open && !DataBasePath.cachedExists()) {
 				return null;
-			File parent = filePath.getParentFile();
+			}
+			File parent = DataBasePath.getParentFile();
 			if(parent!=null){
 				parent.mkdirs();
 			}
-			con = new MdxDBHelper(a,filePath.getPath(),opt);
+			con = new MdxDBHelper(a,DataBasePath.getPath(),opt);
 		}
 		return con;
 	}
@@ -2158,6 +2260,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	}
 
 	public void unload() {
+		if (a!=null && isDirty)
+			dumpViewStates(a.UIProjects);
 		if(mWebView!=null) {
 			mWebView.shutDown();
     		mWebView=null;
@@ -2412,6 +2516,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	public StringBuilder appendCleanDictionaryName(StringBuilder input) {
 		if(input==null){
 			input = a.MainStringBuilder;
+			input.setLength(0);
 		}
 		String full_Dictionary_fName = _Dictionary_fName;
 		if(unwrapSuffix){

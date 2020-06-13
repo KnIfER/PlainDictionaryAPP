@@ -21,7 +21,7 @@ public class mdictRes_asset extends mdictRes {
 
 	//构造
 	public mdictRes_asset(File fn, int pseudoInit, MainActivityUIBase a_) throws IOException {
-		super(fn, 0, a_);
+		super(fn, pseudoInit, a_);
 	}
 
 	@Override

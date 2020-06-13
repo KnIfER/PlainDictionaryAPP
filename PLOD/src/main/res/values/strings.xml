@@ -10,7 +10,7 @@
     <string name="surerrecords">Are you sure to delete selected %d records?(won\'t effect file system)</string>
     <string name="applyallset">Apply to All Sets</string>
     <string name="pickdestineFolder">Select Destine Folder</string>
-    <string name="warn_exit1">[Clear History]</string>
+    <string name="warn_exit1">Clean History</string>
     <string name="bookmarkupdated">Bookmark updated as: %s</string>
     <string name="bookmarkup">Bookmark updated!</string>
     <string name="bookmarkjumped">Jumped to: %s</string>
@@ -205,4 +205,7 @@
 	<string name="copyedft"><![CDATA[已复制到 %s <<  %s]]></string>
 	<string name="warn_reconf">确认要恢复默认配置吗？</string>
 	<string name="SoundOpt">语音设定等</string>
+	<string name="page_options">页面选项</string>
+	<string name="text_operation">文本操作</string>
+	<string name="shutdown_vm">Shutdown VM</string>
 </resources>

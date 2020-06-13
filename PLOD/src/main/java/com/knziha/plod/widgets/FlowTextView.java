@@ -37,6 +37,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import androidx.appcompat.app.GlobalOptions;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.knziha.plod.ArrayList.ArrayListHolder;
@@ -286,7 +287,7 @@ public class FlowTextView extends View {
 			}
 			if(maxLines==2 && maxLines==lineIndex) {
 				mTextsize_MinueOne = true;
-				float pad = 2.5f * Utils.density;
+				float pad = 2.5f * GlobalOptions.density;
 				mTextPaint.setTextSize(mTextsize-pad);
 				int delta = mLineHeight;
 				onTextSizeChanged();
@@ -398,7 +399,7 @@ public class FlowTextView extends View {
 		int start;
 		int i=0;
 		float xOffset;
-		float textTop = paddingTop + (height - (mLineHeight-(2*Utils.density))*size)/2;
+		float textTop = paddingTop + (height - (mLineHeight-(2*GlobalOptions.density))*size)/2;
 		for (; i < size; i++) {
 			htmlLine = lineObjects.get(i);
 			start=htmlLine.start;
@@ -465,7 +466,7 @@ public class FlowTextView extends View {
 		}
 		int starTop = paddingTop + (height - mStarWidth)/2;
 		int starBottom = starTop+mStarWidth;
-		int padding = (int) (mStarWidth*2/3+2*Utils.density);
+		int padding = (int) (mStarWidth*2/3+2*GlobalOptions.density);
 		for (int i = 0; i < StarLevel; i++) {
 			mActiveDrawable.setBounds(starLeft, starTop, starLeft+mStarWidth, starBottom);
 			mActiveDrawable.draw(canvas);
@@ -612,7 +613,7 @@ public class FlowTextView extends View {
 	}
 	
 	public void setStarLevelByClickOffset(float x0, float x) {
-		int sw = (int) (mStarWidth*2/3+2*Utils.density);
+		int sw = (int) (mStarWidth*2/3+2*GlobalOptions.density);
 		if(x0>=(sw+1)*MaxStarLevel){
 			int newLevel = Math.round((getMeasuredWidth() - x)/sw);
 			if(newLevel<0){

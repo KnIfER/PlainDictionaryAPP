@@ -13,6 +13,7 @@ import android.widget.CheckedTextView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.viewpager.widget.ViewPager;
 
 import com.knziha.plod.PlainDict.CMN;
@@ -31,7 +32,7 @@ public class FlowCheckedTextView extends CheckedTextView {
 	public FlowCheckedTextView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		mFlowTextView = new FlowTextView(context, attrs, defStyleAttr);
-		mFlowTextView.pad_right = (int) (Utils.density*8);
+		mFlowTextView.pad_right = (int) (GlobalOptions.density*8);
 		mFlowTextView.setPadding(
 				(int) context.getResources().getDimension(R.dimen._18_)*2/3
 				,0

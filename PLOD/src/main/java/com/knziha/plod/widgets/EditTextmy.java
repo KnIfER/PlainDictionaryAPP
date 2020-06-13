@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.widget.EditText;
 
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 
@@ -13,7 +14,7 @@ import com.knziha.plod.PlainDict.PDICMainAppOptions;
  * when a ET is disabled,it is expected to behave the same way as a TV
  * com.knizha.wangYiLP.ui
  */
-public class EditTextmy extends androidx.appcompat.widget.AppCompatEditText{
+public class EditTextmy extends EditText {
     public EditTextmy(Context context) {
         super(context);
     }

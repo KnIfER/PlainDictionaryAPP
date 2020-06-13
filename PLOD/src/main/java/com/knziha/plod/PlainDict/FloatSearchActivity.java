@@ -325,7 +325,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			lpmy.height=(int) (dm.heightPixels-mainfv.getTranslationY())-(DockerMarginB+DockerMarginT);
     		mainfv.setLayoutParams(lpmy);
 		}
-		Utils.density = dm.density;
+		GlobalOptions.density = dm.density;
     }
     
     @Override

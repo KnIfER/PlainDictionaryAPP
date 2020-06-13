@@ -192,4 +192,7 @@
 	<string name="copyedft"><![CDATA[已复制到 %s <<  %s]]></string>
 	<string name="warn_reconf">确认要恢复默认配置吗？</string>
 	<string name="SoundOpt">语音设定等</string>
+	<string name="page_options">页面选项</string>
+	<string name="text_operation">文本操作</string>
+	<string name="shutdown_vm">关闭虚拟进程</string>
 </resources>
