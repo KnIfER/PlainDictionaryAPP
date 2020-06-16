@@ -1140,9 +1140,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
        	  showT(""+cc);
        	  */
 		mid = Thread.currentThread().getId();
+		CMN.Log("mid", mid, getClass());
 	    CMN.instanceCount++;
 	    //CMN.Log("instanceCount", CMN.instanceCount);
 		super.onCreate(savedInstanceState);
+		if(savedInstanceState!=null && savedInstanceState.getBoolean("shunt")) return;
 		snackWorker = () -> {
 			animationSnackOut=false;
 			hdl.sendEmptyMessage(6657);
@@ -1162,9 +1164,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//ObjectAnimator fadeInContents = ObjectAnimator.ofFloat(topsnack, "translationY", -height, 0);
 			//fadeInContents.start();
 		};
-		if(PDICMainAppOptions.getEnableWebDebug()){
-			WebView.setWebContentsDebuggingEnabled(true);
-		}
+		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
 	}
 
 	public void onAudioPause() {
@@ -3004,36 +3004,38 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	@Override
 	protected void onDestroy(){
-		CMN.instanceCount--;
-		if(systemIntialized) {
-			for(mdict mdTmp:md) {
-				if(mdTmp!=null) {
-					mdTmp.unload();
+		if(!shunt) {
+			CMN.instanceCount--;
+			if(systemIntialized) {
+				for(mdict mdTmp:md) {
+					if(mdTmp!=null) {
+						mdTmp.unload();
+					}
+				}
+				md.clear();
+				webSingleholder.removeAllViews();
+				webholder.removeAllViews();
+				
+				if(ucc!=null) {
+					ucc.invoker=null;
+					ucc=null;
+				}
+				if(TTSController_engine !=null){
+					TTSController_engine.stop();
+					TTSController_engine.shutdown();
+				}
+				if(CMN.instanceCount<=0){
+					((AgentApplication)getApplication()).closeDataBases();
+				}
+				hdl.clearActivity();
+				WeakReference[] holders = new WeakReference[]{popupCrdCloth, popupCmnCloth, setchooser, bottomPlaylist, DBrowser_holder, DHBrowser_holder};
+				for(WeakReference hI:holders){
+					if(hI!=null)
+						hI.clear();
 				}
 			}
-			md.clear();
-			webSingleholder.removeAllViews();
-			webholder.removeAllViews();
-
-			if(ucc!=null) {
-				ucc.invoker=null;
-				ucc=null;
-			}
-			if(TTSController_engine !=null){
-				TTSController_engine.stop();
-				TTSController_engine.shutdown();
-			}
-			if(CMN.instanceCount<=0){
-				((AgentApplication)getApplication()).closeDataBases();
-			}
-			hdl.clearActivity();
-			WeakReference[] holders = new WeakReference[]{popupCrdCloth, popupCmnCloth, setchooser, bottomPlaylist, DBrowser_holder, DHBrowser_holder};
-			for(WeakReference hI:holders){
-				if(hI!=null)
-					hI.clear();
-			}
+			if(CMN.instanceCount<0) CMN.instanceCount=0;
 		}
-		if(CMN.instanceCount<0) CMN.instanceCount=0;
 		super.onDestroy();
 	}
 
@@ -3404,7 +3406,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		if(create){
-			ViewGroup dv = (ViewGroup) inflater.inflate(R.layout.dialog_about_star,null);
+			ViewGroup dv = (ViewGroup) getLayoutInflater().inflate(R.layout.dialog_about_star,null);
 			
 			dv.findViewById(R.id.about_popIvBack).setOnClickListener(this);
 			dv.findViewById(R.id.about_popLstDict).setOnClickListener(this);
@@ -4154,7 +4156,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						switch (v.getId()) {
 							case android.R.id.button1://+
 								if (isLongClicked) {
-									android.app.AlertDialog.Builder builder21 = new android.app.AlertDialog.Builder(inflater.getContext());
+									android.app.AlertDialog.Builder builder21 = new android.app.AlertDialog.Builder(getLayoutInflater().getContext());
 									android.app.AlertDialog d1 = builder21.setTitle("确认删除并恢复默认值？")
 											.setPositiveButton(R.string.confirm, (dialog, which) -> {
 												opt.putDimensionalSharePatternByIndex(position - 7, null);
@@ -4265,7 +4267,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						.setItems((bFromWebView||bFromTextView)?itemsC:itemsA,null)
 						.create();
 
-				bottomView = (ViewGroup) inflater.inflate(R.layout.checker2,d.getListView(), false);
+				bottomView = (ViewGroup) getLayoutInflater().inflate(R.layout.checker2,d.getListView(), false);
 				iv_settings = bottomView.findViewById(R.id.settings);
 				iv_app_settings = bottomView.findViewById(R.id.appsettings);
 				iv_color = bottomView.findViewById(R.id.color);
@@ -4843,7 +4845,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	TextView buildStandardConfigDialog(Context context, boolean centerText, OnClickListener onclick, int title_id, Object...title_args) {
-		final View dv = inflater.inflate(R.layout.dialog_about,null);
+		final View dv = getLayoutInflater().inflate(R.layout.dialog_about,null);
 		final TextView tv = dv.findViewById(R.id.resultN);
 		TextView title = dv.findViewById(R.id.title);
 		if(title_args.length>0){
@@ -5459,7 +5461,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(convertView!=null){
 								ret = (FlowCheckedTextView) convertView;
 							} else {
-								ret = (FlowCheckedTextView) inflater.inflate(R.layout.singlechoice_w, parent, false);
+								ret = (FlowCheckedTextView) getLayoutInflater().inflate(R.layout.singlechoice_w, parent, false);
 								ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
 							}
 							if(mdTmp==null){

@@ -64,10 +64,10 @@ public class Toastable_Activity extends AppCompatActivity {
 	public ViewGroup root;
 	//public dictionary_App_Options opt;
     //public List<mdict> md = new ArrayList<mdict>();//Collections.synchronizedList(new ArrayList<mdict>());
-
+	protected boolean shunt;
 	public PDICMainAppOptions opt;
 	public DisplayMetrics dm;
-	public LayoutInflater inflater;
+	//public LayoutInflater inflater;
 	public InputMethodManager imm;
 	protected int trialCount=-1;
 	
@@ -115,21 +115,24 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
-       opt = new PDICMainAppOptions(this);
-       opt.dm = dm = new DisplayMetrics();
-       Display display = getWindowManager().getDefaultDisplay();
-       if(GlobalOptions.realWidth<=0) {
-		   display.getRealMetrics(dm);
-		   GlobalOptions.realWidth = Math.min(dm.widthPixels, dm.heightPixels);
+       if(!shunt) {
+		   opt = new PDICMainAppOptions(this);
+		   opt.dm = dm = new DisplayMetrics();
+		   Display display = getWindowManager().getDefaultDisplay();
+		   if (GlobalOptions.realWidth <= 0) {
+			   display.getRealMetrics(dm);
+			   GlobalOptions.realWidth = Math.min(dm.widthPixels, dm.heightPixels);
+		   }
+		   display.getMetrics(dm);
+		   GlobalOptions.density = dm.density;
+		   FFStamp = opt.getFirstFlag();
+		   SFStamp = opt.getSecondFlag();
+		   TFStamp = opt.getThirdFlag();
+		   QFStamp = opt.getFourthFlag();
 	   }
-       display.getMetrics(dm);
-	   GlobalOptions.density = dm.density;
-	   FFStamp=opt.getFirstFlag();
-	   SFStamp=opt.getSecondFlag();
-	   TFStamp=opt.getThirdFlag();
-	   QFStamp=opt.getFourthFlag();
 	   super.onCreate(savedInstanceState);
-	   inflater=getLayoutInflater();
+       if(shunt) return;
+	   //inflater=getLayoutInflater();
        imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
 	   mConfiguration = new Configuration(getResources().getConfiguration());
@@ -157,7 +160,9 @@ public class Toastable_Activity extends AppCompatActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		CrashHandler.getInstance(this, opt).TurnOn();
+		if(!shunt) {
+			CrashHandler.getInstance(this, opt).TurnOn();
+		}
 	}
 
 	@Override

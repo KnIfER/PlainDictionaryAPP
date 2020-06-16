@@ -740,7 +740,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		String[] DictOpt = getResources().getStringArray(R.array.peruse_spec);
 		final String[] Coef = DictOpt[0].split("_");
-		final View dv = a.inflater.inflate(R.layout.dialog_about,null);
+		final View dv = a.getLayoutInflater().inflate(R.layout.dialog_about,null);
 		final SpannableStringBuilder ssb = new SpannableStringBuilder();
 		final TextView tv = dv.findViewById(R.id.resultN);
 		TextView title = dv.findViewById(R.id.title);
@@ -801,8 +801,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	public void inflateContentView(MainActivityUIBase a) {
 		//CMN.Log("inflateContentView");
-		contentview = (ViewGroup) a.inflater.inflate(R.layout.contentview, root,false);
-		rl = (ViewGroup) a.inflater.inflate(R.layout.contentview_item, root,false);
+		contentview = (ViewGroup) a.getLayoutInflater().inflate(R.layout.contentview, root,false);
+		rl = (ViewGroup) a.getLayoutInflater().inflate(R.layout.contentview_item, root,false);
 		mBar = contentview.findViewById(R.id.dragScrollBar);
 		((MarginLayoutParams)mBar.getLayoutParams()).leftMargin+=sp_sub.getCompensationBottom()/2;
 		((SplitView)contentview).scrollbar2guard=mBar;

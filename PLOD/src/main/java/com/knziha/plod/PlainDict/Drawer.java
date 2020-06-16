@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -72,6 +73,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 
+import static androidx.appcompat.app.GlobalOptions.realWidth;
 import static com.knziha.plod.PlainDict.MainActivityUIBase.new_mdict;
 
 
@@ -137,6 +139,12 @@ public class Drawer extends Fragment implements
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
 										   int oldRight, int oldBottom) {
 					right=right-left;
+					//todo opt
+					if(GlobalOptions.isLarge) {
+						right = Math.min(right, Math.max(realWidth, (int)getResources().getDimension(R.dimen.idealdpdp)));
+						v.getLayoutParams().width = right;
+					}
+					
 					if(swRow!=null && (right!=oldWidth || bIsFirstLayout)) {
 						//if(bIsFirstLayout) SwitchCompatBeautiful.bForbidRquestLayout = true;
 						int width = (right - sw1.getWidth() * 5) / 6;
@@ -187,7 +195,7 @@ public class Drawer extends Fragment implements
 		}
 		@Override
 		public boolean isEnabled(int position) {
-			return items[position].length()>0;
+			return items[position]!=null;
 		}
 		
 		@Override
@@ -197,7 +205,7 @@ public class Drawer extends Fragment implements
 		
 		@Override
 		public int getItemViewType(int position) {
-			return items[position].length()==0?1:0;
+			return items[position]==null?1:0;
 		}
 		
 		@Override
@@ -213,7 +221,7 @@ public class Drawer extends Fragment implements
 		@NonNull
 		@Override
 		public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-			if(items[position].length()==0){
+			if(items[position]==null){
 				/* divider border */
 				return convertView!=null?convertView:LayoutInflater.from(getContext()).inflate(R.layout.listview_sep, parent, false);
 			}
@@ -375,7 +383,7 @@ public class Drawer extends Fragment implements
 		switch(id) {
 			case R.id.menu_item_setting:
 				//a.mDrawerLayout.closeDrawer(GravityCompat.START);
-				final View dv = a.inflater.inflate(R.layout.dialog_about,null);
+				final View dv = a.getLayoutInflater().inflate(R.layout.dialog_about,null);
 
 				String infoStr = getString(R.string.infoStr);
 				final SpannableStringBuilder ssb = new SpannableStringBuilder(infoStr);

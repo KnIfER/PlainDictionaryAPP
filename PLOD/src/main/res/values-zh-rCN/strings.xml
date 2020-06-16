@@ -195,4 +195,5 @@
 	<string name="page_options">页面选项</string>
 	<string name="text_operation">文本操作</string>
 	<string name="shutdown_vm">关闭虚拟进程</string>
+	<string name="fapp_name">浮动搜索</string>
 </resources>

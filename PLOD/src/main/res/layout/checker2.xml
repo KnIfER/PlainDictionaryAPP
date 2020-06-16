@@ -5,7 +5,6 @@
     android:background="@drawable/surrtrip2"
     xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:UIStyles="http://schemas.android.com/apk/res-auto"
 	android:paddingStart="8dp"
 	>
     
@@ -31,7 +30,7 @@
 	    <ImageView 
     		android:id="@+id/iv_switch"
 		    android:layout_width="30dp"  
-		    android:layout_height="30dp"
+		    android:layout_height="match_parent"
 		    android:padding="4dp"
             android:src="@drawable/ic_swap_horiz_black_24dp"
             android:layout_marginRight="5dp"
@@ -40,8 +39,8 @@
 
 	    <ImageView
     		android:id="@+id/color"
-		    android:layout_width="30dp"
-		    android:layout_height="30dp"
+		    android:layout_width="@dimen/_30_"
+		    android:layout_height="match_parent"
 		    android:padding="4dp"
             android:src="@drawable/color_sheet"
             android:layout_marginRight="5dp"
@@ -49,8 +48,8 @@
 	    
 	    <ImageView 
     		android:id="@+id/settings"
-		    android:layout_width="30dp"  
-		    android:layout_height="30dp"
+		    android:layout_width="@dimen/_30_"
+		    android:layout_height="match_parent"
 		    android:padding="4dp"
             android:src="@drawable/tools_toolbar"
             android:layout_marginRight="5dp"
@@ -58,8 +57,8 @@
 	    
   	   <ImageView 
     		android:id="@+id/appsettings"
-		    android:layout_width="30dp"  
-		    android:layout_height="30dp"
+		    android:layout_width="@dimen/_30_"
+		    android:layout_height="match_parent"
 		    android:padding="4dp"
             android:src="@drawable/drawer_menu_icon_setting"
 	        />
@@ -67,8 +66,8 @@
 	    	   
 	    <ImageView 
     		android:id="@+id/lock"
-		    android:layout_width="30dp"  
-		    android:layout_height="30dp"
+		    android:layout_width="@dimen/_30_"
+		    android:layout_height="match_parent"
 		    android:padding="4dp"
             android:src="@drawable/un_locked"
 	        />

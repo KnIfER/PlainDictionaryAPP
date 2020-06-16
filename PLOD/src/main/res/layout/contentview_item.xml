@@ -2,8 +2,10 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:orientation="vertical"
-	android:clickable="true">
+	android:clickable="true"
+	tools:context="com.knziha.plod.PlainDict.MainActivityUIBase">
 
 	<com.knziha.plod.widgets.AdvancedNestScrollLinerView
 		android:id="@+id/lltoolbar"

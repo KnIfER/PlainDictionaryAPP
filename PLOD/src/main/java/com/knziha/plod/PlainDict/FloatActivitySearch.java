@@ -42,7 +42,7 @@ public class FloatActivitySearch extends FloatSearchActivity {
 	protected void onNewIntent(Intent intent) {
 		//CMN.Log("onNewIntent");
 		super.onNewIntent(intent);
-
+		
 		if(!hasWindowFocus()){
 			ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 			if(manager!=null) manager.moveTaskToFront(getTaskId(), 0);

@@ -1,17 +1,17 @@
 <resources>
-    <string-array name="drawer_hints">
+	<string-array name="drawer_hints">
 		<item>用\'.\'  匹配任意一个字符,  \'*\'  匹配任意长的字符串</item>
 		<item>同上支持通配符</item>
-		<item></item>
+		<item>@null</item>
 		<item>显示最近添加的20条书签</item>
 		<item>点击内容页左上角图标, 在弹出对话框中添加书签</item>
-		<item></item>
+		<item>@null</item>
 		<item>只有在词典管理中心提交, 才会保存到到分组配置里</item>
 		<item>主目录下的词典将以相对路径记录, 提高效率</item>
 		<item>亦可长按底部工具栏第二个图标</item>
 		<item>亦可长按底部工具栏倒数第二个图标</item>
-		<item></item>
-		<item></item>
+		<item>@null</item>
+		<item>&#160;</item>
 	</string-array>
 	
 

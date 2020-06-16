@@ -103,7 +103,7 @@ public class DArrayAdapter extends BaseAdapter {
 	public View getView(final int position, @Nullable View convertView,
 						@NonNull ViewGroup parent) {
 		ViewHolder vh = convertView==null?
-				new ViewHolder(a, convertView = a.inflater.inflate(R.layout.listview_check_select, parent, false))
+				new ViewHolder(a, convertView = a.getLayoutInflater().inflate(R.layout.listview_check_select, parent, false))
 				: (ViewHolder) convertView.getTag();
 		String name = items.get(position).key;
 		boolean actived = name.equals(a.opt.getCurrFavoriteDBName());

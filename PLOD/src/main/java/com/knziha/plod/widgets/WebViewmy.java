@@ -633,26 +633,17 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	public String getSelectText() {
 		getSharedIds();
-		if(SelectString_Id!=0) {
-			return getResources().getString(SelectString_Id);
-		}
-		return getResources().getString(android.R.string.selectAll);
+		return getResources().getString(SelectString_Id!=0?SelectString_Id:android.R.string.selectAll);
 	}
 	
 	public String getShareText() {
 		getSharedIds();
-		if(SelectString_Id!=0) {
-			return getResources().getString(SelectString_Id);
-		}
-		return getResources().getString(R.string.share);
+		return getResources().getString(ShareString_Id!=0?ShareString_Id:R.string.share);
 	}
 	
 	public String getCopyText() {
 		getSharedIds();
-		if(CopyString_Id!=0) {
-			return getResources().getString(CopyString_Id);
-		}
-		return getResources().getString(android.R.string.copy);
+		return getResources().getString(CopyString_Id!=0?CopyString_Id:android.R.string.copy);
 	}
 	
 	private static void getSharedIds() {

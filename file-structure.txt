@@ -1,25 +1,25 @@
 filepicker :
---glide
---GestureView
+一glide
+一GestureView
 
 glide :
---glide
---gif_decoder
---gif_encoder
---disklrucache
---annotation
+一glide
+一gif_decoder
+一gif_encoder
+一disklrucache
+一annotation
 
 modified androidx modules :
---AppPreference
---AweDesigner
---AxtAppCompat
+一AppPreference
+一AweDesigner
+一AxtAppCompat
 
 PlainDict (android):
---Multiline (string pre-processor)
---Glide (It  is used to load images for filepicker and mdd pictures).
---GestureView (only use in filepicker. For mdd pictures I am using another solution).
---recyclerViewFastScroller
---twowaygridview (for Top dictionary list of Peruse Mode).
---drag_sort_lib (for dictionary manager)
---colorPicker (still has some bugs)
---filepicker
+一Multiline (string pre-processor)
+一Glide (It  is used to load images for filepicker and mdd pictures).
+一GestureView (only use in filepicker. For mdd pictures I am using another solution).
+一recyclerViewFastScroller
+一twowaygridview (for Top dictionary list of Peruse Mode).
+一drag_sort_lib (for dictionary manager)
+一colorPicker (still has some bugs)
+一filepicker

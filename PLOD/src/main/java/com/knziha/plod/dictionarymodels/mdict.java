@@ -102,13 +102,6 @@ import db.MdxDBHelper;
  UI side of mdict
  date:2018.07.30
  author:KnIfER
-
- 必须承认，在不支持多继承的Java中，使用interface定义词典，实现词典基类，再做各种拓展是更好的模式。
- 如此，在拓展类中包含 无ui 的 mdict 实例， 或者其他词典/非词典的、用于获取内容的实例，这或许是更加优秀的方案。
- 我们还可以复用这些无ui实例，甚至是跨实例的复用，Application 级别的复用。
-
- 遗憾的是，当初为了避免深恶痛绝的层层套壳，我没有采用这个方案，而是直接在无ui基类上做拓展。
- 现在已经走得太远，我暂时并没有做这些改变的动力。后来者可以做得更好。
 */
 public class mdict extends com.knziha.plod.dictionary.mdict
 		implements ValueCallback<String>, OnClickListener
@@ -116,7 +109,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		{
 	public final static String FileTag = "file://";
 	public final static String baseUrl = "file:///";
-	public final static String  _404 = "<span style='color:#ff0000;'>Mdict 404 Error:</span> ";
+	public final static String  _404 = "<span style='color:#ff0000;'>PlainDict 404 Error:</span> ";
 	
 	/**</style><script class="_PDict" src="mdbr://SUBPAGE.js"></script>*/
 	@Multiline()
@@ -171,9 +164,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	 				tt.userSelect='text';
 				}
 	 			if(NoneSelectable(tt)) {
-					var style1 = document.createElement("style");
-					style1.innerHTML = "*{user-select:text !important}";
-					document.head.appendChild(style1);
+					var sty = document.createElement("style");
+					sty.innerHTML = "*{user-select:text !important}";
+					document.head.appendChild(sty);
 					if(NoneSelectable(tt)) {
 						return -1;
 					}
@@ -867,10 +860,12 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			public void onReceiveValue(String value) {
 				CMN.Log("selectTouchtarget", value);
 				int len = IU.parsint(value, 0);
+				boolean fakePopHandles = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP;
 				if(len>0) {
 					/* bring in action mode by a fake click on the programmatically  selected text. */
-					{
+					if(fakePopHandles) {
 						final_mWebView.forbidLoading=true;
+						final_mWebView.getSettings().setJavaScriptEnabled(false);
 						final_mWebView.getSettings().setJavaScriptEnabled(false);
 						MotionEvent te = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, final_mWebView.lastX, final_mWebView.lastY, 0);
 						final_mWebView.dispatchTouchEvent(te);
@@ -882,11 +877,15 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				} else {
 					a.showT("选择失败");
 				}
-				final_mWebView.postDelayed(() -> {
-					final_mWebView.forbidLoading=false;
-					final_mWebView.getSettings().setJavaScriptEnabled(true);
+				if(fakePopHandles) {
+					final_mWebView.postDelayed(() -> {
+						final_mWebView.forbidLoading=false;
+						final_mWebView.getSettings().setJavaScriptEnabled(true);
+						final_mWebView.evaluateJavascript("restoreTouchtarget()", null);
+					}, 300);
+				} else {
 					final_mWebView.evaluateJavascript("restoreTouchtarget()", null);
-				}, 100);
+				}
 				
 			}
 		});

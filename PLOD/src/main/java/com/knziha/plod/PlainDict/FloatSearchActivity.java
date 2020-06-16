@@ -1,5 +1,7 @@
 package com.knziha.plod.PlainDict;
 
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
@@ -82,7 +84,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	private boolean fullScreen;
 	private boolean hideNavigation;
 	private SplitView sp_main;
-
+	
 	@Override
 	ArrayList<PlaceHolder> getLazyCC() {
 		return mCosyChair;
@@ -333,27 +335,28 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		cbar_key=2;
 		defbarcustpos=3;
     	long cur = System.currentTimeMillis();
-		super.onCreate(savedInstanceState);
-    	if(getClass()==FloatSearchActivity.class) {
+		if(getClass()==FloatSearchActivity.class) {
+			boolean frequentLaunch = cur-CMN.FloatLastInvokerTime<524;
 			if(PDICMainAppOptions.getForceFloatSingletonSearch()) {
 				Intent thisIntent = getIntent();
 				startActivity((thisIntent==null?new Intent():new Intent(getIntent()))
 						.setClass(this, FloatActivitySearch.class)
-						.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-				defbarcustpos=-1;
-			} else if(cur-CMN.FloatLastInvokerTime<524) {
-				defbarcustpos=-1;
-			}
-			if(defbarcustpos==-1) {
-				finish();
-				return;
+						.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));//, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+				overridePendingTransition(R.anim.abc_popup_enter, R.anim.abc_popup_exit);
+				shunt = true;
+			} else if(frequentLaunch) {
+				shunt = true;
 			}
 		}
-    	
+		super.onCreate(savedInstanceState);
+		if(shunt) {
+			finish();
+			return;
+		}
     	CMN.FloatLastInvokerTime=cur;
         bShowLoadErr=false;
 
-    	overridePendingTransition(R.anim.budong,0);
+    	overridePendingTransition(R.anim.abc_popup_enter, R.anim.abc_popup_enter);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -414,12 +417,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	@Override
 	protected void onDestroy(){
-    	if(systemIntialized) {
-    		dumpSettings();
-        	root.getViewTreeObserver().removeOnGlobalLayoutListener(keyObserver);
-        	keyObserver=null;
-    	}
-    	super.onDestroy();
+		if(systemIntialized) {
+			dumpSettings();
+			root.getViewTreeObserver().removeOnGlobalLayoutListener(keyObserver);
+			keyObserver=null;
+		}
+		super.onDestroy();
     }
 
 

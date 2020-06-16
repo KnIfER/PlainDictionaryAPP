@@ -21,6 +21,7 @@
 		android:name="com.knziha.plod.PlainDict.AgentApplication"
 		android:allowBackup="true"
 		android:icon="@mipmap/ic_launcher"
+		android:roundIcon="@mipmap/icon_launcher_round"
 		android:label="@string/app_name"
 		android:supportsRtl="true"
 		android:theme="@style/AppTheme"
@@ -122,6 +123,7 @@
 			android:launchMode="singleInstance"
 			android:taskAffinity=""
 			android:exported="true"
+			android:label="@string/fapp_name"
 			>
 		</activity>
 	</application>

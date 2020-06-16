@@ -208,4 +208,5 @@
 	<string name="page_options">页面选项</string>
 	<string name="text_operation">文本操作</string>
 	<string name="shutdown_vm">Shutdown VM</string>
+	<string name="fapp_name">Float Search</string>
 </resources>

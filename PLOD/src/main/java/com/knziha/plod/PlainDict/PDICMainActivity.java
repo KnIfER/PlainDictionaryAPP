@@ -32,13 +32,11 @@ import android.text.method.LinkMovementMethod;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
-import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -193,7 +191,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public static ArrayList<PlaceHolder> HdnCmfrt = new ArrayList<>();
 	public static ArrayList<PlaceHolder>[] PlaceHolders = new ArrayList[]{CosyChair, CosySofa, HdnCmfrt};
 	private Animation animaExit;
-	private ViewGroup webcoord;
+	private CoordinatorLayout webcoord;
 	private ViewGroup main_content_succinct;
 	private LinearLayout weblist;
 	private View appbar;
@@ -320,7 +318,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					ResizeDictPicker();
 				}
 			}
-			
+			if(GlobalOptions.isLarge) {
+				drawerFragment.mDrawerListLayout.getLayoutParams().width = -1;
+			}
 		}
 		mConfiguration.setTo(newConfig);
 		if(Build.VERSION.SDK_INT>=29){
@@ -423,7 +423,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	private View ShowProgressDialog() {
-		View a_dv = inflater.inflate(R.layout.dialog_progress, findViewById(R.id.dialog), false);
+		View a_dv = getLayoutInflater().inflate(R.layout.dialog_progress, findViewById(R.id.dialog), false);
 		AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
 		builder2.setView(a_dv);
 		AlertDialog dTmp = builder2.create();
@@ -1286,7 +1286,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					);
 				}
 			}});
-
+		LayoutInflater inflater = getLayoutInflater();
 		mlv = (ViewGroup) inflater.inflate(R.layout.mainlistview,viewPager, false);
 		lv = mlv.findViewById(R.id.main_list);
 		lv2 = mlv.findViewById(R.id.sub_list);
@@ -2653,6 +2653,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		@Override
 		public void onItemClick(int pos) {//lv1
+//			if(false) {
+//				startActivity(new Intent(PDICMainActivity.this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", currentDictionary.getEntryAt(pos)));
+//				return;
+//			}
+//			if(true){
+//				LayoutInflater.from(PDICMainActivity.this).inflate(R.layout.contentview_item, webholder, false);
+//				return;
+//			}
 			shuntAAdjustment();
 			if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
 				getPeruseView().ScanSearchAllByText(currentDictionary.getEntryAt(pos), PDICMainActivity.this, true, updateAI);
@@ -2774,7 +2782,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 			AttachContentView();
 
-			//webholder.addView(md.rl);
 			ViewGroup someView = currentDictionary.rl;
 			if(someView.getParent()!=webSingleholder) {
 				if(someView.getParent()!=null) ((ViewGroup)someView.getParent()).removeView(someView);
@@ -3469,7 +3476,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)bottombar.getLayoutParams());
 				lp.gravity=Gravity.BOTTOM;
 				((CoordinatorLayout.LayoutParams)bottombar.getLayoutParams()).setBehavior(new BottomNavigationBehavior(getBaseContext(), null));
-			}else{
+			} else {
 				contentHolder.addView(bottombar, 1);
 				LayoutParams lp = bottombar.getLayoutParams();
 				lp.height = (int) getResources().getDimension(R.dimen._50_);
@@ -3534,6 +3541,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				root.removeView(PhotoPagerHolder);
 			webcontentlist.canClickThrough=false;
 		}
+		((AppBarLayout)appbar).resetAppBarLayoutOffset();
 	}
 
 

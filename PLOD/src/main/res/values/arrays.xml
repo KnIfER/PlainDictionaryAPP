@@ -32,31 +32,31 @@
   	<string-array name="drawer_items">
 		<item>@string/fuzzyret1</item>
 		<item>@string/fullret</item>
-		<item></item>
+		<item>@null</item>
 		<item>@string/bookmarkH</item>
 		<item>@string/lastmarks</item>
-		<item></item>
+		<item>@null</item>
 		<item>@string/addd</item>
 		<item>@string/pick_main</item>
 		<item>@string/manager</item>
 		<item>@string/switch_favor</item>
-		<item></item>
+		<item>@null</item>
 		<item>@string/settings</item>
 	</string-array>
-    
-    
-    <string-array name="drawer_hints">
+
+
+	<string-array name="drawer_hints">
 		<item>Currently implemented: \'.\' (to match any character), \'*\' (to match any string)</item>    
 		<item>Find in all scoped dictionaries\' Html contents. Can use wildcards as well, but may be slow.</item>    
-		<item></item>
+		<item>@null</item>
 		<item>Show the latest 20 bookmarks</item>
 		<item>Add bookmarks in the dialog from the icon-button on the top-left of the webview content UI</item>    
-		<item></item>
+		<item>@null</item>
 		<item>Won\'t modify current configuration unless commit it in the dictionary manager</item>    
 		<item>Dicts\' relative pathname will be saved when it\'s in the main path</item>    
 		<item>Also try long-press on the 2nd btn of the bottom bar</item>    
 		<item>Also try long-press on the last 2nd btn of the bottom bar</item>
-		<item></item>
+		<item>@null</item>
 		<item>&#160;</item>
 	</string-array>
 
@@ -93,7 +93,7 @@
 		<item>默认折叠</item>
 	</string-array>
 
-	<!--web-->
+	<!--webx-->
 
 	<string-array name="config_web_pages">
 		<item>查看原网页</item>
