@@ -59,6 +59,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,6 +71,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -1672,7 +1674,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//bottombar.findViewById(R.id.browser_widget2).performLongClick();
 		//bottombar.findViewById(R.id.browser_widget5).performLongClick();
 
-		//etSearch.setText("happy");
+		etSearch.setText("happy");
 		//if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("15");
 		//if(false)
 		root.postDelayed(() -> {
@@ -2653,7 +2655,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		@Override
 		public void onItemClick(int pos) {//lv1
-//			if(false) {
+//			if(true) {
 //				startActivity(new Intent(PDICMainActivity.this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", currentDictionary.getEntryAt(pos)));
 //				return;
 //			}

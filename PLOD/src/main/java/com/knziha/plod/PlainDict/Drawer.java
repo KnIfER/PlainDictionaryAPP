@@ -51,6 +51,7 @@ import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymodels.mdict;
@@ -784,11 +785,11 @@ public class Drawer extends Fragment implements
 									
 									if(AutoFixLostRecords && renameList.size()>0){
 										ArrayList<File> moduleFullScannerArr;
-										File[] moduleFullScanner = ConfigFile.listFiles(pathname -> pathname.getPath().endsWith(".set"));
+										File[] moduleFullScanner = ConfigFile.listFiles(pathname -> !SU.isNoneSetFileName(pathname.getPath()));
 										moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
 										moduleFullScannerArr.add(rec);
 										moduleFullScannerArr.add(def);
-										StringBuilder sb = new StringBuilder();
+										StringBuilder sb = a.MainStringBuilder;
 										AgentApplication app = ((AgentApplication) a.getApplication());
 										char[] cb = app.get4kCharBuff();
 										for(File fI:moduleFullScannerArr) {

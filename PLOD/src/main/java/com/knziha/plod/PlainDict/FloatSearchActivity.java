@@ -673,13 +673,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 								}
 								if(lpmy.height-dy>dm.heightPixels) dy=0;
 								int newTransY = (int) (mainfv.getTranslationY()+dy);
-								//lpmy.height=Math.min(lpmy.height-dy, root.getHeight()-newTransY-(DockerMarginB+DockerMarginT));//screen culling
-								lpmy.height=root.getHeight()-newTransY-(DockerMarginB+DockerMarginT);
+								lpmy.height=Math.min(lpmy.height-dy, root.getHeight()-newTransY-(DockerMarginB+DockerMarginT));
 								mainfv.setLayoutParams(lpmy);
 
 								//int newTop = (int) (mainfv.getTop() + dy);
 								mainfv.setTranslationY(newTransY);
-							}else if(MOB){//move on the bottom
+							} else if(MOB) {//move on the bottom
 								if(lpmy.height+dy<=_50_ && dy<0) {//size trim
 									dy=(int) (_50_-lpmy.height);
 								}

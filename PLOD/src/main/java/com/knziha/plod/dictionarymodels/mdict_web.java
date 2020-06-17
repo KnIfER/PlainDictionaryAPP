@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.text.TextUtils;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -179,7 +180,7 @@ public class mdict_web extends mdict {
 		//banJs = json.getBooleanValue("banJs");
 		//reEnableJs = json.getBooleanValue("reEnableJs");
 		String _entrance = website.getString("entrance");
-		if(_entrance!=null){
+		if(!TextUtils.isEmpty(_entrance)){
 			entrance = new ArrayList<>(Arrays.asList(_entrance.split("\n")));
 		}
 		String _routes = website.getString("reroute");
@@ -774,8 +775,10 @@ public class mdict_web extends mdict {
 		if(progressProceed !=null) {
 			progressProceed.cancel();
 		}
-		mWebView.titleBar.getBackground().setLevel(1500);
-		((LayerDrawable)mWebView.titleBar.getBackground()).getDrawable(1).setAlpha(255);
+		if(mWebView.titleBar!=null) {
+			mWebView.titleBar.getBackground().setLevel(1500);
+			((LayerDrawable)mWebView.titleBar.getBackground()).getDrawable(1).setAlpha(255);
+		}
 		//onProgressChanged(mWebView, 5);
 		
 		currentUrl=view.getUrl();

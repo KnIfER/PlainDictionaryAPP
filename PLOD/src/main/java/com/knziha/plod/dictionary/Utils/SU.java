@@ -86,6 +86,18 @@ public class  SU{
 		SU.Log(CMN.listToStr(args)+" "+(System.currentTimeMillis()-ststrt));
 	}
 	
+	public static boolean isNoneSetFileName(String fname) {
+		int suffix_index = fname.lastIndexOf(".");
+		return suffix_index<0||!fname.regionMatches(true,suffix_index+1, "set", 0, 3);
+	}
+	
+	public static String legacySetFileName(String line) {
+		if(isNoneSetFileName(line)) { //legacy
+			return line+".set";
+		}
+		return line;
+	}
+	
 	public boolean CharsequenceEqual(CharSequence cs1, CharSequence cs2) {
 		if(cs1!=null&&cs2!=null) {
 			int len1=cs1.length();

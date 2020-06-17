@@ -48,13 +48,13 @@ public class AdvancedNestScrollListview extends ListViewmy implements NestedScro
 	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
+	public boolean dispatchTouchEvent(MotionEvent event) {
 		if(mNestedScrollEnabled) {
 			mChildHelper.onTouchEvent(this, event);
-			super.onTouchEvent(event);
+			super.dispatchTouchEvent(event);
 			return true;
 		}
-		return super.onTouchEvent(event);
+		return super.dispatchTouchEvent(event);
 	}
 
 	// NestedScrollingChild
@@ -63,7 +63,7 @@ public class AdvancedNestScrollListview extends ListViewmy implements NestedScro
 	public void setNestedScrollingEnabled(boolean enabled) {
 		mNestedScrollEnabled=enabled;
 		mChildHelper.setCurrentView(this);
-		ViewCompat.stopNestedScroll(this);
+		//ViewCompat.stopNestedScroll(this);
 		mChildHelper.setNestedScrollingEnabled(enabled);
 	}
 

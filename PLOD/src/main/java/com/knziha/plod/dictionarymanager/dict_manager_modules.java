@@ -17,6 +17,7 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.PlainDict.AgentApplication;
 import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.dict_manager_activity.transferRunnable;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
@@ -68,33 +69,33 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 			BufferedReader in = new BufferedReader(new FileReader(def));
 			String line = in.readLine();
 			while(line!=null){
-				if(con.contains(line))
+				line = SU.legacySetFileName(line);
+				if(!con.add(line)) {
 					isDirty=true;
-				else
-				if(new File(a.ConfigFile, line+".set").exists()) {
-					scanInList.add(line);
-				}else {
-					isDirty=true;
+				} else {
+					if(new File(a.ConfigFile, line).exists()) {
+						scanInList.add(line);
+					} else {
+						isDirty=true;
+					}
 				}
-				con.add(line);
 				line = in.readLine();
 			}
 			in.close();
-		} catch (Exception e2) {
-		}
-
-		a.ConfigFile.listFiles(pathname -> {
-			String name = pathname.getName();
-			if(name.endsWith(".set")) {
-				name = name.substring(0,name.length()-4);
-				if(!con.contains(name)) {
-					scanInList.add(name);
-					con.add(name);
-					isDirty=true;
+		} catch (Exception ignored) {  }
+		
+		String[] names= a.ConfigFile.list();
+		if(names!=null) {
+			for (int i = 0; i < names.length; i++) {
+				String name = names[i];
+				if(!SU.isNoneSetFileName(name)) {
+					if(con.add(name)) {
+						scanInList.add(name);
+						isDirty=true;
+					}
 				}
 			}
-			return false;
-		});
+		}
 
 		adapter = new MyAdapter(scanInList);
 		setListAdapter(adapter);
@@ -114,7 +115,12 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 		}
 		return false;
 	}
-
+	
+	public void add(String filename) {
+		adapter.add(filename);
+		isDirty=true;
+	}
+	
 	private class MyAdapter extends ArrayAdapter<String> {
 		public MyAdapter(List<String> artists) {
 			super(getActivity(), getItemLayout(), R.id.text, artists);
@@ -200,7 +206,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 			if(position>=mDslv.getHeaderViewsCount()) {
 				position = position - mDslv.getHeaderViewsCount();
 				String name = adapter.getItem(position);
-				File newf = new File(a.ConfigFile, name+".set");
+				File newf = new File(a.ConfigFile, name);
 				int cc=0;
 				try {
 					dict_manager_main f1 = ((dict_manager_activity)getActivity()).f1;
@@ -247,7 +253,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 															return false;
 													} catch (IOException e) {return false;}
 
-													String fn = name+".set";
+													String fn = name;
 													boolean doNothingToList=false;
 													if(to.exists()) {//文件覆盖已预先处理。
 														//adapter.remove(to.getName().substring(0,to.getName().length()-4));
@@ -317,7 +323,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 											int try_idx=0;
 											File dest;
 											while(true) {
-												dest = new File(source.getParent(),name+"("+try_idx+")"+".set");
+												dest = new File(source.getParent(),name+"."+try_idx+".set");
 												if(!dest.exists() || dest.isDirectory())
 													break;
 												try_idx++;

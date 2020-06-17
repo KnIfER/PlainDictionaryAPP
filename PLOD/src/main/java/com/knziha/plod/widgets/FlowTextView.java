@@ -104,6 +104,7 @@ public class FlowTextView extends View {
 	private boolean bNeedInvalidate;
 	private int SearchIdentity;
 	public boolean bNeedPostLayout;
+	public int fixedTailTrimCount;
 	
 	public FlowTextView(Context context) {
 		this(context, null);
@@ -165,6 +166,8 @@ public class FlowTextView extends View {
 			int suffix_index = text.lastIndexOf(".");
 			if(suffix_index>0 && text.regionMatches(true,suffix_index+1, "mdx", 0, 3)){
 				mLength-=4;
+			} else if(fixedTailTrimCount>0) {
+				mLength-=fixedTailTrimCount;
 			}
 			mStart=0;
 			suffix_index = text.lastIndexOf("/", suffix_index>=0?suffix_index:text.length());

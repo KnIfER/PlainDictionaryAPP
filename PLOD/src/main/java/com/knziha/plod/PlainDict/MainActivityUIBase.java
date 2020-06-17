@@ -55,8 +55,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.DragEvent;
@@ -109,7 +109,6 @@ import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
-import androidx.appcompat.widget.AlertDialogLayout;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
@@ -134,7 +133,6 @@ import com.jaredrummler.colorpicker.ColorPickerDialogListener;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
-import com.knziha.filepicker.model.GlideOptions;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.widget.CircleCheckBox;
@@ -142,6 +140,7 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
@@ -161,7 +160,6 @@ import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.ArrayAdaptermy;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
-import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.CustomShareAdapter;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
@@ -176,7 +174,6 @@ import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.SamsungLikeScrollBar;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
-import com.knziha.plod.widgets.TableLayout;
 import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
@@ -193,8 +190,8 @@ import com.shockwave.pdfium.PdfiumCore;
 import org.adrianwalker.multilinestring.Multiline;
 import org.apache.commons.imaging.BufferedImage;
 import org.apache.commons.imaging.Imaging;
-import org.apache.commons.imaging.ImagingConstants;
-import org.apache.commons.imaging.ManagedImageBufferedImageFactory;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -202,7 +199,6 @@ import org.nanohttpd.protocols.http.ServerRunnable;
 import org.xiph.speex.ByteArrayRandomOutputStream;
 import org.xiph.speex.manyclass.JSpeexDec;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -222,7 +218,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -535,6 +530,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	private WebResourceResponse emptyResponse = new WebResourceResponse("", "", null);
+	private long SecordTime;
+	private long SecordPime;
 	
 	public boolean checkWebSelection() {
 		if(getCurrentFocus() instanceof WebViewmy && opt.getUseBackKeyClearWebViewFocus()){
@@ -5472,7 +5469,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							tv.setCompoundDrawables(getActiveStarDrawable(), null, null, null);
 							tv.setCover(mdTmp.getCover());
 							tv.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
-							tv.setStarLevel(0);
+							tv.setStarLevel(PDICMainAppOptions.getDFFStarLevel(mdTmp.getFirstFlag()));
 							
 							ret.setChecked(position == finalSelectedPos);
 							
@@ -5493,26 +5490,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 					dTmp.show();
 					
-					dTmp.getWindow().setLayout((int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor)), -2);
-
-					if(GlobalOptions.isDark) dTmp.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-
-					if(selectedPos!=-1) {
-						dTmp.getListView().setSelection(selectedPos);
-						dTmp.getListView().setItemChecked(selectedPos, true);
+					if(!GlobalOptions.isLarge) {
+						dTmp.getWindow().setLayout((int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor)), -2);
+					}
+					
+					if(GlobalOptions.isDark) {
+						dTmp.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 					}
 					//d.getWindow().getDecorView().setBackgroundResource(R.drawable.popup_shadow_l);
 					//d.getWindow().getDecorView().getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 					//d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
 				}
-				else{
+				else {
 					if(widget12.getTag(R.id.image)!=null){
 						float alpha = contentview.getAlpha();// 0.5 0.25 0 1
 						if(alpha==0) alpha=1;
 						else if(alpha==1) alpha=0.37f;
 						else  alpha=0;
 						contentview.setAlpha(alpha);
-					}else{
+					} else {
 						showX(R.string.try_longpress,0);
 					}
 				}
@@ -6263,10 +6259,38 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		AlertDialog dTmp;
 		
 		if(setchooser==null||(dTmp=setchooser.get())==null) {
+			SecordTime = SecordPime = 0;
+			CMN.Log("重建对话框……");
 			ArrayList<String> scanInList = new ArrayList<>();
 			dTmp = new AlertDialog.Builder(this, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line)
 						.setTitle(R.string.loadconfig)
-					.setSingleChoiceItems(new String[]{}, -1, (dialog, pos) -> {
+					.setSingleChoiceItems(ArrayUtils.EMPTY_STRING_ARRAY, -1, null) //new String[]{}
+					.setAdapter(new BaseAdapter() {
+						@Override public int getCount() { return scanInList.size(); }
+						
+						@Override public Object getItem(int position) { return null; }
+						
+						@Override public long getItemId(int position) { return 0; }
+						
+						@NonNull
+						@Override
+						public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+							FlowCheckedTextView ret;
+							if(convertView!=null){
+								ret = (FlowCheckedTextView) convertView;
+							} else {
+								ret = (FlowCheckedTextView) getLayoutInflater().inflate(R.layout.singlechoice_w, parent, false);
+								ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
+								ret.mFlowTextView.fixedTailTrimCount=4;
+							}
+							FlowTextView tv = ret.mFlowTextView;
+							tv.setTextColor(AppBlack);
+							tv.setText(scanInList.get(position));
+							ret.setChecked(position == lastCheckedPos);
+							return ret;
+						}
+					}
+					, (dialog, pos) -> {
 						try {
 							currentFilter.clear();
 							for (mdict mdTmp : md) {
@@ -6282,7 +6306,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							boolean lazyLoad = PDICMainAppOptions.getLazyLoadDicts();
 							LoadLazySlots(newf, lazyLoad, setName);
 							buildUpDictionaryList(lazyLoad, mdict_cache);
-							//todo 延时清空
+							//todo 延时清空 X
 							//mdict_cache.clear();
 							//分组切换
 							setLastPlanName(setName);
@@ -6313,72 +6337,79 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					})
 					.create();
 			
-			((AlertController.RecycleListView) dTmp.getListView())
+			ListView dlv = dTmp.getListView();
+			
+			((AlertController.RecycleListView) dlv)
 					.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_));
 
 			dTmp.show();
 			
-			ListView dlv = dTmp.getListView();
-			
 			dlv.setTag(scanInList);
-			
-			dlv.setAdapter(new ArrayAdapter<String>(getApplicationContext(),
-					R.layout.singlechoice, android.R.id.text1, scanInList) {
-				@NonNull
-				@Override
-				public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-					View ret = super.getView(position, convertView, parent);
-					CheckedTextViewmy tv;
-					if (ret.getTag() == null)
-						ret.setTag(tv = ret.findViewById(android.R.id.text1));
-					else
-						tv = (CheckedTextViewmy) ret.getTag();
-					tv.setTextColor(AppBlack);
-					tv.setText(scanInList.get(position));
-					return ret;
-				}
-			});
 
-			if(lastCheckedPos!=-1) {
-				dlv.setItemChecked(lastCheckedPos, true);
-			}
 			setchooser = new WeakReference<>(dTmp);
 		}
-		else if(dTmp.isShowing()){
+		else if(Utils.DGShowing(dTmp)){
 			return;
 		}
 		
-		ArrayList<String> scanInList = (ArrayList<String>) dTmp.getListView().getTag();
-		
-		scanInList.clear();
-		
 		File ConfigFile = opt.fileToConfig();
 		File def = opt.fileToSecords(ConfigFile);
-		final HashSet<String> con = new HashSet<>();
-		lastCheckedPos = -1;
-		try {
-			AgentApplication app = ((AgentApplication) getApplication());
-			ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(def), app.get4kCharBuff(), 4096);
-			String line = in.readLine();
-			while (line != null) {
-				if (!con.contains(line))
-					if (opt.fileToSet(ConfigFile, line).exists()) {
-						scanInList.add(line);
-						if (line.equals(opt.lastMdPlanName)){
-							lastCheckedPos = scanInList.size() - 1;
+		long l1=def.lastModified();
+		long l2=def.getParentFile().lastModified();
+		boolean b1 = l1!=SecordTime;
+		if(b1 || l2!=SecordPime) {
+			ListView lv = dTmp.getListView();
+			ArrayList<String> scanInList = (ArrayList) lv.getTag();
+			final HashSet<String> con = new HashSet<>();
+			if(b1) {
+				CMN.Log("扫描1……");
+				scanInList.clear();
+				lastCheckedPos = -1;
+				try {
+					AgentApplication app = ((AgentApplication) getApplication());
+					ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(def), app.get4kCharBuff(), 4096);
+					String line = in.readLine();
+					while (line != null) {
+						line = SU.legacySetFileName(line);
+						if (con.add(line) && opt.fileToSet(ConfigFile, line).exists()) {
+							scanInList.add(line);
+							if (line.equals(opt.lastMdPlanName)) {
+								lastCheckedPos = scanInList.size() - 1;
+							}
+						}
+						line = in.readLine();
+					}
+					in.close();
+				}
+				catch (Exception e) {  CMN.Log(e);  }
+				SecordTime = l1;
+			}
+			if(l2!=SecordPime) {
+				if(!b1) {
+					con.addAll(scanInList);
+				}
+				String[] names= ConfigFile.list();
+				int start = scanInList.size();
+				if(names!=null) {
+					for (String name:names) {
+						if(!SU.isNoneSetFileName(name) && con.add(name)) {
+							scanInList.add(name);
 						}
 					}
-				con.add(line);
-				line = in.readLine();
+					if(scanInList.size()>start) {
+						CMN.Log("扫描2……");
+						String addition = StringUtils.join(scanInList.subList(start, scanInList.size()), "\n");
+						BU.appendToFile(def, "\n", addition, "\n");
+					}
+				}
+				SecordPime = l2;
 			}
-			in.close();
+			CMN.Log("扫描分组……", scanInList.size(), def.getParentFile().lastModified());
+			((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
 		}
-		catch (Exception ignored) {  }
-		CMN.Log("扫描分组……", scanInList.size());
-		((BaseAdapter)dTmp.getListView().getAdapter()).notifyDataSetChanged();
+		
 		dTmp.show();
 	}
-
 
 	abstract public void invalidAllLists();
 
@@ -7196,8 +7227,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 															fout = new FileOutputStream(path);
 														fout.write(buffer, 0, len);
 													}
-													fout.flush();
-													fout.close();
+													if(fout!=null) {
+														fout.flush();
+														fout.close();
+													}
 													urlConnection.disconnect();
 													is.close();
 													CMN.Log("shouldInterceptRequest 已下载！", url);

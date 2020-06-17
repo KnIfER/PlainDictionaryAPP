@@ -63,7 +63,7 @@
     <string name="try_longpress">invalid, please try long-press</string>
     
     <string name="err">Load Error! %1$s @%2$s : %3$s</string>
-    <string name="loadconfig">Load Dictionary Set</string>
+    <string name="loadconfig">Load Group</string>
     <string name="pickfavor">Pick Favorite Collection</string>
     <string name="newfc">Create</string>
     <string name="loadsucc">Load successfully！</string>

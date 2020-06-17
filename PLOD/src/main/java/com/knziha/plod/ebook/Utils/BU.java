@@ -416,8 +416,8 @@ public static long buffer_get_varlen_dec(MOBIBuffer buf, len_t len) {
 public static long buffer_get_varlen(MOBIBuffer buf, len_t len) {
     return _buffer_get_varlen(buf, len, 1);
 }
-
-/**
+	
+	/**
  @brief Parsed data from HUFF and CDIC records needed to unpack huffman compressed text
  */
 public static class MOBIHuffCdic{

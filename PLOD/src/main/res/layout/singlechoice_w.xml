@@ -10,4 +10,5 @@
     android:paddingRight="7dip"
     android:ellipsize="marquee"
     android:checkMark="?android:attr/listChoiceIndicatorSingle"
+	android:textSize="@dimen/lvtextsize"
     />

@@ -19,6 +19,7 @@ import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.settings.FilePickerOptions;
 import com.knziha.filepicker.utils.CMNF;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
 import com.knziha.plod.widgets.XYTouchRecorder;
@@ -113,7 +114,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public String getLastPlanName() {
-		return lastMdPlanName=defaultReader.getString("LastPlanName",magicStr);
+		return SU.legacySetFileName(lastMdPlanName=defaultReader.getString("LastPlanName",magicStr));
 	}
 	public void putLastPlanName(String name) {
 		defaultReader.edit().putString("LastPlanName", lastMdPlanName=name).apply();
@@ -2406,11 +2407,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public File fileToSet(File ConfigFile, String name) {
-		if(ConfigFile==null){
-			ConfigFile = fileToConfig();
-		}
-		StringBuffer buffer = pathToMainFolder().append(name).append(".set");
-		return new File(ConfigFile, buffer.substring(pathToL));
+		return new File(ConfigFile==null?fileToConfig():ConfigFile, name);
 	}
 	
 	public File fileToDecords(File ConfigFile) {

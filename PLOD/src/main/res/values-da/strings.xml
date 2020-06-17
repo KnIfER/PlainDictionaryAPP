@@ -100,7 +100,7 @@
 	<string name="coverr">Cover nået!</string>
 	<string name="try_longpress">ugyldig, prøv lang-press</string>
 	<string name="err">Load Error! </string>
-	<string name="loadconfig">Load Dictionary Set</string>
+	<string name="loadconfig">Load Group</string>
 	<string name="pickfavor">Pick Favorit Collection</string>
 	<string name="newfc">skab</string>
 	<string name="loadsucc">Indlæs succes!</string>

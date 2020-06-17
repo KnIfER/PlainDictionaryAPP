@@ -20,7 +20,9 @@ import android.content.Context;
 import android.graphics.Paint;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.Window;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.NestedScrollingChildHelper;
 
 import com.knziha.plod.PlainDict.CMN;
@@ -67,6 +69,11 @@ public class Utils {
 		if(mRectPaint!=null) {
 			mRectPaint.setColor(colorVal);
 		}
+	}
+	
+	public static boolean DGShowing(AlertDialog dTmp) {
+		Window win = dTmp==null?null:dTmp.getWindow();
+		return win!=null&&win.getDecorView().getParent()!=null;
 	}
 	
 	public void Destory(){

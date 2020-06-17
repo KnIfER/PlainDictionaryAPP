@@ -58,7 +58,6 @@ import com.knziha.plod.PlainDict.PlaceHolder;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
@@ -101,9 +100,12 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	
 	public File DecordFile;
 	
+	public File DefordFile;
+	
 	public File SecordFile;
 	
 	mdict_nonexist mninstance = new mdict_nonexist(new File("/N/A"));
+	private boolean deleting;
 	
 	public dict_manager_activity() throws IOException { }
 	
@@ -161,6 +163,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
 	private void checkAll() {
 		AgentApplication app = ((AgentApplication)getApplication());
+		CMN.Log("肮脏的一群！", f1.isDirty, f2.isDirty, f3.isDirty);
 		if(f1.isDirty) {
 			intent.putExtra("result", true);
 			int size = mdmng.size();
@@ -497,50 +500,37 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
         final ListView lv = dialog.findViewById(R.id.lv);
         final EditText et = dialog.findViewById(R.id.et);
         ImageView iv = dialog.findViewById(R.id.confirm);
-        File fSearchFile = new File(ConfigFile, lastPlanName+".set");//查找旧plan
-        final String fSearch = lastPlanName+".set";//查找旧plan
-        final myCpr<Boolean,Boolean> args = new myCpr<>(false,false);
-        File[] sets = ConfigFile.listFiles(pathname -> {
-			String name = pathname.getName();
-			if(name.endsWith(".set")) {
-				if(!args.value)
-				if(fSearch.equals(pathname.getName())) {
-					args.value=true;
-					return false;
+        File fSearchFile = new File(ConfigFile, lastPlanName);//查找旧plan
+        final String fSearch = lastPlanName;//查找旧plan
+        boolean found=false;
+		
+		String names[] = ConfigFile.list();
+		final ArrayList<File> setsArr = new ArrayList<>(names.length);
+		for (int i = 0; i < names.length; i++) {
+			String name = names[i];
+			if(!SU.isNoneSetFileName(name)) {
+				if(!found && fSearch.equals(name)) {
+					found=true;
 				}
-				return true;
+				setsArr.add(new File(ConfigFile, name));
 			}
-			return false;
-		});
+		}
         
-        final ArrayList<File> setsArr = new ArrayList<>(Arrays.asList(sets));
-        
-        if(args.value)
-        	setsArr.add(0,fSearchFile);//让它出现在第一项
-        else
-            et.setText(lastPlanName);//否则码上去~
-
-        for(int i=0;i<setsArr.size();i++) {
-        	File fi = setsArr.get(i);
-        	if(fSearch.equals(fi)) {
-        		break;
-        	}
+        if(found) {
+			setsArr.add(0,fSearchFile);//让它出现在第一项
+		} else {
+			et.setText(lastPlanName);//否则码上去~
 		}
         
         lv.setAdapter(new BaseAdapter() {
 			@Override
-			public int getCount() {
-				return setsArr.size();
-			}
+			public int getCount() { return setsArr.size(); }
 
 			@Override
-			public Object getItem(int position) {
-				return setsArr.get(position);
-			}
+			public Object getItem(int position) { return setsArr.get(position); }
 
 			@Override
-			public long getItemId(int position) {
-				return 0;
+			public long getItemId(int position) { return 0;
 			}
 			OnClickListener myClicker = new OnClickListener() {
 				@Override
@@ -574,7 +564,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 						case R.id.modify:
 							if(Selection.contains(position)) {//重命名
 								File oldf = setsArr.get(position);
-								File newf = new File(oldf.getParentFile(),holder.tv.getText()+".set");
+								File newf = new File(oldf.getParentFile(), SU.legacySetFileName(holder.tv.getText().toString()));
 								if(!newf.equals(oldf) && newf.exists()) {
 									show(R.string.renamefail);
 								}else {
@@ -625,10 +615,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				return convertView;
 			}
 			private void decorateByViewHolder(myHolder holder) {
-				if(args.key)
-	            	holder.remove.setVisibility(View.VISIBLE);
-	            else
-	            	holder.remove.setVisibility(View.GONE);
+				holder.remove.setVisibility(deleting?View.VISIBLE:View.GONE);
 				//holder.tv.setEnabled(true);
 				if(Selection.contains(holder.positition)) {
 					holder.tv.setEnabled(true);
@@ -665,7 +652,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				show(R.string.renamefail0);
 				return;
 			}
-			final File newf = new File(ConfigFile, newName+".set");
+			newName = SU.legacySetFileName(newName);
+			final File newf = new File(ConfigFile, newName);
 			if(!fSearch.equals(newf) && newf.exists()) {//覆盖
 				View dialog12 = getLayoutInflater().inflate(R.layout.dialog_about,null);
 				AlertDialog.Builder builder1 = new AlertDialog.Builder(dict_manager_activity.this);
@@ -692,7 +680,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			}
 		});
         d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
-			args.key = !args.key;
+			deleting = !deleting;
 			((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
 		});
         d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> d.dismiss());
@@ -789,7 +777,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				}
 				try {
 					String name = opt.getLastPlanName();
-					File to = new File(ConfigFile, name+".set");
+					File to = new File(ConfigFile, name);
 					boolean shouldInsert = false;
 					if(!to.exists())
 						shouldInsert=true;
@@ -830,7 +818,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					ThisIsDirty = true;
 					try {
 						String name = opt.getLastPlanName();
-						File from = new File(ConfigFile, name+".set");
+						File from = new File(ConfigFile, name);
 						if (from.exists()) {
 							AgentApplication app = ((AgentApplication) getApplication());
 							ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(from), app.get4kCharBuff(), 4096);
@@ -1198,15 +1186,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 								}
 								deleteRecordsHard();
 
-								ArrayList<File> moduleFullScannerArr;
-								if (((CheckBox) dv.findViewById(R.id.ck)).isChecked()) {
-									File[] moduleFullScanner = ConfigFile.listFiles(pathname -> pathname.getPath().endsWith(".set"));
-									moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
-								} else
-									moduleFullScannerArr = new ArrayList<>();
+								ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(((CheckBox) dv.findViewById(R.id.ck)).isChecked(), f3.isDirty);
 
-								if (f3.isDirty)
-									moduleFullScannerArr.add(DecordFile);
 								AgentApplication app = ((AgentApplication) getApplication());
 								char[] cb = app.get4kCharBuff();
 								boolean bNeedRewrite;
@@ -1344,13 +1325,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 								f3.adapter.notifyDataSetChanged();
 								f3.isDirty = true;
 
-								ArrayList<File> moduleFullScannerArr;
-
-								File[] moduleFullScanner = ConfigFile.listFiles(pathname -> pathname.getPath().endsWith(".set"));
-								moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
-								File def = new File(getExternalFilesDir(null), "default.txt");
-								if(def.length()>0) moduleFullScannerArr.add(def);
-								moduleFullScannerArr.add(DecordFile);
+								ArrayList<File> moduleFullScannerArr = ScanInModlueFiles(true, true);
+								if(DefordFile.length()>0) moduleFullScannerArr.add(DefordFile);
 								HashSet<String> mdlibs = new HashSet<>();
 								AgentApplication app = ((AgentApplication) getApplication());
 								char[] cb = app.get4kCharBuff();
@@ -1441,7 +1417,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				AlertDialog.Builder builder = new AlertDialog.Builder(this).setView(dv1);
 				final AlertDialog dd = builder.create();
 				btn_Done.setOnClickListener(v -> {
-					File source  = new File(ConfigFile, etNew.getText()+".set");
+					File source  = new File(ConfigFile, SU.legacySetFileName(etNew.getText().toString()));
 					if(!mFile.isDirScionOf(source, ConfigFile)) {
 						showT("名称非法！");
 						return;
@@ -1452,7 +1428,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					}
 					try {
 						source.createNewFile();
-						f2.adapter.add(etNew.getText().toString());
+						f2.add(etNew.getText().toString());
 						dd.dismiss();
 						return;
 					} catch (IOException e) {
@@ -1479,6 +1455,26 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 
 		if(closeMenu && !mmi.isActionButton())
 			toolbar.getMenu().close();
+		return ret;
+	}
+	
+	public ArrayList<File> ScanInModlueFiles(boolean all, boolean addAllLibs) {
+		ArrayList<File> ret = new ArrayList<>();
+		if (all) {
+			String[] names = ConfigFile.list();
+			if(names!=null) {
+				ret.ensureCapacity(names.length);
+				for (int i = 0; i < names.length; i++) {
+					String name = names[i];
+					if(!SU.isNoneSetFileName(name)) {
+						ret.add(new File(ConfigFile, name));
+					}
+				}
+			}
+		}
+		if (addAllLibs) {
+			ret.add(DecordFile);
+		}
 		return ret;
 	}
 	

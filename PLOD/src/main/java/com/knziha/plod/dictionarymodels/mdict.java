@@ -226,7 +226,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			}
 	 		console.log('popuping...');
 	 		console.log(w.rcsp);
-			if(curr!=document.documentElement && curr.nodeName!='INPUT' && w.rcsp&0x20 && !curr.noword){
+			if(curr!=document.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && w.rcsp&0x20 && !curr.noword){
 				//todo document.activeElement.tagName
 				var s = w.getSelection();
 				if(s.isCollapsed && s.anchorNode){ // don't bother with user selection

@@ -265,8 +265,19 @@ public class  BU{//byteUtils
 		}
 		return null;
 	}
-
-
+	
+	public static void appendToFile(File f, String...args) {
+		try {
+			FileOutputStream fout = new FileOutputStream(f, true);
+			for(String aI:args) {
+				fout.write(aI.getBytes());
+			}
+			fout.flush();
+			fout.close();
+		} catch (Exception ignored) { }
+	}
+	
+	
 	@Deprecated
     public long toLong1(byte[] b,int offset)
 	{

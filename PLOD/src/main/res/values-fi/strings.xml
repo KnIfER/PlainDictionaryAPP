@@ -100,7 +100,7 @@
 	<string name="coverr">Kansi saavutettu!</string>
 	<string name="try_longpress">kelpaa, yritä painamalla pitkään</string>
 	<string name="err">Kuorma Virhe! </string>
-	<string name="loadconfig">Load Dictionary Set</string>
+	<string name="loadconfig">Load Group</string>
 	<string name="pickfavor">Pick Paras Collection</string>
 	<string name="newfc">Luoda</string>
 	<string name="loadsucc">Latautuvat kunnolla!</string>

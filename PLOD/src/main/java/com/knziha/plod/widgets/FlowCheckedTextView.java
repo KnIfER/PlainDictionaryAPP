@@ -46,7 +46,7 @@ public class FlowCheckedTextView extends CheckedTextView {
 			canvas.translate(0, prejudice);
 		}
 		mFlowTextView.draw(canvas);
-		CMN.Log("画了画了", mFlowTextView.getMeasuredHeight(), mFlowTextView.getMeasuredWidth());
+		//CMN.Log("画了画了", mFlowTextView.getMeasuredHeight(), mFlowTextView.getMeasuredWidth());
 	}
 	
 	@Override
@@ -69,5 +69,10 @@ public class FlowCheckedTextView extends CheckedTextView {
 		if(mFlowTextView!=null) {
 			mFlowTextView.setText(text==null?null:text.toString());
 		}
+	}
+	
+	@Override
+	public void setTextSize(float size) {
+		mFlowTextView.setTextSize(size);
 	}
 }
