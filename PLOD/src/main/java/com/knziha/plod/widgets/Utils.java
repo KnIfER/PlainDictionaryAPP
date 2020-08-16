@@ -118,7 +118,7 @@ public class Utils {
 		return false;
 	}
 	
-	public static void removeIfChildIsNot(ViewGroup someView, ViewGroup parent) {
+	public static void removeIfChildIsNot(View someView, ViewGroup parent) {
 		int cc=parent.getChildCount();
 		if(cc>1) {
 			for(int i=cc-1;i>=0;i--)
@@ -162,6 +162,11 @@ public class Utils {
 			return true;
 		}
 		return false;
+	}
+	
+	public static void addViewToParentUnique(View view2Add, ViewGroup parent) {
+		addViewToParent(view2Add, parent);
+		removeIfChildIsNot(view2Add, parent);
 	}
 	
 	public static boolean ViewIsId(View view, int id) {

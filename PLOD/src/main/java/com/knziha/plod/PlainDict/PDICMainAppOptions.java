@@ -2248,10 +2248,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Multiline(flagPos=57, shift=1) public boolean getPrvNxtDictSkipNoMatch(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
 	@Multiline(flagPos=58) public boolean getDelayContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=59/*, shift=1*/) public boolean getAnimateContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=61/*, shift=1*/) public boolean getLeaveContentBlank(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=59, shift=1) public boolean getAnimateContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=61, shift=1) public boolean getLeaveContentBlank(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
 	@Multiline(flagPos=60, shift=1) public boolean getDimScrollbarForPrvNxt(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	
+	@Multiline(flagPos=61, shift=1) public boolean getAutoAdjustFloatBottomBar(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////

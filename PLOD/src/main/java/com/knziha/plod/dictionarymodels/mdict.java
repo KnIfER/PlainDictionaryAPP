@@ -756,14 +756,15 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 						toolbar_cover.performClick();
 					}
 
+					//tofo 该做的事情
 					mWebView.post(new Runnable() {
 						@Override
 						public void run() {
 							//a.mBar.isWebHeld=true;
 							if(a.mBar.timer!=null) a.mBar.timer.cancel();
 							//a.mBar.fadeIn();
-							a.mBar.setMax(a.webholder.getMeasuredHeight()-((View) a.webholder.getParent()).getMeasuredHeight());
-							a.mBar.setProgress(((View) a.webholder.getParent()).getScrollY());
+							a.mBar.setMax(a.webholder.getMeasuredHeight()-a.WHP.getMeasuredHeight());
+							a.mBar.setProgress(a.WHP.getScrollY());
 							//a.mBar.onTouch(null, MotionEvent.obtain(0,0,MotionEvent.ACTION_UP,0,0,0));
 						}
 					});

@@ -75,6 +75,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.ViewStub;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
@@ -348,7 +350,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BasicAdapter PrevActivedAdapter;
 	public BasicAdapter ActivedAdapter;
 	public BaseHandler hdl;
-	public int  CurrentViewPage = 0;
+	public int  CurrentViewPage = 1;
 	public String fontFaces;
 	
 	MenuBuilder AllMenus;
@@ -539,6 +541,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected boolean this_instanceof_MultiShareActivity;
 	protected boolean this_instanceof_PDICMainActivity;
 	protected boolean lv_matched;
+	private Animation CTANIMA;
 	
 	public boolean checkWebSelection() {
 		if(getCurrentFocus() instanceof WebViewmy && opt.getUseBackKeyClearWebViewFocus()){
@@ -2717,7 +2720,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	protected void findFurtherViews() {
-		CMN.Log("findFurtherViews...");
 		webSingleholder = PageSlider.findViewById(R.id.webSingleholder);
 		WHP = PageSlider.findViewById(R.id.WHP);
 		webholder = WHP.findViewById(R.id.webholder);
@@ -2725,6 +2727,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		mBar = PageSlider.findViewById(R.id.dragScrollBar);
 		widget14 = PageSlider.findViewById(R.id.browser_widget14);
 		widget13 = PageSlider.findViewById(R.id.browser_widget13);
+		
+		CMN.Log("findFurtherViews...", webholder);
 		
 		mBar = PageSlider.findViewById(R.id.dragScrollBar);
 		mBar_layoutParmas = (FrameLayout.LayoutParams) mBar.getLayoutParams();
@@ -9591,6 +9595,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	/** 仿效 GoldenDict 返回尽可能多的结果 */
 	int[] getMergedClickPositions(int pos) {
 		int[] ret;
 		SparseIntArray KeyHeaders = mergedKeyHeaders;
@@ -9619,5 +9624,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ret = new int[]{pos};
 		}
 		return ret;
+	}
+	
+	Animation loadCTAnimation() {
+		if(CTANIMA==null) {
+			CTANIMA = AnimationUtils.loadAnimation(this, R.anim.content_in);
+		}
+		CTANIMA.reset();
+		return CTANIMA;
 	}
 }

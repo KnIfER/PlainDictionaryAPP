@@ -97,7 +97,7 @@
 				android:layout_width="match_parent"
 				android:id="@+id/main_list"
 				android:drawSelectorOnTop="true"
-				android:listSelector="@drawable/color_double_list_bg"
+				android:listSelector="@drawable/listviewselector0"
 				/>
 			<com.knziha.plod.widgets.ListViewmy
 				android:layout_height="match_parent"
@@ -105,7 +105,7 @@
 				android:id="@+id/sub_list"
 				android:drawSelectorOnTop="true"
 				android:background="@android:color/white"
-				android:listSelector="@drawable/color_double_list_bg"
+				android:listSelector="@drawable/listviewselector0"
 				android:visibility="invisible"
 				/>
 

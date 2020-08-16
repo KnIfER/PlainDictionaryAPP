@@ -10,9 +10,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -26,7 +24,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -38,13 +35,14 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.Flag;
-import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_txt;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.SplitView;
+import com.knziha.plod.widgets.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -82,6 +80,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	protected boolean this_instanceof_FloarActivitySearch;
 	private MenuItem iItem_FolderAll;
 	private MenuItem iItem_InPageSearch;
+	
+	ViewGroup.LayoutParams mfv_lp;
 	
 	@Override
 	ArrayList<PlaceHolder> getLazyCC() {
@@ -156,12 +156,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 	@Override
 	public void DetachContentView(boolean leaving) {
-		if(DBrowser!=null){
-			ViewGroup sp = (ViewGroup) sp_main.getParent();
-			if(sp!=main){
-				if(sp!=null){
-					sp.removeView(sp_main);
-				}
+		if(DBrowser!=null) {
+			if(Utils.removeIfParentBeOrNotBe(sp_main, main, false)){
 				main.addView(sp_main, 2);
 			}
 		}
@@ -175,11 +171,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	@Override
 	public void AttachContentViewForDB() {
 		//todo preserve context
-		ViewGroup somp = (ViewGroup) sp_main.getParent();
-		if(somp!=root){
-			if(somp!=null) somp.removeView(sp_main);
-			root.addView(sp_main);
-		}
+		Utils.addViewToParent(sp_main, root);
 	}
 	
 	private int touch_id;
@@ -259,7 +251,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
     		mainfv.setTranslationX(dm.widthPixels-_50_);
     	
 		if(FVDOCKED) {
-        	ViewGroup.LayoutParams  lpmy = mainfv.getLayoutParams();
+        	ViewGroup.LayoutParams  lpmy = mfv_lp;
 			lpmy.width=dm.widthPixels-(DockerMarginR+DockerMarginL);
 			lpmy.height=(int) (dm.heightPixels-mainfv.getTranslationY())-(DockerMarginB+DockerMarginT);
     		mainfv.setLayoutParams(lpmy);
@@ -488,15 +480,18 @@ public class FloatSearchActivity extends MainActivityUIBase {
         //mainfv.getBackground().setTint(FloatBackground);
         //IMPageCover.getBackground().setTint(FloatBackground);
         mainfv.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
+		mfv_lp = mainfv.getLayoutParams();
 		
         //键盘监听器
         root.getViewTreeObserver().addOnGlobalLayoutListener(keyObserver=new OnGlobalLayoutListener(){
 			boolean lastIsKeyBoardShown =false;
+			int lastHeight;
         	@Override
 			public void onGlobalLayout() {
         		int kb_height=isKeyboardShown(root);
 				//showT("onGlobalLayout "+kb_height);
 				boolean keyBoardShown = kb_height > 100;
+				
 				if(keyBoardShown!= lastIsKeyBoardShown) {
 					lastIsKeyBoardShown =keyBoardShown;
 					wm.getDefaultDisplay().getMetrics(dm);
@@ -504,15 +499,22 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					if(mainfv.getTranslationY()>dm.heightPixels - kb_height - TBH) {
 						int newTransY = (int) (dm.heightPixels - kb_height - 2*TBH);
 						if(FVDOCKED) {
-							ViewGroup.LayoutParams lpmy = mainfv.getLayoutParams();
-							lpmy.height=dm.heightPixels-newTransY-(DockerMarginB+DockerMarginT);
-							mainfv.requestLayout();
+							mfv_lp.height= WindowVisibleR.height() -newTransY-(DockerMarginB+DockerMarginT)+1000;
+							//mainfv.requestLayout();
 						}
 						mainfv.setTranslationY(newTransY);
 						//showT("adjusted"+dm.heightPixels);
 					}
 				}
-				//showT("keyBoardShown " + keyBoardShown);
+		
+				int height = mainfv.getHeight();
+				if(opt.getAutoAdjustFloatBottomBar() && height!=lastHeight) {
+					lastHeight=height;
+					CachedBBSize=(int)Math.max(20*dm.density, Math.min(
+							MathUtils.lerp(10*dm.density, 50*dm.density, mfv_lp.height*1.25f/dm.heightPixels)
+							, mResource.getDimension(R.dimen._bottombarheight_)));
+					webcontentlist.setPrimaryContentSize(CachedBBSize,true);
+				}
 			}});
 
 		GestureDetector mGestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
@@ -551,7 +553,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				DedockTheta=_50_/2;
 				touch_id=v.getId();
 				mGestureDetector.onTouchEvent(e);
-				ViewGroup.LayoutParams  lpmy = mainfv.getLayoutParams();
+				ViewGroup.LayoutParams  lpmy = mfv_lp;
 				getWindowManager().getDefaultDisplay().getMetrics(dm);
 				switch(e.getAction()){
 					case MotionEvent.ACTION_DOWN:{
@@ -714,7 +716,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			} catch (Exception ignored) {}
 		}
 
-		ViewGroup.LayoutParams  lpmy = mainfv.getLayoutParams();
+		ViewGroup.LayoutParams  lpmy = mfv_lp;
 		if(!FVDOCKED) {
 			lpmy.width=FVW_UNDOCKED;
 			lpmy.height=FVH_UNDOCKED;
@@ -836,24 +838,23 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		WHP.setBackgroundColor(filteredColor);
 		webSingleholder.setBackgroundColor(filteredColor);
 	}
-
+	
+	Rect  WindowVisibleR = new Rect();
 
 	private int isKeyboardShown(View rootView) {
-		Rect r = new Rect();
-		rootView.getWindowVisibleDisplayFrame(r);
-		return rootView.getBottom() - r.bottom;// > softKeyboardHeight * CMN.dm_density;
+		rootView.getWindowVisibleDisplayFrame(WindowVisibleR);
+		return rootView.getBottom() - WindowVisibleR.bottom;// > softKeyboardHeight * CMN.dm_density;
 	}
 	
 
 	private void dumpSettings(){
 		if(systemIntialized) {
-			android.view.ViewGroup.LayoutParams lp = mainfv.getLayoutParams();
 
 			opt.setFloatBottombarOnBottom(webcontentlist.multiplier==-1);
 			Editor putter = opt.defaultputter();
 			putter.putLong("MFF", opt.FirstFlag())//FVDOCKED
-			.putInt("FVH",lp.height)
-			.putInt("FVW",lp.width)
+			.putInt("FVH",mfv_lp.height)
+			.putInt("FVW",mfv_lp.width)
 			.putInt("FVTX",(int) mainfv.getTranslationX())
 			.putInt("FVTY",(int) mainfv.getTranslationY())
 			.putInt("UDFVW",FVW_UNDOCKED)
@@ -952,7 +953,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	        //String keyText = md.get(adapter_idx).getEntryAt(position);
 	        if(convertView!=null){
         		vh=(PDICMainActivity.ViewHolder)convertView.getTag();
-        	}else{
+        	} else {
         		vh=new PDICMainActivity.ViewHolder(getApplicationContext(), R.layout.listview_item0, null);
         	}
 			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
@@ -988,46 +989,31 @@ public class FloatSearchActivity extends MainActivityUIBase {
         		show(R.string.endendr);
         		return;
     		}
-        	
-        	if(webSingleholder.getVisibility()!=View.VISIBLE)webSingleholder.setVisibility(View.VISIBLE);
-	    	if(WHP.getVisibility()==View.VISIBLE) {
-			    if(webholder.getChildCount()!=0)
-			    	webholder.removeAllViews();
-			    WHP.setVisibility(View.GONE);
-	    	}
-        	if(widget14.getVisibility()==View.VISIBLE) {
-	        	widget13.setVisibility(View.GONE);
-	        	widget14.setVisibility(View.GONE);
-        	}
+	
+			ensureContentVis(webSingleholder, WHP);
 
 			iItem_InPageSearch.setVisible(true);
-
-        	webcontentlist.setVisibility(View.VISIBLE);
+	
 			etSearch_ToToolbarMode(1);
         	//CMN.show("onItemClick"+position);
-			ViewGroup someView = currentDictionary.rl;
-			if(someView!=null && someView.getParent()!=null)
-				((ViewGroup)someView.getParent()).removeView(someView);
+			mdict current = currentDictionary;
 			
-			webholder.removeAllViews();
-
         	if(!bWantsSelection) {
 				imm.hideSoftInputFromWindow(mainfv.getWindowToken(),0);
 				etSearch.clearFocus();
         	}
         	
-			currentDictionary.initViewsHolder(FloatSearchActivity.this);
-			currentDictionary.mWebView.fromCombined=0;
-			webSingleholder.addView(md.get(adapter_idx).rl);
+			current.initViewsHolder(FloatSearchActivity.this);
+			current.mWebView.fromCombined=0;
+			Utils.addViewToParentUnique(current.rl, webSingleholder);
 	
-			/* 仿效 GoldenDict 返回尽可能多的结果 */
-			currentDictionary.renderContentAt(-1,adapter_idx,0,null, getMergedClickPositions(position));
+			current.renderContentAt(-1,adapter_idx,0,null, getMergedClickPositions(position));
 			
-			currentKeyText = currentDictionary.getEntryAt(position);
+			currentKeyText = current.getEntryAt(position);
 			bWantsSelection=true;
 
 			decorateContentviewByKey(null,currentKeyText);
-			if(!(currentDictionary instanceof mdict_txt) && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy6() &&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
+			if(!(current instanceof mdict_txt) && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy6() &&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
 				prepareHistroyCon().insertUpdate(currentKeyText);
 				//CMN.Log("浮动点击1", userCLick);
 			}
@@ -1045,8 +1031,34 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
 
 	}
-    
-    class ListViewAdapter2 extends  BasicAdapter{
+	
+	private void ensureContentVis(ViewGroup webholder, ViewGroup another) {
+		if(webholder.getVisibility()!=View.VISIBLE) {
+			webholder.setVisibility(View.VISIBLE);
+		}
+		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+		if(another.getVisibility()==View.VISIBLE) {
+			Utils.removeAllViews(another);
+			another.setVisibility(View.GONE);
+		}
+		
+		int targetVis = webholder==WHP?View.VISIBLE:View.GONE;
+		
+		if(widget14.getVisibility()!=targetVis) {
+			widget13.setVisibility(targetVis);
+			widget14.setVisibility(targetVis);
+		}
+		
+		if(webcontentlist.getVisibility()!=View.VISIBLE) {
+			webcontentlist.setVisibility(View.VISIBLE);
+			if(opt.getAnimateContents()) {
+				webcontentlist.setAnimation(loadCTAnimation());
+				CMN.Log("动画！！！");
+			}
+		}
+	}
+	
+	class ListViewAdapter2 extends  BasicAdapter{
     	int itemId = R.layout.listview_item1;
         //构造函数
 		public ListViewAdapter2(ViewGroup vg)
@@ -1112,7 +1124,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
         public void onItemClick(int pos){//lv2
         	super.onItemClick(pos);
         	ActivedAdapter=this;
-        	webcontentlist.setVisibility(View.VISIBLE);
 			etSearch_ToToolbarMode(1);
         	if(pos<0 ){
 				show(R.string.endendr);
@@ -1124,23 +1135,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
         		return;
     		}
 
+        	ensureContentVis(WHP, webSingleholder);
+        	
 			iItem_FolderAll.setVisible(true);//折叠
 			iItem_InPageSearch.setVisible(true);
 
         	ActivedAdapter=this;
-        	
-        	if(WHP.getVisibility()!=View.VISIBLE)WHP.setVisibility(View.VISIBLE);
-        	//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
-	    	if(webSingleholder.getVisibility()==View.VISIBLE) {
-			    if(webSingleholder.getChildCount()!=0)
-			    	webSingleholder.removeAllViews();
-			    webSingleholder.setVisibility(View.GONE);
-	    	}
-	    	
-        	if(widget14.getVisibility()!=View.VISIBLE) {
-	        	widget13.setVisibility(View.VISIBLE);
-	        	widget14.setVisibility(View.VISIBLE);
-        	}
         	
         	lastClickedPos = pos;
         	if(!bWantsSelection) {
