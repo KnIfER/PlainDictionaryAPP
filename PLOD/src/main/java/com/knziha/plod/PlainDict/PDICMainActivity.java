@@ -1276,16 +1276,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		View[] viewList = new View[]{mlv1, mlv, mlv2};
 		
 		PagerAdapter pagerAdapter = new PagerAdapter() {
-			@Override
-			public boolean isViewFromObject(@NonNull View arg0, @NonNull Object arg1) {
+			@Override public boolean isViewFromObject(@NonNull View arg0, @NonNull Object arg1) {
 				return arg0 == arg1;
 			}
-			@Override
-			public int getCount() {
-				return 3;
-			}
-			@Override
-			public void destroyItem(ViewGroup container, int position, @NonNull Object object) {
+			@Override public int getCount() { return 3; }
+			@Override public void destroyItem(ViewGroup container, int position, @NonNull Object object) {
 				container.removeView(viewList[position]);
 			}
 			@NonNull @Override

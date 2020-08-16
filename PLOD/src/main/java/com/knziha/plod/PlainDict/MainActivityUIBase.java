@@ -2688,8 +2688,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected void findFurtherViews() {
 		CMN.Log("findFurtherViews...");
-		
-		
 		webSingleholder = PageSlider.findViewById(R.id.webSingleholder);
 		WHP = PageSlider.findViewById(R.id.WHP);
 		webholder = WHP.findViewById(R.id.webholder);
@@ -2698,7 +2696,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		widget14 = PageSlider.findViewById(R.id.browser_widget14);
 		widget13 = PageSlider.findViewById(R.id.browser_widget13);
 		
-		mBar = contentview.findViewById(R.id.dragScrollBar);
+		mBar = PageSlider.findViewById(R.id.dragScrollBar);
 		mBar_layoutParmas = (FrameLayout.LayoutParams) mBar.getLayoutParams();
 		mBar.setOnProgressChangedListener(_mProgress -> {
 			if(PageSlider==null) return;

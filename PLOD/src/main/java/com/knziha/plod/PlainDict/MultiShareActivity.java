@@ -91,8 +91,11 @@ public class MultiShareActivity extends MainActivityUIBase {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		main = root = findViewById(R.id.root);
+		mainF = main.findViewById(R.id.mainF);
+		
 		hdl  = new MyHandler(this);
-		main = root;
 		mActionModeHeight = dm.heightPixels/2;
 		CMN.MainBackground = MainBackground = opt.getMainBackground();
 		processIntent(getIntent());
@@ -125,9 +128,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 		} else {
 			ucc.onClick(null);
 		}
-	}
-	
-	private void ShowVeratilePanel() {
 	}
 	
 	@Override
