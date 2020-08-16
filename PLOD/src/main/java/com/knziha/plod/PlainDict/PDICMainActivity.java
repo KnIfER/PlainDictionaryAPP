@@ -3,7 +3,6 @@ package com.knziha.plod.PlainDict;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -32,7 +31,6 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
-import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -105,7 +103,6 @@ import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.ebook.Utils.BU;
-import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
@@ -118,7 +115,6 @@ import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.IMPageSlider.PageSliderInf;
-import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.RLContainerSlider;
@@ -252,9 +248,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private static int LauncherInstanceCount;
 	public MenuItem iItem_aPageRemember;
 	private EnchanterReceiver locationReceiver;
-	private int TotalMergedKeyCount;
-	private int ConfidentMergeShift;
-	private int ConfidentMergeStart;
 	
 	
 	@Override
@@ -864,6 +857,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		bridgedActivity=true;
 		bIsFirstLaunch=false;
 		focused=true;
+		this_instanceof_PDICMainActivity=true;
 		CMN.Log("LauncherInstanceCount", LauncherInstanceCount);
 		if(LauncherInstanceCount>=1) {
 			Intent thisIntent = getIntent();
@@ -1359,8 +1353,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		tw1=new TextWatcher() { //tw
 			//tc
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				if(s.length()>0){
+			public void onTextChanged(CharSequence cs, int start, int before, int count) {
+				if(cs.length()>0){
 					etSearch_ToToolbarMode(3);
 					if(CurrentViewPage==1) {
 						String text = etSearch.getText().toString().trim();
@@ -1378,74 +1372,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								}
 							}
 						}
-						if(isCombinedSearching){
-							if(lianHeTask!=null) {
-								lianHeTask.cancel(false);
-							}
-							if(!checkDicts()) {
-								return;
-							}
-							String key = s.toString();
-							if(!key.equals(CombinedSearchTask_lastKey))
-								lianHeTask = new CombinedSearchTask(PDICMainActivity.this).execute(key);
-							else if(bIsFirstLaunch){
-								/* 接管历史纪录 */
-								bRequestedCleanSearch=bIsFirstLaunch;
-								bIsFirstLaunch=false;
-								if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(0)))))
-								{
-									adaptermy2.onItemClick(null, adaptermy2.getView(0, null, null), 0, 0);
-								}
+						if(checkDicts()) {
+							if(isCombinedSearching){
+								execBunchSearch(cs);
+							} else {
+								execSingleSearch(cs, count);
 							}
 						}
-						else try {
-							if(!checkDicts()) return;
-							String key = s.toString().trim();
-							//首先，搜索到第一个match，然后尝试变形，两者向下再搜索
-							int normal_idx=currentDictionary.lookUp(key, true);
-							int formation_idx=-1;
-							
-							boolean bFetchMoreContents = true;
-							if(bFetchMoreContents || normal_idx<0 && PDICMainAppOptions.getSearchUseMorphology()) {
-								String formation_key = ReRouteKey(key, true);
-								if(formation_key!=null) {
-									formation_idx = currentDictionary.lookUp(formation_key, true);
-								}
-								if(normal_idx==-1) { //treat formation result as normal.
-									normal_idx=formation_idx;
-									formation_idx=-1;
-									key=formation_key;
-								}
-							}
-							
-							CMN.Log("单本搜索 ： ", normal_idx, normal_idx<0?"":currentDictionary.getEntryAt(normal_idx));
-							if(normal_idx!=-1) {
-								int tmpIdx = normal_idx;
-								if(normal_idx<0) {
-									tmpIdx = -tmpIdx - 3;
-								} else {
-									lv_matched = true;
-									if(bFetchMoreContents) {
-										MergeSingleResults(key, normal_idx, formation_idx);
-									}
-								}
-								lv.setSelection(tmpIdx);
-								if(bIsFirstLaunch||bWantsSelection) {
-									if(normal_idx>=0) {
-										boolean proceed = true;
-										if(count>=0&&isContentViewAttached()&&!isContentViewAttachedForDB()) {
-											proceed = currentDictionary.lvClickPos!=normal_idx;
-										}
-										if(proceed) {
-											bRequestedCleanSearch=bIsFirstLaunch;
-											/* 接管历史纪录 */
-											adaptermy.onItemClick(null, null, normal_idx, 0);
-										}
-									}
-								}
-								bIsFirstLaunch=false;
-							}
-						} catch (Exception e) { CMN.Log(e); }
 					}
 				} else {
 					if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && mdict.class.equals(currentDictionary.getClass()))
@@ -1777,48 +1710,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} catch (Exception e) {
 				CMN.Log(e);
 			}
-	}
-	
-	SparseIntArray mergedKeyHeaders = new SparseIntArray();
-	
-	private void MergeSingleResults(String key, int normal_idx, int formation_idx) {
-		ClearMerges();
-		MergeSingleResultsAfter(null, formation_idx);
-		MergeSingleResultsAfter(key, ConfidentMergeStart=normal_idx);
-		if(ConfidentMergeShift ==-1) ConfidentMergeShift =0;
-		CMN.Log("mergedKeyHeaders", mergedKeyHeaders, ConfidentMergeShift);
-	}
-	
-	private void ClearMerges() {
-		mergedKeyHeaders.clear();
-		TotalMergedKeyCount=0;
-		ConfidentMergeShift =-1;
-	}
-	
-	private void MergeSingleResultsAfter(String key, int startIdx) {
-		if(startIdx!=-1) {
-			mdict current = currentDictionary;
-			int theta=8;
-			long maxID=current.getNumberEntries()-1;
-			String startKey = mdict.processText(current.getEntryAt(startIdx));
-			int i = 0;
-			int idx=startIdx;
-			while(true) {
-				++i;
-				idx++;
-				String currentKey;
-				if(i>theta || idx>maxID || !startKey.equals(mdict.processText(currentKey=current.getEntryAt(idx)))) {
-					break;
-				}
-				if(key!=null && ConfidentMergeShift ==-1 && currentKey.startsWith(key)) {
-					ConfidentMergeShift =i;
-				}
-			}
-			if(i>1) {
-				mergedKeyHeaders.put(startIdx, i);
-				TotalMergedKeyCount+=i;
-			}
-		}
 	}
 	
 	private void ResizeDictPicker() {
@@ -2725,35 +2616,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				current_Webview.bRequestedSoundPlayback=true;
 			
 			/* 仿效 GoldenDict 返回尽可能多的结果 */
-			int[] ClickPositions;
-			SparseIntArray KeyHeaders = mergedKeyHeaders;
-			int mergeCount = KeyHeaders.get(pos);
-			int MergedStartShift = pos==ConfidentMergeStart?ConfidentMergeShift :0;
-			if(mergeCount>0) {
-				ClickPositions = new int[TotalMergedKeyCount];
-				for (int i=0; i < mergeCount; i++) {
-					ClickPositions[i]=pos+(MergedStartShift+i)%mergeCount;
-				}
-				int mergeSize = KeyHeaders.size();
-				if(mergeSize>1) {
-					int mergeIdx = mergeCount;
-					for (int i = 0; i < mergeSize; i++) {
-						int mergeKey = KeyHeaders.keyAt(i);
-						if(mergeKey!=pos) {
-							mergeCount = KeyHeaders.get(mergeKey);
-							for (int j = 0; j < mergeCount; j++) {
-								ClickPositions[mergeIdx+j]=mergeKey+j;
-							}
-							mergeIdx+=mergeCount;
-						}
-					}
-				}
-			} else {
-				ClickPositions = new int[]{pos};
-			}
-			
-			
-			currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, ClickPositions);
+			currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, getMergedClickPositions(pos));
 			contentview.setTag(R.id.image, PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null?false:null);
 
 			String key = currentKeyText = currentDictionary.currentDisplaying;

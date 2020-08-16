@@ -15,7 +15,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -40,12 +39,11 @@ import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_txt;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
-import com.knziha.plod.searchtasks.CombinedSearchTask;
-import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.SplitView;
 
 import java.io.BufferedReader;
@@ -297,65 +295,28 @@ public class FloatSearchActivity extends MainActivityUIBase {
         bShowLoadErr=false;
 		//tc
 		tw1 = new TextWatcher() {
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				String keyTmp = mdict.processText(s.toString());
-				if(keyTmp.length()>0){
+			public void onTextChanged(CharSequence cs, int start, int before, int count) {
+				if(SU.isNotEmpty(cs)) {
 					etSearch_ToToolbarMode(3);
 					//webcontentlist.setVisibility(View.INVISIBLE);
-					if(!bWantsSelection)
+					if(!bWantsSelection) {
 						webholder.removeAllViews();
-					if(isCombinedSearching){
-						if(lianHeTask!=null) {
-							lianHeTask.cancel(false);
-						}
-						if(!checkDicts()) return;
-						if(lv2.getVisibility()==View.INVISIBLE)
-							lv2.setVisibility(View.VISIBLE);
-						String key = s.toString();
-						if(!key.equals(CombinedSearchTask_lastKey))
-							lianHeTask = new CombinedSearchTask(FloatSearchActivity.this).execute(key);
-						else if(bIsFirstLaunch){
-							/* 接管历史纪录 */
-							bIsFirstLaunch=false;
-							if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(0)))))
-							{
-								adaptermy2.onItemClick(null, adaptermy2.getView(0, null, null), 0, 0);
-							}
+					}
+					if(checkDicts()) {
+						if(isCombinedSearching){
+							execBunchSearch(cs);
+						} else {
+							execSingleSearch(cs, count);
 						}
 					}
-					else try {
-						if(!checkDicts()) return;
-						int res=currentDictionary.lookUp(""+s);
-						if(res!=-1){
-							lv.setSelection(res);
-							//showT(proceed+""+bWantsSelection+" "+mdict.processText(currentDictionary.getEntryAt(res))+"=="+mdict.processText(keyTmp));
-							if(bIsFirstLaunch||bWantsSelection) {
-								if(mdict.processText(currentDictionary.getEntryAt(res)).equals(keyTmp)) {
-									boolean proceed = true;
-									if(webcontentlist.getVisibility()==View.VISIBLE) {//webSingleholder.getChildCount()!=1
-										proceed = (adaptermy.currentKeyText == null || !keyTmp.equals(adaptermy.currentKeyText.trim()));
-									}
-									if(proceed) {
-										/* 接管历史纪录 */
-										adaptermy.onItemClick(null, null, res, 0);
-									}
-								}
-							}
-							bIsFirstLaunch=false;
-						}
-					} catch (Exception e) {e.printStackTrace();}
-				}else{
+				} else {
 					if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && mdict.class.equals(currentDictionary.getClass()))
 						adaptermy.notifyDataSetChanged();
-					if(lv2.getVisibility()==View.VISIBLE)
-						lv2.setVisibility(View.INVISIBLE);
+					lv2.setVisibility(View.INVISIBLE);
 				}
 			}
 		
-			public void beforeTextChanged(CharSequence s, int start, int count,
-										  int after) {
-			
-			}
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 		
 			public void afterTextChanged(Editable s) {
 				//if (s.length() == 0) ivDeleteText.setVisibility(View.GONE);
@@ -375,7 +336,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
 
 		hideNavigation = intent==null? PDICMainAppOptions.getFloatHideNavigation():intent.getBooleanExtra(EXTRA_HIDE_NAVIGATION, PDICMainAppOptions.getFloatHideNavigation());
-		if(hideNavigation){
+		if(hideNavigation) {
 			View decorView = getWindow().getDecorView();
 			int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -419,8 +380,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		FVW= defaultReader.getInt("FVW",dm.widthPixels);
 		FVH_UNDOCKED= defaultReader.getInt("UDFVH",-1);
 		FVW_UNDOCKED= defaultReader.getInt("UDFVW",-1);
-		FVTX=Math.min(Math.max(defaultReader.getInt("FVTX",0), 0), (int) (dm.widthPixels-_50_));
-		FVTY=Math.min(Math.max(defaultReader.getInt("FVTY",(int) (dm.heightPixels-500*dm.density)), 0), (int) (dm.heightPixels-_50_));
+		FVTX= Math.min(Math.max(defaultReader.getInt("FVTX",0), 0), (int) (dm.widthPixels-_50_));
+		FVTY= Math.min(Math.max(defaultReader.getInt("FVTY",(int) (dm.heightPixels-500*dm.density)), 0), (int) (dm.heightPixels-_50_));
 		
 		mainfv.setTranslationY(FVTY);
 		mainfv.setTranslationX(FVTX);
@@ -1081,7 +1042,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			currentDictionary.initViewsHolder(FloatSearchActivity.this);
 			currentDictionary.mWebView.fromCombined=0;
 			webSingleholder.addView(md.get(adapter_idx).rl);
-			currentDictionary.renderContentAt(-1,adapter_idx,0,null, position);
+	
+			/* 仿效 GoldenDict 返回尽可能多的结果 */
+			currentDictionary.renderContentAt(-1,adapter_idx,0,null, getMergedClickPositions(position));
 			
 			currentKeyText = currentDictionary.getEntryAt(position);
 			bWantsSelection=true;

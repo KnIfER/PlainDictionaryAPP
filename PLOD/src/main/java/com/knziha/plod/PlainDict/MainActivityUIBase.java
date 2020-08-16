@@ -56,6 +56,7 @@ import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.DisplayMetrics;
+import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.DragEvent;
@@ -155,6 +156,7 @@ import com.knziha.plod.dictionarymodels.mdict_web;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.ebook.Utils.BU;
+import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
@@ -508,6 +510,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	SplitView.PageSliderInf inf;
 	private boolean read_click_search;
 	protected boolean this_instanceof_MultiShareActivity;
+	protected boolean this_instanceof_PDICMainActivity;
 	protected boolean lv_matched;
 	
 	public boolean checkWebSelection() {
@@ -2779,9 +2782,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void buildUpDictionaryList(boolean lazyLoad, HashMap<String, mdict> mdict_cache) {
-		ArrayList<PlaceHolder> CosyChair = this instanceof PDICMainActivity?PDICMainActivity.CosyChair:getLazyCC();
-		ArrayList<PlaceHolder> CosySofa = this instanceof PDICMainActivity?PDICMainActivity.CosySofa:getLazyCS();
-		ArrayList<PlaceHolder> HdnCmfrt = this instanceof PDICMainActivity?PDICMainActivity.HdnCmfrt:getLazyHC();
+		boolean this_instanceof_pdicMainActivity = this_instanceof_PDICMainActivity;
+		ArrayList<PlaceHolder> CosyChair = this_instanceof_pdicMainActivity ?PDICMainActivity.CosyChair:getLazyCC();
+		ArrayList<PlaceHolder> CosySofa = this_instanceof_pdicMainActivity ?PDICMainActivity.CosySofa:getLazyCS();
+		ArrayList<PlaceHolder> HdnCmfrt = this_instanceof_pdicMainActivity ?PDICMainActivity.HdnCmfrt:getLazyHC();
 		currentFilter.ensureCapacity(filter_count);
 		currentFilter.clear();
 		md.ensureCapacity(CosyChair.size());
@@ -3099,7 +3103,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					stopAutoReadProcess();
 				}
 				boolean b1=!bridgedActivity || bridgedActivityCount<=0;
-				if(b1 || this instanceof PDICMainActivity) {
+				if(b1 || this_instanceof_PDICMainActivity) {
 					for (mdict mdTmp : md) {
 						if (mdTmp != null) {
 							mdTmp.unload();
@@ -4945,7 +4949,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(PeruseViewAttached()){
 					title += "翻阅模式";
 					flagPos = 8;
-				} else if(this instanceof PDICMainActivity){
+				} else if(this_instanceof_PDICMainActivity){
 					title+="主程序"+"/"+(wh?"联合搜索":"单本阅读");
 					flagPos = wh?2:0;
 				} else {
@@ -5617,7 +5621,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					break;
 				}
 				exitTime=0;
-				boolean b1=this instanceof PDICMainActivity;
+				boolean b1=this_instanceof_PDICMainActivity;
 				if(b1) {
 					v.setTag(false);
 					PDICMainActivity THIS = (PDICMainActivity) this;
@@ -5685,7 +5689,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.browser_widget12:{
 				if(webSingleholder.getChildCount()==1 && widget12.getTag(R.id.image)!=null){
 					if((int)widget12.getTag(R.id.image)==R.drawable.ic_fullscreen_black_96dp){
-						if(this instanceof PDICMainActivity)
+						if(this_instanceof_PDICMainActivity)
 							((PDICMainActivity)this).forceFullscreen(!PDICMainAppOptions.isFullScreen());
 					}else{
 						toggleClickThrough();
@@ -6235,7 +6239,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				MainPageSearchbar.setTag(null);
 			}
 
-			if(this instanceof PDICMainActivity)
+			if(this_instanceof_PDICMainActivity)
 				opt.setInPageSearchVisible(b1);
 			else{
 				PDICMainAppOptions.setInFloatPageSearchVisible(b1);
@@ -6628,7 +6632,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							//show(R.string.loadsucc);
 							showTopSnack(main_succinct, R.string.loadsucc
 									, -1, -1, Gravity.CENTER, 0);
-							if(this instanceof PDICMainActivity) {
+							if(this_instanceof_PDICMainActivity) {
 								// todo 干掉缓冲组
 								File def1 = new File(getExternalFilesDir(null), "default.txt");
 								if(def1.length()>0) {
@@ -9404,7 +9408,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		int pos = defbarcustpos;
 		if(PeruseViewAttached()){
 			pos = 2;
-		} else if(this instanceof PDICMainActivity && contentview.getParent()!=null){
+		} else if(this_instanceof_PDICMainActivity && contentview.getParent()!=null){
 			pos = 1;
 		}
 		
@@ -9434,5 +9438,159 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CommonAssets.put(key, data);
 		}
 		return new ByteArrayInputStream(data);
+	}
+	
+	void execSingleSearch(CharSequence cs, int count) {
+		try {
+			String key = cs.toString().trim();
+			//首先，搜索到第一个match，然后尝试变形，两者向下再搜索
+			int normal_idx=currentDictionary.lookUp(key, true);
+			int formation_idx=-1;
+			
+			boolean bFetchMoreContents = true;
+			if(bFetchMoreContents || normal_idx<0 && PDICMainAppOptions.getSearchUseMorphology()) {
+				String formation_key = ReRouteKey(key, true);
+				if(formation_key!=null) {
+					formation_idx = currentDictionary.lookUp(formation_key, true);
+				}
+				if(normal_idx==-1) { //treat formation result as normal.
+					normal_idx=formation_idx;
+					formation_idx=-1;
+					key=formation_key;
+				}
+			}
+			
+			CMN.Log("单本搜索 ： ", normal_idx, normal_idx<0?"":currentDictionary.getEntryAt(normal_idx));
+			if(normal_idx!=-1) {
+				int tmpIdx = normal_idx;
+				if(normal_idx<0) {
+					tmpIdx = -tmpIdx - 3;
+				} else {
+					lv_matched = true;
+					if(bFetchMoreContents) {
+						MergeSingleResults(key, normal_idx, formation_idx);
+					}
+				}
+				lv.setSelection(tmpIdx);
+				if(bIsFirstLaunch||bWantsSelection) {
+					if(normal_idx>=0) {
+						boolean proceed = true;
+						if(count>=0) {
+							if(this_instanceof_PDICMainActivity) {
+								if(isContentViewAttached()&&!isContentViewAttachedForDB())
+									proceed = currentDictionary.lvClickPos!=normal_idx;
+							} else {
+								if(webcontentlist.getVisibility()==View.VISIBLE) {//webSingleholder.getChildCount()!=1
+									String keyTmp = mdict.processText(cs.toString());
+									proceed = (adaptermy.currentKeyText == null || !keyTmp.equals(adaptermy.currentKeyText.trim()));
+								}
+							}
+						}
+						if(proceed) {
+							bRequestedCleanSearch=bIsFirstLaunch;
+							/* 接管历史纪录 */
+							adaptermy.onItemClick(null, null, normal_idx, 0);
+						}
+					}
+				}
+				bIsFirstLaunch=false;
+			}
+		} catch (Exception e) { CMN.Log(e); }
+	}
+	
+	void execBunchSearch(CharSequence cs) {
+		if(lianHeTask!=null) {
+			lianHeTask.cancel(false);
+		}
+		//if(lv2.getVisibility()==View.INVISIBLE)
+		//	lv2.setVisibility(View.VISIBLE);
+		String key = cs.toString();
+		if(!key.equals(CombinedSearchTask_lastKey))
+			lianHeTask = new CombinedSearchTask(MainActivityUIBase.this).execute(key);
+		else if(bIsFirstLaunch){
+			/* 接管历史纪录 */
+			bRequestedCleanSearch=bIsFirstLaunch;
+			bIsFirstLaunch=false;
+			if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(0)))))
+			{
+				adaptermy2.onItemClick(null, adaptermy2.getView(0, null, null), 0, 0);
+			}
+		}
+	}
+	
+	
+	SparseIntArray mergedKeyHeaders = new SparseIntArray();
+	private int TotalMergedKeyCount;
+	private int ConfidentMergeShift;
+	private int ConfidentMergeStart;
+	
+	private void MergeSingleResults(String key, int normal_idx, int formation_idx) {
+		ClearMerges();
+		MergeSingleResultsAfter(null, formation_idx);
+		MergeSingleResultsAfter(key, ConfidentMergeStart=normal_idx);
+		if(ConfidentMergeShift ==-1) ConfidentMergeShift =0;
+		CMN.Log("mergedKeyHeaders", mergedKeyHeaders, ConfidentMergeShift);
+	}
+	
+	private void ClearMerges() {
+		mergedKeyHeaders.clear();
+		TotalMergedKeyCount=0;
+		ConfidentMergeShift =-1;
+	}
+	
+	private void MergeSingleResultsAfter(String key, int startIdx) {
+		if(startIdx!=-1) {
+			mdict current = currentDictionary;
+			int theta=8;
+			long maxID=current.getNumberEntries()-1;
+			String startKey = mdict.processText(current.getEntryAt(startIdx));
+			int i = 0;
+			int idx=startIdx;
+			while(true) {
+				++i;
+				idx++;
+				String currentKey;
+				if(i>theta || idx>maxID || !startKey.equals(mdict.processText(currentKey=current.getEntryAt(idx)))) {
+					break;
+				}
+				if(key!=null && ConfidentMergeShift ==-1 && currentKey.startsWith(key)) {
+					ConfidentMergeShift =i;
+				}
+			}
+			if(i>1) {
+				mergedKeyHeaders.put(startIdx, i);
+				TotalMergedKeyCount+=i;
+			}
+		}
+	}
+	
+	int[] getMergedClickPositions(int pos) {
+		int[] ret;
+		SparseIntArray KeyHeaders = mergedKeyHeaders;
+		int mergeCount = KeyHeaders.get(pos);
+		int MergedStartShift = pos==ConfidentMergeStart?ConfidentMergeShift :0;
+		if(mergeCount>0) {
+			ret = new int[TotalMergedKeyCount];
+			for (int i=0; i < mergeCount; i++) {
+				ret[i]=pos+(MergedStartShift+i)%mergeCount;
+			}
+			int mergeSize = KeyHeaders.size();
+			if(mergeSize>1) {
+				int mergeIdx = mergeCount;
+				for (int i = 0; i < mergeSize; i++) {
+					int mergeKey = KeyHeaders.keyAt(i);
+					if(mergeKey!=pos) {
+						mergeCount = KeyHeaders.get(mergeKey);
+						for (int j = 0; j < mergeCount; j++) {
+							ret[mergeIdx+j]=mergeKey+j;
+						}
+						mergeIdx+=mergeCount;
+					}
+				}
+			}
+		} else {
+			ret = new int[]{pos};
+		}
+		return ret;
 	}
 }

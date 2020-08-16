@@ -98,6 +98,22 @@ public class  SU{
 		return line;
 	}
 	
+	public static boolean isNotEmpty(CharSequence cs) {
+		int len=cs.length();
+		if(len>0) {
+			int st = 0;
+			while ((st < len) && (cs.charAt(st) <= ' ')) {
+				len--;
+			}
+			if(len>0) {
+				while ((st < len) && (cs.charAt(len - 1) <= ' ')) {
+					len--;
+				}
+			}
+		}
+		return len>0;
+	}
+	
 	public boolean CharsequenceEqual(CharSequence cs1, CharSequence cs2) {
 		if(cs1!=null&&cs2!=null) {
 			int len1=cs1.length();
