@@ -118,6 +118,7 @@ import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.IMPageSlider.PageSliderInf;
+import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.RLContainerSlider;
@@ -175,7 +176,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public String lastKeyword;
 
 	ImageView widget0;
-	List<View> viewList;
+
 	NoScrollViewPager viewPager;
 	ActionBarDrawerToggle mDrawerToggle;
 	DrawerLayout mDrawerLayout;
@@ -1271,8 +1272,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 		//listViewStrictScroll(lv2,true);
-
-		viewList = Arrays.asList(mlv1, mlv, mlv2);
+		
+		View[] viewList = new View[]{mlv1, mlv, mlv2};
 		
 		PagerAdapter pagerAdapter = new PagerAdapter() {
 			@Override
@@ -1285,11 +1286,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			@Override
 			public void destroyItem(ViewGroup container, int position, @NonNull Object object) {
-				container.removeView(viewList.get(position));
+				container.removeView(viewList[position]);
 			}
 			@NonNull @Override
 			public Object instantiateItem(ViewGroup container, int position) {
-				View child = viewList.get(position);
+				View child = viewList[position];
 				container.addView(child);
 				return child;
 			}
