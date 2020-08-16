@@ -1247,37 +1247,21 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		viewPager.setOnTouchListener(toucherTmp);
 
 		viewPager.addOnPageChangeListener(new OnPageChangeListener() {
-			@Override
-			public void onPageScrollStateChanged(int arg0) {
-			}
-			@Override
-			public void onPageScrolled(int arg0, float arg1, int arg2) {
-			}
-
+			@Override public void onPageScrollStateChanged(int arg0) { }
+			@Override public void onPageScrolled(int arg0, float arg1, int arg2) { }
 			@Override
 			public void onPageSelected(int pos) {
-				int msg = 0;
 				CurrentViewPage=pos;
-				if(pos==0) {
-					if(PDICMainAppOptions.getHintSearchMode())
-						msg=PDICMainAppOptions.getUseRegex1()?3:1;
-				} else if(pos==2) {
-					if(PDICMainAppOptions.getHintSearchMode())
-						msg=PDICMainAppOptions.getUseRegex1()?3:1;
+				boolean b1=pos==0;
+				if((b1||pos==2) && PDICMainAppOptions.getHintSearchMode()) {
+					boolean bUseRegex = b1?PDICMainAppOptions.getUseRegex1():PDICMainAppOptions.getUseRegex2();
+					int msg=bUseRegex?R.string.regret:(b1?R.string.fuzzyret:R.string.fullret);
+					viewPager.post(() -> showTopSnack(main_succinct, msg, 0.5f, -1, Gravity.CENTER, 0));
 				}
-				
 				decorateBottombarFFSearchIcons(pos);
-
 				applyMainMenu();
-				
-				if(msg!=0) {
-					int finalMsg = msg;
-					viewPager.post(() ->
-						showTopSnack(main_succinct, finalMsg ==3?R.string.regret: finalMsg==1?R.string.fuzzyret:R.string.fullret
-								, 0.5f, -1, Gravity.CENTER, 0)
-					);
-				}
 			}});
+		
 		//tofo
 		if(Build.VERSION.SDK_INT >= 24)
 			if(false) {//opt.is_strict_scroll()
