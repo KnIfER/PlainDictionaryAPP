@@ -141,7 +141,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			}
 			DBrowser = null;
 		} else {
-			if(this_instanceof_FloarActivitySearch && PDICMainAppOptions.getFloatClickHideToBackground()){
+			if(this_instanceof_FloarActivitySearch && PDICMainAppOptions.getFloatClickHideToBackground()) {
 				moveTaskToBack(false);
 				return;
 			}
@@ -186,7 +186,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	@Override
 	public void NotifyComboRes(int size) {
-		if(opt.getNotifyComboRes()) {
+		if(PDICMainAppOptions.getNotifyComboRes()) {
 			float fval = 0.5f;
 			if(bIsFirstLaunch||bWantsSelection) {
 				fval=1f;
@@ -271,10 +271,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
     protected void onCreate(Bundle savedInstanceState) {
 		cbar_key=2;
 		defbarcustpos=3;
-    	long cur = System.currentTimeMillis();
 		if(getClass()==FloatSearchActivity.class) {
-			boolean frequentLaunch = cur-CMN.FloatLastInvokerTime<524;
-			if(false)
+			long cur;
 			if(PDICMainAppOptions.getForceFloatSingletonSearch(PDICMainAppOptions.getFourthFlag(this))) {
 				Intent thisIntent = getIntent();
 				startActivity((thisIntent==null?new Intent():new Intent(getIntent()))
@@ -282,8 +280,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 						.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));//, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
 				overridePendingTransition(R.anim.abc_popup_enter, R.anim.abc_popup_exit);
 				shunt = true;
-			} else if(frequentLaunch) {
+			} else if((cur=System.currentTimeMillis())-CMN.FloatLastInvokerTime<524) {
 				shunt = true;
+			} else {
+				CMN.FloatLastInvokerTime=cur;
 			}
 		}
 		super.onCreate(savedInstanceState);
@@ -291,42 +291,24 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			finish();
 			return;
 		}
-    	CMN.FloatLastInvokerTime=cur;
         bShowLoadErr=false;
 		//tc
-		tw1 = new TextWatcher() {
-			public void onTextChanged(CharSequence cs, int start, int before, int count) {
-				if(SU.isNotEmpty(cs)) {
-					etSearch_ToToolbarMode(3);
-					//webcontentlist.setVisibility(View.INVISIBLE);
-					if(!bWantsSelection) {
-						webholder.removeAllViews();
-					}
-					if(checkDicts()) {
-						if(isCombinedSearching){
-							execBunchSearch(cs);
-						} else {
-							execSingleSearch(cs, count);
-						}
-					}
+		execSearchRunnable = () -> {
+			//webcontentlist.setVisibility(View.INVISIBLE);
+			if(!bWantsSelection) {
+				webholder.removeAllViews();
+			}
+			if(checkDicts()) {
+				if(isCombinedSearching){
+					execBunchSearch(search_cs);
 				} else {
-					if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && mdict.class.equals(currentDictionary.getClass()))
-						adaptermy.notifyDataSetChanged();
-					lv2.setVisibility(View.INVISIBLE);
+					execSingleSearch(search_cs, search_count);
 				}
 			}
-		
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-		
-			public void afterTextChanged(Editable s) {
-				//if (s.length() == 0) ivDeleteText.setVisibility(View.GONE);
-				//else  ivDeleteText.setVisibility(View.VISIBLE);
-				if (s.length() != 0) ivDeleteText.setVisibility(View.VISIBLE);
-			}
 		};
-		
     	overridePendingTransition(R.anim.abc_popup_enter, R.anim.abc_popup_enter);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+		|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         Intent intent = getIntent();
@@ -469,13 +451,13 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	private OnGlobalLayoutListener keyObserver;
 	@Override
     protected void further_loading(final Bundle savedInstanceState) {
-        CachedBBSize=opt.getFloatBottombarSize((int) getResources().getDimension(R.dimen._bottombarheight_));
+        CachedBBSize=opt.getFloatBottombarSize((int) mResource.getDimension(R.dimen._bottombarheight_));
     	super.further_loading(savedInstanceState);
 
         main = main_succinct;
 		sp_main.scrollbar2guard = mBar;
 
-		if(opt.getInFloatPageSearchVisible())
+		if(PDICMainAppOptions.getInFloatPageSearchVisible())
 			toggleInPageSearch(false);
     	
         lv.setAdapter(adaptermy = new ListViewAdapter(webSingleholder));
@@ -495,7 +477,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				String key = String.valueOf(etSearch.getText()).trim();
 				if(key.length()>0) Current0SearchText=key;
 				bIsFirstLaunch=true;
-				tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
+				tw1.onTextChanged(etSearch.getText(), -1, -1, 0);
 			}
 			return true;
 		});
@@ -509,33 +491,28 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		
         //键盘监听器
         root.getViewTreeObserver().addOnGlobalLayoutListener(keyObserver=new OnGlobalLayoutListener(){
-			boolean keyBoardFlipper=false;
+			boolean lastIsKeyBoardShown =false;
         	@Override
 			public void onGlobalLayout() {
-				//showT("onGlobalLayout");
         		int kb_height=isKeyboardShown(root);
-        		if(keyBoardFlipper) {
-        			if(kb_height<=0){
-						keyBoardFlipper=false;
-						//showT("onGlobalLayout_kn_hide");
-					}
-        		}else {
-					if(kb_height>0) {
-						keyBoardFlipper=true;
-						//showT("onGlobalLayout_isKeyboardShown");
-						FrameLayout.LayoutParams  lpmy = (android.widget.FrameLayout.LayoutParams) mainfv.getLayoutParams();
-						wm.getDefaultDisplay().getMetrics(dm);
-						if(mainfv.getTranslationY()>dm.heightPixels - kb_height - 50*dm.density) {
-							int newTransY = (int) (dm.heightPixels - kb_height - 100*dm.density);
-							mainfv.setTranslationY(newTransY);
-							if(FVDOCKED) {
-								lpmy.height=dm.heightPixels-newTransY-(DockerMarginB+DockerMarginT);
-								mainfv.setLayoutParams(lpmy);
-							}
-							//showT("sdjusted"+dm.heightPixels);
+				//showT("onGlobalLayout "+kb_height);
+				boolean keyBoardShown = kb_height > 100;
+				if(keyBoardShown!= lastIsKeyBoardShown) {
+					lastIsKeyBoardShown =keyBoardShown;
+					wm.getDefaultDisplay().getMetrics(dm);
+					int TBH = toolbar.getHeight();
+					if(mainfv.getTranslationY()>dm.heightPixels - kb_height - TBH) {
+						int newTransY = (int) (dm.heightPixels - kb_height - 2*TBH);
+						if(FVDOCKED) {
+							ViewGroup.LayoutParams lpmy = mainfv.getLayoutParams();
+							lpmy.height=dm.heightPixels-newTransY-(DockerMarginB+DockerMarginT);
+							mainfv.requestLayout();
 						}
+						mainfv.setTranslationY(newTransY);
+						//showT("adjusted"+dm.heightPixels);
 					}
-        		}
+				}
+				//showT("keyBoardShown " + keyBoardShown);
 			}});
 
 		GestureDetector mGestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
@@ -1193,9 +1170,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		public String currentKeyText() {
 			return currentKeyText;
 		}
-	};
-
-
+	}
+	
+	
 	@Override
 	public void onClick(View v) {
 		super.onClick(v);
@@ -1247,7 +1224,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
-		boolean isLongClicked=mmi==null?false:mmi.isLongClicked;
+		boolean isLongClicked= mmi != null && mmi.isLongClicked;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;

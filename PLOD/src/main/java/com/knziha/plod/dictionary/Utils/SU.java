@@ -40,7 +40,7 @@ public class  SU{
             st++;
         }
         
-        return ((st > 0) || (len < input.length())) ? input.substring(st, len) : input;
+        return st > 0 ? input.substring(st, len) : input;
     }
 	
     public static int compareTo(String strA,String strB,int start, int lim) {
@@ -65,7 +65,7 @@ public class  SU{
 		String msg="fatal_log_mdict : ";
 		if(o!=null)
 			for(int i=0;i<o.length;i++) {
-				if(Exception.class.isInstance(o[i])) {
+				if(o[i] instanceof Exception) {
 					ByteArrayOutputStream s = new ByteArrayOutputStream();
 					PrintStream p = new PrintStream(s);
 					((Exception)o[i]).printStackTrace(p);

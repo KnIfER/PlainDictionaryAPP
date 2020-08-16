@@ -2226,18 +2226,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return (FourthFlag & 0x1000000000000l) == 0x1000000000000l;
 	}
 	
-	public static boolean getForceFloatSingletonSearch() {
-		return (FourthFlag & 0x2000000000000l) != 0x2000000000000l;
-	}
+	@Multiline(flagPos=49) public static boolean getForceFloatSingletonSearch() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=49) public static boolean getForceFloatSingletonSearch(long FourthFlag) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	
-	public static boolean getForceFloatSingletonSearch(long FourthFlag) {
-		return (FourthFlag & 0x2000000000000l) != 0x2000000000000l;
-	}
-	
-	public static boolean isSingleThreadServer() {
-		return (FourthFlag & 0x4000000000000l) == 0x4000000000000l;
-	}
-	
+	@Multiline(flagPos=50) public static boolean isSingleThreadServer() { FourthFlag=FourthFlag; throw new RuntimeException();}
 	@Multiline(flagPos=51) public static boolean getServerStarted() { FourthFlag=FourthFlag; throw new RuntimeException();}
 	@Multiline(flagPos=51) public static void setServerStarted(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	

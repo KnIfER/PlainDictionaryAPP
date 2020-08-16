@@ -290,7 +290,34 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int defbarcustpos;
 	public int cbar_key;
 	public StringBuilder MainStringBuilder;
-	protected TextWatcher tw1;
+	Runnable execSearchRunnable;
+	CharSequence search_cs;
+	int search_count;
+	protected TextWatcher tw1 = new TextWatcher() { //tw
+		public void onTextChanged(CharSequence cs, int start, int before, int count) {
+			if(SU.isNotEmpty(cs)) {
+				etSearch_ToToolbarMode(3);
+				root.removeCallbacks(execSearchRunnable);
+				search_cs=cs;
+				search_count=count;
+				if(start==before&&before==-1) {
+					execSearchRunnable.run();
+				} else {
+					root.postDelayed(execSearchRunnable, 150);
+				}
+			} else {
+				if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && mdict.class.equals(currentDictionary.getClass()))
+					adaptermy.notifyDataSetChanged();
+				lv2.setVisibility(View.INVISIBLE);
+			}
+		}
+		public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+		public void afterTextChanged(Editable s) {
+			//if (s.length() == 0) ivDeleteText.setVisibility(View.GONE);
+			//else  ivDeleteText.setVisibility(View.VISIBLE);
+			if (s.length() != 0) ivDeleteText.setVisibility(View.VISIBLE);
+		}
+	};
 	boolean bShowLoadErr=true;
 	public boolean isCombinedSearching;
 	public String CombinedSearchTask_lastKey;
@@ -623,7 +650,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(prvNxt && opt.getDimScrollbarForPrvNxt()) {
 							Utils.dimScrollbar(lv, false);
 						}
-						tw1.onTextChanged(etSearch.getText(), 0, 0, -100);
+						tw1.onTextChanged(etSearch.getText(), -1, -1, -100);
 						//lv.setFastScrollEnabled(true);
 						if(prvNxt && opt.getPrvNxtDictSkipNoMatch()) {
 							return lv_matched;

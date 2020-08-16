@@ -1350,53 +1350,33 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		adaptermy3.combining_search_result = new resultRecorderScattered(this,md,TintWildResult,fuzzySearchLayer);
 		adaptermy4.combining_search_result = new resultRecorderScattered(this,md,TintWildResult,fullSearchLayer);
-		
-		tw1=new TextWatcher() { //tw
-			//tc
-			public void onTextChanged(CharSequence cs, int start, int before, int count) {
-				if(cs.length()>0){
-					etSearch_ToToolbarMode(3);
-					if(CurrentViewPage==1) {
-						String text = etSearch.getText().toString().trim();
-						if(text.length()==0) return;
-						if(text.startsWith("<")) {
-							String perWSTag = getResources().getString(R.string.perWSTag);
-							String firstTag = firstTag(text);
-							if(firstTag!=null) {
-								String fTCpror = firstTag.replace("~", "");
-								if(perWSTag.equals(fTCpror)||"分字".equals(fTCpror)) {
-									String input = text.substring(text.indexOf(">")+1).trim();
-									if(input.length()!=0)
-										launchVerbatimSearch(input,!firstTag.contains("~"));
-									return;
-								}
-							}
-						}
-						if(checkDicts()) {
-							if(isCombinedSearching){
-								execBunchSearch(cs);
-							} else {
-								execSingleSearch(cs, count);
-							}
+		//tc
+		execSearchRunnable = () -> {
+			if(CurrentViewPage==1) {
+				String text = etSearch.getText().toString().trim();
+				if(text.length()==0) return;
+				if(text.startsWith("<")) {
+					String perWSTag = mResource.getString(R.string.perWSTag);
+					String firstTag = firstTag(text);
+					if(firstTag!=null) {
+						String fTCpror = firstTag.replace("~", "");
+						if(perWSTag.equals(fTCpror)||"分字".equals(fTCpror)) {
+							String input = text.substring(text.indexOf(">")+1).trim();
+							if(input.length()!=0)
+								launchVerbatimSearch(input,!firstTag.contains("~"));
+							return;
 						}
 					}
-				} else {
-					if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && mdict.class.equals(currentDictionary.getClass()))
-						adaptermy.notifyDataSetChanged();
-					if(lv2.getVisibility()==View.VISIBLE)
-						lv2.setVisibility(View.INVISIBLE);
+				}
+				if(checkDicts()) {
+					if(isCombinedSearching){
+						execBunchSearch(search_cs);
+					} else {
+						execSingleSearch(search_cs, search_count);
+					}
 				}
 			}
-			
-			public void beforeTextChanged(CharSequence s, int start, int count,  int after) {}
-			
-			public void afterTextChanged(Editable s) {
-				//if (s.length() == 0) ivDeleteText.setVisibility(View.GONE);
-				//else ivDeleteText.setVisibility(View.VISIBLE);
-				if (s.length() != 0) ivDeleteText.setVisibility(View.VISIBLE);
-			}
 		};
-		
 		etSearch.addTextChangedListener(tw1);
 		//ea
 		etSearch.setOnEditorActionListener((v, actionId, event) -> {
@@ -1417,18 +1397,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 					(mAsyncTask=tmp==0?new FuzzySearchTask(PDICMainActivity.this)
 							:new FullSearchTask(PDICMainActivity.this)).execute(key);
-				}
-				else {
+				} else {
 					if(!PDICMainAppOptions.getHistoryStrategy0() /*&& (PDICMainAppOptions.getHistoryStrategy2()&&isCombinedSearching|| PDICMainAppOptions.getHistoryStrategy3()&&!isCombinedSearching)*/)
 						insertUpdate_histroy(key);
-					if(key.length()>0){
+					if(key.length()>0) {
 						if(!isCombinedSearching && currentDictionary instanceof mdict_web){
 							mdict_web webx = ((mdict_web) currentDictionary);
 							webx.searchKey = key;
 							adaptermy.onItemClick(0);
-						}else{
+						} else {
 							bIsFirstLaunch=true;
-							tw1.onTextChanged(key, 0, 0, 0);
+							tw1.onTextChanged(key, -1, -1, 0);
 						}
 					}
 				}
