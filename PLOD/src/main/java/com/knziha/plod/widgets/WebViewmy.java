@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
+import android.os.SystemClock;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.AttributeSet;
@@ -93,6 +94,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public float highRigkt_Y;
 	public float highRigkt_R;
 	public float highRigkt_B;
+	public static boolean supressNxtClickTranslator;
 	
 	public WebViewmy(Context context) {
 		this(context, null);
@@ -359,8 +361,29 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		AlwaysCheckRange = computeHorizontalScrollRange() > getWidth()?1:-1;
 	}
 	
+	/** 模拟触摸，暂时关闭 contextmenu */
+	public void simulateScrollEffect() {
+		final long now = System.currentTimeMillis();
+		final MotionEvent motion = MotionEvent.obtain(now, now, MotionEvent.ACTION_DOWN,
+				0.0f, 0.0f, 0);
+		dispatchTouchEvent(motion);
+		MainActivityUIBase.CustomViewHideTime = now;
+		motion.setAction(MotionEvent.ACTION_MOVE);
+		motion.setLocation(100, 0);
+		dispatchTouchEvent(motion);
+		motion.recycle();
+	}
+	
+	/** 恢复 contextmenu */
+	public void stopScrollEffect() {
+		final MotionEvent motion = MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP,
+				0.0f, 0.0f, 0);
+		dispatchTouchEvent(motion);
+		motion.recycle();
+	}
+	
 	@RequiresApi(api = Build.VERSION_CODES.M)
-	private class callbackme extends ActionMode.Callback2 implements OnLongClickListener{
+	private class callbackme extends ActionMode.Callback2 implements OnLongClickListener {
 		ActionMode.Callback callback;
 		public callbackme callhere(ActionMode.Callback callher) {
 			if(callher!=null)
@@ -554,7 +577,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																				}
 																				MainActivityUIBase.UniCoverClicker ucc = a.getUcc(); ucc.bFromWebView=true; ucc.bFromPeruseView=WebViewmy.this.fromCombined==3;
 																				ucc.setInvoker(invoker, WebViewmy.this, null, null);
-																				ucc.onItemClick(null, null, MainActivityUIBase.PreferredToolId, -1, false);
+																				ucc.onItemClick(null, null, MainActivityUIBase.PreferredToolId, -1, false, true);
 																			}
 																		}
 																		return true;
@@ -969,6 +992,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean onTouchEvent(MotionEvent event) {
 		lastX = event.getX();
 		lastY = event.getY();
+		if(event.getActionMasked()==MotionEvent.ACTION_DOWN) {
+			supressNxtClickTranslator = bIsActionMenuShown;
+		}
 		return super.onTouchEvent(event);
 	}
 	

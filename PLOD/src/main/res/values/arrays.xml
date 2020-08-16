@@ -198,6 +198,8 @@
 		<item>&#160;×_ √</item>
 		<item>@string/warn_exit1</item>
 		<item>@string/shutdown_vm</item>
+		<item>移除最近任务</item>
+		<item>重启应用程序</item>
 	</string-array>
 
 	<string-array name="appbar_conf">
@@ -228,7 +230,7 @@
     <string-array name="sound_spec">
 	    <item>&#160;×_ √</item>
 	    <item>自动播放词条</item>
-	    <item>然后自动用 TTS 朗读全文</item>
+	    <item>然后自动朗读全文</item>
 	    <item>提示TTS播报</item>
 	    <item>后台播放TTS</item>
 	    <item>网页即点即译</item>
@@ -238,6 +240,8 @@
 		<item>滚动条</item>
 	    <item>朗读时高亮网页</item>
 	    <item>切换 TTS 控制器</item>
+		<item>暂停</item>
+		<item>播放</item>
 	</string-array>
 
     <string-array name="web_scroll_style">

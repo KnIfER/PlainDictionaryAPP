@@ -776,7 +776,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					ret=true; break;
 				}
 				try {
-					String name = opt.getLastPlanName();
+					String name = opt.getLastPlanName("LastPlanName");
 					File to = new File(ConfigFile, name);
 					boolean shouldInsert = false;
 					if(!to.exists())
@@ -817,7 +817,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				}else {
 					ThisIsDirty = true;
 					try {
-						String name = opt.getLastPlanName();
+						String name = opt.getLastPlanName("LastPlanName");
 						File from = new File(ConfigFile, name);
 						if (from.exists()) {
 							AgentApplication app = ((AgentApplication) getApplication());
@@ -839,7 +839,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			} break;
             case R.id.toolbar_action3:{//另存为
 				if(isLongClicked) {ret=false; break;}
-				final String oldFn = opt.getLastPlanName();
+				final String oldFn = opt.getLastPlanName("LastPlanName");
 				showRenameDialog(oldFn,new transferRunnable() {
 					@Override
 					public boolean transfer(File to) {

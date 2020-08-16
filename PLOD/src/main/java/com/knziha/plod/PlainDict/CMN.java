@@ -1,17 +1,21 @@
 package com.knziha.plod.PlainDict;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.HashMap;
-
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.appcompat.app.GlobalOptions;
+
 import com.knziha.plod.dictionary.Utils.SU;
 
 import org.adrianwalker.multilinestring.Multiline;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.List;
 
 
 //common
@@ -52,25 +56,78 @@ public class CMN{
 	public static String sep = " ";
 	public static String BrandName = "PLOD";
 	
+	public static int HonestCredits=100;
+	
 	public static String Log(Object... o) {
-		String msg="";
-		if(o!=null)
-			for(int i=0;i<o.length;i++) {
-				if(Exception.class.isInstance(o[i])) {
-					ByteArrayOutputStream s = new ByteArrayOutputStream();
-					PrintStream p = new PrintStream(s);
-					((Exception)o[i]).printStackTrace(p);
-					msg+=s.toString();
+		StringBuilder msg = new StringBuilder(1024);
+		for(int i=0;i<o.length;i++) {
+				Object o1 = o[i];
+				if (o1 != null) {
+					if (o1 instanceof Exception) {
+						Exception e = ((Exception)o[i]);
+						msg.append(e);
+						if (o1 instanceof PackageManager.NameNotFoundException) {
+							HonestCredits-=25;
+						}
+						if(!GlobalOptions.debug && o.length==1) {
+							e.printStackTrace();
+						} else {
+							ByteArrayOutputStream s = new ByteArrayOutputStream();
+							PrintStream p = new PrintStream(s);
+							e.printStackTrace(p);
+							msg.append(s);
+							continue;
+						}
+					}
+					List oi = null;
+					String classname = o1.getClass().getName();
+					switch (classname) {
+						case "[I": {
+							int[] arr = (int[]) o1;
+							for (int os : arr) {
+								msg.append(os);
+								msg.append(", ");
+							}
+							continue;
+						}
+						case "[Ljava.lang.String;": {
+							String[] arr = (String[]) o1;
+							for (String os : arr) {
+								msg.append(os);
+								msg.append(", ");
+							}
+							continue;
+						}
+						case "[S": {
+							short[] arr = (short[]) o1;
+							for (short os : arr) {
+								msg.append(os);
+								msg.append(", ");
+							}
+							continue;
+						}
+						case "[B": {
+							byte[] arr = (byte[]) o1;
+							for (byte os : arr) {
+								msg.append(Integer.toHexString(os));
+								msg.append(", ");
+							}
+							continue;
+						}
+					}
+					
 				}
-				msg+=o[i]+sep;
+				msg.append(o[i]);
+				msg.append(sep);
 			}
-
-		if(SU.UniversalObject instanceof Exception)
-			System.out.println(msg);
-		else
-			android.util.Log.d("fatal poison",msg);
+		String message = msg.toString();
+		if(SU.UniversalObject instanceof Exception){
+			System.out.println(message);
+		} else {
+			android.util.Log.d("fatal poison",message);
+		}
 		sep = " ";
-		return msg;
+		return message;
 	}
 	
 	public static void recurseLog(View v,String... depths) {
@@ -91,6 +148,7 @@ public class CMN{
 				recurseLog(CI,depth_plus_1);
 		}
 	}
+	
 	public static void recurseLogCascade(View now) {
 		if(now==null) return;
 		while(now.getParent()!=null) {
@@ -109,8 +167,8 @@ public class CMN{
 	public static long stst;
 	public static long ststrt;
 	public static long stst_add;
-	public static void rt() {
-		ststrt = System.currentTimeMillis();
+	public static long rt() {
+		return ststrt = System.currentTimeMillis();
 	}
 	public static void pt(Object...args) {
 		CMN.Log(listToStr(args)+" "+(System.currentTimeMillis()-ststrt));
@@ -161,5 +219,17 @@ public class CMN{
 	
 	public static int Visible(boolean vis) {
 		return vis?View.VISIBLE:View.GONE;
+	}
+	
+	public static int id(Object object) {
+		return System.identityHashCode(object);
+	}
+	
+	public static long now() {
+		return System.currentTimeMillis();
+	}
+	
+	public static Object elapsed(long st) {
+		return now()-st;
 	}
 }

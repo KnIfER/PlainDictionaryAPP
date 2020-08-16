@@ -47,7 +47,7 @@
 	<string name="fuzzyret1">通配搜索</string>
 	<string name="warn_exit">再按一次退出！</string>
 
-	<string name="relaunch">重启生效</string>
+	<string name="relaunch">重启生效！</string>
 	<string name="addd">添加词典</string>
 	<string name="nothingR">无任何记录</string>
 	<string name="bookmarkH">书签历史</string>
@@ -196,4 +196,6 @@
 	<string name="text_operation">文本操作</string>
 	<string name="shutdown_vm">关闭虚拟进程</string>
 	<string name="fapp_name">浮动搜索</string>
+	<string name="server_spec">词典服务器</string>
+	<string name="mdccsp">多维分享</string>
 </resources>

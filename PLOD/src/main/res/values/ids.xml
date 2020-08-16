@@ -30,6 +30,7 @@
 	<item name="go_history" type="id" />
 	<item name="night_mode" type="id" />
 	<item name="switch_landscape" type="id" />
+	<item name="popupBackground" type="id" />
 
 
 </resources>

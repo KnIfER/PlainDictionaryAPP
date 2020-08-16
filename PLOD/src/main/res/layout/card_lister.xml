@@ -4,8 +4,8 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:background="@android:color/white"
 	android:descendantFocusability="beforeDescendants"
+	android:background="@android:color/white"
 	>
 
 	<View
@@ -30,48 +30,46 @@
 			android:showDividers="middle"
 			android:divider="@drawable/divider"
 			>
-
-			<ImageView
+			<View
 				android:id="@+id/tools0"
 				android:layout_width="match_parent"
 				android:layout_height="35dp"
 				android:background="@drawable/ic_pan_tool_black_24dp"
-				android:clickable="true"
 				android:padding="5dp"
 				/>
-			<ImageView
+			<View
 				android:id="@+id/tools001"
 				android:layout_width="match_parent"
 				android:layout_height="35dp"
 				android:background="@drawable/ic_peruse_pan"
-				android:clickable="true"
 				android:padding="5dp"
 				/>
-			<ImageView
+			<View
 				android:id="@+id/toolbar_action2"
 				android:layout_width="match_parent"
 				android:layout_height="35dp"
 				android:background="@drawable/txtdropper"
-				android:clickable="true"
 				/>
-			<ImageView
+			<View
 				android:id="@+id/tools1"
 				android:layout_width="match_parent"
 				android:layout_height="35dp"
 				android:background="@drawable/select"
-				android:clickable="true"
+				android:longClickable="true"
 				android:padding="5dp"
 				/>
 			<View
 				android:layout_width="match_parent"
 				android:layout_height="0dp"
 				/>
-			<ImageView
+
+			<com.knziha.plod.widgets.ActivatableImageView
 				android:id="@+id/toolbar_action1"
 				android:layout_width="match_parent"
 				android:layout_height="35dp"
 				android:src="@drawable/ic_btn_siglemode"
-				android:clickable="true"
+				app:src0="@drawable/ic_btn_multimode"
+				app:activedSR="false"
 				android:tint="#000"
 				android:background="@drawable/surrtrip2"
 				/>
@@ -81,7 +79,6 @@
 				android:layout_width="match_parent"
 				android:layout_height="35dp"
 				android:src="@drawable/delete"
-				android:clickable="true"
 				android:padding="5dp"
 				android:background="@drawable/surrtrip2"
 				/>
@@ -93,27 +90,25 @@
 				android:layout_height="35dp"
 				android:src="@drawable/ic_search"
 				android:backgroundTint="#000000"
-				android:clickable="true"
 				android:background="@drawable/surrtrip2"
 				/>
 
 			<FrameLayout
 				android:layout_width="match_parent"
 				android:layout_height="35dp"
+				android:background="@drawable/bookmark"
 				>
-				<ImageView
+				<View
 					android:id="@+id/bookmark0"
 					android:layout_width="match_parent"
 					android:layout_height="0dp"
-					android:clickable="true"
 					/>
-				<ImageView
+				<View
 					android:id="@+id/bookmark"
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:src="@drawable/bookmark"
-					android:clickable="true"
 					android:background="@drawable/surrtrip2"
+					android:longClickable="true"
 					/>
 			</FrameLayout>
 
@@ -129,6 +124,7 @@
 				android:textSize="25sp"
 				android:gravity="center"
 				android:background="@drawable/ver"
+				android:longClickable="true"
 				/>
 
 
@@ -137,7 +133,6 @@
 				android:layout_width="match_parent"
 				android:layout_height="45dp"
 				android:src="@drawable/choosed"
-				android:clickable="true"
 				android:background="@drawable/surrtrip2"
 				/>
 			<ImageView
@@ -145,7 +140,6 @@
 				android:layout_width="match_parent"
 				android:layout_height="45dp"
 				android:src="@drawable/movec"
-				android:clickable="true"
 				android:background="@drawable/surrtrip2"
 				/>
 		</com.knziha.ankislicer.customviews.ShelfLinearLayout>
@@ -156,7 +150,6 @@
 		android:id="@+id/main_list"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:background="#ffffff"
 		android:layout_toEndOf="@+id/shelfright"
 		/>
 
@@ -206,6 +199,7 @@
 		android:layout_marginBottom="64dp"
 		android:layout_marginEnd="10dp"
 		/>
+
 	<android.widget.ImageView
 		android:id="@+id/browser_widget13"
 		android:layout_width="34dp"
@@ -231,6 +225,7 @@
 		android:layout_marginBottom="0dp"
 		android:layout_marginEnd="10dp"
 		/>
+
 	<FrameLayout
 		android:id="@+id/toast_layout_rootmy"
 		android:layout_width="match_parent"

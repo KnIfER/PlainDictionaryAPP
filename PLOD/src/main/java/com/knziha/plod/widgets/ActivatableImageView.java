@@ -16,9 +16,10 @@ import com.knziha.plod.PlainDict.R;
 public class ActivatableImageView extends ImageView {
 	private Drawable mActiveDrawable;
 	private Drawable mDrawable;
+	private boolean bActivedShowRawColor;
 	ColorFilter mColorFilter;
 	public ActivatableImageView(Context context) {
-		super(context);
+		this(context, null);
 	}
 	
 	public ActivatableImageView(Context context, @Nullable AttributeSet attrs) {
@@ -29,13 +30,14 @@ public class ActivatableImageView extends ImageView {
 		super(context, attrs, defStyleAttr);
 		mDrawable = getDrawable();
 		TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ActivatableImageView, 0, 0);
-		mActiveDrawable = a.getDrawable(0);
+		mActiveDrawable = a.getDrawable(R.styleable.ActivatableImageView_src0);
+		bActivedShowRawColor = a.getBoolean(R.styleable.ActivatableImageView_activedSR, true);
 		a.recycle();
 	}
 	
 	@Override
 	public void setColorFilter(ColorFilter cf) {
-		if(!isActivated())
+		if(!bActivedShowRawColor||!isActivated())
 			super.setColorFilter(cf);
 		if(cf!=null)
 			mColorFilter=cf;
@@ -44,7 +46,11 @@ public class ActivatableImageView extends ImageView {
 	@Override
 	public void setActivated(boolean activated) {
 		if(mActiveDrawable!=null){
-			setColorFilter(activated?null:mColorFilter);
+			if(bActivedShowRawColor) {
+				setColorFilter(activated?null:mColorFilter);
+			} else {
+				super.setActivated(activated);
+			}
 			setImageDrawable(activated?mActiveDrawable:mDrawable);
 		} else {
 			super.setActivated(activated);

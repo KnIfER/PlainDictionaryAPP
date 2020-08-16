@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+	<PreferenceCategory
+		android:key="cat_prog"
+		android:title="@string/server_spec"
+		app:icon="@drawable/ic_baseline_laptop_mac_24"
+		>
+		<Preference
+			android:persistent="false"
+			android:defaultValue="false"
+			android:key="mdccsp"
+			android:title="联机多维分享"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"/>
+
+		<androidx.preference.ListPreference
+			android:defaultValue="0"
+			android:key="share_target"
+			android:persistent="false"
+			android:title="跨设备查词目标"
+			android:summary="主程序"
+			android:entryValues="@array/zero_three"
+			android:entries="@array/paste_target_info"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<androidx.preference.ListPreference
+			android:defaultValue="0"
+			android:key="share_target"
+			android:persistent="false"
+			android:title="跨设备分享目标"
+			android:summary="分享#6"
+			android:entryValues="@array/zero_three"
+			android:entries="@array/paste_target_info"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<Preference
+			android:persistent="false"
+			android:defaultValue="false"
+			android:key="keep_screen"
+			android:title="连接记录"
+			android:summary="最近活动连接数：0"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"/>
+
+		<Preference
+			android:persistent="false"
+			android:defaultValue="false"
+			android:key="keep_screen"
+			android:title="白名单"
+			android:summary="已开启"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"/>
+
+
+		<Preference
+			android:persistent="false"
+			android:defaultValue="false"
+			android:key="keep_screen"
+			android:title="阻挡规则"
+			android:summary="部分阻挡"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"/>
+	</PreferenceCategory>
+
+
+
+
+</PreferenceScreen>

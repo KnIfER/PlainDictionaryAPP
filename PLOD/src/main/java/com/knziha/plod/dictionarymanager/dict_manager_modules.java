@@ -200,7 +200,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 		a=(dict_manager_activity) getActivity();
 		setListAdapter();
 
-		LastSelectedPlan = a.opt.getLastPlanName();
+		LastSelectedPlan = a.opt.getLastPlanName("LastPlanName");
 
 		mDslv.setOnItemClickListener((parent, view, position, id) -> {
 			if(position>=mDslv.getHeaderViewsCount()) {
@@ -217,7 +217,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 					a.do_Load_managee(in);
 					f1.refreshSize();
 					((dict_manager_activity)getActivity()).scrollTo(0);
-					a.opt.putLastPlanName(LastSelectedPlan = name);
+					a.opt.putLastPlanName("LastPlanName", LastSelectedPlan = name);
 					f1.isDirty=true;
 					adapter.notifyDataSetChanged();
 					f1.adapter.notifyDataSetChanged();

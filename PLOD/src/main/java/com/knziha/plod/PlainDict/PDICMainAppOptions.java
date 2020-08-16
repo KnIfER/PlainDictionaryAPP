@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.google.android.material.animation.Positioning;
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.settings.FilePickerOptions;
 import com.knziha.filepicker.utils.CMNF;
@@ -24,6 +25,7 @@ import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
+import org.adrianwalker.multilinestring.Multiline;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -96,7 +98,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public void setLastMdlibPath(String lastMdlibPath) {
-		defaultReader.edit().putString("lastMdlibPath",lastMdlibPath).apply();
+		defaultReader.edit().putString("lastMdlibPath",lastMdlibPath).commit();
 	}
 	public String getCurrFavoriteDBName() {//currFavoriteDBName
 		return defaultReader.getString("DB1",null);
@@ -106,18 +108,26 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		defaultReader.edit().putString("DB1",name).apply();
 	}
 
-	public String getLastMdFn() {
-		return defaultReader.getString("LastMdFn",null);
+	public String getLastMdFn(String key) {
+		return defaultReader.getString(key,null);
 	}
-	public void putLastMd(String name) {
-		defaultReader.edit().putString("LastMdFn", name).apply();
+	public void putLastMdFn(String key, String name) {
+		defaultReader.edit().putString(key, name).apply();
 	}
-
-	public String getLastPlanName() {
-		return SU.legacySetFileName(lastMdPlanName=defaultReader.getString("LastPlanName",magicStr));
+	
+	public void putLastVSGoNumber(int position) {
+		defaultReader.edit().putInt("VSGo", position).apply();
 	}
-	public void putLastPlanName(String name) {
-		defaultReader.edit().putString("LastPlanName", lastMdPlanName=name).apply();
+	
+	public int getLastVSGoNumber() {
+		return defaultReader.getInt("VSGo", -1);
+	}
+	
+	public String getLastPlanName(String key) {
+		return SU.legacySetFileName(lastMdPlanName=defaultReader.getString(key,magicStr));
+	}
+	public void putLastPlanName(String key, String name) {
+		defaultReader.edit().putString(key, lastMdPlanName=name).apply();
 	}
 
 	public String getFontLibPath() {
@@ -125,20 +135,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	public void setFontLibPath(String name) {
 		defaultReader.edit().putString("fntlb", name).apply();
-	}
-
-	public String getFloatMdFn() {
-		return defaultReader.getString("FltMdFn",getLastMdFn());
-	}
-	public void putFloatMd(String name) {
-		defaultReader.edit().putString("FltMdFn", name).apply();
-	}
-	
-	public String getLastFloatPlanName() {
-		return lastMdPlanName=defaultReader.getString("FltPlanName",getLastPlanName());
-	}
-	public void putFloatPlanName(String name) {
-		defaultReader.edit().putString("FltPlanName", lastMdPlanName=name).apply();
 	}
 
 	public String getAppBottomBarProject() {
@@ -295,6 +291,27 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		else if(CommitOrApplyOrNothing==2) editor.commit();
 		//CMN.Log("apply changes");
 	}
+	//////////   Tmp Flag   //////////
+	private static long tmpFlag;
+	private static void updateTmpAt(int o, boolean val) {
+		tmpFlag &= (~o);
+		if(val) tmpFlag |= o;
+	}
+	private void updateTmpAt(long o, boolean val) {
+		tmpFlag &= (~o);
+		if(val) tmpFlag |= o;
+	}
+	
+	public static boolean getRestartVMOnExit() {
+		return (tmpFlag & 0x1) == 0x1;
+	}
+	
+	public static void setRestartVMOnExit(boolean val) {
+		updateTmpAt(1,val);
+	}
+	
+	//////////   ET   //////////
+	
 	//////////   First Boolean Flag   //////////
 	private static Long FirstFlag=null;
 	public long getFirstFlag() {
@@ -972,10 +989,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	/** @return integer: 0=paste_to_main_program auto <br/>
-	 * 1=paste_to_main_program main  <br/>
-	 * 2=paste_to_main_program peruse mode  <br/>
-	 * 3=paste_to_float_search_program*/
+	/** @return integer: 0=paste_to_main_program <br/>
+	 * 2=paste_to_float_search_program<br/>
+	 * 3=paste_to_MDCCSP_main_program<br/>
+	 * 4=paste_to_MDCCSP_standalone */
 	public static int getPasteTarget() {
 		return (int) ((SecondFlag >> 29) & 3);
 	}
@@ -994,12 +1011,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateSFAt(0x80000000l,!val);
 		return val;
 	}
-
-
-	/** @return integer: 0=paste_to_main_program auto <br/>
-	 * 1=paste_to_main_program main  <br/>
-	 * 2=paste_to_main_program peruse mode  <br/>
-	 * 3=paste_to_float_search_program*/
+	
+	
+	/** @return integer: see {@link #getPasteTarget} */
 	public static int getShareTarget() {
 		return (int) ((SecondFlag >> 32) & 3);
 	}
@@ -1279,7 +1293,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	///////////////////End second flag///////////////////////
-	/////////////// 天高任鸟飞 标志随意写 ///////////////////////
+	/////////////// 天高任鸟飞 标志任意写 ///////////////////////
 	///////////////////Start Third Flag///////////////////////
 	private static Long ThirdFlag=null;
 	public long getThirdFlag() {
@@ -1624,10 +1638,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public int FetClickSearchEnabled() {
 		return (ThirdFlag & 0x800000000l)==0?1<<5:0;
 	}
-	public boolean setClickSearchEnabled(boolean val) {
-		updateTFAt(0x800000000l,!val);
-		return val;
-	}
+	
+	@Multiline(flagPos=35, shift=1) public boolean toggleClickSearchEnabled() { ThirdFlag=ThirdFlag; throw new IllegalArgumentException(); }
+	
 	public int FetIsDark() {
 		return GlobalOptions.isDark?1<<6:0;
 	}
@@ -1864,6 +1877,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public long getFourthFlag() {
 		if(FourthFlag==null) {
 			return FourthFlag=defaultReader.getLong("MQF",0);
+		}
+		return FourthFlag;
+	}
+	public static long getFourthFlag(Context context) {
+		if(FourthFlag==null) {
+			return FourthFlag= androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getLong("MQF",0);
 		}
 		return FourthFlag;
 	}
@@ -2211,9 +2230,37 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return (FourthFlag & 0x2000000000000l) != 0x2000000000000l;
 	}
 	
+	public static boolean getForceFloatSingletonSearch(long FourthFlag) {
+		return (FourthFlag & 0x2000000000000l) != 0x2000000000000l;
+	}
+	
 	public static boolean isSingleThreadServer() {
 		return (FourthFlag & 0x4000000000000l) == 0x4000000000000l;
 	}
+	
+	@Multiline(flagPos=51) public static boolean getServerStarted() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=51) public static void setServerStarted(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	
+	@Multiline(flagPos=52, shift=1) public static boolean checkVersionBefore_4_0() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	//@Multiline(flagPos=52, shift=1) public static void uncheckVersionBefore_4_0(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=52, shift=1) public static boolean uncheckVersionBefore_4_0() { FourthFlag=FourthFlag; throw new IllegalArgumentException();}
+	@Multiline(flagPos=53) public static boolean getClearTasksOnExit() { FourthFlag=FourthFlag; throw new RuntimeException();}
+
+	@Multiline(flagPos=54) public boolean getRememberVSPanelGo(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=54) public void setRememberVSPanelGo(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=55) public boolean getVSPanelGOTransient(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=55) public void setVSPanelGOTransient(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=56) public boolean getPinDialog_2(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=56) public void setPinDialog_2(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	
+	@Multiline(flagPos=57, shift=1) public boolean getPrvNxtDictSkipNoMatch(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	
+	@Multiline(flagPos=58) public boolean getDelayContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=59/*, shift=1*/) public boolean getAnimateContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=61/*, shift=1*/) public boolean getLeaveContentBlank(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	
+	@Multiline(flagPos=60, shift=1) public boolean getDimScrollbarForPrvNxt(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////
 	//EQ
@@ -2443,7 +2490,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			case 4:
 			return FourthFlag;
 		}
-		return 0;
+		return tmpFlag;
 	}
 
 	public void Flag(int flagIndex, long val) {
@@ -2459,6 +2506,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			break;
 			case 4:
 				FourthFlag=val;
+			break;
+			default:
+				tmpFlag=val;
 			break;
 		}
 	}

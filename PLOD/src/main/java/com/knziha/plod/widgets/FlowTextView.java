@@ -69,6 +69,7 @@ import java.util.regex.Pattern;
 public class FlowTextView extends View {
 	public float margin=0;
 	public int maxLines=-1;
+	public boolean trim = true;
 	ArrayListHolder lineObjects = new ArrayListHolder(3);
 	public int pad_right;
 	private Drawable mActiveDrawable;
@@ -162,17 +163,19 @@ public class FlowTextView extends View {
 		}
 		if(!mText.equals(text)) {
 			mText = text;
-			mLength = text.length();
-			int suffix_index = text.lastIndexOf(".");
-			if(suffix_index>0 && text.regionMatches(true,suffix_index+1, "mdx", 0, 3)){
-				mLength-=4;
-			} else if(fixedTailTrimCount>0) {
-				mLength-=fixedTailTrimCount;
-			}
 			mStart=0;
-			suffix_index = text.lastIndexOf("/", suffix_index>=0?suffix_index:text.length());
-			if(suffix_index>0){
-				mStart = suffix_index+1;
+			mLength = text.length();
+			if(trim) {
+				int suffix_index = text.lastIndexOf(".");
+				if(suffix_index>0 && text.regionMatches(true,suffix_index+1, "mdx", 0, 3)){
+					mLength-=4;
+				} else if(fixedTailTrimCount>0) {
+					mLength-=fixedTailTrimCount;
+				}
+				suffix_index = text.lastIndexOf("/", suffix_index>=0?suffix_index:text.length());
+				if(suffix_index>0){
+					mStart = suffix_index+1;
+				}
 			}
 			postCalcTextLayout();
 		} else if(bNeedInvalidate){

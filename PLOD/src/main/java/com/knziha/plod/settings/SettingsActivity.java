@@ -35,10 +35,10 @@ public class SettingsActivity extends Toastable_Activity {
 	}
 
 	public void checkBack() {
-		if(realm_id==3){
+		if(realm_id==FileChooser.id){
 			PDICMainAppOptions.SecondFlag(FilePickerOptions.SecondFlag);
 		}
-		else if(realm_id==7){
+		else if(realm_id==SearchSpecification.id){
 			if(opt.CetUseRegex3(SFStamp)
 					|opt.CetPageCaseSensitive(SFStamp)
 					|opt.CetPageWildcardMatchNoSpace(SFStamp)
@@ -78,27 +78,31 @@ public class SettingsActivity extends Toastable_Activity {
 			case 0:
 				fragment = new MainProgram();
 			break;
-			case 3:
+			case FileChooser.id:
 				fragment = new FileChooser();
 			break;
-			case 4:
+			case DevoloperOptions.id:
 				fragment = new DevoloperOptions();
 			break;
-			case 6:
+			case Licences.id:
 				fragment = new Licences();
 			break;
-			case 7:
+			case SearchSpecification.id:
 				fragment = new SearchSpecification();
 			break;
-			case 8:
+			case ViewSpecification.id:
 				fragment = new ViewSpecification();
 				args.putInt("title", R.string.view_spec);
 			break;
-			case 9:
+			case ClickSearch.id:
 				fragment = new ClickSearch();
 			break;
-			case 10:
+			case HistoryPreference.id:
 				fragment = new HistoryPreference();
+			break;
+			case ServerPreference.id:
+				fragment = new ServerPreference();
+				args.putInt("title", R.string.server_spec);
 			break;
 		}
 		fragment.setArguments(args);

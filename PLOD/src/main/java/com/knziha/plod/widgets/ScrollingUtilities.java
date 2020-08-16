@@ -16,7 +16,6 @@
 
 package com.knziha.plod.widgets;
 
-import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 /*
@@ -24,9 +23,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
  */
 class ScrollingUtilities {
 
-    private SamsungLikeScrollBar materialScrollBar;
+    private DragScrollBar materialScrollBar;
 
-    ScrollingUtilities(SamsungLikeScrollBar msb){
+    ScrollingUtilities(DragScrollBar msb){
         materialScrollBar = msb;
     }
 

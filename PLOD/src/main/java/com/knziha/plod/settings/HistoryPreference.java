@@ -9,6 +9,8 @@ import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 
 public class HistoryPreference extends SettingsFragment implements Preference.OnPreferenceClickListener {
+	public final static int id=10;
+	
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

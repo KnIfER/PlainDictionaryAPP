@@ -8,8 +8,6 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
@@ -70,7 +68,8 @@ import com.knziha.plod.widgets.SimpleDialog;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.SplitView.PageSliderInf;
 import com.knziha.plod.widgets.SplitViewGuarder;
-import com.knziha.plod.widgets.SamsungLikeScrollBar;
+import com.knziha.plod.widgets.DragScrollBar;
+import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
 
 import java.util.ArrayList;
@@ -86,6 +85,7 @@ import static com.knziha.plod.PlainDict.PDICMainActivity.ResizeNavigationIcon;
 public class PeruseView extends DialogFragment implements OnClickListener, OnMenuItemClickListener, OnLongClickListener{
 	public ArrayList<Integer> data = new ArrayList<>();
 	public ArrayList<Integer> bakedGroup = new ArrayList<>();
+	public ViewGroup peruseF;
 	private boolean baked;
 	public ArrayList<View> cyclerBin = new ArrayList<>();
 	public ArrayList<View> recyclerBin = new ArrayList<>();
@@ -178,7 +178,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public View ic_save;
 	View ic_redo;
 	UniCoverClicker ucc;
-	SamsungLikeScrollBar mBar;
+	DragScrollBar mBar;
 	View recess;
 	View forward;
 	ViewGroup root;
@@ -211,7 +211,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			return container;
 		}
 		LvHeadline = peruse_content.findViewById(R.id.main_dict_lst);
-        LvHeadline.setHorizontalSpacing(0); 
+		peruseF = peruse_content.findViewById(R.id.peruseF);
+        LvHeadline.setHorizontalSpacing(0);
         LvHeadline.setVerticalSpacing(0);
         LvHeadline.setHorizontalScroll(true);
         LvHeadline.setStretchMode(GridView.NO_STRETCH);
@@ -583,6 +584,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 	}
 	
+	public boolean isWindowDetached() {
+		return isDetached()||getDialog()==null||Utils.isWindowDetached(getDialog().getWindow());
+	}
+	
 	static class DictTitleHolder
 	{
 		public int position;
@@ -685,6 +690,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		.putInt("PBBS", webcontentlist.getPrimaryContentSize()).apply();
 		
 		a.opt.putFirstFlag();
+		a.OnPeruseDetached();
 		//reset views back!
 		//if(a.opt.getBottombarOnBottom() ^ (a.webcontentlist.getChildAt(0).getId()!=R.id.bottombar2))
 		//	a.webcontentlist.SwitchingSides();
@@ -929,6 +935,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		widget10=ContentbarBtns[3];
 		widget11=ContentbarBtns[4];
 		widget12=ContentbarBtns[5];
+		
+		if(a.this_instanceof_MultiShareActivity) {
+			a.widget10 = widget10;
+		}
+		
 		String contentkey = "ctnp#"+1;
 		String appproject = opt.getAppContentBarProject(contentkey);
 		if(appproject!=null) {
@@ -957,7 +968,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         PageSlider.TurnPageEnabled=opt.getPageTurn3();
         if(a.IMPageCover!=null)
         	IMPageCover.setPageSliderInf(a.IMPageCover.inf);
-        webcontentlist.setPageSliderInf(a.webcontentlist.inf);
+        webcontentlist.setPageSliderInf(a.inf);
 		webSingleholder.addView(rl);
 
         (widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
@@ -1149,17 +1160,22 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	public void goBack() {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		if(mDialog!=null && mDialog.getCurrentFocus()==mWebView && mWebView.bIsActionMenuShown){
+		if(mDialog!=null && mDialog.getCurrentFocus()==mWebView && mWebView.bIsActionMenuShown) {
 			mWebView.clearFocus();
 			return;
 		}
-		if(a!=null && a.popupContentView!=null && a.popupContentView.getParent()==root){
-			((ViewGroup)a.popupContentView.getParent()).removeView(a.popupContentView);
-			a.popupContentView = null;
-			a.popupGuarder.setVisibility(View.GONE);
-			return;
+		if(a!=null) {
+			if(Utils.removeIfParentBeOrNotBe(a.popupContentView, root, true)){
+				a.popupContentView = null;
+				a.popupGuarder.setVisibility(View.GONE);
+				return;
+			}
+			if(peruseF.getChildCount()>0){
+				a.DetachDBrowser();
+				return;
+			}
 		}
-		if(contentview!=null && contentview.getParent()==root){
+		if(Utils.removeIfParentBeOrNotBe(contentview, root, true)){
 			DetachContentView(a);
 			return;
 		}
@@ -1412,7 +1428,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 			if(currentDictionary!=null)
 			a.showTopSnack(mlp, currentDictionary._Dictionary_fName
-					, 0.8f, -1, -1, true);
+					, 0.8f, -1, -1, 1);
 
         	mlp.removeView(contentview);
         	
@@ -1508,7 +1524,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         		//super.onItemClick(pos);
             	a.ActivedAdapter=this;
             	if(pos<0) {
-					a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, false);
+					a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, 0);
             		return;
             	}
             	//-1放行
@@ -1908,7 +1924,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			String key = currentKeyText.trim();
 			
 			//voyager[SelectedV*3+2]=pos;
-			a.decorateContentviewByKey(null,key);
+			a.decorateContentviewByKey(favoriteBtn,key);
 			//a.showT(currentDictionary.currentDisplaying);
 			if(!(currentDictionary instanceof mdict_txt) && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy7() && PDICMainAppOptions.getHistoryStrategy9() &&
 					(!ismachineClick || PDICMainAppOptions.getHistoryStrategy8() == 0)){

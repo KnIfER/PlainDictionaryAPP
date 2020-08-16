@@ -3,14 +3,12 @@ package com.knziha.plod.PlainDict;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ClipData;
-import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -57,6 +55,7 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.mdict_pdf;
+import com.knziha.plod.settings.ServerPreference;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
@@ -95,6 +94,7 @@ public class Drawer extends Fragment implements
 	SwitchCompat sw1,sw2,sw3,sw4,sw5;
 
 	View HeaderView;
+	View HeaderView2;
 	View pasteBin;
 
 	ViewGroup FooterView;
@@ -233,6 +233,7 @@ public class Drawer extends Fragment implements
 				vh=new PDICMainActivity.ViewHolder(getContext(),R.layout.listview_item0, parent);
 				vh.itemView.setBackgroundResource(R.drawable.listviewselector1);
 				vh.itemView.setOnClickListener(Drawer.this);
+				vh.subtitle.trim=false;
 				vh.subtitle.setTextColor(ContextCompat.getColor(a, R.color.colorHeaderBlue));
 			}
 			vh.position=position;
@@ -286,7 +287,8 @@ public class Drawer extends Fragment implements
 
 		sw3 = HeaderView.findViewById(R.id.sw3);
 		sw3.setOnCheckedChangeListener(this);
-		sw3.setChecked(!a.opt.isViewPagerEnabled());
+		//sw3.setChecked(!a.opt.isViewPagerEnabled());
+		sw3.setChecked(a.opt.getServerStarted());
 
 		sw4 = HeaderView.findViewById(R.id.sw4);
 		val = a.opt.getInDarkMode();
@@ -382,6 +384,9 @@ public class Drawer extends Fragment implements
 		if(!a.systemIntialized) return;
 		int id = v.getId();
 		switch(id) {
+			case R.id.server:
+				a.launchSettings(ServerPreference.id);
+			return;
 			case R.id.menu_item_setting:
 				//a.mDrawerLayout.closeDrawer(GravityCompat.START);
 				final View dv = a.getLayoutInflater().inflate(R.layout.dialog_about,null);
@@ -454,7 +459,7 @@ public class Drawer extends Fragment implements
 
 				return;
 			case R.id.menu_item_exit://退出
-				a.showAppExit();
+				a.showAppExit(false);
 				return;
 			case R.id.pastebin:{//剪贴板对话框
 				if(ClipboardList ==null){
@@ -543,12 +548,12 @@ public class Drawer extends Fragment implements
 									if(i==placeHolders.size()) {
 										a.md.add(mdTmp);
 										placeHolders.add(new PlaceHolder(mdTmp.getPath()));
-										a.switch_To_Dict_Idx(a.md.size()-1, true, false);
+										a.switch_To_Dict_Idx(a.md.size()-1, true, false, null);
 									}else {
 										if(a.md.get(i)==null){
 											a.md.set(i, mdTmp);
 										}
-										a.switch_To_Dict_Idx(i, true, false);
+										a.switch_To_Dict_Idx(i, true, false, null);
 									}
 									if(a.pickDictDialog!=null) a.pickDictDialog.isDirty=true;
 									int toPos = pos[position1];
@@ -632,7 +637,7 @@ public class Drawer extends Fragment implements
 					int oldPos = a.adapter_idx;
 					for(PlaceHolder phI:a.getLazyCC()) {
 						if(phI.getName().equals(fn)) {
-							a.switch_To_Dict_Idx(c, true, false);
+							a.switch_To_Dict_Idx(c, true, false, null);
 							a.adaptermy.onItemClick(pos1);
 							a.lv.setSelection(pos1);
 							suc=true;
@@ -643,7 +648,7 @@ public class Drawer extends Fragment implements
 					if(!suc)
 						try {
 							a.md.add(new_mdict(lastBookMark, a));
-							a.switch_To_Dict_Idx(a.md.size()-1, true, false);
+							a.switch_To_Dict_Idx(a.md.size()-1, true, false, null);
 							a.adaptermy.onItemClick(pos1);
 							a.lv.setSelection(pos1);
 							suc=true;
@@ -891,11 +896,9 @@ public class Drawer extends Fragment implements
 				dialog1.setDialogSelectionListener(new DialogSelectionListener() {
 					@Override
 					public void
-					onSelectedFilePaths(String[] files, File n) { //files is the array of the paths of files selected by the Application User.
+					onSelectedFilePaths(String[] files, File n) {
 						if(files.length>0) {
-							a.opt.setLastMdlibPath(new File(files[0]).getAbsolutePath());
-							a.show(R.string.relaunch);
-							a.mDrawerLayout.closeDrawer(GravityCompat.START);
+							a.pendingModPath(new File(files[0]).getAbsolutePath());
 						}
 					}
 
@@ -970,8 +973,22 @@ public class Drawer extends Fragment implements
 				a.setNestedScrollingEnabled(PDICMainAppOptions.setEnableSuperImmersiveScrollMode(isChecked));
 			} break;
 			case R.id.sw3:{
-				a.opt.setViewPagerEnabled(!isChecked);
-				a.viewPager.setNoScroll(isChecked);
+				a.opt.setServerStarted(isChecked);
+				//a.viewPager.setNoScroll(isChecked);
+				a.startServer(isChecked);
+				if(isChecked) {
+					if(HeaderView2==null) {
+						HeaderView2 = a.getLayoutInflater().inflate(R.layout.activity_main_navi_server_header, null);
+						HeaderView2.setOnClickListener(this);
+					}
+					if(HeaderView2.getParent()==null) {
+						mDrawerList.addHeaderView(HeaderView2);
+						((FlowTextView)HeaderView2.findViewById(R.id.subtext)).trim=false;
+						((FlowTextView)HeaderView2.findViewById(R.id.subtext)).setText("http://192.168.0.103:8080");
+					}
+				} else if(HeaderView2!=null && HeaderView2.getParent()!=null) {
+					mDrawerList.removeHeaderView(HeaderView2);
+				}
 			} break;
 			case R.id.sw4:{
 				if(Build.VERSION.SDK_INT<29){

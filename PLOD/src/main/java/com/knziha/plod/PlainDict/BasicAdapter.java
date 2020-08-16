@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
@@ -14,6 +15,7 @@ public abstract class BasicAdapter extends BaseAdapter
     						implements OnItemClickListener
     {
 		public ViewGroup webviewHolder;
+		public ListView lava;
 		int lastClickedPos=-1;
 		public int lastClickedPosBeforePageTurn;
 		boolean userCLick;

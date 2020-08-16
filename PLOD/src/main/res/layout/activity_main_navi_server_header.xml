@@ -1,0 +1,27 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:id="@+id/server"
+	android:orientation="vertical"
+	android:background="@drawable/listviewselector1"
+	>
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:text="词典服务器"
+		android:id="@+id/text"
+		android:layout_marginLeft="10dp"
+		android:layout_marginTop="5dp"
+		android:textColor="#000"
+		android:textSize="@dimen/lvtextsize"
+		/>
+	<com.knziha.plod.widgets.FlowTextView
+		android:layout_height="wrap_content"
+		android:layout_width="match_parent"
+		android:id="@+id/subtext"
+		android:layout_marginLeft="10dp"
+		android:textSize="@dimen/lvsubtextsize"
+		android:textColor="@color/colorHeaderBlue"
+		android:padding="0dp"
+		/>
+</LinearLayout>

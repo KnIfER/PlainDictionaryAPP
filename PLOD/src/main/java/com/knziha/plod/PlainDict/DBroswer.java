@@ -4,8 +4,7 @@ import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.PorterDuff;
+import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -23,6 +21,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupWindow;
@@ -34,7 +33,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -90,7 +88,9 @@ public class DBroswer extends Fragment implements
 			}
 		}
 	};
-
+	private boolean isDarkStamp;
+	private boolean bIsCombinedSearch;
+	
 	public DBroswer(){
 		super();
 		mAdapter = new main_list_Adapter();
@@ -127,20 +127,21 @@ public class DBroswer extends Fragment implements
 
 	SearchView searchView;
 	InputMethodManager imm;
-	private View bookmark;
 
 	public int try_goBack(){
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return 0;
+		CMN.Log("try_goBack");
 		if(a.isContentViewAttachedForDB()) {
 			if(opt.getUseBackKeyGoWebViewBack()){
+				CMN.Log("getUseBackKeyGoWebViewBack");
 				WebViewmy view = a.getCurrentWebContext();
 				if(view!=null && view.canGoBack()){
 					view.goBack();
 					return 1;
 				}
 			}
-			a.DetachContentView();
+			a.DetachContentView(true);
 			if(!isToDel || toDelete.size()==0) return 1;
 
 			//删除收藏
@@ -178,6 +179,10 @@ public class DBroswer extends Fragment implements
 
 			return 1;
 		}
+		if(sharedPopup!=null && sharedPopup.isShowing()) {
+			sharedPopup.dismiss();
+			return 1;
+		}
 		if(inSearch) {
 			main_clister_layout.findViewById(R.id.search).performClick();
 			return 1;
@@ -208,10 +213,6 @@ public class DBroswer extends Fragment implements
 				counter.setText(Selection.size()+"/"+mCards_size);
 			}
 			return 1;
-		}
-		if(isDirty) {
-			opt.putFirstFlag();
-			//CMN.Log("DBROWSER写配置……");
 		}
 		return 0;
 	}
@@ -258,29 +259,13 @@ public class DBroswer extends Fragment implements
 				}
 				return true;
 			}});
-
+		
+		Utils.setOnClickListenersOneDepth(sideBar=_main_clister_layout.findViewById(R.id.sideBar), this, 2, null);
+		
 		toolbar_action1=_main_clister_layout.findViewById(R.id.toolbar_action1);
-		//toolbar_action1.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
-		toolbar_action1.setOnClickListener(this);
-		toolbar_action1.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
-
-		_main_clister_layout.findViewById(R.id.tools0).setOnClickListener(this);
-		_main_clister_layout.findViewById(R.id.tools001).setOnClickListener(this);
-		_main_clister_layout.findViewById(R.id.toolbar_action2).setOnClickListener(this);
-		View select_cards = _main_clister_layout.findViewById(R.id.tools1);
-		select_cards.setOnClickListener(this);
-		select_cards.setOnLongClickListener(this);
-		_main_clister_layout.findViewById(R.id.tools3).setOnClickListener(this);
-
-		_main_clister_layout.findViewById(R.id.choosed).setOnClickListener(this);
-		_main_clister_layout.findViewById(R.id.changed).setOnClickListener(this);
-		bookmark = _main_clister_layout.findViewById(R.id.bookmark);
-		bookmark.setOnClickListener(v -> onLongClick(_main_clister_layout.findViewById(R.id.bookmark0)));
-		_main_clister_layout.findViewById(R.id.search).setOnClickListener(this);
-
+		
+		//toolbar_action1.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 		tg2 = _main_clister_layout.findViewById(R.id.tg2);
-		tg2.setOnClickListener(checkViewOnClick);
-		tg2.setOnLongClickListener(this);
 		//main_clister_layout.findViewById(R.id.choosed).setOnLongClickListener(this);
 
 		_main_clister_layout.findViewById(R.id.browser_widget15).setOnClickListener(Utils.DummyOnClick);
@@ -318,8 +303,6 @@ public class DBroswer extends Fragment implements
 			public boolean onQueryTextSubmit(String query) {
 				//Toast.makeText(getActivity(), query, Toast.LENGTH_SHORT).show();
 
-
-
 				searchView.clearFocus();
 				//InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
 				imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
@@ -338,7 +321,6 @@ public class DBroswer extends Fragment implements
 		});
 		searchView.clearFocus();
 
-		sideBar = _main_clister_layout.findViewById(R.id.sideBar);
 		counter =  _main_clister_layout.findViewById(R.id.counter);
 		counter.setVisibility(View.GONE);
 		shelfright = _main_clister_layout.findViewById(R.id.shelfright);
@@ -348,21 +330,6 @@ public class DBroswer extends Fragment implements
 	boolean newStart;
 
 	long last_listHolder_tt;
-	private OnClickListener checkViewOnClick = new OnClickListener() {
-
-		@Override
-		public void onClick(View v) {
-			boolean ck = ((ToggleButton)v).isChecked();
-				switch(v.getId()) {
-					case R.id.tg2://.ver
-						if(opt.setScrollShown(ck))
-							fastScroller.setVisibility(View.GONE);
-						else
-							fastScroller.setVisibility(View.VISIBLE);
-						isDirty=true;
-				break;
-			}
-		}};
 
 	String mRestrictOnDeck;
 	int lastFirst = 0;
@@ -423,42 +390,23 @@ public class DBroswer extends Fragment implements
 		if(!initialized){
 			opt = a.opt;
 			imm = a.imm;
-			if(opt.getIsCombinedSearching()) {
-				toolbar_action1.setImageResource(R.drawable.ic_btn_multimode);
-			}
+			
 			//((DefaultItemAnimator) lv.getItemAnimator()).setSupportsChangeAnimations(false);//取消更新item时闪烁
 			fastScroller.setConservativeScroll(opt.getShelfStrictScroll());
+			bIsCombinedSearch = opt.getIsCombinedSearching();
+			toolbar_action1.setActivated(bIsCombinedSearch);
+			
 			if(opt.getScrollShown()) {
 				tg2.setChecked(true);
 				fastScroller.setVisibility(View.GONE);
 			}
+			
+			
 			mRestrictOnDeck = "";
 			wahahaTextView.mR=main_clister_layout.getRootView();
 			loadInAll(a);
-			ColorMatrixColorFilter NEGATIVE = GlobalOptions.NEGATIVE;
-			final boolean inDark=a.AppWhite==Color.BLACK;
-			if(inDark) {
-				main_clister_layout.setBackgroundColor(Color.BLACK);
-				lv.setBackgroundColor(Color.BLACK);
-				for(int i=0;i<sideBar.getChildCount();i++) {
-					Drawable bg = sideBar.getChildAt(i).getBackground();
-					if(bg!=null)
-						bg.setColorFilter(NEGATIVE);
-				}
-				toolbar_action1.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-				toolbar_action1.getBackground().setColorFilter(NEGATIVE);
-				bookmark.getBackground().setColorFilter(NEGATIVE);
-				sideBar.setSCC(sideBar.ShelfDefaultGray=0xFF4F7FDF);
-				counter.setTextColor(Color.WHITE);
-			}
-			else {
-				for(int i=0;i<sideBar.getChildCount();i++) {
-					Drawable bg = sideBar.getChildAt(i).getBackground();
-					if(bg!=null)
-						bg.setColorFilter(null);
-				}
-				bookmark.getBackground().setColorFilter(null);
-			}
+			checkColors();
+			
 			SelectionMode = opt.getDBMode();
 			main_clister_layout.post(() -> sideBar.setRbyPos(opt.getDBMode()));
 			if(opt.getDBMode()==3 && opt.getInRemoveMode()) {
@@ -477,7 +425,46 @@ public class DBroswer extends Fragment implements
 				loadInAll(a);
 		}
 	}
-
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		checkColor();
+	}
+	
+	public void checkColor() {
+		if(initialized && GlobalOptions.isDark!=isDarkStamp) {
+			checkColors();
+		}
+	}
+	
+	private void checkColors() {
+		CMN.Log("dbr_checkColor...");
+		ColorFilter cs_dbr_sidbr = null;
+		isDarkStamp = GlobalOptions.isDark;
+		int AppWhite = Color.WHITE;
+		if(isDarkStamp) {
+			AppWhite = Color.BLACK;
+			cs_dbr_sidbr = GlobalOptions.WHITE;
+			sideBar.setSCC(sideBar.ShelfDefaultGray=0xFF4F7FDF);
+			counter.setTextColor(Color.WHITE);
+		}
+		main_clister_layout.setBackgroundColor(AppWhite);
+		for(int i=0;i<sideBar.getChildCount();i++) {
+			View cI = sideBar.getChildAt(i);
+			Drawable bg = cI.getBackground();
+			if(bg!=null) {
+				bg.setColorFilter(cs_dbr_sidbr);
+			}
+			if(cI instanceof ImageView) {
+				((ImageView)cI).setColorFilter(cs_dbr_sidbr);
+			}
+		}
+		if(initialized) {
+			mAdapter.notifyDataSetChanged();
+		}
+	}
+	
 	protected boolean getAutoRefreshOnAttach() {
 		return true;
 	}
@@ -585,13 +572,13 @@ public class DBroswer extends Fragment implements
 		@Override
 		public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
 		{
-			MyViewHolder holder = new MyViewHolder(LayoutInflater.from(getActivity()).inflate(R.layout.card_list_item, parent,false));
+			MyViewHolder holder = new MyViewHolder(LayoutInflater.from(getActivity()).inflate(R.layout.card_list_item, parent, false));
 			//holder.setIsRecyclable(false);
 			//if Recyclable, then setText in onBindViewHolder makes textviews unSelectable.
 			//details on this bug:
 			//https://blog.csdn.net/huawuque183/article/details/78563977
 			//issue solved.
-			holder.itemView.setTag(holder);
+			CMN.Log("dbr_onCreateViewHolder", CMN.now());
 			holder.itemView.setOnLongClickListener(longClicker);
 			holder.p.setOnLongClickListener(longClicker);
 			return holder;
@@ -599,9 +586,7 @@ public class DBroswer extends Fragment implements
 
 		@Override
 		public int getItemViewType(int position) {
-			if(position==itemCount && getDelayPullData())
-				return 1;
-			return 0;
+			return position==itemCount && getDelayPullData()?1:0;
 		}
 
 		@Override
@@ -722,7 +707,7 @@ public class DBroswer extends Fragment implements
 	public interface OnItemLongClickListener{
 		boolean onItemLongClick(View view,int position);}
 
-	class MyViewHolder extends ViewHolder
+	static class MyViewHolder extends ViewHolder
 	{
 		TextView webView;
 		TextView time;
@@ -734,6 +719,7 @@ public class DBroswer extends Fragment implements
 			webView = view.findViewById(android.R.id.text1);
 			time = view.findViewById(R.id.subtext1);
 			webView.setTextIsSelectable(true);
+			itemView.setTag(this);
 		}
 	}
 
@@ -813,7 +799,7 @@ public class DBroswer extends Fragment implements
 	/*神之显/隐体系*/
 	int revertage=0;
 	boolean should_hide_cd1,should_hide_cd2;
-	private boolean isDirty;
+	//private boolean isDirty;
 	/*hide/show system by a God*/
 	//click
 	@Override
@@ -822,15 +808,13 @@ public class DBroswer extends Fragment implements
 		int offset;
 		String msg=null;
 		switch(v.getId()) {
+			case R.id.tg2://.ver
+				boolean ck = ((ToggleButton)v).isChecked();
+				fastScroller.setVisibility(opt.setScrollShown(ck)?View.GONE:View.VISIBLE);
+			break;
 			case R.id.toolbar_action1:
-				if(!opt.getSelection_Persists())
-					Selection.clear();
-				if(opt.setIsCombinedSearching(!opt.getIsCombinedSearching())) {
-					toolbar_action1.setImageResource(R.drawable.ic_btn_multimode);
-				}else {
-					toolbar_action1.setImageResource(R.drawable.ic_btn_siglemode);
-				}
-				isDirty=true;
+				v.setActivated(bIsCombinedSearch = !bIsCombinedSearch);
+				opt.setIsCombinedSearching(bIsCombinedSearch);
 				break;
 			case R.id.tools0://pan
 				if(!opt.getSelection_Persists())
@@ -845,7 +829,6 @@ public class DBroswer extends Fragment implements
 					msg = "点击查词模式";
 				else
 					v.setTag(null);
-				isDirty=true;
 				break;
 			case R.id.tools1://选择模式
 				opt.setDBMode(3);
@@ -866,7 +849,6 @@ public class DBroswer extends Fragment implements
 					else
 						v.setTag(null);
 				}
-				isDirty=true;
 				break;
 			case R.id.tools001://peruse
 				if(!opt.getSelection_Persists())
@@ -881,7 +863,6 @@ public class DBroswer extends Fragment implements
 					msg = "点击翻阅模式";
 				else
 					v.setTag(null);
-				isDirty=true;
 				break;
 			case R.id.toolbar_action2://eyedropper
 				opt.setDBMode(2);
@@ -894,7 +875,6 @@ public class DBroswer extends Fragment implements
 					msg = "取词模式";
 				else
 					v.setTag(null);
-				isDirty=true;
 				break;
 			case R.id.tools3://删除
 				if(Selection.size()==0) {
@@ -977,6 +957,9 @@ public class DBroswer extends Fragment implements
 				MainActivityUIBase a = (MainActivityUIBase) getActivity();
 				a.showChooseFavorDialog(1);
 			} break;
+			case R.id.bookmark: {
+				onLongClick(((ViewGroup)v.getParent()).getChildAt(0));
+			} break;
 			case R.id.changed:{//change deck
 				if(System.currentTimeMillis()-last_listHolder_tt<150 && revertage==2) {//too fast from last hide
 					should_hide_cd2=true;
@@ -1053,7 +1036,7 @@ public class DBroswer extends Fragment implements
 		}
 
 		if(msg!=null) {
-			((MainActivityUIBase)getActivity()).showTopSnack(snack_root, msg, 0.5f, -1, -1, false);
+			((MainActivityUIBase)getActivity()).showTopSnack(snack_root, msg, 0.5f, -1, -1, 0);
 		}
 
 	}
@@ -1068,17 +1051,17 @@ public class DBroswer extends Fragment implements
 			}
 	}
 	//lazy strategy. reuse as much as I can.
-	PopupWindow sharePopup;
+	PopupWindow sharedPopup;
 	int menuResId = -1;
 	int onclickBase=0;
 	int lastPopupId=-1;
 	ArrayAdaptermy<String> shareListAda;
 	void initPopup(){
 		View view = getActivity().getLayoutInflater().inflate(R.layout.popup_more_tools, null);
-		sharePopup = new PopupWindow(view,
+		sharedPopup = new PopupWindow(view,
 				(int)(160 * getResources().getDisplayMetrics().density), LayoutParams.WRAP_CONTENT);
 
-		sharePopup.setOnDismissListener(() -> {
+		sharedPopup.setOnDismissListener(() -> {
 		});
 		final ListView shareList = view.findViewById(R.id.share_list);
 		shareListAda = new ArrayAdaptermy<>(getActivity(),
@@ -1117,7 +1100,6 @@ public class DBroswer extends Fragment implements
 						//main_clister_layout.findViewById(R.id.tools1).getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 						sideBar.setSCC(sideBar.ShelfDefaultGray);
 					}
-					isDirty=true;
 					break;
 				case 30://show all decks
 					break;
@@ -1169,17 +1151,15 @@ public class DBroswer extends Fragment implements
 				case 50://严格模式
 					fastScroller.setConservativeScroll(true);
 					opt.setShelfStrictScroll(true);
-					isDirty=true;
 					break;
 				case 51://宽松模式
 					fastScroller.setConservativeScroll(false);
 					opt.setShelfStrictScroll(false);//.putBoolean("strictscroll", false);
-					isDirty=true;
 					break;
 			}
 			TextView tv = (TextView) view1;
 			tv.setText(tv.getText()+"...");
-			getActivity().getWindow().getDecorView().postDelayed(() -> sharePopup.dismiss(), 150);
+			getActivity().getWindow().getDecorView().postDelayed(() -> sharedPopup.dismiss(), 150);
 		});
 	}
 
@@ -1192,28 +1172,32 @@ public class DBroswer extends Fragment implements
 			case R.id.tools1:
 				menuResId=R.array.selection_tweak;
 				onclickBase=10;
-				break;
+				interceptClick=true;
+			break;
 			case R.id.choosed:
 				menuResId=R.array.choosed_tweak;
 				onclickBase=30;
 				interceptClick=true;
-				break;
+			break;
+			case R.id.bookmark:
+				v.performClick();
+			return true;
 			case R.id.bookmark0:
 				menuResId=R.array.bookmark0_tweak;
 				onclickBase=40;
 				interceptClick=true;
-				break;
+			break;
 			case R.id.tg2:
 				menuResId=R.array.ver_tweak;
 				onclickBase=50;
 				interceptClick=true;
-				break;
+			break;
 		}
-		if(sharePopup!=null && sharePopup.isShowing()) {
-			sharePopup.dismiss();
-			return true;
-		}
-		if(sharePopup==null)
+//		if(sharePopup!=null && sharePopup.isShowing()) {
+//			sharePopup.dismiss();
+//			return true;
+//		}
+		if(sharedPopup ==null)
 			initPopup();
 
 		if(lastPopupId!=v.getId()) {//need re-populate
@@ -1221,10 +1205,10 @@ public class DBroswer extends Fragment implements
 			lastPopupId=v.getId();
 		}
 
-		sharePopup.setFocusable(false);
-		sharePopup.setOutsideTouchable(true);
-		sharePopup.setBackgroundDrawable(null);
-		sharePopup.showAsDropDown(v, v.getWidth(), -v.getHeight());
+		sharedPopup.setFocusable(false);
+		sharedPopup.setOutsideTouchable(true);
+		sharedPopup.setBackgroundDrawable(null);
+		sharedPopup.showAsDropDown(v, v.getWidth(), -v.getHeight());
 		return interceptClick;
 	}
 
@@ -1346,13 +1330,17 @@ public class DBroswer extends Fragment implements
 					mAdapter.notifyItemChanged(position);
 				} break;
 				case SelectionMode_pan:{
-					if(opt.getIsCombinedSearching()) {
+					if(a.this_instanceof_MultiShareActivity) {
+						show("未实现");
+					}
+					else if(bIsCombinedSearch) {
 						ArrayList<Integer> records = new ArrayList<>();
 						additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
 						ArrayList<additiveMyCpr1> data = new ArrayList<>();
 						data.add(datalet);
 						String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
 						a.bShowLoadErr=false;
+						long st = CMN.rt();
 						for(int dIdx=0;dIdx<a.md.size();dIdx++) {//联合搜索
 							mdict mdTmp = a.md_get(dIdx);
 							if(mdTmp!=null) {
@@ -1368,9 +1356,11 @@ public class DBroswer extends Fragment implements
 									}
 							}
 						}
+						CMN.Log("联合搜索 - 同步延时 : ", CMN.elapsed(st));
 						a.bShowLoadErr=true;
 						webviewHolder = a.webholder;
 						ViewGroup anothorHolder = a.webSingleholder;
+						CMN.Log("SelectionMode_pan", records.size());
 						if(records.size()>0) {
 							a.recCom = rec = new resultRecorderCombined(a,data,a.md);
 							ScrollViewmy WHP = a.WHP;
@@ -1400,7 +1390,7 @@ public class DBroswer extends Fragment implements
 								//CMN.Log("新建", combining_search_result.expectedPos, pos);
 							}
 
-							if(WHP.getVisibility()!=View.VISIBLE) WHP.setVisibility(View.VISIBLE);
+							WHP.setVisibility(View.VISIBLE);
 							if(anothorHolder.getVisibility()==View.VISIBLE) {
 								if(anothorHolder.getChildCount()!=0)
 									anothorHolder.removeAllViews();
@@ -1410,14 +1400,11 @@ public class DBroswer extends Fragment implements
 							a.widget13.setVisibility(View.VISIBLE);
 							a.widget14.setVisibility(View.VISIBLE);
 							a.contentview.setVisibility(View.VISIBLE);
-							ViewGroup somp = (ViewGroup) a.contentview.getParent();
-							if(somp!=a.main){
-								if(somp!=null) somp.removeView(a.contentview);
-								a.main.addView(a.contentview);
-							}
 							imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
+							
+							//a.AttachContentViewForDB();
 
-							rec.renderContentAt(0, a,null);
+							//rec.renderContentAt(0, a,null);
 
 							processFavorite(position, currentDisplaying);
 						}
@@ -1458,9 +1445,9 @@ public class DBroswer extends Fragment implements
 
 						webviewHolder = a.webSingleholder;
 						ViewGroup anothorHolder = a.webholder;
-						if(idx>=0){
+						if(idx>=0) {
+							currentDictionary.initViewsHolder(a);
 							if(opt.getRemPos()) {
-								currentDictionary.initViewsHolder(a);
 								currentDictionary.rl.setTag(adapter_idx);
 								OUT:
 								if(System.currentTimeMillis()-a.lastClickTime>300)//save our postion
@@ -1503,7 +1490,7 @@ public class DBroswer extends Fragment implements
 								currentDictionary.mWebView.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 								desiredScale=pagerec.scale;
 								CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+currentDictionary.mWebView.expectedPos+" scale:"+pagerec.scale);
-							}else {
+							} else {
 								currentDictionary.mWebView.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 								currentDictionary.mWebView.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 							}
@@ -1558,13 +1545,16 @@ public class DBroswer extends Fragment implements
 					data.add(datalet);
 					String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
 					boolean reorded=false;
+					if(a.PeruseView!=null && a.PeruseView.peruseF.getChildCount()>0) {
+						a.DetachDBrowser();
+					}
 					for(int i=0;i<a.md.size();i++) {//联合搜索
 						int dIdx=i;
-						if(opt.getPeruseAddAll()){
+						if(opt.getPeruseAddAll()) {
 							records.add(dIdx);
 							continue;
 						}
-						if(!opt.getIsCombinedSearching()) {
+						if(!bIsCombinedSearch) {
 							if(dIdx==0)if(a.adapter_idx>0 && a.adapter_idx<a.md.size()) {
 								dIdx=a.adapter_idx;
 								reorded=true;
@@ -1589,16 +1579,23 @@ public class DBroswer extends Fragment implements
 					a.getPeruseView().TextToSearch = currentDisplaying;
 					a.AttachPeruseView(true);
 				} break;
-				case SelectionMode_txtdropper:{
-					a.lastEtString=a.etSearch.getText().toString();
-					a.etSearch.setText(currentDisplaying);
-					a.etSearch_ToToolbarMode(2);
-					a.getSupportFragmentManager().beginTransaction().remove(DBroswer.this).commit();
-					a.DBrowser=null;
-					if(isDirty) {
-						opt.putFirstFlag();
-						//CMN.Log("DBROWSER写配置……");
+				case SelectionMode_txtdropper: {
+					EditText target = null;
+					if(a.this_instanceof_MultiShareActivity) {
+						if(a.PeruseView!=null) {
+							target = a.PeruseView.etSearch;
+						} else {
+							a.getUcc().setInvoker(null, null, null, currentDisplaying);
+						}
+					} else {
+						a.lastEtString=a.etSearch.getText().toString();
+						target = a.etSearch;
+						a.etSearch_ToToolbarMode(2);
 					}
+					if(target!=null) {
+						target.setText(currentDisplaying);
+					}
+					a.DetachDBrowser();
 				} break;
 			}
 		}};
@@ -1630,7 +1627,7 @@ public class DBroswer extends Fragment implements
 		if(a==null) return;
 		if(opt.getBottomNavigationMode()==0) {
 			if (currentPos - 1 < 0) {
-				a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, false);
+				a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, 0);
 				return;
 			}
 			//int first = lm.findFirstVisibleItemPosition();

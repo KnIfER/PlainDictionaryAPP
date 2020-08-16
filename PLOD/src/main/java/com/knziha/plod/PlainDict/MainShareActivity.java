@@ -1,5 +1,6 @@
 package com.knziha.plod.PlainDict;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Intent;
 import android.net.Uri;
@@ -12,39 +13,50 @@ import androidx.appcompat.app.AppCompatActivity;
 /**
  * Recreated by KnIfER on 2019
  */
-public class MainShareActivity extends AppCompatActivity {
+public class MainShareActivity extends Activity {
 	private String debugString;
 	static ActivityManager.AppTask hiddenId;
-
+	public final static int SingleTaskFlags = Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP;
+	public static boolean launched;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(null);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		//setTheme(R.style.AppTheme);
 		ProcessIntent(getIntent());
 		finish();
+		launched=true;
 	}
 
-	public void ProcessIntent(Intent intent) {
+	public void ProcessIntent(Intent thisIntent) {
 		debugString=null;
-		if(intent!=null) {
-			String action = intent.getAction();
+		if(thisIntent!=null) {
+			String action = thisIntent.getAction();
+			if(action!=null && action.equals(Intent.ACTION_MAIN)) {
+				//CMN.Log("主程转发");
+				thisIntent.setClass(getBaseContext(),PDICMainActivity.class);
+				thisIntent.setFlags(SingleTaskFlags);
+				startActivity(thisIntent);
+				return;
+			}
 			if(action!=null && action.equals(Intent.ACTION_VIEW)) {
-				Uri url = intent.getData();
+				Uri url = thisIntent.getData();
 				if(url!=null) {
 					CMN.Log("ProcessIntent_url", url);
 					Intent newTask = new Intent(Intent.ACTION_MAIN);
 					newTask.setType(Intent.CATEGORY_DEFAULT);
 					newTask.putExtra(Intent.EXTRA_TEXT,debugString);
 					newTask.setClass(getBaseContext(),PDICMainActivity.class);
-					newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					newTask.setFlags(SingleTaskFlags);
 					newTask.setData(url);
 					startActivity(newTask);
 					return;
 				}
 			}
-			debugString = intent.getStringExtra(Intent.EXTRA_TEXT);
+			debugString = thisIntent.getStringExtra(Intent.EXTRA_TEXT);
 		}
-		if(debugString!=null){
+		if(debugString!=null) {
 			PDICMainAppOptions opt = new PDICMainAppOptions(this);
 			opt.getSecondFlag();
 			int ShareTarget = PDICMainAppOptions.getShareTarget();
@@ -59,14 +71,15 @@ public class MainShareActivity extends AppCompatActivity {
 				popup.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 				//CMN.Log("pop that way!");
 				getApplicationContext().startActivity(popup);
-			}else{//主程序
+			} else {//主程序
 				Intent newTask = new Intent(Intent.ACTION_MAIN);
-				newTask.setType(intent.getType());
+				newTask.setType(thisIntent.getType());
 				newTask.putExtra(Intent.EXTRA_TEXT,debugString);
+				CMN.Log("主程序", CMN.id(debugString));
 				newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
 				newTask.setClass(getBaseContext(),PDICMainActivity.class);
 //				//|Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
-				newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				newTask.setFlags(SingleTaskFlags);
 				startActivity(newTask);
 			}
 		}

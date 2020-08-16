@@ -11,7 +11,9 @@ import com.knziha.plod.PlainDict.PDICMainAppOptions;
 
 public class PopupGuarder extends View {
 	private final float padding;
-	public View popupToGuard;
+	public ViewGroup popupToGuard;
+	public ViewGroup popupToGuardParent;
+	public OnClickListener onPopupDissmissed;
 	public PopupGuarder(Context context) {
 		super(context);
 		padding = 13*context.getResources().getDisplayMetrics().density;
@@ -29,11 +31,16 @@ public class PopupGuarder extends View {
 		}
 
 		private boolean handle(MotionEvent e) {
-			if(popupToGuard!=null){
-				if(popupToGuard.getParent() instanceof ViewGroup)
-					((ViewGroup)popupToGuard.getParent()).removeView(popupToGuard);
+			if(popupToGuard!=null) {
+				popupToGuardParent = (ViewGroup) popupToGuard.getParent();
+				if(popupToGuardParent!=null)
+					popupToGuardParent.removeView(popupToGuard);
+				popupToGuardParent=
 				popupToGuard=null;
 				setVisibility(View.GONE);
+				if(onPopupDissmissed!=null){
+					onPopupDissmissed.onClick(PopupGuarder.this);
+				}
 				return true;
 			}
 			return false;

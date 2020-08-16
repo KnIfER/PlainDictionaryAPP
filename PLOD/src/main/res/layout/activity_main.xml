@@ -30,7 +30,6 @@
 				android:background="?attr/colorPrimary"
 				app:layout_scrollFlags="scroll|enterAlways|snap"
 				>
-
 				<FrameLayout android:id="@+id/rlSearchFrameDelete"
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
@@ -47,7 +46,6 @@
 						android:background="@drawable/abc_edit_text_material"
 						tools:text="HAPPY SEARCHING"
 						/>
-
 
 					<LinearLayout
 						android:layout_width="wrap_content"
@@ -158,13 +156,16 @@
 <!--				android:src="@drawable/ic_exit_to_app_black_24dp"-->
 <!--				/>-->
 
-			<android.widget.ImageView
+			<com.knziha.plod.widgets.ActivatableImageView
 				android:id="@+id/browser_widget1"
 				android:layout_width="0dp"
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:background="@drawable/surrtrip1"
-				android:src="@drawable/songlist" />
+				android:src="@drawable/songlist"
+				app:src0="@drawable/back_ic"
+				app:activedSR="false"
+				/>
 
 			<android.widget.ImageView
 				android:id="@+id/browser_widget2"
@@ -319,5 +320,50 @@
 			android:minHeight="?attr/actionBarSize"
 			android:theme="@style/toolbarBaseTheme"
 			android:layout="@layout/searchbar" />
+	</RelativeLayout>
+
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		>
+		<com.knziha.plod.widgets.AdvancedNestScrollListview
+			android:layout_height="match_parent"
+			android:layout_width="match_parent"
+			android:id="@+id/main_list"
+			android:drawSelectorOnTop="false"
+			android:listSelector="@drawable/listviewselector0"
+			android:theme="@style/AppTheme"
+			android:fastScrollEnabled="true"
+			android:descendantFocusability="beforeDescendants"
+			android:paddingLeft="10dp"/>
+		<com.knziha.plod.widgets.AdvancedNestScrollListview
+			android:layout_height="match_parent"
+			android:layout_width="match_parent"
+			android:id="@+id/sub_list"
+			android:drawSelectorOnTop="true"
+			android:listSelector="@drawable/listviewselector0"
+			android:background="@android:color/white"
+			android:visibility="invisible"
+			/>
+		<com.knziha.plod.widgets.AdvancedNestScrollListview
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			android:id="@+id/sub_list1"
+			android:drawSelectorOnTop="true"
+			android:listSelector="@drawable/listviewselector0"
+			android:fastScrollEnabled="true"
+			android:fastScrollStyle="@style/fscroll"
+			android:layout_marginBottom="45dip"
+			/>
+		<com.knziha.plod.widgets.AdvancedNestScrollListview
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			android:id="@+id/sub_list2"
+			android:drawSelectorOnTop="true"
+			android:listSelector="@drawable/listviewselector0"
+			android:fastScrollEnabled="true"
+			android:fastScrollStyle="@style/fscroll"
+			android:layout_marginBottom="45dip"
+			/>
 	</RelativeLayout>
 </FrameLayout>

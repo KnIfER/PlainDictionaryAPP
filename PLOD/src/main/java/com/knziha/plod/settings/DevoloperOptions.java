@@ -23,6 +23,7 @@ import java.io.DataOutputStream;
 
 /** Devoloper Options */
 public class DevoloperOptions extends SettingsFragment implements Preference.OnPreferenceClickListener {
+	public final static int id=4;
 	private WebView mWebview;
 
 	//执行初始化操作

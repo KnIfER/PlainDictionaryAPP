@@ -11,7 +11,6 @@
 	splitview:handle="@+id/bottombar2"
 	splitview:secondaryContent="@+id/PageSlider"
 	>
-
 		<com.knziha.plod.widgets.RLContainerSlider
 			android:id="@+id/PageSlider"
 			android:layout_width="match_parent"
@@ -26,6 +25,7 @@
 				android:background="#C7EDCC"
 				/>
 			<com.knziha.plod.widgets.AdvancedNestScrollView
+				android:id="@+id/WHP"
 				android:layout_height="match_parent"
 				android:layout_width="match_parent"
 				android:focusable="true"
@@ -48,7 +48,7 @@
 				android:foreground="@drawable/shixian"
 				/>
 
-			<com.knziha.plod.widgets.SamsungLikeScrollBar
+			<com.knziha.plod.widgets.DragScrollBar
 				android:id="@+id/dragScrollBar"
 				android:layout_width="@dimen/scrollBarWidth"
 				android:layout_height="match_parent"
@@ -139,7 +139,5 @@
 				android:background="@drawable/surrtrip1"
 				android:src="@drawable/voice_ic"
 				/>
-
 		</LinearLayout>
-
 </com.knziha.plod.widgets.SplitView>

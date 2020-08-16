@@ -1,7 +1,5 @@
 package org.adrianwalker.multilinestring;
 
-import com.google.auto.service.AutoService;
-
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -12,7 +10,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
-@AutoService(Processor.class)
+//@AutoService(Processor.class)
 @SupportedAnnotationTypes({"org.adrianwalker.multilinestring.Multiline"})
 public final class MultilineProcessor extends AbstractProcessor {
   private Processor delegator = null;

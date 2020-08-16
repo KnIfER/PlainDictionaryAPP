@@ -4,92 +4,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
 	tools:ignore="AppCompatResource"
 	>
-    <item
-        android:id="@+id/toolbar_action1"
-        android:icon="@drawable/ic_btn_siglemode"
-        android:title=""
-        app:showAsAction="always"/>
-    
-    <item
-        android:id="@+id/toolbar_action0"
-        android:icon="@drawable/ic_btn_siglemode"
-        android:title="@string/fold_all"
-        android:visible="false"
-        app:showAsAction="never"/>
+<!--0--><item android:id="@+id/toolbar_action1" android:icon="@drawable/ic_btn_siglemode" android:title="" app:showAsAction="always"/>
 
-	<item
-		android:id="@+id/toolbar_action12"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/peruse_mode"
-		app:showAsAction="never"/>
+<!--1--><item android:id="@+id/toolbar_action0" android:icon="@drawable/ic_btn_siglemode" android:title="@string/fold_all" app:showAsAction="never"/>
 
-    <item
-      android:id="@+id/toolbar_action6"
-      android:icon="@drawable/ic_btn_siglemode"
-      android:title="@string/rem_position"
-      app:showAsAction="never"/>
-	<!--	翻页前记忆位置-->
+<!--2--><item android:id="@+id/toolbar_action12" android:icon="@drawable/ic_btn_siglemode" android:title="@string/peruse_mode" app:showAsAction="never"/>
 
-    <item
-        android:id="@+id/toolbar_action2"
-        android:icon="@drawable/ic_search_24k"
-        android:title="@string/search"
-        app:showAsAction="never"/>
-    
-<!--    <item-->
-<!--     android:id="@+id/toolbar_action5"-->
-<!--     android:icon="@drawable/ic_btn_siglemode"-->
-<!--     android:title="@string/hint_search_result"-->
-<!--     app:showAsAction="never"/>-->
-<!--	-->
-    <item
-     android:id="@+id/toolbar_action11"
-     android:title="@string/tint_result"
-     app:showAsAction="never"/>
-    <item
-     android:id="@+id/toolbar_action10"
-     android:title="保存搜索…"
-     app:showAsAction="never"/>
-    
-    <item
-        android:id="@+id/toolbar_action3"
-        android:icon="@drawable/ic_search_24k"
-        android:title="@string/perWSearch"
-        app:showAsAction="never"/>
-    
-    <item
-        android:id="@+id/toolbar_action4"
-        android:icon="@drawable/ic_search_24k"
-        android:title="@string/peruseToggle"
-        app:showAsAction="never"/>
-    
-<!--    <item-->
-<!--        android:id="@+id/toolbar_action7"-->
-<!--        android:icon="@drawable/ic_search_24k"-->
-<!--        android:title="@string/switch_dict"-->
-<!--        app:showAsAction="never"/>-->
+<!--3--><item android:id="@+id/toolbar_action6" android:icon="@drawable/ic_btn_siglemode" android:title="@string/rem_position" app:showAsAction="never"/>
 
-	<item
-		android:id="@+id/toolbar_action14"
-		android:icon="@drawable/ic_search_24k"
-		android:title="即点即译"
-		app:showAsAction="never"/>
+<!--4--><item android:id="@+id/toolbar_action2" android:icon="@drawable/ic_search_24k" android:title="@string/search" app:showAsAction="never"/>
 
-    <item
-        android:id="@+id/toolbar_action8"
-        android:icon="@drawable/ic_search_24k"
-        android:title="@string/switch_set"
-        app:showAsAction="never"/>
+<!--5--><item android:id="@+id/toolbar_action11" android:title="@string/tint_result" app:showAsAction="never"/>
 
-	<item
-        android:id="@+id/toolbar_action9"
-        android:icon="@drawable/ic_search_24k"
-        android:title="@string/save_bookmark"
-        app:showAsAction="never"/>
+<!--6--><item android:id="@+id/toolbar_action10" android:title="保存搜索…" app:showAsAction="never"/>
 
-	<item
-		android:id="@+id/toolbar_action13"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="页内查找…"
-		app:showAsAction="never" />
+<!--7--><item android:id="@+id/toolbar_action3" android:icon="@drawable/ic_search_24k" android:title="@string/perWSearch" app:showAsAction="never"/>
+
+<!--8--><item android:id="@+id/toolbar_action4" android:icon="@drawable/ic_search_24k" android:title="@string/peruseToggle" app:showAsAction="never"/>
+
+<!--9--><item android:id="@+id/toolbar_action14" android:icon="@drawable/ic_search_24k" android:title="即点即译" app:showAsAction="never"/>
+
+<!--10--><item android:id="@+id/toolbar_action8" android:icon="@drawable/ic_search_24k" android:title="@string/switch_set" app:showAsAction="never"/>
+
+<!--11--><item android:id="@+id/toolbar_action9" android:icon="@drawable/ic_search_24k" android:title="@string/save_bookmark" app:showAsAction="never"/>
+
+<!--12--><item android:id="@+id/toolbar_action13" android:icon="@drawable/ic_btn_siglemode" android:title="页内查找…" app:showAsAction="never" />
 </menu>

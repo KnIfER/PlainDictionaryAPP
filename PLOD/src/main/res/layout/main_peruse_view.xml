@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:splitview="http://schemas.android.com/apk/res-auto"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -55,6 +55,7 @@
 	<FrameLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		android:layout_below="@+id/toolbar"
 		>
 
 		<com.knziha.plod.widgets.SplitView
@@ -215,4 +216,9 @@
 			android:layout_gravity="bottom|center"
 			android:text="Button" />
 	</FrameLayout>
-</LinearLayout>
+
+	<FrameLayout
+		android:id="@+id/peruseF"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"/>
+</RelativeLayout>

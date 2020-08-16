@@ -3,8 +3,11 @@ package com.knziha.plod.PlainDict;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -29,13 +32,13 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
+import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -43,7 +46,6 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
-import android.view.ViewParent;
 import android.view.ViewStub;
 import android.view.Window;
 import android.view.WindowManager;
@@ -59,7 +61,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupWindow;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,8 +72,8 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -90,9 +92,9 @@ import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.dict_manager_activity;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
-import com.knziha.plod.dictionarymanager.files.IntegerSingleton;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.mdict;
@@ -155,7 +157,6 @@ import static androidx.appcompat.app.GlobalOptions.realWidth;
 @SuppressLint({"SetTextI18n", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
 public class PDICMainActivity extends MainActivityUIBase implements OnClickListener, OnLongClickListener, OnMenuItemClickListener{
 	public String textToSetOnFocus;
-	private String debugString=null;//世           界     你好 happy呀happy\"人\"’。，、？
 	public static int taskCounter = 0;
 	public Timer timer;
 	public int currentSearchingDictIdx;
@@ -174,13 +175,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public String lastKeyword;
 
 	ImageView widget0;
-	ArrayList<View> viewList;
+	List<View> viewList;
 	NoScrollViewPager viewPager;
 	ActionBarDrawerToggle mDrawerToggle;
 	DrawerLayout mDrawerLayout;
 
-	private ImageView browser_widget3;
-	private ImageView browser_widget4;
+	private ImageView browser_widget1;
 
 	public boolean bNeedReAddCon;
 	public boolean bOnePageNav;
@@ -203,7 +203,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	/** 定制底栏一：<br/>
 	 * 选择词典1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6 <br/>
 	 * 退离程序7 打开侧栏8 随机词条9 上一词典10 下一词典11 调整亮度12 定制底栏13 定制颜色14 管理词典15 进入设置16<br/>*/
-	int[] BottombarBtnIcons = new int[]{
+	static int[] BottombarBtnIcons = new int[]{
 			R.drawable.songlist,
 			R.drawable.bundle,
 			R.drawable.fuzzy_search,
@@ -221,8 +221,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			R.drawable.bundle2,//14
 			R.drawable.ic_settings_black_24dp,//15
 	};
-
-	int[] BottombarBtnIds = new int[]{
+	
+	static int[] BottombarBtnIds = new int[]{
 			R.id.browser_widget1,
 			R.id.browser_widget2,
 			R.id.browser_widget3,
@@ -246,6 +246,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private EditText etSearchDict;
 	private boolean SearchDictPatternChanged;
 	private IBinder etSearchDict_getWindowToken;
+	/** 虚空断瀑江流尽注玉魄惊魂启元大法指法篇微直截术第十二式之计启技：<br/>
+	 * 		 👌🏻 · 👌🏻 🏻🏻🏻 👍🏻 👍 <-X>> 👏👏👏--> 👌 <-- 🏻🏻🏻 💣💣💣 ！*/
+	private static int LauncherInstanceCount;
+	public MenuItem iItem_aPageRemember;
+	private EnchanterReceiver locationReceiver;
+	private int TotalMergedKeyCount;
+	private int ConfidentMergeShift;
+	private int ConfidentMergeStart;
+	
 	
 	@Override
 	ArrayList<PlaceHolder> getLazyCC() {
@@ -518,6 +527,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		drawerFragment.setCheckedForce(drawerFragment.sw2, val);
 	}
 	
+	public void pendingModPath(String nextPath) {
+		SU.UniversalObject = nextPath;
+		mDrawerLayout.closeDrawer(GravityCompat.START);
+		showAppExit(true);
+	}
+	
 	private static class MyHandler extends BaseHandler{
 		private final WeakReference<Toastable_Activity> activity;
 		MyHandler(Toastable_Activity a) {
@@ -645,8 +660,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			dialogHolder.setVisibility(View.GONE);
 			if(pickDictDialog!=null) if(pickDictDialog.isDirty)  {opt.putFirstFlag();pickDictDialog.isDirty=false;}
 		}
-		else if(popupContentView!=null && popupContentView.getParent()!=null){
-			DetachClickTranslator();
+		else if(DetachClickTranslator()){
 		}
 		else if(!AutoBrowsePaused || bRequestingAutoReading){
 			stopAutoReadProcess();
@@ -671,7 +685,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						}
 					break;
 					case 3:
-						showAppExit();
+						showAppExit(false);
 					return;
 				}
 			}
@@ -679,24 +693,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			else /*finish();*/ super.onBackPressed();
 		}
 		else if(DBrowser != null){
-			if(DBrowser.try_goBack()!=0)
-				return;
-			//File newFavor = DBrowser.items.get(DBrowser.lastChecked);
-			//xxx
-//			if(!(DBrowser instanceof DHBroswer))
-//				if(!newFavor.equals(new File(favoriteCon.pathName))) {//或许需要重载收藏夹
-//					favoriteCon.close();
-//					favoriteCon = new LexicalDBHelper(this, newFavor);
-//					String name = new File(favoriteCon.pathName).getName();
-//					//opt.putString("currFavoriteDBName", opt.currFavoriteDBName=);
-//					opt.putCurrFavoriteDBName(favorTag+name.substring(0,name.length()-4));
-//					show(R.string.currFavor, DBrowser.boli(newFavor.getName()));
-//				}
-			webholder.removeAllViews();
-			FragmentTransaction transaction = getSupportFragmentManager()
-					.beginTransaction().remove(DBrowser);
-			transaction.commit();
-			DBrowser = null;
+			DetachDBrowser();
 		}
 		else if(ActivedAdapter!=null && contentview.getParent()!=null) {
 			/* 检查返回键倒退网页 */
@@ -709,30 +706,21 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			main_progress_bar.setVisibility(View.GONE);
 
-			toolbar.getMenu().findItem(R.id.toolbar_action2).setVisible(true);//Ser
-			iItem_PerwordSearch.setVisible(CurrentViewPage==1);
-			iItem_PeruseMode.setVisible(true);
-
-			iItem_aPageRemember.setVisible(false);//翻忆
-			iItem_JumpPeruse.setVisible(false);//翻忆
-			iItem_FolderAll.setVisible(false);//折叠
-
-			iItem_InPageSearch.setVisible(!opt.getInPageSearchVisible()&&!opt.isContentBow());
-			iItem_ClickSearch.setVisible(false);
-			iItem_SaveSearch.setVisible(CurrentViewPage!=1);
-			iItem_TintWildRes.setVisible(CurrentViewPage!=1);
-			//iItem_PickDict.setVisible(false);
-			iItem_PickSet.setVisible(false);
-			iItem_SaveBookMark.setVisible(false);
-
+			applyMainMenu();
+			
+			//iItem_InPageSearch.setVisible(!opt.getInPageSearchVisible()&&!opt.isContentBow());
+			
 			ActivedAdapter.SaveVOA();
 			adaptermy2.currentKeyText=null;
 			adaptermy.currentKeyText=null;
-			webholder.removeAllViews();
-			int remcount = webSingleholder.getChildCount();
-			if(remcount>0) webSingleholder.removeAllViews();
-
-			if(currentDictionary!=null && currentDictionary.mWebView!=null ) currentDictionary.mWebView.expectedPos=0;
+			
+//			Utils.removeAllViews(webholder);
+//			Utils.removeAllViews(webSingleholder);
+			
+			WebViewmy backing_webview = PageSlider.WebContext;
+			if(backing_webview!=null) {
+				backing_webview.expectedPos=0;
+			}
 			((ListViewAdapter2)adaptermy2).expectedPos=0;
 			if(drawerFragment.d!=null) {
 				drawerFragment.d.show();
@@ -740,49 +728,25 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			PageSlider.setTranslationX(0);
 			PageSlider.setTranslationY(0);
 			int lastPos = ActivedAdapter.lastClickedPos;
-			if(CurrentViewPage==1){//count==4
-				if(ActivedAdapter==adaptermy2){ //clearWebviews
-					DetachContentView();
-					etSearch_ToToolbarMode(0);
-					bWantsSelection=false;
-					//webholder.removeAllViews();
-					if(lastPos<lv2.getFirstVisiblePosition() || lastPos>lv2.getLastVisiblePosition())
-						lv2.setSelection(lastPos);
-				}
-				else{
-					DetachContentView();
-					etSearch_ToToolbarMode(0);
-					bWantsSelection=false;
-					//webholder.removeAllViews();
-					if(lastPos<lv.getFirstVisiblePosition() || lastPos>lv.getLastVisiblePosition())
-						lv.setSelection(lastPos);
-				}
-			}
-			else{
-				DetachContentView();
-				etSearch_ToToolbarMode(0);
-				bWantsSelection=false;
-				//webholder.removeAllViews();
-				if(CurrentViewPage==0) {
-					if(lastPos<mlv1.getFirstVisiblePosition() || lastPos>mlv1.getLastVisiblePosition())
-						mlv1.setSelection(lastPos);
-				}
-				else {
-					if(lastPos<mlv2.getFirstVisiblePosition() || lastPos>mlv2.getLastVisiblePosition())
-						mlv2.setSelection(lastPos);
-				}
-			}
-			//else main.removeViews(3,count-1);
+			ListView lva = ActivedAdapter.lava;
+			DetachContentView(true);
+			PostDCV_TweakTBIC();
+			if(lastPos<lva.getFirstVisiblePosition() || lastPos>lva.getLastVisiblePosition())
+				lva.setSelection(lastPos);
 			ActivedAdapter=null;
 		}
 		else if(contentview.getParent()!=null){/* avoid stuck */
-			DetachContentView();
+			DetachContentView(true);
 		}
 		else{
 			//mainF.removeAllViews();
-			etSearch_ToToolbarMode(0);
-			bWantsSelection=false;
+			PostDCV_TweakTBIC();
 		}
+	}
+	
+	private void PostDCV_TweakTBIC() {
+		etSearch_ToToolbarMode(0);
+		bWantsSelection=false;
 	}
 	
 	@Override
@@ -879,19 +843,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		return super.onKeyDown(keyCode, event);
 	}
-	
-	public MenuItem iItem_aPageRemember;
-	private MenuItem iItem_JumpPeruse;
-
-	//private MenuItem iItem_PickDict;
-	private MenuItem iItem_PickSet;
-	private MenuItem iItem_SaveBookMark;
-
-	private MenuItem iItem_TintWildRes;
-	private MenuItem iItem_SaveSearch;
-
-	private MenuItem iItem_PerwordSearch;
-	private MenuItem iItem_PeruseMode;
 
 	BooleanSingleton TintWildResult;
 	BooleanSingleton TintFullResult;
@@ -903,16 +854,30 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-		processIntent(intent);
+		processIntent(intent, false);
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		cbar_key=0;
+		bridgedActivity=true;
 		bIsFirstLaunch=false;
 		focused=true;
+		CMN.Log("LauncherInstanceCount", LauncherInstanceCount);
+		if(LauncherInstanceCount>=1) {
+			Intent thisIntent = getIntent();
+			startActivity((thisIntent==null?new Intent():new Intent(getIntent()))
+					.setClass(this, PDICMainActivity.class)
+					.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP));//, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+			shunt=true;
+		}
 		super.onCreate(null);
+		if(shunt) {
+			finish();
+			return;
+		}
 		
+		LauncherInstanceCount=1;
 		Window win = getWindow();
 		
 		win.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
@@ -924,53 +889,59 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		setContentView(R.layout.activity_main);
 		root = findViewById(R.id.root);
 		
-		if(transit){
+		if(transit) {
 			root.setAlpha(0);
 			ObjectAnimator fadeInContents = ObjectAnimator.ofFloat(root, "alpha", 0, 1);
 			fadeInContents.setInterpolator(new AccelerateDecelerateInterpolator());
 			fadeInContents.setDuration(350);
-			fadeInContents.addListener(new Animator.AnimatorListener() {
-				@Override public void onAnimationStart(Animator animation) { }
+			fadeInContents.addListener(new Utils.BaseAnimatorListener() {
 				@Override public void onAnimationEnd(Animator animation) {
 					win.setBackgroundDrawable(null);
 				}
-				@Override public void onAnimationCancel(Animator animation) { }
-				@Override public void onAnimationRepeat(Animator animation) { }
 			});
 			root.post(fadeInContents::start);
 		}
 		
-		contentview = findViewById(R.id.webcontentlister);
+		webcoord = root.findViewById(R.id.webcoord);
+		appbar = webcoord.findViewById(R.id.appbar);
+		toolbar = appbar.findViewById(R.id.toolbar);
+		
+		mDrawerLayout = (DrawerLayout) webcoord.getChildAt(1);
+		main_succinct = mDrawerLayout.findViewById(R.id.mainframe);  //
+		main_content_succinct = main_succinct.findViewById(R.id.main);
+		viewPager = main_content_succinct.findViewById(R.id.viewpager);
+		widget0 = main_succinct.findViewById(R.id.browser_widget0);
+		bottombar = (ViewGroup) webcoord.getChildAt(2);
+		contentview = (ViewGroup) webcoord.getChildAt(3);
+		
 		Objects.requireNonNull(contentview);
-		viewPager = findViewById(R.id.viewpager);
-		snack_holder = findViewById(R.id.snack_holder);
-
-		toolbar = findViewById(R.id.toolbar);
-		appbar = findViewById(R.id.appbar);
-		toolbar.setTag(R.id.action_context_bar, false);
-		toolbar.inflateMenu(R.menu.menu);
-
-		iItem_FolderAll = toolbar.getMenu().findItem(R.id.toolbar_action0);
-
-		iItem_PerwordSearch = toolbar.getMenu().findItem(R.id.toolbar_action3);
-		iItem_PeruseMode = toolbar.getMenu().findItem(R.id.toolbar_action4);
-
-		iItem_InPageSearch = toolbar.getMenu().findItem(R.id.toolbar_action13);
-		iItem_ClickSearch = toolbar.getMenu().findItem(R.id.toolbar_action14);
-		iItem_aPageRemember = toolbar.getMenu().findItem(R.id.toolbar_action6);
-		iItem_JumpPeruse = toolbar.getMenu().findItem(R.id.toolbar_action12);
-		iItem_JumpPeruse.setVisible(false);
-		iItem_PickSet = toolbar.getMenu().findItem(R.id.toolbar_action8);
-		iItem_SaveBookMark = toolbar.getMenu().findItem(R.id.toolbar_action9);
-		iItem_SaveSearch = toolbar.getMenu().findItem(R.id.toolbar_action10);
-		TintWildResult=new BooleanSingleton(true);
-		TintFullResult=new BooleanSingleton(true);
-		iItem_TintWildRes = toolbar.getMenu().findItem(R.id.toolbar_action11);
-
-		mDrawerLayout = findViewById(R.id.drawer_layout);
+		
+		snack_holder = (ViewGroup) root.getChildAt(1);
+		mainF = (ViewGroup) root.getChildAt(2);
+		second_holder = (ViewGroup) root.getChildAt(3);
+		main_progress_bar = (ProgressBar) root.getChildAt(4);
+		dialogHolder = (ViewGroup) root.getChildAt(5);
+		mlv = (ViewGroup) root.getChildAt(6);
+		lv = mlv.findViewById(R.id.main_list);
+		lv2 = mlv.findViewById(R.id.sub_list);
+		mlv1 = mlv.findViewById(R.id.sub_list1);
+		mlv2 = mlv.findViewById(R.id.sub_list2);
+		
+		dialog_ = (ViewGroup) dialogHolder.getChildAt(3);
+		
+		webcontentlist = contentview.findViewById(R.id.webcontentlister);
+		PageSlider = webcontentlist.findViewById(R.id.PageSlider);
+		
+		bottombar2 = (ViewGroup) contentview.getChildAt(1);
+		main = root;
+		
+		root.removeViewAt(6);
+		mlv.removeViews(2, 2);
+		
+		toolbar.setId(R.id.action_context_bar);
 		mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.open, R.string.close);
 		mDrawerToggle.syncState();// 添加按钮
-
+		
 		toolbar.addNavigationOnClickListener(v -> {
 			if(!mDrawerLayout.isDrawerVisible(GravityCompat.START)) {
 				onDrawerOpened();
@@ -979,40 +950,74 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		toolbar.mNavButtonView.setOnLongClickListener(this);
 		
 		ResizeNavigationIcon(toolbar);
-
-		cb1=findViewById(R.id.cb1);
-		cb1.setOnClickListener(this);
-		CheckableImageView cTmp = findViewById(R.id.cb2);
-		cTmp.setOnClickListener(this);
-		cTmp.setChecked(opt.getPinPicDictDialog());
-		cTmp = findViewById(R.id.cb3);
-		cTmp.setOnClickListener(this);
-		cTmp.setChecked(opt.getPicDictAutoSer());
-
-		dialogHolder = findViewById(R.id.dialogHolder);
-		dialog_ = findViewById(R.id.dialog_);
+		
+		Object[] cbFetcher = new Object[]{R.id.cb1, R.id.cb2, R.id.cb3};
+		Utils.setOnClickListenersOneDepth(dialogHolder, this, 1, cbFetcher);
+		cb1 = (View) cbFetcher[0];
+		((CheckableImageView) cbFetcher[1]).setChecked(opt.getPinPicDictDialog());
+		((CheckableImageView) cbFetcher[2]).setChecked(opt.getPicDictAutoSer());
 
 		hdl = mHandle = new MyHandler(this);
-
+		
+		toolbar.inflateMenu(R.menu.menu);
+		AllMenus = (MenuBuilder) toolbar.getMenu();
+		SingleContentMenu = MapNumberToMenu(0, 2, 3, 9, 11, 12);
+		Multi_ContentMenu = MapNumberToMenu(0, 1, 2, 3, 9, 10, 12);
+		MainMenu = MapNumberToMenu(0, 4, 7, 8);
+		LEFTMenu = MapNumberToMenu(0, 4, 5, 6, 8);
+		
+		TintWildResult=new BooleanSingleton(true);
+		TintFullResult=new BooleanSingleton(true);
+		
+		iItem_aPageRemember=AllMenus.getItem(3);
+		
+		if(opt.getRemPos()) iItem_aPageRemember.setTitle(rem_res=R.string.rem_position_yes);
+		
+		if(opt.getClickSearchEnabled()) onMenuItemClickAt(9);
+		
+		if(TintWildResult.first = opt.getTintWildRes()) onMenuItemClickAt(5);
+		
 		checkLog(savedInstanceState);
+		
+		startService(new Intent(this, ServiceEnhancer.class));
+		locationReceiver = new EnchanterReceiver();
+		IntentFilter filter = new IntentFilter();
+		filter.addAction("plodlock");
+		registerReceiver(locationReceiver, filter);
 		
 		CrashHandler.getInstance(this, opt).TurnOn();
 	}
-
+	
+	public static class EnchanterReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String intentAction = intent.getAction();
+			if ("plodlock".equals(intentAction)) {
+				CMN.Log("plodlock!!!");
+			}
+		}
+	}
+	
+	private void onMenuItemClickAt(int i) {
+		onMenuItemClick(AllMenus.getItem(i));
+	}
+	
+	public List<MenuItemImpl> MapNumberToMenu(int...numbers) {
+		MenuItemImpl[] items = new MenuItemImpl[numbers.length];
+		for (int i = 0; i < numbers.length; i++) {
+			items[i] = (MenuItemImpl) AllMenus.getItem(numbers[i]);
+		}
+		return Arrays.asList(items);
+	}
+	
 	void onDrawerOpened() {
-		if(contentview.getParent()!=null) {
-			DetachContentView();
+		if(isContentViewAttached()) {
+			DetachContentView(false);
 			bNeedReAddCon=true;
 		}
 		imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
 		cancleSnack();
-		if(popupContentView!=null && popupContentView.getParent()!=null)
-			popupContentView.setVisibility(View.GONE);
-	}
-
-	@Override
-	protected int getVisibleHeight() {
-		return root.getChildAt(0).getHeight();
+		isPopupContentViewAttached(2);
 	}
 
 	@Override
@@ -1027,21 +1032,30 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		return CosyChair;
 	}
 
-	private void processIntent(Intent intent) {
+	private void processIntent(Intent intent, boolean init) {
 		if(intent !=null){
-			Uri url = intent.getData();
-			if(url!=null) {
-				HandleOpenUrl(url);
-			}
-			if(intent.hasExtra(Intent.EXTRA_TEXT))
-				debugString = intent.getStringExtra(Intent.EXTRA_TEXT);
-			//if(!bWantsSelection) bWantsSelection = intent.hasExtra(Intent.EXTRA_SHORTCUT_ID);
-			if(intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)){
-				adaptermy2.avoyager.remove(0);
-				//todo opt
-				if(contentview.getParent()!=null)
-					DetachContentView();
-				bIsFirstLaunch=true;
+			String action = intent.getAction();
+			if("lock".equals(action)) {
+				//CMN.Log("锁住！！！");
+				if(!focused) moveTaskToBack(false);
+			} else {
+				Uri url = intent.getData();
+				if(url!=null) {
+					HandleOpenUrl(url);
+				}
+				if(intent.hasExtra(Intent.EXTRA_TEXT))
+					debugString = intent.getStringExtra(Intent.EXTRA_TEXT);
+				
+				CMN.Log("主程序-1", CMN.id(debugString), Intent.ACTION_MAIN.equals(action));
+				
+				//if(!bWantsSelection) bWantsSelection = intent.hasExtra(Intent.EXTRA_SHORTCUT_ID);
+				if(adaptermy2!=null && intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)){
+					adaptermy2.avoyager.remove(0);
+					//todo opt
+					if(contentview.getParent()!=null)
+						DetachContentView(true);
+					bIsFirstLaunch=true;
+				}
 			}
 		}
 		if(debugString!=null)
@@ -1076,13 +1090,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	protected void further_loading(final Bundle savedInstanceState) {
 		//CMN.Log("Main Ac further_loading!!!");
-		webcoord = findViewById(R.id.webcoord);
-		IMPageCover = contentview.findViewById(R.id.cover);
-		PageSlider = contentview.findViewById(R.id.PageSlider);
-		second_holder = root.findViewById(R.id.second_holder);
-		main = root;
-		webcontentlist = contentview.findViewById(R.id.webcontentlister);
-		bottombar2 = contentview.findViewById(R.id.bottombar2);
 		CachedBBSize=opt.getBottombarSize((int) getResources().getDimension(R.dimen._bottombarheight_));
 		super.further_loading(savedInstanceState);
 
@@ -1091,7 +1098,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//showT(root.getParent().getClass());
 		DefaultTSView = main_succinct;
 		webcontentlist.scrollbar2guard=mBar;
-		DetachContentView();
+		DetachContentView(true);
 		contentview.setVisibility(View.VISIBLE);
 
 		if(!opt.getBottombarOnBottom())
@@ -1152,7 +1159,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					painter=2;
 				} else {
 					painter=3;
-				};
+				}
 
 				// 重绘
 				mPageCanvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.SRC_IN);
@@ -1249,51 +1256,28 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 			@Override
 			public void onPageSelected(int pos) {
-				final IntegerSingleton msg = new IntegerSingleton(0);
-				switch(CurrentViewPage=pos) {
-					case 0:
-						browser_widget4.setActivated(false);
-						browser_widget3.setActivated(true);
-						if(PDICMainAppOptions.getHintSearchMode())
-							msg.first=PDICMainAppOptions.getUseRegex1()?3:1;
-
-						//toolbar.getMenu().findItem(R.id.toolbar_action2).setVisible(false);//Ser
-					break;
-					case 1:
-						browser_widget4.setActivated(false);
-						browser_widget3.setActivated(false);
-					break;
-					case 2:
-						browser_widget4.setActivated(true);
-						browser_widget3.setActivated(false);
-						if(PDICMainAppOptions.getHintSearchMode())
-							msg.first=PDICMainAppOptions.getUseRegex2()?3:2;
-					break;
+				int msg = 0;
+				CurrentViewPage=pos;
+				if(pos==0) {
+					if(PDICMainAppOptions.getHintSearchMode())
+						msg=PDICMainAppOptions.getUseRegex1()?3:1;
+				} else if(pos==2) {
+					if(PDICMainAppOptions.getHintSearchMode())
+						msg=PDICMainAppOptions.getUseRegex1()?3:1;
 				}
+				
+				decorateBottombarFFSearchIcons(pos);
 
-				iItem_PerwordSearch.setVisible(CurrentViewPage==1);
-				iItem_PeruseMode.setVisible(true);
-				//iItem_FolderAll.setVisible(false);//折叠
-				//iItem_aPageRemember.setVisible(false);//翻忆
-				iItem_SaveSearch.setVisible(CurrentViewPage!=1);
-				iItem_TintWildRes.setVisible(CurrentViewPage!=1);
-				//iItem_PickDict.setVisible(false);
-				//iItem_PickSet.setVisible(false);
-				//iItem_SaveBookMark.setVisible(false);
-
-				if(msg.first>0) {
+				applyMainMenu();
+				
+				if(msg!=0) {
+					int finalMsg = msg;
 					viewPager.post(() ->
-						showTopSnack(main_succinct, msg.first==3?R.string.regret:msg.first==1?R.string.fuzzyret:R.string.fullret
-								, 0.5f, -1, Gravity.CENTER, false)
+						showTopSnack(main_succinct, finalMsg ==3?R.string.regret: finalMsg==1?R.string.fuzzyret:R.string.fullret
+								, 0.5f, -1, Gravity.CENTER, 0)
 					);
 				}
 			}});
-		LayoutInflater inflater = getLayoutInflater();
-		mlv = (ViewGroup) inflater.inflate(R.layout.mainlistview,viewPager, false);
-		lv = mlv.findViewById(R.id.main_list);
-		lv2 = mlv.findViewById(R.id.sub_list);
-		mlv1 = (ListView) inflater.inflate(R.layout.sublistview, viewPager, false);mlv1.setId(R.id.sub_list1);
-		mlv2 = (ListView) inflater.inflate(R.layout.sublistview, viewPager, false);mlv2.setId(R.id.sub_list2);
 		//tofo
 		if(Build.VERSION.SDK_INT >= 24)
 			if(false) {//opt.is_strict_scroll()
@@ -1301,14 +1285,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				listViewStrictScroll(mlv2,true);
 				listViewStrictScroll(lv,true);
 			}
-		main_content_succinct = findViewById(R.id.main);
 		setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 		//listViewStrictScroll(lv2,true);
 
-		viewList = new ArrayList<>();
-		viewList.add(mlv1);
-		viewList.add(mlv);
-		viewList.add(mlv2);
+		viewList = Arrays.asList(mlv1, mlv, mlv2);
+		
 		PagerAdapter pagerAdapter = new PagerAdapter() {
 			@Override
 			public boolean isViewFromObject(@NonNull View arg0, @NonNull Object arg1) {
@@ -1316,25 +1297,20 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			@Override
 			public int getCount() {
-				return viewList.size();
+				return 3;
 			}
 			@Override
 			public void destroyItem(ViewGroup container, int position, @NonNull Object object) {
-				//showT("destroyItem");
 				container.removeView(viewList.get(position));
-			}
-			@Override
-			public int getItemPosition(@NonNull Object object) {
-				return super.getItemPosition(object);
 			}
 			@NonNull @Override
 			public Object instantiateItem(ViewGroup container, int position) {
-				container.addView(viewList.get(position));
-				return viewList.get(position);
+				View child = viewList.get(position);
+				container.addView(child);
+				return child;
 			}
 		};
 
-		widget0= findViewById(R.id.browser_widget0);
 		widget0.setOnClickListener(this);
 		widget0.setOnLongClickListener(this);
 		//widget0.getBackground().setTint(MainBackground);
@@ -1351,8 +1327,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(LongclickableMap.contains(i))
 				iv.setOnLongClickListener(this);
 		}
-		browser_widget3 = BottombarBtns[2];
-		browser_widget4 = BottombarBtns[3];
+		browser_widget1 = BottombarBtns[0];
 		String appproject = opt.getAppBottomBarProject();
 		if(appproject!=null) {
 			bottombar_project = new AppUIProject("btmprj", BottombarBtnIcons, BottombarBtnIds, appproject, bottombar, BottombarBtns);
@@ -1361,19 +1336,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		viewPager.setAdapter(pagerAdapter);
 		viewPager.setCurrentItem(CurrentViewPage = 1);
-		if(opt.getRemPos()) iItem_aPageRemember.setTitle(rem_res=R.string.rem_position_yes);
-		if(opt.getClickSearchEnabled()) iItem_ClickSearch.setTitle(iItem_ClickSearch.getTitle()+" √");
-		iItem_aPageRemember.setVisible(false);//翻忆
-		iItem_JumpPeruse.setVisible(false);//翻忆
-
-		if(TintWildResult.first = opt.getTintWildRes())  iItem_TintWildRes.setTitle(iItem_TintWildRes.getTitle()+" √");
-
-		iItem_PickSet.setVisible(false);
-
-		iItem_SaveSearch.setVisible(false);
-		iItem_TintWildRes.setVisible(false);
-		iItem_SaveBookMark.setVisible(false);
-		//TintWildResult.setVisible(false);
+		
 		//mDrawerLayout.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 		mDrawerLayout.addDrawerListener(mDrawerToggle);// 按钮动画特效
 		mDrawerLayout.addDrawerListener(new DrawerListener() {
@@ -1391,12 +1354,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			@Override public void onDrawerStateChanged(int newState) {
 				if(!mDrawerLayout.isDrawerVisible(GravityCompat.START)) {
 					if(bNeedReAddCon) {
-						AttachContentView();
+						AttachContentView(false);
 						if(contentview.getTag(R.id.image)!=null) initPhotoViewPager();
 						etSearch_ToToolbarMode(1);
-						iItem_FolderAll.setVisible(ActivedAdapter==adaptermy2);
-						iItem_InPageSearch.setVisible(true);
-						iItem_ClickSearch.setVisible(true);
 						bNeedReAddCon=false;
 					} else {
 						etSearch_ToToolbarMode(0);
@@ -1407,20 +1367,123 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//mDrawerLayout.setScrimColor(0x00ffffff);
 
 		lv.setAdapter(adaptermy = new ListViewAdapter(webSingleholder));
-		lv.setOnItemClickListener(adaptermy);
 		lv2.setAdapter(adaptermy2 = new ListViewAdapter2(webholder, R.layout.listview_item1));
-		lv2.setOnItemClickListener(adaptermy2);
 		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2(webSingleholder));
-		mlv1.setOnItemClickListener(adaptermy3);
 		mlv2.setAdapter(adaptermy4 = new ListViewAdapter2(webSingleholder));
-		mlv2.setOnItemClickListener(adaptermy4);
 
 		fuzzySearchLayer=new AdvancedSearchLogicLayer(opt, md, -1);
 		fullSearchLayer=new AdvancedSearchLogicLayer(opt, md, -2);
 
 		adaptermy3.combining_search_result = new resultRecorderScattered(this,md,TintWildResult,fuzzySearchLayer);
 		adaptermy4.combining_search_result = new resultRecorderScattered(this,md,TintWildResult,fullSearchLayer);
-
+		
+		tw1=new TextWatcher() { //tw
+			//tc
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				if(s.length()>0){
+					etSearch_ToToolbarMode(3);
+					if(CurrentViewPage==1) {
+						String text = etSearch.getText().toString().trim();
+						if(text.length()==0) return;
+						if(text.startsWith("<")) {
+							String perWSTag = getResources().getString(R.string.perWSTag);
+							String firstTag = firstTag(text);
+							if(firstTag!=null) {
+								String fTCpror = firstTag.replace("~", "");
+								if(perWSTag.equals(fTCpror)||"分字".equals(fTCpror)) {
+									String input = text.substring(text.indexOf(">")+1).trim();
+									if(input.length()!=0)
+										launchVerbatimSearch(input,!firstTag.contains("~"));
+									return;
+								}
+							}
+						}
+						if(isCombinedSearching){
+							if(lianHeTask!=null) {
+								lianHeTask.cancel(false);
+							}
+							if(!checkDicts()) {
+								return;
+							}
+							String key = s.toString();
+							if(!key.equals(CombinedSearchTask_lastKey))
+								lianHeTask = new CombinedSearchTask(PDICMainActivity.this).execute(key);
+							else if(bIsFirstLaunch){
+								/* 接管历史纪录 */
+								bRequestedCleanSearch=bIsFirstLaunch;
+								bIsFirstLaunch=false;
+								if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(0)))))
+								{
+									adaptermy2.onItemClick(null, adaptermy2.getView(0, null, null), 0, 0);
+								}
+							}
+						}
+						else try {
+							if(!checkDicts()) return;
+							String key = s.toString().trim();
+							//首先，搜索到第一个match，然后尝试变形，两者向下再搜索
+							int normal_idx=currentDictionary.lookUp(key, true);
+							int formation_idx=-1;
+							
+							boolean bFetchMoreContents = true;
+							if(bFetchMoreContents || normal_idx<0 && PDICMainAppOptions.getSearchUseMorphology()) {
+								String formation_key = ReRouteKey(key, true);
+								if(formation_key!=null) {
+									formation_idx = currentDictionary.lookUp(formation_key, true);
+								}
+								if(normal_idx==-1) { //treat formation result as normal.
+									normal_idx=formation_idx;
+									formation_idx=-1;
+									key=formation_key;
+								}
+							}
+							
+							CMN.Log("单本搜索 ： ", normal_idx, normal_idx<0?"":currentDictionary.getEntryAt(normal_idx));
+							if(normal_idx!=-1) {
+								int tmpIdx = normal_idx;
+								if(normal_idx<0) {
+									tmpIdx = -tmpIdx - 3;
+								} else {
+									lv_matched = true;
+									if(bFetchMoreContents) {
+										MergeSingleResults(key, normal_idx, formation_idx);
+									}
+								}
+								lv.setSelection(tmpIdx);
+								if(bIsFirstLaunch||bWantsSelection) {
+									if(normal_idx>=0) {
+										boolean proceed = true;
+										if(count>=0&&isContentViewAttached()&&!isContentViewAttachedForDB()) {
+											proceed = currentDictionary.lvClickPos!=normal_idx;
+										}
+										if(proceed) {
+											bRequestedCleanSearch=bIsFirstLaunch;
+											/* 接管历史纪录 */
+											adaptermy.onItemClick(null, null, normal_idx, 0);
+										}
+									}
+								}
+								bIsFirstLaunch=false;
+							}
+						} catch (Exception e) { CMN.Log(e); }
+					}
+				} else {
+					if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && mdict.class.equals(currentDictionary.getClass()))
+						adaptermy.notifyDataSetChanged();
+					if(lv2.getVisibility()==View.VISIBLE)
+						lv2.setVisibility(View.INVISIBLE);
+				}
+			}
+			
+			public void beforeTextChanged(CharSequence s, int start, int count,  int after) {}
+			
+			public void afterTextChanged(Editable s) {
+				//if (s.length() == 0) ivDeleteText.setVisibility(View.GONE);
+				//else ivDeleteText.setVisibility(View.VISIBLE);
+				if (s.length() != 0) ivDeleteText.setVisibility(View.VISIBLE);
+			}
+		};
+		
 		etSearch.addTextChangedListener(tw1);
 		//ea
 		etSearch.setOnEditorActionListener((v, actionId, event) -> {
@@ -1479,12 +1542,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(opt.getInPeruseMode()) {
 				widget0.setImageResource(R.drawable.peruse_ic_on);
 				showTopSnack(main_succinct, R.string.peruse_mode
-						, 0.5f, -1, Gravity.CENTER, false);
+						, 0.5f, -1, Gravity.CENTER, 0);
 			}
 		}
 		if(PDICMainAppOptions.getSimpleMode() && PDICMainAppOptions.getHintSearchMode())
 			showTopSnack(main_succinct, "极简模式"
-					, 0.5f, -1, Gravity.CENTER, false);
+					, 0.5f, -1, Gravity.CENTER, 0);
 
 		if(savedInstanceState!=null) {
 			for(int i=0;i<md.size();i++){//遍历所有词典
@@ -1629,19 +1692,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				wv.destroy();
 			}, 2500);
 		}
-
+		
 		//tg
 		//do_test_project_Test_Background_Loop();
 		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
-		
-		if(false)
-		try {
-			server = new MdictServerMobile(8080, this, opt);
-			server.start();
-			showT("服务器启动成功");
-		} catch (Exception e) {
-			CMN.Log(e);
-		}
 		
 		//String[] array = getResources().getStringArray(R.array.drawer_hints);
 		//CMN.Log("==??", array[2], array[5], array[2]==array[5], array[2].equals(array[5]), System.identityHashCode(array[2]), System.identityHashCode(array[5]));
@@ -1674,7 +1728,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//bottombar.findViewById(R.id.browser_widget2).performLongClick();
 		//bottombar.findViewById(R.id.browser_widget5).performLongClick();
 
-		etSearch.setText("happy");
+		etSearch.setText("on");
 		//if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("15");
 		//if(false)
 		root.postDelayed(() -> {
@@ -1702,7 +1756,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//JumpToWord("crayon", 1);
 
 		//Intent i = new Intent(this,dict_manager_activity.class); startActivity(i);
-		processIntent(getIntent());
+		processIntent(getIntent(), true);
 
 		refreshUIColors();
 
@@ -1745,12 +1799,54 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 	}
 	
+	SparseIntArray mergedKeyHeaders = new SparseIntArray();
+	
+	private void MergeSingleResults(String key, int normal_idx, int formation_idx) {
+		ClearMerges();
+		MergeSingleResultsAfter(null, formation_idx);
+		MergeSingleResultsAfter(key, ConfidentMergeStart=normal_idx);
+		if(ConfidentMergeShift ==-1) ConfidentMergeShift =0;
+		CMN.Log("mergedKeyHeaders", mergedKeyHeaders, ConfidentMergeShift);
+	}
+	
+	private void ClearMerges() {
+		mergedKeyHeaders.clear();
+		TotalMergedKeyCount=0;
+		ConfidentMergeShift =-1;
+	}
+	
+	private void MergeSingleResultsAfter(String key, int startIdx) {
+		if(startIdx!=-1) {
+			mdict current = currentDictionary;
+			int theta=8;
+			long maxID=current.getNumberEntries()-1;
+			String startKey = mdict.processText(current.getEntryAt(startIdx));
+			int i = 0;
+			int idx=startIdx;
+			while(true) {
+				++i;
+				idx++;
+				String currentKey;
+				if(i>theta || idx>maxID || !startKey.equals(mdict.processText(currentKey=current.getEntryAt(idx)))) {
+					break;
+				}
+				if(key!=null && ConfidentMergeShift ==-1 && currentKey.startsWith(key)) {
+					ConfidentMergeShift =i;
+				}
+			}
+			if(i>1) {
+				mergedKeyHeaders.put(startIdx, i);
+				TotalMergedKeyCount+=i;
+			}
+		}
+	}
+	
 	private void ResizeDictPicker() {
 		int littleIdeal = realWidth;
 		Resources res = getResources();
 		int factor=1;
 		if(dm.widthPixels>littleIdeal) {
-			littleIdeal = Math.min(dm.widthPixels, Math.max(realWidth, (int)res.getDimension(R.dimen.idealdpdp)));
+			littleIdeal = Math.min(dm.widthPixels, Math.max(realWidth, (int)res.getDimension(R.dimen.idealdpdp))*55/45);
 			factor=2;
 		}
 		MarginLayoutParams mlarp = (MarginLayoutParams) dialog_.getLayoutParams();
@@ -1780,31 +1876,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			contentview.requestLayout();
 			RecalibrateContentSnacker(bContentBow);
 		}
-	}
-	
-	@Override
-	protected View getIMPageCover() {
-		return IMPageCover;
-	}
-
-	@Override
-	protected String getLastPlanName() {
-		return opt.getLastPlanName();
-	}
-
-	@Override
-	protected void setLastPlanName(String setName) {
-		opt.putLastPlanName(setName);
-	}
-
-	@Override
-	protected String getLastMdFn() {
-		return opt.getLastMdFn();
-	}
-
-	@Override
-	public void setLastMdFn(String setName) {
-		opt.putLastMd(setName);
 	}
 
 	static long currMdlTime;
@@ -1846,6 +1917,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			int lastOff=-1;
 			@Override
 			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+				if(lv.dimmed && viewPager.isListHold) {
+					Utils.dimScrollbar(lv, true);
+				}
 				if(lastVisible!=-1)
 					if(lv.getChildAt(0)!=null) {
 						if(lv.getFirstVisiblePosition()!=lastVisible || lv.getChildAt(0).getTop()!=lastOff) {
@@ -2052,112 +2126,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		return etSearch.getText().toString();
 	}
 
-	TextWatcher tw1=new TextWatcher() { //tw
-		//tc
-		public void onTextChanged(CharSequence s, int start, int before, int count) {
-			if(s.length()>0){
-				etSearch_ToToolbarMode(3);
-				if(CurrentViewPage==1) {
-					String text = etSearch.getText().toString().trim();
-					if(text.length()==0) return;
-					if(text.startsWith("<")) {
-						String perWSTag = getResources().getString(R.string.perWSTag);
-						String firstTag = firstTag(text);
-						if(firstTag!=null) {
-							String fTCpror = firstTag.replace("~", "");
-							if(perWSTag.equals(fTCpror)||"分字".equals(fTCpror)) {
-								String input = text.substring(text.indexOf(">")+1).trim();
-								if(input.length()!=0)
-									launchVerbatimSearch(input,!firstTag.contains("~"));
-								return;
-							}
-						}
-					}
-					if(isCombinedSearching){
-						if(lianHeTask!=null) {
-							lianHeTask.cancel(false);
-						}
-						if(!checkDicts()) {
-							return;
-						}
-						String key = s.toString();
-						if(!key.equals(CombinedSearchTask_lastKey))
-							lianHeTask = new CombinedSearchTask(PDICMainActivity.this).execute(key);
-						else if(bIsFirstLaunch){
-							/* 接管历史纪录 */
-							bRequestedCleanSearch=bIsFirstLaunch;
-							bIsFirstLaunch=false;
-							if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(0)))))
-							{
-								adaptermy2.onItemClick(null, adaptermy2.getView(0, null, null), 0, 0);
-							}
-						}
-					}
-					else try {
-						if(!checkDicts()) return;
-						String key = s.toString().trim();
-						int idx=currentDictionary.lookUp(key, true);
-						if(idx<0 && PDICMainAppOptions.getSearchUseMorphology()) {
-							key = ReRouteKey(key, true);
-							if(key!=null) {
-								int new_idx = currentDictionary.lookUp(key, true);
-								if(new_idx>=0) {
-									idx = new_idx;
-								}
-							}
-						}
-						CMN.Log("单本搜索 ： ", idx, idx<0?"":currentDictionary.getEntryAt(idx));
-						if(idx!=-1){
-							int tmpIdx = idx;
-							if(idx<0) {
-								tmpIdx = -tmpIdx - 3;
-							}
-//							else while(true) {
-//								if(looseMatch.startsWith(key)) {
-//									idx=tmpIdx;
-//									break;
-//								}
-//								if(tmpIdx>=currentDictionary.getNumberEntries()-1)
-//									break;
-//								looseMatch = currentDictionary.getEntryAt(++tmpIdx);
-//								if(!mdict.processText(looseMatch).startsWith(looseKey))
-//									break;
-//							}
-							lv.setSelection(tmpIdx);
-							if(bIsFirstLaunch||bWantsSelection) {
-								if(idx>=0) {
-									boolean proceed = true;
-									if(contentview.getParent()==main) {
-										proceed = (currentDictionary.lvClickPos!=idx);
-									}
-									if(proceed) {
-										bRequestedCleanSearch=bIsFirstLaunch;
-										/* 接管历史纪录 */
-										adaptermy.onItemClick(null, null, idx, 0);
-									}
-								}
-							}
-							bIsFirstLaunch=false;
-						}
-					} catch (Exception e) { CMN.Log(e); }
-				}
-			}else {
-				if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && mdict.class.equals(currentDictionary.getClass()))
-					adaptermy.notifyDataSetChanged();
-				if(lv2.getVisibility()==View.VISIBLE)
-					lv2.setVisibility(View.INVISIBLE);
-			}
-		}
-
-		public void beforeTextChanged(CharSequence s, int start, int count,  int after) {}
-
-		public void afterTextChanged(Editable s) {
-			//if (s.length() == 0) ivDeleteText.setVisibility(View.GONE);
-			//else ivDeleteText.setVisibility(View.VISIBLE);
-			if (s.length() != 0) ivDeleteText.setVisibility(View.VISIBLE);
-		}
-	};
-
 	@Override
 	public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
 		// Always call the superclass so it can save the view hierarchy state
@@ -2213,11 +2181,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			//都灭掉
 			if(i>0){//tofo
 				lastFullKeyword=etSearch.getText().toString();
-				browser_widget4.setActivated(false);
 			}else{
 				lastFuzzyKeyword=etSearch.getText().toString();
-				browser_widget4.setActivated(false);
 			}
+			decorateBottombarFFSearchIcons(1);
 			//etSearch.setText(lastKeyword);
 			CurrentViewPage = new_curr;
 			//etSearch.addTextChangedListener(tw1);
@@ -2227,23 +2194,28 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		lastKeyword = etSearch.getText().toString();
 		if(i>0){//亮A
 			//etSearch.setText(lastFuzzyKeyword);
-			browser_widget3.setActivated(true);
-			browser_widget4.setActivated(false);
 			msg=R.string.fuzzyret;
 		}else{//亮B
 			//etSearch.setText(lastFullKeyword);
-			browser_widget4.setActivated(true);
-			browser_widget3.setActivated(false);
 			msg=R.string.fullret;
 		}
+		decorateBottombarFFSearchIcons(new_curr);
 		CurrentViewPage = new_curr;
 		showTopSnack(main_succinct, msg
-				, 0.5f, -1, Gravity.CENTER, false);
+				, 0.5f, -1, Gravity.CENTER, 0);
 	}
-
+	
+	private void decorateBottombarFFSearchIcons(int pos) {
+		BottombarBtns[2].setActivated(pos==0);
+		BottombarBtns[3].setActivated(pos==2);
+	}
+	
 	@Override
 	protected void onDestroy(){
 		//CMN.Log("main_onDestroy");
+		if(!shunt) {
+			LauncherInstanceCount--;
+		}
 		if(systemIntialized){
 			dumpSettiings();
 			if(true){
@@ -2285,34 +2257,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		//getMenuInflater().inflate(R.menu.menu, menu);
-		CMN.Log("onCreateOptionsMenu");
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.toolbar_action1:
-				// do something
-				return true;
-			default:
-				// If we got here, the user's action was not recognized.
-				// Invoke the superclass to handle it.
-				return super.onOptionsItemSelected(item);
-
-		}
-	}
-
-	@Override
 	protected void onPause() {
 		//CMN.Log("onPause");
 		try {
 			super.onPause();
 		} catch (Exception ignored) { }
-		if(PeruseView!=null)
-			PeruseView.dismissDialogOnly();
 		//removeBlack();
 		if(systemIntialized)
 			checkDictionaryProject(true);
@@ -2447,7 +2396,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								}
 							}
 						}
-						if(popupContentView!=null && popupContentView.getParent()!=null){
+						if(isPopupContentViewAttached(0)){
 							popupWebView.evaluateJavascript(val,null);
 						}
 					}
@@ -2462,6 +2411,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			if(drawerFragment.sw4!=null && drawerFragment.sw4.isChecked()!=GlobalOptions.isDark){
 				switch_dark_mode(GlobalOptions.isDark);
+			}
+			if(DBrowser!=null) {
+				DBrowser.checkColor();
 			}
 			checkFlags();
 		}
@@ -2574,7 +2526,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		@Override
 		public View getView(final int position, View convertView, ViewGroup parent) {
 			//return lstItemViews.get(position);
-			ViewHolder vh=convertView==null?new ViewHolder(PDICMainActivity.this, R.layout.listview_item0, parent):(ViewHolder)convertView.getTag();
+			ViewHolder vh=convertView==null?new ViewHolder(currentDictionary.a = PDICMainActivity.this, R.layout.listview_item0, parent):(ViewHolder)convertView.getTag();
 			String currentKeyText = currentDictionary.getEntryAt(position,mflag);
 			if(currentDictionary.hasVirtualIndex()){
 				int tailIdx=currentKeyText.lastIndexOf(":");
@@ -2610,7 +2562,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(currentDictionary!=null) {
 				if (opt.getRemPos()) {
 					ScrollerRecord pagerec;
-					WebViewmy current_webview = currentDictionary.mWebView;
+					WebViewmy current_webview = PageSlider.WebContext;
 					if ((current_webview != null && !current_webview.isloading) && lastClickedPos >= 0 && webSingleholder.getChildCount() != 0
 							&& System.currentTimeMillis() - lastClickTime > 300) {
 						if (currentDictionary.webScale == 0)
@@ -2694,23 +2646,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			currentDictionary.initViewsHolder(PDICMainActivity.this);
 			
 			currentDictionary.lvClickPos=pos;
+			
+			AllMenus.setItems(SingleContentMenu);
 
-			toolbar.getMenu().findItem(R.id.toolbar_action2).setVisible(false);//Ser
-			iItem_PerwordSearch.setVisible(false);
-			iItem_PeruseMode.setVisible(false);
-			iItem_aPageRemember.setVisible(true);//翻忆
-			iItem_JumpPeruse.setVisible(true);//翻忆
-			iItem_InPageSearch.setVisible(true);
-			iItem_ClickSearch.setVisible(true);
-			//iItem_SaveSearch.setVisible(false);
-			//iItem_TintWildRes.setVisible(false);
-			//iItem_PickDict.setVisible(true);
-			iItem_PickSet.setVisible(false);
-			iItem_SaveBookMark.setVisible(true);
-
-
-			if(webSingleholder.getVisibility()!=View.VISIBLE)
-				webSingleholder.setVisibility(View.VISIBLE);
+			webSingleholder.setVisibility(View.VISIBLE);
 			if(WHP.getVisibility()==View.VISIBLE) {
 				if(webholder.getChildCount()!=0)
 					webholder.removeAllViews();
@@ -2721,28 +2660,27 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				widget14.setVisibility(View.GONE);
 			}
 
-
-			WebViewmy current_webview = currentDictionary.mWebView;
-			current_webview.fromCombined=0;
+			WebViewmy current_Webview = currentDictionary.mWebView;
+			current_Webview.fromCombined=0;
 			float desiredScale=-1;
 			if(opt.getRemPos() && !shunt) {
 				ScrollerRecord pagerec;
 				OUT:
 				if(System.currentTimeMillis()-lastClickTime>300)//save our postion
-				if(!current_webview.isloading && lastClickedPosBeforePageTurn>=0 && (webSingleholder.getChildCount()!=0 || false/*todo 开放连续的历史纪录 ?*/)) {
+				if(!current_Webview.isloading && lastClickedPosBeforePageTurn>=0 && (webSingleholder.getChildCount()!=0 || false/*todo 开放连续的历史纪录 ?*/)) {
 					if(currentDictionary.webScale==0) currentDictionary.webScale=dm.density;//sanity check
 					//avoyager.set(avoyagerIdx,(int) (current_webview.getScrollY()/(currentDictionary.webScale/dm.density)));
 
 					pagerec = avoyager.get(lastClickedPosBeforePageTurn);
 					if(pagerec==null) {
-						if(current_webview.getScrollX()!=0 || current_webview.getScrollY()!=0 ||currentDictionary.webScale!=mdict.def_zoom) {
+						if(current_Webview.getScrollX()!=0 || current_Webview.getScrollY()!=0 ||currentDictionary.webScale!=mdict.def_zoom) {
 							pagerec=new ScrollerRecord();
 							avoyager.put(lastClickedPosBeforePageTurn, pagerec);
 						}else
 							break OUT;
 					}
 
-					pagerec.set(current_webview.getScrollX(), current_webview.getScrollY(),currentDictionary.webScale);
+					pagerec.set(current_Webview.getScrollX(), current_Webview.getScrollY(),currentDictionary.webScale);
 					//showT("保存位置");
 					//CMN.Log("保存位置 "+ current_webview.getScrollY());
 				}
@@ -2751,13 +2689,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 				pagerec = avoyager.get(pos);
 				if(pagerec!=null) {
-					current_webview.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
-					current_webview.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+					current_Webview.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+					current_Webview.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 					desiredScale=pagerec.scale;
 					//CMN.Log(avoyager.size()+"~"+pos+"~取出旧值"+currentDictionary.expectedPos+" scale:"+avoyager.get(pos).scale);
 				}else {
-					current_webview.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
-					current_webview.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+					current_Webview.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+					current_Webview.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 				}
 				//showT(""+currentDictionary.expectedPos);
 				if(rem_res!=R.string.rem_position_yes){
@@ -2765,14 +2703,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			}
 			else{
-				current_webview.expectedPos=0;
-				current_webview.expectedPosX=0;
+				current_Webview.expectedPos=0;
+				current_Webview.expectedPosX=0;
 				if(rem_res!=R.string.rem_position){
 					iItem_aPageRemember.setTitle(rem_res=R.string.rem_position);
 				}
 				bRequestedCleanSearch=false;
 			}
-
+			
 			if(opt.getInheritePageScale())
 				desiredScale=currentDictionary.webScale;
 
@@ -2782,32 +2720,60 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				etSearch.clearFocus();
 			}
 
-			AttachContentView();
-
 			ViewGroup someView = currentDictionary.rl;
-			if(someView.getParent()!=webSingleholder) {
-				if(someView.getParent()!=null) ((ViewGroup)someView.getParent()).removeView(someView);
-				webSingleholder.addView(someView);
+			
+			delayedAttaching = AttachContentView(opt.getDelayContents());
+			
+			Utils.addViewToParent(someView, webSingleholder);
+			
+			if(delayedAttaching) {
+				AttachContentViewDelayed(5000);
 			}
-			if(webSingleholder.getChildCount()>1) {
-				for(int i=webSingleholder.getChildCount()-1;i>=0;i--)
-					if(webSingleholder.getChildAt(i)!=someView)
-						webSingleholder.removeViewAt(i);
-			}
-			current_webview.fromCombined=0;
+			
+			Utils.removeIfChildIsNot(someView, webSingleholder);
+			
+			current_Webview.fromCombined=0;
 
 			PageSlider.TurnPageEnabled=opt.getPageTurn1()&&opt.getTurnPageEnabled();
-			PageSlider.WebContext = current_webview;
-			PageSlider.invalidateIBC();
+			PageSlider.setIBC(current_Webview);
 
 			layoutScrollDisabled=true;
 			if(bOnePageNav)
 				desiredScale=111;
 			if(opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(currentDictionary.tmpIsFlag)
 				||!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething())
-				current_webview.bRequestedSoundPlayback=true;
-
-			currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, lastClickedPos);
+				current_Webview.bRequestedSoundPlayback=true;
+			
+			/* 仿效 GoldenDict 返回尽可能多的结果 */
+			int[] ClickPositions;
+			SparseIntArray KeyHeaders = mergedKeyHeaders;
+			int mergeCount = KeyHeaders.get(pos);
+			int MergedStartShift = pos==ConfidentMergeStart?ConfidentMergeShift :0;
+			if(mergeCount>0) {
+				ClickPositions = new int[TotalMergedKeyCount];
+				for (int i=0; i < mergeCount; i++) {
+					ClickPositions[i]=pos+(MergedStartShift+i)%mergeCount;
+				}
+				int mergeSize = KeyHeaders.size();
+				if(mergeSize>1) {
+					int mergeIdx = mergeCount;
+					for (int i = 0; i < mergeSize; i++) {
+						int mergeKey = KeyHeaders.keyAt(i);
+						if(mergeKey!=pos) {
+							mergeCount = KeyHeaders.get(mergeKey);
+							for (int j = 0; j < mergeCount; j++) {
+								ClickPositions[mergeIdx+j]=mergeKey+j;
+							}
+							mergeIdx+=mergeCount;
+						}
+					}
+				}
+			} else {
+				ClickPositions = new int[]{pos};
+			}
+			
+			
+			currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, ClickPositions);
 			contentview.setTag(R.id.image, PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null?false:null);
 
 			String key = currentKeyText = currentDictionary.currentDisplaying;
@@ -2817,7 +2783,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				insertUpdate_histroy(key);
 			}
 			//showT("查时: "+(System.currentTimeMillis()-stst));
-			bWantsSelection=current_webview.fromCombined==0;
+			bWantsSelection=!(currentDictionary instanceof mdict_web);//tofo
 			userCLick=false;
 			if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick()){
 				prepareInPageSearch(key, true);
@@ -2834,7 +2800,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			return currentDictionary.currentDisplaying;
 		}
 	}
-
+	
 	public class ListViewAdapter2 extends BasicAdapter {
 		int itemId = R.layout.listview_item0;
 		public ListViewAdapter2(ViewGroup vg, int resId)
@@ -2971,20 +2937,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				show(R.string.endendr);
 				return;
 			}
-			toolbar.getMenu().findItem(R.id.toolbar_action2).setVisible(false);//Ser
-			iItem_PerwordSearch.setVisible(false);
-			iItem_PeruseMode.setVisible(false);
-			iItem_FolderAll.setVisible(this == adaptermy2);//折叠
-			iItem_aPageRemember.setVisible(true);//翻忆
-			iItem_JumpPeruse.setVisible(true);//翻忆
-			iItem_InPageSearch.setVisible(true);
-			iItem_ClickSearch.setVisible(true);
-			iItem_SaveSearch.setVisible(false);
-			iItem_TintWildRes.setVisible(false);
-			//iItem_PickDict.setVisible(false);
-			iItem_PickSet.setVisible(this==adaptermy2);
-			iItem_SaveBookMark.setVisible(this!=adaptermy2);
-
+			
+			AllMenus.setItems(Multi_ContentMenu);
 
 			if(this==adaptermy2) {
 				if(WHP.getVisibility()!=View.VISIBLE)WHP.setVisibility(View.VISIBLE);
@@ -3070,7 +3024,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				etSearch.clearFocus();
 			}
 
-			AttachContentView();
+			AttachContentView(false);
 
 			combining_search_result.renderContentAt(lastClickedPos, PDICMainActivity.this,this);
 
@@ -3091,8 +3045,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			contentview.setTag(R.id.image, PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null?false:null);
 			PageSlider.TurnPageEnabled=(this==adaptermy2?opt.getPageTurn2():opt.getPageTurn1())&&opt.getTurnPageEnabled();
-			PageSlider.WebContext = null;
-			PageSlider.invalidateIBC();
 		}
 
 
@@ -3175,11 +3127,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					msg=R.string.canceld_peruse_mode;
 				}
 				showTopSnack(main_succinct, msg
-						, 0.5f, -1, Gravity.CENTER, false);
+						, 0.5f, -1, Gravity.CENTER, 0);
 			} break;
 			//切换词典
 			case R.id.browser_widget1:{
-				showChooseDictDialog(0);
+				if(v.isActivated()) {
+					bottombar2.setVisibility(View.VISIBLE);
+					v.setActivated(false);
+					DetachContentView(true);
+					PostDCV_TweakTBIC();
+				} else {
+					dismissPopup();
+					showChooseDictDialog(0);
+				}
 			} break;
 			//切换搜索模式
 			case R.id.toolbar_action1:{
@@ -3189,12 +3149,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(isCombinedSearching){
 					if(contentview.getParent()==main)
 						adaptermy2.currentKeyText=null;
-					toolbar.getMenu().findItem(R.id.toolbar_action1).setIcon((getResources().getDrawable(R.drawable.ic_btn_multimode)));
+					AllMenus.findItem(R.id.toolbar_action1).setIcon((getResources().getDrawable(R.drawable.ic_btn_multimode)));
 					lv2.setVisibility(View.VISIBLE);
 				}else{
 					if(contentview.getParent()==main)
 						adaptermy.currentKeyText=null;
-					toolbar.getMenu().findItem(R.id.toolbar_action1).setIcon((getResources().getDrawable(R.drawable.ic_btn_siglemode)));
+					AllMenus.findItem(R.id.toolbar_action1).setIcon((getResources().getDrawable(R.drawable.ic_btn_siglemode)));
 					lv2.setVisibility(View.GONE);
 					if(currentDictionary instanceof mdict_web)
 						adaptermy.notifyDataSetChanged();
@@ -3221,13 +3181,23 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			//切换分组
 			case R.id.browser_widget2:{
-				if(d!=null) {
-					d.dismiss();d=null;
+				if(browser_widget1.isActivated()) {
+					browser_widget1.setActivated(false);
+					bottombar2.setVisibility(View.VISIBLE);
+					AttachContentView(false);
+				} else {
+					if (d != null) {
+						d.dismiss();
+						d = null;
+					}
+					showChooseSetDialog();
 				}
-				showChooseSetDialog();
 			} break;
 			//两大搜索
 			case R.id.browser_widget3:{
+				if(browser_widget1.isActivated()) {
+					browser_widget1.performClick();
+				}
 				if(CurrentViewPage==0){
 					CurrentViewPage = 1;
 					viewPager.setCurrentItem(1);
@@ -3251,6 +3221,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			//收藏和历史纪录
 			case R.id.browser_widget5:{
+				dismissPopup();
 				if(mainF.getChildCount()!=0) return;
 				if(DBrowser==null) {
 					if(DBrowser_holder!=null) DBrowser=DBrowser_holder.get();
@@ -3264,7 +3235,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			//搜索词典
 			case R.id.cb1:{
 				if(Searchbar ==null) {
-					Toolbar searchbar = (Toolbar)  ((ViewStub)findViewById(R.id.view_stub)).inflate();
+					Toolbar searchbar = (Toolbar)  ((ViewStub)dialogHolder.findViewById(R.id.view_stub)).inflate();
 					searchbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);//abc_ic_ab_back_mtrl_am_alpha
 					searchbar.mNavButtonView.setId(R.id.cb1);
 					searchbar.mNavButtonView.setOnClickListener(this);
@@ -3453,12 +3424,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			bottombar2.setTranslationY(0);
 		}
 		ViewGroup contentHolder = bImmersive ? webcoord : weblist;
-		ViewParent sp = mDrawerLayout.getParent();
+		ViewGroup sp = (ViewGroup) mDrawerLayout.getParent();
 		if(sp!=contentHolder) {
 			if(sp!=null) {
-				((ViewGroup) sp).removeView(mDrawerLayout);
-				((ViewGroup) sp).removeView(appbar);
-				root.removeView((View) sp);
+				sp.removeView(mDrawerLayout);
+				sp.removeView(appbar);
+				root.removeView(sp);
 			}
 			if(contentHolder.getParent()==null)
 				root.addView(contentHolder, 0);
@@ -3470,9 +3441,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 
 		contentHolder = bImmersive ? webcoord : main_content_succinct;
-		sp = bottombar.getParent();
+		sp = (ViewGroup) bottombar.getParent();
 		if(sp!=contentHolder) {
-			if(sp!=null) ((ViewGroup) sp).removeView(bottombar);
+			if(sp!=null) sp.removeView(bottombar);
 			if(bImmersive) {
 				contentHolder.addView(bottombar, 2);
 				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)bottombar.getLayoutParams());
@@ -3486,38 +3457,76 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		setContentBow(opt.isContentBow());
 	}
-
-	void AttachContentView() {
+	
+	Runnable DelayedAttacher = () -> {
+		if(delayedAttaching) {
+			AttachContentView(false);
+		}
+	};
+	
+	public void AttachContentViewDelayed(long ms) {
+		root.removeCallbacks(DelayedAttacher);
+		root.postDelayed(DelayedAttacher, ms);
+	}
+	
+	boolean AttachContentView(boolean mayDelay) {
 		boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
 		ViewGroup contentHolder = bImmersive ? webcoord : root;
-		ViewParent sp = contentview.getParent();
-		if(sp!=contentHolder) {
-			if(sp!=null) ((ViewGroup) sp).removeView(contentview);
+		
+		if(Utils.removeIfParentBeOrNotBe(contentview, contentHolder,false)) {
+			if(mayDelay) return mayDelay;
+			if(opt.getAnimateContents()) {
+				Animation animation = AnimationUtils.loadAnimation(this, R.anim.content_in);
+				animation.setAnimationListener(new Utils.BaseAnimationListener(){
+					@Override public void onAnimationEnd(Animation animation) {
+						viewPager.setVisibility(View.INVISIBLE);
+						if(!browser_widget1.isActivated()) {
+							bottombar.setVisibility(View.INVISIBLE);
+						}
+					}
+				});
+				contentview.setAnimation(animation);
+			} else {
+				viewPager.setVisibility(View.INVISIBLE);
+				if(!browser_widget1.isActivated()) {
+					bottombar.setVisibility(View.INVISIBLE);
+				}
+			}
 			if(bImmersive) {
 				contentHolder.addView(contentview, 2);
 				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams)contentview.getLayoutParams());
 				lp.gravity=Gravity.BOTTOM;
 				lp.setBehavior(new AppBarLayout.ScrollingViewBehavior(getBaseContext(), null));
-			}else{
+			} else {
 				contentHolder.addView(contentview, PhotoPager!=null&&PhotoPager.getParent()!=null?2:1);
 			}
 			setContentBow(opt.isContentBow());
 		}
-
-		PlaceContentBottombar(bImmersive);
-
-		viewPager.setVisibility(View.INVISIBLE);
-		bottombar.setVisibility(View.INVISIBLE);
-		if(popupContentView!=null && popupContentView.getParent()!=null && popupContentView.getVisibility()==View.GONE){
-			popupContentView.setVisibility(View.VISIBLE);
+		
+		boolean fastPreview = browser_widget1.isActivated();
+		if(fastPreview) {
+			bottombar2.setVisibility(View.INVISIBLE);
 		}
+		if(!fastPreview || !bImmersive) {
+			PlaceContentBottombar(bImmersive);
+		}
+		
+		isPopupContentViewAttached(1);
+		
+		return delayedAttaching=false;
+	}
+	
+	private boolean isPopupContentViewAttached(int changeVis) {
+		boolean ret = popupContentView!=null && popupContentView.getParent()!=null;
+		if(ret && changeVis>0) {
+			popupContentView.setVisibility(changeVis==1?View.VISIBLE:View.GONE);
+		}
+		return ret;
 	}
 	
 	private void PlaceContentBottombar(boolean bImmersive) {
 		ViewGroup contentHolder = bImmersive ? webcoord : contentview;
-		ViewParent sp = bottombar2.getParent();
-		if(sp!=contentHolder) {
-			if(sp!=null) ((ViewGroup) sp).removeView(bottombar2);
+		if(Utils.removeIfParentBeOrNotBe(bottombar2, contentHolder, false)) {
 			contentHolder.addView(bottombar2, bImmersive?3:1);
 			if(bImmersive) {
 				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams) bottombar2.getLayoutParams());
@@ -3529,24 +3538,41 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	@Override
-	void DetachContentView() {
-		if(DBrowser!=null){
-			AttachContentView();
-		} else {
+	void DetachContentView(boolean leaving) {
+		CMN.Log("DetachContentView");
+		delayedAttaching=false;
+//		if(DBrowser!=null){
+//			AttachContentView();
+//		} else {
 			boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
 			viewPager.setVisibility(View.VISIBLE);
 			bottombar.setVisibility(View.VISIBLE);
+
 			//xxroot.removeView(contentview);
-			((ViewGroup)contentview.getParent()).removeView(contentview);
-			if(bImmersive && bottombar2.getParent()!=null) ((ViewGroup) bottombar2.getParent()).removeView(bottombar2);
-			if(PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null)
-				root.removeView(PhotoPagerHolder);
+			Utils.removeIfParentBeOrNotBe(contentview, null, false);
+			if(bImmersive) {
+				Utils.removeIfParentBeOrNotBe(bottombar2, null, false);
+			}
+			Utils.removeIfParentBeOrNotBe(PhotoPagerHolder, null, false);
 			webcontentlist.canClickThrough=false;
+//		}
+		if(bImmersive) {
+			ResetIMOffset();
 		}
-		((AppBarLayout)appbar).resetAppBarLayoutOffset();
+		if(leaving && opt.getLeaveContentBlank() && ! currentIsWeb()) {
+			WebViewmy current_webview = PageSlider.WebContext;
+			if(current_webview !=null) {
+				current_webview.loadUrl("about:blank");
+				current_webview.clearView();
+			}
+		}
 	}
-
-
+	
+	private boolean currentIsWeb() {
+		return currentDictionary instanceof mdict_web;
+	}
+	
+	
 	@Override
 	void contentviewAddView(View v, int i) {
 		contentview.addView(v, i);
@@ -3554,17 +3580,27 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	@Override
 	public boolean isContentViewAttachedForDB() {
-		return contentview.getParent()==second_holder;
+		CMN.Log("isContentViewAttachedForDB", contentview.getParent());
+		return Utils.ViewIsId((View) contentview.getParent(), R.id.second_holder);
 	}
 	
 	@Override
 	public void AttachContentViewForDB() {
 		//todo preserve context
-		ViewGroup somp = (ViewGroup) contentview.getParent();
-		if(somp!=second_holder){
+		CMN.Log("AttachContentViewForDB");
+		if(Utils.addViewToParent(contentview, second_holder)){
 			PlaceContentBottombar(false);
-			if(somp!=null) somp.removeView(contentview);
-			second_holder.addView(contentview);
+		}
+//		DBrowser.getView().setAlpha(0.01f);
+//		PageSlider.setAlpha(0.01f);
+	}
+	
+	private void ResetIMOffset() {
+		AppBarLayout barappla = (AppBarLayout) appbar;
+		if(barappla.getTop()<0) {
+			//CMN.Log("重置了");
+			barappla.resetAppBarLayoutOffset();
+			barappla.requestLayout();
 		}
 	}
 	
@@ -3578,6 +3614,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				//getPeruseView().TextToSearch = currentDictionary.getEntryAt(pos);
 				showIconCustomizator();
 			} break;
+			case R.id.prv_dict:
+			case R.id.nxt_dict: {
+				ListView activeLv = CurrentViewPage==0?mlv1:CurrentViewPage==2?mlv2:
+					lv2.getVisibility()==View.VISIBLE?lv2:lv;
+				View c0 = activeLv.getChildAt(0);
+				if(c0!=null) {
+					if (true) {
+						browser_widget1.setActivated(true);
+					}
+					activeLv.performItemClick(c0, activeLv.getFirstVisiblePosition(), 0);
+				}
+			} return true;
 			case R.id.browser_widget0:{
 				//getPeruseView().TextToSearch = currentDictionary.getEntryAt(pos);
 				AttachPeruseView(false);
@@ -3803,18 +3851,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					popupWord(null, -1, 0);
 					closeMenu=ret=true;
 				} else {
-					boolean val=opt.setClickSearchEnabled(!opt.getClickSearchEnabled());
-					if(val) {
-						item.setTitle(item.getTitle()+" √");
-					}else {
-						item.setTitle(item.getTitle().subSequence(0, item.getTitle().length()-2));
+					boolean val=systemIntialized?opt.toggleClickSearchEnabled():opt.getClickSearchEnabled();
+					item.setTitle(Utils.decorateSuffixTick(item.getTitle(), val));
+					if(systemIntialized) {
+						toggleClickSearch(val);
 					}
-					toggleClickSearch(val);
 				}
 			} break;
 			case R.id.toolbar_action7://切换词典
 				if(isLongClicked) break;
-				findViewById(R.id.browser_widget1).performClick();
+				dismissPopup();
+				showChooseDictDialog(0);
 			break;
 			case R.id.toolbar_action8://切换切换分组
 				if(isLongClicked) break;
@@ -3846,12 +3893,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			case R.id.toolbar_action11:{//切换着色
 				if(isLongClicked){ ret=false; break;}
-				if(TintWildResult.first=opt.toggleTintWildRes()) {
-					item.setTitle(item.getTitle()+" √");
-				}else {
-					item.setTitle(item.getTitle().subSequence(0, item.getTitle().length()-2));
+				item.setTitle(Utils.decorateSuffixTick(item.getTitle(),TintWildResult.first=systemIntialized?opt.toggleTintWildRes():opt.getTintWildRes()));
+				if(systemIntialized) {
+					adaptermy3.notifyDataSetChanged();
 				}
-				adaptermy3.notifyDataSetChanged();
 			} break;
 			case R.id.toolbar_action2:{
 				if(isLongClicked) {
@@ -3894,7 +3939,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						if (opt.getInPeruseMode()) {
 							widget0.setImageResource(R.drawable.peruse_ic_on);
 							showTopSnack(main_succinct, R.string.peruse_mode
-									, 1f, LONG_DURATION_MS, Gravity.CENTER, false);
+									, 1f, LONG_DURATION_MS, Gravity.CENTER, 0);
 						}
 					}
 					opt.setInPeruseModeTM(!opt.getInPeruseModeTM());
@@ -3958,7 +4003,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if (changed){
 					buildUpDictionaryList(lazyLoaded, mdict_cache);
 					if (adapter_idx<0) {
-						switch_To_Dict_Idx(0, false, false);
+						switch_To_Dict_Idx(0, false, false, null);
 					}
 					invalidAllLists();
 					//CMN.Log("变化了", md.size(), currentFilter.size());
@@ -4121,20 +4166,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	@Override
-	public void switch_To_Dict_Idx(int i, boolean invalidate, boolean putName){
+	public boolean switch_To_Dict_Idx(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC){
 		if(invalidate) checkDictionaryProject(false);
-		super.switch_To_Dict_Idx(i, invalidate, putName);
+		boolean ret = super.switch_To_Dict_Idx(i, invalidate, putName, prvNxtABC);
 		if(invalidate) {
-			if (opt.getPicDictAutoSer()) {
-				//CMN.Log("changing text!......");
-				tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
-			}
-			if ((!opt.getPicDictAutoSer() || isCombinedSearching) && currentDictionary != null) {
-				lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
-			}
 			if (!opt.getPinPicDictDialog())
 				dismissDictPicker(R.anim.dp_dialog_exit);
 		}
+		return ret;
 	}
 
 	void dismissDictPicker(int animationRes) {
@@ -4146,18 +4185,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			/*  词典选择器的动画效果(消失)  */
 			if(animaExit==null) {
 				animaExit = AnimationUtils.loadAnimation(this, animationRes);
-				animaExit.setAnimationListener(new Animation.AnimationListener() {
-					@Override
-					public void onAnimationStart(Animation animation) {
-					}
-
-					@Override
-					public void onAnimationEnd(Animation animation) {
+				animaExit.setAnimationListener(new Utils.BaseAnimationListener(){
+					@Override public void onAnimationEnd(Animation animation) {
 						dialogHolder.setVisibility(View.GONE);
-					}
-
-					@Override
-					public void onAnimationRepeat(Animation animation) {
 					}
 				});
 			}
@@ -4188,7 +4218,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if((val=opt.getClickSearchEnabled())!=opt.getClickSearchEnabled(TFStamp)){
 			String title = "即点即译";
 			if(val) title+=" √";
-			toolbar.getMenu().findItem(R.id.toolbar_action14).setTitle(title);
+			AllMenus.findItem(R.id.toolbar_action14).setTitle(title);
 		}
 	}
 	
@@ -4200,6 +4230,35 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		if(PopupPageSlider!=null){
 			PageSlider.invalidateIBC();
+		}
+	}
+	
+	public void startServer(boolean start) {
+		if(start) {
+			try {
+				if(server==null) {
+					server = new MdictServerMobile(8080, PDICMainActivity.this, opt);
+				}
+				server.start();
+				showDrawerSnack("服务器启动成功");
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
+		} else {
+			if(server!=null) {
+				server.stop();
+				showDrawerSnack("服务已中止");
+				//showT("服务已中止");
+			}
+		}
+	}
+	
+	private void showDrawerSnack(String msg) {
+		//土司合着滑块动画有时太卡了
+		if(mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
+			showTopSnack((ViewGroup) drawerFragment.mDrawerListLayout, msg, 0.8f, -1, -1, 1|0x2);
+		} else {
+			showT(msg);
 		}
 	}
 }

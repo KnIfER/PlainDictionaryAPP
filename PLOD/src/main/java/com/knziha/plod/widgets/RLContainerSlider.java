@@ -312,4 +312,11 @@ public class RLContainerSlider extends FrameLayout{
 	public void invalidateIBC() {
 		bNoDoubleClick = WebContext==null||!WebContext.IBC.getUseDoubleClick();
 	}
+	
+	public void setIBC(WebViewmy IBCN) {
+		if(WebContext!=IBCN) {
+			WebContext = IBCN;
+			invalidateIBC();
+		}
+	}
 }

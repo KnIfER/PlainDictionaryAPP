@@ -2,9 +2,14 @@ package com.knziha.plod.widgets;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.ViewGroup;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import com.knziha.plod.PlainDict.BasicAdapter;
+
 public class ListViewmy extends ListView {
+	public boolean dimmed;
 	OnScrollChangedListener mOnScrollChangeListener;
 	public ListViewmy(Context context) {
 		this(context, null);
@@ -30,5 +35,16 @@ public class ListViewmy extends ListView {
 		super.onScrollChanged(l, t, oldl, oldt);
 		if(mOnScrollChangeListener!=null)
 			mOnScrollChangeListener.onScrollChange(this, l, t, oldl, oldt);
+	}
+	
+	@Override
+	public void setAdapter(ListAdapter adapter) {
+		super.setAdapter(adapter);
+		if(adapter instanceof BasicAdapter) {
+			((BasicAdapter)adapter).lava = this;
+		}
+		if(adapter instanceof OnItemClickListener) {
+			setOnItemClickListener((OnItemClickListener) adapter);
+		}
 	}
 }

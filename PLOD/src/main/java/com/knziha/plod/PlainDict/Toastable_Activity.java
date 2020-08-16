@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Locale;
 
 import android.Manifest;
@@ -29,6 +30,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.graphics.drawable.DrawerArrowDrawable;
 import androidx.appcompat.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -54,7 +56,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
-	protected String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
+	protected final static String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
 
 	private static boolean MarginChecked;
 	private static int DockerMarginL;
@@ -77,6 +79,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected long SFStamp;
 	protected long TFStamp;
 	protected long QFStamp;
+	protected long layoutFlagStamp;
 	public int MainBackground;
 	public int AppBlack;
 	public int AppWhite;
@@ -101,10 +104,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	boolean animationSnackOut;
 	SimpleTextNotifier topsnack;
 	Runnable snackWorker;
-	Runnable snackRemover= () -> {
-		if(topsnack!=null && topsnack.getParent()!=null)
-			((ViewGroup)topsnack.getParent()).removeView(topsnack);
-	};
+	Runnable snackRemover;
 	private Animator.AnimatorListener topsnackListener;
 	static final int FLASH_DURATION_MS = 800;
 	static final int SHORT_DURATION_MS = 1500;
@@ -112,6 +112,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	int NextSnackLength;
 	protected ViewGroup DefaultTSView;
 	long exitTime = 0;
+	protected Resources mResource;
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,6 +123,8 @@ public class Toastable_Activity extends AppCompatActivity {
 		   if (GlobalOptions.realWidth <= 0) {
 			   display.getRealMetrics(dm);
 			   GlobalOptions.realWidth = Math.min(dm.widthPixels, dm.heightPixels);
+			   GlobalOptions.density = dm.density;
+			   //GlobalOptions.densityDpi = dm.densityDpi;
 		   }
 		   display.getMetrics(dm);
 		   GlobalOptions.density = dm.density;
@@ -132,14 +135,23 @@ public class Toastable_Activity extends AppCompatActivity {
 	   }
 	   super.onCreate(savedInstanceState);
        if(shunt) return;
+		snackRemover = () -> {
+			if(topsnack!=null && topsnack.getParent()!=null)
+				((ViewGroup)topsnack.getParent()).removeView(topsnack);
+		};
 	   //inflater=getLayoutInflater();
        imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-
-	   mConfiguration = new Configuration(getResources().getConfiguration());
+		
+       mResource = getResources();
+       
+	   mConfiguration = new Configuration(mResource.getConfiguration());
+	   GlobalOptions.isLarge = (mConfiguration.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >=3 ;
+		//CMN.show("isLarge"+isLarge);
 	   if(Build.VERSION.SDK_INT>=29){
 		   GlobalOptions.isDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
-	   }else
+	   } else {
 		   GlobalOptions.isDark = false;
+	   }
 	   opt.getInDarkMode();
 	   isDarkStamp = GlobalOptions.isDark;
 	   AppBlack=GlobalOptions.isDark?Color.WHITE:Color.BLACK;
@@ -446,10 +458,11 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 	public void showT(Object text)
 	{
-		showT(String.valueOf(text),Toast.LENGTH_LONG);
+		showT(text,Toast.LENGTH_LONG);
 	}
-	public void showT(String text,int len)
+	public void showT(Object obj,int len)
 	{
+		CharSequence text = obj instanceof Integer? getResources().getText((Integer) obj):String.valueOf(obj);
 		if(m_currentToast == null || PDICMainAppOptions.getRebuildToast()){
 			if(m_currentToast!=null)
 				m_currentToast.cancel();
@@ -473,7 +486,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		toastTv.setTextColor(opt.getToastColor());
 		m_currentToast.show();
 	}
-	public void showMT(String text){
+	public void showMT(Object text){
 		showT(text);
 		m_currentToast.setGravity(Gravity.CENTER, 0, 0);
 	}
@@ -487,11 +500,11 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 
 	public void showTopSnack(Object messageVal){
-		showTopSnack(DefaultTSView, messageVal, 0.8f, -1, -1, false);
+		showTopSnack(DefaultTSView, messageVal, 0.8f, -1, -1, 0);
 	}
 
 	public void showContentSnack(Object messageVal){
-		showTopSnack(getContentviewSnackHolder(), messageVal, 0.6f, -1, -1, false);
+		showTopSnack(getContentviewSnackHolder(), messageVal, 0.6f, -1, -1, 0);
 	}
 
 	void modifyTopSnack(Object messageVal){
@@ -502,7 +515,10 @@ public class Toastable_Activity extends AppCompatActivity {
 		}
 	}
 
-	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity, boolean SingleLine) {
+	/** Show Top Snack
+	 * @param layoutFlags ltr : bSingleLine bWrapContentWidth bPostSnack
+	 *  */
+	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity, int layoutFlags) {
 		if(objectAnimator!=null){
 			objectAnimator.cancel();
 			objectAnimator=null;
@@ -524,25 +540,29 @@ public class Toastable_Activity extends AppCompatActivity {
 		}
 		NextSnackLength=duration<0?SHORT_DURATION_MS:duration;
 		topsnack.getBackground().setAlpha((int) (alpha*255));
-		topsnack.setSingleLine(SingleLine);
+		topsnack.setSingleLine((layoutFlags&0x1)!=0);
 		if(messageVal instanceof Integer) {
 			topsnack.setText((int) messageVal);
 			topsnack.setTag(messageVal);
-		}else {
+		} else {
 			topsnack.setText(String.valueOf(messageVal));
 			topsnack.setTag(null);
 		}
-		topsnack.setGravity(gravity==-1||gravity==-10?Gravity.CENTER:gravity);
+		topsnack.setGravity(gravity<0?Gravity.CENTER:gravity);
 		ViewGroup sp = (ViewGroup) topsnack.getParent();
-		if(sp!=parentView) {
+		if(sp!=parentView || layoutFlags!=layoutFlagStamp) {
 			if(sp!=null) sp.removeView(topsnack);
 			topsnack.setVisibility(View.INVISIBLE);
 			parentView.addView(topsnack);
-			topsnack.getLayoutParams().height=-2;
+			ViewGroup.LayoutParams lp = topsnack.getLayoutParams();
+			boolean bWrapContentWidth = ((layoutFlags&0x2)!=0);
+			lp.height=-2;
+			lp.width=bWrapContentWidth?-2:-1;
 			topsnack.post(snackWorker);
-		}else{
+			layoutFlagStamp = layoutFlags;
+		} else {
 			topsnack.removeCallbacks(snackWorker);
-			if(gravity==-10) topsnack.post(snackWorker);
+			if((layoutFlags&0x4)!=0) topsnack.post(snackWorker);
 			else snackWorker.run();
 		}
 	}

@@ -125,7 +125,7 @@ public class  BU{//byteUtils
     @Deprecated
     public static void printBytes(byte[] b){
     	for(int i=0;i<b.length;i++)
-    		System.out.print("0x"+byteTo16(b[i])+",");
+    		System.out.print("fatal 0x"+byteTo16(b[i])+",");
     	System.out.println();
     }
 

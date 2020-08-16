@@ -8,16 +8,6 @@
 	android:gravity="top"
 	android:fitsSystemWindows="false"
 	>
-
-	<com.knziha.plod.widgets.TextViewmy
-		android:id="@+id/MANITV"
-		android:layout_height="match_parent"
-		android:layout_width="wrap_content"
-		android:textSize="19sp"
-		android:text="dear my love\r\nbe happy always"
-		android:visibility="gone"
-		/>
-
 	<LinearLayout
 		android:id="@+id/main"
 		android:layout_width="match_parent"
@@ -28,7 +18,6 @@
 		android:orientation="vertical"
 		android:elevation="4dp"
 		>
-
 		<androidx.appcompat.widget.Toolbar
 			android:id="@+id/toolbar"
 			android:layout_width="match_parent"
@@ -39,7 +28,6 @@
 			android:contentInsetRight="0dp"
 			android:contentInsetEnd="0dp"
 			>
-
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
@@ -53,8 +41,6 @@
 					android:scaleType="centerCrop"
 					android:layout_gravity="center"
 					/>
-
-
 				<FrameLayout android:id="@+id/rlSearchFrameDelete"
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
@@ -68,8 +54,6 @@
 						android:imeOptions="actionSearch"
 						android:paddingRight="53dp"
 						/>
-
-
 					<LinearLayout
 						android:layout_width="wrap_content"
 						android:layout_height="match_parent"
@@ -89,7 +73,6 @@
 							android:paddingRight="10dp"
 							android:visibility="visible"
 							/>
-
 						<ImageView
 							android:id="@+id/ivDeleteText"
 							android:layout_width="wrap_content"
@@ -98,10 +81,7 @@
 							android:paddingRight="8dp"
 							android:visibility="visible"/>
 					</LinearLayout>
-
 				</FrameLayout>
-
-
 			</LinearLayout>
 		</androidx.appcompat.widget.Toolbar>
 
@@ -139,12 +119,11 @@
 
 				splitview:primaryContent="@+id/bottombar2"
 				splitview:handle="@+id/bottombar2"
-				splitview:secondaryContent="@+id/cover"
+				splitview:secondaryContent="@+id/PageSlider"
 				android:elevation="5dp"
 				>
-
 				<com.knziha.plod.widgets.RLContainerSlider
-					android:id="@+id/cover"
+					android:id="@+id/PageSlider"
 					android:layout_width="match_parent"
 					android:layout_height="0dp"
 					android:layout_weight="1"
@@ -153,9 +132,9 @@
 						android:id="@+id/webSingleholder"
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
-						>
-					</FrameLayout>
+						/>
 					<com.knziha.plod.widgets.ScrollViewmy
+						android:id="@+id/WHP"
 						android:layout_height="match_parent"
 						android:layout_width="match_parent"
 						android:focusable="true"
@@ -172,8 +151,6 @@
 							>
 						</LinearLayout>
 					</com.knziha.plod.widgets.ScrollViewmy>
-
-
 					<android.widget.ImageView
 						android:id="@+id/browser_widget14"
 						android:layout_width="34dp"
@@ -196,7 +173,6 @@
 						android:layout_marginBottom="20dp"
 						android:layout_marginRight="10dp"
 						/>
-
 					<View
 						android:id="@+id/IMPageCover"
 						android:layout_width="match_parent"
@@ -204,7 +180,7 @@
 						android:background="@drawable/shixian2"
 						android:visibility="gone"
 						/>
-					<com.knziha.plod.widgets.SamsungLikeScrollBar
+					<com.knziha.plod.widgets.DragScrollBar
 						android:id="@+id/dragScrollBar"
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
@@ -284,13 +260,7 @@
 						/>
 
 				</LinearLayout>
-
-
 			</com.knziha.plod.widgets.SplitPadView>
-
-
-
-
 		</FrameLayout>
 	</LinearLayout>
 

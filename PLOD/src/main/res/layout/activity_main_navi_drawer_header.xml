@@ -56,7 +56,7 @@
         app:dim1="1dp"
 		android:paddingTop="8dp"
 		android:paddingBottom="8dp"
-		app:src0="@drawable/viewpager_locker"
+		app:src0="@drawable/ic_baseline_laptop_mac_24"
         />
 
 

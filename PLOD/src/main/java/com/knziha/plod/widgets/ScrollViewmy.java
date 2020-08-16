@@ -12,7 +12,7 @@ import android.widget.ScrollView;
 import androidx.core.view.ViewCompat;
 
 public class ScrollViewmy extends ScrollView {// for mute it's scroll
-	public SamsungLikeScrollBar scrollbar2guard;
+	public DragScrollBar scrollbar2guard;
     public static OnTouchListener dummyOntouch = new OnTouchListener() {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {

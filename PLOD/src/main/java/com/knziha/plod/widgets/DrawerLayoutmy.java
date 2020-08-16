@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 import com.knziha.plod.PlainDict.CMN;
 
 public class DrawerLayoutmy extends androidx.drawerlayout.widget.DrawerLayout {
-    public SamsungLikeScrollBar scrollbar2guard;
+    public DragScrollBar scrollbar2guard;
     public PopupWindow popupToGuard;
 
 	public DrawerLayoutmy(@NonNull Context context) {

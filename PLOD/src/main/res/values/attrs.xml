@@ -45,9 +45,15 @@
 
     <declare-styleable name="ActivatableImageView">
         <attr name="src0" format="reference" />
+        <attr name="activedSR" format="boolean" />
     </declare-styleable>
 
-    <declare-styleable name="FlowTextView">
+	<declare-styleable name="DescriptiveImageView">
+		<attr name="android:text" format="string|reference"/>
+		<attr name="android:layout_y" format="dimension"/>
+	</declare-styleable>
+
+	<declare-styleable name="FlowTextView">
         <attr name="android:src" format="reference" />
 		<attr name="android:textSize" format="dimension" />
 		<attr name="android:textColor" format="dimension" />

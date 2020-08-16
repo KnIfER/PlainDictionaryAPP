@@ -15,7 +15,7 @@ import android.widget.LinearLayout;
 
 
 public class SplitView extends LinearLayout implements OnTouchListener {
-	public SamsungLikeScrollBar scrollbar2guard;
+	public DragScrollBar scrollbar2guard;
     private int mHandleId;
     private View mHandle;
 

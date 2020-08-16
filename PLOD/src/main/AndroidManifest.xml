@@ -8,6 +8,8 @@
 	<uses-permission android:name="android.permission.READ_MEDIA_STORAGE"/>
 	<uses-permission android:name="android.permission.INTERNET"/>
 
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
 	<uses-permission android:name="android.permission.WAKE_LOCK"/>
 
 	<uses-permission android:name="android.permission.REORDER_TASKS"/>
@@ -41,7 +43,7 @@
 			android:theme="@style/AppTheme"
 			android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|uiMode|locale|layoutDirection"
 			android:hardwareAccelerated="true"
-			android:taskAffinity=""
+			android:launchMode="standard"
 			>
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
@@ -96,11 +98,15 @@
 			android:theme="@style/AppThemeRaw"
 			/>
 
+		<activity android:name="com.knziha.plod.PlainDict.RebootActivity"
+			android:theme="@style/FloatAppTheme"
+			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
+			android:launchMode="standard"
+			/>
 		<activity android:name="com.knziha.plod.PlainDict.MainShareActivity"
 			android:theme="@style/FloatAppTheme"
 			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
 			android:launchMode="standard"
-			android:taskAffinity=""
 			>
 			<intent-filter>
 				<action android:name="android.intent.action.SEND"/>
@@ -121,11 +127,29 @@
 			android:hardwareAccelerated="true"
 			android:windowSoftInputMode="adjustPan"
 			android:launchMode="singleInstance"
-			android:taskAffinity=""
 			android:exported="true"
 			android:label="@string/fapp_name"
+			android:taskAffinity=""
 			>
 		</activity>
+		<activity android:name="com.knziha.plod.PlainDict.MultiShareActivity"
+			android:theme="@style/FloatAppTheme"
+			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
+			android:hardwareAccelerated="true"
+			android:windowSoftInputMode="adjustPan"
+			android:launchMode="singleInstance"
+			android:taskAffinity=""
+			android:exported="true"
+			android:label="@string/mdccsp"
+			>
+			<intent-filter>
+				<action android:name="android.intent.action.SEND"/>
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="text/plain" />
+			</intent-filter>
+		</activity>
+
+		<service android:name=".ServiceEnhancer" />
 	</application>
 
 

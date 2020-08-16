@@ -20,11 +20,9 @@ import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
-import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.Framer;
-import com.knziha.plod.widgets.Utils;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -228,7 +226,7 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 				else {//当前词典
 					int tmpPos = a.adapter_idx;
 					a.adapter_idx = position;
-					a.switch_To_Dict_Idx(position, true, true);
+					a.switch_To_Dict_Idx(position, true, true, null);
 					mAdapter.notifyItemChanged(tmpPos);
 					if(tmpPos!=position){
 						mAdapter.notifyItemChanged(position);

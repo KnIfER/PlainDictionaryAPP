@@ -21,7 +21,7 @@ import com.knziha.plod.PlainDict.R;
 import java.util.Timer;
 
 
-public class SamsungLikeScrollBar extends RelativeLayout{
+public class DragScrollBar extends RelativeLayout{
 	SamsungLikeHandle handleThumb;
 
 	int handleColour;
@@ -41,12 +41,12 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 	//CHAPTER I - INITIAL SETUP
 
 	//构造
-	public SamsungLikeScrollBar(Context context, AttributeSet attributeSet){
+	public DragScrollBar(Context context, AttributeSet attributeSet){
 		this(context, attributeSet, 0);
 	}
 
 	//构造
-	public SamsungLikeScrollBar(Context context, AttributeSet attributeSet, int defStyle){
+	public DragScrollBar(Context context, AttributeSet attributeSet, int defStyle){
 		super(context, attributeSet, defStyle);
 
 		setUpProps(context, attributeSet); //Discovers and applies some XML attributes
@@ -216,7 +216,7 @@ public class SamsungLikeScrollBar extends RelativeLayout{
 				@Override
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom)
 				{
-					SamsungLikeScrollBar.this.removeOnLayoutChangeListener(this);
+					DragScrollBar.this.removeOnLayoutChangeListener(this);
 				}
 			});
 	}

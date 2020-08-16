@@ -25,6 +25,7 @@ public class FloatActivitySearch extends FloatSearchActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		this_instanceof_FloarActivitySearch = true;
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			ActivityManager.TaskDescription taskDesc = new ActivityManager.TaskDescription(
 					getTitle().toString(),//title
@@ -70,17 +71,6 @@ public class FloatActivitySearch extends FloatSearchActivity {
 				break;
 			}
 		}
-	}
-
-	@Override
-	public void onBackPressed() {
-		if(PDICMainAppOptions.getUseBackKeyClearWebViewFocus() && checkWebSelection())
-			return;
-		if(PDICMainAppOptions.getFloatClickHideToBackground()){
-			moveTaskToBack(false);
-			return;
-		}
-		super.onBackPressed();
 	}
 
 	@Override

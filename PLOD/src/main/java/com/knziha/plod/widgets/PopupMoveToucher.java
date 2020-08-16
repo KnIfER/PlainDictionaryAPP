@@ -32,8 +32,10 @@ public class PopupMoveToucher implements View.OnTouchListener {
 	final PopupGuarder popupGuarder;
 	final View textView;
 	private boolean ruinedDoubleClick;
+	MainActivityUIBase a;
 
 	public PopupMoveToucher(MainActivityUIBase a, View _textView){
+		this.a = a;
 		_50_ = a.getResources().getDimension(R.dimen._50_)*a.dm.density;
 		popupGuarder=a.popupGuarder;
 		textView=_textView;
@@ -66,7 +68,7 @@ public class PopupMoveToucher implements View.OnTouchListener {
 						else{
 							FVTY=popupContentView.getTranslationY();
 							popupContentView.setTranslationY(0);
-							Maximized=FVDOCKED=true;
+							onMaximised();
 							FVH_UNDOCKED=popupContentView.getHeight();
 							lpmy.height=calcMaxedH(lpmy);
 							popupContentView.setLayoutParams(lpmy);
@@ -172,8 +174,7 @@ public class PopupMoveToucher implements View.OnTouchListener {
 					popupContentView.setLayoutParams(lpmy);
 					wantsMaximize=
 					wantedMaximize=false;
-					Maximized=
-					FVDOCKED=true;
+					onMaximised();
 					//opt.setFVDocked(FVDOCKED=true);
 				}
 				if(v.getBackground()!=null) {
@@ -192,7 +193,14 @@ public class PopupMoveToucher implements View.OnTouchListener {
 		}
 		return v==textView?true:lastTY!=popupContentView.getTranslationY();
 	}
-
+	
+	private void onMaximised() {
+		Maximized=FVDOCKED=true;
+		if(a.ucc!=null) { // todo opt
+			a.ucc.clearTextFocus();
+		}
+	}
+	
 	private int calcMaxedH(ViewGroup.MarginLayoutParams lpmy) {
 		return popupGuarder.getHeight()-lpmy.topMargin-lpmy.bottomMargin-(PDICMainAppOptions.isFullScreen()?0: CMN.getStatusBarHeight(popupGuarder.getContext()));
 	}

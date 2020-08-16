@@ -1,12 +1,14 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
-import androidx.viewpager.widget.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
+import androidx.viewpager.widget.ViewPager;
+
 public class NoScrollViewPager extends ViewPager {  
-    private boolean noScroll = false;  
+    private boolean noScroll = false;
+	public boolean isListHold;
   
     public NoScrollViewPager(Context context, AttributeSet attrs) {  
         super(context, attrs);  
@@ -40,14 +42,23 @@ public class NoScrollViewPager extends ViewPager {
         /* return false;//super.onTouchEvent(arg0); */
         if (noScroll) {
             return false;  
-        }else  
-            return super.onTouchEvent(event);  
-    }  
-  
-    @Override  
+        } else  {
+			return super.onTouchEvent(event);
+		}
+    }
+	
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent event) {
+		isListHold = event.getActionMasked() != MotionEvent.ACTION_UP;
+		return super.dispatchTouchEvent(event);
+	}
+	
+	@Override
     public boolean onInterceptTouchEvent(MotionEvent event) { 
     	boolean ret = false;
-        if (noScroll)  {}else {
+        if (noScroll)  {
+        
+		} else {
         	ret = super.onInterceptTouchEvent(event);
         }
         if(!ret) {

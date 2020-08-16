@@ -39,6 +39,8 @@ public class AgentApplication extends Application {
 	public HashSet<String> mdlibsCon;
 	/** 控制所有实例只扫描一遍收藏夹 */
 	public boolean bNeedPullFavorites =true;
+	public ArrayList<mdict> b_md = new ArrayList<>();
+	public ArrayList<mdict> b_filter = new ArrayList<>();
 	/** 退出全部实例时关闭、清理 */
 	ArrayList<MyPair<String, LexicalDBHelper>> AppDatabases = new ArrayList<>();
 	/** 退出全部实例时保留 */
@@ -75,6 +77,7 @@ public class AgentApplication extends Application {
 	@Override
 	public void onTerminate() {
 		super.onTerminate();
+		CMN.Log("onTerminate");
 		System.exit(0);
 	}
 

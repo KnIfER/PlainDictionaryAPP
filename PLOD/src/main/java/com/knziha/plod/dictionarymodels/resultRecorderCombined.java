@@ -173,7 +173,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				a.main_progress_bar.setVisibility(expectedPos==0?View.GONE:View.VISIBLE);
 			scrolled=false;
 		}
-
+		
+		a.PageSlider.setIBC(null);
+		
 		ArrayList<Integer> valsTmp = new ArrayList<>();
 		valueCount=0;
 		boolean checkReadEntry = a.opt.getAutoReadEntry();

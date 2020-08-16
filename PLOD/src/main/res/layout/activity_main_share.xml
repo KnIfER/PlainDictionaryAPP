@@ -1,0 +1,31 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/root"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:fitsSystemWindows="true"
+	android:paddingTop="0dp">
+	<FrameLayout
+		android:id="@+id/mainF"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"/>
+
+<!--	<ViewStub-->
+<!--		android:id="@+id/content"-->
+<!--		android:layout="@layout/contentview"-->
+<!--		android:layout_height="match_parent"-->
+<!--		android:layout_width="match_parent"-->
+<!--		/>-->
+
+<!--	<ProgressBar-->
+<!--		android:id="@+id/main_progress_bar"-->
+<!--		android:layout_width="wrap_content"-->
+<!--		android:layout_height="wrap_content"-->
+<!--		android:layout_gravity="center_vertical|center_horizontal"-->
+<!--		android:visibility="gone"/>-->
+
+	<ViewStub
+		android:layout="@layout/contentview_item"
+		android:layout_height="match_parent"
+		android:layout_width="match_parent"
+		/>
+</FrameLayout>

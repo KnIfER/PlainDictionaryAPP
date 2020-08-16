@@ -5,6 +5,8 @@ import android.os.Bundle;
 import com.knziha.plod.PlainDict.R;
 
 public class Licences extends SettingsFragment {
+	public final static int id=6;
+	
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

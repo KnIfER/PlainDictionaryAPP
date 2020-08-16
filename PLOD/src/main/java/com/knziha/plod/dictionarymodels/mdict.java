@@ -452,17 +452,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			var script=document.createElement('script');
 			script.type="text/javascript";
 			if(typeof(callback)!="undefined"){
-				if(script.readyState){
-					script.onreadystatechange=function(){
-						if(script.readyState == "loaded" || script.readyState == "complete"){
-							script.onreadystatechange=null;
-							callback();
-						}
-					}
-				}else{
-					script.onload=function(){
-						callback();
-					}
+				script.onload=function(){
+					callback();
 				}
 			}
 			script.src=url;
@@ -690,6 +681,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	ImageView toolbar_cover;
 	private UniCoverClicker ucc;
 	public void initViewsHolder(final MainActivityUIBase a){
+		this.a=a;
+		ucc = a.getUcc();
 		if(!viewsHolderReady) {
 			rl=(ViewGroup)a.getLayoutInflater().inflate(R.layout.contentview_item, a.webholder, false);
 	        if(mWebView==null){
@@ -700,7 +693,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				if(!(this instanceof mdict_pdf))
 					_mWebView.setOnScrollChangedListener(a.onWebScrollChanged);
 	            //_mWebView.setPadding(0, 0, 18, 0);
-				mWebBridge = new AppHandler(this);
+				if(mWebBridge==null) {
+					mWebBridge = new AppHandler(this);
+				}
 				_mWebView.addJavascriptInterface(mWebBridge, "app");
 				mWebView = _mWebView;
 	        }
@@ -741,7 +736,6 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			toolbar_cover = toolbar.findViewById(R.id.cover);
 			if(cover!=null)
 				toolbar_cover.setImageDrawable(cover);
-			ucc = a.getUcc();
 			toolbar_cover.setOnClickListener(this);
 			toolbar_title.setOnClickListener(new OnClickListener(){
 				@Override
@@ -1505,7 +1499,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 					toolbarBG = mWebView.MutateBGInTitle();
 				}
 				toolbarBG.setColors(ColorShade);
-				CMN.Log("设置了?");
+				//CMN.Log("设置了?");
 			}
 			myWebColor = isDark?Color.WHITE:useInternal?TIFGColor:opt.getTitlebarForegroundColor();
 			mWebView.setTitlebarForegroundColor(myWebColor);
@@ -1980,7 +1974,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
         public AppHandler(mdict _mdx) {
 			mdx=_mdx;
-            scale = mdx.a.getResources().getDisplayMetrics().density;
+            scale = GlobalOptions.density;
     		dm = mdx.opt.dm;
         }
 
@@ -2050,6 +2044,9 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
         @JavascriptInterface
         public void popupWord(String key, int frameAt, float pX, float pY, float pW, float pH) {
+        	if(WebViewmy.supressNxtClickTranslator) {
+        		return;
+			}
         	MainActivityUIBase a = mdx.a;
 			a.popupWord(key, -1, frameAt);
 			if(frameAt>=0 && pH!=0){
@@ -2253,7 +2250,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			}
 		}
 		if(a.currentDictionary==this){
-			a.setLastMdFn(_Dictionary_fName);
+			opt.putLastMdFn("LastPlanName", _Dictionary_fName);
 		}
 		return ret;
 	}
@@ -2266,8 +2263,17 @@ public class mdict extends com.knziha.plod.dictionary.mdict
     		mWebView=null;
 		}
 		if(viewsHolderReady) {
+			viewsHolderReady =  false;
 			ucc=null;
 			toolbar_cover.setOnClickListener(null);
+			toolbar_cover = null;
+			toolbar_title = null;
+			ic_undo = null;
+			ic_save = null;
+			ic_redo = null;
+			toolbar = null;
+			recess = null;
+			forward = null;
 		}
 		a=null;
 	}
@@ -2535,7 +2541,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		return new CachedDirectory(opt.fileToDatabases(), SubPathToDBStorage(extra));
 	}
 			
-			/** Show Per-Dictionary settings dialog via peruseview, normal view. */
+	/** Show Per-Dictionary settings dialog via peruseview, normal view. */
 	public static void showDictTweaker(WebViewmy view, Activity context, mdict_manageable...md) {
 		if(md.length==0) return;
 		mdict_manageable mdTmp = md[0];
@@ -2799,7 +2805,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		}
 	}
 	
-// My life shouldn't waste on these android shits.
+// My life shouldn't waste on these android stuffs.
 // MLSN
 	
 //	String externalstorage = "content://com.android.externalstorage.documents/document/primary%3A";

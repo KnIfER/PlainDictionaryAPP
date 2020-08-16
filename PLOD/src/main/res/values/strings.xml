@@ -209,4 +209,7 @@
 	<string name="text_operation">文本操作</string>
 	<string name="shutdown_vm">Shutdown VM</string>
 	<string name="fapp_name">Float Search</string>
+	<string name="server_spec">词典服务器</string>
+	<string name="colorfuldayswithbeautifulgirl">colordict.intent.action.SEARCH</string>
+	<string name="mdccsp">Versatile Share Panel</string>>
 </resources>

@@ -106,7 +106,7 @@ public class mdict_web extends mdict {
 		 document.head.appendChild(style);
 		 document.head.appendChild(script);
 		 window.PLODKit=1;
-	 }
+	 }wra
 	 */
 	@Multiline
 	static final String loadJs = StringUtils.EMPTY;
@@ -793,18 +793,20 @@ public class mdict_web extends mdict {
 
 	public void onProgressChanged(WebViewmy mWebView, int newProgress) {
 		CMN.Log("onProgressChanged", newProgress);
-		Drawable d = mWebView.titleBar.getBackground();
-		int start = d.getLevel();
-		int end = newProgress*100;
-		if(end<start) end=start+10;
-		if(progressProceed !=null) {
-			progressProceed.cancel();
-			progressProceed.setIntValues(start, end);
-		} else {
-			progressProceed = ObjectAnimator.ofInt(d,"level", start, end);
-			progressProceed.setDuration(100);
+		if(mWebView.titleBar!=null) {
+			Drawable d = mWebView.titleBar.getBackground();
+			int start = d.getLevel();
+			int end = newProgress*100;
+			if(end<start) end=start+10;
+			if(progressProceed !=null) {
+				progressProceed.cancel();
+				progressProceed.setIntValues(start, end);
+			} else {
+				progressProceed = ObjectAnimator.ofInt(d,"level", start, end);
+				progressProceed.setDuration(100);
+			}
+			progressProceed.start();
 		}
-		progressProceed.start();
 		if(newProgress>85){
 			mWebView.evaluateJavascript(jsCode, null);
 		}
@@ -827,18 +829,20 @@ public class mdict_web extends mdict {
 
 	private void fadeOutProgressbar(WebViewmy mWebView, boolean updateTitle) {
 		if(updateTitle) mWebView.toolbar_title.setText(mWebView.word=currentDisplaying=mWebView.getTitle());
-		Drawable d = ((LayerDrawable) mWebView.titleBar.getBackground()).getDrawable(1);
-		if(d.getAlpha()!=255) {
-			return;
+		if(mWebView.titleBar!=null) {
+			Drawable d = ((LayerDrawable) mWebView.titleBar.getBackground()).getDrawable(1);
+			if(d.getAlpha()!=255) {
+				return;
+			}
+			if(progressTransient!=null){
+				progressTransient.cancel();
+				progressTransient.setFloatValues(d.getAlpha(), 0);
+			} else {
+				progressTransient = ObjectAnimator.ofInt(d, "alpha", d.getAlpha(), 0);
+				progressTransient.setDuration(200);
+			}
+			progressTransient.start();
 		}
-		if(progressTransient!=null){
-			progressTransient.cancel();
-			progressTransient.setFloatValues(d.getAlpha(), 0);
-		} else {
-			progressTransient = ObjectAnimator.ofInt(d, "alpha", d.getAlpha(), 0);
-			progressTransient.setDuration(200);
-		}
-		progressTransient.start();
 	}
 
 	@Override
