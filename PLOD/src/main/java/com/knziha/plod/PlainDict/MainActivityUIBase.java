@@ -6653,7 +6653,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							FlowTextView tv = ret.mFlowTextView;
 							tv.setTextColor(AppBlack);
 							tv.setText(scanInList.get(position));
-							ret.setChecked(position == lastCheckedPos);
 							return ret;
 						}
 					}
@@ -6773,6 +6772,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			CMN.Log("扫描分组……", scanInList.size(), def.getParentFile().lastModified());
 			((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
+			dTmp.getListView().setItemChecked(lastCheckedPos, true);
 		}
 		
 		dTmp.show();
