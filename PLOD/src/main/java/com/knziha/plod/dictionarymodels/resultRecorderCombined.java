@@ -184,13 +184,17 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		for(int i=0;i<vals.size();i+=2){
 			valsTmp.clear();
 			int toFind=vals.get(i);
-			mdict mdtmp = md.get(toFind);
-			if(mdtmp==null) continue;
 			while(i<vals.size() && toFind==vals.get(i)) {
 				valsTmp.add(vals.get(i+1));
 				i+=2;
 			}
 			i-=2;
+			
+			if(toFind<0 || toFind>=md.size()) {
+				continue;
+			}
+			mdict mdtmp = md.get(toFind);
+			if(mdtmp==null) continue;
 			
 			int[] d = new int[valsTmp.size()];
 			for(int i1 = 0;i1<valsTmp.size();i1++){
@@ -240,7 +244,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 		}
 		a.RecalibrateWebScrollbar(null);
-	};
+	}
 
 	@Override
 	public ArrayList<Integer> getRecordAt(int pos) {

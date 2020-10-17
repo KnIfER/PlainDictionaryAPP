@@ -286,7 +286,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			editor = defaultReader.edit();
 			CommitOrApplyOrNothing=1;
 		}
-		editor.putLong("MFF", FirstFlag).putLong("MSF", SecondFlag).putLong("MTF", ThirdFlag).putLong("MQF", FourthFlag);
+		editor.putLong("MFF", FirstFlag).putLong("MSF", SecondFlag).putLong("MTF", ThirdFlag)
+				.putLong("MQF", FourthFlag).putLong("MVF", FifthFlag);
 		if(CommitOrApplyOrNothing==1) editor.apply();
 		else if(CommitOrApplyOrNothing==2) editor.commit();
 		//CMN.Log("apply changes");
@@ -325,7 +326,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public void putFlags() {
-		defaultReader.edit().putLong("MFF",FirstFlag).putLong("MSF",SecondFlag).putLong("MTF",ThirdFlag).apply();
+		defaultReader.edit().putLong("MFF",FirstFlag).putLong("MSF",SecondFlag)
+				.putLong("MTF",ThirdFlag).putLong("MVF",FifthFlag).apply();
 	}
 
 	public void putFirstFlag() {
@@ -837,6 +839,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return (SecondFlag & 0x100) != 0x100;
 	}
 
+	/* forbid all history recording */
 	public static boolean getHistoryStrategy0() {
 		return (SecondFlag & 0x200) == 0x200;
 	}
@@ -845,24 +848,25 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-//	/** 搜索框->回车时记录全文/词条搜索 */
-//	public static boolean getHistoryStrategy1() {
-//		return (SecondFlag & 0x400) != 0x400;
-//	}
-//	public static boolean setHistoryStrategy1(boolean val) {
-//		updateSFAt(0x400,!val);
-//		return val;
-//	}
+	/** 记录各种查询 */
+	public static boolean getHistoryStrategy1() {
+		return (SecondFlag & 0x400) != 0x400;
+	}
+	public static boolean setHistoryStrategy1(boolean val) {
+		updateSFAt(0x400,!val);
+		return val;
+	}
 
-//	/** 搜索框->回车时记录联合搜索 */
-//	public static boolean getHistoryStrategy2() {
-//		return (SecondFlag & 0x800) != 0x800;
-//	}
+	/** 记录各种联机 */
+	public static boolean getHistoryStrategy2() {
+		return (SecondFlag & 0x800) != 0x800;
+	}
 
-//	public static boolean setHistoryStrategy2(boolean val) {
-//		updateSFAt(0x800,!val);
-//		return val;
-//	}
+	public static boolean setHistoryStrategy2(boolean val) {
+		updateSFAt(0x800,!val);
+		return val;
+	}
+	
 //	//搜索框->回车时记录普通搜索
 //	public static boolean getHistoryStrategy3() {
 //		return (SecondFlag & 0x1000) != 0x1000;
@@ -872,6 +876,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 //		return val;
 //	}
 
+	/** 记录各种点击 */
 	public static boolean getHistoryStrategy4() {
 		return (SecondFlag & 0x2000) != 0x2000;
 	}
@@ -880,24 +885,26 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateSFAt(0x2000,!val);
 		return val;
 	}
-	public static boolean getHistoryStrategy5() {
-		return (SecondFlag & 0x4000) != 0x4000;
-	}
+	
+//	public static boolean getHistoryStrategy5() {
+////		return (SecondFlag & 0x4000) != 0x4000;
+////	}
+////
+////	public static boolean setHistoryStrategy5(boolean val) {
+////		updateSFAt(0x4000,!val);
+////		return val;
+////	}
+	
+//	public static boolean getHistoryStrategy6() {
+//		return (SecondFlag & 0x8000) != 0x8000;
+//	}
+//
+//	public static boolean setHistoryStrategy6(boolean val) {
+//		updateSFAt(0x8000,!val);
+//		return val;
+//	}
 
-	public static boolean setHistoryStrategy5(boolean val) {
-		updateSFAt(0x4000,!val);
-		return val;
-	}
-	public static boolean getHistoryStrategy6() {
-		return (SecondFlag & 0x8000) != 0x8000;
-	}
-
-	public static boolean setHistoryStrategy6(boolean val) {
-		updateSFAt(0x8000,!val);
-		return val;
-	}
-
-	/** 记录翻阅模式 */
+	/** 记录各种弹出 */
 	public static boolean getHistoryStrategy7() {
 		return (SecondFlag & 0x10000) == 0x10000;
 	}
@@ -1554,52 +1561,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	//xxx
-//	public static boolean getPeruseShowAll() {
-//		return (ThirdFlag & 0x10000000l) != 0x10000000l;
-//	}
-//
-//	public static boolean setPeruseShowAll(boolean val) {
-//		updateTFAt(0x10000000l,!val);
-//		return val;
-//	}
-
-	/** 点击列表记录翻阅模式 */
-	public static boolean getHistoryStrategy9() {
-		return (ThirdFlag & 0x20000000l) == 0x20000000l;
-	}
-
-	public static boolean setHistoryStrategy9(boolean val) {
-		updateTFAt(0x20000000l,val);
-		return val;
-	}
-
-	public static boolean getHistoryStrategy10() {
-		return (ThirdFlag & 0x40000000l) == 0x40000000l;
-	}
-
-	public static boolean setHistoryStrategy10(boolean val) {
-		updateTFAt(0x40000000l,val);
-		return val;
-	}
-
-	public static boolean getHistoryStrategy11() {
-		return (ThirdFlag & 0x80000000l) == 0x80000000l;
-	}
-
-	public static boolean setHistoryStrategy11(boolean val) {
-		updateTFAt(0x80000000l,val);
-		return val;
-	}
-
-	/** 记录浮动搜索启动获取的词条。 */
-	public static boolean getHistoryStrategy12() {
-		return (ThirdFlag & 0x100000000l) != 0x100000000l;
-	}
-
-	public static boolean setHistoryStrategy12(boolean val) {
-		updateTFAt(0x100000000l,!val);
-		return val;
-	}
 
 	public boolean getPageTurn3() {
 		return (ThirdFlag & 0x200000000l) != 0x200000000l;
@@ -2017,18 +1978,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateQFAt(0x80000l,!val);
 		return val;
 	}
-
-	public static boolean getSimpleMode() {
-		return (FourthFlag & 0x100000l) == 0x100000l;
-	}
-	public static boolean getSimpleMode(long FourthFlag) {
-		return (FourthFlag & 0x100000l) == 0x100000l;
-	}
-	public static boolean setSimpleMode(boolean val) {
-		updateQFAt(0x100000l,val);
-		return val;
-	}
-
+	
+	@Multiline(flagPos=20) public static boolean getSimpleMode() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=20) public static boolean getSimpleMode(long FourthFlag) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=20) public static void setSimpleMode(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+ 
 	public static boolean getEnsureAtLeatOneExpandedPage() {
 		return (FourthFlag & 0x200000l) != 0x200000l;
 	}
@@ -2234,8 +2188,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Multiline(flagPos=51) public static void setServerStarted(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	
 	@Multiline(flagPos=52, shift=1) public static boolean checkVersionBefore_4_0() { FourthFlag=FourthFlag; throw new RuntimeException();}
-	//@Multiline(flagPos=52, shift=1) public static void uncheckVersionBefore_4_0(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=52, shift=1) public static boolean uncheckVersionBefore_4_0() { FourthFlag=FourthFlag; throw new IllegalArgumentException();}
+	@Multiline(flagPos=52, shift=1) public static void uncheckVersionBefore_4_0(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	//@Multiline(flagPos=52, shift=1) public static boolean uncheckVersionBefore_4_0() { FourthFlag=FourthFlag; throw new IllegalArgumentException();}
 	@Multiline(flagPos=53) public static boolean getClearTasksOnExit() { FourthFlag=FourthFlag; throw new RuntimeException();}
 
 	@Multiline(flagPos=54) public boolean getRememberVSPanelGo(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
@@ -2257,8 +2211,38 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////
+	/////////////////////Start Fifth Flag///////////////////////////////////
 	//EQ
-
+	private static Long FifthFlag=null;
+	public long getFifthFlag() {
+		if(FifthFlag==null) {
+			return FifthFlag=defaultReader.getLong("MVF",0);
+		}
+		return FifthFlag;
+	}
+	public static long getFifthFlag(Context context) {
+		if(FifthFlag==null) {
+			return FifthFlag= androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getLong("MVF",0);
+		}
+		return FifthFlag;
+	}
+	private void putFifthFlag(long val) {
+		defaultReader.edit().putLong("MVF",FifthFlag=val).apply();
+	}
+	public Long FifthFlag() {
+		return FifthFlag;
+	}
+	
+	@Multiline(flagPos=0, max=3, flagSize=5, shift=1) public static int getSendToAppTarget(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=0, max=3, flagSize=5, shift=1) public static void setSendToAppTarget(int val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	
+	public int getSendToShareTarget(){ return IU.parsint(defaultReader.getString("share_to", null), 1); }
+	
+	
+	//EF
+	///////////////////// End Fifth Flag////////////////////////////////////
+	//EF
+	
 	///////
 	///////
 	public static void setTmpIsFlag(mdict mdTmp, int val) {

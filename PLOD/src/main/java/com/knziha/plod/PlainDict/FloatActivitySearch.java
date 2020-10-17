@@ -48,6 +48,8 @@ public class FloatActivitySearch extends FloatSearchActivity {
 			ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 			if(manager!=null) manager.moveTaskToFront(getTaskId(), 0);
 		}
+		
+		bIsFirstLaunch=true;
 
 		processIntent(intent);
 

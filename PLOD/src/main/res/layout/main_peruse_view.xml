@@ -8,8 +8,9 @@
 	android:layout_height="match_parent"
 	android:orientation="vertical"
 	android:fitsSystemWindows="true"
+	android:clickable="true"
+	android:focusable="true"
 	>
-
 	<androidx.appcompat.widget.Toolbar
 		android:id="@+id/toolbar"
 		android:layout_width="match_parent"
@@ -20,22 +21,19 @@
 		app:contentInsetStart="0dp"
 		app:contentInsetStartWithNavigation="0dp"
 		>
-
 		<RelativeLayout
 			android:id="@+id/pvSearch"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:layout_centerVertical="true"
 			android:gravity="center_vertical" >
-
 			<EditText
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
 				android:paddingRight="32dp"
 				android:singleLine="true"
 				android:textColor="#ffffff"
-				android:imeOptions="actionSearch" >
-			</EditText>
+				android:imeOptions="actionSearch" />
 
 			<ImageView
 				android:id="@+id/ivDeleteText"
@@ -57,69 +55,48 @@
 		android:layout_height="match_parent"
 		android:layout_below="@+id/toolbar"
 		>
-
 		<com.knziha.plod.widgets.SplitView
 			android:id="@+id/split_view"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			android:orientation="vertical"
-
-
 			splitview:primaryContent="@+id/p"
 			splitview:handle="@+id/handle"
 			splitview:secondaryContent="@+id/secondary"
 			splitview:CompensationTop="4dp"
 			splitview:CompensationBottom="14dp"
-
 			tool:context=".PDICMainActivity">
-
-
-
-
 			<LinearLayout
 				android:id="@+id/p"
 				android:layout_width="match_parent"
 				android:layout_height="200dp"
 				android:orientation="horizontal"
 				>
-
 				<com.jess.ui.TwoWayGridView
 					android:id="@+id/main_dict_lst"
 					android:layout_width="match_parent"
-					android:layout_height="match_parent"
+					android:layout_height="200dp"
 					android:orientation="horizontal"
 					/>
-
-
-
 			</LinearLayout>
-
-
-
-
 			<View
 				android:id="@+id/handle"
 				android:layout_width="match_parent"
 				android:layout_height="@dimen/sz_handle"
 				android:background="@drawable/frametop"
 				android:elevation="6dp"/>
-
 			<com.knziha.plod.widgets.SplitView
 				android:id="@+id/secondary"
 				android:layout_width="match_parent"
 				android:layout_height="0dip"
 				android:layout_weight="1"
 				android:orientation="horizontal"
-
 				splitview:primaryContent="@+id/mlp"
 				splitview:handle="@+id/inner_handle"
 				splitview:secondaryContent="@+id/slp"
 				splitview:CompensationTop="0dp"
 				splitview:CompensationBottom="14dp"
-
 				>
-
-
 				<FrameLayout
 					android:id="@+id/mlp"
 					android:layout_height="match_parent"
@@ -137,6 +114,7 @@
 						android:scrollbarSize="4dp"
 						/>
 				</FrameLayout>
+
 				<View
 					android:id="@+id/inner_handle"
 					android:layout_width="@dimen/sz_handle"
@@ -150,8 +128,7 @@
 					android:layout_width="6dp"
 					android:layout_weight="1"
 					>
-
-					<ListView
+					<com.knziha.plod.widgets.ListViewmy
 						android:id="@+id/sub_list"
 						android:layout_height="match_parent"
 						android:layout_width="match_parent"
@@ -162,10 +139,7 @@
 						android:scrollbarSize="4dp"
 						android:paddingLeft="0dp"/>
 				</FrameLayout>
-
-
 			</com.knziha.plod.widgets.SplitView>
-
 		</com.knziha.plod.widgets.SplitView>
 
 		<com.knziha.plod.widgets.SplitViewGuarder
@@ -207,18 +181,10 @@
 			android:layout_gravity="bottom"
 			android:background="@drawable/linewrap"
 			/>
-
-		<Button
-			android:visibility="gone"
-			android:id="@+id/button1"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="bottom|center"
-			android:text="Button" />
 	</FrameLayout>
 
 	<FrameLayout
 		android:id="@+id/peruseF"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent"/>
+		android:layout_height="match_parent" />
 </RelativeLayout>

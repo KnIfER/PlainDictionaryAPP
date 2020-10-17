@@ -756,7 +756,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 						toolbar_cover.performClick();
 					}
 
-					//tofo 该做的事情
+					CMN.Log("//tofo 该做的事情");
 					mWebView.post(new Runnable() {
 						@Override
 						public void run() {
@@ -1241,7 +1241,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 					if(v!=ic_save){
 						if(a.PeruseView!=null){
 							_mWebView = a.PeruseView.mWebView;
-							url = a.PeruseView.currentDisplaying;
+							url = a.PeruseView.currentDisplaying();
 						} else {
 							return true;
 						}
@@ -1273,7 +1273,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 				//CMN.Log("结果长度，", v.length()); CMN.Log("");
 				String title=currentDisplaying;
 				if(mWebView!=this.mWebView && a.PeruseView!=null)
-					title=a.PeruseView.currentDisplaying;
+					title=a.PeruseView.currentDisplaying();
 				SaveCurrentPage_Internal(v, url, title);
 			}
 		});
@@ -1428,7 +1428,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			mWebView.addHistoryAt(idx);
 		}
 		/* 回溯 或 前瞻， 不改变历史 */
-		mWebView.word = currentDisplaying = getEntryAt(mWebView.currentPos = idx);
+		mWebView.word = currentDisplaying = StringUtils.trim(getEntryAt(mWebView.currentPos = idx));
+		
 		if(hasVirtualIndex()){
 			int tailIdx=currentDisplaying.lastIndexOf(":");
 			if(tailIdx>0)

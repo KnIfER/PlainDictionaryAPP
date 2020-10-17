@@ -12,6 +12,7 @@ import com.knziha.plod.PlainDict.PDICMainActivity;
 import com.knziha.plod.PlainDict.PDICMainAppOptions;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
+import com.knziha.plod.widgets.Utils;
 
 import android.graphics.Color;
 import android.text.SpannableStringBuilder;
@@ -182,7 +183,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			pos-=firstLookUpTable[Rgn-1];
 		int idxCount = 0;
 		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
-		for(int ti=0;ti<_combining_search_tree.length;ti++){
+		for(int ti=0;ti<_combining_search_tree.length;ti++) {
 			if(_combining_search_tree[ti]==null)
 				continue;
 			int max = _combining_search_tree[ti].size();
@@ -191,58 +192,10 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			if(pos-idxCount<max) {
 				dictIdx=Rgn;
 				mdtmp.initViewsHolder(a);
-				PDICMainActivity aa= (PDICMainActivity) a;
-				float desiredScale = -1;
-				if(a.opt.getRemPos()) {
-					ScrollerRecord pagerec;
-					if (System.currentTimeMillis() - a.lastClickTime > 400) //save our postion
-						if ((mdtmp.mWebView == null || !mdtmp.mWebView.isloading) && ADA.lastClickedPosBeforePageTurn >= 0 && a.webSingleholder.getChildCount() != 0) {
-							//ADA.avoyager.get(ADA.avoyagerIdx).set(mdtmp.mWebView.getScrollX(), mdtmp.mWebView.getScrollY(), mdtmp.webScale);
-
-							pagerec = ADA.avoyager.get(ADA.lastClickedPosBeforePageTurn);
-							if (pagerec == null) {
-								pagerec = new ScrollerRecord();
-								ADA.avoyager.put(ADA.lastClickedPosBeforePageTurn, pagerec);
-							}
-							pagerec.set(mdtmp.mWebView.getScrollX(), mdtmp.mWebView.getScrollY(), mdtmp.webScale);
-						}
-					a.lastClickTime = System.currentTimeMillis();
-
-					pagerec = ADA.avoyager.get(pos);
-
-					if (pagerec != null) {
-						mdtmp.mWebView.expectedPos = pagerec.y;
-						mdtmp.mWebView.expectedPosX = pagerec.x;
-						desiredScale = pagerec.scale;
-					} else {
-						mdtmp.mWebView.expectedPos = 0;
-						mdtmp.mWebView.expectedPosX = 0;
-					}
-					if(aa.rem_res!=R.string.rem_position_yes){
-						aa.iItem_aPageRemember.setTitle(aa.rem_res=R.string.rem_position_yes);
-					}
-				}else{
-					mdtmp.mWebView.expectedPos = 0;
-					mdtmp.mWebView.expectedPosX = 0;
-					if(aa.rem_res!=R.string.rem_position){
-						aa.iItem_aPageRemember.setTitle(aa.rem_res=R.string.rem_position);
-					}
-				}
-				mdtmp.mWebView.fromCombined=0;
-
-				ViewGroup someView = mdtmp.rl;
-				if(someView.getParent()!=a.webSingleholder) {
-					if(someView.getParent()!=null) ((ViewGroup)someView.getParent()).removeView(someView);
-					a.webSingleholder.addView(someView);
-				}
-				if(a.webSingleholder.getChildCount()>1) {
-					for(int i=a.webSingleholder.getChildCount()-1;i>=0;i--)
-					if(a.webSingleholder.getChildAt(i)!=someView) a.webSingleholder.removeViewAt(i);
-				}
-
-				if(a.opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(mdtmp.tmpIsFlag)){
-					mdtmp.mWebView.bRequestedSoundPlayback=true;
-				}
+				float desiredScale = a.prepareSingleWebviewForAda(mdtmp, null, pos, ADA);
+				
+				Utils.addViewToParentUnique(mdtmp.rl, a.webSingleholder);
+				
 				mdtmp.renderContentAt(desiredScale,Rgn,0,null, (int)(long) _combining_search_tree[ti].get(pos-idxCount));
 				mdtmp.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				mdtmp.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;

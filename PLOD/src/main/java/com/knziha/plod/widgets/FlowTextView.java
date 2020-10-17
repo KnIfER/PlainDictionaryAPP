@@ -598,6 +598,9 @@ public class FlowTextView extends View {
 	}
 	
 	public void setCompoundDrawables(Drawable StarDrawable, Drawable LeftDrawable, Drawable RightDrawable, String Tail) {
+		if(mText!=null && (!StringUtils.equals(mTail, Tail)||LeftDrawable!=mLeftDrawable)) {
+			mText="";
+		}
 		mActiveDrawable = StarDrawable;
 		mLeftDrawable = LeftDrawable;
 		mRightDrawable = RightDrawable;

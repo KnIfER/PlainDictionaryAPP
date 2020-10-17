@@ -52,8 +52,8 @@ import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
-import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymanager.files.mFile;
+import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_pdf;
 import com.knziha.plod.settings.ServerPreference;
 import com.knziha.plod.settings.SettingsActivity;
@@ -67,8 +67,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -943,7 +948,22 @@ public class Drawer extends Fragment implements
 	public void onDismiss(DialogInterface dialog) {
 		d = null;
 	}
-
+	
+	public static String getIP(Context context) throws SocketException {
+		for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+			NetworkInterface intf = en.nextElement();
+			for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();)
+			{
+				InetAddress inetAddress = enumIpAddr.nextElement();
+				if (!inetAddress.isLoopbackAddress() && (inetAddress instanceof Inet4Address))
+				{
+					return inetAddress.getHostAddress();
+				}
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		switch(buttonView.getId()) {
@@ -983,9 +1003,12 @@ public class Drawer extends Fragment implements
 					}
 					if(HeaderView2.getParent()==null) {
 						mDrawerList.addHeaderView(HeaderView2);
-						((FlowTextView)HeaderView2.findViewById(R.id.subtext)).trim=false;
-						((FlowTextView)HeaderView2.findViewById(R.id.subtext)).setText("http://192.168.0.103:8080");
 					}
+					FlowTextView ipView = (FlowTextView) HeaderView2.findViewById(R.id.subtext);
+					ipView.trim=false;
+					try {
+						ipView.setText("http://"+getIP(getContext())+":"+a.server.getListeningPort());
+					} catch (Exception ignored) { }
 				} else if(HeaderView2!=null && HeaderView2.getParent()!=null) {
 					mDrawerList.removeHeaderView(HeaderView2);
 				}

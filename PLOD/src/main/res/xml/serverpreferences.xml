@@ -15,28 +15,34 @@
 			app:allowDividerBelow="true"/>
 
 		<androidx.preference.ListPreference
-			android:defaultValue="0"
-			android:key="share_target"
-			android:persistent="false"
-			android:title="跨设备查词目标"
-			android:summary="主程序"
-			android:entryValues="@array/zero_three"
-			android:entries="@array/paste_target_info"
+			app:defaultValue="1"
+			app:key="send_to"
+			app:persistent="false"
+			app:title="跨设备查词目标"
+			app:summary="主程序"
+			app:entries="@array/paste_target_info_lite"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			/>
 
 		<androidx.preference.ListPreference
-			android:defaultValue="0"
-			android:key="share_target"
-			android:persistent="false"
-			android:title="跨设备分享目标"
-			android:summary="分享#6"
-			android:entryValues="@array/zero_three"
-			android:entries="@array/paste_target_info"
+			app:defaultValue="0"
+			app:key="share_to"
+			app:title="跨设备分享目标"
+			app:persistent="true"
+			app:summary="分享#6"
+			app:entries="@array/share_targets_hard_coded"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			/>
+
+		<Preference
+			android:persistent="false"
+			android:defaultValue="false"
+			android:key="keep"
+			android:title="后台服务"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"/>
 
 		<Preference
 			android:persistent="false"
@@ -50,7 +56,16 @@
 		<Preference
 			android:persistent="false"
 			android:defaultValue="false"
-			android:key="keep_screen"
+			android:key="port"
+			android:title="端口号"
+			android:summary="8080"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"/>
+
+		<Preference
+			android:persistent="false"
+			android:defaultValue="false"
+			android:key="white_list"
 			android:title="白名单"
 			android:summary="已开启"
 			app:allowDividerAbove="true"
@@ -60,7 +75,7 @@
 		<Preference
 			android:persistent="false"
 			android:defaultValue="false"
-			android:key="keep_screen"
+			android:key="black_list"
 			android:title="阻挡规则"
 			android:summary="部分阻挡"
 			app:allowDividerAbove="true"

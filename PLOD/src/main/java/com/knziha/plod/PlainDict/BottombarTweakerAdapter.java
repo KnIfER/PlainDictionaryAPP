@@ -265,9 +265,26 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 				checkCurrentProjectInternal(null);
 				dialog.dismiss();
 			} break;
-			case android.R.id.button2:{
-				clearCurrentProject();
-				dialog.dismiss();
+			case android.R.id.button2: {
+				if(isDirty && projectContext!=null) {
+					DialogInterface.OnClickListener ocl = (dialog, which) -> {
+						if (which == DialogInterface.BUTTON_POSITIVE) {
+							checkCurrentProjectInternal(null);
+						} else if (which == DialogInterface.BUTTON_NEGATIVE) {
+							clearCurrentProject();
+						}
+						dialog.dismiss();
+						v.performClick();
+					};
+					new AlertDialog.Builder(a)
+							.setTitle("配置已更改，是否应用？")
+							.setPositiveButton(R.string.confirm, ocl)
+							.setNegativeButton(R.string.no, ocl)
+							.setNeutralButton(R.string.cancel, ocl)
+							.create().show();
+				} else {
+					dialog.dismiss();
+				}
 			} break;
 			case android.R.id.text1:
 			case R.id.check1:{

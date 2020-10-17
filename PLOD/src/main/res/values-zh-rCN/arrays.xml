@@ -42,6 +42,7 @@
     <string-array name="dict_tweak_arr">
         <item>添加书签</item>
 	    <item>书签列表..</item>
+	    <item>分享内容 ➬</item>
 	    <item>增大字体++</item>
 	    <item>减小字体- -</item>
     </string-array>

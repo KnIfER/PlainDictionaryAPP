@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.Framer;
+import com.knziha.plod.widgets.Utils;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -278,11 +279,7 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 		super.onActivityCreated(savedInstanceState);
 		a=(MainActivityUIBase) getActivity();
 		if(GlobalOptions.isDark) {
-			try {
-				Object Scrollbar = a.ScrollCacheField.get(mRecyclerView);
-				Drawable ScrollbarDrawable = (Drawable) a.ScrollBarDrawableField.get(Scrollbar);
-				ScrollbarDrawable.setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
-			} catch (Exception e) {}
+			Utils.setListViewScrollbarColor(mRecyclerView, true);
 		}
 	}
 }  

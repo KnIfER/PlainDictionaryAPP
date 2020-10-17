@@ -24,22 +24,25 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.database.AbstractWindowedCursor;
+import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
-import android.os.Build;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.animation.Animation;
+import android.widget.AbsListView;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.ImageView;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.view.NestedScrollingChildHelper;
 
 import com.knziha.plod.PlainDict.CMN;
@@ -48,7 +51,6 @@ import com.knziha.plod.PlainDict.RebootActivity;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 import static com.knziha.filepicker.utils.FU.bKindButComplexSdcardAvailable;
 
@@ -59,12 +61,16 @@ public class Utils {
 	
 	private static int FloatTextBG = 0xffffff00;
 	
+	public final static Cursor EmptyCursor=new AbstractWindowedCursor() {
+		@Override
+		public int getCount() {
+			return 0;
+		}
+		public String[] getColumnNames() {
+			return new String[0];
+		}
+	};
 	
-	/**
-     * @param dp Desired size in dp (density-independent pixels)
-     * @param v View
-     * @return Number of corresponding density-dependent pixels for the given device
-     */
     static int getDP(int dp, View v){
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, v.getResources().getDisplayMetrics());
     }
@@ -139,26 +145,17 @@ public class Utils {
 		}
 	}
 	
-	public static class BaseAnimationListener implements Animation.AnimationListener {
-		@Override
-		public void onAnimationStart(Animation animation) {
-		
-		}
-		
-		@Override
-		public void onAnimationEnd(Animation animation) {
-		
-		}
-		
-		@Override
-		public void onAnimationRepeat(Animation animation) {
-		
-		}
-	}
-	
 	public static boolean addViewToParent(View view2Add, ViewGroup parent) {
 		if(removeIfParentBeOrNotBe(view2Add, parent, false)) {
 			parent.addView(view2Add);
+			return true;
+		}
+		return false;
+	}
+	
+	public static boolean addViewToParent(View view2Add, ViewGroup parent, int idx) {
+		if(removeIfParentBeOrNotBe(view2Add, parent, false)) {
+			parent.addView(view2Add, idx);
 			return true;
 		}
 		return false;
@@ -250,15 +247,15 @@ public class Utils {
 	}
 	
 	
-	public static void setOnClickListenersOneDepth(ViewGroup vg, View.OnClickListener clicker, int depth, Object[] viewFetcher) {
+	public static void setOnClickListenersOneDepth(ViewGroup vg, View.OnClickListener clicker, int depth, int idxStart, Object[] viewFetcher) {
 		int cc = vg.getChildCount();
 		View ca;
-		for (int i = 0; i < cc; i++) {
+		for (int i = idxStart; i < cc; i++) {
 			ca = vg.getChildAt(i);
 			//CMN.Log("setOnClickListenersOneDepth", ca, (i+1)+"/"+(cc), ca.isEnabled());
 			if(ca instanceof ViewGroup) {
 				if(--depth>0) {
-					setOnClickListenersOneDepth((ViewGroup) ca, clicker, depth, viewFetcher);
+					setOnClickListenersOneDepth((ViewGroup) ca, clicker, depth, 0, viewFetcher);
 				}
 			} else {
 				int id = ca.getId();
@@ -282,10 +279,96 @@ public class Utils {
 		}
 	}
 	
+	
+	public static class BaseAnimationListener implements Animation.AnimationListener {
+		@Override public void onAnimationStart(Animation animation) { }
+		@Override public void onAnimationEnd(Animation animation) {  }
+		@Override public void onAnimationRepeat(Animation animation) {  }
+	}
+	
 	public static class BaseAnimatorListener implements Animator.AnimatorListener {
 		@Override public void onAnimationStart(Animator animation) { }
 		@Override public void onAnimationEnd(Animator animation) {  }
 		@Override public void onAnimationCancel(Animator animation) { }
 		@Override public void onAnimationRepeat(Animator animation) { }
+	}
+	
+	
+	static Field FastScrollField;
+	static Field TrackDrawableField;
+	static Field ThumbImageViewField;
+	static Field ScrollCacheField;
+	static Field ScrollBarDrawableField;
+	
+	public static void setListViewScrollbarColor(View mListView, boolean red) {
+		try {
+			ensureScrollbarFields();
+			Object Scrollbar = ScrollCacheField.get(mListView);
+			Drawable ScrollbarDrawable = (Drawable) ScrollBarDrawableField.get(Scrollbar);
+			ScrollbarDrawable.setColorFilter(red?RED:GREY);
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+	}
+	
+	static ColorFilter RED = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+	static ColorFilter GREY = new PorterDuffColorFilter(0x8a666666, PorterDuff.Mode.SRC_IN);
+	
+	private static void ensureScrollbarFields() throws Exception {
+		if(ScrollCacheField==null) {
+			ScrollCacheField = View.class.getDeclaredField("mScrollCache");
+			ScrollCacheField.setAccessible(true);
+			ScrollBarDrawableField = Class.forName("android.view.View$ScrollabilityCache").getDeclaredField("scrollBar");
+			ScrollBarDrawableField.setAccessible(true);
+		}
+	}
+	
+	private static void ensureFastscrollFields() throws Exception{
+		if(FastScrollField==null) {
+			Class FastScrollerClass = Class.forName("android.widget.FastScroller");
+			FastScrollField = AbsListView.class.getDeclaredField("mFastScroll");
+			FastScrollField.setAccessible(true);
+			TrackDrawableField = FastScrollerClass.getDeclaredField("mTrackDrawable");
+			TrackDrawableField.setAccessible(true);
+			
+			ThumbImageViewField = FastScrollerClass.getDeclaredField("mThumbImage");
+			ThumbImageViewField.setAccessible(true);
+		}
+	}
+	
+	public static void setListViewFastColor(View...mListViews) {
+		try {
+			ensureFastscrollFields();
+			for(View mListView:mListViews) {
+				Object FastScroller = FastScrollField.get(mListView);
+				if(FastScroller!=null) {
+					ImageView ThumbImage = (ImageView) ThumbImageViewField.get(FastScroller);
+					if (ThumbImage != null) {
+						ThumbImage.setColorFilter(GREY);
+					}
+				}
+			}
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+	}
+	
+	public static void listViewStrictScroll(boolean IsStrictSCroll, ListViewmy...mListViews) {
+		try {
+			ensureFastscrollFields();
+			for(ListViewmy mListView:mListViews) {
+				if(IsStrictSCroll) {
+					Object FastScroller = FastScrollField.get(mListView);
+					if(FastScroller!=null && TrackDrawableField!=null) {
+						mListView.FastScroller = FastScroller;
+						TrackDrawableField.set(FastScroller, null);
+					}
+				} else {
+					TrackDrawableField.set(mListView, mListView.FastScroller);
+				}
+			}
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
 	}
 }

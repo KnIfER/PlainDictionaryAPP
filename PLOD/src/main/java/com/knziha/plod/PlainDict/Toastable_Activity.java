@@ -79,6 +79,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected long SFStamp;
 	protected long TFStamp;
 	protected long QFStamp;
+	protected long VFStamp;
 	protected long layoutFlagStamp;
 	public int MainBackground;
 	public int AppBlack;
@@ -132,6 +133,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		   SFStamp = opt.getSecondFlag();
 		   TFStamp = opt.getThirdFlag();
 		   QFStamp = opt.getFourthFlag();
+		   VFStamp = opt.getFifthFlag();
 	   }
 	   super.onCreate(savedInstanceState);
        if(shunt) return;
@@ -262,13 +264,14 @@ public class Toastable_Activity extends AppCompatActivity {
 			SFStamp=opt.SecondFlag();
 			TFStamp=opt.ThirdFlag();
 			QFStamp=opt.FourthFlag();
+			VFStamp=opt.FifthFlag();
 		}
 	}
 
 	protected void notifyFlagChanged() { }
 
 	protected boolean checkFlagsChanged() {
-		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.getThirdFlag()|| QFStamp!=opt.getFourthFlag();
+		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.getThirdFlag() || QFStamp!=opt.getFourthFlag() || VFStamp!=opt.getFifthFlag();
 	}
 
 	protected void checkLanguage() {

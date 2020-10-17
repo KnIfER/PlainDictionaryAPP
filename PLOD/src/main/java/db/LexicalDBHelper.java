@@ -85,12 +85,14 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 
     public boolean contains(String id) {
 		//preparedSelectExecutor.clearBindings();
-		preparedSelectExecutor.bindString(1, ""+id);
+		preparedSelectExecutor.bindString(1, id);
 		try {
 			//Log.e("preparedSelectExecutor",preparedSelectExecutor.simpleQueryForString());
 			preparedSelectExecutor.simpleQueryForString();
 			return true;
-		}catch(Exception e){}
+		} catch(Exception e) {
+			//CMN.Log(e);
+		}
 		return false;
 	}
 
@@ -112,6 +114,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	}	
 
 	public long insert(String lex) {
+    	CMN.Log("insert");
 		isDirty=true;
 		lastAdded=true;
 		ContentValues values = new ContentValues();
@@ -132,6 +135,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	}
 
 	public long insertUpdate (String lex) {
+    	CMN.Log("insertUpdate");
 		lastAdded=true;
 		long ret=-1;
 		if(!contains(lex)) {

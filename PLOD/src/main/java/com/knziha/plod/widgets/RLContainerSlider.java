@@ -143,38 +143,44 @@ public class RLContainerSlider extends FrameLayout{
 	public boolean enabled;
 
 	@Override
-	public boolean onTouchEvent(MotionEvent ev){
+	public boolean onTouchEvent(MotionEvent ev) {
 		MainActivityUIBase.layoutScrollDisabled=false;
 		if(!TurnPageEnabled) return false;
 		if(!dragged) return true;
 		int actual_index = ev.getActionIndex();
 		int touch_id = ev.getPointerId(actual_index);
-		if(!IMSlider.decided && touch_id==first_touch_id) detector.onTouchEvent(ev);
+		int actionMasked = ev.getActionMasked();
+		if(touch_id==first_touch_id) {
+			detector.onTouchEvent(ev);
+		}
 		if(isOnFlingDected) {
+			if(WebContext!=null && !bNoDoubleClick) {
+				detector = new GestureDetector(getContext(), gl);
+			}
 			dragged=isOnFlingDected=false;
 			IMSlider.decided=false;
 			return true;
 		}
 		if(IMSlider!=null){
-			switch (ev.getActionMasked()) {
-				case MotionEvent.ACTION_MOVE:{
+			switch (actionMasked) {
+				case MotionEvent.ACTION_MOVE: {
 					//CMN.Log("ACTION_MOVE", touch_id, actual_index);
-					if(first_touch_id==-1){
+					if(first_touch_id==-1) {
 						first_touch_id=touch_id;
 						OrgX = lastX = ev.getX(actual_index);
 						OrgY = lastY = ev.getY(actual_index);
 					}
 					move_index=0;
 					int pc = ev.getPointerCount();
-					if(pc>1)
+					if(pc>1) {
 						for (int i = 0; i < pc; i++) {
 							if(ev.getPointerId(i)==first_touch_id){
 								move_index = i;
 							}
 						}
+					}
 					float nowX = ev.getX(move_index);
 					float nowY = ev.getY(move_index);
-
 //						if(!dragged) {
 //							float dx = nowX - OrgX;
 //							IMSlider.OrgTX = IMSlider.getTranslationX();
@@ -186,7 +192,7 @@ public class RLContainerSlider extends FrameLayout{
 //								}
 //							}
 //						}
-					if(dragged){
+					if(dragged) {
 						IMSlider.startdrag(ev);
 						IMSlider.handleDrag(nowX-lastX,nowY-lastY);
 						if(IMSlider.inf!=null)
@@ -195,26 +201,31 @@ public class RLContainerSlider extends FrameLayout{
 					lastX = nowX;
 					lastY = nowY;
 				} break;
-				case MotionEvent.ACTION_UP:{
-					//CMN.Log("ACTION_UP", touch_id);
-					first_touch_id=-1;
-					if(dragged) {
-						dragged=false;
-						IMSlider.RePosition();
-					}
+				case MotionEvent.ACTION_UP: {
+					onActionUp();
 				} break;
-				case MotionEvent.ACTION_POINTER_UP:{
+				case MotionEvent.ACTION_POINTER_UP: {
 					//CMN.Log("ACTION_POINTER_UP??", touch_id, first_touch_id);
 					if(touch_id==first_touch_id){
 						//CMN.Log("ACTION_POINTER_UP!!!", touch_id, first_touch_id);
 						first_touch_id=-1;
 					}
-				}break;
+				} break;
 			}
 		}
 		return dragged;
 	}
-
+	
+	private void onActionUp() {
+		//CMN.Log("ACTION_UP", touch_id);
+		first_touch_id=-1;
+		if(dragged) {
+			//detector = new GestureDetector(getContext(), gl);
+			dragged=false;
+			IMSlider.RePosition();
+		}
+	}
+	
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev){
 		MainActivityUIBase.layoutScrollDisabled=false;
@@ -298,11 +309,7 @@ public class RLContainerSlider extends FrameLayout{
 					}
 				break;
 				case MotionEvent.ACTION_UP:
-					first_touch_id=-1;
-					if(dragged) {
-						dragged=false;
-						IMSlider.RePosition();
-					}
+					onActionUp();
 				break;
 			}
 		}

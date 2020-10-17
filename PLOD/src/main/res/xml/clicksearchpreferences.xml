@@ -40,12 +40,11 @@
 			android:title="使用构词库"/>
 
 		<androidx.preference.ListPreference
-			android:key="mode_cs"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="查询模式 :"
-			android:entryValues="@array/click_search_mode"
-			android:entries="@array/click_search_mode_info"
+			app:key="mode_cs"
+			app:persistent="false"
+			app:defaultValue="0"
+			app:title="查询模式 :"
+			app:entries="@array/click_search_mode_info"
 			/>
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference

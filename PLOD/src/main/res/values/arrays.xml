@@ -400,6 +400,24 @@
 		<item>@string/to_float</item>
 	</string-array>
 
+	<string-array name="paste_target_info_lite">
+		<item>复制到剪贴板</item>
+		<item>主程序</item>
+		<item>@string/to_float</item>
+		<item>多维分享</item>
+	</string-array>
+
+	<string-array name="share_targets_hard_coded">
+		<item>复制到剪贴板</item>
+		<item>多维分享</item>
+		<item>分享#1</item>
+		<item>分享#2</item>
+		<item>分享#3</item>
+		<item>分享#4</item>
+		<item>分享#5</item>
+		<item>分享#6</item>
+	</string-array>
+
 	<string-array name="d_zoom_mode_info">
 		<item>左右分栏</item>
 		<item>靠左</item>
@@ -424,12 +442,6 @@
 		<item>网页前/后导航</item>
 	</string-array>
 
-	<string-array name="click_search_mode">
-		<item>0</item>
-		<item>1</item>
-		<item>2</item>
-	</string-array>
-
 	<string-array name="click_search_mode_info">
 		<item>在当前分组中轮番查询</item>
 		<item>在当前指定的点译词库中轮番查询</item>
@@ -448,12 +460,6 @@
 		<item>顶部弹出确认</item>
 		<item>Toast确认</item>
 		<item>对话框确认</item>
-	</string-array>
-
-	<string-array name="record_slide">
-		<item>0</item>
-		<item>1</item>
-		<item>2</item>
 	</string-array>
 
 	<string-array name="record_slide_info">

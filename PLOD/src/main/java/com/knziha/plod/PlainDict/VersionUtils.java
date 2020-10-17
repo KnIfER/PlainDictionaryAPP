@@ -6,7 +6,8 @@ public class VersionUtils {
 	
 	public static void checkVersion() {
 		if(true||PDICMainAppOptions.checkVersionBefore_4_0()) {
-			PDICMainAppOptions.uncheckVersionBefore_4_0();
+			PDICMainAppOptions.setSimpleMode(false);
+			PDICMainAppOptions.uncheckVersionBefore_4_0(false);
 //			PDICMainAppOptions.setShareTarget(0);
 //			PDICMainAppOptions.setPasteTarget(1);
 //			PDICMainAppOptions.setNotifyComboRes(false);

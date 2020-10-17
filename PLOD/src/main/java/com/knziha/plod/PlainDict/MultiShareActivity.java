@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -109,13 +110,14 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	private void processIntent(Intent intent) {
-		CMN.Log(intent.getExtras());
+		//CMN.Log(intent.getExtras());
 		NewIntentCalled = true;
 		String text = null;
 		//if(intent != null)
 		text = intent.getStringExtra(Intent.EXTRA_TEXT);
 		if(text!=null) {
 			debugString = text;
+			// new Text!
 		} else if(debugString==null) {
 			debugString = StringUtils.EMPTY;
 		}
@@ -127,6 +129,12 @@ public class MultiShareActivity extends MainActivityUIBase {
 			ucc.onItemClick(null, null, VSGO, 0, false, false);
 		} else {
 			ucc.onClick(null);
+		}
+		if(debugString!=null)
+		{
+			// 动画！
+			TextView tv = ucc.d.findViewById(R.id.alertTitle);
+			tv.setText(debugString==null?"文本操作":debugString);
 		}
 	}
 	

@@ -122,6 +122,34 @@ public class  BU{//byteUtils
 			val+="0x"+byteTo16(b[i])+",";
 		SU.Log(val);
 	}
+	public static void printBytes3(byte[][] b){
+		StringBuilder val= new StringBuilder();
+		for (int j = 0; j < b.length; j++) {
+			val.append(new String(b[j])).append(",");
+			if(false) {
+				for(int i=0;i<b[j].length;i++)
+					val.append("0x").append(byteTo16(b[j][i])).append(",");
+				val.append("_");
+			}
+		}
+		SU.Log(val.toString());
+	}
+	public static void printBytes3(byte[][][] b){
+		StringBuilder val= new StringBuilder();
+		for (int k = 0; k < b.length; k++) {
+			for (int j = 0; j < b[k].length; j++) {
+				val.append(new String(b[k][j])).append(",");
+				if(false) {
+					for (int i = 0; i < b[k][j].length; i++) {
+						val.append("0x").append(byteTo16(b[k][j][i])).append(",");
+					}
+					val.append("_");
+				}
+			}
+			val.append("/");
+		}
+		SU.Log(val.toString());
+	}
     @Deprecated
     public static void printBytes(byte[] b){
     	for(int i=0;i<b.length;i++)

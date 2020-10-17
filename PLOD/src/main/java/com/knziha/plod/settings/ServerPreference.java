@@ -28,19 +28,24 @@ public class ServerPreference extends SettingsFragment implements Preference.OnP
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		findPreference("mdccsp").setOnPreferenceClickListener(this);
+		
+		//init_number_info_preference(this, "share_target", PDICMainAppOptions.getSendToShareTarget(), null, null);
+		init_number_info_preference(this, "send_to", PDICMainAppOptions.getSendToAppTarget(), 0, null);
+		
+		Preference item;
+		item = findPreference("keep");
+		item.getParent().removePreference(item);
+		item = findPreference("keep_screen");
+		item.getParent().removePreference(item);
+		item = findPreference("port");
+		item.getParent().removePreference(item);
+		item = findPreference("white_list");
+		item.getParent().removePreference(item);
+		item = findPreference("black_list");
+		item.getParent().removePreference(item);
+		
 	}
 
-
-	public static StringBuilder getCountryFlag(StringBuilder flag_code, String name) {
-		for (int i = 0; i < name.length(); i++) {
-			char cI = name.charAt(i);
-			if(cI>=0x61 && cI<=0x61+26){
-				flag_code.append("\uD83C").append((char) (0xDDE6 + cI - 0x61));
-			}else
-				flag_code.append(cI);
-		}
-		return flag_code;
-	}
 
 	//创建
 	@Override
@@ -62,9 +67,10 @@ public class ServerPreference extends SettingsFragment implements Preference.OnP
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		switch (preference.getKey()){
-			case "enable_pastebin":
-				//PDICMainAppOptions.setShowPasteBin((Boolean) newValue);
-			break;
+			case "send_to": {
+				PDICMainAppOptions.setSendToAppTarget(IU.parsint(newValue, 1));
+				CMN.Log("send_to", newValue, PDICMainAppOptions.getSendToAppTarget());
+			} break;
 		}
 		return true;
 	}

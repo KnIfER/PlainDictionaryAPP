@@ -36,6 +36,7 @@ public class DHBroswer extends DBroswer {
 	}
 
 	protected void loadInAll(MainActivityUIBase a) {
+		CMN.Log("load in all!!!");
 		cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
 		mCards_size = cr.getCount();
 		itemCount = mCards_size;
@@ -43,7 +44,7 @@ public class DHBroswer extends DBroswer {
 		//lv.post(mPullViewsRunnable);
 		int offset = 0;
 		lastFirst = 0;
-		if(true){
+		if(false){
 			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
 			if(lcibdfn!=null){
 				lastFirst = Math.min(lcibdfn.key, mCards_size);
@@ -53,7 +54,8 @@ public class DHBroswer extends DBroswer {
 		if(getDelayPullData()) {
 			itemCount = lastFirst;
 			lv.post(mPullViewsRunnable);
-		} else {
+		}
+		else {
 			itemCount = mCards_size;
 		}
 		String name = CMN.unwrapDatabaseName(mLexiDB.DATABASE);
@@ -61,6 +63,7 @@ public class DHBroswer extends DBroswer {
 		show(R.string.maniFavor2,name,mCards_size);
 		mAdapter.notifyDataSetChanged();
 		lm.scrollToPositionWithOffset(lastFirst,offset);
+		mLexiDB.lastAdded = false;
 	}
 
 	@Override

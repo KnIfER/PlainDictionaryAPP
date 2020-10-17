@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.LinearLayout;
 
-
 public class SplitViewGuarder extends View implements OnTouchListener{
 	/*Oh, dear splitview, please let me guard you! */
 	public ArrayList<SplitView> SplitViewsToGuard = new ArrayList<>();
@@ -24,8 +23,7 @@ public class SplitViewGuarder extends View implements OnTouchListener{
         init();
     }
 
-    public SplitViewGuarder(Context context, AttributeSet attrs,
-                                int defStyle) {
+    public SplitViewGuarder(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
     }
@@ -91,5 +89,4 @@ public class SplitViewGuarder extends View implements OnTouchListener{
 		
 		return false;
 	}
-
 }

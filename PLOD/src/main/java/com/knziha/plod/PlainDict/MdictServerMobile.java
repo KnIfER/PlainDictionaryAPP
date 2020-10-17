@@ -89,11 +89,11 @@ public class MdictServerMobile extends MdictServer {
 	
 	@Override
 	protected void handle_search_event(Map<String, List<String>> parameters, InputStream inputStream) {
-		CMN.Log("接到了接到了");
+		//CMN.Log("接到了接到了");
 		List<String> target = parameters.get("f");
 		if(target!=null && target.size()>0) {
 			int sharetype = IU.parsint(target.get(0));
-			CMN.Log("sharetype", sharetype);
+			//CMN.Log("sharetype", sharetype);
 			byte[] data;
 			try {
 				data = new byte[inputStream.available()];
@@ -104,13 +104,29 @@ public class MdictServerMobile extends MdictServer {
 			String text = new String(data);
 			a.root.post(() -> {
 				if(sharetype==2) {
-					a.execVersatileShare(text, 5);
+					a.execVersatileShare(text, opt.getSendToShareTarget());
 				} else {
-					a.etSearch.setText(text);
-					a.etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
-					if(!a.focused) {
-						ActivityManager manager = (ActivityManager) a.getSystemService(Context.ACTIVITY_SERVICE);
-						if(manager!=null) manager.moveTaskToFront(a.getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
+					switch (PDICMainAppOptions.getSendToAppTarget())
+					{
+						case 0:
+							a.execVersatileShare(text, 0);
+						break;
+						case 1:
+						{
+							a.etSearch.setText(text);
+							a.etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
+							if(!a.focused) {
+								ActivityManager manager = (ActivityManager) a.getSystemService(Context.ACTIVITY_SERVICE);
+								if(manager!=null) manager.moveTaskToFront(a.getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
+							}
+						} break;
+						case 2:
+						{
+							a.JumpToFloatSearch(text);
+						} break;
+						case 3:
+							a.execVersatileShare(text, 1);
+						break;
 					}
 				}
 			});

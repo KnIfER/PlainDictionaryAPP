@@ -217,14 +217,16 @@
 						android:background="@drawable/surrtrip1"
 						android:clickable="true"
 						android:src="@drawable/back_ic" />
-					<android.widget.ImageView
+					<com.knziha.plod.widgets.ActivatableImageView
 						android:id="@+id/browser_widget8"
 						android:layout_width="wrap_content"
 						android:layout_height="match_parent"
 						android:layout_weight="1"
 						android:background="@drawable/surrtrip1"
 						android:clickable="true"
-						android:src="@drawable/star_ic" />
+						android:src="@drawable/star_ic"
+						app:src0="@drawable/star_ic_solid"
+						/>
 					<android.widget.ImageView
 						android:id="@+id/browser_widget9"
 						android:layout_width="wrap_content"

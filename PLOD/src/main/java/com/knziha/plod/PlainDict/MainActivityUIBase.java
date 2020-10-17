@@ -87,7 +87,6 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -249,6 +248,7 @@ import db.MdxDBHelper;
 import static com.bumptech.glide.util.Util.isOnMainThread;
 import static com.knziha.plod.PlainDict.CMN.AssetMap;
 import static com.knziha.plod.PlainDict.CMN.AssetTag;
+import static com.knziha.plod.PlainDict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.PlainDict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.dictionarymodels.mdict.indexOf;
 import static com.knziha.plod.slideshow.PdfPic.MaxBitmapRam;
@@ -614,26 +614,37 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(size>0) {
 			if(i<0||i>=size) {
 				if(prvNxt) {
-					//showT("没有更多了");
-					//return true;
+					boolean rejected=false;
 					String msg = "没有更多了";
-					//String msg = getResources().getString(R.string.search_end, d < 0 ? "⬆" : "", d > 0 ? "⬇" : "");
-					//showTopSnack(getContentviewSnackHolder(), msg, 0.75f, -1, Gravity.CENTER, 0);
-					if(i<0) {
-						msg = "⬆ "+msg;
-						i=size-1;
+					if(++prvNxtABC.沃壳积>=md.size()) {
+						msg = "真的"+msg;
+						rejected=true;
+					} else {
+						if(i<0) {
+							msg = "⬆ "+msg;
+							i=size-1;
+						}
+						else {
+							msg = msg+" ⬇";
+							i=0;
+						}
+						if(prvNxtABC.collide()) { // pass
+							CMN.Log("collide");
+						} else { // snack and return
+							rejected=true;
+						}
 					}
-					else {
-						msg = msg+" ⬇";
-						i=0;
-					}
-					//prvNxt=false;
-					if(!prvNxtABC.acrossed) {
-						prvNxtABC.acrossed=true;
-						showTopSnack(getContentviewSnackHolder(), msg, 0.75f, -1, Gravity.CENTER, 0);
+					if(rejected) {
+						prvNxtABC.dump();
+						ViewGroup sv = getContentviewSnackHolder();
+						if(this_instanceof_PDICMainActivity && !isContentViewAttached()) {
+							sv = main_succinct;
+						}
+						showTopSnack(sv, msg, 0.75f, -1, Gravity.CENTER, 0);
 						return true;
 					}
-				} else {
+				}
+				else {
 					if(i<0) i=0;
 					else i=size-1;
 				}
@@ -1190,10 +1201,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void HandleLocateTextInPage(String content) {
-		if(PeruseViewAttached())
+		if(PeruseViewAttached()) {
 			PeruseView.prepareInPageSearch(content, true);
-		else
+		} else {
 			prepareInPageSearch(content, true);
+		}
+		
 	}
 
 	void HandleSearch(String content) {
@@ -1613,7 +1626,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 							currentClickDisplaying = popupKey;
 							decorateContentviewByKey(popupStar, currentClickDisplaying);
-							if (!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy10())
+							if (!PDICMainAppOptions.getHistoryStrategy0()
+									&& PDICMainAppOptions.getHistoryStrategy7())
 								insertUpdate_histroy(popupKey);
 						}
 
@@ -2162,6 +2176,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mAutoReadProgressView.getParent()==null){
 				d.findDrawableByLayerId(android.R.id.background).setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
 				d.findDrawableByLayerId(android.R.id.progress).setColorFilter(ColorUtils.blendARGB(MainBackground, Color.BLACK, 0.28f), PorterDuff.Mode.SRC_IN);
+			}
+			if(PeruseViewAttached()) {
+				PeruseView.prepareProgressBar(mAutoReadProgressView);
+			} else {
 				contentviewAddView(mAutoReadProgressView, 0);
 			}
 			mAutoReadProgressAnimator.start();
@@ -2229,8 +2247,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		hdl.removeMessages(332211);
 		if(mAutoReadProgressAnimator!=null){
 			mAutoReadProgressAnimator.pause();
-			if(mAutoReadProgressView.getParent()!=null)
-				((ViewGroup)mAutoReadProgressView.getParent()).removeView(mAutoReadProgressView);
+			Utils.removeIfParentBeOrNotBe(mAutoReadProgressView, null, false);
 		}
 	}
 
@@ -2350,7 +2367,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void closeIfNoActionView(MenuItemImpl mi) {
-		if(mi!=null && !mi.isActionButton()) toolbar.getMenu().close();
+		if(mi!=null && !mi.isActionButton()) AllMenus.close();
 	}
 
 
@@ -2711,7 +2728,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		findViewById(R.id.pad).setOnClickListener(Utils.DummyOnClick);
 
 		if(isCombinedSearching) {
-			toolbar.getMenu().findItem(R.id.toolbar_action1).setIcon((ContextCompat.getDrawable(this,R.drawable.ic_btn_multimode)));
+			AllMenus.findItem(R.id.toolbar_action1).setIcon(R.drawable.ic_btn_multimode);
 		}
 		//if(opt.isShowDirectSearch()) ((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action2)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
@@ -2725,12 +2742,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		webholder = WHP.findViewById(R.id.webholder);
 		IMPageCover = PageSlider.findViewById(R.id.cover);
 		mBar = PageSlider.findViewById(R.id.dragScrollBar);
-		widget14 = PageSlider.findViewById(R.id.browser_widget14);
-		widget13 = PageSlider.findViewById(R.id.browser_widget13);
+		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
+		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
 		
 		CMN.Log("findFurtherViews...", webholder);
 		
-		mBar = PageSlider.findViewById(R.id.dragScrollBar);
 		mBar_layoutParmas = (FrameLayout.LayoutParams) mBar.getLayoutParams();
 		mBar.setOnProgressChangedListener(_mProgress -> {
 			if(PageSlider==null) return;
@@ -2746,9 +2762,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		webcontentlist.setPageSliderInf(inf);
 		
 		bottombar2.setBackgroundColor(MainBackground);
-		
-		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
-		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
 		
 		boolean tint = PDICMainAppOptions.getTintIconForeground();
 		for (int i = 0; i < 6; i++) {
@@ -3308,41 +3321,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	protected void insertUpdate_histroy(String key) {
-		prepareHistroyCon().insertUpdate(key);
-	}
-
-	Field FastScrollField;
-	Field TrackDrawableField;
-	Field ThumbImageViewField;
-	Field ScrollCacheField;
-	Field ScrollBarDrawableField;
-	public void listViewStrictScroll(ListView lv,boolean whetherStrict) {
-		try {
-			if(FastScrollField==null) {
-				Class FastScrollerClass = Class.forName("android.widget.FastScroller");
-				FastScrollField = AbsListView.class.getDeclaredField("mFastScroll");
-				FastScrollField.setAccessible(true);
-				TrackDrawableField = FastScrollerClass.getDeclaredField("mTrackDrawable");
-				TrackDrawableField.setAccessible(true);
-
-				ThumbImageViewField = FastScrollerClass.getDeclaredField("mThumbImage");
-				ThumbImageViewField.setAccessible(true);
-			}
-
-
-			Object FastScroller = FastScrollField.get(lv);
-
-			if(whetherStrict && TrackDrawableField!=null)//ok,being lazy...
-				TrackDrawableField.set(FastScroller, null);
-
-			if(ScrollCacheField==null) {
-				ScrollCacheField = View.class.getDeclaredField("mScrollCache");
-				ScrollCacheField.setAccessible(true);
-
-				ScrollBarDrawableField = Class.forName("android.view.View$ScrollabilityCache").getDeclaredField("scrollBar");
-				ScrollBarDrawableField.setAccessible(true);
-			}
-		} catch (Exception ignored) {}
+		if(key!=null) {
+			key = key.trim();
+		}
+		if(key.length()>0) {
+			prepareHistroyCon().insertUpdate(key);
+		}
 	}
 	
 	public static mdict new_mdict(String pathFull, MainActivityUIBase THIS) throws IOException {
@@ -4018,13 +4002,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							});
 						}
 						break;
+						/* 分享内容 */
+						case 2:{
+						
+						} break;
 						/* 文字缩放级别 */
-						case 2:
-						case 3: {
+						case 3:
+						case 4: {
 							if (isLongClicked) {
 								int targetLevel = invoker.getFontSize();
 								switch (position) {
-									case 2:
+									case 3:
 										if (targetLevel < mdict.optimal100) {
 											_mWebView.getSettings().setTextZoom(targetLevel = mdict.optimal100);
 										} else if (targetLevel < 500) {
@@ -4032,7 +4020,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										} else
 											targetLevel = -1;
 										break;
-									case 3:
+									case 4:
 										if (targetLevel > mdict.optimal100) {
 											_mWebView.getSettings().setTextZoom(targetLevel = mdict.optimal100);
 										} else if (targetLevel > 10) {
@@ -4489,7 +4477,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				cb = decorateCheckBox(bottomView.findViewById(R.id.check1), getPinVSDialog(), 0);
 				
 				Object[] items = new Object[]{R.id.iv_switch, R.id.color, R.id.settings, R.id.lock};
-				Utils.setOnClickListenersOneDepth(bottomView, this, 999, items);
+				Utils.setOnClickListenersOneDepth(bottomView, this, 999, 0, items);
 				iv_switch = (ImageView) items[0];
 				iv_color = (ImageView) items[1];
 				iv_settings = (ImageView) items[2];
@@ -4574,7 +4562,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			if(!bFromTextView){
 				StringBuilder sb = invoker.appendCleanDictionaryName(null);
-				String text = bFromPeruseView ? PeruseView.currentDisplaying : invoker.currentDisplaying;
+				String text = bFromPeruseView ? PeruseView.currentDisplaying() : invoker.currentDisplaying;
 				if(!TextUtils.isEmpty(text)) {
 					sb.append(" - ").append(text);
 				}
@@ -4661,14 +4649,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	static int[] VersatileShareSlots = new int[]{7,9,10,18,20,21};
 	
 	public void execVersatileShare(String text, int id) {
-		if(id==5) {
+		CMN.Log("execVersatileShare", id);
+		if(id==0) {
 			ClipboardManager clipboard = (ClipboardManager) getSystemService(Activity.CLIPBOARD_SERVICE);
 			clipboard.setPrimaryClip(ClipData.newPlainText("PLOD", text));
 			showT("已复制！");
 			return;
 		}
-		getUcc().setInvoker(null, null, null, text);
-		getUcc().execVersatileShare(false, VersatileShareSlots[id]);
+		if(id==1) {
+			startActivity(new Intent(this, MultiShareActivity.class)
+					.setFlags(SingleTaskFlags).putExtra(Intent.EXTRA_TEXT, text));
+			return;
+		}
+		id-=2;
+		if(id>=0&&id<=5)
+		{
+			getUcc().setInvoker(null, null, null, text);
+			getUcc().execVersatileShare(false, VersatileShareSlots[id]);
+		}
 	}
 	
 	private JSONObject packoutNeoJson(ArrayList<String> data) throws JSONException {
@@ -5327,8 +5325,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	class AcrossBoundaryContext {
-		//boolean bounded;
-		boolean acrossed;
+		int initiatorIdx;
+		int initiatorDir;
+		int rejectIdx;
+		int rejectDir;
+		int 沃壳积;
+		public boolean collide() {
+			return initiatorIdx==rejectIdx&&initiatorDir==rejectDir;
+		}
+		public void dump() {
+			rejectIdx=initiatorIdx;
+			rejectDir=initiatorDir;
+		}
 	}
 	AcrossBoundaryContext PrvNxtABC = new AcrossBoundaryContext();
 	
@@ -5367,9 +5375,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(CurrentViewPage==1) {
 						int delta = (id == R.id.prv_dict ? -1 : 1);
 						int testVal = adapter_idx;
+						PrvNxtABC.initiatorIdx=testVal;
+						PrvNxtABC.initiatorDir=delta;
+						PrvNxtABC.沃壳积 =0;
 						while(!switch_To_Dict_Idx(adapter_idx+delta, true, false, PrvNxtABC));
-						if(testVal!=adapter_idx) {
-							PrvNxtABC.acrossed=false;
+						if(PrvNxtABC.collide() && testVal!=adapter_idx) { // rejected
+							switch_To_Dict_Idx(testVal, true, false, null);
+						}
+						if(testVal!=adapter_idx&&PrvNxtABC.rejectIdx>=0) { // not rejected
+							PrvNxtABC.rejectIdx=-1;
 							cancleSnack();
 						}
 						if(currentDictionary!=null) {
@@ -5463,7 +5477,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					popupWebView.fromCombined=2;
 					CCD.renderContentAt(-1, CCD_ID, -1, popupWebView, currentClickDictionary_currentPos=np);
 					decorateContentviewByKey(popupStar, currentClickDisplaying);
-					if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy10() && PDICMainAppOptions.getHistoryStrategy11())
+					if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy8()==0)
 						insertUpdate_histroy(currentClickDisplaying);
 				}
 			} break;
@@ -5661,15 +5675,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						THIS.drawerFragment.d.dismiss();
 					}
 				}
-				if(PeruseViewAttached()) {
-					View _contentview = PeruseView.contentview;
-					ViewGroup _p_contentview = (ViewGroup) _contentview.getParent();
-					if(_p_contentview==PeruseView.slp || _p_contentview==PeruseView.mlp) {
-						_p_contentview.removeView(_contentview);
-						PeruseView.cvpolicy=false;
-						PeruseView.ActivedAdapter=null;
-						break;
-					}
+				if(PeruseViewAttached() && PeruseView.removeContentViewIfAttachedToRoot()) {
+					break;
 				}
 				if(b1){
 					onBackPressed();
@@ -5732,10 +5739,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 切换收藏 */
 			case R.id.browser_widget8: {//favorite
 				if(ActivedAdapter==null){
-					if(DBrowser!=null)
+					if(DBrowser!=null) {
 						DBrowser.toggleFavor();
+					}
 				} else {
-					String key = ActivedAdapter.currentKeyText.trim();
+					CMN.Log("ActivedAdapter", ActivedAdapter);
+					String key = ActivedAdapter.currentKeyText;
 					if (prepareFavoriteCon().contains(key)) {
 						favoriteCon.remove(key);
 						v.setActivated(false);
@@ -6043,7 +6052,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.browser_widget8:{
 				String text=null;
 				if(PeruseViewAttached())
-					text=PeruseView.currentDisplaying;
+					text=PeruseView.currentDisplaying();
 				else if(DBrowser!=null)
 					text=DBrowser.currentDisplaying;
 				else if(ActivedAdapter!=null)
@@ -7120,8 +7129,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 
-		public void  onScaleChanged(WebView view, float oldScale,float newScale)
-		{
+		public void  onScaleChanged(WebView view, float oldScale,float newScale) {
 			//CMN.Log(oldScale, "-", newScale, " newScale");
 			int selfAtIdx = (int)view.getTag();
 			if(selfAtIdx>=md.size() || selfAtIdx<0) return;
@@ -7130,7 +7138,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			WebViewmy mWebView = ((WebViewmy)view);
 			mWebView.webScale=newScale;
 			if(view==invoker.mWebView) {
-				invoker.webScale = newScale;
+				invoker.webScale = newScale; //sync
 			}
 		}
 
@@ -9549,7 +9557,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	
 	SparseIntArray mergedKeyHeaders = new SparseIntArray();
 	private int TotalMergedKeyCount;
 	private int ConfidentMergeShift;
@@ -9632,5 +9639,143 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		CTANIMA.reset();
 		return CTANIMA;
+	}
+	
+	class SaveAndRestorePagePosDelegate {
+		public float SaveAndRestoreSinglePageForAdapter(WebViewmy webview, int pos, BasicAdapter ADA) {
+			//CMN.Log("SaveAndRestoreSinglePageForAdapter...");
+			float ret = -1;
+			ScrollerRecord pagerec;
+			OUT: //save our postion
+			if(System.currentTimeMillis()-lastClickTime>300/*400*/ && !webview.isloading
+					&& ADA.lastClickedPosBeforePageTurn>=0
+					&& (ADA.webviewHolder.getChildCount()!=0 /*|| false todo 开放连续的历史纪录 ?*/)) {
+				if(webview.webScale==0) {
+					webview.webScale=dm.density;//sanity check
+				}
+				//avoyager.set(avoyagerIdx,(int) (current_webview.getScrollY()/(current.webScale/dm.density)));
+				
+				pagerec = ADA.avoyager.get(ADA.lastClickedPosBeforePageTurn);
+				if(pagerec==null) {
+					if(webview.getScrollX()!=0 || webview.getScrollY()!=0 ||webview.webScale!=mdict.def_zoom) {
+						pagerec=new ScrollerRecord();
+						ADA.avoyager.put(ADA.lastClickedPosBeforePageTurn, pagerec);
+					} else {
+						break OUT;
+					}
+				}
+				
+				pagerec.set(webview.getScrollX(), webview.getScrollY(),webview.webScale);
+				//showT("保存位置");
+				//CMN.Log("保存位置 "+ webview.getScrollY());
+			}
+			
+			lastClickTime=System.currentTimeMillis();
+			
+			pagerec = ADA.avoyager.get(pos);
+			if(pagerec!=null) {
+				webview.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				webview.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				ret=pagerec.scale;
+				//CMN.Log(avoyager.size()+"~"+pos+"~取出旧值"+current.expectedPos+" scale:"+avoyager.get(pos).scale);
+			} else {
+				webview.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				webview.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+			}
+			//showT(""+current.expectedPos);
+			return ret;
+		}
+		
+		public void SaveAndRestorePagesForAdapter(BasicAdapter ADA, int pos) {
+			resultRecorderDiscrete combining_search_result = ADA.combining_search_result;
+			ScrollerRecord pagerec;
+			OUT:
+			if (((resultRecorderCombined) combining_search_result).scrolled
+					&& ADA.lastClickedPosBeforePageTurn >= 0
+					&& System.currentTimeMillis() - lastClickTime > 300) {
+				//CMN.Log("save our postion", lastClickedPosBeforePageTurn, WHP.getScrollY());
+				pagerec = ADA.avoyager.get(ADA.lastClickedPosBeforePageTurn);
+				if (pagerec == null) {
+					if (WHP.getScrollY() != 0) {
+						pagerec = new ScrollerRecord();
+						ADA.avoyager.put(ADA.lastClickedPosBeforePageTurn, pagerec);
+					} else
+						break OUT;
+				}
+				pagerec.set(0, WHP.getScrollY(), 1);
+				//CMN.Log("保存位置", lastClickedPosBeforePageTurn);
+			}
+			
+			lastClickTime = System.currentTimeMillis();
+			
+			pagerec = ADA.avoyager.get(pos);
+			if (pagerec != null) {
+				combining_search_result.expectedPos = pagerec.y;
+				//currentDictionary.mWebView.setScrollY(currentDictionary.expectedPos);
+				//CMN.Log("取出旧值", combining_search_result.expectedPos, pos, avoyager.size());
+			} else {
+				combining_search_result.expectedPos = 0;
+				//CMN.Log("新建", combining_search_result.expectedPos, pos);
+			}
+		}
+		
+		public void SaveVOA(WebViewmy current_webview, BasicAdapter ADA) {
+			ScrollerRecord pagerec;
+			long deltaT = System.currentTimeMillis() - lastClickTime;
+			if (ADA == adaptermy2) {
+				if (deltaT > 400 && ADA.lastClickedPos >= 0) {
+					//avoyager.set(avoyagerIdx, WHP.getScrollY());
+					pagerec = ADA.avoyager.get(ADA.lastClickedPos);
+					if (pagerec == null && WHP.getScrollY() != 0) {
+						pagerec = new ScrollerRecord();
+						ADA.avoyager.put(ADA.lastClickedPos, pagerec);
+					}
+					if (pagerec != null) {
+						pagerec.set(0, WHP.getScrollY(), 1);
+					}
+					//CMN.Log("保存位置(回退)", lastClickedPos, WHP.getScrollY());
+				}
+			}
+			else {
+				if (current_webview != null
+						&& deltaT > 300
+						&& !current_webview.isloading //
+						&& ADA.lastClickedPos >= 0
+						&& ADA.webviewHolder.getChildCount() != 0 ) {
+					if (current_webview.webScale == 0) current_webview.webScale = dm.density;//sanity check
+					pagerec = ADA.avoyager.get(ADA.lastClickedPos);
+					if(current_webview.SavePagePosIfNeeded(pagerec)) {
+						ADA.avoyager.put(ADA.lastClickedPos, pagerec);
+					}
+					//CMN.Log("回退前暂存位置 ", current_webview.getScrollX(), current_webview.getScrollY(), currentDictionary.webScale);
+				}
+			}
+			lastClickTime = System.currentTimeMillis();
+		}
+	}
+	
+	public float prepareSingleWebviewForAda(mdict current, WebViewmy current_webview, int pos, BasicAdapter Ada) {
+		if(current_webview==null) {
+			current_webview = current.mWebView;
+		}
+		float ret=-1;
+		if(opt.getRemPos() && !Ada.shunt) {
+			ret = new SaveAndRestorePagePosDelegate().SaveAndRestoreSinglePageForAdapter(current_webview, pos, Ada);
+		} else {
+			current_webview.expectedPos=0;
+			current_webview.expectedPosX=0;
+			bRequestedCleanSearch=false;
+		}
+		
+		if(opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(current.tmpIsFlag)
+				||!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething())
+			current_webview.bRequestedSoundPlayback=true;
+		
+		current_webview.fromCombined=0;
+		
+		if(opt.getInheritePageScale())
+			ret=current_webview.webScale;
+		
+		return ret;
 	}
 }

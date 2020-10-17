@@ -1805,7 +1805,7 @@ public class mdict extends mdBase{
 							_key_block_compressed_many=null;
 						}
 						catch (Exception e1) {
-							e1.printStackTrace();
+							SU.Log(e1);
 							if(e1 instanceof SyntaxException){
 								SearchLauncher.IsInterrupted =true;
 								SearchLauncher.ErrorMessage=e1.getMessage();
@@ -1842,6 +1842,10 @@ public class mdict extends mdBase{
 		boolean trimStart = fromIndex==0 && (jumpMap[matchers.length]&1)!=0;
 		int hudieling;
 		//if(true) checkEven=0;
+//		boolean debug=false;
+//		if(new String(source, sourceOffset, sourceCount, _charset).equals("democracy")) {
+//			SU.Log("正在搜索"); debug=true;
+//		}
 		while(fromIndex<sourceCount) {
 			//SU.Log("==");
 			//int idx = -1;
@@ -1852,9 +1856,11 @@ public class mdict extends mdBase{
 			int lexiPartIdx;
 			for(lexiPartIdx=marcherOffest;lexiPartIdx<totalLen;lexiPartIdx++) {
 				//if(fromIndex_>sourceCount-1) return -1;
-				//SU.Log("stst: "+sourceCount+"::"+(fromIndex_+seekPos)+" fromIndex_: "+fromIndex_+" seekPos: "+seekPos+" lexiPartIdx: "+lexiPartIdx);
-				//SU.Log("seekPos: "+seekPos+" lexiPartIdx: "+lexiPartIdx+" fromIndex_: "+fromIndex_);
 				hudieling = jumpMap[lexiPartIdx];
+//				if(debug) {
+//					SU.Log("stst: " + sourceCount + "::" + (fromIndex_ /*+ seekPos*/) + " fromIndex_: " + fromIndex_/* + " seekPos: " + seekPos*/ + " lexiPartIdx: " + lexiPartIdx);
+//					SU.Log("hudieling::"+hudieling, "isSeeking::"+isSeeking, /*"seekPos: " + seekPos + */" lexiPartIdx: " + lexiPartIdx + " fromIndex_: " + fromIndex_);
+//				}
 				if(hudieling>0) {
 					if(lexiPartIdx==totalLen-1) {
 						if(fromIndex_>=sourceCount)
@@ -1888,12 +1894,10 @@ public class mdict extends mdBase{
 				if(isSeeking) {
 					int seekPos=-1;
 					int	newSeekPos = kalyxIndexOf(source, sourceOffset, sourceCount, matchers[lexiPartIdx], fromIndex_, flag);
-					//if(newSeekPos>=0)
-					//SU.Log("newSeekPos", newSeekPos);
+//					if(debug) SU.Log("newSeekPos", newSeekPos, checkEven);
 					if(newSeekPos>=fromIndex_){
 						//todo verify first match
 						pass = true;
-						//if(false)
 						lastSeekLetSize = matchers[lexiPartIdx][flag.val].length;
 						if (checkEven != 0 ) {//zzz
 							if((len = newSeekPos - fromIndex_) != 0) {
@@ -1987,7 +1991,7 @@ public class mdict extends mdBase{
 							continue;
 						}
 					}
-					//SU.Log("seekPos:"+seekPos+" fromIndex_: "+fromIndex_);
+//					if(debug)SU.Log("seekPos:"+seekPos+" fromIndex_: "+fromIndex_, Matched);
 					if(!Matched)
 						return -1;
 					seekPos+=lastSeekLetSize;
@@ -1996,22 +2000,22 @@ public class mdict extends mdBase{
 					continue;
 				}/* End seek */
 				else {
-					//SU.Log("deadline"+fromIndex_+" "+sourceCount);
+//					if(debug)SU.Log("deadline", fromIndex_+" "+sourceCount);
 					if(fromIndex_>sourceCount-1) {
-						//if(GlobalOptions.debug) SU.Log("deadline reached"+fromIndex_+" "+sourceCount);
+//						if(debug)SU.Log("deadline reached"+fromIndex_+" "+sourceCount, new String(source, sourceOffset, sourceCount, _charset));
 						return -1;
 					}
-//					if(GlobalOptions.debug) {
-//						SU.Log("matchedHonestily? ", lexiPartIdx, launcher.mParallelKeys[lexiPartIdx].get(0));
-//						CMN.Log("matchedHonestily? str", new String(source, sourceOffset+fromIndex_, 100, _charset));
+//					if(debug) {
+//						SU.Log("matchedHonestily? ", lexiPartIdx, mParallelKeys.get(lexiPartIdx));
+//						SU.Log("matchedHonestily? str", new String(source, sourceOffset+fromIndex_, 100, _charset), bingStartWith(source,sourceOffset, sourceCount, matchers[lexiPartIdx][0],0,matchers[lexiPartIdx][0].length,fromIndex_));
 //					}
 					for(byte[] marchLet:matchers[lexiPartIdx]) {
 						if(marchLet==null) break;
 						if(bingStartWith(source,sourceOffset, sourceCount, marchLet,0,marchLet.length,fromIndex_)) {
 							Matched=true;
-//							if(GlobalOptions.debug) {
+//							if(debug) {
 //								SU.Log("matchedHonestily: ", sourceCount, "::", " fromIndex_: ", fromIndex_ + " seekPos: ");
-//								SU.Log("matchedHonestily: ", lexiPartIdx, launcher.mParallelKeys[lexiPartIdx].get(0));
+//								SU.Log("matchedHonestily: ", lexiPartIdx, mParallelKeys.get(lexiPartIdx));
 //							}
 							fromIndex_+=marchLet.length;
 							break;
@@ -2130,8 +2134,10 @@ public class mdict extends mdBase{
 							int len = matcher[j][k].length;
 							int[] jumpMap = (int[]) mParallelKeys.get(len);
 							try_idx = flowerIndexOf(key_block, key_start_index+_number_width, key_end_index-(key_start_index+_number_width), matcher[j][k], 0, 0, SearchLauncher, flag, mParallelKeys, jumpMap);
-							//SU.Log("and_group>>"+j, "or_group#"+k, try_idx, nna);
-							if (try_idx < 0 ^ (jumpMap[len] & 4) == 0) break;
+							//SU.Log("and_group>>"+j, "or_group#"+k, try_idx);
+							//BU.printBytes3(matcher[j][k]);
+							//if (try_idx < 0 ^ (jumpMap[len] & 4) == 0) break;
+							if (try_idx >= 0) break;
 						}
 						if (try_idx < 0) {
 							break;
@@ -2142,7 +2148,7 @@ public class mdict extends mdBase{
 				}
 
 				if(try_idx!=-1){
-					//复核 re-collate
+					//SU.Log("复核 re-collate");
 					if(false)
 					if (keyPattern != null){
 						String LexicalEntry = new String(key_block, key_start_index + _number_width, key_end_index - (key_start_index + _number_width), _charset);
@@ -2467,7 +2473,7 @@ public class mdict extends mdBase{
 	}
 
 	static boolean bingStartWith(byte[] source, int sourceOffset, int sourceCount,byte[] target, int targetOffset, int targetCount, int fromIndex) {
-		if (fromIndex >= sourceCount || targetCount+fromIndex >= sourceCount) { // || targetCount+fromIndex>=sourceCount || fromIndex>=sourceCount
+		if (fromIndex >= sourceCount || targetCount+fromIndex > sourceCount) { // || targetCount+fromIndex>=sourceCount || fromIndex>=sourceCount
 			return false;
 		}
 		//if(targetCount<=-1)

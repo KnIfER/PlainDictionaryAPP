@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -260,11 +261,11 @@ public class DBroswer extends Fragment implements
 				return true;
 			}});
 		
-		Utils.setOnClickListenersOneDepth(sideBar=_main_clister_layout.findViewById(R.id.sideBar), this, 2, null);
+		Utils.setOnClickListenersOneDepth(sideBar=_main_clister_layout.findViewById(R.id.sideBar), this, 2, 0, null);
 		
 		toolbar_action1=_main_clister_layout.findViewById(R.id.toolbar_action1);
+		toolbar_action1.setColorFilter(GlobalOptions.BLACK);
 		
-		//toolbar_action1.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 		tg2 = _main_clister_layout.findViewById(R.id.tg2);
 		//main_clister_layout.findViewById(R.id.choosed).setOnLongClickListener(this);
 
@@ -342,6 +343,7 @@ public class DBroswer extends Fragment implements
 	@Override
 	public void onDetach(){
 		super.onDetach();
+		CMN.Log("on browser detach", cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0);
 		if(cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0) {
 			View v = lv.getChildAt(0);
 			((AgentApplication)getActivity().getApplication()).putLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE, lm.findFirstVisibleItemPosition(), v==null?0:v.getTop());
@@ -456,7 +458,9 @@ public class DBroswer extends Fragment implements
 			if(bg!=null) {
 				bg.setColorFilter(cs_dbr_sidbr);
 			}
-			if(cI instanceof ImageView) {
+			if(cI==toolbar_action1 && cs_dbr_sidbr==null) {
+				toolbar_action1.setColorFilter(GlobalOptions.BLACK);
+			} else if(cI instanceof ImageView) {
 				((ImageView)cI).setColorFilter(cs_dbr_sidbr);
 			}
 		}
@@ -1459,20 +1463,20 @@ public class DBroswer extends Fragment implements
 										if(lastDictionary!=null) {
 											WebViewmy current_webview = lastDictionary.mWebView;
 											if (adelta != 0 && current_webview != null && !current_webview.isloading) {
-												if (lastDictionary.webScale == 0)
-													lastDictionary.webScale = a.dm.density;//sanity check
+												if (current_webview.webScale == 0)
+													current_webview.webScale = a.dm.density;//sanity check
 												//CMN.Log("保存位置", lastDictionary._Dictionary_fName, tag);
 
 												pagerec = avoyager.get(lastClickedPosBeforePageTurn);
 												if (pagerec == null) {
-													if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || currentDictionary.webScale != mdict.def_zoom) {
+													if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || current_webview.webScale != mdict.def_zoom) {
 														pagerec = new ScrollerRecord();
 														avoyager.put(lastClickedPosBeforePageTurn, pagerec);
 													} else
 														break OUT;
 												}
 
-												pagerec.set(current_webview.getScrollX(), current_webview.getScrollY(), lastDictionary.webScale);
+												pagerec.set(current_webview.getScrollX(), current_webview.getScrollY(), current_webview.webScale);
 											}
 										}
 									}

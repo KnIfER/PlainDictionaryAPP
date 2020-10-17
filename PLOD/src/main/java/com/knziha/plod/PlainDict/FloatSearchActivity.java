@@ -336,7 +336,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		PageSlider = webcontentlist.findViewById(R.id.PageSlider);
 		main_progress_bar = PageSlider.findViewById(R.id.main_progress_bar);
 	
-		IMPageCover = findViewById(R.id.IMPageCover);
+		IMPageCover = PageSlider.getChildAt(4);
 		bottombar2 = (ViewGroup) webcontentlist.getChildAt(1);
 	
 		mainF = (ViewGroup) root.getChildAt(1);
@@ -806,7 +806,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				}
 			}
 		}
-		if(keytmp!=null && !PDICMainAppOptions.getHistoryStrategy0()&& PDICMainAppOptions.getHistoryStrategy12()){
+		if(keytmp!=null && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy7()){
 			prepareHistroyCon().insertUpdate(keytmp);
 		}
 
@@ -1008,16 +1008,21 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			Utils.addViewToParentUnique(current.rl, webSingleholder);
 	
 			current.renderContentAt(-1,adapter_idx,0,null, getMergedClickPositions(position));
-			
-			currentKeyText = current.getEntryAt(position);
+			currentKeyText = current.currentDisplaying;
 			bWantsSelection=true;
 
-			decorateContentviewByKey(null,currentKeyText);
-			if(!(current instanceof mdict_txt) && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy6() &&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
+			decorateContentviewByKey(null, currentKeyText);
+			
+			if(!(current instanceof mdict_txt) && !PDICMainAppOptions.getHistoryStrategy0()
+					&& PDICMainAppOptions.getHistoryStrategy4()
+					&&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
 				prepareHistroyCon().insertUpdate(currentKeyText);
-				//CMN.Log("浮动点击1", userCLick);
 			}
-			userCLick=false;
+			if(userCLick) {
+				userCLick=false;
+			} else {
+				Kustice=true;
+			}
         }
 
 		@Override
@@ -1052,8 +1057,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		if(webcontentlist.getVisibility()!=View.VISIBLE) {
 			webcontentlist.setVisibility(View.VISIBLE);
 			if(opt.getAnimateContents()) {
-				webcontentlist.setAnimation(loadCTAnimation());
-				CMN.Log("动画！！！");
+				webcontentlist.startAnimation(loadCTAnimation());
 			}
 		}
 	}
@@ -1086,11 +1090,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	CharSequence currentKeyText = combining_search_result.getResAt(position);
 	        
 	        if(convertView!=null){
-	        		vh=(PDICMainActivity.ViewHolder)convertView.getTag();
-	        	}else{
-					vh=new PDICMainActivity.ViewHolder(getApplicationContext(), itemId, null);
-					if(itemId==R.layout.listview_item1)
-						vh.subtitle.setTag(vh.itemView.findViewById(R.id.counter));
+				vh=(PDICMainActivity.ViewHolder)convertView.getTag();
+			} else {
+				vh=new PDICMainActivity.ViewHolder(getApplicationContext(), itemId, null);
+				if(itemId==R.layout.listview_item1)
+					vh.subtitle.setTag(vh.itemView.findViewById(R.id.counter));
 			}
 			if(combining_search_result.dictIdx>=md.size()) return vh.itemView;//不要Crash哇
 			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
@@ -1151,13 +1155,16 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			combining_search_result.renderContentAt(lastClickedPos,FloatSearchActivity.this,this);//webholder
 
 			decorateContentviewByKey(null,currentKeyText = combining_search_result.getResAt(pos).toString());
-			if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy5()) {
-				if(userCLick||PDICMainAppOptions.getHistoryStrategy8()==0){
+			if(PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
+					&&combining_search_result.shouldSaveHistory()
+					&&userCLick||PDICMainAppOptions.getHistoryStrategy8()==0) {
 					prepareHistroyCon().insertUpdate(currentKeyText);
-					//CMN.Log("浮动点击2", userCLick);
-				}
 			}
-			userCLick=false;
+			if(userCLick) {
+				userCLick=false;
+			} else {
+				Kustice=true;
+			}
 			bWantsSelection=true;
         }
 

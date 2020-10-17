@@ -12,7 +12,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
-import android.os.SystemClock;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.AttributeSet;
@@ -380,6 +379,19 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				0.0f, 0.0f, 0);
 		dispatchTouchEvent(motion);
 		motion.recycle();
+	}
+	
+	public boolean SavePagePosIfNeeded(ScrollerRecord pagerec) {
+		boolean ret=false;
+		int sx=getScrollX(), sy=getScrollY();
+		if(pagerec==null && (sx != 0 || sy != 0 || webScale != mdict.def_zoom)) {
+			pagerec = new ScrollerRecord();
+			ret=true;
+		}
+		if(pagerec!=null) {
+			pagerec.set(sx, sy, webScale);
+		}
+		return ret;
 	}
 	
 	@RequiresApi(api = Build.VERSION_CODES.M)

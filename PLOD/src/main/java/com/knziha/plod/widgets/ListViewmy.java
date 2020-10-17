@@ -10,6 +10,7 @@ import com.knziha.plod.PlainDict.BasicAdapter;
 
 public class ListViewmy extends ListView {
 	public boolean dimmed;
+	public Object FastScroller;
 	OnScrollChangedListener mOnScrollChangeListener;
 	public ListViewmy(Context context) {
 		this(context, null);

@@ -61,10 +61,11 @@ import static org.nanohttpd.protocols.http.response.Response.newFixedLengthRespo
 public abstract class MdictServer extends NanoHTTPD {
 	interface AppOptions {
 		boolean isCombinedSearching();
+		int getSendToShareTarget();
 	}
 	final Pattern nautyUrlRequest = Pattern.compile("src=(['\"])?(file://)?/");
 	final String SepWindows = "\\";
-	private final AppOptions opt;
+	final AppOptions opt;
 	
 	String baseHtml;
 	public ArrayList<mdict> currentFilter = new ArrayList<>();

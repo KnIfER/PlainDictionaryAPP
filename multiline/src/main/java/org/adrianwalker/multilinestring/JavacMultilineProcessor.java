@@ -205,12 +205,12 @@ public final class JavacMultilineProcessor extends AbstractProcessor {
 							JCAssign assgn = (JCAssign) stat.expr;
 							JCExpression flag = assgn.getVariable(); //JCIdent
 							int flagPos = annotation.flagPos();
-							int mask = (1<<annotation.flagSize())-1;
-							long maskVal = ((long)mask)<<annotation.flagPos();
+							long mask = (1l<<annotation.flagSize())-1;
+							long maskVal = mask <<annotation.flagPos();
 							int max = annotation.max();
 							int shift = annotation.shift();
 							if(max==0) {
-								max = mask;
+								max = (int) mask;
 							}
 							int elevation = annotation.elevation();
 							List<JCVariableDecl> parms = metDcl.getParameters();
@@ -250,7 +250,7 @@ public final class JavacMultilineProcessor extends AbstractProcessor {
 									}
 								}
 								if(TogglePosFlag) {//toggle boolean
-									CMN.Log("TogglePosFlag");
+									//CMN.Log("TogglePosFlag");
 									JCExpression fetVal = maker.Binary(Tag.EQ, maker.Binary(Tag.BITAND, flag, maker.Literal(maskVal)), maker.Literal(0));
 									
 									Names names = Names.instance(context);
@@ -261,7 +261,7 @@ public final class JavacMultilineProcessor extends AbstractProcessor {
 									
 									JCExpression core = maker.Assignop(Tag.BITAND_ASG, flag, maker.Literal(~maskVal));
 									
-									JCExpression FlagMaskPosPutOne = maker.Binary(Tag.SL, maker.Literal(1L), maker.Literal(flagPos));
+									JCExpression FlagMaskPosPutOne = maker.Binary(Tag.SL, maker.Literal(1l), maker.Literal(flagPos));
 									
 									FlagMaskPosPutOne = maker.Assignop(Tag.BITOR_ASG, flag, FlagMaskPosPutOne);
 									

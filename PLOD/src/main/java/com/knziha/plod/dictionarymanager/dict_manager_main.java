@@ -496,8 +496,9 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 				vh.ck.setOnCheckedChangeListener(null);
 				vh.ck.setChecked(selector.contains(key));
 				vh.ck.setOnCheckedChangeListener(checkChanged);
-			}else
+			} else {
 				vh.ck.setVisibility(View.GONE);
+			}
 
 			StringBuilder rgb = new StringBuilder("#");
 			if(rejector.contains(key))

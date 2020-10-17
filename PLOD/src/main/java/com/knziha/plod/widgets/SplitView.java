@@ -43,7 +43,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     public boolean isSlik=false;
 	public boolean canClickThrough;
 	private boolean clickThroughEntered;
-
+	
 	public interface PageSliderInf{
 		void onPreparePage(int orgSize);
 		void onMoving(SplitView webcontentlist,float val);
@@ -357,12 +357,11 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     }
 
     public int getPrimaryContentSize() {
-            if (getOrientation() == VERTICAL) {
-                return mPrimaryContent.getMeasuredHeight();
-            } else {
-             return mPrimaryContent.getMeasuredWidth();
-            }
-
+		if (getOrientation() == VERTICAL) {
+			return mPrimaryContent.getMeasuredHeight();
+		} else {
+		 	return mPrimaryContent.getMeasuredWidth();
+		}
     }
 
     public int getPrimaryContentSetSize() {
@@ -372,18 +371,28 @@ public class SplitView extends LinearLayout implements OnTouchListener {
          return mPrimaryContent.getWidth();
         }
     }
-    
+	
+	
+	public void setPrimaryContentSizeUnChanged(int newSize, boolean b) {
+		if(getPrimaryContentSize()!=newSize) {
+			setPrimaryContentSize(newSize, b);
+		}
+	}
+	
     public boolean setPrimaryContentSize(int newSize,boolean ...x) {
-    	boolean ret;
-        if (getOrientation() == VERTICAL) {
-            ret = setPrimaryContentHeight(newSize,x);
-        } else {
-            ret = setPrimaryContentWidth(newSize,x);
-        }
-        
-        if(inf!=null)
-        	inf.SizeChanged(newSize,0);
-        return ret;
+    	//if(getPrimaryContentSize()!=newSize) {
+			boolean ret;
+			if (getOrientation() == VERTICAL) {
+				ret = setPrimaryContentHeight(newSize,x);
+			} else {
+				ret = setPrimaryContentWidth(newSize,x);
+			}
+		
+			if(inf!=null)
+				inf.SizeChanged(newSize,0);
+			return ret;
+		//}
+		//return false;
     }
 
     public boolean decided;

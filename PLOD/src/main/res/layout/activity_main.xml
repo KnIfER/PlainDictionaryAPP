@@ -105,17 +105,21 @@
 						android:background="#ffffff"
 						/>
 				</LinearLayout>
-
+				<FrameLayout
+					android:layout_width="50dp"
+					android:layout_height="50dp"
+					android:layout_marginBottom="86dip"
+					android:layout_gravity="bottom|center"
+					>
 				<android.widget.ImageView
 					android:id="@+id/browser_widget0"
-					android:visibility="gone"
+					android:visibility="visible"
 					android:layout_width="50dp"
-					android:layout_height="32dp"
-					android:layout_gravity="bottom|center"
-					android:background="@drawable/perusetoggle"
+					android:layout_height="50dp"
+					android:background="@drawable/perusetoggle3"
 					android:src="@drawable/peruse_ic"
-					android:layout_marginBottom="48dip"
 					/>
+				</FrameLayout>
 			</FrameLayout>
 
 			<fragment

@@ -21,6 +21,8 @@ public abstract class BasicAdapter extends BaseAdapter
 		boolean userCLick;
 		int HlightIdx;
 		int AcrArivAcc;
+		public boolean shunt;
+		public boolean Kustice;
 
 		public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
 		//int adelta=0;
@@ -31,7 +33,7 @@ public abstract class BasicAdapter extends BaseAdapter
 		}
 		
 		public void SaveVOA() {
-			
+		
 		}
     	
     	public void setResHolder(resultRecorderDiscrete r) {
@@ -44,26 +46,26 @@ public abstract class BasicAdapter extends BaseAdapter
         //构造
         public BasicAdapter()
         {
-        	
+        
         }
         @Override
-        public int getCount() {  
+        public int getCount() {
           return combining_search_result.size();
-        }  
+        }
         @Override
         public View getItem(int position) {
 			return null;
-			}    
+			}
         @Override
-        public long getItemId(int position) {    
-          return position;    
-        }  
+        public long getItemId(int position) {
+          return position;
+        }
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
 	          return convertView;
         }
 		public void shutUp() {
-			
+		
 		}
 		public void onItemClick(int pos) {
         	lastClickedPos = Math.min(getCount(), Math.max(-1, pos));

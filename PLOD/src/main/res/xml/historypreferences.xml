@@ -14,82 +14,40 @@
 			android:defaultValue="false"
 			android:title="不做任何记录"
 			/>
-<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
-<!--			android:key="rc_enter_ff"-->
-<!--			android:persistent="false"-->
-<!--			android:defaultValue="false"-->
-<!--			android:title="搜索框->回车时记录全文/词条搜索"-->
-<!--			/>-->
-<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
-<!--			android:key="rc_enter_com"-->
-<!--			android:persistent="false"-->
-<!--			android:defaultValue="false"-->
-<!--			android:title="搜索框->回车时记录联合搜索"-->
-<!--			/>-->
-<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
-<!--			android:key="rc_enter_cmn"-->
-<!--			android:persistent="false"-->
-<!--			android:defaultValue="false"-->
-<!--			android:title="搜索框->回车时记录普通搜索"-->
-<!--			/>-->
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_click_ff"
+			android:key="rc_click"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="列表->点击时记录全文/词条搜索"
+			android:title="纪录列表点击"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_click_com"
+			android:key="rc_query"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="列表->点击时记录模糊搜索"
+			android:title="纪录搜索指令"
+			android:summary="包括键盘回车键/搜索按钮"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_click_cmn"
+			android:key="rc_net"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="列表->点击时记录普通搜索"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_peruse_click"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="列表->点击时记录翻阅模式"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_peruse_key"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="记录翻阅模式"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_pop_key"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="记录点译弹窗"
-			app:allowDividerBelow="true"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_pop_slide"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="记录点译弹窗翻页到达的词条"
+			android:title="记录跨设备查词"
 			app:allowDividerBelow="true"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="rc_float_pop"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="记录浮动搜索启动时获得的搜索词"
+			android:title="记录界面弹出时获得的搜索词"
+			android:summary="包括浮动搜索/翻阅模式/点译弹窗/多维分享"
 			app:allowDividerBelow="true"
 			/>
 		<androidx.preference.ListPreference
 			android:key="rc_slide"
 			android:persistent="false"
 			android:defaultValue="1"
-			android:title="记录解释页面翻页到达的词条"
+			android:title="记录在解释页面翻页到达的词条"
 			app:allowDividerBelow="true"
-			android:entryValues="@array/record_slide"
 			android:entries="@array/record_slide_info"
 			/>
 	</PreferenceCategory>

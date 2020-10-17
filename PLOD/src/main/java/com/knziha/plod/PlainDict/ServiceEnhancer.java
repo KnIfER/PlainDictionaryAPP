@@ -78,7 +78,7 @@ public class ServiceEnhancer extends Service {
 	private Notification getNotification() {
 		Notification.Builder builder = new Notification.Builder(this)
 				.setSmallIcon(R.mipmap.ic_launcher)
-				.setContentTitle("后台服务 (防止自动退出APP)")
+				.setContentTitle("后台服务 (防止自动退出)")
 				//.setCustomContentView()
 				//.setCustomBigContentView()
 				.setContentText("▶");
