@@ -610,6 +610,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		return (firstFlag & 0x40000) != 0;
 	}
 	
+	/** Show entry:// target in the popup window (词条跳转到点译弹窗) */
 	public boolean getPopEntry(){
 		return (firstFlag & 0x80000) != 0;
 	}

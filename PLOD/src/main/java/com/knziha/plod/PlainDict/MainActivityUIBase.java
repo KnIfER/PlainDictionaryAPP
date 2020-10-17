@@ -2844,7 +2844,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		String lastName = opt.getLastMdFn("LastMdFn");
 		for (int i = 0; i < CosyChair.size(); i++) {
 			phI = CosyChair.get(i);
-			mdict mdTmp = mdict_cache==null?null:mdict_cache.get(phI.getPath(opt));
+			//get path put
+			mdict mdTmp = mdict_cache==null?null:mdict_cache.get(phI.getPath(opt).getPath());
 			if ((phI.tmpIsFlag&0x8)!=0){
 				HdnCmfrt.add(phI); /* 隐·1 */
 				CosyChair.remove(i--);
@@ -7168,7 +7169,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return true;
 			}
 			int selfAtIdx = mWebView.SelfIdx;
-			//CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), md.get(selfAtIdx).getDictionaryName(), selfAtIdx, mWebView.fromCombined);
+			CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), selfAtIdx+"/"+md.size(), mWebView.fromCombined);
 			if(selfAtIdx>=md.size() || selfAtIdx<0) return false;
 			final mdict invoker = md.get(selfAtIdx);
 			boolean fromPopup = view==popupWebView;
@@ -7355,14 +7356,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				else{
 					//CMN.Log("chromium inter_ entry2", url);
 					url = url.substring(entryTag.length());
-					boolean popup = invoker.getPopEntry();
-					if(popup){
-						init_popup_view();
-						popupWebView.frameAt = mWebView.frameAt;
-						popupWebView.SelfIdx = mWebView.SelfIdx;
-						mWebView = popupWebView;
-					}
 					try {
+						boolean popup = invoker.getPopEntry();
+						if(popup){
+							init_popup_view();
+							popupWebView.frameAt = mWebView.frameAt;
+							popupWebView.SelfIdx = mWebView.SelfIdx;
+							mWebView = popupWebView;
+						}
 						mWebView.toTag = null;
 						int tagIdx = url.indexOf("#");
 						if (tagIdx > 0) {
@@ -7428,7 +7429,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								return true;
 							}
 						}
-					} catch (Exception e) {
+					}
+					catch (Exception e) {
 						//TODO !!!
 						msg=e.toString();
 						if(true) CMN.Log(e);

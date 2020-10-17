@@ -3295,6 +3295,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				app.mdict_cache = mdict_cache;
 				for(mdict mdTmp:md) {
 					if(mdTmp!=null){
+						//get path put
 						mdict_cache.put(mdTmp.getPath(),mdTmp);
 					}
 				}
