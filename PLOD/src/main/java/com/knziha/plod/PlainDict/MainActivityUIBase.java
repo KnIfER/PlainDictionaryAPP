@@ -3543,11 +3543,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			dv.findViewById(R.id.cancel).setOnClickListener(this);
 			window = d.getWindow();
 			window.setDimAmount(0);
-			window.getDecorView().setTag(tv);
 			tv.setTag(ftv);
 			ftv.setTag(dv.getChildAt(1));
 			d.setCanceledOnTouchOutside(true);
 			d.show();
+			window.getDecorView().setTag(tv);
 			this.d = d;
 		}
 		
