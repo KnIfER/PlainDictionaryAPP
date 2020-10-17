@@ -1,6 +1,7 @@
 package com.knziha.plod.dictionarymodels;
 
 import com.alibaba.fastjson.JSONObject;
+import com.knziha.plod.PlainDict.CMN;
 import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.PlainDict.R;
 import com.knziha.plod.dictionary.Utils.Flag;
@@ -237,8 +238,12 @@ public class mdict_pdf extends mdict {
 	public long getNumberEntries() {
 		return 1+(pdf_index==null?0:pdf_index.length);
 	}
-
-
+	
+	@Override
+	public String getCharsetName() {
+		return "PDF";
+	}
+	
 	@Override
 	public void renderContentAt(float initialScale, int SelfIdx, int frameAt, WebViewmy mWebView, int... position) {
 		targetPage=position[0];
@@ -311,7 +316,7 @@ public class mdict_pdf extends mdict {
 			try {
 				return _INTERNAL_PDFJS.getResourseAt(id);
 			} catch (IOException e) {
-				e.printStackTrace();
+				CMN.Log(e);
 			}
 		}
 		return null;

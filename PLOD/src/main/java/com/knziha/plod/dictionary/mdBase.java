@@ -63,7 +63,7 @@ public abstract class mdBase {
 	protected long ReadOffset;
 	/** 0=no cache; 1=lru cache; 2=unlimited */
 	protected int FileCacheStrategy = 0;
-	ByteArrayInputStream preparedStream;
+	byte[] preparedStream;
 	
 	public File f() {return f;}
 	final static byte[] _zero4 = new byte[]{0,0,0,0};
@@ -116,8 +116,7 @@ public abstract class mdBase {
 		DataInputStream data_in1;
 		//forceReal = true;
 		if(preparedStream!=null) {
-			preparedStream.reset();
-			data_in1 = new DataInputStream(preparedStream);
+			data_in1 = new DataInputStream(new ByteArrayInputStream(preparedStream));
 		}
 		else if(forceReal || FileCacheStrategy ==0) {
 			data_in1 = new DataInputStream(mOpenInputStream());
@@ -143,7 +142,7 @@ public abstract class mdBase {
 		InputStream input = mOpenInputStream();
 		byte[] buffer = new byte[input.available()];
 		input.read(buffer);
-		preparedStream = new ByteArrayInputStream(buffer);
+		preparedStream = buffer;
 	}
 	
 	public Map<Integer, byte[]> file_cache_map;

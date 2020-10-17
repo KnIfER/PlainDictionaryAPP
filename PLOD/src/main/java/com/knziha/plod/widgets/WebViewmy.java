@@ -146,7 +146,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 //		settings.setLoadWithOverviewMode(true);
 //		settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
 //
-//		settings.setAllowUniversalAccessFromFileURLs(true);
+		settings.setAllowUniversalAccessFromFileURLs(true);
 //		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
 //			settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 		
