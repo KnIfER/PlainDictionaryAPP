@@ -1625,7 +1625,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//bottombar.findViewById(R.id.browser_widget2).performLongClick();
 		//bottombar.findViewById(R.id.browser_widget5).performLongClick();
 
-		etSearch.setText("on");
 		//if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("15");
 		//if(false)
 		root.postDelayed(() -> {

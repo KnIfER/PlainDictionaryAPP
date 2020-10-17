@@ -245,6 +245,7 @@ import javax.net.ssl.TrustManager;
 import db.LexicalDBHelper;
 import db.MdxDBHelper;
 
+import static android.view.View.GONE;
 import static com.bumptech.glide.util.Util.isOnMainThread;
 import static com.knziha.plod.PlainDict.CMN.AssetMap;
 import static com.knziha.plod.PlainDict.CMN.AssetTag;
@@ -1750,6 +1751,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			popupBottombar.findViewById(R.id.popNxtE).setOnClickListener(MainActivityUIBase.this);
 			popupBottombar.findViewById(R.id.popLstE).setOnClickListener(MainActivityUIBase.this);
 			popupIndicator.setOnClickListener(MainActivityUIBase.this);
+			if(GlobalOptions.isDark) {
+				popupTextView.setTextColor(Color.WHITE);
+				popupIndicator.setTextColor(Color.WHITE);
+			}
 			
 			// 点击背景
 			popupGuarder = new PopupGuarder(getBaseContext());
@@ -3548,6 +3553,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			d.setCanceledOnTouchOutside(true);
 			d.show();
 			window.getDecorView().setTag(tv);
+			if(GlobalOptions.isDark) {
+				window.getDecorView().setBackgroundColor(0xff333333);
+				ftv.setTextColor(Color.WHITE);
+				tv.setTextColor(Color.WHITE);
+			}
 			this.d = d;
 		}
 		
@@ -5261,6 +5271,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			animateUIColorChanges();
 			if(DBrowser!=null) {
 				DBrowser.checkColor();
+			}
+			if(popupIndicator!=null) {
+				popupTextView.setTextColor(dark?AppBlack:Color.GRAY);
+				popupIndicator.setTextColor(dark?AppBlack:0xff2b43c1);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

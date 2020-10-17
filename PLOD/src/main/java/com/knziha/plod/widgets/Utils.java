@@ -43,6 +43,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.core.view.NestedScrollingChildHelper;
 
 import com.knziha.plod.PlainDict.CMN;
@@ -57,9 +58,9 @@ import static com.knziha.filepicker.utils.FU.bKindButComplexSdcardAvailable;
 public class Utils {
 	public static float density;
 	
-	private static Paint mRectPaint;
+	public static Paint mRectPaint;
 	
-	private static int FloatTextBG = 0xffffff00;
+	public static int FloatTextBG = 0xffffff00;
 	
 	public final static Cursor EmptyCursor=new AbstractWindowedCursor() {
 		@Override
@@ -90,7 +91,7 @@ public class Utils {
 	public static Paint getRectPaint() {
 		if(mRectPaint==null) {
 			mRectPaint = new Paint();
-			mRectPaint.setColor(FloatTextBG);
+			mRectPaint.setColor(GlobalOptions.isDark?0x3fffff00:FloatTextBG);
 		}
 		return mRectPaint;
 	}

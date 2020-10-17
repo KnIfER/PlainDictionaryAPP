@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.bumptech.glide.util.Util;
 import com.google.android.material.animation.Positioning;
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.settings.FilePickerOptions;
@@ -23,6 +25,7 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.mdict;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
+import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
 import org.adrianwalker.multilinestring.Multiline;
@@ -496,6 +499,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	public boolean setInDarkMode(boolean val) {
 		GlobalOptions.isDark |= val;
+		if(Utils.mRectPaint!=null) {
+			Utils.mRectPaint.setColor(GlobalOptions.isDark?0x3fffffff:Utils.FloatTextBG);
+		}
 		updateFFAt(0x80000,val);//0x‭80000
 		return val;
 	}

@@ -1000,6 +1000,10 @@ public class Drawer extends Fragment implements
 					if(HeaderView2==null) {
 						HeaderView2 = a.getLayoutInflater().inflate(R.layout.activity_main_navi_server_header, null);
 						HeaderView2.setOnClickListener(this);
+						if(GlobalOptions.isDark) {
+							HeaderView2.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+							((TextView)HeaderView2.findViewById(R.id.text)).setTextColor(a.AppBlack);
+						}
 					}
 					if(HeaderView2.getParent()==null) {
 						mDrawerList.addHeaderView(HeaderView2);
@@ -1013,6 +1017,7 @@ public class Drawer extends Fragment implements
 					mDrawerList.removeHeaderView(HeaderView2);
 				}
 			} break;
+			/* 切换黑暗模式 */
 			case R.id.sw4:{
 				if(Build.VERSION.SDK_INT<29){
 					GlobalOptions.isDark = false;
@@ -1021,9 +1026,15 @@ public class Drawer extends Fragment implements
 				}
 
 				a.opt.setInDarkMode(isChecked);
-
+				
 				if(buttonView.getTag()==null || GlobalOptions.isDark)
 					a.changeToDarkMode();
+				
+				if(HeaderView2!=null) {
+					HeaderView2.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE:null);
+					((TextView)HeaderView2.findViewById(R.id.text)).setTextColor(a.AppBlack);
+				}
+				
 				buttonView.setTag(null);
 			} break;
 			case R.id.sw5:{
