@@ -18,15 +18,7 @@
 package com.knziha.plod.dictionary;
 
 import com.alibaba.fastjson.JSONObject;
-import com.knziha.plod.dictionary.Utils.BU;
-import com.knziha.plod.dictionary.Utils.F1ag;
-import com.knziha.plod.dictionary.Utils.Flag;
-import com.knziha.plod.dictionary.Utils.GetIndexedString;
-import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionary.Utils.key_info_struct;
-import com.knziha.plod.dictionary.Utils.myCpr;
-import com.knziha.plod.dictionary.Utils.record_info_struct;
+import com.knziha.plod.dictionary.Utils.*;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.adrianwalker.multilinestring.Multiline;
@@ -88,9 +80,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -128,7 +118,10 @@ public class mdict extends mdBase{
 	public String _Dictionary_fName;
 	public /*final*/ boolean isResourceFile;
 	private EncodeChecker encodeChecker;
-	
+	private HashMap<Integer, String> PageNumberMap;
+	protected File fZero;
+	private long fZero_LPT;
+
 	public boolean getIsDedicatedFilter(byte firstFlag){
 		return false;
 	}
@@ -213,20 +206,40 @@ public class mdict extends mdBase{
 	}
 
 	protected boolean handleDebugLines(String line) {
+		//SU.Log("handleDebugLines", line);
 		if(line.length()>0){
-			File p = f.getParentFile();
-			if(line.startsWith("\\")){
+			if(line.startsWith(":")){
+				String[] arr = line.substring(1).split(":"); //竟然长度为3
+				int id;
+				if(arr.length==2&&(id=IU.parsint(arr[0]))>=0) {
+					if(PageNumberMap==null) {
+						PageNumberMap=new HashMap<>();
+					}
+					PageNumberMap.put(id, arr[1]);
+				}
+			} else if(line.startsWith(File.separator)){
+				File p = f.getParentFile();
 				File f = new File(p, line.substring(1));
-				if(f.isDirectory())
-					ftd.add(f);
+				if(f.exists()) {
+					if(f.isDirectory()) {
+						ftd.add(f);
+					}
+				}
 				return true;
+			} else if(line.contains(File.separator)){
+				File f = new File(line);
+				if(f.isDirectory()) {
+					ftd.add(f);
+				}
 			}
+			
 			if(line.startsWith("`")&&line.length()>1){
 				int nxt=line.indexOf("`", 1);
 				_stylesheet.put(line.substring(1,nxt), line.substring(nxt+1).trim().split("`",2));
 				return true;
 			}
 		}
+		//SU.Log(".0.txt 存在", _Dictionary_fName, line);
 		return false;
 	}
 
@@ -235,11 +248,12 @@ public class mdict extends mdBase{
 	}
 
 	public InputStream getResourceByKey(String key) {
+		//SU.Log("getResourceByKey", _Dictionary_fName, ftd);
 		if(ftd !=null && ftd.size()>0){
 			String keykey = key.replace("\\",File.separator);
 			for(File froot: ftd){
 				File ft= new File(froot, keykey);
-				//SU.Log(ft.getAbsolutePath(), ft.exists());
+				//SU.Log("getResourceByKey", _Dictionary_fName, ft.getAbsolutePath(), ft.exists());
 				if(ft.exists()) {
 					try {
 						return new FileInputStream(ft);
@@ -682,7 +696,8 @@ public class mdict extends mdBase{
 		if(ftd!=null && ftd.size()>0 && ReadOffset==0){
 			File ft;
 			for(File f:ftd){
-				ft=new File(f, ""+position);
+				String key=getDebugPageResourceKey(position);
+				ft=new File(f, key);
 				//SU.Log(ft.getAbsolutePath(), ft.exists());
 				if(ft.exists())
 					return BU.fileToString(ft);
@@ -733,6 +748,17 @@ public class mdict extends mdBase{
 			}
 		}
 		return tmp;
+	}
+
+	private String getDebugPageResourceKey(int position) {
+		String key=null;
+		if(PageNumberMap!=null) {
+			key=PageNumberMap.get(position);
+		}
+		if(key==null) {
+			key=Integer.toString(position);
+		}
+		return key;
 	}
 
 	@Override
@@ -1416,7 +1442,12 @@ public class mdict extends mdBase{
 	public String getAboutHtml() {
 		return getAboutString();
 	}
-	
+
+	public boolean hasStyleSheets() {
+		//SU.Log("_stylesheet", _stylesheet.size(), _stylesheet.keySet().size(), _stylesheet.values().size());
+		return _stylesheet.size()>0;
+	}
+
 	public static abstract class AbsAdvancedSearchLogicLayer{
 		public int type;
 		public int Idx;
@@ -2136,8 +2167,7 @@ public class mdict extends mdBase{
 							try_idx = flowerIndexOf(key_block, key_start_index+_number_width, key_end_index-(key_start_index+_number_width), matcher[j][k], 0, 0, SearchLauncher, flag, mParallelKeys, jumpMap);
 							//SU.Log("and_group>>"+j, "or_group#"+k, try_idx);
 							//BU.printBytes3(matcher[j][k]);
-							//if (try_idx < 0 ^ (jumpMap[len] & 4) == 0) break;
-							if (try_idx >= 0) break;
+							if (try_idx < 0 ^ (jumpMap[len] & 4) == 0) break;
 						}
 						if (try_idx < 0) {
 							break;
@@ -2611,16 +2641,9 @@ public class mdict extends mdBase{
 				int base_full_name_L = sb.length();
 				File f2 = new File(p, sb.append(".0.txt").toString());
 				if(f2.exists()){
+					fZero=f2;
 					ftd = new ArrayList<>();
-					try {
-						BufferedReader br = new BufferedReader(new FileReader(f2));
-						String line;
-						while((line=br.readLine())!=null){
-							handleDebugLines(line.trim());
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+					handleDebugLines();
 				}
 				sb.setLength(base_full_name_L);
 				f2 = new File(p, sb.append(".mdd").toString());
@@ -2640,7 +2663,27 @@ public class mdict extends mdBase{
 			}
 		}
 	}
-	
+
+	/* watch debug definition file (dictname.0.txt) */
+	public void handleDebugLines() {
+		if(ftd!=null) {
+			long _fZero_LPT = fZero.lastModified();
+			if(_fZero_LPT!=fZero_LPT) {
+				ftd.clear();
+				try {
+					BufferedReader br = new BufferedReader(new FileReader(fZero));
+					String line;
+					while((line=br.readLine())!=null){
+						handleDebugLines(line.trim());
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				fZero_LPT = _fZero_LPT;
+			}
+		}
+	}
+
 	@Override
 	protected void postGetCharset() {
 		htmlOpenTag = "<".getBytes(_charset);
