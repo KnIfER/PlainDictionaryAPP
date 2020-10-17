@@ -7154,7 +7154,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return true;
 			}
 			int selfAtIdx = mWebView.SelfIdx;
-			CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), md.get(selfAtIdx).getDictionaryName(), selfAtIdx);
+			//CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), md.get(selfAtIdx).getDictionaryName(), selfAtIdx, mWebView.fromCombined);
 			if(selfAtIdx>=md.size() || selfAtIdx<0) return false;
 			final mdict invoker = md.get(selfAtIdx);
 			boolean fromPopup = view==popupWebView;
@@ -9771,7 +9771,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				||!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething())
 			current_webview.bRequestedSoundPlayback=true;
 		
-		current_webview.fromCombined=0;
+		if(current_webview.fromCombined!=3) {
+			current_webview.fromCombined=0;
+		}
 		
 		if(opt.getInheritePageScale())
 			ret=current_webview.webScale;
