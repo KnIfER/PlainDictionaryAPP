@@ -43,6 +43,9 @@ dependencies {
         }
     }
     api (libs_cursor)
+    if(mod_viewpager=='1') {
+        api project(':viewpager')
+    }
     api (libs_fragment){
         if(mod_core=='1') {
             exclude module:"core"
