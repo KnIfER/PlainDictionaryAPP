@@ -219,8 +219,9 @@ public class ListPopupWindow implements ShowableListMenu {
      * screen as needed, regardless of whether this covers the input method.
      */
     public static final int INPUT_METHOD_NOT_NEEDED = PopupWindow.INPUT_METHOD_NOT_NEEDED;
-
-    /**
+	public int Selection;
+	
+	/**
      * Create a new, empty popup window capable of displaying items from a ListAdapter.
      * Backgrounds should be set using {@link #setBackgroundDrawable(Drawable)}.
      *
@@ -450,7 +451,6 @@ public class ListPopupWindow implements ShowableListMenu {
     public void setEnterTransition(@Nullable Transition enterTransition) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             mPopup.setEnterTransition(null);
-            //mPopup.setExitTransition(null);
         }
     }
 
@@ -779,14 +779,15 @@ public class ListPopupWindow implements ShowableListMenu {
             }
             PopupWindowCompat.showAsDropDown(mPopup, getAnchorView(), mDropDownHorizontalOffset,
                     mDropDownVerticalOffset, mDropDownGravity);
-            if(scrolltoend && mAdapter!=null)
-                mDropDownList.setSelection(mAdapter.getCount()-1);
-            else
-                mDropDownList.setSelection(ListView.INVALID_POSITION);
+            //if(scrolltoend && mAdapter!=null)
+            //    mDropDownList.setSelection(mAdapter.getCount()-1);
+            //else
+            //    mDropDownList.setSelection(ListView.INVALID_POSITION);
+			mDropDownList.setSelection(Selection-2);
 
-            if (!mModal || mDropDownList.isInTouchMode()) {
-                clearListSelection();
-            }
+            //if (!mModal || mDropDownList.isInTouchMode()) {
+            //    clearListSelection();
+            //}
             if (!mModal) {
                 mHandler.post(mHideSelector);
             }
@@ -1324,7 +1325,7 @@ public class ListPopupWindow implements ShowableListMenu {
         final int maxHeight = getMaxAvailableHeight(getAnchorView(), mDropDownVerticalOffset,
                 ignoreBottomDecorations)-mMarginTop;
         if (mDropDownAlwaysVisible || mDropDownHeight == ViewGroup.LayoutParams.MATCH_PARENT) {
-            return maxHeight + padding;
+            //return maxHeight + padding;
         }
 
         final int childWidthSpec;

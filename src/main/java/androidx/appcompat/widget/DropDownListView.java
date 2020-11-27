@@ -313,6 +313,7 @@ public class DropDownListView extends ListView {
         int viewType = 0;
         int maxWidth=0;
         int count = adapter.getCount();
+        
         for (int i = 0; i < count; i++) {
             int newType = adapter.getItemViewType(i);
             if (newType != viewType) {
@@ -349,6 +350,12 @@ public class DropDownListView extends ListView {
 
             returnedHeight += child.getMeasuredHeight();
             //maxWidth = Math.max(maxWidth,child.getMeasuredWidth());
+			
+			if(true) {
+				returnedHeight*=count;
+				android.util.Log.d("returnedHeight*=count", returnedHeight+" "+maxHeight);
+				return Math.min(returnedHeight, maxHeight);
+			}
 
             if (returnedHeight >= maxHeight) {
                 // We went over, figure out which height to return.  If returnedHeight >

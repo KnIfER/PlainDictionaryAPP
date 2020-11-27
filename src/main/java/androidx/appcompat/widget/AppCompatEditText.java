@@ -23,12 +23,18 @@ import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.LocaleList;
 import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.textclassifier.ConversationActions;
+import android.view.textclassifier.SelectionEvent;
+import android.view.textclassifier.TextClassification;
 import android.view.textclassifier.TextClassifier;
+import android.view.textclassifier.TextSelection;
 import android.widget.EditText;
 
 import androidx.annotation.DrawableRes;
@@ -39,6 +45,8 @@ import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
 import androidx.core.view.TintableBackgroundView;
 import androidx.core.widget.TextViewCompat;
+
+import java.util.HashMap;
 
 /**
  * A {@link EditText} which supports compatible features on older versions of the platform,
@@ -227,9 +235,71 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
     public TextClassifier getTextClassifier() {
         // The null check is necessary because getTextClassifier is called when we are invoking
         // the super class's constructor.
+		if(true && TextFucker!=null) {
+			return TextFucker;
+		}
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P || mTextClassifierHelper == null) {
             return super.getTextClassifier();
         }
         return mTextClassifierHelper.getTextClassifier();
     }
+    
+    public final static TextClassifier TextFucker;
+    
+    @RequiresApi(api = Build.VERSION_CODES.O)
+	public static class FuckTextClassifier implements TextClassifier {
+		private final TextClassifier FallBack;
+	
+		public FuckTextClassifier(TextClassifier FallBack) {
+			this.FallBack=FallBack;
+		}
+		@NonNull
+		@Override
+		public TextSelection suggestSelection(@NonNull TextSelection.Request request) {
+			TextSelection val = FallBack.suggestSelection(request);
+			android.util.Log.e("fatal_FTC", ""+FallBack+" yield "+val+" "+System.identityHashCode(val));
+			android.util.Log.e("fatal_FTC1", ""+request.getStartIndex()+" - "+request.getEndIndex());
+			android.util.Log.e("fatal_FTC2", ""+val.getSelectionStartIndex()+" - "+val.getSelectionEndIndex());
+			return val;
+			//return new TextSelection.Builder(request.getStartIndex(), request.getEndIndex()).build();
+		}
+	
+		public static final TextClassification EMPTY = new TextClassification.Builder().build();
+		
+		public TextClassification classifyText(TextClassification.Request request) {
+			return FallBack.classifyText(request);
+		}
+	
+		@NonNull
+		@Override
+		public TextClassification classifyText(@NonNull CharSequence text, int startIndex, int endIndex, @Nullable LocaleList defaultLocales) {
+			return FallBack.classifyText(text, startIndex, endIndex, defaultLocales);
+		}
+	
+		@NonNull
+		@Override
+		public ConversationActions suggestConversationActions(@NonNull ConversationActions.Request request) {
+			return FallBack.suggestConversationActions(request);
+		}
+	
+		@Override
+		public void onSelectionEvent(@NonNull SelectionEvent event) {
+			FallBack.onSelectionEvent(event);
+		}
+	}
+    
+    static {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			TextFucker = new TextClassifier(){
+				@RequiresApi(api = Build.VERSION_CODES.P)
+				@NonNull
+				@Override
+				public TextSelection suggestSelection(@NonNull TextSelection.Request request) {
+					return new TextSelection.Builder(request.getStartIndex(), request.getEndIndex()).build();
+				}
+			};
+		} else {
+			TextFucker=null;
+		}
+	}
 }
