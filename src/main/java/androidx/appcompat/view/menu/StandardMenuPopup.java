@@ -34,6 +34,7 @@ import android.widget.PopupWindow.OnDismissListener;
 import android.widget.TextView;
 
 import androidx.appcompat.R;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.MenuPopupWindow;
 import androidx.core.view.ViewCompat;
 
@@ -160,6 +161,9 @@ final class StandardMenuPopup extends MenuPopup implements OnDismissListener, On
         mPopup.setOnItemClickListener(this);
         mPopup.setOnItemLongClickListener(this);
         mPopup.setModal(true);
+
+        if(GlobalOptions.isDark && mPopup.getBackground()!=null)
+			mPopup.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 
         final View anchor = mShownAnchorView;
         final boolean addGlobalListener = mTreeObserver == null;

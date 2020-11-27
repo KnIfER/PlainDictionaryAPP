@@ -46,6 +46,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.R;
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.MenuItemHoverListener;
 import androidx.appcompat.widget.MenuPopupWindow;
 import androidx.core.internal.view.SupportMenu;
@@ -388,6 +389,9 @@ final class CascadingMenuPopup extends MenuPopup implements MenuPresenter, OnKey
         popupWindow.setAdapter(adapter);
         popupWindow.setContentWidth(menuWidth);
         popupWindow.setDropDownGravity(mDropDownGravity);
+
+		if(GlobalOptions.isDark && popupWindow.getBackground()!=null)
+			popupWindow.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 
         final CascadingMenuInfo parentInfo;
         final View parentView;

@@ -86,12 +86,12 @@ public class AlertDialogLayout extends LinearLayoutCompat {
                 buttonPanel = child;
             } else if (id == R.id.contentPanel || id == R.id.customPanel) {
                 if (middlePanel != null) {
-                    // Both the content and custom are visible. Abort!
+					android.util.Log.e("fatal", " Both the content and custom are visible. Abort! ");
                     return false;
                 }
                 middlePanel = child;
             } else {
-                // Unknown top-level child. Abort!
+				android.util.Log.e("fatal", " Unknown top-level child. Abort! ");
                 return false;
             }
         }
@@ -202,6 +202,7 @@ public class AlertDialogLayout extends LinearLayoutCompat {
         if (widthMode != MeasureSpec.EXACTLY) {
             forceUniformWidth(count, heightMeasureSpec);
         }
+		//android.util.Log.e("fatal measure1", maxWidth+" "+widthSizeAndState+" "+widthMeasureSpec);
 
         return true;
     }

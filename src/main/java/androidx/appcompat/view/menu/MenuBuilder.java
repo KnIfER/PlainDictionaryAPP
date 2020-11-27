@@ -47,6 +47,7 @@ import androidx.core.view.ViewConfigurationCompat;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -98,7 +99,7 @@ public class MenuBuilder implements SupportMenu {
     /**
      * Contains all of the items for this menu
      */
-    private ArrayList<MenuItemImpl> mItems;
+    public List<MenuItemImpl> mItems;
 
     /**
      * Contains only the items that are currently visible.  This will be created/refreshed from
@@ -191,8 +192,16 @@ public class MenuBuilder implements SupportMenu {
      * Whether to override the result of {@link #hasVisibleItems()} and always return true
      */
     private boolean mOverrideVisibleItems;
-
-    /**
+	
+	public void setItems(List<MenuItemImpl> newItems) {
+		//android.util.Log.e("fatal_newItems", Arrays.toString(newItems.toArray()));
+		if(mItems!=newItems) {
+			mItems=newItems;
+			onItemsChanged(true);
+		}
+	}
+	
+	/**
      * Called by menu to notify of close and selection changes.
      * @hide
      */
@@ -856,7 +865,7 @@ public class MenuBuilder implements SupportMenu {
         }
     }
 
-    private static int findInsertIndex(ArrayList<MenuItemImpl> items, int ordering) {
+    private static int findInsertIndex(List<MenuItemImpl> items, int ordering) {
         for (int i = items.size() - 1; i >= 0; i--) {
             MenuItemImpl item = items.get(i);
             if (item.getOrdering() <= ordering) {

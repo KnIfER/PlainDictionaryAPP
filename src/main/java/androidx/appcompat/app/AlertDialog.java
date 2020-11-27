@@ -299,6 +299,7 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
     public static class Builder {
         private final AlertController.AlertParams P;
         private final int mTheme;
+        private boolean AutoSetBG = true;
 
         /**
          * Creates a builder for an alert dialog that uses the default alert
@@ -313,6 +314,11 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
         public Builder(@NonNull Context context) {
             this(context, resolveDialogTheme(context, 0));
         }
+	
+		public Builder setAutoBG(boolean AutoBG){
+			AutoSetBG = AutoBG;
+			return this;
+		}
 
         /**
          * Creates a builder for an alert dialog that uses an explicit theme
@@ -997,6 +1003,9 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
             if (P.mOnKeyListener != null) {
                 dialog.setOnKeyListener(P.mOnKeyListener);
             }
+            if(AutoSetBG){
+				dialog.getWindow().setBackgroundDrawableResource(GlobalOptions.isDark?R.drawable.popup_shadow_d:R.drawable.popup_shadow_l);
+			}
             return dialog;
         }
 
@@ -1013,7 +1022,7 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
         public AlertDialog show() {
             final AlertDialog dialog = create();
             dialog.show();
-            return dialog;
+			return dialog;
         }
     }
 

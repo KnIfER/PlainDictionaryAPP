@@ -148,7 +148,7 @@ public class Toolbar extends ViewGroup {
     private ActionMenuView mMenuView;
     private TextView mTitleTextView;
     private TextView mSubtitleTextView;
-    private ImageButton mNavButtonView;
+    public ImageButton mNavButtonView;
     private ImageView mLogoView;
 
     private Drawable mCollapseIcon;
@@ -1008,6 +1008,7 @@ public class Toolbar extends ViewGroup {
         return mNavButtonView != null ? mNavButtonView.getDrawable() : null;
     }
 
+	OnClickListener rawListener;
     /**
      * Set a listener to respond to navigation events.
      *
@@ -1020,9 +1021,22 @@ public class Toolbar extends ViewGroup {
     public void setNavigationOnClickListener(OnClickListener listener) {
         ensureNavButtonView();
         mNavButtonView.setOnClickListener(listener);
+        if(getId()==R.id.action_context_bar) rawListener=listener;
     }
 
-    /**
+    /** add OnClickListener to navigation */
+	public void addNavigationOnClickListener(final OnClickListener listener) {
+		ensureNavButtonView();
+		mNavButtonView.setOnClickListener(rawListener==null?listener:new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				rawListener.onClick(v);
+				listener.onClick(v);
+			}
+		});
+	}
+
+	/**
      * Retrieve the currently configured content description for the collapse button view.
      * This will be used to describe the collapse action to users through mechanisms such
      * as screen readers or tooltips.

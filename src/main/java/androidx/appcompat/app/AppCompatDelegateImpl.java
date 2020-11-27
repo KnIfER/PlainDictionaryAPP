@@ -876,20 +876,16 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         a.getValue(R.styleable.AppCompatTheme_windowMinWidthMinor, cfl.getMinWidthMinor());
 
         if (a.hasValue(R.styleable.AppCompatTheme_windowFixedWidthMajor)) {
-            a.getValue(R.styleable.AppCompatTheme_windowFixedWidthMajor,
-                    cfl.getFixedWidthMajor());
+            a.getValue(R.styleable.AppCompatTheme_windowFixedWidthMajor, cfl.getFixedWidthMajor());
         }
         if (a.hasValue(R.styleable.AppCompatTheme_windowFixedWidthMinor)) {
-            a.getValue(R.styleable.AppCompatTheme_windowFixedWidthMinor,
-                    cfl.getFixedWidthMinor());
+            a.getValue(R.styleable.AppCompatTheme_windowFixedWidthMinor, cfl.getFixedWidthMinor());
         }
         if (a.hasValue(R.styleable.AppCompatTheme_windowFixedHeightMajor)) {
-            a.getValue(R.styleable.AppCompatTheme_windowFixedHeightMajor,
-                    cfl.getFixedHeightMajor());
+            a.getValue(R.styleable.AppCompatTheme_windowFixedHeightMajor, cfl.getFixedHeightMajor());
         }
         if (a.hasValue(R.styleable.AppCompatTheme_windowFixedHeightMinor)) {
-            a.getValue(R.styleable.AppCompatTheme_windowFixedHeightMinor,
-                    cfl.getFixedHeightMinor());
+            a.getValue(R.styleable.AppCompatTheme_windowFixedHeightMinor, cfl.getFixedHeightMinor());
         }
         a.recycle();
 

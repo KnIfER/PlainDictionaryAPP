@@ -118,7 +118,7 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
      */
     private static final String IME_OPTION_NO_MICROPHONE = "nm";
 
-    final SearchAutoComplete mSearchSrcTextView;
+    public final SearchAutoComplete mSearchSrcTextView;
     private final View mSearchEditFrame;
     private final View mSearchPlate;
     private final View mSubmitArea;
@@ -306,6 +306,7 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
         mCollapsedIcon.setImageDrawable(a.getDrawable(R.styleable.SearchView_searchIcon));
 
         mSearchHintIcon = a.getDrawable(R.styleable.SearchView_searchHintIcon);
+		mSearchHintIcon.setAlpha(255);
 
         TooltipCompat.setTooltipText(mSearchButton,
                 getResources().getString(R.string.abc_searchview_description_search));
@@ -669,7 +670,7 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
         if (iconify) {
             onCloseClicked();
         } else {
-            onSearchClicked();
+            onSearchClicked(true);
         }
     }
 
@@ -977,7 +978,7 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
         @Override
         public void onClick(View v) {
             if (v == mSearchButton) {
-                onSearchClicked();
+                onSearchClicked(true);
             } else if (v == mCloseButton) {
                 onCloseClicked();
             } else if (v == mGoButton) {
@@ -1219,16 +1220,19 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
             mSearchSrcTextView.requestFocus();
             mSearchSrcTextView.setImeVisibility(true);
         }
-
+		mSearchHintIcon.setAlpha(255);
     }
 
-    void onSearchClicked() {
+    public void onSearchClicked(boolean focus) {
         updateViewsVisibility(false);
-        mSearchSrcTextView.requestFocus();
-        mSearchSrcTextView.setImeVisibility(true);
+        if(focus){
+			mSearchSrcTextView.requestFocus();
+			mSearchSrcTextView.setImeVisibility(true);
+		}
         if (mOnSearchClickListener != null) {
             mOnSearchClickListener.onClick(this);
         }
+		mSearchHintIcon.setAlpha(0);
     }
 
     void onVoiceClicked() {

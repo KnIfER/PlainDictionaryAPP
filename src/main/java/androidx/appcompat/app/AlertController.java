@@ -65,7 +65,7 @@ import androidx.core.widget.NestedScrollView;
 
 import java.lang.ref.WeakReference;
 
-class AlertController {
+public class AlertController {
     private final Context mContext;
     final AppCompatDialog mDialog;
     private final Window mWindow;
@@ -699,7 +699,8 @@ class AlertController {
                 // Display the title if a title is supplied, else hide it.
                 mTitleView = (TextView) mWindow.findViewById(R.id.alertTitle);
                 mTitleView.setText(mTitle);
-				if(darkIs){
+				if(GlobalOptions.isLarge) mTitleView.setTextSize(26);
+				if(darkIs) {
 					mTitleView.setTextColor(Color.WHITE);
 				}
                 // Do this last so that if the user has supplied any icons we
@@ -752,7 +753,11 @@ class AlertController {
         if (mMessageView == null) {
             return;
         }
-
+	
+		mMessageView.setTextIsSelectable(true);
+	
+		if(GlobalOptions.isDark) mMessageView.setTextColor(0xffcccccc);
+		
         if (mMessage != null) {
             mMessageView.setText(mMessage);
         } else {
@@ -862,6 +867,7 @@ class AlertController {
     public static class RecycleListView extends ListView {
         private final int mPaddingTopNoTitle;
         private final int mPaddingBottomNoButtons;
+        public int mMaxHeight=0;
 
         public RecycleListView(Context context) {
             this(context, null);
@@ -887,6 +893,33 @@ class AlertController {
                 setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
             }
         }
+
+		//https://www.cnblogs.com/carbs/p/5142758.html
+		@Override
+		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+			if(mMaxHeight<=0){
+				super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+				return;
+			}
+			int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+			int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+			if (heightMode == MeasureSpec.EXACTLY) {
+				heightSize = heightSize <= mMaxHeight ? heightSize
+						: mMaxHeight;
+			}
+
+			if (heightMode == MeasureSpec.UNSPECIFIED) {
+				heightSize = heightSize <= mMaxHeight ? heightSize
+						: mMaxHeight;
+			}
+			if (heightMode == MeasureSpec.AT_MOST) {
+				heightSize = heightSize <= mMaxHeight ? heightSize
+						: mMaxHeight;
+			}
+			int maxHeightMeasureSpec = MeasureSpec.makeMeasureSpec(heightSize,heightMode);
+			super.onMeasure(widthMeasureSpec, maxHeightMeasureSpec);
+		}
     }
 
     public static class AlertParams {
@@ -1090,15 +1123,7 @@ class AlertController {
                 } else if (mAdapter != null) {
                     adapter = mAdapter;
                 } else {
-                    adapter = new CheckedItemAdapter(mContext, layout, android.R.id.text1, mItems){
-						@NonNull
-						@Override
-						public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-							View view = super.getView(position, convertView, parent);
-							if(GlobalOptions.isDark)
-								((TextView)view.findViewById(android.R.id.text1)).setTextColor(Color.WHITE);
-							return view;						}
-					};
+                    adapter = new CheckedItemAdapter(mContext, layout, android.R.id.text1, mItems);
                 }
             }
 
@@ -1154,6 +1179,22 @@ class AlertController {
                 CharSequence[] objects) {
             super(context, resource, textViewResourceId, objects);
         }
+
+		@NonNull
+		@Override
+		public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+			View view = super.getView(position, convertView, parent);
+			if(GlobalOptions.isDark || GlobalOptions.isLarge) {
+				TextView tv = ((TextView)view.findViewById(android.R.id.text1));
+				if(GlobalOptions.isDark) tv.setTextColor(Color.WHITE);
+				if(GlobalOptions.isLarge) {
+					tv.setTextSize(23);
+					int pad = (int) (GlobalOptions.density*20);
+					tv.setPadding(tv.getPaddingLeft(), pad, tv.getPaddingRight(), pad);
+				}
+			}
+			return view;
+		}
 
         @Override
         public boolean hasStableIds() {

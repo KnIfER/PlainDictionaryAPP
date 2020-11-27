@@ -4,7 +4,7 @@ apply plugin: 'com.android.library'
 android {
 
     defaultConfig {
-        compileSdkVersion ver_compileSdkVersion as int
+        compileSdkVersion ver_compileSdkVersion
         targetSdkVersion ver_aimsdk
         minSdkVersion ver_minsdk
         vectorDrawables.useSupportLibrary = true
@@ -29,9 +29,28 @@ android {
 
 
 dependencies {
-    api (libs_appres)
-    api libs_drawer
-    api libs_cursor
-    api libs_fragment
+    if(mod_core=='1') {
+        api project(":AxtCore")
+    }
+    api (libs_appres){
+        if(mod_core=='1') {
+            exclude module:"core"
+        }
+    }
+    api (libs_drawer){
+        if(mod_core=='1') {
+            exclude module:"core"
+        }
+    }
+    api (libs_cursor)
+    api (libs_fragment){
+        if(mod_core=='1') {
+            exclude module:"core"
+        }
+        if(mod_viewpager=='1') {
+            exclude module: "viewpager"
+        }
+    }
 
 }
+

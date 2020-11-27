@@ -450,6 +450,7 @@ public class ListPopupWindow implements ShowableListMenu {
     public void setEnterTransition(@Nullable Transition enterTransition) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             mPopup.setEnterTransition(null);
+            //mPopup.setExitTransition(null);
         }
     }
 

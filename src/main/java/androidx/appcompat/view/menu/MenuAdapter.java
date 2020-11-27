@@ -17,12 +17,16 @@ package androidx.appcompat.view.menu;
 
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.TextView;
 
 import androidx.annotation.RestrictTo;
+import androidx.appcompat.R;
+import androidx.appcompat.app.GlobalOptions;
 
 import java.util.ArrayList;
 
@@ -92,6 +96,11 @@ public class MenuAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = mInflater.inflate(mItemLayoutRes, parent, false);
+			if(GlobalOptions.isDark) {
+				//todo move to better place.
+				TextView tv = convertView.findViewById(R.id.title);
+				if (tv != null) tv.setTextColor(Color.WHITE);
+			}
         }
 
         final int currGroupId = getItem(position).getGroupId();
