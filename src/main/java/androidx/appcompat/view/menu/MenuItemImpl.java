@@ -108,6 +108,8 @@ public final class MenuItemImpl implements SupportMenuItem {
 
     public boolean isLongClicked;
     private View mActionView;
+	public View actionView;
+	//public Object tag;
     private ActionProvider mActionProvider;
     private MenuItem.OnActionExpandListener mOnActionExpandListener;
     private boolean mIsActionViewExpanded = false;

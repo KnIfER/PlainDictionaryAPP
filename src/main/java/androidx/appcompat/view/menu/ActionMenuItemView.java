@@ -17,6 +17,7 @@
 package androidx.appcompat.view.menu;
 
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
+import static androidx.appcompat.app.GlobalOptions.shouldRecordMenuView;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -152,14 +153,29 @@ public class ActionMenuItemView extends AppCompatTextView
     @Override
     public void onClick(View v) {
         if (mItemInvoker != null) {
+			boolean srmv = shouldRecordMenuView;
+			if(srmv) {
+				mItemData.actionView = this;
+			}
             mItemInvoker.invokeItem(mItemData);
+			if(srmv) {
+				mItemData.actionView = null;
+			}
         }
     }
 
     @Override
     public boolean onLongClick(View v) {
         if (mItemInvoker != null) {
-            return mItemInvoker.pushItem(mItemData);
+			boolean srmv = shouldRecordMenuView;
+			if(srmv) {
+				mItemData.actionView = this;
+			}
+			boolean ret = mItemInvoker.pushItem(mItemData);
+			if(srmv) {
+				mItemData.actionView = null;
+			}
+            return ret;
         }
         return false;
     }

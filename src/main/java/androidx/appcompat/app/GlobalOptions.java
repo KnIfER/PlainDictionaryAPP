@@ -29,4 +29,6 @@ public class GlobalOptions {
 	public static float densityDpi;
 
 	public static int realWidth;
+	
+	public static boolean shouldRecordMenuView;
 }

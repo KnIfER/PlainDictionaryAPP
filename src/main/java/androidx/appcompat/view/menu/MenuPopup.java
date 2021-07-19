@@ -32,11 +32,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.internal.view.SupportMenu;
 
+import static androidx.appcompat.app.GlobalOptions.shouldRecordMenuView;
+
 /**
  * Base class for a menu popup abstraction - i.e., some type of menu, housed in a popup window
  * environment.
  */
-abstract class MenuPopup implements ShowableListMenu, MenuPresenter,
+public abstract class MenuPopup implements ShowableListMenu, MenuPresenter,
         AdapterView.OnItemClickListener,AdapterView.OnItemLongClickListener {
     private Rect mEpicenterBounds;
 
@@ -122,21 +124,35 @@ abstract class MenuPopup implements ShowableListMenu, MenuPresenter,
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         ListAdapter outerAdapter = (ListAdapter) parent.getAdapter();
         MenuAdapter wrappedAdapter = toMenuAdapter(outerAdapter);
-
+        MenuItemImpl item = (MenuItemImpl) outerAdapter.getItem(position);
+		boolean srmv = shouldRecordMenuView;
+		if(srmv) {
+			item.actionView = view;
+		}
         // Use the position from the outer adapter so that if a header view was added, we don't get
         // an off-by-1 error in position.
         wrappedAdapter.mAdapterMenu.performItemAction(
-                (MenuItem) outerAdapter.getItem(position),
+				item,
                 this, // always make sure that we show the sub-menu
                 closeMenuOnSubMenuOpened() ? 0 : SupportMenu.FLAG_KEEP_OPEN_ON_SUBMENU_OPENED);
+		if(srmv) {
+			item.actionView = null;
+		}
     }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         ListAdapter outerAdapter = (ListAdapter) parent.getAdapter();
         MenuAdapter wrappedAdapter = toMenuAdapter(outerAdapter);
-        boolean ret = wrappedAdapter.mAdapterMenu.dispatchMenuItemLongClicked(wrappedAdapter.mAdapterMenu, (MenuItem) outerAdapter.getItem(position));
-
+		MenuItemImpl item = (MenuItemImpl) outerAdapter.getItem(position);
+		boolean srmv = shouldRecordMenuView;
+		if(srmv) {
+			item.actionView = view;
+		}
+        boolean ret = wrappedAdapter.mAdapterMenu.dispatchMenuItemLongClicked(wrappedAdapter.mAdapterMenu, item);
+		if(srmv) {
+			item.actionView = null;
+		}
         return ret;
     }
     /**
