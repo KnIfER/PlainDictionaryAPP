@@ -16,8 +16,6 @@
 
 package androidx.appcompat.app;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -33,6 +31,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.ArrayRes;
 import androidx.annotation.AttrRes;
@@ -44,6 +43,8 @@ import androidx.annotation.RestrictTo;
 import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.R;
+
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 /**
  * A subclass of Dialog that can display one, two or three buttons. If you only want to
@@ -72,8 +73,8 @@ import androidx.appcompat.R;
  * </div>
  */
 public class AlertDialog extends AppCompatDialog implements DialogInterface {
-
-    final AlertController mAlert;
+	
+	private final AlertController mAlert;
 
     /**
      * No layout hint.
@@ -1026,4 +1027,7 @@ public class AlertDialog extends AppCompatDialog implements DialogInterface {
         }
     }
 
+    public TextView getTitleView() {
+    	return mAlert.mTitleView;
+	}
 }

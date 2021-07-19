@@ -40,6 +40,7 @@ import androidx.core.view.KeyEventDispatcher;
  */
 public class AppCompatDialog extends Dialog implements AppCompatCallback {
 	public Object tag;
+	public Object tag1;
     private AppCompatDelegate mDelegate;
 
     // Until KeyEventDispatcher is un-hidden, it can't be implemented directly,

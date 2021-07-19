@@ -16,8 +16,6 @@
 
 package androidx.appcompat.app;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
@@ -65,6 +63,8 @@ import androidx.core.widget.NestedScrollView;
 
 import java.lang.ref.WeakReference;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
 public class AlertController {
     private final Context mContext;
     final AppCompatDialog mDialog;
@@ -105,8 +105,9 @@ public class AlertController {
     private Drawable mIcon;
 
     private ImageView mIconView;
-    private TextView mTitleView;
+	TextView mTitleView;
     private TextView mMessageView;
+    ViewGroup mTopPanel;
     private View mCustomTitleView;
 
     ListAdapter mAdapter;
@@ -250,6 +251,9 @@ public class AlertController {
         mTitle = title;
         if (mTitleView != null) {
             mTitleView.setText(title);
+        }
+        if (mTopPanel != null && mTopPanel.getVisibility()!=View.VISIBLE^TextUtils.isEmpty(title)) {
+            setupTitle(mTopPanel, true);
         }
     }
 
@@ -488,7 +492,8 @@ public class AlertController {
 
         setupContent(contentPanel);
         setupButtons(buttonPanel);
-        setupTitle(topPanel);
+        mTopPanel = topPanel;
+        setupTitle(topPanel, false);
 
         final boolean hasCustomPanel = customPanel != null
                 && customPanel.getVisibility() != View.GONE;
@@ -679,9 +684,13 @@ public class AlertController {
         }
     }
 
-    private void setupTitle(ViewGroup topPanel) {
+    private void setupTitle(ViewGroup topPanel, boolean update) {
 		boolean darkIs=GlobalOptions.isDark;
+		View titleTemplate = mWindow.findViewById(R.id.title_template);
         if (mCustomTitleView != null) {
+        	if(mCustomTitleView.getParent()!=null) {
+        		return;
+			}
             // Add the custom title view directly to the topPanel layout
             LayoutParams lp = new LayoutParams(
                     LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -689,7 +698,6 @@ public class AlertController {
             topPanel.addView(mCustomTitleView, 0, lp);
 
             // Hide the title template
-            View titleTemplate = mWindow.findViewById(R.id.title_template);
             titleTemplate.setVisibility(View.GONE);
         } else {
             mIconView = (ImageView) mWindow.findViewById(android.R.id.icon);
@@ -702,6 +710,11 @@ public class AlertController {
 				if(GlobalOptions.isLarge) mTitleView.setTextSize(26);
 				if(darkIs) {
 					mTitleView.setTextColor(Color.WHITE);
+				}
+				if(update) {
+					titleTemplate.setVisibility(View.VISIBLE);
+					topPanel.setVisibility(View.VISIBLE);
+					mIconView.setVisibility(View.VISIBLE);
 				}
                 // Do this last so that if the user has supplied any icons we
                 // use them instead of the default ones. If the user has
@@ -735,10 +748,9 @@ public class AlertController {
                 }
             } else {
                 // Hide the title template
-                final View titleTemplate = mWindow.findViewById(R.id.title_template);
                 titleTemplate.setVisibility(View.GONE);
+				topPanel.setVisibility(View.GONE);
                 mIconView.setVisibility(View.GONE);
-                topPanel.setVisibility(View.GONE);
             }
         }
     }
