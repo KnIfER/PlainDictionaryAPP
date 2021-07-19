@@ -26,7 +26,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ListAdapter;
-import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.R;
@@ -34,6 +33,8 @@ import androidx.appcompat.graphics.drawable.DrawableWrapper;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewPropertyAnimatorCompat;
 import androidx.core.widget.ListViewAutoScrollHelper;
+
+import com.mobeta.android.dslv.DragSortListView;
 
 import java.lang.reflect.Field;
 
@@ -43,7 +44,7 @@ import java.lang.reflect.Field;
  * displayed on screen within a drop down. The focus is never actually
  * passed to the drop down in this mode; the list only looks focused.</p>
  */
-public class DropDownListView extends ListView {
+public class DropDownListView extends DragSortListView {
     public static final int INVALID_POSITION = -1;
     public static final int NO_POSITION = -1;
 
@@ -202,8 +203,22 @@ public class DropDownListView extends ListView {
 
         super.dispatchDraw(canvas);
     }
-
-    @Override
+	
+	OnTouchListener dispatchTouchListener;
+	
+	public void setOnDispatchTouchListener(OnTouchListener l) {
+		dispatchTouchListener=l;
+	}
+	
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent ev) {
+    	if(dispatchTouchListener!=null&&dispatchTouchListener.onTouch(this, ev)) {
+    		return true;
+		}
+		return super.dispatchTouchEvent(ev);
+	}
+	
+	@Override
     public boolean onTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:

@@ -111,8 +111,10 @@ public class ListPopupWindow implements ShowableListMenu {
 
     public int mMarginTop;
     public int mMarginShrinkin;
-
-    private Context mContext;
+	public Object tag;
+	public Object tag1;
+	
+	private Context mContext;
     private ListAdapter mAdapter;
     public DropDownListView mDropDownList;
 
