@@ -23,7 +23,6 @@ import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.LocaleList;
 import android.text.Editable;
 import android.util.AttributeSet;
@@ -45,8 +44,6 @@ import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
 import androidx.core.view.TintableBackgroundView;
 import androidx.core.widget.TextViewCompat;
-
-import java.util.HashMap;
 
 /**
  * A {@link EditText} which supports compatible features on older versions of the platform,
@@ -235,8 +232,8 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
     public TextClassifier getTextClassifier() {
         // The null check is necessary because getTextClassifier is called when we are invoking
         // the super class's constructor.
-		if(true && TextFucker!=null) {
-			return TextFucker;
+		if(true && UrlFucker !=null) {
+			return UrlFucker;
 		}
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P || mTextClassifierHelper == null) {
             return super.getTextClassifier();
@@ -244,7 +241,7 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
         return mTextClassifierHelper.getTextClassifier();
     }
     
-    public final static TextClassifier TextFucker;
+    public final static TextClassifier UrlFucker;
     
     @RequiresApi(api = Build.VERSION_CODES.O)
 	public static class FuckTextClassifier implements TextClassifier {
@@ -290,7 +287,7 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
     
     static {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			TextFucker = new TextClassifier(){
+			UrlFucker = new TextClassifier(){
 				@RequiresApi(api = Build.VERSION_CODES.P)
 				@NonNull
 				@Override
@@ -299,7 +296,7 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
 				}
 			};
 		} else {
-			TextFucker=null;
+			UrlFucker =null;
 		}
 	}
 }
