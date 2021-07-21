@@ -80,6 +80,8 @@ public class DragSortListView extends ListView {
 
     private Point mTouchLoc = new Point();
 
+    public float lastX;
+    public float lastY;
     /**
      * The middle (in the y-direction) of the floating View.
      */
@@ -505,7 +507,7 @@ public class DragSortListView extends ListView {
 
             boolean useDefault = a.getBoolean(
                     R.styleable.DragSortListView_use_default_controller,
-                    true);
+                    false);
 
             if (useDefault) {
                 boolean removeEnabled = a.getBoolean(
@@ -729,7 +731,6 @@ public class DragSortListView extends ListView {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-
             DragSortItemView v;
             View child;
             // Log.d("mobeta",
@@ -738,14 +739,13 @@ public class DragSortListView extends ListView {
                 v = (DragSortItemView) convertView;
                 View oldChild = v.getChildAt(0);
                 child = mAdapter.getView(position, oldChild, DragSortListView.this);
-                
-                    // shouldn't get here if user is reusing convertViews
-                    // properly
-                if (oldChild != null) {
-                    v.removeViewAt(0);
+                if (child.getParent()!=v) {
+					// shouldn't get here if user is reusing convertViews properly
+					//Log.d("mobeta", "sanity check removing the view...");
+                    v.removeAllViews();
+                    if(v.getParent()!=null) ((ViewGroup)v.getParent()).removeAllViews();
+					v.addView(child);
                 }
-                if(child!=null)
-                	v.addView(child);
             } else {
                 child = mAdapter.getView(position, null, DragSortListView.this);
                 if (child instanceof Checkable) {
@@ -754,10 +754,12 @@ public class DragSortListView extends ListView {
                     v = new DragSortItemView(getContext());
                 }
                 v.setLayoutParams(new AbsListView.LayoutParams(
-                        ViewGroup.LayoutParams.FILL_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT));
+						ViewGroup.LayoutParams.MATCH_PARENT,
+						ViewGroup.LayoutParams.WRAP_CONTENT));
                 v.addView(child);
             }
+			v.setTag(child.getTag());
+			v.setId(child.getId());
 
             // Set the correct item height given drag state; passed
             // View needs to be measured if measurement is required.
@@ -1517,24 +1519,26 @@ public class DragSortListView extends ListView {
         // must set to avoid cancelDrag being called from the
         // DataSetObserver
         mDragState = DROPPING;
-
-        if (mDropListener != null && mFloatPos >= 0 && mFloatPos < getCount()) {
-            final int numHeaders = getHeaderViewsCount();
-            mDropListener.drop(mSrcPos - numHeaders, mFloatPos - numHeaders);
-        }
+	
+		final int numHeaders = getHeaderViewsCount();
+        int from = mSrcPos - numHeaders;
+        int to =  mFloatPos - numHeaders;;
+        boolean doit = mDropListener != null && mFloatPos >= 0 && mFloatPos < getCount();
 
         destroyFloatView();
 
         adjustOnReorder();
         clearPositions();
         adjustAllItems();
-
+	
         // now the drag is done
         if (mInTouchEvent) {
             mDragState = STOPPED;
         } else {
             mDragState = IDLE;
         }
+        
+		if (doit) mDropListener.drop(from, to);
     }
 
     private void doRemoveItem() {
@@ -1689,7 +1693,7 @@ public class DragSortListView extends ListView {
             mDragState = IDLE;
         }
         mCurrFloatAlpha = mFloatAlpha;
-        mListViewIntercepted = false;
+        ListViewIntercepted = false;
         mChildHeightCache.clear();
     }
 
@@ -1702,18 +1706,14 @@ public class DragSortListView extends ListView {
         mX = (int) ev.getX();
         mY = (int) ev.getY();
         if (action == MotionEvent.ACTION_DOWN) {
-            mLastX = mX;
-            mLastY = mY;
+            lastX = mLastX = mX;
+            lastY = mLastY = mY;
         }
         mOffsetX = (int) ev.getRawX() - mX;
         mOffsetY = (int) ev.getRawY() - mY;
     }
-
-    public boolean listViewIntercepted() {
-        return mListViewIntercepted;
-    }
-
-    private boolean mListViewIntercepted = false;
+	
+	public boolean ListViewIntercepted = false;
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -1743,7 +1743,7 @@ public class DragSortListView extends ListView {
             intercept = true;
         } else {
             if (super.onInterceptTouchEvent(ev)) {
-                mListViewIntercepted = true;
+                ListViewIntercepted = true;
                 intercept = true;
             }
 
@@ -1917,8 +1917,10 @@ public class DragSortListView extends ListView {
         	height=1;
         
         if (height != lp.height) {
-            lp.height = height;
-            v.setLayoutParams(lp);
+			//Log.d("mobeta", "set height="+height);
+			lp.height = height;
+			//v.setLayoutParams(lp);
+			v.requestLayout();
         }
 
         // Adjust item gravity
@@ -2540,6 +2542,10 @@ public class DragSortListView extends ListView {
 
     public boolean isDragEnabled() {
         return mDragEnabled;
+    }
+    
+    public boolean isNotDragging() {
+        return mDragState == IDLE;
     }
 
     /**

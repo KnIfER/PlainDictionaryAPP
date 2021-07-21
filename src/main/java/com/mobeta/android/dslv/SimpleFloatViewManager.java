@@ -1,13 +1,12 @@
 package com.mobeta.android.dslv;
 
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.graphics.Color;
-import android.widget.ListView;
-import android.widget.ImageView;
+import android.graphics.Point;
 import android.view.View;
 import android.view.ViewGroup;
-import android.util.Log;
+import android.widget.ImageView;
+import android.widget.ListView;
 
 /**
  * Simple implementation of the FloatViewManager class. Uses list
@@ -21,10 +20,13 @@ public class SimpleFloatViewManager implements DragSortListView.FloatViewManager
 
 	public int mFloatBGColor = Color.BLACK;
 
-    private ListView mListView;
+    protected ListView mListView;
 
     public SimpleFloatViewManager(ListView lv) {
         mListView = lv;
+		if (mImageView == null) {
+			mImageView = new ImageView(mListView.getContext());
+		}
     }
 
     public void setBackgroundColor(int color) {
@@ -41,25 +43,27 @@ public class SimpleFloatViewManager implements DragSortListView.FloatViewManager
         // a NullPointerException once...
         View v = mListView.getChildAt(position + mListView.getHeaderViewsCount() - mListView.getFirstVisiblePosition());
 
+        if (v instanceof DragSortItemView) {
+			v = ((ViewGroup)v).getChildAt(0);
+		}
+        
         if (v == null) {
             return null;
         }
 
         v.setPressed(false);
-
+		
         // Create a copy of the drawing cache so that it does not get
         // recycled by the framework when the list tries to clean up memory
         //v.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
         v.setDrawingCacheEnabled(true);
         mFloatBitmap = Bitmap.createBitmap(v.getDrawingCache());
         v.setDrawingCacheEnabled(false);
-
-        if (mImageView == null) {
-            mImageView = new ImageView(mListView.getContext());
-        }
+	
         mImageView.setBackgroundColor(mFloatBGColor);
         mImageView.setPadding(0, 0, 0, 0);
         mImageView.setImageBitmap(mFloatBitmap);
+		//Log.d("mobeta", "FloatView W="+v.getWidth()+" H="+v.getMeasuredHeight()+" v="+);
         mImageView.setLayoutParams(new ViewGroup.LayoutParams(v.getWidth(), v.getHeight()));
 
         return mImageView;
@@ -80,10 +84,15 @@ public class SimpleFloatViewManager implements DragSortListView.FloatViewManager
     @Override
     public void onDestroyFloatView(View floatView) {
         ((ImageView) floatView).setImageDrawable(null);
-
-        mFloatBitmap.recycle();
-        mFloatBitmap = null;
+		
+        if (mFloatBitmap!=null) {
+			mFloatBitmap.recycle();
+			mFloatBitmap = null;
+		}
     }
-
+	
+	public ImageView getFloatView() {
+		return mImageView;
+	}
 }
 
