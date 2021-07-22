@@ -49,6 +49,9 @@ class AppCompatSeekBarHelper extends AppCompatProgressBarHelper {
 
         TintTypedArray a = TintTypedArray.obtainStyledAttributes(mView.getContext(), attrs,
                 R.styleable.AppCompatSeekBar, defStyleAttr, 0);
+        ViewCompat.saveAttributeDataForStyleable(mView, mView.getContext(),
+                R.styleable.AppCompatSeekBar, attrs, a.getWrappedTypeArray(),
+                defStyleAttr, 0);
         final Drawable drawable = a.getDrawableIfKnown(R.styleable.AppCompatSeekBar_android_thumb);
         if (drawable != null) {
             mView.setThumb(drawable);

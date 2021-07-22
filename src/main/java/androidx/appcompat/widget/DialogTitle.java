@@ -16,16 +16,18 @@
 
 package androidx.appcompat.widget;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.text.Layout;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
+
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 /**
  * Used by dialogs to change the font size and number of lines to try to fit
@@ -36,23 +38,24 @@ import androidx.appcompat.R;
 @RestrictTo(LIBRARY_GROUP_PREFIX)
 public class DialogTitle extends AppCompatTextView {
 
-    public DialogTitle(Context context, AttributeSet attrs, int defStyleAttr) {
+    public DialogTitle(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
-    public DialogTitle(Context context, AttributeSet attrs) {
+    public DialogTitle(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public DialogTitle(Context context) {
+    public DialogTitle(@NonNull Context context) {
         super(context);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-        if(true) return;
+        
+        if(true) return; // ???
+        
         final Layout layout = getLayout();
         if (layout != null) {
             final int lineCount = layout.getLineCount();

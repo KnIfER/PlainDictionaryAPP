@@ -33,6 +33,7 @@ import android.widget.ListAdapter;
 import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.view.menu.ListMenuItemView;
 import androidx.appcompat.view.menu.MenuAdapter;
@@ -68,10 +69,12 @@ public class MenuPopupWindow extends ListPopupWindow implements MenuItemHoverLis
 
     private MenuItemHoverListener mHoverListener;
 
-    public MenuPopupWindow(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public MenuPopupWindow(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr,
+            int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
+    @NonNull
     @Override
     DropDownListView createDropDownListView(Context context, boolean hijackFocus) {
         MenuDropDownListView view = new MenuDropDownListView(context, hijackFocus);
@@ -178,7 +181,15 @@ public class MenuPopupWindow extends ListPopupWindow implements MenuItemHoverLis
                 setSelection(INVALID_POSITION);
 
                 // Close only the top-level menu.
-                ((MenuAdapter) getAdapter()).getAdapterMenu().close(false /* closeAllMenus */);
+                final ListAdapter adapter = getAdapter();
+                final MenuAdapter menuAdapter;
+                if (adapter instanceof HeaderViewListAdapter) {
+                    menuAdapter =
+                            (MenuAdapter) ((HeaderViewListAdapter) adapter).getWrappedAdapter();
+                } else {
+                    menuAdapter = (MenuAdapter) adapter;
+                }
+                menuAdapter.getAdapterMenu().close(false /* closeAllMenus */);
                 return true;
             }
             return super.onKeyDown(keyCode, event);

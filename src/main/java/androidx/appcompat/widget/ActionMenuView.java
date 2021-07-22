@@ -15,13 +15,10 @@
  */
 package androidx.appcompat.widget;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
-
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.Menu;
@@ -31,15 +28,18 @@ import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.StyleRes;
-import androidx.appcompat.R;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.view.menu.MenuPresenter;
 import androidx.appcompat.view.menu.MenuView;
+
+import static androidx.annotation.RestrictTo.Scope.LIBRARY;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 /**
  * ActionMenuView is a presentation of a series of menu options as a View. It provides
@@ -64,7 +64,7 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
     private int mPopupTheme;
 
     private boolean mReserveOverflow;
-    protected ActionMenuPresenter mPresenter;
+    private ActionMenuPresenter mPresenter;
     private MenuPresenter.Callback mActionMenuPresenterCallback;
     MenuBuilder.Callback mMenuBuilderCallback;
     private boolean mFormatItems;
@@ -74,11 +74,11 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
 
     OnMenuItemClickListener mOnMenuItemClickListener;
 
-    public ActionMenuView(Context context) {
+    public ActionMenuView(@NonNull Context context) {
         this(context, null);
     }
 
-    public ActionMenuView(Context context, AttributeSet attrs) {
+    public ActionMenuView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         setBaselineAligned(false);
         final float density = context.getResources().getDisplayMetrics().density;
@@ -119,7 +119,7 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
      * @param presenter Menu presenter used to display popup menu
      * @hide
      */
-    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    @RestrictTo(LIBRARY)
     public void setPresenter(ActionMenuPresenter presenter) {
         mPresenter = presenter;
         mPresenter.setMenuView(this);
@@ -447,7 +447,6 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
         final int midVertical = (bottom - top) / 2;
         final int dividerWidth = getDividerWidth();
         int overflowWidth = 0;
-        int nonOverflowWidth = 0;
         int nonOverflowCount = 0;
         int widthRemaining = right - left - getPaddingRight() - getPaddingLeft();
         boolean hasOverflow = false;
@@ -482,10 +481,8 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
                 hasOverflow = true;
             } else {
                 final int size = v.getMeasuredWidth() + p.leftMargin + p.rightMargin;
-                nonOverflowWidth += size;
                 widthRemaining -= size;
                 if (hasSupportDividerBeforeChildAt(i)) {
-                    nonOverflowWidth += dividerWidth;
                 }
                 nonOverflowCount++;
             }
@@ -626,12 +623,12 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
     public boolean invokeItem(MenuItemImpl item) {
         return mMenu.performItemAction(item, 0);
     }
-
-    @Override
-    public boolean pushItem(MenuItemImpl item) {
-        return mMenu.dispatchMenuItemLongClicked(mMenu,item);
-    }
-
+	
+	@Override
+	public boolean pushItem(MenuItemImpl item) {
+		return mMenu.dispatchMenuItemLongClicked(mMenu,item);
+	}
+    
     /** @hide */
     @Override
     @RestrictTo(LIBRARY_GROUP_PREFIX)
@@ -783,13 +780,13 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
         }
 
         @Override
-        public boolean onMenuItemSelected(MenuBuilder menu, MenuItem item) {
+        public boolean onMenuItemSelected(@NonNull MenuBuilder menu, @NonNull MenuItem item) {
             return mOnMenuItemClickListener != null &&
                     mOnMenuItemClickListener.onMenuItemClick(item);
         }
 
         @Override
-        public void onMenuModeChange(MenuBuilder menu) {
+        public void onMenuModeChange(@NonNull MenuBuilder menu) {
             if (mMenuBuilderCallback != null) {
                 mMenuBuilderCallback.onMenuModeChange(menu);
             }
@@ -801,11 +798,11 @@ public class ActionMenuView extends LinearLayoutCompat implements MenuBuilder.It
         }
 
         @Override
-        public void onCloseMenu(MenuBuilder menu, boolean allMenusAreClosing) {
+        public void onCloseMenu(@NonNull MenuBuilder menu, boolean allMenusAreClosing) {
         }
 
         @Override
-        public boolean onOpenSubMenu(MenuBuilder subMenu) {
+        public boolean onOpenSubMenu(@NonNull MenuBuilder subMenu) {
             return false;
         }
     }

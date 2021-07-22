@@ -18,21 +18,22 @@ package androidx.appcompat.widget;
 
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.CompoundButton;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.R;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.ViewCompat;
 import androidx.core.widget.CompoundButtonCompat;
 
 class AppCompatCompoundButtonHelper {
-
+    @NonNull
     private final CompoundButton mView;
 
     private ColorStateList mButtonTintList = null;
@@ -42,20 +43,16 @@ class AppCompatCompoundButtonHelper {
 
     private boolean mSkipNextApply;
 
-    /**
-     * Interface which allows us to directly set a button, bypass any calls back to ourselves.
-     */
-    interface DirectSetButtonDrawableInterface {
-        void setButtonDrawable(Drawable buttonDrawable);
-    }
-
-    AppCompatCompoundButtonHelper(CompoundButton view) {
+    AppCompatCompoundButtonHelper(@NonNull CompoundButton view) {
         mView = view;
     }
 
-    void loadFromAttributes(AttributeSet attrs, int defStyleAttr) {
-        TypedArray a = mView.getContext().obtainStyledAttributes(attrs, R.styleable.CompoundButton,
-                defStyleAttr, 0);
+    void loadFromAttributes(@Nullable AttributeSet attrs, int defStyleAttr) {
+        TintTypedArray a =
+                TintTypedArray.obtainStyledAttributes(mView.getContext(), attrs,
+                        R.styleable.CompoundButton, defStyleAttr, 0);
+        ViewCompat.saveAttributeDataForStyleable(mView, mView.getContext(),
+                R.styleable.CompoundButton, attrs, a.getWrappedTypeArray(), defStyleAttr, 0);
         try {
             boolean buttonDrawableLoaded = false;
             if (a.hasValue(R.styleable.CompoundButton_buttonCompat)) {

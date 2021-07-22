@@ -28,6 +28,8 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
 import androidx.appcompat.view.ActionMode;
@@ -39,12 +41,11 @@ import androidx.core.view.ViewCompat;
  */
 @RestrictTo(LIBRARY_GROUP_PREFIX)
 public class ActionBarContextView extends AbsActionBarView {
-    private static final String TAG = "ActionBarContextView";
-
     private CharSequence mTitle;
     private CharSequence mSubtitle;
 
     private View mClose;
+    private View mCloseButton;
     private View mCustomView;
     private LinearLayout mTitleLayout;
     private TextView mTitleView;
@@ -54,15 +55,16 @@ public class ActionBarContextView extends AbsActionBarView {
     private boolean mTitleOptional;
     private int mCloseItemLayout;
 
-    public ActionBarContextView(Context context) {
+    public ActionBarContextView(@NonNull Context context) {
         this(context, null);
     }
 
-    public ActionBarContextView(Context context, AttributeSet attrs) {
+    public ActionBarContextView(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, R.attr.actionModeStyle);
     }
 
-    public ActionBarContextView(Context context, AttributeSet attrs, int defStyle) {
+    public ActionBarContextView(
+            @NonNull Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
         final TintTypedArray a = TintTypedArray.obtainStyledAttributes(context, attrs,
@@ -166,8 +168,8 @@ public class ActionBarContextView extends AbsActionBarView {
             addView(mClose);
         }
 
-        View closeButton = mClose.findViewById(R.id.action_mode_close_button);
-        closeButton.setOnClickListener(new OnClickListener() {
+        mCloseButton = mClose.findViewById(R.id.action_mode_close_button);
+        mCloseButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 mode.finish();
@@ -200,6 +202,10 @@ public class ActionBarContextView extends AbsActionBarView {
         removeAllViews();
         mCustomView = null;
         mMenuView = null;
+        mActionMenuPresenter = null;
+        if (mCloseButton != null) {
+            mCloseButton.setOnClickListener(null);
+        }
     }
 
     @Override

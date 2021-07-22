@@ -138,6 +138,13 @@ public class AppCompatDialog extends Dialog implements AppCompatCallback {
         super.onStop();
         getDelegate().onStop();
     }
+    
+	@Override
+	public void dismiss() {
+		super.dismiss();
+		// There is no onDestroy in Dialog, so we simulate it from dismiss()
+		getDelegate().onDestroy();
+	}
 
     /**
      * Enable extended support library window features.

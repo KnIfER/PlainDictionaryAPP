@@ -16,9 +16,6 @@
 
 package androidx.appcompat.widget;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
-import static androidx.annotation.RestrictTo.Scope.TESTS;
-
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
@@ -66,6 +63,10 @@ import androidx.customview.view.AbsSavedState;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static androidx.annotation.RestrictTo.Scope.LIBRARY;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
+import static androidx.annotation.RestrictTo.Scope.TESTS;
 
 /**
  * A standard toolbar for use within application content.
@@ -149,6 +150,7 @@ public class Toolbar extends ViewGroup {
     private TextView mTitleTextView;
     private TextView mSubtitleTextView;
     public ImageButton mNavButtonView;
+	private OnClickListener rawListener;
     private ImageView mLogoView;
 
     private Drawable mCollapseIcon;
@@ -188,7 +190,6 @@ public class Toolbar extends ViewGroup {
 
     private boolean mEatingTouch;
     private boolean mEatingHover;
-    public boolean bReverseActionViews;
 
     // Clear me after use.
     private final ArrayList<View> mTempViews = new ArrayList<View>();
@@ -225,20 +226,22 @@ public class Toolbar extends ViewGroup {
         }
     };
 
-    public Toolbar(Context context) {
+    public Toolbar(@NonNull Context context) {
         this(context, null);
     }
 
-    public Toolbar(Context context, @Nullable AttributeSet attrs) {
+    public Toolbar(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, R.attr.toolbarStyle);
     }
 
-    public Toolbar(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public Toolbar(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         // Need to use getContext() here so that we use the themed context
         final TintTypedArray a = TintTypedArray.obtainStyledAttributes(getContext(), attrs,
                 R.styleable.Toolbar, defStyleAttr, 0);
+        ViewCompat.saveAttributeDataForStyleable(this, context, R.styleable.Toolbar, attrs,
+                    a.getWrappedTypeArray(), defStyleAttr, 0);
 
         mTitleTextAppearance = a.getResourceId(R.styleable.Toolbar_titleTextAppearance, 0);
         mSubtitleTextAppearance = a.getResourceId(R.styleable.Toolbar_subtitleTextAppearance, 0);
@@ -458,7 +461,7 @@ public class Toolbar extends ViewGroup {
      *
      * @param margin the ending title margin in pixels
      * @see #getTitleMarginEnd()
-     ** {@link androidx.appcompat.R.attr#titleMarginEnd}
+     * {@link androidx.appcompat.R.attr#titleMarginEnd}
      */
     public void setTitleMarginEnd(int margin) {
         mTitleMarginEnd = margin;
@@ -551,7 +554,7 @@ public class Toolbar extends ViewGroup {
     }
 
     /** @hide */
-    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    @RestrictTo(LIBRARY)
     public void setMenu(MenuBuilder menu, ActionMenuPresenter outerPresenter) {
         if (menu == null && mMenuView == null) {
             return;
@@ -874,8 +877,8 @@ public class Toolbar extends ViewGroup {
      *
      * @param color The new text color
      */
-    public void setTitleTextColor(@NonNull ColorStateList color){
-    mTitleTextColor = color;
+    public void setTitleTextColor(@NonNull ColorStateList color) {
+        mTitleTextColor = color;
         if (mTitleTextView != null) {
             mTitleTextView.setTextColor(color);
         }
@@ -1001,14 +1004,13 @@ public class Toolbar extends ViewGroup {
      *
      * @return The navigation icon drawable
      *
-     * @attr ref androidx.appcompat.R.styleable#Toolbar_navigationIcon
+     * {@link androidx.appcompat.R.attr#navigationIcon}
      */
     @Nullable
     public Drawable getNavigationIcon() {
         return mNavButtonView != null ? mNavButtonView.getDrawable() : null;
     }
 
-	OnClickListener rawListener;
     /**
      * Set a listener to respond to navigation events.
      *
@@ -1021,10 +1023,10 @@ public class Toolbar extends ViewGroup {
     public void setNavigationOnClickListener(OnClickListener listener) {
         ensureNavButtonView();
         mNavButtonView.setOnClickListener(listener);
-        if(getId()==R.id.action_context_bar) rawListener=listener;
+		if(getId()==R.id.action_context_bar) rawListener=listener;
     }
-
-    /** add OnClickListener to navigation */
+	
+	/** add OnClickListener to navigation */
 	public void addNavigationOnClickListener(final OnClickListener listener) {
 		ensureNavButtonView();
 		mNavButtonView.setOnClickListener(rawListener==null?listener:new OnClickListener() {
@@ -1035,8 +1037,8 @@ public class Toolbar extends ViewGroup {
 			}
 		});
 	}
-
-	/**
+	
+    /**
      * Retrieve the currently configured content description for the collapse button view.
      * This will be used to describe the collapse action to users through mechanisms such
      * as screen readers or tooltips.
@@ -1168,7 +1170,6 @@ public class Toolbar extends ViewGroup {
         if (mMenuView.peekMenu() == null) {
             // Initialize a new menu for the first time.
             final MenuBuilder menu = (MenuBuilder) mMenuView.getMenu();
-            mMenuView.mPresenter.bReverseActionViews=bReverseActionViews;
             if (mExpandedMenuPresenter == null) {
                 mExpandedMenuPresenter = new ExpandedActionViewMenuPresenter();
             }
@@ -1497,7 +1498,7 @@ public class Toolbar extends ViewGroup {
         if (mNavButtonView == null) {
             mNavButtonView = new AppCompatImageButton(getContext(), null,
                     R.attr.toolbarNavigationButtonStyle);
-            mNavButtonView.setId(R.id.home);
+			mNavButtonView.setId(R.id.home);
             final LayoutParams lp = generateDefaultLayoutParams();
             lp.gravity = GravityCompat.START | (mButtonGravity & Gravity.VERTICAL_GRAVITY_MASK);
             mNavButtonView.setLayoutParams(lp);
@@ -2236,10 +2237,6 @@ public class Toolbar extends ViewGroup {
     @Override
     protected boolean checkLayoutParams(ViewGroup.LayoutParams p) {
         return super.checkLayoutParams(p) && p instanceof LayoutParams;
-    }
-
-    private static boolean isCustomView(View child) {
-        return ((LayoutParams) child.getLayoutParams()).mViewType == LayoutParams.CUSTOM;
     }
 
     /** @hide */
