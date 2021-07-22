@@ -29,8 +29,9 @@ android {
 
 
 dependencies {
+    compile fileTree(include: ['*.aar'], dir: 'libs')
     if(mod_core=='1') {
-        api project(":AxtCore")
+        implementation project(":AxtCore")
     }
     api (libs_appres){
         if(mod_core=='1') {
@@ -46,6 +47,12 @@ dependencies {
     if(mod_viewpager=='1') {
         api project(':viewpager')
     }
+
+    implementation (libs_activity)
+
+    implementation(libs_lifecycle)
+    implementation(libs_lifemodel)
+
     api (libs_fragment){
         if(mod_core=='1') {
             exclude module:"core"
@@ -55,5 +62,6 @@ dependencies {
         }
     }
 
+    implementation (libs_saved)
 }
 

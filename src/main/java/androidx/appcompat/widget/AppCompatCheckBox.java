@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.CheckBox;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
@@ -57,16 +58,20 @@ public class AppCompatCheckBox extends CheckBox implements TintableCompoundButto
     private final AppCompatBackgroundHelper mBackgroundTintHelper;
     private final AppCompatTextHelper mTextHelper;
 
-    public AppCompatCheckBox(Context context) {
+    public AppCompatCheckBox(@NonNull Context context) {
         this(context, null);
     }
 
-    public AppCompatCheckBox(Context context, AttributeSet attrs) {
+    public AppCompatCheckBox(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, R.attr.checkboxStyle);
     }
 
-    public AppCompatCheckBox(Context context, AttributeSet attrs, int defStyleAttr) {
+    public AppCompatCheckBox(
+            @NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(TintContextWrapper.wrap(context), attrs, defStyleAttr);
+
+        ThemeUtils.checkAppCompatTheme(this, getContext());
+
         mCompoundButtonHelper = new AppCompatCompoundButtonHelper(this);
         mCompoundButtonHelper.loadFromAttributes(attrs, defStyleAttr);
 
@@ -204,7 +209,7 @@ public class AppCompatCheckBox extends CheckBox implements TintableCompoundButto
     }
 
     @Override
-    public void setBackgroundDrawable(Drawable background) {
+    public void setBackgroundDrawable(@Nullable Drawable background) {
         super.setBackgroundDrawable(background);
         if (mBackgroundTintHelper != null) {
             mBackgroundTintHelper.onSetBackgroundDrawable(background);

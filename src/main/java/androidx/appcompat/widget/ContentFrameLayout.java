@@ -21,7 +21,6 @@ import static android.view.View.MeasureSpec.EXACTLY;
 import static android.view.View.MeasureSpec.getMode;
 
 import static androidx.annotation.RestrictTo.Scope.LIBRARY;
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 import android.content.Context;
 import android.graphics.Rect;
@@ -30,6 +29,8 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.core.view.ViewCompat;
 
@@ -55,15 +56,16 @@ public class ContentFrameLayout extends FrameLayout {
 
     private OnAttachListener mAttachListener;
 
-    public ContentFrameLayout(Context context) {
+    public ContentFrameLayout(@NonNull Context context) {
         this(context, null);
     }
 
-    public ContentFrameLayout(Context context, AttributeSet attrs) {
+    public ContentFrameLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public ContentFrameLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+    public ContentFrameLayout(
+            @NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mDecorPadding = new Rect();
     }
@@ -71,7 +73,7 @@ public class ContentFrameLayout extends FrameLayout {
     /**
      * @hide
      */
-    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    @RestrictTo(LIBRARY)
     public void dispatchFitSystemWindows(Rect insets) {
         fitSystemWindows(insets);
     }
@@ -86,7 +88,7 @@ public class ContentFrameLayout extends FrameLayout {
      *
      * @hide
      */
-    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    @RestrictTo(LIBRARY)
     public void setDecorPadding(int left, int top, int right, int bottom) {
         mDecorPadding.set(left, top, right, bottom);
         if (ViewCompat.isLaidOut(this)) {

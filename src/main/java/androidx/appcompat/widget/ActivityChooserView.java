@@ -16,6 +16,7 @@
 
 package androidx.appcompat.widget;
 
+import static androidx.annotation.RestrictTo.Scope.LIBRARY;
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 import android.content.Context;
@@ -28,7 +29,6 @@ import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,10 +44,13 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
 import androidx.appcompat.view.menu.ShowableListMenu;
 import androidx.core.view.ActionProvider;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 
 /**
@@ -76,9 +79,6 @@ import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 @RestrictTo(LIBRARY_GROUP_PREFIX)
 public class ActivityChooserView extends ViewGroup implements
         ActivityChooserModel.ActivityChooserModelClient {
-
-    private static final String LOG_TAG = "ActivityChooserView";
-
     /**
      * An adapter for displaying the activities in an {@link android.widget.AdapterView}.
      */
@@ -197,7 +197,7 @@ public class ActivityChooserView extends ViewGroup implements
      *
      * @param context The application environment.
      */
-    public ActivityChooserView(Context context) {
+    public ActivityChooserView(@NonNull Context context) {
         this(context, null);
     }
 
@@ -207,7 +207,7 @@ public class ActivityChooserView extends ViewGroup implements
      * @param context The application environment.
      * @param attrs A collection of attributes.
      */
-    public ActivityChooserView(Context context, AttributeSet attrs) {
+    public ActivityChooserView(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
@@ -218,15 +218,14 @@ public class ActivityChooserView extends ViewGroup implements
      * @param attrs A collection of attributes.
      * @param defStyle The default style to apply to this view.
      */
-    public ActivityChooserView(Context context, AttributeSet attrs, int defStyle) {
+    public ActivityChooserView(
+            @NonNull Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
         TypedArray attributesArray = context.obtainStyledAttributes(attrs,
                 R.styleable.ActivityChooserView, defStyle, 0);
-        if (Build.VERSION.SDK_INT >= 29) {
-            saveAttributeDataForStyleable(
-                    context, R.styleable.ActivityChooserView, attrs, attributesArray, defStyle, 0);
-        }
+        ViewCompat.saveAttributeDataForStyleable(this, context,
+                R.styleable.ActivityChooserView, attrs, attributesArray, defStyle, 0);
 
         mInitialActivityCount = attributesArray.getInt(
                 R.styleable.ActivityChooserView_initialActivityCount,
@@ -297,8 +296,10 @@ public class ActivityChooserView extends ViewGroup implements
     }
 
     /**
+     * @hide
      * {@inheritDoc}
      */
+    @RestrictTo(LIBRARY)
     @Override
     public void setActivityChooserModel(ActivityChooserModel dataModel) {
         mAdapter.setDataModel(dataModel);
@@ -480,6 +481,10 @@ public class ActivityChooserView extends ViewGroup implements
         }
     }
 
+    /**
+     * @hide
+     */
+    @RestrictTo(LIBRARY)
     public ActivityChooserModel getDataModel() {
         return mAdapter.getDataModel();
     }
@@ -718,12 +723,11 @@ public class ActivityChooserView extends ViewGroup implements
 
         @Override
         public int getCount() {
-            int count = 0;
             int activityCount = mDataModel.getActivityCount();
             if (!mShowDefaultActivity && mDataModel.getDefaultActivity() != null) {
                 activityCount--;
             }
-            count = Math.min(activityCount, mMaxActivityCount);
+            int count = Math.min(activityCount, mMaxActivityCount);
             if (mShowFooterView) {
                 count++;
             }

@@ -1,0 +1,9 @@
+ src/main/res/layout/select_dialog_singlechoice_material_holo.xml
+src/main/res/drawable/abc_action_bar_item_background_material.xml
+src/main/res/drawable/abc_ic_ab_white_material.xml
+src/main/res/drawable/popup_shadow_d.9.png
+src/main/res/drawable/popup_shadow_l.9.png
+src/main/res/drawable/abc_ic_go_search_api_material.xml
+src/main/res/drawable/dm_dslitem_dragmy.9.png
+src/main/res/values/dslv_attrs.xml
+src/main/res/values/dslv_ids.xml

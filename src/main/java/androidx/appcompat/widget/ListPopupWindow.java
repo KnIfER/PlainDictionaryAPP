@@ -124,7 +124,6 @@ public class ListPopupWindow implements ShowableListMenu {
     private int mDropDownVerticalOffset;
     private int mDropDownWindowLayoutType = WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL;
     private boolean mDropDownVerticalOffsetSet;
-    private boolean mIsAnimatedFromAnchor = true;
     private boolean mOverlapAnchor;
     private boolean mOverlapAnchorSet;
 

@@ -115,7 +115,8 @@ public class DropDownListView extends DragSortListView {
      *
      * @param context this view's context
      */
-    DropDownListView(Context context, boolean hijackFocus) {
+	@SuppressWarnings("CatchAndPrintStackTrace")
+	DropDownListView(@NonNull Context context, boolean hijackFocus) {
         super(context, null, R.attr.dropDownListViewStyle);
         mHijackFocus = hijackFocus;
         setCacheColorHint(0); // Transparent, since the background drawable could be anything.
@@ -304,8 +305,6 @@ public class DropDownListView extends DragSortListView {
 
         final int paddingTop = getListPaddingTop();
         final int paddingBottom = getListPaddingBottom();
-        final int paddingLeft = getListPaddingLeft();
-        final int paddingRight = getListPaddingRight();
         final int reportedDividerHeight = getDividerHeight();
         final Drawable divider = getDivider();
 
@@ -623,7 +622,8 @@ public class DropDownListView extends DragSortListView {
             DrawableCompat.setHotspot(selector, x, y);
         }
     }
-
+	
+	@SuppressWarnings("CatchAndPrintStackTrace")
     private void positionSelectorCompat(int position, View sel) {
         final Rect selectorRect = mSelectorRect;
         selectorRect.set(sel.getLeft(), sel.getTop(), sel.getRight(), sel.getBottom());
