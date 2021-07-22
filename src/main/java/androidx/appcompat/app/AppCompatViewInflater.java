@@ -44,19 +44,31 @@ import androidx.appcompat.widget.AppCompatSpinner;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.AppCompatToggleButton;
 import androidx.appcompat.widget.TintContextWrapper;
-import androidx.collection.ArrayMap;
+import androidx.collection.SimpleArrayMap;
 import androidx.core.view.ViewCompat;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 /**
- * This class is responsible for manually inflating our tinted widgets.
+ * This class is used by AppCompat to automatically "substitute" all usages of core Android
+ * widgets inflated from layout files by the AppCompat extensions of those widgets.
+ *
  * <p>This class two main responsibilities: the first is to 'inject' our tinted views in place of
  * the framework versions in layout inflation; the second is backport the {@code android:theme}
- * functionality for any inflated widgets. This include theme inheritance from its parent.
+ * functionality for any inflated widgets. This include theme inheritance from its parent.</p>
+ *
+ * <p>In order to provide your own extensions, follow these steps:
+ *    <ul>
+ *        <li>Extend this class, or the relevant subclass if you're using the Material
+ *        components library</li>
+ *        <li>Override one or more of the <code>createXYZ</code> methods</li>
+ *        <li>Add the <code>viewInflaterClass</code> attribute on your application theme. The
+ *        value of the attribute should be the fully-qualified class name of your custom inflater
+ *        class.</li>
+ *    </ul>
+ * </p>
  */
 public class AppCompatViewInflater {
 
@@ -72,8 +84,8 @@ public class AppCompatViewInflater {
 
     private static final String LOG_TAG = "AppCompatViewInflater";
 
-    private static final Map<String, Constructor<? extends View>> sConstructorMap
-            = new ArrayMap<>();
+    private static final SimpleArrayMap<String, Constructor<? extends View>> sConstructorMap =
+            new SimpleArrayMap<>();
 
     private final Object[] mConstructorArgs = new Object[2];
 
@@ -390,7 +402,7 @@ public class AppCompatViewInflater {
         @Override
         public void onClick(@NonNull View v) {
             if (mResolvedMethod == null) {
-                resolveMethod(mHostView.getContext(), mMethodName);
+                resolveMethod(mHostView.getContext());
             }
 
             try {
@@ -404,8 +416,7 @@ public class AppCompatViewInflater {
             }
         }
 
-        @NonNull
-        private void resolveMethod(@Nullable Context context, @NonNull String name) {
+        private void resolveMethod(@Nullable Context context) {
             while (context != null) {
                 try {
                     if (!context.isRestricted()) {

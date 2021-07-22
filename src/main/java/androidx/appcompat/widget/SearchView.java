@@ -16,9 +16,7 @@
 
 package androidx.appcompat.widget;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
-import static androidx.appcompat.widget.SuggestionsAdapter.getColumnString;
-
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
@@ -68,6 +66,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
@@ -79,15 +78,14 @@ import androidx.customview.view.AbsSavedState;
 import java.lang.reflect.Method;
 import java.util.WeakHashMap;
 
+import static android.widget.ListPopupWindow.INPUT_METHOD_NEEDED;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
+import static androidx.appcompat.widget.SuggestionsAdapter.getColumnString;
+
 /**
  * A widget that provides a user interface for the user to enter a search query and submit a request
  * to a search provider. Shows a list of query suggestions or results, if available, and allows the
  * user to pick a suggestion or result to launch into.
- *
- * <p class="note"><strong>Note:</strong> This class is included in the <a
- * href="{@docRoot}tools/extras/support-library.html">support library</a> for compatibility
- * with API level 7 and higher. If you're developing your app for API level 11 and higher
- * <em>only</em>, you should instead use the framework {@link android.widget.SearchView} class.</p>
  *
  * <p>
  * When the SearchView is used in an {@link androidx.appcompat.app.ActionBar}
@@ -172,8 +170,9 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
 
     SearchableInfo mSearchable;
     private Bundle mAppSearchData;
-
-    static final AutoCompleteTextViewReflector HIDDEN_METHOD_INVOKER = new AutoCompleteTextViewReflector();
+	
+	static final PreQAutoCompleteTextViewReflector PRE_API_29_HIDDEN_METHOD_INVOKER =
+			(Build.VERSION.SDK_INT < 29) ? new PreQAutoCompleteTextViewReflector() : null;
 
     private final Runnable mUpdateDrawableStateRunnable = new Runnable() {
         @Override
@@ -262,16 +261,16 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
          */
         boolean onSuggestionClick(int position);
     }
-
-    public SearchView(Context context) {
-        this(context, null);
-    }
-
-    public SearchView(Context context, AttributeSet attrs) {
-        this(context, attrs, R.attr.searchViewStyle);
-    }
-
-    public SearchView(Context context, AttributeSet attrs, int defStyleAttr) {
+	
+	public SearchView(@NonNull Context context) {
+		this(context, null);
+	}
+	
+	public SearchView(@NonNull Context context, @Nullable AttributeSet attrs) {
+		this(context, attrs, R.attr.searchViewStyle);
+	}
+	
+	public SearchView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         final TintTypedArray a = TintTypedArray.obtainStyledAttributes(context,
@@ -1068,7 +1067,7 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
                 mSearchSrcTextView.setSelection(selPoint);
                 mSearchSrcTextView.setListSelection(0);
                 mSearchSrcTextView.clearListSelection();
-                HIDDEN_METHOD_INVOKER.ensureImeVisible(mSearchSrcTextView, true);
+				mSearchSrcTextView.ensureImeVisible();
 
                 return true;
             }
@@ -1686,7 +1685,7 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
             return createIntent(action, dataUri, extraData, query, actionKey, actionMsg);
         } catch (RuntimeException e ) {
             int rowNum;
-            try {                       // be really paranoid now
+            try {                       // be really paranoid now. nope
                 rowNum = c.getPosition();
             } catch (RuntimeException e2 ) {
                 rowNum = -1;
@@ -1701,8 +1700,8 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
         if (Build.VERSION.SDK_INT >= 29) {
             mSearchSrcTextView.refreshAutoCompleteResults();
         } else {
-            HIDDEN_METHOD_INVOKER.doBeforeTextChanged(mSearchSrcTextView);
-            HIDDEN_METHOD_INVOKER.doAfterTextChanged(mSearchSrcTextView);
+			PRE_API_29_HIDDEN_METHOD_INVOKER.doBeforeTextChanged(mSearchSrcTextView);
+			PRE_API_29_HIDDEN_METHOD_INVOKER.doAfterTextChanged(mSearchSrcTextView);
         }
     }
 
@@ -1915,7 +1914,7 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
 
                 // If in landscape mode, then make sure that the ime is in front of the dropdown.
                 if (isLandscapeMode(getContext())) {
-                    HIDDEN_METHOD_INVOKER.ensureImeVisible(this, true);
+					ensureImeVisible();
                 }
             }
         }
@@ -2024,61 +2023,87 @@ public class SearchView extends LinearLayoutCompat implements CollapsibleActionV
             // onCreateInputConnection().
             mHasPendingShowSoftInputRequest = true;
         }
+	
+		void ensureImeVisible() {
+			if (Build.VERSION.SDK_INT >= 29) {
+				setInputMethodMode(INPUT_METHOD_NEEDED);
+				if (enoughToFilter()) {
+					showDropDown();
+				}
+			} else {
+				PRE_API_29_HIDDEN_METHOD_INVOKER.ensureImeVisible(this);
+			}
+		}
     }
-
-    private static class AutoCompleteTextViewReflector {
-        private Method doBeforeTextChanged, doAfterTextChanged;
-        private Method ensureImeVisible;
-
-        AutoCompleteTextViewReflector() {
+	
+	private static class PreQAutoCompleteTextViewReflector {
+		private Method mDoBeforeTextChanged = null;
+		private Method mDoAfterTextChanged = null;
+		private Method mEnsureImeVisible = null;
+		
+		
+		@SuppressWarnings("JavaReflectionMemberAccess")
+		@SuppressLint({"DiscouragedPrivateApi", "SoonBlockedPrivateApi"})
+		PreQAutoCompleteTextViewReflector() {
+			preApi29Check();
             try {
-                doBeforeTextChanged = AutoCompleteTextView.class
+				mDoBeforeTextChanged = AutoCompleteTextView.class
                         .getDeclaredMethod("doBeforeTextChanged");
-                doBeforeTextChanged.setAccessible(true);
+				mDoBeforeTextChanged.setAccessible(true);
             } catch (NoSuchMethodException e) {
                 // Ah well.
             }
             try {
-                doAfterTextChanged = AutoCompleteTextView.class
+				mDoAfterTextChanged = AutoCompleteTextView.class
                         .getDeclaredMethod("doAfterTextChanged");
-                doAfterTextChanged.setAccessible(true);
+				mDoAfterTextChanged.setAccessible(true);
             } catch (NoSuchMethodException e) {
                 // Ah well.
             }
             try {
-                ensureImeVisible = AutoCompleteTextView.class
+				mEnsureImeVisible = AutoCompleteTextView.class
                         .getMethod("ensureImeVisible", boolean.class);
-                ensureImeVisible.setAccessible(true);
+				mEnsureImeVisible.setAccessible(true);
             } catch (NoSuchMethodException e) {
                 // Ah well.
             }
         }
 
         void doBeforeTextChanged(AutoCompleteTextView view) {
-            if (doBeforeTextChanged != null) {
-                try {
-                    doBeforeTextChanged.invoke(view);
-                } catch (Exception e) {
-                }
-            }
+			preApi29Check();
+			if (mDoBeforeTextChanged != null) {
+				try {
+					mDoBeforeTextChanged.invoke(view);
+				} catch (Exception e) {
+				}
+			}
         }
 
         void doAfterTextChanged(AutoCompleteTextView view) {
-            if (doAfterTextChanged != null) {
-                try {
-                    doAfterTextChanged.invoke(view);
-                } catch (Exception e) {
-                }
-            }
+			preApi29Check();
+			if (mDoAfterTextChanged != null) {
+				try {
+					mDoAfterTextChanged.invoke(view);
+				} catch (Exception e) {
+				}
+			}
         }
-
-        void ensureImeVisible(AutoCompleteTextView view, boolean visible) {
-            if (ensureImeVisible != null) {
-                try {
-                    ensureImeVisible.invoke(view, visible);
-                } catch (Exception e) {
-                }
-            }
-        }
+		
+		void ensureImeVisible(AutoCompleteTextView view) {
+			preApi29Check();
+			if (mEnsureImeVisible != null) {
+				try {
+					mEnsureImeVisible.invoke(view, /* visible = */ true);
+				} catch (Exception e) {
+				}
+			}
+		}
+		
+		private static void preApi29Check() {
+			if (Build.VERSION.SDK_INT >= 29) {
+				throw new UnsupportedClassVersionError(
+						"This function can only be used for API Level < 29.");
+			}
+		}
     }
 }

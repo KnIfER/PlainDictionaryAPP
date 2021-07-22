@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
+import androidx.activity.contextaware.OnContextAvailableListener;
 import androidx.annotation.CallSuper;
 import androidx.annotation.ContentView;
 import androidx.annotation.IdRes;
@@ -45,14 +46,28 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NavUtils;
 import androidx.core.app.TaskStackBuilder;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewTreeLifecycleOwner;
+import androidx.lifecycle.ViewTreeViewModelStoreOwner;
+import androidx.savedstate.SavedStateRegistry;
+import androidx.savedstate.ViewTreeSavedStateRegistryOwner;
 
 /**
- * Base class for activities that use the
- * <a href="{@docRoot}tools/extras/support-library.html">support library</a> action bar features.
+ * Base class for activities that wish to use some of the newer platform features on older
+ * Android devices. Some of these backported features include:
  *
- * <p>You can add an {@link androidx.appcompat.app.ActionBar} to your activity when running on API level 7 or higher
- * by extending this class for your activity and setting the activity theme to
- * {@link androidx.appcompat.R.style#Theme_AppCompat Theme.AppCompat} or a similar theme.
+ * <ul>
+ *     <li>Using the action bar, including action items, navigation modes and more with
+ *     the {@link #setSupportActionBar(Toolbar)} API.</li>
+ *     <li>Built-in switching between light and dark themes by using the
+ *     {@link androidx.appcompat.R.style#Theme_AppCompat_DayNight Theme.AppCompat.DayNight} theme
+ *     and {@link AppCompatDelegate#setDefaultNightMode(int)} API.</li>
+ *     <li>Integration with <code>DrawerLayout</code> by using the
+ *     {@link #getDrawerToggleDelegate()} API.</li>
+ * </ul>
+ *
+ * <p>Note that every activity that extends this class has to be themed with
+ * {@link androidx.appcompat.R.style#Theme_AppCompat Theme.AppCompat} or a theme that extends
+ * that theme.</p>
  *
  * <div class="special reference">
  * <h3>Developer Guides</h3>
@@ -65,6 +80,8 @@ import androidx.fragment.app.FragmentActivity;
 public class AppCompatActivity extends FragmentActivity implements AppCompatCallback,
         TaskStackBuilder.SupportParentable, ActionBarDrawerToggle.DelegateProvider {
 
+    private static final String DELEGATE_TAG = "androidx:appcompat";
+
     private AppCompatDelegate mDelegate;
     private Resources mResources;
 
@@ -75,6 +92,7 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
      */
     public AppCompatActivity() {
         super();
+        initDelegate();
     }
 
     /**
@@ -90,20 +108,35 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
     @ContentView
     public AppCompatActivity(@LayoutRes int contentLayoutId) {
         super(contentLayoutId);
+        initDelegate();
+    }
+
+    private void initDelegate() {
+        // TODO: Directly connect AppCompatDelegate to SavedStateRegistry
+        getSavedStateRegistry().registerSavedStateProvider(DELEGATE_TAG,
+                new SavedStateRegistry.SavedStateProvider() {
+                    @NonNull
+                    @Override
+                    public Bundle saveState() {
+                        Bundle outState = new Bundle();
+                        getDelegate().onSaveInstanceState(outState);
+                        return outState;
+                    }
+                });
+        addOnContextAvailableListener(new OnContextAvailableListener() {
+            @Override
+            public void onContextAvailable(@NonNull Context context) {
+                final AppCompatDelegate delegate = getDelegate();
+                delegate.installViewFactory();
+                delegate.onCreate(getSavedStateRegistry()
+                        .consumeRestoredStateForKey(DELEGATE_TAG));
+            }
+        });
     }
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(newBase);
-        getDelegate().attachBaseContext(newBase);
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        final AppCompatDelegate delegate = getDelegate();
-        delegate.installViewFactory();
-        delegate.onCreate(savedInstanceState);
-        super.onCreate(savedInstanceState);
+        super.attachBaseContext(getDelegate().attachBaseContext2(newBase));
     }
 
     @Override
@@ -158,22 +191,34 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
 
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
+        initViewTreeOwners();
         getDelegate().setContentView(layoutResID);
     }
 
     @Override
     public void setContentView(View view) {
+        initViewTreeOwners();
         getDelegate().setContentView(view);
     }
 
     @Override
     public void setContentView(View view, ViewGroup.LayoutParams params) {
+        initViewTreeOwners();
         getDelegate().setContentView(view, params);
     }
 
     @Override
     public void addContentView(View view, ViewGroup.LayoutParams params) {
+        initViewTreeOwners();
         getDelegate().addContentView(view, params);
+    }
+
+    private void initViewTreeOwners() {
+        // Set the view tree owners before setting the content view so that the inflation process
+        // and attach listeners will see them already present
+        ViewTreeLifecycleOwner.set(getWindow().getDecorView(), this);
+        ViewTreeViewModelStoreOwner.set(getWindow().getDecorView(), this);
+        ViewTreeSavedStateRegistryOwner.set(getWindow().getDecorView(), this);
     }
 
     @Override
@@ -258,6 +303,7 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
         return getDelegate().requestWindowFeature(featureId);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void supportInvalidateOptionsMenu() {
         getDelegate().invalidateOptionsMenu();
@@ -487,6 +533,7 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
         NavUtils.navigateUpTo(this, upIntent);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void onContentChanged() {
         // Call onSupportContentChanged() for legacy reasons
@@ -528,12 +575,6 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
         super.onPanelClosed(featureId, menu);
     }
 
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        getDelegate().onSaveInstanceState(outState);
-    }
-
     /**
      * @return The {@link AppCompatDelegate} being used by this Activity.
      */
@@ -571,7 +612,7 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
      * or lower. Here, we check if the keypress corresponds to a menuitem's shortcut combination
      * and perform the corresponding action.
      */
-    private boolean performMenuItemShortcut(int keycode, KeyEvent event) {
+    private boolean performMenuItemShortcut(KeyEvent event) {
         if (!(Build.VERSION.SDK_INT >= 26) && !event.isCtrlPressed()
                 && !KeyEvent.metaStateHasNoModifiers(event.getMetaState())
                 && event.getRepeatCount() == 0
@@ -589,7 +630,7 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (performMenuItemShortcut(keyCode, event)) {
+        if (performMenuItemShortcut(event)) {
             return true;
         }
         return super.onKeyDown(keyCode, event);

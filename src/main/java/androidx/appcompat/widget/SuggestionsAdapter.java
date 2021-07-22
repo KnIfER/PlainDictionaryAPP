@@ -16,7 +16,6 @@ package androidx.appcompat.widget;
  * limitations under the License.
  */
 
-import android.annotation.SuppressLint;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.ComponentName;
@@ -56,7 +55,6 @@ import java.util.WeakHashMap;
 /**
  * Provides the contents for the suggestion drop-down list.in {@link SearchView}.
  */
-@SuppressLint("RestrictedAPI") // Temporary until we have correct restriction scopes for 1.0
 class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListener {
 
     private static final boolean DBG = false;
@@ -67,7 +65,6 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
     static final int REFINE_BY_ENTRY = 1;
     static final int REFINE_ALL = 2;
 
-    private final SearchManager mSearchManager;
     private final SearchView mSearchView;
     private final SearchableInfo mSearchable;
     private final Context mProviderContext;
@@ -89,13 +86,13 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
     private int mIconName2Col = INVALID_INDEX;
     private int mFlagsCol = INVALID_INDEX;
 
-    // private final Runnable mStartSpinnerRunnable;
-    // private final Runnable mStopSpinnerRunnable;
+    @SuppressWarnings("deprecation")
     public SuggestionsAdapter(Context context, SearchView searchView, SearchableInfo searchable,
             WeakHashMap<String, Drawable.ConstantState> outsideDrawablesCache) {
+        // Auto-requery is discouraged, as it results in Cursor queries being performed on the
+        // application's UI thread.
         super(context, searchView.getSuggestionRowLayout(), null /* no initial cursor */,
                 true /* auto-requery */);
-        mSearchManager = (SearchManager) mContext.getSystemService(Context.SEARCH_SERVICE);
         mSearchView = searchView;
         mSearchable = searchable;
         mCommitIconResId = searchView.getSuggestionCommitIconResId();
@@ -337,8 +334,9 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
         if (mUrlColor == null) {
             // Lazily get the URL color from the current theme.
             TypedValue colorValue = new TypedValue();
-            mContext.getTheme().resolveAttribute(R.attr.textColorSearchUrl, colorValue, true);
-            mUrlColor = mContext.getResources().getColorStateList(colorValue.resourceId);
+            mProviderContext.getTheme().resolveAttribute(
+                    R.attr.textColorSearchUrl, colorValue, true);
+            mUrlColor = mProviderContext.getResources().getColorStateList(colorValue.resourceId);
         }
 
         SpannableString text = new SpannableString(url);
@@ -368,7 +366,7 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
         if (drawable != null) {
             return drawable;
         }
-        return getDefaultIcon1(cursor);
+        return getDefaultIcon1();
     }
 
     private Drawable getIcon2(Cursor cursor) {
@@ -452,7 +450,7 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
         } catch (RuntimeException e) {
             Log.w(LOG_TAG, "Search suggestions cursor threw exception.", e);
             // Put exception string in item title
-            View v = newView(mContext, mCursor, parent);
+            View v = newView(mProviderContext, getCursor(), parent);
             if (v != null) {
                 ChildViewCache views = (ChildViewCache) v.getTag();
                 TextView tv = views.mText1;
@@ -475,7 +473,7 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
         } catch (RuntimeException e) {
             Log.w(LOG_TAG, "Search suggestions cursor threw exception.", e);
             // Put exception string in item title
-            final View v = newDropDownView(mContext, mCursor, parent);
+            final View v = newDropDownView(mProviderContext, getCursor(), parent);
             if (v != null) {
                 final ChildViewCache views = (ChildViewCache) v.getTag();
                 final TextView tv = views.mText1;
@@ -599,10 +597,9 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
      * Gets the left-hand side icon that will be used for the current suggestion
      * if the suggestion contains an icon column but no icon or a broken icon.
      *
-     * @param cursor A cursor positioned at the current suggestion.
      * @return A non-null drawable.
      */
-    private Drawable getDefaultIcon1(Cursor cursor) {
+    private Drawable getDefaultIcon1() {
         // Check the component that gave us the suggestion
         Drawable drawable = getActivityIconWithCache(mSearchable.getSearchActivity());
         if (drawable != null) {
@@ -610,7 +607,7 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
         }
 
         // Fall back to a default icon
-        return mContext.getPackageManager().getDefaultActivityIcon();
+        return mProviderContext.getPackageManager().getDefaultActivityIcon();
     }
 
     /**
@@ -645,7 +642,7 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
      *         have an icon set.
      */
     private Drawable getActivityIcon(ComponentName component) {
-        PackageManager pm = mContext.getPackageManager();
+        PackageManager pm = mProviderContext.getPackageManager();
         final ActivityInfo activityInfo;
         try {
             activityInfo = pm.getActivityInfo(component, PackageManager.GET_META_DATA);
@@ -703,7 +700,7 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
             throw new FileNotFoundException("No authority: " + uri);
         } else {
             try {
-                r = mContext.getPackageManager().getResourcesForApplication(authority);
+                r = mProviderContext.getPackageManager().getResourcesForApplication(authority);
             } catch (NameNotFoundException ex) {
                 throw new FileNotFoundException("No package found for authority: " + uri);
             }
@@ -776,6 +773,6 @@ class SuggestionsAdapter extends ResourceCursorAdapter implements OnClickListene
         Uri uri = uriBuilder.build();
 
         // finally, make the query
-        return mContext.getContentResolver().query(uri, null, selection, selArgs, null);
+        return mProviderContext.getContentResolver().query(uri, null, selection, selArgs, null);
     }
 }

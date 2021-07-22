@@ -46,6 +46,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.R;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -55,12 +56,16 @@ import androidx.core.view.ViewCompat;
 import androidx.core.widget.TextViewCompat;
 
 /**
- * SwitchCompat is a version of the Switch widget which on devices back to API v7. It does not
- * make any attempt to use the platform provided widget on those devices which it is available
- * normally.
+ * SwitchCompat is a complete backport of the core {@link android.widget.Switch} widget that
+ * brings the visuals and the functionality of that widget to older versions of the platform.
+ * Unlike other widgets in this package, SwitchCompat is <strong>not</strong> automatically used
+ * in layouts that use the <code>&lt;Switch&gt;</code> element. Instead, you need to explicitly
+ * use <code>&lt;androidx.appcompat.widget.SwitchCompat&gt;</code> and the matching attributes
+ * in your layouts.
+ *
  * <p>
- * A Switch is a two-state toggle switch widget that can select between two
- * options. The user may drag the "thumb" back and forth to choose the selected option,
+ * A Switch is a two-state toggle switch widget that can be used to select one of the two
+ * available options. The user may drag the "thumb" back and forth to choose the selected option,
  * or simply tap to toggle as if it were a checkbox. The {@link #setText(CharSequence) text}
  * property controls the text displayed in the label for the switch, whereas the
  * {@link #setTextOff(CharSequence) off} and {@link #setTextOn(CharSequence) on} text
@@ -69,6 +74,12 @@ import androidx.core.widget.TextViewCompat;
  * setTypeface() methods control the typeface and style of label text, whereas the
  * {@link #setSwitchTextAppearance(android.content.Context, int) switchTextAppearance} and
  * the related setSwitchTypeface() methods control that of the thumb.
+ *
+ * <p>
+ * The thumb can be tinted with {@link #setThumbTintList(ColorStateList)} and
+ * {@link #setThumbTintMode(PorterDuff.Mode)} APIs, as well as with the matching XML attributes.
+ * The track can be tinted with {@link #setTrackTintList(ColorStateList)} and
+ * {@link #setTrackTintMode(PorterDuff.Mode)} APIs, as well as with the matching XML attributes.
  *
  * <p>See the <a href="{@docRoot}guide/topics/ui/controls/togglebutton.html">Toggle Buttons</a>
  * guide.</p>
@@ -81,6 +92,10 @@ import androidx.core.widget.TextViewCompat;
  * {@link android.R.attr#thumb}
  * {@link androidx.appcompat.R.attr#thumbTextPadding}
  * {@link androidx.appcompat.R.attr#track}
+ * {@link androidx.appcompat.R.attr#thumbTint}
+ * {@link androidx.appcompat.R.attr#thumbTintMode}
+ * {@link androidx.appcompat.R.attr#trackTint}
+ * {@link androidx.appcompat.R.attr#trackTintMode}
  */
 public class SwitchCompat extends CompoundButton {
     private static final int THUMB_ANIMATION_DURATION = 250;
@@ -190,7 +205,7 @@ public class SwitchCompat extends CompoundButton {
      *
      * @param context The Context that will determine this widget's theming.
      */
-    public SwitchCompat(Context context) {
+    public SwitchCompat(@NonNull Context context) {
         this(context, null);
     }
 
@@ -201,7 +216,7 @@ public class SwitchCompat extends CompoundButton {
      * @param context The Context that will determine this widget's theming.
      * @param attrs Specification of attributes that should deviate from default styling.
      */
-    public SwitchCompat(Context context, AttributeSet attrs) {
+    public SwitchCompat(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, R.attr.switchStyle);
     }
 
@@ -215,8 +230,10 @@ public class SwitchCompat extends CompoundButton {
      *        reference to a style resource that supplies default values for
      *        the view. Can be 0 to not look for defaults.
      */
-    public SwitchCompat(Context context, AttributeSet attrs, int defStyleAttr) {
+    public SwitchCompat(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+
+        ThemeUtils.checkAppCompatTheme(this, getContext());
 
         mTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 
@@ -225,6 +242,10 @@ public class SwitchCompat extends CompoundButton {
 
         final TintTypedArray a = TintTypedArray.obtainStyledAttributes(context,
                 attrs, R.styleable.SwitchCompat, defStyleAttr, 0);
+        ViewCompat.saveAttributeDataForStyleable(this,
+                context, R.styleable.SwitchCompat, attrs,
+                a.getWrappedTypeArray(), defStyleAttr, 0);
+
         mThumbDrawable = a.getDrawable(R.styleable.SwitchCompat_android_thumb);
         if (mThumbDrawable != null) {
             mThumbDrawable.setCallback(this);
@@ -754,6 +775,11 @@ public class SwitchCompat extends CompoundButton {
     public void setTextOn(CharSequence textOn) {
         mTextOn = textOn;
         requestLayout();
+        if (isChecked()) {
+            // Default state is derived from on/off-text, so state has to be updated when
+            // on/off-text are updated.
+            setOnStateDescriptionOnRAndAbove();
+        }
     }
 
     /**
@@ -773,6 +799,11 @@ public class SwitchCompat extends CompoundButton {
     public void setTextOff(CharSequence textOff) {
         mTextOff = textOff;
         requestLayout();
+        if (!isChecked()) {
+            // Default state is derived from on/off-text, so state has to be updated when
+            // on/off-text are updated.
+            setOffStateDescriptionOnRAndAbove();
+        }
     }
 
     /**
@@ -858,13 +889,12 @@ public class SwitchCompat extends CompoundButton {
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        //android.util.Log.e("fatal mSwitchHeight", ""+mSwitchHeight, mSwitchHeight+getPaddingTop()+getPaddingBottom());
         final int measuredHeight = getMeasuredHeight();
         if (measuredHeight < switchHeight) {
             setMeasuredDimension(getMeasuredWidthAndState(), switchHeight);
         }
-        if (Build.VERSION.SDK_INT >= 19)
-            setMeasuredDimension(getMeasuredWidthAndState(), mSwitchHeight+getPaddingTop()+getPaddingBottom());
+		if (Build.VERSION.SDK_INT >= 19)
+			setMeasuredDimension(getMeasuredWidthAndState(), mSwitchHeight+getPaddingTop()+getPaddingBottom());
     }
 
     @Override
@@ -1069,6 +1099,12 @@ public class SwitchCompat extends CompoundButton {
         // Calling the super method may result in setChecked() getting called
         // recursively with a different value, so load the REAL value...
         checked = isChecked();
+
+        if (checked) {
+            setOnStateDescriptionOnRAndAbove();
+        } else {
+            setOffStateDescriptionOnRAndAbove();
+        }
 
         if (getWindowToken() != null && ViewCompat.isLaidOut(this)) {
             animateThumbToCheckedState(checked);
@@ -1403,15 +1439,17 @@ public class SwitchCompat extends CompoundButton {
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
         super.onInitializeAccessibilityNodeInfo(info);
         info.setClassName(ACCESSIBILITY_EVENT_CLASS_NAME);
-        CharSequence switchText = isChecked() ? mTextOn : mTextOff;
-        if (!TextUtils.isEmpty(switchText)) {
-            CharSequence oldText = info.getText();
-            if (TextUtils.isEmpty(oldText)) {
-                info.setText(switchText);
-            } else {
-                StringBuilder newText = new StringBuilder();
-                newText.append(oldText).append(' ').append(switchText);
-                info.setText(newText);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            CharSequence switchText = isChecked() ? mTextOn : mTextOff;
+            if (!TextUtils.isEmpty(switchText)) {
+                CharSequence oldText = info.getText();
+                if (TextUtils.isEmpty(oldText)) {
+                    info.setText(switchText);
+                } else {
+                    StringBuilder newText = new StringBuilder();
+                    newText.append(oldText).append(' ').append(switchText);
+                    info.setText(newText);
+                }
             }
         }
     }
@@ -1431,5 +1469,23 @@ public class SwitchCompat extends CompoundButton {
      */
     private static float constrain(float amount, float low, float high) {
         return amount < low ? low : (amount > high ? high : amount);
+    }
+
+    private void setOnStateDescriptionOnRAndAbove() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            ViewCompat.setStateDescription(
+                    this,
+                    mTextOn == null ? getResources().getString(R.string.abc_capital_on) : mTextOn
+            );
+        }
+    }
+
+    private void setOffStateDescriptionOnRAndAbove() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            ViewCompat.setStateDescription(
+                    this,
+                    mTextOff == null ? getResources().getString(R.string.abc_capital_off) : mTextOff
+            );
+        }
     }
 }

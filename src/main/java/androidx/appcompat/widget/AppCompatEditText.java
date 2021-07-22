@@ -16,8 +16,6 @@
 
 package androidx.appcompat.widget;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
-
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
@@ -27,6 +25,7 @@ import android.os.LocaleList;
 import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.ActionMode;
+import android.view.DragEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.textclassifier.ConversationActions;
@@ -35,6 +34,7 @@ import android.view.textclassifier.TextClassification;
 import android.view.textclassifier.TextClassifier;
 import android.view.textclassifier.TextSelection;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -42,8 +42,21 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
+import androidx.core.view.ContentInfoCompat;
+import androidx.core.view.OnReceiveContentListener;
+import androidx.core.view.OnReceiveContentViewBehavior;
 import androidx.core.view.TintableBackgroundView;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.inputmethod.EditorInfoCompat;
+import androidx.core.view.inputmethod.InputConnectionCompat;
+import androidx.core.view.inputmethod.InputConnectionCompat.OnCommitContentListener;
 import androidx.core.widget.TextViewCompat;
+import androidx.core.widget.TextViewOnReceiveContentListener;
+
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
+import static androidx.appcompat.widget.AppCompatReceiveContentHelper.createOnCommitContentListener;
+import static androidx.appcompat.widget.AppCompatReceiveContentHelper.maybeHandleDragEventViaPerformReceiveContent;
+import static androidx.appcompat.widget.AppCompatReceiveContentHelper.maybeHandleMenuActionViaPerformReceiveContent;
 
 /**
  * A {@link EditText} which supports compatible features on older versions of the platform,
@@ -53,6 +66,10 @@ import androidx.core.widget.TextViewCompat;
  *     {@link androidx.core.view.ViewCompat}.</li>
  *     <li>Allows setting of the background tint using {@link R.attr#backgroundTint} and
  *     {@link R.attr#backgroundTintMode}.</li>
+ *     <li>Allows setting a custom {@link OnReceiveContentListener listener} to handle
+ *     insertion of content (e.g. pasting text or an image from the clipboard). This listener
+ *     provides the opportunity to implement app-specific handling such as creating an attachment
+ *     when an image is pasted.</li>
  * </ul>
  *
  * <p>This will automatically be used when you use {@link EditText} in your layouts
@@ -60,22 +77,26 @@ import androidx.core.widget.TextViewCompat;
  * <a href="{@docRoot}topic/libraries/support-library/packages.html#v7-appcompat">appcompat</a>.
  * You should only need to manually use this class when writing custom views.</p>
  */
-public class AppCompatEditText extends EditText implements TintableBackgroundView {
+public class AppCompatEditText extends EditText implements TintableBackgroundView,
+		OnReceiveContentViewBehavior {
 
     private final AppCompatBackgroundHelper mBackgroundTintHelper;
     private final AppCompatTextHelper mTextHelper;
     private final AppCompatTextClassifierHelper mTextClassifierHelper;
-
-    public AppCompatEditText(Context context) {
-        this(context, null);
-    }
-
-    public AppCompatEditText(Context context, AttributeSet attrs) {
-        this(context, attrs, R.attr.editTextStyle);
-    }
-
-    public AppCompatEditText(Context context, AttributeSet attrs, int defStyleAttr) {
+	private final TextViewOnReceiveContentListener mDefaultOnReceiveContentListener;
+	
+	public AppCompatEditText(@NonNull Context context) {
+		this(context, null);
+	}
+	
+	public AppCompatEditText(@NonNull Context context, @Nullable AttributeSet attrs) {
+		this(context, attrs, R.attr.editTextStyle);
+	}
+	
+	public AppCompatEditText(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(TintContextWrapper.wrap(context), attrs, defStyleAttr);
+        
+		ThemeUtils.checkAppCompatTheme(this, getContext());
 
         mBackgroundTintHelper = new AppCompatBackgroundHelper(this);
         mBackgroundTintHelper.loadFromAttributes(attrs, defStyleAttr);
@@ -85,6 +106,8 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
         mTextHelper.applyCompoundDrawablesTints();
 
         mTextClassifierHelper = new AppCompatTextClassifierHelper(this);
+        
+		mDefaultOnReceiveContentListener = new TextViewOnReceiveContentListener();
     }
 
     /**
@@ -110,7 +133,7 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
     }
 
     @Override
-    public void setBackgroundDrawable(Drawable background) {
+    public void setBackgroundDrawable(@Nullable Drawable background) {
         super.setBackgroundDrawable(background);
         if (mBackgroundTintHelper != null) {
             mBackgroundTintHelper.onSetBackgroundDrawable(background);
@@ -191,11 +214,27 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
             mTextHelper.onSetTextAppearance(context, resId);
         }
     }
-
+	
+	/**
+	 * If a {@link ViewCompat#setOnReceiveContentListener listener is set}, the returned
+	 * {@link InputConnection} will use it to handle calls to {@link InputConnection#commitContent}.
+	 *
+	 * {@inheritDoc}
+	 */
+	@Nullable
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        return AppCompatHintHelper.onCreateInputConnection(super.onCreateInputConnection(outAttrs),
-                outAttrs, this);
+		InputConnection ic = super.onCreateInputConnection(outAttrs);
+		mTextHelper.populateSurroundingTextIfNeeded(this, ic, outAttrs);
+		ic = AppCompatHintHelper.onCreateInputConnection(ic, outAttrs, this);
+		
+		String[] mimeTypes = ViewCompat.getOnReceiveContentMimeTypes(this);
+		if (ic != null && mimeTypes != null) {
+			EditorInfoCompat.setContentMimeTypes(outAttrs, mimeTypes);
+			OnCommitContentListener onCommitContentListener = createOnCommitContentListener(this);
+			ic = InputConnectionCompat.createWrapper(ic, outAttrs, onCommitContentListener);
+		}
+		return ic;
     }
 
     /**
@@ -240,7 +279,51 @@ public class AppCompatEditText extends EditText implements TintableBackgroundVie
         }
         return mTextClassifierHelper.getTextClassifier();
     }
-    
+	
+	@Override
+	public boolean onDragEvent(@SuppressWarnings("MissingNullability") DragEvent event) {
+		if (maybeHandleDragEventViaPerformReceiveContent(this, event)) {
+			return true;
+		}
+		return super.onDragEvent(event);
+	}
+	
+	/**
+	 * If a {@link ViewCompat#setOnReceiveContentListener listener is set}, uses it to execute the
+	 * "Paste" and "Paste as plain text" menu actions.
+	 *
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean onTextContextMenuItem(int id) {
+		if (maybeHandleMenuActionViaPerformReceiveContent(this, id)) {
+			return true;
+		}
+		return super.onTextContextMenuItem(id);
+	}
+	
+	/**
+	 * Implements the default behavior for receiving content, which coerces all content to text
+	 * and inserts into the view.
+	 *
+	 * <p>IMPORTANT: This method is provided to enable custom widgets that extend this class
+	 * to customize the default behavior for receiving content. Apps wishing to provide custom
+	 * behavior for receiving content should not override this method, but rather should set
+	 * a listener via {@link ViewCompat#setOnReceiveContentListener}. App code wishing to inject
+	 * content into this view should not call this method directly, but rather should invoke
+	 * {@link ViewCompat#performReceiveContent}.
+	 *
+	 * @param payload The content to insert and related metadata.
+	 *
+	 * @return The portion of the passed-in content that was not handled (may be all, some, or none
+	 * of the passed-in content).
+	 */
+	@Nullable
+	@Override
+	public ContentInfoCompat onReceiveContent(@NonNull ContentInfoCompat payload) {
+		return mDefaultOnReceiveContentListener.onReceiveContent(this, payload);
+	}
+	
     public final static TextClassifier UrlFucker;
     
     @RequiresApi(api = Build.VERSION_CODES.O)

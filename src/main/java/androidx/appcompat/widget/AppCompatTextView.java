@@ -84,19 +84,24 @@ public class AppCompatTextView extends TextView implements TintableBackgroundVie
     private final AppCompatTextHelper mTextHelper;
     private final AppCompatTextClassifierHelper mTextClassifierHelper;
 
+    private boolean mIsSetTypefaceProcessing = false;
+
     @Nullable
     private Future<PrecomputedTextCompat> mPrecomputedTextFuture;
 
-    public AppCompatTextView(Context context) {
+    public AppCompatTextView(@NonNull Context context) {
         this(context, null);
     }
 
-    public AppCompatTextView(Context context, AttributeSet attrs) {
+    public AppCompatTextView(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, android.R.attr.textViewStyle);
     }
 
-    public AppCompatTextView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public AppCompatTextView(
+            @NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(TintContextWrapper.wrap(context), attrs, defStyleAttr);
+
+        ThemeUtils.checkAppCompatTheme(this, getContext());
 
         mBackgroundTintHelper = new AppCompatBackgroundHelper(this);
         mBackgroundTintHelper.loadFromAttributes(attrs, defStyleAttr);
@@ -117,7 +122,7 @@ public class AppCompatTextView extends TextView implements TintableBackgroundVie
     }
 
     @Override
-    public void setBackgroundDrawable(Drawable background) {
+    public void setBackgroundDrawable(@Nullable Drawable background) {
         super.setBackgroundDrawable(background);
         if (mBackgroundTintHelper != null) {
             mBackgroundTintHelper.onSetBackgroundDrawable(background);
@@ -393,8 +398,9 @@ public class AppCompatTextView extends TextView implements TintableBackgroundVie
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        return AppCompatHintHelper.onCreateInputConnection(super.onCreateInputConnection(outAttrs),
-                outAttrs, this);
+        InputConnection ic = super.onCreateInputConnection(outAttrs);
+        mTextHelper.populateSurroundingTextIfNeeded(this, ic, outAttrs);
+        return AppCompatHintHelper.onCreateInputConnection(ic, outAttrs, this);
     }
 
     @Override
@@ -700,11 +706,24 @@ public class AppCompatTextView extends TextView implements TintableBackgroundVie
 
     @Override
     public void setTypeface(@Nullable Typeface tf, int style) {
+        if (mIsSetTypefaceProcessing) {
+            // b/151782655
+            // Some device up to API19 recursively calls setTypeface. To avoid infinity recursive
+            // setTypeface call, exit if we know this is re-entrant call.
+            // TODO(nona): Remove this once Android X minSdkVersion moves to API21.
+            return;
+        }
         Typeface finalTypeface = null;
         if (tf != null && style > 0) {
             finalTypeface = TypefaceCompat.create(getContext(), tf, style);
         }
 
-        super.setTypeface(finalTypeface != null ? finalTypeface : tf, style);
+        mIsSetTypefaceProcessing = true;
+        try {
+            super.setTypeface(finalTypeface != null ? finalTypeface : tf, style);
+        } finally {
+            mIsSetTypefaceProcessing = false;
+        }
+
     }
 }

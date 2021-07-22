@@ -16,7 +16,6 @@
 
 package androidx.appcompat.widget;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY;
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 import static androidx.core.widget.AutoSizeableTextView.PLATFORM_SUPPORTS_AUTOSIZE;
 
@@ -32,6 +31,8 @@ import android.os.LocaleList;
 import android.text.method.PasswordTransformationMethod;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -39,6 +40,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.inputmethod.EditorInfoCompat;
 import androidx.core.widget.TextViewCompat;
 
 import java.lang.ref.WeakReference;
@@ -53,6 +56,7 @@ class AppCompatTextHelper {
     private static final int SERIF = 2;
     private static final int MONOSPACE = 3;
 
+    @NonNull
     private final TextView mView;
 
     private TintInfo mDrawableLeftTint;
@@ -71,19 +75,23 @@ class AppCompatTextHelper {
     private Typeface mFontTypeface;
     private boolean mAsyncFontPending;
 
-    AppCompatTextHelper(TextView view) {
+    AppCompatTextHelper(@NonNull TextView view) {
         mView = view;
         mAutoSizeTextHelper = new AppCompatTextViewAutoSizeHelper(mView);
     }
 
     @SuppressLint("NewApi")
-    void loadFromAttributes(AttributeSet attrs, int defStyleAttr) {
+    void loadFromAttributes(@Nullable AttributeSet attrs, int defStyleAttr) {
         final Context context = mView.getContext();
         final AppCompatDrawableManager drawableManager = AppCompatDrawableManager.get();
 
         // First read the TextAppearance style id
         TintTypedArray a = TintTypedArray.obtainStyledAttributes(context, attrs,
                 R.styleable.AppCompatTextHelper, defStyleAttr, 0);
+        ViewCompat.saveAttributeDataForStyleable(mView, mView.getContext(),
+                R.styleable.AppCompatTextHelper, attrs, a.getWrappedTypeArray(),
+                defStyleAttr, 0);
+
         final int ap = a.getResourceId(R.styleable.AppCompatTextHelper_android_textAppearance, -1);
         // Now read the compound drawable and grab any tints
         if (a.hasValue(R.styleable.AppCompatTextHelper_android_drawableLeft)) {
@@ -330,79 +338,6 @@ class AppCompatTextHelper {
         }
     }
 
-    // To accessible from callback */
-    /** @hide */
-    @RestrictTo(LIBRARY)
-    public void setTypefaceByCallback(@NonNull Typeface typeface) {
-        if (mAsyncFontPending) {
-            mView.setTypeface(typeface);
-            mFontTypeface = typeface;
-        }
-    }
-
-    // To accessible from callback */
-    /** @hide */
-    @RestrictTo(LIBRARY)
-    public void runOnUiThread(@NonNull Runnable runnable) {
-        mView.post(runnable);
-    }
-
-    /**
-     * Helper class for applying Typeface on UI thread.
-     */
-    private static class ApplyTextViewCallback extends ResourcesCompat.FontCallback {
-        private class TypefaceApplyCallback implements Runnable {
-            private final WeakReference<AppCompatTextHelper> mParent;
-            private final Typeface mTypeface;
-
-            TypefaceApplyCallback(@NonNull WeakReference<AppCompatTextHelper> parent,
-                    @NonNull Typeface tf) {
-                mParent = parent;
-                mTypeface = tf;
-            }
-
-            @Override
-            public void run() {
-                final AppCompatTextHelper parent = mParent.get();
-                if (parent == null) {
-                    return;  // The view has gone. Do nothing.
-                }
-                parent.setTypefaceByCallback(mTypeface);
-            }
-        }
-
-        private final WeakReference<AppCompatTextHelper> mParent;
-        private final int mFontWeight;
-        private final int mStyle;
-
-        ApplyTextViewCallback(@NonNull AppCompatTextHelper parent, int fontWeight,
-                int style) {
-            mParent = new WeakReference<>(parent);
-            mFontWeight = fontWeight;
-            mStyle = style;
-        }
-
-        @Override
-        public void onFontRetrieved(@NonNull Typeface typeface) {
-            final AppCompatTextHelper parent = mParent.get();
-            if (parent == null) {
-                return;  // The view has gone. Do nothing
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                if (mFontWeight != TEXT_FONT_WEIGHT_UNSPECIFIED) {
-                    typeface = Typeface.create(typeface, mFontWeight,
-                            (mStyle & Typeface.ITALIC) != 0);
-                }
-            }
-            parent.runOnUiThread(new TypefaceApplyCallback(mParent, typeface));
-        }
-
-        @Override
-        public void onFontRetrievalFailed(int reason) {
-            // Do nothing.
-        }
-    }
-
     private void updateTypefaceAndStyle(Context context, TintTypedArray a) {
         mStyle = a.getInt(R.styleable.TextAppearance_android_textStyle, mStyle);
 
@@ -423,8 +358,24 @@ class AppCompatTextHelper {
             final int fontWeight = mFontWeight;
             final int style = mStyle;
             if (!context.isRestricted()) {
-                ResourcesCompat.FontCallback replyCallback = new ApplyTextViewCallback(
-                        this, fontWeight, style);
+                final WeakReference<TextView> textViewWeak = new WeakReference<>(mView);
+                ResourcesCompat.FontCallback replyCallback = new ResourcesCompat.FontCallback() {
+                    @Override
+                    public void onFontRetrieved(@NonNull Typeface typeface) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            if (fontWeight != TEXT_FONT_WEIGHT_UNSPECIFIED) {
+                                typeface = Typeface.create(typeface, fontWeight,
+                                        (style & Typeface.ITALIC) != 0);
+                            }
+                        }
+                        onAsyncTypefaceReceived(textViewWeak, typeface);
+                    }
+
+                    @Override
+                    public void onFontRetrievalFailed(int reason) {
+                        // Do nothing.
+                    }
+                };
                 try {
                     // Note the callback will be triggered on the UI thread.
                     final Typeface typeface = a.getFont(fontFamilyId, mStyle, replyCallback);
@@ -481,6 +432,27 @@ class AppCompatTextHelper {
         }
     }
 
+    @SuppressWarnings("WeakerAccess") /* synthetic access */
+    void onAsyncTypefaceReceived(WeakReference<TextView> textViewWeak, final Typeface typeface) {
+        if (mAsyncFontPending) {
+            mFontTypeface = typeface;
+            final TextView textView = textViewWeak.get();
+            if (textView != null) {
+                if (ViewCompat.isAttachedToWindow(textView)) {
+                    final int style = mStyle;
+                    textView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            textView.setTypeface(typeface, style);
+                        }
+                    });
+                } else {
+                    textView.setTypeface(typeface, mStyle);
+                }
+            }
+        }
+    }
+
     void onSetTextAppearance(Context context, int resId) {
         final TintTypedArray a = TintTypedArray.obtainStyledAttributes(context,
                 resId, R.styleable.TextAppearance);
@@ -491,14 +463,29 @@ class AppCompatTextHelper {
             // app:textAllCaps has the chance to override it
             setAllCaps(a.getBoolean(R.styleable.TextAppearance_textAllCaps, false));
         }
-        if (Build.VERSION.SDK_INT < 23
-                && a.hasValue(R.styleable.TextAppearance_android_textColor)) {
-            // If we're running on < API 23, the text color may contain theme references
+        if (Build.VERSION.SDK_INT < 23) {
+            // If we're running on < API 23, the text colors may contain theme references
             // so let's re-set using our own inflater
-            final ColorStateList textColor
-                    = a.getColorStateList(R.styleable.TextAppearance_android_textColor);
-            if (textColor != null) {
-                mView.setTextColor(textColor);
+            if (a.hasValue(R.styleable.TextAppearance_android_textColor)) {
+                final ColorStateList textColor =
+                        a.getColorStateList(R.styleable.TextAppearance_android_textColor);
+                if (textColor != null) {
+                    mView.setTextColor(textColor);
+                }
+            }
+            if (a.hasValue(R.styleable.TextAppearance_android_textColorLink)) {
+                final ColorStateList textColorLink =
+                        a.getColorStateList(R.styleable.TextAppearance_android_textColorLink);
+                if (textColorLink != null) {
+                    mView.setLinkTextColor(textColorLink);
+                }
+            }
+            if (a.hasValue(R.styleable.TextAppearance_android_textColorHint)) {
+                final ColorStateList textColorHint =
+                        a.getColorStateList(R.styleable.TextAppearance_android_textColorHint);
+                if (textColorHint != null) {
+                    mView.setHintTextColor(textColorHint);
+                }
             }
         }
         // For SDK <= P, when the text size attribute is 0, this would not be set. Fix this here.
@@ -713,6 +700,27 @@ class AppCompatTextHelper {
                     drawableRight != null ? drawableRight : existingAbs[2],
                     drawableBottom != null ? drawableBottom : existingAbs[3]
             );
+        }
+    }
+
+    /**
+     * For SDK < R(API 30), populates the {@link EditorInfo}'s initial surrounding text from the
+     * given {@link TextView} if it created an {@link InputConnection}.
+     *
+     * <p>
+     * Use {@link EditorInfoCompat#setInitialSurroundingText(EditorInfo, CharSequence)} to provide
+     * initial input text when {@link TextView#onCreateInputConnection(EditorInfo). This method
+     * would only be used when running on < R since {@link TextView} already does this on R.
+     *
+     * @param textView the {@code TextView} to extract the initial surrounding text from
+     * @param editorInfo the {@link EditorInfo} on which to set the surrounding text
+     */
+    void populateSurroundingTextIfNeeded(
+            @NonNull TextView textView,
+            @Nullable InputConnection inputConnection,
+            @NonNull EditorInfo editorInfo) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && inputConnection != null) {
+            EditorInfoCompat.setInitialSurroundingText(editorInfo, textView.getText());
         }
     }
 }

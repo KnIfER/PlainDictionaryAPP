@@ -16,6 +16,9 @@
 
 package androidx.appcompat.app;
 
+import static android.view.View.GONE;
+import static android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+import static android.view.View.VISIBLE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.view.Window.FEATURE_OPTIONS_PANEL;
@@ -43,6 +46,7 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.LocaleList;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PowerManager;
@@ -71,6 +75,7 @@ import android.widget.FrameLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -100,9 +105,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.VectorEnabledTintResources;
 import androidx.appcompat.widget.ViewStubCompat;
 import androidx.appcompat.widget.ViewUtils;
-import androidx.collection.ArrayMap;
+import androidx.collection.SimpleArrayMap;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NavUtils;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.core.util.ObjectsCompat;
 import androidx.core.view.KeyEventDispatcher;
 import androidx.core.view.LayoutInflaterCompat;
 import androidx.core.view.OnApplyWindowInsetsListener;
@@ -118,7 +126,6 @@ import androidx.lifecycle.LifecycleOwner;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @hide
@@ -127,12 +134,22 @@ import java.util.Map;
 class AppCompatDelegateImpl extends AppCompatDelegate
         implements MenuBuilder.Callback, LayoutInflater.Factory2 {
 
-    private static final Map<Class<?>, Integer> sLocalNightModes = new ArrayMap<>();
-
-    private static final boolean DEBUG = false;
+    private static final SimpleArrayMap<String, Integer> sLocalNightModes = new SimpleArrayMap<>();
     private static final boolean IS_PRE_LOLLIPOP = Build.VERSION.SDK_INT < 21;
 
     private static final int[] sWindowBackgroundStyleable = {android.R.attr.windowBackground};
+
+    /**
+     * Flag indicating whether we can return a different context from attachBaseContext().
+     * Unfortunately, doing so breaks Robolectric tests, so we skip night mode application there.
+     */
+    private static final boolean sCanReturnDifferentContext =
+            !"robolectric".equals(Build.FINGERPRINT);
+
+    /**
+     * Flag indicating whether ContextThemeWrapper.applyOverrideConfiguration() is available.
+     */
+    private static final boolean sCanApplyOverrideConfiguration = Build.VERSION.SDK_INT >= 17;
 
     private static boolean sInstalledExceptionHandler;
 
@@ -147,16 +164,17 @@ class AppCompatDelegateImpl extends AppCompatDelegate
 
             Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
-                public void uncaughtException(Thread thread, final Throwable thowable) {
-                    if (shouldWrapException(thowable)) {
+                public void uncaughtException(@NonNull Thread thread,
+                        final @NonNull Throwable throwable) {
+                    if (shouldWrapException(throwable)) {
                         // Now wrap the throwable, but append some extra information to the message
                         final Throwable wrapped = new Resources.NotFoundException(
-                                thowable.getMessage() + EXCEPTION_HANDLER_MESSAGE_SUFFIX);
-                        wrapped.initCause(thowable.getCause());
-                        wrapped.setStackTrace(thowable.getStackTrace());
+                                throwable.getMessage() + EXCEPTION_HANDLER_MESSAGE_SUFFIX);
+                        wrapped.initCause(throwable.getCause());
+                        wrapped.setStackTrace(throwable.getStackTrace());
                         defHandler.uncaughtException(thread, wrapped);
                     } else {
-                        defHandler.uncaughtException(thread, thowable);
+                        defHandler.uncaughtException(thread, throwable);
                     }
                 }
 
@@ -199,7 +217,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
 
     // true if we have installed a window sub-decor layout.
     private boolean mSubDecorInstalled;
-    private ViewGroup mSubDecor;
+    ViewGroup mSubDecor;
 
     private TextView mTitleView;
     private View mStatusGuard;
@@ -263,6 +281,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
     private Rect mTempRect2;
 
     private AppCompatViewInflater mAppCompatViewInflater;
+    private LayoutIncludeDetector mLayoutIncludeDetector;
 
     AppCompatDelegateImpl(Activity activity, AppCompatCallback callback) {
         this(activity, null, callback, activity);
@@ -299,11 +318,11 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         }
         if (mLocalNightMode == MODE_NIGHT_UNSPECIFIED) {
             // Try and read the current night mode from our static store
-            final Integer value = sLocalNightModes.get(mHost.getClass());
+            final Integer value = sLocalNightModes.get(mHost.getClass().getName());
             if (value != null) {
                 mLocalNightMode = value;
                 // Finally remove the value
-                sLocalNightModes.remove(mHost.getClass());
+                sLocalNightModes.remove(mHost.getClass().getName());
             }
         }
 
@@ -318,11 +337,153 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         AppCompatDrawableManager.preload();
     }
 
+    @NonNull
     @Override
-    public void attachBaseContext(Context context) {
-        // Activity.recreate() cannot be called before attach is complete.
-        applyDayNight(false);
+    @CallSuper
+    public Context attachBaseContext2(@NonNull final Context baseContext) {
         mBaseContextAttached = true;
+
+        // This is a tricky method. Here are some things to avoid:
+        // 1. Don't modify the configuration of the Application context. All changes should remain
+        //    local to the Activity to avoid conflicting with other Activities and internal logic.
+        // 2. Don't use createConfigurationContext() with Robolectric because Robolectric relies on
+        //    method overrides.
+        // 3. Don't use createConfigurationContext() unless you're able to retain the base context's
+        //    theme stack. Not the last theme applied -- the entire stack of applied themes.
+        // 4. Don't use applyOverrideConfiguration() unless you're able to retain the base context's
+        //    configuration overrides (as distinct from the entire configuration).
+
+        final int modeToApply = mapNightMode(baseContext, calculateNightMode());
+
+        // If the base context is a ContextThemeWrapper (thus not an Application context)
+        // and nobody's touched its Resources yet, we can shortcut and directly apply our
+        // override configuration.
+        if (sCanApplyOverrideConfiguration
+                && baseContext instanceof android.view.ContextThemeWrapper) {
+            final Configuration config = createOverrideConfigurationForDayNight(
+                    baseContext, modeToApply, null);
+            if (DEBUG) {
+                Log.d(TAG, String.format("Attempting to apply config to base context: %s",
+                        config.toString()));
+            }
+
+            try {
+                ContextThemeWrapperCompatApi17Impl.applyOverrideConfiguration(
+                        (android.view.ContextThemeWrapper) baseContext, config);
+                return baseContext;
+            } catch (IllegalStateException e) {
+                if (DEBUG) {
+                    Log.d(TAG, "Failed to apply configuration to base context", e);
+                }
+            }
+        }
+
+        // Again, but using the AppCompat version of ContextThemeWrapper.
+        if (baseContext instanceof ContextThemeWrapper) {
+            final Configuration config = createOverrideConfigurationForDayNight(
+                    baseContext, modeToApply, null);
+            if (DEBUG) {
+                Log.d(TAG, String.format("Attempting to apply config to base context: %s",
+                        config.toString()));
+            }
+
+            try {
+                ((ContextThemeWrapper) baseContext).applyOverrideConfiguration(config);
+                return baseContext;
+            } catch (IllegalStateException e) {
+                if (DEBUG) {
+                    Log.d(TAG, "Failed to apply configuration to base context", e);
+                }
+            }
+        }
+
+        // We can't apply the configuration directly to the existing base context, so we need to
+        // wrap it. We can't create a new configuration context since the app may rely on method
+        // overrides or a specific theme -- neither of which are preserved when creating a
+        // configuration context. Instead, we'll make a best-effort at wrapping the context and
+        // rebasing the original theme.
+        if (!sCanReturnDifferentContext) {
+            return super.attachBaseContext2(baseContext);
+        }
+
+        Configuration configOverlay = null;
+
+        if (Build.VERSION.SDK_INT >= 17) {
+            // There is a bug in createConfigurationContext where it applies overrides to the
+            // canonical configuration, e.g. ActivityThread.mCurrentConfig, rather than the base
+            // configuration, e.g. Activity.getResources().getConfiguration(). We can lean on this
+            // bug to obtain a reference configuration and reconstruct any custom configuration
+            // that may have been applied by the app, thereby avoiding the bug later on.
+            Configuration overrideConfig = new Configuration();
+            // We have to modify a value to receive a new Configuration, so use one that developers
+            // can't override.
+            overrideConfig.uiMode = -1;
+            // Workaround for incorrect default fontScale on earlier SDKs.
+            overrideConfig.fontScale = 0f;
+            Configuration referenceConfig =
+                    Api17Impl.createConfigurationContext(baseContext, overrideConfig)
+                            .getResources().getConfiguration();
+            // Revert the uiMode change so that the diff doesn't include uiMode.
+            Configuration baseConfig = baseContext.getResources().getConfiguration();
+            referenceConfig.uiMode = baseConfig.uiMode;
+
+            // Extract any customizations as an overlay.
+            if (!referenceConfig.equals(baseConfig)) {
+                configOverlay = generateConfigDelta(referenceConfig, baseConfig);
+                if (DEBUG) {
+                    Log.d(TAG, "Application config (" + referenceConfig + ") does not match base "
+                            + "config (" + baseConfig + "), using base overlay: " + configOverlay);
+                }
+            }
+        }
+
+        final Configuration config = createOverrideConfigurationForDayNight(
+                baseContext, modeToApply, configOverlay);
+        if (DEBUG) {
+            Log.d(TAG, String.format("Applying night mode using ContextThemeWrapper and "
+                    + "applyOverrideConfiguration(). Config: %s", config.toString()));
+        }
+
+        // Next, we'll wrap the base context to ensure any method overrides or themes are left
+        // intact. Since ThemeOverlay.AppCompat theme is empty, we'll get the base context's theme.
+        final ContextThemeWrapper wrappedContext = new ContextThemeWrapper(baseContext,
+                R.style.Theme_AppCompat_Empty);
+        wrappedContext.applyOverrideConfiguration(config);
+
+        // Check whether the base context has an explicit theme or is able to obtain one
+        // from its outer context. If it throws an NPE because we're at an invalid point in app
+        // initialization, we don't need to worry about rebasing under the new configuration.
+        boolean needsThemeRebase;
+        try {
+            needsThemeRebase = baseContext.getTheme() != null;
+        } catch (NullPointerException e) {
+            needsThemeRebase = false;
+        }
+
+        if (needsThemeRebase) {
+            // Attempt to rebase the old theme within the new configuration. This will only
+            // work on SDK 23 and up, but it's unlikely that we're keeping the base theme
+            // anyway so maybe nobody will notice. Note that calling getTheme() will clone
+            // the base context's theme into the wrapped context's theme.
+            ResourcesCompat.ThemeCompat.rebase(wrappedContext.getTheme());
+        }
+
+        return super.attachBaseContext2(wrappedContext);
+    }
+
+    /**
+     * Helper for accessing new APIs on {@link android.view.ContextThemeWrapper}.
+     */
+    @RequiresApi(17)
+    private static class ContextThemeWrapperCompatApi17Impl {
+        private ContextThemeWrapperCompatApi17Impl() {
+            // This class is non-instantiable.
+        }
+
+        static void applyOverrideConfiguration(android.view.ContextThemeWrapper context,
+                Configuration overrideConfiguration) {
+            context.applyOverrideConfiguration(overrideConfiguration);
+        }
     }
 
     @Override
@@ -355,6 +516,9 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                     ab.setDefaultDisplayHomeAsUpEnabled(true);
                 }
             }
+
+            // Only activity-hosted delegates should apply night mode changes.
+            addActiveDelegate(this);
         }
 
         mCreated = true;
@@ -498,25 +662,15 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         // This will apply day/night if the time has changed, it will also call through to
         // setupAutoNightModeIfNeeded()
         applyDayNight();
-
-        markStarted(this);
     }
 
     @Override
     public void onStop() {
         mStarted = false;
 
-        markStopped(this);
-
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
             ab.setShowHideAnimationEnabled(false);
-        }
-
-        if (mHost instanceof Dialog) {
-            // If the host is a Dialog, we should clean up the Auto managers now. This is
-            // because Dialogs do not have an onDestroy()
-            cleanupAutoManagers();
         }
     }
 
@@ -565,16 +719,13 @@ class AppCompatDelegateImpl extends AppCompatDelegate
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if (mLocalNightMode != MODE_NIGHT_UNSPECIFIED) {
-            // If we have a local night mode set, save it
-            sLocalNightModes.put(mHost.getClass(), mLocalNightMode);
-        }
     }
 
     @Override
     public void onDestroy() {
-        // There are cases where onStop is not called on all API levels. We make sure here.
-        markStopped(this);
+        if (mHost instanceof Activity) {
+            removeActivityDelegate(this);
+        }
 
         if (mInvalidatePanelMenuPosted) {
             mWindow.getDecorView().removeCallbacks(mInvalidatePanelMenuRunnable);
@@ -582,6 +733,15 @@ class AppCompatDelegateImpl extends AppCompatDelegate
 
         mStarted = false;
         mIsDestroyed = true;
+
+        if (mLocalNightMode != MODE_NIGHT_UNSPECIFIED
+                && mHost instanceof Activity
+                && ((Activity) mHost).isChangingConfigurations()) {
+            // If we have a local night mode set, save it
+            sLocalNightModes.put(mHost.getClass().getName(), mLocalNightMode);
+        } else {
+            sLocalNightModes.remove(mHost.getClass().getName());
+        }
 
         if (mActionBar != null) {
             mActionBar.onDestroy();
@@ -762,40 +922,6 @@ class AppCompatDelegateImpl extends AppCompatDelegate
             } else {
                 subDecor = (ViewGroup) inflater.inflate(R.layout.abc_screen_simple, null);
             }
-
-            if (Build.VERSION.SDK_INT >= 21) {
-                // If we're running on L or above, we can rely on ViewCompat's
-                // setOnApplyWindowInsetsListener
-                ViewCompat.setOnApplyWindowInsetsListener(subDecor,
-                        new OnApplyWindowInsetsListener() {
-                            @Override
-                            public WindowInsetsCompat onApplyWindowInsets(View v,
-                                    WindowInsetsCompat insets) {
-                                final int top = insets.getSystemWindowInsetTop();
-                                final int newTop = updateStatusGuard(top);
-
-                                if (top != newTop) {
-                                    insets = insets.replaceSystemWindowInsets(
-                                            insets.getSystemWindowInsetLeft(),
-                                            newTop,
-                                            insets.getSystemWindowInsetRight(),
-                                            insets.getSystemWindowInsetBottom());
-                                }
-
-                                // Now apply the insets on our view
-                                return ViewCompat.onApplyWindowInsets(v, insets);
-                            }
-                        });
-            } else {
-                // Else, we need to use our own FitWindowsViewGroup handling
-                ((FitWindowsViewGroup) subDecor).setOnFitSystemWindowsListener(
-                        new FitWindowsViewGroup.OnFitSystemWindowsListener() {
-                            @Override
-                            public void onFitSystemWindows(Rect insets) {
-                                insets.top = updateStatusGuard(insets.top);
-                            }
-                        });
-            }
         }
 
         if (subDecor == null) {
@@ -807,6 +933,39 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                             + ", windowActionModeOverlay: " + mOverlayActionMode
                             + ", windowNoTitle: " + mWindowNoTitle
                             + " }");
+        }
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            // If we're running on L or above, we can rely on ViewCompat's
+            // setOnApplyWindowInsetsListener
+            ViewCompat.setOnApplyWindowInsetsListener(subDecor, new OnApplyWindowInsetsListener() {
+                        @Override
+                        public WindowInsetsCompat onApplyWindowInsets(View v,
+                                WindowInsetsCompat insets) {
+                            final int top = insets.getSystemWindowInsetTop();
+                            final int newTop = updateStatusGuard(insets, null);
+
+                            if (top != newTop) {
+                                insets = insets.replaceSystemWindowInsets(
+                                        insets.getSystemWindowInsetLeft(),
+                                        newTop,
+                                        insets.getSystemWindowInsetRight(),
+                                        insets.getSystemWindowInsetBottom());
+                            }
+
+                            // Now apply the insets on our view
+                            return ViewCompat.onApplyWindowInsets(v, insets);
+                        }
+                    });
+        } else if (subDecor instanceof FitWindowsViewGroup) {
+            // Else, we need to use our own FitWindowsViewGroup handling
+            ((FitWindowsViewGroup) subDecor).setOnFitSystemWindowsListener(
+                    new FitWindowsViewGroup.OnFitSystemWindowsListener() {
+                        @Override
+                        public void onFitSystemWindows(Rect insets) {
+                            insets.top = updateStatusGuard(null, insets);
+                        }
+                    });
         }
 
         if (mDecorContentParent == null) {
@@ -876,16 +1035,20 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         a.getValue(R.styleable.AppCompatTheme_windowMinWidthMinor, cfl.getMinWidthMinor());
 
         if (a.hasValue(R.styleable.AppCompatTheme_windowFixedWidthMajor)) {
-            a.getValue(R.styleable.AppCompatTheme_windowFixedWidthMajor, cfl.getFixedWidthMajor());
+            a.getValue(R.styleable.AppCompatTheme_windowFixedWidthMajor,
+                    cfl.getFixedWidthMajor());
         }
         if (a.hasValue(R.styleable.AppCompatTheme_windowFixedWidthMinor)) {
-            a.getValue(R.styleable.AppCompatTheme_windowFixedWidthMinor, cfl.getFixedWidthMinor());
+            a.getValue(R.styleable.AppCompatTheme_windowFixedWidthMinor,
+                    cfl.getFixedWidthMinor());
         }
         if (a.hasValue(R.styleable.AppCompatTheme_windowFixedHeightMajor)) {
-            a.getValue(R.styleable.AppCompatTheme_windowFixedHeightMajor, cfl.getFixedHeightMajor());
+            a.getValue(R.styleable.AppCompatTheme_windowFixedHeightMajor,
+                    cfl.getFixedHeightMajor());
         }
         if (a.hasValue(R.styleable.AppCompatTheme_windowFixedHeightMinor)) {
-            a.getValue(R.styleable.AppCompatTheme_windowFixedHeightMinor, cfl.getFixedHeightMinor());
+            a.getValue(R.styleable.AppCompatTheme_windowFixedHeightMinor,
+                    cfl.getFixedHeightMinor());
         }
         a.recycle();
 
@@ -1008,7 +1171,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
     }
 
     @Override
-    public boolean onMenuItemSelected(MenuBuilder menu, MenuItem item) {
+    public boolean onMenuItemSelected(@NonNull MenuBuilder menu, @NonNull MenuItem item) {
         final Window.Callback cb = getWindowCallback();
         if (cb != null && !mIsDestroyed) {
             final PanelFeatureState panel = findMenuPanel(menu.getRootMenu());
@@ -1020,8 +1183,8 @@ class AppCompatDelegateImpl extends AppCompatDelegate
     }
 
     @Override
-    public void onMenuModeChange(MenuBuilder menu) {
-        reopenMenu(menu, true);
+    public void onMenuModeChange(@NonNull MenuBuilder menu) {
+        reopenMenu(true);
     }
 
     @Override
@@ -1130,7 +1293,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                                 mFadeAnim.setListener(new ViewPropertyAnimatorListenerAdapter() {
                                     @Override
                                     public void onAnimationStart(View view) {
-                                        mActionModeView.setVisibility(View.VISIBLE);
+                                        mActionModeView.setVisibility(VISIBLE);
                                     }
 
                                     @Override
@@ -1142,13 +1305,12 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                                 });
                             } else {
                                 mActionModeView.setAlpha(1f);
-                                mActionModeView.setVisibility(View.VISIBLE);
+                                mActionModeView.setVisibility(VISIBLE);
                             }
                         }
                     };
                 } else {
-                    ViewStubCompat stub = (ViewStubCompat) mSubDecor
-                            .findViewById(R.id.action_mode_bar_stub);
+                    ViewStubCompat stub = mSubDecor.findViewById(R.id.action_mode_bar_stub);
                     if (stub != null) {
                         // Set the layout inflater so that it is inflated with the action bar's context
                         stub.setLayoutInflater(LayoutInflater.from(getActionBarThemedContext()));
@@ -1173,7 +1335,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                         mFadeAnim.setListener(new ViewPropertyAnimatorListenerAdapter() {
                             @Override
                             public void onAnimationStart(View view) {
-                                mActionModeView.setVisibility(View.VISIBLE);
+                                mActionModeView.setVisibility(VISIBLE);
                                 mActionModeView.sendAccessibilityEvent(
                                         AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
                                 if (mActionModeView.getParent() instanceof View) {
@@ -1190,7 +1352,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                         });
                     } else {
                         mActionModeView.setAlpha(1f);
-                        mActionModeView.setVisibility(View.VISIBLE);
+                        mActionModeView.setVisibility(VISIBLE);
                         mActionModeView.sendAccessibilityEvent(
                                 AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
                         if (mActionModeView.getParent() instanceof View) {
@@ -1362,10 +1524,9 @@ class AppCompatDelegateImpl extends AppCompatDelegate
             TypedArray a = mContext.obtainStyledAttributes(R.styleable.AppCompatTheme);
             String viewInflaterClassName =
                     a.getString(R.styleable.AppCompatTheme_viewInflaterClass);
-            if ((viewInflaterClassName == null)
-                    || AppCompatViewInflater.class.getName().equals(viewInflaterClassName)) {
-                // Either default class name or set explicitly to null. In both cases
-                // create the base inflater (no reflection)
+            if (viewInflaterClassName == null) {
+                // Set to null (the default in all AppCompat themes). Create the base inflater
+                // (no reflection)
                 mAppCompatViewInflater = new AppCompatViewInflater();
             } else {
                 try {
@@ -1383,11 +1544,20 @@ class AppCompatDelegateImpl extends AppCompatDelegate
 
         boolean inheritContext = false;
         if (IS_PRE_LOLLIPOP) {
-            inheritContext = (attrs instanceof XmlPullParser)
-                    // If we have a XmlPullParser, we can detect where we are in the layout
-                    ? ((XmlPullParser) attrs).getDepth() > 1
-                    // Otherwise we have to use the old heuristic
-                    : shouldInheritContext((ViewParent) parent);
+            if (mLayoutIncludeDetector == null) {
+                mLayoutIncludeDetector = new LayoutIncludeDetector();
+            }
+            if (mLayoutIncludeDetector.detect(attrs)) {
+                // The view being inflated is the root of an <include>d view, so make sure
+                // we carry over any themed context.
+                inheritContext = true;
+            } else {
+                inheritContext = (attrs instanceof XmlPullParser)
+                        // If we have a XmlPullParser, we can detect where we are in the layout
+                        ? ((XmlPullParser) attrs).getDepth() > 1
+                        // Otherwise we have to use the old heuristic
+                        : shouldInheritContext((ViewParent) parent);
+            }
         }
 
         return mAppCompatViewInflater.createView(parent, name, context, attrs, inheritContext,
@@ -1438,6 +1608,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
     /**
      * From {@link LayoutInflater.Factory2}.
      */
+    @SuppressWarnings("NullableProblems")
     @Override
     public final View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
         return createView(parent, name, context, attrs);
@@ -1446,6 +1617,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
     /**
      * From {@link LayoutInflater.Factory2}.
      */
+    @SuppressWarnings("NullableProblems")
     @Override
     public View onCreateView(String name, Context context, AttributeSet attrs) {
         return onCreateView(null, name, context, attrs);
@@ -1485,7 +1657,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         }
 
         Window.Callback cb = getWindowCallback();
-        if ((cb != null) && (!cb.onMenuOpened(st.featureId, st.menu))) {
+        if ((cb != null) && !cb.onMenuOpened(st.featureId, st.menu)) {
             // Callback doesn't want the menu to open, reset any state
             closePanel(st, true);
             return;
@@ -1514,6 +1686,9 @@ class AppCompatDelegateImpl extends AppCompatDelegate
 
             // This will populate st.shownPanelView
             if (!initializePanelContent(st) || !st.hasPanelItems()) {
+                // If st.decorView was populated but we're not showing the menu for some reason,
+                // make sure we try again rather than showing a potentially empty st.decorView.
+                st.refreshDecorView = true;
                 return;
             }
 
@@ -1570,7 +1745,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         return true;
     }
 
-    private void reopenMenu(MenuBuilder menu, boolean toggleMenuMode) {
+    private void reopenMenu(boolean toggleMenuMode) {
         if (mDecorContentParent != null && mDecorContentParent.canShowOverflowMenu()
                 && (!ViewConfiguration.get(mContext).hasPermanentMenuKey()
                         || mDecorContentParent.isOverflowMenuShowPending())) {
@@ -1782,7 +1957,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         return true;
     }
 
-    void checkCloseActionMenu(MenuBuilder menu) {
+    void checkCloseActionMenu(@NonNull MenuBuilder menu) {
         if (mClosingActionMenu) {
             return;
         }
@@ -1885,8 +2060,8 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         }
 
         if (handled) {
-            AudioManager audioManager = (AudioManager) mContext.getSystemService(
-                    Context.AUDIO_SERVICE);
+            AudioManager audioManager = (AudioManager) mContext.getApplicationContext()
+                    .getSystemService(Context.AUDIO_SERVICE);
             if (audioManager != null) {
                 audioManager.playSoundEffect(AudioManager.FX_KEY_CLICK);
             } else {
@@ -1913,8 +2088,9 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         }
 
         // If the panel is not open, do not callback
-        if ((panel != null) && (!panel.isOpen))
+        if ((panel != null) && !panel.isOpen) {
             return;
+        }
 
         if (!mIsDestroyed) {
             // We need to be careful which callback we dispatch the call to. We can not dispatch
@@ -2017,11 +2193,20 @@ class AppCompatDelegateImpl extends AppCompatDelegate
     /**
      * Updates the status bar guard
      *
-     * @param insetTop the current top system window inset
+     * @param insets the current system window insets, or null if not available
+     * @param rectInsets the current system window insets if {@code insets} is not available
      * @return the new top system window inset
      */
-    int updateStatusGuard(int insetTop) {
+    final int updateStatusGuard(@Nullable final WindowInsetsCompat insets,
+            @Nullable final Rect rectInsets) {
+        int systemWindowInsetTop = 0;
+        if (insets != null) {
+            systemWindowInsetTop = insets.getSystemWindowInsetTop();
+        } else if (rectInsets != null) {
+            systemWindowInsetTop = rectInsets.top;
+        }
         boolean showStatusGuard = false;
+
         // Show the status guard when the non-overlay contextual action bar is showing
         if (mActionModeView != null) {
             if (mActionModeView.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
@@ -2034,29 +2219,57 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                         mTempRect1 = new Rect();
                         mTempRect2 = new Rect();
                     }
-                    final Rect insets = mTempRect1;
-                    final Rect localInsets = mTempRect2;
-                    insets.set(0, insetTop, 0, 0);
+                    final Rect innerInsets = mTempRect1;
+                    final Rect rect = mTempRect2;
+                    if (insets == null) {
+                        innerInsets.set(rectInsets);
+                    } else {
+                        innerInsets.set(
+                                insets.getSystemWindowInsetLeft(),
+                                insets.getSystemWindowInsetTop(),
+                                insets.getSystemWindowInsetRight(),
+                                insets.getSystemWindowInsetBottom());
+                    }
 
-                    ViewUtils.computeFitSystemWindows(mSubDecor, insets, localInsets);
-                    final int newMargin = localInsets.top == 0 ? insetTop : 0;
-                    if (mlp.topMargin != newMargin) {
+                    ViewUtils.computeFitSystemWindows(mSubDecor, innerInsets, rect);
+                    int newTopMargin = innerInsets.top;
+                    int newLeftMargin = innerInsets.left;
+                    int newRightMargin = innerInsets.right;
+
+                    // Must use root window insets for the guard, because the color views consume
+                    // the navigation bar inset if the window does not request LAYOUT_HIDE_NAV - but
+                    // the status guard is attached at the root.
+                    WindowInsetsCompat rootInsets = ViewCompat.getRootWindowInsets(mSubDecor);
+                    int newGuardLeftMargin =
+                            rootInsets == null ? 0 : rootInsets.getSystemWindowInsetLeft();
+                    int newGuardRightMargin =
+                            rootInsets == null ? 0 : rootInsets.getSystemWindowInsetRight();
+
+                    if (mlp.topMargin != newTopMargin || mlp.leftMargin != newLeftMargin
+                            || mlp.rightMargin != newRightMargin) {
                         mlpChanged = true;
-                        mlp.topMargin = insetTop;
+                        mlp.topMargin = newTopMargin;
+                        mlp.leftMargin = newLeftMargin;
+                        mlp.rightMargin = newRightMargin;
+                    }
 
-                        if (mStatusGuard == null) {
-                            mStatusGuard = new View(mContext);
-                            mStatusGuard.setBackgroundColor(mContext.getResources()
-                                    .getColor(R.color.abc_input_method_navigation_guard));
-                            mSubDecor.addView(mStatusGuard, -1,
-                                    new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                            insetTop));
-                        } else {
-                            ViewGroup.LayoutParams lp = mStatusGuard.getLayoutParams();
-                            if (lp.height != insetTop) {
-                                lp.height = insetTop;
-                                mStatusGuard.setLayoutParams(lp);
-                            }
+                    if (newTopMargin > 0 && mStatusGuard == null) {
+                        mStatusGuard = new View(mContext);
+                        mStatusGuard.setVisibility(GONE);
+                        final FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                                MATCH_PARENT, mlp.topMargin, Gravity.LEFT | Gravity.TOP);
+                        lp.leftMargin = newGuardLeftMargin;
+                        lp.rightMargin = newGuardRightMargin;
+                        mSubDecor.addView(mStatusGuard, -1, lp);
+                    } else if (mStatusGuard != null) {
+                        final ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)
+                                mStatusGuard.getLayoutParams();
+                        if (lp.height != mlp.topMargin || lp.leftMargin != newGuardLeftMargin
+                                || lp.rightMargin != newGuardRightMargin) {
+                            lp.height = mlp.topMargin;
+                            lp.leftMargin = newGuardLeftMargin;
+                            lp.rightMargin = newGuardRightMargin;
+                            mStatusGuard.setLayoutParams(lp);
                         }
                     }
 
@@ -2064,12 +2277,17 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                     // always show the status guard above it.
                     showStatusGuard = mStatusGuard != null;
 
+                    if (showStatusGuard && mStatusGuard.getVisibility() != VISIBLE) {
+                        // If it wasn't previously shown, the color may be stale
+                        updateStatusGuardColor(mStatusGuard);
+                    }
+
                     // We only need to consume the insets if the action
                     // mode is overlaid on the app content (e.g. it's
                     // sitting in a FrameLayout, see
                     // screen_simple_overlay_action_mode.xml).
                     if (!mOverlayActionMode && showStatusGuard) {
-                        insetTop = 0;
+                        systemWindowInsetTop = 0;
                     }
                 } else {
                     // reset top margin
@@ -2084,10 +2302,18 @@ class AppCompatDelegateImpl extends AppCompatDelegate
             }
         }
         if (mStatusGuard != null) {
-            mStatusGuard.setVisibility(showStatusGuard ? View.VISIBLE : View.GONE);
+            mStatusGuard.setVisibility(showStatusGuard ? VISIBLE : GONE);
         }
 
-        return insetTop;
+        return systemWindowInsetTop;
+    }
+
+    private void updateStatusGuardColor(View v) {
+        boolean lightStatusBar = (ViewCompat.getWindowSystemUiVisibility(v)
+                & SYSTEM_UI_FLAG_LIGHT_STATUS_BAR) != 0;
+        v.setBackgroundColor(lightStatusBar
+                ? ContextCompat.getColor(mContext, R.color.abc_decor_view_status_guard_light)
+                : ContextCompat.getColor(mContext, R.color.abc_decor_view_status_guard));
     }
 
     private void throwFeatureRequestIfSubDecorInstalled() {
@@ -2145,24 +2371,28 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         return applyDayNight(true);
     }
 
+    @SuppressWarnings("deprecation")
     private boolean applyDayNight(final boolean allowRecreation) {
         if (mIsDestroyed) {
+            if (DEBUG) {
+                Log.d(TAG, "applyDayNight. Skipping because host is destroyed");
+            }
             // If we're destroyed, ignore the call
             return false;
         }
 
         @NightMode final int nightMode = calculateNightMode();
-        @ApplyableNightMode final int modeToApply = mapNightMode(nightMode);
+        @ApplyableNightMode final int modeToApply = mapNightMode(mContext, nightMode);
         final boolean applied = updateForNightMode(modeToApply, allowRecreation);
 
         if (nightMode == MODE_NIGHT_AUTO_TIME) {
-            getAutoTimeNightModeManager().setup();
+            getAutoTimeNightModeManager(mContext).setup();
         } else if (mAutoTimeNightModeManager != null) {
             // Make sure we clean up the existing manager
             mAutoTimeNightModeManager.cleanup();
         }
         if (nightMode == MODE_NIGHT_AUTO_BATTERY) {
-            getAutoBatteryNightModeManager().setup();
+            getAutoBatteryNightModeManager(mContext).setup();
         } else if (mAutoBatteryNightModeManager != null) {
             // Make sure we clean up the existing manager
             mAutoBatteryNightModeManager.cleanup();
@@ -2172,10 +2402,19 @@ class AppCompatDelegateImpl extends AppCompatDelegate
     }
 
     @Override
+    @RequiresApi(17)
     public void setLocalNightMode(@NightMode int mode) {
+        if (DEBUG) {
+            Log.d(TAG, String.format("setLocalNightMode. New: %d, Current: %d",
+                    mode, mLocalNightMode));
+        }
         if (mLocalNightMode != mode) {
             mLocalNightMode = mode;
-            applyDayNight();
+            if (mBaseContextAttached) {
+                // If we the base context is attached, we call through to apply the new value.
+                // Otherwise we just wait for attachBaseContext/onCreate
+                applyDayNight();
+            }
         }
     }
 
@@ -2184,8 +2423,9 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         return mLocalNightMode;
     }
 
+    @SuppressWarnings("deprecation")
     @ApplyableNightMode
-    int mapNightMode(@NightMode final int mode) {
+    int mapNightMode(@NonNull Context context, @NightMode final int mode) {
         switch (mode) {
             case MODE_NIGHT_NO:
             case MODE_NIGHT_YES:
@@ -2194,16 +2434,17 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                 return mode;
             case MODE_NIGHT_AUTO_TIME:
                 if (Build.VERSION.SDK_INT >= 23) {
-                    UiModeManager uiModeManager = mContext.getSystemService(UiModeManager.class);
+                    UiModeManager uiModeManager = (UiModeManager) context.getApplicationContext()
+                            .getSystemService(Context.UI_MODE_SERVICE);
                     if (uiModeManager.getNightMode() == UiModeManager.MODE_NIGHT_AUTO) {
                         // If we're set to AUTO and the system's auto night mode is already enabled,
                         // we'll just let the system handle it by returning FOLLOW_SYSTEM
                         return MODE_NIGHT_FOLLOW_SYSTEM;
                     }
                 }
-                return getAutoTimeNightModeManager().getApplyableNightMode();
+                return getAutoTimeNightModeManager(context).getApplyableNightMode();
             case MODE_NIGHT_AUTO_BATTERY:
-                return getAutoBatteryNightModeManager().getApplyableNightMode();
+                return getAutoBatteryNightModeManager(context).getApplyableNightMode();
             case MODE_NIGHT_UNSPECIFIED:
                 // If we don't have a mode specified, let the system handle it
                 return MODE_NIGHT_FOLLOW_SYSTEM;
@@ -2218,21 +2459,10 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         return mLocalNightMode != MODE_NIGHT_UNSPECIFIED ? mLocalNightMode : getDefaultNightMode();
     }
 
-    /**
-     * Updates the {@link Resources} configuration {@code uiMode} with the
-     * chosen {@code UI_MODE_NIGHT} value.
-     *
-     * @param mode The new night mode to apply
-     * @param allowRecreation whether to attempt activity recreate
-     * @return true if an action has been taken (recreation, resources updating, etc)
-     */
-    private boolean updateForNightMode(@ApplyableNightMode final int mode,
-            final boolean allowRecreation) {
-        boolean handled = false;
-
-        final int applicationNightMode = mContext.getApplicationContext()
-                .getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-
+    @NonNull
+    private Configuration createOverrideConfigurationForDayNight(
+            @NonNull Context context, @ApplyableNightMode final int mode,
+            @Nullable Configuration configOverlay) {
         int newNightMode;
         switch (mode) {
             case MODE_NIGHT_YES:
@@ -2245,70 +2475,83 @@ class AppCompatDelegateImpl extends AppCompatDelegate
             case MODE_NIGHT_FOLLOW_SYSTEM:
                 // If we're following the system, we just use the system default from the
                 // application context
-                newNightMode = applicationNightMode;
+                final Configuration appConfig =
+                        context.getApplicationContext().getResources().getConfiguration();
+                newNightMode = appConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
                 break;
         }
 
-        final boolean activityHandlingUiMode = isActivityManifestHandlingUiMode();
-
-        if (newNightMode != applicationNightMode
-                && !activityHandlingUiMode
-                && Build.VERSION.SDK_INT >= 17
-                && !mBaseContextAttached
-                && mHost instanceof android.view.ContextThemeWrapper) {
-            // If we're here then we can try and apply an override configuration on the Context.
-            final Configuration conf = new Configuration();
-            conf.uiMode = newNightMode | (conf.uiMode & ~Configuration.UI_MODE_NIGHT_MASK);
-
-            try {
-                if (DEBUG) {
-                    Log.d(TAG, "updateForNightMode. Applying override config");
-                }
-                ((android.view.ContextThemeWrapper) mHost).applyOverrideConfiguration(conf);
-                handled = true;
-            } catch (IllegalStateException e) {
-                // applyOverrideConfiguration throws an IllegalStateException if its resources
-                // have already been created. Since there's no way to check this beforehand we
-                // just have to try it and catch the exception.
-                Log.e(TAG, "updateForNightMode. Calling applyOverrideConfiguration() failed"
-                        + " with an exception. Will fall back to using"
-                        + " Resources.updateConfiguration()", e);
-                handled = false;
-            }
+        // If we're here then we can try and apply an override configuration on the Context.
+        final Configuration overrideConf = new Configuration();
+        overrideConf.fontScale = 0;
+        if (configOverlay != null) {
+            overrideConf.setTo(configOverlay);
         }
+        overrideConf.uiMode = newNightMode
+                | (overrideConf.uiMode & ~Configuration.UI_MODE_NIGHT_MASK);
 
+        return overrideConf;
+    }
+
+    /**
+     * Updates the {@link Resources} configuration {@code uiMode} with the
+     * chosen {@code UI_MODE_NIGHT} value.
+     *
+     * @param mode The new night mode to apply
+     * @param allowRecreation whether to attempt activity recreate
+     * @return true if an action has been taken (recreation, resources updating, etc)
+     */
+    private boolean updateForNightMode(@ApplyableNightMode final int mode,
+            final boolean allowRecreation) {
+        boolean handled = false;
+
+        final Configuration overrideConfig =
+                createOverrideConfigurationForDayNight(mContext, mode, null);
+
+        final boolean activityHandlingUiMode = isActivityManifestHandlingUiMode();
         final int currentNightMode = mContext.getResources().getConfiguration().uiMode
                 & Configuration.UI_MODE_NIGHT_MASK;
+        final int newNightMode = overrideConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
 
-        if (!handled
-                && currentNightMode != newNightMode
+        if (DEBUG) {
+            Log.d(TAG, String.format(
+                    "updateForNightMode [allowRecreation:%s, currentNightMode:%d, "
+                            + "newNightMode:%d, activityHandlingUiMode:%s, baseContextAttached:%s, "
+                            + "created:%s, canReturnDifferentContext:%s, host:%s]",
+                    allowRecreation, currentNightMode, newNightMode, activityHandlingUiMode,
+                    mBaseContextAttached, mCreated, sCanReturnDifferentContext, mHost));
+        }
+
+        if (currentNightMode != newNightMode
                 && allowRecreation
                 && !activityHandlingUiMode
                 && mBaseContextAttached
-                && (Build.VERSION.SDK_INT >= 17 || mCreated)
-                && mHost instanceof Activity) {
-            // If we're an attached Activity, we can recreate to apply
-            // The SDK_INT check above is because applyOverrideConfiguration only exists on
-            // API 17+, so we don't want to get into an loop of infinite recreations.
-            // On < API 17 we need to use updateConfiguration before we're 'created'
+                && (sCanReturnDifferentContext || mCreated)
+                && mHost instanceof Activity
+                && !((Activity) mHost).isChild()) {
+            // If we're an attached, standalone Activity, we can recreate() to apply using the
+            // attachBaseContext() + createConfigurationContext() code path.
+            // Else, we need to use updateConfiguration() before we're 'created' (below)
             if (DEBUG) {
-                Log.d(TAG, "updateForNightMode. Recreating Activity");
+                Log.d(TAG, "updateForNightMode attempting to recreate Activity: " + mHost);
             }
             ActivityCompat.recreate((Activity) mHost);
             handled = true;
+        } else if (DEBUG) {
+            Log.d(TAG, "updateForNightMode not recreating Activity: " + mHost);
         }
 
         if (!handled && currentNightMode != newNightMode) {
             // Else we need to use the updateConfiguration path
             if (DEBUG) {
-                Log.d(TAG, "updateForNightMode. Updating resources config");
+                Log.d(TAG, "updateForNightMode. Updating resources config on host: " + mHost);
             }
-            updateResourcesConfigurationForNightMode(newNightMode, activityHandlingUiMode);
+            updateResourcesConfigurationForNightMode(newNightMode, activityHandlingUiMode, null);
             handled = true;
         }
 
         if (DEBUG && !handled) {
-            Log.d(TAG, "updateForNightMode. Skipping. Night mode: " + mode);
+            Log.d(TAG, "updateForNightMode. Skipping. Night mode: " + mode + " for host:" + mHost);
         }
 
         // Notify the activity of the night mode. We only notify if we handled the change,
@@ -2321,11 +2564,15 @@ class AppCompatDelegateImpl extends AppCompatDelegate
     }
 
     private void updateResourcesConfigurationForNightMode(
-            final int uiModeNightModeValue, final boolean callOnConfigChange) {
+            final int uiModeNightModeValue, final boolean callOnConfigChange,
+            @Nullable Configuration configOverlay) {
         // If the Activity is not set to handle uiMode config changes we will
         // update the Resources with a new Configuration with an updated UI Mode
         final Resources res = mContext.getResources();
         final Configuration conf = new Configuration(res.getConfiguration());
+        if (configOverlay != null) {
+            conf.updateFrom(configOverlay);
+        }
         conf.uiMode = uiModeNightModeValue
                 | (res.getConfiguration().uiMode & ~Configuration.UI_MODE_NIGHT_MASK);
         res.updateConfiguration(conf, null);
@@ -2372,17 +2619,22 @@ class AppCompatDelegateImpl extends AppCompatDelegate
      */
     @NonNull
     @RestrictTo(LIBRARY)
+    @VisibleForTesting
     final AutoNightModeManager getAutoTimeNightModeManager() {
+        return getAutoTimeNightModeManager(mContext);
+    }
+
+    private AutoNightModeManager getAutoTimeNightModeManager(@NonNull Context context) {
         if (mAutoTimeNightModeManager == null) {
             mAutoTimeNightModeManager = new AutoTimeNightModeManager(
-                    TwilightManager.getInstance(mContext));
+                    TwilightManager.getInstance(context));
         }
         return mAutoTimeNightModeManager;
     }
 
-    private AutoNightModeManager getAutoBatteryNightModeManager() {
+    private AutoNightModeManager getAutoBatteryNightModeManager(@NonNull Context context) {
         if (mAutoBatteryNightModeManager == null) {
-            mAutoBatteryNightModeManager = new AutoBatteryNightModeManager(mContext);
+            mAutoBatteryNightModeManager = new AutoBatteryNightModeManager(context);
         }
         return mAutoBatteryNightModeManager;
     }
@@ -2396,8 +2648,20 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                 return false;
             }
             try {
+                int flags = 0;
+                // On newer versions of the OS we need to pass direct boot
+                // flags so that getActivityInfo doesn't crash under strict
+                // mode checks
+                if (Build.VERSION.SDK_INT >= 29) {
+                    flags = PackageManager.MATCH_DIRECT_BOOT_AUTO
+                            | PackageManager.MATCH_DIRECT_BOOT_AWARE
+                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
+                } else if (Build.VERSION.SDK_INT >= 24) {
+                    flags = PackageManager.MATCH_DIRECT_BOOT_AWARE
+                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
+                }
                 final ActivityInfo info = pm.getActivityInfo(
-                        new ComponentName(mContext, mHost.getClass()), 0);
+                        new ComponentName(mContext, mHost.getClass()), flags);
                 mActivityHandlesUiMode = info != null
                         && (info.configChanges & ActivityInfo.CONFIG_UI_MODE) != 0;
             } catch (PackageManager.NameNotFoundException e) {
@@ -2430,6 +2694,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
 
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            ViewCompat.requestApplyInsets(mSubDecor);
             return mWrapped.onPrepareActionMode(mode, menu);
         }
 
@@ -2451,15 +2716,16 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                 mFadeAnim.setListener(new ViewPropertyAnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(View view) {
-                        mActionModeView.setVisibility(View.GONE);
+                        mActionModeView.setVisibility(GONE);
                         if (mActionModePopup != null) {
                             mActionModePopup.dismiss();
                         } else if (mActionModeView.getParent() instanceof View) {
                             ViewCompat.requestApplyInsets((View) mActionModeView.getParent());
                         }
-                        mActionModeView.removeAllViews();
+                        mActionModeView.killMode();
                         mFadeAnim.setListener(null);
                         mFadeAnim = null;
+                        ViewCompat.requestApplyInsets(mSubDecor);
                     }
                 });
             }
@@ -2467,6 +2733,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
                 mAppCompatCallback.onSupportActionModeFinished(mActionMode);
             }
             mActionMode = null;
+            ViewCompat.requestApplyInsets(mSubDecor);
         }
     }
 
@@ -2475,7 +2742,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         }
 
         @Override
-        public void onCloseMenu(MenuBuilder menu, boolean allMenusAreClosing) {
+        public void onCloseMenu(@NonNull MenuBuilder menu, boolean allMenusAreClosing) {
             final Menu parentMenu = menu.getRootMenu();
             final boolean isSubMenu = parentMenu != menu;
             final PanelFeatureState panel = findMenuPanel(isSubMenu ? parentMenu : menu);
@@ -2492,8 +2759,9 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         }
 
         @Override
-        public boolean onOpenSubMenu(MenuBuilder subMenu) {
-            if (subMenu == null && mHasActionBar) {
+        public boolean onOpenSubMenu(@NonNull MenuBuilder subMenu) {
+            // Only dispatch for the root menu
+            if (subMenu == subMenu.getRootMenu() && mHasActionBar) {
                 Window.Callback cb = getWindowCallback();
                 if (cb != null && !mIsDestroyed) {
                     cb.onMenuOpened(FEATURE_SUPPORT_ACTION_BAR, subMenu);
@@ -2508,7 +2776,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         }
 
         @Override
-        public boolean onOpenSubMenu(MenuBuilder subMenu) {
+        public boolean onOpenSubMenu(@NonNull MenuBuilder subMenu) {
             Window.Callback cb = getWindowCallback();
             if (cb != null) {
                 cb.onMenuOpened(FEATURE_SUPPORT_ACTION_BAR, subMenu);
@@ -2517,7 +2785,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         }
 
         @Override
-        public void onCloseMenu(MenuBuilder menu, boolean allMenusAreClosing) {
+        public void onCloseMenu(@NonNull MenuBuilder menu, boolean allMenusAreClosing) {
             checkCloseActionMenu(menu);
         }
     }
@@ -3014,14 +3282,15 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         private final PowerManager mPowerManager;
 
         AutoBatteryNightModeManager(@NonNull Context context) {
-            mPowerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            mPowerManager = (PowerManager) context.getApplicationContext()
+                    .getSystemService(Context.POWER_SERVICE);
         }
 
         @ApplyableNightMode
         @Override
         public int getApplyableNightMode() {
             if (Build.VERSION.SDK_INT >= 21) {
-                return mPowerManager.isPowerSaveMode() ? MODE_NIGHT_YES : MODE_NIGHT_NO;
+                return Api21Impl.isPowerSaveMode(mPowerManager) ? MODE_NIGHT_YES : MODE_NIGHT_NO;
             }
             return MODE_NIGHT_NO;
         }
@@ -3085,6 +3354,189 @@ class AppCompatDelegateImpl extends AppCompatDelegate
             ActionBar ab = getSupportActionBar();
             if (ab != null) {
                 ab.setHomeActionContentDescription(contentDescRes);
+            }
+        }
+    }
+
+    /**
+     * Copied from the platform's private method in Configuration. This is <strong>not</strong>
+     * suitable for general use, as it cannot handle some properties including any added after
+     * API 29. See comments inside method for specific properties that could not be handled.
+     * <p>
+     * Generate a delta Configuration between <code>base</code> and <code>change</code>. The
+     * resulting delta can be used with {@link Configuration#updateFrom(Configuration)}.
+     * <p>
+     * Caveat: If the any of the Configuration's members becomes undefined, then
+     * {@link Configuration#updateFrom(Configuration)} will treat it as a no-op and not update that
+     * member.
+     * <p>
+     * This is fine for device configurations as no member is ever undefined.
+     */
+    @NonNull
+    private static Configuration generateConfigDelta(@NonNull Configuration base,
+            @Nullable Configuration change) {
+        final Configuration delta = new Configuration();
+        delta.fontScale = 0;
+
+        if (change == null || base.diff(change) == 0) {
+            return delta;
+        }
+
+        if (base.fontScale != change.fontScale) {
+            delta.fontScale = change.fontScale;
+        }
+
+        if (base.mcc != change.mcc) {
+            delta.mcc = change.mcc;
+        }
+
+        if (base.mnc != change.mnc) {
+            delta.mnc = change.mnc;
+        }
+
+        if (Build.VERSION.SDK_INT >= 24) {
+            Api24Impl.generateConfigDelta_locale(base, change, delta);
+        } else {
+            if (!ObjectsCompat.equals(base.locale, change.locale)) {
+                delta.locale = change.locale;
+            }
+        }
+
+        if (base.touchscreen != change.touchscreen) {
+            delta.touchscreen = change.touchscreen;
+        }
+
+        if (base.keyboard != change.keyboard) {
+            delta.keyboard = change.keyboard;
+        }
+
+        if (base.keyboardHidden != change.keyboardHidden) {
+            delta.keyboardHidden = change.keyboardHidden;
+        }
+
+        if (base.navigation != change.navigation) {
+            delta.navigation = change.navigation;
+        }
+
+        if (base.navigationHidden != change.navigationHidden) {
+            delta.navigationHidden = change.navigationHidden;
+        }
+
+        if (base.orientation != change.orientation) {
+            delta.orientation = change.orientation;
+        }
+
+        if ((base.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK)
+                != (change.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK)) {
+            delta.screenLayout |= change.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+        }
+
+        if ((base.screenLayout & Configuration.SCREENLAYOUT_LAYOUTDIR_MASK)
+                != (change.screenLayout & Configuration.SCREENLAYOUT_LAYOUTDIR_MASK)) {
+            delta.screenLayout |= change.screenLayout & Configuration.SCREENLAYOUT_LAYOUTDIR_MASK;
+        }
+
+        if ((base.screenLayout & Configuration.SCREENLAYOUT_LONG_MASK)
+                != (change.screenLayout & Configuration.SCREENLAYOUT_LONG_MASK)) {
+            delta.screenLayout |= change.screenLayout & Configuration.SCREENLAYOUT_LONG_MASK;
+        }
+
+        if ((base.screenLayout & Configuration.SCREENLAYOUT_ROUND_MASK)
+                != (change.screenLayout & Configuration.SCREENLAYOUT_ROUND_MASK)) {
+            delta.screenLayout |= change.screenLayout & Configuration.SCREENLAYOUT_ROUND_MASK;
+        }
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            Api26Impl.generateConfigDelta_colorMode(base, change, delta);
+        }
+
+        if ((base.uiMode & Configuration.UI_MODE_TYPE_MASK)
+                != (change.uiMode & Configuration.UI_MODE_TYPE_MASK)) {
+            delta.uiMode |= change.uiMode & Configuration.UI_MODE_TYPE_MASK;
+        }
+
+        if ((base.uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                != (change.uiMode & Configuration.UI_MODE_NIGHT_MASK)) {
+            delta.uiMode |= change.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        }
+
+        if (base.screenWidthDp != change.screenWidthDp) {
+            delta.screenWidthDp = change.screenWidthDp;
+        }
+
+        if (base.screenHeightDp != change.screenHeightDp) {
+            delta.screenHeightDp = change.screenHeightDp;
+        }
+
+        if (base.smallestScreenWidthDp != change.smallestScreenWidthDp) {
+            delta.smallestScreenWidthDp = change.smallestScreenWidthDp;
+        }
+
+        if (Build.VERSION.SDK_INT >= 17) {
+            Api17Impl.generateConfigDelta_densityDpi(base, change, delta);
+        }
+
+        // Assets sequence and window configuration are not supported.
+
+        return delta;
+    }
+
+    @RequiresApi(17)
+    static class Api17Impl {
+        private Api17Impl() { }
+
+        static void generateConfigDelta_densityDpi(@NonNull Configuration base,
+                @NonNull Configuration change, @NonNull Configuration delta) {
+            if (base.densityDpi != change.densityDpi) {
+                delta.densityDpi = change.densityDpi;
+            }
+        }
+
+        static Context createConfigurationContext(@NonNull Context context,
+                @NonNull Configuration overrideConfiguration) {
+            return context.createConfigurationContext(overrideConfiguration);
+        }
+    }
+
+    @RequiresApi(21)
+    static class Api21Impl {
+        private Api21Impl() { }
+
+        static boolean isPowerSaveMode(PowerManager powerManager) {
+            return powerManager.isPowerSaveMode();
+        }
+    }
+
+    @RequiresApi(24)
+    static class Api24Impl {
+        private Api24Impl() { }
+
+        static void generateConfigDelta_locale(@NonNull Configuration base,
+                @NonNull Configuration change, @NonNull Configuration delta) {
+            final LocaleList baseLocales = base.getLocales();
+            final LocaleList changeLocales = change.getLocales();
+            if (!baseLocales.equals(changeLocales)) {
+                delta.setLocales(changeLocales);
+                delta.locale = change.locale;
+            }
+        }
+    }
+
+    @RequiresApi(26)
+    static class Api26Impl {
+        private Api26Impl() { }
+
+        static void generateConfigDelta_colorMode(@NonNull Configuration base,
+                @NonNull Configuration change, @NonNull Configuration delta) {
+            if ((base.colorMode & Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK)
+                    != (change.colorMode & Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK)) {
+                delta.colorMode |=
+                        change.colorMode & Configuration.COLOR_MODE_WIDE_COLOR_GAMUT_MASK;
+            }
+
+            if ((base.colorMode & Configuration.COLOR_MODE_HDR_MASK)
+                    != (change.colorMode & Configuration.COLOR_MODE_HDR_MASK)) {
+                delta.colorMode |= change.colorMode & Configuration.COLOR_MODE_HDR_MASK;
             }
         }
     }

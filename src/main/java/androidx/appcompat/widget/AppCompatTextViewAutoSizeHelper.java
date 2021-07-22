@@ -18,6 +18,7 @@ package androidx.appcompat.widget;
 
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -41,6 +42,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.R;
+import androidx.core.view.ViewCompat;
 import androidx.core.widget.TextViewCompat;
 
 import java.lang.reflect.Field;
@@ -49,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Utility class which encapsulates the logic for the TextView auto-size text feature added to
@@ -69,12 +70,14 @@ class AppCompatTextViewAutoSizeHelper {
     private static final int DEFAULT_AUTO_SIZE_GRANULARITY_IN_PX = 1;
     // Cache of TextView methods used via reflection; the key is the method name and the value is
     // the method itself or null if it can not be found.
-    private static ConcurrentHashMap<String, Method> sTextViewMethodByNameCache =
-            new ConcurrentHashMap<>();
+    @SuppressLint("BanConcurrentHashMap")
+    private static java.util.concurrent.ConcurrentHashMap<String, Method>
+            sTextViewMethodByNameCache = new java.util.concurrent.ConcurrentHashMap<>();
     // Cache of TextView fields used via reflection; the key is the field name and the value is
     // the field itself or null if it can not be found.
-    private static ConcurrentHashMap<String, Field> sTextViewFieldByNameCache =
-            new ConcurrentHashMap<>();
+    @SuppressLint("BanConcurrentHashMap")
+    private static java.util.concurrent.ConcurrentHashMap<String, Field> sTextViewFieldByNameCache =
+            new java.util.concurrent.ConcurrentHashMap<>();
     // Use this to specify that any of the auto-size configuration int values have not been set.
     static final float UNSET_AUTO_SIZE_UNIFORM_CONFIGURATION_VALUE = -1f;
     // Ported from TextView#VERY_WIDE. Represents a maximum width in pixels the TextView takes when
@@ -99,21 +102,75 @@ class AppCompatTextViewAutoSizeHelper {
     private boolean mHasPresetAutoSizeValues = false;
     private TextPaint mTempTextPaint;
 
+    @NonNull
     private final TextView mTextView;
     private final Context mContext;
 
-    AppCompatTextViewAutoSizeHelper(TextView textView) {
-        mTextView = textView;
-        mContext = mTextView.getContext();
+    private final Impl mImpl;
+
+    private static class Impl {
+        Impl() {}
+
+        boolean isHorizontallyScrollable(TextView textView) {
+            return invokeAndReturnWithDefault(textView, "getHorizontallyScrolling", false);
+        }
+
+        void computeAndSetTextDirection(StaticLayout.Builder layoutBuilder, TextView textView) {
+        }
     }
 
-    void loadFromAttributes(AttributeSet attrs, int defStyleAttr) {
+    @RequiresApi(23)
+    private static class Impl23 extends Impl {
+        Impl23() {}
+
+        @Override
+        void computeAndSetTextDirection(StaticLayout.Builder layoutBuilder,
+                TextView textView) {
+            final TextDirectionHeuristic textDirectionHeuristic =
+                    invokeAndReturnWithDefault(textView, "getTextDirectionHeuristic",
+                            TextDirectionHeuristics.FIRSTSTRONG_LTR);
+            layoutBuilder.setTextDirection(textDirectionHeuristic);
+        }
+    }
+
+    @RequiresApi(29)
+    private static class Impl29 extends Impl23 {
+        Impl29() {}
+
+        @Override
+        boolean isHorizontallyScrollable(TextView textView) {
+            return textView.isHorizontallyScrollable();
+        }
+
+        @Override
+        void computeAndSetTextDirection(StaticLayout.Builder layoutBuilder,
+                TextView textView) {
+            layoutBuilder.setTextDirection(textView.getTextDirectionHeuristic());
+        }
+    }
+
+    AppCompatTextViewAutoSizeHelper(@NonNull TextView textView) {
+        mTextView = textView;
+        mContext = mTextView.getContext();
+        if (Build.VERSION.SDK_INT >= 29) {
+            mImpl = new Impl29();
+        } else if (Build.VERSION.SDK_INT >= 23) {
+            mImpl = new Impl23();
+        } else {
+            mImpl = new Impl();
+        }
+    }
+
+    void loadFromAttributes(@Nullable AttributeSet attrs, int defStyleAttr) {
         float autoSizeMinTextSizeInPx = UNSET_AUTO_SIZE_UNIFORM_CONFIGURATION_VALUE;
         float autoSizeMaxTextSizeInPx = UNSET_AUTO_SIZE_UNIFORM_CONFIGURATION_VALUE;
         float autoSizeStepGranularityInPx = UNSET_AUTO_SIZE_UNIFORM_CONFIGURATION_VALUE;
 
         TypedArray a = mContext.obtainStyledAttributes(attrs, R.styleable.AppCompatTextView,
                 defStyleAttr, 0);
+        ViewCompat.saveAttributeDataForStyleable(mTextView, mTextView.getContext(),
+                    R.styleable.AppCompatTextView, attrs, a,
+                    defStyleAttr, 0);
         if (a.hasValue(R.styleable.AppCompatTextView_autoSizeTextType)) {
             mAutoSizeTextType = a.getInt(R.styleable.AppCompatTextView_autoSizeTextType,
                     TextViewCompat.AUTO_SIZE_TEXT_TYPE_NONE);
@@ -552,9 +609,7 @@ class AppCompatTextViewAutoSizeHelper {
                 return;
             }
 
-            final boolean horizontallyScrolling = Build.VERSION.SDK_INT >= 29
-                    ? mTextView.isHorizontallyScrollable()
-                    : invokeAndReturnWithDefault(mTextView, "getHorizontallyScrolling", false);
+            final boolean horizontallyScrolling = mImpl.isHorizontallyScrollable(mTextView);
             final int availableWidth = horizontallyScrolling
                     ? VERY_WIDE
                     : mTextView.getMeasuredWidth() - mTextView.getTotalPaddingLeft()
@@ -705,7 +760,7 @@ class AppCompatTextViewAutoSizeHelper {
                 maxLines);
         // Lines overflow.
         if (maxLines != -1 && (layout.getLineCount() > maxLines
-                || (layout.getLineEnd(layout.getLineCount() - 1)) != text.length())) {
+                || layout.getLineEnd(layout.getLineCount() - 1) != text.length())) {
             return false;
         }
 
@@ -736,11 +791,7 @@ class AppCompatTextViewAutoSizeHelper {
         try {
             // Can use the StaticLayout.Builder (along with TextView params added in or after
             // API 23) to construct the layout.
-            final TextDirectionHeuristic textDirectionHeuristic = Build.VERSION.SDK_INT >= 29
-                    ? mTextView.getTextDirectionHeuristic()
-                    : invokeAndReturnWithDefault(mTextView, "getTextDirectionHeuristic",
-                            TextDirectionHeuristics.FIRSTSTRONG_LTR);
-            layoutBuilder.setTextDirection(textDirectionHeuristic);
+            mImpl.computeAndSetTextDirection(layoutBuilder, mTextView);
         } catch (ClassCastException e) {
             // On some devices this exception happens, details: b/127137059.
             Log.w(TAG, "Failed to obtain TextDirectionHeuristic, auto size may be incorrect");
@@ -783,7 +834,9 @@ class AppCompatTextViewAutoSizeHelper {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T invokeAndReturnWithDefault(@NonNull Object object,
+    // This is marked package-protected so that it doesn't require a synthetic accessor
+    // when being used from the Impl inner classes
+    static <T> T invokeAndReturnWithDefault(@NonNull Object object,
             @NonNull final String methodName, @NonNull final T defaultValue) {
         T result = null;
         boolean exceptionThrown = false;

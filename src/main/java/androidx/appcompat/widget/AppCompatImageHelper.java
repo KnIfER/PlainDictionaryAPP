@@ -29,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.R;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.view.ViewCompat;
 import androidx.core.widget.ImageViewCompat;
 
 /**
@@ -36,19 +37,22 @@ import androidx.core.widget.ImageViewCompat;
  */
 @RestrictTo(LIBRARY_GROUP_PREFIX)
 public class AppCompatImageHelper {
+    @NonNull
     private final ImageView mView;
 
     private TintInfo mInternalImageTint;
     private TintInfo mImageTint;
     private TintInfo mTmpInfo;
 
-    public AppCompatImageHelper(ImageView view) {
+    public AppCompatImageHelper(@NonNull ImageView view) {
         mView = view;
     }
 
     public void loadFromAttributes(AttributeSet attrs, int defStyleAttr) {
         TintTypedArray a = TintTypedArray.obtainStyledAttributes(mView.getContext(), attrs,
                 R.styleable.AppCompatImageView, defStyleAttr, 0);
+        ViewCompat.saveAttributeDataForStyleable(mView, mView.getContext(),
+                R.styleable.AppCompatImageView, attrs, a.getWrappedTypeArray(), defStyleAttr, 0);
         try {
             Drawable drawable = mView.getDrawable();
             if (drawable == null) {

@@ -30,11 +30,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.IdRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.view.ActionMode;
@@ -90,7 +92,7 @@ import java.util.Iterator;
  * retained until the Activity is destroyed.</p>
  */
 public abstract class AppCompatDelegate {
-
+    static final boolean DEBUG = false;
     static final String TAG = "AppCompatDelegate";
 
     /**
@@ -118,6 +120,7 @@ public abstract class AppCompatDelegate {
     /**
      * @deprecated Use {@link AppCompatDelegate#MODE_NIGHT_AUTO_TIME} instead
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     public static final int MODE_NIGHT_AUTO = MODE_NIGHT_AUTO_TIME;
 
@@ -162,11 +165,17 @@ public abstract class AppCompatDelegate {
     @NightMode
     private static int sDefaultNightMode = MODE_NIGHT_UNSPECIFIED;
 
-    private static final ArraySet<WeakReference<AppCompatDelegate>> sActiveDelegates =
+    /**
+     * All AppCompatDelegate instances associated with a "live" Activity, e.g. lifecycle state is
+     * post-onCreate and pre-onDestroy. These instances are used to instrument night mode's uiMode
+     * configuration changes.
+     */
+    private static final ArraySet<WeakReference<AppCompatDelegate>> sActivityDelegates =
             new ArraySet<>();
-    private static final Object sActiveDelegatesLock = new Object();
+    private static final Object sActivityDelegatesLock = new Object();
 
     /** @hide */
+    @SuppressWarnings("deprecation")
     @RestrictTo(LIBRARY_GROUP_PREFIX)
     @IntDef({MODE_NIGHT_NO, MODE_NIGHT_YES, MODE_NIGHT_AUTO_TIME, MODE_NIGHT_FOLLOW_SYSTEM,
             MODE_NIGHT_UNSPECIFIED, MODE_NIGHT_AUTO_BATTERY})
@@ -371,9 +380,20 @@ public abstract class AppCompatDelegate {
     public abstract void addContentView(View v, ViewGroup.LayoutParams lp);
 
     /**
-     * Should be called from {@link Activity#attachBaseContext(Context)}
+     * @deprecated use {@link #attachBaseContext2(Context)} instead.
      */
+    @Deprecated
     public void attachBaseContext(Context context) {
+    }
+
+    /**
+     * Should be called from {@link Activity#attachBaseContext(Context)}.
+     */
+    @NonNull
+    @CallSuper
+    public Context attachBaseContext2(@NonNull Context context) {
+        attachBaseContext(context);
+        return context;
     }
 
     /**
@@ -503,7 +523,7 @@ public abstract class AppCompatDelegate {
     /**
      * Override the night mode used for this delegate's host component.
      *
-     * <p>When setting an mode to be used across an entire app, the
+     * <p>When setting a mode to be used across an entire app, the
      * {@link #setDefaultNightMode(int)} method is preferred.</p>
      *
      * <p>If this is called after the host component has been created, a {@code uiMode}
@@ -513,9 +533,14 @@ public abstract class AppCompatDelegate {
      * Dialogs use the host Activity as their context, resulting in the dialog's night mode
      * overriding the Activity's night mode.
      *
+     * <p><strong>Note:</strong> This method is not recommended for use on devices running SDK 16
+     * or earlier, as the specified night mode configuration may leak to other activities. Instead,
+     * consider using {@link #setDefaultNightMode(int)} to specify an app-wide night mode.
+     *
      * @see #getLocalNightMode()
      * @see #setDefaultNightMode(int)
      */
+    @RequiresApi(17)
     public abstract void setLocalNightMode(@NightMode int mode);
 
     /**
@@ -534,7 +559,7 @@ public abstract class AppCompatDelegate {
      * the delegates to avoid unnecessary recreations when possible.</p>
      *
      * <p>If this method is called after any host components with attached
-     * {@link AppCompatDelegate}s have been 'started', a {@code uiMode} configuration change
+     * {@link AppCompatDelegate}s have been 'created', a {@code uiMode} configuration change
      * will occur in each. This may result in those components being recreated, depending
      * on their manifest configuration.</p>
      *
@@ -543,7 +568,12 @@ public abstract class AppCompatDelegate {
      * @see #setLocalNightMode(int)
      * @see #getDefaultNightMode()
      */
+    @SuppressWarnings("deprecation")
     public static void setDefaultNightMode(@NightMode int mode) {
+        if (DEBUG) {
+            Log.d(TAG, String.format("setDefaultNightMode. New:%d, Current:%d",
+                    mode, sDefaultNightMode));
+        }
         switch (mode) {
             case MODE_NIGHT_NO:
             case MODE_NIGHT_YES:
@@ -553,6 +583,9 @@ public abstract class AppCompatDelegate {
                 if (sDefaultNightMode != mode) {
                     sDefaultNightMode = mode;
                     applyDayNightToActiveDelegates();
+                } else if (DEBUG) {
+                    Log.d(TAG, String.format("Not applying changes, sDefaultNightMode already %d",
+                            mode));
                 }
                 break;
             default:
@@ -618,26 +651,26 @@ public abstract class AppCompatDelegate {
         return VectorEnabledTintResources.isCompatVectorFromResourcesEnabled();
     }
 
-    static void markStarted(@NonNull AppCompatDelegate delegate) {
-        synchronized (sActiveDelegatesLock) {
+    static void addActiveDelegate(@NonNull AppCompatDelegate delegate) {
+        synchronized (sActivityDelegatesLock) {
             // Remove any existing records pointing to the delegate.
             // There should not be any, but we'll make sure
             removeDelegateFromActives(delegate);
             // Add a new record to the set
-            sActiveDelegates.add(new WeakReference<>(delegate));
+            sActivityDelegates.add(new WeakReference<>(delegate));
         }
     }
 
-    static void markStopped(@NonNull AppCompatDelegate delegate) {
-        synchronized (sActiveDelegatesLock) {
+    static void removeActivityDelegate(@NonNull AppCompatDelegate delegate) {
+        synchronized (sActivityDelegatesLock) {
             // Remove any WeakRef records pointing to the delegate in the set
             removeDelegateFromActives(delegate);
         }
     }
 
     private static void removeDelegateFromActives(@NonNull AppCompatDelegate toRemove) {
-        synchronized (sActiveDelegatesLock) {
-            final Iterator<WeakReference<AppCompatDelegate>> i = sActiveDelegates.iterator();
+        synchronized (sActivityDelegatesLock) {
+            final Iterator<WeakReference<AppCompatDelegate>> i = sActivityDelegates.iterator();
             while (i.hasNext()) {
                 final AppCompatDelegate delegate = i.next().get();
                 if (delegate == toRemove || delegate == null) {
@@ -650,10 +683,13 @@ public abstract class AppCompatDelegate {
     }
 
     private static void applyDayNightToActiveDelegates() {
-        synchronized (sActiveDelegatesLock) {
-            for (WeakReference<AppCompatDelegate> activeDelegate : sActiveDelegates) {
+        synchronized (sActivityDelegatesLock) {
+            for (WeakReference<AppCompatDelegate> activeDelegate : sActivityDelegates) {
                 final AppCompatDelegate delegate = activeDelegate.get();
                 if (delegate != null) {
+                    if (DEBUG) {
+                        Log.d(TAG, "applyDayNightToActiveDelegates. Applying to " + delegate);
+                    }
                     delegate.applyDayNight();
                 }
             }
