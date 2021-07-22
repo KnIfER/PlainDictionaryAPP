@@ -29,7 +29,10 @@ android {
 
 
 dependencies {
-    compile fileTree(include: ['*.aar'], dir: 'libs')
+    compileOnly project(':Metaline')
+    annotationProcessor project(':Metaline')
+
+    implementation fileTree(include: ['*.aar'], dir: 'libs')
     if(mod_core=='1') {
         implementation project(":AxtCore")
     }

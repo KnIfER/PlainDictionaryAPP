@@ -16,8 +16,6 @@
 
 package androidx.appcompat.app;
 
-import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -46,10 +44,14 @@ import androidx.collection.ArraySet;
 import androidx.core.view.WindowCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import org.knziha.metaline.StripMethods;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
+
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
 /**
  * This class represents a delegate which you can use to extend AppCompat's support to any
@@ -91,6 +93,7 @@ import java.util.Iterator;
  * therefore the instance returned from {@link #create(Activity, AppCompatCallback)} should be
  * retained until the Activity is destroyed.</p>
  */
+@StripMethods(keys="Night", strip=true)
 public abstract class AppCompatDelegate {
     static final boolean DEBUG = false;
     static final String TAG = "AppCompatDelegate";

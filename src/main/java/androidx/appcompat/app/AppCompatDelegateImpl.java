@@ -16,15 +16,6 @@
 
 package androidx.appcompat.app;
 
-import static android.view.View.GONE;
-import static android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-import static android.view.View.VISIBLE;
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static android.view.Window.FEATURE_OPTIONS_PANEL;
-
-import static androidx.annotation.RestrictTo.Scope.LIBRARY;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
@@ -123,13 +114,23 @@ import androidx.core.widget.PopupWindowCompat;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 
+import org.knziha.metaline.StripMethods;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.util.List;
 
+import static android.view.View.GONE;
+import static android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+import static android.view.View.VISIBLE;
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static android.view.Window.FEATURE_OPTIONS_PANEL;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY;
+
 /**
  * @hide
  */
+@StripMethods(keys="Night")
 @RestrictTo(LIBRARY)
 class AppCompatDelegateImpl extends AppCompatDelegate
         implements MenuBuilder.Callback, LayoutInflater.Factory2 {
@@ -337,6 +338,7 @@ class AppCompatDelegateImpl extends AppCompatDelegate
         AppCompatDrawableManager.preload();
     }
 
+    @StripMethods(strip=true)
     @NonNull
     @Override
     @CallSuper

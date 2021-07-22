@@ -51,6 +51,8 @@ import androidx.lifecycle.ViewTreeViewModelStoreOwner;
 import androidx.savedstate.SavedStateRegistry;
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner;
 
+import org.knziha.metaline.StripMethods;
+
 /**
  * Base class for activities that wish to use some of the newer platform features on older
  * Android devices. Some of these backported features include:
@@ -77,6 +79,7 @@ import androidx.savedstate.ViewTreeSavedStateRegistryOwner;
  * Bar</a> API guide.</p>
  * </div>
  */
+@StripMethods(keys="Night")
 public class AppCompatActivity extends FragmentActivity implements AppCompatCallback,
         TaskStackBuilder.SupportParentable, ActionBarDrawerToggle.DelegateProvider {
 
