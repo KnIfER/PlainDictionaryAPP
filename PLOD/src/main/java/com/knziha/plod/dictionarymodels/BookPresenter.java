@@ -44,6 +44,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.filepicker.utils.FU;
+import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.AgentApplication;
@@ -86,6 +87,7 @@ import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -98,6 +100,7 @@ import javax.net.ssl.TrustManager;
 
 import db.MdxDBHelper;
 
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
 import static com.knziha.plod.dictionary.mdBase.fullpageString;
 
 /*
@@ -108,6 +111,9 @@ import static com.knziha.plod.dictionary.mdBase.fullpageString;
 public class BookPresenter
 		implements ValueCallback<String>, OnClickListener, mdict_manageable {
 	public UniversalDictionaryInterface bookImpl;
+	
+	public ArrayList<SearchResultBean>[] combining_search_tree2; // 收集词条名称
+	public ArrayList<SearchResultBean>[] combining_search_tree_4; // 收集词条文本
 	
 	public final static String FileTag = "file://";
 	public final static String baseUrl = "file:///";
@@ -2797,5 +2803,24 @@ public class BookPresenter
 	@Override
 	public String getDictionaryName() {
 		return bookImpl.getDictionaryName();
+	}
+	
+	public void purgeSearch(int searchType) {
+		if (bookImpl instanceof mdict) {
+			((mdict)bookImpl).searchCancled = false;
+		}
+		ArrayList<SearchResultBean>[] searchTree = searchType == SEARCHTYPE_SEARCHINNAMES ? combining_search_tree2 : combining_search_tree_4;
+		if (searchTree != null) {
+			for (int ti = 0; ti < searchTree.length; ti++) {//遍历搜索结果
+				if (searchTree[ti] != null)
+					searchTree[ti].clear();
+			}
+		}
+	}
+	
+	public void findAllNames(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchLogicLayer searchLayer) throws IOException {
+		if (bookImpl instanceof mdict) {
+			((mdict)bookImpl).flowerFindAllContents(searchTerm, adapter_idx, searchLayer);
+		}
 	}
 }

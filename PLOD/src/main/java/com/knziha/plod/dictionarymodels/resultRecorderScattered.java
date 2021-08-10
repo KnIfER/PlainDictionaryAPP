@@ -1,22 +1,22 @@
 package com.knziha.plod.dictionarymodels;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.knziha.plod.dictionary.mdict;
-import com.knziha.plod.plaindict.BasicAdapter;
-import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
-import com.knziha.plod.widgets.Utils;
-
 import android.graphics.Color;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.view.ViewGroup;
+
+import com.knziha.plod.dictionary.SearchResultBean;
+import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
+import com.knziha.plod.plaindict.BasicAdapter;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.widgets.Utils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class resultRecorderScattered extends resultRecorderDiscrete {
 	private final BooleanSingleton TintResult;
@@ -35,17 +35,14 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		
 		int resCount=0;
 		for(int i=0;i<md.size();i++){//遍历所有词典
-			BookPresenter mdtmp = md.get(i);
-			if(mdtmp!=null) {
-				ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree((mdict) mdtmp.bookImpl);
-				if (_combining_search_tree != null)
+			ArrayList<SearchResultBean>[] _combining_search_tree = layer.getTreeBuilt(i);
+			if (_combining_search_tree != null)
 				for (int ti = 0; ti < _combining_search_tree.length; ti++) {//遍历搜索结果
 					if (_combining_search_tree[ti] == null) {
 						continue;
 					}
 					resCount += _combining_search_tree[ti].size();
 				}
-			}
 			firstLookUpTable[i]=resCount;
 		}
 		
@@ -60,17 +57,14 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			firstLookUpTable = new int[md.size()];
 
 		int resCount=0;
-		BookPresenter mdtmp = md.get(idx);
-		if(mdtmp!=null) {
-			ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree((mdict) mdtmp.bookImpl);
-			if (_combining_search_tree != null)
+		ArrayList<SearchResultBean>[] _combining_search_tree = layer.getTreeBuilt(idx);
+		if (_combining_search_tree != null)
 			for (int ti = 0; ti < _combining_search_tree.length; ti++) {//遍历搜索结果
 				if (_combining_search_tree[ti] == null) {
 					continue;
 				}
 				resCount += _combining_search_tree[ti].size();
 			}
-		}
 		
 		//firstLookUpTable[idx]=resCount;
 		for(int i=0;i<firstLookUpTable.length;i++) {
@@ -132,7 +126,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-1];
 		int idxCount = 0;
-		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree((mdict) mdtmp.bookImpl);
+		ArrayList<SearchResultBean>[] _combining_search_tree = layer.getTreeBuilt(Rgn);
 		for(int ti=0;ti<_combining_search_tree.length;ti++){
 			if(_combining_search_tree[ti]==null)
 				continue;
@@ -140,7 +134,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			if(max==0)
 				continue;
 			if(pos-idxCount<max) {
-				String text = mdtmp.bookImpl.getEntryAt(_combining_search_tree[ti].get(pos-idxCount),mflag);
+				String text = mdtmp.bookImpl.getEntryAt(_combining_search_tree[ti].get(pos-idxCount).position,mflag);
 				if(!TintResult.first) return text;
 				SpannableStringBuilder result = new SpannableStringBuilder(text);
 				Pattern reg=layer.getBakedPattern();
@@ -182,7 +176,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-1];
 		int idxCount = 0;
-		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree((mdict) mdtmp.bookImpl);
+		ArrayList<SearchResultBean>[] _combining_search_tree = layer.getTreeBuilt(Rgn);
 		for(int ti=0;ti<_combining_search_tree.length;ti++) {
 			if(_combining_search_tree[ti]==null)
 				continue;
@@ -196,7 +190,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 				
 				Utils.addViewToParentUnique(mdtmp.rl, a.webSingleholder);
 				
-				mdtmp.renderContentAt(desiredScale,Rgn,0,null, (int)(long) _combining_search_tree[ti].get(pos-idxCount));
+				mdtmp.renderContentAt(desiredScale,Rgn,0,null, _combining_search_tree[ti].get(pos-idxCount).position);
 				mdtmp.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				mdtmp.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				return;

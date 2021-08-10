@@ -31,7 +31,6 @@ import android.os.Message;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -95,6 +94,7 @@ import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
+import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
@@ -107,7 +107,6 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
-import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
 import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
@@ -115,7 +114,6 @@ import com.knziha.plod.searchtasks.VerbatimSearchTask;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
-import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.FlowTextView;
@@ -129,7 +127,6 @@ import com.knziha.plod.widgets.ScreenListener;
 import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.BufferedOutputStream;
@@ -153,6 +150,11 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_PLAIN;
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_REGEX;
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_WILDCARD;
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEXTS;
 import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
@@ -398,15 +400,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		});
 		for(int i=0;i<md.size();i++) {//遍历所有词典
 			BookPresenter presenter = md.get(i);
-			if(presenter!=null && presenter.bookImpl instanceof mdict) {
-				mdict mdtmp = (mdict) presenter.bookImpl;
-				mdtmp.searchCancled=false;
-				if(mdtmp.combining_search_tree_4!=null){
-					for (int ti = 0; ti < mdtmp.combining_search_tree_4.length; ti++) {//遍历搜索结果容器
-						if (mdtmp.combining_search_tree_4[ti] != null)
-							mdtmp.combining_search_tree_4[ti].clear();
-					}
-				}
+			if(presenter!=null) {
+				presenter.purgeSearch(SEARCHTYPE_SEARCHINTEXTS);
 			}
 		}
 		CMN.stst = System.currentTimeMillis();
@@ -428,17 +423,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				CMN.Log("强制关闭");
 			}
 		});
-		for(int i=0;i<md.size();i++){//遍历所有词典
+		for(int i=0;i<md.size();i++) {//遍历所有词典
 			BookPresenter presenter = md.get(i);
-			if(presenter!=null && presenter.bookImpl instanceof mdict) {
-				mdict mdtmp = (mdict) presenter.bookImpl;
-				mdtmp.searchCancled = false;
-				if (mdtmp.combining_search_tree2 != null) {
-					for (int ti = 0; ti < mdtmp.combining_search_tree2.length; ti++) {//遍历搜索结果
-						if (mdtmp.combining_search_tree2[ti] != null)
-							mdtmp.combining_search_tree2[ti].clear();
-					}
-				}
+			if(presenter!=null) {
+				presenter.purgeSearch(SEARCHTYPE_SEARCHINNAMES);
 			}
 		}
 		CMN.stst = System.currentTimeMillis();
@@ -1404,8 +1392,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2(webSingleholder));
 		mlv2.setAdapter(adaptermy4 = new ListViewAdapter2(webSingleholder));
 
-		fuzzySearchLayer=new AdvancedSearchLogicLayer(opt, md, -1);
-		fullSearchLayer=new AdvancedSearchLogicLayer(opt, md, -2);
+		fuzzySearchLayer=new AdvancedSearchLogicLayer(opt, md, SEARCHTYPE_SEARCHINNAMES);
+		fullSearchLayer=new AdvancedSearchLogicLayer(opt, md, SEARCHTYPE_SEARCHINTEXTS);
 
 		adaptermy3.combining_search_result = new resultRecorderScattered(this,md,TintWildResult,fuzzySearchLayer);
 		adaptermy4.combining_search_result = new resultRecorderScattered(this,md,TintWildResult,fullSearchLayer);
@@ -1862,7 +1850,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		public Pattern currentPattern;
 		public String currentPageText;
 		/** 0=wild card match; 1=regular expression search; 2=plain search. */
-		int SearchType;
+		int mSearchEngineType;
 
 		public AdvancedSearchLogicLayer(PDICMainAppOptions opt, ArrayList<BookPresenter> md, int type) {
 			this.opt = opt;
@@ -1872,21 +1860,35 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 
 		@Override
-		public ArrayList<Integer>[] getCombinedTree(int DX) {
-			if(combining_search_tree!=null && DX<combining_search_tree.size())
-				return combining_search_tree.get(DX);
+		public ArrayList<SearchResultBean>[] getTreeBuilding(int DX, int splitNumber) {
+			if(DX>=0 && DX<md.size()) {
+				BookPresenter presenter = md.get(DX);
+				if (presenter!=null) {
+					if (type==SEARCHTYPE_SEARCHINNAMES) {
+						if (presenter.combining_search_tree2==null || presenter.combining_search_tree2.length!=splitNumber) {
+							presenter.combining_search_tree2=new ArrayList[splitNumber];
+						}
+						return presenter.combining_search_tree2;
+					} else {
+						if (presenter.combining_search_tree_4==null || presenter.combining_search_tree_4.length!=splitNumber) {
+							presenter.combining_search_tree_4=new ArrayList[splitNumber];
+						}
+						return presenter.combining_search_tree_4;
+					}
+				}
+			}
 			return null;
 		}
 
 		@Override
-		public void setCombinedTree(int DX, ArrayList<Integer>[] _combining_search_tree) {
-			combining_search_tree.set(DX, _combining_search_tree);
-		}
-
-		@Override
-		public ArrayList<Integer>[] getInternalTree(com.knziha.plod.dictionary.mdict md){
-			return type==-1?md.combining_search_tree2:
-					(type==-2?md.combining_search_tree_4:null);
+		public ArrayList<SearchResultBean>[] getTreeBuilt(int DX){
+			if(DX>=0 && DX<md.size()) {
+				BookPresenter presenter = md.get(DX);
+				if (presenter!=null) {
+					return type==SEARCHTYPE_SEARCHINNAMES?presenter.combining_search_tree2:presenter.combining_search_tree_4;
+				}
+			}
+			return null;
 		}
 
 		@Override
@@ -1896,7 +1898,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		@Override
 		public void setCurrentPhrase(String _currentSearchPhrase) {
-			SearchType = (type==-1?PDICMainAppOptions.getUseRegex1():PDICMainAppOptions.getUseRegex2())?1:PDICMainAppOptions.getAdvSearchUseWildcard()?0:2;
+			if (type==SEARCHTYPE_SEARCHINNAMES?PDICMainAppOptions.getUseRegex1():PDICMainAppOptions.getUseRegex2()) {
+				mSearchEngineType = SEARCHENGINETYPE_REGEX;
+			} else {
+				mSearchEngineType = PDICMainAppOptions.getAdvSearchUseWildcard()?SEARCHENGINETYPE_WILDCARD:SEARCHENGINETYPE_PLAIN;
+			}
 			currentSearchPhrase = _currentSearchPhrase;
 			currentPageText = null;
 			currentPattern = null;
@@ -1908,7 +1914,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(currentPattern==null){
 				String val = currentSearchPhrase;
 				if(val==null) val="";
-				if(SearchType!=2)
+				if(mSearchEngineType != SEARCHENGINETYPE_PLAIN)
 				try {
 					
 					currentPattern = Pattern.compile(val, Pattern.CASE_INSENSITIVE);
@@ -1927,16 +1933,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				String ret=val;
 				/*0=wild card; 1=regex search; 2=plain search; */
 				int InPageSearchType = PDICMainAppOptions.getUseRegex3()?1:PDICMainAppOptions.getInPageSearchUseWildcard()?0:2;
-				if(InPageSearchType==0){//wild card
-					if(SearchType!=0){//直接散开呗
+				if(InPageSearchType==SEARCHENGINETYPE_WILDCARD){//wild card
+					if(mSearchEngineType != SEARCHENGINETYPE_WILDCARD){//直接散开呗
 						ret=VerbatimSearchTask.Pattern_VerbatimDelimiter.matcher(val).replaceAll(" ");
 					} else { //有得救
 						ret = ReplaceMWtoMMWOrRegex(ret, false);
 						if(PDICMainAppOptions.getPageWildcardSplitKeywords())
 							ret = ret.replaceAll("[|&^$]", " ");
 					}
-				} else if(InPageSearchType==1){//regex
-					if(SearchType==0){
+				} else if(InPageSearchType==SEARCHENGINETYPE_REGEX){//regex
+					if(mSearchEngineType == SEARCHENGINETYPE_WILDCARD){
 						ret = ReplaceMWtoMMWOrRegex(ret, true);
 						ret = ret.replaceAll("(?<!\\\\)&&?", "|");
 					}
@@ -1993,8 +1999,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		@Override
-		public int getSearchType() {
-			return SearchType;
+		public int getSearchEngineType() {
+			return mSearchEngineType;
 		}
 	}
 

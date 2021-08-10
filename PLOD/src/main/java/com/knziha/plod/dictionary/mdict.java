@@ -90,6 +90,11 @@ import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_REGEX;
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_WILDCARD;
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
+import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEXTS;
+
 
 /**
  * **Mdict Java Library**<br/><br/>
@@ -866,7 +871,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		if(isResourceFile||getOnlyContainsImg()) return;
 		byte[][][][][] matcher=null;
 		Regex Joniregex = null;
-		if(SearchLauncher.getSearchType()==1){
+		if(SearchLauncher.getSearchEngineType()==SEARCHENGINETYPE_REGEX){
 			if(encoding==null) encoding = bakeJoniEncoding(_charset);
 			if(encoding!=null) {
 				//if (getRegexAutoAddHead() && !key.startsWith(".*"))
@@ -894,19 +899,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		final int yuShu=(int) (_num_record_blocks%split_recs_thread_number);
 
 
-		ArrayList<Integer>[] _combining_search_tree=SearchLauncher.getCombinedTree(selfAtIdx);
-		boolean hold=false;
-		if(SearchLauncher.combining_search_tree==null){
-			hold=true; _combining_search_tree=combining_search_tree_4;
-		}
-		if(_combining_search_tree==null || _combining_search_tree.length!=split_keys_thread_number){
-			_combining_search_tree = new ArrayList[split_keys_thread_number];
-			if(hold)
-				combining_search_tree_4=_combining_search_tree;
-			else
-				SearchLauncher.setCombinedTree(selfAtIdx, _combining_search_tree);
-		}
-
+		ArrayList<SearchResultBean>[] _combining_search_tree=SearchLauncher.getTreeBuilding(selfAtIdx, split_keys_thread_number);
 
 		SearchLauncher.poolEUSize.set(SearchLauncher.dirtyProgressCounter=0);
 
@@ -924,8 +917,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				}
 			}
 
-			if(combining_search_tree_4[it]==null)
-				combining_search_tree_4[it] = new ArrayList<>();
+			if(_combining_search_tree[it]==null)
+				_combining_search_tree[it] = new ArrayList<>();
 
 			if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(1);
 
@@ -1046,7 +1039,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 										//SU.Log("full res ::", try_idx, finalKey, new String(record_block_, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator)+try_idx-100, 200, _charset));
 										int pos = (int) (relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator);
 										SearchLauncher.dirtyResultCounter++;
-										combining_search_tree_4[it].add(pos);
+										_combining_search_tree[it].add(new SearchResultBean(pos));
 									}
 									SearchLauncher.dirtyProgressCounter++;
 								}
@@ -1390,11 +1383,10 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 	public int split_keys_thread_number;
 	//public ArrayList<myCpr<String,Integer>>[] combining_search_tree;
-	public ArrayList<Integer>[] combining_search_tree2;
-	public ArrayList<Integer>[] combining_search_tree_4;
+	//public ArrayList<Integer>[] combining_search_tree_4;
 
 	public void executeAdvancedSearch(String key, int i, AbsAdvancedSearchLogicLayer layer) throws IOException {
-		if(layer.type==-1||layer.type==1){
+		if(layer.type==SEARCHTYPE_SEARCHINNAMES){
 			flowerFindAllKeys(key, i, layer);
 		}
 		else{
@@ -1471,7 +1463,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		//SU.Log("_stylesheet", _stylesheet.size(), _stylesheet.keySet().size(), _stylesheet.values().size());
 		return _stylesheet.size()>0;
 	}
-
+	
 	public static abstract class AbsAdvancedSearchLogicLayer{
 		public int type;
 		public int Idx;
@@ -1651,11 +1643,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 		public ArrayList<ArrayList<Integer>[]> combining_search_tree;
 
-		public abstract ArrayList<Integer>[] getCombinedTree(int DX);
+		public abstract ArrayList<SearchResultBean>[] getTreeBuilding(int DX, int splitNumber);
 
-		public abstract void setCombinedTree(int DX, ArrayList<Integer>[] val);
+		//public abstract void setCombinedTree(int DX, ArrayList<Integer>[] val, int searchType);
 
-		public abstract ArrayList<Integer>[] getInternalTree(mdict mdtmp);
+		public abstract ArrayList<SearchResultBean>[] getTreeBuilt(int DX);
 
 		public abstract boolean getEnableFanjnConversion();
 
@@ -1665,7 +1657,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 		public abstract void setCurrentPhrase(String currentPhrase);
 		
-		public abstract int getSearchType();
+		/** 0=wild card match; 1=regular expression search; 2=plain search. */
+		public abstract int getSearchEngineType();
 	}
 
 	public int thread_number,step,yuShu;
@@ -1706,7 +1699,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		Pattern keyPattern=null;//用于 复核 ，并不直接参与搜索
 		byte[][][][][] matcher=null;
 		Regex Joniregex = null;
-		boolean regexIntent=SearchLauncher.getSearchType()==1;
+		boolean regexIntent=SearchLauncher.getSearchEngineType()==SEARCHENGINETYPE_REGEX;
 		if(regexIntent){
 			if(encoding==null) encoding = bakeJoniEncoding(_charset);
 			if(encoding!=null) {
@@ -1744,24 +1737,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		ExecutorService fixedThreadPoolmy = OpenThreadPool(thread_number);
 
 		//show("~"+step+"~"+split_keys_thread_number+"~"+_num_key_blocks);
-
-		ArrayList<Integer>[] _combining_search_tree=SearchLauncher.getCombinedTree(SelfAtIdx);
-		boolean hold=false;
-		if(SearchLauncher.combining_search_tree==null){
-			hold=true;
-			_combining_search_tree=parent!=null?parent.combining_search_tree2:combining_search_tree2;
-		}
-		if(_combining_search_tree==null || _combining_search_tree.length!=split_keys_thread_number){
-			_combining_search_tree = new ArrayList[split_keys_thread_number];
-			if(hold){
-				if(parent!=null)
-					parent.combining_search_tree2=_combining_search_tree;
-				else
-					combining_search_tree2=_combining_search_tree;
-			}
-			else
-				SearchLauncher.setCombinedTree(SelfAtIdx, _combining_search_tree);
-		}
+		
+		ArrayList<SearchResultBean>[] final_combining_search_tree=SearchLauncher.getTreeBuilding(SelfAtIdx, split_keys_thread_number);
 
 
 		for(int ti=0; ti<split_keys_thread_number; ti++){//分  thread_number 股线程运行
@@ -1779,7 +1756,6 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			Regex finalJoniregex = Joniregex;
 			Pattern finalKeyPattern = keyPattern;
 			byte[][][][][] finalMatcher = matcher;
-			ArrayList<Integer>[] final_combining_search_tree = _combining_search_tree;
 			fixedThreadPoolmy.execute(
 					new Runnable(){@Override public void run()
 					{
@@ -1788,7 +1764,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						if(it==split_keys_thread_number-1) jiaX=yuShu;
 						if(final_combining_search_tree[it]==null)
 							final_combining_search_tree[it] = new ArrayList<>();
-						ArrayList<Integer> item = final_combining_search_tree[it];
+						ArrayList<SearchResultBean> item = final_combining_search_tree[it];
 
 						int compressedSize_many = 0, _maxDecomKeyBlockSize = 0;
 						//小循环
@@ -1892,7 +1868,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		int tagCheckFrame = 64;
 		int lastSeekLetSize=0;
 		int totalLen = matchers.length;
-		boolean bSearchInContents = launcher.type==2||launcher.type==-2;
+		boolean bSearchInContents = launcher.type==SEARCHTYPE_SEARCHINTEXTS;
 		boolean bCheckTags = bSearchInContents;
 		boolean trimStart = fromIndex==0 && (jumpMap[matchers.length]&1)!=0;
 		int hudieling;
@@ -2129,7 +2105,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return res;
 	}
 
-	protected void find_in_keyBlock(Regex JoniRegx, Pattern keyPattern, byte[] key_block, key_info_struct infoI, byte[][][][][] matcher, int SelfAtIdx, ArrayList<Integer> it, AbsAdvancedSearchLogicLayer SearchLauncher) {
+	protected void find_in_keyBlock(Regex JoniRegx, Pattern keyPattern, byte[] key_block, key_info_struct infoI, byte[][][][][] matcher, int SelfAtIdx, ArrayList<SearchResultBean> it, AbsAdvancedSearchLogicLayer SearchLauncher) {
 		//org.joni.Matcher Jonimatcher = null;
 		//if(JoniRegx!=null)
 		//	Jonimatcher = JoniRegx.matcher(key_block);
@@ -2221,7 +2197,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					//additiveMyCpr1 tmpnode = new additiveMyCpr1(LexicalEntry,""+SelfAtIdx+""+((int) (infoI.num_entries_accumulator+keyCounter)));//new ArrayList<Integer>() new int[] {SelfAtIdx,(int) (infoI.num_entries_accumulator+keyCounter)}
 					//tmpnode.value.add(SelfAtIdx);
 					//tmpnode.value.add((int) (infoI.num_entries_accumulator+keyCounter));
-					it.add((int) (infoI.num_entries_accumulator+keyCounter));//new additiveMyCpr1(LexicalEntry,infoI.num_entries_accumulator+keyCounter));
+					it.add(new SearchResultBean((int) (infoI.num_entries_accumulator+keyCounter)));//new additiveMyCpr1(LexicalEntry,infoI.num_entries_accumulator+keyCounter));
 					//SU.Log("fuzzyKeyCounter"+fuzzyKeyCounter);
 					SearchLauncher.dirtyResultCounter++;
 				}

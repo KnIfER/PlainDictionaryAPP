@@ -82,12 +82,12 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 				}
 			}
 			System.gc();
-		}else {
+		} else {
 			try {
 				if(a.checkDicts()){
 					publishProgress(a.adapter_idx);
 					// to impl
-					((mdict)a.currentDictionary.bookImpl).flowerFindAllKeys(SearchTerm,a.adapter_idx,a.fuzzySearchLayer);
+					a.currentDictionary.findAllNames(SearchTerm, a.adapter_idx, a.fuzzySearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
