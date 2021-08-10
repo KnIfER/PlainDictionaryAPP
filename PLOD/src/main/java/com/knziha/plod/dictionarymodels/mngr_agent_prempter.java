@@ -13,21 +13,21 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
  data:2018.07.30
  author:KnIfER
 */
-public class mdict_prempter extends mdict_transient {
+public class mngr_agent_prempter extends mngr_agent_transient {
 	public boolean isAsset;
 
 	//构造
-	public mdict_prempter(Activity a, String fn, PDICMainAppOptions opt_, bookPresenter_nonexist mninstance) throws IOException {
+	public mngr_agent_prempter(Activity a, String fn, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) throws IOException {
 		this(a, fn, opt_, 0, mninstance);
 	}
 
-	public mdict_prempter(Activity a,String fn, PDICMainAppOptions opt_, int isF, bookPresenter_nonexist mninstance) throws IOException {
+	public mngr_agent_prempter(Activity a, String fn, PDICMainAppOptions opt_, int isF, mngr_presenter_nonexist mninstance) throws IOException {
 		super(a, fn, opt_, isF, mninstance);
 		String fnTMP = f.getName();
 
 		File f2 = new File(f.getParentFile().getAbsolutePath()+"/"+fnTMP.substring(0,fnTMP.lastIndexOf("."))+".mdd");
 		if(f2.exists()){
-			mdd = Collections.singletonList(new mdictRes_prempter(f2));
+			mdd = Collections.singletonList(new mngr_mdictRes_prempter(f2));
 		}
 	}
 }

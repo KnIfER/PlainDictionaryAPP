@@ -11,11 +11,11 @@ import com.jaredrummler.colorpicker.ColorPickerPreference;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.mdict_manageable;
-import com.knziha.plod.dictionarymodels.mdict_transient;
+import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
+import com.knziha.plod.dictionarymodels.mngr_agent_transient;
 
 public class DictOptions extends SettingsFragment implements Preference.OnPreferenceClickListener {
-	mdict_manageable[] data;
+	mngr_agent_manageable[] data;
 	
 	private void init_color(String key) {
 		boolean multiple = false;
@@ -71,24 +71,24 @@ public class DictOptions extends SettingsFragment implements Preference.OnPrefer
 		}
 	}
 	
-	private boolean getBooleanFlagAt(mdict_manageable datum, int mask, boolean def) {
+	private boolean getBooleanFlagAt(mngr_agent_manageable datum, int mask, boolean def) {
 		boolean val = (datum.getFirstFlag()&mask)!=0;
 		if(def) val = !val;
 		return val;
 	}
 	
-	private long setBooleanFlagAt(mdict_manageable datum, int mask, boolean def, boolean val) {
+	private long setBooleanFlagAt(mngr_agent_manageable datum, int mask, boolean def, boolean val) {
 		long flag = datum.getFirstFlag();
 		flag&=~mask;
 		if(def ^ val) flag |= mask;
 		return flag;
 	}
 	
-	private int getShortFlagAt(mdict_manageable datum, int position) {
+	private int getShortFlagAt(mngr_agent_manageable datum, int position) {
 		return (int) ((datum.getFirstFlag()>>position)&3);
 	}
 	
-	private long setShortFlagAt(mdict_manageable datum, int position, int val) {
+	private long setShortFlagAt(mngr_agent_manageable datum, int position, int val) {
 		long mask = ((long)3)<<position;
 		long flag = datum.getFirstFlag();
 		flag&=~mask;
@@ -96,11 +96,11 @@ public class DictOptions extends SettingsFragment implements Preference.OnPrefer
 		return flag;
 	}
 	
-	private Object GetSetIntField(mdict_manageable datum, String key, boolean get, Object val) {
+	private Object GetSetIntField(mngr_agent_manageable datum, String key, boolean get, Object val) {
 		BookPresenter m1 = null;
-		mdict_transient m2 = null;
+		mngr_agent_transient m2 = null;
 		if(datum instanceof BookPresenter) m1 = (BookPresenter) datum;
-		else m2 = (mdict_transient) datum;
+		else m2 = (mngr_agent_transient) datum;
 		switch (key){
 			case "TIBG":
 				if(m1!=null) { if(get) return m1.TIBGColor; else m1.TIBGColor=(int) val; }
@@ -140,7 +140,7 @@ public class DictOptions extends SettingsFragment implements Preference.OnPrefer
 	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		if(data==null){
-			data = (mdict_manageable[]) getActivity().getWindow().getDecorView().getTag();
+			data = (mngr_agent_manageable[]) getActivity().getWindow().getDecorView().getTag();
 			init_switcher("GLT", 0x200, false);
 			init_switcher("dzoom", 0x400, false);
 			init_disconjuctioner("dzoom_mode", 12, R.array.d_zoom_mode_info);
@@ -185,46 +185,46 @@ public class DictOptions extends SettingsFragment implements Preference.OnPrefer
 		String key;
 		switch (key=preference.getKey()){
 			case "GLT":
-				for (mdict_manageable md:data) {
+				for (mngr_agent_manageable md:data) {
 					md.setFirstFlag(setBooleanFlagAt(md, 0x200, false, (Boolean) newValue));
 				}
 			break;
 			case "golst":
-				for (mdict_manageable md:data) {
+				for (mngr_agent_manageable md:data) {
 					md.setFirstFlag(setBooleanFlagAt(md, 0x40000, false, (Boolean) newValue));
 				}
 			break;
 			case "pop":
-				for (mdict_manageable md:data) {
+				for (mngr_agent_manageable md:data) {
 					md.setFirstFlag(setBooleanFlagAt(md, 0x80000, false, (Boolean) newValue));
 				}
 			break;
 			case "notxt":
-				for (mdict_manageable md:data) {
+				for (mngr_agent_manageable md:data) {
 					md.setFirstFlag(setBooleanFlagAt(md, 0x800, false, (Boolean) newValue));
 				}
 			break;
 			case "dzoom":
-				for (mdict_manageable md:data) {
+				for (mngr_agent_manageable md:data) {
 					md.setFirstFlag(setBooleanFlagAt(md, 0x400, false, (Boolean) newValue));
 				}
 			break;
 			case "dzoom_mode":{
 				int val = IU.parsint(newValue, 0);
-				for (mdict_manageable md:data) {
+				for (mngr_agent_manageable md:data) {
 					md.setFirstFlag(setShortFlagAt(md, 12, val));
 				}
 				preference.setSummary(getResources().getStringArray(R.array.d_zoom_mode_info)[val]);
 			} break;
 			case "dz12":
-				for (mdict_manageable md:data) {
+				for (mngr_agent_manageable md:data) {
 					md.setFirstFlag(setBooleanFlagAt(md, 0x100000, false, (Boolean) newValue));
 				}
 			break;
 			case "TIFG":
 			case "TIBG":{
 				int val = IU.parsint(newValue, 0);
-				for (mdict_manageable md:data) {
+				for (mngr_agent_manageable md:data) {
 					GetSetIntField(md, key, false, val);
 				}
 				if(preference instanceof ColorPickerPreference)
@@ -237,7 +237,7 @@ public class DictOptions extends SettingsFragment implements Preference.OnPrefer
 			case "dzoomx":{
 				try {
 					float val = Float.parseFloat(String.valueOf(newValue));
-					for (mdict_manageable md:data) {
+					for (mngr_agent_manageable md:data) {
 						GetSetIntField(md, key, false, val);
 					}
 					if(preference instanceof ColorPickerPreference)
@@ -246,14 +246,14 @@ public class DictOptions extends SettingsFragment implements Preference.OnPrefer
 			} break;
 			case "pzoom":{
 				int val = IU.parsint(newValue, 0);
-				for (mdict_manageable md:data) {
+				for (mngr_agent_manageable md:data) {
 					md.setFirstFlag(setShortFlagAt(md, 14, val));
 				}
 				preference.setSummary(getResources().getStringArray(R.array.pzoom_info)[val]);
 			} break;
 			case "pmed":{
 				int val = IU.parsint(newValue, 0);
-				for (mdict_manageable md:data) {
+				for (mngr_agent_manageable md:data) {
 					md.setFirstFlag(setShortFlagAt(md, 16, val));
 				}
 				preference.setSummary(getResources().getStringArray(R.array.pzoom_mode_info)[val]);

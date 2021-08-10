@@ -74,7 +74,7 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 					}
 					publishProgress(i);
 					if(mdTmp!=null) // to impl
-						((mdict)a.currentDictionary.bookImpl).flowerFindAllKeys(SearchTerm,i,a.fuzzySearchLayer);
+						mdTmp.findAllNames(SearchTerm, i, a.fuzzySearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {

@@ -10,7 +10,7 @@ import com.knziha.plod.widgets.WebViewmy;
 
 import java.io.File;
 /** Transient object for managing dictionary lists. */
-public interface mdict_manageable {
+public interface mngr_agent_manageable {
 	String getPath();
 	boolean moveFileTo(Context c, File newF);
 	void unload();

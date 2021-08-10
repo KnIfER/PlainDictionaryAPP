@@ -79,8 +79,7 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 					}
 					publishProgress(i);//_mega
 					if(mdTmp!=null)
-						// to impl
-						((mdict)mdTmp.bookImpl).flowerFindAllContents(SearchTerm,i,a.fullSearchLayer);
+						mdTmp.findAllTexts(SearchTerm,i,a.fullSearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {
@@ -93,8 +92,7 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 				if(a.checkDicts()){
 					publishProgress(a.adapter_idx);
 					//CMN.Log("Find In All Conten??");
-					// to impl
-					((mdict)a.currentDictionary.bookImpl).flowerFindAllContents(SearchTerm,a.adapter_idx,a.fullSearchLayer);
+					a.currentDictionary.findAllTexts(SearchTerm,a.adapter_idx,a.fullSearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -63,10 +63,10 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.mdict_manageable;
-import com.knziha.plod.dictionarymodels.bookPresenter_nonexist;
-import com.knziha.plod.dictionarymodels.mdict_prempter;
-import com.knziha.plod.dictionarymodels.mdict_transient;
+import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
+import com.knziha.plod.dictionarymodels.mngr_presenter_nonexist;
+import com.knziha.plod.dictionarymodels.mngr_agent_prempter;
+import com.knziha.plod.dictionarymodels.mngr_agent_transient;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.knziha.plod.widgets.Toastable_FragmentActivity;
 import com.knziha.rbtree.RashSet;
@@ -87,7 +87,7 @@ import java.util.List;
 
 public class dict_manager_activity extends Toastable_FragmentActivity implements OnMenuItemClickListener
 {
-	HashMap<String,mdict_transient> mdict_cache = new HashMap<>();
+	HashMap<String, mngr_agent_transient> mdict_cache = new HashMap<>();
 	Intent intent = new Intent();
 	private PopupWindow mPopup;
 	public ArrayList<PlaceHolder> slots;
@@ -104,7 +104,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	
 	public File SecordFile;
 	
-	bookPresenter_nonexist mninstance = new bookPresenter_nonexist(new File("/N/A"));
+	mngr_presenter_nonexist mninstance = new mngr_presenter_nonexist(new File("/N/A"));
 	private boolean deleting;
 	
 	public dict_manager_activity() throws IOException { }
@@ -131,7 +131,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
     TabLayout mTabLayout;
 	LayoutInflater inflater;
 
-	public ArrayList<mdict_transient> mdmng;
+	public ArrayList<mngr_agent_transient> mdmng;
     public HashSet<String> mdlibsCon;
 	protected int CurrentPage;
 
@@ -170,7 +170,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			boolean identical = size==slots.size();
 			int i;
 			for (i = 0; i < size; i++) {
-				mdict_transient mmTmp = mdmng.get(i);
+				mngr_agent_transient mmTmp = mdmng.get(i);
 				mmTmp.mPhI.lineNumber=i;
 				if(identical){
 					if(!mmTmp.equalsToPlaceHolder(slots.get(i)))
@@ -182,8 +182,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			} else {
 				intent.putExtra("changed", true);
 				slots.clear();
-				for (mdict_manageable mmTmp:mdmng) {
-					slots.add(((mdict_transient)mmTmp).mPhI);
+				for (mngr_agent_manageable mmTmp:mdmng) {
+					slots.add(((mngr_agent_transient)mmTmp).mPhI);
 				}
 				try {
 					File def = new File(getExternalFilesDir(null), "default.txt");
@@ -192,7 +192,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					output.write("[:S]");
 					output.write(Integer.toString(mdmng.size()));
 					output.write("\n");
-					for (mdict_manageable mmTmp : mdmng) {
+					for (mngr_agent_manageable mmTmp : mdmng) {
 						writeForOneLine(output, mmTmp, parent);
 					}
 					output.flush();
@@ -252,7 +252,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		mTabLayout.clearOnTabSelectedListeners();
 	}
 
-	private void writeForOneLine(Writer out, mdict_manageable mmTmp, String parent) throws IOException {
+	private void writeForOneLine(Writer out, mngr_agent_manageable mmTmp, String parent) throws IOException {
 		String name = mmTmp.getPath();
 		if(name.startsWith(parent) && name.length()>parent.length())
 			name = name.substring(parent.length()+1);
@@ -337,7 +337,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 				if(!found) {
 					//show("adding new!"+fn.getAbsolutePath());
 					f3.mDslv.post(() -> {
-						mdict_transient mmTmp = new mdict_transient(dict_manager_activity.this, fn.getPath(), opt, 0, mninstance);
+						mngr_agent_transient mmTmp = new mngr_agent_transient(dict_manager_activity.this, fn.getPath(), opt, 0, mninstance);
 						f1.adapter.add(mmTmp);
 						f1.refreshSize();
 						f1.adapter.notifyDataSetChanged();
@@ -724,7 +724,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			output.write(Integer.toString(mdmng.size()));
 			output.write("\n");
 			String parent = opt.lastMdlibPath.getPath();
-			for(mdict_manageable mmTmp:mdmng) {
+			for(mngr_agent_manageable mmTmp:mdmng) {
 				writeForOneLine(output, mmTmp, parent);
 			}
 			output.flush();
@@ -784,7 +784,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 					BufferedWriter output = new BufferedWriter(new FileWriter(to,false));
 					
 					String parent = opt.lastMdlibPath.getPath();
-					for(mdict_manageable mmTmp:mdmng) {
+					for(mngr_agent_manageable mmTmp:mdmng) {
 						if(!f1.rejector.contains(mmTmp.getPath())){
 							//String pathname = mFile.tryDeScion(new File(md.getPath()), opt.lastMdlibPath);
 							writeForOneLine(output, mmTmp, parent);
@@ -801,7 +801,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			} break;
             case R.id.toolbar_action1:{//刷新
 				if(isLongClicked){
-					for(mdict_manageable mmTmp:mdmng) {
+					for(mngr_agent_manageable mmTmp:mdmng) {
 						f1.selector.add(mmTmp.getPath());
 					}
 					f1.adapter.notifyDataSetChanged();
@@ -871,7 +871,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 						f1.adapter.notifyDataSetChanged();
 					}
 				}else{
-					for(mdict_manageable mmTmp:mdmng) {
+					for(mngr_agent_manageable mmTmp:mdmng) {
 						f1.rejector.add(mmTmp.getPath());
 					}
 					ThisIsDirty=true;
@@ -920,9 +920,9 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 								line = opt.lastMdlibPath + "/" + line;
 							line = new File(line).getAbsolutePath();
 							if (!mdict_cache.containsKey(line)) {
-								mdict_transient m = mdict_cache.get(line);
+								mngr_agent_transient m = mdict_cache.get(line);
 								if (m == null)
-									m = new mdict_transient(dict_manager_activity.this, line, opt, mninstance);
+									m = new mngr_agent_transient(dict_manager_activity.this, line, opt, mninstance);
 								f1.add(m);
 								f1.rejector.add(line);
 								mdict_cache.put(line, m);
@@ -1011,7 +1011,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			} break;
 			/* 添加 */
             case R.id.toolbar_action9:{
-				ArrayList<mdict_transient> data = f1.manager_group;
+				ArrayList<mngr_agent_transient> data = f1.manager_group;
 				if(isLongClicked) {/* 添加到第几行 */
 					AlertDialog.Builder builder2 = new AlertDialog.Builder(dict_manager_activity.this);
 					View dv = getLayoutInflater().inflate(R.layout.dialog_move_to_line, null);
@@ -1034,7 +1034,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 									continue;
 								}
 								String key = fn.getPath();
-								mdict_transient m = null;
+								mngr_agent_transient m = null;
 								if (f1.rejector.contains(key)) {
 									f1.rejector.remove(key);
 								}
@@ -1047,7 +1047,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 								if (m == null)
 									m = mdict_cache.get(key);
 								if (m == null) {
-									m = new mdict_transient(dict_manager_activity.this, key, opt, mninstance);
+									m = new mngr_agent_transient(dict_manager_activity.this, key, opt, mninstance);
 									mdict_cache.put(key, m);
 								}
 								data.add(Math.min(data.size(), toPos++), m);
@@ -1095,7 +1095,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 							cc++;
 						}
 						else {
-							mdict_transient m=null;
+							mngr_agent_transient m=null;
 							for (int j = 0; j < data.size(); j++) {
 								if(data.get(j).getPath().equals(key)){
 									m=data.get(j);
@@ -1105,7 +1105,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 							if(m==null){
 								m = mdict_cache.get(key);
 								if(m==null){
-									m = new mdict_transient(dict_manager_activity.this, key, opt, mninstance);
+									m = new mngr_agent_transient(dict_manager_activity.this, key, opt, mninstance);
 									mdict_cache.put(key, m);
 								}
 								data.add(m);
@@ -1236,6 +1236,10 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			} break;
 			/* 移动文件 */
             case R.id.toolbar_action12:{
+            	if (true) {
+            		showT("功能关闭，请等待5.0版本");
+					ret=false;break;
+				}
 				if(isLongClicked) {
 					ret=false;break;
 				}
@@ -1259,8 +1263,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 								ArrayList<String> arr = f3.Selection.flatten();
 								RashSet<String> renameList = new RashSet<>();
 								ArrayList<String> renameListe;
-								HashMap<String, mdict_manageable> mdict_cache = new HashMap<>(mdmng.size());
-								for (mdict_manageable mmTmp : mdmng) {
+								HashMap<String, mngr_agent_manageable> mdict_cache = new HashMap<>(mdmng.size());
+								for (mngr_agent_manageable mmTmp : mdmng) {
 									//if (mmTmp instanceof mdict)
 										mdict_cache.put(mmTmp.getPath(), mmTmp);
 								}
@@ -1272,10 +1276,10 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 									//if(sI.startsWith("/ASSET/") && CMN.AssetMap.containsKey(sI)) continue;
 									if (mF.isDirectory()) continue;
 									if (f3.data.get(mF).isDirectory()) continue;
-									mdict_manageable mmTmp = mdict_cache.get(sI);
+									mngr_agent_manageable mmTmp = mdict_cache.get(sI);
 									if (mmTmp == null) {
 										try {
-											mmTmp = new mdict_prempter(dict_manager_activity.this, sI, opt, mninstance);
+											mmTmp = new mngr_agent_prempter(dict_manager_activity.this, sI, opt, mninstance);
 										} catch (IOException e) {
 											e.printStackTrace();
 										}
@@ -1545,9 +1549,9 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			}
 			if (!line.startsWith("/"))
 				line = opt.lastMdlibPath + "/" + line;
-			mdict_transient mmtmp = mdict_cache.get(line);
+			mngr_agent_transient mmtmp = mdict_cache.get(line);
 			if (mmtmp == null)
-				mmtmp = new mdict_transient(dict_manager_activity.this, line, opt, 0, mninstance);
+				mmtmp = new mngr_agent_transient(dict_manager_activity.this, line, opt, 0, mninstance);
 			if(!mmtmp.isMddResource()) flag&=~0x4;
 			mmtmp.setTmpIsFlag(flag);
 			mdmng.add(mmtmp);

@@ -22,7 +22,7 @@ import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.mdict_manageable;
+import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
@@ -2259,7 +2259,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public static void setTmpIsFlag(BookPresenter mdTmp, int val) {
 		mdTmp.tmpIsFlag=val;
 	}
-	public static void setTmpIsFlag(mdict_manageable mmTmp, int val) {
+	public static void setTmpIsFlag(mngr_agent_manageable mmTmp, int val) {
 		mmTmp.setTmpIsFlag(val);
 	}
 	public static boolean getTmpIsFiler(int tmpIsFlag) {
@@ -2275,14 +2275,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return val;
 	}
-	public static boolean setTmpIsFiler(mdict_manageable mmTmp, boolean val) {
+	public static boolean setTmpIsFiler(mngr_agent_manageable mmTmp, boolean val) {
 		int tmpIsFlag = mmTmp.getTmpIsFlag();
 		tmpIsFlag &= (~0x1);
 		if(val) tmpIsFlag |= 0x1;
 		mmTmp.setTmpIsFlag(tmpIsFlag);
 		return val;
 	}
-	public static boolean toggleTmpIsFiler(mdict_manageable mdTmp) {
+	public static boolean toggleTmpIsFiler(mngr_agent_manageable mdTmp) {
 		return setTmpIsFiler(mdTmp, !getTmpIsFiler(mdTmp.getTmpIsFlag()));
 	}
 	public static boolean getTmpIsClicker(int tmpIsFlag) {
@@ -2298,14 +2298,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return val;
 	}
-	public static boolean setTmpIsClicker(mdict_manageable mmTmp, boolean val) {
+	public static boolean setTmpIsClicker(mngr_agent_manageable mmTmp, boolean val) {
 		int tmpIsFlag = mmTmp.getTmpIsFlag();
 		tmpIsFlag &= (~0x2);
 		if(val) tmpIsFlag |= 0x2;
 		mmTmp.setTmpIsFlag(tmpIsFlag);
 		return val;
 	}
-	public static boolean toggleTmpIsClicker(mdict_manageable mdTmp) {
+	public static boolean toggleTmpIsClicker(mngr_agent_manageable mdTmp) {
 		return setTmpIsClicker(mdTmp, !getTmpIsClicker(mdTmp.getTmpIsFlag()));
 	}
 	public static boolean getTmpIsAudior(int tmpIsFlag) {
@@ -2321,14 +2321,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return val;
 	}
-	public static boolean setTmpIsAudior(mdict_manageable mmTmp, boolean val) {
+	public static boolean setTmpIsAudior(mngr_agent_manageable mmTmp, boolean val) {
 		int tmpIsFlag = mmTmp.getTmpIsFlag();
 		tmpIsFlag &= (~0x4);
 		if(val) tmpIsFlag |= 0x4;
 		mmTmp.setTmpIsFlag(tmpIsFlag);
 		return val;
 	}
-	public static boolean toggleTmpIsAudior(mdict_manageable mdTmp) {
+	public static boolean toggleTmpIsAudior(mngr_agent_manageable mdTmp) {
 		return setTmpIsAudior(mdTmp,  !getTmpIsAudior(mdTmp.getTmpIsFlag()));
 	}
 	public static boolean getTmpIsHidden(int tmpIsFlag) {
@@ -2344,28 +2344,28 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return val;
 	}
-	public static boolean setTmpIsHidden(mdict_manageable mmTmp, boolean val) {
+	public static boolean setTmpIsHidden(mngr_agent_manageable mmTmp, boolean val) {
 		int tmpIsFlag = mmTmp.getTmpIsFlag();
 		tmpIsFlag &= (~0x8);
 		if(val) tmpIsFlag |= 0x8;
 		mmTmp.setTmpIsFlag(tmpIsFlag);
 		return val;
 	}
-	public static boolean toggleTmpIsHidden(mdict_manageable mdTmp) {
+	public static boolean toggleTmpIsHidden(mngr_agent_manageable mdTmp) {
 		return setTmpIsHidden(mdTmp,  !getTmpIsHidden(mdTmp.getTmpIsFlag()));
 	}
 
 	public static boolean getTmpIsCollapsed(int tmpIsFlag) {
 		return (tmpIsFlag&0x10)!=0;
 	}
-	public static boolean setTmpIsCollapsed(mdict_manageable mmTmp, boolean val) {
+	public static boolean setTmpIsCollapsed(mngr_agent_manageable mmTmp, boolean val) {
 		int tmpIsFlag = mmTmp.getTmpIsFlag();
 		tmpIsFlag &= (~0x10);
 		if(val) tmpIsFlag |= 0x10;
 		mmTmp.setTmpIsFlag(tmpIsFlag);
 		return val;
 	}
-	public static boolean toggleTmpIsCollapsed(mdict_manageable mdTmp) {
+	public static boolean toggleTmpIsCollapsed(mngr_agent_manageable mdTmp) {
 		return setTmpIsCollapsed(mdTmp, !getTmpIsCollapsed(mdTmp.getTmpIsFlag()));
 	}
 	

@@ -14,16 +14,16 @@ import static com.knziha.plod.plaindict.CMN.AssetMap;
  date:2019.03.11
  author:KnIfER
 */
-public class mdict_asset extends plain_mdict {
-	public mdict_asset(String fn) throws IOException {
+public class PlainMdictAsset extends PlainMdict {
+	public PlainMdictAsset(String fn) throws IOException {
 		super(fn);
 	}
 	
-	public mdict_asset(File fn, int pseudoInit, StringBuilder buffer, Object tag) throws IOException {
+	public PlainMdictAsset(File fn, int pseudoInit, StringBuilder buffer, Object tag) throws IOException {
 		super(fn, pseudoInit, buffer, tag);
 	}
 	
-	protected mdict_asset(mdict master, DataInputStream data_in, long _ReadOffset) throws IOException {
+	protected PlainMdictAsset(mdict master, DataInputStream data_in, long _ReadOffset) throws IOException {
 		super(master, data_in, _ReadOffset);
 	}
 	//构造

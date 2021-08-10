@@ -36,7 +36,6 @@ public class resultRecorderDiscrete {
 	public int expectedPos;
 
 	public ArrayList<Integer> getRecordAt(int pos) {
-
 		return new ArrayList<>();
 	}
 

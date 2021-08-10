@@ -42,9 +42,9 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.mdict_manageable;
-import com.knziha.plod.dictionarymodels.mdict_prempter;
-import com.knziha.plod.dictionarymodels.mdict_transient;
+import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
+import com.knziha.plod.dictionarymodels.mngr_agent_prempter;
+import com.knziha.plod.dictionarymodels.mngr_agent_transient;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.knziha.plod.widgets.FlowTextView;
 import com.mobeta.android.dslv.DragSortController;
@@ -59,12 +59,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class dict_manager_main extends dict_manager_base<mdict_transient>
+public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 		implements dict_manager_base.SelectableFragment, OnItemLongClickListener {
 	HashSet<String> rejector = new HashSet<>();
 	dict_manager_activity aaa;
 	private boolean bDictTweakerOnceShowed;
-	public ArrayList<mdict_transient> manager_group;
+	public ArrayList<mngr_agent_transient> manager_group;
 	AlertDialog d;
 	private Drawable mActiveDrawable;
 	private Drawable mFilterDrawable;
@@ -78,7 +78,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			if(lastClickedPos[lastClickedPosIndex%2]!=vh.position) {
 				lastClickedPos[(++lastClickedPosIndex) % 2] = vh.position;
 			}
-			mdict_manageable mdTmp = adapter.getItem(vh.position);
+			mngr_agent_manageable mdTmp = adapter.getItem(vh.position);
 			String key = mdTmp.getPath();
 			if(isChecked)
 				selector.add(key);
@@ -107,7 +107,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 		return new MyDSController(dslv);
 	}
 
-	public void add(mdict_transient mmTmp) {
+	public void add(mngr_agent_transient mmTmp) {
 		manager_group.add(mmTmp);
 		isDirty=true;
 	}
@@ -130,7 +130,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			SpannableStringBuilder ssb = new SpannableStringBuilder(getResources().getString(R.string.dictOpt)).append("");
 			int start = ssb.length();
 
-			final mdict_transient mmTmp = manager_group.get(actualPosition);
+			final mngr_agent_transient mmTmp = manager_group.get(actualPosition);
 			boolean isOnSelected = a.opt.getDictManager1MultiSelecting() && selector.contains(mmTmp.getPath());
 			if (isOnSelected) ssb.append("…");
 			ssb.append(mmTmp.getPath());
@@ -180,9 +180,9 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 									break;
 									case 2://词典设置
 										if (isOnSelected) {
-											mdict_manageable[] mdTmps = new mdict_manageable[selector.size()];
+											mngr_agent_manageable[] mdTmps = new mngr_agent_manageable[selector.size()];
 											int cc = 0;
-											for (mdict_manageable mI : manager_group) {
+											for (mngr_agent_manageable mI : manager_group) {
 												if (selector.contains(mI.getPath()))
 													mdTmps[cc++] = mI;
 											}
@@ -215,6 +215,10 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 					(dialog, pos) -> {
 						switch (pos) {
 							case 0: {
+								if (true) {
+									a.showT("功能关闭，请等待5.0版本");
+									break;
+								}
 								View dialog1 = getActivity().getLayoutInflater().inflate(R.layout.settings_dumping_dialog, null);
 								final ListView lv = dialog1.findViewById(R.id.lv);
 								final EditText et = dialog1.findViewById(R.id.et);
@@ -258,7 +262,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 													CMN.Log("重命名", mmTmp.getDictionaryName());
 													adapter.remove(mmTmp);
 													try {
-														adapter.insert(new mdict_prempter(a, to.getAbsolutePath(), a.opt, a.mninstance), actualPosition);
+														adapter.insert(new mngr_agent_prempter(a, to.getAbsolutePath(), a.opt, a.mninstance), actualPosition);
 													} catch (IOException e) {
 														e.printStackTrace();
 													}
@@ -464,8 +468,8 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 		}
 	}
 
-	private class MyAdapter extends ArrayAdapter<mdict_transient> {
-		public MyAdapter(List<mdict_transient> mdicts) {
+	private class MyAdapter extends ArrayAdapter<mngr_agent_transient> {
+		public MyAdapter(List<mngr_agent_transient> mdicts) {
 			super(getActivity(), getItemLayout(), R.id.text, mdicts);
 		}
 
@@ -481,7 +485,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			vh.position=position;
 			//v.getBackground().setLevel(1000);
 			//position = position - mDslv.getHeaderViewsCount();
-			mdict_manageable mdTmp = adapter.getItem(position);
+			mngr_agent_manageable mdTmp = adapter.getItem(position);
 			
 
 			if(dict_manager_activity.dictQueryWord!=null && mdTmp.getDictionaryName().toLowerCase().contains(aaa.dictQueryWord))
@@ -499,13 +503,6 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			} else {
 				vh.ck.setVisibility(View.GONE);
 			}
-			
-			vh.handle.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-				
-				}
-			});
 
 			StringBuilder rgb = new StringBuilder("#");
 			if(rejector.contains(key))
@@ -561,7 +558,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			a.mdict_cache.clear();
 			manager_group.ensureCapacity(slots.size());
 			for (PlaceHolder phI : slots) {
-				mdict_transient mmTmp = new mdict_transient(a, phI, a.opt, a.mninstance);
+				mngr_agent_transient mmTmp = new mngr_agent_transient(a, phI, a.opt, a.mninstance);
 				if (!mmTmp.isMddResource()) PDICMainAppOptions.setTmpIsAudior(mmTmp, false);
 				if(PDICMainAppOptions.getTmpIsHidden(mmTmp.getTmpIsFlag()))
 					rejector.add(mmTmp.getPath());
@@ -597,10 +594,10 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			//CMN.Log("to", to);
 			//if(true) return;
 			if(a.opt.getDictManager1MultiSelecting() && selector.contains(manager_group.get(from).getPath())){
-				ArrayList<mdict_transient> md_selected = new ArrayList<>(selector.size());
+				ArrayList<mngr_agent_transient> md_selected = new ArrayList<>(selector.size());
 				if(to>from) to++;
 				for (int i = manager_group.size()-1; i >= 0; i--) {
-					mdict_manageable mmTmp = manager_group.get(i);
+					mngr_agent_manageable mmTmp = manager_group.get(i);
 					if(selector.contains(mmTmp.getPath())){
 						md_selected.add(0, manager_group.remove(i));
 						if(i<to) to--;
@@ -610,7 +607,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 				adapter.notifyDataSetChanged();
 			}
 			else if (from != to) {
-				mdict_transient mdTmp = manager_group.remove(from);
+				mngr_agent_transient mdTmp = manager_group.remove(from);
 				manager_group.add(to, mdTmp);
 				adapter.notifyDataSetChanged();
 			}
@@ -662,7 +659,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 		int idxTmp=manager_group.size();
 		HashSet<String> acceptor = new HashSet<>(idxTmp);
 		for(--idxTmp;idxTmp>=0;idxTmp--) {
-			mdict_manageable mmTmp = manager_group.get(idxTmp);
+			mngr_agent_manageable mmTmp = manager_group.get(idxTmp);
 			boolean hidden = PDICMainAppOptions.setTmpIsHidden(mmTmp, rejector.contains(mmTmp.getPath()));
 			if(hidden && ((bUnfinished || !PDICMainAppOptions.getAllowHiddenRecords())) || acceptor.contains(mmTmp.getPath())) {
 				manager_group.remove(mmTmp);

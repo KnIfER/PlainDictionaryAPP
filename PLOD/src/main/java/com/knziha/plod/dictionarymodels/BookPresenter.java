@@ -32,7 +32,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
-import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -43,13 +42,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
-import com.knziha.filepicker.utils.FU;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.AgentApplication;
-import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.DArrayAdapter;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -62,7 +60,6 @@ import com.knziha.plod.settings.DictOpitonContainer;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.mdictRes;
 import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.FlowTextView;
@@ -91,12 +88,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 
 import db.MdxDBHelper;
 
@@ -109,7 +100,7 @@ import static com.knziha.plod.dictionary.mdBase.fullpageString;
  author:KnIfER
 */
 public class BookPresenter
-		implements ValueCallback<String>, OnClickListener, mdict_manageable {
+		implements ValueCallback<String>, OnClickListener, mngr_agent_manageable {
 	public UniversalDictionaryInterface bookImpl;
 	
 	public ArrayList<SearchResultBean>[] combining_search_tree2; // 收集词条名称
@@ -649,22 +640,60 @@ public class BookPresenter
 	protected PDICMainAppOptions opt;
 
 	protected View.OnLongClickListener savelcl;
-
-	//构造
-	public BookPresenter(@NonNull File fn, MainActivityUIBase _a, int pseudoInit, Object tag) throws IOException {
-		bookImpl = new mdict(fn, pseudoInit, _a==null?null:_a.MainStringBuilder, tag);
-		
-		if(_a!=null){
-			a = _a;
-			opt = _a.opt;
+	
+	public static int hashCode(String toHash, int start) {
+		int h=0;
+		int len = toHash.length();
+		for (int i = start; i < len; i++) {
+			h = 31 * h + Character.toLowerCase(toHash.charAt(i));
 		}
+		return h;
+	}
+	
+	//构造
+	public BookPresenter(@NonNull File fullPath, MainActivityUIBase THIS, int pseudoInit, Object tag) throws IOException {
+		String pathFull = fullPath.getPath();
+		//if(pathFull.startsWith(CMN.AssetTag)) {
+		//	if(CMN.AssetMap.containsKey(pathFull))
+		//		return new bookPresenter_asset(fullPath,THIS);
+		//}
+		int sufixp = pathFull.lastIndexOf(".");
+		if(sufixp>0){
+			int hash = hashCode(pathFull, sufixp+1);
+			switch(hash){
+				case 107969:
+				case 107949:
+					bookImpl = new PlainMdict(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, tag);
+				break;
+				//case 117588:
+				//	return new bookPresenter_web(fullPath, THIS);
+				case 110834:
+					bookImpl = new PlainPDF(fullPath, THIS);
+				break;
+				//case 115312:
+				//	return new bookPresenter_txt(fullPath, THIS);
+				//case 99773:
+				//	return new bookPresenter_dsl(fullPath, THIS);
+				
+				//case 120609:
+				//return new mdict_zip(fullPath, THIS);
+				//case 3088960:
+				//return new mdict_docx(fullPath, THIS);
+			}
+		}
+		
+		if(THIS!=null){
+			a = THIS;
+			opt = THIS.opt;
+		}
+		
 		if(pseudoInit==1) {
 			return;
 		}
 		
 		//init(getStreamAt(0)); // MLSN
 		
-        File p = fn.getParentFile();
+        File p = fullPath.getParentFile();
         if(p!=null && p.exists()) {
 			StringBuilder fName_builder = getCleanDictionaryNameBuilder();
 			int bL = fName_builder.length();
@@ -1762,6 +1791,8 @@ public class BookPresenter
 	}
 
 	String getSimplestInjection() {
+		if (bookImpl instanceof DictionaryAdapter)
+			return ((DictionaryAdapter) bookImpl).getSimplestInjection();
 		return SimplestInjection;
 	}
 
@@ -2529,9 +2560,9 @@ public class BookPresenter
 	}
 			
 	/** Show Per-Dictionary settings dialog via peruseview, normal view. */
-	public static void showDictTweaker(WebViewmy view, Activity context, mdict_manageable...md) {
+	public static void showDictTweaker(WebViewmy view, Activity context, mngr_agent_manageable...md) {
 		if(md.length==0) return;
-		mdict_manageable mdTmp = md[0];
+		mngr_agent_manageable mdTmp = md[0];
 		String[] DictOpt = context.getResources().getStringArray(R.array.dict_spec);
 		final String[] Coef = DictOpt[0].split("_");
 		final View dv = LayoutInflater.from(context).inflate(R.layout.dialog_about,null);
@@ -2588,7 +2619,7 @@ public class BookPresenter
 
 		d.setOnDismissListener(dialog -> {
 			boolean doit=true;
-			for (mdict_manageable mI : md) {
+			for (mngr_agent_manageable mI : md) {
 				mI.checkFlag(context);
 				if(doit && mI instanceof BookPresenter){
 					((BookPresenter)mI).a.invalidAllPagers();
@@ -2608,9 +2639,9 @@ public class BookPresenter
 
 	private static void init_clickspan_with_bits_at(WebViewmy view, TextView tv, SpannableStringBuilder text,
 													String[] dictOpt, int titleOff, String[] coef, int coefOff, int coefShift, int mask, int flagPosition, int flagMax
-			, int processId, mdict_manageable... md) {
+			, int processId, mngr_agent_manageable... md) {
 		CMN.Log("init_clickspan_with_bits_at", md[0]);
-		mdict_manageable mdTmp = md[0];
+		mngr_agent_manageable mdTmp = md[0];
 		boolean isSingle=true;
 		int val = (int) ((mdTmp.getFirstFlag()>>flagPosition)&mask);
 		for (int i = 1; i < md.length; i++) {
@@ -2634,7 +2665,7 @@ public class BookPresenter
 				} else {
 					int val = (int) ((mdTmp.getFirstFlag()>>flagPosition)&mask);
 					val=(val+1)%(flagMax+1);
-					for (mdict_manageable mmTmp : md) {
+					for (mngr_agent_manageable mmTmp : md) {
 						mmTmp.validifyValueForFlag(view, val, mask, flagPosition, processId);
 					}
 					int fixedRange = indexOf(text, ':', now);
@@ -2645,7 +2676,7 @@ public class BookPresenter
 			}},start,text.length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 	
-	private static void ConfigSomething(TextView tv, int processId, mdict_manageable[] md) {
+	private static void ConfigSomething(TextView tv, int processId, mngr_agent_manageable[] md) {
 		if(processId==6){
 		
 		}
@@ -2819,6 +2850,12 @@ public class BookPresenter
 	}
 	
 	public void findAllNames(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchLogicLayer searchLayer) throws IOException {
+		if (bookImpl instanceof mdict) {
+			((mdict)bookImpl).flowerFindAllKeys(searchTerm, adapter_idx, searchLayer);
+		}
+	}
+	
+	public void findAllTexts(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchLogicLayer searchLayer) throws IOException {
 		if (bookImpl instanceof mdict) {
 			((mdict)bookImpl).flowerFindAllContents(searchTerm, adapter_idx, searchLayer);
 		}

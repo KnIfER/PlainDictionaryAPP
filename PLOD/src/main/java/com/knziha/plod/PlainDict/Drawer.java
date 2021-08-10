@@ -795,7 +795,7 @@ public class Drawer extends Fragment implements
 												}
 												countAdd++;
 											} catch (Exception e) {
-												e.printStackTrace();
+												CMN.Log(e);
 												a.showT("词典 "+new File(fnI).getName()+" 加载失败 @"+fnI+" Load Error！ "+e.getLocalizedMessage());
 											}
 										}

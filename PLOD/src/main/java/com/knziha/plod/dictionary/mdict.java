@@ -654,7 +654,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		sb.append("</div>");
 		return processStyleSheet(sb.toString(), positions[0]);
 	}
-
+	
 	/**
 	<style>
 	audio {

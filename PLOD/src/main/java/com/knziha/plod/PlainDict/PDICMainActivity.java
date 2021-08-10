@@ -2919,6 +2919,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					showChooseSetDialog();
 				}
 			} break;
+			case R.drawable.book_bundle2:{
+				showDictionaryManager();
+			} break;
 			//两大搜索
 			case R.drawable.fuzzy_search:{ // get3:
 				if(browser_widget1.isActivated()) {
@@ -3399,41 +3402,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				AttachPeruseView(false);
 			} break;
 			case R.drawable.book_bundle:{ // get2:
-				ReadInMdlibs(null);
-				AgentApplication app = ((AgentApplication) getApplication());
-				app.mdict_cache = mdict_cache;
-				for(BookPresenter mdTmp:md) {
-					if(mdTmp!=null){
-						//get path put
-						mdict_cache.put(mdTmp.getPath(),mdTmp);
-					}
-				}
-				for(BookPresenter mdTmp:currentFilter) {
-					if(mdTmp!=null){
-						mdict_cache.put(mdTmp.getPath(),mdTmp);
-					}
-				}
-				if(drawerFragment!=null)
-					for(BookPresenter mdTmp:drawerFragment.mdictInternal.values()) {
-						if(mdTmp!=null){
-							mdict_cache.put(mdTmp.getPath(),mdTmp);
-						}
-					}
-				/* 合符而继统 */
-				for(PlaceHolder phI:HdnCmfrt) {
-					if(!CosyChair.contains(phI))//todo opt
-						CosyChair.add(Math.min(phI.lineNumber, CosyChair.size()), phI);
-				}
-				app.slots=CosyChair;
-				app.opt=opt;
-				app.mdlibsCon=mdlibsCon;
-				app.mdict_cache=mdict_cache;
-				CosySofa.clear();
-				HdnCmfrt.clear();
-				lastLoadedModule=null;
-				Intent intent = new Intent();
-				intent.setClass(PDICMainActivity.this, dict_manager_activity.class);
-				startActivityForResult(intent, 110);
+				showDictionaryManager();
 			} return true;
 			case R.drawable.favoriteg:{ // get5:
 				showChooseFavorDialog(0);
@@ -3502,7 +3471,45 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		return false;
 	}
-
+	
+	private void showDictionaryManager() {
+		ReadInMdlibs(null);
+		AgentApplication app = ((AgentApplication) getApplication());
+		app.mdict_cache = mdict_cache;
+		for(BookPresenter mdTmp:md) {
+			if(mdTmp!=null){
+				//get path put
+				mdict_cache.put(mdTmp.getPath(),mdTmp);
+			}
+		}
+		for(BookPresenter mdTmp:currentFilter) {
+			if(mdTmp!=null){
+				mdict_cache.put(mdTmp.getPath(),mdTmp);
+			}
+		}
+		if(drawerFragment!=null)
+			for(BookPresenter mdTmp:drawerFragment.mdictInternal.values()) {
+				if(mdTmp!=null){
+					mdict_cache.put(mdTmp.getPath(),mdTmp);
+				}
+			}
+		/* 合符而继统 */
+		for(PlaceHolder phI:HdnCmfrt) {
+			if(!CosyChair.contains(phI))//todo opt
+				CosyChair.add(Math.min(phI.lineNumber, CosyChair.size()), phI);
+		}
+		app.slots=CosyChair;
+		app.opt=opt;
+		app.mdlibsCon=mdlibsCon;
+		app.mdict_cache=mdict_cache;
+		CosySofa.clear();
+		HdnCmfrt.clear();
+		lastLoadedModule=null;
+		Intent intent = new Intent();
+		intent.setClass(PDICMainActivity.this, dict_manager_activity.class);
+		startActivityForResult(intent, 110);
+	}
+	
 	@Deprecated
 	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	@Override

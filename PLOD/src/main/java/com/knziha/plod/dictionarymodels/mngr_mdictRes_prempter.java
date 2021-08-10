@@ -12,9 +12,9 @@ import com.knziha.plod.dictionary.mdictRes;
 */
 
 
-public class mdictRes_prempter extends mdictRes {
+public class mngr_mdictRes_prempter extends mdictRes {
 	//构造
-	public mdictRes_prempter(File fn) throws IOException {
+	public mngr_mdictRes_prempter(File fn) throws IOException {
 		super(fn, 1, null);
 	}
 }

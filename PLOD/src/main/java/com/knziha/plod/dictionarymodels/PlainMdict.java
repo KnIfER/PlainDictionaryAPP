@@ -22,16 +22,16 @@ import java.util.concurrent.Executors;
 
 import static com.knziha.plod.plaindict.AgentApplication.BufferAllocatorInst;
 
-public class plain_mdict extends mdict {
-	public plain_mdict(String fn) throws IOException {
+public class PlainMdict extends mdict {
+	public PlainMdict(String fn) throws IOException {
 		super(fn);
 	}
 	
-	public plain_mdict(File fn, int pseudoInit, StringBuilder buffer, Object tag) throws IOException {
+	public PlainMdict(File fn, int pseudoInit, StringBuilder buffer, Object tag) throws IOException {
 		super(fn, pseudoInit, buffer, tag);
 	}
 	
-	protected plain_mdict(mdict master, DataInputStream data_in, long _ReadOffset) throws IOException {
+	protected PlainMdict(mdict master, DataInputStream data_in, long _ReadOffset) throws IOException {
 		super(master, data_in, _ReadOffset);
 	}
 	

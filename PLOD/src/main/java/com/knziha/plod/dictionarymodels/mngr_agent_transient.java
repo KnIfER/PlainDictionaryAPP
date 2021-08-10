@@ -24,7 +24,7 @@ import java.util.List;
  data:2020.01.12
  author:KnIfER
 */
-public class mdict_transient implements mdict_manageable{
+public class mngr_agent_transient implements mngr_agent_manageable {
 	public PlaceHolder mPhI;
 	protected File f;
 	public String _Dictionary_fName_Internal;
@@ -32,7 +32,7 @@ public class mdict_transient implements mdict_manageable{
 	int TIFStamp;
 	long FFStamp;
 	long firstFlag;
-	List<mdictRes_prempter> mdd;
+	List<mngr_mdictRes_prempter> mdd;
 	boolean keepOrgHolder=true;
 	
 	public final PhotoBrowsingContext IBC = new PhotoBrowsingContext();
@@ -43,7 +43,7 @@ public class mdict_transient implements mdict_manageable{
 	public int lvPos,lvClickPos,lvPosOff;
 	private float webScale;
 	public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
-	final bookPresenter_nonexist MNINSTANCE;
+	final mngr_presenter_nonexist MNINSTANCE;
 	public boolean isDirty;
 	private boolean changeMap=true;
 	
@@ -60,16 +60,16 @@ public class mdict_transient implements mdict_manageable{
 	}
 
 	//构造
-	public mdict_transient(Activity a, String fn, PDICMainAppOptions opt_, bookPresenter_nonexist mninstance) {
+	public mngr_agent_transient(Activity a, String fn, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) {
 		this(a, fn, opt_, 0, mninstance);
 	}
 
-	public mdict_transient(Activity a, String fn, PDICMainAppOptions opt_, int isF, bookPresenter_nonexist mninstance) {
+	public mngr_agent_transient(Activity a, String fn, PDICMainAppOptions opt_, int isF, mngr_presenter_nonexist mninstance) {
 		this(a, new PlaceHolder(fn), opt_, mninstance);
 		mPhI.tmpIsFlag=TIFStamp=isF;
 	}
 
-	public mdict_transient(Activity a, PlaceHolder phI, PDICMainAppOptions opt_, bookPresenter_nonexist mninstance) {
+	public mngr_agent_transient(Activity a, PlaceHolder phI, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) {
 		opt=opt_;
 		mPhI = phI;
 		MNINSTANCE = mninstance;

@@ -3352,43 +3352,34 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public static BookPresenter new_mdict(File fullPath, MainActivityUIBase THIS) throws IOException {
-		String pathFull = fullPath.getPath();
-		//if(pathFull.startsWith(CMN.AssetTag)) {
-		//	if(CMN.AssetMap.containsKey(pathFull))
-		//		return new bookPresenter_asset(fullPath,THIS);
+		//String pathFull = fullPath.getPath();
+		////if(pathFull.startsWith(CMN.AssetTag)) {
+		////	if(CMN.AssetMap.containsKey(pathFull))
+		////		return new bookPresenter_asset(fullPath,THIS);
+		////}
+		//int sufixp = pathFull.lastIndexOf(".");
+		//if(sufixp>0){
+		//	int hash = hashCode(pathFull, sufixp+1);
+		//	switch(hash){
+		//		case 107969:
+		//		case 107949:
+		//			return new BookPresenter(fullPath, THIS, 0, null);
+		//		//case 117588:
+		//		//	return new bookPresenter_web(fullPath, THIS);
+		//		//case 110834:
+		//		//	return new bookPresenter_pdf(fullPath, THIS);
+		//		//case 115312:
+		//		//	return new bookPresenter_txt(fullPath, THIS);
+		//		//case 99773:
+		//		//	return new bookPresenter_dsl(fullPath, THIS);
+		//
+		//		//case 120609:
+		//		//return new mdict_zip(fullPath, THIS);
+		//		//case 3088960:
+		//		//return new mdict_docx(fullPath, THIS);
+		//	}
 		//}
-		int sufixp = pathFull.lastIndexOf(".");
-		if(sufixp>0){
-			int hash = hashCode(pathFull, sufixp+1);
-			switch(hash){
-				case 107969:
-				case 107949:
-					return new BookPresenter(fullPath, THIS, 0, null);
-				//case 117588:
-				//	return new bookPresenter_web(fullPath, THIS);
-				//case 110834:
-				//	return new bookPresenter_pdf(fullPath, THIS);
-				//case 115312:
-				//	return new bookPresenter_txt(fullPath, THIS);
-				//case 99773:
-				//	return new bookPresenter_dsl(fullPath, THIS);
-				
-				//case 120609:
-				//return new mdict_zip(fullPath, THIS);
-				//case 3088960:
-				//return new mdict_docx(fullPath, THIS);
-			}
-		}
-		return null;
-	}
-	
-	public static int hashCode(String toHash, int start) {
-		int h=0;
-		int len = toHash.length();
-		for (int i = start; i < len; i++) {
-			h = 31 * h + Character.toLowerCase(toHash.charAt(i));
-		}
-		return h;
+		return new BookPresenter(fullPath, THIS, 0, null);
 	}
 	
 	boolean checkAllWebs(resultRecorderDiscrete combining_search_result, View view, int pos) {
