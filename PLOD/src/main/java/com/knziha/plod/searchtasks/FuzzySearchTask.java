@@ -3,13 +3,13 @@ package com.knziha.plod.searchtasks;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.PDICMainActivity;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.PlaceHolder;
-import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PlaceHolder;
+import com.knziha.plod.plaindict.R;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 		if((a=activity.get())==null) return null;
 		a.fuzzySearchLayer.setCurrentPhrase(CurrentSearchText);
 
-		ArrayList<mdict> md = a.md;
+		ArrayList<BookPresenter> md = a.md;
 
 		String SearchTerm = CurrentSearchText;
 
@@ -61,7 +61,7 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 		if(a.isCombinedSearching){
 			for(int i=0;i<md.size();i++){
 				try {
-					mdict mdTmp = md.get(i);
+					BookPresenter mdTmp = md.get(i);
 					if(mdTmp==null){
 						PlaceHolder phI = a.getPlaceHolderAt(i);
 						if(phI!=null) {

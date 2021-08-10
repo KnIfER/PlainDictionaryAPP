@@ -2,8 +2,8 @@ package com.knziha.plod.dictionarymodels;
 
 import java.util.ArrayList;
 
-import com.knziha.plod.PlainDict.BasicAdapter;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.plaindict.BasicAdapter;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.dictionary.Utils.Flag;
 
 public class resultRecorderDiscrete {
@@ -49,7 +49,7 @@ public class resultRecorderDiscrete {
 		return new ArrayList<>();
 	}
 
-	public boolean checkAllWebs(ArrayList<mdict> md) {
+	public boolean checkAllWebs(ArrayList<BookPresenter> md) {
 		return false;
 	}
 

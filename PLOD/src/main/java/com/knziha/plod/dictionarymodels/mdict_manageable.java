@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.PlaceHolder;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.widgets.WebViewmy;
 
 import java.io.File;

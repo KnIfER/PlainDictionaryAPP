@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionarymanager.files.ArrayListTree;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;

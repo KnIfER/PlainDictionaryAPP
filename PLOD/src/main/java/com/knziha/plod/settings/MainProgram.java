@@ -8,11 +8,11 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.FilePickerPreference;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 
 import java.io.File;
 import java.util.HashMap;
@@ -134,7 +134,7 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 				PDICMainAppOptions.setKeepScreen((Boolean) newValue);
 			break;
 			case "classical_sort":
-				PDICMainAppOptions.setClassicalKeycaseStrategy(mdict.bGlobalUseClassicalKeycase=(Boolean) newValue);
+				PDICMainAppOptions.setClassicalKeycaseStrategy(BookPresenter.bGlobalUseClassicalKeycase=(Boolean) newValue);
 			break;
 			case "GPBC":
 				setColorPreferenceTitle(preference, newValue);

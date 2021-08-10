@@ -5,14 +5,13 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.LinkastReUsageHashMap;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
-import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ArrayListTree;
 import com.knziha.rbtree.RBTNode;
 import com.knziha.rbtree.RBTree;
@@ -20,8 +19,6 @@ import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
 
 import org.adrianwalker.multilinestring.Multiline;
-import org.joni.Option;
-import org.joni.Regex;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -34,9 +31,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,7 +40,7 @@ import java.util.regex.Pattern;
  author:KnIfER<br/>
  licence:GPL3.0<br/>
 */
-public class mdict_dsl extends mdict {
+public class bookPresenter_dsl extends BookPresenter {
 	final static String UTF16BOM = new String(new byte[]{(byte) 0xff, (byte) 0xfe}, StandardCharsets.UTF_16LE);
 	final static Pattern entryLinkPattern = Pattern.compile("<<(.*?)>>");
 	final static Pattern dslTagPattern = Pattern.compile("\\[(.{1,50}?)]|(\t)");
@@ -440,7 +434,7 @@ public class mdict_dsl extends mdict {
 	}
 
 	//构造
-	public mdict_dsl(File fn, MainActivityUIBase _a) throws IOException {
+	public bookPresenter_dsl(File fn, MainActivityUIBase _a) throws IOException {
 		super(fn, _a, 1, null);
 		a=_a;
 		opt=a.opt;
@@ -502,7 +496,7 @@ public class mdict_dsl extends mdict {
 				ReadBlocks:
 				while ((sourceCount = fin.read(source, 0, DSLIndexBlockSize)) > 0) {
 					now=0;
-					while((idx=mdict.indexOf(source, 0, sourceCount, UTF8LineBreakText, 0, UTF8LineBreakText.length, now))>0){
+					while((idx= BookPresenter.indexOf(source, 0, sourceCount, UTF8LineBreakText, 0, UTF8LineBreakText.length, now))>0){
 						if(!appending) {
 							Entry entry = new Entry();
 							entry.text = new String(source, now, idx - now);
@@ -523,7 +517,7 @@ public class mdict_dsl extends mdict {
 							String target = new String(source, now, idx - now);
 							now = idx + UTF8LineBreakText.length;
 							//CMN.Log("appending...", target);
-							while((idx=mdict.indexOf(source, 0, sourceCount, UTF8LineBreakText, 0, UTF8LineBreakText.length, now))>0) {
+							while((idx= BookPresenter.indexOf(source, 0, sourceCount, UTF8LineBreakText, 0, UTF8LineBreakText.length, now))>0) {
 								Entry entry = new Entry();
 								entry.text = new String(source, now, idx - now);
 								entry.contentStart = readLong(source, idx + UTF8LineBreakText.length);
@@ -691,7 +685,7 @@ public class mdict_dsl extends mdict {
 			//CMN.Log("接天莲叶无穷碧", lastTmpBlock==null);
 			return 0;
 		}
-		while((nowIndex=mdict.indexOf(tmpBlock.data, 0, tmpBlock.blockSize, lineBreakText, 0, lineBreakText.length, nowIndex))>=0){
+		while((nowIndex= BookPresenter.indexOf(tmpBlock.data, 0, tmpBlock.blockSize, lineBreakText, 0, lineBreakText.length, nowIndex))>=0){
 			if(!bIsUTF16 || nowIndex%2==0){
 				if(startWithEntry(tmpBlock, nowIndex+lineBreakText.length))
 					return nowIndex;
@@ -702,7 +696,7 @@ public class mdict_dsl extends mdict {
 	}
 
 	private int findNextContentBreakIndex(TextBlock tmpBlock,int nowIndex) {
-		while((nowIndex=mdict.indexOf(tmpBlock.data, 0, tmpBlock.blockSize, lineBreakText, 0, lineBreakText.length, nowIndex))>=0){
+		while((nowIndex= BookPresenter.indexOf(tmpBlock.data, 0, tmpBlock.blockSize, lineBreakText, 0, lineBreakText.length, nowIndex))>=0){
 			if(!bIsUTF16 || nowIndex%2==0){
 				if(startWithContent(tmpBlock, nowIndex+lineBreakText.length))
 					return nowIndex;
@@ -714,7 +708,7 @@ public class mdict_dsl extends mdict {
 
 	private int findNextBreakIndex(TextBlock tmpBlock,int nowIndex) {
 		int lastIndex=nowIndex;
-		while((lastIndex=mdict.indexOf(tmpBlock.data, 0, tmpBlock.blockSize, lineBreakText, 0, lineBreakText.length, lastIndex))>=0){
+		while((lastIndex= BookPresenter.indexOf(tmpBlock.data, 0, tmpBlock.blockSize, lineBreakText, 0, lineBreakText.length, lastIndex))>=0){
 			if(!bIsUTF16 || lastIndex%2==0){
 				return lastIndex;
 			}
@@ -754,7 +748,7 @@ public class mdict_dsl extends mdict {
 	@Override
 	protected void onPageSaved() {
 		super.onPageSaved();
-		a.notifyDictionaryDatabaseChanged(mdict_dsl.this);
+		a.notifyDictionaryDatabaseChanged(bookPresenter_dsl.this);
 	}
 
 	@Override

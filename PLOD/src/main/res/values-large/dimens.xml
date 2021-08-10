@@ -21,4 +21,7 @@
 	<dimen name="_35_">45dp</dimen>
 	<dimen name="scrollBarWidth">16dp</dimen>
 	<dimen name="_bottombarheight_">65dp</dimen>
+
+	<dimen name="_65_">90dp</dimen>
+	<dimen name="_90_">150dp</dimen>
 </resources>

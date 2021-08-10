@@ -1,7 +1,5 @@
 package com.knziha.plod.dictionarymanager.files;
 
-import com.knziha.plod.dictionarymodels.mdict_dsl;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 

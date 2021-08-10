@@ -13,8 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 
 import java.lang.reflect.Field;
 
@@ -585,6 +584,12 @@ public class SelectableTextView extends TextView implements View.OnClickListener
         }
         return false;
     }
-
-
+	
+	
+	@Override
+	public CharSequence getText() {
+		CharSequence ret = super.getText();
+		if (ret==null) ret="";
+		return ret;
+	}
 }

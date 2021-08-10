@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
@@ -18,7 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
-import com.knziha.plod.dictionarymodels.mdict_asset;
+import com.knziha.plod.dictionarymodels.bookPresenter_asset;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.Utils;
 
@@ -30,12 +30,12 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import static com.knziha.plod.PlainDict.PDICMainActivity.CosyChair;
-import static com.knziha.plod.PlainDict.PDICMainActivity.CosySofa;
-import static com.knziha.plod.PlainDict.PDICMainActivity.HdnCmfrt;
-import static com.knziha.plod.PlainDict.PDICMainActivity.currMdlTime;
-import static com.knziha.plod.PlainDict.PDICMainActivity.lastLoadedModule;
-import static com.knziha.plod.PlainDict.PDICMainActivity.lazyLoaded;
+import static com.knziha.plod.plaindict.PDICMainActivity.CosyChair;
+import static com.knziha.plod.plaindict.PDICMainActivity.CosySofa;
+import static com.knziha.plod.plaindict.PDICMainActivity.HdnCmfrt;
+import static com.knziha.plod.plaindict.PDICMainActivity.currMdlTime;
+import static com.knziha.plod.plaindict.PDICMainActivity.lastLoadedModule;
+import static com.knziha.plod.plaindict.PDICMainActivity.lazyLoaded;
 
 /** 主程序之影。复用词典实例。 */
 public class MultiShareActivity extends MainActivityUIBase {
@@ -88,7 +88,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		further_loading(savedInstanceState);
 		String path = CMN.AssetTag + "liba.mdx";
 		try {
-			currentDictionary = new mdict_asset(new File(path), this);
+			currentDictionary = new bookPresenter_asset(new File(path), this);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

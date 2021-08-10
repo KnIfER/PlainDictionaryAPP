@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 
-import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.plaindict.CMN;
 
 public class DrawerLayoutmy extends androidx.drawerlayout.widget.DrawerLayout {
     public DragScrollBar scrollbar2guard;

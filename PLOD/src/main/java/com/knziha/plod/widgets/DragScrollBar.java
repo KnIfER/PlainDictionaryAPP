@@ -15,8 +15,8 @@ import android.widget.ScrollView;
 import androidx.core.view.ViewCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.R;
 
 import java.util.Timer;
 

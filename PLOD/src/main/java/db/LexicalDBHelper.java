@@ -7,12 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.File;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 
 /**
  * Created by KnIfER on 2018/8/4.

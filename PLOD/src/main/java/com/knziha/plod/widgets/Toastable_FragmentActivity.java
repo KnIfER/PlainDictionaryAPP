@@ -1,8 +1,8 @@
 package com.knziha.plod.widgets;
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.PlainDict.DictPicker;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.DictPicker;
 
 import androidx.fragment.app.FragmentActivity;
 

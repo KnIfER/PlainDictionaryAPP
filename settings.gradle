@@ -7,8 +7,6 @@ include ':twowaygridview'
 
 include ':PLOD'
 
-include ':pdfium'
-
 
 include ':AxtCore'
 include ':AxtAppCompat'

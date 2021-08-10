@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.data.DataFetcher;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
 import com.knziha.plod.dictionary.mdictRes;
 
 import org.apache.commons.imaging.BufferedImage;
@@ -17,7 +16,7 @@ import org.xiph.speex.ByteArrayRandomOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import static com.knziha.plod.PlainDict.MdictServerMobile.getTifConfig;
+import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
 
 public class MddPicFetcher implements DataFetcher<InputStream> {
 

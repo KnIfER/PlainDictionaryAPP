@@ -33,11 +33,11 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.knziha.plod.PlainDict.AgentApplication;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.OptionProcessor;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.AgentApplication;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.OptionProcessor;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.mdictRes;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 
@@ -49,10 +49,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.knziha.plod.PlainDict.CMN.Visible;
-import static com.knziha.plod.PlainDict.MainActivityUIBase.fix_full_screen_global;
-import static com.knziha.plod.PlainDict.Toastable_Activity.checkMargin;
-import static com.knziha.plod.PlainDict.Toastable_Activity.setStatusBarColor;
+import static com.knziha.plod.plaindict.CMN.Visible;
+import static com.knziha.plod.plaindict.MainActivityUIBase.fix_full_screen_global;
+import static com.knziha.plod.plaindict.Toastable_Activity.checkMargin;
+import static com.knziha.plod.plaindict.Toastable_Activity.setStatusBarColor;
 
 /** Photo View Activity based on Subsampling-Scale-Image-View */
 public class PhotoViewActivity extends AppCompatActivity implements View.OnClickListener,
@@ -457,8 +457,10 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 				if(!bool && !opt.getPhotoViewShowFloatMenu()){
 					TextView tv = (TextView) widget;
 					Spannable span = (Spannable) tv.getText();
-					ClickableSpan[] spans = span.getSpans(span.getSpanEnd(clickableSpan), span.length(), ClickableSpan.class);
-					spans[0].onClick(tv);
+					if (span!=null) {
+						ClickableSpan[] spans = span.getSpans(span.getSpanEnd(clickableSpan), span.length(), ClickableSpan.class);
+						if(spans.length>0)spans[0].onClick(tv);
+					}
 				}
 			break;
 		}

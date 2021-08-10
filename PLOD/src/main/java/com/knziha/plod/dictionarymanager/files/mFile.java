@@ -1,8 +1,6 @@
 package com.knziha.plod.dictionarymanager.files;
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-
-import org.apache.commons.lang3.StringUtils;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 
 import java.io.File;
 import java.io.IOException;

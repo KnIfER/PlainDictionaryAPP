@@ -103,7 +103,7 @@ import java.util.zip.Inflater;
  * <b>Licence</b> : Apache2.0 under this package (com.knziha.plod.dictionary.*); GPL3.0 for everything else including the mdictBuilder. <br/>
  */
 @SuppressWarnings("SpellCheckingInspection")
-public class mdict extends mdBase{
+public class mdict extends mdBase implements UniversalDictionaryInterface{
 	private mdict parent;
 	byte[] textLineBreak;
 	protected Encoding encoding;
@@ -121,6 +121,8 @@ public class mdict extends mdBase{
 	private HashMap<Integer, String> PageNumberMap;
 	protected File fZero;
 	private long fZero_LPT;
+	
+	public static String error_input;
 
 	public boolean getIsDedicatedFilter(byte firstFlag){
 		return false;
@@ -208,6 +210,7 @@ public class mdict extends mdBase{
 	protected boolean handleDebugLines(String line) {
 		//SU.Log("handleDebugLines", line);
 		if(line.length()>0){
+			line = line.replace("\\", File.separator);
 			if(line.startsWith(":")){
 				String[] arr = line.substring(1).split(":"); //竟然长度为3
 				int id;
@@ -316,7 +319,11 @@ public class mdict extends mdBase{
 		else
 			mflag.data = null;
 		//TODO null pointer error
-		return new String(prepareItemByKeyInfo(infoI,blockId,null).keys[(int) (position-infoI.num_entries_accumulator)],_charset);
+		try {
+			return new String(prepareItemByKeyInfo(infoI,blockId,null).keys[(int) (position-infoI.num_entries_accumulator)],_charset);
+		} catch (Exception e) {
+			return "!!!";
+		}
 	}
 
 	@Override
@@ -2517,7 +2524,13 @@ public class mdict extends mdBase{
 	}
 
 	public String processMyText(String input) {
-		String ret = isStripKey?replaceReg.matcher(input).replaceAll(emptyStr):input;
+		String ret;
+		try {
+			ret = isStripKey?replaceReg.matcher(input).replaceAll(emptyStr):input;
+		} catch (StackOverflowError e) {
+			error_input = input;
+			ret = input;
+		}
 		int KeycaseStrategy=getCaseStrategy();
 		return isKeyCaseSensitive?ret:(((KeycaseStrategy>0)?(KeycaseStrategy==2):bGlobalUseClassicalKeycase)?mOldSchoolToLowerCase(ret):ret.toLowerCase());
 	}
@@ -2641,6 +2654,7 @@ public class mdict extends mdBase{
 				int base_full_name_L = sb.length();
 				File f2 = new File(p, sb.append(".0.txt").toString());
 				if(f2.exists()){
+					fZero_LPT = 0;
 					fZero=f2;
 					ftd = new ArrayList<>();
 					handleDebugLines();

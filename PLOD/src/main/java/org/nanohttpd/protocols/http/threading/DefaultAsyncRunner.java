@@ -33,7 +33,7 @@ package org.nanohttpd.protocols.http.threading;
  * #L%
  */
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;

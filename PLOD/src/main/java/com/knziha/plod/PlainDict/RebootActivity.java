@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.app.Activity;
 import android.content.Intent;

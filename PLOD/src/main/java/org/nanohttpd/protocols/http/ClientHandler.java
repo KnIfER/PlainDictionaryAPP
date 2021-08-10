@@ -33,9 +33,6 @@ package org.nanohttpd.protocols.http;
  * #L%
  */
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.dictionary.Utils.SU;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;

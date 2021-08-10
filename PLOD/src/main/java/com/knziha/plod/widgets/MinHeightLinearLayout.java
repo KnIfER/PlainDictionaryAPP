@@ -6,8 +6,6 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
-import com.knziha.plod.PlainDict.CMN;
-
 public class MinHeightLinearLayout extends LinearLayout {
 	public MinHeightLinearLayout(Context context) {
 		super(context);

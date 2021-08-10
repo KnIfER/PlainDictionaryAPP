@@ -33,15 +33,15 @@ import androidx.appcompat.app.GlobalOptions;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.view.FilePickerDialog;
-import com.knziha.plod.PlainDict.AgentApplication;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.PlaceHolder;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.AgentApplication;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PlaceHolder;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
 import com.knziha.plod.dictionarymodels.mdict_prempter;
 import com.knziha.plod.dictionarymodels.mdict_transient;
@@ -186,9 +186,9 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 												if (selector.contains(mI.getPath()))
 													mdTmps[cc++] = mI;
 											}
-											mdict.showDictTweaker(null, getActivity(), mdTmps);
+											BookPresenter.showDictTweaker(null, getActivity(), mdTmps);
 										} else {
-											mdict.showDictTweaker(null, getActivity(), mmTmp);
+											BookPresenter.showDictTweaker(null, getActivity(), mmTmp);
 										}
 										bDictTweakerOnceShowed = true;
 										break;
@@ -499,6 +499,13 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 			} else {
 				vh.ck.setVisibility(View.GONE);
 			}
+			
+			vh.handle.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+				
+				}
+			});
 
 			StringBuilder rgb = new StringBuilder("#");
 			if(rejector.contains(key))
@@ -517,7 +524,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 				mLeftDrawable=mAudioDrawable;
 			}
 			
-			mdict thereYouAre = a.app_mdict_cache.get(mdTmp.getPath());
+			BookPresenter thereYouAre = a.app_mdict_cache.get(mdTmp.getPath());
 			
 			vh.title.setCover(thereYouAre==null?null:thereYouAre.getCover());
 			
@@ -527,6 +534,8 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 					PDICMainAppOptions.getTmpIsCollapsed(mdTmp.getTmpIsFlag())?"<>":null);
 			
 			vh.title.setText(mdTmp.getPath());
+			
+			vh.title.setStarLevel(0);
 			
 			if(GlobalOptions.isDark) {
 				convertView.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
@@ -642,7 +651,7 @@ public class dict_manager_main extends dict_manager_base<mdict_transient>
 		CheckBox ck;
 
 		public ViewHolder(View v) {
-			handle = v.findViewById(R.id.handle);
+			handle = v.findViewById(R.id.drag_handle);
 			title = v.findViewById(R.id.text);
 			ck = v.findViewById(R.id.check1);
 			v.setTag(this);

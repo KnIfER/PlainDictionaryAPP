@@ -10,9 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.dictionarymodels.mdict_transient;
-
 public class DictOpitonContainer extends DialogFragment
 {
 	DictOptions dictOptions = new DictOptions();

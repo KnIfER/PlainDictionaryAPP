@@ -10,10 +10,7 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.Toastable_Activity;
-
-import static com.knziha.plod.PlainDict.MainActivityUIBase.fix_full_screen_global;
+import static com.knziha.plod.plaindict.MainActivityUIBase.fix_full_screen_global;
 
 public class SimpleDialog extends Dialog {
 	public void decorBright() {

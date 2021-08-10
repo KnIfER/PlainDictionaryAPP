@@ -17,7 +17,7 @@
 	<item name="long_clicked" type="id" />
 	<item name="js_no_match" type="id" />
 
-	<item name="exitApp" type="id" />
+	<!--<item name="exitApp" type="id" />
 	<item name="random_entry" type="id" />
 	<item name="prv_dict" type="id" />
 	<item name="nxt_dict" type="id" />
@@ -30,7 +30,8 @@
 	<item name="go_history" type="id" />
 	<item name="night_mode" type="id" />
 	<item name="switch_landscape" type="id" />
-	<item name="popupBackground" type="id" />
+-->
 
+	<item name="popupBackground" type="id" />
 
 </resources>

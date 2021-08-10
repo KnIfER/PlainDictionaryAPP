@@ -8,17 +8,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict_pdf;
-import com.knziha.plod.dictionarymodels.mdict_web;
+import com.knziha.plod.plaindict.R;
+import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.bookPresenter_pdf;
+import com.knziha.plod.dictionarymodels.bookPresenter_web;
 
 import db.MdxDBHelper;
 
@@ -29,7 +28,7 @@ import db.MdxDBHelper;
 public class ArrayAdaptermy extends BaseAdapter{
 	MdxDBHelper con;
 	public Cursor cr;
-	mdict md;
+	BookPresenter md;
 	boolean isWeb;
 	public boolean showDelete;
 	private final SparseArray<String> DataRecord = new SparseArray<>();
@@ -38,7 +37,7 @@ public class ArrayAdaptermy extends BaseAdapter{
 	Context c;
 	public boolean darkMode;
 	public int StorageLevel=2;
-   public ArrayAdaptermy(Context a, int resource,int textViewResourceId, mdict md_,MdxDBHelper con_, int l) {
+   public ArrayAdaptermy(Context a, int resource, int textViewResourceId, BookPresenter md_, MdxDBHelper con_, int l) {
 		//this(a,resource,textViewResourceId,objects);
 		c=a;
 		resourceID=resource;
@@ -46,14 +45,14 @@ public class ArrayAdaptermy extends BaseAdapter{
 		md=md_;
 		con = con_;
 		StorageLevel=l;
-		isWeb = md instanceof mdict_web;
+		isWeb = md instanceof bookPresenter_web;
 		cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
    }
 
-	public void refresh(mdict invoker, MdxDBHelper con_) {
+	public void refresh(BookPresenter invoker, MdxDBHelper con_) {
 		if(invoker!=md || con!=con_ || cr==null) {
 	    	md=invoker;
-	    	isWeb = md instanceof mdict_web;
+	    	isWeb = md instanceof bookPresenter_web;
 	    	con = con_;
 	    	if(cr!=null) cr.close();
 	    	cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
@@ -92,7 +91,7 @@ public class ArrayAdaptermy extends BaseAdapter{
     	String LexicalText = DataRecord.get(position);
     	if(LexicalText==null) {
     		cr.moveToPosition(position);
-    		if(md instanceof mdict_pdf){
+    		if(md instanceof bookPresenter_pdf){
 				LexicalText="第"+cr.getInt(0)+"页";
 			}else if(isWeb){
 				LexicalText=cr.getString(1);

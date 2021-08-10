@@ -27,13 +27,14 @@
 			android:layout_height="wrap_content"
 			android:layout_centerVertical="true"
 			android:gravity="center_vertical" >
-			<EditText
+			<com.knziha.plod.widgets.EditTextmy
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
 				android:paddingRight="32dp"
 				android:singleLine="true"
 				android:textColor="#ffffff"
-				android:imeOptions="actionSearch" />
+				android:imeOptions="actionSearch"
+				/>
 
 			<ImageView
 				android:id="@+id/ivDeleteText"

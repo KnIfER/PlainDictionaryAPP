@@ -19,7 +19,7 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -45,14 +45,19 @@ public class DescriptiveImageView extends ImageView {
 		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.DescriptiveImageView);
 		mText = a.getString(R.styleable.DescriptiveImageView_android_text);
 		offsetY = a.getDimension(R.styleable.DescriptiveImageView_android_layout_y, 0);
+		textPainter = createTextPainter(false);
 		a.recycle();
 	}
 	
-	public static TextPaint createTextPainter() {
-		TextPaint textPainter = new TextPaint();
-		textPainter.setColor(Color.WHITE);
-		textPainter.setTextSize(GlobalOptions.density*12);
-		return textPainter;
+	static TextPaint global_painter;
+	
+	public static TextPaint createTextPainter(boolean upd) {
+		if (global_painter==null||upd) {
+			if (global_painter==null) global_painter = new TextPaint();
+			global_painter.setColor(Color.WHITE);
+			global_painter.setTextSize((GlobalOptions.density==0?2:GlobalOptions.density)*12);
+		}
+		return global_painter;
 	}
 	
 	@Override

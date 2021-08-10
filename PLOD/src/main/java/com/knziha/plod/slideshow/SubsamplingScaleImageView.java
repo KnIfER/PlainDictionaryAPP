@@ -59,7 +59,7 @@ import androidx.core.view.GestureDetectorCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import com.knziha.plod.ArrayList.ArrayListGood;
-import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.slideshow.decoder.CompatDecoderFactory;
 import com.knziha.plod.slideshow.decoder.DecoderFactory;

@@ -1,24 +1,20 @@
 package com.knziha.plod.settings;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.Preference;
 
-import com.knziha.filepicker.settings.FilePickerPreference;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.MultiShareActivity;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MultiShareActivity;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionarymodels.mdict;
-
-import java.io.File;
-import java.util.HashMap;
 
 public class ServerPreference extends SettingsFragment implements Preference.OnPreferenceClickListener {
 	public final static int id=11;
@@ -43,7 +39,6 @@ public class ServerPreference extends SettingsFragment implements Preference.OnP
 		item.getParent().removePreference(item);
 		item = findPreference("black_list");
 		item.getParent().removePreference(item);
-		
 	}
 
 
@@ -73,5 +68,14 @@ public class ServerPreference extends SettingsFragment implements Preference.OnP
 			} break;
 		}
 		return true;
+	}
+	
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View ret = super.onCreateView(inflater, container, savedInstanceState);
+		
+		text1.setText("可以在局域网内访问本机网址（http://ip地址:端口），以下功能处于测试状态请勿使用。");
+		
+		return  ret;
 	}
 }

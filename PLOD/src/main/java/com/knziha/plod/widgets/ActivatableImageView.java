@@ -5,13 +5,11 @@ import android.content.res.TypedArray;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 
 public class ActivatableImageView extends ImageView {
 	private Drawable mActiveDrawable;

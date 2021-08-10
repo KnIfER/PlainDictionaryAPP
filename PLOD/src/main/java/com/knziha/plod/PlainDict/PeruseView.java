@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -55,10 +55,11 @@ import androidx.fragment.app.DialogFragment;
 import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayAdapterView.OnItemClickListener;
 import com.jess.ui.TwoWayGridView;
-import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
+import com.knziha.plod.plaindict.MainActivityUIBase.UniCoverClicker;
+import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
-import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict_txt;
+import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.bookPresenter_txt;
 import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
@@ -80,8 +81,10 @@ import java.util.HashMap;
 import db.MdxDBHelper;
 
 import static android.view.View.FOCUSABLE_AUTO;
-import static com.knziha.plod.PlainDict.MainActivityUIBase.init_clickspan_with_bits_at;
-import static com.knziha.plod.PlainDict.PDICMainActivity.ResizeNavigationIcon;
+import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
+import static com.knziha.plod.plaindict.PDICMainActivity.ResizeNavigationIcon;
+import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
+import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.widgets.Utils.EmptyCursor;
 
 /** 翻阅模式，以词典为单位，搜索词为中心，一一览读。<br><br/> */
@@ -92,9 +95,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	private boolean baked;
 	public ArrayList<View> cyclerBin = new ArrayList<>();
 	public ArrayList<View> recyclerBin = new ArrayList<>();
-	private ArrayList<mdict> md = new ArrayList<>();
+	private ArrayList<BookPresenter> md = new ArrayList<>();
 	public ArrayList<PlaceHolder> ph = new ArrayList<>();
-	mdict currentDictionary;
+	BookPresenter currentDictionary;
 	ViewGroup main_pview_layout;
 	SplitView sp_main;
 	SplitView sp_sub;
@@ -122,7 +125,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public ImageView widget10, widget11, widget13,widget14;
 	int adapter_idx;
 	int old_adapter_idx = -1;
-	private mdict.AppHandler perusehandler;
+	private BookPresenter.AppHandler perusehandler;
 	SimpleDialog mDialog;
 
 	Toolbar PerusePageSearchbar;
@@ -168,8 +171,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	//ViewGroup webholder;
 	ScrollView WHP;
 	SplitView webcontentlist;
-	ViewGroup bottombar2;
-	ImageView[] ContentbarBtns = new ImageView[20];
+	public ViewGroup bottombar2;
+	public ImageView[] ContentbarBtns = new ImageView[20];
 	RLContainerSlider PageSlider;
 	ViewGroup rl;
 	public WebViewmy mWebView;
@@ -282,7 +285,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					if(ret!=-1) {
 						lv1.setSelectionFromTop(ret, (int) (20*density));
 						if(ToR && cvpolicy)
-						if(mdict.processText(currentDictionary.getEntryAt(ret)).equals(mdict.processText(s.toString())))
+						if(BookPresenter.processText(currentDictionary.getEntryAt(ret)).equals(BookPresenter.processText(s.toString())))
 							leftLexicalAdapter.click(ret,false);
 					}
 				}
@@ -849,7 +852,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	        mWebView.setPadding(0, 0, 18, 0);
         	mBar.setDelimiter("< >", mWebView);
     		mWebView.getSettings().setSupportZoom(true);
-			perusehandler = new mdict.AppHandler(a.currentDictionary);
+			perusehandler = new BookPresenter.AppHandler(a.currentDictionary);
 			mWebView.addJavascriptInterface(perusehandler, "app");
 			ic_undo=rl.findViewById(R.id.undo);
 			ic_save=rl.findViewById(R.id.save);
@@ -907,7 +910,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						} catch (NumberFormatException ignored) { }
 
 						ScrollerRecord PageState = mWebView.History.get(th).value;
-						float initialScale = mdict.def_zoom;
+						float initialScale = BookPresenter.def_zoom;
 						if (PageState != null) {
 							mWebView.expectedPos = PageState.y;
 							mWebView.expectedPosX = PageState.x;
@@ -927,7 +930,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			};
 			recess.setOnClickListener(voyager);
 			forward.setOnClickListener(voyager);
-			mdict.setWebLongClickListener(mWebView, a);
+			BookPresenter.setWebLongClickListener(mWebView, a);
 			
         if(ToL||ToR) {
 			bottombar2.setBackgroundColor(bottombar2BaseColor);
@@ -955,16 +958,16 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		String contentkey = "ctnp#"+1;
 		String appproject = opt.getAppContentBarProject(contentkey);
 		if(appproject!=null) {
-			MainActivityUIBase.AppUIProject content_project = a.peruseview_project;
+			AppUIProject content_project = a.peruseview_project;
 			if(content_project==null){
-				content_project = new MainActivityUIBase.AppUIProject(contentkey, MainActivityUIBase.ContentbarBtnIcons, MainActivityUIBase.ContentbarBtnIds, appproject, bottombar2, ContentbarBtns);
+				content_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, bottombar2, ContentbarBtns);
 				content_project.type = 1;
 				a.peruseview_project = content_project;
 			} else {
 				content_project.bottombar = bottombar2;
 				content_project.btns = ContentbarBtns;
 			}
-			a.RebuildBottombarIcons(content_project, a.mConfiguration);
+			RebuildBottombarIcons(a, content_project, a.mConfiguration);
 		}
 
 		if(opt.getBottomNavigationMode1()==1)
@@ -1194,7 +1197,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	//todo optimise
 	private void DetachContentView(MainActivityUIBase a) {
 		((ViewGroup)contentview.getParent()).removeView(contentview);
-		if(!(currentDictionary instanceof mdict_txt)
+		if(!(currentDictionary instanceof bookPresenter_txt)
 				&& PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 				&& (PDICMainAppOptions.getHistoryStrategy8() == 2)){
 			a.insertUpdate_histroy(mWebView.word);
@@ -1235,7 +1238,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		} else {
 			RestoreOldAI();
 		}
-		text = mdict.replaceReg.matcher(text).replaceAll("").toLowerCase();
+		text = BookPresenter.replaceReg.matcher(text).replaceAll("").toLowerCase();
 		baked = false;
 		if(addAll){
 			data.clear();
@@ -1256,13 +1259,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				bakedGroup.add(i);
 				continue;
 			}
-			mdict mdTmp = a.md_get(i);
+			BookPresenter mdTmp = a.md_get(i);
 			if(mdTmp==null)
 				continue;
 			int idx = mdTmp.lookUp(text);
 			//CMN.Log(mdTmp.getEntryAt(idx), idx, text, mdTmp._Dictionary_fName);
 			if (idx >= 0){
-				String toCompare = mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase();
+				String toCompare = BookPresenter.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase();
 				int len = text.length();
 				int len1 = len;
 				int len2 = toCompare.length();
@@ -1332,7 +1335,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         	View ItemView = recyclerBin.get(position);
 			DictTitleHolder holder = (DictTitleHolder) ItemView.getTag();
 			int mdIdx = data.get(position);
-	        mdict mdTmp = md.get(mdIdx);
+	        BookPresenter mdTmp = md.get(mdIdx);
 			Drawable cover=null;
 			String pathname;
 			if(mdTmp!=null) {
@@ -1385,7 +1388,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			//a.showT(cc+"should collapse at: "+PositionToSelect);
 			((ViewGroup) view).addView(vb);
 
-			mdict OldDictionary = currentDictionary;
+			BookPresenter OldDictionary = currentDictionary;
 			adapter_idx = data.get(SelectedV);
 
 			currentDictionary = a.md_get(adapter_idx);
@@ -1862,7 +1865,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			
 			//voyager[SelectedV*3+2]=pos;
 			a.decorateContentviewByKey(favoriteBtn, currentKeyText);
-			if(!(currentDictionary instanceof mdict_txt)
+			if(!(currentDictionary instanceof bookPresenter_txt)
 					&& PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 					&& (!ismachineClick || PDICMainAppOptions.getHistoryStrategy8() == 0)){
 				a.insertUpdate_histroy(currentKeyText);
@@ -1916,7 +1919,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 		HashMap<String, SparseArray<ScrollerRecord>> DumpedVOA = new HashMap<>();
 
-		public void DumpVOA(mdict oldDictionary, mdict currentDictionary) {
+		public void DumpVOA(BookPresenter oldDictionary, BookPresenter currentDictionary) {
 			if(oldDictionary!=null){
 				DumpedVOA.put(oldDictionary.getPath(), avoyager);
 			} else if(currentDictionary!=null){
@@ -2164,7 +2167,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	boolean isJumping = false;
 	public int bottombar2BaseColor=Constants.DefaultMainBG;
     @SuppressLint("JavascriptInterface")
-	void setCurrentDis(mdict invocker, int idx, int...flag) {
+	void setCurrentDis(BookPresenter invocker, int idx, int...flag) {
 		if(flag==null || flag.length==0) {//书签跳转等等
 			mWebView.addHistoryAt(idx);
 		}

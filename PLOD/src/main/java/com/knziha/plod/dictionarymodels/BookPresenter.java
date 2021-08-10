@@ -23,7 +23,6 @@ import android.text.style.RelativeSizeSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -45,19 +44,20 @@ import androidx.core.graphics.ColorUtils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.filepicker.utils.FU;
-import com.knziha.plod.PlainDict.AgentApplication;
-import com.knziha.plod.PlainDict.BasicAdapter;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.MainActivityUIBase.UniCoverClicker;
-import com.knziha.plod.PlainDict.PDICMainActivity;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.PlaceHolder;
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.plaindict.AgentApplication;
+import com.knziha.plod.plaindict.BasicAdapter;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.MainActivityUIBase.UniCoverClicker;
+import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.plod.settings.DictOpitonContainer;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdictRes;
@@ -103,10 +103,10 @@ import db.MdxDBHelper;
  date:2018.07.30
  author:KnIfER
 */
-public class mdict extends com.knziha.plod.dictionary.mdict
-		implements ValueCallback<String>, OnClickListener
-		, mdict_manageable
-		{
+public class BookPresenter
+		implements ValueCallback<String>, OnClickListener {
+	UniversalDictionaryInterface bookImpl;
+	
 	public final static String FileTag = "file://";
 	public final static String baseUrl = "file:///";
 	public final static String  _404 = "<span style='color:#ff0000;'>PlainDict 404 Error:</span> ";
@@ -569,7 +569,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		firstFlag|=val;
 	}
 	public boolean getIsolateImages(){
-		return (firstFlag & 0x2) != 0;
+		//return (firstFlag & 0x2) != 0;
+		return false;
 	}
 	public void setIsolateImages(boolean val){
 		firstFlag&=~0x2;
@@ -639,7 +640,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	protected View.OnLongClickListener savelcl;
 
 	//构造
-	public mdict(@NonNull File fn, MainActivityUIBase _a, int pseudoInit, Object tag) throws IOException {
+	public BookPresenter(@NonNull File fn, MainActivityUIBase _a, int pseudoInit, Object tag) throws IOException {
 		super(fn, pseudoInit, _a==null?null:_a.MainStringBuilder, tag);
 		if(_a!=null){
 			a = _a;
@@ -691,7 +692,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	           	AdvancedNestScrollWebView _mWebView = rl.findViewById(R.id.webviewmy);
 				_mWebView.setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 				a.initWebScrollChanged();//Strategy: use one webscroll listener
-				if(!(this instanceof mdict_pdf))
+				if(!(this instanceof bookPresenter_pdf))
 					_mWebView.setOnScrollChangedListener(a.onWebScrollChanged);
 	            //_mWebView.setPadding(0, 0, 18, 0);
 				if(mWebBridge==null) {
@@ -813,7 +814,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 							int pos = IU.parsint(mWebView.History.get(th).key, -1);
 							PageState = mWebView.History.get(th).value;
-							float initialScale = mdict.def_zoom;
+							float initialScale = BookPresenter.def_zoom;
 							if (PageState != null) {
 								mWebView.expectedPos = PageState.y;
 								mWebView.expectedPosX = PageState.x;
@@ -986,7 +987,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 						con.removePage(_url);
 						if(PageCursor!=null) PageCursor.close();
 						PageCursor = con.getPageCursor();
-						a.notifyDictionaryDatabaseChanged(mdict.this);
+						a.notifyDictionaryDatabaseChanged(BookPresenter.this);
 					}
 					if(pos==1) {
 						renderContentAt(-1, final_mWebView.SelfIdx, final_mWebView.frameAt, final_mWebView, final_mWebView.currentRendring);
@@ -1095,7 +1096,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 															try {
 																try {
 																	SSLContext sslcontext = SSLContext.getInstance("TLS");
-																	sslcontext.init(null, new TrustManager[]{new mdict_web.MyX509TrustManager()}, new java.security.SecureRandom());
+																	sslcontext.init(null, new TrustManager[]{new bookPresenter_web.MyX509TrustManager()}, new java.security.SecureRandom());
 																	HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
 																} catch (Exception ignored) { }
 																urlConnection = (HttpURLConnection) requestURL.openConnection();
@@ -1621,7 +1622,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 					JSONObject vc = JSONObject.parseObject(virtualIndex.getRecordAt(position[0]));
 					Integer AI = vc.getIntValue("I");
 					JS=vc.getString("JS");
-					if(mWebView.getTag(R.id.virtualID)!=AI){
+					//if(mWebView.getTag(R.id.virtualID)!=AI)
+					{
 						htmlCode = getVirtualRecordsAt(position);
 						mWebView.setTag(R.id.virtualID, AI);
 					}
@@ -1638,7 +1640,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
     	//CMN.Log("缩放是", initialScale);
 		if(initialScale!=-1)
-			mWebView.setInitialScale((int) (100*(initialScale/mdict.def_zoom)*opt.dm.density));//opt.dm.density
+			mWebView.setInitialScale((int) (100*(initialScale/ BookPresenter.def_zoom)*opt.dm.density));//opt.dm.density
 		else {
 			//尝试重置页面缩放
 			if(false && Build.VERSION.SDK_INT<=23) {
@@ -1730,7 +1732,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 		if(mWebView==a.popupWebView) rcsp|=1<<5;
 		htmlBuilder.append("rcsp=").append(rcsp).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
-		if(!(this instanceof mdict_web)) {
+		if(!(this instanceof bookPresenter_web)) {
 			htmlBuilder.append("webx=").append(1).append(";");
 		}
 
@@ -1965,7 +1967,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 	
 	@SuppressWarnings("unused")
     public static class AppHandler {
-		mdict mdx;
+		BookPresenter mdx;
 
         @JavascriptInterface
         public void log(String val) {
@@ -1975,7 +1977,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
         float scale;
         DisplayMetrics dm;
 
-        public AppHandler(mdict _mdx) {
+        public AppHandler(BookPresenter _mdx) {
 			mdx=_mdx;
             scale = GlobalOptions.density;
     		dm = mdx.opt.dm;
@@ -2074,10 +2076,10 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 
 		@JavascriptInterface
 		public void parseContent(int processed, int total, String contents) {
-			if(mdx instanceof mdict_pdf && mdx.a instanceof PDICMainActivity){
+			if(mdx instanceof bookPresenter_pdf && mdx.a instanceof PDICMainActivity){
 				CMN.Log("parseContent", contents, mdx._Dictionary_fName);
 				//((PDICMainActivity)mdx.a).parseContent(mdx, contents);
-				mdict_pdf pdx = ((mdict_pdf) mdx);
+				bookPresenter_pdf pdx = ((bookPresenter_pdf) mdx);
 				pdx.pdf_index=contents.split("\n");
 				mdx.a.lv.post(new Runnable() {
 					@Override
@@ -2105,7 +2107,7 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			mdx.a.ReadText(word, this==mdx.a.popuphandler?mdx.a.popupWebView:mdx.mWebView);
 		}
 
-		public void setDict(mdict ccd) {
+		public void setDict(BookPresenter ccd) {
         	if(ccd!=null)
 				mdx=ccd;
 		}
@@ -2606,8 +2608,8 @@ public class mdict extends com.knziha.plod.dictionary.mdict
 			boolean doit=true;
 			for (mdict_manageable mI : md) {
 				mI.checkFlag(context);
-				if(doit && mI instanceof mdict){
-					((mdict)mI).a.invalidAllPagers();
+				if(doit && mI instanceof BookPresenter){
+					((BookPresenter)mI).a.invalidAllPagers();
 					doit=false;
 				}
 			}

@@ -4,12 +4,12 @@ import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.PDICMainActivity;
-import com.knziha.plod.PlainDict.PlaceHolder;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.myCpr;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
@@ -39,7 +39,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 		a.main_progress_bar.setVisibility(View.VISIBLE);
 		verbatimCount=0;
 		if(!isStrict) {
-			for(mdict mdTmp:a.md) {
+			for(BookPresenter mdTmp:a.md) {
 				if(mdTmp!=null)
 					mdTmp.combining_search_list = new ArrayList<>();
 			}
@@ -55,7 +55,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 		CurrentSearchText=params[0];
 		String[] inputArray = CurrentSearchText.split(RegExp_VerbatimDelimiter);
 
-		ArrayList<mdict> md = a.md;
+		ArrayList<BookPresenter> md = a.md;
 
 		for(int i=0; i<inputArray.length; i++) {
 			if("".equals(inputArray[i])) continue;
@@ -70,7 +70,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 				}
 			}
 			for(int j=start; j<end; j++) {
-				mdict mdTmp = md.get(j);
+				BookPresenter mdTmp = md.get(j);
 				if(mdTmp==null){
 					PlaceHolder phI = a.getPlaceHolderAt(j);
 					if(phI!=null) {
@@ -110,7 +110,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 	protected void onPostExecute(resultRecorderCombined rec) {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
-		ArrayList<mdict> md = a.md;
+		ArrayList<BookPresenter> md = a.md;
 		if(!isStrict) {
 			RBTree_additive additive_combining_search_tree_haha = new RBTree_additive();
 			for(int i=0; i<md.size(); i++) {

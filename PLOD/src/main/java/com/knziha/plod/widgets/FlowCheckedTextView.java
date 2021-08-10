@@ -1,23 +1,13 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.CheckedTextView;
-import android.widget.LinearLayout;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.viewpager.widget.ViewPager;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 
 public class FlowCheckedTextView extends CheckedTextView {
 	public final FlowTextView mFlowTextView;

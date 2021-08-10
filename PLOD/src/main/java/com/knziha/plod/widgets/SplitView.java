@@ -2,8 +2,8 @@ package com.knziha.plod.widgets;
 
 import java.util.ArrayList;
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 
 import android.content.Context;
 import android.content.res.TypedArray;

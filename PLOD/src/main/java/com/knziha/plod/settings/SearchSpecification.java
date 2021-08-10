@@ -5,8 +5,8 @@ import android.os.Bundle;
 
 import androidx.preference.Preference;
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 
 public class SearchSpecification extends SettingsFragment implements Preference.OnPreferenceClickListener {
 	public final static int id=7;

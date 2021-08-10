@@ -10,7 +10,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
-import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.plaindict.CMN;
 
 public class FrameCover extends FrameLayout {
     SelectableTextView tv;

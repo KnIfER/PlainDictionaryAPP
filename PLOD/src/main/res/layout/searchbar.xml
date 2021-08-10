@@ -18,7 +18,7 @@
 	            android:gravity="center_vertical" 
 	            >
 
-	            <EditText
+	            <com.knziha.plod.widgets.EditTextmy
 	                android:id="@+id/etSearch"
 	    			android:layout_toLeftOf="@+id/indicator"
 	                android:layout_width="fill_parent"
@@ -27,7 +27,7 @@
 	                android:singleLine="true"
 	                android:textColor="#ffffff"
 	                android:imeOptions="actionSearch" >
-	            </EditText>
+	            </com.knziha.plod.widgets.EditTextmy>
 
 	             <ImageView
 	                android:id="@+id/ivDeleteText"

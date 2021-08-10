@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 class Constants {
 	public final static int DefaultMainBG=0xFF03A9F4;

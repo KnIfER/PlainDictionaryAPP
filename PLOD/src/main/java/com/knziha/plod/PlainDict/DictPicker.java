@@ -1,8 +1,7 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -215,7 +214,7 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 					int tmpPos = a.currentClick_adapter_idx;
 					a.CCD=a.md_get(position);
 					a.CCD_ID=a.currentClick_adapter_idx = position;
-					a.popupWord(a.popupTextView.getText().toString(),-1, -1);
+					a.popupWord(Utils.getTextInView(a.popupTextView),-1, -1);
 					mAdapter.notifyItemChanged(tmpPos);
 					mAdapter.notifyItemChanged(position);
 					if(a instanceof PDICMainActivity){

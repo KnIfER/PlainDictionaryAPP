@@ -15,8 +15,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
-import com.knziha.plod.PlainDict.AgentApplication;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.AgentApplication;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.dict_manager_activity.transferRunnable;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;

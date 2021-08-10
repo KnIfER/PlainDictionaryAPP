@@ -5,12 +5,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.knziha.plod.PlainDict.BasicAdapter;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.PDICMainActivity;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.BasicAdapter;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.widgets.Utils;
 
@@ -23,7 +20,7 @@ import android.view.ViewGroup;
 public class resultRecorderScattered extends resultRecorderDiscrete {
 	private final BooleanSingleton TintResult;
 	private final com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer layer;
-	private List<mdict> md;
+	private List<BookPresenter> md;
 	private int[] firstLookUpTable;
 	private int size=0;
 	private boolean mShouldSaveHistory;
@@ -37,7 +34,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		
 		int resCount=0;
 		for(int i=0;i<md.size();i++){//遍历所有词典
-			mdict mdtmp = md.get(i);
+			BookPresenter mdtmp = md.get(i);
 			if(mdtmp!=null) {
 				ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
 				if (_combining_search_tree != null)
@@ -62,7 +59,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			firstLookUpTable = new int[md.size()];
 
 		int resCount=0;
-		mdict mdtmp = md.get(idx);
+		BookPresenter mdtmp = md.get(idx);
 		if(mdtmp!=null) {
 			ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
 			if (_combining_search_tree != null)
@@ -84,7 +81,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		size=resCount;
 	}
 	
-	public resultRecorderScattered(MainActivityUIBase a, List<mdict> md_, BooleanSingleton _TintResult, com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer _layer){
+	public resultRecorderScattered(MainActivityUIBase a, List<BookPresenter> md_, BooleanSingleton _TintResult, com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer _layer){
 		super(a);
 		TintResult =_TintResult;
 		md=md_;
@@ -128,7 +125,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
 		if(Rgn<0 || Rgn>md.size()-1)
 			return "!!! Error: code 2 Rgn="+Rgn+" size="+md.size();
-		mdict mdtmp = md.get(Rgn);
+		BookPresenter mdtmp = md.get(Rgn);
 		if(mdtmp==null) return "!!! Error: lazy load error failed.";
 		dictIdx=Rgn;
 		if(Rgn!=0)
@@ -173,12 +170,12 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
 		if(Rgn<0 || Rgn>md.size()-1)
 			return;
-		mdict mdtmp = md.get(Rgn);
+		BookPresenter mdtmp = md.get(Rgn);
 		if(mdtmp==null){
 			CMN.Log("!!! Error: lazy load error failed.");
 			return;
 		}
-		mShouldSaveHistory = !(mdtmp instanceof mdict_txt);
+		mShouldSaveHistory = !(mdtmp instanceof bookPresenter_txt);
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-1];
 		int idxCount = 0;

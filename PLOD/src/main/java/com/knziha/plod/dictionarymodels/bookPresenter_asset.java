@@ -1,24 +1,22 @@
 package com.knziha.plod.dictionarymodels;
 
-import android.content.Context;
-
-import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.knziha.plod.PlainDict.CMN.AssetMap;
-import static com.knziha.plod.PlainDict.CMN.AssetTag;
+import static com.knziha.plod.plaindict.CMN.AssetMap;
+import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 /*
  mdict from android asset.
  date:2019.03.11
  author:KnIfER
 */
-public class mdict_asset extends mdict {
+public class bookPresenter_asset extends BookPresenter {
 	//构造
-	public mdict_asset(File fn, MainActivityUIBase a_) throws IOException {
+	public bookPresenter_asset(File fn, MainActivityUIBase a_) throws IOException {
 		super(fn, a_, 0, a_);
 	}
 

@@ -2,14 +2,14 @@ package com.knziha.plod.dictionarymodels;
 
 import android.content.Context;
 
-import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.dictionary.mdictRes;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.knziha.plod.PlainDict.CMN.AssetTag;
+import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 /*
  mdict from android asset.

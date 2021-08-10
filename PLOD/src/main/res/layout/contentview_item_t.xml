@@ -5,7 +5,7 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:orientation="vertical"
 	android:clickable="true"
-	tools:context="com.knziha.plod.PlainDict.MainActivityUIBase">
+	tools:context="com.knziha.plod.plaindict.MainActivityUIBase">
 	<com.knziha.plod.widgets.AdvancedNestScrollLinerView
 		android:id="@+id/lltoolbar"
 		android:layout_width="match_parent"

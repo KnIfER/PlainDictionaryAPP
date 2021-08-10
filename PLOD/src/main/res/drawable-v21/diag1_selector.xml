@@ -16,7 +16,7 @@
 		<!-- Use the shape you want here -->
 		<shape android:shape="rectangle">
 			<!-- Use the solid tag to define the background color you want -->
-			<solid android:color="@@android:color/transparent"/>
+			<solid android:color="@android:color/transparent"/>
 		</shape>
 	</item>
 </ripple>

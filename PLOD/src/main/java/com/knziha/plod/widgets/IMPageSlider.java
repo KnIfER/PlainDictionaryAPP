@@ -6,6 +6,8 @@ import android.os.Message;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 
 
@@ -104,11 +106,15 @@ public class IMPageSlider extends ImageView{
 	public void startdrag(MotionEvent ev) {
 		//CMN.show("startdrag called");
 		if(!dragged) {
+			OrgX = lastX = ev.getRawX();
+			OrgY = lastY = ev.getRawY();
+			ViewGroup svp = (ViewGroup) getParent();
+			MotionEvent evt = MotionEvent.obtain(0, 0, MotionEvent.ACTION_CANCEL,
+					lastX, lastY, 0);
+			svp.dispatchTouchEvent(evt);
 			leftAcc=0;
 			OrgTX = getTranslationX();
 			dragged=true;
-	    	OrgX = lastX = ev.getRawX();
-	    	OrgY = lastY = ev.getRawY();
 			TargetX=0;
 			if(inf!=null) 
 				inf.onPreparePage(this);

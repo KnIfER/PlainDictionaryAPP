@@ -5,10 +5,10 @@ import android.os.Bundle;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
-import com.knziha.plod.PlainDict.Toastable_Activity;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.dictionary.Utils.IU;
 
 public class ViewSpecification extends SettingsFragment implements Preference.OnPreferenceClickListener {

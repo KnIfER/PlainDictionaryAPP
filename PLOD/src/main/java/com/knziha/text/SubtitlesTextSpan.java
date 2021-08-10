@@ -10,7 +10,7 @@ import android.text.style.UpdateAppearance;
 import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
 
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 
 /**
  * Base annotation span class

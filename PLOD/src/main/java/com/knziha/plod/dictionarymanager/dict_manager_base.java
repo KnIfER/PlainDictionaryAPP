@@ -1,6 +1,6 @@
 package com.knziha.plod.dictionarymanager;
 
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
 

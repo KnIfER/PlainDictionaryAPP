@@ -1,6 +1,6 @@
 package com.knziha.plod.widgets;
 
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 
 import android.content.Context;
 import android.content.res.TypedArray;

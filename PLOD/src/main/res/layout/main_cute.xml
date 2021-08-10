@@ -105,23 +105,20 @@
 	        android:orientation="horizontal" >
 
 	        <android.widget.ImageView
-	            android:id="@+id/browser_widget1"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
 	            android:layout_weight="1"
 	            android:background="@drawable/surrtrip1"
-	            android:src="@drawable/songlist" />
+	            android:src="@drawable/book_list" />
 
 	        <android.widget.ImageView
-	            android:id="@+id/browser_widget2"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
 	            android:layout_weight="1"
 	            android:background="@drawable/surrtrip1"
-	            android:src="@drawable/bundle" />
+	            android:src="@drawable/book_bundle" />
 
 	        <android.widget.ImageView
-	            android:id="@+id/browser_widget3"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
 	            android:layout_weight="1"
@@ -129,7 +126,6 @@
 	            android:src="@drawable/fuzzy_search" />
 
 	        <android.widget.ImageView
-	            android:id="@+id/browser_widget4"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
 	            android:layout_weight="1"
@@ -137,7 +133,6 @@
 	            android:src="@drawable/full_search" />
 
 	        <android.widget.ImageView
-	            android:id="@+id/browser_widget5"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
 	            android:layout_weight="1"
@@ -145,7 +140,6 @@
 	            android:src="@drawable/favoriteg" />
 
 	        <android.widget.ImageView
-	            android:id="@+id/browser_widget6"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
 	            android:layout_weight="1"

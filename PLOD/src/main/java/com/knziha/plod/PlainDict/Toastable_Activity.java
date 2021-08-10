@@ -1,11 +1,10 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Locale;
 
 import android.Manifest;
@@ -26,16 +25,13 @@ import android.os.Bundle;
 import android.os.Environment;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.graphics.drawable.DrawerArrowDrawable;
 import androidx.appcompat.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -46,12 +42,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.SimpleTextNotifier;
-import com.knziha.plod.widgets.Utils;
-import com.sun.tools.internal.xjc.reader.gbind.ElementSets;
 
-import org.apache.commons.imaging.formats.tiff.photometricinterpreters.PhotometricInterpreterBiLevel;
 import org.apache.commons.lang3.StringUtils;
 
 public class Toastable_Activity extends AppCompatActivity {
@@ -99,7 +91,7 @@ public class Toastable_Activity extends AppCompatActivity {
     
 	public Dialog d;
 	public View dv;
-	Configuration mConfiguration;
+	public Configuration mConfiguration;
 	boolean isDarkStamp;
 
 	boolean animationSnackOut;
@@ -113,7 +105,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	int NextSnackLength;
 	protected ViewGroup DefaultTSView;
 	long exitTime = 0;
-	protected Resources mResource;
+	public Resources mResource;
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
@@ -16,14 +15,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 
-import com.bumptech.glide.util.Util;
-import com.google.android.material.animation.Positioning;
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.settings.FilePickerOptions;
 import com.knziha.filepicker.utils.CMNF;
+import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
 import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.XYTouchRecorder;
@@ -193,7 +191,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 				.apply();
 	}
 	
-	public void putAppProject(MainActivityUIBase.AppUIProject projectContext) {
+	public void putAppProject(AppUIProject projectContext) {
 		defaultReader.edit().putString(projectContext.key, projectContext.currentValue).apply();
 	}
 	
@@ -2031,7 +2029,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 
 	public static boolean getEnableResumeDebug() {
-		return (FourthFlag & 0x4000000l) == 0x4000000l;
+		return true;
+		//return (FourthFlag & 0x4000000l) == 0x4000000l;
 	}
 	public static boolean setEnableResumeDebug(boolean val) {
 		updateQFAt(0x4000000l,val);
@@ -2209,7 +2208,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Multiline(flagPos=58) public boolean getDelayContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	@Multiline(flagPos=59, shift=1) public boolean getAnimateContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=59, shift=1) public static void setAnimateContents(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	@Multiline(flagPos=61, shift=1) public boolean getLeaveContentBlank(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=61, shift=1) public static void setLeaveContentBlank(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
 	@Multiline(flagPos=60, shift=1) public boolean getDimScrollbarForPrvNxt(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
@@ -2239,10 +2240,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return FifthFlag;
 	}
 	
-	@Multiline(flagPos=0, max=3, flagSize=5, shift=1) public static int getSendToAppTarget(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=0, max=3, flagSize=5, shift=1) public static void setSendToAppTarget(int val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=0, max=3, flagSize=5, shift=1) public static int getSendToAppTarget(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=0, max=3, flagSize=5, shift=1) public static void setSendToAppTarget(int val){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 	
 	public int getSendToShareTarget(){ return IU.parsint(defaultReader.getString("share_to", null), 1); }
+	
+	
+	@Multiline(flagPos=10, shift=1) public static boolean getAdjustScnShown(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=10, shift=1) public boolean toggleAdjustScnShown() { FifthFlag=FifthFlag; throw new IllegalArgumentException(); }
 	
 	
 	//EF
@@ -2251,7 +2256,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	///////
 	///////
-	public static void setTmpIsFlag(mdict mdTmp, int val) {
+	public static void setTmpIsFlag(BookPresenter mdTmp, int val) {
 		mdTmp.tmpIsFlag=val;
 	}
 	public static void setTmpIsFlag(mdict_manageable mmTmp, int val) {
@@ -2260,7 +2265,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public static boolean getTmpIsFiler(int tmpIsFlag) {
 		return (tmpIsFlag&0x1)!=0;
 	}
-	public static boolean setTmpIsFiler(mdict mdTmp, PlaceHolder placeHolder, boolean val) {
+	public static boolean setTmpIsFiler(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
 		if(mdTmp!=null){
 			mdTmp.tmpIsFlag &= (~0x1);
 			if(val) mdTmp.tmpIsFlag |= 0x1;
@@ -2283,7 +2288,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public static boolean getTmpIsClicker(int tmpIsFlag) {
 		return (tmpIsFlag&0x2)!=0;
 	}
-	public static boolean setTmpIsClicker(mdict mdTmp, PlaceHolder placeHolder, boolean val) {
+	public static boolean setTmpIsClicker(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
 		if(mdTmp!=null){
 			mdTmp.tmpIsFlag &= (~0x2);
 			if(val) mdTmp.tmpIsFlag |= 0x2;
@@ -2306,7 +2311,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public static boolean getTmpIsAudior(int tmpIsFlag) {
 		return (tmpIsFlag&0x4)!=0;
 	}
-	public static boolean setTmpIsAudior(mdict mdTmp, PlaceHolder placeHolder, boolean val) {
+	public static boolean setTmpIsAudior(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
 		if(mdTmp!=null){
 			mdTmp.tmpIsFlag &= (~0x4);
 			if(val) mdTmp.tmpIsFlag |= 0x4;
@@ -2329,7 +2334,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public static boolean getTmpIsHidden(int tmpIsFlag) {
 		return (tmpIsFlag&0x8)!=0;
 	}
-	public static boolean setTmpIsHidden(mdict mdTmp, PlaceHolder placeHolder, boolean val) {
+	public static boolean setTmpIsHidden(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
 		if(mdTmp!=null){
 			mdTmp.tmpIsFlag &= (~0x8);
 			if(val) mdTmp.tmpIsFlag |= 0x8;

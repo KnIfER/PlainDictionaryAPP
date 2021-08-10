@@ -12,9 +12,12 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 49
-        versionName "3.8"
+        versionCode 53
+        versionName "4.5.3"
         vectorDrawables.generatedDensities = ['hdpi']
+    }
+    buildFeatures {
+        dataBinding = true
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -22,7 +25,7 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
         }
     }
@@ -87,7 +90,6 @@ dependencies {
     api ('androidx.palette:palette:1.0.0'){
         exclude module:"core"
     }
-    api project(':pdfium')
     implementation 'org.jetbrains:annotations:15.0'
 
 

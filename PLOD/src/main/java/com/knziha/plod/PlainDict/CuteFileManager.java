@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -142,18 +142,18 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 		dialog.title.setText("高维宇宙异度空间CeShi");
 		viewList.add(dialog);
 
-		findViewById(R.id.browser_widget6).setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				FilePickerDialog dialog = new FilePickerDialog(CuteFileManager.this, properties);
-				dialog.bDontAttach=true;
-				dialog.init();
-				dialog.getView().findViewById(R.id.footer).setVisibility(View.GONE);
-				dialog.title.setText("高维宇宙异度空间CeShi"+viewList.size());
-				viewList.add(dialog);
-				PagerAdapter.notifyDataSetChanged();
-				viewPager.setCurrentItem(viewList.size()-1);
-			}});
+		//findViewById(R.id.browser_widget6).setOnClickListener(new OnClickListener() {
+		//	@Override
+		//	public void onClick(View v) {
+		//		FilePickerDialog dialog = new FilePickerDialog(CuteFileManager.this, properties);
+		//		dialog.bDontAttach=true;
+		//		dialog.init();
+		//		dialog.getView().findViewById(R.id.footer).setVisibility(View.GONE);
+		//		dialog.title.setText("高维宇宙异度空间CeShi"+viewList.size());
+		//		viewList.add(dialog);
+		//		PagerAdapter.notifyDataSetChanged();
+		//		viewPager.setCurrentItem(viewList.size()-1);
+		//	}});
 
 
 

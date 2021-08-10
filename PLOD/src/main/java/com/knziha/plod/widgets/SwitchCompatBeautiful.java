@@ -15,7 +15,7 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 
 import com.knziha.filepicker.utils.CMNF;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 
 public class SwitchCompatBeautiful extends SwitchCompat {
     public static boolean  bForbidRquestLayout;

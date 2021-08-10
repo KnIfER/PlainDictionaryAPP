@@ -2,7 +2,7 @@ package com.knziha.plod.widgets;
 
 import android.view.View;
 
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 
 public class MultiplexLongClicker implements View.OnLongClickListener {
 	@Override

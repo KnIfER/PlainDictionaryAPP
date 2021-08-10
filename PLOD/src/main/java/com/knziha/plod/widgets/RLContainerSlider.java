@@ -7,9 +7,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
-import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 
 
 public class RLContainerSlider extends FrameLayout{
@@ -55,7 +55,7 @@ public class RLContainerSlider extends FrameLayout{
 				PhotoBrowsingContext ibc = WebContext.IBC;
 				float targetZoom = ibc.doubleClickZoomRatio;
 				//CMN.Log(targetZoom, WebContext.webScale/mdict.def_zoom);
-				if(WebContext.webScale/mdict.def_zoom<targetZoom){
+				if(WebContext.webScale/ BookPresenter.def_zoom<targetZoom){
 					if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
 						WebContext.zoomBy(0.02f);
 						WebContext.zoomBy(targetZoom);
@@ -239,7 +239,7 @@ public class RLContainerSlider extends FrameLayout{
 		bZoomOut = bZoomOutCompletely = true;
 		
 		if(WebContext!=null) {
-			bZoomOut = WebContext.webScale <= mdict.def_zoom;
+			bZoomOut = WebContext.webScale <= BookPresenter.def_zoom;
 			
 			if(WebContext.AlwaysCheckRange==0) {
 				WebContext.CheckAlwaysCheckRange();

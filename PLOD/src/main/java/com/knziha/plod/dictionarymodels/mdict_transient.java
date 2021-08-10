@@ -3,23 +3,19 @@ package com.knziha.plod.dictionarymodels;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.util.SparseArray;
 
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.filepicker.utils.FU;
-import com.knziha.plod.PlainDict.AgentApplication;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.PlaceHolder;
-import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.plaindict.AgentApplication;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.widgets.WebViewmy;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -47,7 +43,7 @@ public class mdict_transient implements mdict_manageable{
 	public int lvPos,lvClickPos,lvPosOff;
 	private float webScale;
 	public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
-	final mdict_nonexist MNINSTANCE;
+	final bookPresenter_nonexist MNINSTANCE;
 	public boolean isDirty;
 	private boolean changeMap=true;
 	
@@ -64,16 +60,16 @@ public class mdict_transient implements mdict_manageable{
 	}
 
 	//构造
-	public mdict_transient(Activity a, String fn, PDICMainAppOptions opt_, mdict_nonexist mninstance) {
+	public mdict_transient(Activity a, String fn, PDICMainAppOptions opt_, bookPresenter_nonexist mninstance) {
 		this(a, fn, opt_, 0, mninstance);
 	}
 
-	public mdict_transient(Activity a, String fn, PDICMainAppOptions opt_, int isF, mdict_nonexist mninstance) {
+	public mdict_transient(Activity a, String fn, PDICMainAppOptions opt_, int isF, bookPresenter_nonexist mninstance) {
 		this(a, new PlaceHolder(fn), opt_, mninstance);
 		mPhI.tmpIsFlag=TIFStamp=isF;
 	}
 
-	public mdict_transient(Activity a, PlaceHolder phI, PDICMainAppOptions opt_, mdict_nonexist mninstance) {
+	public mdict_transient(Activity a, PlaceHolder phI, PDICMainAppOptions opt_, bookPresenter_nonexist mninstance) {
 		opt=opt_;
 		mPhI = phI;
 		MNINSTANCE = mninstance;

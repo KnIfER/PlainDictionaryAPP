@@ -296,6 +296,91 @@
 		<item name="android:textColorSecondary">#fff</item>
 		<item name="colorPrimary">#fff</item>
 	</style>
+
+
+	<style name="Animation">
+	</style>
+
+	<style name="MenuIconIVStyle" parent="AppTheme">
+		<item name="android:layout_width">0dp</item>
+		<item name="android:layout_height">match_parent</item>
+		<item name="android:layout_weight">1</item>
+		<item name="android:paddingBottom">22dp</item>
+		<item name="android:paddingTop">1dp</item>
+		<item name="android:paddingLeft">18dp</item>
+		<item name="android:paddingRight">18dp</item>
+		<item name="android:background">?attr/listChoiceBackgroundIndicator</item>
+	</style>
+
+<!--	<item name="android:paddingBottom">30dp</item>-->
+<!--	<item name="android:paddingTop">2dp</item>-->
+
+	<style name="MenuIconIVStyle_PDFX" parent="MenuIconIVStyle">
+		<item name="android:paddingBottom">22dp</item>
+		<item name="android:paddingTop">1dp</item>
+		<item name="android:paddingLeft">12dp</item>
+		<item name="android:paddingRight">12dp</item>
+	</style>
+
+
+	<style name="MenuTextStyleBase" parent="AppTheme">
+		<item name="android:layout_width">match_parent</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:textColor">#000</item>
+		<item name="android:background">?attr/listChoiceBackgroundIndicator</item>
+	</style>
+
+
+	<style name="quick_settings_menu">
+		<item name="android:layout_width">0dp</item>
+		<item name="android:layout_height">match_parent</item>
+		<item name="android:layout_weight">1</item>
+		<item name="android:gravity">center_vertical</item>
+		<item name="android:textAppearance">@style/Base.TextAppearance.AppCompat.Medium</item>
+		<item name="android:textColor">#2E2E2E</item>
+		<item name="android:paddingTop">5dp</item>
+		<item name="android:paddingBottom">5dp</item>
+		<item name="android:paddingLeft">48dp</item>
+		<item name="android:layout_marginLeft">-36dp</item>
+		<item name="android:background">?listChoiceBackgroundIndicator</item>
+	</style>
+
+	<style name="quick_settings_sepver">
+		<item name="android:layout_width">1dp</item>
+		<item name="android:layout_height">match_parent</item>
+		<item name="android:background">#DFDFDF</item>
+		<item name="android:layout_marginTop">4dp</item>
+		<item name="android:layout_marginBottom">4dp</item>
+	</style>
+
+	<style name="quick_settings_sw">
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:thumb">@drawable/switch_ios_thumb</item>
+		<item name="android:paddingTop">5dp</item>
+		<item name="android:paddingBottom">5dp</item>
+		<item name="android:paddingStart">15dp</item>
+		<item name="android:paddingEnd">10dp</item>
+		<item name="android:layout_marginStart">5dp</item>
+		<item name="android:layout_marginEnd">6dp</item>
+		<item name="android:layout_gravity">center_vertical</item>
+	</style>
+
+	<style name="quick_settings_arrow">
+		<item name="android:layout_width">28dp</item>
+		<item name="android:layout_height">28dp</item>
+		<item name="android:layout_gravity">center_vertical</item>
+		<item name="android:layout_marginLeft">8dp</item>
+		<item name="android:enabled">false</item>
+	</style>
+
+	<style name="quick_settings_sephor">
+		<item name="android:layout_width">match_parent</item>
+		<item name="android:layout_height">1dp</item>
+		<item name="android:background">#BFBFBF</item>
+		<item name="android:layout_marginLeft">9dp</item>
+		<item name="android:layout_marginRight">9dp</item>
+	</style>
 </resources>
 
 

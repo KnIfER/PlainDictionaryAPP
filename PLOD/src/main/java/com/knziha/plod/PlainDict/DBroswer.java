@@ -1,11 +1,10 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -48,7 +47,7 @@ import com.knziha.ankislicer.customviews.wahahaTextView;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyIntPair;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.Utils;
@@ -1113,7 +1112,7 @@ public class DBroswer extends Fragment implements
 					if(mCards.size()<1) break;
 					if(cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0) {
 						if(lv.getChildAt(0)!=null) {
-							String key = ((TextView) lv.getChildAt(0).findViewById(android.R.id.text1)).getText().toString();
+							String key = String.valueOf(((TextView) lv.getChildAt(0).findViewById(android.R.id.text1)).getText());
 							if(mLexiDB.updateBookMark(key)!=-1)
 								show(R.string.bookmarkupdated, key);
 						}
@@ -1300,7 +1299,7 @@ public class DBroswer extends Fragment implements
 			if(view!=null) {
 				adelta=0;
 				//TODO retrieve from sibling views
-				currentDisplaying = ((TextView) view.findViewById(android.R.id.text1)).getText().toString();
+				currentDisplaying = String.valueOf(((TextView) view.findViewById(android.R.id.text1)).getText());
 			}
 			else {
 				String text = null;long time = 0;
@@ -1342,16 +1341,16 @@ public class DBroswer extends Fragment implements
 						additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
 						ArrayList<additiveMyCpr1> data = new ArrayList<>();
 						data.add(datalet);
-						String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
+						String currentDisplaying__ = BookPresenter.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
 						a.bShowLoadErr=false;
 						long st = CMN.rt();
 						for(int dIdx=0;dIdx<a.md.size();dIdx++) {//联合搜索
-							mdict mdTmp = a.md_get(dIdx);
+							BookPresenter mdTmp = a.md_get(dIdx);
 							if(mdTmp!=null) {
 								int idx = mdTmp.lookUp(currentDisplaying__);
 								if (idx >= 0)
 									while (idx < mdTmp.getNumberEntries()) {
-										if (mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+										if (BookPresenter.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
 											records.add(dIdx);
 											records.add(idx);
 										} else
@@ -1429,11 +1428,11 @@ public class DBroswer extends Fragment implements
 						a.TransientIntoSingleExplanation();
 
 						String key = currentDisplaying;
-						int offset = mdict.offsetByTailing(key);
+						int offset = BookPresenter.offsetByTailing(key);
 						int idx;
 						if(offset>0)
 							key = key.substring(0,key.length()-offset);
-						mdict currentDictionary = a.currentDictionary;
+						BookPresenter currentDictionary = a.currentDictionary;
 						idx = currentDictionary.lookUp(key,true);
 						int adapter_idx=a.adapter_idx;
 						if(idx<0) {
@@ -1459,7 +1458,7 @@ public class DBroswer extends Fragment implements
 									View s_rl = webviewHolder.getChildAt(0);
 									int tag= IU.parsint(s_rl.getTag(), -1);
 									if(tag!=-1) {
-										mdict lastDictionary = a.md_get(tag);
+										BookPresenter lastDictionary = a.md_get(tag);
 										if(lastDictionary!=null) {
 											WebViewmy current_webview = lastDictionary.mWebView;
 											if (adelta != 0 && current_webview != null && !current_webview.isloading) {
@@ -1469,7 +1468,7 @@ public class DBroswer extends Fragment implements
 
 												pagerec = avoyager.get(lastClickedPosBeforePageTurn);
 												if (pagerec == null) {
-													if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || current_webview.webScale != mdict.def_zoom) {
+													if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || current_webview.webScale != BookPresenter.def_zoom) {
 														pagerec = new ScrollerRecord();
 														avoyager.put(lastClickedPosBeforePageTurn, pagerec);
 													} else
@@ -1506,7 +1505,7 @@ public class DBroswer extends Fragment implements
 								if(currentDictionary.getEntryAt(idx+offset).equals(key))
 									idx+=offset;
 							int tmpIdx=idx;
-							while(tmpIdx+1<currentDictionary.getNumberEntries() && mdict.processText(currentDictionary.getEntryAt(tmpIdx)).equals(mdict.processText(currentDictionary.getEntryAt(tmpIdx+1)))) {
+							while(tmpIdx+1<currentDictionary.getNumberEntries() && BookPresenter.processText(currentDictionary.getEntryAt(tmpIdx)).equals(BookPresenter.processText(currentDictionary.getEntryAt(tmpIdx+1)))) {
 								tmpIdx++;
 								if(currentDictionary.getEntryAt(tmpIdx).trim().equals(key.trim())) {
 									idx=tmpIdx;
@@ -1547,7 +1546,7 @@ public class DBroswer extends Fragment implements
 					additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
 					ArrayList<additiveMyCpr1> data = new ArrayList<>();
 					data.add(datalet);
-					String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
+					String currentDisplaying__ = BookPresenter.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
 					boolean reorded=false;
 					if(a.PeruseView!=null && a.PeruseView.peruseF.getChildCount()>0) {
 						a.DetachDBrowser();
@@ -1566,12 +1565,12 @@ public class DBroswer extends Fragment implements
 								dIdx-=1;
 							}
 						}
-						mdict mdTmp = a.md_get(dIdx);
+						BookPresenter mdTmp = a.md_get(dIdx);
 						if(mdTmp!=null) {
 							int idx = mdTmp.lookUp(currentDisplaying__);
 							if (idx >= 0)
 								while (idx < mdTmp.getNumberEntries()) {
-									if (mdict.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+									if (BookPresenter.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
 										records.add(dIdx);
 									} else
 										break;
@@ -1592,7 +1591,7 @@ public class DBroswer extends Fragment implements
 							a.getUcc().setInvoker(null, null, null, currentDisplaying);
 						}
 					} else {
-						a.lastEtString=a.etSearch.getText().toString();
+						a.lastEtString=String.valueOf(a.etSearch.getText());
 						target = a.etSearch;
 						a.etSearch_ToToolbarMode(2);
 					}

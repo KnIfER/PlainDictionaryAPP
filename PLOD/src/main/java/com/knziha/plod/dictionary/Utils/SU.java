@@ -17,7 +17,7 @@
 
 package com.knziha.plod.dictionary.Utils;
 
-import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.plaindict.CMN;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -62,16 +62,16 @@ public class  SU{
 
 
 	public static void Log(Object... o) {
-		String msg="fatal_log_mdict : ";
+		StringBuilder msg= new StringBuilder("fatal_log_mdict : ");
 		if(o!=null)
-			for(int i=0;i<o.length;i++) {
-				if(o[i] instanceof Exception) {
+			for (Object value : o) {
+				if (value instanceof Exception) {
 					ByteArrayOutputStream s = new ByteArrayOutputStream();
 					PrintStream p = new PrintStream(s);
-					((Exception)o[i]).printStackTrace(p);
-					msg+=s.toString();
+					((Exception) value).printStackTrace(p);
+					msg.append(s.toString());
 				}
-				msg+=o[i]+" ";
+				msg.append(value).append(" ");
 			}
 		System.out.println(msg);
 	}
@@ -103,6 +103,7 @@ public class  SU{
 		if(len>0) {
 			int st = 0;
 			while ((st < len) && (cs.charAt(st) <= ' ')) {
+				st++;
 				len--;
 			}
 			if(len>0) {

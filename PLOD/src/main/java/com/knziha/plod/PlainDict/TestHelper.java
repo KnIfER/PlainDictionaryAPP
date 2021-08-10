@@ -1,6 +1,4 @@
-package com.knziha.plod.PlainDict;
-
-import java.lang.reflect.Method;
+package com.knziha.plod.plaindict;
 
 public class TestHelper {
 	static{
@@ -14,9 +12,9 @@ public class TestHelper {
 //			Method f=ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
 //			f.setAccessible(true);
 //			CMN.Log("IC_", f.invoke(loader,
-//					"com.knziha.plod.PlainDict.MainActivityUIBase$SaveAndRestorePagePosDelegate"));
+//					"com.knziha.plod.plaindict.MainActivityUIBase$SaveAndRestorePagePosDelegate"));
 //
-//			CMN.Log("IC_2", f.invoke(loader, "com.knziha.plod.PlainDict.MainActivityUIBase$ICTest"));
+//			CMN.Log("IC_2", f.invoke(loader, "com.knziha.plod.plaindict.MainActivityUIBase$ICTest"));
 		
 		
 		} catch (Exception e) {

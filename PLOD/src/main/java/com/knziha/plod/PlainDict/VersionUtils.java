@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.os.Build;
 
@@ -8,6 +8,8 @@ public class VersionUtils {
 		if(true||PDICMainAppOptions.checkVersionBefore_4_0()) {
 			PDICMainAppOptions.setSimpleMode(false);
 			PDICMainAppOptions.uncheckVersionBefore_4_0(false);
+			PDICMainAppOptions.setLeaveContentBlank(Build.VERSION.SDK_INT>Build.VERSION_CODES.KITKAT);
+			PDICMainAppOptions.setAnimateContents(Build.VERSION.SDK_INT>Build.VERSION_CODES.KITKAT);
 //			PDICMainAppOptions.setShareTarget(0);
 //			PDICMainAppOptions.setPasteTarget(1);
 //			PDICMainAppOptions.setNotifyComboRes(false);

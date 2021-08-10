@@ -50,21 +50,21 @@ import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.utils.FU;
 import com.knziha.filepicker.view.FilePickerDialog;
-import com.knziha.plod.PlainDict.AgentApplication;
-import com.knziha.plod.PlainDict.BaseHandler;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.PlaceHolder;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.AgentApplication;
+import com.knziha.plod.plaindict.BaseHandler;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PlaceHolder;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
-import com.knziha.plod.dictionarymodels.mdict_nonexist;
+import com.knziha.plod.dictionarymodels.bookPresenter_nonexist;
 import com.knziha.plod.dictionarymodels.mdict_prempter;
 import com.knziha.plod.dictionarymodels.mdict_transient;
 import com.knziha.plod.widgets.SimpleTextNotifier;
@@ -92,7 +92,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	private PopupWindow mPopup;
 	public ArrayList<PlaceHolder> slots;
 	private ArrayList<Fragment> fragments;
-	public HashMap<String, mdict> app_mdict_cache;
+	public HashMap<String, BookPresenter> app_mdict_cache;
 	public HashMap<CharSequence,byte[]> UIProjects;
 	public HashSet<CharSequence> dirtyMap;
 	
@@ -104,7 +104,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	
 	public File SecordFile;
 	
-	mdict_nonexist mninstance = new mdict_nonexist(new File("/N/A"));
+	bookPresenter_nonexist mninstance = new bookPresenter_nonexist(new File("/N/A"));
 	private boolean deleting;
 	
 	public dict_manager_activity() throws IOException { }
@@ -207,12 +207,12 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		if(f3.isDirty) {
 			try {
 				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(DecordFile), app.get4kCharBuff(), 4096);
-				String parent = opt.lastMdlibPath.getPath();
+				String parent = opt.lastMdlibPath.getPath()+File.separator;
 				for(mFile mdTmp:f3.data.getList()) {
 					if(mdTmp.getClass()==mAssetFile.class) continue;
 					if(mdTmp.isDirectory()) continue;
 					String name = mdTmp.getPath();
-					if(name.startsWith(parent) && name.length()>parent.length())
+					if(name.startsWith(parent))
 						name = name.substring(parent.length());
 					output.write(name);
 					output.write("\n");
@@ -1661,7 +1661,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	}
 	
 	public void RebasePath(File oldPath, String OldFName, File newPath, String MoveOrRename, String oldName){
-    	mdict mdTmp = app_mdict_cache.remove(oldPath.getPath());
+    	BookPresenter mdTmp = app_mdict_cache.remove(oldPath.getPath());
 		File p = oldPath.getParentFile();
 		File p2 = newPath.getParentFile();
 		boolean move = MoveOrRename==null;

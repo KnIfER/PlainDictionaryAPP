@@ -1,13 +1,10 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
-
-import com.knziha.plod.PlainDict.CMN;
 
 public class FtagImageView extends ImageView {
 	protected Integer mTag = 0;

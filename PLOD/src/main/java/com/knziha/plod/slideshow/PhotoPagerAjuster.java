@@ -16,13 +16,13 @@ import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.knziha.plod.PlainDict.OptionProcessor;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.OptionProcessor;
+import com.knziha.plod.plaindict.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static com.knziha.plod.PlainDict.MainActivityUIBase.init_clickspan_with_bits_at;
+import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
 
 public class PhotoPagerAjuster extends PagerAdapter {
 	final OptionProcessor opr;

@@ -5,10 +5,10 @@ import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 
-import com.knziha.plod.PlainDict.BasicAdapter;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.BasicAdapter;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
 
@@ -21,9 +21,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	private View scrollTarget;
 
 	public List<additiveMyCpr1> list(){return data;}
-	private List<mdict> md;
+	private List<BookPresenter> md;
 	
-	public resultRecorderCombined(MainActivityUIBase a, List<additiveMyCpr1> data_, List<mdict> md_){
+	public resultRecorderCombined(MainActivityUIBase a, List<additiveMyCpr1> data_, List<BookPresenter> md_){
 		super(a);
 		data=data_;
 		md=md_;
@@ -47,11 +47,11 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	}
 
 	@Override
-	public boolean checkAllWebs(ArrayList<mdict> md) {
+	public boolean checkAllWebs(ArrayList<BookPresenter> md) {
 		ArrayList<Integer> data = getRecordAt(0);
 		allWebs=true;
 		for(int i=0;i<data.size();i+=2) {
-			if(!(md.get(data.get(i)) instanceof mdict_web)){
+			if(!(md.get(data.get(i)) instanceof bookPresenter_web)){
 				allWebs=false;
 				break;
 			}
@@ -113,7 +113,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		
 		valueCount=0;//adaptively remove views
 		for(int i=0;i<md.size();i++) {
-			mdict mdtmp = md.get(i);
+			BookPresenter mdtmp = md.get(i);
 			if(mdtmp!=null) {
 				ViewGroup sV = mdtmp.rl;
 				if (sV != null) {
@@ -193,7 +193,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			if(toFind<0 || toFind>=md.size()) {
 				continue;
 			}
-			mdict mdtmp = md.get(toFind);
+			BookPresenter mdtmp = md.get(toFind);
 			if(mdtmp==null) continue;
 			
 			int[] d = new int[valsTmp.size()];
@@ -221,8 +221,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 			mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
 			mWebView.fromCombined=1;
-			if(mdtmp instanceof mdict_web){
-				mdict_web webx = (mdict_web)mdtmp;
+			if(mdtmp instanceof bookPresenter_web){
+				bookPresenter_web webx = (bookPresenter_web)mdtmp;
 				webx.searchKey = result.key;
 			}
 

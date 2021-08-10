@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:tools="http://schemas.android.com/tools"
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.knziha.plod.PlainDict">
+	package="com.knziha.plod.plaindict">
 
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
@@ -20,7 +20,7 @@
 	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
 	<application
-		android:name="com.knziha.plod.PlainDict.AgentApplication"
+		android:name=".AgentApplication"
 		android:allowBackup="true"
 		android:icon="@mipmap/ic_launcher"
 		android:roundIcon="@mipmap/icon_launcher_round"
@@ -39,7 +39,7 @@
 		<meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_H" android:value="598.0dip" />
 		<meta-data android:name="com.sec.android.multiwindow.MINIMUM_SIZE_W" android:value="632.0dip" />
 		<meta-data android:name="com.sec.android.multiwindow.MINIMUM_SIZE_H" android:value="598.0dip" />
-		<activity android:name="com.knziha.plod.PlainDict.PDICMainActivity"
+		<activity android:name=".PDICMainActivity"
 			android:theme="@style/AppTheme"
 			android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|uiMode|locale|layoutDirection"
 			android:hardwareAccelerated="true"
@@ -51,14 +51,14 @@
 			</intent-filter>
 		</activity>
 
-		<activity android:name="com.knziha.plod.PlainDict.CuteFileManager"
+		<activity android:name=".CuteFileManager"
 			android:theme="@style/AppTheme"
 			android:configChanges="keyboardHidden|orientation|screenSize"
 			android:hardwareAccelerated="true"
 			>
 		</activity>
 
-		<activity android:name="com.knziha.plod.PlainDict.FloatSearchActivity"
+		<activity android:name=".FloatSearchActivity"
 			android:theme="@style/FloatAppTheme"
 			android:configChanges="keyboardHidden|orientation|screenSize"
 			android:hardwareAccelerated="true"
@@ -98,12 +98,12 @@
 			android:theme="@style/AppThemeRaw"
 			/>
 
-		<activity android:name="com.knziha.plod.PlainDict.RebootActivity"
+		<activity android:name=".RebootActivity"
 			android:theme="@style/FloatAppTheme"
 			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
 			android:launchMode="standard"
 			/>
-		<activity android:name="com.knziha.plod.PlainDict.MainShareActivity"
+		<activity android:name=".MainShareActivity"
 			android:theme="@style/FloatAppTheme"
 			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
 			android:launchMode="standard"
@@ -121,7 +121,7 @@
 <!--				<data android:pathPattern="*.mdx"/>-->
 <!--			</intent-filter>-->
 		</activity>
-		<activity android:name="com.knziha.plod.PlainDict.FloatActivitySearch"
+		<activity android:name=".FloatActivitySearch"
 			android:theme="@style/FloatAppTheme"
 			android:configChanges="keyboardHidden|orientation|screenSize"
 			android:hardwareAccelerated="true"
@@ -132,7 +132,7 @@
 			android:taskAffinity=""
 			>
 		</activity>
-		<activity android:name="com.knziha.plod.PlainDict.MultiShareActivity"
+		<activity android:name=".MultiShareActivity"
 			android:theme="@style/FloatAppTheme"
 			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
 			android:hardwareAccelerated="true"

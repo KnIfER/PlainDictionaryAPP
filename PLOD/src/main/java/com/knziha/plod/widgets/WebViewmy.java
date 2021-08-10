@@ -36,13 +36,13 @@ import android.widget.TextView;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 
 import org.adrianwalker.multilinestring.Multiline;
 
@@ -250,7 +250,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			if(WHP!=null){
 				PageState.x = 0;
 				PageState.y = WHP.getScrollY();
-				PageState.scale = mdict.def_zoom;
+				PageState.scale = BookPresenter.def_zoom;
 			}else{
 				PageState.x = getScrollX();
 				PageState.y = getScrollY();
@@ -384,7 +384,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean SavePagePosIfNeeded(ScrollerRecord pagerec) {
 		boolean ret=false;
 		int sx=getScrollX(), sy=getScrollY();
-		if(pagerec==null && (sx != 0 || sy != 0 || webScale != mdict.def_zoom)) {
+		if(pagerec==null && (sx != 0 || sy != 0 || webScale != BookPresenter.def_zoom)) {
 			pagerec = new ScrollerRecord();
 			ret=true;
 		}
@@ -551,7 +551,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 														if(vgg.getChildAt(1) instanceof TextView){
 															TextView tv = (TextView) vgg.getChildAt(1);
 															//CMN.Log(tv.getText().length()==3, tv.getText().toString().equals("TTS"), tv.getText(),tv, "YES??");
-															if(tv.getText().length()==3 && tv.getText().toString().equals("TTS")){
+															CharSequence text = tv.getText();
+															if(text!=null)
+															if(text.length()==3 && tv.getText().toString().equals("TTS")){
 																//CMN.Log("yes tts!!!");
 																vgg.setOnLongClickListener(new OnLongClickListener() {
 																	@Override
@@ -583,7 +585,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																		if(c instanceof MainActivityUIBase){
 																			MainActivityUIBase a = (MainActivityUIBase) c;
 																			if(MainActivityUIBase.PreferredToolId !=-1){
-																				mdict invoker = null;
+																				BookPresenter invoker = null;
 																				if(SelfIdx<a.md.size()){
 																					invoker = a.md.get(SelfIdx);
 																				}
@@ -1013,7 +1015,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	@Override
 	protected void onDraw(Canvas canvas) {
 		if(drawRect){
-			float scale = webScale/mdict.def_zoom;
+			float scale = webScale/ BookPresenter.def_zoom;
 			//float roundVal = 10*GlobalOptions.density*scale;
 			canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale, Utils.getRectPaint());
 		}

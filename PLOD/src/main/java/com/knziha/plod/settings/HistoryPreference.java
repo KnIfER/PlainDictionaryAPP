@@ -4,8 +4,8 @@ import android.os.Bundle;
 
 import androidx.preference.Preference;
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 
 public class HistoryPreference extends SettingsFragment implements Preference.OnPreferenceClickListener {

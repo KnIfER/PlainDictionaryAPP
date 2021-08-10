@@ -33,7 +33,7 @@ package org.nanohttpd.protocols.http;
  * #L%
  */
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.dictionary.Utils.SU;
 
 import java.io.IOException;

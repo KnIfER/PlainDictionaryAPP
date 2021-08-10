@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.PlainUI;
 
 import android.content.DialogInterface;
 import android.content.res.Resources;
@@ -10,10 +10,7 @@ import android.text.SpannableStringBuilder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.CheckedTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,14 +20,21 @@ import androidx.appcompat.app.GlobalOptions;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.knziha.ankislicer.customviews.ShelfLinearLayout;
 import com.knziha.filepicker.widget.CircleCheckBox;
-import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.FloatSearchActivity;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 import com.mobeta.android.dslv.DragSortListView;
 import com.mobeta.android.dslv.SimpleFloatViewManager;
 
-import static com.knziha.plod.PlainDict.MainActivityUIBase.init_clickspan_with_bits_at;
-import static com.knziha.plod.PlainDict.Toastable_Activity.FLASH_DURATION_MS;
+import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
+import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
+import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
+import static com.knziha.plod.plaindict.暂未实现帮助类.没有实现的_工具栏_点击事件不完全列表;
 
-class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListener, DragSortListView.DragSortListener, View.OnLongClickListener{
+public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListener, DragSortListView.DragSortListener, View.OnLongClickListener{
 	private final AlertDialog dialog;
 	private final MainActivityUIBase a;
 	private final PDICMainAppOptions opt;
@@ -38,7 +42,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 	public final DragSortListView main_list;
 	private final ShelfLinearLayout sideBar;
 	
-	public PDICMainActivity.AppUIProject projectContext;
+	public AppUIProject projectContext;
 	public static int StateCount=2;
 	public boolean isDirty;
 	public Drawable switch_landscape;
@@ -79,7 +83,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 		StringBuilder sb = new StringBuilder(64);
 		projectContext.bNeedCheckOrientation=false;
 		for (int i = 0; i <= size; i++) {
-			PDICMainActivity.IconData icI = projectContext.iconData.get(i);
+			AppIconData icI = projectContext.iconData.get(i);
 			icI.addString(sb);
 			if(icI.tmpIsFlag==2){
 				projectContext.bNeedCheckOrientation=true;
@@ -107,7 +111,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		ViewHolder vh=convertView==null?new ViewHolder(parent, this):(ViewHolder)convertView.getTag();
-		PDICMainActivity.IconData item = projectContext.iconData.get(position);
+		AppIconData item = projectContext.iconData.get(position);
 		int id = item.number;
 		Resources res = parent.getResources();
 		vh.tv.setText(projectContext.titles[id]);
@@ -115,6 +119,11 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 		vh.ccb_toggle.setChecked(item.tmpIsFlag,false);
 		vh.position = position;
 		vh.itemView.getBackground().setAlpha(GlobalOptions.isDark?15:255);
+		if (没有实现的_工具栏_点击事件不完全列表.contains(projectContext.icons[id])) {
+			vh.itemView.setAlpha(0.2f);
+		} else {
+			vh.itemView.setAlpha(1);
+		}
 		return vh.itemView;
 	}
 
@@ -168,8 +177,12 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 						if(a instanceof PDICMainActivity){
 							((PDICMainActivity)a).bottombar_project.clear(a);
 						}
-						a.contentbar_project.clear(a);
-						a.peruseview_project.clear(a);
+						if (a.contentbar_project!=null) {
+							a.contentbar_project.clear(a);
+						}
+						if (a.peruseview_project!=null) {
+							a.peruseview_project.clear(a);
+						}
 					}
 					projectContext.clear(a);
 					projectContext.instantiate(null);
@@ -203,13 +216,13 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 					break;
 				}
 				int bottombar_from=0;
-				MainActivityUIBase.AppUIProject projectContext=null;
+				AppUIProject projectContext=null;
 				if(id == R.id.customise_main_bar){
 					if(a instanceof PDICMainActivity){
 						PDICMainActivity aa = (PDICMainActivity) a;
 						projectContext = aa.bottombar_project;
 						if(projectContext==null){
-							aa.bottombar_project = projectContext = new MainActivityUIBase.AppUIProject("btmprj", aa.BottombarBtnIcons, aa.BottombarBtnIds, opt.getAppBottomBarProject(), aa.bottombar, aa.BottombarBtns);
+							aa.bottombar_project = projectContext = new AppUIProject("btmprj", aa.BottombarBtnIcons, opt.getAppBottomBarProject(), aa.bottombar, aa.BottombarBtns);
 						}
 						if(projectContext.iconData==null){
 							projectContext.instantiate(aa.getResources().getStringArray(R.array.customize_btm));
@@ -231,7 +244,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 									a.contentbar_project:null;
 					
 					if(projectContext==null) {
-						projectContext = new MainActivityUIBase.AppUIProject(bottombar_from, a.opt, a.ContentbarBtnIcons, a.ContentbarBtnIds, null, null);
+						projectContext = new AppUIProject(bottombar_from, a.opt, ContentbarBtnIcons, null, null);
 						if(bottombar_from==1){
 							/* fyms */
 							a.peruseview_project = projectContext;
@@ -333,7 +346,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 
 	void clearCurrentProject() {
 		if(isDirty && projectContext!=null){
-			MainActivityUIBase.AppUIProject _projectContext = projectContext;
+			AppUIProject _projectContext = projectContext;
 			projectContext=null;
 			_projectContext.clear(null);
 		}
@@ -348,7 +361,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 				//CMN.Log("保存配置……", projectContext.key);
 				projectContext.currentValue=newVal;
 				if(projectContext.bottombar!=null){
-					a.RebuildBottombarIcons(projectContext, a.mConfiguration);
+					RebuildBottombarIcons(a, projectContext, a.mConfiguration);
 				}
 				opt.putAppProject(projectContext);
 				if(projectContext.type>=0){
@@ -360,12 +373,12 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 		}
 	}
 	
-	private void checkReferncedChange(MainActivityUIBase.AppUIProject checkNow, String newVal) {
+	private void checkReferncedChange(AppUIProject checkNow, String newVal) {
 		if(checkNow!=null && checkNow!=projectContext && opt.isAppContentBarProjectReferTo(checkNow.key, projectContext.type)){
 			CMN.Log(checkNow.key,  "refer to >> ", projectContext.key);
 			checkNow.currentValue=newVal;
 			checkNow.clear(null);
-			a.RebuildBottombarIcons(checkNow, a.mConfiguration);
+			RebuildBottombarIcons(a, checkNow, a.mConfiguration);
 		}
 	}
 	
@@ -379,7 +392,7 @@ class BottombarTweakerAdapter extends BaseAdapter implements View.OnClickListene
 		if (from != to) {
 			isDirty=true;
 			dialog.setCanceledOnTouchOutside(false);
-			PDICMainActivity.IconData item = projectContext.iconData.remove(from);
+			AppIconData item = projectContext.iconData.remove(from);
 			projectContext.iconData.add(to, item);
 			notifyDataSetChanged();
 		}

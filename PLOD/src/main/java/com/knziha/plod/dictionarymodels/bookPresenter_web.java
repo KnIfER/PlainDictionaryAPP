@@ -20,10 +20,10 @@ import androidx.appcompat.app.GlobalOptions;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.knziha.filepicker.utils.FU;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.myCpr;
@@ -55,7 +55,7 @@ import db.MdxDBHelper;
  date:2019.11.28
  author:KnIfER
 */
-public class mdict_notebook extends mdict {
+public class bookPresenter_web extends BookPresenter {
 	String host;
 	String hostName;
 	String index;
@@ -106,7 +106,7 @@ public class mdict_notebook extends mdict {
 		 document.head.appendChild(style);
 		 document.head.appendChild(script);
 		 window.PLODKit=1;
-	 }
+	 }wra
 	 */
 	@Multiline
 	static final String loadJs = StringUtils.EMPTY;
@@ -135,7 +135,7 @@ public class mdict_notebook extends mdict {
 	private static SerializerFeature[] SerializerFormat = new SerializerFeature[]{SerializerFeature.PrettyFormat, SerializerFeature.MapSortField, SerializerFeature.QuoteFieldNames};
 	
 	//构造
-	public mdict_notebook(File fn, MainActivityUIBase _a) throws IOException {
+	public bookPresenter_web(File fn, MainActivityUIBase _a) throws IOException {
 		super(fn, _a, 1, null);
 		a=_a;
 		opt=a.opt;
@@ -144,19 +144,277 @@ public class mdict_notebook extends mdict {
 		unwrapSuffix=false;
 		
 		readInConfigs(a.UIProjects);
+		
+		parseJsonFile();
+	}
+	
+	private void parseJsonFile() throws IOException {
+		website = JSONObject.parseObject(BU.fileToString(f));
+		String _host = website.getString("host");
+		if(_host==null) _host=getRandomHost();
+		if(_host.endsWith("/")) _host=_host.substring(0, _host.length()-1);
+		host=_host;
+		index = website.getString("index");
+		if(index==null) index="";
+		jsLoader = website.getString("js");
+		onstart = website.getString("onstart");
+		onload = website.getString("onload");
+		search = website.getString("search");
+		abSearch = search!=null&&search.startsWith("http");
+		excludeAll = website.getBooleanValue("excludeAll");
+		String _extensions  = website.getString("cacheRes");
+		butReadonly  = website.getBooleanValue("readRes");
+		andEagerForParms  = website.getBooleanValue("php");
+		String _exclude_db_save_extensions  = website.getString("CDROPT");
+		noImage = website.getBooleanValue("noImage");
+		forceText = website.getBooleanValue("forceText");
+		computerFace = website.getBooleanValue("cpau");
+		String svg = website.getString("svg");
+		String _keyPattern = website.getString("keyPattern");
+		if(_keyPattern!=null) {
+			try {
+				keyPattern = Pattern.compile(_keyPattern);
+			} catch (Exception e) { /*CMN.Log(e);*/ }
+		}
+		/*CMN.Log("_keyPattern", _keyPattern, keyPattern);*/
+		//banJs = json.getBooleanValue("banJs");
+		//reEnableJs = json.getBooleanValue("reEnableJs");
+		String _entrance = website.getString("entrance");
+		if(!TextUtils.isEmpty(_entrance)){
+			entrance = new ArrayList<>(Arrays.asList(_entrance.split("\n")));
+		}
+		String _routes = website.getString("reroute");
+		if(_routes!=null){
+			canRerouteUrl=true;
+			String[] list = _routes.split("\n");
+			int size = list.length;
+			routefrom = new ArrayList<>(size);
+			routeto = new ArrayList<>(size);
+			for (int i = 0; i < size; i++) {
+				String[] urls = list[i].split("\r");
+				if (urls.length==2) {
+					routefrom.add(urls[0]);
+					routeto.add(urls[1]);
+				}
+			}
+			CMN.Log("重定向", routefrom.size());
+		}
+		
+		if(bgColor==null) {
+			bgColor= CMN.GlobalPageBackground;
+		}
+		
+		if(excludeAll){
+			canExcludeUrl=true;
+			hosts.add(host);
+			for(String sI:entrance){
+				int idx = sI.indexOf("://");
+				idx++; if(idx>0) idx+=2;
+				idx = sI.indexOf("/", idx);
+				if(idx>0)
+					sI = sI.substring(0, idx);
+				//CMN.Log("hosts :: ", sI);
+				hosts.add(sI);
+			}
+		}
+		
+		bNeedCheckSavePathName=true;
+		
+		if(_extensions!=null){
+			cacheExtensions = _extensions.split("\\|");
+			canSaveResource=true;
+			InternalResourcePath = CachedPathSubToDBStorage("Caches");
+		}
+		
+		if(_exclude_db_save_extensions!=null){
+			if(_exclude_db_save_extensions.equalsIgnoreCase("All")){
+				cleanExtensions = default_cleanExtensions;
+			} else {
+				cleanExtensions = _exclude_db_save_extensions.split("\\|");
+			}
+		}
+		
+		if(svg!=null){
+			svgKeywords = svg.split("\r");
+		}
+		
+		int idx = host.indexOf("://");
+		hostName = idx>0?host.substring(idx+3):host;
+		idx = host.indexOf("/");
+		if(idx>0) hostName = host.substring(0, idx);
+	}
+	
+	//粗暴地排除
+	public boolean shouldExcludeUrl(String url){
+		if(hosts==null)
+			return false;
+		int idx = url.indexOf("://");
+		idx++; if(idx>0) idx+=2;
+		idx = url.indexOf("/", idx);
+		if(idx>0)
+			url = url.substring(0, idx);
+		CMN.Log("shouldExcludeUrl :: ", url, !hosts.contains(url));
+		return !hosts.contains(url);
+	}
+	
+	public String shouldRerouteUrl(String url){
+		if(routefrom !=null) {
+			int size = routefrom.size();
+			for (int i = 0; i < size; i++) {
+				String uI = routefrom.get(i);
+				if(url.startsWith(uI)) {
+					String newurl = routeto.get(i);
+					if(!newurl.startsWith(uI)) {
+						return newurl + url.substring(uI.length());
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+/*	*//** 简便起见，直接将修改的配置存于HashMap *//*
+	@Override
+	public void readInConfigs() throws IOException {
+		if(!check){
+			firstFlag = website.getLongValue("MFF");
+			if(website.containsKey("BG"))
+				bgColor = website.getIntValue("BG");
+			internalScaleLevel = website.getIntValue("TextZoom");
+
+			lvPos = website.getIntValue("lvPos");
+			lvClickPos = website.getIntValue("lvClk");
+			lvPosOff = website.getIntValue("lvOff");
+
+			initArgs = new int[]{website.getIntValue("argx"), website.getIntValue("argy")};
+			webScale = website.getIntValue("args");
+		}
+
+//		if(opt.ChangedMap!=null){
+//			Long newVal = opt.ChangedMap.remove(getPath());
+//			if(newVal!=null && newVal!=firstFlag){
+//				website.put("MFF", firstFlag = newVal);
+//				CMN.Log("保存！！！"+this);
+//				dumpViewStates();
+//				refresh_eidt_kit(getContentEditable(), getEditingContents(), true);
+//			}
+//		}
+	}*/
+
+	/** 保存网站定义 */
+//	@Override
+//	public void dumpViewStates() {
+//		try {
+//			website.put("BG", bgColor);
+//			website.put("TextZoom", internalScaleLevel);
+//			website.put("lvPos", lvPos);
+//			website.put("lvClk", lvClickPos);
+//			website.put("lvOff", lvPosOff);
+//			int ex=0,e=0;
+//			if(viewsHolderReady && mWebView!=null) {
+//				ex=mWebView.getScrollX();
+//				e=mWebView.getScrollY();
+//			}else if(initArgs!=null && initArgs.length==2){
+//				ex=initArgs[0];
+//				e=initArgs[1];
+//			}
+//			website.put("argx", ex);
+//			website.put("argy", e);
+//			website.put("args", webScale);
+//			website.put("MFF", firstFlag);
+//			if(entrance.size()>0)
+//				website.put("entrance", StringUtils.join(entrance, '\n'));
+//			if(cacheExtensions!=null)
+//				website.put("cacheRes", StringUtils.join(cacheExtensions, '|'));
+//			//if(cleanExtensions!=null)
+//			//	website.put("CDROPT", StringUtils.join(cleanExtensions, '|'));
+//
+//			FileOutputStream fo = new FileOutputStream(f);
+//			String v=website.toString();
+//			v=v.replace("\\n", "\n");
+//			fo.write(v.getBytes());
+//			fo.flush();
+//			fo.close();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+
+	//Todo let's make dice
+	String getRandomHost() {
+		return "";
 	}
 
 	@Override
 	protected String getSaveUrl(WebViewmy mWebView) {
-		return currentDisplaying;
+		String url=mWebView.getUrl();
+		if(url==null) {
+			url = currentUrl;
+		}
+		if (url!=null && url.startsWith(host))
+			url = url.substring(host.length());
+		return url;
 	}
 
 	@Override
 	protected void onPageSaved() {
 		super.onPageSaved();
-		a.notifyDictionaryDatabaseChanged(mdict_notebook.this);
+		a.notifyDictionaryDatabaseChanged(bookPresenter_web.this);
 	}
-	
+
+	@Override
+	protected String getSaveNameForUrl(String finalUrl) {
+		boolean needTrim=!((andEagerForParms&&!finalUrl.contains(".js"))||finalUrl.contains(".php"));//动态资源需要保留参数
+		int start = 0;
+		int end = needTrim?finalUrl.indexOf("?"):-1;
+		if(end<0) end=finalUrl.length();
+		String name=finalUrl.substring(start, end);
+		try {
+			name=URLDecoder.decode(name, "utf8");
+		} catch (UnsupportedEncodingException ignored) { }
+		if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
+		if(name.length()>64){
+			name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
+		}
+		return name;
+	}
+
+	public long saveCurrentUrl(MdxDBHelper con, String url) {
+		if(url!=null){
+			con.enssureUrlTable();
+			if(url.startsWith(host))
+				url=url.substring(host.length());
+			if(url.length()>0) {
+				CMN.Log("saveCurrentUrl", url);
+				return con.putUrl(currentDisplaying, url);
+			}
+		}
+		return -1;
+	}
+
+	public boolean containsCurrentUrl(MdxDBHelper con,String url) {
+		if(url!=null) {
+			con.enssureUrlTable();
+			if(url.startsWith(host))
+				url=url.substring(host.length());
+			CMN.Log("containsCurrentUrl", url, con.containsUrl(url));
+			return con.containsUrl(url);
+		}
+		return false;
+	}
+
+	public boolean removeCurrentUrl(MdxDBHelper con,String url) {
+		con.enssureUrlTable();
+		if(url.startsWith(host))
+			url=url.substring(host.length());
+		return con.removeUrl(url)!=-1;
+	}
+
+	@Override
+	String getSimplestInjection() {
+		return js;
+	}
+
 	/*** Page constituents:<br/>
 	 * 1. Index <br/>
 	 * 2~n. Extra entrances [Optional].  Search History [Optional]. <br/>
@@ -165,7 +423,16 @@ public class mdict_notebook extends mdict {
 	 */
 	@Override
 	public long getNumberEntries() {
-		return PageCursor.getCount();
+		long size =  1+searchKeys.size()+entrance.size();
+		getCon(false);
+		if(con!=null && PageCursor==null){
+			con.enssurePageTable();
+			PageCursor = con.getDB().rawQuery("select * from t2 ", null);
+		}
+		if(PageCursor!=null){
+			size += PageCursor.getCount();
+		}
+		return size;
 	}
 	
 	@Override
@@ -174,6 +441,22 @@ public class mdict_notebook extends mdict {
 			return "index";
 		position-=1;
 		try {
+			if(entrance.size()>0){
+				if(position>=0 && position<entrance.size()){
+					String url = entrance.get(position);
+					String[] arr = url.split("\r");
+					if(arr.length>1) {
+						return arr[1];
+					}
+					return url;
+				}
+				position-=entrance.size();
+			}
+			
+			if(position>=0 && position<searchKeys.size())
+				return searchKeys.get(position);
+			position-=searchKeys.size();
+			
 			if(PageCursor!=null){
 				if(position>=0 && position<PageCursor.getCount()){
 					PageCursor.moveToPosition(position);
@@ -204,14 +487,73 @@ public class mdict_notebook extends mdict {
 				return;
 			}
 		}
-		
-		int pos = position[0];
-		
-		PageCursor.moveToPosition(pos);
-		currentDisplaying = PageCursor.getString(0);
-		if(resposibleForThisWeb)
-			toolbar_title.setText(PageCursor.getString(1));
-		
+		mWebView.fromNet=true;
+		mWebView.clearHistory=false;
+		String key = null;
+		String url=null;
+		int pos=mWebView.currentRendring[0];
+		if(pos>0) {
+			pos-=1;
+			if(pos<searchKeys.size()){
+				if(search!=null){
+					key=searchKeys.get(pos);
+				}
+			}
+			pos-=searchKeys.size();
+			//CMN.Log(pos, entrance.size(), entrance.get(0));
+			if(key==null && entrance.size()>0){
+				if(pos>=0 && pos<entrance.size()){
+					url = entrance.get(pos);
+					String[] arr = url.split("\r");
+					if(arr.length>1){
+						url = arr[0];
+					}
+					if(!url.contains("://"))
+						url=host+url;
+				}
+			}
+			pos-=entrance.size();
+			if (url==null && PageCursor != null) {
+				if (pos>=0 && pos < PageCursor.getCount()) {
+					PageCursor.moveToPosition(pos);
+					url = PageCursor.getString(0);
+					//CMN.Log("数据库取出的数据：", URLDecoder.decode(url));
+					if(!url.contains("://"))
+						url=host+url;
+					if(resposibleForThisWeb)
+						toolbar_title.setText(PageCursor.getString(1));
+				}
+				pos -= PageCursor.getCount();
+			}
+		}
+		else{
+			if(searchKey!=null) {
+				if (searchKey.startsWith("http"))
+					url = searchKey;
+				else if (search != null) {
+					key = searchKey;
+					/* 接管网页历史纪录 */
+					searchKeys.remove(key);
+					searchKeys.add(0, key);
+					a.adaptermy.notifyDataSetChanged();
+					searchKey = null;
+				}
+			}
+		}
+		if(url==null){
+			if(key!=null && search!=null){
+				if(search.contains("%s"))
+					url=search.replaceAll("%s", key);
+				else
+					url=search+key;
+				if(!abSearch)
+					url=host+url;
+				if(resposibleForThisWeb)
+					toolbar_title.setText(key);
+			}else{
+				url=host+index;
+			}
+		}
 		if(mWebView==this.mWebView) {
 			if(a.opt.getHideScroll1()&&resposibleForThisWeb)
 				a.mBar.setVisibility(View.GONE);
@@ -232,7 +574,7 @@ public class mdict_notebook extends mdict {
 		
 		jsCode = sb.toString();
 		
-		//mWebView.loadUrl(currentUrl=url);
+		mWebView.loadUrl(currentUrl=url);
 	}
 
 	@Override
@@ -287,7 +629,7 @@ public class mdict_notebook extends mdict {
 							if(entrance==null) entrance=new ArrayList<>();
 							entrance.add(__url);
 							bNeedSave = true;
-							a.notifyDictionaryDatabaseChanged(mdict_notebook.this);
+							a.notifyDictionaryDatabaseChanged(bookPresenter_web.this);
 							((Dialog)v1.getTag()).dismiss();
 						});
 					}
@@ -415,6 +757,11 @@ public class mdict_notebook extends mdict {
 	@Override
 	public void Reload() {
 		super.Reload();
+		try {
+			parseJsonFile();
+		} catch (IOException e) {
+			CMN.Log(e);
+		}
 	}
 	
 	public boolean hasCover() {
@@ -446,18 +793,20 @@ public class mdict_notebook extends mdict {
 
 	public void onProgressChanged(WebViewmy mWebView, int newProgress) {
 		CMN.Log("onProgressChanged", newProgress);
-		Drawable d = mWebView.titleBar.getBackground();
-		int start = d.getLevel();
-		int end = newProgress*100;
-		if(end<start) end=start+10;
-		if(progressProceed !=null) {
-			progressProceed.cancel();
-			progressProceed.setIntValues(start, end);
-		} else {
-			progressProceed = ObjectAnimator.ofInt(d,"level", start, end);
-			progressProceed.setDuration(100);
+		if(mWebView.titleBar!=null) {
+			Drawable d = mWebView.titleBar.getBackground();
+			int start = d.getLevel();
+			int end = newProgress*100;
+			if(end<start) end=start+10;
+			if(progressProceed !=null) {
+				progressProceed.cancel();
+				progressProceed.setIntValues(start, end);
+			} else {
+				progressProceed = ObjectAnimator.ofInt(d,"level", start, end);
+				progressProceed.setDuration(100);
+			}
+			progressProceed.start();
 		}
-		progressProceed.start();
 		if(newProgress>85){
 			mWebView.evaluateJavascript(jsCode, null);
 		}
@@ -480,18 +829,20 @@ public class mdict_notebook extends mdict {
 
 	private void fadeOutProgressbar(WebViewmy mWebView, boolean updateTitle) {
 		if(updateTitle) mWebView.toolbar_title.setText(mWebView.word=currentDisplaying=mWebView.getTitle());
-		Drawable d = ((LayerDrawable) mWebView.titleBar.getBackground()).getDrawable(1);
-		if(d.getAlpha()!=255) {
-			return;
+		if(mWebView.titleBar!=null) {
+			Drawable d = ((LayerDrawable) mWebView.titleBar.getBackground()).getDrawable(1);
+			if(d.getAlpha()!=255) {
+				return;
+			}
+			if(progressTransient!=null){
+				progressTransient.cancel();
+				progressTransient.setFloatValues(d.getAlpha(), 0);
+			} else {
+				progressTransient = ObjectAnimator.ofInt(d, "alpha", d.getAlpha(), 0);
+				progressTransient.setDuration(200);
+			}
+			progressTransient.start();
 		}
-		if(progressTransient!=null){
-			progressTransient.cancel();
-			progressTransient.setFloatValues(d.getAlpha(), 0);
-		} else {
-			progressTransient = ObjectAnimator.ofInt(d, "alpha", d.getAlpha(), 0);
-			progressTransient.setDuration(200);
-		}
-		progressTransient.start();
 	}
 
 	@Override
@@ -612,7 +963,7 @@ public class mdict_notebook extends mdict {
 
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
-			return new X509Certificate[] {};
+			return new java.security.cert.X509Certificate[] {};
 		}
 	}
 	

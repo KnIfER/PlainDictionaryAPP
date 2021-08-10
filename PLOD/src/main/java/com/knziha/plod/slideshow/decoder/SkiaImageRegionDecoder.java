@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;;
 import android.text.TextUtils;
 
 
-import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.slideshow.SubsamplingScaleImageView;
 
 import java.io.BufferedInputStream;

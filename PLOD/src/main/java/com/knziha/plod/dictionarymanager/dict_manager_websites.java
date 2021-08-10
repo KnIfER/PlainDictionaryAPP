@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionarymanager.files.ArrayListTree;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
@@ -18,7 +18,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.ListFragment;
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;

@@ -5,7 +5,7 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:orientation="vertical"
 	android:clickable="true"
-	tools:context="com.knziha.plod.PlainDict.MainActivityUIBase">
+	tools:context="com.knziha.plod.plaindict.MainActivityUIBase">
 
 	<com.knziha.plod.widgets.AdvancedNestScrollLinerView
 		android:id="@+id/lltoolbar"
@@ -25,7 +25,7 @@
 		<com.knziha.plod.widgets.FlowTextView
 			android:id="@+id/toolbar_title"
 			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
+			android:layout_height="@dimen/dictitle"
 			android:singleLine="true"
 			android:textColor="@android:color/white"
 			android:textSize="17sp"

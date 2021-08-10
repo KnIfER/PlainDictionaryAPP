@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.app.Application;
 import android.graphics.Bitmap;
@@ -9,28 +9,25 @@ import com.knziha.plod.dictionary.Utils.MyIntPair;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.mdictRes;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
-import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.settings.DictOptions;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.slideshow.MddPic;
 import com.knziha.plod.slideshow.MddPicLoaderFactory;
 import com.knziha.plod.slideshow.PdfPic;
 import com.knziha.plod.slideshow.PdfPicLoaderFactory;
-import com.knziha.rbtree.RashMap;
 
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import db.LexicalDBHelper;
 
 public class AgentApplication extends Application {
 	/** transient */
-	public HashMap<String,mdict> mdict_cache = new HashMap<>();
+	public HashMap<String, BookPresenter> mdict_cache = new HashMap<>();
 	/** per-dictionary configurations */
 	public HashMap<CharSequence,byte[]> UIProjects = new HashMap<>();
 	public HashSet<CharSequence> dirtyMap = new HashSet<>();
@@ -39,8 +36,8 @@ public class AgentApplication extends Application {
 	public HashSet<String> mdlibsCon;
 	/** 控制所有实例只扫描一遍收藏夹 */
 	public boolean bNeedPullFavorites =true;
-	public ArrayList<mdict> b_md = new ArrayList<>();
-	public ArrayList<mdict> b_filter = new ArrayList<>();
+	public ArrayList<BookPresenter> b_md = new ArrayList<>();
+	public ArrayList<BookPresenter> b_filter = new ArrayList<>();
 	/** 退出全部实例时关闭、清理 */
 	ArrayList<MyPair<String, LexicalDBHelper>> AppDatabases = new ArrayList<>();
 	/** 退出全部实例时保留 */

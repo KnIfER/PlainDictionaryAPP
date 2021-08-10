@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.knziha.plod.PlainDict.CMN;
+import com.knziha.plod.plaindict.CMN;
 
 public class TextViewmy extends TextView {
     private Scroller mScroller;

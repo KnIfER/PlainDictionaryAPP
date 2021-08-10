@@ -1,12 +1,11 @@
 package com.knziha.plod.dictionarymodels;
 
 import com.alibaba.fastjson.JSONObject;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
@@ -18,14 +17,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static com.knziha.plod.PlainDict.CMN.AssetTag;
+import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 /*
  Mdict hodling a PDFJS website.
  date:2019.11.28
  author:KnIfER
 */
-public class mdict_pdf extends mdict {
+public class bookPresenter_pdf extends BookPresenter {
 	mdictRes_asset _INTERNAL_PDFJS;
 	public String[] pdf_index;
 	boolean alphabetic;
@@ -184,7 +183,7 @@ public class mdict_pdf extends mdict {
 	private int targetPage;
 
 	//构造
-	public mdict_pdf(File fn, MainActivityUIBase _a) throws IOException {
+	public bookPresenter_pdf(File fn, MainActivityUIBase _a) throws IOException {
 		super(fn, _a, 1, null);
 		a=_a;
 		opt=a.opt;
@@ -197,7 +196,7 @@ public class mdict_pdf extends mdict {
 		readInConfigs(a.UIProjects);
 
 		if(bgColor==null)
-			bgColor= com.knziha.plod.PlainDict.CMN.GlobalPageBackground;
+			bgColor= com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 
 		File path = new File(a.getExternalFilesDir(".PDF_INDEX"), _Dictionary_fName);
 		if(path.exists()){

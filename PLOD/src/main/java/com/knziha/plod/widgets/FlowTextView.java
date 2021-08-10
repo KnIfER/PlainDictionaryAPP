@@ -34,16 +34,12 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 
 import androidx.appcompat.app.GlobalOptions;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.knziha.plod.ArrayList.ArrayListHolder;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.R;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -269,6 +265,7 @@ public class FlowTextView extends View {
 			if(mCoverBitmap !=null){
 				textLeft+=mLineHeight;
 			}
+			int fixedHeight = getMeasuredHeight();
 			while (charOffsetStart < mLength && (maxLines<=0||lineIndex<maxLines)) { // churn through the block spitting it out onto seperate lines until there is nothing left to render
 				lineIndex++; // we need a new line
 				yOffset =  (lineIndex-1) * lineHeight - ascent; // calculate our new y position based on number of lines * line height
@@ -294,12 +291,23 @@ public class FlowTextView extends View {
 			if(maxLines==2 && maxLines==lineIndex) {
 				mTextsize_MinueOne = true;
 				float pad = 2.5f * GlobalOptions.density;
+				//CMN.Log(mTextsize-pad);
 				mTextPaint.setTextSize(mTextsize-pad);
 				int delta = mLineHeight;
 				onTextSizeChanged();
 				delta = delta - mLineHeight;
-				lineObjects.get(0).yOffset -= pad/2;
-				lineObjects.get(1).yOffset -= 2*pad + delta;
+//				CMN.Log("fixedHeight", 2*mLineHeight, pad, fixedHeight);
+//				CMN.Log("fixedHeight", mTextPaint.getFontMetrics().ascent, mTextPaint.getFontMetrics().descent);
+//				CMN.Log("fixedHeight", 2*(mTextPaint.getFontMetrics().descent-mTextPaint.getFontMetrics().ascent));
+				float height = 2 * (mTextPaint.getFontMetrics().descent - mTextPaint.getFontMetrics().ascent);
+				if (height>fixedHeight+2*pad+8) {
+					mTextPaint.setTextSize(mTextsize);
+					onTextSizeChanged();
+					lineObjects.remove(1);
+				} else {
+					lineObjects.get(0).yOffset -= pad/2;
+					lineObjects.get(1).yOffset -= 2*pad + delta;
+				}
 			}
 		}
 		
@@ -455,7 +463,7 @@ public class FlowTextView extends View {
 	}
 	
 	private void initFocusedTextPainter() {
-		CMN.Log("initFocusedTextPainter");
+		//CMN.Log("initFocusedTextPainter");
 		if(mFocusPaint==null) {
 			mFocusPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 			mFocusPaint.density = mTextPaint.density;

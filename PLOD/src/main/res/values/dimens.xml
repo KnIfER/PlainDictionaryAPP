@@ -42,4 +42,7 @@
 	<dimen name="scrollBarWidth">16dp</dimen>
 	<dimen name="_bottombarheight_">48dp</dimen>
 	<dimen name="idealdpdp">450dp</dimen>
+
+	<dimen name="_65_">65dp</dimen>
+	<dimen name="_90_">90dp</dimen>
 </resources>

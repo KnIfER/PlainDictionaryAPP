@@ -1,12 +1,15 @@
 package com.knziha.plod.widgets;
 
 import android.content.Context;
+import android.text.Editable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.EditText;
 
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 
 /**
  * Created by KnIfER on 2018/4/20.
@@ -44,5 +47,15 @@ public class EditTextmy extends EditText {
 			return hackTp;
 		}
 		return super.getPaint();
+	}
+	
+	
+	@Override
+	public Editable getText() {
+		Editable ret = super.getText();
+		if (ret==null) {
+			ret = new SpannableStringBuilder("");
+		}
+		return ret;
 	}
 }

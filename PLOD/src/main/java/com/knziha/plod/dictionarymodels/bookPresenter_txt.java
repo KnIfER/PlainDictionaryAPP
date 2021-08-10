@@ -4,8 +4,8 @@ import androidx.annotation.NonNull;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
  date:2019.11.28
  author:KnIfER
 */
-public class mdict_txt extends mdict {
+public class bookPresenter_txt extends BookPresenter {
 	static Pattern NumberPattern = Pattern.compile("[0-9]+");
 	private long file_length;
 	byte[] lineBreakText;
@@ -57,7 +57,7 @@ public class mdict_txt extends mdict {
 				breakIndex=0;
 			else {
 				int lastIndex=0;
-				while((lastIndex=mdict.indexOf(data, 0, blockSize, lineBreakText, 0, lineBreakText.length, lastIndex))>=0){
+				while((lastIndex= BookPresenter.indexOf(data, 0, blockSize, lineBreakText, 0, lineBreakText.length, lastIndex))>=0){
 					if(true)
 						break;
 				}
@@ -184,7 +184,7 @@ public class mdict_txt extends mdict {
 	}
 
 	//构造
-	public mdict_txt(File fn, MainActivityUIBase _a) throws IOException {
+	public bookPresenter_txt(File fn, MainActivityUIBase _a) throws IOException {
 		super(fn, _a, 1, null);
 		a=_a;
 		opt=a.opt;
@@ -252,7 +252,7 @@ public class mdict_txt extends mdict {
 	@Override
 	protected void onPageSaved() {
 		super.onPageSaved();
-		a.notifyDictionaryDatabaseChanged(mdict_txt.this);
+		a.notifyDictionaryDatabaseChanged(bookPresenter_txt.this);
 	}
 
 	@Override

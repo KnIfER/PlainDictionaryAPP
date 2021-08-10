@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -38,8 +38,8 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
-import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict_txt;
+import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.bookPresenter_txt;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.Utils;
@@ -56,7 +56,7 @@ import java.util.ArrayList;
  * 多实例浮动搜索<br/>
  * Multi-Instance Float Activity that adheres to 3rd party intent invokers，<br/>
  * 			and that can be launched by android text process protocol or colordict intents.<br/>
- * Created by KnIfER on 2018
+ * Created by KnIfER, 2018
  */
 public class FloatSearchActivity extends MainActivityUIBase {
 	ViewGroup mainfv;
@@ -265,9 +265,19 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		defbarcustpos=3;
 		if(getClass()==FloatSearchActivity.class) {
 			long cur;
-			if(PDICMainAppOptions.getForceFloatSingletonSearch(PDICMainAppOptions.getFourthFlag(this))) {
-				Intent thisIntent = getIntent();
-				startActivity((thisIntent==null?new Intent():new Intent(getIntent()))
+			long FF = PDICMainAppOptions.getFourthFlag(this);
+			Intent thisIntent = getIntent();
+			if(thisIntent==null) {
+				thisIntent = new Intent();
+			}
+			if(true) {
+				thisIntent = new Intent(Intent.ACTION_MAIN)
+						.setClass(this, MainShareActivity.class)
+						.putExtras(thisIntent);
+				startActivity(thisIntent);
+				shunt = true;
+			} else if(PDICMainAppOptions.getForceFloatSingletonSearch(FF)) {
+				startActivity(new Intent(thisIntent)
 						.setClass(this, FloatActivitySearch.class)
 						.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));//, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
 				overridePendingTransition(R.anim.abc_popup_enter, R.anim.abc_popup_exit);
@@ -292,7 +302,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			}
 			if(checkDicts()) {
 				if(isCombinedSearching){
-					execBunchSearch(search_cs);
+					execBatchSearch(search_cs);
 				} else {
 					execSingleSearch(search_cs, search_count);
 				}
@@ -796,6 +806,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 
 	String processIntent(Intent intent) {
+		CMN.Log("processIntent", intent);
 		String keytmp =	intent.getStringExtra("EXTRA_QUERY");
 		if(keytmp==null) {
 			String type = intent.getType();
@@ -930,7 +941,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         @Override
         public int getCount() {
 			if(md.size()>0 && currentDictionary!=null) {
-				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && mdict.class.equals(currentDictionary.getClass()))
+				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && BookPresenter.class.equals(currentDictionary.getClass()))
 					return 0;
 				return (int) currentDictionary.getNumberEntries();
 			}else{
@@ -996,7 +1007,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 			etSearch_ToToolbarMode(1);
         	//CMN.show("onItemClick"+position);
-			mdict current = currentDictionary;
+			BookPresenter current = currentDictionary;
 			
         	if(!bWantsSelection) {
 				imm.hideSoftInputFromWindow(mainfv.getWindowToken(),0);
@@ -1013,7 +1024,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 			decorateContentviewByKey(null, currentKeyText);
 			
-			if(!(current instanceof mdict_txt) && !PDICMainAppOptions.getHistoryStrategy0()
+			if(!(current instanceof bookPresenter_txt) && !PDICMainAppOptions.getHistoryStrategy0()
 					&& PDICMainAppOptions.getHistoryStrategy4()
 					&&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
 				prepareHistroyCon().insertUpdate(currentKeyText);
@@ -1102,7 +1113,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				vh.title.setTextColor(AppBlack);
 			}
 			vh.title.setText(currentKeyText);
-            mdict _currentDictionary = md.get(combining_search_result.dictIdx);
+            BookPresenter _currentDictionary = md.get(combining_search_result.dictIdx);
 //            if(_currentDictionary!=null){
 //				if(combining_search_result.mflag.data!=null)
 //					vh.subtitle.setText(Html.fromHtml(_currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
@@ -1178,7 +1189,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			return currentKeyText;
 		}
 	}
-	
 	
 	@Override
 	public void onClick(View v) {

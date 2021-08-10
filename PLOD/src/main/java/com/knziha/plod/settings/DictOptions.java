@@ -8,11 +8,9 @@ import androidx.fragment.app.DialogFragment;
 import androidx.preference.Preference;
 
 import com.jaredrummler.colorpicker.ColorPickerPreference;
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.mdict_manageable;
 import com.knziha.plod.dictionarymodels.mdict_transient;
 
@@ -99,9 +97,9 @@ public class DictOptions extends SettingsFragment implements Preference.OnPrefer
 	}
 	
 	private Object GetSetIntField(mdict_manageable datum, String key, boolean get, Object val) {
-		mdict m1 = null;
+		BookPresenter m1 = null;
 		mdict_transient m2 = null;
-		if(datum instanceof mdict) m1 = (mdict) datum;
+		if(datum instanceof BookPresenter) m1 = (BookPresenter) datum;
 		else m2 = (mdict_transient) datum;
 		switch (key){
 			case "TIBG":

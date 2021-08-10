@@ -2,11 +2,10 @@ package com.knziha.plod.widgets;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import com.knziha.plod.PlainDict.BasicAdapter;
+import com.knziha.plod.plaindict.BasicAdapter;
 
 public class ListViewmy extends ListView {
 	public boolean dimmed;

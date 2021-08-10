@@ -2,7 +2,7 @@ package com.knziha.plod.settings;
 
 import android.os.Bundle;
 
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 
 public class Licences extends SettingsFragment {
 	public final static int id=6;

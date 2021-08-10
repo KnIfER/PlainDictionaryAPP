@@ -19,7 +19,7 @@
 
     <item
         android:id="@+id/toolbar_action3"
-        android:icon="@drawable/songlist"
+        android:icon="@drawable/book_list"
         android:title="@string/switch_set"
         app:showAsAction="never"/>
 
@@ -30,7 +30,7 @@
 
 	<item
 		android:id="@+id/toolbar_action5"
-		android:icon="@drawable/songlist"
+		android:icon="@drawable/book_list"
 		android:title="页内查找"
 		app:showAsAction="never"/>
 
@@ -43,7 +43,7 @@
 
 	<item
         android:id="@+id/toolbar_action4"
-        android:icon="@drawable/bundle"
+        android:icon="@drawable/book_bundle"
         android:title="@string/favorite"
         app:showAsAction="never"/>
 

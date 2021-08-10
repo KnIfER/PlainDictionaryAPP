@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -7,8 +7,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Recreated by KnIfER on 2019
@@ -65,7 +63,7 @@ public class MainShareActivity extends Activity {
 				if (PDICMainAppOptions.getHideFloatFromRecent() && hiddenId!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 					MainShareActivity.hiddenId.setExcludeFromRecents(false);
 				}
-				Intent popup = new Intent().setClassName("com.knziha.plod.plaindict", "com.knziha.plod.PlainDict.FloatActivitySearch").putExtra("EXTRA_QUERY", debugString);
+				Intent popup = new Intent().setClassName("com.knziha.plod.plaindict", "com.knziha.plod.plaindict.FloatActivitySearch").putExtra("EXTRA_QUERY", debugString);
 				//this, FloatActivitySearch.class
 				popup.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				popup.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);

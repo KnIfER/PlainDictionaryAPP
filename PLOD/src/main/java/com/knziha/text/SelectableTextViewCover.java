@@ -12,7 +12,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.knziha.plod.PlainDict.R;
+import com.knziha.plod.plaindict.R;
 
 /** Cover for SelectableTextView which will draw selection handles and it's magnifier. */
 public class SelectableTextViewCover extends View {

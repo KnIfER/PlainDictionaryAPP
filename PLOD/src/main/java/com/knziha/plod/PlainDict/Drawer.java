@@ -1,4 +1,4 @@
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -53,8 +53,8 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
-import com.knziha.plod.dictionarymodels.mdict;
-import com.knziha.plod.dictionarymodels.mdict_pdf;
+import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.bookPresenter_pdf;
 import com.knziha.plod.settings.ServerPreference;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
@@ -64,6 +64,7 @@ import com.knziha.plod.widgets.SwitchCompatBeautiful;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -77,9 +78,11 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
-import static com.knziha.plod.PlainDict.MainActivityUIBase.new_mdict;
+import static com.knziha.plod.plaindict.MainActivityUIBase.new_mdict;
 
 
 /** @author KnIfER */
@@ -105,12 +108,13 @@ public class Drawer extends Fragment implements
 	ViewGroup FooterView;
 	private File filepickernow;
 	public  ArrayList<String> mClipboard;
+	FileOutputStream PasteFileTarget;
 	ClipboardManager.OnPrimaryClipChangedListener ClipListener;
 	private ListView ClipboardList;
 	private CharSequence mPreviousCBContent;
 	private ViewGroup swRow;
 	private boolean toPDF;
-	HashMap<String, mdict> mdictInternal = new HashMap<>();
+	HashMap<String, BookPresenter> mdictInternal = new HashMap<>();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -341,8 +345,28 @@ public class Drawer extends Fragment implements
 								if ((GlobalOptions.chromium || timeDelta < 256) && content.equals(mPreviousCBContent)){
 									return;
 								}
-								
 								String text = content.toString();
+								if(false) {
+									try {
+										if(PasteFileTarget==null) {
+											PasteFileTarget = new FileOutputStream(new File("/sdcard/myFolder/PlainDictPasted.txt"), true);
+											PasteFileTarget.write("\n\n".getBytes());
+										}
+										Pattern p = Pattern.compile("(ht|f)tp(s?)://[0-9a-zA-Z]([-.\\w]*[0-9a-zA-Z])*(:(0-9)*)*(/?)([a-zA-Z0-9\\-.?,'/\\\\+&amp;%$#_]*)?");
+										Matcher m = p.matcher(text);
+										if(m.find()) {
+											text = m.group(0);
+										}
+										text = text.trim();
+										text = text.replace("\r", "");
+										text = text.replace("\n", "");
+										PasteFileTarget.write(text.getBytes());
+										PasteFileTarget.write("\n".getBytes());
+										PasteFileTarget.flush();
+										a.showT("已记录！");
+									} catch (Exception ignored) { }
+									return;
+								}
 								int i = 0;
 								for (; i < mClipboard.size(); i++) {
 									if (mClipboard.get(i).equals(text))
@@ -398,6 +422,11 @@ public class Drawer extends Fragment implements
 
 				String infoStr = getString(R.string.infoStr);
 				final SpannableStringBuilder ssb = new SpannableStringBuilder(infoStr);
+				
+				if (BookPresenter.error_input!=null) {
+					ssb.append("\n出错信息：").append(BookPresenter.error_input);
+				}
+				
 				final String languageName = Locale.getDefault().getLanguage();
 
 				final TextView tv = dv.findViewById(R.id.resultN);
@@ -505,7 +534,7 @@ public class Drawer extends Fragment implements
 			case 0://模糊搜索
 			case 1://全文搜索
 				a.switchToSearchModeDelta(position==0?100:-100);
-				a.mDrawerLayout.closeDrawer(GravityCompat.START);
+				a.UIData.drawerLayout.closeDrawer(GravityCompat.START);
 				a.etSearch.requestFocus();
 				((InputMethodManager)a.getSystemService( Context.INPUT_METHOD_SERVICE )).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 				break;
@@ -529,7 +558,7 @@ public class Drawer extends Fragment implements
 					cc++;
 				}
 
-				for(mdict mdTmp:a.md) {
+				for(BookPresenter mdTmp:a.md) {
 					if(mdTmp!=null)
 						mdictInternal.put(mdTmp.getDictionaryName(), mdTmp);
 				}
@@ -542,7 +571,7 @@ public class Drawer extends Fragment implements
 							@Override
 							public void run() {
 								String id1 = items[position1];
-								mdict mdTmp = mdictInternal.get(id1);
+								BookPresenter mdTmp = mdictInternal.get(id1);
 								if(mdTmp!=null) {
 									String name = mdTmp.getDictionaryName();
 									int i = 0;
@@ -564,7 +593,7 @@ public class Drawer extends Fragment implements
 									int toPos = pos[position1];
 									a.bWantsSelection=false;
 									a.bNeedReAddCon=false;
-									a.bOnePageNav=mdTmp instanceof mdict_pdf;
+									a.bOnePageNav=mdTmp instanceof bookPresenter_pdf;
 									a.adaptermy.onItemClick(toPos);
 									a.bOnePageNav=false;
 									a.lv.setSelection(toPos);
@@ -602,7 +631,7 @@ public class Drawer extends Fragment implements
 						}
 
 
-						mdict mdTmp  = mdictInternal.get(id);
+						BookPresenter mdTmp  = mdictInternal.get(id);
 
 						if(mdTmp==null) {
 							try {
@@ -698,7 +727,7 @@ public class Drawer extends Fragment implements
 						@Override
 						public void
 						onSelectedFilePaths(String[] files, File now) {
-							CMN.Log(files);
+							//CMN.Log(files);
 							filepickernow = now;
 							if(files.length>0) {
 								final File def = new File(a.getExternalFilesDir(null),"default.txt");      //!!!原配
@@ -713,11 +742,11 @@ public class Drawer extends Fragment implements
 								for(PlaceHolder phI:a.CosyChair) {
 									mdictInternal.add(phI.getPath(a.opt).getPath());
 								}
-								for(mdict mdTmp:a.currentFilter) {
+								for(BookPresenter mdTmp:a.currentFilter) {
 									if(mdTmp!=null)
 										mdictInternal.add(mdTmp.getPath());
 								}
-								for(mdict mdTmp:Drawer.this.mdictInternal.values()) {
+								for(BookPresenter mdTmp:Drawer.this.mdictInternal.values()) {
 									if(mdTmp!=null)
 										mdictInternal.add(mdTmp.getPath());
 								}
@@ -930,10 +959,10 @@ public class Drawer extends Fragment implements
 				dialog1.show();
 			} break;
 			case 8://词典管理中心
-				a.findViewById(R.id.browser_widget2).performLongClick();
+				//a.findViewById(R.id.browser_widget2).performLongClick();
 				break;
 			case 9://切换生词本
-				a.findViewById(R.id.browser_widget5).performLongClick();
+				//a.findViewById(R.id.browser_widget5).performLongClick();
 				break;
 			case 11://设置
 				Intent intent = new Intent();
@@ -1110,5 +1139,10 @@ public class Drawer extends Fragment implements
 		ClipboardManager clipboardManager = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
 		if(clipboardManager!=null && ClipListener!=null)
 			clipboardManager.removePrimaryClipChangedListener(ClipListener);
+		if(PasteFileTarget!=null) {
+			try {
+				PasteFileTarget.close();
+			} catch (Exception ignored) { }
+		}
 	}
 }

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools">
+<com.knziha.plod.widgets.XYLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/root"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:clickable="true"
+	android:elevation="10dp"
+	android:animateLayoutChanges="true"
+	tools:ignore="ContentDescription,HardcodedText"
+	tools:background="#fff"
+	>
+	<LinearLayout
+		android:id="@+id/scnPanel"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="55dp"
+		>
+		<ImageView
+			android:id="@+id/scn_arrow"
+			android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+			style="@style/quick_settings_arrow"
+			/>
+		<TextView
+			android:id="@+id/scn"
+			android:text="屏幕方向"
+			style="@style/quick_settings_menu" />
+	</LinearLayout>
+	<View style="@style/quick_settings_sephor" />
+
+
+	<LinearLayout
+		android:id="@+id/infoPanel"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="55dp"
+		android:alpha="0.5"
+		>
+		<ImageView
+			android:id="@+id/info_arrow"
+			android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+			style="@style/quick_settings_arrow"
+			/>
+		<TextView
+			android:id="@+id/info"
+			android:text="更多功能来袭……"
+			style="@style/quick_settings_menu" />
+	</LinearLayout>
+	<View style="@style/quick_settings_sephor" />
+
+
+</com.knziha.plod.widgets.XYLinearLayout>
+</layout>

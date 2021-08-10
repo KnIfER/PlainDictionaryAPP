@@ -14,12 +14,12 @@
 	
 	Mdict-Java Query Library
 */
-package com.knziha.plod.PlainDict;
+package com.knziha.plod.plaindict;
 
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdBase;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
 
@@ -68,7 +68,7 @@ public abstract class MdictServer extends NanoHTTPD {
 	final AppOptions opt;
 	
 	String baseHtml;
-	public ArrayList<mdict> currentFilter = new ArrayList<>();
+	public ArrayList<BookPresenter> currentFilter = new ArrayList<>();
 	
 	protected mdBase MdbResource;
 	protected MdictServerLet MdbServerLet;
@@ -170,7 +170,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			adapter_idx_ = Integer.parseInt(list[0]);
 			uri = uri.substring(list[0].length());
 			key = uri.replace("/", SepWindows);
-			mdict mdTmp = md_get(adapter_idx_);
+			BookPresenter mdTmp = md_get(adapter_idx_);
 			if(list.length==1){
 				try {
 					int index = mdTmp.lookUp("index");
@@ -213,7 +213,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				if(key.endsWith("\\"))
 					key=key.substring(0, key.length()-1);
 				SU.Log("jumping...", key);
-				mdict mdTmp = md_get(adapter_idx_);
+				BookPresenter mdTmp = md_get(adapter_idx_);
 				String res = mdTmp.getRecordsAt(mdTmp.lookUp(key));
 				return newFixedLengthResponse(constructMdPage(mdTmp, Integer.toString(adapter_idx_), res, b1));
 			} catch (IOException e) {
@@ -248,7 +248,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				
 				
 				for (int i = 0; i < md_size; i++) {
-					mdict mdx = md_get(i);
+					BookPresenter mdx = md_get(i);
 					sb.append(mdx==null?"null":mdx.getDictionaryName());
 					
 					//sb.append(md_getName(i));
@@ -271,7 +271,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				}
 				long ret=0;
 				for (int i = 0; i < md_size; i++) {
-					mdict mdx = md_get(i);
+					BookPresenter mdx = md_get(i);
 					if(mdx!=null && mdx.getDictionaryName().equals(key))
 						ret=mdx.getNumberEntries();
 				}
@@ -287,7 +287,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				String[] l = key.split("\\\\");
 				StringBuilder ret= new StringBuilder();
 				for (int i = 0; i < md_size; i++) {
-					mdict mdx = md_get(i);
+					BookPresenter mdx = md_get(i);
 					if(mdx._Dictionary_fName.equals(l[0])) {
 						StringBuilder sb = new StringBuilder();
 						//SU.Log("capacity "+l[2]);
@@ -328,7 +328,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			//SU.Log("about received : ", uri);
 			uri = uri.substring(7);
 			try {
-				mdict mdTmp = md_get(Integer.parseInt(uri));
+				BookPresenter mdTmp = md_get(Integer.parseInt(uri));
 				return newFixedLengthResponse(mdTmp.getAboutHtml());
 			} catch (Exception ignored) { }
 		}
@@ -346,7 +346,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				}
 				try {
 					adapter_idx_ = Integer.parseInt(list[0]);
-					mdict mdTmp = md_get(adapter_idx_);
+					BookPresenter mdTmp = md_get(adapter_idx_);
 					int[] list2 = new int[list.length-1];
 					for(int i=0;i<list.length-1;i++)
 						list2[i]=Integer.parseInt(list[i+1]);
@@ -358,8 +358,8 @@ public abstract class MdictServer extends NanoHTTPD {
 			return newFixedLengthResponse(constructMdPage(md_get(adapter_idx_), 0+"","<div>ERROR FETCHING CONTENT:"+uri+"</div>", true));
 		}
 		
-		key = mdict.requestPattern.matcher(key).replaceAll("");
-		mdict mdTmp = md_get(adapter_idx_);
+		key = BookPresenter.requestPattern.matcher(key).replaceAll("");
+		BookPresenter mdTmp = md_get(adapter_idx_);
 		InputStream restmp = mdTmp.getResourceByKey(key);
 		SU.Log("-----> /dictionary/", adapter_idx_, mdTmp._Dictionary_fName, key, restmp==null?-1:restmp.available());
 		
@@ -417,7 +417,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		return MdbServerLet.md_getName(pos);
 	}
 	
-	private mdict md_get(int pos) {
+	private BookPresenter md_get(int pos) {
 		return MdbServerLet.md_get(pos);
 	}
 	
@@ -441,7 +441,7 @@ public abstract class MdictServer extends NanoHTTPD {
 	private String Reroute(String currentText) {
 		SU.Log(currentFilter.size(), "Reroute", currentText);
 		try {
-			for (mdict mdTmp:currentFilter) {
+			for (BookPresenter mdTmp:currentFilter) {
 				Object rerouteTarget = mdTmp.ReRoute(currentText);
 				if(rerouteTarget instanceof String){
 					String text = (String) rerouteTarget;
@@ -579,8 +579,8 @@ public abstract class MdictServer extends NanoHTTPD {
 	int MdPageBaseLen=-1;
 	String MdPage_fragment1,MdPage_fragment2, MdPage_fragment3="</html>";
 	int MdPageLength=0;
-	private String constructMdPage(mdict mdTmp, String dictIdx, String record, boolean b1) {
-		if(b1 && mdict.fullpagePattern.matcher(record).find())
+	private String constructMdPage(BookPresenter mdTmp, String dictIdx, String record, boolean b1) {
+		if(b1 && BookPresenter.fullpagePattern.matcher(record).find())
 			b1=false;
 		//b1=true;
 		if(b1) {

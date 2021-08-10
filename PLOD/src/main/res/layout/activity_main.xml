@@ -1,3 +1,4 @@
+<layout>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:CheckableImageview="http://schemas.android.com/apk/res-auto"
@@ -124,7 +125,7 @@
 
 			<fragment
 				android:id="@+id/navigation_drawer"
-				android:name="com.knziha.plod.PlainDict.Drawer"
+				android:name="com.knziha.plod.plaindict.Drawer"
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
 				android:layout_gravity="start"
@@ -142,78 +143,15 @@
 			app:layout_behavior="com.knziha.plod.widgets.BottomNavigationBehavior"
 			android:elevation="5dp"
 			>
-
-<!--			<android.widget.ImageView-->
-<!--				android:layout_width="0dp"-->
-<!--				android:layout_height="wrap_content"-->
-<!--				android:layout_weight="1"-->
-<!--				android:background="@drawable/surrtrip1"-->
-<!--				android:src="@drawable/bundle2"-->
-<!--				android:padding="8dp"-->
-<!--				/>-->
-
-<!--			<android.widget.ImageView-->
-<!--				android:layout_width="0dp"-->
-<!--				android:layout_height="wrap_content"-->
-<!--				android:layout_weight="1"-->
-<!--				android:background="@drawable/surrtrip1"-->
-<!--				android:src="@drawable/ic_exit_to_app_black_24dp"-->
-<!--				/>-->
-
 			<com.knziha.plod.widgets.ActivatableImageView
 				android:id="@+id/browser_widget1"
 				android:layout_width="0dp"
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:background="@drawable/surrtrip1"
-				android:src="@drawable/songlist"
+				android:src="@drawable/book_list"
 				app:src0="@drawable/back_ic"
 				app:activedSR="false"
-				/>
-
-			<android.widget.ImageView
-				android:id="@+id/browser_widget2"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:background="@drawable/surrtrip1"
-				android:src="@drawable/bundle" />
-
-			<com.knziha.plod.widgets.ActivatableImageView
-				android:id="@+id/browser_widget3"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:background="@drawable/surrtrip1"
-				android:src="@drawable/fuzzy_search"
-				app:src0="@drawable/fuzzy_search_pressed"
-				/>
-
-			<com.knziha.plod.widgets.ActivatableImageView
-				android:id="@+id/browser_widget4"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:background="@drawable/surrtrip1"
-				android:src="@drawable/full_search"
-				app:src0="@drawable/full_search_pressed"
-				/>
-
-			<android.widget.ImageView
-				android:id="@+id/browser_widget5"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:background="@drawable/surrtrip1"
-				android:src="@drawable/favoriteg" />
-
-			<android.widget.ImageView
-				android:id="@+id/browser_widget6"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:background="@drawable/surrtrip1"
-				android:src="@drawable/historyg"
 				/>
 		</LinearLayout>
 
@@ -263,6 +201,7 @@
 		android:layoutDirection="ltr"
 		android:elevation="6dp"
 		android:visibility="gone"
+		tools:visibility="visible"
 		>
 
 		<ImageView
@@ -371,3 +310,4 @@
 			/>
 	</RelativeLayout>
 </FrameLayout>
+</layout>

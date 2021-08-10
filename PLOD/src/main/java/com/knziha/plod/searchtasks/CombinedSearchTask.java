@@ -5,12 +5,12 @@ import android.view.View;
 
 import androidx.appcompat.app.GlobalOptions;
 
-import com.knziha.plod.PlainDict.CMN;
-import com.knziha.plod.PlainDict.MainActivityUIBase;
-import com.knziha.plod.PlainDict.PDICMainAppOptions;
-import com.knziha.plod.PlainDict.PlaceHolder;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.myCpr;
-import com.knziha.plod.dictionarymodels.mdict;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.rbtree.RBTree_additive;
 
@@ -36,7 +36,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		//CMN.Log("开始联合搜索！");
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
-		for(mdict mdTmp:a.md) {
+		for(BookPresenter mdTmp:a.md) {
 			if(mdTmp!=null)
 				mdTmp.combining_search_list = new ArrayList<>();
 		}
@@ -52,7 +52,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		CurrentSearchText2=PDICMainAppOptions.getSearchUseMorphology()?
 				a.ReRouteKey(CurrentSearchText, true):null;
 
-		ArrayList<mdict> md = a.md;
+		ArrayList<BookPresenter> md = a.md;
 
 		a.split_dict_thread_number = md.size()<6?1: (md.size()/6);
 		a.split_dict_thread_number = a.split_dict_thread_number>16?6:a.split_dict_thread_number;
@@ -85,7 +85,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 					if(it==a.split_dict_thread_number-1) jiaX=yuShu;
 					for(int i1 = it*step; i1 <it*step+step+jiaX; i1++) {
 						if(isCancelled()) break;
-						mdict mdTmp = md.get(i1);
+						BookPresenter mdTmp = md.get(i1);
 						if(mdTmp==null){
 							PlaceHolder phI = a.getPlaceHolderAt(i1);
 							if(phI!=null) {
@@ -128,10 +128,10 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 	protected void onPostExecute(resultRecorderCombined rec) {
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
-		ArrayList<mdict> md = a.md;
+		ArrayList<BookPresenter> md = a.md;
 		additive_combining_search_tree = new RBTree_additive();
 		for(int i=0; i<md.size(); i++) {
-			mdict mdTmp = md.get(i);
+			BookPresenter mdTmp = md.get(i);
 			if(mdTmp!=null){
 				ArrayList<myCpr<String, Integer>> combining_search_list = mdTmp.combining_search_list;
 				if(combining_search_list!=null) {
@@ -153,10 +153,10 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		//showT(""+bWantsSelection);
 
 		if(a.bIsFirstLaunch||a.bWantsSelection) {
-			if(mdict.processText(rec.getResAt(0)).equals(mdict.processText(CurrentSearchText))) {
+			if(BookPresenter.processText(rec.getResAt(0)).equals(BookPresenter.processText(CurrentSearchText))) {
 				boolean proceed = true;
 				if(a.contentview.getParent()==a.main) {
-					proceed = (a.adaptermy2.currentKeyText == null || !mdict.processText(CurrentSearchText).equals(mdict.processText(a.adaptermy2.currentKeyText)));
+					proceed = (a.adaptermy2.currentKeyText == null || !BookPresenter.processText(CurrentSearchText).equals(BookPresenter.processText(a.adaptermy2.currentKeyText)));
 				}
 				if(proceed){
 					a.bRequestedCleanSearch=a.bIsFirstLaunch;
