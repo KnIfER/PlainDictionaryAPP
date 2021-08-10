@@ -149,16 +149,12 @@ import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.bookPresenter_asset;
-import com.knziha.plod.dictionarymodels.bookPresenter_dsl;
-import com.knziha.plod.dictionarymodels.bookPresenter_pdf;
-import com.knziha.plod.dictionarymodels.bookPresenter_txt;
-import com.knziha.plod.dictionarymodels.bookPresenter_web;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.ebook.Utils.BU;
@@ -535,7 +531,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private Drawable mRatingDrawable;
 	private int CurrentDictInfoIdx;
 	private int StarLevelStamp;
-	public long mid;
 	private static HashMap<String, String> CrossFireHeaders = new HashMap<>();
 	static {
 		CrossFireHeaders.put("Content-Type", "");
@@ -1236,8 +1231,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
        		  cc+=ri.get(i).numActivities;
        	  showT(""+cc);
        	  */
-		mid = Thread.currentThread().getId();
-		CMN.Log("mid", mid, getClass());
+		CMN.mid = Thread.currentThread().getId();
+		CMN.Log("mid", CMN.mid, getClass());
 	    //CMN.Log("instanceCount", CMN.instanceCount);
 		super.onCreate(savedInstanceState);
 		if(shunt) return;
@@ -1382,7 +1377,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public void popupWord(final String key, int forceStartId, int frameAt) {
 		CMN.Log("popupWord_frameAt", frameAt, key, md.size(), WebViewmy.supressNxtClickTranslator);
-		if(key==null || BookPresenter.processText(key).length()>0) {
+		if(key==null || mdict.processText(key).length()>0) {
 			popupKey = key;
 			popupFrame = frameAt;
 			popupForceId = forceStartId;
@@ -1473,7 +1468,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(popupForceId>=0 && popupForceId<size)
 								CCD_ID = popupForceId;
 							//轮询开始
-							bookPresenter_web webx = null;
+							//nimp
+							//bookPresenter_web webx = null;
 							boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
 							int SearchMode = PDICMainAppOptions.getClickSearchMode();
 							CMN.Log("SearchMode", SearchMode);
@@ -1481,16 +1477,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (SearchMode == 2) {/* 仅搜索当前词典 */
 								CCD = md_get(CCD_ID);
 								if (CCD != null) {
-									if (CCD instanceof bookPresenter_web) {
-										webx = (bookPresenter_web) CCD;
-										if (!webx.takeWord(popupKey)) {
-											webx = null;
-										}
-									} else {
-										idx = CCD.lookUp(popupKey, true);
+									//if (CCD instanceof bookPresenter_web) {
+									//	webx = (bookPresenter_web) CCD;
+									//	if (!webx.takeWord(popupKey)) {
+									//		webx = null;
+									//	}
+									//} else 
+									{
+										idx = CCD.bookImpl.lookUp(popupKey, true);
 										if (idx < -1 && use_morph) {
 											keykey = ReRouteKey(popupKey, true);
-											if (keykey != null) idx = CCD.lookUp(keykey, true);
+											if (keykey != null) idx = CCD.bookImpl.lookUp(keykey, true);
 										}
 									}
 								}
@@ -1528,18 +1525,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 													firstAttemp = mdTmp;
 												bHasDedicatedSeachGroup=true;
 												proceed=false;
-												if (mdTmp instanceof bookPresenter_web) {
-													webx = (bookPresenter_web) mdTmp;
-													if (bForceJump || webx.takeWord(popupKey)) {
-														break;
-													}
-													webx = null;
-												} else {
-													idx = mdTmp.lookUp(popupKey, true);
+												//if (mdTmp instanceof bookPresenter_web) {
+												//	webx = (bookPresenter_web) mdTmp;
+												//	if (bForceJump || webx.takeWord(popupKey)) {
+												//		break;
+												//	}
+												//	webx = null;
+												//} else 
+												{
+													idx = mdTmp.bookImpl.lookUp(popupKey, true);
 													if (idx < -1 && use_morph) {
 														keykey = ReRouteKey(popupKey, true);
 														if (keykey != null)
-															idx = mdTmp.lookUp(keykey, true);
+															idx = mdTmp.bookImpl.lookUp(keykey, true);
 													}
 													if(idx<0 && bForceJump){
 														idx = -1-idx;
@@ -1585,19 +1583,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 												}
 											}
 										}
-										if (CCD instanceof bookPresenter_web) {
-											webx = (bookPresenter_web) CCD;
-											if (webx.takeWord(popupKey)) {
-												break;
-											}
-											webx = null;
-										} else if (CCD != null) {
-											idx = CCD.lookUp(popupKey, true);
+										//if (CCD instanceof bookPresenter_web) {
+										//	webx = (bookPresenter_web) CCD;
+										//	if (webx.takeWord(popupKey)) {
+										//		break;
+										//	}
+										//	webx = null;
+										//} else 
+										if (CCD != null) {
+											idx = CCD.bookImpl.lookUp(popupKey, true);
 											if (idx < 0) {
 												if (!reject_morph && use_morph) {
 													keykey = ReRouteKey(popupKey, true);
 													if (keykey != null)
-														idx = CCD.lookUp(keykey, true);
+														idx = CCD.bookImpl.lookUp(keykey, true);
 													else
 														reject_morph = true;
 												}
@@ -1611,10 +1610,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 							popupIndicator.setText(md_getName(CCD_ID));
 
-							if (webx != null) {
-								webx.searchKey = popupKey;
-								idx = 0;
-							}
+							//if (webx != null) {
+							//	webx.searchKey = popupKey;
+							//	idx = 0;
+							//}
 
 							//CMN.Log(CCD, "应用轮询结果", webx, idx);
 
@@ -1828,7 +1827,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				if(mdTmp!=null)
 				try {
-					Object rerouteTarget = mdTmp.ReRoute(key);
+					Object rerouteTarget = mdTmp.bookImpl.ReRoute(key);
 					//CMN.Log(key, " >> " , rerouteTarget, mdTmp.getName(), mdTmp.getIsDedicatedFilter());
 					if (rerouteTarget instanceof String)
 						return (String) rerouteTarget;
@@ -2359,7 +2358,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				int blockSize;
 				while ((blockSize = fin.read(buffer)) > 0) {
 					now = 0;
-					while ((breakIdx = BookPresenter.indexOf(buffer, 0, blockSize, linebreak, 0, linebreak.length, now)) > 0) {
+					while ((breakIdx = mdict.indexOf(buffer, 0, blockSize, linebreak, 0, linebreak.length, now)) > 0) {
 						String val = new String(buffer, now, breakIdx - now, _charset);
 						_jnFanMap.put(val.charAt(0), val);
 						int len = val.length();
@@ -2394,7 +2393,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	protected void scanSettings() {
 		CMN.GlobalPageBackground = GlobalPageBackground = opt.getGlobalPageBackground();
-		BookPresenter.bGlobalUseClassicalKeycase = PDICMainAppOptions.getClassicalKeycaseStrategy();
+		mdict.bGlobalUseClassicalKeycase = PDICMainAppOptions.getClassicalKeycaseStrategy();
 		opt.getLastPlanName(LastPlanName);
 		new File(opt.pathToDatabases().toString()).mkdirs();
 		opt.CheckFileToDefaultMdlibs();
@@ -2810,16 +2809,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected void populateDictionaryList(File def, ArrayList<PlaceHolder> CC, boolean retrieve_all) {
 		if(retrieve_all) {
-			try {
-				String path = CMN.AssetTag + "liba.mdx";
-				md.add(new bookPresenter_asset(new File(path), this));
-				if(CC==null&&this instanceof FloatSearchActivity) {
-					FloatSearchActivity.mCosyChair = CC = new ArrayList<>();
-				}
-				CC.add(new PlaceHolder(path, CC));
-			} catch (IOException e) {
-				CMN.Log(e);
-			}
+			//nimp
+			//try {
+			//	String path = CMN.AssetTag + "liba.mdx";
+			//	md.add(new mdict_asset(new File(path), this));
+			//	if(CC==null&&this instanceof FloatSearchActivity) {
+			//		FloatSearchActivity.mCosyChair = CC = new ArrayList<>();
+			//	}
+			//	CC.add(new PlaceHolder(path, CC));
+			//} catch (IOException e) {
+			//	CMN.Log(e);
+			//}
 		}
 		else try {
 			//todo 实现词典懒加载
@@ -3353,10 +3353,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public static BookPresenter new_mdict(File fullPath, MainActivityUIBase THIS) throws IOException {
 		String pathFull = fullPath.getPath();
-		if(pathFull.startsWith(CMN.AssetTag)) {
-			if(CMN.AssetMap.containsKey(pathFull))
-				return new bookPresenter_asset(fullPath,THIS);
-		}
+		//if(pathFull.startsWith(CMN.AssetTag)) {
+		//	if(CMN.AssetMap.containsKey(pathFull))
+		//		return new bookPresenter_asset(fullPath,THIS);
+		//}
 		int sufixp = pathFull.lastIndexOf(".");
 		if(sufixp>0){
 			int hash = hashCode(pathFull, sufixp+1);
@@ -3364,14 +3364,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				case 107969:
 				case 107949:
 					return new BookPresenter(fullPath, THIS, 0, null);
-				case 117588:
-					return new bookPresenter_web(fullPath, THIS);
-				case 110834:
-					return new bookPresenter_pdf(fullPath, THIS);
-				case 115312:
-					return new bookPresenter_txt(fullPath, THIS);
-				case 99773:
-					return new bookPresenter_dsl(fullPath, THIS);
+				//case 117588:
+				//	return new bookPresenter_web(fullPath, THIS);
+				//case 110834:
+				//	return new bookPresenter_pdf(fullPath, THIS);
+				//case 115312:
+				//	return new bookPresenter_txt(fullPath, THIS);
+				//case 99773:
+				//	return new bookPresenter_dsl(fullPath, THIS);
+				
 				//case 120609:
 				//return new mdict_zip(fullPath, THIS);
 				//case 3088960:
@@ -3593,58 +3594,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	byte[] buffer = new byte[0];
-	byte[] buffer_server = new byte[0];
-	public byte[] AcquireCompressedBlockOfSize(int compressedSize, long max) {
-		long tid = Thread.currentThread().getId();
-		if(tid==mid) {
-			if(buffer.length<max) {
-				//CMN.Log("扩容", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
-				buffer = new byte[(int) (max*1.2f)];
-			} else {
-				//CMN.Log("复用缓存", max);
-			}
-			return buffer;
-		} else if(tid == ServerRunnable.tid) {
-			if(buffer_server.length<max) {
-				//CMN.Log("服 务 器 扩容", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
-				buffer_server = new byte[(int) (max*1.2f)];
-			} else {
-				//CMN.Log("服 务 器 复用缓存", max);
-			}
-			return buffer_server;
-		} else {
-			CMN.Log("复异步缓存", tid);
-			return new byte[compressedSize];
-		}
-	}
-	
-	byte[] buffer1 = new byte[0];
-	byte[] buffer1_server = new byte[0];
-	public byte[] AcquireDeCompressedKeyBlockOfSize(int decompressedSize, long max) {
-		long tid = Thread.currentThread().getId();
-		if(tid==mid) {
-			if(buffer1.length<max) {
-				//CMN.Log("扩容 1", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
-				buffer1 = new byte[(int) (max*1.2f)];
-			} else {
-				//CMN.Log("复用缓存 1", max);
-			}
-			return buffer1;
-		} else if(tid == ServerRunnable.tid) {
-			if(buffer1_server.length<max) {
-				//CMN.Log("服 务 器 扩容 1", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
-				buffer1_server = new byte[(int) (max*1.2f)];
-			} else {
-				//CMN.Log("服 务 器 复用缓存 1", max);
-			}
-			return buffer1_server;
-		} else {
-			CMN.Log("复异步缓存 1", tid);
-			return new byte[decompressedSize];
-		}
-	}
-	
 	public void OnPeruseDetached() {
 	
 	}
@@ -3680,7 +3629,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			invoker=mdict;
 			mWebView=_mWebView;
 			mTextView =_tv;
-			isWeb = invoker instanceof bookPresenter_web;
+			//isWeb = invoker instanceof bookPresenter_web;
+			// nimp
+			isWeb = false;
 			if(_tv!=null){
 				int start = _tv.getSelectionStart();
 				int end = _tv.getSelectionEnd();
@@ -3878,12 +3829,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				bFromWebView=(ftag&1)!=0;
 				bFromPeruseView=(ftag&2)!=0;
 			}
-			if (!bFromWebView && mWebView!=null && invoker instanceof bookPresenter_pdf) {
-				mWebView.evaluateJavascript(PDFPage, value -> {
-					mWebView.currentPos = IU.parsint(value);
-					build_further_dialog();
-				});
-			} else {
+			// nimp
+			//if (!bFromWebView && mWebView!=null && invoker instanceof bookPresenter_pdf) {
+			//	mWebView.evaluateJavascript(PDFPage, value -> {
+			//		mWebView.currentPos = IU.parsint(value);
+			//		build_further_dialog();
+			//	});
+			//} else
+			{
 				build_further_dialog();
 			}
 		}
@@ -3924,10 +3877,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								boolean succ = false;
 								if (con != null) {
 									if (isWeb) {
-										bookPresenter_web webx = ((bookPresenter_web) invoker);
-										if (webx.removeCurrentUrl(con, _mWebView.getUrl())) {
-											succ = true;
-										}
+										// nimp
+										//bookPresenter_web webx = ((bookPresenter_web) invoker);
+										//if (webx.removeCurrentUrl(con, _mWebView.getUrl())) {
+										//	succ = true;
+										//}
 									} else if (con.remove(_mWebView.currentPos) > 0) {
 										succ = true;
 									}
@@ -3942,9 +3896,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if (con == null) con = invoker.getCon(true);
 								try {
 									if (isWeb) {
-										bookPresenter_web webx = ((bookPresenter_web) invoker);
-										if (webx.saveCurrentUrl(con, _mWebView.getUrl()) != -1)
-											succ = true;
+										//bookPresenter_web webx = ((bookPresenter_web) invoker);
+										//if (webx.saveCurrentUrl(con, _mWebView.getUrl()) != -1)
+										//	succ = true;
 									} else {
 										if (con.insert(_mWebView.currentPos) != -1) {
 											succ = true;
@@ -4467,8 +4421,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				itemsA[0]=bmAdd;
 				if(con!=null){
 					if(isWeb){
-						if(((bookPresenter_web)invoker).containsCurrentUrl(con, mWebView.getUrl()))
-							itemsA[0]=getString(R.string.bmSub);
+						//if(((bookPresenter_web)invoker).containsCurrentUrl(con, mWebView.getUrl()))
+						//	itemsA[0]=getString(R.string.bmSub);
 					} else if(con.containsRaw(mWebView.currentPos)){
 						itemsA[0]=getString(R.string.bmSub);
 					}
@@ -5505,8 +5459,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(CCD==null)
 					CCD=currentDictionary;
 				int np = currentClickDictionary_currentPos+(id==R.id.popNxtE?1:-1);
-				if(np>=0&&np<CCD.getNumberEntries()){
-					popupTextView.setText(currentClickDisplaying=CCD.getEntryAt(np));
+				if(np>=0&&np<CCD.bookImpl.getNumberEntries()){
+					popupTextView.setText(currentClickDisplaying=CCD.bookImpl.getEntryAt(np));
 					popupHistory.add(++popupHistoryVagranter,new myCpr<>(currentClickDisplaying,new int[]{CCD_ID, np}));
 					if (popupHistory.size() > popupHistoryVagranter + 1) {
 						popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
@@ -5549,20 +5503,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						cc++;
 						if(cc>md.size())
 							break;
-						if(CCD instanceof bookPresenter_web){
-							bookPresenter_web webx = (bookPresenter_web) CCD;
-							if(webx.takeWord(key)){
-								webx.searchKey=key;
-								idx=0;
-							}
-						}
-						else if (CCD!=null) {
-							idx=CCD.lookUp(key, true);
+						// nimp
+						//if(CCD instanceof bookPresenter_web){
+						//	bookPresenter_web webx = (bookPresenter_web) CCD;
+						//	if(webx.takeWord(key)){
+						//		webx.searchKey=key;
+						//		idx=0;
+						//	}
+						//}
+						//else
+						if (CCD!=null) {
+							idx=CCD.bookImpl.lookUp(key, true);
 							if(idx<0){
 								if(!reject_morph&&use_morph){
 									keykey=ReRouteKey(key, true);
 									if(keykey!=null)
-										idx=CCD.lookUp(keykey, true);
+										idx=CCD.bookImpl.lookUp(keykey, true);
 									else
 										reject_morph=true;
 								}
@@ -6922,9 +6878,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				int selfAtIdx = mWebView.SelfIdx;
 				if(selfAtIdx>=md.size() || selfAtIdx<0) return;
 				final BookPresenter invoker = md.get(selfAtIdx);
-				if(invoker instanceof bookPresenter_web){
-					((bookPresenter_web)invoker).onProgressChanged(mWebView, newProgress);
-				}
+				// nimp
+				//if(invoker instanceof bookPresenter_web){
+				//	((bookPresenter_web)invoker).onProgressChanged(mWebView, newProgress);
+				//}
 			}
 		}
 
@@ -7002,10 +6959,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				int selfAtIdx = mWebView.SelfIdx;
 				if(selfAtIdx>=md.size() || selfAtIdx<0) return;
 				final BookPresenter invoker = md.get(selfAtIdx);
-				if(invoker instanceof bookPresenter_web){
-					((bookPresenter_web)invoker).onPageFinished(view, url, true);
-					break OUT;
-				}
+				// nimp
+				//if(invoker instanceof bookPresenter_web){
+				//	((bookPresenter_web)invoker).onPageFinished(view, url, true);
+				//	break OUT;
+				//}
 				if(invoker==null){
 					//root.post(() -> showT("OPF 错误!!!"));
 					return;
@@ -7174,9 +7132,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			int selfAtIdx = mWebView.SelfIdx;
 			if(selfAtIdx>=md.size() || selfAtIdx<0) return;
 			final BookPresenter invoker = md.get(selfAtIdx);
-			if(invoker instanceof bookPresenter_web){
-				((bookPresenter_web)invoker).onPageStarted(view, url, true);
-			}
+			// nimp
+			//if(invoker instanceof bookPresenter_web){
+			//	((bookPresenter_web)invoker).onPageStarted(view, url, true);
+			//}
 		}
 
 		public void  onScaleChanged(WebView view, float oldScale,float newScale) {
@@ -7208,33 +7167,34 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(selfAtIdx>=md.size() || selfAtIdx<0) return false;
 			final BookPresenter invoker = md.get(selfAtIdx);
 			boolean fromPopup = view==popupWebView;
-			if(invoker instanceof bookPresenter_web){
-				bookPresenter_web webx = ((bookPresenter_web) invoker);
-				try {
-					if (!url.startsWith("http") && !url.startsWith("https") && !url.startsWith("ftp") && !url.startsWith("file")) {
-						return true;
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				boolean ret = webx.canExcludeUrl && webx.shouldExcludeUrl(url);
-				if(!ret){
-					if(webx.canRerouteUrl) {
-						String urlnew = webx.shouldRerouteUrl(url);
-						if(urlnew!=null) {
-							view.loadUrl(urlnew);
-							ret = true;
-						}
-					}
-					if (fromPopup) {
-						popupHistory.add(++popupHistoryVagranter, new myCpr<>(currentClickDisplaying, new int[]{CCD_ID, currentClickDictionary_currentPos}));
-						if (popupHistory.size() > popupHistoryVagranter + 1) {
-							popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
-						}
-					}
-				}
-				return ret;
-			}
+			// nimp
+			//if(invoker instanceof bookPresenter_web){
+			//	bookPresenter_web webx = ((bookPresenter_web) invoker);
+			//	try {
+			//		if (!url.startsWith("http") && !url.startsWith("https") && !url.startsWith("ftp") && !url.startsWith("file")) {
+			//			return true;
+			//		}
+			//	} catch (Exception e) {
+			//		e.printStackTrace();
+			//	}
+			//	boolean ret = webx.canExcludeUrl && webx.shouldExcludeUrl(url);
+			//	if(!ret){
+			//		if(webx.canRerouteUrl) {
+			//			String urlnew = webx.shouldRerouteUrl(url);
+			//			if(urlnew!=null) {
+			//				view.loadUrl(urlnew);
+			//				ret = true;
+			//			}
+			//		}
+			//		if (fromPopup) {
+			//			popupHistory.add(++popupHistoryVagranter, new myCpr<>(currentClickDisplaying, new int[]{CCD_ID, currentClickDictionary_currentPos}));
+			//			if (popupHistory.size() > popupHistoryVagranter + 1) {
+			//				popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
+			//			}
+			//		}
+			//	}
+			//	return ret;
+			//}
 			//CMN.Log("chromium shouldOverrideUrlLoading_",url);
 			//TODO::改写历史纪录方式，统一操作。
 			int from = mWebView.fromCombined;
@@ -7293,7 +7253,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			else if (url.startsWith(soundTag)) {
 				try {
-					if (invoker.hasMdd()) {
+					if (invoker.bookImpl.hasMdd()) {
 						//CMN.Log("hijacked sound playing : ",url);
 						String soundUrl = URLDecoder.decode(url.substring(soundTag.length()), "UTF-8");
 						if(PDICMainAppOptions.getCacheSoundResInAdvance()){
@@ -7358,10 +7318,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//a.jump(url, mdict.this);
 						Integer pos = IU.parseInt(url.substring(entryTag.length() + 1));
 						if (pos == null) return true;
-						if (invoker instanceof bookPresenter_pdf) {
-							view.evaluateJavascript("window.PDFViewerApplication.page=" + pos, null);
-							return true;
-						}
+						//nimp
+						//if (invoker instanceof bookPresenter_pdf) {
+						//	view.evaluateJavascript("window.PDFViewerApplication.page=" + pos, null);
+						//	return true;
+						//}
 						//todo delay save states
 						if (fromPeruseView) {
 							PeruseView.recess.setVisibility(View.VISIBLE);
@@ -7379,7 +7340,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						view.loadDataWithBaseURL(invoker.baseUrl,
 								invoker.AcquirePageBuilder().append((AppWhite == Color.BLACK) ? MainActivityUIBase.DarkModeIncantation_l : "")
 										.append(BookPresenter.htmlHeadEndTag)
-										.append(invoker.getRecordsAt(pos))
+										.append(invoker.bookImpl.getRecordsAt(pos))
 										.append(invoker.htmlEnd).toString()
 								, null, "UTF-8", null);
 						jump(pos, invoker);
@@ -7413,7 +7374,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						else {
 							/* 查询跳转目标 */
-							int idx = invoker.lookUp(url, true);
+							int idx = invoker.bookImpl.lookUp(url, true);
 							//CMN.Log("查询跳转目标 : ", idx, URLDecoder.decode(url,"UTF-8"), processText(URLDecoder.decode(url,"UTF-8")));
 							if (idx >= 0) {//idx != -1
 								if(!fromPopup) {
@@ -7460,7 +7421,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								}
 								invoker.AddPlodStructure(mWebView, htmlBuilder ,mWebView==popupWebView, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
-								invoker.LoadPagelet(mWebView, htmlBuilder, invoker.getRecordsAt(idx));
+								invoker.LoadPagelet(mWebView, htmlBuilder, invoker.bookImpl.getRecordsAt(idx));
 								return true;
 							}
 						}
@@ -7539,157 +7500,158 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			BookPresenter invoker = md.get(selfAtIdx);
 			//CMN.Log("chromium shouldInterceptRequest invoker",invoker);
 			if(invoker==null) return null;
-			if(invoker instanceof bookPresenter_web){
-				if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
-					bookPresenter_web webx = ((bookPresenter_web) invoker);
-					boolean proceed = true;
-					String[] shWebsite = webx.cleanExtensions;
-					if(shWebsite!=null){
-						for (int i = 0; i < shWebsite.length; i++) {
-							if(url_contains(url, shWebsite[i])){
-								proceed=false;
-								break;
-							}
-						}
-					}
-
-					if(proceed){
-						InputStream overridePage = webx.getPage(url);
-						//CMN.tp(0, "webx getPage :: ", overridePage, url);
-						if(overridePage!=null){
-							return new WebResourceResponse("*","UTF-8",overridePage);
-						}
-					}
-
-					if(webx.canSaveResource){
-						try {
-							shWebsite = webx.cacheExtensions;
-							for (int i = 0; i < shWebsite.length; i++) {
-								//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
-								if(url.contains(shWebsite[i])){
-									File pathDownload = webx.getInternalResourcePath(true);
-									if(!pathDownload.exists()) pathDownload.mkdirs();
-									if(pathDownload.isDirectory()) {
-										boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
-										File path;
-										int start = url.indexOf("://");
-										if(start<0) start=0; else start+=3;
-										start = Math.max(url.indexOf("/", start)+1, start);
-										int end = needTrim?url.indexOf("?"):-1;
-										if(end<0) end=url.length();
-										String name=url.substring(start, end);
-										try {
-											name=URLDecoder.decode(name, "utf8");
-										} catch (Exception e) { }
-										if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
-										if(name.length()==0){
-											name = "plod-index";
-										}
-										path=new File(pathDownload, name);
-										CMN.Log("pathDownload", path);
-										pathDownload = path.getParentFile();
-										boolean saveit = !webx.butReadonly;
-										if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
-										if(pathDownload.isDirectory())
-										{
-											name=path.getName();
-											if(name.length()>64){
-												name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
-												path=new File(pathDownload, name);
-											}
-											/* 下载 */
-											if(saveit && !path.exists()) {
-												CMN.Log("shouldInterceptRequest 下载中...！", url);
-												CMN.Log("shouldInterceptRequest 下载目标: ", name);
-												URL requestURL = new URL(url);
-												HttpURLConnection urlConnection = null;
-												FileOutputStream fout = null;
-												try {
-													try {
-														SSLContext sslcontext = SSLContext.getInstance("TLS");
-														sslcontext.init(null, new TrustManager[]{new bookPresenter_web.MyX509TrustManager()}, new SecureRandom());
-														HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
-													} catch (Exception ignored) {
-													}
-													urlConnection = (HttpURLConnection) requestURL.openConnection();
-													urlConnection.setRequestMethod("GET");
-													urlConnection.setConnectTimeout(10000);
-													if(accept!=null)urlConnection.setRequestProperty("Accept",accept);
-													if(refer!=null) urlConnection.setRequestProperty("Refer", refer);
-													if(origin!=null) urlConnection.setRequestProperty("Origin", origin);
-													if(request!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-														Map<String, String> headers = request.getRequestHeaders();
-														urlConnection.setRequestProperty("X-Requested-With", headers.get("X-Requested-With"));
-														urlConnection.setRequestProperty("Content-Type", headers.get("Content-Type"));
-														urlConnection.setRequestMethod(request.getMethod());
-													}
-													urlConnection.setRequestProperty("Charset", "UTF-8");
-													urlConnection.setRequestProperty("Connection", "Keep-Alive");
-													urlConnection.setRequestProperty("User-Agent", webx.computerFace?"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
-														:"Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
-													urlConnection.connect();
-													InputStream is = urlConnection.getInputStream();
-													byte[] buffer = new byte[4096];
-													int len;
-													while ((len = is.read(buffer)) > 0) {
-														if (fout == null)
-															fout = new FileOutputStream(path);
-														fout.write(buffer, 0, len);
-													}
-													if(fout!=null) {
-														fout.flush();
-														fout.close();
-													}
-													urlConnection.disconnect();
-													is.close();
-													CMN.Log("shouldInterceptRequest 已下载！", url);
-												} catch (Exception e) {
-													CMN.Log(e);
-													path.delete();
-													return emptyResponse;
-												}
-											}
-											/* 再构 */
-											if(path.isFile()){
-												String mime=accept;
-												if(mime!=null){
-													int idx = mime.indexOf(",");
-													if(idx>0) mime=mime.substring(0, idx);
-												}else{
-													mime="*/*";
-												}
-												if(mime.startsWith("image") && webx.svgKeywords!=null){
-													for (int j = 0; j < webx.svgKeywords.length; j++) {
-														if(url.contains(webx.svgKeywords[i])){
-															mime="image/svg+xml";
-															break;
-														}
-													}
-												}
-
-												WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
-												if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-													ret.setResponseHeaders(CrossFireHeaders);
-												}
-												return ret;
-											}
-										}
-									}
-
-									break;
-								}
-							}
-						}
-						catch (Exception e) {
-							CMN.Log(e);
-						}
-					}
-				}
-				else{
-					view.setTag(R.id.save, null);
-				}
-				return null;
-			}
+			// nimp
+//			if(invoker instanceof bookPresenter_web){
+//				if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
+//					bookPresenter_web webx = ((bookPresenter_web) invoker);
+//					boolean proceed = true;
+//					String[] shWebsite = webx.cleanExtensions;
+//					if(shWebsite!=null){
+//						for (int i = 0; i < shWebsite.length; i++) {
+//							if(url_contains(url, shWebsite[i])){
+//								proceed=false;
+//								break;
+//							}
+//						}
+//					}
+//
+//					if(proceed){
+//						InputStream overridePage = webx.getPage(url);
+//						//CMN.tp(0, "webx getPage :: ", overridePage, url);
+//						if(overridePage!=null){
+//							return new WebResourceResponse("*","UTF-8",overridePage);
+//						}
+//					}
+//
+//					if(webx.canSaveResource){
+//						try {
+//							shWebsite = webx.cacheExtensions;
+//							for (int i = 0; i < shWebsite.length; i++) {
+//								//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
+//								if(url.contains(shWebsite[i])){
+//									File pathDownload = webx.getInternalResourcePath(true);
+//									if(!pathDownload.exists()) pathDownload.mkdirs();
+//									if(pathDownload.isDirectory()) {
+//										boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
+//										File path;
+//										int start = url.indexOf("://");
+//										if(start<0) start=0; else start+=3;
+//										start = Math.max(url.indexOf("/", start)+1, start);
+//										int end = needTrim?url.indexOf("?"):-1;
+//										if(end<0) end=url.length();
+//										String name=url.substring(start, end);
+//										try {
+//											name=URLDecoder.decode(name, "utf8");
+//										} catch (Exception e) { }
+//										if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
+//										if(name.length()==0){
+//											name = "plod-index";
+//										}
+//										path=new File(pathDownload, name);
+//										CMN.Log("pathDownload", path);
+//										pathDownload = path.getParentFile();
+//										boolean saveit = !webx.butReadonly;
+//										if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
+//										if(pathDownload.isDirectory())
+//										{
+//											name=path.getName();
+//											if(name.length()>64){
+//												name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
+//												path=new File(pathDownload, name);
+//											}
+//											/* 下载 */
+//											if(saveit && !path.exists()) {
+//												CMN.Log("shouldInterceptRequest 下载中...！", url);
+//												CMN.Log("shouldInterceptRequest 下载目标: ", name);
+//												URL requestURL = new URL(url);
+//												HttpURLConnection urlConnection = null;
+//												FileOutputStream fout = null;
+//												try {
+//													try {
+//														SSLContext sslcontext = SSLContext.getInstance("TLS");
+//														sslcontext.init(null, new TrustManager[]{new bookPresenter_web.MyX509TrustManager()}, new SecureRandom());
+//														HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
+//													} catch (Exception ignored) {
+//													}
+//													urlConnection = (HttpURLConnection) requestURL.openConnection();
+//													urlConnection.setRequestMethod("GET");
+//													urlConnection.setConnectTimeout(10000);
+//													if(accept!=null)urlConnection.setRequestProperty("Accept",accept);
+//													if(refer!=null) urlConnection.setRequestProperty("Refer", refer);
+//													if(origin!=null) urlConnection.setRequestProperty("Origin", origin);
+//													if(request!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+//														Map<String, String> headers = request.getRequestHeaders();
+//														urlConnection.setRequestProperty("X-Requested-With", headers.get("X-Requested-With"));
+//														urlConnection.setRequestProperty("Content-Type", headers.get("Content-Type"));
+//														urlConnection.setRequestMethod(request.getMethod());
+//													}
+//													urlConnection.setRequestProperty("Charset", "UTF-8");
+//													urlConnection.setRequestProperty("Connection", "Keep-Alive");
+//													urlConnection.setRequestProperty("User-Agent", webx.computerFace?"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
+//														:"Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
+//													urlConnection.connect();
+//													InputStream is = urlConnection.getInputStream();
+//													byte[] buffer = new byte[4096];
+//													int len;
+//													while ((len = is.read(buffer)) > 0) {
+//														if (fout == null)
+//															fout = new FileOutputStream(path);
+//														fout.write(buffer, 0, len);
+//													}
+//													if(fout!=null) {
+//														fout.flush();
+//														fout.close();
+//													}
+//													urlConnection.disconnect();
+//													is.close();
+//													CMN.Log("shouldInterceptRequest 已下载！", url);
+//												} catch (Exception e) {
+//													CMN.Log(e);
+//													path.delete();
+//													return emptyResponse;
+//												}
+//											}
+//											/* 再构 */
+//											if(path.isFile()){
+//												String mime=accept;
+//												if(mime!=null){
+//													int idx = mime.indexOf(",");
+//													if(idx>0) mime=mime.substring(0, idx);
+//												}else{
+//													mime="*/*";
+//												}
+//												if(mime.startsWith("image") && webx.svgKeywords!=null){
+//													for (int j = 0; j < webx.svgKeywords.length; j++) {
+//														if(url.contains(webx.svgKeywords[i])){
+//															mime="image/svg+xml";
+//															break;
+//														}
+//													}
+//												}
+//
+//												WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
+//												if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//													ret.setResponseHeaders(CrossFireHeaders);
+//												}
+//												return ret;
+//											}
+//										}
+//									}
+//
+//									break;
+//								}
+//							}
+//						}
+//						catch (Exception e) {
+//							CMN.Log(e);
+//						}
+//					}
+//				}
+//				else{
+//					view.setTag(R.id.save, null);
+//				}
+//				return null;
+//			}
 			if(url.startsWith("http") && url.endsWith(".mp3")) {
 				return null;
 			}
@@ -7876,9 +7838,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} catch (FileNotFoundException ignored) { }
 			}
 
-			if(!invoker.hasMdd())
+			if(!invoker.bookImpl.hasMdd())
 				return null;
-			key= BookPresenter.requestPattern.matcher(key).replaceAll("");
+			key= mdict.requestPattern.matcher(key).replaceAll("");
 			if(mWebView.fromCombined==0 && !mWebView.fromNet && invoker.getIsolateImages() && RegImg.matcher(key).find()){
 				//CMN.Log("Isolating Images...");
 				new_photo = key;
@@ -7887,7 +7849,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return super.shouldInterceptRequest(view, url);
 			}
 			try {
-				InputStream restmp=invoker.getResourceByKey(key);
+				InputStream restmp=invoker.bookImpl.getResourceByKey(key);
 				if(restmp==null) {
 					//CMN.Log("chrochro inter_ key is not find: ",key);
 					if(url.startsWith("http://")) {
@@ -7991,7 +7953,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private boolean hasMddForWeb(WebViewmy mWebView) {
 		if(mWebView.SelfIdx>0 && mWebView.SelfIdx<md.size()){
 			BookPresenter mdTmp = md.get(mWebView.SelfIdx);
-			if(mdTmp!=null) return mdTmp.hasMdd();
+			if(mdTmp!=null) return mdTmp.bookImpl.hasMdd();
 		}
 		return false;
 	}
@@ -8867,7 +8829,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(PDICMainAppOptions.getUseSoundsPlaybackFirst()){
 				requestSoundPlayBack(finalTarget, mCurrentDictionary, wv);
 			}
-			else if (AutoBrowsePaused /*自动读时绕过*/ && mCurrentDictionary.hasMdd()) {
+			else if (AutoBrowsePaused /*自动读时绕过*/ && mCurrentDictionary.bookImpl.hasMdd()) {
 				/* 倾向于已经制定发音按钮 */
 				wv.evaluateJavascript(WebviewSoundJS, value -> {
 					//CMN.Log("WebviewSoundJS", value);
@@ -9294,7 +9256,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		try {
 			String key = cs.toString().trim();
 			//首先，搜索到第一个match，然后尝试变形，两者向下再搜索
-			int normal_idx=currentDictionary.lookUp(key, true);
+			int normal_idx=currentDictionary.bookImpl.lookUp(key, true);
 			int formation_idx=-1;
 			
 			boolean bFetchMoreContents = true;
@@ -9302,7 +9264,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(bFetchMoreContents || normal_idx<0 && PDICMainAppOptions.getSearchUseMorphology()) {
 				formation_key = ReRouteKey(key, true);
 				if(formation_key!=null) {
-					formation_idx = currentDictionary.lookUp(formation_key, true);
+					formation_idx = currentDictionary.bookImpl.lookUp(formation_key, true);
 				}
 				if(normal_idx<=-1&&formation_idx>=0) { //treat formation result as normal.
 					normal_idx=formation_idx;
@@ -9311,13 +9273,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 			
-			CMN.Log("单本搜索 ： ", normal_idx, normal_idx==-1?"":currentDictionary.getEntryAt(normal_idx<0?(-normal_idx-3):normal_idx), formation_key);
+			CMN.Log("单本搜索 ： ", normal_idx, normal_idx==-1?"":currentDictionary.bookImpl.getEntryAt(normal_idx<0?(-normal_idx-3):normal_idx), formation_key);
 			if(normal_idx!=-1) {
 				int tmpIdx = normal_idx;
 				if(normal_idx<0) {
 					tmpIdx = -tmpIdx - 3;
-					if(tmpIdx<currentDictionary.getNumberEntries()
-							&& BookPresenter.processText(currentDictionary.getEntryAt(tmpIdx+1)).startsWith(BookPresenter.processText(key))) {
+					if(tmpIdx<currentDictionary.bookImpl.getNumberEntries()
+							&& mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx+1)).startsWith(mdict.processText(key))) {
 						tmpIdx++;
 					}
 				} else {
@@ -9336,7 +9298,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									proceed = currentDictionary.lvClickPos!=normal_idx;
 							} else {
 								if(webcontentlist.getVisibility()==View.VISIBLE) {//webSingleholder.getChildCount()!=1
-									String keyTmp = BookPresenter.processText(cs.toString());
+									String keyTmp = mdict.processText(cs.toString());
 									proceed = (adaptermy.currentKeyText == null || !keyTmp.equals(adaptermy.currentKeyText.trim()));
 								}
 							}
@@ -9369,7 +9331,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 接管历史纪录 */
 			bRequestedCleanSearch=bIsFirstLaunch;
 			bIsFirstLaunch=false;
-			if(recCom.allWebs || !isContentViewAttached() && BookPresenter.processText(key).equals(BookPresenter.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(0)))))
+			if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(0)))))
 			{
 				adaptermy2.onItemClick(null, adaptermy2.getView(0, null, null), 0, 0);
 			}
@@ -9399,15 +9361,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(startIdx>=0) {
 			BookPresenter current = currentDictionary;
 			int theta=8;
-			long maxID=current.getNumberEntries()-1;
-			String startKey = BookPresenter.processText(current.getEntryAt(startIdx));
+			long maxID=current.bookImpl.getNumberEntries()-1;
+			String startKey = mdict.processText(current.bookImpl.getEntryAt(startIdx));
 			int i = 0;
 			int idx=startIdx;
 			while(true) {
 				++i;
 				idx++;
 				String currentKey;
-				if(i>theta || idx>maxID || !startKey.equals(BookPresenter.processText(currentKey=current.getEntryAt(idx)))) {
+				if(i>theta || idx>maxID || !startKey.equals(mdict.processText(currentKey=current.bookImpl.getEntryAt(idx)))) {
 					break;
 				}
 				if(key!=null && ConfidentMergeShift ==-1 && currentKey.startsWith(key)) {

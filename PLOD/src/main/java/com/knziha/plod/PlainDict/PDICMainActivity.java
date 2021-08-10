@@ -98,14 +98,12 @@ import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.dict_manager_activity;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.bookPresenter_pdf;
-import com.knziha.plod.dictionarymodels.bookPresenter_txt;
-import com.knziha.plod.dictionarymodels.bookPresenter_web;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
@@ -399,8 +397,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		});
 		for(int i=0;i<md.size();i++) {//遍历所有词典
-			BookPresenter mdtmp = md.get(i);
-			if(mdtmp!=null) {
+			BookPresenter presenter = md.get(i);
+			if(presenter!=null && presenter.bookImpl instanceof mdict) {
+				mdict mdtmp = (mdict) presenter.bookImpl;
 				mdtmp.searchCancled=false;
 				if(mdtmp.combining_search_tree_4!=null){
 					for (int ti = 0; ti < mdtmp.combining_search_tree_4.length; ti++) {//遍历搜索结果容器
@@ -430,8 +429,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		});
 		for(int i=0;i<md.size();i++){//遍历所有词典
-			BookPresenter mdtmp = md.get(i);
-			if(mdtmp!=null) {
+			BookPresenter presenter = md.get(i);
+			if(presenter!=null && presenter.bookImpl instanceof mdict) {
+				mdict mdtmp = (mdict) presenter.bookImpl;
 				mdtmp.searchCancled = false;
 				if (mdtmp.combining_search_tree2 != null) {
 					for (int ti = 0; ti < mdtmp.combining_search_tree2.length; ti++) {//遍历搜索结果
@@ -464,12 +464,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		dvResultN = a_dv.findViewById(R.id.resultN);
 		dvDictFrac = a_dv.findViewById(R.id.tv);
 		if(currentDictionary!=null)
-			dvTitle.setText(currentDictionary._Dictionary_fName);
+			dvTitle.setText(currentDictionary.bookImpl.getDictionaryName());
 		/* 跳过 */
 		a_dv.findViewById(R.id.skip).setOnClickListener(v14 -> {
 			if(currentSearchingDictIdx<md.size()){
-				BookPresenter mdTmp = md.get(currentSearchingDictIdx);
-				if(mdTmp!=null){
+				BookPresenter presenter = md.get(currentSearchingDictIdx);
+				if(presenter!=null && presenter.bookImpl instanceof mdict) {
+					mdict mdTmp = (mdict) presenter.bookImpl;
 					mdTmp.searchCancled=true;
 				}
 			}
@@ -489,8 +490,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		try {
 			BookPresenter m = md.get(index);
 			currentSearchingDictIdx =index;
-			dvSeekbar.setMax((int) m.getNumberEntries());
-			dvTitle.setText(m._Dictionary_fName);
+			dvSeekbar.setMax((int) m.bookImpl.getNumberEntries());
+			dvTitle.setText(m.bookImpl.getDictionaryName());
 			dvDictFrac.setText(currentSearchingDictIdx+"/"+PDICMainActivity.taskCounter);
 		} catch (Exception ignored) { }
 	}
@@ -598,7 +599,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if(a.dvSeekbar!=null)
 					try {
 						a.dvSeekbar.setProgress(a.currentSearchLayer.dirtyProgressCounter);
-						a.dvProgressFrac.setText(a.currentSearchLayer.dirtyProgressCounter+"/"+m.getNumberEntries());
+						a.dvProgressFrac.setText(a.currentSearchLayer.dirtyProgressCounter+"/"+m.bookImpl.getNumberEntries());
 						a.dvResultN.setText("已搜索到: "+a.currentSearchLayer.dirtyResultCounter+" 项条目!");
 					} catch (Exception ignored) { }
 					break;
@@ -1261,7 +1262,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			public void onMoving(float val,IMPageSlider IMPageCover) {
 				if(ActivedAdapter==adaptermy && currentDictionary.isViewInitialized()) {
 					int pos = currentDictionary.mWebView.currentPos+(Math.abs(val)>20*dm.density?(val<0?1:-1):0);
-					if(pos>=-1 && pos<currentDictionary.getNumberEntries()) {
+					if(pos>=-1 && pos<currentDictionary.bookImpl.getNumberEntries()) {
 						if(currentPos!=pos) {
 							currentDictionary.setToolbarTitleAt(pos);
 						}
@@ -1462,11 +1463,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if(!PDICMainAppOptions.getHistoryStrategy0() /*&& (PDICMainAppOptions.getHistoryStrategy2()&&isCombinedSearching|| PDICMainAppOptions.getHistoryStrategy3()&&!isCombinedSearching)*/)
 						insertUpdate_histroy(key);
 					if(key.length()>0) {
-						if(!isCombinedSearching && currentDictionary instanceof bookPresenter_web){
-							bookPresenter_web webx = ((bookPresenter_web) currentDictionary);
-							webx.searchKey = key;
-							adaptermy.onItemClick(0);
-						} else {
+						// nimp
+						//if(!isCombinedSearching && currentDictionary instanceof bookPresenter_web){
+						//	bookPresenter_web webx = ((bookPresenter_web) currentDictionary);
+						//	webx.searchKey = key;
+						//	adaptermy.onItemClick(0);
+						//} else
+						{
 							bIsFirstLaunch=true;
 							tw1.onTextChanged(key, -1, -1, 0);
 						}
@@ -1503,30 +1506,31 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					, 0.5f, -1, Gravity.CENTER, 0);
 
 		if(savedInstanceState!=null) {
-			for(int i=0;i<md.size();i++){//遍历所有词典
-				BookPresenter mdtmp = md.get(i);
-				if(mdtmp!=null) {
-					String full_Dictionary_fName = mdtmp._Dictionary_fName;
-					if (savedInstanceState.containsKey("sizeOf" + full_Dictionary_fName)) {
-						int size = savedInstanceState.getInt("sizeOf" + full_Dictionary_fName);
-						mdtmp.combining_search_tree2 = new ArrayList[size];
-						for (int ti = 0; ti < size; ti++) {//遍历搜索结果
-							if (savedInstanceState.containsKey(full_Dictionary_fName + "@" + ti)) {
-								mdtmp.combining_search_tree2[ti] = savedInstanceState.getIntegerArrayList(full_Dictionary_fName + "@" + ti);
-							}
-						}
-					}
-					if (savedInstanceState.containsKey("sizeOf_4" + full_Dictionary_fName)) {
-						int size = savedInstanceState.getInt("sizeOf_4" + full_Dictionary_fName);
-						mdtmp.combining_search_tree_4 = new ArrayList[size];
-						for (int ti = 0; ti < size; ti++) {//遍历搜索结果
-							if (savedInstanceState.containsKey(full_Dictionary_fName + "@_4" + ti)) {
-								mdtmp.combining_search_tree_4[ti] = savedInstanceState.getIntegerArrayList(full_Dictionary_fName + "@_4" + ti);
-							}
-						}
-					}
-				}
-			}
+			// 状态恢复
+			//for(int i=0;i<md.size();i++){//遍历所有词典
+			//	BookPresenter mdtmp = md.get(i);
+			//	if(mdtmp!=null) {
+			//		String full_Dictionary_fName = mdtmp.bookImpl.getDictionaryName();
+			//		if (savedInstanceState.containsKey("sizeOf" + full_Dictionary_fName)) {
+			//			int size = savedInstanceState.getInt("sizeOf" + full_Dictionary_fName);
+			//			mdtmp.combining_search_tree2 = new ArrayList[size];
+			//			for (int ti = 0; ti < size; ti++) {//遍历搜索结果
+			//				if (savedInstanceState.containsKey(full_Dictionary_fName + "@" + ti)) {
+			//					mdtmp.combining_search_tree2[ti] = savedInstanceState.getIntegerArrayList(full_Dictionary_fName + "@" + ti);
+			//				}
+			//			}
+			//		}
+			//		if (savedInstanceState.containsKey("sizeOf_4" + full_Dictionary_fName)) {
+			//			int size = savedInstanceState.getInt("sizeOf_4" + full_Dictionary_fName);
+			//			mdtmp.combining_search_tree_4 = new ArrayList[size];
+			//			for (int ti = 0; ti < size; ti++) {//遍历搜索结果
+			//				if (savedInstanceState.containsKey(full_Dictionary_fName + "@_4" + ti)) {
+			//					mdtmp.combining_search_tree_4[ti] = savedInstanceState.getIntegerArrayList(full_Dictionary_fName + "@_4" + ti);
+			//				}
+			//			}
+			//		}
+			//	}
+			//}
 			adaptermy3.combining_search_result.invalidate();
 			adaptermy3.notifyDataSetChanged();
 
@@ -1881,7 +1885,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		@Override
 		public ArrayList<Integer>[] getInternalTree(com.knziha.plod.dictionary.mdict md){
-			return type==-1?md.combining_search_tree2:(type==-2?md.combining_search_tree_4:null);
+			return type==-1?md.combining_search_tree2:
+					(type==-2?md.combining_search_tree_4:null);
 		}
 
 		@Override
@@ -2176,8 +2181,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			checkDictionaryProject(true);
 
 		//pg
-		if(currentDictionary!=null && currentDictionary.file_cache_map!=null)
-		CMN.Log("size", currentDictionary.file_cache_map.size());
+		//  nimp
+		//if(currentDictionary!=null && currentDictionary.file_cache_map!=null)
+		//CMN.Log("size", currentDictionary.file_cache_map.size());
+		
 //		CMN.rt();
 //		for(mdict mdTmp:md){
 //			try {
@@ -2404,7 +2411,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(md.size()>0 && currentDictionary!=null) {
 				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && BookPresenter.class.equals(currentDictionary.getClass()))
 					return 0;
-				return (int) currentDictionary.getNumberEntries();
+				return (int) currentDictionary.bookImpl.getNumberEntries();
 			}else{
 				return 0;
 			}
@@ -2415,8 +2422,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		public View getView(final int position, View convertView, ViewGroup parent) {
 			//return lstItemViews.get(position);
 			ViewHolder vh=convertView==null?new ViewHolder(currentDictionary.a = PDICMainActivity.this, R.layout.listview_item0, parent):(ViewHolder)convertView.getTag();
-			String currentKeyText = currentDictionary.getEntryAt(position,mflag);
-			if(currentDictionary.hasVirtualIndex()){
+			String currentKeyText = currentDictionary.bookImpl.getEntryAt(position,mflag);
+			if(currentDictionary.bookImpl.hasVirtualIndex()){
 				int tailIdx=currentKeyText.lastIndexOf(":");
 				if(tailIdx>0)
 					currentKeyText=currentKeyText.substring(0, tailIdx);
@@ -2452,7 +2459,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					new SaveAndRestorePagePosDelegate().SaveVOA(PageSlider.WebContext, this);
 				}
 				if (Kustice && PDICMainAppOptions.getHistoryStrategy8() == 2
-						&&!(currentDictionary instanceof bookPresenter_txt) && !PDICMainAppOptions.getHistoryStrategy0()
+						//&&!(currentDictionary instanceof bookPresenter_txt) // nimp
+						&& !PDICMainAppOptions.getHistoryStrategy0()
 						&& PDICMainAppOptions.getHistoryStrategy4()) {
 					insertUpdate_histroy(currentDictionary.currentDisplaying);
 				}
@@ -2491,7 +2499,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			
 			shuntAAdjustment();
 			if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
-				getPeruseView().ScanSearchAllByText(currentDictionary.getEntryAt(pos), PDICMainActivity.this, true, updateAI);
+				getPeruseView().ScanSearchAllByText(currentDictionary.bookImpl.getEntryAt(pos), PDICMainActivity.this, true, updateAI);
 				AttachPeruseView(true);
 				//CMN.Log(PeruseView.data);
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
@@ -2502,7 +2510,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			lastClickedPosBeforePageTurn = lastClickedPos;
 			super.onItemClick(pos);
 			ActivedAdapter=this;
-			shunt=currentDictionary instanceof bookPresenter_web ||bRequestedCleanSearch;
+			// nimp
+			shunt=/*currentDictionary instanceof bookPresenter_web ||*/bRequestedCleanSearch;
 			
 			if(pos<0){
 				if(pos<-1||shunt){
@@ -2551,8 +2560,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			String key = currentKeyText = currentDictionary.currentDisplaying.trim();
 
 			decorateContentviewByKey(null,key);
-			if(!(currentDictionary instanceof bookPresenter_txt)
-					&& !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy4()
+			if(//!(currentDictionary instanceof bookPresenter_txt) && // nimp
+					 !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy4()
 					&& (userCLick || PDICMainAppOptions.getHistoryStrategy8()==0) && !(shunt && pos==0)) {
 				//CMN.Log("insertUpdate_histroy");
 				insertUpdate_histroy(key);
@@ -2866,8 +2875,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						adaptermy.currentKeyText=null;
 					AllMenus.findItem(R.id.toolbar_action1).setIcon((getResources().getDrawable(R.drawable.ic_btn_siglemode)));
 					lv2.setVisibility(View.GONE);
-					if(currentDictionary instanceof bookPresenter_web)
-						adaptermy.notifyDataSetChanged();
+					// nimp
+					//if(currentDictionary instanceof bookPresenter_web)
+					//	adaptermy.notifyDataSetChanged();
 				}
 				if(opt.auto_seach_on_switch)
 					tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
@@ -3319,7 +3329,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	private boolean currentIsWeb() {
-		return currentDictionary instanceof bookPresenter_web;
+		//return currentDictionary instanceof bookPresenter_web;
+		return false; // nimp
 	}
 	
 	
@@ -3423,57 +3434,58 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} return true;
 			case R.id.lvitems:{
 				callDrawerIconAnima();
-				if(currentDictionary instanceof bookPresenter_pdf) {
-					bookPresenter_pdf pdx = (bookPresenter_pdf) currentDictionary;
-					AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-					builder2.setTitle("PDF 选项");
-
-					builder2.setSingleChoiceItems(new String[]{}, 0,
-							(dialog, pos) -> {
-								switch (pos) {
-									case 0: {//提取目录
-										if (pdx.mWebView == null) {
-											showT("目录尚未加载!");
-											return;
-										}
-										pdx.parseContent();
-									}
-									break;
-									case 1: {//保存目录
-										if(pdx.pdf_index!=null){
-											File path = getExternalFilesDir(".PDF_INDEX");
-											path.mkdirs();
-											path = new File(path, pdx.getDictionaryName());
-											BU.printFile(StringUtils.join(pdx.pdf_index, "\n").getBytes(), path);
-											if(path.exists()) {
-												showT("保存成功");
-											}
-										}
-									}
-									break;
-									case 2: {//关键词索引
-
-									}
-									break;
-								}
-								dialog.dismiss();
-							});
-
-					String[] Menus = getResources().getStringArray(
-							R.array.pdf_option);
-					List<String> arrMenu = Arrays.asList(Menus);
-					AlertDialog d = builder2.create();
-					d.show();
-
-					TextView titleView = d.getWindow().getDecorView().findViewById(R.id.alertTitle);
-					titleView.setSingleLine(false);
-					titleView.setMovementMethod(LinkMovementMethod.getInstance());
-					if (!GlobalOptions.isLarge) titleView.setMaxLines(5);
-
-					d.getListView().setAdapter(new ArrayAdapterHardCheckMark<>(this,
-							R.layout.singlechoice, android.R.id.text1, arrMenu));
-					//drawerFragment.etAdditional.setText(((TextView)v.findViewById(R.id.text)).getText());
-				}
+//				if(currentDictionary instanceof bookPresenter_pdf) {
+//					bookPresenter_pdf pdx = (bookPresenter_pdf) currentDictionary;
+//					AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+//					builder2.setTitle("PDF 选项");
+//
+//					builder2.setSingleChoiceItems(new String[]{}, 0,
+//							(dialog, pos) -> {
+//								switch (pos) {
+//									case 0: {//提取目录
+//										if (pdx.mWebView == null) {
+//											showT("目录尚未加载!");
+//											return;
+//										}
+//										pdx.parseContent();
+//									}
+//									break;
+//									case 1: {//保存目录
+//										if(pdx.pdf_index!=null){
+//											File path = getExternalFilesDir(".PDF_INDEX");
+//											path.mkdirs();
+//											path = new File(path, pdx.getDictionaryName());
+//											BU.printFile(StringUtils.join(pdx.pdf_index, "\n").getBytes(), path);
+//											if(path.exists()) {
+//												showT("保存成功");
+//											}
+//										}
+//									}
+//									break;
+//									case 2: {//关键词索引
+//
+//									}
+//									break;
+//								}
+//								dialog.dismiss();
+//							});
+//
+//					String[] Menus = getResources().getStringArray(
+//							R.array.pdf_option);
+//					List<String> arrMenu = Arrays.asList(Menus);
+//					AlertDialog d = builder2.create();
+//					d.show();
+//
+//					TextView titleView = d.getWindow().getDecorView().findViewById(R.id.alertTitle);
+//					titleView.setSingleLine(false);
+//					titleView.setMovementMethod(LinkMovementMethod.getInstance());
+//					if (!GlobalOptions.isLarge) titleView.setMaxLines(5);
+//
+//					d.getListView().setAdapter(new ArrayAdapterHardCheckMark<>(this,
+//							R.layout.singlechoice, android.R.id.text1, arrMenu));
+//					//drawerFragment.etAdditional.setText(((TextView)v.findViewById(R.id.text)).getText());
+//				}
+				// nimp
 			} return false;
 			case R.id.drawer_layout:{
 				showIconCustomizator();

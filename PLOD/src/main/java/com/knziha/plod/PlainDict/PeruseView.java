@@ -55,11 +55,11 @@ import androidx.fragment.app.DialogFragment;
 import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayAdapterView.OnItemClickListener;
 import com.jess.ui.TwoWayGridView;
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.bookPresenter_txt;
 import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
@@ -281,11 +281,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
 				if(s.toString().trim().length()>0)
 				if(currentDictionary!=null) {
-					int ret = currentDictionary.lookUp(s.toString(),false);
+					int ret = currentDictionary.bookImpl.lookUp(s.toString(),false);
 					if(ret!=-1) {
 						lv1.setSelectionFromTop(ret, (int) (20*density));
 						if(ToR && cvpolicy)
-						if(BookPresenter.processText(currentDictionary.getEntryAt(ret)).equals(BookPresenter.processText(s.toString())))
+						if(mdict.processText(currentDictionary.bookImpl.getEntryAt(ret)).equals(mdict.processText(s.toString())))
 							leftLexicalAdapter.click(ret,false);
 					}
 				}
@@ -917,7 +917,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 							initialScale = PageState.scale;
 						}
 
-						if(currentDictionary!=null && pos>=0 && pos<currentDictionary.getNumberEntries()) {
+						if(currentDictionary!=null && pos>=0 && pos<currentDictionary.bookImpl.getNumberEntries()) {
 							setCurrentDis(currentDictionary, pos, 0);
 							currentDictionary.renderContentAt_internal(mWebView,initialScale, false, false, false, pos);
 						}else {
@@ -1197,8 +1197,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	//todo optimise
 	private void DetachContentView(MainActivityUIBase a) {
 		((ViewGroup)contentview.getParent()).removeView(contentview);
-		if(!(currentDictionary instanceof bookPresenter_txt)
-				&& PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
+		if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
+				 PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 				&& (PDICMainAppOptions.getHistoryStrategy8() == 2)){
 			a.insertUpdate_histroy(mWebView.word);
 		}
@@ -1238,7 +1238,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		} else {
 			RestoreOldAI();
 		}
-		text = BookPresenter.replaceReg.matcher(text).replaceAll("").toLowerCase();
+		text = mdict.replaceReg.matcher(text).replaceAll("").toLowerCase();
 		baked = false;
 		if(addAll){
 			data.clear();
@@ -1262,10 +1262,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			BookPresenter mdTmp = a.md_get(i);
 			if(mdTmp==null)
 				continue;
-			int idx = mdTmp.lookUp(text);
+			int idx = mdTmp.bookImpl.lookUp(text);
 			//CMN.Log(mdTmp.getEntryAt(idx), idx, text, mdTmp._Dictionary_fName);
 			if (idx >= 0){
-				String toCompare = BookPresenter.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase();
+				String toCompare = mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase();
 				int len = text.length();
 				int len1 = len;
 				int len2 = toCompare.length();
@@ -1404,7 +1404,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			/* 初始化 | 自动搜索 */
 			if((opt.getForceSearch() || voyager[SelectedV*3]<0) && currentDictionary!=null) {
 				if(!TextUtils.isEmpty(TextToSearch)) {
-					voyager[SelectedV*VELESIZE] = currentDictionary.lookUp(TextToSearch,false);
+					voyager[SelectedV*VELESIZE] = currentDictionary.bookImpl.lookUp(TextToSearch,false);
 					voyager[SelectedV*VELESIZE+2] = voyager[SelectedV*VELESIZE];
 					voyager[SelectedV*VELESIZE+1]=(int) (20*density);
 				}
@@ -1436,7 +1436,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			}
 
 			if(currentDictionary!=null)
-			a.showTopSnack(mlp, currentDictionary._Dictionary_fName
+			a.showTopSnack(mlp, currentDictionary.bookImpl.getDictionaryName()
 					, 0.8f, -1, -1, 1);
 
         	mlp.removeView(contentview);
@@ -1494,7 +1494,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     		vh.dv.setTag(position);
 			if(ToD) {
 				cr.moveToPosition(cr.getCount()-position-1);
-				vh.tv.setText(currentDictionary.getEntryAt(cr.getInt(0)));//bookmarks.get(position)
+				vh.tv.setText(currentDictionary.bookImpl.getEntryAt(cr.getInt(0)));//bookmarks.get(position)
 				vh.tv.setSingleLine(false);
 			}else {
 				vh.tv.setText(ph.get(othermds.get(position)).pathname);
@@ -1694,14 +1694,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         @Override
         public int getCount() {
         	if(md!=null && md.size()>0 && currentDictionary!=null)
-        		return (int) currentDictionary.getNumberEntries();
+        		return (int) currentDictionary.bookImpl.getNumberEntries();
         	else
         		return 0;
         }
 
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {//length=1046; index=5173
-        	String currentKeyText = currentDictionary.getEntryAt(position);
+        	String currentKeyText = currentDictionary.bookImpl.getEntryAt(position);
         	viewholder vh;
 	        if(convertView==null){
         		convertView =  LayoutInflater.from(parent.getContext()).inflate(R.layout.listview_item2, parent, false);
@@ -1865,8 +1865,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			
 			//voyager[SelectedV*3+2]=pos;
 			a.decorateContentviewByKey(favoriteBtn, currentKeyText);
-			if(!(currentDictionary instanceof bookPresenter_txt)
-					&& PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
+			if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
+					PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 					&& (!ismachineClick || PDICMainAppOptions.getHistoryStrategy8() == 0)){
 				a.insertUpdate_histroy(currentKeyText);
 			}
@@ -2173,8 +2173,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 		/*回溯 或 前瞻， 不改变历史*/
 		mWebView.currentPos = idx;
-		mWebView.word = StringUtils.trim(mWebView.currentPos<invocker.getNumberEntries()?invocker.getEntryAt(mWebView.currentPos):"Error!!!");
-    	toolbar_title.setText(mWebView.word + " - " + invocker._Dictionary_fName);
+		mWebView.word = StringUtils.trim(mWebView.currentPos<invocker.bookImpl.getNumberEntries()?invocker.bookImpl.getEntryAt(mWebView.currentPos):"Error!!!");
+    	toolbar_title.setText(mWebView.word + " - " + invocker.bookImpl.getDictionaryName());
 
 		if(mWebView.History.size()>2){
 			recess.setVisibility(View.VISIBLE);

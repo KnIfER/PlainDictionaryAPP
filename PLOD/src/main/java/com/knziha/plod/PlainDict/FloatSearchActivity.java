@@ -39,7 +39,6 @@ import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.bookPresenter_txt;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.Utils;
@@ -943,7 +942,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			if(md.size()>0 && currentDictionary!=null) {
 				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && BookPresenter.class.equals(currentDictionary.getClass()))
 					return 0;
-				return (int) currentDictionary.getNumberEntries();
+				return (int) currentDictionary.bookImpl.getNumberEntries();
 			}else{
 				return 0;
 			}
@@ -960,7 +959,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
         	PDICMainActivity.ViewHolder vh;
-        	String currentKeyText = currentDictionary.getEntryAt(position, mFlag);
+        	String currentKeyText = currentDictionary.bookImpl.getEntryAt(position, mFlag);
 	        //String keyText = md.get(adapter_idx).getEntryAt(position);
 	        if(convertView!=null){
         		vh=(PDICMainActivity.ViewHolder)convertView.getTag();
@@ -1024,7 +1023,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 			decorateContentviewByKey(null, currentKeyText);
 			
-			if(!(current instanceof bookPresenter_txt) && !PDICMainAppOptions.getHistoryStrategy0()
+			if(//!(current instanceof bookPresenter_txt) &&  nimp
+					!PDICMainAppOptions.getHistoryStrategy0()
 					&& PDICMainAppOptions.getHistoryStrategy4()
 					&&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
 				prepareHistroyCon().insertUpdate(currentKeyText);

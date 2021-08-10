@@ -32,6 +32,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
+import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -42,9 +43,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
-import com.alibaba.fastjson.JSONObject;
 import com.knziha.filepicker.utils.FU;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
@@ -86,7 +87,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -98,14 +98,16 @@ import javax.net.ssl.TrustManager;
 
 import db.MdxDBHelper;
 
+import static com.knziha.plod.dictionary.mdBase.fullpageString;
+
 /*
  UI side of mdict
  date:2018.07.30
  author:KnIfER
 */
 public class BookPresenter
-		implements ValueCallback<String>, OnClickListener {
-	UniversalDictionaryInterface bookImpl;
+		implements ValueCallback<String>, OnClickListener, mdict_manageable {
+	public UniversalDictionaryInterface bookImpl;
 	
 	public final static String FileTag = "file://";
 	public final static String baseUrl = "file:///";
@@ -514,7 +516,7 @@ public class BookPresenter
 	@Multiline
 	public final static String hl_border ="hl_border";
 
-	//public String _Dictionary_fName_Internal;
+	//public String bookImpl.getFileName()_Internal;
 	public WebViewmy mWebView;
     public ViewGroup rl;
 
@@ -528,7 +530,8 @@ public class BookPresenter
 	long firstFlag;
 	public AppHandler mWebBridge;
 	public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
-
+	
+	public String currentDisplaying;
 	/**
 	 	var saveTag=document.getElementsByTagName('PLODSAVE');
 	 	if(saveTag.length==0){
@@ -559,19 +562,21 @@ public class BookPresenter
 	public static int _req_fvh;
 	private CachedDirectory DataBasePath;
 	
-	@Override
 	public int getCaseStrategy() {
 		return (int) (firstFlag&3);
 	}
-	@Override
+	
 	public void setCaseStrategy(int val) {
 		firstFlag&=~3;
 		firstFlag|=val;
+		bookImpl.setCaseStrategy(val);
 	}
+	
 	public boolean getIsolateImages(){
 		//return (firstFlag & 0x2) != 0;
 		return false;
 	}
+	
 	public void setIsolateImages(boolean val){
 		firstFlag&=~0x2;
 		if(val) firstFlag|=0x2;
@@ -641,7 +646,8 @@ public class BookPresenter
 
 	//构造
 	public BookPresenter(@NonNull File fn, MainActivityUIBase _a, int pseudoInit, Object tag) throws IOException {
-		super(fn, pseudoInit, _a==null?null:_a.MainStringBuilder, tag);
+		bookImpl = new mdict(fn, pseudoInit, _a==null?null:_a.MainStringBuilder, tag);
+		
 		if(_a!=null){
 			a = _a;
 			opt = _a.opt;
@@ -652,7 +658,7 @@ public class BookPresenter
 		
 		//init(getStreamAt(0)); // MLSN
 		
-        File p = f.getParentFile();
+        File p = fn.getParentFile();
         if(p!=null && p.exists()) {
 			StringBuilder fName_builder = getCleanDictionaryNameBuilder();
 			int bL = fName_builder.length();
@@ -692,8 +698,9 @@ public class BookPresenter
 	           	AdvancedNestScrollWebView _mWebView = rl.findViewById(R.id.webviewmy);
 				_mWebView.setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 				a.initWebScrollChanged();//Strategy: use one webscroll listener
-				if(!(this instanceof bookPresenter_pdf))
-					_mWebView.setOnScrollChangedListener(a.onWebScrollChanged);
+				// nimp
+				//if(!(this instanceof bookPresenter_pdf))
+				//	_mWebView.setOnScrollChangedListener(a.onWebScrollChanged);
 	            //_mWebView.setPadding(0, 0, 18, 0);
 				if(mWebBridge==null) {
 					mWebBridge = new AppHandler(this);
@@ -771,10 +778,10 @@ public class BookPresenter
 						}
 					});
 				}});
-			//toolbar.setTitle(this._Dictionary_FName.split(".mdx")[0]);
+			//toolbar.setTitle(this.bookImpl.getFileName().split(".mdx")[0]);
 			recess = toolbar.findViewById(R.id.recess);
 			forward=toolbar.findViewById(R.id.forward);
-			toolbar_title.setText(_Dictionary_fName);
+			toolbar_title.setText(bookImpl.getDictionaryName());
 			//vvv
 			OnClickListener voyager = new OnClickListener() {
 				@Override
@@ -886,6 +893,14 @@ public class BookPresenter
 				
 			}
 		});
+	}
+	
+	public void setDictionaryName(String toString) {
+		// nimp
+	}
+	
+	public void updateFile(File f) {
+		// nimp
 	}
 	
 	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {
@@ -1095,9 +1110,10 @@ public class BookPresenter
 															FileOutputStream fout = null;
 															try {
 																try {
-																	SSLContext sslcontext = SSLContext.getInstance("TLS");
-																	sslcontext.init(null, new TrustManager[]{new bookPresenter_web.MyX509TrustManager()}, new java.security.SecureRandom());
-																	HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
+																	// nimp
+																	//SSLContext sslcontext = SSLContext.getInstance("TLS");
+																	//sslcontext.init(null, new TrustManager[]{new bookPresenter_web.MyX509TrustManager()}, new java.security.SecureRandom());
+																	//HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
 																} catch (Exception ignored) { }
 																urlConnection = (HttpURLConnection) requestURL.openConnection();
 																urlConnection.setRequestMethod("GET");
@@ -1430,15 +1446,15 @@ public class BookPresenter
 			mWebView.addHistoryAt(idx);
 		}
 		/* 回溯 或 前瞻， 不改变历史 */
-		mWebView.word = currentDisplaying = StringUtils.trim(getEntryAt(mWebView.currentPos = idx));
+		mWebView.word = currentDisplaying = StringUtils.trim(bookImpl.getEntryAt(mWebView.currentPos = idx));
 		
-		if(hasVirtualIndex()){
+		if(bookImpl.hasVirtualIndex()){
 			int tailIdx=currentDisplaying.lastIndexOf(":");
 			if(tailIdx>0)
 				currentDisplaying=currentDisplaying.substring(0, tailIdx);
 		}
-		StringBuilder title_builder = AcquireStringBuffer(64);
-    	toolbar_title.setText(title_builder.append(currentDisplaying.trim()).append(" - ").append(_Dictionary_fName).toString());
+		StringBuilder title_builder = bookImpl.AcquireStringBuffer(64);
+    	toolbar_title.setText(title_builder.append(currentDisplaying.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
 
 		if(mWebView.History.size()>2){
 			recess.setVisibility(View.VISIBLE);
@@ -1446,19 +1462,6 @@ public class BookPresenter
 		}
 	}
 	
-	
-	protected byte[] AcquireCompressedBlockOfSize(int compressedSize) {
-		return a.AcquireCompressedBlockOfSize(compressedSize, Math.max(maxComKeyBlockSize, maxComRecSize));
-	}
-	
-	protected byte[] AcquireDeCompressedKeyBlockOfSize(int BlockSize) {
-		return a.AcquireDeCompressedKeyBlockOfSize(BlockSize, maxDecomKeyBlockSize);
-	}
-	
-	@Override
-	protected boolean isMainThread() {
-		return Looper.getMainLooper().getThread() == Thread.currentThread();
-	}
 	
 	public void checkTint() {
 		if(mWebView!=null) {
@@ -1493,7 +1496,7 @@ public class BookPresenter
 		if(toolbarBG!=null) {
 			useInternal = getUseInternalTBG();
 			myWebColor = isDark?Color.BLACK:useInternal?TIBGColor:PDICMainAppOptions.getTitlebarUseGlobalUIColor()?a.MainBackground:opt.getTitlebarBackgroundColor();
-			CMN.Log("使用内置标题栏颜色：", useInternal, _Dictionary_fName, isDark, Integer.toHexString(myWebColor));
+			CMN.Log("使用内置标题栏颜色：", useInternal, bookImpl.getDictionaryName(), isDark, Integer.toHexString(myWebColor));
 			int colorTop = PDICMainAppOptions.getTitlebarUseGradient()?ColorUtils.blendARGB(myWebColor, Color.WHITE, 0.08f):myWebColor;
 			int[] ColorShade = mWebView.ColorShade;
 			if(ColorShade[1]!=myWebColor||ColorShade[0]!=colorTop){
@@ -1513,7 +1516,7 @@ public class BookPresenter
 
 	//todo frameAt=-1
     public void renderContentAt(float initialScale, int SelfIdx, int frameAt, WebViewmy mWebView, int... position){
-    	CMN.Log("renderContentAt!!!...", _Dictionary_fName);
+    	CMN.Log("renderContentAt!!!...", bookImpl.getDictionaryName());
     	isJumping=false;
     	if(mWebView==null) {
     		mWebView=this.mWebView;
@@ -1603,7 +1606,7 @@ public class BookPresenter
     }
 			
 	public StringBuilder AcquirePageBuilder() {
-		StringBuilder sb = AcquireStringBuffer(512);
+		StringBuilder sb = bookImpl.AcquireStringBuffer(512);
 		sb.append(htmlBase);
 		//todo 插入 同名 css 文件？
 		sb.append(js);
@@ -1617,19 +1620,20 @@ public class BookPresenter
 		//	mWebView.resumeTimers();
     	String htmlCode = null ,JS=null;
 		try {
-			if(virtualIndex!=null)
-				try {
-					JSONObject vc = JSONObject.parseObject(virtualIndex.getRecordAt(position[0]));
-					Integer AI = vc.getIntValue("I");
-					JS=vc.getString("JS");
-					//if(mWebView.getTag(R.id.virtualID)!=AI)
-					{
-						htmlCode = getVirtualRecordsAt(position);
-						mWebView.setTag(R.id.virtualID, AI);
-					}
-				} catch (Exception ignored) { }
-			else{
-				htmlCode = getRecordsAt(position);
+			//if(virtualIndex!=null)
+			//	try {
+			//		JSONObject vc = JSONObject.parseObject(virtualIndex.getRecordAt(position[0]));
+			//		Integer AI = vc.getIntValue("I");
+			//		JS=vc.getString("JS");
+			//		//if(mWebView.getTag(R.id.virtualID)!=AI)
+			//		{
+			//			htmlCode = getVirtualRecordsAt(position);
+			//			mWebView.setTag(R.id.virtualID, AI);
+			//		}
+			//	} catch (Exception ignored) { }
+			//else
+			{
+				htmlCode = bookImpl.getRecordsAt(position);
 			}
 		} catch (Exception e) {
 			ByteArrayOutputStream s = new ByteArrayOutputStream();
@@ -1704,7 +1708,7 @@ public class BookPresenter
 	public void AddPlodStructure(WebViewmy mWebView, StringBuilder htmlBuilder, boolean fromPopup, boolean mIsolateImages) {
     	//CMN.Log("MakeRCSP(opt)??", MakeRCSP(opt),MakeRCSP(opt)>>5);
 		htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
-		if(mdd!=null && mdd.size()>0) htmlBuilder.append("<p class='MddExist'/>");
+		if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist'/>");
 		htmlBuilder.append("</div>");
 		boolean styleOpened=false;
 		if (fromPopup) {
@@ -1732,7 +1736,9 @@ public class BookPresenter
 		if(mWebView==a.popupWebView) rcsp|=1<<5;
 		htmlBuilder.append("rcsp=").append(rcsp).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
-		if(!(this instanceof bookPresenter_web)) {
+		//nimp
+		//if(!(this instanceof bookPresenter_web))
+		{
 			htmlBuilder.append("webx=").append(1).append(";");
 		}
 
@@ -1795,24 +1801,16 @@ public class BookPresenter
 			mWebView.setTag(R.id.toolbar_action4,3);
 		}
 	}
-
-    @Override
-    public String getRecordsAt(int... positions) throws IOException {
-		return positions[0]==-1? new StringBuilder(getAboutString())
-				.append("<BR>").append("<HR>")
-				.append(getDictInfo()).toString(): super.getRecordsAt(positions);
-    }
-
-	@Override
+	
 	public String getRecordAt(int position) throws IOException {
-    	if(editingState && getContentEditable()){//Todo save and retrieve via sql database
+		if(editingState && getContentEditable()){//Todo save and retrieve via sql database
 			CachedDirectory cf = getInternalResourcePath(false);
 			boolean ce =  cf.cachedExists();
 			File p = ce?new File(cf, Integer.toString(position)):null;
 			boolean pExists = ce && p.exists();
 			//retrieve page from database
-    		if(getSavePageToDatabase()){
-    			String url=Integer.toString(position);
+			if(getSavePageToDatabase()){
+				String url=Integer.toString(position);
 				getCon(true).enssurePageTable();
 				con.preparePageContain();
 				if(con.containsPage(url)){
@@ -1839,15 +1837,16 @@ public class BookPresenter
 				return BU.fileToString(p);
 			}
 		}
-		return super.getRecordAt(position);
+		return bookImpl.getRecordAt(position);
 	}
-
+	
 	public String getAboutString() {
 		//return Build.VERSION.SDK_INT>=24?Html.fromHtml(_header_tag.get("Description"),Html.FROM_HTML_MODE_COMPACT).toString():Html.fromHtml(_header_tag.get("Description")).toString();
-		String ret=_header_tag==null?"":_header_tag.get("Description");
+		String ret=bookImpl.getRichDescription();
 		if(ret==null) ret="";
 		return StringEscapeUtils.unescapeHtml3(ret);
 	}
+	
 	
 	public MdxDBHelper con;
 	public MdxDBHelper getCon(boolean open) {
@@ -1875,17 +1874,18 @@ public class BookPresenter
 		}
 	}
 
-	public boolean containsResourceKey(String skey) {
-		if(mdd!=null)
-		for(mdictRes mddTmp:mdd){
-			if(mddTmp.lookUp(skey)>=0)
-				return true;
-		}
-		return  false;
-	}
+	// not used
+	//public boolean containsResourceKey(String skey) {
+	//	if(mdd!=null)
+	//	for(mdictRes mddTmp:mdd){
+	//		if(mddTmp.lookUp(skey)>=0)
+	//			return true;
+	//	}
+	//	return  false;
+	//}
 
 	public String getLexicalEntryAt(int position) {
-		return position>=0&&position<_num_entries?getEntryAt(position):"Error!!!";
+		return position>=0&&position<bookImpl.getNumberEntries()?bookImpl.getEntryAt(position):"Error!!!";
 	}
 
 	public boolean hasCover() {
@@ -1894,7 +1894,7 @@ public class BookPresenter
 
 	@Override
 	public boolean isMddResource() {
-		return isResourceFile;
+		return bookImpl.getIsResourceFile();
 	}
 
 	@Override
@@ -1925,44 +1925,19 @@ public class BookPresenter
 	}
 
 	public Object[] getSoundResourceByName(String canonicalName) throws IOException {
-		if(isResourceFile){
-			int idx = lookUp(canonicalName, false);
-			if(idx>=0){
-				String matched=getEntryAt(idx);
-				if(matched.regionMatches(true,0, canonicalName, 0, canonicalName.length())){
-					String spx = "spx";
-					return new Object[]{matched.regionMatches(true,canonicalName.length(), spx, 0, spx.length()), getResourseAt(idx)};
-				}
-			}
-		}else{
-			if(mdd!=null && mdd.size()>0){
-				for(mdictRes mddTmp:mdd){
-					int idx = mddTmp.lookUp(canonicalName, false);
-					if(idx>=0) {
-						String matched=mddTmp.getEntryAt(idx);
-						//SU.Log("getSoundResourceByName", matched, canonicalName);
-						if(matched.regionMatches(true,0, canonicalName, 0, canonicalName.length())){
-							String spx = "spx";
-							return new Object[]{matched.regionMatches(true,canonicalName.length(), spx, 0, spx.length()), mddTmp.getResourseAt(idx)};
-						}
-					}
-					//else SU.Log("chrochro inter_ key is not find:",_Dictionary_fName,canonicalName, idx);
-				}
-			}
-		}
-		return null;
+		return bookImpl.getSoundResourceByName(canonicalName);
 	}
 	
 	public void setToolbarTitleAt(int pos) {
-		String entry = pos>=-1?getEntryAt(pos).trim():currentDisplaying;
-		StringBuilder sb = AcquireStringBuffer(entry.length()+_Dictionary_fName.length()+5);
+		String entry = pos>=-1?bookImpl.getEntryAt(pos).trim():currentDisplaying;
+		StringBuilder sb = bookImpl.AcquireStringBuffer(entry.length()+bookImpl.getDictionaryName().length()+5);
 		sb.append(entry).append(" - ");
 		appendCleanDictionaryName(sb);
 		toolbar_title.setText(sb.toString());
 	}
 	
 	public String getCharsetName() {
-		return _charset.name();
+		return bookImpl.getCharsetName();
 	}
 	
 	@SuppressWarnings("unused")
@@ -1985,15 +1960,15 @@ public class BookPresenter
 
         @JavascriptInterface
         public void openImage(int position, String... img) {
-        	//CMN.Log(position, img, mdx._Dictionary_fName_Internal);
-			MainActivityUIBase aa = mdx.a;
-			AgentApplication app = ((AgentApplication) aa.getApplication());
-			app.mdd = mdx.mdd;
-			app.IBC = mdx.IBC;
-			app.opt = mdx.opt;
-			app.Imgs = img;
-			app.currentImg = position;
-			aa.root.postDelayed(aa.getOpenImgRunnable(), 100);
+        	//CMN.Log(position, img, mdx.bookImpl.getFileName()_Internal);
+			//MainActivityUIBase aa = mdx.a;
+			//AgentApplication app = ((AgentApplication) aa.getApplication());
+			//app.mdd = mdx.mdd;
+			//app.IBC = mdx.IBC;
+			//app.opt = mdx.opt;
+			//app.Imgs = img;
+			//app.currentImg = position;
+			//aa.root.postDelayed(aa.getOpenImgRunnable(), 100);
 		}
 
         @JavascriptInterface
@@ -2076,19 +2051,20 @@ public class BookPresenter
 
 		@JavascriptInterface
 		public void parseContent(int processed, int total, String contents) {
-			if(mdx instanceof bookPresenter_pdf && mdx.a instanceof PDICMainActivity){
-				CMN.Log("parseContent", contents, mdx._Dictionary_fName);
-				//((PDICMainActivity)mdx.a).parseContent(mdx, contents);
-				bookPresenter_pdf pdx = ((bookPresenter_pdf) mdx);
-				pdx.pdf_index=contents.split("\n");
-				mdx.a.lv.post(new Runnable() {
-					@Override
-					public void run() {
-						((BasicAdapter)mdx.a.lv.getAdapter()).notifyDataSetChanged();
-						mdx.a.showT("目录提取完成！("+processed+"/"+total+")");
-					}
-				});
-			}
+        	//nimp
+			//if(mdx instanceof bookPresenter_pdf && mdx.a instanceof PDICMainActivity){
+			//	CMN.Log("parseContent", contents, mdx.bookImpl.getDictionaryName());
+			//	//((PDICMainActivity)mdx.a).parseContent(mdx, contents);
+			//	bookPresenter_pdf pdx = ((bookPresenter_pdf) mdx);
+			//	pdx.pdf_index=contents.split("\n");
+			//	mdx.a.lv.post(new Runnable() {
+			//		@Override
+			//		public void run() {
+			//			((BasicAdapter)mdx.a.lv.getAdapter()).notifyDataSetChanged();
+			//			mdx.a.showT("目录提取完成！("+processed+"/"+total+")");
+			//		}
+			//	});
+			//}
 		}
 
 		@JavascriptInterface
@@ -2145,23 +2121,23 @@ public class BookPresenter
 //		fP.mkdirs();
 //		boolean ret = false;
 //		boolean pass = !f.exists();
-//		String _Dictionary_fName_InternalOld = "."+_Dictionary_fName;
+//		String bookImpl.getFileName()_InternalOld = "."+bookImpl.getFileName();
 //		if(fP.exists() && fP.isDirectory()) {
 //			int retret = FU.rename(a, f, newF);
 //			Log.d("XXX-ret",""+retret);
 //			//Log.e("XXX-ret",f.getParent()+"sad"+newF.getParent());
-//			String oldName = _Dictionary_fName;
+//			String oldName = bookImpl.getFileName();
 //			if(retret==0) {
-//				_Dictionary_fName = newF.getName();
+//				bookImpl.getFileName() = newF.getName();
 //				/* 重命名资源文件 */
 //				ret = true;
 //		    	if(mdd!=null)
 //				for(mdictRes mddTmp:mdd){
 //					File mddF = mddTmp.f();
 //					String fn = BU.unwrapMddName(mddF.getName());
-//					if(fn.startsWith(_Dictionary_fName)){
-//						fn=fn.substring(_Dictionary_fName.length());
-//						File newMdd = new File(fP,_Dictionary_fName+fn+".mdd");
+//					if(fn.startsWith(bookImpl.getFileName())){
+//						fn=fn.substring(bookImpl.getFileName().length());
+//						File newMdd = new File(fP,bookImpl.getFileName()+fn+".mdd");
 //						if(mddF.exists()) {
 //							int ret1 = FU.rename(a, mddF, newMdd);
 //							if (ret1 == 0 && mdd != null) {
@@ -2170,9 +2146,9 @@ public class BookPresenter
 //						}
 //					}
 //				}
-//				else if(new File(fP,_Dictionary_fName+".mdd").exists()) {
+//				else if(new File(fP,bookImpl.getFileName()+".mdd").exists()) {
 //					try {
-//						mdd = Collections.singletonList(new mdictRes(new File(fP, _Dictionary_fName + ".mdd")));
+//						mdd = Collections.singletonList(new mdictRes(new File(fP, bookImpl.getFileName() + ".mdd")));
 //						a.showT("找到了匹配的mdd！");
 //					} catch (IOException e) {
 //						e.printStackTrace();
@@ -2186,77 +2162,77 @@ public class BookPresenter
 //			f=newF;
 //			String fn = newF.getAbsolutePath();
 //		}
-//		new File(opt.pathToDatabases().append(_Dictionary_fName_InternalOld).toString()).renameTo(new File(opt.pathToDatabases().append("."+_Dictionary_fName).toString()));
+//		new File(opt.pathToDatabases().append(bookImpl.getFileName()_InternalOld).toString()).renameTo(new File(opt.pathToDatabases().append("."+bookImpl.getFileName()).toString()));
 //
 //		if(a.currentDictionary==this)
-//			a.setLastMdFn(_Dictionary_fName);
+//			a.setLastMdFn(bookImpl.getFileName());
 //		return ret;
 		return false;
 	}
 
 	@Override
 	public boolean exists() {
-		return f.exists();
+		return bookImpl.getFile().exists();
 	}
 
 	@Override
 	public boolean equalsToPlaceHolder(PlaceHolder placeHolder) {
-		String ThisPath = f.getPath();
+		String ThisPath = bookImpl.getFile().getPath();
 		String LibPath = opt.lastMdlibPath.getPath();
 		String OtherPath = placeHolder.pathname;
 		if(!OtherPath.startsWith("/") && ThisPath.startsWith(LibPath)){
 			return ThisPath.regionMatches(LibPath.length()+1, OtherPath, 0, OtherPath.length());
 		}
-		return placeHolder.getPath(opt).equals(f);
+		return placeHolder.getPath(opt).equals(bookImpl.getFile());
 	}
 
 	public boolean moveFileTo(Context c, File newF) {
-		File fP = newF.getParentFile();
-		fP.mkdirs();
 		boolean ret = false;
-		if(fP.exists() && fP.isDirectory()) {
-			int retret = FU.move3(a, f, newF);
-			CMN.Log("XXX-ret",""+retret);
-			if(retret>=0) {
-				_Dictionary_fName = newF.getName();
-				String clean_Dictionary_fName = getCleanDictionaryName(_Dictionary_fName);
-				/* 移动资源文件 */
-				ret = true;
-				if(mdd!=null)
-					for(mdictRes mddTmp:mdd){
-						File mddF = mddTmp.f();
-						String fn = mddF.getName();
-						if(fn.startsWith(clean_Dictionary_fName)){
-							fn=fn.substring(clean_Dictionary_fName.length());
-							File newMdd = new File(fP,clean_Dictionary_fName+fn);
-							if(mddF.exists()) {
-								int ret1 = FU.rename(a, mddF, newMdd);
-								if (ret1 == 0 && mdd != null) {
-									mddTmp.updateFile(newMdd);
-								}
-							}
-						}
-					}
-				else {
-					File mddNew = new File(fP,clean_Dictionary_fName+".mdd");
-					if(mddNew.exists()) {
-						try {
-							mdd = Collections.singletonList(new mdictRes(mddNew));
-							a.showT("找到了匹配的mdd！");
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				f=newF;
-			}
-			else if(retret==-123) {
-				a.showT("错误：不恰当的分隔符");
-			}
-		}
-		if(a.currentDictionary==this){
-			opt.putLastMdFn("LastPlanName", _Dictionary_fName);
-		}
+		//File fP = newF.getParentFile();
+		//fP.mkdirs();
+		//if(fP.exists() && fP.isDirectory()) {
+		//	int retret = FU.move3(a, f, newF);
+		//	CMN.Log("XXX-ret",""+retret);
+		//	if(retret>=0) {
+		//		bookImpl.getFileName() = newF.getName();
+		//		String cleanbookImpl.getFileName() = getCleanDictionaryName(bookImpl.getFileName());
+		//		/* 移动资源文件 */
+		//		ret = true;
+		//		if(mdd!=null)
+		//			for(mdictRes mddTmp:mdd){
+		//				File mddF = mddTmp.f();
+		//				String fn = mddF.getName();
+		//				if(fn.startsWith(cleanbookImpl.getFileName())){
+		//					fn=fn.substring(cleanbookImpl.getFileName().length());
+		//					File newMdd = new File(fP,cleanbookImpl.getFileName()+fn);
+		//					if(mddF.exists()) {
+		//						int ret1 = FU.rename(a, mddF, newMdd);
+		//						if (ret1 == 0 && mdd != null) {
+		//							mddTmp.updateFile(newMdd);
+		//						}
+		//					}
+		//				}
+		//			}
+		//		else {
+		//			File mddNew = new File(fP,cleanbookImpl.getFileName()+".mdd");
+		//			if(mddNew.exists()) {
+		//				try {
+		//					mdd = Collections.singletonList(new mdictRes(mddNew));
+		//					a.showT("找到了匹配的mdd！");
+		//				} catch (IOException e) {
+		//					e.printStackTrace();
+		//				}
+		//			}
+		//		}
+		//		f=newF;
+		//	}
+		//	else if(retret==-123) {
+		//		a.showT("错误：不恰当的分隔符");
+		//	}
+		//}
+		//if(a.currentDictionary==this){
+		//	opt.putLastMdFn("LastPlanName", bookImpl.getFileName());
+		//}
 		return ret;
 	}
 
@@ -2299,7 +2275,7 @@ public class BookPresenter
 			DataOutputStream data_out;
 			byte[] data;
 			
-			String save_name = _Dictionary_fName;
+			String save_name = bookImpl.getDictionaryName();
 			
 			ReusableByteOutputStream bos = new ReusableByteOutputStream(UIProjects.get(save_name), MainActivityUIBase.ConfigSize + MainActivityUIBase.ConfigExtra);
 			data = bos.getBytes();
@@ -2314,7 +2290,7 @@ public class BookPresenter
 			data_out.writeInt(lvPos);
 			data_out.writeInt(lvClickPos);
 			data_out.writeInt(lvPosOff);
-			//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, _Dictionary_fName);
+			//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, bookImpl.getFileName());
 			ScrollerRecord record = avoyager.get(lvClickPos);
 			if(record!=null){
 				data_out.writeInt(record.x);
@@ -2325,7 +2301,7 @@ public class BookPresenter
 				data_out.writeInt(0);
 				data_out.writeFloat(webScale);
 			}
-			//CMN.Log(_Dictionary_fName+"保存页面位置",expectedPosX,expectedPos,webScale);
+			//CMN.Log(bookImpl.getFileName()+"保存页面位置",expectedPosX,expectedPos,webScale);
 			data_out.writeLong(firstFlag);
 			data_out.writeInt(TIBGColor);
 			data_out.writeInt(TIFGColor);
@@ -2357,7 +2333,7 @@ public class BookPresenter
 		fo.writeInt(lvPos);
 		fo.writeInt(lvClickPos);
 		fo.writeInt(lvPosOff);
-		//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, _Dictionary_fName);
+		//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, bookImpl.getFileName());
 
 		int ex=0,e=0;
 		ScrollerRecord record = avoyager.get(lvClickPos);
@@ -2370,7 +2346,7 @@ public class BookPresenter
 			fo.writeInt(0);
 			fo.writeFloat(webScale);
 		}
-		//CMN.Log(_Dictionary_fName+"保存页面位置",expectedPosX,expectedPos,webScale);
+		//CMN.Log(bookImpl.getFileName()+"保存页面位置",expectedPosX,expectedPos,webScale);
 
 		fo.writeLong(firstFlag);
 
@@ -2383,7 +2359,7 @@ public class BookPresenter
 		System.arraycopy(data, 0, oldData, MainActivityUIBase.ConfigExtra, data.length);
 
 		AgentApplication app = ((AgentApplication) a.getApplication());
-		app.UIProjects.put(f.getName(), oldData);
+		app.UIProjects.put(bookImpl.getFile().getName(), oldData);
 	}
 
 	public int getFontSize() {
@@ -2398,7 +2374,7 @@ public class BookPresenter
 		DataInputStream data_in1 = null;
 		try {
 			CMN.rt();
-			byte[] data = UIProjects.get(f.getName());
+			byte[] data = UIProjects.get(bookImpl.getFile().getName());
 			if(data!=null){
 				int extra = MainActivityUIBase.ConfigExtra;
 				data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
@@ -2417,7 +2393,7 @@ public class BookPresenter
 				lvPos = data_in1.readInt();
 				lvClickPos = data_in1.readInt();
 				lvPosOff = data_in1.readInt();
-				//CMN.Log(_Dictionary_fName,"列表位置",lvPos,lvClickPos,lvPosOff);
+				//CMN.Log(bookImpl.getFileName(),"列表位置",lvPos,lvClickPos,lvPosOff);
 				if(data_in1.available()>0) {
 					ScrollerRecord record = new ScrollerRecord(data_in1.readInt(), data_in1.readInt(), webScale = data_in1.readFloat());
 					avoyager.put(lvClickPos, record);
@@ -2429,7 +2405,7 @@ public class BookPresenter
 				IBC.doubleClickZoomLevel1  = data_in1.readFloat();
 				IBC.doubleClickZoomLevel2  = data_in1.readFloat();
 			}
-			//CMN.pt(_Dictionary_fName+" 单典配置加载耗时");
+			//CMN.pt(bookImpl.getFileName()+" 单典配置加载耗时");
 		} catch (Exception e) {
 			if(GlobalOptions.debug) CMN.Log(e);
 		} finally{
@@ -2482,44 +2458,44 @@ public class BookPresenter
 	boolean unwrapSuffix = true;
 			
 	protected String SubPathToDBStorage(String extra) {
-		String full_Dictionary_fName = _Dictionary_fName;
-		int end = full_Dictionary_fName.length();
-		StringBuilder sb = AcquireStringBuffer(end+10);
+		String fullFileName = bookImpl.getDictionaryName();
+		int end = fullFileName.length();
+		StringBuilder sb = bookImpl.AcquireStringBuffer(end+10);
 		sb.append(".");
 		if(unwrapSuffix){
-			int idx = full_Dictionary_fName.lastIndexOf(".");
+			int idx = fullFileName.lastIndexOf(".");
 			if(idx>0){
 				end=idx;
 			}
 		}
-		sb.append(full_Dictionary_fName,0, end);
+		sb.append(fullFileName,0, end);
 		if(extra!=null){
 			sb.append("/").append(extra);
 		}
 		return sb.toString();
 	}
 	
-	protected String getCleanDictionaryName(String full_Dictionary_fName) {
+	protected String getCleanDictionaryName(String fullFileName) {
 		if(unwrapSuffix){
-			int idx = full_Dictionary_fName.lastIndexOf(".");
+			int idx = fullFileName.lastIndexOf(".");
 			if(idx>0){
-				return full_Dictionary_fName.substring(0, idx);
+				return fullFileName.substring(0, idx);
 			}
 		}
-		return full_Dictionary_fName;
+		return fullFileName;
 	}
 	
 	protected StringBuilder getCleanDictionaryNameBuilder() {
-		String full_Dictionary_fName = _Dictionary_fName;
-		int end = full_Dictionary_fName.length();
-		StringBuilder sb = AcquireStringBuffer(end+10);
+		String fullFileName = bookImpl.getDictionaryName();
+		int end = fullFileName.length();
+		StringBuilder sb = bookImpl.AcquireStringBuffer(end+10);
 		if(unwrapSuffix){
-			int idx = _Dictionary_fName.lastIndexOf(".");
+			int idx = bookImpl.getDictionaryName().lastIndexOf(".");
 			if(idx>0){
 				end=idx;
 			}
 		}
-		sb.append(full_Dictionary_fName,0, end);
+		sb.append(fullFileName,0, end);
 		return sb;
 	}
 	
@@ -2528,14 +2504,14 @@ public class BookPresenter
 			input = a.MainStringBuilder;
 			input.setLength(0);
 		}
-		String full_Dictionary_fName = _Dictionary_fName;
+		String fullFileName = bookImpl.getDictionaryName();
 		if(unwrapSuffix){
-			int idx = full_Dictionary_fName.lastIndexOf(".");
+			int idx = fullFileName.lastIndexOf(".");
 			if(idx>0){
-				return input.append(full_Dictionary_fName, 0, idx);
+				return input.append(fullFileName, 0, idx);
 			}
 		}
-		return input.append(full_Dictionary_fName);
+		return input.append(fullFileName);
 	}
 	
 	protected File PathSubToDBStorage(String extra) {
@@ -2739,50 +2715,22 @@ public class BookPresenter
 		}
 	}
 
-	@Override
-	protected ExecutorService OpenThreadPool(int thread_number) {
-		return Executors.newFixedThreadPool(thread_number);
-		//return Executors.newCachedThreadPool();
-		//return Executors.newScheduledThreadPool(thread_number);
-		//return Executors.newWorkStealingPool();
-	}
+	//@Override
+	//protected boolean handleDebugLines(String line) {
+	//	if(!super.handleDebugLines(line)){
+	//		//CMN.Log(line);
+	//		if(line.startsWith("[")){
+	//			line=line.substring(1);
+	//			if(line.equals("图文分离"))
+	//				setIsolateImages(true);
+	//			return true;
+	//		}
+	//	}
+	//	return false;
+	//}
 
-	@Override
-	protected boolean handleDebugLines(String line) {
-		if(!super.handleDebugLines(line)){
-			//CMN.Log(line);
-			if(line.startsWith("[")){
-				line=line.substring(1);
-				if(line.equals("图文分离"))
-					setIsolateImages(true);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	@Override
-	protected void MoveOrRenameResourceLet(mdictRes md, String token, String pattern, File newPath) {
-		File f = md.f();
-		String tokee = f().getName();
-		if(tokee.startsWith(token) && tokee.charAt(Math.min(token.length(), tokee.length()))=='.'){
-			String suffix = tokee.substring(token.length());
-			String np = f.getParent();
-			if(np!=null && np.equals(np=newPath.getParent())){ //重命名
-				File mnp=new File(np, pattern+suffix);
-				if(FU.rename5(a, f, mnp)>=0)
-					md.Rebase(mnp);
-			} else {
-				File mnp=new File(np, f.getName());
-				if(FU.move3(a, f, mnp)>=0)
-					md.Rebase(mnp);
-			}
-		}
-	}
-
-	@Override
 	public void Reload() {
-		super.Reload();
+		bookImpl.Reload();
 		if(mWebView!=null) {
 			mWebView.setTag(null);
 			mWebView.loadUrl("about:blank");
@@ -2833,4 +2781,21 @@ public class BookPresenter
 //	protected boolean StreamAvailable() {
 //		return a!=null;
 //	}
+	
+	
+	@Override
+	public File f() {
+		return bookImpl.getFile();
+	}
+	
+	
+	@Override
+	public String getPath() {
+		return bookImpl.getFile().getPath();
+	}
+	
+	@Override
+	public String getDictionaryName() {
+		return bookImpl.getDictionaryName();
+	}
 }

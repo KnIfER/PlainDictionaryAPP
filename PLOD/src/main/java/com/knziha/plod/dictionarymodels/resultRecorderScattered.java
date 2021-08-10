@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -36,7 +37,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		for(int i=0;i<md.size();i++){//遍历所有词典
 			BookPresenter mdtmp = md.get(i);
 			if(mdtmp!=null) {
-				ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
+				ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree((mdict) mdtmp.bookImpl);
 				if (_combining_search_tree != null)
 				for (int ti = 0; ti < _combining_search_tree.length; ti++) {//遍历搜索结果
 					if (_combining_search_tree[ti] == null) {
@@ -61,7 +62,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		int resCount=0;
 		BookPresenter mdtmp = md.get(idx);
 		if(mdtmp!=null) {
-			ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
+			ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree((mdict) mdtmp.bookImpl);
 			if (_combining_search_tree != null)
 			for (int ti = 0; ti < _combining_search_tree.length; ti++) {//遍历搜索结果
 				if (_combining_search_tree[ti] == null) {
@@ -131,7 +132,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-1];
 		int idxCount = 0;
-		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
+		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree((mdict) mdtmp.bookImpl);
 		for(int ti=0;ti<_combining_search_tree.length;ti++){
 			if(_combining_search_tree[ti]==null)
 				continue;
@@ -139,7 +140,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			if(max==0)
 				continue;
 			if(pos-idxCount<max) {
-				String text = mdtmp.getEntryAt(_combining_search_tree[ti].get(pos-idxCount),mflag);
+				String text = mdtmp.bookImpl.getEntryAt(_combining_search_tree[ti].get(pos-idxCount),mflag);
 				if(!TintResult.first) return text;
 				SpannableStringBuilder result = new SpannableStringBuilder(text);
 				Pattern reg=layer.getBakedPattern();
@@ -175,11 +176,13 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			CMN.Log("!!! Error: lazy load error failed.");
 			return;
 		}
-		mShouldSaveHistory = !(mdtmp instanceof bookPresenter_txt);
+		// nimp
+		//mShouldSaveHistory = !(mdtmp instanceof bookPresenter_txt);
+		mShouldSaveHistory = true;
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-1];
 		int idxCount = 0;
-		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree(mdtmp);
+		ArrayList<Integer>[] _combining_search_tree = layer.getInternalTree((mdict) mdtmp.bookImpl);
 		for(int ti=0;ti<_combining_search_tree.length;ti++) {
 			if(_combining_search_tree[ti]==null)
 				continue;

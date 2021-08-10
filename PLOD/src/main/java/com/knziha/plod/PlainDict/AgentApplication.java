@@ -16,6 +16,8 @@ import com.knziha.plod.slideshow.MddPicLoaderFactory;
 import com.knziha.plod.slideshow.PdfPic;
 import com.knziha.plod.slideshow.PdfPicLoaderFactory;
 
+import org.nanohttpd.protocols.http.ServerRunnable;
+
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -51,7 +53,62 @@ public class AgentApplication extends Application {
 	public PhotoBrowsingContext IBC;
 	public String[] Imgs;
 	public int currentImg;
-
+	
+	public static class BufferAllocator {
+		byte[] buffer = new byte[0];
+		byte[] buffer_server = new byte[0];
+		public byte[] AcquireCompressedBlockOfSize(int compressedSize, long max) {
+			long tid = Thread.currentThread().getId();
+			if(tid==CMN.mid) {
+				if(buffer.length<max) {
+					//CMN.Log("扩容", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
+					buffer = new byte[(int) (max*1.2f)];
+				} else {
+					//CMN.Log("复用缓存", max);
+				}
+				return buffer;
+			} else if(tid == ServerRunnable.tid) {
+				if(buffer_server.length<max) {
+					//CMN.Log("服 务 器 扩容", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
+					buffer_server = new byte[(int) (max*1.2f)];
+				} else {
+					//CMN.Log("服 务 器 复用缓存", max);
+				}
+				return buffer_server;
+			} else {
+				CMN.Log("复异步缓存", tid);
+				return new byte[compressedSize];
+			}
+		}
+		
+		byte[] buffer1 = new byte[0];
+		byte[] buffer1_server = new byte[0];
+		public byte[] AcquireDeCompressedKeyBlockOfSize(int decompressedSize, long max) {
+			long tid = Thread.currentThread().getId();
+			if(tid==CMN.mid) {
+				if(buffer1.length<max) {
+					//CMN.Log("扩容 1", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
+					buffer1 = new byte[(int) (max*1.2f)];
+				} else {
+					//CMN.Log("复用缓存 1", max);
+				}
+				return buffer1;
+			} else if(tid == ServerRunnable.tid) {
+				if(buffer1_server.length<max) {
+					//CMN.Log("服 务 器 扩容 1", max, (int) (max*1.2f), currentDictionary.getDictionaryName());
+					buffer1_server = new byte[(int) (max*1.2f)];
+				} else {
+					//CMN.Log("服 务 器 复用缓存 1", max);
+				}
+				return buffer1_server;
+			} else {
+				CMN.Log("复异步缓存 1", tid);
+				return new byte[decompressedSize];
+			}
+		}
+	}
+	public final static BufferAllocator BufferAllocatorInst = new BufferAllocator();
+	
 	static {
 		GlideCacheModule.mOnGlideRegistry =
 				registry -> {

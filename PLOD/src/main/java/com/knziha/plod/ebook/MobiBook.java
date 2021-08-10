@@ -10,13 +10,19 @@
 
 package com.knziha.plod.ebook;
 
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.mdBase;
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.ebook.Utils.BU.MOBIHuffCdic;
 import com.knziha.plod.ebook.Utils.CU;
 import com.knziha.plod.ebook.mobi.*;
+
+import org.jcodings.Encoding;
 import org.jcodings.specific.UTF8Encoding;
 import org.joni.Matcher;
 import org.joni.Option;
@@ -26,12 +32,17 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-public class MobiBook extends BookPresenter {
+public class MobiBook implements UniversalDictionaryInterface {
+	File f;
+	Charset _charset;
+	long _num_record_blocks;
+	String _Dictionary_fName;
 	long file_size;
 	MOBIData m;
 	long compression_type;
@@ -40,11 +51,10 @@ public class MobiBook extends BookPresenter {
 	MOBIHuffCdic huffcdic;
 	ArrayList<MOBIPdbRecord> RecordInfos;
 	WeakReference<ReusableByteOutputStream> bos_buffer = new WeakReference<>(new ReusableByteOutputStream());
-
+	
+	protected Encoding encoding;
+	
 	public MobiBook(File fn, com.knziha.plod.plaindict.PDICMainActivity _a) throws IOException{
-		super(fn, _a, 1, null);
-		a=_a;
-		opt = _a.opt;
 		m = new MOBIData();
 		
 		_num_record_blocks=-1;
@@ -770,7 +780,6 @@ public class MobiBook extends BookPresenter {
 	}
 
 
-	@Override
 	public DataInputStream getStreamAt(long off, boolean forceReal) throws IOException{
 		DataInputStream data_in = new DataInputStream(new FileInputStream(f));
 		data_in.skip(off);
@@ -784,7 +793,12 @@ public class MobiBook extends BookPresenter {
 			return contentList.size();
 		return 1;
 	}
-
+	
+	@Override
+	public String getEntryAt(int position, Flag mflag) {
+		return getEntryAt(position);
+	}
+	
 	@Override
 	public String getEntryAt(int position) {
 		if(contentList!=null)
@@ -796,7 +810,92 @@ public class MobiBook extends BookPresenter {
 	public byte[] getRecordData(int position) throws IOException {
 		return null;
 	}
-
+	
+	@Override
+	public void setCaseStrategy(int val) {
+	
+	}
+	
+	@Override
+	public File getFile() {
+		return null;
+	}
+	
+	@Override
+	public String getDictionaryName() {
+		return null;
+	}
+	
+	@Override
+	public boolean hasVirtualIndex() {
+		return false;
+	}
+	
+	@Override
+	public StringBuilder AcquireStringBuffer(int capacity) {
+		return null;
+	}
+	
+	@Override
+	public boolean hasMdd() {
+		return false;
+	}
+	
+	@Override
+	public String getRichDescription() {
+		return null;
+	}
+	
+	@Override
+	public boolean getIsResourceFile() {
+		return false;
+	}
+	
+	@Override
+	public Object[] getSoundResourceByName(String canonicalName) throws IOException {
+		return new Object[0];
+	}
+	
+	@Override
+	public String getCharsetName() {
+		return null;
+	}
+	
+	@Override
+	public void Reload() {
+	
+	}
+	
+	@Override
+	public int lookUp(String keyword, boolean isSrict) {
+		return 0;
+	}
+	
+	@Override
+	public int lookUp(String keyword) {
+		return 0;
+	}
+	
+	@Override
+	public InputStream getResourceByKey(String key) {
+		return null;
+	}
+	
+	@Override
+	public Object ReRoute(String key) throws IOException {
+		return null;
+	}
+	
+	@Override
+	public String getVirtualRecordAt(int vi) throws IOException {
+		return null;
+	}
+	
+	@Override
+	public String getVirtualRecordsAt(int[] list2) throws IOException {
+		return null;
+	}
+	
 	@Override
 	public String getRecordsAt(int... positions) throws IOException {
 		return getRecordAt(positions[0]);
@@ -1088,7 +1187,7 @@ public class MobiBook extends BookPresenter {
 	}
 
 	private String getTextRecordAt(int i) {
-		RecordLogicLayer data = new RecordLogicLayer();
+		mdBase.RecordLogicLayer data = new mdBase.RecordLogicLayer();
 		String ret = getTextRecordData(i, data);
 		if(ret!=null){
 			SU.Log("getTextRecordData Error : "+ret);
@@ -1097,7 +1196,7 @@ public class MobiBook extends BookPresenter {
 		return new String(data.data, data.ral, data.val, _charset);
 	}
 
-	protected String getTextRecordData(int i, RecordLogicLayer retriever) {
+	protected String getTextRecordData(int i, mdBase.RecordLogicLayer retriever) {
 		MOBIPdbRecord curr = RecordInfos.get(i);
 		if(!check_rec_loaded(curr)) return null;
 		long extra_size = 0;
@@ -1191,7 +1290,7 @@ public class MobiBook extends BookPresenter {
 	}
 	ArrayList<ContentContext> contentList;
 	public void parseContent(){
-		if(encoding==null) bakeJoniEncoding();
+		if(encoding==null) encoding=mdict.bakeJoniEncoding(_charset);
 		SU.Log(encoding);
 		String key = "<!DOCTYPE";
 		byte[] pattern = key.getBytes(_charset);
@@ -1199,7 +1298,7 @@ public class MobiBook extends BookPresenter {
 
 		contentList = new ArrayList<>();
 		ContentContext lstContext=null;
-		RecordLogicLayer data = new RecordLogicLayer();
+		mdBase.RecordLogicLayer data = new mdBase.RecordLogicLayer();
 		checkHuffman();
 		for (int i = 1; i < text_rec_count; i++) {
 			MOBIPdbRecord curr = RecordInfos.get(i);
@@ -1274,7 +1373,7 @@ public class MobiBook extends BookPresenter {
 		if(bUseCachedRes && cI.content!=null && cI.content.get()!=null)
 			return cI.content.get();
 		checkHuffman();
-		RecordLogicLayer data = new RecordLogicLayer();
+		mdBase.RecordLogicLayer data = new mdBase.RecordLogicLayer();
 		ReusableByteOutputStream bos=null;
 		if(bUseCachedRes){
 			if((bos=bos_buffer.get())==null)

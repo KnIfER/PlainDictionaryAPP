@@ -46,6 +46,7 @@ import com.knziha.ankislicer.customviews.VerticalRecyclerViewFastScrollermy;
 import com.knziha.ankislicer.customviews.wahahaTextView;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyIntPair;
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -1341,16 +1342,16 @@ public class DBroswer extends Fragment implements
 						additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
 						ArrayList<additiveMyCpr1> data = new ArrayList<>();
 						data.add(datalet);
-						String currentDisplaying__ = BookPresenter.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
+						String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
 						a.bShowLoadErr=false;
 						long st = CMN.rt();
 						for(int dIdx=0;dIdx<a.md.size();dIdx++) {//联合搜索
 							BookPresenter mdTmp = a.md_get(dIdx);
 							if(mdTmp!=null) {
-								int idx = mdTmp.lookUp(currentDisplaying__);
+								int idx = mdTmp.bookImpl.lookUp(currentDisplaying__);
 								if (idx >= 0)
-									while (idx < mdTmp.getNumberEntries()) {
-										if (BookPresenter.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+									while (idx < mdTmp.bookImpl.getNumberEntries()) {
+										if (mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
 											records.add(dIdx);
 											records.add(idx);
 										} else
@@ -1428,19 +1429,19 @@ public class DBroswer extends Fragment implements
 						a.TransientIntoSingleExplanation();
 
 						String key = currentDisplaying;
-						int offset = BookPresenter.offsetByTailing(key);
+						int offset = mdict.offsetByTailing(key);
 						int idx;
 						if(offset>0)
 							key = key.substring(0,key.length()-offset);
 						BookPresenter currentDictionary = a.currentDictionary;
-						idx = currentDictionary.lookUp(key,true);
+						idx = currentDictionary.bookImpl.lookUp(key,true);
 						int adapter_idx=a.adapter_idx;
 						if(idx<0) {
 							for(adapter_idx=0;adapter_idx<a.md.size();adapter_idx++) {
 								if(adapter_idx!=a.adapter_idx) {
 									currentDictionary=a.md_get(adapter_idx);
 									if(currentDictionary!=null)
-										idx=currentDictionary.lookUp(key,true);
+										idx=currentDictionary.bookImpl.lookUp(key,true);
 									if(idx>=0) break;
 								}
 							}
@@ -1502,12 +1503,12 @@ public class DBroswer extends Fragment implements
 							a.AttachContentViewForDB();
 
 							if(offset>0)//apply tailing offset
-								if(currentDictionary.getEntryAt(idx+offset).equals(key))
+								if(currentDictionary.bookImpl.getEntryAt(idx+offset).equals(key))
 									idx+=offset;
 							int tmpIdx=idx;
-							while(tmpIdx+1<currentDictionary.getNumberEntries() && BookPresenter.processText(currentDictionary.getEntryAt(tmpIdx)).equals(BookPresenter.processText(currentDictionary.getEntryAt(tmpIdx+1)))) {
+							while(tmpIdx+1<currentDictionary.bookImpl.getNumberEntries() && mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx)).equals(mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx+1)))) {
 								tmpIdx++;
-								if(currentDictionary.getEntryAt(tmpIdx).trim().equals(key.trim())) {
+								if(currentDictionary.bookImpl.getEntryAt(tmpIdx).trim().equals(key.trim())) {
 									idx=tmpIdx;
 									break;
 								}
@@ -1525,8 +1526,8 @@ public class DBroswer extends Fragment implements
 
 							currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, idx);
 
-							currentDictionary.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-							currentDictionary.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+							currentDictionary.mWebView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
+							currentDictionary.rl.getLayoutParams().height = LayoutParams.MATCH_PARENT;
 							processFavorite(position, currentDisplaying);
 						}
 						else {
@@ -1546,7 +1547,7 @@ public class DBroswer extends Fragment implements
 					additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
 					ArrayList<additiveMyCpr1> data = new ArrayList<>();
 					data.add(datalet);
-					String currentDisplaying__ = BookPresenter.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
+					String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
 					boolean reorded=false;
 					if(a.PeruseView!=null && a.PeruseView.peruseF.getChildCount()>0) {
 						a.DetachDBrowser();
@@ -1567,10 +1568,10 @@ public class DBroswer extends Fragment implements
 						}
 						BookPresenter mdTmp = a.md_get(dIdx);
 						if(mdTmp!=null) {
-							int idx = mdTmp.lookUp(currentDisplaying__);
+							int idx = mdTmp.bookImpl.lookUp(currentDisplaying__);
 							if (idx >= 0)
-								while (idx < mdTmp.getNumberEntries()) {
-									if (BookPresenter.replaceReg.matcher(mdTmp.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+								while (idx < mdTmp.bookImpl.getNumberEntries()) {
+									if (mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
 										records.add(dIdx);
 									} else
 										break;
@@ -1600,6 +1601,8 @@ public class DBroswer extends Fragment implements
 					}
 					a.DetachDBrowser();
 				} break;
+				default:
+					throw new IllegalStateException("Unexpected value: " + SelectionMode);
 			}
 		}};
 

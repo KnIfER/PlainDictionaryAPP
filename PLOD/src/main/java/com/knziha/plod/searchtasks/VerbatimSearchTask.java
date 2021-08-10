@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -40,8 +41,8 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 		verbatimCount=0;
 		if(!isStrict) {
 			for(BookPresenter mdTmp:a.md) {
-				if(mdTmp!=null)
-					mdTmp.combining_search_list = new ArrayList<>();
+				if(mdTmp!=null) // to impl
+					((mdict)mdTmp.bookImpl).combining_search_list = new ArrayList<>();
 			}
 		}
 	}
@@ -76,14 +77,14 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 					if(phI!=null) {
 						try {
 							md.set(j, mdTmp= MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
-							mdTmp.tmpIsFlag = phI.tmpIsFlag;
-							mdTmp.combining_search_list = new ArrayList<>();
+							mdTmp.tmpIsFlag = phI.tmpIsFlag; // to impl
+							((mdict)mdTmp.bookImpl).combining_search_list = new ArrayList<>();
 						} catch (Exception ignored) { }
 					}
 				}
 				if(mdTmp!=null){
 					if(isStrict) {
-						int result = mdTmp.lookUp(inputArray[i], true);
+						int result = mdTmp.bookImpl.lookUp(inputArray[i], true);
 						if(result>=0) {
 							if(!created) {
 								ArrayList<Integer> arr = new ArrayList<>();
@@ -96,8 +97,8 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 							}
 						}
 					}else {
-						if(isCancelled()) break;
-						mdTmp.size_confined_lookUp5(inputArray[i],null,i,15);
+						if(isCancelled()) break; // to impl
+						((mdict)mdTmp.bookImpl).size_confined_lookUp5(inputArray[i],null,i,15);
 					}
 				}
 			}
@@ -115,7 +116,8 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 			RBTree_additive additive_combining_search_tree_haha = new RBTree_additive();
 			for(int i=0; i<md.size(); i++) {
 				if(md.get(i)!=null)
-				for(myCpr<String, Integer> dataI:md.get(i).combining_search_list) {
+					// to impl
+				for(myCpr<String, Integer> dataI:((mdict)md.get(i).bookImpl).combining_search_list) {
 					additive_combining_search_tree_haha.insert(dataI.key, i, dataI.value);
 				}
 			}

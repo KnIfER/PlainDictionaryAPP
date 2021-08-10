@@ -49,13 +49,14 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	@Override
 	public boolean checkAllWebs(ArrayList<BookPresenter> md) {
 		ArrayList<Integer> data = getRecordAt(0);
-		allWebs=true;
-		for(int i=0;i<data.size();i+=2) {
-			if(!(md.get(data.get(i)) instanceof bookPresenter_web)){
-				allWebs=false;
-				break;
-			}
-		}
+		// nimp
+		//allWebs=true;
+		//for(int i=0;i<data.size();i+=2) {
+		//	if(!(md.get(data.get(i)) instanceof bookPresenter_web)){
+		//		allWebs=false;
+		//		break;
+		//	}
+		//}
 		return allWebs;
 	}
 
@@ -221,10 +222,11 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 			mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
 			mWebView.fromCombined=1;
-			if(mdtmp instanceof bookPresenter_web){
-				bookPresenter_web webx = (bookPresenter_web)mdtmp;
-				webx.searchKey = result.key;
-			}
+			//nimp
+			//if(mdtmp instanceof bookPresenter_web){
+			//	bookPresenter_web webx = (bookPresenter_web)mdtmp;
+			//	webx.searchKey = result.key;
+			//}
 
 			mdtmp.renderContentAt(-1,toFind,frameAt,null, d);
 			if(!mWebView.awaiting){

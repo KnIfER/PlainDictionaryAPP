@@ -3,6 +3,7 @@ package com.knziha.plod.searchtasks;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -72,8 +73,8 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 						}
 					}
 					publishProgress(i);
-					if(mdTmp!=null)
-						mdTmp.flowerFindAllKeys(SearchTerm,i,a.fuzzySearchLayer);
+					if(mdTmp!=null) // to impl
+						((mdict)a.currentDictionary.bookImpl).flowerFindAllKeys(SearchTerm,i,a.fuzzySearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {
@@ -85,7 +86,8 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 			try {
 				if(a.checkDicts()){
 					publishProgress(a.adapter_idx);
-					a.currentDictionary.flowerFindAllKeys(SearchTerm,a.adapter_idx,a.fuzzySearchLayer);
+					// to impl
+					((mdict)a.currentDictionary.bookImpl).flowerFindAllKeys(SearchTerm,a.adapter_idx,a.fuzzySearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

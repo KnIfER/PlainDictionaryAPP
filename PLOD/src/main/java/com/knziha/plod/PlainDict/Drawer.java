@@ -50,11 +50,11 @@ import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.bookPresenter_pdf;
 import com.knziha.plod.settings.ServerPreference;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
@@ -423,8 +423,8 @@ public class Drawer extends Fragment implements
 				String infoStr = getString(R.string.infoStr);
 				final SpannableStringBuilder ssb = new SpannableStringBuilder(infoStr);
 				
-				if (BookPresenter.error_input!=null) {
-					ssb.append("\n出错信息：").append(BookPresenter.error_input);
+				if (mdict.error_input!=null) {
+					ssb.append("\n出错信息：").append(mdict.error_input);
 				}
 				
 				final String languageName = Locale.getDefault().getLanguage();
@@ -593,7 +593,7 @@ public class Drawer extends Fragment implements
 									int toPos = pos[position1];
 									a.bWantsSelection=false;
 									a.bNeedReAddCon=false;
-									a.bOnePageNav=mdTmp instanceof bookPresenter_pdf;
+									//a.bOnePageNav=mdTmp instanceof bookPresenter_pdf; nimp
 									a.adaptermy.onItemClick(toPos);
 									a.bOnePageNav=false;
 									a.lv.setSelection(toPos);

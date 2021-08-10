@@ -18,7 +18,6 @@ import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
-import com.knziha.plod.dictionarymodels.bookPresenter_asset;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.Utils;
 
@@ -87,11 +86,11 @@ public class MultiShareActivity extends MainActivityUIBase {
 		setContentView(R.layout.activity_main_share);
 		further_loading(savedInstanceState);
 		String path = CMN.AssetTag + "liba.mdx";
-		try {
-			currentDictionary = new bookPresenter_asset(new File(path), this);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		//try { // nimp
+		//	currentDictionary = new bookPresenter_asset(new File(path), this);
+		//} catch (IOException e) {
+		//	e.printStackTrace();
+		//}
 		
 		main = root = findViewById(R.id.root);
 		mainF = main.findViewById(R.id.mainF);

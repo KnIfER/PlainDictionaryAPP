@@ -24,7 +24,9 @@ public class CMN{
 	public static final HashMap<String, String> AssetMap = new HashMap<>();
 	public static final String AssetTag = "/ASSET/";
 	public static final Boolean OccupyTag = true;
-
+	
+	public static long mid;
+	
 	public static int GlobalPageBackground = 0;
 	public static int MainBackground = 0;
 	public static int FloatBackground;

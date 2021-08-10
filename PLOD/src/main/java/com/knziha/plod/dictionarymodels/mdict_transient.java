@@ -78,7 +78,7 @@ public class mdict_transient implements mdict_manageable{
 		
 		try {
 			mninstance.opt=opt;
-			MNINSTANCE._Dictionary_fName=mPhI.getName().toString();
+			MNINSTANCE.setDictionaryName(mPhI.getName().toString());
 			MNINSTANCE.IBC=IBC;
 			MNINSTANCE.updateFile(f);
 			MNINSTANCE.avoyager=avoyager;
@@ -195,7 +195,7 @@ public class mdict_transient implements mdict_manageable{
 				PDICMainAppOptions.ChangedMap.add(path);
 			}
 			
-			MNINSTANCE._Dictionary_fName=mPhI.getName().toString();
+			MNINSTANCE.setDictionaryName(mPhI.getName().toString());
 			MNINSTANCE.IBC=IBC;
 			MNINSTANCE.updateFile(f);
 			MNINSTANCE.avoyager=avoyager;

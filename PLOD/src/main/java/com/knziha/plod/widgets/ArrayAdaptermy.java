@@ -16,9 +16,6 @@ import androidx.annotation.Nullable;
 
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.bookPresenter_pdf;
-import com.knziha.plod.dictionarymodels.bookPresenter_web;
-
 import db.MdxDBHelper;
 
 /**
@@ -45,14 +42,14 @@ public class ArrayAdaptermy extends BaseAdapter{
 		md=md_;
 		con = con_;
 		StorageLevel=l;
-		isWeb = md instanceof bookPresenter_web;
+		isWeb = false; // nimp md instanceof bookPresenter_web;
 		cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
    }
 
 	public void refresh(BookPresenter invoker, MdxDBHelper con_) {
 		if(invoker!=md || con!=con_ || cr==null) {
 	    	md=invoker;
-	    	isWeb = md instanceof bookPresenter_web;
+	    	isWeb = false;// nimp md instanceof bookPresenter_web;
 	    	con = con_;
 	    	if(cr!=null) cr.close();
 	    	cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
@@ -91,13 +88,15 @@ public class ArrayAdaptermy extends BaseAdapter{
     	String LexicalText = DataRecord.get(position);
     	if(LexicalText==null) {
     		cr.moveToPosition(position);
-    		if(md instanceof bookPresenter_pdf){
-				LexicalText="第"+cr.getInt(0)+"页";
-			}else if(isWeb){
-				LexicalText=cr.getString(1);
-			}
-    		else try {
-				LexicalText=md.getEntryAt(cr.getInt(0));
+    		// nimp
+    		//if(md instanceof bookPresenter_pdf){
+			//	LexicalText="第"+cr.getInt(0)+"页";
+			//}else if(isWeb){
+			//	LexicalText=cr.getString(1);
+			//}
+    		//else
+			try {
+				LexicalText=md.bookImpl.getEntryAt(cr.getInt(0));
 			} catch (Exception e) {
 				LexicalText="!!!Error: "+e.getLocalizedMessage();
 			}

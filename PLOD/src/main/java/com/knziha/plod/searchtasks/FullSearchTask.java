@@ -3,6 +3,7 @@ package com.knziha.plod.searchtasks;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -78,7 +79,8 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 					}
 					publishProgress(i);//_mega
 					if(mdTmp!=null)
-						mdTmp.flowerFindAllContents(SearchTerm,i,a.fullSearchLayer);
+						// to impl
+						((mdict)mdTmp.bookImpl).flowerFindAllContents(SearchTerm,i,a.fullSearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {
@@ -91,7 +93,8 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 				if(a.checkDicts()){
 					publishProgress(a.adapter_idx);
 					//CMN.Log("Find In All Conten??");
-					a.currentDictionary.flowerFindAllContents(SearchTerm,a.adapter_idx,a.fullSearchLayer);
+					// to impl
+					((mdict)a.currentDictionary.bookImpl).flowerFindAllContents(SearchTerm,a.adapter_idx,a.fullSearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

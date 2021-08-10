@@ -1690,7 +1690,8 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		}
 		if(mdTmp!=null){
 			CMN.Log("RebasePath!!!");
-			mdTmp.Rebase(newPath);
+			// nmg
+			//mdTmp.Rebase(newPath);
 			app_mdict_cache.put(newPath.getPath(), mdTmp);
 		}
 		if(!move){

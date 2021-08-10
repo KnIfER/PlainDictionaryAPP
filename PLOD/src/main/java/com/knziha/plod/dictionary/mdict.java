@@ -127,11 +127,22 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	public boolean getIsDedicatedFilter(byte firstFlag){
 		return false;
 	}
+	
+	
+	int mCaseStrategy;
+	
+	
 	//public int KeycaseStrategy=0;//0:global 1:Java API 2:classical
 	public int getCaseStrategy(){
-		return 0;
+		return mCaseStrategy;
 	}
 	public void setCaseStrategy(int val){
+		mCaseStrategy = val;
+	}
+	
+	@Override
+	public File getFile() {
+		return f;
 	}
 	
 	public boolean getOnlyContainsImg(){
@@ -856,7 +867,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		byte[][][][][] matcher=null;
 		Regex Joniregex = null;
 		if(SearchLauncher.getSearchType()==1){
-			if(encoding==null) bakeJoniEncoding();
+			if(encoding==null) encoding = bakeJoniEncoding(_charset);
 			if(encoding!=null) {
 				//if (getRegexAutoAddHead() && !key.startsWith(".*"))
 				//	key = ".*" + key;
@@ -1078,128 +1089,89 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 //		}
 	}
 
-	protected void bakeJoniEncoding() {
-		switch (_charset.name()){
+	public static Encoding bakeJoniEncoding(Charset charset) {
+		switch (charset.name()){
 			case "US-ASCII":
-				encoding=ASCIIEncoding.INSTANCE;
-			break;
+				return ASCIIEncoding.INSTANCE;
 			case "Big5":
-				encoding=BIG5Encoding.INSTANCE;
-			break;
+				return BIG5Encoding.INSTANCE;
 			case "Big5-HKSCS":
-				encoding=Big5HKSCSEncoding.INSTANCE;
-			break;
+				return Big5HKSCSEncoding.INSTANCE;
 			case "x-IBM949":
-				encoding=CP949Encoding.INSTANCE;
-			break;
+				return CP949Encoding.INSTANCE;
 			case "EUC-JP":
-				encoding=EUCJPEncoding.INSTANCE;
-			break;
+				return EUCJPEncoding.INSTANCE;
 			case "EUC-KR":
-				encoding=EUCKREncoding.INSTANCE;
-			break;
+				return EUCKREncoding.INSTANCE;
 			case "x-EUC-TW":
-				encoding=EUCTWEncoding.INSTANCE;
-			break;
+				return EUCTWEncoding.INSTANCE;
 			case "GB2312":
-				encoding=GB2312Encoding.INSTANCE;
-			break;
+				return GB2312Encoding.INSTANCE;
 			case "GB18030":
-				encoding=GB18030Encoding.INSTANCE;
-			break;
+				return GB18030Encoding.INSTANCE;
 			case "GBK":
-				encoding=GBKEncoding.INSTANCE;
-			break;
+				return GBKEncoding.INSTANCE;
 			case "ISO-8859-1":
-				encoding=ISO8859_1Encoding.INSTANCE;
-			break;
+				return ISO8859_1Encoding.INSTANCE;
 			case "ISO-8859-2":
-				encoding=ISO8859_2Encoding.INSTANCE;
-			break;
+				return ISO8859_2Encoding.INSTANCE;
 			case "ISO-8859-3":
-				encoding=ISO8859_3Encoding.INSTANCE;
-			break;
+				return ISO8859_3Encoding.INSTANCE;
 			case "ISO-8859-4":
-				encoding=ISO8859_4Encoding.INSTANCE;
-			break;
+				return ISO8859_4Encoding.INSTANCE;
 			case "ISO-8859-5":
-				encoding=ISO8859_5Encoding.INSTANCE;
-			break;
+				return ISO8859_5Encoding.INSTANCE;
 			case "ISO-8859-6":
-				encoding=ISO8859_6Encoding.INSTANCE;
-			break;
+				return ISO8859_6Encoding.INSTANCE;
 			case "ISO-8859-7":
-				encoding=ISO8859_7Encoding.INSTANCE;
-			break;
+				return ISO8859_7Encoding.INSTANCE;
 			case "ISO-8859-8":
-				encoding=ISO8859_8Encoding.INSTANCE;
-			break;
+				return ISO8859_8Encoding.INSTANCE;
 			case "ISO-8859-9":
-				encoding=ISO8859_9Encoding.INSTANCE;
-			break;
+				return ISO8859_9Encoding.INSTANCE;
 			case "ISO-8859-10":
-				encoding=ISO8859_10Encoding.INSTANCE;
-			break;
+				return ISO8859_10Encoding.INSTANCE;
 			case "ISO-8859-11":
-				encoding=ISO8859_11Encoding.INSTANCE;
-			break;
+				return ISO8859_11Encoding.INSTANCE;
 			case "ISO-8859-13":
-				encoding=ISO8859_13Encoding.INSTANCE;
-			break;
+				return ISO8859_13Encoding.INSTANCE;
 			case "ISO-8859-14":
-				encoding=ISO8859_14Encoding.INSTANCE;
-			break;
+				return ISO8859_14Encoding.INSTANCE;
 			case "ISO-8859-15":
-				encoding=ISO8859_15Encoding.INSTANCE;
-			break;
+				return ISO8859_15Encoding.INSTANCE;
 			case "ISO-8859-16":
-				encoding=ISO8859_16Encoding.INSTANCE;
-			break;
+				return ISO8859_16Encoding.INSTANCE;
 			case "KOI8-R":
-				encoding=KOI8REncoding.INSTANCE;
-			break;
+				return KOI8REncoding.INSTANCE;
 			case "KOI8-U":
-				encoding=KOI8UEncoding.INSTANCE;
-			break;
+				return KOI8UEncoding.INSTANCE;
 			case "Shift_JIS":
-				encoding=SJISEncoding.INSTANCE;
-			break;
+				return SJISEncoding.INSTANCE;
+			default:
 			case "UTF-8":
-				encoding=UTF8Encoding.INSTANCE;
-			break;
+				return UTF8Encoding.INSTANCE;
 			case "UTF-16BE":
-				encoding=UTF16BEEncoding.INSTANCE;
-			break;
+				return UTF16BEEncoding.INSTANCE;
 			case "UTF-16LE":
-				encoding=UTF16LEEncoding.INSTANCE;
-			break;
+				return UTF16LEEncoding.INSTANCE;
 			case "UTF-32BE":
-				encoding=UTF32BEEncoding.INSTANCE;
-			break;
+				return UTF32BEEncoding.INSTANCE;
 			case "UTF-32LE":
-				encoding=UTF32LEEncoding.INSTANCE;
-			break;
+				return UTF32LEEncoding.INSTANCE;
 			case "Windows-31j":
-				encoding=Windows_31JEncoding.INSTANCE;
-			break;
+				return Windows_31JEncoding.INSTANCE;
 			case "Windows-1250":
-				encoding=Windows_1250Encoding.INSTANCE;
-			break;
+				return Windows_1250Encoding.INSTANCE;
 			case "Windows-1251":
-				encoding=Windows_1251Encoding.INSTANCE;
-			break;
+				return Windows_1251Encoding.INSTANCE;
 			case "Windows-1252":
-				encoding=Windows_1252Encoding.INSTANCE;
-			break;
+				return Windows_1252Encoding.INSTANCE;
 			case "Windows-1253":
-				encoding=Windows_1253Encoding.INSTANCE;
-			break;
+				return Windows_1253Encoding.INSTANCE;
 			case "Windows-1254":
-				encoding=Windows_1254Encoding.INSTANCE;
-			break;
+				return Windows_1254Encoding.INSTANCE;
 			case "Windows-1257":
-				encoding=Windows_1257Encoding.INSTANCE;
-			break;
+				return Windows_1257Encoding.INSTANCE;
 		}
 	}
 
@@ -1440,6 +1412,51 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	
 	public boolean hasMdd() {
 		return mdd!=null && mdd.size()>0 || ftd!=null && ftd.size()>0 || isResourceFile;
+	}
+	
+	@Override
+	public String getRichDescription() {
+		return _header_tag==null?"":_header_tag.get("Description");
+	}
+	
+	@Override
+	public boolean getIsResourceFile() {
+		return isResourceFile;
+	}
+	
+	@Override
+	public Object[] getSoundResourceByName(String canonicalName) throws IOException {
+		if(getIsResourceFile()){
+			int idx = lookUp(canonicalName, false);
+			if(idx>=0){
+				String matched=getEntryAt(idx);
+				if(matched.regionMatches(true,0, canonicalName, 0, canonicalName.length())){
+					String spx = "spx";
+					return new Object[]{matched.regionMatches(true,canonicalName.length(), spx, 0, spx.length()), getResourseAt(idx)};
+				}
+			}
+		} else {
+			if(mdd!=null && mdd.size()>0){
+				for(mdictRes mddTmp:mdd){
+					int idx = mddTmp.lookUp(canonicalName, false);
+					if(idx>=0) {
+						String matched=mddTmp.getEntryAt(idx);
+						//SU.Log("getSoundResourceByName", matched, canonicalName);
+						if(matched.regionMatches(true,0, canonicalName, 0, canonicalName.length())){
+							String spx = "spx";
+							return new Object[]{matched.regionMatches(true,canonicalName.length(), spx, 0, spx.length()), mddTmp.getResourseAt(idx)};
+						}
+					}
+					//else SU.Log("chrochro inter_ key is not find:",bookImpl.getFileName(),canonicalName, idx);
+				}
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	public String getCharsetName() {
+		return _charset.name();
 	}
 	
 	public List<mdictRes> getMdd() {
@@ -1691,7 +1708,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		Regex Joniregex = null;
 		boolean regexIntent=SearchLauncher.getSearchType()==1;
 		if(regexIntent){
-			if(encoding==null) bakeJoniEncoding();
+			if(encoding==null) encoding = bakeJoniEncoding(_charset);
 			if(encoding!=null) {
 				//.if (getRegexAutoAddHead() && !key.startsWith(".*"))
 				//.	key = ".*" + key;
@@ -1785,7 +1802,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 								compressedSize_many += _key_block_info_list[blockId+1].key_block_compressed_size_accumulator-infoI.key_block_compressed_size_accumulator;
 						}
 						//TODO optimise compressedSize_many
-						//SU.Log("compressedSize_many;;"+compressedSize_many);
+						//SU.Log("compressedSize_many;"+compressedSize_many);
 						byte[] key_block = new byte[_maxDecomKeyBlockSize];/*分配资源 maxDecomKeyBlockSize 32770   65536 (common cache for index blocks)*/
 						long start = _key_block_info_list[it*step].key_block_compressed_size_accumulator;
 
@@ -1820,7 +1837,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 								//byte[] record_block_type = new byte[]{_key_block_compressed_many[(int) startI],_key_block_compressed_many[(int) (startI+1)],_key_block_compressed_many[(int) (startI+2)],_key_block_compressed_many[(int) (startI+3)]};
 								//int adler32 = getInt(_key_block_compressed_many[(int) (startI+4)],_key_block_compressed_many[(int) (startI+5)],_key_block_compressed_many[(int)(startI+6)],_key_block_compressed_many[(int) (startI+7)]);
 
-								//SU.Log(key_block.length+";;"+infoI.key_block_decompressed_size+";;"+maxDecomKeyBlockSize);
+								//SU.Log(key_block.length+";"+infoI.key_block_decompressed_size+";"+maxDecomKeyBlockSize);
 								//SU.Log(_key_block_compressed_many.length, startI, key_block.length,_key_block_size-8);
 								//解压开始
 								switch (_key_block_compressed_many[startI]|_key_block_compressed_many[startI+1]<<8|_key_block_compressed_many[startI+2]<<16|_key_block_compressed_many[startI+3]<<32){
@@ -2622,7 +2639,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		}
 	}
 	
-	protected StringBuilder AcquireStringBuffer(int capacity) {
+	public StringBuilder AcquireStringBuffer(int capacity) {
 		StringBuilder sb;
 		if(univeral_buffer != null && isMainThread()){
 			sb = univeral_buffer;

@@ -5,6 +5,7 @@ import android.view.View;
 
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -37,8 +38,8 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
 		for(BookPresenter mdTmp:a.md) {
-			if(mdTmp!=null)
-				mdTmp.combining_search_list = new ArrayList<>();
+			if(mdTmp!=null) // to impl
+				((mdict)mdTmp.bookImpl).combining_search_list = new ArrayList<>();
 		}
 		additive_combining_search_tree.clear();
 	}
@@ -92,16 +93,17 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 								try {
 									md.set(i1, mdTmp=MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
 									mdTmp.tmpIsFlag = phI.tmpIsFlag;
-									mdTmp.combining_search_list = new ArrayList<>();
+									// to impl
+									((mdict)mdTmp.bookImpl).combining_search_list = new ArrayList<>();
 								} catch (Exception ignored) { }
 							}
 						}
 						if(mdTmp!=null)
 							try {
-								mdTmp.size_confined_lookUp5(CurrentSearchText,null, i1,15);
+								((mdict)mdTmp.bookImpl).size_confined_lookUp5(CurrentSearchText,null, i1,15);
 							} catch (Exception e) {
 								if(GlobalOptions.debug)
-									CMN.Log("搜索出错！！！", mdTmp._Dictionary_fName, e);
+									CMN.Log("搜索出错！！！", mdTmp.bookImpl.getDictionaryName(), e);
 							}
 					}
 					if(a.split_dict_thread_number>thread_number) a.poolEUSize.addAndGet(-1);
@@ -132,8 +134,8 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		additive_combining_search_tree = new RBTree_additive();
 		for(int i=0; i<md.size(); i++) {
 			BookPresenter mdTmp = md.get(i);
-			if(mdTmp!=null){
-				ArrayList<myCpr<String, Integer>> combining_search_list = mdTmp.combining_search_list;
+			if(mdTmp!=null){ // to impl
+				ArrayList<myCpr<String, Integer>> combining_search_list = ((mdict)mdTmp.bookImpl).combining_search_list;
 				if(combining_search_list!=null) {
 					for (myCpr<String, Integer> dataI : combining_search_list) {
 						additive_combining_search_tree.insert(dataI.key, i, dataI.value);
@@ -153,10 +155,10 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		//showT(""+bWantsSelection);
 
 		if(a.bIsFirstLaunch||a.bWantsSelection) {
-			if(BookPresenter.processText(rec.getResAt(0)).equals(BookPresenter.processText(CurrentSearchText))) {
+			if(mdict.processText(rec.getResAt(0)).equals(mdict.processText(CurrentSearchText))) {
 				boolean proceed = true;
 				if(a.contentview.getParent()==a.main) {
-					proceed = (a.adaptermy2.currentKeyText == null || !BookPresenter.processText(CurrentSearchText).equals(BookPresenter.processText(a.adaptermy2.currentKeyText)));
+					proceed = (a.adaptermy2.currentKeyText == null || !mdict.processText(CurrentSearchText).equals(mdict.processText(a.adaptermy2.currentKeyText)));
 				}
 				if(proceed){
 					a.bRequestedCleanSearch=a.bIsFirstLaunch;
