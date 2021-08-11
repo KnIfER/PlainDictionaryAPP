@@ -76,8 +76,8 @@
 
 		<androidx.preference.ListPreference
 			android:defaultValue="0"
-			android:key="paste_target"
-			android:persistent="false"
+			android:key="tgt_paste"
+			android:persistent="true"
 			android:title="@string/paste_target"
 			android:entryValues="@array/zero_three"
 			android:entries="@array/paste_target_info"
@@ -87,13 +87,39 @@
 
 		<androidx.preference.ListPreference
 			android:defaultValue="0"
-			android:key="share_target"
-			android:persistent="false"
+			android:key="tgt_share"
+			android:persistent="true"
 			android:title="@string/share_target"
 			android:entryValues="@array/zero_three"
 			android:entries="@array/paste_target_info"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
+			/>
+
+		<androidx.preference.ListPreference
+			android:defaultValue="3"
+			android:key="tgt_color"
+			android:persistent="true"
+			android:title="ColorDict 划词目标 : "
+			android:summary="（流行的词典接口）"
+			android:entryValues="@array/zero_three"
+			android:entries="@array/paste_target_info"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:wiki="ColorDict 本是一款APP，不知为何，其接口被争相模仿。静读天下支持的第一个查词方式即为此。"
+			/>
+
+		<androidx.preference.ListPreference
+			android:defaultValue="3"
+			android:key="tgt_text"
+			android:persistent="true"
+			android:title="文本处理目标 : "
+			android:summary="（安卓通用接口）"
+			android:entryValues="@array/zero_three"
+			android:entries="@array/paste_target_info"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:wiki="安卓通用的文本处理接口，一般位于文本的上下文菜单中，比如长按浏览器文本出现的菜单。谷歌翻译也实现了此接口。"
 			/>
 
 		<com.knziha.filepicker.settings.FilePickerPreference
