@@ -378,7 +378,7 @@ public class Drawer extends Fragment implements
 									mClipboard.add(0, mClipboard.remove(i));
 								}
 								boolean focused = a.hasWindowFocus();
-								boolean toFloat = PDICMainAppOptions.getPasteTarget() == 3;
+								boolean toFloat = a.opt.getPasteTarget() == 3;
 								if (!toFloat && !focused && a.opt.getPasteBinBringTaskToFront()) {
 									ActivityManager manager = (ActivityManager) a.getSystemService(Context.ACTIVITY_SERVICE);
 									if (manager != null)
@@ -959,10 +959,10 @@ public class Drawer extends Fragment implements
 				dialog1.show();
 			} break;
 			case 8://词典管理中心
-				//a.findViewById(R.id.browser_widget2).performLongClick();
+				a.showDictionaryManager();
 				break;
 			case 9://切换生词本
-				//a.findViewById(R.id.browser_widget5).performLongClick();
+				a.showPickFavorFolder();
 				break;
 			case 11://设置
 				Intent intent = new Intent();

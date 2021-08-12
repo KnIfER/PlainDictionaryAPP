@@ -33,6 +33,12 @@ public class ActivatableImageView extends ImageView {
 		a.recycle();
 	}
 	
+	public void setActiveDrawable(Drawable activeDrawable, boolean showRawColor) {
+		mDrawable = getDrawable();
+		mActiveDrawable = activeDrawable;
+		bActivedShowRawColor = showRawColor;
+	}
+	
 	@Override
 	public void setColorFilter(ColorFilter cf) {
 		if(!bActivedShowRawColor||!isActivated())

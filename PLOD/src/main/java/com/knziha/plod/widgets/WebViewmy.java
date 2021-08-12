@@ -36,6 +36,7 @@ import android.widget.TextView;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
@@ -88,6 +89,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
+	public BookPresenter presenter;
+	
 	public boolean drawRect;
 	public float highRigkt_X;
 	public float highRigkt_Y;
@@ -136,9 +139,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		settings.setJavaScriptCanOpenWindowsAutomatically(false);
 		settings.setMediaPlaybackRequiresUserGesture(false);
 
-//		settings.setAppCacheEnabled(true);
-//		settings.setDatabaseEnabled(true);
-//		settings.setDomStorageEnabled(true);
+		// todo enhance safety
+		settings.setAppCacheEnabled(true);
+		settings.setDatabaseEnabled(true);
+		settings.setDomStorageEnabled(true);
 		
 		settings.setAllowFileAccess(true);
 

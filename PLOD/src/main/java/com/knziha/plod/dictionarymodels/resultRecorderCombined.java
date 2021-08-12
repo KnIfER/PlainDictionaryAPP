@@ -6,12 +6,15 @@ import android.view.ViewGroup;
 import android.widget.ScrollView;
 
 import com.knziha.plod.plaindict.BasicAdapter;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,36 +103,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 
 		final additiveMyCpr1 result = data.get(pos);
 		final List<Integer> vals = (List<Integer>) result.value;
-
-		int lastVal=-1, valueCount=0;
-		int[] exempter = new int[vals.size()/2];
-		for(int i=0;i<vals.size();i+=2){
-			int nowVal = vals.get(i);
-			if(lastVal!=nowVal) {
-				exempter[valueCount++]=nowVal;
-			}
-			lastVal=nowVal;
-		}
-		final int vc = valueCount;
 		
-		valueCount=0;//adaptively remove views
-		for(int i=0;i<md.size();i++) {
-			BookPresenter mdtmp = md.get(i);
-			if(mdtmp!=null) {
-				ViewGroup sV = mdtmp.rl;
-				if (sV != null) {
-					ViewGroup sVG = (ViewGroup) sV.getParent();
-					if (sVG != null) {
-						if (valueCount < vc && i == exempter[valueCount]) {
-							if (sVG != a.webholder) sVG.removeView(sV);
-							valueCount++;
-						} else
-							sVG.removeView(sV);
-					}
-				}
-			}
-		}
-
+		// todo remove adaptively .
+		a.webholder.removeAllViews();
+		
 		//if(false)
 		a.WHP.touchFlag.first=false;
 		if(OLCL==null) {
@@ -178,7 +155,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		a.PageSlider.setIBC(null);
 		
 		ArrayList<Integer> valsTmp = new ArrayList<>();
-		valueCount=0;
+		int valueCount=0;
 		boolean checkReadEntry = a.opt.getAutoReadEntry();
 		boolean bNeedExpand=true;
 		ViewGroup webholder = a.webholder;
@@ -190,11 +167,17 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				i+=2;
 			}
 			i-=2;
-			
-			if(toFind<0 || toFind>=md.size()) {
-				continue;
+			BookPresenter mdtmp = null;
+			if (toFind<0) {
+				try {
+					mdtmp = a.getDictionaryById(-toFind);
+				} catch (IOException ignored) { }
 			}
-			BookPresenter mdtmp = md.get(toFind);
+			
+			if (mdtmp==null && toFind>=0 && toFind<md.size()) {
+				mdtmp = md.get(toFind);
+			}
+			
 			if(mdtmp==null) continue;
 			
 			int[] d = new int[valsTmp.size()];
@@ -206,11 +189,12 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			mdtmp.initViewsHolder(a);
 			ViewGroup rl = mdtmp.rl;
 			WebViewmy mWebView = mdtmp.mWebView;
-			rl.setTag(toFind);
 			int frameAt=webholder.getChildCount();
-			frameAt=valueCount>frameAt?frameAt:valueCount;
-			if(rl.getParent()==null)
+			frameAt= Math.min(valueCount, frameAt);
+			if(rl.getParent()!=webholder) {
+				Utils.removeView(rl);
 				webholder.addView(rl,frameAt);
+			}
 			//else
 			//	a.showT("yes: "+mdtmp.getPath());
 			//mdtmp.vll=vll;
@@ -228,7 +212,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			//	webx.searchKey = result.key;
 			//}
 
-			mdtmp.renderContentAt(-1,toFind,frameAt,null, d);
+			mdtmp.renderContentAt(-1, toFind, frameAt,null, d);
 			if(!mWebView.awaiting){
 				bNeedExpand=false;
 				if(checkReadEntry){

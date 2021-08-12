@@ -158,6 +158,7 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEX
 import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
+import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
 
 /**
  * 主程序 - 单实例<br/>
@@ -235,8 +236,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private EditText etSearchDict;
 	private boolean SearchDictPatternChanged;
 	private IBinder etSearchDict_getWindowToken;
-	/** 虚空断瀑江流尽注玉魄惊魂启元大法指法篇微直截术第十二式之计启技：<br/>
-	 * 		 👌🏻 · 👌🏻 🏻🏻🏻 👍🏻 👍 <-X>> 👏👏👏--> 👌 <-- 🏻🏻🏻 💣💣💣 ！*/
 	private static int LauncherInstanceCount;
 	public MenuItem iItem_aPageRemember;
 	private EnchanterReceiver locationReceiver;
@@ -491,7 +490,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	 * */
 	public void JumpToWord(String content, int source) {
 		//CMN.Log("JumpToWord", focused, source, PDICMainAppOptions.getPasteTarget(), PDICMainAppOptions.getPasteToPeruseModeWhenFocued());
-		if((source>=1)&&PDICMainAppOptions.getPasteTarget()==3 && !(source==1&&PDICMainAppOptions.getPasteToPeruseModeWhenFocued())){
+		if((source>=1)&&opt.getPasteTarget()==3 && !(source==1&&PDICMainAppOptions.getPasteToPeruseModeWhenFocued())){
 			Intent popup = new Intent().setClassName("com.knziha.plod.plaindict", "com.knziha.plod.plaindict.FloatActivitySearch").putExtra("EXTRA_QUERY", content);
 			//this, FloatActivitySearch.class
 			popup.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -505,8 +504,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			return;
 		}
 
-		int PasteTarget=PDICMainAppOptions.getPasteTarget();
-		int ShareTarget=PDICMainAppOptions.getShareTarget();
+		int PasteTarget=opt.getPasteTarget();
+		int ShareTarget=opt.getShareToTarget();
 		boolean isPeruseView=PeruseViewAttached();
 		boolean toPeruseView =  (source>=1)&&(PasteTarget==2||PasteTarget==0&&isPeruseView) ||
 				source == 1 && PDICMainAppOptions.getPasteToPeruseModeWhenFocued() ||
@@ -663,6 +662,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(pickDictDialog!=null) if(pickDictDialog.isDirty)  {opt.putFirstFlag();pickDictDialog.isDirty=false;}
 		}
 		else if(DetachClickTranslator()){
+		}
+		else if(settingsPanel!=null) {
+			hideSettingsPanel();
 		}
 		else if(!AutoBrowsePaused || bRequestingAutoReading){
 			stopAutoReadProcess();
@@ -1639,6 +1641,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		//tg
+		//etSearch.setText("happy");
 		//do_test_project_Test_Background_Loop();
 		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
 		
@@ -1697,7 +1700,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(CMN.testFLoatSearch)
 			startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 
-		//onClick(findViewById(R.id.browser_widget6));
 		//JumpToWord("crayon", 1);
 
 		//Intent i = new Intent(this,dict_manager_activity.class); startActivity(i);
@@ -2126,8 +2128,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	private void decorateBottombarFFSearchIcons(int pos) {
-		BottombarBtns[2].setActivated(pos==0);
-		BottombarBtns[3].setActivated(pos==2);
+		if(BottombarBtns[2]!=null)BottombarBtns[2].setActivated(pos==0);
+		if(BottombarBtns[3]!=null)BottombarBtns[3].setActivated(pos==2);
 	}
 	
 	@Override
@@ -3472,25 +3474,29 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		return false;
 	}
 	
-	private void showDictionaryManager() {
+	public void showPickFavorFolder() {
+		showChooseFavorDialog(0);
+	}
+	
+	public void showDictionaryManager() {
 		ReadInMdlibs(null);
 		AgentApplication app = ((AgentApplication) getApplication());
 		app.mdict_cache = mdict_cache;
 		for(BookPresenter mdTmp:md) {
 			if(mdTmp!=null){
 				//get path put
-				mdict_cache.put(mdTmp.getPath(),mdTmp);
+				mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
 			}
 		}
 		for(BookPresenter mdTmp:currentFilter) {
 			if(mdTmp!=null){
-				mdict_cache.put(mdTmp.getPath(),mdTmp);
+				mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
 			}
 		}
 		if(drawerFragment!=null)
 			for(BookPresenter mdTmp:drawerFragment.mdictInternal.values()) {
 				if(mdTmp!=null){
-					mdict_cache.put(mdTmp.getPath(),mdTmp);
+					mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
 				}
 			}
 		/* 合符而继统 */
@@ -3647,23 +3653,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			break;
 			case R.id.toolbar_action9:{//存书签
 				if(isLongClicked) break;
-				if(ActivedAdapter!=null && ActivedAdapter!=adaptermy2) {
-					if(webSingleholder.getVisibility()==View.VISIBLE){
-						int idx=webSingleholder.getChildCount()-1;
-						if(idx>=0) {
-							View v = webSingleholder.getChildAt(idx);
-							v=v.findViewById(R.id.cover);
-							if(v!=null) {
-								v.setTag(R.id.toolbar_action1,CMN.OccupyTag);
-								v.performClick();
-								if(v.getTag(R.id.toolbar_action2)!=null) {
-									showX(R.string.bmAdded,0);
-									v.setTag(R.id.toolbar_action2,null);
-								}else
-									showT("添加失败,数据库出错...",0);
-							}
-						}
-					}
+				WebViewmy wv = getCurrentWebContext();
+				if (wv!=null) {
+					wv.presenter.toggleBookMark();
 				}
 			} break;
 			case R.id.toolbar_action10:{//保存搜索
@@ -3788,7 +3780,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				if(PDICMainAppOptions.ChangedMap !=null && PDICMainAppOptions.ChangedMap.size()>0){
 					for(String path: PDICMainAppOptions.ChangedMap) {
-						BookPresenter mdTmp = mdict_cache.get(path);
+						BookPresenter mdTmp = mdict_cache.get(new File(path).getName());
 						CMN.Log("重新读取配置！！！", path);
 						if(mdTmp!=null)
 						try {
@@ -4051,7 +4043,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		svp.getLocationInWindow(vLocation);
 		int topY = vLocation[1];
 		//showT(UIData.webcoord.getHeight() +" = "+ UIData.bottombar.getHeight());
-		int h = svp.getHeight() - UIData.bottombar.getHeight();
+		int h = svp.getHeight() - (isContentViewAttached()?bottombar2:UIData.bottombar).getHeight();
 		//if (UIData.appbar.getTop()==0)
 		//{
 		//	int h1 = etSearch.getHeight();

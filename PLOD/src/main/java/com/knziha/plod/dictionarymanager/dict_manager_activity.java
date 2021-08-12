@@ -1665,7 +1665,11 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	}
 	
 	public void RebasePath(File oldPath, String OldFName, File newPath, String MoveOrRename, String oldName){
-    	BookPresenter mdTmp = app_mdict_cache.remove(oldPath.getPath());
+    	if (true) {
+    		showT("功能关闭，请等待5.0版本");
+    		return;
+		}
+		BookPresenter mdTmp = app_mdict_cache.remove(oldPath.getPath());
 		File p = oldPath.getParentFile();
 		File p2 = newPath.getParentFile();
 		boolean move = MoveOrRename==null;

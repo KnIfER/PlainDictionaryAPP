@@ -110,7 +110,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
        if(!shunt) {
-		   opt = new PDICMainAppOptions(this);
+		   if (opt==null) opt = new PDICMainAppOptions(this);
 		   opt.dm = dm = new DisplayMetrics();
 		   Display display = getWindowManager().getDefaultDisplay();
 		   if (GlobalOptions.realWidth <= 0) {

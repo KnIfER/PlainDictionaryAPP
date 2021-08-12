@@ -521,7 +521,7 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 				mLeftDrawable=mAudioDrawable;
 			}
 			
-			BookPresenter thereYouAre = a.app_mdict_cache.get(mdTmp.getPath());
+			BookPresenter thereYouAre = a.app_mdict_cache.get(new File(mdTmp.getPath()).getName());
 			
 			vh.title.setCover(thereYouAre==null?null:thereYouAre.getCover());
 			

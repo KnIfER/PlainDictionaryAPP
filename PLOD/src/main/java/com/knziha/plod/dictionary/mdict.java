@@ -127,6 +127,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	protected File fZero;
 	private long fZero_LPT;
 	
+	long _bid;
+	
 	public static String error_input;
 
 	public boolean getIsDedicatedFilter(byte firstFlag){
@@ -615,6 +617,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return processStyleSheet(ret, p0);
 	}
 
+	// 初始化
 	/** @param positions virutal indexes*/
 	public String getVirtualRecordsAt(int... positions) throws IOException {
 		if(virtualIndex==null)
@@ -653,6 +656,26 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		if(mdd!=null && mdd.size()>0) sb.append("<p class='MddExist'/>");
 		sb.append("</div>");
 		return processStyleSheet(sb.toString(), positions[0]);
+	}
+	
+	@Override
+	public String getVirtualTextValidateJs() {
+		return "";
+	}
+	
+	@Override
+	public String getVirtualTextEffectJs(int[] positions) {
+		return "";
+	}
+	
+	@Override
+	public long getBooKID() {
+		return _bid;
+	}
+	
+	@Override
+	public void setBooKID(long id) {
+		_bid = id;
 	}
 	
 	/**
@@ -880,7 +903,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				Joniregex = new Regex(pattern, 0, pattern.length, getRegexOption(), encoding);
 			}
 		}
-		if(Joniregex==null) matcher =  leafSanLieZhi(SearchLauncher);
+		if(Joniregex==null) matcher =  leafSanLieZhi(SearchLauncher, _charset);
 
 		if(_key_block_info_list==null) read_key_block_info(null);
 
@@ -1716,7 +1739,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				keyPattern=Pattern.compile(regexIntent?keyword:keyword.replace("*", ".+?"),Pattern.CASE_INSENSITIVE);
 			}catch(Exception ignored) {}
 
-			matcher =  leafSanLieZhi(SearchLauncher);
+			matcher =  leafSanLieZhi(SearchLauncher, _charset);
 		}
 
 		if(_key_block_info_list==null) read_key_block_info(null);
@@ -2079,7 +2102,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return -1;
 	}
 
-	protected byte[][][][][] leafSanLieZhi(AbsAdvancedSearchLogicLayer searchLauncher) {
+	public static byte[][][][][] leafSanLieZhi(AbsAdvancedSearchLogicLayer searchLauncher, Charset _charset) {
 		ArrayList<ArrayList<ArrayList<Object>>> pm = searchLauncher.mParallelKeys;
 		byte[][][][][] res = new byte[pm.size()][][][][];
 		ArrayList<String> item;
@@ -2502,7 +2525,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				.append("Path: ").append(getPath()).toString();
 	}
 
-	static boolean bingStartWith(byte[] source, int sourceOffset, int sourceCount,byte[] target, int targetOffset, int targetCount, int fromIndex) {
+	public static boolean bingStartWith(byte[] source, int sourceOffset, int sourceCount,byte[] target, int targetOffset, int targetCount, int fromIndex) {
 		if (fromIndex >= sourceCount || targetCount+fromIndex > sourceCount) { // || targetCount+fromIndex>=sourceCount || fromIndex>=sourceCount
 			return false;
 		}
@@ -2744,7 +2767,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		}
 	}
 
-	class EncodeChecker{
+	public static class EncodeChecker{
 		public boolean checkBefore(byte[] source, int sourceOffset, int fromIndex_, int ret) {
 			try {
 				int code = source[sourceOffset + ret - 1]&0xff;

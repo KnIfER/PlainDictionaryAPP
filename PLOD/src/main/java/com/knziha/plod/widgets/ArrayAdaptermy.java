@@ -2,6 +2,7 @@ package com.knziha.plod.widgets;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -16,14 +17,17 @@ import androidx.annotation.Nullable;
 
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.plaindict.Toastable_Activity;
+
 import db.MdxDBHelper;
+
+import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
 
 /**
  * Created by KnIfER on 2018/3/26.
  */
 
 public class ArrayAdaptermy extends BaseAdapter{
-	MdxDBHelper con;
 	public Cursor cr;
 	BookPresenter md;
 	boolean isWeb;
@@ -34,31 +38,38 @@ public class ArrayAdaptermy extends BaseAdapter{
 	Context c;
 	public boolean darkMode;
 	public int StorageLevel=2;
-   public ArrayAdaptermy(Context a, int resource, int textViewResourceId, BookPresenter md_, MdxDBHelper con_, int l) {
+   public ArrayAdaptermy(Context a, int resource, int textViewResourceId, BookPresenter md_, SQLiteDatabase database, int l) {
 		//this(a,resource,textViewResourceId,objects);
 		c=a;
 		resourceID=resource;
 		textViewResourceID=textViewResourceId;
 		md=md_;
-		con = con_;
 		StorageLevel=l;
 		isWeb = false; // nimp md instanceof bookPresenter_web;
-		cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
+	   if (testDBV2) {
+		   cr = database.rawQuery("select * from bookmark where bid=? order by creation_time desc", new String[]{md_.bookImpl.getBooKID()+""});
+	   } else {
+		   cr = database.rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
+	   }
    }
 
-	public void refresh(BookPresenter invoker, MdxDBHelper con_) {
-		if(invoker!=md || con!=con_ || cr==null) {
+	public void refresh(BookPresenter invoker, SQLiteDatabase database) {
+		//if(invoker!=md || con!=con_ || cr==null)
+		{
 	    	md=invoker;
 	    	isWeb = false;// nimp md instanceof bookPresenter_web;
-	    	con = con_;
 	    	if(cr!=null) cr.close();
-	    	cr = con.getDB().rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
+			if (testDBV2) {
+				cr = database.rawQuery("select * from bookmark where bid=? order by creation_time desc", new String[]{invoker.bookImpl.getBooKID()+""});
+			} else {
+				cr = database.rawQuery(isWeb?"select * from t3 ":"select * from t1 ", null);
+			}
 			DataRecord.clear();
 			notifyDataSetChanged();
 		}
 	}
 
-	public static class ViewHolder_TvAndDel {
+	public class ViewHolder_TvAndDel {
 		TextView title;
 		ImageView ivDel;
 		ViewHolder_TvAndDel(ArrayAdaptermy a, View itemView) {
@@ -66,18 +77,21 @@ public class ArrayAdaptermy extends BaseAdapter{
 			title = itemView.findViewById(R.id.text1);
 			ivDel = itemView.findViewById(R.id.del);
 			ivDel.setOnClickListener(v -> {
-				int position = (int) v.getTag();
-				Cursor cr = a.cr;
-				MdxDBHelper con = a.con;
-				cr.moveToPosition(position);
-				a.DataRecord.clear();
-				if(a.isWeb)
-					con.remove(cr.getInt(0));
-				else
-					con.removeUrl(cr.getString(0));
-				cr.close();
-				a.cr = con.getDB().rawQuery("select * from t1 ", null);
-				a.notifyDataSetChanged();
+				if (c instanceof Toastable_Activity) {
+					((Toastable_Activity) c).showT("功能关闭，请等待5.0版本");
+				}
+				//int position = (int) v.getTag();
+				//Cursor cr = a.cr;
+				//MdxDBHelper con = a.con;
+				//cr.moveToPosition(position);
+				//a.DataRecord.clear();
+				//if(a.isWeb)
+				//	con.remove(cr.getInt(0));
+				//else
+				//	con.removeUrl(cr.getString(0));
+				//cr.close();
+				//a.cr = con.getDB().rawQuery("select * from t1 ", null);
+				//a.notifyDataSetChanged();
 			});
 		}
 	}
@@ -96,7 +110,7 @@ public class ArrayAdaptermy extends BaseAdapter{
 			//}
     		//else
 			try {
-				LexicalText=md.bookImpl.getEntryAt(cr.getInt(0));
+				LexicalText=md.bookImpl.getEntryAt(testDBV2?cr.getInt(2):cr.getInt(0));
 			} catch (Exception e) {
 				LexicalText="!!!Error: "+e.getLocalizedMessage();
 			}
@@ -124,7 +138,7 @@ public class ArrayAdaptermy extends BaseAdapter{
 	@Override
 	public Object getItem(int position) {
 		cr.moveToPosition(position);
-		return cr.getInt(0);
+		return cr.getInt(2);
 	}
 
 	@Override

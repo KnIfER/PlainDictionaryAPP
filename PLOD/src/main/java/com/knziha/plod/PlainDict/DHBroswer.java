@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 
 import com.knziha.plod.dictionary.Utils.MyIntPair;
 
+import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
+
 public class DHBroswer extends DBroswer {
 	public DHBroswer(){
 		super();
@@ -37,7 +39,11 @@ public class DHBroswer extends DBroswer {
 
 	protected void loadInAll(MainActivityUIBase a) {
 		CMN.Log("load in all!!!");
-		cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
+		if (testDBV2) {
+			cr = mLexiDB.getDB().query("history", null,null,null,null,null,"last_visit_time desc");
+		} else {
+			cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
+		}
 		mCards_size = cr.getCount();
 		itemCount = mCards_size;
 		//itemCount=Math.min(lastFirst, mCards_size);

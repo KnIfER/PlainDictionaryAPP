@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.FilePickerPreference;
@@ -51,8 +52,7 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 		init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null);
 		init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(CMN.MainBackground).toUpperCase(), null);
 		init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(CMN.FloatBackground).toUpperCase(), null);
-		init_number_info_preference(this, "paste_target", PDICMainAppOptions.getPasteTarget(), R.array.paste_target_info, null);
-		init_number_info_preference(this, "share_target", PDICMainAppOptions.getShareTarget(), R.array.paste_target_info, null);
+		//init_number_info_preference(this, "paste_target", PDICMainAppOptions.getPasteTarget(), R.array.paste_target_info, null);
 		//init_switch_preference(this, "f_share_peruse", PDICMainAppOptions.getShareToPeruseModeWhenFocued(), null, null);
 		init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null);
 		init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null);
@@ -154,12 +154,12 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 					PDICMainAppOptions.locale=localeStamp.equals(newValue)?localeStamp:null;
 				preference.setSummary(getNameFlag((String) newValue));
 			break;
-			case "paste_target":
-				preference.setSummary(getResources().getStringArray(R.array.paste_target_info)[PDICMainAppOptions.setPasteTarget(IU.parsint(newValue))]);
-			break;
-			case "share_target":
-				preference.setSummary(getResources().getStringArray(R.array.paste_target_info)[PDICMainAppOptions.setShareTarget(IU.parsint(newValue))]);
-			break;
+//			case "paste_target":
+//				preference.setSummary(getResources().getStringArray(R.array.paste_target_info)[PDICMainAppOptions.setPasteTarget(IU.parsint(newValue))]);
+//			break;
+//			case "share_target":
+//				preference.setSummary(getResources().getStringArray(R.array.paste_target_info)[PDICMainAppOptions.setShareTarget(IU.parsint(newValue))]);
+//			break;
 			case "f_share_peruse":
 				PDICMainAppOptions.setShareToPeruseModeWhenFocued((Boolean) newValue);
 			break;

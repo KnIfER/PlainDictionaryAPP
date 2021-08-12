@@ -24,6 +24,8 @@ import java.nio.charset.Charset;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
 
+import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
+
 /**
  * Created by Zenjo Kang on 2018/8/4.
  * 数据库将创建于 data/com.knziha/databases/ 下
@@ -36,7 +38,9 @@ public class MdxDBHelper extends SQLiteOpenHelper {
     private SQLiteDatabase database;
     public SQLiteDatabase getDB(){return database;}
     
-    public static final String TABLE_MARKS = "t1";
+    public static final String TABLE_HISTORY_v2 = "history";
+    
+    public static final String TABLE_HISTORY = "t1";
     public static final String TABLE_PAGES = "t2";
     public static final String TABLE_URLS = "t3";
 
@@ -58,14 +62,13 @@ public class MdxDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {//第一次
-    	StringBuilder sqlBuilder = new StringBuilder("create table if not exists ")
-    			.append(TABLE_MARKS)
-    			.append("(")
-    			.append(Key_ID).append(" integer primary key,")
-				.append(Date).append(" text")
-				.append(")")
-				;
-        db.execSQL(sqlBuilder.toString());
+		String sqlBuilder = "create table if not exists " +
+				TABLE_HISTORY +
+				"(" +
+				Key_ID + " integer primary key," +
+				Date + " text" +
+				")";
+		db.execSQL(sqlBuilder);
     }
 
     public void enssurePageTable(){
@@ -113,29 +116,6 @@ public class MdxDBHelper extends SQLiteOpenHelper {
     }
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
-
-    
-    
     /////
     
     
@@ -155,7 +135,7 @@ public class MdxDBHelper extends SQLiteOpenHelper {
 	
 	public boolean containsRaw(int id) {
      	boolean ret = false;
-     	String sql = "select * from " + TABLE_MARKS + " where " + Key_ID + " = ? ";
+     	String sql = "select * from " + TABLE_HISTORY + " where " + Key_ID + " = ? ";
      	Cursor c = database.rawQuery(sql,new String[]{""+id});
      	if(c.getCount()>0) ret=true;
      	c.close();
@@ -165,7 +145,7 @@ public class MdxDBHelper extends SQLiteOpenHelper {
 	}
 	public boolean containsOld(String fn) {
      	boolean ret = false;
-     	Cursor c = database.query(TABLE_MARKS, new String[]{Key_ID}, Key_ID + " = ? ", new String[] {fn}, null, null, null) ;
+     	Cursor c = database.query(TABLE_HISTORY, new String[]{Key_ID}, Key_ID + " = ? ", new String[] {fn}, null, null, null) ;
      	if(c.getCount()>0) ret=true;
      	c.close();
 		return ret;
@@ -178,10 +158,10 @@ public class MdxDBHelper extends SQLiteOpenHelper {
 		ContentValues values = new ContentValues();
 		values.put(Key_ID, id);
 		values.put(Date, System.currentTimeMillis()+"");
-		return database.insert(TABLE_MARKS, null, values);
+		return database.insert(TABLE_HISTORY, null, values);
 	}
 	public int remove(int id) {
-		return database.delete(TABLE_MARKS, Key_ID + " = ? ", new String[]{""+id});
+		return database.delete(TABLE_HISTORY, Key_ID + " = ? ", new String[]{""+id});
 	}
 	
 	public void refresh() {
@@ -192,7 +172,7 @@ public class MdxDBHelper extends SQLiteOpenHelper {
 	}
 	SQLiteStatement preparedSelectExecutor;
 	public void prepareContain() {
-     	String sql = "select * from " + TABLE_MARKS + " where " + Key_ID + " = ? ";
+     	String sql = "select * from " + TABLE_HISTORY + " where " + Key_ID + " = ? ";
 		preparedSelectExecutor = database.compileStatement(sql);
 	}
 

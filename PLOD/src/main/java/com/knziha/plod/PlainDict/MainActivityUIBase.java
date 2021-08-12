@@ -143,6 +143,7 @@ import com.knziha.plod.PlainUI.BottombarTweakerAdapter;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
@@ -152,7 +153,9 @@ import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
+import com.knziha.plod.dictionarymodels.PlainPDF;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -253,6 +256,7 @@ import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionarymodels.BookPresenter.indexOf;
+import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
 
 /** 程序基类<br/>
@@ -2809,17 +2813,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected void populateDictionaryList(File def, ArrayList<PlaceHolder> CC, boolean retrieve_all) {
 		if(retrieve_all) {
-			//nimp
-			//try {
-			//	String path = CMN.AssetTag + "liba.mdx";
-			//	md.add(new mdict_asset(new File(path), this));
-			//	if(CC==null&&this instanceof FloatSearchActivity) {
-			//		FloatSearchActivity.mCosyChair = CC = new ArrayList<>();
-			//	}
-			//	CC.add(new PlaceHolder(path, CC));
-			//} catch (IOException e) {
-			//	CMN.Log(e);
-			//}
+			try {
+				String path = CMN.AssetTag + "liba.mdx";
+				md.add(new BookPresenter(new File(path), this, 0, null));
+				if(CC==null&&this instanceof FloatSearchActivity) {
+					FloatSearchActivity.mCosyChair = CC = new ArrayList<>();
+				}
+				CC.add(new PlaceHolder(path, CC));
+			} catch (IOException e) {
+				CMN.Log(e);
+			}
 		}
 		else try {
 			//todo 实现词典懒加载
@@ -2856,7 +2859,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		for (int i = 0; i < CosyChair.size(); i++) {
 			phI = CosyChair.get(i);
 			//get path put
-			BookPresenter mdTmp = mdict_cache==null?null:mdict_cache.get(phI.getPath(opt).getPath());
+			BookPresenter mdTmp = mdict_cache==null?null:mdict_cache.get(phI.getPath(opt).getName());
 			if ((phI.tmpIsFlag&0x8)!=0){
 				HdnCmfrt.add(phI); /* 隐·1 */
 				CosyChair.remove(i--);
@@ -3116,7 +3119,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					PlaceHolder phI = getPlaceHolderAt(adapter_idx);
 					if(phI!=null) {
 						try {
-							md.set(adapter_idx, currentDictionary=MainActivityUIBase.new_mdict(phI.getPath(opt), this));
+							md.set(adapter_idx, currentDictionary=new_mdict(phI.getPath(opt), this));
 							currentDictionary.tmpIsFlag = phI.tmpIsFlag;
 						} catch (Exception ignored) { }
 					}
@@ -3211,8 +3214,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(cv!=null) {
 				if(cv.getTag()!=null) {
 					try {
-						int dictIdx = (int)cv.getTag();
-						BookPresenter mdTmp = md.get(dictIdx);
+						BookPresenter mdTmp = ((WebViewmy) cv.getTag()).presenter;
 						if(!mdTmp.getUseInternalFS())
 							mdTmp.mWebView.getSettings().setTextZoom(targetLevel);
 					} catch (Exception ignored) {}
@@ -3275,8 +3277,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		checkDirs.mkdirs();
 	}
 	
-	protected LexicalDBHelper prepareFavoriteCon() {
+	public LexicalDBHelper prepareFavoriteCon() {
 		if(favoriteCon!=null) return favoriteCon;
+		if (testDBV2) {
+			favoriteCon = prepareHistroyCon();
+			return favoriteCon;
+		}
 		ArrayList<MyPair<String, LexicalDBHelper>> slots = ((AgentApplication) getApplication()).AppDatabases;
 		String name = opt.getCurrFavoriteDBName();
 		int selectedPos=-1;
@@ -3322,7 +3328,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return favoriteCon = _favoriteCon;
 	}
 	
-	protected LexicalDBHelper prepareHistroyCon() {
+	public LexicalDBHelper prepareHistroyCon() {
 		if(historyCon!=null) return historyCon;
 		AgentApplication app = ((AgentApplication) getApplication());
 		LexicalDBHelper _historyCon = app.historyCon;
@@ -3342,7 +3348,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			key = key.trim();
 		}
 		if(key.length()>0) {
-			prepareHistroyCon().insertUpdate(key);
+			if (testDBV2) {
+				prepareHistroyCon().updateHistoryTerm(this, key);
+			} else {
+				prepareHistroyCon().insertUpdate(key);
+			}
 		}
 	}
 	
@@ -3352,34 +3362,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public static BookPresenter new_mdict(File fullPath, MainActivityUIBase THIS) throws IOException {
-		//String pathFull = fullPath.getPath();
-		////if(pathFull.startsWith(CMN.AssetTag)) {
-		////	if(CMN.AssetMap.containsKey(pathFull))
-		////		return new bookPresenter_asset(fullPath,THIS);
-		////}
-		//int sufixp = pathFull.lastIndexOf(".");
-		//if(sufixp>0){
-		//	int hash = hashCode(pathFull, sufixp+1);
-		//	switch(hash){
-		//		case 107969:
-		//		case 107949:
-		//			return new BookPresenter(fullPath, THIS, 0, null);
-		//		//case 117588:
-		//		//	return new bookPresenter_web(fullPath, THIS);
-		//		//case 110834:
-		//		//	return new bookPresenter_pdf(fullPath, THIS);
-		//		//case 115312:
-		//		//	return new bookPresenter_txt(fullPath, THIS);
-		//		//case 99773:
-		//		//	return new bookPresenter_dsl(fullPath, THIS);
-		//
-		//		//case 120609:
-		//		//return new mdict_zip(fullPath, THIS);
-		//		//case 3088960:
-		//		//return new mdict_docx(fullPath, THIS);
-		//	}
-		//}
-		return new BookPresenter(fullPath, THIS, 0, null);
+		BookPresenter ret = THIS.mdict_cache.get(fullPath.getName());
+		if (ret!=null) {
+			return ret;
+		}
+		ret = new BookPresenter(fullPath, THIS, 0, null);
+		THIS.mdict_cache.put(fullPath.getName(), ret);
+		return ret;
 	}
 	
 	boolean checkAllWebs(resultRecorderDiscrete combining_search_result, View view, int pos) {
@@ -3587,6 +3576,41 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public void OnPeruseDetached() {
 	
+	}
+	
+	public String collectDisplayingBooks() {
+		String ret="";
+		if (ActivedAdapter!=null) {
+			for (int i = 0, len=ActivedAdapter.webviewHolder.getChildCount(); i < len; i++) {
+				View child = ActivedAdapter.webviewHolder.getChildAt(i);
+				if (child!=null) {
+					WebViewmy wv = child.findViewById(R.id.webviewmy);
+					if (wv!=null) {
+						ret += wv.presenter.bookImpl.getBooKID();
+						//if (i<len-1)
+						ret+=";";
+					}
+				}
+			}
+		}
+		return ret;
+	}
+	
+	public BookPresenter getDictionaryById(long bid) throws IOException {
+		String fileName = null;
+		UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+		CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+				prepareHistroyCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+				, currentDictionary.bookImpl.getBooKID());
+		if (impl!=null) {
+			fileName = impl.getFile().getPath();
+		} else {
+			fileName = prepareHistroyCon().getBookPath(bid);
+		}
+		if (fileName!=null) {
+			return new_mdict(fileName, this);
+		}
+		return null;
 	}
 	
 	public final class UniCoverClicker implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
@@ -3864,52 +3888,63 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						/* 书签 */
 						case 0: {
 							if (isLongClicked) return false;
-							if (itemsA[0].equals(getString(R.string.bmSub))) {
-								boolean succ = false;
-								if (con != null) {
-									if (isWeb) {
-										// nimp
-										//bookPresenter_web webx = ((bookPresenter_web) invoker);
-										//if (webx.removeCurrentUrl(con, _mWebView.getUrl())) {
-										//	succ = true;
-										//}
-									} else if (con.remove(_mWebView.currentPos) > 0) {
-										succ = true;
-									}
+							if (testDBV2) {
+								int ret = prepareHistroyCon().bookMarkToggle(_mWebView.presenter.bookImpl.getBooKID(), _mWebView.currentPos);
+								if (ret==1) {
+									showT("已保存书签");
+								} else if(ret==2){
+									showT("已删除书签");
+								} else {
+									showT("操作失败！");
 								}
-								if (succ) {
-									if(view!=null)((TextView) view.findViewById(android.R.id.text1)).setText(itemsA[0] = bmAdd);
-									showX(R.string.delDone, 0);
-								} else
-									showT("删除失败,数据库出错...", 0);
-							} else {// add
-								boolean succ = false;
-								if (con == null) con = invoker.getCon(true);
-								try {
-									if (isWeb) {
-										//bookPresenter_web webx = ((bookPresenter_web) invoker);
-										//if (webx.saveCurrentUrl(con, _mWebView.getUrl()) != -1)
-										//	succ = true;
-									} else {
-										if (con.insert(_mWebView.currentPos) != -1) {
+							} else {
+								if (itemsA[0].equals(getString(R.string.bmSub))) {
+									boolean succ = false;
+									if (con != null) {
+										if (isWeb) {
+											// nimp
+											//bookPresenter_web webx = ((bookPresenter_web) invoker);
+											//if (webx.removeCurrentUrl(con, _mWebView.getUrl())) {
+											//	succ = true;
+											//}
+										} else if (con.remove(_mWebView.currentPos) > 0) {
 											succ = true;
-											int BKHistroryVagranter = opt.getInt("bkHVgrt", -1);
-											BKHistroryVagranter = (BKHistroryVagranter + 1) % 20;
-											String rec = invoker.getDictionaryName() + "/?Pos=" + _mWebView.currentPos;
-											opt.putter()
-													.putString("bkh" + BKHistroryVagranter, rec)
-													.putInt("bkHVgrt", BKHistroryVagranter)
-													.apply();
 										}
 									}
-								} catch (Exception e) {
-									CMN.Log(e);
-								}
-								if (succ) {
-									showX(R.string.bmAdded, 0);
-									if(view!=null)((TextView) view.findViewById(android.R.id.text1)).setText(itemsA[0] = getString(R.string.bmSub));
-								} else {
-									showT("添加失败,数据库出错...", 0);
+									if (succ) {
+										if(view!=null)((TextView) view.findViewById(android.R.id.text1)).setText(itemsA[0] = bmAdd);
+										showX(R.string.delDone, 0);
+									} else
+										showT("删除失败,数据库出错...", 0);
+								} else {// add
+									boolean succ = false;
+									if (con == null) con = invoker.getCon(true);
+									try {
+										if (isWeb) {
+											//bookPresenter_web webx = ((bookPresenter_web) invoker);
+											//if (webx.saveCurrentUrl(con, _mWebView.getUrl()) != -1)
+											//	succ = true;
+										} else {
+											if (con.insert(_mWebView.currentPos) != -1) {
+												succ = true;
+												int BKHistroryVagranter = opt.getInt("bkHVgrt", -1);
+												BKHistroryVagranter = (BKHistroryVagranter + 1) % 20;
+												String rec = invoker.getDictionaryName() + "/?Pos=" + _mWebView.currentPos;
+												opt.putter()
+														.putString("bkh" + BKHistroryVagranter, rec)
+														.putInt("bkHVgrt", BKHistroryVagranter)
+														.apply();
+											}
+										}
+									} catch (Exception e) {
+										CMN.Log(e);
+									}
+									if (succ) {
+										showX(R.string.bmAdded, 0);
+										if(view!=null)((TextView) view.findViewById(android.R.id.text1)).setText(itemsA[0] = getString(R.string.bmSub));
+									} else {
+										showT("添加失败,数据库出错...", 0);
+									}
 								}
 							}
 							if (mBookMarkAdapter != null)
@@ -3934,7 +3969,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							//	result.add(0,cr.getInt(0));
 							//}
 							//cr.close();
-							if (con == null) {
+							if (con == null && !testDBV2) {
 								showT("没有书签", 0);
 								break;
 							}
@@ -3944,7 +3979,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							builder.setNeutralButton(R.string.delete, null);
 							AlertDialog d = builder.show();
 							ListView list = d.getListView();
-							list.setAdapter(getBookMarkAdapter(lastInDark, invoker, con));
+							list.setAdapter(testDBV2?getBookMarkAdapterV2(lastInDark, invoker):getBookMarkAdapter(lastInDark, invoker, con));
 							//d.getListView().setFastScrollEnabled(true);
 
 							//tofo
@@ -4820,9 +4855,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	ArrayAdaptermy mBookMarkAdapter;
 	public ListAdapter getBookMarkAdapter(boolean darkMode, BookPresenter invoker, MdxDBHelper con) {
 		if(mBookMarkAdapter==null)
-			mBookMarkAdapter=new ArrayAdaptermy(getApplicationContext(),R.layout.drawer_list_item,R.id.text1,invoker,con,0);
+			mBookMarkAdapter=new ArrayAdaptermy(getApplicationContext(),R.layout.drawer_list_item,R.id.text1,invoker,con.getDB(),0);
 		else
-			mBookMarkAdapter.refresh(invoker,con);
+			mBookMarkAdapter.refresh(invoker,con.getDB());
+		mBookMarkAdapter.darkMode=darkMode;
+		return mBookMarkAdapter;
+	}
+	
+	public ListAdapter getBookMarkAdapterV2(boolean darkMode, BookPresenter invoker) {
+		if(mBookMarkAdapter==null)
+			mBookMarkAdapter=new ArrayAdaptermy(getApplicationContext(),R.layout.drawer_list_item,R.id.text1,invoker, prepareHistroyCon().getDB(),0);
+		else
+			mBookMarkAdapter.refresh(invoker, prepareHistroyCon().getDB());
 		mBookMarkAdapter.darkMode=darkMode;
 		return mBookMarkAdapter;
 	}
@@ -5715,11 +5759,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			/* 发音 */
 			case R.id.browser_widget12:{
-				if(webSingleholder.getChildCount()==1 && widget12.getTag(R.id.image)!=null){
-					if((int)widget12.getTag(R.id.image)==R.drawable.ic_fullscreen_black_96dp){
+				if(webSingleholder.getChildCount()==1 && v.getTag(R.id.image)!=null){
+					// todo
+					if((int)v.getTag(R.id.image)==R.drawable.ic_fullscreen_black_96dp){
 						if(this_instanceof_PDICMainActivity)
 							((PDICMainActivity)this).forceFullscreen(!PDICMainAppOptions.isFullScreen());
-					}else{
+					} else {
 						toggleClickThrough();
 					}
 				} else {
@@ -5735,6 +5780,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				} else {
 					CMN.Log("ActivedAdapter", ActivedAdapter);
+					if(webSingleholder.getChildAt(0)==contentview) {
+						//todo 泛化
+						WebViewmy mWebView = webSingleholder.findViewById(R.id.webviewmy);
+						if (mWebView != null) {
+							int DX = mWebView.SelfIdx;
+							if (DX>=0 && DX<md.size()) {
+								BookPresenter presenter = md.get(DX);
+								if (presenter.bookImpl instanceof PlainPDF) {
+									((PlainPDF)presenter.bookImpl).toggleFavor();
+									break;
+								}
+							}
+						}
+					}
 					String key = ActivedAdapter.currentKeyText;
 					if (prepareFavoriteCon().contains(key)) {
 						favoriteCon.remove(key);
@@ -5777,10 +5836,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						@NonNull
 						@Override
 						public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-							View CI = webholder.getChildAt(position);
-							int currIdx = (int) CI.getTag();
-							BookPresenter mdTmp = md.get(currIdx);
-							
 							FlowCheckedTextView ret;
 							if(convertView!=null){
 								ret = (FlowCheckedTextView) convertView;
@@ -5788,20 +5843,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								ret = (FlowCheckedTextView) getLayoutInflater().inflate(R.layout.singlechoice_w, parent, false);
 								ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
 							}
-							if(mdTmp==null){
-								ret.setText("Error!!!");
-								return ret;
+							
+							View ca = webholder.getChildAt(position);
+							if (ca!=null && ca.getTag() instanceof WebViewmy) {
+								BookPresenter mdTmp = ((WebViewmy) ca.getTag()).presenter;
+								if (mdTmp!=null) {
+									FlowTextView tv = ret.mFlowTextView;
+									tv.setCompoundDrawables(getActiveStarDrawable(), null, null, null);
+									tv.setCover(mdTmp.getCover());
+									tv.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
+									tv.setStarLevel(PDICMainAppOptions.getDFFStarLevel(mdTmp.getFirstFlag()));
+									
+									ret.setChecked(position == finalSelectedPos);
+									
+									ret.setText(mdTmp.getDictionaryName());
+									return ret;
+								}
 							}
-							FlowTextView tv = ret.mFlowTextView;
-							tv.setCompoundDrawables(getActiveStarDrawable(), null, null, null);
-							tv.setCover(mdTmp.getCover());
-							tv.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
-							tv.setStarLevel(PDICMainAppOptions.getDFFStarLevel(mdTmp.getFirstFlag()));
 							
-							ret.setChecked(position == finalSelectedPos);
-							
-							ret.setText(mdTmp.getDictionaryName());
-							
+							ret.setText("Error!!!");
 							return ret;
 						}
 					}, (dialog, pos) -> {
@@ -5919,7 +5979,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			int delay = 100;
 			if(PDICMainAppOptions.getScrollAutoExpand())
 			try {
-				BookPresenter mdTmp = md.get((int) childAt.getTag());
+				BookPresenter mdTmp = ((WebViewmy) childAt.getTag()).presenter;
 				if (mdTmp != null && mdTmp.mWebView.getVisibility() != View.VISIBLE) {
 					postTarget = mdTmp.mWebView;
 					mdTmp.toolbar_title.performClick();
@@ -6643,11 +6703,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							currentFilter.clear();
 							for (BookPresenter mdTmp : md) {
 								if(mdTmp!=null)
-									mdict_cache.put(mdTmp.getPath(), mdTmp);
+									mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
 							}
 							for (BookPresenter mdTmp : currentFilter) {
 								if(mdTmp!=null)
-									mdict_cache.put(mdTmp.getPath(), mdTmp);
+									mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
 							}
 							String setName = scanInList.get(pos);
 							File newf = opt.fileToSet(null, setName);
@@ -6931,11 +6991,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return;
 			}
 			WebViewmy mWebView = (WebViewmy) view;
-			CMN.Log("chromium page finished ==> ", url, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
+			CMN.Log("chromium page finished ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
 			if(!mWebView.isloading && !mWebView.fromNet) return;
 			int from = mWebView.fromCombined;
 			mWebView.isloading = false;
 			mWebView.AlwaysCheckRange = 0;
+			
+			BookPresenter invoker = mWebView.presenter;
 			
 			if(delayedAttaching && mWebView.SelfIdx==adapter_idx) {
 				((PDICMainActivity)MainActivityUIBase.this).AttachContentViewDelayed(10);
@@ -6947,9 +7009,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			String toTag = mWebView.toTag;
 			OUT:
 			if(from!=2){
-				int selfAtIdx = mWebView.SelfIdx;
-				if(selfAtIdx>=md.size() || selfAtIdx<0) return;
-				final BookPresenter invoker = md.get(selfAtIdx);
 				// nimp
 				//if(invoker instanceof bookPresenter_web){
 				//	((bookPresenter_web)invoker).onPageFinished(view, url, true);
@@ -7100,16 +7159,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			/* 延迟加载 */
 			if(from==1 && PDICMainAppOptions.getDelaySecondPageLoading() && !PDICMainAppOptions.getOnlyExpandTopPage()){
-				int next = mWebView.frameAt+1;
+				int next = fastFrameIndexOf(webholder, mWebView, mWebView.frameAt) + 1;
+				//CMN.Log("/* 延迟加载 */ ?????? ", next, webholder.getChildCount());
  				if(next < webholder.getChildCount()){
 					View childAt;
 					try {
 						while ((childAt=webholder.getChildAt(next++))!=null) {
-							BookPresenter invoker = md.get((int) childAt.getTag());
-							if(!PDICMainAppOptions.getTmpIsCollapsed(invoker.tmpIsFlag) && invoker.mWebView.awaiting){
-								CMN.Log("/* 延迟加载 */", invoker.getDictionaryName());
-								invoker.toolbar_title.performClick();
-								break;
+							if (childAt.getTag() instanceof WebViewmy) {
+								mWebView = ((WebViewmy) childAt.getTag());
+								BookPresenter presenter = mWebView.presenter;
+								if(!PDICMainAppOptions.getTmpIsCollapsed(presenter.tmpIsFlag) && presenter.mWebView.awaiting){
+									CMN.Log("/* 延迟加载 */", presenter.getDictionaryName());
+									presenter.toolbar_title.performClick();
+									break;
+								}
 							}
 						}
 					} catch (Exception ignored) {  }
@@ -7131,7 +7194,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		public void  onScaleChanged(WebView view, float oldScale,float newScale) {
 			//CMN.Log(oldScale, "-", newScale, " newScale");
-			int selfAtIdx = (int)view.getTag();
+			int selfAtIdx = ((WebViewmy)view).SelfIdx;
 			if(selfAtIdx>=md.size() || selfAtIdx<0) return;
 			BookPresenter invoker = md.get(selfAtIdx);
 			super.onScaleChanged(view, oldScale,newScale);
@@ -7926,7 +7989,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			dialog.show();
 		}
 	};
-
+	
+	private int fastFrameIndexOf(ViewGroup webholder, WebViewmy mWebView, int frameAt) {
+		View ca = webholder.getChildAt(frameAt);
+		if(ca!=null && ca.getTag()==mWebView) {
+			return frameAt;
+		}
+		for (int i = 0, len = webholder.getChildCount(); i < len; i++) {
+			ca = webholder.getChildAt(i);
+			if(ca!=null && ca.getTag()==mWebView) {
+				return i;
+			}
+		}
+		return frameAt;
+	}
+	
 	private void ReadEntryPlanB(WebViewmy mWebView, String url) {
 		opt.supressAudioResourcePlaying=!AutoBrowsePaused;
 		CMN.Log("ReadEntryPlanB");
@@ -8759,7 +8836,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public void performReadEntry() {
 		mThenReadEntryCount--;
-		BookPresenter mCurrentDictionary;
+		BookPresenter mCurrentDictionary = null;
 		WebViewmy wv;
 		String target;
 		
@@ -8773,6 +8850,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				wv = PeruseView.mWebView;
 			}
 			else {
+				View SV;
 				if (webholder.getChildCount() != 0) {
 					int selectedPos = -1;
 					/* 当前滚动高度 */
@@ -8791,16 +8869,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							selectedPos++;
 						}
 					}
-					mCurrentDictionary = md.get((Integer) webholder.getChildAt(selectedPos).getTag());
+					SV = webholder.getChildAt(selectedPos);
 				} else {//单本阅读
-					View SV = webSingleholder.getChildAt(0);
-					int id = SV == null ? -1 : IU.parsint(SV.getTag(), -1);
-					if (id >= 0 && id < md.size()) {
-						mCurrentDictionary = md.get(id);
-					} else {
-						mCurrentDictionary = currentDictionary;
-					}
+					SV = webSingleholder.getChildAt(0);
 				}
+				
+				if (SV!=null && SV.getTag() instanceof WebViewmy) {
+					mCurrentDictionary = ((WebViewmy) SV.getTag()).presenter;
+				}
+				
 				if (mCurrentDictionary != null) {
 					wv = mCurrentDictionary.mWebView;
 				} else {
@@ -8822,10 +8899,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			else if (AutoBrowsePaused /*自动读时绕过*/ && mCurrentDictionary.bookImpl.hasMdd()) {
 				/* 倾向于已经制定发音按钮 */
+				BookPresenter finalMCurrentDictionary = mCurrentDictionary;
 				wv.evaluateJavascript(WebviewSoundJS, value -> {
 					//CMN.Log("WebviewSoundJS", value);
 					if (!"10".equals(value)) {
-						requestSoundPlayBack(finalTarget, mCurrentDictionary, wv);
+						requestSoundPlayBack(finalTarget, finalMCurrentDictionary, wv);
 					}
 				});
 			} else {
@@ -8861,8 +8939,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			});
 		}
 	}
-
-	private BookPresenter getCurrentReadContext() {
+	
+	
+	//public WebViewmy getCurrentWebContext() {
+	//	if(PeruseViewAttached())
+	//		return PeruseView.mWebView;
+	//	BookPresenter mdTmp = getCurrentReadContext();
+	//	return mdTmp==null?null:mdTmp.mWebView;
+	//}
+	
+	public WebViewmy getCurrentWebContext() {
+		View SV = null;
 		if(webholder.getChildCount()!=0){
 			int selectedPos=-1;
 			/* 当前滚动高度 */
@@ -8881,24 +8968,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					selectedPos++;
 				}
 			}
-			return md.get((Integer) webholder.getChildAt(selectedPos).getTag());
+			//UniversalDictionaryInterface bookImpl = (UniversalDictionaryInterface) webholder.getChildAt(selectedPos).getTag();
+			//return mdict_cache.get(bookImpl.getDictionaryName());
+			SV = webholder.getChildAt(selectedPos);
 		}
-		else{//单本阅读
-			View SV = webSingleholder.getChildAt(0);
-			int id = SV==null?-1:IU.parsint(SV.getTag(), -1);
-			if(id>=0 && id<md.size()){
-				return md.get(id);
-			} else {
-				return currentDictionary;
-			}
+		else {//单本阅读
+			SV = webSingleholder.getChildAt(0);
+			//UniversalDictionaryInterface bookImpl = (UniversalDictionaryInterface) SV.getTag();
+			//return currentDictionary.bookImpl==bookImpl?currentDictionary
+			//		:mdict_cache.get(bookImpl.getDictionaryName());
+			//sv = webholder.getChildAt(selectedPos);
 		}
-	}
-
-	public WebViewmy getCurrentWebContext() {
-		if(PeruseViewAttached())
-			return PeruseView.mWebView;
-		BookPresenter mdTmp = getCurrentReadContext();
-		return mdTmp==null?null:mdTmp.mWebView;
+		if (SV!=null && SV.getTag() instanceof WebViewmy) {
+			return (WebViewmy) SV.getTag();
+		}
+		return null;
 	}
 
 	/**
@@ -9065,6 +9149,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void showMultipleCollection(String text) {
+		showT("功能关闭中，请等待5.0版本");
 		//showT(text);
 		BottomSheetDialog _bottomPlaylist = bottomPlaylist==null?null:bottomPlaylist.get();
 		if(_bottomPlaylist==null) {

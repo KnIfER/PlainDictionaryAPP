@@ -12,6 +12,7 @@ import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.widgets.ActivatableImageView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -174,8 +175,22 @@ public class AppUIProject {
 					if (id >= 0 && id < BottombarBtns.length) {
 						ImageView iv = BottombarBtns[id];
 						if (iv == null) {
-							iv = new ImageView(this_);
-							iv.setImageResource(btnIcons[id]);
+							int bid = btnIcons[id];
+							if (bid==R.drawable.fuzzy_search || bid==R.drawable.full_search) {
+								ActivatableImageView avt = new ActivatableImageView(this_);
+								avt.setImageResource(bid);
+								if (bid==R.drawable.fuzzy_search) {
+									avt.setActiveDrawable(a.mResource.getDrawable(R.drawable.fuzzy_search_pressed), false);
+								}
+								else
+								{
+									avt.setActiveDrawable(a.mResource.getDrawable(R.drawable.full_search_pressed), false);
+								}
+								iv = avt;
+							} else {
+								iv = new ImageView(this_);
+								iv.setImageResource(bid);
+							}
 							iv.setBackgroundResource(R.drawable.surrtrip1);
 							iv.setLayoutParams(this_.widget10.getLayoutParams());
 							iv.setId(btnIcons[id]);

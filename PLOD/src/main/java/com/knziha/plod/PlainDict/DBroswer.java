@@ -57,6 +57,7 @@ import com.knziha.rbtree.RBTNode;
 import com.knziha.rbtree.RashSet;
 import com.knziha.rbtree.additiveMyCpr1;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +65,8 @@ import java.util.Date;
 import java.util.HashSet;
 
 import db.LexicalDBHelper;
+
+import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
 
 @SuppressLint("SetTextI18n")
 public class DBroswer extends Fragment implements
@@ -352,7 +355,11 @@ public class DBroswer extends Fragment implements
 
 	private void rebuildCursor(MainActivityUIBase a) {
 		mCards.clear();
-		cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
+		if (testDBV2) {
+			cr = mLexiDB.getDB().query("history", null,null,null,null,null,"last_visit_time desc");
+		} else {
+			cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
+		}
 		mCards_size = cr.getCount();
 		//todo 记忆 lastFirst
 		int offset = 0;
@@ -609,14 +616,19 @@ public class DBroswer extends Fragment implements
 			if(mItemcard==null) {
 				cr.moveToPosition(position);
 				try {
-					text=cr.getString(0);
-					time=cr.getLong(1);
+					if (testDBV2) {
+						text=cr.getString(1);
+						time=cr.getLong(6);
+					} else {
+						text=cr.getString(0);
+						time=cr.getLong(1);
+					}
 				} catch (Exception e) {
 					text="!!!Error: "+e.getLocalizedMessage();
 				}
 				if(StoragePolicy==2) mCards.put(position,new ItemCard(text,time));
 				//CMN.Log("putting new vals");
-			}else{
+			} else {
 				text=mItemcard.name;
 				time=mItemcard.time;
 			}
@@ -1334,212 +1346,39 @@ public class DBroswer extends Fragment implements
 					mAdapter.notifyItemChanged(position);
 				} break;
 				case SelectionMode_pan:{
+					if (testDBV2) {
+						cr.moveToPosition(position);
+						String texts = cr.getString(2);
+						CMN.Log("复活::", texts);
+						if (texts!=null) {
+							String[] textsArr = texts.split(";");
+							if (textsArr.length==1) {
+								BookPresenter currentDictionary = null;
+								try {
+									currentDictionary = a.getDictionaryById(Long.parseLong(textsArr[0]));
+								} catch (Exception e) {
+									CMN.Log(e);
+								}
+								if(currentDictionary!=null)
+									queryAndShowOneDictionary(currentDictionary, currentDisplaying, position, false);
+								else
+									queryAndShowOneDictionary(a.currentDictionary, currentDisplaying, position, true);
+							}
+							else if (textsArr.length>1) {
+								queryAndShowMultipleDictionary(textsArr, currentDisplaying, position, false);
+							}
+						}
+						break;
+					}
 					if(a.this_instanceof_MultiShareActivity) {
 						show("未实现");
 					}
 					else if(bIsCombinedSearch) {
-						ArrayList<Integer> records = new ArrayList<>();
-						additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
-						ArrayList<additiveMyCpr1> data = new ArrayList<>();
-						data.add(datalet);
-						String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
-						a.bShowLoadErr=false;
-						long st = CMN.rt();
-						for(int dIdx=0;dIdx<a.md.size();dIdx++) {//联合搜索
-							BookPresenter mdTmp = a.md_get(dIdx);
-							if(mdTmp!=null) {
-								int idx = mdTmp.bookImpl.lookUp(currentDisplaying__);
-								if (idx >= 0)
-									while (idx < mdTmp.bookImpl.getNumberEntries()) {
-										if (mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
-											records.add(dIdx);
-											records.add(idx);
-										} else
-											break;
-										idx++;
-									}
-							}
-						}
-						CMN.Log("联合搜索 - 同步延时 : ", CMN.elapsed(st));
-						a.bShowLoadErr=true;
-						webviewHolder = a.webholder;
-						ViewGroup anothorHolder = a.webSingleholder;
-						CMN.Log("SelectionMode_pan", records.size());
-						if(records.size()>0) {
-							a.recCom = rec = new resultRecorderCombined(a,data,a.md);
-							ScrollViewmy WHP = a.WHP;
-							OUT:
-							if(adelta!=0 && System.currentTimeMillis()-a.lastClickTime>300) {//save our postion
-								pagerec = avoyager.get(lastClickedPosBeforePageTurn);
-								if (pagerec == null) {
-									if (WHP.getScrollY() != 0) {
-										pagerec = new ScrollerRecord();
-										avoyager.put(lastClickedPosBeforePageTurn, pagerec);
-									} else
-										break OUT;
-								}
-								pagerec.set(0, WHP.getScrollY(), 1);
-							}
-
-							adelta=0;
-							a.lastClickTime=System.currentTimeMillis();
-
-							pagerec = avoyager.get(position);
-							if (pagerec != null) {
-								rec.expectedPos = pagerec.y;
-								//currentDictionary.mWebView.setScrollY(currentDictionary.expectedPos);
-								//CMN.Log("取出旧值", combining_search_result.expectedPos, pos, avoyager.size());
-							} else {
-								rec.expectedPos = 0;
-								//CMN.Log("新建", combining_search_result.expectedPos, pos);
-							}
-
-							WHP.setVisibility(View.VISIBLE);
-							if(anothorHolder.getVisibility()==View.VISIBLE) {
-								if(anothorHolder.getChildCount()!=0)
-									anothorHolder.removeAllViews();
-								anothorHolder.setVisibility(View.GONE);
-							}
-
-							a.widget13.setVisibility(View.VISIBLE);
-							a.widget14.setVisibility(View.VISIBLE);
-							a.contentview.setVisibility(View.VISIBLE);
-							imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
-							
-							//a.AttachContentViewForDB();
-
-							//rec.renderContentAt(0, a,null);
-
-							processFavorite(position, currentDisplaying);
-						}
-						else {
-							if(a.main.getChildCount()==1) {
-								show(R.string.searchFailed, currentDisplaying);
-							}else {
-								a.show(R.string.searchFailed, currentDisplaying);
-								webviewHolder.removeAllViews();
-								int remcount = anothorHolder.getChildCount()-1;
-								if(remcount>0) anothorHolder.removeViews(1, remcount);
-							}
-						}
+						queryAndShowMultipleDictionary(null, currentDisplaying, position, true);
 					}
 					else {
 						//CMN.Log("单独搜索模式");
-						float desiredScale=-1;
-						a.TransientIntoSingleExplanation();
-
-						String key = currentDisplaying;
-						int offset = mdict.offsetByTailing(key);
-						int idx;
-						if(offset>0)
-							key = key.substring(0,key.length()-offset);
-						BookPresenter currentDictionary = a.currentDictionary;
-						idx = currentDictionary.bookImpl.lookUp(key,true);
-						int adapter_idx=a.adapter_idx;
-						if(idx<0) {
-							for(adapter_idx=0;adapter_idx<a.md.size();adapter_idx++) {
-								if(adapter_idx!=a.adapter_idx) {
-									currentDictionary=a.md_get(adapter_idx);
-									if(currentDictionary!=null)
-										idx=currentDictionary.bookImpl.lookUp(key,true);
-									if(idx>=0) break;
-								}
-							}
-						}
-
-						webviewHolder = a.webSingleholder;
-						ViewGroup anothorHolder = a.webholder;
-						if(idx>=0) {
-							currentDictionary.initViewsHolder(a);
-							if(opt.getRemPos()) {
-								currentDictionary.rl.setTag(adapter_idx);
-								OUT:
-								if(System.currentTimeMillis()-a.lastClickTime>300)//save our postion
-								if(webviewHolder.getChildCount()!=0) {
-									View s_rl = webviewHolder.getChildAt(0);
-									int tag= IU.parsint(s_rl.getTag(), -1);
-									if(tag!=-1) {
-										BookPresenter lastDictionary = a.md_get(tag);
-										if(lastDictionary!=null) {
-											WebViewmy current_webview = lastDictionary.mWebView;
-											if (adelta != 0 && current_webview != null && !current_webview.isloading) {
-												if (current_webview.webScale == 0)
-													current_webview.webScale = a.dm.density;//sanity check
-												//CMN.Log("保存位置", lastDictionary._Dictionary_fName, tag);
-
-												pagerec = avoyager.get(lastClickedPosBeforePageTurn);
-												if (pagerec == null) {
-													if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || current_webview.webScale != BookPresenter.def_zoom) {
-														pagerec = new ScrollerRecord();
-														avoyager.put(lastClickedPosBeforePageTurn, pagerec);
-													} else
-														break OUT;
-												}
-
-												pagerec.set(current_webview.getScrollX(), current_webview.getScrollY(), current_webview.webScale);
-											}
-										}
-									}
-								}
-
-								adelta=0;
-								a.lastClickTime=System.currentTimeMillis();
-
-								pagerec = avoyager.get(position);
-								//a.showT(""+currentDictionary.expectedPos);
-							}
-
-							if(pagerec!=null) {
-								currentDictionary.mWebView.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
-								currentDictionary.mWebView.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
-								desiredScale=pagerec.scale;
-								CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+currentDictionary.mWebView.expectedPos+" scale:"+pagerec.scale);
-							} else {
-								currentDictionary.mWebView.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
-								currentDictionary.mWebView.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
-							}
-
-							imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
-							a.AttachContentViewForDB();
-
-							if(offset>0)//apply tailing offset
-								if(currentDictionary.bookImpl.getEntryAt(idx+offset).equals(key))
-									idx+=offset;
-							int tmpIdx=idx;
-							while(tmpIdx+1<currentDictionary.bookImpl.getNumberEntries() && mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx)).equals(mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx+1)))) {
-								tmpIdx++;
-								if(currentDictionary.bookImpl.getEntryAt(tmpIdx).trim().equals(key.trim())) {
-									idx=tmpIdx;
-									break;
-								}
-							}
-
-							ViewGroup someView = currentDictionary.rl;
-							if(someView.getParent()!=webviewHolder) {
-								if(someView.getParent()!=null) ((ViewGroup)someView.getParent()).removeView(someView);
-								webviewHolder.addView(currentDictionary.rl);
-							}
-							if(webviewHolder.getChildCount()>1) {
-								for(int i=webviewHolder.getChildCount()-1;i>=0;i--)
-									if(webviewHolder.getChildAt(i)!=currentDictionary.rl) webviewHolder.removeViewAt(i);
-							}
-
-							currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, idx);
-
-							currentDictionary.mWebView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
-							currentDictionary.rl.getLayoutParams().height = LayoutParams.MATCH_PARENT;
-							processFavorite(position, currentDisplaying);
-						}
-						else {
-							if(a.main.getChildCount()==1) {
-								show(R.string.searchFailed, currentDisplaying);
-							}else {
-								a.show(R.string.searchFailed, currentDisplaying);
-								anothorHolder.removeAllViews();
-								int remcount = webviewHolder.getChildCount()-1;
-								if(remcount>0) webviewHolder.removeViews(1, remcount);
-							}
-						}
+						queryAndShowOneDictionary(a.currentDictionary, currentDisplaying, position, true);
 					}
 				} break;
 				case SelectionMode_peruseview:{
@@ -1605,8 +1444,246 @@ public class DBroswer extends Fragment implements
 					throw new IllegalStateException("Unexpected value: " + SelectionMode);
 			}
 		}};
-
-
+	
+	private void queryAndShowMultipleDictionary(String[] texts, String currentDisplaying, int position, boolean queryAll) {
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
+		
+		int lastClickedPosBeforePageTurn = position - adelta;
+		
+		ArrayList<Integer> records = new ArrayList<>();
+		additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
+		ArrayList<additiveMyCpr1> data = new ArrayList<>();
+		data.add(datalet);
+		String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
+		a.bShowLoadErr=false;
+		long st = CMN.rt();
+		if (texts!=null) {
+			for(int dIdx=0;dIdx<texts.length;dIdx++) {//联合搜索
+				try {
+					long bid = Long.parseLong(texts[dIdx]);
+					BookPresenter mdTmp = a.getDictionaryById(bid);
+					if(mdTmp!=null) {
+						int idx = mdTmp.bookImpl.lookUp(currentDisplaying__);
+						if (idx >= 0)
+							while (idx < mdTmp.bookImpl.getNumberEntries()) {
+								if (mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+									records.add((int) -bid);
+									records.add(idx);
+								} else {
+									break;
+								}
+								idx++;
+							}
+					}
+				} catch (IOException e) {
+					CMN.Log(e);
+				}
+			}
+		} else {
+			for(int dIdx=0;dIdx<a.md.size();dIdx++) {//联合搜索
+				BookPresenter mdTmp = a.md_get(dIdx);
+				if(mdTmp!=null) {
+					int idx = mdTmp.bookImpl.lookUp(currentDisplaying__);
+					if (idx >= 0)
+						while (idx < mdTmp.bookImpl.getNumberEntries()) {
+							if (mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+								records.add(dIdx);
+								records.add(idx);
+							} else
+								break;
+							idx++;
+						}
+				}
+			}
+		}
+		CMN.Log("联合搜索 - 同步延时 : ", CMN.elapsed(st));
+		a.bShowLoadErr=true;
+		webviewHolder = a.webholder;
+		ViewGroup anothorHolder = a.webSingleholder;
+		CMN.Log("SelectionMode_pan", records.size());
+		if(records.size()>0) {
+			a.recCom = rec = new resultRecorderCombined(a,data,a.md);
+			ScrollViewmy WHP = a.WHP;
+			ScrollerRecord pagerec = null;
+			OUT:
+			if(adelta!=0 && System.currentTimeMillis()-a.lastClickTime>300) {//save our postion
+				pagerec = avoyager.get(lastClickedPosBeforePageTurn);
+				if (pagerec == null) {
+					if (WHP.getScrollY() != 0) {
+						pagerec = new ScrollerRecord();
+						avoyager.put(lastClickedPosBeforePageTurn, pagerec);
+					} else
+						break OUT;
+				}
+				pagerec.set(0, WHP.getScrollY(), 1);
+			}
+			
+			adelta=0;
+			a.lastClickTime=System.currentTimeMillis();
+			
+			pagerec = avoyager.get(position);
+			if (pagerec != null) {
+				rec.expectedPos = pagerec.y;
+				//currentDictionary.mWebView.setScrollY(currentDictionary.expectedPos);
+				//CMN.Log("取出旧值", combining_search_result.expectedPos, pos, avoyager.size());
+			} else {
+				rec.expectedPos = 0;
+				//CMN.Log("新建", combining_search_result.expectedPos, pos);
+			}
+			
+			WHP.setVisibility(View.VISIBLE);
+			if(anothorHolder.getVisibility()==View.VISIBLE) {
+				if(anothorHolder.getChildCount()!=0)
+					anothorHolder.removeAllViews();
+				anothorHolder.setVisibility(View.GONE);
+			}
+			
+			a.widget13.setVisibility(View.VISIBLE);
+			a.widget14.setVisibility(View.VISIBLE);
+			a.contentview.setVisibility(View.VISIBLE);
+			imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
+			
+			a.AttachContentViewForDB();
+			
+			rec.renderContentAt(0, a,null);
+			
+			processFavorite(position, currentDisplaying);
+		}
+		else {
+			if(a.main.getChildCount()==1) {
+				show(R.string.searchFailed, currentDisplaying);
+			}else {
+				a.show(R.string.searchFailed, currentDisplaying);
+				webviewHolder.removeAllViews();
+				int remcount = anothorHolder.getChildCount()-1;
+				if(remcount>0) anothorHolder.removeViews(1, remcount);
+			}
+		}
+	}
+	
+	private void queryAndShowOneDictionary(BookPresenter currentDictionary, String currentDisplaying, int position, boolean queryAll) {
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
+		
+		int lastClickedPosBeforePageTurn = position - adelta;
+		
+		float desiredScale=-1;
+		a.TransientIntoSingleExplanation();
+		
+		String key = currentDisplaying;
+		int offset = mdict.offsetByTailing(key);
+		int idx;
+		if(offset>0)
+			key = key.substring(0,key.length()-offset);
+		idx = currentDictionary.bookImpl.lookUp(key,true);
+		int adapter_idx=a.adapter_idx;
+		
+		if(idx<0 && queryAll) {
+			for(adapter_idx=0;adapter_idx<a.md.size();adapter_idx++) {
+				if(adapter_idx!=a.adapter_idx) {
+					currentDictionary=a.md_get(adapter_idx);
+					if(currentDictionary!=null)
+						idx=currentDictionary.bookImpl.lookUp(key,true);
+					if(idx>=0) break;
+				}
+			}
+		}
+		
+		webviewHolder = a.webSingleholder;
+		ViewGroup anothorHolder = a.webholder;
+		if(idx>=0) {
+			currentDictionary.initViewsHolder(a);
+			ScrollerRecord pagerec = null;
+			if(opt.getRemPos()) {
+				OUT:
+				if(System.currentTimeMillis()-a.lastClickTime>300)//save our postion
+					if(webviewHolder.getChildCount()!=0) {
+						View s_rl = webviewHolder.getChildAt(0);
+						int tag= IU.parsint(s_rl.getTag(), -1);
+						if(tag!=-1) {
+							BookPresenter lastDictionary = a.md_get(tag);
+							if(lastDictionary!=null) {
+								WebViewmy current_webview = lastDictionary.mWebView;
+								if (adelta != 0 && current_webview != null && !current_webview.isloading) {
+									if (current_webview.webScale == 0)
+										current_webview.webScale = a.dm.density;//sanity check
+									//CMN.Log("保存位置", lastDictionary._Dictionary_fName, tag);
+									
+									pagerec = avoyager.get(lastClickedPosBeforePageTurn);
+									if (pagerec == null) {
+										if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || current_webview.webScale != BookPresenter.def_zoom) {
+											pagerec = new ScrollerRecord();
+											avoyager.put(lastClickedPosBeforePageTurn, pagerec);
+										} else
+											break OUT;
+									}
+									
+									pagerec.set(current_webview.getScrollX(), current_webview.getScrollY(), current_webview.webScale);
+								}
+							}
+						}
+					}
+				
+				adelta=0;
+				a.lastClickTime=System.currentTimeMillis();
+				
+				pagerec = avoyager.get(position);
+				//a.showT(""+currentDictionary.expectedPos);
+			}
+			
+			if(pagerec!=null) {
+				currentDictionary.mWebView.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				currentDictionary.mWebView.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				desiredScale=pagerec.scale;
+				CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+currentDictionary.mWebView.expectedPos+" scale:"+pagerec.scale);
+			} else {
+				currentDictionary.mWebView.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				currentDictionary.mWebView.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+			}
+			
+			imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
+			a.AttachContentViewForDB();
+			
+			if(offset>0)//apply tailing offset
+				if(currentDictionary.bookImpl.getEntryAt(idx+offset).equals(key))
+					idx+=offset;
+			int tmpIdx=idx;
+			while(tmpIdx+1<currentDictionary.bookImpl.getNumberEntries() && mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx)).equals(mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx+1)))) {
+				tmpIdx++;
+				if(currentDictionary.bookImpl.getEntryAt(tmpIdx).trim().equals(key.trim())) {
+					idx=tmpIdx;
+					break;
+				}
+			}
+			
+			ViewGroup someView = currentDictionary.rl;
+			if(someView.getParent()!=webviewHolder) {
+				if(someView.getParent()!=null) ((ViewGroup)someView.getParent()).removeView(someView);
+				webviewHolder.addView(currentDictionary.rl);
+			}
+			if(webviewHolder.getChildCount()>1) {
+				for(int i=webviewHolder.getChildCount()-1;i>=0;i--)
+					if(webviewHolder.getChildAt(i)!=currentDictionary.rl) webviewHolder.removeViewAt(i);
+			}
+			
+			currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, idx);
+			
+			currentDictionary.mWebView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
+			currentDictionary.rl.getLayoutParams().height = LayoutParams.MATCH_PARENT;
+			processFavorite(position, currentDisplaying);
+		}
+		else {
+			if(a.main.getChildCount()==1) {
+				show(R.string.searchFailed, currentDisplaying);
+			}else {
+				a.show(R.string.searchFailed, currentDisplaying);
+				anothorHolder.removeAllViews();
+				int remcount = webviewHolder.getChildCount()-1;
+				if(remcount>0) webviewHolder.removeViews(1, remcount);
+			}
+		}
+	}
+	
+	
 	public void toggleFavor() {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;

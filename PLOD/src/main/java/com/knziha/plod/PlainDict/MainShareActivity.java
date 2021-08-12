@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 
+import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
+
 /**
  * Recreated by KnIfER on 2019
  */
@@ -29,8 +31,11 @@ public class MainShareActivity extends Activity {
 
 	public void ProcessIntent(Intent thisIntent) {
 		debugString=null;
+		int forceTarget = -1;
 		if(thisIntent!=null) {
 			String action = thisIntent.getAction();
+			forceTarget = thisIntent.getIntExtra("force", -1);
+			if (forceTarget==-1)
 			if(action!=null && action.equals(Intent.ACTION_MAIN)) {
 				//CMN.Log("主程转发");
 				thisIntent.setClass(getBaseContext(),PDICMainActivity.class);
@@ -57,8 +62,8 @@ public class MainShareActivity extends Activity {
 		if(debugString!=null) {
 			PDICMainAppOptions opt = new PDICMainAppOptions(this);
 			opt.getSecondFlag();
-			int ShareTarget = PDICMainAppOptions.getShareTarget();
-			if(ShareTarget==3){//浮动搜索
+			int ShareTarget = forceTarget!=-1?forceTarget:opt.getShareToTarget();
+			if(ShareTarget==PLAIN_TARGET_FLOAT_SEARCH){//浮动搜索
 				//getApplicationContext().startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", debugString));
 				if (PDICMainAppOptions.getHideFloatFromRecent() && hiddenId!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 					MainShareActivity.hiddenId.setExcludeFromRecents(false);
@@ -74,7 +79,7 @@ public class MainShareActivity extends Activity {
 				newTask.setType(thisIntent.getType());
 				newTask.putExtra(Intent.EXTRA_TEXT,debugString);
 				CMN.Log("主程序", CMN.id(debugString));
-				newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
+				newTask.putExtra(Intent.EXTRA_SHORTCUT_ID, ShareTarget);
 				newTask.setClass(getBaseContext(),PDICMainActivity.class);
 //				//|Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
 				newTask.setFlags(SingleTaskFlags);

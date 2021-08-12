@@ -48,21 +48,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	public PDICMainAppOptions(Context a_){
 		reader2 = a_.getSharedPreferences("SizeChangablePrefs",Activity.MODE_PRIVATE);
-
 		defaultReader = PreferenceManager.getDefaultSharedPreferences(a_);
 		magicStr=a_.getResources().getString(R.string.defPlan);
-
-		int max = 1<<7;
-		byte[]  bytes = new byte[max];
-		for (int i = 1; i < max; i++) {
-			bytes[i] = (byte) i;
-		}
-		CMN.Log(max, 0x7e);
-
-		String str = new String(bytes, 1, max-1, StandardCharsets.UTF_8);
-		String store = defaultReader.getString("test", null);
-		defaultReader.edit().putString("test", null).apply();
-		CMN.Log("===", str.equals(store));
 	}
 	String magicStr;
 
@@ -264,8 +251,35 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public int getPeruseBottombarSize(int def) {
 		return defaultReader.getInt("PBBS", def);
 	}
-
-
+	
+	public final static int PLAIN_TARGET_APP_AUTO = 0;
+	public final static int PLAIN_TARGET_APP_SEARCH = 1;
+	public final static int PLAIN_TARGET_APP_PERUSE = 2;
+	public final static int PLAIN_TARGET_FLOAT_SEARCH = 3;
+	
+	/** @return integer: 0=paste_to_main_program <br/>
+	 * 2=paste_to_float_search_program<br/>
+	 * 3=paste_to_MDCCSP_main_program<br/>
+	 * 4=paste_to_MDCCSP_standalone */
+	public int getPasteTarget()
+	{
+		return IU.parsint(defaultReader.getString("tgt_paste", "0"));
+	}
+	/** @return integer: see {@link #getPasteTarget} */
+	public int getShareToTarget()
+	{
+		return IU.parsint(defaultReader.getString("tgt_share", "0"), 0);
+	}
+	/** @return integer: see {@link #getPasteTarget} */
+	public int getColorDictTarget()
+	{
+		return IU.parsint(defaultReader.getString("tgt_color", "3"), 3);
+	}
+	/** @return integer: see {@link #getPasteTarget} */
+	public int getTextProcessorTarget()
+	{
+		return IU.parsint(defaultReader.getString("tgt_text", "3"), 3);
+	}
 
 	//////////////
 
@@ -1000,20 +1014,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	/** @return integer: 0=paste_to_main_program <br/>
-	 * 2=paste_to_float_search_program<br/>
-	 * 3=paste_to_MDCCSP_main_program<br/>
-	 * 4=paste_to_MDCCSP_standalone */
-	public static int getPasteTarget() {
-		return (int) ((SecondFlag >> 29) & 3);
-	}
-	public static int setPasteTarget(int val) {
-		SecondFlag &= (~0x20000000l);
-		SecondFlag &= (~0x40000000l);
-		SecondFlag |= ((long)(val & 3)) << 29;
-		return val;
-	}
-
+	//kk 0x20000000l 0x40000000l
 	//todo 默认关闭
 	public static boolean getPasteToPeruseModeWhenFocued() {
 		return (SecondFlag & 0x80000000l) != 0x80000000l;
@@ -1023,18 +1024,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	
+	// 0x100000000l   0x200000000l
 	
-	/** @return integer: see {@link #getPasteTarget} */
-	public static int getShareTarget() {
-		return (int) ((SecondFlag >> 32) & 3);
-	}
-	public static int setShareTarget(int val) {
-		SecondFlag &= (~0x100000000l);
-		SecondFlag &= (~0x200000000l);
-		SecondFlag |= ((long)(val & 3)) << 32;
-		return val;
-	}
-
+	// todo
 	public static boolean getShareToPeruseModeWhenFocued() {
 		return (SecondFlag & 0x400000000l) != 0x400000000l;
 	}
@@ -1693,7 +1685,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public boolean getUseBackKeyGoWebViewBack() {
-		return (ThirdFlag & 0x400000000000l) == 0x400000000000l;
+		return false;//(ThirdFlag & 0x400000000000l) == 0x400000000000l;
 	}
 	public boolean setUseBackKeyGoWebViewBack(boolean val) {
 		updateTFAt(0x400000000000l,val);
@@ -1996,7 +1988,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public static boolean getOnlyExpandTopPage() {
-		return (FourthFlag & 0x400000l) == 0x400000l;
+		return false;//
+		//return (FourthFlag & 0x400000l) == 0x400000l;
 	}
 	public static boolean setOnlyExpandTopPage(boolean val) {
 		updateQFAt(0x400000l,val);
@@ -2185,8 +2178,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return (FourthFlag & 0x1000000000000l) == 0x1000000000000l;
 	}
 	
-	@Multiline(flagPos=49) public static boolean getForceFloatSingletonSearch() { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=49) public static boolean getForceFloatSingletonSearch(long FourthFlag) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=49, debug=1) public static boolean getForceFloatSingletonSearch() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=49, debug=1) public static boolean getForceFloatSingletonSearch(long FourthFlag) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	
 	@Multiline(flagPos=50) public static boolean isSingleThreadServer() { FourthFlag=FourthFlag; throw new RuntimeException();}
 	@Multiline(flagPos=51) public static boolean getServerStarted() { FourthFlag=FourthFlag; throw new RuntimeException();}
@@ -2248,6 +2241,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Multiline(flagPos=10, shift=1) public static boolean getAdjustScnShown(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 	@Multiline(flagPos=10, shift=1) public boolean toggleAdjustScnShown() { FifthFlag=FifthFlag; throw new IllegalArgumentException(); }
+	
+
 	
 	
 	//EF
@@ -2395,12 +2390,24 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return FileDatabases;
 	}
+	
+	public final static boolean testDBV2 = false;
+	
 	private String pathToFavoriteDatabases(String name) {
 		StringBuffer InternalPath = pathToMainFolder().append("INTERNAL/");
-		if(name!=null){
-			InternalPath.append("favorites/").append(name);
+		if (testDBV2) {
+			if(name!=null)
+			{
+				InternalPath.append("favorites/").append(name);
+			} else {
+				InternalPath.append("databaseV2.sql");
+			}
 		} else {
-			InternalPath.append("history.sql");
+			if(name!=null){
+				InternalPath.append("favorites/").append(name);
+			} else {
+				InternalPath.append("history.sql");
+			}
 		}
 		return InternalPath.toString();
 	}

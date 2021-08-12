@@ -44,4 +44,15 @@ public interface UniversalDictionaryInterface {
 	String getVirtualRecordAt(int vi) throws IOException;
 	
 	String getVirtualRecordsAt(int[] list2) throws IOException;
+	
+	String getVirtualTextValidateJs();
+	
+	String getVirtualTextEffectJs(int[] positions);
+	
+	long getBooKID();
+	
+	void setBooKID(long id);
+	
+	void flowerFindAllContents(String key, int selfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException;
+	void flowerFindAllKeys(String key, int SelfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException;
 }

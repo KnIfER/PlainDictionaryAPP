@@ -845,6 +845,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		webSingleholder.setBackgroundColor(a.GlobalPageBackground);
 		
 			mWebView = rl.findViewById(R.id.webviewmy);
+			rl.setTag(mWebView);
 			//mWebView.fromPeruseview = true;
 			mWebView.fromCombined=3;
 			a.initWebScrollChanged();//Strategy: use one webscroll listener

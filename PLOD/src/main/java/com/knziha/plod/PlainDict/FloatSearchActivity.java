@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
+import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
+
 
 /**
  * 多实例浮动搜索<br/>
@@ -269,10 +271,21 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			if(thisIntent==null) {
 				thisIntent = new Intent();
 			}
-			if(true) {
+			String act = thisIntent.getAction();
+			int reTarget = -1;
+			opt = new PDICMainAppOptions(this);
+			if ("colordict.intent.action.SEARCH".equals(act)) {
+				reTarget = opt.getColorDictTarget();
+			}
+			else if ("android.intent.action.PROCESS_TEXT".equals(act)) {
+				reTarget = opt.getTextProcessorTarget();
+			}
+			if(reTarget!=PLAIN_TARGET_FLOAT_SEARCH) {
 				thisIntent = new Intent(Intent.ACTION_MAIN)
 						.setClass(this, MainShareActivity.class)
-						.putExtras(thisIntent);
+						.putExtras(thisIntent)
+						.putExtra("force", reTarget)
+				;
 				startActivity(thisIntent);
 				shunt = true;
 			} else if(PDICMainAppOptions.getForceFloatSingletonSearch(FF)) {
@@ -943,7 +956,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && BookPresenter.class.equals(currentDictionary.getClass()))
 					return 0;
 				return (int) currentDictionary.bookImpl.getNumberEntries();
-			}else{
+			} else {
 				return 0;
 			}
         }
@@ -1049,9 +1062,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 	
 	private void ensureContentVis(ViewGroup webholder, ViewGroup another) {
-		if(webholder.getVisibility()!=View.VISIBLE) {
-			webholder.setVisibility(View.VISIBLE);
-		}
+		webholder.setVisibility(View.VISIBLE);
+		
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 		if(another.getVisibility()==View.VISIBLE) {
 			Utils.removeAllViews(another);

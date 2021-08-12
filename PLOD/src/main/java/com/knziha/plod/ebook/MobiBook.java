@@ -17,6 +17,7 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdBase;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.ebook.Utils.BU.MOBIHuffCdic;
 import com.knziha.plod.ebook.Utils.CU;
@@ -38,7 +39,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-public class MobiBook implements UniversalDictionaryInterface {
+public class MobiBook extends DictionaryAdapter {
 	File f;
 	Charset _charset;
 	long _num_record_blocks;
@@ -887,12 +888,7 @@ public class MobiBook implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public String getVirtualRecordAt(int vi) throws IOException {
-		return null;
-	}
-	
-	@Override
-	public String getVirtualRecordsAt(int[] list2) throws IOException {
+	public String getVirtualTextEffectJs(int[] positions) {
 		return null;
 	}
 	

@@ -177,9 +177,7 @@ public class PlainPDF extends DictionaryAdapter {
 
 	//构造
 	public PlainPDF(File fn, MainActivityUIBase _a) throws IOException {
-		opt=_a.opt;
-		f = fn;
-		_Dictionary_fName=fn.getName();
+		super(fn, _a);
 		_INTERNAL_PDFJS=new mdictRes_asset(new File(AssetTag +"pdf.mdd"), 2, _a);
 		_num_entries = 1;
 		
@@ -258,7 +256,7 @@ public class PlainPDF extends DictionaryAdapter {
 
 	@Override
 	public String getEntryAt(int position) {
-		return "第"+position+"页";
+		return getDictionaryName();
 	}
 
 	@Override
@@ -289,9 +287,33 @@ public class PlainPDF extends DictionaryAdapter {
 		}
 		return null;
 	}
-
+	
+	@Override
+	public String getVirtualRecordsAt(int[] list2) throws IOException {
+		return getRecordsAt(0);
+	}
+	
+	@Override
+	public boolean hasVirtualIndex() {
+		return true;
+	}
+	
+	@Override
+	public String getVirtualTextValidateJs() {
+		return "";
+	}
+	
+	@Override
+	public String getVirtualTextEffectJs(int[] positions) {
+		return "";
+	}
+	
 	@Override
 	public boolean hasMdd() {
 		return true;
+	}
+	
+	public void toggleFavor() {
+	
 	}
 }

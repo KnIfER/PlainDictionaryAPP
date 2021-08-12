@@ -63,6 +63,7 @@
 			android:configChanges="keyboardHidden|orientation|screenSize"
 			android:hardwareAccelerated="true"
 			android:windowSoftInputMode="adjustPan"
+			android:taskAffinity=""
 			>
 			<intent-filter>
 				<action android:name="colordict.intent.action.SEARCH"/>
