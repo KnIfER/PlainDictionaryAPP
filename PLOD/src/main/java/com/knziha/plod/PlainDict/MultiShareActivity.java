@@ -18,6 +18,8 @@ import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
+import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.PlainMdictAsset;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.Utils;
 
@@ -86,11 +88,11 @@ public class MultiShareActivity extends MainActivityUIBase {
 		setContentView(R.layout.activity_main_share);
 		further_loading(savedInstanceState);
 		String path = CMN.AssetTag + "liba.mdx";
-		//try { // nimp
-		//	currentDictionary = new bookPresenter_asset(new File(path), this);
-		//} catch (IOException e) {
-		//	e.printStackTrace();
-		//}
+		try {
+			currentDictionary = new BookPresenter(new File(path), this, 0, this);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 		main = root = findViewById(R.id.root);
 		mainF = main.findViewById(R.id.mainF);
@@ -132,8 +134,10 @@ public class MultiShareActivity extends MainActivityUIBase {
 		if(debugString!=null)
 		{
 			// 动画！
-			TextView tv = ucc.d.findViewById(R.id.alertTitle);
-			tv.setText(debugString==null?"文本操作":debugString);
+			try {
+				TextView tv = ucc.d.findViewById(R.id.alertTitle);
+				tv.setText(debugString==null?"文本操作":debugString);
+			} catch (Exception ignored) {  }
 		}
 	}
 	

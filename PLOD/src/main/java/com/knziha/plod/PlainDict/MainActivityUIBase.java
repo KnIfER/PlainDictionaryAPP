@@ -153,7 +153,6 @@ import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
-import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.PlainPDF;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
@@ -201,7 +200,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.nanohttpd.protocols.http.ServerRunnable;
 import org.xiph.speex.ByteArrayRandomOutputStream;
 import org.xiph.speex.manyclass.JSpeexDec;
 
@@ -229,7 +227,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -240,10 +237,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 
 import db.LexicalDBHelper;
 import db.MdxDBHelper;
@@ -825,7 +818,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public CharSequence md_getAbout_Trim(int i) {
 		ArrayList<PlaceHolder> placeHolders = getLazyCC();
 		PlaceHolder phTmp = placeHolders.get(i);
-		BookPresenter mdTmp = md.get(i);
+		BookPresenter presenter = md.get(i);
 		String msg = phTmp.ErrorMsg;
 		boolean show_info_extra = true||msg!=null;
 		boolean show_info_codec = true;
@@ -837,12 +830,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(show_info_reload) {
 				sb.append("[重新加载");
 			}
-			if(show_info_codec && mdTmp!=null) {
+			if(show_info_codec && presenter!=null) {
 				if(!show_info_reload) {
 					sb.append("编码");
 				}
 				sb.append("：");
-				sb.append(mdTmp.getCharsetName());
+				sb.append(presenter.getCharsetName());
 			}
 			if(show_info_reload) {
 				sb.append("]");
@@ -858,8 +851,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		
-		CharSequence ret=mdTmp==null? "未加载"
-				:HtmlCompat.fromHtml(mdTmp.getAboutString(), HtmlCompat.FROM_HTML_MODE_COMPACT);
+		CharSequence ret=presenter==null? "未加载"
+				:HtmlCompat.fromHtml(presenter.getAboutString(), HtmlCompat.FROM_HTML_MODE_COMPACT);
 		int len = ret.length();
 		int st = 0;
 		while((st < len) && ret.charAt(st) <= ' '){
@@ -873,8 +866,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			sb.append(ret, st, len);
 			ret=sb;
 			if(msg!=null) {
-				sb.append("\t").append("错误信息：");
+				sb.append("\n\n").append("错误信息：");
 				sb.append(msg);
+			}
+			if(presenter!=null && presenter.bookImpl.hasMdd()) {
+				sb.append("\n\n").append("资源文件：");
+				sb.append(presenter.bookImpl.getResourcePaths());
 			}
 			if(show_info_path) {
 				sb.append("\n");
@@ -3351,7 +3348,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (testDBV2) {
 				prepareHistroyCon().updateHistoryTerm(this, key);
 			} else {
-				prepareHistroyCon().insertUpdate(key);
+				prepareHistroyCon().insertUpdate(this, key);
 			}
 		}
 	}
@@ -3578,17 +3575,56 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	}
 	
-	public String collectDisplayingBooks() {
-		String ret="";
+	public String retrieveDisplayingBooks(String books) {
+		String ret = "";
+		String[] booksArr = books.split(";");
+		int cc=0;
+		boolean needDunhao = false;
+		for (int i = 0; i < booksArr.length && cc<3; i++) {
+			if (needDunhao) {
+				ret += "、 ";
+				needDunhao = false;
+			}
+			try {
+				String bookName = getBookNameById(Long.parseLong(booksArr[i]));
+				if (bookName!=null) {
+					if (bookName.endsWith(".mdx")) {
+						bookName = bookName.substring(0, bookName.length()-4);
+					}
+					bookName = bookName.replaceAll("\\(.*\\)", "");
+				}
+				ret += bookName;
+				cc++;
+				needDunhao = true;
+			} catch (Exception e) { }
+		}
+		return ret;
+	}
+	
+	private String getBookNameById(long bid) {
+		UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+		if (impl!=null) {
+			return impl.getDictionaryName();
+		}
+		return prepareHistroyCon().getBookName(bid);
+	}
+	
+	public String collectDisplayingBooks(String books) {
+		String ret=books==null?"":books;
 		if (ActivedAdapter!=null) {
 			for (int i = 0, len=ActivedAdapter.webviewHolder.getChildCount(); i < len; i++) {
 				View child = ActivedAdapter.webviewHolder.getChildAt(i);
 				if (child!=null) {
 					WebViewmy wv = child.findViewById(R.id.webviewmy);
 					if (wv!=null) {
-						ret += wv.presenter.bookImpl.getBooKID();
-						//if (i<len-1)
-						ret+=";";
+						if (books!=null) {
+							String thisIs = wv.presenter.bookImpl.getBooKID() + ";";
+							if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
+								ret += thisIs;
+							}
+						} else {
+							ret += wv.presenter.bookImpl.getBooKID() + ";";
+						}
 					}
 				}
 			}
@@ -4077,12 +4113,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						case 11:
 						case 0: {
 							if (bFromTextView) {
-								if (CurrentSelected.length() > 0 && prepareFavoriteCon().insertUpdate(CurrentSelected) > 0)
+								if (CurrentSelected.length() > 0 && prepareFavoriteCon().insertUpdate(MainActivityUIBase.this, CurrentSelected) > 0)
 									showT(CurrentSelected + " 已收藏");
 							} else {
 								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
 									if (word.length() > 2) {
-										if (prepareFavoriteCon().insertUpdate(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1))) > 0)
+										if (prepareFavoriteCon().insertUpdate(MainActivityUIBase.this, StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1))) > 0)
 											showT(word + " 已收藏");
 									}
 								});
@@ -5784,13 +5820,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//todo 泛化
 						WebViewmy mWebView = webSingleholder.findViewById(R.id.webviewmy);
 						if (mWebView != null) {
-							int DX = mWebView.SelfIdx;
-							if (DX>=0 && DX<md.size()) {
-								BookPresenter presenter = md.get(DX);
-								if (presenter.bookImpl instanceof PlainPDF) {
-									((PlainPDF)presenter.bookImpl).toggleFavor();
-									break;
-								}
+							BookPresenter presenter = mWebView.presenter;
+							if (presenter.bookImpl instanceof PlainPDF) {
+								((PlainPDF)presenter.bookImpl).toggleFavor();
+								break;
 							}
 						}
 					}
@@ -5800,7 +5833,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						v.setActivated(false);
 						show(R.string.removed);
 					} else {
-						favoriteCon.insert(key);
+						favoriteCon.insert(this, key);
 						v.setActivated(true);
 						show(R.string.added);
 					}
@@ -6078,7 +6111,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			futton.setActivated(false);
 			if(toast)show(R.string.removed);
 		}else {
-			favoriteCon.insert(key);
+			favoriteCon.insert(this, key);
 			futton.setActivated(true);
 			if(toast)show(R.string.added);
 		}
@@ -7778,7 +7811,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(start==-1){
 				if(key.startsWith("./"))
 					key=key.substring(1);
-			}else{
+			} else {
 				key = key.substring(start+ BookPresenter.FileTag.length());
 			}
 			if(url.startsWith("/MdbR/")){
@@ -7858,6 +7891,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			if(!key.startsWith(SepWindows)){
 				key=SepWindows+key;
+			}
+			if(key.endsWith(SepWindows)){
+				key=key.substring(0, key.length()-1);
 			}
 
 			int suffixIdx = key.lastIndexOf(".");
@@ -9183,7 +9219,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										if (db == null) {
 											db = iI.value = new LexicalDBHelper(getApplicationContext(), opt, iI.key);
 										}
-										if(db.insertUpdate(text)>0){
+										if(db.insertUpdate(this, text)>0){
 											cc++;
 										}
 									} catch (Exception ignored) { }

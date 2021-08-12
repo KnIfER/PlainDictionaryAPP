@@ -318,7 +318,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		}
 		mConfiguration.setTo(newConfig);
-		if(Build.VERSION.SDK_INT>=29){
+		if(Build.VERSION.SDK_INT>=29 && false){
 			GlobalOptions.isDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
 		} else {
 			GlobalOptions.isDark = false;
@@ -3054,27 +3054,31 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						st = fullSize-1;
 					}
 					int msg = R.string.fn;
-					for(int i=st,j;delta<0?i>=0:i<fullSize;i+=delta) {
-						if(i>=sep) {
-							j=i-sep;
-						} else {
-							j=i+fvp;
+					try {
+						for(int i=st,j;delta<0?i>=0:i<fullSize;i+=delta) {
+							if(i>=sep) {
+								j=i-sep;
+							} else {
+								j=i+fvp;
+							}
+							//CMN.Log(i, j, CosyChair.get(j).pathname);
+	//						if(delta>0&&j==fullSize-1||delta<0&&j==0) {
+	//							break;
+	//						}
+							if (j>=0 && j<CosyChair.size()) {
+								String name = CosyChair.get(j).pathname;
+								if(name!=null && name.startsWith(AssetTag) && AssetMap.containsKey(name)) {
+									name = AssetMap.get(name);
+								}
+								if(pickDictDialog.SearchPattern==null || pickDictDialog.SearchPattern.matcher(name).find()) {
+									msg = 0;
+									pickDictDialog.lman.scrollToPositionWithOffset(j, pad);
+									pickDictDialog.LastSearchScrollItem=j;
+									break;
+								}
+							}
 						}
-						//CMN.Log(i, j, CosyChair.get(j).pathname);
-//						if(delta>0&&j==fullSize-1||delta<0&&j==0) {
-//							break;
-//						}
-						String name = CosyChair.get(j).pathname;
-						if(name!=null && name.startsWith(AssetTag) && AssetMap.containsKey(name)) {
-							name = AssetMap.get(name);
-						}
-						if(pickDictDialog.SearchPattern==null || pickDictDialog.SearchPattern.matcher(name).find()) {
-							msg = 0;
-							pickDictDialog.lman.scrollToPositionWithOffset(j, pad);
-							pickDictDialog.LastSearchScrollItem=j;
-							break;
-						}
-					}
+					} catch (Exception e) {  }
 					if(msg!=0) {
 						show(msg);
 					}
@@ -3097,6 +3101,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			case R.id.settings:{
 
 			} break;
+			case R.drawable.ic_menu_drawer_24dp:
 			case R.id.drawer_layout:{
 				if (UIData.drawerLayout.isDrawerVisible(GravityCompat.START)) {
 					UIData.drawerLayout.closeDrawer(GravityCompat.START);

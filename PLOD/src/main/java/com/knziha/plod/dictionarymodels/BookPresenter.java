@@ -694,12 +694,13 @@ public class BookPresenter
 		UniversalDictionaryInterface bookImpl = null;
 		String pathFull = fullPath.getPath();
 		long bid = -1;
-		if (pseudoInit==0 && testDBV2) {
+		if (pseudoInit==0 && testDBV2 && THIS!=null) {
 			String name = fullPath.getName();
 			Long bid_ = bookImplsNameMap.get(name);
 			if (bid_==null) {
 				bid = THIS.prepareHistroyCon().getBookID(fullPath.getPath(), name);
-				bookImplsNameMap.put(name, bid);
+				//CMN.Log("新标识::", bid, name);
+				if(bid!=-1) bookImplsNameMap.put(name, bid);
 			} else {
 				bid = bid_;
 			}
@@ -715,7 +716,7 @@ public class BookPresenter
 						if (pathFull.startsWith(CMN.AssetTag))
 							bookImpl = new PlainMdictAsset(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, THIS);
 						else
-							bookImpl = new PlainMdict(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, null);
+							bookImpl = new PlainMdict(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, null, hash==107949);
 						break;
 					//case 117588:
 					//	return new bookPresenter_web(fullPath, THIS);
@@ -737,7 +738,7 @@ public class BookPresenter
 			if (bookImpl!=null) {
 				bookImpl.setBooKID(bid);
 				if (pseudoInit==0 && testDBV2) {
-					bookImplsMap.put(bid, bookImpl);
+					if(bid!=-1) bookImplsMap.put(bid, bookImpl);
 				}
 			}
 		}
@@ -2057,15 +2058,19 @@ public class BookPresenter
 
         @JavascriptInterface
         public void openImage(int position, String... img) {
+			if(presenter==null) return;
         	//CMN.Log(position, img, mdx.bookImpl.getFileName()_Internal);
-			//MainActivityUIBase aa = mdx.a;
-			//AgentApplication app = ((AgentApplication) aa.getApplication());
-			//app.mdd = mdx.mdd;
-			//app.IBC = mdx.IBC;
-			//app.opt = mdx.opt;
-			//app.Imgs = img;
-			//app.currentImg = position;
-			//aa.root.postDelayed(aa.getOpenImgRunnable(), 100);
+			MainActivityUIBase aa = presenter.a;
+			AgentApplication app = ((AgentApplication) aa.getApplication());
+			app.mdd = null;
+			if (presenter.bookImpl instanceof mdict) {
+				app.mdd = ((mdict) presenter.bookImpl).getMdd();
+			}
+			app.IBC = presenter.IBC;
+			app.opt = presenter.opt;
+			app.Imgs = img;
+			app.currentImg = position;
+			aa.root.postDelayed(aa.getOpenImgRunnable(), 100);
 		}
 
         @JavascriptInterface

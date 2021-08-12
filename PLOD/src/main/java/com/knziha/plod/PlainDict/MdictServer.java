@@ -134,8 +134,8 @@ public abstract class MdictServer extends NanoHTTPD {
 			StringBuilder sb_ = new StringBuilder();
 			for(int i=0;i<md_size();i++){
 				try {
-					// nimp
-					//md_get(i).size_confined_lookUp5(uri,combining_search_tree_,i,30);
+					// to impl
+					((mdict)md_get(i).bookImpl).size_confined_lookUp5(uri,combining_search_tree_,i,30);
 				} catch (Exception e) {
 					SU.Log(md_getName(i), e);
 				}
@@ -288,22 +288,27 @@ public abstract class MdictServer extends NanoHTTPD {
 				//SU.Log(key);
 				String[] l = key.split("\\\\");
 				StringBuilder ret= new StringBuilder();
+				// to optimise
 				for (int i = 0; i < md_size; i++) {
-					BookPresenter mdx = md_get(i);
-					if(mdx.bookImpl.getDictionaryName().equals(l[0])) {
-						StringBuilder sb = new StringBuilder();
-						//SU.Log("capacity "+l[2]);
-						int capacity=Integer.parseInt(l[2]);
-						int base = Integer.parseInt(l[1]);
-						for(int j=0;j<capacity;j++) {
-							ret.append(mdx.bookImpl.getEntryAt(base + j));
-							if(j<capacity-1)
-								ret.append("\n");
-							//sb.append(mdx.getEntryAt(base+i)).append("\n");
+					try {
+						BookPresenter mdx = md_get(i);
+						if(mdx.bookImpl.getDictionaryName().equals(l[0])) {
+							StringBuilder sb = new StringBuilder();
+							//SU.Log("capacity "+l[2]);
+							int capacity=Integer.parseInt(l[2]);
+							int base = Integer.parseInt(l[1]);
+							for(int j=0;j<capacity;j++) {
+								ret.append(mdx.bookImpl.getEntryAt(base + j));
+								if(j<capacity-1)
+									ret.append("\n");
+								//sb.append(mdx.getEntryAt(base+i)).append("\n");
+							}
+							//sb.setLength(sb.length()-1);
+							//ret = sb.toString();
+							break;
 						}
-						//sb.setLength(sb.length()-1);
-						//ret = sb.toString();
-						break;
+					} catch (Exception e) {
+						CMN.Log(e);
 					}
 				}
 				

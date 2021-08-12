@@ -315,11 +315,14 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 				imageUrl = imageUrl.substring(1).replace("/", SepWindows);
 			else
 				imageUrl = imageUrl.replace("/", SepWindows);
-		}else{
+		} else {
 			imageUrl = imageUrl.substring(start+FileTag.length()).replace("/", SepWindows);
 		}
 		if(!imageUrl.startsWith(SepWindows)){
 			imageUrl=SepWindows+imageUrl;
+		}
+		if(imageUrl.endsWith(SepWindows)){
+			imageUrl=imageUrl.substring(0, imageUrl.length()-1);
 		}
 		try {
 			imageUrl=URLDecoder.decode(imageUrl,"UTF-8");

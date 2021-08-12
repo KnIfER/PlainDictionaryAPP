@@ -67,6 +67,7 @@ import java.util.HashSet;
 import db.LexicalDBHelper;
 
 import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
+import static db.LexicalDBHelper.TABLE_FAVORITE_v2;
 
 @SuppressLint("SetTextI18n")
 public class DBroswer extends Fragment implements
@@ -356,7 +357,7 @@ public class DBroswer extends Fragment implements
 	private void rebuildCursor(MainActivityUIBase a) {
 		mCards.clear();
 		if (testDBV2) {
-			cr = mLexiDB.getDB().query("history", null,null,null,null,null,"last_visit_time desc");
+			cr = mLexiDB.getDB().query(TABLE_FAVORITE_v2, null,null,null,null,null,"last_visit_time desc");
 		} else {
 			cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
 		}
@@ -548,7 +549,7 @@ public class DBroswer extends Fragment implements
 		Date day_;
 		//构造
 		main_list_Adapter(){
-			date = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
+			date = new SimpleDateFormat("yyyy-MM-dd/HH:mm:ss");
 			day_ = new Date();
 		}
 
@@ -603,6 +604,7 @@ public class DBroswer extends Fragment implements
 		@Override
 		public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position)
 		{
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 			holder.itemView.setTag(R.id.position, position);
 			holder.p.setTag(R.id.position, position);
 			if(position==itemCount && getDelayPullData()){
@@ -618,7 +620,10 @@ public class DBroswer extends Fragment implements
 				try {
 					if (testDBV2) {
 						text=cr.getString(1);
-						time=cr.getLong(6);
+						time=cr.getLong(4);
+						String books = cr.getString(2);
+						day_.setTime(time);
+						holder.time.setText(date.format(day_) + "  " + a.retrieveDisplayingBooks(books));
 					} else {
 						text=cr.getString(0);
 						time=cr.getLong(1);
@@ -634,8 +639,6 @@ public class DBroswer extends Fragment implements
 			}
 
 			holder.webView.setText(text.trim());
-			
-			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 
 			if(GlobalOptions.isDark) {
 				if(holder.webView.getTextColors().getDefaultColor()!=a.AppBlack) {
@@ -644,11 +647,13 @@ public class DBroswer extends Fragment implements
 				}
 			}
 
-			if(time==0)
-				holder.time.setText("N.A.");
-			else {
-				day_.setTime(time);
-				holder.time.setText(date.format(day_));
+			if (!testDBV2) {
+				if(time==0)
+					holder.time.setText("N.A.");
+				else {
+					day_.setTime(time);
+					holder.time.setText(date.format(day_));
+				}
 			}
 
 			if(Selection.contains(position))//

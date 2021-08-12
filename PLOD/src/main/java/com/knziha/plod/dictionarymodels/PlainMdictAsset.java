@@ -19,16 +19,8 @@ import static com.knziha.plod.plaindict.CMN.AssetTag;
 public class PlainMdictAsset extends PlainMdict {
 	private MainActivityUIBase a;
 	
-	public PlainMdictAsset(String fn) throws IOException {
-		super(fn);
-	}
-	
 	public PlainMdictAsset(File fn, int pseudoInit, StringBuilder buffer, Object tag) throws IOException {
-		super(fn, pseudoInit, buffer, tag);
-	}
-	
-	protected PlainMdictAsset(mdict master, DataInputStream data_in, long _ReadOffset) throws IOException {
-		super(master, data_in, _ReadOffset);
+		super(fn, pseudoInit, buffer, tag, false);
 	}
 	//构造
 	

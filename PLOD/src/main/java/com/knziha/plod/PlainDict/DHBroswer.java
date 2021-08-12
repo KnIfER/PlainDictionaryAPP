@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import com.knziha.plod.dictionary.Utils.MyIntPair;
 
 import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
+import static db.LexicalDBHelper.TABLE_HISTORY_v2;
 
 public class DHBroswer extends DBroswer {
 	public DHBroswer(){
@@ -40,7 +41,7 @@ public class DHBroswer extends DBroswer {
 	protected void loadInAll(MainActivityUIBase a) {
 		CMN.Log("load in all!!!");
 		if (testDBV2) {
-			cr = mLexiDB.getDB().query("history", null,null,null,null,null,"last_visit_time desc");
+			cr = mLexiDB.getDB().query(TABLE_HISTORY_v2, null,null,null,null,null,"last_visit_time desc");
 		} else {
 			cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
 		}
@@ -82,7 +83,7 @@ public class DHBroswer extends DBroswer {
 			a.favoriteBtn.setActivated(false);
 			a.show(R.string.removed);
 		}else {//添加
-			a.favoriteCon.insert(text);
+			a.favoriteCon.insert(a, text);
 			a.favoriteBtn.setActivated(true);
 			a.show(R.string.added);
 		}

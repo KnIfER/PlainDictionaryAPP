@@ -2391,7 +2391,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return FileDatabases;
 	}
 	
-	public final static boolean testDBV2 = false;
+	public final static boolean testDBV2 = true;
 	
 	private String pathToFavoriteDatabases(String name) {
 		StringBuffer InternalPath = pathToMainFolder().append("INTERNAL/");

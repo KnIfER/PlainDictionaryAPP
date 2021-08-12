@@ -214,11 +214,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	@Override
 	void switch_dark_mode(boolean val) {
-		if(Build.VERSION.SDK_INT<29){
+		//if(Build.VERSION.SDK_INT<29){
 			GlobalOptions.isDark = false;
-		}else{
-			GlobalOptions.isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
-		}
+//		}else{
+//			GlobalOptions.isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
+//		}
 		opt.setInDarkMode(val);
 		changeToDarkMode();
 	}
@@ -272,7 +272,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				thisIntent = new Intent();
 			}
 			String act = thisIntent.getAction();
-			int reTarget = -1;
+			int reTarget = PLAIN_TARGET_FLOAT_SEARCH;
 			opt = new PDICMainAppOptions(this);
 			if ("colordict.intent.action.SEARCH".equals(act)) {
 				reTarget = opt.getColorDictTarget();
@@ -830,7 +830,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			}
 		}
 		if(keytmp!=null && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy7()){
-			prepareHistroyCon().insertUpdate(keytmp);
+			prepareHistroyCon().insertUpdate(this, keytmp);
 		}
 
 		if(fullScreen) {
@@ -1040,7 +1040,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					!PDICMainAppOptions.getHistoryStrategy0()
 					&& PDICMainAppOptions.getHistoryStrategy4()
 					&&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
-				prepareHistroyCon().insertUpdate(currentKeyText);
+				prepareHistroyCon().insertUpdate(FloatSearchActivity.this, currentKeyText);
 			}
 			if(userCLick) {
 				userCLick=false;
@@ -1181,7 +1181,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			if(PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 					&&combining_search_result.shouldSaveHistory()
 					&&userCLick||PDICMainAppOptions.getHistoryStrategy8()==0) {
-					prepareHistroyCon().insertUpdate(currentKeyText);
+					prepareHistroyCon().insertUpdate(FloatSearchActivity.this, currentKeyText);
 			}
 			if(userCLick) {
 				userCLick=false;
@@ -1277,7 +1277,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
             case R.id.toolbar_action4:
 				if(isLongClicked) break;
             	String keyword = etSearch.getText().toString().trim();
-            	if(prepareHistroyCon().insertUpdate(keyword)>0)
+            	if(prepareHistroyCon().insertUpdate(this, keyword)>0)
             		showT("已收藏！");
             break;
             case R.id.toolbar_action5:

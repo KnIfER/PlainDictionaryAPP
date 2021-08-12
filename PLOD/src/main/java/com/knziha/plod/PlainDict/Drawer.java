@@ -1048,11 +1048,11 @@ public class Drawer extends Fragment implements
 			} break;
 			/* 切换黑暗模式 */
 			case R.id.sw4:{
-				if(Build.VERSION.SDK_INT<29){
+				//if(Build.VERSION.SDK_INT<29){
 					GlobalOptions.isDark = false;
-				}else{
-					GlobalOptions.isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
-				}
+//				}else{
+//					GlobalOptions.isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
+//				}
 
 				a.opt.setInDarkMode(isChecked);
 				

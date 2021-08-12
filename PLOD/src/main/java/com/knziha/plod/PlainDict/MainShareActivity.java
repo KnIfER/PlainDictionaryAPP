@@ -11,7 +11,7 @@ import android.view.Window;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
 /**
- * Recreated by KnIfER on 2019
+ * Created by KnIfER on 2019
  */
 public class MainShareActivity extends Activity {
 	private String debugString;
@@ -35,30 +35,38 @@ public class MainShareActivity extends Activity {
 		if(thisIntent!=null) {
 			String action = thisIntent.getAction();
 			forceTarget = thisIntent.getIntExtra("force", -1);
-			if (forceTarget==-1)
-			if(action!=null && action.equals(Intent.ACTION_MAIN)) {
-				//CMN.Log("主程转发");
-				thisIntent.setClass(getBaseContext(),PDICMainActivity.class);
-				thisIntent.setFlags(SingleTaskFlags);
-				startActivity(thisIntent);
-				return;
-			}
-			if(action!=null && action.equals(Intent.ACTION_VIEW)) {
-				Uri url = thisIntent.getData();
-				if(url!=null) {
-					CMN.Log("ProcessIntent_url", url);
-					Intent newTask = new Intent(Intent.ACTION_MAIN);
-					newTask.setType(Intent.CATEGORY_DEFAULT);
-					newTask.putExtra(Intent.EXTRA_TEXT,debugString);
-					newTask.setClass(getBaseContext(),PDICMainActivity.class);
-					newTask.setFlags(SingleTaskFlags);
-					newTask.setData(url);
-					startActivity(newTask);
+			if (forceTarget==-1) {
+				if(action!=null && action.equals(Intent.ACTION_MAIN)) {
+					//CMN.Log("主程转发");
+					thisIntent.setClass(getBaseContext(),PDICMainActivity.class);
+					thisIntent.setFlags(SingleTaskFlags);
+					startActivity(thisIntent);
 					return;
+				}
+				if(action!=null && action.equals(Intent.ACTION_VIEW)) {
+					Uri url = thisIntent.getData();
+					if(url!=null) {
+						CMN.Log("ProcessIntent_url", url);
+						Intent newTask = new Intent(Intent.ACTION_MAIN);
+						newTask.setType(Intent.CATEGORY_DEFAULT);
+						newTask.putExtra(Intent.EXTRA_TEXT,debugString);
+						newTask.setClass(getBaseContext(),PDICMainActivity.class);
+						newTask.setFlags(SingleTaskFlags);
+						newTask.setData(url);
+						startActivity(newTask);
+						return;
+					}
 				}
 			}
 			debugString = thisIntent.getStringExtra(Intent.EXTRA_TEXT);
+			if (debugString==null) {
+				debugString = thisIntent.getStringExtra("EXTRA_QUERY");
+			}
+			if (debugString==null) {
+				debugString = thisIntent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
+			}
 		}
+		CMN.Log("force", forceTarget, debugString);
 		if(debugString!=null) {
 			PDICMainAppOptions opt = new PDICMainAppOptions(this);
 			opt.getSecondFlag();

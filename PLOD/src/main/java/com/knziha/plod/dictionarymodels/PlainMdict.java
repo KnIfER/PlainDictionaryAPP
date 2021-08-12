@@ -23,16 +23,9 @@ import java.util.concurrent.Executors;
 import static com.knziha.plod.plaindict.AgentApplication.BufferAllocatorInst;
 
 public class PlainMdict extends mdict {
-	public PlainMdict(String fn) throws IOException {
-		super(fn);
-	}
-	
-	public PlainMdict(File fn, int pseudoInit, StringBuilder buffer, Object tag) throws IOException {
+	public PlainMdict(File fn, int pseudoInit, StringBuilder buffer, Object tag, boolean isResourceFile) throws IOException {
 		super(fn, pseudoInit, buffer, tag);
-	}
-	
-	protected PlainMdict(mdict master, DataInputStream data_in, long _ReadOffset) throws IOException {
-		super(master, data_in, _ReadOffset);
+		this.isResourceFile = isResourceFile;
 	}
 	
 	protected byte[] AcquireCompressedBlockOfSize(int compressedSize) {
@@ -50,6 +43,7 @@ public class PlainMdict extends mdict {
 	
 	@Override
 	public String getRecordsAt(int... positions) throws IOException {
+		//CMN.Log(super.getRecordsAt(positions));
 		return positions[0]==-1? new StringBuilder(getAboutString())
 				.append("<BR>").append("<HR>")
 				.append(getDictInfo()).toString(): super.getRecordsAt(positions);

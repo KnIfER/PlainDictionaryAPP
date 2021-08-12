@@ -200,6 +200,11 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
+	public String getResourcePaths() {
+		return null;
+	}
+	
+	@Override
 	public String getVirtualTextValidateJs() {
 		return "";
 	}

@@ -38,7 +38,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
 		for(BookPresenter mdTmp:a.md) {
-			if(mdTmp!=null) // to impl
+			if(mdTmp!=null && mdTmp.bookImpl instanceof mdict) // to impl
 				((mdict)mdTmp.bookImpl).combining_search_list = new ArrayList<>();
 		}
 		additive_combining_search_tree.clear();
@@ -134,10 +134,11 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		additive_combining_search_tree = new RBTree_additive();
 		for(int i=0; i<md.size(); i++) {
 			BookPresenter mdTmp = md.get(i);
-			if(mdTmp!=null){ // to impl
+			if(mdTmp!=null && mdTmp.bookImpl instanceof mdict){ // to impl
 				ArrayList<myCpr<String, Integer>> combining_search_list = ((mdict)mdTmp.bookImpl).combining_search_list;
 				if(combining_search_list!=null) {
 					for (myCpr<String, Integer> dataI : combining_search_list) {
+						if(dataI!=null) // to check
 						additive_combining_search_tree.insert(dataI.key, i, dataI.value);
 					}
 				}

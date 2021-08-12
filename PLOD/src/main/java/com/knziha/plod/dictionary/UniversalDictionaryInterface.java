@@ -2,6 +2,8 @@ package com.knziha.plod.dictionary;
 
 import com.knziha.plod.dictionary.Utils.Flag;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,4 +57,6 @@ public interface UniversalDictionaryInterface {
 	
 	void flowerFindAllContents(String key, int selfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException;
 	void flowerFindAllKeys(String key, int SelfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException;
+	
+	String getResourcePaths();
 }

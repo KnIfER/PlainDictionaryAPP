@@ -17,6 +17,8 @@
 
 package com.knziha.plod.dictionary;
 
+import androidx.preference.CMN;
+
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.Utils.*;
 import com.knziha.rbtree.RBTree_additive;
@@ -698,6 +700,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 	/** Construct Logical Page For mdd resource file. */
 	private String constructLogicalPage(int...positions) {
+		CMN.Log("constructLogicalPage!!!");
 		StringBuilder LoPageBuilder = new StringBuilder();
 		LoPageBuilder.append(logicalPageHeader);
 		for(int i:positions) {
@@ -1879,7 +1882,23 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		fixedThreadPoolmy=null;
 		//System.gc();
 	}
-
+	
+	@Override
+	public String getResourcePaths() {
+		StringBuilder ret = new StringBuilder();
+		if (hasMdd()) {
+			if(mdd!=null)
+			for(mdictRes md:mdd) {
+				ret.append(md.getPath()).append("\n");
+			}
+			if(ftd!=null)
+			for(File fd:ftd) {
+				ret.append(fd.getPath()).append("\n");
+			}
+		}
+		return ret.toString();
+	}
+	
 	protected ExecutorService OpenThreadPool(int thread_number) {
 		if(parent!=null)
 			return parent.OpenThreadPool(thread_number);

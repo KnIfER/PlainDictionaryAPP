@@ -141,7 +141,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	   mConfiguration = new Configuration(mResource.getConfiguration());
 	   GlobalOptions.isLarge = (mConfiguration.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >=3 ;
 		//CMN.show("isLarge"+isLarge);
-	   if(Build.VERSION.SDK_INT>=29){
+	   if(Build.VERSION.SDK_INT>=29 && false){
 		   GlobalOptions.isDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
 	   } else {
 		   GlobalOptions.isDark = false;
