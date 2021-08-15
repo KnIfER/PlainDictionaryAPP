@@ -264,6 +264,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public final static int PLAIN_TARGET_APP_SEARCH = 1;
 	public final static int PLAIN_TARGET_APP_PERUSE = 2;
 	public final static int PLAIN_TARGET_FLOAT_SEARCH = 3;
+	public final static int PLAIN_TARGET_INPAGE_SEARCH = 4;
 	
 	/** @return integer: 0=paste_to_main_program <br/>
 	 * 2=paste_to_float_search_program<br/>
@@ -2202,8 +2203,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Multiline(flagPos=54) public void setRememberVSPanelGo(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	@Multiline(flagPos=55) public boolean getVSPanelGOTransient(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	@Multiline(flagPos=55) public void setVSPanelGOTransient(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=56) public boolean getPinDialog_2(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=56) public void setPinDialog_2(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=56, shift=1) public boolean getPinDialog_2(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=56, shift=1) public void setPinDialog_2(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
 	@Multiline(flagPos=57, shift=1) public boolean getPrvNxtDictSkipNoMatch(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
@@ -2250,7 +2251,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Multiline(flagPos=10, shift=1) public static boolean getAdjustScnShown(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 	@Multiline(flagPos=10, shift=1) public boolean toggleAdjustScnShown() { FifthFlag=FifthFlag; throw new IllegalArgumentException(); }
 	
-
+	
+	@Multiline(flagPos=11, shift=1) public static boolean checkVersionBefore_4_9() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=11, shift=1) public static void uncheckVersionBefore_4_9(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
 	
 	
 	//EF

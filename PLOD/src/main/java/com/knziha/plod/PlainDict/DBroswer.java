@@ -1387,10 +1387,7 @@ public class DBroswer extends Fragment implements
 						}
 						break;
 					}
-					if(a.this_instanceof_MultiShareActivity) {
-						show("未实现");
-					}
-					else if(bIsCombinedSearch) {
+					if(bIsCombinedSearch) {
 						queryAndShowMultipleDictionary(null, currentDisplaying, position, true);
 					}
 					else {

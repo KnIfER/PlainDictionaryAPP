@@ -159,6 +159,7 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEX
 import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
+import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
 
 /**
  * 主程序 - 单实例<br/>
@@ -650,28 +651,41 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	@Override
 	public void onBackPressed() {
+			//mainF.removeAllViews();
+			PostDCV_TweakTBIC();
+			super.onBackPressed();
+	}
+	
+	protected boolean PerFormBackPrevention() {
+		if (super.PerFormBackPrevention()) {
+			return true;
+		}
 		boolean bBackBtn = widget7.getTag()!=null;
 		if(bBackBtn) widget7.setTag(null);
 		if(!bBackBtn && checkWebSelection())
-			return;
+			return true;
 		if(removeBlack())
-			return;
+			return true;
 		cancleSnack();
 		if(dialogHolder.getVisibility()==View.VISIBLE) {
 			dialogHolder.setVisibility(View.GONE);
-			if(pickDictDialog!=null) if(pickDictDialog.isDirty)  {opt.putFirstFlag();pickDictDialog.isDirty=false;}
+			if(pickDictDialog!=null && pickDictDialog.isDirty)
+			{
+				opt.putFirstFlag();pickDictDialog.isDirty=false;
+			}
+			return true;
 		}
-		else if(ActivedAdapter!=null && contentview.getParent()!=null) {
+		if(ActivedAdapter!=null && contentview.getParent()!=null) {
 			/* 检查返回键倒退网页 */
 			if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn){
 				WebViewmy view = getCurrentWebContext();
 				if(view!=null && view.canGoBack()){
 					view.goBack();
-					return;
+					return true;
 				}
 			}
 			main_progress_bar.setVisibility(View.GONE);
-
+			
 			applyMainMenu();
 			
 			//iItem_InPageSearch.setVisible(!opt.getInPageSearchVisible()&&!opt.isContentBow());
@@ -679,7 +693,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			ActivedAdapter.SaveVOA();
 			adaptermy2.currentKeyText=null;
 			adaptermy.currentKeyText=null;
-			
+
 //			Utils.removeAllViews(webholder);
 //			Utils.removeAllViews(webSingleholder);
 			
@@ -700,22 +714,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(lastPos<lva.getFirstVisiblePosition() || lastPos>lva.getLastVisiblePosition())
 				lva.setSelection(lastPos);
 			ActivedAdapter=null;
-		}
-		else if(contentview.getParent()!=null){/* avoid stuck */
-			DetachContentView(true);
-		}
-		else {
-			//mainF.removeAllViews();
-			PostDCV_TweakTBIC();
-			super.onBackPressed();
-		}
-	}
-	
-	protected boolean PerFormBackPrevention() {
-		if (super.PerFormBackPrevention()) {
 			return true;
 		}
-		else if(mainF.getChildCount()==0 && !isContentViewAttached()){
+		if(contentview.getParent()!=null){/* avoid stuck */
+			DetachContentView(true);
+			return true;
+		}
+		if(mainF.getChildCount()==0 && !isContentViewAttached()){
 			if(UIData.drawerLayout.isDrawerOpen(GravityCompat.START)) {
 				UIData.drawerLayout.closeDrawer(GravityCompat.START);
 				return true;
@@ -1073,7 +1078,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		return CosyChair;
 	}
 
-	private void processIntent(Intent intent, boolean ainit) {
+	private void processIntent(Intent intent, boolean initialzie) {
 		if(intent !=null){
 			String action = intent.getAction();
 			if("lock".equals(action)) {
@@ -1099,12 +1104,21 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				CMN.Log("主程序-1", debugString, CMN.id(debugString), Intent.ACTION_MAIN.equals(action));
 				
 				//if(!bWantsSelection) bWantsSelection = intent.hasExtra(Intent.EXTRA_SHORTCUT_ID);
-				if(adaptermy2!=null && intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)){
-					adaptermy2.avoyager.remove(0);
-					//todo opt
-					if(contentview.getParent()!=null)
-						DetachContentView(true);
-					bIsFirstLaunch=true;
+				if (intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)) {
+					int forceTarget = intent.getIntExtra(Intent.EXTRA_SHORTCUT_ID, 0);
+					if (debugString!=null) {
+						if (forceTarget==PLAIN_TARGET_INPAGE_SEARCH) {
+							HandleLocateTextInPage(debugString);
+							return;
+						}
+					}
+					if(adaptermy2!=null){
+						adaptermy2.avoyager.remove(0);
+						//todo opt
+						if(contentview.getParent()!=null)
+							DetachContentView(true);
+						bIsFirstLaunch=true;
+					}
 				}
 			}
 		}

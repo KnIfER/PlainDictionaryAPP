@@ -44,6 +44,7 @@ import static com.knziha.plod.plaindict.PDICMainActivity.HdnCmfrt;
 import static com.knziha.plod.plaindict.PDICMainActivity.currMdlTime;
 import static com.knziha.plod.plaindict.PDICMainActivity.lastLoadedModule;
 import static com.knziha.plod.plaindict.PDICMainActivity.lazyLoaded;
+import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
 
 /** 主程序之影。复用词典实例。 */
 public class MultiShareActivity extends MainActivityUIBase {
@@ -54,7 +55,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	
 	@Override
 	public void onBackPressed() {
-		//super.onBackPressed();
 		if(!PerFormBackPrevention()) {
 			finishOrHide();
 		}
@@ -71,15 +71,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	protected void populateDictionaryList() {
 		super.populateDictionaryList();
-//		不了吧
-//		if(mainF==null) {
-//			contentview = (ViewGroup) ((ViewStub)findViewById(R.id.content)).inflate();
-//			webcontentlist = (SplitView) contentview;
-//			bottombar2 = webcontentlist.findViewById(R.id.bottombar2);
-//			PageSlider = webcontentlist.findViewById(R.id.PageSlider);
-//			findFurtherViews();
-//		}
-	
+		findFurtherViews();
 	}
 	
 	@Override
@@ -90,7 +82,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 		if(checkWebSelection()) {
 			return true;
 		}
-		if(contentview.getParent()!=null){
+		if(contentview!=null && contentview.getParent()!=null)
+		{
 			DetachContentView(true);
 			return true;
 		}
@@ -103,7 +96,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		receivable=
 		bridgedActivity=
 		this_instanceof_MultiShareActivity=true;
-		super.onCreate(null);
+		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main_share);
 		further_loading(savedInstanceState);
@@ -115,6 +108,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		}
 		
 		main = root = findViewById(R.id.root);
+		main_succinct = main;
 		mainF = main.findViewById(R.id.mainF);
 		main_progress_bar = main.findViewById(R.id.main_progress_bar);
 		
@@ -132,18 +126,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
 			super.findFurtherViews();
 		}
-	}
-	
-	@Override
-	protected void init_popup_view() {
-		findFurtherViews();
-		super.init_popup_view();
-	}
-	
-	@Override
-	com.knziha.plod.plaindict.PeruseView getPeruseView() {
-		findFurtherViews();
-		return super.getPeruseView();
 	}
 	
 	@Override
@@ -181,6 +163,18 @@ public class MultiShareActivity extends MainActivityUIBase {
 				TextView tv = ucc.d.findViewById(R.id.alertTitle);
 				tv.setText(debugString==null?"文本操作":debugString);
 			} catch (Exception ignored) {  }
+		}
+	}
+	
+	void HandleLocateTextInPage(String content) {
+		if(!PeruseViewAttached()/* && !Pop*/) {
+			startActivity(new Intent(Intent.ACTION_MAIN)
+					.setClass(this, MainShareActivity.class)
+					.putExtra("force", PLAIN_TARGET_INPAGE_SEARCH)
+					.putExtra(Intent.EXTRA_TEXT, debugString)
+			);
+		} else {
+			super.HandleLocateTextInPage(content);
 		}
 	}
 	

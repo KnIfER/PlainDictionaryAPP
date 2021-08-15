@@ -1215,7 +1215,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			prepareInPageSearch(content, true);
 		}
-		
 	}
 
 	void HandleSearch(String content) {
@@ -2419,7 +2418,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	protected void further_loading(Bundle savedInstanceState) {
 		super.further_loading(savedInstanceState);
-		VersionUtils.checkVersion();
+		VersionUtils.checkVersion(opt);
 		opt.fileToDatabases();
 		BookPresenter.def_zoom=dm.density;
 		BookPresenter.optimal100 = GlobalOptions.isLarge?150:125;
@@ -3711,7 +3710,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//boolean doCloseOnDiss=true;
 		String[] itemsA;
 		String[] itemsB;
-		String[] itemsC = new String[0];
+		String[] itemsEmpty = new String[0];
 		String[] itemsD;
 		String[] itemsE;
 		String bmAdd;
@@ -4497,14 +4496,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 			ListView dialogList;
-			CMN.Log("重建对话???");
+			CMN.Log("重建对话???", bFromWebView||bFromTextView);
 			if(GlobalOptions.isDark!=lastInDark || needReCreateUcc || d==null) {
 				CMN.Log("重建对话框…");
 				needRecreate=false;
 				d = new AlertDialog.Builder(MainActivityUIBase.this
 						,GlobalOptions.isDark?R.style.DialogStyle3Line
 						:R.style.DialogStyle4Line)
-						.setItems((bFromWebView||bFromTextView)?itemsC:itemsA,null)
+						.setItems((bFromWebView||bFromTextView)? itemsEmpty :itemsA,null)
 						.create();
 				bottomView = (ViewGroup) getLayoutInflater().inflate(R.layout.checker2, dialogList = d.getListView(), false);
 				
@@ -4513,7 +4512,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					int id=R.id.check2;
 					decorateCheckBox((CircleCheckBox) ((ViewStub)bottomView.findViewById(id)).inflate(), opt.getRememberVSPanelGo(), 1.25f).setId(id);
 					CircleCheckBox cb = decorateCheckBox((CircleCheckBox) ((ViewStub)bottomView.findViewById(id=R.id.check3)).inflate(), opt.getVSPanelGOTransient(), 2.5f);
-					cb.setDrawable(0, mResource.getDrawable(R.drawable.ic_exit_app));
+					cb.setDrawable(0, mResource.getDrawable(R.drawable.ic_exit_app).mutate());
 					cb.mHintSurrondingPad *= 0.15;
 					cb.mHintSurrondingPad/=2;
 					cb.setId(id);
@@ -4595,6 +4594,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				if(twoColumnView.getParent()!=dialogList){
 					dialogList.removeFooterView(bottomView);
+					dialogList.removeFooterView(twoColumnView);
 					dialogList.addFooterView(twoColumnView);
 					dialogList.addFooterView(bottomView);
 				}
@@ -4642,12 +4642,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			if(needRecreate && !needReCreateUcc) { /* dynamically change items! */
 				try {
-					ArrayAdapter<CharSequence> DialogArryAda = ((ArrayAdapter<CharSequence>) ((HeaderViewListAdapter) d.getListView().getAdapter()).getWrappedAdapter());
+					ArrayAdapter<CharSequence> dlgListAdapter = ((ArrayAdapter<CharSequence>) ((HeaderViewListAdapter) d.getListView().getAdapter()).getWrappedAdapter());
 					Field field = ArrayAdapter.class.getDeclaredField("mObjects");
 					field.setAccessible(true);
-					field.set(DialogArryAda, Arrays.asList((bFromWebView||bFromTextView) ? itemsC : itemsA));
-					DialogArryAda.notifyDataSetChanged();
-					//CMN.Log("列表动态更新成功！");
+					field.set(dlgListAdapter, Arrays.asList((bFromWebView||bFromTextView) ? itemsEmpty : itemsA));
+					dlgListAdapter.notifyDataSetChanged();
+					//dialogList.requestLayout();
+					//dialogList.setBackgroundColor(Color.BLUE);
+					//CMN.recurseLogCascade(d.getListView());
+					//CMN.Log("列表动态更新成功！", dialogList.getFooterViewsCount());
 					bLastFromWebView=bFromWebView||bFromTextView;
 				} catch (Exception e) {
 					needReCreateUcc = true;
@@ -5776,7 +5779,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.browser_widget10:
 			case R.id.browser_widget11:{//左zuo
 				int delta = (id==R.id.browser_widget10?-1:1);
-				if(ActivedAdapter==null) {
+				if(ActivedAdapter==null||isContentViewAttachedForDB()) {
 					if(DBrowser!=null) {
 						if(delta<0)DBrowser.goBack();
 						else DBrowser.goQiak();
