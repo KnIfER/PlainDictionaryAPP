@@ -141,4 +141,16 @@ public class MdictServerMobile extends MdictServer {
 		}
 		return mTifConfig;
 	}
+	
+	@Override
+	protected InputStream OpenMdbResourceByName(String key) throws IOException {
+		if ("\\MdbR\\subpage.html".equals(key)) {
+			try {
+				return a.getAssets().open("MdbR/subpage.html");
+			} catch (IOException e) {
+				CMN.Log(e);
+			}
+		}
+		return super.OpenMdbResourceByName(key);
+	}
 }

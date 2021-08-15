@@ -64,7 +64,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		boolean isCombinedSearching();
 		int getSendToShareTarget();
 	}
-	final Pattern nautyUrlRequest = Pattern.compile("src=(['\"])?(file://)?/");
+	final Pattern nautyUrlRequest = Pattern.compile("src=(['\"])?(file://?)?/");
 	final String SepWindows = "\\";
 	final AppOptions opt;
 	
@@ -468,120 +468,128 @@ public abstract class MdictServer extends NanoHTTPD {
 	 var postInit;
 	 if(false)
 	 if(window.addEventListener){
-	 window.addEventListener('load',wrappedOnLoadFunc,false);
-	 window.addEventListener('click',wrappedClickFunc);
+		 window.addEventListener('load',wrappedOnLoadFunc,false);
+		 window.addEventListener('click',wrappedClickFunc);
 	 }else if(window.attachEvent){ //ie
-	 window.addEventListener('onload',wrappedOnLoadFunc);
-	 window.addEventListener('onclick',wrappedClickFunc);
+		 window.addEventListener('onload',wrappedOnLoadFunc);
+		 window.addEventListener('onclick',wrappedClickFunc);
 	 }else{
-	 window.onload=wrappedOnLoadFunction;
-	 window.onclick=wrappedClickFunc;
+		 window.onload=wrappedOnLoadFunction;
+		 window.onclick=wrappedClickFunc;
 	 }
-	 function wrappedOnLoadFunc(){
-	 document.getElementById('view1').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no');
-	 if(postInit) postInit();
+	 function wrappedOnLoadFunc() {
+	 	document.getElementById('view1').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no');
+	 	if(postInit) postInit();
+		var imgs = document.getElementsByTagName('IMG');
+	 	console.log("onload", imgs);
+		for(var i=0;i<imgs.length;i++){
+			if(imgs[i].src.startsWith("file://"))
+	 			imgs[i].src = imgs[i].src.substring(7);
+			if(imgs[i].src.startsWith("/"))
+	 			imgs[i].src = imgs[i].src.substring(1);
+		}
 	 }
-	 
+
 	 var audio;
 	 var regHttp=new RegExp("^https?://");
 	 var regEntry=new RegExp("^entry://");
 	 var regPdf=new RegExp("^pdf://");
 	 var regSound=new RegExp("^sound://");
-	 
+
 	 function hiPlaySound(e){
-	 var cur=e.ur1?e:e.srcElement;
-	 //console.log("hijacked sound playing : "+cur.ur1);
-	 if(audio)
-	 audio.pause();
-	 else
-	 audio = new Audio();
-	 audio.src = cur.ur1;
-	 audio.play();
+		 var cur=e.ur1?e:e.srcElement;
+		 //console.log("hijacked sound playing : "+cur.ur1);
+		 if(audio)
+		 audio.pause();
+		 else
+		 audio = new Audio();
+		 audio.src = cur.ur1;
+		 audio.play();
 	 }
-	 
+
 	 function loadVI(pos){
-	 console.log('loadVI/'+pos);
-	 var req=new XMLHttpRequest();
-	 req.open('GET','/VI/'+pos);
-	 req.responseType='json';
-	 req.onreadystatechange=function(e) {
-	 if(req.readyState == 4 && req.status==200) {
-	 console.log(req.responseText);
+		 console.log('loadVI/'+pos);
+		 var req=new XMLHttpRequest();
+		 req.open('GET','/VI/'+pos);
+		 req.responseType='json';
+		 req.onreadystatechange=function(e) {
+		 if(req.readyState == 4 && req.status==200) {
+		 console.log(req.responseText);
 	 }
 	 }
 	 }
-	 
+
 	 function wrappedClickFunc(e){
-	 var cur=e.srcElement;
-	 if(cur.href){
-	 //console.log("1! found link : "+cur.href+" : "+regSound.test(cur.href));
-	 if(regEntry.test(cur.href))
-	 cur.href="entry/"+cur.href.substring(8);
-	 else if(regSound.test(cur.href)){//拦截 sound 连接
-	 var link="sound/"+cur.href.substring(8);
-	 cur.href=link;
-	 if(cur.onclick==undefined){
-	 //console.log("1! found internal sound link : "+cur.href);
-	 cur.ur1=cur.href;
-	 cur.removeAttribute("href");
-	 cur.onclick=hiPlaySound;
-	 hiPlaySound(cur);
-	 return false;
-	 }
-	 }
-	 }
-	 else if(cur.src && regEntry.test(cur.src)){
-	 console.log("2! found link : "+cur.src);
-	 return false;
-	 }
-	 else if(false && e.srcElement!=document.documentElement){ // immunize blank area out of body ( in html )
-	 //console.log(e.srcElement+'')
-	 //console.log(e)
-	 var s = window.getSelection();
-	 if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
-	 s.modify('extend', 'forward', 'word'); // first attempt
-	 var an=s.anchorNode;
-	 //console.log(s.anchorNode); console.log(s);
-	 //if(true) return;
-	 
-	 if(s.baseNode != document.body) {// immunize blank area
-	 var text=s.toString(); // for word made up of just one character
-	 var range = s.getRangeAt(0);
-	 
-	 s.collapseToStart();
-	 s.modify('extend', 'forward', 'lineboundary');
-	 
-	 if(s.toString().length>=text.length){
-	 s.empty();
-	 s.addRange(range);
-	 
-	 s.modify('move', 'backward', 'word'); // could be next line
-	 s.modify('extend', 'forward', 'word');
-	 
-	 if(s.getRangeAt(0).endContainer===range.endContainer&&s.getRangeAt(0).endOffset===range.endOffset){
-	 // 字未央
-	 text=s.toString();
-	 }
-	 
-	 console.log(text); // final output
-	 }
-	 }
-	 //s.collapseToStart();
-	 return false;
-	 }
-	 }
-	 return true;
+		 var cur=e.srcElement;
+		 if(cur.href){
+			 //console.log("1! found link : "+cur.href+" : "+regSound.test(cur.href));
+			 if(regEntry.test(cur.href))
+			 cur.href="entry/"+cur.href.substring(8);
+			 else if(regSound.test(cur.href)){//拦截 sound 连接
+				 var link="sound/"+cur.href.substring(8);
+				 cur.href=link;
+				 if(cur.onclick==undefined){
+					 //console.log("1! found internal sound link : "+cur.href);
+					 cur.ur1=cur.href;
+					 cur.removeAttribute("href");
+					 cur.onclick=hiPlaySound;
+					 hiPlaySound(cur);
+					 return false;
+				 }
+			 }
+		 }
+		 else if(cur.src && regEntry.test(cur.src)){
+			 console.log("2! found link : "+cur.src);
+			 return false;
+		 }
+		 else if(false && e.srcElement!=document.documentElement){ // immunize blank area out of body ( in html )
+			 //console.log(e.srcElement+'')
+			 //console.log(e)
+			 var s = window.getSelection();
+			 if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
+				 s.modify('extend', 'forward', 'word'); // first attempt
+				 var an=s.anchorNode;
+				 //console.log(s.anchorNode); console.log(s);
+				 //if(true) return;
+			
+				 if(s.baseNode != document.body) {// immunize blank area
+					 var text=s.toString(); // for word made up of just one character
+					 var range = s.getRangeAt(0);
+				
+					 s.collapseToStart();
+					 s.modify('extend', 'forward', 'lineboundary');
+				
+					 if(s.toString().length>=text.length){
+						 s.empty();
+						 s.addRange(range);
+				
+						 s.modify('move', 'backward', 'word'); // could be next line
+						 s.modify('extend', 'forward', 'word');
+					
+						 if(s.getRangeAt(0).endContainer===range.endContainer&&s.getRangeAt(0).endOffset===range.endOffset){
+							 // 字未央
+							 text=s.toString();
+						 }
+				
+						console.log(text); // final output
+					}
+				 }
+				 //s.collapseToStart();
+				 return false;
+			 }
+		 }
+		 return true;
 	 };
 	 </script>
-	 
+
 	 <base href='/base/*/
 	@Multiline(trim = false)
-	String SimplestInjection="SimplestInj easdas  glaofssssssdsactionasdasd";
+	String SimplestInjection=StringUtils.EMPTY;
 	/** /'/>
 	 <base target="_self" />
 	 */
 	@Multiline(trim=false)
-	String SimplestInjectionEnd="SimplestInsjectionEnd";
+	String SimplestInjectionEnd=StringUtils.EMPTY;
 	
 	int MdPageBaseLen=-1;
 	String MdPage_fragment1,MdPage_fragment2, MdPage_fragment3="</html>";

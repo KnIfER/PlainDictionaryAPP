@@ -76,12 +76,14 @@ function hiPlaySound(e){
 }
 
 function wrappedClickFunc(e){
+	console.log('fatal wrappedClickFunc', e);
 	//if(1)return;
 	parent.window.dismiss_menu();
 	var cur=e.srcElement;
 	parent.dismiss_menu();
+	if(!cur.href && cur.parentElement) cur = cur.parentElement;
 	if(cur.href){
-		console.log("1! found link : "+cur.href+" : "+regSound.test(cur.href));
+		//console.log("1! found link : "+cur.href+" : "+regSound.test(cur.href));
 		var getRawLink=cur.href;
 		var patt1 = /\/base\/[0-9]*\/(#.*)/;
 		var m = getRawLink.match(patt1);

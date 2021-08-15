@@ -793,7 +793,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					if(key.equals(getEntryAt(idx+offset)))
 						idx+=offset;
 				}
-				tmp=getRecordAt(idx);
+				if (idx!=position)
+					tmp=getRecordAt(idx);
 			}
 		}
 		return tmp;

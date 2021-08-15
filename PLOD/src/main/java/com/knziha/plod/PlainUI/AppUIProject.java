@@ -48,6 +48,7 @@ public class AppUIProject {
 			R.drawable.ic_swich_landscape_orientation,//24
 			R.drawable.ic_options_toolbox,//25
 			R.drawable.customize_bars,//26
+			R.drawable.ic_keyboard_show_24,
 	};
 	
 	public int type=-1;

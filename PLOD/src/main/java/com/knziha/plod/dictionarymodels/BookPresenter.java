@@ -194,7 +194,7 @@ public class BookPresenter
 	 		w._touchtarget_lck=!1;
 		}
 	 	function wrappedClickFunc(e){
-	 		//console.log('fatal wrappedClickFunc');
+	 		//console.log('fatal wrappedClickFunc', e);
 	 		var curr=e.srcElement;
 	 		if(w.webx){
 				if(curr.tagName=='IMG'){

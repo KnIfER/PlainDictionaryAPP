@@ -77,6 +77,7 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
@@ -5450,6 +5451,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					DetachContentView(true);
 				}
 			} break;
+			case R.drawable.ic_keyboard_show_24: {
+				etSearch.setSelectAllOnFocus(true);
+				etSearch.requestFocus();
+				imm.showSoftInput(etSearch, 0);
+				etSearch.setSelectAllOnFocus(false);
+				//imm.showin(InputMethodManager.SHOW_FORCED, 0);
+			} break;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
 				if(isCombinedSearching) {
@@ -9356,7 +9364,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	//定制工具条
-	public ImageView[] ContentbarBtns = new ImageView[20];
+	public ImageView[] ContentbarBtns = new ImageView[ContentbarBtnIcons.length];
 	public AppUIProject contentbar_project;
 	public AppUIProject peruseview_project;
 	

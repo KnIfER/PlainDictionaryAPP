@@ -230,6 +230,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			R.drawable.ic_options_toolbox,
 			R.drawable.book_bundle2,
 			R.drawable.ic_settings_black_24dp,
+			R.drawable.ic_keyboard_show_24,
 	};
 	public final ImageView[] BottombarBtns = new ImageView[BottombarBtnIcons.length];
 	
@@ -1638,8 +1639,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		checkMargin(this);
 
-		if(opt.getInPageSearchVisible())
-			toggleInPageSearch(false);
+		//if(opt.getInPageSearchVisible())
+		//	toggleInPageSearch(false);
 
 		if(opt.getBottomNavigationMode()==1)
 			setBottomNavigationType(1, null);
