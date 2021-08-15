@@ -18,6 +18,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String TABLE_BOOK_v2 = "book";
 	public static final String TABLE_BOOKMARK_v2 = "bookmark";
 	public static final String TABLE_FAVORITE_v2 = "favorite";
+	public static final String TABLE_FAVORITE_FOLDER_v2 = "favfolder";
 	
     public final String DATABASE;
 	public boolean lastAdded;
@@ -87,6 +88,19 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			db.execSQL("CREATE INDEX if not exists book_name_index ON book (name)");
 			
 			
+			// TABLE_FAVORITE_FOLDER_v2
+			sqlBuilder = "create table if not exists " +
+					TABLE_FAVORITE_FOLDER_v2 +
+					"(" +
+					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
+					", lex LONGVARCHAR" +
+					", miaoshu TEXT"+
+					", creation_time INTEGER NOT NULL"+
+					")";
+			db.execSQL(sqlBuilder);
+			db.execSQL("CREATE INDEX if not exists favfolder_index ON favfolder (lex)");
+			
+			
 			// TABLE_FAVORITE_v2
 			sqlBuilder = "create table if not exists " +
 					TABLE_FAVORITE_v2 +
@@ -151,6 +165,10 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
     @Override
     public void onOpen(SQLiteDatabase db) {
         db.setVersion(oldVersion);
+	
+		if (testDBV2) {
+			//onCreate(db);
+		}
     }
 
     /////
@@ -193,17 +211,22 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			int count=-1;
 			try {
 				long id=-1;
-				
+				long NID = a.opt.getCurrFavoriteNoteBookId();
 				String books = null;
 				String[] where = new String[]{lex};
 				boolean insertNew=true;
 				Cursor c = database.rawQuery("select id,visit_count,books from favorite where lex = ? ", where);
-				if(c.moveToFirst()) {
-					insertNew = false;
+				
+				while(c.moveToFirst()) {
 					id = c.getLong(0);
-					count = c.getInt(1);
-					books = c.getString(2);
+					if (id==NID) {
+						insertNew = false;
+						count = c.getInt(1);
+						books = c.getString(2);
+						break;
+					}
 				}
+				
 				c.close();
 				
 				ContentValues values = new ContentValues();
@@ -212,15 +235,15 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				values.put("books", a.collectDisplayingBooks(books));
 				
 				values.put("visit_count", ++count);
+				
 				long now = CMN.now();
 				values.put("last_visit_time", now);
+				
 				if(insertNew) {
+					values.put("folder", NID);
 					values.put("creation_time", now);
 					id = database.insert(TABLE_FAVORITE_v2, null, values);
 				} else {
-					//values.put("id", id);
-					//database.update(TABLE_URLS, values, "url=?", where);
-					//database.insertWithOnConflict(TABLE_URLS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
 					where[0]=""+id;
 					database.update(TABLE_FAVORITE_v2, values, "id=?", where);
 				}
@@ -238,7 +261,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	}
 
 	public int remove(String id) {
-		return database.delete(TABLE_MARKS, Key_ID + " = ? ", new String[]{id});
+		if (testDBV2) {
+			return database.delete(TABLE_FAVORITE_v2, Key_ID + " = ? ", new String[]{id});
+		} else {
+			return database.delete(TABLE_MARKS, Key_ID + " = ? ", new String[]{id});
+		}
 	}
 
 	public void refresh() {
@@ -248,12 +275,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	public void updateHistoryTerm (MainActivityUIBase a, String lex) {
+	public long updateHistoryTerm (MainActivityUIBase a, String lex) {
 		CMN.rt();
 		int count=-1;
+		long id=-1;
 		try {
-			long id=-1;
-			
 			String books = null;
 			String[] where = new String[]{lex};
 			boolean insertNew=true;
@@ -276,7 +302,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			values.put("last_visit_time", now);
 			if(insertNew) {
 				values.put("creation_time", now);
-				database.insert(TABLE_HISTORY_v2, null, values);
+				id = database.insert(TABLE_HISTORY_v2, null, values);
 			} else {
 				//values.put("id", id);
 				//database.update(TABLE_URLS, values, "url=?", where);
@@ -288,6 +314,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			CMN.Log(e);
 		}
 		CMN.pt("历史插入时间：");
+		return id;
 	}
 	
 	public int bookMarkToggle (long bid, int pos) {
@@ -382,6 +409,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	}
 
 	public long insertUpdate(MainActivityUIBase a, String lex) {
+    	if (testDBV2) {
+			return updateHistoryTerm(a, lex);
+		}
     	CMN.Log("insertUpdate");
 		lastAdded=true;
 		long ret=-1;
@@ -445,5 +475,21 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 
 	public boolean wipeData() {
 		return database.delete(TABLE_MARKS, null, null)>0;
+	}
+	
+	public long newFavFolder(String name) {
+		ContentValues contentValues = new ContentValues();
+		contentValues.put("lex", name);
+		contentValues.put("creation_time", CMN.now());
+		return database.insert(TABLE_FAVORITE_FOLDER_v2, null, contentValues);
+	}
+	
+	public String getFavoriteNoteBookNameById(long NID) {
+		try {
+			Cursor cursor = database.rawQuery("select lex from favfolder where id=?", new String[]{""+NID});
+			return cursor.getString(0);
+		} catch (Exception e) {
+			return "默认收藏夹";
+		}
 	}
 }

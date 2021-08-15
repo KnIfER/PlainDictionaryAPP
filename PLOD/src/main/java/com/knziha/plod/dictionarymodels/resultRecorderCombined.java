@@ -171,6 +171,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			if (toFind<0) {
 				try {
 					mdtmp = a.getDictionaryById(-toFind);
+					toFind = Integer.MAX_VALUE;
 				} catch (IOException ignored) { }
 			}
 			

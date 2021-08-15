@@ -156,6 +156,7 @@
 		</LinearLayout>
 
 		<include
+			android:id="@+id/contentview"
 			android:visibility="gone"
 			layout="@layout/contentview"
 			app:layout_behavior="@string/appbar_scrolling_view_behavior"

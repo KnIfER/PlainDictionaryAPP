@@ -108,6 +108,7 @@ import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
+import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
@@ -158,7 +159,6 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEX
 import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
-import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
 
 /**
  * 主程序 - 单实例<br/>
@@ -661,44 +661,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			dialogHolder.setVisibility(View.GONE);
 			if(pickDictDialog!=null) if(pickDictDialog.isDirty)  {opt.putFirstFlag();pickDictDialog.isDirty=false;}
 		}
-		else if(DetachClickTranslator()){
-		}
-		else if(settingsPanel!=null) {
-			hideSettingsPanel();
-		}
-		else if(!AutoBrowsePaused || bRequestingAutoReading){
-			stopAutoReadProcess();
-		}
-		else if(mainF.getChildCount()==0 && !isContentViewAttached()){//
-			if(UIData.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-				UIData.drawerLayout.closeDrawer(GravityCompat.START);
-				return;
-			}
-			boolean b1=PDICMainAppOptions.getBackToHomePage();
-			if(!b1||PDICMainAppOptions.getBackToHomePagePreventBack()) {
-				int BackPrevention = PDICMainAppOptions.getBackPrevention();
-				switch (BackPrevention) {
-					default: break;
-					case 1:
-					case 2:
-						if ((System.currentTimeMillis() - exitTime) > 2000) {
-							if (BackPrevention == 1) showTopSnack(R.string.warn_exit);
-							else showX(R.string.warn_exit, 0);
-							exitTime = System.currentTimeMillis();
-							return;
-						}
-					break;
-					case 3:
-						showAppExit(false);
-					return;
-				}
-			}
-			if(b1) moveTaskToBack(true);
-			else /*finish();*/ super.onBackPressed();
-		}
-		else if(DBrowser != null){
-			DetachDBrowser();
-		}
 		else if(ActivedAdapter!=null && contentview.getParent()!=null) {
 			/* 检查返回键倒退网页 */
 			if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn){
@@ -742,10 +704,47 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		else if(contentview.getParent()!=null){/* avoid stuck */
 			DetachContentView(true);
 		}
-		else{
+		else {
 			//mainF.removeAllViews();
 			PostDCV_TweakTBIC();
+			super.onBackPressed();
 		}
+	}
+	
+	protected boolean PerFormBackPrevention() {
+		if (super.PerFormBackPrevention()) {
+			return true;
+		}
+		else if(mainF.getChildCount()==0 && !isContentViewAttached()){
+			if(UIData.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+				UIData.drawerLayout.closeDrawer(GravityCompat.START);
+				return true;
+			}
+			boolean b1=PDICMainAppOptions.getBackToHomePage();
+			if(!b1||PDICMainAppOptions.getBackToHomePagePreventBack()) {
+				int BackPrevention = PDICMainAppOptions.getBackPrevention();
+				switch (BackPrevention) {
+					default: break;
+					case 1:
+					case 2:
+						if ((System.currentTimeMillis() - exitTime) > 2000) {
+							if (BackPrevention == 1) showTopSnack(R.string.warn_exit);
+							else showX(R.string.warn_exit, 0);
+							exitTime = System.currentTimeMillis();
+							return true;
+						}
+						break;
+					case 3:
+						showAppExit(false);
+						return true;
+				}
+			}
+			if(b1) {
+				moveTaskToBack(true);
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private void PostDCV_TweakTBIC() {
@@ -914,32 +913,24 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		toolbar = UIData.toolbar;
 		
 		main_succinct = UIData.mainframe;  //
-		main_content_succinct = main_succinct.findViewById(R.id.main);
+		main_content_succinct = UIData.main;
 		bottombar = UIData.bottombar;
-		contentview = (ViewGroup) UIData.webcoord.getChildAt(3);
 		
-		Objects.requireNonNull(contentview);
+		contentUIData = UIData.contentview;
 		
-		snack_holder = (ViewGroup) root.getChildAt(1);
-		mainF = (ViewGroup) root.getChildAt(2);
-		second_holder = (ViewGroup) root.getChildAt(3);
-		main_progress_bar = (ProgressBar) root.getChildAt(4);
-		dialogHolder = (ViewGroup) root.getChildAt(5);
+		snack_holder = UIData.snackHolder;
+		mainF = UIData.mainF;
+		main_progress_bar = UIData.mainProgressBar;
+		dialogHolder = UIData.dialogHolder;
 		mlv = (ViewGroup) root.getChildAt(6);
-		lv = mlv.findViewById(R.id.main_list);
-		lv2 = mlv.findViewById(R.id.sub_list);
-		mlv1 = mlv.findViewById(R.id.sub_list1);
-		mlv2 = mlv.findViewById(R.id.sub_list2);
+		lv = UIData.mainList;
+		lv2 = UIData.subList;
+		mlv1 = UIData.subList1;
+		mlv2 = UIData.subList2;
 		
-		dialog_ = (ViewGroup) dialogHolder.getChildAt(3);
-		
-		webcontentlist = contentview.findViewById(R.id.webcontentlister);
-		PageSlider = webcontentlist.findViewById(R.id.PageSlider);
-		
-		bottombar2 = (ViewGroup) contentview.getChildAt(1);
 		main = root;
 		
-		root.removeViewAt(6);
+		Utils.removeView(mlv);
 		mlv.removeViews(2, 2);
 		
 		toolbar.setId(R.id.action_context_bar);
@@ -955,11 +946,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		ResizeNavigationIcon(toolbar);
 		
-		Object[] cbFetcher = new Object[]{R.id.cb1, R.id.cb2, R.id.cb3};
-		Utils.setOnClickListenersOneDepth(dialogHolder, this, 1, 0, cbFetcher);
-		cb1 = (View) cbFetcher[0];
-		((CheckableImageView) cbFetcher[1]).setChecked(opt.getPinPicDictDialog());
-		((CheckableImageView) cbFetcher[2]).setChecked(opt.getPicDictAutoSer());
+		Utils.setOnClickListenersOneDepth(dialogHolder, this, 1, 0, null);
+		cb1 = UIData.cb1;
+		UIData.cb2.setChecked(opt.getPinPicDictDialog());
+		UIData.cb3.setChecked(opt.getPicDictAutoSer());
 
 		hdl = mHandle = new MyHandler(this);
 		
@@ -1047,6 +1037,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			items[i] = (MenuItemImpl) AllMenus.getItem(numbers[i]);
 		}
 		return Arrays.asList(items);
+	}
+	
+	@Override
+	protected void findFurtherViews() {
+		// todo
+		findViewById(R.id.toolbar_action1).setOnClickListener(this);
+		ivDeleteText = UIData.ivDeleteText;
+		ivBack = UIData.ivBack;
+		UIData.pad.setOnClickListener(Utils.DummyOnClick);
+		etSearch = UIData.etSearch;
+		
+		super.findFurtherViews();
 	}
 	
 	void onDrawerOpened() {
@@ -1754,14 +1756,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			littleIdeal = Math.min(dm.widthPixels, Math.max(realWidth, (int)res.getDimension(R.dimen.idealdpdp))*55/45);
 			factor=2;
 		}
-		MarginLayoutParams mlarp = (MarginLayoutParams) dialog_.getLayoutParams();
+		MarginLayoutParams mlarp = (MarginLayoutParams) UIData.dialog.getLayoutParams();
 		int[] margins;
-		if(dialog_.getTag()==null) {
-			dialog_.setTag(margins=new int[2]);
+		if(UIData.dialog.getTag()==null) {
+			UIData.dialog.setTag(margins=new int[2]);
 			margins[0] = mlarp.topMargin;
 			margins[1] = mlarp.bottomMargin;
 		} else {
-			margins = (int[]) dialog_.getTag();
+			margins = (int[]) UIData.dialog.getTag();
 		}
 		mlarp.width = littleIdeal - (int) (2 * res.getDimension(R.dimen._28_) + GlobalOptions.density * 15);
 		mlarp.topMargin=margins[0]/factor;
@@ -2365,13 +2367,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		toolbar.setBackgroundColor(filteredColor);
 
 		if(!isHalo) {
-			dialog_.setBackgroundResource(R.drawable.popup_shadow_l);
-			dialog_.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+			UIData.dialog.setBackgroundResource(R.drawable.popup_shadow_l);
+			UIData.dialog.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 			MarginLayoutParams lp = (MarginLayoutParams) cb1.getLayoutParams();
 			lp.topMargin=(int) (13*dm.density);
 			cb1.setLayoutParams(lp);
 		}else {
-			dialog_.setBackgroundResource(R.drawable.popup_background3);
+			UIData.dialog.setBackgroundResource(R.drawable.popup_background3);
 			MarginLayoutParams lp = (MarginLayoutParams) cb1.getLayoutParams();
 			lp.topMargin=(int) (10*dm.density);
 			cb1.setLayoutParams(lp);
@@ -3094,10 +3096,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					pickDictDialog.notifyDataSetChanged();
 				}
 			} break;
-			case R.drawable.ic_exit_app:{
-				v.getBackground().jumpToCurrentState();
-				moveTaskToBack(false);
-			} break;
 			case R.id.settings:{
 
 			} break;
@@ -3126,9 +3124,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 				}
 			} break;
-			case R.drawable.ic_menu_24dp:{
-				showMenuGrid();
-			}
 		}
 	}
 	
@@ -3317,6 +3312,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	void DetachContentView(boolean leaving) {
 		CMN.Log("DetachContentView");
 		delayedAttaching=false;
+		applyMainMenu();
 //		if(DBrowser!=null){
 //			AttachContentView();
 //		} else {
@@ -3356,16 +3352,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	@Override
-	public boolean isContentViewAttachedForDB() {
-		CMN.Log("isContentViewAttachedForDB", contentview.getParent());
-		return Utils.ViewIsId((View) contentview.getParent(), R.id.second_holder);
-	}
-	
-	@Override
 	public void AttachContentViewForDB() {
 		//todo preserve context
 		CMN.Log("AttachContentViewForDB");
-		if(Utils.addViewToParent(contentview, second_holder)){
+		if(Utils.addViewToParent(contentview, PeruseViewAttached()?
+				PeruseView.peruseF
+				:UIData.secondHolder
+				)){
 			PlaceContentBottombar(false);
 		}
 //		DBrowser.getView().setAlpha(0.01f);
@@ -4048,7 +4041,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		svp.getLocationInWindow(vLocation);
 		int topY = vLocation[1];
 		//showT(UIData.webcoord.getHeight() +" = "+ UIData.bottombar.getHeight());
-		int h = svp.getHeight() - (isContentViewAttached()?bottombar2:UIData.bottombar).getHeight();
+		int h = svp.getHeight() - app_panel_bottombar_height;
 		//if (UIData.appbar.getTop()==0)
 		//{
 		//	int h1 = etSearch.getHeight();
@@ -4060,7 +4053,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if (pop.isShowing()) {
 			pop.update(0, topY, -1, h);
 		} else {
-			pop.showAtLocation(root, Gravity.TOP, 0, topY);
+			pop.showAtLocation(PeruseViewAttached()?PeruseView.root:root, Gravity.TOP, 0, topY);
 		}
 	}
 }

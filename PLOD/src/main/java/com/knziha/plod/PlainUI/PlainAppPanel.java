@@ -17,7 +17,7 @@ public class PlainAppPanel extends SettingsPanel {
 	protected boolean showPopOnAppbar = true;
 	
 	public PlainAppPanel(MainActivityUIBase a) {
-		super(a, a.root, a.bottombar.getHeight()/2, a.opt, a);
+		super(a, a.root, a.app_panel_bottombar_height/2, a.opt, a);
 		this.a = a;
 		if (!showInPopWindow) {
 			Utils.embedViewInCoordinatorLayout(settingsLayout, !showPopOnAppbar);

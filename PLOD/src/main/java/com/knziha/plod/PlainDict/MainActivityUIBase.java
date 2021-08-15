@@ -105,6 +105,7 @@ import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertController;
@@ -160,6 +161,7 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.ebook.Utils.BU;
+import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.SettingsActivity;
@@ -328,14 +330,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public String CombinedSearchTask_lastKey;
 	public HashMap<CharSequence,byte[]> UIProjects;
 	public HashSet<CharSequence> dirtyMap;
-
+	
+	public ContentviewBinding contentUIData;
+	
 	public Drawer drawerFragment;
 	public DictPicker pickDictDialog;
 	public int GlobalPageBackground=-1;
 	public DragScrollBar mBar;
-	private FrameLayout.LayoutParams mBar_layoutParmas;
+	protected FrameLayout.LayoutParams mBar_layoutParmas;
 	public ViewGroup main;
-	public ViewGroup second_holder;
 	public ViewGroup mainF;
 	public ViewGroup webholder;
 	public ScrollViewmy WHP;
@@ -372,7 +375,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public ArrayList<BookPresenter> md = new ArrayList<>();//Collections.synchronizedList(new ArrayList<mdict>());
 
 	public Dialog taskd;
-	DArrayAdapter AppDataAdapter;
+	DArrayAdapter AppFunAdapter;
 	BufferedWriter output;
 	BufferedWriter output2;
 	public final static String ce_on="document.body.contentEditable=!0";
@@ -382,19 +385,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	/** Use a a filename-directory map to keep a record of lost files so that users could add them back without the need of restore every specific directory.  */
 	HashMap<String,String> checker;
 
-	ImageView favoriteBtn;
 
 	SplitView webcontentlist;
 	protected IMPageSlider IMPageCover;
 	public PeruseView PeruseView;
 	public ViewGroup bottombar2;
 	public ViewGroup bottombar;
-
+	
+	ImageView favoriteBtn;
 	public ImageView widget7;
 	public ImageView widget10;
 	public ImageView widget11;
 	public ImageView widget12;
-
 
 	public boolean bRequestedCleanSearch;
 	public boolean bWantsSelection;
@@ -500,6 +502,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int mActionModeHeight;
 	private int[] LocationFetcher = new int[2];
 	private Runnable mFeetHeightScalerRunnable;
+	
+	public int app_panel_bottombar_height;
 	
 	//xo
 	public String LastPlanName = "LastPlanName";
@@ -655,7 +659,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			currentDictionary = md_get(adapter_idx=i);
 			bShowLoadErr=bShowErr;
 			
-			if (invalidate) {
+			if (invalidate && adaptermy!=null) {
 				adaptermy.notifyDataSetChanged();
 				postPutName(550);
 				if (currentDictionary != null) {
@@ -1723,7 +1727,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	private void init_popup_view() {
+	protected void init_popup_view() {
 		if (popupWebView == null) {
 			popupContentView = (ViewGroup) getLayoutInflater()
 					.inflate(R.layout.float_contentview_basic, root, false);
@@ -1972,7 +1976,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void notifyDictionaryDatabaseChanged(BookPresenter mdx) {
-		if(currentDictionary==mdx){
+		if(currentDictionary==mdx && adaptermy!=null){
 			lv.post(new Runnable() {
 				@Override
 				public void run() {
@@ -2725,39 +2729,31 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		findFurtherViews();
 		
-		findViewById(R.id.toolbar_action1).setOnClickListener(this);
 		toolbar.setOnMenuItemClickListener(this);
-		
-		TypedValue typedValue = new TypedValue();
-		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
-		actionBarSize = TypedValue.complexToDimensionPixelSize(typedValue.data, dm);
-		if(actionBarSize<=0) actionBarSize=(int) (56*dm.density);
-
-		ivDeleteText = toolbar.findViewById(R.id.ivDeleteText);
-		ivBack = toolbar.findViewById(R.id.ivBack);
-		
 		ivDeleteText.setOnClickListener(this);
 		ivBack.setOnClickListener(this);
-		
-		findViewById(R.id.pad).setOnClickListener(Utils.DummyOnClick);
-
 		if(isCombinedSearching) {
 			AllMenus.findItem(R.id.toolbar_action1).setIcon(R.drawable.ic_btn_multimode);
 		}
 		//if(opt.isShowDirectSearch()) ((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action2)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
-
-		etSearch = findViewById(R.id.etSearch);
-
 	}
 	
+	@CallSuper
 	protected void findFurtherViews() {
-		webSingleholder = PageSlider.findViewById(R.id.webSingleholder);
-		WHP = PageSlider.findViewById(R.id.WHP);
-		webholder = WHP.findViewById(R.id.webholder);
-		IMPageCover = PageSlider.findViewById(R.id.cover);
-		mBar = PageSlider.findViewById(R.id.dragScrollBar);
-		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
-		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
+		if (webSingleholder==null) {
+			contentview = contentUIData.webcontentlister;
+			webcontentlist = contentUIData.webcontentlister;
+			PageSlider = contentUIData.PageSlider;
+			bottombar2 = contentUIData.bottombar2;
+			
+			webSingleholder = contentUIData.webSingleholder;
+			WHP = contentUIData.WHP;
+			webholder = contentUIData.webholder;
+			IMPageCover = contentUIData.cover;
+			mBar = contentUIData.dragScrollBar;
+			(widget13=contentUIData.browserWidget13).setOnClickListener(this);
+			(widget14=contentUIData.browserWidget14).setOnClickListener(this);
+		}
 		
 		CMN.Log("findFurtherViews...", webholder);
 		
@@ -2792,13 +2788,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		widget12=ContentbarBtns[5];
 		String contentkey = "ctnp#"+cbar_key;
 		String appproject = opt.getAppContentBarProject(contentkey);
-		if(appproject!=null) {
-		}
 		if(appproject==null) appproject="0|1|2|3|4|5";
-		
 		contentbar_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, bottombar2, ContentbarBtns);
 		contentbar_project.type = cbar_key;
 		RebuildBottombarIcons(this, contentbar_project, mConfiguration);
+		
+		
+		TypedValue typedValue = new TypedValue();
+		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
+		actionBarSize = TypedValue.complexToDimensionPixelSize(typedValue.data, dm);
+		if(actionBarSize<=0) actionBarSize=(int) (56*dm.density);
 	}
 	
 	protected void populateDictionaryList() {
@@ -3266,7 +3265,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public void decorateContentviewByKey(ImageView futton, String key) {
 		if(futton==null) futton=this.favoriteBtn;
-		futton.setActivated(prepareFavoriteCon().contains(key));
+		if(futton!=null) futton.setActivated(prepareFavoriteCon().contains(key));
 	}
 	
 	private void CheckInternalDataBaseDirExist() {
@@ -3414,7 +3413,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		tv.setTag(null);
 	}
 	
-	public abstract boolean isContentViewAttachedForDB();
+	public boolean isContentViewAttachedForDB() {
+		CMN.Log("isContentViewAttachedForDB", contentview.getParent());
+		return Utils.ViewIsId((View) contentview.getParent(), PeruseViewAttached()?R.id.peruseF:R.id.second_holder);
+	}
+	
 	
 	public abstract void AttachContentViewForDB();
 	
@@ -3826,10 +3829,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if(invoker.getUseInternalBG()) {
 									if(apply && mWebView!=null)
 										mWebView.setBackgroundColor(ManFt_invoker_bgColor);
-								}else {
+								} else {
 									if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 									WHP.setBackgroundColor(ManFt_GlobalPageBackground);
-									if(bFromPeruseView)PeruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
+									if(bFromPeruseView) {
+										PeruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
+									}
 									if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
 										mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
 								}
@@ -4112,6 +4117,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						/* 收藏 */
 						case 11:
 						case 0: {
+							// to impl
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0 && prepareFavoriteCon().insertUpdate(MainActivityUIBase.this, CurrentSelected) > 0)
 									showT(CurrentSelected + " 已收藏");
@@ -4566,7 +4572,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			dialogList = d.getListView();
 			boolean toText = bFromTextView || opt.getToTextShare();
-			if(hasText){
+			if(hasText) {
 				String[] items = toText ? (bFromTextView && opt.getToTextShare2()?itemsE:itemsD) : itemsB;
 				if(twoColumnView==null) {
 					RecyclerView footRcyView = new RecyclerView(bottomView.getContext());
@@ -4594,11 +4600,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				twoColumnAda.setItems(items);
 			}
-			else if(twoColumnView!=null && twoColumnView.getParent()!=null){
+			else if(twoColumnView!=null && twoColumnView.getParent()!=null) {
 				dialogList.removeFooterView(twoColumnView);
 			}
 
-			if(!bFromTextView){
+			if(!bFromTextView) {
 				StringBuilder sb = invoker.appendCleanDictionaryName(null);
 				String text = bFromPeruseView ? PeruseView.currentDisplaying() : invoker.currentDisplaying;
 				if(!TextUtils.isEmpty(text)) {
@@ -5296,6 +5302,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				drawerFragment.myAdapter.notifyDataSetChanged();
 				if(isFragInitiated && pickDictDialog!=null)pickDictDialog.adapter().notifyDataSetChanged();
 			}
+			if(DBrowser!=null) {
+				DBrowser.checkColor();
+			}
+			if(popupIndicator!=null) {
+				popupTextView.setTextColor(dark?AppBlack:Color.GRAY);
+				popupIndicator.setTextColor(dark?AppBlack:0xff2b43c1);
+			}
 			adaptermy.notifyDataSetChanged();
 			adaptermy2.notifyDataSetChanged();
 			if(adaptermy3!=null){
@@ -5307,13 +5320,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				setchooser=null;
 			}
 			animateUIColorChanges();
-			if(DBrowser!=null) {
-				DBrowser.checkColor();
-			}
-			if(popupIndicator!=null) {
-				popupTextView.setTextColor(dark?AppBlack:Color.GRAY);
-				popupIndicator.setTextColor(dark?AppBlack:0xff2b43c1);
-			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -5372,7 +5378,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				.beginTransaction()
 				.remove(DBrowser)
 				.commit();
-		Utils.removeIfParentBeOrNotBe(DBrowser.getView(), null, false);
+		Utils.removeView(DBrowser.getView());
 		DBrowser = null;
 	}
 	
@@ -5392,7 +5398,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	AcrossBoundaryContext PrvNxtABC = new AcrossBoundaryContext();
 	
-	// click
+	//click
 	@Override
 	public void onClick(View v) {
 		if(!systemIntialized) {
@@ -5410,10 +5416,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		int id=v.getId();
 		switch (id){
 			default:return;
+			case R.drawable.ic_menu_24dp: {
+				app_panel_bottombar_height = ((View)v.getParent()).getHeight();
+				showMenuGrid();
+			} break;
+			case R.drawable.ic_exit_app:{
+				v.getBackground().jumpToCurrentState();
+				moveTaskToBack(false);
+			} break;
 			case R.drawable.customize_bars: {
 				showIconCustomizator();
 			} break;
 			case R.drawable.ic_options_toolbox: {
+				app_panel_bottombar_height = ((View)v.getParent()).getHeight();
 				showBookSettings();
 			} break;
 			case R.drawable.historyg: { // get6:
@@ -5667,14 +5682,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				DArrayAdapter.ViewHolder vh = (DArrayAdapter.ViewHolder) p.getTag();
 				int position = vh.position;
 				int id_ = ((ViewGroup)p.getParent()).getId();
-				MyPair<String, LexicalDBHelper> item = AppDataAdapter.items.get(position);
+				MyPair<String, LexicalDBHelper> item = AppFunAdapter.notebooks.get(position);
 				if(p.getParent() instanceof ViewGroup)
 				if(id_==R.id.favorList){//选择
 					//CMN.Log("选择!!!");
 					opt.putCurrFavoriteDBName(item.key);
 					favoriteCon = null;
 					prepareFavoriteCon();
-					AppDataAdapter.notifyDataSetChanged();
+					AppFunAdapter.notifyDataSetChanged();
 				} else if(id_==R.id.click_remove){//删除
 					LexicalDBHelper vI = item.value;
 					if(vI!=null){
@@ -5686,7 +5701,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					File fi = opt.fileToFavoriteDatabases(item.key);
 					fi.delete();
 					new File(fi.getPath()+"-journal").delete();
-					AppDataAdapter.remove(position);
+					AppFunAdapter.remove(position);
 				}
 			}break;
 			//返回
@@ -8887,7 +8902,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			else {
 				View SV;
-				if (webholder.getChildCount() != 0) {
+				if (webholder!=null && webholder.getChildCount() != 0) {
 					int selectedPos = -1;
 					/* 当前滚动高度 */
 					int currentHeight = WHP.getScrollY();
@@ -9146,10 +9161,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
-	protected ListAdapter AppDataAdapter() {
-		if(AppDataAdapter==null)
-			AppDataAdapter = new DArrayAdapter(this);
-		return AppDataAdapter;
+	protected ListAdapter FavoriteNoteBooksAdapter() {
+		if(AppFunAdapter ==null)
+			AppFunAdapter = new DArrayAdapter(this);
+		return AppFunAdapter;
 	}
 
 	protected void showCreateNewFavoriteDialog(int width) {
@@ -9161,7 +9176,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		dd.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		dd.setContentView(dv);
 		btn_Done.setOnClickListener(v121 -> {
-			AppDataAdapter.createNewDatabase(etNew.getText().toString());
+			AppFunAdapter.createNewDatabase(etNew.getText().toString());
 			dd.dismiss();
 		});
 		etNew.setOnEditorActionListener((v1212, actionId, event) -> {
@@ -9193,12 +9208,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			bottomPlaylist = new WeakReference<>(_bottomPlaylist = new BottomSheetDialog(this));
 			View ll = LayoutInflater.from(this).inflate(R.layout.favorite_bottom_sheet, null);
 			ListView lv = ll.findViewById(R.id.favorList);
-			lv.setAdapter(AppDataAdapter());
+			lv.setAdapter(FavoriteNoteBooksAdapter());
 			lv.setOnItemClickListener((parent, view, position, id) -> {
 				CheckedTextView tv = view.findViewById(android.R.id.text1);
 				tv.toggle();
 				tv.jumpDrawablesToCurrentState();
-				AppDataAdapter.setChecked(position, tv.isChecked());
+				AppFunAdapter.setChecked(position, tv.isChecked());
 			});
 			BottomSheetDialog final_bottomPlaylist = _bottomPlaylist;
 			OnClickListener clicker = v -> {
@@ -9207,8 +9222,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						final_bottomPlaylist.dismiss();
 					break;
 					case R.id.confirm:
-						ArrayList<MyPair<String, LexicalDBHelper>> items = AppDataAdapter.items;
-						HashSet<Integer> selection = AppDataAdapter.selectedPositions;
+						ArrayList<MyPair<String, LexicalDBHelper>> items = AppFunAdapter.notebooks;
+						HashSet<Integer> selection = AppFunAdapter.selectedPositions;
 						if(selection.size()>0) {
 							int cc=0;
 							for (int i = 0; i < items.size(); i++) {
@@ -9274,34 +9289,49 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			d.show();
 			ListView litsView = d.getListView();
 			litsView.setId(R.id.click_remove);
-			litsView.setAdapter(AppDataAdapter());
+			litsView.setAdapter(FavoriteNoteBooksAdapter());
 			AlertDialog finalD = d;
 			litsView.setOnItemClickListener((parent, view, position, id) -> {
 				int reason1 = (int) parent.getTag();
-				MyPair<String, LexicalDBHelper> item = AppDataAdapter.items.get(position);
-				String name = item.key;
-				LexicalDBHelper _favoriteCon = item.value;
-				if(_favoriteCon==null){
-					_favoriteCon = item.value = new LexicalDBHelper(getApplicationContext(), opt, name);
+				String name;
+				if(testDBV2) {
+					MyPair<String, Long> nb = AppFunAdapter.notebooksV2.get(position);
+					name = nb.key;
+					long NID = nb.value;
+					if(reason1!=2 && DBrowser!=null && DBrowser.getFragmentId()==1) {
+						// 加载收藏夹
+						opt.putCurrFavoriteNoteBookId(NID);
+						DBrowser.loadInAll(this);
+					} else if(reason1==2 && DBrowser!=null) {
+						DBrowser.moveSelectedCardsToFolder(NID);
+					}
+				} else {
+					MyPair<String, LexicalDBHelper> item = AppFunAdapter.notebooks.get(position);
+					name = item.key;
+					LexicalDBHelper _favoriteCon = item.value;
+					if(_favoriteCon==null){
+						_favoriteCon = item.value = new LexicalDBHelper(getApplicationContext(), opt, name);
+					}
+					if(reason1!=2 && DBrowser!=null && DBrowser.getFragmentId()==1){
+						// 加载收藏夹
+						opt.putCurrFavoriteDBName(name);
+						favoriteCon = _favoriteCon;
+						DBrowser.loadInAll(this);
+					} else if(reason1==2 && DBrowser!=null){
+						DBrowser.moveSelectedardsToDataBase(_favoriteCon);
+					}
 				}
-				if(reason1!=2 && DBrowser!=null && DBrowser.getFragmentId()==1){
-					// 加载收藏夹
-					opt.putCurrFavoriteDBName(name);
-					favoriteCon = _favoriteCon;
-					DBrowser.loadInAll(this);
-				} else if(reason1==2 && DBrowser!=null){
-					DBrowser.moveSelectedardsToDataBase(_favoriteCon);
-				}
-				if(reason1!=2)
+				if(reason1!=2) {
 					view.post(() -> {
 						finalD.dismiss();
 						if(reason1==0)
 							show(R.string.currFavor,CMN.unwrapDatabaseName(name));
 					});
+				}
 			});
 			d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v1 -> {
-				AppDataAdapter.showDelete = !AppDataAdapter.showDelete;
-				AppDataAdapter.notifyDataSetChanged();
+				AppFunAdapter.showDelete = !AppFunAdapter.showDelete;
+				AppFunAdapter.notifyDataSetChanged();
 			});
 			d.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 			d.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(MainActivityUIBase.this,R.color.colorHeaderBlue));
@@ -9697,6 +9727,31 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	}
 	
+	@Override
+	public void onBackPressed() {
+		if(!PerFormBackPrevention()) {
+			super.onBackPressed();
+		}
+	}
+	
+	protected boolean PerFormBackPrevention() {
+		if(settingsPanel!=null) {
+			hideSettingsPanel();
+		}
+		else if(DetachClickTranslator()) {
+		}
+		else if(!AutoBrowsePaused || bRequestingAutoReading){
+			stopAutoReadProcess();
+		}
+		else if(DBrowser != null) {
+			DetachDBrowser();
+		}
+		else {
+			return false;
+		}
+		return true;
+	}
+	
 	public SettingsPanel settingsPanel;
 	public PopupWindow   settingsPopup;
 	public View.OnClickListener mInterceptorListener;
@@ -9716,14 +9771,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
 		pop.setBackgroundDrawable(null);
 		int[] vLocation = new int[2];
+		ViewGroup root = this.root;
 		root.getLocationInWindow(vLocation);
 		int topY = vLocation[1];
 		int h = root.getHeight();
 		pop.setWidth(-1);
-		pop.setHeight(h);
+		pop.setHeight(h-app_panel_bottombar_height);
 		if (pop.isShowing()) {
-			pop.update(0, topY, -1, h);
+			pop.update(0, topY, -1, h-app_panel_bottombar_height);
 		} else {
+			if (PeruseViewAttached()) {
+				root = PeruseView.root;
+			}
 			pop.showAtLocation(root, Gravity.TOP, 0, topY);
 		}
 	}

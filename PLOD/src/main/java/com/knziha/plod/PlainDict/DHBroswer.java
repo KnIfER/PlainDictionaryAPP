@@ -67,7 +67,7 @@ public class DHBroswer extends DBroswer {
 		}
 		String name = CMN.unwrapDatabaseName(mLexiDB.DATABASE);
 		toolbar.setTitle(name);
-		show(R.string.maniFavor2,name,mCards_size);
+		show(R.string.maniFavor2, name ,mCards_size);
 		mAdapter.notifyDataSetChanged();
 		lm.scrollToPositionWithOffset(lastFirst,offset);
 		mLexiDB.lastAdded = false;

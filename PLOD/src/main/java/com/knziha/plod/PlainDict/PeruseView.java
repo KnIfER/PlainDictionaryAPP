@@ -457,12 +457,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	@NonNull @Override
 	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-		CMN.Log("----->onCreateDialog");
+		CMN.Log("PeruseView----->onCreateDialog");
 		if(mDialog==null){
 			mDialog = new SimpleDialog(requireContext(), getTheme());
 			mDialog.mBCL = new SimpleDialog.BCL(){
 				@Override
-				public void onBackPressed() { goBack(); }
+				public void onBackPressed() {
+					goBack();
+				}
 				@Override
 				public void onActionModeStarted(ActionMode mode) {
 					getMainActivity().onActionModeStarted(mode);
@@ -996,7 +998,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		MainActivityUIBase a = getMainActivity();
 		if(isLongClicked){
 			a.launchSettings(7);
-		} else {
+		}
+		else {
 			Toolbar InPageSearchbar = PerusePageSearchbar;
 			if (InPageSearchbar == null) {
 				Toolbar searchbar = (Toolbar) getLayoutInflater().inflate(R.layout.searchbar, null);
@@ -1054,7 +1057,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					}
 					return true;
 				};
-				this.PerusePageSearchbar = searchbar;
+				InPageSearchbar = this.PerusePageSearchbar = searchbar;
 				this.PerusePageSearchetSearch = etSearch;
 				this.PerusePageSearchindicator = searchbar.findViewById(R.id.indicator);
 				View viewTmp=searchbar.findViewById(R.id.recess);
@@ -1174,11 +1177,19 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	public void goBack() {
 		MainActivityUIBase a = getMainActivity();
-		if(mDialog!=null && mDialog.getCurrentFocus()==mWebView && mWebView.bIsActionMenuShown) {
-			mWebView.clearFocus();
-			return;
-		}
 		if(a!=null) {
+			if(a.settingsPanel!=null) {
+				a.hideSettingsPanel();
+				return;
+			}
+			if(!a.AutoBrowsePaused || a.bRequestingAutoReading){
+				a.stopAutoReadProcess();
+				return;
+			}
+			if(mDialog!=null && mDialog.getCurrentFocus()==mWebView && mWebView.bIsActionMenuShown) {
+				mWebView.clearFocus();
+				return;
+			}
 			if(Utils.removeIfParentBeOrNotBe(a.popupContentView, root, true)){
 				a.popupContentView = null;
 				a.popupGuarder.setVisibility(View.GONE);

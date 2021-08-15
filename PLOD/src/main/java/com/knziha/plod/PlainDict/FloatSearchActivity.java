@@ -10,7 +10,6 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
-import android.text.TextUtils;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -24,6 +23,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -33,9 +34,9 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.math.MathUtils;
+import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -50,6 +51,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
+import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
+import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
 
@@ -100,56 +103,20 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 
 	@Override
-	public void onBackPressed() {
-		CMN.Log("onBackPressed!!!", DBrowser);
+	protected boolean PerFormBackPrevention() {
+		if (super.PerFormBackPrevention()) {
+			return true;
+		}
 		if(PDICMainAppOptions.getUseBackKeyClearWebViewFocus() && checkWebSelection()){
-			return;
+			return true;
 		}
-		else if(DetachClickTranslator()){
-		
+		if(this_instanceof_FloarActivitySearch && PDICMainAppOptions.getFloatClickHideToBackground()) {
+			moveTaskToBack(false);
+			return true;
 		}
-		else if(DBrowser != null){
-			if(DBrowser.try_goBack()!=0)
-				return;
-			//File newFavor = DBrowser.items.get(DBrowser.lastChecked);
-			//xxx
-//			if(!(DBrowser instanceof DHBroswer))
-//				if(!newFavor.equals(new File(favoriteCon.pathName))) {//或许需要重载收藏夹
-//					favoriteCon.close();
-//					favoriteCon = new LexicalDBHelper(this, newFavor);
-//					String name = new File(favoriteCon.pathName).getName();
-//					//opt.putString("currFavoriteDBName", opt.currFavoriteDBName=);
-//					opt.putCurrFavoriteDBName(favorTag+name.substring(0,name.length()-4));
-//					show(R.string.currFavor, DBrowser.boli(newFavor.getName()));
-//				}
-			if(contentview.getParent()==main){
-			
-			}
-			FragmentTransaction transaction = getSupportFragmentManager()
-					.beginTransaction().remove(DBrowser);
-			transaction.commit();
-			
-			//getSupportFragmentManager().popBackStack();
-			
-			//main.removeView(DBroswer.getView());
-			//DBroswer.onDetach();
-			//todo 增设选项
-			if(!TextUtils.isEmpty(DBrowser.currentDisplaying)) {
-				//if(!opt.getBrowser_AffectInstant()) etSearch.removeTextChangedListener(tw1);
-				//etSearch.setText(DBrowser.currentDisplaying);
-				//ivDeleteText.setVisibility(View.VISIBLE);
-				//if(!opt.getBrowser_AffectInstant()) etSearch.addTextChangedListener(tw1);
-			}
-			DBrowser = null;
-		} else {
-			if(this_instanceof_FloarActivitySearch && PDICMainAppOptions.getFloatClickHideToBackground()) {
-				moveTaskToBack(false);
-				return;
-			}
-			super.onBackPressed();
-		}
+		return false;
 	}
-
+	
 	@Override
 	boolean isContentViewAttached() {
 		return webcontentlist.getVisibility()==View.VISIBLE;
@@ -759,7 +726,25 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 		refreshUIColors();
     }
-
+	
+	protected void findFurtherViews() {
+		webSingleholder = PageSlider.findViewById(R.id.webSingleholder);
+		WHP = PageSlider.findViewById(R.id.WHP);
+		webholder = WHP.findViewById(R.id.webholder);
+		IMPageCover = PageSlider.findViewById(R.id.cover);
+		mBar = PageSlider.findViewById(R.id.dragScrollBar);
+		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
+		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
+		
+		super.findFurtherViews();
+		
+		findViewById(R.id.toolbar_action1).setOnClickListener(this);
+		ivDeleteText = toolbar.findViewById(R.id.ivDeleteText);
+		ivBack = toolbar.findViewById(R.id.ivBack);
+		findViewById(R.id.pad).setOnClickListener(Utils.DummyOnClick);
+		etSearch = findViewById(R.id.etSearch);
+	}
+	
 	protected void exit() {
 		finish();
 	}

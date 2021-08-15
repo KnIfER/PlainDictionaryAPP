@@ -24,8 +24,23 @@
 <!--		android:visibility="gone"/>-->
 
 	<ViewStub
+		android:layout="@layout/contentview"
+		android:layout_height="match_parent"
+		android:layout_width="match_parent"
+		android:visibility="gone"
+		/>
+
+	<ViewStub
 		android:layout="@layout/contentview_item"
 		android:layout_height="match_parent"
 		android:layout_width="match_parent"
 		/>
+
+	<ProgressBar
+		android:id="@+id/main_progress_bar"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center_vertical|center_horizontal"
+		android:visibility="gone"/>
+
 </FrameLayout>

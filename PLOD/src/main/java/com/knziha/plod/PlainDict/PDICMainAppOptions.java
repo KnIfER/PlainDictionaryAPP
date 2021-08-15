@@ -96,6 +96,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		defaultReader.edit().putString("DB1",name).apply();
 	}
 
+	public long getCurrFavoriteNoteBookId() {
+		return defaultReader.getLong("NID", 0);
+	}
+
+	public void putCurrFavoriteNoteBookId(long id) {
+		defaultReader.edit().putLong("NID", id).apply();
+	}
+
 	public String getLastMdFn(String key) {
 		return defaultReader.getString(key,null);
 	}
@@ -2391,7 +2399,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return FileDatabases;
 	}
 	
-	public final static boolean testDBV2 = true;
+	public final static boolean testDBV2 = false;
 	
 	private String pathToFavoriteDatabases(String name) {
 		StringBuffer InternalPath = pathToMainFolder().append("INTERNAL/");

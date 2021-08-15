@@ -2,7 +2,6 @@ package com.knziha.plod.PlainUI;
 
 import android.content.Context;
 import android.graphics.PorterDuff;
-import android.text.TextPaint;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +20,6 @@ public class MenuGrid extends PlainAppPanel {
 	MainActivityUIBase a;
 	DisplayMetrics dm;
 	
-	TextPaint menu_grid_painter;
 	private ScrollView menu_grid;
 	private boolean MenuClicked;
 	private int lastWidth;
@@ -42,13 +40,6 @@ public class MenuGrid extends PlainAppPanel {
 		
 		DescriptiveImageView.createTextPainter(true);
 		
-		int TargetTransY = -a.bottombar2.getHeight();
-		int legalMenuTransY = (int) (GlobalOptions.density*55);
-		
-		// init_menu_layout
-		// todo avoid
-		a.bottombar2.setOnClickListener(Utils.DummyOnClick);
-		//settingsLayout = (ViewGroup) a.UIData.menuGrid.getViewStub().inflate();
 		settingsLayout = (ViewGroup) LayoutInflater.from(a).inflate(R.layout.menu_grid, root, false);
 		settingsLayout.setOnClickListener(this);
 		
@@ -101,26 +92,6 @@ public class MenuGrid extends PlainAppPanel {
 			case R.id.root: {
 				dismiss();
 			} break;
-//			case R.id.menu_icon3: {
-//				//a.showHistory();
-//			} break;
-//			/* 下载 */
-//			case R.id.menu_icon4: {
-//				//a.showDownloads();
-//			} break;
-//			/* 分享 */
-//			case R.id.menu_icon5: {
-//				//a.shareUrlOrText(null, null);
-//			} break;
-//			case R.id.menu_icon9: {
-//				//a.showBrowserSettings();
-//			} return;
-//			case R.id.menu_icon7: {
-//				//a.showWebAnnots();
-//			} return;
-			case R.id.menu_icon8: {
-				//a.showNightMode();
-			} return;
 		}
 		//v.postDelayed(() -> toggleMenuGrid(true), 250);
 	}

@@ -42,6 +42,7 @@ public class AgentApplication extends Application {
 	public ArrayList<BookPresenter> b_filter = new ArrayList<>();
 	/** 退出全部实例时关闭、清理 */
 	ArrayList<MyPair<String, LexicalDBHelper>> AppDatabases = new ArrayList<>();
+	ArrayList<MyPair<String, Long>> AppDatabasesV2 = new ArrayList<>();
 	/** 退出全部实例时保留 */
 	HashSet<Integer> selectedPositions;
 	/** 退出全部实例时仍然保留 */

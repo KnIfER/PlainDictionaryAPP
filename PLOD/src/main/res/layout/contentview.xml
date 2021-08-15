@@ -1,3 +1,4 @@
+<layout>
 <com.knziha.plod.widgets.SplitView xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:splitview="http://schemas.android.com/apk/res-auto"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -141,3 +142,4 @@
 				/>
 		</LinearLayout>
 </com.knziha.plod.widgets.SplitView>
+</layout>

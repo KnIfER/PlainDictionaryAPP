@@ -68,6 +68,7 @@ import db.LexicalDBHelper;
 
 import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
 import static db.LexicalDBHelper.TABLE_FAVORITE_v2;
+import static db.LexicalDBHelper.TABLE_HISTORY_v2;
 
 @SuppressLint("SetTextI18n")
 public class DBroswer extends Fragment implements
@@ -357,7 +358,8 @@ public class DBroswer extends Fragment implements
 	private void rebuildCursor(MainActivityUIBase a) {
 		mCards.clear();
 		if (testDBV2) {
-			cr = mLexiDB.getDB().query(TABLE_FAVORITE_v2, null,null,null,null,null,"last_visit_time desc");
+			cr = mLexiDB.getDB().rawQuery("select * from favorite where folder=? order by last_visit_time desc", new String[]{""+opt.getCurrFavoriteNoteBookId()});
+			//cr = mLexiDB.getDB().query(TABLE_FAVORITE_v2, null,null,null,null,null,"last_visit_time desc");
 		} else {
 			cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
 		}
@@ -386,9 +388,14 @@ public class DBroswer extends Fragment implements
 	protected void loadInAll(MainActivityUIBase a) {
 		mLexiDB = a.prepareFavoriteCon();
 		rebuildCursor(a);
-		String name = CMN.unwrapDatabaseName(mLexiDB.DATABASE);
+		String name;
+		if (testDBV2) {
+			name = mLexiDB.getFavoriteNoteBookNameById(a.opt.getCurrFavoriteNoteBookId());
+		} else {
+			name = CMN.unwrapDatabaseName(mLexiDB.DATABASE);
+		}
 		toolbar.setTitle(name);
-		show(R.string.maniFavor,name,mCards_size);
+		show(R.string.maniFavor, name, mCards_size);
 		progressBar.setVisibility(View.GONE);
 		mLexiDB.lastAdded = false;
 	}
@@ -539,7 +546,12 @@ public class DBroswer extends Fragment implements
 				counter.setText(0 +"/"+mCards_size);
 			}).show();
 	}
-
+	
+	public void moveSelectedCardsToFolder(long nid) {
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
+		a.showT("暂未实现！");
+	}
+	
 	//for main list
 	//参见：live down
 	//参见：P.L.O.D -> float search view -> HomeAdapter

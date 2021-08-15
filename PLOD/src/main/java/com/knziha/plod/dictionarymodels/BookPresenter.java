@@ -1590,6 +1590,10 @@ public class BookPresenter
 	//todo frameAt=-1
     public void renderContentAt(float initialScale, int SelfIdx, int frameAt, WebViewmy mWebView, int... position){
     	CMN.Log("renderContentAt!!!...", bookImpl.getDictionaryName());
+    	if (a==null) {
+    		// safe check
+    		return;
+		}
     	isJumping=false;
     	if(mWebView==null) {
     		mWebView=this.mWebView;

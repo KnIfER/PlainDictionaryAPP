@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Message;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,10 +22,15 @@ import androidx.core.graphics.ColorUtils;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainMdictAsset;
+import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.widgets.CheckableImageView;
+import com.knziha.plod.widgets.ScrollViewmy;
+import com.knziha.plod.widgets.SplitPadView;
+import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.Utils;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileReader;
@@ -48,9 +55,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	public void onBackPressed() {
 		//super.onBackPressed();
-		if(DetachClickTranslator()) {
-		
-		} else {
+		if(!PerFormBackPrevention()) {
 			finishOrHide();
 		}
 	}
@@ -78,6 +83,21 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
+	protected boolean PerFormBackPrevention() {
+		if (super.PerFormBackPrevention()) {
+			return true;
+		}
+		if(checkWebSelection()) {
+			return true;
+		}
+		if(contentview.getParent()!=null){
+			DetachContentView(true);
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		CMN.Log("onCreate...");
 		receivable=
@@ -96,12 +116,34 @@ public class MultiShareActivity extends MainActivityUIBase {
 		
 		main = root = findViewById(R.id.root);
 		mainF = main.findViewById(R.id.mainF);
+		main_progress_bar = main.findViewById(R.id.main_progress_bar);
 		
 		hdl  = new MyHandler(this);
 		mActionModeHeight = dm.heightPixels/2;
 		CMN.MainBackground = MainBackground = opt.getMainBackground();
 		processIntent(getIntent());
 		systemIntialized=true;
+	}
+	
+	
+	@Override
+	protected void findFurtherViews() {
+		if (contentUIData==null) {
+			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
+			super.findFurtherViews();
+		}
+	}
+	
+	@Override
+	protected void init_popup_view() {
+		findFurtherViews();
+		super.init_popup_view();
+	}
+	
+	@Override
+	com.knziha.plod.plaindict.PeruseView getPeruseView() {
+		findFurtherViews();
+		return super.getPeruseView();
 	}
 	
 	@Override
@@ -125,6 +167,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		ucc = getUcc();
 		ucc.setInvoker(null, null, null, debugString);
 		int VSGO=opt.getRememberVSPanelGo()?opt.getLastVSGoNumber():-1;
+		VSGO=-1;
 		if(VSGO>=0) {
 			supressNxtPauseLis = true;
 			ucc.onItemClick(null, null, VSGO, 0, false, false);
@@ -151,6 +194,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 				if(NewIntentCalled&&opt.getVSPanelGOTransient()) {
 					finishOrHide();
 				} else {
+					getUcc().setInvoker(null, null, null, debugString);
 					getUcc().onClick(null);
 				}
 			}
@@ -191,7 +235,9 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	public void hide() {
-		moveTaskToBack(false);
+		if (!moveTaskToBack(false)) {
+			showT("关闭不了么？");
+		}
 	}
 	
 	public boolean allHidden() {
@@ -398,20 +444,10 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	public boolean isContentViewAttachedForDB() {
-		return false;
-	}
-	
-	@Override
 	public void AttachContentViewForDB() {
 		CMN.Log("AttachContentViewForDB");
 		if(DBrowser!=null) {
-			boolean fromPeruseView = PeruseViewAttached();
-			ViewGroup target = fromPeruseView?PeruseView.root:root;
-			if(Utils.removeIfParentBeOrNotBe(contentview, target, false)) {
-				target.addView(contentview);
-			}
-			
+			Utils.addViewToParent(contentview, PeruseViewAttached()?PeruseView.peruseF:root);
 		}
 	}
 	
@@ -432,7 +468,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	
 	@Override
 	void DetachContentView(boolean leaving) {
-	
+		Utils.removeView(contentview);
 	}
 	
 	@Override
