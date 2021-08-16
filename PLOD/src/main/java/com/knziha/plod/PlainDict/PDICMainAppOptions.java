@@ -1960,13 +1960,13 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	public boolean getDatabaseDelayPullData() {
-		return (FourthFlag & 0x20000l) == 0x20000l;
-	}
-	public boolean setDatabaseDelayPullData(boolean val) {
-		updateQFAt(0x20000l,val);
-		return val;
-	}
+//	public boolean getDatabaseDelayPullData() {
+//		return true;
+//	}
+//	public boolean setDatabaseDelayPullData(boolean val) {
+//		updateQFAt(0x20000l,val);
+//		return val;
+//	}
 
 	public boolean getDatabaseDelayPullData1() {
 		return (FourthFlag & 0x40000l) == 0x40000l;

@@ -3638,9 +3638,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BookPresenter getDictionaryById(long bid) throws IOException {
 		String fileName = null;
 		UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
-		CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
-				prepareHistroyCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
-				, currentDictionary.bookImpl.getBooKID());
+		try {
+			CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+					prepareHistroyCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+					, currentDictionary.bookImpl.getBooKID());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		if (impl!=null) {
 			fileName = impl.getFile().getPath();
 		} else {
@@ -5687,32 +5691,51 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					//etSearch_ToToolbarMode(3);
 				}
 			}break;
-			/* 删除/选择收藏夹 */
-			case R.id.ivDeleteText_ADA:{
+			/* 选择.删除.收藏夹 */
+			case R.id.ivDeleteText_ADA: {
 				View p = (View) v.getParent();
 				DArrayAdapter.ViewHolder vh = (DArrayAdapter.ViewHolder) p.getTag();
 				int position = vh.position;
 				int id_ = ((ViewGroup)p.getParent()).getId();
-				MyPair<String, LexicalDBHelper> item = AppFunAdapter.notebooks.get(position);
-				if(p.getParent() instanceof ViewGroup)
-				if(id_==R.id.favorList){//选择
-					//CMN.Log("选择!!!");
-					opt.putCurrFavoriteDBName(item.key);
-					favoriteCon = null;
-					prepareFavoriteCon();
-					AppFunAdapter.notifyDataSetChanged();
-				} else if(id_==R.id.click_remove){//删除
-					LexicalDBHelper vI = item.value;
-					if(vI!=null){
-						if(vI==favoriteCon)
-							favoriteCon=null;
-						vI.close();
-						item.value=null;
-					}
-					File fi = opt.fileToFavoriteDatabases(item.key);
-					fi.delete();
-					new File(fi.getPath()+"-journal").delete();
-					AppFunAdapter.remove(position);
+				if (testDBV2) {
+					MyPair<String, Long> item = AppFunAdapter.notebooksV2.get(position);
+					if(p.getParent() instanceof ViewGroup)
+						//选择收藏夹
+						if(id_==R.id.favorList) {
+							opt.putCurrFavoriteNoteBookId(item.value);
+							AppFunAdapter.notifyDataSetChanged();
+						}
+						//删除收藏夹
+						else if(id_==R.id.click_remove) {
+							if (prepareHistroyCon().removeFolder(item.value)>=0) {
+								AppFunAdapter.remove(position);
+							}
+						}
+				} else {
+					MyPair<String, LexicalDBHelper> item = AppFunAdapter.notebooks.get(position);
+					if(p.getParent() instanceof ViewGroup)
+						//选择收藏夹
+						if(id_==R.id.favorList) {
+							//CMN.Log("选择!!!");
+							opt.putCurrFavoriteDBName(item.key);
+							favoriteCon = null;
+							prepareFavoriteCon();
+							AppFunAdapter.notifyDataSetChanged();
+						}
+						//删除收藏夹
+						else if(id_==R.id.click_remove) {
+							LexicalDBHelper vI = item.value;
+							if(vI!=null){
+								if(vI==favoriteCon)
+									favoriteCon=null;
+								vI.close();
+								item.value=null;
+							}
+							File fi = opt.fileToFavoriteDatabases(item.key);
+							fi.delete();
+							new File(fi.getPath()+"-journal").delete();
+							AppFunAdapter.remove(position);
+						}
 				}
 			}break;
 			//返回
@@ -9300,7 +9323,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			d.show();
 			ListView litsView = d.getListView();
 			litsView.setId(R.id.click_remove);
+			////////////// 列表适配器
 			litsView.setAdapter(FavoriteNoteBooksAdapter());
+			////////////// 收藏夹列表
 			AlertDialog finalD = d;
 			litsView.setOnItemClickListener((parent, view, position, id) -> {
 				int reason1 = (int) parent.getTag();
@@ -9309,12 +9334,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					MyPair<String, Long> nb = AppFunAdapter.notebooksV2.get(position);
 					name = nb.key;
 					long NID = nb.value;
-					if(reason1!=2 && DBrowser!=null && DBrowser.getFragmentId()==1) {
-						// 加载收藏夹
-						opt.putCurrFavoriteNoteBookId(NID);
-						DBrowser.loadInAll(this);
-					} else if(reason1==2 && DBrowser!=null) {
-						DBrowser.moveSelectedCardsToFolder(NID);
+					if (DBrowser!=null) {
+						if(reason1!=2 && DBrowser.getFragmentId()==1) {
+							//CMN.Log("// 加载收藏夹", NID);
+							opt.putCurrFavoriteNoteBookId(NID);
+							DBrowser.Selection.clear();
+							DBrowser.loadInAll(this);
+						} else if(reason1==2 && DBrowser!=null) {
+							// 移动收藏夹
+							DBrowser.moveSelectedCardsToFolder(name, NID);
+						}
 					}
 				} else {
 					MyPair<String, LexicalDBHelper> item = AppFunAdapter.notebooks.get(position);

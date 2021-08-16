@@ -83,6 +83,10 @@ dependencies {
     api project(':drag_sort_lib')
     api project(':colorpicker')
     api project(':filepicker')
+
+    api project(':Logger')
+    api project(':Paging')
+
     api fileTree(include: ['*.jar'], dir: 'libs')
     api(libs_anno)
     //testImplementation 'junit:junit:4.12'

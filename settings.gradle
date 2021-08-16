@@ -7,6 +7,9 @@ include ':twowaygridview'
 
 include ':PLOD'
 
+include ':Logger'
+include ':Paging'
+
 
 include ':AxtCore'
 include ':AxtAppCompat'

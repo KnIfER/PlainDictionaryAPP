@@ -2,9 +2,12 @@ package com.knziha.plod.plaindict;
 
 import android.app.Application;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.utils.CMNF;
+import com.knziha.paging.AppIconCover.AppIconCover;
+import com.knziha.paging.AppIconCover.AppIconCoverLoaderFactory;
 import com.knziha.plod.dictionary.Utils.MyIntPair;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.mdictRes;
@@ -115,6 +118,7 @@ public class AgentApplication extends Application {
 				registry -> {
 					registry.append(MddPic.class, InputStream.class, new MddPicLoaderFactory());
 					registry.append(PdfPic.class, Bitmap.class, new PdfPicLoaderFactory());
+					registry.append(AppIconCover.class, Drawable.class, new AppIconCoverLoaderFactory());
 				};
 		CMNF.settings_class= SettingsActivity.class.getName();
 		//	StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
@@ -122,7 +126,6 @@ public class AgentApplication extends Application {
 		//           .penaltyLog()//违规对log日志
 		//            .penaltyDeath()//违规Crash
 		//            .build());
-		CMN.AssetMap.clear();
 		CMN.AssetMap.put("/ASSET/liba.mdx", "李白全集-内置");
 		CMN.AssetMap.put("/ASSET/", "【内置】");
 	}

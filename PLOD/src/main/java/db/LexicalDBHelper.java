@@ -20,6 +20,8 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String TABLE_FAVORITE_v2 = "favorite";
 	public static final String TABLE_FAVORITE_FOLDER_v2 = "favfolder";
 	
+	public static final String FIELD_CREATE_TIME = "creation_time";
+	
     public final String DATABASE;
 	public boolean lastAdded;
 	private SQLiteDatabase database;
@@ -485,11 +487,26 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	}
 	
 	public String getFavoriteNoteBookNameById(long NID) {
-		try {
-			Cursor cursor = database.rawQuery("select lex from favfolder where id=?", new String[]{""+NID});
+		String ret;
+		try (Cursor cursor = database.rawQuery("select lex from favfolder where id=?", new String[]{""+NID})) {
+			cursor.moveToNext();
 			return cursor.getString(0);
 		} catch (Exception e) {
-			return "默认收藏夹";
+			CMN.Log(e);
+			ret = "默认收藏夹";
 		}
+		return ret;
+	}
+	
+	/** 删除收藏夹 */
+	public int removeFolder(long value) {
+		int ret=-1;
+		try {
+			ret = database.delete(TABLE_FAVORITE_v2, "folder = ?", new String[]{"" + value});
+			database.delete(TABLE_FAVORITE_FOLDER_v2, "id = ?", new String[]{"" + value});
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+		return ret;
 	}
 }

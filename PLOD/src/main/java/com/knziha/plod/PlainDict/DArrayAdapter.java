@@ -62,7 +62,11 @@ public class DArrayAdapter extends BaseAdapter {
 	}
 
 	public void remove(int position) {
-		notebooks.remove(position);
+		if (testDBV2) {
+			notebooksV2.remove(position);
+		} else {
+			notebooks.remove(position);
+		}
 		notifyDataSetChanged();
 	}
 
@@ -115,7 +119,12 @@ public class DArrayAdapter extends BaseAdapter {
 				new ViewHolder(a, convertView = a.getLayoutInflater().inflate(R.layout.listview_check_select, parent, false))
 				: (ViewHolder) convertView.getTag();
 		String name = getItem(position);
-		boolean actived = name.equals(a.opt.getCurrFavoriteDBName());
+		boolean actived;
+		if (testDBV2) {
+			actived = notebooksV2.get(position).value == a.opt.getCurrFavoriteNoteBookId();
+		} else {
+			actived = name.equals(a.opt.getCurrFavoriteDBName());
+		}
 		if(actived && selectedPositions.size()==0)    //todo 精确添加模式，自动勾选收藏有该文本的数据库，而取消勾选后则从数据库删除。
 			selectedPositions.add(position);
 		convertView.setActivated(actived);

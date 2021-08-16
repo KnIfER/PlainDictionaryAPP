@@ -64,7 +64,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		boolean isCombinedSearching();
 		int getSendToShareTarget();
 	}
-	final Pattern nautyUrlRequest = Pattern.compile("src=(['\"])?(file://?)?/");
+	final Pattern nautyUrlRequest = Pattern.compile("src=(['\"])?(file://)?/");
 	final String SepWindows = "\\";
 	final AppOptions opt;
 	
@@ -481,7 +481,6 @@ public abstract class MdictServer extends NanoHTTPD {
 	 	document.getElementById('view1').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no');
 	 	if(postInit) postInit();
 		var imgs = document.getElementsByTagName('IMG');
-	 	console.log("onload", imgs);
 		for(var i=0;i<imgs.length;i++){
 			if(imgs[i].src.startsWith("file://"))
 	 			imgs[i].src = imgs[i].src.substring(7);

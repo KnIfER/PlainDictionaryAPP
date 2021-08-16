@@ -2,6 +2,7 @@ package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -36,22 +37,28 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
 import com.afollestad.dragselectrecyclerview.IDragSelectAdapter;
 import com.knziha.ankislicer.customviews.ArrayAdaptermy;
 import com.knziha.ankislicer.customviews.ShelfLinearLayout;
 import com.knziha.ankislicer.customviews.VerticalRecyclerViewFastScrollermy;
-import com.knziha.ankislicer.customviews.wahahaTextView;
+import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyIntPair;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
+import com.knziha.paging.CursorAdapter;
+import com.knziha.paging.CursorReader;
+import com.knziha.paging.PagingAdapterInterface;
+import com.knziha.paging.PagingCursorAdapter;
+import com.knziha.paging.SimpleClassConstructor;
+import com.knziha.plod.plaindict.databinding.CardListItemBinding;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTNode;
 import com.knziha.rbtree.RashSet;
@@ -67,38 +74,62 @@ import java.util.HashSet;
 import db.LexicalDBHelper;
 
 import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
+import static com.knziha.plod.widgets.Utils.EmptyCursor;
 import static db.LexicalDBHelper.TABLE_FAVORITE_v2;
-import static db.LexicalDBHelper.TABLE_HISTORY_v2;
 
 @SuppressLint("SetTextI18n")
 public class DBroswer extends Fragment implements
 		View.OnClickListener, OnLongClickListener{
+	public final static int DB_FAVORITE = 1;
+	public final static int DB_HISTORY = 2;
 	public int pendingDBClickPos=-1;
 	ViewGroup webviewHolder;
 	protected boolean initialized;
-	protected int itemCount;
-	protected Runnable mPullViewsRunnable = new Runnable() {
-		@Override
-		public void run() {
-			if(mCards_size>itemCount){
-				itemCount+=1;
-				mAdapter.notifyItemChanged(itemCount);
-				View lc = lv.getChildAt(lv.getChildCount()-2);
-				if(lc!=null && lc.getBottom()>=lv.getHeight()){
-					CMN.Log("停止拉取", ((MyViewHolder)lc.getTag()).webView.getText());
-					itemCount = mCards_size;
-				}
-				if(mCards_size>itemCount){
-					lv.postDelayed(mPullViewsRunnable, 15);
-				}
-			}
-		}
-	};
 	private boolean isDarkStamp;
 	private boolean bIsCombinedSearch;
+	String mtableName = TABLE_FAVORITE_v2;
+	
+	SparseArray<Long> lastVisiblePositionMap = new SparseArray<>();
+	
+	RecyclerView lv;
+	
+	main_list_Adapter mAdapter;
+	PagingAdapterInterface<HistoryDatabaseReader> dataAdapter;
+	ImageView pageAsyncLoader;
+	Date date = new Date();
+	
+	public static class HistoryDatabaseReader implements CursorReader {
+		long row_id;
+		long sort_number;
+		String books;
+		String record;
+		String time_text;
+		@Override
+		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
+			record = cursor.getString(2);
+			if (testDBV2) {
+				books = cursor.getString(3);
+			}
+			if (row_id!=-1) {
+				row_id = rowID;
+				sort_number = sortNum;
+			} else {
+				row_id = cursor.getLong(0);
+				sort_number = cursor.getLong(1);
+			}
+		}
+		
+		@Override
+		public String toString() {
+			return "WebAnnotationCursorReader{" +
+					"lex='" + record + '\'' +
+					'}';
+		}
+	}
 	
 	public DBroswer(){
 		super();
+		dataAdapter = new CursorAdapter<>(EmptyCursor, new HistoryDatabaseReader());
 		mAdapter = new main_list_Adapter();
 	}
 
@@ -106,11 +137,9 @@ public class DBroswer extends Fragment implements
 
 	public String currentDisplaying = "";
 	public int currentPos=-1;
+	public long currentRowId=-1;
 
-	RecyclerView lv;
-
-	main_list_Adapter mAdapter;
-
+	
 	View main_clister_layout;
 	View progressBar;
 	ToggleButton tg2;
@@ -120,11 +149,10 @@ public class DBroswer extends Fragment implements
 	TextView counter;
 	View shelfright;
 
-	protected final SparseArray<ItemCard> mCards = new SparseArray<>();
 	SparseArray<String> toDelete = new SparseArray<>();
-	HashSet<Integer> Selection = new HashSet<>();
+	HashSet<Long> toDeleteV2 = new HashSet<>();
+	HashSet<Long> Selection = new HashSet<>();
 
-	public int StoragePolicy;
 	boolean isToDel = false;
 
 	LinearLayoutManager lm;
@@ -148,41 +176,64 @@ public class DBroswer extends Fragment implements
 				}
 			}
 			a.DetachContentView(true);
-			if(!isToDel || toDelete.size()==0) return 1;
+			SparseArray<String> deleting = this.toDelete;
+			Long[] deletingV2 = this.toDeleteV2.toArray(new Long[this.toDeleteV2.size()]);
+			if(!isToDel || deleting.size()==0) return 1;
 
-			//删除收藏
-			String sql = "delete from t1 where lex = ? ";
-			SQLiteStatement preparedDeleteExecutor = mLexiDB.getDB().compileStatement(sql);
-			mLexiDB.getDB().beginTransaction();  //开启事务
-			int count = 0;
-			int toDelete_size = toDelete.size();
-			try {
-				for(int i=0;i<toDelete.size();i++) {//delete
-					String key = toDelete.valueAt(i);
-					int deleI = toDelete.keyAt(i);
-					preparedDeleteExecutor.bindString(1, key);
-					if(preparedDeleteExecutor.executeUpdateDelete()!=-1) {
-						//Selection.remove(deleI);
-						mCards.remove(deleI);
-						count++;
+			//删除收藏 to impl
+			SQLiteDatabase db = mLexiDB.getDB();
+			if(testDBV2) {
+				String sql = "delete from favorite where id = ? ";
+				SQLiteStatement preparedDeleteExecutor = db.compileStatement(sql);
+				db.beginTransaction();  //开启事务
+				int count = 0;
+				int toDelete_size = deletingV2.length;
+				try {
+					for(Long rowId:deletingV2) {//delete
+						preparedDeleteExecutor.bindLong(1, rowId);
+						if(preparedDeleteExecutor.executeUpdateDelete()!=-1) {
+							count++;
+						}
+						this.toDeleteV2.remove(rowId);
 					}
-					toDelete.removeAt(i);
+					preparedDeleteExecutor.close();
+					Selection.clear();
+					db.setTransactionSuccessful();  //控制回滚
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					db.endTransaction();  //事务提交
+					rebuildCursor(a);
+					show(R.string.maniDel,count,toDelete_size);
 				}
-				preparedDeleteExecutor.close();
-				Selection.clear();
-				mLexiDB.getDB().setTransactionSuccessful();  //控制回滚
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				mLexiDB.getDB().endTransaction();  //事务提交
-				cr.close();
-				cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
-				mCards.clear();
-				show(R.string.maniDel,count,toDelete_size);
-				mAdapter.notifyDataSetChanged();
+			} else {
+				String sql = "delete from t1 where lex = ? ";
+				SQLiteStatement preparedDeleteExecutor = db.compileStatement(sql);
+				db.beginTransaction();  //开启事务
+				int count = 0;
+				int toDelete_size = deleting.size();
+				try {
+					for(int i = 0; i< deleting.size(); i++) {//delete
+						String key = deleting.valueAt(i);
+						int deleI = deleting.keyAt(i);
+						preparedDeleteExecutor.bindString(1, key);
+						if(preparedDeleteExecutor.executeUpdateDelete()!=-1) {
+							//Selection.remove(deleI);
+							count++;
+						}
+						deleting.removeAt(i);
+					}
+					preparedDeleteExecutor.close();
+					Selection.clear();
+					db.setTransactionSuccessful();  //控制回滚
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					db.endTransaction();  //事务提交
+					rebuildCursor(a);
+					show(R.string.maniDel,count,toDelete_size);
+				}
 			}
-
-
 			return 1;
 		}
 		if(sharedPopup!=null && sharedPopup.isShowing()) {
@@ -196,7 +247,7 @@ public class DBroswer extends Fragment implements
 		if(Selection.size()>0) {//SelectionMode==SelectionMode_select
 			Selection.clear();
 			mAdapter.notifyDataSetChanged();
-			counter.setText(Selection.size()+"/"+mCards_size);
+			counter.setText(Selection.size()+"/"+dataAdapter.getCount());
 			if(SelectionMode==SelectionMode_select) {
 				int taregtID=0;
 				switch(lastFallBackTarget) {
@@ -216,7 +267,7 @@ public class DBroswer extends Fragment implements
 					target.performClick();
 				}
 			}else {
-				counter.setText(Selection.size()+"/"+mCards_size);
+				counter.setText(Selection.size()+"/"+dataAdapter.getCount());
 			}
 			return 1;
 		}
@@ -258,7 +309,11 @@ public class DBroswer extends Fragment implements
 					target.setTag(false);
 					target.performClick();
 					lastFallBackTarget=tmpVal;
-					if(!Selection.contains(position)) {
+					boolean alreadyselected = Selection.contains((long) position);
+					if (testDBV2) {
+						alreadyselected = Selection.contains(dataAdapter.getReaderAt(position).row_id);
+					}
+					if(!alreadyselected) {
 						view.performClick();
 					}
 					return false;
@@ -334,59 +389,88 @@ public class DBroswer extends Fragment implements
 		return main_clister_layout = _main_clister_layout;
 	}
 	boolean newStart;
-
 	long last_listHolder_tt;
 
 	String mRestrictOnDeck;
 	int lastFirst = 0;
 	LexicalDBHelper mLexiDB;
-	Cursor cr;
+	//Cursor cr;
 
 	int lastChecked = 0;
-
-	protected int mCards_size;
+	
 	@Override
 	public void onDetach(){
 		super.onDetach();
-		CMN.Log("on browser detach", cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0);
-		if(cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0) {
-			View v = lv.getChildAt(0);
-			((AgentApplication)getActivity().getApplication()).putLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE, lm.findFirstVisibleItemPosition(), v==null?0:v.getTop());
+		//CMN.Log("on browser detach", cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0);
+		View ca = lv.getChildAt(0);
+		if (ca!=null) {
+			ViewUtils.ViewDataHolder holder = (ViewUtils.ViewDataHolder) ca.getTag();
+			HistoryDatabaseReader reader = (HistoryDatabaseReader) holder.tag;
+			lastVisiblePositionMap.append(getFragmentId(), reader.sort_number);
+//			a.showT(new Date(last_visible_entry_time).toLocaleString());
 		}
 	}
 
 	private void rebuildCursor(MainActivityUIBase a) {
-		mCards.clear();
-		if (testDBV2) {
-			cr = mLexiDB.getDB().rawQuery("select * from favorite where folder=? order by last_visit_time desc", new String[]{""+opt.getCurrFavoriteNoteBookId()});
-			//cr = mLexiDB.getDB().query(TABLE_FAVORITE_v2, null,null,null,null,null,"last_visit_time desc");
-		} else {
-			cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
+		boolean bSingleThreadLoading = false;
+		SQLiteDatabase db = mLexiDB.getDB();
+		if (pageAsyncLoader==null) {
+			pageAsyncLoader = new ImageView(a);
 		}
-		mCards_size = cr.getCount();
-		//todo 记忆 lastFirst
-		int offset = 0;
-		lastFirst = 0;
-		if(true){
-			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
-			if(lcibdfn!=null){
-				lastFirst = Math.min(lcibdfn.key, mCards_size);
-				offset =  lcibdfn.value;
+		if (testDBV2) {
+			if (bSingleThreadLoading) {
+				Cursor cursor = db.rawQuery("SELECT id,creation_time,lex,books FROM "+mtableName+" ORDER BY creation_time desc", null);
+				CMN.Log("查询个数::"+cursor.getCount());
+				dataAdapter = new CursorAdapter<>(cursor, new HistoryDatabaseReader());
+				mAdapter.notifyDataSetChanged();
+			} else {
+				if (dataAdapter!=null) {
+					// todo
+				}
+				PagingCursorAdapter<HistoryDatabaseReader> dataAdapter = new PagingCursorAdapter<>(db
+						, new SimpleClassConstructor<>(HistoryDatabaseReader.class)
+						, HistoryDatabaseReader[]::new);
+				this.dataAdapter = dataAdapter;
+				dataAdapter.bindTo(lv)
+						.setAsyncLoader(a, pageAsyncLoader)
+						.sortBy(mtableName, LexicalDBHelper.FIELD_CREATE_TIME, true, "lex, books");
+				if (getFragmentId()==DB_FAVORITE) {
+					dataAdapter.where("folder=?", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
+				}
+				dataAdapter.startPaging(lastVisiblePositionMap.get(getFragmentId(), 0L), 20, 15);
 			}
 		}
-		if(getDelayPullData()) {
-			itemCount = lastFirst;
-			lv.post(mPullViewsRunnable);
-		} else {
-			itemCount = mCards_size;
+		else {
+			Cursor cursor = mLexiDB.getDB().rawQuery("select rowid,date,lex from t1 order by date desc", null);
+			CMN.Log("查询个数::"+cursor.getCount());
+			dataAdapter = new CursorAdapter<>(cursor, new HistoryDatabaseReader());
+			mAdapter.notifyDataSetChanged();
 		}
-		mAdapter.notifyDataSetChanged();
-		lm.scrollToPositionWithOffset(lastFirst,offset);
-		lm.setInitialPrefetchItemCount(10);
+		CMN.Log("rebuildCursor!!!");
+		//todo 记忆 lastFirst
+//		int offset = 0;
+//		lastFirst = 0;
+//		if(true)
+//		{
+//			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
+//			if(lcibdfn!=null)
+//			{
+//				lastFirst = Math.min(lcibdfn.key, dataAdapter.getCount());
+//				offset =  lcibdfn.value;
+//			}
+//		}
+//		mAdapter.notifyDataSetChanged();
+//		lm.scrollToPositionWithOffset(lastFirst,offset);
+//		lm.setInitialPrefetchItemCount(10);
 	}
 
 	protected void loadInAll(MainActivityUIBase a) {
-		mLexiDB = a.prepareFavoriteCon();
+		CMN.Log("FAV load in all!!!");
+		if (getFragmentId()==DB_FAVORITE) {
+			mLexiDB = a.prepareFavoriteCon();
+		} else if(getFragmentId()==DB_HISTORY) {
+			mLexiDB = a.prepareHistroyCon();
+		}
 		rebuildCursor(a);
 		String name;
 		if (testDBV2) {
@@ -395,7 +479,7 @@ public class DBroswer extends Fragment implements
 			name = CMN.unwrapDatabaseName(mLexiDB.DATABASE);
 		}
 		toolbar.setTitle(name);
-		show(R.string.maniFavor, name, mCards_size);
+		show(R.string.maniFavor, name, dataAdapter.getCount());
 		progressBar.setVisibility(View.GONE);
 		mLexiDB.lastAdded = false;
 	}
@@ -420,7 +504,7 @@ public class DBroswer extends Fragment implements
 			
 			
 			mRestrictOnDeck = "";
-			wahahaTextView.mR=main_clister_layout.getRootView();
+			WahahaTextView.mR=main_clister_layout.getRootView();
 			loadInAll(a);
 			checkColors();
 			
@@ -488,6 +572,7 @@ public class DBroswer extends Fragment implements
 		return true;
 	}
 
+	@Deprecated
 	public void moveSelectedardsToDataBase(LexicalDBHelper toDB) {
 		if(Selection.size()==0) {
 			show(R.string.noseletion);
@@ -503,35 +588,20 @@ public class DBroswer extends Fragment implements
 				String sql = "delete from t1 where lex = ? ";
 				SQLiteStatement preparedDeleteExecutor = mLexiDB.getDB().compileStatement(sql);
 				mLexiDB.getDB().beginTransaction();  //开启事务
-
 				String sql2 = "insert into t1(lex, date) values(?,?)";
 				SQLiteStatement preparedInsertExecutor = toDB.getDB().compileStatement(sql2);
 				toDB.getDB().beginTransaction();  //开启事务
 				try {
-					for(int position1 :Selection) {//移动
-						String text;long time = 0;
-						ItemCard mItemcard = mCards.get(position1);
-						if(mItemcard==null) {
-							cr.moveToPosition(position1);
-							try {
-								text=cr.getString(0);
-								time=cr.getLong(1);
-							} catch (Exception e) {
-								text="!!!Error: "+e.getLocalizedMessage();
-							}
-						}else{
-							text=mItemcard.name;
-							time=mItemcard.time;
-						}
-						preparedInsertExecutor.bindString(1, text);
-						preparedInsertExecutor.bindLong(2, time);
+					for(Long position1 :Selection) {//移动
+						HistoryDatabaseReader reader = dataAdapter.getReaderAt((int)(long)position1);
+						preparedInsertExecutor.bindString(1, reader.record);
+						preparedInsertExecutor.bindLong(2, reader.sort_number);
 						if(preparedInsertExecutor.executeInsert()!=-1) {
-							preparedDeleteExecutor.bindString(1, text);
+							preparedDeleteExecutor.bindString(1, reader.record);
 							preparedDeleteExecutor.executeUpdateDelete();
 						}
 					}
 					Selection.clear();
-
 					preparedDeleteExecutor.close();
 					preparedInsertExecutor.close();
 					mLexiDB.getDB().setTransactionSuccessful();  //控制回滚
@@ -543,19 +613,50 @@ public class DBroswer extends Fragment implements
 					toDB.getDB().endTransaction();  //事务提交
 				}
 				rebuildCursor(a);
-				counter.setText(0 +"/"+mCards_size);
+				counter.setText(0 +"/"+dataAdapter.getCount());
 			}).show();
 	}
 	
-	public void moveSelectedCardsToFolder(long nid) {
+	public void moveSelectedCardsToFolder(String name, long nid) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		a.showT("暂未实现！");
+		if(Selection.size()==0) {
+			show(R.string.noseletion);
+			return;
+		}
+		if(a==null) return;
+		new AlertDialog.Builder(a)
+			.setMessage(getResources().getString(R.string.warn_move, Selection.size()
+					, mLexiDB.getFavoriteNoteBookNameById(a.opt.getCurrFavoriteNoteBookId())
+					, name))
+			.setIcon(android.R.drawable.ic_dialog_alert)
+			.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+				String sql = "UPDATE favorite SET folder=? where id=?";
+				SQLiteDatabase database = mLexiDB.getDB();
+				SQLiteStatement preparedMoveExecutor = database.compileStatement(sql);
+				preparedMoveExecutor.bindLong(1, nid);
+				database.beginTransaction();  //开启事务
+				try {
+					for(Long rowId : Selection) {//移动
+						preparedMoveExecutor.bindLong(2, rowId);
+						preparedMoveExecutor.execute();
+					}
+					Selection.clear();
+					preparedMoveExecutor.close();
+					database.setTransactionSuccessful();  //控制回滚
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					database.endTransaction();  //事务提交
+				}
+				rebuildCursor(a);
+				counter.setText(0 +"/"+dataAdapter.getCount());
+			}).show();
 	}
 	
 	//for main list
 	//参见：live down
 	//参见：P.L.O.D -> float search view -> HomeAdapter
-	class main_list_Adapter extends RecyclerView.Adapter<MyViewHolder> implements IDragSelectAdapter
+	class main_list_Adapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<CardListItemBinding>> implements IDragSelectAdapter
 	{
 		SimpleDateFormat date;
 		Date day_;
@@ -568,17 +669,17 @@ public class DBroswer extends Fragment implements
 		@Override
 		public int getItemCount()
 		{
-			return getDelayPullData()?itemCount+1:itemCount;
+			return dataAdapter.getCount();
 		}
 
 		private OnItemClickListener mOnItemClickListener;
 		private OnItemLongClickListener mOnItemLongClickListener;
 		private OnLongClickListener longClicker = new OnLongClickListener() {
-
 			@Override
 			public boolean onLongClick(View v) {
 				return mOnItemLongClickListener.onItemLongClick(v, (Integer) v.getTag(R.id.position));
-			}};
+			}
+		};
 
 		//单机
 		public void setOnItemClickListener(OnItemClickListener mOnItemClickListener)
@@ -594,9 +695,9 @@ public class DBroswer extends Fragment implements
 		//Create
 		@NonNull
 		@Override
-		public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
+		public ViewUtils.ViewDataHolder<CardListItemBinding> onCreateViewHolder(ViewGroup parent, int viewType)
 		{
-			MyViewHolder holder = new MyViewHolder(LayoutInflater.from(getActivity()).inflate(R.layout.card_list_item, parent, false));
+			ViewUtils.ViewDataHolder<CardListItemBinding> holder = new ViewUtils.ViewDataHolder<>(CardListItemBinding.inflate(LayoutInflater.from(getActivity()), parent, false));
 			//holder.setIsRecyclable(false);
 			//if Recyclable, then setText in onBindViewHolder makes textviews unSelectable.
 			//details on this bug:
@@ -604,118 +705,113 @@ public class DBroswer extends Fragment implements
 			//issue solved.
 			CMN.Log("dbr_onCreateViewHolder", CMN.now());
 			holder.itemView.setOnLongClickListener(longClicker);
-			holder.p.setOnLongClickListener(longClicker);
+			holder.data.p.setOnLongClickListener(longClicker);
+//			webView = view.findViewById(android.R.id.text1);
+//			time = view.findViewById(R.id.subtext1);
+			holder.data.text1.setTextIsSelectable(true);
+			
 			return holder;
 		}
 
 		@Override
 		public int getItemViewType(int position) {
-			return position==itemCount && getDelayPullData()?1:0;
+			return 0;
 		}
 
 		@Override
-		public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position)
+		public void onBindViewHolder(@NonNull final ViewUtils.ViewDataHolder<CardListItemBinding> holder, final int position)
 		{
 			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 			holder.itemView.setTag(R.id.position, position);
-			holder.p.setTag(R.id.position, position);
-			if(position==itemCount && getDelayPullData()){
-				holder.itemView.getLayoutParams().height=-1;
-				holder.itemView.setVisibility(View.GONE);
-				return;
-			}
+			holder.data.p.setTag(R.id.position, position);
 			//if(true) return;
 			String text;long time = 0;
-			ItemCard mItemcard = mCards.get(position);
-			if(mItemcard==null) {
-				cr.moveToPosition(position);
-				try {
-					if (testDBV2) {
-						text=cr.getString(1);
-						time=cr.getLong(4);
-						String books = cr.getString(2);
-						day_.setTime(time);
-						holder.time.setText(date.format(day_) + "  " + a.retrieveDisplayingBooks(books));
-					} else {
-						text=cr.getString(0);
-						time=cr.getLong(1);
-					}
-				} catch (Exception e) {
-					text="!!!Error: "+e.getLocalizedMessage();
+			
+			long rowId = position;
+			
+			HistoryDatabaseReader reader = dataAdapter.getReaderAt(position);
+			holder.tag = reader;
+			try {
+				if (testDBV2) {
+					text=reader.record;
+					time=reader.sort_number;
+					rowId = reader.row_id;
+					String books = reader.books;
+					day_.setTime(time);
+					holder.data.subtext1.setText(date.format(day_) + "  " + a.retrieveDisplayingBooks(books));
+				} else {
+					text=reader.record;
+					time=reader.sort_number;
 				}
-				if(StoragePolicy==2) mCards.put(position,new ItemCard(text,time));
-				//CMN.Log("putting new vals");
-			} else {
-				text=mItemcard.name;
-				time=mItemcard.time;
+			} catch (Exception e) {
+				text="!!!Error: "+e.getLocalizedMessage();
 			}
-
-			holder.webView.setText(text.trim());
-
+			
+			holder.data.text1.setText(text.trim());
+			
 			if(GlobalOptions.isDark) {
-				if(holder.webView.getTextColors().getDefaultColor()!=a.AppBlack) {
+				if(holder.data.text1.getTextColors().getDefaultColor()!=a.AppBlack) {
 					holder.itemView.findViewById(R.id.sub_list).getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-					holder.webView.setTextColor(a.AppBlack);
+					holder.data.text1.setTextColor(a.AppBlack);
 				}
 			}
 
 			if (!testDBV2) {
-				if(time==0)
-					holder.time.setText("N.A.");
-				else {
-					day_.setTime(time);
-					holder.time.setText(date.format(day_));
-				}
+				day_.setTime(time);
+				holder.data.subtext1.setText(date.format(day_));
 			}
 
-			if(Selection.contains(position))//
+			if(Selection.contains(rowId))
 				holder.itemView.setBackgroundColor(GlobalOptions.isDark?0xFF4F7FDF:0xa04F5F6F);//FF4081 4F7FDF
 			else
 				holder.itemView.setBackgroundColor(0x00a0f0f0);//aaa0f0f0
 
 			if(inSearch && mSearchResTree!=null && mSearchResTree.contains(position))
-				holder.webView.setBackgroundResource(R.drawable.xuxian2);
+				holder.data.text1.setBackgroundResource(R.drawable.xuxian2);
 			else
-				holder.webView.setBackground(null);
+				holder.data.text1.setBackground(null);
 
 
 			if(SelectionMode==SelectionMode_select) {
-				holder.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, position));
-				holder.p.setVisibility(View.VISIBLE);
+				holder.data.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, position));
+				holder.data.p.setVisibility(View.VISIBLE);
 			}else{
 				holder.itemView.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, position));
-				holder.p.setVisibility(View.GONE);
+				holder.data.p.setVisibility(View.GONE);
 			}
-			holder.p.setTag(position);
+			holder.data.p.setTag(position);
 		}
 
 		@Override
 		public void setSelected(int index, boolean selected) {
-			boolean alreadyselected=Selection.contains(index);
+			long posId = index;
+			if (testDBV2) {
+				posId = dataAdapter.getReaderAt(index).row_id;
+			}
+			boolean alreadyselected=Selection.contains(posId);
 			boolean needUpdate = false;
 			if(opt.getInRemoveMode()) {//bIsInverseSelecting
 				if(selected && alreadyselected) {
-					Selection.remove(index);
+					Selection.remove(posId);
 					needUpdate=true;
-				}else if(!selected && !alreadyselected) {
-					Selection.add(index);
+				} else if(!selected && !alreadyselected) {
+					Selection.add(posId);
 					needUpdate=true;
 				}
-			}else {
+			} else {
 				if(selected && !alreadyselected) {
-					Selection.add(index);
+					Selection.add(posId);
 					needUpdate=true;
-				}else if(!selected && alreadyselected) {
-					Selection.remove(index);
+				} else if(!selected && alreadyselected) {
+					Selection.remove(posId);
 					needUpdate=true;
 				}
 			}
 
-
 			if(needUpdate) {
 				notifyItemChanged(index);
 				counter.setVisibility(View.VISIBLE);
-				counter.setText(Selection.size()+"/"+mCards_size);
+				counter.setText(Selection.size()+"/"+dataAdapter.getCount());
 			}
 		}
 
@@ -730,31 +826,12 @@ public class DBroswer extends Fragment implements
 		//}
 	}
 
-	protected boolean getDelayPullData() {
-		return opt.getDatabaseDelayPullData();
-	}
-
 
 	public interface OnItemClickListener{
 		void onItemClick(View view,int position);}
 	public interface OnItemLongClickListener{
 		boolean onItemLongClick(View view,int position);}
-
-	static class MyViewHolder extends ViewHolder
-	{
-		TextView webView;
-		TextView time;
-		View p;
-		public MyViewHolder(View view)
-		{
-			super(view);
-			p = view.findViewById(R.id.p);
-			webView = view.findViewById(android.R.id.text1);
-			time = view.findViewById(R.id.subtext1);
-			webView.setTextIsSelectable(true);
-			itemView.setTag(this);
-		}
-	}
+		
 
 	RashSet<Integer> mSearchResTree = new RashSet<>();
 
@@ -766,26 +843,21 @@ public class DBroswer extends Fragment implements
 		protected Void doInBackground(String... keys) {
 			String key = keys[0];
 			mSearchResTree.clear();
-			for(int position=0;position<mCards_size;position++) {
-				String text;
-				ItemCard mItemcard = mCards.get(position);
-				if(mItemcard==null) {
-					cr.moveToPosition(position);
-					try {
-						text=cr.getString(0);
-					} catch (Exception e) {
-						text="!!!Error: "+e.getLocalizedMessage();
-					}
-					if(StoragePolicy==2) mCards.put(position,new ItemCard(text,cr.getLong(1)));
-					//CMN.Log("putting new vals");
-				}else{
-					text=mItemcard.name;
-				}
-
-				if(text.contains(key)) {
-					mSearchResTree.insert(position);
-				}
-			}
+//			for(int position=0;position<dataAdapter.getCount();position++) {
+//				String text;
+//				{
+//					cr.moveToPosition(position);
+//					try {
+//						text=cr.getString(0);
+//					} catch (Exception e) {
+//						text="!!!Error: "+e.getLocalizedMessage();
+//					}
+//				}
+//
+//				if(text.contains(key)) {
+//					mSearchResTree.insert(position);
+//				}
+//			}
 
 			return null;
 		}
@@ -799,14 +871,13 @@ public class DBroswer extends Fragment implements
 			progressBar.setVisibility(View.VISIBLE);
 		}
 
-
 		@Override
 		public void onPostExecute(Void result) {
 			progressBar.setVisibility(View.GONE);
 			if(mSearchResTree.getRoot()!=null)
 				lm.scrollToPositionWithOffset(mSearchResTree.minimum(), toolbar.getHeight());
 			fastScroller.setTree(mSearchResTree);
-			fastScroller.timeLength = mCards_size;
+			fastScroller.timeLength = dataAdapter.getCount();
 			fastScroller.invalidate();
 			mAdapter.notifyDataSetChanged();
 			show(R.string.resCount,mSearchResTree.size());
@@ -840,6 +911,7 @@ public class DBroswer extends Fragment implements
 		int pos;
 		int offset;
 		String msg=null;
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		switch(v.getId()) {
 			case R.id.tg2://.ver
 				boolean ck = ((ToggleButton)v).isChecked();
@@ -874,7 +946,7 @@ public class DBroswer extends Fragment implements
 					sideBar.setRbyView(v);
 					mAdapter.notifyDataSetChanged();
 					if(counter.getVisibility()!=View.VISIBLE) {
-						counter.setText(Selection.size()+"/"+mCards_size);
+						counter.setText(Selection.size()+"/"+dataAdapter.getCount());
 						counter.setVisibility(View.VISIBLE);
 					}
 					if(v.getTag()==null)
@@ -931,50 +1003,40 @@ public class DBroswer extends Fragment implements
 						.setMessage(getResources().getString(R.string.warn_delete, Selection.size()))
 						.setIcon(android.R.drawable.ic_dialog_alert)
 						.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-
-							String sql = "delete from t1 where lex = ? ";
-							SQLiteStatement preparedDeleteExecutor = mLexiDB.getDB().compileStatement(sql);
-							mLexiDB.getDB().beginTransaction();  //开启事务
-
-							try {
-								//List delList = new ArrayList();
-								for(int position:Selection) {//移动
-									String text;
-									ItemCard mItemcard = mCards.get(position);
-									if(mItemcard==null) {
-										cr.moveToPosition(position);
-										try {
-											text=cr.getString(0);
-										} catch (Exception e) {
-											text="!!!Error: "+e.getLocalizedMessage();
-										}
-									}else{
-										text=mItemcard.name;
-									}
-
-									preparedDeleteExecutor.bindString(1, text);
-									if(preparedDeleteExecutor.executeUpdateDelete()!=-1) {
-										//delList.add(position);
-										mCards.remove(position);
-										mCards_size--;
-									}
+							//if (testDBV2)
+							{
+								String sql = "DELETE FROM "+mtableName+" WHERE id = ? ";
+								if (!testDBV2) {
+									sql = "DELETE FROM t1 WHERE rowid = ? ";
 								}
-								Selection.clear();
-								//delList.clear();
-
-								preparedDeleteExecutor.close();
-								mLexiDB.getDB().setTransactionSuccessful();  //控制回滚
-							} catch (Exception e) {
-								e.printStackTrace();
-							} finally {
-								mLexiDB.getDB().endTransaction();  //事务提交
-								cr.close();
-								cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
-								mCards.clear();
-								mAdapter.notifyDataSetChanged();
-								counter.setText(Selection.size()+"/"+mCards_size);
+								SQLiteDatabase database_mod_delete = mLexiDB.getDB();
+								SQLiteStatement preparedDeleteExecutor = database_mod_delete.compileStatement(sql);
+								database_mod_delete.beginTransaction();  //开启事务
+								try {
+									for(Long position:Selection) {//删除记录
+										try {
+											if (testDBV2) {
+												preparedDeleteExecutor.bindLong(1, position);
+											} else {
+												preparedDeleteExecutor.bindLong(1, dataAdapter.getReaderAt((int)(long)position).row_id);
+											}
+											preparedDeleteExecutor.executeUpdateDelete();
+										} catch (Exception e) {
+											CMN.Log(e);
+										}
+									}
+									Selection.clear();
+									preparedDeleteExecutor.close();
+									database_mod_delete.setTransactionSuccessful();  //控制回滚
+								} catch (Exception e) {
+									e.printStackTrace();
+								} finally {
+									database_mod_delete.endTransaction();  //事务提交
+									rebuildCursor(a);
+									mAdapter.notifyDataSetChanged();
+									counter.setText(Selection.size()+"/"+dataAdapter.getCount());
+								}
 							}
-
 							mAdapter.notifyDataSetChanged();
 						}).setOnDismissListener(dialog -> {
 							if(hasKeyBoard) {
@@ -983,21 +1045,19 @@ public class DBroswer extends Fragment implements
 						}).show();
 				d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
 				break;
-			case R.id.choosed:{//choose deck
+			case R.id.choosed: {//choose deck
 				if(System.currentTimeMillis()-last_listHolder_tt<150 && revertage==1) {//too fast from last hide
 					should_hide_cd1=true;
 				}
-				MainActivityUIBase a = (MainActivityUIBase) getActivity();
 				a.showChooseFavorDialog(1);
 			} break;
 			case R.id.bookmark: {
 				onLongClick(((ViewGroup)v.getParent()).getChildAt(0));
 			} break;
-			case R.id.changed:{//change deck
+			case R.id.changed: {//change deck
 				if(System.currentTimeMillis()-last_listHolder_tt<150 && revertage==2) {//too fast from last hide
 					should_hide_cd2=true;
 				}
-				MainActivityUIBase a = (MainActivityUIBase) getActivity();
 				a.showChooseFavorDialog(2);
 			} break;
 			case R.id.search:
@@ -1069,9 +1129,8 @@ public class DBroswer extends Fragment implements
 		}
 
 		if(msg!=null) {
-			((MainActivityUIBase)getActivity()).showTopSnack(snack_root, msg, 0.5f, -1, -1, 0);
+			a.showTopSnack(snack_root, msg, 0.5f, -1, -1, 0);
 		}
-
 	}
 
 
@@ -1079,7 +1138,7 @@ public class DBroswer extends Fragment implements
 		if(SelectionMode==SelectionMode_select)
 			if(!opt.getSelection_Persists()) {//清空选择
 				Selection.clear();
-				counter.setText(Selection.size()+"/"+mCards_size);
+				counter.setText(Selection.size()+"/"+dataAdapter.getCount());
 				counter.setVisibility(View.GONE);
 			}
 	}
@@ -1106,23 +1165,38 @@ public class DBroswer extends Fragment implements
 			switch(position+onclickBase) {//处理点击事件
 				case 10://全选
 					//TODO develop more efficient and elegant algorithm.
-					for(int i=0;i<mCards_size;i++) {
-						Selection.add(i);
+					if (testDBV2) {
+						for(int i=0;i<dataAdapter.getCount();i++) {
+							Selection.add(dataAdapter.getReaderAt(i).row_id);
+						}
+					} else {
+						for(int i=0;i<dataAdapter.getCount();i++) {
+							Selection.add((long) i);
+						}
 					}
-					counter.setText(Selection.size()+"/"+mCards_size);
+					counter.setText(Selection.size()+"/"+dataAdapter.getCount());
 					mAdapter.notifyDataSetChanged();
 					break;
 				case 11:
 					Selection.clear();
-					counter.setText(Selection.size()+"/"+mCards_size);
+					counter.setText(Selection.size()+"/"+dataAdapter.getCount());
 					mAdapter.notifyDataSetChanged();
 					break;
 				case 12://反选
-					for(int i=0;i<mCards_size;i++) {
-						if(!Selection.remove(i))
-							Selection.add(i);
+					if (testDBV2) {
+						for(int i=0;i<dataAdapter.getCount();i++) {
+							long rowId = dataAdapter.getReaderAt(i).row_id;
+							if(!Selection.remove(rowId))
+								Selection.add(rowId);
+						}
+					} else {
+						for(int i=0;i<dataAdapter.getCount();i++) {
+							if(!Selection.remove((long) i))
+								Selection.add((long) i);
+						}
 					}
-					counter.setText(Selection.size()+"/"+mCards_size);
+					
+					counter.setText(Selection.size()+"/"+dataAdapter.getCount());
 					mAdapter.notifyDataSetChanged();
 					break;
 				case 13://反向选择-toggle
@@ -1139,46 +1213,38 @@ public class DBroswer extends Fragment implements
 				case 31://刷新
 					break;
 				case 40://更新书签
-					if(mCards.size()<1) break;
-					if(cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0) {
-						if(lv.getChildAt(0)!=null) {
-							String key = String.valueOf(((TextView) lv.getChildAt(0).findViewById(android.R.id.text1)).getText());
-							if(mLexiDB.updateBookMark(key)!=-1)
-								show(R.string.bookmarkupdated, key);
-						}
-					}
+					// toimpl
+//					if(cr!=null && lm.findFirstVisibleItemPosition()>=1 && dataAdapter.getCount()>=0) {
+//						if(lv.getChildAt(0)!=null) {
+//							String key = String.valueOf(((TextView) lv.getChildAt(0).findViewById(android.R.id.text1)).getText());
+//							if(mLexiDB.updateBookMark(key)!=-1)
+//								show(R.string.bookmarkupdated, key);
+//						}
+//					}
 					break;
 				case 41://跳转书签
 					String key = mLexiDB.getLastBookMark();
-					if(key!=null) {
-						int cc=0;
-						for(int i=0;i<mCards_size;i++) {
-							String text;
-							ItemCard mItemcard = mCards.get(position);
-							if(mItemcard==null) {
-								cr.moveToPosition(position);
-								try {
-									text=cr.getString(0);
-								} catch (Exception e) {
-									text="!!!Error: "+e.getLocalizedMessage();
-								}
-								if(StoragePolicy==2 || StoragePolicy==1) mCards.put(position,new ItemCard(text,cr.getLong(1)));
-								//CMN.Log("putting new vals");
-							}else{
-								text=mItemcard.name;
-							}
-
-
-							if(text.equals(key)) {
-								lm.scrollToPositionWithOffset(cc, 0);
-								show(R.string.bookmarkjumped, key);
-								return;
-							}
-							cc++;
-						}
-
-
-					}
+//					if(key!=null) {
+//						int cc=0;
+//						for(int i=0;i<dataAdapter.getCount();i++) {
+//							String text;
+//							{
+//								cr.moveToPosition(position);
+//								try {
+//									text=cr.getString(0);
+//								} catch (Exception e) {
+//									text="!!!Error: "+e.getLocalizedMessage();
+//								}
+//							}
+//
+//							if(text.equals(key)) {
+//								lm.scrollToPositionWithOffset(cc, 0);
+//								show(R.string.bookmarkjumped, key);
+//								return;
+//							}
+//							cc++;
+//						}
+//					}
 					show(R.string.bookmarkfailed, key);
 					break;
 				case 50://严格模式
@@ -1331,41 +1397,37 @@ public class DBroswer extends Fragment implements
 				//TODO retrieve from sibling views
 				currentDisplaying = String.valueOf(((TextView) view.findViewById(android.R.id.text1)).getText());
 			}
-			else {
-				String text = null;long time = 0;
-				ItemCard mItemcard = mCards.get(position);
-				if(mItemcard==null) {
-					cr.moveToPosition(position);
-					try {
-						currentDisplaying=cr.getString(0);
-						time=cr.getLong(1);
-					} catch (Exception e) {
-						currentDisplaying="!!!Error: "+e.getLocalizedMessage();
-					}
-					if(StoragePolicy==2) mCards.put(position,new ItemCard(text,time));
-				}else{
-					currentDisplaying=mItemcard.name;
-					time=mItemcard.time;
-				}
-			}
 
 			int lastClickedPosBeforePageTurn = position - adelta;
 			ScrollerRecord pagerec=null;
 			currentPos = position;
+			long rowId = 0;
+			HistoryDatabaseReader reader = dataAdapter.getReaderAt(position);
+			if (testDBV2) {
+				rowId = reader.row_id;
+				currentRowId = position;
+			}
+			currentDisplaying = reader.record;
 
 			switch(SelectionMode) {
 				case SelectionMode_select:{
-					if(!Selection.remove(position)) {
-						Selection.add(position);
+					if (testDBV2) {
+						if(!Selection.remove(rowId)) {
+							Selection.add(rowId);
+						}
+					} else {
+						if(!Selection.remove((long) position)) {
+							Selection.add((long) position);
+						}
 					}
-					counter.setText(Selection.size()+"/"+mCards_size);
+					counter.setText(Selection.size()+"/"+dataAdapter.getCount());
 					counter.setVisibility(View.VISIBLE);
 					mAdapter.notifyItemChanged(position);
 				} break;
 				case SelectionMode_pan:{
+					//toimpl
 					if (testDBV2) {
-						cr.moveToPosition(position);
-						String texts = cr.getString(2);
+						String texts = reader.books;
 						CMN.Log("复活::", texts);
 						if (texts!=null) {
 							String[] textsArr = texts.split(";");
@@ -1395,7 +1457,7 @@ public class DBroswer extends Fragment implements
 						queryAndShowOneDictionary(a.currentDictionary, currentDisplaying, position, true);
 					}
 				} break;
-				case SelectionMode_peruseview:{
+				case SelectionMode_peruseview: {
 					ArrayList<Integer> records = new ArrayList<>();
 					additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
 					ArrayList<additiveMyCpr1> data = new ArrayList<>();
@@ -1493,7 +1555,8 @@ public class DBroswer extends Fragment implements
 					CMN.Log(e);
 				}
 			}
-		} else {
+		}
+		else {
 			for(int dIdx=0;dIdx<a.md.size();dIdx++) {//联合搜索
 				BookPresenter mdTmp = a.md_get(dIdx);
 				if(mdTmp!=null) {
@@ -1701,22 +1764,38 @@ public class DBroswer extends Fragment implements
 	public void toggleFavor() {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
-		if(toDelete.get(currentPos)==null) {
-			a.favoriteBtn.setActivated(false);
-			toDelete.put(currentPos,currentDisplaying);
-			isToDel=true; a.show(R.string.toRemove);
-		}else {
-			toDelete.remove(currentPos);
-			a.favoriteBtn.setActivated(true);
-			a.show(R.string.added);
+		if (testDBV2) {
+			if(toDeleteV2.remove(currentRowId)) {
+				a.favoriteBtn.setActivated(true);
+				a.show(R.string.added);
+			} else {
+				a.favoriteBtn.setActivated(false);
+				toDeleteV2.add(currentRowId);
+				isToDel=true; a.show(R.string.toRemove);
+			}
+		} else {
+			SparseArray<String> toDelete = this.toDelete;
+			if(toDelete.get(currentPos)==null) {
+				a.favoriteBtn.setActivated(false);
+				toDelete.put(currentPos,currentDisplaying);
+				isToDel=true; a.show(R.string.toRemove);
+			} else {
+				toDelete.remove(currentPos);
+				a.favoriteBtn.setActivated(true);
+				a.show(R.string.added);
+			}
 		}
 	}
 
 
 	protected void processFavorite(int position,String key) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		if(a==null) return;
-		a.favoriteBtn.setActivated(toDelete.get(currentPos)==null);
+		if(a==null || a.favoriteBtn==null) return;
+		if (testDBV2) {
+			a.favoriteBtn.setActivated(!toDeleteV2.contains(currentRowId));
+		} else {
+			a.favoriteBtn.setActivated(toDelete.get(currentPos)==null);
+		}
 	}
 
 	public void goBack() {
@@ -1741,7 +1820,7 @@ public class DBroswer extends Fragment implements
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
 		if(opt.getBottomNavigationMode()==0) {
-			if (currentPos + 1 > mCards_size - 1) {
+			if (currentPos + 1 > dataAdapter.getCount() - 1) {
 				a.show(R.string.endendr);
 				return;
 			}
@@ -1765,19 +1844,7 @@ public class DBroswer extends Fragment implements
 		}
 	}
 
-	class ItemCard {
-		String name;
-		long time;
-
-
-		public ItemCard(String text, long time_) {
-			time=time_;
-			name=text;
-		}
-
-	}
-
 	public int getFragmentId() {
-		return 1;
+		return DB_FAVORITE;
 	}
 }

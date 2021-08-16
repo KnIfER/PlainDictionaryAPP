@@ -18,18 +18,18 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.EditTextmy;
 
-public class wahahaTextView extends TextView  implements MenuItem.OnMenuItemClickListener{
+public class WahahaTextView extends TextView  implements MenuItem.OnMenuItemClickListener{
 	private boolean bIsActionMenuShown;
 	private callbackme callmeback;
 
-	public wahahaTextView(Context context) {
+	public WahahaTextView(Context context) {
 		this(context, null);
 	}
-	public wahahaTextView(Context context, AttributeSet attrs) {
+	public WahahaTextView(Context context, AttributeSet attrs) {
 		this(context, attrs, 0);
 	}
 
-	public wahahaTextView(Context context, AttributeSet attrs, int defStyleAttr) {
+	public WahahaTextView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 	}
 	
@@ -63,7 +63,7 @@ public class wahahaTextView extends TextView  implements MenuItem.OnMenuItemClic
 	@RequiresApi(api = Build.VERSION_CODES.M)
 	private class callbackme extends ActionMode.Callback2 implements OnLongClickListener{
 		ActionMode.Callback callback;
-		public wahahaTextView.callbackme callhere(ActionMode.Callback callher) {
+		public WahahaTextView.callbackme callhere(ActionMode.Callback callher) {
 			if(callher!=null)
 				callback=callher;
 			return this;
@@ -91,7 +91,7 @@ public class wahahaTextView extends TextView  implements MenuItem.OnMenuItemClic
 
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			return wahahaTextView.this.onMenuItemClick(item);
+			return WahahaTextView.this.onMenuItemClick(item);
 		}
 
 

@@ -6,14 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.knziha.plod.dictionary.Utils.MyIntPair;
-
-import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
 import static db.LexicalDBHelper.TABLE_HISTORY_v2;
 
 public class DHBroswer extends DBroswer {
 	public DHBroswer(){
 		super();
+		mtableName = TABLE_HISTORY_v2;
 	}
 
 	@Override
@@ -40,36 +38,21 @@ public class DHBroswer extends DBroswer {
 
 	protected void loadInAll(MainActivityUIBase a) {
 		CMN.Log("load in all!!!");
-		if (testDBV2) {
-			cr = mLexiDB.getDB().query(TABLE_HISTORY_v2, null,null,null,null,null,"last_visit_time desc");
-		} else {
-			cr = mLexiDB.getDB().query("t1", null,null,null,null,null,"date desc");
-		}
-		mCards_size = cr.getCount();
-		itemCount = mCards_size;
-		//itemCount=Math.min(lastFirst, mCards_size);
-		//lv.post(mPullViewsRunnable);
-		int offset = 0;
-		lastFirst = 0;
-		if(false){
-			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
-			if(lcibdfn!=null){
-				lastFirst = Math.min(lcibdfn.key, mCards_size);
-				offset =  lcibdfn.value;
-			}
-		}
-		if(getDelayPullData()) {
-			itemCount = lastFirst;
-			lv.post(mPullViewsRunnable);
-		}
-		else {
-			itemCount = mCards_size;
-		}
+		super.loadInAll(a);
+//		int offset = 0;
+//		lastFirst = 0;
+//		if(false){
+//			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
+//			if(lcibdfn!=null){
+//				lastFirst = Math.min(lcibdfn.key, mCards_size);
+//				offset =  lcibdfn.value;
+//			}
+//		}
 		String name = CMN.unwrapDatabaseName(mLexiDB.DATABASE);
 		toolbar.setTitle(name);
-		show(R.string.maniFavor2, name ,mCards_size);
-		mAdapter.notifyDataSetChanged();
-		lm.scrollToPositionWithOffset(lastFirst,offset);
+		show(R.string.maniFavor2, name , dataAdapter.getCount());
+//		mAdapter.notifyDataSetChanged();
+//		lm.scrollToPositionWithOffset(lastFirst,offset);
 		mLexiDB.lastAdded = false;
 	}
 
@@ -82,7 +65,7 @@ public class DHBroswer extends DBroswer {
 			a.favoriteCon.remove(text);
 			a.favoriteBtn.setActivated(false);
 			a.show(R.string.removed);
-		}else {//添加
+		} else {//添加
 			a.favoriteCon.insert(a, text);
 			a.favoriteBtn.setActivated(true);
 			a.show(R.string.added);
@@ -92,12 +75,12 @@ public class DHBroswer extends DBroswer {
 	@Override
 	public void processFavorite(int position,String key) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		if(a==null) return;
-		a.favoriteBtn.setActivated(a.prepareFavoriteCon().contains(key));
+		if(a!=null && a.favoriteBtn!=null)
+			a.favoriteBtn.setActivated(a.prepareFavoriteCon().contains(key));
 	}
 
 	@Override
 	public int getFragmentId() {
-		return 2;
+		return DB_HISTORY;
 	}
 }
