@@ -2,21 +2,12 @@ package com.knziha.plod.dictionarymodels;
 
 import android.os.Looper;
 
-import com.knziha.filepicker.utils.FU;
-import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionary.mdictRes;
-import com.knziha.plod.dictionarymanager.files.CachedDirectory;
-import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.MainActivityUIBase;
 
-import org.apache.commons.text.StringEscapeUtils;
-import org.nanohttpd.protocols.http.ServerRunnable;
-
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -42,11 +33,11 @@ public class PlainMdict extends mdict {
 	}
 	
 	@Override
-	public String getRecordsAt(int... positions) throws IOException {
+	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, int... positions) throws IOException {
 		//CMN.Log(super.getRecordsAt(positions));
 		return positions[0]==-1? new StringBuilder(getAboutString())
 				.append("<BR>").append("<HR>")
-				.append(getDictInfo()).toString(): super.getRecordsAt(positions);
+				.append(getDictInfo()).toString(): super.getRecordsAt(getRecordAtInterceptor, positions);
 	}
 	
 	

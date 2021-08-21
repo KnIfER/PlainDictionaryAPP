@@ -42,6 +42,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
+import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.mdict;
@@ -1344,17 +1345,21 @@ public class BookPresenter
 	}
 
 	public void saveCurrentPage(WebViewmy mWebView) {
-		if (true) {
-			a.showT("功能关闭，请等待5.0版本。");
-			return;
-		}
+//		if (true) {
+//			a.showT("功能关闭，请等待5.0版本。");
+//			return;
+//		}
 		if(mWebView.currentRendring!=null && mWebView.currentRendring.length>1){
 			a.showT("错误：多重词条内容不可保存");
 			return;
 		}
-		if(getSavePageToDatabase())
-			getCon(true).enssurePageTable();
-		String url=getSaveUrl(mWebView);
+		if(getSavePageToDatabase()) {
+			if(!testDBV2) {
+				getCon(true).enssurePageTable();
+			}
+		}
+		//String url=getSaveUrl(mWebView);
+		String url=bookImpl.getEntryAt(mWebView.currentPos);
 		if(url!=null && url.length()>0)
 		mWebView.evaluateJavascript(save_js, v -> {
 			if(v!=null && v.startsWith("\"")) {
@@ -1448,12 +1453,24 @@ public class BookPresenter
 			proceed=false;
 			try {
 				try {
-					if (con.putPage(url, name, data) != -1) {
-						String succStr = true?a.getResources().getString(R.string.saved_with_size, data.length()):a.getResources().getString(R.string.saved);
-						a.showT(succStr);
-						onPageSaved();
-					} else
-						a.showT("保存失败 ");
+					if(testDBV2) {
+						if (a.prepareHistroyCon().putPage(bookImpl.getBooKID(), url, name, data) != -1) {
+							String succStr = true?a.getResources().getString(R.string.saved_with_size, data.length())
+									:a.getResources().getString(R.string.saved);
+							a.showT(succStr);
+							onPageSaved();
+						} else {
+							a.showT("保存失败 ");
+						}
+					} else {
+						if (con.putPage(url, name, data) != -1) {
+							String succStr = true?a.getResources().getString(R.string.saved_with_size, data.length()):a.getResources().getString(R.string.saved);
+							a.showT(succStr);
+							onPageSaved();
+						} else {
+							a.showT("保存失败 ");
+						}
+					}
 				} catch (Exception e) {
 					if (e instanceof MdxDBHelper.DataTooLargeException) {
 						proceed=true;
@@ -1728,7 +1745,7 @@ public class BookPresenter
 				}
 			else
 			{
-				htmlCode = bookImpl.getRecordsAt(position);
+				htmlCode = bookImpl.getRecordsAt(mBookRecordInteceptor, position);
 			}
 		} catch (Exception e) {
 			ByteArrayOutputStream s = new ByteArrayOutputStream();
@@ -1899,43 +1916,73 @@ public class BookPresenter
 		}
 	}
 	
-	public String getRecordAt(int position) throws IOException {
-		if(editingState && getContentEditable()){//Todo save and retrieve via sql database
-			CachedDirectory cf = getInternalResourcePath(false);
-			boolean ce =  cf.cachedExists();
-			File p = ce?new File(cf, Integer.toString(position)):null;
-			boolean pExists = ce && p.exists();
-			//retrieve page from database
-			if(getSavePageToDatabase()){
-				String url=Integer.toString(position);
-				getCon(true).enssurePageTable();
-				con.preparePageContain();
-				if(con.containsPage(url)){
-					if(!pExists) return con.getPageString(url, StandardCharsets.UTF_8);
-					else{
-						Object[] results=con.getPageAndTime(url);
-						if(results!=null) {
-							/* 删除文件，除非文件最近修改过。 */
-							/* 只在此处删除文件。 */
-							/* xian baocun dao shujuku ->  baocun dao wenjian  */
-							/* --> canliu laojiu de shuju. Duqu shi, bu yu li hui.*/
-							/* xian baocun dao wenjian -> baocun dao shujuku  */
-							/* --> canliu laojiu de wenjian. Duqu shi shanchu */
-							if ((long) results[1] > p.lastModified()) {
-								p.delete();
-								return new String((byte[])results[0]);
+	GetRecordAtInterceptor mBookRecordInteceptor = new GetRecordAtInterceptor() {
+		@Override
+		public String getRecordAt(UniversalDictionaryInterface bookImpl, int position) {
+			if(editingState && getContentEditable()){//Todo save and retrieve via sql database
+				CachedDirectory cf = getInternalResourcePath(false);
+				boolean ce =  cf.cachedExists();
+				File p = ce?new File(cf, Integer.toString(position)):null;
+				boolean pExists = ce && p.exists();
+				//retrieve page from database
+				if(getSavePageToDatabase()) {
+					String url=Integer.toString(position);
+					if(testDBV2) {
+						url = bookImpl.getEntryAt(position);
+						long note_id = a.prepareHistroyCon().containsPage(bookImpl.getBooKID(), url);
+						if(note_id!=-1) {
+							a.showT("有笔记！！！");
+							String ret = a.prepareHistroyCon().getPageString(bookImpl.getBooKID(), url);
+							CMN.Log(ret);
+							return ret;
+//						if(!pExists) return con.getPageString(url, StandardCharsets.UTF_8);
+//						else {
+//							Object[] results=con.getPageAndTime(url);
+//							if(results!=null) {
+//								/* 删除文件，除非文件最近修改过。 */
+//								/* 只在此处删除文件。 */
+//								/* xian baocun dao shujuku ->  baocun dao wenjian  */
+//								/* --> canliu laojiu de shuju. Duqu shi, bu yu li hui.*/
+//								/* xian baocun dao wenjian -> baocun dao shujuku  */
+//								/* --> canliu laojiu de wenjian. Duqu shi shanchu */
+//								if ((long) results[1] > p.lastModified()) {
+//									p.delete();
+//									return new String((byte[])results[0]);
+//								}
+//							}
+//						}
+						}
+					} else {
+						getCon(true).enssurePageTable();
+						con.preparePageContain();
+						if(con.containsPage(url)) {
+							if(!pExists) return con.getPageString(url, StandardCharsets.UTF_8);
+							else{
+								Object[] results=con.getPageAndTime(url);
+								if(results!=null) {
+									/* 删除文件，除非文件最近修改过。 */
+									/* 只在此处删除文件。 */
+									/* xian baocun dao shujuku ->  baocun dao wenjian  */
+									/* --> canliu laojiu de shuju. Duqu shi, bu yu li hui.*/
+									/* xian baocun dao wenjian -> baocun dao shujuku  */
+									/* --> canliu laojiu de wenjian. Duqu shi shanchu */
+									if ((long) results[1] > p.lastModified()) {
+										p.delete();
+										return new String((byte[])results[0]);
+									}
+								}
 							}
 						}
 					}
 				}
+				//retrieve page from file system
+				if(pExists){
+					return BU.fileToString(p);
+				}
 			}
-			//retrieve page from file system
-			if(pExists){
-				return BU.fileToString(p);
-			}
+			return null;
 		}
-		return bookImpl.getRecordAt(position);
-	}
+	};
 	
 	public String getAboutString() {
 		//return Build.VERSION.SDK_INT>=24?Html.fromHtml(_header_tag.get("Description"),Html.FROM_HTML_MODE_COMPACT).toString():Html.fromHtml(_header_tag.get("Description")).toString();

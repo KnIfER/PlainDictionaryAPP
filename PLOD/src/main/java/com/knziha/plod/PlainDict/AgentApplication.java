@@ -46,8 +46,6 @@ public class AgentApplication extends Application {
 	/** 退出全部实例时关闭、清理 */
 	ArrayList<MyPair<String, LexicalDBHelper>> AppDatabases = new ArrayList<>();
 	ArrayList<MyPair<String, Long>> AppDatabasesV2 = new ArrayList<>();
-	/** 退出全部实例时保留 */
-	HashSet<Integer> selectedPositions;
 	/** 退出全部实例时仍然保留 */
 	HashMap<String, MyIntPair> databaseConext = new HashMap<>();
 	/** 退出全部实例时关闭、清理 */
@@ -156,11 +154,7 @@ public class AgentApplication extends Application {
 	public void set4kCharBuff(char[] cb) {
 		_4kCharBuff=new SoftReference<>(cb);
 	}
-
-	public HashSet<Integer> selectedPositions() {
-		return selectedPositions!=null?selectedPositions:(selectedPositions=new HashSet<>(AppDatabases.size()));
-	}
-
+	
 	public MyIntPair getLastContextualIndexByDatabaseFileName(String database) {
 		return databaseConext.get(database);
 	}

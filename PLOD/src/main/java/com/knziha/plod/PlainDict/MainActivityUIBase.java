@@ -77,7 +77,6 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
@@ -5878,11 +5877,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					String key = ActivedAdapter.currentKeyText;
 					if (prepareFavoriteCon().contains(key)) {
-						favoriteCon.remove(key);
+						favoriteCon.remove(key, opt.getFavoritePerceptsRemoveAll()?-1:opt.getCurrFavoriteNoteBookId());
 						v.setActivated(false);
 						show(R.string.removed);
 					} else {
-						favoriteCon.insert(this, key);
+						favoriteCon.insert(this, key, opt.getCurrFavoriteNoteBookId());
 						v.setActivated(true);
 						show(R.string.added);
 					}
@@ -6156,11 +6155,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	void toggleStar(String key, ImageView futton, boolean toast) {
 		key = key.trim();
 		if(prepareFavoriteCon().contains(key)) {
-			favoriteCon.remove(key);
+			favoriteCon.remove(key, opt.getFavoritePerceptsRemoveAll()?-1:opt.getCurrFavoriteNoteBookId());
 			futton.setActivated(false);
 			if(toast)show(R.string.removed);
 		}else {
-			favoriteCon.insert(this, key);
+			favoriteCon.insert(this, key, opt.getCurrFavoriteNoteBookId());
 			futton.setActivated(true);
 			if(toast)show(R.string.added);
 		}
@@ -7476,7 +7475,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						view.loadDataWithBaseURL(invoker.baseUrl,
 								invoker.AcquirePageBuilder().append((AppWhite == Color.BLACK) ? MainActivityUIBase.DarkModeIncantation_l : "")
 										.append(BookPresenter.htmlHeadEndTag)
-										.append(invoker.bookImpl.getRecordsAt(pos))
+										.append(invoker.bookImpl.getRecordsAt(null, pos))
 										.append(invoker.htmlEnd).toString()
 								, null, "UTF-8", null);
 						jump(pos, invoker);
@@ -7557,7 +7556,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								}
 								invoker.AddPlodStructure(mWebView, htmlBuilder ,mWebView==popupWebView, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
-								invoker.LoadPagelet(mWebView, htmlBuilder, invoker.bookImpl.getRecordsAt(idx));
+								invoker.LoadPagelet(mWebView, htmlBuilder, invoker.bookImpl.getRecordsAt(null, idx));
 								return true;
 							}
 						}
@@ -9195,7 +9194,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
-	protected ListAdapter FavoriteNoteBooksAdapter() {
+	protected DArrayAdapter FavoriteNoteBooksAdapter() {
 		if(AppFunAdapter ==null)
 			AppFunAdapter = new DArrayAdapter(this);
 		return AppFunAdapter;
@@ -9234,7 +9233,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void showMultipleCollection(String text) {
-		showT("功能关闭中，请等待5.0版本");
+		//showT("功能关闭中，请等待5.0版本");
 		//showT(text);
 		BottomSheetDialog _bottomPlaylist = bottomPlaylist==null?null:bottomPlaylist.get();
 		if(_bottomPlaylist==null) {
@@ -9256,25 +9255,69 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						final_bottomPlaylist.dismiss();
 					break;
 					case R.id.confirm:
-						ArrayList<MyPair<String, LexicalDBHelper>> items = AppFunAdapter.notebooks;
-						HashSet<Integer> selection = AppFunAdapter.selectedPositions;
-						if(selection.size()>0) {
-							int cc=0;
-							for (int i = 0; i < items.size(); i++) {
-								if (selection.contains(i)) {
-									try {
-										MyPair<String, LexicalDBHelper> iI = items.get(i);
-										LexicalDBHelper db = iI.value;
-										if (db == null) {
-											db = iI.value = new LexicalDBHelper(getApplicationContext(), opt, iI.key);
-										}
-										if(db.insertUpdate(this, text)>0){
-											cc++;
-										}
-									} catch (Exception ignored) { }
+						if(testDBV2) {
+							Long[] selectionArr = AppFunAdapter.selectedPositionsArr;
+							ArrayList<MyPair<String, Long>> items = AppFunAdapter.notebooksV2;
+							HashSet<Long> selection = AppFunAdapter.selectedPositions;
+							if(selection.size()>0) {
+								int delCnt=0, delNum=0, addCnt=0, addNum=0;
+								for(Long oldFav:selectionArr) {
+									if (!selection.contains(oldFav)) {
+										delNum++;
+										try {
+											if(prepareHistroyCon().remove(text, oldFav)>=0) {
+												delCnt++;
+											}
+										} catch (Exception ignored) { CMN.Log(ignored); }
+									}
 								}
+								selection.removeAll(Arrays.asList(selectionArr));
+								addNum = selection.size();
+								selectionArr = selection.toArray(new Long[addNum]);
+								for(Long newFav:selectionArr) {
+									try {
+										if(prepareHistroyCon().insert(this, text, newFav)>=0){
+											addCnt++;
+										}
+									} catch (Exception ignored) { CMN.Log(ignored); }
+								}
+								String msg = "";
+								if (addNum>0) {
+									msg += " 添加完毕！(" + addCnt + "/" + addNum + ")";
+								}
+								if (delNum>0) {
+									if (!TextUtils.isEmpty(msg)) {
+										msg += "\t";
+									}
+									msg += " 移除完毕！(" + delCnt + "/" + delNum + ")";
+								}
+								if (!TextUtils.isEmpty(msg)) {
+									showT(msg);
+								}
+								selection.clear();
 							}
-							showT("添加完毕！("+cc+"/"+selection.size()+")");
+						}
+						else {
+							ArrayList<MyPair<String, LexicalDBHelper>> items = AppFunAdapter.notebooks;
+							HashSet<Long> selection = AppFunAdapter.selectedPositions;
+							if(selection.size()>0) {
+								int cc=0;
+								for (int i = 0; i < items.size(); i++) {
+									if (selection.contains((long)i)) {
+										try {
+											MyPair<String, LexicalDBHelper> iI = items.get(i);
+											LexicalDBHelper db = iI.value;
+											if (db == null) {
+												db = iI.value = new LexicalDBHelper(getApplicationContext(), opt, iI.key);
+											}
+											if(db.insertUpdate(this, text)>0){
+												cc++;
+											}
+										} catch (Exception ignored) { }
+									}
+								}
+								showT("添加完毕！("+cc+"/"+selection.size()+")");
+							}
 						}
 						final_bottomPlaylist.dismiss();
 					break;
@@ -9295,11 +9338,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			_bottomPlaylist.getWindow().getDecorView().setTag(lv);
 			//CMN.recurseLogCascade(lv);
 			_bottomPlaylist.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);// 展开
-			if(GlobalOptions.isDark){
+			if(GlobalOptions.isDark) {
 				ll.setBackgroundColor(Color.BLACK);
 				((TextView)ll.findViewById(R.id.title)).setTextColor(Color.WHITE);
 				ll.findViewById(R.id.bottombar).getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 			}
+		}
+		if (testDBV2) {
+			FavoriteNoteBooksAdapter().adaptToMultipleCollections(text);
 		}
 		View v = (View) _bottomPlaylist.getWindow().getDecorView().getTag();
 		DisplayMetrics dm2 = new DisplayMetrics();

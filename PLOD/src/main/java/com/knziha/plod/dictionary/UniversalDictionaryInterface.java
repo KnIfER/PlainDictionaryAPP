@@ -2,8 +2,6 @@ package com.knziha.plod.dictionary;
 
 import com.knziha.plod.dictionary.Utils.Flag;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,8 +11,8 @@ public interface UniversalDictionaryInterface {
 	String getEntryAt(int position);
 	long getNumberEntries();
 	
-	String getRecordAt(int position) throws IOException;
-	String getRecordsAt(int... positions) throws IOException;
+	String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException;
+	String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, int... positions) throws IOException;
 	byte[] getRecordData(int position) throws IOException;
 	void setCaseStrategy(int val);
 	

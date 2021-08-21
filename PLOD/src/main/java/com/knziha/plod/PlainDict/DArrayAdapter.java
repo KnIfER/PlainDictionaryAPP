@@ -28,10 +28,11 @@ import static db.LexicalDBHelper.TABLE_FAVORITE_FOLDER_v2;
 public class DArrayAdapter extends BaseAdapter {
 	final ArrayList<MyPair<String, Long>> notebooksV2;
 	final ArrayList<MyPair<String, LexicalDBHelper>> notebooks;
-	final HashSet<Integer> selectedPositions;
+	final HashSet<Long> selectedPositions;
 	public boolean showDelete;
 	final MainActivityUIBase a;
-
+	public Long[] selectedPositionsArr;
+	
 	public DArrayAdapter(MainActivityUIBase a) {
 		this.a = a;
 		AgentApplication app = ((AgentApplication) a.getApplication());
@@ -41,7 +42,7 @@ public class DArrayAdapter extends BaseAdapter {
 			loadInFavorites();
 			app.bNeedPullFavorites =false;
 		}
-		selectedPositions = app.selectedPositions();
+		selectedPositions = new HashSet<>();
 	}
 
 	@Override
@@ -71,12 +72,29 @@ public class DArrayAdapter extends BaseAdapter {
 	}
 
 	public void setChecked(int position, boolean checked) {
-		if(checked)
-			selectedPositions.add(position);
-		else
-			selectedPositions.remove(position);
+		if (testDBV2) {
+			if(checked)
+				selectedPositions.add(notebooksV2.get(position).value);
+			else
+				selectedPositions.remove(notebooksV2.get(position).value);
+		} else {
+			if(checked)
+				selectedPositions.add((long)position);
+			else
+				selectedPositions.remove((long)position);
+		}
 	}
-
+	
+	public void adaptToMultipleCollections(String lex) {
+		selectedPositions.clear();
+		for (MyPair<String, Long> notebook:notebooksV2) {
+			if (a.prepareHistroyCon().containsPrecise(lex, notebook.value)) {
+				selectedPositions.add(notebook.value);
+			}
+		}
+		selectedPositionsArr = selectedPositions.toArray(new Long[selectedPositions.size()]);
+	}
+	
 	public static class ViewHolder{
 		int type;
 		int position;
@@ -92,7 +110,7 @@ public class DArrayAdapter extends BaseAdapter {
 		}
 
 		/** @param _type : 0=single&multiple selector; 1=delete&single selector  */
-		void AdaptToType(int _position, int _type, DArrayAdapter ada){
+		void AdaptToType(int _position, int _type, DArrayAdapter ada, long pos_id){
 			position = _position;
 			if(type!=_type){
 				if(_type==0){
@@ -106,7 +124,7 @@ public class DArrayAdapter extends BaseAdapter {
 				type=_type;
 			}
 			if(type==0)
-				title.setChecked(ada.selectedPositions.contains(this.position));
+				title.setChecked(ada.selectedPositions.contains(pos_id));
 			else
 				ivDel.setVisibility(ada.showDelete?View.VISIBLE:View.GONE);
 		}
@@ -125,12 +143,14 @@ public class DArrayAdapter extends BaseAdapter {
 		} else {
 			actived = name.equals(a.opt.getCurrFavoriteDBName());
 		}
-		if(actived && selectedPositions.size()==0)    //todo 精确添加模式，自动勾选收藏有该文本的数据库，而取消勾选后则从数据库删除。
-			selectedPositions.add(position);
+		if (!testDBV2) {
+			if(actived && selectedPositions.size()==0)
+				selectedPositions.add((long)position);
+		}
 		convertView.setActivated(actived);
 		vh.title.setText(CMN.unwrapDatabaseName(name));
 		vh.title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
-		vh.AdaptToType(position, parent.getId()==R.id.favorList?0:1, this);
+		vh.AdaptToType(position, parent.getId()==R.id.favorList?0:1, this, testDBV2?notebooksV2.get(position).value:position);
 		return convertView;
 	}
 
@@ -164,7 +184,8 @@ public class DArrayAdapter extends BaseAdapter {
 					CMN.Log(e);
 				}
 			}
-		} else {
+		}
+		else {
 			HashMap<String, MyPair<String, LexicalDBHelper>> map = new HashMap<>(notebooks.size());
 			for(MyPair<String, LexicalDBHelper> nb: notebooks){
 				map.put(nb.key, nb);

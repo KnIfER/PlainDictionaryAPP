@@ -62,11 +62,11 @@ public class DHBroswer extends DBroswer {
 		if(a==null) return;
 		String text = currentDisplaying;
 		if(a.prepareFavoriteCon().contains(text)) {//删除
-			a.favoriteCon.remove(text);
+			a.favoriteCon.remove(text, opt.getFavoritePerceptsRemoveAll()?-1:opt.getCurrFavoriteNoteBookId());
 			a.favoriteBtn.setActivated(false);
 			a.show(R.string.removed);
 		} else {//添加
-			a.favoriteCon.insert(a, text);
+			a.favoriteCon.insert(a, text, opt.getCurrFavoriteNoteBookId());
 			a.favoriteBtn.setActivated(true);
 			a.show(R.string.added);
 		}

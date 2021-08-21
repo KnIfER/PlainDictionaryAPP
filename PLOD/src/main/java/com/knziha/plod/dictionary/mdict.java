@@ -93,7 +93,6 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_REGEX;
-import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_WILDCARD;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEXTS;
 
@@ -595,21 +594,21 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		if(i<0){
 			return -1;
 		}
-		return getRecordAt(i);
+		return getRecordAt(i, null, true);
 	}
 
-	public String getRecordsAt(int... positions) throws IOException {
+	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, int... positions) throws IOException {
 		if(isResourceFile)
 			return constructLogicalPage(positions);
 		String ret;
 		int p0 = positions[0];
 		if(positions.length==1) {
-			ret = getRecordAt(p0);
+			ret = getRecordAt(p0, getRecordAtInterceptor, true);
 		} else {
 			StringBuilder sb = new StringBuilder();
 			int c=0;
 			for(int i:positions) {
-				sb.append(getRecordAt(i));//.trim()
+				sb.append(getRecordAt(i, getRecordAtInterceptor, true));//.trim()
 				if(c!=positions.length-1)
 					sb.append("<HR>");
 				c++;
@@ -623,11 +622,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	/** @param positions virutal indexes*/
 	public String getVirtualRecordsAt(int... positions) throws IOException {
 		if(virtualIndex==null)
-			return getRecordsAt(positions);
+			return getRecordsAt(null, positions);
 		StringBuilder sb = new StringBuilder();
 		int c=0, lastAI=-1;
 		for(int i:positions) {
-			String vi = virtualIndex.getRecordAt(i);
+			String vi = virtualIndex.getRecordAt(i, null, true);
 			JSONObject vc = JSONObject.parseObject(vi);
 			int AI=vc.getInteger("I");
 			if(lastAI==AI){
@@ -635,7 +634,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			}
 			else{
 				String JS = vc.getString("JS");
-				String record = getRecordAt(AI);
+				String record = getRecordAt(AI, null, true);
 				int headId= record.indexOf("<head>");
 				if(headId<0) {
 					headId=-6;
@@ -741,7 +740,14 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return 0;
 	}
 
-	public String getRecordAt(int position) throws IOException {
+	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
+		if(getRecordAtInterceptor!=null)
+		{
+			String ret = getRecordAtInterceptor.getRecordAt(this, position);
+			if (ret!=null) {
+				return ret;
+			}
+		}
 		if(ftd!=null && ftd.size()>0 && ReadOffset==0){
 			File ft;
 			for(File f:ftd){
@@ -764,7 +770,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 		String tmp = new String(data, record_start, record_end-record_start,_charset);
 
-		if(tmp.startsWith(linkRenderStr)) {
+		if(allowJump && tmp.startsWith(linkRenderStr)) {
 			//SU.Log("rerouting",tmp);
 			//SU.Log(tmp.replace("\n", "1"));
 			String key = tmp.substring(linkRenderStr.length());
@@ -794,7 +800,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						idx+=offset;
 				}
 				if (idx!=position)
-					tmp=getRecordAt(idx);
+					tmp=getRecordAt(idx, null, false);
 			}
 		}
 		return tmp;
@@ -1422,7 +1428,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 
 	public String getVirtualRecordAt(int vi) throws IOException {
-		return virtualIndex.getRecordAt(vi);
+		return virtualIndex.getRecordAt(vi, null, true);
 	}
 
 	public String getDictionaryName() {

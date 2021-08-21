@@ -10,13 +10,12 @@
 
 package com.knziha.plod.ebook;
 
-import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdBase;
 import com.knziha.plod.dictionary.mdict;
-import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.ebook.Utils.BU.MOBIHuffCdic;
@@ -891,12 +890,6 @@ public class MobiBook extends DictionaryAdapter {
 	public String getVirtualTextEffectJs(int[] positions) {
 		return null;
 	}
-	
-	@Override
-	public String getRecordsAt(int... positions) throws IOException {
-		return getRecordAt(positions[0]);
-	}
-
 
 	/**
 	 @brief Parse HUFF record into MOBIHuffCdic structure
@@ -1254,7 +1247,7 @@ public class MobiBook extends DictionaryAdapter {
 	int readEndOffset=0;
 
 	@Override
-	public String getRecordAt(int position) throws IOException {
+	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 		//return new String(m.rec.next.data, _charset);
 		if (m.rh == null || m.rh.text_record_count == 0) {
 			return "404";

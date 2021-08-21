@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
+import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.CMN;
@@ -14,8 +15,6 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.LinkastReUsageHashMap;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionarymanager.files.CachedDirectory;
-import com.knziha.rbtree.RBTree_additive;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.joni.Option;
@@ -26,10 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +34,6 @@ import java.util.regex.Pattern;
 import static com.knziha.plod.dictionary.mdBase.compareByteArrayIsPara;
 import static com.knziha.plod.dictionary.mdict.bakeJoniEncoding;
 import static com.knziha.plod.dictionary.mdict.leafSanLieZhi;
-import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 /*
  Mdict point to local txt file.
@@ -88,11 +83,6 @@ public class PlainText extends DictionaryAdapter {
 	LinkastReUsageHashMap<Integer, TextBlock> block_cache;
 	TextBlock[] textScope = new TextBlock[2];
 	
-	@Override
-	public String getRecordsAt(int...position) throws IOException {
-		return getRecordAt(position[0]);
-	}
-	
 	/**
 	 * 0 0
 	 * | 1 1
@@ -100,7 +90,7 @@ public class PlainText extends DictionaryAdapter {
 	 * | | | 3 3
 	 */
 	@Override
-	public String getRecordAt(int position) throws IOException {
+	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 //		if(editingState && getContentEditable()){
 //			CachedDirectory cf = getInternalResourcePath(false);
 //			boolean ce =  cf.cachedExists();

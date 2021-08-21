@@ -2255,6 +2255,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Multiline(flagPos=11, shift=1) public static boolean checkVersionBefore_4_9() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Multiline(flagPos=11, shift=1) public static void uncheckVersionBefore_4_9(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
+	@Multiline(flagPos=12, shift=1) public boolean getFavoritePerceptsRemoveAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=13, shift=1) public boolean getFavoritePerceptsAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
 	
 	
 	//EF
@@ -2403,7 +2406,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return FileDatabases;
 	}
 	
-	public final static boolean testDBV2 = false;
+	public final static boolean testDBV2 = true;
 	
 	private String pathToFavoriteDatabases(String name) {
 		StringBuffer InternalPath = pathToMainFolder().append("INTERNAL/");

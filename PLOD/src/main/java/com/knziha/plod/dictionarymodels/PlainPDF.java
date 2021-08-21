@@ -3,6 +3,7 @@ package com.knziha.plod.dictionarymodels;
 import android.webkit.WebView;
 
 import com.alibaba.fastjson.JSONObject;
+import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.CMN;
@@ -271,7 +272,7 @@ public class PlainPDF extends DictionaryAdapter {
 	}
 
 	@Override
-	public String getRecordsAt(int... positions) throws IOException {
+	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 		return new String(_INTERNAL_PDFJS.getRecordData(_INTERNAL_PDFJS.lookUp("index")), StandardCharsets.UTF_8)+f.getAbsolutePath()+tailing;
 	}
 
@@ -290,7 +291,7 @@ public class PlainPDF extends DictionaryAdapter {
 	
 	@Override
 	public String getVirtualRecordsAt(int[] list2) throws IOException {
-		return getRecordsAt(0);
+		return getRecordsAt(null, 0);
 	}
 	
 	@Override

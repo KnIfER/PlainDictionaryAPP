@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionarymodels;
 
+import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.Flag;
@@ -75,13 +76,13 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public String getRecordAt(int position) throws IOException {
+	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 		return null;
 	}
 	
 	@Override
-	public String getRecordsAt(int... positions) throws IOException {
-		return null;
+	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, int... positions) throws IOException {
+		return getRecordAt(positions[0], null, true);
 	}
 	
 	@Override

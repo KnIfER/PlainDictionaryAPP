@@ -176,7 +176,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			if(list.length==1){
 				try {
 					int index = mdTmp.bookImpl.lookUp("index");
-					return newFixedLengthResponse(md_get(adapter_idx_).bookImpl.getRecordsAt(index>=0?index:0));
+					return newFixedLengthResponse(md_get(adapter_idx_).bookImpl.getRecordsAt(null, index>=0?index:0));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -185,7 +185,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				key = uri.substring(list[0].length()+1+3);
 				SU.Log("rerouting..."+key);
 				try {
-					return newFixedLengthResponse(mdTmp.bookImpl.getRecordsAt(md_get(adapter_idx_).bookImpl.lookUp(key)));
+					return newFixedLengthResponse(mdTmp.bookImpl.getRecordsAt(null, md_get(adapter_idx_).bookImpl.lookUp(key)));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -216,7 +216,7 @@ public abstract class MdictServer extends NanoHTTPD {
 					key=key.substring(0, key.length()-1);
 				SU.Log("jumping...", key);
 				BookPresenter mdTmp = md_get(adapter_idx_);
-				String res = mdTmp.bookImpl.getRecordsAt(mdTmp.bookImpl.lookUp(key));
+				String res = mdTmp.bookImpl.getRecordsAt(null, mdTmp.bookImpl.lookUp(key));
 				return newFixedLengthResponse(constructMdPage(mdTmp, Integer.toString(adapter_idx_), res, b1));
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -357,7 +357,7 @@ public abstract class MdictServer extends NanoHTTPD {
 					int[] list2 = new int[list.length-1];
 					for(int i=0;i<list.length-1;i++)
 						list2[i]=Integer.parseInt(list[i+1]);
-					return newFixedLengthResponse(constructMdPage(mdTmp, list[0],lid!=-1?mdTmp.bookImpl.getVirtualRecordsAt(list2):mdTmp.bookImpl.getRecordsAt(list2), true));
+					return newFixedLengthResponse(constructMdPage(mdTmp, list[0],lid!=-1?mdTmp.bookImpl.getVirtualRecordsAt(list2):mdTmp.bookImpl.getRecordsAt(null, list2), true));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
