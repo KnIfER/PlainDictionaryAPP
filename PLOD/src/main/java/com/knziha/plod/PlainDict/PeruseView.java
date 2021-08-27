@@ -997,7 +997,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	void toggleInPageSearch(boolean isLongClicked) {
 		MainActivityUIBase a = getMainActivity();
 		if(isLongClicked){
-			a.launchSettings(7);
+			a.launchSettings(7, 0);
 		}
 		else {
 			Toolbar InPageSearchbar = PerusePageSearchbar;
@@ -1208,12 +1208,12 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	//todo optimise
 	private void DetachContentView(MainActivityUIBase a) {
-		((ViewGroup)contentview.getParent()).removeView(contentview);
 		if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
 				 PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 				&& (PDICMainAppOptions.getHistoryStrategy8() == 2)){
-			a.insertUpdate_histroy(mWebView.word);
+			a.insertUpdate_histroy(mWebView.word, webSingleholder);
 		}
+		((ViewGroup)contentview.getParent()).removeView(contentview);
 	}
 
 	public boolean isAttached() {
@@ -1880,7 +1880,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
 					PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 					&& (!ismachineClick || PDICMainAppOptions.getHistoryStrategy8() == 0)){
-				a.insertUpdate_histroy(currentKeyText);
+				a.insertUpdate_histroy(currentKeyText, webSingleholder);
 			}
 		}
         

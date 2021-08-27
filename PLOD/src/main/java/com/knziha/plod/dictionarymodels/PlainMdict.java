@@ -33,15 +33,6 @@ public class PlainMdict extends mdict {
 	}
 	
 	@Override
-	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, int... positions) throws IOException {
-		//CMN.Log(super.getRecordsAt(positions));
-		return positions[0]==-1? new StringBuilder(getAboutString())
-				.append("<BR>").append("<HR>")
-				.append(getDictInfo()).toString(): super.getRecordsAt(getRecordAtInterceptor, positions);
-	}
-	
-	
-	@Override
 	protected ExecutorService OpenThreadPool(int thread_number) {
 		return Executors.newFixedThreadPool(thread_number);
 		//return Executors.newCachedThreadPool();

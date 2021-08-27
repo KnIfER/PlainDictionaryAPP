@@ -46,6 +46,8 @@ import com.knziha.plod.widgets.SimpleTextNotifier;
 
 import org.apache.commons.lang3.StringUtils;
 
+import db.LexicalDBHelper;
+
 public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
 	protected final static String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
@@ -106,7 +108,9 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected ViewGroup DefaultTSView;
 	long exitTime = 0;
 	public Resources mResource;
-
+	
+	LexicalDBHelper historyCon;
+	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
        if(!shunt) {
@@ -275,7 +279,7 @@ public class Toastable_Activity extends AppCompatActivity {
 			Locale locale = null;
 			if(language.length()==0){
 				locale=Locale.getDefault();
-			}else try {
+			} else try {
 				if(language.contains("-r")){
 					String[] arr=language.split("-r");
 					if(arr.length==2){
@@ -643,7 +647,26 @@ public class Toastable_Activity extends AppCompatActivity {
 			targetView.setLayoutParams(lp);
 		}
 	}
-
+	
+	protected void CheckInternalDataBaseDirExist(boolean testDBV2) {
+		File checkDirs = opt.fileToDatabaseFavorites(testDBV2);
+		checkDirs.mkdirs();
+	}
+	
+	public LexicalDBHelper prepareHistoryCon() {
+		if(historyCon!=null) return historyCon;
+		AgentApplication app = ((AgentApplication) getApplication());
+		LexicalDBHelper _historyCon = app.historyCon;
+		if(_historyCon!=null){
+			if(!new File(_historyCon.pathName).exists())
+				_historyCon=null;
+		}
+		if(_historyCon==null){
+			CheckInternalDataBaseDirExist(opt.getUseDatabaseV2());
+			app.historyCon = _historyCon = new LexicalDBHelper(getApplicationContext(), opt, opt.getUseDatabaseV2());
+		}
+		return historyCon = _historyCon;
+	}
 }
 
 

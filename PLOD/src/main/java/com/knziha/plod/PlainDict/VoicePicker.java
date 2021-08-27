@@ -24,6 +24,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.DialogFragment;
 
 import com.knziha.plod.dictionarymanager.files.ArrayTreeList;
+import com.knziha.plod.settings.DevoloperOptions;
 import com.knziha.plod.settings.MainProgram;
 import com.knziha.plod.widgets.Framer;
 import com.knziha.plod.widgets.Utils;
@@ -333,7 +334,7 @@ public class VoicePicker extends DialogFragment
 					//((TextView)v.findViewById(R.id.text)).setPadding((int) (9*getActivity().getResources().getDisplayMetrics().density), 0, 0, 0);
 					convertView.findViewById(R.id.splitterIcon).setVisibility(View.GONE);
 				}
-				vh.subtext.setText(MainProgram.getCountryFlag(new StringBuilder(), locale.getCountry())+locale.getDisplayCountry()+vcTmp.getName());
+				vh.subtext.setText(DevoloperOptions.getCountryFlag(new StringBuilder(), locale.getCountry())+locale.getDisplayCountry()+vcTmp.getName());
 				vh.subtext.setVisibility(View.VISIBLE);
 				vh.drag_handle.setVisibility(View.VISIBLE);
 				vh.folderIcon.setVisibility(View.GONE);

@@ -24,8 +24,6 @@ import java.nio.charset.Charset;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
 
-import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
-
 /**
  * Created by Zenjo Kang on 2018/8/4.
  * 数据库将创建于 data/com.knziha/databases/ 下

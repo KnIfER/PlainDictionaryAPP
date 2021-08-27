@@ -3,26 +3,35 @@ package com.knziha.plod.settings;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.GlobalOptions;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.knziha.filepicker.settings.FileChooser;
 import com.knziha.filepicker.settings.FilePickerOptions;
+import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.CrashHandler;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.widgets.APPSettingsActivity;
 
 import java.io.File;
 
-public class SettingsActivity extends Toastable_Activity {
+public class SettingsActivity extends Toastable_Activity implements APPSettingsActivity {
 	private int realm_id;
-
+	private MainActivityUIBase pHandler;
+	
+	public PreferenceFragmentCompat fragment;
+	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -70,7 +79,6 @@ public class SettingsActivity extends Toastable_Activity {
 		File lock=new File(log.getParentFile(),"lock");
 		if(lock.exists()) lock.delete();
 
-		PreferenceFragmentCompat fragment;
 		Bundle args = new Bundle();
 		switch (realm_id = getIntent().getIntExtra("realm", 0)){
 			default:
@@ -108,11 +116,22 @@ public class SettingsActivity extends Toastable_Activity {
 		this.getSupportFragmentManager().beginTransaction()
 				.replace(android.R.id.content, fragment)
 				.commit();
+		
+		pHandler = CMN.pHandler==null?null:CMN.pHandler.get();
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		checkFlags();
+	}
+	
+	@Override
+	public void notifyChanged(Preference preference) {
+		if (pHandler!=null) {
+			pHandler.onSettingsChanged(this, preference);
+		} else {
+			showT("请从主程序打开设置界面！");
+		}
 	}
 }

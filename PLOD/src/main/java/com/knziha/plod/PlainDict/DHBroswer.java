@@ -29,7 +29,7 @@ public class DHBroswer extends DBroswer {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		if(!initialized){
 			MainActivityUIBase a = (MainActivityUIBase) getActivity();
-			mLexiDB = a.prepareHistroyCon();
+			mLexiDB = a.prepareHistoryCon();
 			fastScroller.setHandleBackground(a.getResources().getDrawable(R.drawable.ghour));
 			lastChecked=0;
 		}
@@ -66,7 +66,7 @@ public class DHBroswer extends DBroswer {
 			a.favoriteBtn.setActivated(false);
 			a.show(R.string.removed);
 		} else {//添加
-			a.favoriteCon.insert(a, text, opt.getCurrFavoriteNoteBookId());
+			a.favoriteCon.insert(a, text, opt.getCurrFavoriteNoteBookId(), webviewHolder);
 			a.favoriteBtn.setActivated(true);
 			a.show(R.string.added);
 		}

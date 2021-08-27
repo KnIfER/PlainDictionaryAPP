@@ -14,6 +14,7 @@ import org.adrianwalker.multilinestring.Multiline;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 
@@ -59,6 +60,7 @@ public class CMN{
 	public static String BrandName = "PLOD";
 	
 	public static int HonestCredits=100;
+	public static WeakReference<MainActivityUIBase> pHandler;
 	
 	public static String Log(Object... o) {
 		StringBuilder msg = new StringBuilder(1024);

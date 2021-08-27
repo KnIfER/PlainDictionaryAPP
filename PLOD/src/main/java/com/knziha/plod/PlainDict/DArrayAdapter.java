@@ -22,25 +22,33 @@ import java.util.HashSet;
 
 import db.LexicalDBHelper;
 
-import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
 import static db.LexicalDBHelper.TABLE_FAVORITE_FOLDER_v2;
 
 public class DArrayAdapter extends BaseAdapter {
 	final ArrayList<MyPair<String, Long>> notebooksV2;
 	final ArrayList<MyPair<String, LexicalDBHelper>> notebooks;
 	final HashSet<Long> selectedPositions;
+	private final boolean testDBV2;
 	public boolean showDelete;
 	final MainActivityUIBase a;
 	public Long[] selectedPositionsArr;
 	
-	public DArrayAdapter(MainActivityUIBase a) {
+	public DArrayAdapter(MainActivityUIBase a, boolean testDB) {
 		this.a = a;
 		AgentApplication app = ((AgentApplication) a.getApplication());
-		notebooks = app.AppDatabases;
-		notebooksV2 = app.AppDatabasesV2;
-		if(app.bNeedPullFavorites){
+		if (testDB) {
+			notebooks = app.AppDatabases;
+			notebooksV2 = new ArrayList<>();
+			testDBV2 = false;
 			loadInFavorites();
-			app.bNeedPullFavorites =false;
+		} else {
+			notebooks = app.AppDatabases;
+			notebooksV2 = app.AppDatabasesV2;
+			testDBV2 = a.getUsingDataV2();
+			if(app.bNeedPullFavorites){
+				loadInFavorites();
+				app.bNeedPullFavorites =false;
+			}
 		}
 		selectedPositions = new HashSet<>();
 	}
@@ -88,7 +96,7 @@ public class DArrayAdapter extends BaseAdapter {
 	public void adaptToMultipleCollections(String lex) {
 		selectedPositions.clear();
 		for (MyPair<String, Long> notebook:notebooksV2) {
-			if (a.prepareHistroyCon().containsPrecise(lex, notebook.value)) {
+			if (a.prepareHistoryCon().containsPrecise(lex, notebook.value)) {
 				selectedPositions.add(notebook.value);
 			}
 		}
@@ -160,7 +168,7 @@ public class DArrayAdapter extends BaseAdapter {
 		if (testDBV2) {
 			notebooksV2.clear();
 			boolean defaultRecorded = false;
-			try (Cursor cursor = a.prepareHistroyCon().getDB().rawQuery("select id,lex from favfolder order by creation_time", null)){
+			try (Cursor cursor = a.prepareHistoryCon().getDB().rawQuery("select id,lex from favfolder order by creation_time", null)){
 				while (cursor.moveToNext()) {
 					long id = cursor.getLong(0);
 					if (id==0) {
@@ -179,7 +187,7 @@ public class DArrayAdapter extends BaseAdapter {
 				contentValues.put("lex", "默认收藏夹");
 				contentValues.put("creation_time", CMN.now());
 				try {
-					a.prepareHistroyCon().getDB().insert(TABLE_FAVORITE_FOLDER_v2, null, contentValues);
+					a.prepareHistoryCon().getDB().insert(TABLE_FAVORITE_FOLDER_v2, null, contentValues);
 				} catch (Exception e) {
 					CMN.Log(e);
 				}
@@ -192,12 +200,12 @@ public class DArrayAdapter extends BaseAdapter {
 			}
 			notebooks.clear();
 			
-			String[] names = opt.fileToDatabaseFavorites().list();
+			String[] names = opt.fileToDatabaseFavorites(false).list();
 			if(names!=null){
 				for (String nI:names) {
 					if(nI.endsWith(".sql") || nI.endsWith(".sql.db")) {//MIMU will add db suffix
 						MyPair<String, LexicalDBHelper> item = map.get(nI);
-						if(item==null){
+						if(item==null) {
 							item = new MyPair<>(nI, null);
 						}
 						notebooks.add(item);
@@ -221,7 +229,7 @@ public class DArrayAdapter extends BaseAdapter {
 						return;
 					}
 				}
-				notebooksV2.add(new MyPair<>(name, a.prepareHistroyCon().newFavFolder(name)));
+				notebooksV2.add(new MyPair<>(name, a.prepareHistoryCon().newFavFolder(name)));
 			} else {
 				if(!name.endsWith(".sql"))
 					name+=".sql";
@@ -231,7 +239,7 @@ public class DArrayAdapter extends BaseAdapter {
 						return;
 					}
 				}
-				notebooks.add(new MyPair<>(name, new LexicalDBHelper(a, a.opt,name)));
+				notebooks.add(new MyPair<>(name, new LexicalDBHelper(a, a.opt,name,false)));
 			}
 		} catch (Exception e) {
 			a.showT("创建失败！");

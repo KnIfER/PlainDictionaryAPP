@@ -4,11 +4,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.os.ParcelFileDescriptor;
+import android.view.ViewGroup;
 
+import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -16,29 +17,27 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
 
-import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
-
 public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String TABLE_HISTORY_v2 = "history";
 	public static final String TABLE_BOOK_v2 = "book";
-	public static final String TABLE_BOOKMARK_v2 = "bookmark";
+	//public static final String TABLE_BOOKMARK_v2 = "bookmark";
 	public static final String TABLE_FAVORITE_v2 = "favorite";
 	public static final String TABLE_FAVORITE_FOLDER_v2 = "favfolder";
 	public static final String TABLE_BOOK_NOTE_v2 = "booknote";
 	public static final String TABLE_BOOK_ANNOT_v2 = "bookannot";
 	
 	public static final String FIELD_CREATE_TIME = "creation_time";
-	public static final String FIELD_VIST_TIME = "last_visit_time";
+	public static final String FIELD_VISIT_TIME = "last_visit_time";
 	public static final String FIELD_EDIT_TIME = "last_edit_time";
 	public static final String FIELD_ENTRY_NAME = "lex";
 	public static final String FIELD_NOTES = "notes";
+	public static final String FIELD_FOLDER = "folder";
 	public static final String FIELD_BOOK_ID = "bid";
+	public static final String FIELD_POSITION = "pos";
 	
     public final String DATABASE;
 	public boolean lastAdded;
@@ -51,18 +50,22 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
     public static final String Date = "date"; //路径
     
     public String pathName;
-
+	
+	public final boolean testDBV2;
+	
 	/** 创建收藏夹数据库（从名称） */
-    public LexicalDBHelper(Context context, PDICMainAppOptions opt, String name) {
-        super(context, opt.pathToFavoriteDatabase(name), null, CMN.dbVersionCode);
+    public LexicalDBHelper(Context context, PDICMainAppOptions opt, String name, boolean testDBV2) {
+        super(context, opt.pathToFavoriteDatabase(name, testDBV2), null, CMN.dbVersionCode);
         DATABASE=name;
+        this.testDBV2 = testDBV2;
 		onConfigure();
     }
 
 	/** 创建历史纪录数据库 */
-	public LexicalDBHelper(Context context, PDICMainAppOptions opt) {
-		super(context, opt.pathToFavoriteDatabase(null), null, CMN.dbVersionCode);
+	public LexicalDBHelper(Context context, PDICMainAppOptions opt, boolean testDBV2) {
+		super(context, opt.pathToFavoriteDatabase(null, testDBV2), null, CMN.dbVersionCode);
 		DATABASE="history.sql";
+		this.testDBV2 = testDBV2;
 		onConfigure();
 	}
 	
@@ -70,7 +73,6 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		database = getWritableDatabase();
 		pathName = database.getPath();
 		oldVersion=CMN.dbVersionCode;
-		prepareContain();
 	}
 	
 	@Override
@@ -79,22 +81,33 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			String sqlBuilder;
 			
 			// TABLE_BOOK_ANNOT_v2 记录高亮标记
-//			sqlBuilder = "create table if not exists " +
-//					TABLE_BOOK_ANNOT_v2 +
-//					"(" +
-//					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
-//					", lex LONGVARCHAR" +
-//					", bid INTEGER NOT NULL"+
-//					", creation_time INTEGER NOT NULL"+
-//					", last_visit_time INTEGER NOT NULL" +
-//					", visit_count INTEGER DEFAULT 0 NOT NULL" +
-//					", param BLOB" +
-//					", notes BLOB" +
-//					")";
-//			db.execSQL(sqlBuilder);
-//			db.execSQL("CREATE INDEX if not exists booknote_book_index ON bookannot (bid)");
-//			db.execSQL("CREATE INDEX if not exists bookannot_time_index ON bookannot (creation_time)");
+			sqlBuilder = "create table if not exists " +
+					TABLE_BOOK_ANNOT_v2 +
+					"(" +
+					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
+					", lex LONGVARCHAR" +
+					", bid INTEGER NOT NULL"+
+					", pos INTEGER NOT NULL"+
+					", entry LONGVARCHAR" +
+					", creation_time INTEGER NOT NULL"+
+					", last_visit_time INTEGER NOT NULL" +
+					", visit_count INTEGER DEFAULT 0 NOT NULL" +
+					", param BLOB" +
+					", notes BLOB" +
+					")";
+			db.execSQL(sqlBuilder);
+			//db.execSQL("CREATE INDEX if not exists booknote_book_index ON bookannot (bid)");
+			db.execSQL("CREATE INDEX if not exists bookannot_book_pos_index ON bookannot (bid, pos)");
+			db.execSQL("CREATE INDEX if not exists bookannot_time_index ON bookannot (creation_time)");
 			
+//			db.execSQL("DROP INDEX if exists favorite_term_index");
+//			db.execSQL("DROP INDEX if exists favorite_folder_index");
+//			db.execSQL("DROP INDEX if exists booknote_term_index");
+//			db.execSQL("DROP INDEX if exists booknote_book_index");
+//			db.execSQL("DROP INDEX if exists booknote_time_index");
+			
+			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOK_NOTE_v2);
+			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOKMARK_v2);
 			// TABLE_BOOK_NOTE_v2 记录词条重写
 			sqlBuilder = "create table if not exists " +
 					TABLE_BOOK_NOTE_v2 +
@@ -102,30 +115,33 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
 					", lex LONGVARCHAR" +
 					", bid INTEGER NOT NULL"+
+					", pos INTEGER NOT NULL"+
 					", creation_time INTEGER NOT NULL"+
 					", last_edit_time INTEGER NOT NULL" +
 					", edit_count INTEGER DEFAULT 0 NOT NULL" +
+					", param BLOB" +
 					", notes BLOB" +
 					")";
 			db.execSQL(sqlBuilder);
-			db.execSQL("CREATE INDEX if not exists booknote_term_index ON booknote (lex)");
-			db.execSQL("CREATE INDEX if not exists booknote_book_index ON booknote (bid)");
-			db.execSQL("CREATE INDEX if not exists booknote_time_index ON booknote (last_edit_time)");
+			db.execSQL("CREATE INDEX if not exists booknote_term_index ON booknote (lex, bid)"); // query view | booknotes view1
+			db.execSQL("CREATE INDEX if not exists booknote_book_index ON booknote (bid, last_edit_time)"); // booknotes view
+			db.execSQL("CREATE INDEX if not exists booknote_time_index ON booknote (last_edit_time)"); // all view
+			//db.execSQL("CREATE INDEX if not exists booknote_edit_index ON booknote (edit_count)"); // edit_count view
 			
 			
 			// TABLE_BOOKMARK_v2 记录书签
-			sqlBuilder = "create table if not exists " +
-					TABLE_BOOKMARK_v2 +
-					"(" +
-					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
-					", bid INTEGER NOT NULL"+
-					", pos INTEGER NOT NULL" +
-					", param BLOB" +
-					", creation_time INTEGER NOT NULL"+
-					")";
-			db.execSQL(sqlBuilder);
-			db.execSQL("CREATE INDEX if not exists bkmk_index ON bookmark (bid, pos)");
-			db.execSQL("CREATE INDEX if not exists bkmk_time_index ON bookmark (creation_time)");
+//			sqlBuilder = "create table if not exists " +
+//					TABLE_BOOKMARK_v2 +
+//					"(" +
+//					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
+//					", bid INTEGER NOT NULL"+
+//					", pos INTEGER NOT NULL" +
+//					", param BLOB" +
+//					", creation_time INTEGER NOT NULL"+
+//					")";
+//			db.execSQL(sqlBuilder);
+//			db.execSQL("CREATE INDEX if not exists bkmk_index ON bookmark (bid, pos)");
+//			db.execSQL("CREATE INDEX if not exists bkmk_time_index ON bookmark (creation_time)");
 			
 			
 			// TABLE_BOOK_v2 记录书本
@@ -133,13 +149,13 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					TABLE_BOOK_v2 +
 					"(" +
 					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
-					", name LONGVARCHAR" +
+					", name LONGVARCHAR UNIQUE" +
 					", path LONGVARCHAR"+
 					", options BLOB"+
-					", creation_time INTEGER NOT NULL"+
+					", creation_time INTEGER DEFAULT 0 NOT NULL"+
 					")";
 			db.execSQL(sqlBuilder);
-			db.execSQL("CREATE INDEX if not exists book_name_index ON book (name)");
+			//db.execSQL("CREATE INDEX if not exists book_name_index ON book (name)");
 			
 			
 			// TABLE_FAVORITE_FOLDER_v2 记录收藏夹
@@ -162,6 +178,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
 					", lex LONGVARCHAR" +
 					", books TEXT"+
+					", src INTEGER DEFAULT 0 NOT NULL"+
 					", creation_time INTEGER NOT NULL"+
 					", last_visit_time INTEGER NOT NULL" +
 					", visit_count INTEGER DEFAULT 0 NOT NULL" +
@@ -170,11 +187,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", notes LONGVARCHAR" +
 					")";
 			db.execSQL(sqlBuilder);
-			db.execSQL("CREATE INDEX if not exists favorite_term_index ON favorite (lex)");
-			db.execSQL("CREATE INDEX if not exists favorite_level_index ON favorite (level)");
-			db.execSQL("CREATE INDEX if not exists favorite_folder_index ON favorite (folder)");
-			db.execSQL("CREATE INDEX if not exists favorite_time_index ON favorite (last_visit_time)");
-			
+			db.execSQL("CREATE INDEX if not exists favorite_term_index ON favorite (lex, folder)"); // query view
+			//db.execSQL("CREATE INDEX if not exists favorite_level_index ON favorite (folder, level)");  // level view
+			db.execSQL("CREATE INDEX if not exists favorite_folder_index ON favorite (folder, last_visit_time)"); // folder view
+			//db.execSQL("CREATE INDEX if not exists favorite_filter_index ON favorite (folder, visit_count, level,last_visit_time)"); // filter view
+			db.execSQL("CREATE INDEX if not exists favorite_time_index ON favorite (last_visit_time)"); // all view
 			
 			
 			// TABLE_HISTORY_v2 记录历史
@@ -183,18 +200,26 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					"(" +
 					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
 					", lex LONGVARCHAR" +
-					", books TEXT"+ //6
-					", creation_time INTEGER NOT NULL"+ //6
+					", books TEXT"+
+					", src INTEGER DEFAULT 0 NOT NULL"+
+					", creation_time INTEGER NOT NULL"+
 					", last_visit_time INTEGER NOT NULL" +
 					", visit_count INTEGER DEFAULT 0 NOT NULL" +
 					")";
 			db.execSQL(sqlBuilder);
-			db.execSQL("CREATE INDEX if not exists history_term_index ON history (lex)");
-			db.execSQL("CREATE INDEX if not exists history_time_index ON history (last_visit_time)");
+			db.execSQL("CREATE INDEX if not exists history_term_index ON history (lex)"); // query view
+			db.execSQL("CREATE INDEX if not exists history_time_index ON history (last_visit_time)"); // main view
+			db.execSQL("CREATE INDEX if not exists history_visit_index ON history (visit_count, last_visit_time) where visit_count>0"); // visit_count view
 			
-			if(preparedPageSelectExecutor==null) {
-				preparedPageSelectExecutor = db.compileStatement("select id from " + TABLE_BOOK_NOTE_v2 + " where lex=? and bid=?");
-				preparedPageSelectExecutor2 = db.compileStatement("select notes from "+TABLE_BOOK_NOTE_v2+" where lex=? and bid=?");
+			if (preparedHasBookNoteForEntry ==null) {
+				preparedHasBookNoteForEntry = db.compileStatement("select id from " + TABLE_BOOK_NOTE_v2 + " where lex=? and bid=? and notes IS NOT NULL");
+				preparedGetBookNoteForEntry = db.compileStatement("select notes from "+TABLE_BOOK_NOTE_v2+" where lex=? and bid=? and notes IS NOT NULL");
+				preparedHasBookmarkForEntry = db.compileStatement("select id from "+TABLE_BOOK_NOTE_v2+" where bid=? and lex=?");
+				preparedGetBookOptions = db.compileStatement("select options from "+TABLE_BOOK_v2+" where id=?");
+				
+				String sql = "select id from " + TABLE_FAVORITE_v2 + " where lex=?";
+				preparedGetIsFavoriteWordInFolder = db.compileStatement(sql+" and folder=?");
+				preparedGetIsFavoriteWord = db.compileStatement(sql);
 			}
 		} else {
 			StringBuilder sqlBuilder = new StringBuilder("create table if not exists ")
@@ -205,16 +230,18 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					.append(")")
 					;
 			db.execSQL(sqlBuilder.toString());
+			String sql = "select rowid from " + TABLE_MARKS + " where " + Key_ID + " = ? ";
+			preparedGetIsFavoriteWord = db.compileStatement(sql);
 		}
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int _oldVersion, int newVersion) {
-        //在setVersion前已经调用
-        oldVersion=_oldVersion;
-        //Toast.makeText(c,oldVersion+":"+newVersion+":"+db.getVersion(),Toast.LENGTH_SHORT).show();
-
-    }
+		//在setVersion前已经调用
+		oldVersion=_oldVersion;
+		//Toast.makeText(c,oldVersion+":"+newVersion+":"+db.getVersion(),Toast.LENGTH_SHORT).show();
+		
+	}
 
     //lazy Upgrade
 	boolean isDirty=false;
@@ -232,10 +259,10 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	/** contain text term in the favorite table */
     public boolean contains(String id) {
 		//preparedSelectExecutor.clearBindings();
-		preparedSelectExecutor.bindString(1, id);
+		preparedGetIsFavoriteWord.bindString(1, id);
 		try {
 			//Log.e("preparedSelectExecutor",preparedSelectExecutor.simpleQueryForString());
-			preparedSelectExecutor.simpleQueryForLong();
+			preparedGetIsFavoriteWord.simpleQueryForLong();
 			return true;
 		} catch(Exception e) {
 			//CMN.Log(e);
@@ -246,11 +273,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	/** contain text term in the specific folder of favorite table */
     public boolean containsPrecise(String lex, long folder) {
 		//preparedSelectExecutor.clearBindings();
-		preparedSelectPreciseExecutor.bindString(1, lex);
-		preparedSelectPreciseExecutor.bindLong(2, folder);
+		preparedGetIsFavoriteWordInFolder.bindString(1, lex);
+		preparedGetIsFavoriteWordInFolder.bindLong(2, folder);
 		try {
 			//Log.e("preparedSelectExecutor",preparedSelectExecutor.simpleQueryForString());
-			preparedSelectPreciseExecutor.simpleQueryForLong();
+			preparedGetIsFavoriteWordInFolder.simpleQueryForLong();
 			return true;
 		} catch(Exception e) {
 			//CMN.Log(e);
@@ -279,10 +306,13 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	 * @param lex the text term
 	 * @param folder the favorite folder id.
 	 * */
-	public long insert(MainActivityUIBase a, String lex, long folder) {
+	public long insert(MainActivityUIBase a, String lex, long folder, ViewGroup webviewholder) {
     	CMN.Log("insert");
 		isDirty=true;
 		lastAdded=true;
+		if (folder==-1) {
+			folder = a.opt.getCurrFavoriteNoteBookId();
+		}
 		if (testDBV2) {
 			int count=-1;
 			try {
@@ -290,7 +320,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				String books = null;
 				String[] where = new String[]{lex, ""+folder};
 				boolean insertNew=true;
-				Cursor c = database.rawQuery("select id,visit_count,books from favorite where lex=? and folder=? ", where);
+				Cursor c = database.rawQuery("select id,visit_count,books from "+TABLE_FAVORITE_v2+" where lex=? and folder=? ", where);
 
 				if(c.moveToFirst()) {
 					id = c.getLong(0);
@@ -304,7 +334,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				ContentValues values = new ContentValues();
 				values.put("lex", lex);
 				
-				values.put("books", a.collectDisplayingBooks(books));
+				values.put("books", a.collectDisplayingBooks(books, webviewholder));
 				
 				values.put("visit_count", ++count);
 				
@@ -327,7 +357,14 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			ContentValues values = new ContentValues();
 			values.put(Key_ID, lex);
 			values.put(Date, System.currentTimeMillis());
-			return database.insert(TABLE_MARKS, null, values);
+			lastAdded=true;
+			long ret=-1;
+			if(!contains(lex)) {
+				ret = database.insert(TABLE_MARKS, null, values);
+			} else {
+				ret = database.update(TABLE_MARKS, values, "lex =?", new String[]{lex});
+			}
+			return ret;
 		}
 		return -1;
 	}
@@ -337,6 +374,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	 * @param folder the favorite folder id. if -1 then remove all
 	 **/
 	public int remove(String lex, long folder) {
+		lastAdded=true;
 		if (testDBV2) {
 			if (folder==-1) {
 				return database.delete(TABLE_FAVORITE_v2, Key_ID + " = ? ", new String[]{lex});
@@ -349,7 +387,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	}
 
 	public void refresh() {
-		preparedSelectExecutor.close();
+		preparedGetIsFavoriteWord.close();
 		if(isDirty) {
 			//database.execSQL("CREATE UNIQUE INDEX idxmy ON "+TABLE_MDXES+" ("+NAME+"); ");
 		}
@@ -357,15 +395,15 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	
 	
 	/** insert history */
-	public long insertUpdate(MainActivityUIBase a, String lex) {
+	public long insertUpdate(MainActivityUIBase a, String lex, ViewGroup webviewholder) {
 		if (testDBV2) {
-			return updateHistoryTerm(a, lex);
+			return updateHistoryTerm(a, lex, webviewholder);
 		} else {
 			CMN.Log("insertUpdate");
 			lastAdded=true;
 			long ret=-1;
 			if(!contains(lex)) {
-				ret = insert(a, lex, 0);
+				ret = insert(a, lex, 0, null);
 			} else {
 				ContentValues values = new ContentValues();
 				values.put(Date, System.currentTimeMillis());
@@ -375,7 +413,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		}
 	}
 	
-	public long updateHistoryTerm (MainActivityUIBase a, String lex) {
+	public long updateHistoryTerm (MainActivityUIBase a, String lex, ViewGroup webviewholder) {
 		CMN.rt();
 		int count=-1;
 		long id=-1;
@@ -395,7 +433,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			ContentValues values = new ContentValues();
 			values.put("lex", lex);
 			
-			values.put("books", a.collectDisplayingBooks(books));
+			values.put("books", a.collectDisplayingBooks(books, webviewholder));
 			
 			values.put("visit_count", ++count);
 			long now = CMN.now();
@@ -410,43 +448,12 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				where[0]=""+id;
 				database.update(TABLE_HISTORY_v2, values, "id=?", where);
 			}
+			lastAdded=true;
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
 		CMN.pt("历史插入时间：");
 		return id;
-	}
-	
-	public int bookMarkToggle (long bid, int pos) {
-		CMN.rt();
-		try {
-			long id=-1;
-			String[] where = new String[]{""+bid, ""+pos};
-			boolean insertNew=true;
-			Cursor c = database.rawQuery("select id from bookmark where bid = ? and pos = ? ", where);
-			if(c.moveToFirst()) {
-				insertNew = false;
-				id = c.getLong(0);
-			}
-			c.close();
-			
-			if(insertNew) {
-				ContentValues values = new ContentValues();
-				values.put("bid", bid);
-				values.put("pos", pos);
-				long now = CMN.now();
-				values.put("creation_time", now);
-				database.insert(TABLE_BOOKMARK_v2, null, values);
-				return 1;
-			} else {
-				where=new String[]{""+id};
-				database.delete(TABLE_BOOKMARK_v2, "id=?", where);
-				return 2;
-			}
-		} catch (Exception e) {
-			CMN.Log(e);
-		}
-		return 0;
 	}
 	
 	public String getBookName(long bid) {
@@ -484,13 +491,15 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public long getBookID(String fullPath, String bookName) {
 		CMN.rt();
 		long id=-1;
+		String path=fullPath;
 		try {
 			String[] where = new String[]{bookName};
 			boolean insertNew=true;
-			Cursor c = database.rawQuery("select id from book where name = ? ", where);
+			Cursor c = database.rawQuery("select id,path from book where name = ? ", where);
 			if(c.moveToFirst()) {
 				insertNew = false;
 				id = c.getLong(0);
+				path = c.getString(1);
 			}
 			c.close();
 			
@@ -498,27 +507,17 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				ContentValues values = new ContentValues();
 				values.put("name", bookName);
 				values.put("path", fullPath);
-				long now = CMN.now();
-				values.put("creation_time", now);
+				values.put(FIELD_CREATE_TIME, CMN.now());
 				id = database.insert(TABLE_BOOK_v2, null, values);
+			} else if(path==null && fullPath!=null) {
+//				ContentValues values = new ContentValues();
+//				values.put("path", fullPath);
+//				database.update(TABLE_BOOK_v2, values, "id=?", new String[]{""+id});
 			}
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
 		return id;
-	}
-	
-	SQLiteStatement preparedSelectExecutor;
-	SQLiteStatement preparedSelectPreciseExecutor;
-	private void prepareContain() {
-		if(preparedSelectExecutor==null) {
-	     	String sql = "select id from " + TABLE_MARKS + " where " + Key_ID + " = ? ";
-	     	if (testDBV2) {
-				sql = "select id from " + TABLE_FAVORITE_v2 + " where " + Key_ID + " = ? ";
-				preparedSelectPreciseExecutor = database.compileStatement(sql+"and folder=?");
-			}
-			preparedSelectExecutor = database.compileStatement(sql);
-		}
 	}
 
 	public long updateBookMark(String key){
@@ -554,8 +553,8 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	@Override
 	public void close(){
 		super.close();
-		if(preparedSelectExecutor!=null)
-			preparedSelectExecutor.close();
+		if(preparedGetIsFavoriteWord !=null)
+			preparedGetIsFavoriteWord.close();
 	}
 
 	public boolean wipeData() {
@@ -567,6 +566,19 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		contentValues.put("lex", name);
 		contentValues.put("creation_time", CMN.now());
 		return database.insert(TABLE_FAVORITE_FOLDER_v2, null, contentValues);
+	}
+	
+	public long ensureNoteBookByName(String name) {
+		long ret;
+		Cursor cursor = database.rawQuery("select id from favfolder where lex=?", new String[]{name});
+		if (cursor.moveToNext()) {
+			ret = cursor.getLong(0);
+		} else {
+			ret = newFavFolder(name);
+			DBUpgradeHelper.favFolderUpdCnt++;
+		}
+		cursor.close();
+		return ret;
 	}
 	
 	public String getFavoriteNoteBookNameById(long NID) {
@@ -593,8 +605,13 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		return ret;
 	}
 	
-	SQLiteStatement preparedPageSelectExecutor;
-	SQLiteStatement preparedPageSelectExecutor2;
+	SQLiteStatement preparedHasBookNoteForEntry;
+	SQLiteStatement preparedGetBookNoteForEntry;
+	public SQLiteStatement preparedHasBookmarkForEntry;
+	public SQLiteStatement preparedGetBookOptions;
+	
+	SQLiteStatement preparedGetIsFavoriteWord;
+	SQLiteStatement preparedGetIsFavoriteWordInFolder;
 	
 	public String getPageString(long bid, String entry){
 		ReusableByteOutputStream data = getPage_internal(bid, entry);
@@ -606,9 +623,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	private ReusableByteOutputStream getPage_internal(long bid, String entry) {
 		try {
 			try {
-				preparedPageSelectExecutor2.bindString(1, entry);
-				preparedPageSelectExecutor2.bindLong(2, bid);
-				ParcelFileDescriptor fd = preparedPageSelectExecutor2.simpleQueryForBlobFileDescriptor();
+				preparedGetBookNoteForEntry.bindString(1, entry);
+				preparedGetBookNoteForEntry.bindLong(2, bid);
+				ParcelFileDescriptor fd = preparedGetBookNoteForEntry.simpleQueryForBlobFileDescriptor();
 				if(fd!=null) {
 					FileInputStream fin = new FileInputStream(fd.getFileDescriptor());
 					ReusableByteOutputStream out = new ReusableByteOutputStream();
@@ -632,21 +649,22 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	}
 	
 	public long containsPage(long bid, String entry) {
-		preparedPageSelectExecutor.bindString(1, entry);
-		preparedPageSelectExecutor.bindLong(2, bid);
+		preparedHasBookNoteForEntry.bindString(1, entry);
+		preparedHasBookNoteForEntry.bindLong(2, bid);
 		try {
 			//Log.e("preparedSelectExecutor",preparedSelectExecutor.simpleQueryForString());
-			return preparedPageSelectExecutor.simpleQueryForLong();
+			return preparedHasBookNoteForEntry.simpleQueryForLong();
 		}catch(Exception e){
 			//CMN.Log(e);
 		}
 		return -1;
 	}
 	
-	public long putPage(long bid, String url, String name, String page) throws Exception {
+	public long putPage(long bid, String url, long position, String name, String page) throws Exception {
 		ContentValues values = new ContentValues();
 		values.put(FIELD_ENTRY_NAME, url);
 		values.put(FIELD_BOOK_ID, bid);
+		values.put(FIELD_POSITION, position);
 		//values.put(FIELD_ENTRY_NAME, title);
 		long now = CMN.now();
 		values.put(FIELD_EDIT_TIME, now);
@@ -662,7 +680,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			throw new MdxDBHelper.DataTooLargeException("page too large!!!");
 		values.put(FIELD_NOTES, data);
 		
-		Cursor cursor = database.rawQuery("SELECT id,edit_count from "+TABLE_BOOK_NOTE_v2+" where lex=? and bid=?"
+		Cursor cursor = database.rawQuery("SELECT id,edit_count from "+TABLE_BOOK_NOTE_v2+" where bid=? and lex=?"
 				, new String[]{url, ""+bid});
 		long ret;
 		if (cursor.moveToNext()) {
@@ -674,5 +692,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		}
 		cursor.close();
 		return ret;
+	}
+	
+	public void removePage(long bid, String entry){
+		database.delete(TABLE_BOOK_NOTE_v2, "bid=? and lex=?", new String[]{""+bid, entry});
 	}
 }

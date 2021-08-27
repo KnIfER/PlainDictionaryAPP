@@ -356,7 +356,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		ValueAnimator va = (ValueAnimator) animation;
 		if (va==null || va.getAnimatedFraction()==1) {
 			if (!bIsShowing) {
-				CMN.Log("dismiss!!!");
+				//CMN.Log("dismiss!!!");
 				if (pop!=null) {
 					pop.dismiss();
 				} else {

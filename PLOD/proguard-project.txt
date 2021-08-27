@@ -9,6 +9,9 @@
 -dontwarn com.google.android.material.**
 -dontnote com.google.android.material.**
 -dontwarn androidx.**
+
+-keep class com.knziha.** {*;}
+
 #-keepattributes SourceFile,LineNumberTable
 #-keepattributes Exceptions,InnerClasses,Signature
 #-keepattributes SourceFile,LineNumberTable

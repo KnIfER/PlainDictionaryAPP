@@ -34,7 +34,7 @@ public class AgentApplication extends Application {
 	/** transient */
 	public HashMap<String, BookPresenter> mdict_cache = new HashMap<>();
 	/** per-dictionary configurations */
-	public HashMap<CharSequence,byte[]> UIProjects = new HashMap<>();
+	public HashMap<CharSequence,byte[]> BookProjects = new HashMap<>();
 	public HashSet<CharSequence> dirtyMap = new HashSet<>();
 	public HashMap<String,String> fontNames = new HashMap<>();
 	public PDICMainAppOptions opt;
@@ -170,7 +170,7 @@ public class AgentApplication extends Application {
 	}
 
 	public void closeDataBases() {
-		//CMN.Log("关闭数据库");
+		CMN.Log("关闭数据库");
 		LexicalDBHelper vI;
 		for(MyPair<String, LexicalDBHelper> itemI:AppDatabases){
 			vI = itemI.value;
@@ -178,6 +178,10 @@ public class AgentApplication extends Application {
 				itemI.value=null;
 				vI.close();
 			}
+		}
+		if (historyCon!=null) {
+			historyCon.close();
+			historyCon = null;
 		}
 	}
 }

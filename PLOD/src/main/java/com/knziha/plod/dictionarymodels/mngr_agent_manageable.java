@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
+import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.WebViewmy;
 
 import java.io.File;
@@ -20,7 +21,7 @@ public interface mngr_agent_manageable {
 	boolean isMddResource();
 	void setTmpIsFlag(int val);
 	File f();
-	void checkFlag(Activity context);
+	void checkFlag(Toastable_Activity context);
 	long getFirstFlag();
 	void setFirstFlag(long val);
 	void validifyValueForFlag(WebViewmy view, int val, int mask, int flagPosition, int processId);

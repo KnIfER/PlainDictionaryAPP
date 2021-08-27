@@ -37,6 +37,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
@@ -398,6 +399,76 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		return ret;
 	}
 	
+	public boolean voyagable(boolean isGoBack) {
+		if (false) {
+			return isGoBack?canGoBack():canGoForward();
+		}
+		return isGoBack?HistoryVagranter > 0:HistoryVagranter<=History.size()-2;
+	}
+	
+	public void voyage(boolean isGoBack) {
+		if (false) {
+			if (isGoBack) if (canGoBack()) goBack();
+			else if (canGoForward()) goForward(); return;
+		}
+		//CMN.Log("这是网页的前后导航" ,isGoBack, HistoryVagranter, History.size());
+		if (isGoBack && HistoryVagranter > 0 || !isGoBack&&HistoryVagranter<=History.size() - 2) {
+			boolean fromCombined = this.fromCombined==1;
+			try {
+				MainActivityUIBase a = presenter.a;
+				ScrollerRecord PageState=null;
+				if(fromCombined) {
+					a.main_progress_bar.setVisibility(View.VISIBLE);
+					toTag="===???";/* OPF监听器中由recCom接管 */
+				}
+				
+				if(System.currentTimeMillis()-a.lastClickTime>300 && !isloading) {//save our postion
+					if (!fromCombined || a.recCom.scrolled)
+						PageState = saveHistory(fromCombined ? a.WHP : null, a.lastClickTime);
+					if (!isGoBack && HistoryVagranter == 0 && PageState != null) {
+						if (fromCombined) {
+							a.adaptermy2.avoyager.put(a.adaptermy2.lastClickedPosBeforePageTurn, PageState);
+						} else {
+							presenter.HistoryOOP.put(currentPos, PageState);
+						}
+					}
+				}
+				
+				a.lastClickTime = System.currentTimeMillis();
+				
+				int th = isGoBack ? --HistoryVagranter : ++HistoryVagranter;
+				
+				int pos = IU.parsint(History.get(th).key, -1);
+				PageState = History.get(th).value;
+				float initialScale = BookPresenter.def_zoom;
+				if (PageState != null) {
+					expectedPos = PageState.y;
+					expectedPosX = PageState.x;
+					initialScale = PageState.scale;
+				}
+				
+				//a.showT(CMN.Log(initialScale+" :: "+th+" :: "+pos+" :: expectedPos" + (isRecess ? " <- " : " -> ") + expectedPos));
+				
+				if (pos != -1) {
+					boolean render = currentPos != pos || isloading;
+					presenter.setCurrentDis(this, pos, 0);
+					if (render) {
+						//CMN.Log("/*BUG::多重结果变成成单一结果*/");
+						presenter.renderContentAt_internal(this,initialScale, fromCombined, false, false, pos); // mIso = rl.getLayoutParams().height>0
+					} else {
+						//CMN.Log("还是在这个页面");
+						isloading = true;
+						onFinishedPage();
+					}
+				} else {
+					loadUrl(History.get(HistoryVagranter).key);//
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	@RequiresApi(api = Build.VERSION_CODES.M)
 	private class callbackme extends ActionMode.Callback2 implements OnLongClickListener {
 		ActionMode.Callback callback;
@@ -589,12 +660,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																		if(c instanceof MainActivityUIBase){
 																			MainActivityUIBase a = (MainActivityUIBase) c;
 																			if(MainActivityUIBase.PreferredToolId !=-1){
-																				BookPresenter invoker = null;
-																				if(SelfIdx<a.md.size()){
-																					invoker = a.md.get(SelfIdx);
-																				}
 																				MainActivityUIBase.UniCoverClicker ucc = a.getUcc(); ucc.bFromWebView=true; ucc.bFromPeruseView=WebViewmy.this.fromCombined==3;
-																				ucc.setInvoker(invoker, WebViewmy.this, null, null);
+																				ucc.setInvoker(presenter, WebViewmy.this, null, null);
 																				ucc.onItemClick(null, null, MainActivityUIBase.PreferredToolId, -1, false, true);
 																			}
 																		}

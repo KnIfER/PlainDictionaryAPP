@@ -129,6 +129,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	private long fZero_LPT;
 	
 	long _bid;
+	byte[] options;
 	
 	public static String error_input;
 
@@ -1904,6 +1905,16 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			}
 		}
 		return ret.toString();
+	}
+	
+	@Override
+	public byte[] getOptions() {
+		return options;
+	}
+	
+	@Override
+	public void setOptions(byte[] options) {
+		this.options = options;
 	}
 	
 	protected ExecutorService OpenThreadPool(int thread_number) {

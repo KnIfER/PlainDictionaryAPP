@@ -45,6 +45,7 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.dictionarymodels.mngr_agent_prempter;
 import com.knziha.plod.dictionarymodels.mngr_agent_transient;
+import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.knziha.plod.widgets.FlowTextView;
 import com.mobeta.android.dslv.DragSortController;
@@ -186,9 +187,9 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 												if (selector.contains(mI.getPath()))
 													mdTmps[cc++] = mI;
 											}
-											BookPresenter.showDictTweaker(null, getActivity(), mdTmps);
+											BookPresenter.showDictTweaker(null, (Toastable_Activity) getActivity(), mdTmps);
 										} else {
-											BookPresenter.showDictTweaker(null, getActivity(), mmTmp);
+											BookPresenter.showDictTweaker(null, (Toastable_Activity) getActivity(), mmTmp);
 										}
 										bDictTweakerOnceShowed = true;
 										break;

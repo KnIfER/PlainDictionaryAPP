@@ -24,6 +24,7 @@ public interface UniversalDictionaryInterface {
 	boolean hasMdd();
 	
 	String getRichDescription();
+	String getDictInfo();
 	
 	boolean getIsResourceFile();
 	
@@ -57,4 +58,7 @@ public interface UniversalDictionaryInterface {
 	void flowerFindAllKeys(String key, int SelfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException;
 	
 	String getResourcePaths();
+	
+	byte[] getOptions();
+	void setOptions(byte[] options);
 }

@@ -25,6 +25,16 @@
 			android:persistent="false"
 			/>
 
+		<androidx.preference.ListPreference
+			android:defaultValue="@string/empty__"
+			android:key="locale"
+			android:persistent="true"
+			android:title="@string/language"
+			android:entryValues="@array/languages"
+			android:entries="@array/languages_info"
+			app:allowDividerBelow="true"
+			/>
+
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="lazyLoad"
 			android:title="词典懒加载"

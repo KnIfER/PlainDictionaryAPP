@@ -23,8 +23,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -36,7 +34,6 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.math.MathUtils;
-import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -51,8 +48,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
-import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
 
@@ -103,11 +98,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 
 	@Override
-	protected boolean PerFormBackPrevention() {
-		if (super.PerFormBackPrevention()) {
-			return true;
-		}
-		if(PDICMainAppOptions.getUseBackKeyClearWebViewFocus() && checkWebSelection()){
+	protected boolean PerFormBackPrevention(boolean bBackBtn) {
+		if (super.PerFormBackPrevention(bBackBtn)) {
 			return true;
 		}
 		if(this_instanceof_FloarActivitySearch && PDICMainAppOptions.getFloatClickHideToBackground()) {
@@ -815,7 +807,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			}
 		}
 		if(keytmp!=null && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy7()){
-			prepareHistroyCon().insertUpdate(this, keytmp);
+			prepareHistoryCon().insertUpdate(this, keytmp, null);
 		}
 
 		if(fullScreen) {
@@ -1025,7 +1017,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					!PDICMainAppOptions.getHistoryStrategy0()
 					&& PDICMainAppOptions.getHistoryStrategy4()
 					&&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
-				prepareHistroyCon().insertUpdate(FloatSearchActivity.this, currentKeyText);
+				prepareHistoryCon().insertUpdate(FloatSearchActivity.this, currentKeyText, webviewHolder);
 			}
 			if(userCLick) {
 				userCLick=false;
@@ -1166,7 +1158,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			if(PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 					&&combining_search_result.shouldSaveHistory()
 					&&userCLick||PDICMainAppOptions.getHistoryStrategy8()==0) {
-					prepareHistroyCon().insertUpdate(FloatSearchActivity.this, currentKeyText);
+					prepareHistoryCon().insertUpdate(FloatSearchActivity.this, currentKeyText, webviewHolder);
 			}
 			if(userCLick) {
 				userCLick=false;
@@ -1262,7 +1254,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
             case R.id.toolbar_action4:
 				if(isLongClicked) break;
             	String keyword = etSearch.getText().toString().trim();
-            	if(prepareHistroyCon().insertUpdate(this, keyword)>0)
+            	//todo impl
+            	if(prepareHistoryCon().insertUpdate(this, keyword, ActivedAdapter==null?null:ActivedAdapter.webviewHolder)>0)
             		showT("已收藏！");
             break;
             case R.id.toolbar_action5:

@@ -12,6 +12,7 @@ import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
+import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.WebViewmy;
 
 import java.io.File;
@@ -60,16 +61,16 @@ public class mngr_agent_transient implements mngr_agent_manageable {
 	}
 
 	//构造
-	public mngr_agent_transient(Activity a, String fn, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) {
+	public mngr_agent_transient(Toastable_Activity a, String fn, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) {
 		this(a, fn, opt_, 0, mninstance);
 	}
 
-	public mngr_agent_transient(Activity a, String fn, PDICMainAppOptions opt_, int isF, mngr_presenter_nonexist mninstance) {
+	public mngr_agent_transient(Toastable_Activity a, String fn, PDICMainAppOptions opt_, int isF, mngr_presenter_nonexist mninstance) {
 		this(a, new PlaceHolder(fn), opt_, mninstance);
 		mPhI.tmpIsFlag=TIFStamp=isF;
 	}
 
-	public mngr_agent_transient(Activity a, PlaceHolder phI, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) {
+	public mngr_agent_transient(Toastable_Activity a, PlaceHolder phI, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) {
 		opt=opt_;
 		mPhI = phI;
 		MNINSTANCE = mninstance;
@@ -82,7 +83,7 @@ public class mngr_agent_transient implements mngr_agent_manageable {
 			MNINSTANCE.IBC=IBC;
 			MNINSTANCE.updateFile(f);
 			MNINSTANCE.avoyager=avoyager;
-			MNINSTANCE.readInConfigs(((AgentApplication)a.getApplication()).UIProjects);
+			MNINSTANCE.readInConfigs(a, a.prepareHistoryCon());
 			bgColor=MNINSTANCE.bgColor;
 			TIBGColor=MNINSTANCE.TIBGColor;
 			TIFGColor=MNINSTANCE.TIFGColor;
@@ -179,7 +180,7 @@ public class mngr_agent_transient implements mngr_agent_manageable {
 		return f;
 	}
 	
-	public void dumpViewStates(Activity context, int tmpIsFlag) {
+	public void dumpViewStates(Toastable_Activity context, int tmpIsFlag) {
 		isDirty=true;
 		firstFlag = tmpIsFlag;
 		changeMap = false;
@@ -187,7 +188,7 @@ public class mngr_agent_transient implements mngr_agent_manageable {
 	}
 	
 	@Override
-	public void checkFlag(Activity context) {
+	public void checkFlag(Toastable_Activity context) {
 		if(isDirty||firstFlag!=FFStamp){
 			if(changeMap){
 				String path = getPath();
@@ -208,7 +209,7 @@ public class mngr_agent_transient implements mngr_agent_manageable {
 			MNINSTANCE.lvPosOff=lvPosOff;
 			MNINSTANCE.webScale=webScale;
 			MNINSTANCE.firstFlag=firstFlag;
-			MNINSTANCE.dumpViewStates(((AgentApplication)context.getApplication()).UIProjects);
+			MNINSTANCE.dumpViewStates(context, context.prepareHistoryCon());
 			FFStamp=firstFlag;
 			isDirty=false;
 		}

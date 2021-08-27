@@ -213,6 +213,14 @@ public class AppUIProject {
 				}
 			}
 		}
-		CMN.pt("重排耗时");
+		CMN.pt("重排耗时", bottombar_project);
+	}
+	
+	@Override
+	public String toString() {
+		return "AppUIProject{" +
+				"key='" + key + '\'' +
+				", bottombar=" + bottombar +
+				'}';
 	}
 }

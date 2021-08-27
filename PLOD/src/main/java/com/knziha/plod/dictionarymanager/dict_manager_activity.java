@@ -67,6 +67,7 @@ import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.dictionarymodels.mngr_presenter_nonexist;
 import com.knziha.plod.dictionarymodels.mngr_agent_prempter;
 import com.knziha.plod.dictionarymodels.mngr_agent_transient;
+import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.knziha.plod.widgets.Toastable_FragmentActivity;
 import com.knziha.rbtree.RashSet;
@@ -85,7 +86,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public class dict_manager_activity extends Toastable_FragmentActivity implements OnMenuItemClickListener
+public class dict_manager_activity extends Toastable_Activity implements OnMenuItemClickListener
 {
 	HashMap<String, mngr_agent_transient> mdict_cache = new HashMap<>();
 	Intent intent = new Intent();
@@ -93,7 +94,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 	public ArrayList<PlaceHolder> slots;
 	private ArrayList<Fragment> fragments;
 	public HashMap<String, BookPresenter> app_mdict_cache;
-	public HashMap<CharSequence,byte[]> UIProjects;
+	//public HashMap<CharSequence,byte[]> UIProjects;
 	public HashSet<CharSequence> dirtyMap;
 	
 	public File ConfigFile;
@@ -282,7 +283,7 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 		super.onCreate(null);
 		AgentApplication agent = ((AgentApplication)getApplication());
 		app_mdict_cache=agent.mdict_cache;
-		UIProjects=agent.UIProjects;
+		//UIProjects=agent.BookProjects;
 		dirtyMap=agent.dirtyMap;
 		opt=agent.opt;
 		slots = agent.slots;
@@ -1703,12 +1704,12 @@ public class dict_manager_activity extends Toastable_FragmentActivity implements
 			app_mdict_cache.put(newPath.getPath(), mdTmp);
 		}
 		if(!move){
-			byte[] data = UIProjects.remove(oldName);
-			if(data!=null){
-				String name = newPath.getName();
-				UIProjects.put(name, data);
-				dirtyMap.add(name);
-			}
+			//byte[] data = UIProjects.remove(oldName);
+			//if(data!=null){
+			//	String name = newPath.getName();
+			//	UIProjects.put(name, data);
+			//	dirtyMap.add(name);
+			//}
 		}
 	}
 }

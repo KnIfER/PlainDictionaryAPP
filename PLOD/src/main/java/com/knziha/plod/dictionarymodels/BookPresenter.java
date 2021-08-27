@@ -1,13 +1,15 @@
 package com.knziha.plod.dictionarymodels;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -15,6 +17,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.ParcelFileDescriptor;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
@@ -56,6 +59,7 @@ import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.CachedDirectory;
+import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.settings.DictOpitonContainer;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -76,6 +80,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,15 +91,16 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import db.LexicalDBHelper;
 import db.MdxDBHelper;
 
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
 import static com.knziha.plod.dictionary.mdBase.fullpageString;
-import static com.knziha.plod.plaindict.PDICMainAppOptions.testDBV2;
+import static db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
+import static db.LexicalDBHelper.TABLE_BOOK_v2;
 
 /*
  UI side of mdict
@@ -688,18 +694,32 @@ public class BookPresenter
 	        }
         }
 
-        readInConfigs(a.UIProjects);
+        readInConfigs(THIS, THIS.prepareHistoryCon());
+	}
+	
+	public static void keepBook(MainActivityUIBase THIS, UniversalDictionaryInterface bookImpl) {
+		File fullPath = bookImpl.getFile();
+		String name = fullPath.getName();
+		long bid;
+		Long bid_ = bookImplsNameMap.get(name);
+		if (bid_==null) {
+			bid = THIS.prepareHistoryCon().getBookID(fullPath.getPath(), name);
+			if(bid!=-1) bookImplsNameMap.put(name, bid);
+		} else {
+			bid = bid_;
+		}
+		if(bid!=-1) bookImplsMap.put(bid, bookImpl);
 	}
 	
 	public static UniversalDictionaryInterface getBookImpl(MainActivityUIBase THIS, File fullPath, int pseudoInit) throws IOException {
 		UniversalDictionaryInterface bookImpl = null;
 		String pathFull = fullPath.getPath();
 		long bid = -1;
-		if (pseudoInit==0 && testDBV2 && THIS!=null) {
+		if (pseudoInit==0 && THIS.getUsingDataV2() && THIS!=null) {
 			String name = fullPath.getName();
 			Long bid_ = bookImplsNameMap.get(name);
 			if (bid_==null) {
-				bid = THIS.prepareHistroyCon().getBookID(fullPath.getPath(), name);
+				bid = THIS.prepareHistoryCon().getBookID(fullPath.getPath(), name);
 				//CMN.Log("新标识::", bid, name);
 				if(bid!=-1) bookImplsNameMap.put(name, bid);
 			} else {
@@ -738,7 +758,7 @@ public class BookPresenter
 			}
 			if (bookImpl!=null) {
 				bookImpl.setBooKID(bid);
-				if (pseudoInit==0 && testDBV2) {
+				if (pseudoInit==0 && THIS.getUsingDataV2()) {
 					if(bid!=-1) bookImplsMap.put(bid, bookImpl);
 				}
 			}
@@ -858,66 +878,7 @@ public class BookPresenter
 				public void onClick(View v) {
 					CMN.Log("voyager onClick");
 					boolean isRecess = v.getId() == R.id.recess;
-					if (false) {
-						if (isRecess) if (mWebView.canGoBack()) mWebView.goBack();
-						else if (mWebView.canGoForward()) mWebView.goForward(); return;
-					}
-					//CMN.Log("这是网页的前后导航" ,isRecess, mWebView.HistoryVagranter, mWebView.History.size());
-					if (isRecess && mWebView.HistoryVagranter > 0 || !isRecess&&mWebView.HistoryVagranter<=mWebView.History.size() - 2) {
-						ViewGroup root = (ViewGroup) rl.getParent();
-						boolean fromCombined = root.getId() == R.id.webholder;
-						try {
-							ScrollerRecord PageState=null;
-							if(fromCombined) {
-								a.main_progress_bar.setVisibility(View.VISIBLE);
-								mWebView.toTag="===???";/* OPF监听器中由recCom接管 */
-							}
-
-							if(System.currentTimeMillis()-a.lastClickTime>300 && !mWebView.isloading) {//save our postion
-								if (!fromCombined || a.recCom.scrolled)
-									PageState = mWebView.saveHistory(fromCombined ? a.WHP : null, a.lastClickTime);
-								if (!isRecess && mWebView.HistoryVagranter == 0 && PageState != null) {
-									if (fromCombined) {
-										a.adaptermy2.avoyager.put(a.adaptermy2.lastClickedPosBeforePageTurn, PageState);
-									} else {
-										HistoryOOP.put(mWebView.currentPos, PageState);
-									}
-								}
-							}
-
-							a.lastClickTime = System.currentTimeMillis();
-
-							int th = isRecess ? --mWebView.HistoryVagranter : ++mWebView.HistoryVagranter;
-
-							int pos = IU.parsint(mWebView.History.get(th).key, -1);
-							PageState = mWebView.History.get(th).value;
-							float initialScale = BookPresenter.def_zoom;
-							if (PageState != null) {
-								mWebView.expectedPos = PageState.y;
-								mWebView.expectedPosX = PageState.x;
-								initialScale = PageState.scale;
-							}
-
-							//a.showT(CMN.Log(initialScale+" :: "+th+" :: "+pos+" :: expectedPos" + (isRecess ? " <- " : " -> ") + mWebView.expectedPos));
-
-							if (pos != -1) {
-								boolean render = mWebView.currentPos != pos || mWebView.isloading;
-								setCurrentDis(mWebView, pos, 0);
-								if (render) {
-									//CMN.Log("/*BUG::多重结果变成成单一结果*/");
-									renderContentAt_internal(mWebView,initialScale, fromCombined, false, rl.getLayoutParams().height>0, pos);
-								} else {
-									//CMN.Log("还是在这个页面");
-									mWebView.isloading = true;
-									mWebView.onFinishedPage();
-								}
-							} else {
-								mWebView.loadUrl(mWebView.History.get(mWebView.HistoryVagranter).key);//
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
+					mWebView.voyage(isRecess);
 				}
 			};
 			recess.setOnClickListener(voyager);
@@ -1065,19 +1026,30 @@ public class BookPresenter
 						a.showT("错误：多重词条内容不可保存");
 						break;
 					}
-				case 21:{
-					getCon(true).enssurePageTable();
-					String _url = getSaveUrl(final_mWebView);
-					if(_url!=null){
-						con.removePage(_url);
-						if(PageCursor!=null) PageCursor.close();
-						PageCursor = con.getPageCursor();
-						a.notifyDictionaryDatabaseChanged(BookPresenter.this);
+				case 21: {
+					if(a.getUsingDataV2()) {
+						String url=bookImpl.getEntryAt(mWebView.currentPos);
+						a.prepareHistoryCon().removePage(bookImpl.getBooKID(), url);
+						if(pos==1) {
+							renderContentAt(-1, final_mWebView.SelfIdx, final_mWebView.frameAt, final_mWebView, final_mWebView.currentRendring);
+						} else {
+							final_mWebView.reload();
+						}
 					}
-					if(pos==1) {
-						renderContentAt(-1, final_mWebView.SelfIdx, final_mWebView.frameAt, final_mWebView, final_mWebView.currentRendring);
-					} else {
-						final_mWebView.reload();
+					else {
+						getCon(true).enssurePageTable();
+						String _url = getSaveUrl(final_mWebView);
+						if(_url!=null){
+							con.removePage(_url);
+							if(PageCursor!=null) PageCursor.close();
+							PageCursor = con.getPageCursor();
+							a.notifyDictionaryDatabaseChanged(BookPresenter.this);
+						}
+						if(pos==1) {
+							renderContentAt(-1, final_mWebView.SelfIdx, final_mWebView.frameAt, final_mWebView, final_mWebView.currentRendring);
+						} else {
+							final_mWebView.reload();
+						}
 					}
 				} break;
 				/* 打开中枢 */
@@ -1354,7 +1326,7 @@ public class BookPresenter
 			return;
 		}
 		if(getSavePageToDatabase()) {
-			if(!testDBV2) {
+			if(!a.getUsingDataV2()) {
 				getCon(true).enssurePageTable();
 			}
 		}
@@ -1370,7 +1342,7 @@ public class BookPresenter
 				String title=currentDisplaying;
 				if(mWebView!=this.mWebView && a.PeruseView!=null)
 					title=a.PeruseView.currentDisplaying();
-				SaveCurrentPage_Internal(v, url, title);
+				SaveCurrentPage_Internal(v, url, mWebView.currentPos, title);
 			}
 		});
 	}
@@ -1446,15 +1418,15 @@ public class BookPresenter
 	}
 
 	/** Prefer saving to  database due to the possible complexity of url */
-	private void SaveCurrentPage_Internal(String data, String url, String name) {
+	private void SaveCurrentPage_Internal(String data, String url, int position, String name) {
 		/* save to database */
 		boolean proceed=true;
 		if(getSavePageToDatabase()) {
 			proceed=false;
 			try {
 				try {
-					if(testDBV2) {
-						if (a.prepareHistroyCon().putPage(bookImpl.getBooKID(), url, name, data) != -1) {
+					if(a.getUsingDataV2()) {
+						if (a.prepareHistoryCon().putPage(bookImpl.getBooKID(), url, position, name, data) != -1) {
 							String succStr = true?a.getResources().getString(R.string.saved_with_size, data.length())
 									:a.getResources().getString(R.string.saved);
 							a.showT(succStr);
@@ -1916,9 +1888,14 @@ public class BookPresenter
 		}
 	}
 	
-	GetRecordAtInterceptor mBookRecordInteceptor = new GetRecordAtInterceptor() {
+	public GetRecordAtInterceptor mBookRecordInteceptor = new GetRecordAtInterceptor() {
 		@Override
 		public String getRecordAt(UniversalDictionaryInterface bookImpl, int position) {
+			if(position==-1) {
+				return new StringBuilder(getAboutString())
+						.append("<BR>").append("<HR>")
+						.append(bookImpl.getDictInfo()).toString();
+			}
 			if(editingState && getContentEditable()){//Todo save and retrieve via sql database
 				CachedDirectory cf = getInternalResourcePath(false);
 				boolean ce =  cf.cachedExists();
@@ -1927,12 +1904,12 @@ public class BookPresenter
 				//retrieve page from database
 				if(getSavePageToDatabase()) {
 					String url=Integer.toString(position);
-					if(testDBV2) {
+					if(a.getUsingDataV2()) {
 						url = bookImpl.getEntryAt(position);
-						long note_id = a.prepareHistroyCon().containsPage(bookImpl.getBooKID(), url);
+						long note_id = a.prepareHistoryCon().containsPage(bookImpl.getBooKID(), url);
 						if(note_id!=-1) {
-							a.showT("有笔记！！！");
-							String ret = a.prepareHistroyCon().getPageString(bookImpl.getBooKID(), url);
+							//a.showT("有笔记！！！");
+							String ret = a.prepareHistoryCon().getPageString(bookImpl.getBooKID(), url);
 							CMN.Log(ret);
 							return ret;
 //						if(!pExists) return con.getPageString(url, StandardCharsets.UTF_8);
@@ -2047,9 +2024,9 @@ public class BookPresenter
 	}
 
 	@Override
-	public void checkFlag(Activity context) {
+	public void checkFlag(Toastable_Activity context) {
 		if(FFStamp!=firstFlag || isDirty)
-			dumpViewStates(a.UIProjects);
+			dumpViewStates(context, context.prepareHistoryCon());
 	}
 
 	@Override
@@ -2413,7 +2390,7 @@ public class BookPresenter
 
 	public void unload() {
 		if (a!=null && isDirty)
-			dumpViewStates(a.UIProjects);
+			dumpViewStates(a, a.prepareHistoryCon());
 		if(mWebView!=null) {
 			mWebView.shutDown();
     		mWebView=null;
@@ -2444,7 +2421,7 @@ public class BookPresenter
 		return tmpIsFlag;
 	}
 
-	public void dumpViewStates(HashMap<CharSequence,byte[]> UIProjects) {
+	public void dumpViewStates(Context context, LexicalDBHelper historyCon) {
 		setIsDedicatedFilter(false);
 		try {
 			DataOutputStream data_out;
@@ -2452,7 +2429,7 @@ public class BookPresenter
 			
 			String save_name = bookImpl.getDictionaryName();
 			
-			ReusableByteOutputStream bos = new ReusableByteOutputStream(UIProjects.get(save_name), MainActivityUIBase.ConfigSize + MainActivityUIBase.ConfigExtra);
+			ReusableByteOutputStream bos = new ReusableByteOutputStream(bookImpl.getOptions(), MainActivityUIBase.ConfigSize + MainActivityUIBase.ConfigExtra);
 			data = bos.getBytes();
 			bos.precede(MainActivityUIBase.ConfigExtra);
 			data_out = new DataOutputStream(bos);
@@ -2487,54 +2464,58 @@ public class BookPresenter
 			data_out.close();
 			
 			/* Just mark as dirty. */
-			if(!CMN.bForbidOneSpecFile && a!=null){
-				CMN.Log("putted", save_name);
-				a.dirtyMap.add(save_name);
-			}
-			UIProjects.put(save_name, data);
+			//if(!CMN.bForbidOneSpecFile && a!=null){
+			//	CMN.Log("putted", save_name);
+			//	a.dirtyMap.add(save_name);
+			//}
+			//UIProjects.put(save_name, data);
+			putBookOptions(context, historyCon, bookImpl.getBooKID(), bos.getBytesLegal(), bookImpl.getFile().getPath(), bookImpl.getDictionaryName());
 			isDirty = false;
 		} catch (Exception e) { if(GlobalOptions.debug) CMN.Log(e); }
 	}
-
-	public void putSates() throws IOException {
-		ReusableByteOutputStream bos = new ReusableByteOutputStream(50);
-		DataOutputStream fo = new DataOutputStream(bos);
-		fo.writeShort(12);
-		fo.writeByte(0);
-
-		fo.writeInt(bgColor);
-		fo.writeInt(internalScaleLevel);
-
-		fo.writeInt(lvPos);
-		fo.writeInt(lvClickPos);
-		fo.writeInt(lvPosOff);
-		//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, bookImpl.getFileName());
-
-		int ex=0,e=0;
-		ScrollerRecord record = avoyager.get(lvClickPos);
-		if(record!=null){
-			fo.writeInt(record.x);
-			fo.writeInt(record.y);
-			fo.writeFloat(record.scale);
-		} else {
-			fo.writeInt(0);
-			fo.writeInt(0);
-			fo.writeFloat(webScale);
+	
+	public static byte[] getBookOptions(Context context, LexicalDBHelper db, long book_id, String path, String name) {
+		if (db.testDBV2) {
+			if (book_id==-1) {
+				book_id = db.getBookID(path, name);
+			}
+			db.preparedGetBookOptions.bindLong(1, book_id);
+			try {
+				ParcelFileDescriptor fd = db.preparedGetBookOptions.simpleQueryForBlobFileDescriptor();
+				if(fd==null) {
+					CMN.Log("THIS FILE DESCRIPTOR IS NULL!!!", book_id, path, name);
+					return null;
+				}
+				FileInputStream fin = new FileInputStream(fd.getFileDescriptor());
+				ReusableByteOutputStream out = new ReusableByteOutputStream(Math.max(fin.available(), MainActivityUIBase.ConfigSize));
+				out.write(fin, true);
+				fin.close();
+				//CMN.Log("getBytesLegal::", out.getBytesLegal()==out.getBytes(), out.getBytesLegal().length, out.getBytes().length);
+				return out.getBytesLegal();
+			} catch (IOException e) {
+				CMN.Log(e);
+			}
 		}
-		//CMN.Log(bookImpl.getFileName()+"保存页面位置",expectedPosX,expectedPos,webScale);
-
-		fo.writeLong(firstFlag);
-
-
-		byte[] data = bos.getBytes();
-		byte[] oldData = new byte[data.length + MainActivityUIBase.ConfigExtra];
-		for (int k = 0; k < 4; k++) {
-			oldData[k] = 0;
+		return ((AgentApplication)context.getApplicationContext()).BookProjects.get(name);
+	}
+	
+	public static void putBookOptions(Context context, LexicalDBHelper db, long book_id, byte[] options, String path, String name) {
+		if (db.testDBV2) {
+			try {
+				SQLiteDatabase db_ = db.getDB();
+				ContentValues values = new ContentValues();
+				values.put("options", options);
+				if (book_id==-1) {
+					book_id = db.getBookID(path, name);
+				}
+				db_.update(TABLE_BOOK_v2, values, "id=?", new String[]{""+book_id});
+				CMN.Log("已存放::", book_id, name);
+				return;
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
 		}
-		System.arraycopy(data, 0, oldData, MainActivityUIBase.ConfigExtra, data.length);
-
-		AgentApplication app = ((AgentApplication) a.getApplication());
-		app.UIProjects.put(bookImpl.getFile().getName(), oldData);
+		((AgentApplication)context.getApplicationContext()).BookProjects.put(name, options);
 	}
 
 	public int getFontSize() {
@@ -2545,16 +2526,17 @@ public class BookPresenter
 
 	public float webScale=0;
 
-	public void readInConfigs(HashMap<CharSequence,byte[]> UIProjects) throws IOException {
+	public void readInConfigs(Context context, LexicalDBHelper historyCon) throws IOException {
 		DataInputStream data_in1 = null;
 		try {
 			CMN.rt();
-			byte[] data = UIProjects.get(bookImpl.getFile().getName());
+			byte[] data = getBookOptions(context, historyCon, bookImpl.getBooKID(), bookImpl.getFile().getPath(), bookImpl.getDictionaryName());
 			if(data!=null){
+				bookImpl.setOptions(data);
 				int extra = MainActivityUIBase.ConfigExtra;
 				data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
 			}
-			if(data_in1!=null){
+			if(data_in1!=null) {
 				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
 				IBC.doubleClickXOffset = ((float)Math.round(((float)data_in1.read())/255*1000))/1000;
 				IBC.doubleClickPresetXOffset = ((float)Math.round(((float)data_in1.read())/255*1000))/1000;
@@ -2568,22 +2550,23 @@ public class BookPresenter
 				lvPos = data_in1.readInt();
 				lvClickPos = data_in1.readInt();
 				lvPosOff = data_in1.readInt();
-				//CMN.Log(bookImpl.getFileName(),"列表位置",lvPos,lvClickPos,lvPosOff);
 				if(data_in1.available()>0) {
 					ScrollerRecord record = new ScrollerRecord(data_in1.readInt(), data_in1.readInt(), webScale = data_in1.readFloat());
 					avoyager.put(lvClickPos, record);
 				}
 				firstFlag |= data_in1.readLong();
+				CMN.Log(bookImpl.getDictionaryName(), firstFlag, "列表位置",lvPos,lvClickPos,lvPosOff);
 				TIBGColor = data_in1.readInt();
 				TIFGColor = data_in1.readInt();
 				IBC.doubleClickZoomRatio = data_in1.readFloat();
 				IBC.doubleClickZoomLevel1  = data_in1.readFloat();
 				IBC.doubleClickZoomLevel2  = data_in1.readFloat();
 			}
-			//CMN.pt(bookImpl.getFileName()+" 单典配置加载耗时");
+			CMN.pt(bookImpl.getDictionaryName()+" id="+bookImpl.getBooKID()+" "+data+" 单典配置加载耗时");
 		} catch (Exception e) {
-			if(GlobalOptions.debug) CMN.Log(e);
-		} finally{
+			CMN.Log(e);
+			firstFlag = 0;
+		} finally {
 			FFStamp = firstFlag;
 			if(data_in1!=null) data_in1.close();
 		}
@@ -2596,10 +2579,12 @@ public class BookPresenter
 			TIFGColor = opt.getTitlebarForegroundColor();
 		}
 	}
-
+	
 	public interface ViewLayoutListener{
 		void onLayoutDone(int size);
-	}public ViewLayoutListener vll;
+	}
+	
+	public ViewLayoutListener vll;
 
 	@Override
 	public void onReceiveValue(String value) {
@@ -2698,7 +2683,7 @@ public class BookPresenter
 	}
 			
 	/** Show Per-Dictionary settings dialog via peruseview, normal view. */
-	public static void showDictTweaker(WebViewmy view, Activity context, mngr_agent_manageable...md) {
+	public static void showDictTweaker(WebViewmy view, Toastable_Activity context, mngr_agent_manageable...md) {
 		if(md.length==0) return;
 		mngr_agent_manageable mdTmp = md[0];
 		String[] DictOpt = context.getResources().getStringArray(R.array.dict_spec);
@@ -2875,8 +2860,9 @@ public class BookPresenter
 					break;
 				}
 				if(v.getTag(R.id.toolbar_action1)!=null) {//add It!
-					if(testDBV2) {
-						toggleBookMark();
+					if(a.getUsingDataV2()) {
+						// todo remove
+						toggleBookMark(null, null);
 					} else {
 						boolean resposible=con==null;
 						if(getCon(true).insertUpdate(mWebView.currentPos)!=-1)
@@ -2894,14 +2880,126 @@ public class BookPresenter
 		}
 	}
 	
-	public void toggleBookMark() {
-		int ret = a.prepareHistroyCon().bookMarkToggle(bookImpl.getBooKID(), mWebView.currentPos);
-		if (ret==1) {
+	public boolean hasBookmarkAt(String entryName) {
+		SQLiteStatement stat = a.prepareHistoryCon().preparedHasBookmarkForEntry;
+		stat.bindLong(1, bookImpl.getBooKID());
+		stat.bindString(2, entryName);
+		try {
+			stat.simpleQueryForLong();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	public void deleteBookMark(int pos, OnClickListener notifier) {
+		long bid = bookImpl.getBooKID();
+		long id=-1;
+		try {
+			SQLiteDatabase database = a.prepareHistoryCon().getDB();
+			boolean hasNotes=false;
+			String[] where = new String[]{""+bid, ""+pos};
+			boolean insertNew=true;
+			Cursor c = database.rawQuery("select id,notes is not null from "+TABLE_BOOK_NOTE_v2+" where bid=? and pos=?", where);
+			if(c.moveToFirst()) {
+				insertNew = false;
+				id = c.getLong(0);
+				hasNotes = c.getInt(1)==1;
+			}
+			c.close();
+			
+			if(insertNew) {
+				id=-1;
+			} else {
+				String id_ = ""+id;
+				if (hasNotes) {
+					id=0;
+					new AlertDialog.Builder(a)
+							.setMessage("该书签含有重载笔记内容，确认删除？")
+							.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									sayToggleBookMarkResult(database.delete(TABLE_BOOK_NOTE_v2, "id=?", new String[]{id_})>0?-2:-1, notifier);
+								}
+							})
+							.setNegativeButton("取消", null)
+							.show();
+				} else {
+					id=database.delete(TABLE_BOOK_NOTE_v2, "id=?", new String[]{id_})>0?-2:-1;
+				}
+			}
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+		sayToggleBookMarkResult((int) id, notifier);
+	}
+	
+	public void toggleBookMark(WebViewmy mWebView, OnClickListener notifier) {
+		long id=-1;
+		if (mWebView!=null) {
+			long bid = bookImpl.getBooKID();
+			CMN.rt();
+			int pos=mWebView.currentPos;
+			try {
+				SQLiteDatabase database = a.prepareHistoryCon().getDB();
+				boolean hasNotes=false;
+				String[] where = new String[]{""+bid, ""+pos};
+				boolean insertNew=true;
+				Cursor c = database.rawQuery("select id,notes is not null from "+TABLE_BOOK_NOTE_v2+" where bid = ? and pos = ? ", where);
+				if(c.moveToFirst()) {
+					insertNew = false;
+					id = c.getLong(0);
+					hasNotes = c.getInt(1)==1;
+				}
+				c.close();
+				
+				if(insertNew) {
+					ContentValues values = new ContentValues();
+					values.put("lex", mWebView.presenter.bookImpl.getEntryAt(pos));
+					values.put("bid", bid);
+					values.put("pos", pos);
+					long now = CMN.now();
+					values.put("last_edit_time", now);
+					values.put("creation_time", now);
+					id = database.insert(TABLE_BOOK_NOTE_v2, null, values);
+				} else {
+					String id_ = ""+id;
+					if (hasNotes) {
+						id=0;
+						new AlertDialog.Builder(a)
+								.setMessage("该书签含有重载笔记内容，确认删除？")
+								.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										sayToggleBookMarkResult(database.delete(TABLE_BOOK_NOTE_v2, "id=?", new String[]{id_})>0?-2:-1, notifier);
+									}
+								})
+								.setNegativeButton("取消", null)
+								.show();
+					} else {
+						id=database.delete(TABLE_BOOK_NOTE_v2, "id=?", new String[]{id_})>0?-2:-1;
+					}
+				}
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
+		}
+		sayToggleBookMarkResult((int) id, notifier);
+	}
+	
+	private void sayToggleBookMarkResult(int ret, OnClickListener notifier) {
+		if (ret>=1) {
 			a.showT("已保存书签");
-		} else if(ret==2){
+		} else if(ret==-2) {
 			a.showT("已删除书签");
-		} else {
+		} else if(ret==-1){
 			a.showT("操作失败！");
+			return;
+		} else if(ret==0){
+			return;
+		}
+		if (notifier!=null) {
+			notifier.onClick(null);
 		}
 	}
 	

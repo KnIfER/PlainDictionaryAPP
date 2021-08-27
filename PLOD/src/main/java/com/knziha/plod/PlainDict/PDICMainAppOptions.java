@@ -45,7 +45,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	SharedPreferences reader2;
 	SharedPreferences defaultReader;
 	public static String locale;
-
+	
 	public PDICMainAppOptions(Context a_){
 		reader2 = a_.getSharedPreferences("SizeChangablePrefs",Activity.MODE_PRIVATE);
 		defaultReader = PreferenceManager.getDefaultSharedPreferences(a_);
@@ -1692,33 +1692,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateTFAt(0x200000000000l,val);
 		return val;
 	}
-
-	public boolean getUseBackKeyGoWebViewBack() {
-		return false;//(ThirdFlag & 0x400000000000l) == 0x400000000000l;
-	}
-	public boolean setUseBackKeyGoWebViewBack(boolean val) {
-		updateTFAt(0x400000000000l,val);
-		return val;
-	}
-
-
-	public static boolean getLazyLoadDicts() {
-		return (ThirdFlag & 0x800000000000l) != 0x800000000000l;
-	}
-	public static boolean setLazyLoadDicts(boolean val) {
-		updateTFAt(0x800000000000l,!val);
-		return val;
-	}
-
-
-	public static boolean getEnableWebDebug() {
-		return (ThirdFlag & 0x1000000000000l) != 0x1000000000000l;
-	}
-	public static boolean setEnableWebDebug(boolean val) {
-		updateTFAt(0x1000000000000l,!val);
-		return val;
-	}
-
+	
+	@Multiline(flagPos=46, shift=1) public boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Multiline(flagPos=46, shift=1) public void setUseBackKeyGoWebViewBack(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Multiline(flagPos=47, shift=1) public static boolean getLazyLoadDicts() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Multiline(flagPos=47, shift=1) public static void setLazyLoadDicts(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Multiline(flagPos=48) public static boolean getEnableWebDebug() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Multiline(flagPos=48) public static void setEnableWebDebug(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	
+	
 	/** @return integer: 0=entry page forword/backward <br/>
 	 * 1=web page forword/backward <br/>
 	 */
@@ -2258,6 +2240,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Multiline(flagPos=12, shift=1) public boolean getFavoritePerceptsRemoveAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Multiline(flagPos=13, shift=1) public boolean getFavoritePerceptsAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
+	@Multiline(flagPos=14, shift=0/*, debug=0*/) public static boolean getUseDatabaseV2() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=14, shift=0) public static void setUseDatabaseV2(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	
+	@Multiline(flagPos=15, shift=1) public static boolean checkVersionBefore_5_0() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=15, shift=1) public static void uncheckVersionBefore_5_0(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF
@@ -2406,9 +2394,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return FileDatabases;
 	}
 	
-	public final static boolean testDBV2 = true;
-	
-	private String pathToFavoriteDatabases(String name) {
+	private String pathToFavoriteDatabases(String name, boolean testDBV2) {
 		StringBuffer InternalPath = pathToMainFolder().append("INTERNAL/");
 		if (testDBV2) {
 			if(name!=null)
@@ -2426,14 +2412,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return InternalPath.toString();
 	}
-	public String pathToFavoriteDatabase(String name) {
-		return pathToFavoriteDatabases(name);
+	public String pathToFavoriteDatabase(String name, boolean testDBV2) {
+		return pathToFavoriteDatabases(name, testDBV2);
 	}
-	public File fileToFavoriteDatabases(String name) {
-		return new File(pathToFavoriteDatabases(name));
+	public File fileToFavoriteDatabases(String name, boolean testDBV2) {
+		return new File(pathToFavoriteDatabases(name, testDBV2));
 	}
-	public File fileToDatabaseFavorites() {
-		return new File(pathToFavoriteDatabases(StringUtils.EMPTY));
+	public File fileToDatabaseFavorites(boolean testDBV2) {
+		return new File(pathToFavoriteDatabases(StringUtils.EMPTY, testDBV2));
 	}
 	
 	public StringBuffer pathToMainFolder() {

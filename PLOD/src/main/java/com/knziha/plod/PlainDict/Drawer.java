@@ -8,10 +8,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Spannable;
@@ -414,7 +412,7 @@ public class Drawer extends Fragment implements
 		int id = v.getId();
 		switch(id) {
 			case R.id.server:
-				a.launchSettings(ServerPreference.id);
+				a.launchSettings(ServerPreference.id, 0);
 			return;
 			case R.id.menu_item_setting:
 				//a.mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -439,10 +437,7 @@ public class Drawer extends Fragment implements
 					ssb.setSpan(new ClickableSpan() {
 						@Override
 						public void onClick(@NonNull View widget) {
-							Intent intent = new Intent();
-							intent.putExtra("realm",6);
-							intent.setClass(a, SettingsActivity.class);
-							a.startActivityForResult(intent, 1297);
+							a.launchSettings(6, 1297);
 						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 
@@ -965,10 +960,8 @@ public class Drawer extends Fragment implements
 				a.showPickFavorFolder();
 				break;
 			case 11://设置
-				Intent intent = new Intent();
 				((AgentApplication)a.getApplication()).opt=a.opt;
-				intent.setClass(a, SettingsActivity.class);
-				a.startActivityForResult(intent, 1297);
+				a.launchSettings(0, 1297);
 				break;
 		}
 	}

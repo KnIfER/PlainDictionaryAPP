@@ -1,12 +1,11 @@
 package com.knziha.plod.dictionarymodels;
 
-import android.app.Activity;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.Toastable_Activity;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 
 /*
  UI side of mdict
@@ -17,11 +16,11 @@ public class mngr_agent_prempter extends mngr_agent_transient {
 	public boolean isAsset;
 
 	//构造
-	public mngr_agent_prempter(Activity a, String fn, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) throws IOException {
+	public mngr_agent_prempter(Toastable_Activity a, String fn, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) throws IOException {
 		this(a, fn, opt_, 0, mninstance);
 	}
 
-	public mngr_agent_prempter(Activity a, String fn, PDICMainAppOptions opt_, int isF, mngr_presenter_nonexist mninstance) throws IOException {
+	public mngr_agent_prempter(Toastable_Activity a, String fn, PDICMainAppOptions opt_, int isF, mngr_presenter_nonexist mninstance) throws IOException {
 		super(a, fn, opt_, isF, mninstance);
 		String fnTMP = f.getName();
 

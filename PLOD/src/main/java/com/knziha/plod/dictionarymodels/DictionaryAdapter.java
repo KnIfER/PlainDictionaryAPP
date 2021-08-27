@@ -35,6 +35,8 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	Encoding encoding;
 	public volatile boolean searchCancled;
 	
+	byte[] options;
+	
 	/** validation schema<br/>
 	 * 0=none; 1=check even; 2=check four; 3=check direct; 4=check direct for all; 5=1/3; */
 	protected int checkEven;
@@ -122,7 +124,12 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	
 	@Override
 	public String getRichDescription() {
-		return null;
+		return "";
+	}
+	
+	@Override
+	public String getDictInfo() {
+		return "";
 	}
 	
 	@Override
@@ -203,6 +210,16 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	@Override
 	public String getResourcePaths() {
 		return null;
+	}
+	
+	@Override
+	public byte[] getOptions() {
+		return options;
+	}
+	
+	@Override
+	public void setOptions(byte[] options) {
+		this.options = options;
 	}
 	
 	@Override

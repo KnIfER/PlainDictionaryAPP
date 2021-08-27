@@ -5,10 +5,13 @@
 
 package com.knziha.plod.dictionary.Utils;
 
+import com.knziha.plod.plaindict.CMN;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 public class ReusableByteOutputStream extends OutputStream {
     protected byte[] buf;
@@ -34,11 +37,11 @@ public class ReusableByteOutputStream extends OutputStream {
 			this.buf = new byte[size];
 	}
 
-    public void write(InputStream in) throws IOException {
+    public void write(InputStream in, boolean breakOnZeroAvail) throws IOException {
         int cap;
         if (in instanceof ByteArrayInputStream) {
             cap = in.available();
-            this.ensureCapacity(cap);
+            this.ensureCapacity(count + cap);
             this.count += in.read(this.buf, this.count, cap);
         } else {
             while(true) {
@@ -50,38 +53,82 @@ public class ReusableByteOutputStream extends OutputStream {
 
                 this.count += sz;
                 if (cap == sz) {
-                    this.ensureCapacity(this.count);
+                	int avail = in.available();
+                	if (breakOnZeroAvail && avail==0) break;
+                    this.ensureCapacity(this.count+Math.max(64, in.available()));
                 }
             }
         }
     }
-
-    public void write(int b) {
-        this.ensureCapacity(1);
+	
+	public void write(byte[] b, int off, int len) {
+		if ((off < 0) || (off > b.length) || (len < 0) ||
+				((off + len) - b.length > 0)) {
+			throw new IndexOutOfBoundsException();
+		}
+		this.ensureCapacity(count + len);
+		System.arraycopy(b, off, this.buf, this.count, len);
+		this.count += len;
+	}
+	
+	public void write(byte[] b) {
+		this.write(b, 0, b.length);
+	}
+	
+	
+	public void write(int b) {
+        this.ensureCapacity(count + 1);
         this.buf[this.count] = (byte)b;
         ++this.count;
     }
 
-    public void ensureCapacity(int space) {
-        int newcount = space + this.count;
-        if (newcount > this.buf.length) {
-            byte[] newbuf = new byte[Math.max(this.buf.length << 1, newcount)];
-            System.arraycopy(this.buf, 0, newbuf, 0, this.count);
-            this.buf = newbuf;
-        }
-
+    public void ensureCapacity(int minCapacity) {
+        //int newcount = space + this.count;
+        //if (newcount > this.buf.length) {
+        //    byte[] newbuf = new byte[Math.max(this.buf.length << 1, newcount)];
+        //    System.arraycopy(this.buf, 0, newbuf, 0, this.count);
+        //    this.buf = newbuf;
+        //}
+		// overflow-conscious code
+		if (minCapacity - buf.length > 0)
+			grow(minCapacity);
     }
-
-    public void write(byte[] b, int off, int len) {
-        this.ensureCapacity(len);
-        System.arraycopy(b, off, this.buf, this.count, len);
-        this.count += len;
-    }
-
-    public void write(byte[] b) {
-        this.write(b, 0, b.length);
-    }
-
+	
+	
+	/**
+	 * The maximum size of array to allocate.
+	 * Some VMs reserve some header words in an array.
+	 * Attempts to allocate larger arrays may result in
+	 * OutOfMemoryError: Requested array size exceeds VM limit
+	 */
+	private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+	
+	
+	/**
+	 * Increases the capacity to ensure that it can hold at least the
+	 * number of elements specified by the minimum capacity argument.
+	 *
+	 * @param minCapacity the desired minimum capacity
+	 */
+	private void grow(int minCapacity) {
+		// overflow-conscious code
+		int oldCapacity = buf.length;
+		int newCapacity = oldCapacity << 1;
+		if (newCapacity - minCapacity < 0)
+			newCapacity = minCapacity;
+		if (newCapacity - MAX_ARRAY_SIZE > 0)
+			newCapacity = hugeCapacity(minCapacity);
+		buf = Arrays.copyOf(buf, newCapacity);
+	}
+	
+	private static int hugeCapacity(int minCapacity) {
+		if (minCapacity < 0) // overflow
+			throw new OutOfMemoryError();
+		return (minCapacity > MAX_ARRAY_SIZE) ?
+				Integer.MAX_VALUE :
+				MAX_ARRAY_SIZE;
+	}
+	
     public void reset() {
         this.count = 0;
     }
@@ -106,6 +153,11 @@ public class ReusableByteOutputStream extends OutputStream {
 
     public byte[] getBytes() {
         return this.buf;
+    }
+
+    public byte[] getBytesLegal() {
+		//CMN.Log("getBytesLegal::", this.buf.length==count);
+        return this.buf.length==count?this.buf:toByteArray();
     }
 
     public int getCount() {

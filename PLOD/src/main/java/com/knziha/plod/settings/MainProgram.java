@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.FilePickerPreference;
@@ -13,39 +12,14 @@ import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.File;
-import java.util.HashMap;
 
 public class MainProgram extends SettingsFragment implements Preference.OnPreferenceClickListener {
-	private String localeStamp;
-	private HashMap<String, String> nym;
-	StringBuilder flag_code= new StringBuilder();
-
-	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		nym=new HashMap<>(15);
-		nym.put("ar", "ae");
-		nym.put("zh", "cn");
-		nym.put("ja", "jp");
-		nym.put("ca", "");
-		nym.put("gl", "");
-		nym.put("el", "gr");
-		nym.put("ko", "kr");
-		nym.put("en", "gb\t\tus");
-		nym.put("cs", "cz");
-		nym.put("da", "dk");
-		nym.put("sv", "se");
-		nym.put("sl", "si");
-		nym.put("nb", "no");
-		nym.put("sr", "rs");
-		nym.put("uk", "ua");
-
 		super.onCreate(savedInstanceState);
-		init_switch_preference(this, "locale", null, getNameFlag(localeStamp = PDICMainAppOptions.locale), null);
 		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null);
 		init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null);
 		init_switch_preference(this, "classical_sort", PDICMainAppOptions.getClassicalKeycaseStrategy(), null, null);
@@ -57,44 +31,17 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 		init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null);
 		init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null);
 		init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null);
+		
+		init_switch_preference(this, "dbv2", PDICMainAppOptions.getUseDatabaseV2(), null, null);
 
 		findPreference("f_size").setDefaultValue(GlobalOptions.isLarge?150:125);
 		
 		findPreference("dev").setOnPreferenceClickListener(this);
 		findPreference("sspec").setOnPreferenceClickListener(this);
 		findPreference("vspec").setOnPreferenceClickListener(this);
+		findPreference("dbv2_up").setOnPreferenceClickListener(this);
 	}
-
-	private String getNameFlag(String andoid_country_code) {
-		if(andoid_country_code==null || andoid_country_code.length()==0)
-			return null;
-		String name=andoid_country_code;
-		int idx;
-		if((idx = name.indexOf("-")) != -1.)
-			name=name.substring(0, idx);
-		else
-			andoid_country_code=andoid_country_code.toUpperCase();
-		name=name.toLowerCase();
-		if(nym.containsKey(name))
-			name=nym.get(name);
-		if(flag_code==null)
-			flag_code= new StringBuilder();
-		flag_code.setLength(0);
-		flag_code.append(andoid_country_code).append("\t\t\t\t");
-		return getCountryFlag(flag_code, name).toString();
-	}
-
-	public static StringBuilder getCountryFlag(StringBuilder flag_code, String name) {
-		for (int i = 0; i < name.length(); i++) {
-			char cI = name.charAt(i);
-			if(cI>=0x61 && cI<=0x61+26){
-				flag_code.append("\uD83C").append((char) (0xDDE6 + cI - 0x61));
-			}else
-				flag_code.append(cI);
-		}
-		return flag_code;
-	}
-
+	
 	//创建
 	@Override
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -114,6 +61,10 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 			case "vspec":
 				fragmentId=8;
 			break;
+			case "dbv2_up": {
+				ViewUtils.notifyAPPSettingsChanged(getActivity(), preference);
+			} break;
+			
 		}
 		if(fragmentId!=-1){
 			Intent intent = new Intent();
@@ -149,11 +100,6 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 				setColorPreferenceTitle(preference, newValue);
 				CMN.FloatBackground=(int) newValue;
 			break;
-			case "locale":
-				if(localeStamp!=null)
-					PDICMainAppOptions.locale=localeStamp.equals(newValue)?localeStamp:null;
-				preference.setSummary(getNameFlag((String) newValue));
-			break;
 //			case "paste_target":
 //				preference.setSummary(getResources().getStringArray(R.array.paste_target_info)[PDICMainAppOptions.setPasteTarget(IU.parsint(newValue))]);
 //			break;
@@ -171,6 +117,10 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 			break;
 			case "f_hide_recent":
 				PDICMainAppOptions.setHideFloatFromRecent((Boolean) newValue);
+			break;
+			case "dbv2":
+				PDICMainAppOptions.setUseDatabaseV2((Boolean) newValue);
+				preference.setSummary("重启生效*");
 			break;
 		}
 		return true;

@@ -20,16 +20,40 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
 import java.io.DataOutputStream;
+import java.util.HashMap;
 
 /** Devoloper Options */
 public class DevoloperOptions extends SettingsFragment implements Preference.OnPreferenceClickListener {
 	public final static int id=4;
 	private WebView mWebview;
+	
+	private String localeStamp;
+	private HashMap<String, String> nym;
+	StringBuilder flag_code= new StringBuilder();
 
 	//执行初始化操作
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		nym=new HashMap<>(15);
+		nym.put("ar", "ae");
+		nym.put("zh", "cn");
+		nym.put("ja", "jp");
+		nym.put("ca", "");
+		nym.put("gl", "");
+		nym.put("el", "gr");
+		nym.put("ko", "kr");
+		nym.put("en", "gb\t\tus");
+		nym.put("cs", "cz");
+		nym.put("da", "dk");
+		nym.put("sv", "se");
+		nym.put("sl", "si");
+		nym.put("nb", "no");
+		nym.put("sr", "rs");
+		nym.put("uk", "ua");
+		
 		super.onCreate(savedInstanceState);
+		init_switch_preference(this, "locale", null, getNameFlag(localeStamp = PDICMainAppOptions.locale), null);
+		
 		findPreference("app_settings").setOnPreferenceClickListener(this);
 		findPreference("system_dev").setOnPreferenceClickListener(this);
 		findPreference("clear_cache1").setOnPreferenceClickListener(this);
@@ -43,6 +67,36 @@ public class DevoloperOptions extends SettingsFragment implements Preference.OnP
 		init_switch_preference(this, "enable_web_debug", PDICMainAppOptions.getEnableWebDebug(), null, null);
 		init_switch_preference(this, "tts_reader", PDICMainAppOptions.getUseTTSToReadEntry(), null, null);
 		init_switch_preference(this, "cache_mp3", PDICMainAppOptions.getCacheSoundResInAdvance(), null, null);
+	}
+	
+	private String getNameFlag(String andoid_country_code) {
+		if(andoid_country_code==null || andoid_country_code.length()==0)
+			return null;
+		String name=andoid_country_code;
+		int idx;
+		if((idx = name.indexOf("-")) != -1.)
+			name=name.substring(0, idx);
+		else
+			andoid_country_code=andoid_country_code.toUpperCase();
+		name=name.toLowerCase();
+		if(nym.containsKey(name))
+			name=nym.get(name);
+		if(flag_code==null)
+			flag_code= new StringBuilder();
+		flag_code.setLength(0);
+		flag_code.append(andoid_country_code).append("\t\t\t\t");
+		return getCountryFlag(flag_code, name).toString();
+	}
+	
+	public static StringBuilder getCountryFlag(StringBuilder flag_code, String name) {
+		for (int i = 0; i < name.length(); i++) {
+			char cI = name.charAt(i);
+			if(cI>=0x61 && cI<=0x61+26){
+				flag_code.append("\uD83C").append((char) (0xDDE6 + cI - 0x61));
+			}else
+				flag_code.append(cI);
+		}
+		return flag_code;
 	}
 
 	/** 应用程序运行命令获取 Root权限 */
@@ -104,6 +158,11 @@ public class DevoloperOptions extends SettingsFragment implements Preference.OnP
 			case "cache_mp3": {
 				PDICMainAppOptions.setCacheSoundResInAdvance((boolean)newValue);
 			}
+			return true;
+			case "locale":
+				if(localeStamp!=null)
+					PDICMainAppOptions.locale=localeStamp.equals(newValue)?localeStamp:null;
+				preference.setSummary(getNameFlag((String) newValue));
 			return true;
 		}
 		return super.onPreferenceChange(preference, newValue);

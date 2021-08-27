@@ -1,8 +1,14 @@
 package com.knziha.plod.widgets;
 
+import android.app.Activity;
 import android.view.View;
+import android.widget.BaseAdapter;
+import android.widget.ListAdapter;
+import android.widget.WrapperListAdapter;
 
 import androidx.databinding.ViewDataBinding;
+import androidx.fragment.app.FragmentActivity;
+import androidx.preference.Preference;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -112,4 +118,18 @@ public class ViewUtils {
         }
         return false;
     }
+	
+	public static void notifyAPPSettingsChanged(Activity activity, Preference preference) {
+    	if (activity instanceof APPSettingsActivity) {
+			((APPSettingsActivity) activity).notifyChanged(preference);
+		}
+	}
+	
+	public static void notifyDataSetChanged(ListAdapter adapter) {
+		if (adapter instanceof BaseAdapter) {
+			((BaseAdapter) adapter).notifyDataSetChanged();
+		} else if (adapter instanceof WrapperListAdapter) {
+			notifyDataSetChanged(((WrapperListAdapter) adapter).getWrappedAdapter());
+		}
+	}
 }

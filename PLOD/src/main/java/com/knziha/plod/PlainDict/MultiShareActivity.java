@@ -55,7 +55,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	
 	@Override
 	public void onBackPressed() {
-		if(!PerFormBackPrevention()) {
+		if(!PerFormBackPrevention(lastBackBtnAct)) {
 			finishOrHide();
 		}
 	}
@@ -75,11 +75,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	protected boolean PerFormBackPrevention() {
-		if (super.PerFormBackPrevention()) {
-			return true;
-		}
-		if(checkWebSelection()) {
+	protected boolean PerFormBackPrevention(boolean bBackBtn) {
+		if (super.PerFormBackPrevention(bBackBtn)) {
 			return true;
 		}
 		if(contentview!=null && contentview.getParent()!=null)
