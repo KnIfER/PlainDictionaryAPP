@@ -709,9 +709,9 @@ public class Drawer extends Fragment implements
 					properties.opt_dir.mkdirs();
 					properties.extensions = new HashSet<>();
 					properties.extensions.add(".mdx");
+					properties.extensions.add(".web"); // 在线词典，JSON格式。
 					if(toPDF) {
 						properties.extensions.add(".pdf");
-						properties.extensions.add(".web");
 						properties.extensions.add(".mdd");
 						properties.extensions.add(".txt");
 						properties.extensions.add(".dsl");

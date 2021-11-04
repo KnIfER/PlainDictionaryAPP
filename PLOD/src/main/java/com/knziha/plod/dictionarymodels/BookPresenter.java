@@ -768,9 +768,9 @@ public class BookPresenter
 					case 115312:
 						bookImpl = new PlainText(fullPath, THIS);
 						break;
-					//case 99773:
-					//	return new bookPresenter_dsl(fullPath, THIS);
-					
+					case 99773:
+						bookImpl = new PlainDSL(fullPath, THIS);
+						break;
 					//case 120609:
 					//return new mdict_zip(fullPath, THIS);
 					//case 3088960:

@@ -34,6 +34,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 		,PLAIN_TYPE_WEB
 		,PLAIN_TYPE_MDICT
 		,PLAIN_TYPE_PDF
+		,PLAIN_TYPE_DSL
 	}
 	File f;
 	long _bid;

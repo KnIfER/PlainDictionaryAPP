@@ -30,7 +30,7 @@ public class LinkastReUsageHashMap<K,V> extends LinkedHashMap<K,V> {
 	@Override
 	protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
 		if(mCapacity > 0) {
-			if(BlockCacheSize!=desiredTotalCacheSize) {
+			if(perblockSize>0 && BlockCacheSize!=desiredTotalCacheSize) {
 				desiredTotalCacheSize = BlockCacheSize;
 				this.mCapacity = desiredTotalCacheSize/perblockSize;
 			}
