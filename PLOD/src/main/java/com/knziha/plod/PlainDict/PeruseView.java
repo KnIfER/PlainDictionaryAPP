@@ -55,7 +55,9 @@ import androidx.fragment.app.DialogFragment;
 import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayAdapterView.OnItemClickListener;
 import com.jess.ui.TwoWayGridView;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.plaindict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
@@ -178,7 +180,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public WebViewmy mWebView;
 	ViewGroup toolbar_web;
 	ImageView toolbar_cover;
-	FlowTextView toolbar_title;
 	View ic_undo;
 	public View ic_save;
 	View ic_redo;
@@ -271,6 +272,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			lv2.setFastScrollEnabled(false);
 		}
 		
+		//tc
 		etSearch.addTextChangedListener(tw1=new TextWatcher() {
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -279,13 +281,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				if(s.toString().trim().length()>0)
-				if(currentDictionary!=null) {
-					int ret = currentDictionary.bookImpl.lookUp(s.toString(),false);
+				if(currentDictionary!=null && TextUtils.getTrimmedLength(s)>0) {
+					int ret = currentDictionary.bookImpl.lookUp(s.toString(), false);
+					CMN.Log("peruseview::onTextChanged::", ret, ToR && cvpolicy, count);
 					if(ret!=-1) {
 						lv1.setSelectionFromTop(ret, (int) (20*density));
 						if(ToR && cvpolicy)
-						if(mdict.processText(currentDictionary.bookImpl.getEntryAt(ret)).equals(mdict.processText(s.toString())))
+						if(count==-1 || mdict.processText(currentDictionary.bookImpl.getEntryAt(ret)).equals(mdict.processText(s.toString())))
 							leftLexicalAdapter.click(ret,false);
 					}
 				}
@@ -690,7 +692,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			currentDictionary.bmCBI=lv2.getFirstVisiblePosition();
 			currentDictionary.bmCCI=bookMarkAdapter.lastClickedPos;
 		}
-		//currentDictionary=null;
+		//currentDictionary = null;
 		a.getWindowManager().getDefaultDisplay().getMetrics(dm);
 		spsubs = sp_sub.getPrimaryContentSize()*1.f/dm.widthPixels;
 		
@@ -882,12 +884,12 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			ic_redo.setOnClickListener(clicker);
 
 	        toolbar_web= rl.findViewById(R.id.lltoolbar);
-	        toolbar_title = toolbar_web.findViewById(R.id.toolbar_title);
+			mWebView.toolbar_title = toolbar_web.findViewById(R.id.toolbar_title);
 			toolbar_cover = toolbar_web.findViewById(R.id.cover);
 			ucc = a.getUcc();
 			toolbar_cover.setOnClickListener(this);
 			toolbar_cover.setTag(2);
-			toolbar_title.setOnClickListener(this);
+			mWebView.toolbar_title.setOnClickListener(this);
 		
 			mWebView.titleBar = (AdvancedNestScrollLinerView) toolbar_web;
 			toolbar_web.getBackground().mutate();
@@ -1211,7 +1213,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
 				 PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 				&& (PDICMainAppOptions.getHistoryStrategy8() == 2)){
-			a.insertUpdate_histroy(mWebView.word, webSingleholder);
+			a.insertUpdate_histroy(mWebView.word, 0, webSingleholder);
 		}
 		((ViewGroup)contentview.getParent()).removeView(contentview);
 	}
@@ -1226,7 +1228,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 
 	public float getWebTouchY() {
-		return mWebView.lastY+toolbar_title.getHeight()+LvHeadline.getHeight()+etSearch.getHeight();
+		return mWebView.lastY+mWebView.toolbar_title.getHeight()+LvHeadline.getHeight()+etSearch.getHeight();
 	}
 
 	public void dismissDialogOnly() {
@@ -1277,6 +1279,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			int idx = mdTmp.bookImpl.lookUp(text);
 			//CMN.Log(mdTmp.getEntryAt(idx), idx, text, mdTmp._Dictionary_fName);
 			if (idx >= 0){
+				if (mdTmp.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+					data.add(i);
+					bakedGroup.add(i);
+					continue;
+				}
 				String toCompare = mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase();
 				int len = text.length();
 				int len1 = len;
@@ -1632,7 +1639,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         	} else {
         		ViewGroup p = (ViewGroup) vb.getParent();
     			if(p!=null) {
-    				currentDictionary=null;
+    				currentDictionary = null;
     				voyager[SelectedV*VELESIZE] = lv1.getFirstVisiblePosition();
     				voyager[SelectedV*VELESIZE+1] = lv1.getChildAt(0).getTop();
     				if(leftLexicalAdapter.lastClickedPos!=-1)
@@ -1866,6 +1873,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			mWebView.clearIfNewADA(adapter_idx);
         	
         	setCurrentDis(currentDictionary, lastClickedPos);
+        	if (pos==0 && currentDictionary.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+				currentDictionary.SetSearchKey(etSearch.getText().toString());
+			}
 
 			if(a.opt.getAutoReadEntry()
 					&& !PDICMainAppOptions.getTmpIsAudior(currentDictionary.tmpIsFlag)){
@@ -1880,7 +1890,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
 					PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 					&& (!ismachineClick || PDICMainAppOptions.getHistoryStrategy8() == 0)){
-				a.insertUpdate_histroy(currentKeyText, webSingleholder);
+				a.insertUpdate_histroy(currentKeyText, 0, webSingleholder);
 			}
 		}
         
@@ -2113,7 +2123,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						a.showT("已更新搜索词！");
 					}
 				}
-				tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
+				int textFlag = 0;
+				if (currentDictionary!=null && currentDictionary.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
+					textFlag = -1;
+				tw1.onTextChanged(etSearch.getText(), 0, 0, textFlag);
 			break;
 			/* 页内搜索 */
 			case R.id.toolbar_action2:
@@ -2179,14 +2192,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	boolean isJumping = false;
 	public int bottombar2BaseColor=Constants.DefaultMainBG;
     @SuppressLint("JavascriptInterface")
-	void setCurrentDis(BookPresenter invocker, int idx, int...flag) {
+	void setCurrentDis(BookPresenter invoker, int idx, int...flag) {
 		if(flag==null || flag.length==0) {//书签跳转等等
 			mWebView.addHistoryAt(idx);
 		}
 		/*回溯 或 前瞻， 不改变历史*/
 		mWebView.currentPos = idx;
-		mWebView.word = StringUtils.trim(mWebView.currentPos<invocker.bookImpl.getNumberEntries()?invocker.bookImpl.getEntryAt(mWebView.currentPos):"Error!!!");
-    	toolbar_title.setText(mWebView.word + " - " + invocker.bookImpl.getDictionaryName());
+		mWebView.word = StringUtils.trim(mWebView.currentPos<invoker.bookImpl.getNumberEntries()?invoker.bookImpl.getEntryAt(mWebView.currentPos):"Error!!!");
+		mWebView.toolbar_title.setText(mWebView.word + " - " + invoker.bookImpl.getDictionaryName());
 
 		if(mWebView.History.size()>2){
 			recess.setVisibility(View.VISIBLE);

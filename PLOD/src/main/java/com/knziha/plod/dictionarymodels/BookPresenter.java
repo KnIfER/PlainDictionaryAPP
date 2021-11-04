@@ -48,6 +48,7 @@ import androidx.core.graphics.ColorUtils;
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
@@ -531,6 +532,7 @@ public class BookPresenter
 	public static int def_fontsize = 100;
 	public static int optimal100;
 	public int tmpIsFlag;
+	public ArrayList<myCpr<String, Integer>> combining_search_list;
 	long FFStamp;
 	long firstFlag;
 	public AppHandler mWebBridge;
@@ -556,16 +558,19 @@ public class BookPresenter
 	public final static String save_js="ONSAVE";
 
 	public final static String preview_js="document.documentElement.outerHTML";
-
-	public String searchKey;
+	
+	protected String searchKey;
 	protected Cursor PageCursor;
 	protected CachedDirectory InternalResourcePath;
 	protected boolean bNeedCheckSavePathName;
 	public boolean isDirty;
 	public boolean editingState=true;
+	public final boolean bAutoRecordHistory;
 	public static int _req_fvw;
 	public static int _req_fvh;
 	private CachedDirectory DataBasePath;
+	
+	final DictionaryAdapter.PLAIN_BOOK_TYPE mType;
 	
 	public int getCaseStrategy() {
 		return (int) (firstFlag&3);
@@ -626,6 +631,9 @@ public class BookPresenter
 		return (firstFlag & 0x80000) != 0;
 	}
 	
+	@Multiline(flagPos=20) public boolean getContentFixedHeightWhenCombined(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	@Multiline(flagPos=21) public boolean getNoScrollRect(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	
 //	public boolean getStarLevel(){
 //		0x100000~0x400000
 //	}
@@ -666,6 +674,19 @@ public class BookPresenter
 	public BookPresenter(@NonNull File fullPath, MainActivityUIBase THIS, int pseudoInit, Object tag) throws IOException {
 		bookImpl = getBookImpl(THIS, fullPath, pseudoInit);
 		
+		int type = 0;
+		if (bookImpl!=null)
+		{
+			type = bookImpl.getType();
+			if (type<0 || type>3)
+			{
+				type = 0;
+			}
+		}
+		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.values()[type];
+		
+		bAutoRecordHistory = mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
+		
 		if(THIS!=null){
 			a = THIS;
 			opt = THIS.opt;
@@ -674,7 +695,6 @@ public class BookPresenter
 		if(pseudoInit==1) {
 			return;
 		}
-		
 		//init(getStreamAt(0)); // MLSN
 		
         File p = fullPath.getParentFile();
@@ -739,8 +759,9 @@ public class BookPresenter
 						else
 							bookImpl = new PlainMdict(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, null, hash==107949);
 						break;
-					//case 117588:
-					//	return new bookPresenter_web(fullPath, THIS);
+					case 117588:
+						bookImpl = new PlainWeb(fullPath, THIS);
+						break;
 					case 110834:
 						bookImpl = new PlainPDF(fullPath, THIS);
 						break;
@@ -932,6 +953,18 @@ public class BookPresenter
 	
 	public void updateFile(File f) {
 		// nimp
+	}
+	
+	public String GetSearchKey() {
+		return searchKey;
+	}
+	
+	public void SetSearchKey(String key) {
+		searchKey = key;
+	}
+	
+	public long GetSearchKeyId(String key) {
+		return a.GetAddHistory(key);
 	}
 	
 	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {
@@ -1511,9 +1544,13 @@ public class BookPresenter
 		mWebView.word = currentDisplaying = StringUtils.trim(bookImpl.getEntryAt(mWebView.currentPos = idx));
 		
 		if(bookImpl.hasVirtualIndex()){
-			int tailIdx=currentDisplaying.lastIndexOf(":");
-			if(tailIdx>0)
-				currentDisplaying=currentDisplaying.substring(0, tailIdx);
+			if (idx==0 && mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB && searchKey!=null) {
+				currentDisplaying = searchKey;
+			} else {
+				int tailIdx=currentDisplaying.lastIndexOf(":");
+				if(tailIdx>0)
+					currentDisplaying=currentDisplaying.substring(0, tailIdx);
+			}
 		}
 		StringBuilder title_builder = bookImpl.AcquireStringBuffer(64);
     	toolbar_title.setText(title_builder.append(currentDisplaying.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
@@ -1592,7 +1629,7 @@ public class BookPresenter
 		}
 		boolean resposibleForThisWeb=mWebView==this.mWebView;
     	
-    	if (!resposibleForThisWeb) {
+    	if (!resposibleForThisWeb && mWebView.presenter!=this) {
 			mWebView.presenter = this;
 		}
 	
@@ -1634,13 +1671,17 @@ public class BookPresenter
 
 		if(getFontSize()!=mWebView.getSettings().getTextZoom())
 			mWebView.getSettings().setTextZoom(getFontSize());
-
+		
 		if(resposibleForThisWeb) {
 	    	setCurrentDis(mWebView, position[0]);
 			if(fromCombined) {
 				if(rl.getLayoutParams()!=null)
 					rl.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
-				mWebView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
+				if (getContentFixedHeightWhenCombined()) {
+					mWebView.getLayoutParams().height = a.root.getHeight();
+				} else {
+					mWebView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
+				}
 			}
 			else {
 				if(mIsolateImages){
@@ -1659,7 +1700,9 @@ public class BookPresenter
 				a.RecalibrateWebScrollbar(mWebView);
 			}
 		}
-
+	
+		//todo 处理 fromCombined && opt.getAlwaysShowScrollRect()
+		mWebView.SetupScrollRect(!getNoScrollRect() && (!fromCombined&&opt.getAlwaysShowScrollRect() || fromCombined&&getContentFixedHeightWhenCombined()));
 
     	//mWebView.setVisibility(View.VISIBLE);
    	    //a.showT("mWebView:"+mWebView.isHardwareAccelerated());
@@ -1683,7 +1726,7 @@ public class BookPresenter
 		sb.append(js);
 		return sb;
 	}
-	
+	boolean test = true;
 	public void renderContentAt_internal(WebViewmy mWebView,float initialScale, boolean fromCombined, boolean fromPopup, boolean mIsolateImages, int...position) {
 		mWebView.isloading=true;
 		mWebView.currentPos = position[0];
@@ -1693,17 +1736,28 @@ public class BookPresenter
 		try {
 			if(bookImpl.hasVirtualIndex())
 				try {
-					String validifier = bookImpl.getVirtualTextValidateJs();
-					if ("forceLoad".equals(mWebView.getTag())) {
-						htmlCode = bookImpl.getVirtualRecordsAt(position);
+					String validifier = bookImpl.getVirtualTextValidateJs(this, mWebView, position[0]);
+					//CMN.Log("validifier::", validifier);
+					if (validifier == null
+							//|| true // 用于调试直接网页加载
+							|| "forceLoad".equals(mWebView.getTag())) {
+						htmlCode = bookImpl.getVirtualRecordsAt(this, position);
 						mWebView.setTag(null);
+						CMN.Log("htmlCode::", htmlCode);
+						if (htmlCode!=null && htmlCode.startsWith("http")) {
+							// 如果是加载网页
+							mWebView.loadUrl(htmlCode);
+							htmlCode = null;
+						}
 					} else {
 						mWebView.evaluateJavascript(validifier, new ValueCallback<String>() {
 							@Override
 							public void onReceiveValue(String value) {
-								if ("1".equals(value)) {
+								//CMN.Log("validifier::onReceiveValue::", value);
+								if ("1".equals(value) || "true".equals(value)) {
 									String effectJs = bookImpl.getVirtualTextEffectJs(position);
-									mWebView.evaluateJavascript(effectJs, null);
+									if (effectJs!=null) mWebView.evaluateJavascript(effectJs, null);
+									//a.showT("免重新加载生效！");
 								} else {
 									mWebView.setTag("forceLoad");
 									renderContentAt_internal(mWebView, initialScale, fromCombined, fromPopup, mIsolateImages, position);
@@ -1719,7 +1773,8 @@ public class BookPresenter
 			{
 				htmlCode = bookImpl.getRecordsAt(mBookRecordInteceptor, position);
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			ByteArrayOutputStream s = new ByteArrayOutputStream();
 			e.printStackTrace(new PrintStream(s));
 			htmlCode=_404+e.getLocalizedMessage()+"<br>"+s;
@@ -1746,35 +1801,40 @@ public class BookPresenter
 			mWebView.setTag(R.id.toolbar_action5, a.hasCurrentPageKey() ? false : null);
 		}
 		mWebView.isloading = true;
-		if(htmlCode!=null)
-			if(!htmlCode.startsWith(fullpageString)) {
+		if(htmlCode!=null) {
+			if (!htmlCode.startsWith(fullpageString)) {
 				AddPlodStructure(mWebView, htmlBuilder, fromPopup, mIsolateImages);
 				LoadPagelet(mWebView, htmlBuilder, htmlCode);
-			}
-			else{
+			} else {
 				CMN.Log("fullpageString");
 				int headidx = htmlCode.indexOf("<head>");
-				boolean b1=headidx==-1;
-				if(true){
-					if(b1) {
+				boolean b1 = headidx == -1;
+				if (true) {
+					if (b1) {
 						htmlBuilder.append("<head>");
 					} else {
-						htmlBuilder.append(htmlCode, 0, headidx+6);
+						htmlBuilder.append(htmlCode, 0, headidx + 6);
 					}
 					AddPlodStructure(mWebView, htmlBuilder, fromPopup, mIsolateImages);
 					htmlBuilder.append(getSimplestInjection());
-					if(b1) {
+					if (b1) {
 						htmlBuilder.append("</head>");
 						htmlBuilder.append(htmlCode);
 					} else {
-						htmlBuilder.append(htmlCode, headidx+6, htmlCode.length());
+						htmlBuilder.append(htmlCode, headidx + 6, htmlCode.length());
 					}
 					htmlCode = htmlBuilder.toString();
 				}
-				mWebView.loadDataWithBaseURL(baseUrl,htmlCode,null, "UTF-8", null);
+				mWebView.loadDataWithBaseURL(baseUrl, htmlCode, null, "UTF-8", null);
 			}
-		else if(JS!=null){
+		} else if(JS!=null) {
 			mWebView.evaluateJavascript(JS, null);
+		}
+	}
+	
+	public void TakeHistoryRecord(String key) {
+		if (mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+			((PlainWeb)bookImpl).takeHistoryRecord(this, key);
 		}
 	}
 	
@@ -2859,19 +2919,6 @@ public class BookPresenter
 					showDictTweaker(mWebView, a, this);
 					break;
 				}
-				if(v.getTag(R.id.toolbar_action1)!=null) {//add It!
-					if(a.getUsingDataV2()) {
-						// todo remove
-						toggleBookMark(null, null);
-					} else {
-						boolean resposible=con==null;
-						if(getCon(true).insertUpdate(mWebView.currentPos)!=-1)
-							v.setTag(R.id.toolbar_action2,CMN.OccupyTag);
-						if(resposible) closeCon();
-						v.setTag(R.id.toolbar_action1,null);
-					}
-					break;
-				}
 				if(ucc!=null) {//sanity check.
 					ucc.setInvoker(this, mWebView, null, null);
 					ucc.onClick(v);
@@ -3070,6 +3117,9 @@ public class BookPresenter
 //		return a!=null;
 //	}
 	
+ 	public DictionaryAdapter.PLAIN_BOOK_TYPE getType(){
+		return mType;
+	};
 	
 	@Override
 	public File f() {

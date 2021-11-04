@@ -8,6 +8,7 @@ import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.widgets.WebViewmy;
 
 import org.adrianwalker.multilinestring.Multiline;
 
@@ -204,6 +205,7 @@ public class PlainPDF extends DictionaryAdapter {
 			}
 			pdf_index = data.split("\n");
 		}
+		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF;
 	}
 
 	public void parseContent(WebView mWebView) {
@@ -290,7 +292,7 @@ public class PlainPDF extends DictionaryAdapter {
 	}
 	
 	@Override
-	public String getVirtualRecordsAt(int[] list2) throws IOException {
+	public String getVirtualRecordsAt(Object presenter, int[] list2) throws IOException {
 		return getRecordsAt(null, 0);
 	}
 	
@@ -300,7 +302,7 @@ public class PlainPDF extends DictionaryAdapter {
 	}
 	
 	@Override
-	public String getVirtualTextValidateJs() {
+	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, int position) {
 		return "";
 	}
 	

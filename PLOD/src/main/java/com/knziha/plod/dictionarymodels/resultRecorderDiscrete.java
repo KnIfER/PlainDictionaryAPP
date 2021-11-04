@@ -48,7 +48,7 @@ public class resultRecorderDiscrete {
 		return new ArrayList<>();
 	}
 
-	public boolean checkAllWebs(ArrayList<BookPresenter> md) {
+	public boolean checkAllWebs(MainActivityUIBase mainActivityUIBase, ArrayList<BookPresenter> md) {
 		return false;
 	}
 

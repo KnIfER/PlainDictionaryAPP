@@ -27,6 +27,7 @@ public class ViewSpecification extends SettingsFragment implements Preference.On
 		init_switch_preference(this, "ap_click", PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick(), null, null);
 		init_switch_preference(this, "noext", PDICMainAppOptions.getBackToHomePage(), null, null);
 		init_switch_preference(this, "clear_sel", PDICMainAppOptions.getUseBackKeyClearWebViewFocus(), null, null);
+		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null);
 		Preference p = init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null);
 		p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 										   @Override
@@ -97,6 +98,9 @@ public class ViewSpecification extends SettingsFragment implements Preference.On
 			break;
 			case "clear_sel":
 				PDICMainAppOptions.setUseBackKeyClearWebViewFocus((Boolean) newValue);
+			break;
+			case "back_web":
+				PDICMainAppOptions.setUseBackKeyGoWebViewBack((Boolean) newValue);
 			break;
 			case "conext":
 				int val = IU.parsint(newValue);

@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 import android.widget.ScrollView;
 
 import com.knziha.plod.plaindict.BasicAdapter;
-import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -50,16 +49,27 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	}
 
 	@Override
-	public boolean checkAllWebs(ArrayList<BookPresenter> md) {
+	public boolean checkAllWebs(MainActivityUIBase a, ArrayList<BookPresenter> md) {
 		ArrayList<Integer> data = getRecordAt(0);
-		// nimp
-		//allWebs=true;
-		//for(int i=0;i<data.size();i+=2) {
-		//	if(!(md.get(data.get(i)) instanceof bookPresenter_web)){
-		//		allWebs=false;
-		//		break;
-		//	}
-		//}
+		BookPresenter bp;
+		allWebs=true;
+		for(int i=0;i<data.size();i+=2) {
+			bp = null;
+			int toFind=data.get(i);
+			if (toFind<0) {
+				try {
+					bp = a.getDictionaryById(-toFind);
+					toFind = Integer.MAX_VALUE;
+				} catch (IOException ignored) { }
+			}
+			if (bp==null && toFind>=0 && toFind<md.size()) {
+				bp = md.get(toFind);
+			}
+			if (bp!=null && bp.getType()!=DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+				allWebs=false;
+				break;
+			}
+		}
 		return allWebs;
 	}
 
@@ -207,11 +217,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 			mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
 			mWebView.fromCombined=1;
-			//nimp
-			//if(mdtmp instanceof bookPresenter_web){
-			//	bookPresenter_web webx = (bookPresenter_web)mdtmp;
-			//	webx.searchKey = result.key;
-			//}
+			if(mdtmp.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
+			{
+				mdtmp.SetSearchKey(result.key);
+			}
 
 			mdtmp.renderContentAt(-1, toFind, frameAt,null, d);
 			if(!mWebView.awaiting){

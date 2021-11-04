@@ -261,15 +261,23 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public final static int PLAIN_TARGET_APP_AUTO = 0;
-	public final static int PLAIN_TARGET_APP_SEARCH = 1;
+	public final static int PLAIN_TARGET_APP_POP = 1;
 	public final static int PLAIN_TARGET_APP_PERUSE = 2;
 	public final static int PLAIN_TARGET_FLOAT_SEARCH = 3;
 	public final static int PLAIN_TARGET_INPAGE_SEARCH = 4;
+	public final static int PLAIN_TARGET_MDCCSP_SEARCH = 5;
+	public final static int PLAIN_TARGET_MDCCSP_POP = 6;
+	public final static int PLAIN_TARGET_MDCCSP_PERUSE = 7;
 	
-	/** @return integer: 0=paste_to_main_program <br/>
-	 * 2=paste_to_float_search_program<br/>
-	 * 3=paste_to_MDCCSP_main_program<br/>
-	 * 4=paste_to_MDCCSP_standalone */
+	/** @return integer 目标: 0=主程序 <br/>
+	 * 1=主程序（点译弹窗）<br/>
+	 * 2=主程序（翻阅模式）<br/>
+	 * 3=浮动搜索<br/>
+	 * 4=页内搜索<br/>
+	 * 5=多维分享<br/>
+	 * 6=多维分享（点译弹窗）<br/>
+	 * 7=多维分享（翻阅模式）<br/>
+	 * */
 	public int getPasteTarget()
 	{
 		return IU.parsint(defaultReader.getString("tgt_paste", "0"));
@@ -1693,8 +1701,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	
-	@Multiline(flagPos=46, shift=1) public boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Multiline(flagPos=46, shift=1) public void setUseBackKeyGoWebViewBack(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Multiline(flagPos=46, shift=1) public static boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Multiline(flagPos=46, shift=1) public static void setUseBackKeyGoWebViewBack(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Multiline(flagPos=47, shift=1) public static boolean getLazyLoadDicts() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Multiline(flagPos=47, shift=1) public static void setLazyLoadDicts(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Multiline(flagPos=48) public static boolean getEnableWebDebug() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
@@ -2246,6 +2254,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Multiline(flagPos=15, shift=1) public static boolean checkVersionBefore_5_0() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Multiline(flagPos=15, shift=1) public static void uncheckVersionBefore_5_0(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	
+	@Multiline(flagPos=16) public boolean getAlwaysShowScrollRect() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Multiline(flagPos=16) public void setAlwaysShowScrollRect(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF

@@ -21,6 +21,7 @@ import androidx.preference.CMN;
 
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.Utils.*;
+import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.adrianwalker.multilinestring.Multiline;
@@ -621,7 +622,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 	// 初始化
 	/** @param positions virutal indexes*/
-	public String getVirtualRecordsAt(int... positions) throws IOException {
+	public String getVirtualRecordsAt(Object presenter, int... positions) throws IOException {
 		if(virtualIndex==null)
 			return getRecordsAt(null, positions);
 		StringBuilder sb = new StringBuilder();
@@ -661,7 +662,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 	
 	@Override
-	public String getVirtualTextValidateJs() {
+	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, int position) {
 		return "";
 	}
 	
@@ -1428,7 +1429,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		}
 	}
 
-	public String getVirtualRecordAt(int vi) throws IOException {
+	public String getVirtualRecordAt(Object presenter, int vi) throws IOException {
 		return virtualIndex.getRecordAt(vi, null, true);
 	}
 
@@ -1917,6 +1918,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		this.options = options;
 	}
 	
+	@Override
+	public int getType() {
+		return 0;
+	}
+	
 	protected ExecutorService OpenThreadPool(int thread_number) {
 		if(parent!=null)
 			return parent.OpenThreadPool(thread_number);
@@ -2325,14 +2331,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		}
 	}
 
-	public ArrayList<myCpr<String, Integer>> combining_search_list;
 	//联合搜索  555
-	public void size_confined_lookUp5(String keyword,
-									  RBTree_additive combining_search_tree, int SelfAtIdx, int theta) //多线程
+	public void lookUpRange(String keyword, ArrayList<myCpr<String, Integer>> combining_search_list, RBTree_additive combining_search_tree, int SelfAtIdx, int theta) //多线程
 	{
 		if(virtualIndex!=null){
-			virtualIndex.combining_search_list=combining_search_list;
-			virtualIndex.size_confined_lookUp5(keyword, combining_search_tree, SelfAtIdx, theta);
+			virtualIndex.lookUpRange(keyword, combining_search_list, combining_search_tree, SelfAtIdx, theta);
 			return;
 		}
 		int[][] scaler_ = null;

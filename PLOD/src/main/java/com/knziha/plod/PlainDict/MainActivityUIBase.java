@@ -155,8 +155,10 @@ import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.PlainPDF;
+import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -230,6 +232,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -240,6 +243,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 
 import db.LexicalDBHelper;
 import db.MdxDBHelper;
@@ -1482,7 +1489,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								CCD_ID = popupForceId;
 							//轮询开始
 							//nimp
-							//bookPresenter_web webx = null;
+							BookPresenter webx = null;
 							boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
 							int SearchMode = PDICMainAppOptions.getClickSearchMode();
 							CMN.Log("SearchMode", SearchMode);
@@ -1490,13 +1497,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (SearchMode == 2) {/* 仅搜索当前词典 */
 								CCD = md_get(CCD_ID);
 								if (CCD != null) {
-									//if (CCD instanceof bookPresenter_web) {
-									//	webx = (bookPresenter_web) CCD;
-									//	if (!webx.takeWord(popupKey)) {
-									//		webx = null;
-									//	}
-									//} else 
-									{
+									if(CCD.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+										webx = CCD;
+										if (!((PlainWeb)webx.bookImpl).takeWord(popupKey)) {
+											webx = null;
+										}
+									} else  {
 										idx = CCD.bookImpl.lookUp(popupKey, true);
 										if (idx < -1 && use_morph) {
 											keykey = ReRouteKey(popupKey, true);
@@ -1538,13 +1544,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 													firstAttemp = mdTmp;
 												bHasDedicatedSeachGroup=true;
 												proceed=false;
-												//if (mdTmp instanceof bookPresenter_web) {
-												//	webx = (bookPresenter_web) mdTmp;
-												//	if (bForceJump || webx.takeWord(popupKey)) {
-												//		break;
-												//	}
-												//	webx = null;
-												//} else 
+												if(mdTmp.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+													webx = mdTmp;
+													if (bForceJump || ((PlainWeb)webx.bookImpl).takeWord(popupKey)) {
+														break;
+													}
+													webx = null;
+												}
+												else
 												{
 													idx = mdTmp.bookImpl.lookUp(popupKey, true);
 													if (idx < -1 && use_morph) {
@@ -1596,13 +1603,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 												}
 											}
 										}
-										//if (CCD instanceof bookPresenter_web) {
-										//	webx = (bookPresenter_web) CCD;
-										//	if (webx.takeWord(popupKey)) {
-										//		break;
-										//	}
-										//	webx = null;
-										//} else 
+										
+										if(CCD!=null && CCD.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+											webx = CCD;
+											if (((PlainWeb)webx.bookImpl).takeWord(popupKey)) {
+												break;
+											}
+											webx = null;
+										} else
 										if (CCD != null) {
 											idx = CCD.bookImpl.lookUp(popupKey, true);
 											if (idx < 0) {
@@ -1623,10 +1631,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 							popupIndicator.setText(md_getName(CCD_ID));
 
-							//if (webx != null) {
-							//	webx.searchKey = popupKey;
-							//	idx = 0;
-							//}
+							if (webx != null) {
+								webx.SetSearchKey(popupKey);
+								idx = 0;
+							}
 
 							//CMN.Log(CCD, "应用轮询结果", webx, idx);
 
@@ -1649,7 +1657,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							decorateContentviewByKey(popupStar, currentClickDisplaying);
 							if (!PDICMainAppOptions.getHistoryStrategy0()
 									&& PDICMainAppOptions.getHistoryStrategy7())
-								insertUpdate_histroy(popupKey, PopupPageSlider);
+								insertUpdate_histroy(popupKey, 0, PopupPageSlider);
 						}
 
 						// 初次添加请指明方位
@@ -3339,18 +3347,37 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		return favoriteCon = _favoriteCon;
 	}
-
-	protected void insertUpdate_histroy(String key, ViewGroup webviewholder) {
+	
+	protected long lastInsertedId;
+	
+	protected String lastInsertedKey;
+	
+	protected void insertUpdate_histroy(String key, int source, ViewGroup webviewholder) {
 		if(key!=null) {
 			key = key.trim();
 		}
 		if(key.length()>0) {
 			if (getUsingDataV2()) {
-				prepareHistoryCon().updateHistoryTerm(this, key, webviewholder);
+				lastInsertedKey = key;
+				lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder);
 			} else {
 				prepareHistoryCon().insertUpdate(this, key, null);
 			}
 		}
+	}
+	
+	public long GetAddHistory(String key) {
+		if(key!=null) {
+			key = key.trim();
+		}
+		if (getUsingDataV2() && key.length()>0) {
+			if (TextUtils.equals(lastInsertedKey, key)) return lastInsertedId;
+			else {
+				//lastInsertedKey = key;
+				//lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, ActivedAdapter!=null?ActivedAdapter.webviewHolder:null);
+			}
+		}
+		return -1;
 	}
 	
 	public static BookPresenter new_mdict(String pathFull, MainActivityUIBase THIS) throws IOException {
@@ -3370,7 +3397,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	boolean checkAllWebs(resultRecorderDiscrete combining_search_result, View view, int pos) {
 		if(combining_search_result instanceof resultRecorderCombined && pos==0 && view==null){
-			if(combining_search_result.checkAllWebs(md)){
+			if(combining_search_result.checkAllWebs(this, md)){
 				CMN.Log("驳回！！！");
 				return true;
 			}
@@ -3946,55 +3973,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								});
 							} else {
-								// todo remove
-								if (itemsA[0].equals(getString(R.string.bmSub))) {
-									boolean succ = false;
-									if (con != null) {
-										if (isWeb) {
-											// nimp
-											//bookPresenter_web webx = ((bookPresenter_web) invoker);
-											//if (webx.removeCurrentUrl(con, _mWebView.getUrl())) {
-											//	succ = true;
-											//}
-										} else if (con.remove(_mWebView.currentPos) > 0) {
-											succ = true;
-										}
-									}
-									if (succ) {
-										if(view!=null)((TextView) view.findViewById(android.R.id.text1)).setText(itemsA[0] = bmAdd);
-										showX(R.string.delDone, 0);
-									} else
-										showT("删除失败,数据库出错...", 0);
-								} else {// add
-									boolean succ = false;
-									if (con == null) con = invoker.getCon(true);
-									try {
-										if (isWeb) {
-											//bookPresenter_web webx = ((bookPresenter_web) invoker);
-											//if (webx.saveCurrentUrl(con, _mWebView.getUrl()) != -1)
-											//	succ = true;
-										} else {
-											if (con.insert(_mWebView.currentPos) != -1) {
-												succ = true;
-												int BKHistroryVagranter = opt.getInt("bkHVgrt", -1);
-												BKHistroryVagranter = (BKHistroryVagranter + 1) % 20;
-												String rec = invoker.getDictionaryName() + "/?Pos=" + _mWebView.currentPos;
-												opt.putter()
-														.putString("bkh" + BKHistroryVagranter, rec)
-														.putInt("bkHVgrt", BKHistroryVagranter)
-														.apply();
-											}
-										}
-									} catch (Exception e) {
-										CMN.Log(e);
-									}
-									if (succ) {
-										showX(R.string.bmAdded, 0);
-										if(view!=null)((TextView) view.findViewById(android.R.id.text1)).setText(itemsA[0] = getString(R.string.bmSub));
-									} else {
-										showT("添加失败,数据库出错...", 0);
-									}
-								}
+								showT("已弃用旧版数据库，请尽快升级。");
 							}
 							if (mBookMarkAdapter != null) { // todo why
 								mBookMarkAdapter.clear();
@@ -4109,7 +4088,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								return true;
 							} else {
 								int targetLevel = invoker.getUseInternalFS() ? _mWebView.getSettings().getTextZoom() : BookPresenter.def_fontsize;
-								if (position == 2) targetLevel += 10;
+								if (position == 3) targetLevel += 10;
 								else targetLevel -= 10;
 								targetLevel = targetLevel > 500 ? 500 : targetLevel;
 								targetLevel = targetLevel < 10 ? 10 : targetLevel;
@@ -5609,7 +5588,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					CCD.renderContentAt(-1, CCD_ID, -1, popupWebView, currentClickDictionary_currentPos=np);
 					decorateContentviewByKey(popupStar, currentClickDisplaying);
 					if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy8()==0)
-						insertUpdate_histroy(currentClickDisplaying, PopupPageSlider);
+						insertUpdate_histroy(currentClickDisplaying, 0, PopupPageSlider);
 				}
 			} break;
 			case R.id.popNxtDict:
@@ -7152,15 +7131,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		@Override
 		public void onProgressChanged(final WebView view, int newProgress) {
-			//CMN.Log("ProgressChanged");
+			//CMN.Log("ProgressChanged", newProgress);
 			WebViewmy mWebView = (WebViewmy) view;
 			//todo undo changes made to webview by web dictionaries.
 			//if(mWebView.fromCombined==4){
 			if(mWebView.fromNet){
 				final BookPresenter invoker = mWebView.presenter;
-				//if(invoker instanceof bookPresenter_web){
-				//	((bookPresenter_web)invoker).onProgressChanged(mWebView, newProgress);
-				//}
+				if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+					((PlainWeb)invoker.bookImpl).onProgressChanged(invoker, mWebView, newProgress);
+				}
 			}
 		}
 
@@ -7236,12 +7215,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			*  II、进入黑暗模式([0,1,2,3],[4])、编辑模式(0,1,3,[4])。*/
 			String toTag = mWebView.toTag;
 			OUT:
+			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+				((PlainWeb)invoker.bookImpl).onPageFinished(invoker, view, url, true);
+			} else
 			if(from!=2){
-				// nimp
-				//if(invoker instanceof bookPresenter_web){
-				//	((bookPresenter_web)invoker).onPageFinished(view, url, true);
-				//	break OUT;
-				//}
 				if(invoker==null){
 					//root.post(() -> showT("OPF 错误!!!"));
 					return;
@@ -7412,10 +7389,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			WebViewmy mWebView = (WebViewmy) view;
 			final BookPresenter invoker = mWebView.presenter;
-			// nimp
-			//if(invoker instanceof bookPresenter_web){
-			//	((bookPresenter_web)invoker).onPageStarted(view, url, true);
-			//}
+			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+				((PlainWeb)invoker.bookImpl).onPageStarted(invoker, view, url, true);
+			}
 		}
 
 		public void  onScaleChanged(WebView view, float oldScale,float newScale) {
@@ -7444,34 +7420,33 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
 			boolean fromPopup = view==popupWebView;
-			// nimp
-			//if(invoker instanceof bookPresenter_web){
-			//	bookPresenter_web webx = ((bookPresenter_web) invoker);
-			//	try {
-			//		if (!url.startsWith("http") && !url.startsWith("https") && !url.startsWith("ftp") && !url.startsWith("file")) {
-			//			return true;
-			//		}
-			//	} catch (Exception e) {
-			//		e.printStackTrace();
-			//	}
-			//	boolean ret = webx.canExcludeUrl && webx.shouldExcludeUrl(url);
-			//	if(!ret){
-			//		if(webx.canRerouteUrl) {
-			//			String urlnew = webx.shouldRerouteUrl(url);
-			//			if(urlnew!=null) {
-			//				view.loadUrl(urlnew);
-			//				ret = true;
-			//			}
-			//		}
-			//		if (fromPopup) {
-			//			popupHistory.add(++popupHistoryVagranter, new myCpr<>(currentClickDisplaying, new int[]{CCD_ID, currentClickDictionary_currentPos}));
-			//			if (popupHistory.size() > popupHistoryVagranter + 1) {
-			//				popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
-			//			}
-			//		}
-			//	}
-			//	return ret;
-			//}
+			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+				PlainWeb webx = (PlainWeb) invoker.bookImpl;
+				try {
+					if (!url.startsWith("http") && !url.startsWith("https") && !url.startsWith("ftp") && !url.startsWith("file")) {
+						return true;
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				boolean ret = webx.canExcludeUrl && webx.shouldExcludeUrl(url);
+				if(!ret){
+					if(webx.canRerouteUrl) {
+						String urlnew = webx.shouldRerouteUrl(url);
+						if(urlnew!=null) {
+							view.loadUrl(urlnew);
+							ret = true;
+						}
+					}
+					if (fromPopup) {
+						popupHistory.add(++popupHistoryVagranter, new myCpr<>(currentClickDisplaying, new int[]{CCD_ID, currentClickDictionary_currentPos}));
+						if (popupHistory.size() > popupHistoryVagranter + 1) {
+							popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
+						}
+					}
+				}
+				return ret;
+			}
 			//CMN.Log("chromium shouldOverrideUrlLoading_",url);
 			//TODO::改写历史纪录方式，统一操作。
 			int from = mWebView.fromCombined;
@@ -7754,7 +7729,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			CMN.Log("chromium shouldInterceptRequest???",url,view.getTag());
+			//CMN.Log("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 
@@ -7776,157 +7751,157 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//CMN.Log("chromium shouldInterceptRequest invoker",invoker);
 			if(invoker==null) return null;
 			// nimp
-//			if(invoker instanceof bookPresenter_web){
-//				if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
-//					bookPresenter_web webx = ((bookPresenter_web) invoker);
-//					boolean proceed = true;
-//					String[] shWebsite = webx.cleanExtensions;
-//					if(shWebsite!=null){
-//						for (int i = 0; i < shWebsite.length; i++) {
-//							if(url_contains(url, shWebsite[i])){
-//								proceed=false;
-//								break;
-//							}
-//						}
-//					}
-//
-//					if(proceed){
-//						InputStream overridePage = webx.getPage(url);
-//						//CMN.tp(0, "webx getPage :: ", overridePage, url);
-//						if(overridePage!=null){
-//							return new WebResourceResponse("*","UTF-8",overridePage);
-//						}
-//					}
-//
-//					if(webx.canSaveResource){
-//						try {
-//							shWebsite = webx.cacheExtensions;
-//							for (int i = 0; i < shWebsite.length; i++) {
-//								//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
-//								if(url.contains(shWebsite[i])){
-//									File pathDownload = webx.getInternalResourcePath(true);
-//									if(!pathDownload.exists()) pathDownload.mkdirs();
-//									if(pathDownload.isDirectory()) {
-//										boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
-//										File path;
-//										int start = url.indexOf("://");
-//										if(start<0) start=0; else start+=3;
-//										start = Math.max(url.indexOf("/", start)+1, start);
-//										int end = needTrim?url.indexOf("?"):-1;
-//										if(end<0) end=url.length();
-//										String name=url.substring(start, end);
-//										try {
-//											name=URLDecoder.decode(name, "utf8");
-//										} catch (Exception e) { }
-//										if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
-//										if(name.length()==0){
-//											name = "plod-index";
-//										}
-//										path=new File(pathDownload, name);
-//										CMN.Log("pathDownload", path);
-//										pathDownload = path.getParentFile();
-//										boolean saveit = !webx.butReadonly;
-//										if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
-//										if(pathDownload.isDirectory())
-//										{
-//											name=path.getName();
-//											if(name.length()>64){
-//												name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
-//												path=new File(pathDownload, name);
-//											}
-//											/* 下载 */
-//											if(saveit && !path.exists()) {
-//												CMN.Log("shouldInterceptRequest 下载中...！", url);
-//												CMN.Log("shouldInterceptRequest 下载目标: ", name);
-//												URL requestURL = new URL(url);
-//												HttpURLConnection urlConnection = null;
-//												FileOutputStream fout = null;
-//												try {
-//													try {
-//														SSLContext sslcontext = SSLContext.getInstance("TLS");
-//														sslcontext.init(null, new TrustManager[]{new bookPresenter_web.MyX509TrustManager()}, new SecureRandom());
-//														HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
-//													} catch (Exception ignored) {
-//													}
-//													urlConnection = (HttpURLConnection) requestURL.openConnection();
-//													urlConnection.setRequestMethod("GET");
-//													urlConnection.setConnectTimeout(10000);
-//													if(accept!=null)urlConnection.setRequestProperty("Accept",accept);
-//													if(refer!=null) urlConnection.setRequestProperty("Refer", refer);
-//													if(origin!=null) urlConnection.setRequestProperty("Origin", origin);
-//													if(request!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-//														Map<String, String> headers = request.getRequestHeaders();
-//														urlConnection.setRequestProperty("X-Requested-With", headers.get("X-Requested-With"));
-//														urlConnection.setRequestProperty("Content-Type", headers.get("Content-Type"));
-//														urlConnection.setRequestMethod(request.getMethod());
-//													}
-//													urlConnection.setRequestProperty("Charset", "UTF-8");
-//													urlConnection.setRequestProperty("Connection", "Keep-Alive");
-//													urlConnection.setRequestProperty("User-Agent", webx.computerFace?"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
-//														:"Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
-//													urlConnection.connect();
-//													InputStream is = urlConnection.getInputStream();
-//													byte[] buffer = new byte[4096];
-//													int len;
-//													while ((len = is.read(buffer)) > 0) {
-//														if (fout == null)
-//															fout = new FileOutputStream(path);
-//														fout.write(buffer, 0, len);
-//													}
-//													if(fout!=null) {
-//														fout.flush();
-//														fout.close();
-//													}
-//													urlConnection.disconnect();
-//													is.close();
-//													CMN.Log("shouldInterceptRequest 已下载！", url);
-//												} catch (Exception e) {
-//													CMN.Log(e);
-//													path.delete();
-//													return emptyResponse;
-//												}
-//											}
-//											/* 再构 */
-//											if(path.isFile()){
-//												String mime=accept;
-//												if(mime!=null){
-//													int idx = mime.indexOf(",");
-//													if(idx>0) mime=mime.substring(0, idx);
-//												}else{
-//													mime="*/*";
-//												}
-//												if(mime.startsWith("image") && webx.svgKeywords!=null){
-//													for (int j = 0; j < webx.svgKeywords.length; j++) {
-//														if(url.contains(webx.svgKeywords[i])){
-//															mime="image/svg+xml";
-//															break;
-//														}
-//													}
-//												}
-//
-//												WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
-//												if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//													ret.setResponseHeaders(CrossFireHeaders);
-//												}
-//												return ret;
-//											}
-//										}
-//									}
-//
-//									break;
-//								}
-//							}
-//						}
-//						catch (Exception e) {
-//							CMN.Log(e);
-//						}
-//					}
-//				}
-//				else{
-//					view.setTag(R.id.save, null);
-//				}
-//				return null;
-//			}
+			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+				if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
+					PlainWeb webx = (PlainWeb) invoker.bookImpl;
+					boolean proceed = true;
+					String[] shWebsite = webx.cleanExtensions;
+					if(shWebsite!=null){
+						for (int i = 0; i < shWebsite.length; i++) {
+							if(url_contains(url, shWebsite[i])){
+								proceed=false;
+								break;
+							}
+						}
+					}
+
+					if(proceed){
+						InputStream overridePage = webx.getPage(url);
+						//CMN.tp(0, "webx getPage :: ", overridePage, url);
+						if(overridePage!=null){
+							return new WebResourceResponse("*","UTF-8",overridePage);
+						}
+					}
+
+					if(webx.canSaveResource){
+						try {
+							shWebsite = webx.cacheExtensions;
+							for (int i = 0; i < shWebsite.length; i++) {
+								//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
+								if(url.contains(shWebsite[i])){
+									File pathDownload = invoker.getInternalResourcePath(true);
+									if(!pathDownload.exists()) pathDownload.mkdirs();
+									if(pathDownload.isDirectory()) {
+										boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
+										File path;
+										int start = url.indexOf("://");
+										if(start<0) start=0; else start+=3;
+										start = Math.max(url.indexOf("/", start)+1, start);
+										int end = needTrim?url.indexOf("?"):-1;
+										if(end<0) end=url.length();
+										String name=url.substring(start, end);
+										try {
+											name=URLDecoder.decode(name, "utf8");
+										} catch (Exception e) { }
+										if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
+										if(name.length()==0){
+											name = "plod-index";
+										}
+										path=new File(pathDownload, name);
+										CMN.Log("pathDownload", path);
+										pathDownload = path.getParentFile();
+										boolean saveit = !webx.butReadonly;
+										if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
+										if(pathDownload.isDirectory())
+										{
+											name=path.getName();
+											if(name.length()>64){
+												name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
+												path=new File(pathDownload, name);
+											}
+											/* 下载 */
+											if(saveit && !path.exists()) {
+												CMN.Log("shouldInterceptRequest 下载中...！", url);
+												CMN.Log("shouldInterceptRequest 下载目标: ", name);
+												URL requestURL = new URL(url);
+												HttpURLConnection urlConnection = null;
+												FileOutputStream fout = null;
+												try {
+													try {
+														SSLContext sslcontext = SSLContext.getInstance("TLS");
+														sslcontext.init(null, new TrustManager[]{new PlainWeb.MyX509TrustManager()}, new SecureRandom());
+														HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
+													} catch (Exception ignored) {
+													}
+													urlConnection = (HttpURLConnection) requestURL.openConnection();
+													urlConnection.setRequestMethod("GET");
+													urlConnection.setConnectTimeout(10000);
+													if(accept!=null)urlConnection.setRequestProperty("Accept",accept);
+													if(refer!=null) urlConnection.setRequestProperty("Refer", refer);
+													if(origin!=null) urlConnection.setRequestProperty("Origin", origin);
+													if(request!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+														Map<String, String> headers = request.getRequestHeaders();
+														urlConnection.setRequestProperty("X-Requested-With", headers.get("X-Requested-With"));
+														urlConnection.setRequestProperty("Content-Type", headers.get("Content-Type"));
+														urlConnection.setRequestMethod(request.getMethod());
+													}
+													urlConnection.setRequestProperty("Charset", "UTF-8");
+													urlConnection.setRequestProperty("Connection", "Keep-Alive");
+													urlConnection.setRequestProperty("User-Agent", webx.computerFace?"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
+														:"Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
+													urlConnection.connect();
+													InputStream is = urlConnection.getInputStream();
+													byte[] buffer = new byte[4096];
+													int len;
+													while ((len = is.read(buffer)) > 0) {
+														if (fout == null)
+															fout = new FileOutputStream(path);
+														fout.write(buffer, 0, len);
+													}
+													if(fout!=null) {
+														fout.flush();
+														fout.close();
+													}
+													urlConnection.disconnect();
+													is.close();
+													CMN.Log("shouldInterceptRequest 已下载！", url);
+												} catch (Exception e) {
+													CMN.Log(e);
+													path.delete();
+													return emptyResponse;
+												}
+											}
+											/* 再构 */
+											if(path.isFile()){
+												String mime=accept;
+												if(mime!=null){
+													int idx = mime.indexOf(",");
+													if(idx>0) mime=mime.substring(0, idx);
+												}else{
+													mime="*/*";
+												}
+												if(mime.startsWith("image") && webx.svgKeywords!=null){
+													for (int j = 0; j < webx.svgKeywords.length; j++) {
+														if(url.contains(webx.svgKeywords[i])){
+															mime="image/svg+xml";
+															break;
+														}
+													}
+												}
+
+												WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
+												if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+													ret.setResponseHeaders(CrossFireHeaders);
+												}
+												return ret;
+											}
+										}
+									}
+
+									break;
+								}
+							}
+						}
+						catch (Exception e) {
+							CMN.Log(e);
+						}
+					}
+				}
+				else{
+					view.setTag(R.id.save, null);
+				}
+				return null;
+			}
 			if(url.startsWith("http") && url.endsWith(".mp3")) {
 				return null;
 			}
@@ -8472,20 +8447,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 var css = 'html {-webkit-filter: invert(100%);\
 					 -moz-filter: invert(100%);\
 					 -o-filter: invert(100%);\
-					 -ms-filter: invert(100%);}',
+					 -ms-filter: invert(100%);}\
+				body {background:transparent}',
 	 head = document.getElementsByTagName('head')[0],
 	 style = document.createElement('style');
-	 style.class = "_PDict";
 	 style.id = "_PDict_Darken";
-	 style.type = 'text/css';
-	 if (style.styleSheet){
-		 style.styleSheet.cssText = css;
-	 } else {
-	 	style.appendChild(document.createTextNode(css));
+	 if(!document.getElementById(style.id)) {
+		 style.class = "_PDict";
+		 style.type = 'text/css';
+		 if (style.styleSheet){
+		 	style.styleSheet.cssText = css;
+		 } else {
+		 	style.appendChild(document.createTextNode(css));
+		 }
+		 //injecting the css to the head
+		 head.appendChild(style);
+		 window.document.body.style.background='transparent';
 	 }
-	 //injecting the css to the head
-	 head.appendChild(style);
-	 window.document.body.style.background='transparent';
 	 */
 	@Multiline
 	public final static String DarkModeIncantation ="DARK";

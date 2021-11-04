@@ -35,6 +35,7 @@ public class MainShareActivity extends Activity {
 		if(thisIntent!=null) {
 			String action = thisIntent.getAction();
 			forceTarget = thisIntent.getIntExtra("force", -1);
+			CMN.Log("forceTarget", forceTarget);
 			if (forceTarget==-1) {
 				if(action!=null && action.equals(Intent.ACTION_MAIN)) {
 					//CMN.Log("主程转发");

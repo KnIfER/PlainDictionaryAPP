@@ -134,8 +134,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			StringBuilder sb_ = new StringBuilder();
 			for(int i=0;i<md_size();i++){
 				try {
-					// to impl
-					((mdict)md_get(i).bookImpl).size_confined_lookUp5(uri,combining_search_tree_,i,30);
+					md_get(i).bookImpl.lookUpRange(uri, null, combining_search_tree_,i,30);
 				} catch (Exception e) {
 					SU.Log(md_getName(i), e);
 				}
@@ -195,7 +194,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				try {
 					int VI = IU.parsint(list[2],-1);
 					//SU.Log("virtual content..."+VI, mdTmp.getVirtualRecordAt(VI));
-					return newFixedLengthResponse(mdTmp.bookImpl.getVirtualRecordAt(VI));
+					return newFixedLengthResponse(mdTmp.bookImpl.getVirtualRecordAt(this, VI));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -357,7 +356,7 @@ public abstract class MdictServer extends NanoHTTPD {
 					int[] list2 = new int[list.length-1];
 					for(int i=0;i<list.length-1;i++)
 						list2[i]=Integer.parseInt(list[i+1]);
-					return newFixedLengthResponse(constructMdPage(mdTmp, list[0],lid!=-1?mdTmp.bookImpl.getVirtualRecordsAt(list2):mdTmp.bookImpl.getRecordsAt(null, list2), true));
+					return newFixedLengthResponse(constructMdPage(mdTmp, list[0],lid!=-1?mdTmp.bookImpl.getVirtualRecordsAt(this, list2):mdTmp.bookImpl.getRecordsAt(null, list2), true));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

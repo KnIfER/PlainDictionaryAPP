@@ -240,6 +240,7 @@ public class PlainText extends DictionaryAdapter {
 		file_length = f.length();
 		_num_record_blocks=
 		_num_entries = (long) Math.ceil(file_length*1.f/ mBlockSize);
+		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_TEXT;
 	}
 
 //	@Override

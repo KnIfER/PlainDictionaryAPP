@@ -128,6 +128,7 @@
 			app:isPreferenceVisible="true"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
+			android:icon="@drawable/ic_view_carousel_black_24dp"
 			/>
 
 	</PreferenceCategory>

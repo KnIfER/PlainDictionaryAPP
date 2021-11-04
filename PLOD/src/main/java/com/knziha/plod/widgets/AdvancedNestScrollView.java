@@ -29,7 +29,6 @@ import androidx.core.view.NestedScrollingChildHelper;
  */
 public class AdvancedNestScrollView extends ScrollViewmy implements NestedScrollingChild {
 	boolean mNestedScrollEnabled;
-	
 	private final NestedScrollingChildHelper mChildHelper;
 	
 	int mLastMotionY;

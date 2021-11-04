@@ -102,6 +102,8 @@ import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.dict_manager_activity;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
+import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -154,9 +156,11 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_REGEX
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_WILDCARD;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEXTS;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
+import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
 
 /**
@@ -486,11 +490,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	/** Jump to old or new UI with new text.
 	 * @param content New text
 	 * @param source specifies the source of our text.
-	 * 0=intent share; 1=focused paste; 2=unfocused paste
+	 * 0=intent share; 1=focused paste; 2=unfocused paste; -1=redirected from float search(text proessing)
 	 * */
 	public void JumpToWord(String content, int source) {
-		//CMN.Log("JumpToWord", focused, source, PDICMainAppOptions.getPasteTarget(), PDICMainAppOptions.getPasteToPeruseModeWhenFocued());
-		if((source>=1)&&opt.getPasteTarget()==3 && !(source==1&&PDICMainAppOptions.getPasteToPeruseModeWhenFocued())){
+		CMN.Log("JumpToWord", focused, source, opt.getPasteTarget(), opt.getPasteToPeruseModeWhenFocued(), PeruseViewAttached());
+		if((source>=1)&&opt.getPasteTarget()==PLAIN_TARGET_FLOAT_SEARCH && !(source==1&&PDICMainAppOptions.getPasteToPeruseModeWhenFocued())){
 			Intent popup = new Intent().setClassName("com.knziha.plod.plaindict", "com.knziha.plod.plaindict.FloatActivitySearch").putExtra("EXTRA_QUERY", content);
 			//this, FloatActivitySearch.class
 			popup.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -503,7 +507,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			getApplicationContext().startActivity(popup);
 			return;
 		}
-
+		// todo 分享目标优化
 		int PasteTarget=opt.getPasteTarget();
 		int ShareTarget=opt.getShareToTarget();
 		boolean isPeruseView=PeruseViewAttached();
@@ -1066,6 +1070,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	private void processIntent(Intent intent, boolean initialzie) {
+		int jump_source = 0;
 		if(intent !=null){
 			String action = intent.getAction();
 			if("lock".equals(action)) {
@@ -1098,6 +1103,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							HandleLocateTextInPage(debugString);
 							return;
 						}
+						jump_source = -1;
 					}
 					if(adaptermy2!=null){
 						adaptermy2.avoyager.remove(0);
@@ -1110,7 +1116,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		}
 		if(debugString!=null)
-			JumpToWord(debugString, 0);
+			JumpToWord(debugString, jump_source);
 	}
 	
 	private void HandleOpenUrl(Uri url) {
@@ -1422,9 +1428,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				if(checkDicts()) {
 					if(isCombinedSearching){
+						//todo
 						execBatchSearch(search_cs);
 					} else {
-						execSingleSearch(search_cs, search_count);
+						if (currentDictionary.getType()!=PLAIN_TYPE_WEB)
+							execSingleSearch(search_cs, search_count);
 					}
 				}
 				if(来一发) {
@@ -1444,7 +1452,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				int tmp = viewPager.getCurrentItem();
 				if(tmp==0 || tmp==2) {
 					if(!PDICMainAppOptions.getHistoryStrategy0() /*&& PDICMainAppOptions.getHistoryStrategy1()*/)
-						insertUpdate_histroy(key, null);
+						insertUpdate_histroy(key, 2, null);
 					if(!checkDicts()) return true;
 					//模糊搜索 & 全文搜索
 					if(mAsyncTask!=null)
@@ -1454,14 +1462,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							:new FullSearchTask(PDICMainActivity.this)).execute(key);
 				} else {
 					if(!PDICMainAppOptions.getHistoryStrategy0() /*&& (PDICMainAppOptions.getHistoryStrategy2()&&isCombinedSearching|| PDICMainAppOptions.getHistoryStrategy3()&&!isCombinedSearching)*/)
-						insertUpdate_histroy(key, null);
-					if(key.length()>0) {
-						// nimp
-						//if(!isCombinedSearching && currentDictionary instanceof bookPresenter_web){
-						//	bookPresenter_web webx = ((bookPresenter_web) currentDictionary);
-						//	webx.searchKey = key;
-						//	adaptermy.onItemClick(0);
-						//} else
+						insertUpdate_histroy(key, 2, null);
+					if(key.length()>0)
+					{
+						if(!isCombinedSearching && currentDictionary.getType()==PLAIN_TYPE_WEB)
+						{
+							showT("PLAIN_TYPE_WEB!!!");
+							currentDictionary.SetSearchKey(key);
+							adaptermy.onItemClick(0);
+						}
+						else
 						{
 							bIsFirstLaunch=true;
 							tw1.onTextChanged(key, -1, -1, 0);
@@ -2228,14 +2238,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	private void checkDictionaryProject(boolean performSave) {
-		if(bNeedSaveViewStates && currentDictionary!=null) {
-			int pos = lv.getFirstVisiblePosition();
-			if(currentDictionary.lvPos != pos && !PDICMainAppOptions.getSimpleMode()){
-				currentDictionary.lvPos = pos;
-				if(lv.getChildAt(0)!=null) currentDictionary.lvPosOff=lv.getChildAt(0).getTop();
-				currentDictionary.dumpViewStates(this, prepareHistoryCon());
+		if(currentDictionary!=null) {
+			if (currentDictionary.getType()== DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
+				((PlainWeb)currentDictionary.bookImpl).dumpRecords(this, prepareHistoryCon());
+			if(bNeedSaveViewStates) {
+				int pos = lv.getFirstVisiblePosition();
+				if(currentDictionary.lvPos != pos && !PDICMainAppOptions.getSimpleMode()){
+					currentDictionary.lvPos = pos;
+					if(lv.getChildAt(0)!=null) currentDictionary.lvPosOff=lv.getChildAt(0).getTop();
+					currentDictionary.dumpViewStates(this, prepareHistoryCon());
+				}
+				bNeedSaveViewStates =false;
 			}
-			bNeedSaveViewStates =false;
 		}
 //		if(performSave && dirtyMap.size()>0){
 //			CMN.rt();
@@ -2470,7 +2484,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						//&&!(currentDictionary instanceof bookPresenter_txt) // nimp
 						&& !PDICMainAppOptions.getHistoryStrategy0()
 						&& PDICMainAppOptions.getHistoryStrategy4()) {
-					insertUpdate_histroy(currentDictionary.currentDisplaying, webviewHolder);
+					insertUpdate_histroy(currentDictionary.currentDisplaying, 0, webviewHolder);
 				}
 			}
 		}
@@ -2507,7 +2521,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			
 			shuntAAdjustment();
 			if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
-				getPeruseView().ScanSearchAllByText(currentDictionary.bookImpl.getEntryAt(pos), PDICMainActivity.this, true, updateAI);
+				String pw = pos==0?etSearch.getText().toString():currentDictionary.bookImpl.getEntryAt(pos);
+				getPeruseView().ScanSearchAllByText(pw, PDICMainActivity.this, true, updateAI);
 				AttachPeruseView(true);
 				//CMN.Log(PeruseView.data);
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
@@ -2572,7 +2587,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					 !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy4()
 					&& (userCLick || PDICMainAppOptions.getHistoryStrategy8()==0) && !(shunt && pos==0)) {
 				//CMN.Log("insertUpdate_histroy");
-				insertUpdate_histroy(key, webviewHolder);
+				insertUpdate_histroy(key, 0, webviewHolder);
 			}
 			//showT("查时: "+(System.currentTimeMillis()-stst));
 			bWantsSelection=!currentIsWeb();//tofo
@@ -2604,6 +2619,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			webholder.setVisibility(View.VISIBLE);
 		}
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+		//WHP.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
 		if(another.getVisibility()==View.VISIBLE) {
 			Utils.removeAllViews(anotherholder);
 			another.setVisibility(View.GONE);
@@ -2692,7 +2708,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(Kustice && PDICMainAppOptions.getHistoryStrategy8() == 2
 					&& combining_search_result.shouldSaveHistory()
 					&& !PDICMainAppOptions.getHistoryStrategy0())
-				insertUpdate_histroy(currentKeyText, webviewHolder);
+				insertUpdate_histroy(currentKeyText, 0, webviewHolder);
 		}
 
 		@Override
@@ -2757,7 +2773,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 				&& combining_search_result.shouldSaveHistory()
 					&&(userCLick||PDICMainAppOptions.getHistoryStrategy8()==0)) {
-				insertUpdate_histroy(currentKeyText, webviewHolder);
+				insertUpdate_histroy(currentKeyText, 0, webviewHolder);
 			}
 			
 			if(userCLick) {
@@ -3320,6 +3336,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(leaving && opt.getLeaveContentBlank() && ! currentIsWeb()) {
 			WebViewmy current_webview = PageSlider.WebContext;
 			if(current_webview !=null) {
+				CMN.Log("页面置空了……");
 				current_webview.loadUrl("about:blank");
 				current_webview.clearView();
 			}
@@ -3327,8 +3344,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	private boolean currentIsWeb() {
-		//return currentDictionary instanceof bookPresenter_web;
-		return false; // nimp
+		return currentDictionary !=null && currentDictionary.getType()==PLAIN_TYPE_WEB;
 	}
 	
 	
@@ -3660,7 +3676,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if (CurrentViewPage == 1) {//viewPager
 						tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 						if (!PDICMainAppOptions.getHistoryStrategy0()) {
-							insertUpdate_histroy(etSearch.getText().toString().trim(), null);
+							insertUpdate_histroy(etSearch.getText().toString().trim(), 0, null);
 						}
 					} else
 						etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);

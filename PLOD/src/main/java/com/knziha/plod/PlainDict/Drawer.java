@@ -81,6 +81,7 @@ import java.util.regex.Pattern;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
 import static com.knziha.plod.plaindict.MainActivityUIBase.new_mdict;
+import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
 
 /** @author KnIfER */
@@ -376,7 +377,7 @@ public class Drawer extends Fragment implements
 									mClipboard.add(0, mClipboard.remove(i));
 								}
 								boolean focused = a.hasWindowFocus();
-								boolean toFloat = a.opt.getPasteTarget() == 3;
+								boolean toFloat = a.opt.getPasteTarget() == PLAIN_TARGET_FLOAT_SEARCH;
 								if (!toFloat && !focused && a.opt.getPasteBinBringTaskToFront()) {
 									ActivityManager manager = (ActivityManager) a.getSystemService(Context.ACTIVITY_SERVICE);
 									if (manager != null)

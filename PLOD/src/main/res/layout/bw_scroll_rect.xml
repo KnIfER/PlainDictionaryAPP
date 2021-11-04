@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="vertical"
+	android:layout_width="50dp"
+	android:layout_height="120dp"
+	tools:translationX="20dp"
+	tools:translationY="20dp"
+	>
+
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:background="#3F82C9FF"
+		android:layout_marginTop="7dp"
+		/>
+
+	<android.widget.ImageView
+		android:id="@+id/auto_scroll_u"
+		android:layout_width="match_parent"
+		android:layout_height="60dp"
+		android:background="@drawable/listviewselector_rect"
+		android:clickable="true"
+		android:longClickable="true"
+		android:src="@drawable/chevron_top"
+		android:layout_marginLeft= "2dp"
+		android:layout_marginRight="2dp"
+		android:layout_marginTop="7dp"
+		/>
+
+
+
+	<android.widget.ImageView
+		android:id="@+id/auto_scroll_d"
+		android:layout_width="match_parent"
+		android:layout_height="60dp"
+		android:background="@drawable/listviewselector_rect"
+		android:clickable="true"
+		android:longClickable="true"
+		android:src="@drawable/chevron_bottom"
+		android:layout_marginLeft= "2dp"
+		android:layout_marginRight="2dp"
+		android:layout_below="@id/auto_scroll_u"
+		/>
+
+	<LinearLayout
+		android:orientation="vertical"
+		android:layout_width="match_parent"
+		android:layout_height="15dp"
+		android:clipChildren="false"
+		android:clipToPadding="false"
+		>
+		<View
+			android:layout_width= "15dp"
+			android:layout_height="15dp"
+			android:background="@drawable/circle_drag_dot"
+			android:layout_gravity="center"
+			android:visibility="invisible"
+			/>
+	</LinearLayout>
+</RelativeLayout>

@@ -4,9 +4,12 @@ import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.rbtree.RBTree_additive;
 
 import org.jcodings.Encoding;
 import org.joni.Option;
@@ -25,6 +28,13 @@ import static com.knziha.plod.dictionary.mdict.kalyxIndexOf;
 import static com.knziha.plod.dictionary.mdict.kalyxLastIndexOf;
 
 public class DictionaryAdapter implements UniversalDictionaryInterface {
+	public enum PLAIN_BOOK_TYPE
+	{
+		PLAIN_TYPE_TEXT
+		,PLAIN_TYPE_WEB
+		,PLAIN_TYPE_MDICT
+		,PLAIN_TYPE_PDF
+	}
 	File f;
 	long _bid;
 	long _num_entries;
@@ -35,6 +45,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	Encoding encoding;
 	public volatile boolean searchCancled;
 	
+	DictionaryAdapter.PLAIN_BOOK_TYPE mType;
 	byte[] options;
 	
 	/** validation schema<br/>
@@ -163,6 +174,10 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
+	public void lookUpRange(String keyword, ArrayList<myCpr<String, Integer>> combining_search_list, RBTree_additive combining_search_tree, int SelfAtIdx, int theta) {
+	}
+	
+	@Override
 	public InputStream getResourceByKey(String key) {
 		return null;
 	}
@@ -173,18 +188,18 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public String getVirtualRecordAt(int vi) throws IOException {
+	public String getVirtualRecordAt(Object presenter, int vi) throws IOException {
 		return null;
 	}
 	
 	@Override
-	public String getVirtualRecordsAt(int[] list2) throws IOException {
-		return null;
+	public String getVirtualRecordsAt(Object presenter, int[] args) throws IOException {
+		return getVirtualRecordAt(presenter, args[0]);
 	}
 	
 	@Override
 	public String getVirtualTextEffectJs(int[] positions) {
-		return "";
+		return null;
 	}
 	
 	@Override
@@ -209,7 +224,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	
 	@Override
 	public String getResourcePaths() {
-		return null;
+		return "";
 	}
 	
 	@Override
@@ -223,7 +238,12 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public String getVirtualTextValidateJs() {
+	public int getType() {
+		return mType.ordinal();
+	}
+	
+	@Override
+	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, int position) {
 		return "";
 	}
 	

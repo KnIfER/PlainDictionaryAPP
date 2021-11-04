@@ -40,9 +40,9 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 		a.main_progress_bar.setVisibility(View.VISIBLE);
 		verbatimCount=0;
 		if(!isStrict) {
-			for(BookPresenter mdTmp:a.md) {
-				if(mdTmp!=null) // to impl
-					((mdict)mdTmp.bookImpl).combining_search_list = new ArrayList<>();
+			for(BookPresenter bookPresenter:a.md) {
+				if(bookPresenter!=null) // to impl
+					bookPresenter.combining_search_list = new ArrayList<>();
 			}
 		}
 	}
@@ -78,7 +78,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 						try {
 							md.set(j, mdTmp= MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
 							mdTmp.tmpIsFlag = phI.tmpIsFlag; // to impl
-							((mdict)mdTmp.bookImpl).combining_search_list = new ArrayList<>();
+							mdTmp.combining_search_list = new ArrayList<>();
 						} catch (Exception ignored) { }
 					}
 				}
@@ -98,7 +98,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 						}
 					}else {
 						if(isCancelled()) break; // to impl
-						((mdict)mdTmp.bookImpl).size_confined_lookUp5(inputArray[i],null,i,15);
+						mdTmp.bookImpl.lookUpRange(inputArray[i], mdTmp.combining_search_list, null,i,15);
 					}
 				}
 			}
@@ -116,8 +116,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 			RBTree_additive additive_combining_search_tree_haha = new RBTree_additive();
 			for(int i=0; i<md.size(); i++) {
 				if(md.get(i)!=null)
-					// to impl
-				for(myCpr<String, Integer> dataI:((mdict)md.get(i).bookImpl).combining_search_list) {
+				for(myCpr<String, Integer> dataI:md.get(i).combining_search_list) {
 					additive_combining_search_tree_haha.insert(dataI.key, i, dataI.value);
 				}
 			}

@@ -37,9 +37,8 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		//CMN.Log("开始联合搜索！");
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
-		for(BookPresenter mdTmp:a.md) {
-			if(mdTmp!=null && mdTmp.bookImpl instanceof mdict) // to impl
-				((mdict)mdTmp.bookImpl).combining_search_list = new ArrayList<>();
+		for(BookPresenter bookPresenter:a.md) {
+			if(bookPresenter!=null) bookPresenter.combining_search_list = new ArrayList<>();
 		}
 		additive_combining_search_tree.clear();
 	}
@@ -86,24 +85,23 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 					if(it==a.split_dict_thread_number-1) jiaX=yuShu;
 					for(int i1 = it*step; i1 <it*step+step+jiaX; i1++) {
 						if(isCancelled()) break;
-						BookPresenter mdTmp = md.get(i1);
-						if(mdTmp==null){
+						BookPresenter bookPresenter = md.get(i1);
+						if(bookPresenter==null){
 							PlaceHolder phI = a.getPlaceHolderAt(i1);
 							if(phI!=null) {
 								try {
-									md.set(i1, mdTmp=MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
-									mdTmp.tmpIsFlag = phI.tmpIsFlag;
-									// to impl
-									((mdict)mdTmp.bookImpl).combining_search_list = new ArrayList<>();
+									md.set(i1, bookPresenter=MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
+									bookPresenter.tmpIsFlag = phI.tmpIsFlag;
+									bookPresenter.combining_search_list = new ArrayList<>();
 								} catch (Exception ignored) { }
 							}
 						}
-						if(mdTmp!=null)
+						if(bookPresenter!=null)
 							try {
-								((mdict)mdTmp.bookImpl).size_confined_lookUp5(CurrentSearchText,null, i1,15);
+								bookPresenter.bookImpl.lookUpRange(CurrentSearchText, bookPresenter.combining_search_list, null, i1,15);
 							} catch (Exception e) {
 								if(GlobalOptions.debug)
-									CMN.Log("搜索出错！！！", mdTmp.bookImpl.getDictionaryName(), e);
+									CMN.Log("搜索出错！！！", bookPresenter.bookImpl.getDictionaryName(), e);
 							}
 					}
 					if(a.split_dict_thread_number>thread_number) a.poolEUSize.addAndGet(-1);
@@ -132,10 +130,12 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		if((a=activity.get())==null) return;
 		ArrayList<BookPresenter> md = a.md;
 		additive_combining_search_tree = new RBTree_additive();
+		ArrayList<myCpr<String, Integer>> combining_search_list;
+		BookPresenter bookPresenter;
 		for(int i=0; i<md.size(); i++) {
-			BookPresenter mdTmp = md.get(i);
-			if(mdTmp!=null && mdTmp.bookImpl instanceof mdict){ // to impl
-				ArrayList<myCpr<String, Integer>> combining_search_list = ((mdict)mdTmp.bookImpl).combining_search_list;
+			bookPresenter = md.get(i);
+			if(bookPresenter!=null){ // to impl
+				combining_search_list = bookPresenter.combining_search_list;
 				if(combining_search_list!=null) {
 					for (myCpr<String, Integer> dataI : combining_search_list) {
 						if(dataI!=null) // to check

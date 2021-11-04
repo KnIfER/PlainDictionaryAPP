@@ -29,6 +29,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String TABLE_FAVORITE_FOLDER_v2 = "favfolder";
 	public static final String TABLE_BOOK_NOTE_v2 = "booknote";
 	public static final String TABLE_BOOK_ANNOT_v2 = "bookannot";
+	public static final String TABLE_DATA_v2 = "data";
 	
 	public static final String FIELD_CREATE_TIME = "creation_time";
 	public static final String FIELD_VISIT_TIME = "last_visit_time";
@@ -42,7 +43,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
     public final String DATABASE;
 	public boolean lastAdded;
 	private SQLiteDatabase database;
-    public SQLiteDatabase getDB(){return database;}
+	public SQLiteDatabase getDB(){return database;}
     
     public static final String TABLE_MARKS = "t1";
 
@@ -52,6 +53,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
     public String pathName;
 	
 	public final boolean testDBV2;
+	
+	static LexicalDBHelper instance;
+	boolean closed = false;
 	
 	/** 创建收藏夹数据库（从名称） */
     public LexicalDBHelper(Context context, PDICMainAppOptions opt, String name, boolean testDBV2) {
@@ -73,6 +77,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		database = getWritableDatabase();
 		pathName = database.getPath();
 		oldVersion=CMN.dbVersionCode;
+		instance = this;
+	}
+	
+	public static LexicalDBHelper getInstance() {
+		return instance;
 	}
 	
 	@Override
@@ -108,7 +117,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			
 			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOK_NOTE_v2);
 			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOKMARK_v2);
-			// TABLE_BOOK_NOTE_v2 记录词条重写
+			// TABLE_BOOK_NOTE_v2 记录书签以及词条重写
 			sqlBuilder = "create table if not exists " +
 					TABLE_BOOK_NOTE_v2 +
 					"(" +
@@ -119,6 +128,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", creation_time INTEGER NOT NULL"+
 					", last_edit_time INTEGER NOT NULL" +
 					", edit_count INTEGER DEFAULT 0 NOT NULL" +
+					", miaoshu TEXT"+
 					", param BLOB" +
 					", notes BLOB" +
 					")";
@@ -210,6 +220,23 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			db.execSQL("CREATE INDEX if not exists history_term_index ON history (lex)"); // query view
 			db.execSQL("CREATE INDEX if not exists history_time_index ON history (last_visit_time)"); // main view
 			db.execSQL("CREATE INDEX if not exists history_visit_index ON history (visit_count, last_visit_time) where visit_count>0"); // visit_count view
+			
+			// TABLE_HISTORY_v2 记录自定义数据
+			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_DATA_v2);
+			sqlBuilder = "create table if not exists " +
+					TABLE_DATA_v2 +
+					"(" +
+					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
+					", name LONGVARCHAR" +
+					", data blob"+
+					", len INTEGER DEFAULT 0 NOT NULL"+
+					", type INTEGER DEFAULT 0 NOT NULL"+
+					", creation_time INTEGER NOT NULL"+
+					", last_edit_time INTEGER NOT NULL" +
+					", edit_count INTEGER DEFAULT 0 NOT NULL" +
+					")";
+			db.execSQL(sqlBuilder);
+			db.execSQL("CREATE INDEX if not exists data_name_index ON data (name)");
 			
 			if (preparedHasBookNoteForEntry ==null) {
 				preparedHasBookNoteForEntry = db.compileStatement("select id from " + TABLE_BOOK_NOTE_v2 + " where lex=? and bid=? and notes IS NOT NULL");
@@ -553,10 +580,15 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	@Override
 	public void close(){
 		super.close();
+		closed = true;
 		if(preparedGetIsFavoriteWord !=null)
 			preparedGetIsFavoriteWord.close();
 	}
-
+	
+	public boolean isClosed() {
+		return closed || database==null;
+	}
+	
 	public boolean wipeData() {
 		return database.delete(TABLE_MARKS, null, null)>0;
 	}

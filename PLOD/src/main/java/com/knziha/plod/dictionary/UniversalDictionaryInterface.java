@@ -1,10 +1,14 @@
 package com.knziha.plod.dictionary;
 
 import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.rbtree.RBTree_additive;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public interface UniversalDictionaryInterface {
 	String getEntryAt(int position, Flag mflag);
@@ -38,15 +42,17 @@ public interface UniversalDictionaryInterface {
 	
 	int lookUp(String keyword);
 	
+	void lookUpRange(String keyword, ArrayList<myCpr<String, Integer>> combining_search_list, RBTree_additive combining_search_tree, int SelfAtIdx, int theta);
+	
 	InputStream getResourceByKey(String key);
 	
 	Object ReRoute(String key) throws IOException;
 	
-	String getVirtualRecordAt(int vi) throws IOException;
+	String getVirtualRecordAt(Object presenter, int vi) throws IOException;
 	
-	String getVirtualRecordsAt(int[] list2) throws IOException;
+	String getVirtualRecordsAt(Object presenter, int[] list2) throws IOException;
 	
-	String getVirtualTextValidateJs();
+	String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, int position);
 	
 	String getVirtualTextEffectJs(int[] positions);
 	
@@ -61,4 +67,5 @@ public interface UniversalDictionaryInterface {
 	
 	byte[] getOptions();
 	void setOptions(byte[] options);
+	int getType();
 }

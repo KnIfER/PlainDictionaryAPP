@@ -63,7 +63,14 @@
 			android:key="clear_sel"
 			android:persistent="false"
 			android:defaultValue="true"
-			android:title="返回键优先清除网页中的文本选择"
+			android:title="使用返回键清除网页中的文本选择"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="back_web"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="使用返回键倒退网页"
+			android:summary="建议长按解释页面的&lt;&gt;按钮进行设置"
 			/>
 		<androidx.preference.ListPreference
 			android:defaultValue="0"

@@ -142,27 +142,13 @@ public class BookmarkAdapter extends BaseAdapter{
 			ivDel = itemView.findViewById(R.id.del);
 			ivDel.setOnClickListener(v -> {
 				if (testDBV2) {
-					presenter.deleteBookMark(entry_position, new View.OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							notifyDataSetChanged();
-						}
+					presenter.deleteBookMark(entry_position, v1 -> {
+						refresh(presenter, presenter.a.prepareHistoryCon().getDB());
+						notifyDataSetChanged();
 					});
 				} else {
 					presenter.a.showT("已弃用旧版数据库，请尽快升级。");
 				}
-				//int position = (int) v.getTag();
-				//Cursor cr = a.cr;
-				//MdxDBHelper con = a.con;
-				//cr.moveToPosition(position);
-				//a.DataRecord.clear();
-				//if(a.isWeb)
-				//	con.remove(cr.getInt(0));
-				//else
-				//	con.removeUrl(cr.getString(0));
-				//cr.close();
-				//a.cr = con.getDB().rawQuery("select * from t1 ", null);
-				//a.notifyDataSetChanged();
 			});
 		}
 	}

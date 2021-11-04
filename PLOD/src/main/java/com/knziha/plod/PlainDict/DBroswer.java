@@ -52,6 +52,7 @@ import com.knziha.paging.PagingCursorAdapter;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.CardListItemBinding;
@@ -1670,7 +1671,12 @@ public class DBroswer extends Fragment implements
 		int idx;
 		if(offset>0)
 			key = key.substring(0,key.length()-offset);
-		idx = currentDictionary.bookImpl.lookUp(key,true);
+		if (currentDictionary.getType()== DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+			currentDictionary.SetSearchKey(key);
+			idx = 0;
+		} else {
+			idx = currentDictionary.bookImpl.lookUp(key,true);
+		}
 		int adapter_idx=a.adapter_idx;
 		
 		if(idx<0 && queryAll) {

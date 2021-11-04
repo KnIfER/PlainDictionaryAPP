@@ -14,9 +14,11 @@ import java.util.concurrent.Executors;
 import static com.knziha.plod.plaindict.AgentApplication.BufferAllocatorInst;
 
 public class PlainMdict extends mdict {
+	DictionaryAdapter.PLAIN_BOOK_TYPE mType;
 	public PlainMdict(File fn, int pseudoInit, StringBuilder buffer, Object tag, boolean isResourceFile) throws IOException {
 		super(fn, pseudoInit, buffer, tag);
 		this.isResourceFile = isResourceFile;
+		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT;
 	}
 	
 	protected byte[] AcquireCompressedBlockOfSize(int compressedSize) {
@@ -40,7 +42,6 @@ public class PlainMdict extends mdict {
 		//return Executors.newWorkStealingPool();
 	}
 	
-	
 	@Override
 	protected void MoveOrRenameResourceLet(mdictRes md, String token, String pattern, File newPath) {
 		//File f = md.f();
@@ -58,5 +59,10 @@ public class PlainMdict extends mdict {
 		//			md.Rebase(mnp);
 		//	}
 		//}
+	}
+	
+	@Override
+	public int getType() {
+		return mType.ordinal();
 	}
 }

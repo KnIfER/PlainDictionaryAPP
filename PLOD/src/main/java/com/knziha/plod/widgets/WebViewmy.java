@@ -17,11 +17,17 @@ import android.text.Spanned;
 import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.ContextMenu;
+import android.view.GestureDetector;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.animation.AccelerateInterpolator;
 import android.webkit.WebSettings;
 
 import android.webkit.WebView;
@@ -31,12 +37,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
 
-import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -99,6 +107,13 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public float highRigkt_B;
 	public static boolean supressNxtClickTranslator;
 	
+	View scrollRect;
+	ScrollAbility mScrollAbility;
+	
+	boolean scrolling;
+	int speed = 5;
+	int interval = 16;
+	
 	public WebViewmy(Context context) {
 		this(context, null);
 	}
@@ -106,7 +121,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public WebViewmy(Context context, AttributeSet attrs) {
 		this(context, attrs, 0);
 	}
-
+	
+	WidgetsLayout widgetsLayout;
+	boolean hasWidgets;
+	
 	public WebViewmy(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		//setWebContentsDebuggingEnabled(true);
@@ -1072,7 +1090,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 
 		return new ArrayList<View>();
 	}
-
+	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		lastX = event.getX();
@@ -1080,7 +1098,29 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		if(event.getActionMasked()==MotionEvent.ACTION_DOWN) {
 			supressNxtClickTranslator = bIsActionMenuShown;
 		}
+		if (hasWidgets) {
+			//setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+			widgetsLayout.layoutWidgets();
+			if (widgetsLayout.dispatchTouchEvent(event)) {
+				return true;
+			}
+		}
 		return super.onTouchEvent(event);
+	}
+	
+	@Override
+	public void computeScroll() {
+		super.computeScroll();
+		if (scrolling && getParent()!=null) {
+			int nsy = getScrollY();
+			int sy = nsy + speed;
+			if (sy<0) sy=0;
+			else sy = Math.min(computeVerticalScrollRange()-getHeight(), sy);
+			if (nsy!=sy)
+				scrollTo(getScrollX(), sy);
+			else if(mScrollAbility!=null)
+				((View)getParent()).postDelayed(mScrollAbility, 16);
+		}
 	}
 	
 	@Override
@@ -1091,5 +1131,216 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale, Utils.getRectPaint());
 		}
 		super.onDraw(canvas);
+		if (hasWidgets) {
+			widgetsLayout.layoutWidgets();
+		}
+	}
+	
+	/** WebView内布局，无视网页总长，与WebView保持恒定大小 */
+	static class WidgetsLayout extends FrameLayout{
+		final View scrollableView;
+		int lastSx;
+		int lastSy;
+		public WidgetsLayout(@NonNull View scrollableView) {
+			super(scrollableView.getContext());
+			this.scrollableView = scrollableView;
+		}
+		// 强制内布局layout
+		void layoutWidgets() {
+			int sx = scrollableView.getScrollX(), sy = scrollableView.getScrollY(), sw=scrollableView.getWidth(), sh=scrollableView.getHeight();
+			if (getLeft()!=sx||getTop()!=sy||sx!=lastSx||sy!=lastSy||sw!=getWidth()||sh!=getHeight())
+			{
+				layout(sx, sy, sx+sw, sy+sh);
+				lastSx = sx;
+				lastSy = sy;
+				CMN.Log("layoutWidgets::", lastSx, lastSy, getWidth(), getHeight());
+			}
+		}
+	}
+	
+	void init_widgets_layout() {
+		if (widgetsLayout==null) {
+			widgetsLayout = new WidgetsLayout(this);
+			//widgetsLayout.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+			addView(widgetsLayout);
+		}
+	}
+	
+	/** 自滚能力 卷死你们 */
+	class ScrollAbility implements OnClickListener, OnLongClickListener, OnTouchListener, Runnable{
+		float orgX;
+		float orgY;
+		float lastX;
+		float lastY;
+		boolean longScrollEnabled;
+		boolean longScrollTriggered;
+		boolean thisTouchScrolled;
+		@Override
+		public void run() {
+			if (scrolling && getParent()!=null) {
+				computeScroll();
+			}
+		}
+		//GestureDetector gestureDetector=new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener(){
+		//	@Override
+		//	public boolean onSingleTapConfirmed(MotionEvent e) {
+		//		return true;
+		//	}
+		//});
+		int lastPageTarget;
+		int lastPageStep;
+		long lastPageTime;
+		// 单击，自动平滑滚动 类似于 page up / page down
+		@Override
+		public void onClick(View v) {
+			boolean b1 = v.getId()==R.id.auto_scroll_d;
+			if (b1||v.getId()==R.id.auto_scroll_u) {
+				if (!thisTouchScrolled) {
+					long now = CMN.now();
+					int step = (int) (0.39*getHeight()/BookPresenter.def_zoom);
+					if (!b1) step = -step;
+					boolean smooth = true;
+					//evaluateJavascript("window.scrollBy({top: "+step+(smooth?", behavior: \"smooth\" })":"})"), null);
+					int scrollFrom = (int) (getScrollY()/BookPresenter.def_zoom);
+					if (now-lastPageTime<350 && scrollFrom!=lastPageTarget) {
+						scrollFrom = lastPageTarget;
+						//smooth = false;
+					}
+					int target = scrollFrom + step;
+					evaluateJavascript("window.scrollTo({top: "+target+(smooth?", behavior: \"smooth\" })":"})"), null);
+					lastPageTarget = target;
+					lastPageTime = now;
+				}
+			}
+		}
+		
+		// 长按，自动滚动
+		@Override
+		public boolean onLongClick(View v) {
+			if(longScrollEnabled && !thisTouchScrolled && !scrolling) {
+				scrolling = thisTouchScrolled = true;
+				speed = v.getId()==R.id.auto_scroll_d?15:-15;
+				longScrollTriggered = true;
+				post(this);
+			}
+			return false;
+		}
+		
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			int actionMasked = event.getActionMasked();
+			if (v.getId()==R.id.auto_scroll_d||v.getId()==R.id.auto_scroll_u) {
+				if (actionMasked==MotionEvent.ACTION_DOWN) {
+					//CMN.Log("ScrollAbility::ACTION_DOWN");
+					orgX = lastX = event.getRawX();
+					orgY = lastY = event.getRawY();
+					longScrollTriggered = thisTouchScrolled = false;
+					SuppressScrollParent(true);
+				}
+				if (actionMasked==MotionEvent.ACTION_MOVE) {
+					//CMN.Log("ScrollAbility::ACTION_MOVE");
+					lastX = event.getRawX();
+					lastY = event.getRawY();
+					if (longScrollTriggered) {
+						int touchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+						if (MathUtils.dist(lastX, lastY, orgX, orgY)>touchSlop/2) {
+							longScrollTriggered = false;
+						} else {
+							return scrolling;
+						}
+					}
+					// 计算Y轴距离，根据此距离动态改变滚动速度，距离越大滚动速度越大。
+					float distance = (lastY-orgY);
+					int sign = distance<0?-1:1;
+					int minSpd = 1;
+					float factor = Math.abs(distance)/Math.max(350, getHeight()/2);
+					speed = sign*(int) MathUtils.lerp(minSpd, 180, factor);
+					AccelerateInterpolator interpolator = new AccelerateInterpolator();
+					speed = sign*(int) (minSpd+275*interpolator.getInterpolation(factor));
+					if (speed>5) {
+						interval = (int) MathUtils.lerp(8, 2, Math.max(0, Math.min(1, factor)));
+					} else {
+						interval = 16;
+					}
+					//CMN.Log("dist::", Math.abs(distance), lastY, orgY);
+					if (!scrolling) {
+						int touchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+						if (MathUtils.dist(lastX, lastY, orgX, orgY)>touchSlop/2) {
+							scrolling = true;
+							thisTouchScrolled = true;
+							post(this);
+						}
+					}
+				}
+				if (actionMasked==MotionEvent.ACTION_UP||actionMasked==MotionEvent.ACTION_CANCEL) {
+					scrolling = false;
+					SuppressScrollParent(false);
+				}
+				return scrolling;
+			}
+			return false;
+		}
+		
+		// 改变默认滚动行为，解决嵌套滚动时无法获得焦点。
+		private void SuppressScrollParent(boolean suppress) {
+			if (fromCombined==1) {
+				ViewParent vp = getParent();
+				if(vp!=null) {
+					while((vp=vp.getParent())!=null) {
+						if (vp instanceof ScrollView) {
+							vp.requestDisallowInterceptTouchEvent(suppress);
+							if (true && vp instanceof AdvancedNestScrollView) {
+								((AdvancedNestScrollView)vp).setNestedScrollingEnabled(!suppress);
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	// 显示滚动按钮框
+	public void SetupScrollRect(boolean enable) {
+		if ((!enable) ^ (scrollRect==null||scrollRect.getVisibility()!=View.VISIBLE)) {
+			if (enable) {
+				init_widgets_layout();
+				if (mScrollAbility == null)
+					mScrollAbility = new ScrollAbility();
+				if (scrollRect == null) {
+					scrollRect = LayoutInflater.from(getContext()).inflate(R.layout.bw_scroll_rect, widgetsLayout, false);
+					widgetsLayout.addView(scrollRect);
+					((FrameLayout.LayoutParams) scrollRect.getLayoutParams()).gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
+					scrollRect.setTranslationY(-55 * GlobalOptions.density);
+					scrollRect.setTranslationX(-15 * GlobalOptions.density);
+					scrollRect.setOnClickListener(Utils.DummyOnClick);
+					//evaluateJavascript("window.scrollBy({top: 50, behavior: \"smooth\" });", null);
+					//evaluateJavascript("setInterval(()=>{window.scrollBy({top: 1})}, 1);", null);
+					Utils.setOnClickListenersOneDepth((ViewGroup) scrollRect, mScrollAbility, 999, null);
+				}
+				widgetsLayout.setVisibility(View.VISIBLE);
+				scrollRect.setVisibility(View.VISIBLE);
+				hasWidgets = true;
+			} else {
+				Utils.removeView(scrollRect);
+				scrollRect.setVisibility(View.GONE);
+				if (true) { // todo honor other widgets
+					widgetsLayout.setVisibility(View.GONE);
+					hasWidgets = false;
+				}
+			}
+		}
+	}
+	
+	void layoutWidgets() {
+		if (hasWidgets) {
+			widgetsLayout.layoutWidgets();
+		}
+	}
+	
+	View getScrollRect() {
+		if (hasWidgets && scrollRect!=null && scrollRect.getVisibility()==View.VISIBLE)
+			return scrollRect;
+		return null;
 	}
 }
