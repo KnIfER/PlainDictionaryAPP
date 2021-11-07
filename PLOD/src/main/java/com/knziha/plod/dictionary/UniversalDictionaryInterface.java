@@ -36,7 +36,7 @@ public interface UniversalDictionaryInterface {
 	
 	String getCharsetName();
 	
-	void Reload();
+	void Reload(Object context);
 	
 	int lookUp(String keyword,boolean isSrict);
 	

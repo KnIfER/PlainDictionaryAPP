@@ -1,5 +1,22 @@
 apply plugin: 'com.android.application'
 
+android.applicationVariants.all { variant ->
+    variant.mergeResources.doFirst {
+        def isReleaseMode = false
+        for(String s : gradle.startParameter.taskNames) {
+            if(s.contains("Release")) {
+                isReleaseMode=true
+                break
+            }
+        }
+        if (isReleaseMode) {
+            android.sourceSets.main.assets.srcDirs = ['src/main/assets_release']
+            android.sourceSets.debug.assets.srcDirs = ['src/main/assets_release']
+            android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
+        }
+    }
+}
+
 android {
     lintOptions {
         tasks.lint.enabled = false
@@ -24,9 +41,13 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     buildTypes {
+        debug {
+            buildConfigField "boolean","isDebug","true"
+        }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
+            buildConfigField "boolean","isDebug","false"
         }
     }
 }

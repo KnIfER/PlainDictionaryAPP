@@ -297,7 +297,7 @@ public abstract class mdBase {
 		init(data_in);
 	}
 
-	public void Reload() {
+	public void Reload(Object context) {
 		try {
 			_num_record_blocks=0;
 			if(preparedStream!=null) {

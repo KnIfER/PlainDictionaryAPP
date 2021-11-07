@@ -35,6 +35,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
+import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -43,6 +44,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.menu.MenuWrapperICS;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
@@ -69,6 +71,7 @@ import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.RLContainerSlider;
+import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
@@ -682,6 +685,8 @@ public class BookPresenter
 			{
 				type = 0;
 			}
+		} else if(pseudoInit==0) {
+			throw new RuntimeException("Failed To Create Book! "+fullPath);
 		}
 		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.values()[type];
 		
@@ -735,8 +740,8 @@ public class BookPresenter
 		UniversalDictionaryInterface bookImpl = null;
 		String pathFull = fullPath.getPath();
 		long bid = -1;
-		if (pseudoInit==0 && THIS.getUsingDataV2() && THIS!=null) {
-			String name = fullPath.getName();
+		String name = fullPath.getName();
+		if (pseudoInit==0 && THIS!=null && THIS.getUsingDataV2()) {
 			Long bid_ = bookImplsNameMap.get(name);
 			if (bid_==null) {
 				bid = THIS.prepareHistoryCon().getBookID(fullPath.getPath(), name);
@@ -749,33 +754,33 @@ public class BookPresenter
 		}
 		if (bookImpl==null) {
 			int sufixp = pathFull.lastIndexOf(".");
-			if(sufixp>0){
-				int hash = hashCode(pathFull, sufixp+1);
-				switch(hash){
-					case 107969:
-					case 107949:
-						if (pathFull.startsWith(CMN.AssetTag))
-							bookImpl = new PlainMdictAsset(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, THIS);
-						else
-							bookImpl = new PlainMdict(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, null, hash==107949);
-						break;
-					case 117588:
-						bookImpl = new PlainWeb(fullPath, THIS);
-						break;
-					case 110834:
-						bookImpl = new PlainPDF(fullPath, THIS);
-						break;
-					case 115312:
-						bookImpl = new PlainText(fullPath, THIS);
-						break;
-					case 99773:
-						bookImpl = new PlainDSL(fullPath, THIS);
-						break;
-					//case 120609:
-					//return new mdict_zip(fullPath, THIS);
-					//case 3088960:
-					//return new mdict_docx(fullPath, THIS);
-				}
+			if (sufixp<pathFull.length()-name.length()) sufixp=-1;
+			int hash = hashCode(sufixp<0?name:pathFull, sufixp+1);
+			switch(hash){
+				case 107969:
+				case 107949:
+				case 3645348:
+					if (pathFull.startsWith("/ASSET"))
+						bookImpl = new PlainMdictAsset(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, THIS);
+					else
+						bookImpl = new PlainMdict(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, null, hash==107949);
+					break;
+				case 117588:
+					bookImpl = new PlainWeb(fullPath, THIS);
+					break;
+				case 110834:
+					bookImpl = new PlainPDF(fullPath, THIS);
+					break;
+				case 115312:
+					bookImpl = new PlainText(fullPath, THIS);
+					break;
+				case 99773:
+					bookImpl = new PlainDSL(fullPath, THIS);
+					break;
+				//case 120609:
+				//return new mdict_zip(fullPath, THIS);
+				//case 3088960:
+				//return new mdict_docx(fullPath, THIS);
 			}
 			if (bookImpl!=null) {
 				bookImpl.setBooKID(bid);
@@ -897,9 +902,14 @@ public class BookPresenter
 			OnClickListener voyager = new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					CMN.Log("voyager onClick");
-					boolean isRecess = v.getId() == R.id.recess;
-					mWebView.voyage(isRecess);
+					//CMN.Log("voyager onClick");
+					boolean isGoBack = v.getId() == R.id.recess;
+					if (mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+						if (isGoBack) if (mWebView.canGoBack()) mWebView.goBack();
+						else if (mWebView.canGoForward()) mWebView.goForward(); return;
+					} else {
+						mWebView.voyage(isGoBack);
+					}
 				}
 			};
 			recess.setOnClickListener(voyager);
@@ -1150,10 +1160,15 @@ public class BookPresenter
 		@Override
 		public boolean onLongClick(View v) {
 			WebViewmy _mWebView = (WebViewmy) v;
+			_mWebView.lastLongSX = _mWebView.getScrollX();
+			_mWebView.lastLongSY = _mWebView.getScrollY();
+			_mWebView.lastLongScale = _mWebView.webScale;
+			_mWebView.lastLongX = _mWebView.lastX;
+			_mWebView.lastLongY = _mWebView.lastY;
 			WebViewmy.HitTestResult result = _mWebView.getHitTestResult();
 			if (null == result) return false;
 			int type = result.getType();
-			//CMN.Log("getHitTestResult", type, result.getExtra());
+			CMN.Log("getHitTestResult", type, result.getExtra());
 			switch (type) {
 				/* 长按下载图片 */
 				case WebViewmy.HitTestResult.SRC_IMAGE_ANCHOR_TYPE:
@@ -1168,7 +1183,7 @@ public class BookPresenter
 											@Override
 											public void run() {
 												try {
-													java.net.URL requestURL = new URL(url);
+													URL requestURL = new URL(url);
 													File pathDownload = new File("/storage/emulated/0/download");
 													pathDownload.mkdirs();
 													if(pathDownload.isDirectory()) {
@@ -1634,7 +1649,7 @@ public class BookPresenter
 		}
 	
 		int from = mWebView.fromCombined;
-		mWebView.fromNet=false;
+		mWebView.fromNet=mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 		boolean fromCombined = from==1;
 		boolean fromPopup = from==2;
 
@@ -2324,6 +2339,29 @@ public class BookPresenter
         	//CMN.Log("onExitFView");
 			MainActivityUIBase.CustomViewHideTime = System.currentTimeMillis();
 			((Handler) presenter.a.hdl).sendEmptyMessageDelayed(7658941, 600);
+		}
+		
+		@JavascriptInterface
+		public void knock() {
+			//if(layout==a.currentViewImpl)
+			{
+				//upsended = true;
+				WebViewmy view = presenter.mWebView;
+//				view.postDelayed(new Runnable() {
+//					@Override
+//					public void run() {
+						long time = CMN.now();
+						float lastX = (view.lastLongX + view.lastLongSX)/view.lastLongScale*view.webScale - view.getScrollX();
+						float lastY = (view.lastLongY + view.lastLongSY)/view.lastLongScale*view.webScale - view.getScrollY();
+						MotionEvent evt = MotionEvent.obtain(time, time,MotionEvent.ACTION_DOWN, lastX, lastY, 0);
+						view.dispatchTouchEvent(evt);
+						evt.setAction(MotionEvent.ACTION_UP);
+						view.dispatchTouchEvent(evt);
+						//view.dispatchTouchEvent(evt);
+						evt.recycle();
+//					}
+//				}, 0);
+			}
 		}
 	}
 
@@ -3064,8 +3102,8 @@ public class BookPresenter
 	//	return false;
 	//}
 
-	public void Reload() {
-		bookImpl.Reload();
+	public void Reload(Object context) {
+		bookImpl.Reload(context);
 		if(mWebView!=null) {
 			mWebView.setTag(null);
 			mWebView.loadUrl("about:blank");

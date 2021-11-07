@@ -11,6 +11,7 @@ public class mFile extends File{
 	public String CSTR;//子系文件标识符
 	public boolean bInIntrestedDir=false;
 	protected boolean isDirectory=false;
+	private Object tag;
 	public mFile(File parent, String child) {
 		super(parent, child);
 	}
@@ -19,6 +20,11 @@ public class mFile extends File{
 		super(pathname);
 	}
 
+	public mFile(String pathname, Object tag) {
+		super(pathname);
+		this.tag = tag;
+	}
+	
 	public mFile(File to) {
 		super(getEUPath(to));
 	}
@@ -37,19 +43,25 @@ public class mFile extends File{
 		super(uri);
 	}
 	
+	public Object getTag() {
+		return tag;
+	}
+	
 	boolean cpr1,cpr2;
 	public mFile init(PDICMainAppOptions opt) {
 		//Log.e("init__fatal",getAbsolutePath());
 		isDirectory=isDirectory();
 		if(getPath().length()>1) {
 			String ParentPath = getParent();
-			boolean isS,isDS;
-			String parent = opt.lastMdlibPath.getPath();
-			if(ParentPath.startsWith(parent)) {
-				isS=true;
-				isDS=ParentPath.length()==parent.length();
-				cpr1=(!isDS||isDirectory);
-				cpr2=isDS&&!isDirectory;
+			if (ParentPath!=null) {
+				boolean isS,isDS;
+				String parent = opt.lastMdlibPath.getPath();
+				if(ParentPath.startsWith(parent)) {
+					isS=true;
+					isDS=ParentPath.length()==parent.length();
+					cpr1=(!isDS||isDirectory);
+					cpr2=isDS&&!isDirectory;
+				}
 			}
 		}
 		return this;
@@ -132,8 +144,12 @@ public class mFile extends File{
 	}
 	
 	public static boolean isDirScionOf(File fin,File parentFile) {
-		try {return fin.getParentFile().getCanonicalPath().toLowerCase().equals(parentFile.getCanonicalPath().toLowerCase());}catch(Exception e) {}
-		return fin.getParentFile().getAbsolutePath().toLowerCase().equals(parentFile.getAbsolutePath().toLowerCase());
+		File pf = fin.getParentFile();
+		if (pf!=null) {
+			try {return pf.getCanonicalPath().toLowerCase().equals(parentFile.getCanonicalPath().toLowerCase());}catch(Exception e) {}
+			return pf.getAbsolutePath().toLowerCase().equals(parentFile.getAbsolutePath().toLowerCase());
+		}
+		return false;
 	}
 
 	public static boolean isDirScionOf(File other, String parentFile) {

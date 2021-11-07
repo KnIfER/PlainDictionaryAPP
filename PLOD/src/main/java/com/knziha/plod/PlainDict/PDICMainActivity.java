@@ -1431,7 +1431,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						//todo
 						execBatchSearch(search_cs);
 					} else {
-						if (currentDictionary.getType()!=PLAIN_TYPE_WEB)
+						if (来一发 || currentDictionary.getType()!=PLAIN_TYPE_WEB)
 							execSingleSearch(search_cs, search_count);
 					}
 				}
@@ -1684,6 +1684,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //			switch_To_Dict_Idx(md.size()-1, false, false);
 //		} catch (Exception e) {
 //			e.printStackTrace();
+//		}
+		
+//		try {
+//			md.add(new BookPresenter(new File("/ASSET/vocabulary.web"), this, 0, opt));
+//			switch_To_Dict_Idx(md.size()-1, false, false, null);
+//		} catch (Exception e) {
+//			CMN.Log(e);
 //		}
 
 		//startActivity(new Intent().putExtra("realm",8).setClass(this, SettingsActivity.class));
@@ -2240,7 +2247,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private void checkDictionaryProject(boolean performSave) {
 		if(currentDictionary!=null) {
 			if (currentDictionary.getType()== DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
-				((PlainWeb)currentDictionary.bookImpl).dumpRecords(this, prepareHistoryCon());
+				((PlainWeb)currentDictionary.bookImpl).saveWebSearches(this, prepareHistoryCon());
 			if(bNeedSaveViewStates) {
 				int pos = lv.getFirstVisiblePosition();
 				if(currentDictionary.lvPos != pos && !PDICMainAppOptions.getSimpleMode()){

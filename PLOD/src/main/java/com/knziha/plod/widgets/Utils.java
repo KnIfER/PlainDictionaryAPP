@@ -60,17 +60,27 @@ import androidx.core.view.NestedScrollingChildHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.RebootActivity;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import static com.knziha.filepicker.utils.FU.bKindButComplexSdcardAvailable;
+import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 public class Utils {
 	public static float density;
@@ -403,6 +413,37 @@ public class Utils {
 				params.setBehavior(null);
 			}
 		}
+	}
+	
+	public static String fileToString(Context context, File f) {
+		if (f.getPath().startsWith("/ASSET")) {
+			String errRinfo = null;
+			boolean b1=f.getPath().startsWith("/", 6);
+			if(GlobalOptions.debug || b1)
+			try {
+				InputStream fin = context.getResources().getAssets().open(f.getPath().substring(AssetTag.length()+(!b1?1:0)));
+				ReusableByteOutputStream bout = new ReusableByteOutputStream(fin.available());
+				byte[] buffer = new byte[4096];
+				int read;
+				while((read=fin.read(buffer))>0) {
+					bout.write(buffer, 0, read);
+				}
+				return new String(bout.getBytes(), 0, bout.getCount(), StandardCharsets.UTF_8);
+			} catch (IOException e) {
+				errRinfo = CMN.Log(e);
+			}
+			try {
+				UniversalDictionaryInterface asset = BookPresenter.getBookImpl(context instanceof MainActivityUIBase ?(MainActivityUIBase)context:null, new File(AssetTag+"webx"), 0);
+				Objects.requireNonNull(asset);
+				int idx = asset.lookUp(""+BookPresenter.hashCode(f.getPath().substring(8), 0));
+				CMN.Log("val::", asset.getRecordAt(idx, null, true), f.getPath(), asset.getEntryAt(0), asset.getNumberEntries());
+				return asset.getRecordAt(idx, null, true);
+			} catch (IOException e) {
+				errRinfo = CMN.Log(e);
+			}
+			return errRinfo;
+		}
+		return BU.fileToString(f);
 	}
 	
 	public void Destory(){

@@ -1,0 +1,60 @@
+{
+	"host": "https://www.vocabulary.com"
+	,"index": "/dictionary/"
+	,"name": "在线学习、积累英语词汇"
+	,"stylex": [
+		{urlx:"//.+", value:"header{height:0px!important;display:none}"}
+	]
+	,"js": "
+	var e = document.createElement('IMG');
+	e.id='etyexp';
+	if(!document.getElementById(e.id)) {
+		document.body.appendChild(e);
+		e.src='//cdn.vocab.com/images/header/learn-icon-off-s4bhjk.svg';
+		e.style='position:absolute;width:35px;height:38px;top:8px;right:25px;background-color:rgb(82,152,227);opacity:0.15;transition:all 0.25s linear 0s;z-index:999;border-radius:3px;padding:10px;user-select:none;';
+		e.style.position='fixed'; // 始终可见
+		function toggle(e){var stl = document.getElementById('_PDSTL');
+		e=e.srcElement;
+		var mod1 = 'header{height:0px',idx=stl.innerText.indexOf(mod1);
+		var mod = '.limited-width{display:none!important}header{height:0px!important;min-height:0px!important}';
+		if(idx>=0) {
+			if(stl.innerText.startsWith('min', idx+28))
+				stl.innerText = stl.innerText.replace(mod, '');
+			else
+				stl.innerText = stl.innerText.replace('header{height:0px!important;display:none}', '');
+			e.style.opacity=1;
+		} else {
+			stl.innerText = stl.innerText + mod;
+			e.style.opacity=0.15;
+		}}
+		e.onclick=toggle;
+	}
+"
+	,"entrance": "/play/\r交互式学习
+/lists/\r词汇列表
+//randomword\r随机一词
+	"
+	,"search": "/dictionary/"
+	,"searchJs": "var succ = 0;
+	try{
+		var ta = document.querySelector('#search')||document.querySelector('.search');
+		ta.value = '%s';
+		ta.dispatchEvent(new Event('input', {
+			bubbles: true
+		}));
+		setTimeout(()=> {
+			ta.dispatchEvent(new KeyboardEvent('keydown', {
+				keyCode: 13,
+				bubbles: 1
+			}))
+		}, 200);
+		succ=1;
+	}catch(e){
+		console.log('fatal e='+e);
+	}
+	succ
+"
+	,"keyPattern": "[a-zA-Z]"
+	,"onload": ""
+	,"cacheRes": "ahuh4v.css"
+}

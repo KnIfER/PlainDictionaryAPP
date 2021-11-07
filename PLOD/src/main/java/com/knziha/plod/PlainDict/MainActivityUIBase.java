@@ -619,7 +619,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			PlaceHolder phTmp = CosyChair.get(i);
 			BookPresenter mdTmp = md.get(i);
 			if(mdTmp!=null) {
-				mdTmp.Reload();
+				mdTmp.Reload(this);
 			} else {
 				md.set(i, new_mdict(phTmp.getPath(opt), this));
 			}
@@ -3719,9 +3719,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			invoker=mdict;
 			mWebView=_mWebView;
 			mTextView =_tv;
-			//isWeb = invoker instanceof bookPresenter_web;
-			// nimp
-			isWeb = false;
+			isWeb = invoker!=null && invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 			if(_tv!=null){
 				int start = _tv.getSelectionStart();
 				int end = _tv.getSelectionEnd();
@@ -5619,24 +5617,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						cc++;
 						if(cc>md.size())
 							break;
-						// nimp
-						//if(CCD instanceof bookPresenter_web){
-						//	bookPresenter_web webx = (bookPresenter_web) CCD;
-						//	if(webx.takeWord(key)){
-						//		webx.searchKey=key;
-						//		idx=0;
-						//	}
-						//}
-						//else
+						
 						if (CCD!=null) {
-							idx=CCD.bookImpl.lookUp(key, true);
-							if(idx<0){
-								if(!reject_morph&&use_morph){
-									keykey=ReRouteKey(key, true);
-									if(keykey!=null)
-										idx=CCD.bookImpl.lookUp(keykey, true);
-									else
-										reject_morph=true;
+							if(CCD.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+								PlainWeb webx = (PlainWeb) CCD.bookImpl;
+								if(webx.takeWord(key)) {
+									CCD.SetSearchKey(key);
+									idx=0;
+								}
+							} else  {
+								idx=CCD.bookImpl.lookUp(key, true);
+								if(idx<0){
+									if(!reject_morph&&use_morph){
+										keykey=ReRouteKey(key, true);
+										if(keykey!=null)
+											idx=CCD.bookImpl.lookUp(keykey, true);
+										else
+											reject_morph=true;
+									}
 								}
 							}
 						}
@@ -9160,6 +9158,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return popupWebView;
 			}
 		}
+		if (!isContentViewAttached()) {
+			return null;
+		}
 		if(webholder_childCount !=0) {
 			int selectedPos=-1;
 			/* 当前滚动高度 */
@@ -9629,6 +9630,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			String key = cs.toString().trim();
 			//首先，搜索到第一个match，然后尝试变形，两者向下再搜索
 			int normal_idx=currentDictionary.bookImpl.lookUp(key, true);
+			if(normal_idx==0 && currentDictionary.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+				currentDictionary.SetSearchKey(key);
+				if(bIsFirstLaunch||bWantsSelection||来一发) {
+					bRequestedCleanSearch=bIsFirstLaunch;
+					/* 接管历史纪录 */
+					adaptermy.onItemClick(null, null, normal_idx, 0);
+				}
+				bIsFirstLaunch=false;
+				return;
+			}
 			int formation_idx=-1;
 			
 			boolean bFetchMoreContents = true;

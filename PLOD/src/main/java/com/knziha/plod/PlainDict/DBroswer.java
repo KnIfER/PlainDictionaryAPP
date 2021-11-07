@@ -1563,12 +1563,17 @@ public class DBroswer extends Fragment implements
 			for(int dIdx=0;dIdx<texts.length;dIdx++) {//联合搜索
 				try {
 					long bid = Long.parseLong(texts[dIdx]);
-					BookPresenter mdTmp = a.getDictionaryById(bid);
-					if(mdTmp!=null) {
-						int idx = mdTmp.bookImpl.lookUp(currentDisplaying__);
-						if (idx >= 0)
-							while (idx < mdTmp.bookImpl.getNumberEntries()) {
-								if (mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+					BookPresenter bookPresenter = a.getDictionaryById(bid);
+					if(bookPresenter!=null) {
+						int idx = bookPresenter.bookImpl.lookUp(currentDisplaying__);
+						if (idx >= 0) {
+							if(idx==0 && bookPresenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+								bookPresenter.SetSearchKey(currentDisplaying__);
+								records.add((int) -bid);
+								records.add(idx);
+							} else
+							while (idx < bookPresenter.bookImpl.getNumberEntries()) {
+								if (mdict.replaceReg.matcher(bookPresenter.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
 									records.add((int) -bid);
 									records.add(idx);
 								} else {
@@ -1576,6 +1581,7 @@ public class DBroswer extends Fragment implements
 								}
 								idx++;
 							}
+						}
 					}
 				} catch (IOException e) {
 					CMN.Log(e);

@@ -68,7 +68,7 @@ public class dict_Manager_folderlike extends ListFragment implements dict_manage
 
 	public interface OnEnterSelectionListener{
 		void onEnterSelection();
-		int addIt(File fn);
+		int addIt(mFile fn);
 	} OnEnterSelectionListener oes;
 
 	public boolean SelectionMode=false;

@@ -28,13 +28,21 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
 public class dict_manager_websites extends ListFragment {
 	String parentFile;
+	public static class WebAssetDesc {
+		final String realPath;
+		final String desc;
+		final String description;
+		WebAssetDesc(String realPath, String desc, String description) {
+			this.realPath = realPath;
+			this.desc = desc;
+			this.description = description;
+		}
+	}
 	ArrayListTree<mFile> data=new ArrayListTree<>();
 	ArrayListTree<mFile> hiddenParents=new ArrayListTree<>();
 	protected ListView mDslv;
@@ -44,39 +52,41 @@ public class dict_manager_websites extends ListFragment {
 	int[] lastClickedPos=new int[]{-1, -1};
 	int lastClickedPosIndex=0;
 
-	public interface OnEnterSelectionListener{
-		void onEnterSelection();
-		int addIt(File fn);
-	} OnEnterSelectionListener oes;
+	dict_Manager_folderlike.OnEnterSelectionListener oes;
 
 	public boolean SelectionMode=false;
 	public RashSet<String> Selection = new RashSet<>();
 
 	public boolean alreadySelectedAll;
-
+	
+	//构造
+	public dict_manager_websites()
+	{
+		super();
+	}
+	
 	@Override
-	public void onHiddenChanged(boolean hidden) {
-		if (!hidden) {
-			pullData();
-		}
-		super.onHiddenChanged(hidden);
+	public void onResume()
+	{
+		pullData();
+		super.onResume();
 	}
 
 	boolean dataPrepared;
-	private void pullData() {
+	private void pullData()
+	{
 		if(!dataPrepared) {
-
+			data.insert(new mFile("翻译", true));
+			data.insert(new mFile("翻译/谷歌翻译", new WebAssetDesc("/ASSET2/谷歌翻译.web", null, null)));
+			
+			data.insert(new mFile("英语词汇", true));
+			data.insert(new mFile("英语词汇/Vocabulary", new WebAssetDesc("/ASSET/vocabulary.web", "词汇", "热门的词汇查询网站，支持交互式学习（Play模式）。")));
+			data.insert(new mFile("英语词汇/Etymology online", new WebAssetDesc("/ASSET/etymonline.web", "词根", "提供专业词根查询服务")));
+			
 			if(adapter!=null)//strange here.
 				adapter.notifyDataSetChanged();
 		}
 		dataPrepared=true;
-	}
-
-
-
-	//构造
-	public dict_manager_websites(){
-		super();
 	}
 
 	@Override
@@ -142,40 +152,35 @@ public class dict_manager_websites extends ListFragment {
 			if(v.getTag()==null) {
 				//Log.e("新建",""+pos);
 				final ViewHolder vh=new ViewHolder();
-				vh.ck = (CheckBox)v.findViewById(R.id.ck);
-				vh.ck.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-					@Override
-					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-						//CMN.show("onCheckedChanged");
-
-					}});
+				vh.ck = v.findViewById(R.id.ck);
+				vh.ck.setOnCheckedChangeListener((buttonView, isChecked) -> {
+					//CMN.show("onCheckedChanged");
+				});
 				vh.folderIcon = (v.findViewById(R.id.folderIcon));
-				vh.folderIcon.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						mFile mdTmp = vh.dataLet;
-						int pos = data.indexOf(mdTmp);
-						if(mdTmp.shrinked==0) {
-							hiddenParents.insert(mdTmp);
-							mdTmp.shrinked=0;
-							for(int i=pos+1;i<data.getList().size();i++) {
-								if(!mFile.isDirScionOf(data.getList().get(i), mdTmp))
-									break;
-								if(data.getList().get(i).isDirectory())
-									break;
-								mdTmp.shrinked++;
-							}
-							notifyDataSetChanged();
-							//CMN.show(""+adapter.getCount());
-						}else {
-							mdTmp.shrinked=0;
-							hiddenParents.remove(mdTmp);
-							notifyDataSetChanged();
-							//CMN.show("22 "+adapter.getCount());
+				vh.folderIcon.setOnClickListener(v1 -> {
+					mFile mdTmp = vh.dataLet;
+					int pos1 = data.indexOf(mdTmp);
+					if(mdTmp.shrinked==0) {
+						hiddenParents.insert(mdTmp);
+						mdTmp.shrinked=0;
+						for(int i = pos1 +1; i<data.getList().size(); i++) {
+							if(!mFile.isDirScionOf(data.getList().get(i), mdTmp))
+								break;
+							if(data.getList().get(i).isDirectory())
+								break;
+							mdTmp.shrinked++;
 						}
-					}});
-				vh.text=((TextView)v.findViewById(R.id.text));
-				vh.splitterIcon=((View)v.findViewById(R.id.splitterIcon));
+						notifyDataSetChanged();
+						//CMN.show(""+adapter.getCount());
+					}else {
+						mdTmp.shrinked=0;
+						hiddenParents.remove(mdTmp);
+						notifyDataSetChanged();
+						//CMN.show("22 "+adapter.getCount());
+					}
+				});
+				vh.text= v.findViewById(R.id.text);
+				vh.splitterIcon= v.findViewById(R.id.splitterIcon);
 				vh.drag_handle=v.findViewById(R.id.drag_handle);
 				vh.drag_handle.setOnClickListener(new OnClickListener() {
 					@Override
@@ -201,7 +206,7 @@ public class dict_manager_websites extends ListFragment {
 					vh.ck.setChecked(true);
 				else
 					vh.ck.setChecked(false);
-			}else {
+			} else {
 				vh.ck.setChecked(false);
 				vh.ck.setVisibility(View.GONE);
 			}
@@ -218,19 +223,16 @@ public class dict_manager_websites extends ListFragment {
 			String AssetInternalname = null;
 			if(mdTmp.getClass() == mAssetFile.class)
 				AssetInternalname = CMN.AssetMap.get(mdTmp.getAbsolutePath());
-			if(mdTmp.exists() || (AssetInternalname!=null))
-				vh.text.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
-			else
-				vh.text.setTextColor(Color.RED);
+			
+			vh.text.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
+			
 			if(dict_manager_activity.dictQueryWord!=null && mdTmp.getName().toLowerCase().contains(a.dictQueryWord))
 				vh.text.setBackgroundResource(R.drawable.xuxian2);
 			else
 				vh.text.setBackground(null);
 			if(mdTmp.isDirectory()) {//目录
-				if(AssetInternalname!=null) {
-					vh.text.setText(AssetInternalname);
-				}else
-					vh.text.setText(mFile.tryDeScion(mdTmp,parentFile));
+				vh.text.setText(mdTmp.getPath());
+				
 				vh.folderIcon.setVisibility(View.VISIBLE);
 				vh.drag_handle.setVisibility(View.GONE);
 				vh.splitterIcon.setVisibility(View.GONE);
@@ -238,19 +240,19 @@ public class dict_manager_websites extends ListFragment {
 			}else {//路径
 				if(AssetInternalname!=null) {
 					vh.text.setText(AssetInternalname);
-				}else if(mFile.isScionOf(mdTmp,parentFile)) {
+				} else if(mFile.isScionOf(mdTmp,parentFile)) {
 					vh.text.setPadding((int) (9*getActivity().getResources().getDisplayMetrics().density), 0, 0, 0);
-					vh.text.setText(a.isDebug?mdTmp.getPath():BU.unwrapMdxName(mdTmp.getName()));//BU.unwrapMdxName(mdTmp.getName())
-				}else {
+					vh.text.setText(mdTmp.getPath());//BU.unwrapMdxName(mdTmp.getName())
+				} else {
 					vh.text.setPadding(0, 0, 0, 0);
-					vh.text.setText(mdTmp.getAbsolutePath());
+					vh.text.setText(mdTmp.getPath());
 				}
 				mFile p = data.get(mdTmp.getParentFile().init(a.opt));
 				if(p!=null) {//有父文件夹节点
 					vh.text.setPadding(5, 0, 0, 0);
 					vh.text.setText(BU.unwrapMdxName(mdTmp.getName()));
 					vh.splitterIcon.setVisibility(View.VISIBLE);
-				}else {
+				} else {
 					//((TextView)v.findViewById(R.id.text)).setPadding((int) (9*getActivity().getResources().getDisplayMetrics().density), 0, 0, 0);
 					((View)v.findViewById(R.id.splitterIcon)).setVisibility(View.GONE);
 				}

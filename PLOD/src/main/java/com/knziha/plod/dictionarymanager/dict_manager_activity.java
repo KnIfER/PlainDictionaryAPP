@@ -322,7 +322,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 			public void onEnterSelection(){
 				for (int i = 7; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i<=12);
 			}
-			public int addIt(final File fn) {
+			public int addIt(final mFile fn) {
 				boolean found=false;
 				for(int i=0;i<f1.adapter.getCount();i++) {
 					if(f1.adapter.getItem(i).getPath().equals(fn.getAbsolutePath())) {
@@ -347,6 +347,42 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 					return 1;
 				}else
 					return 0;
+			};
+		};
+		f4.oes = new dict_Manager_folderlike.OnEnterSelectionListener() {
+			public void onEnterSelection(){
+				for (int i = 7; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i<=12);
+			}
+			public int addIt(final mFile fn) {
+				boolean found=false;
+				String path = fn.getAbsolutePath();
+				if (fn.getTag() instanceof dict_manager_websites.WebAssetDesc) {
+					path = ((dict_manager_websites.WebAssetDesc) fn.getTag()).realPath;
+				}
+				for(int i=0;i<f1.adapter.getCount();i++) {
+					if(f1.adapter.getItem(i).getPath().equals(path)) {
+						if(f1.rejector.contains(path)) {
+							f1.rejector.remove(path);
+							f1.adapter.notifyDataSetChanged();
+							return 1;
+						}
+						found=true;
+						break;
+					}
+				}
+				if(!found) {
+					//show("adding new!"+path);
+					String finalPath = path;
+					f4.mDslv.post(() -> {
+						mngr_agent_transient mmTmp = new mngr_agent_transient(dict_manager_activity.this, finalPath, opt, 0, mninstance);
+						f1.adapter.add(mmTmp);
+						f1.refreshSize();
+						f1.adapter.notifyDataSetChanged();
+						f1.isDirty=true;
+					});
+					return 1;
+				}
+				else return 0;
 			};
 		};
 		FragAdapter adapterf = new FragAdapter(getSupportFragmentManager(), fragments);

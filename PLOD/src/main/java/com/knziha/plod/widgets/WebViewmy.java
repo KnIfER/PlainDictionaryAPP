@@ -28,6 +28,8 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.AccelerateInterpolator;
+import android.view.textclassifier.TextClassifier;
+import android.view.textclassifier.TextSelection;
 import android.webkit.WebSettings;
 
 import android.webkit.WebView;
@@ -82,6 +84,11 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public ArrayList<myCpr<String, ScrollerRecord>> History = new ArrayList<>();
 	public float lastX;
 	public float lastY;
+	public int lastLongSX;
+	public int lastLongSY;
+	public float lastLongScale;
+	public float lastLongX;
+	public float lastLongY;
 	public static Integer ShareString_Id;
 	public static Integer SelectString_Id;
 	public static Integer CopyString_Id;
@@ -418,14 +425,40 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 	
 	public boolean voyagable(boolean isGoBack) {
-		if (false) {
+		if (fromNet) {
 			return isGoBack?canGoBack():canGoForward();
 		}
 		return isGoBack?HistoryVagranter > 0:HistoryVagranter<=History.size()-2;
 	}
 	
+//	@NonNull
+//	@Override
+//	public TextClassifier getTextClassifier() {
+//		if (true) {
+//			return UrlFucker;
+//		}
+//		return super.getTextClassifier();
+//	}
+//
+//	public final static TextClassifier UrlFucker;
+//
+//	static {
+//		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//			UrlFucker = new TextClassifier(){
+//				@RequiresApi(api = Build.VERSION_CODES.P)
+//				@NonNull
+//				@Override
+//				public TextSelection suggestSelection(@NonNull TextSelection.Request request) {
+//					return new TextSelection.Builder(request.getStartIndex(), request.getEndIndex()).build();
+//				}
+//			};
+//		} else {
+//			UrlFucker =null;
+//		}
+//	}
+	
 	public void voyage(boolean isGoBack) {
-		if (false) {
+		if (fromNet) {
 			if (isGoBack) if (canGoBack()) goBack();
 			else if (canGoForward()) goForward(); return;
 		}

@@ -17,11 +17,24 @@
 
 package com.knziha.plod.dictionary.Utils;
 
+import android.content.Context;
+import android.os.Build;
+
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.PlainMdictAsset;
+import com.knziha.plod.plaindict.BuildConfig;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.zip.Adler32;
 import java.util.zip.InflaterOutputStream;
+
+import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 
 /**
@@ -239,10 +252,7 @@ public class  BU{//byteUtils
     }
     
     
-    
-    
-
-    public static char toChar(byte[] buffer,int offset) {   
+    public static char toChar(byte[] buffer,int offset) {
         char  values = 0;   
         for (int i = 0; i < 2; i++) {    
             values <<= 8; values|= (buffer[offset+i] & 0xff);   
@@ -274,11 +284,10 @@ public class  BU{//byteUtils
 			fin.read(data);
 			return new String(data, "utf8");
 		} catch (IOException e) {
-			e.printStackTrace();
+			CMN.Log(e);
 		}
 		return null;
 	}
-
 
 	public static String fileToString(String path, byte[] buffer, ReusableByteOutputStream bo, Charset charset) {
 		try {

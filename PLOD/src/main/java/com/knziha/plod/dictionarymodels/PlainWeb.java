@@ -6,11 +6,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.icu.text.UFormat;
 import android.text.TextUtils;
+import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
 import androidx.appcompat.app.GlobalOptions;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.knziha.plod.ArrayList.SerializedLongArray;
@@ -20,6 +23,8 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
@@ -56,15 +61,19 @@ import static db.LexicalDBHelper.TABLE_DATA_v2;
  author:KnIfER
 */
 public class PlainWeb extends DictionaryAdapter {
+	/** The main url */
 	String host;
 	String hostName;
 	String index;
 	String jsLoader;
 	String onstart;
 	String onload;
+	/** The search sub url */
 	String search;
+	/** The search action js */
 	String searchJs;
 	String style;
+	JSONArray stylex;
 	String currentUrl;
 	boolean abSearch;
 	boolean excludeAll;
@@ -106,6 +115,7 @@ public class PlainWeb extends DictionaryAdapter {
 		 var e = document.createElement('style'), css = 'mark{background:yellow}mark.current{background:orange}';
 		 e.type = 'text/css';
 		 e.class = '_PDict';
+		 e.id = '_PDSTL';
 		 document.head.appendChild(e);
 		 if (e.styleSheet){
 		 	e.styleSheet.cssText = css;
@@ -146,6 +156,7 @@ public class PlainWeb extends DictionaryAdapter {
 	private boolean bNeedSave;
 	private static SerializerFeature[] SerializerFormat = new SerializerFeature[]{SerializerFeature.PrettyFormat, SerializerFeature.MapSortField, SerializerFeature.QuoteFieldNames};
 	boolean dataRead = false;
+	private String name = "index";
 	
 	//构造
 	public PlainWeb(File fn, MainActivityUIBase _a) throws IOException {
@@ -158,9 +169,11 @@ public class PlainWeb extends DictionaryAdapter {
 		
 		//readInConfigs(a.UIProjects);
 		
-		parseJsonFile();
+		parseJsonFile(_a);
 		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 		
+		keyProviders.add(keyProvider_Entrances);
+		keyProviders.add(keyProvider_Searches);
 	}
 	
 	@Override
@@ -199,13 +212,19 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 	}
 	
-	private void parseJsonFile() throws IOException {
-		website = JSONObject.parseObject(BU.fileToString(f));
+	private String getString(String name, String defValue) {
+		String value = website.getString(name);
+		return value==null?defValue:value;
+	}
+	
+	private void parseJsonFile(Context context) throws IOException {
+		website = JSONObject.parseObject(Utils.fileToString(context, f));
 		String _host = website.getString("host");
 		if(_host==null) _host=getRandomHost();
 		if(_host.endsWith("/")) _host=_host.substring(0, _host.length()-1);
 		host=_host;
 		index = website.getString("index");
+		name = getString("name", "index");
 		if(index==null) index="";
 		jsLoader = website.getString("js");
 		onstart = website.getString("onstart");
@@ -213,6 +232,7 @@ public class PlainWeb extends DictionaryAdapter {
 		search = website.getString("search");
 		searchJs = website.getString("searchJs");
 		style = website.getString("style");
+		stylex = website.getJSONArray("stylex");
 		abSearch = search!=null&&search.startsWith("http");
 		excludeAll = website.getBooleanValue("excludeAll");
 		String _extensions  = website.getString("cacheRes");
@@ -234,7 +254,14 @@ public class PlainWeb extends DictionaryAdapter {
 		//reEnableJs = json.getBooleanValue("reEnableJs");
 		String _entrance = website.getString("entrance");
 		if(!TextUtils.isEmpty(_entrance)){
+			//read json defined entrances
 			entrance = new ArrayList<>(Arrays.asList(_entrance.split("\n")));
+			int sz = entrance.size();
+			if (sz>0) {
+				if(0==TextUtils.getTrimmedLength(entrance.get(sz-1))) entrance.remove(sz-1);
+				if(sz>1 && 0==TextUtils.getTrimmedLength(entrance.get(0))) entrance.remove(0);
+			}
+			//todo read entrances that saved in db.
 		}
 		String _routes = website.getString("reroute");
 		if(_routes!=null){
@@ -476,7 +503,11 @@ public class PlainWeb extends DictionaryAdapter {
 	 */
 	@Override
 	public long getNumberEntries() {
-		long size =  1+searchKeyIds.size()+entrance.size();
+		//long size =  1+entrance.size()+searchKeyIds.size();
+		long size =  1;
+		for (VirtualKeyProvider vkp:keyProviders) {
+			size+=vkp.getSize();
+		}
 //		getCon(false);
 //		if(con!=null && PageCursor==null){
 //			con.enssurePageTable();
@@ -488,24 +519,60 @@ public class PlainWeb extends DictionaryAdapter {
 		return size;
 	}
 	
-	@Override
-	public String getEntryAt(int position) {
-		if(position==0)
-			return "index";
-		position-=1;
-		try {
-			if(entrance.size()>0){
-				if(position>=0 && position<entrance.size()){
-					String url = entrance.get(position);
-					String[] arr = url.split("\r");
-					if(arr.length>1) {
-						return arr[1];
-					}
-					return url;
+	abstract class VirtualKeyProvider {
+		abstract String getEntryAt(int position);
+		abstract String getRecordAt(int position);
+		abstract long getSize();
+		abstract String getVirtualTextValidateJs(BookPresenter bookPresenter, WebViewmy mWebView, int position);
+	}
+	
+	final ArrayList<VirtualKeyProvider> keyProviders = new ArrayList<>();
+	final VirtualKeyProvider keyProvider_Entrances = new EntranceKeyProvider();
+	final SearchKeyProvider keyProvider_Searches = new SearchKeyProvider();
+	
+	class EntranceKeyProvider extends VirtualKeyProvider{
+		String getEntryAt(int position) {
+			if(position>=0 && position<entrance.size()){
+				String url = entrance.get(position);
+				String[] arr = url.split("\r");
+				if(arr.length>1) {
+					return arr[1];
 				}
-				position-=entrance.size();
+				return url;
 			}
-			
+			return null;
+		}
+		
+		@Override
+		String getRecordAt(int position) {
+			if(position>=0 && position<entrance.size()){
+				String url = entrance.get(position);
+				String[] arr = url.split("\r");
+				if(arr.length>1) {
+					url =  arr[0];
+				}
+				// 返回完整网址
+				return WebxUrl(url);
+			}
+			return null;
+		}
+		
+		@Override
+		long getSize() { return entrance.size(); }
+		
+		@Override
+		String getVirtualTextValidateJs(BookPresenter bookPresenter, WebViewmy mWebView, int position) {
+			if(position>=0 && position<entrance.size()){
+				String url = getRecordAt(position);
+				return TextUtils.equals(url, mWebView.getUrl())?"1":null;
+			}
+			return null;
+		}
+	}
+	
+	class SearchKeyProvider extends VirtualKeyProvider{
+		String getEntryAt(int position)
+		{
 			if(position>=0 && position<searchKeyIds.size())
 			{
 				LexicalDBHelper database = LexicalDBHelper.getInstance();
@@ -522,7 +589,69 @@ public class PlainWeb extends DictionaryAdapter {
 				}
 				return searchKeyIds.get(position)+"=XDI（无记录）";
 			}
-			position-=searchKeyIds.size();
+			return null;
+		}
+		
+		@Override
+		String getRecordAt(int position) {
+			// 返回搜索词
+			return getEntryAt(position);
+		}
+		
+		@Override long getSize() { return searchKeyIds.size(); }
+		
+		@Override
+		String getVirtualTextValidateJs(BookPresenter bookPresenter, WebViewmy mWebView, int position)
+		{
+			if(searchJs!=null && position>=0 && position<searchKeyIds.size())
+			{
+				return searchJs.replace("%s", getEntryAt(position));
+			}
+			return null;
+		}
+	}
+	
+	@Override
+	public String getEntryAt(int position) {
+		if(position==0) return name;
+		position-=1;
+		try {
+			String ret;
+			for (VirtualKeyProvider vkp:keyProviders) {
+				ret = vkp.getEntryAt(position);
+				if (ret!=null) return ret;
+				position -= vkp.getSize();
+			}
+			
+//			if(entrance.size()>0){
+//				if(position>=0 && position<entrance.size()){
+//					String url = entrance.get(position);
+//					String[] arr = url.split("\r");
+//					if(arr.length>1) {
+//						return arr[1];
+//					}
+//					return url;
+//				}
+//				position-=entrance.size();
+//			}
+			
+//			if(position>=0 && position<searchKeyIds.size())
+//			{
+//				LexicalDBHelper database = LexicalDBHelper.getInstance();
+//				if (database!=null && database.testDBV2 && !database.isClosed()) {
+//					long index = searchKeyIds.get(position);
+//					// todo 加一层缓存？
+//					try (Cursor cursor = database.getDB().rawQuery("select lex from history where id=? limit 1", new String[]{""+index})){
+//						if (cursor.moveToNext()) {
+//							return cursor.getString(0);
+//						}
+//					} catch (Exception e) {
+//						CMN.Log(e);
+//					}
+//				}
+//				return searchKeyIds.get(position)+"=XDI（无记录）";
+//			}
+//			position-=searchKeyIds.size();
 			
 //			if(PageCursor!=null){
 //				if(position>=0 && position<PageCursor.getCount()){
@@ -542,52 +671,57 @@ public class PlainWeb extends DictionaryAdapter {
 		return true;
 	}
 	
-	/** WEB模型直接在此处实现快速搜索（避免重新加载），返回的JS亦检验亦效应。 */
+	/** WEB模型直接在此处实现快速搜索（避免重新加载），返回的JS（基于searchJs）亦检验亦效应。 */
 	@Override
 	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, int position) {
-		mWebView.fromNet=true;
-		if (searchJs!=null)
+		//mWebView.fromNet=true;
+		BookPresenter bookPresenter = (BookPresenter) presenter;
+		if (position==0)
 		{
-			if (position==0)
+			String searchKey = bookPresenter.GetSearchKey();
+			if (searchKey!=null)
 			{
-				if (presenter instanceof BookPresenter)
-				{
-					BookPresenter bookPresenter = (BookPresenter) presenter;
-					String searchKey = bookPresenter.GetSearchKey();
-					if (searchKey!=null)
-					{
-						long id = bookPresenter.GetSearchKeyId(searchKey);
-						if (id>=0 && mLastKeyId!=id) { //
-							searchKeyIds.remove(id);
-							searchKeyIds.add(0, id);
-							int maxKeyStore = 100;
-							if (searchKeyIds.size()>maxKeyStore) {
-								for (int del=searchKeyIds.size()-1,i = del+1-maxKeyStore; i >= 0; i--) {
-									searchKeyIds.remove(del, null);
-								}
-							}
-							mLastKeyId=id;
-							mRecordsDirty=true;
+				// 记录一部分搜索历史
+				long id = bookPresenter.GetSearchKeyId(searchKey);
+				if (id>=0 && mLastKeyId!=id) {
+					searchKeyIds.remove(id);
+					searchKeyIds.add(0, id);
+					int maxKeyStore = 100;
+					if (searchKeyIds.size()>maxKeyStore) {
+						for (int del=searchKeyIds.size()-1,i = del+1-maxKeyStore; i >= 0; i--) {
+							searchKeyIds.remove(del, null);
 						}
-						bookPresenter.a.adaptermy.notifyDataSetChanged();
-						//takeHistoryRecord();
-						return searchJs.replace("%s", searchKey);
 					}
-					else { // 同一本书籍
-						return mWebView.getUrl()!=null && mWebView.getUrl().startsWith(host)?"1":null;
-					}
+					mLastKeyId=id;
+					mRecordsDirty=true;
 				}
+				// 更新列表
+				bookPresenter.a.adaptermy.notifyDataSetChanged(); //todo
+				//takeHistoryRecord();
+				// 检验、应用搜索搜索词
+				if (searchJs!=null)
+				{
+					return searchJs.replace("%s", searchKey);
+				}
+				return null;
 			}
-			return searchJs.replace("%s", getEntryAt(position));
-		}
-		else if (position==0) { // 同一本书籍
+			// 同一本书籍
 			return mWebView.getUrl()!=null && mWebView.getUrl().startsWith(host)?"1":null;
+		} else {
+			position -= 1;
 		}
 		
-		return searchJs;
+		String ret;
+		for (VirtualKeyProvider vkp:keyProviders) {
+			ret = vkp.getVirtualTextValidateJs(bookPresenter, mWebView, position);
+			if (ret!=null) return ret;
+			position -= vkp.getSize();
+		}
+		
+		return null;
 	}
 	
-	public void dumpRecords(Toastable_Activity context, LexicalDBHelper database) {
+	public void saveWebSearches(Toastable_Activity context, LexicalDBHelper database) {
 		if (mRecordsDirty && database!=null && database.testDBV2)
 		{
 			try {
@@ -637,7 +771,7 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	/** 返回目标网址 */
 	@Override
-	public String getVirtualRecordAt(Object presenter, int pos) throws IOException {
+	public String getVirtualRecordAt(Object presenter, int position) throws IOException {
 		//if(mWebView==null)
 		//	mWebView=this.mWebView;
 		//boolean resposibleForThisWeb = mWebView==this.mWebView;
@@ -646,14 +780,37 @@ public class PlainWeb extends DictionaryAdapter {
 		//	tintBackground(mWebView);
 		String key = null;
 		String url=null;
-		BookPresenter bookPresenter = null;
-		if (presenter!=null) { // todo check instance of
-			bookPresenter = (BookPresenter) presenter;
-		}
-		CMN.Log("PlainWeb::getVirtualRecordAt::", pos, bookPresenter.GetSearchKey());
-		if(pos>0) {
-			key = getEntryAt(pos);
-//			pos-=1;
+		BookPresenter bookPresenter = (BookPresenter) presenter;  // todo check instance of
+		CMN.Log("PlainWeb::getVirtualRecordAt::", position, bookPresenter.GetSearchKey());
+		if (position==0) {
+			String searchKey = bookPresenter.GetSearchKey();
+			if(searchKey!=null) {
+				if (searchKey.startsWith("http")) // 简单处理
+					url = searchKey;
+				else if (search != null) {
+					key = searchKey;
+					// 清空搜索词
+					bookPresenter.SetSearchKey(null);
+				}
+			}
+		} else {
+			position-=1;
+			//key = getEntryAt(position);
+			
+			String ret;
+			for (VirtualKeyProvider vkp:keyProviders) {
+				ret = vkp.getRecordAt(position);
+				if (ret!=null) {
+					if (ret.startsWith("http")) // 简单处理
+						url = ret;
+					else
+						key = ret;
+					break;
+				}
+				position -= vkp.getSize();
+			}
+			
+			
 //			if(pos<searchKeys.size()){
 //				if(search!=null){
 //					key=searchKeys.get(pos);
@@ -686,20 +843,7 @@ public class PlainWeb extends DictionaryAdapter {
 //				pos -= PageCursor.getCount();
 //			}
 		}
-		else {
-			if (bookPresenter!=null) {
-				String searchKey = bookPresenter.GetSearchKey();
-				if(searchKey!=null) {
-					if (searchKey.startsWith("http"))
-						url = searchKey;
-					else if (search != null) {
-						key = searchKey;
-						bookPresenter.SetSearchKey(null);
-					}
-				}
-			}
-		}
-		if(url==null){
+		if(url==null) {
 			if(key!=null && search!=null){
 				if(search.contains("%s"))
 					url=search.replaceAll("%s", key);
@@ -709,7 +853,7 @@ public class PlainWeb extends DictionaryAdapter {
 					url=host+url;
 //				if(resposibleForThisWeb)
 //					toolbar_title.setText(key);
-			}else{
+			} else {
 				url=host+index;
 			}
 		}
@@ -724,17 +868,35 @@ public class PlainWeb extends DictionaryAdapter {
 			StringBuilder sb = AcquireStringBuffer(8196).append("window.rcsp=")
 					.append(bookPresenter.MakeRCSP(opt)).append(";")
 					;
-			if (jsLoader != null) sb.append(jsLoader);
-			if (onload != null) sb.append(onload);
-			if (onstart != null) sb.append(onstart);
+			if (jsLoader != null) sb.append("try{").append(jsLoader).append("}catch(e){}");
+			if (onload != null) sb.append("try{").append(onload).append("}catch(e){}");
+			if (onstart != null) sb.append("try{").append(onstart).append("}catch(e){}");
+//			if (onload != null) sb.append(onload);
+//			if (onstart != null) sb.append(onstart);
 			if(GlobalOptions.isDark) sb.append(DarkModeIncantation);
 			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.popupWebView)
 				sb.append(MainActivityUIBase.ce_on);
 			
-			if (style!=null) {
+			if (style!=null || stylex!=null) {
 				int st = loadJs.indexOf("}'");
 				if (st>0) {
-					sb.append(loadJs, 0, st+1).append(style).append(loadJs, st+1, loadJs.length());
+					sb.append(loadJs, 0, st+1);
+					if (style!=null) sb.append(style);
+					if (stylex!=null) {
+						JSONObject sex;
+						for (int i = 0; i < stylex.size(); i++) {
+							sex = stylex.getJSONObject(i);
+							String urlRegex = WebxUrl(sex.getString("urlx"));
+							if (urlRegex!=null) {
+								Pattern pattern = Pattern.compile(urlRegex);
+								if (pattern.matcher(url).find()) {
+									sb.append(sex.getString("value"));
+								}
+							}
+						}
+					}
+					
+					sb.append(loadJs, st+1, loadJs.length());
 				} else {
 					sb.append(loadJs);
 				}
@@ -748,6 +910,19 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 		CMN.Log("加载网页::", url, jsCode);
 		return currentUrl=url;
+	}
+	
+	/** 返回完整网址 */
+	private String WebxUrl(String url) {
+		if (url!=null) {
+			if (url.startsWith("/")) {
+				if (url.startsWith("//"))
+					url = host+index+url.substring(index.endsWith("/")?2:1);
+				else
+					url = host+url;
+			}
+		}
+		return url;
 	}
 	
 	public void takeHistoryRecord(BookPresenter bookPresenter, String key) {
@@ -1042,10 +1217,9 @@ public class PlainWeb extends DictionaryAdapter {
 //	}
 	
 	@Override
-	public void Reload() {
-		super.Reload();
+	public void Reload(Object context) {
 		try {
-			parseJsonFile();
+			parseJsonFile(context instanceof Context?(Context)context:this.context);
 		} catch (IOException e) {
 			CMN.Log(e);
 		}
@@ -1067,7 +1241,7 @@ public class PlainWeb extends DictionaryAdapter {
 			((LayerDrawable)mWebView.titleBar.getBackground()).getDrawable(1).setAlpha(255);
 		}
 		//onProgressChanged(mWebView, 5);
-
+		
 		currentUrl=view.getUrl();
 //		if(jsLoader!=null || onstart!=null) {
 //			String jsCode = "window.rcsp=" + bookPresenter.MakeRCSP(opt) + ";";
@@ -1095,9 +1269,11 @@ public class PlainWeb extends DictionaryAdapter {
 			}
 			progressProceed.start();
 		}
-		if(GlobalOptions.isDark && newProgress>5)
-		{
-			mWebView.evaluateJavascript(DarkModeIncantation, null);
+		if(newProgress>5) {
+			if(GlobalOptions.isDark)
+			{
+				mWebView.evaluateJavascript(DarkModeIncantation, null);
+			}
 		}
 		if(newProgress>85){
 			mWebView.evaluateJavascript(jsCode, null);
@@ -1116,7 +1292,12 @@ public class PlainWeb extends DictionaryAdapter {
 		CMN.Log("chromium", "web  - onPageFinished", currentUrl);
 		fadeOutProgressbar(bookPresenter, (WebViewmy) view, updateTitle);
 		currentUrl=view.getUrl();
-		view.evaluateJavascript(jsCode, null);
+		view.evaluateJavascript(jsCode, new ValueCallback<String>() {
+			@Override
+			public void onReceiveValue(String value) {
+				CMN.Log(value);
+			}
+		});
 	}
 
 	private void fadeOutProgressbar(BookPresenter bookPresenter, WebViewmy mWebView, boolean updateTitle) {

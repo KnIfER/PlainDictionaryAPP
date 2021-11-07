@@ -160,7 +160,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public void Reload() {
+	public void Reload(Object context) {
 	
 	}
 	

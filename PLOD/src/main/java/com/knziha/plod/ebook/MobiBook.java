@@ -862,7 +862,7 @@ public class MobiBook extends DictionaryAdapter {
 	}
 	
 	@Override
-	public void Reload() {
+	public void Reload(Object context) {
 	
 	}
 	
