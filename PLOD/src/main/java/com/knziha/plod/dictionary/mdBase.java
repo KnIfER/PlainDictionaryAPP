@@ -90,7 +90,8 @@ public abstract class mdBase {
 	long _num_key_blocks;public long get_num_key_blocks(){return _num_key_blocks;}
 	protected long _num_record_blocks;public long get_num_record_blocks(){return _num_record_blocks;}
 
-	RBTree<myCpr<Integer, Integer>> accumulation_blockId_tree = new RBTree<>();
+	/** 长整型position -> 整数block索引映射 */
+	RBTree<myCpr<Long, Integer>> accumulation_blockId_tree = new RBTree<>();
 	long _key_block_size,_key_block_info_size,_key_block_info_decomp_size,_record_block_info_size,_record_block_size;
 
 	int _key_block_offset;
@@ -510,7 +511,7 @@ public abstract class mdBase {
 			key_block_info = key_block_info_compressed;
 		// decoding……
 		long key_block_compressed_size = 0;
-		int accumulation_ = 0;//how many entries before one certain block.for construction of a list.
+		long accumulation_ = 0;//how many entries before one certain block.for construction of a list.
 		//遍历blocks
 		int bytePointer =0 ;
 		for(int i=0;i<_key_block_info_list.length;i++){
@@ -792,7 +793,7 @@ public abstract class mdBase {
 
 
 	//for listview
-	public String getEntryAt(int position) {
+	public String getEntryAt(long position) {
 		if(position==-1) return "about:";
 		if(_key_block_info_list==null) read_key_block_info(null);
 		int blockId = accumulation_blockId_tree.xxing(new myCpr<>(position,1)).getKey().value;
@@ -806,7 +807,7 @@ public abstract class mdBase {
 		public byte[] data;
 	}
 
-	protected void getRecordData(int position, RecordLogicLayer retriever) throws IOException{
+	protected void getRecordData(long position, RecordLogicLayer retriever) throws IOException{
 		if(position<0||position>=_num_entries) return;
 		if(_record_info_struct_list==null) decode_record_block_header();
 		int blockId = accumulation_blockId_tree.xxing(new myCpr<>(position,1)).getKey().value;
@@ -866,7 +867,7 @@ public abstract class mdBase {
 		return record;
 	}
 
-	public String decodeRecordData(int position, Charset charset) {
+	public String decodeRecordData(long position, Charset charset) {
 		RecordLogicLayer layer = new RecordLogicLayer();
 		try {
 			getRecordData(position, layer);
