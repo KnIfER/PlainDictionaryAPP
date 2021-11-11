@@ -17,24 +17,11 @@
 
 package com.knziha.plod.dictionary.Utils;
 
-import android.content.Context;
-import android.os.Build;
-
-import com.knziha.plod.dictionary.UniversalDictionaryInterface;
-import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.PlainMdictAsset;
-import com.knziha.plod.plaindict.BuildConfig;
-import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.MainActivityUIBase;
-
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import java.util.zip.Adler32;
 import java.util.zip.InflaterOutputStream;
-
-import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 
 /**
@@ -87,12 +74,54 @@ public class  BU{//byteUtils
         }   
         return values;  
      } 
+    public static long toLongLE(byte[] buffer,int offset) {   
+        long  values = 0;   
+        for (int i = 7; i >= 0; i--) {    
+            values <<= 8; values|= (buffer[offset+i] & 0xff);   
+        }   
+        return values;  
+     } 
     public static int toInt(byte[] buffer,int offset) {   
         int  values = 0;   
         for (int i = 0; i < 4; i++) {    
             values <<= 8; values|= (buffer[offset+i] & 0xff);   
         }   
         return values;  
+     }     
+     
+    public static int toIntLE(byte[] buffer,int offset) {   
+        int  values = 0;   
+        for (int i = 3; i >= 0; i--) {    
+            values <<= 8; values|= (buffer[offset+i] & 0xff);   
+        }   
+        return values;  
+     }     
+    
+    public static short toShortLE(byte[] buffer,int offset) {   
+        short  values = 0;   
+        for (int i = 1; i >= 0; i--) {    
+            values <<= 8; values|= (buffer[offset+i] & 0xff);   
+        }   
+        return values;  
+     }   
+     
+    public static void putShortLE(byte[] buffer, int offset, short value) {   
+		buffer[offset] = (byte) (value&0xff);
+		buffer[offset+1] = (byte) (value>>8&0xff);
+     }     
+    
+    public static void putIntLE(byte[] buffer, int offset, int value) {   
+		buffer[offset] = (byte) (value&0xff);
+		buffer[offset+1] = (byte) (value>>8&0xff);
+		buffer[offset+2] = (byte) (value>>16&0xff);
+		buffer[offset+3] = (byte) (value>>24&0xff);
+     }     
+     
+    public static void putLongLE(byte[] buffer, int offset, long value) {
+		for (int i = 0; i < 8; i++) {
+			buffer[offset+i] = (byte) (value&0xff);
+			value>>=8;
+		}
      }     
     
     
@@ -166,7 +195,7 @@ public class  BU{//byteUtils
     @Deprecated
     public static void printBytes(byte[] b){
     	for(int i=0;i<b.length;i++)
-    		System.out.print("fatal 0x"+byteTo16(b[i])+",");
+    		System.out.print("0x"+byteTo16(b[i])+",");
     	System.out.println();
     }
 
@@ -251,8 +280,7 @@ public class  BU{//byteUtils
         return resStr;
     }
     
-    
-    public static char toChar(byte[] buffer,int offset) {
+    public static char toChar(byte[] buffer,int offset) {   
         char  values = 0;   
         for (int i = 0; i < 2; i++) {    
             values <<= 8; values|= (buffer[offset+i] & 0xff);   
@@ -282,12 +310,14 @@ public class  BU{//byteUtils
 			FileInputStream fin = new FileInputStream(f);
 			byte[] data = new byte[(int) f.length()];
 			fin.read(data);
+			fin.close();
 			return new String(data, "utf8");
 		} catch (IOException e) {
-			CMN.Log(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
+
 
 	public static String fileToString(String path, byte[] buffer, ReusableByteOutputStream bo, Charset charset) {
 		try {
@@ -302,6 +332,18 @@ public class  BU{//byteUtils
 		}
 		return null;
 	}
+
+	public static String transStream(InputStream in) {
+		byte[] data = new byte[4096];
+		ReusableByteOutputStream bout = new ReusableByteOutputStream(8192);
+		try{
+			int len;
+			while ((len=in.read(data))>0) {
+				bout.write(data, 0 ,len);
+			}
+		} catch (Exception ignored) {  }
+		return new String(bout.data(), 0, bout.size());
+	}
 	
 	public static void appendToFile(File f, String...args) {
 		try {
@@ -313,7 +355,6 @@ public class  BU{//byteUtils
 			fout.close();
 		} catch (Exception ignored) { }
 	}
-	
 	
 	@Deprecated
     public long toLong1(byte[] b,int offset)
