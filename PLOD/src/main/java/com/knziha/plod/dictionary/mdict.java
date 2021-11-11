@@ -22,6 +22,7 @@ import androidx.preference.CMN;
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.Utils.*;
 import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.rbtree.RBTree;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.adrianwalker.multilinestring.Multiline;
@@ -125,7 +126,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	public String _Dictionary_fName;
 	public /*final*/ boolean isResourceFile;
 	private EncodeChecker encodeChecker;
-	private HashMap<Integer, String> PageNumberMap;
+	private HashMap<Long, String> PageNumberMap;
 	protected File fZero;
 	private long fZero_LPT;
 	
@@ -177,7 +178,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	public byte[][] htmlTags;
 	public byte[][] htmlTagsA;
 	public byte[][] htmlTagsB;
-	
+	public byte[] spaceBytes;
 	//构造
 	public mdict(String fn) throws IOException{
 		this(new File(fn), 0, null, null);
@@ -234,8 +235,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			line = line.replace("\\", File.separator);
 			if(line.startsWith(":")){
 				String[] arr = line.substring(1).split(":"); //竟然长度为3
-				int id;
-				if(arr.length==2&&(id=IU.parsint(arr[0]))>=0) {
+				long id;
+				if(arr.length==2&&(id=IU.parseLong(arr[0]))>=0) {
 					if(PageNumberMap==null) {
 						PageNumberMap=new HashMap<>();
 					}
@@ -316,7 +317,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 	}
 
-	public String getCachedEntryAt(int pos) {
+	public String getCachedEntryAt(long pos) {
 		return currentDisplaying;
 	}
 
@@ -328,10 +329,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 
 	//for lv
-	public String getEntryAt(int position, Flag mflag) {
+	public String getEntryAt(long position, Flag mflag) {
 		if(virtualIndex!=null)
 			return virtualIndex.getEntryAt(position, mflag);
 		if(position==-1) return "about:";
+		if(position>=_num_entries) return position+">!!!"+_num_entries;
 		if(_key_block_info_list==null) read_key_block_info(null);
 		int blockId = accumulation_blockId_tree.xxing(new myCpr<>(position,1)).getKey().value;
 		key_info_struct infoI = _key_block_info_list[blockId];
@@ -343,12 +345,13 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		try {
 			return new String(prepareItemByKeyInfo(infoI,blockId,null).keys[(int) (position-infoI.num_entries_accumulator)],_charset);
 		} catch (Exception e) {
+			CMN.Log(e);
 			return "!!!";
 		}
 	}
 
 	@Override
-	public String getEntryAt(int position) {
+	public String getEntryAt(long position) {
 		if(virtualIndex!=null)
 			return virtualIndex.getEntryAt(position);
 		return super.getEntryAt(position);
@@ -599,17 +602,17 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return getRecordAt(i, null, true);
 	}
 
-	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, int... positions) throws IOException {
+	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, long... positions) throws IOException {
 		if(isResourceFile)
 			return constructLogicalPage(positions);
 		String ret;
-		int p0 = positions[0];
+		long p0 = positions[0];
 		if(positions.length==1) {
 			ret = getRecordAt(p0, getRecordAtInterceptor, true);
 		} else {
 			StringBuilder sb = new StringBuilder();
 			int c=0;
-			for(int i:positions) {
+			for(long i:positions) {
 				sb.append(getRecordAt(i, getRecordAtInterceptor, true));//.trim()
 				if(c!=positions.length-1)
 					sb.append("<HR>");
@@ -622,12 +625,12 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 	// 初始化
 	/** @param positions virutal indexes*/
-	public String getVirtualRecordsAt(Object presenter, int... positions) throws IOException {
+	public String getVirtualRecordsAt(Object presenter, long... positions) throws IOException {
 		if(virtualIndex==null)
 			return getRecordsAt(null, positions);
 		StringBuilder sb = new StringBuilder();
 		int c=0, lastAI=-1;
-		for(int i:positions) {
+		for(long i:positions) {
 			String vi = virtualIndex.getRecordAt(i, null, true);
 			JSONObject vc = JSONObject.parseObject(vi);
 			int AI=vc.getInteger("I");
@@ -662,12 +665,12 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 	
 	@Override
-	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, int position) {
+	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position) {
 		return "";
 	}
 	
 	@Override
-	public String getVirtualTextEffectJs(int[] positions) {
+	public String getVirtualTextEffectJs(long[] positions) {
 		return "";
 	}
 	
@@ -700,11 +703,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	String logicalPageHeader="SUBPAGE";
 
 	/** Construct Logical Page For mdd resource file. */
-	private String constructLogicalPage(int...positions) {
+	private String constructLogicalPage(long...positions) {
 		CMN.Log("constructLogicalPage!!!");
 		StringBuilder LoPageBuilder = new StringBuilder();
 		LoPageBuilder.append(logicalPageHeader);
-		for(int i:positions) {
+		for(long i:positions) {
 			String key = getEntryAt(i);
 			if(key.startsWith("/")||key.startsWith("\\"))
 				key=key.substring(1);
@@ -742,7 +745,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return 0;
 	}
 
-	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
+	public String getRecordAt(long position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 		if(getRecordAtInterceptor!=null)
 		{
 			String ret = getRecordAtInterceptor.getRecordAt(this, position);
@@ -808,19 +811,19 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return tmp;
 	}
 
-	private String getDebugPageResourceKey(int position) {
+	private String getDebugPageResourceKey(long position) {
 		String key=null;
 		if(PageNumberMap!=null) {
 			key=PageNumberMap.get(position);
 		}
 		if(key==null) {
-			key=Integer.toString(position);
+			key=Long.toString(position);
 		}
 		return key;
 	}
 
 	@Override
-	public String decodeRecordData(int position, Charset charset) {
+	public String decodeRecordData(long position, Charset charset) {
 		if(ftd !=null && ftd.size()>0){
 			for(File froot: ftd){
 				File ft= new File(froot, ""+position);
@@ -984,7 +987,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 							int compressed_size = (int) RinfoI.compressed_size;
 							int decompressed_size = (int) RinfoI.decompressed_size;
-							data_in.read(record_block_compressed,0, compressed_size);
+							data_in.read(record_block_compressed, 0, compressed_size);
 
 							//解压开始
 							switch (record_block_compressed[0]|record_block_compressed[1]<<8|record_block_compressed[2]<<16|record_block_compressed[3]<<32){
@@ -1072,7 +1075,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 									if(try_idx!=-1) {
 										//SU.Log("full res ::", try_idx, finalKey, new String(record_block_, (int) (ko[relative_pos]-RinfoI.decompressed_size_accumulator)+try_idx-100, 200, _charset));
-										int pos = (int) (relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator);
+										long pos = relative_pos+_key_block_info_list[key_block_id].num_entries_accumulator;
 										SearchLauncher.dirtyResultCounter++;
 										_combining_search_tree[it].add(new SearchResultBean(pos));
 									}
@@ -1429,7 +1432,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		}
 	}
 
-	public String getVirtualRecordAt(Object presenter, int vi) throws IOException {
+	public String getVirtualRecordAt(Object presenter, long vi) throws IOException {
 		return virtualIndex.getRecordAt(vi, null, true);
 	}
 
@@ -1928,20 +1931,52 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			return parent.OpenThreadPool(thread_number);
 		return Executors.newFixedThreadPool(thread_number);
 	}
-
+	
 	protected int flowerIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][][] matchers, int marcherOffest, int fromIndex, AbsAdvancedSearchLogicLayer launcher, F1ag flag, ArrayList<Object> mParallelKeys, int[] jumpMap)
 	{
-		int tagCheckFrame = 64;
+		int tagCheckFrame = 32;
+		int tagSkipFrame = 32;
 		int lastSeekLetSize=0;
 		int totalLen = matchers.length;
 		boolean bSearchInContents = launcher.type==SEARCHTYPE_SEARCHINTEXTS;
-		boolean bCheckTags = bSearchInContents;
+		boolean bSkipTags = bSearchInContents;
+		boolean bCheckInTag = bSearchInContents;
 		boolean trimStart = fromIndex==0 && (jumpMap[matchers.length]&1)!=0;
 		int hudieling;
-		//if(true) checkEven=0;
+		if(true) {
+			//checkEven=0;
+			//bCheckTags=false;
+		}
 //		boolean debug=false;
 //		if(new String(source, sourceOffset, sourceCount, _charset).equals("democracy")) {
 //			SU.Log("正在搜索"); debug=true;
+//		}
+		if (bSkipTags && false) {
+			//todo skip html tags 三步，检查紧邻< ，搜索>，而后推进fromIndex_
+			int fromIndex_=fromIndex;
+			while(bingStartWith(source,sourceOffset,sourceCount,htmlOpenTag, 0,htmlOpenTag.length,fromIndex_)){
+				int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, fromIndex_+htmlOpenTag.length+tagSkipFrame), htmlTagsB, fromIndex_+htmlOpenTag.length, flag);
+				if(htmlForward>=fromIndex_+htmlOpenTag.length){
+					fromIndex_=htmlForward+htmlCloseTag.length;
+				} else break;
+				while(
+						bingStartWith(source, sourceOffset,sourceCount,spaceBytes, 0,spaceBytes.length,fromIndex_)
+						||bingStartWith(source, sourceOffset,sourceCount,spaceBytes, 0,spaceBytes.length,fromIndex_)
+				)
+					fromIndex_+=spaceBytes.length;
+			}
+			//SU.Log("跳过了:", fromIndex, fromIndex_);
+			fromIndex=fromIndex_;
+		}
+		int bInTagCheckNeeded=-1;
+//		RBTree<MyIntPair> tagsMap = new RBTree<>();
+//		for (int i = 0; i < sourceCount; i++) {
+//			if (source[i]==htmlOpenTag[0]) {
+//				//tagsMap.insert(new MyIntPair(i,0));
+//			}
+//			else if(source[i]==htmlCloseTag[0]) {
+//				//tagsMap.insert(new MyIntPair(i,0));
+//			}
 //		}
 		while(fromIndex<sourceCount) {
 			//SU.Log("==");
@@ -2042,14 +2077,17 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 //							}
 						}
 						if (pass) {
-							if(bCheckTags){
-								//todo skip html tags 检查不在<>之中。 往前找>，截止于<>两者。若找先到<则放行。
+							if(bCheckInTag)
+							if(true) // delay the check
+								bInTagCheckNeeded=newSeekPos+lastSeekLetSize;
+							else {
+								// 标签内检查
+								//todo skip html tags 检查不在<>之中。 前进找>，截止于<>两者。若找先到<则放行。
 								//									若找先到>则需要进一步检查。 [36]
-								//									往后找<，截止于<>两者。若找先到>则放行。[36]
+								//									后退找<，截止于<>两者。若找先到>则放行。[36]
 								//									若找先到<则简单认为需要跳过。
 								int from = newSeekPos+lastSeekLetSize;
 								int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlTags, from, flag);
-
 								if (htmlForward>=from) {
 									if(flag.val==1){ // x >
 										from = newSeekPos-1;
@@ -2110,6 +2148,32 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						if(marchLet==null) break;
 						if(bingStartWith(source,sourceOffset, sourceCount, marchLet,0,marchLet.length,fromIndex_)) {
 							Matched=true;
+							if(bInTagCheckNeeded>=0){
+								//延后的标签内检查 delay the check
+								int from = bInTagCheckNeeded;
+								//todo skip html tags 检查不在<>之中。 前进找>，截止于<>两者。若找先到<则放行。
+								//									若找先到>则需要进一步检查。 [36]
+								//									后退找<，截止于<>两者。若找先到>则放行。[36]
+								//									若找先到<则简单认为需要跳过。
+								//int htmlForward = indexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlCloseTag, 0, htmlCloseTag.length, from);
+								int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlTags, from, flag);
+								if (htmlForward>=from) {
+									//if(flag.val==1){ // x >
+										from = bInTagCheckNeeded-1;
+										//int htmlBackward = safeKalyxLastIndexOf(source, sourceOffset, sourceOffset+Math.max(0, from-tagCheckFrame), htmlTags, from, flag);
+										int htmlBackward = safeKalyxLastIndexOf(source, sourceOffset, sourceOffset+Math.max(0, from-tagCheckFrame), htmlTags, from, flag);
+										if(htmlBackward>=0){
+											if(flag.val==0){ // < x
+												fromIndex=fromIndex_=htmlForward+htmlTags[flag.val].length;
+												Matched=false;
+												bInTagCheckNeeded=0;
+												break; // re-seek
+											}
+										}
+									//}
+								}
+								bInTagCheckNeeded=0;
+							}
 //							if(debug) {
 //								SU.Log("matchedHonestily: ", sourceCount, "::", " fromIndex_: ", fromIndex_ + " seekPos: ");
 //								SU.Log("matchedHonestily: ", lexiPartIdx, mParallelKeys.get(lexiPartIdx));
@@ -2118,10 +2182,10 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 							break;
 						}
 					}
-					if(Matched && bCheckTags) {
+					if(Matched && bSkipTags) {
 						//todo skip html tags 三步，检查紧邻< ，搜索>，而后推进fromIndex_
 						while(bingStartWith(source,sourceOffset,sourceCount,htmlOpenTag, 0,htmlOpenTag.length,fromIndex_)){
-							int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, fromIndex_+htmlOpenTag.length+tagCheckFrame), htmlTagsB, fromIndex_+htmlOpenTag.length, flag);
+							int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, fromIndex_+htmlOpenTag.length+tagSkipFrame), htmlTagsB, fromIndex_+htmlOpenTag.length, flag);
 							if(htmlForward>=fromIndex_+htmlOpenTag.length){
 								fromIndex_=htmlForward+htmlCloseTag.length;
 								//CMN.Log("跳过！");
@@ -2263,7 +2327,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					//additiveMyCpr1 tmpnode = new additiveMyCpr1(LexicalEntry,""+SelfAtIdx+""+((int) (infoI.num_entries_accumulator+keyCounter)));//new ArrayList<Integer>() new int[] {SelfAtIdx,(int) (infoI.num_entries_accumulator+keyCounter)}
 					//tmpnode.value.add(SelfAtIdx);
 					//tmpnode.value.add((int) (infoI.num_entries_accumulator+keyCounter));
-					it.add(new SearchResultBean((int) (infoI.num_entries_accumulator+keyCounter)));//new additiveMyCpr1(LexicalEntry,infoI.num_entries_accumulator+keyCounter));
+					it.add(new SearchResultBean(infoI.num_entries_accumulator+keyCounter));//new additiveMyCpr1(LexicalEntry,infoI.num_entries_accumulator+keyCounter));
 					//SU.Log("fuzzyKeyCounter"+fuzzyKeyCounter);
 					SearchLauncher.dirtyResultCounter++;
 				}
@@ -2332,41 +2396,39 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 
 	//联合搜索  555
-	public void lookUpRange(String keyword, ArrayList<myCpr<String, Integer>> combining_search_list, RBTree_additive combining_search_tree, int SelfAtIdx, int theta) //多线程
+	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta) //多线程
 	{
 		if(virtualIndex!=null){
-			virtualIndex.lookUpRange(keyword, combining_search_list, combining_search_tree, SelfAtIdx, theta);
-			return;
+			return virtualIndex.lookUpRange(keyword, rangReceiver, treeBuilder, SelfAtIdx, theta);
 		}
 		int[][] scaler_ = null;
 		byte[] key_block_cache_ = null;
-		ArrayList<myCpr<String, Integer>> _combining_search_list = combining_search_list;
 		keyword = processMyText(keyword);
 		byte[] kAB = keyword.getBytes(_charset);
 		if(_encoding.startsWith("GB")) {
 			if(compareByteArray(_key_block_info_list[(int)_num_key_blocks-1].tailerKeyText,kAB)<0)
-				return;
+				return 0;
 			if(compareByteArray(_key_block_info_list[0].headerKeyText,kAB)>0)
-				return;
+				return 0;
 		} else {
 			if((TailerTextStr==null? TailerTextStr =processMyText(new String(_key_block_info_list[(int)_num_key_blocks-1].tailerKeyText,_charset).toLowerCase()):TailerTextStr).compareTo(keyword)<0) {
-				return;
+				return 0;
 			}
 			if((HeaderTextStr==null? HeaderTextStr=processMyText(new String(_key_block_info_list[0].headerKeyText,_charset).toLowerCase()):HeaderTextStr).compareTo(keyword)>0) {
 				if(!HeaderTextStr.startsWith(keyword))
-					return;
+					return 0;
 			}
 		}
 		if(_key_block_info_list==null) read_key_block_info(null);
 		int blockId = _encoding.startsWith("GB")?reduce_index2(kAB,0,_key_block_info_list.length):reduce_index(keyword,0,_key_block_info_list.length);
 
-		if(blockId==-1) return;
+		if(blockId==-1) return 0;
 		//show(_Dictionary_fName+_key_block_info_list[blockId].tailerKeyText+"1~"+_key_block_info_list[blockId].headerKeyText);
 		//while(blockId!=0 &&  compareByteArray(_key_block_info_list[blockId-1].tailerKeyText,kAB)>=0)
 		//	blockId--;
-
+		
 		boolean doHarvest=false;
-
+		int results=0;
 		//OUT:
 		while(theta>0) {//complexity explanation: the aim is to harvest at most number theta matching results. but they might be crossing-blocks.
 			key_info_struct infoI = _key_block_info_list[blockId];
@@ -2437,14 +2499,15 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						if(doHarvest) {
 							String kI = new String(key_block_cache_, key_start_index+_number_width,key_end_index-(key_start_index+_number_width), _charset);
 							if(processMyText(kI).startsWith(keyword)) {
-								if(combining_search_tree!=null)
-									combining_search_tree.insert(kI,SelfAtIdx,(int)(keyCounter+infoI.num_entries_accumulator));
+								if(treeBuilder !=null)
+									treeBuilder.insert(kI, SelfAtIdx, keyCounter+infoI.num_entries_accumulator);
 								else
-									_combining_search_list.add(new myCpr(kI,(int)(keyCounter+infoI.num_entries_accumulator)));
+									rangReceiver.add(new myCpr<String, Long>(kI,keyCounter+infoI.num_entries_accumulator));
 								theta--;
-							}else return;
-							if(theta<=0) return;
-						}else {
+								results++;
+							} else return results;
+							if(theta<=0) return results;
+						} else {
 							scaler_[keyCounter][0] = key_start_index+_number_width;
 							scaler_[keyCounter][1] = key_end_index-(key_start_index+_number_width);
 						}
@@ -2476,17 +2539,18 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				String kI = new String(key_block_cache_, scaler_[idx][0],scaler_[idx][1], _charset);
 				while(true) {
 					if(processMyText(kI).startsWith(keyword)) {
-						if(combining_search_tree!=null)
-							combining_search_tree.insert(kI,SelfAtIdx,(int)(idx+infoI.num_entries_accumulator));
+						if(treeBuilder !=null)
+							treeBuilder.insert(kI, SelfAtIdx, idx+infoI.num_entries_accumulator);
 						else
-							_combining_search_list.add(new myCpr<>(kI,(int)(idx+infoI.num_entries_accumulator)));
+							rangReceiver.add(new myCpr<>(kI, idx+infoI.num_entries_accumulator));
 						theta--;
-					}else
-						return;
+						results++;
+					} else
+						return results;
 					idx++;
 					//if(idx>=infoI.num_entries) SU.Log("nono!");
 					if(theta<=0)//no need to proceed. Max results fetched.
-						return;
+						return results;
 					if(idx>=infoI.num_entries) {
 						break;
 					}
@@ -2495,8 +2559,9 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				doHarvest=true;
 			}
 			++blockId;
-			if(_key_block_info_list.length<=blockId) return;
+			if(_key_block_info_list.length<=blockId) return results;
 		}
+		return results;
 	}
 
 	public String processKey(byte[] in){
@@ -2600,7 +2665,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return sb.toString();
 	}
 
-	public String processStyleSheet(String input, int pos) {
+	public String processStyleSheet(String input, long pos) {
 		if(_stylesheet.size()==0)
 			return input;
 		Matcher m = markerReg.matcher(input);
@@ -2614,7 +2679,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			String[] nowArr = _stylesheet.get(now);
 			if(nowArr==null)
 				if("0".equals(now)) {
-					nowArr=new String[] {getCachedEntryAt(pos),""};
+					nowArr=new String[] {getCachedEntryAt(pos),""}; // todo check mt
 				}
 			if(nowArr==null) {
 				if(last!=null) {
@@ -2761,6 +2826,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		htmlTags = new byte[][]{htmlOpenTag, htmlCloseTag};
 		htmlTagsA = new byte[][]{htmlOpenTag};
 		htmlTagsB = new byte[][]{htmlCloseTag};
+		spaceBytes = " ".getBytes(_charset);
 		switch (_charset.name()){
 			case "EUC-JP":
 				checkEven=5;
