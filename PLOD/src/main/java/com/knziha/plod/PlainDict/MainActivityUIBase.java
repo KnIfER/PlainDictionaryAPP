@@ -55,7 +55,7 @@ import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.DisplayMetrics;
-import android.util.SparseIntArray;
+import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.DragEvent;
@@ -252,6 +252,7 @@ import db.LexicalDBHelper;
 import db.MdxDBHelper;
 
 import static com.bumptech.glide.util.Util.isOnMainThread;
+import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
@@ -435,7 +436,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	Runnable mPopupRunnable;
 	String popupKey;
 	int popupFrame;
-	int popupForceId;
+	BookPresenter popupForceId;
 	protected TextView popupTextView;
 	protected PopupMoveToucher popupMoveToucher;
 	public FlowTextView popupIndicator;
@@ -621,7 +622,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mdTmp!=null) {
 				mdTmp.Reload(this);
 			} else {
-				md.set(i, new_mdict(phTmp.getPath(opt), this));
+				md.set(i, new_book(phTmp.getPath(opt), this));
 			}
 			showT("重新加载!");
 		} catch (Exception e) {
@@ -720,7 +721,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					PlaceHolder phTmp = CosyChair.get(i);
 					if (phTmp != null) {
 						try {
-							md.set(i, ret = new_mdict(phTmp.getPath(opt), this));
+							md.set(i, ret = new_book(phTmp.getPath(opt), this));
 							ret.tmpIsFlag = phTmp.tmpIsFlag;
 						} catch (Exception e) {
 							if(GlobalOptions.debug) CMN.Log(e);
@@ -763,7 +764,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mdTmp!=null) {
 				flag = mdTmp.getFirstFlag();
 				mdTmp.setFirstFlag(flag=PDICMainAppOptions.setDFFStarLevel(flag, val));
-				mdTmp.dumpViewStates(this, prepareHistoryCon());
+				mdTmp.saveStates(this, prepareHistoryCon());
 			} else {
 				ArrayList<PlaceHolder> CosyChair = getLazyCC();
 				if(i<CosyChair.size()) {
@@ -1395,7 +1396,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
-	public void popupWord(final String key, int forceStartId, int frameAt) {
+	public void popupWord(final String key, BookPresenter forceStartId, int frameAt) {
 		CMN.Log("popupWord_frameAt", frameAt, key, md.size(), WebViewmy.supressNxtClickTranslator);
 		if(key==null || mdict.processText(key).length()>0) {
 			popupKey = key;
@@ -1485,8 +1486,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							popupTextView.setText(popupKey);
 							String keykey;
 							CCD_ID = currentClick_adapter_idx = Math.min(currentClick_adapter_idx, size-1);
-							if(popupForceId>=0 && popupForceId<size)
-								CCD_ID = popupForceId;
+							if(popupForceId!=null) {
+								CCD = popupForceId;
+								CCD_ID = md.indexOf(popupForceId);
+								if(CCD_ID<0) {
+									CCD_ID = md.size();
+									md.add(popupForceId); // todo check???
+								}
+							}
 							//轮询开始
 							//nimp
 							BookPresenter webx = null;
@@ -1531,7 +1538,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 														mdTmp = md.get(CSID);
 														if (mdTmp == null) {
 															try {
-																md.set(CSID, mdTmp = new_mdict(phTmp.getPath(opt), MainActivityUIBase.this));
+																md.set(CSID, mdTmp = new_book(phTmp.getPath(opt), MainActivityUIBase.this));
 																mdTmp.tmpIsFlag = phTmp.tmpIsFlag;
 															} catch (Exception e) {
 															}
@@ -1595,7 +1602,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 												PlaceHolder phTmp = CosyChair.get(CCD_ID);
 												if (phTmp != null) {
 													try {
-														md.set(CCD_ID, CCD = new_mdict(phTmp.getPath(opt), MainActivityUIBase.this));
+														md.set(CCD_ID, CCD = new_book(phTmp.getPath(opt), MainActivityUIBase.this));
 														CCD.tmpIsFlag = phTmp.tmpIsFlag;
 													} catch (Exception e) {
 														CMN.Log(e);
@@ -1650,7 +1657,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									popupWebView.bRequestedSoundPlayback=true;
 								popupWebView.IBC = CCD.IBC;
 								PopupPageSlider.invalidateIBC();
-								CCD.renderContentAt(-1, CCD_ID, -1, popupWebView, currentClickDictionary_currentPos = idx);
+								CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, popupWebView, currentClickDictionary_currentPos = idx);
 							}
 
 							currentClickDisplaying = popupKey;
@@ -1841,7 +1848,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(i<CosySofa.size()){
 						PlaceHolder phI = CosySofa.get(i);
 						try {
-							currentFilter.set(i, mdTmp=new_mdict(phI.getPath(opt), this));
+							currentFilter.set(i, mdTmp= new_book(phI.getPath(opt), this));
 							mdTmp.tmpIsFlag=phI.tmpIsFlag;
 						} catch (Exception e) { CMN.Log(e); }
 					}
@@ -2892,7 +2899,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if(mdTmp==null && !lazyLoad) { // 大家看 这里有个老实人
 				try {
-					mdTmp = new_mdict(phI.getPath(opt), this);
+					mdTmp = new_book(phI.getPath(opt), this);
 				} catch (Exception e) {
 					phI.tmpIsFlag|=0x8;
 					HdnCmfrt.add(phI); /* 兵解轮回 */
@@ -3144,7 +3151,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					PlaceHolder phI = getPlaceHolderAt(adapter_idx);
 					if(phI!=null) {
 						try {
-							md.set(adapter_idx, currentDictionary=new_mdict(phI.getPath(opt), this));
+							md.set(adapter_idx, currentDictionary= new_book(phI.getPath(opt), this));
 							currentDictionary.tmpIsFlag = phI.tmpIsFlag;
 						} catch (Exception ignored) { }
 					}
@@ -3373,19 +3380,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (getUsingDataV2() && key.length()>0) {
 			if (TextUtils.equals(lastInsertedKey, key)) return lastInsertedId;
 			else {
-				//lastInsertedKey = key;
-				//lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, ActivedAdapter!=null?ActivedAdapter.webviewHolder:null);
+				try {
+					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, ActivedAdapter!=null?ActivedAdapter.webviewHolder:null);
+					lastInsertedKey = key;
+				} catch (Exception e) {
+					CMN.Log(e);
+				}
 			}
 		}
 		return -1;
 	}
 	
-	public static BookPresenter new_mdict(String pathFull, MainActivityUIBase THIS) throws IOException {
+	public static BookPresenter new_book(String pathFull, MainActivityUIBase THIS) throws IOException {
 		File fullPath = pathFull.startsWith("/")?new File(pathFull):new File(THIS.opt.lastMdlibPath, pathFull);
-		return new_mdict(fullPath, THIS);
+		return new_book(fullPath, THIS);
 	}
 	
-	public static BookPresenter new_mdict(File fullPath, MainActivityUIBase THIS) throws IOException {
+	public static BookPresenter new_book(File fullPath, MainActivityUIBase THIS) throws IOException {
 		BookPresenter ret = THIS.mdict_cache.get(fullPath.getName());
 		if (ret!=null) {
 			return ret;
@@ -3666,23 +3677,104 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ret;
 	}
 	
-	public BookPresenter getDictionaryById(long bid) throws IOException {
-		String fileName = null;
-		UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
-		try {
-			CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
-					prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
-					, currentDictionary.bookImpl.getBooKID());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		if (impl!=null) {
-			fileName = impl.getFile().getPath();
+	public long getBookIdAt(int i) {
+		if (getUsingDataV2()) {
+			try {
+				BookPresenter presenter = md.get(i);
+				if (presenter!=null)
+					return presenter.getId();
+				String name = new File(getPlaceHolders().get(i).pathname).getName();
+				return prepareHistoryCon().getBookID(null, name);
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
 		} else {
-			fileName = prepareHistoryCon().getBookPath(bid);
+			return i;
 		}
-		if (fileName!=null) {
-			return new_mdict(fileName, this);
+		return -1;
+	}
+	
+	public BookPresenter getBookById(long bid) {
+		try {
+			if (getUsingDataV2()) {
+				String fileName = null;
+				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+				try {
+					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+							, currentDictionary.bookImpl.getBooKID());
+				} catch (Exception e) {
+					CMN.Log(e);
+				}
+				if (impl!=null) {
+					fileName = impl.getFile().getPath();
+				} else {
+					fileName = prepareHistoryCon().getBookPath(bid);
+				}
+				if (fileName!=null) {
+					return new_book(fileName, this);
+				}
+			} else {
+				if (bid>=0&&bid<md.size())
+					return md.get((int) bid);
+			}
+		} catch (IOException e) {
+			CMN.Log(e);
+		}
+		return null;
+	}
+	
+	public BookPresenter getBookByIdNoCreation(long bid) {
+		try {
+			if (getUsingDataV2()) {
+				String fileName = null;
+				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+				try {
+					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+							, currentDictionary.bookImpl.getBooKID());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				if (impl!=null) {
+					fileName = impl.getFile().getPath();
+					if (fileName!=null) {
+						return new_book(fileName, this);
+					}
+				}
+			} else {
+				if (bid>=0&&bid<md.size())
+					return md.get((int) bid);
+			}
+		} catch (IOException e) {
+			CMN.Log(e);
+		}
+		return null;
+	}
+	
+	public String getBookNameByIdNoCreation(long bid) {
+		try {
+			if (getUsingDataV2()) {
+				String fileName = null;
+				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+				try {
+					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+							, currentDictionary.bookImpl.getBooKID());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				if (impl!=null) {
+					return impl.getFile().getPath();
+				}
+				return prepareHistoryCon().getBookName(bid);
+			} else {
+				if (bid>=0&&bid<md.size()&&md.get((int) bid)!=null)
+					return md.get((int) bid).getDictionaryName();
+				return getPlaceHolderAt((int) bid).pathname;
+			}
+		} catch (Exception e) {
+			CMN.Log(e);
 		}
 		return null;
 	}
@@ -3715,8 +3807,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			lastInDark = GlobalOptions.isDark;
 		}
 		
-		public void setInvoker(BookPresenter mdict, WebViewmy _mWebView, TextView _tv, String text) {
-			invoker=mdict;
+		public void setInvoker(BookPresenter presenter, WebViewmy _mWebView, TextView _tv, String text) {
+			invoker=presenter;
 			mWebView=_mWebView;
 			mTextView =_tv;
 			isWeb = invoker!=null && invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
@@ -3816,7 +3908,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							};
 							boolean apply = bFromPeruseView || widget12.getTag(R.id.image)==null;
 							if(invoker.getUseInternalBG()) {
-								invoker.dumpViewStates(MainActivityUIBase.this, prepareHistoryCon());
+								invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
 								if(apply && mWebView!=null)
 									mWebView.setBackgroundColor(ManFt_invoker_bgColor);
 							}else {
@@ -3969,7 +4061,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									public void onClick(View v) {
 										statHasBookmark(true);
 									}
-								});
+								}, false);
 							} else {
 								showT("已弃用旧版数据库，请尽快升级。");
 							}
@@ -4014,15 +4106,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									BookmarkAdapter.BookmarkDatabaseReader reader = (BookmarkAdapter.BookmarkDatabaseReader) mBookMarkAdapter.getItem(position1);
 									if (reader!=null) {
 										WebViewmy webview = (bFromPeruseView ? PeruseView.mWebView : invoker.mWebView);
-										UniversalDictionaryInterface book = webview.presenter.bookImpl;
-										int pos = reader.position;
-										if (!TextUtils.equals(mdict.processText(reader.entryName), mdict.processText(book.getEntryAt(pos)))) {
-											int tmp_pos = book.lookUp(reader.entryName);
-											if (tmp_pos>=0) {
-												pos = tmp_pos;
+										if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+											String url = reader.entryName;
+											if (url.startsWith("/")) {
+												url = ((PlainWeb)webview.presenter.bookImpl).getHost()+url;
 											}
+											webview.loadUrl(url);
+										} else {
+											UniversalDictionaryInterface book = webview.presenter.bookImpl;
+											int pos = reader.position;
+											if (!TextUtils.equals(mdict.processText(reader.entryName), mdict.processText(book.getEntryAt(pos)))) {
+												int tmp_pos = book.lookUp(reader.entryName);
+												if (tmp_pos>=0) {
+													pos = tmp_pos;
+												}
+											}
+											myWebClient.shouldOverrideUrlLoading(webview, "entry://@" + pos);
 										}
-										myWebClient.shouldOverrideUrlLoading(webview, "entry://@" + pos);
 										//opt.putString("bkmk", invoker.f().getAbsolutePath() + "/?Pos=" + id11);
 										//if(!cb.isChecked())
 									}
@@ -4044,7 +4144,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							});
 						}
 						break;
-						/* 分享内容 */
+						/* 词典设置 */
 						case 2:{
 						
 						} break;
@@ -4074,7 +4174,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if (targetLevel > 0) {
 									if (invoker.getUseInternalFS()) {
 										showT((invoker.internalScaleLevel = targetLevel) + "%", 0);
-										invoker.dumpViewStates(MainActivityUIBase.this, prepareHistoryCon());
+										invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
 									} else {
 										notifyGLobalFSChanged(targetLevel);
 										showT("(全局) " + (targetLevel) + "%", 0);//"(全局) "
@@ -4093,7 +4193,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								_mWebView.getSettings().setTextZoom(targetLevel);
 								if (invoker.getUseInternalFS()) {
 									showT((invoker.internalScaleLevel = targetLevel) + "%", 0);
-									invoker.dumpViewStates(MainActivityUIBase.this, prepareHistoryCon());
+									invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
 								} else {
 									notifyGLobalFSChanged(targetLevel);
 									showT("(" + getResources().getString(R.string.GL) + ") " + (targetLevel) + "%", 0);//全局
@@ -4221,7 +4321,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (isLongClicked) return false;
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0) {
-									popupWord(CurrentSelected, -1, -1);
+									popupWord(CurrentSelected, null, -1);
 								}
 								bNeedClearTextSelection=true;
 							} else {
@@ -4229,7 +4329,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									mWebView.simulateScrollEffect();
 									bNeedStopScrollEffect=true;
 									if (word.length() > 2) {
-										popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), -1, mWebView.frameAt);
+										popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), null, mWebView.frameAt);
 									}
 								});
 							}
@@ -4593,7 +4693,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			else if(twoColumnView!=null && twoColumnView.getParent()!=null) {
 				dialogList.removeFooterView(twoColumnView);
 			}
-
+			
+			// 设置标题
 			if(!bFromTextView) {
 				StringBuilder sb = invoker.appendCleanDictionaryName(null);
 				String text = bFromPeruseView ? PeruseView.currentDisplaying() : invoker.currentDisplaying;
@@ -4657,10 +4758,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		private void statHasBookmark(boolean notify) {
 			itemsA[0]=bmAdd;
 			if(getUsingDataV2()) {
-				if(isWeb) {
-					//if(((bookPresenter_web)invoker).containsCurrentUrl(con, mWebView.getUrl()))
-					//	itemsA[0]=getString(R.string.bmSub);
-				} else if(mWebView.presenter.hasBookmarkAt(mWebView.presenter.bookImpl.getEntryAt(mWebView.currentPos))){
+				if(mWebView.presenter.hasBookmark(mWebView)){
 					itemsA[0]=getString(R.string.bmSub);
 				}
 			}
@@ -5327,9 +5425,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				setchooser.clear();
 				setchooser=null;
 			}
+			if(ActivedAdapter!=null){
+				webviewHolder = ActivedAdapter.webviewHolder;
+				if(webviewHolder!=null) {
+					for(int i=0;i<webviewHolder.getChildCount();i++) {
+						View ca = webviewHolder.getChildAt(i);
+						if (ca!=null && ca.getTag() instanceof WebViewmy) {
+							BookPresenter mdTmp = ((WebViewmy) ca.getTag()).presenter;
+							mdTmp.vartakelayaTowardsDarkMode(null);
+						}
+					}
+				}
+			}
 			animateUIColorChanges();
 		} catch (Exception e) {
-			e.printStackTrace();
+			CMN.Log(e);
 		}
 	}
 
@@ -5583,7 +5693,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(PDICMainAppOptions.getClickSearchAutoReadEntry())
 						popupWebView.bRequestedSoundPlayback=true;
 					popupWebView.fromCombined=2;
-					CCD.renderContentAt(-1, CCD_ID, -1, popupWebView, currentClickDictionary_currentPos=np);
+					CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, popupWebView, currentClickDictionary_currentPos=np);
 					decorateContentviewByKey(popupStar, currentClickDisplaying);
 					if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy8()==0)
 						insertUpdate_histroy(currentClickDisplaying, 0, PopupPageSlider);
@@ -5663,7 +5773,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(PDICMainAppOptions.getClickSearchAutoReadEntry())
 								popupWebView.bRequestedSoundPlayback=true;
 							popupWebView.fromCombined=2;
-							CCD.renderContentAt(-1, CCD_ID, -1, popupWebView, currentClickDictionary_currentPos=idx);
+							CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, popupWebView, currentClickDictionary_currentPos=idx);
 						}
 					}
 				}
@@ -6244,7 +6354,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			try {
 				myCpr<String, int[]> record = popupHistory.get(popupHistoryVagranter+=(isGoBack?-1:1));
 				popupTextView.setText(currentClickDisplaying=record.key);
-				popupWebView.SelfIdx = CCD_ID = record.value[0];
+				//popupWebView.SelfIdx = CCD_ID = record.value[0];
 				currentClickDictionary_currentPos = record.value[1];
 				popupIndicator.setText((CCD=md.get(CCD_ID)).getDictionaryName());
 				popuphandler.setDict(CCD);
@@ -7307,7 +7417,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 
 				if (editing && mWebView.currentRendring!=null && mWebView.currentRendring.length==1) {
-					mWebView.evaluateJavascript(ce_on, null);
+					if (!(mWebView.fromCombined==3?getPeruseView().bSupressingEditing:invoker.bSupressingEditing)) {
+						mWebView.evaluateJavascript(ce_on, null);
+					}
 				}
 
 				if(toHighLight){
@@ -7414,7 +7526,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mWebView.forbidLoading) {
 				return true;
 			}
-			CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), mWebView.SelfIdx+"/"+md.size(), mWebView.fromCombined);
+			CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), mWebView.fromCombined);
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
 			boolean fromPopup = view==popupWebView;
@@ -7533,7 +7645,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (mWebView.HistoryVagranter >= 0) {
 							(PageState = mWebView.History.get(mWebView.HistoryVagranter).value).set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
 							if (mWebView.HistoryVagranter == 0) {
-								invoker.HistoryOOP.put(mWebView.currentPos, PageState);
+								invoker.HistoryOOP.put((int)mWebView.currentPos, PageState); //todo
 							}
 						}
 						mWebView.expectedPos = -100;
@@ -7607,7 +7719,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(popup){
 							init_popup_view();
 							popupWebView.frameAt = mWebView.frameAt;
-							popupWebView.SelfIdx = mWebView.SelfIdx;
+							//popupWebView.SelfIdx = mWebView.SelfIdx;
 							mWebView = popupWebView;
 						}
 						mWebView.toTag = null;
@@ -7619,7 +7731,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(url.endsWith("/")) url=url.substring(0, url.length()-1);
 						url = URLDecoder.decode(url, "UTF-8");
 						if(popup){
-							popupWord(url, popupWebView.SelfIdx, mWebView.frameAt);
+							popupWord(url, popupWebView.presenter, mWebView.frameAt);
 							return true;
 						}
 						else {
@@ -7642,7 +7754,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											if (mWebView.HistoryVagranter >= 0)
 												(PageState = mWebView.History.get(mWebView.HistoryVagranter).value).set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
 											if (mWebView.HistoryVagranter == 0)
-												invoker.HistoryOOP.put(mWebView.currentPos, PageState);
+												invoker.HistoryOOP.put((int) mWebView.currentPos, PageState); // todo
 										} else if (mWebView.HistoryVagranter >= 0) {
 											mWebView.History.get(mWebView.HistoryVagranter).value.set(0, WHP.getScrollY(), mWebView.webScale);
 										}
@@ -7748,8 +7860,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			BookPresenter invoker = mWebView.presenter;
 			//CMN.Log("chromium shouldInterceptRequest invoker",invoker);
 			if(invoker==null) return null;
-			// nimp
-			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB
+				&& (accept==null || accept.contains("text/html"))) {
 				if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
 					PlainWeb webx = (PlainWeb) invoker.bookImpl;
 					boolean proceed = true;
@@ -7763,11 +7875,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 
-					if(proceed){
-						InputStream overridePage = webx.getPage(url);
-						//CMN.tp(0, "webx getPage :: ", overridePage, url);
+					if(proceed) {
+						CMN.Log("accept", accept, url);
+						InputStream overridePage = invoker.getWebPage(url);
 						if(overridePage!=null){
-							return new WebResourceResponse("*","UTF-8",overridePage);
+							//CMN.tp(0, "webx getPage :: ", invoker.getWebPageString(url), url);
+							//BU.recordString(invoker.getWebPageString(url), "/sdcard/test.html");
+							return new WebResourceResponse("text/html","UTF-8",overridePage);
 						}
 					}
 
@@ -8244,7 +8358,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				PlaceHolder phTmp = CosyChair.get(i);
 				if (PDICMainAppOptions.getTmpIsAudior(phTmp.tmpIsFlag)) {
 					try {
-						md.set(i, mdTmp = new_mdict(phTmp.getPath(opt), MainActivityUIBase.this));
+						md.set(i, mdTmp = new_book(phTmp.getPath(opt), MainActivityUIBase.this));
 						mdTmp.tmpIsFlag = phTmp.tmpIsFlag;
 					} catch (Exception ignored) { }
 				}
@@ -8450,7 +8564,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 head = document.getElementsByTagName('head')[0],
 	 style = document.createElement('style');
 	 style.id = "_PDict_Darken";
-	 if(!document.getElementById(style.id)) {
+	 if(!document.getElementById('_PDict_Darken')) {
 		 style.class = "_PDict";
 		 style.type = 'text/css';
 		 if (style.styleSheet){
@@ -8855,7 +8969,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case 999:
 				if(PDICMainAppOptions.getImmersiveClickSearch()!=PDICMainAppOptions.getImmersiveClickSearch(TFStamp))
-					popupWord(null,-1, 0);
+					popupWord(null,null, 0);
 			break;
 		}
 	}
@@ -9714,14 +9828,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 接管历史纪录 */
 			bRequestedCleanSearch=bIsFirstLaunch;
 			bIsFirstLaunch=false;
-			if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(0)))))
+			if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(this, 0)))))
 			{
 				adaptermy2.onItemClick(null, adaptermy2.getView(0, null, null), 0, 0);
 			}
 		}
 	}
 	
-	SparseIntArray mergedKeyHeaders = new SparseIntArray();
+	LongSparseArray<Integer> mergedKeyHeaders = new LongSparseArray();
 	private int TotalMergedKeyCount;
 	private int ConfidentMergeShift;
 	private int ConfidentMergeStart;
@@ -9767,13 +9881,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	/** 仿效 GoldenDict 返回尽可能多的结果 */
-	int[] getMergedClickPositions(int pos) {
-		int[] ret;
-		SparseIntArray KeyHeaders = mergedKeyHeaders;
-		int mergeCount = KeyHeaders.get(pos);
+	long[] getMergedClickPositions(long pos) {
+		long[] ret;
+		LongSparseArray<Integer> KeyHeaders = mergedKeyHeaders;
+		int mergeCount = KeyHeaders.get(pos, 0); // , 0
 		int MergedStartShift = pos==ConfidentMergeStart?ConfidentMergeShift :0;
 		if(mergeCount>0) {
-			ret = new int[TotalMergedKeyCount];
+			ret = new long[TotalMergedKeyCount];
 			for (int i=0; i < mergeCount; i++) {
 				ret[i]=pos+(MergedStartShift+i)%mergeCount;
 			}
@@ -9781,7 +9895,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mergeSize>1) {
 				int mergeIdx = mergeCount;
 				for (int i = 0; i < mergeSize; i++) {
-					int mergeKey = KeyHeaders.keyAt(i);
+					long mergeKey = KeyHeaders.keyAt(i);
 					if(mergeKey!=pos) {
 						mergeCount = KeyHeaders.get(mergeKey);
 						for (int j = 0; j < mergeCount; j++) {
@@ -9792,7 +9906,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		} else {
-			ret = new int[]{pos};
+			ret = new long[]{pos};
 		}
 		return ret;
 	}
@@ -9806,7 +9920,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	class SaveAndRestorePagePosDelegate {
-		public float SaveAndRestoreSinglePageForAdapter(WebViewmy webview, int pos, BasicAdapter ADA) {
+		public float SaveAndRestoreSinglePageForAdapter(WebViewmy webview, long pos, BasicAdapter ADA) {
 			//CMN.Log("SaveAndRestoreSinglePageForAdapter...");
 			float ret = -1;
 			ScrollerRecord pagerec;
@@ -9836,7 +9950,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			lastClickTime=System.currentTimeMillis();
 			
-			pagerec = ADA.avoyager.get(pos);
+			pagerec = ADA.avoyager.get((int) pos); //todo
 			if(pagerec!=null) {
 				webview.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 				webview.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
@@ -9918,7 +10032,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public float prepareSingleWebviewForAda(BookPresenter current, WebViewmy current_webview, int pos, BasicAdapter Ada) {
+	public float prepareSingleWebviewForAda(BookPresenter current, WebViewmy current_webview, long pos, BasicAdapter Ada) {
 		if(current_webview==null) {
 			current_webview = current.mWebView;
 		}
