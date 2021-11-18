@@ -2,7 +2,6 @@ package com.knziha.plod.dictionarymodels;
 
 import android.os.Looper;
 
-import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionary.mdictRes;
 

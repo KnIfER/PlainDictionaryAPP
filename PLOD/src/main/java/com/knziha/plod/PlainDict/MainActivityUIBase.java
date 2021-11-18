@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
@@ -87,13 +88,11 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -140,6 +139,7 @@ import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.widget.CircleCheckBox;
+import com.knziha.plod.PlainUI.AnnotAdapter;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.BottombarTweakerAdapter;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
@@ -161,12 +161,14 @@ import com.knziha.plod.dictionarymodels.PlainPDF;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
+import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
@@ -188,7 +190,6 @@ import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.Utils;
-import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
 import com.knziha.text.ColoredHighLightSpan;
@@ -225,7 +226,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -2431,7 +2431,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static byte[] separator = "\n".getBytes(StandardCharsets.UTF_8);
 	public static int separatorCount = separator.length;
 	public static int targetCount = target.length;
-	public static int ConfigSize = 64;
+	public static int ConfigSize = 70;
 	public static int ConfigExtra = 0; // 5
 	public static int SpecificationBlockSize = 4096;
 
@@ -3786,7 +3786,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		TextView mTextView;
 		MdxDBHelper con;
 		AlertDialog d;
-		ListAdapter d_list_adapter;
 		ImageView iv_switch;
 		ImageView tools_lock;
 		ImageView iv_settings;
@@ -3798,12 +3797,53 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		private CircleCheckBox cb;
 		
 		UniCoverClicker(){
-			final Resources r = getResources();
-			itemsA = r.getStringArray(R.array.dict_tweak_arr);
-			itemsB = r.getStringArray(R.array.dict_tweak_arr2);
-			itemsD = r.getStringArray(R.array.text_tweak_arr);
-			itemsE = r.getStringArray(R.array.text_tweak_arr2);
-			bmAdd=itemsA[0];
+			arrayTweakDict = new int[]{
+				R.string.bmAdd
+				,R.string.bookmarkL
+				,R.string.annotL
+				,R.string.dict_opt
+				,R.string.f_scale_up
+				,R.string.f_scale_down
+			};
+			arraySelUtils = new int[]{
+				R.string.favor_sel
+				,R.string.select_all
+				,R.string.hi_color
+				,R.string.highlight
+				,R.string.dehighlight
+				,R.string.underline
+				,R.string.deunderline
+				,R.string.share_1
+				,R.string.send_dot
+				,R.string.share_2
+				,R.string.share_3
+			};
+			arraySelUtils2 = new int[]{
+				R.string.favor_sel
+				,R.string.send_inpage
+				,R.string.tts
+				,R.string.pop_sch
+				,R.string.peruse_sch
+				,R.string.send_etsch
+				,R.string.fapp_name
+				,R.string.share_4
+				,R.string.send_dot
+				,R.string.share_5
+				,R.string.share_6
+			};
+			arrayTextUtils = new int[]{
+				R.string.favor_sel
+				,R.string.send_inpage
+				,R.string.tts
+				,R.string.pop_sch
+				,R.string.peruse_sch
+				,R.string.send_etsch
+				,R.string.fapp_name
+				,R.string.share_1
+				,R.string.send_dot
+				,R.string.share_2
+				,R.string.share_3
+			};
 			lastInDark = GlobalOptions.isDark;
 		}
 		
@@ -3835,12 +3875,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		//boolean bResposibleForCon=false;
 		//boolean doCloseOnDiss=true;
-		String[] itemsA;
-		String[] itemsB;
-		String[] itemsEmpty = new String[0];
-		String[] itemsD;
-		String[] itemsE;
-		String bmAdd;
+		int[] arrayTweakDict;
+		int[] arraySelUtils;
+		int[] arraySelUtils2;
+		int[] arrayTextUtils;
 		public boolean bFromWebView;
 		public boolean bFromPeruseView;
 		boolean bFromTextView;
@@ -3861,13 +3899,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						boolean val = opt.setToTextShare(!opt.getToTextShare());
 						iv_switch.setColorFilter(getResources().getColor(val?R.color.DeapDanger:R.color.ThinHeaderBlue), PorterDuff.Mode.SRC_IN);
 						if(twoColumnAda!=null){
-							twoColumnAda.setItems(val?itemsD:itemsB);
+							twoColumnAda.setItems(val? arraySelUtils2 : arraySelUtils);
 						}
 					} else {
 						boolean val = opt.setToTextShare2(!opt.getToTextShare2());
 						iv_switch.setColorFilter(getResources().getColor(val?R.color.colorAccent:R.color.ThinAccent), PorterDuff.Mode.SRC_IN);
 						if(twoColumnAda!=null){
-							twoColumnAda.setItems(val?itemsE:itemsD);
+							twoColumnAda.setItems(val? arrayTextUtils : arraySelUtils2);
 						}
 					}
 				} return;
@@ -3888,19 +3926,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					ColorPickerDialog asd =
 							ColorPickerDialog.newBuilder()
 									.setDialogId(123123)
-									.setInitialColor(invoker.getUseInternalBG()?(invoker.bgColor==null?(invoker.bgColor=CMN.GlobalPageBackground):invoker.bgColor):GlobalPageBackground)
+									.setInitialColor(invoker.getUseInternalBG()?invoker.getBgColor():GlobalPageBackground)
 									.create();
 					asd.setColorPickerDialogListener(new ColorPickerDialogListener() {
 						@Override
 						public void onColorSelected(ColorPickerDialog dialogInterface, int color) {
 							//CMN.Log("onColorSelected");
 							if(invoker.getUseInternalBG())
-								invoker.bgColor=color;
+								invoker.setBgColor(color);
 							else{
 								GlobalPageBackground=CMN.GlobalPageBackground=color;
 							}
 							WebViewmy mWebView=bFromPeruseView?PeruseView.mWebView:invoker.mWebView;
-							int ManFt_invoker_bgColor=invoker.bgColor;
+							int ManFt_invoker_bgColor=invoker.getBgColor();
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
 							if(GlobalOptions.isDark) {
 								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web);
@@ -3944,7 +3982,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							CMN.Log("onDialogDismissed");
 							d.show();
 							WebViewmy mWebView=bFromPeruseView?PeruseView.mWebView:invoker.mWebView;
-							int ManFt_invoker_bgColor=invoker.bgColor;
+							int ManFt_invoker_bgColor=invoker.getBgColor();
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
 							if(GlobalOptions.isDark) {
 								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web);
@@ -4037,29 +4075,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		public boolean onItemClick(AdapterView<?> parent, @Nullable View view, int position, long id, boolean isLongClicked, boolean isUserClick) {
-			//CMN.Log("数据库 ", itemsA[0], getString(R.string.bmSub), itemsA[0].equals(getString(R.string.bmSub)));
-			if(position<0) {
-				return true;
-			}
+			if(position<0) return true;
 			int dissmisstype=0;
 			try {
 				//if(isLongClicked) CMN.Log("长按开始……");
-				if(!bFromWebView && !bFromTextView) {
+				if(!hasText()) {
 					WebViewmy _mWebView = mWebView;
 					if(_mWebView==null) _mWebView=invoker.mWebView;
 					if(_mWebView==null) {
 						showT("错误!!! 网页找不到了");
 						return true;
 					}
-					switch (position) {
+					switch ((int) id) {
 						/* 书签 */
-						case 0: {
+						case R.string.bmAdd: {
 							if (isLongClicked) return false;
 							if (getUsingDataV2()) {
 								_mWebView.presenter.toggleBookMark(_mWebView, new OnClickListener(){
 									@Override
 									public void onClick(View v) {
-										statHasBookmark(true);
+										statHasBookmark();
 									}
 								}, false);
 							} else {
@@ -4068,10 +4103,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (mBookMarkAdapter != null) { // todo why
 								mBookMarkAdapter.clear();
 							}
-						}
-						break;
+						} break;
 						/* 书签列表 */
-						case 1: {//书签列表
+						case R.string.bookmarkL: {
 							if (isLongClicked) return false;
 							//stst = System.currentTimeMillis();
 							//ArrayList<Integer> result = new ArrayList<>();
@@ -4142,34 +4176,95 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								lastBookMarkPosition = list.getFirstVisiblePosition();
 								mBookMarkAdapter.clear();
 							});
-						}
-						break;
+						} break;
+						/* 笔记列表 */
+						case R.string.annotL: {
+							if (isLongClicked) return false;
+							if (!getUsingDataV2()) {
+								showT("仅支持数据库v2", 0);
+								break;
+							}
+							AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this, lastInDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line);//,R.style.DialogStyle2Line);
+							builder.setTitle(invoker.appendCleanDictionaryName(MainStringBuilder).append(" -> ").append(getString(R.string.bm)).toString());
+							builder.setItems(new String[]{}, null);
+							//builder.setNeutralButton(R.string.delete, null);
+							AlertDialog d = builder.show();
+							ListView list = d.getListView();
+							list.setAdapter(getAnnotationAdapter(lastInDark, invoker));
+							//d.getListView().setFastScrollEnabled(true);
+							list.setOnItemClickListener((parent1, view1, position1, id1) -> {
+								if (prepareHistoryCon().testDBV2) {
+									AnnotAdapter.AnnotationReader reader = (AnnotAdapter.AnnotationReader) mAnnotAdapter.getItem(position1);
+									if (reader!=null) {
+										WebViewmy webview = (bFromPeruseView ? PeruseView.mWebView : invoker.mWebView);
+										if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+											String url = reader.entryName;
+											if (url.startsWith("/")) {
+												url = ((PlainWeb)webview.presenter.bookImpl).getHost()+url;
+											}
+											webview.loadUrl(url);
+										} else {
+											UniversalDictionaryInterface book = webview.presenter.bookImpl;
+											int pos = (int) reader.position;
+											if (!TextUtils.equals(mdict.processText(reader.entryName), mdict.processText(book.getEntryAt(pos)))) {
+												int tmp_pos = book.lookUp(reader.entryName);
+												if (tmp_pos>=0) {
+													pos = tmp_pos;
+												}
+											}
+//											webview.expectedPos = pagerec.y;
+//											webview.expectedPosX = pagerec.x;
+											myWebClient.shouldOverrideUrlLoading(webview, "entry://@" + pos);
+										}
+										//opt.putString("bkmk", invoker.f().getAbsolutePath() + "/?Pos=" + id11);
+										//if(!cb.isChecked())
+									}
+									// todo notify error
+								}
+								d.dismiss();
+							});
+							
+							list.addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_))));
+							//d.getListView().setTag(con);
+						} break;
 						/* 词典设置 */
-						case 2:{
-						
+						case R.string.dict_opt:{
+							int jd = WeakReferenceHelper.dict_opt;
+							BookOptionsDialog dialog = (BookOptionsDialog) getReferencedObject(jd);
+							if (dialog==null) {
+								dialog = new BookOptionsDialog();
+								putReferencedObject(jd, dialog);
+							}
+							dialog.bookOptions.setData(new BookPresenter[]{_mWebView.presenter});
+							try {
+								if (!dialog.isAdded()) {
+									dialog.show(getSupportFragmentManager(), "");
+								} else {
+									dialog.getDialog().show();
+								}
+							} catch (Exception e) {
+								CMN.Log(e);
+							}
 						} break;
 						/* 文字缩放级别 */
-						case 3:
-						case 4: {
+						case R.string.f_scale_up:
+						case R.string.f_scale_down: {
 							if (isLongClicked) {
 								int targetLevel = invoker.getFontSize();
-								switch (position) {
-									case 3:
-										if (targetLevel < BookPresenter.optimal100) {
-											_mWebView.getSettings().setTextZoom(targetLevel = BookPresenter.optimal100);
-										} else if (targetLevel < 500) {
-											_mWebView.getSettings().setTextZoom(targetLevel = 500);
-										} else
-											targetLevel = -1;
-										break;
-									case 4:
-										if (targetLevel > BookPresenter.optimal100) {
-											_mWebView.getSettings().setTextZoom(targetLevel = BookPresenter.optimal100);
-										} else if (targetLevel > 10) {
-											_mWebView.getSettings().setTextZoom(targetLevel = 10);
-										} else
-											targetLevel = -2;
-										break;
+								if (id==R.string.f_scale_up) {
+									if (targetLevel < BookPresenter.optimal100) {
+										_mWebView.getSettings().setTextZoom(targetLevel = BookPresenter.optimal100);
+									} else if (targetLevel < 500) {
+										_mWebView.getSettings().setTextZoom(targetLevel = 500);
+									} else
+										targetLevel = -1;
+								} else {
+									if (targetLevel > BookPresenter.optimal100) {
+										_mWebView.getSettings().setTextZoom(targetLevel = BookPresenter.optimal100);
+									} else if (targetLevel > 10) {
+										_mWebView.getSettings().setTextZoom(targetLevel = 10);
+									} else
+										targetLevel = -2;
 								}
 								if (targetLevel > 0) {
 									if (invoker.getUseInternalFS()) {
@@ -4186,7 +4281,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								return true;
 							} else {
 								int targetLevel = invoker.getUseInternalFS() ? _mWebView.getSettings().getTextZoom() : BookPresenter.def_fontsize;
-								if (position == 3) targetLevel += 10;
+								if (id==R.string.f_scale_up) targetLevel += 10;
 								else targetLevel -= 10;
 								targetLevel = targetLevel > 500 ? 500 : targetLevel;
 								targetLevel = targetLevel < 10 ? 10 : targetLevel;
@@ -4199,23 +4294,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									showT("(" + getResources().getString(R.string.GL) + ") " + (targetLevel) + "%", 0);//全局
 								}
 							}
-						}
-						break;
+						} break;
 					}
 				}
 				else {
-					PreferredToolId = position;
+					PreferredToolId = (int) id;
 					if(isUserClick) {
-						if((bFromTextView && (position<7||!opt.getToTextShare2()) || !bFromTextView && opt.getToTextShare()))
-							position+=11;
 						if(!isLongClicked && this_instanceof_MultiShareActivity && opt.getRememberVSPanelGo()) {
-							opt.putLastVSGoNumber(position);
+							//opt.putLastVSGoNumber(position);//todo
 						}
 					}
-					switch (position) {//xx
+					switch (PreferredToolId) {//xx
 						/* 收藏 */
-						case 11:
-						case 0: {
+						case R.string.favor_sel: {
 							// to impl
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0 && prepareFavoriteCon().insert(MainActivityUIBase.this, CurrentSelected, -1, null) > 0)
@@ -4228,10 +4319,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								});
 							}
-						}
-						break;
+						} break;
 						/* 全选 */
-						case 1: {
+						case R.string.select_all: {
 							if (isLongClicked) {
 								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
 									if (word.length() > 2) {
@@ -4242,47 +4332,40 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							} else {
 								mWebView.evaluateJavascript(WebViewmy.SelectAll, null);
 							}
-						}
-						break;
+						} break;
 						/* 颜色 */
-						case 2:
+						case R.string.hi_color:
 							break;
 						/* 高亮 */
-						case 3: {
-							mWebView.evaluateJavascript(mWebView.getHighLightIncantation().toString(), null);
-						}
-						break;
+						case R.string.highlight: {
+							Annot(mWebView, R.string.highlight);
+						} break;
 						/* 清除高亮 */
-						case 4: {
+						case R.string.dehighlight: {
 							mWebView.evaluateJavascript(mWebView.getDeHighLightIncantation().toString(), null);
-						}
-						break;
+						} break;
 						/* 下划线 */
-						case 5: {
-							mWebView.evaluateJavascript(mWebView.getUnderlineIncantation().toString(), null);
-						}
-						break;
+						case R.string.underline: {
+							Annot(mWebView, R.string.underline);
+						} break;
 						/* 清除下划线 */
-						case 6: {
+						case R.string.deunderline: {
 							mWebView.evaluateJavascript(mWebView.getDeUnderlineIncantation().toString(), null);
-						}
-						break;
-						case 18://分享#4
-						case 19://分享'
-						case 20://分享#5
-						case 21://分享#6
-						case 7://分享#1
-						case 8://分享
-						case 9://分享#2
-						case 10: //分享#3
+						} break;
+						case R.string.send_dot:
+						case R.string.share_1:
+						case R.string.share_2:
+						case R.string.share_3:
+						case R.string.share_4:
+						case R.string.share_5:
+						case R.string.share_6:
 						{
-							if(execVersatileShare(isLongClicked, position)) {
+							if(execVersatileShare(isLongClicked, PreferredToolId)) {
 								return true;
 							}
-						}
-						break;
+						} break;
 						/* 页内搜索 */
-						case 12: {
+						case R.string.send_inpage: {
 							if (isLongClicked) return false;
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0)
@@ -4295,10 +4378,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								});
 							}
 							dissmisstype=1;
-						}
-						break;
+						} break;
 						/* TTS */
-						case 13: {
+						case R.string.tts: {
 							if (isLongClicked) return false;
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0)
@@ -4311,10 +4393,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								});
 							}
 							dissmisstype=2;
-						}
-						break;
+						} break;
 						/* 点译 */
-						case 14: {
+						case R.string.pop_sch: {
 							if(this_instanceof_MultiShareActivity) {
 								populateDictionaryList();
 							}
@@ -4334,10 +4415,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								});
 							}
 							dissmisstype=1;
-						}
-						break;
+						} break;
 						/* 翻阅模式 */
-						case 15: {
+						case R.string.peruse_sch: {
 							if(this_instanceof_MultiShareActivity) {
 								populateDictionaryList();
 							}
@@ -4353,10 +4433,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								});
 							}
 							dissmisstype=1;
-						}
-						break;
+						} break;
 						/* 搜索框 */
-						case 16: {
+						case R.string.send_etsch: {
 							if (isLongClicked) return false;
 							if(this_instanceof_MultiShareActivity) {
 								Intent newTask = new Intent(Intent.ACTION_MAIN);
@@ -4380,10 +4459,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								}
 								dissmisstype=1;
 							}
-						}
-						break;
+						} break;
 						/* 浮动搜索 */
-						case 17: {
+						case R.string.fapp_name: {
 							if (isLongClicked) return false;
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0)
@@ -4438,11 +4516,31 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		
-		boolean execVersatileShare(boolean isLongClicked, int position) {
-			if (isLongClicked && (position == 19 || position == 8)) {
+		private int mapVShareToPostion(int id) {
+			switch (id) {
+				case R.string.share_1:
+					return 0;
+				case R.string.share_2:
+					return 2;
+				case R.string.share_3:
+					return 3;
+				case R.string.share_4:
+					return 11;
+				case R.string.share_5:
+					return 13;
+				case R.string.share_6:
+					return 14;
+				default:
+					return 1;
+			}
+		}
+		
+		boolean execVersatileShare(boolean isLongClicked, int id) {
+			if (isLongClicked && id==R.string.send_dot) {
 				return true;
 			}
-			JSONObject json = opt.getDimensionalSharePatternByIndex(position - 7);
+			int position = mapVShareToPostion(id);
+			JSONObject json = opt.getDimensionalSharePatternByIndex(position);
 			boolean putDefault = json == null;
 			if (putDefault) {
 				json = new JSONObject();
@@ -4450,7 +4548,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				putDefault = json.has("b")||json.length()==0;
 			}
 			if (putDefault) {
-				putDefaultSharePattern(json, position);
+				putDefaultSharePattern(json, id);
 			}
 			/* 将 json 散列为数组。 */
 			ArrayList<String> data = new ArrayList<>(8);
@@ -4494,10 +4592,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									android.app.AlertDialog.Builder builder21 = new android.app.AlertDialog.Builder(getLayoutInflater().getContext());
 									android.app.AlertDialog d1 = builder21.setTitle("确认删除并恢复默认值？")
 											.setPositiveButton(R.string.confirm, (dialog, which) -> {
-												opt.putDimensionalSharePatternByIndex(position - 7, null);
+												opt.putDimensionalSharePatternByIndex(position, null);
 												JSONObject json = new JSONObject();
 												data.clear();
-												putDefaultSharePattern(json, position);
+												putDefaultSharePattern(json, id);
 												serializeSharePattern(json, data);
 												csa.notifyDataSetChanged();
 											})
@@ -4507,11 +4605,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								else try {
 									JSONObject neo = packoutNeoJson(data);
 									JSONObject original = new JSONObject();
-									putDefaultSharePattern(original, position);
+									putDefaultSharePattern(original, id);
 									if (baseOnDefaultSharePattern(neo, original)) {
 										neo = packoutNeoJson(data);
 									}
-									opt.putDimensionalSharePatternByIndex(position - 7, neo);
+									opt.putDimensionalSharePatternByIndex(position, neo);
 									showT("保存成功！");
 									dTmp.dismiss();
 								}
@@ -4581,19 +4679,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		protected void build_further_dialog(){
-			boolean needRecreate=bLastFromWebView!=bFromWebView||bFromTextView;
+			boolean needRecreate=bLastFromWebView!=hasText();
 			if(!bFromWebView && mWebView!=null) {
-				statHasBookmark(false);
+				statHasBookmark();
 			}
 			ListView dialogList;
-			CMN.Log("重建对话???", bFromWebView||bFromTextView);
-			if(GlobalOptions.isDark!=lastInDark || needReCreateUcc || d==null) {
+			//CMN.Log("重建对话???", hasText());
+			if(GlobalOptions.isDark!=lastInDark || d==null)
+			{
 				CMN.Log("重建对话框…");
 				needRecreate=false;
 				d = new AlertDialog.Builder(MainActivityUIBase.this
 						,GlobalOptions.isDark?R.style.DialogStyle3Line
 						:R.style.DialogStyle4Line)
-						.setItems((bFromWebView||bFromTextView)? itemsEmpty :itemsA,null)
+						.setItems(ArrayUtils.EMPTY_STRING_ARRAY,null)
 						.create();
 				bottomView = (ViewGroup) getLayoutInflater().inflate(R.layout.checker2, dialogList = d.getListView(), false);
 				
@@ -4634,16 +4733,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					tools_lock.setVisibility(View.GONE);
 				}
 
-				dialogList.setOnItemClickListener(this);
-				dialogList.setOnItemLongClickListener(this);
-
 				dialogList.addFooterView(bottomView);
 
 				if(twoColumnAda!=null)  twoColumnAda.notifyDataSetChanged();
-				
 			}
-
-			boolean hasText = bFromWebView || bFromTextView;
 
 			int switch_cl_id=bFromWebView?(opt.getToTextShare()?R.color.DeapDanger:R.color.ThinHeaderBlue)
 					:opt.getToTextShare2()?R.color.colorAccent:R.color.ThinAccent;
@@ -4652,7 +4745,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				iv_switch.setColorFilter(mResource.getColor(last_switch_cl_id=switch_cl_id), PorterDuff.Mode.SRC_IN);
 			}
 
-			iv_switch.setVisibility(hasText?View.VISIBLE:View.GONE);
+			iv_switch.setVisibility(hasText()?View.VISIBLE:View.GONE);
 
 			int targetVis = bFromTextView?View.GONE:View.VISIBLE;
 			tools_lock.setVisibility(targetVis);
@@ -4661,38 +4754,36 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			dialogList = d.getListView();
 			boolean toText = bFromTextView || opt.getToTextShare();
-			if(hasText) {
-				String[] items = toText ? (bFromTextView && opt.getToTextShare2()?itemsE:itemsD) : itemsB;
-				if(twoColumnView==null) {
-					RecyclerView footRcyView = new RecyclerView(bottomView.getContext());
-					footRcyView.setClipToPadding(false);
-					GridLayoutManager lman;
-					footRcyView.setLayoutManager(lman = new GridLayoutManager(bottomView.getContext(), 2));
-					lman.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-						@Override
-						public int getSpanSize(int position) {
-							if (position == 0) return 2;
-							return 1;
-						}
-					});
-					TwoColumnAdapter RcyAda = new TwoColumnAdapter(items);
-					RcyAda.setOnItemClickListener(this);
-					RcyAda.setOnItemLongClickListener(this);
-					footRcyView.setAdapter(RcyAda);
-					twoColumnAda = RcyAda;
-					twoColumnView = footRcyView;
-				}
-				if(twoColumnView.getParent()!=dialogList){
-					dialogList.removeFooterView(bottomView);
-					dialogList.removeFooterView(twoColumnView);
-					dialogList.addFooterView(twoColumnView);
-					dialogList.addFooterView(bottomView);
-				}
-				twoColumnAda.setItems(items);
+			int[] items = hasText()?
+					toText ? (bFromTextView && opt.getToTextShare2()? arrayTextUtils : arraySelUtils2) : arraySelUtils
+					:arrayTweakDict;
+			if(twoColumnView==null) {
+				RecyclerView footRcyView = new RecyclerView(bottomView.getContext());
+				footRcyView.setClipToPadding(false);
+				GridLayoutManager lman;
+				footRcyView.setLayoutManager(lman = new GridLayoutManager(bottomView.getContext(), 2));
+				lman.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+					@Override
+					public int getSpanSize(int position) {
+						if (!hasText()) return 2;
+						if (position == 0) return 2;
+						return 1;
+					}
+				});
+				TwoColumnAdapter RcyAda = new TwoColumnAdapter(items);
+				RcyAda.setOnItemClickListener(this);
+				RcyAda.setOnItemLongClickListener(this);
+				footRcyView.setAdapter(RcyAda);
+				twoColumnAda = RcyAda;
+				twoColumnView = footRcyView;
 			}
-			else if(twoColumnView!=null && twoColumnView.getParent()!=null) {
+			if(twoColumnView.getParent()!=dialogList){
+				dialogList.removeFooterView(bottomView);
 				dialogList.removeFooterView(twoColumnView);
+				dialogList.addFooterView(twoColumnView);
+				dialogList.addFooterView(bottomView);
 			}
+			twoColumnAda.setItems(items);
 			
 			// 设置标题
 			if(!bFromTextView) {
@@ -4731,40 +4822,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			lastInDark=GlobalOptions.isDark;
 
-			if(needRecreate && !needReCreateUcc) { /* dynamically change items! */
-				try {
-					ArrayAdapter<CharSequence> dlgListAdapter = ((ArrayAdapter<CharSequence>) ((HeaderViewListAdapter) d.getListView().getAdapter()).getWrappedAdapter());
-					Field field = ArrayAdapter.class.getDeclaredField("mObjects");
-					field.setAccessible(true);
-					field.set(dlgListAdapter, Arrays.asList((bFromWebView||bFromTextView) ? itemsEmpty : itemsA));
-					dlgListAdapter.notifyDataSetChanged();
-					//dialogList.requestLayout();
-					//dialogList.setBackgroundColor(Color.BLUE);
-					//CMN.recurseLogCascade(d.getListView());
-					//CMN.Log("列表动态更新成功！", dialogList.getFooterViewsCount());
-					bLastFromWebView=bFromWebView||bFromTextView;
-				} catch (Exception e) {
-					needReCreateUcc = true;
-					CMN.Log("列表动态更新失败", e);
-				}
-			}else{
-				bLastFromWebView=bFromWebView||bFromTextView;
-			}
+			bLastFromWebView=bFromWebView||bFromTextView;
 			firstCreateUcc=false;
-			
-			d_list_adapter = dialogList.getAdapter();
 		}
 		
-		private void statHasBookmark(boolean notify) {
-			itemsA[0]=bmAdd;
+		private boolean hasText() {
+			return bFromWebView||bFromTextView;
+		}
+		
+		private void statHasBookmark() {
+			int resId=R.string.bmAdd;
 			if(getUsingDataV2()) {
 				if(mWebView.presenter.hasBookmark(mWebView)){
-					itemsA[0]=getString(R.string.bmSub);
+					resId=R.string.bmSub;
 				}
 			}
 			else if(!bFromTextView) con = invoker.getCon(false);
-			if (notify && d_list_adapter!=null) {
-				ViewUtils.notifyDataSetChanged(d_list_adapter);
+			if (arrayTweakDict[0]!=resId) {
+				arrayTweakDict[0] = resId;
+				if (twoColumnAda!=null) {
+					twoColumnAda.notifyItemChanged(0);
+				}
 			}
 		}
 		
@@ -4781,6 +4859,62 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public boolean detached() {
 			return d==null||!d.isShowing()||Utils.isWindowDetached(d.getWindow());
 		}
+	}
+	
+	public static long hashKey(String value) {
+		long h = BookPresenter.hashCode(value, 0);
+		h |= ((long)value.length())<<32;
+		return h;
+	}
+	
+	public static String digestKey(String value, int length) {
+		return value.length()>length?value.substring(0, length):value;
+	}
+	
+	public void Annot(WebViewmy mWebView, int type) {
+		boolean record = mWebView.presenter.getRecordHiKeys();
+		String js = (type==R.string.highlight?mWebView.getHighLightIncantation(record)
+				:mWebView.getUnderlineIncantation(record)).toString();
+		mWebView.evaluateJavascript(js, record?new ValueCallback<String>() {
+			@Override
+			public void onReceiveValue(String value) {
+				if(value!=null && value.length()>=3)
+				try {
+					value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+					if (getUsingDataV2()) {
+						String entry = mWebView.word;
+						PlainWeb webx = mWebView.presenter.getWebx();
+						if (webx!=null) {
+							entry = mWebView.getUrl();
+							if (entry.startsWith(webx.getHost()))
+								entry = entry.substring(webx.getHost().length());
+						}
+						long entryHash = hashKey(entry);
+						String lex = value;
+						long lexHash = hashKey(lex);
+						ContentValues values = new ContentValues();
+						values.put("bid", mWebView.presenter.getId());
+						values.put("entry", entry);
+						values.put("entryHash", entryHash);
+						values.put("entryDig", digestKey(entry, 3));
+						values.put("lex", lex);
+						values.put("lexHash", lexHash);
+						values.put("lexDig", digestKey(lex, 2));
+						values.put("pos", mWebView.currentPos);
+						long now = CMN.now();
+						values.put(LexicalDBHelper.FIELD_EDIT_TIME, now);
+						values.put(LexicalDBHelper.FIELD_CREATE_TIME, now);
+						JSONObject json = new JSONObject();
+						json.put("x", mWebView.getScrollX());
+						json.put("y", mWebView.getScrollY());
+						json.put("s", mWebView.webScale);
+						values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
+						long id = prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
+						showT(id+", "+value);
+					}
+				} catch (JSONException e) { CMN.Log(e); }
+			}
+		}:null);
 	}
 	
 	protected boolean getPinVSDialog() {
@@ -4917,28 +5051,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
-	void putDefaultSharePattern(JSONObject json, int position) {
+	void putDefaultSharePattern(JSONObject json, int id) {
 		try {
-			switch (position){
+			switch (id){
 				/* 分享#2 */
-				case 9:
+				case R.string.share_2:
 				/* 分享#1 */
-				case 7:
+				case R.string.share_1:
 					if(!json.has("k1")) json.put("k1", "_data");
-					if(!json.has("v1")) json.put("v1", position==9?"https://translate.google.cn/#view=home&op=translate&sl=auto&tl=zh-CN&text=%s":"https://www.baidu.com/s?wd=%s");
+					if(!json.has("v1")) json.put("v1", id==R.string.share_2?"https://translate.google.cn/#view=home&op=translate&sl=auto&tl=zh-CN&text=%s":"https://www.baidu.com/s?wd=%s");
 					if(!json.has("k2")) json.put("k2", "_chooser");
-					if(!json.has("v2")) json.put("v2", position==9?"c/q":"/");
+					if(!json.has("v2")) json.put("v2", id==R.string.share_2?"c/q":"/");
 				break;
 				/* 分享#3 */
-				case 10:
+				case R.string.share_3:
 					if(!json.has("k1")) json.put("k1", "_data");
 					if(!json.has("v1")) json.put("v1", "https://cn.bing.com/search?q=%s");
 					if(!json.has("k2")) json.put("k2", "_chooser");
 					if(!json.has("v2")) json.put("v2", "/");
 				break;
-				case 21:
-				case 19:
-				case 8:
+				case R.string.send_dot:
+				case R.string.share_6:
 					if(!json.has("k1")) json.put("k1", Intent.EXTRA_TEXT);
 					if(!json.has("v1")) json.put("v1", "%s");
 					if(!json.has("k2")) json.put("k2", "_chooser");
@@ -4946,14 +5079,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(!json.has("t")) json.put("t", "text/plain");
 					if(!json.has("a")) json.put("a", Intent.ACTION_SEND);
 				break;
-				case 18:
+				case R.string.share_4:
 					if(!json.has("a")) json.put("a", getResources().getString(R.string.colorfuldayswithbeautifulgirl));
 					if(!json.has("k1")) json.put("k1", EXTRA_QUERY);
 					if(!json.has("v1")) json.put("v1", "%s");
 					if(!json.has("k2")) json.put("k2", "_chooser");
 					if(!json.has("v2")) json.put("v2", "/");
 				break;
-				case 20:
+				case R.string.share_5:
 					if(!json.has("a")) json.put("a", Intent.ACTION_PROCESS_TEXT);
 					if(!json.has("k1")) json.put("k1", Intent.EXTRA_PROCESS_TEXT);
 					if(!json.has("v1")) json.put("v1", "%s");
@@ -4982,7 +5115,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	boolean firstCreateUcc=true;
-	boolean needReCreateUcc=false;
 	public UniCoverClicker ucc;
 	public int CachedBBSize=-1;
 	
@@ -5020,6 +5152,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			mBookMarkAdapter.refresh(invoker, prepareHistoryCon().getDB());
 		mBookMarkAdapter.darkMode=darkMode;
 		return mBookMarkAdapter;
+	}
+	
+	private AnnotAdapter mAnnotAdapter;
+	public ListAdapter getAnnotationAdapter(boolean darkMode, BookPresenter invoker) {
+		if(mAnnotAdapter==null)
+			mAnnotAdapter=new AnnotAdapter(this,R.layout.drawer_list_item,R.id.text1,invoker, prepareHistoryCon().getDB(),0);
+		else
+			mAnnotAdapter.refresh(invoker, prepareHistoryCon().getDB());
+		mAnnotAdapter.darkMode=darkMode;
+		return mAnnotAdapter;
 	}
 
 	public static void init_clickspan_with_bits_at(OptionProcessor optprs, TextView tv, SpannableStringBuilder text,

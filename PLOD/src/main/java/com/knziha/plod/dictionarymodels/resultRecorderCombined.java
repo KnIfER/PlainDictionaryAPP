@@ -13,7 +13,6 @@ import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,10 +31,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	}
 	
 	@Override
-	public ArrayList<Integer> getDictsAt(int pos) {
-		ArrayList<Integer> data = getRecordAt(pos);
-		ArrayList<Integer> data2=new ArrayList<>();
-		int last=-1;
+	public ArrayList<Long> getDictsAt(int pos) {
+		ArrayList<Long> data = getRecordAt(pos);
+		ArrayList<Long> data2=new ArrayList<>();
+		long last=-1;
 		for(int i=0;i<data.size();i+=2) {
 			if(last!=data.get(i))
 				data2.add(last=data.get(i));
@@ -44,27 +43,18 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	}
 
 	@Override
-	public int getOneDictAt(int pos) {
+	public long getOneDictAt(int pos) {
 		return getRecordAt(pos).get(0);
 	}
 
 	@Override
 	public boolean checkAllWebs(MainActivityUIBase a, ArrayList<BookPresenter> md) {
-		ArrayList<Integer> data = getRecordAt(0);
+		ArrayList<Long> data = getRecordAt(0);
 		BookPresenter bp;
 		allWebs=true;
 		for(int i=0;i<data.size();i+=2) {
-			bp = null;
-			int toFind=data.get(i);
-			if (toFind<0) {
-				try {
-					bp = a.getDictionaryById(-toFind);
-					toFind = Integer.MAX_VALUE;
-				} catch (IOException ignored) { }
-			}
-			if (bp==null && toFind>=0 && toFind<md.size()) {
-				bp = md.get(toFind);
-			}
+			long toFind=data.get(i);
+			bp = a.getBookById(toFind);
 			if (bp!=null && bp.getType()!=DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
 				allWebs=false;
 				break;
@@ -74,9 +64,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	}
 
 	@Override
-	public void syncToPeruseArr(ArrayList<Integer> pvdata, int pos) {
-		ArrayList<Integer> data = getRecordAt(pos);
-		int last=-1;
+	public void syncToPeruseArr(ArrayList<Long> pvdata, int pos) {
+		ArrayList<Long> data = getRecordAt(pos);
+		long last=-1;
 		pvdata.clear();
 		pvdata.ensureCapacity(data.size()/2);
 		for(int i=0;i<data.size();i+=2) {
@@ -86,13 +76,13 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	}
 
 	@Override
-	public CharSequence getResAt(int pos) {
+	public CharSequence getResAt(MainActivityUIBase a, long pos) {
 		if(data==null || pos<0 || pos>data.size()-1)
 			return "!!! Error: code 1";
-		List<Integer> l = ((List<Integer>) data.get(pos).value);
-		dictIdx = l.get(0);
+		List<Long> l = ((List<Long>) data.get((int) pos).value); //todo
+		bookId = l.get(0);
 		count = String.format("%02d", l.size()/2);
-		return data.get(pos).key;
+		return data.get((int) pos).key;
 	};
 
 	public OnLayoutChangeListener OLCL;
@@ -101,7 +91,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	public int LHGEIGHT;
 	
 	@Override
-	public void renderContentAt(int pos, final MainActivityUIBase a, BasicAdapter ADA){
+	public void renderContentAt(long pos, final MainActivityUIBase a, BasicAdapter ADA){
 		scrollTarget=null;
 		final ScrollView sv = a.WHP;
 		toHighLight=a.hasCurrentPageKey();
@@ -111,8 +101,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			sv.scrollTo(0, expectedPos);
 		}
 
-		final additiveMyCpr1 result = data.get(pos);
-		final List<Integer> vals = (List<Integer>) result.value;
+		final additiveMyCpr1 result = data.get((int) pos);
+		final List<Long> vals = (List<Long>) result.value;
 		
 		// todo remove adaptively .
 		a.webholder.removeAllViews();
@@ -164,42 +154,34 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		
 		a.PageSlider.setIBC(null);
 		
-		ArrayList<Integer> valsTmp = new ArrayList<>();
+		ArrayList<Long> valsTmp = new ArrayList<>();
 		int valueCount=0;
 		boolean checkReadEntry = a.opt.getAutoReadEntry();
 		boolean bNeedExpand=true;
 		ViewGroup webholder = a.webholder;
+		long toFind;
 		for(int i=0;i<vals.size();i+=2){
 			valsTmp.clear();
-			int toFind=vals.get(i);
+			toFind=vals.get(i);
 			while(i<vals.size() && toFind==vals.get(i)) {
 				valsTmp.add(vals.get(i+1));
 				i+=2;
 			}
 			i-=2;
-			BookPresenter mdtmp = null;
-			if (toFind<0) {
-				try {
-					mdtmp = a.getDictionaryById(-toFind);
-					toFind = Integer.MAX_VALUE;
-				} catch (IOException ignored) { }
-			}
 			
-			if (mdtmp==null && toFind>=0 && toFind<md.size()) {
-				mdtmp = md.get(toFind);
-			}
+			BookPresenter presenter = a.getBookById(toFind);
 			
-			if(mdtmp==null) continue;
+			if(presenter==null) continue;
 			
-			int[] d = new int[valsTmp.size()];
+			long[] p = new long[valsTmp.size()];
 			for(int i1 = 0;i1<valsTmp.size();i1++){
-			    d[i1] = valsTmp.get(i1);
+			    p[i1] = valsTmp.get(i1);
 			}
 			
 			//if(Build.VERSION.SDK_INT>=22)...// because kitkat's webview is not that adaptive for content height
-			mdtmp.initViewsHolder(a);
-			ViewGroup rl = mdtmp.rl;
-			WebViewmy mWebView = mdtmp.mWebView;
+			presenter.initViewsHolder(a);
+			ViewGroup rl = presenter.rl;
+			WebViewmy mWebView = presenter.mWebView;
 			int frameAt=webholder.getChildCount();
 			frameAt= Math.min(valueCount, frameAt);
 			if(rl.getParent()!=webholder) {
@@ -217,16 +199,16 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 			mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
 			mWebView.fromCombined=1;
-			if(mdtmp.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
+			if(presenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
 			{
-				mdtmp.SetSearchKey(result.key);
+				presenter.SetSearchKey(result.key);
 			}
-
-			mdtmp.renderContentAt(-1, toFind, frameAt,null, d);
+			
+			presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, frameAt,null, p);
 			if(!mWebView.awaiting){
 				bNeedExpand=false;
 				if(checkReadEntry){
-					mdtmp.mWebView.bRequestedSoundPlayback=true;
+					presenter.mWebView.bRequestedSoundPlayback=true;
 					checkReadEntry=false;
 				}
 			}
@@ -243,8 +225,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	}
 
 	@Override
-	public ArrayList<Integer> getRecordAt(int pos) {
-		return (ArrayList<Integer>) data.get(pos).value;
+	public ArrayList<Long> getRecordAt(int pos) {
+		return (ArrayList<Long>) data.get(pos).value;
 	}
 
 	@Override

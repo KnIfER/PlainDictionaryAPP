@@ -5,13 +5,14 @@ import android.os.Bundle;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
+import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.dictionary.Utils.IU;
 
-public class ViewSpecification extends SettingsFragment implements Preference.OnPreferenceClickListener {
+public class ViewSpecification extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=8;
 	
 	//初始化

@@ -130,16 +130,16 @@ public abstract class MdictServer extends NanoHTTPD {
 		else if(uri.startsWith("/MdbRJointQuery/")) {
 			uri = Reroute(uri.substring("/MdbRJointQuery/".length()));
 			//SU.Log("MdbRJointQuery: "+uri);
-			RBTree_additive combining_search_tree_ = new RBTree_additive();
+			RBTree_additive treeBuilder = new RBTree_additive();
 			StringBuilder sb_ = new StringBuilder();
 			for(int i=0;i<md_size();i++){
 				try {
-					md_get(i).bookImpl.lookUpRange(uri, null, combining_search_tree_,i,30);
+					md_get(i).bookImpl.lookUpRange(uri, null, treeBuilder,i,30);
 				} catch (Exception e) {
 					SU.Log(md_getName(i), e);
 				}
 			}
-			ArrayList<additiveMyCpr1> combining_search_result = combining_search_tree_.flatten();
+			ArrayList<additiveMyCpr1> combining_search_result = treeBuilder.flatten();
 			for(int i=0;i<combining_search_result.size();i++) {
 				additiveMyCpr1 resI = combining_search_result.get(i);
 				sb_.append(resI.key).append("\r");
@@ -353,7 +353,7 @@ public abstract class MdictServer extends NanoHTTPD {
 				try {
 					adapter_idx_ = Integer.parseInt(list[0]);
 					BookPresenter mdTmp = md_get(adapter_idx_);
-					int[] list2 = new int[list.length-1];
+					long[] list2 = new long[list.length-1];
 					for(int i=0;i<list.length-1;i++)
 						list2[i]=Integer.parseInt(list[i+1]);
 					return newFixedLengthResponse(constructMdPage(mdTmp, list[0],lid!=-1?mdTmp.bookImpl.getVirtualRecordsAt(this, list2):mdTmp.bookImpl.getRecordsAt(null, list2), true));

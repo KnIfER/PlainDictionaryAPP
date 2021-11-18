@@ -201,7 +201,7 @@ public class PlainDSL extends DictionaryAdapter {
 	final static String stylesheet="stylesheet";
 	
 	@Override
-	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
+	public String getRecordAt(long position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 		if(getRecordAtInterceptor!=null)
 		{
 			String ret = getRecordAtInterceptor.getRecordAt(this, position);
@@ -210,7 +210,7 @@ public class PlainDSL extends DictionaryAdapter {
 			}
 		}
 		StringBuffer sb = new StringBuffer();
-		getRecordsAt_internal(sb, index_array.itemAt(position), 0);
+		getRecordsAt_internal(sb, index_array.itemAt((int) position), 0);
 		return sb.toString();
 	}
 
@@ -770,13 +770,13 @@ public class PlainDSL extends DictionaryAdapter {
 //	}
 
 	@Override
-	public String getEntryAt(int position) {
+	public String getEntryAt(long position) {
 		if(position==-1) return "about:";
-		return index_array.itemAt(position).text;
+		return index_array.itemAt((int) position).text;
 	}
 
 	@Override
-	public String getEntryAt(int position, Flag mflag) {
+	public String getEntryAt(long position, Flag mflag) {
 		return getEntryAt(position);
 	}
 

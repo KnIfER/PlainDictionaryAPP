@@ -75,12 +75,12 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public String getEntryAt(int position, Flag mflag) {
+	public String getEntryAt(long position, Flag mflag) {
 		return null;
 	}
 	
 	@Override
-	public String getEntryAt(int position) {
+	public String getEntryAt(long position) {
 		return null;
 	}
 	
@@ -90,12 +90,12 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
+	public String getRecordAt(long position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 		return null;
 	}
 	
 	@Override
-	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, int... positions) throws IOException {
+	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, long... positions) throws IOException {
 		return getRecordAt(positions[0], null, true);
 	}
 	
@@ -175,7 +175,8 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public void lookUpRange(String keyword, ArrayList<myCpr<String, Integer>> combining_search_list, RBTree_additive combining_search_tree, int SelfAtIdx, int theta) {
+	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta) {
+		return 0;
 	}
 	
 	@Override
@@ -189,17 +190,22 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	@Override
-	public String getVirtualRecordAt(Object presenter, int vi) throws IOException {
+	public String getVirtualRecordAt(Object presenter, long vi) throws IOException {
 		return null;
 	}
 	
 	@Override
-	public String getVirtualRecordsAt(Object presenter, int[] args) throws IOException {
+	public String getVirtualRecordsAt(Object presenter, long[] args) throws IOException {
 		return getVirtualRecordAt(presenter, args[0]);
 	}
 	
 	@Override
-	public String getVirtualTextEffectJs(int[] positions) {
+	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position) {
+		return "";
+	}
+	
+	@Override
+	public String getVirtualTextEffectJs(long[] positions) {
 		return null;
 	}
 	
@@ -243,11 +249,13 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 		return mType.ordinal();
 	}
 	
-	@Override
-	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, int position) {
-		return "";
+	public int[] getPageUtils(boolean extra) {
+		return null;
 	}
 	
+	public boolean handlePageUtils(BookPresenter presenter, WebViewmy mWebView, int pos) {
+		return false;
+	}
 	
 	public String getSimplestInjection() {
 		return BookPresenter.SimplestInjection;

@@ -1,7 +1,7 @@
 package com.knziha.plod.dictionary;
 
 public class SearchResultBean{
-	public int position;
+	public long position;
 	public String preview;
 	
 	public final static int SEARCHTYPE_SEARCHINNAMES=1;
@@ -11,7 +11,7 @@ public class SearchResultBean{
 	public final static int SEARCHENGINETYPE_REGEX=1;
 	public final static int SEARCHENGINETYPE_PLAIN=2;
 	
-	public SearchResultBean(int pos) {
+	public SearchResultBean(long pos) {
 		position = pos;
 	}
 }

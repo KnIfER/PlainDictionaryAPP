@@ -3,10 +3,11 @@ package com.knziha.plod.dictionarymodels;
 import android.animation.ObjectAnimator;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
-import android.icu.text.UFormat;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.webkit.ValueCallback;
 import android.webkit.WebView;
@@ -17,14 +18,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.knziha.plod.ArrayList.SerializedLongArray;
+import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.dictionary.Utils.Flag;
-import com.knziha.plod.ebook.Utils.BU;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.Utils;
-import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
@@ -157,6 +157,7 @@ public class PlainWeb extends DictionaryAdapter {
 	private static SerializerFeature[] SerializerFormat = new SerializerFeature[]{SerializerFeature.PrettyFormat, SerializerFeature.MapSortField, SerializerFeature.QuoteFieldNames};
 	boolean dataRead = false;
 	private String name = "index";
+	private boolean isTranslator;
 	
 	//构造
 	public PlainWeb(File fn, MainActivityUIBase _a) throws IOException {
@@ -242,6 +243,7 @@ public class PlainWeb extends DictionaryAdapter {
 		noImage = website.getBooleanValue("noImage");
 		forceText = website.getBooleanValue("forceText");
 		computerFace = website.getBooleanValue("cpau");
+		isTranslator = website.getBooleanValue("translator");
 		String svg = website.getString("svg");
 		String _keyPattern = website.getString("keyPattern");
 		if(_keyPattern!=null) {
@@ -519,11 +521,24 @@ public class PlainWeb extends DictionaryAdapter {
 		return size;
 	}
 	
+	public String getHost() {
+		return host;
+	}
+	
+	public String getDisplayName(String url) {
+		url = url.replace(search.replace("%s", ""), "").replace(host, "");
+		try {
+			return URLDecoder.decode(url, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return url;
+		}
+	}
+	
 	abstract class VirtualKeyProvider {
-		abstract String getEntryAt(int position);
-		abstract String getRecordAt(int position);
+		abstract String getEntryAt(long position);
+		abstract String getRecordAt(long position);
 		abstract long getSize();
-		abstract String getVirtualTextValidateJs(BookPresenter bookPresenter, WebViewmy mWebView, int position);
+		abstract String getVirtualTextValidateJs(BookPresenter bookPresenter, WebViewmy mWebView, long position);
 	}
 	
 	final ArrayList<VirtualKeyProvider> keyProviders = new ArrayList<>();
@@ -531,9 +546,9 @@ public class PlainWeb extends DictionaryAdapter {
 	final SearchKeyProvider keyProvider_Searches = new SearchKeyProvider();
 	
 	class EntranceKeyProvider extends VirtualKeyProvider{
-		String getEntryAt(int position) {
+		String getEntryAt(long position) {
 			if(position>=0 && position<entrance.size()){
-				String url = entrance.get(position);
+				String url = entrance.get((int) position);
 				String[] arr = url.split("\r");
 				if(arr.length>1) {
 					return arr[1];
@@ -544,9 +559,9 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 		
 		@Override
-		String getRecordAt(int position) {
+		String getRecordAt(long position) {
 			if(position>=0 && position<entrance.size()){
-				String url = entrance.get(position);
+				String url = entrance.get((int) position);
 				String[] arr = url.split("\r");
 				if(arr.length>1) {
 					url =  arr[0];
@@ -561,7 +576,7 @@ public class PlainWeb extends DictionaryAdapter {
 		long getSize() { return entrance.size(); }
 		
 		@Override
-		String getVirtualTextValidateJs(BookPresenter bookPresenter, WebViewmy mWebView, int position) {
+		String getVirtualTextValidateJs(BookPresenter bookPresenter, WebViewmy mWebView, long position) {
 			if(position>=0 && position<entrance.size()){
 				String url = getRecordAt(position);
 				return TextUtils.equals(url, mWebView.getUrl())?"1":null;
@@ -571,13 +586,13 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	class SearchKeyProvider extends VirtualKeyProvider{
-		String getEntryAt(int position)
+		String getEntryAt(long position)
 		{
 			if(position>=0 && position<searchKeyIds.size())
 			{
 				LexicalDBHelper database = LexicalDBHelper.getInstance();
 				if (database!=null && database.testDBV2 && !database.isClosed()) {
-					long index = searchKeyIds.get(position);
+					long index = searchKeyIds.get((int) position);
 					// todo 加一层缓存？
 					try (Cursor cursor = database.getDB().rawQuery("select lex from history where id=? limit 1", new String[]{""+index})){
 						if (cursor.moveToNext()) {
@@ -587,13 +602,13 @@ public class PlainWeb extends DictionaryAdapter {
 						CMN.Log(e);
 					}
 				}
-				return searchKeyIds.get(position)+"=XDI（无记录）";
+				return "无记录";
 			}
 			return null;
 		}
 		
 		@Override
-		String getRecordAt(int position) {
+		String getRecordAt(long position) {
 			// 返回搜索词
 			return getEntryAt(position);
 		}
@@ -601,7 +616,7 @@ public class PlainWeb extends DictionaryAdapter {
 		@Override long getSize() { return searchKeyIds.size(); }
 		
 		@Override
-		String getVirtualTextValidateJs(BookPresenter bookPresenter, WebViewmy mWebView, int position)
+		String getVirtualTextValidateJs(BookPresenter bookPresenter, WebViewmy mWebView, long position)
 		{
 			if(searchJs!=null && position>=0 && position<searchKeyIds.size())
 			{
@@ -612,7 +627,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	@Override
-	public String getEntryAt(int position) {
+	public String getEntryAt(long position) {
 		if(position==0) return name;
 		position-=1;
 		try {
@@ -673,7 +688,7 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	/** WEB模型直接在此处实现快速搜索（避免重新加载），返回的JS（基于searchJs）亦检验亦效应。 */
 	@Override
-	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, int position) {
+	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position) {
 		//mWebView.fromNet=true;
 		BookPresenter bookPresenter = (BookPresenter) presenter;
 		if (position==0)
@@ -771,7 +786,7 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	/** 返回目标网址 */
 	@Override
-	public String getVirtualRecordAt(Object presenter, int position) throws IOException {
+	public String getVirtualRecordAt(Object presenter, long position) throws IOException {
 		//if(mWebView==null)
 		//	mWebView=this.mWebView;
 		//boolean resposibleForThisWeb = mWebView==this.mWebView;
@@ -1061,21 +1076,43 @@ public class PlainWeb extends DictionaryAdapter {
 //		}
 //	}
 	
-//	class OptionListHandlerDynWeb extends OptionListHandlerDyn {
-//		public OptionListHandlerDynWeb(MainActivityUIBase a, WebViewmy mWebView, String extra) {
-//			super(a, mWebView, extra);
-//		}
-//		@Override
-//		public void onClick(DialogInterface dialog, int _pos) {
-//			int pos=_pos+IU.parsint(((AlertDialog)dialog).getListView().getTag());
-//			switch(pos) {
-//				/* 查看原网页 */
-//				case 20:{
-//					final_mWebView.setTag(R.id.save, false);
-//					final_mWebView.reload();
-//				} break;
-//				/* 新增入口 */
-//				case 22:{
+	@Override
+	public int[] getPageUtils(boolean extra) {
+		return extra?new int[]{
+				R.string.bmAdd
+				,R.string.page_dakai
+				,R.string.page_del
+//				,R.string.page_fuzhi
+//				,R.string.page_baocun
+				,R.string.page_lianjie
+//				,R.string.peruse_mode
+		}:new int[]{
+				R.string.page_yuan
+				,R.string.refresh
+				,R.string.page_rukou
+				,R.string.page_nav
+				,R.string.page_ucc
+		};
+	}
+	
+	@Override
+	public boolean handlePageUtils(BookPresenter presenter, WebViewmy mWebView, int pos) {
+		switch (pos) {
+			case R.string.page_yuan:
+				mWebView.setTag(R.id.save, false);
+			case R.string.refresh:
+				mWebView.reload();
+			return true;
+			case R.string.page_dakai:
+				try {
+					String url = mWebView.getUrl();
+					Intent intent = new Intent();
+					intent.setData(Uri.parse(url));
+					intent.setAction(Intent.ACTION_VIEW);
+					presenter.a.startActivity(intent);
+				} catch (Exception e) { }
+			return true;
+			case R.string.page_rukou:
 //					String _url = final_mWebView.getUrl();
 //					if(_url!=null) {
 //						EditText etNew = FU.buildStandardTopETDialog(a, false);
@@ -1095,60 +1132,18 @@ public class PlainWeb extends DictionaryAdapter {
 //							((Dialog)v1.getTag()).dismiss();
 //						});
 //					}
-//				} break;
-//				/* 浏览器中打开 */
-//				case 31: {
-//					try {
-//						Intent intent = new Intent();
-//						intent.setData(Uri.parse(url));
-//						intent.setAction(Intent.ACTION_VIEW);
-//						a.startActivity(intent);
-//					} catch (Exception e) { }
-//				}
-//				break;
-//				/* 复制链接 */
-//				case 32: { }
-//				break;
-//				/* 复制文本 */
-//				case 33:
-//				break;
-//				default:
-//					super.onClick(dialog, _pos);
-//				return;
-//			}
-//			dialog.dismiss();
-//		}
-//	}
+			return true;
+			case R.string.page_lianjie:
+				presenter.a.FuzhiText(mWebView.getUrl());
+			return true;
+			case R.string.page_nav:
+			return true;
+			default:
+			return false;
+		}
+	}
 	
-//	@Override
-//	public void setSaveIconLongClick(View v) {
-//		if(savelcl == null){
-//			savelcl = new View.OnLongClickListener() {
-//				@Override
-//				public boolean onLongClick(View v) {
-//					WebViewmy _mWebView = mWebView;
-//					if(v!=ic_save){
-//						if(a.PeruseView!=null){
-//							_mWebView = a.PeruseView.mWebView;
-//						} else {
-//							return true;
-//						}
-//					}
-//					String url = _mWebView.getUrl();
-//					if(url==null) {
-//						url = currentUrl;
-//					}
-//					OptionListHandlerDynWeb olhdw = new OptionListHandlerDynWeb(a, _mWebView, url);
-//					buildStandardOptionListDialog(a, R.string.page_options
-//							, R.array.config_web_pages, olhdw, url, olhdw, 20);
-//					return false;
-//				}
-//			};
-//		}
-//		v.setOnLongClickListener(savelcl);
-//	}
-	
-//	@Override
+	//	@Override
 //	public void unload() {
 //		if(bNeedSave) { // 保存 json
 //			if(entrance!=null) {
@@ -1324,7 +1319,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 
 	@Override
-	public String getEntryAt(int position, Flag mflag) {
+	public String getEntryAt(long position, Flag mflag) {
 		return getEntryAt(position);
 	}
 
@@ -1340,14 +1335,19 @@ public class PlainWeb extends DictionaryAdapter {
 	 * 		( II. during single search mode ) added to searchKeys after typing 'enter'.
 	 * 		] ;
 	 *
-	 * from mimicking others' results [multiple. ]*/
-	public void lookUpRange(String keyword, ArrayList<myCpr<String, Integer>> combining_search_list, RBTree_additive combining_search_tree, int SelfAtIdx, int theta) //多线程
+	 * from mimicking others' results [multiple. ]
+	 * @return*/
+	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta) //多线程
 	{
-		if(combining_search_tree!=null)
-			combining_search_tree.insert(keyword,SelfAtIdx,0);
-		else
-			combining_search_list.add(new myCpr(keyword,0));
-		isListDirty=true;
+		if(takeWord(keyword)) {
+			if(treeBuilder !=null)
+				treeBuilder.insert(keyword, SelfAtIdx, 0);
+			else
+				rangReceiver.add(new myCpr<>(keyword, (long) 0));
+			isListDirty=true;
+			return 1;
+		}
+		return 0;
 	}
 
 //	@Override
@@ -1385,22 +1385,6 @@ public class PlainWeb extends DictionaryAdapter {
 //	public void flowerFindAllKeys(String key, int SelfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher) {
 //	}
 
-	// noimpl
-	public InputStream getPage(String url) {
-//		if(getContentEditable()){
-//			MdxDBHelper con = getCon(false);
-//			if(con!=null){
-//				if(url.startsWith(host)) {
-//					url=url.substring(host.length());
-//				}
-//				//CMN.Log("web enssurePageTable");
-//				con.enssurePageTable();
-//				return con.getPageStream(url);
-//			}
-//		}
-		return null;
-	}
-
 //	@Override
 //	public CachedDirectory getInternalResourcePath(boolean create) {
 //		if(create && InternalResourcePath!=null){
@@ -1418,10 +1402,9 @@ public class PlainWeb extends DictionaryAdapter {
 
 	/** Accept given key keyword or not. */
 	public boolean takeWord(String key) {
-		//if(keyPattern!=null){
-		//	return keyPattern.matcher(key).find();
-		//}
-		//return false;
+		if(keyPattern!=null){
+			return keyPattern.matcher(key).find();
+		}
 		return true;
 	}
 	
@@ -1443,5 +1426,9 @@ public class PlainWeb extends DictionaryAdapter {
 	@Override
 	public String getCharsetName() {
 		return "online";
+	}
+	
+	public boolean getIsTranslator() {
+		return isTranslator;
 	}
 }

@@ -174,8 +174,10 @@ public class CMN{
 	public static long rt() {
 		return ststrt = System.currentTimeMillis();
 	}
-	public static void pt(Object...args) {
-		CMN.Log(listToStr(args)+" "+(System.currentTimeMillis()-ststrt));
+	public static long pt(Object...args) {
+		long ret=System.currentTimeMillis()-ststrt;
+		CMN.Log(listToStr(args)+" "+ret);
+		return ret;
 	}
 	public static void tp(long stst, Object...args) {
 		long time = (System.currentTimeMillis() - stst);

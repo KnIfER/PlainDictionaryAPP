@@ -1,0 +1,47 @@
+#gradlew processDebugManifest --stacktrace
+#settings put global enable_freedom_support 1
+
+秘籍
+gradle
+.gradle
+.idea
+*.iml
+new_repo
+captures
+AxtAppCompat/build/
+**/build/
+**/bin/
+**/.settings/
+**/.idea/
+**/debug/
+**/gen/
+**/test/
+**/release/
+**/debug/
+*.jar
+
+glide/
+gif_decoder/
+gif_encoder/
+disklrucache/
+annotation/
+colorPicker/
+filepicker/
+GestureView/
+
+*.zip
+*.rar
+
+#git remote add origin https://github.com/KnIfER/PlainDictionaryAPP.git
+#git push -u origin +master
+
+#git rm filepicker/build/ -r -f
+#git push origin HEAD --force
+#git ls-files
+#git rm FILE --cached
+#./gradlew ODPlayer：dependencies
+
+#git checkout -b dev origin/dev
+*.log
+
+assets_release

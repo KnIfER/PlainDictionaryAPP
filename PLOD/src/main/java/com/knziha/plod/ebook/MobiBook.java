@@ -795,12 +795,12 @@ public class MobiBook extends DictionaryAdapter {
 	}
 	
 	@Override
-	public String getEntryAt(int position, Flag mflag) {
+	public String getEntryAt(long position, Flag mflag) {
 		return getEntryAt(position);
 	}
 	
 	@Override
-	public String getEntryAt(int position) {
+	public String getEntryAt(long position) {
 		if(contentList!=null)
 			return "第"+position+"页";
 		return "index";
@@ -883,11 +883,6 @@ public class MobiBook extends DictionaryAdapter {
 	
 	@Override
 	public Object ReRoute(String key) throws IOException {
-		return null;
-	}
-	
-	@Override
-	public String getVirtualTextEffectJs(int[] positions) {
 		return null;
 	}
 
@@ -1247,7 +1242,7 @@ public class MobiBook extends DictionaryAdapter {
 	int readEndOffset=0;
 
 	@Override
-	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
+	public String getRecordAt(long position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 		//return new String(m.rec.next.data, _charset);
 		if (m.rh == null || m.rh.text_record_count == 0) {
 			return "404";
@@ -1256,7 +1251,7 @@ public class MobiBook extends DictionaryAdapter {
 			return "404 : huff parse error";
 
 		if(contentList!=null)
-			return buildContent(contentList.get(position), true);
+			return buildContent(contentList.get((int) position), true);
 
 		StringBuilder sb = new StringBuilder();
 

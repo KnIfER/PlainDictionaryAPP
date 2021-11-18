@@ -117,7 +117,60 @@ the valueOf method.
     }
     return negative ? result : -result;
 }
-
+	
+	public static long parseLong(String s)
+	{
+		return parseLong(s, -1);
+	}
+	
+	public static long parseLong(String s, long val)
+	{
+		if (s == null) {
+			return val;
+		}
+		
+		long result = 0;
+		boolean negative = false;
+		int i = 0, len = s.length();
+		long limit = -Long.MAX_VALUE;
+		long multmin;
+		int digit;
+		
+		if (len > 0) {
+			char firstChar = s.charAt(0);
+			if (firstChar < '0') { // Possible leading "+" or "-"
+				if (firstChar == '-') {
+					negative = true;
+					limit = Long.MIN_VALUE;
+				} else if (firstChar != '+')
+					return val;
+				
+				if (len == 1) // Cannot have lone "+" or "-"
+					return val;
+				i++;
+			}
+			multmin = limit / 10;
+			while (i < len) {
+				// Accumulating negatively avoids surprises near MAX_VALUE
+				digit = Character.digit(s.charAt(i++),10);
+				if (digit < 0) {
+					return val;
+				}
+				if (result < multmin) {
+					return val;
+				}
+				result *= 10;
+				if (result < limit + digit) {
+					return val;
+				}
+				result -= digit;
+			}
+		} else {
+			return val;
+		}
+		return negative ? result : -result;
+	}
+	
 
     public static int parseInteger(Object o, int val)
 {
@@ -232,5 +285,9 @@ the valueOf method.
 		writeBuffer[pad+5] = (byte)(v >>> 16);
 		writeBuffer[pad+6] = (byte)(v >>>  8);
 		writeBuffer[pad+7] = (byte)(v >>>  0);
+	}
+	
+	public static boolean parseBool(Object value) {
+		return value instanceof Boolean && (boolean)value;
 	}
 }

@@ -8,7 +8,8 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.FilePickerPreference;
-import com.knziha.plod.dictionary.mdict;
+import com.knziha.filepicker.settings.SettingsFragmentBase;
+
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -16,13 +17,12 @@ import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.File;
 
-public class MainProgram extends SettingsFragment implements Preference.OnPreferenceClickListener {
+public class MainProgram extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null);
 		init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null);
-		init_switch_preference(this, "classical_sort", PDICMainAppOptions.getClassicalKeycaseStrategy(), null, null);
 		init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null);
 		init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(CMN.MainBackground).toUpperCase(), null);
 		init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(CMN.FloatBackground).toUpperCase(), null);
@@ -84,9 +84,6 @@ public class MainProgram extends SettingsFragment implements Preference.OnPrefer
 			break;
 			case "keep_screen":
 				PDICMainAppOptions.setKeepScreen((Boolean) newValue);
-			break;
-			case "classical_sort":
-				PDICMainAppOptions.setClassicalKeycaseStrategy(mdict.bGlobalUseClassicalKeycase=(Boolean) newValue);
 			break;
 			case "GPBC":
 				setColorPreferenceTitle(preference, newValue);

@@ -20,9 +20,16 @@ package com.knziha.plod.dictionary;
 import androidx.preference.CMN;
 
 import com.alibaba.fastjson.JSONObject;
-import com.knziha.plod.dictionary.Utils.*;
+import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.Utils.F1ag;
+import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionary.Utils.GetIndexedString;
+import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.Utils.key_info_struct;
+import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.dictionary.Utils.record_info_struct;
 import com.knziha.plod.widgets.WebViewmy;
-import com.knziha.rbtree.RBTree;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.adrianwalker.multilinestring.Multiline;
@@ -30,46 +37,7 @@ import org.anarres.lzo.LzoDecompressor1x;
 import org.anarres.lzo.lzo_uintp;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jcodings.Encoding;
-import org.jcodings.specific.ASCIIEncoding;
-import org.jcodings.specific.BIG5Encoding;
-import org.jcodings.specific.Big5HKSCSEncoding;
-import org.jcodings.specific.CP949Encoding;
-import org.jcodings.specific.EUCJPEncoding;
-import org.jcodings.specific.EUCKREncoding;
-import org.jcodings.specific.EUCTWEncoding;
-import org.jcodings.specific.GB18030Encoding;
-import org.jcodings.specific.GB2312Encoding;
-import org.jcodings.specific.GBKEncoding;
-import org.jcodings.specific.ISO8859_10Encoding;
-import org.jcodings.specific.ISO8859_11Encoding;
-import org.jcodings.specific.ISO8859_13Encoding;
-import org.jcodings.specific.ISO8859_14Encoding;
-import org.jcodings.specific.ISO8859_15Encoding;
-import org.jcodings.specific.ISO8859_16Encoding;
-import org.jcodings.specific.ISO8859_1Encoding;
-import org.jcodings.specific.ISO8859_2Encoding;
-import org.jcodings.specific.ISO8859_3Encoding;
-import org.jcodings.specific.ISO8859_4Encoding;
-import org.jcodings.specific.ISO8859_5Encoding;
-import org.jcodings.specific.ISO8859_6Encoding;
-import org.jcodings.specific.ISO8859_7Encoding;
-import org.jcodings.specific.ISO8859_8Encoding;
-import org.jcodings.specific.ISO8859_9Encoding;
-import org.jcodings.specific.KOI8REncoding;
-import org.jcodings.specific.KOI8UEncoding;
-import org.jcodings.specific.SJISEncoding;
-import org.jcodings.specific.UTF16BEEncoding;
-import org.jcodings.specific.UTF16LEEncoding;
-import org.jcodings.specific.UTF32BEEncoding;
-import org.jcodings.specific.UTF32LEEncoding;
-import org.jcodings.specific.UTF8Encoding;
-import org.jcodings.specific.Windows_1250Encoding;
-import org.jcodings.specific.Windows_1251Encoding;
-import org.jcodings.specific.Windows_1252Encoding;
-import org.jcodings.specific.Windows_1253Encoding;
-import org.jcodings.specific.Windows_1254Encoding;
-import org.jcodings.specific.Windows_1257Encoding;
-import org.jcodings.specific.Windows_31JEncoding;
+import org.jcodings.specific.*;
 import org.joni.Option;
 import org.joni.Regex;
 import org.joni.exception.SyntaxException;
@@ -84,7 +52,10 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -888,6 +859,12 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 							int ret = inf.inflate(currentKeyBlock,0,(int)(infoI.key_block_decompressed_size));
 						} catch (DataFormatException e) {e.printStackTrace();}
 					break;
+					case 3:
+						SU.Zstd_decompress(_key_block_compressed, 8, (int)(compressedSize-8), currentKeyBlock, 0, (int)(infoI.key_block_decompressed_size));
+					break;
+					case 4:
+						SU.Lz4_decompress(_key_block_compressed, 8, currentKeyBlock,0,(int)(infoI.key_block_decompressed_size));
+					break;
 				}
 				//!!spliting curr Key block
 
@@ -1001,6 +978,12 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 									Inflater inf = new Inflater();
 									inf.setInput(record_block_compressed,8,compressed_size-8);
 									int ret = inf.inflate(record_block_,0,decompressed_size);
+								break;
+								case 3:
+									SU.Zstd_decompress(record_block_compressed, 8, compressed_size-8, record_block_, 0, decompressed_size);
+								break;
+								case 4:
+									SU.Lz4_decompress(record_block_compressed, 8, record_block_, 0, decompressed_size);
 								break;
 							}
 
@@ -1863,10 +1846,16 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 									break;
 									case 2:
 										Inflater inf = new Inflater();
-										inf.setInput(_key_block_compressed_many,(startI+8),(compressedSize-8));
+										inf.setInput(_key_block_compressed_many, startI+8, compressedSize-8);
 										try {
 											int ret = inf.inflate(key_block,0,(int)(infoI.key_block_decompressed_size));
 										} catch (DataFormatException e) {e.printStackTrace();}
+									break;
+									case 3:
+										SU.Zstd_decompress(_key_block_compressed_many, startI+8, compressedSize-8, key_block, 0, (int)(infoI.key_block_decompressed_size));
+									break;
+									case 4:
+										SU.Lz4_decompress(_key_block_compressed_many, startI+8, key_block, 0, (int)(infoI.key_block_decompressed_size));
 									break;
 								}
 								find_in_keyBlock(finalJoniregex, finalKeyPattern, key_block,infoI, finalMatcher,SelfAtIdx,item, SearchLauncher);

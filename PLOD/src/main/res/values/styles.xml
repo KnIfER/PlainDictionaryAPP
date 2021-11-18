@@ -381,6 +381,23 @@
 		<item name="android:layout_marginLeft">9dp</item>
 		<item name="android:layout_marginRight">9dp</item>
 	</style>
+
+	<style name="title_btns" parent="AppTheme">
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_gravity">center_vertical</item>
+		<item name="android:paddingTop">5dp</item>
+		<item name="android:paddingBottom">5dp</item>
+		<item name="android:paddingLeft">2dp</item>
+		<item name="android:paddingRight">2dp</item>
+		<item name="android:gravity">center</item>
+		<item name="android:textColor">#fff</item>
+		<item name="android:clickable">true</item>
+		<item name="android:layout_marginRight">8dp</item>
+		<item name="android:background">@drawable/txt_tool</item>
+		<item name="android:visibility">gone</item>
+		<item name="android:longClickable">true</item>
+	</style>
 </resources>
 
 

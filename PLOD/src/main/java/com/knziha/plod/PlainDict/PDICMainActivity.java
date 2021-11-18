@@ -99,7 +99,7 @@ import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
-import com.knziha.plod.dictionarymanager.dict_manager_activity;
+import com.knziha.plod.dictionarymanager.BookManager;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
@@ -951,10 +951,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		toolbar.inflateMenu(R.menu.menu);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
-		SingleContentMenu = MapNumberToMenu(0, 2, 3, 9, 11, 12);
-		Multi_ContentMenu = MapNumberToMenu(0, 1, 2, 3, 9, 10, 12);
+		SingleContentMenu = MapNumberToMenu(0, 4, 2, 3, 9, 11, 12);
+		Multi_ContentMenu = MapNumberToMenu(0, 4, 1, 2, 3, 9, 10, 12);
 		MainMenu = MapNumberToMenu(0, 4, 7, 8);
-		LEFTMenu = MapNumberToMenu(0, 4, 5, 6, 8);
+		LEFTMenu = MapNumberToMenu(0, 4, 7, 5, 6);
 		
 		TintWildResult=new BooleanSingleton(true);
 		TintFullResult=new BooleanSingleton(true);
@@ -1255,12 +1255,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(Build.VERSION.SDK_INT>23)
 					IMPageCover.getForeground().setAlpha(255);
 			}
-			int currentPos=0;
+			long currentPos=0;
 
 			@Override
 			public void onMoving(float val,IMPageSlider IMPageCover) {
 				if(ActivedAdapter==adaptermy && currentDictionary.isViewInitialized()) {
-					int pos = currentDictionary.mWebView.currentPos+(Math.abs(val)>20*dm.density?(val<0?1:-1):0);
+					long pos = currentDictionary.mWebView.currentPos+(Math.abs(val)>20*dm.density?(val<0?1:-1):0);
 					if(pos>=-1 && pos<currentDictionary.bookImpl.getNumberEntries()) {
 						if(currentPos!=pos) {
 							currentDictionary.setToolbarTitleAt(pos);
@@ -1654,6 +1654,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		//tg
 		//etSearch.setText("happy");
+//		etSearch.setText("vignette");
+//		etSearch.setText("class=\"main\"");
+//		etSearch.setText("Label");
+		
+//		launchSettings(0, 0);
 		//do_test_project_Test_Background_Loop();
 		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
 		
@@ -1662,12 +1667,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			DBUpgradeHelper.showUpgradeDlg(null, this, true);
 			opt.setUseBackKeyGoWebViewBack(true);
 			PDICMainAppOptions.uncheckVersionBefore_5_0(false);
-			
 			PDICMainAppOptions.uncheckVersionBefore_4_0(true);
 			PDICMainAppOptions.uncheckVersionBefore_4_9(true);
-			
-			
 		}
+		
+		
+//		try {
+//			String path = CMN.AssetTag + "liba.mdx";
+//			//BookPresenter mdx = new BookPresenter(new File(path), this, 0, null);
+//			BookPresenter mdx = md.get(0);
+//			TestHelper.insertMegaInAnnotDb(prepareHistoryCon().getDB(), (mdict) mdx.bookImpl);
+//		} catch (Exception e) {
+//			CMN.Log(e);
+//		}
 		
 		//String[] array = getResources().getStringArray(R.array.drawer_hints);
 		//CMN.Log("==??", array[2], array[5], array[2]==array[5], array[2].equals(array[5]), System.identityHashCode(array[2]), System.identityHashCode(array[5]));
@@ -2104,13 +2116,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				savedInstanceState.putInt("lv_pos", ActivedAdapter.lastClickedPos);
 			}
 
-			if(PeruseViewAttached()) {
-				savedInstanceState.putIntegerArrayList("p_data", PeruseView.data);
-				savedInstanceState.putString("p_key", PeruseView.etSearch.getText().toString());
-				savedInstanceState.putInt("p_adaidx", PeruseView.adapter_idx);
-				savedInstanceState.putInt("lvp_id", PeruseView.ActivedAdapter.getId());
-				savedInstanceState.putInt("lvp_pos", PeruseView.ActivedAdapter.lastClickedPos);
-			}
+//			if(PeruseViewAttached()) {
+//				savedInstanceState.putIntegerArrayList("p_data", PeruseView.bookIds);
+//				savedInstanceState.putString("p_key", PeruseView.etSearch.getText().toString());
+//				savedInstanceState.putInt("p_adaidx", PeruseView.bookId);
+//				savedInstanceState.putInt("lvp_id", PeruseView.ActivedAdapter.getId());
+//				savedInstanceState.putInt("lvp_pos", PeruseView.ActivedAdapter.lastClickedPos);
+//			}
 		}
 	}
 
@@ -2253,7 +2265,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(currentDictionary.lvPos != pos && !PDICMainAppOptions.getSimpleMode()){
 					currentDictionary.lvPos = pos;
 					if(lv.getChildAt(0)!=null) currentDictionary.lvPosOff=lv.getChildAt(0).getTop();
-					currentDictionary.dumpViewStates(this, prepareHistoryCon());
+					currentDictionary.saveStates(this, prepareHistoryCon());
 				}
 				bNeedSaveViewStates =false;
 			}
@@ -2584,7 +2596,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				desiredScale=111;
 			
 			/* 仿效 GoldenDict 返回尽可能多的结果 */
-			currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, getMergedClickPositions(pos));
+			currentDictionary.renderContentAt(desiredScale,BookPresenter.RENDERFLAG_NEW,0,null, getMergedClickPositions(pos));
 			contentview.setTag(R.id.image, PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null?false:null);
 
 			String key = currentKeyText = currentDictionary.currentDisplaying.trim();
@@ -2670,7 +2682,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			//return lstItemViews.get(position);
 			ViewHolder vh;
 
-			CharSequence currentKeyText = combining_search_result.getResAt(position);
+			CharSequence currentKeyText = combining_search_result.getResAt(PDICMainActivity.this, position);
 
 			if(convertView!=null){
 				vh=(ViewHolder)convertView.getTag();
@@ -2681,19 +2693,20 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(itemId==R.layout.listview_item1)
 					vh.subtitle.setTag(vh.itemView.findViewById(R.id.counter));
 			}
-			if(combining_search_result.dictIdx>=md.size()) return vh.itemView;//不要Crash哇
 			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
 				//decorateBackground(vh.itemView);
 				vh.title.setTextColor(AppBlack);
 			}
 			vh.title.setText(currentKeyText);
-			BookPresenter _currentDictionary = md.get(combining_search_result.dictIdx);
+			BookPresenter presenter = getBookById(combining_search_result.bookId);
 //			if(combining_search_result.mflag.data!=null){
 //				vh.subtitle.setText(Html.fromHtml(currentDictionary.appendCleanDictionaryName(null).append("<font color='#2B4391'> < ").append(combining_search_result.mflag.data).append(" ></font >").toString()));
 //			} else {
 //
 //			}
-			vh.subtitle.setText(_currentDictionary.getDictionaryName());
+			if (presenter!=null) {
+				vh.subtitle.setText(presenter.getDictionaryName());
+			}
 			if(combining_search_result.getClass()==resultRecorderCombined.class)
 				((TextView)vh.subtitle.getTag()).setText(((resultRecorderCombined)combining_search_result).count);
 			//vh.itemView.setTag(R.id.position,position);
@@ -2736,8 +2749,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
 				PeruseView pv = getPeruseView();
 				pv.RestoreOldAI();
-				combining_search_result.syncToPeruseArr(pv.data, pos);
-				pv.TextToSearch = combining_search_result.getResAt(pos).toString();
+				combining_search_result.syncToPeruseArr(pv.bookIds, pos);
+				pv.TextToSearch = combining_search_result.getResAt(PDICMainActivity.this, pos).toString();
 				AttachPeruseView(true);
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 				return;
@@ -2776,7 +2789,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			
 			combining_search_result.renderContentAt(lastClickedPos, PDICMainActivity.this,this);
 			
-			decorateContentviewByKey(null, currentKeyText = combining_search_result.getResAt(pos).toString());
+			decorateContentviewByKey(null, currentKeyText = combining_search_result.getResAt(PDICMainActivity.this, pos).toString());
 			if(PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 				&& combining_search_result.shouldSaveHistory()
 					&&(userCLick||PDICMainAppOptions.getHistoryStrategy8()==0)) {
@@ -2806,7 +2819,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		@Override
 		public String currentKeyText() {
 			return combining_search_result instanceof resultRecorderScattered?
-					((resultRecorderScattered)combining_search_result).getCurrentKeyText(lastClickedPos)
+					((resultRecorderScattered)combining_search_result).getCurrentKeyText(PDICMainActivity.this, lastClickedPos)
 					:currentKeyText;
 		}
 	}
@@ -3519,7 +3532,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		HdnCmfrt.clear();
 		lastLoadedModule=null;
 		Intent intent = new Intent();
-		intent.setClass(PDICMainActivity.this, dict_manager_activity.class);
+		intent.setClass(PDICMainActivity.this, BookManager.class);
 		startActivityForResult(intent, 110);
 	}
 	
@@ -3639,7 +3652,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			/* 即点即译 */
 			case R.id.toolbar_action14:{
 				if(isLongClicked){
-					popupWord(null, -1, 0);
+					popupWord(null, null, 0);
 					closeMenu=ret=true;
 				} else {
 					boolean val=systemIntialized?opt.toggleClickSearchEnabled():opt.getClickSearchEnabled();
@@ -3662,7 +3675,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(isLongClicked) break;
 				WebViewmy _mWebView = getCurrentWebContext(false);
 				if (_mWebView!=null) {
-					_mWebView.presenter.toggleBookMark(_mWebView, null);
+					_mWebView.presenter.toggleBookMark(_mWebView, null, false);
 				}
 			} break;
 			case R.id.toolbar_action10:{//保存搜索
@@ -3791,7 +3804,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						CMN.Log("重新读取配置！！！", path);
 						if(mdTmp!=null)
 						try {
-							mdTmp.readInConfigs(this, prepareHistoryCon());
+							mdTmp.readConfigs(this, prepareHistoryCon());
 							//dirtyMap.add(mdTmp.f().getName());
 						} catch (IOException e) { if(GlobalOptions.debug) CMN.Log(e); }
 						//else dirtyMap.add(new File(path).getName());

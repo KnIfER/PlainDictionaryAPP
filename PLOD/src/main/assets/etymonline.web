@@ -1,0 +1,10 @@
+{
+	"host": "https://www.etymonline.com"
+	,"name": "词源在线"
+	,"style": ".app-guide,.share-tool{position:relative}.header--focus{display:none}"
+	,"entrance": "/columns/post/abbr\r缩写说明
+/columns?ref=etymonline_homepage\r词源专栏
+	"
+	,"search": "/word/"
+	,"keyPattern": "^[a-zA-Z-]{0,38}$"
+}

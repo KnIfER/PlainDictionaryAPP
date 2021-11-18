@@ -64,7 +64,6 @@ import com.knziha.rbtree.RBTNode;
 import com.knziha.rbtree.RashSet;
 import com.knziha.rbtree.additiveMyCpr1;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,6 +72,7 @@ import java.util.HashSet;
 
 import db.LexicalDBHelper;
 
+import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.widgets.Utils.EmptyCursor;
 import static db.LexicalDBHelper.FIELD_VISIT_TIME;
 import static db.LexicalDBHelper.TABLE_FAVORITE_v2;
@@ -1434,12 +1434,7 @@ public class DBroswer extends Fragment implements
 						if (texts!=null) {
 							String[] textsArr = texts.split(";");
 							if (textsArr.length==1) {
-								BookPresenter currentDictionary = null;
-								try {
-									currentDictionary = a.getDictionaryById(Long.parseLong(textsArr[0]));
-								} catch (Exception e) {
-									CMN.Log(e);
-								}
+								BookPresenter currentDictionary = a.getBookById(Long.parseLong(textsArr[0]));
 								if(currentDictionary!=null) {
 									rendered = queryAndShowOneDictionary(currentDictionary, currentDisplaying, position, false);
 								}
@@ -1484,7 +1479,7 @@ public class DBroswer extends Fragment implements
 					}
 				} break;
 				case SelectionMode_peruseview: {
-					ArrayList<Integer> records = new ArrayList<>();
+					ArrayList<Long> records = new ArrayList<>();
 					additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
 					ArrayList<additiveMyCpr1> data = new ArrayList<>();
 					data.add(datalet);
@@ -1496,7 +1491,7 @@ public class DBroswer extends Fragment implements
 					for(int i=0;i<a.md.size();i++) {//联合搜索
 						int dIdx=i;
 						if(opt.getPeruseAddAll()) {
-							records.add(dIdx);
+							records.add(a.getBookIdAt(i));
 							continue;
 						}
 						if(!bIsCombinedSearch) {
@@ -1507,20 +1502,20 @@ public class DBroswer extends Fragment implements
 								dIdx-=1;
 							}
 						}
-						BookPresenter mdTmp = a.md_get(dIdx);
-						if(mdTmp!=null) {
-							int idx = mdTmp.bookImpl.lookUp(currentDisplaying__);
+						BookPresenter presenter = a.md_get(dIdx);
+						if(presenter!=null) {
+							int idx = presenter.bookImpl.lookUp(currentDisplaying__);
 							if (idx >= 0)
-								while (idx < mdTmp.bookImpl.getNumberEntries()) {
-									if (mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
-										records.add(dIdx);
+								while (idx < presenter.bookImpl.getNumberEntries()) {
+									if (mdict.replaceReg.matcher(presenter.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+										records.add(presenter.getId());
 									} else
 										break;
 									idx++;
 								}
 						}
 					}
-					a.getPeruseView().data = records;
+					a.getPeruseView().bookIds = records;
 					a.getPeruseView().TextToSearch = currentDisplaying;
 					a.AttachPeruseView(true);
 				} break;
@@ -1552,7 +1547,7 @@ public class DBroswer extends Fragment implements
 		
 		int lastClickedPosBeforePageTurn = position - adelta;
 		
-		ArrayList<Integer> records = new ArrayList<>();
+		ArrayList<Long> records = new ArrayList<>();
 		additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
 		ArrayList<additiveMyCpr1> data = new ArrayList<>();
 		data.add(datalet);
@@ -1561,30 +1556,26 @@ public class DBroswer extends Fragment implements
 		long st = CMN.rt();
 		if (texts!=null) {
 			for(int dIdx=0;dIdx<texts.length;dIdx++) {//联合搜索
-				try {
-					long bid = Long.parseLong(texts[dIdx]);
-					BookPresenter bookPresenter = a.getDictionaryById(bid);
-					if(bookPresenter!=null) {
-						int idx = bookPresenter.bookImpl.lookUp(currentDisplaying__);
-						if (idx >= 0) {
-							if(idx==0 && bookPresenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
-								bookPresenter.SetSearchKey(currentDisplaying__);
-								records.add((int) -bid);
+				long bid = Long.parseLong(texts[dIdx]);
+				BookPresenter bookPresenter = a.getBookById(bid);
+				if(bookPresenter!=null) {
+					long idx = bookPresenter.bookImpl.lookUp(currentDisplaying__);
+					if (idx >= 0) {
+						if(idx==0 && bookPresenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+							bookPresenter.SetSearchKey(currentDisplaying__);
+							records.add(bid);
+							records.add(idx);
+						} else
+						while (idx < bookPresenter.bookImpl.getNumberEntries()) {
+							if (mdict.replaceReg.matcher(bookPresenter.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
+								records.add(bid);
 								records.add(idx);
-							} else
-							while (idx < bookPresenter.bookImpl.getNumberEntries()) {
-								if (mdict.replaceReg.matcher(bookPresenter.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
-									records.add((int) -bid);
-									records.add(idx);
-								} else {
-									break;
-								}
-								idx++;
+							} else {
+								break;
 							}
+							idx++;
 						}
 					}
-				} catch (IOException e) {
-					CMN.Log(e);
 				}
 			}
 		}
@@ -1592,11 +1583,11 @@ public class DBroswer extends Fragment implements
 			for(int dIdx=0;dIdx<a.md.size();dIdx++) {//联合搜索
 				BookPresenter mdTmp = a.md_get(dIdx);
 				if(mdTmp!=null) {
-					int idx = mdTmp.bookImpl.lookUp(currentDisplaying__);
+					long idx = mdTmp.bookImpl.lookUp(currentDisplaying__);
 					if (idx >= 0)
 						while (idx < mdTmp.bookImpl.getNumberEntries()) {
 							if (mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
-								records.add(dIdx);
+								records.add(a.getBookIdAt(dIdx));
 								records.add(idx);
 							} else
 								break;
@@ -1773,7 +1764,7 @@ public class DBroswer extends Fragment implements
 					if(webviewHolder.getChildAt(i)!=currentDictionary.rl) webviewHolder.removeViewAt(i);
 			}
 			
-			currentDictionary.renderContentAt(desiredScale,adapter_idx,0,null, idx);
+			currentDictionary.renderContentAt(desiredScale,RENDERFLAG_NEW,0,null, idx);
 			
 			currentDictionary.mWebView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
 			currentDictionary.rl.getLayoutParams().height = LayoutParams.MATCH_PARENT;

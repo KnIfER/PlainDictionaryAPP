@@ -7,25 +7,36 @@
 		{keyx:"^[\u4e00-\u9fa5]", value:"/?sl=auto&tl=en&op=translate&text="}
 	]
 	,"keyPattern": "*"
-	,"js": "let e = document.getElementById('gtyexp'),win=window,sel=win.getSelection()
-	,ta = document.getElementsByTagName('textarea')[0];
+	,"js": "
+	let e = document.getElementById('gtyexp'),win=window,sel=win.getSelection()
+	,ta=document.getElementsByTagName('textarea')[0], debug=console.log,listPane,textPara;
+	debug('translator ini...'); // 开始
+	function sc(v){
+		if(sel.type!='Range') e.style.display = 'none';
+		else if(e.style.display=='none'){
+			e.style.display = 'unset';
+			e.style.opacity = 0.75;
+		};
+	};
 	if(!e) {
 		e=document.createElement('IMG');
 		e.id='gtyexp';
 		document.body.appendChild(e);
 		e.src='//ssl.gstatic.com/translate/favicon.ico'; // 谷歌翻译的图标
-		e.style='display:none;position:fixed;width:35px;height:35px;top:8px;right:25px;background-color:rgb(181 217 255);transition:all 0.15s;opacity:0.75;z-index:999;border-radius:3px;padding:10px;user-select:none;box-shadow:rgb(0 0 255 / 20%) 0px 7px 19px 0px;';
-		function toggle(e){ 
+		e.style='display:none;position:fixed;width:35px;height:35px;top:8px;right:25px;background-color:rgb(181 217 255);transition:all 0.25s;opacity:0.75;z-index:999;border-radius:3px;padding:10px;user-select:none;box-shadow:rgb(0 0 255 / 20%) 0px 7px 19px 0px;';
+		let PDRNG,PDRNT;
+		function toggle(){ 
 			if(!sel.toStringRaw) { // 强硬作风 温和修改
 				sel.toStringRaw = sel.toString;
 				sel.toString = function(){
+					console.log('fatal toString='+PDRNG); 
 					var ret = sel.toStringRaw();
-					if(win._PDRNG) {
-						console.log('fatal sustain the selection v3='+win._PDRNG); 
-						ret = win._PDRNG.toString();
+					if(PDRNG) {
+						console.log('fatal sustain the selection v3='+PDRNG); 
+						ret = PDRNG.toString();
 						sel.removeAllRanges();
-						sel.addRange(win._PDRNG);
-						win._PDRNG = 0;
+						sel.addRange(PDRNG);
+						PDRNG = 0;
 					}
 					return ret
 				}
@@ -34,42 +45,61 @@
 				keyCode: 0x10,
 				bubbles: 1
 			}));
-			var rng=sel.getRangeAt(0),key=rng.toString();
-			if(sel.anchorNode!=ta) 
+			function isChildOf(c, p) {
+				return p&&SearchElement(p);
+				function SearchElement(ele) {
+					if (!ele) return 0;
+					return ele===c
+						|| SearchElement(ele.firstChild) 
+						|| SearchElement(ele.nextSibling);
+				}
+			}
+			function getTop(e){
+			  var offset=e.offsetTop;
+			  if(e.offsetParent!=null) offset+=getTop(e.offsetParent);
+			  return offset;
+			}
+			var rng=sel.getRangeAt(0),key=rng.toString(),an=sel.anchorNode;
+			if(an!==ta.parentElement) 
 			{
-				win._PDRNG=rng.cloneRange();
-				app.knock();
-				win._PDRNG=0;
+				PDRNG=rng.cloneRange();
+				var exp=document.getElementsByClassName('J0lOec')[0];
+				if(!isChildOf(an,exp)) {
+					rng.selectNode(exp);
+					app.knock1(exp.offsetWidth/2, getTop(exp));
+				} else {
+					app.knock();
+				}
+				clearTimeout(PDRNT);
+				//PDRNT = setTimeout(v=>{PDRNG=0}, 1800);
 			}
 			ta.dispatchEvent(new KeyboardEvent('keyup', {
 				keyCode: 0x10,
 				bubbles: 1
 			}));
-			//if(document.getElementsByClassName('aia4Ud')[0].firstElementChild.innerText==key) 
-			{
-				// 
-				e.style.transform='scale(1.5)';
-				console.log('找到了分词'+e.style.transform);
-				//setTimeout(v=>{e.style.transform='unset'}, 150);
-			}
+			debug('检查是否查到了单词释义');
+			if(false)
+			setTimeout(v=>{
+				//if(document.getElementsByClassName('aia4Ud')[0].firstElementChild.innerText===key) 
+				if(1)
+				{
+					e.style.transition='';
+					e.style.transform='scale(1.5)';
+					e.style.transition='all 0.25s';
+					setTimeout(v=>{e.style.transform='unset'}, 80);
+					//e.style.transform='unset'
+				}
+			}, 200);
 		}
 		e.onclick=toggle;
+		document.addEventListener('selectionchange', sc);
 	}
-	function sc(v){
-		if(sel.type!='Range') e.style.display = 'none';
-		else if(e.style.display=='none'){
-			e.style.display = 'unset';
-			e.style.opacity = 0.75;
-		};
-	};
-	document.addEventListener('selectionchange', sc);
-	if(ta) {
-		ta.addEventListener('selectionchange', sc);
-		ta.readOnly=true;
-		
+	function isAttached(e) {
+		while(e&&(e=e.parentElement)) {
+			if(e===document.body)return true;
+		}
+		return false;
 	}
-	
-	// 点击不显示候选列表
 	function queryByAttr(aAttribute, aValue, abody) {
 		return SearchElement(abody||document.body);
 		function ElementVerifier(ele) {
@@ -86,84 +116,134 @@
 				|| SearchElement(ele.nextSibling);
 		}
 	}
-	let listPane;
-	let textPara;
-	function tweakHXCL(){ // 调整候选表
-		var jn='jsname',cp=queryByAttr(jn, 'r5xl4'); // 解释内容容器
-		function Qa(jsname, p){return queryByAttr(jn, jsname, p||cp)}
-		if(!win._modin) {
-			let modin = Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮
-			modin.style.color='#888';
-			document.getElementsByClassName('FFpbKc')[0].appendChild(modin); // 添加到输入内容，字数栏之后
-			modin.onclick=v=>{
-				ta.readOnly=!ta.readOnly;
-				modin.style.color=ta.readOnly?'#888':'#000';
-				v.stopPropagation();
-			}
-			win._modin=modin;
+	// 默认不编辑输入框
+	function tweakInput(){
+		if(!isAttached(ta)) {
+			win._tweakedHXCL=0;
+			ta=document.getElementsByTagName('textarea')[0];
 		}
-		//console.log('点击不显示候选列表', listPane = Qa('HyaQwf'));
-		const observer=new MutationObserver(function(mutationsList, observer) {
-			for(var mutation of mutationsList) {
-				if (mutation.type==='attributes' && mutation.attributeName==='style') {
-					//console.log('The ' + mutation.attributeName + ' attribute was modified.');
-					if(listPane.style.display=='') { // 若正常显示候选列表
-						listPane.style.display='none'; // 重新隐藏候选列表
-						observer.disconnect();
+		if(ta && !ta.getAttribute('_PDSC')) {
+			ta.addEventListener('selectionchange', sc);
+			if(ta!=document.activeElement)ta.readOnly=true;
+			ta.setAttribute('_PDSC', '');
+		}
+	}
+	// 点击不显示候选列表
+	const observer=new MutationObserver(function(mutationsList, observer) {
+		for(var mutation of mutationsList) {
+			if (mutation.type==='attributes' && mutation.attributeName==='style') {
+				//console.log('The ' + mutation.attributeName + ' attribute was modified.');
+				if(listPane.style.display=='') { // 若正常显示候选列表
+					listPane.style.display='none'; // 重新隐藏候选列表
+					observer.disconnect();
+				}
+			}
+		}
+	});
+	function obz(){
+		observer.observe(listPane, { attributes: true
+			, attributeFilter : ['style'] });
+	}
+	const observer1=new MutationObserver(function(mutationsList, observer) {
+		for(var mutation of mutationsList) {
+			if (mutation.attributeName==='aria-label') {
+				var e=mutation.target;
+				if(e.getAttribute('aria-label')!==e.getAttribute('data-aria-label-on')) {
+					observer1.disconnect();
+					app.onAudioPause();
+				}
+			}
+		}
+	});
+	function obz1(e){
+		observer1.observe(e, { attributes: true
+			, attributeFilter : ['aria-label'] });
+	}
+	function tweakHXCL(){ // 调整候选表
+		let jn='jsname',cp=queryByAttr(jn, 'r5xl4'); // 解释内容容器
+		function Qa(jsname, p){return queryByAttr(jn, jsname, p||cp)}
+		function check(){
+			if(win._tweakedHXCL) tweakInput();
+			if(!win._tweakedHXCL) {
+				setTimeout(tweakHXCL, 350);
+				if(!isAttached(cp)) cp=queryByAttr(jn, 'r5xl4');
+			}
+		}
+		tweakInput();
+		if(!win._RPGF) {
+			// mod the share btn
+			win.addEventListener('click', v=>{
+				var p=v.srcElement.parentElement;
+				if(p) {
+					var jn=p.getAttribute('jsname');
+					if(jn==='ymIaV' && !v.srcElement.onclick) {
+						v.srcElement.onclick=u=>{
+							debug('fatal 123');
+							if(!listPane) {
+								listPane = Qa('HyaQwf');
+								listPane.style.display='none'; //  hide the list pane
+							}
+							(textPara||Qa('W297wb')).click();  // clk on txt to show list pane
+							listPane.style.display='';
+							u.preventDefault();
+							u.stopPropagation();
+							obz();
+							return false;
+						};
+					}
+					else if(jn==='UsVyAb') {
+						app.onAudioPlay();
+						obz1(p);
 					}
 				}
-			}
-		});
-		function obz(){
-			observer.observe(listPane, { attributes: true
-				, attributeFilter : ['style'] });
+				//debug('fatal 123asd '+p.parentElement.className+' jn='+p.parentElement.getAttribute('jsname'));
+				if(p.parentElement.className==='VIiyi') {
+					debug('fatal click on text');
+					check();
+					textPara = v.srcElement;
+					listPane = Qa('HyaQwf', p); // force hide the list pane
+					if(listPane.style.display!='none')
+						listPane.style.display='none';
+				}
+			}, true);
+			win._RPGF=1;
 		}
-		if(!win._PRGF)
-		// mod the share btn
-		win.addEventListener('click', v=>{
-			var p=v.srcElement.parentElement;
-			if(p) {
-				if(p.getAttribute('jsname')==='ymIaV' && !v.srcElement.onclick) {
-					v.srcElement.onclick=u=>{
-						//console.log('fatal 123');
-						if(!listPane) {
-							listPane = Qa('HyaQwf');
-							listPane.style.display='none'; //  hide the list pane
-						}
-						(textPara||Qa('W297wb')).click();  // clk on txt to show list pane
-						listPane.style.display='';
-						u.preventDefault();
-						u.stopPropagation();
-						obz();
-						return false;
-					};
+		if(!isAttached(win._modin)) {
+			if(!win._modin) {
+				let e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮
+				win._modin=e;
+				e.style.color='#888';
+				e.onclick=v=>{
+					ta.readOnly=!ta.readOnly;
+					e.style.color=ta.readOnly?'#888':'#000';
+					v.stopPropagation();
 				}
 			}
-			//console.log('fatal 123asd '+p.parentElement.className+' jn='+p.parentElement.getAttribute('jsname'));
-			if(p.parentElement.className==='VIiyi') {
-				textPara = v.srcElement;
-				listPane = Qa('HyaQwf', p); // force hide the list pane
-				if(listPane.style.display!='none')
-					listPane.style.display='none';
-			}
-		}, true);
+			document.getElementsByClassName('FFpbKc')[0].appendChild(win._modin); // 添加到输入内容，字数栏之后
+		}
+		debug('点击不显示候选列表', listPane = Qa('HyaQwf'));
 		win._tweakedHXCL=true;
-		//console.log('点击不显示候选列表 done.');
+		debug('点击不显示候选列表 done.');
 	}
+	
+	tweakInput();
+	
 	win._tweakHXCL = tweakHXCL;
 	if(!win._tweakedHXCL)
 		setTimeout(tweakHXCL, 1350);
-	//
 	
-	
-	
+	debug('translator init done.'); // 结束
 	"
 	,"searchJs": "var succ = 0;
 try {
-	var ta,tl=1,i=0;
-	if(window._pdta){
-		ta = window._pdta;
-	}else{
+	function isAttached(e) {
+		while(e&&(e=e.parentElement)) {
+			if(e===document.body)return true;
+		}
+		return false;
+	}
+	var ta=window._pdta,tl=1,i=0;
+	if(!isAttached(ta)){
 		var tat = document.getElementsByTagName('textarea');
 		for (ta=tat[0],tl=tat.length; i < tl; i++) if (tat[i].getAttribute('aria-label') === '原文') {
 			ta=tat[i];
@@ -190,4 +270,5 @@ try {
 	console.log('fatal e='+e);
 }
 succ"
+	,"translator":"true"
 }

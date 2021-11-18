@@ -1087,7 +1087,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         public View getView(final int position, View convertView, ViewGroup parent) {
         	PDICMainActivity.ViewHolder vh;
 
-        	CharSequence currentKeyText = combining_search_result.getResAt(position);
+        	CharSequence currentKeyText = combining_search_result.getResAt(FloatSearchActivity.this, position);
 	        
 	        if(convertView!=null){
 				vh=(PDICMainActivity.ViewHolder)convertView.getTag();
@@ -1096,20 +1096,20 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				if(itemId==R.layout.listview_item1)
 					vh.subtitle.setTag(vh.itemView.findViewById(R.id.counter));
 			}
-			if(combining_search_result.dictIdx>=md.size()) return vh.itemView;//不要Crash哇
 			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
 				//decorateBackground(vh.itemView);
 				vh.title.setTextColor(AppBlack);
 			}
 			vh.title.setText(currentKeyText);
-            BookPresenter _currentDictionary = md.get(combining_search_result.dictIdx);
-//            if(_currentDictionary!=null){
-//				if(combining_search_result.mflag.data!=null)
-//					vh.subtitle.setText(Html.fromHtml(_currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
-//				else
-//			}
-			vh.subtitle.setText(_currentDictionary.getDictionaryName());
-
+            BookPresenter presenter = getBookById(combining_search_result.bookId);
+			if (presenter!=null) { //todo
+	//            if(presenter!=null){
+	//				if(combining_search_result.mflag.data!=null)
+	//					vh.subtitle.setText(Html.fromHtml(presenter._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
+	//				else
+	//			}
+				vh.subtitle.setText(presenter.getDictionaryName());
+			}
 			if(combining_search_result.getClass()==resultRecorderCombined.class)
 				((TextView)vh.subtitle.getTag()).setText(((resultRecorderCombined)combining_search_result).count);
 			//vh.itemView.setTag(R.id.position,position);
@@ -1154,7 +1154,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 			combining_search_result.renderContentAt(lastClickedPos,FloatSearchActivity.this,this);//webholder
 
-			decorateContentviewByKey(null,currentKeyText = combining_search_result.getResAt(pos).toString());
+			decorateContentviewByKey(null,currentKeyText = combining_search_result.getResAt(FloatSearchActivity.this, pos).toString());
 			if(PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 					&&combining_search_result.shouldSaveHistory()
 					&&userCLick||PDICMainAppOptions.getHistoryStrategy8()==0) {

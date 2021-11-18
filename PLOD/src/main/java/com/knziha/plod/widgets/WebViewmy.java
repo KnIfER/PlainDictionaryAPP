@@ -65,16 +65,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListener {
-	public int currentPos;
+	public long currentPos;
 	public int frameAt;
 	public String toTag;
-	public int SelfIdx;
+	//public int SelfIdx;
 	/** 标记视图来源。 0=单本搜索; 1=联合搜索; 2=点译模式; 3=翻阅模式。*/
 	public int fromCombined;
 	//public boolean fromPeruseview;
 	public boolean fromNet;
 	public String word;
-	public int[] currentRendring;
+	public long[] currentRendring;
 	public boolean awaiting;
 	public boolean bRequestedSoundPlayback;
 	public int HistoryVagranter=-1;
@@ -297,15 +297,15 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			wvclient.onPageFinished(this, "file:///");
 	}
 
-	public void addHistoryAt(int idx) {
+	public void addHistoryAt(long idx) {
 		//CMN.Log("创造历史！！！");
 		History.add(++HistoryVagranter,new myCpr<>(String.valueOf(idx),new ScrollerRecord(expectedPosX, expectedPos, -1)));
 		for(int i=History.size()-1;i>=HistoryVagranter+1;i--)
 			History.remove(i);
 	}
 
-	public void clearIfNewADA(int adapter_idx) {
-		if(SelfIdx!=adapter_idx){
+	public void clearIfNewADA(BookPresenter adapter_idx) {
+		if(presenter!=adapter_idx){
 			//CMN.Log("清空历史!!!", adapter_idx, SelfIdx);
 			History.clear();
 			HistoryVagranter=-1;
@@ -480,7 +480,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 						if (fromCombined) {
 							a.adaptermy2.avoyager.put(a.adaptermy2.lastClickedPosBeforePageTurn, PageState);
 						} else {
-							presenter.HistoryOOP.put(currentPos, PageState);
+							presenter.HistoryOOP.put((int)currentPos, PageState); //todo
 						}
 					}
 				}
@@ -518,6 +518,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public long getBookId() {
+		return presenter.bookImpl.getBooKID();
 	}
 	
 	@RequiresApi(api = Build.VERSION_CODES.M)
@@ -577,7 +581,11 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		int id = item.getItemId();
 		switch(id) {
 			case R.id.toolbar_action0:{
-				evaluateJavascript(getHighLightIncantation().toString(), value -> invalidate());
+				if (getContext() instanceof MainActivityUIBase) {
+					((MainActivityUIBase) getContext()).Annot(this, R.string.highlight);
+				} else {
+					evaluateJavascript(getHighLightIncantation(false).toString(), value -> invalidate());
+				}
 				MyMenuinversed=!MyMenuinversed;
 			} return true;
 			case R.id.toolbar_action1:{//工具复用，我真厉害啊啊啊啊！
@@ -693,7 +701,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																vgg.setOnLongClickListener(new OnLongClickListener() {
 																	@Override
 																	public boolean onLongClick(View v) {
-																		evaluateJavascript(getUnderlineIncantation().toString(),null);
+																		evaluateJavascript(getUnderlineIncantation(false).toString(),null);
 																		return true;
 																	}
 																});
@@ -935,28 +943,32 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	private static StringBuilder HighlightBuilder;
 
 	/**
-	 (function(t){
+	 (function(t,r){
 	     if (window.getSelection) {
-			var ann = document.createElement("span");
-			if(t==0){
-				ann.className = "PLOD_HL";
-	 			ann.setAttribute("style", "background:#ffaaaa;");
-	 		}else{
-				ann.className = "PLOD_UL";
-				//ann.style = "color:#ffaaaa;text-decoration: underline";
-	 			ann.setAttribute("style", "border-bottom:1px solid #ffaaaa");
-	 		}
 			var sel = window.getSelection();
-			var ranges = [];
-			var range;
-			for (var i = 0, len = sel.rangeCount; i < len; ++i) {
-				ranges.push(sel.getRangeAt(i))
-			} //sel.removeAllRanges();
-			i = ranges.length;
-			while (i--) {
-				range = ranges[i];
-				surroundRangeContents(range, ann)
-			}
+	 		var ret = r?sel.toString():'';
+	 		try {
+				var ann = document.createElement("span");
+				if(t==0){
+					ann.className = "PLOD_HL";
+					ann.setAttribute("style", "background:#ffaaaa;");
+				}else{
+					ann.className = "PLOD_UL";
+					//ann.style = "color:#ffaaaa;text-decoration: underline";
+					ann.setAttribute("style", "border-bottom:1px solid #ffaaaa");
+				}
+				var ranges = [];
+				var range;
+				for (var i = 0, len = sel.rangeCount; i < len; ++i) {
+					ranges.push(sel.getRangeAt(i))
+				} //sel.removeAllRanges();
+				i = ranges.length;
+				while (i--) {
+					range = ranges[i];
+					surroundRangeContents(range, ann)
+				}
+			} catch (e) {console.log(e)}
+	 		return ret;
 	 	}
 	 })(
 	 */
@@ -1012,9 +1024,13 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		HighlightBuilder.setLength(commonIcanBaseLen);
 	}
 
-	public StringBuilder getHighLightIncantation() {
+	public StringBuilder getHighLightIncantation(boolean record) {
 		prepareHighlightBuilder();
-		return HighlightBuilder.append(HighLightIncantation).append("0);");
+		return HighlightBuilder.append(HighLightIncantation)
+				.append("0")
+				.append(",")
+				.append(record?"1":"0")
+				.append(")");
 	}
 
 	public StringBuilder getDeHighLightIncantation() {
@@ -1022,9 +1038,13 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		return HighlightBuilder.append(DeHighLightIncantation).append("'PLOD_HL');");
 	}
 
-	public StringBuilder getUnderlineIncantation() {
+	public StringBuilder getUnderlineIncantation(boolean record) {
 		prepareHighlightBuilder();
-		return HighlightBuilder.append(HighLightIncantation).append("1);");
+		return HighlightBuilder.append(HighLightIncantation)
+				.append("1")
+				.append(",")
+				.append(record?"1":"0")
+				.append(")");
 	}
 
 	public StringBuilder getDeUnderlineIncantation() {

@@ -5,10 +5,11 @@ import android.os.Bundle;
 
 import androidx.preference.Preference;
 
+import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
-public class SearchSpecification extends SettingsFragment implements Preference.OnPreferenceClickListener {
+public class SearchSpecification extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=7;
 	
 	//初始化

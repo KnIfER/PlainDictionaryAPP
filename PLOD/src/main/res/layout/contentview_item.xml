@@ -40,56 +40,30 @@
 
 		<TextView
 			android:id="@+id/undo"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_vertical"
-			android:paddingTop="5dp"
-			android:paddingBottom="5dp"
-			android:paddingLeft="2dp"
-			android:paddingRight="2dp"
-			android:text="Undo"
-			android:gravity="center"
-			android:textColor="#fff"
-			android:clickable="true"
-			android:layout_marginRight="8dp"
-			android:background="@drawable/txt_tool"
-			android:visibility="gone"
+			style="@style/title_btns"
+			android:text="撤销"
+			tools:visibility="visible"
 			/>
 
 		<TextView
 			android:id="@+id/redo"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_vertical"
-			android:paddingTop="5dp"
-			android:paddingBottom="5dp"
-			android:paddingLeft="2dp"
-			android:paddingRight="2dp"
-			android:text="Redo"
-			android:gravity="center"
-			android:textColor="#fff"
-			android:clickable="true"
-			android:layout_marginRight="8dp"
-			android:background="@drawable/txt_tool"
-			android:visibility="gone"
+			style="@style/title_btns"
+			android:text="重做"
+			tools:visibility="visible"
 			/>
 
 		<TextView
 			android:id="@+id/save"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_vertical"
-			android:paddingTop="5dp"
-			android:paddingBottom="5dp"
-			android:paddingLeft="2dp"
-			android:paddingRight="2dp"
-			android:text="Save"
-			android:gravity="center"
-			android:textColor="#fff"
-			android:clickable="true"
-			android:layout_marginRight="8dp"
-			android:background="@drawable/txt_tool"
-			android:visibility="gone"
+			style="@style/title_btns"
+			android:text="保存"
+			tools:visibility="visible"
+			/>
+
+		<TextView
+			android:id="@+id/tools"
+			style="@style/title_btns"
+			android:text="工具"
+			tools:visibility="visible"
 			/>
 
 		<ImageView

@@ -13,6 +13,8 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -433,8 +435,7 @@ public class Toastable_Activity extends AppCompatActivity {
 
 				}else {showT("未知错误：配置存储目录建立失败！");finish();}
 			}).setCancelable(false).show();
-			
-		}else{
+		} else {
 			/* Ideal Dwelling (/sdcard/PLOD) already exists. nothing to ask for. */
 			further_loading(savedInstanceState);
 		}
@@ -666,6 +667,16 @@ public class Toastable_Activity extends AppCompatActivity {
 			app.historyCon = _historyCon = new LexicalDBHelper(getApplicationContext(), opt, opt.getUseDatabaseV2());
 		}
 		return historyCon = _historyCon;
+	}
+	
+	public void FuzhiText(String url) {
+		try {
+			ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+			if(cm!=null){
+				cm.setPrimaryClip(ClipData.newPlainText(null, url));
+				showT("已复制");
+			}
+		} catch (Exception e) { }
 	}
 }
 

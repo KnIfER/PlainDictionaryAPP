@@ -14,11 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.knziha.plod.plaindict.R;
 
 public class TwoColumnAdapter extends RecyclerView.Adapter {
-	String[] data;
+	int[] data;
 	private AdapterView.OnItemClickListener listener;
 	private AdapterView.OnItemLongClickListener longlistener;
 
-	public TwoColumnAdapter(String[] data) {
+	public TwoColumnAdapter(int[] data) {
 		this.data = data;
 	}
 
@@ -30,7 +30,7 @@ public class TwoColumnAdapter extends RecyclerView.Adapter {
 		longlistener=_longlistener;
 	}
 
-	public void setItems(String[] _data) {
+	public void setItems(int[] _data) {
 		if(data != _data){
 			data = _data;
 			//notifyItemRangeChanged(0, data.length);
@@ -62,10 +62,10 @@ public class TwoColumnAdapter extends RecyclerView.Adapter {
 			vh.title.setPadding(vh.title.getPaddingLeft(), pad, vh.title.getPaddingRight(), pad);
 		}
 		vh.itemView.setOnClickListener(v -> {
-			if (listener != null) listener.onItemClick(null, v, ((ViewHolder)v.getTag()).position, 0);
+			if (listener != null) listener.onItemClick(null, v, 0, v.getId());
 		});
 		vh.itemView.setOnLongClickListener(v -> {
-			if(longlistener!=null) return longlistener.onItemLongClick(null, v, ((ViewHolder)v.getTag()).position, 0);
+			if(longlistener!=null) return longlistener.onItemLongClick(null, v, 0, v.getId());
 			return false;
 		});
 		return vh;
@@ -75,6 +75,7 @@ public class TwoColumnAdapter extends RecyclerView.Adapter {
 	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 		ViewHolder vh = (ViewHolder) holder;
 		vh.title.setText(data[position]);
+		vh.itemView.setId(data[position]);
 		vh.position = position;
 		vh.title.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 	}

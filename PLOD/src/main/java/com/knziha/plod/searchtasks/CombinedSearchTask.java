@@ -6,6 +6,7 @@ import android.view.View;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.dictionary.mdict;
+import com.knziha.plod.dictionarymodels.SearchType;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorderCombined> {
 	private final WeakReference<MainActivityUIBase> activity;
-	RBTree_additive additive_combining_search_tree = new RBTree_additive();
+	RBTree_additive _treeBuilder = new RBTree_additive();
 	String CurrentSearchText;
 	String CurrentSearchText2;
 	private long stst;
@@ -38,9 +39,9 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
 		for(BookPresenter bookPresenter:a.md) {
-			if(bookPresenter!=null) bookPresenter.combining_search_list = new ArrayList<>();
+			if(bookPresenter!=null) bookPresenter.range_query_reveiver = new ArrayList<>();
 		}
-		additive_combining_search_tree.clear();
+		_treeBuilder.clear();
 	}
 	
 	@Override
@@ -48,9 +49,12 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return null;
 		stst=System.currentTimeMillis();
-		CurrentSearchText=params[0];
+		String searchText = params[0].trim();
+		boolean isParagraph = BookPresenter.testIsParagraph(searchText);
+		CMN.Log("isParagraph::", isParagraph);
+		CurrentSearchText=searchText;
 		CurrentSearchText2=PDICMainAppOptions.getSearchUseMorphology()?
-				a.ReRouteKey(CurrentSearchText, true):null;
+				a.ReRouteKey(searchText, true):null;
 
 		ArrayList<BookPresenter> md = a.md;
 
@@ -90,19 +94,20 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 							PlaceHolder phI = a.getPlaceHolderAt(i1);
 							if(phI!=null) {
 								try {
-									md.set(i1, bookPresenter=MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
+									md.set(i1, bookPresenter=MainActivityUIBase.new_book(phI.getPath(a.opt), a));
 									bookPresenter.tmpIsFlag = phI.tmpIsFlag;
-									bookPresenter.combining_search_list = new ArrayList<>();
+									bookPresenter.range_query_reveiver = new ArrayList<>();
 								} catch (Exception ignored) { }
 							}
 						}
-						if(bookPresenter!=null)
+						if(bookPresenter!=null) {
 							try {
-								bookPresenter.bookImpl.lookUpRange(CurrentSearchText, bookPresenter.combining_search_list, null, i1,15);
+								bookPresenter.QueryByKey(CurrentSearchText, SearchType.Range, isParagraph);
 							} catch (Exception e) {
 								if(GlobalOptions.debug)
 									CMN.Log("搜索出错！！！", bookPresenter.bookImpl.getDictionaryName(), e);
 							}
+						}
 					}
 					if(a.split_dict_thread_number>thread_number) a.poolEUSize.addAndGet(-1);
 				} catch (Exception e){
@@ -129,22 +134,26 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
 		ArrayList<BookPresenter> md = a.md;
-		additive_combining_search_tree = new RBTree_additive();
-		ArrayList<myCpr<String, Integer>> combining_search_list;
+		_treeBuilder = new RBTree_additive();
+		ArrayList<myCpr<String, Long>> combining_search_list;
 		BookPresenter bookPresenter;
+		long bid;
 		for(int i=0; i<md.size(); i++) {
 			bookPresenter = md.get(i);
 			if(bookPresenter!=null){ // to impl
-				combining_search_list = bookPresenter.combining_search_list;
-				if(combining_search_list!=null) {
-					for (myCpr<String, Integer> dataI : combining_search_list) {
+				bid = a.getUsingDataV2()?bookPresenter.bookImpl.getBooKID():i;
+				combining_search_list = bookPresenter.range_query_reveiver;
+				if(combining_search_list!=null)
+				{
+					for (myCpr<String, Long> dataI : combining_search_list)
+					{
 						if(dataI!=null) // to check
-						additive_combining_search_tree.insert(dataI.key, i, dataI.value);
+							_treeBuilder.insert(dataI.key, bid, dataI.value);
 					}
 				}
 			}
 		}
-		rec =  new resultRecorderCombined(a,additive_combining_search_tree.flatten(),md);
+		rec =  new resultRecorderCombined(a, _treeBuilder.flatten(),md);
 
 		//CMN.Log("联合搜索 时间： " + (System.currentTimeMillis() - stst) + "ms " + rec.size());
 
@@ -156,7 +165,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		//showT(""+bWantsSelection);
 
 		if(a.bIsFirstLaunch||a.bWantsSelection) {
-			if(mdict.processText(rec.getResAt(0)).equals(mdict.processText(CurrentSearchText))) {
+			if(mdict.processText(rec.getResAt(a, 0)).equals(mdict.processText(CurrentSearchText))) {
 				boolean proceed = true;
 				if(a.contentview.getParent()==a.main) {
 					proceed = (a.adaptermy2.currentKeyText == null || !mdict.processText(CurrentSearchText).equals(mdict.processText(a.adaptermy2.currentKeyText)));

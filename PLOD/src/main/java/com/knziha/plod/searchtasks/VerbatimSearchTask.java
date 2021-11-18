@@ -4,7 +4,6 @@ import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -42,7 +41,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 		if(!isStrict) {
 			for(BookPresenter bookPresenter:a.md) {
 				if(bookPresenter!=null) // to impl
-					bookPresenter.combining_search_list = new ArrayList<>();
+					bookPresenter.range_query_reveiver = new ArrayList<>();
 			}
 		}
 	}
@@ -76,9 +75,9 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 					PlaceHolder phI = a.getPlaceHolderAt(j);
 					if(phI!=null) {
 						try {
-							md.set(j, mdTmp= MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
+							md.set(j, mdTmp= MainActivityUIBase.new_book(phI.getPath(a.opt), a));
 							mdTmp.tmpIsFlag = phI.tmpIsFlag; // to impl
-							mdTmp.combining_search_list = new ArrayList<>();
+							mdTmp.range_query_reveiver = new ArrayList<>();
 						} catch (Exception ignored) { }
 					}
 				}
@@ -98,7 +97,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 						}
 					}else {
 						if(isCancelled()) break; // to impl
-						mdTmp.bookImpl.lookUpRange(inputArray[i], mdTmp.combining_search_list, null,i,15);
+						mdTmp.bookImpl.lookUpRange(inputArray[i], mdTmp.range_query_reveiver, null,i,15);
 					}
 				}
 			}
@@ -116,7 +115,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 			RBTree_additive additive_combining_search_tree_haha = new RBTree_additive();
 			for(int i=0; i<md.size(); i++) {
 				if(md.get(i)!=null)
-				for(myCpr<String, Integer> dataI:md.get(i).combining_search_list) {
+				for(myCpr<String, Long> dataI:md.get(i).range_query_reveiver) {
 					additive_combining_search_tree_haha.insert(dataI.key, i, dataI.value);
 				}
 			}

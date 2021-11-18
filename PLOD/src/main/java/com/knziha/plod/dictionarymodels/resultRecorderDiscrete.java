@@ -19,9 +19,9 @@ public class resultRecorderDiscrete {
 		//a=a_;
 	};
 
-	public CharSequence getResAt(int pos) {return "";}
+	public CharSequence getResAt(MainActivityUIBase a, long pos) {return "";}
 
-	public void renderContentAt(int pos, MainActivityUIBase a_, BasicAdapter ADA) {}
+	public void renderContentAt(long pos, MainActivityUIBase a_, BasicAdapter ADA) {}
 
 	public int size() {return 0;}
 
@@ -31,20 +31,21 @@ public class resultRecorderDiscrete {
 
 	public void shutUp() {}
 
-	public int dictIdx=0;
+	//public int dictIdx=0;
+	public long bookId=0;
 
 	public int expectedPos;
 
-	public ArrayList<Integer> getRecordAt(int pos) {
+	public ArrayList<Long> getRecordAt(int pos) {
 		return new ArrayList<>();
 	}
 
-	public int getOneDictAt(int pos) {
+	public long getOneDictAt(int pos) {
 		return 0;
 	}
 
 	@Deprecated
-	public ArrayList<Integer> getDictsAt(int pos) {
+	public ArrayList<Long> getDictsAt(int pos) {
 		return new ArrayList<>();
 	}
 
@@ -52,7 +53,7 @@ public class resultRecorderDiscrete {
 		return false;
 	}
 
-	public void syncToPeruseArr(ArrayList<Integer> pvdata, int pos) {
+	public void syncToPeruseArr(ArrayList<Long> pvdata, int pos) {
 		pvdata.clear();
 	}
 

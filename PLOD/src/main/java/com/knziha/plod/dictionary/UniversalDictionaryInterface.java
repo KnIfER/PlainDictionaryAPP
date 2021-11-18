@@ -11,12 +11,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 public interface UniversalDictionaryInterface {
-	String getEntryAt(int position, Flag mflag);
-	String getEntryAt(int position);
+	String getEntryAt(long position, Flag mflag);
+	String getEntryAt(long position);
 	long getNumberEntries();
 	
-	String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException;
-	String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, int... positions) throws IOException;
+	String getRecordAt(long position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException;
+	String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, long... positions) throws IOException;
 	byte[] getRecordData(int position) throws IOException;
 	void setCaseStrategy(int val);
 	
@@ -42,19 +42,19 @@ public interface UniversalDictionaryInterface {
 	
 	int lookUp(String keyword);
 	
-	void lookUpRange(String keyword, ArrayList<myCpr<String, Integer>> combining_search_list, RBTree_additive combining_search_tree, int SelfAtIdx, int theta);
+	int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta);
 	
 	InputStream getResourceByKey(String key);
 	
 	Object ReRoute(String key) throws IOException;
 	
-	String getVirtualRecordAt(Object presenter, int vi) throws IOException;
+	String getVirtualRecordAt(Object presenter, long vi) throws IOException;
 	
-	String getVirtualRecordsAt(Object presenter, int[] list2) throws IOException;
+	String getVirtualRecordsAt(Object presenter, long[] positions) throws IOException;
 	
-	String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, int position);
+	String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position);
 	
-	String getVirtualTextEffectJs(int[] positions);
+	String getVirtualTextEffectJs(long[] positions);
 	
 	long getBooKID();
 	

@@ -43,8 +43,7 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
-import com.knziha.plod.dictionarymodels.mngr_agent_prempter;
-import com.knziha.plod.dictionarymodels.mngr_agent_transient;
+import com.knziha.plod.dictionarymodels.MagentTransient;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.knziha.plod.widgets.FlowTextView;
@@ -60,19 +59,19 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
-		implements dict_manager_base.SelectableFragment, OnItemLongClickListener {
+public class BookManagerMain extends BookManagerFragment<MagentTransient>
+		implements BookManagerFragment.SelectableFragment, OnItemLongClickListener {
 	HashSet<String> rejector = new HashSet<>();
-	dict_manager_activity aaa;
+	BookManager aaa;
 	private boolean bDictTweakerOnceShowed;
-	public ArrayList<mngr_agent_transient> manager_group;
+	public ArrayList<MagentTransient> manager_group;
 	AlertDialog d;
 	private Drawable mActiveDrawable;
 	private Drawable mFilterDrawable;
 	private Drawable mAudioDrawable;
 	private Drawable mRightDrawable;
 	
-	public dict_manager_main(){
+	public BookManagerMain(){
 		super();
 		checkChanged=(buttonView, isChecked) -> {
 			ViewHolder vh = (ViewHolder) ((View)buttonView.getParent()).getTag();
@@ -108,7 +107,7 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 		return new MyDSController(dslv);
 	}
 
-	public void add(mngr_agent_transient mmTmp) {
+	public void add(MagentTransient mmTmp) {
 		manager_group.add(mmTmp);
 		isDirty=true;
 	}
@@ -131,7 +130,7 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 			SpannableStringBuilder ssb = new SpannableStringBuilder(getResources().getString(R.string.dictOpt)).append("");
 			int start = ssb.length();
 
-			final mngr_agent_transient mmTmp = manager_group.get(actualPosition);
+			final MagentTransient mmTmp = manager_group.get(actualPosition);
 			boolean isOnSelected = a.opt.getDictManager1MultiSelecting() && selector.contains(mmTmp.getPath());
 			if (isOnSelected) ssb.append("…");
 			ssb.append(mmTmp.getPath());
@@ -262,11 +261,7 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 													mmTmp.renameFileTo(getActivity(), to);
 													CMN.Log("重命名", mmTmp.getDictionaryName());
 													adapter.remove(mmTmp);
-													try {
-														adapter.insert(new mngr_agent_prempter(a, to.getAbsolutePath(), a.opt, a.mninstance), actualPosition);
-													} catch (IOException e) {
-														e.printStackTrace();
-													}
+													adapter.insert(a.new_MagentTransient(to.getAbsolutePath(), a.opt, a.adapterInstance, null, true), actualPosition);
 													suc = true;
 												}
 											}
@@ -319,7 +314,7 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 													}
 												}
 												app.set4kCharBuff(cb);
-												dict_Manager_folderlike f3 = ((dict_manager_activity) getActivity()).f3;
+												BookManagerFolderlike f3 = ((BookManager) getActivity()).f3;
 												if (f3.dataPrepared) {
 													int idx = f3.data.remove(new mFile(oldPath));
 													if (idx != -1) {
@@ -469,8 +464,8 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 		}
 	}
 
-	private class MyAdapter extends ArrayAdapter<mngr_agent_transient> {
-		public MyAdapter(List<mngr_agent_transient> mdicts) {
+	private class MyAdapter extends ArrayAdapter<MagentTransient> {
+		public MyAdapter(List<MagentTransient> mdicts) {
 			super(getActivity(), getItemLayout(), R.id.text, mdicts);
 		}
 
@@ -489,7 +484,7 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 			mngr_agent_manageable mdTmp = adapter.getItem(position);
 			
 
-			if(dict_manager_activity.dictQueryWord!=null && mdTmp.getDictionaryName().toLowerCase().contains(aaa.dictQueryWord))
+			if(BookManager.dictQueryWord!=null && mdTmp.getDictionaryName().toLowerCase().contains(aaa.dictQueryWord))
 				vh.title.setBackgroundResource(R.drawable.xuxian2);
 			else
 				vh.title.setBackground(null);
@@ -545,7 +540,7 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		a=(dict_manager_activity) getActivity();
+		a=(BookManager) getActivity();
 		if(a!=null) {
 			Resources resource = a.getResources();
 			mActiveDrawable = resource.getDrawable(R.drawable.star_ic_solid);
@@ -559,15 +554,15 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 			a.mdict_cache.clear();
 			manager_group.ensureCapacity(slots.size());
 			for (PlaceHolder phI : slots) {
-				mngr_agent_transient mmTmp = new mngr_agent_transient(a, phI, a.opt, a.mninstance);
-				if (!mmTmp.isMddResource()) PDICMainAppOptions.setTmpIsAudior(mmTmp, false);
-				if(PDICMainAppOptions.getTmpIsHidden(mmTmp.getTmpIsFlag()))
-					rejector.add(mmTmp.getPath());
-				manager_group.add(mmTmp);
-				a.mdict_cache.put(phI.getPath(a.opt).getPath(), mmTmp);
+				MagentTransient magent = a.new_MagentTransient(phI, a.opt, a.adapterInstance, null, false);
+				if (!magent.isMddResource()) PDICMainAppOptions.setTmpIsAudior(magent, false);
+				if(PDICMainAppOptions.getTmpIsHidden(magent.getTmpIsFlag()))
+					rejector.add(magent.getPath());
+				manager_group.add(magent);
+				a.mdict_cache.put(phI.getPath(a.opt).getPath(), magent);
 			}
 
-			aaa = (dict_manager_activity) getActivity();
+			aaa = (BookManager) getActivity();
 			mDslv.setOnItemClickListener((parent, view, position, id) -> {
 				//CMN.show(""+(adapter==null)+" "+(((dict_manager_activity)getActivity()).f1.adapter==null));
 				isDirty = true;
@@ -595,7 +590,7 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 			//CMN.Log("to", to);
 			//if(true) return;
 			if(a.opt.getDictManager1MultiSelecting() && selector.contains(manager_group.get(from).getPath())){
-				ArrayList<mngr_agent_transient> md_selected = new ArrayList<>(selector.size());
+				ArrayList<MagentTransient> md_selected = new ArrayList<>(selector.size());
 				if(to>from) to++;
 				for (int i = manager_group.size()-1; i >= 0; i--) {
 					mngr_agent_manageable mmTmp = manager_group.get(i);
@@ -608,7 +603,7 @@ public class dict_manager_main extends dict_manager_base<mngr_agent_transient>
 				adapter.notifyDataSetChanged();
 			}
 			else if (from != to) {
-				mngr_agent_transient mdTmp = manager_group.remove(from);
+				MagentTransient mdTmp = manager_group.remove(from);
 				manager_group.add(to, mdTmp);
 				adapter.notifyDataSetChanged();
 			}

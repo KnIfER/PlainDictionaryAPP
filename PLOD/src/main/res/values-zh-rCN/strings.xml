@@ -73,7 +73,7 @@
 	<string name="search">搜索</string>
 	<string name="perWSearch">分字搜索</string>
 	<string name="perWSTag">字</string>
-	<string name="peruseToggle">切换翻阅</string>
+	<string name="peruseToggle">翻阅模式</string>
 	<string name="peruseToggle1">@string/peruse_mode</string>
 
 	<string name="currentPlan">当前分组(%d)</string>
@@ -87,7 +87,7 @@
 	<string name="bmAdded">书签已添加！</string>
 	<string name="AppOpt">程序设定</string>
 	<string name="dictOpt">词典选项…</string>
-	<string name="dictOpt1">词典设定</string>
+	<string name="dictOpt1">词典设置</string>
 	<string name="setOpt">分组配置选项…</string>
 	<string name="newName">输入新的名称…</string>
 
@@ -111,11 +111,11 @@
 	<string name="peruse_mode">翻阅模式</string>
 	<string name="applyall">适用于所有集合</string>
 	<string name="prog_settings">程序设置</string>
-	<string name="clipboard">监听剪贴板</string>
+	<string name="clipboard">自动获取剪贴板内容</string>
 	<string name="keep_screen_on">保持屏幕常亮</string>
 	<string name="classical_sort">使用旧版mdict大小写转换</string>
-	<string name="wv_background">全局Webview背景 : </string>
-	<string name="wv_font">全局Webview字体缩放 : </string>
+	<string name="wv_background">内容页默认背景 : </string>
+	<string name="wv_font">内容页默认字体缩放 : \ </string>
 	<string name="m_background">主程序背景 : </string>
 	<string name="f_background">浮动搜索背景 : </string>
 	<string name="paste_target">粘贴目标 : </string>
@@ -198,4 +198,27 @@
 	<string name="fapp_name">浮动搜索</string>
 	<string name="server_spec">词典服务器</string>
 	<string name="mdccsp">多维分享</string>
+	<string name="page_yuan">查看原网页</string>
+	<string name="page_del">删除重载页面</string>
+	<string name="page_rukou">添加为入口</string>
+	<string name="page_nav">输入网址…（未完成）</string>
+	<string name="dict_opt">词典设置 ✡</string>
+	<string name="favor_sel">收藏选中文本</string>
+	<string name="hi_color">选择标注颜色</string>
+	<string name="highlight">高亮</string>
+	<string name="dehighlight">清除高亮</string>
+	<string name="underline">下划线</string>
+	<string name="deunderline">清除下划线</string>
+	<string name="share_1">分享#1</string>
+	<string name="share_2">分享#2</string>
+	<string name="share_3">分享#3</string>>
+	<string name="send_inpage">发送到页内搜索</string>
+	<string name="tts">TTS 播放</string>
+	<string name="pop_sch">点译查询</string>
+	<string name="peruse_sch">翻阅查询</string>
+	<string name="send_etsch">发送到搜索框</string>
+	<string name="share_4">分享#4</string>
+	<string name="share_5">分享#5</string>
+	<string name="share_6">分享#6</string>
+	<string name="annotL">笔记列表 ✏</string>>
 </resources>

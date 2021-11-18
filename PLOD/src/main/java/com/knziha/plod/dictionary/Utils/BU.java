@@ -75,11 +75,11 @@ public class  BU{//byteUtils
         return values;  
      } 
     public static long toLongLE(byte[] buffer,int offset) {   
-        long  values = 0;   
-        for (int i = 7; i >= 0; i--) {    
-            values <<= 8; values|= (buffer[offset+i] & 0xff);   
-        }   
-        return values;  
+        long  values = 0;
+        for (int i = 7; i >= 0; i--) {
+            values <<= 8; values|= (buffer[offset+i] & 0xff);
+        }
+        return values;
      } 
     public static int toInt(byte[] buffer,int offset) {   
         int  values = 0;   

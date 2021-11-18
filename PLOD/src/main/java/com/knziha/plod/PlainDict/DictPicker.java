@@ -214,7 +214,7 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 					int tmpPos = a.currentClick_adapter_idx;
 					a.CCD=a.md_get(position);
 					a.CCD_ID=a.currentClick_adapter_idx = position;
-					a.popupWord(Utils.getTextInView(a.popupTextView),-1, -1);
+					a.popupWord(Utils.getTextInView(a.popupTextView), null, -1);
 					mAdapter.notifyItemChanged(tmpPos);
 					mAdapter.notifyItemChanged(position);
 					if(a instanceof PDICMainActivity){

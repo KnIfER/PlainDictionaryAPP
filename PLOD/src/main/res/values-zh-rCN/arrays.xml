@@ -6,6 +6,8 @@
 		<item>显示最近添加的20条书签</item>
 		<item>点击内容页左上角图标, 在弹出对话框中添加书签</item>
 		<item>@null</item>
+		<item>打开设置</item>
+		<item>@null</item>
 		<item>只有在词典管理中心提交, 才会保存到到分组配置里</item>
 		<item>主目录下的词典将以相对路径记录, 提高效率</item>
 		<item>亦可长按底部工具栏第二个图标</item>
@@ -38,14 +40,7 @@
 		<item>前往顶部</item>
 		<item>前往底部</item>
 	</string-array>
-	
-    <string-array name="dict_tweak_arr">
-        <item>添加书签</item>
-	    <item>书签列表..</item>
-	    <item>分享内容 ➬</item>
-	    <item>增大字体++</item>
-	    <item>减小字体- -</item>
-    </string-array>
+
 
     
 </resources>

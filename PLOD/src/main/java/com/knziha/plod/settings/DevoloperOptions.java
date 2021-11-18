@@ -16,6 +16,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 
+import com.knziha.filepicker.settings.SettingsFragmentBase;
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
@@ -23,7 +25,7 @@ import java.io.DataOutputStream;
 import java.util.HashMap;
 
 /** Devoloper Options */
-public class DevoloperOptions extends SettingsFragment implements Preference.OnPreferenceClickListener {
+public class DevoloperOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=4;
 	private WebView mWebview;
 	
@@ -62,6 +64,7 @@ public class DevoloperOptions extends SettingsFragment implements Preference.OnP
 		findPreference("clear_cache4").setOnPreferenceClickListener(this);
 		init_switch_preference(this, "root", PDICMainAppOptions.getRoot(), null, null).setVisible(false);
 		init_switch_preference(this, "lazyLoad", PDICMainAppOptions.getLazyLoadDicts(), null, null);
+		init_switch_preference(this, "classical_sort", PDICMainAppOptions.getClassicalKeycaseStrategy(), null, null);
 		init_switch_preference(this, "keep_hide", PDICMainAppOptions.getAllowHiddenRecords(), null, null);
 		init_switch_preference(this, "sounds_first", PDICMainAppOptions.getUseSoundsPlaybackFirst(), null, null);
 		init_switch_preference(this, "enable_web_debug", PDICMainAppOptions.getEnableWebDebug(), null, null);
@@ -149,6 +152,7 @@ public class DevoloperOptions extends SettingsFragment implements Preference.OnP
 			return true;
 			case "enable_web_debug": {
 				PDICMainAppOptions.setEnableWebDebug((boolean)newValue);
+				WebView.setWebContentsDebuggingEnabled((boolean)newValue);
 			}
 			return true;
 			case "tts_reader": {
@@ -158,6 +162,9 @@ public class DevoloperOptions extends SettingsFragment implements Preference.OnP
 			case "cache_mp3": {
 				PDICMainAppOptions.setCacheSoundResInAdvance((boolean)newValue);
 			}
+			return true;
+			case "classical_sort":
+				PDICMainAppOptions.setClassicalKeycaseStrategy(mdict.bGlobalUseClassicalKeycase=(Boolean) newValue);
 			return true;
 			case "locale":
 				if(localeStamp!=null)

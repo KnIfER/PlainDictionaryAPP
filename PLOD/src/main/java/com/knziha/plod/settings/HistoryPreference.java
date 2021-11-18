@@ -4,11 +4,12 @@ import android.os.Bundle;
 
 import androidx.preference.Preference;
 
+import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 
-public class HistoryPreference extends SettingsFragment implements Preference.OnPreferenceClickListener {
+public class HistoryPreference extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=10;
 	
 	//初始化

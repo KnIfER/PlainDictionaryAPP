@@ -29,35 +29,21 @@
 		<item>浮动搜索</item>
 	</string-array>
 
-  	<string-array name="drawer_items">
-		<item>@string/fuzzyret1</item>
-		<item>@string/fullret</item>
-		<item>@null</item>
-		<item>@string/bookmarkH</item>
-		<item>@string/lastmarks</item>
-		<item>@null</item>
-		<item>@string/addd</item>
-		<item>@string/pick_main</item>
-		<item>@string/manager</item>
-		<item>@string/switch_favor</item>
-		<item>@null</item>
-		<item>@string/settings</item>
-	</string-array>
-
 
 	<string-array name="drawer_hints">
 		<item>Currently implemented: \'.\' (to match any character), \'*\' (to match any string)</item>    
 		<item>Find in all scoped dictionaries\' Html contents. Can use wildcards as well, but may be slow.</item>    
 		<item>@null</item>
 		<item>Show the latest 20 bookmarks</item>
-		<item>Add bookmarks in the dialog from the icon-button on the top-left of the webview content UI</item>    
+		<item>Add bookmarks in the dialog from the icon-button on the top-left of the webview content UI</item>
+		<item>@null</item>
+		<item>&#160;</item>
 		<item>@null</item>
 		<item>Won\'t modify current configuration unless commit it in the dictionary manager</item>    
 		<item>Dicts\' relative pathname will be saved when it\'s in the main path</item>    
 		<item>Also try long-press on the 2nd btn of the bottom bar</item>    
 		<item>Also try long-press on the last 2nd btn of the bottom bar</item>
 		<item>@null</item>
-		<item>&#160;</item>
 	</string-array>
 
 	<string-array name="pdf_option">
@@ -100,28 +86,6 @@
 		<item>删除重载页面</item>
 		<item>添加为入口</item>
 		<item>地址直达</item>
-	</string-array>
-
-	<string-array name="lexical_page_url_options2">
-		<item>使用浏览器打开</item>
-		<item>保存网页源代码</item>
-		<item>复制链接</item>
-		<item>翻阅模式</item>
-	</string-array>
-
-	<!--mdx-->
-
-	<string-array name="config_pages">
-		<item>查看原网页</item>
-		<item>删除重载页面</item>
-		<item>打开文本分享</item>
-	</string-array>
-
-	<string-array name="lexical_page_url_options">
-		<item>添加书签</item>
-		<item>复制文本</item>
-		<item>保存代码</item>
-		<item>翻阅模式</item>
 	</string-array>
 
 	<string-array name="config_images">
@@ -250,56 +214,7 @@
 	    <item>隐藏滚动条</item>
 	    <item>使用系统滚动条</item>
 	</string-array>
-	
-    <string-array name="dict_tweak_arr">
-        <item>@string/bmAdd</item>
-	    <item>BookMark List…</item>
-	    <item>Font size++</item>
-	    <item>Font size - -</item>
-    </string-array>
 
-	<string-array name="dict_tweak_arr2">
-		<item>收藏选中文本</item>
-		<item>全选</item>
-		<item>选择标注颜色</item>
-		<item>高亮</item>
-		<item>清除高亮</item>
-		<item>下划线</item>
-		<item>清除下划线</item>
-		<item>分享#1</item>
-		<item>分享…</item>
-		<item>分享#2</item>
-		<item>分享#3</item>
-	</string-array>
-
-	<string-array name="text_tweak_arr">
-		<item>收藏选中文本</item>
-		<item>发送到页内搜索</item>
-		<item>TTS 播放</item>
-		<item>点译查询</item>
-		<item>翻阅查询</item>
-		<item>发送到搜索框</item>
-		<item>浮动搜索</item>
-		<item>分享#4</item>
-		<item>分享…</item>
-		<item>分享#5</item>
-		<item>分享#6</item>
-	</string-array>
-
-	<string-array name="text_tweak_arr2">
-		<item>收藏选中文本</item>
-		<item>发送到页内搜索</item>
-		<item>TTS 播放</item>
-		<item>点译查询</item>
-		<item>翻阅查询</item>
-		<item>发送到搜索框</item>
-		<item>浮动搜索</item>
-		<item>分享#1</item>
-		<item>分享…</item>
-		<item>分享#2</item>
-		<item>分享#3</item>
-	</string-array>
-    
   	<string-array name="internal_favor_dirs"> 
 	    <item>/storage/emulated/0</item>
 	    <item>/storage/emulated/0/Android/data/com.knziha.plod.plaindict/</item>

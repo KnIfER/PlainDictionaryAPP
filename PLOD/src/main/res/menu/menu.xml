@@ -18,9 +18,9 @@
 
 <!--6--><item android:id="@+id/toolbar_action10" android:title="保存搜索…" app:showAsAction="never"/>
 
-<!--7--><item android:id="@+id/toolbar_action3" android:icon="@drawable/ic_search_24k" android:title="@string/perWSearch" app:showAsAction="never"/>
-
 <!--8--><item android:id="@+id/toolbar_action4" android:icon="@drawable/ic_search_24k" android:title="@string/peruseToggle" app:showAsAction="never"/>
+
+<!--7--><item android:id="@+id/toolbar_action3" android:icon="@drawable/ic_search_24k" android:title="@string/perWSearch" app:showAsAction="never"/>
 
 <!--9--><item android:id="@+id/toolbar_action14" android:icon="@drawable/ic_search_24k" android:title="即点即译" app:showAsAction="never"/>
 

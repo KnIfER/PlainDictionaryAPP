@@ -50,6 +50,7 @@ import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.utils.FU;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.BaseHandler;
 import com.knziha.plod.plaindict.CMN;
@@ -64,12 +65,9 @@ import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
-import com.knziha.plod.dictionarymodels.mngr_presenter_nonexist;
-import com.knziha.plod.dictionarymodels.mngr_agent_prempter;
-import com.knziha.plod.dictionarymodels.mngr_agent_transient;
+import com.knziha.plod.dictionarymodels.MagentTransient;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.SimpleTextNotifier;
-import com.knziha.plod.widgets.Toastable_FragmentActivity;
 import com.knziha.rbtree.RashSet;
 
 import java.io.BufferedReader;
@@ -86,9 +84,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public class dict_manager_activity extends Toastable_Activity implements OnMenuItemClickListener
+public class BookManager extends Toastable_Activity implements OnMenuItemClickListener
 {
-	HashMap<String, mngr_agent_transient> mdict_cache = new HashMap<>();
+	HashMap<String, MagentTransient> mdict_cache = new HashMap<>();
 	Intent intent = new Intent();
 	private PopupWindow mPopup;
 	public ArrayList<PlaceHolder> slots;
@@ -105,10 +103,10 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 	
 	public File SecordFile;
 	
-	mngr_presenter_nonexist mninstance = new mngr_presenter_nonexist(new File("/N/A"));
+	DictionaryAdapter adapterInstance = new DictionaryAdapter(new File("/N/A"), null);
 	private boolean deleting;
 	
-	public dict_manager_activity() throws IOException { }
+	public BookManager() { }
 	
 	public File fileToSet(String name) {
 		return opt.fileToSet(ConfigFile, name);
@@ -124,15 +122,15 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
     static String dictQueryWord;
     private SearchView searchView;
     protected Menu toolbarmenu;
-    dict_manager_main f1;
-    dict_manager_modules f2;
-    dict_Manager_folderlike f3;
-	dict_manager_websites f4;
+    BookManagerMain f1;
+    BookManagerModules f2;
+    BookManagerFolderlike f3;
+	BookManagerWebsites f4;
     ViewPager viewPager;  //对应的viewPager
     TabLayout mTabLayout;
 	LayoutInflater inflater;
 
-	public ArrayList<mngr_agent_transient> mdmng;
+	public ArrayList<MagentTransient> mdmng;
     public HashSet<String> mdlibsCon;
 	protected int CurrentPage;
 
@@ -145,8 +143,8 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 		}
 
 		int item = viewPager.getCurrentItem();
-		if(item<fragments.size() && fragments.get(item) instanceof dict_manager_base.SelectableFragment){
-			if(((dict_manager_base.SelectableFragment)fragments.get(item)).exitSelectionMode()){
+		if(item<fragments.size() && fragments.get(item) instanceof BookManagerFragment.SelectableFragment){
+			if(((BookManagerFragment.SelectableFragment)fragments.get(item)).exitSelectionMode()){
 				return;
 			}
 		}
@@ -171,7 +169,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 			boolean identical = size==slots.size();
 			int i;
 			for (i = 0; i < size; i++) {
-				mngr_agent_transient mmTmp = mdmng.get(i);
+				MagentTransient mmTmp = mdmng.get(i);
 				mmTmp.mPhI.lineNumber=i;
 				if(identical){
 					if(!mmTmp.equalsToPlaceHolder(slots.get(i)))
@@ -184,7 +182,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 				intent.putExtra("changed", true);
 				slots.clear();
 				for (mngr_agent_manageable mmTmp:mdmng) {
-					slots.add(((mngr_agent_transient)mmTmp).mPhI);
+					slots.add(((MagentTransient)mmTmp).mPhI);
 				}
 				try {
 					File def = new File(getExternalFilesDir(null), "default.txt");
@@ -315,10 +313,10 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 		
 	    String[] tabTitle = {getResources().getString(R.string.currentPlan,0),getResources().getString(R.string.allPlans), "网络词典", "全部词典"};
 	    
-		fragments.addAll(Arrays.asList(f1 = new dict_manager_main(), f2 = new dict_manager_modules(), f4 = new dict_manager_websites(), f3 = new dict_Manager_folderlike()));
+		fragments.addAll(Arrays.asList(f1 = new BookManagerMain(), f2 = new BookManagerModules(), f4 = new BookManagerWebsites(), f3 = new BookManagerFolderlike()));
 		f1.a=f2.a=f4.a=f3.a=this;
 
-		f3.oes = new dict_Manager_folderlike.OnEnterSelectionListener() {
+		f3.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
 			public void onEnterSelection(){
 				for (int i = 7; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i<=12);
 			}
@@ -338,7 +336,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 				if(!found) {
 					//show("adding new!"+fn.getAbsolutePath());
 					f3.mDslv.post(() -> {
-						mngr_agent_transient mmTmp = new mngr_agent_transient(dict_manager_activity.this, fn.getPath(), opt, 0, mninstance);
+						MagentTransient mmTmp = new_MagentTransient(fn.getPath(), opt, adapterInstance, 0, false);
 						f1.adapter.add(mmTmp);
 						f1.refreshSize();
 						f1.adapter.notifyDataSetChanged();
@@ -349,15 +347,15 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 					return 0;
 			};
 		};
-		f4.oes = new dict_Manager_folderlike.OnEnterSelectionListener() {
+		f4.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
 			public void onEnterSelection(){
 				for (int i = 7; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i<=12);
 			}
 			public int addIt(final mFile fn) {
 				boolean found=false;
 				String path = fn.getAbsolutePath();
-				if (fn.getTag() instanceof dict_manager_websites.WebAssetDesc) {
-					path = ((dict_manager_websites.WebAssetDesc) fn.getTag()).realPath;
+				if (fn.getTag() instanceof BookManagerWebsites.WebAssetDesc) {
+					path = ((BookManagerWebsites.WebAssetDesc) fn.getTag()).realPath;
 				}
 				for(int i=0;i<f1.adapter.getCount();i++) {
 					if(f1.adapter.getItem(i).getPath().equals(path)) {
@@ -374,7 +372,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 					//show("adding new!"+path);
 					String finalPath = path;
 					f4.mDslv.post(() -> {
-						mngr_agent_transient mmTmp = new mngr_agent_transient(dict_manager_activity.this, finalPath, opt, 0, mninstance);
+						MagentTransient mmTmp = new_MagentTransient(finalPath, opt, adapterInstance, 0, false);
 						f1.adapter.add(mmTmp);
 						f1.refreshSize();
 						f1.adapter.notifyDataSetChanged();
@@ -674,7 +672,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 					holder.modify.setImageResource(R.drawable.ic_mode_edit_24dp);
 				}
 			}});
-        AlertDialog.Builder builder = new AlertDialog.Builder(dict_manager_activity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(BookManager.this);
         builder.setView(dialog);
         builder.setIcon(R.mipmap.ic_directory_parent);
         builder.setNeutralButton(R.string.delete,null);
@@ -693,7 +691,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 			final File newf = new File(ConfigFile, newName);
 			if(!fSearch.equals(newf) && newf.exists()) {//覆盖
 				View dialog12 = getLayoutInflater().inflate(R.layout.dialog_about,null);
-				AlertDialog.Builder builder1 = new AlertDialog.Builder(dict_manager_activity.this);
+				AlertDialog.Builder builder1 = new AlertDialog.Builder(BookManager.this);
 				TextView tvtv = dialog12.findViewById(R.id.title);
 				tvtv.setText(R.string.wenj_fugai);
 				tvtv.setPadding(50, 50, 0, 0);
@@ -957,9 +955,9 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 								line = opt.lastMdlibPath + "/" + line;
 							line = new File(line).getAbsolutePath();
 							if (!mdict_cache.containsKey(line)) {
-								mngr_agent_transient m = mdict_cache.get(line);
+								MagentTransient m = mdict_cache.get(line);
 								if (m == null)
-									m = new mngr_agent_transient(dict_manager_activity.this, line, opt, mninstance);
+									m = new_MagentTransient(line, opt, adapterInstance, null, false);
 								f1.add(m);
 								f1.rejector.add(line);
 								mdict_cache.put(line, m);
@@ -1048,9 +1046,9 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 			} break;
 			/* 添加 */
             case R.id.toolbar_action9:{
-				ArrayList<mngr_agent_transient> data = f1.manager_group;
+				ArrayList<MagentTransient> data = f1.manager_group;
 				if(isLongClicked) {/* 添加到第几行 */
-					AlertDialog.Builder builder2 = new AlertDialog.Builder(dict_manager_activity.this);
+					AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
 					View dv = getLayoutInflater().inflate(R.layout.dialog_move_to_line, null);
 					NumberPicker np = dv.findViewById(R.id.numberpicker);
 					CheckBox checker1 = dv.findViewById(R.id.check1);
@@ -1071,7 +1069,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 									continue;
 								}
 								String key = fn.getPath();
-								mngr_agent_transient m = null;
+								MagentTransient m = null;
 								if (f1.rejector.contains(key)) {
 									f1.rejector.remove(key);
 								}
@@ -1084,7 +1082,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 								if (m == null)
 									m = mdict_cache.get(key);
 								if (m == null) {
-									m = new mngr_agent_transient(dict_manager_activity.this, key, opt, mninstance);
+									m = new_MagentTransient(key, opt, adapterInstance, 0, false);
 									mdict_cache.put(key, m);
 								}
 								data.add(Math.min(data.size(), toPos++), m);
@@ -1132,7 +1130,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 							cc++;
 						}
 						else {
-							mngr_agent_transient m=null;
+							MagentTransient m=null;
 							for (int j = 0; j < data.size(); j++) {
 								if(data.get(j).getPath().equals(key)){
 									m=data.get(j);
@@ -1142,7 +1140,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 							if(m==null){
 								m = mdict_cache.get(key);
 								if(m==null){
-									m = new mngr_agent_transient(dict_manager_activity.this, key, opt, mninstance);
+									m = new_MagentTransient(key, opt, adapterInstance, null, false);
 									mdict_cache.put(key, m);
 								}
 								data.add(m);
@@ -1160,7 +1158,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 			/* 移除 */
             case R.id.toolbar_action10:{
 				if(isLongClicked) {
-					new AlertDialog.Builder(dict_manager_activity.this)
+					new AlertDialog.Builder(BookManager.this)
 							.setTitle(R.string.surerrecords)
 							.setPositiveButton(R.string.confirm, (dialog, which) -> {
 								deleteRecordsHard();
@@ -1189,7 +1187,7 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 				}
 				else {
 					final View dv = inflater.inflate(R.layout.dialog_sure_and_all, null);
-					AlertDialog.Builder builder2 = new AlertDialog.Builder(dict_manager_activity.this);
+					AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
 					builder2.setView(dv).setTitle(getResources().getString(R.string.surerrecords, f3.Selection.size()))
 							.setPositiveButton(R.string.confirm, (dialog, which) -> {
 								HashSet<String> removePool = new HashSet<>();
@@ -1315,16 +1313,12 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 									if (f3.data.get(mF).isDirectory()) continue;
 									mngr_agent_manageable mmTmp = mdict_cache.get(sI);
 									if (mmTmp == null) {
-										try {
-											mmTmp = new mngr_agent_prempter(dict_manager_activity.this, sI, opt, mninstance);
-										} catch (IOException e) {
-											e.printStackTrace();
-										}
+										mmTmp = new_MagentTransient(sI, opt, adapterInstance, null, true);
 									}
 									File OldF = mmTmp.f();
 									String OldFName = mmTmp.getDictionaryName();
 									File toF = new File(p, OldF.getName());
-									boolean ret = mmTmp.moveFileTo(dict_manager_activity.this, toF);
+									boolean ret = mmTmp.moveFileTo(BookManager.this, toF);
 									//CMN.Log("移动？？？", ret, toF);
 									if (ret) {
 										RebasePath(OldF, OldFName, toF, null, OldF.getName());
@@ -1499,6 +1493,14 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 		return ret;
 	}
 	
+	public MagentTransient new_MagentTransient(Object key, PDICMainAppOptions opt, DictionaryAdapter adapterInstance, Integer isF, boolean bIsPreempter) {
+		try {
+			return new MagentTransient(this, key, opt, adapterInstance, isF, bIsPreempter);
+		} catch (IOException e) {
+			throw new RuntimeException(MagentTransient.class.toString());
+		}
+	}
+	
 	public ArrayList<File> ScanInModlueFiles(boolean all, boolean addAllLibs) {
 		ArrayList<File> ret = new ArrayList<>();
 		if (all) {
@@ -1586,9 +1588,9 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 			}
 			if (!line.startsWith("/"))
 				line = opt.lastMdlibPath + "/" + line;
-			mngr_agent_transient mmtmp = mdict_cache.get(line);
+			MagentTransient mmtmp = mdict_cache.get(line);
 			if (mmtmp == null)
-				mmtmp = new mngr_agent_transient(dict_manager_activity.this, line, opt, 0, mninstance);
+				mmtmp = new_MagentTransient(line, opt, adapterInstance, 0, false);
 			if(!mmtmp.isMddResource()) flag&=~0x4;
 			mmtmp.setTmpIsFlag(flag);
 			mdmng.add(mmtmp);
@@ -1668,11 +1670,11 @@ public class dict_manager_activity extends Toastable_Activity implements OnMenuI
 	}
 	
 	private static class MyHandler extends BaseHandler {
-		private final WeakReference<dict_manager_activity> activity;
-		MyHandler(dict_manager_activity a) { this.activity = new WeakReference<>(a); }
+		private final WeakReference<BookManager> activity;
+		MyHandler(BookManager a) { this.activity = new WeakReference<>(a); }
 		@Override public void clearActivity() { activity.clear(); }
 		@Override public void handleMessage(@NonNull Message msg) {
-			dict_manager_activity a = activity.get();
+			BookManager a = activity.get();
 			if(a==null) return;
 			if (msg.what == 6657) {
 				removeMessages(6657);

@@ -1,6 +1,5 @@
 package com.knziha.plod.dictionarymodels;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.SparseArray;
@@ -8,44 +7,35 @@ import android.util.SparseArray;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.filepicker.utils.FU;
-import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.WebViewmy;
 
+import org.apache.commons.text.StringEscapeUtils;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 /**
- Swift representation for management of mdicts.
+ For management of books.
  data:2020.01.12
  author:KnIfER
 */
-public class mngr_agent_transient implements mngr_agent_manageable {
+public class MagentTransient extends BookPresenter {
 	public PlaceHolder mPhI;
 	protected File f;
 	public String _Dictionary_fName_Internal;
 	PDICMainAppOptions opt;
 	int TIFStamp;
-	long FFStamp;
-	long firstFlag;
 	List<mngr_mdictRes_prempter> mdd;
 	boolean keepOrgHolder=true;
 	
-	public final PhotoBrowsingContext IBC = new PhotoBrowsingContext();
-	public Integer bgColor=null;
-	public int TIBGColor;
-	public int TIFGColor;
-	public int internalScaleLevel=-1;
-	public int lvPos,lvClickPos,lvPosOff;
-	private float webScale;
-	public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
-	final mngr_presenter_nonexist MNINSTANCE;
-	public boolean isDirty;
 	private boolean changeMap=true;
 	
 	public void Rebase(File f){
@@ -60,44 +50,44 @@ public class mngr_agent_transient implements mngr_agent_manageable {
 		mPhI.Rebase(f);
 	}
 
-	//构造
-	public mngr_agent_transient(Toastable_Activity a, String fn, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) {
-		this(a, fn, opt_, 0, mninstance);
-	}
-
-	public mngr_agent_transient(Toastable_Activity a, String fn, PDICMainAppOptions opt_, int isF, mngr_presenter_nonexist mninstance) {
-		this(a, new PlaceHolder(fn), opt_, mninstance);
-		mPhI.tmpIsFlag=TIFStamp=isF;
-	}
-
-	public mngr_agent_transient(Toastable_Activity a, PlaceHolder phI, PDICMainAppOptions opt_, mngr_presenter_nonexist mninstance) {
+	public MagentTransient(Toastable_Activity a, Object PlaceHolderString, PDICMainAppOptions opt_, DictionaryAdapter bookInstance, Integer isF, boolean bIsPreempter) throws IOException {
+		super(new File("/N/A"), null, 1, null);
+		
+		PlaceHolder phI=null;
+		if (PlaceHolderString instanceof String) {
+			phI = new PlaceHolder((String) PlaceHolderString);
+		}
+		else if (PlaceHolderString instanceof PlaceHolder) {
+			phI = (PlaceHolder) PlaceHolderString;
+		}
+		Objects.requireNonNull(phI);
+		bookImpl = bookInstance;
+		bIsManagerAgent = 1;
 		opt=opt_;
 		mPhI = phI;
-		MNINSTANCE = mninstance;
 		f = mPhI.getPath(opt);
 		_Dictionary_fName_Internal = "."+mPhI.getName();
 		
-		try {
-			mninstance.opt=opt;
-			MNINSTANCE.setDictionaryName(mPhI.getName().toString());
-			MNINSTANCE.IBC=IBC;
-			MNINSTANCE.updateFile(f);
-			MNINSTANCE.avoyager=avoyager;
-			MNINSTANCE.readInConfigs(a, a.prepareHistoryCon());
-			bgColor=MNINSTANCE.bgColor;
-			TIBGColor=MNINSTANCE.TIBGColor;
-			TIFGColor=MNINSTANCE.TIFGColor;
-			internalScaleLevel=MNINSTANCE.internalScaleLevel;
-			lvPos=MNINSTANCE.lvPos;
-			lvClickPos=MNINSTANCE.lvClickPos;
-			lvPosOff=MNINSTANCE.lvPosOff;
-			webScale=MNINSTANCE.webScale;
-			firstFlag=MNINSTANCE.firstFlag;
-		} catch (IOException e) {
-			if(GlobalOptions.debug) CMN.Log(e);
+		setDictionaryName(mPhI.getName().toString());
+		updateFile(f);
+		readConfigs(a, a.prepareHistoryCon());
+		
+		if (isF!=null) {
+			mPhI.tmpIsFlag=TIFStamp=isF;
 		}
+		
 		FFStamp=firstFlag;
 		TIFStamp=mPhI.tmpIsFlag;
+		
+		if (bIsPreempter) {
+			String fnTMP = f.getName();
+			
+			File f2 = new File(f.getParentFile().getAbsolutePath()+"/"+fnTMP.substring(0,fnTMP.lastIndexOf("."))+".mdd");
+			if(f2.exists()){
+				mdd = Collections.singletonList(new mngr_mdictRes_prempter(f2));
+			}
+			bIsManagerAgent = 2;
+		}
 	}
 
 	@Override
@@ -149,6 +139,11 @@ public class mngr_agent_transient implements mngr_agent_manageable {
 		return mPhI.tmpIsFlag;
 	}
 	
+	@Override
+	public void setTmpIsFlag(int val) {
+		mPhI.tmpIsFlag = val;
+	}
+	
 	public boolean isMdictFile() {
 		String line = mPhI.pathname;
 		int tmpIdx = line.length()-4;
@@ -169,23 +164,13 @@ public class mngr_agent_transient implements mngr_agent_manageable {
 		}
 		return false;
 	}
-
-	@Override
-	public void setTmpIsFlag(int val) {
-		mPhI.tmpIsFlag=val;
-	}
-
-	@Override
-	public File f() {
-		return f;
-	}
 	
-	public void dumpViewStates(Toastable_Activity context, int tmpIsFlag) {
-		isDirty=true;
-		firstFlag = tmpIsFlag;
-		changeMap = false;
-		checkFlag(context);
-	}
+//	public void dumpViewStates(Toastable_Activity context, int tmpIsFlag) {
+//		bookDelegate.isDirty = true;
+//		bookDelegate.firstFlag = tmpIsFlag;
+//		changeMap = false;
+//		checkFlag(context);
+//	}
 	
 	@Override
 	public void checkFlag(Toastable_Activity context) {
@@ -196,49 +181,19 @@ public class mngr_agent_transient implements mngr_agent_manageable {
 				PDICMainAppOptions.ChangedMap.add(path);
 			}
 			
-			MNINSTANCE.setDictionaryName(mPhI.getName().toString());
-			MNINSTANCE.IBC=IBC;
-			MNINSTANCE.updateFile(f);
-			MNINSTANCE.avoyager=avoyager;
+			setDictionaryName(mPhI.getName().toString());
+			updateFile(f);
 			
-			MNINSTANCE.bgColor=bgColor;
-			MNINSTANCE.TIBGColor=TIBGColor;
-			MNINSTANCE.internalScaleLevel=internalScaleLevel;
-			MNINSTANCE.lvPos=lvPos;
-			MNINSTANCE.lvClickPos=lvClickPos;
-			MNINSTANCE.lvPosOff=lvPosOff;
-			MNINSTANCE.webScale=webScale;
-			MNINSTANCE.firstFlag=firstFlag;
-			MNINSTANCE.dumpViewStates(context, context.prepareHistoryCon());
+			saveStates(context, context.prepareHistoryCon());
 			FFStamp=firstFlag;
 			isDirty=false;
 		}
 	}
 
 	@Override
-	public long getFirstFlag() {
-		return firstFlag;
-	}
-	
-	@Override
-	public void setFirstFlag(long val){
-		firstFlag = val;
-	}
-	
-	@Override
-	public void validifyValueForFlag(WebViewmy view, int val, int mask, int flagPosition, int pid) {
-		firstFlag &= ~(mask << flagPosition);
-		firstFlag |= (val << flagPosition);
-	}
-
-	@Override
-	public PDICMainAppOptions getOpt() {
-		return opt;
-	}
-
-	@Override
 	public boolean exists() {
-		return CMN.AssetMap.containsKey(mPhI.pathname)||f.exists();
+		// CMN.AssetMap.containsKey(mPhI.pathname)
+		return mPhI.pathname.startsWith("/ASSET")||f.exists();
 	}
 
 	@Override

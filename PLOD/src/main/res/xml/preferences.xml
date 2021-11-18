@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	>
 	<PreferenceCategory
 		android:key="cat_prog"
-		android:title="@string/prog_settings"
-		app:icon="@drawable/drawer_menu_icon_setting"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:persistent="false"
 			android:defaultValue="false"
 			android:key="enable_pastebin"
 			android:title="@string/clipboard"
-			app:allowDividerAbove="true"
+			app:allowDividerAbove="false"
 			app:allowDividerBelow="true"
 			/>
 
@@ -26,10 +25,12 @@
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:persistent="false"
 			android:defaultValue="false"
-			android:key="classical_sort"
-			android:title="@string/classical_sort"
+			android:key="search_all"
+			android:title="搜索所有词典"
 			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"/>
+			app:allowDividerBelow="true"
+			app:isPreferenceVisible="false"
+			/>
 
 		<com.knziha.filepicker.settings.IntPreference
 			android:defaultValue="@integer/MIN"
@@ -37,6 +38,7 @@
 			android:persistent="true"
 			android:title="@string/wv_font"
 			suffix=" %"
+			app:inlineSummary="true"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			/>
@@ -162,6 +164,24 @@
 		<!--			/>-->
 
 
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="dbv2"
+			android:persistent="false"
+			android:title="使用数据库V2"
+			app:isPreferenceVisible="true"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<Preference
+			android:key="dbv2_up"
+			android:persistent="false"
+			android:title="升级数据库V2"
+			app:isPreferenceVisible="true"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
 		<Preference
 			android:key="sspec"
 			android:persistent="false"
@@ -180,24 +200,6 @@
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:icon="@drawable/ic_view_carousel_black_24dp"
-			/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="dbv2"
-			android:persistent="false"
-			android:title="使用数据库V2"
-			app:isPreferenceVisible="true"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-
-		<Preference
-			android:key="dbv2_up"
-			android:persistent="false"
-			android:title="升级数据库V2"
-			app:isPreferenceVisible="true"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
 
 		<Preference

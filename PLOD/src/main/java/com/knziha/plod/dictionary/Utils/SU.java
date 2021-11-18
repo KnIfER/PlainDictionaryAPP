@@ -115,6 +115,20 @@ public class  SU{
 		return len>0;
 	}
 	
+	//static net.jpountz.lz4.LZ4Factory factory;
+	
+	public static void Lz4_decompress(byte[] compressed, int offset, byte[] output, int out_offset, int decompressedLen) {
+//		if (factory==null) {
+//			factory = net.jpountz.lz4.LZ4Factory.fastestInstance();
+//		}
+//		factory.fastDecompressor().decompress(compressed, offset, output, out_offset, decompressedLen);
+	}
+	
+	public static void Zstd_decompress(byte[] compressed, int offset, int length, byte[] output, int out_offset, int decompressedLen) {
+		////new ZstdDecompressor().decompress(compressed, offset, length, output, out_offset, decompressedLen);
+		//Zstd.decompressByteArray(output, out_offset, decompressedLen, compressed, offset, length);
+	}
+	
 	public boolean CharsequenceEqual(CharSequence cs1, CharSequence cs2) {
 		if(cs1!=null&&cs2!=null) {
 			int len1=cs1.length();

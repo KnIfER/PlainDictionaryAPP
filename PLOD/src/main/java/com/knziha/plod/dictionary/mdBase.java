@@ -19,6 +19,7 @@ package com.knziha.plod.dictionary;
 
 import com.knziha.plod.dictionary.Utils.*;
 import com.knziha.rbtree.RBTree;
+
 import org.anarres.lzo.*;
 
 import java.io.*;
@@ -34,8 +35,6 @@ import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterOutputStream;
-
-import io.airlift.compress.zstd.ZstdDecompressor;
 
 import static com.knziha.plod.dictionary.Utils.BU.calcChecksum;
 
@@ -793,8 +792,11 @@ public abstract class mdBase {
 			break;
 			case 3:
 				RinfoI_cache.record_block_ = new byte[decompressed_size];
-				ZstdDecompressor zstdDecompressor = new ZstdDecompressor();
-				zstdDecompressor.decompress(record_block_compressed, 8, compressed_size-8, RinfoI_cache.record_block_, 0, decompressed_size);
+				SU.Zstd_decompress(record_block_compressed, 8, compressed_size-8, RinfoI_cache.record_block_, 0, decompressed_size);
+			break;
+			case 4:
+				RinfoI_cache.record_block_ = new byte[decompressed_size];
+				SU.Lz4_decompress(record_block_compressed, 8, RinfoI_cache.record_block_, 0, decompressed_size);
 			break;
 		}
 
@@ -964,8 +966,11 @@ public abstract class mdBase {
 				break;
 				case 3:
 					key_block = new byte[BlockLen];
-					ZstdDecompressor zstdDecompressor = new ZstdDecompressor();
-					zstdDecompressor.decompress(_key_block_compressed, 8, (int)(compressedSize-8), key_block, 0, BlockLen);
+					SU.Zstd_decompress(_key_block_compressed, 8, compressedSize-8, key_block, 0, BlockLen);
+				break;
+				case 4:
+					key_block = new byte[BlockLen];
+					SU.Lz4_decompress(_key_block_compressed, 8, key_block, 0, BlockLen);
 				break;
 			}
 			/*spliting current Key block*/

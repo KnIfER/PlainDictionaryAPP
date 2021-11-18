@@ -94,7 +94,7 @@
 			android:theme="@style/FloatAppTheme"
 			/>
 
-		<activity android:name="com.knziha.plod.dictionarymanager.dict_manager_activity"
+		<activity android:name="com.knziha.plod.dictionarymanager.BookManager"
 			android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|uiMode|locale|layoutDirection"
 			android:theme="@style/AppThemeRaw"
 			/>

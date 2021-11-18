@@ -54,7 +54,6 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.settings.ServerPreference;
-import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.FlowTextView;
@@ -80,7 +79,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
-import static com.knziha.plod.plaindict.MainActivityUIBase.new_mdict;
+import static com.knziha.plod.plaindict.MainActivityUIBase.new_book;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
 
@@ -134,7 +133,20 @@ public class Drawer extends Fragment implements
 			mDrawerList = mDrawerListLayout.findViewById(R.id.left_drawer);
 			((AdvancedNestScrollListview)mDrawerList).setNestedScrollingEnabled(true);
 			
-			myAdapter = new MyAdapter(getResources().getStringArray(R.array.drawer_items));
+			myAdapter = new MyAdapter(new int[]{
+				R.string.fuzzyret1
+				, R.string.fullret
+				, 0
+				, R.string.bookmarkH
+				, R.string.lastmarks
+				, 0
+				, R.string.settings
+				, 0
+				, R.string.addd
+				, R.string.pick_main
+				, R.string.manager
+				, R.string.switch_favor
+			});
 			
 			mDrawerList.setAdapter(myAdapter);
 			
@@ -185,8 +197,8 @@ public class Drawer extends Fragment implements
 	}
 
 	class MyAdapter extends BaseAdapter {
-		String[] items;
-		public MyAdapter(String[] items) {
+		int[] items;
+		public MyAdapter(int[] items) {
 			this.items = items;
 		}
 		boolean show_hints = true;
@@ -204,33 +216,40 @@ public class Drawer extends Fragment implements
 		}
 		@Override
 		public boolean isEnabled(int position) {
-			return items[position]!=null;
+			return items[position]!=0;
 		}
 		
 		@Override
 		public int getViewTypeCount() {
-			return 2;
+			return 3;
 		}
 		
 		@Override
 		public int getItemViewType(int position) {
-			return items[position]==null?1:0;
+			if (items[position]==0) {
+				return 1;
+			}
+			if (items[position]==R.string.settings) {
+				return 2;
+			}
+			return 0;
 		}
 		
 		@Override
 		public String getItem(int position) {
-			return items[position];
+			return a.mResource.getString(items[position]);
 		}
 		
 		@Override
 		public long getItemId(int position) {
-			return position;
+			return items[position];
 		}
 		
 		@NonNull
 		@Override
 		public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-			if(items[position]==null){
+			int id=items[position];
+			if(id==0){
 				/* divider border */
 				return convertView!=null?convertView:LayoutInflater.from(getContext()).inflate(R.layout.listview_sep, parent, false);
 			}
@@ -238,28 +257,34 @@ public class Drawer extends Fragment implements
 			if(convertView!=null){
 				vh=(PDICMainActivity.ViewHolder)convertView.getTag();
 			} else {
-				vh=new PDICMainActivity.ViewHolder(getContext(),R.layout.listview_item0, parent);
+				vh=new PDICMainActivity.ViewHolder(getContext(),id==R.string.settings?R.layout.drawer_settings:R.layout.drawer_item0, parent);
 				vh.itemView.setBackgroundResource(R.drawable.listviewselector1);
 				vh.itemView.setOnClickListener(Drawer.this);
-				vh.subtitle.trim=false;
-				vh.subtitle.setTextColor(ContextCompat.getColor(a, R.color.colorHeaderBlue));
+				if (vh.subtitle!=null) {
+					vh.subtitle.trim=false;
+					vh.subtitle.setTextColor(ContextCompat.getColor(a, R.color.colorHeaderBlue));
+				}
 			}
 			vh.position=position;
-			vh.itemView.setOnLongClickListener((position==6||position==7)?Drawer.this:null);
+			vh.itemView.setOnLongClickListener((id==R.string.addd||id==R.string.pick_main)?Drawer.this:null);
 			if( vh.title.getTextColors().getDefaultColor()!=a.AppBlack) {
 				PDICMainActivity.decorateBackground(vh.itemView);
 				vh.title.setTextColor(a.AppBlack);
 			}
 
-			vh.title.setText(items[position]);
-			
-			if(show_hints) {
-				if(hints==null)
-					hints = getResources().getStringArray(R.array.drawer_hints);
-				vh.subtitle.setText(hints[position]);
-			} else {
-				vh.subtitle.setText(null);
+			vh.title.setText(id);
+			vh.itemView.setId(id);
+			if (vh.subtitle!=null) {
+				String hint = null;
+				if(show_hints) {
+					if(hints==null) hints = getResources().getStringArray(R.array.drawer_hints);
+					hint=hints[position];
+				}
+				vh.subtitle.setText(hint);
 			}
+//			vh.subtitle.getLayoutParams().height=hint==null? (int) (GlobalOptions.density * 8) :-2;
+//			vh.subtitle.requestLayout();
+			//vh.subtitle.setVisibility(hint==null?View.GONE:View.VISIBLE);
 
 			return vh.itemView;
 		}
@@ -411,14 +436,15 @@ public class Drawer extends Fragment implements
 	public void onClick(View v) {
 		if(!a.systemIntialized) return;
 		int id = v.getId();
+		int BKHistroryVagranter;
 		switch(id) {
 			case R.id.server:
 				a.launchSettings(ServerPreference.id, 0);
 			return;
-			case R.id.menu_item_setting:
+			case R.id.menu_item_setting:{
 				//a.mDrawerLayout.closeDrawer(GravityCompat.START);
 				final View dv = a.getLayoutInflater().inflate(R.layout.dialog_about,null);
-
+				
 				String infoStr = getString(R.string.infoStr);
 				final SpannableStringBuilder ssb = new SpannableStringBuilder(infoStr);
 				
@@ -427,24 +453,24 @@ public class Drawer extends Fragment implements
 				}
 				
 				final String languageName = Locale.getDefault().getLanguage();
-
+				
 				final TextView tv = dv.findViewById(R.id.resultN);
 				tv.setPadding(0, 0, 0, 50);
-
+				
 				try {
 					int startss = ssb.toString().indexOf("[");
 					int endss = ssb.toString().indexOf("]",startss);
-
+					
 					ssb.setSpan(new ClickableSpan() {
 						@Override
 						public void onClick(@NonNull View widget) {
 							a.launchSettings(6, 1297);
 						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-
+					
+					
 					startss = ssb.toString().indexOf("[",endss);
 					endss = ssb.toString().indexOf("]",startss);
-
+					
 					if(false)
 						ssb.setSpan(new ClickableSpan() {
 							@Override
@@ -453,12 +479,12 @@ public class Drawer extends Fragment implements
 								Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 								startActivity(intent);
 							}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-
+					
+					
 					startss = ssb.toString().indexOf("[",endss);
 					endss = ssb.toString().indexOf("]",startss);
 					if(endss>startss && startss>0)
-
+						
 						if(false)
 							ssb.setSpan(new ClickableSpan() {
 								@Override
@@ -470,8 +496,8 @@ public class Drawer extends Fragment implements
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-
-
+				
+				
 				tv.setText(ssb);
 				tv.setMovementMethod(LinkMovementMethod.getInstance());
 				AlertDialog.Builder builder2 = new AlertDialog.Builder(a);
@@ -486,11 +512,12 @@ public class Drawer extends Fragment implements
 				//android.view.WindowManager.LayoutParams lp = d.getWindow().getAttributes();  //获取对话框当前的参数值
 				//lp.height = -2;
 				//d.getWindow().setAttributes(lp);
-
-				return;
-			case R.id.menu_item_exit://退出
+				
+			} break;
+			//退出
+			case R.id.menu_item_exit:
 				a.showAppExit(false);
-				return;
+				break;
 			case R.id.pastebin:{//剪贴板对话框
 				if(ClipboardList ==null){
 					ClipboardList = new ListView(a.getBaseContext());
@@ -522,19 +549,17 @@ public class Drawer extends Fragment implements
 				dTmp.setOnDismissListener(dialog -> a.checkFlags());
 				a.d=dTmp;
 				ClipboardList.addOnLayoutChangeListener(MainActivityUIBase.mListsizeConfiner.setMaxHeight((int) (a.root.getHeight()-a.root.getPaddingTop()-2.8*getResources().getDimension(R.dimen._50_))));
-			} return;
-		}
-		int position = ((PDICMainActivity.ViewHolder)v.getTag()).position;
-		int BKHistroryVagranter;
-		switch(position) {
-			case 0://模糊搜索
-			case 1://全文搜索
-				a.switchToSearchModeDelta(position==0?100:-100);
+			} break;
+			//模糊搜索 全文搜索
+			case R.string.fuzzyret1:
+			case R.string.fullret:  {
+				a.switchToSearchModeDelta((id==R.string.fuzzyret1)?100:-100);
 				a.UIData.drawerLayout.closeDrawer(GravityCompat.START);
 				a.etSearch.requestFocus();
 				((InputMethodManager)a.getSystemService( Context.INPUT_METHOD_SERVICE )).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-				break;
-			case 3:{//书签历史
+			} break;
+			//书签历史
+			case R.string.bookmarkH:  {
 				final String[] items = new String[20];
 				final int[] pos = new int[20];
 				BKHistroryVagranter = a.opt.getInt("bkHVgrt",0);// must 0<..<20
@@ -553,12 +578,12 @@ public class Drawer extends Fragment implements
 					}
 					cc++;
 				}
-
+				
 				for(BookPresenter mdTmp:a.md) {
 					if(mdTmp!=null)
 						mdictInternal.put(mdTmp.getDictionaryName(), mdTmp);
 				}
-
+				
 				AlertDialog.Builder builder = new AlertDialog.Builder(a);
 				builder.setTitle(R.string.bookmarkH);
 				ArrayList<PlaceHolder> placeHolders = a.getLazyCC();
@@ -595,11 +620,11 @@ public class Drawer extends Fragment implements
 									a.lv.setSelection(toPos);
 									d.hide();
 								}}
-
+							
 						}, 0));
 				d=builder.create();
 				d.show();
-
+				
 				d.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 				d.setOnDismissListener(Drawer.this::onDismiss);
 				d.getListView().setAdapter(new ArrayAdapter<String>(a,
@@ -614,7 +639,7 @@ public class Drawer extends Fragment implements
 							ret.setTag(tv = ret.findViewById(android.R.id.text1));
 						else
 							tv = (CheckedTextViewmy)ret.getTag();
-
+						
 						String id = items[position];
 						
 						if(GlobalOptions.isDark)
@@ -625,20 +650,19 @@ public class Drawer extends Fragment implements
 							tv.setSubText(null);
 							return ret;
 						}
-
-
+						
 						BookPresenter mdTmp  = mdictInternal.get(id);
-
+						
 						if(mdTmp==null) {
 							try {
 								String path=id;
-								mdTmp = new_mdict(path, a);
+								mdTmp = MainActivityUIBase.new_book(path, a);
 								mdictInternal.put(id, mdTmp);
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
 						}
-
+						
 						if(mdTmp!=null) {
 							tv.setSubText(mdTmp.getDictionaryName());
 							tv.setText(mdTmp.getLexicalEntryAt(pos[position]));
@@ -650,7 +674,8 @@ public class Drawer extends Fragment implements
 					}
 				});
 			} break;
-			case 4:{//书签
+			//书签
+			case R.string.lastmarks:  {
 				//String lastBookMark = a.opt.getString("bkmk");
 				BKHistroryVagranter = a.opt.getInt("bkHVgrt",0);// must 0<..<20
 				String lastBookMark = a.opt.getString("bkh"+BKHistroryVagranter);
@@ -677,7 +702,7 @@ public class Drawer extends Fragment implements
 					}
 					if(!suc)
 						try {
-							a.md.add(new_mdict(lastBookMark, a));
+							a.md.add(MainActivityUIBase.new_book(lastBookMark, a));
 							a.switch_To_Dict_Idx(a.md.size()-1, true, false, null);
 							a.adaptermy.onItemClick(pos1);
 							a.lv.setSelection(pos1);
@@ -692,7 +717,8 @@ public class Drawer extends Fragment implements
 				}else
 					a.show(R.string.nothingR);
 			} break;
-			case 6:{//追加词典 添加词典 打开
+			//追加词典 添加词典 打开
+			case R.string.addd:  {
 				if(false) { // MLSN
 					a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
 							.setType("*/*"), Constants.OpenBookRequset);
@@ -766,7 +792,7 @@ public class Drawer extends Fragment implements
 										/* 追加不存于当前分组的全部词典至全部记录与缓冲组。 */
 										else if(!mdictInternal.contains(fI.getPath())) {
 											try {
-												a.md.add(new_mdict(fnI, a));
+												a.md.add(MainActivityUIBase.new_book(fnI, a));
 												PlaceHolder phI = new PlaceHolder(fnI);
 												a.CosyChair.add(phI);
 												String raw=fnI;
@@ -910,7 +936,8 @@ public class Drawer extends Fragment implements
 				}
 				//.dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 			} break;
-			case 7:{//主目录
+			//主目录
+			case R.string.pick_main:  {
 				DialogProperties properties1 = new DialogProperties();
 				properties1.selection_mode = DialogConfigs.SINGLE_MODE;
 				properties1.selection_type = DialogConfigs.DIR_SELECT;
@@ -931,39 +958,41 @@ public class Drawer extends Fragment implements
 							a.pendingModPath(new File(files[0]).getAbsolutePath());
 						}
 					}
-
+					
 					@Override
 					public void onEnterSlideShow(Window win, int delay) {
-
+					
 					}
-
+					
 					@Override
 					public void onExitSlideShow() {
-
+					
 					}
-
+					
 					@Override
 					public Activity getDialogActivity() {
 						return null;
 					}
-
+					
 					@Override
 					public void onDismiss() {
-
+					
 					}
 				});
 				dialog1.show();
 			} break;
-			case 8://词典管理中心
+			//词典管理中心
+			case R.string.manager:  {
 				a.showDictionaryManager();
-				break;
-			case 9://切换生词本
+			} break;
+			//切换生词本
+			case R.string.switch_favor:  {
 				a.showPickFavorFolder();
-				break;
-			case 11://设置
+			} break;
+			case R.string.settings:  {
 				((AgentApplication)a.getApplication()).opt=a.opt;
 				a.launchSettings(0, 1297);
-				break;
+			} break;
 		}
 	}
 	
@@ -1068,12 +1097,12 @@ public class Drawer extends Fragment implements
 
 	@Override
 	public boolean onLongClick(View v) {
-		int position = ((PDICMainActivity.ViewHolder) v.getTag()).position;
-		if(position==6) {
+		int id = v.getId();
+		if(id==R.string.addd) {
 			toPDF=true;
 			((FlowTextView)v.findViewById(R.id.subtext)).setText("Oh PDF !");
 			return false;
-		} else if(position==7) {
+		} else if(id==R.string.pick_main) {
 			try { // MLSN
 				a.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
 						.addCategory(Intent.CATEGORY_OPENABLE)

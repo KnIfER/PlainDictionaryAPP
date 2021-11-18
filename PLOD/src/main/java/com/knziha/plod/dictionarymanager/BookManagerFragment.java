@@ -15,7 +15,7 @@ import android.widget.CompoundButton;
 import java.util.HashSet;
 
 
-public abstract class dict_manager_base<T> extends ListFragment {
+public abstract class BookManagerFragment<T> extends ListFragment {
 	HashSet<String> selector = new HashSet<>();
 	public interface SelectableFragment{
 		boolean exitSelectionMode();
@@ -26,7 +26,7 @@ public abstract class dict_manager_base<T> extends ListFragment {
 
     ArrayAdapter<T> adapter;
     boolean isDirty = false;
-	dict_manager_activity a;
+	BookManager a;
     private DragSortListView.RemoveListener onRemove = 
             new DragSortListView.RemoveListener() {
                 @Override

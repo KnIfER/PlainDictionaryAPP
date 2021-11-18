@@ -90,7 +90,7 @@ public class PlainText extends DictionaryAdapter {
 	 * | | | 3 3
 	 */
 	@Override
-	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
+	public String getRecordAt(long position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 //		if(editingState && getContentEditable()){
 //			CachedDirectory cf = getInternalResourcePath(false);
 //			boolean ce =  cf.cachedExists();
@@ -125,7 +125,7 @@ public class PlainText extends DictionaryAdapter {
 //				return BU.fileToString(p);
 //			}
 //		}
-		int centerBlock = position;
+		int centerBlock = (int) position;
 		FileInputStream fin = null;
 		TextBlock tmpBlock;
 		int toSkip = mBlockSize * centerBlock;
@@ -272,8 +272,8 @@ public class PlainText extends DictionaryAdapter {
 	}
 
 	@Override
-	public String getEntryAt(int position) {
-		return Integer.toString(position);
+	public String getEntryAt(long position) {
+		return Long.toString(position);
 	}
 
 	public boolean hasCover() {
@@ -286,7 +286,7 @@ public class PlainText extends DictionaryAdapter {
 	}
 
 	@Override
-	public String getEntryAt(int position, Flag mflag) {
+	public String getEntryAt(long position, Flag mflag) {
 		return getEntryAt(position);
 	}
 

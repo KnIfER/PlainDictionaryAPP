@@ -35,14 +35,14 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class dict_Manager_folderlike extends ListFragment implements dict_manager_base.SelectableFragment {
+public class BookManagerFolderlike extends ListFragment implements BookManagerFragment.SelectableFragment {
 	String parentFile;
 	ArrayListTree<mFile> data=new ArrayListTree<>();
 	ArrayListTree<mFile> hiddenParents=new ArrayListTree<>();
 	protected ListView mDslv;
 	ArrayAdapter<mFile> adapter;
 	boolean isDirty = false;
-	dict_manager_activity a;
+	BookManager a;
 	int[] lastClickedPos=new int[]{-1, -1};
 	int lastClickedPosIndex=0;
 
@@ -151,7 +151,7 @@ public class dict_Manager_folderlike extends ListFragment implements dict_manage
 
 
 	//构造
-	public dict_Manager_folderlike(){
+	public BookManagerFolderlike(){
 		super();
 	}
 
@@ -290,7 +290,7 @@ public class dict_Manager_folderlike extends ListFragment implements dict_manage
 				vh.text.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 			else
 				vh.text.setTextColor(Color.RED);
-			if(dict_manager_activity.dictQueryWord!=null && mdTmp.getName().toLowerCase().contains(dict_manager_activity.dictQueryWord))
+			if(BookManager.dictQueryWord!=null && mdTmp.getName().toLowerCase().contains(BookManager.dictQueryWord))
 				vh.text.setBackgroundResource(R.drawable.xuxian2);
 			else
 				vh.text.setBackground(null);
@@ -338,7 +338,7 @@ public class dict_Manager_folderlike extends ListFragment implements dict_manage
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		a = (dict_manager_activity) getActivity();
+		a = (BookManager) getActivity();
 		parentFile=a.opt.lastMdlibPath.getPath();
 		mDslv = getListView();
 		mDslv.setChoiceMode(mDslv.CHOICE_MODE_MULTIPLE);

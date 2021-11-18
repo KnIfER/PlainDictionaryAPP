@@ -54,7 +54,7 @@
 	}
 	succ
 "
-	,"keyPattern": "[a-zA-Z]"
+	,"keyPattern": "^[a-zA-Z-]{0,38}$"
 	,"onload": ""
 	,"cacheRes": "ahuh4v.css"
 }

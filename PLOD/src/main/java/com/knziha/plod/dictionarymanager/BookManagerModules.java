@@ -18,7 +18,7 @@ import androidx.appcompat.app.GlobalOptions;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionarymanager.dict_manager_activity.transferRunnable;
+import com.knziha.plod.dictionarymanager.BookManager.transferRunnable;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.mobeta.android.dslv.DragSortController;
@@ -36,14 +36,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class dict_manager_modules extends dict_manager_base<String> implements dict_manager_base.SelectableFragment {
+public class BookManagerModules extends BookManagerFragment<String> implements BookManagerFragment.SelectableFragment {
 	String LastSelectedPlan;
 	private ArrayList<String> scanInList;
 
-	public dict_manager_modules(){
+	public BookManagerModules(){
 		super();
 		checkChanged=(buttonView, isChecked) -> {
-			dict_manager_main.ViewHolder vh = (dict_manager_main.ViewHolder) ((View)buttonView.getParent()).getTag();
+			BookManagerMain.ViewHolder vh = (BookManagerMain.ViewHolder) ((View)buttonView.getParent()).getTag();
 			lastClickedPos[(++lastClickedPosIndex)%2]=vh.position;
 			String key = scanInList.get(vh.position);
 			if(isChecked)
@@ -132,12 +132,12 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
-			dict_manager_main.ViewHolder vh;
+			BookManagerMain.ViewHolder vh;
 			if(convertView==null){
 				convertView = LayoutInflater.from(parent.getContext()).inflate(getItemLayout(), parent, false);
-				convertView.setTag(vh = new dict_manager_main.ViewHolder(convertView));
+				convertView.setTag(vh = new BookManagerMain.ViewHolder(convertView));
 			} else {
-				vh = (dict_manager_main.ViewHolder) convertView.getTag();
+				vh = (BookManagerMain.ViewHolder) convertView.getTag();
 			}
 			vh.position = position;
 			//v.getBackground().setLevel(1000);
@@ -180,7 +180,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 		@Override
 		public View onCreateFloatView(int position) {
 			View v = adapter.getView(position, null, mDslv);
-			((dict_manager_main.ViewHolder)v.getTag()).ck.jumpDrawablesToCurrentState();
+			((BookManagerMain.ViewHolder)v.getTag()).ck.jumpDrawablesToCurrentState();
 			//v.getBackground().setLevel(20000);
 			mDslv.setFloatAlpha(1.0f);
 			v.setBackgroundColor(Color.parseColor("#ffff00"));//TODO: get primary color
@@ -197,7 +197,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		a=(dict_manager_activity) getActivity();
+		a=(BookManager) getActivity();
 		setListAdapter();
 
 		LastSelectedPlan = a.opt.getLastPlanName("LastPlanName");
@@ -209,14 +209,14 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 				File newf = new File(a.ConfigFile, name);
 				int cc=0;
 				try {
-					dict_manager_main f1 = ((dict_manager_activity)getActivity()).f1;
+					BookManagerMain f1 = ((BookManager)getActivity()).f1;
 					f1.isDirty=true;
 					ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(newf), get4kCharBuff(), 4096);
 					a.ThisIsDirty=true;
 					f1.rejector.clear();
 					a.do_Load_managee(in);
 					f1.refreshSize();
-					((dict_manager_activity)getActivity()).scrollTo(0);
+					((BookManager)getActivity()).scrollTo(0);
 					a.opt.putLastPlanName("LastPlanName", LastSelectedPlan = name);
 					f1.isDirty=true;
 					adapter.notifyDataSetChanged();
@@ -244,7 +244,7 @@ public class dict_manager_modules extends dict_manager_base<String> implements d
 									final String name = adapter.getItem(actualPosition);
 									switch(pos) {
 										case 0://模块的 重命名
-											((dict_manager_activity)getActivity()).showRenameDialog(name, new transferRunnable() {
+											((BookManager)getActivity()).showRenameDialog(name, new transferRunnable() {
 												@Override
 												public boolean transfer(File to) {
 													File p=a.ConfigFile;

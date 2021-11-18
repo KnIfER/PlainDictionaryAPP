@@ -3,7 +3,6 @@ package com.knziha.plod.searchtasks;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
-import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -72,7 +71,7 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 						PlaceHolder phI = a.getPlaceHolderAt(i);
 						if(phI!=null) {
 							try {
-								md.set(i, mdTmp=MainActivityUIBase.new_mdict(phI.getPath(a.opt), a));
+								md.set(i, mdTmp=MainActivityUIBase.new_book(phI.getPath(a.opt), a));
 								mdTmp.tmpIsFlag = phI.tmpIsFlag;
 							} catch (Exception ignored) { }
 						}
@@ -89,10 +88,10 @@ public class FullSearchTask extends AsyncTask<String, Integer, String > {
 			System.gc();
 		} else {
 			try {
-				if(a.checkDicts()){
+				if(a.checkDicts()) {
 					publishProgress(a.adapter_idx);
 					//CMN.Log("Find In All Conten??");
-					a.currentDictionary.findAllTexts(SearchTerm,a.adapter_idx,a.fullSearchLayer);
+					a.currentDictionary.findAllTexts(SearchTerm, a.adapter_idx, a.fullSearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

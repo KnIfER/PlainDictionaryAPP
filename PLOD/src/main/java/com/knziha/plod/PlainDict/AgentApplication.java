@@ -78,7 +78,7 @@ public class AgentApplication extends Application {
 				}
 				return buffer_server;
 			} else {
-				CMN.Log("复异步缓存", tid);
+				//CMN.Log("复异步缓存", tid);
 				return new byte[compressedSize];
 			}
 		}
@@ -104,7 +104,7 @@ public class AgentApplication extends Application {
 				}
 				return buffer1_server;
 			} else {
-				CMN.Log("复异步缓存 1", tid);
+				//CMN.Log("复异步缓存 1", tid);
 				return new byte[decompressedSize];
 			}
 		}

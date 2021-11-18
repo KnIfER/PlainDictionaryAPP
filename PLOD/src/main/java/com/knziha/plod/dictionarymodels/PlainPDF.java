@@ -8,7 +8,6 @@ import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.widgets.WebViewmy;
 
 import org.adrianwalker.multilinestring.Multiline;
 
@@ -258,12 +257,12 @@ public class PlainPDF extends DictionaryAdapter {
 	//}
 
 	@Override
-	public String getEntryAt(int position) {
+	public String getEntryAt(long position) {
 		return getDictionaryName();
 	}
 
 	@Override
-	public String getEntryAt(int position, Flag mflag) {
+	public String getEntryAt(long position, Flag mflag) {
 		return getEntryAt(position);
 	}
 
@@ -274,7 +273,7 @@ public class PlainPDF extends DictionaryAdapter {
 	}
 
 	@Override
-	public String getRecordAt(int position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
+	public String getRecordAt(long position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 		return new String(_INTERNAL_PDFJS.getRecordData(_INTERNAL_PDFJS.lookUp("index")), StandardCharsets.UTF_8)+f.getAbsolutePath()+tailing;
 	}
 
@@ -292,23 +291,13 @@ public class PlainPDF extends DictionaryAdapter {
 	}
 	
 	@Override
-	public String getVirtualRecordsAt(Object presenter, int[] list2) throws IOException {
+	public String getVirtualRecordsAt(Object presenter, long[] list2) throws IOException {
 		return getRecordsAt(null, 0);
 	}
 	
 	@Override
 	public boolean hasVirtualIndex() {
 		return true;
-	}
-	
-	@Override
-	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, int position) {
-		return "";
-	}
-	
-	@Override
-	public String getVirtualTextEffectJs(int[] positions) {
-		return "";
 	}
 	
 	@Override
