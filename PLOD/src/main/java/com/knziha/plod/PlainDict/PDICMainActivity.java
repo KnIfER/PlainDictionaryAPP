@@ -1467,7 +1467,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					{
 						if(!isCombinedSearching && currentDictionary.getType()==PLAIN_TYPE_WEB)
 						{
-							showT("PLAIN_TYPE_WEB!!!");
 							currentDictionary.SetSearchKey(key);
 							adaptermy.onItemClick(0);
 						}
@@ -1663,9 +1662,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
 		
 		if (PDICMainAppOptions.checkVersionBefore_5_0())
-		{
+		{ // 升级数据库对话框
 			DBUpgradeHelper.showUpgradeDlg(null, this, true);
 			opt.setUseBackKeyGoWebViewBack(true);
+			opt.setAnimateContents(Build.VERSION.SDK_INT>=21);
 			PDICMainAppOptions.uncheckVersionBefore_5_0(false);
 			PDICMainAppOptions.uncheckVersionBefore_4_0(true);
 			PDICMainAppOptions.uncheckVersionBefore_4_9(true);

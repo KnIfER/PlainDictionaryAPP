@@ -9,7 +9,7 @@ import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 
-import org.adrianwalker.multilinestring.Multiline;
+import org.knziha.metaline.Metaline;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,11 +132,11 @@ public class PlainPDF extends DictionaryAdapter {
 		}
 	 </script>
 	 */
-	@Multiline
+	@Metaline
 	public final static String js="SUBPAGE";
 	
 	/**";</script><script src="pdfviewer.js"></script></head>*/
-	@Multiline
+	@Metaline
 	final static String tailing = "TAIL";
 
 	/**
@@ -171,7 +171,7 @@ public class PlainPDF extends DictionaryAdapter {
 
 	extractContents(0);
 	 */
-	@Multiline
+	@Metaline
 	final static String parseCatalogue = "CONTENTS";
 
 	private int targetPage;

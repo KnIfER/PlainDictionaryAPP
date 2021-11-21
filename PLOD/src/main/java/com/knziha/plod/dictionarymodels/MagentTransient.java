@@ -31,12 +31,12 @@ public class MagentTransient extends BookPresenter {
 	public PlaceHolder mPhI;
 	protected File f;
 	public String _Dictionary_fName_Internal;
-	PDICMainAppOptions opt;
 	int TIFStamp;
 	List<mngr_mdictRes_prempter> mdd;
 	boolean keepOrgHolder=true;
 	
 	private boolean changeMap=true;
+	Toastable_Activity context;
 	
 	public void Rebase(File f){
 		CMN.Log("MT0Rebase!!!");
@@ -49,19 +49,19 @@ public class MagentTransient extends BookPresenter {
 		}
 		mPhI.Rebase(f);
 	}
+	
 
-	public MagentTransient(Toastable_Activity a, Object PlaceHolderString, PDICMainAppOptions opt_, DictionaryAdapter bookInstance, Integer isF, boolean bIsPreempter) throws IOException {
-		super(new File("/N/A"), null, 1, null);
-		
-		PlaceHolder phI=null;
-		if (PlaceHolderString instanceof String) {
-			phI = new PlaceHolder((String) PlaceHolderString);
-		}
-		else if (PlaceHolderString instanceof PlaceHolder) {
-			phI = (PlaceHolder) PlaceHolderString;
-		}
+	public MagentTransient(Toastable_Activity a, Object PlaceHolderString, PDICMainAppOptions opt_, Integer isF, boolean bIsPreempter) throws IOException {
+		super(new File(PlaceHolderString instanceof String?(String)PlaceHolderString:PlaceHolderString instanceof PlaceHolder?((PlaceHolder) PlaceHolderString).pathname:"/N/A"), null, 1, null);
+		PlaceHolder phI=PlaceHolderString instanceof String?new PlaceHolder((String) PlaceHolderString):PlaceHolderString instanceof PlaceHolder?(PlaceHolder) PlaceHolderString:null;
 		Objects.requireNonNull(phI);
-		bookImpl = bookInstance;
+		if(bookImpl==null) {
+			File f = new File(phI.pathname);
+			bookImpl = new DictionaryAdapter(f, null);
+			Long bid = bookImplsNameMap.get(f.getName());
+			if(bid==null) bid=-1L; // todo check
+			bookImpl.setBooKID(bid);
+		}
 		bIsManagerAgent = 1;
 		opt=opt_;
 		mPhI = phI;
@@ -70,13 +70,10 @@ public class MagentTransient extends BookPresenter {
 		
 		setDictionaryName(mPhI.getName().toString());
 		updateFile(f);
-		readConfigs(a, a.prepareHistoryCon());
 		
 		if (isF!=null) {
 			mPhI.tmpIsFlag=TIFStamp=isF;
 		}
-		
-		FFStamp=firstFlag;
 		TIFStamp=mPhI.tmpIsFlag;
 		
 		if (bIsPreempter) {
@@ -88,8 +85,21 @@ public class MagentTransient extends BookPresenter {
 			}
 			bIsManagerAgent = 2;
 		}
+		
+		context = a;
 	}
-
+	
+	@Override
+	public long getFirstFlag() {
+		if (!bReadConfig) {
+			try {
+				readConfigs(context, context.prepareHistoryCon());
+				FFStamp=firstFlag;
+			} catch (IOException e) { CMN.Log(e); }
+		}
+		return super.getFirstFlag();
+	}
+	
 	@Override
 	public boolean renameFileTo(Context c, File to) {
 		if(FU.rename5(c, f, to)>=0) {

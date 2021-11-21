@@ -708,7 +708,7 @@ public class DBroswer extends Fragment implements
 			//details on this bug:
 			//https://blog.csdn.net/huawuque183/article/details/78563977
 			//issue solved.
-			CMN.Log("dbr_onCreateViewHolder", CMN.now());
+			CMN.Log("dbr_onCreateViewHolder", CMN.now()); // todo
 			holder.itemView.setOnLongClickListener(longClicker);
 			holder.data.p.setOnLongClickListener(longClicker);
 //			webView = view.findViewById(android.R.id.text1);
@@ -1434,7 +1434,7 @@ public class DBroswer extends Fragment implements
 						if (texts!=null) {
 							String[] textsArr = texts.split(";");
 							if (textsArr.length==1) {
-								BookPresenter currentDictionary = a.getBookById(Long.parseLong(textsArr[0]));
+								BookPresenter currentDictionary = a.getBookById(IU.parseLong(textsArr[0], -1));
 								if(currentDictionary!=null) {
 									rendered = queryAndShowOneDictionary(currentDictionary, currentDisplaying, position, false);
 								}
@@ -1556,7 +1556,7 @@ public class DBroswer extends Fragment implements
 		long st = CMN.rt();
 		if (texts!=null) {
 			for(int dIdx=0;dIdx<texts.length;dIdx++) {//联合搜索
-				long bid = Long.parseLong(texts[dIdx]);
+				long bid = IU.parseLong(texts[dIdx], -1);
 				BookPresenter bookPresenter = a.getBookById(bid);
 				if(bookPresenter!=null) {
 					long idx = bookPresenter.bookImpl.lookUp(currentDisplaying__);

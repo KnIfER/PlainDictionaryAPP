@@ -2289,25 +2289,37 @@ public class SubsamplingScaleImageView extends View {
 			vTranslate.y = (getScreenHeight()*1.0f/2) - (scale * _sPendingCenter.y);
 			
 			int pzl = IBC.getPresetZoomLevel();
-			if(pzl!=0){
+			int pza = IBC.getPresetZoomAlignment();
+			if(pzl!=0) {
 				vTranslate.y = 0;
-				int pza = IBC.getPresetZoomAlignment();
-				if(pzl==1&&IBC.doubleClickZoomLevel1>1){
+				if(pzl==1&&IBC.doubleClickZoomLevel1>1) {
 					scale=scale*IBC.doubleClickZoomLevel1;
-					if(pza!=0){
-						float offset = dm.widthPixels*IBC.doubleClickPresetXOffset;
-						if(pza==1){
-							vTranslate.x = -offset;
-						} else {
-							vTranslate.x = getScreenWidth() - scale*sWidth + offset;
-						}
-					}
+				}
+				else if(pzl==2&&IBC.doubleClickZoomLevel2>1) {
+					scale=scale*IBC.doubleClickZoomLevel1;
+				}
+				float offset = dm.widthPixels*IBC.doubleClickPresetXOffset;
+				if(pza==0) {
+					// 居中
+					vTranslate.x = (getScreenWidth() - scale*sWidth) / 2 - offset;
+				} else if(pza==1) {
+					// 靠左
+					vTranslate.x = -offset;
+				} else if(pza==2) {
+					// 靠右
+					vTranslate.x = getScreenWidth() - scale*sWidth + offset;
+				} else if(pza==3) {
+					// 智能计算
+					vTranslate.x = getScreenWidth()/2 - scale*(sWidth*IBC.lastX) - offset/2;
+					vTranslate.y = getScreenHeight()/2 - scale*(sHeight*IBC.lastY) - offset/2;
 				}
 			}
+			
+			//vTranslate.x = -50;
 			//pendingScale = scale;
 			//sPendingCenter = _sPendingCenter;
 			
-			CMN.Log("kiam preDraw2", "scale",scale, vTranslate.x);
+			CMN.Log("kiam preDraw2", "scale",scale, vTranslate.x, pza, pzl);
 			
 			vTranslateOrg.set(vTranslate);
 			//Log.e("fatal poison", ""+getScreenWidth()+" x "+getScreenHeight());

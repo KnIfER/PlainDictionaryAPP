@@ -26,7 +26,7 @@ import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
-import org.adrianwalker.multilinestring.Multiline;
+import org.knziha.metaline.Metaline;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -346,6 +346,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	//////////   ET   //////////
 	
 	//////////   First Boolean Flag   //////////
+	public static long SessionFlag;
 	private static Long FirstFlag=null;
 	public long getFirstFlag() {
 		if(FirstFlag==null) {
@@ -1613,7 +1614,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return (ThirdFlag & 0x800000000l)==0?1<<5:0;
 	}
 	
-	@Multiline(flagPos=35, shift=1) public boolean toggleClickSearchEnabled() { ThirdFlag=ThirdFlag; throw new IllegalArgumentException(); }
+	@Metaline(flagPos=35, shift=1) public boolean toggleClickSearchEnabled() { ThirdFlag=ThirdFlag; throw new IllegalArgumentException(); }
 	
 	public int FetIsDark() {
 		return GlobalOptions.isDark?1<<6:0;
@@ -1701,12 +1702,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	
-	@Multiline(flagPos=46, shift=1) public static boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Multiline(flagPos=46, shift=1) public static void setUseBackKeyGoWebViewBack(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Multiline(flagPos=47, shift=1) public static boolean getLazyLoadDicts() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Multiline(flagPos=47, shift=1) public static void setLazyLoadDicts(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Multiline(flagPos=48) public static boolean getEnableWebDebug() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Multiline(flagPos=48) public static void setEnableWebDebug(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46, shift=1) public static boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46, shift=1) public static void setUseBackKeyGoWebViewBack(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=47, shift=1) public static boolean getLazyLoadDicts() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=47, shift=1) public static void setLazyLoadDicts(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=48) public static boolean getEnableWebDebug() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=48) public static void setEnableWebDebug(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	
 	
 	/** @return integer: 0=entry page forword/backward <br/>
@@ -1974,9 +1975,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	
-	@Multiline(flagPos=20) public static boolean getSimpleMode() { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=20) public static boolean getSimpleMode(long FourthFlag) { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=20) public static void setSimpleMode(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=20) public static boolean getSimpleMode() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=20) public static boolean getSimpleMode(long FourthFlag) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=20) public static void setSimpleMode(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
  
 	public static boolean getEnsureAtLeatOneExpandedPage() {
 		return (FourthFlag & 0x200000l) != 0x200000l;
@@ -2177,36 +2178,36 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return (FourthFlag & 0x1000000000000l) == 0x1000000000000l;
 	}
 	
-	@Multiline(flagPos=49, debug=1) public static boolean getForceFloatSingletonSearch() { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=49, debug=1) public static boolean getForceFloatSingletonSearch(long FourthFlag) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=49, debug=1) public static boolean getForceFloatSingletonSearch() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=49, debug=1) public static boolean getForceFloatSingletonSearch(long FourthFlag) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	
-	@Multiline(flagPos=50) public static boolean isSingleThreadServer() { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=51) public static boolean getServerStarted() { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=51) public static void setServerStarted(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=50) public static boolean isSingleThreadServer() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51) public static boolean getServerStarted() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51) public static void setServerStarted(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	
-	@Multiline(flagPos=52, shift=1) public static boolean checkVersionBefore_4_0() { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=52, shift=1) public static void uncheckVersionBefore_4_0(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
-	//@Multiline(flagPos=52, shift=1) public static boolean uncheckVersionBefore_4_0() { FourthFlag=FourthFlag; throw new IllegalArgumentException();}
-	@Multiline(flagPos=53) public static boolean getClearTasksOnExit() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_4_0() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_4_0(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	//@Metaline(flagPos=52, shift=1) public static boolean uncheckVersionBefore_4_0() { FourthFlag=FourthFlag; throw new IllegalArgumentException();}
+	@Metaline(flagPos=53) public static boolean getClearTasksOnExit() { FourthFlag=FourthFlag; throw new RuntimeException();}
 
-	@Multiline(flagPos=54) public boolean getRememberVSPanelGo(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=54) public void setRememberVSPanelGo(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=55) public boolean getVSPanelGOTransient(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=55) public void setVSPanelGOTransient(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=56, shift=1) public boolean getPinDialog_2(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=56, shift=1) public void setPinDialog_2(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=54) public boolean getRememberVSPanelGo(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=54) public void setRememberVSPanelGo(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=55) public boolean getVSPanelGOTransient(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=55) public void setVSPanelGOTransient(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=56, shift=1) public boolean getPinDialog_2(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=56, shift=1) public void setPinDialog_2(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
-	@Multiline(flagPos=57, shift=1) public boolean getPrvNxtDictSkipNoMatch(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=57, shift=1) public boolean getPrvNxtDictSkipNoMatch(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
-	@Multiline(flagPos=58) public boolean getDelayContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=59, shift=1) public boolean getAnimateContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=59, shift=1) public static void setAnimateContents(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=61, shift=1) public boolean getLeaveContentBlank(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=61, shift=1) public static void setLeaveContentBlank(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=58) public boolean getDelayContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=59, shift=1) public boolean getAnimateContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=59, shift=1) public static void setAnimateContents(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=61, shift=1) public boolean getLeaveContentBlank(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=61, shift=1) public static void setLeaveContentBlank(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
-	@Multiline(flagPos=60, shift=1) public boolean getDimScrollbarForPrvNxt(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=60, shift=1) public boolean getDimScrollbarForPrvNxt(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
-	@Multiline(flagPos=61, shift=1) public boolean getAutoAdjustFloatBottomBar(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=61, shift=1) public boolean getAutoAdjustFloatBottomBar(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////
@@ -2232,32 +2233,32 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return FifthFlag;
 	}
 	
-	@Multiline(flagPos=0, max=3, flagSize=5, shift=1) public static int getSendToAppTarget(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=0, max=3, flagSize=5, shift=1) public static void setSendToAppTarget(int val){ FifthFlag=FifthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=0, max=3, flagSize=5, shift=1) public static int getSendToAppTarget(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=0, max=3, flagSize=5, shift=1) public static void setSendToAppTarget(int val){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 	
 	public int getSendToShareTarget(){ return IU.parsint(defaultReader.getString("share_to", null), 1); }
 	
 	
-	@Multiline(flagPos=10, shift=1) public static boolean getAdjustScnShown(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
-	@Multiline(flagPos=10, shift=1) public boolean toggleAdjustScnShown() { FifthFlag=FifthFlag; throw new IllegalArgumentException(); }
+	@Metaline(flagPos=10, shift=1) public static boolean getAdjustScnShown(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=10, shift=1) public boolean toggleAdjustScnShown() { FifthFlag=FifthFlag; throw new IllegalArgumentException(); }
 	
 	
-	@Multiline(flagPos=11, shift=1) public static boolean checkVersionBefore_4_9() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=11, shift=1) public static void uncheckVersionBefore_4_9(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=11, shift=1) public static boolean checkVersionBefore_4_9() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=11, shift=1) public static void uncheckVersionBefore_4_9(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Multiline(flagPos=12, shift=1) public boolean getFavoritePerceptsRemoveAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=13, shift=1) public boolean getFavoritePerceptsAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12, shift=1) public boolean getFavoritePerceptsRemoveAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=13, shift=1) public boolean getFavoritePerceptsAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Multiline(flagPos=14, shift=0/*, debug=0*/) public static boolean getUseDatabaseV2() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=14, shift=0) public static void setUseDatabaseV2(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
-	
-	
-	@Multiline(flagPos=15, shift=1) public static boolean checkVersionBefore_5_0() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=15, shift=1) public static void uncheckVersionBefore_5_0(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=14, shift=0/*, debug=0*/) public static boolean getUseDatabaseV2() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=14, shift=0) public static void setUseDatabaseV2(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
-	@Multiline(flagPos=16) public boolean getAlwaysShowScrollRect() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Multiline(flagPos=16) public void setAlwaysShowScrollRect(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=15, shift=1) public static boolean checkVersionBefore_5_0() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=15, shift=1) public static void uncheckVersionBefore_5_0(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	
+	@Metaline(flagPos=16) public boolean getAlwaysShowScrollRect() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=16) public void setAlwaysShowScrollRect(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF
@@ -2490,6 +2491,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	public long Flag(int flagIndex) {
 		switch (flagIndex){
+			case -1:
+			return SessionFlag;
 			case 1:
 			return FirstFlag;
 			case 2:
@@ -2504,6 +2507,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	public void Flag(int flagIndex, long val) {
 		switch (flagIndex){
+			case -1:
+				SessionFlag=val;
+			break;
 			case 1:
 				FirstFlag=val;
 			break;

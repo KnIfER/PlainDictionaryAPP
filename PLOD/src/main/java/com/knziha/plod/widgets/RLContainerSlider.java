@@ -150,7 +150,7 @@ public class RLContainerSlider extends FrameLayout{
 		int actual_index = ev.getActionIndex();
 		int touch_id = ev.getPointerId(actual_index);
 		int actionMasked = ev.getActionMasked();
-		if(touch_id==first_touch_id) {
+		if(touch_id==first_touch_id && detector!=null) {
 			detector.onTouchEvent(ev);
 		}
 		if(isOnFlingDected) {
@@ -317,7 +317,7 @@ public class RLContainerSlider extends FrameLayout{
 	}
 	
 	public void invalidateIBC() {
-		bNoDoubleClick = WebContext==null||!WebContext.IBC.getUseDoubleClick();
+		bNoDoubleClick = WebContext==null||!WebContext.IBC.getDoubleClickZoomPage();
 	}
 	
 	public void setIBC(WebViewmy IBCN) {

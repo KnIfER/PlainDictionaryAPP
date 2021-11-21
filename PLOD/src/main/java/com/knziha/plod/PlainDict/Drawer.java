@@ -292,7 +292,7 @@ public class Drawer extends Fragment implements
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		CMN.Log("Drawer onActivityCreated");
+		//CMN.Log("Drawer onActivityCreated");
 		super.onActivityCreated(savedInstanceState);
 		a = ((PDICMainActivity)getActivity());
 		a.drawerFragment = this;

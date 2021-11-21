@@ -67,6 +67,7 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.dictionarymodels.MagentTransient;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.knziha.rbtree.RashSet;
 
@@ -103,13 +104,25 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	
 	public File SecordFile;
 	
-	DictionaryAdapter adapterInstance = new DictionaryAdapter(new File("/N/A"), null);
 	private boolean deleting;
 	
 	public BookManager() { }
 	
 	public File fileToSet(String name) {
 		return opt.fileToSet(ConfigFile, name);
+	}
+	
+	BookOptionsDialog bookOptionsDialog;
+	public void showBookPreferences(BookPresenter...books) {
+		if (bookOptionsDialog==null) bookOptionsDialog = new BookOptionsDialog();
+		bookOptionsDialog.bookOptions.setData(books);
+		try {
+			if (!bookOptionsDialog.isAdded()) {
+				bookOptionsDialog.show(getSupportFragmentManager(), "");
+			} else {
+				bookOptionsDialog.getDialog().show();
+			}
+		} catch (Exception ignored) { }
 	}
 	
 	public interface transferRunnable{
@@ -336,7 +349,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				if(!found) {
 					//show("adding new!"+fn.getAbsolutePath());
 					f3.mDslv.post(() -> {
-						MagentTransient mmTmp = new_MagentTransient(fn.getPath(), opt, adapterInstance, 0, false);
+						MagentTransient mmTmp = new_MagentTransient(fn.getPath(), opt, 0, false);
 						f1.adapter.add(mmTmp);
 						f1.refreshSize();
 						f1.adapter.notifyDataSetChanged();
@@ -372,7 +385,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					//show("adding new!"+path);
 					String finalPath = path;
 					f4.mDslv.post(() -> {
-						MagentTransient mmTmp = new_MagentTransient(finalPath, opt, adapterInstance, 0, false);
+						MagentTransient mmTmp = new_MagentTransient(finalPath, opt, 0, false);
 						f1.adapter.add(mmTmp);
 						f1.refreshSize();
 						f1.adapter.notifyDataSetChanged();
@@ -957,7 +970,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							if (!mdict_cache.containsKey(line)) {
 								MagentTransient m = mdict_cache.get(line);
 								if (m == null)
-									m = new_MagentTransient(line, opt, adapterInstance, null, false);
+									m = new_MagentTransient(line, opt, null, false);
 								f1.add(m);
 								f1.rejector.add(line);
 								mdict_cache.put(line, m);
@@ -1082,7 +1095,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 								if (m == null)
 									m = mdict_cache.get(key);
 								if (m == null) {
-									m = new_MagentTransient(key, opt, adapterInstance, 0, false);
+									m = new_MagentTransient(key, opt, 0, false);
 									mdict_cache.put(key, m);
 								}
 								data.add(Math.min(data.size(), toPos++), m);
@@ -1140,7 +1153,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							if(m==null){
 								m = mdict_cache.get(key);
 								if(m==null){
-									m = new_MagentTransient(key, opt, adapterInstance, null, false);
+									m = new_MagentTransient(key, opt, null, false);
 									mdict_cache.put(key, m);
 								}
 								data.add(m);
@@ -1313,7 +1326,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 									if (f3.data.get(mF).isDirectory()) continue;
 									mngr_agent_manageable mmTmp = mdict_cache.get(sI);
 									if (mmTmp == null) {
-										mmTmp = new_MagentTransient(sI, opt, adapterInstance, null, true);
+										mmTmp = new_MagentTransient(sI, opt, null, true);
 									}
 									File OldF = mmTmp.f();
 									String OldFName = mmTmp.getDictionaryName();
@@ -1493,9 +1506,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		return ret;
 	}
 	
-	public MagentTransient new_MagentTransient(Object key, PDICMainAppOptions opt, DictionaryAdapter adapterInstance, Integer isF, boolean bIsPreempter) {
+	public MagentTransient new_MagentTransient(Object key, PDICMainAppOptions opt, Integer isF, boolean bIsPreempter) {
 		try {
-			return new MagentTransient(this, key, opt, adapterInstance, isF, bIsPreempter);
+			return new MagentTransient(this, key, opt, isF, bIsPreempter);
 		} catch (IOException e) {
 			throw new RuntimeException(MagentTransient.class.toString());
 		}
@@ -1590,7 +1603,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				line = opt.lastMdlibPath + "/" + line;
 			MagentTransient mmtmp = mdict_cache.get(line);
 			if (mmtmp == null)
-				mmtmp = new_MagentTransient(line, opt, adapterInstance, 0, false);
+				mmtmp = new_MagentTransient(line, opt, 0, false);
 			if(!mmtmp.isMddResource()) flag&=~0x4;
 			mmtmp.setTmpIsFlag(flag);
 			mdmng.add(mmtmp);

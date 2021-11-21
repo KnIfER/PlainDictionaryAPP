@@ -1,5 +1,6 @@
 package com.knziha.plod.settings;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -13,6 +14,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.DialogFragment;
+
+import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.Toastable_Activity;
 
 public class BookOptionsDialog extends DialogFragment {
 	public BookOptions bookOptions = new BookOptions();
@@ -56,6 +61,30 @@ public class BookOptionsDialog extends DialogFragment {
 					win.setAttributes(params);
 				});
 				win.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+			}
+		}
+	}
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setStyle(STYLE_NO_FRAME, 0);
+	}
+	
+	@Override
+	public void onDismiss(@NonNull DialogInterface dialog) {
+		super.onDismiss(dialog);
+		//todo 在此调试一下配置存放
+		if (getActivity() instanceof Toastable_Activity) {
+			MainActivityUIBase a=null;
+			for (BookPresenter datum : bookOptions.data) {
+				datum.checkFlag((Toastable_Activity) getActivity());
+				if (a==null && datum.getIsManagerAgent()==0) {
+					a=datum.a;
+				}
+			}
+			if(a!=null){
+				a.invalidAllPagers();
 			}
 		}
 	}

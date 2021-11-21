@@ -17,6 +17,7 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.knziha.plod.plaindict.OptionProcessor;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_b
 
 public class PhotoPagerAjuster extends PagerAdapter {
 	final OptionProcessor opr;
+	final PDICMainAppOptions opt;
 	final ViewPager viewPager;
 	View[] items = new View[3];
 	SeekBar[] seekbars_scale;
@@ -46,12 +48,13 @@ public class PhotoPagerAjuster extends PagerAdapter {
 		}
 	};
 	
-	public PhotoPagerAjuster(OptionProcessor opr, ViewPager viewPager){
+	public PhotoPagerAjuster(OptionProcessor opr, PDICMainAppOptions opt, ViewPager viewPager){
 		this.opr = opr;
 		this.viewPager = viewPager;
 		if(colorMatrix==null){
 			colorMatrix = new ColorMatrix();
 		}
+		this.opt = opt;
 	}
 	@Override
 	public int getCount() {
@@ -78,28 +81,30 @@ public class PhotoPagerAjuster extends PagerAdapter {
 					final ScrollView sv = new ScrollView(context);
 					final TextView tv = new TextView(context);
 					tv.setLayoutParams(new ScrollView.LayoutParams(-1, -2));
+					tv.setTag(new Object[]{opt, opr});
 					sv.addView(tv);
 					ssb.append("\n");
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1,44,1,4, 0,true); //锁定X
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1,45,1,4, 12,true);//长按
+					init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1,44,1,4, 0,true); //锁定X
+					init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1,45,1,4, 12,true);//长按
 					ssb.delete(ssb.length()-4,ssb.length());
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 3, Coef, 0, 1, 0x1,46,1,4, 1,true);//菜单按钮
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1,43,1,2, -1,true);//单击
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 5, Coef, 0, 1, 0x1,41,1,2, 2,true);//前后an
+					init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 1, 0x1,46,1,4, 1,true);//菜单按钮
+					init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1,43,1,2, -1,true);//单击
+					init_clickspan_with_bits_at(tv, ssb, DictOpt, 5, Coef, 0, 1, 0x1,41,1,2, 2,true);//前后an
 					
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 6, null, 0, 1, 0x1,-1,1,-1, 10,false);//保存
+					init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, null, 0, 1, 0x1,-1,1,-1, 10,false);//保存
 					ssb.delete(ssb.length()-4,ssb.length()); ssb.append(" ");
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1,42,1,2, 3,true);//保存an
+					init_clickspan_with_bits_at(tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1,42,1,2, 3,true);//保存an
 					
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 8, null, 0, 1, 0x1,-1,1,-1, 11,false);//返回
+					init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, null, 0, 1, 0x1,-1,1,-1, 11,false);//返回
 					ssb.delete(ssb.length()-4,ssb.length()); ssb.append(" ");
-					init_clickspan_with_bits_at(opr, tv, ssb, DictOpt, 9, Coef, 0, 1, 0x1,47,1,4, 4,true);//返回an
+					init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, Coef, 0, 1, 0x1,47,1,4, 4,true);//返回an
 					
 					for (int i = 0; i < 8; i++) {
 						ssb.append("\n");
 					}
 					
-					opr.getOpt().setAsLinkedTextView(tv, true);
+					opt.setAsLinkedTextView(tv, true);
+					
 					tv.setLinkTextColor(Color.WHITE);
 					tv.setText(ssb, TextView.BufferType.SPANNABLE);
 					if(false){

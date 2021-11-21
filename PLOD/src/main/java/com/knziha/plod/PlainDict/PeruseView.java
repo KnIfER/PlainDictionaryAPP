@@ -770,28 +770,28 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 1, Coef, 0, 1, 0x1, 20, 1, 1, -1, true);//opt.getPeruseAddAll()//添加全部
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 1, 0x1, 20, 1, 1, -1, true);//opt.getPeruseAddAll()//添加全部
 
 
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, 19, 1, 1, 25, true);//opt.getInDarkMode()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, 19, 1, 1, 25, true);//opt.getInDarkMode()//
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 55, 1, 3, 26, true);//opt.getPeruseTextSelectable()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 55, 1, 3, 26, true);//opt.getPeruseTextSelectable()//
 
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 8, 1, 1, 20, true);//opt.getShowBA()//添加书签
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 8, 1, 1, 20, true);//opt.getShowBA()//添加书签
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 9, 1, 1, 21, true);//opt.getShowBD()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 9, 1, 1, 21, true);//opt.getShowBD()//
 
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 8, 1, 1, 20, true);//opt.getShowBA()//记忆页面位置
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 8, 1, 1, 20, true);//opt.getShowBA()//记忆页面位置
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 9, 1, 1, 21, true);//opt.getShowBD()//允许滑动翻页
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 9, 1, 1, 21, true);//opt.getShowBD()//允许滑动翻页
 
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 11, 1, 1, 22, true);//opt.getForceSearch()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 11, 1, 1, 22, true);//opt.getForceSearch()//
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 5, Coef, 0, 0, 0x1, 10, 1, 1, 23, true);//opt.getShowFScroll()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 5, Coef, 0, 0, 0x1, 10, 1, 1, 23, true);//opt.getShowFScroll()//
 
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 10, 1, 1, 23, true);//opt.getShowFScroll()//始终以搜索框内容为搜索词
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 10, 1, 1, 23, true);//opt.getShowFScroll()//始终以搜索框内容为搜索词
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 54, 1, 3, 24, true);//opt.getPeruseInPageSearchVisible()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 54, 1, 3, 24, true);//opt.getPeruseInPageSearchVisible()//
 
 
 		ssb.delete(ssb.length()-4,ssb.length());
@@ -1495,7 +1495,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		public void click(int pos,boolean ismachineClick) {//lv2
 			MainActivityUIBase a = getMainActivity();
 			ActivedAdapter=a.ActivedAdapter=this;
-			CMN.Log("111");
 			
 			PageSlider.WebContext = mWebView;
 			mWebView.IBC = currentDictionary.IBC;

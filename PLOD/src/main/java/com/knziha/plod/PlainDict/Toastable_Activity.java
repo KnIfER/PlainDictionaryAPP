@@ -31,6 +31,10 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
+
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.ClickableSpan;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Gravity;
@@ -49,6 +53,8 @@ import com.knziha.plod.widgets.SimpleTextNotifier;
 import org.apache.commons.lang3.StringUtils;
 
 import db.LexicalDBHelper;
+
+import static com.knziha.plod.dictionarymodels.BookPresenter.indexOf;
 
 public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
@@ -677,6 +683,104 @@ public class Toastable_Activity extends AppCompatActivity {
 				showT("已复制");
 			}
 		} catch (Exception e) { }
+	}
+	
+	public TextView buildStandardConfigDialog(OptionProcessor optprs
+			, boolean centerText
+			, Object btnIdListener
+			, int title_id
+			, Object... title_args) {
+		final View dv = getLayoutInflater().inflate(R.layout.dialog_about,null);
+		final TextView tv = dv.findViewById(R.id.resultN);
+		TextView title = dv.findViewById(R.id.title);
+		if (title_id!=0) {
+			if(title_args.length>0){
+				title.setText(mResource.getString(title_id, title_args));
+			} else {
+				title.setText(title_id);
+			}
+		} else if(title_args.length>0 && title_args[0] instanceof String){
+			title.setText((String) title_args[0]);
+		}
+		title.setTextSize(GlobalOptions.isLarge?19f:18f);
+		title.setTextColor(AppBlack);
+		//title.getPaint().setFakeBoldText(true);
+		
+		int topad = (int) mResource.getDimension(R.dimen._18_);
+		((ViewGroup)title.getParent()).setPadding(topad*3/5, topad/2, 0, 0);
+		//((ViewGroup)title.getParent()).setClipToPadding(false);
+		//((ViewGroup.MarginLayoutParams)title.getLayoutParams()).setMarginStart(-topad/4);
+		
+		opt.setAsLinkedTextView(tv, centerText);
+		
+		final androidx.appcompat.app.AlertDialog configurableDialog =
+				new androidx.appcompat.app.AlertDialog.Builder(this,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line)
+						.setView(dv)
+						.create();
+		configurableDialog.setCanceledOnTouchOutside(true);
+		
+		dv.findViewById(R.id.cancel).setOnClickListener(v -> {
+			if(btnIdListener instanceof Integer) optprs.processOptionChanged(null, null, (Integer) btnIdListener, 0);
+			else if(btnIdListener instanceof View.OnClickListener) ((View.OnClickListener) btnIdListener).onClick(v);
+			configurableDialog.dismiss();
+		});
+		tv.setTag(configurableDialog);
+		configurableDialog.tag = new Object[]{opt, optprs};
+		
+		return tv;
+	}
+	
+	public static void init_clickspan_with_bits_at(TextView tv, SpannableStringBuilder text,
+												   String[] dictOpt, int titleOff, String[] coef, int coefOff,
+												   int coefShift, long mask,
+												   int flagPosition, int flagMax, int flagIndex,
+												   int processId, boolean addColon) {
+		Object[] tags;
+		if (tv.getTag() instanceof androidx.appcompat.app.AlertDialog) {
+			tags = (Object[]) ((androidx.appcompat.app.AlertDialog)tv.getTag()).tag;
+		} else {
+			tags = (Object[]) tv.getTag();
+		}
+		PDICMainAppOptions opt = (PDICMainAppOptions) tags[0];
+		OptionProcessor optprs = (OptionProcessor) tags[1];
+		int start = text.length();
+		int now = start+dictOpt[titleOff].length();
+		text.append("[").append(dictOpt[titleOff]);
+		if(addColon) text.append(" :");
+		if(coef!=null){
+			long val = (opt.Flag(flagIndex)>>flagPosition)&mask;
+			text.append(coef[coefOff+(int) ((val)+coefShift)%(flagMax+1)]);
+		}
+		text.append("]");
+		text.setSpan(new ClickableSpan() {
+			@Override
+			public void onClick(@NonNull View widget) {
+				if(coef==null){
+					optprs.processOptionChanged(this, widget, processId , -1);
+					return;
+				}
+				long flag = opt.Flag(flagIndex);
+				long val = (flag>>flagPosition)&mask;
+				val=(val+1)%(flagMax+1);
+				flag &= ~(mask << flagPosition);
+				flag |= (val << flagPosition);
+				opt.Flag(flagIndex, flag);
+				int fixedRange = indexOf(text, ':', now);
+				text.delete(fixedRange+1, indexOf(text, ']', fixedRange));
+				text.insert(fixedRange+1,coef[coefOff+(int) ((val)+coefShift)%(flagMax+1)]);
+				tv.setText(text);
+				optprs.processOptionChanged(this, widget, processId , (int) val);
+			}},start,text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		text.append("\r\n").append("\r\n");
+	}
+	
+	public static void showStandardConfigDialog(TextView tv, SpannableStringBuilder ssb) {
+		int length = ssb.length();
+		ssb.delete(length-4,length);
+		tv.setText(ssb, TextView.BufferType.SPANNABLE);
+		((androidx.appcompat.app.AlertDialog) tv.getTag()).show();
+		((androidx.appcompat.app.AlertDialog) tv.getTag()).tag=null;
+		tv.setTag(null);
 	}
 }
 

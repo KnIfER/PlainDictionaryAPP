@@ -28,7 +28,7 @@ import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
-import org.adrianwalker.multilinestring.Multiline;
+import org.knziha.metaline.Metaline;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -130,7 +130,7 @@ public class PlainWeb extends DictionaryAdapter {
 	 }
 	 //console.log('fatal PLODKitASD' + window.PLODKit);
 	 */
-	@Multiline
+	@Metaline
 	static final String loadJs = StringUtils.EMPTY;
 	
 	/**
@@ -146,7 +146,7 @@ public class PlainWeb extends DictionaryAdapter {
 	 		window._fvwhl=1;
 	 	//}
 	 */
-	@Multiline(trim = false)
+	@Metaline(trim = false)
 	public final static String projs="SUB PAGE";
 	private JSONObject website;
 	private ObjectAnimator progressProceed;
@@ -923,7 +923,7 @@ public class PlainWeb extends DictionaryAdapter {
 		} else {
 			jsCode = jsLoader;
 		}
-		CMN.Log("加载网页::", url, jsCode);
+		if(GlobalOptions.debug)CMN.Log("加载网页::", url);
 		return currentUrl=url;
 	}
 	

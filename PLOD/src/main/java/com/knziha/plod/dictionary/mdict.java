@@ -32,7 +32,7 @@ import com.knziha.plod.dictionary.Utils.record_info_struct;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
-import org.adrianwalker.multilinestring.Multiline;
+import org.knziha.metaline.Metaline;
 import org.anarres.lzo.LzoDecompressor1x;
 import org.anarres.lzo.lzo_uintp;
 import org.apache.commons.text.StringEscapeUtils;
@@ -670,7 +670,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 	</style>
 	 */
-	@Multiline
+	@Metaline
 	String logicalPageHeader="SUBPAGE";
 
 	/** Construct Logical Page For mdd resource file. */
@@ -2738,7 +2738,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			sb = univeral_buffer;
 			sb.ensureCapacity(capacity);
 			sb.setLength(0);
-			SU.Log("复用字符串构建器……");
+			//SU.Log("复用字符串构建器……");
 		} else {
 			sb = new StringBuilder(capacity);
 		}

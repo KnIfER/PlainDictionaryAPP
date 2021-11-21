@@ -150,7 +150,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 						final String[] Coef = DictOpt[0].split("_");
 						final SpannableStringBuilder ssb = new SpannableStringBuilder();
 						
-						TextView tv = a.buildStandardConfigDialog(a, false, v12 -> {
+						TextView tv = a.buildStandardConfigDialog(a, false, (View.OnClickListener)v12 -> {
 							opt.linkContentbarProject(currentType, final_Bottombar_copy_from);
 							projectContext.currentValue = opt.getAppContentBarProject(currentType);
 							isDirty = false;
@@ -159,7 +159,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 							a.showX(opt.getLinkContentBarProj()?R.string.linkedft:R.string.copyedft, Toast.LENGTH_LONG, copy_to, copy_from);
 						}, R.string.warn_copyconfrom, copy_from);
 						
-						init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 41, 1, 4, -1, true);
+						init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 41, 1, 4, -1, true);
 						
 						MainActivityUIBase.showStandardConfigDialog(tv, ssb);
 					}
@@ -171,7 +171,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 				final String[] Coef = DictOpt[0].split("_");
 				final SpannableStringBuilder ssb = new SpannableStringBuilder();
 				
-				TextView tv = a.buildStandardConfigDialog(a, false, v13 -> {
+				TextView tv = a.buildStandardConfigDialog(a, false, (View.OnClickListener)v13 -> {
 					opt.clearAppProjects(projectContext.key);
 					if(opt.getRestoreAllBottombarProj()){
 						if(a instanceof PDICMainActivity){
@@ -189,7 +189,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 					notifyDataSetChanged();
 				}, R.string.warn_reconf);
 				
-				init_clickspan_with_bits_at(a, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 43, 1, 4, -1, true);
+				init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 43, 1, 4, -1, true);
 				
 				MainActivityUIBase.showStandardConfigDialog(tv, ssb);
 			} break;

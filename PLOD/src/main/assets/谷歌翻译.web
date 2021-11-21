@@ -2,7 +2,7 @@
 	,"host": "https://translate.google.cn"
 	,"index": ""
 	,"style": "header,.VjFXz{display:none!important}"
-	,"search": "/?sl=auto&tl=zh-CN&op=translate&text="
+	,"search": "/?sl=auto&tl=zh-CN&text=%s&op=translate"
 	,"searchx": [
 		{keyx:"^[\u4e00-\u9fa5]", value:"/?sl=auto&tl=en&op=translate&text="}
 	]
@@ -29,10 +29,10 @@
 			if(!sel.toStringRaw) { // 强硬作风 温和修改
 				sel.toStringRaw = sel.toString;
 				sel.toString = function(){
-					console.log('fatal toString='+PDRNG); 
+					debug('fatal toString='+PDRNG); 
 					var ret = sel.toStringRaw();
 					if(PDRNG) {
-						console.log('fatal sustain the selection v3='+PDRNG); 
+						debug('fatal sustain the selection v3='+PDRNG); 
 						ret = PDRNG.toString();
 						sel.removeAllRanges();
 						sel.addRange(PDRNG);
@@ -234,8 +234,9 @@
 	
 	debug('translator init done.'); // 结束
 	"
-	,"searchJs": "var succ = 0;
+	,"searchJs": "var succ = 0, debug=console.log;
 try {
+	debug('searchJs');
 	function isAttached(e) {
 		while(e&&(e=e.parentElement)) {
 			if(e===document.body)return true;
@@ -251,7 +252,7 @@ try {
 			break;
 		}
 	}
-	//console.log('fatal ta='+ta+' len='+tl+' wta='+window._pdta);
+	debug('fatal ta='+ta+' len='+tl+' wta='+window._pdta);
 	if (ta) {
 		ta.value = '%s';
 		ta.dispatchEvent(new Event('input', {
@@ -267,7 +268,7 @@ try {
 		//window._tweakedHXCL = false; setTimeout(window._tweakHXCL, 350);
 	}
 } catch (e) {
-	console.log('fatal e='+e);
+	debug('fatal e='+e);
 }
 succ"
 	,"translator":"true"

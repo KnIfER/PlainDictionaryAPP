@@ -50,6 +50,8 @@
 	<PreferenceCategory
 		android:key="gp_lianhe"
 		android:title="联合搜索"
+		app:icon="@drawable/ic_btn_multimode"
+		android:tint="#000"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
 		>
@@ -63,19 +65,19 @@
 			android:key="limit_chars"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="限定最长/最短匹配字数"
+			android:title="限制最长/最短匹配字数"
 			/>
 		<com.knziha.filepicker.settings.IntPreference
 			android:key="min_chars"
 			android:persistent="false"
-			android:defaultValue="3"
+			android:defaultValue="1"
 			android:title="最短匹配字数 : "
 			app:inlineSummary="true"
 			/>
 		<com.knziha.filepicker.settings.IntPreference
 			android:key="max_chars"
 			android:persistent="false"
-			android:defaultValue="3"
+			android:defaultValue="20"
 			android:title="最长匹配字数 : "
 			app:inlineSummary="true"
 			/>
@@ -102,11 +104,13 @@
 			android:title="自动为段落打开逐字搜索模式"
 			app:isPreferenceVisible="false"
 			/>
+<!--		todo 限定高度、滚动方块-->
 	</PreferenceCategory>
 
 	<PreferenceCategory
 		android:key="gp_edit"
 		android:title="内容编辑"
+		app:icon="@drawable/ic_edit_black_24dp"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
 		>
@@ -122,14 +126,14 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="内容可编辑"
-			android:summary="指是否可用键盘编辑内容，长按标题栏按钮可暂时关闭此功能。"
+			android:summary="是否可用键盘编辑内容，长按标题栏按钮可暂时关闭此功能。"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="hikeys"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="额外记录高亮内容"
-			android:summary="除编辑的内容外，额外在数据库中存储高亮的内容，方便查询与导出。"
+			android:summary="除编辑的内容外，在数据库中额外存储高亮的内容，方便查询与导出。"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="offline"
@@ -141,10 +145,11 @@
 	</PreferenceCategory>
 
 	<PreferenceCategory
-		android:key="cat_debug"
+		android:key="gp_debug"
 		android:title="调试"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
+		app:icon="@drawable/ic_baseline_bug_report_24"
 		>
 		<Preference
 			android:key="reload"
@@ -186,7 +191,7 @@
 			android:key="browse_img"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="在图片查看器中打开图片"
+			android:title="使用图片查看器打开图片"
 			/>
 		<com.knziha.filepicker.settings.FloatPreference
 			android:defaultValue="2"
@@ -227,7 +232,7 @@
 			android:key="pzoom_plc"
 			android:persistent="false"
 			android:title="预置居中 : "
-			android:entryValues="@array/zero_two"
+			android:entryValues="@array/zero_three"
 			android:entries="@array/pzoom_mode_info"
 			app:inlineSummary="true"
 			/>
@@ -236,14 +241,16 @@
 			android:key="pzoomx"
 			android:persistent="false"
 			android:title="预置x轴偏移系数 : "
+			min="-1"
 			max="1"
 			app:inlineSummary="true"
+			app:wiki="指预放大图片后，视口相对于图片的横向偏移距离（-1.0~1.0倍屏幕宽度）。\n\n居中时或靠左时，正值代表向右偏移；靠右时，正值代表向左偏移。"
 			/>
 	</PreferenceCategory>
 
 	<PreferenceCategory
 		android:key="gp_dzoom"
-		android:title="网页双击"
+		android:title="双击内容页"
 		app:icon="@drawable/ic_search"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
@@ -252,7 +259,7 @@
 			android:key="dzoom"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="双击放大"
+			android:title="使用双击放大"
 			/>
 		<androidx.preference.ListPreference
 			android:defaultValue="0"
@@ -276,7 +283,9 @@
 			android:key="dzoomx"
 			android:persistent="false"
 			android:title="X轴偏移系数 : "
+			min="-1"
 			max="1"
+			app:wiki="指放大内容页面后，视口相对于内容的横向偏移距离（-1.0~1.0倍屏幕宽度），居中时或靠左时，正值代表向右偏移；靠右时，正值代表向左偏移。"
 			app:inlineSummary="true"
 			/>
 	</PreferenceCategory>

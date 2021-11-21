@@ -24,7 +24,7 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
 
-import org.adrianwalker.multilinestring.Multiline;
+import org.knziha.metaline.Metaline;
 import org.apache.commons.lang3.StringUtils;
 import org.nanohttpd.protocols.http.IHTTPSession;
 import org.nanohttpd.protocols.http.NanoHTTPD;
@@ -581,12 +581,12 @@ public abstract class MdictServer extends NanoHTTPD {
 	 </script>
 
 	 <base href='/base/*/
-	@Multiline(trim = false)
+	@Metaline(trim = false)
 	String SimplestInjection=StringUtils.EMPTY;
 	/** /'/>
 	 <base target="_self" />
 	 */
-	@Multiline(trim=false)
+	@Metaline(trim=false)
 	String SimplestInjectionEnd=StringUtils.EMPTY;
 	
 	int MdPageBaseLen=-1;

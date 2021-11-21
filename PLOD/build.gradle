@@ -15,6 +15,7 @@ android.applicationVariants.all { variant ->
             android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
         }
     }
+
 }
 
 android {
@@ -29,8 +30,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 61
-        versionName "5.0"
+        versionCode 62
+        versionName "5.0.1"
         vectorDrawables.generatedDensities = ['hdpi']
     }
     buildFeatures {
@@ -45,9 +46,24 @@ android {
             buildConfigField "boolean","isDebug","true"
         }
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
             buildConfigField "boolean","isDebug","false"
+        }
+    }
+
+    sourceSets {
+        def isReleaseMode = false
+        for(String s : gradle.startParameter.taskNames) {
+            if(s.contains("Release")) {
+                isReleaseMode=true
+                break
+            }
+        }
+        main {
+            if(isReleaseMode) {
+                assets.srcDirs = ['src/main/assets_release']
+            }
         }
     }
 }
@@ -70,10 +86,13 @@ dependencies {
     api project(path: ':viewpager')
     api project(path: ':GestureView')
     testImplementation 'junit:junit:4.12'
-    compileOnly project(':multiline')
-    annotationProcessor project(':multiline')
-    testCompileOnly project(':multiline')
-    testAnnotationProcessor project(':multiline')
+
+
+    compileOnly libs_metaline
+    annotationProcessor libs_metaline
+    testCompileOnly libs_metaline
+    testAnnotationProcessor libs_metaline
+
     api 'org.apache.commons:commons-text:1.8'
     api (libs_clang)
     api project(':recyclerViewFastScroller')
@@ -122,7 +141,6 @@ dependencies {
         exclude module:"core"
     }
     implementation 'org.jetbrains:annotations:15.0'
-
 
     //api ('com.github.barteksc:pdfium-android:1.9.0')
 }

@@ -10,7 +10,7 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.dictionary.Utils.SU;
 
-import org.adrianwalker.multilinestring.Multiline;
+import org.knziha.metaline.Metaline;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -51,7 +51,7 @@ public class CMN{
 	public static int CheckSettings;
 
 	/** Is it not like the king? */
-	@Multiline
+	@Metaline
 	public static final String TestText="Happy";
 	public static boolean bForbidOneSpecFile;
 	public static long LastConfigReadTime;

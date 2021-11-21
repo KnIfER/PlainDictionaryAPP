@@ -213,7 +213,7 @@ public class AppUIProject {
 				}
 			}
 		}
-		CMN.pt("重排耗时", bottombar_project);
+		//CMN.pt("重排耗时", bottombar_project);
 	}
 	
 	@Override

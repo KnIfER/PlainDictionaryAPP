@@ -50,7 +50,8 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		if((a=activity.get())==null) return null;
 		stst=System.currentTimeMillis();
 		String searchText = params[0].trim();
-		boolean isParagraph = BookPresenter.testIsParagraph(searchText);
+		int paragraphWords = 9;
+		boolean isParagraph = BookPresenter.testIsParagraph(searchText, paragraphWords);
 		CMN.Log("isParagraph::", isParagraph);
 		CurrentSearchText=searchText;
 		CurrentSearchText2=PDICMainAppOptions.getSearchUseMorphology()?
@@ -102,7 +103,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 						}
 						if(bookPresenter!=null) {
 							try {
-								bookPresenter.QueryByKey(CurrentSearchText, SearchType.Range, isParagraph);
+								bookPresenter.QueryByKey(CurrentSearchText, SearchType.Range, isParagraph, paragraphWords);
 							} catch (Exception e) {
 								if(GlobalOptions.debug)
 									CMN.Log("搜索出错！！！", bookPresenter.bookImpl.getDictionaryName(), e);

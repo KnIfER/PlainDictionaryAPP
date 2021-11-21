@@ -16,7 +16,7 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.settings.SettingsActivity;
 
-import org.adrianwalker.multilinestring.Multiline;
+import org.knziha.metaline.Metaline;
 
 import java.io.File;
 import java.util.Objects;
@@ -34,14 +34,14 @@ public class DBUpgradeHelper {
     新的数据库格式更加完善，支持更多功能，比如可以从历史记录或收藏夹追溯查词时的词典。
     旧版数据库（多个文件）：PLOD/INTERNAL/history.sql（历史记录）、PLOD/INTERNAL/favorites/*.sql（收藏夹）、PLOD/bmDBs/ .* / *.sql（词典数据）
     新版数据库（一个文件）：PLOD/INTERNAL/databaseV2.sql（统一数据库）*/
-	@Multiline(trim=false)
+	@Metaline(trim=false)
 	private final static String upgradeMsg = "";
 	public final static int message = 20210823;
 	
 	public static void showUpgradeDlg(SettingsActivity dlgAct, MainActivityUIBase a, boolean tickStart) {
 		//if(true) return;
 		AlertDialog dlg = new AlertDialog.Builder(dlgAct==null?a:dlgAct)
-				.setNeutralButton("5秒后自动开始", null)
+				.setNeutralButton("倒计时5秒", null)
 				.setNegativeButton("取消", null)
 				.setPositiveButton("开始升级！", null)
 				.setTitle("升级至数据库V2")
@@ -99,6 +99,7 @@ public class DBUpgradeHelper {
 					msg += "收录词条收藏"+favUpdCnt+"项\n";
 					if (new File(a.opt.pathToDatabases().toString()).exists()) {
 						msg += "注：未迁移旧版词典笔记（包括重载页面和词典书签），如有需要请联系开发者。\n";
+						msg += "\n建议彻底关闭进程后，重启应用；否则，直接使用可能存在未知的问题。\n";
 					}
 					dlg.setMessage(msg);
 					PositiveButton.setText("完成");
@@ -122,7 +123,7 @@ public class DBUpgradeHelper {
 					if (left>0) {
 						if (!abortTick.get()) {
 							NeutralButton.postDelayed(this, 1000);
-							NeutralButton.setText(left+"秒后自动开始");
+							NeutralButton.setText("倒计时"+left+"秒");
 						}
 					} else {
 						NeutralButton.setVisibility(View.GONE);

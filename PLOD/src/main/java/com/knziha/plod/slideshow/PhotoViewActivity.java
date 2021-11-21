@@ -374,7 +374,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 
 	void showImageTweakerDialog(){
 		final ViewPager viewPager = new ViewPager(this);
-		PhotoPagerAjuster ppa = new PhotoPagerAjuster(this, viewPager);
+		PhotoPagerAjuster ppa = new PhotoPagerAjuster(this, opt, viewPager);
 		ppa.setOnColorFilterChangedListener(colorMatrix -> {
 			CMCF = new ColorMatrixColorFilter(colorMatrix);
 			int cc = this.viewPager.getChildCount();
@@ -412,11 +412,6 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 		viewPager.setCurrentItem(PhotoPagerAjuster.PBC_tab, false);
 		
 		viewPager.getLayoutParams().height = (int) (Math.max(dm.heightPixels, dm.widthPixels) * d.getBehavior().getHalfExpandedRatio() - getResources().getDimension(R.dimen._45_) * 1.75);
-	}
-	
-	@Override
-	public PDICMainAppOptions getOpt() {
-		return opt;
 	}
 	
 	@Override

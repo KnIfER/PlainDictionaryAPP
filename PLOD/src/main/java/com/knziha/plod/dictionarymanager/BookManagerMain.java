@@ -130,10 +130,10 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 			SpannableStringBuilder ssb = new SpannableStringBuilder(getResources().getString(R.string.dictOpt)).append("");
 			int start = ssb.length();
 
-			final MagentTransient mmTmp = manager_group.get(actualPosition);
-			boolean isOnSelected = a.opt.getDictManager1MultiSelecting() && selector.contains(mmTmp.getPath());
+			final MagentTransient magent = manager_group.get(actualPosition);
+			boolean isOnSelected = a.opt.getDictManager1MultiSelecting() && selector.contains(magent.getPath());
 			if (isOnSelected) ssb.append("…");
-			ssb.append(mmTmp.getPath());
+			ssb.append(magent.getPath());
 			if (isOnSelected) ssb.append("…");
 			int end = ssb.length();
 
@@ -145,13 +145,13 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 					builder3.setTitle("更多选项");
 					builder3.setSingleChoiceItems(new String[]{}, 0,
 							(dialog, pos) -> {
-								//mdict_manageable mmTmp = manager_group.get(actualPosition);
+								//mdict_manageable magent = manager_group.get(actualPosition);
 								switch (pos) {
 									case 0: {//在外部管理器打开路径
 										StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
 										try {
 											startActivity(new Intent(Intent.ACTION_VIEW)
-													.setDataAndType(Uri.fromFile(mmTmp.f().getParentFile()), "resource/folder")
+													.setDataAndType(Uri.fromFile(magent.f().getParentFile()), "resource/folder")
 													.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 											);
 										} catch (Exception e) {
@@ -165,9 +165,9 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 										properties.selection_type = DialogConfigs.FILE_SELECT;
 										properties.root = new File("/");
 										properties.error_dir = new File(Environment.getExternalStorageDirectory().getPath());
-										properties.offset = mmTmp.f().getParentFile();
+										properties.offset = magent.f().getParentFile();
 										properties.opt_dir = new File(a.opt.pathToDatabases() + "favorite_dirs/");
-										properties.dedicatedTarget = mmTmp.f().getName();
+										properties.dedicatedTarget = magent.f().getName();
 										properties.opt_dir.mkdirs();
 										properties.extensions = new HashSet<>();
 										properties.extensions.add(".mdx");
@@ -180,17 +180,30 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 									break;
 									case 2://词典设置
 										if (isOnSelected) {
-											mngr_agent_manageable[] mdTmps = new mngr_agent_manageable[selector.size()];
+											BookPresenter[] mdTmps = new BookPresenter[selector.size()];
 											int cc = 0;
-											for (mngr_agent_manageable mI : manager_group) {
+											for (BookPresenter mI : manager_group) {
 												if (selector.contains(mI.getPath()))
 													mdTmps[cc++] = mI;
 											}
 											BookPresenter.showDictTweaker(null, (Toastable_Activity) getActivity(), mdTmps);
 										} else {
-											BookPresenter.showDictTweaker(null, (Toastable_Activity) getActivity(), mmTmp);
+											BookPresenter.showDictTweaker(null, (Toastable_Activity) getActivity(), magent);
 										}
 										bDictTweakerOnceShowed = true;
+										break;
+									case 3://词典设置
+										if (isOnSelected) {
+											BookPresenter[] data = new BookPresenter[selector.size()];
+											int cc = 0;
+											for (BookPresenter mI : manager_group) {
+												if (selector.contains(mI.getPath()))
+													data[cc++] = mI;
+											}
+											((BookManager) getActivity()).showBookPreferences(data);
+										} else {
+											((BookManager) getActivity()).showBookPreferences(magent);
+										}
 										break;
 								}
 							});
@@ -237,31 +250,31 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 									if(!newPath.contains("/")){
 										if(newName.endsWith(".mdx"))
 											newName = newName.substring(0, newName.length()-4);
-										else if(mmTmp.isMdictFile())
+										else if(magent.isMdictFile())
 											newPath+=".mdx";
 										if(newName.length()>0){
-											String oldPath = mmTmp.getPath();
-											File oldf = mmTmp.f();
+											String oldPath = magent.getPath();
+											File oldf = magent.f();
 											String oldFn = oldf.getName();
-											String OldFName = mmTmp.getDictionaryName();
+											String OldFName = magent.getDictionaryName();
 											int oldFnLen = oldFn.length();
 
-											File to = new File(mmTmp.f().getParent(), newPath);
+											File to = new File(magent.f().getParent(), newPath);
 											String toFn = a.opt.tryGetDomesticFileName(to.getPath());
-											if (to.equals(mmTmp.f())) {//就是自己
+											if (to.equals(magent.f())) {//就是自己
 												suc = true;
-											} else if (new File(mmTmp.getPath()).exists()) {//正常重命名
+											} else if (new File(magent.getPath()).exists()) {//正常重命名
 												if (to.exists()) {
 													a.showT("文件已存在，重命名失败！");
-												} else if (mmTmp.renameFileTo(getActivity(), to)) {//正常重命名成功
+												} else if (magent.renameFileTo(getActivity(), to)) {//正常重命名成功
 													suc = true;
 												}
 											} else {
 												if (to.exists() && !a.mdict_cache.containsKey(to.getAbsolutePath())) {//关联已存在的文件
-													mmTmp.renameFileTo(getActivity(), to);
-													CMN.Log("重命名", mmTmp.getDictionaryName());
-													adapter.remove(mmTmp);
-													adapter.insert(a.new_MagentTransient(to.getAbsolutePath(), a.opt, a.adapterInstance, null, true), actualPosition);
+													magent.renameFileTo(getActivity(), to);
+													CMN.Log("重命名", magent.getDictionaryName());
+													adapter.remove(magent);
+													adapter.insert(a.new_MagentTransient(to.getAbsolutePath(), a.opt, null, true), actualPosition);
 													suc = true;
 												}
 											}
@@ -341,7 +354,7 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 							case 2: {//移至顶部
 								isDirty = true;
 								manager_group.remove(actualPosition);
-								manager_group.add(0, mmTmp);
+								manager_group.add(0, magent);
 								d.dismiss();
 								adapter.notifyDataSetChanged();
 								getListView().setSelection(0);
@@ -350,7 +363,7 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 							case 3: {//移至底部
 								isDirty = true;
 								manager_group.remove(actualPosition);
-								manager_group.add(manager_group.size(), mmTmp);
+								manager_group.add(manager_group.size(), magent);
 								d.dismiss();
 								adapter.notifyDataSetChanged();
 								getListView().setSelection(manager_group.size() - 1);
@@ -361,13 +374,13 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 								AlertDialog.Builder builder3 = new AlertDialog.Builder(getActivity());
 								builder3.setTitle("更多选项");
 								builder3.setSingleChoiceItems(
-										mmTmp.isMddResource() ? R.array.dicts_option2 : R.array.dicts_option3, -1,
+										magent.isMddResource() ? R.array.dicts_option2 : R.array.dicts_option3, -1,
 										(dialog3, pos3) -> {
 											switch (pos3) {
 												/* 设为滤器 */
 												case 0: {
 													isDirty = true;
-													boolean isF = PDICMainAppOptions.toggleTmpIsFiler(mmTmp);
+													boolean isF = PDICMainAppOptions.toggleTmpIsFiler(magent);
 													if (isOnSelected) {
 														for (int i = 0; i < manager_group.size(); i++) {
 															if (selector.contains(manager_group.get(i).getPath()) && !manager_group.get(i).isMddResource())
@@ -381,7 +394,7 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 												/* 设为点译词库 */
 												case 1: {
 													isDirty = true;
-													boolean isCS = PDICMainAppOptions.toggleTmpIsClicker(mmTmp);
+													boolean isCS = PDICMainAppOptions.toggleTmpIsClicker(magent);
 													if (isOnSelected) {
 														for (int i = 0; i < manager_group.size(); i++) {
 															if (selector.contains(manager_group.get(i).getPath()))
@@ -395,7 +408,7 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 												/* 设为默认折叠 */
 												case 2: {
 													isDirty = true;
-													boolean isCL = PDICMainAppOptions.toggleTmpIsCollapsed(mmTmp);
+													boolean isCL = PDICMainAppOptions.toggleTmpIsCollapsed(magent);
 													if (isOnSelected) {
 														for (int i = 0; i < manager_group.size(); i++) {
 															if (selector.contains(manager_group.get(i).getPath()))
@@ -408,11 +421,11 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 												break;
 												/* 设为发音库( mdd 专有 ) */
 												case 3: {
-													if (mmTmp.isMddResource()) {
+													if (magent.isMddResource()) {
 														isDirty = true;
-														boolean isCS = PDICMainAppOptions.toggleTmpIsAudior(mmTmp);
+														boolean isCS = PDICMainAppOptions.toggleTmpIsAudior(magent);
 														if (isCS)
-															PDICMainAppOptions.setTmpIsFiler(mmTmp, false);
+															PDICMainAppOptions.setTmpIsFiler(magent, false);
 														if (isOnSelected) {
 															for (int i = 0; i < manager_group.size(); i++) {
 																if (selector.contains(manager_group.get(i).getPath())) {
@@ -554,7 +567,7 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 			a.mdict_cache.clear();
 			manager_group.ensureCapacity(slots.size());
 			for (PlaceHolder phI : slots) {
-				MagentTransient magent = a.new_MagentTransient(phI, a.opt, a.adapterInstance, null, false);
+				MagentTransient magent = a.new_MagentTransient(phI, a.opt, null, false);
 				if (!magent.isMddResource()) PDICMainAppOptions.setTmpIsAudior(magent, false);
 				if(PDICMainAppOptions.getTmpIsHidden(magent.getTmpIsFlag()))
 					rejector.add(magent.getPath());

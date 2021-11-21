@@ -30,4 +30,4 @@ include ':GlideModule:disklrucache'
 include ':viewpager'
 
 include ':GestureView'
-include ':multiline'
+//include ':multiline'

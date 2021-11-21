@@ -17,7 +17,6 @@ import android.text.Spanned;
 import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.ContextMenu;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,8 +27,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.AccelerateInterpolator;
-import android.view.textclassifier.TextClassifier;
-import android.view.textclassifier.TextSelection;
 import android.webkit.WebSettings;
 
 import android.webkit.WebView;
@@ -56,7 +53,7 @@ import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 
-import org.adrianwalker.multilinestring.Multiline;
+import org.knziha.metaline.Metaline;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -187,7 +184,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		//setLayerType(View.LAYER_TYPE_HARDWARE, null);
 		webScale=GlobalOptions.density;
 	}
-
+	
 	public int getContentHeight(){
 		return computeVerticalScrollRange();
 	}
@@ -937,42 +934,39 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		b.setEnd(a, a.length);
 	}
 	*/
-   @Multiline(trim=true)
+    @Metaline(trim=true)
 	private final static String commonIcan="COMMONJS";
 	private static int commonIcanBaseLen=0;
 	private static StringBuilder HighlightBuilder;
 
 	/**
 	 (function(t,r){
-	     if (window.getSelection) {
-			var sel = window.getSelection();
-	 		var ret = r?sel.toString():'';
-	 		try {
-				var ann = document.createElement("span");
-				if(t==0){
-					ann.className = "PLOD_HL";
-					ann.setAttribute("style", "background:#ffaaaa;");
-				}else{
-					ann.className = "PLOD_UL";
-					//ann.style = "color:#ffaaaa;text-decoration: underline";
-					ann.setAttribute("style", "border-bottom:1px solid #ffaaaa");
-				}
-				var ranges = [];
-				var range;
-				for (var i = 0, len = sel.rangeCount; i < len; ++i) {
-					ranges.push(sel.getRangeAt(i))
-				} //sel.removeAllRanges();
-				i = ranges.length;
-				while (i--) {
-					range = ranges[i];
-					surroundRangeContents(range, ann)
-				}
-			} catch (e) {console.log(e)}
-	 		return ret;
-	 	}
-	 })(
-	 */
-	@Multiline(trim=true)
+		var sel = window.getSelection();
+		var ret = r?sel.toString():'';
+		try {
+			var ann = document.createElement("span");
+			if(t==0){
+				ann.className = "PLOD_HL";
+				ann.setAttribute("style", "background:#ffaaaa;");
+			}else{
+				ann.className = "PLOD_UL";
+				//ann.style = "color:#ffaaaa;text-decoration: underline";
+				ann.setAttribute("style", "border-bottom:1px solid #ffaaaa");
+			}
+			var ranges = [];
+			var range;
+			for (var i = 0, len = sel.rangeCount; i < len; ++i) {
+				ranges.push(sel.getRangeAt(i))
+			} //sel.removeAllRanges();
+			i = ranges.length;
+			while (i--) {
+				range = ranges[i];
+				surroundRangeContents(range, ann)
+			}
+		} catch (e) {console.log(e)}
+		return ret;
+	 });*/
+	@Metaline(trim=true, compile=true)
 	private final static  String HighLightIncantation="HI";
 	/**
 	function recurseDeWrap(b, t) {
@@ -1011,22 +1005,24 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				recurseDeWrap(nodes, t)
 			}
 	 	}
-	 })(
+	 });
 	 */
-	@Multiline(trim=true)
+	@Metaline(trim=true, compile=true)
 	private final static  String DeHighLightIncantation="DEHI";
 
-	private void prepareHighlightBuilder() {
-		if(commonIcanBaseLen==0){
+	private StringBuilder prepareHighlightBuilder() {
+		if(HighlightBuilder==null){
 			HighlightBuilder = new StringBuilder(commonIcan);
 			commonIcanBaseLen=HighlightBuilder.length();
 		}
 		HighlightBuilder.setLength(commonIcanBaseLen);
+		return HighlightBuilder;
 	}
 
 	public StringBuilder getHighLightIncantation(boolean record) {
-		prepareHighlightBuilder();
-		return HighlightBuilder.append(HighLightIncantation)
+		return prepareHighlightBuilder().append(HighLightIncantation)
+				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
+				.append("(")
 				.append("0")
 				.append(",")
 				.append(record?"1":"0")
@@ -1034,13 +1030,18 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 
 	public StringBuilder getDeHighLightIncantation() {
-		prepareHighlightBuilder();
-		return HighlightBuilder.append(DeHighLightIncantation).append("'PLOD_HL');");
+		return prepareHighlightBuilder()
+				.append(DeHighLightIncantation)
+				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
+				.append("(")
+				.append("'PLOD_HL');");
 	}
 
 	public StringBuilder getUnderlineIncantation(boolean record) {
 		prepareHighlightBuilder();
 		return HighlightBuilder.append(HighLightIncantation)
+				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
+				.append("(")
 				.append("1")
 				.append(",")
 				.append(record?"1":"0")
@@ -1048,14 +1049,17 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 
 	public StringBuilder getDeUnderlineIncantation() {
-		prepareHighlightBuilder();
-		return HighlightBuilder.append(DeHighLightIncantation).append("'PLOD_UL');");
+		return prepareHighlightBuilder()
+				.append(DeHighLightIncantation)
+				.delete(HighlightBuilder.length()-1, HighlightBuilder.length())
+				.append("(")
+				.append("'PLOD_UL');");
 	}
 
 	/**
 		''+window.getSelection()
 	 */
-	@Multiline
+	@Metaline
 	public static final String CollectWord="CWJS";
 
 	/**
@@ -1071,7 +1075,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		flmstd.appendChild(range.cloneContents());
 		flmstd.innerHTML;
 	 */
-	@Multiline
+	@Metaline
 	public static final String CollectHtml="CHJS";
 
 	public static final String SelectAll="document.execCommand('selectAll')";

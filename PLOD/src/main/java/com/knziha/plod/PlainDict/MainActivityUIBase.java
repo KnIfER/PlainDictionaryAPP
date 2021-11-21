@@ -161,7 +161,6 @@ import com.knziha.plod.dictionarymodels.PlainPDF;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.ebook.Utils.BU;
@@ -199,7 +198,7 @@ import com.knziha.text.SelectableTextViewBackGround;
 import com.knziha.text.SelectableTextViewCover;
 import com.knziha.text.TTSMoveToucher;
 
-import org.adrianwalker.multilinestring.Multiline;
+import org.knziha.metaline.Metaline;
 import org.apache.commons.imaging.BufferedImage;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.lang3.ArrayUtils;
@@ -529,7 +528,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 panel.appendChild(info);
 	 document.body.appendChild(panel);
 	 */
-	@Multiline()
+	@Metaline()
 	private static final String js_no_match="js_no_match";
 	private boolean bHasDedicatedSeachGroup;
 	private File fontlibs;
@@ -582,7 +581,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public HashMap<String, BookPresenter> mdict_cache = new HashMap<>();
 	protected int filter_count;
 	protected int hidden_count;
-	@Multiline
+	@Metaline
 	private static final String PDFPage="PAGE";
 	public resultRecorderCombined recCom;
 	protected boolean forbidVolumeAjustmentsForTextRead;
@@ -1278,7 +1277,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//fadeInContents.start();
 		};
 		MainStringBuilder = new StringBuilder(40960);
-		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
+		//WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
+		//WebView.setWebContentsDebuggingEnabled(true);
 		
 	}
 
@@ -2431,7 +2431,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static byte[] separator = "\n".getBytes(StandardCharsets.UTF_8);
 	public static int separatorCount = separator.length;
 	public static int targetCount = target.length;
-	public static int ConfigSize = 70;
+	public static int ConfigSize = 78;
 	public static int ConfigExtra = 0; // 5
 	public static int SpecificationBlockSize = 4096;
 
@@ -2791,7 +2791,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			(widget14=contentUIData.browserWidget14).setOnClickListener(this);
 		}
 		
-		CMN.Log("findFurtherViews...", webholder);
+		//CMN.Log("findFurtherViews...", webholder);
 		
 		mBar_layoutParmas = (FrameLayout.LayoutParams) mBar.getLayoutParams();
 		mBar.setOnProgressChangedListener(_mProgress -> {
@@ -3442,14 +3442,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			adaptermy2.onItemClick(pendingLv2ClickPos);
 			pendingLv2ClickPos=-1;
 		}
-	}
-	
-	public static void showStandardConfigDialog(TextView tv, SpannableStringBuilder ssb) {
-		int length = ssb.length();
-		ssb.delete(length-4,length);
-		tv.setText(ssb, TextView.BufferType.SPANNABLE);
-		((AlertDialog) tv.getTag()).show();
-		tv.setTag(null);
 	}
 	
 	public boolean isContentViewAttachedForDB() {
@@ -4229,22 +4221,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						} break;
 						/* 词典设置 */
 						case R.string.dict_opt:{
-							int jd = WeakReferenceHelper.dict_opt;
-							BookOptionsDialog dialog = (BookOptionsDialog) getReferencedObject(jd);
-							if (dialog==null) {
-								dialog = new BookOptionsDialog();
-								putReferencedObject(jd, dialog);
-							}
-							dialog.bookOptions.setData(new BookPresenter[]{_mWebView.presenter});
-							try {
-								if (!dialog.isAdded()) {
-									dialog.show(getSupportFragmentManager(), "");
-								} else {
-									dialog.getDialog().show();
-								}
-							} catch (Exception e) {
-								CMN.Log(e);
-							}
+							showBookPreferences(_mWebView.presenter);
 						} break;
 						/* 文字缩放级别 */
 						case R.string.f_scale_up:
@@ -4875,10 +4852,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		boolean record = mWebView.presenter.getRecordHiKeys();
 		String js = (type==R.string.highlight?mWebView.getHighLightIncantation(record)
 				:mWebView.getUnderlineIncantation(record)).toString();
+		//CMN.Log("Annot_js=", js);
 		mWebView.evaluateJavascript(js, record?new ValueCallback<String>() {
 			@Override
 			public void onReceiveValue(String value) {
-				if(value!=null && value.length()>=3)
+				if(value!=null && value.length()>=3 && value.charAt(0)=='"')
 				try {
 					value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
 					if (getUsingDataV2()) {
@@ -5164,46 +5142,28 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return mAnnotAdapter;
 	}
 
-	public static void init_clickspan_with_bits_at(OptionProcessor optprs, TextView tv, SpannableStringBuilder text,
-									 String[] dictOpt, int titleOff, String[] coef, int coefOff,
-									 int coefShift, long mask,
-									 int flagPosition, int flagMax, int flagIndex,
-									 int processId, boolean addColon) {
-		PDICMainAppOptions opt = optprs.getOpt();
-		int start = text.length();
-		int now = start+dictOpt[titleOff].length();
-		text.append("[").append(dictOpt[titleOff]);
-		if(addColon) text.append(" :");
-		if(coef!=null){
-			long val = (opt.Flag(flagIndex)>>flagPosition)&mask;
-			text.append(coef[coefOff+(int) ((val)+coefShift)%(flagMax+1)]);
-		}
-		text.append("]");
-		text.setSpan(new ClickableSpan() {
-			@Override
-			public void onClick(@NonNull View widget) {
-				if(coef==null){
-					optprs.processOptionChanged(this, widget, processId , -1);
-					return;
-				}
-				long flag = opt.Flag(flagIndex);
-				long val = (flag>>flagPosition)&mask;
-				val=(val+1)%(flagMax+1);
-				flag &= ~(mask << flagPosition);
-				flag |= (val << flagPosition);
-				opt.Flag(flagIndex, flag);
-				int fixedRange = indexOf(text, ':', now);
-				text.delete(fixedRange+1, indexOf(text, ']', fixedRange));
-				text.insert(fixedRange+1,coef[coefOff+(int) ((val)+coefShift)%(flagMax+1)]);
-				tv.setText(text);
-				optprs.processOptionChanged(this, widget, processId , (int) val);
-			}},start,text.length(),Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-		text.append("\r\n").append("\r\n");
-	}
-	
 	@Override
 	public void processOptionChanged(ClickableSpan clickableSpan, View widget, int processId, int val) {
 		switch (processId){
+			case R.string.relaunch:
+			case R.string.warn_exit0: {
+				if(opt.getDeletHistoryOnExit()) {
+					deleteHistory();
+				}
+				boolean svm = opt.getShuntDownVMOnExit();
+				if(processId==R.string.relaunch) {
+					opt.setLastMdlibPath((String)SU.UniversalObject);
+					SU.UniversalObject=null;
+				} else if(svm) {
+					if(checkFlagsChanged()) {
+						opt.setFlags(null, 2);
+					}
+				}
+				Utils.CleanExitApp(this, false/*restart*/&&PDICMainAppOptions.getRestartVMOnExit(), opt.getClearTasksOnExit(), svm);
+			} break;
+			case R.string.shutdown_vm:
+				checkFlags();
+			break;
 			case 0:
 				if(drawerFragment!=null) {
 					drawerFragment.sw1.setChecked(val==1);
@@ -5364,11 +5324,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	@Override
-	public PDICMainAppOptions getOpt() {
-		return opt;
-	}
-	
 	@Deprecated
 	private void anyDialog() {
 		AlertDialog d = new AlertDialog.Builder(this)
@@ -5385,41 +5340,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		CMN.Log(((ViewGroup)tv.getParent()).getPaddingTop());
 	}
 	
-	public TextView buildStandardConfigDialog(Context context, boolean centerText, OnClickListener onclick, int title_id, Object... title_args) {
-		final View dv = getLayoutInflater().inflate(R.layout.dialog_about,null);
-		final TextView tv = dv.findViewById(R.id.resultN);
-		TextView title = dv.findViewById(R.id.title);
-		if(title_args.length>0){
-			title.setText(getResources().getString(title_id, title_args));
-		} else {
-			title.setText(title_id);
-		}
-		title.setTextSize(GlobalOptions.isLarge?19f:18f);
-		title.setTextColor(AppBlack);
-		//title.getPaint().setFakeBoldText(true);
-		
-		int topad = (int) getResources().getDimension(R.dimen._18_);
-		((ViewGroup)title.getParent()).setPadding(topad*3/5, topad/2, 0, 0);
-		//((ViewGroup)title.getParent()).setClipToPadding(false);
-		//((ViewGroup.MarginLayoutParams)title.getLayoutParams()).setMarginStart(-topad/4);
-		
-		opt.setAsLinkedTextView(tv, centerText);
-		
-		final AlertDialog configurableDialog =
-				new AlertDialog.Builder(context,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line)
-						.setView(dv)
-						.create();
-		configurableDialog.setCanceledOnTouchOutside(true);
-		
-		dv.findViewById(R.id.cancel).setOnClickListener(v -> {
-			if(onclick!=null) onclick.onClick(v);
-			configurableDialog.dismiss();
-		});
-		
-		tv.setTag(configurableDialog);
-		
-		return tv;
-	}
 	
 	public void showAppTweaker() {
 		String[] DictOpt = getResources().getStringArray(R.array.app_spec);
@@ -5429,27 +5349,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		TextView tv = buildStandardConfigDialog(this, true, null, R.string.AppOpt);
 		Dialog configurableDialog = (Dialog) tv.getTag();
 
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 16, 1, 1, 0, false);//opt.isFullScreen()//全屏
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1, 17, 1, 1, 1, false);//opt.isContentBow()//
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 18, 1, 1, 2, false);//opt.getInDarkMode()//
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 46, 1, 1, 3, false);//opt.getUseVolumeBtn()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 16, 1, 1, 0, false);//opt.isFullScreen()//全屏
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 1, 0x1, 17, 1, 1, 1, false);//opt.isContentBow()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 18, 1, 1, 2, false);//opt.getInDarkMode()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 46, 1, 1, 3, false);//opt.getUseVolumeBtn()//
 		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 5, null, 0, 0, 0x1, 0, 1, 1, -1, false);//隐藏标题
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 0, 1, 2, -1, false);//opt.getInheritePageScale()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 5, null, 0, 0, 0x1, 0, 1, 1, -1, false);//隐藏标题
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 0, 1, 2, -1, false);//opt.getInheritePageScale()//
 		String[] Coef2 = new String[]{Coef[0], Coef[1], Coef[2]};
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 7, Coef2, 0, 0, 0x3, 0, 2, 2, 4, false);//opt.getNavigationBtnType()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 7, Coef2, 0, 0, 0x3, 0, 2, 2, 4, false);//opt.getNavigationBtnType()//
 		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 3, 1, 2, 5, false);//opt.getHideScroll1()//
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 4, 1, 2, 6, false);//opt.getHideScroll2()//
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 5, 1, 2, 7, false);//opt.getHideScroll3()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 3, 1, 2, 5, false);//opt.getHideScroll1()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 4, 1, 2, 6, false);//opt.getHideScroll2()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 5, 1, 2, 7, false);//opt.getHideScroll3()//
 		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 6, 1, 2, -1, false);//opt.getPageTurn1()//
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 12, Coef, 0, 0, 0x1, 7, 1, 2, -1, false);//opt.getPageTurn2()//
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 13, Coef, 0, 0, 0x1, 33, 1, 3, -1, false);//opt.getPageTurn3()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 6, 1, 2, -1, false);//opt.getPageTurn1()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 12, Coef, 0, 0, 0x1, 7, 1, 2, -1, false);//opt.getPageTurn2()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 13, Coef, 0, 0, 0x1, 33, 1, 3, -1, false);//opt.getPageTurn3()//
 		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 15, Coef, 0, 1, 0x1, 28, 1, 3, 8, false);//opt.getAllowContentEidt()//编辑页面
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 14, Coef, 0, 0, 0x1, 9, 1, 2, 10, false);//opt.setHistoryStrategy0()//关闭历史纪录
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 16, null, 0, 0, 0x1, 0, 1, 2, 9, false);//历史纪录规则
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 15, Coef, 0, 1, 0x1, 28, 1, 3, 8, false);//opt.getAllowContentEidt()//编辑页面
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 14, Coef, 0, 0, 0x1, 9, 1, 2, 10, false);//opt.setHistoryStrategy0()//关闭历史纪录
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 16, null, 0, 0, 0x1, 0, 1, 2, 9, false);//历史纪录规则
 		//CMN.Log("ssb len:", ssb.length());
 		tv.setTag(null);
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
@@ -5457,32 +5377,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	void showAppExit(boolean restart) {
-		String[] DictOpt = getResources().getStringArray(R.array.app_exit);		final String[] Coef = DictOpt[0].split("_");
+		String[] DictOpt = getResources().getStringArray(R.array.app_exit);
+		final String[] Coef = DictOpt[0].split("_");
 		final SpannableStringBuilder ssb = new SpannableStringBuilder();
-		boolean finalRestart = restart;
-		TextView tv = buildStandardConfigDialog(this, false, v12 -> {
-			if(opt.getDeletHistoryOnExit()) {
-				deleteHistory();
-			}
-			boolean svm = opt.getShuntDownVMOnExit();
-			if(finalRestart/*restart*/) {
-				opt.setLastMdlibPath((String)SU.UniversalObject);
-				SU.UniversalObject=null;
-			} else if(svm) {
-				if(checkFlagsChanged()) {
-					opt.setFlags(null, 2);
-				}
-			}
-			Utils.CleanExitApp(this, false/*restart*/&&PDICMainAppOptions.getRestartVMOnExit(), opt.getClearTasksOnExit(), svm);
-		}, restart?R.string.relaunch:R.string.warn_exit0);
+		int title = restart?R.string.relaunch:R.string.warn_exit0;
+		TextView tv = buildStandardConfigDialog(this, false, title, title);
 		restart = false;
-		init_clickspan_with_bits_at(this, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 42, 1, 4, -1, true);//清除历史
-		init_clickspan_with_bits_at(this, tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 40, 1, 4, -1, true);//彻底退出
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 42, 1, 4, -1, true);//清除历史
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 40, 1, 4, R.string.shutdown_vm, true);//彻底退出
 		if(!restart) {
-			init_clickspan_with_bits_at(this, tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 49, 1, 4, -1, true);//clear tasks
+			init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 49, 1, 4, -1, true);//clear tasks
 		} else {
 			PDICMainAppOptions.setRestartVMOnExit(true);
-			init_clickspan_with_bits_at(this, tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 0, 1, 100, -1, true);//restart
+			init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 0, 0x1, 0, 1, 100, -1, true);//restart
 		}
 		
 		ssb.delete(ssb.length()-4,ssb.length());
@@ -5504,29 +5411,29 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		TextView tv = buildStandardConfigDialog(this, true, null, R.string.SoundOpt);
 		Dialog configurableDialog = (Dialog) tv.getTag();
 
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 38, 1, 3, -1, true);//opt.getAutoReadEntry()//
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 12, null, 0, 0, 0x1, 0, 1, 4, 12, false);//暂停
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 38, 1, 3, -1, true);//opt.getAutoReadEntry()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 12, null, 0, 0, 0x1, 0, 1, 4, 12, false);//暂停
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 48, 1, 4, -1, true);//opt.getThenAutoReadContent()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 48, 1, 4, -1, true);//opt.getThenAutoReadContent()//
 		
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 37, 1, 3, -1, true);//opt.getHintTTSReading()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 3, Coef, 0, 0, 0x1, 37, 1, 3, -1, true);//opt.getHintTTSReading()//
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1, 42, 1, 3, -1, true);//opt.getTTSBackgroundPlay()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 4, Coef, 0, 1, 0x1, 42, 1, 3, -1, true);//opt.getTTSBackgroundPlay()//
 
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 5, Coef, 0, 1, 0x1, 35, 1, 3, 12, true);//opt.getClickSearchEnabled()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 5, Coef, 0, 1, 0x1, 35, 1, 3, 12, true);//opt.getClickSearchEnabled()//
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 6, null, 0, 1, 0x1, 0, 1, 3, 15, false);
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, null, 0, 1, 0x1, 0, 1, 3, 15, false);
 
 		boolean flagCase = PeruseViewAttached();
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, flagCase?37:46, 1, flagCase?2:1, -1, true);//opt.getUseVolumeBtn()
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 7, Coef, 0, 0, 0x1, flagCase?37:46, 1, flagCase?2:1, -1, true);//opt.getUseVolumeBtn()
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 8, Coef, 0, 1, 0x1, 39, 1, 3, -1, true);//opt.getMakeWayForVolumeAjustmentsWhenAudioPlayed()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, Coef, 0, 1, 0x1, 39, 1, 3, -1, true);//opt.getMakeWayForVolumeAjustmentsWhenAudioPlayed()//
 
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 9, null, 0, 0, 0x1, 44, 1, 3, 16, false);//滚动条
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, null, 0, 0, 0x1, 44, 1, 3, 16, false);//滚动条
 		ssb.delete(ssb.length()-4, ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 44, 1, 3, 11, true);//opt.getTTSHighlightWebView()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 44, 1, 3, 11, true);//opt.getTTSHighlightWebView()//
 
-		init_clickspan_with_bits_at(this,tv, ssb, DictOpt, 11, null, 0, 0, 0x1, 0, 1, 3, 10, false);//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 11, null, 0, 0, 0x1, 0, 1, 3, 10, false);//
 
 		ssb.delete(ssb.length()-4, ssb.length());
 		
@@ -7625,7 +7532,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (childAt.getTag() instanceof WebViewmy) {
 								mWebView = ((WebViewmy) childAt.getTag());
 								BookPresenter presenter = mWebView.presenter;
-								if(!PDICMainAppOptions.getTmpIsCollapsed(presenter.tmpIsFlag) && presenter.mWebView.awaiting){
+								if(presenter.mWebView.awaiting
+										&& !PDICMainAppOptions.getTmpIsCollapsed(presenter.tmpIsFlag)
+										&& !presenter.getAutoFold()
+								){
 									CMN.Log("/* 延迟加载 */", presenter.getDictionaryName());
 									presenter.toolbar_title.performClick();
 									break;
@@ -8156,9 +8066,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				return null;
 			}
-			if(url.startsWith("http") && url.endsWith(".mp3")) {
-				return null;
+			if(url.startsWith("http")) {
+				if(url.endsWith(".mp3"))
+					return null;
+				if (invoker.getOfflineMode())
+					return emptyResponse;
 			}
+			//CMN.Log("漏网之鱼::", url);
 
 			if(url.startsWith("font://") && fontlibs!=null){
 				url=url.substring(7);
@@ -8353,7 +8267,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				new_photo = key;
 				PhotoPager.removeCallbacks(PhotoRunnable);
 				PhotoPager.post(PhotoRunnable);
-				return super.shouldInterceptRequest(view, url);
+				return null;
 			}
 			try {
 				InputStream restmp=invoker.bookImpl.getResourceByKey(key);
@@ -8378,7 +8292,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						restmp = new ByteArrayInputStream(bos.toByteArray());
 						//return new WebResourceResponse("","UTF-8",inStream);
 					}
-					else return super.shouldInterceptRequest(view, url);
+					else return null;
 				}
 
 				if(mime==null && suffix!=null)
@@ -8677,7 +8591,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 	ssc.parentNode.removeChild(ssc);
 	 }
 	 */
-	@Multiline
+	@Metaline
 	final static String DeDarkModeIncantation = "DARK";
 
 	/**
@@ -8694,7 +8608,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 }
 	 </style>
 	 */
-	@Multiline
+	@Metaline
 	public final static String DarkModeIncantation_l = "DARK";
 
 	/**
@@ -8719,7 +8633,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		 window.document.body.style.background='transparent';
 	 }
 	 */
-	@Multiline
+	@Metaline
 	public final static String DarkModeIncantation ="DARK";
 
 	/**
@@ -8746,7 +8660,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 	return 0;
 	 })
 	 */
-	@Multiline
+	@Metaline
 	final static String playsoundscript="AUDIO";
 
 
@@ -9484,7 +9398,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		 }
 	 }
 	 */
-	@Multiline
+	@Metaline
 	private String WebviewSoundJS=StringUtils.EMPTY;
 
 	private void requestSoundPlayBack(String finalTarget, BookPresenter invoker, WebViewmy wv) {
@@ -10360,6 +10274,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 		setRequestedOrientation(ScreenOrientation[idx]);
 	}
+	
+	public void showBookPreferences(BookPresenter...books) {
+		int jd = WeakReferenceHelper.dict_opt;
+		BookOptionsDialog dialog = (BookOptionsDialog) getReferencedObject(jd);
+		if (dialog==null) {
+			dialog = new BookOptionsDialog();
+			putReferencedObject(jd, dialog);
+		}
+		dialog.bookOptions.setData(books);
+		try {
+			if (!dialog.isAdded()) {
+				dialog.show(getSupportFragmentManager(), "");
+			} else {
+				dialog.getDialog().show();
+			}
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+	}
+	
 	public void showBookSettings() {
 		int jd = WeakReferenceHelper.quick_settings;
 		QuickBookSettingsPanel quickSettings

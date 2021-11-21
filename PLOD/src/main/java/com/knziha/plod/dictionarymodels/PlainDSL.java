@@ -20,7 +20,7 @@ import com.knziha.rbtree.RBTree;
 import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
 
-import org.adrianwalker.multilinestring.Multiline;
+import org.knziha.metaline.Metaline;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -197,7 +197,7 @@ public class PlainDSL extends DictionaryAdapter {
 	 }
 	 </style>
 	 */
-	@Multiline
+	@Metaline
 	final static String stylesheet="stylesheet";
 	
 	@Override

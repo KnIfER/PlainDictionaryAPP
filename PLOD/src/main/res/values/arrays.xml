@@ -63,7 +63,8 @@
 	<string-array name="dicts_option1">
 		<item>在外部管理器打开路径</item>
 		<item>在内置管理器打开路径</item>
-		<item>定制词典</item>
+		<item>定制词典（简易）</item>
+		<item>定制词典（详细）</item>
 	</string-array>
 
 	<string-array name="dicts_option2">
@@ -350,6 +351,7 @@
 		<item>居中</item>
 		<item>靠左</item>
 		<item>靠右</item>
+		<item>智能计算</item>
 	</string-array>
 
 	<string-array name="btm_navmode">

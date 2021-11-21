@@ -3,16 +3,13 @@ package com.knziha.plod.plaindict;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.text.TextUtils;
 
 import androidx.core.text.HtmlCompat;
 
-import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.text.BreakIteratorHelper;
 
-import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.json.JSONException;
 import org.json.JSONObject;
 

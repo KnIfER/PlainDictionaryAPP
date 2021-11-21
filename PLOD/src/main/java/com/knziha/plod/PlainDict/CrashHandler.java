@@ -86,9 +86,9 @@ public class CrashHandler implements UncaughtExceptionHandler {
 					byte[] cert = signatures[0].toByteArray();
 					InputStream input = new ByteArrayInputStream(cert);
 					byte[] publicKey = MessageDigest.getInstance("SHA1").digest(((X509Certificate)CertificateFactory.getInstance("X509").generateCertificate(input)).getEncoded());
-					BU.printBytes(publicKey);
-					CMN.Log(111);
-					CMN.Log(new String(publicKey));
+//					BU.printBytes(publicKey);
+//					CMN.Log(111);
+//					CMN.Log(new String(publicKey)); //todo ???
 				}
 			} catch (Exception e){ CMN.Log(e); }
 		}

@@ -3,6 +3,7 @@ package db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -179,7 +180,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", creation_time INTEGER DEFAULT 0 NOT NULL"+
 					")";
 			db.execSQL(sqlBuilder);
-			//db.execSQL("CREATE INDEX if not exists book_name_index ON book (name)");
+			db.execSQL("CREATE INDEX if not exists book_name_index ON book (name)");
 			
 			
 			// TABLE_FAVORITE_FOLDER_v2 记录收藏夹
@@ -233,7 +234,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			db.execSQL(sqlBuilder);
 			db.execSQL("CREATE INDEX if not exists history_term_index ON history (lex)"); // query view
 			db.execSQL("CREATE INDEX if not exists history_time_index ON history (last_visit_time)"); // main view
-			db.execSQL("CREATE INDEX if not exists history_visit_index ON history (visit_count, last_visit_time) where visit_count>0"); // visit_count view
+			try {
+				db.execSQL("CREATE INDEX if not exists history_visit_index ON history (visit_count, last_visit_time) where visit_count>0"); // visit_count view
+			} catch (SQLException e) {
+				CMN.Log(e);
+			}
 			
 			// TABLE_HISTORY_v2 记录自定义数据
 			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_DATA_v2);
@@ -692,7 +697,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				return out;
 			}
 		} catch (Exception e) {
-			CMN.Log(e);
+			//CMN.Log(e);
 		}
 		return null;
 	}
