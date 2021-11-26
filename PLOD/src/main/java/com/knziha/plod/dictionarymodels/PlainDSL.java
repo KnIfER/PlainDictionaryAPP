@@ -6,11 +6,15 @@ import androidx.appcompat.app.GlobalOptions;
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
+import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.LinkastReUsageHashMap;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
+import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.files.ArrayListTree;
 import com.knziha.plod.plaindict.CMN;
@@ -20,24 +24,39 @@ import com.knziha.rbtree.RBTree;
 import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
 
+import org.joni.Option;
+import org.joni.Regex;
 import org.knziha.metaline.Metaline;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
+import java.util.zip.ZipInputStream;
 
 import static com.knziha.plod.dictionary.mdBase.compareByteArrayIsPara;
 import static com.knziha.plod.dictionary.mdBase.processText;
+import static com.knziha.plod.dictionary.mdict.leafSanLieZhi;
 
 /**
  Model handling local lingvo-dsl files.<br/>
@@ -46,43 +65,88 @@ import static com.knziha.plod.dictionary.mdBase.processText;
  licence:GPL2.0<br/>
 */
 public class PlainDSL extends DictionaryAdapter {
-	final static String UTF16BOM = new String(new byte[]{(byte) 0xff, (byte) 0xfe}, StandardCharsets.UTF_16LE);
+	final static byte[] UTF16BOMBYTES = new byte[]{(byte) 0xff, (byte) 0xfe};
+	final static String UTF16BOM = new String(UTF16BOMBYTES, StandardCharsets.UTF_16LE);
 	final static Pattern entryLinkPattern = Pattern.compile("<<(.*?)>>");
 	final static Pattern dslTagPattern = Pattern.compile("\\[(.{1,50}?)]|(\t)");
 	final static byte[] UTF8LineBreakText = "\n".getBytes(StandardCharsets.UTF_8);
-	private final int lcl;
+	private long firstflag;
 	private boolean bIsUTF16;
 	private long file_length;
 	byte[] lineBreakText;
 	byte[] contentBreakText;
+	byte[] contentBreakText1;
 	byte[][] excludesNextBytes;
 	final static int block_size = 4096;
 	int mBlockSize = block_size;
-	final static int DefaultCacheItemCount = 1024*1024/4096;
+	final static int DefaultCacheItemCount = 1024*1024/block_size;
 	int mCacheItemCount;
-	class TextBlock{
+	private int contentBreakText_length;
+	private int _BOM_SIZE;
+	public final boolean isInArchive;
+	
+	@Metaline(flagPos=0, shift=1) public boolean getIsGzipArchive() {firstflag=firstflag;throw new RuntimeException();}
+	@Metaline(flagPos=0, shift=1) public void setIsGzipArchive(boolean value) {firstflag=firstflag;throw new RuntimeException();}
+	
+	int SafeRead(InputStream input, byte[] data, int offset, int tempRead) throws IOException {
+		int read=0;
+		int len;
+		while((len = input.read(data, offset+read, tempRead-read))>0) {
+			read += len;
+		}
+		return read;
+	}
+	
+	static class TextBlock{
 		int blockIndex;
 		int breakIndex=-1;
 		int blockSize;
-		byte[] data = new byte[mBlockSize];
+		final byte[] data;
+		TextBlock(int blockSize) {
+			data = new byte[blockSize];
+		}
 		@NonNull
 		@Override
 		public String toString() {
-			return "#"+blockIndex+":"+breakIndex+"/"+blockSize+"≈"+new String(data, 0, 100, _charset);
+			return "#"+blockIndex+":"+breakIndex+"/"+blockSize+"≈"+new String(data, 0, 100, StandardCharsets.UTF_16LE);
+		}
+		public void read(InputStream fis) throws IOException {
+			//blockSize = fis.read(data);
+			blockSize=0;
+			int len;
+			while((len = fis.read(data, blockSize, data.length-blockSize))>0) {
+				blockSize += len;
+			}
 		}
 	}
+	
 	LinkastReUsageHashMap<Integer, TextBlock> block_cache;
 	RBTree<Entry> index_tree = new RBTree<>();
 	RBTree_additive appendix = new RBTree_additive();
 	ArrayListTree<Entry> index_array = new ArrayListTree<>();
+	ArrayList<Long> zran_block_index = new ArrayList<>();
 	
 	final File mIndexFolder;
-	final File mIndexFile;
+	/*final*/ File mIndexFile;
 	
 	void dumpEntries() throws IOException {
 		ArrayList<Entry> data = index_array.getList();
 		mIndexFolder.mkdirs();
-		FileOutputStream fout = new FileOutputStream(new File(mIndexFolder, f.getName()));
+		FileOutputStream fout = new FileOutputStream(mIndexFile);
+		// 32 bytes
+		{
+			byte[] buffer = new byte[8];
+			BU.putIntLE(buffer, 0, DSLINDEXVERSION);
+			fout.write(buffer,0,4);
+			BU.putIntLE(buffer, 0, 0);
+			fout.write(buffer,0,4);
+			BU.putLongLE(buffer, 0, file_length);
+			fout.write(buffer);
+			BU.putLongLE(buffer, 0, firstflag);
+			fout.write(buffer);
+			BU.putLongLE(buffer, 0, _num_entries);
+			fout.write(buffer);
+		}
 		int DSLIndexBlockSize = 4096;
 		byte[] buff = new byte[DSLIndexBlockSize];
 		ReusableByteOutputStream bos;
@@ -181,6 +245,7 @@ public class PlainDSL extends DictionaryAdapter {
 			fout.flush();
 			fout.close();
 		}
+		mIndexFile.setLastModified(f.lastModified());
 	}
 
 	/**
@@ -213,27 +278,57 @@ public class PlainDSL extends DictionaryAdapter {
 		getRecordsAt_internal(sb, index_array.itemAt((int) position), 0);
 		return sb.toString();
 	}
-
+	
+	protected InputStream mOpenInputStream() throws IOException {
+		InputStream input = new FileInputStream(f);
+		if (isInArchive) {
+			if(getIsGzipArchive()) {
+				try {
+					return new GZIPInputStream(input);
+				} catch (IOException e) {
+					setIsGzipArchive(false);
+					return mOpenInputStream();
+				}
+			} else {
+				ZipInputStream zipInputStream = new ZipInputStream(input);
+				java.util.zip.ZipEntry entry;
+				while ((entry = zipInputStream.getNextEntry()) != null) {
+					if (!entry.isDirectory() && entry.getName().toLowerCase().endsWith(".dsl")) {
+						return zipInputStream;
+					}
+				}
+			}
+		}
+		return input;
+	}
+	
+	TextBlock tmpLastBlock;
+	
 	private void getRecordsAt_internal(StringBuffer sb, Entry eI, int depth) throws IOException {
 		int centerBlock = (int) (eI.contentStart/mBlockSize);
 		int length = (int) (eI.contentEnd - eI.contentStart);
 		ReusableByteOutputStream bos = new ReusableByteOutputStream(mBlockSize *2);
 		bos.reset();
-		InputStream fin = BU.SafeSkipReam(new FileInputStream(f), centerBlock*mBlockSize);
 		TextBlock tmpBlock;
-		TextBlock tmpLastBlock;
 		int toSkip=0; int cc=0;
 		while(length>0 && centerBlock<_num_record_blocks) {
-			tmpBlock = block_cache.get(centerBlock);
+			tmpBlock = tmpLastBlock!=null&&tmpLastBlock.blockIndex==centerBlock?tmpLastBlock:block_cache.get(centerBlock);
 			if(tmpBlock==null){
-				if(toSkip>0) {
-					BU.SafeSkipReam(fin, toSkip);
-					toSkip=0;
+				IOException exception=null;
+				try(InputStream fin = BU.SafeSkipReam(mOpenInputStream(), centerBlock*mBlockSize)) {
+					if(toSkip>0) {
+						BU.SafeSkipReam(fin, toSkip);
+						toSkip=0;
+					}
+					tmpBlock = new_TextBlock();
+					tmpBlock.blockIndex = centerBlock;
+					//tmpBlock.blockSize = fin.read(tmpBlock.data);
+					tmpBlock.read(fin);
+					block_cache.put(centerBlock, tmpBlock);
+				} catch (IOException e) {
+					exception = e;
 				}
-				tmpBlock = new TextBlock();
-				tmpBlock.blockIndex = centerBlock;
-				tmpBlock.blockSize = fin.read(tmpBlock.data);
-				block_cache.put(centerBlock, tmpBlock);
+				if(exception!=null)throw exception;
 			} else {
 				//CMN.Log("找到DSL缓存区");
 				toSkip+=tmpBlock.blockSize;
@@ -245,10 +340,66 @@ public class PlainDSL extends DictionaryAdapter {
 			length-=len;
 			centerBlock++;
 		}
-		fin.close();
 		String val = new String(bos.getBytes(), 0, bos.size(), _charset);
 		//CMN.Log(" "); CMN.Log(" "); CMN.Log(val);
 		ConvertDslToHtml(sb, eI, val, depth);
+	}
+	
+	private TextBlock new_TextBlock() {
+		return new TextBlock(mBlockSize);
+	}
+	
+	private byte[] getRecordDataForEntry(TextBlock tmpBlock_A, TextBlock tmpBlock_B, Entry eI, ReusableByteOutputStream bos, F1ag recordSt) throws IOException {
+		bos.reset();
+		int centerBlock = (int) (eI.contentStart/mBlockSize);
+		int endBlock = (int) (eI.contentEnd/mBlockSize);
+		int length = (int) (eI.contentEnd - eI.contentStart);
+		if(endBlock==centerBlock) {
+			recordSt.val = (int)(eI.contentStart - centerBlock*mBlockSize);
+			if(tmpBlock_B.blockIndex==centerBlock) {
+				return tmpBlock_B.data;
+			}
+			if(tmpBlock_A.blockIndex==centerBlock) {
+				return tmpBlock_A.data;
+			}
+			recordSt.val = 0;
+		}
+		TextBlock tmpBlock;
+		int toSkip=0;
+		while(length>0 && centerBlock<_num_record_blocks) {
+			//tmpBlock = tmpLastBlock!=null&&tmpLastBlock.blockIndex==centerBlock?tmpLastBlock:block_cache.get(centerBlock);
+			if(tmpBlock_B.blockIndex==centerBlock) tmpBlock=tmpBlock_B;
+			else if(tmpBlock_A.blockIndex==centerBlock) tmpBlock=tmpBlock_A;
+			else tmpBlock=null;
+			if(tmpBlock==null) { // &&false
+				//if(true) return bos.getBytes();
+				// oops
+				IOException exception=null;
+				try(InputStream fin = BU.SafeSkipReam(mOpenInputStream(), centerBlock*mBlockSize)) {
+					if(toSkip>0) {
+						BU.SafeSkipReam(fin, toSkip);
+						toSkip=0;
+					}
+					tmpBlock = new_TextBlock();
+					tmpBlock.blockIndex = centerBlock;
+					//tmpBlock.blockSize = fin.read(tmpBlock.data);
+					tmpBlock.read(fin);
+					//block_cache.put(centerBlock, tmpBlock);
+				} catch (IOException e) {
+					exception = e;
+				}
+				if(exception!=null)throw exception;
+			} else {
+				//CMN.Log("找到DSL缓存区");
+				toSkip+=tmpBlock.blockSize;
+			}
+			int start = (int) Math.max(0, eI.contentStart - (centerBlock * mBlockSize));
+			int len = Math.min(tmpBlock.blockSize - start, length);
+			bos.write(tmpBlock.data, start, len);
+			length-=len;
+			centerBlock++;
+		}
+		return bos.getBytes();
 	}
 
 	public void ConvertDslToHtml(StringBuffer sb, Entry entry, String dsl, int depth) throws IOException {
@@ -447,24 +598,115 @@ public class PlainDSL extends DictionaryAdapter {
 		}
 	}
 	
+	final static int DSLINDEXVERSION = 2;
+	
+	class GZIPHeaderReader{
+		long flag;
+		GZIPHeaderReader(InputStream data_in) throws IOException {
+			this.flag = data_in.read();
+		}
+		@Metaline(flagPos=0) boolean isText(){flag=flag; throw new RuntimeException();}
+		@Metaline(flagPos=1) boolean hasCRC(){flag=flag; throw new RuntimeException();}
+		@Metaline(flagPos=2) boolean hasExtra(){flag=flag; throw new RuntimeException();}
+		@Metaline(flagPos=3) boolean hasName(){flag=flag; throw new RuntimeException();}
+		@Metaline(flagPos=4) boolean hasComment(){flag=flag; throw new RuntimeException();}
+	}
+	
+	int[] blockIndexes;
+	
 	//构造
 	public PlainDSL(File fn, MainActivityUIBase _a) throws IOException {
 		super(fn, _a);
+		isInArchive = _Dictionary_fName.regionMatches(true, _Dictionary_fName.length()-3, ".dz", 0, 3);
 		opt=_a.opt;
 		mType = PLAIN_BOOK_TYPE.PLAIN_TYPE_DSL;
 		
 		_num_record_blocks=-1;
 		
 		mBlockSize = 1*block_size;
-		//readInConfigs(a.UIProjects);
 
 		mCacheItemCount = DefaultCacheItemCount;
 		block_cache = new LinkastReUsageHashMap<>(mCacheItemCount);
+		
+		if(isInArchive) {
+			InputStream data_in =  new BufferedInputStream(new FileInputStream(f));
+			// |ID1|ID2| CM |FLG|     MTIME     |XFL|OS | (more-->)
+			//  1    1   1   1           4        1   1
+			// 0x1F 0x8B
+			BU.SafeSkipReam(data_in, 3);
+			GZIPHeaderReader headerReader = new GZIPHeaderReader(data_in);
+			if (headerReader.hasExtra()) {
+				int blockOffset = 10;
+				BU.SafeSkipReam(data_in, 6);
+				int xlen = BU.readShortLE(data_in);
+				CMN.Log(xlen);
+				//byte[] buffer = new byte[xlen];
+				//data_in.read(buffer);
+				//CMN.Log("extra::", new String(buffer));
+				// |ID1|ID2| LEN |   DATA  |
+				int ID1 = data_in.read(); // ID1
+				int ID2 = data_in.read(); // ID2
+				//CMN.Log(ID1, ID2, (int)'R', (int)'A');
+				int LEN = BU.readShortLE(data_in);
+				int VER = BU.readShortLE(data_in);
+				int blockSize =  BU.readShortLE(data_in);
+				int blockCount = BU.readShortLE(data_in);
+				CMN.Log("blockSize="+blockSize, "blockCount="+blockCount);
+				blockIndexes = new int[blockCount];
+				long total=0;
+				for (int i = 0; i < blockCount; i++) {
+					blockIndexes[i] = BU.readShortLE(data_in);
+					//CMN.Log("block#"+i, blockIndexes[i]);
+					total += blockIndexes[i];
+				}
+				blockOffset += 4 + LEN;
+				CMN.Log("block#", total, total/blockCount, blockCount*2, LEN);
+				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				int value;
+				if (headerReader.hasName()) {
+					bos.reset();
+					while((value=data_in.read())!=0) {
+						bos.write(value);
+						blockOffset++;
+					}
+					CMN.Log("name="+new String(bos.toByteArray()));
+					blockOffset++;
+				}
+				if (headerReader.hasComment()) {
+					bos.reset();
+					while((value=data_in.read())!=0) {
+						bos.write(value);
+						blockOffset++;
+					}
+					CMN.Log("words="+new String(bos.toByteArray()));
+					blockOffset++;
+				}
+				if (headerReader.hasCRC()) {
+					BU.readShortLE(data_in);
+					blockOffset+=2;
+				}
+				RandomAccessFile raf = new RandomAccessFile(f, "r");
+				raf.seek(blockOffset+2);
+				byte[] data = new byte[blockIndexes[0]];
+				raf.read(data);
+				//data_in.read(data);
+//				CMN.Log(new String(BU.zlib_decompress(data,0,data.length), StandardCharsets.UTF_16LE));
+				
+				InflaterInputStream input = new InflaterInputStream(new ByteArrayInputStream(data), new Inflater(true), 8192);
+				byte[] uncompressed = new byte[blockSize];
+				input.read(uncompressed, 0, blockSize);
+				CMN.Log(new String(uncompressed, 0, uncompressed.length, StandardCharsets.UTF_16LE));
+				BU.printFile(uncompressed, "/sdcard/tmpBlck"+0);
+			}
+			
+		}
 
-		FileInputStream fis = new FileInputStream(f);
-		TextBlock tmpBlock=new TextBlock();
-		tmpBlock.blockSize = fis.read(tmpBlock.data);
+		InputStream data_in = mOpenInputStream();
+		TextBlock tmpBlock=new_TextBlock();
+		tmpBlock.blockSize = data_in.read(tmpBlock.data);
+		//tmpBlock.read(fis);
 
+		//CMN.Log("blockSize", tmpBlock.blockSize, new String(tmpBlock.data, 0, 10, StandardCharsets.UTF_16LE));
 		//block_cache.put(0, tmpBlock);
 
 		CharsetDetector detector = new CharsetDetector();
@@ -473,31 +715,56 @@ public class PlainDSL extends DictionaryAdapter {
 		String charset = "utf8";
 		if(match!=null && match.getConfidence()>=75)
 			charset = match.getName();
-		//CMN.Log("检测结果：", charset);
+		CMN.Log("检测结果：", charset, isInArchive);
 		_charset = Charset.forName(charset);
-		if(_charset.equals(StandardCharsets.UTF_16LE) || _charset.equals(StandardCharsets.UTF_16BE))
+		if(_charset.equals(StandardCharsets.UTF_16LE) || _charset.equals(StandardCharsets.UTF_16BE)) {
 			bIsUTF16=true;
+			if(compareByteArrayIsPara(tmpBlock.data, 0, UTF16BOMBYTES)) _BOM_SIZE=2;
+		}
 		else if(!_charset.equals(StandardCharsets.UTF_8))
 			throw new IllegalArgumentException("invalid dsl encoding!");
+		htmlOpenTagStr="[";
+		htmlCloseTagStr="]";
+		postGetCharset();
 		lineBreakText = "\n".getBytes(_charset);
 		contentBreakText = "\t".getBytes(_charset);
-		lcl = lineBreakText.length+contentBreakText.length;
-		excludesNextBytes = new byte[][]{ "#".getBytes(_charset), "\t".getBytes(_charset)};
+		contentBreakText1 = " ".getBytes(_charset);
+		contentBreakText_length = contentBreakText.length;
+		excludesNextBytes = new byte[][]{contentBreakText, contentBreakText1, "#".getBytes(_charset) }; //, "\r".getBytes(_charset)
 		file_length = f.length();
 		_num_record_blocks = (long) Math.ceil(file_length*1.f/ mBlockSize);
 		//if(bgColor==null)
 		//	bgColor=CMN.GlobalPageBackground;
 
-
-		boolean scan = true;
-		CMN.Log("Scan Indexes...");
+		boolean full_scan = true;
 		
 		mIndexFolder = _a.getExternalFilesDir("DSLIndex");
 		mIndexFile = new File(mIndexFolder, f.getName());
-		if( mIndexFile.exists() && mIndexFile.lastModified()>=f.lastModified()){
+		mIndexFile.delete();
+		mIndexFile = new File(mIndexFolder, f.getName()+".idx");
+		CMN.Log("Scan Indexes...", mIndexFile);
+		//if(false)
+		if( mIndexFile.exists() && mIndexFile.lastModified()==f.lastModified()){
 			CMN.rt();
 			try {
 				FileInputStream fin = new FileInputStream(mIndexFile);
+				// 32 bytes
+				{
+					byte[] buffer = new byte[8];
+					SafeRead(fin, buffer, 0, 4);
+					if (DSLINDEXVERSION!=BU.toIntLE(buffer, 0))
+						throw new IllegalStateException();
+					SafeRead(fin, buffer, 0, 4);
+					SafeRead(fin, buffer, 0, 8);
+					if (isInArchive) {
+						file_length = BU.toLongLE(buffer, 0);
+						_num_record_blocks = (long) Math.ceil(file_length*1.f/ mBlockSize);
+					}
+					SafeRead(fin, buffer, 0, 8);
+					firstflag = BU.toLongLE(buffer, 0);
+					SafeRead(fin, buffer, 0, 8);
+					_num_entries = BU.toLongLE(buffer, 0);
+				}
 				int DSLIndexBlockSize = 4096;
 				int sourceCount, idx;
 				int now;
@@ -553,22 +820,28 @@ public class PlainDSL extends DictionaryAdapter {
 				_num_entries = index_array.size();
 				CMN.pt(" 树大小："+_num_entries+"恢复索引耗时：");
 				CMN.Log("recoverEntries", _num_entries);
-				scan=false;
+				full_scan=false;
 			} catch (Exception e) { if(GlobalOptions.debug)CMN.Log(e); }
 		}
 
-		if(scan) {
-			fis = new FileInputStream(f);
+		if(full_scan) {
+			data_in = mOpenInputStream();
 			CMN.rt();
 			ReusableByteOutputStream bos = new ReusableByteOutputStream(512);
 			boolean checkTail=false;
 			//int StartBlock=4198400/block_size-2; fis.skip(StartBlock*block_size);
 			ArrayList<Entry> lastEntry=new ArrayList<>(8);
+			int i = -1;
+			tmpBlock.blockSize=mBlockSize;
+			// split keys
 			ScanBlocks:
 			//for (int i = StartBlock; i < StartBlock+100; i++) {
-			for (int i = 0; i < _num_record_blocks; i++) {
+			//for (; i < _num_record_blocks; i++) {
+			while(tmpBlock.blockSize==mBlockSize) {
+				i++;
 				tmpBlock.blockIndex = i;
-				tmpBlock.blockSize = fis.read(tmpBlock.data);
+				//tmpBlock.blockSize = fis.read(tmpBlock.data);
+				tmpBlock.read(data_in);
 				int entryBreak=0;
 				//CMN.Log("区块", i, checkTail, bos.size(), new String(tmpBlock.data, 0, 500, _charset));
 				if(!checkTail && bos.size()>0){ //entry residue
@@ -578,19 +851,19 @@ public class PlainDSL extends DictionaryAdapter {
 						bSemiContentTurn=true;
 						next=0;
 						bos.recess(lineBreakText.length);
-					}else{
+					} else {
 						next = findNextContentBreakIndex(tmpBlock, 0);
 					}
 					if(next>=0){
 						if(bSemiContentTurn) {
-							next += contentBreakText.length;
+							next += contentBreakText_length;
 						} else {
 							bos.write(tmpBlock.data, 0, next);
-							next += lcl;
+							next += lcl();
 						}
 						entryBreak = next;
 						//CMN.Log("residue!!!", new String(bos.getBytes(), 0, bos.size(), _charset));
-						addEntry(bos.getBytes(), 0, bos.size(), i*mBlockSize+entryBreak-contentBreakText.length, lastEntry);
+						addEntry(bos.getBytes(), 0, bos.size(), i*mBlockSize+entryBreak-contentBreakText_length, lastEntry);
 						//fout.write(bos.getBytes(), 0, bos.size());
 						//fout.write(lineBreakText);
 					}
@@ -606,8 +879,8 @@ public class PlainDSL extends DictionaryAdapter {
 						//fout.write(tmpBlock.data, entryBreak, next-entryBreak);
 						//fout.write(lineBreakText);
 						addEntry(tmpBlock.data, entryBreak, next-entryBreak, i*mBlockSize+next+lineBreakText.length, lastEntry);
-						entryBreak=next+lcl;
-					} else{ /* but without any result */
+						entryBreak=next+lcl();
+					} else { /* but without any result */
 						//CMN.Log("FNCBI without any result, \n* opened but not closed!", entryBreak);
 						checkTail=false;
 						bos.reset();
@@ -621,6 +894,10 @@ public class PlainDSL extends DictionaryAdapter {
 					bos.write(tmpBlock.data, tmpBlock.blockSize - lineBreakText.length, lineBreakText.length);
 				}
 			}
+			if (isInArchive) {
+				file_length = tmpBlock.blockIndex*(long)mBlockSize+tmpBlock.blockSize;
+				_num_record_blocks = (long) Math.ceil(file_length*1.f/ mBlockSize);
+			}
 			index_array = new ArrayListTree<>(index_tree.flatten());
 			_num_entries = index_array.size();
 			CMN.pt(" 树大小："+_num_entries+" 扫描文件耗时：");
@@ -628,9 +905,13 @@ public class PlainDSL extends DictionaryAdapter {
 			if(lastEntry.size()>0)
 				for (Entry eI:lastEntry)
 					eI.contentEnd = f.length();
-			CMN.rt();
-			dumpEntries();
-			CMN.pt("写入词条耗时：");
+			try {
+				CMN.rt();
+				dumpEntries();
+				CMN.pt("写入词条耗时：");
+			} catch (Exception e) {
+				mIndexFile.delete();
+			}
 		}
 	}
 
@@ -644,12 +925,87 @@ public class PlainDSL extends DictionaryAdapter {
 				((readBuffer[start+6] & 255) <<  8) +
 				((readBuffer[start+7] & 255) <<  0));
 	}
-
+	
+	
+	protected void findInAllContentsForEntry(TextBlock tmpBlock_A, TextBlock tmpBlock_B, ArrayList<SearchResultBean> searchReceiver, byte[] data, int offset, int size, int contentStart, ArrayList<Entry> lastSibling, byte[][][][][] finalMatcher, Regex finalJoniregex, mdict.AbsAdvancedSearchLogicLayer searchLauncher, Flag flag, ReusableByteOutputStream rec_bos) throws IOException, InterruptedException {
+		String text = new String(data, offset, size, _charset).trim();
+		if(text.indexOf("\\(")>=-1){
+			text = text.replace("\\(", "(").replace("\\)", ")");
+		}
+		text = text.replace("{·}", "");
+		if(index_tree.getRoot()==null && bIsUTF16)
+			text = text.replace(UTF16BOM, "");
+		String[] arr = text.split("\n");
+		Entry newEntry = new Entry();
+		newEntry.text = arr[0];
+		//String[] arr1 = text.split(VerbatimSearchTask.RegExp_VerbatimDelimiter);
+		newEntry.contentStart=contentStart;
+		newEntry.entryStart = contentStart-size;
+		if(lastSibling!=null) {
+			for (Entry eI:lastSibling) {
+				eI.contentEnd = newEntry.entryStart - lineBreakText.length;
+				//SU.Log(tmpBlock_B.blockIndex, tmpBlock_A.blockIndex, "mBlockSize="+mBlockSize
+				//		, eI.text+"@"+eI.contentStart, (int) (eI.contentStart/mBlockSize)
+				//		, newEntry.text+"@"+newEntry.contentStart, (int) (newEntry.contentStart/mBlockSize));
+				F1ag recordSt=new F1ag();
+				byte[] record_block_ = getRecordDataForEntry(tmpBlock_A, tmpBlock_B, eI, rec_bos, recordSt);
+				int recordLen = (int) (eI.contentEnd-eI.contentStart);
+				recordLen = Math.min(recordLen, record_block_.length-recordSt.val);
+				// 内容块读取完毕，接下来进行搜索。
+				org.joni.Matcher Jonimatcher = null;
+				if(finalJoniregex !=null)
+					Jonimatcher = finalJoniregex.matcher(record_block_);
+				
+				int try_idx;
+				if(Jonimatcher==null){
+					try_idx=-1;
+					ArrayList<ArrayList<Object>> mpk;
+					ArrayList<Object> mParallelKeys;
+					for (int j = 0; j < finalMatcher.length; j++) { // and group
+						mpk = searchLauncher.mParallelKeys.get(j);
+						for (int k = 0; k < finalMatcher[j].length; k++) { // or group
+							mParallelKeys = mpk.get(k);
+							int len = finalMatcher[j][k].length;
+							int[] jumpMap = (int[]) mParallelKeys.get(len);
+							try_idx=flowerIndexOf(record_block_,recordSt.val,recordLen, finalMatcher[j][k],0,0, searchLauncher, flag, mParallelKeys, jumpMap);
+							//SU.Log("and_group>>"+j, "or_group#"+k, try_idx, nna);
+							if(try_idx<0 ^ (jumpMap[len]&4)==0) break;
+						}
+						if(try_idx<0){
+							break;
+						}
+					}
+				} else {
+					try_idx=Jonimatcher.searchInterruptible(recordSt.val, recordLen, Option.DEFAULT);
+				}
+				if(try_idx!=-1) {
+					if(eI.text.equals("infer")) {
+						SU.Log("找到了：", eI.text, eI.contentEnd-eI.contentStart, rec_bos.getBytes().length, try_idx, new String(record_block_, recordSt.val+try_idx, 10, _charset));
+						SU.Log("找到了：", try_idx, eI.contentStart, eI.contentEnd-eI.contentStart);
+						SU.Log("找到了：", new String(record_block_, recordSt.val, (int)(eI.contentEnd-eI.contentStart), _charset));
+						SU.Log("找到了：", new String(record_block_, recordSt.val+try_idx, 1000, _charset));
+						SU.Log("找到了：", new String(record_block_, recordSt.val+try_idx-200, 200, _charset));
+						
+					}
+					SU.Log("找到了：", eI.text);
+					searchLauncher.dirtyResultCounter++;
+					searchReceiver.add(new SearchResultBean(lookUp(eI.text, true)));
+				}
+				break;
+			}
+			searchLauncher.dirtyProgressCounter++;
+			lastSibling.clear();
+			lastSibling.add(newEntry);
+		}
+	}
+	
+	
 	private void addEntry(byte[] data, int offset, int size, int contentStart, ArrayList<Entry> lastSibling) {
 		String text = new String(data, offset, size, _charset).trim();
 		if(text.indexOf("\\(")>=-1){
 			text = text.replace("\\(", "(").replace("\\)", ")");
 		}
+		text = text.replace("{·}", "");
 		if(index_tree.getRoot()==null && bIsUTF16)
 			text = text.replace(UTF16BOM, "");
 		String[] arr = text.split("\n");
@@ -692,9 +1048,11 @@ public class PlainDSL extends DictionaryAdapter {
 			}
 		}
 	}
-
+	
+	/** Find line beak followed by a new entry. */
 	private int findNextEntryBreakIndex(ReusableByteOutputStream lastTmpBlock, TextBlock tmpBlock, int nowIndex) {
-		if(nowIndex==0 && (tmpBlock.blockIndex==0&&startWithEntry(tmpBlock, nowIndex+(bIsUTF16?2:0)) || lastTmpBlock!=null && endWithLineBreak(lastTmpBlock) && startWithEntry(tmpBlock, nowIndex))){
+		if(nowIndex==0 && (tmpBlock.blockIndex==0&&startWithEntry(tmpBlock, nowIndex+_BOM_SIZE)
+				|| lastTmpBlock!=null && endWithLineBreak(lastTmpBlock) && startWithEntry(tmpBlock, nowIndex))){
 			//CMN.Log("接天莲叶无穷碧", lastTmpBlock==null);
 			return 0;
 		}
@@ -708,6 +1066,7 @@ public class PlainDSL extends DictionaryAdapter {
 		return -1;
 	}
 
+	/** Find line beak followed by contents. return the start of contents. */
 	private int findNextContentBreakIndex(TextBlock tmpBlock,int nowIndex) {
 		while((nowIndex=mdict.indexOf(tmpBlock.data, 0, tmpBlock.blockSize, lineBreakText, 0, lineBreakText.length, nowIndex))>=0){
 			if(!bIsUTF16 || nowIndex%2==0){
@@ -739,10 +1098,19 @@ public class PlainDSL extends DictionaryAdapter {
 		return true;
 	}
 
+	int lcl() {
+		return lineBreakText.length + contentBreakText_length;
+	}
 
 	private boolean startWithContent(TextBlock tmpBlock, int nowIndex) {
-		if(compareByteArrayIsPara(tmpBlock.data, nowIndex, tmpBlock.blockSize, contentBreakText))
+		if(compareByteArrayIsPara(tmpBlock.data, nowIndex, tmpBlock.blockSize, contentBreakText)) {
+			contentBreakText_length = contentBreakText.length;
 			return true;
+		}
+		if(compareByteArrayIsPara(tmpBlock.data, nowIndex, tmpBlock.blockSize, contentBreakText1)) {
+			contentBreakText_length = contentBreakText1.length;
+			return true;
+		}
 		return false;
 	}
 
@@ -781,13 +1149,13 @@ public class PlainDSL extends DictionaryAdapter {
 	}
 
 	@Override
-	public int lookUp(String keyword, boolean isSrict) {
+	public int lookUp(String keyword, boolean isStrict) {
 		ArrayList<Entry> data = index_array.getList();
 		if(data.size()==0) return -1;
 
 		int idx = reduce(data, keyword,0,data.size());
 
-		if(idx<0 || !isSrict) return idx;
+		if(idx<0 || !isStrict) return idx;
 
 		String looseMatch = processText(getEntryAt(idx));
 		boolean bIsEqual = looseMatch.equals(processText(keyword));
@@ -796,8 +1164,35 @@ public class PlainDSL extends DictionaryAdapter {
 		}
 		return idx;
 	}
-
-	public int reduce(ArrayList<Entry> data, String val,int start,int end) {//via mdict-js
+	
+	@Override
+	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta) {
+		int idx = lookUp(keyword, true);
+		int cc=0;
+		if (idx>=0) {
+			cc=1;
+			String entry = getEntryAt(idx);
+			if(treeBuilder !=null)
+				treeBuilder.insert(entry, SelfAtIdx, (long)idx);
+			else
+				rangReceiver.add(new myCpr<>(entry, (long) idx));
+			keyword = processText(keyword);
+			for (int i = 1; i < theta; i++)
+			{
+				entry = getEntryAt(idx+i);
+				if (processText(entry).startsWith(keyword))
+				{
+					if(treeBuilder !=null)
+						treeBuilder.insert(entry, SelfAtIdx, (long) (idx+i));
+					else
+						rangReceiver.add(new myCpr<>(entry, (long) (idx + i)));
+				}
+			}
+		}
+		return cc;
+	}
+	
+	public int reduce(ArrayList<Entry> data, String val, int start, int end) {//via mdict-js
 		int len = end-start;
 		if (len > 1) {
 			len = len >> 1;
@@ -830,167 +1225,327 @@ public class PlainDSL extends DictionaryAdapter {
 //	}
 	
 	
-	@Override
+	public void flowerFindAllContentsXXX(String key, int selfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
+		//SU.Log("Find In All Contents Stated");
+		byte[][][][][] matcher=null;
+		Regex Joniregex = null;
+		if(SearchLauncher.getSearchEngineType()==1){
+			if(encoding==null) mdict.bakeJoniEncoding(_charset);
+			if(encoding!=null) {
+				//if (getRegexAutoAddHead() && !key.startsWith(".*"))
+				//	key = ".*" + key;
+				byte[] pattern = key.getBytes(_charset);
+				Joniregex = new Regex(pattern, 0, pattern.length, getRegexOption(), encoding);
+			}
+		}
+		if(Joniregex==null) {
+			matcher =  leafSanLieZhi(SearchLauncher, _charset);
+		}
+		
+		split_recs_thread_number = _num_entries<6?1:(int) (_num_entries/6);//Runtime.getRuntime().availableProcessors()/2*2+10;
+		split_recs_thread_number = split_recs_thread_number>16?6:split_recs_thread_number;
+		final int thread_number = Math.min(Runtime.getRuntime().availableProcessors()/2*2+2, split_recs_thread_number);
+		SU.Log("split_recs_thread_number", split_recs_thread_number);
+		SU.Log("thread_number", thread_number);
+		split_recs_thread_number = 1;
+		
+		final int step = (int) (_num_entries/split_recs_thread_number);
+		final int yuShu=(int) (_num_entries%split_recs_thread_number);
+		
+		ArrayList<SearchResultBean>[] _combining_search_tree=SearchLauncher.getTreeBuilding(selfAtIdx, split_recs_thread_number);
+		
+		ConcurrentHashMap<Integer, TextBlock> cache_tmp = new ConcurrentHashMap<>(block_cache);
+		SearchLauncher.poolEUSize.set(SearchLauncher.dirtyProgressCounter=0);
+		block_cache.syncAccommodationSize();
+		//ArrayList<Thread> fixedThreadPool = new ArrayList<>(thread_number);
+		ExecutorService fixedThreadPool = OpenThreadPool(thread_number);
+		for(int ti=0; ti<split_recs_thread_number; ti++){//分  thread_number 股线程运行
+			//SU.Log("执行", ti , split_recs_thread_number);
+			if(SearchLauncher.IsInterrupted || searchCancled) break;
+			final int it = ti;
+			if(split_recs_thread_number>thread_number) while (SearchLauncher.poolEUSize.get()>=thread_number) {
+				try {
+					Thread.sleep(2);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			if(_combining_search_tree[it]==null)
+				_combining_search_tree[it] = new ArrayList<>();
+			
+			if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(1);
+			
+			Regex finalJoniregex = Joniregex;
+			byte[][][][][] finalMatcher = matcher;
+			fixedThreadPool.execute(
+					new Runnable(){@Override public void run()
+					{
+						if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
+						final ReusableByteOutputStream bos = new ReusableByteOutputStream(mBlockSize *2);//!!!避免反复申请内存
+						Flag flag = new Flag();
+						long toSkip=it*step*mBlockSize;
+						try // 避免重复打开文件
+						{
+							// centerBlock*mBlockSize
+							int jiaX=0;
+							if(it==split_recs_thread_number-1) jiaX=yuShu;
+							TextBlock tmpBlock=null;
+							for(int i=it*step; i<it*step+step+jiaX; i++)//_num_entries
+							{
+								if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
+								bos.reset();
+								
+								if(i>=_num_entries) return;
+								
+								Entry eI = index_array.itemAt(i);
+								int centerBlock = (int) (eI.contentStart/mBlockSize);
+								int length = (int) (eI.contentEnd - eI.contentStart);
+								// 从 block 中取出 data 记录，并搜索。
+								{
+									toSkip=0;
+									TextBlock cachedBlock;
+									// 取出。
+									while(length>0 && centerBlock<_num_record_blocks) {
+										cachedBlock = null;//cache_tmp.get(centerBlock);
+										if(cachedBlock==null){
+											InputStream fin = BU.SafeSkipReam(mOpenInputStream(), centerBlock*mBlockSize);
+											if(tmpBlock==null) tmpBlock = new_TextBlock();
+											tmpBlock.blockIndex = centerBlock;
+											tmpBlock.read(fin);
+											cachedBlock=tmpBlock;
+											int space = block_cache.accommodation.addAndGet(-1);
+											if(space>0){ //可加入缓存队列
+												tmpBlock = null;
+												cache_tmp.put(centerBlock, cachedBlock);
+											}
+											fin.close();
+										}
+										else {
+											//CMN.Log("找到DSL缓存区", block_cache.size());
+											toSkip+=mBlockSize;
+										}
+										int start = (int) Math.max(0, eI.contentStart - (cachedBlock.blockIndex * mBlockSize));
+										int len = Math.min(cachedBlock.blockSize - start, length);
+										bos.write(cachedBlock.data, start, len);
+										length-=len;
+										centerBlock++;
+									}
+									byte[] record_block_ = bos.getBytes();
+									int recordodKeyLen = bos.size();
+									// 内容块读取完毕，接下来进行搜索。
+									org.joni.Matcher Jonimatcher = null;
+									if(finalJoniregex !=null)
+										Jonimatcher = finalJoniregex.matcher(record_block_);
+									if(SearchLauncher.IsInterrupted  || searchCancled ) break;
+									
+									int try_idx;
+									if(Jonimatcher==null){
+										try_idx=-1;
+										ArrayList<ArrayList<Object>> mpk;
+										ArrayList<Object> mParallelKeys;
+										for (int j = 0; j < finalMatcher.length; j++) { // and group
+											mpk = SearchLauncher.mParallelKeys.get(j);
+											for (int k = 0; k < finalMatcher[j].length; k++) { // or group
+												mParallelKeys = mpk.get(k);
+												int len = finalMatcher[j][k].length;
+												int[] jumpMap = (int[]) mParallelKeys.get(len);
+												try_idx=flowerIndexOf(record_block_,0,recordodKeyLen, finalMatcher[j][k],0,0, SearchLauncher, flag, mParallelKeys, jumpMap);
+												//SU.Log("and_group>>"+j, "or_group#"+k, try_idx, nna);
+												if(try_idx<0 ^ (jumpMap[len]&4)==0) break;
+											}
+											if(try_idx<0){
+												break;
+											}
+										}
+									} else {
+										try_idx=Jonimatcher.searchInterruptible(0, recordodKeyLen, Option.DEFAULT);
+									}
+									//SU.Log(try_idx, record_block_.length, recordodKeyLen);
+									if(try_idx!=-1) {
+										SearchLauncher.dirtyResultCounter++;
+										_combining_search_tree[it].add(new SearchResultBean(i));
+										//SU.Log("找到了：", getEntryAt(i));
+									}
+								}/* catch (Exception e) {
+									if(GlobalOptions.debug)CMN.Log(e);
+								}*/
+								SearchLauncher.dirtyProgressCounter++;
+							}
+						} catch (Exception e) {
+							CMN.Log(e);
+						}
+						SearchLauncher.thread_number_count--;
+						if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(-1);
+					}}
+			);
+		}
+		SearchLauncher.currentThreads=fixedThreadPool;
+		fixedThreadPool.shutdown();
+		try {
+			fixedThreadPool.awaitTermination(5, TimeUnit.MINUTES);
+		} catch (Exception e1) {
+			SU.Log("Find In Full Text Interrupted!!!");
+		} finally {
+			int size = block_cache.size();
+			block_cache.putAll(cache_tmp);
+			//a.root.postDelayed(() -> a.showT(CMN.Log("添加后", block_cache.size(),block_cache.size()-size)), 500);
+		}
+	}
+	
+	
 	public void flowerFindAllContents(String key, int selfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
-	////	super.flowerFindAllContents(key, selfAtIdx, SearchLauncher);
-	////}
-	////
-	////@Override
-	////public void flowerFindAllContents(String key, int selfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
-//		//SU.Log("Find In All Contents Stated");
-//		byte[][][] matcher=null;
-//		Regex Joniregex = null;
-//		if(getUseJoniRegex(1)){
-//			if(encoding==null) bakeJoniEncoding();
-//			if(encoding!=null) {
-//				//if (getRegexAutoAddHead() && !key.startsWith(".*"))
-//				//	key = ".*" + key;
-//				byte[] pattern = key.getBytes(_charset);
-//				Joniregex = new Regex(pattern, 0, pattern.length, getRegexOption(), encoding);
-//			}
-//		}
-//		if(Joniregex==null) matcher =  leafSanLieZhi(SearchLauncher);
-//
-//		split_recs_thread_number = _num_entries<6?1:(int) (_num_entries/6);//Runtime.getRuntime().availableProcessors()/2*2+10;
-//		split_recs_thread_number = split_recs_thread_number>16?6:split_recs_thread_number;
-//		final int thread_number = Math.min(Runtime.getRuntime().availableProcessors()/2*2+2, split_recs_thread_number);
-//		//SU.Log("fatal_","split_recs_thread_number", split_recs_thread_number);
-//		//SU.Log("fatal_","thread_number", thread_number);
-//
-//		final int step = (int) (_num_entries/split_recs_thread_number);
-//		final int yuShu=(int) (_num_entries%split_recs_thread_number);
-//
-//		ArrayList<Integer>[] _combining_search_tree=SearchLauncher.getCombinedTree(selfAtIdx);
-//		boolean hold=false;
-//		if(SearchLauncher.combining_search_tree==null){
-//			hold=true; _combining_search_tree=combining_search_tree_4;
-//		}
-//		if(_combining_search_tree==null || _combining_search_tree.length!=split_recs_thread_number){
-//			_combining_search_tree = new ArrayList[split_recs_thread_number];
-//			if(hold)
-//				combining_search_tree_4=_combining_search_tree;
-//			else
-//				SearchLauncher.setCombinedTree(selfAtIdx, _combining_search_tree);
-//		}
-//
-//		ConcurrentHashMap<Integer, TextBlock> cache_tmp = new ConcurrentHashMap<>(block_cache);
-//		SearchLauncher.poolEUSize.set(SearchLauncher.dirtyProgressCounter=0);
-//		block_cache.syncAccommodationSize();
-//		//ArrayList<Thread> fixedThreadPool = new ArrayList<>(thread_number);
-//		ExecutorService fixedThreadPool = OpenThreadPool(thread_number);
-//		for(int ti=0; ti<split_recs_thread_number; ti++){//分  thread_number 股线程运行
-//			//SU.Log("执行", ti , split_recs_thread_number);
-//			if(SearchLauncher.IsInterrupted || searchCancled) break;
-//			final int it = ti;
-//			if(split_recs_thread_number>thread_number) while (SearchLauncher.poolEUSize.get()>=thread_number) {
-//				try {
-//					Thread.sleep(2);
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//
-//			if(combining_search_tree_4[it]==null)
-//				combining_search_tree_4[it] = new ArrayList<>();
-//
-//			if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(1);
-//
-//			Regex finalJoniregex = Joniregex;
-//			byte[][][] finalMatcher = matcher;
-//			fixedThreadPool.execute(
-//					new Runnable(){@Override public void run()
-//					{
-//						if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
-//						final ReusableByteOutputStream bos = new ReusableByteOutputStream(mBlockSize *2);//!!!避免反复申请内存
-//						try
-//						{
-//							Flag flag = new Flag();
-//							long toSkip=it*step* mBlockSize;
-//							InputStream data_in = BU.SafeSkipReam(new FileInputStream(f), toSkip);
-//							int jiaX=0;
-//							if(it==split_recs_thread_number-1) jiaX=yuShu;
-//							TextBlock tmpBlock=null;
-//							for(int i=it*step; i<it*step+step+jiaX; i++)//_num_entries
-//							{
-//								if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
-//								bos.reset();
-//
-//								if(i>=_num_entries) return;
-//
-//								Entry eI = index_array.itemAt(i);
-//								int centerBlock = (int) (eI.contentStart/mBlockSize);
-//								int length = (int) (eI.contentEnd - eI.contentStart);
-//								InputStream fin = BU.SafeSkipReam(new FileInputStream(f), centerBlock*mBlockSize);
-//								toSkip=0;
-//								TextBlock cachedBlock;
-//								while(length>0 && centerBlock<_num_record_blocks) {
-//									cachedBlock = cache_tmp.get(centerBlock);
-//									if(cachedBlock==null){
-//										if(toSkip>0) {
-//											BU.SafeSkipReam(fin, toSkip);
-//											toSkip=0;
-//										}
-//										if(tmpBlock==null) tmpBlock = new TextBlock();
-//										tmpBlock.blockIndex = centerBlock;
-//										tmpBlock.blockSize = fin.read(tmpBlock.data);
-//										cachedBlock=tmpBlock;
-//										int space = block_cache.accommodation.addAndGet(-1);
-//										if(space>0){ //可加入缓存队列
-//											tmpBlock = null;
-//											cache_tmp.put(centerBlock, cachedBlock);
-//										}
-//									} else {
-//										//CMN.Log("找到DSL缓存区", block_cache.size());
-//										toSkip+=mBlockSize;
-//									}
-//									int start = (int) Math.max(0, eI.contentStart - (cachedBlock.blockIndex * mBlockSize));
-//									int len = Math.min(cachedBlock.blockSize - start, length);
-//									bos.write(cachedBlock.data, start, len);
-//									length-=len;
-//									centerBlock++;
-//								}
-//
-//								byte[] record_block_ = bos.getBytes();
-//								int recordodKeyLen = bos.size();
-//								//内容块读取完毕
-//
-//								org.joni.Matcher Jonimatcher = null;
-//								if(finalJoniregex !=null)
-//									Jonimatcher = finalJoniregex.matcher(record_block_);
-//								if(SearchLauncher.IsInterrupted  || searchCancled ) break;
-//
-//								int try_idx=Jonimatcher==null?
-//										flowerIndexOf(record_block_,0,recordodKeyLen, finalMatcher,0,0, SearchLauncher, flag)
-//										:Jonimatcher.searchInterruptible(0, recordodKeyLen, Option.DEFAULT)
-//										;
-//								//SU.Log(try_idx, record_block_.length, recordodKeyLen);
-//								if(try_idx!=-1) {
-//									SearchLauncher.dirtyResultCounter++;
-//									combining_search_tree_4[it].add(i);
-//								}
-//								SearchLauncher.dirtyProgressCounter++;
-//							}
-//							data_in.close();
-//
-//						} catch (Exception e) {
-//							CMN.Log(e);
-//						}
-//						SearchLauncher.thread_number_count--;
-//						if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(-1);
-//					}}
-//			);
-//		}
-//		SearchLauncher.currentThreads=fixedThreadPool;
-//		fixedThreadPool.shutdown();
-//		try {
-//			fixedThreadPool.awaitTermination(5, TimeUnit.MINUTES);
-//		} catch (Exception e1) {
-//			SU.Log("Find In Full Text Interrupted!!!");
-//		} finally {
-//			int size = block_cache.size();
-//			block_cache.putAll(cache_tmp);
-//			//a.root.postDelayed(() -> a.showT(CMN.Log("添加后", block_cache.size(),block_cache.size()-size)), 500);
-//		}
+		//SU.Log("Find In All Contents Stated");
+		byte[][][][][] matcher=null;
+		Regex Joniregex = null;
+		if(SearchLauncher.getSearchEngineType()==1){
+			if(encoding==null) mdict.bakeJoniEncoding(_charset);
+			if(encoding!=null) {
+				//if (getRegexAutoAddHead() && !key.startsWith(".*"))
+				//	key = ".*" + key;
+				byte[] pattern = key.getBytes(_charset);
+				Joniregex = new Regex(pattern, 0, pattern.length, getRegexOption(), encoding);
+			}
+		}
+		if(Joniregex==null) {
+			matcher =  leafSanLieZhi(SearchLauncher, _charset);
+		}
+
+		split_recs_thread_number = _num_entries<6?1:(int) (_num_entries/6);//Runtime.getRuntime().availableProcessors()/2*2+10;
+		split_recs_thread_number = split_recs_thread_number>16?6:split_recs_thread_number;
+		final int thread_number = Math.min(Runtime.getRuntime().availableProcessors()/2*2+2, split_recs_thread_number);
+		SU.Log("split_recs_thread_number", split_recs_thread_number);
+		SU.Log("thread_number", thread_number);
+		
+		split_recs_thread_number = 1;
+
+		final int step = (int) (_num_record_blocks/split_recs_thread_number);
+		final int yuShu=(int) (_num_record_blocks%split_recs_thread_number);
+		
+		ArrayList<SearchResultBean>[] _combining_search_tree=SearchLauncher.getTreeBuilding(selfAtIdx, split_recs_thread_number);
+
+		ConcurrentHashMap<Integer, TextBlock> cache_tmp = new ConcurrentHashMap<>(block_cache);
+		SearchLauncher.poolEUSize.set(SearchLauncher.dirtyProgressCounter=0);
+		block_cache.syncAccommodationSize();
+		//ArrayList<Thread> fixedThreadPool = new ArrayList<>(thread_number);
+		ExecutorService fixedThreadPool = OpenThreadPool(thread_number);
+		for(int ti=0; ti<split_recs_thread_number; ti++){//分  thread_number 股线程运行
+			//SU.Log("执行", ti , split_recs_thread_number);
+			if(SearchLauncher.IsInterrupted || searchCancled) break;
+			final int it = ti;
+			if(split_recs_thread_number>thread_number) while (SearchLauncher.poolEUSize.get()>=thread_number) {
+				try {
+					Thread.sleep(2);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+
+			if(_combining_search_tree[it]==null)
+				_combining_search_tree[it] = new ArrayList<>();
+
+			if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(1);
+
+			Regex finalJoniregex = Joniregex;
+			byte[][][][][] finalMatcher = matcher;
+			fixedThreadPool.execute(
+					new Runnable(){@Override public void run()
+					{
+						if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
+						final ReusableByteOutputStream bos = new ReusableByteOutputStream(mBlockSize *2);//!!!避免反复申请内存
+						final ReusableByteOutputStream rec_bos = new ReusableByteOutputStream(mBlockSize *2);//!!!避免反复申请内存
+						Flag flag = new Flag();
+						long toSkip=it*step*mBlockSize;
+						try(InputStream data_in = BU.SafeSkipReam(mOpenInputStream(), toSkip)) // 避免重复打开文件
+						{
+							CMN.rt();
+							boolean checkTail=false;
+							//int StartBlock=4198400/block_size-2; fis.skip(StartBlock*block_size);
+							ArrayList<Entry> lastEntry=new ArrayList<>(8);
+							int jiaX=0;
+							if(it==split_recs_thread_number-1) jiaX=yuShu;
+							TextBlock tmpBlock_A=new_TextBlock();
+							TextBlock tmpBlock_B=new_TextBlock();
+							TextBlock tmpBlock_tmp;
+							tmpBlock_A.blockIndex = -1;
+							// split keys
+							ScanBlocks:
+							for(int i=it*step; i<it*step+step+jiaX; i+=1)//_num_entries
+							{
+								if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
+								tmpBlock_tmp = tmpBlock_B;
+								tmpBlock_B = tmpBlock_A;
+								tmpBlock_A = tmpBlock_tmp;
+								
+								tmpBlock_A.blockIndex = i;
+								tmpBlock_A.read(data_in);
+								
+								int entryBreak=0;
+								//CMN.Log("区块", i+"/"+_num_record_blocks, checkTail, bos.size(), new String(tmpBlock_A.data, 0, 20, _charset));
+								if(!checkTail && bos.size()>0){ //entry residue
+									int next;
+									boolean bSemiContentTurn = false;
+									if(endWithLineBreak(bos) && startWithContent(tmpBlock_A, 0)){
+										bSemiContentTurn=true;
+										next=0;
+										bos.recess(lineBreakText.length);
+									} else {
+										next = findNextContentBreakIndex(tmpBlock_A, 0);
+									}
+									if(next>=0){
+										if(bSemiContentTurn) {
+											next += contentBreakText_length;
+										} else {
+											bos.write(tmpBlock_A.data, 0, next);
+											next += lcl();
+										}
+										entryBreak = next;
+										findInAllContentsForEntry(tmpBlock_A, tmpBlock_B, _combining_search_tree[it], bos.getBytes(), 0, bos.size(), i*mBlockSize+entryBreak-contentBreakText_length, lastEntry, finalMatcher, finalJoniregex, SearchLauncher, flag, rec_bos);
+									}
+								}
+								/* expecting one next \n\t break that brings in the contents. */
+								while((entryBreak = findNextEntryBreakIndex(checkTail?bos:null, tmpBlock_A, entryBreak))>=0){
+									if(SearchLauncher.IsInterrupted  || searchCancled ) break;
+									if(entryBreak>0 || startWithBreak(tmpBlock_A))
+										entryBreak+=lineBreakText.length;
+									int next = findNextContentBreakIndex(tmpBlock_A, entryBreak);
+									//CMN.Log("entryBreak", entryBreak, next);
+									if(next>0) {
+										findInAllContentsForEntry(tmpBlock_A, tmpBlock_B, _combining_search_tree[it], tmpBlock_A.data, entryBreak, next-entryBreak, i*mBlockSize+next+lineBreakText.length, lastEntry, finalMatcher, finalJoniregex, SearchLauncher, flag, rec_bos);
+										entryBreak=next+lcl();
+									} else{ /* but without any result */
+										//CMN.Log("FNCBI without any result, \n* opened but not closed!", entryBreak);
+										checkTail=false;
+										bos.reset();
+										bos.write(tmpBlock_A.data, entryBreak, tmpBlock_A.blockSize-entryBreak);
+										continue ScanBlocks;
+									}
+								}
+								bos.reset();
+								if(tmpBlock_A.blockSize>lineBreakText.length) {
+									checkTail = true;
+									bos.write(tmpBlock_A.data, tmpBlock_A.blockSize - lineBreakText.length, lineBreakText.length);
+								}
+							}
+						} catch (Exception e) {
+							CMN.Log(e);
+						}
+						SearchLauncher.thread_number_count--;
+						if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(-1);
+					}}
+			);
+		}
+		SearchLauncher.currentThreads=fixedThreadPool;
+		fixedThreadPool.shutdown();
+		try {
+			fixedThreadPool.awaitTermination(5, TimeUnit.MINUTES);
+		} catch (Exception e1) {
+			SU.Log("Find In Full Text Interrupted!!!");
+		} finally {
+			int size = block_cache.size();
+			block_cache.putAll(cache_tmp);
+			//a.root.postDelayed(() -> a.showT(CMN.Log("添加后", block_cache.size(),block_cache.size()-size)), 500);
+		}
 	}
 	
 	@Override

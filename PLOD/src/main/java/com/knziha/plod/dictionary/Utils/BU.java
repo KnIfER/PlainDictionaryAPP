@@ -410,6 +410,10 @@ public class  BU{//byteUtils
 			throw new EOFException();
 		return (short)((ch1 << 8) + (ch2 << 0));
 	}
+	
+	public static int readShortLE(InputStream bin) throws IOException {
+		return bin.read()|(bin.read()<<8);
+	}
 
 	public static String parseFontName(ReusableBufferedInputStream bin) throws IOException {
 		bin.skip(4);
