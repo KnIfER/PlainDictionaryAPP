@@ -12,12 +12,13 @@ import java.util.ArrayList;
  * @date 2017/11/18
  */
 
-public class RBTree<T extends Comparable<T>> {
+public class RBTree<T extends Comparable<T>> implements InOrderTodoAble {
 
     protected RBTNode<T> mRoot;public RBTNode<T> getRoot() {return mRoot;} // 根结点
 
     protected static final boolean RED   = false;
     protected static final boolean BLACK = true;
+    int size=0;
 
 
     public RBTree() {
@@ -94,6 +95,17 @@ public class RBTree<T extends Comparable<T>> {
         inorderCounter3 = 0;//important
         inOrderDo(mRoot);
     }
+
+    @Override
+    public void insertNode(Comparable node) {
+         insert((T) node);
+    }
+
+    @Override
+    public int size() {
+        return 0;
+    }
+
     //![1]设置接口
     public void SetInOrderDo(inOrderDo ido){
         mInOrderDo = ido;
@@ -583,10 +595,12 @@ public class RBTree<T extends Comparable<T>> {
         // 2. 设置节点的颜色为红色
         node.color = RED;
 
+        size++;
+
         // 3. 将它重新修正为一颗二叉查找树
         insertFixUp(node);
-
-        return node;
+	
+		return node;
     }
 
     /*
@@ -596,8 +610,8 @@ public class RBTree<T extends Comparable<T>> {
      *     key 插入结点的键值
      */
     public RBTNode<T> insert(T key) {
-        RBTNode<T> node=new RBTNode<T>(key,BLACK,null,null,null);
-		return insert(node);
+		RBTNode<T> node=new RBTNode<T>(key,BLACK,null,null,null);
+        return insert(node);
     }
 
 
@@ -778,6 +792,7 @@ public class RBTree<T extends Comparable<T>> {
 
         if (color == BLACK)
             removeFixUp(child, parent);
+        size--;
         node = null;
     }
 
@@ -791,11 +806,11 @@ public class RBTree<T extends Comparable<T>> {
     public boolean remove(T key) {
         RBTNode<T> node;
 
-        if ((node = search(mRoot, key)) != null){
+		if ((node = search(mRoot, key)) != null){
 			remove(node);
 			return true;
 		}
-  
+	
 		return false;
     }
 
@@ -817,6 +832,7 @@ public class RBTree<T extends Comparable<T>> {
     public void clear() {
         destroy(mRoot);
         mRoot = null;
+        size=0;
     }
 
     /*

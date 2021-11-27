@@ -129,6 +129,10 @@ public class  SU{
 		//Zstd.decompressByteArray(output, out_offset, decompressedLen, compressed, offset, length);
 	}
 	
+	public static void pt_mins(String...args) {
+		SU.Log(args,((System.currentTimeMillis()-stst)/1000.f/60)+"m");
+	}
+	
 	public boolean CharsequenceEqual(CharSequence cs1, CharSequence cs2) {
 		if(cs1!=null&&cs2!=null) {
 			int len1=cs1.length();
