@@ -28,6 +28,7 @@ public class DictInputStream extends InputStream {
 	public static class GZIPDictReader {
 		byte[] buffer_cache = new byte[64*1024];
 		int buffer_cache_index=-1;
+		/** 文件。 */
 		final File f;
 		/** GZIP标志。 */
 		long flag;
@@ -40,11 +41,11 @@ public class DictInputStream extends InputStream {
 		final int blockDecLength;
 		/** 分块总数。 */
 		final int blockCount;
-		/** 每个块各自的偏移量（压缩状态），以第一块为零记起。 */
+		/** 每个块各自的偏移量（压缩状态下），以第一块为零记起。 */
 		final long[] blockOffsets;
 		/** GZIP文件头大小。 */
 		final long blockOffset;
-		/** 所有块加起来的总大小（压缩状态）。 */
+		/** 所有块加起来的总大小（压缩状态下）。 */
 		long totalLength;
 		public GZIPDictReader(File f) throws IOException {
 			this.f = f;
@@ -164,13 +165,13 @@ public class DictInputStream extends InputStream {
 		this.dictReader = dictReader;
 		blockIndex = (int) (fileOffset/dictReader.blockDecLength);
 		long tid = Thread.currentThread().getId();
-		if(tid==CMN.mid) {
+		if(tid==CMN.mid) { // false
 			buffer = dictReader.buffer_cache;
 			if(blockIndex==dictReader.buffer_cache_index) {
 				SU.Log("真的好懒哦！");
 				delayedStream=true;
 				blockSize=dictReader.blockDecLength;
-				delayedStreamOpenOffset=blockIndex+1<dictReader.blockCount?dictReader.blockOffsets[blockIndex+1]:dictReader.totalLength;
+				delayedStreamOpenOffset=fileOffset+dictReader.blockDecLength;
 			}
 		} else {
 			buffer = new byte[64*1024];
@@ -196,18 +197,22 @@ public class DictInputStream extends InputStream {
 	
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
+		//SU.Log("read::", blockIndex, off, len, linearInputStream, pos);
 		if((off|(b.length-(off+len)))<0) {
-			throw new IndexOutOfBoundsException();
-		} else if(len==0) {
-			return 0;
+			throw new IndexOutOfBoundsException(b.length+","+off+","+len);
 		}
-		int read=0;
-		while(true) {
-			int maxRead = readMax(b, read+off, len-read);
-			if(maxRead<=0) return read>0?read:maxRead;
+		int read=0, maxRead;
+		while(len>read) {
+			maxRead = readMax(b, off+read, len-read);
+			if(maxRead<=0) {
+				if(read==0) return maxRead;
+				break;
+			}
 			read += maxRead;
-			//if(available()<=0)  return read;
+			if(available()<=0)
+				break;
 		}
+		return read;
 	}
 	
 	private int readMax(byte[] b, int off, int len) throws IOException {
@@ -217,6 +222,7 @@ public class DictInputStream extends InputStream {
 			available = blockSize-pos;
 			if(available<=0) return -1;
 		}
+		//SU.Log("readMax::", blockIndex, off, len, linearInputStream, pos);
 		if(len>available) len = available;
 		System.arraycopy(buffer, pos, b, off, len);
 		pos += len;
@@ -225,8 +231,7 @@ public class DictInputStream extends InputStream {
 	
 	@Override
 	public int available() throws IOException {
-		if(blockIndex>=dictReader.blockCount) return 0;
-		return blockSize-pos+(dictReader.blockCount- blockIndex -1)*dictReader.blockDecLength;
+		return (dictReader.blockCount - blockIndex)*dictReader.blockDecLength - pos;
 	}
 	
 	/** 读取一整块新数据至buffer */
@@ -234,6 +239,7 @@ public class DictInputStream extends InputStream {
 		pos = 0;
 		blockSize = 0;
 		blockIndex++;
+		CMN.Log("filling new block::", blockIndex, linearInputStream, delayedStreamOpenOffset);
 		if(blockIndex<dictReader.blockCount) {
 			long blockOffset = dictReader.blockOffsets[blockIndex];
 			long blockOffsetNxt = blockIndex+1<dictReader.blockCount?dictReader.blockOffsets[blockIndex+1]:dictReader.totalLength;
@@ -247,7 +253,7 @@ public class DictInputStream extends InputStream {
 					SU.Log("给我勤快一点！");
 					linearInputStream = dictReader.OpenStreamAt(delayedStreamOpenOffset);
 				}
-				delayedStream =false;
+				delayedStream=false;
 			}
 			if(linearInputStream!=null) {
 				// todo while-read

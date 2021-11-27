@@ -107,7 +107,7 @@ public class PlainDSL extends DictionaryAdapter {
 			//blockSize = fis.read(data);
 			blockSize=0;
 			int len;
-			while((len = fis.read(data, blockSize, data.length-blockSize))>0) {
+			while(blockSize<data.length&&(len = fis.read(data, blockSize, data.length-blockSize))>0) {
 				blockSize += len;
 			}
 		}
@@ -305,13 +305,16 @@ public class PlainDSL extends DictionaryAdapter {
 		ReusableByteOutputStream bos = new ReusableByteOutputStream(mBlockSize *2);
 		bos.reset();
 		TextBlock tmpBlock;
-		int toSkip=0; int cc=0;
+		int toSkip=0;
+		InputStream fin=null;
 		while(length>0 && centerBlock<_num_record_blocks) {
+			//tmpBlock = null;
 			tmpBlock = tmpLastBlock!=null&&tmpLastBlock.blockIndex==centerBlock?tmpLastBlock:block_cache.get(centerBlock);
 			if(tmpBlock==null){
-				IOException exception=null;
-				try(InputStream fin = mOpenInputStream(centerBlock*mBlockSize)) {
-					if(toSkip>0) {
+				try {
+					if(fin==null)
+						fin = mOpenInputStream(centerBlock*mBlockSize);
+					else if(toSkip>0) {
 						BU.SafeSkipReam(fin, toSkip);
 						toSkip=0;
 					}
@@ -321,14 +324,16 @@ public class PlainDSL extends DictionaryAdapter {
 					tmpBlock.read(fin);
 					block_cache.put(centerBlock, tmpBlock);
 				} catch (IOException e) {
-					exception = e;
+					if(fin!=null)
+						fin.close();
+					throw e;
 				}
-				if(exception!=null)throw exception;
 			} else {
 				//CMN.Log("找到DSL缓存区");
-				toSkip+=tmpBlock.blockSize;
+				if(fin!=null)toSkip+=tmpBlock.blockSize;
 			}
-			tmpLastBlock=tmpBlock;
+			if(tmpLastBlock!=tmpBlock)tmpLastBlock=tmpBlock;
+			//CMN.Log(centerBlock, tmpBlock);
 			int start = (int) Math.max(0, eI.contentStart - (centerBlock * mBlockSize));
 			int len = Math.min(tmpBlock.blockSize - start, length);
 			bos.write(tmpBlock.data, start, len);
@@ -674,7 +679,7 @@ public class PlainDSL extends DictionaryAdapter {
 		mIndexFile.delete();
 		mIndexFile = new File(mIndexFolder, f.getName()+".idx");
 		CMN.Log("Scan Indexes...", mIndexFile);
-		if(false)
+		//if(false)
 		if( mIndexFile.exists() && mIndexFile.lastModified()==f.lastModified()){
 			CMN.rt();
 			try {
