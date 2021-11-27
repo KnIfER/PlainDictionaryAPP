@@ -71,15 +71,15 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEX
 
 
 /**
- * **Mdict Java Library**<br/><br/>
+ * <h2>Mdict Java Library</h2>
  * <b>FEATURES</b>:<br/>
- * 1. Basic listing and fast binary query of mdx files.<br/>
- * 2. Dictionary conjunction search.<br/>
- * 3. Fast Multi-threaded search in all contents.<br/>
- * 4. Fast Multi-threaded search in all entries.<br/>
- * 5. Optional regex expression engine( Joni ) or wildcards( .* ) for above two search modes.<br/><br/>
+ * 1. getEntryAt(long) & lookUp(String) : List entries and perform fast binary search for mdict file format.<br/>
+ * 2. lookUpRange(String,...) : Search for multiple entries. <br/>
+ * 3. flowerFindAllContents(String,...) : Fast Multi-threaded search in all contents.<br/>
+ * 4. flowerFindAllKeys(String,...) : Fast Multi-threaded search in all entries.<br/>
+ * 5. Optional regex expression engine( Joni ) or wildcards( .* ) for above two searching methods.<br/><br/>
  * Author : KnIfER<br/>
- * <b>Licence</b> : Apache2.0 under this package (com.knziha.plod.dictionary.*); GPL3.0 for everything else including the mdictBuilder. <br/>
+ * <b>Licence</b> : Apache2.0 under this package (com.knziha.plod.dictionary.*); GPL3.0 for anything else including the mdictBuilder. <br/>
  */
 @SuppressWarnings("SpellCheckingInspection")
 public class mdict extends mdBase implements UniversalDictionaryInterface{
@@ -314,7 +314,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			mflag.data = null;
 		//TODO null pointer error
 		try {
-			return new String(prepareItemByKeyInfo(infoI,blockId,null).keys[(int) (position-infoI.num_entries_accumulator)],_charset);
+			return prepareItemByKeyInfo(infoI,blockId,null).getString((int) (position-infoI.num_entries_accumulator));
 		} catch (Exception e) {
 			CMN.Log(e);
 			return "!!!";
@@ -430,10 +430,10 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		int res;
 		if(isGBoldCodec)
 			//res = binary_find_closest2(infoI_cache.keys,keyword);//keyword
-			res = reduce_keys2(infoI_cache.keys,kAB,0,infoI_cache.keys.length);
+			res = reduce_keys2(infoI_cache,kAB,0,infoI_cache.key_offsets.length);
 		else
 			//res = binary_find_closest(infoI_cache.keys,keyword);//keyword
-			res = reduce_keys(infoI_cache.keys,keyword,0,infoI_cache.keys.length);
+			res = reduce_keys(infoI_cache,keyword,0,infoI_cache.key_offsets.length);
 
 		if (res==-1){
 			System.out.println("search failed!"+keyword);
@@ -441,7 +441,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		}
 		//SU.Log(keyword, res, getEntryAt((int) (res+infoI.num_entries_accumulator)));
 		////if(isCompact) //compatibility fix
-		String other_key = new String(infoI_cache.keys[res],_charset);
+		String other_key = infoI_cache.getString(res);
 		String looseMatch = processMyText(other_key);
 		boolean bIsEqual = looseMatch.equals(keyword);
 
@@ -511,7 +511,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return -1;
 	}
 
-	public int reduce_keys(byte[][] keys,String val,int start,int end) {//via mdict-js
+	public int reduce_keys(cached_key_block keys,String val,int start,int end) {//via mdict-js
 		int len = end-start;
 		if (len > 1) {
 			len = len >> 1;
@@ -530,14 +530,14 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			//show(start+"::"+end+"   "+new String(keys[start],_charset)+"::"+new String(keys[end==keys.length?end-1:end],_charset));
 
 
-			return val.compareTo(processMyText(new String(keys[start + len - 1],_charset)))>0
+			return val.compareTo(processMyText(keys.getString(start + len - 1)))>0
 					? reduce_keys(keys,val,start+len,end)
 					: reduce_keys(keys,val,start,start+len);
 		} else {
 			return start;
 		}
 	}
-	public int reduce_keys2(byte[][] keys,byte[] val,int start,int end) {//via mdict-js
+	public int reduce_keys2(cached_key_block keys,byte[] val,int start,int end) {//via mdict-js
 		int len = end-start;
 		if (len > 1) {
 			len = len >> 1;
@@ -551,8 +551,9 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				  zhujue = replaceReg2.matcher(zhujue).replaceAll(emptyStr);
 			  }
 		  }*/
+			
 			//SU.Log(start+"::"+end+"   "+new String(keys[start],_charset)+"::"+new String(keys[end],_charset));
-			return compareByteArray(val, processMyText(new String(keys[start + len - 1],_charset)).getBytes(_charset))>0
+			return compareByteArray(val, processMyText(keys.getString(start + len - 1)).getBytes(_charset))>0
 					? reduce_keys2(keys,val,start+len,end)
 					: reduce_keys2(keys,val,start,start+len);
 		} else {

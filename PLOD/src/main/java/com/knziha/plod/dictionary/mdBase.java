@@ -21,6 +21,7 @@ import com.knziha.plod.dictionary.Utils.*;
 import com.knziha.rbtree.RBTree;
 
 import org.anarres.lzo.*;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -112,6 +113,7 @@ public abstract class mdBase {
 	/** data buffer that holds one record bock of maximum possible size for this dictionary */
 	
 	protected Object tag;
+	
 	
 	protected DataInputStream getStreamAt(long at, boolean forceReal) throws IOException {
 		//SU.Log("getStreamAt", at, this);
@@ -815,7 +817,7 @@ public abstract class mdBase {
 		if(_key_block_info_list==null) read_key_block_info(null);
 		int blockId = accumulation_blockId_tree.xxing(new myCpr<>(position,1)).getKey().value;
 		key_info_struct infoI = _key_block_info_list[blockId];
-		return new String(prepareItemByKeyInfo(infoI, blockId, null).keys[(int) (position-infoI.num_entries_accumulator)],_charset);
+		return prepareItemByKeyInfo(infoI, blockId, null).getString((int) (position-infoI.num_entries_accumulator));
 	}
 
 
@@ -901,15 +903,42 @@ public abstract class mdBase {
 	}
 
 	static class cached_key_block{
-		byte[][] keys;
+		//byte[][] keys;
+		byte[] raw_keys;
+		int[] raw_keys_splits;
 		long[] key_offsets;
 		byte[] hearderText=null;
 		byte[] tailerKeyText=null;
 		String hearderTextStr=null;
 		String tailerKeyTextStr=null;
 		int blockID=-100;
+		final Charset _charset;
+		final int _number_width;
+		cached_key_block(Charset charset, int number_width) {
+			_charset = charset;
+			_number_width = number_width;
+		}
+		public int reduce_keys_raw(String val,int start,int end) {//via mdict-js
+			int len = end-start;
+			//SU.Log(new String(keys[start],_charset)+"  "+new String(keys[Math.min(end, keys.length-1)],_charset));
+			if (len > 1) {
+				len = len >> 1;
+				int index=start + len - 1;
+				int st=raw_keys_splits[index];
+				return val.compareTo(new String(raw_keys, st, raw_keys_splits[index+1]-_number_width-st, _charset).toLowerCase())>0
+						? reduce_keys_raw(val,start+len,end)
+						: reduce_keys_raw(val,start,start+len);
+			} else {
+				return start;
+			}
+		}
+		
+		public String getString(int index) {
+			int st=raw_keys_splits[index];
+			return new String(raw_keys, st, raw_keys_splits[index+1]-_number_width-st, _charset);
+		}
 	}
-	private cached_key_block infoI_cache_ = new cached_key_block();
+	private cached_key_block infoI_cache_ = new cached_key_block(_charset, _number_width+delimiter_width);
 
 	public cached_key_block prepareItemByKeyInfo(key_info_struct infoI,int blockId,cached_key_block infoI_cache){
 		cached_key_block infoI_cache_ = this.infoI_cache_;
@@ -917,11 +946,12 @@ public abstract class mdBase {
 		if(infoI_cache_.blockID==blockId)
 			return infoI_cache_;
 		if(infoI_cache==null)
-			infoI_cache = new cached_key_block();
+			infoI_cache = new cached_key_block(_charset, _number_width+delimiter_width);
 		try {
 			if(infoI==null)
 				infoI = _key_block_info_list[blockId];
-			infoI_cache.keys = new byte[(int) infoI.num_entries][];
+			//infoI_cache.keys = new byte[(int) infoI.num_entries][];
+			infoI_cache.raw_keys_splits = new int[(int) infoI.num_entries+1];
 			infoI_cache.key_offsets = new long[(int) infoI.num_entries];
 			infoI_cache.hearderText = infoI.headerKeyText;
 			infoI_cache.tailerKeyText = infoI.tailerKeyText;
@@ -948,7 +978,7 @@ public abstract class mdBase {
 			switch (_key_block_compressed[0]|_key_block_compressed[1]<<8|_key_block_compressed[2]<<16|_key_block_compressed[3]<<32){
 				default:
 				case 0://no compression
-					key_block=_key_block_compressed;
+					key_block=_key_block_compressed.clone();
 					BlockOff=8;
 				break;
 				case 1:
@@ -977,7 +1007,7 @@ public abstract class mdBase {
 			int key_start_index=0,
 					key_end_index,
 					keyCounter = 0;
-
+			infoI_cache.raw_keys = key_block;
 			while(key_start_index < BlockLen && keyCounter<infoI.num_entries){// 莫须有小于
 				long key_id = _version<2 ?BU.toInt(key_block, BlockOff+key_start_index)
 							:BU.toLong(key_block, BlockOff+key_start_index);
@@ -994,26 +1024,32 @@ public abstract class mdBase {
 					break;//all match
 				}
 
-				//SU.Log("key_start_index", key_start_index);
-				byte[] arraytmp = new byte[key_end_index-(key_start_index+_number_width)];
-				System.arraycopy(key_block,BlockOff+key_start_index+_number_width, arraytmp, 0,arraytmp.length);
-
-
-				//SU.Log(keyCounter,":::",new String(arraytmp, _charset));
+//				//SU.Log("key_start_index", key_start_index);
+//				byte[] arraytmp = new byte[key_end_index-(key_start_index+_number_width)];
+//				System.arraycopy(key_block,BlockOff+key_start_index+_number_width, arraytmp, 0,arraytmp.length);
+//
+//
+//				//SU.Log(keyCounter,":::",new String(arraytmp, _charset));
+				
+				infoI_cache.raw_keys_splits[keyCounter]=BlockOff+key_start_index+_number_width;
+				//SU.Log(keyCounter,":::",new String(key_block, infoI_cache.raw_keys_splits[keyCounter], key_end_index-(key_start_index+_number_width), _charset));
+				
 				key_start_index = key_end_index + delimiter_width;
-				//SU.Log(infoI_cache.keys.length+"~~~"+keyCounter+"~~~"+infoI.num_entries);
-				infoI_cache.keys[keyCounter]=arraytmp;
+				
+//				//SU.Log(infoI_cache.keys.length+"~~~"+keyCounter+"~~~"+infoI.num_entries);
+//				infoI_cache.keys[keyCounter]=arraytmp;
 
 				infoI_cache.key_offsets[keyCounter]=key_id;
 				keyCounter++;
 			}
+			infoI_cache.raw_keys_splits[keyCounter]=BlockOff+key_start_index+_number_width;
 			//long end2=System.currentTimeMillis(); //获取开始时间
 			//System.out.println("解压耗时："+(end2-start2));
 			//assert(adler32 == (calcChecksum(key_block)));
 			infoI_cache.blockID = blockId;
 			this.infoI_cache_=infoI_cache;
-		} catch (IOException e2) {
-			e2.printStackTrace();
+		} catch (IOException e) {
+			SU.Log(e);
 		}
 		return infoI_cache;
 
@@ -1029,17 +1065,17 @@ public abstract class mdBase {
 	
 	@Deprecated
 	public void findAllKeys(String keyword){
-		keyword = mdict.processText(keyword);
-		int blockCounter = 0;
-		for(key_info_struct infoI:_key_block_info_list){
-			prepareItemByKeyInfo(infoI,blockCounter,null);
-			for(byte[] entry:infoI_cache_.keys){
-				String kk = new String(entry);
-				if(kk.contains(keyword))
-					SU.Log(kk);
-			}
-			blockCounter++;
-		}
+//		keyword = mdict.processText(keyword);
+//		int blockCounter = 0;
+//		for(key_info_struct infoI:_key_block_info_list){
+//			prepareItemByKeyInfo(infoI,blockCounter,null);
+//			for(byte[] entry:infoI_cache_.keys){
+//				String kk = new String(entry);
+//				if(kk.contains(keyword))
+//					SU.Log(kk);
+//			}
+//			blockCounter++;
+//		}
 	}
 
 
@@ -1152,14 +1188,14 @@ public abstract class mdBase {
 
 		cached_key_block infoI_cache = prepareItemByKeyInfo(infoI,blockId,null);
 
-		int res = reduce_keys_raw(infoI_cache.keys,keyword,0,infoI_cache.keys.length);//keyword
+		int res = infoI_cache.reduce_keys_raw(keyword,0,infoI_cache.key_offsets.length);//keyword
 		//SU.Log("search failed!asdasd", res);
 		if (res==-1){
 			//SU.Log("search failed!");
 			return -1;
 		}
 		else{
-			if(isSrict && !new String(infoI_cache.keys[res],_charset).toLowerCase().equals(keyword))
+			if(isSrict && !infoI_cache.getString(res).toLowerCase().equals(keyword))
 				return -1;
 			//String KeyText= infoI_cache.keys[res];
 			//long wjOffset = infoI.key_block_compressed_size_accumulator+infoI_cache.key_offsets[res];
@@ -1177,19 +1213,6 @@ public abstract class mdBase {
 //		}
 //		return null;
 //	}
-
-	public int reduce_keys_raw(byte[][] keys,String val,int start,int end) {//via mdict-js
-		int len = end-start;
-		//SU.Log(new String(keys[start],_charset)+"  "+new String(keys[Math.min(end, keys.length-1)],_charset));
-		if (len > 1) {
-			len = len >> 1;
-			return val.compareTo(new String(keys[start + len - 1],_charset).toLowerCase())>0
-					? reduce_keys_raw(keys,val,start+len,end)
-					: reduce_keys_raw(keys,val,start,start+len);
-		} else {
-			return start;
-		}
-	}
 
 	@Override
 	public String toString() {
