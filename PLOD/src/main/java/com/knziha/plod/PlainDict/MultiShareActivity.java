@@ -97,12 +97,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main_share);
 		further_loading(savedInstanceState);
-		String path = CMN.AssetTag + "liba.mdx";
-		try {
-			currentDictionary = new BookPresenter(new File(path), this, 0, this);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		
 		main = root = findViewById(R.id.root);
 		main_succinct = main;

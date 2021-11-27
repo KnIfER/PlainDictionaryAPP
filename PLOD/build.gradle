@@ -30,9 +30,14 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 62
-        versionName "5.0.1"
+        versionCode 63
+        versionName "5.0.2"
         vectorDrawables.generatedDensities = ['hdpi']
+    }
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
     }
     buildFeatures {
         dataBinding = true

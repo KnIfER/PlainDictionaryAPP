@@ -1,5 +1,5 @@
 <resources>
-	<string name="app_name">平典</string>
+	<string name="app_name">平典搜索</string>
 	<string name="wenj_fugai">文件已存在，覆盖保存？</string>
 	<string name="warn_delete">确认删除选中的  %d 项内容?(不可撤销)</string>
 	<string name="warnDelete">确认删除分组 %s?</string>
@@ -48,7 +48,7 @@
 	<string name="warn_exit">再按一次退出！</string>
 
 	<string name="relaunch">重启生效！</string>
-	<string name="addd">添加词典</string>
+	<string name="addd">打开词典</string>
 	<string name="nothingR">无任何记录</string>
 	<string name="bookmarkH">书签历史</string>
 	<string name="clearsucc">清除成功！</string>
@@ -60,7 +60,7 @@
 
 
 	<string name="err">加载失败</string>
-	<string name="loadconfig">加载词典分组</string>
+	<string name="loadconfig">切换词典分组</string>
 	<string name="pickfavor">选择生词本</string>
 	<string name="newfc">新建</string>
 	<string name="loadsucc">加载成功！</string>
@@ -104,7 +104,8 @@
 	<string name="stg_grantnow">立即开启</string>
 	<string name="trialin">试用中…… #</string>
 	<string name="stgerr_fail">抱歉，无法在您的设备上使用</string>
-	<string name="infoStr">平典——安卓平台的开源查词软件。\n\n阿尔法v4.5\n\n相关软件\：Bluedict(启发) 、Bing 词典(启发) 、MdictPC(起源) \n\n[开源组件] \n\n[反馈]</string>
+<!--	<string name="infoStr">平典搜索（PlainDict）是安卓平台的一款查词软件，绿色小巧，精通十八般武艺（支持在线词典与翻译器、支持直接打开两种经典的词典格式，支持查看PDF文件，支持全文搜索、联合查询、点译、高亮标注等等）。\n\n当前版本号：v%s\n\n启发作者的其他精美应用\：Bluedict 、Bing 词典 、Mdict PC、LingVo 等等。 \n\n[开源许可证] \n\n[反映问题] \n\n[赞赏开发者]</string>-->
+	<string name="infoStr">平典搜索（PlainDict）是安卓平台的一款查词软件，绿色小巧，精通十八般武艺（支持在线词典与翻译器、支持直接打开两种经典的词典格式，支持查看PDF文件，支持全文搜索、联合查询、点译、高亮标注等等）。\n\n当前版本号：v%s\n\n启发作者的其他精美应用\：Bluedict 、Bing 词典 、Mdict PC、LingVo 等等。 \n\n[开源许可证]</string>
 	<string name="licence">开源许可证</string>
 	<string name="bmAdd">添加书签</string>
 	<string name="language">语言</string>

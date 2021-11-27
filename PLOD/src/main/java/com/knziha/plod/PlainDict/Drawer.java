@@ -79,7 +79,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
-import static com.knziha.plod.plaindict.MainActivityUIBase.new_book;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
 
@@ -445,7 +444,7 @@ public class Drawer extends Fragment implements
 				//a.mDrawerLayout.closeDrawer(GravityCompat.START);
 				final View dv = a.getLayoutInflater().inflate(R.layout.dialog_about,null);
 				
-				String infoStr = getString(R.string.infoStr);
+				String infoStr = getString(R.string.infoStr, BuildConfig.VERSION_NAME+(BuildConfig.isDebug?"工程调试版":""));
 				final SpannableStringBuilder ssb = new SpannableStringBuilder(infoStr);
 				
 				if (mdict.error_input!=null) {
@@ -736,11 +735,12 @@ public class Drawer extends Fragment implements
 					properties.extensions = new HashSet<>();
 					properties.extensions.add(".mdx");
 					properties.extensions.add(".web"); // 在线词典，JSON格式。
+					properties.extensions.add(".dsl");
+					properties.extensions.add(".dz");
 					if(toPDF) {
 						properties.extensions.add(".pdf");
 						properties.extensions.add(".mdd");
 						properties.extensions.add(".txt");
-						properties.extensions.add(".dsl");
 					}
 					properties.title_id = R.string.addd;
 					properties.isDark = a.AppWhite==Color.BLACK;
@@ -752,11 +752,12 @@ public class Drawer extends Fragment implements
 							//CMN.Log(files);
 							filepickernow = now;
 							if(files.length>0) {
-								final File def = new File(a.getExternalFilesDir(null),"default.txt");      //!!!原配
+								final File def = a.opt.getCacheCurrentGroup()?new File(a.getExternalFilesDir(null),"default.txt")
+										:a.getStartupFile(a.opt.fileToConfig());      //!!!原配
 								File ConfigFile = a.opt.fileToConfig();
 								File rec = a.opt.fileToDecords(ConfigFile);
 								a.ReadInMdlibs(rec);
-								HashMap<String, String> checker = a.checker;
+								HashMap<String, String> add_book_checker = a.lostFiles;
 								
 								HashSet<String> mdictInternal = new HashSet<>();
 								HashSet<String> renameRec = new HashSet<>();
@@ -785,7 +786,7 @@ public class Drawer extends Fragment implements
 										if(fI.isDirectory()) continue;
 										//checker.put("sound_us.mdd", "/storage/emulated/0/PLOD/mdicts/发音库/sound_us.mdd");
 										/* 检查文件名称是否乃记录之中已失效项，有则需重命名。*/
-										if(AutoFixLostRecords && (removedAPath=checker.get(fI.getName()))!=null) {
+										if(AutoFixLostRecords && (removedAPath=add_book_checker.get(fI.getName()))!=null) {
 											renameList.put(removedAPath, fnI);
 											renameRec.add(fnI);
 										}
@@ -822,7 +823,7 @@ public class Drawer extends Fragment implements
 											}
 										}
 									}
-									CMN.Log(checker);
+									CMN.Log(add_book_checker);
 									CMN.Log(renameRec.toString());
 									if(a.pickDictDialog!=null) {
 										a.pickDictDialog.adapter().notifyDataSetChanged();
@@ -897,7 +898,7 @@ public class Drawer extends Fragment implements
 										}
 										app.set4kCharBuff(cb);
 										renameList.clear();
-										checker.clear();
+										add_book_checker.clear();
 									}
 									if(countRename>0)
 										a.showT("新加入"+countAdd+"本词典, 重定位"+countRename+"次！");

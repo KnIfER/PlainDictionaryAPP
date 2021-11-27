@@ -96,7 +96,7 @@ public class DArrayAdapter extends BaseAdapter {
 	public void adaptToMultipleCollections(String lex) {
 		selectedPositions.clear();
 		for (MyPair<String, Long> notebook:notebooksV2) {
-			if (a.prepareHistoryCon().containsPrecise(lex, notebook.value)) {
+			if (a.prepareHistoryCon().GetIsFavoriteTerm(lex, notebook.value)) {
 				selectedPositions.add(notebook.value);
 			}
 		}

@@ -13,8 +13,10 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.Signature;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -206,6 +208,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.knziha.metaline.StripMethods;
 import org.xiph.speex.ByteArrayRandomOutputStream;
 import org.xiph.speex.manyclass.JSpeexDec;
 
@@ -238,6 +241,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -258,7 +262,6 @@ import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
-import static com.knziha.plod.dictionarymodels.BookPresenter.indexOf;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
 
 /** 程序基础类<br/>
@@ -266,6 +269,7 @@ import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
  * Created by KnIfER on 2018
  */
 @SuppressLint({"ResourceType", "SetTextI18bbn","Registered", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
+@StripMethods(strip=!BuildConfig.isDebug, keys={"setMagicNumber"})
 public abstract class MainActivityUIBase extends Toastable_Activity implements OnTouchListener,
 		OnLongClickListener,
 		OnClickListener,
@@ -320,8 +324,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					root.postDelayed(execSearchRunnable, 150);
 				}
 			} else {
-				if(PDICMainAppOptions.getSimpleMode() && currentDictionary!=null && BookPresenter.class.equals(currentDictionary.getClass()))
-					adaptermy.notifyDataSetChanged();
+				if(PDICMainAppOptions.getSimpleMode()) adaptermy.notifyDataSetChanged();
 				lv2.setVisibility(View.INVISIBLE);
 			}
 		}
@@ -375,7 +378,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	ViewGroup dialogHolder;
 	boolean dismissing_dh;
 	ViewGroup snack_holder;
-	public BookPresenter currentDictionary;
+	public BookPresenter EmptyBook;
+	@NonNull public BookPresenter currentDictionary;
 	public ArrayList<BookPresenter> currentFilter = new ArrayList<>();
 	public int adapter_idx;
 	HashSet<String> mdlibsCon;
@@ -389,7 +393,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public final static String ce_off="document.body.contentEditable=!1";
 	LexicalDBHelper favoriteCon;//public LexicalDBHelper getFDB(){return favoriteCon;};
 	/** Use a a filename-directory map to keep a record of lost files so that users could add them back without the need of restore every specific directory.  */
-	HashMap<String,String> checker;
+	HashMap<String,String> lostFiles;
 
 
 	SplitView webcontentlist;
@@ -462,7 +466,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int currentClickDictionary_currentPos;
 	public int currentClick_adapter_idx;
 	public int CCD_ID;
-	public BookPresenter CCD;
+	@NonNull public BookPresenter CCD;
 	ArrayList<myCpr<String, int[]>> popupHistory = new ArrayList<>();
 	int popupHistoryVagranter=-1;
 	ViewGroup PhotoPagerHolder;
@@ -621,7 +625,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mdTmp!=null) {
 				mdTmp.Reload(this);
 			} else {
-				md.set(i, new_book(phTmp.getPath(opt), this));
+				md.set(i, new_book(phTmp, this));
 			}
 			showT("重新加载!");
 		} catch (Exception e) {
@@ -679,7 +683,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (invalidate && adaptermy!=null) {
 				adaptermy.notifyDataSetChanged();
 				postPutName(550);
-				if (currentDictionary != null) {
+				if (currentDictionary != EmptyBook) {
 					if (/*!isCombinedSearching && */(opt.getPicDictAutoSer()||this instanceof FloatSearchActivity)) {
 						CMN.Log("auto_search!......");
 						lv_matched=false;
@@ -711,17 +715,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return md.size();
 	}
 	
-	public BookPresenter md_get(int i) {
+	@NonNull public BookPresenter md_get(int i) {
+		BookPresenter ret = null;
 		try {
-			BookPresenter ret = md.get(i);
-			if(ret==null){
+			ret = md.get(i);
+			if(ret==null) {
 				ArrayList<PlaceHolder> CosyChair = getLazyCC();
 				if(i<CosyChair.size()) {
 					PlaceHolder phTmp = CosyChair.get(i);
 					if (phTmp != null) {
 						try {
-							md.set(i, ret = new_book(phTmp.getPath(opt), this));
-							ret.tmpIsFlag = phTmp.tmpIsFlag;
+							md.set(i, ret = new_book(phTmp, this));
 						} catch (Exception e) {
 							if(GlobalOptions.debug) CMN.Log(e);
 							if (bShowLoadErr && isOnMainThread()) {
@@ -732,9 +736,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			}
-			return ret;
 		} catch (Exception e) { CMN.Log(e); }
-		return null;
+		if(ret==null)
+			ret = EmptyBook;
+		return ret;
 	}
 
 	public String md_getName(int i) {
@@ -835,6 +840,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return data;
 	}
 	
+	@SuppressWarnings("All")
 	public CharSequence md_getAbout_Trim(int i) {
 		ArrayList<PlaceHolder> placeHolders = getLazyCC();
 		PlaceHolder phTmp = placeHolders.get(i);
@@ -855,7 +861,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					sb.append("编码");
 				}
 				sb.append("：");
-				sb.append(presenter.getCharsetName());
+				sb.append(String.valueOf(presenter.getCharsetName()));
 			}
 			if(show_info_reload) {
 				sb.append("]");
@@ -926,7 +932,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void onActionModeStarted(ActionMode mode) {
 		View v = getCurrentFocus();
 		CMN.Log("-->onActionModeStarted", v);
-		Menu menu = null;
+		Menu menu;
 		if(v instanceof WebViewmy && Build.VERSION.SDK_INT<=Build.VERSION_CODES.M) {
 			mode.setTitle(null);
 			mode.setSubtitle(null);
@@ -1279,7 +1285,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		MainStringBuilder = new StringBuilder(40960);
 		//WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
 		//WebView.setWebContentsDebuggingEnabled(true);
-		
 	}
 
 	public void onAudioPause() {
@@ -1503,7 +1508,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							boolean bForceJump = false;
 							if (SearchMode == 2) {/* 仅搜索当前词典 */
 								CCD = md_get(CCD_ID);
-								if (CCD != null) {
+								if (CCD != EmptyBook) {
 									if(CCD.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
 										webx = CCD;
 										if (!((PlainWeb)webx.bookImpl).takeWord(popupKey)) {
@@ -1538,10 +1543,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 														mdTmp = md.get(CSID);
 														if (mdTmp == null) {
 															try {
-																md.set(CSID, mdTmp = new_book(phTmp.getPath(opt), MainActivityUIBase.this));
-																mdTmp.tmpIsFlag = phTmp.tmpIsFlag;
-															} catch (Exception e) {
-															}
+																md.set(CSID, mdTmp = new_book(phTmp, MainActivityUIBase.this));
+															} catch (Exception e) { }
 														}
 													}
 												}
@@ -1602,8 +1605,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 												PlaceHolder phTmp = CosyChair.get(CCD_ID);
 												if (phTmp != null) {
 													try {
-														md.set(CCD_ID, CCD = new_book(phTmp.getPath(opt), MainActivityUIBase.this));
-														CCD.tmpIsFlag = phTmp.tmpIsFlag;
+														md.set(CCD_ID, CCD = new_book(phTmp, MainActivityUIBase.this));
 													} catch (Exception e) {
 														CMN.Log(e);
 													}
@@ -1611,14 +1613,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											}
 										}
 										
-										if(CCD!=null && CCD.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+										if(CCD.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
 											webx = CCD;
 											if (((PlainWeb)webx.bookImpl).takeWord(popupKey)) {
 												break;
 											}
 											webx = null;
 										} else
-										if (CCD != null) {
+										if (CCD != EmptyBook) {
 											idx = CCD.bookImpl.lookUp(popupKey, true);
 											if (idx < 0) {
 												if (!reject_morph && use_morph) {
@@ -1645,7 +1647,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 							//CMN.Log(CCD, "应用轮询结果", webx, idx);
 
-							if (idx >= 0 && CCD != null) {
+							if (idx >= 0 && CCD != EmptyBook) {
 								if(bForceJump && SearchMode==1)
 									popupWebView.setTag(R.id.js_no_match, false);
 								popupHistory.add(++popupHistoryVagranter, new myCpr<>(popupKey, new int[]{CCD_ID, idx}));
@@ -1848,7 +1850,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(i<CosySofa.size()){
 						PlaceHolder phI = CosySofa.get(i);
 						try {
-							currentFilter.set(i, mdTmp= new_book(phI.getPath(opt), this));
+							currentFilter.set(i, mdTmp= new_book(phI, this));
 							mdTmp.tmpIsFlag=phI.tmpIsFlag;
 						} catch (Exception e) { CMN.Log(e); }
 					}
@@ -2434,11 +2436,36 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static int ConfigSize = 78;
 	public static int ConfigExtra = 0; // 5
 	public static int SpecificationBlockSize = 4096;
+	//public static int PseudoInitCode = 31<<2;
+	public static long SessionFlag;
 
 	public int mConfigSize = 0;
 	public static int bridgedActivityCount = 0;
 	public boolean bridgedActivity = false;
-
+	public boolean bShouldCheckApplicationValid = true;
+	
+	public static String byte2HexFormatted(byte[] arr) {
+		StringBuilder str = new StringBuilder(arr.length * 2);
+		for (int i = 0; i < arr.length; i++) {
+			String h = Integer.toHexString(arr[i]);
+			int l = h.length();
+			if (l == 1) h = "0" + h;
+			if (l > 2) h = h.substring(l - 2, l);
+			str.append(h.toUpperCase());
+			if (i < (arr.length - 1)) str.append(':');
+		}
+		return str.toString();
+	}
+	
+	void setMagicNumberForHash() {
+		opt.setPseudoInitCode(31);
+		//showT("setMagicNumberForHash！");
+	}
+	
+	public native boolean testPakVal(String pakNam);
+	
+	public native int getPseudoCode(int sigHash);
+	
 	@Override
 	protected void further_loading(Bundle savedInstanceState) {
 		super.further_loading(savedInstanceState);
@@ -2447,6 +2474,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		BookPresenter.def_zoom=dm.density;
 		BookPresenter.optimal100 = GlobalOptions.isLarge?150:125;
 		BookPresenter.def_fontsize = opt.getDefaultFontScale(BookPresenter.optimal100);
+		
+		if (bShouldCheckApplicationValid) {
+			try {
+				System.loadLibrary("PDict");
+				String packageName = getPackageName();
+				PackageManager packageManager = getPackageManager();
+				PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES);
+				Signature[] signatures = packageInfo.signatures;
+				opt.setPseudoInitCode(getPseudoCode(signatures[0].hashCode()));
+				//CMN.Log("请使用正版软件！", signatures[0].hashCode(), getPseudoCode(signatures[0].hashCode()));
+				if (!testPakVal(packageName))
+					showT("请使用正版软件！");
+			} catch (Exception ignored) { }
+		}
+		
+		setMagicNumberForHash();
+		
+		try {
+			currentDictionary = EmptyBook = new BookPresenter(new File("empty"), this, 0, null);
+		} catch (IOException ignored) { }
 		
 		File ConfigFile = opt.fileToConfig();
 		
@@ -2848,8 +2895,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			try {
 				String path = CMN.AssetTag + "liba.mdx";
 				md.add(new BookPresenter(new File(path), this, 0, null));
-				if(CC==null&&this instanceof FloatSearchActivity) {
-					FloatSearchActivity.mCosyChair = CC = new ArrayList<>();
+				if(CC==null) {
+					CC = new ArrayList<>();
+					if(this instanceof FloatSearchActivity) FloatSearchActivity.mCosyChair = CC;
+					if(this instanceof PDICMainActivity) PDICMainActivity.CosyChair = CC;
 				}
 				CC.add(new PlaceHolder(path, CC));
 			} catch (IOException e) {
@@ -2869,8 +2918,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	protected File getStartupFile(File ConfigFile){
-		File def = new File(getExternalFilesDir(null),"default.txt");
-		if(def.length()<=0){
+		File def = null;
+		if (this_instanceof_PDICMainActivity && opt.getCacheCurrentGroup()) {
+			def = new File(getExternalFilesDir(null),"default.txt");
+			if(def.length()<=0) def=null;
+		}
+		if(def==null){
 			def = opt.fileToSet(ConfigFile, opt.getLastPlanName(LastPlanName));
 		}
 		return def;
@@ -2899,7 +2952,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if(mdTmp==null && !lazyLoad) { // 大家看 这里有个老实人
 				try {
-					mdTmp = new_book(phI.getPath(opt), this);
+					mdTmp = new_book(phI, this);
 				} catch (Exception e) {
 					phI.tmpIsFlag|=0x8;
 					HdnCmfrt.add(phI); /* 兵解轮回 */
@@ -3000,7 +3053,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(mdlibsCon==null){
 			mdlibsCon = new HashSet<>(md.size()*3);
-			checker = new HashMap<>();
+			lostFiles = new HashMap<>();
 			if(rec.exists())
 				try {
 					BufferedReader in = new BufferedReader(new FileReader(rec));
@@ -3013,15 +3066,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						else
 							check=new File(line);
 						if(!line.startsWith("/ASSET/") && !check.exists())
-							checker.put(check.getName(),check.getPath());
+							lostFiles.put(check.getName(),check.getPath());
 					}
 					in.close();
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
 			else {
-				rec.getParentFile().mkdirs();
 				try {
+					rec.getParentFile().mkdirs();
 					rec.createNewFile();
 				} catch (IOException ignored) {}
 			}
@@ -3145,16 +3198,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public boolean checkDicts() {
 		if(md.size()>0) {
-			if(currentDictionary==null){
-				currentDictionary=md.get(adapter_idx=(adapter_idx<0||adapter_idx>=md.size())?0:adapter_idx);
+			if(currentDictionary==null || currentDictionary==EmptyBook){
+				if((adapter_idx<0||adapter_idx>=md.size())) adapter_idx=0;
+				currentDictionary = md.get(adapter_idx);
 				if(currentDictionary==null){
 					PlaceHolder phI = getPlaceHolderAt(adapter_idx);
 					if(phI!=null) {
 						try {
-							md.set(adapter_idx, currentDictionary= new_book(phI.getPath(opt), this));
-							currentDictionary.tmpIsFlag = phI.tmpIsFlag;
+							md.set(adapter_idx, currentDictionary = new_book(phI, this));
 						} catch (Exception ignored) { }
 					}
+				}
+				if(currentDictionary==null){
+					currentDictionary = EmptyBook;
 				}
 			}
 			return true;
@@ -3301,7 +3357,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public void decorateContentviewByKey(ImageView futton, String key) {
 		if(futton==null) futton=this.favoriteBtn;
-		if(futton!=null) futton.setActivated(prepareFavoriteCon().contains(key));
+		if(futton!=null) futton.setActivated(GetIsFavoriteTerm(key));
 	}
 	
 	public LexicalDBHelper prepareFavoriteCon() {
@@ -3396,12 +3452,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return new_book(fullPath, THIS);
 	}
 	
+	public static BookPresenter new_book(PlaceHolder phI, MainActivityUIBase THIS) throws IOException {
+		BookPresenter ret = new_book(phI.getPath(THIS.opt), THIS);
+		ret.tmpIsFlag = phI.tmpIsFlag;
+		return ret;
+	}
+	
 	public static BookPresenter new_book(File fullPath, MainActivityUIBase THIS) throws IOException {
 		BookPresenter ret = THIS.mdict_cache.get(fullPath.getName());
 		if (ret!=null) {
 			return ret;
 		}
-		ret = new BookPresenter(fullPath, THIS, 0, null);
+		ret = new BookPresenter(fullPath, THIS, THIS.opt.getPseudoInitCode(0), null);
 		THIS.mdict_cache.put(fullPath.getName(), ret);
 		return ret;
 	}
@@ -3673,8 +3735,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (getUsingDataV2()) {
 			try {
 				BookPresenter presenter = md.get(i);
-				if (presenter!=null)
-					return presenter.getId();
+				if (presenter!=null) return presenter.getId();
 				String name = new File(getPlaceHolders().get(i).pathname).getName();
 				return prepareHistoryCon().getBookID(null, name);
 			} catch (Exception e) {
@@ -3687,6 +3748,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public BookPresenter getBookById(long bid) {
+		BookPresenter ret = null;
 		try {
 			if (getUsingDataV2()) {
 				String fileName = null;
@@ -3704,19 +3766,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					fileName = prepareHistoryCon().getBookPath(bid);
 				}
 				if (fileName!=null) {
-					return new_book(fileName, this);
+					ret = new_book(fileName, this);
 				}
 			} else {
 				if (bid>=0&&bid<md.size())
-					return md.get((int) bid);
+					ret = md.get((int) bid);
 			}
 		} catch (IOException e) {
 			CMN.Log(e);
 		}
-		return null;
+		if(ret==null)
+			ret=EmptyBook;
+		return ret;
 	}
 	
 	public BookPresenter getBookByIdNoCreation(long bid) {
+		BookPresenter ret = null;
 		try {
 			if (getUsingDataV2()) {
 				String fileName = null;
@@ -3731,17 +3796,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if (impl!=null) {
 					fileName = impl.getFile().getPath();
 					if (fileName!=null) {
-						return new_book(fileName, this);
+						ret = new_book(fileName, this);
 					}
 				}
 			} else {
 				if (bid>=0&&bid<md.size())
-					return md.get((int) bid);
+					ret = md.get((int) bid);
 			}
 		} catch (IOException e) {
 			CMN.Log(e);
 		}
-		return null;
+		if(ret==null)
+			ret=EmptyBook;
+		return ret;
 	}
 	
 	public String getBookNameByIdNoCreation(long bid) {
@@ -3769,6 +3836,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CMN.Log(e);
 		}
 		return null;
+	}
+	
+	
+	private void putCurrFavoriteNoteBookId(long value) {
+		opt.putCurrFavoriteNoteBookId(value);
+		prepareHistoryCon().setFavoriteFolderId(value);
+	}
+	
+	public boolean GetIsFavoriteTerm(String text) {
+		return prepareFavoriteCon().GetIsFavoriteTerm(text, (!getUsingDataV2()||opt.getFavoritePerceptsAll())?-1:-2);
+	}
+	
+	public void removeFavoriteTerm(String text) {
+		prepareFavoriteCon().remove(text, (!getUsingDataV2()||opt.getFavoritePerceptsRemoveAll())?-1:-2);
 	}
 	
 	public final class UniCoverClicker implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
@@ -4887,8 +4968,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						json.put("y", mWebView.getScrollY());
 						json.put("s", mWebView.webScale);
 						values.put(LexicalDBHelper.FIELD_PARAMETERS, json.toString().getBytes());
-						long id = prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
-						showT(id+", "+value);
+						prepareHistoryCon().getDB().insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
+						//showT(id+", "+value);
 					}
 				} catch (JSONException e) { CMN.Log(e); }
 			}
@@ -5653,7 +5734,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							PrvNxtABC.rejectIdx=-1;
 							cancleSnack();
 						}
-						if(currentDictionary!=null) {
+						if(currentDictionary!=EmptyBook) {
 							//showTopSnack(currentDictionary._Dictionary_fName);
 							postPutName(1000);
 						}
@@ -5777,7 +5858,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(cc>md.size())
 							break;
 						
-						if (CCD!=null) {
+						if (CCD!=EmptyBook) {
 							if(CCD.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
 								PlainWeb webx = (PlainWeb) CCD.bookImpl;
 								if(webx.takeWord(key)) {
@@ -5798,12 +5879,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 						}
 
-						if(idx>=0 || hasDedicatedSeachGroup && CCD!=null ||  !PDICMainAppOptions.getSkipClickSearch())
+						if(idx>=0 || hasDedicatedSeachGroup && CCD!=EmptyBook ||  !PDICMainAppOptions.getSkipClickSearch())
 							break;
 					}
 
 					//应用轮询结果
-					if(OldCCD!=CCD_ID && CCD!=null){
+					if(OldCCD!=CCD_ID && CCD!=EmptyBook){
 						if(PDICMainAppOptions.getSwichClickSearchDictOnNav()){
 							currentClick_adapter_idx = CCD_ID;
 						}
@@ -5874,7 +5955,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(p.getParent() instanceof ViewGroup)
 						//选择收藏夹
 						if(id_==R.id.favorList) {
-							opt.putCurrFavoriteNoteBookId(item.value);
+							putCurrFavoriteNoteBookId(item.value);
 							AppFunAdapter.notifyDataSetChanged();
 						}
 						//删除收藏夹
@@ -6044,8 +6125,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 					String key = ActivedAdapter.currentKeyText;
-					if (prepareFavoriteCon().contains(key)) {
-						favoriteCon.remove(key, opt.getFavoritePerceptsRemoveAll()?-1:opt.getCurrFavoriteNoteBookId());
+					if(GetIsFavoriteTerm(key)) {
+						removeFavoriteTerm(key);
 						v.setActivated(false);
 						show(R.string.removed);
 					} else {
@@ -6426,11 +6507,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	void toggleStar(String key, ImageView futton, boolean toast, ViewGroup webviewholder) {
 		key = key.trim();
-		if(prepareFavoriteCon().contains(key)) {
-			favoriteCon.remove(key, opt.getFavoritePerceptsRemoveAll()?-1:opt.getCurrFavoriteNoteBookId());
+		if(GetIsFavoriteTerm(key)) {
+			removeFavoriteTerm(key);
 			futton.setActivated(false);
 			if(toast)show(R.string.removed);
-		}else {
+		} else {
 			favoriteCon.insert(this, key, opt.getCurrFavoriteNoteBookId(), webviewholder);
 			futton.setActivated(true);
 			if(toast)show(R.string.added);
@@ -7095,7 +7176,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							//show(R.string.loadsucc);
 							showTopSnack(main_succinct, R.string.loadsucc
 									, -1, -1, Gravity.CENTER, 0);
-							if(this_instanceof_PDICMainActivity) {
+							if(this_instanceof_PDICMainActivity
+								&& opt.getCacheCurrentGroup()) {
 								// todo 干掉缓冲组
 								File def1 = new File(getExternalFilesDir(null), "default.txt");
 								if(def1.length()>0) {
@@ -7829,7 +7911,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								mWebView.isloading = true;
 								StringBuilder htmlBuilder = invoker.AcquirePageBuilder();
 								if(fromPopup){
-									popupHistory.add(++popupHistoryVagranter, new myCpr<>(CCD!=null?CCD.getLexicalEntryAt(idx):currentClickDisplaying, new int[]{CCD_ID, idx}));
+									popupHistory.add(++popupHistoryVagranter, new myCpr<>(CCD.getLexicalEntryAt(idx), new int[]{CCD_ID, idx}));
 									if (popupHistory.size() > popupHistoryVagranter + 1) {
 										popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
 									}
@@ -8414,8 +8496,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				PlaceHolder phTmp = CosyChair.get(i);
 				if (PDICMainAppOptions.getTmpIsAudior(phTmp.tmpIsFlag)) {
 					try {
-						md.set(i, mdTmp = new_book(phTmp.getPath(opt), MainActivityUIBase.this));
-						mdTmp.tmpIsFlag = phTmp.tmpIsFlag;
+						md.set(i, mdTmp = new_book(phTmp, MainActivityUIBase.this));
 					} catch (Exception ignored) { }
 				}
 			}
@@ -9207,7 +9288,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		WebViewmy wv;
 		String target;
 		
-		if(read_click_search && CCD!=null) {
+		if(read_click_search && CCD!=EmptyBook) {
 			mCurrentDictionary = CCD;
 			target = currentClickDisplaying;
 			wv = popupWebView;
@@ -9479,10 +9560,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	/** 接管跳转翻阅。来自包括分享中枢、get12菜单。*/
 	public void JumpToPeruseModeWithWord(String content) {
 		//CMN.Log(" Jump To Peruse ...  ", content);
-		getPeruseView().prepareJump(this, content, null, 0);
-		AttachPeruseView(content!=null);
+		JumpToPeruseMode(content, null, -1, content!=null);
 	}
-
+	
+	public void JumpToPeruseMode(String text, ArrayList<Long> bookIds, long bookId, boolean refresh) {
+		if(bookId==-1) {
+			bookId = currentDictionary.getId();
+		} else if(bookId==-2){
+			bookId = bookIds!=null && bookIds.size()>0?bookIds.get(0):-1;
+		}
+		getPeruseView().prepareJump(this, text, bookIds, bookId);
+		AttachPeruseView(refresh);
+	}
+	
 	abstract ArrayList<PlaceHolder> getLazyCC();
 	abstract ArrayList<PlaceHolder> getLazyCS();
 	abstract ArrayList<PlaceHolder> getLazyHC();
@@ -9698,15 +9788,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if (DBrowser!=null) {
 						if(reason1!=2 && DBrowser.getFragmentId()==1) {
 							//CMN.Log("// 加载收藏夹", NID);
-							opt.putCurrFavoriteNoteBookId(NID);
+							putCurrFavoriteNoteBookId(NID);
 							DBrowser.Selection.clear();
 							DBrowser.loadInAll(this);
 						} else if(reason1==2 && DBrowser!=null) {
 							// 移动收藏夹
 							DBrowser.moveSelectedCardsToFolder(name, NID);
 						}
+					} else {
+						putCurrFavoriteNoteBookId(NID);
 					}
-				} else {
+				}
+				else {
 					MyPair<String, LexicalDBHelper> item = AppFunAdapter.notebooks.get(position);
 					name = item.key;
 					LexicalDBHelper _favoriteCon = item.value;

@@ -95,15 +95,16 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 	}
 	
 	@Override
-	public ArrayList<Long> getDictsAt(int pos) {
+	public ArrayList<Long> getBooksAt(ArrayList<Long> books, int pos) {
+		if(books==null) books=new ArrayList<>();
+		else {books.clear();}
 		if(size<=0 || pos<0 || pos>size-1)
-			return null;
+			return books;
 		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
-			return null;
-		ArrayList<Long> ret = new ArrayList<>();
-		ret.add(firstLookUpTable[Rgn+1]);
-		return ret;
+			return books;
+		books.add(firstLookUpTable[Rgn+1]);
+		return books;
 	}
 
 	@Override
@@ -115,15 +116,6 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 	}
 
 	@Override
-	public void syncToPeruseArr(ArrayList<Long> pvdata, int pos) {
-		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
-		pvdata.clear();
-		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
-			return;
-		pvdata.add(firstLookUpTable[Rgn+1]);
-	}
-
-	@Override
 	public CharSequence getResAt(MainActivityUIBase a, long pos) {
 		if(size<=0 || pos<0 || pos>size-1)
 			return "!!! Error: code 1";
@@ -131,7 +123,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
 			return "!!! Error: code 2 Rgn="+Rgn/2+" size="+md.size();
 		BookPresenter presenter = a.getBookById(firstLookUpTable[Rgn+1]);
-		if(presenter==null) return "!!! Error: lazy load error failed.";
+		if(presenter==a.EmptyBook) return "!!! Error: lazy load error failed.";
 		bookId=presenter.getId();
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-2];
@@ -165,11 +157,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
 			return null;
-		BookPresenter presenter = a.getBookById(firstLookUpTable[Rgn+1]);
-		if(presenter!=null) {
-			return presenter.currentDisplaying;
-		}
-		return null;
+		return a.getBookById(firstLookUpTable[Rgn+1]).currentDisplaying;
 	}
 
 	@Override
@@ -181,7 +169,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
 			return;
 		BookPresenter presenter = a.getBookById(firstLookUpTable[Rgn+1]);
-		if(presenter==null){
+		if(presenter==a.EmptyBook){
 			CMN.Log("!!! Error: lazy load error failed.");
 			return;
 		}

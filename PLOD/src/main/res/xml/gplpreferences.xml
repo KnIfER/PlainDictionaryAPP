@@ -6,28 +6,28 @@
 		<com.knziha.plod.settings.URLPreference
 			android:key="https://github.com/KnIfER/PlainDictionaryAPP"
 			android:summary="GPL3.0"
-			android:title="KnIfER/PlainDict"/>
+			android:title="KnIfER/PlainDict | 开源的旧版本"/>
 
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/KnIfER/mdict-java"
 			android:summary="GPL3.0"
-			android:title="KnIfER/Mdict-Java"/>
+			android:title="KnIfER/Mdict-Java | 开源的Java库"/>
 
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://bitbucket.org/xwang/"
 			android:summary="Public domain"
-			android:title="xwang/python-mdict-analysis"/>
+			android:title="xwang/python-mdict-analysis | Mdict 格式解析"/>
 
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/fengdh/mdict-js"
 			android:summary="Public domain"
-			android:title="fengdh/mdict-js"/>
+			android:title="fengdh/mdict-js | 用 JavaScript 打开 Mdict"/>
 
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"
@@ -39,9 +39,9 @@
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
-			android:key="https://github.com/benelog/multiline"
+			android:key="https://gitee.com/knziha/Metaline"
 			android:summary="Public domain"
-			android:title="benelog/multiline"/>
+			android:title="KnIfER/Metaline | 元线注解模块"/>
 
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"
@@ -69,7 +69,7 @@
 			app:allowDividerBelow="true"
 			android:key="https://github.com/bauerca/drag-sort-listview"
 			android:summary="Public domain"
-			android:title="bauerca/drag-sort-listview"/>
+			android:title="bauerca/drag-sort-listview | 可排序列表"/>
 
 		<com.knziha.plod.settings.URLPreference
 			app:allowDividerAbove="true"

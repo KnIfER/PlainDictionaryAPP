@@ -454,8 +454,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		dvProgressFrac = a_dv.findViewById(R.id.progressFrac);
 		dvResultN = a_dv.findViewById(R.id.resultN);
 		dvDictFrac = a_dv.findViewById(R.id.tv);
-		if(currentDictionary!=null)
-			dvTitle.setText(currentDictionary.bookImpl.getDictionaryName());
+		dvTitle.setText(currentDictionary.bookImpl.getDictionaryName());
 		/* 跳过 */
 		a_dv.findViewById(R.id.skip).setOnClickListener(v14 -> {
 			if(currentSearchingDictIdx<md.size()){
@@ -952,7 +951,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		toolbar.inflateMenu(R.menu.menu);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
 		SingleContentMenu = MapNumberToMenu(0, 4, 2, 3, 9, 11, 12);
-		Multi_ContentMenu = MapNumberToMenu(0, 4, 1, 2, 3, 9, 10, 12);
+		Multi_ContentMenu = MapNumberToMenu(0, 4, 2, 1, 3, 9, 10, 12);
 		MainMenu = MapNumberToMenu(0, 4, 7, 8);
 		LEFTMenu = MapNumberToMenu(0, 4, 7, 5, 6);
 		
@@ -1174,7 +1173,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				//CMN.Log("onPreparePage!!!");
 				//mPageCanvas.drawColor(Color.WHITE);
 				currentPos=0;
-				if(currentDictionary!=null&&currentDictionary.mWebView!=null){
+				if(currentDictionary.mWebView!=null){
 					currentPos=currentDictionary.mWebView.currentPos;
 				}
 				if(Build.VERSION.SDK_INT>23){
@@ -1483,7 +1482,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 
 		//switch_To_Dict_Idx(adapter_idx);
-		if(currentDictionary!=null) {
+		if(currentDictionary!=EmptyBook) {
 			lv.post(() -> {
 				lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
 				setLv1ScrollChanged();
@@ -1653,6 +1652,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		//tg
 		//etSearch.setText("happy");
+//		etSearch.setText("beat");
 //		etSearch.setText("vignette");
 //		etSearch.setText("class=\"main\"");
 //		etSearch.setText("Label");
@@ -2244,7 +2244,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			bNeedSaveViewStates = false;
 			currentDictionary.lvPos = lv.getFirstVisiblePosition();
 		}
-		if(PDICMainAppOptions.getEnableResumeDebug() && currentDictionary!=null){
+		if(PDICMainAppOptions.getEnableResumeDebug()){
 			//currentDictionary.Reload();
 		}
 	}
@@ -2257,18 +2257,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	private void checkDictionaryProject(boolean performSave) {
-		if(currentDictionary!=null) {
-			if (currentDictionary.getType()== DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
-				((PlainWeb)currentDictionary.bookImpl).saveWebSearches(this, prepareHistoryCon());
-			if(bNeedSaveViewStates) {
-				int pos = lv.getFirstVisiblePosition();
-				if(currentDictionary.lvPos != pos && !PDICMainAppOptions.getSimpleMode()){
-					currentDictionary.lvPos = pos;
-					if(lv.getChildAt(0)!=null) currentDictionary.lvPosOff=lv.getChildAt(0).getTop();
-					currentDictionary.saveStates(this, prepareHistoryCon());
-				}
-				bNeedSaveViewStates =false;
+		if (currentDictionary.getType()== DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
+			((PlainWeb)currentDictionary.bookImpl).saveWebSearches(this, prepareHistoryCon());
+		if(bNeedSaveViewStates) {
+			int pos = lv.getFirstVisiblePosition();
+			if(currentDictionary.lvPos != pos && !PDICMainAppOptions.getSimpleMode()){
+				currentDictionary.lvPos = pos;
+				if(lv.getChildAt(0)!=null) currentDictionary.lvPosOff=lv.getChildAt(0).getTop();
+				currentDictionary.saveStates(this, prepareHistoryCon());
 			}
+			bNeedSaveViewStates =false;
 		}
 //		if(performSave && dirtyMap.size()>0){
 //			CMN.rt();
@@ -2449,11 +2447,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		@Override
 		public int getCount() {
-			if(md.size()>0 && currentDictionary!=null) {
-				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && BookPresenter.class.equals(currentDictionary.getClass()))
+			if(md.size()>0) {
+				if(PDICMainAppOptions.getSimpleMode() && etSearch.getText().length()==0 && BookPresenter.class.equals(currentDictionary.getClass())) //todo ???
 					return 0;
 				return (int) currentDictionary.bookImpl.getNumberEntries();
-			}else{
+			} else {
 				return 0;
 			}
 		}
@@ -2495,7 +2493,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		@Override
 		public void SaveVOA() {
-			if(currentDictionary!=null) {
+			if(currentDictionary!=EmptyBook) {
 				if (opt.getRemPos()) {
 					new SaveAndRestorePagePosDelegate().SaveVOA(PageSlider.WebContext, this);
 				}
@@ -2511,7 +2509,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		@Override
 		public void ClearVOA() {
 			super.ClearVOA();
-			if(currentDictionary!=null) {
+			{
 				//CMN.Log("江河湖海",currentDictionary.expectedPosX,currentDictionary.expectedPos,currentDictionary.webScale);
 				if(opt.getRemPos())
 					avoyager.put(currentDictionary.lvClickPos, new ScrollerRecord(currentDictionary.mWebView.expectedPosX,currentDictionary.mWebView.expectedPos,currentDictionary.mWebView.webScale));
@@ -2698,15 +2696,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				vh.title.setTextColor(AppBlack);
 			}
 			vh.title.setText(currentKeyText);
-			BookPresenter presenter = getBookById(combining_search_result.bookId);
 //			if(combining_search_result.mflag.data!=null){
 //				vh.subtitle.setText(Html.fromHtml(currentDictionary.appendCleanDictionaryName(null).append("<font color='#2B4391'> < ").append(combining_search_result.mflag.data).append(" ></font >").toString()));
 //			} else {
 //
 //			}
-			if (presenter!=null) {
-				vh.subtitle.setText(presenter.getDictionaryName());
-			}
+			vh.subtitle.setText(getBookById(combining_search_result.bookId).getDictionaryName());
 			if(combining_search_result.getClass()==resultRecorderCombined.class)
 				((TextView)vh.subtitle.getTag()).setText(((resultRecorderCombined)combining_search_result).count);
 			//vh.itemView.setTag(R.id.position,position);
@@ -2749,9 +2744,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
 				PeruseView pv = getPeruseView();
 				pv.RestoreOldAI();
-				combining_search_result.syncToPeruseArr(pv.bookIds, pos);
-				pv.TextToSearch = combining_search_result.getResAt(PDICMainActivity.this, pos).toString();
-				AttachPeruseView(true);
+				JumpToPeruseMode(combining_search_result.getResAt(PDICMainActivity.this, pos).toString(), combining_search_result.getBooksAt(pv.bookIds, pos), -2, true);
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 				return;
 			}

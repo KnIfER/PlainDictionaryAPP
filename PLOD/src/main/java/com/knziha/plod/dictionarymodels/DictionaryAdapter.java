@@ -35,6 +35,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 		,PLAIN_TYPE_MDICT
 		,PLAIN_TYPE_PDF
 		,PLAIN_TYPE_DSL
+		,PLAIN_TYPE_EMPTY
 	}
 	File f;
 	long _bid;
@@ -54,6 +55,8 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	protected int checkEven;
 	protected int maxEB;
 	
+	public String htmlOpenTagStr="<";
+	public String htmlCloseTagStr=">";
 	public byte[] htmlOpenTag;
 	public byte[] htmlCloseTag;
 	public byte[][] htmlTags;
@@ -69,6 +72,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 		if (_a!=null) {
 			opt=_a.opt;
 		}
+		mType = PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY;
 	}
 	
 	protected DictionaryAdapter() {
@@ -166,12 +170,12 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	
 	@Override
 	public int lookUp(String keyword, boolean isSrict) {
-		return 0;
+		return -1;
 	}
 	
 	@Override
 	public int lookUp(String keyword) {
-		return 0;
+		return lookUp(keyword, false);
 	}
 	
 	@Override
@@ -266,8 +270,8 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	}
 	
 	protected void postGetCharset() {
-		htmlOpenTag = "<".getBytes(_charset);
-		htmlCloseTag = ">".getBytes(_charset);
+		htmlOpenTag = htmlOpenTagStr.getBytes(_charset);
+		htmlCloseTag = htmlCloseTagStr.getBytes(_charset);
 		htmlTags = new byte[][]{htmlOpenTag, htmlCloseTag};
 		htmlTagsA = new byte[][]{htmlOpenTag};
 		htmlTagsB = new byte[][]{htmlCloseTag};
@@ -326,17 +330,30 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	
 	protected int flowerIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][][] matchers, int marcherOffest, int fromIndex, mdict.AbsAdvancedSearchLogicLayer launcher, F1ag flag, ArrayList<Object> mParallelKeys, int[] jumpMap)
 	{
-		int tagCheckFrame = 64;
+		int tagCheckFrame = 32;
+		int tagSkipFrame = 32;
 		int lastSeekLetSize=0;
 		int totalLen = matchers.length;
 		boolean bSearchInContents = launcher.type==SEARCHTYPE_SEARCHINTEXTS;
-		boolean bCheckTags = bSearchInContents;
 		boolean trimStart = fromIndex==0 && (jumpMap[matchers.length]&1)!=0;
 		int hudieling;
-		//if(true) checkEven=0;
+		if(true) {
+			//checkEven=0;
+			//bCheckTags=false;
+		}
 //		boolean debug=false;
 //		if(new String(source, sourceOffset, sourceCount, _charset).equals("democracy")) {
 //			SU.Log("正在搜索"); debug=true;
+//		}
+		int bInTagCheckNeeded=-1;
+//		RBTree<MyIntPair> tagsMap = new RBTree<>();
+//		for (int i = 0; i < sourceCount; i++) {
+//			if (source[i]==htmlOpenTag[0]) {
+//				//tagsMap.insert(new MyIntPair(i,0));
+//			}
+//			else if(source[i]==htmlCloseTag[0]) {
+//				//tagsMap.insert(new MyIntPair(i,0));
+//			}
 //		}
 		while(fromIndex<sourceCount) {
 			//SU.Log("==");
@@ -437,43 +454,6 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 //							}
 						}
 						if (pass) {
-							if(bCheckTags){
-								//todo skip html tags 检查不在<>之中。 往前找>，截止于<>两者。若找先到<则放行。
-								//									若找先到>则需要进一步检查。 [36]
-								//									往后找<，截止于<>两者。若找先到>则放行。[36]
-								//									若找先到<则简单认为需要跳过。
-								int from = newSeekPos+lastSeekLetSize;
-								int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlTags, from, flag);
-								
-								if (htmlForward>=from) {
-									if(flag.val==1){ // x >
-										from = newSeekPos-1;
-										int htmlBackward = safeKalyxLastIndexOf(source, sourceOffset, sourceOffset+Math.max(0, from-tagCheckFrame), htmlTags, from, flag);
-										if(htmlBackward>=0){
-											if(flag.val==0){ // < x
-												fromIndex=fromIndex_=htmlForward+htmlTags[flag.val].length;
-												lexiPartIdx--;
-												continue;
-											}
-										}
-									} else if(htmlForward==from){// 紧邻<
-										while(bingStartWith(source,sourceOffset,sourceCount,htmlOpenTag, 0,htmlOpenTag.length,from)){
-											from+=htmlOpenTag.length;
-											htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlTagsB, from, flag);
-											if(htmlForward>=from+htmlCloseTag.length){
-												from=htmlForward+htmlCloseTag.length;
-												newSeekPos=from-lastSeekLetSize;
-												//CMN.Log("跳过！");
-											} else break;
-										}
-//										from = htmlForward+htmlTags[flag.val].length;
-//										htmlForward = safeKalyxIndexOf(source, sourceOffset, from+36, htmlTagsB, from, flag);
-//										if(htmlForward>=from){
-//											newSeekPos = htmlForward+htmlTagsB[0].length-lastSeekLetSize;
-//										}
-									}
-								}
-							}
 							seekPos = newSeekPos;
 							Matched = true;
 						}
@@ -505,22 +485,38 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 						if(marchLet==null) break;
 						if(bingStartWith(source,sourceOffset, sourceCount, marchLet,0,marchLet.length,fromIndex_)) {
 							Matched=true;
+							if(bInTagCheckNeeded>=0){
+								//延后的标签内检查 delay the check
+								int from = bInTagCheckNeeded;
+								//todo skip html tags 检查不在<>之中。 前进找>，截止于<>两者。若找先到<则放行。
+								//									若找先到>则需要进一步检查。 [36]
+								//									后退找<，截止于<>两者。若找先到>则放行。[36]
+								//									若找先到<则简单认为需要跳过。
+								//int htmlForward = indexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlCloseTag, 0, htmlCloseTag.length, from);
+								int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlTags, from, flag);
+								if (htmlForward>=from) {
+									//if(flag.val==1){ // x >
+									from = bInTagCheckNeeded-1;
+									//int htmlBackward = safeKalyxLastIndexOf(source, sourceOffset, sourceOffset+Math.max(0, from-tagCheckFrame), htmlTags, from, flag);
+									int htmlBackward = safeKalyxLastIndexOf(source, sourceOffset, sourceOffset+Math.max(0, from-tagCheckFrame), htmlTags, from, flag);
+									if(htmlBackward>=0){
+										if(flag.val==0){ // < x
+											fromIndex=fromIndex_=htmlForward+htmlTags[flag.val].length;
+											Matched=false;
+											bInTagCheckNeeded=0;
+											break; // re-seek
+										}
+									}
+									//}
+								}
+								bInTagCheckNeeded=0;
+							}
 //							if(debug) {
 //								SU.Log("matchedHonestily: ", sourceCount, "::", " fromIndex_: ", fromIndex_ + " seekPos: ");
 //								SU.Log("matchedHonestily: ", lexiPartIdx, mParallelKeys.get(lexiPartIdx));
 //							}
 							fromIndex_+=marchLet.length;
 							break;
-						}
-					}
-					if(Matched && bCheckTags) {
-						//todo skip html tags 三步，检查紧邻< ，搜索>，而后推进fromIndex_
-						while(bingStartWith(source,sourceOffset,sourceCount,htmlOpenTag, 0,htmlOpenTag.length,fromIndex_)){
-							int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, fromIndex_+htmlOpenTag.length+tagCheckFrame), htmlTagsB, fromIndex_+htmlOpenTag.length, flag);
-							if(htmlForward>=fromIndex_+htmlOpenTag.length){
-								fromIndex_=htmlForward+htmlCloseTag.length;
-								//CMN.Log("跳过！");
-							} else break;
 						}
 					}
 				}/* End honest match */
@@ -539,6 +535,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 		}
 		return -1;
 	}
+
 	
 	public int safeKalyxIndexOf(byte[] source, int sourceOffset, int sourceCount, byte[][] targets, int fromIndex, F1ag seelHolder) {
 		int fromIndex_ = fromIndex;

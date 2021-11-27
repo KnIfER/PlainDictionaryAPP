@@ -832,26 +832,26 @@ public abstract class mdBase {
 		cached_key_block infoI_cache = prepareItemByKeyInfo(infoI, blockId, null);
 
 		int i = (int) (position-infoI.num_entries_accumulator);
-		Integer Rinfo_id = findRecordBlockByKeyOff(infoI_cache.key_offsets[i],0,_record_info_struct_list.length);//accumulation_RecordB_tree.xxing(new mdictRes.myCpr(,1)).getKey().value;//null 过 key前
+		int Rinfo_id = findRecordBlockByKeyOff(infoI_cache.key_offsets[i],0,_record_info_struct_list.length);//accumulation_RecordB_tree.xxing(new mdictRes.myCpr(,1)).getKey().value;//null 过 key前
 		record_info_struct RinfoI = _record_info_struct_list[Rinfo_id];
 
 		cached_rec_block RinfoI_cache = prepareRecordBlock(RinfoI,Rinfo_id);
 
 		// split record block according to the offset info from key block
-		long record_start = infoI_cache.key_offsets[i]-RinfoI.decompressed_size_accumulator;
-		long record_end;
+		int record_start = (int) (infoI_cache.key_offsets[i]-RinfoI.decompressed_size_accumulator);
+		int record_end;
 		if (i < infoI.num_entries-1){
-			record_end = infoI_cache.key_offsets[i+1]-RinfoI.decompressed_size_accumulator;
+			record_end = (int) (infoI_cache.key_offsets[i+1]-RinfoI.decompressed_size_accumulator);
 		}
 		else {
 			if (blockId + 1 < _key_block_info_list.length) {
 				//TODO construct a margin checker
-				record_end = prepareItemByKeyInfo(null, blockId + 1, null).key_offsets[0] - RinfoI.decompressed_size_accumulator;
+				record_end = (int) (prepareItemByKeyInfo(null, blockId + 1, null).key_offsets[0] - RinfoI.decompressed_size_accumulator);
 			} else
 				record_end = rec_decompressed_size;
 		}
-		retriever.ral=(int)record_start+RinfoI_cache.blockOff;
-		retriever.val=(int)record_end+RinfoI_cache.blockOff;
+		retriever.ral=record_start+RinfoI_cache.blockOff;
+		retriever.val=record_end+RinfoI_cache.blockOff;
 		/* May have resource reroute target */
 		if(compareByteArrayIsPara(RinfoI_cache.record_block_, retriever.ral, linkRenderByt)){
 			int length = (int) (record_end-record_start-linkRenderByt.length);

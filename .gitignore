@@ -45,3 +45,4 @@ GestureView/
 *.log
 
 assets_release
+.cxx

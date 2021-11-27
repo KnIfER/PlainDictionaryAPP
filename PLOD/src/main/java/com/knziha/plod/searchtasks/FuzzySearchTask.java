@@ -66,8 +66,7 @@ public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
 						PlaceHolder phI = a.getPlaceHolderAt(i);
 						if(phI!=null) {
 							try {
-								md.set(i, mdTmp= MainActivityUIBase.new_book(phI.getPath(a.opt), a));
-								mdTmp.tmpIsFlag = phI.tmpIsFlag;
+								md.set(i, mdTmp= MainActivityUIBase.new_book(phI, a));
 							} catch (Exception ignored) { }
 						}
 					}

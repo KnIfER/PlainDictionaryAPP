@@ -44,17 +44,12 @@ public class resultRecorderDiscrete {
 		return 0;
 	}
 
-	@Deprecated
-	public ArrayList<Long> getDictsAt(int pos) {
+	public ArrayList<Long> getBooksAt(ArrayList<Long> books, int pos) {
 		return new ArrayList<>();
 	}
 
 	public boolean checkAllWebs(MainActivityUIBase mainActivityUIBase, ArrayList<BookPresenter> md) {
 		return false;
-	}
-
-	public void syncToPeruseArr(ArrayList<Long> pvdata, int pos) {
-		pvdata.clear();
 	}
 
 	public boolean shouldSaveHistory() {

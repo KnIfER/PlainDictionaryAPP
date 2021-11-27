@@ -110,7 +110,7 @@
 	<string name="stg_grantnow">Grant now</string>
 	<string name="trialin">Trial…… #</string>
 	<string name="stgerr_fail">Sorry, but cannot use this app on you device.</string>
-	<string name="infoStr">Plain Dictionary —— Mini android text search engine designed for mdx. \n\nOthers\：Bluedict(Inspired by) 、Bing dictionary(Inspired by) 、MdictPC(Origin) \n\n[Open Source] \n\n[Feedback]</string>
+	<string name="infoStr">平典搜索（PlainDict）——安卓平台的查词软件，绿色小巧，精通十八般武艺（支持在线词典和在线翻译、支持直接打开两种经典的词典格式，支持查看PDF文件，支持点译、高亮标注等）。\n\n当前版本号码：%s\n\n相关APP\：Bluedict(启发) 、Bing 词典(启发) 、MdictPC(启发)、LingVo(启发) \n\n[开源许可证] \n\n[反映问题]</string>
 	<string name="licence">Open Source Licences</string>
 	<string name="bmAdd">Add Bookmark</string>
 	<string name="language">Language</string>

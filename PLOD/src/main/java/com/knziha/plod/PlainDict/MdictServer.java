@@ -143,10 +143,10 @@ public abstract class MdictServer extends NanoHTTPD {
 			for(int i=0;i<combining_search_result.size();i++) {
 				additiveMyCpr1 resI = combining_search_result.get(i);
 				sb_.append(resI.key).append("\r");
-				ArrayList<Integer> result = (ArrayList<Integer>) resI.value;
-				int lastIdx=-1;
+				ArrayList<Long> result = (ArrayList<Long>) resI.value;
+				long lastIdx=-1;
 				for(int ii=0;ii<result.size();ii+=2) {
-					int currIdx=result.get(ii);
+					long currIdx=result.get(ii);
 					if(lastIdx!=currIdx) {
 						if(lastIdx!=-1)
 							sb_.append("&");

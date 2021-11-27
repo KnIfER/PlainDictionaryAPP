@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.os.ParcelFileDescriptor;
@@ -59,6 +58,12 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
     public String pathName;
 	
 	public final boolean testDBV2;
+	
+	public void setFavoriteFolderId(long favoriteFolderId) {
+		this.favoriteFolderId = favoriteFolderId;
+	}
+	
+	private long favoriteFolderId = -1;
 	
 	static LexicalDBHelper instance;
 	boolean closed = false;
@@ -302,31 +307,32 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
     }
 
     /////
-	/** contain text term in the favorite table */
-    public boolean contains(String id) {
-		//preparedSelectExecutor.clearBindings();
-		preparedGetIsFavoriteWord.bindString(1, id);
-		try {
-			//Log.e("preparedSelectExecutor",preparedSelectExecutor.simpleQueryForString());
-			preparedGetIsFavoriteWord.simpleQueryForLong();
-			return true;
-		} catch(Exception e) {
-			//CMN.Log(e);
+	/** has text term in the favorite table */
+    public boolean GetIsFavoriteTerm(String lex, long folder) {
+    	if (folder==-2) {
+			folder = favoriteFolderId;
 		}
-		return false;
-	}
-	
-	/** contain text term in the specific folder of favorite table */
-    public boolean containsPrecise(String lex, long folder) {
-		//preparedSelectExecutor.clearBindings();
-		preparedGetIsFavoriteWordInFolder.bindString(1, lex);
-		preparedGetIsFavoriteWordInFolder.bindLong(2, folder);
-		try {
-			//Log.e("preparedSelectExecutor",preparedSelectExecutor.simpleQueryForString());
-			preparedGetIsFavoriteWordInFolder.simpleQueryForLong();
-			return true;
-		} catch(Exception e) {
-			//CMN.Log(e);
+    	if (folder>=0) {
+    		// Get Is Favorite Term For Folder
+			preparedGetIsFavoriteWordInFolder.bindString(1, lex);
+			preparedGetIsFavoriteWordInFolder.bindLong(2, folder);
+			try {
+				//Log.e("preparedSelectExecutor",preparedSelectExecutor.simpleQueryForString());
+				preparedGetIsFavoriteWordInFolder.simpleQueryForLong();
+				return true;
+			} catch(Exception e) {
+				//CMN.Log(e);
+			}
+		} else {
+    		// for all
+			preparedGetIsFavoriteWord.bindString(1, lex);
+			try {
+				//Log.e("preparedSelectExecutor",preparedSelectExecutor.simpleQueryForString());
+				preparedGetIsFavoriteWord.simpleQueryForLong();
+				return true;
+			} catch(Exception e) {
+				//CMN.Log(e);
+			}
 		}
 		return false;
 	}
@@ -405,7 +411,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			values.put(Date, System.currentTimeMillis());
 			lastAdded=true;
 			long ret=-1;
-			if(!contains(lex)) {
+			if(!GetIsFavoriteTerm(lex, -1)) {
 				ret = database.insert(TABLE_MARKS, null, values);
 			} else {
 				ret = database.update(TABLE_MARKS, values, "lex =?", new String[]{lex});
@@ -421,8 +427,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	 **/
 	public int remove(String lex, long folder) {
 		lastAdded=true;
+		if(folder==-2) {
+			folder = favoriteFolderId;
+		}
 		if (testDBV2) {
-			if (folder==-1) {
+			if (folder<0) {
 				return database.delete(TABLE_FAVORITE_v2, Key_ID + " = ? ", new String[]{lex});
 			} else {
 				return database.delete(TABLE_FAVORITE_v2, "lex=? and folder=?", new String[]{lex, ""+folder});
@@ -448,7 +457,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			CMN.Log("insertUpdate");
 			lastAdded=true;
 			long ret=-1;
-			if(!contains(lex)) {
+			if(!GetIsFavoriteTerm(lex, -1)) {
 				ret = insert(a, lex, 0, null);
 			} else {
 				ContentValues values = new ContentValues();

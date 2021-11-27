@@ -35,6 +35,8 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 
+import static com.knziha.plod.plaindict.MainActivityUIBase.SessionFlag;
+
 public class PDICMainAppOptions implements MdictServer.AppOptions
 {
 	public boolean isAudioPlaying;
@@ -346,7 +348,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	//////////   ET   //////////
 	
 	//////////   First Boolean Flag   //////////
-	public static long SessionFlag;
 	private static Long FirstFlag=null;
 	public long getFirstFlag() {
 		if(FirstFlag==null) {
@@ -2246,8 +2247,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=11, shift=1) public static boolean checkVersionBefore_4_9() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=11, shift=1) public static void uncheckVersionBefore_4_9(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=12, shift=1) public boolean getFavoritePerceptsRemoveAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=13, shift=1) public boolean getFavoritePerceptsAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12) public boolean getFavoritePerceptsRemoveAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=13) public boolean getFavoritePerceptsAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=14, shift=0/*, debug=0*/) public static boolean getUseDatabaseV2() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=14, shift=0) public static void setUseDatabaseV2(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2259,6 +2260,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=16) public boolean getAlwaysShowScrollRect() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=16) public void setAlwaysShowScrollRect(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=17, debug=0) public boolean getCacheCurrentGroup() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF
@@ -2389,6 +2392,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		long mask = ~(7<<20);
 		flag = flag&mask|valex;
 		return flag;
+	}
+	
+	@Metaline(flagPos=0) public boolean getIgnoreReloadWarning(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=1) public boolean getReloadWebView(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=0, flagSize=8) public int getPseudoInitCode(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2, flagSize=6) public void setPseudoInitCode(int value){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	public int getPseudoInitCode(int pseudoInit) {
+		return (getPseudoInitCode()&~3)|pseudoInit;
 	}
 	
 	//////

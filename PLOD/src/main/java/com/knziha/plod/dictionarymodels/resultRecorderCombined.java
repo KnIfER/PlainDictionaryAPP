@@ -31,15 +31,16 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	}
 	
 	@Override
-	public ArrayList<Long> getDictsAt(int pos) {
+	public ArrayList<Long> getBooksAt(ArrayList<Long> books, int pos) {
 		ArrayList<Long> data = getRecordAt(pos);
-		ArrayList<Long> data2=new ArrayList<>();
+		if(books==null) books=new ArrayList<>(data.size()/2);
+		else {books.clear();books.ensureCapacity(data.size()/2);}
 		long last=-1;
 		for(int i=0;i<data.size();i+=2) {
 			if(last!=data.get(i))
-				data2.add(last=data.get(i));
+				books.add(last=data.get(i));
 		}
-		return data2;
+		return books;
 	}
 
 	@Override
@@ -50,29 +51,15 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	@Override
 	public boolean checkAllWebs(MainActivityUIBase a, ArrayList<BookPresenter> md) {
 		ArrayList<Long> data = getRecordAt(0);
-		BookPresenter bp;
 		allWebs=true;
 		for(int i=0;i<data.size();i+=2) {
 			long toFind=data.get(i);
-			bp = a.getBookById(toFind);
-			if (bp!=null && bp.getType()!=DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+			if (a.getBookById(toFind).getType()!=DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
 				allWebs=false;
 				break;
 			}
 		}
 		return allWebs;
-	}
-
-	@Override
-	public void syncToPeruseArr(ArrayList<Long> pvdata, int pos) {
-		ArrayList<Long> data = getRecordAt(pos);
-		long last=-1;
-		pvdata.clear();
-		pvdata.ensureCapacity(data.size()/2);
-		for(int i=0;i<data.size();i+=2) {
-			if(last!=data.get(i))
-				pvdata.add(last=data.get(i));
-		}
 	}
 
 	@Override
@@ -171,7 +158,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			
 			BookPresenter presenter = a.getBookById(toFind);
 			
-			if(presenter==null) continue;
+			if(presenter==a.EmptyBook) continue;
 			
 			long[] p = new long[valsTmp.size()];
 			for(int i1 = 0;i1<valsTmp.size();i1++){

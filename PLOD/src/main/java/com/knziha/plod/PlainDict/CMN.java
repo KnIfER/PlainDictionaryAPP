@@ -21,7 +21,7 @@ import java.util.List;
 
 //common
 public class CMN{
-	public static volatile int instanceCount;
+	public static /*volatile*/ int instanceCount;
 	public static final HashMap<String, String> AssetMap = new HashMap<>();
 	public static final String AssetTag = "/ASSET/";
 	public static final Boolean OccupyTag = true;

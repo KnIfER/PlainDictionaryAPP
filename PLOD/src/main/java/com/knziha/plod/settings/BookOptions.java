@@ -245,9 +245,6 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		findPreference("reload").setOnPreferenceClickListener(this);
 	}
 	
-	@Metaline(flagPos=0) boolean getIgnoreReloadWarning(){PDICMainAppOptions.SessionFlag=PDICMainAppOptions.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=1) public static boolean getReloadWebView(){PDICMainAppOptions.SessionFlag=PDICMainAppOptions.SessionFlag; throw new RuntimeException();}
-	
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		String key=preference.getKey();
@@ -267,7 +264,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 						a.showT("已重新加载"+cc+"本词典");
 					}
 				};
-				if (getIgnoreReloadWarning()) {
+				if (a.opt.getIgnoreReloadWarning()) {
 					optprc.processOptionChanged(null, null, 1, 0);
 				} else {
 					final String[] DictOpt = new String[]{"重启前不再确认", "重新加载视图"};

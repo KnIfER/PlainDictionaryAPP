@@ -95,8 +95,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 							PlaceHolder phI = a.getPlaceHolderAt(i1);
 							if(phI!=null) {
 								try {
-									md.set(i1, bookPresenter=MainActivityUIBase.new_book(phI.getPath(a.opt), a));
-									bookPresenter.tmpIsFlag = phI.tmpIsFlag;
+									md.set(i1, bookPresenter=MainActivityUIBase.new_book(phI, a));
 									bookPresenter.range_query_reveiver = new ArrayList<>();
 								} catch (Exception ignored) { }
 							}

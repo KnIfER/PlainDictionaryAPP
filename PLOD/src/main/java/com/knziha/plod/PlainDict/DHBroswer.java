@@ -61,8 +61,8 @@ public class DHBroswer extends DBroswer {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
 		String text = currentDisplaying;
-		if(a.prepareFavoriteCon().contains(text)) {//删除
-			a.favoriteCon.remove(text, opt.getFavoritePerceptsRemoveAll()?-1:opt.getCurrFavoriteNoteBookId());
+		if(a.GetIsFavoriteTerm(text)) {//删除
+			a.removeFavoriteTerm(text);
 			a.favoriteBtn.setActivated(false);
 			a.show(R.string.removed);
 		} else {//添加
@@ -76,7 +76,7 @@ public class DHBroswer extends DBroswer {
 	public void processFavorite(int position,String key) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a!=null && a.favoriteBtn!=null)
-			a.favoriteBtn.setActivated(a.prepareFavoriteCon().contains(key));
+			a.favoriteBtn.setActivated(a.GetIsFavoriteTerm(key));
 	}
 
 	@Override

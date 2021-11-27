@@ -198,7 +198,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					slots.add(((MagentTransient)mmTmp).mPhI);
 				}
 				try {
-					File def = new File(getExternalFilesDir(null), "default.txt");
+					final File def = opt.getCacheCurrentGroup()?new File(getExternalFilesDir(null),"default.txt")
+							:opt.fileToSet(ConfigFile, opt.getLastPlanName("LastPlanName"));      //!!!原配
 					ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(def), app.get4kCharBuff(), 4096);
 					String parent = opt.lastMdlibPath.getPath();
 					output.write("[:S]");

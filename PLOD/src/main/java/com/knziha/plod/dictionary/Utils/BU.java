@@ -480,6 +480,7 @@ public class  BU{//byteUtils
 
 	public static InputStream SafeSkipReam(InputStream fin, long toSkip) throws IOException {
 		//CMN.Log("SafeSkipReam::", toSkip);
+		if(toSkip==0) return fin;
 		int tryCount=0;long skipped;
 		while(toSkip>0){
 			skipped=fin.skip(toSkip);

@@ -746,15 +746,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		return IMPageCover;
 	}
 
-	@Override
-	protected File getStartupFile(File ConfigFile) {
-		File suf = new File(ConfigFile, opt.getLastPlanName(LastPlanName));
-		if(!suf.exists()) {
-			return super.getStartupFile(ConfigFile);
-		}
-		return suf;
-	}
-
 	static long currMdlTime;
 	static String lastLoadedModule;
 	static boolean lazyLoaded;
@@ -929,8 +920,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
         }
         @Override
         public int getCount() {
-			if(md.size()>0 && currentDictionary!=null) {
-				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && BookPresenter.class.equals(currentDictionary.getClass()))
+			if(md.size()>0) {
+				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && BookPresenter.class.equals(currentDictionary.getClass())) //todo ???
 					return 0;
 				return (int) currentDictionary.bookImpl.getNumberEntries();
 			} else {
@@ -1101,14 +1092,13 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				vh.title.setTextColor(AppBlack);
 			}
 			vh.title.setText(currentKeyText);
-            BookPresenter presenter = getBookById(combining_search_result.bookId);
-			if (presenter!=null) { //todo
+            { //todo
 	//            if(presenter!=null){
 	//				if(combining_search_result.mflag.data!=null)
 	//					vh.subtitle.setText(Html.fromHtml(presenter._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
 	//				else
 	//			}
-				vh.subtitle.setText(presenter.getDictionaryName());
+				vh.subtitle.setText(getBookById(combining_search_result.bookId).getDictionaryName());
 			}
 			if(combining_search_result.getClass()==resultRecorderCombined.class)
 				((TextView)vh.subtitle.getTag()).setText(((resultRecorderCombined)combining_search_result).count);

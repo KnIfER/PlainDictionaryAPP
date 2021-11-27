@@ -75,8 +75,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 					PlaceHolder phI = a.getPlaceHolderAt(j);
 					if(phI!=null) {
 						try {
-							md.set(j, mdTmp= MainActivityUIBase.new_book(phI.getPath(a.opt), a));
-							mdTmp.tmpIsFlag = phI.tmpIsFlag; // to impl
+							md.set(j, mdTmp= MainActivityUIBase.new_book(phI, a));
 							mdTmp.range_query_reveiver = new ArrayList<>();
 						} catch (Exception ignored) { }
 					}

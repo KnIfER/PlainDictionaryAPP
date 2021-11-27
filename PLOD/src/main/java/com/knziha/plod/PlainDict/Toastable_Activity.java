@@ -672,6 +672,7 @@ public class Toastable_Activity extends AppCompatActivity {
 			CheckInternalDataBaseDirExist(opt.getUseDatabaseV2());
 			app.historyCon = _historyCon = new LexicalDBHelper(getApplicationContext(), opt, opt.getUseDatabaseV2());
 		}
+		_historyCon.setFavoriteFolderId(opt.getCurrFavoriteNoteBookId());
 		return historyCon = _historyCon;
 	}
 	

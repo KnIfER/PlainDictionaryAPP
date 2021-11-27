@@ -206,7 +206,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 			if(position>=mDslv.getHeaderViewsCount()) {
 				position = position - mDslv.getHeaderViewsCount();
 				String name = adapter.getItem(position);
-				File newf = new File(a.ConfigFile, name);
+				File newf = new File(a.ConfigFile, SU.legacySetFileName(name));
 				int cc=0;
 				try {
 					BookManagerMain f1 = ((BookManager)getActivity()).f1;

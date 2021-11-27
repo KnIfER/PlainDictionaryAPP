@@ -40,8 +40,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
@@ -63,8 +63,6 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.plaindict.databinding.ContentviewItemBinding;
-import com.knziha.plod.settings.BookOptions;
-import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -920,18 +918,21 @@ public class BookPresenter
 			bookImpl = bookImplsMap.get(bid);
 		}
 		//CMN.Log("getBookImpl", fullPath, bookImpl);
-		if (pseudoInit==0 && bookImpl==null) {
+		if ((pseudoInit&3)==0 && bookImpl==null) {
 			int sufixp = pathFull.lastIndexOf(".");
 			if (sufixp<pathFull.length()-name.length()) sufixp=-1;
 			int hash = hashCode(sufixp<0?name:pathFull, sufixp+1);
+//			if(sufixp>=0) name = pathFull;
+//			int hash=0,i = sufixp+1,len = name.length();
+//			for (; i < len; i++) hash = (pseudoInit>>2) * hash + Character.toLowerCase(name.charAt(i));
 			switch(hash){
 				case 107969:
 				case 107949:
 				case 3645348:
 					if (pathFull.startsWith("/ASSET"))
-						bookImpl = new PlainMdictAsset(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, THIS);
+						bookImpl = new PlainMdictAsset(fullPath, pseudoInit&3, THIS==null?null:THIS.MainStringBuilder, THIS);
 					else
-						bookImpl = new PlainMdict(fullPath, pseudoInit, THIS==null?null:THIS.MainStringBuilder, null, hash==107949);
+						bookImpl = new PlainMdict(fullPath, pseudoInit&3, THIS==null?null:THIS.MainStringBuilder, null, hash==107949);
 					break;
 				case 117588:
 					bookImpl = new PlainWeb(fullPath, THIS);
@@ -942,8 +943,15 @@ public class BookPresenter
 				case 115312:
 					bookImpl = new PlainText(fullPath, THIS);
 					break;
+				case 3222:
+					bookImpl = new PlainDSL(fullPath, THIS);
+					break;
 				case 99773:
 					bookImpl = new PlainDSL(fullPath, THIS);
+					break;
+				//case 96634189:
+				default:
+					bookImpl = new DictionaryAdapter(fullPath, THIS);
 					break;
 				//case 120609:
 				//return new mdict_zip(fullPath, THIS);
@@ -952,7 +960,7 @@ public class BookPresenter
 			}
 			if (bookImpl!=null) {
 				bookImpl.setBooKID(bid);
-				if (pseudoInit==0 && THIS.getUsingDataV2()) {
+				if ((pseudoInit&3)==0 && THIS.getUsingDataV2()) {
 					if(bid!=-1) bookImplsMap.put(bid, bookImpl);
 				}
 			}
@@ -1692,13 +1700,13 @@ public class BookPresenter
 		return sb.toString();
 	}
 
-	public String getSaveUrl(WebViewmy mWebView) {
+	@Nullable public String getSaveUrl(WebViewmy mWebView) {
 		String url;
 		if(a.getUsingDataV2()) {
 			if (mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
 				url=mWebView.getUrl();
 				String host = ((PlainWeb)bookImpl).host;
-				if (url.startsWith(host)) {
+				if (url!=null && url.startsWith(host)) {
 					url = url.substring(host.length());
 				}
 			} else {
@@ -2897,6 +2905,7 @@ public class BookPresenter
 	}
 	
 	public void saveStates(Context context, LexicalDBHelper historyCon) {
+		if(mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY) return;
 		setIsDedicatedFilter(false);
 		try {
 			DataOutputStream data_out;
@@ -3380,6 +3389,7 @@ public class BookPresenter
 	
 	public boolean hasBookmark(WebViewmy mWebView) {
 		String entryName = getSaveUrl(mWebView);
+		if (entryName==null) return false;
 		SQLiteStatement stat = a.prepareHistoryCon().preparedHasBookmarkForEntry;
 		stat.bindString(1, entryName);
 		stat.bindLong(2, getId());
@@ -3439,6 +3449,7 @@ public class BookPresenter
 			long bid = bookImpl.getBooKID();
 			CMN.rt();
 			String url = getSaveUrl(mWebView);
+			if(url==null) return;
 			CMN.Log("toggleBookMark::url::", url);
 			try {
 				SQLiteDatabase database = a.prepareHistoryCon().getDB();
@@ -3525,7 +3536,7 @@ public class BookPresenter
 	public void Reload(Object context) {
 		bookImpl.Reload(context);
 		if(mWebView!=null) {
-			if(BookOptions.getReloadWebView()) {
+			if(opt.getReloadWebView()) {
 				ViewGroup rl = this.rl;
 				WebViewmy wv = this.mWebView;
 				viewsHolderReady = false;

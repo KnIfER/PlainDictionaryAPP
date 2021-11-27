@@ -28,18 +28,12 @@ import org.joni.Option;
 import org.joni.Regex;
 import org.knziha.metaline.Metaline;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -50,8 +44,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.Inflater;
-import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipInputStream;
 
 import static com.knziha.plod.dictionary.mdBase.compareByteArrayIsPara;
@@ -70,6 +62,7 @@ public class PlainDSL extends DictionaryAdapter {
 	final static Pattern entryLinkPattern = Pattern.compile("<<(.*?)>>");
 	final static Pattern dslTagPattern = Pattern.compile("\\[(.{1,50}?)]|(\t)");
 	final static byte[] UTF8LineBreakText = "\n".getBytes(StandardCharsets.UTF_8);
+	private DictInputStream.GZIPDictReader dictReader;
 	private long firstflag;
 	private boolean bIsUTF16;
 	private long file_length;
@@ -83,7 +76,7 @@ public class PlainDSL extends DictionaryAdapter {
 	int mCacheItemCount;
 	private int contentBreakText_length;
 	private int _BOM_SIZE;
-	public final boolean isInArchive;
+	public final boolean isDictZip;
 	
 	@Metaline(flagPos=0, shift=1) public boolean getIsGzipArchive() {firstflag=firstflag;throw new RuntimeException();}
 	@Metaline(flagPos=0, shift=1) public void setIsGzipArchive(boolean value) {firstflag=firstflag;throw new RuntimeException();}
@@ -279,27 +272,29 @@ public class PlainDSL extends DictionaryAdapter {
 		return sb.toString();
 	}
 	
-	protected InputStream mOpenInputStream() throws IOException {
-		InputStream input = new FileInputStream(f);
-		if (isInArchive) {
-			if(getIsGzipArchive()) {
+	protected InputStream mOpenInputStream(long fileOffset) throws IOException {
+		if (isDictZip) {
+			if(getIsGzipArchive()||dictReader!=null) {
+				if(dictReader!=null) {
+					return new DictInputStream(dictReader, fileOffset);
+				}
 				try {
-					return new GZIPInputStream(input);
+					return BU.SafeSkipReam(new GZIPInputStream(new FileInputStream(f)), fileOffset);
 				} catch (IOException e) {
 					setIsGzipArchive(false);
-					return mOpenInputStream();
+					return BU.SafeSkipReam(mOpenInputStream(fileOffset), fileOffset);
 				}
 			} else {
-				ZipInputStream zipInputStream = new ZipInputStream(input);
+				ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(f));
 				java.util.zip.ZipEntry entry;
 				while ((entry = zipInputStream.getNextEntry()) != null) {
 					if (!entry.isDirectory() && entry.getName().toLowerCase().endsWith(".dsl")) {
-						return zipInputStream;
+						return BU.SafeSkipReam(zipInputStream, fileOffset);
 					}
 				}
 			}
 		}
-		return input;
+		return BU.SafeSkipReam(new FileInputStream(f), fileOffset);
 	}
 	
 	TextBlock tmpLastBlock;
@@ -315,7 +310,7 @@ public class PlainDSL extends DictionaryAdapter {
 			tmpBlock = tmpLastBlock!=null&&tmpLastBlock.blockIndex==centerBlock?tmpLastBlock:block_cache.get(centerBlock);
 			if(tmpBlock==null){
 				IOException exception=null;
-				try(InputStream fin = BU.SafeSkipReam(mOpenInputStream(), centerBlock*mBlockSize)) {
+				try(InputStream fin = mOpenInputStream(centerBlock*mBlockSize)) {
 					if(toSkip>0) {
 						BU.SafeSkipReam(fin, toSkip);
 						toSkip=0;
@@ -375,7 +370,7 @@ public class PlainDSL extends DictionaryAdapter {
 				//if(true) return bos.getBytes();
 				// oops
 				IOException exception=null;
-				try(InputStream fin = BU.SafeSkipReam(mOpenInputStream(), centerBlock*mBlockSize)) {
+				try(InputStream fin = mOpenInputStream(centerBlock*mBlockSize)) {
 					if(toSkip>0) {
 						BU.SafeSkipReam(fin, toSkip);
 						toSkip=0;
@@ -600,24 +595,13 @@ public class PlainDSL extends DictionaryAdapter {
 	
 	final static int DSLINDEXVERSION = 2;
 	
-	class GZIPHeaderReader{
-		long flag;
-		GZIPHeaderReader(InputStream data_in) throws IOException {
-			this.flag = data_in.read();
-		}
-		@Metaline(flagPos=0) boolean isText(){flag=flag; throw new RuntimeException();}
-		@Metaline(flagPos=1) boolean hasCRC(){flag=flag; throw new RuntimeException();}
-		@Metaline(flagPos=2) boolean hasExtra(){flag=flag; throw new RuntimeException();}
-		@Metaline(flagPos=3) boolean hasName(){flag=flag; throw new RuntimeException();}
-		@Metaline(flagPos=4) boolean hasComment(){flag=flag; throw new RuntimeException();}
-	}
 	
 	int[] blockIndexes;
 	
 	//构造
 	public PlainDSL(File fn, MainActivityUIBase _a) throws IOException {
 		super(fn, _a);
-		isInArchive = _Dictionary_fName.regionMatches(true, _Dictionary_fName.length()-3, ".dz", 0, 3);
+		isDictZip = _Dictionary_fName.regionMatches(true, _Dictionary_fName.length()-3, ".dz", 0, 3);
 		opt=_a.opt;
 		mType = PLAIN_BOOK_TYPE.PLAIN_TYPE_DSL;
 		
@@ -628,83 +612,29 @@ public class PlainDSL extends DictionaryAdapter {
 		mCacheItemCount = DefaultCacheItemCount;
 		block_cache = new LinkastReUsageHashMap<>(mCacheItemCount);
 		
-		if(isInArchive) {
-			InputStream data_in =  new BufferedInputStream(new FileInputStream(f));
-			// |ID1|ID2| CM |FLG|     MTIME     |XFL|OS | (more-->)
-			//  1    1   1   1           4        1   1
-			// 0x1F 0x8B
-			BU.SafeSkipReam(data_in, 3);
-			GZIPHeaderReader headerReader = new GZIPHeaderReader(data_in);
-			if (headerReader.hasExtra()) {
-				int blockOffset = 10;
-				BU.SafeSkipReam(data_in, 6);
-				int xlen = BU.readShortLE(data_in);
-				CMN.Log(xlen);
-				//byte[] buffer = new byte[xlen];
-				//data_in.read(buffer);
-				//CMN.Log("extra::", new String(buffer));
-				// |ID1|ID2| LEN |   DATA  |
-				int ID1 = data_in.read(); // ID1
-				int ID2 = data_in.read(); // ID2
-				//CMN.Log(ID1, ID2, (int)'R', (int)'A');
-				int LEN = BU.readShortLE(data_in);
-				int VER = BU.readShortLE(data_in);
-				int blockSize =  BU.readShortLE(data_in);
-				int blockCount = BU.readShortLE(data_in);
-				CMN.Log("blockSize="+blockSize, "blockCount="+blockCount);
-				blockIndexes = new int[blockCount];
-				long total=0;
-				for (int i = 0; i < blockCount; i++) {
-					blockIndexes[i] = BU.readShortLE(data_in);
-					//CMN.Log("block#"+i, blockIndexes[i]);
-					total += blockIndexes[i];
-				}
-				blockOffset += 4 + LEN;
-				CMN.Log("block#", total, total/blockCount, blockCount*2, LEN);
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				int value;
-				if (headerReader.hasName()) {
-					bos.reset();
-					while((value=data_in.read())!=0) {
-						bos.write(value);
-						blockOffset++;
-					}
-					CMN.Log("name="+new String(bos.toByteArray()));
-					blockOffset++;
-				}
-				if (headerReader.hasComment()) {
-					bos.reset();
-					while((value=data_in.read())!=0) {
-						bos.write(value);
-						blockOffset++;
-					}
-					CMN.Log("words="+new String(bos.toByteArray()));
-					blockOffset++;
-				}
-				if (headerReader.hasCRC()) {
-					BU.readShortLE(data_in);
-					blockOffset+=2;
-				}
-				RandomAccessFile raf = new RandomAccessFile(f, "r");
-				raf.seek(blockOffset+2);
-				byte[] data = new byte[blockIndexes[0]];
-				raf.read(data);
-				//data_in.read(data);
-//				CMN.Log(new String(BU.zlib_decompress(data,0,data.length), StandardCharsets.UTF_16LE));
-				
-				InflaterInputStream input = new InflaterInputStream(new ByteArrayInputStream(data), new Inflater(true), 8192);
-				byte[] uncompressed = new byte[blockSize];
-				input.read(uncompressed, 0, blockSize);
-				CMN.Log(new String(uncompressed, 0, uncompressed.length, StandardCharsets.UTF_16LE));
-				BU.printFile(uncompressed, "/sdcard/tmpBlck"+0);
+		if(isDictZip) {
+			try {
+				dictReader = new DictInputStream.GZIPDictReader(f);
+			} catch (IOException e) {
+				if(GlobalOptions.debug)CMN.Log(e);
 			}
-			
+//			int blockIndex=dictReader.blockDecLength/mBlockSize+10;
+//			long fileOffset=blockIndex*mBlockSize;
+//			FileInputStream rawFileReader = new FileInputStream(f);
+//			BU.SafeSkipReam(rawFileReader, dictReader.blockOffset+dictReader.getReadStartForOffset(fileOffset));
+//
+//			InputStream din = new DictInputStream(dictReader, rawFileReader, fileOffset);
+//
+//			TextBlock tmpBlock=new_TextBlock();
+//			tmpBlock.blockIndex=blockIndex;
+//			tmpBlock.read(din);
+//			CMN.Log(new String(tmpBlock.data, StandardCharsets.UTF_16LE));
 		}
 
-		InputStream data_in = mOpenInputStream();
+		InputStream data_in = mOpenInputStream(0);
 		TextBlock tmpBlock=new_TextBlock();
 		tmpBlock.blockSize = data_in.read(tmpBlock.data);
-		//tmpBlock.read(fis);
+		//tmpBlock.read(data_in);
 
 		//CMN.Log("blockSize", tmpBlock.blockSize, new String(tmpBlock.data, 0, 10, StandardCharsets.UTF_16LE));
 		//block_cache.put(0, tmpBlock);
@@ -715,8 +645,9 @@ public class PlainDSL extends DictionaryAdapter {
 		String charset = "utf8";
 		if(match!=null && match.getConfidence()>=75)
 			charset = match.getName();
-		CMN.Log("检测结果：", charset, isInArchive);
+		CMN.Log("检测结果：", charset, isDictZip);
 		_charset = Charset.forName(charset);
+		//_charset = StandardCharsets.UTF_16LE;
 		if(_charset.equals(StandardCharsets.UTF_16LE) || _charset.equals(StandardCharsets.UTF_16BE)) {
 			bIsUTF16=true;
 			if(compareByteArrayIsPara(tmpBlock.data, 0, UTF16BOMBYTES)) _BOM_SIZE=2;
@@ -743,7 +674,7 @@ public class PlainDSL extends DictionaryAdapter {
 		mIndexFile.delete();
 		mIndexFile = new File(mIndexFolder, f.getName()+".idx");
 		CMN.Log("Scan Indexes...", mIndexFile);
-		//if(false)
+		if(false)
 		if( mIndexFile.exists() && mIndexFile.lastModified()==f.lastModified()){
 			CMN.rt();
 			try {
@@ -756,7 +687,7 @@ public class PlainDSL extends DictionaryAdapter {
 						throw new IllegalStateException();
 					SafeRead(fin, buffer, 0, 4);
 					SafeRead(fin, buffer, 0, 8);
-					if (isInArchive) {
+					if (isDictZip) {
 						file_length = BU.toLongLE(buffer, 0);
 						_num_record_blocks = (long) Math.ceil(file_length*1.f/ mBlockSize);
 					}
@@ -818,14 +749,14 @@ public class PlainDSL extends DictionaryAdapter {
 				}
 				index_array = new ArrayListTree<>(index_data);
 				_num_entries = index_array.size();
+				CMN.Log("recoverEntries", _num_entries, this);
 				CMN.pt(" 树大小："+_num_entries+"恢复索引耗时：");
-				CMN.Log("recoverEntries", _num_entries);
 				full_scan=false;
 			} catch (Exception e) { if(GlobalOptions.debug)CMN.Log(e); }
 		}
 
 		if(full_scan) {
-			data_in = mOpenInputStream();
+			data_in = mOpenInputStream(0);
 			CMN.rt();
 			ReusableByteOutputStream bos = new ReusableByteOutputStream(512);
 			boolean checkTail=false;
@@ -894,7 +825,7 @@ public class PlainDSL extends DictionaryAdapter {
 					bos.write(tmpBlock.data, tmpBlock.blockSize - lineBreakText.length, lineBreakText.length);
 				}
 			}
-			if (isInArchive) {
+			if (isDictZip) {
 				file_length = tmpBlock.blockIndex*(long)mBlockSize+tmpBlock.blockSize;
 				_num_record_blocks = (long) Math.ceil(file_length*1.f/ mBlockSize);
 			}
@@ -1309,7 +1240,7 @@ public class PlainDSL extends DictionaryAdapter {
 									while(length>0 && centerBlock<_num_record_blocks) {
 										cachedBlock = null;//cache_tmp.get(centerBlock);
 										if(cachedBlock==null){
-											InputStream fin = BU.SafeSkipReam(mOpenInputStream(), centerBlock*mBlockSize);
+											InputStream fin = mOpenInputStream(centerBlock*mBlockSize);
 											if(tmpBlock==null) tmpBlock = new_TextBlock();
 											tmpBlock.blockIndex = centerBlock;
 											tmpBlock.read(fin);
@@ -1456,7 +1387,7 @@ public class PlainDSL extends DictionaryAdapter {
 						final ReusableByteOutputStream rec_bos = new ReusableByteOutputStream(mBlockSize *2);//!!!避免反复申请内存
 						Flag flag = new Flag();
 						long toSkip=it*step*mBlockSize;
-						try(InputStream data_in = BU.SafeSkipReam(mOpenInputStream(), toSkip)) // 避免重复打开文件
+						try(InputStream data_in = mOpenInputStream(toSkip)) // 避免重复打开文件
 						{
 							CMN.rt();
 							boolean checkTail=false;
