@@ -154,12 +154,15 @@ public class RBTree_duplicative<T extends Comparable<T>> implements InOrderTodoA
     }
     //上行wrap :find node x,so that x.key>=val and no node with key smaller that x.key satisfies this condition.
     public RBTNode<T> sxing(T val){
-        RBTNode<T> tmpnode =upwardNeighbour(this.mRoot,val);
+        RBTNode<T> tmpnode =upwardNeighbour(this.mRoot,null,val);
         if (tmpnode!=null) return tmpnode;
         else return this.maximum(this.mRoot);
     }
+    public RBTNode<T> sxing(RBTNode<T> val){
+		return upwardNeighbour(this.mRoot,val,val.key);
+    }
     ///情况一////cur///////情况二//
-    private RBTNode<T> upwardNeighbour(RBTNode<T> du,T val) {
+    private RBTNode<T> upwardNeighbour(RBTNode<T> du,RBTNode<T> co,T val) {
         int cmp;
         RBTNode<T> x = du;
         RBTNode<T> tmpnode = null;
@@ -168,12 +171,12 @@ public class RBTree_duplicative<T extends Comparable<T>> implements InOrderTodoA
             return null;
 
         cmp = val.compareTo(x.key);
-        if (cmp > 0)//情况一
-            return upwardNeighbour(x.right, val);
+        if (cmp > 0 || cmp==0 && co!=null)//情况一
+            return upwardNeighbour(x.right, co, val);
         else// if (cmp =< 0)//情况二
         {
             if(x.left==null ) return x;
-            tmpnode = upwardNeighbour(x.left, val);
+            tmpnode = upwardNeighbour(x.left, co, val);
             if (tmpnode==null) return x;
             else return tmpnode;
         }
@@ -513,23 +516,29 @@ public class RBTree_duplicative<T extends Comparable<T>> implements InOrderTodoA
             else if(cmp > 0)
                 x = x.right;
             else {
-            	while(y.right!=null && node.key.compareTo(y.right.key)==0) {
-                	y = y.right;
-                }
             	break;
-            }	
+            }
         }
-        
-        
-        	
-        node.parent = y;
+	
         if (y!=null) {
+			x=y;
+			while((x = sxing(x))!=null && x.key.compareTo(y.key)==0) {
+				y = x;
+			}
+			node.parent = y;
             cmp = node.key.compareTo(y.key);
-            if (cmp < 0)
-                y.left = node;
-            else
-                y.right = node;
+            if (cmp < 0) {
+				y.left = node;
+			}
+            else {
+            	if(cmp==0 && y.right!=null) {
+					node.right = y.right;
+					node.right.parent = node;
+				}
+				y.right = node;
+			}
         } else {
+			node.parent = null;
             this.mRoot = node;
         }
 

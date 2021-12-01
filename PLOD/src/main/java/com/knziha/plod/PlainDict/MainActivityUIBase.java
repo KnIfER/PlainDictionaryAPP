@@ -144,6 +144,7 @@ import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.PlainUI.AnnotAdapter;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.BottombarTweakerAdapter;
+import com.knziha.plod.PlainUI.BuildIndexInterface;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
@@ -241,7 +242,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -280,7 +280,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		MdictServerLet {
 	
 	protected WeakReference[] WeakReferencePool = new WeakReference[WeakReferenceHelper.poolSize];
-	
+	public mdict.AbsAdvancedSearchLogicLayer taskRecv;
 	
 	//private static final String RegExp_VerbatimDelimiter = "[ ]{1,}|\\pP{1,}|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
 	private static final Pattern RegImg = Pattern.compile("(png$)|(jpg$)|(jpeg$)|(tiff$)|(tif$)|(bmp$)|(webp$)", Pattern.CASE_INSENSITIVE);
@@ -311,6 +311,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	Runnable execSearchRunnable;
 	CharSequence search_cs;
 	int search_count;
+	public FrameLayout lvHeaderView;
 	protected TextWatcher tw1 = new TextWatcher() { //tw
 		public void onTextChanged(CharSequence cs, int start, int before, int count) {
 			if(SU.isNotEmpty(cs)) {
@@ -359,6 +360,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public ViewGroup main_succinct;
 
 	public ListViewmy lv,lv2;
+	protected ViewGroup mlv;
 	public BasicAdapter adaptermy;
 	public BasicAdapter adaptermy2;
 	public BasicAdapter adaptermy3;
@@ -703,10 +705,58 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					return false;
 				}
 			}
+			
+			boolean showBuildIndex=false;
+			if(currentDictionary==EmptyBook && EmptyBook.tag instanceof PlaceHolder) {
+				if(((PlaceHolder) EmptyBook.tag).NeedsBuildIndex()) {
+					AddIndexingBookIdx(0, i);
+					showBuildIndex=true;
+				}
+			}
+			showBuildIndexInterface(showBuildIndex);
 		}
 		return true;
 	}
-
+	
+	public void AddIndexingBookIdx(int position, int idx) {
+		for (int j = 0; j < IndexingBooks.size(); j++) {
+			if((int)(long)IndexingBooks.get(j)==idx) {
+				IndexingBooks.remove(j);
+				break;
+			}
+		}
+		if(position==-1)
+			position=IndexingBooks.size();
+		IndexingBooks.add(position, (0x1L<<32)|idx);
+	}
+	
+	ArrayList<Long> IndexingBooks = new ArrayList();
+	WeakReference<BuildIndexInterface> buildIndexPane = CMN.EmptyRef;
+	
+	protected void showBuildIndexInterface(boolean showBuildIndex) {
+		BuildIndexInterface buildIndex = buildIndexPane.get();
+		if(showBuildIndex) {
+			if(lvHeaderView==null) {
+				lvHeaderView = new FrameLayout(this);
+				lvHeaderView.setLayoutParams(new LayoutParams(-1, -2));
+			}
+			Utils.addViewToParent(lvHeaderView, (ViewGroup)mlv.getParent(), 0);
+			
+			if(buildIndex==null) {
+				buildIndex = new BuildIndexInterface(this, IndexingBooks);
+				buildIndexPane = new WeakReference<>(buildIndex);
+			}
+			Utils.addViewToParent(buildIndex.buildIndexLayout, lvHeaderView);
+			double rootHeight = root.getHeight();
+			if(rootHeight==0) rootHeight=dm.heightPixels*5.8/6;
+			buildIndex.buildIndexLayout.getLayoutParams().height = (int) (rootHeight*4.5/6);
+			buildIndex.notifyDataSetChanged();
+			//buildIndex.buildIndexLayout.getLayoutParams().height = (int) Math.max(root.getHeight()*4.5/6, GlobalOptions.density*50);
+		} else if(buildIndex!=null) {
+			Utils.removeIfParentBeOrNotBe(buildIndex.buildIndexLayout, lvHeaderView, true);
+		}
+	}
+	
 	public void switchToSearchModeDelta(int i) {
 	
 	}
@@ -717,12 +767,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	@NonNull public BookPresenter md_get(int i) {
 		BookPresenter ret = null;
+		PlaceHolder phTmp = null;
 		try {
 			ret = md.get(i);
 			if(ret==null) {
 				ArrayList<PlaceHolder> CosyChair = getLazyCC();
 				if(i<CosyChair.size()) {
-					PlaceHolder phTmp = CosyChair.get(i);
+					phTmp = CosyChair.get(i);
 					if (phTmp != null) {
 						try {
 							md.set(i, ret = new_book(phTmp, this));
@@ -730,15 +781,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(GlobalOptions.debug) CMN.Log(e);
 							if (bShowLoadErr && isOnMainThread()) {
 								phTmp.ErrorMsg = e.getLocalizedMessage();
-								show(R.string.err);
+								if(!phTmp.NeedsBuildIndex())
+									show(R.string.err);
+								//else showT("需要建立索引！");
 							}
 						}
 					}
 				}
 			}
 		} catch (Exception e) { CMN.Log(e); }
-		if(ret==null)
+		if(ret==null) {
 			ret = EmptyBook;
+			EmptyBook.tag = phTmp;
+		}
 		return ret;
 	}
 
@@ -3754,9 +3809,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				String fileName = null;
 				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
 				try {
-					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
-							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
-							, currentDictionary.bookImpl.getBooKID());
+//					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+//							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+//							, currentDictionary.bookImpl.getBooKID());
 				} catch (Exception e) {
 					CMN.Log(e);
 				}
@@ -3787,9 +3842,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				String fileName = null;
 				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
 				try {
-					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
-							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
-							, currentDictionary.bookImpl.getBooKID());
+//					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+//							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+//							, currentDictionary.bookImpl.getBooKID());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -3817,9 +3872,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				String fileName = null;
 				UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
 				try {
-					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
-							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
-							, currentDictionary.bookImpl.getBooKID());
+//					CMN.Log("getDictionaryById::", bid, impl, currentDictionary.bookImpl.getDictionaryName(),
+//							prepareHistoryCon().getBookID(null, currentDictionary.bookImpl.getDictionaryName())
+//							, currentDictionary.bookImpl.getBooKID());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -6376,7 +6431,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	private Runnable putNameRunnable = () -> {
 		BookPresenter mdTmp = currentDictionary;
-		String name = mdTmp==null?new File(getLazyCC().get(adapter_idx).pathname).getName()
+		String name = mdTmp==EmptyBook?new File(getLazyCC().get(adapter_idx).pathname).getName()
 				:mdTmp.getDictionaryName();
 		opt.putLastMdFn(LastMdFn, name);
 	};

@@ -2263,6 +2263,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=17, debug=0) public boolean getCacheCurrentGroup() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=18, debug=0) public boolean getAutoBuildIndex() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
 	
 	//EF
 	///////////////////// End Fifth Flag////////////////////////////////////

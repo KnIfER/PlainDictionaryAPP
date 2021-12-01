@@ -21,6 +21,7 @@ import com.knziha.plod.plaindict.CMN;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.text.Normalizer;
 
 
 /**
@@ -35,12 +36,19 @@ public class  SU{
 	public static String trimStart(String input) {
 		int len = input.length();
         int st = 0;
-
         while ((st < len) && (input.charAt(st) <= ' ')) {
             st++;
         }
-        
         return st > 0 ? input.substring(st, len) : input;
+    }
+    
+	public static String trimEnd(String input) {
+		int len = input.length();
+        int ed = len;
+        while ((ed > 1) && (input.charAt(ed-1) <= ' ')) {
+			ed--;
+        }
+        return ed < len ? input.substring(0, ed) : input;
     }
 	
     public static int compareTo(String strA,String strB,int start, int lim) {
@@ -146,6 +154,29 @@ public class  SU{
 			}
 		}
 		return false;
+	}
+	
+	public static String removeDiacritics(String text) {
+		if (!Normalizer.isNormalized(text, Normalizer.Form.NFD)) {
+			text = Normalizer.normalize(text, Normalizer.Form.NFD);
+			char[] chars = text.toCharArray();
+			int j = 0;
+			for (char c : chars) {
+				chars[j] = c;
+				if(c>'a'&&c<'z' || c>'A'&&c<'Z' || !IsMark(c)) j++;
+			}
+			text = new String(chars, 0, j);
+		}
+		return text;
+	}
+	
+	private static boolean IsMark(char ch) {
+		int gc = Character.getType(ch);
+//
+//		return gc == Character.NON_SPACING_MARK
+//				|| gc == Character.ENCLOSING_MARK
+//				|| gc == Character.COMBINING_SPACING_MARK;
+		return gc>=Character.NON_SPACING_MARK&&gc<=Character.COMBINING_SPACING_MARK;
 	}
 }
 	

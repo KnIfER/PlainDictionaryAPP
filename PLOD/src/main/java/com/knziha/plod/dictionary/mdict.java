@@ -32,6 +32,7 @@ import com.knziha.plod.dictionary.Utils.record_info_struct;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
+import org.apache.commons.lang3.StringUtils;
 import org.knziha.metaline.Metaline;
 import org.anarres.lzo.LzoDecompressor1x;
 import org.anarres.lzo.lzo_uintp;
@@ -473,7 +474,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			}
 			
 			if(isSrict) {
-				SU.Log(getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
+				SU.Log(keyword, getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
 				return -1*(int) ((infoI.num_entries_accumulator+res+2));
 			}
 		}
@@ -742,8 +743,15 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		byte[] data = va1.data;
 		int record_start=va1.ral;
 		int record_end=va1.val;
-
-		if(textTailed(data, record_end-textLineBreak.length, textLineBreak)) record_end-=textLineBreak.length;
+		
+		//SU.Log("record_start", record_start, record_end);
+		
+		if(record_start==record_end) {
+			return StringUtils.EMPTY;
+		}
+		
+		if(record_end>=record_start+textLineBreak.length
+				&& textTailed(data, record_end-textLineBreak.length, textLineBreak)) record_end-=textLineBreak.length;
 
 		String tmp = new String(data, record_start, record_end-record_start,_charset);
 
@@ -811,6 +819,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return super.decodeRecordData(position, charset);
 	}
 
+	// todo
 	public static boolean textTailed(byte[] data, int off, byte[] textLineBreak) {
 		if(off+2<data.length){
 			return data[off]==textLineBreak[0]&&data[off+1]==textLineBreak[1]&&data[off+2]==textLineBreak[2];
@@ -1496,6 +1505,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		public GetIndexedString fanJnMap;
 		public volatile int dirtyResultCounter;
 		public volatile int dirtyProgressCounter;
+		public volatile int dirtyTotalProgress;
 		public long st;
 		public String key;
 
@@ -2246,7 +2256,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			// sf.position(8);
 			//key_id = sf.getLong(key_start_index);//Key_ID
 			//show("key_id"+key_id);
-			key_end_index = key_start_index + _number_width;
+			key_end_index = key_start_index + _number_width + entryNumExt;
 
 			SK_DELI:
 			while(true){
@@ -2284,7 +2294,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 							mParallelKeys = mpk.get(k);
 							int len = matcher[j][k].length;
 							int[] jumpMap = (int[]) mParallelKeys.get(len);
-							try_idx = flowerIndexOf(key_block, key_start_index+_number_width, key_end_index-(key_start_index+_number_width), matcher[j][k], 0, 0, SearchLauncher, flag, mParallelKeys, jumpMap);
+							try_idx = flowerIndexOf(key_block, key_start_index+_number_width + entryNumExt, key_end_index-(key_start_index+_number_width + entryNumExt), matcher[j][k], 0, 0, SearchLauncher, flag, mParallelKeys, jumpMap);
 							//SU.Log("and_group>>"+j, "or_group#"+k, try_idx);
 							//BU.printBytes3(matcher[j][k]);
 							if (try_idx < 0 ^ (jumpMap[len] & 4) == 0) break;
@@ -2294,14 +2304,14 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						}
 					}
 				} else {
-					try_idx = JoniRegx.matcher(key_block, key_start_index+_number_width, key_end_index).search(key_start_index+_number_width, key_end_index, Option.SINGLELINE);
+					try_idx = JoniRegx.matcher(key_block, key_start_index+_number_width + entryNumExt, key_end_index).search(key_start_index+_number_width + entryNumExt, key_end_index, Option.SINGLELINE);
 				}
 
 				if(try_idx!=-1){
 					//SU.Log("复核 re-collate");
 					if(false)
 					if (keyPattern != null){
-						String LexicalEntry = new String(key_block, key_start_index + _number_width, key_end_index - (key_start_index + _number_width), _charset);
+						String LexicalEntry = new String(key_block, key_start_index + _number_width + entryNumExt, key_end_index - (key_start_index + _number_width + entryNumExt), _charset);
 						//SU.Log("checking ", LexicalEntry);
 						if (!keyPattern.matcher(LexicalEntry).find()) {
 							SU.Log("发现错匹！！！", LexicalEntry, _Dictionary_fName);
@@ -2473,7 +2483,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					int keyCounter = 0;
 
 					while(key_start_index < key_block_cache_.length){
-						key_end_index = key_start_index + _number_width;
+						key_end_index = key_start_index + _number_width + entryNumExt;
 						SK_DELI:
 						while(true){
 							for(int sker=0;sker<delimiter_width;sker++) {
@@ -2487,7 +2497,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						//SU.Log(new String(key_block_cache_,key_start_index+_number_width,key_end_index-(key_start_index+_number_width),_charset));
 						//if(EntryStartWith(key_block_cache_,key_start_index+_number_width,key_end_index-(key_start_index+_number_width),matcher)) {
 						if(doHarvest) {
-							String kI = new String(key_block_cache_, key_start_index+_number_width,key_end_index-(key_start_index+_number_width), _charset);
+							String kI = new String(key_block_cache_, key_start_index+_number_width + entryNumExt,key_end_index-(key_start_index+_number_width + entryNumExt), _charset);
 							if(processMyText(kI).startsWith(keyword)) {
 								if(treeBuilder !=null)
 									treeBuilder.insert(kI, SelfAtIdx, keyCounter+infoI.num_entries_accumulator);
@@ -2498,8 +2508,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 							} else return results;
 							if(theta<=0) return results;
 						} else {
-							scaler_[keyCounter][0] = key_start_index+_number_width;
-							scaler_[keyCounter][1] = key_end_index-(key_start_index+_number_width);
+							scaler_[keyCounter][0] = key_start_index+_number_width + entryNumExt;
+							scaler_[keyCounter][1] = key_end_index-(key_start_index+_number_width + entryNumExt);
 						}
 
 						key_start_index = key_end_index + delimiter_width;
@@ -2600,7 +2610,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	public String getAboutString() {
 		return _header_tag.get("Description");
 	}
-
+	
+	public String getField(String fieldName) {
+		return _header_tag.get(fieldName);
+	}
+	
 	public String getDictInfo(){
 		DecimalFormat numbermachine = new DecimalFormat("#.00");
 		return new StringBuilder()
@@ -2614,9 +2628,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				.append("Avg. Rec Block: ").append(numbermachine.format(1.0*_record_block_size/_num_record_blocks/1024)).append(" kb, ").append(numbermachine.format(1.0*_num_entries/_num_record_blocks)).append(" items / block").append("<BR>")
 				.append("Compact  排序: ").append(isCompact).append("<BR>")
 				.append("StripKey 排序: ").append(isStripKey).append("<BR>")
-				.append("Case Sensitive: ").append(isKeyCaseSensitive).append("<BR>")
+				.append("Ignore KeyCase v1: ").append(!isKeyCaseSensitive).append("<BR>")
+				.append("Ignore KeyCase v2: ").append(isKeyCaseInsensitive).append("<BR>")
+				.append("Ignore 变音符号: ").append(isDiacriticsInsensitive).append("<BR>")
 				//.append(mdd==null?"&lt;no assiciated mdRes&gt;":("MdResource count "+mdd.getNumberEntries()+","+mdd._encoding+","+mdd._num_key_blocks+","+mdd._num_record_blocks)).append("<BR>")
-				.append("Internal Name: ").append(_header_tag.get("Title")).append("<BR>")
+				.append("书籍名称: ").append(_header_tag.get("Title")).append("<BR>")
 				.append("Path: ").append(getPath()).toString();
 	}
 
@@ -2642,11 +2658,15 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			error_input = input;
 			ret = input;
 		}
-		int KeycaseStrategy=getCaseStrategy();
-		return isKeyCaseSensitive?ret:(((KeycaseStrategy>0)?(KeycaseStrategy==2):bGlobalUseClassicalKeycase)?mOldSchoolToLowerCase(ret):ret.toLowerCase());
+		if(isDiacriticsInsensitive) {
+			ret = SU.removeDiacritics(ret);
+		}
+		//return ret.toLowerCase();
+		return isKeyCaseSensitive?ret:isKeyCaseInsensitive?ret.toLowerCase():AngloToLowerCase(ret);
 	}
 
-	public String mOldSchoolToLowerCase(String input) {
+	/** This is the old way. */
+	public static String AngloToLowerCase(String input) {
 		StringBuilder sb = new StringBuilder(input);
 		for(int i=0;i<sb.length();i++) {
 			if(sb.charAt(i)>='A' && sb.charAt(i)<='Z')

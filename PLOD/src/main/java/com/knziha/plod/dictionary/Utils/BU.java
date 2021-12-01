@@ -17,9 +17,12 @@
 
 package com.knziha.plod.dictionary.Utils;
 
+import androidx.appcompat.app.GlobalOptions;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.zip.Adler32;
 import java.util.zip.InflaterOutputStream;
 
@@ -492,6 +495,29 @@ public class  BU{//byteUtils
 			}
 		}
 		return fin;
+	}
+	
+	public static String calcMD5(String path){
+		try {
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			FileInputStream fis = new FileInputStream(path);
+			byte[] buffer = new byte[4096];
+			int len;
+			while ((len = fis.read(buffer)) != -1) {
+				md5.update(buffer, 0, len);
+			}
+			fis.close();
+			
+			byte[] byteArray = md5.digest();
+			StringBuilder sb = new StringBuilder();
+			for (byte b : byteArray) {
+				sb.append(String.format("%02x", b&0xFF));
+			}
+			return sb.toString();
+		} catch (Exception e){
+			if(GlobalOptions.debug)SU.Log(e);
+		}
+		return "";
 	}
 }
 	

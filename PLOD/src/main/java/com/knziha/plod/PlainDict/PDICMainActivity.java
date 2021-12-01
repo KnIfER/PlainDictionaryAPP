@@ -91,6 +91,7 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.PlainUI.BuildIndexInterface;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
@@ -110,6 +111,7 @@ import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
+import com.knziha.plod.searchtasks.BuildIndexTask;
 import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
@@ -180,7 +182,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public TextView dvDictFrac;
 	public TextView dvResultN;
 
-	ViewGroup mlv;
 	public ListViewmy mlv1;
 	public ListViewmy mlv2;
 
@@ -409,6 +410,31 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		CMN.stst = System.currentTimeMillis();
 	}
+	
+	public void OnEnterBuildIndexTask(BuildIndexTask task) {
+		taskCounter=IndexingBooks.size();
+		AdvancedSearchLogicLayer _currentSearchLayer = currentSearchLayer = fullSearchLayer;
+		taskRecv = _currentSearchLayer;
+		_currentSearchLayer.dirtyProgressCounter=
+		_currentSearchLayer.dirtyResultCounter=0;
+		_currentSearchLayer.IsInterrupted=false;
+		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
+			if(!_currentSearchLayer.IsInterrupted){
+				_currentSearchLayer.IsInterrupted=true;
+				task.cancel(false);
+			}else{
+				task.cancel(true);
+				task.harvest(true);
+				mAsyncTask=null;
+				if(taskd!=null){
+					taskd.dismiss();
+					taskd=null;
+				}
+				showT("强制关闭");
+			}
+		});
+		CMN.stst = System.currentTimeMillis();
+	}
 
 	public void OnEnterFuzzySearchTask(AsyncTask task) {
 		taskCounter=md.size();
@@ -483,6 +509,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			dvSeekbar.setMax((int) m.bookImpl.getNumberEntries());
 			dvTitle.setText(m.bookImpl.getDictionaryName());
 			dvDictFrac.setText(currentSearchingDictIdx+"/"+PDICMainActivity.taskCounter);
+		} catch (Exception ignored) { }
+	}
+	
+	public void updateIndexBuilding(Integer dPos, Integer tIdx) {
+		try {
+			PlaceHolder placeHolder = getPlaceHolderAt(dPos);
+			currentSearchingDictIdx=-1;
+			dvSeekbar.setMax((int) placeHolder.getPath(opt).length());
+			dvTitle.setText(placeHolder.getName());
+			dvDictFrac.setText(tIdx+"/"+PDICMainActivity.taskCounter);
 		} catch (Exception ignored) { }
 	}
 
@@ -582,16 +618,25 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				break;
 				case 1008601:
 					//((TextView)dv.findViewById(R.id.tv)).setText("0/"+System.currentTimeMillis());
-					if(a.currentSearchingDictIdx>=a.md.size())
-						return;
 					removeMessages(1008601);
-					BookPresenter m = a.md.get(a.currentSearchingDictIdx);
-					if(a.dvSeekbar!=null)
-					try {
-						a.dvSeekbar.setProgress(a.currentSearchLayer.dirtyProgressCounter);
-						a.dvProgressFrac.setText(a.currentSearchLayer.dirtyProgressCounter+"/"+m.bookImpl.getNumberEntries());
-						a.dvResultN.setText("已搜索到: "+a.currentSearchLayer.dirtyResultCounter+" 项条目!");
-					} catch (Exception ignored) { }
+					int handlerIdx = a.currentSearchingDictIdx;
+					AdvancedSearchLogicLayer handlerRecv = a.currentSearchLayer;
+					//SU.Log("handlerIdx", handlerIdx, handlerRecv.dirtyProgressCounter);
+					if(a.dvSeekbar!=null) {
+						try {
+							if(handlerIdx==-1) {;
+								if(handlerRecv.dirtyTotalProgress>0 && a.dvSeekbar.getMax()!=handlerRecv.dirtyTotalProgress)
+									a.dvSeekbar.setMax(handlerRecv.dirtyTotalProgress);
+								a.dvResultN.setText("");
+							} else {
+								if(handlerIdx<0 || handlerIdx>=a.md.size())
+									return;
+								a.dvResultN.setText("已搜索到: "+handlerRecv.dirtyResultCounter+" 项条目!");
+							}
+							a.dvSeekbar.setProgress(handlerRecv.dirtyProgressCounter);
+							a.dvProgressFrac.setText(handlerRecv.dirtyProgressCounter+"/"+a.dvSeekbar.getMax());
+						} catch (Exception ignored) { }
+					}
 					break;
 				case 10086:
 				break;
@@ -925,7 +970,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		main = root;
 		
-		Utils.removeView(mlv);
 		mlv.removeViews(2, 2);
 		
 		toolbar.setId(R.id.action_context_bar);
@@ -1148,6 +1192,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	protected void further_loading(final Bundle savedInstanceState) {
 		//CMN.Log("Main Ac further_loading!!!");
 		CachedBBSize=opt.getBottombarSize((int) getResources().getDimension(R.dimen._bottombarheight_));
+		
+		Utils.removeView(mlv);
+		View[] viewList = new View[]{mlv1, mlv, mlv2};
+		for (int i = 0; i < 3; i++) {
+			LinearLayout view = new LinearLayout(this);
+			view.setOrientation(LinearLayout.VERTICAL);
+			view.addView(viewList[i]);
+			viewList[i] = view;
+		}
 		super.further_loading(savedInstanceState);
 
 		CheckGlideJournal();
@@ -1324,8 +1377,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			Utils.listViewStrictScroll(true, mlv1, mlv2, lv);
 		}
 		
-		View[] viewList = new View[]{mlv1, mlv, mlv2};
-		
 		setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 		//Utils.listViewStrictScroll(lv2,true);
 		
@@ -1396,7 +1447,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				checkFlags();
 			}});
 		//mDrawerLayout.setScrimColor(0x00ffffff);
-
+		
 		lv.setAdapter(adaptermy = new ListViewAdapter(webSingleholder));
 		lv2.setAdapter(adaptermy2 = new ListViewAdapter2(webholder, R.layout.listview_item1));
 		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2(webSingleholder));
@@ -1652,6 +1703,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		//tg
 		//etSearch.setText("happy");
+		//showT(""+currentDictionary.QueryByKey("woodie", SearchType.Normal, false, 0));
+		
 //		etSearch.setText("beat");
 //		etSearch.setText("vignette");
 //		etSearch.setText("class=\"main\"");
@@ -3958,7 +4011,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		return ret;
 	}
-
+	
 	void dismissDictPicker(int animationRes) {
 		if(dismissing_dh) return;
 		dismissing_dh=true;

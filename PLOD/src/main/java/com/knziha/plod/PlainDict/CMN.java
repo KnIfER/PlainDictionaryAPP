@@ -25,6 +25,7 @@ public class CMN{
 	public static final HashMap<String, String> AssetMap = new HashMap<>();
 	public static final String AssetTag = "/ASSET/";
 	public static final Boolean OccupyTag = true;
+	public static final WeakReference EmptyRef = new WeakReference(null);
 	
 	public static long mid;
 	

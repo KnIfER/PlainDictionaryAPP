@@ -1,5 +1,7 @@
 package com.knziha.plod.plaindict;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 
 import java.io.File;
@@ -58,5 +60,9 @@ public class PlaceHolder {
 	
 	public CharSequence getSoftName() {
 		return CharSequenceKey.Instance.setAsMdName(pathname);
+	}
+	
+	public boolean NeedsBuildIndex() {
+		return TextUtils.equals(ErrorMsg, "Needs Index Building!");
 	}
 }

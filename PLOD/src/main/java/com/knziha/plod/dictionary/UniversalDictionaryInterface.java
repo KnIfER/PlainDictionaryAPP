@@ -68,4 +68,8 @@ public interface UniversalDictionaryInterface {
 	byte[] getOptions();
 	void setOptions(byte[] options);
 	int getType();
+	
+	long getEntryExtNumber(long position, int index);
+	
+	String getField(String fieldName);
 }

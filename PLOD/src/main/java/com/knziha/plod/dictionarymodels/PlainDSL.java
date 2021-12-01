@@ -1,5 +1,7 @@
 package com.knziha.plod.dictionarymodels;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 
@@ -16,28 +18,24 @@ import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
-import com.knziha.plod.dictionarymanager.files.ArrayListTree;
+import com.knziha.plod.dictionaryBuilder.mdictBuilder;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.rbtree.RBTNode;
-import com.knziha.rbtree.RBTree;
 import com.knziha.rbtree.RBTree_additive;
-import com.knziha.rbtree.additiveMyCpr1;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joni.Option;
 import org.joni.Regex;
 import org.knziha.metaline.Metaline;
 
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -114,131 +112,128 @@ public class PlainDSL extends DictionaryAdapter {
 	}
 	
 	LinkastReUsageHashMap<Integer, TextBlock> block_cache;
-	RBTree<Entry> index_tree = new RBTree<>();
-	RBTree_additive appendix = new RBTree_additive();
-	ArrayListTree<Entry> index_array = new ArrayListTree<>();
-	ArrayList<Long> zran_block_index = new ArrayList<>();
+	mdict keyIndex;
 	
-	final File mIndexFolder;
+	/*final*/ File mIndexFolder;
 	/*final*/ File mIndexFile;
 	
 	void dumpEntries() throws IOException {
-		ArrayList<Entry> data = index_array.getList();
-		mIndexFolder.mkdirs();
-		FileOutputStream fout = new FileOutputStream(mIndexFile);
-		// 32 bytes
-		{
-			byte[] buffer = new byte[8];
-			BU.putIntLE(buffer, 0, DSLINDEXVERSION);
-			fout.write(buffer,0,4);
-			BU.putIntLE(buffer, 0, 0);
-			fout.write(buffer,0,4);
-			BU.putLongLE(buffer, 0, file_length);
-			fout.write(buffer);
-			BU.putLongLE(buffer, 0, firstflag);
-			fout.write(buffer);
-			BU.putLongLE(buffer, 0, _num_entries);
-			fout.write(buffer);
-		}
-		int DSLIndexBlockSize = 4096;
-		byte[] buff = new byte[DSLIndexBlockSize];
-		ReusableByteOutputStream bos;
-		DataOutputStream data_out = new DataOutputStream(bos=new ReusableByteOutputStream(buff, DSLIndexBlockSize));
-		int count=0; int size;
-		byte[] name;
-		boolean init=false;
-		/* writing normal entries, including rerouting ones. */
-		_num_entries = data.size();
-		CMN.Log("dumpEntries", _num_entries);
-		ArrayList<additiveMyCpr1> appendix_arr = appendix.flatten();
-		int appendSize = appendix_arr.size();
-		int U8BTL = UTF8LineBreakText.length;
-		for (int i = 0; i <= _num_entries; i++) {//4k对齐写入
-			if(!init){
-				name = "EXTIDX".getBytes(StandardCharsets.UTF_8);
-				data_out.write(name);
-				data_out.write(UTF8LineBreakText);
-				data_out.writeLong(0);
-				data_out.writeLong(_num_entries);
-				count=name.length+U8BTL+16;
-				init=true;
-			}
-			Entry entry;
-			if(i==_num_entries){
-				entry = new Entry();
-				entry.text="APPEND";
-				entry.contentStart=appendSize;
-			} else {
-				entry = data.get(i);
-			}
-			name = entry.text.getBytes(StandardCharsets.UTF_8);
-			size=name.length+U8BTL+16;
-			if(count+size > DSLIndexBlockSize){//溢出写入
-				byte[] source = bos.getBytes();
-				Arrays.fill(source, count, DSLIndexBlockSize, (byte) 0);
-				fout.write(source);
-				fout.flush();
-				bos.reset();
-				count = 0;
-			}
-			data_out.write(name);
-			data_out.write(UTF8LineBreakText);
-			data_out.writeLong(entry.contentStart);
-			data_out.writeLong(entry.contentEnd);
-			count+=size;
-		}
-		/* writing gd appending entries, including duplicated ones. */
-		for (int i = 0; i < appendSize; i++) {
-			OUT:
-			if(true){
-				String keyText = appendix_arr.get(i).key;
-				ArrayList arr = (ArrayList) appendix_arr.get(i).value;
-				name = keyText.getBytes(StandardCharsets.UTF_8);
-				size = name.length+U8BTL; if(count+size > DSLIndexBlockSize){break OUT;}
-				data_out.write(name);
-				data_out.write(UTF8LineBreakText);
-				for (Object oI:arr) {
-					if(oI instanceof String){
-						name = ((String)oI).getBytes(StandardCharsets.UTF_8);
-						size += name.length+U8BTL+16; if(count+size > DSLIndexBlockSize){break OUT;}
-						data_out.write(name);
-						data_out.write(UTF8LineBreakText);
-						data_out.writeLong(0);
-						data_out.writeLong(0);
-					} else if(oI instanceof Entry){
-						Entry entry = ((Entry) oI);
-						name = entry.text.getBytes(StandardCharsets.UTF_8);
-						size += name.length+U8BTL+16; if(count+size > DSLIndexBlockSize){break OUT;}
-						data_out.write(name);
-						data_out.write(UTF8LineBreakText);
-						data_out.writeLong(entry.contentStart);
-						data_out.writeLong(entry.contentEnd);
-					}
-				}
-				name = "APPEND".getBytes(StandardCharsets.UTF_8);
-				size += name.length+U8BTL+16; if(count+size > DSLIndexBlockSize){break OUT;}
-				data_out.write(name);
-				data_out.write(UTF8LineBreakText);
-				data_out.writeLong(-1);
-				data_out.writeLong(-1);
-				count+=size;
-				continue;
-			}
-			//溢出写入
-			byte[] source = bos.getBytes();
-			Arrays.fill(source, count, DSLIndexBlockSize, (byte) 0);
-			fout.write(source);
-			fout.flush();
-			bos.reset();
-			count = 0;
-		}
-		byte[] source = bos.getBytes();
-		if(count>0 && count<=DSLIndexBlockSize) { //正常写入
-			fout.write(source ,0, count);
-			fout.flush();
-			fout.close();
-		}
-		mIndexFile.setLastModified(f.lastModified());
+//		ArrayList<Entry> data = index_array.getList();
+//		mIndexFolder.mkdirs();
+//		FileOutputStream fout = new FileOutputStream(mIndexFile);
+//		// 32 bytes
+//		{
+//			byte[] buffer = new byte[8];
+//			BU.putIntLE(buffer, 0, DSLINDEXVERSION);
+//			fout.write(buffer,0,4);
+//			BU.putIntLE(buffer, 0, 0);
+//			fout.write(buffer,0,4);
+//			BU.putLongLE(buffer, 0, file_length);
+//			fout.write(buffer);
+//			BU.putLongLE(buffer, 0, firstflag);
+//			fout.write(buffer);
+//			BU.putLongLE(buffer, 0, _num_entries);
+//			fout.write(buffer);
+//		}
+//		int DSLIndexBlockSize = 4096;
+//		byte[] buff = new byte[DSLIndexBlockSize];
+//		ReusableByteOutputStream bos;
+//		DataOutputStream data_out = new DataOutputStream(bos=new ReusableByteOutputStream(buff, DSLIndexBlockSize));
+//		int count=0; int size;
+//		byte[] name;
+//		boolean init=false;
+//		/* writing normal entries, including rerouting ones. */
+//		_num_entries = data.size();
+//		CMN.Log("dumpEntries", _num_entries);
+//		ArrayList<additiveMyCpr1> appendix_arr = appendix.flatten();
+//		int appendSize = appendix_arr.size();
+//		int U8BTL = UTF8LineBreakText.length;
+//		for (int i = 0; i <= _num_entries; i++) {//4k对齐写入
+//			if(!init){
+//				name = "EXTIDX".getBytes(StandardCharsets.UTF_8);
+//				data_out.write(name);
+//				data_out.write(UTF8LineBreakText);
+//				data_out.writeLong(0);
+//				data_out.writeLong(_num_entries);
+//				count=name.length+U8BTL+16;
+//				init=true;
+//			}
+//			Entry entry;
+//			if(i==_num_entries){
+//				entry = new Entry();
+//				entry.text="APPEND";
+//				entry.contentStart=appendSize;
+//			} else {
+//				entry = data.get(i);
+//			}
+//			name = entry.text.getBytes(StandardCharsets.UTF_8);
+//			size=name.length+U8BTL+16;
+//			if(count+size > DSLIndexBlockSize){//溢出写入
+//				byte[] source = bos.getBytes();
+//				Arrays.fill(source, count, DSLIndexBlockSize, (byte) 0);
+//				fout.write(source);
+//				fout.flush();
+//				bos.reset();
+//				count = 0;
+//			}
+//			data_out.write(name);
+//			data_out.write(UTF8LineBreakText);
+//			data_out.writeLong(entry.contentStart);
+//			data_out.writeLong(entry.contentEnd);
+//			count+=size;
+//		}
+//		/* writing gd appending entries, including duplicated ones. */
+//		for (int i = 0; i < appendSize; i++) {
+//			OUT:
+//			if(true){
+//				String keyText = appendix_arr.get(i).key;
+//				ArrayList arr = (ArrayList) appendix_arr.get(i).value;
+//				name = keyText.getBytes(StandardCharsets.UTF_8);
+//				size = name.length+U8BTL; if(count+size > DSLIndexBlockSize){break OUT;}
+//				data_out.write(name);
+//				data_out.write(UTF8LineBreakText);
+//				for (Object oI:arr) {
+//					if(oI instanceof String){
+//						name = ((String)oI).getBytes(StandardCharsets.UTF_8);
+//						size += name.length+U8BTL+16; if(count+size > DSLIndexBlockSize){break OUT;}
+//						data_out.write(name);
+//						data_out.write(UTF8LineBreakText);
+//						data_out.writeLong(0);
+//						data_out.writeLong(0);
+//					} else if(oI instanceof Entry){
+//						Entry entry = ((Entry) oI);
+//						name = entry.text.getBytes(StandardCharsets.UTF_8);
+//						size += name.length+U8BTL+16; if(count+size > DSLIndexBlockSize){break OUT;}
+//						data_out.write(name);
+//						data_out.write(UTF8LineBreakText);
+//						data_out.writeLong(entry.contentStart);
+//						data_out.writeLong(entry.contentEnd);
+//					}
+//				}
+//				name = "APPEND".getBytes(StandardCharsets.UTF_8);
+//				size += name.length+U8BTL+16; if(count+size > DSLIndexBlockSize){break OUT;}
+//				data_out.write(name);
+//				data_out.write(UTF8LineBreakText);
+//				data_out.writeLong(-1);
+//				data_out.writeLong(-1);
+//				count+=size;
+//				continue;
+//			}
+//			//溢出写入
+//			byte[] source = bos.getBytes();
+//			Arrays.fill(source, count, DSLIndexBlockSize, (byte) 0);
+//			fout.write(source);
+//			fout.flush();
+//			bos.reset();
+//			count = 0;
+//		}
+//		byte[] source = bos.getBytes();
+//		if(count>0 && count<=DSLIndexBlockSize) { //正常写入
+//			fout.write(source ,0, count);
+//			fout.flush();
+//			fout.close();
+//		}
+//		mIndexFile.setLastModified(f.lastModified());
 	}
 
 	/**
@@ -268,7 +263,7 @@ public class PlainDSL extends DictionaryAdapter {
 			}
 		}
 		StringBuffer sb = new StringBuffer();
-		getRecordsAt_internal(sb, index_array.itemAt((int) position), 0);
+		getRecordsAt_internal(sb, position, 0);
 		return sb.toString();
 	}
 	
@@ -299,9 +294,13 @@ public class PlainDSL extends DictionaryAdapter {
 	
 	TextBlock tmpLastBlock;
 	
-	private void getRecordsAt_internal(StringBuffer sb, Entry eI, int depth) throws IOException {
-		int centerBlock = (int) (eI.contentStart/mBlockSize);
-		int length = (int) (eI.contentEnd - eI.contentStart);
+	private void getRecordsAt_internal(StringBuffer sb, long position, int depth) throws IOException {
+		String indexRecord = keyIndex.getRecordAt(position, null, false);
+		long contentStart = keyIndex.getEntryExtNumber(position, 0);
+		long contentLength = keyIndex.getEntryExtNumber(position, 1);
+		//SU.Log("indexRecord::", indexRecord.replace("\n", "\\n"), contentStart, contentLength);
+		int centerBlock = (int) (contentStart/mBlockSize);
+		int length = (int) (contentLength);
 		ReusableByteOutputStream bos = new ReusableByteOutputStream(mBlockSize *2);
 		bos.reset();
 		TextBlock tmpBlock;
@@ -334,7 +333,7 @@ public class PlainDSL extends DictionaryAdapter {
 			}
 			if(tmpLastBlock!=tmpBlock)tmpLastBlock=tmpBlock;
 			//CMN.Log(centerBlock, tmpBlock);
-			int start = (int) Math.max(0, eI.contentStart - (centerBlock * mBlockSize));
+			int start = (int) Math.max(0, contentStart - (centerBlock * mBlockSize));
 			int len = Math.min(tmpBlock.blockSize - start, length);
 			bos.write(tmpBlock.data, start, len);
 			length-=len;
@@ -342,7 +341,7 @@ public class PlainDSL extends DictionaryAdapter {
 		}
 		String val = new String(bos.getBytes(), 0, bos.size(), _charset);
 		//CMN.Log(" "); CMN.Log(" "); CMN.Log(val);
-		ConvertDslToHtml(sb, eI, val, depth);
+		ConvertDslToHtml(sb, keyIndex.getEntryAt(position), val, indexRecord, depth);
 	}
 	
 	private TextBlock new_TextBlock() {
@@ -402,26 +401,39 @@ public class PlainDSL extends DictionaryAdapter {
 		return bos.getBytes();
 	}
 
-	public void ConvertDslToHtml(StringBuffer sb, Entry entry, String dsl, int depth) throws IOException {
+	public void ConvertDslToHtml(StringBuffer sb, String entry, String source, String routeAndLinks, int depth) throws IOException {
 		boolean bIsStart = sb.length()==0;
-		dsl = entryLinkPattern.matcher(dsl).replaceAll("<a href='entry://$1'>$1</a>");
-		Matcher m = dslTagPattern.matcher(dsl);
+		source = entryLinkPattern.matcher(source).replaceAll("<a href='entry://$1'>$1</a>");
+		if(source.contains("\\\\")) source = source.replace("\\\\", "\\");
+		Matcher m = dslTagPattern.matcher(source);
 		sb.append(stylesheet);
 		if(bIsStart){
-			sb.append("<h3 class='_DSL_HEAD'>"+entry.text+"</h3>");
+			sb.append("<h3 class='_DSL_HEAD'>").append(entry).append("</h3>");
 		}
+		
+		String[] indexArr = null;
+		if(!TextUtils.isEmpty(routeAndLinks)) {
+			indexArr = routeAndLinks.split("\n");
+			if(indexArr.length>0) {
+				String rerouteTarget = indexArr[0];
+				if(!TextUtils.isEmpty(rerouteTarget)) { // ==>
+					sb.append("<h5 class='_DSL_HEAD'> ➥ ").append(rerouteTarget).append("</h5>");
+				}
+			}
+		}
+		
 		boolean replace;
 		while(m.find()){
 			String val = m.group(1);
 			int start=m.start();
 			if(val==null){
 				val = m.group(2);
-				if(start>0 && start+2<dsl.length() && !(dsl.charAt(start+1)=='['&&dsl.charAt(start+2)=='m')){
+				if(start>0 && start+2<source.length() && !(source.charAt(start+1)=='['&&source.charAt(start+2)=='m')){
 					m.appendReplacement(sb, "<br/>");
 				}
 			} else {
 				replace=true;
-				if (start > 0 && val.length() > 0 && dsl.charAt(start - 1) == '\\') {
+				if (start > 0 && val.length() > 0 && source.charAt(start - 1) == '\\') {
 					if(val.charAt(val.length() - 1) == '\\') {
 						m.appendReplacement(sb, "");
 						sb.delete(sb.length() - 1, sb.length());
@@ -442,7 +454,7 @@ public class PlainDSL extends DictionaryAdapter {
 				if(replace)
 					m.appendReplacement(sb, "<");
 				//if(start>0){
-				//	if(dsl.charAt(start)=='\t')
+				//	if(source.charAt(start)=='\t')
 				//		sb.append("br/><");
 				//}
 				String[] args = val.split(" +");
@@ -502,7 +514,7 @@ public class PlainDSL extends DictionaryAdapter {
 							case "*":
 								sb.append("div");
 								if (!closing) {
-									sb.append(" class='_DSL_OPT'");
+									sb.append(" class='_DSL_OPTX'");
 									break ParseTagWithArgs;
 								}
 							break;
@@ -543,25 +555,14 @@ public class PlainDSL extends DictionaryAdapter {
 			}
 		}
 		m.appendTail(sb);
-		RBTNode<additiveMyCpr1> append = appendix.searchByString(entry.text);
-		if(append!=null){
-			ArrayList arr = (ArrayList) append.getKey().value;
-			//CMN.Log("追加???", entry, "<---", arr.toArray().length);
-			//CMN.Log( arr.toArray() );
-			for (Object oI:arr) {
-				Entry enpentry = null;
-				if(oI instanceof String){
-					String appendKey = (String) oI;
-					int idx=lookUp(appendKey);
-					if(idx>=0 && idx<index_array.size()){
-						enpentry = index_array.itemAt(idx);
-					}
-				} else if(oI instanceof Entry){
-					enpentry=(Entry)oI;
-				}
-				if(enpentry!=null && enpentry!=entry && depth<=3) {
-					sb.append("<br/><p>➟").append(enpentry.text).append("</p>");
-					getRecordsAt_internal(sb, enpentry, ++depth);
+		
+		if(indexArr!=null) {
+			++depth;
+			for (int i = 1; i < indexArr.length; i++) {
+				if (TextUtils.getTrimmedLength(indexArr[i])>0) {
+					sb.append("<br/><p>➟").append(indexArr[i]).append("</p>");
+					int idx=lookUp(indexArr[i], true);
+					if(idx>=0 && depth<=3) getRecordsAt_internal(sb, idx, depth);
 				}
 			}
 		}
@@ -570,11 +571,14 @@ public class PlainDSL extends DictionaryAdapter {
 
 	static class Entry implements Comparable<Entry> {
 		private String text;
+		public String rerouteTarget;
 		private String cptext;
 		byte[] data;
 		long contentStart;
 		long contentEnd;
 		long entryStart;
+		long entryLength;
+		long dataOffset;
 
 		@Override
 		public int compareTo(Entry o) {
@@ -586,11 +590,6 @@ public class PlainDSL extends DictionaryAdapter {
 			return cptext==null?(cptext=processText(text)):cptext;
 		}
 
-		private byte[] data(Charset charset) {
-			if(data==null) data = text.getBytes(charset);
-			return data;
-		}
-
 		@NonNull
 		@Override
 		public String toString() {
@@ -598,13 +597,31 @@ public class PlainDSL extends DictionaryAdapter {
 		}
 	}
 	
-	final static int DSLINDEXVERSION = 2;
 	
+	public void buildTextForTempEntry(Entry tmpEntry) {
+		if(tmpEntry.data!=null && tmpEntry.text==null) {
+			String text = new String(tmpEntry.data, (int)tmpEntry.dataOffset, (int)tmpEntry.entryLength, _charset).trim();
+			if(text.contains("\\(")){
+				text = text.replace("\\(", "(").replace("\\)", ")");
+			}
+			if(bIsUTF16 && text.startsWith(UTF16BOM))
+				text = text.replace(UTF16BOM, "");
+			int idx = text.indexOf("\n");
+			if (idx>0) {
+				text = text.substring(0, idx);
+			}
+			tmpEntry.text = stripNonSortParts(text);
+			tmpEntry.data = null;
+		}
+	}
 	
-	int[] blockIndexes;
+	static class IndexBuilder {
+		ArrayList<String> appendixArr = new ArrayList<>();
+		mdictBuilder mdb;
+	}
 	
 	//构造
-	public PlainDSL(File fn, MainActivityUIBase _a) throws IOException {
+	public PlainDSL(File fn, MainActivityUIBase _a, mdict.AbsAdvancedSearchLogicLayer taskRecv) throws IOException {
 		super(fn, _a);
 		isDictZip = _Dictionary_fName.regionMatches(true, _Dictionary_fName.length()-3, ".dz", 0, 3);
 		opt=_a.opt;
@@ -620,148 +637,63 @@ public class PlainDSL extends DictionaryAdapter {
 		if(isDictZip) {
 			try {
 				dictReader = new DictInputStream.GZIPDictReader(f);
+				file_length = dictReader.blockDecLength*dictReader.blockCount;
 			} catch (IOException e) {
 				if(GlobalOptions.debug)CMN.Log(e);
 			}
-//			int blockIndex=dictReader.blockDecLength/mBlockSize+10;
-//			long fileOffset=blockIndex*mBlockSize;
-//			FileInputStream rawFileReader = new FileInputStream(f);
-//			BU.SafeSkipReam(rawFileReader, dictReader.blockOffset+dictReader.getReadStartForOffset(fileOffset));
-//
-//			InputStream din = new DictInputStream(dictReader, rawFileReader, fileOffset);
-//
-//			TextBlock tmpBlock=new_TextBlock();
-//			tmpBlock.blockIndex=blockIndex;
-//			tmpBlock.read(din);
-//			CMN.Log(new String(tmpBlock.data, StandardCharsets.UTF_16LE));
 		}
-
-		InputStream data_in = mOpenInputStream(0);
-		TextBlock tmpBlock=new_TextBlock();
-		tmpBlock.blockSize = data_in.read(tmpBlock.data);
-		//tmpBlock.read(data_in);
-
-		//CMN.Log("blockSize", tmpBlock.blockSize, new String(tmpBlock.data, 0, 10, StandardCharsets.UTF_16LE));
-		//block_cache.put(0, tmpBlock);
-
-		CharsetDetector detector = new CharsetDetector();
-		detector.setText(tmpBlock.data);
-		CharsetMatch match = detector.detect();
-		String charset = "utf8";
-		if(match!=null && match.getConfidence()>=75)
-			charset = match.getName();
-		CMN.Log("检测结果：", charset, isDictZip);
-		_charset = Charset.forName(charset);
-		//_charset = StandardCharsets.UTF_16LE;
-		if(_charset.equals(StandardCharsets.UTF_16LE) || _charset.equals(StandardCharsets.UTF_16BE)) {
-			bIsUTF16=true;
-			if(compareByteArrayIsPara(tmpBlock.data, 0, UTF16BOMBYTES)) _BOM_SIZE=2;
-		}
-		else if(!_charset.equals(StandardCharsets.UTF_8))
-			throw new IllegalArgumentException("invalid dsl encoding!");
-		htmlOpenTagStr="[";
-		htmlCloseTagStr="]";
-		postGetCharset();
-		lineBreakText = "\n".getBytes(_charset);
-		contentBreakText = "\t".getBytes(_charset);
-		contentBreakText1 = " ".getBytes(_charset);
-		contentBreakText_length = contentBreakText.length;
-		excludesNextBytes = new byte[][]{contentBreakText, contentBreakText1, "#".getBytes(_charset) }; //, "\r".getBytes(_charset)
-		file_length = f.length();
-		_num_record_blocks = (long) Math.ceil(file_length*1.f/ mBlockSize);
-		//if(bgColor==null)
-		//	bgColor=CMN.GlobalPageBackground;
-
-		boolean full_scan = true;
-		
 		mIndexFolder = _a.getExternalFilesDir("DSLIndex");
 		mIndexFile = new File(mIndexFolder, f.getName());
-		mIndexFile.delete();
+		if(mIndexFile.exists())mIndexFile.delete();
+		mIndexFolder = _a.getExternalFilesDir("DzIndex");
 		mIndexFile = new File(mIndexFolder, f.getName()+".idx");
-		CMN.Log("Scan Indexes...", mIndexFile);
+		//SU.Log("Scan Indexes...", mIndexFile);
 		//if(false)
-		if( mIndexFile.exists() && mIndexFile.lastModified()==f.lastModified()){
-			CMN.rt();
+		if( mIndexFile.exists()) {
 			try {
-				FileInputStream fin = new FileInputStream(mIndexFile);
-				// 32 bytes
-				{
-					byte[] buffer = new byte[8];
-					SafeRead(fin, buffer, 0, 4);
-					if (DSLINDEXVERSION!=BU.toIntLE(buffer, 0))
-						throw new IllegalStateException();
-					SafeRead(fin, buffer, 0, 4);
-					SafeRead(fin, buffer, 0, 8);
-					if (isDictZip) {
-						file_length = BU.toLongLE(buffer, 0);
-						_num_record_blocks = (long) Math.ceil(file_length*1.f/ mBlockSize);
-					}
-					SafeRead(fin, buffer, 0, 8);
-					firstflag = BU.toLongLE(buffer, 0);
-					SafeRead(fin, buffer, 0, 8);
-					_num_entries = BU.toLongLE(buffer, 0);
-				}
-				int DSLIndexBlockSize = 4096;
-				int sourceCount, idx;
-				int now;
-				byte[] source = new byte[DSLIndexBlockSize];
-				ArrayList<Entry> index_data = new ArrayList<>();
-				boolean init=true;
-				//4k对齐读取。
-				boolean appending=false;
-				ReadBlocks:
-				while ((sourceCount = fin.read(source, 0, DSLIndexBlockSize)) > 0) {
-					now=0;
-					while((idx= mdict.indexOf(source, 0, sourceCount, UTF8LineBreakText, 0, UTF8LineBreakText.length, now))>0){
-						if(!appending) {
-							Entry entry = new Entry();
-							entry.text = new String(source, now, idx - now);
-							entry.contentStart = readLong(source, idx + UTF8LineBreakText.length);
-							entry.contentEnd = readLong(source, idx + UTF8LineBreakText.length + 8);
-							if (init && entry.text.equals("EXTIDX")) {
-								_num_entries = entry.contentEnd;
-								index_data = new ArrayList<>((int) _num_entries);
-								init = false;
-								CMN.Log("EI HEAD: N#"+_num_entries);
-							} else if (entry.contentStart >= 0 && entry.contentEnd > entry.contentStart) {
-								index_data.add(entry);
-							} else if (entry.text.equals("APPEND")) {
-								appending = true;
-							}
-							now = idx + UTF8LineBreakText.length + 16;
-						} else {
-							String target = new String(source, now, idx - now);
-							now = idx + UTF8LineBreakText.length;
-							//CMN.Log("appending...", target);
-							while((idx= mdict.indexOf(source, 0, sourceCount, UTF8LineBreakText, 0, UTF8LineBreakText.length, now))>0) {
-								Entry entry = new Entry();
-								entry.text = new String(source, now, idx - now);
-								entry.contentStart = readLong(source, idx + UTF8LineBreakText.length);
-								entry.contentEnd = readLong(source, idx + UTF8LineBreakText.length + 8);
-								now = idx + UTF8LineBreakText.length + 16;
-								//CMN.Log("---append :", entry.text, entry.contentStart, entry.contentEnd);
-								if (entry.contentStart >= 0 && entry.contentEnd > entry.contentStart) {
-									appendix.insert(target, entry);
-								} else if (entry.contentStart == 0 && entry.contentEnd == 0) {
-									appendix.insert(target, entry.text);
-								} else if (entry.text.equals("APPEND")) {
-									//CMN.Log("append end...", target);
-									break;
-								}
-							}
-						}
-					}
-				}
-				index_array = new ArrayListTree<>(index_data);
-				_num_entries = index_array.size();
-				CMN.Log("recoverEntries", _num_entries, this);
-				CMN.pt(" 树大小："+_num_entries+"恢复索引耗时：");
-				full_scan=false;
-			} catch (Exception e) { if(GlobalOptions.debug)CMN.Log(e); }
+				CMN.rt();
+				keyIndex = new mdict(mIndexFile.getPath());
+				CMN.pt("恢复索引耗时：", keyIndex.getNumberEntries());
+			} catch (IOException e) {
+				if(GlobalOptions.debug) SU.Log(e);
+			}
 		}
-
-		if(full_scan) {
-			data_in = mOpenInputStream(0);
+		String md5 = null;
+		if (keyIndex != null) {
+			if(IU.parsint(keyIndex.getField("idxVer"), 0)!=1
+				|| IU.parseLong(keyIndex.getField("idxLen"), 0)!=f.length())
+				keyIndex = null;
+			else {
+				long lastModified = f.lastModified();
+				if(mIndexFile.lastModified()!=lastModified) {
+					// check md5
+					md5 = BU.calcMD5(f.getPath());
+					if(TextUtils.equals(keyIndex.getField("idxMd5"), md5)) {
+						keyIndex = null;
+					} else {
+						mIndexFile.setLastModified(lastModified);
+					}
+				}
+			}
+		}
+		
+		if (keyIndex != null) {
+			String charset = keyIndex.getField("idxEnc");
+			setCharset(charset);
+			_BOM_SIZE = IU.parsint(keyIndex.getField("idxBOM"));
+		}
+		else {
+			// build the index
+			if(f.length()>=2.33*1024*1024 &&
+					!opt.getAutoBuildIndex() && CMN.mid==Thread.currentThread().getId()) {
+				throw new IllegalStateException("Needs Index Building!");
+			}
+			InputStream data_in = mOpenInputStream(0);
+			TextBlock tmpBlock=new_TextBlock();
+			IndexBuilder db = new IndexBuilder();
+			mdictBuilder mdb = db.mdb = new mdictBuilder(mIndexFile.getName(), "Index file for "+getDictionaryName(), "utf8");
+			mdb.setDiacriticsInsensitive(true);
+			mdb.setKeyCaseInsensitive(true);
 			CMN.rt();
 			ReusableByteOutputStream bos = new ReusableByteOutputStream(512);
 			boolean checkTail=false;
@@ -769,16 +701,52 @@ public class PlainDSL extends DictionaryAdapter {
 			ArrayList<Entry> lastEntry=new ArrayList<>(8);
 			int i = -1;
 			tmpBlock.blockSize=mBlockSize;
+			String name=null;
+			DictInputStream dzInput = data_in instanceof DictInputStream? (DictInputStream) data_in :null;
 			// split keys
 			ScanBlocks:
-			//for (int i = StartBlock; i < StartBlock+100; i++) {
-			//for (; i < _num_record_blocks; i++) {
 			while(tmpBlock.blockSize==mBlockSize) {
 				i++;
 				tmpBlock.blockIndex = i;
-				//tmpBlock.blockSize = fis.read(tmpBlock.data);
 				tmpBlock.read(data_in);
+				if(taskRecv!=null) {
+					taskRecv.dirtyTotalProgress = (int) file_length;
+					if(dzInput!=null) {
+						taskRecv.dirtyProgressCounter = dzInput.tellPosition();
+					} else {
+						taskRecv.dirtyProgressCounter+=tmpBlock.blockSize;
+					}
+					if(taskRecv.IsInterrupted || searchCancled)
+						throw new IllegalStateException("Needs Index Building!");
+				}
+				if(i==0) {
+					//CMN.Log("blockSize", tmpBlock.blockSize, new String(tmpBlock.data, 0, 10, StandardCharsets.UTF_16LE));
+					CharsetDetector detector = new CharsetDetector();
+					detector.setText(tmpBlock.data);
+					CharsetMatch match = detector.detect();
+					String charset = "utf8";
+					if(match!=null && match.getConfidence()>=75)
+						charset = match.getName();
+					if(GlobalOptions.debug)CMN.Log("检测结果：", charset, isDictZip);
+					setCharset(charset);
+					if(compareByteArrayIsPara(tmpBlock.data, 0, UTF16BOMBYTES)) _BOM_SIZE=2;
+					try {
+						String infos = new String(tmpBlock.data, _BOM_SIZE, Math.min(128, tmpBlock.blockSize)/2*2-2, _charset);
+						if(infos.charAt(0)=='#') {
+							int idx = infos.indexOf("#NAME");
+							if(idx>=0) {
+								int idx1 = infos.indexOf("\n", idx);
+								if(idx1>0) {
+									name = infos.substring(idx+5, idx1).trim();
+									name = name.substring(1, name.length()-1);
+								}
+							}
+						}
+						//CMN.Log("infos", infos, name);
+					} catch (Exception ignored) { }
+				}
 				int entryBreak=0;
+				//if(i%100==0)CMN.Log("区块", i, _num_record_blocks);
 				//CMN.Log("区块", i, checkTail, bos.size(), new String(tmpBlock.data, 0, 500, _charset));
 				if(!checkTail && bos.size()>0){ //entry residue
 					int next;
@@ -799,7 +767,7 @@ public class PlainDSL extends DictionaryAdapter {
 						}
 						entryBreak = next;
 						//CMN.Log("residue!!!", new String(bos.getBytes(), 0, bos.size(), _charset));
-						addEntry(bos.getBytes(), 0, bos.size(), i*mBlockSize+entryBreak-contentBreakText_length, lastEntry);
+						addEntry(db, bos.getBytes(), 0, bos.size(), i*mBlockSize+entryBreak-contentBreakText_length, lastEntry);
 						//fout.write(bos.getBytes(), 0, bos.size());
 						//fout.write(lineBreakText);
 					}
@@ -814,7 +782,7 @@ public class PlainDSL extends DictionaryAdapter {
 						//CMN.Log(new String(tmpBlock.data, entryBreak, next-entryBreak, _charset));
 						//fout.write(tmpBlock.data, entryBreak, next-entryBreak);
 						//fout.write(lineBreakText);
-						addEntry(tmpBlock.data, entryBreak, next-entryBreak, i*mBlockSize+next+lineBreakText.length, lastEntry);
+						addEntry(db, tmpBlock.data, entryBreak, next-entryBreak, i*mBlockSize+next+lineBreakText.length, lastEntry);
 						entryBreak=next+lcl();
 					} else { /* but without any result */
 						//CMN.Log("FNCBI without any result, \n* opened but not closed!", entryBreak);
@@ -830,23 +798,95 @@ public class PlainDSL extends DictionaryAdapter {
 					bos.write(tmpBlock.data, tmpBlock.blockSize - lineBreakText.length, lineBreakText.length);
 				}
 			}
-			if (isDictZip) {
-				file_length = tmpBlock.blockIndex*(long)mBlockSize+tmpBlock.blockSize;
-				_num_record_blocks = (long) Math.ceil(file_length*1.f/ mBlockSize);
+			data_in.close();
+			file_length = tmpBlock.blockIndex*(long)mBlockSize+tmpBlock.blockSize;
+			if(lastEntry.size()>0) {
+				for (Entry eI:lastEntry) {
+					//CMN.Log("最后：：", eI.text);
+					mdb.insert(eI.text, null, 0, eI.contentStart, file_length-eI.contentStart);
+				}
 			}
-			index_array = new ArrayListTree<>(index_tree.flatten());
-			_num_entries = index_array.size();
-			CMN.pt(" 树大小："+_num_entries+" 扫描文件耗时：");
-			//fout.flush(); fout.close();
-			if(lastEntry.size()>0)
-				for (Entry eI:lastEntry)
-					eI.contentEnd = f.length();
-			try {
+			for (int j = 0, len=db.appendixArr.size(); j < len; j+=2) {
+				String rawName = db.appendixArr.get(j);
+				String linkedName = db.appendixArr.get(j+1);
+				mdictBuilder.myCprKey keyNode = mdb.lookUp(rawName);
+				if(keyNode==null) {
+					mdb.insert(rawName, null, 0, 0, 0);
+					keyNode = mdb.lookUp(rawName);
+				}
+				if(keyNode!=null) {
+					//SU.Log(rawName, " 嵌入其他链接 ", linkedName);
+					if(keyNode.postProcessor==null)keyNode.postProcessor = new LinkedEntryBuilder();
+					((LinkedEntryBuilder)keyNode.postProcessor).addLinkedEntry(linkedName);
+				} else if(GlobalOptions.debug) {
+					SU.Log("！！！未找到嵌入目标:>>>"+rawName+"<<<", rawName.length());
+				}
+			}
+			//mdb.insert("happy", "hah");
+			SU.pt(" 树大小："+entryCount);
+			SU.pt(" 树大小："+mdb.getNumberEntries()+" 扫描文件耗时：");
+			if(name!=null) mdb.setName(name);
+			mdb.field("idxVer", 1);
+			mdb.field("idxLen", f.length());
+			mdb.field("idxEnc", _charset.name());
+			mdb.field("idxBOM", _BOM_SIZE);
+			mdb.field("stdSort", true);
+			if(md5==null) {
 				CMN.rt();
-				dumpEntries();
-				CMN.pt("写入词条耗时：");
-			} catch (Exception e) {
-				mIndexFile.delete();
+				md5 = BU.calcMD5(f.getPath());
+				CMN.pt("计算Md5耗时：");
+			}
+			mdb.field("idxMd5", md5);
+			SU.rt();
+			mdb.setContentDelimiter(ArrayUtils.EMPTY_BYTE_ARRAY);
+			mdb.setCompressionType(2);
+			mdb.setIndexUnitSize(32);
+			mdb.setRecordUnitSize(4);
+			mdb.write(mIndexFile.getPath());
+			SU.pt("写入词条耗时：");
+			
+			keyIndex = new mdict(mIndexFile.getPath());
+			mIndexFile.setLastModified(f.lastModified());
+		}
+		if(file_length==0) file_length = f.length();
+		_num_entries = keyIndex.getNumberEntries();
+		_num_record_blocks = (long) Math.ceil(file_length*1.f/ mBlockSize);
+	}
+	
+	private void setCharset(String charset) {
+		_charset = Charset.forName(charset);
+		//_charset = StandardCharsets.UTF_16LE;
+		if(_charset.equals(StandardCharsets.UTF_16LE) || _charset.equals(StandardCharsets.UTF_16BE)) {
+			bIsUTF16=true;
+		}
+		else if(!_charset.equals(StandardCharsets.UTF_8))
+			throw new IllegalArgumentException("invalid dsl encoding!");
+		htmlOpenTagStr="[";
+		htmlCloseTagStr="]";
+		postGetCharset();
+		lineBreakText = "\n".getBytes(_charset);
+		contentBreakText = "\t".getBytes(_charset);
+		contentBreakText1 = " ".getBytes(_charset);
+		contentBreakText_length = contentBreakText.length;
+		excludesNextBytes = new byte[][]{contentBreakText, contentBreakText1, "#".getBytes(_charset) }; //, "\r".getBytes(_charset)
+	}
+	
+	static class LinkedEntryBuilder implements mdictBuilder.PostEntryValueProcessor {
+		/** 重定向词条，链接词条1，链接词条2, ... */
+		ArrayList<String> tags = new ArrayList<>();
+		public void addLinkedEntry(String text) {
+			if(tags.size()==0) tags.add("");
+			tags.add(text);
+		}
+		public void setRerouteTarget(String text) {
+			if(tags.size()==0) tags.add("");
+			tags.set(0, text);
+		}
+		@Override
+		public void processEntry(mdictBuilder builder, mdictBuilder.myCprKey entry) {
+			if(tags.size()>0) {
+				entry.value = StringUtils.join(tags, "\n");
+				// 复刻重定向词条记录的开始与终止。（已经预先处理）
 			}
 		}
 	}
@@ -863,23 +903,31 @@ public class PlainDSL extends DictionaryAdapter {
 	}
 	
 	
-	protected void findInAllContentsForEntry(TextBlock tmpBlock_A, TextBlock tmpBlock_B, ArrayList<SearchResultBean> searchReceiver, byte[] data, int offset, int size, int contentStart, ArrayList<Entry> lastSibling, byte[][][][][] finalMatcher, Regex finalJoniregex, mdict.AbsAdvancedSearchLogicLayer searchLauncher, Flag flag, ReusableByteOutputStream rec_bos) throws IOException, InterruptedException {
-		String text = new String(data, offset, size, _charset).trim();
-		if(text.indexOf("\\(")>=-1){
-			text = text.replace("\\(", "(").replace("\\)", ")");
+	protected void findInAllContentsForEntry(TextBlock tmpBlock_A, TextBlock tmpBlock_B, ArrayList<SearchResultBean> searchReceiver
+			, byte[] data, int offset, int size, int contentStart, ArrayList<Entry> newEntrys, ArrayList<Entry> lastSibling
+			, byte[][][][][] finalMatcher, Regex finalJoniregex, mdict.AbsAdvancedSearchLogicLayer searchLauncher, Flag flag
+			, ReusableByteOutputStream rec_bos, boolean insert) throws IOException, InterruptedException {
+		Entry newEntry = null;
+		if(insert) {
+			if(newEntrys.size()>0) {
+				newEntry = newEntrys.remove(newEntrys.size()-1);
+			} else {
+				newEntry = new Entry();
+			}
+			newEntry.text = null;
+			newEntry.contentStart=contentStart;
+			newEntry.entryStart = contentStart-size;
+			newEntry.data = data;
+			newEntry.entryLength = size;
+			newEntry.dataOffset = offset;
+			if(data!=tmpBlock_A.data)
+			{
+				buildTextForTempEntry(newEntry);
+			}
 		}
-		text = text.replace("{·}", "");
-		if(index_tree.getRoot()==null && bIsUTF16)
-			text = text.replace(UTF16BOM, "");
-		String[] arr = text.split("\n");
-		Entry newEntry = new Entry();
-		newEntry.text = arr[0];
-		//String[] arr1 = text.split(VerbatimSearchTask.RegExp_VerbatimDelimiter);
-		newEntry.contentStart=contentStart;
-		newEntry.entryStart = contentStart-size;
 		if(lastSibling!=null) {
 			for (Entry eI:lastSibling) {
-				eI.contentEnd = newEntry.entryStart - lineBreakText.length;
+				eI.contentEnd = contentStart - size - lineBreakText.length;
 				//SU.Log(tmpBlock_B.blockIndex, tmpBlock_A.blockIndex, "mBlockSize="+mBlockSize
 				//		, eI.text+"@"+eI.contentStart, (int) (eI.contentStart/mBlockSize)
 				//		, newEntry.text+"@"+newEntry.contentStart, (int) (newEntry.contentStart/mBlockSize));
@@ -915,71 +963,114 @@ public class PlainDSL extends DictionaryAdapter {
 					try_idx=Jonimatcher.searchInterruptible(recordSt.val, recordLen, Option.DEFAULT);
 				}
 				if(try_idx!=-1) {
-					if(eI.text.equals("infer")) {
-						SU.Log("找到了：", eI.text, eI.contentEnd-eI.contentStart, rec_bos.getBytes().length, try_idx, new String(record_block_, recordSt.val+try_idx, 10, _charset));
-						SU.Log("找到了：", try_idx, eI.contentStart, eI.contentEnd-eI.contentStart);
-						SU.Log("找到了：", new String(record_block_, recordSt.val, (int)(eI.contentEnd-eI.contentStart), _charset));
-						SU.Log("找到了：", new String(record_block_, recordSt.val+try_idx, 1000, _charset));
-						SU.Log("找到了：", new String(record_block_, recordSt.val+try_idx-200, 200, _charset));
-						
-					}
-					SU.Log("找到了：", eI.text);
+					buildTextForTempEntry(eI);
+//					if(eI.text.equals("woodie")) {
+//						SU.Log("找到了 yesyes：", eI.text, eI.contentEnd-eI.contentStart, rec_bos.getBytes().length, try_idx, new String(record_block_, recordSt.val+try_idx, 10, _charset));
+//						SU.Log("找到了 yesyes：", try_idx, eI.contentStart, eI.contentEnd-eI.contentStart);
+//						SU.Log("找到了 yesyes：", new String(record_block_, recordSt.val, (int)(eI.contentEnd-eI.contentStart), _charset));
+//						SU.Log("找到了 yesyes：", new String(record_block_, recordSt.val+try_idx, 1000, _charset));
+//						SU.Log("找到了 yesyes：", new String(record_block_, recordSt.val+try_idx+10, 1000, _charset));
+//						//SU.Log("找到了 yesyes：", new String(record_block_, recordSt.val+try_idx-200, 200, _charset));
+//					}
+//					SU.Log("找到了：", eI.text);
 					searchLauncher.dirtyResultCounter++;
-					searchReceiver.add(new SearchResultBean(lookUp(eI.text, true)));
+					int firstMat = lookUp(eI.text, true);
+					if(firstMat>0) {
+						int nxt = firstMat++;
+						String cptext = processMyText(eI.text), nxtEty;
+						while(nxt<_num_entries && processMyText(nxtEty=getEntryAt(nxt)).equals(cptext)) {
+							if(eI.text.equals(nxtEty)) {
+								firstMat = nxt;
+								break;
+							}
+							nxt++;
+						}
+					}
+					searchReceiver.add(new SearchResultBean(firstMat));
 				}
 				break;
 			}
 			searchLauncher.dirtyProgressCounter++;
+			newEntrys.addAll(lastSibling);
 			lastSibling.clear();
-			lastSibling.add(newEntry);
+			if(insert)lastSibling.add(newEntry);
 		}
 	}
 	
+	private boolean isKeyCaseSensitive=false;
+	private boolean isStripKey=true;
+	protected String processMyText(String input) {
+		String ret = isStripKey?mdict.replaceReg.matcher(input).replaceAll(""):input;
+		return isKeyCaseSensitive?ret:ret.toLowerCase();
+	}
 	
-	private void addEntry(byte[] data, int offset, int size, int contentStart, ArrayList<Entry> lastSibling) {
+	final Pattern patterNonSortParts = Pattern.compile("\\{.*?\\}|\r");
+	
+	/** see https://documentation.help/ABBYY-Lingvo8/unsorted_head_part.htm */
+	private String stripNonSortParts(String text) {
+		if(text.contains("{"))
+			return patterNonSortParts.matcher(text).replaceAll("");
+		return SU.trimEnd(text);
+		//return text.replace("{·}", "");
+	}
+	
+	int entryCount=0;
+	
+	private void addEntry(IndexBuilder db, byte[] data, int offset, int size, int contentStart, ArrayList<Entry> lastSibling) {
 		String text = new String(data, offset, size, _charset).trim();
-		if(text.indexOf("\\(")>=-1){
+		//CMN.Log("addEntry::", text);
+		if(text.contains("\\("))
+		{
 			text = text.replace("\\(", "(").replace("\\)", ")");
 		}
-		text = text.replace("{·}", "");
-		if(index_tree.getRoot()==null && bIsUTF16)
-			text = text.replace(UTF16BOM, "");
 		String[] arr = text.split("\n");
+		
 		Entry newEntry = new Entry();
-		newEntry.text = arr[0];
-		//String[] arr1 = text.split(VerbatimSearchTask.RegExp_VerbatimDelimiter);
+		entryCount++;
+		
+		String entryFullName = arr[0];
+		if(bIsUTF16 && text.startsWith(UTF16BOM))
+			entryFullName = entryFullName.replace(UTF16BOM, "");
+		newEntry.text = stripNonSortParts(entryFullName);
 		newEntry.contentStart=contentStart;
 		newEntry.entryStart = contentStart-size;
-		RBTNode<Entry> heyNode = index_tree.insert(newEntry);
+		
 		if(lastSibling!=null) {
-			for (Entry eI:lastSibling)
-				eI.contentEnd = newEntry.entryStart - lineBreakText.length;
+			for (Entry eI:lastSibling) {
+				mdictBuilder.myCprKey keyNode = db.mdb.insert(eI.text, null, 0, eI.contentStart, newEntry.entryStart - lineBreakText.length - eI.contentStart);
+				if(eI.rerouteTarget!=null) {
+					// 重定向
+					if(keyNode.postProcessor==null)keyNode.postProcessor = new LinkedEntryBuilder();
+					((LinkedEntryBuilder)keyNode.postProcessor).setRerouteTarget(eI.rerouteTarget);
+				}
+				//CMN.Log("mdb.insert::", eI.text);
+			}
+			lastSibling.clear();
+			lastSibling.add(newEntry); // waiting to be inserted...
 		}
-		lastSibling.clear();
-		lastSibling.add(newEntry);
-		if(heyNode.getKey()!=newEntry){
-//			if(heyNode.getKey().text.compareToIgnoreCase("cheap")==0)
-//				CMN.Log("处理重复词条11");
-			appendix.insert(heyNode.getKey().text, newEntry);
-		}
+		//CMN.Log("array::", StringUtils.join(arr, ","));
 		if (arr.length > 1) {
 			for (int i = 1; i < arr.length; i++) {
-				String tI = arr[i];
+				String tI = SU.trimEnd(arr[i]);
+				//CMN.Log("array items::", tI, tI.endsWith(")}"), tI.contains("{("));
 				//String[] arrI = tI.split(VerbatimSearchTask.RegExp_VerbatimDelimiter);
-				if (tI.contains("{(") && tI.endsWith(")}")) { //advanced append
+				if (tI.endsWith(")}") && tI.contains("{(")) { //advanced append
+					//CMN.Log("通常是在别的词条下嵌入当前词条", tI);
 					int idx = tI.indexOf("{(");
-					if (idx > 0) {
-						if (tI.charAt(idx - 1) == ' ')
-							--idx;
-						appendix.insert(tI.substring(0, idx).trim(), newEntry.text);
-					}
+					String linkedName = tI.substring(idx+2, tI.length()-2);
+					if (tI.charAt(idx - 1) == ' ')
+						--idx;
+					String rawName = SU.trimEnd(tI.substring(0, idx));
+					db.appendixArr.add(rawName); // 原词
+					db.appendixArr.add(linkedName); // 嵌入词
 				} else { //alias
+					// 别名而已
 					Entry entry = new Entry();
-					lastSibling.add(entry);
-					entry.text = tI;
+					entry.text = stripNonSortParts(tI);
 					entry.contentStart=newEntry.contentStart;
 					entry.entryStart = newEntry.entryStart;
-					index_tree.insert(entry);
+					entry.rerouteTarget = newEntry.text;
+					lastSibling.add(entry);
 				}
 			}
 		}
@@ -1076,7 +1167,11 @@ public class PlainDSL extends DictionaryAdapter {
 	@Override
 	public String getEntryAt(long position) {
 		if(position==-1) return "about:";
-		return index_array.itemAt((int) position).text;
+		try {
+			return keyIndex.getEntryAt(position);
+		} catch (Exception e) {
+			return "!!!"+position;
+		}
 	}
 
 	@Override
@@ -1086,46 +1181,13 @@ public class PlainDSL extends DictionaryAdapter {
 
 	@Override
 	public int lookUp(String keyword, boolean isStrict) {
-		ArrayList<Entry> data = index_array.getList();
-		if(data.size()==0) return -1;
-
-		int idx = reduce(data, keyword,0,data.size());
-
-		if(idx<0 || !isStrict) return idx;
-
-		String looseMatch = processText(getEntryAt(idx));
-		boolean bIsEqual = looseMatch.equals(processText(keyword));
-		if(!bIsEqual){
-			return -1* (idx+2);
-		}
-		return idx;
+		return keyIndex.lookUp(keyword, isStrict);
 	}
 	
 	@Override
 	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta) {
-		int idx = lookUp(keyword, true);
-		int cc=0;
-		if (idx>=0) {
-			cc=1;
-			String entry = getEntryAt(idx);
-			if(treeBuilder !=null)
-				treeBuilder.insert(entry, SelfAtIdx, (long)idx);
-			else
-				rangReceiver.add(new myCpr<>(entry, (long) idx));
-			keyword = processText(keyword);
-			for (int i = 1; i < theta; i++)
-			{
-				entry = getEntryAt(idx+i);
-				if (processText(entry).startsWith(keyword))
-				{
-					if(treeBuilder !=null)
-						treeBuilder.insert(entry, SelfAtIdx, (long) (idx+i));
-					else
-						rangReceiver.add(new myCpr<>(entry, (long) (idx + i)));
-				}
-			}
-		}
-		return cc;
+		return keyIndex.lookUpRange(keyword, rangReceiver, treeBuilder, SelfAtIdx, theta);
+		// todo std lookUpRange
 	}
 	
 	public int reduce(ArrayList<Entry> data, String val, int start, int end) {//via mdict-js
@@ -1161,174 +1223,10 @@ public class PlainDSL extends DictionaryAdapter {
 //	}
 	
 	
-	public void flowerFindAllContentsXXX(String key, int selfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
-		//SU.Log("Find In All Contents Stated");
-		byte[][][][][] matcher=null;
-		Regex Joniregex = null;
-		if(SearchLauncher.getSearchEngineType()==1){
-			if(encoding==null) mdict.bakeJoniEncoding(_charset);
-			if(encoding!=null) {
-				//if (getRegexAutoAddHead() && !key.startsWith(".*"))
-				//	key = ".*" + key;
-				byte[] pattern = key.getBytes(_charset);
-				Joniregex = new Regex(pattern, 0, pattern.length, getRegexOption(), encoding);
-			}
-		}
-		if(Joniregex==null) {
-			matcher =  leafSanLieZhi(SearchLauncher, _charset);
-		}
-		
-		split_recs_thread_number = _num_entries<6?1:(int) (_num_entries/6);//Runtime.getRuntime().availableProcessors()/2*2+10;
-		split_recs_thread_number = split_recs_thread_number>16?6:split_recs_thread_number;
-		final int thread_number = Math.min(Runtime.getRuntime().availableProcessors()/2*2+2, split_recs_thread_number);
-		SU.Log("split_recs_thread_number", split_recs_thread_number);
-		SU.Log("thread_number", thread_number);
-		split_recs_thread_number = 1;
-		
-		final int step = (int) (_num_entries/split_recs_thread_number);
-		final int yuShu=(int) (_num_entries%split_recs_thread_number);
-		
-		ArrayList<SearchResultBean>[] _combining_search_tree=SearchLauncher.getTreeBuilding(selfAtIdx, split_recs_thread_number);
-		
-		ConcurrentHashMap<Integer, TextBlock> cache_tmp = new ConcurrentHashMap<>(block_cache);
-		SearchLauncher.poolEUSize.set(SearchLauncher.dirtyProgressCounter=0);
-		block_cache.syncAccommodationSize();
-		//ArrayList<Thread> fixedThreadPool = new ArrayList<>(thread_number);
-		ExecutorService fixedThreadPool = OpenThreadPool(thread_number);
-		for(int ti=0; ti<split_recs_thread_number; ti++){//分  thread_number 股线程运行
-			//SU.Log("执行", ti , split_recs_thread_number);
-			if(SearchLauncher.IsInterrupted || searchCancled) break;
-			final int it = ti;
-			if(split_recs_thread_number>thread_number) while (SearchLauncher.poolEUSize.get()>=thread_number) {
-				try {
-					Thread.sleep(2);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			
-			if(_combining_search_tree[it]==null)
-				_combining_search_tree[it] = new ArrayList<>();
-			
-			if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(1);
-			
-			Regex finalJoniregex = Joniregex;
-			byte[][][][][] finalMatcher = matcher;
-			fixedThreadPool.execute(
-					new Runnable(){@Override public void run()
-					{
-						if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
-						final ReusableByteOutputStream bos = new ReusableByteOutputStream(mBlockSize *2);//!!!避免反复申请内存
-						Flag flag = new Flag();
-						long toSkip=it*step*mBlockSize;
-						try // 避免重复打开文件
-						{
-							// centerBlock*mBlockSize
-							int jiaX=0;
-							if(it==split_recs_thread_number-1) jiaX=yuShu;
-							TextBlock tmpBlock=null;
-							for(int i=it*step; i<it*step+step+jiaX; i++)//_num_entries
-							{
-								if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
-								bos.reset();
-								
-								if(i>=_num_entries) return;
-								
-								Entry eI = index_array.itemAt(i);
-								int centerBlock = (int) (eI.contentStart/mBlockSize);
-								int length = (int) (eI.contentEnd - eI.contentStart);
-								// 从 block 中取出 data 记录，并搜索。
-								{
-									toSkip=0;
-									TextBlock cachedBlock;
-									// 取出。
-									while(length>0 && centerBlock<_num_record_blocks) {
-										cachedBlock = null;//cache_tmp.get(centerBlock);
-										if(cachedBlock==null){
-											InputStream fin = mOpenInputStream(centerBlock*mBlockSize);
-											if(tmpBlock==null) tmpBlock = new_TextBlock();
-											tmpBlock.blockIndex = centerBlock;
-											tmpBlock.read(fin);
-											cachedBlock=tmpBlock;
-											int space = block_cache.accommodation.addAndGet(-1);
-											if(space>0){ //可加入缓存队列
-												tmpBlock = null;
-												cache_tmp.put(centerBlock, cachedBlock);
-											}
-											fin.close();
-										}
-										else {
-											//CMN.Log("找到DSL缓存区", block_cache.size());
-											toSkip+=mBlockSize;
-										}
-										int start = (int) Math.max(0, eI.contentStart - (cachedBlock.blockIndex * mBlockSize));
-										int len = Math.min(cachedBlock.blockSize - start, length);
-										bos.write(cachedBlock.data, start, len);
-										length-=len;
-										centerBlock++;
-									}
-									byte[] record_block_ = bos.getBytes();
-									int recordodKeyLen = bos.size();
-									// 内容块读取完毕，接下来进行搜索。
-									org.joni.Matcher Jonimatcher = null;
-									if(finalJoniregex !=null)
-										Jonimatcher = finalJoniregex.matcher(record_block_);
-									if(SearchLauncher.IsInterrupted  || searchCancled ) break;
-									
-									int try_idx;
-									if(Jonimatcher==null){
-										try_idx=-1;
-										ArrayList<ArrayList<Object>> mpk;
-										ArrayList<Object> mParallelKeys;
-										for (int j = 0; j < finalMatcher.length; j++) { // and group
-											mpk = SearchLauncher.mParallelKeys.get(j);
-											for (int k = 0; k < finalMatcher[j].length; k++) { // or group
-												mParallelKeys = mpk.get(k);
-												int len = finalMatcher[j][k].length;
-												int[] jumpMap = (int[]) mParallelKeys.get(len);
-												try_idx=flowerIndexOf(record_block_,0,recordodKeyLen, finalMatcher[j][k],0,0, SearchLauncher, flag, mParallelKeys, jumpMap);
-												//SU.Log("and_group>>"+j, "or_group#"+k, try_idx, nna);
-												if(try_idx<0 ^ (jumpMap[len]&4)==0) break;
-											}
-											if(try_idx<0){
-												break;
-											}
-										}
-									} else {
-										try_idx=Jonimatcher.searchInterruptible(0, recordodKeyLen, Option.DEFAULT);
-									}
-									//SU.Log(try_idx, record_block_.length, recordodKeyLen);
-									if(try_idx!=-1) {
-										SearchLauncher.dirtyResultCounter++;
-										_combining_search_tree[it].add(new SearchResultBean(i));
-										//SU.Log("找到了：", getEntryAt(i));
-									}
-								}/* catch (Exception e) {
-									if(GlobalOptions.debug)CMN.Log(e);
-								}*/
-								SearchLauncher.dirtyProgressCounter++;
-							}
-						} catch (Exception e) {
-							CMN.Log(e);
-						}
-						SearchLauncher.thread_number_count--;
-						if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(-1);
-					}}
-			);
-		}
-		SearchLauncher.currentThreads=fixedThreadPool;
-		fixedThreadPool.shutdown();
-		try {
-			fixedThreadPool.awaitTermination(5, TimeUnit.MINUTES);
-		} catch (Exception e1) {
-			SU.Log("Find In Full Text Interrupted!!!");
-		} finally {
-			int size = block_cache.size();
-			block_cache.putAll(cache_tmp);
-			//a.root.postDelayed(() -> a.showT(CMN.Log("添加后", block_cache.size(),block_cache.size()-size)), 500);
-		}
+	@Override
+	public void flowerFindAllKeys(String key, int SelfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
+		keyIndex.flowerFindAllKeys(key, SelfAtIdx, SearchLauncher);
 	}
-	
 	
 	public void flowerFindAllContents(String key, int selfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
 		//SU.Log("Find In All Contents Stated");
@@ -1353,7 +1251,9 @@ public class PlainDSL extends DictionaryAdapter {
 		SU.Log("split_recs_thread_number", split_recs_thread_number);
 		SU.Log("thread_number", thread_number);
 		
-		split_recs_thread_number = 1;
+		/* 调试调试调试 */
+		//split_recs_thread_number = 1;
+		/* 调试调试调试 */
 
 		final int step = (int) (_num_record_blocks/split_recs_thread_number);
 		final int yuShu=(int) (_num_record_blocks%split_recs_thread_number);
@@ -1397,6 +1297,7 @@ public class PlainDSL extends DictionaryAdapter {
 							CMN.rt();
 							boolean checkTail=false;
 							//int StartBlock=4198400/block_size-2; fis.skip(StartBlock*block_size);
+							ArrayList<Entry> newEntrys=new ArrayList<>(8);
 							ArrayList<Entry> lastEntry=new ArrayList<>(8);
 							int jiaX=0;
 							if(it==split_recs_thread_number-1) jiaX=yuShu;
@@ -1404,10 +1305,14 @@ public class PlainDSL extends DictionaryAdapter {
 							TextBlock tmpBlock_B=new_TextBlock();
 							TextBlock tmpBlock_tmp;
 							tmpBlock_A.blockIndex = -1;
+							boolean reading=true;
 							// split keys
 							ScanBlocks:
-							for(int i=it*step; i<it*step+step+jiaX; i+=1)//_num_entries
+							for(int i=it*step,len=it*step+step+jiaX; i<len; i+=1)//_num_entries
 							{
+								for (int j = 0; j < lastEntry.size(); j++) {
+									buildTextForTempEntry(lastEntry.get(j));
+								}
 								if(SearchLauncher.IsInterrupted || searchCancled) { SearchLauncher.poolEUSize.set(0); return; }
 								tmpBlock_tmp = tmpBlock_B;
 								tmpBlock_B = tmpBlock_A;
@@ -1436,7 +1341,7 @@ public class PlainDSL extends DictionaryAdapter {
 											next += lcl();
 										}
 										entryBreak = next;
-										findInAllContentsForEntry(tmpBlock_A, tmpBlock_B, _combining_search_tree[it], bos.getBytes(), 0, bos.size(), i*mBlockSize+entryBreak-contentBreakText_length, lastEntry, finalMatcher, finalJoniregex, SearchLauncher, flag, rec_bos);
+										findInAllContentsForEntry(tmpBlock_A, tmpBlock_B, _combining_search_tree[it], bos.getBytes(), 0, bos.size(), i*mBlockSize+entryBreak-contentBreakText_length, newEntrys, lastEntry, finalMatcher, finalJoniregex, SearchLauncher, flag, rec_bos, reading);
 									}
 								}
 								/* expecting one next \n\t break that brings in the contents. */
@@ -1447,13 +1352,18 @@ public class PlainDSL extends DictionaryAdapter {
 									int next = findNextContentBreakIndex(tmpBlock_A, entryBreak);
 									//CMN.Log("entryBreak", entryBreak, next);
 									if(next>0) {
-										findInAllContentsForEntry(tmpBlock_A, tmpBlock_B, _combining_search_tree[it], tmpBlock_A.data, entryBreak, next-entryBreak, i*mBlockSize+next+lineBreakText.length, lastEntry, finalMatcher, finalJoniregex, SearchLauncher, flag, rec_bos);
+										findInAllContentsForEntry(tmpBlock_A, tmpBlock_B, _combining_search_tree[it], tmpBlock_A.data, entryBreak, next-entryBreak, i*mBlockSize+next+lineBreakText.length, newEntrys, lastEntry, finalMatcher, finalJoniregex, SearchLauncher, flag, rec_bos, reading);
 										entryBreak=next+lcl();
-									} else{ /* but without any result */
+									} else { /* but without any result */
 										//CMN.Log("FNCBI without any result, \n* opened but not closed!", entryBreak);
 										checkTail=false;
 										bos.reset();
 										bos.write(tmpBlock_A.data, entryBreak, tmpBlock_A.blockSize-entryBreak);
+										if(i==len-1 && reading) {
+											//CMN.Log("老骥伏枥志在千里");
+											if(len+1<_num_record_blocks)len++;
+											reading=false;
+										}
 										continue ScanBlocks;
 									}
 								}
@@ -1462,6 +1372,14 @@ public class PlainDSL extends DictionaryAdapter {
 									checkTail = true;
 									bos.write(tmpBlock_A.data, tmpBlock_A.blockSize - lineBreakText.length, lineBreakText.length);
 								}
+								if(lastEntry.size()>0 && i==len-1 && reading) {
+									//CMN.Log("老当益壮穷且益坚");
+									if(len+1<_num_record_blocks)len++;
+									reading=false;
+								}
+							}
+							if(lastEntry.size()>0) {
+								findInAllContentsForEntry(tmpBlock_A, tmpBlock_B, _combining_search_tree[it], null, 0, 0, (int) file_length, newEntrys, lastEntry, finalMatcher, finalJoniregex, SearchLauncher, flag, rec_bos, false);
 							}
 						} catch (Exception e) {
 							CMN.Log(e);
@@ -1486,12 +1404,20 @@ public class PlainDSL extends DictionaryAdapter {
 	
 	@Override
 	public String getRichDescription() {
-		return _Dictionary_fName+"<br>"+f.getAbsolutePath()+"<br>"+f.lastModified()+"<br>"+_charset+"<br>"+mp4meta.utils.CMN.formatSize(f.length());
+		return new StringBuilder()
+				.append(_Dictionary_fName).append("<br>")
+				.append(f.getAbsolutePath()).append("<br>")
+				.append(f.lastModified()).append("<br>")
+				.append(_charset).append("<br>")
+				.append(mp4meta.utils.CMN.formatSize(f.length())).append("<br>")
+				.append("索引v").append(keyIndex.getField("idxVer"))
+				.append("&nbsp;&nbsp;：").append(keyIndex.getRichDescription()).append("<br>")
+				.toString();
 	}
 	
 	@Override
 	public String getDictInfo() {
-		return getRichDescription();
+		return keyIndex.getDictInfo();
 	}
 
 }

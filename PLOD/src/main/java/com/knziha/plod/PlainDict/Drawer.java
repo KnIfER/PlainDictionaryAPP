@@ -773,27 +773,36 @@ public class Drawer extends Fragment implements
 									if(mdTmp!=null)
 										mdictInternal.add(mdTmp.getPath());
 								}
-								
+								int newAdapterIdx=-1;
 								try {
 									BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
 									BufferedWriter output2 = null;
 									int countAdd=0;
 									int countRename=0;
 									String removedAPath;
-									for(String fnI:files) {
+									boolean bNextPlaceHolder = false;
+									for (int i = 0; i < files.length; i++) {
+										String fnI = files[i];
 										File fI = new File(fnI);
 										CMN.Log("AddFiles", fnI, mdictInternal.contains(fI.getPath()));
 										if(fI.isDirectory()) continue;
 										//checker.put("sound_us.mdd", "/storage/emulated/0/PLOD/mdicts/发音库/sound_us.mdd");
 										/* 检查文件名称是否乃记录之中已失效项，有则需重命名。*/
-										if(AutoFixLostRecords && (removedAPath=add_book_checker.get(fI.getName()))!=null) {
+										if(!bNextPlaceHolder && AutoFixLostRecords && (removedAPath=add_book_checker.get(fI.getName()))!=null) {
 											renameList.put(removedAPath, fnI);
 											renameRec.add(fnI);
 										}
 										/* 追加不存于当前分组的全部词典至全部记录与缓冲组。 */
 										else if(!mdictInternal.contains(fI.getPath())) {
 											try {
-												a.md.add(MainActivityUIBase.new_book(fnI, a));
+												if (bNextPlaceHolder) {
+													a.AddIndexingBookIdx(-1, a.md.size());
+													a.md.add(null);
+													bNextPlaceHolder=false;
+												} else {
+													a.md.add(MainActivityUIBase.new_book(fnI, a));
+												}
+												if(newAdapterIdx==-1) newAdapterIdx = a.md.size()-1;
 												PlaceHolder phI = new PlaceHolder(fnI);
 												a.CosyChair.add(phI);
 												String raw=fnI;
@@ -818,8 +827,13 @@ public class Drawer extends Fragment implements
 												}
 												countAdd++;
 											} catch (Exception e) {
-												CMN.Log(e);
-												a.showT("词典 "+new File(fnI).getName()+" 加载失败 @"+fnI+" Load Error！ "+e.getLocalizedMessage());
+												if(e instanceof IllegalStateException && "Needs Index Building!".equals(e.getMessage())) {
+													bNextPlaceHolder=true;
+													i--;
+												} else {
+													CMN.Log(e);
+													a.showT("词典 "+new File(fnI).getName()+" 加载失败 @"+fnI+" Load Error！ "+e.getLocalizedMessage());
+												}
 											}
 										}
 									}
@@ -904,6 +918,10 @@ public class Drawer extends Fragment implements
 										a.showT("新加入"+countAdd+"本词典, 重定位"+countRename+"次！");
 									else
 										a.showT("新加入"+countAdd+"本词典！");
+									
+									if(newAdapterIdx!=-1) {
+										a.switch_To_Dict_Idx(newAdapterIdx, true, true, null);
+									}
 								} catch (IOException e1) {
 									e1.printStackTrace();
 								}

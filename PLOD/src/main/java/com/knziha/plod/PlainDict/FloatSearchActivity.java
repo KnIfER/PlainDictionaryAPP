@@ -310,6 +310,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 		main_succinct = mainfv.findViewById(R.id.mainframe);
 		lv = main_succinct.findViewById(R.id.main_list);
+		mlv = (ViewGroup) lv.getParent();
 		lv2 = main_succinct.findViewById(R.id.sub_list);
 		webcontentlist = main_succinct.findViewById(R.id.webcontentlister);
 		

@@ -536,6 +536,7 @@ public class BookPresenter
 	public static int optimal100;
 	public int tmpIsFlag;
 	public ArrayList<myCpr<String, Long>> range_query_reveiver;
+	public Object tag;
 	long FFStamp;
 	long firstFlag;
 	byte firstVersionFlag;
@@ -944,10 +945,10 @@ public class BookPresenter
 					bookImpl = new PlainText(fullPath, THIS);
 					break;
 				case 3222:
-					bookImpl = new PlainDSL(fullPath, THIS);
+					bookImpl = new PlainDSL(fullPath, THIS, THIS.taskRecv);
 					break;
 				case 99773:
-					bookImpl = new PlainDSL(fullPath, THIS);
+					bookImpl = new PlainDSL(fullPath, THIS, THIS.taskRecv);
 					break;
 				//case 96634189:
 				default:

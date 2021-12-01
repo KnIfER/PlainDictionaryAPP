@@ -100,6 +100,13 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	
 	@Override
 	public String getRecordsAt(GetRecordAtInterceptor getRecordAtInterceptor, long... positions) throws IOException {
+		if(getRecordAtInterceptor!=null)
+		{
+			String ret = getRecordAtInterceptor.getRecordAt(this, positions[0]);
+			if (ret!=null) {
+				return ret;
+			}
+		}
 		return getRecordAt(positions[0], null, true);
 	}
 	
@@ -251,6 +258,16 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	@Override
 	public int getType() {
 		return mType.ordinal();
+	}
+	
+	@Override
+	public long getEntryExtNumber(long position, int index) {
+		return 0;
+	}
+	
+	@Override
+	public String getField(String fieldName) {
+		return null;
 	}
 	
 	public int[] getPageUtils(boolean extra) {

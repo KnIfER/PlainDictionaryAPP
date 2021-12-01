@@ -1,7 +1,14 @@
 package com.knziha.plod.dictionaryBuilder;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.rbtree.RBTNode;
+import com.knziha.rbtree.RBTree_duplicative;
 import com.knziha.rbtree.myAbsCprKey;
 
 import org.apache.commons.text.StringEscapeUtils;
@@ -12,6 +19,8 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 
 
@@ -23,6 +32,8 @@ import java.util.Locale;
 public class mdictBuilder extends mdictBuilderBase {
 	public String _stylesheet = "";
 	private boolean isKeyCaseSensitive=false;
+	private boolean isKeyCaseInsensitive=true;
+	private boolean isDiacriticsInsensitive=false;
 	private boolean isStripKey=true;
 	String sharedMdd;
 	private final String nullStr=null;
@@ -31,8 +42,8 @@ public class mdictBuilder extends mdictBuilderBase {
 	private boolean bContentEditable;
 
 	public mdictBuilder(String Dictionary_Name, String about,String charset) {
-		data_tree= new ArrayListTree<>();
-		//data_tree = new RBTree_duplicative<>();
+		//data_tree= new ArrayListTree<>();
+		data_tree = new RBTree_duplicative<>();
 		privateZone = new IntervalTree();
 		_Dictionary_Name=Dictionary_Name;
 		_about=StringEscapeUtils.escapeHtml4(about);
@@ -48,7 +59,35 @@ public class mdictBuilder extends mdictBuilderBase {
 		data_tree.insertNode(new myCprKey(key,data));
 		return 0;
 	}
+	
+	/** WARNING: 设置后可能无法被其他软件解析！ */
+	public void setContentDelimiter(@NonNull byte[] contentDelimiter) {
+		mContentDelimiter = contentDelimiter;
+	}
 
+	/**
+	 * @param fileStr file or string object
+	 * @param contentStartExt Hardcode the content start & end & ext numbers, typically for index-only mdx.
+	 * @return  the inserted entry node */
+	public myCprKey insert(String key, @Nullable Object fileStr, long...contentStartExt) {
+		if(contentStartExt.length<2) throw new IllegalStateException("where's start and ext??");
+		if (extraNumbersDummy==null) {
+			extraNumbersDummy = new long[contentStartExt.length];
+		} else if(extraNumbersDummy.length!=contentStartExt.length) {
+			throw new IllegalStateException("size not match!");
+		}
+		String data = null;
+		if(fileStr instanceof String)
+			data = (String) fileStr;
+		myCprKey keyNode = new myCprKey(key, data);
+		data_tree.insertNode(keyNode);
+		if(fileStr instanceof File) {
+			fileTree.put(keyNode, (File) fileStr);
+		}
+		hasHardcodedKeyId = true;
+		keyNode.contentStartExt = contentStartExt;
+		return keyNode;
+	}
 
 	public void insert(String key, File file) {
 		myCprKey keyNode = new myCprKey(key, nullStr);
@@ -65,6 +104,10 @@ public class mdictBuilder extends mdictBuilderBase {
 		((ArrayListTree<myAbsCprKey>)data_tree).add(keyNode);
 		fileTree.put(keyNode, inhtml);
 	}
+	
+//	public void setHasNoRecords() {
+//		bNoRecords = true;
+//	}
 
 	@Override
 	String constructHeader() {
@@ -101,6 +144,10 @@ public class mdictBuilder extends mdictBuilderBase {
 				.append("\"").append(isKeyCaseSensitive?"Yes":"No").append("\"")
 				//.append(" StripKey=")//k
 				//.append("\"").append(isStripKey?"Yes":"No").append("\"")
+				.append(" KeyCaseInsensitive=")
+				.append("\"").append(isKeyCaseInsensitive?"Yes":"No").append("\"")
+				.append(" DiacriticsInsensitive=")
+				.append("\"").append(isDiacriticsInsensitive?"Yes":"No").append("\"")
 				.append(" Description=")
 				.append("\"").append(_about).append("\"")
 				.append(sharedMdd!=null?" SharedMdd='"+sharedMdd+"\"":"")
@@ -115,6 +162,15 @@ public class mdictBuilder extends mdictBuilderBase {
 				//.append(" RegCode=")
 				//.append("\"").append("\"")
 				;
+		
+		if(hasHardcodedKeyId)
+			sb.append(" entryNumExt=").append("\"").append(extraNumbersDummy.length-1).append("\"");
+		if(fields!=null) {
+			for(String key:fields.keySet()) {
+				sb.append(" ").append(key.replace(" ", "_")).append("=").append("\"").append(fields.get(key)).append("\"");
+			}
+		}
+		
 		if(hasSlavery)
 			sb.append(" hasSlavery=").append("\"").append("\"");
 		if(bContentEditable)
@@ -122,7 +178,14 @@ public class mdictBuilder extends mdictBuilderBase {
 		sb.append("/>");
 		return sb.toString();
 	}
-
+	
+	HashMap<String, String> fields;
+	
+	public String field(String fieldName, Object value) {
+		if(fields==null) fields = new HashMap<>();
+		return fields.put(fieldName, String.valueOf(value));
+	}
+	
 	@Override
 	byte[] bakeMarginKey(String key){
 		return key.toLowerCase().replace(" ","").replace("-","").getBytes(_charset);
@@ -157,38 +220,84 @@ public class mdictBuilder extends mdictBuilderBase {
 	public void setSharedMdd(String name) {
 		sharedMdd=name;
 	}
-
-	public void setKeycaseSensitive(boolean b) {
-		isKeyCaseSensitive=b;
+	
+	/** default to false. must be set to true if you what a KeyCase-Sensitive result. */
+	public void setKeyCaseSensitive(boolean value) {
+		isKeyCaseSensitive=value;
 	}
-
-	protected String mOldSchoolToLowerCase(String input) {
-		StringBuilder sb = new StringBuilder(input);
-		for(int i=0;i<sb.length();i++) {
-			if(sb.charAt(i)>='A' && sb.charAt(i)<='Z')
-				sb.setCharAt(i, (char) (sb.charAt(i)+32));
-		}
-		return sb.toString();
+	
+	/** default to true. invalid if setKeyCaseSensitive was set to the same value */
+	public void setKeyCaseInsensitive(boolean value) {
+		isKeyCaseInsensitive=value;
+	}
+	
+	/** default to false. */
+	public void setDiacriticsInsensitive(boolean value) {
+		isDiacriticsInsensitive=value;
 	}
 
 	protected String processMyText(String input) {
-		String ret = isStripKey?mdict.replaceReg.matcher(input).replaceAll(""):input;
-		return isKeyCaseSensitive?ret:ret.toLowerCase();
+//		String ret = isStripKey?mdict.replaceReg.matcher(input).replaceAll(""):input;
+//		return isKeyCaseSensitive?ret:ret.toLowerCase();
+		String ret;
+		try {
+			ret = isStripKey?mdict.replaceReg.matcher(input).replaceAll(""):input;
+		} catch (StackOverflowError e) {
+			ret = input;
+		}
+		if(isDiacriticsInsensitive) {
+			ret = SU.removeDiacritics(ret);
+		}
+		return isKeyCaseSensitive?ret:isKeyCaseInsensitive?ret.toLowerCase():mdict.AngloToLowerCase(ret);
 	}
 
 	public void setContentEditable(boolean val) {
 		bContentEditable=val;
 	}
-
+	
+	public void testInsert() {
+		RBTree_duplicative<myAbsCprKey> data_tree = new RBTree_duplicative<>();
+		
+		mdictBuilder.myCprKey keyNode = new mdictBuilder.myCprKey("approximate", null);
+		data_tree.insertNode(keyNode);
+		
+		keyNode = new mdictBuilder.myCprKey("ABOUT/APPROXIMATELY", null);
+		data_tree.insertNode(keyNode);
+		
+		keyNode = new mdictBuilder.myCprKey("above", null);
+		data_tree.insertNode(keyNode);
+		
+		keyNode = new mdictBuilder.myCprKey("ABOVE", null);
+		data_tree.insertNode(keyNode);
+		
+		
+		ArrayList<myAbsCprKey> _keys = data_tree.flatten();
+		CMN.Log(_keys.toArray());
+		
+	}
+	
+	public void setName(String name) {
+		_Dictionary_Name = name;
+	}
+	
+	public interface PostEntryValueProcessor {
+		void processEntry(mdictBuilder mdictBuilder, myCprKey entry);
+	}
+	
 	public class myCprKey extends myAbsCprKey {
 		public String value;
+		public String compareKey;
+		public PostEntryValueProcessor postProcessor;
+		
 		public myCprKey(String vk, String v) {
 			super(vk);
 			value=v;
+			compareKey = processMyText(key);
 		}
 		@Override
 		public int compareTo(myAbsCprKey other) {
-			if(other instanceof myCprKey){
+			//if(other instanceof myCprKey)
+			{
 				if(key.endsWith(">") && other.key.endsWith(">")) {
 					int idx2 = key.lastIndexOf("<",key.length()-2);
 					if(idx2!=-1) {
@@ -217,9 +326,11 @@ public class mdictBuilder extends mdictBuilderBase {
 						}
 					}
 				}
-				return (processMyText(key).compareTo(processMyText(other.key)));
+				//return (processMyText(key).compareTo(processMyText(other.key)));
+				return (compareKey.compareTo(((myCprKey) other).compareKey));
+				//return (key.compareToIgnoreCase(((myCprKey) other).key));
 			}
-			return 111;
+			//return 111;
 		}
 
 		@Override
@@ -229,9 +340,11 @@ public class mdictBuilder extends mdictBuilderBase {
 
 		@Override
 		public byte[] getBinVals() {
+			if(postProcessor!=null) {
+				postProcessor.processEntry(mdictBuilder.this, this);
+			}
 			return value==null?null:value.getBytes(_charset);
 		}
-
 	}
 
 
@@ -247,5 +360,19 @@ public class mdictBuilder extends mdictBuilderBase {
 	public mdictBuilder setAsMaster(){
 		hasSlavery=true;
 		return this;
+	}
+	
+	public myCprKey lookUp(String rawName) {
+		//rawName = processMyText(rawName);
+		RBTree_duplicative<myAbsCprKey> rbTree = (RBTree_duplicative<myAbsCprKey>) data_tree;
+		myCprKey search = new myCprKey(rawName, null);
+		RBTNode<myAbsCprKey> node = rbTree.sxing(search);
+		myCprKey ret = null;
+		if(node!=null) {
+			ret = (myCprKey) node.getKey();
+			//SU.Log(">>>"+ret.key+"<<<", ret.key.length());
+			if(ret.compareTo(search)!=0) return null;
+		}
+		return ret;
 	}
 }

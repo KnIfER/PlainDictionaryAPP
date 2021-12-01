@@ -234,12 +234,16 @@ public class DictInputStream extends InputStream {
 		return (dictReader.blockCount - blockIndex)*dictReader.blockDecLength - pos;
 	}
 	
+	public int tellPosition() {
+		return blockIndex*dictReader.blockDecLength + pos;
+	}
+	
 	/** 读取一整块新数据至buffer */
 	void fillNewBlock() throws IOException {
 		pos = 0;
 		blockSize = 0;
 		blockIndex++;
-		CMN.Log("filling new block::", blockIndex, linearInputStream, delayedStreamOpenOffset);
+		//CMN.Log("filling new block::", blockIndex, linearInputStream, delayedStreamOpenOffset);
 		if(blockIndex<dictReader.blockCount) {
 			long blockOffset = dictReader.blockOffsets[blockIndex];
 			long blockOffsetNxt = blockIndex+1<dictReader.blockCount?dictReader.blockOffsets[blockIndex+1]:dictReader.totalLength;

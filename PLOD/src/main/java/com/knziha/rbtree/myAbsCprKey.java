@@ -2,6 +2,7 @@ package com.knziha.rbtree;
 
 public abstract class myAbsCprKey implements Comparable<myAbsCprKey> {
 	public String key;
+	public long[] contentStartExt;
 	public myAbsCprKey(String vk){
 		key=vk;
 	}

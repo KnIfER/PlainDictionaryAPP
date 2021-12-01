@@ -18,6 +18,7 @@
 package com.knziha.plod.dictionary;
 
 import com.knziha.plod.dictionary.Utils.*;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.rbtree.RBTree;
 
 import org.anarres.lzo.*;
@@ -28,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +68,7 @@ public abstract class mdBase {
 	/** 0=no cache; 1=lru cache; 2=unlimited */
 	protected int FileCacheStrategy = 0;
 	byte[] preparedStream;
+	protected int entryNumExt;
 	
 	public File f() {return f;}
 	final static byte[] _zero4 = new byte[]{0,0,0,0};
@@ -75,7 +78,12 @@ public abstract class mdBase {
 	final static String invalid_format = "unrecognized format : ";
 	public Boolean isCompact = true;
 	public Boolean isStripKey = true;
+	/** 旧版mdict只处理英文字母的大小写转换 */
 	protected Boolean isKeyCaseSensitive = false;
+	/** 是否处理所有Unicode支持的大小写转换 */
+	protected Boolean isKeyCaseInsensitive = false;
+	/** 是否忽略变音符号，如可用字母a查找字母 Å  */
+	protected Boolean isDiacriticsInsensitive = false;
 	/** encryption flag
 	   0x00 - no encryption
 	   0x01 - encrypt record block
@@ -362,10 +370,22 @@ public abstract class mdBase {
 		valueTmp = _header_tag.get("StripKey");
 		if(valueTmp!=null)
 			isStripKey = valueTmp.length()==3;
+		
+		valueTmp = _header_tag.get("entryNumExt");
+		if(valueTmp!=null)
+			entryNumExt = IU.parsint(valueTmp, 0)*8;
 
 		valueTmp = _header_tag.get("KeyCaseSensitive");
 		if(valueTmp!=null)
 			isKeyCaseSensitive = valueTmp.length()==3;
+		
+		valueTmp = _header_tag.get("KeyCaseInsensitive");
+		if(valueTmp!=null)
+			isKeyCaseInsensitive = valueTmp.length()==3;
+		
+		valueTmp = _header_tag.get("DiacriticsInsensitive");
+		if(valueTmp!=null)
+			isDiacriticsInsensitive = valueTmp.length()==3;
 
 		valueTmp = _header_tag.get("Encoding");
 		if(valueTmp!=null && !valueTmp.equals(""))
@@ -819,6 +839,15 @@ public abstract class mdBase {
 		key_info_struct infoI = _key_block_info_list[blockId];
 		return prepareItemByKeyInfo(infoI, blockId, null).getString((int) (position-infoI.num_entries_accumulator));
 	}
+	
+	public long getEntryExtNumber(long position, int index) {
+		int extraNumbers = entryNumExt/8;
+		if(index < -1 || index >= extraNumbers) return 0;
+		if(_key_block_info_list==null) read_key_block_info(null);
+		int blockId = accumulation_blockId_tree.xxing(new myCpr<>(position,1)).getKey().value;
+		key_info_struct infoI = _key_block_info_list[blockId];
+		return prepareItemByKeyInfo(infoI, blockId, null).getExtNumber((int) (position-infoI.num_entries_accumulator), extraNumbers-1-index);
+	}
 
 
 	public static class RecordLogicLayer extends F1ag{
@@ -934,11 +963,17 @@ public abstract class mdBase {
 		}
 		
 		public String getString(int index) {
+			if(index+1>=raw_keys_splits.length) return "!!!";
 			int st=raw_keys_splits[index];
 			return new String(raw_keys, st, raw_keys_splits[index+1]-_number_width-st, _charset);
 		}
+		
+		public long getExtNumber(int index, int number_index) {
+			int st=raw_keys_splits[index];
+			return BU.toLong(raw_keys, st-(number_index+1)*8);
+		}
 	}
-	private cached_key_block infoI_cache_ = new cached_key_block(_charset, _number_width+delimiter_width);
+	private cached_key_block infoI_cache_ = new cached_key_block(_charset, _number_width+entryNumExt+delimiter_width);
 
 	public cached_key_block prepareItemByKeyInfo(key_info_struct infoI,int blockId,cached_key_block infoI_cache){
 		cached_key_block infoI_cache_ = this.infoI_cache_;
@@ -946,7 +981,7 @@ public abstract class mdBase {
 		if(infoI_cache_.blockID==blockId)
 			return infoI_cache_;
 		if(infoI_cache==null)
-			infoI_cache = new cached_key_block(_charset, _number_width+delimiter_width);
+			infoI_cache = new cached_key_block(_charset, _number_width+entryNumExt+delimiter_width);
 		try {
 			if(infoI==null)
 				infoI = _key_block_info_list[blockId];
@@ -978,7 +1013,7 @@ public abstract class mdBase {
 			switch (_key_block_compressed[0]|_key_block_compressed[1]<<8|_key_block_compressed[2]<<16|_key_block_compressed[3]<<32){
 				default:
 				case 0://no compression
-					key_block=_key_block_compressed.clone();
+					key_block=_key_block_compressed;
 					BlockOff=8;
 				break;
 				case 1:
@@ -1007,12 +1042,12 @@ public abstract class mdBase {
 			int key_start_index=0,
 					key_end_index,
 					keyCounter = 0;
-			infoI_cache.raw_keys = key_block;
+			infoI_cache.raw_keys = Arrays.copyOf(key_block, BlockLen);
 			while(key_start_index < BlockLen && keyCounter<infoI.num_entries){// 莫须有小于
 				long key_id = _version<2 ?BU.toInt(key_block, BlockOff+key_start_index)
 							:BU.toLong(key_block, BlockOff+key_start_index);
-
-				key_end_index = key_start_index + _number_width;
+				
+				key_end_index = key_start_index + _number_width + entryNumExt;
 				SK_DELI:
 				while(key_end_index+delimiter_width<BlockLen){
 					for(int sker=0;sker<delimiter_width;sker++) {
@@ -1031,7 +1066,7 @@ public abstract class mdBase {
 //
 //				//SU.Log(keyCounter,":::",new String(arraytmp, _charset));
 				
-				infoI_cache.raw_keys_splits[keyCounter]=BlockOff+key_start_index+_number_width;
+				infoI_cache.raw_keys_splits[keyCounter]=BlockOff+key_start_index+_number_width+entryNumExt;
 				//SU.Log(keyCounter,":::",new String(key_block, infoI_cache.raw_keys_splits[keyCounter], key_end_index-(key_start_index+_number_width), _charset));
 				
 				key_start_index = key_end_index + delimiter_width;
@@ -1042,7 +1077,7 @@ public abstract class mdBase {
 				infoI_cache.key_offsets[keyCounter]=key_id;
 				keyCounter++;
 			}
-			infoI_cache.raw_keys_splits[keyCounter]=BlockOff+key_start_index+_number_width;
+			infoI_cache.raw_keys_splits[keyCounter]=BlockOff+key_start_index+_number_width+entryNumExt;
 			//long end2=System.currentTimeMillis(); //获取开始时间
 			//System.out.println("解压耗时："+(end2-start2));
 			//assert(adler32 == (calcChecksum(key_block)));

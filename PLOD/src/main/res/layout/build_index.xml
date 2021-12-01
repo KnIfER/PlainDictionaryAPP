@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+	<com.knziha.plod.widgets.AdvancedNestScrollListview
+		android:id="@+id/listview"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		/>
+
+	<LinearLayout
+		android:id="@+id/bottombar"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="65dp"
+		android:gravity="center"
+		>
+		<View
+			android:layout_width="0dp"
+			android:layout_height="match_parent"
+			android:layout_weight="1"
+			/>
+		<androidx.appcompat.widget.AppCompatButton
+			android:textColor="#fff"
+			android:id="@+id/scan"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_margin="8dp"
+			android:text="扫描全部"
+			tools:backgroundTint="@color/colorPrimary"
+			/>
+		<androidx.appcompat.widget.AppCompatButton
+			android:textColor="#fff"
+			android:id="@+id/start"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_margin="8dp"
+			android:text="立即建立索引"
+			tools:backgroundTint="@color/colorPrimary"
+			/>
+	</LinearLayout>
+
+</LinearLayout>
