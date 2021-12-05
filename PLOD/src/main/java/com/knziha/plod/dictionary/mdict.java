@@ -2471,7 +2471,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					}
 					key_block_cache=key_block_cache_;
 					key_block_cacheId = blockId;
-				}else {
+				} else {
 					key_block_cache_=key_block_cache;
 				}
 				/*!!spliting curr Key block*/

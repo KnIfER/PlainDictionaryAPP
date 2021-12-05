@@ -32,14 +32,12 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 		init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null);
 		init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null);
 		
-		init_switch_preference(this, "dbv2", PDICMainAppOptions.getUseDatabaseV2(), null, null);
 
 		findPreference("f_size").setDefaultValue(GlobalOptions.isLarge?150:125);
 		
 		findPreference("dev").setOnPreferenceClickListener(this);
 		findPreference("sspec").setOnPreferenceClickListener(this);
 		findPreference("vspec").setOnPreferenceClickListener(this);
-		findPreference("dbv2_up").setOnPreferenceClickListener(this);
 	}
 	
 	//创建
@@ -61,10 +59,6 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 			case "vspec":
 				fragmentId=8;
 			break;
-			case "dbv2_up": {
-				ViewUtils.notifyAPPSettingsChanged(getActivity(), preference);
-			} break;
-			
 		}
 		if(fragmentId!=-1){
 			Intent intent = new Intent();
@@ -114,10 +108,6 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 			break;
 			case "f_hide_recent":
 				PDICMainAppOptions.setHideFloatFromRecent((Boolean) newValue);
-			break;
-			case "dbv2":
-				PDICMainAppOptions.setUseDatabaseV2((Boolean) newValue);
-				preference.setSummary("重启生效*");
 			break;
 		}
 		return true;

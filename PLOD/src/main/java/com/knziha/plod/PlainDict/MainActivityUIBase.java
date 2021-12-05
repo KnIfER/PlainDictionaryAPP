@@ -255,6 +255,7 @@ import db.LexicalDBHelper;
 import db.MdxDBHelper;
 
 import static com.bumptech.glide.util.Util.isOnMainThread;
+import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
@@ -682,33 +683,36 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			currentDictionary = md_get(adapter_idx=i);
 			bShowLoadErr=bShowErr;
 			
-			if (invalidate && adaptermy!=null) {
-				adaptermy.notifyDataSetChanged();
-				postPutName(550);
-				if (currentDictionary != EmptyBook) {
-					if (/*!isCombinedSearching && */(opt.getPicDictAutoSer()||this instanceof FloatSearchActivity)) {
-						CMN.Log("auto_search!......");
-						lv_matched=false;
-						if(prvNxt && opt.getDimScrollbarForPrvNxt()) {
-							Utils.dimScrollbar(lv, false);
+			if (adaptermy!=null) {
+				adaptermy.setPresenter(currentDictionary);
+				if (invalidate) {
+					adaptermy.notifyDataSetChanged();
+					postPutName(550);
+					if (currentDictionary != EmptyBook) {
+						if (/*!isCombinedSearching && */(opt.getPicDictAutoSer()||this instanceof FloatSearchActivity)) {
+							CMN.Log("auto_search!......");
+							lv_matched=false;
+							if(prvNxt && opt.getDimScrollbarForPrvNxt()) {
+								Utils.dimScrollbar(lv, false);
+							}
+							tw1.onTextChanged(etSearch.getText(), -1, -1, -100);
+							//lv.setFastScrollEnabled(true);
+							if(prvNxt && opt.getPrvNxtDictSkipNoMatch()) {
+								return lv_matched;
+							}
+						} else {
+							//lv.setSelection(currentDictionary.lvPos);
+							lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
 						}
-						tw1.onTextChanged(etSearch.getText(), -1, -1, -100);
-						//lv.setFastScrollEnabled(true);
-						if(prvNxt && opt.getPrvNxtDictSkipNoMatch()) {
-							return lv_matched;
-						}
-					} else {
-						//lv.setSelection(currentDictionary.lvPos);
-						lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
+					} else if(prvNxt) {
+						return false;
 					}
-				} else if(prvNxt) {
-					return false;
 				}
 			}
 			
 			boolean showBuildIndex=false;
-			if(currentDictionary==EmptyBook && EmptyBook.tag instanceof PlaceHolder) {
-				if(((PlaceHolder) EmptyBook.tag).NeedsBuildIndex()) {
+			if(currentDictionary==EmptyBook && EmptyBook.placeHolder instanceof PlaceHolder) {
+				if(((PlaceHolder) EmptyBook.placeHolder).NeedsBuildIndex()) {
 					AddIndexingBookIdx(0, i);
 					showBuildIndex=true;
 				}
@@ -792,7 +796,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} catch (Exception e) { CMN.Log(e); }
 		if(ret==null) {
 			ret = EmptyBook;
-			EmptyBook.tag = phTmp;
+			EmptyBook.placeHolder = phTmp;
 		}
 		return ret;
 	}
@@ -1312,6 +1316,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
        		  cc+=ri.get(i).numActivities;
        	  showT(""+cc);
        	  */
+		
 		CMN.mid = Thread.currentThread().getId();
 		CMN.Log("mid", CMN.mid, getClass());
 	    //CMN.Log("instanceCount", CMN.instanceCount);
@@ -2845,7 +2850,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						try {
 							BookPresenter mdtmp = new BookPresenter(i, this, 0, null);
 							md.add(mdtmp);
-							CC.add(new PlaceHolder(i.getName(), CC));
+							CC.add(mdtmp.placeHolder=new PlaceHolder(i.getName(), CC));
 						} catch (Exception e) { /*CMN.Log(e);*/ }
 					}
 				}
@@ -2946,26 +2951,36 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	protected void populateDictionaryList(File def, ArrayList<PlaceHolder> CC, boolean retrieve_all) {
+		BookPresenter book;
 		if(retrieve_all) {
 			try {
-				String path = CMN.AssetTag + "liba.mdx";
-				md.add(new BookPresenter(new File(path), this, 0, null));
 				if(CC==null) {
 					CC = new ArrayList<>();
 					if(this instanceof FloatSearchActivity) FloatSearchActivity.mCosyChair = CC;
 					if(this instanceof PDICMainActivity) PDICMainActivity.CosyChair = CC;
 				}
-				CC.add(new PlaceHolder(path, CC));
+				String[] paths = new String[]{
+					CMN.AssetTag + "liba.mdx"
+					,"/ASSET2/谷歌翻译.web"
+				};
+				String lastName = opt.getLastMdFn("LastMdFn");
+				for (String path:paths) {
+					PlaceHolder placeHolder = new PlaceHolder(path, CC);
+					CC.add(placeHolder);
+					if(TextUtils.equals(new File(path).getName(), lastName)) {
+						adapter_idx = md.size();
+					}
+					md.add(book=new_book(placeHolder, this));
+				}
 			} catch (IOException e) {
 				CMN.Log(e);
 			}
 		}
 		else try {
-			//todo 实现词典懒加载
 			boolean lazyLoad = opt.getLazyLoadDicts();
 			LoadLazySlots(def, lazyLoad, opt.getLastPlanName(LastPlanName));
 			buildUpDictionaryList(lazyLoad, null);
-		} catch (IOException e2) { e2.printStackTrace(); }
+		} catch (IOException e) { CMN.Log(e); }
 	}
 	
 	protected View getIMPageCover() {
@@ -3267,6 +3282,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(currentDictionary==null){
 					currentDictionary = EmptyBook;
 				}
+				adaptermy.setPresenter(currentDictionary);
 			}
 			return true;
 		}
@@ -3905,6 +3921,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public void removeFavoriteTerm(String text) {
 		prepareFavoriteCon().remove(text, (!getUsingDataV2()||opt.getFavoritePerceptsRemoveAll())?-1:-2);
+	}
+	
+	public void putRecentBookMark(long bid, long nid, long pos) {
+		final int UnitMax=5+12*3;
+		String BKHistroryVagranter = opt.getString("bkHVgrts", "");
+		int size = opt.getInt("bkHSize", 0);
+		StringBuilder sb = new StringBuilder();
+		NumberToText_SIXTWO_LE(bid, sb).append(",");
+		NumberToText_SIXTWO_LE(nid, sb).append(",");
+		String rec = NumberToText_SIXTWO_LE(pos, sb).append(";").toString();
+		sb.append(BKHistroryVagranter.replace(rec, ""));
+		while(size>20)
+		{
+			int newIdx=sb.lastIndexOf(";", sb.length()-1);
+			if(newIdx==-1) break;
+			sb.setLength(newIdx+1);
+			size--;
+		}
+		opt.putter().putString("bkHVgrts", sb.toString()).putInt("bkHSize", size).apply();
 	}
 	
 	public final class UniCoverClicker implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
@@ -8031,10 +8066,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//CMN.Log("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
-
-			if(url.startsWith("mdbr://")){
+			
+			WebViewmy mWebView = (WebViewmy) view;
+			BookPresenter invoker = mWebView.presenter;
+			if(invoker==null) return null;
+			
+			if(invoker.remaps!=null) {
+				String map = invoker.remaps.get(url);
+				if(map!=null) url=map;
+			}
+			
+			if(url.startsWith("mdbr://")
+					|| url.startsWith("https://mdbr/")
+			){
 				try {
-					url=url.substring(7);
+					if(url.startsWith("mdbr://")) url=url.substring(7);
+					else url=url.substring(13);
 					CMN.Log("[fetching internal res : ]", url);
 					String mime="*/*";
 					if(url.endsWith(".css")) mime = "text/css";
@@ -8045,10 +8092,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 
-			WebViewmy mWebView = (WebViewmy) view;
-			BookPresenter invoker = mWebView.presenter;
 			//CMN.Log("chromium shouldInterceptRequest invoker",invoker);
-			if(invoker==null) return null;
 			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB
 				&& (accept==null || accept.contains("text/html"))) {
 				if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){

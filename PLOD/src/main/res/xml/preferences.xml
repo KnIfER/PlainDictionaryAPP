@@ -163,25 +163,6 @@
 		<!--			app:allowDividerBelow="true"-->
 		<!--			/>-->
 
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="dbv2"
-			android:persistent="false"
-			android:title="使用数据库V2"
-			app:isPreferenceVisible="true"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-
-		<Preference
-			android:key="dbv2_up"
-			android:persistent="false"
-			android:title="升级数据库V2"
-			app:isPreferenceVisible="true"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-
 		<Preference
 			android:key="sspec"
 			android:persistent="false"

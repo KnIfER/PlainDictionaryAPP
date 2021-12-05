@@ -1,5 +1,7 @@
 package com.knziha.rbtree;
 
+import com.knziha.plod.dictionary.Utils.SU;
+
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -172,7 +174,7 @@ public class RBTree_additive {
     
     //![END]
     public ArrayList<additiveMyCpr1> flatten(){
-    	ArrayList<additiveMyCpr1> res = new ArrayList<additiveMyCpr1>();
+    	ArrayList<additiveMyCpr1> res = new ArrayList<>();
     	inOrderflatten(this.mRoot,res);
     	return res;
     	
@@ -564,7 +566,7 @@ public class RBTree_additive {
     	});
     }
     public void insert(String key,Object...val) {
-        int cmp;
+        int cmp=0;
         //key=key.toLowerCase().replaceAll(replaceReg,emptyStr);
         RBTNode<additiveMyCpr1> y = null;
         RBTNode<additiveMyCpr1> x = this.mRoot;
@@ -573,8 +575,11 @@ public class RBTree_additive {
         while (x != null) {
             y = x;
             //cmp = key.toLowerCase().replace(" ",emptyStr).replace("'",emptyStr).compareTo(x.key.key.toLowerCase().replace(" ",emptyStr).replace("'",emptyStr));
-            cmp = key.toLowerCase().replace(" ",emptyStr).replace("'",emptyStr).replace(":",emptyStr).replace(".",emptyStr).replace("-",emptyStr).replace(",",emptyStr).compareTo(x.key.key.toLowerCase().replace(" ",emptyStr).replace("'",emptyStr).replace(":",emptyStr).replace(".",emptyStr).replace("-",emptyStr).replace(",",emptyStr));
-            
+            cmp = key.toLowerCase().replace(" ",emptyStr).replace("'",emptyStr).replace(":",emptyStr).replace(".",emptyStr).replace("-",emptyStr).replace(",",emptyStr)
+					.compareTo(x.key.key.toLowerCase().replace(" ",emptyStr).replace("'",emptyStr).replace(":",emptyStr).replace(".",emptyStr).replace("-",emptyStr).replace(",",emptyStr));
+	
+			//cmp = key.compareTo(x.key.key);
+			
             if (cmp < 0)
                 x = x.left;
             else if(cmp > 0)
@@ -587,19 +592,17 @@ public class RBTree_additive {
 
         additiveMyCpr1 node_key = new additiveMyCpr1(key,new ArrayList());
         for(Object i:val) ((ArrayList) node_key.value).add(i);//here
-        RBTNode<additiveMyCpr1> node = new RBTNode<additiveMyCpr1>(node_key,BLACK,null,null,null);
-
-        // 如果新建结点失败，则返回。
-        if (node == null) return;
+        RBTNode<additiveMyCpr1> node = new RBTNode<>(node_key, BLACK, null, null, null);
 		
         node.parent = y;
         if (y!=null) {
-            cmp = node.key.compareTo(y.key);
+            //cmp = node.key.key.compareTo(y.key.key);
             if (cmp < 0)
                 y.left = node;
             else
                 y.right = node;
-        } else {
+        }
+        else {
             this.mRoot = node;
         }
 

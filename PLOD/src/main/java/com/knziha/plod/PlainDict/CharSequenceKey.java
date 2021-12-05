@@ -103,4 +103,18 @@ public class CharSequenceKey implements CharSequence {
 	public boolean equalsInternal(String pathname) {
 		return value.equals(pathname);
 	}
+	
+	public CharSequenceKey reset(int st, int ed) {
+		this.start = st;
+		this.end = ed<st?value.length():ed;
+		return this;
+	}
+	
+	public int getStart() {
+		return start;
+	}
+	
+	public int getEnd() {
+		return end;
+	}
 }

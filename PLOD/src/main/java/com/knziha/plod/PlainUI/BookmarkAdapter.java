@@ -42,7 +42,7 @@ public class BookmarkAdapter extends BaseAdapter{
 	public boolean darkMode;
 	public final boolean testDBV2;
 	
-	private PagingAdapterInterface<BookmarkDatabaseReader> DummyReader = new CursorAdapter<>(EmptyCursor, new BookmarkDatabaseReader());
+	private PagingAdapterInterface<BookmarkDatabaseReader> DummyReader = new CursorAdapter<>(EmptyCursor, new BookmarkDatabaseReader(true));
 	PagingAdapterInterface<BookmarkDatabaseReader> dataAdapter = DummyReader;
 	ImageView pageAsyncLoader;
 	
@@ -57,11 +57,17 @@ public class BookmarkAdapter extends BaseAdapter{
 		refresh(md_, database);
    }
    
-	public /*static*/ class BookmarkDatabaseReader implements CursorReader {
+	public static class BookmarkDatabaseReader implements CursorReader {
 		public long row_id;
 		public long sort_number;
 		public String entryName;
 		public int position;
+		public final boolean testDBV2;
+		
+		public BookmarkDatabaseReader(boolean testDBV2) {
+			this.testDBV2 = testDBV2;
+		}
+		
 		@Override
 		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
 			if (testDBV2) {
@@ -86,7 +92,7 @@ public class BookmarkAdapter extends BaseAdapter{
 					'}';
 		}
 	}
-	ConstructorInterface<BookmarkDatabaseReader> BookmarkDatabaseReaderConstructor = length -> new BookmarkDatabaseReader();
+	ConstructorInterface<BookmarkDatabaseReader> BookmarkDatabaseReaderConstructor = length -> new BookmarkDatabaseReader(true);
 	
 	public void refresh(BookPresenter invoker, SQLiteDatabase database) {
 		//if(invoker!=md || con!=con_ || cr==null)
@@ -102,7 +108,7 @@ public class BookmarkAdapter extends BaseAdapter{
 									+LexicalDBHelper.TABLE_BOOK_NOTE_v2 +" where bid=? order by last_edit_time desc"
 							, new String[]{presenter.bookImpl.getBooKID()+""});
 					CMN.Log("查询个数::"+cursor.getCount());
-					dataAdapter = new CursorAdapter<>(cursor, new BookmarkDatabaseReader());
+					dataAdapter = new CursorAdapter<>(cursor, new BookmarkDatabaseReader(testDBV2));
 					notifyDataSetChanged();
 				} else {
 //					if (pageAsyncLoader==null) {
@@ -124,7 +130,7 @@ public class BookmarkAdapter extends BaseAdapter{
 			} else {
 				Cursor cursor = database.rawQuery(isWeb?"select rowid,date,_id from t3 ":"select * from t1 ", null);
 				CMN.Log("查询个数::"+cursor.getCount());
-				dataAdapter = new CursorAdapter<>(cursor, new BookmarkDatabaseReader());
+				dataAdapter = new CursorAdapter<>(cursor, new BookmarkDatabaseReader(testDBV2));
 				notifyDataSetChanged();
 			}
 		} catch (Exception e) {

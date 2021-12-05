@@ -20,6 +20,7 @@ import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.DataOutputStream;
 import java.util.HashMap;
@@ -70,6 +71,9 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 		init_switch_preference(this, "enable_web_debug", PDICMainAppOptions.getEnableWebDebug(), null, null);
 		init_switch_preference(this, "tts_reader", PDICMainAppOptions.getUseTTSToReadEntry(), null, null);
 		init_switch_preference(this, "cache_mp3", PDICMainAppOptions.getCacheSoundResInAdvance(), null, null);
+		
+		init_switch_preference(this, "dbv2", PDICMainAppOptions.getUseDatabaseV2(), null, null);
+		findPreference("dbv2_up").setOnPreferenceClickListener(this);
 	}
 	
 	private String getNameFlag(String andoid_country_code) {
@@ -171,6 +175,10 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 					PDICMainAppOptions.locale=localeStamp.equals(newValue)?localeStamp:null;
 				preference.setSummary(getNameFlag((String) newValue));
 			return true;
+			case "dbv2":
+				PDICMainAppOptions.setUseDatabaseV2((Boolean) newValue);
+				preference.setSummary("重启生效*");
+			return true;
 		}
 		return super.onPreferenceChange(preference, newValue);
 	}
@@ -248,8 +256,11 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 						} catch (Exception ignored) { }
 					}
 				}
-			}
-			break;
+			} break;
+			case "dbv2_up": {
+				ViewUtils.notifyAPPSettingsChanged(getActivity(), preference);
+			} break;
+			
 		}
 		return false;
 	}

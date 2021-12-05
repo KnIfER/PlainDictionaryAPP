@@ -8,12 +8,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
@@ -47,12 +49,15 @@ import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.PlainUI.BookmarkAdapter;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.settings.ServerPreference;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
@@ -77,6 +82,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import db.LexicalDBHelper;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
@@ -111,7 +118,6 @@ public class Drawer extends Fragment implements
 	private CharSequence mPreviousCBContent;
 	private ViewGroup swRow;
 	private boolean toPDF;
-	HashMap<String, BookPresenter> mdictInternal = new HashMap<>();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -430,12 +436,14 @@ public class Drawer extends Fragment implements
 			}
 		}
 	}
-
+	
+	long[] bnPos = new long[3];
+	public BasicAdapter adaptermy;
+	
 	@Override
 	public void onClick(View v) {
 		if(!a.systemIntialized) return;
 		int id = v.getId();
-		int BKHistroryVagranter;
 		switch(id) {
 			case R.id.server:
 				a.launchSettings(ServerPreference.id, 0);
@@ -559,67 +567,56 @@ public class Drawer extends Fragment implements
 			} break;
 			//书签历史
 			case R.string.bookmarkH:  {
-				final String[] items = new String[20];
-				final int[] pos = new int[20];
-				BKHistroryVagranter = a.opt.getInt("bkHVgrt",0);// must 0<..<20
-				BKHistroryVagranter+=20;
-				int cc=0;
-				for(int i=0;i<20;i++) {
-					int VagranterI = (BKHistroryVagranter-i)%20;
-					items[cc] = a.opt.getString("bkh"+VagranterI);
-					if(items[cc]!=null) {
-						int deli = items[cc].indexOf("/?Pos=");
-						pos[cc] = Integer.valueOf(items[cc].substring(deli+"/?Pos=".length()));
-						items[cc] = items[cc].substring(0, deli);
-					}else {
-						items[cc]="N.A.";
-						pos[cc] = -2;
-					}
-					cc++;
-				}
-				
-				for(BookPresenter mdTmp:a.md) {
-					if(mdTmp!=null)
-						mdictInternal.put(mdTmp.getDictionaryName(), mdTmp);
-				}
-				
+				String BKHistroryVagranter = a.opt.getString("bkHVgrts", "");// must 0<..<20
+				//CMN.Log(BKHistroryVagranter);
+				String[] items = BKHistroryVagranter.split(";");
+				String[] entryNames = new String[items.length];
 				AlertDialog.Builder builder = new AlertDialog.Builder(a);
 				builder.setTitle(R.string.bookmarkH);
-				ArrayList<PlaceHolder> placeHolders = a.getLazyCC();
 				builder.setSingleChoiceItems(new String[] {}, 0,
 						(dialog, position1) -> d.getListView().postDelayed(new Runnable() {
 							@Override
 							public void run() {
-								String id1 = items[position1];
-								BookPresenter mdTmp = mdictInternal.get(id1);
-								if(mdTmp!=null) {
-									String name = mdTmp.getDictionaryName();
-									int i = 0;
-									for (; i < placeHolders.size(); i++) {
-										if(placeHolders.get(i).getName().equals(name))
-											break;
-									}
-									if(i==placeHolders.size()) {
-										a.md.add(mdTmp);
-										placeHolders.add(new PlaceHolder(mdTmp.getPath()));
-										a.switch_To_Dict_Idx(a.md.size()-1, true, false, null);
-									}else {
-										if(a.md.get(i)==null){
-											a.md.set(i, mdTmp);
-										}
-										a.switch_To_Dict_Idx(i, true, false, null);
-									}
+								retrieveBnPos(bnPos, items[position1]);
+								BookPresenter markedBook = a.getBookById(bnPos[0]);
+								if(markedBook!=null) {
+									//a.swicthToBook(markedBook);
 									if(a.pickDictDialog!=null) a.pickDictDialog.isDirty=true;
-									int toPos = pos[position1];
 									a.bWantsSelection=false;
 									a.bNeedReAddCon=false;
+									
+									if(adaptermy==null)
+										adaptermy = a.new ListViewAdapter(a.webSingleholder);
 									//a.bOnePageNav=mdTmp instanceof bookPresenter_pdf; nimp
-									a.adaptermy.onItemClick(toPos);
+									adaptermy.setPresenter(markedBook);
+									int pos = (int) bnPos[2];
+									String entryName = entryNames[position1];
+									if(markedBook.getIsWebx()) {
+										PlainWeb webx = markedBook.getWebx();
+										pos = 0;
+										// entryName is the save url
+										if(entryName==null) entryName=webx.getHost();
+										if(entryName.indexOf(":")<0) {
+											entryName=webx.getHost()+entryName;
+										}
+										markedBook.SetSearchKey(entryName);
+									} else {
+										if(entryName!=null) {
+											// 名称验证
+											if (!TextUtils.equals(mdict.processText(entryName), mdict.processText(markedBook.bookImpl.getEntryAt(pos)))) {
+												// 重新查询
+												int tmp_pos = markedBook.bookImpl.lookUp(entryName);
+												if (tmp_pos>=0) {
+													pos = tmp_pos;
+												}
+											}
+										}
+									}
+									adaptermy.onItemClick(pos);
 									a.bOnePageNav=false;
-									a.lv.setSelection(toPos);
+									a.lv.setSelection(pos);
 									d.hide();
 								}}
-							
 						}, 0));
 				d=builder.create();
 				d.show();
@@ -639,82 +636,81 @@ public class Drawer extends Fragment implements
 						else
 							tv = (CheckedTextViewmy)ret.getTag();
 						
-						String id = items[position];
+						retrieveBnPos(bnPos, items[position]);
 						
 						if(GlobalOptions.isDark)
 							tv.setTextColor(Color.WHITE);
 						
-						if(pos[position]==-2) {//无数据
-							tv.setText("N.A.");
-							tv.setSubText(null);
-							return ret;
-						}
+						BookPresenter markedBook = a.getBookById(bnPos[0]);
 						
-						BookPresenter mdTmp  = mdictInternal.get(id);
-						
-						if(mdTmp==null) {
-							try {
-								String path=id;
-								mdTmp = MainActivityUIBase.new_book(path, a);
-								mdictInternal.put(id, mdTmp);
+						String entryName = entryNames[position];
+						if(entryName==null) {
+							//数据库获取书签名
+							try (Cursor cursor = a.prepareHistoryCon().getDB().rawQuery("select lex from "
+									+ LexicalDBHelper.TABLE_BOOK_NOTE_v2 +" where id=?", new String[]{bnPos[1]+""})){
+								if(cursor.moveToNext()) {
+									entryName = entryNames[position] = cursor.getString(0);
+								}
 							} catch (Exception e) {
-								e.printStackTrace();
+								CMN.Log(e);
 							}
 						}
 						
-						if(mdTmp!=null) {
-							tv.setSubText(mdTmp.getDictionaryName());
-							tv.setText(mdTmp.getLexicalEntryAt(pos[position]));
-						}else {//获取词典失败
-							tv.setSubText(id);
-							tv.setText("failed to fetch: "+id);
+						if(markedBook!=null) {
+							if(entryName==null) {
+								entryName = entryNames[position] = markedBook.getLexicalEntryAt((int) bnPos[2]);
+							}
+							tv.setSubText(markedBook.getDictionaryName());
+						} else {//获取词典失败
+							tv.setSubText("failed to fetch: "+id);
 						}
+						tv.setText(entryName);
 						return ret;
 					}
 				});
 			} break;
 			//书签
 			case R.string.lastmarks:  {
-				//String lastBookMark = a.opt.getString("bkmk");
-				BKHistroryVagranter = a.opt.getInt("bkHVgrt",0);// must 0<..<20
-				String lastBookMark = a.opt.getString("bkh"+BKHistroryVagranter);
-				//CMN.show(lastBookMark);
-				if(lastBookMark!=null) {
-					String[] l = lastBookMark.split("/\\?Pos=");
-					int pos1 = Integer.valueOf(l[1]);
-					lastBookMark = l[0];
-					String fn = new File(lastBookMark).getName();
-					if(fn.lastIndexOf(".")!=-1)
-						fn = fn.substring(0,fn.lastIndexOf("."));
-					int c=0;
-					boolean suc=false;
-					int oldPos = a.adapter_idx;
-					for(PlaceHolder phI:a.getLazyCC()) {
-						if(phI.getName().equals(fn)) {
-							a.switch_To_Dict_Idx(c, true, false, null);
-							a.adaptermy.onItemClick(pos1);
-							a.lv.setSelection(pos1);
-							suc=true;
-							break;
+				String BKHistroryVagranter = a.opt.getString("bkHVgrts", "");// must 0<..<20
+				retrieveBnPos(bnPos, BKHistroryVagranter);
+				BookPresenter markedBook = a.getBookById(bnPos[0]);
+				if(markedBook!=null) {
+					if(adaptermy==null)
+						adaptermy = a.new ListViewAdapter(a.webSingleholder);
+					//a.bOnePageNav=mdTmp instanceof bookPresenter_pdf; nimp
+					int pos=(int) bnPos[2];
+					String entryName = null;
+					//数据库获取书签名 1
+					try (Cursor cursor = a.prepareHistoryCon().getDB().rawQuery("select lex from "
+							+ LexicalDBHelper.TABLE_BOOK_NOTE_v2 +" where id=?", new String[]{bnPos[1]+""})){
+						if(cursor.moveToNext()) {
+							entryName = cursor.getString(0);
 						}
-						c++;
+					} catch (Exception e) {
+						entryName = markedBook.getLexicalEntryAt((int) bnPos[2]);
 					}
-					if(!suc)
-						try {
-							a.md.add(MainActivityUIBase.new_book(lastBookMark, a));
-							a.switch_To_Dict_Idx(a.md.size()-1, true, false, null);
-							a.adaptermy.onItemClick(pos1);
-							a.lv.setSelection(pos1);
-							suc=true;
-						} catch (Exception e) {
-							e.printStackTrace();
+					if(markedBook.getIsWebx()) {
+						PlainWeb webx = markedBook.getWebx();
+						pos = 0;
+						// entryName is the save url
+						if(entryName==null) entryName=webx.getHost();
+						if(entryName.indexOf(":")<0) {
+							entryName=webx.getHost()+entryName;
 						}
-					if(suc) {
-						//a.mDrawerLayout.closeDrawer(mDrawerListView);
-						if(a.pickDictDialog!=null) a.pickDictDialog.isDirty=true;
+						markedBook.SetSearchKey(entryName);
+					} else {
+						// 名称验证 1
+						if (!TextUtils.equals(mdict.processText(entryName), mdict.processText(markedBook.bookImpl.getEntryAt(pos)))) {
+							// 重新查询 1
+							int tmp_pos = markedBook.bookImpl.lookUp(entryName);
+							if (tmp_pos>=0) {
+								pos = tmp_pos;
+							}
+						}
 					}
-				}else
-					a.show(R.string.nothingR);
+					adaptermy.setPresenter(markedBook);
+					adaptermy.onItemClick(pos);
+				}
 			} break;
 			//追加词典 添加词典 打开
 			case R.string.addd:  {
@@ -769,10 +765,10 @@ public class Drawer extends Fragment implements
 									if(mdTmp!=null)
 										mdictInternal.add(mdTmp.getPath());
 								}
-								for(BookPresenter mdTmp:Drawer.this.mdictInternal.values()) {
-									if(mdTmp!=null)
-										mdictInternal.add(mdTmp.getPath());
-								}
+//								for(BookPresenter mdTmp:Drawer.this.mdictInternal.values()) {
+//									if(mdTmp!=null)
+//										mdictInternal.add(mdTmp.getPath());
+//								}
 								int newAdapterIdx=-1;
 								try {
 									BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
@@ -1013,6 +1009,17 @@ public class Drawer extends Fragment implements
 				a.launchSettings(0, 1297);
 			} break;
 		}
+	}
+	
+	private void retrieveBnPos(long[] bnPos, String text) {
+		CharSequenceKey wrap = new CharSequenceKey(text, 0, 0);
+		int idx;
+		idx=text.indexOf(",");
+		bnPos[0] = IU.TextToNumber_SIXTWO_LE(wrap.reset(0, idx));
+		idx=text.indexOf(",", idx+1);
+		bnPos[1] = IU.TextToNumber_SIXTWO_LE(wrap.reset(wrap.getEnd()+1, idx));
+		idx=text.indexOf(";", idx+1);
+		bnPos[2] = IU.TextToNumber_SIXTWO_LE(wrap.reset(wrap.getEnd()+1, idx));
 	}
 	
 	@Override

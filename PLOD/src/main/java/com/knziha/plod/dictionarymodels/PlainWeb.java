@@ -122,11 +122,12 @@ public class PlainWeb extends DictionaryAdapter {
 		 } else {
 		 	e.appendChild(document.createTextNode(css));
 		 }
+	 	 window.PLODKit=1;
 		 e = document.createElement('script');
 		 e.type = 'text/javascript';
-		 e.src = 'mdbr://SUBPAGE.js';
+		 e.id = '_PDJS';
+		 e.src = 'https://mdbr/SUBPAGE.js';
 	 	 document.head.appendChild(e);
-		 window.PLODKit=1;
 	 }
 	 //console.log('fatal PLODKitASD' + window.PLODKit);
 	 */
@@ -915,10 +916,10 @@ public class PlainWeb extends DictionaryAdapter {
 				} else {
 					sb.append(loadJs);
 				}
-			} else {
+			}
+			else {
 				sb.append(loadJs);
 			}
-			
 			jsCode = sb.toString();
 		} else {
 			jsCode = jsLoader;
@@ -1293,6 +1294,13 @@ public class PlainWeb extends DictionaryAdapter {
 				CMN.Log(value);
 			}
 		});
+//		CMN.Log(1234654212345L);
+//		view.evaluateJavascript(new String(BookPresenter.jsBytes), new ValueCallback<String>() {
+//			@Override
+//			public void onReceiveValue(String value) {
+//				CMN.Log(value);
+//			}
+//		});
 	}
 
 	private void fadeOutProgressbar(BookPresenter bookPresenter, WebViewmy mWebView, boolean updateTitle) {

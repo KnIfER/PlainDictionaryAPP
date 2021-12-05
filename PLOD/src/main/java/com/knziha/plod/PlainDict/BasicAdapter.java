@@ -8,6 +8,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 
@@ -25,6 +26,7 @@ public abstract class BasicAdapter extends BaseAdapter
 		public boolean Kustice;
 
 		public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
+		protected BookPresenter presenter;
 		//int adelta=0;
 
 		public void ClearVOA() {
@@ -81,4 +83,8 @@ public abstract class BasicAdapter extends BaseAdapter
 		public abstract int getId();
 
 		public abstract String currentKeyText();
+	
+		public void setPresenter(BookPresenter presenter) {
+			this.presenter = presenter;
+		}
 	}

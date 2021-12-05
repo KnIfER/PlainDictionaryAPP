@@ -9,7 +9,8 @@
 	,"keyPattern": "*"
 	,"js": "
 	let e = document.getElementById('gtyexp'),win=window,sel=win.getSelection()
-	,ta=document.getElementsByTagName('textarea')[0], debug=console.log,listPane,textPara;
+	,ta=document.getElementsByTagName('textarea')[0], listPane,textPara;
+	function debug(e){console.log(e)};
 	debug('translator ini...'); // 开始
 	function sc(v){
 		if(sel.type!='Range') e.style.display = 'none';
@@ -234,7 +235,8 @@
 	
 	debug('translator init done.'); // 结束
 	"
-	,"searchJs": "var succ = 0, debug=console.log;
+	,"searchJs": "var succ = 0;
+function debug(e){console.log(e)};
 try {
 	debug('searchJs');
 	function isAttached(e) {

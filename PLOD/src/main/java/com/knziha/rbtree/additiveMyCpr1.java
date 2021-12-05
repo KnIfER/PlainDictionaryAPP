@@ -1,7 +1,7 @@
 package com.knziha.rbtree;
 import com.knziha.plod.dictionary.mdict;
 
-
+import java.util.ArrayList;
 
 
 public class additiveMyCpr1 implements Comparable<additiveMyCpr1>{
@@ -17,7 +17,7 @@ public class additiveMyCpr1 implements Comparable<additiveMyCpr1>{
 		return mdict.processText(this.key.toLowerCase()).compareTo(mdict.processText(other.key.toLowerCase()));
 	}
 	public String toString(){
-		String str = ""; //for(Integer i:value) str+="@"+i;
+		String str = ""; //for(Long i:(ArrayList<Long>)value) str+="@"+i;
 		return key+"____"+str;
 	}
 }

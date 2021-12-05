@@ -138,6 +138,16 @@ public class Toastable_Activity extends AppCompatActivity {
 		   TFStamp = opt.getThirdFlag();
 		   QFStamp = opt.getFourthFlag();
 		   VFStamp = opt.getFifthFlag();
+		   if (PDICMainAppOptions.checkVersionBefore_5_0())
+		   { // 升级数据库对话框
+			   //DBUpgradeHelper.showUpgradeDlg(null, this, true);
+			   opt.setUseDatabaseV2(true);
+			   opt.setUseBackKeyGoWebViewBack(true);
+			   opt.setAnimateContents(Build.VERSION.SDK_INT>=21);
+			   PDICMainAppOptions.uncheckVersionBefore_5_0(false);
+			   PDICMainAppOptions.uncheckVersionBefore_4_0(true); // revert & recycle the flag bits
+			   PDICMainAppOptions.uncheckVersionBefore_4_9(true); // revert & recycle the flag bits
+		   }
 	   }
 	   super.onCreate(savedInstanceState);
        if(shunt) return;

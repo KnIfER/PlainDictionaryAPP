@@ -103,6 +103,24 @@
 			android:title="点击按钮发音时，优先使用发音库而非发音链接"
 			android:persistent="false"
 			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="dbv2"
+			android:persistent="false"
+			android:title="使用数据库V2"
+			app:isPreferenceVisible="true"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
+
+		<Preference
+			android:key="dbv2_up"
+			android:persistent="false"
+			android:title="升级数据库V2"
+			app:isPreferenceVisible="true"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			/>
 	</PreferenceCategory>
 
 

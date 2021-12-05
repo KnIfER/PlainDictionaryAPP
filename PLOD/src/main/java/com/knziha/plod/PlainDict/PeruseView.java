@@ -1858,7 +1858,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					a.opt.putter()//.putString("bkmk", rec)
 							.putString("bkh" + BKHistroryVagranter, rec)
 							.putInt("bkHVgrt", BKHistroryVagranter)
-							.commit();
+							.apply();
 					if (ToD) {
 						pullBookMarks();
 					}

@@ -94,7 +94,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import db.LexicalDBHelper;
@@ -422,6 +424,7 @@ public class BookPresenter
 				keyword=app.getCurrentPageKey();
 			if(keyword==null||b1&&keyword.trim().length==0)
 				return;
+	 		if(!MarkLoad) MarkLoad|=w.MarkLoad;
 			if(!MarkLoad){
 				loadJs('mdbr://mark.js', function(){
 					MarkLoad=true;
@@ -536,7 +539,8 @@ public class BookPresenter
 	public static int optimal100;
 	public int tmpIsFlag;
 	public ArrayList<myCpr<String, Long>> range_query_reveiver;
-	public Object tag;
+	public PlaceHolder placeHolder;
+	public Map<String, String> remaps;
 	long FFStamp;
 	long firstFlag;
 	byte firstVersionFlag;
@@ -584,6 +588,13 @@ public class BookPresenter
 	private short minParagraphWords;
 	protected boolean bReadConfig;
 	protected int bIsManagerAgent;
+	
+	/**
+var succ = 0;
+function debug(e){console.log(e)};
+    debug(111); 123
+*/ @Metaline(compile = false)
+	private final static String testVal="";
 	
 	/**几乎肯定是段落，不是单词或成语。**/
 	public static boolean testIsParagraph(String searchText, int paragraphWords) {
@@ -1740,11 +1751,13 @@ public class BookPresenter
 			try {
 				try {
 					if(a.getUsingDataV2()) {
-						if (a.prepareHistoryCon().putPage(bookImpl.getBooKID(), url, position, name, data) != -1) {
+						long nid=a.prepareHistoryCon().putPage(bookImpl.getBooKID(), url, position, name, data);
+						if (nid != -1) {
 							String succStr = true?a.getResources().getString(R.string.saved_with_size, data.length())
 									:a.getResources().getString(R.string.saved);
 							a.showT(succStr);
 							onPageSaved();
+							a.putRecentBookMark(bookImpl.getBooKID(), nid, position);
 						} else {
 							a.showT("保存失败 ");
 						}
@@ -2049,13 +2062,13 @@ public class BookPresenter
 			if(bookImpl.hasVirtualIndex())
 				try {
 					String validifier = getOfflineMode()&&getIsWebx()?null:bookImpl.getVirtualTextValidateJs(this, mWebView, position[0]);
-					//CMN.Log("validifier::", validifier, GetSearchKey());
+					//CMN.Log("validifier::", validifier, GetSearchKey(), mWebView.getTag());
 					if (validifier == null
 							//|| true // 用于调试直接网页加载
 							|| "forceLoad".equals(mWebView.getTag())) {
 						htmlCode = bookImpl.getVirtualRecordsAt(this, position);
 						mWebView.setTag(null);
-						//CMN.Log("htmlCode::", htmlCode);
+						CMN.Log("htmlCode::", htmlCode);
 						if (htmlCode!=null && htmlCode.startsWith("http")) {
 							// 如果是加载网页
 							mWebView.loadUrl(htmlCode);
@@ -2077,6 +2090,12 @@ public class BookPresenter
 								}
 							}
 						});
+//						mWebView.evaluateJavascript(testVal, new ValueCallback<String>() {
+//							@Override
+//							public void onReceiveValue(String value) {
+//								CMN.Log("validifier::onReceiveValue1::", value);
+//							}
+//						});
 						return;
 					}
 				} catch (Exception e) {
@@ -2492,11 +2511,11 @@ public class BookPresenter
         float scale;
         DisplayMetrics dm;
 
-        public AppHandler(BookPresenter _mdx) {
+        public AppHandler(BookPresenter presenter) {
 			try {
-				presenter = _mdx;
+				this.presenter = presenter;
 				scale = GlobalOptions.density;
-				if (presenter!=null) {
+				if (presenter !=null) {
 					dm = presenter.a.dm;
 				}
 			} catch (Exception ignored) { }
@@ -2688,6 +2707,14 @@ public class BookPresenter
         	//CMN.Log("onExitFView");
 			MainActivityUIBase.CustomViewHideTime = System.currentTimeMillis();
 			((Handler) presenter.a.hdl).sendEmptyMessageDelayed(7658941, 600);
+		}
+		
+		@JavascriptInterface
+		public void remap(String from, String to) {
+			CMN.Log("RemapUrl::", from, to, "client");
+			if(presenter==null) return;
+			presenter.RemapUrl(from, to);
+			presenter.mWebView.evaluateJavascript("console.log('RemapUrl client 1')", null);
 		}
 		
 		// sendup
@@ -3479,6 +3506,7 @@ public class BookPresenter
 					if (forceAdd) {
 						a.showT(R.string.bmAdded);
 					}
+					a.putRecentBookMark(bid, id, mWebView.currentPos);
 				} else {
 					String id_ = ""+id;
 					if (hasNotes) {
@@ -3641,5 +3669,11 @@ public class BookPresenter
 	
 	public void findAllTexts(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchLogicLayer searchLayer) throws IOException {
 		bookImpl.flowerFindAllContents(searchTerm, adapter_idx, searchLayer);
+	}
+	
+	public void RemapUrl(String from, String to) {
+		if(remaps==null)
+			remaps = new ConcurrentHashMap<>();
+		remaps.put(from, to);
 	}
 }

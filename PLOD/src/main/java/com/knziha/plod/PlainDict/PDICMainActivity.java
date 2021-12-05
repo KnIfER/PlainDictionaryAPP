@@ -91,7 +91,6 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.PlainUI.AppUIProject;
-import com.knziha.plod.PlainUI.BuildIndexInterface;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
@@ -743,10 +742,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			PageSlider.setTranslationX(0);
 			PageSlider.setTranslationY(0);
 			int lastPos = ActivedAdapter.lastClickedPos;
-			ListView lva = ActivedAdapter.lava;
 			DetachContentView(true);
 			PostDCV_TweakTBIC();
-			if(lastPos<lva.getFirstVisiblePosition() || lastPos>lva.getLastVisiblePosition())
+			ListView lva = ActivedAdapter.lava;
+			if(lva!=null && (lastPos<lva.getFirstVisiblePosition() || lastPos>lva.getLastVisiblePosition()))
 				lva.setSelection(lastPos);
 			ActivedAdapter=null;
 			return true;
@@ -1202,7 +1201,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			viewList[i] = view;
 		}
 		super.further_loading(savedInstanceState);
-
+		
 		CheckGlideJournal();
 
 		//showT(root.getParent().getClass());
@@ -1447,8 +1446,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				checkFlags();
 			}});
 		//mDrawerLayout.setScrimColor(0x00ffffff);
-		
-		lv.setAdapter(adaptermy = new ListViewAdapter(webSingleholder));
+		adaptermy = new ListViewAdapter(webSingleholder);
+		adaptermy.setPresenter(currentDictionary);
+		lv.setAdapter(adaptermy);
 		lv2.setAdapter(adaptermy2 = new ListViewAdapter2(webholder, R.layout.listview_item1));
 		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2(webSingleholder));
 		mlv2.setAdapter(adaptermy4 = new ListViewAdapter2(webSingleholder));
@@ -1713,16 +1713,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		launchSettings(0, 0);
 		//do_test_project_Test_Background_Loop();
 		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
-		
-		if (PDICMainAppOptions.checkVersionBefore_5_0())
-		{ // 升级数据库对话框
-			DBUpgradeHelper.showUpgradeDlg(null, this, true);
-			opt.setUseBackKeyGoWebViewBack(true);
-			opt.setAnimateContents(Build.VERSION.SDK_INT>=21);
-			PDICMainAppOptions.uncheckVersionBefore_5_0(false);
-			PDICMainAppOptions.uncheckVersionBefore_4_0(true);
-			PDICMainAppOptions.uncheckVersionBefore_4_9(true);
-		}
 		
 		
 //		try {
@@ -2490,7 +2480,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			Utils.setListViewFastColor(lv, mlv1, mlv2, lv2);
 		}
 	}
-
+	
 	public class ListViewAdapter extends BasicAdapter {
 		//AbsListView.LayoutParams lp;
 		//构造
@@ -2501,9 +2491,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		@Override
 		public int getCount() {
 			if(md.size()>0) {
-				if(PDICMainAppOptions.getSimpleMode() && etSearch.getText().length()==0 && BookPresenter.class.equals(currentDictionary.getClass())) //todo ???
+				if(PDICMainAppOptions.getSimpleMode() && etSearch.getText().length()==0 && BookPresenter.class.equals(presenter.getClass())) //todo ???
 					return 0;
-				return (int) currentDictionary.bookImpl.getNumberEntries();
+				return (int) presenter.bookImpl.getNumberEntries();
 			} else {
 				return 0;
 			}
@@ -2513,9 +2503,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		@Override
 		public View getView(final int position, View convertView, ViewGroup parent) {
 			//return lstItemViews.get(position);
-			ViewHolder vh=convertView==null?new ViewHolder(currentDictionary.a = PDICMainActivity.this, R.layout.listview_item0, parent):(ViewHolder)convertView.getTag();
-			String currentKeyText = currentDictionary.bookImpl.getEntryAt(position,mflag);
-			if(currentDictionary.bookImpl.hasVirtualIndex()){
+			ViewHolder vh=convertView==null?new ViewHolder(parent.getContext(), R.layout.listview_item0, parent):(ViewHolder)convertView.getTag();
+			String currentKeyText = presenter.bookImpl.getEntryAt(position,mflag);
+			if(presenter.bookImpl.hasVirtualIndex()){
 				int tailIdx=currentKeyText.lastIndexOf(":");
 				if(tailIdx>0)
 					currentKeyText=currentKeyText.substring(0, tailIdx);
@@ -2538,7 +2528,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //				}
 //			}
 			//tofo
-			vh.subtitle.setText(currentDictionary.getDictionaryName());
+			vh.subtitle.setText(presenter.getDictionaryName());
 			vh.itemView.setTag(R.id.position,position);
 
 			return vh.itemView;
@@ -2546,7 +2536,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		@Override
 		public void SaveVOA() {
-			if(currentDictionary!=EmptyBook) {
+			if(presenter != EmptyBook) {
 				if (opt.getRemPos()) {
 					new SaveAndRestorePagePosDelegate().SaveVOA(PageSlider.WebContext, this);
 				}
@@ -2554,7 +2544,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						//&&!(currentDictionary instanceof bookPresenter_txt) // nimp
 						&& !PDICMainAppOptions.getHistoryStrategy0()
 						&& PDICMainAppOptions.getHistoryStrategy4()) {
-					insertUpdate_histroy(currentDictionary.currentDisplaying, 0, webviewHolder);
+					insertUpdate_histroy(presenter.currentDisplaying, 0, webviewHolder);
 				}
 			}
 		}
@@ -2565,7 +2555,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			{
 				//CMN.Log("江河湖海",currentDictionary.expectedPosX,currentDictionary.expectedPos,currentDictionary.webScale);
 				if(opt.getRemPos())
-					avoyager.put(currentDictionary.lvClickPos, new ScrollerRecord(currentDictionary.mWebView.expectedPosX,currentDictionary.mWebView.expectedPos,currentDictionary.mWebView.webScale));
+					avoyager.put(presenter.lvClickPos, new ScrollerRecord(presenter.mWebView.expectedPosX, presenter.mWebView.expectedPos, presenter.mWebView.webScale));
 			}
 		}
 
@@ -2583,15 +2573,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		@Override
 		public void onItemClick(int pos) {//lv1
-			TestHelper.testClassLoading(null);
-//			if(true) {
-//				startActivity(new Intent(PDICMainActivity.this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", currentDictionary.getEntryAt(pos)));
-//				return;
-//			}
-			
 			shuntAAdjustment();
 			if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
-				String pw = pos==0?etSearch.getText().toString():currentDictionary.bookImpl.getEntryAt(pos);
+				String pw = pos==0?etSearch.getText().toString(): presenter.bookImpl.getEntryAt(pos);
 				getPeruseView().ScanSearchAllByText(pw, PDICMainActivity.this, true, updateAI);
 				AttachPeruseView(true);
 				//CMN.Log(PeruseView.data);
@@ -2619,18 +2603,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				return;
 			}
 			
-			avoyager = currentDictionary.avoyager;
-			currentDictionary.initViewsHolder(PDICMainActivity.this);
+			avoyager = presenter.avoyager;
+			presenter.initViewsHolder(PDICMainActivity.this);
 			
-			currentDictionary.lvClickPos=pos;
+			presenter.lvClickPos=pos;
 			
 			AllMenus.setItems(SingleContentMenu);
 			
-			Utils.addViewToParentUnique(currentDictionary.rl, webSingleholder);
+			Utils.addViewToParentUnique(presenter.rl, webSingleholder);
 			/* ensureContentVis */
 			ensureContentVis(webSingleholder, WHP, webholder);
 			
-			float desiredScale=prepareSingleWebviewForAda(currentDictionary, null, pos, this);
+			float desiredScale=prepareSingleWebviewForAda(presenter, null, pos, this);
 
 			lastClickedPos = pos;
 			
@@ -2640,17 +2624,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 
 			PageSlider.TurnPageEnabled=opt.getPageTurn1()&&opt.getTurnPageEnabled();
-			PageSlider.setIBC(currentDictionary.mWebView);
+			PageSlider.setIBC(presenter.mWebView);
 
 			layoutScrollDisabled=true;
 			if(bOnePageNav)
 				desiredScale=111;
 			
 			/* 仿效 GoldenDict 返回尽可能多的结果 */
-			currentDictionary.renderContentAt(desiredScale,BookPresenter.RENDERFLAG_NEW,0,null, getMergedClickPositions(pos));
+			presenter.renderContentAt(desiredScale,BookPresenter.RENDERFLAG_NEW,0,null, getMergedClickPositions(pos));
 			contentview.setTag(R.id.image, PhotoPagerHolder!=null&&PhotoPagerHolder.getParent()!=null?false:null);
 
-			String key = currentKeyText = currentDictionary.currentDisplaying.trim();
+			String key = currentKeyText = presenter.currentDisplaying.trim();
 
 			decorateContentviewByKey(null,key);
 			if(//!(currentDictionary instanceof bookPresenter_txt) && // nimp
@@ -2678,7 +2662,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		@Override
 		public String currentKeyText() {
-			return currentDictionary.currentDisplaying;
+			return presenter.currentDisplaying;
 		}
 	}
 	
@@ -3548,6 +3532,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		ReadInMdlibs(null);
 		AgentApplication app = ((AgentApplication) getApplication());
 		app.mdict_cache = mdict_cache;
+		//todo remove???
 		for(BookPresenter mdTmp:md) {
 			if(mdTmp!=null){
 				//get path put
@@ -3559,12 +3544,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
 			}
 		}
-		if(drawerFragment!=null)
-			for(BookPresenter mdTmp:drawerFragment.mdictInternal.values()) {
-				if(mdTmp!=null){
-					mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
-				}
-			}
 		/* 合符而继统 */
 		for(PlaceHolder phI:HdnCmfrt) {
 			if(!CosyChair.contains(phI))//todo opt

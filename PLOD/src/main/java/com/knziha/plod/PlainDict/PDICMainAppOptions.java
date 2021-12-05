@@ -44,12 +44,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public boolean supressAudioResourcePlaying;
 	public static HashSet<String> ChangedMap;
 	public File SpecificationFile;
-	SharedPreferences reader2;
 	SharedPreferences defaultReader;
 	public static String locale;
 	
 	public PDICMainAppOptions(Context a_){
-		reader2 = a_.getSharedPreferences("SizeChangablePrefs",Activity.MODE_PRIVATE);
 		defaultReader = PreferenceManager.getDefaultSharedPreferences(a_);
 		magicStr=a_.getResources().getString(R.string.defPlan);
 	}
@@ -60,18 +58,17 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public boolean auto_seach_on_switch=true;
 	protected boolean bShouldUseExternalBrowserApp=true;
 
-
 	public int getInt(String key, int i) {
-		return reader2.getInt(key, i);
+		return defaultReader.getInt(key, i);
 	}
 	public Editor putter() {
-		return reader2.edit();
+		return defaultReader.edit();
 	}
 	public void putString(String key, String val) {
-		reader2.edit().putString(key, val).apply();
+		defaultReader.edit().putString(key, val).apply();
 	}
-	public String getString(String key) {
-		return reader2.getString(key, null);
+	public String getString(String key, String defValue) {
+		return defaultReader.getString(key, defValue);
 	}
 
 	public Editor defaultputter() {
