@@ -42,13 +42,6 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 		return super.onKeyDown(keyCode, event);
 	}
 	
-	
-	@Override
-	public void finish() {
-		CMN.Log("finish!!!");
-		super.finish();
-	}
-	
 	public void checkBack() {
 		if(realm_id==FileChooser.id){
 			PDICMainAppOptions.SecondFlag(FilePickerOptions.SecondFlag);

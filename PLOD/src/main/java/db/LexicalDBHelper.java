@@ -89,6 +89,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		pathName = database.getPath();
 		oldVersion=CMN.dbVersionCode;
 		if(this.testDBV2)instance = this;
+		else {
+			String sql = "select rowid from " + TABLE_MARKS + " where " + Key_ID + " = ? ";
+			preparedGetIsFavoriteWord = database.compileStatement(sql);
+		}
+		
 	}
 	
 	public static LexicalDBHelper getInstance() {

@@ -1984,15 +1984,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateQFAt(0x200000l,!val);
 		return val;
 	}
+	
+	// 0x400000l
+	@Metaline(flagPos=22) public static boolean getOnlyExpandTopPage() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=22) public static void setOnlyExpandTopPage(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
 
-	public static boolean getOnlyExpandTopPage() {
-		return false;//
-		//return (FourthFlag & 0x400000l) == 0x400000l;
-	}
-	public static boolean setOnlyExpandTopPage(boolean val) {
-		updateQFAt(0x400000l,val);
-		return val;
-	}
 
 	public static boolean getDelaySecondPageLoading() {
 		return (FourthFlag & 0x800000l) != 0x800000l;
@@ -2185,6 +2181,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_4_0() { FourthFlag=FourthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_4_0(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_5_2() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52, shift=1) public static boolean uncheckVersionBefore_5_2(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	
 	//@Metaline(flagPos=52, shift=1) public static boolean uncheckVersionBefore_4_0() { FourthFlag=FourthFlag; throw new IllegalArgumentException();}
 	@Metaline(flagPos=53) public static boolean getClearTasksOnExit() { FourthFlag=FourthFlag; throw new RuntimeException();}
 

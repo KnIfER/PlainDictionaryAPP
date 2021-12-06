@@ -80,12 +80,12 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	
 	@Override
 	public String getEntryAt(long position, Flag mflag) {
-		return null;
+		return "";
 	}
 	
 	@Override
 	public String getEntryAt(long position) {
-		return null;
+		return "";
 	}
 	
 	@Override

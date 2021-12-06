@@ -16,6 +16,8 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.rbtree.RBTree_additive;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -24,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorderCombined> {
 	private final WeakReference<MainActivityUIBase> activity;
-	RBTree_additive _treeBuilder = new RBTree_additive();
+	private RBTree_additive _treeBuilder = new RBTree_additive();
 	String CurrentSearchText;
 	String CurrentSearchText2;
 	private long stst;
@@ -123,17 +125,10 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		fixedThreadPool.shutdown();
 		try {
 			fixedThreadPool.awaitTermination(1, TimeUnit.MINUTES);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
+		} catch (InterruptedException e) {
+			if(GlobalOptions.debug) CMN.Log(e);
 		}
-		return null;
-	}
-
-	@Override
-	protected void onPostExecute(resultRecorderCombined rec) {
-		MainActivityUIBase a;
-		if((a=activity.get())==null) return;
-		ArrayList<BookPresenter> md = a.md;
+		
 		_treeBuilder = new RBTree_additive();
 		ArrayList<myCpr<String, Long>> combining_search_list;
 		BookPresenter bookPresenter;
@@ -141,22 +136,34 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		for(int i=0; i<md.size(); i++) {
 			bookPresenter = md.get(i);
 			if(bookPresenter!=null){ // to impl
+				if(isCancelled()) break;
 				bid = a.getUsingDataV2()?bookPresenter.bookImpl.getBooKID():i;
 				combining_search_list = bookPresenter.range_query_reveiver;
 				if(combining_search_list!=null)
 				{
-					for (myCpr<String, Long> dataI : combining_search_list)
-					{
-						if(dataI!=null) // to check
-							_treeBuilder.insert(dataI.key, bid, dataI.value);
-					}
+					try {
+						for (int j = 0; j < combining_search_list.size(); j++) {
+							myCpr<String, Long> dataI = combining_search_list.get(j);
+							if(dataI!=null) // to check
+								_treeBuilder.insert(dataI.key, bid, dataI.value);
+						}
+					} catch (Exception ignored) { }
 				}
 			}
 		}
-		rec =  new resultRecorderCombined(a, _treeBuilder.flatten(),md);
+		if(isCancelled()) return null;
+		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), md);
+		if(rec.FindFirstIdx(searchText, this)) return rec;
+		return null;
+	}
+
+	@Override
+	protected void onPostExecute(resultRecorderCombined rec) {
+		MainActivityUIBase a;
+		if((a=activity.get())==null) return;
 
 		//CMN.Log("联合搜索 时间： " + (System.currentTimeMillis() - stst) + "ms " + rec.size());
-
+		if(rec==null) rec = new resultRecorderCombined(a, new ArrayList<>(), null);
 		if(a.lv2.getVisibility()!= View.VISIBLE)
 			a.lv2.setVisibility(View.VISIBLE);
 		a.adaptermy2.combining_search_result  = a.recCom = rec;

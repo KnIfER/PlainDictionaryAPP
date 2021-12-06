@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionarymodels;
 
+import android.os.AsyncTask;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import java.util.List;
 /** Recorder rendering search results as : LinearLayout {WebView, WebView, ... }  */
 public class resultRecorderCombined extends resultRecorderDiscrete {
 	private List<additiveMyCpr1> data;
+	int firstItemIdx;
 	private View scrollTarget;
 
 	public List<additiveMyCpr1> list(){return data;}
@@ -28,6 +30,25 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		super(a);
 		data=data_;
 		md=md_;
+	}
+	
+	public boolean FindFirstIdx(String key, AsyncTask task) {
+		int cc=0;
+		for (int i = 0; i < data.size(); i++) {
+			if(cc++>350) { if(task.isCancelled()) return false; cc=0; }
+			if(data.get(i).key.regionMatches(true, 0, key, 0, key.length())) {
+				firstItemIdx = i;
+				break;
+			}
+		}
+		return true;
+	}
+	
+	private int RemapPos(int pos) {
+		if(firstItemIdx>0) {
+			pos = (pos+firstItemIdx)%data.size();
+		}
+		return pos;
 	}
 	
 	@Override
@@ -66,6 +87,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	public CharSequence getResAt(MainActivityUIBase a, long pos) {
 		if(data==null || pos<0 || pos>data.size()-1)
 			return "!!! Error: code 1";
+		if(firstItemIdx>0) pos = RemapPos((int) pos);
 		List<Long> l = ((List<Long>) data.get((int) pos).value); //todo
 		bookId = l.get(0);
 		count = String.format("%02d", l.size()/2);
@@ -87,7 +109,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		else{
 			sv.scrollTo(0, expectedPos);
 		}
-
+		
+		if(firstItemIdx>0) pos = RemapPos((int) pos);
 		final additiveMyCpr1 result = data.get((int) pos);
 		final List<Long> vals = (List<Long>) result.value;
 		
@@ -213,6 +236,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 
 	@Override
 	public ArrayList<Long> getRecordAt(int pos) {
+		if(firstItemIdx>0) pos = RemapPos(pos);
 		return (ArrayList<Long>) data.get(pos).value;
 	}
 
@@ -227,6 +251,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	@Override
 	public void shutUp() {
 		data.clear();
+		firstItemIdx = 0;
 	}
 
 	public void scrollTo(View _scrollTarget, MainActivityUIBase a) {

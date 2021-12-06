@@ -596,19 +596,17 @@ public class Drawer extends Fragment implements
 										pos = 0;
 										// entryName is the save url
 										if(entryName==null) entryName=webx.getHost();
-										if(entryName.indexOf(":")<0) {
+										if(entryName!=null && !entryName.contains(":")) {
 											entryName=webx.getHost()+entryName;
 										}
 										markedBook.SetSearchKey(entryName);
 									} else {
-										if(entryName!=null) {
-											// 名称验证
-											if (!TextUtils.equals(mdict.processText(entryName), mdict.processText(markedBook.bookImpl.getEntryAt(pos)))) {
-												// 重新查询
-												int tmp_pos = markedBook.bookImpl.lookUp(entryName);
-												if (tmp_pos>=0) {
-													pos = tmp_pos;
-												}
+										// 名称验证
+										if (entryName!=null && !TextUtils.equals(mdict.processText(entryName), mdict.processText(markedBook.bookImpl.getEntryAt(pos)))) {
+											// 重新查询
+											int tmp_pos = markedBook.bookImpl.lookUp(entryName);
+											if (tmp_pos>=0) {
+												pos = tmp_pos;
 											}
 										}
 									}
@@ -694,13 +692,13 @@ public class Drawer extends Fragment implements
 						pos = 0;
 						// entryName is the save url
 						if(entryName==null) entryName=webx.getHost();
-						if(entryName.indexOf(":")<0) {
+						if(entryName!=null && entryName.indexOf(":")<0) {
 							entryName=webx.getHost()+entryName;
 						}
 						markedBook.SetSearchKey(entryName);
 					} else {
 						// 名称验证 1
-						if (!TextUtils.equals(mdict.processText(entryName), mdict.processText(markedBook.bookImpl.getEntryAt(pos)))) {
+						if (entryName!=null && !TextUtils.equals(mdict.processText(entryName), mdict.processText(markedBook.bookImpl.getEntryAt(pos)))) {
 							// 重新查询 1
 							int tmp_pos = markedBook.bookImpl.lookUp(entryName);
 							if (tmp_pos>=0) {

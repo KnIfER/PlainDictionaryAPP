@@ -17,7 +17,7 @@ public class additiveMyCpr1 implements Comparable<additiveMyCpr1>{
 		return mdict.processText(this.key.toLowerCase()).compareTo(mdict.processText(other.key.toLowerCase()));
 	}
 	public String toString(){
-		String str = ""; //for(Long i:(ArrayList<Long>)value) str+="@"+i;
+		String str = ""; for(Object i:(ArrayList)value) str+="@"+i;
 		return key+"____"+str;
 	}
 }

@@ -17,6 +17,8 @@
 
 package com.knziha.plod.dictionary;
 
+import androidx.annotation.NonNull;
+
 import com.knziha.plod.dictionary.Utils.*;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.rbtree.RBTree;
@@ -1254,7 +1256,7 @@ public abstract class mdBase {
 		return super.toString()+"::"+f.getName();
 	}
 
-	public static String processText(CharSequence input) {
+	public static String processText(@NonNull CharSequence input) {
 		return replaceReg.matcher(input).replaceAll(emptyStr).toLowerCase();
 	}
 }

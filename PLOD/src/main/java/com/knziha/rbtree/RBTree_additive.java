@@ -612,6 +612,8 @@ public class RBTree_additive {
         // 3. 将它重新修正为一颗二叉查找树
         insertFixUp(node);
     }
+    
+    
     /* 
      * 新建结点(key)，并将其插入到红黑树中
      *

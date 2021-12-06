@@ -148,6 +148,11 @@ public class Toastable_Activity extends AppCompatActivity {
 			   PDICMainAppOptions.uncheckVersionBefore_4_0(true); // revert & recycle the flag bits
 			   PDICMainAppOptions.uncheckVersionBefore_4_9(true); // revert & recycle the flag bits
 		   }
+//		   if (PDICMainAppOptions.checkVersionBefore_5_2())
+//		   { // 强制数据库2.0
+//			   opt.setUseDatabaseV2(true);
+//			   PDICMainAppOptions.uncheckVersionBefore_5_2(false);
+//		   }
 	   }
 	   super.onCreate(savedInstanceState);
        if(shunt) return;
