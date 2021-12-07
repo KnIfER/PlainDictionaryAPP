@@ -4182,10 +4182,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					cb.toggle();
 					boolean val = cb.isChecked();
 					if(id==R.id.check1) {
-						if(this_instanceof_MultiShareActivity) opt.setPinVSDialog(val);
+						if(this_instanceof_MultiShareActivity) {
+							opt.setPinVSDialog(val);
+							showT(val?"钉住面板":"使用一次后退出");
+						}
 						else  opt.setPinDialog(val);
 					} else if(id==R.id.check2){
 						opt.setRememberVSPanelGo(val);
+						showT(val?"记忆最近使用项，今后直接跳转":"每一次都重新进入面板");
 					} else {
 						opt.setVSPanelGOTransient(val);
 					}
@@ -4453,6 +4457,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								});
 							}
+							if(this_instanceof_MultiShareActivity) {
+								checkMultiVSTGO();
+							}
 						} break;
 						/* 全选 */
 						case R.string.select_all: {
@@ -4525,6 +4532,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										ReadText(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), mWebView);
 									}
 								});
+							}
+							if(this_instanceof_MultiShareActivity) {
+								checkMultiVSTGO();
 							}
 							dissmisstype=2;
 						} break;
@@ -4831,6 +4841,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				bottomView = (ViewGroup) getLayoutInflater().inflate(R.layout.checker2, dialogList = d.getListView(), false);
 				
 				if(this_instanceof_MultiShareActivity) {
+					opt.setVSPanelGOTransient(false);
 					d.setOnDismissListener(MainActivityUIBase.this);
 					int id=R.id.check2;
 					decorateCheckBox((CircleCheckBox) ((ViewStub)bottomView.findViewById(id)).inflate(), opt.getRememberVSPanelGo(), 1.25f).setId(id);
@@ -4839,6 +4850,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					cb.mHintSurrondingPad *= 0.15;
 					cb.mHintSurrondingPad/=2;
 					cb.setId(id);
+					cb.setVisibility(View.GONE);
 				}
 				cb = decorateCheckBox(bottomView.findViewById(R.id.check1), getPinVSDialog(), 0);
 				
@@ -5057,8 +5069,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	private void checkMultiVSTGO() {
-		//CMN.Log("checkMultiVSTGO...", ((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled , opt.getVSPanelGOTransient());
-		if(((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled && opt.getVSPanelGOTransient()) {
+		CMN.Log("checkMultiVSTGO...", ((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled , opt.getVSPanelGOTransient());
+		if(((MultiShareActivity)MainActivityUIBase.this).NewIntentCalled && !getPinVSDialog()) {
 			root.postDelayed(()->moveTaskToBack(false), 200);
 			//moveTaskToBack(false);
 		}

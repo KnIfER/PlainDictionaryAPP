@@ -30,8 +30,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 67
-        versionName "5.2"
+        versionCode 68
+        versionName "5.3"
         vectorDrawables.generatedDensities = ['hdpi']
     }
     externalNativeBuild {

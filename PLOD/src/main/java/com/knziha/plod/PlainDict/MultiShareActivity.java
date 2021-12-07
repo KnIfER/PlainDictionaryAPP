@@ -161,12 +161,11 @@ public class MultiShareActivity extends MainActivityUIBase {
 	
 	@Override
 	public void OnPeruseDetached() {
-		CMN.Log("OnPeruseDetached", NewIntentCalled, opt.getVSPanelGOTransient());
-		if(NewIntentCalled && opt.getVSPanelGOTransient()) {
+		if(NewIntentCalled && getPinVSDialog()) {
 			hide();
 		} else {
 			if(allHidden() && (ucc==null||ucc.detached())) {
-				if(NewIntentCalled && opt.getVSPanelGOTransient()) {
+				if(NewIntentCalled && getPinVSDialog()) {
 					finishOrHide();
 				} else {
 					getUcc().setInvoker(null, null, null, debugString);
