@@ -902,7 +902,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		cbar_key=0;
-		bridgedActivity=true;
 		bIsFirstLaunch=false;
 		focused=true;
 		this_instanceof_PDICMainActivity=true;

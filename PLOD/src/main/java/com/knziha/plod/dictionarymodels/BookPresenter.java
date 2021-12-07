@@ -878,24 +878,26 @@ function debug(e){console.log(e)};
 		}
 		//init(getStreamAt(0)); // MLSN
 		
-        File p = fullPath.getParentFile();
-        if(p!=null && p.exists()) {
+		File p = fullPath.getParentFile();
+		if(p!=null && p.exists()) {
 			StringBuilder fName_builder = getCleanDictionaryNameBuilder();
 			int bL = fName_builder.length();
 			/* 外挂同名css */
 			File externalFile = new File(p, fName_builder.append(".css").toString());
-	        if(externalFile.exists()) {
-	        	//todo 插入 同名 css 文件？
-	        }
-	        fName_builder.setLength(bL);
+			if(externalFile.exists()) {
+				//todo 插入 同名 css 文件？
+			}
+			fName_builder.setLength(bL);
 			externalFile = new File(p, fName_builder.append(".png").toString());
 			/* 同名png图标 */
-	        if(externalFile.exists()) {
-	        	cover = Drawable.createFromPath(externalFile.getPath());
-	        }
-        }
-
-        readConfigs(THIS, THIS.prepareHistoryCon());
+			if(externalFile.exists()) {
+				cover = Drawable.createFromPath(externalFile.getPath());
+			}
+		}
+		
+		if(THIS!=null) {
+			readConfigs(THIS, THIS.prepareHistoryCon());
+		}
 	}
 	
 	public static void keepBook(MainActivityUIBase THIS, UniversalDictionaryInterface bookImpl) {
@@ -1973,16 +1975,17 @@ function debug(e){console.log(e)};
 			mWebView.clearIfNewADA(resposibleForThisWeb?null:this); // todo ???
 			mWebView.currentPos=position[0];
 			mWebView.currentRendring=position;
-			mWebView.frameAt = frameAt;
+			if(frameAt>=0) mWebView.frameAt = frameAt;
+			//CMN.Log("折叠？？？", frameAt, mWebView.frameAt, getDictionaryName());
 			mWebView.awaiting = false;
-			if(/*resposibleForThisWeb && */fromCombined
+			if(/*resposibleForThisWeb && */fromCombined && frameAt>=0
 					&& (PDICMainAppOptions.getTmpIsCollapsed(tmpIsFlag) || getAutoFold()
-							|| frameAt>0&&(PDICMainAppOptions.getDelaySecondPageLoading()
-											|| PDICMainAppOptions.getOnlyExpandTopPage()))){/* 自动折叠 */
+							|| /*frameAt>0 && */PDICMainAppOptions.getDelaySecondPageLoading()
+											|| PDICMainAppOptions.getOnlyExpandTopPage() && frameAt+1>=opt.getExpandTopPageNum()    )){/* 自动折叠 */
 				mWebView.awaiting = true;
 				mWebView.setVisibility(View.GONE);
 				setCurrentDis(mWebView, mWebView.currentPos);
-				CMN.Log("折叠！！！");
+				CMN.Log("折叠！！！", mWebView.frameAt);
 				return;
 			}
 		}
@@ -2898,6 +2901,7 @@ function debug(e){console.log(e)};
 	}
 
 	public void unload() {
+		//CMN.Log("unload::", this);
 		if (a!=null && isDirty)
 			saveStates(a, a.prepareHistoryCon());
 		if(mWebView!=null) {

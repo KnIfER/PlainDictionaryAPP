@@ -1,16 +1,17 @@
 package com.knziha.plod.settings;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.SettingsFragmentBase;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.dictionary.Utils.IU;
 
 public class ViewSpecification extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=8;
@@ -18,6 +19,7 @@ public class ViewSpecification extends SettingsFragmentBase implements Preferenc
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mPreferenceId = R.xml.viewpreferences;
 		super.onCreate(savedInstanceState);
 
 		init_switch_preference(this, "ps_audio_key", PDICMainAppOptions.getInPageSearchUseAudioKey(), null, null);
@@ -52,19 +54,14 @@ public class ViewSpecification extends SettingsFragmentBase implements Preferenc
 		init_switch_preference(this, "magny", PDICMainAppOptions.getEtSearchNoMagnifier(), null, null);
 		init_switch_preference(this, "magny2", PDICMainAppOptions.getHackDisableMagnifier(), null, null);
 		init_switch_preference(this, "expand_ao", PDICMainAppOptions.getEnsureAtLeatOneExpandedPage(), null, null);
-		init_switch_preference(this, "expand_top", PDICMainAppOptions.getOnlyExpandTopPage(), null, null);
+		findPreference("expand_top").setOnPreferenceChangeListener(this);
+		
 		init_switch_preference(this, "scranima", PDICMainAppOptions.getScrollAnimation(), null, null);
 		init_switch_preference(this, "scrautex", PDICMainAppOptions.getScrollAutoExpand(), null, null);
 		init_switch_preference(this, "turbo_top", PDICMainAppOptions.getDelaySecondPageLoading(), null, null);
 		init_switch_preference(this, "1toast", PDICMainAppOptions.getRebuildToast(), null, null);
 		init_switch_preference(this, "rtoast", PDICMainAppOptions.getToastRoundedCorner(), null, null);
 
-	}
-
-	//创建
-	@Override
-	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-		addPreferencesFromResource(R.xml.viewpreferences);
 	}
 
 	@Override
@@ -75,6 +72,21 @@ public class ViewSpecification extends SettingsFragmentBase implements Preferenc
 	//配置变化
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
+		String key=preference.getKey();
+		if (newValue instanceof String) {
+			String str = (String) newValue;
+			boolean b1=str.equals("using");
+			boolean b2=!b1&&(str.startsWith("use")&&(str.length()==3||str.endsWith("_not")));
+			//CMN.Log("onPreferenceChange::", b1, b2, str, key);
+			if (b1||b2) {
+				String rtrStr= "use_"+key;
+				if(TextUtils.equals(rtrStr, "use_expand_top")) {
+					if(b1) return PDICMainAppOptions.getOnlyExpandTopPage();
+					PDICMainAppOptions.setOnlyExpandTopPage(str.length()==3);
+					return true;
+				}
+			}
+		}
 		switch (preference.getKey()){
 			case "ps_audio_key":
 				PDICMainAppOptions.setInPageSearchUseAudioKey((Boolean) newValue);
@@ -130,9 +142,6 @@ public class ViewSpecification extends SettingsFragmentBase implements Preferenc
 			break;
 			case "expand_ao":
 				PDICMainAppOptions.setEnsureAtLeatOneExpandedPage((Boolean) newValue);
-			break;
-			case "expand_top":
-				PDICMainAppOptions.setOnlyExpandTopPage((Boolean) newValue);
 			break;
 			case "scranima":
 				PDICMainAppOptions.setScrollAnimation((Boolean) newValue);

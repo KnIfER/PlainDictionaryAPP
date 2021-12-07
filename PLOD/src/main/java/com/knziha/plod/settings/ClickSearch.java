@@ -15,6 +15,7 @@ public class ClickSearch extends SettingsFragmentBase implements Preference.OnPr
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mPreferenceId = R.xml.clicksearchpreferences;
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "coord_view", PDICMainAppOptions.getImmersiveClickSearch(), null, null);
 
@@ -32,12 +33,6 @@ public class ClickSearch extends SettingsFragmentBase implements Preference.OnPr
 		init_switch_preference(this, "switch_nav", PDICMainAppOptions.getSwichClickSearchDictOnNav(), null, null);
 		init_switch_preference(this, "delay_diss", PDICMainAppOptions.getClickSearchDismissDelay(), null, null);
 		init_switch_preference(this, "click_tts", PDICMainAppOptions.getClickSearchAutoReadEntry(), null, null);
-	}
-
-	//创建
-	@Override
-	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-		addPreferencesFromResource(R.xml.clicksearchpreferences);
 	}
 
 	@Override

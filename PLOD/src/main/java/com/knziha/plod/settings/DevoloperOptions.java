@@ -37,6 +37,7 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 	//执行初始化操作
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mPreferenceId = R.xml.devpreferences;
 		nym=new HashMap<>(15);
 		nym.put("ar", "ae");
 		nym.put("zh", "cn");
@@ -263,11 +264,5 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 			
 		}
 		return false;
-	}
-
-	//加载
-	@Override
-	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-		addPreferencesFromResource(R.xml.devpreferences);
 	}
 }

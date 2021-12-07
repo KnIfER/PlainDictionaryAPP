@@ -41,8 +41,8 @@ public class AgentApplication extends Application {
 	public HashSet<String> mdlibsCon;
 	/** 控制所有实例只扫描一遍收藏夹 */
 	public boolean bNeedPullFavorites =true;
-	public ArrayList<BookPresenter> b_md = new ArrayList<>();
-	public ArrayList<BookPresenter> b_filter = new ArrayList<>();
+//	public ArrayList<BookPresenter> b_md = new ArrayList<>();
+//	public ArrayList<BookPresenter> b_filter = new ArrayList<>();
 	/** 退出全部实例时关闭、清理 */
 	ArrayList<MyPair<String, LexicalDBHelper>> AppDatabases = new ArrayList<>();
 	ArrayList<MyPair<String, Long>> AppDatabasesV2 = new ArrayList<>();

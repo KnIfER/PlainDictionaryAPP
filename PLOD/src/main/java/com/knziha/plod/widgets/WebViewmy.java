@@ -1,5 +1,6 @@
 package com.knziha.plod.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Resources;
@@ -45,6 +46,7 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
@@ -55,6 +57,8 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 
 import org.knziha.metaline.Metaline;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,7 +106,14 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
-	public BookPresenter presenter;
+	@SuppressLint("StaticFieldLeak")
+	private static BookPresenter EmptyBook;
+	static {
+		try {
+			EmptyBook = new BookPresenter(new File("empty"), null, 1, null);
+		} catch (IOException ignored) { }
+	}
+	public BookPresenter presenter = EmptyBook;
 	
 	public boolean drawRect;
 	public float highRigkt_X;

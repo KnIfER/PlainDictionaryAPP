@@ -2500,8 +2500,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static long SessionFlag;
 
 	public int mConfigSize = 0;
-	public static int bridgedActivityCount = 0;
-	public boolean bridgedActivity = false;
 	public boolean bShouldCheckApplicationValid = true;
 	
 	public static String byte2HexFormatted(byte[] arr) {
@@ -2560,11 +2558,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ConfigFile.mkdirs();
 
 		AgentApplication app = ((AgentApplication) getApplication());
-		if(bridgedActivity) {
-			bridgedActivityCount = Math.max(bridgedActivityCount+1, 1);
-			md = app.b_md;
-			currentFilter = app.b_filter;
-		}
 		CMN.rt();
 		File fontlibs = new File(opt.getFontLibPath());
 		if(fontlibs.isDirectory()) {
@@ -3318,24 +3311,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void onDestroy(){
 		if(!shunt) {
 			CMN.instanceCount--;
-			if(bridgedActivity){
-				bridgedActivityCount--;
-			}
 			if(systemIntialized) {
 				if(!AutoBrowsePaused || bRequestingAutoReading){ //avoid leak ServiceConnection
 					stopAutoReadProcess();
 				}
-				boolean b1=!bridgedActivity || bridgedActivityCount<=0;
-				if(b1 || this_instanceof_PDICMainActivity) {
-					for (BookPresenter mdTmp : md) {
-						if (mdTmp != null) {
-							mdTmp.unload();
-						}
-					}
-					if(b1) {
-						md.clear();
+				for (BookPresenter mdTmp : mdict_cache.values()) {
+					if (mdTmp != null) {
+						mdTmp.unload();
 					}
 				}
+				mdict_cache.clear();
 				if(webSingleholder!=null) {
 					webSingleholder.removeAllViews();
 					webholder.removeAllViews();
@@ -4197,7 +4182,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					cb.toggle();
 					boolean val = cb.isChecked();
 					if(id==R.id.check1) {
-						setPinVSDialog(val);
+						if(this_instanceof_MultiShareActivity) opt.setPinVSDialog(val);
+						else  opt.setPinDialog(val);
 					} else if(id==R.id.check2){
 						opt.setRememberVSPanelGo(val);
 					} else {
@@ -4449,7 +4435,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					PreferredToolId = (int) id;
 					if(isUserClick) {
 						if(!isLongClicked && this_instanceof_MultiShareActivity && opt.getRememberVSPanelGo()) {
-							//opt.putLastVSGoNumber(position);//todo
+							opt.putLastVSGoNumber(PreferredToolId);
 						}
 					}
 					switch (PreferredToolId) {//xx
@@ -4633,7 +4619,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(cb!=null) {
 						if(!cb.isChecked())
 							dissmisstype=1;
-						if(dissmisstype==1 || dissmisstype==2&&!getPinVSDialog()) {
+						if(dissmisstype==1 || dissmisstype==2 && !getPinVSDialog()) {
 							if(this_instanceof_MultiShareActivity) {
 								d.setOnDismissListener(null);
 								d.dismiss();
@@ -5066,12 +5052,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}:null);
 	}
 	
-	protected boolean getPinVSDialog() {
-		return opt.getPinDialog();
-	}
-	
-	protected void setPinVSDialog(boolean val) {
-		opt.setPinDialog(val);
+	public boolean getPinVSDialog() {
+		return this_instanceof_MultiShareActivity?opt.getPinVSDialog():opt.getPinDialog();
 	}
 	
 	private void checkMultiVSTGO() {
@@ -7694,9 +7676,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			
 			/* 延迟加载 */
-			if(from==1 && PDICMainAppOptions.getDelaySecondPageLoading() && !PDICMainAppOptions.getOnlyExpandTopPage()){
+			if(from==1 && PDICMainAppOptions.getDelaySecondPageLoading() && !(PDICMainAppOptions.getOnlyExpandTopPage() && mWebView.frameAt+1>=opt.getExpandTopPageNum()) ){
 				int next = fastFrameIndexOf(webholder, mWebView, mWebView.frameAt) + 1;
-				//CMN.Log("/* 延迟加载 */ ?????? ", next, webholder.getChildCount());
+				//CMN.Log("/* 延迟加载 */ ?????? ", next, webholder.getChildCount(), PDICMainAppOptions.getOnlyExpandTopPage(), mWebView.frameAt, opt.getExpandTopPageNum());
  				if(next < webholder.getChildCount()){
 					View childAt;
 					try {

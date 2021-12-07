@@ -15,6 +15,7 @@ public class HistoryPreference extends SettingsFragmentBase implements Preferenc
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mPreferenceId = R.xml.historypreferences;
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "rc_nothing", PDICMainAppOptions.getHistoryStrategy0(), null, null);
 		
@@ -28,13 +29,7 @@ public class HistoryPreference extends SettingsFragmentBase implements Preferenc
 		
 		init_number_info_preference(this, "rc_slide", PDICMainAppOptions.getHistoryStrategy8(), R.array.record_slide_info, null);
 	}
-
-	//创建
-	@Override
-	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-		addPreferencesFromResource(R.xml.historypreferences);
-	}
-
+	
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		return false;

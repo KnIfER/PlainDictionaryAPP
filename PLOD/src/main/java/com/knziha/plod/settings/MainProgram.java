@@ -20,6 +20,7 @@ import java.io.File;
 public class MainProgram extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mPreferenceId = R.xml.preferences;
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null);
 		init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null);
@@ -40,12 +41,6 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 		findPreference("vspec").setOnPreferenceClickListener(this);
 	}
 	
-	//创建
-	@Override
-	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-		addPreferencesFromResource(R.xml.preferences);
-	}
-
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		int fragmentId=-1;

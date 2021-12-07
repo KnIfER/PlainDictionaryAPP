@@ -111,11 +111,17 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public void putLastVSGoNumber(int position) {
-		defaultReader.edit().putInt("VSGo", position).apply();
+		if(getLastVSGoNumber()!=position) {
+			defaultReader.edit().putInt("VSGo", position).apply();
+		}
 	}
 	
 	public int getLastVSGoNumber() {
 		return defaultReader.getInt("VSGo", -1);
+	}
+	
+	public int getExpandTopPageNum() {
+		return defaultReader.getInt("expand_top", 3);
 	}
 	
 	public String getLastPlanName(String key) {
@@ -2189,10 +2195,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	@Metaline(flagPos=54) public boolean getRememberVSPanelGo(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=54) public void setRememberVSPanelGo(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	
 	@Metaline(flagPos=55) public boolean getVSPanelGOTransient(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=55) public void setVSPanelGOTransient(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=56, shift=1) public boolean getPinDialog_2(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=56, shift=1) public void setPinDialog_2(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=56, shift=1) public boolean getPinVSDialog(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=56, shift=1) public void setPinVSDialog(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
 	@Metaline(flagPos=57, shift=1) public boolean getPrvNxtDictSkipNoMatch(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	

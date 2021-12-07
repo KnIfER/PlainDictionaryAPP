@@ -23,6 +23,7 @@ public class ServerPreference extends SettingsFragmentBase implements Preference
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mPreferenceId = R.xml.serverpreferences;
 		super.onCreate(savedInstanceState);
 		findPreference("mdccsp").setOnPreferenceClickListener(this);
 		
@@ -41,14 +42,7 @@ public class ServerPreference extends SettingsFragmentBase implements Preference
 		item = findPreference("black_list");
 		item.getParent().removePreference(item);
 	}
-
-
-	//创建
-	@Override
-	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-		addPreferencesFromResource(R.xml.serverpreferences);
-	}
-
+	
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		switch (preference.getKey()){

@@ -136,12 +136,14 @@
 			android:title="保证至少有一项展开"
 			app:allowDividerBelow="true"
 			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+		<com.knziha.filepicker.settings.IntPreference
 			android:key="expand_top"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="仅展开第一项"
+			android:persistent="true"
+			android:defaultValue="3"
+			android:title="仅展开前几项 : "
+			app:inlineSummary="true"
 			app:allowDividerBelow="true"
+			app:hasCheck="true"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="scranima"

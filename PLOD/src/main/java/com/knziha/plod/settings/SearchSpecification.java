@@ -15,6 +15,7 @@ public class SearchSpecification extends SettingsFragmentBase implements Prefere
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mPreferenceId = R.xml.searchpreferences;
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "enable_regex1", PDICMainAppOptions.getUseRegex1(), null, null);
 		init_switch_preference(this, "enable_regex2", PDICMainAppOptions.getUseRegex2(), null, null);
@@ -30,12 +31,6 @@ public class SearchSpecification extends SettingsFragmentBase implements Prefere
 		init_switch_preference(this, "use_wildcard2", PDICMainAppOptions.getInPageSearchUseWildcard(), null, null);
 		init_switch_preference(this, "use_morph", PDICMainAppOptions.getSearchUseMorphology(), null, null);
 		findPreference("vspec").setOnPreferenceClickListener(this);
-	}
-
-	//创建
-	@Override
-	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-		addPreferencesFromResource(R.xml.searchpreferences);
 	}
 
 	@Override

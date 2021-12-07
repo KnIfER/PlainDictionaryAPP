@@ -6,12 +6,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Message;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,17 +17,11 @@ import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
-import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.PlainMdictAsset;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.widgets.CheckableImageView;
-import com.knziha.plod.widgets.ScrollViewmy;
-import com.knziha.plod.widgets.SplitPadView;
-import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.Utils;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileReader;
@@ -91,8 +82,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	protected void onCreate(Bundle savedInstanceState) {
 		CMN.Log("onCreate...");
 		receivable=
-		bridgedActivity=
-		this_instanceof_MultiShareActivity=true;
+		this_instanceof_MultiShareActivity = true;
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main_share);
@@ -140,10 +130,10 @@ public class MultiShareActivity extends MainActivityUIBase {
 		ucc = getUcc();
 		ucc.setInvoker(null, null, null, debugString);
 		int VSGO=opt.getRememberVSPanelGo()?opt.getLastVSGoNumber():-1;
-		VSGO=-1;
+		//VSGO=-1;
 		if(VSGO>=0) {
 			supressNxtPauseLis = true;
-			ucc.onItemClick(null, null, VSGO, 0, false, false);
+			ucc.onItemClick(null, null, 0, VSGO, false, false);
 		} else {
 			ucc.onClick(null);
 		}
@@ -172,11 +162,11 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	public void OnPeruseDetached() {
 		CMN.Log("OnPeruseDetached", NewIntentCalled, opt.getVSPanelGOTransient());
-		if(NewIntentCalled&&opt.getVSPanelGOTransient()) {
+		if(NewIntentCalled && opt.getVSPanelGOTransient()) {
 			hide();
 		} else {
 			if(allHidden() && (ucc==null||ucc.detached())) {
-				if(NewIntentCalled&&opt.getVSPanelGOTransient()) {
+				if(NewIntentCalled && opt.getVSPanelGOTransient()) {
 					finishOrHide();
 				} else {
 					getUcc().setInvoker(null, null, null, debugString);
@@ -196,8 +186,10 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	public void RestoreUccOrExit(int force) {
-		if(allHidden() && (ucc==null||ucc.detached()) && (PeruseView==null||PeruseView.isWindowDetached())) {
-			if(NewIntentCalled&&opt.getVSPanelGOTransient()) {
+		if(allHidden()
+				&& (ucc==null||ucc.detached())
+				&& (PeruseView==null||PeruseView.isWindowDetached())) {
+			if(NewIntentCalled && !getPinVSDialog()) {
 				if(force==0) {
 					finishOrHide();
 					CMN.Log("hide!!!");
@@ -334,7 +326,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	protected void onPause() {
 		super.onPause();
 		startLis = true;
-		CMN.Log("onPause");
+		CMN.Log("MultiShare::onPause");
 		NewIntentCalled = false;
 		checkFlags();
 	}
@@ -342,8 +334,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		CMN.Log("onResume", NewIntentCalled, systemIntialized&&startLis);
-		CMN.Log("onResume", allHidden() , (ucc==null||ucc.detached()),  (PeruseView==null||PeruseView.isWindowDetached()));
+		CMN.Log("onResume", "NewIntentCalled="+NewIntentCalled, systemIntialized&&startLis);
+		CMN.Log("onResume", "allHidden="+allHidden() , (ucc==null||ucc.detached()),  (PeruseView==null||PeruseView.isWindowDetached()));
 		if(!NewIntentCalled && systemIntialized && startLis) {
 			//RestoreUccOrExit(1);
 			if(allHidden() && (ucc==null||ucc.detached()) && (PeruseView==null||PeruseView.isWindowDetached())) {
@@ -366,17 +358,18 @@ public class MultiShareActivity extends MainActivityUIBase {
 	protected void onStop() {
 		super.onStop();
 		NewIntentCalled = false;
-		CMN.Log("onStop");
+		CMN.Log("MultiShare::onStop");
 	}
 	
 	@Override
 	protected void onRestart() {
 		super.onRestart();
-		CMN.Log("onRestart");
+		CMN.Log("MultiShare::onRestart");
 	}
 	
 	@Override
 	protected void onDestroy() {
+		CMN.Log("MultiShare::onDestroy");
 		receivable=false;
 		super.onDestroy();
 	}
@@ -528,15 +521,5 @@ public class MultiShareActivity extends MainActivityUIBase {
 				RestoreUccOrExit(0);
 			break;
 		}
-	}
-	
-	@Override
-	protected boolean getPinVSDialog() {
-		return opt.getPinDialog_2();
-	}
-	
-	@Override
-	protected void setPinVSDialog(boolean val) {
-		opt.setPinDialog_2(val);
 	}
 }
