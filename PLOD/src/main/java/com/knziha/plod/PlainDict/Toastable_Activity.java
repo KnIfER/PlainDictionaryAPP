@@ -83,6 +83,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected long QFStamp;
 	protected long VFStamp;
 	protected long layoutFlagStamp;
+	public int MainAppBackground;
 	public int MainBackground;
 	public int AppBlack;
 	public int AppWhite;
@@ -149,7 +150,8 @@ public class Toastable_Activity extends AppCompatActivity {
 			   PDICMainAppOptions.uncheckVersionBefore_4_9(true); // revert & recycle the flag bits
 		   }
 		   if (PDICMainAppOptions.checkVersionBefore_5_2())
-		   { // 强制数据库2.0
+		   {
+			   //CMN.Log("强制数据库2.0");
 			   opt.setUseDatabaseV2(true);
 			   PDICMainAppOptions.uncheckVersionBefore_5_2(false);
 		   }
@@ -228,6 +230,7 @@ public class Toastable_Activity extends AppCompatActivity {
 							byte[] buffer = new byte[Math.min((int) log.length(), 4096)];
 							int len = new FileInputStream(log).read(buffer);
 							String message=new String(buffer,0,len);
+							CMN.Log(message);
 							launching[0]=true;
 							setStatusBarColor(getWindow(), Constants.DefaultMainBG);
 							new androidx.appcompat.app.AlertDialog.Builder(this)
@@ -469,6 +472,11 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 	
 	protected void further_loading(Bundle savedInstanceState) {
+		
+//if(true) { // 测试调试混淆信息
+//	savedInstanceState.putInt("test", 1/DockerMarginR);
+//}
+		
 		scanSettings();
 	}
    

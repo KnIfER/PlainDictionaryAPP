@@ -2,6 +2,7 @@ package com.knziha.plod.widgets;
 
 import android.app.Activity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.WrapperListAdapter;
@@ -131,5 +132,10 @@ public class ViewUtils {
 		} else if (adapter instanceof WrapperListAdapter) {
 			notifyDataSetChanged(((WrapperListAdapter) adapter).getWrappedAdapter());
 		}
+	}
+	
+	public static void addOnLayoutChangeListener(View view, View.OnLayoutChangeListener layoutChangeListener) {
+		if (layoutChangeListener!=null)
+			view.addOnLayoutChangeListener(layoutChangeListener);
 	}
 }

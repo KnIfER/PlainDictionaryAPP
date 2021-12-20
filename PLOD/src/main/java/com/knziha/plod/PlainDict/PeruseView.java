@@ -86,6 +86,7 @@ import db.MdxDBHelper;
 import static android.view.View.FOCUSABLE_AUTO;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
+import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.plaindict.PDICMainActivity.ResizeNavigationIcon;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
@@ -875,7 +876,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		widget10=ContentbarBtns[3];
 		widget11=ContentbarBtns[4];
 		
-		if(a.this_instanceof_MultiShareActivity) {
+		if(a.thisActType==ActType.MultiShareActivity) {
 			a.widget10 = widget10;
 		}
 		

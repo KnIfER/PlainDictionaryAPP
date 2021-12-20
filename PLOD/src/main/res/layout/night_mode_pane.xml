@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.knziha.plod.widgets.SwipeBackLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	>
+	<FrameLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		>
+
+		<com.knziha.plod.widgets.DarkToggleButton
+			android:id="@+id/dayNightArt"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_gravity="center"
+			/>
+
+		<TextView
+			android:id="@+id/dayNightBtn"
+			android:text="切换黑暗模式"
+			android:textSize="35dp"
+			android:shadowColor="@color/colorPrimary"
+			android:shadowDx="0.2"
+			android:shadowDy="0.2"
+			android:shadowRadius="1.3"
+			android:layout_width="280dp"
+			android:layout_height="150dp"
+			android:layout_marginBottom="60dp"
+			android:textColor="#fff"
+			android:layout_gravity="center|bottom"
+			android:background="@drawable/frame_bg"
+			android:gravity="center"
+			android:elevation="100dp"
+			/>
+
+	</FrameLayout>
+</com.knziha.plod.widgets.SwipeBackLayout>

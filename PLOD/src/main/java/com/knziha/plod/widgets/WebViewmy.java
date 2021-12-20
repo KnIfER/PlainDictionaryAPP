@@ -28,6 +28,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.AccelerateInterpolator;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 
 import android.webkit.WebView;
@@ -46,7 +47,6 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
@@ -64,6 +64,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListener {
 	public long currentPos;
@@ -103,6 +104,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public FlowTextView toolbar_title;
 	public int AlwaysCheckRange;
 	public boolean forbidLoading;
+	public boolean active;
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
@@ -121,6 +123,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public float highRigkt_R;
 	public float highRigkt_B;
 	public static boolean supressNxtClickTranslator;
+	
+	private final SIDProvider mSimpleIdentifier = new SIDProvider();
 	
 	View scrollRect;
 	ScrollAbility mScrollAbility;
@@ -194,6 +198,17 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		
 		//setLayerType(View.LAYER_TYPE_HARDWARE, null);
 		webScale=GlobalOptions.density;
+		
+		
+		removeJavascriptInterface("searchBoxJavaBridge_");
+		removeJavascriptInterface("accessibility");
+		removeJavascriptInterface("accessibilityTraversal");
+		
+		addJavascriptInterface(mSimpleIdentifier, "sid");
+	}
+	
+	public long getSimpleIdentifier() {
+		return mSimpleIdentifier.get();
 	}
 	
 	public int getContentHeight(){
@@ -614,7 +629,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				}
 			} return false;
 			case R.id.toolbar_action3:{//TTS
-				evaluateJavascript("if(window.app)app.ReadText(''+window.getSelection())",null);
+				evaluateJavascript("if(window.app)app.ReadText(sid.get(), ''+window.getSelection())",null);
 			} return false;
 		}
 		if (mode!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -1193,15 +1208,22 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-		if(drawRect){
-			float scale = webScale/ BookPresenter.def_zoom;
-			//float roundVal = 10*GlobalOptions.density*scale;
-			canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale, Utils.getRectPaint());
+		if(drawRect&&!presenter.getDrawHighlightOnTop()){
+			drawHighlightRect(canvas);
 		}
 		super.onDraw(canvas);
 		if (hasWidgets) {
 			widgetsLayout.layoutWidgets();
 		}
+		if(drawRect&&presenter.getDrawHighlightOnTop()){
+			drawHighlightRect(canvas);
+		}
+	}
+	
+	private void drawHighlightRect(Canvas canvas) {
+		float scale = webScale/ BookPresenter.def_zoom;
+		//float roundVal = 10*GlobalOptions.density*scale;
+		canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale, Utils.getRectPaint());
 	}
 	
 	/** WebView内布局，无视网页总长，与WebView保持恒定大小 */
@@ -1366,6 +1388,16 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				}
 			}
 		}
+	}
+	
+	private static class SIDProvider{
+		final static Random rand = new Random(28517);
+		final long mSimpleIdentifier;
+		SIDProvider() {
+			this.mSimpleIdentifier = ((CMN.now()&0xFFFFL)<<32)|(long)rand.nextInt(Integer.MAX_VALUE/2);
+		}
+		@JavascriptInterface
+		public long get(){return mSimpleIdentifier;}
 	}
 	
 	// 显示滚动按钮框

@@ -33,6 +33,7 @@ android {
         versionCode 68
         versionName "5.3"
         vectorDrawables.generatedDensities = ['hdpi']
+        multiDexEnabled true
     }
     externalNativeBuild {
         cmake {
@@ -51,7 +52,7 @@ android {
             buildConfigField "boolean","isDebug","true"
         }
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
             buildConfigField "boolean","isDebug","false"
         }
@@ -85,8 +86,8 @@ dependencies {
         exclude module:"core"
     }
     //api 'org.jruby.joni:joni:2.1.30'
-    api 'org.jruby.jcodings:jcodings:1.0.45'
-
+    //api 'org.jruby.jcodings:jcodings:1.0.55'
+    //implementation 'com.android.support:support-dynamic-animation:27.1.1'
     api 'org.anarres.lzo:lzo-core:1.0.6'
     api project(path: ':viewpager')
     api project(path: ':GestureView')
@@ -147,5 +148,6 @@ dependencies {
     }
     implementation 'org.jetbrains:annotations:15.0'
 
+    implementation "io.noties.markwon:core:4.5.0"
     //api ('com.github.barteksc:pdfium-android:1.9.0')
 }

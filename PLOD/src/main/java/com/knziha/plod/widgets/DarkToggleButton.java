@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
-import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Region;
@@ -68,6 +67,12 @@ public class DarkToggleButton extends View {
 	
 	Drawable drawableCloud;
 	Bitmap bmCloud;
+	private boolean bAnimationSuppressed;
+	
+	public interface AnimationUpdateListener {
+		void onAnimationUpdate(float progress);
+	}
+	AnimationUpdateListener animatorListener;
 	
 	/** 弹簧插值器。
 	 * https://blog.csdn.net/l474297694/article/details/79916864
@@ -95,7 +100,7 @@ public class DarkToggleButton extends View {
 	/** 记录动画开始时间 */
 	private long animatorTime;
 	/** 动画时长 */
-	private long duration = 1500;
+	private long duration = 1720;
 	
 	/** 随机数生成器 */
 	private Random rand = new Random(28517);
@@ -140,7 +145,7 @@ public class DarkToggleButton extends View {
 	}
 	
 	/** 切换日月状态，并开始播放动画。 */
-	public void toggle() {
+	public void toggle(boolean animate) {
 		stateIsSun = !stateIsSun;
 		// 根据日月状态，设置插值终点。
 		if (stateIsSun) {
@@ -164,10 +169,15 @@ public class DarkToggleButton extends View {
 		for (int i = 0; i < 8; i++) {
 			targetValues[BasicPropsNum+i] = val;
 		}
-		// 拷贝当前状态数值，作为插值起点。
-		System.arraycopy(values, 0, lastValues, 0, animatePropsCnt);
-		animating=true;
-		animatorTime = System.currentTimeMillis();
+		if (animate) {
+			// 拷贝当前状态数值，作为插值起点。
+			System.arraycopy(values, 0, lastValues, 0, animatePropsCnt);
+			animating = true;
+			animatorTime = System.currentTimeMillis();
+		} else {
+			System.arraycopy(targetValues, 0, values, 0, animatePropsCnt);
+			animating = false;
+		}
 		invalidate();
 	}
 	
@@ -189,14 +199,14 @@ public class DarkToggleButton extends View {
 		if(R==0) R=W/2;
 		int CX = (int) (W*0.25f);
 		int CY = (int) (H*0.25f);
-		
+		//CMN.Log("DarkToggleButton::onDraw::", CMN.now(), W, H);
 		// 天空渐变色
 		canvas.drawColor(Color.BLACK);
 		bgPaint.setAlpha((int) Math.max(0, Math.min(255, values[skyAlpha])));
 		canvas.drawRect(0, 0, W, H, bgPaint);
 		
 		// 绘制星空
-		rand.setSeed(seed); // 重设随机数生成器
+		rand.setSeed(seed); // 重设随机数生成器n
 		float cloudAlphaVal = Math.max(0, values[cloudAlpha]);
 		float starDensityVal = 1-cloudAlphaVal;
 		if (starDensityVal>0) {
@@ -293,6 +303,9 @@ public class DarkToggleButton extends View {
 		long now = System.currentTimeMillis();
 		long elapsed = now - animatorTime;
 		progress = Math.min(1, elapsed*1.f/duration);
+		if(animatorListener!=null) {
+			animatorListener.onAnimationUpdate(progress/springStopFactor);
+		}
 		if(elapsed>=duration || progress>=springStopFactor) animating = false;
 		float interp = springInterpolator.getInterpolation(progress);
 		boolean toSun = stateIsSun;
@@ -312,9 +325,33 @@ public class DarkToggleButton extends View {
 				values[idx] =  Math.min(1, (1-interp)*lastValues[idx] + interp*targetValues[idx]);
 			}
 		}
-		if (animating) {
+		if (animating && !bAnimationSuppressed) {
 			// onDraw中触发重绘。应该比直接invalidate更节省性能，类比于js的requestAnimationFrame和setTimeout。
 			postInvalidateOnAnimation();
 		}
+	}
+	
+	/** 动画进度监听器。比如切换到一半的时候可以作些什么事情。 */
+	public void setAnimationListener(AnimationUpdateListener animatorListener_) {
+		animatorListener = animatorListener_;
+	}
+	
+	/** 获取当前状态。 */
+	public boolean stateIsNightMode() {
+		return !stateIsSun;
+	}
+	
+	/** 停止动画，跳转至结束状态。 */
+	public void abortAnimation() {
+		if (animating) {
+			System.arraycopy(targetValues, 0, values, 0, animatePropsCnt);
+			animating=false;
+			invalidate();
+		}
+		bAnimationSuppressed = false;
+	}
+	
+	public void stopAnimation() {
+		bAnimationSuppressed = true;
 	}
 }

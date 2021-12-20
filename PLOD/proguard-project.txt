@@ -4,14 +4,15 @@
 
 -keep class com.google.android.material.** {*;}
 -keep class androidx.** {*;}
--keep public class * extends androidx.**
+#-keep public class * extends androidx.**
 -keep interface androidx.** {*;}
 -dontwarn com.google.android.material.**
 -dontnote com.google.android.material.**
 -dontwarn androidx.**
 
--keep class com.knziha.** {*;}
+#-keep class com.knziha.** {*;}
 
-#-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+-keepattributes SourceFile,LineNumberTable
 #-keepattributes Exceptions,InnerClasses,Signature
 #-keepattributes SourceFile,LineNumberTable

@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,7 @@ import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.XYLinearLayout;
 
 public class SettingsPanel extends AnimatorListenerAdapter implements View.OnClickListener {
-	public ViewGroup settingsLayout;
+	@NonNull public ViewGroup settingsLayout;
 	public LinearLayout linearLayout;
 	protected boolean bIsShowing;
 	protected int bottomPadding;
@@ -35,6 +36,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected boolean isHorizontal;
 	protected boolean shouldWrapInScrollView = true;
 	protected boolean bShouldRemoveAfterDismiss = true;
+	protected boolean bSuppressNxtAnimation = false;
 	protected boolean hasDelegatePicker;
 	protected boolean showInPopWindow;
 	public PopupWindow pop;
@@ -46,10 +48,21 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected int mItemPaddingLeft=5;
 	protected int mItemPaddingTop=8;
 	protected int mItemPaddingBottom=8;
+	// 0=menu grid; 1=quick settings;
+	protected int mBackgroundColorType;
 	protected int mBackgroundColor = 0xefffffff;
 	protected int mViewAttachIdx = -1;
 	protected SettingsPanel parent;
 	private SettingsPanel parentToDismiss;
+	
+	public void setPresetBgColorType(int type) {
+		mBackgroundColorType = type;
+		if (type==0) {
+			mBackgroundColor = GlobalOptions.isDark?Color.TRANSPARENT:0x20FFEEEE; // 0x3E8F8F8F
+		} else if(type==1) {
+			mBackgroundColor = GlobalOptions.isDark?0xef333333:0xefffffff; // 0x3E8F8F8F
+		}
+	}
 	
 	public void setEmbedded(ActionListener actionListener){
 		mPaddingLeft = 15;
@@ -248,6 +261,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 			int[] tags_group = UITags[i];
 			if(group[0]!=null) { // 需显示标题
 				TextView groupTitle = new TextView(context, null, 0);
+				if(GlobalOptions.isDark) groupTitle.setTextColor(Color.WHITE);
 				//groupTitle.setTextAppearance(android.R.attr.textAppearanceLarge);
 				groupTitle.setText(group[0]);
 				groupTitle.setPadding((int) (2*density), (int) (8*density), 0, (int) (8*density));
@@ -255,6 +269,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 			}
 			for (int j = 1; j < group.length; j++) { // 建立子项
 				RadioSwitchButton button = new RadioSwitchButton(context);
+				if(GlobalOptions.isDark) button.setTextColor(Color.WHITE);
 				button.setText(group[j]);
 				button.setButtonDrawable(R.drawable.radio_selector);
 				button.setPadding((int) (mItemPaddingLeft*density), (int) (mItemPaddingTop*density), 0, (int) (mItemPaddingBottom*density));
@@ -327,16 +342,26 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 			targetAlpha = 0;
 			targetTrans = bottomPadding;
 		}
-		ViewPropertyAnimator animator = settingsLayout.animate().alpha(targetAlpha);
-		if (isHorizontal) {
-			animator.translationX(targetTrans);
+		if (bSuppressNxtAnimation) {
+			if (isHorizontal) {
+				settingsLayout.setTranslationX(targetTrans);
+			} else {
+				settingsLayout.setTranslationY(targetTrans);
+			}
+			onAnimationEnd(null);
+			bSuppressNxtAnimation = false;
 		} else {
-			animator.translationY(targetTrans);
+			ViewPropertyAnimator animator = settingsLayout.animate().alpha(targetAlpha);
+			if (isHorizontal) {
+				animator.translationX(targetTrans);
+			} else {
+				animator.translationY(targetTrans);
+			}
+			animator.setDuration(220)
+					.setListener(this)
+			//.start()
+			;
 		}
-		animator.setDuration(220)
-				.setListener(this)
-				//.start()
-		;
 		if (!bIsShowing) {
 			onDismiss();
 		} else if (parentToDismiss!=null) {

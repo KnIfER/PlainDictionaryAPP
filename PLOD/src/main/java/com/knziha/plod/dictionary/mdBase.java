@@ -927,6 +927,7 @@ public abstract class mdBase {
 		return "";
 	}
 
+	// todo 分块加载 stream
 	public ByteArrayInputStream getResourseAt(int position) throws IOException {
 		RecordLogicLayer va1=new RecordLogicLayer();
 		getRecordData(position, va1);

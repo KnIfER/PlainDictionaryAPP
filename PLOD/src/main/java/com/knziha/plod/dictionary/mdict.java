@@ -917,8 +917,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		split_recs_thread_number = split_keys_thread_number>16?6:split_keys_thread_number;
 		//split_recs_thread_number = Runtime.getRuntime().availableProcessors();
 		final int thread_number = Math.min(Runtime.getRuntime().availableProcessors()/2*2+2, split_keys_thread_number);
-		//SU.Log("fatal_","split_recs_thread_number"+split_recs_thread_number);
-		//SU.Log("fatal_","thread_number"+thread_number);
+		SU.Log("fatal_","split_recs_thread_number"+split_recs_thread_number);
+		SU.Log("fatal_","thread_number"+thread_number);
 
 		final int step = (int) (_num_record_blocks/split_recs_thread_number);
 		final int yuShu=(int) (_num_record_blocks%split_recs_thread_number);

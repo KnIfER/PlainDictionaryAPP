@@ -310,5 +310,6 @@
 			android:layout_marginBottom="45dip"
 			/>
 	</RelativeLayout>
+
 </FrameLayout>
 </layout>

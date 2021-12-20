@@ -94,7 +94,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -109,7 +108,7 @@ import static db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
 import static db.LexicalDBHelper.TABLE_BOOK_v2;
 
 /*
- UI side of mdict
+ UI side of books / dictionaries
  date:2018.07.30
  author:KnIfER
 */
@@ -129,30 +128,170 @@ public class BookPresenter
 	public final static String js="SUBPAGE";
 	
 	/** const w=window;
-	 	w.addEventListener('load',wrappedOnLoadFunc,false);
-		w.addEventListener('click',wrappedClickFunc);
-		w.addEventListener('touchstart',wrappedOnDownFunc);
-		function wrappedOnLoadFunc(){
+		var LoadMark, frameAt;
+		function _log(...e){console.log('fatal web::',e)};
+	 	w.addEventListener('load',()=>{
+			//_log('wrappedOnLoadFunc...');
 			var ws = w.document.body.style;
-			console.log('mdpage loaded dark:'+(w.rcsp&0x40));
+			_log('mdpage loaded dark:'+(w.rcsp&0x40));
 	 		document.body.contentEditable=!1;
-	 		highlight(null);
+	 		_highlight(null);
 			var vi = document.getElementsByTagName('video');
 			for(var i=0;i<vi.length;i++){if(!vi[i]._fvwhl){vi[i].addEventListener("webkitfullscreenchange", wrappedFscrFunc, false);vi[i]._fvwhl=1;}}
+		},false);
+		function _highlight(keyword){
+			var b1=keyword==null;
+			if(b1)
+				keyword=app.getCurrentPageKey();
+			if(keyword==null||b1&&keyword.trim().length==0)
+				return;
+			if(!LoadMark) {
+	 			function cb(){LoadMark=1;highlight(keyword);}
+				try{loadJs('mdbr://markloader.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'markloader.js');}
+			} else highlight(keyword);
 		}
 	 	function wrappedFscrFunc(e){
-			//console.log('begin fullscreen!!!');
+			//_log('begin fullscreen!!!');
 			var se = e.srcElement;
 			//if(se.webkitDisplayingFullscreen&&app) app.onRequestFView(se.videoWidth, se.videoHeight);
 			if(app)se.webkitDisplayingFullscreen?app.onRequestFView(se.videoWidth, se.videoHeight):app.onExitFView()
 		}
-		function wrappedOnDownFunc(e){
-	 		//console.log('fatal wrappedOnDownFunc');
+		w.addEventListener('touchstart',(e)=>{
+	 		//_log('fatal wrappedOnDownFunc');
 	 		if(!w._touchtarget_lck && e.touches.length==1){
 	 			w._touchtarget = e.touches[0].target;
 	 		}
-			//console.log('fatal wrappedOnDownFunc' +w._touchtarget);
+			//_log('fatal wrappedOnDownFunc' +w._touchtarget);
+		});
+		function loadJs(url,callback){
+			var script=document.createElement('script');
+			script.type="text/javascript";
+			if(typeof(callback)!="undefined"){
+				script.onload=function(){
+					callback();
+				}
+			}
+			script.src=url;
+			document.body.appendChild(script);
 		}
+	 */
+	@Metaline()
+	public final static byte[] jsBytes=SU.EmptyBytes;
+	
+	/** if(!(w.rcsp&0xF00)){w.addEventListener('click',(e)=>{
+	 		//_log('wrappedClickFunc', e.srcElement.id);
+	 		var curr=e.srcElement;
+	 		if(w.webx){
+				if(curr.tagName=='IMG'){
+					var img=curr;
+					if(img.src && !img.onclick && !(img.parentNode&&img.parentNode.tagName=="A")){
+						var lst = [];
+						var current=0;
+						var all = document.getElementsByTagName("img");
+						for(var i=0;i<all.length;i++){
+							if(all[i].src){
+								lst.push(all[i].src);
+								if(all[i]==img)
+									current=i;
+							}
+						}
+						if(lst.length==0)
+							lst.push(img.src);
+						app.openImage(current, e.offsetX/img.offsetWidth, e.offsetY/img.offsetHeight, lst);
+					}
+				}
+				else if(curr.tagName=='A'){
+					//_log('fatal in wcl : '+curr.href);
+					var href=curr.href+'';
+					if(curr.href && href.startsWith('file:///#')){
+						curr.href='entry://#'+href.substring(9);
+						return false;
+					}
+	 			}
+			}
+			_log('popuping...', w.rcsp);
+			if(curr!=document.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && w.rcsp&0x20 && !curr.noword){
+	 			if(w._NWP) {
+	 				var p=curr; while((p=p.parentElement))
+	 				if(_NWP.indexOf(p)>=0) break;
+	 			}
+	 			if(w._YWPC) {
+	 				var p=curr; while((p=p.parentElement))
+	 				if(_YWPC.indexOf(p.className)>=0) break;
+	 				if(!p) return;
+	 			}
+				//todo document.activeElement.tagName
+				var s = w.getSelection();
+				if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
+					s.modify('extend', 'forward', 'word'); // first attempt
+					var an=s.anchorNode;
+					//_log(s.anchorNode); _log(s);
+					//if(true) return;
+
+					if(s.baseNode != document.body) {// immunize blank area
+						var text=s.toString(); // for word made up of just one character
+						var range = s.getRangeAt(0);
+	 
+						var rrect = range.getBoundingClientRect();
+	 					var pX = rrect.x;
+	 					var pY = rrect.y;
+	 					var pW = rrect.width;
+	 					var pH = rrect.height;
+	 					var cprY = e.clientY;
+	 					var cprX = e.clientX;
+
+						if(1||(cprY>pY-5 && cprY<pY+pH+5 && cprX>pX-5 && cprX<pX+pW+15)){
+							s.collapseToStart();
+							s.modify('extend', 'forward', 'lineboundary');
+		 
+							if(s.toString().length>=text.length){
+								s.empty();
+								s.addRange(range);
+	
+								s.modify('move', 'backward', 'word'); // now could noway be next line
+								s.modify('extend', 'forward', 'word');
+	
+								var range1 = s.getRangeAt(0);
+								if(range1.endContainer===range.endContainer&&range1.endOffset===range.endOffset){
+									// for word made up of multiple character
+									text=s.toString();
+									rrect = range1.getBoundingClientRect();
+									pX = rrect.x;
+									pY = rrect.y;
+									pW = rrect.width;
+									pH = rrect.height;
+								}
+	 
+								//网页内部的位置，与缩放无关
+								//_log(rrect);
+								_log(pX+' ~~ '+pY+' ~~ '+pW+' ~~ '+pH);
+								_log(cprX+' :: '+cprY);
+	 
+								_log(text); // final output
+								if(app){
+									app.popupWord(sid.get(), text, frameAt, w.document.documentElement.scrollLeft+pX, w.document.documentElement.scrollTop+pY, pW, pH);
+									w.popup=1;
+									s.empty();
+									return true;
+								}
+							}
+	 					}
+					}
+
+					//点击空白关闭点译弹窗
+					if(w.popup){
+						app.popupClose();
+						w.popup=0;
+					}
+					s.empty();
+				}
+			}
+	 	})}
+	 */
+	@Metaline()
+	public final static String tapTranslateLoader=StringUtils.EMPTY;
+	
+	/**
 		function selectTouchtarget(e){
 	 		var ret = selectTouchtarget_internal(e);
 			if(ret<=0||e==1) {
@@ -206,115 +345,14 @@ public class BookPresenter
 	 		}
 	 		w._touchtarget_lck=!1;
 		}
-	 	function wrappedClickFunc(e){
-	 		//console.log('fatal wrappedClickFunc', e);
-	 		var curr=e.srcElement;
-	 		if(w.webx){
-				if(curr.tagName=='IMG'){
-					var img=curr;
-					if(img.src && !img.onclick && !(img.parentNode&&img.parentNode.tagName=="A")){
-						var lst = [];
-						var current=0;
-						var all = document.getElementsByTagName("img");
-						for(var i=0;i<all.length;i++){
-							if(all[i].src){
-								lst.push(all[i].src);
-								if(all[i]==img)
-									current=i;
-							}
-						}
-						if(lst.length==0)
-							lst.push(img.src);
-						app.openImage(current, e.offsetX/img.offsetWidth, e.offsetY/img.offsetHeight, lst);
-					}
-				}
-				else if(curr.tagName=='A'){
-					//console.log('fatal in wcl : '+curr.href);
-					var href=curr.href+'';
-					if(curr.href && href.startsWith('file:///#')){
-						curr.href='entry://#'+href.substring(9);
-						return false;
-					}
-	 			}
-			}
-	 		console.log('popuping...');
-	 		console.log(w.rcsp);
-			if(curr!=document.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && w.rcsp&0x20 && !curr.noword){
-				//todo document.activeElement.tagName
-				var s = w.getSelection();
-				if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
-					s.modify('extend', 'forward', 'word'); // first attempt
-					var an=s.anchorNode;
-					//console.log(s.anchorNode); console.log(s);
-					//if(true) return;
-
-					if(s.baseNode != document.body) {// immunize blank area
-						var text=s.toString(); // for word made up of just one character
-						var range = s.getRangeAt(0);
-	 
-						var rrect = range.getBoundingClientRect();
-	 					var pX = rrect.x;
-	 					var pY = rrect.y;
-	 					var pW = rrect.width;
-	 					var pH = rrect.height;
-	 					var cprY = e.clientY;
-	 					var cprX = e.clientX;
-
-	 
-						if(1||(cprY>pY-5 && cprY<pY+pH+5 && cprX>pX-5 && cprX<pX+pW+15)){
-							s.collapseToStart();
-							s.modify('extend', 'forward', 'lineboundary');
-		 
-							if(s.toString().length>=text.length){
-								s.empty();
-								s.addRange(range);
+	 */
+	@Metaline()
+	public final static String touchTargetLoader=StringUtils.EMPTY;
 	
-								s.modify('move', 'backward', 'word'); // now could noway be next line
-								s.modify('extend', 'forward', 'word');
-	
-								var range1 = s.getRangeAt(0);
-								if(range1.endContainer===range.endContainer&&range1.endOffset===range.endOffset){
-									// for word made up of multiple character
-									text=s.toString();
-									rrect = range1.getBoundingClientRect();
-									pX = rrect.x;
-									pY = rrect.y;
-									pW = rrect.width;
-									pH = rrect.height;
-								}
-	 
-								//网页内部的位置，与缩放无关
-								//console.log(rrect);
-								console.log(pX+' ~~ '+pY+' ~~ '+pW+' ~~ '+pH);
-								console.log(cprX+' :: '+cprY);
-	 
-								console.log(text); // final output
-								if(app){
-									app.popupWord(text, frameAt, w.document.documentElement.scrollLeft+pX, w.document.documentElement.scrollTop+pY, pW, pH);
-									w.popup=1;
-									s.empty();
-									return true;
-								}
-							}
-	 					}
-					}
-
-					//点击空白关闭点译弹窗
-					if(w.popup){
-						app.popupClose();
-						w.popup=0;
-					}
-					s.empty();
-				}
-			}
-	 	}
-
-		//!!!高亮开始
+	/** //!!!高亮开始
 		var MarkLoad,MarkInst;
 		var results=[], current,currentIndex = 0;
 		var currentClass = "current";
-	 	var frameAt;
-
 		function jumpTo(d, desiredOffset, frameAt, HlightIdx, reset, topOffset_frameAt) {
 			if (results.length) {
 	 			if(reset) resetLight(d);
@@ -346,7 +384,6 @@ public class BookPresenter
 			}
 			return d;
 	 	}
-
 		function pw_topOffset(value){
 			var top=0;
 			while(value && value!=document.body){
@@ -355,12 +392,11 @@ public class BookPresenter
 			}
 			return top;
 		}
-
 		function topOffset(elem){
 			var top=0;
 			var add=1;
 			while(elem && elem!=document.body){
-				if(elem.style.display=='none' || elem.style.display=='' && document.defaultView.getComputedStyle(elem,null).display=='none'){
+				if(!w.webx)if(elem.style.display=='none' || elem.style.display=='' && document.defaultView.getComputedStyle(elem,null).display=='none'){
 					elem.style.display='block';
 				}
 				if(add){
@@ -373,25 +409,20 @@ public class BookPresenter
 			}
 			return !add&&top==0?-1:top;
 		}
-
 		function quenchLight(){
 			if(current) removeClass(current, currentClass);
 		}
-
 		function resetLight(d){
 			if(d==1) currentIndex=-1;
 			else if(d==-1) currentIndex=results.length;
 			quenchLight();
 		}
-
 		function setAsEndLight(){
 			currentIndex=results.length-1;
 		}
-
 		function setAsStartLight(){
 			currentIndex=0;
 		}
-
 		function addClass(elem, className) {
 			if (!className) return;
 			const els = Array.isArray(elem) ? elem : [elem];
@@ -399,7 +430,6 @@ public class BookPresenter
 				els[i].className+=className;
 			}
 		}
-
 		function removeClass(elem, className) {
 			if (!className) return;
 			const els = Array.isArray(elem) ? elem : [elem];
@@ -407,7 +437,6 @@ public class BookPresenter
 				els[i].className=els[i].className.replace(className, '');
 			}
 		}
-
 		function clearHighlights(){
 			if(w.bOnceHighlighted && MarkInst && MarkLoad)
 			MarkInst.unmark({
@@ -417,7 +446,6 @@ public class BookPresenter
 				}
 			});
 		}
-
 		function highlight(keyword){
 			var b1=keyword==null;
 			if(b1)
@@ -426,12 +454,9 @@ public class BookPresenter
 				return;
 	 		if(!MarkLoad) MarkLoad|=w.MarkLoad;
 			if(!MarkLoad){
-				loadJs('mdbr://mark.js', function(){
-					MarkLoad=true;
-					do_highlight(keyword);
-				});
-			}else
-				do_highlight(keyword);
+	 			function cb(){MarkLoad=true; do_highlight(keyword);}
+				try{loadJs('mdbr://mark.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'mark.js');}
+			} else do_highlight(keyword);
 		}
 		function do_highlight(keyword){
 			if(!MarkInst)
@@ -454,27 +479,15 @@ public class BookPresenter
 				}
 			});
 		}
-
 		 function done_highlight(){
 			 w.bOnceHighlighted=true;
 			 results = document.getElementsByTagName("mark");
 			 currentIndex=-1;
 			 if(app) app.onHighlightReady(frameAt, results.length);
 		 }
-
-		function loadJs(url,callback){
-			var script=document.createElement('script');
-			script.type="text/javascript";
-			if(typeof(callback)!="undefined"){
-				script.onload=function(){
-					callback();
-				}
-			}
-			script.src=url;
-			document.body.appendChild(script);
-		}*/
+	 */
 	@Metaline()
-	public final static byte[] jsBytes=SU.EmptyBytes;
+	public final static byte[] markJsLoader=SU.EmptyBytes;
 
 	/**
 	 	<script class="_PDict">
@@ -507,7 +520,7 @@ public class BookPresenter
 									}
 
 									console.log(text); // final output
-									if(app)app.popupWord(text, e.clientX, e.clientY, frameAt);
+									if(app)app.popupWord(sid.get(), text, e.clientX, e.clientY, frameAt);
 								}
 							}
 						}
@@ -540,7 +553,6 @@ public class BookPresenter
 	public int tmpIsFlag;
 	public ArrayList<myCpr<String, Long>> range_query_reveiver;
 	public PlaceHolder placeHolder;
-	public Map<String, String> remaps;
 	long FFStamp;
 	long firstFlag;
 	byte firstVersionFlag;
@@ -688,7 +700,11 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=31, shift=1) public boolean getImageBrowsable(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=31, shift=1) public void setImageBrowsable(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=32) public boolean getAutoFold(){ firstFlag=firstFlag; throw new RuntimeException(); }
-
+	
+	@Metaline(flagPos=33) public boolean getDrawHighlightOnTop(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=33) public void setDrawHighlightOnTop(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
+	
+	
 //	public boolean getStarLevel(){
 //		0x100000~0x400000
 //	}
@@ -1150,7 +1166,7 @@ function debug(e){console.log(e)};
 	}
 	
 	static void SelectHtmlObject(MainActivityUIBase a, WebViewmy final_mWebView, int source) {
-		final_mWebView.evaluateJavascript("selectTouchtarget("+source+")", new ValueCallback<String>() {
+		final_mWebView.evaluateJavascript(touchTargetLoader+"selectTouchtarget("+source+")", new ValueCallback<String>() {
 			@Override
 			public void onReceiveValue(String value) {
 				CMN.Log("selectTouchtarget", value);
@@ -1176,10 +1192,10 @@ function debug(e){console.log(e)};
 					final_mWebView.postDelayed(() -> {
 						final_mWebView.forbidLoading=false;
 						final_mWebView.getSettings().setJavaScriptEnabled(true);
-						final_mWebView.evaluateJavascript("restoreTouchtarget()", null);
+						final_mWebView.evaluateJavascript(touchTargetLoader+"restoreTouchtarget()", null);
 					}, 300);
 				} else {
-					final_mWebView.evaluateJavascript("restoreTouchtarget()", null);
+					final_mWebView.evaluateJavascript(touchTargetLoader+"restoreTouchtarget()", null);
 				}
 				
 			}
@@ -1196,6 +1212,10 @@ function debug(e){console.log(e)};
 	
 	public String GetSearchKey() {
 		return searchKey;
+	}
+	
+	public String GetAppSearchKey() {
+		return a.getSearchTerm();
 	}
 	
 	public void SetSearchKey(String key) {
@@ -1959,6 +1979,7 @@ function debug(e){console.log(e)};
 	
 		int from = mWebView.fromCombined;
 		mWebView.fromNet=mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
+		mWebView.active=true;
 		boolean fromCombined = from==1;
 		boolean fromPopup = from==2;
 
@@ -2087,6 +2108,13 @@ function debug(e){console.log(e)};
 									if (effectJs!=null) mWebView.evaluateJavascript(effectJs, null);
 									//a.showT("免重新加载生效！");
 									vartakelayaTowardsDarkMode(mWebView);
+								}  else if("2".equals(value) && getIsWebx()) { // apply js modifier first, then do search
+									if (!"schVar".equals(mWebView.getTag())) {
+										mWebView.setTag("schVar");
+										SetSearchKey(GetAppSearchKey());
+										renderContentAt_internal(mWebView, initialScale, fromCombined, fromPopup, mIsolateImages, 0);
+										mWebView.setTag(null);
+									}
 								} else {
 									mWebView.setTag("forceLoad");
 									renderContentAt_internal(mWebView, initialScale, fromCombined, fromPopup, mIsolateImages, position);
@@ -2144,7 +2172,8 @@ function debug(e){console.log(e)};
 			if (!htmlCode.startsWith(fullpageString)) {
 				AddPlodStructure(mWebView, htmlBuilder, fromPopup, mIsolateImages);
 				LoadPagelet(mWebView, htmlBuilder, htmlCode);
-			} else {
+			}
+			else {
 				CMN.Log("fullpageString");
 				int headidx = htmlCode.indexOf("<head>");
 				boolean b1 = headidx == -1;
@@ -2169,6 +2198,28 @@ function debug(e){console.log(e)};
 		} else if(JS!=null) {
 			mWebView.evaluateJavascript(JS, null);
 		}
+	}
+	
+	public void EvaluateValidifierJs(String validifier1, WebViewmy mWebView) {
+		mWebView.evaluateJavascript(validifier1, new ValueCallback<String>() {
+			@Override
+			public void onReceiveValue(String value) {
+				//CMN.Log("validifier::onReceiveValue::1", value);
+				if ("1".equals(value) || "true".equals(value)) {
+					String effectJs = bookImpl.getVirtualTextEffectJs(mWebView.currentRendring);
+					if (effectJs!=null) mWebView.evaluateJavascript(effectJs, null);
+					//a.showT("免重新加载生效！");
+					vartakelayaTowardsDarkMode(mWebView);
+				}  else if("2".equals(value) && getIsWebx()) { // apply js modifier first, then do search
+					if (!"schVar".equals(mWebView.getTag())) {
+						mWebView.setTag("schVar");
+						SetSearchKey(GetAppSearchKey());
+						renderContentAt_internal(mWebView, -1, mWebView.fromCombined==1, mWebView==a.popupWebView, false, 0);
+						mWebView.setTag(null);
+					}
+				}
+			}
+		});
 	}
 	
 	public void vartakelayaTowardsDarkMode(WebViewmy mWebView) {
@@ -2510,6 +2561,25 @@ function debug(e){console.log(e)};
         public void log(String val) {
         	CMN.Log(val);
         }
+        
+        @JavascriptInterface
+        public void loadJs(long sid, String name) {
+			WebViewmy wv = presenter.findWebview(sid);
+			CMN.Log("loadJs::", name, wv!=null);
+			if (wv!=null) {
+				wv.post(new Runnable() {
+					@Override
+					public void run() {
+						wv.evaluateJavascript(presenter.a.getCommonAsset(name), new ValueCallback<String>() {
+							@Override
+							public void onReceiveValue(String value) {
+								presenter.mWebView.evaluateJavascript("if(window.loadJsCb)loadJsCb()", null);
+							}
+						});
+					}
+				});
+			}
+        }
 
         float scale;
         DisplayMetrics dm;
@@ -2518,7 +2588,7 @@ function debug(e){console.log(e)};
 			try {
 				this.presenter = presenter;
 				scale = GlobalOptions.density;
-				if (presenter !=null) {
+				if (presenter!=null) {
 					dm = presenter.a.dm;
 				}
 			} catch (Exception ignored) { }
@@ -2607,7 +2677,7 @@ function debug(e){console.log(e)};
         }
 
         @JavascriptInterface
-        public void popupWord(String key, int frameAt, float pX, float pY, float pW, float pH) {
+        public void popupWord(long sid, String key, int frameAt, float pX, float pY, float pW, float pH) {
 			if(presenter==null) return;
         	if(WebViewmy.supressNxtClickTranslator) {
         		return;
@@ -2617,12 +2687,12 @@ function debug(e){console.log(e)};
 			if(frameAt>=0 && pH!=0){
 				if(pW==0) pW=pH;
 				if(RLContainerSlider.lastZoomTime == 0 || System.currentTimeMillis() - RLContainerSlider.lastZoomTime > 500){
-					/* 只管去兮不管来 */
-					float density = dm.density;
 					//Utils.setFloatTextBG(new Random().nextInt());
-					WebViewmy mWebView = a.PeruseViewAttached()?a.PeruseView.mWebView: presenter.mWebView;
-					if(mWebView!=null){
-						mWebView.highRigkt_set(pX*density, pY*density, (pX+pW)*density, (pY+pH)*density);
+					WebViewmy wv = presenter.findWebview(sid);
+					//CMN.Log("只管去兮不管来", wv!=null);
+					if(wv!=null){
+						float density = dm.density;
+						wv.highRigkt_set(pX*density, pY*density, (pX+pW)*density, (pY+pH)*density);
 					}
 				}
 			}
@@ -2668,9 +2738,9 @@ function debug(e){console.log(e)};
 		}
 
 		@JavascriptInterface
-		public void ReadText(String word) {
+		public void ReadText(long sid, String word) {
 			if(presenter==null) return;
-			presenter.a.ReadText(word, this== presenter.a.popuphandler? presenter.a.popupWebView: presenter.mWebView);
+			presenter.a.ReadText(word, presenter.findWebview(sid));
 		}
 
 		public void setDict(BookPresenter ccd) {
@@ -2712,21 +2782,13 @@ function debug(e){console.log(e)};
 			((Handler) presenter.a.hdl).sendEmptyMessageDelayed(7658941, 600);
 		}
 		
-		@JavascriptInterface
-		public void remap(String from, String to) {
-			CMN.Log("RemapUrl::", from, to, "client");
-			if(presenter==null) return;
-			presenter.RemapUrl(from, to);
-			presenter.mWebView.evaluateJavascript("console.log('RemapUrl client 1')", null);
-		}
-		
 		// sendup
 		@JavascriptInterface
-		public void knock() {
+		public void knock(long sid) {
 			//if(layout==a.currentViewImpl)
 			{
 				//upsended = true;
-				WebViewmy view = presenter.mWebView;
+				WebViewmy view = presenter.findWebview(sid);
 //				view.postDelayed(new Runnable() {
 //					@Override
 //					public void run() {
@@ -2745,11 +2807,11 @@ function debug(e){console.log(e)};
 		}
 		
 		@JavascriptInterface
-		public void knock1(int x, int y) {
+		public void knock1(long sid, int x, int y) {
 			//if(layout==a.currentViewImpl)
 			{
 				//upsended = true;
-				WebViewmy view = presenter.mWebView;
+				WebViewmy view = presenter.findWebview(sid);
 //				view.postDelayed(new Runnable() {
 //					@Override
 //					public void run() {
@@ -2778,7 +2840,19 @@ function debug(e){console.log(e)};
 			}
 		}
 	}
-
+	
+	private WebViewmy findWebview(long sid) {
+		if (mWebView!=null && mWebView.getSimpleIdentifier()==sid)
+			return mWebView;
+		if (a.PeruseViewAttached() && a.PeruseView.mWebView.getSimpleIdentifier()==sid) {
+			return a.PeruseView.mWebView;
+		}
+		if (a.popupWebView!=null && a.popupWebView.getSimpleIdentifier()==sid) {
+			return a.popupWebView;
+		}
+		return mWebView;
+	}
+	
 	public boolean renameFileTo(Context c, File newF) {
 		//tofo_tofo
 //		File fP = newF.getParentFile();
@@ -2957,10 +3031,12 @@ function debug(e){console.log(e)};
 			data_out.writeByte(0);
 			data_out.writeInt(bgColor);
 			data_out.writeInt(internalScaleLevel);
-			data_out.writeInt(lvPos);
+			// 调试
+			boolean d = PDICMainAppOptions.getSimpleMode()||true;
+			data_out.writeInt(d?0:lvPos);
 			data_out.writeInt(lvClickPos);
-			data_out.writeInt(lvPosOff);
-			//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, bookImpl.getFileName());
+			data_out.writeInt(d?0:lvPosOff);
+			//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, bookImpl.getDictionaryName());
 			ScrollerRecord record = avoyager.get(lvClickPos);
 			if(record!=null){
 				data_out.writeInt(record.x);
@@ -2971,7 +3047,7 @@ function debug(e){console.log(e)};
 				data_out.writeInt(0);
 				data_out.writeFloat(webScale);
 			}
-			//CMN.Log(bookImpl.getFileName()+"保存页面位置",expectedPosX,expectedPos,webScale);
+			//CMN.Log(bookImpl.getDictionaryName()+"保存页面位置",record.x,record.y,webScale);
 			data_out.writeLong(firstFlag);
 			data_out.writeInt(TIBGColor);
 			data_out.writeInt(TIFGColor);
@@ -2985,7 +3061,7 @@ function debug(e){console.log(e)};
 			data_out.writeShort(minMatchChars);
 			data_out.writeShort(minParagraphWords);
 			
-			CMN.Log("saved::minMatchChars::", minMatchChars, maxMatchChars);
+			//CMN.Log("saved::minMatchChars::", minMatchChars, maxMatchChars);
 			
 			data_out.writeFloat(IBC.doubleClickXOffset);
 			data_out.writeFloat(IBC.doubleClickPresetXOffset);
@@ -3001,6 +3077,113 @@ function debug(e){console.log(e)};
 			putBookOptions(context, historyCon, bookImpl.getBooKID(), bos.getBytesLegal(MainActivityUIBase.ConfigSize), bookImpl.getFile().getPath(), save_name);
 			isDirty = false;
 		} catch (Exception e) { if(GlobalOptions.debug) CMN.Log(e); }
+	}
+	
+	public float webScale=0;
+
+	public void readConfigs(Context context, LexicalDBHelper historyCon) throws IOException {
+		DataInputStream data_in1 = null;
+		if(context==null) return;
+		try {
+			CMN.rt();
+			byte[] data = bookImpl.getOptions();
+			if(data==null) data=getBookOptions(context, historyCon, bookImpl.getBooKID(), bookImpl.getFile().getPath(), bookImpl.getDictionaryName());
+			if(data!=null) {
+				bookImpl.setOptions(data);
+				int extra = MainActivityUIBase.ConfigExtra;
+				data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
+			} else {
+				bookImpl.setOptions(new byte[MainActivityUIBase.ConfigSize]);
+			}
+			if(data_in1!=null) {
+				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
+				//IBC.doubleClickXOffset = ((float)Math.round(((float)data_in1.read())/255*1000))/1000;
+				//IBC.doubleClickPresetXOffset = ((float)Math.round(((float)data_in1.read())/255*1000))/1000;
+				data_in1.read();
+				data_in1.read();
+				byte _firstFlag = data_in1.readByte();
+				firstFlag=0;
+				if(_firstFlag!=0){
+					firstFlag |= _firstFlag;
+				}
+				bgColor = data_in1.readInt();
+				internalScaleLevel = data_in1.readInt();
+				lvPos = data_in1.readInt();
+				lvClickPos = data_in1.readInt();
+				lvPosOff = data_in1.readInt();
+				ScrollerRecord record = new ScrollerRecord(data_in1.readInt()
+						, data_in1.readInt()
+						, webScale = data_in1.readFloat());
+				avoyager.put(lvClickPos, record);
+				firstFlag |= data_in1.readLong();
+				CMN.Log(bookImpl.getDictionaryName(), firstFlag, "列表位置",lvPos,lvClickPos,lvPosOff);
+				//CMN.Log(bookImpl.getDictionaryName()+"页面位置",record.x,record.y,webScale);
+				TIBGColor = data_in1.readInt();
+				TIFGColor = data_in1.readInt();
+				IBC.doubleClickZoomRatio = data_in1.readFloat();
+				IBC.doubleClickZoomLevel1  = data_in1.readFloat();
+				IBC.doubleClickZoomLevel2  = data_in1.readFloat();
+				firstVersionFlag = data_in1.readByte();
+				// 3 + (9+4)*4 + 8 + 1 = 64
+				maxMatchChars = data_in1.readShort();
+				minMatchChars = data_in1.readShort();
+				minParagraphWords = data_in1.readShort();
+				// 70
+				IBC.doubleClickXOffset = data_in1.readFloat();
+				IBC.doubleClickPresetXOffset = data_in1.readFloat();
+				// 78
+			}
+			CMN.pt(bookImpl.getDictionaryName()+" id="+bookImpl.getBooKID()+" "+data+" 单典配置加载耗时");
+		} catch (Exception e) {
+			CMN.Log(e);
+			//firstFlag = 0;
+		} finally {
+			FFStamp = firstFlag;
+			if(data_in1!=null) data_in1.close();
+		}
+		if(PDICMainAppOptions.getSimpleMode()||true) {
+			// 调试
+			lvPos=0;lvPosOff=0;
+		}
+		bReadConfig = true;
+		IBC.firstFlag = firstFlag;
+		boolean b1=IBC.doubleClickZoomRatio==0;
+		if(b1) {
+			/* initialise values */
+			IBC.doubleClickZoomRatio=2.25f;
+			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?CMN.MainBackground:opt.getTitlebarBackgroundColor();
+			TIFGColor = opt.getTitlebarForegroundColor();
+		}
+		if ((firstVersionFlag&0x1)==0)
+		{
+			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?CMN.MainBackground:opt.getTitlebarBackgroundColor();
+			TIFGColor = opt.getTitlebarForegroundColor();
+			CMN.Log("初始化词典设置");
+			if (getIsWebx()) {
+				setShowToolsBtn(true);
+				setImageBrowsable(false);
+				setAcceptParagraph(getWebx().getIsTranslator());
+				setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
+			}
+			if(b1)IBC.setPresetZoomAlignment(3);
+			IBC.doubleClickPresetXOffset = 0.12f;
+			IBC.doubleClickXOffset = 0.12f;
+			minMatchChars = 1;
+			maxMatchChars = 20;
+			minParagraphWords = 8;
+			bgColor=CMN.GlobalPageBackground;
+			
+			firstVersionFlag|=0x1;
+			isDirty = true;
+		}
+		if (getIsWebx()) {
+			if (PDICMainAppOptions.checkVersionBefore_5_4())
+			{
+				setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
+				PDICMainAppOptions.uncheckVersionBefore_5_4(false);
+				isDirty = true;
+			}
+		}
 	}
 	
 	public static byte[] getBookOptions(Context context, LexicalDBHelper db, long book_id, String path, String name) {
@@ -3048,104 +3231,11 @@ function debug(e){console.log(e)};
 		}
 		((AgentApplication)context.getApplicationContext()).BookProjects.put(name, options);
 	}
-
+	
 	public int getFontSize() {
 		if(getUseInternalFS())
 			return internalScaleLevel>0?internalScaleLevel:(internalScaleLevel=def_fontsize);
 		return def_fontsize;
-	}
-
-	public float webScale=0;
-
-	public void readConfigs(Context context, LexicalDBHelper historyCon) throws IOException {
-		DataInputStream data_in1 = null;
-		if(context==null) return;
-		try {
-			CMN.rt();
-			byte[] data = bookImpl.getOptions();
-			if(data==null) data=getBookOptions(context, historyCon, bookImpl.getBooKID(), bookImpl.getFile().getPath(), bookImpl.getDictionaryName());
-			if(data!=null) {
-				bookImpl.setOptions(data);
-				int extra = MainActivityUIBase.ConfigExtra;
-				data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
-			} else {
-				bookImpl.setOptions(new byte[MainActivityUIBase.ConfigSize]);
-			}
-			if(data_in1!=null) {
-				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
-				//IBC.doubleClickXOffset = ((float)Math.round(((float)data_in1.read())/255*1000))/1000;
-				//IBC.doubleClickPresetXOffset = ((float)Math.round(((float)data_in1.read())/255*1000))/1000;
-				data_in1.read();
-				data_in1.read();
-				byte _firstFlag = data_in1.readByte();
-				firstFlag=0;
-				if(_firstFlag!=0){
-					firstFlag |= _firstFlag;
-				}
-				bgColor = data_in1.readInt();
-				internalScaleLevel = data_in1.readInt();
-				lvPos = data_in1.readInt();
-				lvClickPos = data_in1.readInt();
-				lvPosOff = data_in1.readInt();
-				if(data_in1.available()>0) {
-					ScrollerRecord record = new ScrollerRecord(data_in1.readInt(), data_in1.readInt(), webScale = data_in1.readFloat());
-					avoyager.put(lvClickPos, record);
-				}
-				firstFlag |= data_in1.readLong();
-				CMN.Log(bookImpl.getDictionaryName(), firstFlag, "列表位置",lvPos,lvClickPos,lvPosOff);
-				TIBGColor = data_in1.readInt();
-				TIFGColor = data_in1.readInt();
-				IBC.doubleClickZoomRatio = data_in1.readFloat();
-				IBC.doubleClickZoomLevel1  = data_in1.readFloat();
-				IBC.doubleClickZoomLevel2  = data_in1.readFloat();
-				firstVersionFlag = data_in1.readByte();
-				// 3 + (9+4)*4 + 8 + 1 = 64
-				maxMatchChars = data_in1.readShort();
-				minMatchChars = data_in1.readShort();
-				minParagraphWords = data_in1.readShort();
-				// 70
-				IBC.doubleClickXOffset = data_in1.readFloat();
-				IBC.doubleClickPresetXOffset = data_in1.readFloat();
-				// 78
-			}
-			CMN.pt(bookImpl.getDictionaryName()+" id="+bookImpl.getBooKID()+" "+data+" 单典配置加载耗时");
-		} catch (Exception e) {
-			CMN.Log(e);
-			//firstFlag = 0;
-		} finally {
-			FFStamp = firstFlag;
-			if(data_in1!=null) data_in1.close();
-		}
-		bReadConfig = true;
-		IBC.firstFlag = firstFlag;
-		boolean b1=IBC.doubleClickZoomRatio==0;
-		if(b1) {
-			/* initialise values */
-			IBC.doubleClickZoomRatio=2.25f;
-			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?CMN.MainBackground:opt.getTitlebarBackgroundColor();
-			TIFGColor = opt.getTitlebarForegroundColor();
-		}
-		if ((firstVersionFlag&0x1)==0)
-		{
-			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?CMN.MainBackground:opt.getTitlebarBackgroundColor();
-			TIFGColor = opt.getTitlebarForegroundColor();
-			CMN.Log("初始化词典设置");
-			if (getIsWebx()) {
-				setShowToolsBtn(true);
-				setImageBrowsable(false);
-				setAcceptParagraph(getWebx().getIsTranslator());
-			}
-			if(b1)IBC.setPresetZoomAlignment(3);
-			IBC.doubleClickPresetXOffset = 0.12f;
-			IBC.doubleClickXOffset = 0.12f;
-			minMatchChars = 1;
-			maxMatchChars = 20;
-			minParagraphWords = 8;
-			bgColor=CMN.GlobalPageBackground;
-			
-			firstVersionFlag|=0x1;
-			isDirty = true;
-		}
 	}
 	
 	public interface ViewLayoutListener{
@@ -3673,11 +3763,5 @@ function debug(e){console.log(e)};
 	
 	public void findAllTexts(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchLogicLayer searchLayer) throws IOException {
 		bookImpl.flowerFindAllContents(searchTerm, adapter_idx, searchLayer);
-	}
-	
-	public void RemapUrl(String from, String to) {
-		if(remaps==null)
-			remaps = new ConcurrentHashMap<>();
-		remaps.put(from, to);
 	}
 }

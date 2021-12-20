@@ -12,6 +12,7 @@
 	,ta=document.getElementsByTagName('textarea')[0], listPane,textPara;
 	function debug(e){console.log(e)};
 	debug('translator ini...'); // 开始
+	win._YWPC=['Sp3AF'];
 	function sc(v){
 		if(sel.type!='Range') e.style.display = 'none';
 		else if(e.style.display=='none'){
@@ -67,9 +68,9 @@
 				var exp=document.getElementsByClassName('J0lOec')[0];
 				if(!isChildOf(an,exp)) {
 					rng.selectNode(exp);
-					app.knock1(exp.offsetWidth/2, getTop(exp));
+					app.knock1(sid.get(),exp.offsetWidth/2, getTop(exp));
 				} else {
-					app.knock();
+					app.knock(sid.get());
 				}
 				clearTimeout(PDRNT);
 				//PDRNT = setTimeout(v=>{PDRNG=0}, 1800);
@@ -274,4 +275,5 @@ try {
 }
 succ"
 	,"translator":"true"
+	,"drawHighlightOnTop":"true"
 }

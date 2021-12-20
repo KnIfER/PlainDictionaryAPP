@@ -11,6 +11,7 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
 
@@ -119,6 +120,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		
 		//if(false)
 		a.WHP.touchFlag.first=false;
+		a.awaiting = true;
 		if(OLCL==null) {
 			OLCL = new OnLayoutChangeListener() {
 				@Override
@@ -156,7 +158,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		LHGEIGHT=0;
 		a.webholder.removeOnLayoutChangeListener(OLCL);
 		if(!toHighLight){
-			a.webholder.addOnLayoutChangeListener(OLCL);
+			ViewUtils.addOnLayoutChangeListener(a.webholder, OLCL);
 			if(a.main_progress_bar!=null)
 				a.main_progress_bar.setVisibility(expectedPos==0?View.GONE:View.VISIBLE);
 			scrolled=false;
@@ -258,8 +260,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		a.WHP.touchFlag.first=false;
 		scrollTarget=_scrollTarget;
 		LHGEIGHT=a.WHP.getHeight();
-		a.webholder.removeOnLayoutChangeListener(OLCL);
-		a.webholder.addOnLayoutChangeListener(OLCL);
+		a.webholder.removeOnLayoutChangeListener(OLCL); // todo save this step ???
+		ViewUtils.addOnLayoutChangeListener(a.webholder, OLCL);
 		scrolled=false;
 	}
 }

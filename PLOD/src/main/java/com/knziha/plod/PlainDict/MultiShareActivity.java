@@ -81,8 +81,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		CMN.Log("onCreate...");
-		receivable=
-		this_instanceof_MultiShareActivity = true;
+		receivable=true;
+		thisActType = ActType.MultiShareActivity;
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main_share);
@@ -95,7 +95,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		
 		hdl  = new MyHandler(this);
 		mActionModeHeight = dm.heightPixels/2;
-		CMN.MainBackground = MainBackground = opt.getMainBackground();
+		CMN.MainBackground = MainBackground = MainAppBackground = opt.getMainBackground();
 		processIntent(getIntent());
 		systemIntialized=true;
 	}
@@ -106,6 +106,16 @@ public class MultiShareActivity extends MainActivityUIBase {
 		if (contentUIData==null) {
 			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
 			super.findFurtherViews();
+			adaptermy = new BasicAdapter() {
+				@Override
+				public int getId() {
+					return -1;
+				}
+				@Override
+				public String currentKeyText() {
+					return "";
+				}
+			};
 		}
 	}
 	

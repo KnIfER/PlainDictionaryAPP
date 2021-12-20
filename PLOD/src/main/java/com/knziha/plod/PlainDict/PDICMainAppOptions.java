@@ -2188,7 +2188,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_4_0() { FourthFlag=FourthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_4_0(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_5_2() { FourthFlag=FourthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=52, shift=1) public static boolean uncheckVersionBefore_5_2(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_5_2(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	
 	//@Metaline(flagPos=52, shift=1) public static boolean uncheckVersionBefore_4_0() { FourthFlag=FourthFlag; throw new IllegalArgumentException();}
 	@Metaline(flagPos=53) public static boolean getClearTasksOnExit() { FourthFlag=FourthFlag; throw new RuntimeException();}
@@ -2252,7 +2252,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=11, shift=1) public static void uncheckVersionBefore_4_9(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=11, shift=1) public static boolean checkVersionBefore_5_3() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=11, shift=1) public static boolean uncheckVersionBefore_5_3(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=11, shift=1) public static void uncheckVersionBefore_5_3(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	@Metaline(flagPos=12) public boolean getFavoritePerceptsRemoveAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2273,6 +2273,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=18, debug=0) public boolean getAutoBuildIndex() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
+	
+	@Metaline(flagPos=19, shift=1) public static boolean checkVersionBefore_5_4() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=19, shift=1) public static void uncheckVersionBefore_5_4(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	//EF
 	///////////////////// End Fifth Flag////////////////////////////////////
@@ -2580,9 +2583,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		tv.setOnClickListener(xyt);
 		tv.setOnTouchListener(xyt);
 		tv.setTextSize(GlobalOptions.isLarge?22f:17f);
-		if(GlobalOptions.isLarge) {
-			tv.setTextSize(tv.getTextSize());
-		}
+//		if(GlobalOptions.isLarge) {
+//			tv.setTextSize(tv.getTextSize());
+//		}
 		if(center) {
 			tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 		}

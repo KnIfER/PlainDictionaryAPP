@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
+import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
 
@@ -110,7 +111,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	boolean isContentViewAttached() {
+	public boolean isContentViewAttached() {
 		return webcontentlist.getVisibility()==View.VISIBLE;
 	}
 	
@@ -223,6 +224,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
     protected void onCreate(Bundle savedInstanceState) {
 		cbar_key=2;
 		defbarcustpos=3;
+		thisActType = ActType.FloatSearchActivity;
 		if(getClass()==FloatSearchActivity.class) {
 			long cur;
 			long FF = PDICMainAppOptions.getFourthFlag(this);
@@ -417,7 +419,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		LastPlanName = "FltPlanName";
 		LastMdFn = "FltMdFn";
 		super.scanSettings();
-		CMN.FloatBackground = MainBackground = opt.getFloatBackground();
+		CMN.FloatBackground = MainBackground = MainAppBackground = opt.getFloatBackground();
 		isCombinedSearching = opt.isFloatCombinedSearching();
 	}
 
@@ -813,7 +815,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	void refreshUIColors() {
 		boolean isHalo=!GlobalOptions.isDark;
-		int filteredColor = isHalo?MainBackground: ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
+		MainAppBackground = isHalo?MainBackground: ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
+		int filteredColor = MainAppBackground;
+		lv.setBackgroundColor(AppWhite);
 		lv2.setBackgroundColor(AppWhite);
 		if(GlobalOptions.isDark)
 			mainfv.getBackground().setColorFilter(filteredColor, PorterDuff.Mode.SRC_IN);
@@ -948,7 +952,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	} else {
         		vh=new PDICMainActivity.ViewHolder(getApplicationContext(), R.layout.listview_item0, null);
         	}
-			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
+			//if( vh.title.getTextColors().getDefaultColor()!=AppBlack)
+			{
 				//decorateBackground(vh.itemView);
 				vh.title.setTextColor(AppBlack);
 			}
@@ -999,7 +1004,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			current.mWebView.fromCombined=0;
 			Utils.addViewToParentUnique(current.rl, webSingleholder);
 	
-			current.renderContentAt(-1,adapter_idx,0,null, getMergedClickPositions(position));
+			current.renderContentAt(-1,RENDERFLAG_NEW,0,null, getMergedClickPositions(position));
 			currentKeyText = current.currentDisplaying;
 			bWantsSelection=true;
 
@@ -1030,12 +1035,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	}
 	
-	private void ensureContentVis(ViewGroup webholder, ViewGroup another) {
+	public void ensureContentVis(ViewGroup webholder, ViewGroup another) {
 		webholder.setVisibility(View.VISIBLE);
 		
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 		if(another.getVisibility()==View.VISIBLE) {
-			Utils.removeAllViews(another);
+			Utils.removeAllViews(another==WHP?(ViewGroup) WHP.getChildAt(0):another);
 			another.setVisibility(View.GONE);
 		}
 		
@@ -1187,6 +1192,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				if(isCombinedSearching){
 					if(b) adaptermy2.currentKeyText=null;
 					lv.setVisibility(View.VISIBLE);
+					if(adaptermy2.getCount()>0)lv2.setVisibility(View.VISIBLE);
 				} else {
 					if(b) adaptermy.currentKeyText=null;
 					lv2.setVisibility(View.GONE);

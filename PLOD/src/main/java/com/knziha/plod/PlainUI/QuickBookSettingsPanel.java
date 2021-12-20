@@ -4,6 +4,7 @@ import android.animation.LayoutTransition;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,6 +47,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		a=(MainActivityUIBase) context;
 		
 		showInPopWindow = true;
+		setPresetBgColorType(1);
 		
 		Resources mResource = a.mResource;
 		drawables = new Drawable[]{
@@ -77,6 +79,10 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		{
 			UIData.scnArrow.setRotation(90);
 			initScreenPanel();
+		}
+		
+		if(GlobalOptions.isDark) {
+			UIData.scn.setTextColor(Color.WHITE);
 		}
 		
 		if(mScrollY>0) {

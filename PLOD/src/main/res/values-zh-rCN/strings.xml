@@ -104,8 +104,6 @@
 	<string name="stg_grantnow">立即开启</string>
 	<string name="trialin">试用中…… #</string>
 	<string name="stgerr_fail">抱歉，无法在您的设备上使用</string>
-<!--	<string name="infoStr">平典搜索（PlainDict）是安卓平台的一款查词软件，绿色小巧，精通十八般武艺（支持在线词典与翻译器、支持直接打开两种经典的词典格式，支持查看PDF文件，支持全文搜索、联合查询、点译、高亮标注等等）。\n\n当前版本号：v%s\n\n启发作者的其他精美应用\：Bluedict 、Bing 词典 、Mdict PC、LingVo 等等。 \n\n[开源许可证] \n\n[反映问题] \n\n[赞赏开发者]</string>-->
-	<string name="infoStr">平典搜索（PlainDict）是安卓平台的一款查词软件，绿色小巧，精通十八般武艺（支持在线词典与翻译器、支持直接打开两种经典的词典格式，支持查看PDF文件，支持全文搜索、联合查询、点译、高亮标注等等）。\n\n当前版本号：v%s\n\n启发作者的其他精美应用\：Bluedict 、Bing 词典 、Mdict PC、LingVo 等等。 \n\n[开源许可证]</string>
 	<string name="licence">开源许可证</string>
 	<string name="bmAdd">添加书签</string>
 	<string name="language">语言</string>

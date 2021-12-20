@@ -7,7 +7,7 @@ public class ScrollerRecord {
 		scale=-1;//mdict.def_zoom;
 	}
 	public ScrollerRecord(int scrollX, int scrollY, float scale_){
-		set(scrollY, scrollY, scale_);
+		set(scrollX, scrollY, scale_);
 	}
 	public void set(int scrollX, int scrollY, float scale_) {
 		x=scrollX;

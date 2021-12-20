@@ -2,6 +2,8 @@ package com.knziha.plod.PlainUI;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.graphics.PorterDuff;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupWindow;
 
@@ -15,12 +17,29 @@ public class PlainAppPanel extends SettingsPanel {
 	protected MainActivityUIBase a;
 	protected boolean bShouldInterceptClickListener = true;
 	protected boolean showPopOnAppbar = true;
+	int MainColorStamp;
+	View bgView;
 	
 	public PlainAppPanel(MainActivityUIBase a) {
 		super(a, a.root, a.app_panel_bottombar_height/2, a.opt, a);
 		this.a = a;
 		if (!showInPopWindow) {
 			Utils.embedViewInCoordinatorLayout(settingsLayout, !showPopOnAppbar);
+		}
+		MainColorStamp = a.MainAppBackground;
+	}
+	
+	@Override
+	public void refresh() {
+		super.refresh();
+		// refresh colors
+		if (MainColorStamp!=a.MainAppBackground) {
+			setPresetBgColorType(mBackgroundColorType);
+			if(bgView!=null) {
+				bgView.getBackground().setColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
+			}
+			settingsLayout.setBackgroundColor(mBackgroundColor);
+			MainColorStamp = a.MainAppBackground;
 		}
 	}
 	

@@ -904,7 +904,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		cbar_key=0;
 		bIsFirstLaunch=false;
 		focused=true;
-		this_instanceof_PDICMainActivity=true;
+		thisActType = ActType.PDICMainActivity;
 		CMN.Log("LauncherInstanceCount", LauncherInstanceCount);
 		if(LauncherInstanceCount>=1) {
 			Intent thisIntent = getIntent();
@@ -1700,6 +1700,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				wv.destroy();
 			}, 2500);
 		}
+		
 		//tg
 		//etSearch.setText("happy");
 		//showT(""+currentDictionary.QueryByKey("woodie", SearchType.Normal, false, 0));
@@ -1760,8 +1761,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		//bottombar.findViewById(R.id.browser_widget2).performLongClick();
 		//bottombar.findViewById(R.id.browser_widget5).performLongClick();
-
-		//if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("15");
+//		toggleInPageSearch(false);
+//		if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("译");
 		//if(false)
 		root.postDelayed(() -> {
 			//lv.getChildAt(0).performClick();
@@ -1868,7 +1869,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	static long currMdlTime;
-	static String lastLoadedModule;
 	static boolean lazyLoaded;
 	@Override
 	protected void LoadLazySlots(File modulePath, boolean lazyLoad, String moduleName) throws IOException {
@@ -2240,7 +2240,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	protected void scanSettings(){
 		super.scanSettings();
-		CMN.MainBackground = MainBackground = opt.getMainBackground();
+		CMN.MainBackground = MainBackground = MainAppBackground = opt.getMainBackground();
 		//getWindow().setNavigationBarColor(MainBackground);
 		CMN.FloatBackground = opt.getFloatBackground();
 		//文件网络
@@ -2377,7 +2377,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(CMN.CheckSettings!=0){
 				if(CMN.checkRCSP()){
 					if(ActivedAdapter!=null){
-						String val = "window.rcsp="+ BookPresenter.MakeRCSP(opt)+"; highlight(null);";
+						String val = "window.rcsp="+ BookPresenter.MakeRCSP(opt)+"; _highlight(null);";
 						CMN.Log("checkRCSP!!",val, BookPresenter.MakeRCSP(opt)&0x10);
 						resetPatterns();
 						webviewHolder=ActivedAdapter.webviewHolder;
@@ -2431,7 +2431,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	void refreshUIColors() {
 		boolean isHalo=!GlobalOptions.isDark;
-		int filteredColor = isHalo?MainBackground:ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);//CU.MColor(MainBackground,ColorMultiplier);
+		MainAppBackground = isHalo?MainBackground:ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
+		int filteredColor = MainAppBackground;//CU.MColor(MainBackground,ColorMultiplier);
 		UIData.viewpager.setBackgroundColor(AppWhite);
 		lv2.setBackgroundColor(AppWhite);
 		bottombar.setBackgroundColor(filteredColor);
@@ -3386,6 +3387,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			WebViewmy current_webview = PageSlider.WebContext;
 			if(current_webview !=null) {
 				CMN.Log("页面置空了……");
+				current_webview.active = false;
 				current_webview.loadUrl("about:blank");
 				current_webview.clearView();
 			}
@@ -3525,39 +3527,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	public void showPickFavorFolder() {
 		showChooseFavorDialog(0);
-	}
-	
-	public void showDictionaryManager() {
-		ReadInMdlibs(null);
-		AgentApplication app = ((AgentApplication) getApplication());
-		app.mdict_cache = mdict_cache;
-		//todo remove???
-		for(BookPresenter mdTmp:md) {
-			if(mdTmp!=null){
-				//get path put
-				mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
-			}
-		}
-		for(BookPresenter mdTmp:currentFilter) {
-			if(mdTmp!=null){
-				mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
-			}
-		}
-		/* 合符而继统 */
-		for(PlaceHolder phI:HdnCmfrt) {
-			if(!CosyChair.contains(phI))//todo opt
-				CosyChair.add(Math.min(phI.lineNumber, CosyChair.size()), phI);
-		}
-		app.slots=CosyChair;
-		app.opt=opt;
-		app.mdlibsCon=mdlibsCon;
-		app.mdict_cache=mdict_cache;
-		CosySofa.clear();
-		HdnCmfrt.clear();
-		lastLoadedModule=null;
-		Intent intent = new Intent();
-		intent.setClass(PDICMainActivity.this, BookManager.class);
-		startActivityForResult(intent, 110);
 	}
 	
 	@Deprecated

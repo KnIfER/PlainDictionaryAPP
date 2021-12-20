@@ -41,6 +41,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
@@ -123,11 +124,13 @@ public class PlainWeb extends DictionaryAdapter {
 		 	e.appendChild(document.createTextNode(css));
 		 }
 	 	 window.PLODKit=1;
-		 e = document.createElement('script');
-		 e.type = 'text/javascript';
-		 e.id = '_PDJS';
-		 e.src = 'https://mdbr/SUBPAGE.js';
-	 	 document.head.appendChild(e);
+		function loadJs(url){
+			var script=document.createElement('script');
+			script.type="text/javascript";
+			script.src=url;
+			document.body.appendChild(script);
+		}
+		try{loadJs('https://mdbr/SUBPAGE.js')}catch(e){app.loadJs(sid.get(),'SUBPAGE.js');}
 	 }
 	 //console.log('fatal PLODKitASD' + window.PLODKit);
 	 */
@@ -535,6 +538,10 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 	}
 	
+	public boolean getDrawHighlightOnTop() {
+		return website.getBooleanValue("drawHighlightOnTop");
+	}
+	
 	abstract class VirtualKeyProvider {
 		abstract String getEntryAt(long position);
 		abstract String getRecordAt(long position);
@@ -545,6 +552,8 @@ public class PlainWeb extends DictionaryAdapter {
 	final ArrayList<VirtualKeyProvider> keyProviders = new ArrayList<>();
 	final VirtualKeyProvider keyProvider_Entrances = new EntranceKeyProvider();
 	final SearchKeyProvider keyProvider_Searches = new SearchKeyProvider();
+	
+	final static Pattern FieldReferencePattern = Pattern.compile("@\\{(.*?)\\}");
 	
 	class EntranceKeyProvider extends VirtualKeyProvider{
 		String getEntryAt(long position) {
@@ -567,20 +576,38 @@ public class PlainWeb extends DictionaryAdapter {
 				if(arr.length>1) {
 					url =  arr[0];
 				}
-				// 返回完整网址
-				return WebxUrl(url);
+				if (url.startsWith("js:")) {
+					return url;
+				} else {
+					// 返回完整网址
+					return WebxUrl(url);
+				}
 			}
 			return null;
 		}
 		
 		@Override
 		long getSize() { return entrance.size(); }
-		
 		@Override
 		String getVirtualTextValidateJs(BookPresenter bookPresenter, WebViewmy mWebView, long position) {
 			if(position>=0 && position<entrance.size()){
 				String url = getRecordAt(position);
-				return TextUtils.equals(url, mWebView.getUrl())?"1":null;
+				if (url.startsWith("js:")) {
+					StringBuffer sb = new StringBuffer(url.length());
+					Matcher m = FieldReferencePattern.matcher(url.substring(3));
+					while(m.find()) {
+						String field = m.group(1);
+						m.appendReplacement(sb, String.valueOf(website.getString(field)));
+					}
+					m.appendTail(sb);
+					int idx = sb.indexOf("%s");
+					if(idx>0) {
+						sb.replace(idx, idx+3, bookPresenter.GetAppSearchKey());
+					}
+					return sb.toString();
+				} else {
+					return TextUtils.equals(url, mWebView.getUrl())?"1":null;
+				}
 			}
 			return null;
 		}
@@ -871,6 +898,7 @@ public class PlainWeb extends DictionaryAdapter {
 //					toolbar_title.setText(key);
 			} else {
 				url=host+index;
+				bookPresenter.SetSearchKey(key);
 			}
 		}
 //		if(mWebView==this.mWebView) {
@@ -1227,8 +1255,7 @@ public class PlainWeb extends DictionaryAdapter {
 
 	public void onPageStarted(BookPresenter bookPresenter, WebView view, String url, boolean updateTitle) {
 		WebViewmy mWebView = (WebViewmy) view;
-		if(updateTitle)
-			mWebView.toolbar_title.setText(bookPresenter.currentDisplaying=view.getTitle());
+		//if(updateTitle) mWebView.toolbar_title.setText(bookPresenter.currentDisplaying=view.getTitle());
 		if(progressProceed !=null) {
 			progressProceed.cancel();
 		}
@@ -1298,13 +1325,13 @@ public class PlainWeb extends DictionaryAdapter {
 //		view.evaluateJavascript(new String(BookPresenter.jsBytes), new ValueCallback<String>() {
 //			@Override
 //			public void onReceiveValue(String value) {
-//				CMN.Log(value);
+//				CMN.Log("BookPresenter.jsBytes::onReceiveValue", value);
 //			}
 //		});
 	}
 
 	private void fadeOutProgressbar(BookPresenter bookPresenter, WebViewmy mWebView, boolean updateTitle) {
-		if(updateTitle) mWebView.toolbar_title.setText(mWebView.word=bookPresenter.currentDisplaying=mWebView.getTitle());
+		//if(updateTitle) mWebView.toolbar_title.setText(mWebView.word=bookPresenter.currentDisplaying=mWebView.getTitle());
 		if(mWebView.titleBar!=null) {
 			Drawable d = ((LayerDrawable) mWebView.titleBar.getBackground()).getDrawable(1);
 			if(d.getAlpha()!=255) {

@@ -70,11 +70,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Set;
 
 import db.LexicalDBHelper;
 
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
+import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.widgets.Utils.EmptyCursor;
 import static db.LexicalDBHelper.FIELD_VISIT_TIME;
 import static db.LexicalDBHelper.TABLE_FAVORITE_v2;
@@ -1537,7 +1537,7 @@ public class DBroswer extends Fragment implements
 				} break;
 				case SelectionMode_txtdropper: {
 					EditText target = null;
-					if(a.this_instanceof_MultiShareActivity) {
+					if(a.thisActType==ActType.MultiShareActivity) {
 						if(a.PeruseView!=null) {
 							target = a.PeruseView.etSearch;
 						} else {

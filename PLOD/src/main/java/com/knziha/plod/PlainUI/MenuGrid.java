@@ -1,14 +1,17 @@
 package com.knziha.plod.PlainUI;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 
 import androidx.appcompat.app.GlobalOptions;
+import androidx.core.view.ViewCompat;
 
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
@@ -24,18 +27,22 @@ public class MenuGrid extends PlainAppPanel {
 	private boolean MenuClicked;
 	private int lastWidth;
 	private int lastHeight;
+	private DescriptiveImageView menu_icon5;
+	private int btnPaddingH;
+	private int btnShareBundleResId = R.drawable.abc_ic_menu_share_mtrl_alpha;
 	
 	public MenuGrid(MainActivityUIBase a) {
 		super(a);
 	}
 	
+	@SuppressLint("ResourceType")
 	@Override
 	public void init(Context context, ViewGroup root) {
 		a=(MainActivityUIBase) context;
 		showPopOnAppbar = true;
 		
 		showInPopWindow = true;
-		mBackgroundColor = 0x20FFEEEE; // 0x3E8F8F8F
+		setPresetBgColorType(0);
 		dm = a.dm;
 		
 		DescriptiveImageView.createTextPainter(true);
@@ -43,14 +50,16 @@ public class MenuGrid extends PlainAppPanel {
 		settingsLayout = (ViewGroup) LayoutInflater.from(a).inflate(R.layout.menu_grid, root, false);
 		settingsLayout.setOnClickListener(this);
 		
-		menu_grid = settingsLayout.findViewById(R.id.menu_grid);
+		bgView = menu_grid = settingsLayout.findViewById(R.id.menu_grid);
 		
-		menu_grid.getBackground().setColorFilter(a.MainBackground, PorterDuff.Mode.SRC_IN);
+		menu_grid.getBackground().setColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
 		
 		ViewGroup svp = (ViewGroup) menu_grid.getChildAt(0);
 		//menu_grid.setTranslationY(TargetTransY + legalMenuTransY);
 		Utils.setOnClickListenersOneDepth(svp, a, 999, null);
 		//refreshMenuGridSize(true);
+		
+		menu_icon5 = settingsLayout.findViewById(R.drawable.abc_ic_menu_share_mtrl_alpha);
 	}
 	
 	@Override
@@ -60,12 +69,24 @@ public class MenuGrid extends PlainAppPanel {
 		if (lastWidth!=a.root.getWidth() || lastHeight!=a.root.getHeight()) {
 			refreshMenuGridSize(true);
 		}
+		if(btnPaddingH==0){
+			btnPaddingH = menu_icon5.getPaddingLeft();
+		}
+		if (ret && ((btnShareBundleResId==R.drawable.abc_ic_menu_share_mtrl_alpha) ^ a.isContentViewAttached())) {
+			int paddingH = btnPaddingH;
+			if(a.isContentViewAttached()) {
+				menu_icon5.setImageResource(btnShareBundleResId=R.drawable.abc_ic_menu_share_mtrl_alpha);
+				menu_icon5.setAlpha(.2f);
+				menu_icon5.setText("分享至…");
+			} else {
+				menu_icon5.setImageResource(btnShareBundleResId=R.drawable.book_bundle2);
+				menu_icon5.setAlpha(1.f);
+				menu_icon5.setText("管理词典");
+				paddingH -= GlobalOptions.density*1.5;
+			}
+			menu_icon5.setPadding(paddingH, menu_icon5.getPaddingTop(), paddingH, menu_icon5.getPaddingBottom());
+		}
 		return ret;
-	}
-	
-	@Override
-	protected void decorateInterceptorListener(boolean install) {
-	
 	}
 	
 	@Override
@@ -74,9 +95,6 @@ public class MenuGrid extends PlainAppPanel {
 			return;
 		}
 		dismiss();
-		if (v.getTag() instanceof String) {
-			a.showT(v.getTag());
-		}
 		//MenuClicked = true;
 		switch (v.getId()) {
 			case R.drawable.ic_menu_24dp: {
@@ -92,6 +110,19 @@ public class MenuGrid extends PlainAppPanel {
 			case R.id.root: {
 				dismiss();
 			} break;
+			case R.drawable.abc_ic_menu_share_mtrl_alpha: {
+				if (btnShareBundleResId==R.drawable.abc_ic_menu_share_mtrl_alpha) {
+				
+				} else {
+					a.showDictionaryManager();
+					break;
+				}
+			}
+			default:
+				if (v.getTag() instanceof String) {
+					a.showT(v.getTag());
+				}
+			break;
 		}
 		//v.postDelayed(() -> toggleMenuGrid(true), 250);
 	}

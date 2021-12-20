@@ -63,7 +63,7 @@
 					android:src="@drawable/customize_bars"
 					/>
 				<com.knziha.plod.widgets.DescriptiveImageView
-					android:id="@+id/menu_icon5"
+					android:id="@drawable/abc_ic_menu_share_mtrl_alpha"
 					style="@style/MenuIconIVStyle"
 					android:text="分享至…"
 					android:src="@drawable/abc_ic_menu_share_mtrl_alpha"
@@ -90,12 +90,10 @@
 					android:tag="暂未实现：准备在完成数据库v2后再实现"
 					/>
 				<com.knziha.plod.widgets.DescriptiveImageView
-					android:id="@+id/menu_icon8"
+					android:id="@drawable/ic_baseline_nightmode_24"
 					style="@style/MenuIconIVStyle"
 					android:text="夜间模式"
 					android:src="@drawable/ic_baseline_nightmode_24"
-					android:alpha="0.2"
-					android:tag="暂未实现：缺少动画"
 					/>
 				<com.knziha.plod.widgets.DescriptiveImageView
 					android:id="@drawable/ic_options_toolbox"
