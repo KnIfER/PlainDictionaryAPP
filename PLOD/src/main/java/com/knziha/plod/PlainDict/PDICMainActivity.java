@@ -2377,7 +2377,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(CMN.CheckSettings!=0){
 				if(CMN.checkRCSP()){
 					if(ActivedAdapter!=null){
-						String val = "window.rcsp="+ BookPresenter.MakeRCSP(opt)+"; _highlight(null);";
+						String val = "app.rcsp="+ BookPresenter.MakeRCSP(opt)+"; _highlight(null);";
 						CMN.Log("checkRCSP!!",val, BookPresenter.MakeRCSP(opt)&0x10);
 						resetPatterns();
 						webviewHolder=ActivedAdapter.webviewHolder;

@@ -161,6 +161,13 @@ public class Toastable_Activity extends AppCompatActivity {
 			   opt.setRememberVSPanelGo(false);
 			   PDICMainAppOptions.uncheckVersionBefore_5_3(false);
 		   }
+		   if(PDICMainAppOptions.checkVersionBefore_5_4()) {
+			   PDICMainAppOptions.bCheckVersionBefore_5_4=true;
+			   PDICMainAppOptions.setHideFloatFromRecent(false);
+			   PDICMainAppOptions.uncheckVersionBefore_5_4(false);
+		   } else {
+			   PDICMainAppOptions.bCheckVersionBefore_5_4=false;
+		   }
 	   }
 	   super.onCreate(savedInstanceState);
        if(shunt) return;

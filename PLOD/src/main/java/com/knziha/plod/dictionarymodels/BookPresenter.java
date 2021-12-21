@@ -127,17 +127,24 @@ public class BookPresenter
 	@Metaline()
 	public final static String js="SUBPAGE";
 	
-	/** const w=window;
+	/**
+	 	const w=window;
 		var LoadMark, frameAt;
 		function _log(...e){console.log('fatal web::',e)};
 	 	w.addEventListener('load',()=>{
 			//_log('wrappedOnLoadFunc...');
 			var ws = w.document.body.style;
-			_log('mdpage loaded dark:'+(w.rcsp&0x40));
+			_log('mdpage loaded dark:'+(app.rcsp&0x40));
 	 		document.body.contentEditable=!1;
 	 		_highlight(null);
 			var vi = document.getElementsByTagName('video');
-			for(var i=0;i<vi.length;i++){if(!vi[i]._fvwhl){vi[i].addEventListener("webkitfullscreenchange", wrappedFscrFunc, false);vi[i]._fvwhl=1;}}
+			function f(e){
+				//_log('begin fullscreen!!! wrappedFscrFunc');
+				var se = e.srcElement;
+				//if(se.webkitDisplayingFullscreen&&app) app.onRequestFView(se.videoWidth, se.videoHeight);
+				if(app)se.webkitDisplayingFullscreen?app.onRequestFView(se.videoWidth, se.videoHeight):app.onExitFView()
+			}
+			for(var i=0;i<vi.length;i++){if(!vi[i]._fvwhl){vi[i].addEventListener("webkitfullscreenchange", f, false);vi[i]._fvwhl=1;}}
 		},false);
 		function _highlight(keyword){
 			var b1=keyword==null;
@@ -149,12 +156,6 @@ public class BookPresenter
 	 			function cb(){LoadMark=1;highlight(keyword);}
 				try{loadJs('mdbr://markloader.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'markloader.js');}
 			} else highlight(keyword);
-		}
-	 	function wrappedFscrFunc(e){
-			//_log('begin fullscreen!!!');
-			var se = e.srcElement;
-			//if(se.webkitDisplayingFullscreen&&app) app.onRequestFView(se.videoWidth, se.videoHeight);
-			if(app)se.webkitDisplayingFullscreen?app.onRequestFView(se.videoWidth, se.videoHeight):app.onExitFView()
 		}
 		w.addEventListener('touchstart',(e)=>{
 	 		//_log('fatal wrappedOnDownFunc');
@@ -178,7 +179,7 @@ public class BookPresenter
 	@Metaline()
 	public final static byte[] jsBytes=SU.EmptyBytes;
 	
-	/** if(!(w.rcsp&0xF00)){w.addEventListener('click',(e)=>{
+	/** if(!(app.rcsp&0xF00)){w.addEventListener('click',(e)=>{
 	 		//_log('wrappedClickFunc', e.srcElement.id);
 	 		var curr=e.srcElement;
 	 		if(w.webx){
@@ -209,8 +210,8 @@ public class BookPresenter
 					}
 	 			}
 			}
-			_log('popuping...', w.rcsp);
-			if(curr!=document.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && w.rcsp&0x20 && !curr.noword){
+			_log('popuping...', app.rcsp);
+			if(curr!=document.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && app.rcsp&0x20 && !curr.noword){
 	 			if(w._NWP) {
 	 				var p=curr; while((p=p.parentElement))
 	 				if(_NWP.indexOf(p)>=0) break;
@@ -464,7 +465,7 @@ public class BookPresenter
 	 		w.bOnceHighlighted=false;
 			MarkInst.unmark({
 				done: function() {
-	 				var rcsp=w.rcsp;
+	 				var rcsp=app.rcsp;
 					keyword=decodeURIComponent(keyword);
 	 				console.log('highlighting...'+keyword+((rcsp&0x1)!=0));
 	 				if(rcsp&0x1)
@@ -3177,10 +3178,9 @@ function debug(e){console.log(e)};
 			isDirty = true;
 		}
 		if (getIsWebx()) {
-			if (PDICMainAppOptions.checkVersionBefore_5_4())
+			if (PDICMainAppOptions.bCheckVersionBefore_5_4)
 			{
 				setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
-				PDICMainAppOptions.uncheckVersionBefore_5_4(false);
 				isDirty = true;
 			}
 		}

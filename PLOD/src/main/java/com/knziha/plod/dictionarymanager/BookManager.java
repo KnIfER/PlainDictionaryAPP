@@ -437,7 +437,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	    mTabLayout.setSelectedTabIndicatorHeight((int) (3.8*opt.dm.density));
 	    
 	    //tofo
-	    viewPager.setCurrentItem(CurrentPage = opt.getDictManagerTap());
+	    //viewPager.setCurrentItem(CurrentPage = opt.getDictManagerTap());
+	    viewPager.setCurrentItem(CurrentPage = 0); // 暂时关闭
 		
 	    viewPager.setOffscreenPageLimit(Math.max(viewPager.getOffscreenPageLimit(), 1+CurrentPage));
 

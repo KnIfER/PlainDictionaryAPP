@@ -112,7 +112,7 @@ public class PlainWeb extends DictionaryAdapter {
 	private boolean mRecordsDirty;
 	
 	/**
-	 if(!window.PLODKit) {
+	 if(!app.PLODKit) {
 		 var e = document.createElement('style'), css = 'mark{background:yellow}mark.current{background:orange}';
 		 e.type = 'text/css';
 		 e.class = '_PDict';
@@ -123,7 +123,7 @@ public class PlainWeb extends DictionaryAdapter {
 		 } else {
 		 	e.appendChild(document.createTextNode(css));
 		 }
-	 	 window.PLODKit=1;
+	 	 app.PLODKit=1;
 		function loadJs(url){
 			var script=document.createElement('script');
 			script.type="text/javascript";
@@ -909,7 +909,7 @@ public class PlainWeb extends DictionaryAdapter {
 //			}
 //		}
 		if (bookPresenter!=null) {
-			StringBuilder sb = AcquireStringBuffer(8196).append("window.rcsp=")
+			StringBuilder sb = AcquireStringBuffer(8196).append("app.rcsp=")
 					.append(bookPresenter.MakeRCSP(opt)).append(";")
 					;
 			if (jsLoader != null) sb.append("try{").append(jsLoader).append("}catch(e){}");
@@ -1068,7 +1068,7 @@ public class PlainWeb extends DictionaryAdapter {
 ////			}
 ////		}
 //
-//		StringBuilder sb = AcquireStringBuffer(8196).append("window.rcsp=")
+//		StringBuilder sb = AcquireStringBuffer(8196).append("app.rcsp=")
 //				.append(MakeRCSP(opt)).append(";")
 //				.append(loadJs);
 //		if (jsLoader != null) sb.append(jsLoader);
@@ -1267,7 +1267,7 @@ public class PlainWeb extends DictionaryAdapter {
 		
 		currentUrl=view.getUrl();
 //		if(jsLoader!=null || onstart!=null) {
-//			String jsCode = "window.rcsp=" + bookPresenter.MakeRCSP(opt) + ";";
+//			String jsCode = "app.rcsp=" + bookPresenter.MakeRCSP(opt) + ";";
 //			if (jsLoader != null) jsCode += jsLoader;
 //			if (onstart != null) jsCode += onstart;
 //			////view.evaluateJavascript(jsCode, null);

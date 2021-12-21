@@ -1085,16 +1085,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateSFAt(0x10000000l,!val);
 		return val;
 	}
-	public static boolean getHideFloatFromRecent() {
-		return getHideFloatFromRecent(SecondFlag);//SecondFlag==null?0:
-	}
-	public static boolean getHideFloatFromRecent(long SecondFlag) {
-		return (SecondFlag & 0x1000000000l) != 0x1000000000l;
-	}
-	public static boolean setHideFloatFromRecent(boolean val) {
-		updateSFAt(0x1000000000l,!val);
-		return val;
-	}
+	
+	@Metaline(flagPos=36) public static boolean getHideFloatFromRecent() { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=36) public static void setHideFloatFromRecent(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 
 	//xxx
 	public boolean getPeruseUseVolumeBtn() {
@@ -2273,7 +2266,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=18, debug=0) public boolean getAutoBuildIndex() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	
+	public static boolean bCheckVersionBefore_5_4;
 	@Metaline(flagPos=19, shift=1) public static boolean checkVersionBefore_5_4() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=19, shift=1) public static void uncheckVersionBefore_5_4(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	

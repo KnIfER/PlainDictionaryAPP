@@ -6797,7 +6797,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void toggleClickSearch(boolean val) {
-		evalJsAtAllFrames(val?"w.rcsp|=0x20;(w.rcsp&0xF00)||app.loadJs(sid.get(),'tapTrans.js')":"w.rcsp&=~0x20");
+		evalJsAtAllFrames(val?"app.rcsp|=0x20;(app.rcsp&0xF00)||app.loadJs(sid.get(),'tapTrans.js')":"app.rcsp&=~0x20");
 	}
 
 	void toggleInPageSearch(boolean isLongClicked) {
