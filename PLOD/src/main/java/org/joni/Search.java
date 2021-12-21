@@ -19,12 +19,10 @@
  */
 package org.joni;
 
-import com.knziha.plod.dictionary.Utils.SU;
+import static org.joni.Config.USE_SUNDAY_QUICK_SEARCH;
 
 import org.jcodings.Encoding;
 import org.jcodings.IntHolder;
-
-import static org.joni.Config.USE_SUNDAY_QUICK_SEARCH;
 
 final class Search {
 
@@ -203,21 +201,13 @@ final class Search {
             int s = textP;
             byte[]buf = matcher.icbuf();
 
-			int max = enc.maxLength();
-			if(max==1) {
-				while (s < end) {
-					if (lowerCaseMatch(target, targetP, targetEnd, text, s, textEnd, enc, buf, regex.caseFoldFlag)) return s;
-					s += enc.length(text, s, textEnd);
-				}
-			} else {
-				while (s < textRange) {
-					if (lowerCaseMatch(target, targetP, targetEnd, text, s, textEnd, enc, buf, regex.caseFoldFlag)) return s;
-					int val = Math.max(1, enc.length(text, s, textEnd));//I believe
-					s += val;
-				}
-			}
+            while (s < end) {
+                if (lowerCaseMatch(target, targetP, targetEnd, text, s, textEnd, enc, buf, regex.caseFoldFlag)) return s;
+                s += enc.length(text, s, textEnd);
+            }
             return -1;
         }
+
     };
 
     static final Backward SLOW_IC_BACKWARD = new Backward() {
@@ -237,7 +227,6 @@ final class Search {
             while (s >= textP) {
                 if (lowerCaseMatch(target, targetP, targetEnd, text, s, textEnd, enc, buf, regex.caseFoldFlag)) return s;
                 s = enc.prevCharHead(text, adjustText, s, textEnd);
-
             }
             return -1;
         }
@@ -581,18 +570,10 @@ final class Search {
             Encoding enc = regex.enc;
             byte[]map = regex.map;
             int s = textP;
-            int max = enc.maxLength();
-            if(max==1) {
-                while (s < textRange) {
-                    if (map[text[s] & 0xff] != 0) return s;
-                    s += enc.length(text, s, textEnd);
-                }
-            } else {
-                while (s < textRange) {
-                    if (map[text[s] & 0xff] != 0) return s;
-                    int val = Math.max(1, enc.length(text, s, textEnd)); //I believe
-					s += val;
-                }
+
+            while (s < textRange) {
+                if (map[text[s] & 0xff] != 0) return s;
+                s += enc.length(text, s, textEnd);
             }
             return -1;
         }

@@ -31,6 +31,7 @@ import org.jcodings.Ptr;
 import org.jcodings.constants.CharacterType;
 import org.jcodings.constants.PosixBracket;
 import org.jcodings.exception.InternalException;
+import org.jcodings.unicode.UnicodeCodeRange;
 import org.joni.ast.AnchorNode;
 import org.joni.ast.AnyCharNode;
 import org.joni.ast.BackRefNode;
@@ -468,6 +469,7 @@ class Parser extends Lexer {
                 } // USE_NAMED_GROUP
                 break;
             case '<':  /* look behind (?<=...), (?<!...) */
+                if (!left()) newSyntaxException(END_PATTERN_WITH_UNMATCHED_PARENTHESIS);
                 fetch();
                 if (c == '=') {
                     node = new AnchorNode(AnchorType.LOOK_BEHIND);
@@ -494,7 +496,7 @@ class Parser extends Lexer {
             case '@':
                 if (syntax.op2AtMarkCaptureHistory()) {
                     if (Config.USE_NAMED_GROUP) {
-                        if (syntax.op2QMarkLtNamedGroup()) {
+                        if (left() && syntax.op2QMarkLtNamedGroup()) {
                             fetch();
                             if (c == '<' || c == '\'') {
                                 listCapture = true;
@@ -514,7 +516,7 @@ class Parser extends Lexer {
                 break;
 
             case '(':   /* conditional expression: (?(cond)yes), (?(cond)yes|no) */
-                if (syntax.op2QMarkLParenCondition()) {
+                if (left() && syntax.op2QMarkLParenCondition()) {
                     int num = -1;
                     int name = -1;
                     fetch();
@@ -646,8 +648,7 @@ class Parser extends Lexer {
                     } // switch
 
                     if (c == ')') {
-                        EncloseNode en = EncloseNode.newOption(option);
-                        node = en;
+                        node = EncloseNode.newOption(option);
                         returnCode = 2; /* option only */
                         return node;
                     } else if (c == ':') {
@@ -678,8 +679,7 @@ class Parser extends Lexer {
                 return node;
             }
             EncloseNode en = EncloseNode.newMemory(env.option, false);
-            int num = env.addMemEntry();
-            en.regNum = num;
+            en.regNum = env.addMemEntry();
             node = en;
         }
 
@@ -713,27 +713,25 @@ class Parser extends Lexer {
 
     private Node parseEncloseNamedGroup2(boolean listCapture) {
         int nm = p;
-        int num = fetchName(c, false);
+        fetchName(c, false);
         int nameEnd = value;
-        num = env.addMemEntry();
+        int num = env.addMemEntry();
         if (listCapture && num >= BitStatus.BIT_STATUS_BITS_NUM) newValueException(GROUP_NUMBER_OVER_FOR_CAPTURE_HISTORY);
 
         regex.nameAdd(bytes, nm, nameEnd, num, syntax);
         EncloseNode en = EncloseNode.newMemory(env.option, true);
         en.regNum = num;
 
-        Node node = en;
-
         if (listCapture) env.captureHistory = bsOnAtSimple(env.captureHistory, num);
         env.numNamed++;
-        return node;
+        return en;
     }
 
     private int findStrPosition(int[]s, int n, int from, int to, Ptr nextChar) {
         int x;
         int q;
         int p = from;
-        int i = 0;
+        int i;
         while (p < to) {
             x = enc.mbcToCode(bytes, p, to);
             q = p + enc.length(bytes, p, to);
@@ -898,28 +896,13 @@ class Parser extends Lexer {
         return en;
     }
 
-    private static class GraphemeNames {
-        static final byte[] Grapheme_Cluster_Break_Extend = "Grapheme_Cluster_Break=Extend".getBytes();
-        static final byte[] Grapheme_Cluster_Break_Control = "Grapheme_Cluster_Break=Control".getBytes();
-        static final byte[] Grapheme_Cluster_Break_Prepend = "Grapheme_Cluster_Break=Prepend".getBytes();
-        static final byte[] Grapheme_Cluster_Break_L = "Grapheme_Cluster_Break=L".getBytes();
-        static final byte[] Grapheme_Cluster_Break_V = "Grapheme_Cluster_Break=V".getBytes();
-        static final byte[] Grapheme_Cluster_Break_LV = "Grapheme_Cluster_Break=LV".getBytes();
-        static final byte[] Grapheme_Cluster_Break_LVT = "Grapheme_Cluster_Break=LVT".getBytes();
-        static final byte[] Grapheme_Cluster_Break_T = "Grapheme_Cluster_Break=T".getBytes();
-        static final byte[] Regional_Indicator = "Regional_Indicator".getBytes();
-        static final byte[] Extended_Pictographic = "Extended_Pictographic".getBytes();
-        static final byte[] Grapheme_Cluster_Break_SpacingMark = "Grapheme_Cluster_Break=SpacingMark".getBytes();
+    private void addPropertyToCC(CClassNode cc, UnicodeCodeRange range, boolean not) {
+        cc.addCType(range.getCType(), not, false, env, this);
     }
 
-    private void addPropertyToCC(CClassNode cc, byte[] propName, boolean not) {
-        int ctype = enc.propertyNameToCType(propName, 0, propName.length);
-        cc.addCType(ctype, not, false, env, this);
-    }
-
-    private void createPropertyNode(Node[]nodes, int np, byte[] propName) {
+    private void createPropertyNode(Node[]nodes, int np, UnicodeCodeRange range) {
         CClassNode cc = new CClassNode();
-        addPropertyToCC(cc, propName, false);
+        addPropertyToCC(cc, range, false);
         nodes[np] = cc;
     }
 
@@ -929,17 +912,17 @@ class Parser extends Lexer {
         nodes[np] = qnf;
     }
 
-    private void quantifierPropertyNode(Node[]nodes, int np, byte[] propName, char repetitions) {
+    private void quantifierPropertyNode(Node[]nodes, int np, UnicodeCodeRange range, char repetitions) {
         int lower = 0;
         int upper = QuantifierNode.REPEAT_INFINITE;
 
-        createPropertyNode(nodes, np, propName);
+        createPropertyNode(nodes, np, range);
         switch (repetitions) {
             case '?':  upper = 1;          break;
             case '+':  lower = 1;          break;
             case '*':                      break;
             case '2':  lower = upper = 2;  break;
-            default :  new InternalException(ErrorMessages.PARSER_BUG);
+            default :  throw new InternalException(ErrorMessages.PARSER_BUG);
         }
 
         quantifierNode(nodes, np, lower, upper);
@@ -968,7 +951,7 @@ class Parser extends Lexer {
         return np;
     }
 
-    private static int NODE_COMMON_SIZE = 16;
+    private static final int NODE_COMMON_SIZE = 16;
     private Node parseExtendedGraphemeCluster() {
         final Node[] nodes = new Node[NODE_COMMON_SIZE];
         final int anyTargetPosition;
@@ -984,7 +967,7 @@ class Parser extends Lexer {
             CClassNode cc;
             cc = new CClassNode();
             nodes[alts + 1] = cc;
-            addPropertyToCC(cc, GraphemeNames.Grapheme_Cluster_Break_Control, false);
+            addPropertyToCC(cc, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_CONTROL, false);
             if (enc.minLength() > 1) {
                 cc.addCodeRange(env, 0x000A, 0x000A);
                 cc.addCodeRange(env, 0x000D, 0x000D);
@@ -995,41 +978,41 @@ class Parser extends Lexer {
 
             {
                 int list = alts + 3;
-                quantifierPropertyNode(nodes, list + 0, GraphemeNames.Grapheme_Cluster_Break_Prepend, '*');
+                quantifierPropertyNode(nodes, list + 0, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_PREPEND, '*');
                 {
                     int coreAlts = list + 2;
                     {
                         int HList = coreAlts + 1;
-                        quantifierPropertyNode(nodes, HList + 0, GraphemeNames.Grapheme_Cluster_Break_L, '*');
+                        quantifierPropertyNode(nodes, HList + 0, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_L, '*');
                         {
                             int HAlt2 = HList + 2;
-                            quantifierPropertyNode(nodes, HAlt2 + 0, GraphemeNames.Grapheme_Cluster_Break_V, '+');
+                            quantifierPropertyNode(nodes, HAlt2 + 0, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_V, '+');
                             {
                                 int HList2 = HAlt2 + 2;
-                                createPropertyNode(nodes, HList2 + 0, GraphemeNames.Grapheme_Cluster_Break_LV);
-                                quantifierPropertyNode(nodes, HList2 + 1, GraphemeNames.Grapheme_Cluster_Break_V, '*');
+                                createPropertyNode(nodes, HList2 + 0, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_LV);
+                                quantifierPropertyNode(nodes, HList2 + 1, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_V, '*');
                                 createNodeFromArray(true, nodes, HAlt2 + 1, HList2);
                             }
-                            createPropertyNode(nodes, HAlt2 + 2, GraphemeNames.Grapheme_Cluster_Break_LVT);
+                            createPropertyNode(nodes, HAlt2 + 2, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_LVT);
                             createNodeFromArray(false, nodes, HList + 1, HAlt2);
                         }
-                        quantifierPropertyNode(nodes, HList + 2, GraphemeNames.Grapheme_Cluster_Break_T, '*');
+                        quantifierPropertyNode(nodes, HList + 2, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_T, '*');
                         createNodeFromArray(true, nodes, coreAlts + 0, HList);
                     }
-                    quantifierPropertyNode(nodes, coreAlts + 1, GraphemeNames.Grapheme_Cluster_Break_L, '+');
-                    quantifierPropertyNode(nodes, coreAlts + 2, GraphemeNames.Grapheme_Cluster_Break_T, '+');
-                    quantifierPropertyNode(nodes, coreAlts + 3, GraphemeNames.Regional_Indicator, '2');
+                    quantifierPropertyNode(nodes, coreAlts + 1, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_L, '+');
+                    quantifierPropertyNode(nodes, coreAlts + 2, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_T, '+');
+                    quantifierPropertyNode(nodes, coreAlts + 3, UnicodeCodeRange.REGIONALINDICATOR, '2');
                     {
                         int XPList = coreAlts + 5;
-                        createPropertyNode(nodes, XPList + 0, GraphemeNames.Extended_Pictographic);
+                        createPropertyNode(nodes, XPList + 0, UnicodeCodeRange.EXTENDEDPICTOGRAPHIC);
                         {
                             int ExList = XPList + 2;
-                            quantifierPropertyNode(nodes, ExList + 0, GraphemeNames.Grapheme_Cluster_Break_Extend, '*');
+                            quantifierPropertyNode(nodes, ExList + 0, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_EXTEND, '*');
                             strNode = new StringNode(Config.ENC_CODE_TO_MBC_MAXLEN);
                             strNode.setRaw();
                             strNode.catCode(0x200D, enc);
                             nodes[ExList + 1] = strNode;
-                            createPropertyNode(nodes, ExList + 2, GraphemeNames.Extended_Pictographic);
+                            createPropertyNode(nodes, ExList + 2, UnicodeCodeRange.EXTENDEDPICTOGRAPHIC);
                             createNodeFromArray(true, nodes, XPList + 1, ExList);
                         }
                         quantifierNode(nodes, XPList + 1, 0, QuantifierNode.REPEAT_INFINITE);
@@ -1038,20 +1021,20 @@ class Parser extends Lexer {
                     cc = new CClassNode();
                     nodes[coreAlts + 5] = cc;
                     if (enc.minLength() > 1) {
-                        addPropertyToCC(cc, GraphemeNames.Grapheme_Cluster_Break_Control, false);
+                        addPropertyToCC(cc, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_CONTROL, false);
                         cc.addCodeRange(env, 0x000A, 0x000A);
                         cc.addCodeRange(env, 0x000D, 0x000D);
                         cc.mbuf = CodeRangeBuffer.notCodeRangeBuff(env, cc.mbuf);
                     } else {
-                        addPropertyToCC(cc, GraphemeNames.Grapheme_Cluster_Break_Control, true);
+                        addPropertyToCC(cc, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_CONTROL, true);
                         cc.bs.clear(0x0A);
                         cc.bs.clear(0x0D);
                     }
                     createNodeFromArray(false, nodes, list + 1, coreAlts);
                 }
-                createPropertyNode(nodes, list + 2, GraphemeNames.Grapheme_Cluster_Break_Extend);
+                createPropertyNode(nodes, list + 2, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_EXTEND);
                 cc = (CClassNode)nodes[list + 2];
-                addPropertyToCC(cc, GraphemeNames.Grapheme_Cluster_Break_SpacingMark, false);
+                addPropertyToCC(cc, UnicodeCodeRange.GRAPHEMECLUSTERBREAK_SPACINGMARK, false);
                 cc.addCodeRange(env, 0x200D, 0x200D);
                 quantifierNode(nodes, list + 2, 0, QuantifierNode.REPEAT_INFINITE);
                 createNodeFromArray(true, nodes, alts + 2, list);
