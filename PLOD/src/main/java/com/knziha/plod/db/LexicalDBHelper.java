@@ -105,9 +105,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		if (testDBV2) {
 			String sqlBuilder;
 			
-//			com.knziha.plod.db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOK_ANNOT_v2);
-//			com.knziha.plod.db.execSQL("DROP INDEX if exists bookannot_book_hash_index");
-//			com.knziha.plod.db.execSQL("DROP INDEX if exists bookannot_time_index");
+//			db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOK_ANNOT_v2);
+//			db.execSQL("DROP INDEX if exists bookannot_book_hash_index");
+//			db.execSQL("DROP INDEX if exists bookannot_time_index");
 			// TABLE_BOOK_ANNOT_v2 记录高亮标记
 			sqlBuilder = "create table if not exists " +
 					TABLE_BOOK_ANNOT_v2 +
@@ -129,18 +129,18 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", notes BLOB" +
 					")";
 			db.execSQL(sqlBuilder);
-			//com.knziha.plod.db.execSQL("CREATE INDEX if not exists booknote_book_index ON bookannot (bid)");
+			//db.execSQL("CREATE INDEX if not exists booknote_book_index ON bookannot (bid)");
 			db.execSQL("CREATE INDEX if not exists bookannot_book_hash_index ON bookannot (bid, entryDig, entryHash, lexHash, lexDig, pos, hasNotes)"); // 查询，页面笔记视图
 			db.execSQL("CREATE INDEX if not exists bookannot_time_index ON bookannot (bid, last_edit_time)"); // 词典笔记视图
 			db.execSQL("CREATE INDEX if not exists bookannot_time_index ON bookannot (last_edit_time)"); // 全部笔记视图
-//			com.knziha.plod.db.execSQL("DROP INDEX if exists favorite_term_index");
-//			com.knziha.plod.db.execSQL("DROP INDEX if exists favorite_folder_index");
-//			com.knziha.plod.db.execSQL("DROP INDEX if exists booknote_term_index");
-//			com.knziha.plod.db.execSQL("DROP INDEX if exists booknote_book_index");
-//			com.knziha.plod.db.execSQL("DROP INDEX if exists booknote_time_index");
+//			db.execSQL("DROP INDEX if exists favorite_term_index");
+//			db.execSQL("DROP INDEX if exists favorite_folder_index");
+//			db.execSQL("DROP INDEX if exists booknote_term_index");
+//			db.execSQL("DROP INDEX if exists booknote_book_index");
+//			db.execSQL("DROP INDEX if exists booknote_time_index");
 			
-			//com.knziha.plod.db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOK_NOTE_v2);
-			//com.knziha.plod.db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOKMARK_v2);
+			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOK_NOTE_v2);
+			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_BOOKMARK_v2);
 			// TABLE_BOOK_NOTE_v2 记录书签以及词条重写
 			sqlBuilder = "create table if not exists " +
 					TABLE_BOOK_NOTE_v2 +
@@ -161,7 +161,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			db.execSQL("CREATE INDEX if not exists booknote_term_index ON booknote (lex, bid, notesType)"); // query view | booknotes view1
 			db.execSQL("CREATE INDEX if not exists booknote_book_index ON booknote (bid, last_edit_time, notesType)"); // booknotes view
 			db.execSQL("CREATE INDEX if not exists booknote_time_index ON booknote (last_edit_time)"); // all view
-			//com.knziha.plod.db.execSQL("CREATE INDEX if not exists booknote_edit_index ON booknote (edit_count)"); // edit_count view
+			//db.execSQL("CREATE INDEX if not exists booknote_edit_index ON booknote (edit_count)"); // edit_count view
 			
 			
 			// TABLE_BOOKMARK_v2 记录书签
@@ -174,9 +174,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 //					", param BLOB" +
 //					", creation_time INTEGER NOT NULL"+
 //					")";
-//			com.knziha.plod.db.execSQL(sqlBuilder);
-//			com.knziha.plod.db.execSQL("CREATE INDEX if not exists bkmk_index ON bookmark (bid, pos)");
-//			com.knziha.plod.db.execSQL("CREATE INDEX if not exists bkmk_time_index ON bookmark (creation_time)");
+//			db.execSQL(sqlBuilder);
+//			db.execSQL("CREATE INDEX if not exists bkmk_index ON bookmark (bid, pos)");
+//			db.execSQL("CREATE INDEX if not exists bkmk_time_index ON bookmark (creation_time)");
 			
 			
 			// TABLE_BOOK_v2 记录书本
@@ -223,9 +223,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					")";
 			db.execSQL(sqlBuilder);
 			db.execSQL("CREATE INDEX if not exists favorite_term_index ON favorite (lex, folder)"); // query view
-			//com.knziha.plod.db.execSQL("CREATE INDEX if not exists favorite_level_index ON favorite (folder, level)");  // level view
+			//db.execSQL("CREATE INDEX if not exists favorite_level_index ON favorite (folder, level)");  // level view
 			db.execSQL("CREATE INDEX if not exists favorite_folder_index ON favorite (folder, last_visit_time)"); // folder view
-			//com.knziha.plod.db.execSQL("CREATE INDEX if not exists favorite_filter_index ON favorite (folder, visit_count, level,last_visit_time)"); // filter view
+			//db.execSQL("CREATE INDEX if not exists favorite_filter_index ON favorite (folder, visit_count, level,last_visit_time)"); // filter view
 			db.execSQL("CREATE INDEX if not exists favorite_time_index ON favorite (last_visit_time)"); // all view
 			
 			
@@ -251,7 +251,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			}
 			
 			// TABLE_HISTORY_v2 记录自定义数据
-			//com.knziha.plod.db.execSQL("DROP TABLE IF EXISTS "+TABLE_DATA_v2);
+			//db.execSQL("DROP TABLE IF EXISTS "+TABLE_DATA_v2);
 			sqlBuilder = "create table if not exists " +
 					TABLE_DATA_v2 +
 					"(" +
@@ -295,7 +295,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int _oldVersion, int newVersion) {
 		//在setVersion前已经调用
 		oldVersion=_oldVersion;
-		//Toast.makeText(c,oldVersion+":"+newVersion+":"+com.knziha.plod.db.getVersion(),Toast.LENGTH_SHORT).show();
+		//Toast.makeText(c,oldVersion+":"+newVersion+":"+db.getVersion(),Toast.LENGTH_SHORT).show();
 		
 	}
 

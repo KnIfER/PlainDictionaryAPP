@@ -70,7 +70,7 @@ public class mobi {
 	 @{
 	 */
 	final static int PALMDB_HEADER_LEN = 78;  /**< Length of header without record info headers */
-	final static int PALMDB_NAME_SIZE_MAX = 32;  /**< Max length of com.knziha.plod.db name stored at offset 0 */
+	final static int PALMDB_NAME_SIZE_MAX = 32;  /**< Max length of db name stored at offset 0 */
 	final static int PALMDB_RECORD_INFO_SIZE = 8;  /**< Record info header size of each pdb record */
 /** @} */
 

@@ -267,7 +267,7 @@ public class PlainWeb extends DictionaryAdapter {
 				if(0==TextUtils.getTrimmedLength(entrance.get(sz-1))) entrance.remove(sz-1);
 				if(sz>1 && 0==TextUtils.getTrimmedLength(entrance.get(0))) entrance.remove(0);
 			}
-			//todo read entrances that saved in com.knziha.plod.db.
+			//todo read entrances that saved in db.
 		}
 		String _routes = website.getString("reroute");
 		if(_routes!=null){
