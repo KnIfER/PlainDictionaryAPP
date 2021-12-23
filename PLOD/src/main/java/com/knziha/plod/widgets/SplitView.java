@@ -67,32 +67,32 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     public SplitView(Context context, AttributeSet attrs) {
         super(context, attrs);
         if (!isInEditMode()) {
-	        TypedArray StyledAttributes = context.obtainStyledAttributes(attrs, R.styleable.SplitView);
+	        TypedArray StyledAttributes = context.obtainStyledAttributes(attrs, R.styleable.SplitViewSty);
 	        
 	        RuntimeException e = null;
 
 	        sz_hdl = getResources().getDimension(R.dimen.sz_handle);
 	        sz_valv = getResources().getDimension(R.dimen.sz_valve);
 	        
-	    	CompensationTop = StyledAttributes.getDimensionPixelSize(R.styleable.SplitView_CompensationTop   ,0);
-	    	CompensationBottom = StyledAttributes.getDimensionPixelSize(R.styleable.SplitView_CompensationBottom,0);
-	    	ReservationLeft = StyledAttributes.getDimensionPixelSize(R.styleable.SplitView_ReservationLeft    ,0);
-	    	ReservationRight  = StyledAttributes.getDimensionPixelSize(R.styleable.SplitView_ReservationRight ,0);
+	    	CompensationTop = StyledAttributes.getDimensionPixelSize(R.styleable.SplitViewSty_CompensationTop,0);
+	    	CompensationBottom = StyledAttributes.getDimensionPixelSize(R.styleable.SplitViewSty_CompensationBottom,0);
+	    	ReservationLeft = StyledAttributes.getDimensionPixelSize(R.styleable.SplitViewSty_ReservationLeft,0);
+	    	ReservationRight  = StyledAttributes.getDimensionPixelSize(R.styleable.SplitViewSty_ReservationRight,0);
 	    	
-	        mHandleId = StyledAttributes.getResourceId(R.styleable.SplitView_handle, 0);
+	        mHandleId = StyledAttributes.getResourceId(R.styleable.SplitViewSty_handle, 0);
 	        if (mHandleId == 0) {
 	            e = new IllegalArgumentException(StyledAttributes.getPositionDescription() +
 	                                             ": Handle attribute must refer to a valid child.");
 	        }
 	
-	        mPrimaryContentId = StyledAttributes.getResourceId(R.styleable.SplitView_primaryContent, 0);
+	        mPrimaryContentId = StyledAttributes.getResourceId(R.styleable.SplitViewSty_primaryContent, 0);
 	        if (mPrimaryContentId == 0 ) {
 	            e = new IllegalArgumentException(StyledAttributes.getPositionDescription() +
 	                                             ": Handle attribute must refer to a valid child.");
 	        }
 	
 	
-	        mSecondaryContentId = StyledAttributes.getResourceId(R.styleable.SplitView_secondaryContent, 0);
+	        mSecondaryContentId = StyledAttributes.getResourceId(R.styleable.SplitViewSty_secondaryContent, 0);
 	        if (mSecondaryContentId == 0 ) {
 	            e = new IllegalArgumentException(StyledAttributes.getPositionDescription() +
 	                                             ": Secondary content must refer to a valid child.");

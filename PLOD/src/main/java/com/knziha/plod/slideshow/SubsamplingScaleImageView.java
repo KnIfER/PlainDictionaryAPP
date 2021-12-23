@@ -361,7 +361,7 @@ public class SubsamplingScaleImageView extends View {
 	
 	public SubsamplingScaleImageView(Context context, AttributeSet attr) {
 		super(context, attr);
-		flingScroller = new OverScroller(getContext());
+		flingScroller = new FlingScroller(getContext());
 		//flingScroller.setInterpolator(new LinearInterpolator());
 		density = getResources().getDisplayMetrics().density;
 		//setMinimumDpi(160)(ViewGroup;
@@ -3501,7 +3501,7 @@ public class SubsamplingScaleImageView extends View {
 //		return +change * fluidInterpolator.getInterpolation(progress) + from;
 	}
 	
-	OverScroller flingScroller;
+	FlingScroller flingScroller;
 	DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(1f);
 	ViscousFluidInterpolator fluidInterpolator = new ViscousFluidInterpolator();
 	

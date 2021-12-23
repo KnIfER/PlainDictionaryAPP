@@ -115,19 +115,19 @@ public class FlowTextView extends View {
 		super(context, attrs, defStyle);
 		DisplayMetrics dm = getResources().getDisplayMetrics();
 		if (attrs != null) {
-			TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.FlowTextView);
-			mSpacingAdd = ta.getDimensionPixelSize(R.styleable.FlowTextView_android_lineSpacingExtra, 0);
-			mSpacingMult = ta.getFloat(R.styleable.FlowTextView_android_lineSpacingMultiplier, 1.0f);
-			mTextsize = ta.getDimension(R.styleable.FlowTextView_android_textSize, 0);
-			mTextColor = ta.getColor(R.styleable.FlowTextView_android_textColor, Color.BLACK);
-			mStarWidth = ta.getDimensionPixelSize(R.styleable.FlowTextView_starWidth, 0);
-			maxLines = ta.getInteger(R.styleable.FlowTextView_android_maxLines, -1);
-			margin = ta.getDimension(R.styleable.FlowTextView_margin, 0);
-			Rating = ta.getBoolean(R.styleable.FlowTextView_rating, false);
-			mGravity = ta.getInteger(R.styleable.FlowTextView_android_gravity, 0);
+			TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.FlowTextViewSty);
+			mSpacingAdd = ta.getDimensionPixelSize(R.styleable.FlowTextViewSty_android_lineSpacingExtra, 0);
+			mSpacingMult = ta.getFloat(R.styleable.FlowTextViewSty_android_lineSpacingMultiplier, 1.0f);
+			mTextsize = ta.getDimension(R.styleable.FlowTextViewSty_android_textSize, 0);
+			mTextColor = ta.getColor(R.styleable.FlowTextViewSty_android_textColor, Color.BLACK);
+			mStarWidth = ta.getDimensionPixelSize(R.styleable.FlowTextViewSty_starWidth, 0);
+			maxLines = ta.getInteger(R.styleable.FlowTextViewSty_android_maxLines, -1);
+			margin = ta.getDimension(R.styleable.FlowTextViewSty_margin, 0);
+			Rating = ta.getBoolean(R.styleable.FlowTextViewSty_rating, false);
+			mGravity = ta.getInteger(R.styleable.FlowTextViewSty_android_gravity, 0);
 			if(isInEditMode()){
-				mActiveDrawable = ta.getDrawable(R.styleable.FlowTextView_android_src);
-				setText(ta.getString(R.styleable.FlowTextView_android_text));
+				mActiveDrawable = ta.getDrawable(R.styleable.FlowTextViewSty_android_src);
+				setText(ta.getString(R.styleable.FlowTextViewSty_android_text));
 			}
 			ta.recycle();
 		}

@@ -42,9 +42,9 @@ public class DescriptiveImageView extends ImageView {
 	
 	public DescriptiveImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.DescriptiveImageView);
-		mText = a.getString(R.styleable.DescriptiveImageView_android_text);
-		offsetY = a.getDimension(R.styleable.DescriptiveImageView_android_layout_y, 0);
+		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.DescriptiveImageViewSty);
+		mText = a.getString(R.styleable.DescriptiveImageViewSty_android_text);
+		offsetY = a.getDimension(R.styleable.DescriptiveImageViewSty_android_layout_y, 0);
 		textPainter = createTextPainter(false);
 		a.recycle();
 	}

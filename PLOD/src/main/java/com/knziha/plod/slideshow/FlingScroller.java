@@ -28,7 +28,7 @@ import android.view.animation.Interpolator;
  * of a scrolling operation. This class is a drop-in replacement for
  * {@link android.widget.Scroller} in most cases.
  */
-public class OverScroller {
+public class FlingScroller {
     private int mMode;
 
     private final SplineOverScroller mScrollerX;
@@ -46,7 +46,7 @@ public class OverScroller {
      * Creates an OverScroller with a viscous fluid scroll interpolator and flywheel.
      * @param context
      */
-    public OverScroller(Context context) {
+    public FlingScroller(Context context) {
         this(context, null);
     }
 
@@ -56,7 +56,7 @@ public class OverScroller {
      * @param interpolator The scroll interpolator. If null, a default (viscous) interpolator will
      * be used.
      */
-    public OverScroller(Context context, Interpolator interpolator) {
+    public FlingScroller(Context context, Interpolator interpolator) {
         this(context, interpolator, true);
     }
 
@@ -68,7 +68,7 @@ public class OverScroller {
      * @param flywheel If true, successive fling motions will keep on increasing scroll speed.
      * @hide
      */
-    public OverScroller(Context context, Interpolator interpolator, boolean flywheel) {
+    public FlingScroller(Context context, Interpolator interpolator, boolean flywheel) {
         if (interpolator == null) {
             mInterpolator = new SubsamplingScaleImageView.ViscousFluidInterpolator();
         } else {
@@ -89,11 +89,11 @@ public class OverScroller {
      * means no bounce. This behavior is no longer supported and this coefficient has no effect.
      * @param bounceCoefficientY Same as bounceCoefficientX but for the vertical direction. This
      * behavior is no longer supported and this coefficient has no effect.
-     * @deprecated Use {@link #OverScroller(Context, Interpolator)} instead.
+     * @deprecated Use {@link #FlingScroller(Context, Interpolator)} instead.
      */
     @Deprecated
-    public OverScroller(Context context, Interpolator interpolator,
-            float bounceCoefficientX, float bounceCoefficientY) {
+    public FlingScroller(Context context, Interpolator interpolator,
+						 float bounceCoefficientX, float bounceCoefficientY) {
         this(context, interpolator, true);
     }
 
@@ -108,11 +108,11 @@ public class OverScroller {
      * @param bounceCoefficientY Same as bounceCoefficientX but for the vertical direction. This
      * behavior is no longer supported and this coefficient has no effect.
      * @param flywheel If true, successive fling motions will keep on increasing scroll speed.
-     * @deprecated Use {@link #OverScroller(Context, Interpolator)} instead.
+     * @deprecated Use {@link #FlingScroller(Context, Interpolator)} instead.
      */
     @Deprecated
-    public OverScroller(Context context, Interpolator interpolator,
-            float bounceCoefficientX, float bounceCoefficientY, boolean flywheel) {
+    public FlingScroller(Context context, Interpolator interpolator,
+						 float bounceCoefficientX, float bounceCoefficientY, boolean flywheel) {
         this(context, interpolator, flywheel);
     }
 
