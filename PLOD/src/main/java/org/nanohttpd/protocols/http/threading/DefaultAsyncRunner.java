@@ -33,7 +33,7 @@ package org.nanohttpd.protocols.http.threading;
  * #L%
  */
 
-import com.knziha.plod.plaindict.PDICMainAppOptions;
+//import com.knziha.plod.plaindict.PDICMainAppOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,12 +79,12 @@ public class DefaultAsyncRunner implements IAsyncRunner {
     @Override
     public void exec(ClientHandler clientHandler) {
         ++this.requestCount;
-        if(PDICMainAppOptions.isSingleThreadServer()) {
-			clientHandler.run();
-		} else {
+//        if(PDICMainAppOptions.isSingleThreadServer()) {
+//			clientHandler.run();
+//		} else {
 			this.running.add(clientHandler);
 			createThread(clientHandler).start();
-		}
+//		}
     }
 
     protected Thread createThread(ClientHandler clientHandler) {

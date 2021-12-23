@@ -33,8 +33,8 @@ package org.nanohttpd.protocols.http;
  * #L%
  */
 
-import com.knziha.plod.plaindict.PDICMainAppOptions;
-import com.knziha.plod.dictionary.Utils.SU;
+//import com.knziha.plod.plaindict.PDICMainAppOptions;
+//import com.knziha.plod.dictionary.Utils.SU;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,7 +64,7 @@ public class ServerRunnable implements Runnable {
     @Override
     public void run() {
     	tid = Thread.currentThread().getId();
-    	SU.Log("tid", tid);
+//    	SU.Log("tid", tid);
         try {
             httpd.getMyServerSocket().bind(httpd.hostname != null ? new InetSocketAddress(httpd.hostname, httpd.myPort) : new InetSocketAddress(httpd.myPort));
             hasBinded = true;
@@ -77,13 +77,13 @@ public class ServerRunnable implements Runnable {
 				//SU.rt();
                 final Socket finalAccept = httpd.getMyServerSocket().accept();
                 if (this.timeout > 0) {
-                    finalAccept.setSoTimeout(PDICMainAppOptions.isSingleThreadServer()?2:this.timeout); //this.timeout
+//                    finalAccept.setSoTimeout(PDICMainAppOptions.isSingleThreadServer()?2:this.timeout); //this.timeout
                 }
                 final InputStream inputStream = finalAccept.getInputStream();
                 httpd.asyncRunner.exec(httpd.createClientHandler(finalAccept, inputStream));
 				//SU.pt("执行完毕");
             } catch (IOException e) {
-				SU.Log(Level.FINE, "Communication with the client broken", e);
+//				SU.Log(Level.FINE, "Communication with the client broken", e);
             }
         } while (!httpd.getMyServerSocket().isClosed());
     }

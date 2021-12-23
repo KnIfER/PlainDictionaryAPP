@@ -19,7 +19,7 @@
  */
 package org.jcodings.util;
 
-import com.knziha.plod.dictionary.Utils.BU;
+//import com.knziha.plod.dictionary.Utils.BU;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
