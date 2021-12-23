@@ -3679,7 +3679,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ftv.mRatingDrawable = getRatingDrawable();
 			ftv.setCompoundDrawables(mActiveDrawable, null, null, null);
 			
-			XYTouchRecorder xyt = opt.XYTouchRecorder();
+			XYTouchRecorder xyt = opt.XYTouchRecorderInstance();
 			ftv.setOnTouchListener(xyt);
 			ftv.setOnClickListener(xyt);
 			

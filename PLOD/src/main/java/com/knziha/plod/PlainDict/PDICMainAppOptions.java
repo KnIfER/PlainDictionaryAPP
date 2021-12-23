@@ -2547,7 +2547,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	XYTouchRecorder xyt;
-	public XYTouchRecorder XYTouchRecorder() {
+	public XYTouchRecorder XYTouchRecorderInstance() {
 		if(xyt==null) xyt = new XYTouchRecorder();
 		return xyt;
 	}

@@ -3386,7 +3386,7 @@ function debug(e){console.log(e)};
 		
 		tv.setTextSize(17f);
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
-		XYTouchRecorder xyt = mdTmp.getOpt().XYTouchRecorder();
+		XYTouchRecorder xyt = mdTmp.getOpt().XYTouchRecorderInstance();
 		tv.setOnClickListener(xyt);
 		tv.setOnTouchListener(xyt);
 		AlertDialog.Builder builder2 = new AlertDialog.Builder(context,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line);

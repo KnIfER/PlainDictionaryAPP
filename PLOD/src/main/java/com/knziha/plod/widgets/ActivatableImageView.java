@@ -27,9 +27,9 @@ public class ActivatableImageView extends ImageView {
 	public ActivatableImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		mDrawable = getDrawable();
-		TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ActivatableImageView, 0, 0);
-		mActiveDrawable = a.getDrawable(R.styleable.ActivatableImageView_src0);
-		bActivedShowRawColor = a.getBoolean(R.styleable.ActivatableImageView_activedSR, true);
+		TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ActivatableImageViewSty, 0, 0);
+		mActiveDrawable = a.getDrawable(R.styleable.ActivatableImageViewSty_src0);
+		bActivedShowRawColor = a.getBoolean(R.styleable.ActivatableImageViewSty_activedSR, true);
 		a.recycle();
 	}
 	

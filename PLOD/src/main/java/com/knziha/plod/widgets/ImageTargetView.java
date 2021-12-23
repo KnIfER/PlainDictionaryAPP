@@ -8,16 +8,16 @@ import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 
-public class ImageViewTarget extends ImageView {
-	public ImageViewTarget(Context context) {
+public class ImageTargetView extends ImageView {
+	public ImageTargetView(Context context) {
 		super(context);
 	}
 	
-	public ImageViewTarget(Context context, @Nullable AttributeSet attrs) {
+	public ImageTargetView(Context context, @Nullable AttributeSet attrs) {
 		super(context, attrs);
 	}
 	
-	public ImageViewTarget(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+	public ImageTargetView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 	}
 	

@@ -43,7 +43,7 @@
         <attr name="title" format="string"/>
     </declare-styleable>
 
-    <declare-styleable name="ActivatableImageView">
+    <declare-styleable name="ActivatableImageViewSty">
         <attr name="src0" format="reference" />
         <attr name="activedSR" format="boolean" />
     </declare-styleable>
