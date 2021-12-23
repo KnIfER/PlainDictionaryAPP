@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.knziha.plod.plaindict.CMN;
 
-public class TextViewmy extends TextView {
+public class TextViewmyNoUse extends TextView {
     private Scroller mScroller;
     private int mScrollY;
     private int mMinScroll;
@@ -23,17 +23,17 @@ public class TextViewmy extends TextView {
     private boolean didMove;
     private int sHeight;
 
-    public TextViewmy(Context context) {
+    public TextViewmyNoUse(Context context) {
         super(context);
         InitScroller(context);
     }
 
-    public TextViewmy(Context context, @Nullable AttributeSet attrs) {
+    public TextViewmyNoUse(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         InitScroller(context);
     }
 
-    public TextViewmy(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public TextViewmyNoUse(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         InitScroller(context);
     }

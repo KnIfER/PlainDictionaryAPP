@@ -19,7 +19,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.ListFragment;
 
 import com.knziha.plod.dictionary.Utils.BU;
-import com.knziha.plod.dictionarymanager.files.ArrayListTree;
+import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.plaindict.CMN;
@@ -41,8 +41,8 @@ public class BookManagerWebsites extends ListFragment {
 			this.description = description;
 		}
 	}
-	ArrayListTree<mFile> data=new ArrayListTree<>();
-	ArrayListTree<mFile> hiddenParents=new ArrayListTree<>();
+	ArrayListBookTree<mFile> data=new ArrayListBookTree<>();
+	ArrayListBookTree<mFile> hiddenParents=new ArrayListBookTree<>();
 	protected ListView mDslv;
 	ArrayAdapter<mFile> adapter;
 	boolean isDirty = false;

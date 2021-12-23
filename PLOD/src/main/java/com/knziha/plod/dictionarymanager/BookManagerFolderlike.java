@@ -9,7 +9,7 @@ import java.util.List;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.dictionarymanager.files.ArrayListTree;
+import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionary.Utils.BU;
@@ -37,8 +37,8 @@ import android.widget.TextView;
 
 public class BookManagerFolderlike extends ListFragment implements BookManagerFragment.SelectableFragment {
 	String parentFile;
-	ArrayListTree<mFile> data=new ArrayListTree<>();
-	ArrayListTree<mFile> hiddenParents=new ArrayListTree<>();
+	ArrayListBookTree<mFile> data=new ArrayListBookTree<>();
+	ArrayListBookTree<mFile> hiddenParents=new ArrayListBookTree<>();
 	protected ListView mDslv;
 	ArrayAdapter<mFile> adapter;
 	boolean isDirty = false;

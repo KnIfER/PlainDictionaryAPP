@@ -3,22 +3,22 @@ package com.knziha.plod.dictionarymanager.files;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class ArrayListTree<T extends Comparable<? super T>> {
+public class ArrayListBookTree<T extends Comparable<? super T>> {
 	//wonderful!
 	
 	protected final ArrayList<T> data;
 	//boolean isdirty=false;
 	
-	public ArrayListTree(){
+	public ArrayListBookTree(){
 		data = new  ArrayList<>();
 	}
 
-	public ArrayListTree(ArrayList<T> _data) {
+	public ArrayListBookTree(ArrayList<T> _data) {
 		data = _data;
 	}
 
 	public int insert(T val){
-		if(data.size()==0 || data.get(data.size()-1).compareTo(val)<0) {//!!!不允许重复
+		if(data.size()==0 || data.get(data.size()-1).compareTo(val)<0) {//!!!不允许重复，没有等于0
 			data.add(data.size(),val);
 			return data.size();
 		}
@@ -64,13 +64,15 @@ public class ArrayListTree<T extends Comparable<? super T>> {
 		return cc;
 	}
 
-	public Integer size() {
+	public Integer size() { // boxing ???
 		return data.size();
 	}
 
 	public void add(T val) {
 		data.add(val);
 	}
+	
+	// new methods
 
 	public ArrayList<T> getList() {
 		return data;
