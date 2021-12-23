@@ -14,7 +14,6 @@ import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
 import android.view.ActionMode;
@@ -43,7 +42,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.AppCompatImageButton;
@@ -57,7 +55,6 @@ import com.jess.ui.TwoWayAdapterView.OnItemClickListener;
 import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
-import com.knziha.plod.plaindict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -81,7 +78,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import db.MdxDBHelper;
+import com.knziha.plod.db.MdxDBHelper;
 
 import static android.view.View.FOCUSABLE_AUTO;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
@@ -876,7 +873,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		widget10=ContentbarBtns[3];
 		widget11=ContentbarBtns[4];
 		
-		if(a.thisActType==ActType.MultiShareActivity) {
+		if(a.thisActType==ActType.MultiShare) {
 			a.widget10 = widget10;
 		}
 		

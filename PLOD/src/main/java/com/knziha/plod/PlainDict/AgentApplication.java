@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import db.LexicalDBHelper;
+import com.knziha.plod.db.LexicalDBHelper;
 
 public class AgentApplication extends Application {
 	/** transient */

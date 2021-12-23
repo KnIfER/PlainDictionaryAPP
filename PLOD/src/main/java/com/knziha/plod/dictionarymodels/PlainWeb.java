@@ -48,13 +48,13 @@ import java.util.zip.Inflater;
 
 import javax.net.ssl.X509TrustManager;
 
-import db.LexicalDBHelper;
-import db.MdxDBHelper;
+import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.db.MdxDBHelper;
 
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
-import static db.LexicalDBHelper.FIELD_CREATE_TIME;
-import static db.LexicalDBHelper.FIELD_EDIT_TIME;
-import static db.LexicalDBHelper.TABLE_DATA_v2;
+import static com.knziha.plod.db.LexicalDBHelper.FIELD_CREATE_TIME;
+import static com.knziha.plod.db.LexicalDBHelper.FIELD_EDIT_TIME;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_DATA_v2;
 
 /*
  Mdict point to online website.
@@ -267,7 +267,7 @@ public class PlainWeb extends DictionaryAdapter {
 				if(0==TextUtils.getTrimmedLength(entrance.get(sz-1))) entrance.remove(sz-1);
 				if(sz>1 && 0==TextUtils.getTrimmedLength(entrance.get(0))) entrance.remove(0);
 			}
-			//todo read entrances that saved in db.
+			//todo read entrances that saved in com.knziha.plod.db.
 		}
 		String _routes = website.getString("reroute");
 		if(_routes!=null){

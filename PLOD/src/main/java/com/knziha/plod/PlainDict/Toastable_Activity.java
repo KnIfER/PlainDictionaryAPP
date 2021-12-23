@@ -52,7 +52,7 @@ import com.knziha.plod.widgets.SimpleTextNotifier;
 
 import org.apache.commons.lang3.StringUtils;
 
-import db.LexicalDBHelper;
+import com.knziha.plod.db.LexicalDBHelper;
 
 import static com.knziha.plod.dictionarymodels.BookPresenter.indexOf;
 

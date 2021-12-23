@@ -33,7 +33,6 @@ import static com.knziha.plod.plaindict.PDICMainActivity.CosyChair;
 import static com.knziha.plod.plaindict.PDICMainActivity.CosySofa;
 import static com.knziha.plod.plaindict.PDICMainActivity.HdnCmfrt;
 import static com.knziha.plod.plaindict.PDICMainActivity.currMdlTime;
-import static com.knziha.plod.plaindict.PDICMainActivity.lastLoadedModule;
 import static com.knziha.plod.plaindict.PDICMainActivity.lazyLoaded;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
 
@@ -54,7 +53,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	public void onDismiss(DialogInterface dialog) {
 		super.onDismiss(dialog);
-		if(allHidden() && (PeruseView==null||PeruseView.isWindowDetached())) {
+		if(allHidden() && (peruseView ==null|| peruseView.isWindowDetached())) {
 			finishOrHide();
 		}
 	}
@@ -82,7 +81,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	protected void onCreate(Bundle savedInstanceState) {
 		CMN.Log("onCreate...");
 		receivable=true;
-		thisActType = ActType.MultiShareActivity;
+		thisActType = ActType.MultiShare;
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main_share);
@@ -197,7 +196,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	public void RestoreUccOrExit(int force) {
 		if(allHidden()
 				&& (ucc==null||ucc.detached())
-				&& (PeruseView==null||PeruseView.isWindowDetached())) {
+				&& (peruseView ==null|| peruseView.isWindowDetached())) {
 			if(NewIntentCalled && !getPinVSDialog()) {
 				if(force==0) {
 					finishOrHide();
@@ -344,10 +343,10 @@ public class MultiShareActivity extends MainActivityUIBase {
 	protected void onResume() {
 		super.onResume();
 		CMN.Log("onResume", "NewIntentCalled="+NewIntentCalled, systemIntialized&&startLis);
-		CMN.Log("onResume", "allHidden="+allHidden() , (ucc==null||ucc.detached()),  (PeruseView==null||PeruseView.isWindowDetached()));
+		CMN.Log("onResume", "allHidden="+allHidden() , (ucc==null||ucc.detached()),  (peruseView ==null|| peruseView.isWindowDetached()));
 		if(!NewIntentCalled && systemIntialized && startLis) {
 			//RestoreUccOrExit(1);
-			if(allHidden() && (ucc==null||ucc.detached()) && (PeruseView==null||PeruseView.isWindowDetached())) {
+			if(allHidden() && (ucc==null||ucc.detached()) && (peruseView ==null|| peruseView.isWindowDetached())) {
 				showUcc();
 			}
 		} else {
@@ -434,7 +433,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	public void AttachContentViewForDB() {
 		CMN.Log("AttachContentViewForDB");
 		if(DBrowser!=null) {
-			Utils.addViewToParent(contentview, PeruseViewAttached()?PeruseView.peruseF:root);
+			Utils.addViewToParent(contentview, PeruseViewAttached()? peruseView.peruseF:root);
 		}
 	}
 	

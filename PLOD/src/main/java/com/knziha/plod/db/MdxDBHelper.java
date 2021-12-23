@@ -1,4 +1,4 @@
-package db;
+package com.knziha.plod.db;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -103,7 +103,7 @@ public class MdxDBHelper extends SQLiteOpenHelper {
         //在setVersion前已经调用
         oldVersion=_oldVersion;
         Toast.makeText(c,"编辑器：项目系统的数据库架构需要更新，请随便保存一个项目以更新",Toast.LENGTH_LONG).show();
-        //Toast.makeText(c,oldVersion+":"+newVersion+":"+db.getVersion(),Toast.LENGTH_SHORT).show();
+        //Toast.makeText(c,oldVersion+":"+newVersion+":"+com.knziha.plod.db.getVersion(),Toast.LENGTH_SHORT).show();
 
     }
     //lazy Upgrade

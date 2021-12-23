@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import static db.LexicalDBHelper.TABLE_HISTORY_v2;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_HISTORY_v2;
 
 public class DHBroswer extends DBroswer {
 	public DHBroswer(){

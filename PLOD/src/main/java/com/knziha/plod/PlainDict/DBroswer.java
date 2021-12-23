@@ -71,13 +71,13 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 
-import db.LexicalDBHelper;
+import com.knziha.plod.db.LexicalDBHelper;
 
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.widgets.Utils.EmptyCursor;
-import static db.LexicalDBHelper.FIELD_VISIT_TIME;
-import static db.LexicalDBHelper.TABLE_FAVORITE_v2;
+import static com.knziha.plod.db.LexicalDBHelper.FIELD_VISIT_TIME;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
 
 @SuppressLint("SetTextI18n")
 public class DBroswer extends Fragment implements
@@ -1484,7 +1484,7 @@ public class DBroswer extends Fragment implements
 					data.add(datalet);
 					String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
 					boolean reorded=false;
-					if(a.PeruseView!=null && a.PeruseView.peruseF.getChildCount()>0) {
+					if(a.peruseView !=null && a.peruseView.peruseF.getChildCount()>0) {
 						a.DetachDBrowser();
 					}
 					long bid;
@@ -1537,9 +1537,9 @@ public class DBroswer extends Fragment implements
 				} break;
 				case SelectionMode_txtdropper: {
 					EditText target = null;
-					if(a.thisActType==ActType.MultiShareActivity) {
-						if(a.PeruseView!=null) {
-							target = a.PeruseView.etSearch;
+					if(a.thisActType==ActType.MultiShare) {
+						if(a.peruseView !=null) {
+							target = a.peruseView.etSearch;
 						} else {
 							a.getUcc().setInvoker(null, null, null, currentDisplaying);
 						}

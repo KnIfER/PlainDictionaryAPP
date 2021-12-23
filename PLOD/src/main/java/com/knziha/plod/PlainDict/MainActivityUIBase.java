@@ -254,8 +254,8 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import db.LexicalDBHelper;
-import db.MdxDBHelper;
+import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.db.MdxDBHelper;
 
 import static com.bumptech.glide.util.Util.isOnMainThread;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
@@ -404,7 +404,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	SplitView webcontentlist;
 	protected IMPageSlider IMPageCover;
-	public PeruseView PeruseView;
+	public PeruseView peruseView;
 	public ViewGroup bottombar2;
 	/** 主程有 */
 	public @Nullable ViewGroup bottombar;
@@ -566,9 +566,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean awaiting;
 	
 	enum ActType{
-		PDICMainActivity
-		,FloatSearchActivity
-		,MultiShareActivity
+		PlainDict
+		, FloatSearch
+		, MultiShare
 	}
 	protected boolean lv_matched;
 	private Animation CTANIMA;
@@ -676,7 +676,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(rejected) {
 						prvNxtABC.dump();
 						ViewGroup sv = getContentviewSnackHolder();
-						if(thisActType==ActType.PDICMainActivity && !isContentViewAttached()) {
+						if(thisActType==ActType.PlainDict && !isContentViewAttached()) {
 							sv = main_succinct;
 						}
 						showTopSnack(sv, msg, 0.75f, -1, Gravity.CENTER, 0);
@@ -1119,7 +1119,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	public View getCurrentFocus() {
 		if(PeruseViewAttached())
-			return PeruseView.mDialog.getCurrentFocus();
+			return peruseView.mDialog.getCurrentFocus();
 		return super.getCurrentFocus();
 	}
 
@@ -1302,7 +1302,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	void HandleLocateTextInPage(String content) {
 		if(PeruseViewAttached()) {
-			PeruseView.prepareInPageSearch(content, true);
+			peruseView.prepareInPageSearch(content, true);
 		} else {
 			prepareInPageSearch(content, true);
 		}
@@ -1310,7 +1310,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	void HandleSearch(String content) {
 		if(PeruseViewAttached())
-			PeruseView.etSearch.setText(content);
+			peruseView.etSearch.setText(content);
 		else
 			etSearch.setText(content);
 	}
@@ -1443,8 +1443,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 		}
-		if(PeruseView!=null) {
-			PeruseView.refreshUIColors(MainBackground);
+		if(peruseView !=null) {
+			peruseView.refreshUIColors(MainBackground);
 		}
 	}
 
@@ -1489,7 +1489,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						boolean bPeruseViewAttached = PeruseViewAttached();
 						//CMN.Log("\nmPopupRunnable run!!!");
-						ViewGroup targetRoot = bPeruseViewAttached?PeruseView.root:root;
+						ViewGroup targetRoot = bPeruseViewAttached? peruseView.root:root;
 						int size = md.size();
 						if (size <= 0) return;
 						//CMN.Log("popupWord", popupKey, x, y, frameAt);
@@ -1761,7 +1761,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										CMN.Log(now, targetRoot.getHeight() / 2);
 									}
 									else if(bPeruseViewAttached){
-										now = PeruseView.getWebTouchY();
+										now = peruseView.getWebTouchY();
 									}
 									else if (ActivedAdapter == adaptermy || ActivedAdapter == adaptermy3 || ActivedAdapter == adaptermy4) {
 										if (webSingleholder.getChildAt(0) instanceof LinearLayout) {
@@ -1782,7 +1782,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											now = sv.getTop() + mWebView.lastY + sv.getChildAt(0).getHeight() - WHP.getScrollY();
 										}
 									}
-									if(thisActType!=ActType.MultiShareActivity) {
+									if(thisActType!=ActType.MultiShare) {
 										if(PDICMainAppOptions.getEnableSuperImmersiveScrollMode()){
 											now += webcontentlist.getTop();
 										} else {
@@ -1867,7 +1867,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			// 点击背景
 			popupGuarder = new PopupGuarder(getBaseContext());
-			if(thisActType==ActType.MultiShareActivity) {
+			if(thisActType==ActType.MultiShare) {
 				popupGuarder.onPopupDissmissed = this;
 			}
 			popupGuarder.setId(R.id.popupBackground);
@@ -2293,7 +2293,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				d.findDrawableByLayerId(android.R.id.progress).setColorFilter(ColorUtils.blendARGB(MainBackground, Color.BLACK, 0.28f), PorterDuff.Mode.SRC_IN);
 			}
 			if(PeruseViewAttached()) {
-				PeruseView.prepareProgressBar(mAutoReadProgressView);
+				peruseView.prepareProgressBar(mAutoReadProgressView);
 			} else {
 				contentviewAddView(mAutoReadProgressView, 0);
 			}
@@ -2725,7 +2725,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				View IMPageCover_ = getIMPageCover();
 				LayoutParams lpp = IMPageCover_.getLayoutParams();
 				if(PeruseViewAttached())
-					IMPageCover_ = PeruseView.IMPageCover;
+					IMPageCover_ = peruseView.IMPageCover;
 				//showT("onPreparePage"+System.currentTimeMillis());
 				height=val;
 				lpp.height=val;
@@ -2749,8 +2749,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				View IMPageCover_ = getIMPageCover();
 				View PageSlider_ = PageSlider;
 				if(PeruseViewAttached()) {
-					IMPageCover_=PeruseView.IMPageCover;
-					PageSlider_=PeruseView.PageSlider;
+					IMPageCover_= peruseView.IMPageCover;
+					PageSlider_= peruseView.PageSlider;
 				}
 				IMPageCover_.setVisibility(View.VISIBLE);
 				if(!webcontentlist.decided)
@@ -2764,9 +2764,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			public void onPageTurn(SplitView webcontentlist) {
 				//showT("onPageTurn"+System.currentTimeMillis());
 				View IMPageCover_ = getIMPageCover();
-				boolean bPeruseIncharge = PeruseViewAttached() && (PeruseView.contentview.getParent()==PeruseView.slp || PeruseView.contentview.getParent()==PeruseView.mlp);
+				boolean bPeruseIncharge = PeruseViewAttached() && (peruseView.contentview.getParent()== peruseView.slp || peruseView.contentview.getParent()== peruseView.mlp);
 				if(PeruseViewAttached())
-					IMPageCover_=PeruseView.IMPageCover;
+					IMPageCover_= peruseView.IMPageCover;
 				IMPageCover_.setVisibility(View.GONE);
 				
 				if(bPeruseIncharge)
@@ -2782,8 +2782,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			public void onHesitate() {
 				//showT("onHesitate"+System.currentTimeMillis());
 				IMPageSlider IMPageCover_ = IMPageCover;
-				if(PeruseView!=null && PeruseView.getView()!=null && PeruseView.getView().getParent()!=null)
-					IMPageCover_=PeruseView.IMPageCover;
+				if(peruseView !=null && peruseView.getView()!=null && peruseView.getView().getParent()!=null)
+					IMPageCover_= peruseView.IMPageCover;
 				if(IMPageCover_!=null)
 					IMPageCover_.setVisibility(View.GONE);
 			}
@@ -2797,11 +2797,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			@Override
 			public int preResizing(int size) {
-				boolean bPeruseIncahrge = PeruseViewAttached() && (PeruseView.contentview.getParent()==PeruseView.slp || PeruseView.contentview.getParent()==PeruseView.mlp);
+				boolean bPeruseIncahrge = PeruseViewAttached() && (peruseView.contentview.getParent()== peruseView.slp || peruseView.contentview.getParent()== peruseView.mlp);
 				int ret = (int) Math.max(((bPeruseIncahrge&&!opt.getPeruseBottombarOnBottom())?30:20)*dm.density, Math.min(getResources().getDimension(R.dimen._bottombarheight_), size));//50*dm.density
 				CMN.Log(ret);
 				if(bPeruseIncahrge) {
-					PeruseView.CachedBBSize = ret;
+					peruseView.CachedBBSize = ret;
 				}else{
 					CachedBBSize = ret;
 					webcontentlist.isDirty=true;
@@ -2810,7 +2810,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		};
 		
-		if(thisActType==ActType.MultiShareActivity) {
+		if(thisActType==ActType.MultiShare) {
 			return;
 		}
 		
@@ -2994,7 +2994,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	protected File getStartupFile(File ConfigFile){
 		File def = null;
-		if (thisActType==ActType.PDICMainActivity && opt.getCacheCurrentGroup()) {
+		if (thisActType==ActType.PlainDict && opt.getCacheCurrentGroup()) {
 			def = new File(getExternalFilesDir(null),"default.txt");
 			if(def.length()<=0) def=null;
 		}
@@ -3005,7 +3005,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void buildUpDictionaryList(boolean lazyLoad, HashMap<String, BookPresenter> mdict_cache) {
-		boolean actMain = thisActType==ActType.PDICMainActivity;;
+		boolean actMain = thisActType==ActType.PlainDict;;
 		ArrayList<PlaceHolder> CosyChair =  actMain?PDICMainActivity.CosyChair:getLazyCC();
 		ArrayList<PlaceHolder> CosySofa =  actMain?PDICMainActivity.CosySofa:getLazyCS();
 		ArrayList<PlaceHolder> HdnCmfrt =  actMain?PDICMainActivity.HdnCmfrt:getLazyHC();
@@ -3185,7 +3185,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//tofo
 				if(currentScale>= BookPresenter.def_zoom) {
 					if(fromPeruseView) {
-						_mBar= PeruseView.mBar;
+						_mBar= peruseView.mBar;
 					}
 				}
 
@@ -3308,8 +3308,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			pauseTTS();
 			pauseTTSCtrl(true);
 		}
-		if(PeruseView!=null) {
-			PeruseView.dismissDialogOnly();
+		if(peruseView !=null) {
+			peruseView.dismissDialogOnly();
 		}
 		if((!AutoBrowsePaused || bRequestingAutoReading) && !opt.getTTSBackgroundPlay()){
 			stopAutoReadProcess();
@@ -4079,7 +4079,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						msg=getResources().getString(R.string.BGMSG2);
 					}
 					//DialogSnack(d,msg);
-					ViewGroup target=bFromPeruseView?PeruseView.contentview:getContentviewSnackHolder();
+					ViewGroup target=bFromPeruseView? peruseView.contentview:getContentviewSnackHolder();
 					root.post(() -> showTopSnack(target, msg, 0.8f, -1, -1, 0x4));
 					
 					d.hide();
@@ -4097,7 +4097,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							else{
 								GlobalPageBackground=CMN.GlobalPageBackground=color;
 							}
-							WebViewmy mWebView=bFromPeruseView?PeruseView.mWebView:invoker.mWebView;
+							WebViewmy mWebView=bFromPeruseView? peruseView.mWebView:invoker.mWebView;
 							int ManFt_invoker_bgColor=invoker.getBgColor();
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
 							if(GlobalOptions.isDark) {
@@ -4114,7 +4114,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								GlobalPageBackground=CMN.GlobalPageBackground;
 								if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 								WHP.setBackgroundColor(ManFt_GlobalPageBackground);
-								if(bFromPeruseView)PeruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
+								if(bFromPeruseView) peruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 								opt.putGlobalPageBackground(CMN.GlobalPageBackground);
 								if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
 									mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
@@ -4125,8 +4125,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(bFromPeruseView || widget12.getTag(R.id.image)==null) {
 								if (GlobalOptions.isDark)
 									color = ColorUtils.blendARGB(color, Color.BLACK, ColorMultiplier_Web);
-								WebViewmy mWebView = bFromPeruseView ? PeruseView.mWebView : invoker.mWebView;
-								ViewGroup webSingleholder = bFromPeruseView ? PeruseView.webSingleholder : MainActivityUIBase.this.webSingleholder;
+								WebViewmy mWebView = bFromPeruseView ? peruseView.mWebView : invoker.mWebView;
+								ViewGroup webSingleholder = bFromPeruseView ? peruseView.webSingleholder : MainActivityUIBase.this.webSingleholder;
 								if (invoker.getUseInternalBG()) {
 									if (mWebView != null)
 										mWebView.setBackgroundColor(color);
@@ -4141,7 +4141,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						public void onDialogDismissed(ColorPickerDialog dialogInterface, int color) {
 							CMN.Log("onDialogDismissed");
 							d.show();
-							WebViewmy mWebView=bFromPeruseView?PeruseView.mWebView:invoker.mWebView;
+							WebViewmy mWebView=bFromPeruseView? peruseView.mWebView:invoker.mWebView;
 							int ManFt_invoker_bgColor=invoker.getBgColor();
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
 							if(GlobalOptions.isDark) {
@@ -4157,7 +4157,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 									WHP.setBackgroundColor(ManFt_GlobalPageBackground);
 									if(bFromPeruseView) {
-										PeruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
+										peruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 									}
 									if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
 										mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
@@ -4169,7 +4169,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					asd.show(getSupportFragmentManager(),"color-picker-dialog");
 				} return;
 				case R.id.settings:{
-					BookPresenter.showDictTweaker(bFromPeruseView?PeruseView.mWebView:null, MainActivityUIBase.this, invoker);
+					BookPresenter.showDictTweaker(bFromPeruseView? peruseView.mWebView:null, MainActivityUIBase.this, invoker);
 				} return;
 				case R.id.appsettings:{
 					showAppTweaker();
@@ -4177,7 +4177,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				case R.id.lock:{
 					boolean enabled;
 					if(bFromPeruseView){
-						enabled=PeruseView.toggleTurnPageEnabled();
+						enabled= peruseView.toggleTurnPageEnabled();
 					}else{
 						enabled=opt.setTurnPageEnabled(!opt.getTurnPageEnabled());
 						PageSlider.TurnPageEnabled=enabled;
@@ -4194,7 +4194,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					cb.toggle();
 					boolean val = cb.isChecked();
 					if(id==R.id.check1) {
-						if(thisActType==ActType.MultiShareActivity) {
+						if(thisActType==ActType.MultiShare) {
 							opt.setPinVSDialog(val);
 							showT(val?"钉住面板":"使用一次后退出");
 						}
@@ -4304,7 +4304,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if (prepareHistoryCon().testDBV2) {
 									BookmarkAdapter.BookmarkDatabaseReader reader = (BookmarkAdapter.BookmarkDatabaseReader) mBookMarkAdapter.getItem(position1);
 									if (reader!=null) {
-										WebViewmy webview = (bFromPeruseView ? PeruseView.mWebView : invoker.mWebView);
+										WebViewmy webview = (bFromPeruseView ? peruseView.mWebView : invoker.mWebView);
 										if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
 											String url = reader.entryName;
 											if (url.startsWith("/")) {
@@ -4361,7 +4361,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if (prepareHistoryCon().testDBV2) {
 									AnnotAdapter.AnnotationReader reader = (AnnotAdapter.AnnotationReader) mAnnotAdapter.getItem(position1);
 									if (reader!=null) {
-										WebViewmy webview = (bFromPeruseView ? PeruseView.mWebView : invoker.mWebView);
+										WebViewmy webview = (bFromPeruseView ? peruseView.mWebView : invoker.mWebView);
 										if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
 											String url = reader.entryName;
 											if (url.startsWith("/")) {
@@ -4450,7 +4450,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				else {
 					PreferredToolId = (int) id;
 					if(isUserClick) {
-						if(!isLongClicked && thisActType==ActType.MultiShareActivity && opt.getRememberVSPanelGo()) {
+						if(!isLongClicked && thisActType==ActType.MultiShare && opt.getRememberVSPanelGo()) {
 							opt.putLastVSGoNumber(PreferredToolId);
 						}
 					}
@@ -4469,7 +4469,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								});
 							}
-							if(thisActType==ActType.MultiShareActivity) {
+							if(thisActType==ActType.MultiShare) {
 								checkMultiVSTGO();
 							}
 						} break;
@@ -4545,14 +4545,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								});
 							}
-							if(thisActType==ActType.MultiShareActivity) {
+							if(thisActType==ActType.MultiShare) {
 								checkMultiVSTGO();
 							}
 							dissmisstype=2;
 						} break;
 						/* 点译 */
 						case R.string.pop_sch: {
-							if(thisActType==ActType.MultiShareActivity) {
+							if(thisActType==ActType.MultiShare) {
 								populateDictionaryList();
 							}
 							if (isLongClicked) return false;
@@ -4574,7 +4574,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						} break;
 						/* 翻阅模式 */
 						case R.string.peruse_sch: {
-							if(thisActType==ActType.MultiShareActivity) {
+							if(thisActType==ActType.MultiShare) {
 								populateDictionaryList();
 							}
 							if (isLongClicked) return false;
@@ -4593,7 +4593,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						/* 搜索框 */
 						case R.string.send_etsch: {
 							if (isLongClicked) return false;
-							if(thisActType==ActType.MultiShareActivity) {
+							if(thisActType==ActType.MultiShare) {
 								Intent newTask = new Intent(Intent.ACTION_MAIN);
 								newTask.putExtra(Intent.EXTRA_TEXT, debugString);
 								//newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
@@ -4630,7 +4630,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								});
 							}
 							dissmisstype=1;
-							if(thisActType==ActType.MultiShareActivity) {
+							if(thisActType==ActType.MultiShare) {
 								checkMultiVSTGO();
 							}
 						}
@@ -4642,7 +4642,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(!cb.isChecked())
 							dissmisstype=1;
 						if(dissmisstype==1 || dissmisstype==2 && !getPinVSDialog()) {
-							if(thisActType==ActType.MultiShareActivity) {
+							if(thisActType==ActType.MultiShare) {
 								d.setOnDismissListener(null);
 								d.dismiss();
 								d.setOnDismissListener(MainActivityUIBase.this);
@@ -4800,7 +4800,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		void HandleShareIntent(ArrayList<String> data) {
 			if(bFromTextView){
 				handleIntentShare(CurrentSelected, data);
-				if(thisActType==ActType.MultiShareActivity) {
+				if(thisActType==ActType.MultiShare) {
 					checkMultiVSTGO();
 				}
 			} else {
@@ -4852,7 +4852,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						.create();
 				bottomView = (ViewGroup) getLayoutInflater().inflate(R.layout.checker2, dialogList = d.getListView(), false);
 				
-				if(thisActType==ActType.MultiShareActivity) {
+				if(thisActType==ActType.MultiShare) {
 					opt.setVSPanelGOTransient(false);
 					d.setOnDismissListener(MainActivityUIBase.this);
 					int id=R.id.check2;
@@ -4946,7 +4946,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			// 设置标题
 			if(!bFromTextView) {
 				StringBuilder sb = invoker.appendCleanDictionaryName(null);
-				String text = bFromPeruseView ? PeruseView.currentDisplaying() : invoker.currentDisplaying;
+				String text = bFromPeruseView ? peruseView.currentDisplaying() : invoker.currentDisplaying;
 				if(!TextUtils.isEmpty(text)) {
 					sb.append(" - ").append(text);
 				}
@@ -5077,7 +5077,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public boolean getPinVSDialog() {
-		return thisActType==ActType.MultiShareActivity?opt.getPinVSDialog():opt.getPinDialog();
+		return thisActType==ActType.MultiShare ?opt.getPinVSDialog():opt.getPinDialog();
 	}
 	
 	private void checkMultiVSTGO() {
@@ -5377,11 +5377,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					mBar.setVisibility(View.VISIBLE);
 			break;
 			case 7:
-				if(PeruseView!=null&&PeruseView.getView()!=null) {
+				if(peruseView !=null&& peruseView.getView()!=null) {
 					if(val==1)
-						PeruseView.mBar.setVisibility(View.GONE);
+						peruseView.mBar.setVisibility(View.GONE);
 					else
-						PeruseView.mBar.setVisibility(View.VISIBLE);
+						peruseView.mBar.setVisibility(View.VISIBLE);
 				}
 			break;
 			case 8:
@@ -5417,7 +5417,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(PeruseViewAttached()){
 					title += "翻阅模式";
 					flagPos = 8;
-				} else if(thisActType==ActType.PDICMainActivity){
+				} else if(thisActType==ActType.PlainDict){
 					title+="主程序"+"/"+(wh?"联合搜索":"单本阅读");
 					flagPos = wh?2:0;
 				} else {
@@ -5434,7 +5434,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						opt.setTypeFlag_11_AtQF(which, finalFlagPos);
 					}
 					if(PeruseViewAttached())
-						PeruseView.RecalibrateWebScrollbar();
+						peruseView.RecalibrateWebScrollbar();
 					RecalibrateWebScrollbar(webSingleholder.getChildCount()>0?webSingleholder.findViewById(R.id.webviewmy):null);
 					dialog12.dismiss();
 				})
@@ -5479,24 +5479,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			/* 翻阅模式 */
 			case 20:
-				PeruseView.leftLexicalAdapter.notifyDataSetChanged();
+				peruseView.leftLexicalAdapter.notifyDataSetChanged();
 			break;
 			case 21:
-				PeruseView.lv2.setFastScrollEnabled(val==1);
+				peruseView.lv2.setFastScrollEnabled(val==1);
 			break;
 			case 22:
-				PeruseView.lv1.setFastScrollEnabled(val==1);
+				peruseView.lv1.setFastScrollEnabled(val==1);
 			break;
 			case 23:
-				PeruseView.lv1.setFastScrollEnabled(val==1);
-				PeruseView.lv2.setFastScrollEnabled(val==1);
+				peruseView.lv1.setFastScrollEnabled(val==1);
+				peruseView.lv2.setFastScrollEnabled(val==1);
 			break;
 			case 24:
-				PeruseView.toggleInPageSearch(false);
+				peruseView.toggleInPageSearch(false);
 			break;
 			case 26:
-				PeruseView.leftLexicalAdapter.notifyDataSetChanged();
-				PeruseView.bookMarkAdapter.notifyDataSetChanged();
+				peruseView.leftLexicalAdapter.notifyDataSetChanged();
+				peruseView.bookMarkAdapter.notifyDataSetChanged();
 			break;
 		}
 	}
@@ -5690,9 +5690,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	void AttachDBrowser() {
 		if(DBrowser!=null){
 			boolean fromPeruseView = PeruseViewAttached();
-			ViewGroup target = fromPeruseView?PeruseView.peruseF:mainF;
+			ViewGroup target = fromPeruseView? peruseView.peruseF:mainF;
 			if(!DBrowser.isAdded()) {
-				FragmentManager fragmentManager = fromPeruseView?PeruseView.getChildFragmentManager():getSupportFragmentManager();
+				FragmentManager fragmentManager = fromPeruseView? peruseView.getChildFragmentManager():getSupportFragmentManager();
 				fragmentManager.beginTransaction()
 				.setCustomAnimations(R.anim.history_enter, R.anim.history_enter)
 				.add(fromPeruseView?R.id.peruseF:R.id.mainF, DBrowser)
@@ -5798,7 +5798,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				dismissPopup();
 				//todo to favorite
 				boolean fromPeruseView = PeruseViewAttached();
-				ViewGroup target = fromPeruseView?PeruseView.peruseF:mainF;
+				ViewGroup target = fromPeruseView? peruseView.peruseF:mainF;
 				if(target.getChildCount()==0){ //if(DBrowser==null)
 					if(DHBrowser_holder!=null) DBrowser=DHBrowser_holder.get();
 					if(DBrowser==null){
@@ -6019,7 +6019,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				boolean next=id==R.id.recess;
 				//CMN.Log("下一个");
 				if(PDICMainAppOptions.getInPageSearchAutoHideKeyboard()){
-					imm.hideSoftInputFromWindow((PeruseSearchAttached()?PeruseView.PerusePageSearchetSearch:MainPageSearchetSearch).getWindowToken(), 0);
+					imm.hideSoftInputFromWindow((PeruseSearchAttached()? peruseView.PerusePageSearchetSearch:MainPageSearchetSearch).getWindowToken(), 0);
 				}
 				jumpHighlight(next?1:-1, true);
 			} break;
@@ -6128,11 +6128,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//返回
 			case R.id.browser_widget7:{
 				if(PeruseViewAttached()){
-					PeruseView.try_go_back();
+					peruseView.try_go_back();
 					break;
 				}
 				exitTime=0;
-				boolean b1=thisActType==ActType.PDICMainActivity;
+				boolean b1=thisActType==ActType.PlainDict;
 				if(b1) {
 					v.setTag(false);
 					PDICMainActivity THIS = (PDICMainActivity) this;
@@ -6141,7 +6141,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						THIS.drawerFragment.d.dismiss();
 					}
 				}
-				if(PeruseViewAttached() && PeruseView.removeContentViewIfAttachedToRoot()) {
+				if(PeruseViewAttached() && peruseView.removeContentViewIfAttachedToRoot()) {
 					break;
 				}
 				// todo yes
@@ -6150,7 +6150,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					onBackPressed();
 					lastBackBtnAct = false;
 				} else {
-					if(thisActType!=ActType.MultiShareActivity) {
+					if(thisActType!=ActType.MultiShare) {
 						etSearch_ToToolbarMode(0);
 					}
 					webcontentlist.setVisibility(View.GONE);
@@ -6197,7 +6197,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(webSingleholder.getChildCount()==1 && v.getTag(R.id.image)!=null){
 					// todo
 					if((int)v.getTag(R.id.image)==R.drawable.ic_fullscreen_black_96dp){
-						if(thisActType==ActType.PDICMainActivity)
+						if(thisActType==ActType.PlainDict)
 							((PDICMainActivity)this).forceFullscreen(!PDICMainAppOptions.isFullScreen());
 					} else {
 						toggleClickThrough();
@@ -6639,7 +6639,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.browser_widget8:{
 				String text=null;
 				if(PeruseViewAttached())
-					text=PeruseView.currentDisplaying();
+					text= peruseView.currentDisplaying();
 				else if(DBrowser!=null)
 					text=DBrowser.currentDisplaying;
 				else if(ActivedAdapter!=null)
@@ -6650,7 +6650,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* long-click view outline */
 			case R.id.browser_widget9:{
 				if(PeruseViewAttached()) {
-					PeruseView.toolbar_cover.performClick();
+					peruseView.toolbar_cover.performClick();
 					break;
 				}
 				if((isCombinedSearching && DBrowser!=null) ||ActivedAdapter==adaptermy2) {
@@ -6694,7 +6694,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				builder2.setSingleChoiceItems(R.array.btm_navmode, bPeruseIncharge?opt.getBottomNavigationMode1():opt.getBottomNavigationMode(), (dialog12, which) -> {
 					TextView tv  = (TextView) ((AlertDialog) dialog12).getListView().getTag();
 					if(bPeruseIncharge)
-						PeruseView.setBottomNavigationType(opt.setBottomNavigationMode1(which), tv);
+						peruseView.setBottomNavigationType(opt.setBottomNavigationMode1(which), tv);
 					else
 						setBottomNavigationType(opt.setBottomNavigationMode(which), tv);
 					dialog12.dismiss();
@@ -6883,7 +6883,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				MainPageSearchbar.setTag(null);
 			}
 
-			if(thisActType==ActType.PDICMainActivity)
+			if(thisActType==ActType.PlainDict)
 				opt.setInPageSearchVisible(b1);
 			else{
 				PDICMainAppOptions.setInFloatPageSearchVisible(b1);
@@ -7024,7 +7024,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											all += IU.parseInteger(v.getTag(R.id.numberpicker), 0);
 										}
 									}
-									(PeruseSearchAttached()?PeruseView.PerusePageSearchindicator:MainPageSearchindicator).setText((preAll+1)+"/"+all);
+									(PeruseSearchAttached()? peruseView.PerusePageSearchindicator:MainPageSearchindicator).setText((preAll+1)+"/"+all);
 								}
 							}
 						}
@@ -7080,8 +7080,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private void evalJsAtAllFrames(String exp) {
 		evalJsAtAllFrames_internal(webSingleholder, exp);
 		evalJsAtAllFrames_internal(webholder, exp);
-		if(PeruseView!=null && PeruseView.mWebView!=null){
-			PeruseView.mWebView.evaluateJavascript(exp,null);
+		if(peruseView !=null && peruseView.mWebView!=null){
+			peruseView.mWebView.evaluateJavascript(exp,null);
 		}
 		if(popupWebView!=null){
 			popupWebView.evaluateJavascript(exp,null);
@@ -7281,7 +7281,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							//show(R.string.loadsucc);
 							showTopSnack(main_succinct, R.string.loadsucc
 									, -1, -1, Gravity.CENTER, 0);
-							if(thisActType==ActType.PDICMainActivity
+							if(thisActType==ActType.PlainDict
 								&& opt.getCacheCurrentGroup()) {
 								// todo 干掉缓冲组
 								File def1 = new File(getExternalFilesDir(null), "default.txt");
@@ -7915,7 +7915,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								});
 					}
 					if(fromPeruseView)
-						PeruseView.setCurrentDis(invoker, mWebView.currentPos);
+						peruseView.setCurrentDis(invoker, mWebView.currentPos);
 					else if(mWebView.fromCombined<=1)
 						invoker.setCurrentDis(mWebView, mWebView.currentPos);
 					return true;
@@ -7938,12 +7938,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//}
 						//todo delay save states
 						if (fromPeruseView) {
-							PeruseView.recess.setVisibility(View.VISIBLE);
-							PeruseView.forward.setVisibility(View.VISIBLE);
-							PeruseView.isJumping = true;
+							peruseView.recess.setVisibility(View.VISIBLE);
+							peruseView.forward.setVisibility(View.VISIBLE);
+							peruseView.isJumping = true;
 							if (mWebView.HistoryVagranter >= 0)
-								mWebView.History.get(PeruseView.mWebView.HistoryVagranter).value.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
-							PeruseView.setCurrentDis(invoker, pos);
+								mWebView.History.get(peruseView.mWebView.HistoryVagranter).value.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
+							peruseView.setCurrentDis(invoker, pos);
 						} else {
 							invoker.isJumping = true;
 							if (mWebView.HistoryVagranter >= 0)
@@ -7993,10 +7993,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if(!fromPopup) {
 									/* 除点译弹窗与网络词典，代管所有网页的前进/后退。 */
 									if (fromPeruseView) {
-										PeruseView.isJumping = true;
+										peruseView.isJumping = true;
 										if (mWebView.HistoryVagranter >= 0)
 											mWebView.History.get(mWebView.HistoryVagranter).value.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
-										PeruseView.setCurrentDis(invoker, idx);
+										peruseView.setCurrentDis(invoker, idx);
 									}
 									else {
 										invoker.isJumping = true;
@@ -9059,7 +9059,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void showTTS() {
 		ViewGroup targetRoot = root;
 		if(PeruseViewAttached())
-			targetRoot = PeruseView.root;
+			targetRoot = peruseView.root;
 		boolean isNewHolder=false;
 		boolean isInit=false;
 		// 初始化核心组件
@@ -9415,8 +9415,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			wv = popupWebView;
 		} else {
 			if(PeruseViewAttached()){
-				mCurrentDictionary = PeruseView.currentDictionary;
-				wv = PeruseView.mWebView;
+				mCurrentDictionary = peruseView.currentDictionary;
+				wv = peruseView.mWebView;
 			}
 			else {
 				View SV;
@@ -9637,43 +9637,43 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public boolean PeruseViewAttached() {
-		if(PeruseView!=null){
-			return PeruseView.isAttached();
+		if(peruseView !=null){
+			return peruseView.isAttached();
 		}
 		return false;
 	}
 
 	public boolean PeruseSearchAttached() {
-		if(PeruseView!=null){
-			return PeruseView.isAttached() && PeruseView.PerusePageSearchetSearch!=null;
+		if(peruseView !=null){
+			return peruseView.isAttached() && peruseView.PerusePageSearchetSearch!=null;
 		}
 		return false;
 	}
 
 	PeruseView getPeruseView() {
-		if(PeruseView==null) {
-			PeruseView = new PeruseView();
-			PeruseView.spsubs = opt.defaultReader.getFloat("spsubs", 0.706f);
-			PeruseView.dm = dm;
-			PeruseView.opt = opt;
-			PeruseView.density = dm.density;
-			PeruseView.addAll = opt.getPeruseAddAll();
+		if(peruseView ==null) {
+			peruseView = new PeruseView();
+			peruseView.spsubs = opt.defaultReader.getFloat("spsubs", 0.706f);
+			peruseView.dm = dm;
+			peruseView.opt = opt;
+			peruseView.density = dm.density;
+			peruseView.addAll = opt.getPeruseAddAll();
 		}
-		return PeruseView;
+		return peruseView;
 	}
 
 	void AttachPeruseView(boolean bRefresh) {
 		try {
-			if(PeruseView==null) return;
-			if(!PeruseView.isAdded()) {
+			if(peruseView ==null) return;
+			if(!peruseView.isAdded()) {
 				//CMN.Log("AttachPeruseView 1 ", bRefresh);
-				PeruseView.bCallViewAOA=true;
+				peruseView.bCallViewAOA=true;
 				/* catch : Can not perform this action after onSaveInstanceState */
-				PeruseView.show(getSupportFragmentManager(), "PeruseView");
-			} else if(PeruseView.mDialog!=null){
+				peruseView.show(getSupportFragmentManager(), "PeruseView");
+			} else if(peruseView.mDialog!=null){
 				//CMN.Log("AttachPeruseView 2 ", bRefresh);
-				PeruseView.mDialog.show();
-				PeruseView.onViewAttached(this, bRefresh);
+				peruseView.mDialog.show();
+				peruseView.onViewAttached(this, bRefresh);
 			}
 		} catch (Exception e) { e.printStackTrace(); }
 	}
@@ -9979,7 +9979,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		int pos = defbarcustpos;
 		if(PeruseViewAttached()){
 			pos = 2;
-		} else if(thisActType==ActType.PDICMainActivity && contentview.getParent()!=null){
+		} else if(thisActType==ActType.PlainDict && contentview.getParent()!=null){
 			pos = 1;
 		}
 		int jd = WeakReferenceHelper.app_bar_customize_dlg;
@@ -10083,7 +10083,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(normal_idx>=0) {
 						boolean proceed = true;
 						if(count>=0) {
-							if(thisActType==ActType.PDICMainActivity) {
+							if(thisActType==ActType.PlainDict) {
 								if(isContentViewAttached()&&!isContentViewAttachedForDB())
 									proceed = currentDictionary.lvClickPos!=normal_idx;
 							} else {
@@ -10455,7 +10455,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			pop.update(0, topY, -1, h-app_panel_bottombar_height);
 		} else {
 			if (PeruseViewAttached()) {
-				root = PeruseView.root;
+				root = peruseView.root;
 			}
 			pop.showAtLocation(root, Gravity.TOP, 0, topY);
 		}
@@ -10578,7 +10578,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	
 	public void toggleDarkMode() {
-		if (thisActType==ActType.PDICMainActivity) {
+		if (thisActType==ActType.PlainDict) {
 			((PDICMainActivity) this).drawerFragment.dayNightSwitch.toggle();
 		} else {
 			boolean isDark = opt.getInDarkMode();

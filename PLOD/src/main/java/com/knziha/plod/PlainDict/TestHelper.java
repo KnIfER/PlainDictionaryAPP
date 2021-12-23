@@ -15,7 +15,7 @@ import org.json.JSONObject;
 
 import java.util.Random;
 
-import db.LexicalDBHelper;
+import com.knziha.plod.db.LexicalDBHelper;
 
 import static com.knziha.plod.plaindict.MainActivityUIBase.digestKey;
 import static com.knziha.plod.plaindict.MainActivityUIBase.hashKey;

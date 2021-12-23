@@ -156,7 +156,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			fix_full_screen(getWindow().getDecorView());
 			if(CMN.FloatBackground != MainBackground || CMN.GlobalPageBackground!=GlobalPageBackground ) {
 				IMPageCover.setTag(false);
-				if(PeruseView!=null) PeruseView.IMPageCover.setTag(false);
+				if(peruseView !=null) peruseView.IMPageCover.setTag(false);
 				GlobalPageBackground=CMN.GlobalPageBackground;
 				MainBackground=CMN.FloatBackground;
 				refreshUIColors();
@@ -224,7 +224,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
     protected void onCreate(Bundle savedInstanceState) {
 		cbar_key=2;
 		defbarcustpos=3;
-		thisActType = ActType.FloatSearchActivity;
+		thisActType = ActType.FloatSearch;
 		if(getClass()==FloatSearchActivity.class) {
 			long cur;
 			long FF = PDICMainAppOptions.getFourthFlag(this);

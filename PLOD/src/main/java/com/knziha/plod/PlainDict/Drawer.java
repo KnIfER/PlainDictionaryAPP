@@ -49,7 +49,6 @@ import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
-import com.knziha.plod.PlainUI.BookmarkAdapter;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
@@ -63,8 +62,6 @@ import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
-
-import org.w3c.dom.Text;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -85,7 +82,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import db.LexicalDBHelper;
+import com.knziha.plod.db.LexicalDBHelper;
 import io.noties.markwon.Markwon;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;

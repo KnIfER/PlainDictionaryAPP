@@ -24,7 +24,7 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 
-import db.LexicalDBHelper;
+import com.knziha.plod.db.LexicalDBHelper;
 
 import static com.knziha.plod.widgets.Utils.EmptyCursor;
 

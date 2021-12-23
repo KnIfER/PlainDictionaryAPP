@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import db.LexicalDBHelper;
+import com.knziha.plod.db.LexicalDBHelper;
 
-import static db.LexicalDBHelper.TABLE_FAVORITE_FOLDER_v2;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_FOLDER_v2;
 
 public class DArrayAdapter extends BaseAdapter {
 	final ArrayList<MyPair<String, Long>> notebooksV2;
@@ -203,7 +203,7 @@ public class DArrayAdapter extends BaseAdapter {
 			String[] names = opt.fileToDatabaseFavorites(false).list();
 			if(names!=null){
 				for (String nI:names) {
-					if(nI.endsWith(".sql") || nI.endsWith(".sql.db")) {//MIMU will add db suffix
+					if(nI.endsWith(".sql") || nI.endsWith(".sql.db")) {//MIMU will add com.knziha.plod.db suffix
 						MyPair<String, LexicalDBHelper> item = map.get(nI);
 						if(item==null) {
 							item = new MyPair<>(nI, null);

@@ -95,17 +95,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import db.LexicalDBHelper;
-import db.MdxDBHelper;
+import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.db.MdxDBHelper;
 
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
 import static com.knziha.plod.dictionary.mdBase.fullpageString;
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
-import static db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
-import static db.LexicalDBHelper.TABLE_BOOK_v2;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
 
 /*
  UI side of books / dictionaries
@@ -1070,9 +1069,9 @@ function debug(e){console.log(e)};
 				WebViewmy _mWebView = mWebView;
 				String url = currentDisplaying;
 				if(v.getParent()!=toolbar){
-					if(a.PeruseView!=null){
-						_mWebView = a.PeruseView.mWebView;
-						url = a.PeruseView.currentDisplaying();
+					if(a.peruseView !=null){
+						_mWebView = a.peruseView.mWebView;
+						url = a.peruseView.currentDisplaying();
 					} else {
 						return true;
 					}
@@ -1673,8 +1672,8 @@ function debug(e){console.log(e)};
 				CMN.Log("结果Html，", v);
 				//CMN.Log("结果长度，", v.length()); CMN.Log("");
 				String title=currentDisplaying;
-				if(mWebView!=this.mWebView && a.PeruseView!=null)
-					title=a.PeruseView.currentDisplaying();
+				if(mWebView!=this.mWebView && a.peruseView !=null)
+					title=a.peruseView.currentDisplaying();
 				SaveCurrentPage_Internal(v, url, mWebView.currentPos, title);
 			}
 		});
@@ -1859,8 +1858,8 @@ function debug(e){console.log(e)};
 				if (pageView==this.mPageView) {
 					mTBtnStates = targetStats;
 				}
-				else if(a.PeruseView!=null) {
-					a.PeruseView.mTBtnStates = targetStats;
+				else if(a.peruseView !=null) {
+					a.peruseView.mTBtnStates = targetStats;
 				}
 				if(updateWeb && pageView.getRoot().getParent()!=null)
 					pageView.webviewmy.evaluateJavascript(editable&&!supressingEditing ? MainActivityUIBase.ce_on : MainActivityUIBase.ce_off, null);
@@ -1968,9 +1967,9 @@ function debug(e){console.log(e)};
     	if(mWebView==null) {
     		mWebView=this.mWebView;
 			refresh_eidt_kit(mPageView, mTBtnStates, bSupressingEditing, true);
-		} else if(a.PeruseView != null && mWebView==a.PeruseView.mWebView) {
-			a.PeruseView.mPageView.save.setOnLongClickListener(this);
-			refresh_eidt_kit(a.PeruseView.mPageView, a.PeruseView.mTBtnStates, a.PeruseView.bSupressingEditing, false);
+		} else if(a.peruseView != null && mWebView==a.peruseView.mWebView) {
+			a.peruseView.mPageView.save.setOnLongClickListener(this);
+			refresh_eidt_kit(a.peruseView.mPageView, a.peruseView.mTBtnStates, a.peruseView.bSupressingEditing, false);
 		}
 		boolean resposibleForThisWeb=mWebView==this.mWebView;
     	
@@ -2845,8 +2844,8 @@ function debug(e){console.log(e)};
 	private WebViewmy findWebview(long sid) {
 		if (mWebView!=null && mWebView.getSimpleIdentifier()==sid)
 			return mWebView;
-		if (a.PeruseViewAttached() && a.PeruseView.mWebView.getSimpleIdentifier()==sid) {
-			return a.PeruseView.mWebView;
+		if (a.PeruseViewAttached() && a.peruseView.mWebView.getSimpleIdentifier()==sid) {
+			return a.peruseView.mWebView;
 		}
 		if (a.popupWebView!=null && a.popupWebView.getSimpleIdentifier()==sid) {
 			return a.popupWebView;

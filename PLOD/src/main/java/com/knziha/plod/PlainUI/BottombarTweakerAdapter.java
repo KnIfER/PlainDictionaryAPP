@@ -248,9 +248,9 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 						if(bottombar_from==1){
 							/* fyms */
 							a.peruseview_project = projectContext;
-							if(a.PeruseView != null && projectContext.btns==null){
-								projectContext.bottombar = a.PeruseView.bottombar2;
-								projectContext.btns = a.PeruseView.ContentbarBtns;
+							if(a.peruseView != null && projectContext.btns==null){
+								projectContext.bottombar = a.peruseView.bottombar2;
+								projectContext.btns = a.peruseView.ContentbarBtns;
 							}
 						} else if(isProjHost){
 							projectContext.bottombar = a.bottombar2;

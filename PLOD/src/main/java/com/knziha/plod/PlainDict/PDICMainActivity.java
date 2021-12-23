@@ -91,7 +91,6 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.PlainUI.AppUIProject;
-import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.dictionary.SearchResultBean;
@@ -99,7 +98,6 @@ import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
-import com.knziha.plod.dictionarymanager.BookManager;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
@@ -556,8 +554,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			etSearch.setText(content);
 			//来一发=false;
 			//todo opt
-			if(PeruseView!=null)
-				PeruseView.dismiss();
+			if(peruseView !=null)
+				peruseView.dismiss();
 		}
 	}
 
@@ -855,7 +853,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						}
 						return true;
 					} else if (PeruseViewAttached()) {
-						PeruseView.widget10.performClick();
+						peruseView.widget10.performClick();
 						return true;
 					} else if (contentview.getParent() != null) {
 						if(toHighlight) onIdClick(null, R.id.forward);
@@ -904,7 +902,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		cbar_key=0;
 		bIsFirstLaunch=false;
 		focused=true;
-		thisActType = ActType.PDICMainActivity;
+		thisActType = ActType.PlainDict;
 		CMN.Log("LauncherInstanceCount", LauncherInstanceCount);
 		if(LauncherInstanceCount>=1) {
 			Intent thisIntent = getIntent();
@@ -1239,8 +1237,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				IMPageCover.setTranslationY(0);
 				RLContainerSlider PageSlider_ = PageSlider;
-				if(PeruseView!=null && ActivedAdapter==PeruseView.leftLexicalAdapter)
-					PageSlider_=PeruseView.PageSlider;
+				if(peruseView !=null && ActivedAdapter== peruseView.leftLexicalAdapter)
+					PageSlider_= peruseView.PageSlider;
 				if(PageCache==null) {
 					PageCache = Bitmap.createBitmap(dm.widthPixels,dm.heightPixels, Bitmap.Config.ARGB_8888);
 					mPageCanvas.setBitmap(PageCache);
@@ -1273,9 +1271,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				mPageCanvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.SRC_IN);
 
 				if(painter==1) {
-					PeruseView.webSingleholder.post(() -> {
+					peruseView.webSingleholder.post(() -> {
 						//if(PageCache.isRecycled())PageCache = Bitmap.createBitmap(PageCache.getWidth(), PageCache.getHeight(), Bitmap.Config.ARGB_8888);
-						PeruseView.webSingleholder.draw(mPageCanvas);
+						peruseView.webSingleholder.draw(mPageCanvas);
 					});
 				} else if(painter==2){
 					webholder.post(() -> {
@@ -2401,7 +2399,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			if(CMN.MainBackground != MainBackground || CMN.GlobalPageBackground!=GlobalPageBackground ) {
 				IMPageCover.setTag(false);
-				if(PeruseView!=null) PeruseView.IMPageCover.setTag(false);
+				if(peruseView !=null) peruseView.IMPageCover.setTag(false);
 				GlobalPageBackground=CMN.GlobalPageBackground;
 				MainBackground=CMN.MainBackground;
 				refreshUIColors();
@@ -3409,7 +3407,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//todo preserve context
 		CMN.Log("AttachContentViewForDB");
 		if(Utils.addViewToParent(contentview, PeruseViewAttached()?
-				PeruseView.peruseF
+				peruseView.peruseF
 				:UIData.secondHolder
 				)){
 			PlaceContentBottombar(false);
@@ -4008,8 +4006,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	public void invalidAllPagers() {
 		PageSlider.invalidateIBC();
-		if(PeruseView!=null){
-			PeruseView.PageSlider.invalidateIBC();
+		if(peruseView !=null){
+			peruseView.PageSlider.invalidateIBC();
 		}
 		if(PopupPageSlider!=null){
 			PageSlider.invalidateIBC();
@@ -4068,7 +4066,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if (pop.isShowing()) {
 			pop.update(0, topY, -1, h);
 		} else {
-			pop.showAtLocation(PeruseViewAttached()?PeruseView.root:root, Gravity.TOP, 0, topY);
+			pop.showAtLocation(PeruseViewAttached()? peruseView.root:root, Gravity.TOP, 0, topY);
 		}
 	}
 }
