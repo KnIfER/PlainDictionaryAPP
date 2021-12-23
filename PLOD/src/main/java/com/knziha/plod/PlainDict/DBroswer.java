@@ -328,7 +328,7 @@ public class DBroswer extends Fragment implements
 
 		toolbar = _main_clister_layout.findViewById(R.id.toolbar);
 		//sideBarPopHolder = (Toolbar) main_clister_layout.findViewById(R.id.sideBarPopHolder);
-		toolbar.inflateMenu(R.menu.menu_search_view);
+		toolbar.inflateMenu(R.xml.menu_search_view);
 		toolbar.setBackgroundColor(0xcc000000|(CMN.MainBackground&0xffffff));
 		Menu toolbarmenu = toolbar.getMenu();
 		MenuItem searchItem = toolbarmenu.getItem(0);

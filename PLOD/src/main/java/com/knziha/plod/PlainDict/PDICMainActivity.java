@@ -988,7 +988,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		hdl = mHandle = new MyHandler(this);
 		
-		toolbar.inflateMenu(R.menu.menu);
+		toolbar.inflateMenu(R.xml.menu);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
 		SingleContentMenu = MapNumberToMenu(0, 4, 2, 3, 9, 11, 12);
 		Multi_ContentMenu = MapNumberToMenu(0, 4, 2, 1, 3, 9, 10, 12);

@@ -53,13 +53,15 @@ import androidx.fragment.app.DialogFragment;
 import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayAdapterView.OnItemClickListener;
 import com.jess.ui.TwoWayGridView;
-import com.knziha.plod.dictionary.mdict;
-import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.PlainUI.AppUIProject;
-import com.knziha.plod.dictionarymodels.ScrollerRecord;
+import com.knziha.plod.db.MdxDBHelper;
+import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
+import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.plaindict.databinding.ContentviewItemBinding;
 import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
+import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.ListViewmy;
@@ -68,7 +70,6 @@ import com.knziha.plod.widgets.SimpleDialog;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.SplitView.PageSliderInf;
 import com.knziha.plod.widgets.SplitViewGuarder;
-import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
 
@@ -78,15 +79,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import com.knziha.plod.db.MdxDBHelper;
-
 import static android.view.View.FOCUSABLE_AUTO;
-import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
-import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
-import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
-import static com.knziha.plod.plaindict.PDICMainActivity.ResizeNavigationIcon;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
+import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
+import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
+import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
+import static com.knziha.plod.plaindict.PDICMainActivity.ResizeNavigationIcon;
 import static com.knziha.plod.widgets.Utils.EmptyCursor;
 
 /** 翻阅模式，以词典为单位，搜索词为中心，一一览读。<br><br/> */
@@ -252,7 +251,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		sp_main.addValve(intenToDown= (ImageView) PeruseTorso.getChildAt(4));
 		sp_main.guarded=sp_sub.guarded=true;
 		
-        toolbar.inflateMenu(R.menu.pview_menu);
+        toolbar.inflateMenu(R.xml.menu_pview);
         toolbar.setOnMenuItemClickListener(this);
         toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);//abc_ic_ab_back_mtrl_am_alpha
 		ResizeNavigationIcon(toolbar);

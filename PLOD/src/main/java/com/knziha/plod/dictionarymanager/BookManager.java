@@ -50,13 +50,6 @@ import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.utils.FU;
 import com.knziha.filepicker.view.FilePickerDialog;
-import com.knziha.plod.dictionarymodels.DictionaryAdapter;
-import com.knziha.plod.plaindict.AgentApplication;
-import com.knziha.plod.plaindict.BaseHandler;
-import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
-import com.knziha.plod.plaindict.PlaceHolder;
-import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
@@ -64,8 +57,14 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mAssetFile;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.dictionarymodels.MagentTransient;
+import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
+import com.knziha.plod.plaindict.AgentApplication;
+import com.knziha.plod.plaindict.BaseHandler;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.PlaceHolder;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.widgets.SimpleTextNotifier;
@@ -318,7 +317,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
         mTabLayout = findViewById(R.id.mTabLayout);
 		inflater=LayoutInflater.from(getApplicationContext());
         toolbar = findViewById(R.id.toolbar);
-        toolbar.inflateMenu(R.menu.dict_manager);
+        toolbar.inflateMenu(R.xml.menu_dict_manager);
 
         
  		toolbarmenu = toolbar.getMenu();

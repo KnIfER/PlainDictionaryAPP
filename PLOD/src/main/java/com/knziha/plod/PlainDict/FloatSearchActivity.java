@@ -344,7 +344,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		mainfv.setTranslationY(FVTY);
 		mainfv.setTranslationX(FVTX);
 	
-		toolbar.inflateMenu(R.menu.float_menu);
+		toolbar.inflateMenu(R.xml.menu_float);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
 		iItem_FolderAll = AllMenus.findItem(R.id.toolbar_action0);
 		iItem_InPageSearch = AllMenus.findItem(R.id.toolbar_action5);
