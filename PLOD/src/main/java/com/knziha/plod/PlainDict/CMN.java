@@ -240,4 +240,12 @@ public class CMN{
 	public static Object elapsed(long st) {
 		return now()-st;
 	}
+	
+	public static String getAssetName(String name) {
+		String ret = name;
+		try {
+			ret = AssetMap.get(name.substring(AssetTag.length(), name.lastIndexOf(".")));
+		} catch (Exception ignored) { }
+		return ret==null?name:ret;
+	}
 }

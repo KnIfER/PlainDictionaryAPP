@@ -2,19 +2,29 @@ package com.knziha.plod.widgets;
 
 import android.app.Activity;
 import android.view.View;
-import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.WrapperListAdapter;
 
 import androidx.databinding.ViewDataBinding;
-import androidx.fragment.app.FragmentActivity;
 import androidx.preference.Preference;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.knziha.plod.plaindict.BuildConfig;
+import com.knziha.plod.plaindict.Toastable_Activity;
 
+import org.knziha.metaline.StripMethods;
+
+@StripMethods(strip=!BuildConfig.isDebug, keys={"setWebDebug"})
 public class ViewUtils {
+	@StripMethods(strip = !BuildConfig.isDebug)
+	public static void setWebDebug(Toastable_Activity a) {
+		WebView.setWebContentsDebuggingEnabled(true);
+		a.showT("调试网页！");
+	}
+	
 	public static class ViewDataHolder<T extends ViewDataBinding> extends RecyclerView.ViewHolder{
 		public T data;
 		public long position;

@@ -57,6 +57,7 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
+import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.settings.ServerPreference;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
@@ -83,6 +84,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.widgets.Utils;
+
 import io.noties.markwon.Markwon;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
@@ -478,92 +481,20 @@ public class Drawer extends Fragment implements
 					
 					startss = ssb.toString().indexOf("[",endss);
 					endss = ssb.toString().indexOf("]",startss);
-					
+					String title="更新日志";
 					ssb.setSpan(new ClickableSpan() {
 						@Override
 						public void onClick(@NonNull View widget) {
 							AlertDialog d = new AlertDialog.Builder(a)
-									.setTitle("更新日志")
-									.setMessage("哈哈")
+									.setTitle(title)
+									.setMessage(title)
 									.setPositiveButton(R.string.confirm, null)
-									//.setNeutralButton("查看更多…", null)
 									.show();
 							Markwon markwon = Markwon.create(a);
 							TextView tv = d.findViewById(android.R.id.message);
 							a.opt.setAsLinkedTextView(tv, false);
-							tv.setTextSize(GlobalOptions.isLarge?15:18);
-							markwon.setMarkdown(tv, "# v5.4\n" +
-									"- 新增[在线词典《万词王》](https://wantwords.thunlp.org/)，用一句描述查询近义词\n" +
-									"- 新增黑暗模式切换动画\n" +
-									"- 《谷歌翻译》可以使用点译和页内搜索\n" +
-									"- 可以在“关于”对话框中查看更新日志\n" +
-									"\n" +
-									"- 暂时取消持久化保存列表位置\n" +
-									"- 修复设置不上的BUG\n" +
-									"\n" +
-									"\n" +
-									"\n" +
-									"# v5.3\n" +
-									"- 调整联合搜索的排序规则，近似结果排在最前。\n" +
-									"- 修复无法打开“仅展开第一项”，升级为“仅展开前N项”。\n" +
-									"- 记忆设置界面的列表位置。\n" +
-									"- 多维分享可记忆上次打开的工具，再次进入后直接跳转。\n" +
-									"- 修复多维分享查不到的BUG。\n" +
-									"- 修复使用旧版数据库导致崩溃的BUG。\n" +
-									"\n" +
-									"\n" +
-									"# v5.2\n" +
-									"- 修复联合搜索漏掉结果的BUG，感谢沃土的发现。\n" +
-									"- 修复左侧抽屉中[最近书签]的显示。\n" +
-									"- 为旧设备适配谷歌搜索的[单词释义]功能。\n" +
-									"不再提示升级数据库，升级按钮移至[兼容性选项]。\n" +
-									"\n" +
-									"\n" +
-									"# v5.1.2\n" +
-									"- 修复复用缓存引发的乱码BUG\n" +
-									"\n" +
-									"\n" +
-									"# v5.1\n" +
-									"开始支持 dsl.dz 词典格式：\n" +
-									"- 首次打开dsl文件需要建立索引，如果文件较小（2MB左右）会自动创建，否则需根据相关指引手动创建，目的是为了不卡住界面，因为10万词条、10MB压缩词典的索引可能需要5~10秒才能创建完毕。执行联合或全文搜索等异步任务时也会自动创建。\n" +
-									"索引存储于APP的临时目录*.idx，格式是扩展过的mdx，创建时，排序规则忽略大小写与变音符号。\n" +
-									"- 与mdx一样支持全文和词条搜索\n" +
-									"- 兼容以空格缩进的词条格式\n" +
-									"- 自动切换至新打开的词典\n" +
-									"\n" +
-									"\n" +
-									"\n" +
-									"\n" +
-									"# v5.0.2 \n" +
-									"修复以下问题：\n" +
-									"- 在词典设置中启用联合搜索->自动折叠后，点击标题栏却无法再展开\n" +
-									"- 无法立即打开新建的分组\n" +
-									"- 无法加载内置的《词源在线》\n" +
-									"\n" +
-									"功能调整：\n" +
-									"- 打开新的词典后，直接保存到当前的分组中，无需再去提交。\n" +
-									"\n" +
-									"\n" +
-									"\n" +
-									"# v5.0.1 \n" +
-									"- 修复在主界面切换收藏夹失效\n" +
-									"- 修复在网页版联合查询失效\n" +
-									"- 修复空指针错误\n" +
-									"- 修复翻阅模式（无法在历史记录中打开非当前分组的词典、菜单点不开的问题）\n" +
-									"- 可在空白处点击以关闭词典设置对话框。\n" +
-									"\n" +
-									"\n" +
-									"# v5.0  \n" +
-									"新特性：  \n" +
-									"  \n" +
-									"- 升级至数据库v2，支持更多的记录功能。下一大版本将完全移除数据库v1。升级后，将为每一词典按其文件名分配唯一ID，暂不支持修改文件名了。   \n" +
-									"- 正式支持在线词典，内置谷歌翻译、词源在线等，可在词典管理界面中添加。  \n" +
-									"- 测试DSL词典。      \n" +
-									"- 带来更详细的词典设置界面，可点击内容页面、标题栏上，词典的封面图标进入，持续完善中。  \n" +
-									"- 更容易从左侧抽屉进入设置界面。各处放置了一些金色的帮助按钮，点击后显示一小段wiki说明。  \n" +
-									"\n" +
-									"修复：  \n" +
-									"字体放大、分享目标里的BUG。  ");
+							tv.setTextSize(GlobalOptions.isLarge?12:17);
+							markwon.setMarkdown(tv, Utils.fileToString(a, new File(CMN.AssetTag, "rizhi")));
 						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					
 					if(false)

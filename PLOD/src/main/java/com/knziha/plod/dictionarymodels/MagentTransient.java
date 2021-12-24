@@ -2,18 +2,12 @@ package com.knziha.plod.dictionarymodels;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.util.SparseArray;
-
-import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.filepicker.utils.FU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.widgets.WebViewmy;
-
-import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -138,10 +132,10 @@ public class MagentTransient extends BookPresenter {
 
 	@Override
 	public String getDictionaryName() {
-		String ret = mPhI.pathname.startsWith(CMN.AssetTag)?CMN.AssetMap.get(mPhI.pathname):null;
-		if(ret==null)
-			ret=mPhI.getName().toString();
-		return ret;
+//		String ret = mPhI.pathname.startsWith(CMN.AssetTag)?CMN.AssetMap.get(mPhI.pathname):null;
+//		if(ret==null)
+//			ret=mPhI.getName().toString();
+		return mPhI.getName().toString();
 	}
 
 	@Override

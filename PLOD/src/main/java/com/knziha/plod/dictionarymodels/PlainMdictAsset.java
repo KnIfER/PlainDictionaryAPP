@@ -1,14 +1,11 @@
 package com.knziha.plod.dictionarymodels;
 
-import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 /*
@@ -39,10 +36,10 @@ public class PlainMdictAsset extends PlainMdict {
 	
 	@Override
 	public String getDictionaryName() {
-		String name = AssetMap.get(f.getPath());
-		if(name!=null) {
-			return name;
-		}
+//		String name = CMN.getAssetName(f.getPath());
+//		if(name!=null) {
+//			return name;
+//		}
 		return super.getDictionaryName();
 	}
 }

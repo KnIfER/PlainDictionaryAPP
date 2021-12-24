@@ -33,17 +33,17 @@ import androidx.appcompat.app.GlobalOptions;
 import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
+import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
+import com.knziha.plod.dictionarymanager.files.mFile;
+import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.MagentTransient;
+import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
-import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
-import com.knziha.plod.dictionarymanager.files.mFile;
-import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
-import com.knziha.plod.dictionarymodels.MagentTransient;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ArrayAdapterHardCheckMark;
 import com.knziha.plod.widgets.FlowTextView;
@@ -539,7 +539,7 @@ public class BookManagerMain extends BookManagerFragment<MagentTransient>
 					PDICMainAppOptions.getTmpIsClicker(mdTmp.getTmpIsFlag())?mRightDrawable:null,
 					PDICMainAppOptions.getTmpIsCollapsed(mdTmp.getTmpIsFlag())?"<>":null);
 			
-			vh.title.setText(mdTmp.getPath());
+			vh.title.setText(CMN.getAssetName(key));
 			
 			vh.title.setStarLevel(0);
 			

@@ -212,12 +212,17 @@
 		}
 		if(!isAttached(win._modin)) {
 			if(!win._modin) {
-				let e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮
+				//let e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮 2021翻译门事件后取消编辑按钮
+				let e=Qa('kImuFf').cloneNode(true); // 拷贝复制按钮
+				let n=e.getElementsByTagName('I')[0];
 				win._modin=e;
-				e.style.color='#888';
+				if(n){
+					n.style.color='#888';
+					n.innertText='edit';
+				}
 				e.onclick=v=>{
 					ta.readOnly=!ta.readOnly;
-					e.style.color=ta.readOnly?'#888':'#000';
+					if(n)n.style.color=ta.readOnly?'#888':'#000';
 					v.stopPropagation();
 				}
 			}

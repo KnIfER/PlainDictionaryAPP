@@ -261,7 +261,6 @@ import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
-import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
@@ -272,7 +271,7 @@ import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
  * Created by KnIfER on 2018
  */
 @SuppressLint({"ResourceType", "SetTextI18bbn","Registered", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
-@StripMethods(strip=!BuildConfig.isDebug, keys={"setMagicNumber"})
+@StripMethods(strip=!BuildConfig.isDebug, keys={"setMagicNumber", "setWebDebug"})
 public abstract class MainActivityUIBase extends Toastable_Activity implements OnTouchListener,
 		OnLongClickListener,
 		OnClickListener,
@@ -811,19 +810,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public String md_getName(int i) {
-		if(i>=0 && i<md.size()){
+		if(i>=0 && i<md.size()) {
+			String name = null;
 			BookPresenter mdTmp = md.get(i);
-			if(mdTmp!=null) return mdTmp.getDictionaryName();
-			ArrayList<PlaceHolder> CosyChair = getLazyCC();
-			if(i<CosyChair.size()){
-				PlaceHolder placeHolder = CosyChair.get(i);
-				if(placeHolder!=null) {
-					String name = placeHolder.pathname;
-					if(name!=null && name.startsWith(AssetTag) && AssetMap.containsKey(name)) {
-						name = AssetMap.get(name);
+			if(mdTmp!=null) {
+				name = mdTmp.getPath();
+				if (name.startsWith(AssetTag)) name = CMN.getAssetName(name);
+				else name = mdTmp.getDictionaryName();
+			} else {
+				ArrayList<PlaceHolder> CosyChair = getLazyCC();
+				if(i<CosyChair.size()){
+					PlaceHolder placeHolder = CosyChair.get(i);
+					if(placeHolder!=null) {
+						name = placeHolder.pathname;
+						if (name.startsWith(AssetTag)) name = CMN.getAssetName(name);
+						else name = placeHolder.getName().toString();
 					}
-					return name;
 				}
+			}
+			if(name!=null) {
+				return name;
 			}
 		}
 		return "Error!!!";
@@ -1313,7 +1319,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		else
 			etSearch.setText(content);
 	}
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 	   /*if(opt.FirstFlag()==null)
@@ -1353,7 +1359,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		};
 		MainStringBuilder = new StringBuilder(40960);
 		//WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
-		WebView.setWebContentsDebuggingEnabled(true);
+		ViewUtils.setWebDebug(this);
 	}
 
 	public void onAudioPause() {

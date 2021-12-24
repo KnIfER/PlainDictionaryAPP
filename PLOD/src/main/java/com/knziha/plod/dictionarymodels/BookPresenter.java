@@ -126,16 +126,16 @@ public class BookPresenter
 	public final static String js="SUBPAGE";
 	
 	/**
-	 	const w=window;
+	 	var w=window, d=document;
 		var LoadMark, frameAt;
 		function _log(...e){console.log('fatal web::',e)};
 	 	w.addEventListener('load',()=>{
 			//_log('wrappedOnLoadFunc...');
-			var ws = w.document.body.style;
+			var ws = d.body.style;
 			_log('mdpage loaded dark:'+(app.rcsp&0x40));
-	 		document.body.contentEditable=!1;
+	 		d.body.contentEditable=!1;
 	 		_highlight(null);
-			var vi = document.getElementsByTagName('video');
+			var vi = d.getElementsByTagName('video');
 			function f(e){
 				//_log('begin fullscreen!!! wrappedFscrFunc');
 				var se = e.srcElement;
@@ -163,7 +163,7 @@ public class BookPresenter
 			//_log('fatal wrappedOnDownFunc' +w._touchtarget);
 		});
 		function loadJs(url,callback){
-			var script=document.createElement('script');
+			var script=d.createElement('script');
 			script.type="text/javascript";
 			if(typeof(callback)!="undefined"){
 				script.onload=function(){
@@ -171,13 +171,13 @@ public class BookPresenter
 				}
 			}
 			script.src=url;
-			document.body.appendChild(script);
+			d.body.appendChild(script);
 		}
 	 */
 	@Metaline()
 	public final static byte[] jsBytes=SU.EmptyBytes;
 	
-	/** if(!(app.rcsp&0xF00)){w.addEventListener('click',(e)=>{
+	/** if(!(app.rcsp&0xF00)){var w=window,d=document;w.addEventListener('click',(e)=>{
 	 		//_log('wrappedClickFunc', e.srcElement.id);
 	 		var curr=e.srcElement;
 	 		if(w.webx){
@@ -186,7 +186,7 @@ public class BookPresenter
 					if(img.src && !img.onclick && !(img.parentNode&&img.parentNode.tagName=="A")){
 						var lst = [];
 						var current=0;
-						var all = document.getElementsByTagName("img");
+						var all = d.getElementsByTagName("img");
 						for(var i=0;i<all.length;i++){
 							if(all[i].src){
 								lst.push(all[i].src);
@@ -209,7 +209,7 @@ public class BookPresenter
 	 			}
 			}
 			_log('popuping...', app.rcsp);
-			if(curr!=document.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && app.rcsp&0x20 && !curr.noword){
+			if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && app.rcsp&0x20 && !curr.noword){
 	 			if(w._NWP) {
 	 				var p=curr; while((p=p.parentElement))
 	 				if(_NWP.indexOf(p)>=0) break;
@@ -219,7 +219,7 @@ public class BookPresenter
 	 				if(_YWPC.indexOf(p.className)>=0) break;
 	 				if(!p) return;
 	 			}
-				//todo document.activeElement.tagName
+				//todo d.activeElement.tagName
 				var s = w.getSelection();
 				if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
 					s.modify('extend', 'forward', 'word'); // first attempt
@@ -227,7 +227,7 @@ public class BookPresenter
 					//_log(s.anchorNode); _log(s);
 					//if(true) return;
 
-					if(s.baseNode != document.body) {// immunize blank area
+					if(s.baseNode != d.body) {// immunize blank area
 						var text=s.toString(); // for word made up of just one character
 						var range = s.getRangeAt(0);
 	 
@@ -268,7 +268,7 @@ public class BookPresenter
 	 
 								_log(text); // final output
 								if(app){
-									app.popupWord(sid.get(), text, frameAt, w.document.documentElement.scrollLeft+pX, w.document.documentElement.scrollTop+pY, pW, pH);
+									app.popupWord(sid.get(), text, frameAt, d.documentElement.scrollLeft+pX, d.documentElement.scrollTop+pY, pW, pH);
 									w.popup=1;
 									s.empty();
 									return true;
@@ -290,7 +290,7 @@ public class BookPresenter
 	@Metaline()
 	public final static String tapTranslateLoader=StringUtils.EMPTY;
 	
-	/**
+	/**var w=window,d=document;
 		function selectTouchtarget(e){
 	 		var ret = selectTouchtarget_internal(e);
 			if(ret<=0||e==1) {
@@ -315,9 +315,9 @@ public class BookPresenter
 	 				tt.userSelect='text';
 				}
 	 			if(NoneSelectable(tt)) {
-					var sty = document.createElement("style");
+					var sty = d.createElement("style");
 					sty.innerHTML = "*{user-select:text !important}";
-					document.head.appendChild(sty);
+					d.head.appendChild(sty);
 					if(NoneSelectable(tt)) {
 						return -1;
 					}
@@ -327,7 +327,7 @@ public class BookPresenter
 				}
 	 			if(e==0)w._touchtarget_href = tt.getAttribute("href");
 				var sel = w.getSelection();
-				var range = document.createRange();
+				var range = d.createRange();
 				range.selectNodeContents(t0);
 				sel.removeAllRanges();
 				sel.addRange(range);
@@ -348,7 +348,7 @@ public class BookPresenter
 	@Metaline()
 	public final static String touchTargetLoader=StringUtils.EMPTY;
 	
-	/** //!!!高亮开始
+	/** var w=window,d=document;//!!!高亮开始
 		var MarkLoad,MarkInst;
 		var results=[], current,currentIndex = 0;
 		var currentClass = "current";
@@ -385,7 +385,7 @@ public class BookPresenter
 	 	}
 		function pw_topOffset(value){
 			var top=0;
-			while(value && value!=document.body){
+			while(value && value!=d.body){
 				top+=value.offsetTop;
 				value=value.offsetParent;
 			}
@@ -394,8 +394,8 @@ public class BookPresenter
 		function topOffset(elem){
 			var top=0;
 			var add=1;
-			while(elem && elem!=document.body){
-				if(!w.webx)if(elem.style.display=='none' || elem.style.display=='' && document.defaultView.getComputedStyle(elem,null).display=='none'){
+			while(elem && elem!=d.body){
+				if(!w.webx)if(elem.style.display=='none' || elem.style.display=='' && d.defaultView.getComputedStyle(elem,null).display=='none'){
 					elem.style.display='block';
 				}
 				if(add){
@@ -459,7 +459,7 @@ public class BookPresenter
 		}
 		function do_highlight(keyword){
 			if(!MarkInst)
-				MarkInst = new Mark(document);
+				MarkInst = new Mark(d);
 	 		w.bOnceHighlighted=false;
 			MarkInst.unmark({
 				done: function() {
@@ -480,7 +480,7 @@ public class BookPresenter
 		}
 		 function done_highlight(){
 			 w.bOnceHighlighted=true;
-			 results = document.getElementsByTagName("mark");
+			 results = d.getElementsByTagName("mark");
 			 currentIndex=-1;
 			 if(app) app.onHighlightReady(frameAt, results.length);
 		 }

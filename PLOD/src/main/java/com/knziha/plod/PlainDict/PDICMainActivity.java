@@ -156,7 +156,6 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_WILDC
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEXTS;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
-import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
@@ -3119,8 +3118,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	//						}
 							if (j>=0 && j<CosyChair.size()) {
 								String name = CosyChair.get(j).pathname;
-								if(name!=null && name.startsWith(AssetTag) && AssetMap.containsKey(name)) {
-									name = AssetMap.get(name);
+								if(name!=null && name.startsWith(AssetTag)) {
+									name = CMN.getAssetName(name);
 								}
 								if(pickDictDialog.SearchPattern==null || pickDictDialog.SearchPattern.matcher(name).find()) {
 									msg = 0;

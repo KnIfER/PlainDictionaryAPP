@@ -221,8 +221,8 @@ public class BookManagerWebsites extends ListFragment {
 			//	((TextView)v.findViewById(R.id.text)).setText(ssb);
 			//}else
 			String AssetInternalname = null;
-			if(mdTmp.getClass() == mAssetFile.class)
-				AssetInternalname = CMN.AssetMap.get(mdTmp.getAbsolutePath());
+			if(mdTmp instanceof mAssetFile)
+				AssetInternalname = CMN.getAssetName(mdTmp.getAbsolutePath());
 			
 			vh.text.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 			

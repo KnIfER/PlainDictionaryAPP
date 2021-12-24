@@ -1,27 +1,8 @@
 package com.knziha.plod.dictionarymanager;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.R;
-import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
-import com.knziha.plod.dictionarymanager.files.mAssetFile;
-import com.knziha.plod.dictionarymanager.files.mFile;
-import com.knziha.plod.dictionary.Utils.BU;
-import com.knziha.rbtree.RashSet;
-
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-
-import androidx.appcompat.app.GlobalOptions;
-import androidx.fragment.app.ListFragment;
-
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -34,6 +15,24 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.appcompat.app.GlobalOptions;
+import androidx.fragment.app.ListFragment;
+
+import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionarymanager.files.ArrayListBookTree;
+import com.knziha.plod.dictionarymanager.files.mAssetFile;
+import com.knziha.plod.dictionarymanager.files.mFile;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.R;
+import com.knziha.rbtree.RashSet;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BookManagerFolderlike extends ListFragment implements BookManagerFragment.SelectableFragment {
 	String parentFile;
@@ -285,7 +284,7 @@ public class BookManagerFolderlike extends ListFragment implements BookManagerFr
 			//}else
 			String AssetInternalname = null;
 			if(mdTmp instanceof mAssetFile)
-				AssetInternalname = CMN.AssetMap.get(mdTmp.getAbsolutePath());
+				AssetInternalname = CMN.getAssetName(mdTmp.getAbsolutePath());
 			if(mdTmp.exists() || (AssetInternalname!=null))
 				vh.text.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 			else

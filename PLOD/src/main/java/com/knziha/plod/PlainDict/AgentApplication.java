@@ -124,8 +124,10 @@ public class AgentApplication extends Application {
 		//           .penaltyLog()//违规对log日志
 		//            .penaltyDeath()//违规Crash
 		//            .build());
-		CMN.AssetMap.put("/ASSET/liba.mdx", "李白全集-内置");
-		CMN.AssetMap.put("/ASSET/", "【内置】");
+		CMN.AssetMap.put("liba", "李白全集");
+		CMN.AssetMap.put("etymonline", "Etymology Online");
+		CMN.AssetMap.put("vocabulary", "Vocabulary");
+		CMN.AssetMap.put("", "【内置】");
 	}
 	public SoftReference<char[]> _4kCharBuff;
 	public ArrayList<PlaceHolder> slots;
