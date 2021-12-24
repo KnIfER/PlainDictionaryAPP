@@ -290,7 +290,7 @@
 			android:visibility="invisible"
 			/>
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
-			android:layout_height="wrap_content"
+			android:layout_height="match_parent"
 			android:layout_width="match_parent"
 			android:id="@+id/sub_list1"
 			android:drawSelectorOnTop="true"
@@ -300,7 +300,7 @@
 			android:layout_marginBottom="45dip"
 			/>
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
-			android:layout_height="wrap_content"
+			android:layout_height="match_parent"
 			android:layout_width="match_parent"
 			android:id="@+id/sub_list2"
 			android:drawSelectorOnTop="true"

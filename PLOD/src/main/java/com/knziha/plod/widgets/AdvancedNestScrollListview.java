@@ -19,11 +19,9 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.ListView;
 
 import androidx.core.view.NestedScrollingChild;
 import androidx.core.view.NestedScrollingChildHelper;
-import androidx.core.view.ViewCompat;
 
 /**
  * https://github.com/tobiasrohloff/NestedScrollWebView/edit/master/lib/src/main/java/com/tobiasrohloff/view/NestedScrollWebView.java
@@ -45,6 +43,12 @@ public class AdvancedNestScrollListview extends ListViewmy implements NestedScro
 		super(context, attrs, defStyleAttr);
 		mChildHelper = Utils.getNestedScrollingChildHelper();
 		//mChildHelper = new NestedScrollingChildHelper(null);
+	}
+	
+	public void ensureNewNestedScrollHelper() {
+		if (mChildHelper==Utils.getNestedScrollingChildHelper()) {
+			mChildHelper = new NestedScrollingChildHelper(this);
+		}
 	}
 
 	@Override

@@ -34,6 +34,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -49,6 +50,7 @@ import com.knziha.filepicker.model.DialogConfigs;
 import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
+import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
@@ -57,12 +59,12 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
-import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.settings.ServerPreference;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
+import com.knziha.plod.widgets.Utils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -83,9 +85,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.knziha.plod.db.LexicalDBHelper;
-import com.knziha.plod.widgets.Utils;
-
 import io.noties.markwon.Markwon;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
@@ -100,7 +99,7 @@ public class Drawer extends Fragment implements
 	AlertDialog d;
 
 	String[] hints;
-	private ListView mDrawerList;
+	private AdvancedNestScrollListview mDrawerList;
 	View mDrawerListLayout;
 	MyAdapter myAdapter;
 
@@ -122,7 +121,8 @@ public class Drawer extends Fragment implements
 	private CharSequence mPreviousCBContent;
 	private ViewGroup swRow;
 	private boolean toPDF;
-
+	private int basicArrLen;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -140,22 +140,51 @@ public class Drawer extends Fragment implements
 			mDrawerListLayout.findViewById(R.id.menu_item_exit).setOnClickListener(this);
 			mDrawerListLayout.findViewById(R.id.menu_item_exit).setOnLongClickListener(this);
 			mDrawerList = mDrawerListLayout.findViewById(R.id.left_drawer);
-			((AdvancedNestScrollListview)mDrawerList).setNestedScrollingEnabled(true);
+			mDrawerList.ensureNewNestedScrollHelper();
+			mDrawerList.setNestedScrollingEnabled(true);
 			
-			myAdapter = new MyAdapter(new int[]{
-				R.string.fuzzyret1
-				, R.string.fullret
-				, 0
-				, R.string.bookmarkH
-				, R.string.lastmarks
-				, 0
-				, R.string.settings
-				, 0
-				, R.string.addd
-				, R.string.pick_main
-				, R.string.manager
-				, R.string.switch_favor
-			});
+			int[] basicArr;
+			if (GlobalOptions.isLarge) {
+				basicArr = new int[]{
+						R.string.fuzzyret1
+						, R.string.fullret
+						, 0
+						, R.string.bookmarkH
+						, R.string.lastmarks
+						, 0
+						, R.string.addd
+						, R.string.pick_main
+						, R.string.manager
+						, R.string.switch_favor
+						, 0
+						, R.string.settings
+						, 0
+						, R.string.about
+						, 0
+						, R.string.exit
+						, 0
+						, R.string.clip_board
+				};
+				basicArrLen = basicArr.length-8;
+				FooterView.setVisibility(View.GONE);
+			} else {
+				basicArr = new int[]{
+						R.string.fuzzyret1
+						, R.string.fullret
+						, 0
+						, R.string.bookmarkH
+						, R.string.lastmarks
+						, 0
+						, R.string.settings
+						, 0
+						, R.string.addd
+						, R.string.pick_main
+						, R.string.manager
+						, R.string.switch_favor
+				};
+				basicArrLen = basicArr.length;
+			}
+			myAdapter = new MyAdapter(basicArr);
 			
 			mDrawerList.setAdapter(myAdapter);
 			
@@ -204,7 +233,22 @@ public class Drawer extends Fragment implements
 			sw5.toggle();
 		}
 	}
-
+	
+	public void adjustBottomPadding() {
+		if (!GlobalOptions.isLarge) {
+			int pad = 0;
+			if (PDICMainAppOptions.getEnableSuperImmersiveScrollMode()) {
+				if (a.UIData.appbar.getTop()==0) {
+					pad = a.toolbar.getHeight()+a.bottombar.getHeight();
+				}
+				mDrawerList.setNestedScrollingEnabled(pad==0);
+			}
+			if (mDrawerListLayout.getPaddingBottom()!=pad) {
+				mDrawerListLayout.setPadding(0, 0, 0, pad);
+			}
+		}
+	}
+	
 	class MyAdapter extends BaseAdapter {
 		int[] items;
 		public MyAdapter(int[] items) {
@@ -221,6 +265,10 @@ public class Drawer extends Fragment implements
 		}
 		@Override
 		public int getCount() {
+			if (GlobalOptions.isLarge) {
+				if (pasteBin==null || pasteBin.getVisibility()==View.INVISIBLE)
+					return items.length-2;
+			}
 			return items.length;
 		}
 		@Override
@@ -235,10 +283,13 @@ public class Drawer extends Fragment implements
 		
 		@Override
 		public int getItemViewType(int position) {
-			if (items[position]==0) {
+			int item = items[position];
+			if (item==0) {
 				return 1;
 			}
-			if (items[position]==R.string.settings) {
+			if (item==R.string.settings
+				|| position>=basicArrLen
+			) {
 				return 2;
 			}
 			return 0;
@@ -263,10 +314,11 @@ public class Drawer extends Fragment implements
 				return convertView!=null?convertView:LayoutInflater.from(getContext()).inflate(R.layout.listview_sep, parent, false);
 			}
 			PDICMainActivity.ViewHolder vh;
+			int viewType = getItemViewType(position);
 			if(convertView!=null){
 				vh=(PDICMainActivity.ViewHolder)convertView.getTag();
 			} else {
-				vh=new PDICMainActivity.ViewHolder(getContext(),id==R.string.settings?R.layout.drawer_settings:R.layout.drawer_item0, parent);
+				vh=new PDICMainActivity.ViewHolder(getContext(),viewType==2?R.layout.drawer_settings:R.layout.drawer_item0, parent);
 				vh.itemView.setBackgroundResource(R.drawable.listviewselector1);
 				vh.itemView.setOnClickListener(Drawer.this);
 				if (vh.subtitle!=null) {
@@ -280,14 +332,21 @@ public class Drawer extends Fragment implements
 				PDICMainActivity.decorateBackground(vh.itemView);
 				vh.title.setTextColor(a.AppBlack);
 			}
-
+			if (viewType==2) {
+				// 设置图标
+				((ImageView)vh.itemView.findViewById(R.id.icon)).setImageResource(id==R.string.settings?R.drawable.drawer_menu_icon_setting
+						:id==R.string.about?R.drawable.info
+						:id==R.string.exit?R.drawable.drawer_menu_icon_exit
+						:/*id==R.string.clip_board?*/R.drawable.ic_content_paste_black_24dp
+						);
+			}
 			vh.title.setText(id);
 			vh.itemView.setId(id);
 			if (vh.subtitle!=null) {
 				String hint = null;
 				if(show_hints) {
 					if(hints==null) hints = getResources().getStringArray(R.array.drawer_hints);
-					hint=hints[position];
+					if(position<hints.length) hint=hints[position];
 				}
 				vh.subtitle.setText(hint);
 			}
@@ -360,6 +419,9 @@ public class Drawer extends Fragment implements
 			if(pasteBin==null){
 				pasteBin = mDrawerListLayout.findViewById(R.id.pastebin);
 				pasteBin.setOnClickListener(this);
+				if (GlobalOptions.isLarge) {
+					pasteBin.getLayoutParams().height=0;
+				}
 				mClipboard=new ArrayList<>(12);
 				//mClipboard.add("Happy");
 			}
@@ -439,6 +501,9 @@ public class Drawer extends Fragment implements
 				if(ClipListener!=null)
 					clipboardManager.removePrimaryClipChangedListener(ClipListener);
 			}
+			if (GlobalOptions.isLarge) {
+				myAdapter.notifyDataSetChanged();
+			}
 		}
 	}
 	
@@ -453,6 +518,7 @@ public class Drawer extends Fragment implements
 			case R.id.server:
 				a.launchSettings(ServerPreference.id, 0);
 			return;
+			case R.string.about:
 			case R.id.menu_item_setting:{
 				//a.mDrawerLayout.closeDrawer(GravityCompat.START);
 				final View dv = a.getLayoutInflater().inflate(R.layout.dialog_about,null);
@@ -493,7 +559,7 @@ public class Drawer extends Fragment implements
 							Markwon markwon = Markwon.create(a);
 							TextView tv = d.findViewById(android.R.id.message);
 							a.opt.setAsLinkedTextView(tv, false);
-							tv.setTextSize(GlobalOptions.isLarge?12:17);
+							tv.setTextSize(GlobalOptions.isLarge?20:19);
 							markwon.setMarkdown(tv, Utils.fileToString(a, new File(CMN.AssetTag, "rizhi")));
 						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					
@@ -541,9 +607,11 @@ public class Drawer extends Fragment implements
 				
 			} break;
 			//退出
+			case R.string.exit:
 			case R.id.menu_item_exit:
 				a.showAppExit(false);
 				break;
+			case R.string.clip_board:
 			case R.id.pastebin:{//剪贴板对话框
 				if(ClipboardList ==null){
 					ClipboardList = new ListView(a.getBaseContext());
@@ -1086,6 +1154,7 @@ public class Drawer extends Fragment implements
 			} break;
 			case R.id.sw2:{
 				a.setNestedScrollingEnabled(PDICMainAppOptions.setEnableSuperImmersiveScrollMode(isChecked));
+				adjustBottomPadding();
 			} break;
 			case R.id.sw3:{
 				a.opt.setServerStarted(isChecked);

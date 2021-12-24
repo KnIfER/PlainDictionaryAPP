@@ -6,6 +6,7 @@
 	android:orientation="horizontal">
 
 	<ImageView
+		android:id="@+id/icon"
 		android:src="@drawable/drawer_menu_icon_setting"
 		android:layout_width="35dp"
 		android:layout_height="match_parent"
