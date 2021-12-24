@@ -143,6 +143,7 @@ import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.PlainUI.AnnotAdapter;
 import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.PlainUI.BookmarkAdapter;
 import com.knziha.plod.PlainUI.BottombarTweakerAdapter;
 import com.knziha.plod.PlainUI.BuildIndexInterface;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
@@ -150,6 +151,8 @@ import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.NightModeSwitchPanel;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
+import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
@@ -160,12 +163,12 @@ import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.BookManager;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.PlainPDF;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
-import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.ebook.Utils.BU;
@@ -176,9 +179,9 @@ import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
-import com.knziha.plod.PlainUI.BookmarkAdapter;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CustomShareAdapter;
+import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
@@ -189,7 +192,6 @@ import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.PopupGuarder;
 import com.knziha.plod.widgets.PopupMoveToucher;
 import com.knziha.plod.widgets.RLContainerSlider;
-import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.TwoColumnAdapter;
@@ -204,7 +206,6 @@ import com.knziha.text.SelectableTextViewBackGround;
 import com.knziha.text.SelectableTextViewCover;
 import com.knziha.text.TTSMoveToucher;
 
-import org.knziha.metaline.Metaline;
 import org.apache.commons.imaging.BufferedImage;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.lang3.ArrayUtils;
@@ -212,6 +213,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.knziha.metaline.Metaline;
 import org.knziha.metaline.StripMethods;
 import org.xiph.speex.ByteArrayRandomOutputStream;
 import org.xiph.speex.manyclass.JSpeexDec;
@@ -254,18 +256,15 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import com.knziha.plod.db.LexicalDBHelper;
-import com.knziha.plod.db.MdxDBHelper;
-
 import static com.bumptech.glide.util.Util.isOnMainThread;
+import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
+import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.CMN.AssetMap;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
-import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
-import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
 
 /** 程序基础类<br/>
@@ -10293,6 +10292,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		public void SaveVOA(WebViewmy webview, BasicAdapter ADA) {
+			if (webview==null) {
+				showT("BUG!!!发生空指针错误(webview)");
+				return;
+			}
 			ScrollerRecord pagerec;
 			long deltaT = System.currentTimeMillis() - lastClickTime;
 			int lastClickedPos = (int) webview.currentPos; // ADA.lastClickedPos

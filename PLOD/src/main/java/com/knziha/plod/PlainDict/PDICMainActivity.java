@@ -167,7 +167,7 @@ import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_S
  * Our single instanced Main Interface.<br/>
  * Created by KnIfER on 2018.
  */
-@SuppressLint({"SetTextI18n", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi"})
+@SuppressLint({"SetTextI18n", "ClickableViewAccessibility","PrivateApi","DiscouragedPrivateApi","ResourceType"})
 public class PDICMainActivity extends MainActivityUIBase implements OnClickListener, OnLongClickListener, OnMenuItemClickListener{
 	public String textToSetOnFocus;
 	public static int taskCounter = 0;

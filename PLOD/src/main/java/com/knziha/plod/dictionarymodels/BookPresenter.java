@@ -45,12 +45,19 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
+import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.BookManager;
+import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -58,14 +65,9 @@ import com.knziha.plod.plaindict.MainActivityUIBase.UniCoverClicker;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
-import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
-import com.knziha.plod.dictionary.Utils.SU;
-import com.knziha.plod.dictionarymanager.files.CachedDirectory;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.plaindict.databinding.ContentviewItemBinding;
-import com.knziha.plod.plaindict.R;
-import com.knziha.plod.dictionary.Utils.BU;
-import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.FlowTextView;
@@ -74,9 +76,9 @@ import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
-import org.knziha.metaline.Metaline;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.knziha.metaline.Metaline;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -97,14 +99,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.knziha.plod.db.LexicalDBHelper;
-import com.knziha.plod.db.MdxDBHelper;
-
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
 import static com.knziha.plod.dictionary.mdBase.fullpageString;
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
-import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
-import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
 
 /*
  UI side of books / dictionaries
@@ -2288,7 +2287,7 @@ function debug(e){console.log(e)};
 		htmlBuilder.append("<script class=\"_PDict\">");
 		int rcsp = MakeRCSP(opt);
 		if(mWebView==a.popupWebView) rcsp|=1<<5;
-		htmlBuilder.append("rcsp=").append(rcsp).append(";");
+		htmlBuilder.append("app.rcsp=").append(rcsp).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
 		//nimp
 		//if(!(this instanceof bookPresenter_web))
@@ -2573,7 +2572,7 @@ function debug(e){console.log(e)};
 						wv.evaluateJavascript(presenter.a.getCommonAsset(name), new ValueCallback<String>() {
 							@Override
 							public void onReceiveValue(String value) {
-								presenter.mWebView.evaluateJavascript("if(window.loadJsCb)loadJsCb()", null);
+								wv.evaluateJavascript("if(window.loadJsCb)loadJsCb()", null);
 							}
 						});
 					}
