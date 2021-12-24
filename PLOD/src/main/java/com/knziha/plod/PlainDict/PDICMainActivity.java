@@ -920,7 +920,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		Window win = getWindow();
 		
 		win.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+//		setSoftInputMode(softModeResize);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		//if(Utils.littleCake) {
+		if(Build.VERSION.SDK_INT<=22) {
+			requestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
+			supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
+		}
 		
 		boolean transit = PDICMainAppOptions.getTransitSplashScreen();
 		if(!transit) setTheme(R.style.PlainAppTheme);
@@ -975,6 +981,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(!UIData.drawerLayout.isDrawerVisible(GravityCompat.START)) {
 				onDrawerOpened();
 			}
+			drawerFragment.adjustBottomPadding();
 		});
 		toolbar.mNavButtonView.setOnLongClickListener(this);
 		
@@ -1083,6 +1090,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		etSearch = UIData.etSearch;
 		
 		super.findFurtherViews();
+	}
+	
+	private int softMode;
+	public final int softModeHold = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
+	public final int softModeResize = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+	
+	public void setSoftInputMode(int mode) {
+		if(softMode!=mode) {
+			softMode=mode;
+			getWindow().setSoftInputMode(mode);
+		}
 	}
 	
 	void onDrawerOpened() {

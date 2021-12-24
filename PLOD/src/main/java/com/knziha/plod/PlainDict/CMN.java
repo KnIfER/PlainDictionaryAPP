@@ -248,4 +248,8 @@ public class CMN{
 		} catch (Exception ignored) { }
 		return ret==null?name:ret;
 	}
+	
+	public static void debug(Object...o) {
+		if (BuildConfig.isDebug) Log(o);
+	}
 }

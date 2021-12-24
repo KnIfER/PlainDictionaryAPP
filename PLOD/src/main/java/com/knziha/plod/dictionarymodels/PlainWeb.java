@@ -1268,7 +1268,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 
 	public void onProgressChanged(BookPresenter bookPresenter, WebViewmy  mWebView, int newProgress) {
-		if(GlobalOptions.debug) CMN.Log("onProgressChanged", newProgress);
+		CMN.debug("onProgressChanged", newProgress);
 		if(mWebView.titleBar!=null) {
 			Drawable d = mWebView.titleBar.getBackground();
 			int start = d.getLevel();

@@ -189,10 +189,10 @@ public class CrashHandler implements UncaughtExceptionHandler {
 			new AlertDialog.Builder(context)
 					.setMessage(message)
 					.setPositiveButton(android.R.string.yes, btnLis)
-					.setNegativeButton(android.R.string.copy, null)
+					.setNeutralButton(android.R.string.copy, null)
 					.setTitle(title)
 					.setCancelable(btnLis==null)
-					.show().findViewById(android.R.id.button2).setOnClickListener(v -> {
+					.show().findViewById(android.R.id.button3).setOnClickListener(v -> {
 						if (context instanceof Toastable_Activity) {
 							((Toastable_Activity) context).FuzhiText(finalMessage);
 						}

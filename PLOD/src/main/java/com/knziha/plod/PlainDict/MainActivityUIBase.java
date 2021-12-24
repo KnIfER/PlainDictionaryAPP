@@ -8150,7 +8150,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 
 					if(proceed) {
-						//CMN.Log("accept", accept, url);
+						CMN.debug("accept", accept, url);
 						InputStream overridePage = invoker.getWebPage(url);
 						if(overridePage!=null){
 							//CMN.tp(0, "webx getPage :: ", invoker.getWebPageString(url), url);
@@ -8158,6 +8158,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							return new WebResourceResponse("text/html","UTF-8",overridePage);
 						}
 					}
+					
+//					if (url.contains("apis.google")) return emptyResponse;
 
 					if(webx.canSaveResource){
 						try {

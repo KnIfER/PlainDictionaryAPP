@@ -173,6 +173,28 @@
 			}
 		}
 		tweakInput();
+		function tweakInputMod(){
+			if(!isAttached(win._modin)) {
+				var n;
+				if(!win._modin) {
+					//var e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮 2021翻译门事件后取消编辑按钮
+					var e=Qa('kImuFf').cloneNode(true); // 拷贝复制按钮
+					n = e.getElementsByTagName('I')[0];
+					win._modin=e;
+					if(n){
+						n.style.color='#888';
+						n.innerText='edit';
+					}
+					e.onclick=function(v){
+						ta.readOnly=!ta.readOnly;
+						if(n)n.style.color=ta.readOnly?'#888':'#000';
+						v.stopPropagation();
+					}
+				}
+				document.getElementsByClassName('FFpbKc')[0].appendChild(win._modin); // 添加到输入内容，字数栏之后
+			}
+		}
+		tweakInputMod();
 		if(!win._RPGF) {
 			// mod the share btn
 			win.addEventListener('click', function(v){
@@ -191,6 +213,7 @@
 							u.preventDefault();
 							u.stopPropagation();
 							obz();
+							tweakInputMod();
 							return false;
 						};
 					}
@@ -211,24 +234,7 @@
 			}, true);
 			win._RPGF=1;
 		}
-		if(!isAttached(win._modin)) {
-			if(!win._modin) {
-				//var e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮 2021翻译门事件后取消编辑按钮
-				var e=Qa('kImuFf').cloneNode(true); // 拷贝复制按钮
-				var n=e.getElementsByTagName('I')[0];
-				win._modin=e;
-				if(n){
-					n.style.color='#888';
-					n.innertText='edit';
-				}
-				e.onclick=function(v){
-					ta.readOnly=!ta.readOnly;
-					if(n)n.style.color=ta.readOnly?'#888':'#000';
-					v.stopPropagation();
-				}
-			}
-			document.getElementsByClassName('FFpbKc')[0].appendChild(win._modin); // 添加到输入内容，字数栏之后
-		}
+		
 		debug('点击不显示候选列表', listPane = Qa('HyaQwf'));
 		win._tweakedHXCL=true;
 		debug('点击不显示候选列表 done.');
