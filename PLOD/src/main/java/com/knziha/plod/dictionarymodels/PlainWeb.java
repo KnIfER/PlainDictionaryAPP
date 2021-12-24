@@ -9,7 +9,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
 import androidx.appcompat.app.GlobalOptions;
@@ -18,6 +17,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.knziha.plod.ArrayList.SerializedLongArray;
+import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.plaindict.CMN;
@@ -28,8 +29,8 @@ import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
-import org.knziha.metaline.Metaline;
 import org.apache.commons.lang3.StringUtils;
+import org.knziha.metaline.Metaline;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -48,13 +49,10 @@ import java.util.zip.Inflater;
 
 import javax.net.ssl.X509TrustManager;
 
-import com.knziha.plod.db.LexicalDBHelper;
-import com.knziha.plod.db.MdxDBHelper;
-
-import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
 import static com.knziha.plod.db.LexicalDBHelper.FIELD_CREATE_TIME;
 import static com.knziha.plod.db.LexicalDBHelper.FIELD_EDIT_TIME;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_DATA_v2;
+import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
 
 /*
  Mdict point to online website.
@@ -124,18 +122,17 @@ public class PlainWeb extends DictionaryAdapter {
 		 	e.appendChild(document.createTextNode(css));
 		 }
 	 	 app.PLODKit=1;
-		function loadJs(url){
+		function fun(url){
 			var script=document.createElement('script');
 			script.type="text/javascript";
 			script.src=url;
 			document.body.appendChild(script);
 		}
-		try{loadJs('https://mdbr/SUBPAGE.js')}catch(e){app.loadJs(sid.get(),'SUBPAGE.js');}
+		try{fun('https://mdbr/SUBPAGE.js')}catch(e){app.loadJs(sid.get(),'SUBPAGE.js');}
 	 }
-	 //console.log('fatal PLODKitASD' + window.PLODKit);
 	 */
-	@Metaline
-	static final String loadJs = StringUtils.EMPTY;
+	@Metaline(trim = false)
+	public static final String loadJs = StringUtils.EMPTY;
 	
 	/**
 	 	//if(!window._fvwhl){
@@ -909,7 +906,7 @@ public class PlainWeb extends DictionaryAdapter {
 //			}
 //		}
 		if (bookPresenter!=null) {
-			StringBuilder sb = AcquireStringBuffer(8196).append("app.rcsp=")
+			StringBuilder sb = AcquireStringBuffer(8196).append("window.rcsp=")
 					.append(bookPresenter.MakeRCSP(opt)).append(";")
 					;
 			if (jsLoader != null) sb.append("try{").append(jsLoader).append("}catch(e){}");
@@ -1277,7 +1274,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 
 	public void onProgressChanged(BookPresenter bookPresenter, WebViewmy mWebView, int newProgress) {
-		CMN.Log("onProgressChanged", newProgress);
+		if(GlobalOptions.debug) CMN.Log("onProgressChanged", newProgress);
 		if(mWebView.titleBar!=null) {
 			Drawable d = mWebView.titleBar.getBackground();
 			int start = d.getLevel();
@@ -1299,10 +1296,11 @@ public class PlainWeb extends DictionaryAdapter {
 			}
 		}
 		if(newProgress>85){
-			mWebView.evaluateJavascript(jsCode, null);
+//			mWebView.evaluateJavascript(jsCode, null);
+			bookPresenter.a.myWebClient.onPageFinished(mWebView, mWebView.getUrl());
 		}
 		if(newProgress>=98){
-			CMN.Log("newProgress>=98", newProgress);
+			if(GlobalOptions.debug) CMN.Log("newProgress>=98", newProgress);
 			fadeOutProgressbar(bookPresenter, mWebView, newProgress>=99);
 		}
 		if(newProgress>=20){
@@ -1312,22 +1310,10 @@ public class PlainWeb extends DictionaryAdapter {
 
 	/** 接管进入黑暗模式、编辑模式 */
 	public void onPageFinished(BookPresenter bookPresenter, WebView view, String url, boolean updateTitle) {
-		CMN.Log("chromium", "web  - onPageFinished", currentUrl);
+		if(GlobalOptions.debug) CMN.Log("chromium", "web  - onPageFinished", currentUrl);
 		fadeOutProgressbar(bookPresenter, (WebViewmy) view, updateTitle);
 		currentUrl=view.getUrl();
-		view.evaluateJavascript(jsCode, new ValueCallback<String>() {
-			@Override
-			public void onReceiveValue(String value) {
-				CMN.Log(value);
-			}
-		});
-//		CMN.Log(1234654212345L);
-//		view.evaluateJavascript(new String(BookPresenter.jsBytes), new ValueCallback<String>() {
-//			@Override
-//			public void onReceiveValue(String value) {
-//				CMN.Log("BookPresenter.jsBytes::onReceiveValue", value);
-//			}
-//		});
+		view.evaluateJavascript(jsCode, null);
 	}
 
 	private void fadeOutProgressbar(BookPresenter bookPresenter, WebViewmy mWebView, boolean updateTitle) {

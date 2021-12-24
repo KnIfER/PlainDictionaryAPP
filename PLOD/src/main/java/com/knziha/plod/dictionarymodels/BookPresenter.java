@@ -128,11 +128,11 @@ public class BookPresenter
 	/**
 	 	var w=window, d=document;
 		var LoadMark, frameAt;
-		function _log(...e){console.log('fatal web::',e)};
-	 	w.addEventListener('load',()=>{
+		function _log(...e){console.log('fatal web::'+e)};
+	 	w.addEventListener('load',function(e){
 			//_log('wrappedOnLoadFunc...');
 			var ws = d.body.style;
-			_log('mdpage loaded dark:'+(app.rcsp&0x40));
+			_log('mdpage loaded dark:'+(w.rcsp&0x40));
 	 		d.body.contentEditable=!1;
 	 		_highlight(null);
 			var vi = d.getElementsByTagName('video');
@@ -155,7 +155,7 @@ public class BookPresenter
 				try{loadJs('mdbr://markloader.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'markloader.js');}
 			} else highlight(keyword);
 		}
-		w.addEventListener('touchstart',(e)=>{
+		w.addEventListener('touchstart',function(e){
 	 		//_log('fatal wrappedOnDownFunc');
 	 		if(!w._touchtarget_lck && e.touches.length==1){
 	 			w._touchtarget = e.touches[0].target;
@@ -174,10 +174,18 @@ public class BookPresenter
 			d.body.appendChild(script);
 		}
 	 */
-	@Metaline()
-	public final static byte[] jsBytes=SU.EmptyBytes;
+	@Metaline(trim = false,compile = false)
+	public static byte[] jsBytes=SU.EmptyBytes;
 	
-	/** if(!(app.rcsp&0xF00)){var w=window,d=document;w.addEventListener('click',(e)=>{
+	static {
+		if (Build.VERSION.SDK_INT<=20) {
+			String tmp = new String(jsBytes);
+			tmp = tmp.replaceFirst("_log\\(...e\\)", "_log(e)");
+			jsBytes = tmp.getBytes();
+		}
+	}
+	
+	/** var w=window,d=document;if(!(w.rcsp&0xF00)){w.addEventListener('click',function(e){
 	 		//_log('wrappedClickFunc', e.srcElement.id);
 	 		var curr=e.srcElement;
 	 		if(w.webx){
@@ -208,8 +216,8 @@ public class BookPresenter
 					}
 	 			}
 			}
-			_log('popuping...', app.rcsp);
-			if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && app.rcsp&0x20 && !curr.noword){
+			_log('popuping...'+w.rcsp);
+			if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && w.rcsp&0x20 && !curr.noword){
 	 			if(w._NWP) {
 	 				var p=curr; while((p=p.parentElement))
 	 				if(_NWP.indexOf(p)>=0) break;
@@ -463,7 +471,7 @@ public class BookPresenter
 	 		w.bOnceHighlighted=false;
 			MarkInst.unmark({
 				done: function() {
-	 				var rcsp=app.rcsp;
+	 				var rcsp=w.rcsp;
 					keyword=decodeURIComponent(keyword);
 	 				console.log('highlighting...'+keyword+((rcsp&0x1)!=0));
 	 				if(rcsp&0x1)
@@ -2287,7 +2295,7 @@ function debug(e){console.log(e)};
 		htmlBuilder.append("<script class=\"_PDict\">");
 		int rcsp = MakeRCSP(opt);
 		if(mWebView==a.popupWebView) rcsp|=1<<5;
-		htmlBuilder.append("app.rcsp=").append(rcsp).append(";");
+		htmlBuilder.append("window.rcsp=").append(rcsp).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
 		//nimp
 		//if(!(this instanceof bookPresenter_web))

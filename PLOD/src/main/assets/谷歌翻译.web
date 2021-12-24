@@ -8,7 +8,7 @@
 	]
 	,"keyPattern": "*"
 	,"js": "
-	let e = document.getElementById('gtyexp'),win=window,sel=win.getSelection()
+	var e = document.getElementById('gtyexp'),win=window,sel=win.getSelection()
 	,ta=document.getElementsByTagName('textarea')[0], listPane,textPara;
 	function debug(e){console.log(e)};
 	debug('translator ini...'); // 开始
@@ -18,15 +18,15 @@
 		else if(e.style.display=='none'){
 			e.style.display = 'unset';
 			e.style.opacity = 0.75;
-		};
-	};
+		}
+	}
 	if(!e) {
 		e=document.createElement('IMG');
 		e.id='gtyexp';
 		document.body.appendChild(e);
 		e.src='//ssl.gstatic.com/translate/favicon.ico'; // 谷歌翻译的图标
 		e.style='display:none;position:fixed;width:35px;height:35px;top:8px;right:25px;background-color:rgb(181 217 255);transition:all 0.25s;opacity:0.75;z-index:999;border-radius:3px;padding:10px;user-select:none;box-shadow:rgb(0 0 255 / 20%) 0px 7px 19px 0px;';
-		let PDRNG,PDRNT;
+		var PDRNG,PDRNT;
 		function toggle(){ 
 			if(!sel.toStringRaw) { // 强硬作风 温和修改
 				sel.toStringRaw = sel.toString;
@@ -81,14 +81,14 @@
 			}));
 			debug('检查是否查到了单词释义');
 			if(false)
-			setTimeout(v=>{
+			setTimeout(function(){
 				//if(document.getElementsByClassName('aia4Ud')[0].firstElementChild.innerText===key) 
 				if(1)
 				{
 					e.style.transition='';
 					e.style.transform='scale(1.5)';
 					e.style.transition='all 0.25s';
-					setTimeout(v=>{e.style.transform='unset'}, 80);
+					setTimeout(function(){e.style.transform='unset'}, 80);
 					//e.style.transform='unset'
 				}
 			}, 200);
@@ -132,7 +132,8 @@
 	}
 	// 点击不显示候选列表
 	const observer=new MutationObserver(function(mutationsList, observer) {
-		for(var mutation of mutationsList) {
+		for(var i=0;i<mutationsList.length;i++) {
+			var mutation = mutationsList[i];
 			if (mutation.type==='attributes' && mutation.attributeName==='style') {
 				//console.log('The ' + mutation.attributeName + ' attribute was modified.');
 				if(listPane.style.display=='') { // 若正常显示候选列表
@@ -147,7 +148,8 @@
 			, attributeFilter : ['style'] });
 	}
 	const observer1=new MutationObserver(function(mutationsList, observer) {
-		for(var mutation of mutationsList) {
+		for(var i=0;i<mutationsList.length;i++) {
+			var mutation = mutationsList[i];
 			if (mutation.attributeName==='aria-label') {
 				var e=mutation.target;
 				if(e.getAttribute('aria-label')!==e.getAttribute('data-aria-label-on')) {
@@ -162,7 +164,7 @@
 			, attributeFilter : ['aria-label'] });
 	}
 	function tweakHXCL(){ // 调整候选表
-		let jn='jsname',cp=queryByAttr(jn, 'r5xl4'); // 解释内容容器
+		var jn='jsname',cp=queryByAttr(jn, 'r5xl4'); // 解释内容容器
 		function Qa(jsname, p){return queryByAttr(jn, jsname, p||cp)}
 		function check(){
 			if(win._tweakedHXCL) tweakInput();
@@ -174,12 +176,12 @@
 		tweakInput();
 		if(!win._RPGF) {
 			// mod the share btn
-			win.addEventListener('click', v=>{
+			win.addEventListener('click', function(v){
 				var p=v.srcElement.parentElement;
 				if(p) {
 					var jn=p.getAttribute('jsname');
 					if(jn==='ymIaV' && !v.srcElement.onclick) {
-						v.srcElement.onclick=u=>{
+						v.srcElement.onclick=function(u){
 							debug('fatal 123');
 							if(!listPane) {
 								listPane = Qa('HyaQwf');
@@ -212,15 +214,15 @@
 		}
 		if(!isAttached(win._modin)) {
 			if(!win._modin) {
-				//let e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮 2021翻译门事件后取消编辑按钮
-				let e=Qa('kImuFf').cloneNode(true); // 拷贝复制按钮
-				let n=e.getElementsByTagName('I')[0];
+				//var e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮 2021翻译门事件后取消编辑按钮
+				var e=Qa('kImuFf').cloneNode(true); // 拷贝复制按钮
+				var n=e.getElementsByTagName('I')[0];
 				win._modin=e;
 				if(n){
 					n.style.color='#888';
 					n.innertText='edit';
 				}
-				e.onclick=v=>{
+				e.onclick=function(v){
 					ta.readOnly=!ta.readOnly;
 					if(n)n.style.color=ta.readOnly?'#888':'#000';
 					v.stopPropagation();
@@ -266,7 +268,7 @@ try {
 		ta.dispatchEvent(new Event('input', {
 			bubbles: true
 		}));
-		setTimeout(()=> {
+		setTimeout(function(){
 			ta.dispatchEvent(new KeyboardEvent('keydown', {
 				keyCode: 27,
 				bubbles: 1

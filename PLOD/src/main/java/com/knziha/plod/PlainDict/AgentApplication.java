@@ -1,18 +1,23 @@
 package com.knziha.plod.plaindict;
 
 import android.app.Application;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+
+import androidx.multidex.MultiDex;
 
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.utils.CMNF;
 import com.knziha.paging.AppIconCover.AppIconCover;
 import com.knziha.paging.AppIconCover.AppIconCoverLoaderFactory;
+import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.Utils.MyIntPair;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.mdictRes;
-import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.slideshow.MddPic;
 import com.knziha.plod.slideshow.MddPicLoaderFactory;
@@ -27,8 +32,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-
-import com.knziha.plod.db.LexicalDBHelper;
 
 public class AgentApplication extends Application {
 	/** transient */
@@ -184,6 +187,14 @@ public class AgentApplication extends Application {
 		if (historyCon!=null) {
 			historyCon.close();
 			historyCon = null;
+		}
+	}
+	
+	@Override
+	protected void attachBaseContext(Context base) {
+		super.attachBaseContext(base);
+		if (Build.VERSION.SDK_INT<=20) {
+			MultiDex.install(this);
 		}
 	}
 }

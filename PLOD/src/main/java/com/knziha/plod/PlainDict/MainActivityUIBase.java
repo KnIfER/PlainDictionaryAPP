@@ -6802,7 +6802,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void toggleClickSearch(boolean val) {
-		evalJsAtAllFrames(val?"app.rcsp|=0x20;(app.rcsp&0xF00)||app.loadJs(sid.get(),'tapTrans.js')":"app.rcsp&=~0x20");
+		evalJsAtAllFrames(val?"window.rcsp|=0x20;(rcsp&0xF00)||loadJs(sid.get(),'tapTrans.js')":"window.rcsp&=~0x20");
+//		currentDictionary.mWebView.evaluateJavascript(currentDictionary.getWebx().jsLoader, new ValueCallback<String>() {
+//			@Override
+//			public void onReceiveValue(String value) {
+//				CMN.Log("onReceiveValue::rcsp::", value);
+//			}
+//		});
 	}
 
 	void toggleInPageSearch(boolean isLongClicked) {
@@ -7477,17 +7483,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			CustomViewHideTime = System.currentTimeMillis();
 		}
-
+		
 		@Override
 		public void onProgressChanged(final WebView view, int newProgress) {
 			//CMN.Log("ProgressChanged", newProgress);
 			WebViewmy mWebView = (WebViewmy) view;
-			//todo undo changes made to webview by web dictionaries.
-			//if(mWebView.fromCombined==4){
-			if(mWebView.fromNet){
-				final BookPresenter invoker = mWebView.presenter;
-				if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
-					((PlainWeb)invoker.bookImpl).onProgressChanged(invoker, mWebView, newProgress);
+			if (mWebView.bPageStarted) {
+				//todo undo changes made to webview by web dictionaries.
+				//if(mWebView.fromCombined==4){
+				if (mWebView.fromNet) {
+					final BookPresenter invoker = mWebView.presenter;
+					if (invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+						((PlainWeb) invoker.bookImpl).onProgressChanged(invoker, mWebView, newProgress);
+					}
 				}
 			}
 		}
@@ -7544,6 +7552,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WebViewClient myWebClient = new WebViewClient() {
 		public void onPageFinished(WebView view, String url) {
 			WebViewmy mWebView = (WebViewmy) view;
+			if (mWebView.bPageStarted) {
+				mWebView.bPageStarted = false;
+			} else {
+				return;
+			}
 			if("about:blank".equals(url) || !mWebView.active&&!mWebView.fromNet) {
 				return;
 			}
@@ -7754,6 +7767,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			WebViewmy mWebView = (WebViewmy) view;
+			mWebView.bPageStarted=true;
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
 				((PlainWeb)invoker.bookImpl).onPageStarted(invoker, view, url, true);
@@ -8136,7 +8150,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 
 					if(proceed) {
-						CMN.Log("accept", accept, url);
+						//CMN.Log("accept", accept, url);
 						InputStream overridePage = invoker.getWebPage(url);
 						if(overridePage!=null){
 							//CMN.tp(0, "webx getPage :: ", invoker.getWebPageString(url), url);

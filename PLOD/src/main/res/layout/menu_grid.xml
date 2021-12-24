@@ -92,7 +92,7 @@
 				<com.knziha.plod.widgets.DescriptiveImageView
 					android:id="@drawable/ic_baseline_nightmode_24"
 					style="@style/MenuIconIVStyle"
-					android:text="夜间模式"
+					android:text="黑暗模式"
 					android:src="@drawable/ic_baseline_nightmode_24"
 					/>
 				<com.knziha.plod.widgets.DescriptiveImageView

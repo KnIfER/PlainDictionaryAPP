@@ -105,6 +105,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public int AlwaysCheckRange;
 	public boolean forbidLoading;
 	public boolean active;
+	public boolean bPageStarted;
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
