@@ -104,13 +104,28 @@
 			android:persistent="false"
 			/>
 
+		<Preference
+			android:key="log"
+			android:persistent="false"
+			android:title="查看上次错误信息"
+			app:isPreferenceVisible="true"
+			app:allowDividerAbove="true"
+			/>
+
+		<Preference
+			android:key="log2"
+			android:persistent="false"
+			android:title="模拟错误信息"
+			app:isPreferenceVisible="true"
+			app:allowDividerBelow="true"
+			/>
+
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="dbv2"
 			android:persistent="false"
 			android:title="使用数据库V2"
 			app:isPreferenceVisible="true"
 			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
 
 		<Preference
@@ -118,8 +133,6 @@
 			android:persistent="false"
 			android:title="升级数据库V2"
 			app:isPreferenceVisible="true"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
 			/>
 	</PreferenceCategory>
 

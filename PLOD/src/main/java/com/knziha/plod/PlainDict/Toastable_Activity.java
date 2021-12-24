@@ -1,12 +1,5 @@
 package com.knziha.plod.plaindict;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Locale;
-
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
@@ -25,13 +18,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.widget.Toolbar;
-
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ClickableSpan;
@@ -39,20 +25,31 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.widget.Toolbar;
+
+import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.knziha.plod.db.LexicalDBHelper;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Locale;
 
 import static com.knziha.plod.dictionarymodels.BookPresenter.indexOf;
 
@@ -231,26 +228,15 @@ public class Toastable_Activity extends AppCompatActivity {
 			if(opt.getLogToFile()){
 				try {
 					File log=new File(CrashHandler.getInstance(this, opt).getLogFile());
-					File lock;
-					if(log.exists()){
-						if((lock=new File(log.getParentFile(),"lock")).exists()){
-							byte[] buffer = new byte[Math.min((int) log.length(), 4096)];
-							int len = new FileInputStream(log).read(buffer);
-							String message=new String(buffer,0,len);
-							CMN.Log(message);
-							launching[0]=true;
-							setStatusBarColor(getWindow(), Constants.DefaultMainBG);
-							new androidx.appcompat.app.AlertDialog.Builder(this)
-								.setMessage(message)
-								.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-									lock.delete();
-									dialog.dismiss();
-									checkLaunch(savedInstanceState);
-								})
-								.setTitle("天哪，崩溃了……")
-								.setCancelable(false)
-								.show();
-						}
+					File lock=new File(log.getParentFile(),"lock");
+					if(lock.exists())
+					{
+						launching[0]=true;
+						setStatusBarColor(getWindow(), Constants.DefaultMainBG);
+						CrashHandler.getInstance(this, opt).showErrorMessage(this, (dialog, whichButton) -> {
+							lock.delete();
+							checkLaunch(savedInstanceState);
+						}, false);
 					}
 				} catch (Exception e) { CMN.Log(e); }finally {
 					if(!launching[0])

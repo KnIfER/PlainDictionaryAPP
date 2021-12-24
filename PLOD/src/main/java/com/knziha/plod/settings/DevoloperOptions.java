@@ -18,8 +18,10 @@ import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.dictionary.mdict;
+import com.knziha.plod.plaindict.CrashHandler;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.DataOutputStream;
@@ -64,6 +66,8 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 		findPreference("clear_cache2").setOnPreferenceClickListener(this);
 		findPreference("clear_cache3").setOnPreferenceClickListener(this);
 		findPreference("clear_cache4").setOnPreferenceClickListener(this);
+		findPreference("log").setOnPreferenceClickListener(this);
+		findPreference("log2").setOnPreferenceClickListener(this);
 		init_switch_preference(this, "root", PDICMainAppOptions.getRoot(), null, null).setVisible(false);
 		init_switch_preference(this, "lazyLoad", PDICMainAppOptions.getLazyLoadDicts(), null, null);
 		init_switch_preference(this, "classical_sort", PDICMainAppOptions.getClassicalKeycaseStrategy(), null, null);
@@ -186,12 +190,13 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
+		String key=preference.getKey();
 		if(preference instanceof WarnPreference){
 			Context context = getContext();
 			AlertDialog.Builder builder2 = new AlertDialog.Builder(context);
 			builder2.setTitle("确认清理？")
 					.setPositiveButton(com.knziha.filepicker.R.string.delete, (dialog, which) -> {
-						switch (preference.getKey()){
+						switch (key){
 							case "clear_cache1": {
 								if(mWebview==null) mWebview = new WebView(getContext());
 								mWebview.clearCache(false);
@@ -225,7 +230,7 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 			dTmp.show();
 			((TextView)dTmp.findViewById(com.knziha.filepicker.R.id.alertTitle)).setSingleLine(false);
 		}
-		else switch (preference.getKey()){
+		else switch (key){
 			case "app_settings":{
 				Intent intent = new Intent();
 				intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -261,7 +266,13 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 			case "dbv2_up": {
 				ViewUtils.notifyAPPSettingsChanged(getActivity(), preference);
 			} break;
-			
+			case "log":
+			case "log2": {
+				Context c = getActivity();
+				CrashHandler.getInstance(c, ((Toastable_Activity)c).opt)
+						.showErrorMessage(c, null, key.length()==3?false:true);
+			}
+			break;
 		}
 		return false;
 	}

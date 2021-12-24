@@ -2,6 +2,7 @@ package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -10,13 +11,14 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-
-import com.knziha.plod.ebook.Utils.BU;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -154,6 +156,47 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		}else {
 			unRegister();
 			System.exit(1);
+		}
+	}
+	
+	public void showErrorMessage(Context context, DialogInterface.OnClickListener btnLis, boolean simulated) {
+		String message = null;
+		String title = "天哪，崩溃了……";
+		if (simulated) {
+			title = "[模拟] "+title;
+			try{
+				throw new RuntimeException(title);
+			} catch (Exception e) {
+				message = CMN.Log(e);
+			}
+		} else {
+			File log = new File(getLogFile());
+			if (log.exists()) {
+				try {
+					byte[] buffer = new byte[Math.min((int) log.length(), 4096)];
+					int len = new FileInputStream(log).read(buffer);
+					message=new String(buffer,0,len);
+					if(GlobalOptions.debug||btnLis==null) {
+						CMN.Log(message);
+					}
+				} catch (IOException e) {
+					CMN.Log(e);
+				}
+			}
+		}
+		if (message!=null) {
+			String finalMessage = message;
+			new AlertDialog.Builder(context)
+					.setMessage(message)
+					.setPositiveButton(android.R.string.yes, btnLis)
+					.setNegativeButton(android.R.string.copy, null)
+					.setTitle(title)
+					.setCancelable(btnLis==null)
+					.show().findViewById(android.R.id.button2).setOnClickListener(v -> {
+						if (context instanceof Toastable_Activity) {
+							((Toastable_Activity) context).FuzhiText(finalMessage);
+						}
+					});
 		}
 	}
 }
