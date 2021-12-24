@@ -1359,7 +1359,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		};
 		MainStringBuilder = new StringBuilder(40960);
 		//WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
-		ViewUtils.setWebDebug(this);
+		//ViewUtils.setWebDebug(this);
 	}
 
 	public void onAudioPause() {

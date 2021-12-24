@@ -174,7 +174,7 @@ public class BookPresenter
 			d.body.appendChild(script);
 		}
 	 */
-	@Metaline(trim = false,compile = false)
+	@Metaline()
 	public static byte[] jsBytes=SU.EmptyBytes;
 	
 	static {

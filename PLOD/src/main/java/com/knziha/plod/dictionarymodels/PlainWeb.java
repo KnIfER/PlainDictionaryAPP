@@ -64,7 +64,7 @@ public class PlainWeb extends DictionaryAdapter {
 	String host;
 	String hostName;
 	String index;
-	String jsLoader;
+	String jsCode;
 	String onstart;
 	String onload;
 	/** The search sub url */
@@ -131,7 +131,7 @@ public class PlainWeb extends DictionaryAdapter {
 		try{fun('https://mdbr/SUBPAGE.js')}catch(e){app.loadJs(sid.get(),'SUBPAGE.js');}
 	 }
 	 */
-	@Metaline(trim = false)
+	@Metaline()
 	public static final String loadJs = StringUtils.EMPTY;
 	
 	/**
@@ -147,13 +147,13 @@ public class PlainWeb extends DictionaryAdapter {
 	 		window._fvwhl=1;
 	 	//}
 	 */
-	@Metaline(trim = false)
+	@Metaline()
 	public final static String projs="SUB PAGE";
 	private JSONObject website;
 	private ObjectAnimator progressProceed;
 	private ObjectAnimator progressTransient;
 	private boolean isListDirty;
-	private String jsCode;
+	private String jsLoader;
 	private boolean bNeedSave;
 	private static SerializerFeature[] SerializerFormat = new SerializerFeature[]{SerializerFeature.PrettyFormat, SerializerFeature.MapSortField, SerializerFeature.QuoteFieldNames};
 	boolean dataRead = false;
@@ -228,7 +228,7 @@ public class PlainWeb extends DictionaryAdapter {
 		index = website.getString("index");
 		name = getString("name", "index");
 		if(index==null) index="";
-		jsLoader = website.getString("js");
+		jsCode = website.getString("js");
 		onstart = website.getString("onstart");
 		onload = website.getString("onload");
 		search = website.getString("search");
@@ -905,19 +905,14 @@ public class PlainWeb extends DictionaryAdapter {
 //				a.mBar.setDelimiter("< >", mWebView);
 //			}
 //		}
-		if (bookPresenter!=null) {
+
+//		if (bookPresenter!=null) {
 			StringBuilder sb = AcquireStringBuffer(8196).append("window.rcsp=")
 					.append(bookPresenter.MakeRCSP(opt)).append(";")
 					;
-			if (jsLoader != null) sb.append("try{").append(jsLoader).append("}catch(e){}");
-			if (onload != null) sb.append("try{").append(onload).append("}catch(e){}");
-			if (onstart != null) sb.append("try{").append(onstart).append("}catch(e){}");
-//			if (onload != null) sb.append(onload);
-//			if (onstart != null) sb.append(onstart);
 			if(GlobalOptions.isDark) sb.append(DarkModeIncantation);
 			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.popupWebView)
 				sb.append(MainActivityUIBase.ce_on);
-			
 			if (style!=null || stylex!=null) {
 				int st = loadJs.indexOf("}'");
 				if (st>0) {
@@ -936,7 +931,6 @@ public class PlainWeb extends DictionaryAdapter {
 							}
 						}
 					}
-					
 					sb.append(loadJs, st+1, loadJs.length());
 				} else {
 					sb.append(loadJs);
@@ -945,10 +939,10 @@ public class PlainWeb extends DictionaryAdapter {
 			else {
 				sb.append(loadJs);
 			}
-			jsCode = sb.toString();
-		} else {
-			jsCode = jsLoader;
-		}
+			jsLoader = sb.toString();
+//		} else {
+//			jsLoader = jsLoaderInJson;
+//		}
 		if(GlobalOptions.debug)CMN.Log("加载网页::", url);
 		return currentUrl=url;
 	}
@@ -1273,7 +1267,7 @@ public class PlainWeb extends DictionaryAdapter {
 		if(GlobalOptions.isDark) mWebView.evaluateJavascript(DarkModeIncantation, null);
 	}
 
-	public void onProgressChanged(BookPresenter bookPresenter, WebViewmy mWebView, int newProgress) {
+	public void onProgressChanged(BookPresenter bookPresenter, WebViewmy  mWebView, int newProgress) {
 		if(GlobalOptions.debug) CMN.Log("onProgressChanged", newProgress);
 		if(mWebView.titleBar!=null) {
 			Drawable d = mWebView.titleBar.getBackground();
@@ -1295,7 +1289,7 @@ public class PlainWeb extends DictionaryAdapter {
 				mWebView.evaluateJavascript(DarkModeIncantation, null);
 			}
 		}
-		if(newProgress>85){
+		if(newProgress>89){
 //			mWebView.evaluateJavascript(jsCode, null);
 			bookPresenter.a.myWebClient.onPageFinished(mWebView, mWebView.getUrl());
 		}
@@ -1313,7 +1307,10 @@ public class PlainWeb extends DictionaryAdapter {
 		if(GlobalOptions.debug) CMN.Log("chromium", "web  - onPageFinished", currentUrl);
 		fadeOutProgressbar(bookPresenter, (WebViewmy) view, updateTitle);
 		currentUrl=view.getUrl();
-		view.evaluateJavascript(jsCode, null);
+		view.evaluateJavascript(jsLoader, null);
+		if (jsCode != null) view.evaluateJavascript(jsCode, null);
+		if (onload != null) view.evaluateJavascript(onload, null);
+		if (onstart != null) view.evaluateJavascript(onstart, null);
 	}
 
 	private void fadeOutProgressbar(BookPresenter bookPresenter, WebViewmy mWebView, boolean updateTitle) {

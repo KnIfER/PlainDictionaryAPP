@@ -1209,14 +1209,14 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-		if(drawRect&&!presenter.getDrawHighlightOnTop()){
-			drawHighlightRect(canvas);
-		}
+//		if(drawRect&&!presenter.getDrawHighlightOnTop()){
+//			drawHighlightRect(canvas);
+//		}
 		super.onDraw(canvas);
 		if (hasWidgets) {
 			widgetsLayout.layoutWidgets();
 		}
-		if(drawRect&&presenter.getDrawHighlightOnTop()){
+		if(drawRect ){
 			drawHighlightRect(canvas);
 		}
 	}
