@@ -247,7 +247,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			try {
 				db.execSQL("CREATE INDEX if not exists history_visit_index ON history (visit_count, last_visit_time) where visit_count>0"); // visit_count view
 			} catch (SQLException e) {
-				CMN.Log(e);
+				CMN.debug(e);
 			}
 			
 			// TABLE_HISTORY_v2 记录自定义数据

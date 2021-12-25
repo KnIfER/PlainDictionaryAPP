@@ -2096,7 +2096,8 @@ function debug(e){console.log(e)};
 					//CMN.Log("validifier::", validifier, GetSearchKey(), mWebView.getTag());
 					if (validifier == null
 							//|| true // 用于调试直接网页加载
-							|| "forceLoad".equals(mWebView.getTag())) {
+							|| "forceLoad".equals(mWebView.getTag())
+							|| mWebView.getUrl()==null) {
 						htmlCode = bookImpl.getVirtualRecordsAt(this, position);
 						mWebView.setTag(null);
 						CMN.Log("htmlCode::", htmlCode);

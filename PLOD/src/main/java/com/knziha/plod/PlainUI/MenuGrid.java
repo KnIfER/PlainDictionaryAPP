@@ -7,11 +7,9 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ScrollView;
 
 import androidx.appcompat.app.GlobalOptions;
-import androidx.core.view.ViewCompat;
 
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
@@ -143,7 +141,9 @@ public class MenuGrid extends PlainAppPanel {
 			ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) menu_grid.getLayoutParams();
 			int maxHeight = a.root.getHeight();
 			layoutParams.width=maxWidth;
-			layoutParams.height= GlobalOptions.density*200>maxHeight?maxHeight+mInnerBottomPadding:-2;
+			int BPad = mInnerBottomPadding;
+			//BPad = a.bottombar.getHeight()*2;
+			layoutParams.height= GlobalOptions.density*200>maxHeight?maxHeight+BPad:-2;
 			//layoutParams.height= (int) (GlobalOptions.density*100)+mInnerBottomPadding;
 			//layoutParams.height= 721;
 			//CMN.Log("refreshMenuGridSize::", layoutParams.width, layoutParams.height, maxHeight, mInnerBottomPadding);
@@ -151,9 +151,9 @@ public class MenuGrid extends PlainAppPanel {
 				layoutParams.setMarginEnd((int) (15* GlobalOptions.density));
 				int pad = (int) (GlobalOptions.density*8);
 				int HPad = (int) (pad*2.25);
-				menu_grid.setPadding(HPad, pad/2, HPad, pad*2+mInnerBottomPadding);
+				menu_grid.setPadding(HPad, pad/2, HPad, pad*2+BPad);
 			} else {
-				menu_grid.setPadding(0, 0, 0, mInnerBottomPadding);
+				menu_grid.setPadding(0, 0, 0, BPad);
 			}
 			menu_grid.requestLayout();
 		}

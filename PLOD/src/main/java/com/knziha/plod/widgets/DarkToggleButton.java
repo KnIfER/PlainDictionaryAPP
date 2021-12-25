@@ -20,7 +20,6 @@ import android.view.animation.Interpolator;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 
-import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 
 import java.util.Random;
@@ -192,7 +191,7 @@ public class DarkToggleButton extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		size = (int) (GlobalOptions.density * 200);
+		size = (int) (GlobalOptions.density * (GlobalOptions.isLarge?300:200));
 		int R = size/2;
 		int W = getWidth();
 		int H = getHeight();

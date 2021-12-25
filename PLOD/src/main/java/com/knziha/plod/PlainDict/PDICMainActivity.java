@@ -1457,6 +1457,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						etSearch_ToToolbarMode(0);
 					}
 				}
+				//if (newState==UIData.drawerLayout.STATE_DRAGGING)
+				{
+					drawerFragment.adjustBottomPadding();
+				}
 				checkFlags();
 			}});
 		//mDrawerLayout.setScrimColor(0x00ffffff);
@@ -4071,7 +4075,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		svp.getLocationInWindow(vLocation);
 		int topY = vLocation[1];
 		//showT(UIData.webcoord.getHeight() +" = "+ UIData.bottombar.getHeight());
-		int h = svp.getHeight() - app_panel_bottombar_height;
+		int h = svp.getHeight() - (bottombar!=null?bottombar.getHeight():app_panel_bottombar_height);
 		//if (UIData.appbar.getTop()==0)
 		//{
 		//	int h1 = etSearch.getHeight();

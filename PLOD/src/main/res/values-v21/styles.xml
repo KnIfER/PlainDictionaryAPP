@@ -8,8 +8,6 @@
     <style name="scroll" parent="AppTheme.Base">
    			<item name="android:colorEdgeEffect">#00ffffff</item>
     </style>
-    
-    
-        
-        
+
+
 </resources>

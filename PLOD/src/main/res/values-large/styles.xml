@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme2" parent="android:Theme.Material.Light">
+		<item name="android:fastScrollThumbDrawable">@drawable/fastscroll_thumb</item>
+	</style>
+	
+    
+    <style name="scroll" parent="AppTheme.Base">
+   			<item name="android:colorEdgeEffect">#00ffffff</item>
+    </style>
+
+	<style name="MenuIconIVStyle">
+		<item name="android:layout_width">0dp</item>
+		<item name="android:layout_height">match_parent</item>
+		<item name="android:layout_weight">1</item>
+		<item name="android:paddingBottom">40dp</item>
+		<item name="android:paddingTop">   12dp</item>
+		<item name="android:paddingLeft"> 28dp</item>
+		<item name="android:paddingRight">28dp</item>
+		<item name="android:background">?attr/listChoiceBackgroundIndicator</item>
+	</style>
+
+	<style name="MenuIconIVStyle_PDFX" parent="MenuIconIVStyle">
+		<item name="android:paddingBottom">40dp</item>
+		<item name="android:paddingTop">   12dp</item>
+		<item name="android:paddingLeft"> 28dp</item>
+		<item name="android:paddingRight">28dp</item>
+	</style>
+
+
+
+</resources>

@@ -13,11 +13,12 @@
 	function debug(e){console.log(e)};
 	debug('translator ini...'); // 开始
 	win._YWPC=['Sp3AF'];
+	var ety=e;
 	function sc(v){
-		if(sel.type!='Range') e.style.display = 'none';
-		else if(e.style.display=='none'){
-			e.style.display = 'unset';
-			e.style.opacity = 0.75;
+		if(sel.type!='Range') ety.style.display = 'none';
+		else if(ety.style.display=='none'){
+			ety.style.display = 'block';
+			ety.style.opacity = 0.75;
 		}
 	}
 	if(!e) {
