@@ -78,7 +78,7 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 				lman.scrollToPositionWithOffset(a.pickTarget==1?a.CCD_ID:target, 0);
 				CMN.Log("scrolled");
 			}
-		if(a instanceof PDICMainActivity) {
+		if(a.thisActType==MainActivityUIBase.ActType.PlainDict) {
 			/*  词典选择器的动画效果(显示)  */
 			if(animation==null)
 				animation = (AnimationSet) AnimationUtils.loadAnimation(a, R.anim.dp_dialog_enter);

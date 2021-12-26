@@ -3590,6 +3590,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			findViewById(R.id.dialog_).setOnClickListener(Utils.DummyOnClick);
 			transaction.commit();
 			root.postDelayed(() -> pickDictDialog.PostEnabled=false, 1000);
+			//pickDictDialog.PostEnabled=false;
 			isFragInitiated=true;
 			//pickDictDialog.mRecyclerView.scrollToPosition(adapter_idx);
 		}

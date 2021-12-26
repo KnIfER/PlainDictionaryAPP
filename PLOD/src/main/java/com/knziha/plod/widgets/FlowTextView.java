@@ -219,6 +219,7 @@ public class FlowTextView extends View {
 	}
 	
 	private void calcTextLayout() {
+		removeCallbacks(this::calcTextLayout);
 		//CMN.Log("calcTextLayout", getText());
 		//onTextSizeChanged();
 		if(mTextsize_MinueOne) {
@@ -229,7 +230,9 @@ public class FlowTextView extends View {
 		float space_width = getMeasuredWidth();
 		if(space_width==0){
 			postDelayed(this::calcTextLayout, 350);
+			return; // 防止循环anr……
 		}
+		//CMN.Log("calcTextLayoutsplit::", space_width);
 		float paddingStart = getPaddingStart();
 		float paddingEnd = getPaddingEnd();
 		space_width -= paddingStart + paddingEnd + pad_right;
@@ -254,6 +257,8 @@ public class FlowTextView extends View {
 		if(mCoverBitmap !=null){
 			space_width-=lineHeight;
 		}
+		
+		if (space_width<=0) return; // 防止循环anr……
 		
 		lineObjects.clear(); // this will get populated with special html objects we need to render
 		
@@ -285,6 +290,7 @@ public class FlowTextView extends View {
 				lineObjects.add(charOffsetStart, charOffsetEnd, xOffset, yOffset);
 
 				//if(htmlLine.end>mLength) htmlLine.end=mLength;
+				//CMN.Log("while-split::", charOffsetStart, charOffsetEnd, mText, mText.length(), space_width);
 				
 				charOffsetStart = charOffsetEnd;
 			}
