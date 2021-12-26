@@ -46,6 +46,5 @@ GestureView/
 
 assets_release
 .cxx
-PLOD/src/main/generated.txt
-PLOD/src/main/mapping.user.txt
-PLOD/src/main/mapping.v1.0.txt
+generated.txt
+mapping*
