@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.os.Build;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -186,17 +187,25 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		}
 		if (message!=null) {
 			String finalMessage = message;
-			new AlertDialog.Builder(context)
+			View btn = new AlertDialog.Builder(context)
 					.setMessage(message)
 					.setPositiveButton(android.R.string.yes, btnLis)
 					.setNeutralButton(android.R.string.copy, null)
 					.setTitle(title)
-					.setCancelable(btnLis==null)
-					.show().findViewById(android.R.id.button3).setOnClickListener(v -> {
-						if (context instanceof Toastable_Activity) {
-							((Toastable_Activity) context).FuzhiText(finalMessage);
-						}
-					});
+					.setCancelable(btnLis == null)
+					.show()
+					.findViewById(android.R.id.button3);
+			btn.setOnClickListener(v -> {
+				if (context instanceof Toastable_Activity) {
+					((Toastable_Activity) context).FuzhiText(finalMessage);
+				}
+			});
+			if (simulated) {
+				String finalTitle = title;
+				btn.setOnLongClickListener(v -> {
+					throw new RuntimeException(finalTitle);
+				});
+			}
 		}
 	}
 }
