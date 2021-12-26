@@ -13,6 +13,6 @@
 #-keep class com.knziha.** {*;}
 
 -renamesourcefileattribute SourceFile
--keepattributes SourceFile,LineNumberTable
+-keepattributes LineNumberTable
 #-keepattributes Exceptions,InnerClasses,Signature
 #-keepattributes SourceFile,LineNumberTable
