@@ -1209,22 +1209,23 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-//		if(drawRect&&!presenter.getDrawHighlightOnTop()){
-//			drawHighlightRect(canvas);
-//		}
+		if(drawRect&&!presenter.getDrawHighlightOnTop()){
+			drawHighlightRect(canvas, false);
+		}
 		super.onDraw(canvas);
 		if (hasWidgets) {
 			widgetsLayout.layoutWidgets();
 		}
-		if(drawRect ){
-			drawHighlightRect(canvas);
+		if(drawRect&&presenter.getDrawHighlightOnTop()){
+			drawHighlightRect(canvas, Build.VERSION.SDK_INT<=23 && !GlobalOptions.isDark);
 		}
 	}
 	
-	private void drawHighlightRect(Canvas canvas) {
+	private void drawHighlightRect(Canvas canvas, boolean alpha) {
 		float scale = webScale/ BookPresenter.def_zoom;
 		//float roundVal = 10*GlobalOptions.density*scale;
-		canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale, Utils.getRectPaint());
+		canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale
+				, alpha?Utils.getRectPaintAlpha():Utils.getRectPaint());
 	}
 	
 	/** WebView内布局，无视网页总长，与WebView保持恒定大小 */

@@ -1333,7 +1333,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
        	  */
 		
 		CMN.mid = Thread.currentThread().getId();
-		CMN.Log("mid", CMN.mid, getClass());
+		CMN.debug("mid", CMN.mid, getClass());
+		CMN.debug("sdk", Build.VERSION.SDK_INT);
 	    //CMN.Log("instanceCount", CMN.instanceCount);
 		super.onCreate(savedInstanceState);
 		if(shunt) return;

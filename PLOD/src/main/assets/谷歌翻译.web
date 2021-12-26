@@ -8,246 +8,254 @@
 	]
 	,"keyPattern": "*"
 	,"js": "
-	var e = document.getElementById('gtyexp'),win=window,sel=win.getSelection()
-	,ta=document.getElementsByTagName('textarea')[0], listPane,textPara;
-	function debug(e){console.log(e)};
-	debug('translator ini...'); // 开始
-	win._YWPC=['Sp3AF'];
-	var ety=e;
-	function sc(v){
-		if(sel.type!='Range') ety.style.display = 'none';
-		else if(ety.style.display=='none'){
-			ety.style.display = 'block';
-			ety.style.opacity = 0.75;
+	function init(){
+		var win=window,doc=document,e=doc.getElementById('gtyexp'),sel=win.getSelection()
+		,ta=doc.getElementsByTagName('textarea')[0], listPane,textPara;
+		function debug(e){console.log(e)};
+		debug('translator ini...'+doc.body); // 开始
+		if(!doc.body) {
+			setTimeout(init, 200);
+			return;
 		}
-	}
-	if(!e) {
-		e=document.createElement('IMG');
-		e.id='gtyexp';
-		document.body.appendChild(e);
-		e.src='//ssl.gstatic.com/translate/favicon.ico'; // 谷歌翻译的图标
-		var PDRNG,PDRNT;
-		function toggle(){ 
-			if(!sel.toStringRaw) { // 强硬作风 温和修改
-				sel.toStringRaw = sel.toString;
-				sel.toString = function(){
-					debug('fatal toString='+PDRNG); 
-					var ret = sel.toStringRaw();
-					if(PDRNG) {
-						debug('fatal sustain the selection v3='+PDRNG); 
-						ret = PDRNG.toString();
-						sel.removeAllRanges();
-						sel.addRange(PDRNG);
-						PDRNG = 0;
+		win._YWPC=['Sp3AF'];
+		if(!e) {
+			e=doc.createElement('IMG');
+			var ety=e;
+			e.id='gtyexp';
+			doc.body.appendChild(e);
+			e.src='//ssl.gstatic.com/translate/favicon.ico'; // 谷歌翻译的图标
+			var PDRNG,PDRNT;
+			function toggle(){ 
+				if(!sel.toStringRaw) { // 强硬作风 温和修改
+					sel.toStringRaw = sel.toString;
+					sel.toString = function(){
+						debug('fatal toString='+PDRNG); 
+						var ret = sel.toStringRaw();
+						if(PDRNG) {
+							debug('fatal sustain the selection v3='+PDRNG); 
+							ret = PDRNG.toString();
+							sel.removeAllRanges();
+							sel.addRange(PDRNG);
+							PDRNG = 0;
+						}
+						return ret
 					}
-					return ret
 				}
-			}
-			ta.dispatchEvent(new KeyboardEvent('keydown', {
-				keyCode: 0x10,
-				bubbles: 1
-			}));
-			function isChildOf(c, p) {
-				return p&&SearchElement(p);
-				function SearchElement(ele) {
-					if (!ele) return 0;
-					return ele===c
-						|| SearchElement(ele.firstChild) 
-						|| SearchElement(ele.nextSibling);
+				ta.dispatchEvent(new KeyboardEvent('keydown', {
+					keyCode: 0x10,
+					bubbles: 1
+				}));
+				function isChildOf(c, p) {
+					return p&&SearchElement(p);
+					function SearchElement(ele) {
+						if (!ele) return 0;
+						return ele===c
+							|| SearchElement(ele.firstChild) 
+							|| SearchElement(ele.nextSibling);
+					}
 				}
-			}
-			function getTop(e){
-			  var offset=e.offsetTop;
-			  if(e.offsetParent!=null) offset+=getTop(e.offsetParent);
-			  return offset;
-			}
-			var rng=sel.getRangeAt(0),key=rng.toString(),an=sel.anchorNode;
-			if(an!==ta.parentElement) 
-			{
-				PDRNG=rng.cloneRange();
-				var exp=document.getElementsByClassName('J0lOec')[0];
-				if(!isChildOf(an,exp)) {
-					rng.selectNode(exp);
-					app.knock1(sid.get(),exp.offsetWidth/2, getTop(exp));
-				} else {
-					app.knock(sid.get());
+				function getTop(e){
+				  var offset=e.offsetTop;
+				  if(e.offsetParent!=null) offset+=getTop(e.offsetParent);
+				  return offset;
 				}
-				clearTimeout(PDRNT);
-				//PDRNT = setTimeout(v=>{PDRNG=0}, 1800);
-			}
-			ta.dispatchEvent(new KeyboardEvent('keyup', {
-				keyCode: 0x10,
-				bubbles: 1
-			}));
-			debug('检查是否查到了单词释义');
-			if(false)
-			setTimeout(function(){
-				//if(document.getElementsByClassName('aia4Ud')[0].firstElementChild.innerText===key) 
-				if(1)
+				var rng=sel.getRangeAt(0),key=rng.toString(),an=sel.anchorNode;
+				if(an!==ta.parentElement) 
 				{
-					e.style.transition='';
-					e.style.transform='scale(1.5)';
-					e.style.transition='all 0.25s';
-					setTimeout(function(){e.style.transform='unset'}, 80);
-					//e.style.transform='unset'
+					PDRNG=rng.cloneRange();
+					var exp=document.getElementsByClassName('J0lOec')[0];
+					if(!isChildOf(an,exp)) {
+						rng.selectNode(exp);
+						app.knock1(sid.get(),exp.offsetWidth/2, getTop(exp));
+					} else {
+						app.knock(sid.get());
+					}
+					clearTimeout(PDRNT);
+					//PDRNT = setTimeout(v=>{PDRNG=0}, 1800);
 				}
-			}, 200);
-		}
-		e.onclick=toggle;
-		document.addEventListener('selectionchange', sc);
-	}
-	function isAttached(e) {
-		while(e&&(e=e.parentElement)) {
-			if(e===document.body)return true;
-		}
-		return false;
-	}
-	function queryByAttr(aAttribute, aValue, abody) {
-		return SearchElement(abody||document.body);
-		function ElementVerifier(ele) {
-			var Element = ele;
-			if (Element.nodeName!=='#text' && ele.getAttribute(aAttribute)===aValue)
-				//return eval('Element.' + aAttribute + '==\\'' + aValue + '\\'?true:false;');
-				return ele;
-			return 0;
-		}
-		function SearchElement(ele) {
-			if (!ele) return 0;
-			return ElementVerifier(ele) 
-				|| SearchElement(ele.firstChild) 
-				|| SearchElement(ele.nextSibling);
-		}
-	}
-	// 默认不编辑输入框
-	function tweakInput(){
-		if(!isAttached(ta)) {
-			win._tweakedHXCL=0;
-			ta=document.getElementsByTagName('textarea')[0];
-		}
-		if(ta && !ta.getAttribute('_PDSC')) {
-			ta.addEventListener('selectionchange', sc);
-			if(ta!=document.activeElement)ta.readOnly=true;
-			ta.setAttribute('_PDSC', '');
-		}
-	}
-	// 点击不显示候选列表
-	const observer=new MutationObserver(function(mutationsList, observer) {
-		for(var i=0;i<mutationsList.length;i++) {
-			var mutation = mutationsList[i];
-			if (mutation.type==='attributes' && mutation.attributeName==='style') {
-				//console.log('The ' + mutation.attributeName + ' attribute was modified.');
-				if(listPane.style.display=='') { // 若正常显示候选列表
-					listPane.style.display='none'; // 重新隐藏候选列表
-					observer.disconnect();
+				ta.dispatchEvent(new KeyboardEvent('keyup', {
+					keyCode: 0x10,
+					bubbles: 1
+				}));
+				debug('检查是否查到了单词释义');
+				if(false)
+				setTimeout(function(){
+					//if(document.getElementsByClassName('aia4Ud')[0].firstElementChild.innerText===key) 
+					if(1)
+					{
+						e.style.transition='';
+						e.style.transform='scale(1.5)';
+						e.style.transition='all 0.25s';
+						setTimeout(function(){e.style.transform='unset'}, 80);
+						//e.style.transform='unset'
+					}
+				}, 200);
+			}
+			e.onclick=toggle;
+			if(!doc.sc)doc.addEventListener('selectionchange', function(){
+				debug('sc...'+sel.type+' '+sel)
+				if(sel.type!='Range') ety.style.display = 'none';
+				else if(ety.style.display=='none'){
+					ety.style.display = 'block';
+					ety.style.opacity = 0.75;
 				}
+			});
+			doc.sc=1;
+		}
+		function isAttached(e) {
+			while(e&&(e=e.parentElement)) {
+				if(e===doc.body)return true;
+			}
+			return false;
+		}
+		function queryByAttr(aAttribute, aValue, abody) {
+			return SearchElement(abody||doc.body);
+			function ElementVerifier(ele) {
+				var Element = ele;
+				if (Element.nodeName!=='#text' && ele.getAttribute(aAttribute)===aValue)
+					//return eval('Element.' + aAttribute + '==\\'' + aValue + '\\'?true:false;');
+					return ele;
+				return 0;
+			}
+			function SearchElement(ele) {
+				if (!ele) return 0;
+				return ElementVerifier(ele) 
+					|| SearchElement(ele.firstChild) 
+					|| SearchElement(ele.nextSibling);
 			}
 		}
-	});
-	function obz(){
-		observer.observe(listPane, { attributes: true
-			, attributeFilter : ['style'] });
-	}
-	const observer1=new MutationObserver(function(mutationsList, observer) {
-		for(var i=0;i<mutationsList.length;i++) {
-			var mutation = mutationsList[i];
-			if (mutation.attributeName==='aria-label') {
-				var e=mutation.target;
-				if(e.getAttribute('aria-label')!==e.getAttribute('data-aria-label-on')) {
-					observer1.disconnect();
-					app.onAudioPause();
-				}
+		// 默认不编辑输入框
+		function tweakInput(){
+			if(!isAttached(ta)) {
+				win._tweakedHXCL=0;
+				ta=doc.getElementsByTagName('textarea')[0];
+			}
+			if(ta && !ta.getAttribute('_PDSC')) {
+				ta.addEventListener('selectionchange', sc);
+				if(ta!=doc.activeElement)ta.readOnly=true;
+				ta.setAttribute('_PDSC', '');
 			}
 		}
-	});
-	function obz1(e){
-		observer1.observe(e, { attributes: true
-			, attributeFilter : ['aria-label'] });
-	}
-	function tweakHXCL(){ // 调整候选表
-		var jn='jsname',cp=queryByAttr(jn, 'r5xl4'); // 解释内容容器
-		function Qa(jsname, p){return queryByAttr(jn, jsname, p||cp)}
-		function check(){
-			if(win._tweakedHXCL) tweakInput();
-			if(!win._tweakedHXCL) {
-				setTimeout(tweakHXCL, 350);
-				if(!isAttached(cp)) cp=queryByAttr(jn, 'r5xl4');
+		// 点击不显示候选列表
+		const observer=new MutationObserver(function(mutationsList, observer) {
+			for(var i=0;i<mutationsList.length;i++) {
+				var mutation = mutationsList[i];
+				if (mutation.type==='attributes' && mutation.attributeName==='style') {
+					//console.log('The ' + mutation.attributeName + ' attribute was modified.');
+					if(listPane.style.display=='') { // 若正常显示候选列表
+						listPane.style.display='none'; // 重新隐藏候选列表
+						observer.disconnect();
+					}
+				}
 			}
+		});
+		function obz(){
+			observer.observe(listPane, { attributes: true
+				, attributeFilter : ['style'] });
 		}
-		tweakInput();
-		function tweakInputMod(){
-			if(!isAttached(win._modin)) {
-				var n;
-				if(!win._modin) {
-					//var e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮 2021翻译门事件后取消编辑按钮
-					var e=Qa('kImuFf').cloneNode(true); // 拷贝复制按钮
-					n = e.getElementsByTagName('I')[0];
-					win._modin=e;
-					if(n){
-						n.style.color='#888';
-						n.innerText='edit';
-					}
-					e.onclick=function(v){
-						ta.readOnly=!ta.readOnly;
-						if(n)n.style.color=ta.readOnly?'#888':'#000';
-						v.stopPropagation();
+		const observer1=new MutationObserver(function(mutationsList, observer) {
+			for(var i=0;i<mutationsList.length;i++) {
+				var mutation = mutationsList[i];
+				if (mutation.attributeName==='aria-label') {
+					var e=mutation.target;
+					if(e.getAttribute('aria-label')!==e.getAttribute('data-aria-label-on')) {
+						observer1.disconnect();
+						app.onAudioPause();
 					}
 				}
-				document.getElementsByClassName('FFpbKc')[0].appendChild(win._modin); // 添加到输入内容，字数栏之后
 			}
+		});
+		function obz1(e){
+			observer1.observe(e, { attributes: true
+				, attributeFilter : ['aria-label'] });
 		}
-		tweakInputMod();
-		if(!win._RPGF) {
-			// mod the share btn
-			win.addEventListener('click', function(v){
-				var p=v.srcElement.parentElement;
-				if(p) {
-					var jn=p.getAttribute('jsname');
-					if(jn==='ymIaV' && !v.srcElement.onclick) {
-						v.srcElement.onclick=function(u){
-							debug('fatal 123');
-							if(!listPane) {
-								listPane = Qa('HyaQwf');
-								listPane.style.display='none'; //  hide the list pane
-							}
-							(textPara||Qa('W297wb')).click();  // clk on txt to show list pane
-							listPane.style.display='';
-							u.preventDefault();
-							u.stopPropagation();
-							obz();
-							tweakInputMod();
-							return false;
-						};
-					}
-					else if(jn==='UsVyAb') {
-						app.onAudioPlay();
-						obz1(p);
-					}
+		function tweakHXCL(){ // 调整候选表
+			var jn='jsname',cp=queryByAttr(jn, 'r5xl4'); // 解释内容容器
+			function Qa(jsname, p){return queryByAttr(jn, jsname, p||cp)}
+			function check(){
+				if(win._tweakedHXCL) tweakInput();
+				if(!win._tweakedHXCL) {
+					setTimeout(tweakHXCL, 350);
+					if(!isAttached(cp)) cp=queryByAttr(jn, 'r5xl4');
 				}
-				//debug('fatal 123asd '+p.parentElement.className+' jn='+p.parentElement.getAttribute('jsname'));
-				if(p.parentElement.className==='VIiyi') {
-					debug('fatal click on text');
-					check();
-					textPara = v.srcElement;
-					listPane = Qa('HyaQwf', p); // force hide the list pane
-					if(listPane.style.display!='none')
-						listPane.style.display='none';
+			}
+			tweakInput();
+			function tweakInputMod(){
+				if(!isAttached(win._modin)) {
+					var n;
+					if(!win._modin) {
+						//var e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮 2021翻译门事件后取消编辑按钮
+						var e=Qa('kImuFf').cloneNode(true); // 拷贝复制按钮
+						n = e.getElementsByTagName('I')[0];
+						win._modin=e;
+						if(n){
+							n.style.color='#888';
+							n.innerText='edit';
+						}
+						e.onclick=function(v){
+							ta.readOnly=!ta.readOnly;
+							if(n)n.style.color=ta.readOnly?'#888':'#000';
+							v.stopPropagation();
+						}
+					}
+					doc.getElementsByClassName('FFpbKc')[0].appendChild(win._modin); // 添加到输入内容，字数栏之后
 				}
-			}, true);
-			win._RPGF=1;
+			}
+			tweakInputMod();
+			if(!win._RPGF) {
+				// mod the share btn
+				win.addEventListener('click', function(v){
+					var p=v.srcElement.parentElement;
+					if(p) {
+						var jn=p.getAttribute('jsname');
+						if(jn==='ymIaV' && !v.srcElement.onclick) {
+							v.srcElement.onclick=function(u){
+								debug('fatal 123');
+								if(!listPane) {
+									listPane = Qa('HyaQwf');
+									listPane.style.display='none'; //  hide the list pane
+								}
+								(textPara||Qa('W297wb')).click();  // clk on txt to show list pane
+								listPane.style.display='';
+								u.preventDefault();
+								u.stopPropagation();
+								obz();
+								tweakInputMod();
+								return false;
+							};
+						}
+						else if(jn==='UsVyAb') {
+							app.onAudioPlay();
+							obz1(p);
+						}
+					}
+					//debug('fatal 123asd '+p.parentElement.className+' jn='+p.parentElement.getAttribute('jsname'));
+					if(p.parentElement.className==='VIiyi') {
+						debug('fatal click on text');
+						check();
+						textPara = v.srcElement;
+						listPane = Qa('HyaQwf', p); // force hide the list pane
+						if(listPane.style.display!='none')
+							listPane.style.display='none';
+					}
+				}, true);
+				win._RPGF=1;
+			}
+			
+			debug('点击不显示候选列表', listPane = Qa('HyaQwf'));
+			win._tweakedHXCL=true;
+			debug('点击不显示候选列表 done.');
 		}
 		
-		debug('点击不显示候选列表', listPane = Qa('HyaQwf'));
-		win._tweakedHXCL=true;
-		debug('点击不显示候选列表 done.');
+		tweakInput();
+		
+		win._tweakHXCL = tweakHXCL;
+		if(!win._tweakedHXCL)
+			setTimeout(tweakHXCL, 1350);
+		
+		debug('translator init done.'); // 结束
 	}
-	
-	tweakInput();
-	
-	win._tweakHXCL = tweakHXCL;
-	if(!win._tweakedHXCL)
-		setTimeout(tweakHXCL, 1350);
-	
-	debug('translator init done.'); // 结束
+	init();
 	"
 	,"searchJs": "var succ = 0;
 function debug(e){console.log(e)};

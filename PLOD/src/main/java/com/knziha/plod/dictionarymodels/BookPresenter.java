@@ -712,6 +712,10 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=33) public void setDrawHighlightOnTop(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
 	
 	
+	@Metaline(flagPos=34, shift=1) public boolean checkVersionBefore_5_4() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=34, shift=1) public void uncheckVersionBefore_5_4(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
+
+
 //	public boolean getStarLevel(){
 //		0x100000~0x400000
 //	}
@@ -3185,10 +3189,10 @@ function debug(e){console.log(e)};
 			isDirty = true;
 		}
 		if (getIsWebx()) {
-			if (PDICMainAppOptions.bCheckVersionBefore_5_4)
+			if (checkVersionBefore_5_4())
 			{
 				setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
-				isDirty = true;
+				uncheckVersionBefore_5_4(false);
 			}
 		}
 	}

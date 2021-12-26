@@ -86,8 +86,10 @@ public class Utils {
 	public static float density;
 	
 	public static Paint mRectPaint;
+	public static Paint mRectPaintAlpha;
 	
 	public static int FloatTextBG = 0xffffff00;
+	public static int FloatTextBGAlpha = 0x7fffff00;
 	
 	public final static Cursor EmptyCursor=new AbstractWindowedCursor() {
 		@Override
@@ -130,6 +132,15 @@ public class Utils {
 			}
 		}
 		return mRectPaint;
+	}
+	
+	public static Paint getRectPaintAlpha() {
+		if(mRectPaintAlpha==null) {
+			mRectPaintAlpha = new Paint();
+			mRectPaintAlpha.setColor(FloatTextBGAlpha);
+			mRectPaintAlpha.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DARKEN));
+		}
+		return mRectPaintAlpha;
 	}
 	
 	public static void setFloatTextBG(int colorVal) {
