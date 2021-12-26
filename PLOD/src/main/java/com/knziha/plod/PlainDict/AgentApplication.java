@@ -130,6 +130,7 @@ public class AgentApplication extends Application {
 		CMN.AssetMap.put("liba", "李白全集");
 		CMN.AssetMap.put("etymonline", "Etymology Online");
 		CMN.AssetMap.put("vocabulary", "Vocabulary");
+		CMN.AssetMap.put("wantwords", "万词王");
 		CMN.AssetMap.put("", "【内置】");
 	}
 	public SoftReference<char[]> _4kCharBuff;
