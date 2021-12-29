@@ -150,6 +150,17 @@ public class PlainWeb extends DictionaryAdapter {
 	 */
 	@Metaline()
 	public final static String projs="SUB PAGE";
+	
+	/**
+		if (typeof String.prototype.startsWith != 'function') {
+		 String.prototype.startsWith = function (prefix){
+		  return this.slice(0, prefix.length) === prefix;
+		 }
+		}
+	 */
+	@Metaline()
+	public final static String kitkatCompatJs="SUB PAGE";
+	
 	private JSONObject website;
 	private ObjectAnimator progressProceed;
 	private ObjectAnimator progressTransient;
@@ -160,6 +171,8 @@ public class PlainWeb extends DictionaryAdapter {
 	boolean dataRead = false;
 	private String name = "index";
 	private boolean isTranslator;
+	private boolean bReplaceLetToVar;
+	public String[] kikUrlPatterns;
 	
 	//构造
 	public PlainWeb(File fn, MainActivityUIBase _a) throws IOException {
@@ -246,6 +259,11 @@ public class PlainWeb extends DictionaryAdapter {
 		forceText = website.getBooleanValue("forceText");
 		computerFace = website.getBooleanValue("cpau");
 		isTranslator = website.getBooleanValue("translator");
+		bReplaceLetToVar = website.containsKey("kikLetVar");
+		if (bReplaceLetToVar) {
+			String str = website.getString("kikLetVar");
+			kikUrlPatterns = "true".equals(str)?new String[]{".js"}:str.split("\\|");
+		}
 		String svg = website.getString("svg");
 		String _keyPattern = website.getString("keyPattern");
 		if(_keyPattern!=null) {
@@ -304,11 +322,11 @@ public class PlainWeb extends DictionaryAdapter {
 		
 //		bNeedCheckSavePathName=true;
 		
-//		if(_extensions!=null){
-//			cacheExtensions = _extensions.split("\\|");
-//			canSaveResource=true;
-//			InternalResourcePath = CachedPathSubToDBStorage("Caches");
-//		}
+		if(_extensions!=null){
+			cacheExtensions = _extensions.split("\\|");
+			canSaveResource=true;
+			//InternalResourcePath = CachedPathSubToDBStorage("Caches");
+		}
 		
 		if(_exclude_db_save_extensions!=null){
 			if(_exclude_db_save_extensions.equalsIgnoreCase("All")){
@@ -538,6 +556,17 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	public boolean getDrawHighlightOnTop() {
 		return website.getBooleanValue("drawHighlightOnTop");
+	}
+	
+	// todo webview 版本
+	public boolean getReplaceLetToVar(String url) {
+		if (bReplaceLetToVar && Build.VERSION.SDK_INT<21) {
+			for (int i = 0; i < kikUrlPatterns.length; i++) {
+				if (url.contains(kikUrlPatterns[i]))
+					return true;
+			}
+		}
+		return false;
 	}
 	
 	abstract class VirtualKeyProvider {
@@ -1310,6 +1339,7 @@ public class PlainWeb extends DictionaryAdapter {
 		mWebView.removePostFinished();
 		fadeOutProgressbar(bookPresenter, (WebViewmy) mWebView, updateTitle);
 		currentUrl=mWebView.getUrl();
+		if (Build.VERSION.SDK_INT<21) mWebView.evaluateJavascript(kitkatCompatJs, null);
 		mWebView.evaluateJavascript(jsLoader, null);
 		if (jsCode != null) mWebView.evaluateJavascript(jsCode, null);
 		if (onload != null) mWebView.evaluateJavascript(onload, null);
@@ -1376,9 +1406,10 @@ public class PlainWeb extends DictionaryAdapter {
 //	public String getRecordsAt(int... positions) throws IOException {
 //		return "";
 //	}
-
+	
 	@Override
 	public InputStream getResourceByKey(String key) {
+	 	//CMN.Log("getResourceByKey::", key);
 		return null;
 	}
 

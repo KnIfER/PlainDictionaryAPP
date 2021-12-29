@@ -219,7 +219,7 @@ public class BookPresenter
 			if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && w.rcsp&0x20 && !curr.noword){
 	 			if(w._NWP) {
 	 				var p=curr; while((p=p.parentElement))
-	 				if(_NWP.indexOf(p)>=0) break;
+	 				if(_NWP.indexOf(p)>=0) return;
 	 			}
 	 			if(w._YWPC) {
 	 				var p=curr; while((p=p.parentElement))
@@ -3193,6 +3193,7 @@ function debug(e){console.log(e)};
 				setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
 				uncheckVersionBefore_5_4(false);
 			}
+			setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
 		}
 	}
 	

@@ -48,6 +48,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -71,6 +73,7 @@ import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -81,20 +84,32 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.knziha.metaline.StripMethods;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.StringTokenizer;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 
 import static com.knziha.filepicker.utils.FU.bKindButComplexSdcardAvailable;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
@@ -460,6 +475,66 @@ public class ViewUtils {
 			return errRinfo;
 		}
 		return BU.fileToString(f);
+	}
+	
+	// todo 缓存
+	public static WebResourceResponse KikLetToVar(String url, String accept, String refer, String origin,
+												  WebResourceRequest request, PlainWeb webx) throws Exception {
+		OutputStream[] rev = new OutputStream[]{null};
+		ViewUtils.downloadToStream(url, rev, null
+				, accept, refer, origin, request, webx);
+		if (rev[0]!=null) {
+			String ret = rev[0].toString().replaceAll("\\blet\\b", "var");
+			//CMN.Log("KikLetToVar", ret);
+			return new WebResourceResponse("text/js", "UTF-8", new ByteArrayInputStream(ret.getBytes()));
+		}
+		return null;
+	}
+	
+	public static void downloadToStream(String url
+			, OutputStream[] outputStreams
+			, String path, String accept, String refer, String origin,
+										WebResourceRequest request, PlainWeb webx) throws Exception {
+		URL requestURL = new URL(url);
+		OutputStream fout = outputStreams[0];
+		try {
+			SSLContext sslcontext = SSLContext.getInstance("TLS");
+			sslcontext.init(null, new TrustManager[]{new PlainWeb.MyX509TrustManager()}, new SecureRandom());
+			HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
+		} catch (Exception ignored) { }
+		HttpURLConnection urlConnection = (HttpURLConnection) requestURL.openConnection();
+		urlConnection.setRequestMethod("GET");
+		urlConnection.setConnectTimeout(10000);
+		if(accept!=null) urlConnection.setRequestProperty("Accept",accept);
+		if(refer!=null) urlConnection.setRequestProperty("Refer", refer);
+		if(origin!=null) urlConnection.setRequestProperty("Origin", origin);
+		if(request!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+			Map<String, String> headers = request.getRequestHeaders();
+			urlConnection.setRequestProperty("X-Requested-With", headers.get("X-Requested-With"));
+			urlConnection.setRequestProperty("Content-Type", headers.get("Content-Type"));
+			urlConnection.setRequestMethod(request.getMethod());
+		}
+		urlConnection.setRequestProperty("Charset", "UTF-8");
+		urlConnection.setRequestProperty("Connection", "Keep-Alive");
+		urlConnection.setRequestProperty("User-Agent", webx.computerFace?"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
+				:"Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
+		urlConnection.connect();
+		InputStream is = urlConnection.getInputStream();
+		byte[] buffer = new byte[4096];
+		int len;
+		while ((len = is.read(buffer)) > 0) {
+			if (fout == null)  {
+				fout = path==null?new ByteArrayOutputStream():new FileOutputStream(path);
+				outputStreams[0] = fout;
+			}
+			fout.write(buffer, 0, len);
+		}
+		if(fout!=null) {
+			fout.flush();
+			fout.close();
+		}
+		urlConnection.disconnect();
+		is.close();
 	}
 	
 	public void Destory(){

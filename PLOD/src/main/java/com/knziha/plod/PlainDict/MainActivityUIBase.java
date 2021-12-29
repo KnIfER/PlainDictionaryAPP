@@ -231,6 +231,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -240,7 +241,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -252,15 +252,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-
 import static com.bumptech.glide.util.Util.isOnMainThread;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
+import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
@@ -430,6 +427,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	Canvas mPageCanvas = new Canvas();
 	Matrix HappyMatrix = new Matrix();
 	BitmapDrawable mPageDrawable;
+	ColorDrawable mPageColorDrawable;
 
 	AsyncTask lianHeTask;
 	public int[] pendingLv2Pos;
@@ -1333,8 +1331,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
        	  */
 		
 		CMN.mid = Thread.currentThread().getId();
-		CMN.debug("mid", CMN.mid, getClass());
-		CMN.debug("sdk", Build.VERSION.SDK_INT);
 	    //CMN.Log("instanceCount", CMN.instanceCount);
 		super.onCreate(savedInstanceState);
 		if(shunt) return;
@@ -1360,7 +1356,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		};
 		MainStringBuilder = new StringBuilder(40960);
 		//WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
-		//ViewUtils.setWebDebug(this);
+		ViewUtils.setWebDebug(this);
+		if (BuildConfig.isDebug) {
+			CMN.debug("mid", CMN.mid, getClass());
+			CMN.debug("sdk", Build.VERSION.SDK_INT);
+			CMN.debug("dens", GlobalOptions.density);
+		}
 	}
 
 	public void onAudioPause() {
@@ -7832,7 +7833,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				invoker.webScale = newScale; //sync
 			}
 		}
-
+		
+		@Override
+		public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+			//CMN.Log("onReceivedError::", errorCode, failingUrl);
+//			if (errorCode==ERROR_HOST_LOOKUP ) {
+//
+//			}
+			//view.loadUrl("mdbr://load.html");
+			if(GlobalOptions.isDark && Build.VERSION.SDK_INT<21) { //todo webview 版本
+				view.loadDataWithBaseURL(baseUrl, "<div>\n" +
+						"hello world!\n" +
+						"</div>", null, "UTF-8", null);
+			}
+		}
+		
 		@Override
 		public void onLoadResource(WebView view, String url) {
 
@@ -8017,7 +8032,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								mWebView.History.get(mWebView.HistoryVagranter).value.set(mWebView.getScrollX(),mWebView.getScrollY(), mWebView.webScale);
 							invoker.setCurrentDis(mWebView, pos);
 						}
-						view.loadDataWithBaseURL(invoker.baseUrl,
+						view.loadDataWithBaseURL(baseUrl,
 								invoker.AcquirePageBuilder().append((AppWhite == Color.BLACK) ? MainActivityUIBase.DarkModeIncantation_l : "")
 										.append(BookPresenter.htmlHeadEndTag)
 										.append(invoker.bookImpl.getRecordsAt(invoker.mBookRecordInteceptor, pos))
@@ -8182,159 +8197,128 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 
 			//CMN.Log("chromium shouldInterceptRequest invoker",invoker);
-			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB
-				&& (accept==null || accept.contains("text/html"))) {
-				if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
-					PlainWeb webx = (PlainWeb) invoker.bookImpl;
-					boolean proceed = true;
-					String[] shWebsite = webx.cleanExtensions;
-					if(shWebsite!=null){
-						for (int i = 0; i < shWebsite.length; i++) {
-							if(url_contains(url, shWebsite[i])){
-								proceed=false;
-								break;
-							}
-						}
-					}
-
-					if(proceed) {
-						CMN.debug("accept", accept, url);
-						InputStream overridePage = invoker.getWebPage(url);
-						if(overridePage!=null){
-							//CMN.tp(0, "webx getPage :: ", invoker.getWebPageString(url), url);
-							//BU.recordString(invoker.getWebPageString(url), "/sdcard/test.html");
-							return new WebResourceResponse("text/html","UTF-8",overridePage);
-						}
-					}
-					
-//					if (url.contains("apis.google")) return emptyResponse;
-
-					if(webx.canSaveResource){
-						try {
-							shWebsite = webx.cacheExtensions;
+			if(invoker.getIsWebx()) {
+				PlainWeb webx = (PlainWeb) invoker.bookImpl;
+				if(accept==null || accept.contains("text/html")) {
+					if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
+						boolean proceed = true;
+						String[] shWebsite = webx.cleanExtensions;
+						if(shWebsite!=null){
 							for (int i = 0; i < shWebsite.length; i++) {
-								//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
-								if(url.contains(shWebsite[i])){
-									File pathDownload = invoker.getInternalResourcePath(true);
-									if(!pathDownload.exists()) pathDownload.mkdirs();
-									if(pathDownload.isDirectory()) {
-										boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
-										File path;
-										int start = url.indexOf("://");
-										if(start<0) start=0; else start+=3;
-										start = Math.max(url.indexOf("/", start)+1, start);
-										int end = needTrim?url.indexOf("?"):-1;
-										if(end<0) end=url.length();
-										String name=url.substring(start, end);
-										try {
-											name=URLDecoder.decode(name, "utf8");
-										} catch (Exception e) { }
-										if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
-										if(name.length()==0){
-											name = "plod-index";
-										}
-										path=new File(pathDownload, name);
-										CMN.Log("pathDownload", path);
-										pathDownload = path.getParentFile();
-										boolean saveit = !webx.butReadonly;
-										if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
-										if(pathDownload.isDirectory())
-										{
-											name=path.getName();
-											if(name.length()>64){
-												name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
-												path=new File(pathDownload, name);
-											}
-											/* 下载 */
-											if(saveit && !path.exists()) {
-												CMN.Log("shouldInterceptRequest 下载中...！", url);
-												CMN.Log("shouldInterceptRequest 下载目标: ", name);
-												URL requestURL = new URL(url);
-												HttpURLConnection urlConnection = null;
-												FileOutputStream fout = null;
-												try {
-													try {
-														SSLContext sslcontext = SSLContext.getInstance("TLS");
-														sslcontext.init(null, new TrustManager[]{new PlainWeb.MyX509TrustManager()}, new SecureRandom());
-														HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
-													} catch (Exception ignored) {
-													}
-													urlConnection = (HttpURLConnection) requestURL.openConnection();
-													urlConnection.setRequestMethod("GET");
-													urlConnection.setConnectTimeout(10000);
-													if(accept!=null)urlConnection.setRequestProperty("Accept",accept);
-													if(refer!=null) urlConnection.setRequestProperty("Refer", refer);
-													if(origin!=null) urlConnection.setRequestProperty("Origin", origin);
-													if(request!=null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-														Map<String, String> headers = request.getRequestHeaders();
-														urlConnection.setRequestProperty("X-Requested-With", headers.get("X-Requested-With"));
-														urlConnection.setRequestProperty("Content-Type", headers.get("Content-Type"));
-														urlConnection.setRequestMethod(request.getMethod());
-													}
-													urlConnection.setRequestProperty("Charset", "UTF-8");
-													urlConnection.setRequestProperty("Connection", "Keep-Alive");
-													urlConnection.setRequestProperty("User-Agent", webx.computerFace?"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36"
-														:"Mozilla/5.0 (Linux; Android 9; VTR-AL00 Build/HUAWEIVTR-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
-													urlConnection.connect();
-													InputStream is = urlConnection.getInputStream();
-													byte[] buffer = new byte[4096];
-													int len;
-													while ((len = is.read(buffer)) > 0) {
-														if (fout == null)
-															fout = new FileOutputStream(path);
-														fout.write(buffer, 0, len);
-													}
-													if(fout!=null) {
-														fout.flush();
-														fout.close();
-													}
-													urlConnection.disconnect();
-													is.close();
-													CMN.Log("shouldInterceptRequest 已下载！", url);
-												} catch (Exception e) {
-													CMN.Log(e);
-													path.delete();
-													return emptyResponse;
-												}
-											}
-											/* 再构 */
-											if(path.isFile()){
-												String mime=accept;
-												if(mime!=null){
-													int idx = mime.indexOf(",");
-													if(idx>0) mime=mime.substring(0, idx);
-												}else{
-													mime="*/*";
-												}
-												if(mime.startsWith("image") && webx.svgKeywords!=null){
-													for (int j = 0; j < webx.svgKeywords.length; j++) {
-														if(url.contains(webx.svgKeywords[i])){
-															mime="image/svg+xml";
-															break;
-														}
-													}
-												}
-
-												WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
-												if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-													ret.setResponseHeaders(CrossFireHeaders);
-												}
-												return ret;
-											}
-										}
-									}
-
+								if(url_contains(url, shWebsite[i])){
+									proceed=false;
 									break;
 								}
 							}
 						}
-						catch (Exception e) {
-							CMN.Log(e);
+	
+						if(proceed) {
+							CMN.debug("accept", accept, url);
+							InputStream overridePage = invoker.getWebPage(url);
+							if(overridePage!=null){
+								//CMN.tp(0, "webx getPage :: ", invoker.getWebPageString(url), url);
+								//BU.recordString(invoker.getWebPageString(url), "/sdcard/test.html");
+								return new WebResourceResponse("text/html","UTF-8",overridePage);
+							}
+						}
+						
+	//					if (url.contains("apis.google")) return emptyResponse;
+	
+						if(webx.canSaveResource){
+							try {
+								shWebsite = webx.cacheExtensions;
+								for (int i = 0; i < shWebsite.length; i++) {
+									//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
+									if(url.contains(shWebsite[i])){
+										File pathDownload = invoker.getInternalResourcePath(true);
+										if(!pathDownload.exists()) pathDownload.mkdirs();
+										if(pathDownload.isDirectory()) {
+											boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
+											File path;
+											int start = url.indexOf("://");
+											if(start<0) start=0; else start+=3;
+											start = Math.max(url.indexOf("/", start)+1, start);
+											int end = needTrim?url.indexOf("?"):-1;
+											if(end<0) end=url.length();
+											String name=url.substring(start, end);
+											try {
+												name=URLDecoder.decode(name, "utf8");
+											} catch (Exception e) { }
+											if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
+											if(name.length()==0){
+												name = "plod-index";
+											}
+											path=new File(pathDownload, name);
+											CMN.Log("pathDownload", path);
+											pathDownload = path.getParentFile();
+											boolean saveit = !webx.butReadonly;
+											if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
+											if(pathDownload.isDirectory())
+											{
+												name=path.getName();
+												if(name.length()>64){
+													name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
+													path=new File(pathDownload, name);
+												}
+												/* 下载 */
+												if(saveit && !path.exists()) {
+													CMN.Log("shouldInterceptRequest 下载中...！", url);
+													CMN.Log("shouldInterceptRequest 下载目标: ", name);
+													try {
+														ViewUtils.downloadToStream(url, new OutputStream[]{null}, path.getPath()
+																, accept, refer, origin, request, webx);
+														CMN.Log("shouldInterceptRequest 已下载！", url);
+													} catch (Exception e) {
+														CMN.Log(e);
+														path.delete();
+														return emptyResponse;
+													}
+													// 预处理
+												}
+												/* 再构 */
+												if(path.isFile()){
+													String mime=accept;
+													if(mime!=null){
+														int idx = mime.indexOf(",");
+														if(idx>0) mime=mime.substring(0, idx);
+													}else{
+														mime="*/*";
+													}
+													if(mime.startsWith("image") && webx.svgKeywords!=null){
+														for (int j = 0; j < webx.svgKeywords.length; j++) {
+															if(url.contains(webx.svgKeywords[i])){
+																mime="image/svg+xml";
+																break;
+															}
+														}
+													}
+	
+													WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
+													if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+														ret.setResponseHeaders(CrossFireHeaders);
+													}
+													return ret;
+												}
+											}
+										}
+	
+										break;
+									}
+								}
+							}
+							catch (Exception e) {
+								CMN.Log(e);
+							}
 						}
 					}
+					else{
+						view.setTag(R.id.save, null);
+					}
 				}
-				else{
-					view.setTag(R.id.save, null);
+				if (webx.getReplaceLetToVar(url)) {
+					try {
+						return ViewUtils.KikLetToVar(url , accept, refer, origin, request, webx);
+					} catch (Exception e) { CMN.debug("kiklet 转化失败::", e); }
 				}
 				return null;
 			}
@@ -8604,7 +8588,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return new WebResourceResponse(mime,"UTF-8",restmp);
 			}
 			catch (IOException e) {
-				e.printStackTrace();
+				CMN.Log(e);
 				return super.shouldInterceptRequest(view, url);
 			}
 		}
@@ -8875,7 +8859,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 }
 	 body {
 	 	background:transparent!important;
-	 	background-color:transparent!important;
+	 	background-color:#fff!important;
 	 }
 	 </style>
 	 */
@@ -8887,7 +8871,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					 -moz-filter: invert(100%);\
 					 -o-filter: invert(100%);\
 					 -ms-filter: invert(100%);}\
-				body {background:transparent}', d=document,
+				body {background:#fff}', d=document,
 	 head = d.getElementsByTagName('head')[0],
 	 sty = d.createElement('style');
 	 sty.id = "_PDict_Darken";
@@ -8901,7 +8885,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		 }
 		 //injecting the css to the head
 		 head.appendChild(sty);
-		 if(d.body){d.body.style.background='transparent';d._pdkn=1}
+		 if(d.body){d.body.style.background='#fff';d._pdkn=1}
 	 }
 	 */
 	@Metaline
@@ -10072,7 +10056,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		CommonAssetsStr.put("tapTrans.js", BookPresenter.tapTranslateLoader);
 	}
 	
-	private InputStream loadCommonAsset(String key) throws IOException {
+	public InputStream loadCommonAsset(String key) throws IOException {
 		byte[] data = CommonAssets.get(key);
 		if(data==null){
 			InputStream input = getResources().getAssets().open(key);

@@ -5,8 +5,9 @@
 	,"name": "万词王（智慧近义词查询）"
 	,"js": "
 		var win=window,doc=document;
-		function debug(...e){console.log('fatal web::',e)};
-		function ge(e){return doc.getElementById(e)}
+		function debug(e){console.log('fatal web::'+e)};
+		debug('init wantwords...');
+		function ge(e){return doc.getElementById(e)};
 		function initHeaderBtn() {
 			var e = doc.createElement('IMG');
 			e.id='etyexp';
@@ -30,10 +31,11 @@
 			e.click();
 			win.headerBtn=e;
 		}
-		win.gotoid=()=>{};
+		win.gotoid=function(){};
 		if(!win._NWP) {
 			win._NWP=[ge('result'),ge('result_EE'),ge('result_EC'),ge('result_CE')];
 		}
+		debug('init wantwords...');
 	"
 	,"searchJs": "
 		if(!window.headerBtn) initHeaderBtn();
@@ -82,4 +84,6 @@ js:@{schVar}(3)\r< English >
 js:@{schVar}(4)\r< En-Zh >
 	"
 	,"onload": ""
+	,"drawHighlightOnTop":"true"
+	,"kikLetVar":"home.js"
 }
