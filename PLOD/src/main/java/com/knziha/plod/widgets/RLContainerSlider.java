@@ -7,9 +7,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
-import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 
 
 public class RLContainerSlider extends FrameLayout{
@@ -22,6 +22,10 @@ public class RLContainerSlider extends FrameLayout{
 	private boolean bNoDoubleClick;
 	private boolean bNoTurnPage;
 	private int WebContextWidth;
+	private boolean aborted;
+	private float dragInitDx;
+	private float abortedOffsetX;
+	private float abortedOffsetY;
 	
 	public RLContainerSlider(Context context) {
 		this(context, null);
@@ -146,7 +150,7 @@ public class RLContainerSlider extends FrameLayout{
 	public boolean onTouchEvent(MotionEvent ev) {
 		MainActivityUIBase.layoutScrollDisabled=false;
 		if(!TurnPageEnabled) return false;
-		if(!dragged) return true;
+		if(!dragged && !aborted) return true;
 		int actual_index = ev.getActionIndex();
 		int touch_id = ev.getPointerId(actual_index);
 		int actionMasked = ev.getActionMasked();
@@ -197,6 +201,28 @@ public class RLContainerSlider extends FrameLayout{
 						IMSlider.handleDrag(nowX-lastX,nowY-lastY);
 						if(IMSlider.inf!=null)
 							IMSlider.inf.onMoving(IMSlider.getTranslationX(),IMSlider);
+//						CMN.Log("IMSlider.getTranslationX()", dragInitDx, IMSlider.getTranslationX());
+						if (//Math.abs(IMSlider.getTranslationX())<3.5*GlobalOptions.density &&
+								dragInitDx*IMSlider.getTranslationX()<=0
+								//&& Math.abs(IMSlider.getTranslationY())<20*GlobalOptions.density
+						) {
+							dragged = false;
+							aborted = true;
+							IMSlider.decided=false;
+							IMSlider.RePosition();
+							first_touch_id = -1;
+//							CMN.Log("abort!!!");
+							ViewUtils.preventDefaultTouchEvent(this, (int)lastX, (int)lastY);
+							abortedOffsetX = WebContext.lastX-nowX;
+							abortedOffsetY = WebContext.lastY-nowY;
+						}
+					}
+					else if(aborted) {
+						onInterceptTouchEvent(ev);
+						if(!dragged && WebContext!=null) {
+							ev.setLocation(nowX/*-WebContext.getLeft()*/+abortedOffsetX, nowY/*-WebContext.getTop()*/+abortedOffsetY);
+							WebContext.dispatchTouchEvent(ev);
+						}
 					}
 					lastX = nowX;
 					lastY = nowY;
@@ -287,6 +313,7 @@ public class RLContainerSlider extends FrameLayout{
 					first_touch_id=touch_id;
 					detector.onTouchEvent(ev);
 					OrgY = lastY = ev.getY();
+					aborted = false;
 				break;
 				case MotionEvent.ACTION_MOVE:
 					if(ev.getPointerCount()==1) {
@@ -294,9 +321,12 @@ public class RLContainerSlider extends FrameLayout{
 						lastY = ev.getY();
 						if (!dragged) {
 							float dx = lastX - OrgX;
-							if (WebContext==null || (WebContext.AlwaysCheckRange==-1 && bZoomOut && (dx > 100 || dx < -100))
-									|| (WebContext.AlwaysCheckRange==1||!bZoomOut) &&
-									(dx > 100 && WebContext.getScrollX()==0 || dx < -100 && WebContext.getScrollX()+WebContext.getWidth()==WebContextWidth)) {
+							if (WebContext==null
+									|| (WebContext.AlwaysCheckRange==-1 && bZoomOut && (dx > 100 || dx < -100))
+									|| (WebContext.AlwaysCheckRange==1||!bZoomOut)
+										&& (dx > 100 && WebContext.getScrollX()==0
+												|| dx < -100 && WebContext.getScrollX()+WebContext.getWidth()==WebContextWidth)) {
+								dragInitDx = dx;
 								float dy = lastY - OrgY;
 								if (dy == 0) dy = 0.000001f;
 								dx = dx / dy;

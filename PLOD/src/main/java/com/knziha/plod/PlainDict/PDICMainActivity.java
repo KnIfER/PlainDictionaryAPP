@@ -1230,7 +1230,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//SplitViewGuarder_ svGuard = (SplitViewGuarder_) contentview.findViewById(R.id.svGuard);
 		//svGuard.SplitViewsToGuard.add(webcontentlister);
 
-
 		//PageSlider.SCViewToMute = (ScrollViewmy) webholder.getParent();
 		PageSlider.IMSlider = IMPageCover;
 		IMPageCover.setPageSliderInf(new PageSliderInf() {
@@ -1247,62 +1246,68 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					IMPageCover.getForeground().setAlpha(0);
 					IMPageCover.setBackground(null);
 				}
-				if(IMPageCover.getTag()==null) {
+				if(IMPageCover.getTag()!=(Integer)MainBackground) {
 					if(Build.VERSION.SDK_INT>23)
 						IMPageCover.getForeground().setTint(0x662b4381);
-					//IMPageCover.getBackground().setColorFilter(0x662b4381, PorterDuff.Mode.SRC_IN);
-					IMPageCover.setTag(false);
+					else
+						IMPageCover.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
+					IMPageCover.setTag(MainBackground);
 				}
 				IMPageCover.setTranslationY(0);
 				RLContainerSlider PageSlider_ = PageSlider;
 				if(peruseView !=null && ActivedAdapter== peruseView.leftLexicalAdapter)
 					PageSlider_= peruseView.PageSlider;
-				if(PageCache==null) {
-					PageCache = Bitmap.createBitmap(dm.widthPixels,dm.heightPixels, Bitmap.Config.ARGB_8888);
-					mPageCanvas.setBitmap(PageCache);
-					mPageDrawable = new BitmapDrawable(getResources(), PageCache);
-				}
-				//IMPageCover.setImageBitmap(PageCache);
-				IMPageCover.setScaleType(ImageView.ScaleType.MATRIX);
-				HappyMatrix = new Matrix();
-				HappyMatrix.setScale(Math.round(1.f*dm.widthPixels/PageSlider_.getWidth()),Math.round(1.f*dm.heightPixels/PageSlider_.getHeight()));
-				HappyMatrix.setScale(Math.round(1.f*PageSlider_.getWidth()/dm.widthPixels),Math.round(1.f*PageSlider_.getHeight()/dm.heightPixels));
-				IMPageCover.setImageMatrix(HappyMatrix);
-
-				IMPageCover.setImageDrawable(mPageDrawable);
-
-				if(PageCache.getWidth()!=PageSlider_.getWidth() || PageCache.getHeight()!=PageSlider.getHeight()) {
-					//PageCache.setHeight(PageSlider_.getHeight());
-					//PageCache.setWidth(PageSlider_.getWidth());
-				}
-
-				int painter;
-				if(PeruseViewAttached()) {
-					painter=1;
-				} else if(webholder.getChildCount()!=0) {
-					painter=2;
-				} else {
-					painter=3;
-				}
-
-				// 重绘
-				mPageCanvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.SRC_IN);
 				
-				CMN.debug("复制网页画面::", currentDictionary, "$1.mWebView.getProgress()");
+				//CMN.debug("复制网页画面::", currentDictionary, "$1.mWebView.getProgress()");
 				
-				if(painter==1) {
-					peruseView.webSingleholder.post(() -> {
-						//if(PageCache.isRecycled())PageCache = Bitmap.createBitmap(PageCache.getWidth(), PageCache.getHeight(), Bitmap.Config.ARGB_8888);
-						peruseView.webSingleholder.draw(mPageCanvas);
-					});
-				} else if(painter==2){
-					webholder.post(() -> {
-						mPageCanvas.translate(0, -WHP.getScrollY());
-						WHP.draw(mPageCanvas);
-						mPageCanvas.translate(0, WHP.getScrollY());
-					});
+				if (PDICMainAppOptions.getPowerSavingPageSideView()
+					||GlobalOptions.isDark && Build.VERSION.SDK_INT<21) { // todo webview 版本
+					if(mPageColorDrawable==null) mPageColorDrawable=new ColorDrawable();
+					mPageColorDrawable.setColor(GlobalOptions.isDark?0x2f888888:0x38efefef);
+					IMPageCover.setImageDrawable(mPageColorDrawable);
 				} else {
-					webSingleholder.draw(new Canvas(PageCache));
+					if(PageCache==null) {
+						PageCache = Bitmap.createBitmap(dm.widthPixels,dm.heightPixels, Bitmap.Config.ARGB_8888);
+						mPageCanvas.setBitmap(PageCache);
+						mPageDrawable = new BitmapDrawable(getResources(), PageCache);
+					}
+					//IMPageCover.setImageBitmap(PageCache);
+					IMPageCover.setScaleType(ImageView.ScaleType.MATRIX);
+					HappyMatrix = new Matrix();
+					HappyMatrix.setScale(Math.round(1.f*dm.widthPixels/PageSlider_.getWidth()),Math.round(1.f*dm.heightPixels/PageSlider_.getHeight()));
+					HappyMatrix.setScale(Math.round(1.f*PageSlider_.getWidth()/dm.widthPixels),Math.round(1.f*PageSlider_.getHeight()/dm.heightPixels));
+					IMPageCover.setImageMatrix(HappyMatrix);
+					
+					IMPageCover.setImageDrawable(mPageDrawable);
+					
+					if(PageCache.getWidth()!=PageSlider_.getWidth() || PageCache.getHeight()!=PageSlider.getHeight()) {
+						//PageCache.setHeight(PageSlider_.getHeight());
+						//PageCache.setWidth(PageSlider_.getWidth());
+					}
+					int painter;
+					if(PeruseViewAttached()) {
+						painter=1;
+					} else if(webholder.getChildCount()!=0) {
+						painter=2;
+					} else {
+						painter=3;
+					}
+					// 重绘
+					mPageCanvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.SRC_IN);
+					if(painter==1) {
+						peruseView.webSingleholder.post(() -> {
+							//if(PageCache.isRecycled())PageCache = Bitmap.createBitmap(PageCache.getWidth(), PageCache.getHeight(), Bitmap.Config.ARGB_8888);
+							peruseView.webSingleholder.draw(mPageCanvas);
+						});
+					} else if(painter==2){
+						webholder.post(() -> {
+							mPageCanvas.translate(0, -WHP.getScrollY());
+							WHP.draw(mPageCanvas);
+							mPageCanvas.translate(0, WHP.getScrollY());
+						});
+					} else {
+						webSingleholder.draw(new Canvas(PageCache));
+					}
 				}
 
 				IMPageCover.setVisibility(View.VISIBLE);
