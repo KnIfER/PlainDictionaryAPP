@@ -90,7 +90,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -3686,11 +3685,8 @@ function debug(e){console.log(e)};
 				mWebView.setTag(null);
 				mWebView.loadUrl("about:blank");
 				//mWebView.clearCache(false);
-				try {
-					Field f_mKeyedTags = View.class.getDeclaredField("mKeyedTags");
-					f_mKeyedTags.setAccessible(true);
-					SparseArray tags = (SparseArray) f_mKeyedTags.get(mWebView);
-					tags.clear();
+				try { // clear SparseArray tags
+					ViewUtils.execSimple("$.mKeyedTags.clear()", ViewUtils.reflectionPool, mWebView);
 				} catch (Exception e) { CMN.Log(e); }
 				if(a.currentDictionary==this) {
 					a.adaptermy.notifyDataSetChanged();

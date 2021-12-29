@@ -49,7 +49,6 @@ import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.webkit.WebView;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -78,6 +77,7 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.RebootActivity;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.knziha.metaline.StripMethods;
 
@@ -94,6 +94,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringTokenizer;
 
 import static com.knziha.filepicker.utils.FU.bKindButComplexSdcardAvailable;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
@@ -176,42 +177,31 @@ public class ViewUtils {
 	}
 	
 	
-	static Object instance_WindowManagerGlobal;
-	static Class class_WindowManagerGlobal;
-	static Field field_mViews;
-	
 	public static void logAllViews(){
 		List<View> views = getWindowManagerViews();
+		CMN.debug("logAllViews::", views);
 		for(View vI:views){
-			CMN.Log("\n\n\n\n\n::  "+vI);
+			CMN.Log("\n\n\n\n\nlogAllViews::  "+vI);
 			CMN.recurseLog(vI);
 		}
 	}
-	
 	/* get the list from WindowManagerGlobal.mViews */
 	public static List<View> getWindowManagerViews() {
-		if(instance_WindowManagerGlobal instanceof Exception) {
-			return new ArrayList<>();
-		}
 		try {
-			if(instance_WindowManagerGlobal==null) {
-				class_WindowManagerGlobal = Class.forName("android.view.WindowManagerGlobal");
-				field_mViews = class_WindowManagerGlobal.getDeclaredField("mViews");
-				field_mViews.setAccessible(true);
-				Method method_getInstance = class_WindowManagerGlobal.getMethod("getInstance");
-				instance_WindowManagerGlobal = method_getInstance.invoke(null);
-			}
-			Object views = field_mViews.get(instance_WindowManagerGlobal);
+			//  Class.forName("android.view.WindowManagerGlobal")
+			//  ------>mViews
+			//  ------>getInstance
+			Object views = execSimple("{android.view.WindowManagerGlobal}.getInstance().mViews", reflectionPool);
+			//CMN.debug("logAllViews::views::", views);
 			if (views instanceof List) {
 				return (List<View>) views;
 			} else if (views instanceof View[]) {
 				return Arrays.asList((View[])views);
 			}
 		} catch (Exception e) {
-			CMN.Log(e);
-			instance_WindowManagerGlobal = new Exception();
+			CMN.debug("logAllViews::", e);
+			//instance_WindowManagerGlobal = new Exception();
 		}
-		
 		return new ArrayList<>();
 	}
 	
@@ -238,7 +228,6 @@ public class ViewUtils {
 		}
 		return (View)obj;
 	}
-	
 	
 	public static void setOnClickListenersOneDepth(ViewGroup vg, View.OnClickListener clicker, int depth, Object[] viewFetcher) {
 		int cc = vg.getChildCount();
@@ -573,8 +562,6 @@ public class ViewUtils {
 		}
 	}
 	
-	
-	
 	public static boolean actualLandscapeMode(Context c) {
 		int angle = ((WindowManager)c.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
 		return angle== Surface.ROTATION_90||angle==Surface.ROTATION_270;
@@ -687,66 +674,35 @@ public class ViewUtils {
 		@Override public void onAnimationRepeat(Animator animation) { }
 	}
 	
+	public static HashMap<String, Object> reflectionPool = new HashMap<>();
 	
-	static Field FastScrollField;
-	static Field TrackDrawableField;
-	static Field ThumbImageViewField;
-	static Field ScrollCacheField;
-	static Field ScrollBarDrawableField;
-	static HashMap<String, Object> reflectionPool = new HashMap<>();
+	//View.class.getDeclaredField("mScrollCache");
+	//Class.forName("android.view.View$ScrollabilityCache").getDeclaredField("scrollBar")
 	
 	public static void setListViewScrollbarColor(View mListView, boolean red) {
 		try {
-//			ensureScrollbarFields();
-//			Object Scrollbar = ScrollCacheField.get(mListView);
-//			Drawable ScrollbarDrawable = (Drawable) ScrollBarDrawableField.get(Scrollbar);
 			Drawable ScrollbarDrawable = (Drawable) execSimple("$.mScrollCache.scrollBar", reflectionPool, mListView);
-			CMN.Log("setListViewScrollbarColor::", ScrollbarDrawable, mListView);
+			//CMN.debug("setListViewScrollbarColor::", ScrollbarDrawable, mListView);
 			ScrollbarDrawable.setColorFilter(red?RED:GREY);
 		} catch (Exception e) {
-			CMN.Log(e);
-		}
-	}
-	
-	private static void ensureScrollbarFields() throws Exception {
-		if(ScrollCacheField==null) {
-			ScrollCacheField = View.class.getDeclaredField("mScrollCache");
-			ScrollCacheField.setAccessible(true);
-			ScrollBarDrawableField = Class.forName("android.view.View$ScrollabilityCache").getDeclaredField("scrollBar");
-			ScrollBarDrawableField.setAccessible(true);
+			CMN.debug("setListViewScrollbarColor::", e);
 		}
 	}
 	
 	static ColorFilter RED = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
 	static ColorFilter GREY = new PorterDuffColorFilter(0x8a666666, PorterDuff.Mode.SRC_IN);
 	
-	private static void ensureFastscrollFields() throws Exception{
-		if(FastScrollField==null) {
-			Class FastScrollerClass = Class.forName("android.widget.FastScroller");
-			FastScrollField = AbsListView.class.getDeclaredField("mFastScroll");
-			FastScrollField.setAccessible(true);
-			TrackDrawableField = FastScrollerClass.getDeclaredField("mTrackDrawable");
-			TrackDrawableField.setAccessible(true);
-			
-			ThumbImageViewField = FastScrollerClass.getDeclaredField("mThumbImage");
-			ThumbImageViewField.setAccessible(true);
-		}
-	}
+	
+	//Class.forName("android.widget.FastScroller");
+	//--->getDeclaredField("mTrackDrawable");
+	//--->getDeclaredField("mThumbImage");
+	//AbsListView.class.getDeclaredField("mFastScroll");
 	
 	public static void setListViewFastColor(View...mListViews) {
 		try {
-			ensureFastscrollFields();
 			for(View mListView:mListViews) {
-//				Object FastScroller = FastScrollField.get(mListView);
-//				if(FastScroller!=null) {
-//					ImageView ThumbImage = (ImageView) ThumbImageViewField.get(FastScroller);
-//					if (ThumbImage != null) {
-//						ThumbImage.setColorFilter(GREY);
-//					}
-//					CMN.debug("setListViewFastColor::", FastScroller);
-//				}
 				ImageView ThumbImage = (ImageView) execSimple("$.mFastScroll.mThumbImage", reflectionPool, mListView);
-				CMN.debug("setListViewFastColor::", ThumbImage);
+				//CMN.debug("setListViewFastColor::", ThumbImage);
 				if (ThumbImage != null) ThumbImage.setColorFilter(GREY);
 			}
 		} catch (Exception e) {
@@ -756,7 +712,6 @@ public class ViewUtils {
 	
 	public static void listViewStrictScroll(boolean IsStrictSCroll, ListViewmy...mListViews) {
 		try {
-			ensureFastscrollFields();
 			for(ListViewmy mListView:mListViews) {
 				String eval = "$.mFastScroll.mTrackDrawable";
 				if(IsStrictSCroll) {
@@ -764,18 +719,12 @@ public class ViewUtils {
 						mListView.FastScroller = execSimple(eval, reflectionPool, mListView);
 					}
 					execSimple(eval+"=n", reflectionPool, mListView);
-//					Object FastScroller = FastScrollField.get(mListView);
-//					if(FastScroller!=null && TrackDrawableField!=null) {
-//						mListView.FastScroller = FastScroller;
-//						TrackDrawableField.set(FastScroller, null);
-//					}
 				} else {
 					execSimple(eval+"=$1", reflectionPool, mListView, mListView.FastScroller);
-//					TrackDrawableField.set(mListView, mListView.FastScroller);
 				}
 			}
 		} catch (Exception e) {
-			CMN.Log("listViewStrictScroll::", e);
+			CMN.debug("listViewStrictScroll::", e);
 		}
 	}
 	
@@ -910,7 +859,7 @@ public class ViewUtils {
 	}
 	
 	public static Field getField(Class<?> aClass, String name) throws Exception {
-		CMN.debug("getField::"+aClass+"->"+name);
+//		CMN.debug("getField::"+aClass+"->"+name);
 		if (aClass==ObjectUtils.NULL.getClass()) {
 			return null;
 		}
@@ -955,17 +904,17 @@ public class ViewUtils {
 	}
 	
 	public static Object execSimple(String simplet, HashMap<String, Object> reflectionPool, Object...vars) throws Exception {
-		String[] array = simplet.split("[;\r\n]");
+		StringTokenizer array = new StringTokenizer(simplet, ";\r\n");
 		HashMap<String, Object> variables = new HashMap<>();
 		for (int i = 0; i < vars.length-0; i++) {
 			variables.put("$"+(i==0?"":i), vars[i+0]);
 		}
 		Object ret = null;
-		for (int i = 0; i < array.length; i++) {
-			String ln = array[i].trim();
-			CMN.debug("ln::"+ln);
-			String[] eq = ln.split("=");
-			if (eq.length==2) {
+		while(array.hasMoreTokens()){
+			String ln = array.nextToken();
+//			CMN.debug("ln::"+ln);
+			int eqIdx = ln.indexOf('=');
+			if (eqIdx>0) {
 				Class sClazz = null;
 				Class zClazz = null;
 				Object object = null;
@@ -973,10 +922,10 @@ public class ViewUtils {
 				String varName=null;
 				String valName=null;
 				Field fieldToSet=null;
-				varName = eq[0];
+				varName = ln.substring(0, eqIdx);
 				// 左值
 				if (varName.startsWith("var")) {
-					varName = varName.substring(3).trim();
+					varName = varName.substring(4);
 				} else {
 					if (varName.contains(".")) {
 						if (varName.startsWith("{")) {
@@ -1001,8 +950,8 @@ public class ViewUtils {
 				// eq[0] = eq[1]
 				//         ...exps
 				// 右值
-				valName = eq[1].trim();
-				CMN.debug("右值::"+valName);
+				valName = ln.substring(eqIdx+1);
+//				CMN.debug("右值::"+valName);
 				String[] expsRight=null;
 				if (valName.startsWith("{")) {
 					int idx=valName.lastIndexOf("}");
@@ -1011,7 +960,7 @@ public class ViewUtils {
 				} else if (valName.startsWith("'")) {
 					newObj = valName.substring(1, valName.length()-1);
 				}  else {
-					expsRight = eq[1].trim().split("\\.(?![0-9])");
+					expsRight = valName.split("\\.(?![0-9])");
 					valName = expsRight[0];
 					newObj = variables.get(valName);
 				}
@@ -1022,21 +971,21 @@ public class ViewUtils {
 				// 右值
 				// 赋值
 				if (fieldToSet!=null) {
+//					CMN.debug("field赋值::", object, fieldToSet, newObj);
 					fieldToSet.set(object, newObj);
-					CMN.debug("field赋值::", object, fieldToSet, newObj);
 				}
 				if (varName!=null) {
-					CMN.debug("var赋值::", varName, newObj);
+//					CMN.debug("var赋值::", varName, newObj);
 					variables.put(varName, newObj);
 				}
 			}
 			else if(ln.length()>2){
 				if (ln.startsWith("{")) {
-					int idx=ln.lastIndexOf("}");
+					int idx=ln.indexOf("}");
 					Class<?> sClazz = Class.forName(ln.substring(1, idx));
 					ln = ln.substring(idx+1);
 					String[] expsLeft = (ln).trim().split("\\.(?![0-9])");
-					evalFieldMethod(sClazz, null, expsLeft, variables, reflectionPool);
+					ret = evalFieldMethod(sClazz, null, expsLeft, variables, reflectionPool);
 				} else {
 					String[] exps = ln.split("\\.(?![0-9])");
 					ret = evalFieldMethod(null, null, exps, variables, reflectionPool);
@@ -1045,6 +994,8 @@ public class ViewUtils {
 		}
 		return ret;
 	}
+	
+	final static HashMap<String, Class> typeHash = new HashMap<>();
 	
 	//	public static Object evalSimple(Object object, String exps) {
 //		try {
@@ -1055,27 +1006,29 @@ public class ViewUtils {
 //	}
 	public static Object evalFieldMethod(Class zClazz, Object object
 			, String[] exps, HashMap<String, Object> variables, HashMap<String, Object> reflectionPool) throws Exception {
-		CMN.debug("evalFieldMethod::", zClazz, object, "exp::"+exps, variables);
+//		CMN.debug("evalFieldMethod::", zClazz, object, "exp::"+Arrays.toString(exps), variables);
 		boolean extract=exps.length>1&& "ex".equals(exps[0]);
 		Object fMd = null;
-		HashMap<String, Class> typeHash = new HashMap<>();
-		// byte、short、int、long、float、double
-		//typeHash.put("byte", byte.class);  typeHash.put("Byte", Byte.class);
-		//typeHash.put("double", double.class);  typeHash.put("Double", Double.class);
-		//typeHash.put("float", float.class);  typeHash.put("Float", Float.class);
-		//typeHash.put("long", long.class); typeHash.put("Long", Long.class);
-		typeHash.put("int", int.class); typeHash.put("Int", Integer.class);
-		//typeHash.put("short", short.class);  typeHash.put("Short", Short.class);
-		typeHash.put("String", String.class);
+		if (typeHash.size()==0) {
+			// byte、short、int、long、float、double
+			//typeHash.put("byte", byte.class);  typeHash.put("Byte", Byte.class);
+			//typeHash.put("double", double.class);  typeHash.put("Double", Double.class);
+			//typeHash.put("float", float.class);  typeHash.put("Float", Float.class);
+			//typeHash.put("long", long.class); typeHash.put("Long", Long.class);
+			typeHash.put("int", int.class); typeHash.put("Int", Integer.class);
+			//typeHash.put("short", short.class);  typeHash.put("Short", Short.class);
+			typeHash.put("String", String.class);
+		}
 		if (zClazz==null && object!=null) {
 			zClazz = object.getClass();
 		}
+		Object[] parameters; Class[] methodTypes;
 		for (int i = (object==null&&zClazz==null)?0:1; i < exps.length; i++) {
 			String fdMd=exps[i];
-			Object[] parameters = new Object[0];
-			Class[] methodTypes = new Class[0];
+			parameters = ArrayUtils.EMPTY_OBJECT_ARRAY;
+			methodTypes = ArrayUtils.EMPTY_CLASS_ARRAY;
 			if (i==0 && variables!=null) {
-				CMN.debug("init extraction from variables::"+fdMd);
+//				CMN.debug("init extraction from variables::"+fdMd);
 				object = variables.get(fdMd);
 				zClazz = object==null? ObjectUtils.Null.class:object.getClass();
 				continue;
@@ -1089,6 +1042,19 @@ public class ViewUtils {
 				if(zh>0) {
 					if (zh<xi) {
 						where = zh;
+					} else {
+						which = IU.parsint(fdMd.substring(zh+1, fdMd.indexOf("]", zh)), 0);
+					}
+				}
+				String methodName = fdMd.substring(0, where);
+				fMd = null;
+				String storeKey=null;
+				if (zClazz!=null && reflectionPool!=null) {
+					storeKey = zClazz.hashCode()+methodName;
+					fMd = reflectionPool.get(storeKey);
+				}
+				if (fMd==null) {
+					if (where!=xi) {
 						String types = fdMd.substring(zh+1, fdMd.indexOf("]", zh));
 						arr=null;
 						if (types.contains(",")) {
@@ -1097,7 +1063,6 @@ public class ViewUtils {
 							arr = new String[]{types};
 						}
 						if (arr!=null) {
-							arr = types.split(",");
 							methodTypes = new Class[arr.length];
 							for (int j = 0; j < arr.length; j++) { // ..分析参数类型
 								String typeName = arr[j].trim();
@@ -1113,12 +1078,10 @@ public class ViewUtils {
 								methodTypes[j] = type;
 							}
 						}
-					} else {
-						which = IU.parsint(fdMd.substring(zh+1, fdMd.indexOf("]", zh)), 0);
 					}
-				}
+				} //else CMN.Log("复用反射::"+storeKey);
 				//if (methodTypes.length>0) {
-				String params = fdMd.substring(xi+1, fdMd.indexOf(")", xi)).trim();
+				String params = fdMd.substring(xi+1, fdMd.indexOf(")", xi));
 				arr=null;
 				if (params.contains(",")) {
 					arr = params.split(",");
@@ -1130,7 +1093,7 @@ public class ViewUtils {
 					if(methodTypes.length==0) methodTypes = new Class[arr.length];
 					for (int j = 0; j < arr.length; j++) { // ..分析参数
 						String paramName = arr[j].trim();
-						CMN.debug("paramName::", paramName);
+//						CMN.debug("paramName::", paramName);
 						try {
 							//CMN.debug("paramName::", paramName, methodTypes[j]==null?null:methodTypes[j].getSimpleName());
 							if (paramName.startsWith("'")) {
@@ -1163,23 +1126,17 @@ public class ViewUtils {
 					}
 				}
 				//}
-				CMN.debug("methodTypes::", methodTypes.length, Arrays.toString(methodTypes));
-				CMN.debug("parameters::", parameters.length, Arrays.toString(parameters));
-				fdMd = fdMd.substring(0, where);
-				//CMN.debug("fdMd::", fdMd);
-				fMd = null;
-				String storeKey=null;
-				if (zClazz!=null && reflectionPool!=null) {
-					storeKey = zClazz.hashCode()+fdMd;
-					fMd = reflectionPool.get(storeKey);
-				}
+//				CMN.debug("methodTypes::", methodTypes.length, Arrays.toString(methodTypes));
+//				CMN.debug("parameters::", parameters.length, Arrays.toString(parameters));
+//				CMN.debug("fdMd::", methodName);
 				if (fMd==null) {
-					fMd = getMethod(zClazz, fdMd, methodTypes);
+					fMd = getMethod(zClazz, methodName, methodTypes);
 					if (reflectionPool!=null && fMd!=null) reflectionPool.put(storeKey, fMd);
-				} //else CMN.Log("复用反射::"+storeKey);
+				}
 				if(fMd==null) return null;
-				Objects.requireNonNull(fMd);
+				//Objects.requireNonNull(fMd);
 				object = ((Method)fMd).invoke(object, parameters);
+//				CMN.debug("result::", object);
 			}
 			else {
 				if(zh>0) {

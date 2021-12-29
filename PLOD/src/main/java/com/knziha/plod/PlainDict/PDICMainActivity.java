@@ -1727,26 +1727,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//etSearch.setText("happy");
 		//showT(""+currentDictionary.QueryByKey("woodie", SearchType.Normal, false, 0));
 		TestHelper.wakeUpAndUnlock(this);
-		
-		
-		CMN.Log("AdvancedNestScrollListview::");
-		try {
-			CMN.Log(ViewUtils.getField(AdvancedNestScrollListview.class, "mFastScroll"));
-		} catch (Exception e) {
-			CMN.Log(e);
-		}
-		try {
-			Class<?> aClass = AdvancedNestScrollListview.class;
-			while((aClass=aClass.getSuperclass())!=null) {
-				CMN.Log(aClass);
-				try {
-					CMN.Log(aClass, aClass.getDeclaredField("mFastScroll"));
-				} catch (NoSuchFieldException e) {
-				}
-			}
-		} catch (Exception e) {
-			CMN.Log(e);
-		}
 
 //		PowerManager pm= (PowerManager) this.getSystemService(Context.POWER_SERVICE);
 //		wakeLock=pm.newWakeLock(PowerManager.ON_AFTER_RELEASE|PowerManager.PARTIAL_WAKE_LOCK,"kn:debug");

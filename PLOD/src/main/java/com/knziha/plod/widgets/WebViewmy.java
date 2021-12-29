@@ -206,6 +206,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		removeJavascriptInterface("accessibilityTraversal");
 		
 		addJavascriptInterface(mSimpleIdentifier, "sid");
+		
 	}
 	
 	public long getSimpleIdentifier() {
@@ -698,7 +699,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				public void run() {
 					//logAllViews();
 					ViewGroup vg;
-					List<View> views = getWindowManagerViews();
+					List<View> views = /*ViewUtils.*/getWindowManagerViews();
 					for(View vI:views){
 						//CMN.Log("\n\n\n\n\n::  "+vI);
 						//CMN.recurseLog(vI);
