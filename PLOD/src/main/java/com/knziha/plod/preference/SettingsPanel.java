@@ -21,7 +21,7 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.XYLinearLayout;
 
 public class SettingsPanel extends AnimatorListenerAdapter implements View.OnClickListener {
@@ -240,7 +240,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 			sl.setBackgroundColor(mBackgroundColor);
 		}
 		if(root!=null && !showInPopWindow) {
-			Utils.addViewToParent(sl, root);
+			ViewUtils.addViewToParent(sl, root);
 		}
 	}
 	
@@ -335,7 +335,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 			if (showInPopWindow) {
 				showPop();
 			} else {
-				Utils.addViewToParent(settingsLayout, root, mViewAttachIdx);
+				ViewUtils.addViewToParent(settingsLayout, root, mViewAttachIdx);
 			}
 			settingsLayout.setVisibility(View.VISIBLE);
 		} else {
@@ -387,7 +387,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 				} else {
 					settingsLayout.setVisibility(View.GONE);
 					if (bShouldRemoveAfterDismiss) {
-						Utils.removeView(settingsLayout);
+						ViewUtils.removeView(settingsLayout);
 					}
 				}
 				if (settingsLayout.getAlpha()==0 && (isHorizontal?settingsLayout.getTranslationX():settingsLayout.getTranslationY())==0) {

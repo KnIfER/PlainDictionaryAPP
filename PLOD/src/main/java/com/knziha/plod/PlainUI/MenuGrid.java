@@ -15,7 +15,7 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.DescriptiveImageView;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 
 public class MenuGrid extends PlainAppPanel {
 	MainActivityUIBase a;
@@ -54,7 +54,7 @@ public class MenuGrid extends PlainAppPanel {
 		
 		ViewGroup svp = (ViewGroup) menu_grid.getChildAt(0);
 		//menu_grid.setTranslationY(TargetTransY + legalMenuTransY);
-		Utils.setOnClickListenersOneDepth(svp, a, 999, null);
+		ViewUtils.setOnClickListenersOneDepth(svp, a, 999, null);
 		//refreshMenuGridSize(true);
 		
 		menu_icon5 = settingsLayout.findViewById(R.drawable.abc_ic_menu_share_mtrl_alpha);
@@ -134,7 +134,7 @@ public class MenuGrid extends PlainAppPanel {
 				w -= GlobalOptions.density*18;
 			}
 			int maxWidth = Math.min(w, (int) (GlobalOptions.density*560));
-			if(Utils.actualLandscapeMode(a)) {
+			if(ViewUtils.actualLandscapeMode(a)) {
 				maxWidth = Math.min(lastHeight, maxWidth);
 			}
 			//menu_grid.setBackgroundResource(R.drawable.frame_top_rounded);

@@ -41,12 +41,12 @@ public class AdvancedNestScrollListview extends ListViewmy implements NestedScro
 
 	public AdvancedNestScrollListview(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		mChildHelper = Utils.getNestedScrollingChildHelper();
+		mChildHelper = ViewUtils.getNestedScrollingChildHelper();
 		//mChildHelper = new NestedScrollingChildHelper(null);
 	}
 	
 	public void ensureNewNestedScrollHelper() {
-		if (mChildHelper==Utils.getNestedScrollingChildHelper()) {
+		if (mChildHelper== ViewUtils.getNestedScrollingChildHelper()) {
 			mChildHelper = new NestedScrollingChildHelper(this);
 		}
 	}

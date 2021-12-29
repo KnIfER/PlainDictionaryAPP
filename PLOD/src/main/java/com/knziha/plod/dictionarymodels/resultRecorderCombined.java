@@ -10,7 +10,6 @@ import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
@@ -197,7 +196,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			int frameAt=webholder.getChildCount();
 			frameAt= Math.min(valueCount, frameAt);
 			if(rl.getParent()!=webholder) {
-				Utils.removeView(rl);
+				ViewUtils.removeView(rl);
 				webholder.addView(rl,frameAt);
 			}
 			//else

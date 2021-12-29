@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.LocaleList;
 import android.os.Message;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -100,10 +101,10 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
-import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
@@ -125,7 +126,7 @@ import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScreenListener;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
 import org.apache.commons.text.StringEscapeUtils;
@@ -150,6 +151,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import static androidx.appcompat.app.GlobalOptions.realWidth;
+import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_PLAIN;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_REGEX;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_WILDCARD;
@@ -157,7 +159,6 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAM
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEXTS;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
-import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
 
@@ -987,7 +988,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		ResizeNavigationIcon(toolbar);
 		
-		Utils.setOnClickListenersOneDepth(dialogHolder, this, 1, 0, null);
+		ViewUtils.setOnClickListenersOneDepth(dialogHolder, this, 1, 0, null);
 		cb1 = UIData.cb1;
 		UIData.cb2.setChecked(opt.getPinPicDictDialog());
 		UIData.cb3.setChecked(opt.getPicDictAutoSer());
@@ -1086,7 +1087,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		findViewById(R.id.toolbar_action1).setOnClickListener(this);
 		ivDeleteText = UIData.ivDeleteText;
 		ivBack = UIData.ivBack;
-		UIData.pad.setOnClickListener(Utils.DummyOnClick);
+		UIData.pad.setOnClickListener(ViewUtils.DummyOnClick);
 		etSearch = UIData.etSearch;
 		
 		super.findFurtherViews();
@@ -1206,7 +1207,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//CMN.Log("Main Ac further_loading!!!");
 		CachedBBSize=opt.getBottombarSize((int) getResources().getDimension(R.dimen._bottombarheight_));
 		
-		Utils.removeView(mlv);
+		ViewUtils.removeView(mlv);
 		View[] viewList = new View[]{mlv1, mlv, mlv2};
 		for (int i = 0; i < 3; i++) {
 			LinearLayout view = new LinearLayout(this);
@@ -1286,7 +1287,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 				// 重绘
 				mPageCanvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.SRC_IN);
-
+				
+				CMN.debug("复制网页画面::", currentDictionary, "$1.mWebView.getProgress()");
+				
 				if(painter==1) {
 					peruseView.webSingleholder.post(() -> {
 						//if(PageCache.isRecycled())PageCache = Bitmap.createBitmap(PageCache.getWidth(), PageCache.getHeight(), Bitmap.Config.ARGB_8888);
@@ -1387,7 +1390,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		//tofo
 		if(Build.VERSION.SDK_INT >= 24) {
-			Utils.listViewStrictScroll(true, mlv1, mlv2, lv);
+			ViewUtils.listViewStrictScroll(true, mlv1, mlv2, lv);
 		}
 		
 		setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
@@ -1723,6 +1726,32 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//tg
 		//etSearch.setText("happy");
 		//showT(""+currentDictionary.QueryByKey("woodie", SearchType.Normal, false, 0));
+		TestHelper.wakeUpAndUnlock(this);
+		
+		
+		CMN.Log("AdvancedNestScrollListview::");
+		try {
+			CMN.Log(ViewUtils.getField(AdvancedNestScrollListview.class, "mFastScroll"));
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+		try {
+			Class<?> aClass = AdvancedNestScrollListview.class;
+			while((aClass=aClass.getSuperclass())!=null) {
+				CMN.Log(aClass);
+				try {
+					CMN.Log(aClass, aClass.getDeclaredField("mFastScroll"));
+				} catch (NoSuchFieldException e) {
+				}
+			}
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+
+//		PowerManager pm= (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+//		wakeLock=pm.newWakeLock(PowerManager.ON_AFTER_RELEASE|PowerManager.PARTIAL_WAKE_LOCK,"kn:debug");
+//		wakeLock.acquire();
+
 		
 //		etSearch.setText("beat");
 //		etSearch.setText("vignette");
@@ -1849,6 +1878,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //				CMN.Log(e);
 //			}
 	}
+	PowerManager.WakeLock wakeLock;
 	
 	private void ResizeDictPicker() {
 		int littleIdeal = realWidth;
@@ -1926,7 +1956,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			@Override
 			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
 				if(lv.dimmed && UIData.viewpager.isListHold) {
-					Utils.dimScrollbar(lv, true);
+					ViewUtils.dimScrollbar(lv, true);
 				}
 				if(lastVisible!=-1)
 					if(lv.getChildAt(0)!=null) {
@@ -2493,10 +2523,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		fix_pw_color();
 		fix_dm_color();
 		if(pickDictDialog!=null) {
-			Utils.setListViewScrollbarColor(pickDictDialog.mRecyclerView, isChecked);
+			ViewUtils.setListViewScrollbarColor(pickDictDialog.mRecyclerView, isChecked);
 		}
 		if(isChecked) {
-			Utils.setListViewFastColor(lv, mlv1, mlv2, lv2);
+			ViewUtils.setListViewFastColor(lv, mlv1, mlv2, lv2);
 		}
 	}
 	
@@ -2629,7 +2659,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			
 			AllMenus.setItems(SingleContentMenu);
 			
-			Utils.addViewToParentUnique(presenter.rl, webSingleholder);
+			ViewUtils.addViewToParentUnique(presenter.rl, webSingleholder);
 			/* ensureContentVis */
 			ensureContentVis(webSingleholder, WHP, webholder);
 			
@@ -2694,7 +2724,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
 		if(another.getVisibility()==View.VISIBLE) {
-			Utils.removeAllViews(anotherholder);
+			ViewUtils.removeAllViews(anotherholder);
 			another.setVisibility(View.GONE);
 		}
 		
@@ -3298,11 +3328,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
 		ViewGroup contentHolder = bImmersive ? UIData.webcoord : root;
 		
-		if(Utils.removeIfParentBeOrNotBe(contentview, contentHolder,false)) {
+		if(ViewUtils.removeIfParentBeOrNotBe(contentview, contentHolder,false)) {
 			if(mayDelay) return mayDelay;
 			if(opt.getAnimateContents()) {
 				Animation animation = AnimationUtils.loadAnimation(this, R.anim.content_in);
-				animation.setAnimationListener(new Utils.BaseAnimationListener(){
+				animation.setAnimationListener(new ViewUtils.BaseAnimationListener(){
 					@Override
 					public void onAnimationEnd(Animation animation) {
 						if(isContentViewAttached()) {
@@ -3368,7 +3398,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	private void PlaceContentBottombar(boolean bImmersive) {
 		ViewGroup contentHolder = bImmersive ? UIData.webcoord : contentview;
-		if(Utils.removeIfParentBeOrNotBe(bottombar2, contentHolder, false)) {
+		if(ViewUtils.removeIfParentBeOrNotBe(bottombar2, contentHolder, false)) {
 			contentHolder.addView(bottombar2, bImmersive?3:1);
 			if(bImmersive) {
 				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams) bottombar2.getLayoutParams());
@@ -3392,11 +3422,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			bottombar.setVisibility(View.VISIBLE);
 
 			//xxroot.removeView(contentview);
-			Utils.removeIfParentBeOrNotBe(contentview, null, false);
+			ViewUtils.removeIfParentBeOrNotBe(contentview, null, false);
 			if(bImmersive) {
-				Utils.removeIfParentBeOrNotBe(bottombar2, null, false);
+				ViewUtils.removeIfParentBeOrNotBe(bottombar2, null, false);
 			}
-			Utils.removeIfParentBeOrNotBe(PhotoPagerHolder, null, false);
+			ViewUtils.removeIfParentBeOrNotBe(PhotoPagerHolder, null, false);
 			webcontentlist.canClickThrough=false;
 //		}
 		if(bImmersive) {
@@ -3420,14 +3450,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	@Override
 	void contentviewAddView(View v, int i) {
-		Utils.addViewToParent(v, contentview, i);
+		ViewUtils.addViewToParent(v, contentview, i);
 	}
 	
 	@Override
 	public void AttachContentViewForDB() {
 		//todo preserve context
 		CMN.Log("AttachContentViewForDB");
-		if(Utils.addViewToParent(contentview, PeruseViewAttached()?
+		if(ViewUtils.addViewToParent(contentview, PeruseViewAttached()?
 				peruseView.peruseF
 				:UIData.secondHolder
 				)){
@@ -3587,7 +3617,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			FragmentTransaction transaction = fragmentManager.beginTransaction();
 			pickDictDialog = new DictPicker(this);
 			transaction.add(R.id.dialog_, pickDictDialog);
-			findViewById(R.id.dialog_).setOnClickListener(Utils.DummyOnClick);
+			findViewById(R.id.dialog_).setOnClickListener(ViewUtils.DummyOnClick);
 			transaction.commit();
 			root.postDelayed(() -> pickDictDialog.PostEnabled=false, 1000);
 			//pickDictDialog.PostEnabled=false;
@@ -3669,7 +3699,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					closeMenu=ret=true;
 				} else {
 					boolean val=systemIntialized?opt.toggleClickSearchEnabled():opt.getClickSearchEnabled();
-					item.setTitle(Utils.decorateSuffixTick(item.getTitle(), val));
+					item.setTitle(ViewUtils.decorateSuffixTick(item.getTitle(), val));
 					if(systemIntialized) {
 						toggleClickSearch(val);
 					}
@@ -3696,7 +3726,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			case R.id.toolbar_action11:{//切换着色
 				if(isLongClicked){ ret=false; break;}
-				item.setTitle(Utils.decorateSuffixTick(item.getTitle(),TintWildResult.first=systemIntialized?opt.toggleTintWildRes():opt.getTintWildRes()));
+				item.setTitle(ViewUtils.decorateSuffixTick(item.getTitle(),TintWildResult.first=systemIntialized?opt.toggleTintWildRes():opt.getTintWildRes()));
 				if(systemIntialized) {
 					adaptermy3.notifyDataSetChanged();
 				}
@@ -3988,7 +4018,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			/*  词典选择器的动画效果(消失)  */
 			if(animaExit==null) {
 				animaExit = AnimationUtils.loadAnimation(this, animationRes);
-				animaExit.setAnimationListener(new Utils.BaseAnimationListener(){
+				animaExit.setAnimationListener(new ViewUtils.BaseAnimationListener(){
 					@Override public void onAnimationEnd(Animation animation) {
 						dialogHolder.setVisibility(View.GONE);
 					}

@@ -23,7 +23,6 @@ import android.view.MotionEvent;
 
 import androidx.core.view.NestedScrollingChild;
 import androidx.core.view.NestedScrollingChildHelper;
-import androidx.core.view.ViewCompat;
 
 /**
  * https://github.com/tobiasrohloff/NestedScrollWebView/edit/master/lib/src/main/java/com/tobiasrohloff/view/NestedScrollWebView.java
@@ -43,7 +42,7 @@ public class AdvancedNestScrollWebView extends WebViewmy implements NestedScroll
 
 	public AdvancedNestScrollWebView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		mChildHelper = Utils.getNestedScrollingChildHelper();
+		mChildHelper = ViewUtils.getNestedScrollingChildHelper();
 		//mChildHelper = new NestedScrollingChildHelper(null);
 	}
 

@@ -1,21 +1,34 @@
 package com.knziha.plod.plaindict;
 
+import android.app.KeyguardManager;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.os.PowerManager;
 
 import androidx.core.text.HtmlCompat;
 
+import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.text.BreakIteratorHelper;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.Random;
-
-import com.knziha.plod.db.LexicalDBHelper;
 
 import static com.knziha.plod.plaindict.MainActivityUIBase.digestKey;
 import static com.knziha.plod.plaindict.MainActivityUIBase.hashKey;
@@ -141,5 +154,78 @@ public class TestHelper {
 		long id = db.insert(LexicalDBHelper.TABLE_BOOK_ANNOT_v2, null, values);
 		CMN.Log("最后插入：", id, "插入时间：", CMN.pt());
 		
+	}
+	
+	public static void testRhino(MainActivityUIBase mainActivityUIBase) {
+//		org.mozilla.javascript.Context cx = org.mozilla.javascript.Context.enter();
+//		try {
+//			// Initialize the standard objects (Object, Function, etc.)
+//			// This must be done before scripts can be executed. Returns
+//			// a scope object that we use in later calls.
+//			org.mozilla.javascript.Scriptable scope = cx.initStandardObjects();
+//
+//			// Collect the arguments into a single string.
+//			String s = "var a=1;";
+//
+//			// Now evaluate the string we've colected.
+//			Object result = cx.evaluateString(scope, s, "<cmd>", 1, null);
+//
+//			// Convert the result to a string and print it.
+//			CMN.Log(result);
+//
+//		} finally {
+//			// Exit from the context.
+//			org.mozilla.javascript.Context.exit();
+//		}
+	}
+	
+	public static void wakeUpAndUnlock(Context context){
+		KeyguardManager km= (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+		KeyguardManager.KeyguardLock kl = km.newKeyguardLock("unLock");           //这句 过期了。。但是整个代码 在 我的 htc android4.4 还是能管用的
+		//解锁
+		kl.disableKeyguard();
+		//获取电源管理器对象
+		PowerManager pm=(PowerManager) context.getSystemService(Context.POWER_SERVICE);
+		//获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
+		PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_DIM_WAKE_LOCK,"kn:debug");
+		//点亮屏幕
+		wl.acquire();
+		//释放
+		wl.release();
+	}
+	
+	public static String RotateEncrypt(String input, boolean dec) {
+		final List<Integer> Vowels = new ArrayList<>(8);
+		final List<Integer> Sonants = new ArrayList<>(32);
+		for (int i = 0; i < 5; i++) Vowels.add(i*2);
+		for (Integer i = 0; i < 32; i++) if (!Vowels.contains(i)) Sonants.add(i);
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < input.length(); i++) {
+			char c = input.charAt(i), b=0;
+			if (c>=97)
+			{
+				if(c<=122)b = 97;
+			}
+			else if (c>=65)
+			{
+				if(c<=90)b = 65;
+			}
+			else if (c==63||c==61)
+			{
+				c = (char) (dec?61:63);
+			}
+			if (b>0) {
+				int val = c-b;
+				int vid=Vowels.indexOf(val);
+				if(vid>=0) {
+					c = (char) (b+Vowels.get((vid+(dec?3:2))%5));
+				} else {
+					vid=Sonants.indexOf(val);
+					c = (char) (b+Sonants.get((vid+(dec?11:10))%21));
+				}
+			}
+			sb.append(c);
+		}
+		return sb.toString();
 	}
 }

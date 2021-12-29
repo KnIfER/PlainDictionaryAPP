@@ -18,7 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 
 public class ServiceEnhancer extends Service {
 	private NotificationManager notificationManager;
@@ -60,7 +60,7 @@ public class ServiceEnhancer extends Service {
 	
 		notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	
-		if(Utils.bigMountain) {
+		if(ViewUtils.bigMountain) {
 			channel = new NotificationChannel(Id, Name, NotificationManager.IMPORTANCE_HIGH);
 			notificationManager.createNotificationChannel(channel);
 		}

@@ -1,7 +1,7 @@
 package com.knziha.plod.plaindict;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
+import android.util.AndroidException;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -9,14 +9,17 @@ import android.widget.TextView;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.widgets.ViewUtils;
 
 import org.knziha.metaline.Metaline;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+
+import static com.knziha.plod.plaindict.TestHelper.RotateEncrypt;
 
 
 //common
@@ -72,7 +75,7 @@ public class CMN{
 					if (o1 instanceof Exception) {
 						Exception e = ((Exception)o[i]);
 						msg.append(e);
-						if (o1 instanceof PackageManager.NameNotFoundException) {
+						if (o1 instanceof AndroidException) {
 							HonestCredits-=25;
 						}
 						if(!GlobalOptions.debug && o.length==1) {
@@ -84,46 +87,45 @@ public class CMN{
 							msg.append(s);
 							continue;
 						}
-					}
-					List oi = null;
-					String classname = o1.getClass().getName();
-					switch (classname) {
-						case "[I": {
-							int[] arr = (int[]) o1;
-							for (int os : arr) {
-								msg.append(os);
-								msg.append(", ");
+					} else if(o1 instanceof String) {
+						if (((String)o1).startsWith("$")) {
+							try {
+								o1 = ViewUtils.execSimple(((String)o1).startsWith("$",1)?
+										RotateEncrypt((String)o1, true):(String)o1, null, o);
+							} catch (Exception e) {
+								e.printStackTrace();
 							}
-							continue;
-						}
-						case "[Ljava.lang.String;": {
-							String[] arr = (String[]) o1;
-							for (String os : arr) {
-								msg.append(os);
-								msg.append(", ");
-							}
-							continue;
-						}
-						case "[S": {
-							short[] arr = (short[]) o1;
-							for (short os : arr) {
-								msg.append(os);
-								msg.append(", ");
-							}
-							continue;
-						}
-						case "[B": {
-							byte[] arr = (byte[]) o1;
-							for (byte os : arr) {
-								msg.append(Integer.toHexString(os));
-								msg.append(", ");
-							}
-							continue;
 						}
 					}
-					
+					if (o1!=null && o1.getClass().isArray()) {
+						String classname = o1.getClass().getName();
+						if (classname.length()==2) {
+							switch (classname.charAt(1)) {
+								case 'B': {
+									o1 = msg.append(Arrays.toString((byte[]) o1));
+								} break;
+								case 'D': {
+									o1 = msg.append(Arrays.toString((double[]) o1));
+								} break;
+								case 'F': {
+									o1 = msg.append(Arrays.toString((float[]) o1));
+								} break;
+								case 'L': {
+									o1 = msg.append(Arrays.toString((long[]) o1));
+								} break;
+								case 'I': {
+									o1 = msg.append(Arrays.toString((int[]) o1));
+								} break;
+								case 'S': {
+									o1 = msg.append(Arrays.toString((short[]) o1));
+								} break;
+							}
+						} else {
+							o1 = Arrays.toString((Object[]) o1);
+						}
+					}
 				}
-				msg.append(o[i]);
+				msg.append(o1);
 				msg.append(sep);
 			}
 		String message = msg.toString();
@@ -252,4 +254,5 @@ public class CMN{
 	public static void debug(Object...o) {
 		if (BuildConfig.isDebug) Log(o);
 	}
+	
 }

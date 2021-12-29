@@ -91,7 +91,7 @@ public class DragScrollBar extends RelativeLayout{
 	SamsungLikeHandle setUpHandle(Context context, Boolean lightOnTouch){
 		handleThumb = new SamsungLikeHandle(context, 0);
 		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(desiredWidth,
-				desiredHeight=Utils.getDP(36, this));
+				desiredHeight= ViewUtils.getDP(36, this));
 		lp.addRule(ALIGN_PARENT_RIGHT);
 		handleThumb.setLayoutParams(lp);
 		handleThumb.setVisibility(View.GONE);

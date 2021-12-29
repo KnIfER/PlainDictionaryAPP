@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 import android.webkit.WebView;
 
@@ -25,7 +26,7 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
@@ -220,7 +221,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	private void parseJsonFile(Context context) throws IOException {
-		website = JSONObject.parseObject(Utils.fileToString(context, f));
+		website = JSONObject.parseObject(ViewUtils.fileToString(context, f));
 		String _host = website.getString("host");
 		if(_host==null) _host=getRandomHost();
 		if(_host.endsWith("/")) _host=_host.substring(0, _host.length()-1);
@@ -1268,13 +1269,13 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 
 	public void onProgressChanged(BookPresenter bookPresenter, WebViewmy  mWebView, int newProgress) {
-		CMN.debug("onProgressChanged", newProgress);
+		CMN.debug("onProgressChanged", newProgress, mWebView.getProgress());
 		if(mWebView.titleBar!=null) {
 			Drawable d = mWebView.titleBar.getBackground();
 			int start = d.getLevel();
 			int end = newProgress*100;
 			if(end<start) end=start+10;
-			if(progressProceed !=null) {
+			if(progressProceed!=null) {
 				progressProceed.cancel();
 				progressProceed.setIntValues(start, end);
 			} else {
@@ -1283,34 +1284,37 @@ public class PlainWeb extends DictionaryAdapter {
 			}
 			progressProceed.start();
 		}
-		if(newProgress>5) {
-			if(GlobalOptions.isDark)
-			{
+		if(GlobalOptions.isDark && newProgress>5) {
+			if (Build.VERSION.SDK_INT>=21) { //todo webview版本 23 未测试
+				mWebView.evaluateJavascript("document._pdkn||app.loadJs(sid.get(), 'dk.js')", null);
+			} else {
 				mWebView.evaluateJavascript(DarkModeIncantation, null);
 			}
 		}
-		if(newProgress>89){
-//			mWebView.evaluateJavascript(jsCode, null);
+		if(newProgress>89) {
 			bookPresenter.a.myWebClient.onPageFinished(mWebView, mWebView.getUrl());
 		}
-		if(newProgress>=98){
-			if(GlobalOptions.debug) CMN.Log("newProgress>=98", newProgress);
-			fadeOutProgressbar(bookPresenter, mWebView, newProgress>=99);
+		else if(newProgress>=85) {
+			//fadeOutProgressbar(bookPresenter, (WebViewmy) mWebView, newProgress>87);
+			mWebView.postFinished();
 		}
-		if(newProgress>=20){
-			//view.evaluateJavascript(projs, null);
-		}
+//		if(newProgress>=98){
+//			CMN.debug("newProgress>=98", newProgress);
+//			fadeOutProgressbar(bookPresenter, mWebView, newProgress>=99);
+//		}
 	}
 
 	/** 接管进入黑暗模式、编辑模式 */
-	public void onPageFinished(BookPresenter bookPresenter, WebView view, String url, boolean updateTitle) {
+	public void onPageFinished(BookPresenter bookPresenter, WebViewmy mWebView, String url, boolean updateTitle) {
 		if(GlobalOptions.debug) CMN.Log("chromium", "web  - onPageFinished", currentUrl);
-		fadeOutProgressbar(bookPresenter, (WebViewmy) view, updateTitle);
-		currentUrl=view.getUrl();
-		view.evaluateJavascript(jsLoader, null);
-		if (jsCode != null) view.evaluateJavascript(jsCode, null);
-		if (onload != null) view.evaluateJavascript(onload, null);
-		if (onstart != null) view.evaluateJavascript(onstart, null);
+		mWebView.removePostFinished();
+		fadeOutProgressbar(bookPresenter, (WebViewmy) mWebView, updateTitle);
+		currentUrl=mWebView.getUrl();
+		mWebView.evaluateJavascript(jsLoader, null);
+		if (jsCode != null) mWebView.evaluateJavascript(jsCode, null);
+		if (onload != null) mWebView.evaluateJavascript(onload, null);
+		if (onstart != null) mWebView.evaluateJavascript(onstart, null);
+		//mWebView.evaluateJavascript("window.loadJsCb=function(){erdo.init()};app.loadJs(sid.get(), 'erdo.js')", null);
 	}
 
 	private void fadeOutProgressbar(BookPresenter bookPresenter, WebViewmy mWebView, boolean updateTitle) {

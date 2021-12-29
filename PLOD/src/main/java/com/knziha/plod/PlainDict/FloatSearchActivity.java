@@ -39,7 +39,7 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.SplitView;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -118,7 +118,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	@Override
 	public void DetachContentView(boolean leaving) {
 		if(DBrowser!=null) {
-			if(Utils.removeIfParentBeOrNotBe(sp_main, main, false)){
+			if(ViewUtils.removeIfParentBeOrNotBe(sp_main, main, false)){
 				main.addView(sp_main, 2);
 			}
 		}
@@ -132,7 +132,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	@Override
 	public void AttachContentViewForDB() {
 		//todo preserve context
-		Utils.addViewToParent(sp_main, root);
+		ViewUtils.addViewToParent(sp_main, root);
 	}
 	
 	private int touch_id;
@@ -736,7 +736,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		findViewById(R.id.toolbar_action1).setOnClickListener(this);
 		ivDeleteText = toolbar.findViewById(R.id.ivDeleteText);
 		ivBack = toolbar.findViewById(R.id.ivBack);
-		findViewById(R.id.pad).setOnClickListener(Utils.DummyOnClick);
+		findViewById(R.id.pad).setOnClickListener(ViewUtils.DummyOnClick);
 		etSearch = findViewById(R.id.etSearch);
 	}
 	
@@ -1002,7 +1002,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         	
 			current.initViewsHolder(FloatSearchActivity.this);
 			current.mWebView.fromCombined=0;
-			Utils.addViewToParentUnique(current.rl, webSingleholder);
+			ViewUtils.addViewToParentUnique(current.rl, webSingleholder);
 	
 			current.renderContentAt(-1,RENDERFLAG_NEW,0,null, getMergedClickPositions(position));
 			currentKeyText = current.currentDisplaying;
@@ -1040,7 +1040,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 		if(another.getVisibility()==View.VISIBLE) {
-			Utils.removeAllViews(another==WHP?(ViewGroup) WHP.getChildAt(0):another);
+			ViewUtils.removeAllViews(another==WHP?(ViewGroup) WHP.getChildAt(0):another);
 			another.setVisibility(View.GONE);
 		}
 		

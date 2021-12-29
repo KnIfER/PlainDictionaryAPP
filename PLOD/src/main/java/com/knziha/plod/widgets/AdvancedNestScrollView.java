@@ -19,7 +19,6 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 
 import androidx.core.view.NestedScrollingChild;
 import androidx.core.view.NestedScrollingChildHelper;
@@ -45,7 +44,7 @@ public class AdvancedNestScrollView extends ScrollViewmy implements NestedScroll
 	public AdvancedNestScrollView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		//mChildHelper = new NestedScrollingChildHelper(null);
-		mChildHelper = Utils.getNestedScrollingChildHelper();
+		mChildHelper = ViewUtils.getNestedScrollingChildHelper();
 	}
 
 	@Override

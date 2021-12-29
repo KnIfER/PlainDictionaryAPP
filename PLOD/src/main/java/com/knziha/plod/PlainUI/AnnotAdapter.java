@@ -25,7 +25,7 @@ import com.knziha.plod.plaindict.R;
 
 import com.knziha.plod.db.LexicalDBHelper;
 
-import static com.knziha.plod.widgets.Utils.EmptyCursor;
+import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
 /**
  * Created by KnIfER on 2021/11/16.

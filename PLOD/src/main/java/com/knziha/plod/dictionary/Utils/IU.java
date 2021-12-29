@@ -2,7 +2,6 @@ package com.knziha.plod.dictionary.Utils;
 
 import android.text.TextUtils;
 
-import java.io.IOException;
 import java.util.regex.Pattern;
 
 public class IU {
@@ -77,7 +76,13 @@ the valueOf method.
     if (s == null) {
     	return val;
     }
-
+	if (s.startsWith("0x")) {
+		try {
+			return Integer.parseInt(s.substring(2), 16);
+		} catch (NumberFormatException e) {
+			return val;
+		}
+	}
     int result = 0;
     boolean negative = false;
     int i = 0, len = s.length();

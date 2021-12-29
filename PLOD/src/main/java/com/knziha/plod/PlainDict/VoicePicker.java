@@ -25,9 +25,8 @@ import androidx.fragment.app.DialogFragment;
 
 import com.knziha.plod.dictionarymanager.files.ArrayTreeList;
 import com.knziha.plod.settings.DevoloperOptions;
-import com.knziha.plod.settings.MainProgram;
 import com.knziha.plod.widgets.Framer;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -188,7 +187,7 @@ public class VoicePicker extends DialogFragment
 		super.onActivityCreated(savedInstanceState);
 		a=(MainActivityUIBase) getActivity();
 		if(GlobalOptions.isDark) {
-			Utils.setListViewScrollbarColor(mListView, true);
+			ViewUtils.setListViewScrollbarColor(mListView, true);
 		}
 	}
 

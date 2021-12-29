@@ -70,7 +70,7 @@ import com.knziha.plod.widgets.SimpleDialog;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.SplitView.PageSliderInf;
 import com.knziha.plod.widgets.SplitViewGuarder;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
 import org.apache.commons.lang3.StringUtils;
@@ -86,7 +86,7 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
 import static com.knziha.plod.plaindict.PDICMainActivity.ResizeNavigationIcon;
-import static com.knziha.plod.widgets.Utils.EmptyCursor;
+import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
 /** 翻阅模式，以词典为单位，搜索词为中心，一一览读。<br><br/> */
 public class PeruseView extends DialogFragment implements OnClickListener, OnMenuItemClickListener, OnLongClickListener{
@@ -211,7 +211,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 		if(shunt) {
 			//CMN.Log("复用视图");
-			Utils.removeIfParentBeOrNotBe(peruse_content, null, false);
+			ViewUtils.removeIfParentBeOrNotBe(peruse_content, null, false);
 			return container;
 		}
         
@@ -305,7 +305,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		
         ivDeleteText.setOnClickListener(this);
         
-        Utils.setOnClickListenersOneDepth(PeruseTorso, this, 1, 2, null);
+        ViewUtils.setOnClickListenersOneDepth(PeruseTorso, this, 1, 2, null);
         
 		itemWidth = (int) (lvHeaderItem_length * density);
         itemHeight = (int) (lvHeaderItem_height * density);
@@ -574,11 +574,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 	
 	public boolean isWindowDetached() {
-		return isDetached()||getDialog()==null||Utils.isWindowDetached(getDialog().getWindow());
+		return isDetached()||getDialog()==null|| ViewUtils.isWindowDetached(getDialog().getWindow());
 	}
 	
 	public boolean removeContentViewIfAttachedToRoot() {
-		if(contentview.getParent()!=null && Utils.removeIfParentBeOrNotBe(contentview, main_pview_layout, false)) {
+		if(contentview.getParent()!=null && ViewUtils.removeIfParentBeOrNotBe(contentview, main_pview_layout, false)) {
 			cvpolicy=false;
 			return true;
 		}
@@ -723,7 +723,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 		if(Build.VERSION.SDK_INT >= 24)
         if(true) {//a.opt.is_strict_scroll()
-	        Utils.listViewStrictScroll(true, lv1, lv2);
+	        ViewUtils.listViewStrictScroll(true, lv1, lv2);
         }
 		
         LvHeadline.setColumnWidth((int) (lvHeaderItem_length * density));
@@ -837,7 +837,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     		mWebView.getSettings().setSupportZoom(true);
 			perusehandler = new BookPresenter.AppHandler(a.currentDictionary);
 			mWebView.addJavascriptInterface(perusehandler, "app");
-			Utils.setOnClickListenersOneDepth(pageView.lltoolbar, this, 999, null);
+			ViewUtils.setOnClickListenersOneDepth(pageView.lltoolbar, this, 999, null);
 
 	        toolbar_web= pageView.lltoolbar;
 			mWebView.toolbar_title = pageView.toolbarTitle;
@@ -1003,7 +1003,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 	
 	public void prepareProgressBar(View progressBar) {
-		Utils.addViewToParent(progressBar, contentview, 0);
+		ViewUtils.addViewToParent(progressBar, contentview, 0);
 	}
 	
 	public void refreshUIColors(int MainBackground) {
@@ -1127,7 +1127,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				mWebView.clearFocus();
 				return;
 			}
-			if(Utils.removeIfParentBeOrNotBe(a.popupContentView, root, true)){
+			if(ViewUtils.removeIfParentBeOrNotBe(a.popupContentView, root, true)){
 				a.popupContentView = null;
 				a.popupGuarder.setVisibility(View.GONE);
 				return;
@@ -1137,7 +1137,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				return;
 			}
 		}
-		if(Utils.removeIfParentBeOrNotBe(contentview, main_pview_layout, true)){
+		if(ViewUtils.removeIfParentBeOrNotBe(contentview, main_pview_layout, true)){
 			return;
 		}
 		hide();
@@ -1550,12 +1550,12 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					if(a.opt.getPeruseBottombarOnBottom() ^ (webcontentlist.getChildAt(webcontentlist.getChildCount()-1).getId()==R.id.bottombar2))
                     	webcontentlist.SwitchingSides();
 					webcontentlist.setPrimaryContentSizeUnChanged(CachedBBSize,true);
-					Utils.addViewToParent(contentview, mlp);
+					ViewUtils.addViewToParent(contentview, mlp);
             	} else {
             		if(a.opt.getBottombarOnBottom() ^ (webcontentlist.getChildAt(0).getId()!=R.id.bottombar2))
                     	webcontentlist.SwitchingSides();
 					webcontentlist.setPrimaryContentSizeUnChanged(a.CachedBBSize,true);
-            		Utils.addViewToParent(contentview, main_pview_layout);
+            		ViewUtils.addViewToParent(contentview, main_pview_layout);
             	}
     			
             	lastClickedPos = pos;
@@ -1803,12 +1803,12 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
                 if(a.opt.getPeruseBottombarOnBottom() ^ (webcontentlist.getChildAt(webcontentlist.getChildCount()-1).getId()==R.id.bottombar2))
                 	webcontentlist.SwitchingSides();
 				webcontentlist.setPrimaryContentSize/*UnChanged*/(CachedBBSize,true);
-        		Utils.addViewToParent(contentview, slp);
+        		ViewUtils.addViewToParent(contentview, slp);
         	} else {
         		if(a.opt.getBottombarOnBottom() ^ (webcontentlist.getChildAt(0).getId()!=R.id.bottombar2))
                 	webcontentlist.SwitchingSides();
 				webcontentlist.setPrimaryContentSize/*UnChanged*/(a.CachedBBSize,true);
-				Utils.addViewToParent(contentview, main_pview_layout);
+				ViewUtils.addViewToParent(contentview, main_pview_layout);
         	}
 			//a.showT(pos+":"+lastClickedPos);
         	lastClickedPos = pos;

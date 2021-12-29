@@ -64,7 +64,7 @@ import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -560,7 +560,7 @@ public class Drawer extends Fragment implements
 							TextView tv = d.findViewById(android.R.id.message);
 							a.opt.setAsLinkedTextView(tv, false);
 							tv.setTextSize(GlobalOptions.isLarge?20:19);
-							markwon.setMarkdown(tv, Utils.fileToString(a, new File(CMN.AssetTag, "rizhi")));
+							markwon.setMarkdown(tv, ViewUtils.fileToString(a, new File(CMN.AssetTag, "rizhi")));
 						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					
 					if(false)

@@ -57,7 +57,6 @@ import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.CardListItemBinding;
 import com.knziha.plod.widgets.ScrollViewmy;
-import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTNode;
@@ -75,7 +74,7 @@ import com.knziha.plod.db.LexicalDBHelper;
 
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
-import static com.knziha.plod.widgets.Utils.EmptyCursor;
+import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 import static com.knziha.plod.db.LexicalDBHelper.FIELD_VISIT_TIME;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
 
@@ -314,7 +313,7 @@ public class DBroswer extends Fragment implements
 				return true;
 			}});
 		
-		Utils.setOnClickListenersOneDepth(sideBar=_main_clister_layout.findViewById(R.id.sideBar), this, 2, 0, null);
+		ViewUtils.setOnClickListenersOneDepth(sideBar=_main_clister_layout.findViewById(R.id.sideBar), this, 2, 0, null);
 		
 		toolbar_action1=_main_clister_layout.findViewById(R.id.toolbar_action1);
 		toolbar_action1.setColorFilter(GlobalOptions.BLACK);
@@ -322,7 +321,7 @@ public class DBroswer extends Fragment implements
 		tg2 = _main_clister_layout.findViewById(R.id.tg2);
 		//main_clister_layout.findViewById(R.id.choosed).setOnLongClickListener(this);
 
-		_main_clister_layout.findViewById(R.id.browser_widget15).setOnClickListener(Utils.DummyOnClick);
+		_main_clister_layout.findViewById(R.id.browser_widget15).setOnClickListener(ViewUtils.DummyOnClick);
 		_main_clister_layout.findViewById(R.id.browser_widget14).setOnClickListener(this);
 		_main_clister_layout.findViewById(R.id.browser_widget13).setOnClickListener(this);
 

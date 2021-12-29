@@ -151,5 +151,6 @@ dependencies {
     implementation "io.noties.markwon:core:4.5.0"
     //api ('com.github.barteksc:pdfium-android:1.9.0')
 
+    implementation 'com.bytedance.boost_multidex:boost_multidex:1.0.1'
 
 }

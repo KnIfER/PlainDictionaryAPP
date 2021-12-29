@@ -72,7 +72,7 @@ import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.RLContainerSlider;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
@@ -1043,7 +1043,7 @@ function debug(e){console.log(e)};
 			setWebLongClickListener(mWebView, a);
 
 			toolbar = pageView.lltoolbar;
-			Utils.setOnClickListenersOneDepth(toolbar, this, 999, null);
+			ViewUtils.setOnClickListenersOneDepth(toolbar, this, 999, null);
 			
 			mWebView.IBC = IBC;
 			mWebView.titleBar = (AdvancedNestScrollLinerView) toolbar;
@@ -3677,7 +3677,7 @@ function debug(e){console.log(e)};
 				mTBtnStates = 0;
 				initViewsHolder(a);
 				mWebView.fromCombined = wv.fromCombined;
-				if (Utils.replaceView(this.rl, rl).getParent()!=null) {
+				if (ViewUtils.replaceView(this.rl, rl).getParent()!=null) {
 					renderContentAt(-1, RENDERFLAG_NEW, wv.frameAt, null, wv.currentRendring);
 				}
 				checkTint();

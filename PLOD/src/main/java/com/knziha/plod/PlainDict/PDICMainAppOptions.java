@@ -1,7 +1,6 @@
 package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -23,16 +22,15 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.XYTouchRecorder;
 
-import org.knziha.metaline.Metaline;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.knziha.metaline.Metaline;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 
 import static com.knziha.plod.plaindict.MainActivityUIBase.SessionFlag;
@@ -533,8 +531,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	public boolean setInDarkMode(boolean val) {
 		GlobalOptions.isDark |= val;
-		if(Utils.mRectPaint!=null) {
-			Utils.mRectPaint.setColor(GlobalOptions.isDark?0x3fffffff:Utils.FloatTextBG);
+		if(ViewUtils.mRectPaint!=null) {
+			ViewUtils.mRectPaint.setColor(GlobalOptions.isDark?0x3fffffff: ViewUtils.FloatTextBG);
 		}
 		updateFFAt(0x80000,val);//0x‭80000
 		return val;
@@ -1538,7 +1536,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		ThirdFlag |= ((long)(val & 3)) << 22;
 		return val;
 	}
-
+	
+	int calcPseudoCode(int input) {
+		// 1721624788 -> 31
+		if(input%73==0xf&&input%101==0x63) {
+			return 1721624788%64+0xb;
+		}
+		return input%0xf;
+	}
+	
 	/** x-axis fit/snap preference.
 	 * @return integer: 0=center 1=left 2=right <br/>
 	 */

@@ -195,7 +195,6 @@ import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.TwoColumnAdapter;
-import com.knziha.plod.widgets.Utils;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
@@ -234,6 +233,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -701,7 +701,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							CMN.Log("auto_search!......");
 							lv_matched=false;
 							if(prvNxt && opt.getDimScrollbarForPrvNxt()) {
-								Utils.dimScrollbar(lv, false);
+								ViewUtils.dimScrollbar(lv, false);
 							}
 							tw1.onTextChanged(etSearch.getText(), -1, -1, -100);
 							//lv.setFastScrollEnabled(true);
@@ -752,20 +752,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				lvHeaderView = new FrameLayout(this);
 				lvHeaderView.setLayoutParams(new LayoutParams(-1, -2));
 			}
-			Utils.addViewToParent(lvHeaderView, (ViewGroup)mlv.getParent(), 0);
+			ViewUtils.addViewToParent(lvHeaderView, (ViewGroup)mlv.getParent(), 0);
 			
 			if(buildIndex==null) {
 				buildIndex = new BuildIndexInterface(this, IndexingBooks);
 				buildIndexPane = new WeakReference<>(buildIndex);
 			}
-			Utils.addViewToParent(buildIndex.buildIndexLayout, lvHeaderView);
+			ViewUtils.addViewToParent(buildIndex.buildIndexLayout, lvHeaderView);
 			double rootHeight = root.getHeight();
 			if(rootHeight==0) rootHeight=dm.heightPixels*5.8/6;
 			buildIndex.buildIndexLayout.getLayoutParams().height = (int) (rootHeight*4.5/6);
 			buildIndex.notifyDataSetChanged();
 			//buildIndex.buildIndexLayout.getLayoutParams().height = (int) Math.max(root.getHeight()*4.5/6, GlobalOptions.density*50);
 		} else if(buildIndex!=null) {
-			Utils.removeIfParentBeOrNotBe(buildIndex.buildIndexLayout, lvHeaderView, true);
+			ViewUtils.removeIfParentBeOrNotBe(buildIndex.buildIndexLayout, lvHeaderView, true);
 		}
 	}
 	
@@ -1553,7 +1553,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (isNewHolder) {
 							popupWebView.fromCombined = 2;
 							fix_pw_color();
-							popupContentView.setOnClickListener(Utils.DummyOnClick);
+							popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
 							FrameLayout.LayoutParams lp = ((FrameLayout.LayoutParams) popupContentView.getLayoutParams());
 							lp.height = popupMoveToucher.FVH_UNDOCKED = (int) (dm.heightPixels * 5.0 / 12 - getResources().getDimension(R.dimen._20_));
 							if (mPopupContentView != null && !isInit) {
@@ -1834,7 +1834,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (popupWebView == null) {
 			popupContentView = (ViewGroup) getLayoutInflater()
 					.inflate(R.layout.float_contentview_basic, root, false);
-			popupContentView.setOnClickListener(Utils.DummyOnClick);
+			popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
 			popupToolbar = (ViewGroup) popupContentView.getChildAt(0);
 			PopupPageSlider = (RLContainerSlider) popupContentView.getChildAt(1);
 			WebViewmy mPopupWebView = (WebViewmy) PopupPageSlider.getChildAt(0);
@@ -2288,7 +2288,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} else {
 				mAutoReadProgressAnimator = ObjectAnimator.ofInt(d,"level", 0, 10000);
 				mAutoReadProgressAnimator.setDuration(AutoBrowseTimeOut);
-				mAutoReadProgressAnimator.addListener(new Utils.BaseAnimatorListener() {
+				mAutoReadProgressAnimator.addListener(new ViewUtils.BaseAnimatorListener() {
 					@Override public void onAnimationEnd(Animator animation) {
 						performAutoReadProcess();
 					}
@@ -2368,7 +2368,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		hdl.removeMessages(332211);
 		if(mAutoReadProgressAnimator!=null){
 			mAutoReadProgressAnimator.pause();
-			Utils.removeIfParentBeOrNotBe(mAutoReadProgressView, null, false);
+			ViewUtils.removeIfParentBeOrNotBe(mAutoReadProgressView, null, false);
 		}
 	}
 
@@ -2542,6 +2542,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public native int getPseudoCode(int sigHash);
 	
+	
+//	/**{android.app.ActivityThread}.sPackageManager = null
+//var pm = $.getPackageManager()
+//var packageName = $.getPackageName()
+//var info = pm.getPackageInfo[, int](packageName, 0x40)
+//var signature0 = info.signatures[0];
+//var hashcode = signature0.hashCode();*/
+//	@Metaline(trim=false)
+//	String testVerifyCode = "";
+	
+//	/**{android.app.ActivityThread}.sPackageManager = null
+//var packageName = $.getPackageName()
+//var info = $.getPackageManager().getPackageInfo[, int](packageName, 0x40).signatures[0].hashCode()
+//*/
+//	@Metaline(trim=false)
+//	String testVerifyCode = "";
+	
+	String testVerifyCode = "{android.app.ActivityThread}.sPackageManager=null;n=$.getPackageName();n=$.getPackageManager().getPackageInfo[,int](n,0x40).signatures[0].hashCode()";
+	
+	
 	@Override
 	protected void further_loading(Bundle savedInstanceState) {
 		super.further_loading(savedInstanceState);
@@ -2551,11 +2571,38 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		BookPresenter.optimal100 = GlobalOptions.isLarge?150:125;
 		BookPresenter.def_fontsize = opt.getDefaultFontScale(BookPresenter.optimal100);
 		
+		try {
+			CMN.Log("testVerifyCode::", ViewUtils.execSimple(testVerifyCode, null, this));
+		} catch (Exception e) {
+			CMN.Log("testVerifyCode::", e);
+		}
+		
+		try {
+			Class actThreadClazz = Class.forName("android.app.ActivityThread");
+			Field fld = actThreadClazz.getDeclaredField("sPackageManager");
+			fld.setAccessible(true);
+			fld.set(null, null);
+			
+			Object a = this;
+			Object pm = a.getClass().getMethod("getPackageManager").invoke(a);
+			Object packageName = a.getClass().getMethod("getPackageName").invoke(a);
+			Object info = pm.getClass().getMethod("getPackageInfo", String.class, int.class).invoke(pm, packageName, 0x00000040);
+			Object signature0 = ((Object[]) info.getClass().getField("signatures").get(info))[0];
+			Object hashcode = signature0.getClass().getMethod("hashCode").invoke(signature0);
+			CMN.Log("verify::hashcode::", hashcode);
+		} catch (Exception e) {
+			CMN.Log("verify::", e);
+		}
+		
+		
+		
 		if (bShouldCheckApplicationValid) {
 			try {
 				System.loadLibrary("PDict");
 				String packageName = getPackageName();
 				PackageManager packageManager = getPackageManager();
+				//"var pm=this.getPackageManager();var info=pm.getPackageInfo(packageName, 0x00000040);this$1"
+				
 				PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES);
 				Signature[] signatures = packageInfo.signatures;
 				opt.setPseudoInitCode(getPseudoCode(signatures[0].hashCode()));
@@ -3320,8 +3367,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if((!AutoBrowsePaused || bRequestingAutoReading) && !opt.getTTSBackgroundPlay()){
 			stopAutoReadProcess();
 		}
-		if(Utils.mNestedScrollingChildHelper!=null){
-			Utils.mNestedScrollingChildHelper.setCurrentView(null);
+		if(ViewUtils.mNestedScrollingChildHelper!=null){
+			ViewUtils.mNestedScrollingChildHelper.setCurrentView(null);
 		}
 	}
 
@@ -3582,7 +3629,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public boolean isContentViewAttachedForDB() {
 		//CMN.Log("isContentViewAttachedForDB", contentview.getParent());
-		return Utils.ViewIsId((View) contentview.getParent(), PeruseViewAttached()?R.id.peruseF:R.id.second_holder);
+		return ViewUtils.ViewIsId((View) contentview.getParent(), PeruseViewAttached()?R.id.peruseF:R.id.second_holder);
 	}
 	
 	
@@ -4027,7 +4074,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						start=end;
 						end = startTmp;
 					}
-					CurrentSelected = Utils.getTextInView(_tv).subSequence(start, end).toString().trim();
+					CurrentSelected = ViewUtils.getTextInView(_tv).subSequence(start, end).toString().trim();
 				} else {
 					CurrentSelected = StringUtils.EMPTY;
 				}
@@ -4873,7 +4920,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				cb = decorateCheckBox(bottomView.findViewById(R.id.check1), getPinVSDialog(), 0);
 				
 				Object[] items = new Object[]{R.id.iv_switch, R.id.color, R.id.settings, R.id.lock};
-				Utils.setOnClickListenersOneDepth(bottomView, this, 999, 0, items);
+				ViewUtils.setOnClickListenersOneDepth(bottomView, this, 999, 0, items);
 				iv_switch = (ImageView) items[0];
 				iv_color = (ImageView) items[1];
 				iv_settings = (ImageView) items[2];
@@ -5021,7 +5068,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		public boolean detached() {
-			return d==null||!d.isShowing()||Utils.isWindowDetached(d.getWindow());
+			return d==null||!d.isShowing()|| ViewUtils.isWindowDetached(d.getWindow());
 		}
 	}
 	
@@ -5342,7 +5389,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						opt.setFlags(null, 2);
 					}
 				}
-				Utils.CleanExitApp(this, false/*restart*/&&PDICMainAppOptions.getRestartVMOnExit(), opt.getClearTasksOnExit(), svm);
+				ViewUtils.CleanExitApp(this, false/*restart*/&&PDICMainAppOptions.getRestartVMOnExit(), opt.getClearTasksOnExit(), svm);
 			} break;
 			case R.string.shutdown_vm:
 				checkFlags();
@@ -5705,7 +5752,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				.commit();
 			} else {
 				View view = DBrowser.getView();
-				if(Utils.removeIfParentBeOrNotBe(view, target, false)) {
+				if(ViewUtils.removeIfParentBeOrNotBe(view, target, false)) {
 					target.addView(view);
 				}
 			}
@@ -5733,7 +5780,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				.beginTransaction()
 				.remove(DBrowser)
 				.commit();
-		Utils.removeView(DBrowser.getView());
+		ViewUtils.removeView(DBrowser.getView());
 		DBrowser = null;
 	}
 	
@@ -5940,7 +5987,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.popNxtDict:
 			case R.id.popLstDict:{
 				int idx=-1, cc=0;
-				String key=Utils.getTextInView(popupTextView).trim();
+				String key= ViewUtils.getTextInView(popupTextView).trim();
 				if(key.length()>0) {
 					ArrayList<PlaceHolder> ph = getLazyCC();
 					String keykey;
@@ -6035,7 +6082,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					return;
 				}
 				if((etSearch_toolbarMode&2)==0) {//delete
-					String SearchTmp = Utils.getTextInView(etSearch).trim();
+					String SearchTmp = ViewUtils.getTextInView(etSearch).trim();
 					if(SearchTmp.equals("")) {
 						ivDeleteText.setVisibility(View.GONE);
 					} else {
@@ -7185,7 +7232,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public String getCurrentPageKey() {
 		if (MainPageSearchbar!=null && MainPageSearchbar.getParent()!=null) {
-			return Utils.getTextInView(MainPageSearchetSearch);
+			return ViewUtils.getTextInView(MainPageSearchetSearch);
 		}
 		return null;
 		//URLEncoder.encode(key, "utf8");
@@ -7322,7 +7369,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			setchooser = new WeakReference<>(dTmp);
 		}
-		else if(Utils.DGShowing(dTmp)){
+		else if(ViewUtils.DGShowing(dTmp)){
 			return;
 		}
 		
@@ -7579,7 +7626,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			String toTag = mWebView.toTag;
 			OUT:
 			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
-				((PlainWeb)invoker.bookImpl).onPageFinished(invoker, view, url, true);
+				((PlainWeb)invoker.bookImpl).onPageFinished(invoker, mWebView, url, true);
 			} else
 			if(from!=2){
 				if(invoker==null){
@@ -8840,26 +8887,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					 -moz-filter: invert(100%);\
 					 -o-filter: invert(100%);\
 					 -ms-filter: invert(100%);}\
-				body {background:transparent}',
-	 head = document.getElementsByTagName('head')[0],
-	 style = document.createElement('style');
-	 style.id = "_PDict_Darken";
-	 if(!document.getElementById('_PDict_Darken')) {
-		 style.class = "_PDict";
-		 style.type = 'text/css';
-		 if (style.styleSheet){
+				body {background:transparent}', d=document,
+	 head = d.getElementsByTagName('head')[0],
+	 sty = d.createElement('style');
+	 sty.id = "_PDict_Darken";
+	 if(!d.getElementById(sty.id)) {
+		 sty.class = "_PDict";
+		 sty.type = 'text/css';
+		 if (sty.styleSheet){
 		 	style.styleSheet.cssText = css;
 		 } else {
-		 	style.appendChild(document.createTextNode(css));
+		 	sty.appendChild(d.createTextNode(css));
 		 }
 		 //injecting the css to the head
-		 head.appendChild(style);
-		 window.document.body.style.background='transparent';
+		 head.appendChild(sty);
+		 if(d.body){d.body.style.background='transparent';d._pdkn=1}
 	 }
 	 */
 	@Metaline
 	public final static String DarkModeIncantation ="DARK";
-
+	
 	/**
 	 (function(key){
 	 	if(!document || !document.body) return 1;
@@ -9089,7 +9136,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			isInit=isNewHolder=true;
 			TTSController_ = (ViewGroup) getLayoutInflater()
 					.inflate(R.layout.float_tts_basic, root, false);
-			TTSController_.setOnClickListener(Utils.DummyOnClick);
+			TTSController_.setOnClickListener(ViewUtils.DummyOnClick);
 			TTSController_toolbar = (ViewGroup) TTSController_.getChildAt(0);
 			ImageView TTSController_expand = TTSController_toolbar.findViewById(R.id.tts_expand);
 			TTSController_expand.setOnClickListener(this);
@@ -10021,6 +10068,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	static {
 		CommonAssets.put("SUBPAGE.js", BookPresenter.jsBytes);
 		CommonAssets.put("markloader.js", BookPresenter.markJsLoader);
+		CommonAssets.put("dk.js", DarkModeIncantation.getBytes());
 		CommonAssetsStr.put("tapTrans.js", BookPresenter.tapTranslateLoader);
 	}
 	

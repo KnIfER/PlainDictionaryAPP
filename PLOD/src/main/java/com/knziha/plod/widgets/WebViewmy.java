@@ -548,6 +548,24 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		return presenter.bookImpl.getBooKID();
 	}
 	
+	Runnable postFinishedAbility = () -> wvclient.onPageFinished(this, getUrl());
+	
+	boolean bPostedFinish;
+	
+	public void postFinished() {
+		if (!bPostedFinish) {
+			postDelayed(postFinishedAbility, 750);
+			bPostedFinish = true;
+		}
+	}
+	
+	public void removePostFinished() {
+		if (bPostedFinish) {
+			removeCallbacks(postFinishedAbility);
+			bPostedFinish = false;
+		}
+	}
+	
 	@RequiresApi(api = Build.VERSION_CODES.M)
 	private class callbackme extends ActionMode.Callback2 implements OnLongClickListener {
 		ActionMode.Callback callback;
@@ -1225,7 +1243,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		float scale = webScale/ BookPresenter.def_zoom;
 		//float roundVal = 10*GlobalOptions.density*scale;
 		canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale
-				, alpha?Utils.getRectPaintAlpha():Utils.getRectPaint());
+				, alpha? ViewUtils.getRectPaintAlpha(): ViewUtils.getRectPaint());
 	}
 	
 	/** WebView内布局，无视网页总长，与WebView保持恒定大小 */
@@ -1415,16 +1433,16 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 					((FrameLayout.LayoutParams) scrollRect.getLayoutParams()).gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
 					scrollRect.setTranslationY(-55 * GlobalOptions.density);
 					scrollRect.setTranslationX(-15 * GlobalOptions.density);
-					scrollRect.setOnClickListener(Utils.DummyOnClick);
+					scrollRect.setOnClickListener(ViewUtils.DummyOnClick);
 					//evaluateJavascript("window.scrollBy({top: 50, behavior: \"smooth\" });", null);
 					//evaluateJavascript("setInterval(()=>{window.scrollBy({top: 1})}, 1);", null);
-					Utils.setOnClickListenersOneDepth((ViewGroup) scrollRect, mScrollAbility, 999, null);
+					ViewUtils.setOnClickListenersOneDepth((ViewGroup) scrollRect, mScrollAbility, 999, null);
 				}
 				widgetsLayout.setVisibility(View.VISIBLE);
 				scrollRect.setVisibility(View.VISIBLE);
 				hasWidgets = true;
 			} else {
-				Utils.removeView(scrollRect);
+				ViewUtils.removeView(scrollRect);
 				scrollRect.setVisibility(View.GONE);
 				if (true) { // todo honor other widgets
 					widgetsLayout.setVisibility(View.GONE);

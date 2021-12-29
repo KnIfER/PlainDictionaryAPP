@@ -11,7 +11,7 @@ import androidx.annotation.CallSuper;
 
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.preference.SettingsPanel;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 
 public class PlainAppPanel extends SettingsPanel {
 	protected MainActivityUIBase a;
@@ -24,7 +24,7 @@ public class PlainAppPanel extends SettingsPanel {
 		super(a, a.root, a.app_panel_bottombar_height/2, a.opt, a);
 		this.a = a;
 		if (!showInPopWindow) {
-			Utils.embedViewInCoordinatorLayout(settingsLayout, !showPopOnAppbar);
+			ViewUtils.embedViewInCoordinatorLayout(settingsLayout, !showPopOnAppbar);
 		}
 		MainColorStamp = a.MainAppBackground;
 	}

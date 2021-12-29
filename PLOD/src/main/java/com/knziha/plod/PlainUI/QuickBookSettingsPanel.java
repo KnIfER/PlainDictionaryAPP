@@ -22,7 +22,7 @@ import com.knziha.plod.plaindict.databinding.QuickSettingsPanelBinding;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 
 public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPanel.ActionListener {
 	protected MainActivityUIBase a;
@@ -73,7 +73,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		settingsLayout = sv;
 		
 		this.root = UIData.root;
-		Utils.setOnClickListenersOneDepth(UIData.root, this, 999, null);
+		ViewUtils.setOnClickListenersOneDepth(UIData.root, this, 999, null);
 		
 		if (opt.getAdjustScnShown())
 		{
@@ -302,9 +302,9 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			LinearLayout ll = new LinearLayout(a);
 			View sep = new View(a);
 			ll.setOrientation(LinearLayout.HORIZONTAL);
-			Utils.addViewToParent(hengping.settingsLayout, ll);
-			Utils.addViewToParent(sep, ll);
-			Utils.addViewToParent(shuping.settingsLayout, ll);
+			ViewUtils.addViewToParent(hengping.settingsLayout, ll);
+			ViewUtils.addViewToParent(sep, ll);
+			ViewUtils.addViewToParent(shuping.settingsLayout, ll);
 			hengping.settingsLayout.setBackgroundResource(R.drawable.frame);
 			shuping.settingsLayout.setBackgroundResource(R.drawable.frame);
 			((LinearLayout.LayoutParams)hengping.settingsLayout.getLayoutParams()).weight = 1;
@@ -312,7 +312,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			((LinearLayout.LayoutParams)sep.getLayoutParams()).width = (int) (GlobalOptions.density*15);
 			int pad = (int) (GlobalOptions.density*5);
 			ll.setPadding(pad, 0, pad, 0);
-			Utils.addViewToParent(ll, screenSettings.settingsLayout, 0);
+			ViewUtils.addViewToParent(ll, screenSettings.settingsLayout, 0);
 			
 			addPanelViewBelow(screenSettings.settingsLayout, UIData.scnPanel);
 			this.screenSettings = screenSettings;
@@ -321,7 +321,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	}
 	
 	protected void addPanelViewBelow(View settingsLayout, LinearLayout panelTitle) {
-		Utils.addViewToParent(settingsLayout, root, panelTitle);
+		ViewUtils.addViewToParent(settingsLayout, root, panelTitle);
 	}
 	
 	

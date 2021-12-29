@@ -45,7 +45,7 @@ public class AdvancedNestScrollLinerView extends LinearLayout implements NestedS
 
 	public AdvancedNestScrollLinerView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		mChildHelper = Utils.getNestedScrollingChildHelper();
+		mChildHelper = ViewUtils.getNestedScrollingChildHelper();
 		setNestedScrollingEnabled(true);
 	}
 	

@@ -19,7 +19,7 @@ import androidx.core.graphics.ColorUtils;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.widgets.CheckableImageView;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -433,7 +433,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	public void AttachContentViewForDB() {
 		CMN.Log("AttachContentViewForDB");
 		if(DBrowser!=null) {
-			Utils.addViewToParent(contentview, PeruseViewAttached()? peruseView.peruseF:root);
+			ViewUtils.addViewToParent(contentview, PeruseViewAttached()? peruseView.peruseF:root);
 		}
 	}
 	
@@ -454,7 +454,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	
 	@Override
 	void DetachContentView(boolean leaving) {
-		Utils.removeView(contentview);
+		ViewUtils.removeView(contentview);
 	}
 	
 	@Override

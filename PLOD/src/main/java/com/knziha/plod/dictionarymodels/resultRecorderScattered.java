@@ -12,7 +12,7 @@ import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -191,7 +191,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 				presenter.initViewsHolder(a);
 				float desiredScale = a.prepareSingleWebviewForAda(presenter, null, pos, ADA);
 				
-				Utils.addViewToParentUnique(presenter.rl, a.webSingleholder);
+				ViewUtils.addViewToParentUnique(presenter.rl, a.webSingleholder);
 				
 				//todododo jcabjsahcbshjaccheck
 				//todododo jcabjsahcbshjaccheck

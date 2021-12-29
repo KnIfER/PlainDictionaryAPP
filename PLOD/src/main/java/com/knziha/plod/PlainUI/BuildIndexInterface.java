@@ -1,8 +1,6 @@
 package com.knziha.plod.PlainUI;
 
 import android.content.res.ColorStateList;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -21,7 +19,7 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.searchtasks.BuildIndexTask;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.FlowTextView;
-import com.knziha.plod.widgets.Utils;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,7 +40,7 @@ public class BuildIndexInterface extends BaseAdapter
 			listview.setOnItemClickListener(this);
 			((AdvancedNestScrollListview)listview).setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 			ViewGroup bottombar = buildIndexLayout.findViewById(R.id.bottombar);
-			Utils.setOnClickListenersOneDepth(bottombar, this, 999, null);
+			ViewUtils.setOnClickListenersOneDepth(bottombar, this, 999, null);
 			ColorStateList tint = ColorStateList.valueOf(a.MainBackground);
 			for (int i = 0; i < bottombar.getChildCount(); i++) {
 				ViewCompat.setBackgroundTintList(bottombar.getChildAt(i), tint);
