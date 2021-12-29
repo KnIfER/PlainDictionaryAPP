@@ -701,7 +701,12 @@ public class ViewUtils {
 	public static void setListViewFastColor(View...mListViews) {
 		try {
 			for(View mListView:mListViews) {
-				ImageView ThumbImage = (ImageView) execSimple("$.mFastScroll.mThumbImage", reflectionPool, mListView);
+				// https://github1s.com/aosp-mirror/platform_frameworks_base/blob/kitkat-release/core/java/android/widget/AbsListView.java#L584
+				String eval = "$.mFastScroll.mThumbImage";
+				if (Build.VERSION.SDK_INT<21) {
+					eval = eval.substring(0,13)+"er"+eval.substring(13);
+				}
+				ImageView ThumbImage = (ImageView) execSimple(eval, reflectionPool, mListView);
 				//CMN.debug("setListViewFastColor::", ThumbImage);
 				if (ThumbImage != null) ThumbImage.setColorFilter(GREY);
 			}
@@ -1143,7 +1148,7 @@ public class ViewUtils {
 					which = IU.parsint(fdMd.substring(zh+1, fdMd.indexOf("]", zh)), 0);
 					fdMd = fdMd.substring(0, zh);
 				}
-//				CMN.debug("getField::", zClazz, object);
+//				CMN.debug("getField::", zClazz, object, fdMd);
 				fMd = null;
 				if (zClazz.isArray()) {
 					object = Array.getLength(object);
