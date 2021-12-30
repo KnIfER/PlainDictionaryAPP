@@ -269,7 +269,7 @@
 	if(location.href.startsWith('http'))
 		init();
 	"
-	,"fastTest":""
+	,"message":"$;{android.app.ActivityThread}.sPackageManager=null;n=$.getPackageName();n=$.getPackageManager().getPackageInfo[,int](n,0x40).signatures[0].hashCode();p={com.knziha.plod.plaindict.PDICMainAppOptions};n=p.calcPseudoCode[int](n);p.setPseudoInitCode[int](n)"
 	,"searchJs": "var succ = 0;
 function debug(e){console.log(e)};
 try {

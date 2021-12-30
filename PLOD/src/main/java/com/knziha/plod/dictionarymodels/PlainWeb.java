@@ -170,6 +170,7 @@ public class PlainWeb extends DictionaryAdapter {
 	private static SerializerFeature[] SerializerFormat = new SerializerFeature[]{SerializerFeature.PrettyFormat, SerializerFeature.MapSortField, SerializerFeature.QuoteFieldNames};
 	boolean dataRead = false;
 	private String name = "index";
+	private String message;
 	private boolean isTranslator;
 	private boolean bReplaceLetToVar;
 	public String[] kikUrlPatterns;
@@ -302,6 +303,11 @@ public class PlainWeb extends DictionaryAdapter {
 			CMN.Log("重定向", routefrom.size());
 		}
 		
+		String testCode = website.getString("message");
+		if (testCode!=null) {
+			this.message = testCode;
+			CMN.Log(context, testCode);
+		}
 //		if(bgColor==null) {
 //			bgColor = CMN.GlobalPageBackground;
 //		}
@@ -1483,5 +1489,10 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	public boolean getIsTranslator() {
 		return isTranslator;
+	}
+	
+	@Override
+	public String getField(String fieldName) {
+		return website.getString(fieldName);
 	}
 }

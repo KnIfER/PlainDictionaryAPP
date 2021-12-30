@@ -13,10 +13,8 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.content.pm.Signature;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -234,7 +232,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -1361,6 +1358,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CMN.debug("mid", CMN.mid, getClass());
 			CMN.debug("sdk", Build.VERSION.SDK_INT);
 			CMN.debug("dens", GlobalOptions.density);
+		}
+		if (bShouldCheckApplicationValid) {
+			try {
+				System.loadLibrary("PDict");
+				if (!testPakVal(getPackageName()))
+					showT("请使用正版软件！");
+			} catch (Exception ignored) { }
 		}
 	}
 
@@ -2571,50 +2575,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		BookPresenter.def_zoom=dm.density;
 		BookPresenter.optimal100 = GlobalOptions.isLarge?150:125;
 		BookPresenter.def_fontsize = opt.getDefaultFontScale(BookPresenter.optimal100);
-		
-		try {
-			Integer verifyCode = (Integer) ViewUtils.execSimple(testVerifyCode, null, this);
-			CMN.Log("testVerifyCode::", verifyCode);
-			ViewUtils.execSimple("p={com.knziha.plod.plaindict.PDICMainAppOptions};n=p.calcPseudoCode[int]($);p.setPseudoInitCode[int](n)", null, 1721624788);
-			CMN.Log("setPseudoInitCode::", PDICMainAppOptions.getPseudoInitCodeEu());
-		} catch (Exception e) {
-			CMN.Log("testVerifyCode::", e);
-		}
-		
-		try {
-			Class actThreadClazz = Class.forName("android.app.ActivityThread");
-			Field fld = actThreadClazz.getDeclaredField("sPackageManager");
-			fld.setAccessible(true);
-			fld.set(null, null);
-			
-			Object a = this;
-			Object pm = a.getClass().getMethod("getPackageManager").invoke(a);
-			Object packageName = a.getClass().getMethod("getPackageName").invoke(a);
-			Object info = pm.getClass().getMethod("getPackageInfo", String.class, int.class).invoke(pm, packageName, 0x00000040);
-			Object signature0 = ((Object[]) info.getClass().getField("signatures").get(info))[0];
-			Object hashcode = signature0.getClass().getMethod("hashCode").invoke(signature0);
-			CMN.Log("verify::hashcode::", hashcode);
-		} catch (Exception e) {
-			CMN.Log("verify::", e);
-		}
-		
-		
-		
-		if (bShouldCheckApplicationValid) {
-			try {
-				System.loadLibrary("PDict");
-				String packageName = getPackageName();
-				PackageManager packageManager = getPackageManager();
-				//"var pm=this.getPackageManager();var info=pm.getPackageInfo(packageName, 0x00000040);this$1"
-				
-				PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES);
-				Signature[] signatures = packageInfo.signatures;
-				opt.setPseudoInitCode(getPseudoCode(signatures[0].hashCode()));
-				//CMN.Log("请使用正版软件！", signatures[0].hashCode(), getPseudoCode(signatures[0].hashCode()));
-				if (!testPakVal(packageName))
-					showT("请使用正版软件！");
-			} catch (Exception ignored) { }
-		}
+//		try {
+//			Integer verifyCode = (Integer) ViewUtils.execSimple(testVerifyCode, null, this);
+//			CMN.Log("testVerifyCode::", verifyCode);
+//			ViewUtils.execSimple("p={com.knziha.plod.plaindict.PDICMainAppOptions};n=p.calcPseudoCode[int]($);p.setPseudoInitCode[int](n)", null, 1721624788);
+//			CMN.Log("setPseudoInitCode::", PDICMainAppOptions.getPseudoInitCodeEu());
+//		} catch (Exception e) {
+//			CMN.Log("testVerifyCode::", e);
+//		}
 		
 		setMagicNumberForHash();
 		
@@ -3012,8 +2980,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	final String[] defDicts = new String[]{
+			CMN.AssetTag + "liba.mdx"
+			,"/ASSET2/谷歌翻译.web"
+	};
+	
 	protected void populateDictionaryList(File def, ArrayList<PlaceHolder> CC, boolean retrieve_all) {
-		BookPresenter book;
+		BookPresenter book = null;
+		try {
+			book = new_book(defDicts[1], this);
+		} catch (IOException ignored) {  }
 		if(retrieve_all) {
 			try {
 				if(CC==null) {
@@ -3021,12 +2997,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(this instanceof FloatSearchActivity) FloatSearchActivity.mCosyChair = CC;
 					if(this instanceof PDICMainActivity) PDICMainActivity.CosyChair = CC;
 				}
-				String[] paths = new String[]{
-					CMN.AssetTag + "liba.mdx"
-					,"/ASSET2/谷歌翻译.web"
-				};
 				String lastName = opt.getLastMdFn("LastMdFn");
-				for (String path:paths) {
+				for (String path:defDicts) {
 					PlaceHolder placeHolder = new PlaceHolder(path, CC);
 					CC.add(placeHolder);
 					if(TextUtils.equals(new File(path).getName(), lastName)) {

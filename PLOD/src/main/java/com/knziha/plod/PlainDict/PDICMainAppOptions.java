@@ -1540,9 +1540,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public static int calcPseudoCode(int input) {
+		CMN.Log("calcPseudoCode::", input);
 		// 1721624788 -> 31
+		// -1143300572 ( debug )
 		if(input%73==0xf&&input%101==0x63) {
-			return 1721624788%64+0xb;
+			return input%64+0xb;
 		}
 		return input%0xf;
 	}
