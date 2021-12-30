@@ -92,6 +92,7 @@ dependencies {
     api project(path: ':viewpager')
     api project(path: ':GestureView')
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.jdom:jdom:2.0.2'
 
 
     compileOnly project(':Metaline:Metaline')
