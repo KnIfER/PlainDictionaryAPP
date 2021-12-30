@@ -2573,7 +2573,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		BookPresenter.def_fontsize = opt.getDefaultFontScale(BookPresenter.optimal100);
 		
 		try {
-			CMN.Log("testVerifyCode::", ViewUtils.execSimple(testVerifyCode, null, this));
+			Integer verifyCode = (Integer) ViewUtils.execSimple(testVerifyCode, null, this);
+			CMN.Log("testVerifyCode::", verifyCode);
+			ViewUtils.execSimple("p={com.knziha.plod.plaindict.PDICMainAppOptions};n=p.calcPseudoCode[int]($);p.setPseudoInitCode[int](n)", null, 1721624788);
+			CMN.Log("setPseudoInitCode::", PDICMainAppOptions.getPseudoInitCodeEu());
 		} catch (Exception e) {
 			CMN.Log("testVerifyCode::", e);
 		}

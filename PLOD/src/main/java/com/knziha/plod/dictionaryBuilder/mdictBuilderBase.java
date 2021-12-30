@@ -9,7 +9,6 @@ import com.knziha.plod.dictionary.Utils.record_info_struct;
 import com.knziha.plod.dictionaryBuilder.Utils.ByteDataOutputStream;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.rbtree.InOrderTodoAble;
-import com.knziha.rbtree.RBTree_duplicative;
 import com.knziha.rbtree.myAbsCprKey;
 
 import org.anarres.lzo.LzoCompressor1x_1;
@@ -53,6 +52,8 @@ abstract class mdictBuilderBase {
 	protected boolean hasHardcodedKeyId;
 	
 	boolean bNoRecords;
+	boolean bUTF8Head;
+	boolean bEncryptHead;
 	
 	public HashMap<String,ArrayList<mdictBuilder.myCprKey>> bookTree = new HashMap<>();
 	public IntervalTree privateZone;
@@ -127,7 +128,12 @@ abstract class mdictBuilderBase {
 			recordblockCompressionType=recordBlock;
 		}
 	}
-
+	
+	public void setHeaderEncoding(boolean utf8, boolean encrypt) {
+		bUTF8Head = utf8;
+		bEncryptHead = encrypt;
+	}
+	
 	public long write(String path) throws IOException {
 		File dirP = (f=new File(path)).getParentFile();
 		dirP.mkdirs();
@@ -141,9 +147,19 @@ abstract class mdictBuilderBase {
 		if(!f.exists())
 			f.createNewFile();
 		//![1]write_header
-		byte[] header_bytes = constructHeader().getBytes(StandardCharsets.UTF_16LE);
-		fOut.writeInt(header_bytes.length);
+		byte[] header_bytes = constructHeader().getBytes(bUTF8Head?StandardCharsets.UTF_8:StandardCharsets.UTF_16LE);
+		if (bEncryptHead)
+			for (int i = 0; i < header_bytes.length; i++)
+				header_bytes[i] += i*15;
+		fOut.writeInt(header_bytes.length+(bUTF8Head?2:0));
 		fOut.write(header_bytes);
+		if(bUTF8Head||bEncryptHead) {
+			byte f=(byte) 0xF0;
+			if(bUTF8Head) f|=0x1;
+			if(bEncryptHead) f|=0x2;
+			fOut.writeByte(f);
+			fOut.writeByte(f);
+		}
 		fOut.write(BU.toLH(BU.calcChecksum(header_bytes)));
 
 		//![2]split Keys

@@ -1531,13 +1531,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return (int) ((ThirdFlag >> 22) & 3);
 	}
 	public int setBottomNavigationMode(int val) {
+		calcPseudoCode(val);
+		setPseudoInitCode(val);
 		ThirdFlag &= (~0x400000l);
 		ThirdFlag &= (~0x800000l);
 		ThirdFlag |= ((long)(val & 3)) << 22;
 		return val;
 	}
 	
-	int calcPseudoCode(int input) {
+	public static int calcPseudoCode(int input) {
 		// 1721624788 -> 31
 		if(input%73==0xf&&input%101==0x63) {
 			return 1721624788%64+0xb;
@@ -2412,8 +2414,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=0) public boolean getIgnoreReloadWarning(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=1) public boolean getReloadWebView(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=0, flagSize=8) public int getPseudoInitCode(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=2, flagSize=6) public void setPseudoInitCode(int value){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=0, flagSize=8) public static int getPseudoInitCode(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2, flagSize=6) public static int getPseudoInitCodeEu(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2, flagSize=6) public static void setPseudoInitCode(int value){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
 	public int getPseudoInitCode(int pseudoInit) {
 		return (getPseudoInitCode()&~3)|pseudoInit;

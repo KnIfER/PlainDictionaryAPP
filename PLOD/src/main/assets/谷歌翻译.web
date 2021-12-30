@@ -1,7 +1,7 @@
 {
 	,"host": "https://translate.google.cn"
 	,"index": ""
-	,"style": "header,.VjFXz{display:none!important}#gtyexp{display:none;position:fixed;width:35px;height:35px;top:8px;right:25px;background-color:rgb(181 217 255);transition:all 0.25s;opacity:0.75;z-index:999;border-radius:3px;padding:10px;user-select:none;box-shadow:rgb(0 0 255 / 20%) 0px 7px 19px 0px;}"
+	,"style": "header,.VjFXz{display:none!important}#gtyexp{position:fixed;width:35px;height:35px;top:8px;right:25px;background-color:rgb(181 217 255);transition:all 0.25s;opacity:0.75;z-index:999;border-radius:3px;padding:10px;user-select:none;box-shadow:rgb(0 0 255 / 20%) 0px 7px 19px 0px;}"
 	,"search": "/?sl=auto&tl=zh-CN&text=%s&op=translate"
 	,"searchx": [
 		{keyx:"^[\u4e00-\u9fa5]", value:"/?sl=auto&tl=en&op=translate&text="}
@@ -10,13 +10,15 @@
 	,"js": "
 	function init(){
 		var win=window,doc=document,e=doc.getElementById('gtyexp'),sel=win.getSelection()
-		,ta=doc.getElementsByTagName('textarea')[0], listPane,textPara;
+		,ta=doc.getElementsByTagName('textarea')[0], listPane,textPara,tryCnt=0;
 		function debug(e){console.log(e)};
+		//debug('translator ini...'+location.href); // 开始
 		debug('translator ini...'+doc.body); // 开始
 		if(!doc.body) {
 			setTimeout(init, 200);
 			return;
 		}
+		//debug('translator ...123');
 		win._YWPC=['Sp3AF'];
 		if(!e) {
 			e=doc.createElement('IMG');
@@ -29,10 +31,10 @@
 				if(!sel.toStringRaw) { // 强硬作风 温和修改
 					sel.toStringRaw = sel.toString;
 					sel.toString = function(){
-						debug('fatal toString='+PDRNG); 
+						//debug('fatal toString='+PDRNG); 
 						var ret = sel.toStringRaw();
 						if(PDRNG) {
-							debug('fatal sustain the selection v3='+PDRNG); 
+							//debug('fatal sustain the selection v3='+PDRNG); 
 							ret = PDRNG.toString();
 							sel.removeAllRanges();
 							sel.addRange(PDRNG);
@@ -77,7 +79,7 @@
 					keyCode: 0x10,
 					bubbles: 1
 				}));
-				debug('检查是否查到了单词释义');
+				//debug('检查是否查到了单词释义');
 				if(false)
 				setTimeout(function(){
 					//if(document.getElementsByClassName('aia4Ud')[0].firstElementChild.innerText===key) 
@@ -93,7 +95,7 @@
 			}
 			e.onclick=toggle;
 			if(!doc.sc)doc.addEventListener('selectionchange', function(){
-				debug('sc...'+sel.type+' '+sel)
+				//debug('sc...'+sel.type+' '+sel)
 				if(sel.type!='Range') ety.style.display = 'none';
 				else if(ety.style.display=='none'){
 					ety.style.display = 'block';
@@ -131,7 +133,14 @@
 				ta=doc.getElementsByTagName('textarea')[0];
 			}
 			if(ta && !ta.getAttribute('_PDSC')) {
-				ta.addEventListener('selectionchange', sc);
+				ta.addEventListener('selectionchange', function(){
+					var e = doc.getElementById('gtyexp').style;
+					if(sel.type!='Range') e.display = 'none';
+					else if(e.display=='none'){
+						e.display = 'block';
+						e.opacity = 0.75;
+					}
+				});
 				if(ta!=doc.activeElement)ta.readOnly=true;
 				ta.setAttribute('_PDSC', '');
 			}
@@ -180,25 +189,28 @@
 				}
 			}
 			tweakInput();
-			function tweakInputMod(){
+			function tweakInputMod() {
+				//debug('tweakInputMod...'+ win._modin+isAttached(win._modin));
 				if(!isAttached(win._modin)) {
-					var n;
 					if(!win._modin) {
 						//var e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮 2021翻译门事件后取消编辑按钮
-						var e=Qa('kImuFf').cloneNode(true); // 拷贝复制按钮
-						n = e.getElementsByTagName('I')[0];
-						win._modin=e;
+						var m=Qa('kImuFf');
+						if(!m && tryCnt<5) {setTimeout(tweakInputMod, 200); tryCnt++;return}
+						m=m.cloneNode(true); // 拷贝复制按钮
+						var n=m.getElementsByTagName('I')[0];
 						if(n){
 							n.style.color='#888';
-							n.innerText='edit';
+							n.innerText='edit'; // 变成编辑按钮（图标）
 						}
-						e.onclick=function(v){
+						m.onclick=function(v){
 							ta.readOnly=!ta.readOnly;
 							if(n)n.style.color=ta.readOnly?'#888':'#000';
 							v.stopPropagation();
 						}
+						win._modin=m;
 					}
 					doc.getElementsByClassName('FFpbKc')[0].appendChild(win._modin); // 添加到输入内容，字数栏之后
+					//debug('tweakInputMod...9');
 				}
 			}
 			tweakInputMod();
@@ -210,7 +222,6 @@
 						var jn=p.getAttribute('jsname');
 						if(jn==='ymIaV' && !v.srcElement.onclick) {
 							v.srcElement.onclick=function(u){
-								debug('fatal 123');
 								if(!listPane) {
 									listPane = Qa('HyaQwf');
 									listPane.style.display='none'; //  hide the list pane
@@ -242,7 +253,7 @@
 				win._RPGF=1;
 			}
 			
-			debug('点击不显示候选列表', listPane = Qa('HyaQwf'));
+			//debug('点击不显示候选列表', listPane = Qa('HyaQwf'));
 			win._tweakedHXCL=true;
 			debug('点击不显示候选列表 done.');
 		}
@@ -255,8 +266,10 @@
 		
 		debug('translator init done.'); // 结束
 	}
-	init();
+	if(location.href.startsWith('http'))
+		init();
 	"
+	,"fastTest":""
 	,"searchJs": "var succ = 0;
 function debug(e){console.log(e)};
 try {

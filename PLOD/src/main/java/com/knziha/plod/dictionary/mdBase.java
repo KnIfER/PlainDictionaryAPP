@@ -19,14 +19,31 @@ package com.knziha.plod.dictionary;
 
 import androidx.annotation.NonNull;
 
-import com.knziha.plod.dictionary.Utils.*;
-import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.dictionary.Utils.BSI;
+import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.Utils.F1ag;
+import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.LinkastReUsageHashMap;
+import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.Utils.key_info_struct;
+import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.dictionary.Utils.record_info_struct;
 import com.knziha.rbtree.RBTree;
 
-import org.anarres.lzo.*;
-import org.apache.commons.lang3.ArrayUtils;
+import org.anarres.lzo.LzoAlgorithm;
+import org.anarres.lzo.LzoDecompressor;
+import org.anarres.lzo.LzoDecompressor1x;
+import org.anarres.lzo.LzoInputStream;
+import org.anarres.lzo.LzoLibrary;
+import org.anarres.lzo.lzo_uintp;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -346,13 +363,29 @@ public abstract class mdBase {
 		data_in.read(itemBuf, 0, 4);
 		int alder32 = getInt(itemBuf[3],itemBuf[2],itemBuf[1],itemBuf[0]);
 		//assert alder32 == (BU.calcChecksum(header_bytes)& 0xffffffff);
-		if((calcChecksum(header_bytes)& 0xffffffff) != alder32) throw new IOException(invalid_format+"invalid header checksum");
 
 		//data_in.skipBytes(4);
 		//不必关闭文件流 data_in
 
-		Pattern re = Pattern.compile("(\\w+)=[\"](.*?)[\"]",Pattern.DOTALL);
-		String headerString = new String(header_bytes, StandardCharsets.UTF_16LE);
+		final Pattern re = Pattern.compile("(\\w+)=[\"](.*?)[\"]",Pattern.DOTALL);
+		String headerString;
+		int hl = header_bytes.length;
+		byte hf = header_bytes[hl-1];
+		Charset hc = StandardCharsets.UTF_16LE;
+		if(hl>2 && (hf&0xF0)==0xF0 && hf==header_bytes[hl-2]) {
+			hl-=2;
+			if ((hf&0x1)!=0) {
+				hc = StandardCharsets.UTF_8;
+			}
+		} else {
+			hf = 0;
+		}
+		if((calcChecksum(header_bytes, 0, hl)& 0xffffffff) != alder32) throw new IOException(invalid_format+"invalid header checksum");
+		if ((hf&0x2)!=0) {
+			for (int i = 0; i < hl; i++)
+				header_bytes[i] -= i*15;
+		}
+		headerString = new String(header_bytes, 0, hl, hc);
 		//SU.Log("headerString::", headerString);
 		Matcher m = re.matcher(headerString);
 		if(_header_tag==null) {

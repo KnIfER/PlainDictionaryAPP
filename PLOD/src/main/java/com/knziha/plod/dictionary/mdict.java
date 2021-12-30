@@ -718,6 +718,10 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return 0;
 	}
 
+	public String getRecordAt(long position) throws IOException {
+		return getRecordAt(position, null, true);
+	}
+	
 	public String getRecordAt(long position, GetRecordAtInterceptor getRecordAtInterceptor, boolean allowJump) throws IOException {
 		if(getRecordAtInterceptor!=null)
 		{

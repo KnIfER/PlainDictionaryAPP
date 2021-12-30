@@ -1036,7 +1036,11 @@ public class ViewUtils {
 				if (valName.startsWith("{")) {
 					int idx=valName.lastIndexOf("}");
 					zClazz = Class.forName(valName.substring(1, idx));
-					expsRight = valName.substring(idx).split("\\.(?![0-9])");
+					if (idx+1>=valName.length()) {
+						newObj = zClazz; // 直接变成类
+					} else {
+						expsRight = valName.substring(idx).split("\\.(?![0-9])");
+					}
 				} else if (valName.startsWith("'")) {
 					newObj = valName.substring(1, valName.length()-1);
 				}  else {
@@ -1100,7 +1104,7 @@ public class ViewUtils {
 			typeHash.put("String", String.class);
 		}
 		if (zClazz==null && object!=null) {
-			zClazz = object.getClass();
+			zClazz = object instanceof Class?(Class) object :object.getClass();
 		}
 		Object[] parameters; Class[] methodTypes;
 		for (int i = (object==null&&zClazz==null)?0:1; i < exps.length; i++) {
@@ -1108,9 +1112,10 @@ public class ViewUtils {
 			parameters = ArrayUtils.EMPTY_OBJECT_ARRAY;
 			methodTypes = ArrayUtils.EMPTY_CLASS_ARRAY;
 			if (i==0 && variables!=null) {
-//				CMN.debug("init extraction from variables::"+fdMd);
+				//CMN.debug("init extraction from variables::"+fdMd, zClazz);
 				object = variables.get(fdMd);
-				zClazz = object==null? ObjectUtils.Null.class:object.getClass();
+				zClazz = object==null? ObjectUtils.Null.class:
+						object instanceof Class?(Class) object :object.getClass();
 				continue;
 			}
 			int zh = fdMd.indexOf("[");
@@ -1208,7 +1213,7 @@ public class ViewUtils {
 				//}
 //				CMN.debug("methodTypes::", methodTypes.length, Arrays.toString(methodTypes));
 //				CMN.debug("parameters::", parameters.length, Arrays.toString(parameters));
-//				CMN.debug("fdMd::", methodName);
+//				CMN.debug("fdMd::", zClazz, methodName);
 				if (fMd==null) {
 					fMd = getMethod(zClazz, methodName, methodTypes);
 					if (reflectionPool!=null && fMd!=null) reflectionPool.put(storeKey, fMd);

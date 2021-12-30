@@ -94,10 +94,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 
 
-    compileOnly libs_metaline
-    annotationProcessor libs_metaline
-    testCompileOnly libs_metaline
-    testAnnotationProcessor libs_metaline
+    compileOnly project(':Metaline:Metaline')
+    annotationProcessor project(':Metaline:Metaline')
+    testCompileOnly project(':Metaline:Metaline')
+    testAnnotationProcessor project(':Metaline:Metaline')
 
     api 'org.apache.commons:commons-text:1.8'
     api (libs_clang)
