@@ -18,6 +18,7 @@ import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.settings.FilePickerOptions;
 import com.knziha.filepicker.utils.CMNF;
 import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -31,7 +32,9 @@ import org.json.JSONObject;
 import org.knziha.metaline.Metaline;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 
 import static com.knziha.plod.plaindict.MainActivityUIBase.SessionFlag;
 
@@ -50,6 +53,51 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		magicStr=a_.getResources().getString(R.string.defPlan);
 	}
 	String magicStr;
+	
+	public void backup() throws IOException {
+		File file = new File(Environment.getExternalStorageDirectory(), "平典搜索_备份.json");
+		Map<String, ?> all = defaultReader.getAll();
+		com.alibaba.fastjson.JSONObject json = new com.alibaba.fastjson.JSONObject();
+		for(String key:all.keySet()) {
+			Object v = all.get(key);
+			if (v instanceof Long) {
+				json.put("Lng_"+key, v);
+			} else {
+				json.put(key, v);
+			}
+		}
+		BU.SaveToFile(json.toString(), file);
+	}
+	
+	public void restore() throws IOException {
+		File file = new File(Environment.getExternalStorageDirectory(), "平典搜索_备份.json");
+		Editor preferences = defaultReader.edit();
+		com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject(BU.FileToString(file));
+		for(String key:json.keySet()) {
+			Object value = json.get(key);
+			if (key.startsWith("Lng_")) {
+				preferences.putLong(key.substring(4), Long.parseLong(""+value));
+			}
+			else if (value instanceof String) {
+				preferences.putString(key, (String) value);
+			}
+			else if (value instanceof Long) {
+				//CMN.Log("putInt::Long::", key);
+				preferences.putLong(key, (Long) value);
+			}
+			else if (value instanceof Integer) {
+				//CMN.Log("putInt::", key);
+				preferences.putInt(key, (Integer) value);
+			}
+			else if (value instanceof Float) {
+				preferences.putFloat(key, (Float) value);
+			}
+			else if (value instanceof Boolean) {
+				preferences.putBoolean(key, (Boolean) value);
+			}
+		}
+		preferences.apply();
+	}
 
 	public File lastMdlibPath;
 	public String lastMdPlanName;
@@ -94,7 +142,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public long getCurrFavoriteNoteBookId() {
-		return defaultReader.getLong("NID", 0);
+		return getLong("NID", 0);
 	}
 
 	public void putCurrFavoriteNoteBookId(long id) {
@@ -352,7 +400,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	private static Long FirstFlag=null;
 	public long getFirstFlag() {
 		if(FirstFlag==null) {
-			return CMNF.FirstFlag=FirstFlag=defaultReader.getLong("MFF",0);
+			return CMNF.FirstFlag=FirstFlag=getLong("MFF",0);
 		}
 		return FirstFlag;
 	}
@@ -783,7 +831,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public static Long SecondFlag=null;
 	public long getSecondFlag() {
 		if(SecondFlag==null) {
-			return FilePickerOptions.SecondFlag=SecondFlag=defaultReader.getLong("MSF",0);
+			return FilePickerOptions.SecondFlag=SecondFlag=getLong("MSF",0);
 		}
 		return SecondFlag;
 	}
@@ -1314,7 +1362,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	private static Long ThirdFlag=null;
 	public long getThirdFlag() {
 		if(ThirdFlag==null) {
-			return ThirdFlag=defaultReader.getLong("MTF",0);
+			return ThirdFlag=getLong("MTF",0);
 		}
 		return ThirdFlag;
 	}
@@ -1540,7 +1588,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	
 	public static int calcPseudoCode(int input) {
-		CMN.Log("calcPseudoCode::", input);
+		//CMN.Log("calcPseudoCode::", input);
 		// 1721624788 -> 31
 		// -1143300572 ( debug )
 		if(input%73==0xf&&input%101==0x63) {
@@ -1840,7 +1888,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	private static Long FourthFlag=null;
 	public long getFourthFlag() {
 		if(FourthFlag==null) {
-			return FourthFlag=defaultReader.getLong("MQF",0);
+			return FourthFlag=getLong("MQF",0);
 		}
 		return FourthFlag;
 	}
@@ -2224,10 +2272,20 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	private static Long FifthFlag=null;
 	public long getFifthFlag() {
 		if(FifthFlag==null) {
-			return FifthFlag=defaultReader.getLong("MVF",0);
+			return FifthFlag=getLong("MVF",0);
 		}
 		return FifthFlag;
 	}
+	
+	private Long getLong(String key, int def) {
+		try {
+			return defaultReader.getLong(key, def);
+		} catch (Exception e) {
+			CMN.Log(e);
+			return (long) defaultReader.getInt(key, def);
+		}
+	}
+	
 	public static long getFifthFlag(Context context) {
 		if(FifthFlag==null) {
 			return FifthFlag= androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getLong("MVF",0);

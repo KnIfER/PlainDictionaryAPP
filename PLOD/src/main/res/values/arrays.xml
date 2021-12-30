@@ -303,11 +303,22 @@
 		<item>3</item>
 	</string-array>
 
+	<string-array name="zero_one">
+		<item>0</item>
+		<item>1</item>
+	</string-array>
+
 	<string-array name="zero_two">
 		<item>0</item>
 		<item>1</item>
 		<item>2</item>
 	</string-array>
+
+	<string-array name="backup">
+		<item>备份设置到SD卡</item>
+		<item>从SD卡恢复…</item>
+	</string-array>
+
 
 	<string-array name="paste_target_info">
 		<item>@string/to_main_auto</item>

@@ -99,7 +99,7 @@
 			android:entries="@array/paste_target_info"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
-			app:wiki="ColorDict 本是一款APP，不知为何，其接口被争相模仿。静读天下支持的第一个查词方式即为此。"
+			app:wiki="ColorDict 本是一款APP，其接口被争相模仿而流行。静读天下支持的第一个查词方式即为此。"
 			/>
 
 		<androidx.preference.ListPreference
@@ -162,6 +162,17 @@
 		<!--			app:allowDividerAbove="true"-->
 		<!--			app:allowDividerBelow="true"-->
 		<!--			/>-->
+
+		<androidx.preference.ListPreference
+			android:key="backup"
+			android:entries="@array/backup"
+			android:persistent="false"
+			android:title="设置备份以及恢复"
+			app:isPreferenceVisible="true"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			app:wiki="需要存储卡的读写权限。备份至/sdcard/平典搜索_备份.json，不包括词典配置；恢复后需完全重启APP方可生效。"
+			/>
 
 		<Preference
 			android:key="sspec"

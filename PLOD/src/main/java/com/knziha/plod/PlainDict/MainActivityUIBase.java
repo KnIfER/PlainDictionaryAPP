@@ -1353,7 +1353,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		};
 		MainStringBuilder = new StringBuilder(40960);
 		//WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
-		ViewUtils.setWebDebug(this);
+		//ViewUtils.setWebDebug(this);
 		if (BuildConfig.isDebug) {
 			CMN.debug("mid", CMN.mid, getClass());
 			CMN.debug("sdk", Build.VERSION.SDK_INT);

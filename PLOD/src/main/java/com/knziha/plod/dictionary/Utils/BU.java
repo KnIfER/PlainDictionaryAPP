@@ -235,6 +235,13 @@ public class  BU{//byteUtils
 			e.printStackTrace();
 		}
     }
+    
+	public static void SaveToFile(String string, File f) throws IOException {
+		FileOutputStream fout = new FileOutputStream(f);
+		fout.write(string.getBytes(StandardCharsets.UTF_8));
+		fout.close();
+	}
+	
     @Deprecated
     public static void printFile(byte[] b, String path){
 		printFile(b,0,b.length,new File(path));
@@ -319,6 +326,14 @@ public class  BU{//byteUtils
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public static String FileToString(File f) throws IOException {
+		FileInputStream fin = new FileInputStream(f);
+		byte[] data = new byte[(int) f.length()];
+		fin.read(data);
+		fin.close();
+		return new String(data, "utf8");
 	}
 
 

@@ -9,11 +9,11 @@ import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.FilePickerPreference;
 import com.knziha.filepicker.settings.SettingsFragmentBase;
-
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.plaindict.Toastable_Activity;
 
 import java.io.File;
 
@@ -39,6 +39,7 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 		findPreference("dev").setOnPreferenceClickListener(this);
 		findPreference("sspec").setOnPreferenceClickListener(this);
 		findPreference("vspec").setOnPreferenceClickListener(this);
+		findPreference("backup").setOnPreferenceChangeListener(this);
 	}
 	
 	@Override
@@ -68,6 +69,26 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		switch (preference.getKey()){
+			case "backup":
+				Toastable_Activity a = (Toastable_Activity) getActivity();
+				if (a==null) break;
+				int idx = IU.parsint(newValue, -1);
+				if(idx==0) {
+					try {
+						a.opt.backup();
+						a.showT("备份成功！");
+					} catch (Exception e) {
+						a.showT("备份失败，请检查存储权限与空间！"+e);
+					}
+				} else if(idx==1) {
+					try {
+						a.opt.restore();
+						a.showT("设置已恢复，重启生效！");
+					} catch (Exception e) {
+						a.showT(""+e);
+					}
+				}
+			break;
 			case "enable_pastebin":
 				PDICMainAppOptions.setShowPasteBin((Boolean) newValue);
 			break;
