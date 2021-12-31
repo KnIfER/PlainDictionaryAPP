@@ -1436,7 +1436,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void fix_dm_color() {
-		CMN.Log("fix_dm_color");
+		//CMN.Log("fix_dm_color");
 		boolean isDark = GlobalOptions.isDark;
 		boolean nii=widget12.getTag(R.id.image)==null;
 		ViewGroup[] holders = new ViewGroup[]{webSingleholder, webholder};
@@ -5653,7 +5653,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	abstract void switch_dark_mode(boolean val);
 
 	void changeToDarkMode() {
-		CMN.Log("changeToDarkMode");
+		//CMN.Log("changeToDarkMode");
 		try {
 			getReferenceObject(WeakReferenceHelper.quick_settings).clear();
 			boolean dark=GlobalOptions.isDark||opt.getInDarkMode();
@@ -7586,7 +7586,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if("about:blank".equals(url) || !mWebView.active&&!mWebView.fromNet) {
 				return;
 			}
-			CMN.Log("chromium page finished ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
+			//CMN.Log("chromium page finished ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
 			if(!mWebView.isloading && !mWebView.fromNet) return;
 			int from = mWebView.fromCombined;
 			mWebView.isloading = false;
@@ -10537,7 +10537,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (menuGrid==null) {
 			menuGrid = new MenuGrid(this);
 			putReferencedObject(jd, menuGrid);
-			CMN.Log("新建MenuGrid...");
+			//CMN.Log("新建MenuGrid...");
 		} else {
 			menuGrid.refresh();
 		}

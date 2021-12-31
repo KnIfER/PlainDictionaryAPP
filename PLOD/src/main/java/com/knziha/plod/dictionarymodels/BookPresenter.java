@@ -3135,7 +3135,7 @@ function debug(e){console.log(e)};
 						, webScale = data_in1.readFloat());
 				avoyager.put(lvClickPos, record);
 				firstFlag |= data_in1.readLong();
-				CMN.Log(bookImpl.getDictionaryName(), firstFlag, "列表位置",lvPos,lvClickPos,lvPosOff);
+				//CMN.Log(bookImpl.getDictionaryName(), firstFlag, "列表位置",lvPos,lvClickPos,lvPosOff);
 				//CMN.Log(bookImpl.getDictionaryName()+"页面位置",record.x,record.y,webScale);
 				TIBGColor = data_in1.readInt();
 				TIFGColor = data_in1.readInt();
@@ -3152,7 +3152,7 @@ function debug(e){console.log(e)};
 				IBC.doubleClickPresetXOffset = data_in1.readFloat();
 				// 78
 			}
-			CMN.pt(bookImpl.getDictionaryName()+" id="+bookImpl.getBooKID()+" "+data+" 单典配置加载耗时");
+			//CMN.pt(bookImpl.getDictionaryName()+" id="+bookImpl.getBooKID()+" "+data+" 单典配置加载耗时");
 		} catch (Exception e) {
 			CMN.Log(e);
 			//firstFlag = 0;
@@ -3202,7 +3202,6 @@ function debug(e){console.log(e)};
 				uncheckVersionBefore_5_4(false);
 			}
 			setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
-			CMN.Log("设置了::", getWebx().getDrawHighlightOnTop());
 		}
 	}
 	

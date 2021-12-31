@@ -878,7 +878,7 @@ public class PlainWeb extends DictionaryAdapter {
 		String key = null;
 		String url=null;
 		BookPresenter bookPresenter = (BookPresenter) presenter;  // todo check instance of
-		CMN.Log("PlainWeb::getVirtualRecordAt::", position, bookPresenter.GetSearchKey());
+		//CMN.Log("PlainWeb::getVirtualRecordAt::", position, bookPresenter.GetSearchKey());
 		if (position==0) {
 			String searchKey = bookPresenter.GetSearchKey();
 			if(searchKey!=null) {
@@ -1328,7 +1328,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 
 	public void onProgressChanged(BookPresenter bookPresenter, WebViewmy  mWebView, int newProgress) {
-		CMN.debug("onProgressChanged", newProgress, mWebView.getProgress());
+		//CMN.debug("onProgressChanged", newProgress, mWebView.getProgress());
 		if(mWebView.titleBar!=null) {
 			Drawable d = mWebView.titleBar.getBackground();
 			int start = d.getLevel();
@@ -1368,7 +1368,7 @@ public class PlainWeb extends DictionaryAdapter {
 
 	/** 接管进入黑暗模式、编辑模式 */
 	public void onPageFinished(BookPresenter bookPresenter, WebViewmy mWebView, String url, boolean updateTitle) {
-		if(GlobalOptions.debug) CMN.Log("chromium", "web  - onPageFinished", currentUrl);
+		CMN.debug("chromium", "web  - onPageFinished", currentUrl);
 		mWebView.removePostFinished();
 		fadeOutProgressbar(bookPresenter, (WebViewmy) mWebView, updateTitle);
 		currentUrl=mWebView.getUrl();

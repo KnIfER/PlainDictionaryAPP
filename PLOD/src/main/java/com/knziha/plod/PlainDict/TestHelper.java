@@ -7,27 +7,19 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.PowerManager;
 
+import androidx.appcompat.app.GlobalOptions;
 import androidx.core.text.HtmlCompat;
 
 import com.knziha.plod.db.LexicalDBHelper;
-import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.text.BreakIteratorHelper;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 import static com.knziha.plod.plaindict.MainActivityUIBase.digestKey;
@@ -180,18 +172,24 @@ public class TestHelper {
 	}
 	
 	public static void wakeUpAndUnlock(Context context){
-		KeyguardManager km= (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-		KeyguardManager.KeyguardLock kl = km.newKeyguardLock("unLock");           //这句 过期了。。但是整个代码 在 我的 htc android4.4 还是能管用的
-		//解锁
-		kl.disableKeyguard();
-		//获取电源管理器对象
-		PowerManager pm=(PowerManager) context.getSystemService(Context.POWER_SERVICE);
-		//获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
-		PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_DIM_WAKE_LOCK,"kn:debug");
-		//点亮屏幕
-		wl.acquire();
-		//释放
-		wl.release();
+		if (GlobalOptions.debug) {
+			try {
+				KeyguardManager km= (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+				KeyguardManager.KeyguardLock kl = km.newKeyguardLock("unLock");           //这句 过期了。。但是整个代码 在 我的 htc android4.4 还是能管用的
+				//解锁
+				kl.disableKeyguard();
+				//获取电源管理器对象
+				PowerManager pm=(PowerManager) context.getSystemService(Context.POWER_SERVICE);
+				//获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
+				PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_DIM_WAKE_LOCK,"kn:debug");
+				//点亮屏幕
+				wl.acquire();
+				//释放
+				wl.release();
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
+		}
 	}
 	
 	public static String RotateEncrypt(String input, boolean dec) {

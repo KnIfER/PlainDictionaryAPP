@@ -474,7 +474,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 			}
 			
 			if(isSrict) {
-				SU.Log(keyword, getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
+				//SU.Log(keyword, getEntryAt((int) (infoI.num_entries_accumulator+res)), res, "::",  -1 * (res + 2));
 				return -1*(int) ((infoI.num_entries_accumulator+res+2));
 			}
 		}
