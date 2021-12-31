@@ -10,6 +10,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
+import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
 import androidx.appcompat.app.GlobalOptions;
@@ -77,9 +78,11 @@ public class PlainWeb extends DictionaryAdapter {
 	String currentUrl;
 	boolean abSearch;
 	boolean excludeAll;
-	public boolean canExcludeUrl;
+	public boolean hasExcludedUrl;
+	public boolean hasExcludedResV4;
+	public boolean fastGStaticFonts;
 	public boolean canSaveResource;
-	public boolean canRerouteUrl;
+	public boolean hasReroutedUrl;
 	public boolean butReadonly;
 	public boolean andEagerForParms;
 	public boolean noImage;
@@ -98,6 +101,8 @@ public class PlainWeb extends DictionaryAdapter {
 	ArrayList<String> routeto = new ArrayList<>();
 	/** for excludeAll */
 	HashSet<String> hosts=new HashSet<>();
+	/** 排除资源文件，加速加载过程（目前仅对kitkat有效） */
+	public String[] excludeResourcesV4;
 	/** for SVG */
 	public String[] svgKeywords;
 	/** 兴趣文件后缀 */
@@ -253,6 +258,8 @@ public class PlainWeb extends DictionaryAdapter {
 		abSearch = search!=null&&search.startsWith("http");
 		excludeAll = website.getBooleanValue("excludeAll");
 		String _extensions  = website.getString("cacheRes");
+		String _excludeRes  = website.getString("excludeRes");
+		fastGStaticFonts  = website.getBooleanValue("fastFonts");
 		butReadonly  = website.getBooleanValue("readRes");
 		andEagerForParms  = website.getBooleanValue("php");
 		String _exclude_db_save_extensions  = website.getString("CDROPT");
@@ -288,7 +295,7 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 		String _routes = website.getString("reroute");
 		if(_routes!=null){
-			canRerouteUrl=true;
+			hasReroutedUrl =true;
 			String[] list = _routes.split("\n");
 			int size = list.length;
 			routefrom = new ArrayList<>(size);
@@ -313,7 +320,7 @@ public class PlainWeb extends DictionaryAdapter {
 //		}
 		
 		if(excludeAll){
-			canExcludeUrl=true;
+			hasExcludedUrl =true;
 			hosts.add(host);
 			for(String sI:entrance){
 				int idx = sI.indexOf("://");
@@ -327,6 +334,12 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 		
 //		bNeedCheckSavePathName=true;
+		
+		if(_excludeRes!=null){
+			excludeResourcesV4 = _excludeRes.split("\\|");
+			hasExcludedResV4=true;
+			//InternalResourcePath = CachedPathSubToDBStorage("Caches");
+		}
 		
 		if(_extensions!=null){
 			cacheExtensions = _extensions.split("\\|");
@@ -571,6 +584,14 @@ public class PlainWeb extends DictionaryAdapter {
 				if (url.contains(kikUrlPatterns[i]))
 					return true;
 			}
+		}
+		return false;
+	}
+	
+	public boolean shouldExcludedResV4(String url) {
+		for (String key:excludeResourcesV4) {
+			if (url.contains(key))
+				return true;
 		}
 		return false;
 	}
@@ -1282,6 +1303,9 @@ public class PlainWeb extends DictionaryAdapter {
 
 	public void onPageStarted(BookPresenter bookPresenter, WebView view, String url, boolean updateTitle) {
 		WebViewmy mWebView = (WebViewmy) view;
+		if (bookPresenter.getContentEditable()) {
+			mWebView.bShouldOverridePageResource = true;
+		}
 		//if(updateTitle) mWebView.toolbar_title.setText(bookPresenter.currentDisplaying=view.getTitle());
 		if(progressProceed !=null) {
 			progressProceed.cancel();
@@ -1333,6 +1357,9 @@ public class PlainWeb extends DictionaryAdapter {
 			//fadeOutProgressbar(bookPresenter, (WebViewmy) mWebView, newProgress>87);
 			mWebView.postFinished();
 		}
+		if(mWebView.bShouldOverridePageResource && newProgress>=45) {
+			mWebView.bShouldOverridePageResource = false;
+		}
 //		if(newProgress>=98){
 //			CMN.debug("newProgress>=98", newProgress);
 //			fadeOutProgressbar(bookPresenter, mWebView, newProgress>=99);
@@ -1346,7 +1373,11 @@ public class PlainWeb extends DictionaryAdapter {
 		fadeOutProgressbar(bookPresenter, (WebViewmy) mWebView, updateTitle);
 		currentUrl=mWebView.getUrl();
 		if (Build.VERSION.SDK_INT<21) mWebView.evaluateJavascript(kitkatCompatJs, null);
-		mWebView.evaluateJavascript(jsLoader, null);
+		mWebView.evaluateJavascript(jsLoader, new ValueCallback<String>() {
+			@Override
+			public void onReceiveValue(String value) {
+			}
+		});
 		if (jsCode != null) mWebView.evaluateJavascript(jsCode, null);
 		if (onload != null) mWebView.evaluateJavascript(onload, null);
 		if (onstart != null) mWebView.evaluateJavascript(onstart, null);

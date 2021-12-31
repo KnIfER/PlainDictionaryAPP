@@ -327,6 +327,14 @@ public class  BU{//byteUtils
 		}
 		return null;
 	}
+	
+	public static FileInputStream fileToStream(File f) {
+		try {
+			return new FileInputStream(f);
+		} catch (FileNotFoundException e) {
+			return null;
+		}
+	}
 
 	public static String FileToString(File f) throws IOException {
 		FileInputStream fin = new FileInputStream(f);

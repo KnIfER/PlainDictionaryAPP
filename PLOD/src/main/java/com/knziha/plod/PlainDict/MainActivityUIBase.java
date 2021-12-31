@@ -1364,7 +1364,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				System.loadLibrary("PDict");
 				if (!testPakVal(getPackageName()))
 					showT("请使用正版软件！");
-			} catch (Exception ignored) { }
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
 		}
 	}
 
@@ -2989,7 +2991,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		BookPresenter book = null;
 		try {
 			book = new_book(defDicts[1], this);
-		} catch (IOException ignored) {  }
+		} catch (Exception ignored) {  }
 		if(retrieve_all) {
 			try {
 				if(CC==null) {
@@ -3006,7 +3008,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					md.add(book=new_book(placeHolder, this));
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				CMN.Log(e);
 			}
 		}
@@ -3014,7 +3016,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			boolean lazyLoad = opt.getLazyLoadDicts();
 			LoadLazySlots(def, lazyLoad, opt.getLastPlanName(LastPlanName));
 			buildUpDictionaryList(lazyLoad, null);
-		} catch (IOException e) { CMN.Log(e); }
+		} catch (Exception e) { CMN.Log(e); }
 	}
 	
 	protected View getIMPageCover() {
@@ -7601,9 +7603,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			*  II、进入黑暗模式([0,1,2,3],[4])、编辑模式(0,1,3,[4])。*/
 			String toTag = mWebView.toTag;
 			OUT:
-			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+			if(invoker.getIsWebx()){
 				((PlainWeb)invoker.bookImpl).onPageFinished(invoker, mWebView, url, true);
-			} else
+			} else {
+			if(invoker.getImageBrowsable() && invoker.bookImpl.hasMdd()) {
+				mWebView.evaluateJavascript(BookPresenter.imgAndEntryLoader, null);
+			}
 			if(from!=2){
 				if(invoker==null){
 					//root.post(() -> showT("OPF 错误!!!"));
@@ -7714,6 +7719,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						view.evaluateJavascript("location.replace(\"#" + toTag + "\");", null);
 					}
 				}
+			}
 			}
 			/* 自动播放声音自动播报 */
 			if(mWebView.bRequestedSoundPlayback){
@@ -7838,7 +7844,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
 			boolean fromPopup = view==popupWebView;
-			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+			if(invoker.getIsWebx()) {
 				PlainWeb webx = (PlainWeb) invoker.bookImpl;
 				try {
 					if (!url.startsWith("http") && !url.startsWith("https") && !url.startsWith("ftp") && !url.startsWith("file")) {
@@ -7847,9 +7853,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				boolean ret = webx.canExcludeUrl && webx.shouldExcludeUrl(url);
+				boolean ret = webx.hasExcludedUrl && webx.shouldExcludeUrl(url);
 				if(!ret){
-					if(webx.canRerouteUrl) {
+					if(webx.hasReroutedUrl) {
 						String urlnew = webx.shouldRerouteUrl(url);
 						if(urlnew!=null) {
 							view.loadUrl(urlnew);
@@ -7871,6 +7877,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			boolean fromPeruseView = from==3;
 			boolean fromCombined = from==1;
 			String msg=null;
+			if (url.startsWith("file:///#")) {
+				url = entryTag+url.substring(8);
+			}
 			if (url.startsWith("pdf://")) {
 				int end = url.lastIndexOf("#");
 				int pageId = -1;
@@ -8170,10 +8179,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					CMN.Log(e);
 				}
 			}
-
+			
 			//CMN.Log("chromium shouldInterceptRequest invoker",invoker);
 			if(invoker.getIsWebx()) {
 				PlainWeb webx = (PlainWeb) invoker.bookImpl;
+				if (webx.hasExcludedResV4 && Build.VERSION.SDK_INT<21) {
+					if (webx.shouldExcludedResV4(url)) {
+						//CMN.Log("排除::"+url);
+						return emptyResponse;
+					}
+				}
+//				if (webx.fastGStaticFonts && Build.VERSION.SDK_INT<21) {
+//					if (url.endsWith(".woff")) {
+//						InputStream resTmp = ViewUtils.fileToStream(invoker.a, new File(AssetTag.substring(0, 6)+"2/"+url.substring(url.lastIndexOf("/") + 1)));
+//						if(resTmp!=null) return new WebResourceResponse("*/*", "UTF-8", resTmp);
+//					}
+//				}
 				if(accept==null || accept.contains("text/html")) {
 					if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
 						boolean proceed = true;
@@ -8187,8 +8208,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 						}
 	
-						if(proceed) {
-							CMN.debug("accept", accept, url);
+						if(proceed && mWebView.bShouldOverridePageResource) {
+							//CMN.debug("accept", accept, url);
 							InputStream overridePage = invoker.getWebPage(url);
 							if(overridePage!=null){
 								//CMN.tp(0, "webx getPage :: ", invoker.getWebPageString(url), url);

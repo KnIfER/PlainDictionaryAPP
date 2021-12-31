@@ -1,21 +1,19 @@
 {
 	"host": "https://wantwords.thunlp.org"
 	,"index": ""
-	,"style": ""
+	,"style": "#etyexp{position:fixed;width:35px;height:38px;top:8px;right:5px;opacity:0.45;transition:all 0.25s linear 0s;z-index:999999;padding:9px;user-select:none}"
 	,"name": "万词王（智慧近义词查询）"
 	,"js": "
 		var win=window,doc=document;
 		function debug(e){console.log('fatal web::'+e)};
 		debug('init wantwords...');
 		function ge(e){return doc.getElementById(e)};
-		function initHeaderBtn() {
+		function initHBtn() {
 			var e = doc.createElement('IMG');
 			e.id='etyexp';
 			if(!ge(e.id)) {
 				doc.body.appendChild(e);
 				e.src='/static/image/about.png';
-				e.style='position:absolute;width:35px;height:38px;top:8px;right:5px;opacity:0.45;transition:all 0.25s linear 0s;z-index:999999;padding:9px;user-select:none;';
-				e.style.position='fixed'; // 始终可见
 				function toggle(e){var stl = ge('_PDSTL');
 				e=e.srcElement;
 				var mod = '.navbar{display: none;}#tabs{top:0!important}',idx=stl.innerText.indexOf(mod);
@@ -38,14 +36,14 @@
 		debug('init wantwords...');
 	"
 	,"searchJs": "
-		if(!window.headerBtn) initHeaderBtn();
+		if(!window.headerBtn && window.initHBtn) initHBtn();
 		var succ;
 		// 1汉语 3En 2汉英 4En-Zh
 		// sid=0 2 1 3
 		var rm=[1,2,3,4]
 		var tid=rm[getSelectedTabId||0];
 		var tab=$('#tabs-'+tid)[0];
-		debug('wants::',tid,tab,tab.id);
+		//debug('wants::',tid,tab,tab.id);
 		// todo 自动切换
 		if(tab) {
 			tab.noword=1;
@@ -66,7 +64,7 @@
 		// 搜索引擎变体
 		function doSearch(e)
 		{
-			debug('doSearch...');
+			//debug('doSearch...');
 			var id='ui-id-'+e,lnks=document.getElementsByTagName('A');
 			for(var i=0;c=lnks[i++];) {
 				if(c.id===id)

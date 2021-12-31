@@ -215,12 +215,15 @@ public class RLContainerSlider extends FrameLayout{
 							ViewUtils.preventDefaultTouchEvent(this, (int)lastX, (int)lastY);
 							abortedOffsetX = WebContext.lastX-nowX;
 							abortedOffsetY = WebContext.lastY-nowY;
+							ev.setAction(MotionEvent.ACTION_DOWN);
+							WebContext.dispatchTouchEvent(ev);
 						}
 					}
 					else if(aborted) {
 						onInterceptTouchEvent(ev);
 						if(!dragged && WebContext!=null) {
-							ev.setLocation(nowX/*-WebContext.getLeft()*/+abortedOffsetX, nowY/*-WebContext.getTop()*/+abortedOffsetY);
+							//ev.setLocation(nowX/*-WebContext.getLeft()*/+abortedOffsetX, nowY/*-WebContext.getTop()*/+abortedOffsetY);
+							ev.setLocation(nowX, nowY);
 							WebContext.dispatchTouchEvent(ev);
 						}
 					}

@@ -185,36 +185,8 @@ public class BookPresenter
 	}
 	
 	/** var w=window,d=document;if(!(w.rcsp&0xF00)){w.addEventListener('click',function(e){
-	 		//_log('wrappedClickFunc', e.srcElement.id);
-	 		var curr=e.srcElement;
-	 		if(w.webx){
-				if(curr.tagName=='IMG'){
-					var img=curr;
-					if(img.src && !img.onclick && !(img.parentNode&&img.parentNode.tagName=="A")){
-						var lst = [];
-						var current=0;
-						var all = d.getElementsByTagName("img");
-						for(var i=0;i<all.length;i++){
-							if(all[i].src){
-								lst.push(all[i].src);
-								if(all[i]==img)
-									current=i;
-							}
-						}
-						if(lst.length==0)
-							lst.push(img.src);
-						app.openImage(current, e.offsetX/img.offsetWidth, e.offsetY/img.offsetHeight, lst);
-					}
-				}
-				else if(curr.tagName=='A'){
-					//_log('fatal in wcl : '+curr.href);
-					var href=curr.href+'';
-					if(curr.href && href.startsWith('file:///#')){
-						curr.href='entry://#'+href.substring(9);
-						return false;
-					}
-	 			}
-			}
+	 		//_log('wrappedClickFunc 2', e.srcElement.id);
+	 		var curr = e.srcElement;
 			_log('popuping...'+w.rcsp);
 			if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && w.rcsp&0x20 && !curr.noword){
 	 			if(w._NWP) {
@@ -238,11 +210,11 @@ public class BookPresenter
 						var text=s.toString(); // for word made up of just one character
 						var range = s.getRangeAt(0);
 	 
-						var rrect = range.getBoundingClientRect();
-	 					var pX = rrect.x;
-	 					var pY = rrect.y;
-	 					var pW = rrect.width;
-	 					var pH = rrect.height;
+						var br = range.getBoundingClientRect();
+	 					var pX = br.left;
+	 					var pY = br.top;
+	 					var pW = br.width;
+	 					var pH = br.height;
 	 					var cprY = e.clientY;
 	 					var cprX = e.clientX;
 
@@ -261,19 +233,20 @@ public class BookPresenter
 								if(range1.endContainer===range.endContainer&&range1.endOffset===range.endOffset){
 									// for word made up of multiple character
 									text=s.toString();
-									rrect = range1.getBoundingClientRect();
-									pX = rrect.x;
-									pY = rrect.y;
-									pW = rrect.width;
-									pH = rrect.height;
+									br = range1.getBoundingClientRect();
+									pX = br.left;
+									pY = br.top;
+									pW = br.width;
+									pH = br.height;
 								}
 	 
 								//网页内部的位置，与缩放无关
 								//_log(rrect);
-								_log(pX+' ~~ '+pY+' ~~ '+pW+' ~~ '+pH);
-								_log(cprX+' :: '+cprY);
+								//_log(pX+' ~~ '+pY+' ~~ '+pW+' ~~ '+pH);
+								//_log(cprX+' :: '+cprY);
+								//_log(d.documentElement.scrollLeft+' px:: '+pX);
 	 
-								_log(text); // final output
+								//_log(text); // final output
 								if(app){
 									app.popupWord(sid.get(), text, frameAt, d.documentElement.scrollLeft+pX, d.documentElement.scrollTop+pY, pW, pH);
 									w.popup=1;
@@ -296,6 +269,30 @@ public class BookPresenter
 	 */
 	@Metaline()
 	public final static String tapTranslateLoader=StringUtils.EMPTY;
+	
+	/**window.addEventListener('click',function(e) {
+		//_log('wrappedClickFunc 1', e.srcElement.id);
+		if(e.srcElement.tagName==='IMG'){
+			var img=e.srcElement;
+			if(img.src && !img.onclick && !(img.parentNode&&img.parentNode.tagName=="A")){
+				var lst = [];
+				var current=0;
+				var all = document.getElementsByTagName("img");
+				for(var i=0;i<all.length;i++) {
+					if(all[i].src) {
+						lst.push(all[i].src);
+						if(all[i]==img)
+							current=i;
+					}
+				}
+				if(lst.length==0)
+					lst.push(img.src);
+				app.openImage(current, e.offsetX/img.offsetWidth, e.offsetY/img.offsetHeight, lst);
+			}
+		}
+	 })*/
+	@Metaline()
+	public final static String imgAndEntryLoader=StringUtils.EMPTY;
 	
 	/**var w=window,d=document;
 		function selectTouchtarget(e){
@@ -2450,13 +2447,17 @@ function debug(e){console.log(e)};
 	}
 	
 	public InputStream getWebPage(String url) {
-		if (getContentEditable() && mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
-			PlainWeb webx = (PlainWeb) bookImpl;
-			if(url.startsWith(webx.host)) {
-				url=url.substring(webx.host.length());
+		try {
+			if (getContentEditable() && mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+				PlainWeb webx = (PlainWeb) bookImpl;
+				if(url.startsWith(webx.host)) {
+					url=url.substring(webx.host.length());
+				}
+				CMN.Log("getWebPage::", url);
+				return a.prepareHistoryCon().getPageStream(getId(), url);
 			}
-			CMN.Log("getWebPage::", url);
-			return a.prepareHistoryCon().getPageStream(getId(), url);
+		} catch (Exception e) {
+			CMN.Log(e);
 		}
 		return null;
 	}
@@ -2636,8 +2637,14 @@ function debug(e){console.log(e)};
 
         @JavascriptInterface
         public String getCurrentPageKey() {
-			if(presenter==null) return "";
-			return presenter.a.getCurrentPageKey();
+        	String ret=null;
+			try {
+				if(presenter!=null)
+					ret = presenter.a.getCurrentPageKey();
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
+			return ret==null?"":ret;
 		}
 
         @JavascriptInterface
@@ -2699,6 +2706,7 @@ function debug(e){console.log(e)};
 				if(pW==0) pW=pH;
 				if(RLContainerSlider.lastZoomTime == 0 || System.currentTimeMillis() - RLContainerSlider.lastZoomTime > 500){
 					//Utils.setFloatTextBG(new Random().nextInt());
+					//CMN.Log("popupWord::", pX, pY, pW, pH);
 					WebViewmy wv = presenter.findWebview(sid);
 					//CMN.Log("只管去兮不管来", wv!=null);
 					if(wv!=null){
@@ -3194,6 +3202,7 @@ function debug(e){console.log(e)};
 				uncheckVersionBefore_5_4(false);
 			}
 			setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
+			CMN.Log("设置了::", getWebx().getDrawHighlightOnTop());
 		}
 	}
 	

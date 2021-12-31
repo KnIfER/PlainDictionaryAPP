@@ -106,6 +106,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean forbidLoading;
 	public boolean active;
 	public boolean bPageStarted;
+	public boolean bShouldOverridePageResource;
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
@@ -396,6 +397,14 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		highRigkt_Y = y-pad;
 		highRigkt_R = r+pad;
 		highRigkt_B = b+pad;
+		if (Build.VERSION.SDK_INT<21) { //todo webview 版本
+			int sX = getScrollX();
+			int sY = getScrollY();
+			highRigkt_X += sX;
+			highRigkt_R += sX;
+			highRigkt_Y += sY;
+			highRigkt_B += sY;
+		}
 		drawRect = true;
 		postInvalidate();
 	}
@@ -1228,16 +1237,20 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-		if(drawRect&&!presenter.getDrawHighlightOnTop()){
-			drawHighlightRect(canvas, false);
-		}
 		super.onDraw(canvas);
 		if (hasWidgets) {
 			widgetsLayout.layoutWidgets();
 		}
-		if(drawRect&&presenter.getDrawHighlightOnTop()){
+		if(drawRect/* && presenter.getDrawHighlightOnTop()*/)
+		{
 			drawHighlightRect(canvas, Build.VERSION.SDK_INT<=23 && !GlobalOptions.isDark);
 		}
+//		if (drawRect) {
+//			drawHighlightRect(canvas, false);
+//			float scale = webScale/ BookPresenter.def_zoom;
+//			canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale
+//					, ViewUtils.getRectPaint());
+//		}
 	}
 	
 	private void drawHighlightRect(Canvas canvas, boolean alpha) {

@@ -461,7 +461,7 @@ public abstract class mdBase {
 			String[] lines = _header_tag.get("StyleSheet").split("\n");
 			for(int i=0;i<lines.length;i+=3) {
 				if(lines[i].length()>0) { //todo
-					SU.Log("_stylesheet.put", lines[i], lines[i].length());
+					//SU.Log("_stylesheet.put", lines[i], lines[i].length());
 					_stylesheet.put(lines[i],new String[]{i+1<lines.length?lines[i+1]:"",i+2<lines.length?lines[i+2]:""});
 					lenSty++;
 				}

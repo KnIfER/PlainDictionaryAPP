@@ -1243,17 +1243,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(currentDictionary.mWebView!=null){
 					currentPos=currentDictionary.mWebView.currentPos;
 				}
-				if(Build.VERSION.SDK_INT>23){
-					IMPageCover.getForeground().setAlpha(0);
-					IMPageCover.setBackground(null);
-				}
 				if(IMPageCover.getTag()!=(Integer)MainBackground) {
-					if(Build.VERSION.SDK_INT>23)
-						IMPageCover.getForeground().setTint(0x662b4381);
-					else
-						IMPageCover.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
+					IMPageCover.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
 					IMPageCover.setTag(MainBackground);
 				}
+				IMPageCover.getBackground().setAlpha(0);
 				IMPageCover.setTranslationY(0);
 				RLContainerSlider PageSlider_ = PageSlider;
 				if(peruseView !=null && ActivedAdapter== peruseView.leftLexicalAdapter)
@@ -1323,11 +1317,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 			@Override
 			public void onDecided(boolean Dir,IMPageSlider IMPageCover) {
-				//IMPageCover.setAlpha(0.5f);
-				//IMPageCover.setForegroundTintList(tint);
-				//IMPageCover.getForeground().setAlpha(0);
-				if(Build.VERSION.SDK_INT>23)
-					IMPageCover.getForeground().setAlpha(255);
+				IMPageCover.getBackground().setAlpha(255);
 			}
 			long currentPos=0;
 
@@ -1346,14 +1336,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 			@Override
 			public void onHesitate(IMPageSlider IMPageCover) {
-				if(Build.VERSION.SDK_INT>23)
-					IMPageCover.getForeground().setAlpha(0);
+				IMPageCover.getBackground().setAlpha(0);
 			}
 
 			@Override
 			public void onPageTurn(int Dir,IMPageSlider IMPageCover) {
-				if(Build.VERSION.SDK_INT>23)
-					IMPageCover.getForeground().setAlpha(0);
+				IMPageCover.getBackground().setAlpha(0);
 				boolean there = ActivedAdapter instanceof com.knziha.plod.plaindict.PeruseView.LeftViewAdapter;
 				if(Dir==1) {widget11.performClick();}
 				else if(Dir==0) widget10.performClick();

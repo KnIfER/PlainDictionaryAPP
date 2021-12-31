@@ -477,6 +477,30 @@ public class ViewUtils {
 		return BU.fileToString(f);
 	}
 	
+	public static InputStream fileToStream(Context context, File f) {
+		if (f.getPath().startsWith("/ASSET")) {
+			String errRinfo;
+			boolean b1=f.getPath().startsWith("/", 6);
+			if(GlobalOptions.debug || b1)
+			try {
+				return context.getResources().getAssets().open(f.getPath().substring(AssetTag.length()+(!b1?1:0)));
+			} catch (IOException e) {
+				errRinfo = CMN.Log(e);
+			}
+			try {
+				UniversalDictionaryInterface asset = BookPresenter.getBookImpl(context instanceof MainActivityUIBase ?(MainActivityUIBase)context:null, new File(AssetTag+"webx"), 0);
+				Objects.requireNonNull(asset);
+				int idx = asset.lookUp(""+BookPresenter.hashCode(f.getPath().substring(8), 0));
+				CMN.Log("val::", asset.getRecordAt(idx, null, true), f.getPath(), asset.getEntryAt(0), asset.getNumberEntries());
+				return new ByteArrayInputStream(asset.getRecordData(idx));
+			} catch (IOException e) {
+				errRinfo = CMN.Log(e);
+			}
+			return new ByteArrayInputStream(errRinfo.getBytes());
+		}
+		return BU.fileToStream(f);
+	}
+	
 	// todo 缓存
 	public static WebResourceResponse KikLetToVar(String url, String accept, String refer, String origin,
 												  WebResourceRequest request, PlainWeb webx) throws Exception {
