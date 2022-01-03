@@ -167,7 +167,7 @@
 			android:key="backup"
 			android:entries="@array/backup"
 			android:persistent="false"
-			android:title="设置备份以及恢复"
+			android:title="设置备份及恢复"
 			app:isPreferenceVisible="true"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"

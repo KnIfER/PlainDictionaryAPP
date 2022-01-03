@@ -1720,7 +1720,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//tg
 		//etSearch.setText("happy");
 		//showT(""+currentDictionary.QueryByKey("woodie", SearchType.Normal, false, 0));
-		//TestHelper.wakeUpAndUnlock(this);
+		TestHelper.wakeUpAndUnlock(this);
 
 //		PowerManager pm= (PowerManager) this.getSystemService(Context.POWER_SERVICE);
 //		wakeLock=pm.newWakeLock(PowerManager.ON_AFTER_RELEASE|PowerManager.PARTIAL_WAKE_LOCK,"kn:debug");

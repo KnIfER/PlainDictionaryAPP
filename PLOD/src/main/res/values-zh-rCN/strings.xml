@@ -100,7 +100,7 @@
 
 
 	<string name="stg_require">请赋予存储权限。</string>
-	<string name="stg_statement">如您不赋予，则无法正常打开外部词库，只可试用。</string>
+	<string name="stg_statement">推荐赋予存储权限，否则无法打开外部词库文件。</string>
 	<string name="stg_grantnow">立即开启</string>
 	<string name="trialin">试用中…… #</string>
 	<string name="stgerr_fail">抱歉，无法在您的设备上使用</string>

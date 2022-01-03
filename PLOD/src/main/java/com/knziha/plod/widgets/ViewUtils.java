@@ -1010,8 +1010,13 @@ public class ViewUtils {
 	public static Object execSimple(String simplet, HashMap<String, Object> reflectionPool, Object...vars) throws Exception {
 		StringTokenizer array = new StringTokenizer(simplet, ";\r\n");
 		HashMap<String, Object> variables = new HashMap<>();
-		for (int i = 0; i < vars.length-0; i++) {
-			variables.put("$"+(i==0?"":i), vars[i+0]);
+		int st=0;
+		for (int i = st; i < vars.length-0; i++) {
+			if(i==st && vars[i] instanceof String && vars[i].toString().endsWith("::")) {
+				st++; continue;
+			}
+			//if(vars[i]==simplet) break;
+			variables.put("$"+(i==st?"":i), vars[i+0]);
 		}
 		Object ret = null;
 		while(array.hasMoreTokens()){

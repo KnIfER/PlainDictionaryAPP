@@ -152,6 +152,7 @@ import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.AutoCloseInputStream;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
@@ -8220,7 +8221,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						
 	//					if (url.contains("apis.google")) return emptyResponse;
 	
-						if(webx.canSaveResource){
+						if(webx.canSaveResource) {
 							try {
 								shWebsite = webx.cacheExtensions;
 								for (int i = 0; i < shWebsite.length; i++) {
@@ -8397,7 +8398,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} else {
 				key = key.substring(start+ BookPresenter.FileTag.length());
 			}
-			if(url.startsWith("/MdbR/")){
+			if(url.startsWith("/MdbR/")) {
 				try {
 					url=url.substring(6);
 					CMN.Log("[fetching internal res : ]", url);
@@ -8409,7 +8410,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					CMN.Log(e);
 				}
 			}
-			else if(key.startsWith("/pdfimg/")){
+			else if(key.startsWith("/pdfimg/")) {
 //				String urlkey=key.substring("/pdfimg/".length());
 //				int idx = urlkey.lastIndexOf("#");
 //				int page = 0;
@@ -8503,11 +8504,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				break;
 			}
 			//检查后缀，js，ini,png,css,直接路径。
-			if(mime!=null && key.lastIndexOf(SepWindows)==0){
+			if(mime!=null && key.lastIndexOf(SepWindows)==0) {
 				File candi = new File(invoker.f().getParentFile(),new File(url).getName());
-				//CMN.Log("candi_csssj",url, candi.getAbsolutePath(), candi.exists());
+				CMN.debug("外挂CSS/JS资源::", candi, url, "$.getAbsolutePath()", "$.exists()");
 				if(candi.exists()) try {
-					return new WebResourceResponse(mime,"UTF-8",new FileInputStream(candi));
+					return new WebResourceResponse(mime, "UTF-8", new AutoCloseInputStream(new FileInputStream(candi)));
 				} catch (FileNotFoundException ignored) { }
 			}
 
@@ -8854,8 +8855,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		-ms-filter:invert(1);
 	 }
 	 body {
-	 	background:transparent!important;
-	 	background-color:#fff!important;
+	 	background:#00000000!important;
+	 	background-color:#00000000!important;
 	 }
 	 </style>
 	 */
@@ -8867,7 +8868,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					 -moz-filter: invert(100%);\
 					 -o-filter: invert(100%);\
 					 -ms-filter: invert(100%);}\
-				body {background:#fff}', d=document,
+				body {background:#00000000}', d=document,
 	 head = d.getElementsByTagName('head')[0],
 	 sty = d.createElement('style');
 	 sty.id = "_PDict_Darken";
@@ -8881,7 +8882,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		 }
 		 //injecting the css to the head
 		 head.appendChild(sty);
-		 if(d.body){d.body.style.background='#fff';d._pdkn=1}
+		 if(d.body){d.body.style.background='#00000000';d._pdkn=1}
 	 }
 	 */
 	@Metaline

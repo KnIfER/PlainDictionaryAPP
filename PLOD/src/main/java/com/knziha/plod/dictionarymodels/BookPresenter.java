@@ -610,6 +610,7 @@ function debug(e){console.log(e)};
     debug(111); 123
 */ @Metaline(compile = false)
 	private final static String testVal="";
+	private boolean hasExtStyle;
 	
 	/**几乎肯定是段落，不是单词或成语。**/
 	public static boolean testIsParagraph(String searchText, int paragraphWords) {
@@ -903,15 +904,16 @@ function debug(e){console.log(e)};
 		
 		File p = fullPath.getParentFile();
 		if(p!=null && p.exists()) {
-			StringBuilder fName_builder = getCleanDictionaryNameBuilder();
-			int bL = fName_builder.length();
+			StringBuilder buffer = getCleanDictionaryNameBuilder();
+			int bL = buffer.length();
 			/* 外挂同名css */
-			File externalFile = new File(p, fName_builder.append(".css").toString());
+			File externalFile = new File(p, buffer.append(".css").toString());
 			if(externalFile.exists()) {
 				//todo 插入 同名 css 文件？
+				hasExtStyle = true;
 			}
-			fName_builder.setLength(bL);
-			externalFile = new File(p, fName_builder.append(".png").toString());
+			buffer.setLength(bL);
+			externalFile = new File(p, buffer.append(".png").toString());
 			/* 同名png图标 */
 			if(externalFile.exists()) {
 				cover = Drawable.createFromPath(externalFile.getPath());
@@ -2078,11 +2080,22 @@ function debug(e){console.log(e)};
 	public StringBuilder AcquirePageBuilder() {
 		StringBuilder sb = bookImpl.AcquireStringBuffer(512);
 		sb.append(htmlBase);
-		//todo 插入 同名 css 文件？
 		sb.append(js);
+		if(hasExtStyle) {
+			//CMN.Log("外挂同名 css");
+			String fullFileName = bookImpl.getDictionaryName();
+			int end = fullFileName.length();
+			if(unwrapSuffix) {
+				int idx = bookImpl.getDictionaryName().lastIndexOf(".");
+				if(idx>0) end=idx;
+			}
+			sb.append("<link rel='stylesheet' type='text/css' href='")
+					.append(fullFileName, 0, end)
+					.append(".css'/>");
+		}
 		return sb;
 	}
-	boolean test = true;
+	
 	public void renderContentAt_internal(WebViewmy mWebView,float initialScale, boolean fromCombined, boolean fromPopup, boolean mIsolateImages, long...position) {
 		mWebView.isloading=true;
 		mWebView.currentPos = position[0];
@@ -2156,7 +2169,7 @@ function debug(e){console.log(e)};
 			CMN.Log(s);
 		}
 
-    	//CMN.Log("缩放是", initialScale);
+    	CMN.Log("renderContentAt_internal::缩放是", initialScale);
 		if(initialScale!=-1)
 			mWebView.setInitialScale((int) (100*(initialScale/ BookPresenter.def_zoom)*opt.dm.density));//opt.dm.density
 		else {
