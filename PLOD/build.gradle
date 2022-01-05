@@ -29,8 +29,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 71
-        versionName "5.6"
+        versionCode 72
+        versionName "5.6.1"
         vectorDrawables.generatedDensities = ['hdpi']
         multiDexEnabled true
     }
