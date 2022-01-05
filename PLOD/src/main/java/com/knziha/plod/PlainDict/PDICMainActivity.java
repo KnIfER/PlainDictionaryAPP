@@ -25,7 +25,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.os.LocaleList;
 import android.os.Message;
@@ -2647,7 +2646,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 
 			PageSlider.TurnPageEnabled=opt.getPageTurn1()&&opt.getTurnPageEnabled();
-			PageSlider.setIBC(presenter.mWebView);
+			PageSlider.setIBC(presenter.mWebView, null);
 
 			layoutScrollDisabled=true;
 			if(bOnePageNav)

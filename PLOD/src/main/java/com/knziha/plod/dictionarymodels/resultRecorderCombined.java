@@ -163,7 +163,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			scrolled=false;
 		}
 		
-		a.PageSlider.setIBC(null);
+		a.PageSlider.setIBC(null, a.WHP);
 		
 		ArrayList<Long> valsTmp = new ArrayList<>();
 		int valueCount=0;

@@ -5,6 +5,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -15,6 +16,7 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 public class RLContainerSlider extends FrameLayout{
 	public boolean TurnPageSuppressed;
 	public WebViewmy WebContext;
+	public ViewGroup ScrollerView;
 	private float density;
 	private int move_index;
 	private boolean bZoomOut;
@@ -213,18 +215,20 @@ public class RLContainerSlider extends FrameLayout{
 							first_touch_id = -1;
 //							CMN.Log("abort!!!");
 							ViewUtils.preventDefaultTouchEvent(this, (int)lastX, (int)lastY);
-							abortedOffsetX = WebContext.lastX-nowX;
-							abortedOffsetY = WebContext.lastY-nowY;
-							ev.setAction(MotionEvent.ACTION_DOWN);
-							WebContext.dispatchTouchEvent(ev);
+//							abortedOffsetX = WebContext.lastX-nowX;
+//							abortedOffsetY = WebContext.lastY-nowY;
+							if(ScrollerView!=null) {
+								ev.setAction(MotionEvent.ACTION_DOWN);
+								ScrollerView.dispatchTouchEvent(ev);
+							}
 						}
 					}
 					else if(aborted) {
 						onInterceptTouchEvent(ev);
-						if(!dragged && WebContext!=null) {
+						if(!dragged && ScrollerView!=null) {
 							//ev.setLocation(nowX/*-WebContext.getLeft()*/+abortedOffsetX, nowY/*-WebContext.getTop()*/+abortedOffsetY);
 							ev.setLocation(nowX, nowY);
-							WebContext.dispatchTouchEvent(ev);
+							ScrollerView.dispatchTouchEvent(ev);
 						}
 					}
 					lastX = nowX;
@@ -353,10 +357,16 @@ public class RLContainerSlider extends FrameLayout{
 		bNoDoubleClick = WebContext==null||!WebContext.IBC.getDoubleClickZoomPage();
 	}
 	
-	public void setIBC(WebViewmy IBCN) {
+	public void setIBC(WebViewmy IBCN, ViewGroup scrollerView) {
 		if(WebContext!=IBCN) {
 			WebContext = IBCN;
 			invalidateIBC();
+			if (WebContext!=null) {
+				this.ScrollerView = WebContext;
+			}
+		}
+		if(this.ScrollerView!=scrollerView && scrollerView!=null) {
+			this.ScrollerView = scrollerView;
 		}
 	}
 }
