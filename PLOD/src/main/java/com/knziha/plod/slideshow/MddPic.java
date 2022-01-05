@@ -1,15 +1,19 @@
 package com.knziha.plod.slideshow;
 
-import com.knziha.plod.dictionary.mdictRes;
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 
-import java.util.List;
+import java.io.InputStream;
 
 public class MddPic {
-	final List<mdictRes> mdd;
+	final UniversalDictionaryInterface book;
 	final String path;
 
-	public MddPic(List<mdictRes> mdd, String key) {
-		this.mdd = mdd;
+	public MddPic(UniversalDictionaryInterface book, String key) {
+		this.book = book;
 		this.path = key;
+	}
+	
+	public InputStream load() {
+		return book.getResourceByKey(path);
 	}
 }

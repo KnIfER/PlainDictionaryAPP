@@ -15,7 +15,6 @@ android.applicationVariants.all { variant ->
             android.sourceSets.release.assets.srcDirs = ['src/main/assets_release']
         }
     }
-
 }
 
 android {
@@ -30,8 +29,8 @@ android {
         applicationId "com.knziha.plod.plaindict"
         minSdkVersion ver_minsdk
         targetSdkVersion ver_aimsdk
-        versionCode 70
-        versionName "5.5"
+        versionCode 71
+        versionName "5.6"
         vectorDrawables.generatedDensities = ['hdpi']
         multiDexEnabled true
     }

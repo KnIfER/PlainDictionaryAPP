@@ -66,6 +66,9 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	
 	protected int split_recs_thread_number;
 	
+	protected boolean hasResources;
+	
+	
 	public DictionaryAdapter(File fn, MainActivityUIBase _a) {
 		f = fn;
 		_Dictionary_fName=fn.getName();
@@ -142,7 +145,7 @@ public class DictionaryAdapter implements UniversalDictionaryInterface {
 	
 	@Override
 	public boolean hasMdd() {
-		return false;
+		return hasResources;
 	}
 	
 	@Override

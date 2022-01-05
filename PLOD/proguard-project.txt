@@ -16,3 +16,11 @@
 -keepattributes LineNumberTable
 #-keepattributes Exceptions,InnerClasses,Signature
 #-keepattributes SourceFile,LineNumberTable
+
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+}
+-assumenosideeffects class com.knziha.plod.plaindict.CMN {
+    public static *** debug(...);
+}

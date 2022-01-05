@@ -1113,7 +1113,12 @@ public abstract class mdBase {
 				infoI_cache.key_offsets[keyCounter]=key_id;
 				keyCounter++;
 			}
-			infoI_cache.raw_keys_splits[keyCounter]=BlockOff+key_start_index+_number_width+entryNumExt;
+			//infoI_cache.raw_keys_splits[keyCounter]=BlockOff+key_start_index+_number_width+entryNumExt;
+			
+			//if(BlockOff+key_start_index+_number_width+entryNumExt>BlockLen)
+			//	throw new RuntimeException("大笨蛋！"+(BlockOff+key_start_index+_number_width+entryNumExt)+", "+BlockLen);
+			
+			infoI_cache.raw_keys_splits[keyCounter]=BlockLen;
 			//long end2=System.currentTimeMillis(); //获取开始时间
 			//System.out.println("解压耗时："+(end2-start2));
 			//assert(adler32 == (calcChecksum(key_block)));

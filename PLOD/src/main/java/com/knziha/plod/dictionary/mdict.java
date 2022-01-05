@@ -29,6 +29,7 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.key_info_struct;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.Utils.record_info_struct;
+import com.knziha.plod.plaindict.CrashHandler;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
@@ -246,41 +247,47 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 	public InputStream getResourceByKey(String key) {
 		//SU.Log("getResourceByKey", _Dictionary_fName, ftd);
-		if(ftd !=null && ftd.size()>0){
-			String keykey = key.replace("\\",File.separator);
-			for(File froot: ftd){
-				File ft= new File(froot, keykey);
-				//SU.Log("getResourceByKey", _Dictionary_fName, ft.getAbsolutePath(), ft.exists());
-				if(ft.exists()) {
-					try {
-						return new FileInputStream(ft);
-					} catch (Exception e) {
-						e.printStackTrace();
+		try {
+			if(ftd !=null && ftd.size()>0){
+				String keykey = key.replace("\\",File.separator);
+				for(File froot: ftd){
+					File ft= new File(froot, keykey);
+					//SU.Log("getResourceByKey", _Dictionary_fName, ft.getAbsolutePath(), ft.exists());
+					if(ft.exists()) {
+						try {
+							return new FileInputStream(ft);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}
-		}
-		if(isResourceFile){
-			int idx = lookUp(key);
-			if(idx>=0) {
-				try {
-					return getResourseAt(idx);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		} else if(mdd!=null && mdd.size()>0){
-			for(mdictRes mddTmp:mdd){
-				int idx = mddTmp.lookUp(key);
+			if(isResourceFile){
+				int idx = lookUp(key);
 				if(idx>=0) {
 					try {
-						return mddTmp.getResourseAt(idx);
+						return getResourseAt(idx);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
-				//else SU.Log("chrochro inter_ key is not find:",_Dictionary_fName,key, idx);
 			}
+			else if(mdd!=null && mdd.size()>0){
+				for(mdictRes mddTmp:mdd){
+					int idx = mddTmp.lookUp(key);
+					if(idx>=0) {
+						try {
+							return mddTmp.getResourseAt(idx);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					//else SU.Log("chrochro inter_ key is not find:",_Dictionary_fName,key, idx);
+				}
+			}
+		} catch (Exception e) {
+			CrashHandler.hotTracingObject = getPath();
+			throw e;
 		}
 		return null;
 	}

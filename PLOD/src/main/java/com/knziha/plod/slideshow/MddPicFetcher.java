@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.data.DataFetcher;
-import com.knziha.plod.dictionary.mdictRes;
 
 import org.apache.commons.imaging.BufferedImage;
 import org.apache.commons.imaging.Imaging;
@@ -34,14 +33,7 @@ public class MddPicFetcher implements DataFetcher<InputStream> {
 	public void loadData(@NonNull Priority priority, @NonNull DataCallback<? super InputStream> callback) {
 		String err=null;
 		try {
-			ByteArrayInputStream resTmp = null;
-			for(mdictRes mddTmp:model.mdd){
-				int idx = mddTmp.lookUp(model.path);
-				if(idx!=-1) {
-					resTmp = mddTmp.getResourseAt(idx);
-					if (resTmp != null) break;
-				}
-			}
+			InputStream resTmp = model.load();
 			if (resTmp != null) {
 				if(model.path.endsWith(".tif")||model.path.endsWith(".tiff")){
 					BufferedImage image = Imaging.getBufferedImage(resTmp, getTifConfig());

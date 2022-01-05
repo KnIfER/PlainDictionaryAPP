@@ -3620,28 +3620,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public Runnable getOpenImgRunnable() {
 		if(mOpenImgRunnable==null){
-			mOpenImgRunnable = new Runnable(){
-				@Override
-				public void run() {
-					boolean abort = false;
-					if(RLContainerSlider.lastZoomTime >0) {
-						if((System.currentTimeMillis()-RLContainerSlider.lastZoomTime)<500){
-							abort=true;
-						} else {
-							RLContainerSlider.lastZoomTime=0;
-						}
-					}
-					if(isBrowsingImgs) {
+			mOpenImgRunnable = () -> {
+				boolean abort = false;
+				if(RLContainerSlider.lastZoomTime >0) {
+					if((System.currentTimeMillis()-RLContainerSlider.lastZoomTime)<500){
 						abort=true;
-					}
-					if(abort){
-						((AgentApplication)getApplication()).clearNonsenses();
 					} else {
-						isBrowsingImgs=true;
-						startActivityForResult(new Intent()
-								.setClass(MainActivityUIBase.this
-										, PhotoViewActivity.class),0);
+						RLContainerSlider.lastZoomTime=0;
 					}
+				}
+				if(isBrowsingImgs) {
+					abort=true;
+				}
+				if(abort){
+					((AgentApplication)getApplication()).clearNonsenses();
+				} else {
+					isBrowsingImgs=true;
+					startActivityForResult(new Intent()
+							.setClass(MainActivityUIBase.this
+									, PhotoViewActivity.class),0);
 				}
 			};
 		}
@@ -7841,7 +7838,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mWebView.forbidLoading) {
 				return true;
 			}
-			CMN.Log("chromium shouldOverrideUrlLoading_???",url,view.getTag(), mWebView.fromCombined);
+			//CMN.debug("chromium shouldOverrideUrlLoading_???",url,view.getTag(), mWebView.fromCombined);
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
 			boolean fromPopup = view==popupWebView;
@@ -8157,7 +8154,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			//CMN.Log("chromium shouldInterceptRequest???",url,view.getTag());
+			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 			

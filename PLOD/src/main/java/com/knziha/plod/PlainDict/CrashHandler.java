@@ -37,6 +37,7 @@ import java.util.Locale;
 @SuppressLint({"WrongConstant"})
 public class CrashHandler implements UncaughtExceptionHandler {
 	public static final String TAG = "FatalHandler";
+	public static Object hotTracingObject;
 	/** System default handler */
 	private UncaughtExceptionHandler mDefaultHandler;
 	private static CrashHandler instance;
@@ -130,7 +131,9 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		String result = writer.toString();
 		String time = formatter.format(new Date());
 		info_builder.append("crash-=====Log-start=====")
-				.append(time).append("\n");
+				.append(time).append("\n")
+				.append("at : ").append(hotTracingObject).append("\n")
+		;
 		info_builder.append(result);
 		if(bLogToFile){
 			try {

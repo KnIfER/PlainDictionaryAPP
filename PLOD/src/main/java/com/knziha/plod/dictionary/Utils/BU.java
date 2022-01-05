@@ -242,6 +242,15 @@ public class  BU{//byteUtils
 		fout.close();
 	}
 	
+	public static void SaveToFile(InputStream input, File f) throws IOException {
+		FileOutputStream fout = new FileOutputStream(f);
+		byte[] data = new byte[4096];
+		int len;
+		while((len=input.read(data))!=-1)
+			fout.write(data, 0, len);
+		fout.close();
+	}
+	
     @Deprecated
     public static void printFile(byte[] b, String path){
 		printFile(b,0,b.length,new File(path));

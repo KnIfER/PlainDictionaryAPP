@@ -33,6 +33,8 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.OptionProcessor;
@@ -43,6 +45,7 @@ import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashSet;
@@ -61,7 +64,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 	public View background;
 	public View float_menu;
 	public View float_exit;
-	public List<mdictRes> mdd_;
+	public UniversalDictionaryInterface resProvider;
 	public PhotoBrowsingContext IBC_;
 	public static final int OffScreenViewPagerSize=5;
 	private String[] imageUrls;
@@ -118,7 +121,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 		AgentApplication agent = ((AgentApplication)getApplication());
 		imageUrls = agent.Imgs;
 		opt=agent.opt;
-		mdd_=agent.mdd;
+		resProvider=agent.resProvider;
 		IBC_=agent.IBC;
 		curPosition = agent.currentImg;
 		agent.clearNonsenses();
@@ -200,7 +203,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 					}
 					Glide.with(PhotoViewActivity.this)
 							.asBitmap()
-							.load(key.startsWith("/pdfimg/")?new PdfPic(key, getBaseContext()):new MddPic(mdd_, key))
+							.load(key.startsWith("/pdfimg/")?new PdfPic(key, getBaseContext()):new MddPic(resProvider, key))
 							.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
 							.fitCenter()
 							.diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -483,20 +486,12 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 	private void SaveCurrentImg() {
 		String PicPath = imageUrls[viewPager.getCurrentItem()];
 		try {
-			for(mdictRes mddTmp:mdd_){
-				int idx = mddTmp.lookUp(PicPath);
-				if(idx!=-1) {
-					byte[] resTmp = mddTmp.getRecordData(idx);
-					if (resTmp != null) {
-						File f = new File("/sdcard/download", PicPath);
-						if(!f.exists()){
-							FileOutputStream fout = new FileOutputStream(f);
-							fout.write(resTmp);
-							fout.close();
-							Toast.makeText(this, f.getName()+" 写入成功！", Toast.LENGTH_LONG).show();
-						}
-						break;
-					}
+			InputStream resTmp = resProvider.getResourceByKey(PicPath);
+			if (resTmp != null) {
+				File f = new File("/sdcard/download", PicPath);
+				if(!f.exists()){
+					BU.SaveToFile(resTmp, f);
+					Toast.makeText(this, f.getName()+" 写入成功！", Toast.LENGTH_LONG).show();
 				}
 			}
 		} catch (Exception ignored) {  }

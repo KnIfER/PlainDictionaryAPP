@@ -7,12 +7,14 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
+import com.knziha.filepicker.utils.ExtensionHelper;
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.F1ag;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.IntStr;
 import com.knziha.plod.dictionary.Utils.LinkastReUsageHashMap;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
@@ -42,6 +44,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import static com.knziha.plod.dictionary.mdBase.compareByteArrayIsPara;
@@ -57,9 +61,10 @@ import static com.knziha.plod.dictionary.mdict.leafSanLieZhi;
 public class PlainDSL extends DictionaryAdapter {
 	final static byte[] UTF16BOMBYTES = new byte[]{(byte) 0xff, (byte) 0xfe};
 	final static String UTF16BOM = new String(UTF16BOMBYTES, StandardCharsets.UTF_16LE);
-	final static Pattern entryLinkPattern = Pattern.compile("<<(.*?)>>");
-	final static Pattern dslTagPattern = Pattern.compile("\\[(.{1,50}?)]|(\t)");
+	final static Pattern dslTagPattern = Pattern.compile("\\[(.{1,50}?)]|(\t)|<<(.*?)>>");
 	final static byte[] UTF8LineBreakText = "\n".getBytes(StandardCharsets.UTF_8);
+	private final File mResZipFile;
+	private ZipFile mResZip;
 	private DictInputStream.GZIPDictReader dictReader;
 	private long firstflag;
 	private boolean bIsUTF16;
@@ -403,8 +408,10 @@ public class PlainDSL extends DictionaryAdapter {
 
 	public void ConvertDslToHtml(StringBuffer sb, String entry, String source, String routeAndLinks, int depth) throws IOException {
 		boolean bIsStart = sb.length()==0;
-		source = entryLinkPattern.matcher(source).replaceAll("<a href='entry://$1'>$1</a>");
-		if(source.contains("\\\\")) source = source.replace("\\\\", "\\");
+		//source = entryLinkPattern.matcher(source).replaceAll("<a href='entry://$1'>$1</a>");
+		//todo naive 转义
+		//if(source.contains("\\\\")) source = source.replace("\\\\", "\\");
+		//  Pattern.compile("\\[(.{1,50}?)]|(\t)|<<(.*?)>>");
 		Matcher m = dslTagPattern.matcher(source);
 		sb.append(stylesheet);
 		if(bIsStart){
@@ -421,17 +428,27 @@ public class PlainDSL extends DictionaryAdapter {
 				}
 			}
 		}
+		ArrayList<IntStr> tmpTags = new ArrayList<>();
 		
 		boolean replace;
 		while(m.find()){
 			String val = m.group(1);
 			int start=m.start();
-			if(val==null){
+			if(val==null) {
 				val = m.group(2);
-				if(start>0 && start+2<source.length() && !(source.charAt(start+1)=='['&&source.charAt(start+2)=='m')){
-					m.appendReplacement(sb, "<br/>");
+				if (val!=null) {
+					if(start>0 && start+2<source.length() && !(source.charAt(start+1)=='['&&source.charAt(start+2)=='m')){
+						m.appendReplacement(sb, "<br/>");
+					}
+					continue;
 				}
-			} else {
+				val = m.group(3);
+				if (val!=null) {
+					m.appendReplacement(sb, "<a href='entry://$1'>$1</a>");
+					continue;
+				}
+			}
+			else {
 				replace=true;
 				if (start > 0 && val.length() > 0 && source.charAt(start - 1) == '\\') {
 					if(val.charAt(val.length() - 1) == '\\') {
@@ -498,12 +515,43 @@ public class PlainDSL extends DictionaryAdapter {
 								}
 							break;
 							case "s":
-								sb.append("span");
+								//sb.append("span");
 								if (!closing) {
-									sb.append(" style='display:none'");
-									break ParseTagWithArgs;
+									tmpTags.add(new IntStr(sb.length(), "img"));
+									sb.append("img");
+									//sb.append(" style='display:none'");
+								} else if(tmpTags.size()>0) {
+									IntStr tmpTag = tmpTags.remove(tmpTags.size() - 1);
+									//"img".equals(tmpTag.string)
+									String suffix = null;
+									int len=sb.length()-2;
+									sb.setLength(len);
+									for (int j = Math.max(0, len-8); j < len; j++) {
+										if (sb.charAt(j)=='.') {
+											suffix = sb.substring(j).toLowerCase();
+											break;
+										}
+									}
+									String newTagName = tmpTag.string;
+									boolean isAudio=false;
+									if (suffix!=null) {
+										if (ExtensionHelper.SOUNDS.contains(suffix)) {
+											newTagName = "audio";
+											isAudio = true;
+										}
+									}
+									sb.replace(tmpTag.number, tmpTag.number+tmpTag.string.length()+1, newTagName+" src=\"");
+									sb.append("\"");
+									if(isAudio) sb.append("controls=\"\"");
+									sb.append(">🔈</");
+									sb.append(newTagName);
+									//CMN.Log("替换string::", sb);
+									//CMN.Log("替换string::", newTagName, suffix);
+								} else {
+									sb.append("img");
 								}
-							break;
+								break ParseTagWithArgs;
+							//break;
 							case "i":
 								sb.append("span");
 								if (!closing) {
@@ -851,6 +899,13 @@ public class PlainDSL extends DictionaryAdapter {
 		if(file_length==0) file_length = f.length();
 		_num_entries = keyIndex.getNumberEntries();
 		_num_record_blocks = (long) Math.ceil(file_length*1.f/ mBlockSize);
+		
+		String path = f.getParent();
+		String base = isDictZip?_Dictionary_fName.substring(0, _Dictionary_fName.length()-3):_Dictionary_fName;
+		mResZipFile = new File(path, base + ".files.zip");
+		if (mResZipFile.exists()) {
+			hasResources = true;
+		}
 	}
 	
 	private void setCharset(String charset) {
@@ -1204,12 +1259,17 @@ public class PlainDSL extends DictionaryAdapter {
 
 	@Override
 	public InputStream getResourceByKey(String key) {
+		//CMN.Log("lingvo::getResourceByKey", key);
+		if (hasResources) {
+			try {
+				if(mResZip ==null) mResZip = new ZipFile(mResZipFile);
+				ZipEntry ent = mResZip.getEntry(key.substring(1));
+				if (ent!=null) return mResZip.getInputStream(ent);
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
 		return null;
-	}
-
-	@Override
-	public boolean hasMdd() {
-		return false;
 	}
 
 //	@Override

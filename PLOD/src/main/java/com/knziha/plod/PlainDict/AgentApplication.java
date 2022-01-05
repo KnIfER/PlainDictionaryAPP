@@ -12,9 +12,9 @@ import com.knziha.filepicker.utils.CMNF;
 import com.knziha.paging.AppIconCover.AppIconCover;
 import com.knziha.paging.AppIconCover.AppIconCoverLoaderFactory;
 import com.knziha.plod.db.LexicalDBHelper;
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.MyIntPair;
 import com.knziha.plod.dictionary.Utils.MyPair;
-import com.knziha.plod.dictionary.mdictRes;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.settings.SettingsActivity;
@@ -30,7 +30,6 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 public class AgentApplication extends Application {
 	/** transient */
@@ -53,7 +52,7 @@ public class AgentApplication extends Application {
 	/** 退出全部实例时关闭、清理 */
 	LexicalDBHelper historyCon;
 	
-	public List<mdictRes> mdd;
+	public UniversalDictionaryInterface resProvider;
 	public PhotoBrowsingContext IBC;
 	public String[] Imgs;
 	public int currentImg;
@@ -146,7 +145,7 @@ public class AgentApplication extends Application {
 		mdict_cache=null;
 		mdlibsCon=null;
 		opt=null;
-		mdd=null;
+		resProvider =null;
 		IBC=null;
 		Imgs=null;
 	}

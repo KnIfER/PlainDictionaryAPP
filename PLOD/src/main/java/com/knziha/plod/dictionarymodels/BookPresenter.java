@@ -287,7 +287,7 @@ public class BookPresenter
 				}
 				if(lst.length==0)
 					lst.push(img.src);
-				app.openImage(current, e.offsetX/img.offsetWidth, e.offsetY/img.offsetHeight, lst);
+				app.openImage(sid.get(), current, e.offsetX/img.offsetWidth, e.offsetY/img.offsetHeight, lst);
 			}
 		}
 	 })*/
@@ -1575,10 +1575,14 @@ function debug(e){console.log(e)};
 					ssb.setSpan(new ClickableSpan() {
 						@Override
 						public void onClick(@NonNull View widget) {//打开链接
-							Intent intent = new Intent();
-							intent.setData(Uri.parse(url));
-							intent.setAction(Intent.ACTION_VIEW);
-							a.startActivity(intent);
+							try {
+								Intent intent = new Intent();
+								intent.setData(Uri.parse(url));
+								intent.setAction(Intent.ACTION_VIEW);
+								a.startActivity(intent);
+							} catch (Exception e) {
+								a.showT(""+e); //todo
+							}
 						}
 					}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					
@@ -2621,25 +2625,21 @@ function debug(e){console.log(e)};
 		}
 
         @JavascriptInterface
-        public void openImage(int position, float offsetX, float offsetY, String... img) {
+        public void openImage(long sid, int position, float offsetX, float offsetY, String... img) {
 			if(presenter==null || !presenter.getImageBrowsable()) return;
         	//CMN.Log(position, img, mdx.bookImpl.getFileName()_Internal);
         	//CMN.Log("openImage::", offsetX, offsetY);
-			MainActivityUIBase aa = presenter.a;
-			AgentApplication app = ((AgentApplication) aa.getApplication());
-			app.mdd = null;
-			if (presenter.bookImpl instanceof mdict) {
-				app.mdd = ((mdict) presenter.bookImpl).getMdd();
-			}
+			MainActivityUIBase a = presenter.a;
+			AgentApplication app = ((AgentApplication) a.getApplication());
+			app.resProvider = presenter.bookImpl;
 			app.IBC = presenter.IBC;
 			app.opt = presenter.opt;
 			app.Imgs = img;
 			app.currentImg = position;
-			//todo
-			WebViewmy mWebView = presenter.mWebView;
+			//WebViewmy mWebView = presenter.findWebview(sid);
 			app.IBC.lastX = offsetX;
 			app.IBC.lastY = offsetY;
-			aa.root.postDelayed(aa.getOpenImgRunnable(), 100);
+			a.root.postDelayed(a.getOpenImgRunnable(), 100);
 		}
 
         @JavascriptInterface
