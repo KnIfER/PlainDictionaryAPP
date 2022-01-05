@@ -8483,12 +8483,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(suffixIdx!=-1){
 				suffix = key.substring(suffixIdx).toLowerCase();
 				suffixIdx = key.indexOf("?");
-				if(suffixIdx!=-1){
-					suffix = key.substring(suffixIdx);
-				}
+				if(suffixIdx!=-1)suffix = key.substring(0, suffixIdx);
 			}
 			if(suffix!=null)
-			switch (suffix){
+			switch (suffix) {
 				case ".ini":
 				case ".js":
 					mime = "text/x-javascript";
@@ -8502,11 +8500,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			//检查后缀，js，ini,png,css,直接路径。
 			if(mime!=null && key.lastIndexOf(SepWindows)==0) {
-				File candi = new File(invoker.f().getParentFile(),new File(url).getName());
-				CMN.debug("外挂CSS/JS资源::", candi, url, "$.getAbsolutePath()", "$.exists()");
-				if(candi.exists()) try {
-					return new WebResourceResponse(mime, "UTF-8", new AutoCloseInputStream(new FileInputStream(candi)));
-				} catch (FileNotFoundException ignored) { }
+				try {
+					String resName = new File(url).getName();
+					suffixIdx = resName.indexOf("?");
+					if(suffixIdx>=0) resName = resName.substring(0, suffixIdx);
+					resName = URLDecoder.decode(resName, "UTF-8");
+					File plugResFile = new File(invoker.f().getParentFile(), resName);
+					CMN.debug("外挂CSS/JS资源::", plugResFile, url, "$.getAbsolutePath()", "$.exists()");
+					if(plugResFile.exists()) return new WebResourceResponse(mime, "UTF-8", new AutoCloseInputStream(new FileInputStream(plugResFile)));
+				} catch (Exception ignored) { }
 			}
 
 			if(!invoker.bookImpl.hasMdd())
