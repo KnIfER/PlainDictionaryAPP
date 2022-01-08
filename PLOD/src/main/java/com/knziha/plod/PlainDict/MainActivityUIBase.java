@@ -257,6 +257,7 @@ import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
+import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
@@ -343,7 +344,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public Drawer drawerFragment;
 	public DictPicker pickDictDialog;
-	public int GlobalPageBackground=-1;
 	public DragScrollBar mBar;
 	protected FrameLayout.LayoutParams mBar_layoutParmas;
 	public ViewGroup main;
@@ -2508,7 +2508,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	@Override
 	protected void scanSettings() {
-		CMN.GlobalPageBackground = GlobalPageBackground = opt.getGlobalPageBackground();
+		GlobalPageBackground = GlobalPageBackground = opt.getGlobalPageBackground();
 		mdict.bGlobalUseClassicalKeycase = PDICMainAppOptions.getClassicalKeycaseStrategy();
 		opt.getLastPlanName(LastPlanName);
 		new File(opt.pathToDatabases().toString()).mkdirs();
@@ -4124,7 +4124,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(invoker.getUseInternalBG())
 								invoker.setBgColor(color);
 							else{
-								GlobalPageBackground=CMN.GlobalPageBackground=color;
+								GlobalPageBackground=color;
 							}
 							WebViewmy mWebView=bFromPeruseView? peruseView.mWebView:invoker.mWebView;
 							int ManFt_invoker_bgColor=invoker.getBgColor();
@@ -4138,13 +4138,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
 								if(apply && mWebView!=null)
 									mWebView.setBackgroundColor(ManFt_invoker_bgColor);
-							}else {
+							} else {
 								CMN.Log("应用全局颜色变更中…");
-								GlobalPageBackground=CMN.GlobalPageBackground;
+								GlobalPageBackground= GlobalPageBackground;
 								if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 								WHP.setBackgroundColor(ManFt_GlobalPageBackground);
 								if(bFromPeruseView) peruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
-								opt.putGlobalPageBackground(CMN.GlobalPageBackground);
+								opt.putGlobalPageBackground(GlobalPageBackground);
 								if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
 									mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
 							}
@@ -4176,7 +4176,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(GlobalOptions.isDark) {
 								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web);
 								ManFt_GlobalPageBackground=ColorUtils.blendARGB(ManFt_GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
-							};
+							}
 							boolean apply = bFromPeruseView || widget12.getTag(R.id.image)==null;
 							if(!isDirty){//fall back
 								if(invoker.getUseInternalBG()) {
@@ -7795,10 +7795,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			WebViewmy mWebView = (WebViewmy) view;
-			mWebView.bPageStarted=true;
-			final BookPresenter invoker = mWebView.presenter;
-			if(invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
-				((PlainWeb)invoker.bookImpl).onPageStarted(invoker, view, url, true);
+			if(mWebView.wvclient!=null) {
+				mWebView.bPageStarted=true;
+				final BookPresenter invoker = mWebView.presenter;
+				if(invoker.getIsWebx()) {
+					((PlainWeb)invoker.bookImpl).onPageStarted(invoker, view, url, true);
+				}
 			}
 		}
 
@@ -9701,7 +9703,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	PeruseView getPeruseView() {
 		if(peruseView ==null) {
-			peruseView = new PeruseView();
+			peruseView = new PeruseView(MainBackground);
 			peruseView.spsubs = opt.defaultReader.getFloat("spsubs", 0.706f);
 			peruseView.dm = dm;
 			peruseView.opt = opt;

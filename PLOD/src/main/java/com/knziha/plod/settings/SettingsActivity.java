@@ -70,9 +70,10 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 		win.getDecorView().setBackgroundColor(GlobalOptions.isDark? Color.BLACK:Color.WHITE);
 		root=win.getDecorView().findViewById(android.R.id.content);
 		checkMargin(this);
+		MainBackground = opt.getMainBackground();
 		if(Build.VERSION.SDK_INT>=21) {
-			win.setStatusBarColor(CMN.MainBackground);
-			win.setNavigationBarColor(CMN.MainBackground);
+			win.setStatusBarColor(MainBackground);
+			win.setNavigationBarColor(MainBackground);
 		}
 
 		File log=new File(CrashHandler.getInstance(this, opt).getLogFile());

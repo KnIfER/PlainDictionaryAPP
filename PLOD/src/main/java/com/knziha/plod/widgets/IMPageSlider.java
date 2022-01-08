@@ -12,6 +12,8 @@ import android.widget.ImageView;
 
 
 public class IMPageSlider extends ImageView{
+	public int MainBackground;
+	
 	public IMPageSlider(Context context) {
 		super(context);setAlpha(0.f);
 	}

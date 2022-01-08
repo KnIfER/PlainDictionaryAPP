@@ -90,6 +90,7 @@ import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
 /** 翻阅模式，以词典为单位，搜索词为中心，一一览读。<br><br/> */
 public class PeruseView extends DialogFragment implements OnClickListener, OnMenuItemClickListener, OnLongClickListener{
+	int MainBackground;
 	public ArrayList<Long> bookIds = new ArrayList<>();
 	public ArrayList<Long> hidden = new ArrayList<>();
 	public ArrayList<Long> bakedGroup = new ArrayList<>();
@@ -144,9 +145,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public ContentviewItemBinding mPageView;
 	
 	//构造
-	public PeruseView(){
+	public PeruseView(int mainBackground){
 		super();
 		setCancelable(false);
+		MainBackground = mainBackground;
+	}
+	
+	public PeruseView(){
+		this(0);
 	}
 	
 	int cc;
@@ -500,7 +506,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if(content!=null) {
 				root=content;
 			}
-			Toastable_Activity.setStatusBarColor(win, CMN.MainBackground);
+			Toastable_Activity.setStatusBarColor(win, MainBackground);
 			//win.setStatusBarColor(CMN.MainBackground);
 			View view = win.getDecorView();
 			view.setBackground(null);
@@ -824,7 +830,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		});
 		leftLexicalAdapter.webviewHolder=
 		bookMarkAdapter.webviewHolder = webSingleholder;
-		webSingleholder.setBackgroundColor(a.GlobalPageBackground);
+		webSingleholder.setBackgroundColor(CMN.GlobalPageBackground);
 		
 			mWebView = pageView.webviewmy;
 			rl.setTag(mWebView);
@@ -1027,7 +1033,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		mWebView.evaluateJavascript(isDark? MainActivityUIBase.DarkModeIncantation: MainActivityUIBase.DeDarkModeIncantation, null);
 		main_pview_layout.setBackgroundColor(filteredColor);
 		bottombar2.setBackgroundColor(bottombar2BaseColor = filteredColor);
-		webSingleholder.setBackgroundColor(isDark?Color.BLACK:a.GlobalPageBackground);
+		webSingleholder.setBackgroundColor(isDark?Color.BLACK:CMN.GlobalPageBackground);
 	}
 
 	float spsubs;
@@ -2077,12 +2083,16 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public void onSaveInstanceState(@NonNull Bundle outState) {
 		CMN.Log("-----> !!! onSaveInstanceState");
 		//super.onSaveInstanceState(outState);
+		outState.putInt("bg", MainBackground);
 	}
 
 	@Override
 	public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
 		CMN.Log("-----> !!! onViewStateRestored");
 		super.onViewStateRestored(savedInstanceState);
+		if (savedInstanceState!=null && MainBackground==0) {
+			MainBackground = savedInstanceState.getInt("bg", Color.GRAY);
+		}
 	}
 
 	@Override

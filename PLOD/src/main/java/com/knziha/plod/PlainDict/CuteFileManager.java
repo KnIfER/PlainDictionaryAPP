@@ -254,7 +254,7 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 	@Override
 	protected void scanSettings(){
 		super.scanSettings();
-		CMN.MainBackground = MainBackground = opt.getMainBackground();
+		MainBackground = opt.getMainBackground();
 
 		opt.CheckFileToDefaultMdlibs();
 
@@ -293,12 +293,6 @@ public class CuteFileManager extends Toastable_Activity implements OnClickListen
 				if(!lastPastedContent.equals(content)) {
 					drawerFragment.etAdditional.setText(lastPastedContent = content);
 				}
-			}
-		}
-		if(systemIntialized) {
-			if(CMN.MainBackground != MainBackground) {
-				MainBackground=CMN.MainBackground;
-				refreshUIColors();
 			}
 		}
 	}

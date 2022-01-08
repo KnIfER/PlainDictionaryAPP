@@ -1351,7 +1351,7 @@ public class PlainWeb extends DictionaryAdapter {
 			}
 		}
 		if(newProgress>89) {
-			bookPresenter.a.myWebClient.onPageFinished(mWebView, mWebView.getUrl());
+			mWebView.wvclient.onPageFinished(mWebView, mWebView.getUrl());
 		}
 		else if(newProgress>=85) {
 			//fadeOutProgressbar(bookPresenter, (WebViewmy) mWebView, newProgress>87);

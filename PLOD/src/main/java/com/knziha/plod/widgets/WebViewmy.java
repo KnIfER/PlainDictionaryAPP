@@ -339,8 +339,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 
 	public void shutDown() {
+		bPageStarted = false;
 		setWebChromeClient(null);
 		setWebViewClient(null);
+		bPageStarted = false;
 		setOnScrollChangedListener(null);
 		setOnTouchListener(null);
 		setOnLongClickListener(null);

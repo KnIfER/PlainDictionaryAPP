@@ -151,6 +151,13 @@ public class MdictServerMobile extends MdictServer {
 				CMN.Log(e);
 			}
 		}
+//		if (key.contains("mdict_browser.html")) {
+//			try {
+//				return a.getAssets().open("mdict_browser.html");
+//			} catch (IOException e) {
+//				CMN.Log(e);
+//			}
+//		}
 		return super.OpenMdbResourceByName(key);
 	}
 }

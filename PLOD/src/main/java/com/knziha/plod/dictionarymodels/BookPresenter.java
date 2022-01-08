@@ -1924,7 +1924,7 @@ function debug(e){console.log(e)};
 	
 	public void tintBackground(WebViewmy mWebView) {
     	//CMN.rt();
-		int globalPageBackground = a.GlobalPageBackground;
+		int globalPageBackground = CMN.GlobalPageBackground;
 		boolean useInternal = getUseInternalBG();
 		boolean isDark = GlobalOptions.isDark;
 		int myWebColor = useInternal?bgColor:globalPageBackground;
@@ -3180,15 +3180,17 @@ function debug(e){console.log(e)};
 		bReadConfig = true;
 		IBC.firstFlag = firstFlag;
 		boolean b1=IBC.doubleClickZoomRatio==0;
+		// todo 变色
+		int MainBackground = context instanceof MainActivityUIBase?((MainActivityUIBase)context).MainBackground:Color.GRAY;
 		if(b1) {
 			/* initialise values */
 			IBC.doubleClickZoomRatio=2.25f;
-			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?CMN.MainBackground:opt.getTitlebarBackgroundColor();
+			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
 			TIFGColor = opt.getTitlebarForegroundColor();
 		}
 		if ((firstVersionFlag&0x1)==0)
 		{
-			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?CMN.MainBackground:opt.getTitlebarBackgroundColor();
+			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
 			TIFGColor = opt.getTitlebarForegroundColor();
 			CMN.Log("初始化词典设置");
 			if (getIsWebx()) {
@@ -3282,7 +3284,7 @@ function debug(e){console.log(e)};
 		if(value==null) return;
 		int val;
 		try {
-			val = Integer.valueOf(value);
+			val = Integer.parseInt(value);
 		} catch (NumberFormatException e) {
 			return;
 		}
@@ -3507,11 +3509,11 @@ function debug(e){console.log(e)};
 				case 1:
 					if (getUseInternalBG()) {
 						if(PDICMainAppOptions.getInheritGlobleWebcolorBeforeSwichingToInternal())
-							bgColor = a.GlobalPageBackground;
+							bgColor = CMN.GlobalPageBackground;
 						if (!(a.isCombinedViewAvtive() && getIsolateImages()))
 							mWebView.setBackgroundColor(bgColor);
 					} else if (!(a.isCombinedViewAvtive() && getIsolateImages()))
-						mWebView.setBackgroundColor(a.GlobalPageBackground);
+						mWebView.setBackgroundColor(CMN.GlobalPageBackground);
 				break;
 				case 2:
 					mWebView.getSettings().setTextZoom(getFontSize());

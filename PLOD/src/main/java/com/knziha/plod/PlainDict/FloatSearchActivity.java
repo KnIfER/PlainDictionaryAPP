@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
+import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
 
@@ -154,11 +155,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		super.onWindowFocusChanged(hasFocus);
 		if(systemIntialized && hasFocus){
 			fix_full_screen(getWindow().getDecorView());
-			if(CMN.FloatBackground != MainBackground || CMN.GlobalPageBackground!=GlobalPageBackground ) {
-				IMPageCover.setTag(false);
-				if(peruseView !=null) peruseView.IMPageCover.setTag(false);
-				GlobalPageBackground=CMN.GlobalPageBackground;
-				MainBackground=CMN.FloatBackground;
+			if((CMN.AppColorChangedFlag&0x2)!=0)
+			{
+				MainBackground = MainAppBackground = opt.getFloatBackground();
+				CMN.AppColorChangedFlag &= ~0x2;
 				refreshUIColors();
 			}
 			checkFlags();
@@ -189,7 +189,25 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		fix_dm_color();
 		refreshUIColors();
 	}
-
+	
+	void refreshUIColors() {
+		boolean isHalo=!GlobalOptions.isDark;
+		MainAppBackground = isHalo?MainBackground: ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
+		int filteredColor = MainAppBackground;
+		lv.setBackgroundColor(AppWhite);
+		lv2.setBackgroundColor(AppWhite);
+		//CMN.debug("refreshUIColors!!!", Integer.toHexString(filteredColor));
+		mainfv.getBackground().setColorFilter(filteredColor, PorterDuff.Mode.SRC_IN);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			getWindow().setNavigationBarColor(filteredColor);
+		}
+		bottombar2.setBackgroundColor(filteredColor);
+		
+		filteredColor = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
+		WHP.setBackgroundColor(filteredColor);
+		webSingleholder.setBackgroundColor(filteredColor);
+	}
+	
 	@Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -419,7 +437,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		LastPlanName = "FltPlanName";
 		LastMdFn = "FltMdFn";
 		super.scanSettings();
-		CMN.FloatBackground = MainBackground = MainAppBackground = opt.getFloatBackground();
+		MainBackground = MainAppBackground = opt.getFloatBackground();
+		CMN.AppColorChangedFlag &= ~0x2;
 		isCombinedSearching = opt.isFloatCombinedSearching();
 	}
 
@@ -706,7 +725,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			lpmy.height=FVH_UNDOCKED;
 			setDocked(false);
 			mainfv.requestLayout();
-		}else {
+		} else {
 			Rect rect = new Rect();
 			getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
 			lpmy.width=dm.widthPixels-(DockerMarginR+DockerMarginL);
@@ -812,28 +831,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
 		return keytmp;
 	}
-
-	void refreshUIColors() {
-		boolean isHalo=!GlobalOptions.isDark;
-		MainAppBackground = isHalo?MainBackground: ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
-		int filteredColor = MainAppBackground;
-		lv.setBackgroundColor(AppWhite);
-		lv2.setBackgroundColor(AppWhite);
-		if(GlobalOptions.isDark)
-			mainfv.getBackground().setColorFilter(filteredColor, PorterDuff.Mode.SRC_IN);
-		else
-			mainfv.getBackground().clearColorFilter();
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			getWindow().setNavigationBarColor(filteredColor);
-		}
-
-		bottombar2.setBackgroundColor(filteredColor);
-
-		filteredColor = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
-		WHP.setBackgroundColor(filteredColor);
-		webSingleholder.setBackgroundColor(filteredColor);
-	}
 	
 	Rect  WindowVisibleR = new Rect();
 
@@ -906,17 +903,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				break;
 			}
 	}}
-
-	@Override
-    protected void onResume() {
-        super.onResume();
-        if(systemIntialized) {
-	        if(CMN.FloatBackground != MainBackground) {
-	        	MainBackground=CMN.FloatBackground;
-                mainfv.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
-	        }
-        }
-    }
 
     public class ListViewAdapter extends BasicAdapter {
         public ListViewAdapter(ViewGroup webSingleholder)

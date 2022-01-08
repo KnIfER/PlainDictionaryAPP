@@ -16,17 +16,19 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
 import java.io.File;
+import java.util.Objects;
 
 public class MainProgram extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		PDICMainAppOptions opt = ((Toastable_Activity) getActivity()).opt;
 		mPreferenceId = R.xml.preferences;
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null);
 		init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null);
 		init_switch_preference(this, "GPBC", null, "0x"+Integer.toHexString(CMN.GlobalPageBackground).toUpperCase(), null);
-		init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(CMN.MainBackground).toUpperCase(), null);
-		init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(CMN.FloatBackground).toUpperCase(), null);
+		init_switch_preference(this, "BCM", null, "0x"+Integer.toHexString(opt.getMainBackground()).toUpperCase(), null);
+		init_switch_preference(this, "BCF", null, "0x"+Integer.toHexString(opt.getFloatBackground()).toUpperCase(), null);
 		//init_number_info_preference(this, "paste_target", PDICMainAppOptions.getPasteTarget(), R.array.paste_target_info, null);
 		//init_switch_preference(this, "f_share_peruse", PDICMainAppOptions.getShareToPeruseModeWhenFocued(), null, null);
 		init_switch_preference(this, "f_paste_peruse", PDICMainAppOptions.getPasteToPeruseModeWhenFocued(), null, null);
@@ -101,11 +103,11 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 			break;
 			case "BCM":
 				setColorPreferenceTitle(preference, newValue);
-				CMN.MainBackground=(int) newValue;
+				CMN.AppColorChangedFlag|=0x1;
 			break;
 			case "BCF":
 				setColorPreferenceTitle(preference, newValue);
-				CMN.FloatBackground=(int) newValue;
+				CMN.AppColorChangedFlag|=0x2;
 			break;
 //			case "paste_target":
 //				preference.setSummary(getResources().getStringArray(R.array.paste_target_info)[PDICMainAppOptions.setPasteTarget(IU.parsint(newValue))]);

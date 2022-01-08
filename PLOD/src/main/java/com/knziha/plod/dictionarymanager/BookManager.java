@@ -311,7 +311,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		
         getWindowManager().getDefaultDisplay().getMetrics(opt.dm);
 
-        findViewById(R.id.drawer_layout).setBackgroundColor(GlobalOptions.isDark?Color.BLACK: CMN.MainBackground);
+        findViewById(R.id.drawer_layout).setBackgroundColor(GlobalOptions.isDark?Color.BLACK:opt.getMainBackground());
         
         viewPager = findViewById(R.id.viewpager);
         mTabLayout = findViewById(R.id.mTabLayout);
@@ -431,7 +431,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			@Override public void onTabReselected(TabLayout.Tab tab) {}
         });
 		
-	    mTabLayout.setSelectedTabIndicatorColor(ColorUtils.blendARGB(CMN.MainBackground, Color.BLACK, 0.28f));
+	    mTabLayout.setSelectedTabIndicatorColor(ColorUtils.blendARGB(opt.getMainBackground(), Color.BLACK, 0.28f));
 	    
 	    mTabLayout.setSelectedTabIndicatorHeight((int) (3.8*opt.dm.density));
 	    

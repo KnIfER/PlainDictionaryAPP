@@ -1,6 +1,7 @@
 package com.knziha.plod.plaindict;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AndroidException;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,9 +33,9 @@ public class CMN{
 	
 	public static long mid;
 	
-	public static int GlobalPageBackground = 0;
-	public static int MainBackground = 0;
-	public static int FloatBackground;
+	public static int GlobalPageBackground = Color.WHITE;
+	/** 0x1=main; 0x2=float */
+	public static int AppColorChangedFlag;
 	public static boolean touchThenSearch=true;
 	public static int actionBarHeight;
 	//static Boolean module_set_invalid = true;

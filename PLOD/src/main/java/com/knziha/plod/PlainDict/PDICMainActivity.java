@@ -159,6 +159,7 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAM
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEXTS;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
+import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
 
@@ -1242,9 +1243,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(currentDictionary.mWebView!=null){
 					currentPos=currentDictionary.mWebView.currentPos;
 				}
-				if(IMPageCover.getTag()!=(Integer)MainBackground) {
-					IMPageCover.getBackground().setColorFilter(MainBackground, PorterDuff.Mode.SRC_IN);
-					IMPageCover.setTag(MainBackground);
+				if(IMPageCover.MainBackground!=MainBackground) {
+					IMPageCover.getBackground().setColorFilter(IMPageCover.MainBackground=MainBackground, PorterDuff.Mode.SRC_IN);
 				}
 				IMPageCover.getBackground().setAlpha(0);
 				IMPageCover.setTranslationY(0);
@@ -2262,9 +2262,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@Override
 	protected void scanSettings(){
 		super.scanSettings();
-		CMN.MainBackground = MainBackground = MainAppBackground = opt.getMainBackground();
+		MainBackground = MainAppBackground = opt.getMainBackground();
+		CMN.AppColorChangedFlag &= ~0x1;
 		//getWindow().setNavigationBarColor(MainBackground);
-		CMN.FloatBackground = opt.getFloatBackground();
 		//文件网络
 		//SharedPreferences read = getSharedPreferences("lock", MODE_PRIVATE);
 		isCombinedSearching = opt.isCombinedSearching();
@@ -2421,11 +2421,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 				}
 			}
-			if(CMN.MainBackground != MainBackground || CMN.GlobalPageBackground!=GlobalPageBackground ) {
-				IMPageCover.setTag(false);
-				if(peruseView !=null) peruseView.IMPageCover.setTag(false);
-				GlobalPageBackground=CMN.GlobalPageBackground;
-				MainBackground=CMN.MainBackground;
+			
+			if((CMN.AppColorChangedFlag&0x1)!=0)
+			{
+				MainBackground = MainAppBackground = opt.getMainBackground();
+				CMN.AppColorChangedFlag &= ~0x1;
 				refreshUIColors();
 			}
 			if(drawerFragment.sw4!=null && drawerFragment.sw4.isChecked()!=GlobalOptions.isDark){

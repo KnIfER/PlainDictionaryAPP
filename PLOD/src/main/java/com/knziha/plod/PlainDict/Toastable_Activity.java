@@ -208,6 +208,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		if(!shunt) {
 			CrashHandler.getInstance(this, opt).TurnOn();
 		}
+		systemIntialized=false;
 	}
 
 	@Override

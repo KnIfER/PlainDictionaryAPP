@@ -94,7 +94,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		
 		hdl  = new MyHandler(this);
 		mActionModeHeight = dm.heightPixels/2;
-		CMN.MainBackground = MainBackground = MainAppBackground = opt.getMainBackground();
+		MainBackground = MainAppBackground = opt.getMainBackground();
 		processIntent(getIntent());
 		systemIntialized=true;
 	}
