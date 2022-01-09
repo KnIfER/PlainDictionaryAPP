@@ -4,6 +4,7 @@ import android.os.Looper;
 
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionary.mdictRes;
+import com.knziha.plod.plaindict.CrashHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,10 +22,14 @@ public class PlainMdict extends mdict {
 	}
 	
 	protected byte[] AcquireCompressedBlockOfSize(int compressedSize) {
-		return BufferAllocatorInst.AcquireCompressedBlockOfSize(compressedSize, Math.max(maxComKeyBlockSize, maxComRecSize));
+		CrashHandler.hotDebugMessage = compressedSize+", "+maxComKeyBlockSize+", "+maxComRecSize;
+		byte[] ret = BufferAllocatorInst.AcquireCompressedBlockOfSize(compressedSize, Math.max(maxComKeyBlockSize, maxComRecSize));
+		CrashHandler.hotDebugMessage = null;
+		return ret;
 	}
 	
 	protected byte[] AcquireDeCompressedKeyBlockOfSize(int BlockSize) {
+		CrashHandler.hotDebugMessage = CrashHandler.hotDebugMessage+"::"+BlockSize+"::"+maxDecomKeyBlockSize;
 		return BufferAllocatorInst.AcquireDeCompressedKeyBlockOfSize(BlockSize, maxDecomKeyBlockSize);
 	}
 	

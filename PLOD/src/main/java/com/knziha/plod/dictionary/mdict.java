@@ -321,10 +321,15 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		else
 			mflag.data = null;
 		//TODO null pointer error
+		CrashHandler.hotTracingObject = getPath();
 		try {
-			return prepareItemByKeyInfo(infoI,blockId,null).getString((int) (position-infoI.num_entries_accumulator));
+			cached_key_block keyInfo = prepareItemByKeyInfo(infoI, blockId, null);
+			String ret = keyInfo.getString((int) (position - infoI.num_entries_accumulator));
+			CrashHandler.hotTracingObject = null;
+			return ret;
 		} catch (Exception e) {
-			CMN.Log(e);
+			CrashHandler.hotTracingObject = getPath() + e;
+			SU.Log(e);
 			return "!!!";
 		}
 	}

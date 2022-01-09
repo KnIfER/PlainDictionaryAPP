@@ -38,6 +38,7 @@ import java.util.Locale;
 public class CrashHandler implements UncaughtExceptionHandler {
 	public static final String TAG = "FatalHandler";
 	public static Object hotTracingObject;
+	public static String hotDebugMessage;
 	/** System default handler */
 	private UncaughtExceptionHandler mDefaultHandler;
 	private static CrashHandler instance;
@@ -131,8 +132,10 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		String result = writer.toString();
 		String time = formatter.format(new Date());
 		info_builder.append("crash-=====Log-start=====")
-				.append(time).append("\n")
-				.append("at : ").append(hotTracingObject).append("\n")
+				.append(time).append("\n");
+		
+		if(hotTracingObject!=null) info_builder.append("at : ").append(hotTracingObject).append("\n");
+		if(hotDebugMessage!=null) info_builder.append("at : ").append(hotDebugMessage).append("\n");
 		;
 		info_builder.append(result);
 		if(bLogToFile){
