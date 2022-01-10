@@ -826,13 +826,67 @@ public class Drawer extends Fragment implements
 					properties.title_id = R.string.addd;
 					properties.isDark = a.AppWhite==Color.BLACK;
 					FilePickerDialog dialog = new FilePickerDialog(a, properties);
+					HashSet<String> mdictInternal = new HashSet<>();
 					dialog.setDialogSelectionListener(new DialogSelectionListener() {
 						@Override
 						public void
 						onSelectedFilePaths(String[] files, File now) {
-							//CMN.Log(files);
-							filepickernow = now;
+							CMN.debug(files);
+							if(now!=null) {
+								for(PlaceHolder phI:a.CosyChair) {
+									mdictInternal.add(phI.getPath(a.opt).getPath());
+								}
+								for(BookPresenter mdTmp:a.currentFilter) {
+									if(mdTmp!=null) mdictInternal.add(mdTmp.getPath());
+								}
+//								for(BookPresenter mdTmp:Drawer.this.mdictInternal.values()) {
+//									if(mdTmp!=null)
+//										mdictInternal.add(mdTmp.getPath());
+//								}
+								filepickernow = now;
+								if(files.length>1) {
+									File ConfigFile = a.opt.fileToConfig();
+									File rec = a.opt.fileToDecords(ConfigFile);
+									a.ReadInMdlibs(rec);
+									boolean hasSame=false;
+									for (int i = 0; i < files.length; i++) {
+										String fnI = files[i];
+										if (!mdictInternal.contains(fnI)) {
+											File fI = new File(fnI);
+											fnI = mFile.tryDeScion(fI, a.opt.lastMdlibPath);
+											if (a.mdlibsCon.contains(fnI)) {
+												hasSame=true;
+												break;
+											}
+										}
+									}
+									CMN.debug("hasSame::", hasSame, a.mdlibsCon);
+									if(hasSame) {
+										new AlertDialog.Builder(a)
+												.setTitle("是否跳过打开过的词典？")
+												.setPositiveButton("是", (dialog12, which) -> {
+													ArrayList<String> arr = new ArrayList<>(Arrays.asList(files));
+													for (int i = files.length-1; i>=0; i--) {
+														String fnI = files[i];
+														File fI = new File(fnI);
+														fnI = mFile.tryDeScion(fI, a.opt.lastMdlibPath);
+														if (a.mdlibsCon.contains(fnI)) {
+															arr.remove(i);
+														}
+													}
+													onSelectedFilePaths(arr.toArray(files), null);
+												})
+												.setNegativeButton("否", (dialog12, which) -> {
+													onSelectedFilePaths(files, null);
+												})
+												.show();
+										return;
+									}
+								}
+							}
 							if(files.length>0) {
+								int newAdapterIdx=-1;
+								int bscAdapterIdx=-1;
 								final File def = a.opt.getCacheCurrentGroup()?new File(a.getExternalFilesDir(null),"default.txt")
 										:a.getStartupFile(a.opt.fileToConfig());      //!!!原配
 								File ConfigFile = a.opt.fileToConfig();
@@ -840,21 +894,9 @@ public class Drawer extends Fragment implements
 								a.ReadInMdlibs(rec);
 								HashMap<String, String> add_book_checker = a.lostFiles;
 								
-								HashSet<String> mdictInternal = new HashSet<>();
 								HashSet<String> renameRec = new HashSet<>();
 								HashMap<String,String> renameList = new HashMap<>();
-								for(PlaceHolder phI:a.CosyChair) {
-									mdictInternal.add(phI.getPath(a.opt).getPath());
-								}
-								for(BookPresenter mdTmp:a.currentFilter) {
-									if(mdTmp!=null)
-										mdictInternal.add(mdTmp.getPath());
-								}
-//								for(BookPresenter mdTmp:Drawer.this.mdictInternal.values()) {
-//									if(mdTmp!=null)
-//										mdictInternal.add(mdTmp.getPath());
-//								}
-								int newAdapterIdx=-1;
+								
 								try {
 									BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
 									BufferedWriter output2 = null;
@@ -864,8 +906,9 @@ public class Drawer extends Fragment implements
 									boolean bNextPlaceHolder = false;
 									for (int i = 0; i < files.length; i++) {
 										String fnI = files[i];
+										if(fnI==null) break;
 										File fI = new File(fnI);
-										CMN.Log("AddFiles", fnI, mdictInternal.contains(fI.getPath()));
+										CMN.debug("AddFiles", fnI, mdictInternal.contains(fI.getPath()));
 										if(fI.isDirectory()) continue;
 										//checker.put("sound_us.mdd", "/storage/emulated/0/PLOD/mdicts/发音库/sound_us.mdd");
 										/* 检查文件名称是否乃记录之中已失效项，有则需重命名。*/
@@ -914,6 +957,15 @@ public class Drawer extends Fragment implements
 												} else {
 													CMN.Log(e);
 													a.showT("词典 "+new File(fnI).getName()+" 加载失败 @"+fnI+" Load Error！ "+e.getLocalizedMessage());
+												}
+											}
+										}
+										else if(newAdapterIdx==-1 && bscAdapterIdx==-1) {
+											for (int j = 0; j < a.CosyChair.size(); j++) {
+												PlaceHolder phI = a.CosyChair.get(j);
+												if(fI.equals(phI.getPath(a.opt))) {
+													bscAdapterIdx = j;
+													break;
 												}
 											}
 										}
@@ -999,8 +1051,11 @@ public class Drawer extends Fragment implements
 										a.showT("新加入"+countAdd+"本词典, 重定位"+countRename+"次！");
 									else
 										a.showT("新加入"+countAdd+"本词典！");
-									
+									if (newAdapterIdx==-1) {
+										newAdapterIdx = bscAdapterIdx;
+									}
 									if(newAdapterIdx!=-1) {
+										a.UIData.drawerLayout.closeDrawer(GravityCompat.START);
 										a.switch_To_Dict_Idx(newAdapterIdx, true, true, null);
 									}
 								} catch (IOException e1) {
