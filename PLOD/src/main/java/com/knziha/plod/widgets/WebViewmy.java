@@ -1245,7 +1245,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 		if(drawRect/* && presenter.getDrawHighlightOnTop()*/)
 		{
-			drawHighlightRect(canvas, Build.VERSION.SDK_INT<=23 && !GlobalOptions.isDark);
+			drawHighlightRect(canvas, Build.VERSION.SDK_INT<=25 && !GlobalOptions.isDark);
 		}
 //		if (drawRect) {
 //			drawHighlightRect(canvas, false);
@@ -1256,7 +1256,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 	
 	private void drawHighlightRect(Canvas canvas, boolean alpha) {
-		float scale = webScale/ BookPresenter.def_zoom;
+		float scale = webScale / BookPresenter.def_zoom;
 		//float roundVal = 10*GlobalOptions.density*scale;
 		canvas.drawRect(highRigkt_X*scale, highRigkt_Y*scale, highRigkt_R *scale, highRigkt_B *scale
 				, alpha? ViewUtils.getRectPaintAlpha(): ViewUtils.getRectPaint());

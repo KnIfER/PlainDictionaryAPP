@@ -16,7 +16,13 @@ import java.util.concurrent.Executors;
  */
 public class RBTree_additive {
 
-    private RBTNode<additiveMyCpr1> mRoot;public RBTNode<additiveMyCpr1> getRoot(){return mRoot;}
+    private RBTNode<additiveMyCpr1> mRoot;
+	private String keyClashHandler = null;
+	public void setKeyClashHandler(String keyClashHandler) {
+		this.keyClashHandler = keyClashHandler!=null?keyClashHandler.toLowerCase():keyClashHandler;
+	}
+	
+	public RBTNode<additiveMyCpr1> getRoot(){return mRoot;}
     
     private static final boolean RED   = false;
     private static final boolean BLACK = true;
@@ -584,7 +590,10 @@ public class RBTree_additive {
                 x = x.left;
             else if(cmp > 0)
                 x = x.right;
-            else{//key 相等，value数组叠加
+            else {//key 相等，value数组叠加
+            	if(keyClashHandler!=null) {
+					x.key.handleKeyClash(keyClashHandler, key);
+				}
         		for(Object i:val) ((ArrayList) x.key.value).add(i);
             	return;//here
             }

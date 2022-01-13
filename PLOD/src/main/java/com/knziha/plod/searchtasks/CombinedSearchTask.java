@@ -130,6 +130,8 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		}
 		
 		_treeBuilder = new RBTree_additive();
+		// 替换key值为searchText近似值
+		_treeBuilder.setKeyClashHandler(searchText);
 		ArrayList<myCpr<String, Long>> combining_search_list;
 		BookPresenter bookPresenter;
 		long bid;
@@ -144,8 +146,9 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 					try {
 						for (int j = 0; j < combining_search_list.size(); j++) {
 							myCpr<String, Long> dataI = combining_search_list.get(j);
-							if(dataI!=null) // to check
+							if(dataI!=null) { // to check
 								_treeBuilder.insert(dataI.key, bid, dataI.value);
+							}
 						}
 					} catch (Exception ignored) { }
 				}

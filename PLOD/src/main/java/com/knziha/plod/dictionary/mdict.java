@@ -2514,11 +2514,12 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 						//if(EntryStartWith(key_block_cache_,key_start_index+_number_width,key_end_index-(key_start_index+_number_width),matcher)) {
 						if(doHarvest) {
 							String kI = new String(key_block_cache_, key_start_index+_number_width + entryNumExt,key_end_index-(key_start_index+_number_width + entryNumExt), _charset);
-							if(processMyText(kI).startsWith(keyword)) {
+							String proKey = processMyText(kI);
+							if(proKey.startsWith(keyword)) {
 								if(treeBuilder !=null)
 									treeBuilder.insert(kI, SelfAtIdx, keyCounter+infoI.num_entries_accumulator);
 								else
-									rangReceiver.add(new myCpr<String, Long>(kI,keyCounter+infoI.num_entries_accumulator));
+									rangReceiver.add(new myCpr<String, Long>(kI, keyCounter+infoI.num_entries_accumulator));
 								theta--;
 								results++;
 							} else return results;
