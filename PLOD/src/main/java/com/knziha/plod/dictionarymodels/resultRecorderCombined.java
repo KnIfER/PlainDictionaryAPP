@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ScrollView;
 
 import com.knziha.plod.plaindict.BasicAdapter;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -171,6 +172,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		boolean bNeedExpand=true;
 		ViewGroup webholder = a.webholder;
 		long toFind;
+		View expTbView = null;
 		for(int i=0;i<vals.size();i+=2){
 			valsTmp.clear();
 			toFind=vals.get(i);
@@ -214,7 +216,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			{
 				presenter.SetSearchKey(result.key);
 			}
-			
+			//CMN.debug("combining_search_result.renderContentAt::", frameAt);
 			presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, frameAt,null, p);
 			if(!mWebView.awaiting){
 				bNeedExpand=false;
@@ -222,15 +224,18 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 					presenter.mWebView.bRequestedSoundPlayback=true;
 					checkReadEntry=false;
 				}
+			} else if(bNeedExpand && !presenter.getNeedsAutoFolding(mWebView.frameAt)) {
+				expTbView = mWebView.toolbar_title;
+				bNeedExpand = false;
 			}
 			mWebView.fromCombined=1;
 			valueCount++;
 		}
 		if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
-			View viewById = webholder.findViewById(R.id.toolbar_title);
-			if (viewById != null) {
-				viewById.performClick();
-			}
+			expTbView = webholder.findViewById(R.id.toolbar_title);
+		}
+		if (expTbView != null) {
+			expTbView.performClick();
 		}
 		a.RecalibrateWebScrollbar(null);
 	}

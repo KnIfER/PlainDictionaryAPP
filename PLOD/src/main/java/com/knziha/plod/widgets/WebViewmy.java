@@ -342,6 +342,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		bPageStarted = false;
 		setWebChromeClient(null);
 		setWebViewClient(null);
+		//todo 空指针
 		bPageStarted = false;
 		setOnScrollChangedListener(null);
 		setOnTouchListener(null);
@@ -560,7 +561,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		return presenter.bookImpl.getBooKID();
 	}
 	
-	Runnable postFinishedAbility = () -> wvclient.onPageFinished(this, getUrl());
+	public Runnable postFinishedAbility = () -> wvclient.onPageFinished(this, getUrl());
 	
 	boolean bPostedFinish;
 	

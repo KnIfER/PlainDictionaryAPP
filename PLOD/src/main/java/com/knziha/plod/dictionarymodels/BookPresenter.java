@@ -1132,7 +1132,7 @@ function debug(e){console.log(e)};
 				mPageView.save.performLongClick();
 				break;
 			case R.id.toolbar_title:
-				CMN.Log("toolbar_title onClick");
+				CMN.debug("toolbar_title onClick");
 				if(mWebView.getVisibility()!=View.VISIBLE) {
 					mWebView.setAlpha(1);
 					mWebView.setVisibility(View.VISIBLE);
@@ -1971,7 +1971,7 @@ function debug(e){console.log(e)};
 
 	//todo frameAt=-1
     public void renderContentAt(float initialScale, int fRender, int frameAt, WebViewmy mWebView, long... position){
-    	CMN.Log("renderContentAt!!!...", bookImpl.getDictionaryName());
+    	CMN.debug("renderContentAt!!!...", bookImpl.getDictionaryName());
     	if (a==null) {
     		// safe check
     		return;
@@ -2010,16 +2010,15 @@ function debug(e){console.log(e)};
 			mWebView.currentPos=position[0];
 			mWebView.currentRendring=position;
 			if(frameAt>=0) mWebView.frameAt = frameAt;
-			//CMN.Log("折叠？？？", frameAt, mWebView.frameAt, getDictionaryName());
+			//CMN.debug("折叠？？？", frameAt, mWebView.frameAt, getDictionaryName());
 			mWebView.awaiting = false;
 			if(/*resposibleForThisWeb && */fromCombined && frameAt>=0
-					&& (PDICMainAppOptions.getTmpIsCollapsed(tmpIsFlag) || getAutoFold()
-							|| /*frameAt>0 && */PDICMainAppOptions.getDelaySecondPageLoading()
-											|| PDICMainAppOptions.getOnlyExpandTopPage() && frameAt+1>=opt.getExpandTopPageNum()    )){/* 自动折叠 */
+					&& (frameAt>0 && PDICMainAppOptions.getDelaySecondPageLoading()
+						|| getNeedsAutoFolding(frameAt))){/* 自动折叠 */
 				mWebView.awaiting = true;
 				mWebView.setVisibility(View.GONE);
 				setCurrentDis(mWebView, mWebView.currentPos);
-				CMN.Log("折叠！！！", mWebView.frameAt);
+				//CMN.debug("折叠！！！", mWebView.frameAt);
 				return;
 			}
 		}
@@ -2080,7 +2079,12 @@ function debug(e){console.log(e)};
 
 		renderContentAt_internal(mWebView, initialScale, fromCombined, fromPopup, mIsolateImages, position);
     }
-			
+	
+	public boolean getNeedsAutoFolding(int frameAt) {
+		return PDICMainAppOptions.getTmpIsCollapsed(tmpIsFlag) || getAutoFold()
+						|| PDICMainAppOptions.getOnlyExpandTopPage() && frameAt+1>=opt.getExpandTopPageNum()    ;
+	}
+	
 	public StringBuilder AcquirePageBuilder() {
 		StringBuilder sb = bookImpl.AcquireStringBuffer(512);
 		sb.append(htmlBase);
@@ -2133,6 +2137,8 @@ function debug(e){console.log(e)};
 									if (effectJs!=null) mWebView.evaluateJavascript(effectJs, null);
 									//a.showT("免重新加载生效！");
 									vartakelayaTowardsDarkMode(mWebView);
+									mWebView.bPageStarted=true;
+									mWebView.postFinishedAbility.run();
 								}  else if("2".equals(value) && getIsWebx()) { // apply js modifier first, then do search
 									if (!"schVar".equals(mWebView.getTag())) {
 										mWebView.setTag("schVar");

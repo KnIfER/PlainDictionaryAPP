@@ -1717,7 +1717,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		//tg
-		//etSearch.setText("happy");
+		etSearch.setText("happy");
 		//showT(""+currentDictionary.QueryByKey("woodie", SearchType.Normal, false, 0));
 		TestHelper.wakeUpAndUnlock(this);
 
@@ -2839,6 +2839,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				etSearch.clearFocus();
 			}
 			
+			//CMN.debug("combining_search_result.renderContentAt::");
 			combining_search_result.renderContentAt(lastClickedPos, PDICMainActivity.this,this);
 			
 			decorateContentviewByKey(null, currentKeyText = combining_search_result.getResAt(PDICMainActivity.this, pos).toString());
