@@ -799,7 +799,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public void inflateContentView(MainActivityUIBase a) {
 		//CMN.Log("inflateContentView");
 		contentview = (ViewGroup) a.getLayoutInflater().inflate(R.layout.contentview, root,false);
-		ContentviewItemBinding pageView = ContentviewItemBinding.inflate(a.getLayoutInflater(), a.webholder, false);
+		ContentviewItemBinding pageView = ContentviewItemBinding.inflate(a.getLayoutInflater(), a.weblistHandler.getViewGroup(), false);
 		mPageView = pageView;
 		rl = (ViewGroup) pageView.getRoot();
 		

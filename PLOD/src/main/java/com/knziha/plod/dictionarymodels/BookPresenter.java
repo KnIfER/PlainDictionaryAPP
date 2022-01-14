@@ -1018,7 +1018,7 @@ function debug(e){console.log(e)};
 		this.a=a;
 		ucc = a.getUcc();
 		if(!viewsHolderReady) {
-			ContentviewItemBinding pageView = ContentviewItemBinding.inflate(a.getLayoutInflater(), a.webholder, false);
+			ContentviewItemBinding pageView = ContentviewItemBinding.inflate(a.getLayoutInflater(), a.weblistHandler.getViewGroup(), false);
 			mPageView = pageView;
 			rl = (ViewGroup) pageView.getRoot();
 	        {
@@ -1141,7 +1141,7 @@ function debug(e){console.log(e)};
 						renderContentAt(-1, RENDERFLAG_NEW, -1, null, mWebView.currentRendring);
 					}
 				}//((View)rl.getParent()).getId()==R.id.webholder
-				else if(rl.getParent()==a.webholder) {
+				else if(rl.getParent()==a.weblistHandler.getViewGroup()) {
 					mWebView.setVisibility(View.GONE);
 				}
 				else {
@@ -1155,9 +1155,7 @@ function debug(e){console.log(e)};
 						//a.mBar.isWebHeld=true;
 						if(a.mBar.timer!=null) a.mBar.timer.cancel();
 						//a.mBar.fadeIn();
-						a.mBar.setMax(a.webholder.getMeasuredHeight()-a.WHP.getMeasuredHeight());
-						a.mBar.setProgress(a.WHP.getScrollY());
-						//a.mBar.onTouch(null, MotionEvent.obtain(0,0,MotionEvent.ACTION_UP,0,0,0));
+						a.weblistHandler.setScrollbar();
 					}
 				});
 				break;
@@ -2010,7 +2008,7 @@ function debug(e){console.log(e)};
 			mWebView.currentPos=position[0];
 			mWebView.currentRendring=position;
 			if(frameAt>=0) mWebView.frameAt = frameAt;
-			//CMN.debug("折叠？？？", frameAt, mWebView.frameAt, getDictionaryName());
+			CMN.debug("折叠？？？", frameAt, mWebView.frameAt, getDictionaryName());
 			mWebView.awaiting = false;
 			if(/*resposibleForThisWeb && */fromCombined && frameAt>=0
 					&& (frameAt>0 && PDICMainAppOptions.getDelaySecondPageLoading()
@@ -2018,7 +2016,7 @@ function debug(e){console.log(e)};
 				mWebView.awaiting = true;
 				mWebView.setVisibility(View.GONE);
 				setCurrentDis(mWebView, mWebView.currentPos);
-				//CMN.debug("折叠！！！", mWebView.frameAt);
+				CMN.debug("折叠！！！", mWebView.frameAt);
 				return;
 			}
 		}

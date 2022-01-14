@@ -38,6 +38,7 @@ import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
+import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -204,7 +205,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		bottombar2.setBackgroundColor(filteredColor);
 		
 		filteredColor = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
-		WHP.setBackgroundColor(filteredColor);
+		weblistHandler.setBackgroundColor(filteredColor);
 		webSingleholder.setBackgroundColor(filteredColor);
 	}
 	
@@ -289,7 +290,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		execSearchRunnable = () -> {
 			//webcontentlist.setVisibility(View.INVISIBLE);
 			if(!bWantsSelection) {
-				webholder.removeAllViews();
+				weblistHandler.removeAllViews();
 			}
 			if(checkDicts()) {
 				if(isCombinedSearching){
@@ -456,7 +457,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			toggleInPageSearch(false);
     	
         lv.setAdapter(adaptermy = new ListViewAdapter(webSingleholder));
-        lv2.setAdapter(adaptermy2 = new ListViewAdapter2(webholder));
+        lv2.setAdapter(adaptermy2 = new ListViewAdapter2(weblistHandler));
 
 			String keytmp = processIntent(getIntent());
 	        etSearch.addTextChangedListener(tw1);
@@ -743,8 +744,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 	protected void findFurtherViews() {
 		webSingleholder = PageSlider.findViewById(R.id.webSingleholder);
-		WHP = PageSlider.findViewById(R.id.WHP);
-		webholder = WHP.findViewById(R.id.webholder);
+		View WHP = PageSlider.findViewById(R.id.WHP);
+		weblistHandler.init((ViewGroup) WHP, WHP.findViewById(R.id.webholder));
 		IMPageCover = PageSlider.findViewById(R.id.cover);
 		mBar = PageSlider.findViewById(R.id.dragScrollBar);
 		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
@@ -973,7 +974,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         		return;
     		}
 	
-			ensureContentVis(webSingleholder, WHP);
+			ensureContentVis(webSingleholder, weblistHandler);
 
 			iItem_InPageSearch.setVisible(true);
 	
@@ -1026,11 +1027,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 		if(another.getVisibility()==View.VISIBLE) {
-			ViewUtils.removeAllViews(another==WHP?(ViewGroup) WHP.getChildAt(0):another);
+			ViewUtils.removeAllViews(another);
 			another.setVisibility(View.GONE);
 		}
 		
-		int targetVis = webholder==WHP?View.VISIBLE:View.GONE;
+		int targetVis = webholder==weblistHandler?View.VISIBLE:View.GONE;
 		
 		if(widget14.getVisibility()!=targetVis) {
 			widget13.setVisibility(targetVis);
@@ -1121,7 +1122,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
         		return;
     		}
 
-        	ensureContentVis(WHP, webSingleholder);
+        	ensureContentVis(weblistHandler, webSingleholder);
         	
 			iItem_FolderAll.setVisible(true);//折叠
 			iItem_InPageSearch.setVisible(true);
@@ -1201,7 +1202,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					if(webSingleholder.getChildCount()!=0) {
 						webSingleholder.removeAllViews();
 					}
-					webholder.removeAllViews();
+					weblistHandler.removeAllViews();
 					etSearch_ToToolbarMode(0);
 				}
 			} break;
@@ -1258,7 +1259,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	@Override
 	public void invalidAllLists() {
 		webSingleholder.removeAllViews();
-		webholder.removeAllViews();
+		weblistHandler.removeAllViews();
 		bIsFirstLaunch = true;
 		//todo 有时白，fowhy.
 		CombinedSearchTask_lastKey = null;

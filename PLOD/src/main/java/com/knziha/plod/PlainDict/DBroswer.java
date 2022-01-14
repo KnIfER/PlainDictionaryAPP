@@ -1471,7 +1471,7 @@ public class DBroswer extends Fragment implements
 								show(R.string.searchFailed, currentDisplaying);
 							} else {
 								a.show(R.string.searchFailed, currentDisplaying);
-								ViewGroup anothorHolder = a.webholder;
+								ViewGroup anothorHolder = a.weblistHandler;
 								anothorHolder.removeAllViews();
 								int remcount = webviewHolder.getChildCount()-1;
 								if(remcount>0) webviewHolder.removeViews(1, remcount);
@@ -1616,12 +1616,13 @@ public class DBroswer extends Fragment implements
 		}
 		CMN.Log("联合搜索 - 同步延时 : ", CMN.elapsed(st));
 		a.bShowLoadErr=true;
-		webviewHolder = a.webholder;
+		webviewHolder = a.weblistHandler;
 		ViewGroup anothorHolder = a.webSingleholder;
 		CMN.Log("SelectionMode_pan", records.size());
 		if(records.size()>0) {
+			//yyy
 			a.recCom = rec = new resultRecorderCombined(a,data,a.md);
-			ScrollViewmy WHP = a.WHP;
+			ScrollViewmy WHP = (ScrollViewmy) a.weblistHandler.getScrollView();
 			ScrollerRecord pagerec = null;
 			OUT:
 			if(adelta!=0 && System.currentTimeMillis()-a.lastClickTime>300) {//save our postion
@@ -1635,10 +1636,10 @@ public class DBroswer extends Fragment implements
 				}
 				pagerec.set(0, WHP.getScrollY(), 1);
 			}
-			
+
 			adelta=0;
 			a.lastClickTime=System.currentTimeMillis();
-			
+
 			pagerec = avoyager.get(position);
 			if (pagerec != null) {
 				rec.expectedPos = pagerec.y;
@@ -1648,23 +1649,23 @@ public class DBroswer extends Fragment implements
 				rec.expectedPos = 0;
 				//CMN.Log("新建", combining_search_result.expectedPos, pos);
 			}
-			
+
 			WHP.setVisibility(View.VISIBLE);
 			if(anothorHolder.getVisibility()==View.VISIBLE) {
 				if(anothorHolder.getChildCount()!=0)
 					anothorHolder.removeAllViews();
 				anothorHolder.setVisibility(View.GONE);
 			}
-			
+
 			a.widget13.setVisibility(View.VISIBLE);
 			a.widget14.setVisibility(View.VISIBLE);
 			a.contentview.setVisibility(View.VISIBLE);
 			imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
-			
+
 			a.AttachContentViewForDB();
-			
+
 			rec.renderContentAt(0, a,null);
-			
+
 			processFavorite(position, currentDisplaying);
 			return true;
 		}
@@ -1705,7 +1706,7 @@ public class DBroswer extends Fragment implements
 		}
 		
 		webviewHolder = a.webSingleholder;
-		ViewGroup anothorHolder = a.webholder;
+		ViewGroup anothorHolder = a.weblistHandler;
 		if(idx>=0) {
 			currentDictionary.initViewsHolder(a);
 			ScrollerRecord pagerec = null;

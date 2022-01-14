@@ -512,7 +512,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				
 				if(System.currentTimeMillis()-a.lastClickTime>300 && !isloading) {//save our postion
 					if (!fromCombined || a.recCom.scrolled)
-						PageState = saveHistory(fromCombined ? a.WHP : null, a.lastClickTime);
+						PageState = saveHistory(fromCombined ? a.weblistHandler.getScrollView() : null, a.lastClickTime);
 					if (!isGoBack && HistoryVagranter == 0 && PageState != null) {
 						if (fromCombined) {
 							a.adaptermy2.avoyager.put(a.adaptermy2.lastClickedPosBeforePageTurn, PageState);

@@ -87,6 +87,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -177,6 +178,7 @@ import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.slideshow.PhotoViewActivity;
+import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CustomShareAdapter;
@@ -185,6 +187,7 @@ import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.ListSizeConfiner;
+import com.knziha.plod.widgets.ListViewBasicViews;
 import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.MultiplexLongClicker;
 import com.knziha.plod.widgets.OnScrollChangedListener;
@@ -348,8 +351,220 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected FrameLayout.LayoutParams mBar_layoutParmas;
 	public ViewGroup main;
 	public ViewGroup mainF;
-	public ViewGroup webholder;
-	public ScrollViewmy WHP;
+	public WebViewListHandler weblistHandler;
+	public class WebViewListHandler extends ViewGroup {
+		boolean bUseListView;
+		ListViewmy mListView;
+		ListViewBasicViews.BasicViewsAdapter mAdapter;
+		ScrollViewmy WHP;
+		ViewGroup webholder;
+		
+		public void setUseListView(boolean use) {
+			if(this.bUseListView = use) {
+			} else {
+			
+			}
+		}
+		
+		public WebViewListHandler(Context context) {
+			super(context);
+			setId(R.id.webholder);
+			//setUseListView(true);
+		}
+		
+		public ViewGroup getViewGroup() {
+			return bUseListView?mListView:webholder;
+		}
+		
+		public View getChildAt(int frameAt) {
+			if(bUseListView) {
+				return (View) mAdapter.getItem(frameAt);
+			}
+			return webholder.getChildAt(frameAt);
+		}
+		
+		@Override
+		public int getChildCount() {
+			return bUseListView?mAdapter.getCount():webholder.getChildCount();
+		}
+		
+		public void shutUp() {
+			if(WHP.getVisibility()==View.VISIBLE) {
+				if(webholder.getChildCount()!=0)
+					webholder.removeAllViews();
+				WHP.setVisibility(View.GONE);
+			}
+		}
+		
+		public void init(ViewGroup whp, ViewGroup webholder) {
+			this.WHP = (ScrollViewmy) whp;
+			this.webholder = webholder;
+			if(bUseListView) {
+				if(mListView==null && whp.getParent()!=null) {
+					mListView = new ListViewmy(WHP.getContext());
+					mAdapter = new ListViewBasicViews.BasicViewsAdapter();
+					mListView.setAdapter(mAdapter);
+					ViewUtils.replaceView(mListView, WHP);
+					CMN.Log("替换::", mListView.getParent(), WHP.getParent());
+					
+					mListView.setNestedScrollingEnabled(false);
+//					mListView.setFastScrollAlwaysVisible(true);
+//					mListView.setFastScrollEnabled(true);
+					mListView.setRecyclerListener(new AbsListView.RecyclerListener() {
+						@Override
+						public void onMovedToScrapHeap(View view) {
+						
+						}
+					});
+				}
+			}
+		}
+		
+		@Override
+		public void addView(View child, int index) {
+			if (bUseListView) {
+				CMN.Log("添加::", index, mAdapter.mViews.size());
+				if (index < 0) {
+					index = mAdapter.getCount();
+				}
+				mAdapter.mViews.add(index, child);
+				mAdapter.notifyDataSetChanged();
+			} else {
+				webholder.addView(child, index);
+			}
+		}
+		
+		public void removeAllViews() {
+			if (bUseListView) {
+				mAdapter.mViews.clear();
+				mAdapter.notifyDataSetChanged();
+			} else {
+				webholder.removeAllViews();
+			}
+		}
+		
+		@Override
+		public void setVisibility(int visibility) {
+			(bUseListView?mListView:WHP).setVisibility(visibility);
+		}
+		
+		@Override
+		public int getVisibility() {
+			return (bUseListView?mListView:WHP).getVisibility();
+		}
+		
+		@Override
+		protected void onLayout(boolean changed, int l, int t, int r, int b) { }
+		
+		public void setBackgroundColor(int manFt_globalPageBackground) {
+			(bUseListView?mListView:WHP).setBackgroundColor(manFt_globalPageBackground);
+		}
+		
+		public int getFirstVisblePos() {
+			if (bUseListView) {
+				return mListView.getFirstVisiblePosition();
+			}
+			final int currentHeight=WHP.getScrollY();
+			for(int i=0;i<webholder.getChildCount();i++) {
+				View CI = webholder.getChildAt(i);
+				if(CI.getBottom() > currentHeight) {
+					return i;
+				}
+			}
+			return -1;
+		}
+		
+		public ViewGroup getScrollView() {
+			return WHP;
+		}
+		
+		public void setScrollbar() {
+			mBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
+			mBar.setProgress(WHP.getScrollY());
+			//a.mBar.onTouch(null, MotionEvent.obtain(0,0,MotionEvent.ACTION_UP,0,0,0));
+		}
+		
+		public OnLayoutChangeListener OLCL;
+		public void installLayoutScrollListener(resultRecorderCombined recom) {
+			WHP.touchFlag.first=false;
+			if(OLCL==null) {
+				OLCL = new OnLayoutChangeListener() {
+					@Override
+					public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight,
+							int oldBottom) {
+						//CMN.Log("onLayoutChange", expectedPos, sv.getScrollY());
+						//CMN.Log("onLayoutChange", a.WHP.touchFlag.first, scrolled, bottom - top >= expectedPos + sv.getMeasuredHeight());
+						//CMN.Log("onLayoutChange", bottom - top , expectedPos + sv.getMeasuredHeight());
+						if (WHP.touchFlag.first) {
+							main_progress_bar.setVisibility(View.GONE);
+							v.removeOnLayoutChangeListener(this);
+							return;
+						}
+						//if(expectedPos==0) return;
+						int HGEIGHT = bottom - top;
+						if (HGEIGHT < recom.LHGEIGHT)
+							recom.scrolled = false;
+						recom.LHGEIGHT = HGEIGHT;
+						if(recom.scrollTarget!=null)
+							recom.expectedPos=recom.scrollTarget.getTop();
+						ScrollViewmy sv = WHP;
+						if (!recom.scrolled) {
+							if (HGEIGHT >= recom.expectedPos + sv.getMeasuredHeight()) {
+								sv.scrollTo(0, recom.expectedPos);//smooth
+								//CMN.Log("onLayoutChange scrolled", expectedPos, sv.getMeasuredHeight());
+								if (sv.getScrollY() == recom.expectedPos) {
+									main_progress_bar.setVisibility(View.GONE);
+									recom.scrolled = true;
+								}
+							}
+						}
+					}
+				};
+			}
+			
+			recom.LHGEIGHT=0;
+			webholder.removeOnLayoutChangeListener(OLCL);
+			if(!recom.toHighLight){
+				ViewUtils.addOnLayoutChangeListener(webholder, OLCL);
+				if(main_progress_bar!=null)
+					main_progress_bar.setVisibility(recom.expectedPos==0?View.GONE:View.VISIBLE);
+				recom.scrolled=false;
+			}
+			PageSlider.setIBC(null, weblistHandler);
+		}
+		
+		public void NotifyScrollingTo(resultRecorderCombined recom) {
+			WHP.touchFlag.first=false;
+			recom.LHGEIGHT=WHP.getHeight();
+			webholder.removeOnLayoutChangeListener(OLCL); // todo save this step ???
+			ViewUtils.addOnLayoutChangeListener(webholder, OLCL);
+		}
+		
+		public void initWebHolderScrollChanged() {
+			if(mBar.getVisibility()==View.VISIBLE){
+				if(onWebHolderScrollChanged==null){
+					WHP.scrollbar2guard=mBar;
+					WHP.setScrollViewListener(onWebHolderScrollChanged=(v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+						if(mBar.isHidden()){
+							if(Math.abs(oldScrollY-scrollY)>=10*dm.density)
+								mBar.fadeIn();
+						}
+						if(!mBar.isHidden()){
+							if(!mBar.isWebHeld)
+								mBar.hiJackScrollFinishedFadeOut();
+							if(!mBar.isDragging){
+								mBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
+								mBar.setProgress(WHP.getScrollY());
+							}
+						}
+					});
+				}
+				mBar.fadeOut();
+			}
+			mBar.setDelimiter("|||", WHP);
+		}
+	}
+	
 	public ViewGroup webSingleholder;
 	protected WindowManager wm;
 
@@ -1327,10 +1542,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
        		  cc+=ri.get(i).numActivities;
        	  showT(""+cc);
        	  */
-		
 		CMN.mid = Thread.currentThread().getId();
 	    //CMN.Log("instanceCount", CMN.instanceCount);
 		super.onCreate(savedInstanceState);
+		ViewGroup tmp =  new ScrollViewmy(this);
+		weblistHandler = new WebViewListHandler(this);
+		weblistHandler.init(tmp, tmp);
 		if(shunt) return;
 		CMN.instanceCount++;
 		snackWorker = () -> {
@@ -1440,7 +1657,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//CMN.Log("fix_dm_color");
 		boolean isDark = GlobalOptions.isDark;
 		boolean nii=widget12.getTag(R.id.image)==null;
-		ViewGroup[] holders = new ViewGroup[]{webSingleholder, webholder};
+		ViewGroup[] holders = new ViewGroup[]{webSingleholder, weblistHandler.getViewGroup()};
 		for (ViewGroup hI : holders) {
 			for (int i = 0; i < hI.getChildCount(); i++) {
 				Object tag = hI.getChildAt(i).getTag();
@@ -1790,10 +2007,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										}
 									}
 									else if (ActivedAdapter == adaptermy2) {
-										if (webholder.getChildAt(popupFrame) instanceof LinearLayout) {
-											LinearLayout sv = (LinearLayout) webholder.getChildAt(popupFrame);
+										if (weblistHandler.getChildAt(popupFrame) instanceof LinearLayout) {
+											LinearLayout sv = (LinearLayout) weblistHandler.getChildAt(popupFrame);
 											WebViewmy mWebView = sv.findViewById(R.id.webviewmy);
-											now = sv.getTop() + mWebView.lastY + sv.getChildAt(0).getHeight() - WHP.getScrollY();
+											now = sv.getTop() + mWebView.lastY + sv.getChildAt(0).getHeight() - weblistHandler.WHP.getScrollY();
 										}
 									}
 									if(thisActType!=ActType.MultiShare) {
@@ -2103,11 +2320,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public void TransientIntoSingleExplanation() {
 		webSingleholder.setVisibility(View.VISIBLE);
-		if(WHP.getVisibility()==View.VISIBLE) {
-			if(webholder.getChildCount()!=0)
-				webholder.removeAllViews();
-			WHP.setVisibility(View.GONE);
-		}
+		weblistHandler.shutUp();
 		if(widget14.getVisibility()==View.VISIBLE) {
 			widget13.setVisibility(View.GONE);
 			widget14.setVisibility(View.GONE);
@@ -2152,9 +2365,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(vis==View.VISIBLE)
 				mBar.setDelimiter("< >", mWebView);
 		}else{
-			WHP.setVerticalScrollBarEnabled(vsi);
+			weblistHandler.setVerticalScrollBarEnabled(vsi);
 			if(vis==View.VISIBLE)
-				initWebHolderScrollChanged();
+				weblistHandler.initWebHolderScrollChanged();
 		}
 	}
 
@@ -2923,8 +3136,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			bottombar2 = contentUIData.bottombar2;
 			
 			webSingleholder = contentUIData.webSingleholder;
-			WHP = contentUIData.WHP;
-			webholder = contentUIData.webholder;
+			weblistHandler.init(contentUIData.WHP, contentUIData.webholder);
 			IMPageCover = contentUIData.cover;
 			mBar = contentUIData.dragScrollBar;
 			(widget13=contentUIData.browserWidget13).setOnClickListener(this);
@@ -3239,30 +3451,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
-	public void initWebHolderScrollChanged() {
-		if(mBar.getVisibility()==View.VISIBLE){
-			if(onWebHolderScrollChanged==null){
-				WHP.scrollbar2guard=mBar;
-				WHP.setScrollViewListener(onWebHolderScrollChanged=(v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
-					if(mBar.isHidden()){
-						if(Math.abs(oldScrollY-scrollY)>=10*dm.density)
-							mBar.fadeIn();
-					}
-					if(!mBar.isHidden()){
-						if(!mBar.isWebHeld)
-							mBar.hiJackScrollFinishedFadeOut();
-						if(!mBar.isDragging){
-							mBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
-							mBar.setProgress(WHP.getScrollY());
-						}
-					}
-				});
-			}
-			mBar.fadeOut();
-		}
-		mBar.setDelimiter("|||", WHP);
-	}
-
 	/** 0-搜索  1-返回  2-删除  4-撤销   */
 	boolean etSearch_ToToolbarMode(int mode) {
 		switch(mode){
@@ -3367,7 +3555,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mdict_cache.clear();
 				if(webSingleholder!=null) {
 					webSingleholder.removeAllViews();
-					webholder.removeAllViews();
+					weblistHandler.removeAllViews();
 				}
 				
 				if(ucc!=null) {
@@ -3397,6 +3585,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public void notifyGLobalFSChanged(int targetLevel) {
 		BookPresenter.def_fontsize=targetLevel;
+		ViewGroup webholder = weblistHandler.getViewGroup();
 		for(int i=0;i<webholder.getChildCount();i++) {
 			View cv = webholder.getChildAt(i);
 			if(cv!=null) {
@@ -3869,7 +4058,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if (bid>=0&&bid<md.size())
 					ret = md.get((int) bid);
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			CMN.Log(e);
 		}
 		if(ret==null)
@@ -3900,7 +4089,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if (bid>=0&&bid<md.size())
 					ret = md.get((int) bid);
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			CMN.Log(e);
 		}
 		if(ret==null)
@@ -4142,7 +4331,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								CMN.Log("应用全局颜色变更中…");
 								GlobalPageBackground= GlobalPageBackground;
 								if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
-								WHP.setBackgroundColor(ManFt_GlobalPageBackground);
+								weblistHandler.setBackgroundColor(ManFt_GlobalPageBackground);
 								if(bFromPeruseView) peruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 								opt.putGlobalPageBackground(GlobalPageBackground);
 								if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
@@ -4184,7 +4373,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										mWebView.setBackgroundColor(ManFt_invoker_bgColor);
 								} else {
 									if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
-									WHP.setBackgroundColor(ManFt_GlobalPageBackground);
+									weblistHandler.setBackgroundColor(ManFt_GlobalPageBackground);
 									if(bFromPeruseView) {
 										peruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 									}
@@ -5441,7 +5630,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 天运之子，层类无穷，衍生不尽！ */
 			case 16:{//滚动条 [在右/在左/无/系统滚动条] 翻阅/主程序1.2/浮动搜索1.2
 				String title = "设置网页滚动条 - ";
-				boolean wh = webholder.getChildCount()>0;
+				boolean wh = weblistHandler.getChildCount()>0;
 				int flagPos=0;
 				if(PeruseViewAttached()){
 					title += "翻阅模式";
@@ -5749,9 +5938,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //					opt.putCurrFavoriteDBName(favorTag+name.substring(0,name.length()-4));
 //					show(R.string.currFavor, DBrowser.boli(newFavor.getName()));
 //				}
-		if(webholder!=null) {
-			webholder.removeAllViews();
-		}
+		weblistHandler.removeAllViews();
 		DBrowser.getFragmentManager()
 				.beginTransaction()
 				.remove(DBrowser)
@@ -6210,7 +6397,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					int toPos = ActivedAdapter.lastClickedPos+delta;
 					if(CurrentViewPage==1 && !bPeruseInCharge){
 						if(lv2.getVisibility()!=View.VISIBLE){
-							webholder.removeAllViews();
+							weblistHandler.removeAllViews();
 						}
 					}
 					ActivedAdapter.onItemClick(toPos);
@@ -6273,22 +6460,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					v.performLongClick();
 					break;
 				}
-				if(webholder.getChildCount()!=0) {
+				if(weblistHandler.getChildCount()!=0) {
 					imm.hideSoftInputFromWindow(main.getWindowToken(),0);
-					int selectedPos=-1;
-					final int currentHeight=WHP.getScrollY();
-					for(int i=0;i<webholder.getChildCount();i++) {
-						View CI = webholder.getChildAt(i);
-						if(CI.getBottom() > currentHeight) {
-							selectedPos=i;
-							break;
-						}
-					}
-					int finalSelectedPos = selectedPos;
+					int selectedPos=weblistHandler.getFirstVisblePos();
 					AlertDialog dTmp = new AlertDialog.Builder(this/*,R.style.DialogStyle*/)
 							.setTitle("跳转")
 					.setAdapter(new BaseAdapter() {
-						@Override public int getCount() { return webholder.getChildCount(); }
+						@Override public int getCount() { return weblistHandler.getChildCount(); }
 						
 						@Override public Object getItem(int position) { return null; }
 						
@@ -6305,7 +6483,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
 							}
 							
-							View ca = webholder.getChildAt(position);
+							View ca = weblistHandler.getChildAt(position);
 							if (ca!=null && ca.getTag() instanceof WebViewmy) {
 								BookPresenter mdTmp = ((WebViewmy) ca.getTag()).presenter;
 								if (mdTmp!=null) {
@@ -6315,7 +6493,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									tv.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
 									tv.setStarLevel(PDICMainAppOptions.getDFFStarLevel(mdTmp.getFirstFlag()));
 									
-									ret.setChecked(position == finalSelectedPos);
+									ret.setChecked(position == selectedPos);
 									
 									ret.setText(mdTmp.getDictionaryName());
 									return ret;
@@ -6326,7 +6504,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							return ret;
 						}
 					}, (dialog, pos) -> {
-						View childAt = webholder.getChildAt(pos);
+						View childAt = weblistHandler.getChildAt(pos);
 						if(childAt!=null) {
 							scrollToWebChild(childAt);
 							recCom.scrollTo(childAt, MainActivityUIBase.this);
@@ -6365,12 +6543,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.browser_widget13:
 			case R.id.browser_widget14:{
 				boolean nxt = id == R.id.browser_widget14;
-				final int currentHeight=WHP.getScrollY();
-				int cc=webholder.getChildCount();
+				final int currentHeight=weblistHandler.WHP.getScrollY();
+				int cc=weblistHandler.webholder.getChildCount();
 				int childAtIdx=cc;
 				int top;
 				for(int i=0;i<cc;i++) {
-					top = webholder.getChildAt(i).getTop();
+					top = weblistHandler.webholder.getChildAt(i).getTop();
 					if(top>=currentHeight){
 						childAtIdx=i;
 						if(top!=currentHeight && !nxt) --childAtIdx;
@@ -6379,9 +6557,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				childAtIdx+=nxt?-1:1;
 				if(childAtIdx>=cc){
-					scrollToPagePosition(webholder.getChildAt(cc-1).getBottom());
+					scrollToPagePosition(weblistHandler.webholder.getChildAt(cc-1).getBottom());
 				} else {
-					scrollToWebChild(webholder.getChildAt(childAtIdx));
+					scrollToWebChild(weblistHandler.webholder.getChildAt(childAtIdx));
 				}
 			} break;
 			/* 自动浏览 */
@@ -6548,16 +6726,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	private void scrollToPageTop(View childAt) {
 		if(PDICMainAppOptions.getScrollAnimation())
-			WHP.smoothScrollTo(0, childAt.getTop());
+			weblistHandler.WHP.smoothScrollTo(0, childAt.getTop());
 		else
-			WHP.scrollTo(0, childAt.getTop());
+			weblistHandler.WHP.scrollTo(0, childAt.getTop());
 	}
 
 	private void scrollToPagePosition(int offset) {
 		if(PDICMainAppOptions.getScrollAnimation())
-			WHP.smoothScrollTo(0, offset);
+			weblistHandler.WHP.smoothScrollTo(0, offset);
 		else
-			WHP.scrollTo(0, offset);
+			weblistHandler.WHP.scrollTo(0, offset);
 
 	}
 
@@ -6570,7 +6748,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					tianming=webviewHolder.getChildAt(0);
 				else {
 					// todo 第二种模式
-					int currentHeight = WHP.getScrollY();
+					int currentHeight = weblistHandler.WHP.getScrollY();
 					int selectedPos = -1;
 					for (int i = 0; i < cc; i++) {
 						if (webviewHolder.getChildAt(i) instanceof LinearLayout) {
@@ -6582,9 +6760,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 					//应用中线法则
-					currentHeight = currentHeight + WHP.getHeight() / 2;
+					currentHeight = currentHeight + weblistHandler.WHP.getHeight() / 2;
 					if (selectedPos >= 0) {
-						while (selectedPos + 1 < webholder.getChildCount() && webholder.getChildAt(selectedPos).getBottom() < currentHeight) {
+						while (selectedPos + 1 < weblistHandler.webholder.getChildCount() && weblistHandler.webholder.getChildAt(selectedPos).getBottom() < currentHeight) {
 							selectedPos++;
 						}
 						tianming = webviewHolder.getChildAt(selectedPos);
@@ -6697,10 +6875,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 					int totalHeight=0;
 					int selectedPos=-1;
-					final int currentHeight=WHP.getScrollY();
+					final int currentHeight=weblistHandler.WHP.getScrollY();
 					View itemTo = null;
-					for(int i=0;i<webholder.getChildCount();i+=1) {
-						itemTo = webholder.getChildAt(i);
+					for(int i=0;i<weblistHandler.webholder.getChildCount();i+=1) {
+						itemTo = weblistHandler.webholder.getChildAt(i);
 						totalHeight+=itemTo.getMeasuredHeight();
 						if(totalHeight>currentHeight) {
 							selectedPos=i;
@@ -6784,10 +6962,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	protected void toggleFoldAll() {
 		int targetVis=View.VISIBLE;
-		int cc=webholder.getChildCount();
+		int cc=weblistHandler.getChildCount();
 		if(cc>0) {
 			for (int i = 0; i < cc; i++) {
-				if (webholder.getChildAt(i).findViewById(R.id.webviewmy).getVisibility() != View.GONE) {
+				if (weblistHandler.getChildAt(i).findViewById(R.id.webviewmy).getVisibility() != View.GONE) {
 					targetVis = View.GONE;
 					break;
 				}
@@ -6796,7 +6974,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				awaiting = false;
 			}
 			for (int i = 0; i < cc; i++) {
-				View childAt = webholder.getChildAt(i);
+				View childAt = weblistHandler.getChildAt(i);
 				WebViewmy targetView = childAt.findViewById(R.id.webviewmy);
 				if(targetVis==View.GONE) {
 					targetView.setVisibility(targetVis);
@@ -7114,7 +7292,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	private void evalJsAtAllFrames(String exp) {
 		evalJsAtAllFrames_internal(webSingleholder, exp);
-		evalJsAtAllFrames_internal(webholder, exp);
+		evalJsAtAllFrames_internal(weblistHandler, exp);
 		if(peruseView !=null && peruseView.mWebView!=null){
 			peruseView.mWebView.evaluateJavascript(exp,null);
 		}
@@ -7159,10 +7337,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			View wv = webHolder.getChildAt(1);
 			if(wv instanceof WebView){
 				int pad=(int) (25*dm.density);
-				if(ActivedAdapter.webviewHolder==webholder){
+				if(ActivedAdapter.webviewHolder==weblistHandler){
 					//CMN.Log("???");
-					WHP.performLongClick();
-					WHP.onTouchEvent(MotionEvent.obtain( 1000,/*小*/
+					weblistHandler.WHP.performLongClick();
+					weblistHandler.WHP.onTouchEvent(MotionEvent.obtain( 1000,/*小*/
 							1000,/*样，*/
 							MotionEvent.ACTION_UP,/*我还*/
 							0,/*治*/
@@ -7176,9 +7354,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					o=(int)(o*dm.density);
 					o+=webHolder.getTop()+wv.getTop();
 					//CMN.Log("??????", o);
-					if(o<=WHP.getScrollY() || o+pad>=WHP.getScrollY()+WHP.getHeight()){
+					if(o<=weblistHandler.WHP.getScrollY() || o+pad>=weblistHandler.WHP.getScrollY()+weblistHandler.WHP.getHeight()){
 						//CMN.Log("do_scrollHighlight",o,d,o-pad);
-						WHP.smoothScrollTo(0, o-pad);
+						weblistHandler.WHP.smoothScrollTo(0, o-pad);
 					}
 				}
 				else{
@@ -7638,18 +7816,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						proceed=false;
 						mWebView.expectedPos = -100;
 						if(fromCombined){
-							WHP.touchFlag.first=true;
+							weblistHandler.WHP.touchFlag.first=true;
 								if (toTag.equals("===000")) {
 									//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + WHP.getChildAt(0).getHeight());
-									WHP.post(() -> {
-										WHP.smoothScrollTo(0, invoker.rl.getTop());
+									weblistHandler.WHP.post(() -> {
+										weblistHandler.WHP.smoothScrollTo(0, invoker.rl.getTop());
 									});
 								} else
 									view.evaluateJavascript("var item=document.getElementsByName(\"" + toTag + "\")[0];item?item.getBoundingClientRect().top:-1;"
 											, v -> {
 												int to = (int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
 												if(to>=0)
-													WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
+													weblistHandler.WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
 											});
 
 						}
@@ -7661,7 +7839,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				
-				CMN.Log("expectedPos::", mWebView.expectedPos, mWebView.getScrollY());
+				CMN.debug("expectedPos::", mWebView.expectedPos, mWebView.getScrollY());
 				boolean toHighLight = PDICMainAppOptions.getPageAutoScrollOnTurnPage() && view.getTag(R.id.toolbar_action5) != null;
 
 				if(proceed) {
@@ -7683,15 +7861,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					else {
 						if("===???".equals(toTag)){
 							/* 接管同一词典不同页面的网页前后跳转 */
-							WHP.touchFlag.first=false;
+							weblistHandler.WHP.touchFlag.first=false;
 							//WHP.post(() -> {
 							//WHP.smoothScrollTo(0, mWebView.expectedPos);
 							//WHP.smoothScrollTo(mWebView.expectedPosX, mWebView.expectedPos);
 							recCom.expectedPos=mWebView.expectedPos;
 							recCom.LHGEIGHT=0;
 							recCom.scrolled=false;
-							ViewUtils.addOnLayoutChangeListener(webholder, recCom.OLCL);
-							recCom.OLCL.onLayoutChange(webholder,0, webholder.getTop(),0,webholder.getBottom(),0,0,0,0);
+							ViewUtils.addOnLayoutChangeListener(weblistHandler.webholder, weblistHandler.OLCL);
+							weblistHandler.OLCL.onLayoutChange(weblistHandler.webholder,0, weblistHandler.webholder.getTop(),0,weblistHandler.webholder.getBottom(),0,0,0,0);
 							//});
 						}
 					}
@@ -7767,13 +7945,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			
 			/* 延迟加载 */
-			if(awaiting && from==1 && PDICMainAppOptions.getDelaySecondPageLoading() && !(PDICMainAppOptions.getOnlyExpandTopPage() && mWebView.frameAt+1>=opt.getExpandTopPageNum()) ){
-				int next = fastFrameIndexOf(webholder, mWebView, mWebView.frameAt) + 1;
-				//CMN.Log("/* 延迟加载 */ ?????? ", next, webholder.getChildCount(), PDICMainAppOptions.getOnlyExpandTopPage(), mWebView.frameAt, opt.getExpandTopPageNum());
- 				if(next < webholder.getChildCount()){
+			if(awaiting && from==1 && PDICMainAppOptions.getDelaySecondPageLoading()
+					&& !(PDICMainAppOptions.getOnlyExpandTopPage() && mWebView.frameAt+1>=opt.getExpandTopPageNum()) ){
+				int next = fastFrameIndexOf(weblistHandler, mWebView, mWebView.frameAt) + 1;
+				CMN.debug("/* 延迟加载 */ ?????? ", next, weblistHandler.getChildCount(), PDICMainAppOptions.getOnlyExpandTopPage(), mWebView.frameAt, opt.getExpandTopPageNum());
+ 				if(next < weblistHandler.getChildCount()){
 					View childAt;
 					try {
-						while ((childAt=webholder.getChildAt(next++))!=null) {
+						while ((childAt=weblistHandler.getChildAt(next++))!=null) {
 							if (childAt.getTag() instanceof WebViewmy) {
 								mWebView = ((WebViewmy) childAt.getTag());
 								BookPresenter presenter = mWebView.presenter;
@@ -7781,7 +7960,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										&& !PDICMainAppOptions.getTmpIsCollapsed(presenter.tmpIsFlag)
 										&& !presenter.getAutoFold()
 								){
-									CMN.Log("/* 延迟加载 */", presenter.getDictionaryName());
+									CMN.debug("/* 延迟加载 */", presenter.getDictionaryName());
 									presenter.toolbar_title.performClick();
 									break;
 								}
@@ -7971,13 +8150,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					else {//TODO 精确之
 						if (mWebView.HistoryVagranter >= 0) {
-							mWebView.History.get(mWebView.HistoryVagranter).value.set(0, WHP.getScrollY(), mWebView.webScale);
+							mWebView.History.get(mWebView.HistoryVagranter).value.set(0, weblistHandler.WHP.getScrollY(), mWebView.webScale);
 						}
 						view.evaluateJavascript("var item=document.getElementsByName(\"" + url.substring(entryTag.length() + 1) + "\")[0]; item?item.getBoundingClientRect().top:-1;"
 								, v -> {
 									int to=(int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
 									if(to>=0)
-										WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
+										weblistHandler.WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
 								});
 					}
 					if(fromPeruseView)
@@ -8073,7 +8252,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											if (mWebView.HistoryVagranter == 0)
 												invoker.HistoryOOP.put((int) mWebView.currentPos, PageState); // todo
 										} else if (mWebView.HistoryVagranter >= 0) {
-											mWebView.History.get(mWebView.HistoryVagranter).value.set(0, WHP.getScrollY(), mWebView.webScale);
+											mWebView.History.get(mWebView.HistoryVagranter).value.set(0, weblistHandler.WHP.getScrollY(), mWebView.webScale);
 										}
 										invoker.setCurrentDis(mWebView, idx);
 									}
@@ -8156,7 +8335,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
+			//CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 			
@@ -8508,7 +8687,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(suffixIdx>=0) resName = resName.substring(0, suffixIdx);
 					resName = URLDecoder.decode(resName, "UTF-8");
 					File plugResFile = new File(invoker.f().getParentFile(), resName);
-					CMN.debug("外挂CSS/JS资源::", plugResFile, url, "$.getAbsolutePath()", "$.exists()");
+					//CMN.debug("外挂CSS/JS资源::", plugResFile, url, "$.getAbsolutePath()", "$.exists()");
 					if(plugResFile.exists()) return new WebResourceResponse(mime, "UTF-8", new AutoCloseInputStream(new FileInputStream(plugResFile)));
 				} catch (Exception ignored) { }
 			}
@@ -9470,26 +9649,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				wv = peruseView.mWebView;
 			}
 			else {
-				View SV;
-				if (webholder!=null && webholder.getChildCount() != 0) {
+				View SV=null;
+				if (weblistHandler.webholder!=null && weblistHandler.webholder.getChildCount() != 0) {
 					int selectedPos = -1;
 					/* 当前滚动高度 */
-					int currentHeight = WHP.getScrollY();
-					for (int i = 0; i < webholder.getChildCount(); i++) {
-						if (webholder.getChildAt(i).getBottom() > currentHeight) {
+					int currentHeight = weblistHandler.WHP.getScrollY();
+					for (int i = 0; i < weblistHandler.webholder.getChildCount(); i++) {
+						if (weblistHandler.webholder.getChildAt(i).getBottom() > currentHeight) {
 							/* Frames累加高度 首次超出 滚动高度 */
 							selectedPos = i;
 							break;
 						}
 					}
 					//应用中线法则
-					currentHeight = currentHeight + WHP.getHeight() / 2;
+					currentHeight = currentHeight + weblistHandler.WHP.getHeight() / 2;
 					if (selectedPos >= 0) {
-						while (selectedPos + 1 < webholder.getChildCount() && webholder.getChildAt(selectedPos).getBottom() < currentHeight) {
+						while (selectedPos + 1 < weblistHandler.webholder.getChildCount() && weblistHandler.webholder.getChildAt(selectedPos).getBottom() < currentHeight) {
 							selectedPos++;
 						}
 					}
-					SV = webholder.getChildAt(selectedPos);
+					SV = weblistHandler.webholder.getChildAt(selectedPos);
 				} else {//单本阅读
 					SV = webSingleholder.getChildAt(0);
 				}
@@ -9570,8 +9749,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public WebViewmy getCurrentWebContext(boolean getVisibleBackable) {
 		View SV = null;
-		ScrollViewmy WHP = this.WHP;
-		ViewGroup webholder = this.webholder;
+		ScrollViewmy WHP = weblistHandler.WHP;
+		ViewGroup webholder = weblistHandler.webholder;
 		ViewGroup webSingleholder = this.webSingleholder;
 		int webholder_childCount = webholder.getChildCount();
 		if(popupContentView!=null) {
@@ -9595,7 +9774,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					break;
 				}
 			}
-			
+
 			//获得返回之抵消
 			if (getVisibleBackable) {
 				for(int i = selectedPos; i<webholder_childCount; i++) {
@@ -9611,7 +9790,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			}
-			
+
 			//应用中线法则
 			currentHeight = currentHeight+ WHP.getHeight()/2;
 			if(selectedPos>=0){
@@ -9619,7 +9798,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					selectedPos++;
 				}
 			}
-			
+
 			//UniversalDictionaryInterface bookImpl = (UniversalDictionaryInterface) webholder.getChildAt(selectedPos).getTag();
 			//return mdict_cache.get(bookImpl.getDictionaryName());
 			SV = webholder.getChildAt(selectedPos);
@@ -10318,16 +10497,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (((resultRecorderCombined) combining_search_result).scrolled
 					&& ADA.lastClickedPosBeforePageTurn >= 0
 					&& System.currentTimeMillis() - lastClickTime > 300) {
-				//CMN.Log("save our postion", lastClickedPosBeforePageTurn, WHP.getScrollY());
+				//CMN.debug("save our postion", lastClickedPosBeforePageTurn, WHP.getScrollY());
 				pagerec = ADA.avoyager.get(ADA.lastClickedPosBeforePageTurn);
 				if (pagerec == null) {
-					if (WHP.getScrollY() != 0) {
+					if (weblistHandler.WHP.getScrollY() != 0) {
 						pagerec = new ScrollerRecord();
 						ADA.avoyager.put(ADA.lastClickedPosBeforePageTurn, pagerec);
 					} else
 						break OUT;
 				}
-				pagerec.set(0, WHP.getScrollY(), 1);
+				pagerec.set(0, weblistHandler.WHP.getScrollY(), 1);
 				//CMN.Log("保存位置", lastClickedPosBeforePageTurn);
 			}
 			
@@ -10356,12 +10535,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if (deltaT > 400 && lastClickedPos >= 0) {
 					//avoyager.set(avoyagerIdx, WHP.getScrollY());
 					pagerec = ADA.avoyager.get(lastClickedPos);
-					if (pagerec == null && WHP.getScrollY() != 0) {
+					if (pagerec == null && weblistHandler.WHP.getScrollY() != 0) {
 						pagerec = new ScrollerRecord();
 						ADA.avoyager.put(lastClickedPos, pagerec);
 					}
 					if (pagerec != null) {
-						pagerec.set(0, WHP.getScrollY(), 1);
+						pagerec.set(0, weblistHandler.WHP.getScrollY(), 1);
 					}
 					//CMN.Log("保存位置(回退)", lastClickedPos, WHP.getScrollY());
 				}

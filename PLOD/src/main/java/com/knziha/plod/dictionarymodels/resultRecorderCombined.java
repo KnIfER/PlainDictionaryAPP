@@ -2,12 +2,10 @@ package com.knziha.plod.dictionarymodels;
 
 import android.os.AsyncTask;
 import android.view.View;
-import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 
 import com.knziha.plod.plaindict.BasicAdapter;
-import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -22,7 +20,7 @@ import java.util.List;
 public class resultRecorderCombined extends resultRecorderDiscrete {
 	private List<additiveMyCpr1> data;
 	int firstItemIdx;
-	private View scrollTarget;
+	public View scrollTarget;
 
 	public List<additiveMyCpr1> list(){return data;}
 	private List<BookPresenter> md;
@@ -95,15 +93,13 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		return data.get((int) pos).key;
 	};
 
-	public OnLayoutChangeListener OLCL;
-
 	public boolean scrolled=false, toHighLight;
 	public int LHGEIGHT;
 	
 	@Override
 	public void renderContentAt(long pos, final MainActivityUIBase a, BasicAdapter ADA){
 		scrollTarget=null;
-		final ScrollView sv = a.WHP;
+		final ScrollView sv = (ScrollView) a.weblistHandler.getScrollView();
 		toHighLight=a.hasCurrentPageKey();
 		if(toHighLight || expectedPos==0)
 			sv.scrollTo(0, 0);
@@ -116,61 +112,18 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		final List<Long> vals = (List<Long>) result.value;
 		
 		// todo remove adaptively .
-		a.webholder.removeAllViews();
+		a.weblistHandler.removeAllViews();
 		
 		//if(false)
-		a.WHP.touchFlag.first=false;
+		//yyy
 		a.awaiting = true;
-		if(OLCL==null) {
-			OLCL = new OnLayoutChangeListener() {
-				@Override
-				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight,
-						int oldBottom) {
-					//CMN.Log("onLayoutChange", expectedPos, sv.getScrollY());
-					//CMN.Log("onLayoutChange", a.WHP.touchFlag.first, scrolled, bottom - top >= expectedPos + sv.getMeasuredHeight());
-					//CMN.Log("onLayoutChange", bottom - top , expectedPos + sv.getMeasuredHeight());
-					if (a.WHP.touchFlag.first) {
-						a.main_progress_bar.setVisibility(View.GONE);
-						v.removeOnLayoutChangeListener(this);
-						return;
-					}
-					//if(expectedPos==0) return;
-					int HGEIGHT = bottom - top;
-					if (HGEIGHT < LHGEIGHT)
-						scrolled = false;
-					LHGEIGHT = HGEIGHT;
-					if(scrollTarget!=null)
-						expectedPos=scrollTarget.getTop();
-					if (!scrolled) {
-						if (HGEIGHT >= expectedPos + sv.getMeasuredHeight()) {
-							sv.scrollTo(0, expectedPos);//smooth
-							//CMN.Log("onLayoutChange scrolled", expectedPos, sv.getMeasuredHeight());
-							if (sv.getScrollY() == expectedPos) {
-								a.main_progress_bar.setVisibility(View.GONE);
-								scrolled = true;
-							}
-						}
-					}
-				}
-			};
-		}
-		
-		LHGEIGHT=0;
-		a.webholder.removeOnLayoutChangeListener(OLCL);
-		if(!toHighLight){
-			ViewUtils.addOnLayoutChangeListener(a.webholder, OLCL);
-			if(a.main_progress_bar!=null)
-				a.main_progress_bar.setVisibility(expectedPos==0?View.GONE:View.VISIBLE);
-			scrolled=false;
-		}
-		
-		a.PageSlider.setIBC(null, a.WHP);
+		a.weblistHandler.installLayoutScrollListener(this);
 		
 		ArrayList<Long> valsTmp = new ArrayList<>();
 		int valueCount=0;
 		boolean checkReadEntry = a.opt.getAutoReadEntry();
 		boolean bNeedExpand=true;
-		ViewGroup webholder = a.webholder;
+		ViewGroup webholder = a.weblistHandler;
 		long toFind;
 		View expTbView = null;
 		for(int i=0;i<vals.size();i+=2){
@@ -190,15 +143,15 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			for(int i1 = 0;i1<valsTmp.size();i1++){
 			    p[i1] = valsTmp.get(i1);
 			}
-			
 			//if(Build.VERSION.SDK_INT>=22)...// because kitkat's webview is not that adaptive for content height
 			presenter.initViewsHolder(a);
 			ViewGroup rl = presenter.rl;
 			WebViewmy mWebView = presenter.mWebView;
-			int frameAt=webholder.getChildCount();
-			frameAt= Math.min(valueCount, frameAt);
-			if(rl.getParent()!=webholder) {
+			int frameAt=valueCount;
+			//if(rl.getParent()!=a.weblistHandler.getViewGroup())
+			{
 				ViewUtils.removeView(rl);
+				frameAt=Math.min(frameAt, webholder.getChildCount());
 				webholder.addView(rl,frameAt);
 			}
 			//else
@@ -232,7 +185,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			valueCount++;
 		}
 		if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
-			expTbView = webholder.findViewById(R.id.toolbar_title);
+			//expTbView = webholder.findViewById(R.id.toolbar_title); //yyy!!!
+			expTbView = a.weblistHandler.getViewGroup().findViewById(R.id.toolbar_title); //yyy!!!
 		}
 		if (expTbView != null) {
 			expTbView.performClick();
@@ -261,11 +215,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	}
 
 	public void scrollTo(View _scrollTarget, MainActivityUIBase a) {
-		a.WHP.touchFlag.first=false;
 		scrollTarget=_scrollTarget;
-		LHGEIGHT=a.WHP.getHeight();
-		a.webholder.removeOnLayoutChangeListener(OLCL); // todo save this step ???
-		ViewUtils.addOnLayoutChangeListener(a.webholder, OLCL);
+		a.weblistHandler.NotifyScrollingTo(this);
 		scrolled=false;
 	}
 }

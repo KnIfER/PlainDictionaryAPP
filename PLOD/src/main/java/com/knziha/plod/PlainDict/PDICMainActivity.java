@@ -126,6 +126,7 @@ import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScreenListener;
+import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
@@ -1281,7 +1282,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					int painter;
 					if(PeruseViewAttached()) {
 						painter=1;
-					} else if(webholder.getChildCount()!=0) {
+					} else if(weblistHandler.getChildCount()!=0) {
 						painter=2;
 					} else {
 						painter=3;
@@ -1294,10 +1295,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							peruseView.webSingleholder.draw(mPageCanvas);
 						});
 					} else if(painter==2){
-						webholder.post(() -> {
-							mPageCanvas.translate(0, -WHP.getScrollY());
-							WHP.draw(mPageCanvas);
-							mPageCanvas.translate(0, WHP.getScrollY());
+						weblistHandler.webholder.post(() -> {
+							mPageCanvas.translate(0, -weblistHandler.WHP.getScrollY());
+							weblistHandler.WHP.draw(mPageCanvas);
+							mPageCanvas.translate(0, weblistHandler.WHP.getScrollY());
 						});
 					} else {
 						webSingleholder.draw(new Canvas(PageCache));
@@ -1463,7 +1464,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		adaptermy = new ListViewAdapter(webSingleholder);
 		adaptermy.setPresenter(currentDictionary);
 		lv.setAdapter(adaptermy);
-		lv2.setAdapter(adaptermy2 = new ListViewAdapter2(webholder, R.layout.listview_item1));
+		lv2.setAdapter(adaptermy2 = new ListViewAdapter2(weblistHandler, R.layout.listview_item1));
 		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2(webSingleholder));
 		mlv2.setAdapter(adaptermy4 = new ListViewAdapter2(webSingleholder));
 
@@ -2480,7 +2481,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		UIData.browserWidget0.getBackground().setColorFilter(filteredColor, PorterDuff.Mode.SRC_IN);
 
 		filteredColor = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
-		WHP.setBackgroundColor(filteredColor);
+		weblistHandler.setBackgroundColor(filteredColor);
 		if(widget12.getTag(R.id.image)==null) {
 			webSingleholder.setBackgroundColor(filteredColor);
 		}
@@ -2634,7 +2635,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			
 			ViewUtils.addViewToParentUnique(presenter.rl, webSingleholder);
 			/* ensureContentVis */
-			ensureContentVis(webSingleholder, WHP, webholder);
+			ensureContentVis(webSingleholder, weblistHandler);
 			
 			float desiredScale=prepareSingleWebviewForAda(presenter, null, pos, this);
 
@@ -2690,18 +2691,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	
 	
-	private void ensureContentVis(ViewGroup webholder, ViewGroup another, ViewGroup anotherholder) {
+	private void ensureContentVis(ViewGroup webholder, ViewGroup another) {
 		if(webholder.getVisibility()!=View.VISIBLE) {
 			webholder.setVisibility(View.VISIBLE);
 		}
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
 		if(another.getVisibility()==View.VISIBLE) {
-			ViewUtils.removeAllViews(anotherholder);
+			ViewUtils.removeAllViews(another);
 			another.setVisibility(View.GONE);
 		}
 		
-		int targetVis = webholder==WHP?View.VISIBLE:View.GONE;
+		int targetVis = webholder==weblistHandler?View.VISIBLE:View.GONE;
 		
 		if(widget14.getVisibility()!=targetVis) {
 			widget13.setVisibility(targetVis);
@@ -2799,7 +2800,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		@Override
 		public void onItemClick(int pos){//lv2 mlv1 mlv2
 			shuntAAdjustment();
-			WHP.touchFlag.first=true;
+			weblistHandler.WHP.touchFlag.first=true;
 			if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
 				PeruseView pv = getPeruseView();
 				pv.RestoreOldAI();
@@ -2820,13 +2821,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			AllMenus.setItems(Multi_ContentMenu);
 
 			if(this==adaptermy2) {
-				ensureContentVis(WHP, webSingleholder, webSingleholder);
+				ensureContentVis(weblistHandler, webSingleholder);
 				locateNaviIcon(widget13,widget14);
 				if(opt.getRemPos2() && !bRequestedCleanSearch) {
 					new SaveAndRestorePagePosDelegate().SaveAndRestorePagesForAdapter(this, pos);
 				}
 			} else {
-				ensureContentVis(webSingleholder, WHP, webholder);
+				ensureContentVis(webSingleholder, weblistHandler);
 			}
 			
 			ActivedAdapter=this;
@@ -3233,7 +3234,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(mdTmp!=null)
 				mdTmp.setNestedScrollingEnabled(bImmersive);
 		}
-		((AdvancedNestScrollView)WHP).setNestedScrollingEnabled(bImmersive);
+		weblistHandler.WHP.setNestedScrollingEnabled(bImmersive);
 		((AdvancedNestScrollListview)lv).setNestedScrollingEnabled(bImmersive);
 		((AdvancedNestScrollListview)lv2).setNestedScrollingEnabled(bImmersive);
 		((AdvancedNestScrollListview)mlv1).setNestedScrollingEnabled(bImmersive);
@@ -3409,7 +3410,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(leaving && opt.getLeaveContentBlank() && ! currentIsWeb()) {
 			WebViewmy current_webview = PageSlider.WebContext;
 			if(current_webview !=null) {
-				CMN.Log("页面置空了……");
+				CMN.debug("页面置空了……");
 				current_webview.active = false;
 				current_webview.loadUrl("about:blank");
 				current_webview.clearView();
