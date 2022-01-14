@@ -21,15 +21,12 @@ mark.current {
 if(window.addEventListener){
 	window.addEventListener('load',wrappedOnLoadFunc,false);
 	window.addEventListener('click',wrappedClickFunc);
-	window.addEventListener('mousedown',wrappedMouseDown);
 }else if(window.attachEvent){ //ie
 	window.addEventListener('onload',wrappedOnLoadFunc);
 	window.addEventListener('onclick',wrappedClickFunc);
-	window.addEventListener('onmousedown',wrappedMouseDown);
 }else{
 	window.onload=wrappedOnLoadFunction;
 	window.onclick=wrappedClickFunc;
-	window.onmousedown=wrappedMouseDown;
 }
 function wrappedOnLoadFunc(){
 	console.log('mdpage loaded');
@@ -78,53 +75,11 @@ function hiPlaySound(e){
 	audio.play();
 }
 
-function wrappedMouseDown(e){
-	//console.log(e);
-	var cur=e.srcElement;
-	if(cur.href && (e.button==1||e.button==0)) {
-		console.log("01! found link : "+cur.href+" : "+regSound.test(cur.href));
-		var getRawLink=cur.href;
-		var patt1 = /\/base\/[0-9]*\/(#.*)/;
-		var m = getRawLink.match(patt1);
-		if(m && m[0].length>0){
-			console.log(m[1]);
-			getRawLink=m[1];
-			console.log(window.location.href);
-			cur.href=window.location.href+getRawLink;
-			return false;
-		}
-		if(regEntry.test(cur.href)){
-			cur.href=/* "entry/"+ */cur.href.substring(8);
-			console.log(111);
-		}else if(regSound.test(cur.href)){/*拦截 sound 连接*/
-			var link=/* "sound/"+ */cur.href.substring(8);
-			cur.href=link;
-			if(cur.onclick==undefined){
-				//console.log("1! found internal sound link : "+cur.href);
-				cur.ur1=cur.href;
-				cur.removeAttribute("href");
-				cur.onclick=hiPlaySound;
-				hiPlaySound(cur)
-				return false;
-			}
-		}
-		else if(parent.app && regHttp.test(cur.href)){/*拦截 http*/
-			parent.app.handleWebLink(cur.href);
-			return false;
-		}
-		else if(parent.app && regPdf.test(cur.href)){/*拦截 pdf*/
-			parent.app.handlePdfLink(cur.href);
-			return false;
-		}
-		return true;/*连接通行！*/
-	}
-}
 function wrappedClickFunc(e){
 	//if(1)return;
-	//parent.window.dismiss_menu();
-	//parent.dismiss_menu();
+	parent.window.dismiss_menu();
 	var cur=e.srcElement;
-	if(0)
+	parent.dismiss_menu();
 	if(cur.href){
 		console.log("1! found link : "+cur.href+" : "+regSound.test(cur.href));
 		var getRawLink=cur.href;
@@ -141,7 +96,7 @@ function wrappedClickFunc(e){
 			cur.href="entry/"+cur.href.substring(8);
 			console.log(111);
 		}else if(regSound.test(cur.href)){/*拦截 sound 连接*/
-			var link=/* "sound/"+ */cur.href.substring(8);
+			var link="sound/"+cur.href.substring(8);
 			cur.href=link;
 			if(cur.onclick==undefined){
 				//console.log("1! found internal sound link : "+cur.href);
@@ -192,65 +147,57 @@ function wrappedClickFunc(e){
 					}
 				}
 				if(scer){
-					scer=0;
 					var text=s.toString(); // for word made up of just one character
+					tillNext=text;
 					if(text.length>0){
-						var re=/[\u4e00-\u9fa5]/g;
-						tillNext=text;
-						if(re.test(text.trim())){
-							scer=1;
-						}else{
-							var range = s.getRangeAt(0);  // first attempt, forward range
-							//console.log(range);
-							var lb='lineboundary';
+						var range = s.getRangeAt(0);  // first attempt, forward range
+						//console.log(range);
+						var lb='lineboundary';
+						s.collapseToStart();
+						s.modify('extend', 'forward', lb);
+						tillNextLine=s.toString();
+						var eN='word';
+						var eB='word';
+						if(tillNextLine.trim()!="") {
+							s.collapseToStart();
+							s.modify('extend', 'backward', 'word');
+							tillNext=s.toString();
+							s.collapseToEnd();
+							s.modify('extend', 'backward', lb);
+							tillNextLine=s.toString();
+							if(tillNextLine.length<tillNext.length){
+								var code=tillNextLine.charAt(0);
+								if(code.toUpperCase()===code) eB=lb;
+							}
+						
+							s.empty(); s.addRange(range);
+							s.collapseToStart();
+							
+							
+							s.modify('move', 'backward', eB);
+							
+							s.modify('extend', 'forward', 'word');
+							tillNext=s.toString();
 							s.collapseToStart();
 							s.modify('extend', 'forward', lb);
 							tillNextLine=s.toString();
-							var eN='word';
-							var eB='word';
-							if(tillNextLine.trim()!="") {
-								s.collapseToStart();
-								s.modify('extend', 'backward', 'word');
-								tillNext=s.toString();
-								s.collapseToEnd();
-								s.modify('extend', 'backward', lb);
-								tillNextLine=s.toString();
-								
-								// !!!  !!! sometime in the pdf
-								// a lot of tags till be wrongly treated as in one line.
-								if(tillNextLine.length<tillNext.length){
-									var code=tillNextLine.charAt(0);
-									if(code.toUpperCase()===code && code.toLowerCase!=code) eB=lb;
-								}
-							
-								s.empty(); s.addRange(range);
-								s.collapseToStart();
-								
-								
-								s.modify('move', 'backward', eB);
-								
-								s.modify('extend', 'forward', 'word');
-								tillNext=s.toString();
-								s.collapseToStart();
-								s.modify('extend', 'forward', lb);
-								tillNextLine=s.toString();
-								
-								// !!!  !!! sometime in the pdf
-								// a lot of tags till be wrongly treated as in one line.
-								if(tillNextLine.length<tillNext.length){
-									var code=tillNext.charAt(tillNextLine.length);
-									if(code.toUpperCase()==code && code.toLowerCase()!=code) eN=lb;
-								}
-								s.collapseToStart();
-								
-								s.modify('extend', 'forward', eN);
-								
-								text=s.toString();
-								scer=1;
+							if(tillNextLine.length<tillNext.length){
+								var code=tillNext.charAt(tillNextLine.length);
+								if(code.toUpperCase()===code) eN=lb;
 							}
-						}
-						if(scer){
-							console.log(text); // final output
+							s.collapseToStart();
+							
+							s.modify('extend', 'forward', eN);
+							console.log(range);
+							console.log(s.getRangeAt(0));
+							if(1)return;
+							if(s.getRangeAt(0).endContainer===range.endContainer&&s.getRangeAt(0).endOffset===range.endOffset){
+								// for word made up of multiple character
+							}else{
+								s.empty(); s.addRange(range);
+							}
+							
+							console.log(s.toString()); // final output
 						}
 					}
 				}
