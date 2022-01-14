@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.view.inputmethod.EditorInfo;
 
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.mdictRes_asset;
 
 import org.apache.commons.imaging.BufferedImage;
@@ -39,7 +40,9 @@ public class MdictServerMobile extends MdictServer {
 		super(port, _opt);
 		a = _a;
 		MdbServerLet = _a;
-		MdbResource = new mdictRes_asset(new File(CMN.AssetTag, "MdbR.mdd"),2, a);
+		try {
+			MdbResource = new mdictRes_asset(new File(CMN.AssetTag, "MdbR.mdd"),2, a);
+		} catch (IOException e) { SU.Log(e); }
 		setOnMirrorRequestListener((uri, mirror) -> {
 			if(uri==null)uri="";
 			String[] arr = uri.split("&");
@@ -144,9 +147,10 @@ public class MdictServerMobile extends MdictServer {
 	
 	@Override
 	protected InputStream OpenMdbResourceByName(String key) throws IOException {
-		if ("\\MdbR\\subpage.html".equals(key)) {
+		//if ("\\MdbR\\subpage.html".equals(key))
+		{
 			try {
-				return a.getAssets().open("MdbR/subpage.html");
+				return a.getAssets().open(key.substring(1).replace("\\", "/"));
 			} catch (IOException e) {
 				CMN.Log(e);
 			}

@@ -433,12 +433,14 @@ public abstract class MdictServer extends NanoHTTPD {
 	
 	protected InputStream OpenMdbResourceByName(String key) throws IOException {
 		InputStream ret = null;
-		if(MdbResource instanceof com.knziha.plod.dictionary.mdict) {
-			ret = ((com.knziha.plod.dictionary.mdict)MdbResource).getResourceByKey(key);
-		} else {
-			int id = MdbResource.lookUp(key);
-			if(id>=0) {
-				ret = MdbResource.getResourseAt(id);
+		if (MdbResource!=null) {
+			if(MdbResource instanceof com.knziha.plod.dictionary.mdict) {
+				ret = ((com.knziha.plod.dictionary.mdict)MdbResource).getResourceByKey(key);
+			} else {
+				int id = MdbResource.lookUp(key);
+				if(id>=0) {
+					ret = MdbResource.getResourseAt(id);
+				}
 			}
 		}
 		return ret;
