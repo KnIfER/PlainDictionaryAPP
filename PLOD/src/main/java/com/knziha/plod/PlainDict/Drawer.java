@@ -1230,8 +1230,10 @@ public class Drawer extends Fragment implements
 					FlowTextView ipView = (FlowTextView) HeaderView2.findViewById(R.id.subtext);
 					ipView.trim=false;
 					try {
-						ipView.setText("http://"+getIP(getContext())+":"+a.server.getListeningPort());
-					} catch (Exception ignored) { }
+						ipView.setText("http://"+getIP(getContext())+":"+a.getMdictServer().getListeningPort());
+					} catch (Exception e) {
+						ipView.setText(""+e);
+					}
 				} else if(HeaderView2!=null && HeaderView2.getParent()!=null) {
 					mDrawerList.removeHeaderView(HeaderView2);
 				}

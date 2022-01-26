@@ -13,6 +13,7 @@ import org.apache.commons.imaging.BufferedImage;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.ImagingConstants;
 import org.apache.commons.imaging.ManagedImageBufferedImageFactory;
+import org.nanohttpd.protocols.http.HTTPSession;
 import org.xiph.speex.ByteArrayRandomOutputStream;
 
 import java.io.ByteArrayInputStream;
@@ -33,10 +34,10 @@ import static org.nanohttpd.protocols.http.response.Response.newFixedLengthRespo
  */
 	
 public class MdictServerMobile extends MdictServer {
-	private PDICMainActivity a;
+	private MainActivityUIBase a;
 	private static HashMap<String, Object>  mTifConfig;
 	
-	public MdictServerMobile(int port, PDICMainActivity _a, PDICMainAppOptions _opt) throws IOException {
+	public MdictServerMobile(int port, MainActivityUIBase _a, PDICMainAppOptions _opt) throws IOException {
 		super(port, _opt);
 		a = _a;
 		MdbServerLet = _a;

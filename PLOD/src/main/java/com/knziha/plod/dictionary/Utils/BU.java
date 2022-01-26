@@ -23,6 +23,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.InflaterOutputStream;
 
@@ -249,6 +250,17 @@ public class  BU{//byteUtils
 		while((len=input.read(data))!=-1)
 			fout.write(data, 0, len);
 		fout.close();
+	}
+	
+	public static String StreamToString(InputStream input) throws IOException {
+		int bufferSize = 1024;
+		char[] buffer = new char[bufferSize];
+		StringBuilder out = new StringBuilder();
+		Reader in = new InputStreamReader(input, StandardCharsets.UTF_8);
+		for (int numRead; (numRead = in.read(buffer, 0, buffer.length)) > 0; ) {
+			out.append(buffer, 0, numRead);
+		}
+		return out.toString();
 	}
 	
     @Deprecated

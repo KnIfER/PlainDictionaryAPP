@@ -11,7 +11,7 @@ public class Licences extends SettingsFragmentBase {
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		mPreferenceId = R.xml.gplpreferences;
+		mPreferenceId = R.xml.pref_licence;
 		super.onCreate(savedInstanceState);
 		resId=R.string.licence;
 	}

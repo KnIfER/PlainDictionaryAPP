@@ -15,6 +15,7 @@ include ':AxtCore'
 include ':AxtAppCompat'
 include ':AweDesigner'
 include ':AppPreference'
+include ':AwtRecyclerView'
 
 include ':drag_sort_lib'
 include ':filepicker'
@@ -30,4 +31,4 @@ include ':GlideModule:disklrucache'
 include ':viewpager'
 
 include ':GestureView'
-include ':Metaline:Metaline'
+//include ':Metaline:Metaline'

@@ -45,6 +45,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
@@ -62,6 +64,7 @@ import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.MainActivityUIBase.UniCoverClicker;
+import com.knziha.plod.plaindict.MdictServer;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
@@ -79,6 +82,8 @@ import com.knziha.plod.widgets.XYTouchRecorder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.knziha.metaline.Metaline;
+import org.nanohttpd.protocols.http.HTTPSession;
+import org.nanohttpd.protocols.http.response.Response;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -96,6 +101,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
@@ -725,41 +731,49 @@ function debug(e){console.log(e)};
 	public PhotoBrowsingContext IBC = new PhotoBrowsingContext();
 	
 	private int bgColor;
-    private int TIBGColor;
-    private int TIFGColor;
+    private int tbgColor;
+    private int tfgColor;
 	
 	
-	public int getBgColor() {
+	public int getContentBackground() {
 		if (!bReadConfig&&bgColor==0)
 			return CMN.GlobalPageBackground;
 		return bgColor;
 	}
 	
-	public void setBgColor(int value) {
+	public void setContentBackground(int value) {
 		if (bgColor!=value) {
 			bgColor = value;
 			isDirty = true;
 		}
 	}
 	
-	public int getTitleBGColor() {
-		return TIBGColor;
+	public int getInternalTitleBackground() {
+		return tbgColor;
 	}
 	
-	public void setTitleBGColor(int value) {
-		if (TIBGColor!=value) {
-			TIBGColor = value;
+	public int getTitleBackground() {
+		return getUseInternalTBG()?tbgColor:0;
+	}
+	
+	public void setTitleBackground(int value) {
+		if (tbgColor!=value) {
+			tbgColor = value;
 			isDirty = true;
 		}
 	}
 	
-	public int getTitleFGColor() {
-		return TIFGColor;
+	public int getInternalTitleForeground() {
+		return tfgColor;
 	}
 	
-	public void setTitleFGColor(int value) {
-		if (TIFGColor!=value) {
-			TIFGColor = value;
+	public int getTitleForeground() {
+		return getUseInternalTBG()?tfgColor:0;
+	}
+	
+	public void setTitleForeground(int value) {
+		if (tfgColor!=value) {
+			tfgColor = value;
 			isDirty = true;
 		}
 	}
@@ -1009,14 +1023,14 @@ function debug(e){console.log(e)};
 	
 	protected boolean viewsHolderReady =  false;
 	public FlowTextView toolbar_title;
-	ViewGroup toolbar;
+	public ViewGroup toolbar;
 	public View recess;
 	public View forward;
 	ImageView toolbar_cover;
 	private UniCoverClicker ucc;
 	public void initViewsHolder(final MainActivityUIBase a){
 		this.a=a;
-		ucc = a.getUcc();
+		ucc = a.getUcc(); //todo
 		if(!viewsHolderReady) {
 			ContentviewItemBinding pageView = ContentviewItemBinding.inflate(a.getLayoutInflater(), a.weblistHandler.getViewGroup(), false);
 			mPageView = pageView;
@@ -1275,6 +1289,21 @@ function debug(e){console.log(e)};
 	
 	public int getIsManagerAgent() {
 		return bIsManagerAgent;
+	}
+	
+	public JSONObject getDictInfo(JSONObject json) {
+		if(json==null)json = new JSONObject();
+		else json.clear();
+		json.put("name", getDictionaryName());
+		json.put("tag", true);
+		json.put("id", "d"+IU.NumberToText_SIXTWO_LE(getId(), null));
+		json.put("tbg", SU.toHexRGB(getTitleBackground()));
+		json.put("tfg", SU.toHexRGB(getTitleForeground()));
+		PlainWeb webx = getWebx();
+		if(webx!=null) {
+			json.put("sch", webx.getSearchUrl());
+		}
+		return json;
 	}
 	
 	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {
@@ -1946,11 +1975,15 @@ function debug(e){console.log(e)};
 		GradientDrawable toolbarBG = mWebView.toolbarBG;
 		if(toolbarBG!=null) {
 			useInternal = getUseInternalTBG();
-			myWebColor = isDark?Color.BLACK:useInternal?TIBGColor:PDICMainAppOptions.getTitlebarUseGlobalUIColor()?a.MainBackground:opt.getTitlebarBackgroundColor();
+			myWebColor = isDark?Color.BLACK
+					:useInternal? tbgColor
+					:PDICMainAppOptions.getTitlebarUseGlobalUIColor()?a.MainBackground
+					:opt.getTitlebarBackgroundColor();
 			CMN.Log("使用内置标题栏颜色：", useInternal, bookImpl.getDictionaryName(), isDark, Integer.toHexString(myWebColor));
 			int colorTop = PDICMainAppOptions.getTitlebarUseGradient()?ColorUtils.blendARGB(myWebColor, Color.WHITE, 0.08f):myWebColor;
 			int[] ColorShade = mWebView.ColorShade;
-			if(ColorShade[1]!=myWebColor||ColorShade[0]!=colorTop){
+			if(ColorShade[1]!=myWebColor||ColorShade[0]!=colorTop)
+			{
 				ColorShade[1] = myWebColor;
 				ColorShade[0] = colorTop;
 				if(useInternal) {
@@ -1959,7 +1992,7 @@ function debug(e){console.log(e)};
 				toolbarBG.setColors(ColorShade);
 				//CMN.Log("设置了?");
 			}
-			myWebColor = isDark?Color.WHITE:useInternal?TIFGColor:opt.getTitlebarForegroundColor();
+			myWebColor = isDark?Color.WHITE:useInternal? tfgColor :opt.getTitlebarForegroundColor();
 			mWebView.setTitlebarForegroundColor(myWebColor);
 		}
 		//CMN.pt("设置颜色：");
@@ -2596,6 +2629,58 @@ function debug(e){console.log(e)};
         }
         
         @JavascriptInterface
+        public String loadJson(String url) {
+			CMN.Log("loadJson::", url);
+			MainActivityUIBase a = presenter.a;
+			MdictServer server = a.getMdictServer();
+			try {
+				if(url.startsWith("/dicts.json")) {
+					StringBuilder sb = new StringBuilder();
+					sb.append("[");
+					JSONObject json = new JSONObject();
+					if(url.startsWith("?", 11)) {
+						//JSONArray jsonArray = new JSONArray();
+						StringTokenizer array = new StringTokenizer(url, ",");
+						boolean st=true;
+						while(array.hasMoreTokens()) {
+							String ln = array.nextToken();
+							if(st) {
+								ln = ln.substring(16);
+								st=false;
+							}
+							BookPresenter book = server.md_getByURL(ln);
+							if(book!=null) {
+								if(sb.length()>1)sb.append(",");
+								sb.append(book.getDictInfo(json));
+								//jsonArray.add(book.getDictInfo());
+							}
+						}
+						sb.append("]");
+						CMN.Log("dicts::", url, sb.toString());
+						return sb.toString();
+					} else {
+						for (int i = 0; i < a.md_getSize(); i++) {
+							BookPresenter book = a.md_get(i);
+							if(sb.length()>1)sb.append(",");
+							if(book!=a.EmptyBook) {
+								sb.append(book.getDictInfo(json));
+							} else {
+								json.clear();
+								json.put("name", a.md_getName(i));
+								sb.append(book.getDictInfo(json));
+							}
+						}
+					}
+				} else if(url.startsWith("/settings.json")) {
+					return server.getSettings().toJSONString();
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			return "{}";
+        }
+        
+        @JavascriptInterface
         public void loadJs(long sid, String name) {
 			WebViewmy wv = presenter.findWebview(sid);
 			CMN.Log("loadJs::", name, wv!=null);
@@ -2875,6 +2960,59 @@ function debug(e){console.log(e)};
 //				}, 1200);
 			}
 		}
+		
+		@JavascriptInterface
+		public void setFlag(int val) {
+		}
+		@JavascriptInterface
+		public int getFlag() {
+			return 0;
+		}
+		@JavascriptInterface
+		public void setPos(String pos) {
+		}
+		@JavascriptInterface
+		public void setLastMd(String val) {
+		}
+		@JavascriptInterface
+		public String getCurrentPageKey(boolean bAppendFlag){
+			return null;
+		}
+		@JavascriptInterface
+		public String getKeyWord() {
+			return "";
+		}
+		@JavascriptInterface
+		public void recordRecords(String record){
+		}
+		@JavascriptInterface
+		public void setCombinedSeaching(boolean val){
+		}
+		@JavascriptInterface
+		public void saveCurrent(String val){
+		}
+		@JavascriptInterface
+		public void InPageSearch(String text){
+		}
+		@JavascriptInterface
+		public boolean getInPageSearch(String text){
+			return false;
+		}
+		@JavascriptInterface
+		public void handleWebLink(String url){
+		}
+		@JavascriptInterface
+		public void handleWebSearch(String url, int slot){
+		}
+		@JavascriptInterface
+		public void handleLvResize(int size){
+		}
+		@JavascriptInterface
+		public void reloadDict(int idx){
+		}
+		@JavascriptInterface
+		public void openFolder(int idx){
+		}
 	}
 	
 	private WebViewmy findWebview(long sid) {
@@ -3085,8 +3223,8 @@ function debug(e){console.log(e)};
 			}
 			//CMN.Log(bookImpl.getDictionaryName()+"保存页面位置",record.x,record.y,webScale);
 			data_out.writeLong(firstFlag);
-			data_out.writeInt(TIBGColor);
-			data_out.writeInt(TIFGColor);
+			data_out.writeInt(tbgColor);
+			data_out.writeInt(tfgColor);
 			data_out.writeFloat(IBC.doubleClickZoomRatio);
 			data_out.writeFloat(IBC.doubleClickZoomLevel1);
 			data_out.writeFloat(IBC.doubleClickZoomLevel2);
@@ -3154,8 +3292,8 @@ function debug(e){console.log(e)};
 				firstFlag |= data_in1.readLong();
 				//CMN.Log(bookImpl.getDictionaryName(), firstFlag, "列表位置",lvPos,lvClickPos,lvPosOff);
 				//CMN.Log(bookImpl.getDictionaryName()+"页面位置",record.x,record.y,webScale);
-				TIBGColor = data_in1.readInt();
-				TIFGColor = data_in1.readInt();
+				tbgColor = data_in1.readInt();
+				tfgColor = data_in1.readInt();
 				IBC.doubleClickZoomRatio = data_in1.readFloat();
 				IBC.doubleClickZoomLevel1  = data_in1.readFloat();
 				IBC.doubleClickZoomLevel2  = data_in1.readFloat();
@@ -3189,13 +3327,13 @@ function debug(e){console.log(e)};
 		if(b1) {
 			/* initialise values */
 			IBC.doubleClickZoomRatio=2.25f;
-			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
-			TIFGColor = opt.getTitlebarForegroundColor();
+			tbgColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
+			tfgColor = opt.getTitlebarForegroundColor();
 		}
 		if ((firstVersionFlag&0x1)==0)
 		{
-			TIBGColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
-			TIFGColor = opt.getTitlebarForegroundColor();
+			tbgColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
+			tfgColor = opt.getTitlebarForegroundColor();
 			CMN.Log("初始化词典设置");
 			if (getIsWebx()) {
 				setShowToolsBtn(true);

@@ -95,13 +95,13 @@ public class HTTPSession implements IHTTPSession {
 
     private int rlen;
 
-    private String uri;
+    protected String uri;
 
     private Method method;
+	
+	protected Map<String, List<String>> parms;
 
-    private Map<String, List<String>> parms;
-
-    private Map<String, String> headers;
+    protected Map<String, String> headers;
 
     private CookieHandler cookies;
 
@@ -111,6 +111,13 @@ public class HTTPSession implements IHTTPSession {
 
     private String protocolVersion;
 
+    protected HTTPSession() {
+        this.httpd = null;
+        this.tempFileManager = null;
+        this.inputStream = null;
+        this.outputStream = null;
+    }
+    
     public HTTPSession(NanoHTTPD httpd, ITempFileManager tempFileManager, InputStream inputStream, OutputStream outputStream) {
         this.httpd = httpd;
         this.tempFileManager = tempFileManager;
@@ -303,7 +310,7 @@ public class HTTPSession implements IHTTPSession {
      * Decodes parameters in percent-encoded URI-format ( e.g.
      * "name=Jack%20Daniels&pass=Single%20Malt" ) and adds them to given Map.
      */
-    private void decodeParms(String parms, Map<String, List<String>> p) {
+    protected void decodeParms(String parms, Map<String, List<String>> p) {
         if (parms == null) {
             this.queryParameterString = "";
             return;

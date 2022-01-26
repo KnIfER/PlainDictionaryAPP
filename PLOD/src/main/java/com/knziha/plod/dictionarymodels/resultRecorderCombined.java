@@ -5,7 +5,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 
+import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.plaindict.BasicAdapter;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -13,6 +16,7 @@ import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,6 +130,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		ViewGroup webholder = a.weblistHandler;
 		long toFind;
 		View expTbView = null;
+		boolean bMergeFrames=true;
+		StringBuilder mergedUrl = null;
 		for(int i=0;i<vals.size();i+=2){
 			valsTmp.clear();
 			toFind=vals.get(i);
@@ -139,57 +145,78 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			
 			if(presenter==a.EmptyBook) continue;
 			
-			long[] p = new long[valsTmp.size()];
-			for(int i1 = 0;i1<valsTmp.size();i1++){
-			    p[i1] = valsTmp.get(i1);
-			}
-			//if(Build.VERSION.SDK_INT>=22)...// because kitkat's webview is not that adaptive for content height
-			presenter.initViewsHolder(a);
-			ViewGroup rl = presenter.rl;
-			WebViewmy mWebView = presenter.mWebView;
-			int frameAt=valueCount;
-			//if(rl.getParent()!=a.weblistHandler.getViewGroup())
-			{
-				ViewUtils.removeView(rl);
-				frameAt=Math.min(frameAt, webholder.getChildCount());
-				webholder.addView(rl,frameAt);
-			}
-			//else
-			//	a.showT("yes: "+mdtmp.getPath());
-			//mdtmp.vll=vll;
-
-			/*//for debug usage
-			if(mdtmp.mWebView.getLayerType()!=View.LAYER_TYPE_NONE)
-				mdtmp.mWebView.setLayerType(View.LAYER_TYPE_NONE, null);
-			*/
-			//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-			mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
-			mWebView.fromCombined=1;
-			if(presenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
-			{
-				presenter.SetSearchKey(result.key);
-			}
-			//CMN.debug("combining_search_result.renderContentAt::", frameAt);
-			presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, frameAt,null, p);
-			if(!mWebView.awaiting){
-				bNeedExpand=false;
-				if(checkReadEntry){
-					presenter.mWebView.bRequestedSoundPlayback=true;
-					checkReadEntry=false;
+			if(!bMergeFrames) {
+				long[] p = new long[valsTmp.size()];
+				for(int i1 = 0;i1<valsTmp.size();i1++){
+					p[i1] = valsTmp.get(i1);
 				}
-			} else if(bNeedExpand && !presenter.getNeedsAutoFolding(mWebView.frameAt)) {
-				expTbView = mWebView.toolbar_title;
-				bNeedExpand = false;
+				//if(Build.VERSION.SDK_INT>=22)...// because kitkat's webview is not that adaptive for content height
+				presenter.initViewsHolder(a);
+				ViewGroup rl = presenter.rl;
+				WebViewmy mWebView = presenter.mWebView;
+				int frameAt=valueCount;
+				//if(rl.getParent()!=a.weblistHandler.getViewGroup())
+				{
+					ViewUtils.removeView(rl);
+					frameAt=Math.min(frameAt, webholder.getChildCount());
+					webholder.addView(rl,frameAt);
+				}
+				//else
+				//	a.showT("yes: "+mdtmp.getPath());
+				//mdtmp.vll=vll;
+
+				/*//for debug usage
+				if(mdtmp.mWebView.getLayerType()!=View.LAYER_TYPE_NONE)
+					mdtmp.mWebView.setLayerType(View.LAYER_TYPE_NONE, null);
+				*/
+				//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+				mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
+				mWebView.fromCombined=1;
+				if(presenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
+				{
+					presenter.SetSearchKey(result.key);
+				}
+				//CMN.debug("combining_search_result.renderContentAt::", frameAt);
+				presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, frameAt,null, p);
+				if(!mWebView.awaiting){
+					bNeedExpand=false;
+					if(checkReadEntry){
+						presenter.mWebView.bRequestedSoundPlayback=true;
+						checkReadEntry=false;
+					}
+				} else if(bNeedExpand && !presenter.getNeedsAutoFolding(mWebView.frameAt)) {
+					expTbView = mWebView.toolbar_title;
+					bNeedExpand = false;
+				}
+				mWebView.fromCombined=1;
 			}
-			mWebView.fromCombined=1;
+			else {
+				if(mergedUrl==null)
+					mergedUrl = new StringBuilder("http://MdbR/MERGE.jsp?q=")
+						.append(SU.encode(result.key)).append("&EXP=");
+				else mergedUrl.append("-");
+				mergedUrl.append("d");
+				IU.NumberToText_SIXTWO_LE(presenter.getId(), mergedUrl);
+				for (Long val:valsTmp) {
+					mergedUrl.append("_");
+					IU.NumberToText_SIXTWO_LE(val, mergedUrl);
+				}
+			}
 			valueCount++;
 		}
-		if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
-			//expTbView = webholder.findViewById(R.id.toolbar_title); //yyy!!!
-			expTbView = a.weblistHandler.getViewGroup().findViewById(R.id.toolbar_title); //yyy!!!
+		if(bMergeFrames) {
+			WebViewmy mWebView = a.weblistHandler.initMergedFrame();
+			CMN.debug("mergedUrl::", mergedUrl);
+			mWebView.loadUrl(mergedUrl.toString());
 		}
-		if (expTbView != null) {
-			expTbView.performClick();
+		else {
+			if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
+				//expTbView = webholder.findViewById(R.id.toolbar_title); //yyy!!!
+				expTbView = a.weblistHandler.getViewGroup().findViewById(R.id.toolbar_title); //yyy!!!
+			}
+			if (expTbView != null) {
+				expTbView.performClick();
+			}
 		}
 		a.RecalibrateWebScrollbar(null);
 	}

@@ -42,6 +42,7 @@ public class AgentApplication extends Application {
 	public HashSet<String> mdlibsCon;
 	/** 控制所有实例只扫描一遍收藏夹 */
 	public boolean bNeedPullFavorites =true;
+	public MdictServer mServer;
 //	public ArrayList<BookPresenter> b_md = new ArrayList<>();
 //	public ArrayList<BookPresenter> b_filter = new ArrayList<>();
 	/** 退出全部实例时关闭、清理 */

@@ -1,6 +1,5 @@
 package com.knziha.plod.settings;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.widget.TextView;
@@ -15,17 +14,14 @@ import com.jaredrummler.colorpicker.ColorPickerPreference;
 import com.knziha.filepicker.settings.FloatPreference;
 import com.knziha.filepicker.settings.IntPreference;
 import com.knziha.filepicker.settings.SettingsFragmentBase;
-import com.knziha.logger.CMN;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.MagentTransient;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.OptionProcessor;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
-
-import org.knziha.metaline.Metaline;
 
 public class BookOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	BookPresenter[] data;
@@ -39,7 +35,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		bNavBarClickAsIcon = true;
 		mNavBarHeight = (int) (35 * GlobalOptions.density);
 		mNavBarPaddingTop = (int) (2 * GlobalOptions.density);
-		mPreferenceId = R.xml.bookpreferences;
+		mPreferenceId = R.xml.pref_book;
 		Bundle args = new Bundle();
 		args.putInt("title", R.string.dictOpt1);
 		setArguments(args);
@@ -135,18 +131,18 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 	}
 	
 	private Object GetSetIntField(BookPresenter datum, String key, boolean get, Object val) {
-		//CMN.Log("GetSetIntField", key, get, val);
+		CMN.Log("GetSetIntField", key, get, val);
 		if (datum instanceof MagentTransient) datum.getFirstFlag();
 		if(datum!=null) {
 			switch (key){
 				case "bgTitle":
-					if(get) return datum.getTitleBGColor(); else datum.setTitleBGColor((int) val);
+					if(get) return datum.getTitleBackground(); else datum.setTitleBackground((int) val);
 					break;
 				case "fgTitle":
-					if(get) return datum.getTitleFGColor(); else datum.setTitleFGColor((int) val);
+					if(get) return datum.getInternalTitleForeground(); else datum.setTitleForeground((int) val);
 					break;
 				case "bgColor":
-					if(get) return datum.getBgColor(); else datum.setBgColor((int) val);
+					if(get) return datum.getContentBackground(); else datum.setContentBackground((int) val);
 					break;
 				case "use_bgColor":
 					if(get) return datum.getUseInternalBG(); else datum.setUseInternalBG((boolean)val);

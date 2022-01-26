@@ -121,7 +121,10 @@ public class Response implements Closeable {
         ALWAYS,
         NEVER;
     }
-
+	
+	protected Response() {
+ 
+	}
     /**
      * Creates a fixed length response if totalBytes>=0, otherwise chunked.
      */

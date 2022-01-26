@@ -596,6 +596,10 @@ public class PlainWeb extends DictionaryAdapter {
 		return false;
 	}
 	
+	public String getSearchUrl() {
+		return host+search;
+	}
+	
 	abstract class VirtualKeyProvider {
 		abstract String getEntryAt(long position);
 		abstract String getRecordAt(long position);

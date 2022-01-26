@@ -10,6 +10,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
@@ -413,12 +414,16 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 	
 	public void FindBGInTitle(ViewGroup toolbar_web) {
-		toolbarBG = (GradientDrawable) ((LayerDrawable)toolbar_web.getBackground()).getDrawable(0);
+		Drawable bg = toolbar_web.getBackground();
+		if(true) {
+			bg.mutate();
+		}
+		toolbarBG = (GradientDrawable) ((LayerDrawable)bg).getDrawable(0);
 	}
 	
-	
 	public GradientDrawable MutateBGInTitle() {
-		LayerDrawable d = ((LayerDrawable) titleBar.getBackground().mutate());
+		LayerDrawable d;
+		d = (LayerDrawable) titleBar.getBackground().mutate();
 		toolbarBG = (GradientDrawable) d.getDrawable(0);
 		return toolbarBG;
 	}

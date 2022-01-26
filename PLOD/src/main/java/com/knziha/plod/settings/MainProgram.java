@@ -59,10 +59,7 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 			break;
 		}
 		if(fragmentId!=-1){
-			Intent intent = new Intent();
-			intent.putExtra("realm", fragmentId);
-			intent.setClass(getContext(), SettingsActivity.class);
-			startActivity(intent);
+			SettingsActivity.launch(getContext(), fragmentId);
 		}
 		return false;
 	}

@@ -21,6 +21,8 @@ import com.knziha.plod.plaindict.CMN;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.Normalizer;
 
 
@@ -139,6 +141,26 @@ public class  SU{
 	
 	public static void pt_mins(String...args) {
 		SU.Log(args,((System.currentTimeMillis()-stst)/1000.f/60)+"m");
+	}
+	
+	public static String encode(String str) {
+		try {
+			return URLEncoder.encode(str, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return str;
+		}
+	}
+	
+	public static String toHexRGB(int color) {
+		color&=0xFFFFFF;
+		if(color==0) {
+			return null;
+		}
+		String val = Integer.toHexString(color);
+		for (int i = val.length(); i < 6; i++) {
+			val = "0"+val;
+		}
+		return val;
 	}
 	
 	public boolean CharsequenceEqual(CharSequence cs1, CharSequence cs2) {

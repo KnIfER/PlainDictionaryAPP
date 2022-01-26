@@ -1,5 +1,7 @@
 package com.knziha.plod.plaindict;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
@@ -178,7 +180,6 @@ import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.slideshow.PhotoViewActivity;
-import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CustomShareAdapter;
@@ -216,6 +217,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.knziha.metaline.Metaline;
 import org.knziha.metaline.StripMethods;
+import org.nanohttpd.protocols.http.HTTPSession;
+import org.nanohttpd.protocols.http.response.Response;
 import org.xiph.speex.ByteArrayRandomOutputStream;
 import org.xiph.speex.manyclass.JSpeexDec;
 
@@ -226,7 +229,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -256,6 +258,7 @@ import java.util.regex.Pattern;
 import static com.bumptech.glide.util.Util.isOnMainThread;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
+import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
@@ -264,6 +267,8 @@ import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /** 程序基础类<br/>
  *  Class for all dictionary activities. <br/>
@@ -312,6 +317,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	Runnable execSearchRunnable;
 	CharSequence search_cs;
 	int search_count;
+	boolean focused;
+	protected MdictServer server;
 	public FrameLayout lvHeaderView;
 	protected TextWatcher tw1 = new TextWatcher() { //tw
 		public void onTextChanged(CharSequence cs, int start, int before, int count) {
@@ -357,7 +364,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ListViewmy mListView;
 		ListViewBasicViews.BasicViewsAdapter mAdapter;
 		ScrollViewmy WHP;
+		FrameLayout WHP1;
 		ViewGroup webholder;
+		WebViewmy mMergedFrame;
+		BookPresenter mMergedBook;
 		
 		public void setUseListView(boolean use) {
 			if(this.bUseListView = use) {
@@ -562,6 +572,34 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mBar.fadeOut();
 			}
 			mBar.setDelimiter("|||", WHP);
+		}
+		
+		public WebViewmy initMergedFrame() {
+			if(mMergedFrame==null) {
+				try {
+					mMergedBook = new BookPresenter(new File("empty"), null, 1, null);
+				} catch (IOException ignored) { }
+				WHP1 = new FrameLayout(MainActivityUIBase.this);
+				mMergedBook.initViewsHolder(MainActivityUIBase.this);
+				mMergedFrame = mMergedBook.mWebView;
+				mMergedFrame.setWebViewClient(myWebClient);
+				mMergedFrame.setWebChromeClient(myWebCClient);
+				mMergedFrame.setOnScrollChangedListener(null);
+			}
+			if(WHP1.getParent()==null) {
+				ViewUtils.replaceView(WHP1, WHP);
+			}
+			webholder.getLayoutParams().height = MATCH_PARENT;
+			ViewUtils.addViewToParent(webholder, WHP1);
+			ViewUtils.addViewToParent(mMergedBook.rl, webholder);
+			if(webholder.getChildCount()>1)
+				for (int i = webholder.getChildCount()-1; i>=0; i--)
+					if(webholder.getChildAt(i)!=mMergedFrame)
+						webholder.removeViewAt(i);
+			mMergedFrame.getLayoutParams().height = MATCH_PARENT;
+			mMergedBook.rl.getLayoutParams().height = MATCH_PARENT;
+			mMergedBook.toolbar.setVisibility(View.GONE);
+			return mMergedFrame;
 		}
 	}
 	
@@ -986,6 +1024,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public int md_getSize(){
 		return md.size();
+	}
+	
+	@Override
+	public int getMainBackground() {
+		return MainBackground;
+	}
+	
+	@NonNull public BookPresenter md_getById(long id) {
+		return getBookById(id);
+	}
+	
+	@NonNull public BookPresenter md_getByName(String name) {
+		return getBookByName(name);
 	}
 	
 	@NonNull public BookPresenter md_get(int i) {
@@ -1754,7 +1805,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								((CoordinatorLayout.LayoutParams) popupBottombar.getLayoutParams()).gravity = Gravity.BOTTOM;
 								((CoordinatorLayout.LayoutParams) popupBottombar.getLayoutParams()).setBehavior(new BottomNavigationBehavior(popupContentView.getContext(), null));
 								((CoordinatorLayout.LayoutParams) PopupPageSlider.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(popupContentView.getContext(), null));
-								((CoordinatorLayout.LayoutParams) PopupPageSlider.getLayoutParams()).height = LayoutParams.MATCH_PARENT;
+								((CoordinatorLayout.LayoutParams) PopupPageSlider.getLayoutParams()).height = MATCH_PARENT;
 								((AppBarLayout.LayoutParams) popupToolbar.getLayoutParams()).setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS | AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP);
 							} else {
 								popupContentView = (popupCmnCloth != null && popupCmnCloth.get() != null) ? popupCmnCloth.get()
@@ -4033,6 +4084,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return -1;
 	}
 	
+	public BookPresenter getBookByName(String name) {
+		Long bid = BookPresenter.bookImplsNameMap.get(name);
+		if(bid==null) {
+			if (getUsingDataV2()) {
+				bid = prepareHistoryCon().getBookID(null, name);
+			}
+		}
+		return getBookById(bid);
+	}
+	
 	public BookPresenter getBookById(long bid) {
 		BookPresenter ret = null;
 		try {
@@ -4304,19 +4365,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					ColorPickerDialog asd =
 							ColorPickerDialog.newBuilder()
 									.setDialogId(123123)
-									.setInitialColor(invoker.getUseInternalBG()?invoker.getBgColor():GlobalPageBackground)
+									.setInitialColor(invoker.getUseInternalBG()?invoker.getContentBackground():GlobalPageBackground)
 									.create();
 					asd.setColorPickerDialogListener(new ColorPickerDialogListener() {
 						@Override
 						public void onColorSelected(ColorPickerDialog dialogInterface, int color) {
 							//CMN.Log("onColorSelected");
 							if(invoker.getUseInternalBG())
-								invoker.setBgColor(color);
+								invoker.setContentBackground(color);
 							else{
 								GlobalPageBackground=color;
 							}
 							WebViewmy mWebView=bFromPeruseView? peruseView.mWebView:invoker.mWebView;
-							int ManFt_invoker_bgColor=invoker.getBgColor();
+							int ManFt_invoker_bgColor=invoker.getContentBackground();
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
 							if(GlobalOptions.isDark) {
 								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web);
@@ -4360,7 +4421,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							CMN.Log("onDialogDismissed");
 							d.show();
 							WebViewmy mWebView=bFromPeruseView? peruseView.mWebView:invoker.mWebView;
-							int ManFt_invoker_bgColor=invoker.getBgColor();
+							int ManFt_invoker_bgColor=invoker.getContentBackground();
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
 							if(GlobalOptions.isDark) {
 								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web);
@@ -7657,8 +7718,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			Window window = d.getWindow();
 			window.setDimAmount(1);
 			WindowManager.LayoutParams layoutParams = window.getAttributes();
-			layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
-			layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
+			layoutParams.width = MATCH_PARENT;
+			layoutParams.height = MATCH_PARENT;
 			layoutParams.horizontalMargin = 0;
 			layoutParams.verticalMargin = 0;
 			window.setAttributes(layoutParams);
@@ -8019,7 +8080,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mWebView.forbidLoading) {
 				return true;
 			}
-			//CMN.debug("chromium shouldOverrideUrlLoading_???",url,view.getTag(), mWebView.fromCombined);
+			CMN.debug("chromium shouldOverrideUrlLoading_???",url,view.getTag(), mWebView.fromCombined);
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
 			boolean fromPopup = view==popupWebView;
@@ -8080,12 +8141,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if (url.startsWith("http://") || url.startsWith("https://")) {
 				//CMN.Log("shouldOverrideUrlLoading_http",url);
+				if(invoker==weblistHandler.mMergedBook) {
+					//todo
+					return false;
+				}
 				if (opt.bShouldUseExternalBrowserApp) {
 					Uri uri = Uri.parse(url);
 					Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 					startActivity(intent);
 					return true;
-				} else {
+				}
+				else {
 					if (fromPeruseView) {
 						//TODO fix
 //						if (PeruseView.mWebView.HistoryVagranter >= 0)
@@ -8342,6 +8408,74 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			WebViewmy mWebView = (WebViewmy) view;
 			BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return null;
+			
+			if(invoker==weblistHandler.mMergedBook) {
+				int schemaIdx = url.indexOf(":");
+				//CMN.debug("mMergedBook::", url);
+				if(url.regionMatches(true, schemaIdx+3, "MdbR", 0, 4)) {
+					try {
+						HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7), request);
+						Response ret = getMdictServer().handle(req);
+						if(ret!=null) {
+							CMN.Log("WebResourceResponse::", ret.getMimeType());
+							String mime = ret.getMimeType();
+							int idx=mime.indexOf(";");
+							if(idx>0) mime = mime.substring(0, idx);
+							return new WebResourceResponse(mime, "UTF-8", ret.getData());
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
+				else try {
+					//HTTPSessionProxy proxy = (HTTPSessionProxy) session;
+					HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
+					
+					if(urlConnection instanceof HttpsURLConnection) {
+						((HttpsURLConnection)urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
+					}
+					urlConnection.setRequestProperty("Accept-Charset", "utf-8");
+					urlConnection.setRequestProperty("connection", "Keep-Alive");
+					urlConnection.setRequestMethod(request.getMethod());
+					urlConnection.setConnectTimeout(3800);
+					urlConnection.setUseCaches(true);
+					urlConnection.setDefaultUseCaches(true);
+					Map<String, String> headers = request.getRequestHeaders();
+					headers.put("Access-Control-Allow-Origin", "*");
+					headers.put("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
+					for(String kI:headers.keySet()) {
+						urlConnection.setRequestProperty(kI, headers.get(kI));
+					}
+					//if(host!=null) urlConnection.setRequestProperty("Host", presenter.getWebx().getHost());
+					urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
+					urlConnection.connect();
+					InputStream input = urlConnection.getInputStream();
+					String MIME = urlConnection.getHeaderField("content-type");
+					
+					String acc = headers.get("Accept");
+					if(acc==null) {
+						acc = "*/*;";
+					}
+					if(TextUtils.isEmpty(MIME)) {
+						MIME = acc;
+					}
+					int idx = MIME.indexOf(",");
+					if(idx<0) {
+						idx = MIME.indexOf(";");
+					}
+					if(idx>=0) {
+						MIME = MIME.substring(0, idx);
+					}
+					WebResourceResponse webResourceResponse;
+					webResourceResponse=new WebResourceResponse(MIME, "utf8", input);
+					webResourceResponse.setResponseHeaders(headers);
+					
+					return webResourceResponse;
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+				return null;
+			}
 			
 			if(url.startsWith("mdbr://")
 					|| url.startsWith("https://mdbr/")
@@ -10821,6 +10955,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			opt.setInDarkMode(!isDark);
 			changeToDarkMode();
 		}
+	}
+	
+	public MdictServer getMdictServer() {
+		try {
+			if(server==null) {
+				server = new MdictServerMobile(8080, this, opt);
+				((AgentApplication)getApplication()).mServer = server;
+			}
+		} catch (IOException e) {
+			CMN.Log(e);
+		}
+		return server;
 	}
 	
 	static String lastLoadedModule;

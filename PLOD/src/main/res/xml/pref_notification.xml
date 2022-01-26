@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+	<PreferenceCategory>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="always"
+			android:title="始终显示通知"
+			android:summary="用来查询剪贴板内容"
+			android:persistent="false"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="server"
+			android:title="自动显示通知"
+			android:summary="开启局域网服务器时，自动显示通知"
+			android:persistent="false"
+			/>
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="wifi"-->
+<!--			android:title="充电时自动关闭后台音频、Wifi锁保活"-->
+<!--			android:summary="充电时的休眠(doze mode)机制不是很激进。"-->
+<!--			android:persistent="false"-->
+<!--			/>-->
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="exit"
+			android:title="退出主程序时自动清除通知"
+			android:summary="主程序退出后，只能用来点击查词。"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="swipe"-->
+<!--			android:title="可划走"-->
+<!--			android:summary="滑动清除通知。"-->
+<!--			android:persistent="false"-->
+<!--			app:allowDividerBelow="true"-->
+<!--			/>-->
+
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:title="激进保活"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="daemon"
+			android:title="自动启用"
+			android:summary="开启局域网服务器、处于省电模式时启用激进的保活模式"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="music"
+			android:title="播放音频"
+			android:summary="默认空白音频（非纯无声）"
+			android:persistent="false"
+			app:hasSep="false"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="wifi"
+			android:title="Wifi锁"
+			android:summary="阻止熄屏后自动断网（无用，建议在系统设置中调整相关选项）"
+			android:persistent="false"
+			/>
+
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:title="系统设置"
+		>
+		<Preference
+			android:key="batUsage"
+			android:title="应用启动管理"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+
+		<Preference
+			android:key="batSummary"
+			android:title="电池使用状况"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+		<Preference
+			android:key="settings"
+			android:title="系统设置"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:title="杂项"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="subtitle"
+			android:title="显示子标题"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="options"
+			android:title="显示设置按钮"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="close"
+			android:title="显示退出按钮"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+		<Preference
+			android:key="start"
+			android:title="重新显示"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+		<Preference
+			android:key="finish"
+			android:title="立即退出"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+	</PreferenceCategory>
+
+</PreferenceScreen>

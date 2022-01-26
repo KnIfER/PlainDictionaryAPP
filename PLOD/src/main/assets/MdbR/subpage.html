@@ -18,39 +18,47 @@ mark.current {
 </style>
 
 <script>
+function debug(...e){console.log(e)};
+debug("frameElement::", frameElement);
+function ge(e){return document.getElementById(e)};
 if(window.addEventListener){
 	window.addEventListener('load',wrappedOnLoadFunc,false);
 	window.addEventListener('click',wrappedClickFunc);
-	window.addEventListener('mousedown',wrappedMouseDown);
-}else if(window.attachEvent){ //ie
-	window.addEventListener('onload',wrappedOnLoadFunc);
-	window.addEventListener('onclick',wrappedClickFunc);
-	window.addEventListener('onmousedown',wrappedMouseDown);
-}else{
+	window.addEventListener('mousedown',wrappedDown);
+	window.addEventListener('touchstart',wrappedDown);
+} else {
 	window.onload=wrappedOnLoadFunction;
 	window.onclick=wrappedClickFunc;
-	window.onmousedown=wrappedMouseDown;
+	window.onmousedown=wrappedDown;
 }
 function wrappedOnLoadFunc(){
-	console.log('mdpage loaded');
-	//document.body.style.fontSize=35+'px';
-	highlight(null);
-	//console.log('frameAt !! '+frameAt);
-	if(_onloadchecks && _onloadchecks.length)
-	for(var i=0;i<_onloadchecks.length;i++){
-		_onloadchecks[i]();
+	// debug('mdpage loaded');
+	// //document.body.style.fontSize=35+'px';
+	// highlight(null);
+	// //debug('frameAt !! '+frameAt);
+	// if(_onloadchecks && _onloadchecks.length)
+	// for(var i=0;i<_onloadchecks.length;i++){
+	// 	_onloadchecks[i]();
+	// }
+	debug("wrappedOnLoadFunc::", frameElement.tag, frameElement.u, location.href);
+	if(frameElement.u) {
+		if(frameElement.u.startsWith(location.href)) {
+			location.href=frameElement.u;
+		}
+		frameElement.u=0;
 	}
+	//todo 处理背景色？
 }
 
 function loadVI(pos){
 	//111
-	console.log('hi !! loadVI/'+pos);
+	debug('hi !! loadVI/'+pos);
 	var req=new XMLHttpRequest();
 	req.open('POST','VI/'+pos);
 	req.responseType='text';
 	req.onreadystatechange=function(e) {
 		if(req.readyState == 4 && req.status==200) {
-			console.log(req.responseText);
+			debug(req.responseText);
 			var vc = JSON.parse(req.responseText);
 			if(vc.JS){
 				eval(vc.JS)
@@ -69,7 +77,7 @@ var regSound=new RegExp("^sound://");
 
 function hiPlaySound(e){
 	var cur=e.ur1?e:e.srcElement;
-	//console.log("hijacked sound playing : "+cur.ur1);
+	//debug("hijacked sound playing : "+cur.ur1);
 	if(audio)
 		audio.pause();
 	else
@@ -78,47 +86,57 @@ function hiPlaySound(e){
 	audio.play();
 }
 
-function wrappedMouseDown(e){
-	//console.log(e);
-	var cur=e.srcElement;
-	if(cur.href && (e.button==1||e.button==0)) {
-		console.log("01! found link : "+cur.href+" : "+regSound.test(cur.href));
-		var getRawLink=cur.href;
+function wrappedDown(e){
+	debug(e);
+	var t;
+	for(var i=0;i<10 && (t=e.path[i]);i++)
+		if(t.href!==undefined)
+			break;
+	if(t && t.href) { //  && (e.button==1||e.button==0)
+		debug("01! found link : "+t.href+" : "+regSound.test(t.href));
+		var getRawLink=t.href;
 		var patt1 = /\/base\/[0-9]*\/(#.*)/;
 		var m = getRawLink.match(patt1);
 		if(m && m[0].length>0){
-			console.log(m[1]);
+			debug(m[1]);
 			getRawLink=m[1];
-			console.log(window.location.href);
-			cur.href=window.location.href+getRawLink;
+			debug(window.location.href);
+			t.href=window.location.href+getRawLink;
 			return false;
 		}
-		if(regEntry.test(cur.href)){
-			cur.href=/* "entry/"+ */cur.href.substring(8);
-			console.log(111);
-		}else if(regSound.test(cur.href)){/*拦截 sound 连接*/
-			var link=/* "sound/"+ */cur.href.substring(8);
-			cur.href=link;
-			if(cur.onclick==undefined){
-				//console.log("1! found internal sound link : "+cur.href);
-				cur.ur1=cur.href;
-				cur.removeAttribute("href");
-				cur.onclick=hiPlaySound;
-				hiPlaySound(cur)
+		if(regEntry.test(t.href)) {
+			var ent=t.href.substring(8), tid=ent.indexOf('#');
+			t.href="entry/"+ent;
+			if(tid>0) {
+				parent.window.JumpTag(frameElement, ent.slice(tid+1), t.href,t);
+				//ent=ent.slice(0,tid);
+			}
+			debug("entry::", t.href);
+		} 
+		else if(regSound.test(t.href)) {/*拦截 sound 连接*/
+			var link=/* "sound/"+ */t.href.substring(8);
+			t.href=link;
+			if(t.onclick==undefined){
+				//debug("1! found internal sound link : "+cur.href);
+				t.ur1=t.href;
+				t.removeAttribute("href");
+				t.onclick=hiPlaySound;
+				hiPlaySound(t)
 				return false;
 			}
 		}
-		else if(parent.app && regHttp.test(cur.href)){/*拦截 http*/
-			parent.app.handleWebLink(cur.href);
+		else if(parent.app && regHttp.test(t.href)){/*拦截 http*/
+			parent.app.handleWebLink(t.href);
 			return false;
 		}
-		else if(parent.app && regPdf.test(cur.href)){/*拦截 pdf*/
-			parent.app.handlePdfLink(cur.href);
+		else if(parent.app && regPdf.test(t.href)){/*拦截 pdf*/
+			parent.app.handlePdfLink(t.href);
 			return false;
 		}
 		return true;/*连接通行！*/
 	}
 }
+
 function wrappedClickFunc(e){
 	//if(1)return;
 	//parent.window.dismiss_menu();
@@ -126,25 +144,25 @@ function wrappedClickFunc(e){
 	var cur=e.srcElement;
 	if(0)
 	if(cur.href){
-		console.log("1! found link : "+cur.href+" : "+regSound.test(cur.href));
+		debug("1! found link : "+cur.href+" : "+regSound.test(cur.href));
 		var getRawLink=cur.href;
 		var patt1 = /\/base\/[0-9]*\/(#.*)/;
 		var m = getRawLink.match(patt1);
 		if(m && m[0].length>0){
-			console.log(m[1]);
+			debug(m[1]);
 			getRawLink=m[1];
-			console.log(window.location.href);
+			debug(window.location.href);
 			cur.href=window.location.href+getRawLink;
 			return false;
 		}
 		if(regEntry.test(cur.href)){
 			cur.href="entry/"+cur.href.substring(8);
-			console.log(111);
+			debug("entry::", cur.href);
 		}else if(regSound.test(cur.href)){/*拦截 sound 连接*/
 			var link=/* "sound/"+ */cur.href.substring(8);
 			cur.href=link;
 			if(cur.onclick==undefined){
-				//console.log("1! found internal sound link : "+cur.href);
+				//debug("1! found internal sound link : "+cur.href);
 				cur.ur1=cur.href;
 				cur.removeAttribute("href");
 				cur.onclick=hiPlaySound;
@@ -163,18 +181,18 @@ function wrappedClickFunc(e){
 		return true;/*连接通行！*/
 	}
 	else if(cur.src && regEntry.test(cur.src)){
-		console.log("2! found link : "+cur.src);
+		debug("2! found link : "+cur.src);
 		return false;
 	}
 	else if(e.srcElement!=document.documentElement && e.srcElement.nodeName!='INPUT'){ // immunize blank area out of body ( in html )
-		//console.log(e.srcElement+'')
-		//console.log(e);
+		//debug(e.srcElement+'')
+		//debug(e);
 		var s = window.getSelection();
 		if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
 			s.modify('extend', 'forward', 'word'); // first attempt
 			//if(1) return;
 			var an=s.anchorNode;
-			//console.log(s.anchorNode); console.log(s);  console.log(s.getRangeAt(0)); console.log(s+'');
+			//debug(s.anchorNode); debug(s);  debug(s.getRangeAt(0)); debug(s+'');
 			fixPdfForword(s);
 			if(s.baseNode != document.body) {// immunize blank area
 				var scer=s.getRangeAt(0);
@@ -184,7 +202,7 @@ function wrappedClickFunc(e){
 						scer=scer.parentNode;
 					}
 					if(scer.previousSibling==null){
-						console.log(e.clientX-scer.offsetLeft, e.clientY-scer.offsetTop);
+						debug(e.clientX-scer.offsetLeft, e.clientY-scer.offsetTop);
 						if(Math.abs(e.clientX-scer.offsetLeft)>50||Math.abs(e.clientY-scer.offsetTop)>50){
 							s.empty();
 							scer=null;
@@ -201,7 +219,7 @@ function wrappedClickFunc(e){
 							scer=1;
 						}else{
 							var range = s.getRangeAt(0);  // first attempt, forward range
-							//console.log(range);
+							//debug(range);
 							var lb='lineboundary';
 							s.collapseToStart();
 							s.modify('extend', 'forward', lb);
@@ -250,7 +268,7 @@ function wrappedClickFunc(e){
 							}
 						}
 						if(scer){
-							console.log(text); // final output
+							debug(text); // final output
 						}
 					}
 				}
@@ -282,7 +300,7 @@ var currentClass = "current";
 
 function jumpTo(d) {
     if (results.length) {
-		console.log('jumpTo received '+frameAt+'->'+parent.window.HlightIdx+' '+(currentIndex+d)+'/'+(results.length)+' dir='+d);
+		debug('jumpTo received '+frameAt+'->'+parent.window.HlightIdx+' '+(currentIndex+d)+'/'+(results.length)+' dir='+d);
 		var np=currentIndex+d;
 		var max=results.length - 1;
 		if (currentIndex > max) currentIndex=0;
@@ -292,7 +310,7 @@ function jumpTo(d) {
 			if(frameAt<pw.HlightIdx) return d;
 			var baseOffset=pw.topOffset(frameAt);
 			for(;np>=0&&np<=max;np+=d){
-				console.log(frameAt+'->'+pw.HlightIdx+' npnpnpnp ? '+np+'/'+max+' ? '+(baseOffset+pw.topOffset(results[np])+' >= '+pw.desiredOffset));
+				debug(frameAt+'->'+pw.HlightIdx+' npnpnpnp ? '+np+'/'+max+' ? '+(baseOffset+pw.topOffset(results[np])+' >= '+pw.desiredOffset));
 				if(baseOffset+pw.topOffset(results[np])>=pw.desiredOffset)
 					break;
 			}
@@ -317,7 +335,7 @@ function topOffset(elem){
     var top=0;
     var add=1;
     while(elem && elem!=document.body){
-    console.log(""+(elem.style.display==""))
+    debug(""+(elem.style.display==""))
         if(elem.style.display=='none'){
         	elem.style.display='block';
 		}
@@ -411,7 +429,7 @@ function do_highlight(keyword,rcsp){
 			bOnceHighlighted=false;
 			if(keyword){
 				keyword=decodeURIComponent(keyword);
-				console.log('keyword='+keyword+', rcsp='+rcsp);
+				debug('keyword='+keyword+', rcsp='+rcsp);
 				if(rcsp&0x1)
 				MarkInst.markRegExp(new RegExp(keyword, (rcsp&0x2)?'m':'im'), {
 					done: done_highlight

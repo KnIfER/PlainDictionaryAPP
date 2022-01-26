@@ -5,12 +5,14 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -72,6 +74,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.ViewPropertyAnimatorCompatSet;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -196,7 +199,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public boolean bOnePageNav;
 	private MyHandler mHandle;
 	public AsyncTask<String, Integer, String> mAsyncTask;
-	boolean focused;
 	public int rem_res=R.string.rem_position;
 	public static ArrayList<PlaceHolder> CosyChair = new ArrayList<>();
 	public static ArrayList<PlaceHolder> CosySofa = new ArrayList<>();
@@ -205,8 +207,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private Animation animaExit;
 	private ViewGroup main_content_succinct;
 	private LinearLayout weblist;
-	
-	public MdictServer server;
 	
 	ActivityMainBinding UIData;
 	
@@ -1017,12 +1017,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		checkLog(savedInstanceState);
 		
-		if (false) {
+		if (PDICMainAppOptions.getNotificationEnabled()) {
 			startService(new Intent(this, ServiceEnhancer.class));
-			locationReceiver = new EnchanterReceiver();
-			IntentFilter filter = new IntentFilter();
-			filter.addAction("plodlock");
-			registerReceiver(locationReceiver, filter);
+//			locationReceiver = new EnchanterReceiver();
+//			IntentFilter filter = new IntentFilter();
+//			filter.addAction("plodlock");
+//			registerReceiver(locationReceiver, filter);
 		}
 		
 		if(false) {
@@ -1047,7 +1047,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			});
 		}
-		
 		
 		CrashHandler.getInstance(this, opt).TurnOn();
 	}
@@ -1721,6 +1720,31 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		etSearch.setText("happy");
 		//showT(""+currentDictionary.QueryByKey("woodie", SearchType.Normal, false, 0));
 		TestHelper.wakeUpAndUnlock(this);
+		
+//		if (Build.MANUFACTURER.equalsIgnoreCase("samsung")) {
+//			Intent intent = new Intent();
+//			if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+//				intent.setComponent(new ComponentName("com.samsung.android.lool", "com.samsung.android.sm.ui.battery.BatteryActivity"));
+//			} else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+//				intent.setComponent(new ComponentName("com.samsung.android.sm", "com.samsung.android.sm.ui.battery.BatteryActivity"));
+//			}
+//			startActivity(intent);
+//		}
+//		if (Build.MANUFACTURER.equalsIgnoreCase("huawei")) {
+//			Intent intent = new Intent();
+//			intent.setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity"));
+//			startActivity(intent);
+//		}
+//
+//		if (Build.MANUFACTURER.equalsIgnoreCase("xiaomi")) {
+//			Intent intent = new Intent();
+//			intent.setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
+//			startActivity(intent);
+//		}
+
+
+
+
 
 //		PowerManager pm= (PowerManager) this.getSystemService(Context.POWER_SERVICE);
 //		wakeLock=pm.newWakeLock(PowerManager.ON_AFTER_RELEASE|PowerManager.PARTIAL_WAKE_LOCK,"kn:debug");
@@ -1733,7 +1757,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //		etSearch.setText("Label");
 		
 //		launchSettings(0, 0);
-		//do_test_project_Test_Background_Loop();
+//		do_test_project_Test_Background_Loop();
 		//CMN.Log(FU.listFiles(this, Uri.fromFile(new File("/sdcard"))));
 		
 		
@@ -2253,9 +2277,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			FilePickerDialog.clearMemory(getBaseContext());
 			drawerFragment.onDestroy();
 			if(server!=null) {
-				server.stop();
+				server.stop(this);
 			}
 			cancleToast();
+		}
+		if(ServiceEnhancer.isRunning) {
+			if(PDICMainAppOptions.getAutoClearNotificationOnExit() || !PDICMainAppOptions.getNotificationEnabled()) {
+				AU.stopService(this, ServiceEnhancer.class);
+			} else {
+				Intent intent = new Intent(this, ServiceEnhancer.class);
+				intent.putExtra("exit", true);
+				startService(intent);
+			}
 		}
 		super.onDestroy();
 	}
@@ -3234,7 +3267,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(mdTmp!=null)
 				mdTmp.setNestedScrollingEnabled(bImmersive);
 		}
-		weblistHandler.WHP.setNestedScrollingEnabled(bImmersive);
+		((AdvancedNestScrollView)weblistHandler.WHP).setNestedScrollingEnabled(bImmersive);
 		((AdvancedNestScrollListview)lv).setNestedScrollingEnabled(bImmersive);
 		((AdvancedNestScrollListview)lv2).setNestedScrollingEnabled(bImmersive);
 		((AdvancedNestScrollListview)mlv1).setNestedScrollingEnabled(bImmersive);
@@ -4043,18 +4076,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	public void startServer(boolean start) {
 		if(start) {
-			try {
-				if(server==null) {
-					server = new MdictServerMobile(8080, PDICMainActivity.this, opt);
+			if(getMdictServer()!=null) {
+				try {
+					getMdictServer().start(this);
+					showDrawerSnack("服务器启动成功");
+				} catch (IOException e) {
+					CMN.Log(e);
 				}
-				server.start();
-				showDrawerSnack("服务器启动成功");
-			} catch (Exception e) {
-				CMN.Log(e);
 			}
 		} else {
 			if(server!=null) {
-				server.stop();
+				server.stop(this);
 				showDrawerSnack("服务已中止");
 				//showT("服务已中止");
 			}

@@ -1,10 +1,10 @@
 package com.knziha.plod.settings;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
@@ -15,7 +15,6 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import com.knziha.filepicker.settings.FileChooser;
 import com.knziha.filepicker.settings.FilePickerOptions;
-import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.CrashHandler;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -31,6 +30,13 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 	private MainActivityUIBase pHandler;
 	
 	public PreferenceFragmentCompat fragment;
+	
+	public static void launch(Context context, int fragmentId) {
+		Intent intent = new Intent();
+		intent.putExtra("realm", fragmentId);
+		intent.setClass(context, SettingsActivity.class);
+		context.startActivity(intent);
+	}
 	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -89,8 +95,8 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 			case FileChooser.id:
 				fragment = new FileChooser();
 			break;
-			case DevoloperOptions.id:
-				fragment = new DevoloperOptions();
+			case DeveloperOptions.id:
+				fragment = new DeveloperOptions();
 			break;
 			case Licences.id:
 				fragment = new Licences();
@@ -111,6 +117,10 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 			case ServerPreference.id:
 				fragment = new ServerPreference();
 				args.putInt("title", R.string.server_spec);
+			break;
+			case NotificationSettings.id:
+				fragment = new NotificationSettings();
+				args.putInt("title", R.string.noti_set);
 			break;
 		}
 		fragment.setArguments(args);

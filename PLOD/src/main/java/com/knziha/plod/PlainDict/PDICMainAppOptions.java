@@ -2341,6 +2341,37 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=20, shift=1/*, debug=0*/) public static boolean getPowerSavingPageSideView() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=20, shift=1) public static void setPowerSavingPageSideView(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=21, shift=1) public static boolean getAutoEnableNotification() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=21, shift=1) public static void setAutoEnableNotification(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=22) public static boolean getForceDaemonMusic() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=22) public static void setForceDaemonMusic(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=23) public static boolean getForceDaemonWifi() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=23) public static void setForceDaemonWifi(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	/**自动判断保活方式，在常驻通知栏的基础上，
+	 * 当处于省电模式（且开启了局域网服务器）时，自动选择加上后台播放空白音频、防止wifi休眠的保活措施。*/
+	@Metaline(flagPos=24) public static boolean getAutoDaemonMW() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=24) public static void setAutoDaemonMW(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=25, shift=1) public static boolean getAutoClearNotificationOnExit() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=25, shift=1) public static void setAutoClearNotificationOnExit(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=26) public static boolean getNotificationEnabled() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=26) public static void setNotificationEnabled(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+//	@Metaline(flagPos=27) public static boolean getNotificationSwipeble() { FifthFlag=FifthFlag; throw new RuntimeException();}
+//	@Metaline(flagPos=27) public static void setNotificationSwipeble(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=28) public static boolean getShowNotificationExitBtn() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=28) public static void setShowNotificationExitBtn(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=29) public static boolean getShowNotificationSubtitle() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=29) public static void setShowNotificationSubtitle(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=30, shift=1) public static boolean getShowNotificationSettings() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=30, shift=1) public static void setShowNotificationSettings(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	//EF
 	///////////////////// End Fifth Flag////////////////////////////////////

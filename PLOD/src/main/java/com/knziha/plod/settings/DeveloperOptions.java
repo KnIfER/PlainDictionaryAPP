@@ -1,5 +1,6 @@
 package com.knziha.plod.settings;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -18,9 +19,12 @@ import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.dictionary.mdict;
+import com.knziha.plod.plaindict.AU;
 import com.knziha.plod.plaindict.CrashHandler;
+import com.knziha.plod.plaindict.FcfrtAppBhUtils;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.ServiceEnhancer;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -28,7 +32,7 @@ import java.io.DataOutputStream;
 import java.util.HashMap;
 
 /** Devoloper Options */
-public class DevoloperOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
+public class DeveloperOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=4;
 	private WebView mWebview;
 	
@@ -39,7 +43,7 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 	//执行初始化操作
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		mPreferenceId = R.xml.devpreferences;
+		mPreferenceId = R.xml.pref_dev;
 		nym=new HashMap<>(15);
 		nym.put("ar", "ae");
 		nym.put("zh", "cn");
@@ -62,6 +66,7 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 		
 		findPreference("app_settings").setOnPreferenceClickListener(this);
 		findPreference("system_dev").setOnPreferenceClickListener(this);
+		findPreference("battery").setOnPreferenceClickListener(this);
 		findPreference("clear_cache1").setOnPreferenceClickListener(this);
 		findPreference("clear_cache2").setOnPreferenceClickListener(this);
 		findPreference("clear_cache3").setOnPreferenceClickListener(this);
@@ -76,6 +81,7 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 		init_switch_preference(this, "enable_web_debug", PDICMainAppOptions.getEnableWebDebug(), null, null);
 		init_switch_preference(this, "tts_reader", PDICMainAppOptions.getUseTTSToReadEntry(), null, null);
 		init_switch_preference(this, "cache_mp3", PDICMainAppOptions.getCacheSoundResInAdvance(), null, null);
+		init_switch_preference(this, "notify", PDICMainAppOptions.getNotificationEnabled(), null, null);
 		
 		init_switch_preference(this, "dbv2", PDICMainAppOptions.getUseDatabaseV2(), null, null);
 		findPreference("dbv2_up").setOnPreferenceClickListener(this);
@@ -172,6 +178,24 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 				PDICMainAppOptions.setCacheSoundResInAdvance((boolean)newValue);
 			}
 			return true;
+			case "notify": {
+				Context context = getContext();
+				if(context==null) return false;
+				if(preference.getLeftPartClicked()) {
+					SettingsActivity.launch(context, NotificationSettings.id);
+					return false;
+				} else {
+					AU.checkNotificationPermissionAndRequire(context);
+					PDICMainAppOptions.setNotificationEnabled((boolean)newValue);
+					Intent intent = new Intent(context, ServiceEnhancer.class);
+					if(PDICMainAppOptions.getNotificationEnabled()) {
+						context.startService(intent);
+					} else {
+						context.stopService(intent);
+					}
+				}
+			}
+			return true;
 			case "classical_sort":
 				PDICMainAppOptions.setClassicalKeycaseStrategy(mdict.bGlobalUseClassicalKeycase=(Boolean) newValue);
 			return true;
@@ -191,40 +215,41 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		String key=preference.getKey();
+		Activity context = getActivity();
+		if(context==null) return false;
 		if(preference instanceof WarnPreference){
-			Context context = getContext();
 			AlertDialog.Builder builder2 = new AlertDialog.Builder(context);
 			builder2.setTitle("确认清理？")
 					.setPositiveButton(com.knziha.filepicker.R.string.delete, (dialog, which) -> {
 						switch (key){
 							case "clear_cache1": {
-								if(mWebview==null) mWebview = new WebView(getContext());
+								if(mWebview==null) mWebview = new WebView(context);
 								mWebview.clearCache(false);
 							}
 							break;
 							case "clear_cache2": {
-								if(mWebview==null) mWebview = new WebView(getContext());
+								if(mWebview==null) mWebview = new WebView(context);
 								mWebview.clearCache(true);
-								CookieSyncManager.createInstance(getContext());  //Create a singleton CookieSyncManager within a context
+								CookieSyncManager.createInstance(context);  //Create a singleton CookieSyncManager within a context
 								CookieManager cookieManager = CookieManager.getInstance(); // the singleton CookieManager instance
 								cookieManager.removeAllCookie();// Removes all cookies.
 								CookieSyncManager.getInstance().sync(); // forces sync manager to sync now
 							}
 							break;
 							case "clear_cache3": {
-								if(mWebview==null) mWebview = new WebView(getContext());
+								if(mWebview==null) mWebview = new WebView(context);
 								mWebview.clearFormData();
 							}
 							break;
 							case "clear_cache4": {
-								if(mWebview==null) mWebview = new WebView(getContext());
+								if(mWebview==null) mWebview = new WebView(context);
 								mWebview.clearSslPreferences();
 								if(Build.VERSION.SDK_INT>=21)
 									WebView.clearClientCertPreferences(null);
 							}
 							break;
 						}
-						Toast.makeText(getContext(), "已清理", Toast.LENGTH_LONG).show();
+						Toast.makeText(context, "已清理", Toast.LENGTH_LONG).show();
 					});
 			AlertDialog dTmp = builder2.create();
 			dTmp.show();
@@ -241,6 +266,9 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 				startActivity(intent);
 			}
 			break;
+			case "battery":{
+				FcfrtAppBhUtils.requestIgnoreBatteryOptimizations(context);
+			} break;
 			case "system_dev":{
 				try {
 					Intent intent = new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS);
@@ -264,13 +292,12 @@ public class DevoloperOptions extends SettingsFragmentBase implements Preference
 				}
 			} break;
 			case "dbv2_up": {
-				ViewUtils.notifyAPPSettingsChanged(getActivity(), preference);
+				ViewUtils.notifyAPPSettingsChanged(context, preference);
 			} break;
 			case "log":
 			case "log2": {
-				Context c = getActivity();
-				CrashHandler.getInstance(c, ((Toastable_Activity)c).opt)
-						.showErrorMessage(c, null, key.length()==3?false:true);
+				CrashHandler.getInstance(context, ((Toastable_Activity)context).opt)
+						.showErrorMessage(context, null, key.length()==3?false:true);
 			}
 			break;
 		}

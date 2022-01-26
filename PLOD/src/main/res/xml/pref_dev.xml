@@ -2,11 +2,10 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:NumberPickerPreference="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
 	>
 	<PreferenceCategory
 		android:key="category_program"
-		android:title="Developers"
-		app:icon="@drawable/tools_toolbar"
 		>
 		<Preference
 			android:key="app_settings"
@@ -32,8 +31,25 @@
 			android:title="@string/language"
 			android:entryValues="@array/languages"
 			android:entries="@array/languages_info"
-			app:allowDividerBelow="true"
 			/>
+
+
+		<Preference
+			android:key="battery"
+			android:title="申请电池优化白名单"
+			android:summary="避免处于后台时自动退出"
+			android:persistent="false"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="notify"
+			android:title="常驻通知栏"
+			android:summary="允许后台运行/点击后查询复制的词"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			app:hasSep="true"
+			/>
+
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:persistent="false"

@@ -73,6 +73,20 @@ android {
     }
 }
 
+task delog {
+    group 'delog'
+    description 'delog'
+    doLast {
+        def gradle = project.getGradle()
+        new File("${gradle.getGradleUserHomeDir().getAbsolutePath()}/daemon/${gradle.getGradleVersion()}").listFiles().each {
+            if (it.getName().endsWith('.out.log')) {
+                logger.debug("Cleaning up daemon log file $it")
+                it.delete()
+            }
+        }
+    }
+}
+
 dependencies {
     //api 'com.implimentz:unsafe:0.0.6'
 
@@ -94,11 +108,15 @@ dependencies {
     testImplementation 'org.jdom:jdom:2.0.2'
 
 
-    compileOnly project(':Metaline:Metaline')
-    annotationProcessor project(':Metaline:Metaline')
-    testImplementation project(':Metaline:Metaline')
-    testAnnotationProcessor project(':Metaline:Metaline')
-    //testImplementation 'com.google.javascript:closure-compiler:v20211107'
+//    compileOnly project(':Metaline:Metaline')
+//    annotationProcessor project(':Metaline:Metaline')
+//    testImplementation project(':Metaline:Metaline')
+//    testAnnotationProcessor project(':Metaline:Metaline')
+    compileOnly libs_metaline
+    annotationProcessor libs_metaline
+    testImplementation libs_metaline
+    testAnnotationProcessor libs_metaline
+    testImplementation 'com.google.javascript:closure-compiler:v20211107'
 
     api 'org.apache.commons:commons-text:1.8'
     api (libs_clang)

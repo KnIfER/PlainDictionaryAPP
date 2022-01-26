@@ -15,7 +15,7 @@ public class HistoryPreference extends SettingsFragmentBase implements Preferenc
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		mPreferenceId = R.xml.historypreferences;
+		mPreferenceId = R.xml.pref_history;
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "rc_nothing", PDICMainAppOptions.getHistoryStrategy0(), null, null);
 		

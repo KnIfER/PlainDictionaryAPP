@@ -17,6 +17,12 @@ public class CharSequenceKey implements CharSequence {
 	public CharSequenceKey() {
 			this(StringUtils.EMPTY,0,0);
 		}
+		
+		public CharSequenceKey(@NonNull String val, int st) {
+			value = val;
+			start = st;
+			end = value.length();
+		}
 	
 		public CharSequenceKey(@NonNull String val, int st, int ed) {
 			value = val;
