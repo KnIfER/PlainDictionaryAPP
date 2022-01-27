@@ -19,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -155,7 +156,6 @@ import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
-import com.knziha.plod.dictionary.Utils.AutoCloseInputStream;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
@@ -263,6 +263,7 @@ import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
+import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
@@ -359,250 +360,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public ViewGroup main;
 	public ViewGroup mainF;
 	public WebViewListHandler weblistHandler;
-	public class WebViewListHandler extends ViewGroup {
-		boolean bUseListView;
-		ListViewmy mListView;
-		ListViewBasicViews.BasicViewsAdapter mAdapter;
-		ScrollViewmy WHP;
-		FrameLayout WHP1;
-		ViewGroup webholder;
-		WebViewmy mMergedFrame;
-		BookPresenter mMergedBook;
-		
-		public void setUseListView(boolean use) {
-			if(this.bUseListView = use) {
-			} else {
-			
-			}
-		}
-		
-		public WebViewListHandler(Context context) {
-			super(context);
-			setId(R.id.webholder);
-			//setUseListView(true);
-		}
-		
-		public ViewGroup getViewGroup() {
-			return bUseListView?mListView:webholder;
-		}
-		
-		public View getChildAt(int frameAt) {
-			if(bUseListView) {
-				return (View) mAdapter.getItem(frameAt);
-			}
-			return webholder.getChildAt(frameAt);
-		}
-		
-		@Override
-		public int getChildCount() {
-			return bUseListView?mAdapter.getCount():webholder.getChildCount();
-		}
-		
-		public void shutUp() {
-			if(WHP.getVisibility()==View.VISIBLE) {
-				if(webholder.getChildCount()!=0)
-					webholder.removeAllViews();
-				WHP.setVisibility(View.GONE);
-			}
-		}
-		
-		public void init(ViewGroup whp, ViewGroup webholder) {
-			this.WHP = (ScrollViewmy) whp;
-			this.webholder = webholder;
-			if(bUseListView) {
-				if(mListView==null && whp.getParent()!=null) {
-					mListView = new ListViewmy(WHP.getContext());
-					mAdapter = new ListViewBasicViews.BasicViewsAdapter();
-					mListView.setAdapter(mAdapter);
-					ViewUtils.replaceView(mListView, WHP);
-					CMN.Log("替换::", mListView.getParent(), WHP.getParent());
-					
-					mListView.setNestedScrollingEnabled(false);
-//					mListView.setFastScrollAlwaysVisible(true);
-//					mListView.setFastScrollEnabled(true);
-					mListView.setRecyclerListener(new AbsListView.RecyclerListener() {
-						@Override
-						public void onMovedToScrapHeap(View view) {
-						
-						}
-					});
-				}
-			}
-		}
-		
-		@Override
-		public void addView(View child, int index) {
-			if (bUseListView) {
-				CMN.Log("添加::", index, mAdapter.mViews.size());
-				if (index < 0) {
-					index = mAdapter.getCount();
-				}
-				mAdapter.mViews.add(index, child);
-				mAdapter.notifyDataSetChanged();
-			} else {
-				webholder.addView(child, index);
-			}
-		}
-		
-		public void removeAllViews() {
-			if (bUseListView) {
-				mAdapter.mViews.clear();
-				mAdapter.notifyDataSetChanged();
-			} else {
-				webholder.removeAllViews();
-			}
-		}
-		
-		@Override
-		public void setVisibility(int visibility) {
-			(bUseListView?mListView:WHP).setVisibility(visibility);
-		}
-		
-		@Override
-		public int getVisibility() {
-			return (bUseListView?mListView:WHP).getVisibility();
-		}
-		
-		@Override
-		protected void onLayout(boolean changed, int l, int t, int r, int b) { }
-		
-		public void setBackgroundColor(int manFt_globalPageBackground) {
-			(bUseListView?mListView:WHP).setBackgroundColor(manFt_globalPageBackground);
-		}
-		
-		public int getFirstVisblePos() {
-			if (bUseListView) {
-				return mListView.getFirstVisiblePosition();
-			}
-			final int currentHeight=WHP.getScrollY();
-			for(int i=0;i<webholder.getChildCount();i++) {
-				View CI = webholder.getChildAt(i);
-				if(CI.getBottom() > currentHeight) {
-					return i;
-				}
-			}
-			return -1;
-		}
-		
-		public ViewGroup getScrollView() {
-			return WHP;
-		}
-		
-		public void setScrollbar() {
-			mBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
-			mBar.setProgress(WHP.getScrollY());
-			//a.mBar.onTouch(null, MotionEvent.obtain(0,0,MotionEvent.ACTION_UP,0,0,0));
-		}
-		
-		public OnLayoutChangeListener OLCL;
-		public void installLayoutScrollListener(resultRecorderCombined recom) {
-			WHP.touchFlag.first=false;
-			if(OLCL==null) {
-				OLCL = new OnLayoutChangeListener() {
-					@Override
-					public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight,
-							int oldBottom) {
-						//CMN.Log("onLayoutChange", expectedPos, sv.getScrollY());
-						//CMN.Log("onLayoutChange", a.WHP.touchFlag.first, scrolled, bottom - top >= expectedPos + sv.getMeasuredHeight());
-						//CMN.Log("onLayoutChange", bottom - top , expectedPos + sv.getMeasuredHeight());
-						if (WHP.touchFlag.first) {
-							main_progress_bar.setVisibility(View.GONE);
-							v.removeOnLayoutChangeListener(this);
-							return;
-						}
-						//if(expectedPos==0) return;
-						int HGEIGHT = bottom - top;
-						if (HGEIGHT < recom.LHGEIGHT)
-							recom.scrolled = false;
-						recom.LHGEIGHT = HGEIGHT;
-						if(recom.scrollTarget!=null)
-							recom.expectedPos=recom.scrollTarget.getTop();
-						ScrollViewmy sv = WHP;
-						if (!recom.scrolled) {
-							if (HGEIGHT >= recom.expectedPos + sv.getMeasuredHeight()) {
-								sv.scrollTo(0, recom.expectedPos);//smooth
-								//CMN.Log("onLayoutChange scrolled", expectedPos, sv.getMeasuredHeight());
-								if (sv.getScrollY() == recom.expectedPos) {
-									main_progress_bar.setVisibility(View.GONE);
-									recom.scrolled = true;
-								}
-							}
-						}
-					}
-				};
-			}
-			
-			recom.LHGEIGHT=0;
-			webholder.removeOnLayoutChangeListener(OLCL);
-			if(!recom.toHighLight){
-				ViewUtils.addOnLayoutChangeListener(webholder, OLCL);
-				if(main_progress_bar!=null)
-					main_progress_bar.setVisibility(recom.expectedPos==0?View.GONE:View.VISIBLE);
-				recom.scrolled=false;
-			}
-			PageSlider.setIBC(null, weblistHandler);
-		}
-		
-		public void NotifyScrollingTo(resultRecorderCombined recom) {
-			WHP.touchFlag.first=false;
-			recom.LHGEIGHT=WHP.getHeight();
-			webholder.removeOnLayoutChangeListener(OLCL); // todo save this step ???
-			ViewUtils.addOnLayoutChangeListener(webholder, OLCL);
-		}
-		
-		public void initWebHolderScrollChanged() {
-			if(mBar.getVisibility()==View.VISIBLE){
-				if(onWebHolderScrollChanged==null){
-					WHP.scrollbar2guard=mBar;
-					WHP.setScrollViewListener(onWebHolderScrollChanged=(v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
-						if(mBar.isHidden()){
-							if(Math.abs(oldScrollY-scrollY)>=10*dm.density)
-								mBar.fadeIn();
-						}
-						if(!mBar.isHidden()){
-							if(!mBar.isWebHeld)
-								mBar.hiJackScrollFinishedFadeOut();
-							if(!mBar.isDragging){
-								mBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
-								mBar.setProgress(WHP.getScrollY());
-							}
-						}
-					});
-				}
-				mBar.fadeOut();
-			}
-			mBar.setDelimiter("|||", WHP);
-		}
-		
-		public WebViewmy initMergedFrame() {
-			if(mMergedFrame==null) {
-				try {
-					mMergedBook = new BookPresenter(new File("empty"), null, 1, null);
-				} catch (IOException ignored) { }
-				WHP1 = new FrameLayout(MainActivityUIBase.this);
-				mMergedBook.initViewsHolder(MainActivityUIBase.this);
-				mMergedFrame = mMergedBook.mWebView;
-				mMergedFrame.setWebViewClient(myWebClient);
-				mMergedFrame.setWebChromeClient(myWebCClient);
-				mMergedFrame.setOnScrollChangedListener(null);
-			}
-			if(WHP1.getParent()==null) {
-				ViewUtils.replaceView(WHP1, WHP);
-			}
-			webholder.getLayoutParams().height = MATCH_PARENT;
-			ViewUtils.addViewToParent(webholder, WHP1);
-			ViewUtils.addViewToParent(mMergedBook.rl, webholder);
-			if(webholder.getChildCount()>1)
-				for (int i = webholder.getChildCount()-1; i>=0; i--)
-					if(webholder.getChildAt(i)!=mMergedFrame)
-						webholder.removeViewAt(i);
-			mMergedFrame.getLayoutParams().height = MATCH_PARENT;
-			mMergedBook.rl.getLayoutParams().height = MATCH_PARENT;
-			mMergedBook.toolbar.setVisibility(View.GONE);
-			return mMergedFrame;
-		}
-	}
-	
 	public ViewGroup webSingleholder;
 	protected WindowManager wm;
 
@@ -992,7 +749,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	ArrayList<Long> IndexingBooks = new ArrayList();
-	WeakReference<BuildIndexInterface> buildIndexPane = CMN.EmptyRef;
+	WeakReference<BuildIndexInterface> buildIndexPane = EmptyRef;
 	
 	protected void showBuildIndexInterface(boolean showBuildIndex) {
 		BuildIndexInterface buildIndex = buildIndexPane.get();
@@ -2388,7 +2145,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		boolean vsi = false;
 		int gt = 0;
 		int type = mWebView!=null?0:2;
-		if(this instanceof FloatSearchActivity)
+		if(thisActType==ActType.FloatSearch)
 			type+=4;
 		switch (opt.getTypeFlag_11_AtQF(type)){
 			case 0:
@@ -2407,6 +2164,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(mBar.getVisibility()!=vis)
 			mBar.setVisibility(vis);
+		//mBar.handleThumb.getBackground().setColorFilter(MainAppBackground, PorterDuff.Mode.SRC_IN);
 		if(gt!=0 && mBar_layoutParmas.gravity!=gt){
 			mBar_layoutParmas.gravity=gt;
 			mBar.requestLayout();
@@ -3484,7 +3242,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 
-				if(fromPeruseView || !isCombinedSearching || (ActivedAdapter!=null && !(ActivedAdapter.combining_search_result instanceof resultRecorderCombined))) {
+				if(fromPeruseView
+						|| !isCombinedSearching
+						|| webview==weblistHandler.mMergedFrame
+						|| (ActivedAdapter!=null && !(ActivedAdapter.combining_search_result instanceof resultRecorderCombined))) {
 					if(_mBar.isHidden()){
 						if(Math.abs(oldy-y)>=10*dm.density)
 							_mBar.fadeIn();
@@ -6522,71 +6283,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					break;
 				}
 				if(weblistHandler.getChildCount()!=0) {
-					imm.hideSoftInputFromWindow(main.getWindowToken(),0);
-					int selectedPos=weblistHandler.getFirstVisblePos();
-					AlertDialog dTmp = new AlertDialog.Builder(this/*,R.style.DialogStyle*/)
-							.setTitle("跳转")
-					.setAdapter(new BaseAdapter() {
-						@Override public int getCount() { return weblistHandler.getChildCount(); }
-						
-						@Override public Object getItem(int position) { return null; }
-						
-						@Override public long getItemId(int position) { return 0; }
-						
-						@NonNull
-						@Override
-						public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-							FlowCheckedTextView ret;
-							if(convertView!=null){
-								ret = (FlowCheckedTextView) convertView;
-							} else {
-								ret = (FlowCheckedTextView) getLayoutInflater().inflate(R.layout.singlechoice_w, parent, false);
-								ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
-							}
-							
-							View ca = weblistHandler.getChildAt(position);
-							if (ca!=null && ca.getTag() instanceof WebViewmy) {
-								BookPresenter mdTmp = ((WebViewmy) ca.getTag()).presenter;
-								if (mdTmp!=null) {
-									FlowTextView tv = ret.mFlowTextView;
-									tv.setCompoundDrawables(getActiveStarDrawable(), null, null, null);
-									tv.setCover(mdTmp.getCover());
-									tv.setTextColor(GlobalOptions.isDark?Color.WHITE:Color.BLACK);
-									tv.setStarLevel(PDICMainAppOptions.getDFFStarLevel(mdTmp.getFirstFlag()));
-									
-									ret.setChecked(position == selectedPos);
-									
-									ret.setText(mdTmp.getDictionaryName());
-									return ret;
-								}
-							}
-							
-							ret.setText("Error!!!");
-							return ret;
-						}
-					}, (dialog, pos) -> {
-						View childAt = weblistHandler.getChildAt(pos);
-						if(childAt!=null) {
-							scrollToWebChild(childAt);
-							recCom.scrollTo(childAt, MainActivityUIBase.this);
-						}
-						dialog.dismiss();
-					}).create();
-					
-					dTmp.setCanceledOnTouchOutside(true);
-
-					dTmp.show();
-					
-					if(!GlobalOptions.isLarge) {
-						dTmp.getWindow().setLayout((int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor)), -2);
-					}
-					
-					if(GlobalOptions.isDark) {
-						dTmp.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-					}
-					//d.getWindow().getDecorView().setBackgroundResource(R.drawable.popup_shadow_l);
-					//d.getWindow().getDecorView().getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-					//d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
+					weblistHandler.showJumpListDialog();
 				}
 				else {
 					if(widget12.getTag(R.id.image)!=null){
@@ -6603,25 +6300,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 上下导航 */
 			case R.id.browser_widget13:
 			case R.id.browser_widget14:{
-				boolean nxt = id == R.id.browser_widget14;
-				final int currentHeight=weblistHandler.WHP.getScrollY();
-				int cc=weblistHandler.webholder.getChildCount();
-				int childAtIdx=cc;
-				int top;
-				for(int i=0;i<cc;i++) {
-					top = weblistHandler.webholder.getChildAt(i).getTop();
-					if(top>=currentHeight){
-						childAtIdx=i;
-						if(top!=currentHeight && !nxt) --childAtIdx;
-						break;
-					}
-				}
-				childAtIdx+=nxt?-1:1;
-				if(childAtIdx>=cc){
-					scrollToPagePosition(weblistHandler.webholder.getChildAt(cc-1).getBottom());
-				} else {
-					scrollToWebChild(weblistHandler.webholder.getChildAt(childAtIdx));
-				}
+				weblistHandler.scrollFrame(id != R.id.browser_widget14);
 			} break;
 			/* 自动浏览 */
 			case R.drawable.ic_autoplay:{
@@ -6760,7 +6439,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		DetachClickTranslator();
 	}
 	
-	private void scrollToWebChild(View childAt) {
+	void scrollToWebChild(View childAt) {
 		CMN.Log("scrollToWebChild");
 		if(childAt!=null) {
 			View postTarget = null;
@@ -6792,7 +6471,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			weblistHandler.WHP.scrollTo(0, childAt.getTop());
 	}
 
-	private void scrollToPagePosition(int offset) {
+	void scrollToPagePosition(int offset) {
 		if(PDICMainAppOptions.getScrollAnimation())
 			weblistHandler.WHP.smoothScrollTo(0, offset);
 		else
@@ -8813,22 +8492,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					mime = "text/css";
 				break;
 			}
+			key= mdict.requestPattern.matcher(key).replaceAll("");
+			
 			//检查后缀，js，ini,png,css,直接路径。
-			if(mime!=null && key.lastIndexOf(SepWindows)==0) {
-				try {
-					String resName = new File(url).getName();
-					suffixIdx = resName.indexOf("?");
-					if(suffixIdx>=0) resName = resName.substring(0, suffixIdx);
-					resName = URLDecoder.decode(resName, "UTF-8");
-					File plugResFile = new File(invoker.f().getParentFile(), resName);
-					//CMN.debug("外挂CSS/JS资源::", plugResFile, url, "$.getAbsolutePath()", "$.exists()");
-					if(plugResFile.exists()) return new WebResourceResponse(mime, "UTF-8", new AutoCloseInputStream(new FileInputStream(plugResFile)));
-				} catch (Exception ignored) { }
+			if(PDICMainAppOptions.getAllowPlugRes() && !PDICMainAppOptions.getAllowPlugResNone()) {
+				WebResourceResponse ret = getPlugRes(invoker, key);
+				if(ret!=null) return ret;
 			}
 
 			if(!invoker.bookImpl.hasMdd())
 				return null;
-			key= mdict.requestPattern.matcher(key).replaceAll("");
 			if(mWebView.fromCombined==0 && !mWebView.fromNet && invoker.getIsolateImages() && RegImg.matcher(key).find()){
 				//CMN.Log("Isolating Images...");
 				new_photo = key;
@@ -8839,6 +8512,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			try {
 				InputStream restmp=invoker.bookImpl.getResourceByKey(key);
 				if(restmp==null) {
+					if(PDICMainAppOptions.getAllowPlugRes() && PDICMainAppOptions.getAllowPlugResNone()) {
+						WebResourceResponse ret = getPlugRes(invoker, key);
+						if(ret!=null) return ret;
+					}
 					//CMN.Log("chrochro inter_ key is not find: ",key);
 					if(url.startsWith("http://")) {
 						URL uurrll = new URL(url);
@@ -8903,7 +8580,48 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return super.shouldInterceptRequest(view, url);
 			}
 		}
-
+		
+		private WebResourceResponse getPlugRes(BookPresenter presenter, String uri) {
+			try {
+				if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("\\")==0) {
+					int sid = uri.lastIndexOf(".");
+					if(sid>0 && sid<uri.length()-2) {
+						if(PDICMainAppOptions.getAllowPlugResSame()) {
+							String p = presenter.getPath();
+							String d = presenter.getDictionaryName();
+							int sep = p.lastIndexOf(File.separator, p.lastIndexOf(File.separator)-1)+1;
+							if(sep>0) {
+								if(p.regionMatches(true, sep, d, 0, Math.min(d.length(), 3))) {
+									//SU.Log("同名目录!");
+									p=null;
+								}
+							}
+							if(p!=null) {
+								return null;
+							}
+						}
+						SU.Log("文件", uri);
+						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
+						if(mid>=0) {
+							InputStream input = presenter.getDebuggingResource("/"+uri.substring(1));
+							if(input!=null) {
+								String MIME = mid==0?"application/x-javascript"
+										:mid==2?"text/css"
+										:mid>=5&&mid<18?"img/*"
+										:mid==18?"img/svg" //todo
+										:"*/*"
+										;
+								return new WebResourceResponse(MIME, "UTF-8", input);
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			return null;
+		}
+		
 		@Override
 		public void onReceivedSslError(WebView view, final SslErrorHandler mHandler, SslError error) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityUIBase.this);

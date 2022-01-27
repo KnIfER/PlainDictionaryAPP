@@ -260,6 +260,7 @@ public class  BU{//byteUtils
 		for (int numRead; (numRead = in.read(buffer, 0, buffer.length)) > 0; ) {
 			out.append(buffer, 0, numRead);
 		}
+		input.close();
 		return out.toString();
 	}
 	

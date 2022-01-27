@@ -227,7 +227,7 @@
       font-size: 16px;
       position: relative;
       top:0;
-      margin: 0 0 0 25px  ;
+      margin: 0 0 0 25px;
       padding:6px 0 6px 2px;
     }
     #seekbar_container {
@@ -514,6 +514,80 @@
 	.contents {
 	  
 	}
+		
+		/*箭头*/
+		.arrow {
+			position: relative;
+			display: block;
+			width: 80%;
+			height: 80%;
+			margin: 10% 0 0 10%;
+			padding: 0;
+			opacity: 0.25;
+			transition: opacity .3s;
+		}
+		.arrow:hover {
+			opacity: 1;
+		}
+		.arrow::before {
+			transform: translateX(-50%) translateY(-2%) rotate(-50deg);
+			transform-origin: 0 100%;
+			margin-top: 20%;
+		}
+		.arrow::after {
+			top: 50%;
+			transform: translateX(-50%) rotate(-130deg);
+			transform-origin: 0 0;
+			margin-top: 20%;
+		}
+		.arrow::before, .arrow::after {
+			content: " ";
+			position: absolute;
+			left: 52%;
+			width: 2px;
+			height: 50%;
+			background: #555555;
+			transition: transform .3s,background-color .3s;
+			backface-visibility: hidden;
+		}
+		.arrwp:hover .arrow::before {
+			background: #FF4081;
+			transform: translateX(-50%) rotate(-45deg);
+		}
+		.arrwp:hover .arrow::after {
+			background: #FF4081;
+			transform: translateX(-50%) translateY(2%) rotate(-135deg);
+		}
+		/*底盘*/
+		.arrwp {
+			--x : 50px;
+			position: fixed;
+			bottom: 10px;
+			right: 25px;
+			width:  calc(var(--x));
+			height: calc(var(--x));
+		}
+		.arrwp.prev {
+			bottom: calc(25px + var(--x));
+			transform: rotate(180deg);
+		}
+		.arrwp::before {
+			content: " ";
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			opacity: 0;
+			border-radius: 50%;
+			background: #fff;
+			transition: transform .3s,opacity .3s;
+			transform: scale(0.9);
+		}
+		.arrwp:hover::before {
+			opacity: 1;
+			transform: scale(1);
+		}
 	</style>
 
 	<script>
@@ -795,22 +869,27 @@
 			return displayingMultiSearch && MultiSearchResult!=undefined;
 		}
 
-		function reinitIframe3(){
+		function reinitIframe(){
 			for (var i=0,fx; fx=frames[i++];)
 			if(!fx.waiting && fx.item)
 			try{
-				fx = fx.item;
-				if(scrollExpandAll() && fx.scrollExpandAll){
-					/*let's take a step bold.  offsetHeight  clientHeight scrollHeight*/
-					var tbh=fx.contentWindow;
-					if(tbh) {
-						tbh = type_bold?(tbh.document.body.clientHeight+65):(tbh.document.body.scrollHeight);
-						fx.scrolling="no";
-						fx.height=tbh;
-					}
+				if(focusMode && fx!==currentFocus) {
+					continue;
 				} else {
-					fx.scrolling="yes";
-					fx.height = "100%";// iframes.length==1?:500;
+					fx = fx.item;
+					//debug('reinitIframe...', fx);
+					if(scrollExpandAll() && fx.scrollExpandAll){
+						/*let's take a step bold.  offsetHeight  clientHeight scrollHeight*/
+						var tbh=fx.contentWindow;
+						if(tbh) {
+							tbh = type_bold?(tbh.document.body.clientHeight+65):(tbh.document.body.scrollHeight);
+							fx.scrolling="no";
+							fx.height=tbh;
+						}
+					} else {
+						fx.scrolling="yes";
+						fx.height = "100%";// iframes.length==1?:500;
+					}
 				}
 				if(fx.tag) {
 					var e=fx.contentWindow.document.getElementsByName(fx.tag)[0], t=e?e.getBoundingClientRect().top:0;
@@ -823,9 +902,14 @@
 			}catch (e){debug(e)}
 		}
 
-		var tid=window.setInterval("reinitIframe3()", 200);
+		var tid=window.setInterval(reinitIframe, 200);
 
-		function JumpTag(f,t,u,e) {
+		function JumpUrlTag(f,t,u,e) {
+			var inf=f.dictInfo;
+			if(focusMode==2 && currentFocus!==f.dictInfo) {
+				inf.focusing=1;
+				inf.dictTitle.click();
+			}
 			f.u=u;
 			f.tag=t;
 			//f.height = "200%";
@@ -833,7 +917,20 @@
 			f.tc=2;
 			e.href=f.src;
 			//sclearInterval(tid);
-			debug("JumpTag::", f.frameAt, t, f.src);
+			debug("JumpTag::", f.frameAt, t, u, u.slice(0,u.length-t.length));
+		}
+
+		function JumpUrlFrame(f) {
+			debug("JumpTag::Frame::", f.frameAt, f.src);
+			var inf=f.dictInfo;
+			if(focusMode==2 && currentFocus!==f.dictInfo) {
+				inf.focusing=1;
+				inf.dictTitle.click();
+			} else {
+				f=inf.title.offsetTop;
+				if(f<defP.scrollTop)
+					defP.scrollTo(0, f);
+			}
 		}
 		
 		function p(e){//列表点击
@@ -879,11 +976,12 @@
 			return e;
 		}
 
-		function getFrame(inf, t) {
+		function getFrame(inf, title) {
 			var e;
-			if(!inf.item) {
+			if(!inf.item && !inf.waiting) {
 				e=document.createElement('iframe');
 				e.id=inf.id;
+				e.dictInfo=inf;
 				e.width="100%";
 				e.frameBorder=0;
 				e.className='contents';
@@ -891,118 +989,20 @@
 				inf.viewDirty=1;
 			}
 			e=inf.title;
-			if(t) {
+			if(title) {
 				if(!e) {
 					inf.title=e=craft('li', 'title');
 					e.onselectstart=function(){return false};
+					e.dictInfo=inf;
 					inf.cover = craft('img', 'dc', craft('td',0,e));
 					inf.cover.src = "/MdbR/cover.png";
 					inf.dictTitle = craft('span', 'dt', e);
-					inf.dictTitle.onclick=p3;
+					inf.dictTitle.onclick=onTitleClick;
 					inf.viewDirty=1;
 				}
-			} else if(e) {
-				e.remove();
 			}
 			if(inf.viewDirty)handleViewDirty(inf);
 			return inf.item;
-		}
-		
-		/** 排列多页面内容。
-		 * 新格式： 词条名称\r-d词典ID_0_1_2-d词典ID_0_1_2...
-		 * 旧格式：Multi result format : entry1 \r 0@1@2 & 1@1@2 & 5@1024 \n entry2...
-			where 0@1@2 means contents at position entry#( 1 and 2 ) of dict#( 0 ) */
-		function processContents(e, hasId, proc){
-			var sep=e.indexOf('\r');
-			if(sep) e=e.slice(sep+1);
-			var arr = e.split("-");
-			debug("processContents::", e, arr);
-			var childs = defP.childNodes, ln = childs?childs.length:0;
-			for (var i = 0; i < ln; i++) {
-				childs[i].rendering=0;
-			}
-			var pool=hasId?dictsInfo:dictsGroup;
-			frames.length=0;
-			var infoReq;
-			var lazyLoad=false;
-			for (var i = 0; i < arr.length; i++) {
-				var pid=arr[i];
-				pid = pid.slice(0, pid.indexOf('_'));
-				var inf=pool[pid];
-				/* 动态添加 */ 
-				if(!inf) { 
-					inf={}; 
-					pool[pid]=inf; 
-					if(hasId) inf.id=pid;
-				}
-				if(!proc) {
-					if(!inf.name) {
-						if(!infoReq) infoReq=pid;
-						else infoReq += ','+pid;
-					}
-					if(infoReq) {
-						continue;
-					}
-				}
-				var fx = getFrame(inf, true);
-				fx.frameAt=i;
-				fx.height=100;
-				fx.scrollExpandAll=true;
-				
-				/* 不移不改，缺一不可 */
-				if(!fx.parentNode || !inf.title.parentNode){
-					defP.appendChild(inf.title);
-					if(!lazyLoad) {
-						defP.appendChild(fx);
-					}
-				}
-				fx.rendering=true;
-				inf.title.rendering=true;
-				e=arr[i];
-				if(inf.VI){
-					e=e.substring(0, e.indexOf(":"));
-				}
-				if(fx.innerHTML!=e){
-					fx.innerHTML=e;
-					/* \content\d5_abc */ 
-					if(lazyLoad) {
-						fx.style.height='10px';
-						fx.waiting=true;
-					} else {
-						fx.src="\\content\\"+e;
-						fx.waiting=false;
-					}
-				}
-				frames.push(inf);
-			}
-			if(infoReq) {
-				checkDicts(infoReq, function(){processContents(e, hasId, true)});
-			} else {
-				childs = defP.childNodes; ln = childs?childs.length:0;
-				for (var i = ln-1; i >=0 ; i--)
-					if(!childs[i].rendering)
-						defP.removeChild(childs[i]);
-				defP.style.overflowY = 'scroll';
-				// if(true) {
-				// 	debug('requestAnimationFrame::1');
-				// 	var cc=0;
-				// 	function expand(){
-				// 		var fx=frames[cc];
-				// 		//debug('expand::', cc, fx, fx.waiting, fx.innerHTML, inf.title.nextSibling)
-				// 		if(fx && fx.waiting) {
-				// 			fx.src = "\\content\\"+fx.innerHTML;
-				// 			fx.waiting = false;
-				// 		}
-				// 		if(!fx.parentNode && inf.title.parentNode){
-				// 			defP.insertBefore(fx, inf.title.nextSibling);
-				// 		}
-				// 		if(cc++<frames.length) 
-				// 			requestAnimationFrame(expand);
-				// 	}
-				// 	requestAnimationFrame(expand);
-				// 	debug('requestAnimationFrame::');
-				// }
-			}
 		}
 
 		function processContent(e, inf){
@@ -1010,6 +1010,9 @@
 			if(!inf) return;
 			frames.length=0;
 			var fx = getFrame(inf);
+			if(inf.title) {
+				inf.title.remove();
+			}
 			fx.frameAt=0;
 			fx.height="100%";
 			fx.scrollExpandAll=0;
@@ -1021,11 +1024,8 @@
 			}
 			// 不移不改，缺一不可
 			if(!fx.parentNode)defP.appendChild(fx);
-			if(fx.innerHTML!=e){
-				fx.innerHTML=e;
-				fx.src="\\content\\"+fx.innerHTML+(inf.VI?(":"+LP):"");
-			}
-			else if(inf.VI){
+			checkUrl(inf);
+			if(inf.VI){
 				//console.log("VIVIVI");
 				//var fv=arr[1];
 				//item.contentWindow._onloadchecks=[];
@@ -1045,6 +1045,341 @@
 				checkDicts(inf.id);
 			}
 			defP.style.overflowY = 'hidden';
+		}
+
+		/** 排列多页面内容。
+		 * 新格式： 词条名称\r-d词典ID_0_1_2-d词典ID_0_1_2...
+		 * 旧格式：Multi result format : entry1 \r 0@1@2 & 1@1@2 & 5@1024 \n entry2...
+			where 0@1@2 means contents at position entry#( 1 and 2 ) of dict#( 0 ) */
+		function processContents(e, hasId, proc){
+			var sep=e.indexOf('\r');
+			if(sep) e=e.slice(sep+1);
+			var arr = e.split("-");
+			debug("processContents::", e, arr);
+			var childs = defP.childNodes, ln = childs?childs.length:0;
+			for (var i = 0; i < ln; i++) {
+				childs[i].rendering=0;
+			}
+			var pool=hasId?dictsInfo:dictsGroup;
+			frames.length=0;
+			var infoReq;
+			for (var i = 0; i < arr.length; i++) {
+				var pid=arr[i];
+				pid = pid.slice(0, pid.indexOf('_'));
+				var inf=pool[pid];
+				/* 动态添加 */ 
+				if(!inf) { 
+					inf={}; 
+					pool[pid]=inf; 
+					if(hasId) inf.id=pid;
+				}
+				if(!proc) {
+					if(!inf.name) {
+						if(!infoReq) infoReq=pid;
+						else infoReq += ','+pid;
+					}
+					if(infoReq) {
+						continue;
+					}
+				}
+				e=arr[i];
+				if(inf.VI){
+					e=e.substring(0, e.indexOf(":"));
+				}
+				//e="\\content\\"+e;
+				/* \content\d5_abc */ 
+				inf.waiting = delay && i>lazyLoadMin;
+				var fx = getFrame(inf, true);
+				inf.title.rendering=true;
+				inf.src = e;
+				if(fx) { //todo
+					var h=100;
+					if(focusMode && fx!==currentFocus) {
+						if(focusMode==1) {
+							h=0;
+							fx.style.display='none';
+						} else {
+							h=200;
+						}
+					}
+					fx.height=h;
+					fx.scrollExpandAll=true;
+					/* 不移不改，缺一不可 */
+					if(!fx.parentNode || !inf.title.parentNode){
+						defP.appendChild(inf.title);
+						defP.appendChild(fx);
+					}
+					fx.rendering=true;
+					if(h!=0) 
+						checkUrl(inf);
+				} else {
+					if(!inf.title.parentNode){
+						defP.appendChild(inf.title);
+					}
+				}
+			}
+			if(infoReq) {
+				checkDicts(infoReq, function(){processContents(e, hasId, true)});
+			} else {
+				childs = defP.childNodes; ln = childs?childs.length:0;
+				for (var i=0,f;f=childs[i]; i++) {
+					if(!f.rendering) {
+						defP.removeChild(f);
+						i--;
+					}
+					else if(f.tagName==='LI') {
+						f.dictInfo.frameAt=frames.length;
+						frames.push(f.dictInfo);
+					}
+				}
+				defP.style.overflowY = 'scroll';
+				if(delay) {
+					dec=frames.length;
+					startLazyLoadFrames(0);
+				}
+			}
+		}
+
+		var delay=true, lazyLoadMin=1, layzLoadMax=1.5;
+		var dex, dec, des, expanding;
+		var focusMode=2; // 1=折叠其他；2=限制其他视图的高度；
+		var currentFocus;
+
+		var firstVisFrame, lastVisFrame;
+		function onWebListScroll(e){//滚动
+			if(expanding) return;
+			var currentHeight=Math.ceil(defP.scrollTop);
+			debug('onWebListScroll st', firstVisFrame, lastVisFrame);
+			var reCalc;
+			if(!withinFrame(currentHeight, firstVisFrame) || (firstVisFrame!=lastVisFrame) && !withinFrame(currentHeight+defP.offsetHeight, lastVisFrame)) {
+				firstVisFrame=lastVisFrame=0;
+				var des=0;
+				for (var i=0,fx; fx=frames[i++];) {
+					if(!firstVisFrame) {
+						if(withinFrame(currentHeight, fx))
+							firstVisFrame = fx;
+					}
+					else {
+						if(!lastVisFrame) {
+							if(withinFrame(currentHeight+defP.offsetHeight, fx))
+								lastVisFrame = fx;
+						}
+						else break;
+					}
+					if(firstVisFrame && des==0 && fx.waiting) {
+						//debug('nxt...', fx);
+						des=fx.frameAt;
+					}
+					//...
+				}
+				if(des>0) {
+					startLazyLoadFrames(des);
+				}
+				debug('onWebListScroll ed', des, firstVisFrame, lastVisFrame);
+			}
+		}
+	
+		function withinFrame(p,f) {
+			if(f) {
+				//p-=f.title.offsetTop;
+				return p>=f.title.offsetTop && p<f.title.offsetTop+calcFrameHeight(f);
+			}
+			return false;
+		}
+	
+		function withoutFrame(f) {
+			if(f) {
+				var p = Math.ceil(defP.scrollTop);
+				//p-=f.title.offsetTop;
+				return f.title.offsetTop>=p+defP.offsetHeight || f.title.offsetTop+calcFrameHeight(f)<=p;
+			}
+			return true;
+		}
+
+		function startLazyLoadFrames(e) {
+			if(focusMode!=1) {
+				expanding = true;
+				debug('startLazyLoadFrames',e);
+				des=dex=e;
+				delayExpandTimed();
+			}
+		}
+
+		var det;
+		function delayExpandTimed(){
+			if(expanding) 
+			{
+				if(dex>=des+5) {
+					clearTimeout(det); det = setTimeout(delayExpand, 250);
+				} else {
+					requestAnimationFrame(delayExpand);
+					//clearTimeout(det); det = setTimeout(delayExpand, 250);
+				}
+			}
+		}
+
+		function delayExpandAnimated(){
+			requestAnimationFrame(delayExpand);
+		}
+
+		function delayExpand(){
+			var inf=frames[dex];
+			debug('lazyLoading...', dex, inf, inf&&inf.waiting);
+			if(inf) {
+				if(layzLoadMax>0 && inf.title.offsetTop>=defP.scrollTop+layzLoadMax*defP.offsetHeight) {
+					expanding=false;
+					return;
+				}
+				if(!inf.waiting && inf.title.offsetTop>=defP.scrollTop+5*defP.offsetHeight) {
+					expanding=false;
+					return;
+				}
+				checkFrame(inf);
+				delayExpandTimed();
+			} else {
+				expanding=false;
+			}
+			dex++; dec--;
+		}
+		function calcFrameHeight(fx) {
+			var h=0;
+			if(fx.title)h+=fx.title.offsetHeight;
+			if(fx.item)h+=parseInt(fx.item.height);
+			return h;
+		}
+
+		function checkFrame(e) {
+			if(e.waiting) {
+				var h=10;
+				if(focusMode && e!==currentFocus) {
+					if(focusMode==1) {
+						return;
+					} else {
+						h=200;
+					}
+				}
+				//debug('expand::', dex)
+				e.waiting = false;
+				var fx=getFrame(e);
+				fx.scrollExpandAll=true;
+				fx.height=h;
+				checkUrl(e);
+				if(e.title.parentNode){
+					defP.insertBefore(fx, e.title.nextSibling);
+				}
+			}
+			//if(e.fold) {
+			//	e.fold = false;
+			//	fx.height=10;
+			//}
+		}
+
+		function checkUrl(e) {
+			var fx=e.item,u=e.src;
+			if(fx.innerHTML!=u) {
+				fx.src = "\\content\\"+u;
+				fx.innerHTML = u;
+			}
+		}
+		
+		function scrollToFrame(id,pos) {
+			var scrollingTo;
+			function doScroll(fx) {
+				fx = fx||scrollingTo;
+				//debug('scrollToFrame'+fx.name);
+				//defP.scrollTop=fx.title.offsetTop+10;
+				fx.title.scrollIntoView(true);
+				startLazyLoadFrames(fx.frameAt);
+				expanding=true;
+				// defP.scrollTo({
+				// 	top: fx.title.offsetTop
+				// 	//,behavior: 'smooth'
+				// });
+			}
+			for(var i=0,fx;fx=frames[i];i++) {
+				if(fx.id===id) {
+					checkFrame(fx);
+					if(fx.item.style.display=='none') {
+						fx.item.style.display='block';
+					}
+					var wait=fx.waiting;
+					if(fx.title.offsetTop+defP.offsetHeight+fx.title.offsetHeight>=defP.scrollHeight) {
+						wait=1;
+					} else {
+						wait=2;
+					}
+					debug('wait scrollToFrame '+wait);
+					debug('wait ... ',fx.title.offsetTop+defP.offsetHeight, defP.scrollHeight);
+					if(wait) {
+						scrollingTo=fx;
+						expanding=false;
+						setTimeout(doScroll, wait==2?200:350);//todo 200s 不行
+					} else {
+						doScroll(fx);
+					}
+					break;
+				}
+			}
+		}
+
+		function currentFrame(e) {
+			var lx=frames[e];
+			var t=Math.ceil(defP.scrollTop),m=t+defP.offsetHeight/2,e=t+defP.offsetHeight;
+			if(lx && (lx==currentFocus
+				||withinFrame(m, lx) 
+				||(!withoutFrame(lx) && (e>=defP.scrollHeight+2 || lx.selTop==lx.title.offsetTop)) )) 
+				return 0; //keep
+			var i=0,fx,ff,h;
+			for(;fx=frames[i];i++) {
+				h=fx.title.offsetTop;
+				if(!ff) {
+					if(h+calcFrameHeight(fx)>t) ff = fx;
+				} else if(h>=e) break;
+				if(withinFrame(m, fx)) {
+					ff = fx;
+					debug('mddle', ff.name);
+					break;
+				}
+			}
+			if(ff) {
+				ff.selTop=ff.title.offsetTop
+				return ff.id+'-'+ff.frameAt;
+			}
+			return 0;
+		}
+
+		function scrollFrame(nxt) {
+			var currentHeight=Math.ceil(defP.scrollTop);
+			var cc=frames.length,childAtIdx=cc;
+			var i=0,fx;
+			for(;fx=frames[i];i++) {
+				var top=fx.title.offsetTop;
+				if(top>=currentHeight){
+					childAtIdx=(nxt && top!=currentHeight)?i-1:i;
+					break;
+				}
+			}
+			childAtIdx+=nxt?1:-1;
+			//debug('scrollFrame childAtIdx', childAtIdx, currentHeight, frames[i].title.offsetTop);
+			if(childAtIdx>=cc){
+				defP.scrollTo({
+					top: defP.scrollHeight-defP.offsetHeight,
+					behavior: 'smooth'
+				});
+			} else {
+				var fx=frames[childAtIdx];
+				defP.scrollTo({
+					top: fx?fx.title.offsetTop:0
+					//,behavior: 'smooth'
+				});
+				checkFrame(fx);
+				if(focusMode) {
+					fx.focusing=true;
+					fx.dictTitle.click();
+				} else if(fx.item && fx.item.style.display==='none') {
+					fx.item.style.display='block';
+				}
+			}
 		}
 
 		function whiterRgb(c, a){
@@ -1068,6 +1403,15 @@
 				// 	inf.item.src = inf.sch.replace('%s', args.q);
 				// 	inf.item.style.height = defP.offsetHeight;
 				// }
+			}
+			if(inf.item) {
+				inf._bg|=0;
+				if(inf.bg) {
+					inf.item.style.background='#'+inf.bg;
+					inf._bg|=0x1;
+				} else if(inf._bg&0x1) {
+					inf.item.style.background='unset';
+				}
 			}
 			if(inf.title) {
 				inf._tbg|=0;
@@ -1159,14 +1503,51 @@
 			//e.target.background("#0000ff");
 		}
 	
-		function p3(e){//折叠内容
-			var framei=e instanceof HTMLIFrameElement?e:e.srcElement.parentNode.nextSibling;
-			if(framei instanceof HTMLIFrameElement){
-				framei.style.display=framei.style.display!='none'?'none':'block';
-				e.preventDefault();
+		function onTitleClick(e){//折叠内容
+			var inf = e.srcElement.parentNode.dictInfo;
+			var lx=currentFocus;
+			if(focusMode && lx && lx!==inf && lx.item) {
+				if(focusMode==1) {
+					lx.item.style.display='none';
+				} else {
+					lx.item.height=200;
+				}
 			}
+			var fx=inf.item;
+			var hide=false;
+			if(currentFocus!=inf) {
+				currentFocus=inf;
+			} else if(!inf.focusing){
+				if(fx)fx.height=200;
+				currentFocus=0;
+				hide=true;
+			}
+			checkFrame(inf);
+			if(fx) {
+				if(fx.style.display!='none') {
+					if(!inf.focusing && focusMode!=2) {
+						fx.style.display='none';
+						hide=true;
+					}
+				} else {
+					fx.style.display='block';
+				}
+				if(!hide) {
+					checkUrl(inf);
+				}
+			}
+			if(inf.focusing) {
+				inf.focusing=false;
+			}
+			if(focusMode && !hide) {
+				defP.scrollTo({
+					top: inf.title.offsetTop
+					//,behavior: 'smooth'
+				});
+			}
+			e.preventDefault();
 		}
-	
+
 		function Initialize() {
 			merge = location.pathname==='/MERGE.jsp';
 			defP = ge("defP");
@@ -1296,6 +1677,8 @@
 			// 扫描设置
 			setup();
 			ScanInDicts();
+			defP.onscroll=onWebListScroll;
+
 		}
 	
 		var postInit = function(){
@@ -1575,6 +1958,7 @@
 		// 直接根据URL摆放内容页面
 		function restorePages() {
 			args=parseArgs();
+			debug('args=',args);
 			/**/if(!merge) {
 				if(args.FL) flag = parseInt(args.FL)||0;
 				if(args.DX) currentDict = parseInt(args.DX)||0;
@@ -2073,7 +2457,7 @@
 	</script>
 	
 	
-	<title>123平典搜索 · MDict Browser</title>
+	<title>平典搜索 · MDict Browser</title>
 
 </head>
 <!--一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一-->
@@ -2096,6 +2480,9 @@
 		<div class='def' id='def'></div>
 		<!--iframe name="frame1" src="/content/x/0"></iframe-->
 	</div>
+	<a class="arrwp prev" id="forward"  onclick="scrollFrame();"><p class="arrow"/></p></a>
+	<a class="arrwp next" id="recess" onclick="scrollFrame(1);"><p class="arrow"/></p></a> 
+
 	<div id="toastview">
 		<div id="toasttext"></div>
 	</div>
@@ -2174,6 +2561,7 @@
 	<div onclick="reloadDict()">重新加载词典</div>
 	<div onclick="openFolder()">打开所在文件夹</div>
 </div>
+
 
 
 </body>

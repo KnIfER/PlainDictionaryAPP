@@ -52,6 +52,7 @@ import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.AutoCloseInputStream;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
@@ -920,11 +921,14 @@ function debug(e){console.log(e)};
 		if(p!=null && p.exists()) {
 			StringBuilder buffer = getCleanDictionaryNameBuilder();
 			int bL = buffer.length();
+			File externalFile;
 			/* 外挂同名css */
-			File externalFile = new File(p, buffer.append(".css").toString());
-			if(externalFile.exists()) {
-				//todo 插入 同名 css 文件？
-				hasExtStyle = true;
+			if(PDICMainAppOptions.getAllowPlugCss()) {
+				externalFile = new File(p, buffer.append(".css").toString());
+				if(externalFile.exists()) {
+					//todo 插入 同名 css 文件？
+					hasExtStyle = true;
+				}
 			}
 			buffer.setLength(bL);
 			externalFile = new File(p, buffer.append(".png").toString());
@@ -1299,11 +1303,33 @@ function debug(e){console.log(e)};
 		json.put("id", "d"+IU.NumberToText_SIXTWO_LE(getId(), null));
 		json.put("tbg", SU.toHexRGB(getTitleBackground()));
 		json.put("tfg", SU.toHexRGB(getTitleForeground()));
+		json.put("bg", getUseInternalBG()?SU.toHexRGB(getContentBackground()):null);
 		PlainWeb webx = getWebx();
 		if(webx!=null) {
 			json.put("sch", webx.getSearchUrl());
 		}
 		return json;
+	}
+	
+	public static ConcurrentHashMap<String, Integer> debuggingSlots;
+	
+	public InputStream getDebuggingResource(String uri) throws IOException {
+		if(debuggingSlots==null) {
+			debuggingSlots=new ConcurrentHashMap<>(32);
+		}
+		Integer val = debuggingSlots.get(uri);
+		if(val!=null || debuggingSlots.size()<24)
+		{
+			String p=getPath();
+			File candi = new File(p.substring(0, p.lastIndexOf(File.separator))+uri);
+			if(val==null) {
+				debuggingSlots.put(uri, val=candi.exists()?1:0);
+			}
+			if(val==1) {
+				return new AutoCloseInputStream(new FileInputStream(candi));
+			}
+		}
+		return null;
 	}
 	
 	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {
@@ -2120,7 +2146,7 @@ function debug(e){console.log(e)};
 		StringBuilder sb = bookImpl.AcquireStringBuffer(512);
 		sb.append(htmlBase);
 		sb.append(js);
-		if(hasExtStyle) {
+		if(hasExtStyle && PDICMainAppOptions.getAllowPlugCss()) {
 			//CMN.Log("外挂同名 css");
 			String fullFileName = bookImpl.getDictionaryName();
 			int end = fullFileName.length();
@@ -3834,6 +3860,9 @@ function debug(e){console.log(e)};
 
 	public void Reload(Object context) {
 		bookImpl.Reload(context);
+		if(debuggingSlots!=null) {
+			debuggingSlots.clear();
+		}
 		if(mWebView!=null) {
 			if(opt.getReloadWebView()) {
 				ViewGroup rl = this.rl;

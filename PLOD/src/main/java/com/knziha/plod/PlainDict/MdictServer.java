@@ -16,6 +16,7 @@
 */
 package com.knziha.plod.plaindict;
 
+import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 
 import android.content.Context;
@@ -23,12 +24,12 @@ import android.webkit.WebResourceRequest;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdBase;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.rbtree.RBTree_additive;
 import com.knziha.rbtree.additiveMyCpr1;
 
@@ -47,7 +48,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -110,7 +110,8 @@ public abstract class MdictServer extends NanoHTTPD {
 				if(uri.contains(".css")) mime = "text/css";
 				if(uri.contains(".js")) mime = "text/js";
 				try {
-					return newFixedLengthResponse(Status.OK,mime,  candi, candi.available());
+					return newChunkedResponse(Status.OK,mime,  candi);
+					//return newFixedLengthResponse(Status.OK,mime,  candi, candi.available());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -236,26 +237,6 @@ public abstract class MdictServer extends NanoHTTPD {
 				e.printStackTrace();
 			}
 			return emptyResponse;
-		}
-		
-		
-		try {
-			if(uri.toLowerCase().endsWith(".js")) {
-				//SU.Log("candi",uri);
-				File candi = new File(new File(presenter.getPath()).getParentFile(),new File(uri).getName());
-				if(candi.exists())
-					return newFixedLengthResponse(Status.OK,"application/x-javascript",  new FileInputStream(candi), candi.length());
-				
-			}
-			else if(uri.toLowerCase().endsWith(".css")) {
-				File candi = new File(new File(presenter.getPath()).getParentFile(),new File(uri).getName());
-				SU.Log("candi_css",uri,candi.getAbsolutePath(), candi.exists());
-				if(candi.exists()) {
-					return newFixedLengthResponse(Status.OK,"text/css",  new FileInputStream(candi), candi.length());
-				}
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		}
 		
 		if(key.equals("\\settings.json")) {
@@ -407,12 +388,21 @@ public abstract class MdictServer extends NanoHTTPD {
 			return newFixedLengthResponse(constructMdPage(presenter,"<div>ERROR FETCHING CONTENT:"+uri+"</div>", true));
 		}
 		
+		if(PDICMainAppOptions.getAllowPlugRes() && !PDICMainAppOptions.getAllowPlugResNone()) {
+			Response ret=getPlugRes(presenter, uri);
+			if(ret!=null) return ret;
+		}
+		
 		key = mdict.requestPattern.matcher(key).replaceAll("");
 		//BookPresenter mdTmp = md_get(adapter_idx_);
 		InputStream restmp = presenter.bookImpl.getResourceByKey(key);
 		//SU.Log("-----> /dictionary/", presenter.bookImpl.getDictionaryName(), key, restmp==null?-1:restmp.available());
 		
 		if(restmp==null){
+			if(PDICMainAppOptions.getAllowPlugRes() && PDICMainAppOptions.getAllowPlugResNone()) {
+				Response ret=getPlugRes(presenter, uri);
+				if(ret!=null) return ret;
+			}
 			return emptyResponse;
 		}
 		
@@ -456,6 +446,47 @@ public abstract class MdictServer extends NanoHTTPD {
 		}
 		
 		return newFixedLengthResponse(Status.OK,"*/*", restmp, restmp.available());
+	}
+	
+	private Response getPlugRes(BookPresenter presenter, String uri) {
+		try {
+			if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("/")==0) {
+				int sid = uri.lastIndexOf(".");
+				if(sid>0 && sid<uri.length()-2) {
+					if(PDICMainAppOptions.getAllowPlugResSame()) {
+						String p = presenter.getPath();
+						String d = presenter.getDictionaryName();
+						int sep = p.lastIndexOf(File.separator, p.lastIndexOf(File.separator)-1)+1;
+						if(sep>0) {
+							if(p.regionMatches(true, sep, d, 0, Math.min(d.length(), 3))) {
+								//SU.Log("同名目录!");
+								p=null;
+							}
+						}
+						if(p!=null) {
+							return null;
+						}
+					}
+					SU.Log("文件", uri);
+					int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
+					if(mid>=0) {
+						InputStream input = presenter.getDebuggingResource(uri);
+						if(input!=null) {
+							String MIME = mid==0?"application/x-javascript"
+									:mid==2?"text/css"
+									:mid>=5&&mid<18?"img/*"
+									:mid==18?"img/svg" //todo
+									:"*/*"
+									;
+							return newChunkedResponse(Status.OK,MIME, input);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			SU.Log(e);
+		}
+		return null;
 	}
 	
 	public JSONObject getSettings() {
@@ -790,9 +821,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			try {
 				SU.Log("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
 				InputStream fin = OpenMdbResourceByName("\\mdict_browser.html");
-				byte[] data = new byte[fin.available()];
-				fin.read(data);
-				baseHtml = new String(data);
+				baseHtml = BU.StreamToString(fin);
 				fin.close();
 			} catch (IOException e) {
 				e.printStackTrace();

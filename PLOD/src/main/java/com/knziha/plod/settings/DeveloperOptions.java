@@ -83,6 +83,11 @@ public class DeveloperOptions extends SettingsFragmentBase implements Preference
 		init_switch_preference(this, "cache_mp3", PDICMainAppOptions.getCacheSoundResInAdvance(), null, null);
 		init_switch_preference(this, "notify", PDICMainAppOptions.getNotificationEnabled(), null, null);
 		
+		init_switch_preference(this, "plugCss", PDICMainAppOptions.getAllowPlugCss(), null, null);
+		init_switch_preference(this, "plugRes", PDICMainAppOptions.getAllowPlugRes(), null, null);
+		init_switch_preference(this, "plugResNone", PDICMainAppOptions.getAllowPlugResNone(), null, null);
+		init_switch_preference(this, "plugResSame", PDICMainAppOptions.getAllowPlugResSame(), null, null);
+		
 		init_switch_preference(this, "dbv2", PDICMainAppOptions.getUseDatabaseV2(), null, null);
 		findPreference("dbv2_up").setOnPreferenceClickListener(this);
 	}
@@ -196,6 +201,20 @@ public class DeveloperOptions extends SettingsFragmentBase implements Preference
 				}
 			}
 			return true;
+			
+			case "plugCss":
+				PDICMainAppOptions.setAllowPlugCss((Boolean) newValue);
+			return true;
+			case "plugRes":
+				PDICMainAppOptions.setAllowPlugRes((Boolean) newValue);
+			return true;
+			case "plugResNone":
+				PDICMainAppOptions.setAllowPlugResNone((Boolean) newValue);
+			return true;
+			case "plugResSame":
+				PDICMainAppOptions.setAllowPlugResSame((Boolean) newValue);
+			return true;
+			
 			case "classical_sort":
 				PDICMainAppOptions.setClassicalKeycaseStrategy(mdict.bGlobalUseClassicalKeycase=(Boolean) newValue);
 			return true;

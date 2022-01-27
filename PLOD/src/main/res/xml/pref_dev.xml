@@ -69,12 +69,58 @@
 			android:key="keep_hide"
 			android:title="管理词典时保留禁用项"
 			android:persistent="false"
+			android:enabled="false"
 			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="plugCss"
+			android:title="允许加载同名css文件"
+			android:summary="初始化词典时检测一次"
+			android:persistent="false"
+			app:allowDividerAbove="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="plugRes"
+			android:title="允许检测同目录资源文件"
+			android:summary="仅支持一级目录，限制最大文件名长度为30，支持js/css/jpg/png/webp/svg/ico/ini后缀，同一词典至多加载20个不同的文件。"
+			android:persistent="false"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="plugResNone"
+			android:title="仅在资源不存在时，才检测同目录资源文件"
+			android:summary="避免所有符合条件的URL都触发文件检测"
+			android:persistent="false"
+			app:allowDividerBelow="true"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="plugResSame"
+			android:title="仅在父级目录与词典名称相似时，才检测同目录资源文件"
+			android:persistent="false"
+			/>
+
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="unpackRes"-->
+<!--			android:title="允许用 NAME.0.txt 指定资源文件目录"-->
+<!--			android:summary="用同目录同名称的文本文件，记录资源路径，无上述限制。"-->
+<!--			android:persistent="false"-->
+<!--			app:allowDividerBelow="true"-->
+<!--			/>-->
+
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="plugResMdx"-->
+<!--			android:title="仅为mdx格式的词典检测同目录资源文件"-->
+<!--			android:persistent="false"-->
+<!--			app:allowDividerBelow="true"-->
+<!--			/>-->
 
 		<com.knziha.plod.settings.WarnPreference
 			android:key="clear_cache1"
 			android:title="清理网页缓存（仅内存）"
 			android:persistent="false"
+			app:allowDividerAbove="true"
 			/>
 
 		<com.knziha.plod.settings.WarnPreference
@@ -93,6 +139,7 @@
 			android:key="clear_cache4"
 			android:title="清理SSL处理记录"
 			android:persistent="false"
+			app:allowDividerBelow="true"
 			/>
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference

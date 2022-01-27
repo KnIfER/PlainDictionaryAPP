@@ -167,7 +167,8 @@ public class Drawer extends Fragment implements
 				};
 				basicArrLen = basicArr.length-8;
 				FooterView.setVisibility(View.GONE);
-			} else {
+			}
+			else {
 				basicArr = new int[]{
 						R.string.fuzzyret1
 						, R.string.fullret

@@ -318,13 +318,15 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 	
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-		if(intent.hasExtra("exit")) {
-			stopMusic();
-			releaseWifiLock();
-		} else if(intent.hasExtra("realm")) {
-			setupDaemon(-1);
-		} else if(intent.hasExtra("close")) {
-			stopSelf();
+		if(intent!=null) {
+			if(intent.hasExtra("exit")) {
+				stopMusic();
+				releaseWifiLock();
+			} else if(intent.hasExtra("realm")) {
+				setupDaemon(-1);
+			} else if(intent.hasExtra("close")) {
+				stopSelf();
+			}
 		}
         return START_STICKY;
     }

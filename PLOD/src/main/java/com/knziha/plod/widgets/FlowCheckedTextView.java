@@ -2,9 +2,11 @@ package com.knziha.plod.widgets;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.CheckedTextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.R;
@@ -23,12 +25,38 @@ public class FlowCheckedTextView extends CheckedTextView {
 		super(context, attrs, defStyleAttr);
 		mFlowTextView = new FlowTextView(context, attrs, defStyleAttr);
 		mFlowTextView.pad_right = (int) (GlobalOptions.density*8);
-		mFlowTextView.setPadding(
-				(int) context.getResources().getDimension(R.dimen._18_)*2/3
-				,0
-				,getCheckMarkDrawable().getIntrinsicWidth()
-				,0);
+		if(getCheckMarkDrawable()!=null) {
+			mFlowTextView.setPadding(
+					(int) context.getResources().getDimension(R.dimen._18_)*2/3
+					,0
+					,getCheckMarkDrawable().getIntrinsicWidth()
+					,0);
+		}
 	}
+	
+//	@Override
+//	public void setCheckMarkDrawable(int resId) {
+//		super.setCheckMarkDrawable(resId);
+//		if(getCheckMarkDrawable()!=null) {
+//			mFlowTextView.setPadding(
+//					(int) getContext().getResources().getDimension(R.dimen._18_)*2/3
+//					,0
+//					,getCheckMarkDrawable().getIntrinsicWidth()
+//					,0);
+//		}
+//	}
+//
+//	@Override
+//	public void setCheckMarkDrawable(@Nullable Drawable d) {
+//		super.setCheckMarkDrawable(d);
+//		if(getCheckMarkDrawable()!=null) {
+//			mFlowTextView.setPadding(
+//					(int) getContext().getResources().getDimension(R.dimen._18_)*2/3
+//					,0
+//					,getCheckMarkDrawable().getIntrinsicWidth()
+//					,0);
+//		}
+//	}
 	
 	public void onDraw(Canvas canvas) {
 		super.onDraw(canvas);

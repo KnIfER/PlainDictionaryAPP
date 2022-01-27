@@ -1,10 +1,13 @@
 package com.knziha.plod.plaindict;
 
+import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
+
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.inputmethod.EditorInfo;
 
+import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.mdictRes_asset;
@@ -20,12 +23,17 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Mdict Server
@@ -148,6 +156,34 @@ public class MdictServerMobile extends MdictServer {
 	
 	@Override
 	protected InputStream OpenMdbResourceByName(String key) throws IOException {
+		if(true)
+		{
+			try {
+				CMN.Log("OpenMdbResourceByName   http://192.168.0.100:8080/base/3"+key.replace("\\", "/"));
+				HttpURLConnection urlConnection = (HttpURLConnection) new URL("http://192.168.0.100:8080/base/3"+key.replace("\\", "/")).openConnection();
+				if(urlConnection instanceof HttpsURLConnection) {
+					((HttpsURLConnection)urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
+				}
+				urlConnection.setRequestProperty("Accept-Charset", "utf-8");
+				urlConnection.setRequestProperty("connection", "Keep-Alive");
+				urlConnection.setRequestMethod("GET");
+				urlConnection.setConnectTimeout(500);
+				urlConnection.setUseCaches(true);
+				urlConnection.setDefaultUseCaches(true);
+				//if(host!=null) urlConnection.setRequestProperty("Host", host);
+				urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
+				urlConnection.connect();
+				InputStream input = urlConnection.getInputStream();
+//				String val = BU.StreamToString(input);
+//				//input = new AutoCloseNetStream(input, urlConnection);
+//				return new ByteArrayInputStream(val.getBytes(StandardCharsets.UTF_8));
+				CMN.Log("请求的是本机调试资源…");
+				return input;
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
+		}
+		
 		//if ("\\MdbR\\subpage.html".equals(key))
 		{
 			try {

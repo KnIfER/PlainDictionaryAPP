@@ -1719,7 +1719,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//tg
 		etSearch.setText("happy");
 		//showT(""+currentDictionary.QueryByKey("woodie", SearchType.Normal, false, 0));
-		TestHelper.wakeUpAndUnlock(this);
+//		TestHelper.wakeUpAndUnlock(this);
 		
 //		if (Build.MANUFACTURER.equalsIgnoreCase("samsung")) {
 //			Intent intent = new Intent();

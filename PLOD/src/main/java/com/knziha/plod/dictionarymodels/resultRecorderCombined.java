@@ -130,8 +130,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		ViewGroup webholder = a.weblistHandler;
 		long toFind;
 		View expTbView = null;
-		boolean bMergeFrames=true;
+		boolean bMergeFrames=a.weblistHandler.bMergeFrames;
 		StringBuilder mergedUrl = null;
+		a.weblistHandler.frames.clear();
 		for(int i=0;i<vals.size();i+=2){
 			valsTmp.clear();
 			toFind=vals.get(i);
@@ -144,6 +145,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			BookPresenter presenter = a.getBookById(toFind);
 			
 			if(presenter==a.EmptyBook) continue;
+			
+			a.weblistHandler.frames.add(toFind);
 			
 			if(!bMergeFrames) {
 				long[] p = new long[valsTmp.size()];
@@ -208,6 +211,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			WebViewmy mWebView = a.weblistHandler.initMergedFrame();
 			CMN.debug("mergedUrl::", mergedUrl);
 			mWebView.loadUrl(mergedUrl.toString());
+			a.RecalibrateWebScrollbar(mWebView);
 		}
 		else {
 			if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){

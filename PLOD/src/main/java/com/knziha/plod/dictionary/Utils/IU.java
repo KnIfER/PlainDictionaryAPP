@@ -66,66 +66,50 @@ the valueOf method.
     public static int parsint(Object o){
         return parsint(o,-1);
     }
-
-    public static int parsint(Object o, int val)
-{
+	
+	public static int parsint(Object o, int val)
+	{
     /*
 WARNING: This method may be invoked early during VM initialization
 before IntegerCache is initialized. Care must be taken to not use
 the valueOf method.
      */
-	String s = String.valueOf(o);
-    if (s == null) {
-    	return val;
-    }
-	if (s.startsWith("0x")) {
-		try {
-			return Integer.parseInt(s.substring(2), 16);
-		} catch (NumberFormatException e) {
-			return val;
+		if (o == null) return val;
+		String s = String.valueOf(o);
+		int i = 0, len = s.length();
+		if (len == 0) return val;
+		if (s.startsWith("0x")) {
+			try {
+				return Integer.parseInt(s.substring(2), 16);
+			} catch (NumberFormatException e) {
+				return val;
+			}
 		}
+		int result = 0;
+		boolean negative = false;
+		int limit = -Integer.MAX_VALUE;
+		int multmin;
+		int digit;
+		
+		if (s.charAt(0) == '-') {
+			negative = true;
+			limit = Integer.MIN_VALUE;
+			i++;
+		}
+		multmin = limit / 10;
+		while (i < len) {
+			// Accumulating negatively avoids surprises near MAX_VALUE
+			digit = Character.digit(s.charAt(i++),10);
+			if (digit < 0
+					|| result < multmin
+					|| (result *= 10) < limit + digit) {
+				if(i>(negative?1:0)) break;
+				else return val;
+			}
+			result -= digit;
+		}
+		return negative ? result : -result;
 	}
-    int result = 0;
-    boolean negative = false;
-    int i = 0, len = s.length();
-    int limit = -Integer.MAX_VALUE;
-    int multmin;
-    int digit;
-
-    if (len > 0) {
-        char firstChar = s.charAt(0);
-        if (firstChar < '0') { // Possible leading "+" or "-"
-            if (firstChar == '-') {
-                negative = true;
-                limit = Integer.MIN_VALUE;
-            } else if (firstChar != '+')
-                return val;
-
-            if (len == 1) // Cannot have lone "+" or "-"
-            	 return val;
-            i++;
-        }
-        multmin = limit / 10;
-        while (i < len) {
-            // Accumulating negatively avoids surprises near MAX_VALUE
-            digit = Character.digit(s.charAt(i++),10);
-            if (digit < 0) {
-            	 return val;
-            }
-            if (result < multmin) {
-            	 return val;
-            }
-            result *= 10;
-            if (result < limit + digit) {
-            	 return val;
-            }
-            result -= digit;
-        }
-    } else {
-        return val;
-    }
-    return negative ? result : -result;
-}
 	
 	public static long parseLong(String s)
 	{

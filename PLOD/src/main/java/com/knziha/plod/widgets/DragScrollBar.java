@@ -22,7 +22,7 @@ import java.util.Timer;
 
 
 public class DragScrollBar extends RelativeLayout{
-	SamsungLikeHandle handleThumb;
+	public SamsungLikeHandle handleThumb;
 
 	int handleColour;
 	int mMax=100;
