@@ -312,4 +312,46 @@ succ"
 	,"drawHighlightOnTop":"true"
 	,"excludeRes":"fonts.gstatic.com/s/roboto"
 	,"fastFontsx":"true"
+	,"modifiers":[
+		{url:"https://translate-pa.googleapis.com/v1/supportedLanguages"}
+		,{url:"https://www.google.com/images/cleardot.gif"}
+		,{url:"http://translate.google.com/gen204x"}
+		,{url:"https://translate.google.cn/translate_a/element.js"}
+	]
+	,"synthesis":"
+		<div id='raw'  class='notranslate'></div>
+		<hr/>
+		<div id='text'></div>
+		<style>
+			#\\:0\\.targetLanguage{
+    			display: inline-block;
+			}
+			.goog-te-combo{
+    			margin-right: 15px!important;
+			}
+		</style>
+		<script>
+			var te=document.getElementById('text');
+			document.getElementById('raw').innerText=parent.getText();
+			te.innerText=parent.getText();
+			function googleTranslateElementInit () {
+				var e=new google.translate.TranslateElement(
+					{ pageLanguage: 'auto' }
+					//{pageLanguage:'auto',layout:google.translate.TranslateElement.InlineLayout.SIMPLE,multilanguagePage:true}
+					, 'text');
+				console.log('ret', e);
+			}
+			var cc=0;
+			function tweakDone() {
+				if(te.firstElementChild) {
+
+					
+				} else if(cc++<9) {
+					setTimeout(tweakDone, 1500);
+				}
+			}
+			//setTimeout(tweakDone, 1500);
+		</script>
+	  	<script src='https://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit '></script>
+	"
 }
