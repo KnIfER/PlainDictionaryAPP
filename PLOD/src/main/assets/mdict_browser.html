@@ -1134,15 +1134,7 @@
 			try{
 				fx=inf.item;
 				nf=opt.focusMode && inf!==currentFocus;
-				if(nf && (!opt.fm2 || opt.limHeightMode==1)) {
-					if(inf.fakeScroll && opt.fm2 && inf.box) {
-						// 虽然限制了最大高度，但是还需要同步滚动条高度。
-						inf.fScroll.style.height=fx.contentWindow.document.body.clientHeight+'px'; 
-						//debug('fsc', inf.fScroll, inf.fScroll.style.height);
-					}
-					continue;
-				} 
-				else { // 动态匹配高度
+				if(inf.scrollExpandAll) { // 动态匹配高度
 					if(inf.fm2)bx = inf.fbox;
 					//debug('reinitIframe...', fx);
 					// if(scrollExpandAll() && fx.scrollExpandAll){
@@ -1155,26 +1147,28 @@
 								if(type_bold && inf.lastHeight+65==h) {
 									continue;
 								}
-								if(nf) {
-									if(h>opt.maxHeight2) h=opt.maxHeight2;
+								if(h>fx.maxHeight) {
+									h=fx.maxHeight;
 								}
-								inf.lastHeight=h;
-								//fx.scrolling="no";
-								//h = tbh.clientHeight+65;
-								//h=fx.contentWindow.document.documentElement.scrollHeight;
-								//debug(fx.contentWindow.document, h);
-								if(bx) { 
-									bx.style.height=h+'px'; 
-									if(inf.fakeScroll) {
-										if(nf) {
-											inf.fScroll.style.height=fx.contentWindow.document.body.clientHeight+'px'; 
-										} else {
-											inf.fScroll.style.height=h+'px'; 
+								if(inf.lastHeight!=h) {
+									inf.lastHeight=h;
+									//fx.scrolling="no";
+									//h = tbh.clientHeight+65;
+									//h=fx.contentWindow.document.documentElement.scrollHeight;
+									//debug(fx.contentWindow.document, h);
+									if(bx) { 
+										bx.style.height=h+'px'; 
+										if(inf.fakeScroll) {
+											if(nf) {
+												inf.fScroll.style.height=fx.contentWindow.document.body.clientHeight+'px'; 
+											} else {
+												inf.fScroll.style.height=h+'px'; 
+											}
 										}
+										//debug(bx.style.height, h, tbh.offsetHeight, tbh.scrollHeight);
 									}
-									//debug(bx.style.height, h, tbh.offsetHeight, tbh.scrollHeight);
+									else fx.height=h;
 								}
-								else fx.height=h;
 							}
 						}
 					// } else if(!scrollExpandAll()){
@@ -1183,6 +1177,10 @@
 					// 	if(bx) { bx.style.height="100%"; }
 					// 	else fx.height=tbh;
 					// }
+				} else if(inf.fakeScroll && opt.fm2 && inf.box) {
+					// 虽然限制了最大高度，但是还需要同步滚动条高度。
+					inf.fScroll.style.height=fx.contentWindow.document.body.clientHeight+'px'; 
+					//debug('fsc', inf.fScroll, inf.fScroll.style.height);
 				}
 				if(fx.tag) {
 					var e=fx.contentWindow.document.getElementsByName(fx.tag)[0], t=e?e.getBoundingClientRect().top:0;
@@ -1192,7 +1190,7 @@
 						if(--fx.tc<0) fx.tag=0;
 					}
 				}
-			}catch (e){console.log(e)}
+			} catch (e){console.log(e)}
 		}
 
 		var tid=window.setInterval(reinitIframe, 200);
@@ -1336,15 +1334,16 @@
 				}
 			}
 			
-			if(opt.fm2 && (opt.noNestedScroll2 ^ inf.fakeScroll) && inf.fScroll) 
+			var fakeScroll = opt.fm2 && opt.noNestedScroll2;
+			if((fakeScroll ^ inf.fakeScroll) && inf.fScroll) 
 			{
 				// 若限制最大高度，则需打开滚动条代理，否则关闭。
-				inf.fScroll.parentNode.style.display=(inf.fakeScroll = opt.noNestedScroll2)?'block':'none';
+				inf.fScroll.parentNode.style.display=(inf.fakeScroll = fakeScroll)?'block':'none';
 				if(inf.fakeScroll && inf.item) try{
 					// 若打开，则需同步滚动高度和位置。
 					var win=inf.item.contentWindow;
 					inf.fScroll.style.height=win.document.body.clientHeight+'px'; 
-					inf.fScroll.parentNode.scrollTop=win.scrollY; 
+					//inf.fScroll.parentNode.scrollTop=win.scrollY; 
 				} catch(e){
 					debug(e);
 				}
@@ -1490,26 +1489,31 @@
 					var fx = getFrame(inf, true);
 					debug('processContents-waiting', inf.name, 'waiting='+inf.waiting, 'wait='+(fx==null));
 					inf.title.rendering=true;
-					
 					unfoldFrame(inf);
-					fixBtnText(inf);
 					if(opt.delay && !des && inf.title.offsetTop>=defP.scrollTop) {
 						des = i;
 					}
-					if(fx) { //todo
-						var h=100;
-						fx.scrollExpandAll=true;
-						if(opt.focusMode && fx!==currentFocus && i>=opt.getExpandFirstN()) {
-							if(opt.fm2) {
-								h=opt.initHeight2;
-								inf.fbox.style.height=opt.initHeight2+'px';
-								fx.scrollExpandAll=false;
-							} else {
-								h=0;
-								foldFrame(inf);
-							}
+					inf.initHeight = 100;
+					inf.scrollExpandAll = true;
+					inf.maxHeight = 0;
+					if(opt.focusMode && inf!==currentFocus && i>=opt.getExpandFirstN()) {
+						if(opt.fm2) {
+							inf.initHeight=opt.initHeight2;
+							inf.scrollExpandAll = false;
+							inf.maxHeight = opt.maxHeight2;
+							// todo 固定or最大
+						} else {
+							inf.initHeight=0;
+							foldFrame(inf);
 						}
-						debug('h=', h, opt.fm2, fx.name, fx==currentFocus);
+					}
+					fixBtnText(inf);
+					if(fx) { //todo
+						if(!inf.scrollExpandAll) { // collapsed && opt.fm2
+							inf.fbox.style.height=inf.initHeight+'px';
+						}
+						var h=inf.initHeight;
+						debug('h=', h, opt.fm2, fx.name, fx==currentFocus, 'scrollExpandAll='+fx.scrollExpandAll, 'maxHeight='+fx.maxHeight);
 						fx.height=h;
 						/* 不移不改，缺一不可 */
 						if(!inf.box.parentNode || !inf.title.parentNode){
@@ -1585,7 +1589,7 @@
 
 		var flag=0;
 		var dex, dec, des, expanding;	
-		var currentFocus, lastFocus;
+		var currentFocus;
 
 		var firstVisFrame, lastVisFrame;
 		function onWebListScroll(e){//滚动
@@ -1628,10 +1632,11 @@
 			var inf=e.dictInfo;
 			if(e.id==='foldText') {
 				click(inf.dictTitle, {_fold:1});
+				return;
 			}
 			var bhv=opt.smoothNestedScroll2?'smooth':'auto'
 			,top=opt.nestedScrollByPart2?opt.nestedScrollPart2*inf.box.offsetHeight:opt.nestedScrollPixel2
-			,win=inf.item.contentWindow;
+			,win=inf.item.contentWindow, proxy=inf.fakeScroll && opt.smoothNestedScroll2;
 			if(e.id==='pageUpIcon') {
 				top = -top;
 				win.scrollBy({
@@ -1646,6 +1651,7 @@
 			}
 			//debug('win.scrollBy', top, bhv);
 			if(inf.fakeScroll) {
+				 // 会触发下面的监听器，重复设置了滚动值，不影响。
 				inf.fScroll.parentNode.scrollTo({
 					top: win.scrollY + top
 					,behavior: bhv
@@ -1654,10 +1660,12 @@
 		}
 
 		function onFakeScroll(e) {
-			//debug(e);
+			// debug('onFakeScroll', e);
 			e=e.srcElement;
 			var inf = e.dictInfo;
-			inf.item.contentWindow.scrollTo(0,e.scrollTop);
+			if(!inf.scrollExpandAll) {
+				inf.item.contentWindow.scrollTo(0,e.scrollTop);
+			}
 		}
 	
 		function withinFrame(p,f) {
@@ -1737,7 +1745,7 @@
 				var h=10;
 				if(opt.focusMode && e!==currentFocus) {
 					if(opt.fm2) {
-						h=opt.initHeight2;
+						h=e.initHeight;
 					} else {
 						return;
 					}
@@ -1745,7 +1753,6 @@
 				//debug('checkFrame-expand->', e, dex)
 				e.waiting = false;
 				var fx=getFrame(e);
-				fx.scrollExpandAll=true;
 				fx.height=h;
 				checkUrl(e);
 				if(e.title.parentNode && !e.box.parentNode){
@@ -2041,7 +2048,7 @@
 					break;
 			if(!t) t=e.srcElement.parentNode;
 			var inf = t.dictInfo;
-			var lx=lastFocus;
+			var lx=currentFocus;
 			var newFoc=lx!=inf;
 			// if(newFoc) {
 			// 	if(!e._foc) {
@@ -2049,6 +2056,9 @@
 			// 		if(!focusMode&&!inf.fold || fm2&&currentFocus==inf)newFoc=false;
 			// 	}
 			// }
+			if(newFoc && e._fold && inf.foldingText) {
+				newFoc = false;
+			}
 			if(opt.focusMode && lx && newFoc && lx.box) {
 				if(opt.fm2) {
 					if(lx.fm2)lx.box.style.height=opt.initHeight2+'px';
@@ -2063,22 +2073,25 @@
 			var hide=false;
 			if(newFoc) {
 				if(lx) {
+					if(opt.fm2) lx.scrollExpandAll = false;
 					lx.title.classList.remove('focus');
 					lx.title.id='';
 					if(lx.fbox)lx.fbox.classList.remove('focus');
 				}
 				inf.title.id='focus';
-				lastFocus=currentFocus=inf;
-				inf.title.classList.add('focus');
-				inf.item.scrollExpandAll=true;
-				fixBtnText(lx);
-			} else if(!e._foc && currentFocus==inf){
-				hide=true;
-				if(inf.fm2)bx.style.height=opt.initHeight2+'px'; //???
-				else bx.height=opt.initHeight2;
-				currentFocus=0;
-			} else if(lx==inf){
 				currentFocus=inf;
+				inf.title.classList.add('focus');
+				inf.scrollExpandAll = true;
+				fixBtnText(lx);
+			} else if(!e._foc) {
+				if(!inf.scrollExpandAll) {
+					inf.scrollExpandAll = true;
+				} else if(opt.fm2) {
+					hide=true;
+					inf.scrollExpandAll = false;
+					if(inf.fm2)bx.style.height=opt.initHeight2+'px'; //???
+					else bx.height=opt.initHeight2;
+				}
 			}
 			if(fx) {
 				// toggle fold / unfold
@@ -2106,8 +2119,8 @@
 			// 	}
 			// }
 
-			if(e._fold && lastFocus==inf) {
-			}
+			// if(e._fold && lastFocus==inf) {
+			// }
 
 			if(e._fold && inf.title.offsetTop<defP.scrollTop) {
 				// 收起亦要滚动
@@ -2130,11 +2143,14 @@
 
 		function fixBtnText(e) {
 			if(e && e.fm2 && e.box) {
-				var t='foldText';
-				if(opt.fm2 && e!=currentFocus) {
-					t='expandText';
+				// var t='foldText';
+				// if(!e.scrollExpandAll) { // opt.fm2 && e!=currentFocus
+				// 	t='expandText';
+				// }
+				if(e.foldingText !== e.scrollExpandAll) {
+					e.foldingText = e.scrollExpandAll;
+					e.btns.children[0].innerText=trans[e.foldingText?'foldText':'expandText'];
 				}
-				e.btns.children[0].innerText=trans[t];
 			}
 		}
 
