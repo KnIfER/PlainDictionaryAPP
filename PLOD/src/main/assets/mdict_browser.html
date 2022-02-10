@@ -744,8 +744,6 @@
 		var merge=false;
 		var args={};
 
-		function gitAutoFocusInFocusModeOnly() { return flag & 0x1; }
-
 		var onmousewheelDown = function(event) {
 			event.preventDefault();
 			pos+=event.deltaY*-1;
@@ -1134,49 +1132,43 @@
 			try{
 				fx=inf.item;
 				nf=opt.focusMode && inf!==currentFocus;
-				if(inf.scrollExpandAll) { // 动态匹配高度
+				if(!inf.collapsed || opt.limHeightMod==0) { // 动态匹配高度
 					if(inf.fm2)bx = inf.fbox;
 					//debug('reinitIframe...', fx);
-					// if(scrollExpandAll() && fx.scrollExpandAll){
-						/*let's take a step bold.  offsetHeight  clientHeight scrollHeight*/
-						var tbh=fx.contentWindow;
+					/*let's take a step bold.  offsetHeight  clientHeight scrollHeight*/
+					var tbh=fx.contentWindow;
+					if(tbh) {
+						tbh = tbh.document.body;
 						if(tbh) {
-							tbh = tbh.document.body;
-							if(tbh) {
-								var h = type_bold?(tbh.clientHeight+65):(tbh.scrollHeight);
-								if(type_bold && inf.lastHeight+65==h) {
-									continue;
-								}
-								if(h>fx.maxHeight) {
-									h=fx.maxHeight;
-								}
-								if(inf.lastHeight!=h) {
-									inf.lastHeight=h;
-									//fx.scrolling="no";
-									//h = tbh.clientHeight+65;
-									//h=fx.contentWindow.document.documentElement.scrollHeight;
-									//debug(fx.contentWindow.document, h);
-									if(bx) { 
-										bx.style.height=h+'px'; 
-										if(inf.fakeScroll) {
-											if(nf) {
-												inf.fScroll.style.height=fx.contentWindow.document.body.clientHeight+'px'; 
-											} else {
-												inf.fScroll.style.height=h+'px'; 
-											}
+							var h = type_bold?(tbh.clientHeight+65):(tbh.scrollHeight);
+							if(type_bold && inf.lastHeight+65==h) {
+								continue;
+							}
+							if(inf.collapsed && h>inf.maxHeight) {
+								h=inf.maxHeight;
+							}
+							//if(inf.lastHeight!=h) {
+							if(inf.box.offsetHeight!=h) {
+								inf.lastHeight=h;
+								//h = tbh.clientHeight+65;
+								//h=fx.contentWindow.document.documentElement.scrollHeight;
+								//debug(fx.contentWindow.document, h);
+								if(bx) { 
+									bx.style.height=h+'px'; 
+									if(inf.fakeScroll) {
+										// 同步滚动条高度
+										if(nf) {
+											inf.fScroll.style.height=fx.contentWindow.document.body.clientHeight+'px'; 
+										} else {
+											inf.fScroll.style.height=h+'px'; 
 										}
-										//debug(bx.style.height, h, tbh.offsetHeight, tbh.scrollHeight);
 									}
-									else fx.height=h;
+									//debug(bx.style.height, h, tbh.offsetHeight, tbh.scrollHeight);
 								}
+								else fx.height=h;
 							}
 						}
-					// } else if(!scrollExpandAll()){
-					// 	//fx.scrolling="yes";
-					// 	fx.height = "100%";// iframes.length==1?:500;
-					// 	if(bx) { bx.style.height="100%"; }
-					// 	else fx.height=tbh;
-					// }
+					}
 				} else if(inf.fakeScroll && opt.fm2 && inf.box) {
 					// 虽然限制了最大高度，但是还需要同步滚动条高度。
 					inf.fScroll.style.height=fx.contentWindow.document.body.clientHeight+'px'; 
@@ -1280,57 +1272,57 @@
 					e.style.display="none";
 				}
 			}
+			// 强制塞入fbox，但是暂时只有全展开、全折叠之特性。
+			inf.fm2 = opt.fm2||opt.alwaysShowExpand;
 			if(e) {
-				var scrollable='no';
-				if(opt.fm2 && !opt.noNestedScroll2) {
-					scrollable='yes';
-				}
-				e.scrolling=scrollable;
-			}
-			var ffm2=opt.alwaysShowExpand; // 强制塞入fbox，但是暂时只有全展开、全折叠之特性。
-			if(inf.item && (opt.fm2||ffm2) ^ inf.fm2) {
-				if(opt.fm2||ffm2) {
-					if(!inf.fbox) {
-						e = inf.fbox = craft('div', 'fbox');
-						if(inf.fold) {
-							e.style.display="none";
+				// scrollable
+				e.scrolling=opt.fm2 && !opt.noNestedScroll2?'yes' : 'no';
+				if(e.fm2 ^ inf.fm2) {
+					if(inf.fm2) {
+						var fbox = inf.fbox;
+						if(!fbox) {
+							var fbox = inf.fbox = craft('div', 'fbox');
+							if(inf.fold) {
+								fbox.style.display="none";
+							}
+							fbox.dictInfo=inf;
+							var sp = craft('div', 'scroll', fbox);
+							inf.fScroll = craft('div', 'fakeScroll', sp);
+							sp.dictInfo = inf;
+							sp.onscroll=onFakeScroll;
+							var mask=craft('div', 'mask', fbox);
+							// 创建按钮
+							var bg=craft('div', 'btns', fbox);
+							//['< 翻页▲ >','< 阅读全文 >','< 翻页▼ >'].forEach(function(it){
+							['foldText','pageUpIcon','pageDownIcon'].forEach(function(it){
+								var e=craft('button', 0, bg);
+								e.onclick=onBoxClick;
+								e.id=it;
+								e.dictInfo=inf;
+								e.innerText=trans[it];
+							});
+							inf.btns=bg;
+							inf.fakeScroll = true;
 						}
-						e.dictInfo=inf;
-						var sp = craft('div', 'scroll', e);
-						inf.fScroll = craft('div', 'fakeScroll', sp);
-						sp.dictInfo = inf;
-						sp.onscroll=onFakeScroll;
-						var mask=craft('div', 'mask', e);
-						// 创建按钮
-						var bg=craft('div', 'btns', e);
-						//['< 翻页▲ >','< 阅读全文 >','< 翻页▼ >'].forEach(function(it){
-						['foldText','pageUpIcon','pageDownIcon'].forEach(function(it){
-							var e=craft('button', 0, bg);
-							e.onclick=onBoxClick;
-							e.id=it;
-							e.dictInfo=inf;
-							e.innerText=trans[it];
-						});
-						inf.btns=bg;
-						inf.fakeScroll = true;
+						inf.box = fbox;
+						if(inf.item && inf.item.parentNode!=fbox) {
+							//inf.fbox.prepend(inf.item);
+							fbox.insertBefore(inf.item, fbox.firstChild);
+							inf.item.style.display="block";
+						}
+						e.fm2 = true;
+						fixBtnText(inf);
+					} else if(!inf.box.parentNode) {
+						// 惰性更新；避免重新加载。
+						inf.box = inf.item;
+						if(inf.fbox.parentNode) {
+							inf.fbox.remove();
+						}
+						if(inf.box && inf.box.parentNode==inf.fbox) {
+							inf.box.remove();
+						}
+						e.fm2 = false;
 					}
-					inf.box = inf.fbox;
-					if(inf.item && inf.item.parentNode!=inf.fbox) {
-						//inf.fbox.prepend(inf.item);
-						inf.fbox.insertBefore(inf.item, inf.fbox.firstChild);
-						inf.item.style.display="block";
-					}
-					inf.fm2 = true;
-					fixBtnText(inf);
-				} else if(!inf.box.parentNode){
-					inf.box = inf.item;
-					if(inf.fbox.parentNode) {
-						inf.fbox.remove();
-					}
-					if(inf.box && inf.box.parentNode==inf.fbox) {
-						inf.box.remove();
-					}
-					inf.fm2 = false;
 				}
 			}
 			
@@ -1414,6 +1406,7 @@
 		 * 旧格式：Multi result format : entry1 \r 0@1@2 & 1@1@2 & 5@1024 \n entry2...
 			where 0@1@2 means contents at position entry#( 1 and 2 ) of dict#( 0 ) */
 		function processContents(e, hasId, _proc){
+			//debug('processContents', hasId);
 			processing=true;
 			var newContents=false;
 			if(contents!==e) {
@@ -1424,7 +1417,7 @@
 			var infoReq;
 			var des;
 			if(newContents) {
-				// 1st pass invalidate array
+				// [1st pass] Invalidate array
 				for (var i = 0; i < frames.length; i++) {
 					frames[i].frameAt=-1;
 				}
@@ -1433,15 +1426,16 @@
 				var sep=e.indexOf('\r');
 				if(sep) e=e.slice(sep+1);
 				var arr = e.split("-");
-				debug("processContents::", e, arr);
-				// 2nd pass rearrange array
+				//debug("processContents contents =", e, 'arr =', arr);
+				// [2nd pass] Rearrange array
 				for (var i = 0; i < arr.length; i++) {
 					e = arr[i];
 					var pid=e;
 					pid = pid.slice(0, pid.indexOf('_'));
 					var inf=pool[pid];
-					/* 动态添加 */ 
+					debug("processContents inf =", pid, inf, 'name='+inf.name);
 					if(!inf) { 
+						// debug('动态添加', e)
 						inf={}; 
 						pool[pid]=inf; 
 						if(hasId) inf.id=pid;
@@ -1461,7 +1455,7 @@
 			if(infoReq) {
 				checkDicts(infoReq, function(){processContents(contents, hasId, true)});
 			} else {
-				// 3rd pass preserve valid frames
+				// [3rd pass] Preserve valid frames
 				var la=0,f;
 				for (var i=0,fa;f=defP.children[i]; i++) {
 					if(!f.dictInfo) debug(f);
@@ -1476,11 +1470,11 @@
 						la=fa;
 					}
 				}
-				// 4th pass erase rest insert-before buff
+				// [4th pass] Erase rest insert-before buff
 				for (var j=la;f=frames[j++];) {
 					f._ibf=null;
 				}
-				// 5th pass load frames to dom
+				// [5th pass] Load frames to dom
 				for (var i = 0; i < frames.length; i++) {
 					var inf=frames[i];
 					//e="\\content\\"+e;
@@ -1495,12 +1489,15 @@
 					}
 					inf.initHeight = 100;
 					inf.scrollExpandAll = true;
-					inf.maxHeight = 0;
-					if(opt.focusMode && inf!==currentFocus && i>=opt.getExpandFirstN()) {
+					inf.collapsed = false;
+					if(opt.focusMode) {
 						if(opt.fm2) {
+							inf.maxHeight = inf.maxHeightSet || opt.maxHeight2;
+							inf.collapsed = i>=opt.getExpandFirstN() && inf!==currentFocus;
 							inf.initHeight=opt.initHeight2;
-							inf.scrollExpandAll = false;
-							inf.maxHeight = opt.maxHeight2;
+							if(opt.limHeightMode==1) {
+								inf.scrollExpandAll = false;
+							}
 							// todo 固定or最大
 						} else {
 							inf.initHeight=0;
@@ -1513,7 +1510,7 @@
 							inf.fbox.style.height=inf.initHeight+'px';
 						}
 						var h=inf.initHeight;
-						debug('h=', h, opt.fm2, fx.name, fx==currentFocus, 'scrollExpandAll='+fx.scrollExpandAll, 'maxHeight='+fx.maxHeight);
+						debug('h=', h, opt.fm2, fx.name, fx==currentFocus, 'scrollExpandAll='+fx.scrollExpandAll, 'maxHeight='+inf.maxHeight);
 						fx.height=h;
 						/* 不移不改，缺一不可 */
 						if(!inf.box.parentNode || !inf.title.parentNode){
@@ -1549,12 +1546,12 @@
 		var opt={
 			delay : true
 
-			,focusMode : 2 // 1=折叠其他；2=限制其他视图的高度；
+			,focusMode : 0 // 1=折叠其他；2=限制其他视图的高度；
 			,fm2 : false
 			,limHeightMode : 1 //非focus高度 :  0=限制最大值 1=强制数值
 			,maxHeight2 : 200
 			,initHeight2 : 100
-			,alwaysShowExpand : false
+			,alwaysShowExpand : true
 			,expandFirst1 : false
 			,expandFirst2 : true
 			,expandFirst1N : 1
@@ -1565,8 +1562,8 @@
 			,lazyLoadMaxFrames : 8
 			,lazyLoadMaxFramesEnabled : false
 			,lazyLoadMinEnabled : true
-			,autoFocus2 : true
-			,alwaysFocusToExpandedFrame : true
+			,autoScrollFocus : false
+			,alwaysAutoScrollFocus : false
 			,enssureOnePage : true
 			,noNestedScroll2 : true
 			,smoothNestedScroll2 : true
@@ -1581,13 +1578,15 @@
 				return this.fm2 && this.expandFirst2? this.expandFirst2N:
 					!this.fm2 && this.expandFirst1? this.expandFirst1N : 0;
 			}
+			,getAutoScrollFocus : function() {
+				return this.focusMode && this.autoScrollFocus || !this.focusMode && this.alwaysAutoScrollFocus;
+			}
 		};
 
 		var tmp={
 			scrollNestedScroll2 : true
 		};
 
-		var flag=0;
 		var dex, dec, des, expanding;	
 		var currentFocus;
 
@@ -1740,10 +1739,10 @@
 			return h;
 		}
 
-		function checkFrame(e) {
+		function checkFrame(e, ftitle) {
 			if(e.waiting && !e.fold) {
 				var h=10;
-				if(opt.focusMode && e!==currentFocus) {
+				if(opt.focusMode && e!==currentFocus && !ftitle) {
 					if(opt.fm2) {
 						h=e.initHeight;
 					} else {
@@ -1954,7 +1953,7 @@
 						} else {
 							Object.assign(inf, d);
 						}
-						//debug("checkDicts::", inf.sch);
+						debug("checkDicts::", dictsInfo[d.id]);
 						if(cb)inf.viewDirty=true;
 						else handleViewDirty(inf);
 					}
@@ -2040,24 +2039,36 @@
 			e.onclick(pay);
 		}
 
+		function collapsing(e){
+			return !e.collapsed && opt.fm2;
+		}
+
 		function onTitleClick(e){//折叠内容
 			//debug(e);
-			var t;
-			if(e.path)for(var i=0;t=e.path[i++];)
-				if(t.tagName==='LI')
-					break;
-			if(!t) t=e.srcElement.parentNode;
+			var t = e.srcElement;
+			while(t.tagName!=='LI') t = t.parentNode;
 			var inf = t.dictInfo;
 			var lx=currentFocus;
 			var newFoc=lx!=inf;
-			// if(newFoc) {
-			// 	if(!e._foc) {
-			// 		// 折叠不算聚焦
-			// 		if(!focusMode&&!inf.fold || fm2&&currentFocus==inf)newFoc=false;
-			// 	}
-			// }
-			if(newFoc && e._fold && inf.foldingText) {
-				newFoc = false;
+			var hide=0;
+			if(newFoc) {
+				if((e._fold && !inf.expandingText // 按钮折叠不算聚焦
+					// || !e._foc && (!focusMode&&!inf.fold || fm2&&currentFocus==inf) // 折叠不算聚焦
+					//|| !e._foc && // 折叠fbox不算聚焦
+				))
+					newFoc = false;
+				else if(!e._foc && collapsing(inf)) {
+					// inf.scrollExpandAll = false;
+					newFoc = false;
+					hide = 1;
+					// if(opt.limHeightMode==1 && inf.box) {
+					// 	if(inf.fm2)inf.box.style.height=opt.initHeight2+'px';
+					// 	else inf.box.height=opt.initHeight2;
+					// }
+				}
+				else {
+					currentFocus=inf;
+				}
 			}
 			if(opt.focusMode && lx && newFoc && lx.box) {
 				if(opt.fm2) {
@@ -2067,42 +2078,49 @@
 					lx.box.style.display='none';
 				}
 			}
-			inf.fold=false;
-			checkFrame(inf);
+			var fold=inf.fold || inf.waiting;
+			if(fold)inf.fold=false;
+			checkFrame(inf, true);
 			var fx=inf.item,bx=inf.box;
-			var hide=false;
 			if(newFoc) {
 				if(lx) {
-					if(opt.fm2) lx.scrollExpandAll = false;
+					if(opt.focusMode) {
+						if(opt.fm2) lx.collapsed = true;
+						else lx.fold = true;
+					}
 					lx.title.classList.remove('focus');
 					lx.title.id='';
 					if(lx.fbox)lx.fbox.classList.remove('focus');
+					fixBtnText(lx);
 				}
 				inf.title.id='focus';
-				currentFocus=inf;
 				inf.title.classList.add('focus');
-				inf.scrollExpandAll = true;
-				fixBtnText(lx);
+				// if(inf.scrollExpandAll) {
+				// 	//if(inf.fm2) hide=true;
+				// } else {
+				// 	inf.scrollExpandAll = true;
+				// }
+				inf.collapsed = false;
 			} else if(!e._foc) {
-				if(!inf.scrollExpandAll) {
-					inf.scrollExpandAll = true;
-				} else if(opt.fm2) {
-					hide=true;
-					inf.scrollExpandAll = false;
+				if((inf.collapsed||opt.fm2))
+				if(inf.collapsed=!inf.collapsed) {
+					hide=2;
 					if(inf.fm2)bx.style.height=opt.initHeight2+'px'; //???
 					else bx.height=opt.initHeight2;
 				}
 			}
 			if(fx) {
 				// toggle fold / unfold
-				if(bx.style.display!='none') {
+				if(fold) {
+					bx.style.display='block';
+				} else {
+				// if(bx.style.display!='none') {
+				// } 
 					if(!e._foc && !opt.fm2) {
 						bx.style.display='none';
 						inf.fold=true;
-						hide=true;
+						hide=3;
 					}
-				} else {
-					bx.style.display='block';
 				}
 				if(!hide) {
 					checkUrl(inf);
@@ -2111,45 +2129,36 @@
 			if(newFoc && opt.fm2 && inf.fbox) {
 				inf.fbox.classList.add('focus');
 			}
-			// else {
-			// 	if(!inf.fold) {
-			// 		if(!e._foc && focusMode!=2) {
-			// 			inf.fold=true;
-			// 		}
-			// 	}
-			// }
+			debug('hide', hide, inf.waiting);
 
-			// if(e._fold && lastFocus==inf) {
-			// }
-
-			if(e._fold && inf.title.offsetTop<defP.scrollTop) {
-				// 收起亦要滚动
-				hide = false;
+			if(hide && e._fold && inf.title.offsetTop<defP.scrollTop) { // 收起亦要滚动
+				hide = 9;
 			}
 
-			if((opt.focusMode||!gitAutoFocusInFocusModeOnly()) && !hide && !inf._scroll) {
-				if(e.path)
+			if((opt.getAutoScrollFocus()) && !inf._scroll && !hide || hide===9) {
+				// if(e.path)
 					scrollToFrame(inf);
-				else
-					defP.scrollTo({
-						top: inf.title.offsetTop
-						//,behavior: 'smooth'
-					});
+				// else
+				// 	defP.scrollTo({
+				// 		top: inf.title.offsetTop
+				// 		//,behavior: 'smooth'
+				// 	});
 			}
-			if(e.path)
+			if(e.preventDefault) {
 				e.preventDefault();
+			}
 			fixBtnText(inf);
 		}
 
 		function fixBtnText(e) {
-			if(e && e.fm2 && e.box) {
+			if(e && e.fm2 && e.btns) {
 				// var t='foldText';
 				// if(!e.scrollExpandAll) { // opt.fm2 && e!=currentFocus
 				// 	t='expandText';
 				// }
-				if(e.foldingText !== e.scrollExpandAll) {
-					e.foldingText = e.scrollExpandAll;
-					e.btns.children[0].innerText=trans[e.foldingText?'foldText':'expandText'];
+				if(e.expandingText !== e.collapsed) {
+					e.expandingText = e.collapsed;
+					e.btns.children[0].innerText=trans[e.expandingText?'expandText':'foldText'];
 				}
 			}
 		}
@@ -2701,7 +2710,7 @@
 								, [1<<10, ['limHeightMode', 1], '固定为高度值', opt.limHeightMode==1]
 								, [2, 'maxHeight2', '高度值：', opt.maxHeight2]
 								]
-							, [1, 'autoFocus2', ['自动滚动至展开项'], opt.autoFocus2]
+							, [1, 'autoScrollFocus', ['自动滚动至展开项'], opt.autoScrollFocus]
 						]
 					, [1, 'delay', ['延迟加载', '加载压力分散到一段时间中'], opt.delay
 						, [2, 'lazyLoadMin', ['条件','页面数大于：'], opt.lazyLoadMin]
@@ -2711,9 +2720,9 @@
 							]
 						]
 					
-					, [1, 'enssureOnePage', ['只有一项时始终展开'], opt.enssureOnePage]
+					, [1, 'alwaysAutoScrollFocus', ['自动滚动至展开项'], opt.alwaysAutoScrollFocus]
 					, [1, 'alwaysShowExpand', ['始终显示展开/收起全文'], opt.alwaysShowExpand]
-					, [1, 'alwaysFocusToExpandedFrame', ['始终自动滚动至展开项'], opt.alwaysFocusToExpandedFrame]
+					, [1, 'enssureOnePage', ['只有一项时自动展开'], opt.enssureOnePage]
 					, [3<<10, 'scrollNestedScroll2', ['限制最大高度时，上下翻页按钮的设置：'], tmp.scrollNestedScroll2
 						, [1, 'smoothNestedScroll2', '平滑滚动', opt.smoothNestedScroll2]
 						, [2|1<<10, ['nestedScrollPart2', 'nestedScrollByPart2', true, opt.nestedScrollByPart2], '按倍数滚动：', opt.nestedScrollPart2]
@@ -2757,7 +2766,8 @@
 			if('dt'===name){
 				menu=makeMenu(name, ['foldAll', 'unfoldAll', 'unFoldCurrent', '', 'saveCurrent', '', 'showAbout', null]);
 				currentContext=e.srcElement.nextSibling;
-			} else if('arrow'===name){
+			} 
+			else if('arrow'===name){
 				//menu=makeMenu(name, ['专注模式1（折叠）', '专注模式2（限高）', ['滚动快', '滚动慢', '滚动停'], '回到顶部', null]);
 				menu=makeMenu(name, ['toTop', ['autoScroll1', 'autoScroll2', 'autoScroll3'], 'settings', 'focusMode1', 'focusMode2', null]);
 				menu.revert=true;
