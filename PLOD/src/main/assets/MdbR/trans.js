@@ -1,5 +1,6 @@
 var trans={
      "start" : ""
+    ,"foldThis" : "展开 / 折叠"
     ,"foldAll" : "折叠全部"
     ,"unfoldAll" : "展开全部"
     ,"unFoldCurrent" : "只展开当前页面"
