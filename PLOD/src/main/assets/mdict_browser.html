@@ -55,14 +55,13 @@
       padding: 0;
     }
     #defP {
-	  --x:195px;
-      position:fixed;
+      position: absolute;
       top: 0px;
       bottom: 0px;
-      margin-top:70px;
-      overflow:scroll;
-	  overflow-x: hidden;
-      width: calc(100% - var(--x));
+      margin-top: 70px;
+      overflow: scroll;
+      overflow-x: hidden;
+      width: 100%;
       background-color: #B3E5EE;
     }
     .def {
@@ -70,77 +69,66 @@
       padding:4px 4px 100px 4px;
     }
     #navR{
-	  --x:195px;
-      position:fixed;
-      margin: 0; 
-	  padding: 0;
-      height: 70px;
-	  width:90%;
-	  width:-moz-calc(100% - var(--x));
-	  width:-webkit-calc(100% - var(--x));
-      width:calc(100% - var(--x));
-      white-space: nowrap;
-    }
-    .toolbar{
-      margin: 0; 
-	  padding: 0;
+      position: absolute;
+      margin: 0;
+      padding: 0;
       height: 70px;
       width: 100%;
-      background-color: rgba(133, 195, 255, 1);
       white-space: nowrap;
-	  display: flex;
-	  justify-content : space-between;
+      z-index: 3;
+	  background-color: rgba(133, 195, 255, 1);
+    }
+    #toolbar{
+      margin: 0;
+      padding: 0;
+      height: auto;
+      bottom: 8px;
+      position: absolute;
+      white-space: nowrap;
+      display: flex;
+      justify-content: space-between;
     }
     .btnFile{
       margin: 0; 
 	  padding: 0;
       width: 100%;
-      background-color: rgba(133, 195, 255, 1);
       white-space: nowrap;
 	  display: flex;
 	  justify-content : flex-start;
+	  align-items: flex-end;
     }
-    #fileBtn{
-      position: relative;
+    .btn{
       margin-left: 4px;
       width: 25px;
       height: 25px;
       bottom: -37px;
       border-radius: 30%;
       color: white;
-      z-index: 2;
       float: left;
       vertical-align: bottom;
     }
-	#viewToggle{
-      position: relative;
-      margin-right: 4px;
-      width: 25px;
-      height: 25px;
-      bottom: -37px;
-      border-radius: 10%;
-      color: white;
-      z-index: 1;
-      float: right;
-      vertical-align: bottom;
-    }
-    #fileName{
-      position: relative;
-      height: 26px;
+    .label{
+      height: fit-content;
+      margin-left: 4px;
       bottom: -41px;
       float:left;
       white-space: nowrap;
       color: white;
-      z-index: 2;
       float: left;
       vertical-align: bottom;
     }
+	#entryName::before {
+      content: '/';
+      padding-right: 4px;
+	}
     .cp2
     {
       top:0;
       background-color:#397CCD;
-      width:50px;
-      margin:20px 25px 0 0px;
+	  color: #ecf0f6;
+	  xcolor: #87caf5;
+      width:65px;
+      margin:5px 20px 0 0px;
       display: inline-block;
       overflow-x:hidden;
       padding:10px 0 0px 0;
@@ -152,8 +140,8 @@
       overflow: visible;
       word-wrap: break-word;
       z-index: 1;
-      margin-right:5px;
-      width:70px;
+      margin-right:10px;
+      width:75px;
     }
     .dt
     {
@@ -205,14 +193,32 @@
       position: absolute;
       left:0;top:0;
       margin-left: 30px;
-      margin-top:-15px;
       overflow-y: hidden;
-      width:100%;
+      width: calc(100% - 30px);
+      height:100%;
       float: left;
       vertical-align: top;
     }
+	#dictsP::-webkit-scrollbar {
+		height: 7px;
+	}
+	#dictsP::-webkit-scrollbar-track-piece {
+		background-color: transparent;
+	}
+	#dictsP::-webkit-scrollbar-thumb:horizontal {
+		width: 12px;
+		background-color: #BDBDBD;
+		-webkit-border-radius: 2px;
+		background-color: #919191;
+	}
+	#dictsP::-webkit-scrollbar-thumb:horizontal:hover
+	{
+		background-color: #808080;
+	}
+
     #ListView{
-      position: absolute; top: 0; left: 0;
+      position: absolute;
+	  left: 0;
       width: 195px;
       height: 100%;
       box-sizing: border-box;
@@ -585,7 +591,7 @@
 		}
 	</style> 
 	<script>
-		function debug(e){console.log('fatal web d::', e)};
+		function debug(...e){console.log('fatal web d::', e)};
 		function ge(e,p){return (p||document).getElementById(e)};
     	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
     	function _gn(e,p){if(!p || p.name===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
@@ -602,7 +608,8 @@
 		var listSize = 100;
 		var seekBarmy;
 		var lastTarget,lastSelection_;
-		var currentDict;var dictsGroup=[];var dictsInfo=[];
+		var EmptyBook=[];
+		var currentDict=EmptyBook;var dictsGroup=[];var dictsInfo=[];
 		var currentDictPos;
 		var chrome_ = 0;
 		var enter=0;
@@ -622,18 +629,19 @@
 		var type_bold;
 		var mobile;
 		var line_height;
-		var lastSelection;
+		var lastSelection, currentText;
 		//346eb4
 		var AC="#397CCD";
 
 		var merge=false;
 		var args={};
+		var mousewheel;
 
 		var onmousewheelDown = function(e) {
 			//debug(["onmousewheelDown: ", e, e.wheelDelta]);
 			var d=e.detail?-e.detail /3: -e.wheelDelta /120;
 			d = Math[d >= 1 ? 'floor' : 'ceil' ](d);
-			debug("onmousewheelDown: ", d);
+			//debug("onmousewheelDown: ", d);
 			e.preventDefault();
 			pos+=d;
 			// pos+=-e.deltaY;
@@ -646,7 +654,7 @@
 			//bind mouse wheel
 			// $('#lv').bind('mousewheel', onmousewheelDown);
 			// $('#seekbar_container').bind('mousewheel', onmousewheelDown);
-			var mousewheel = (/Firefox/i.test(ua))?"DOMMouseScroll": "mousewheel";
+			mousewheel = (/Firefox/i.test(ua))?"DOMMouseScroll": "mousewheel";
 			ge('lv').addEventListener(mousewheel, onmousewheelDown);
 			ge('seekbar_container').addEventListener(mousewheel, onmousewheelDown);
 			
@@ -656,7 +664,7 @@
 				resizer.u='touchend';
 			}
 			bindResize(ge('drag_resizer'));
-			bindResize(ge('fileName'));
+			bindResize(ge('toolbar'));
 			bindResize(ge('seekbar_container'), 1);
 			if(mobile){
 				var styleObj= document.styleSheets[1].cssRules[0].style;
@@ -701,15 +709,15 @@
 				document.addEventListener(resizer.m,resizer.move);
 				document.addEventListener(resizer.u,resizer.up);
 				document.body.classList.add('dragging'); 
+				e.preventDefault();
+				//e.stopPropagation();
 			}
 			,'move':function(e){
-				debug("mousemove", e);
+				//debug("mousemove", e);
 				if(e.clientX==undefined)
 					e.clientX=e.changedTouches[0].clientX;
 				lvPs.width = e.clientX - x + 'px';
 				pRs.marginLeft = lvPs.width;
-				defP.style.setProperty('--x', lvPs.width);
-				ge('navR').style.setProperty('--x', lvPs.width);
 				if(app) app.handleLvResize(e.clientX - x);
 		    }
 			,'up':function(e){
@@ -776,7 +784,7 @@
 			if(isMultiSearchView()){//联合
 				rePopulateByData(MultiSearchResult);
 			}
-			else if(currentDict){//请求数据
+			else if(currentDict!=EmptyBook){//请求数据
 				if(loadingEntries) loadingEntries.abort();
 				//$("#jsonid").load
 				loadingEntries = loadText("/MdbRGetEntries/"+currentDict.id+"/"+pos+"/"+capacity,
@@ -798,7 +806,7 @@
 				}
 				for (var i=0; i<capacity; i++){
 					var item = document.createElement('p');
-					item.id = pos+i;
+					item.pos = pos+i;
 					item.className="cp";
 					item.onclick = onEntryClick;
 					item.innerText = "N/A " + (pos+i);
@@ -821,6 +829,38 @@
 			if(!merge) {
 				lv = ge("lv");
 				dictsP = ge("dictsP");
+				function wrapHorizonScroll() {
+					// var mask=craft(0, 0,dictsP);
+					// mask.style='position:absolute;top:0;width:100%;height:100%;';
+					var scrollTo;/* ,scrollTm;
+					function reset() {
+						scrollTo=0;
+						scrollTm=0;
+					} */
+					dictsP.addEventListener(mousewheel, onmousewheelDown);
+					ge("toolbar").addEventListener(mousewheel, onmousewheelDown);
+					// dictsP.onmousewheel=
+					function onmousewheelDown(e) {
+						//debug(e);
+						var d=e.detail?-e.detail /3: -e.wheelDelta /120;
+						d = Math[d >= 1 ? 'floor' : 'ceil' ](d);
+						if(d) {
+							// if(!scrollTo) {
+							// 	scrollTo=dictsP.scrollLeft;
+							// }
+							//scrollTo += d*80;
+							//var dt = Math.abs(dictsP.scrollLeft-scrollTo);
+							dictsP.scrollTo({
+								left: dictsP.scrollLeft + d*80
+								,behavior: true?'auto':'smooth'
+							});
+							//reset();
+							//if(scrollTm) clearTimeout(scrollTm);
+							//scrollTm=setTimeout(reset, 250);
+						}
+					}
+				}
+				wrapHorizonScroll(dictsP);
 				seekBarmy = new Seekbar.Seekbar({
 						renderTo: "#seekbar_container",
 						minValue: 0, maxValue: 255,
@@ -932,7 +972,6 @@
 				e=ge('ListView'); if(e) e.remove();
 				ge('parentR').style.marginLeft=0;
 				defP.style.marginTop=0;
-				defP.style.setProperty('--x', '0px');
 			}/**/
 			
 			var useagent=navigator.userAgent;
@@ -941,6 +980,9 @@
 			// 扫描设置
 			setup();
 			defP.onscroll=onWebListScroll;
+			ge('body_').addEventListener('scroll',function(e){
+				if(e.srcElement.scrollTop>0)e.srcElement.scrollTop=0;
+			});
 		}
 	
 		var postInit = function(){
@@ -954,26 +996,24 @@
 			if(mobile){
 				lvPs.width = Math.floor($(window).innerWidth()*0.42) + 'px';
 				pRs.marginLeft = lvPs.width;
-				defP.style.setProperty('--x', lvPs.width);
-				ge('navR').style.setProperty('--x', lvPs.width);
 			}
 			postInit=null;
 		/**/};
 		
 		function rePopulateByData(data) {
-			debug("rePopulateByData::", data);
-			//if(lastTarget) lastSelection = parseInt(lastTarget.id);
+			//debug("rePopulateByData::", data);
+			//if(lastTarget) lastSelection = parseInt(lastTarget.pos);
 			if(lastSelection_!=-1) lastSelection=lastSelection_;
 			var isCombinedView = isMultiSearchView();
 			var startIndex=isCombinedView?pos:0;
 			var i = 0;
 			var end;
 			if(lv.hasChildNodes()) {
-				debug("rePopulateByData::data::", data[pos+i]);
+				//debug("rePopulateByData::data::", data[pos+i]);
 				var childs = lv.childNodes, end = Math.min(capacity, childs.length);
 				for (; i < end; i++) {
 					var item = childs[i];
-					item.id = pos+i;
+					item.pos = pos+i;
 					item.onclick = onEntryClick;
 					item.innerText = isCombinedView?data[pos+i].split("\r")[0]:data[i];
 					if(!isCombinedView && currentDict.VI){
@@ -984,7 +1024,7 @@
 						}catch(e){}
 					}
 					item.style.display='block';
-					if(lastSelection==item.id){
+					if(lastSelection==item.pos){
 						lastTarget = item;
 						item.style.setProperty("background-color",AC);
 					}else{ 
@@ -995,11 +1035,11 @@
 			
 			for(;i<capacity;i++){
 				var item = document.createElement('p');
-				item.id = pos+i;
+				item.pos = pos+i;
 				item.className="cp";
 				item.onclick = onEntryClick;
 				item.innerText = isCombinedView?data[pos+i].split("\r")[0]:data[i];
-				if(lastSelection==item.id){
+				if(lastSelection==item.pos){
 					lastTarget = item;
 					item.style.setProperty("background-color",AC);
 				}
@@ -1022,7 +1062,7 @@
 		function reinitIframe(){
 			//debug('reinitIframe');
 			for (var i=0,inf,fx,bx,nf; inf=frames[i++];)
-			if(!inf.waiting && inf.item && !inf.fold)
+			if(!inf.waiting && inf.item && !inf.fold && inf.scrollExpand)
 			try{
 				fx=inf.item;
 				nf=opt.focusMode && inf!==currentFocus;
@@ -1034,11 +1074,12 @@
 					if(tbh) {
 						tbh = tbh.document.body;
 						if(tbh) {
-							var h = type_bold?(tbh.clientHeight+65):(tbh.scrollHeight);
+							//toast(tbh.clientHeight+','+tbh.scrollHeight);
+							//var h = type_bold?(tbh.clientHeight+65):(tbh.scrollHeight),h0=h;
+							var h = tbh.scrollHeight+(type_bold?65:0),h0=h;
 							if(type_bold && inf.lastHeight+65==h) {
 								continue;
 							}
-							tbh = h;
 							if(inf.collapsed && h>inf.maxHeight) {
 								h=inf.maxHeight;
 							}
@@ -1052,10 +1093,13 @@
 									bx.style.height=h+'px'; 
 								}
 								else fx.height=h;
+							} else if(!inf.scrollable && tbh.scrollWidth>fx.offsetWidth) { 
+								inf.scrollable = true; // 简单处理（嵌套滚动）
+								fx.scrolling='auto';
 							}
 							if(inf.fakeScroll) {
 								// 同步滚动条高度
-								if(nf) h = tbh;
+								if(nf) h = h0;
 								if(inf.fScroll.offsetHeight!=h) {
 									debug('111');
 									inf.fScroll.style.height=h+'px'; 
@@ -1077,7 +1121,14 @@
 						if(--fx.tc<0) fx.tag=0;
 					}
 				}
-			} catch (e){console.log(e)}
+			} catch (e){
+				//debug(e);
+				//if(!inf.item.src.startsWith(location.origin)) {
+				var h=inf.maxHeightSet || opt.maxHeight2;
+				debug('collapse cors frame', h);
+				getFrame(inf, 1, 1);
+				inf.box.style.height=h+'px';
+			}
 		}
 
 		var tid=window.setInterval(reinitIframe, 200);
@@ -1108,17 +1159,22 @@
 					defP.scrollTo(0, f);
 			}
 		}
-		
+
 		function onEntryClick(e){//列表点击
-			//console.log("p: "+e.target.id+typeof(e.target.id));
+			//console.log("p: "+e.target.pos+typeof(e.target.pos));
 			//console.log(e.target.style);
 			if(lastTarget)
 				lastTarget.removeAttribute("style");
 			lastTarget=e.target;
 			lastTarget.style.setProperty("background-color",AC);
-			var logicalPos=lastTarget.id;
-			lastSelection=logicalPos;
-			onItemClick(logicalPos, lastTarget.VI);
+			var pos=lastTarget.pos;
+			lastSelection=pos;
+			currentText = lastTarget.innerText;
+			if(pos==0 && currentDict.name.endsWith('.web')) {
+				currentText=ge("word").value;
+			}
+			ge("entryName").innerText=currentText;
+			onItemClick(pos, lastTarget.VI);
 		}
 		
 		function EnterContent(newPos){
@@ -1131,15 +1187,22 @@
 			//一框一典多释义并列
 			var contents;
 			//ClearAllPages
-			frames.length=0;
 			HlightIdx=0;
 			if(isMultiSearchView()) {
-				processContents(contents=MultiSearchResult[logicalPos]);
+				processContents(MultiSearchResult[logicalPos]);
 			} else {
-				contents=lastDingX+"_"+(VI!=undefined?VI:logicalPos);
+				contents=currentDict.id+"_"+encodePosid((VI!=undefined?VI:logicalPos));
 				processContent(contents, currentDict);
 			}
-			history.pushState(null,null,'READ.jsp?FL='+flag+'&DX='+lastDingX+'&POS='+pos+'&AT='+lastSelection+'&CT='+encodeURIComponent(contents));
+			var read = 'READ.jsp?q='+currentText;
+			if(currentText!=ge("word").value) {
+				read += '&s='+ge("word").value;
+			}
+			if(currentDict) {
+				read += '&dx='+currentDict.id+'&pos='+currentDict.pos+'&click='+lastSelection;
+			}
+			read += '&exp='+encodeURIComponent(contents);
+			history.replaceState(null,null,read);
 			if(app && contents){
 				app.recordRecords(contents);
 			}
@@ -1152,7 +1215,7 @@
 			return e;
 		}
 
-		function getFrame(inf, title) {
+		function getFrame(inf, title, collapse) {
 			var e=inf.item;
 			if(!e && !inf.waiting) {
 				e=craft('iframe');
@@ -1161,17 +1224,34 @@
 				e.width="100%";
 				e.frameBorder=0;
 				e.className='contents';
+				e.scrollExpand=true;
 				inf.box=inf.item=e;
 				inf.viewDirty=1;
 				if(inf.fold && !opt.fm2) {
 					e.style.display="none";
 				}
 			}
+			
+			var t=inf.title;
+			if(true) {
+			//if(title) {
+				if(!t) {
+					inf.title=t=craft('li', 'title');
+					t.onselectstart=function(){return false};
+					t.dictInfo=inf;
+					inf.cover = craft('img', 'dc', craft('td',0,t));
+					inf.cover.src = "/MdbR/cover.png";
+					inf.dictTitle = craft('span', 'dt', t);
+					inf.dictTitle.onclick=onTitleClick;
+					inf.cover.onclick=onCoverClick;
+					inf.viewDirty=1;
+				}
+			}
+
 			// 强制塞入fbox，但是暂时只有全展开、全折叠之特性。
-			inf.fm2 = opt.fm2||opt.alwaysShowExpand;
+			inf.fm2 = collapse || (opt.fm2||opt.alwaysShowExpand) && inf.scrollExpand;
 			if(e) {
-				// scrollable
-				e.scrolling=opt.fm2 && !opt.noNestedScroll2?'yes' : 'no';
+				inf.scrollable = opt.fm2 && !opt.noNestedScroll2;
 				if(e.fm2 ^ inf.fm2) {
 					if(inf.fm2) {
 						var fbox = inf.fbox;
@@ -1207,8 +1287,8 @@
 						}
 						e.fm2 = true;
 						fixBtnText(inf);
-					} else if(!inf.box.parentNode) {
-						// 惰性更新；避免重新加载。
+					} else if(!inf.box.parentNode || !inf.scrollExpand) {
+						// 惰性更新；避免重新加载。（单个显示时除外）
 						inf.box = inf.item;
 						if(inf.fbox.parentNode) {
 							inf.fbox.remove();
@@ -1219,6 +1299,17 @@
 						e.fm2 = false;
 					}
 				}
+				if(inf.scrollExpand ^ e.scrollExpand) {
+					if(e.scrollExpand = inf.scrollExpand) {
+					} else {
+						inf.box.style.height='100%';
+						e.scrolling = 'auto';
+					}
+				}
+				if(e.scrollExpand) {
+					e.scrolling=inf.scrollable?'auto' : 'no';
+				}
+				debug('box.style.height', inf.box.style.height);
 			}
 			
 			var fakeScroll = opt.fm2 && opt.noNestedScroll2;
@@ -1236,43 +1327,36 @@
 				}
 			}
 
-			e=inf.title;
-			if(title) {
-				if(!e) {
-					inf.title=e=craft('li', 'title');
-					e.onselectstart=function(){return false};
-					e.dictInfo=inf;
-					inf.cover = craft('img', 'dc', craft('td',0,e));
-					inf.cover.src = "/MdbR/cover.png";
-					inf.dictTitle = craft('span', 'dt', e);
-					inf.dictTitle.onclick=onTitleClick;
-					inf.cover.onclick=onCoverClick;
-					inf.viewDirty=1;
-				}
-			}
 			if(inf.viewDirty)handleViewDirty(inf);
 			return inf.item;
 		}
 
 		function processContent(e, inf){
-			debug("processContent::", e, inf);
+			//debug("processContent::", e, inf);
 			if(!inf) return;
-			frames.length=0;
+			inf.waiting=false;
+			inf.scrollExpand=false;
 			var fx = getFrame(inf);
-			if(inf.title) {
-				inf.title.remove();
-			}
 			fx.frameAt=0;
 			fx.height="100%";
 			fx.collapsed=0;
-			if(defP.hasChildNodes()) {
-				var childs = defP.childNodes, ln = childs.length;
-				for (var i = 0; i < ln; i++) {
-					if(childs[0]!=fx) defP.removeChild(childs[0]);
+			for (var i=0,child;child=defP.childNodes[i++];) {
+				if(child!=inf.box && child!=inf.title) {
+					child.remove();
+					i--;
 				}
 			}
 			// 不移不改，缺一不可
-			if(!inf.box.parentNode)defP.appendChild(inf.box);
+			if(opt.hideTitleForOnePage ^ inf.title.parentNode) {
+				if(opt.hideTitleForOnePage)
+					inf.title.remove();
+				else 
+					defP.appendChild(inf.title);
+			}
+			if(!inf.title.parentNode) defP.appendChild(inf.title);
+			if(!inf.box.parentNode) defP.appendChild(inf.box);
+			inf.src = e;
+			unfoldFrame(inf);
 			checkUrl(inf);
 			if(inf.VI){
 				//console.log("VIVIVI");
@@ -1283,32 +1367,32 @@
 					fx.contentWindow.loadVI(LP);
 				}
 			}
-			fx.contentWindow.frameAt=0;
-			fx.contentWindow.framed=1;
+			
+			// fx.contentWindow.frameAt=0;
+			// fx.contentWindow.framed=1;
+
+			frames.length=0;
 			frames.push(inf);
-			childs = defP.childNodes, ln = childs?childs.length:0;
-			for (var i = ln-1; i >=0 ; i--)
-				if(childs[i]!=fx)
-					defP.removeChild(childs[i]);
 			if(!inf.name) {
 				checkDicts(inf.id);
 			}
 			defP.style.overflowY = 'hidden';
+			defP.style.display = 'flex';
+			defP.style.flexDirection = 'column';
 		}
 
 		/** 排列多页面内容。
 		 * 新格式： 词条名称\r-d词典ID_0_1_2-d词典ID_0_1_2...
 		 * 旧格式：Multi result format : entry1 \r 0@1@2 & 1@1@2 & 5@1024 \n entry2...
 			where 0@1@2 means contents at position entry#( 1 and 2 ) of dict#( 0 ) */
-		function processContents(e, hasId, _proc){
-			//debug('processContents', hasId);
+		function processContents(e, _proc){
 			processing=true;
 			var newContents=false;
 			if(contents!==e) {
 				newContents=true;
 				contents = e;
 			}
-			//defP.innerHTML='';
+			//debug('processContents', newContents);
 			var infoReq;
 			var des;
 			if(newContents) {
@@ -1316,11 +1400,12 @@
 				for (var i = 0; i < frames.length; i++) {
 					frames[i].frameAt=-1;
 				}
-				var pool=hasId?dictsInfo:dictsGroup;
-				frames.length=0;
 				var sep=e.indexOf('\r');
 				if(sep) e=e.slice(sep+1);
 				var arr = e.split("-");
+				var hasId = e.startsWith('d');
+				var pool=hasId?dictsInfo:dictsGroup;
+				frames.length=0;
 				//debug("processContents contents =", e, 'arr =', arr);
 				// [2nd pass] Rearrange array
 				for (var i = 0; i < arr.length; i++) {
@@ -1347,7 +1432,7 @@
 				}
 			}
 			if(infoReq) {
-				checkDicts(infoReq, function(){processContents(contents, hasId, true)});
+				checkDicts(infoReq, function(){processContents(contents, true)});
 			} else {
 				// [3rd pass] Preserve valid frames
 				var la=0,f;
@@ -1358,8 +1443,10 @@
 						f.remove();
 						i--;
 					} else if(f.tagName==='LI') {
-						for (var j=la,t=f.dictInfo.title;j<fa; j++) {
-							frames[j]._ibf=t;
+						//debug('IBF==>', la, fa, frames.length, f.dictInfo.name);
+						for (var j=la,fx,t=f.dictInfo.title;j<fa && (fx=frames[j]); j++) {
+							//debug('IBF====>', fx.name);
+							fx._ibf=t;
 						}
 						la=fa;
 					}
@@ -1368,10 +1455,15 @@
 				for (var j=la;f=frames[j++];) {
 					f._ibf=null;
 				}
-				var i = 0, len=frames.length;
+				// for (var j=0;f=frames[j++];) {
+				// 	//if(f._ibf)
+				// 	debug('IBF=', f.name, f._ibf?.dictInfo.name);
+				// }
+				var i = 0, len=frames.length, preN=opt.getExpandFirstN();
 				var manyfolds = !(opt.ensureOnePage && len==1);
-				toast(manyfolds);
+				//toast(manyfolds);
 				// [5th pass] Load frames to dom
+				var bStayExpandedFocus=true;
 				for (; i < len; i++) {
 					var inf=frames[i];
 					//e="\\content\\"+e;
@@ -1379,26 +1471,32 @@
 					unfoldFrame(inf);
 					inf.initHeight = 100;
 					inf.collapsed = false;
+					inf.waiting = opt.delay && i>opt.lazyLoadMin || inf.fold;//opt.focusMode==1 && currentFocus!=inf;
 					if(opt.focusMode) {
+						var nf=!bStayExpandedFocus || currentFocus!=inf;
 						if(opt.fm2) {
 							inf.maxHeight = inf.maxHeightSet || opt.maxHeight2;
-							inf.collapsed = manyfolds && i>=opt.getExpandFirstN() && inf!==currentFocus;
+							inf.collapsed = manyfolds && i>=preN && nf;
 							inf.initHeight=opt.initHeight2;
 							// todo 固定or最大
-						} else if(manyfolds){
-							inf.initHeight=0;
-							foldFrame(inf);
+						} else {
+							if(!nf) {
+								inf.waiting = false;
+							} else if(manyfolds && i>=preN){
+								inf.initHeight=0;
+								foldFrame(inf);
+							}
 						}
 					}
-					inf.waiting = opt.delay && i>opt.lazyLoadMin || inf.fold;//opt.focusMode==1 && currentFocus!=inf;
+					inf.scrollExpand=true;
 					var fx = getFrame(inf, true);
-					debug('processContents-waiting', inf.name, 'waiting='+inf.waiting, 'wait='+(fx==null));
+					//debug('processContents-waiting', inf.name, 'waiting='+inf.waiting, 'wait='+(fx==null));
 					if(fx) { //todo
 						if(inf.collapsed && opt.fm2) { // 
 							inf.fbox.style.height=inf.initHeight+'px';
 						}
 						var h=inf.initHeight;
-						debug('h=', h, opt.fm2, fx.name, fx==currentFocus, 'collapsed='+fx.collapsed, 'maxHeight='+inf.maxHeight);
+						debug('h=', h, opt.fm2, fx.name, fx==currentFocus, 'collapsed='+fx.collapsed, 'fold='+fx.fold, 'maxHeight='+inf.maxHeight);
 						fx.height=h;
 						/* 不移不改，缺一不可 */
 						if(!inf.box.parentNode || !inf.title.parentNode){
@@ -1413,7 +1511,7 @@
 						inf.box.rendering=true;
 						if(!inf.fold && !inf.waiting) 
 							checkUrl(inf);
-						debug('processContents-waitin h', h, inf.waiting, isFrameLoaded(inf));
+						//debug('processContents-waitin h', h, inf.waiting, isFrameLoaded(inf));
 					}
 					else {
 						if(!inf.title.parentNode){
@@ -1429,9 +1527,12 @@
 					}
 				}
 				defP.style.overflowY = 'scroll';
+				defP.style.display = 'unset';
 				if(opt.delay) {
 					dec=frames.length;
-					startLazyLoadFrames(des||0);
+					if(!opt.fm1 || preN<=0) {
+						startLazyLoadFrames(des||0);
+					}
 				}
 			}
 			processing=false;
@@ -1441,7 +1542,9 @@
 			delay : true
 
 			,focusMode : 1 // 1=折叠其他；2=限制其他视图的高度；
+			,fm1 : false
 			,fm2 : false
+			,fml : false
 			,limHeightMode : 0 //非focus高度 :  0=限制最大值 1=强制数值
 			,maxHeight2 : 200
 			,initHeight2 : 100
@@ -1464,16 +1567,24 @@
 			,nestedScrollByPart2 : true
 			,nestedScrollPart2 : 0.8
 			,nestedScrollPixel2 : 150
+			,hideTitleForOnePage : false    //  从单本词典点击进来，是否隐藏标题？
 			,init : function() {
-				this.fm2 = opt.focusMode==2;
-				this.initHeight2 = opt.maxHeight2/(opt.limHeightMode==1?1:2);
+				var _=this;
+				_.fm1 = _.focusMode==1;
+				_.fm2 = _.focusMode==2;
+				_.initHeight2 = _.maxHeight2/(_.limHeightMode==1?1:2);
+				if(_.focusMode) {
+					_.fml=_.focusMode;
+				}
 			}
 			,getExpandFirstN : function() {
-				return this.fm2 && this.expandFirst2? this.expandFirst2N:
-					!this.fm2 && this.expandFirst1? this.expandFirst1N : 0;
+				var _=this;
+				return _.fm2 && _.expandFirst2? _.expandFirst2N:
+					!_.fm2 && _.expandFirst1? _.expandFirst1N : 0;
 			}
 			,getAutoScrollFocus : function() {
-				return this.focusMode && this.autoScrollFocus || !this.focusMode && this.alwaysAutoScrollFocus;
+				var _=this;
+				return _.focusMode && _.autoScrollFocus || !_.focusMode && _.alwaysAutoScrollFocus;
 			}
 			,initHeight : function(lx) {
 				// init collapsed height
@@ -1600,7 +1711,9 @@
 		}
 
 		function startLazyLoadFrames(e) {
-			if(opt.focusMode!=1) {
+			//if(opt.focusMode!=1) 
+			if(true) 
+			{
 				expanding = true;
 				debug('startLazyLoadFrames',e);
 				des=dex=e;
@@ -1638,7 +1751,7 @@
 						expanding=false; // 暂停加载
 						return;
 					}
-					if(!opt.focusMode==1 && inf.fold) {
+					if(opt.focusMode==1 && inf.fold) {
 						expanding=false; // 停止加载
 						return;
 					}
@@ -1892,33 +2005,33 @@
 			else processContent(e, currentDict);
 		}
 		
-		function p2(e){//切换词典
-			if(dictsGroup){
-				dictsGroup[lastDingX].OldPos = pos;
-				dictsGroup[lastDingX].OldKey = $("#word").val();
-				if(lastTarget)dictsGroup[lastDingX].OldSel = parseInt(lastTarget.id);
+		function chooseDict(e){//切换词典
+			if(e && dictsGroup){
+				// dictsGroup[lastDingX].OldPos = pos;
+				// dictsGroup[lastDingX].OldKey = ge("word").value;
+				// if(lastTarget)dictsGroup[lastDingX].OldSel = parseInt(lastTarget.pos);
 	
+				var idx;
 				if(e.name!=undefined)
-					lastDingX = parseInt(e.name);
+					idx = parseInt(e.name);
 				else if(e.target)
-					lastDingX = parseInt(e.target.id);
+					idx = parseInt(e.target.id);
 				else
-					lastDingX = parseInt(e.id);
+					idx = parseInt(e.id);
 					
 	
-				if(lastDingX!=Number.NaN){
-					currentDict = dictsGroup[lastDingX];
-					if(app)
-						app.setLastMd(lastDingX);
+				if(idx!=Number.NaN){
+					currentDict = dictsGroup[idx];
+					if(app) app.setLastMd(currentDict.id);
 					//if(app) app.log("clicking dict: "+currentDict+currentDict.OldSel);
 				
 					if(currentDict.OldKey){
-						//TODO????? $("#word").val(currentDict.OldKey);
+						//TODO????? ge("word").value = currentDict.OldKey;
 					}
 					if(currentDict.OldSel){
 						lastSelection_ = currentDict.OldSel;
 						//currentDict.renderDef(currentDict.OldSel)
-					} else $(".def").html("");
+					}
 					
 					if(currentDict.OldPos)
 						pos=currentDict.OldPos;
@@ -1927,7 +2040,7 @@
 					if(pengDingPos!=-1)
 						pos = pengDingPos;
 					setListSize(currentDict.name);
-					$("#fileName").html(currentDict.name);
+					ge("fileName").innerText=currentDict.name;
 				}
 			}
 			try{
@@ -2128,7 +2241,7 @@
 				var e = [];
 				e.name=ding;
 				pengDingPos=p;
-				p2(e);
+				chooseDict(e);
 			}else{
 				setListPos(p);
 			}
@@ -2171,7 +2284,7 @@
 							if(enter)EnterContent(0);
 					});
 				else
-				$("#jsonid").load("/MdbRSingleQuery/"+lastDingX+"/"+encodeURIComponent(word),
+				$("#jsonid").load("/MdbRSingleQuery/"+currentDict.id+"/"+encodeURIComponent(word),
 						function(data) {
 							debug(typeof(data));
 							if(data){
@@ -2308,11 +2421,9 @@
 				if(Array.isArray(e)){
 					dictsGroup = e;
 					dictsP.innerHTML="";
-					var t = [], argSep;
-					t.id=lastDingX;
 					for(var i=0;i<e.length;i++){
-						var info=e[i];
-						if(info.id) dictsInfo[info.id]=info;
+						var inf=e[i];
+						if(inf.id) dictsInfo[inf.id]=inf;
 
 						var d = document.createElement('p');
 						var t = document.createElement('span');
@@ -2320,17 +2431,18 @@
 	
 						t.id=d.id=i;
 						d.className="cp2";
-						d.onclick=t.onclick = p2;
-						t.innerText = info.name;
+						d.onclick=t.onclick = chooseDict;
+						t.innerText = inf.name;
 						t.cover=1;
 						d.cover=1;
 	
 						d.style.setProperty("background-color","#4296FA");
 						d.appendChild(t);
 						dictsP.appendChild(d);
+						inf.tab=d;
 					}
 					restorePages();
-					p2(t);
+					chooseDict(currentDict.tab);
 					if(postInit)
 						postInit();
 					rePopulate();
@@ -2344,23 +2456,21 @@
 			args=parseArgs();
 			debug('args=',args);
 			/**/if(!merge) {
-				if(args.FL) flag = parseInt(args.FL)||0;
-				if(args.DX) currentDict = parseInt(args.DX)||0;
-				if(args.AT)  {
-					lastSelection_ = lastSelection = parseInt(args.AT)||0;
+				if(args.dx) currentDict = parseInt(args.DX)||0;
+				if(args.click)  {
+					lastSelection_ = lastSelection = parseInt(args.click)||0;
 				}
-				if(args.POS)  {
+				if(args.pos)  {
 					pos = parseInt(args.POS)||0;
 				}
 			}/**/
 			if(args.q)  {
 				args.q = decodeURIComponent(args.q);
+				currentText = args.q;
 			}
-			if(args.EXP){
+			if(args.exp){
 				// todo handle exp=ASK
-				processContents(decodeURIComponent(args.EXP), true);
-			} else if(args.CT){
-				processContents(decodeURIComponent(args.CT));
+				processContents(decodeURIComponent(args.exp));
 			}
 		}
 
@@ -2379,7 +2489,7 @@
 		}
 
 		function getText() {
-			return args.q;
+			return currentText;
 		}
 
 		function setFocusMode(e) {
@@ -2387,7 +2497,7 @@
 			{
 				opt.focusMode = e;
 				opt.fm2=opt.focusMode==2;
-				if(contents) processContents(contents, true);
+				if(contents) processContents(contents);
 				//else if(content) processContent(content);
 			}
 			
@@ -2468,7 +2578,7 @@
 			if(currentContext){
 				var aboutPage = ge("about");
 				if(aboutPage.context_idx>=0 && aboutPage.context_idx<dictsGroup.length){
-					p2(ge(aboutPage.context_idx));
+					chooseDict(ge(aboutPage.context_idx));
 				}
 			}
 		}
@@ -2590,7 +2700,7 @@
 			var className = target.className;
 			if('dt'===className||'dc'===className||target.dictInfo){
 				//menu=makeMenu(name, ['foldAll', 'unfoldAll', 'unFoldCurrent', '', 'saveCurrent', '', 'showAbout', null]);
-				menu=makeMenu('dt', ['foldThis', 'foldAll', 'unfoldAll', 'unFoldCurrent', '', 'this', '', 'showAbout', null]);
+				menu=makeMenu('dt', ['foldThis', 'foldAll', 'unfoldAll', 'unFoldCurrent', '', 'this', '', 'openTab', null]);
 				currentContext=target.nextSibling;
 				var inf=getMenuDictInfo(target);
 				gn('this', menu).innerText = inf.name;
@@ -2825,7 +2935,7 @@
 						opt[id] = value;
 
 						opt.init();
-						if(contents) processContents(contents, true);
+						if(contents) processContents(contents);
 
 					}
 					return 1;
@@ -2833,10 +2943,10 @@
 
 				var settingsArr = ['首选项'
 					, [1, ['focusMode', 0], ['专注模式', '折叠其他页面或限制高度'], opt.focusMode!=0
-							, [1<<10, ['focusMode', 1], '折叠其他页面', opt.focusMode==1
+							, [1<<10, ['focusMode', 1], '折叠其他页面', opt.fml==1
 								, [2|2<<10, ['expandFirst1N', 'expandFirst1', opt.expandFirst1], ['默认展开前几项：'], opt.expandFirst1N]
 								]
-							, [1<<10, ['focusMode', 2], '限制最大高度', opt.fm2
+							, [1<<10, ['focusMode', 2], '限制最大高度', opt.fml==2
 								, [2|2<<10, ['expandFirst2N', 'expandFirst2', opt.expandFirst2], ['默认展开前几项：'], opt.expandFirst2N]
 								, [1, 'noNestedScroll2', ['禁止嵌套滚动', '但仍可点击翻页、滑动边缘'], opt.noNestedScroll2]
 								, [1<<10, ['limHeightMode', 0], '最大的高度值', opt.limHeightMode==0]
@@ -3119,6 +3229,24 @@
 			return frames[id].src||'';
 		}
 		
+		function encodePosid(num)
+		{
+			//debug("NumberToText_SIXTWO_LE::", number);
+			const temp = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+			var negative=num<0;
+			if(negative) num=-num;
+			if(num<0) {
+				// todo INCONGRUENT
+				return "8m85Y0n8LzA~";
+			}
+			var sb='';
+			while (num != 0) {
+				sb+=temp[parseInt(num % 62)];
+				num = parseInt(num / 62);
+			}
+			if(negative) sb+='~';
+			return sb;
+		}
 	</script>
 	
 	
@@ -3126,29 +3254,9 @@
 
 </head>
 <!--一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一-->
-<body id="body_" onload="Initialize()">
+<body id="body_" onload="Initialize()" scroll="no">
 
 
-<div id="parentR">
-	<div id="navR">
-		<div class="toolbar">
-			<div class="btnFile">
-				<img id="fileBtn" src='MdbR/sin.png' onclick="toggleSearchMode(this)"/>
-				<img id="viewToggle" src='MdbR/viewAll.png' onclick="showSettings()"/>
-				<div id="fileName" onclick="h5Test()">...</div>
-			</div>
-			<!-- <image id="viewToggle" src='MdbR/viewAll.png' onclick="showSettings()"></image> -->
-		</div>
-		<div id="dictsP"></div>
-	</div>
-	
-	<div id='defP'>
-		<!-- <div class='def' id='def'></div> -->
-		<!--iframe name="frame1" src="/content/x/0"></iframe-->
-	</div>
-	<a class="arrwp" id="prev"  onclick="prvnxtFrame();"><p class="arrow"></p></a>
-	<a class="arrwp" id="next" onclick="prvnxtFrame(1);"><p class="arrow"></p></a> 
-</div>
 
 <div id="ListView">
 	<p id="lv"></p> 
@@ -3163,9 +3271,31 @@
 	</div>
 </div>
 
+<div id="parentR">
+	<div id="navR">
+		<div id="dictsP"></div>
+		<div id="toolbar">
+			<div class="btnFile">
+				<img class="btn" src='MdbR/sin.png' onclick="toggleSearchMode(this)" title="切换联合模式"/>
+				<img class="btn" src='MdbR/tools.png' onclick="showSettings()" title="多页面设置"/>
+				<div id="fileName" class="label">...</div>
+				<div id="entryName" class="label">...</div>
+			</div>
+			<!-- <image id="viewToggle" src='MdbR/viewAll.png' onclick="showSettings()"></image> -->
+		</div>
+	</div>
+	
+	<div id='defP'>
+		<!-- <div class='def' id='def'></div> -->
+		<!--iframe name="frame1" src="/content/x/0"></iframe-->
+	</div>
+	<a class="arrwp" id="prev"  onclick="prvnxtFrame();"><p class="arrow"></p></a>
+	<a class="arrwp" id="next" onclick="prvnxtFrame(1);"><p class="arrow"></p></a> 
+</div>
+
 <div id="jsonid" style="display:none;"></div>
 
-<p id="tmpText" class="sel" stylex="--x:10px;width:calc(var)"></p>
+<p id="tmpText" class="sel"></p>
 
 <div id="aboutP">
 	<div id="aboutB" class='sel'>
