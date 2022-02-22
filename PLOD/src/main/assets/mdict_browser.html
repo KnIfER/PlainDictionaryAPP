@@ -121,12 +121,16 @@
       content: '/';
       padding-right: 4px;
 	}
+	#entryName {
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+	}
     .cp2
     {
       top:0;
-      background-color:#397CCD;
+      background-color:#4296FA;
 	  color: #ecf0f6;
-	  xcolor: #87caf5;
       width:65px;
       margin:5px 20px 0 0px;
       display: inline-block;
@@ -134,6 +138,14 @@
       padding:10px 0 0px 0;
       vertical-align: top;
     }
+    .cp2#cd
+    {
+		border-bottom: 3px solid rgb(255 255 255)!important;
+	}
+    .cp2.hide
+    {
+	  	color: #87caf5;
+	}
     .cp2:hover
     {
       white-space: pre-wrap;
@@ -294,6 +306,7 @@
       margin: 0 0 0 10px ;
       height: 40px;
       width: 100%;
+      min-width: 35px;
       overflow: hidden;
       display: flex;
     }
@@ -309,6 +322,13 @@
       padding-left: 5px;
 	  outline:none;
     }
+	#search{
+	  position: absolute;
+	  right: 0;
+	  width: 20px;
+	  height: 25px;
+	  z-index: 5;
+	}
 	
 	#body{
 		width:70em;
@@ -596,8 +616,6 @@
     	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
     	function _gn(e,p){if(!p || p.name===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
     	function gn(e,p){return _gn(e, p.firstElementChild);};
-		var lastDingX=0;
-		var pos = 0;
 		var pengDingPos = -1;
 		var lv;
 		var defP;
@@ -607,12 +625,11 @@
 		var trueCapacity = 30;
 		var listSize = 100;
 		var seekBarmy;
-		var lastTarget,lastSelection_;
+		var lastTarget;
 		var EmptyBook=[];
 		var currentDict=EmptyBook;var dictsGroup=[];var dictsInfo=[];
 		var currentDictPos;
 		var chrome_ = 0;
-		var enter=0;
 		var app;
 		var frames=[], contents, processing;
 	 		
@@ -629,7 +646,6 @@
 		var type_bold;
 		var mobile;
 		var line_height;
-		var lastSelection, currentText;
 		//346eb4
 		var AC="#397CCD";
 
@@ -643,9 +659,9 @@
 			d = Math[d >= 1 ? 'floor' : 'ceil' ](d);
 			//debug("onmousewheelDown: ", d);
 			e.preventDefault();
-			pos+=d;
+			lastPosAdd(d);
 			// pos+=-e.deltaY;
-			seekBarmy.setValue(getListSize()-pos);
+			seekBarmy.setValue(getListSize()-lastPos());
 			rePopulate();
 		}
 		$(function() {
@@ -688,8 +704,8 @@
 					e.clientY=e.originalEvent.changedTouches[0].clientY;
 				var deltaY=y-e.clientY;
 				if(Math.abs(deltaY)>=line_height){
-					pos+=(deltaY>0?1:-1);
-					seekBarmy.setValue(getListSize()-pos);
+					lastPosAdd(deltaY>0?1:-1);
+					seekBarmy.setValue(getListSize()-lastPos());
 					rePopulate();
 					y=e.clientY;
 				}
@@ -763,11 +779,9 @@
 			trueCapacity=capacity=Math.floor($(window).innerHeight()/line_height);
 			//console.log("line_height: "+line_height, "capacity: "+capacity, "pos: "+pos, "_listSize: "+getListSize());
 			//trueCapacity=capacity=12;
-			var lastSelection=-1;
 	
 			var _listSize=getListSize();
-			if(pos<0) pos=0;
-			if(pos>=_listSize) pos = _listSize-1;
+			var pos=lastPosTrim(_listSize);
 			var couterfeitCounter = pos+capacity;
 	
 			//if(couterfeitCounter>=Number.MAX_SAFE_INTEGER){
@@ -795,29 +809,6 @@
 				);
 			}
 			else{//demo items
-				if(lastTarget) lastSelection = parseInt(lastTarget.id);
-				else if(lastSelection_!=-1) lastSelection=lastSelection_;
-				if(lv.hasChildNodes()) {
-					var childs = lv.childNodes,
-							ln = childs.length;
-					for (var i = 0; i < ln; i++) {
-						lv.removeChild(childs[0]);
-					}
-				}
-				for (var i=0; i<capacity; i++){
-					var item = document.createElement('p');
-					item.pos = pos+i;
-					item.className="cp";
-					item.onclick = onEntryClick;
-					item.innerText = "N/A " + (pos+i);
-					//lv.append(item);
-					if(lastSelection==pos+i){
-						lastTarget = item;
-						item.style.setProperty("background-color",AC);
-					}
-					lv.appendChild(item);
-				}
-				lastSelection_=-1;
 			}
 		}
 		
@@ -881,8 +872,7 @@
 				setListSize(667);//900719925474101000
 				if(document.all){
 					ge("word").onpropertychange=loookup;
-				}
-				else{
+				} else {
 					ge("word").oninput=loookup;
 				}
 				$(window).keyup(function(event){
@@ -915,40 +905,10 @@
 							return true;
 						}
 					}
-					//if($(':focus').length==0 || $("#word").is(':focus'))
-						var lastSelection=0;
-						if(lastTarget) lastSelection = parseInt(lastTarget.id);
-						else if(lastSelection_!=-1) lastSelection=lastSelection_;
-						var re=false;
-						if(keyCode==38){//up
-							if(lastSelection==0) return false;
-							lastSelection=lastSelection-1;
-							re=true;
-						}
-						if(keyCode==40){//down
-							if(lastSelection>=getListSize()-1) return false;
-							lastSelection=lastSelection+1;
-							re=true;
-						}
-						if(re){
-							lastSelection_=lastSelection;
-							lastTarget=null;
-							e.preventDefault();
-							if(lastSelection<=pos) pos=lastSelection;
-							else{
-								var ca =  trueCapacity - 6;
-								if(lastSelection>pos+ca)
-									pos=lastSelection-ca;
-								console.log(lastSelection+" : "+pos+" : "+(pos+ca));
-							}
-							if(currentDict){
-								console.log(""+lastSelection+" : "+getListSize());
-								onItemClick(lastSelection);
-							}
-							seekBarmy.setValue(listSize-pos);
-							rePopulate();
-							return;
-						}
+					if(keyCode==38){//up
+					}
+					if(keyCode==40){//down
+					}
 					return true;
 				}
 				$(document.body).bind({
@@ -1002,12 +962,12 @@
 		
 		function rePopulateByData(data) {
 			//debug("rePopulateByData::", data);
-			//if(lastTarget) lastSelection = parseInt(lastTarget.pos);
-			if(lastSelection_!=-1) lastSelection=lastSelection_;
 			var isCombinedView = isMultiSearchView();
+			var pos=lastPos();
 			var startIndex=isCombinedView?pos:0;
 			var i = 0;
 			var end;
+			var sel=lastSelection();
 			if(lv.hasChildNodes()) {
 				//debug("rePopulateByData::data::", data[pos+i]);
 				var childs = lv.childNodes, end = Math.min(capacity, childs.length);
@@ -1024,7 +984,7 @@
 						}catch(e){}
 					}
 					item.style.display='block';
-					if(lastSelection==item.pos){
+					if(sel==item.pos){
 						lastTarget = item;
 						item.style.setProperty("background-color",AC);
 					}else{ 
@@ -1039,7 +999,7 @@
 				item.className="cp";
 				item.onclick = onEntryClick;
 				item.innerText = isCombinedView?data[pos+i].split("\r")[0]:data[i];
-				if(lastSelection==item.pos){
+				if(sel==item.pos){
 					lastTarget = item;
 					item.style.setProperty("background-color",AC);
 				}
@@ -1052,11 +1012,36 @@
 				var item = lv.childNodes[i];
 				item.style.display='none';
 			}
-			lastSelection_=-1;
 		}
 
 		function isMultiSearchView(){
 			return displayingMultiSearch && MultiSearchResult!=undefined;
+		}
+
+		function lastSelection(){
+			return (isMultiSearchView()?MultiSearchResult:currentDict).sel||0;
+		}
+
+		function lastPos(){
+			return (isMultiSearchView()?MultiSearchResult:currentDict).pos||0;
+		}
+
+		function lastPosTrim(max){
+			var pos=lastPos();
+			if(pos<0) lastPosSet(pos=0);
+			else if(pos>=max) lastPosSet(pos = max-1);
+			return pos;
+		}
+
+		function lastPosSet(pos){
+			if(isMultiSearchView())
+				MultiSearchResult.pos=pos;
+			else
+				currentDict.pos=pos;
+		}
+
+		function lastPosAdd(d){
+			lastPosSet(lastPos()+d)
 		}
 
 		function reinitIframe(){
@@ -1168,43 +1153,67 @@
 			lastTarget=e.target;
 			lastTarget.style.setProperty("background-color",AC);
 			var pos=lastTarget.pos;
-			lastSelection=pos;
-			currentText = lastTarget.innerText;
+			var t = lastTarget.innerText;
 			if(pos==0 && currentDict.name.endsWith('.web')) {
-				currentText=ge("word").value;
+				t=ge("word").value;
 			}
-			ge("entryName").innerText=currentText;
+			setTitle(t);
+			if(!isMultiSearchView()) {
+				currentDict.entry = args.q;
+			}
 			onItemClick(pos, lastTarget.VI);
 		}
 		
 		function EnterContent(newPos){
 			lastTarget=null;
-			onItemClick(lastSelection_=newPos);
-			enter=0;
+			onItemClick(newPos);
+			tmp.enter=0;
 		}
 
 		function onItemClick(logicalPos, VI){
 			//一框一典多释义并列
-			var contents;
 			//ClearAllPages
 			HlightIdx=0;
+			tmp.pushStates = false;
 			if(isMultiSearchView()) {
+				if(opt.pushStates && (opt.pushStatesOn!=2 || tmp.enter)) tmp.pushStates=true;
+				MultiSearchResult.sel = logicalPos;
 				processContents(MultiSearchResult[logicalPos]);
 			} else {
-				contents=currentDict.id+"_"+encodePosid((VI!=undefined?VI:logicalPos));
+				if(opt.pushStates && (opt.pushStatesOn==0 
+						|| opt.pushStatesOn==1 && (tmp.lastMode!=0 || tmp.getOnePageId()!=currentDict.id))// lastMode 不一致了、或不是同一本词典内浏览
+						|| opt.pushStatesOn==2 && tmp.enter
+						) {
+					tmp.pushStates=true;
+				}
+				currentDict.sel=VI!=undefined?VI:logicalPos;
+				contents=currentDict.id+"_"+encodePosid(currentDict.sel);
 				processContent(contents, currentDict);
 			}
-			var read = 'READ.jsp?q='+currentText;
-			if(currentText!=ge("word").value) {
-				read += '&s='+ge("word").value;
+			if(tmp.enter) {
+				args.s = args.q;
 			}
-			if(currentDict) {
-				read += '&dx='+currentDict.id+'&pos='+currentDict.pos+'&click='+lastSelection;
+			if(tmp.pushStates) {
+				pushState();
 			}
-			read += '&exp='+encodeURIComponent(contents);
-			history.replaceState(null,null,read);
-			if(app && contents){
-				app.recordRecords(contents);
+			if(app && contents) app.recordRecords(contents);
+		}
+
+		function pushState() {
+			if(true) {
+				args.s = ge("word").value;
+				var read = 'READ.jsp?q='+args.q;
+				if(args.q!=args.s) {
+					read += '&s='+args.s;
+				}
+				if(currentDict) {
+					read += '&dx='+currentDict.id+'&pos='+currentDict.pos+'&click='+lastSelection();
+				}
+				if(args.mode) {
+					read += '&mode='+args.mode;
+				}
+				read += '&exp='+encodeURIComponent(contents);
+				history.pushState(null,null,read);
 			}
 		}
 
@@ -1340,12 +1349,24 @@
 			fx.frameAt=0;
 			fx.height="100%";
 			fx.collapsed=0;
-			for (var i=0,child;child=defP.childNodes[i++];) {
-				if(child!=inf.box && child!=inf.title) {
-					child.remove();
+			for (var i=0,f;f=defP.childNodes[i++];) {
+				if(f!=inf.box && f!=inf.title) {
+					f.remove();
 					i--;
+					if(f.tagName==='LI') {
+						f=f.dictInfo;
+						if(f.item) {
+							try{
+								var d=f.item.contentWindow.document.documentElement;
+								f.lastY=d.scrollTop;
+								f.lastX=d.scrollLeft;
+								debug('卸载内容!!!', f.lastY, f.lastX);
+							}catch(e){}
+						}
+					}
 				}
 			}
+			tmp.lastMode = 0;
 			// 不移不改，缺一不可
 			if(opt.hideTitleForOnePage ^ inf.title.parentNode) {
 				if(opt.hideTitleForOnePage)
@@ -1355,9 +1376,15 @@
 			}
 			if(!inf.title.parentNode) defP.appendChild(inf.title);
 			if(!inf.box.parentNode) defP.appendChild(inf.box);
-			inf.src = e;
+			if(inf.src!=e) {
+				inf.src = e;
+				inf.lastY = inf.lastX = 0;
+			}
 			unfoldFrame(inf);
-			checkUrl(inf);
+			var loaded=checkUrl(inf);
+			if(!loaded) {
+				debug('不要重新加载!!!', inf.lastY, inf.lastX);
+			}
 			if(inf.VI){
 				//console.log("VIVIVI");
 				//var fv=arr[1];
@@ -1430,10 +1457,21 @@
 					inf.frameAt = i;
 					frames.push(inf);
 				}
+				// var f=dictsP.firstChild;
+				// while(f) {
+				// 	var c=f.classList;
+				// 	if(f.dictInfo.frameAt>=0) {
+				// 		c.remove('hide');
+				// 	} else {
+				// 		c.add('hide');
+				// 	}
+				// 	f=f.nextSibling;
+				// }
 			}
 			if(infoReq) {
 				checkDicts(infoReq, function(){processContents(contents, true)});
 			} else {
+				tmp.lastMode = 1;
 				// [3rd pass] Preserve valid frames
 				var la=0,f;
 				for (var i=0,fa;f=defP.children[i]; i++) {
@@ -1568,6 +1606,14 @@
 			,nestedScrollPart2 : 0.8
 			,nestedScrollPixel2 : 150
 			,hideTitleForOnePage : false    //  从单本词典点击进来，是否隐藏标题？
+
+			,pushStates : true // 自动更新地址栏历史 切换词条时更新，会有很多历史记录
+			,pushStatesOn : 2 // 0=始终; 1=仅在联合查询、或切换显示不同词典的内容时启用; 2=仅在使用搜索框时启用
+			,pushUIStates : false // 切换界面状态时也自动更新
+			,frameSafe : true // 若自动更新了，禁止加载子页面时再次影响浏览器的前后导航历史
+
+			,safeFrame : false // 加载子页面时，禁止影响浏览器前后导航历史
+
 			,init : function() {
 				var _=this;
 				_.fm1 = _.focusMode==1;
@@ -1600,6 +1646,15 @@
 
 		var tmp={
 			scrollNestedScroll2 : true
+			,pushStates : false
+			,lastMode : false
+			,enter : false
+			,getOnePageId : function() {
+				var f=defP.firstChild;
+				if(f) f=f.dictInfo;
+				if(f) f=f.id;
+				return f;
+			}
 		};
 
 		var dex, dec, des, expanding;	
@@ -1804,9 +1859,17 @@
 		function checkUrl(e) {
 			var fx=e.item,u=e.src;
 			if(fx && fx.innerHTML!=u) {
-				//debug('加载...', fx.innerHTML, u);
-				fx.src = "\\content\\"+u;
+				debug('加载...', fx.innerHTML, u, tmp.pushStates);
+				if(opt.safeFrame || opt.frameSafe&&tmp.pushStates){
+					debug('阻止...');
+					try{
+						fx.contentWindow.location.replace("\\content\\"+u);
+					}catch(e){fx.src = "\\content\\"+u;}
+				} else {
+					fx.src = "\\content\\"+u;
+				}
 				fx.innerHTML = u;
+				return true;
 			}
 		}
 
@@ -2005,46 +2068,43 @@
 			else processContent(e, currentDict);
 		}
 		
-		function chooseDict(e){//切换词典
-			if(e && dictsGroup){
-				// dictsGroup[lastDingX].OldPos = pos;
-				// dictsGroup[lastDingX].OldKey = ge("word").value;
-				// if(lastTarget)dictsGroup[lastDingX].OldSel = parseInt(lastTarget.pos);
-	
-				var idx;
-				if(e.name!=undefined)
-					idx = parseInt(e.name);
-				else if(e.target)
-					idx = parseInt(e.target.id);
-				else
-					idx = parseInt(e.id);
-					
-	
-				if(idx!=Number.NaN){
-					currentDict = dictsGroup[idx];
-					if(app) app.setLastMd(currentDict.id);
-					//if(app) app.log("clicking dict: "+currentDict+currentDict.OldSel);
-				
-					if(currentDict.OldKey){
-						//TODO????? ge("word").value = currentDict.OldKey;
+		function chooseDict(t){//切换词典
+			if(t && dictsGroup){
+				if(isMultiSearchView()) {
+					//111
+					return;
+				}
+				currentDict.key = ge("word").value;
+				var inf=getMenuDictInfo(t.srcElement||t), ld=currentDict, d=inf!=ld;
+				ge("fileName").innerText=inf.name;
+				currentDict = inf;
+				if(app) app.setLastMd(inf.id);
+				//if(app) app.log("clicking dict: "+inf+inf.sel);
+			
+				if(inf.key){
+					//TODO????? ge("word").value = inf.OldKey;
+				}
+				var entryName='...';
+				if(inf.sel){
+					entryName = inf.entry || args.q;
+					if(!isMultiSearchView())
+						onItemClick(inf.sel);
+				}
+				ge("entryName").innerText=entryName;
+				if(!isMultiSearchView()) {
+					if(pengDingPos!=-1) lastPosSet(pengDingPos);
+					setListSize(inf.name);
+				}
+				if(!merge) {
+					inf.tab.id = 'cd';
+					if(d) {
+						if(ld)ld.tab.id='';
+						pushState();
 					}
-					if(currentDict.OldSel){
-						lastSelection_ = currentDict.OldSel;
-						//currentDict.renderDef(currentDict.OldSel)
-					}
-					
-					if(currentDict.OldPos)
-						pos=currentDict.OldPos;
-					else pos=0;
-	
-					if(pengDingPos!=-1)
-						pos = pengDingPos;
-					setListSize(currentDict.name);
-					ge("fileName").innerText=currentDict.name;
 				}
 			}
 			try{
-				e.stopPropagation();
+				t.stopPropagation();
 			}catch(e){}
 			//e.target.background("#0000ff");
 		}
@@ -2228,35 +2288,22 @@
 		function setListPos(p){
 			//console.log("list pos is: ",getListSize()-p);
 			seekBarmy.setValue(getListSize()-p);
-			pos=p;
+			lastPosSet(p);
 			//seekBarmy.render();
 			rePopulate();
-		}
-		
-		function setDictAndPos(ding,p){
-			dictsGroup[ding].OldSel=ding;
-			lastTarget=null;
-			lastSelection_=p;
-			if(lastDingX!=ding){
-				var e = [];
-				e.name=ding;
-				pengDingPos=p;
-				chooseDict(e);
-			}else{
-				setListPos(p);
-			}
-		}
-	
-		function setCurrMdict(mdict){
-			//
 		}
 		
 		//scroll bar scrolled
 		function updateProgress() {
 			if(!seekBarmy) return;
-			pos = getListSize() - seekBarmy.value.toString(10);
+			lastPosSet(getListSize() - seekBarmy.value.toString(10));
 			rePopulate();
 			// $("#color-code").html(red);
+		}
+		
+		function setTitle(t){
+			ge("entryName").innerText = args.q = t;
+			document.title = t + ' - 平典搜索';
 		}
 		
 		function loookup(){
@@ -2275,23 +2322,26 @@
 				if(isCombinedSeaching())
 				$("#jsonid").load("/MdbRJointQuery/"+encodeURIComponent(word),
 						function(data) {
-							debug("received 联合搜索: "+data);
+							//debug("received 联合搜索: "+data);
 							MultiSearchResult = data.split('\n');
 							MultiSearchResultStamp=word;
 							displayingMultiSearch=true;
 							setListPos(0);
 							adjustSeekbar(MultiSearchResult.length);
-							if(enter)EnterContent(0);
+							if(tmp.enter)EnterContent(0);
 					});
 				else
 				$("#jsonid").load("/MdbRSingleQuery/"+currentDict.id+"/"+encodeURIComponent(word),
 						function(data) {
-							debug(typeof(data));
+							debug('received 单本搜索: '+typeof(data), data);
 							if(data){
 								displayingMultiSearch=false;
 								var newPos=parseInt(data);
+								if(newPos>=0) {
+									setTitle(data.slice(data.indexOf('_')+1));
+								}
 								setListPos(newPos);
-								if(enter)EnterContent(newPos);
+								if(tmp.enter)EnterContent(newPos);
 							}
 					});
 			}
@@ -2408,10 +2458,21 @@
 		}
 
 		function ScanInDicts() {
+			args=parseArgs();
 			/**/if(merge) {/**/
 				restorePages();
 			/**/return;
 			} 
+			if(args.mode=='all') {
+				setCombinedSeaching(true);
+				ge('sin').src='MdbR/joint.png';
+			} else if(!args.mode) {
+				// todo...
+			}
+			ge('word').value=args.s || args.q;
+			if(args.q)  {
+				ge("entryName").innerText = args.q;
+			}
 			// $("#jsonid").load
 			loadJson("/dicts.json", function(e) {
 				debug(["ScanInDicts::", e, Array.isArray(e)]);
@@ -2427,20 +2488,22 @@
 
 						var d = document.createElement('p');
 						var t = document.createElement('span');
-						t.style.setProperty("background-color","#4296FA");
 	
-						t.id=d.id=i;
 						d.className="cp2";
-						d.onclick=t.onclick = chooseDict;
+						d.dictInfo=t.dictInfo=inf;
+						d.onclick=t.onclick=chooseDict;
 						t.innerText = inf.name;
-						t.cover=1;
-						d.cover=1;
-	
-						d.style.setProperty("background-color","#4296FA");
+						
 						d.appendChild(t);
 						dictsP.appendChild(d);
 						inf.tab=d;
+						if(args.dx===inf.id) {
+							currentDict = inf;
+							currentDict.pos = parseInt(args.pos)||0;
+							currentDict.sel = parseInt(args.click)||0;
+						}
 					}
+					debug('currentDict', currentDict);
 					restorePages();
 					chooseDict(currentDict.tab);
 					if(postInit)
@@ -2453,21 +2516,7 @@
 	
 		// 直接根据URL摆放内容页面
 		function restorePages() {
-			args=parseArgs();
 			debug('args=',args);
-			/**/if(!merge) {
-				if(args.dx) currentDict = parseInt(args.DX)||0;
-				if(args.click)  {
-					lastSelection_ = lastSelection = parseInt(args.click)||0;
-				}
-				if(args.pos)  {
-					pos = parseInt(args.POS)||0;
-				}
-			}/**/
-			if(args.q)  {
-				args.q = decodeURIComponent(args.q);
-				currentText = args.q;
-			}
 			if(args.exp){
 				// todo handle exp=ASK
 				processContents(decodeURIComponent(args.exp));
@@ -2485,11 +2534,13 @@
 					}
 				});
 			}
+			if(params.q)params.q=decodeURIComponent(params.q);
+			if(params.s)params.s=decodeURIComponent(params.s);
 			return params;
 		}
 
 		function getText() {
-			return currentText;
+			return args.q;
 		}
 
 		function setFocusMode(e) {
@@ -3017,9 +3068,11 @@
 		function toggleSearchMode(e){
 			setCombinedSeaching(!isCombinedSeaching());
 			if(isCombinedSeaching()){
+				if(args.mode)args.mode='all';
 				e.src='MdbR/joint.png';
 			}
 			else{
+				if(args.mode)args.mode='one';
 				displayingMultiSearch=false;
 				e.src='MdbR/sin.png';
 				adjustSeekbar(listSize);
@@ -3028,6 +3081,8 @@
 			
 			if(app)
 				app.setCombinedSeaching(isCombinedSeaching());
+
+			pushState();
 		}
 
 		function fadeToast() {
@@ -3268,6 +3323,13 @@
 	
 	<div id="wordP" style="">
 		<input id="word" type="text" value="">
+		<label id="search" onclick="tmp.enter=1;loookup()">
+			<svg viewBox="0 0 25 25" style="vertical-align: middle;margin:4px 5px 0 0;">
+				<path stroke="#4296fa" stroke-width="2.5" stroke-linecap="round" stroke-miterlimit="10" fill="none" d="M23.75 23.75l-9-9"></path>
+				<circle stroke="#4296fa" stroke-width="2.5" stroke-linecap="round" stroke-miterlimit="10" cx="9" cy="9" r="7.75" fill="none"></circle>
+				<path fill="none" d="M25 25h-25v-25h25z"></path>
+			</svg>
+		</label>
 	</div>
 </div>
 
@@ -3276,7 +3338,7 @@
 		<div id="dictsP"></div>
 		<div id="toolbar">
 			<div class="btnFile">
-				<img class="btn" src='MdbR/sin.png' onclick="toggleSearchMode(this)" title="切换联合模式"/>
+				<img id='sin' class="btn" src='MdbR/sin.png' onclick="toggleSearchMode(this)" title="切换联合模式"/>
 				<img class="btn" src='MdbR/tools.png' onclick="showSettings()" title="多页面设置"/>
 				<div id="fileName" class="label">...</div>
 				<div id="entryName" class="label">...</div>
