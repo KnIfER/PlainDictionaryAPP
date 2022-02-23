@@ -12,7 +12,7 @@
 
 <!--3--><item android:id="@+id/toolbar_action6" android:icon="@drawable/ic_btn_siglemode" android:title="@string/rem_position" app:showAsAction="never"/>
 
-<!--4--><item android:id="@+id/toolbar_action2" android:icon="@drawable/ic_search_24k" android:title="@string/search" app:showAsAction="never"/>
+<!--4--><item android:id="@+id/toolbar_action2" android:icon="@drawable/ic_search_24k" android:title="@string/search" app:showAsAction="always"/>
 
 <!--5--><item android:id="@+id/toolbar_action11" android:title="@string/tint_result" app:showAsAction="never"/>
 

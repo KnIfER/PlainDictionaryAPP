@@ -5,14 +5,11 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -76,7 +73,6 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.ViewPropertyAnimatorCompatSet;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
@@ -131,7 +127,6 @@ import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScreenListener;
-import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
@@ -811,7 +806,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if (DBrowser != null && main.getChildCount() == 1) {//==1: 内容未加渲染
 						if (opt.getUseVolumeBtn()) {
 							if (DBrowser.inSearch)
-								DBrowser.onClick(DBrowser.main_clister_layout.findViewById(R.id.browser_widget13));
+								DBrowser.onClick(DBrowser.UIData.browserWidget13);
 							else {
 								View v = new View(this);
 								v.setId(R.id.nxt_plain);
@@ -850,7 +845,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					boolean toHighlight=MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && MainPageSearchbar.getParent()!=null;
 					if (DBrowser != null && main.getChildCount() == 1) {
 						if (DBrowser.inSearch)
-							DBrowser.onClick(DBrowser.main_clister_layout.findViewById(R.id.browser_widget14));
+							DBrowser.onClick(DBrowser.UIData.browserWidget14);
 						else {
 							View v = new View(this);
 							v.setId(R.id.lst_plain);
@@ -2237,7 +2232,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		if(systemIntialized){
 			if(DBrowser!=null){
-				savedInstanceState.putInt("DB",DBrowser.getFragmentId());
+				savedInstanceState.putInt("DB",DBrowser.getFragmentType());
 				savedInstanceState.putInt("DBPos",DBrowser.currentPos);
 			}
 
@@ -2514,7 +2509,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				switch_dark_mode(GlobalOptions.isDark);
 			}
 			if(DBrowser!=null) {
-				DBrowser.checkColor();
+				DBrowser.checkColors();
 			}
 			checkFlags();
 		}

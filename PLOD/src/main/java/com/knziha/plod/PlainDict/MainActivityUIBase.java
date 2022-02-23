@@ -5686,7 +5686,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(isFragInitiated && pickDictDialog!=null)pickDictDialog.adapter().notifyDataSetChanged();
 			}
 			if(DBrowser!=null) {
-				DBrowser.checkColor();
+				DBrowser.checkColors();
 			}
 			if(popupIndicator!=null) {
 				popupTextView.setTextColor(dark?AppBlack:Color.GRAY);

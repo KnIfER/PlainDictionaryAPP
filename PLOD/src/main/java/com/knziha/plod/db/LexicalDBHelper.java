@@ -21,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
 
@@ -46,7 +48,27 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String FIELD_PARAMETERS = "param";
 	
     public final String DATABASE;
+    HashMap<Long, Long> versions = new HashMap<>();
 	public boolean lastAdded;
+	void incrementDBVersion(Long fid) {
+		Long ver = versions.get(fid);
+		versions.put(fid, (ver==null?1L:(ver+1)));
+	}
+	void incrementFavVersion(Long fid) {
+		if(fid==-1) {
+			Long ver = versions.get(fid);
+			versions.clear();
+			if(ver!=null) {
+				versions.put(fid, ver);
+			}
+		} else {
+			incrementDBVersion(fid);
+		}
+	}
+	public long getDBVersion(Long fid) {
+		Long ver = versions.get(fid);
+		return ver==null?0L:ver;
+	}
 	private SQLiteDatabase database;
 	public SQLiteDatabase getDB(){return database;}
     
@@ -366,7 +388,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public long insert(MainActivityUIBase a, String lex, long folder, ViewGroup webviewholder) {
     	CMN.Log("insert");
 		isDirty=true;
-		lastAdded=true;
+		incrementFavVersion(folder);
 		if (folder==-1) {
 			folder = a.opt.getCurrFavoriteNoteBookId();
 		}
@@ -414,7 +436,6 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			ContentValues values = new ContentValues();
 			values.put(Key_ID, lex);
 			values.put(Date, System.currentTimeMillis());
-			lastAdded=true;
 			long ret=-1;
 			if(!GetIsFavoriteTerm(lex, -1)) {
 				ret = database.insert(TABLE_MARKS, null, values);
@@ -431,7 +452,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	 * @param folder the favorite folder id. if -1 then remove all
 	 **/
 	public int remove(String lex, long folder) {
-		lastAdded=true;
+		incrementFavVersion(folder);
 		if(folder==-2) {
 			folder = favoriteFolderId;
 		}
@@ -460,7 +481,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			return updateHistoryTerm(a, lex, webviewholder);
 		} else {
 			CMN.Log("insertUpdate");
-			lastAdded=true;
+			incrementDBVersion(-1L);
 			long ret=-1;
 			if(!GetIsFavoriteTerm(lex, -1)) {
 				ret = insert(a, lex, 0, null);
@@ -508,7 +529,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				where[0]=""+id;
 				database.update(TABLE_HISTORY_v2, values, "id=?", where);
 			}
-			lastAdded=true;
+			incrementDBVersion(-1L);
 		} catch (Exception e) {
 			CMN.Log(e);
 		}

@@ -30,16 +30,12 @@ import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
 import com.knziha.ankislicer.customviews.ArrayAdaptermy;
-import com.knziha.ankislicer.customviews.ShelfLinearLayout;
-import com.knziha.ankislicer.customviews.VerticalRecyclerViewFastScrollermy;
 import com.knziha.ankislicer.customviews.WahahaTextView;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdict;
@@ -47,6 +43,7 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
+import com.knziha.plod.plaindict.databinding.DeckBrowserBinding;
 import com.knziha.plod.widgets.RecyclerViewmy;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.ViewUtils;
@@ -79,6 +76,7 @@ public class DBroswer extends Fragment implements
 	protected boolean initialized;
 	private boolean isDarkStamp;
 	private boolean bIsCombinedSearch;
+	DeckBrowserBinding UIData;
 	
 	SparseArray<Long> lastVisiblePositionMap = new SparseArray<>();
 	
@@ -94,17 +92,7 @@ public class DBroswer extends Fragment implements
 	public String currentDisplaying = "";
 	public int currentPos=-1;
 	public long currentRowId=-1;
-
 	
-	View main_clister_layout;
-	View progressBar;
-	ToggleButton tg2;
-	ImageView toolbar_action1;
-	Toolbar toolbar;
-	ShelfLinearLayout sideBar;
-	TextView counter;
-	View shelfright;
-
 	SparseArray<String> toDelete = new SparseArray<>();
 	HashSet<Long> toDeleteV2 = new HashSet<>();
 	HashSet<Long> Selection = new HashSet<>();
@@ -112,12 +100,10 @@ public class DBroswer extends Fragment implements
 	boolean isToDel = false;
 
 	LinearLayoutManager lm;
-	VerticalRecyclerViewFastScrollermy fastScroller;
-	ViewGroup snack_root;
 
-	SearchView searchView;
 	InputMethodManager imm;
-
+	private int MainAppBackground;
+	
 	public int try_goBack(){
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null || !initialized) return 0;
@@ -161,13 +147,13 @@ public class DBroswer extends Fragment implements
 			return 1;
 		}
 		if(inSearch) {
-			main_clister_layout.findViewById(R.id.search).performClick();
+			UIData.search.performClick();
 			return 1;
 		}
 		if(Selection.size()>0) {//SelectionMode==SelectionMode_select
 			Selection.clear();
 			notifyDataSetChanged();
-			counter.setText(Selection.size()+"/"+ getItemCount());
+			UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 			if(SelectionMode==SelectionMode_select) {
 				int taregtID=0;
 				switch(lastFallBackTarget) {
@@ -182,12 +168,12 @@ public class DBroswer extends Fragment implements
 					break;
 				}
 				if(taregtID!=0) {// taregtID=R.id.tools0;
-					View target = main_clister_layout.findViewById(taregtID);
+					View target = UIData.getRoot().findViewById(taregtID);
 					target.setTag(false);
 					target.performClick();
 				}
 			}else {
-				counter.setText(Selection.size()+"/"+ getItemCount());
+				UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 			}
 			return 1;
 		}
@@ -196,54 +182,41 @@ public class DBroswer extends Fragment implements
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		if(main_clister_layout!=null)
-			return main_clister_layout;
-		//CMN.Log("onCreateView!!!");
-		View _main_clister_layout= inflater.inflate(R.layout.card_lister, container,false);
-		progressBar = _main_clister_layout.findViewById(R.id.progress_bar);
-		progressBar.setVisibility(View.GONE);
-		lv = _main_clister_layout.findViewById(R.id.main_list);
-		snack_root = _main_clister_layout.findViewById(R.id.snack_root);
-		fastScroller = _main_clister_layout.findViewById(R.id.fast_scroller);
-		fastScroller.setRecyclerView(lv);
-		lv.addOnScrollListener(fastScroller.getOnScrollListener());
-		lv.setLayoutManager(lm = new LinearLayoutManager(inflater.getContext()));
-		
-		ViewUtils.setOnClickListenersOneDepth(sideBar=_main_clister_layout.findViewById(R.id.sideBar), this, 2, 0, null);
-		
-		toolbar_action1=_main_clister_layout.findViewById(R.id.toolbar_action1);
-		toolbar_action1.setColorFilter(GlobalOptions.BLACK);
-		
-		tg2 = _main_clister_layout.findViewById(R.id.tg2);
-		//main_clister_layout.findViewById(R.id.choosed).setOnLongClickListener(this);
-
-		_main_clister_layout.findViewById(R.id.browser_widget15).setOnClickListener(ViewUtils.DummyOnClick);
-		_main_clister_layout.findViewById(R.id.browser_widget14).setOnClickListener(this);
-		_main_clister_layout.findViewById(R.id.browser_widget13).setOnClickListener(this);
-
-		toolbar = _main_clister_layout.findViewById(R.id.toolbar);
-		//sideBarPopHolder = (Toolbar) main_clister_layout.findViewById(R.id.sideBarPopHolder);
-		toolbar.inflateMenu(R.xml.menu_search_view);
-		
-		toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
-		toolbar.setNavigationOnClickListener(v1 -> {
-		
-		});
-		
-		if (container.getContext() instanceof MainActivityUIBase) {
+		if(UIData==null) {
+			UIData = DeckBrowserBinding.inflate(inflater, container, false);
+			//CMN.Log("onCreateView!!!");
+			lv = UIData.mainList;
+			UIData.fastScroller.setRecyclerView(lv);
+			lv.addOnScrollListener(UIData.fastScroller.getOnScrollListener());
+			lv.setLayoutManager(lm = new LinearLayoutManager(inflater.getContext()));
+			
+			ViewUtils.setOnClickListenersOneDepth(UIData.sideBar, this, 2, 0, null);
+			
+			UIData.toolbarAction1.setColorFilter(GlobalOptions.BLACK);
+			
+			UIData.browserWidget15.setOnClickListener(ViewUtils.DummyOnClick);
+			UIData.browserWidget14.setOnClickListener(this);
+			UIData.browserWidget13.setOnClickListener(this);
+			
+			UIData.toolbar.inflateMenu(R.xml.menu_dbrowser);
+			
+			UIData.toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
+			UIData.toolbar.setNavigationOnClickListener(v1 -> {
+			
+			});
+			
+			if (container.getContext() instanceof MainActivityUIBase) {
 //			toolbar.setBackgroundColor(0xcc000000|(((MainActivityUIBase) container.getContext()).MainBackground&0xffffff));
-			toolbar.setBackgroundColor(((MainActivityUIBase) container.getContext()).MainBackground);
+			}
+			//CMN.Log("咿呀咿呀", container.getContext());
+			Menu toolbarmenu = UIData.toolbar.getMenu();
+			MenuItem searchItem = toolbarmenu.getItem(0);
+			//  new SearchCardsHandler2().execute(query);
+			
+			UIData.counter.setVisibility(View.GONE);
+			newStart = true;
 		}
-		//CMN.Log("咿呀咿呀", container.getContext());
-		Menu toolbarmenu = toolbar.getMenu();
-		MenuItem searchItem = toolbarmenu.getItem(0);
-		//  new SearchCardsHandler2().execute(query);
-		
-		counter =  _main_clister_layout.findViewById(R.id.counter);
-		counter.setVisibility(View.GONE);
-		shelfright = _main_clister_layout.findViewById(R.id.shelfright);
-		newStart = true;
-		return main_clister_layout = _main_clister_layout;
+		return UIData.getRoot();
 	}
 	boolean newStart;
 	long last_listHolder_tt;
@@ -260,7 +233,7 @@ public class DBroswer extends Fragment implements
 		if (ca!=null) {
 			ViewUtils.ViewDataHolder holder = (ViewUtils.ViewDataHolder) ca.getTag();
 			DeckListAdapter.HistoryDatabaseReader reader = (DeckListAdapter.HistoryDatabaseReader) holder.tag;
-			lastVisiblePositionMap.append(getFragmentId(), reader.sort_number);
+			lastVisiblePositionMap.append(getFragmentType(), reader.sort_number);
 //			a.showT(new Date(last_visible_entry_time).toLocaleString());
 		}
 	}
@@ -268,34 +241,34 @@ public class DBroswer extends Fragment implements
 	protected void loadInAll(MainActivityUIBase a) {
 		CMN.Log("FAV load in all!!!", initialized, type, getTableName());
 		if(initialized) {
+			if(mAdapter!=null && mAdapter.resetDataCache(type)) {
+				mAdapter.notifyDataSetChanged();
+//			lv.postDelayed(mAdapter::notifyDataSetChanged, 180);
+			}
 			mLexiDB = a.prepareHistoryCon();
 			mAdapter.rebuildCursor(a);
-			String name = mLexiDB.getFavoriteNoteBookNameById(a.opt.getCurrFavoriteNoteBookId());
-			toolbar.setTitle(name);
-			show(R.string.maniFavor, name, getItemCount());
-			progressBar.setVisibility(View.GONE);
-			mLexiDB.lastAdded = false;
 			
-			if(type==DB_HISTORY) {
-				//		int offset = 0;
-				//		lastFirst = 0;
-				//		if(false){
-				//			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
-				//			if(lcibdfn!=null){
-				//				lastFirst = Math.min(lcibdfn.key, mCards_size);
-				//				offset =  lcibdfn.value;
-				//			}
-				//		}
-				name = CMN.unwrapDatabaseName(mLexiDB.DATABASE);
-				toolbar.setTitle(name);
-				show(R.string.maniFavor2, name , mAdapter.getItemCount());
-				//		mAdapter.notifyDataSetChanged();
-				//		lm.scrollToPositionWithOffset(lastFirst,offset);
-				mLexiDB.lastAdded = false;
+			String foldername;
+			if(type==DB_FAVORITE) {
+				long fid = a.opt.getCurrFavoriteNoteBookId();
+				mAdapter.data.fid = fid;
+				mAdapter.data.ver = mLexiDB.getDBVersion(fid);
+				foldername = mLexiDB.getFavoriteNoteBookNameById(fid);
+			} else {
+				mAdapter.data.ver = mLexiDB.getDBVersion(mAdapter.data.fid = -1L);
+				foldername = "历史记录";
 			}
+			setTitle(foldername);
+			//show(type==DB_FAVORITE?R.string.maniFavor:R.string.maniFavor2, foldername, getItemCount());
+			//progressBar.setVisibility(View.GONE);
 		}
 	}
-
+	
+	private void setTitle(String title) {
+		UIData.toolbar.setTitle(title);
+		UIData.smallLabel.setText(title);
+	}
+	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -322,24 +295,24 @@ public class DBroswer extends Fragment implements
 			initialized = true;
 			
 			//((DefaultItemAnimator) lv.getItemAnimator()).setSupportsChangeAnimations(false);//取消更新item时闪烁
-			fastScroller.setConservativeScroll(opt.getShelfStrictScroll());
+			UIData.fastScroller.setConservativeScroll(opt.getShelfStrictScroll());
 			bIsCombinedSearch = opt.getIsCombinedSearching();
-			toolbar_action1.setActivated(bIsCombinedSearch);
+			UIData.toolbarAction1.setActivated(bIsCombinedSearch);
 			
 			if(opt.getScrollShown()) {
-				tg2.setChecked(true);
-				fastScroller.setVisibility(View.GONE);
+				UIData.tg2.setChecked(true);
+				UIData.fastScroller.setVisibility(View.GONE);
 			}
 			
 			mRestrictOnDeck = "";
-			WahahaTextView.mR=main_clister_layout.getRootView();
+			WahahaTextView.mR=UIData.getRoot();
 			loadInAll(a);
 			checkColors();
 			
 			SelectionMode = opt.getDBMode();
-			main_clister_layout.post(() -> sideBar.setRbyPos(opt.getDBMode()));
+			UIData.getRoot().post(() -> UIData.sideBar.setRbyPos(opt.getDBMode()));
 			if(opt.getDBMode()==3 && opt.getInRemoveMode()) {
-				sideBar.setSCC(opt.getInRemoveMode()?getResources().getColor(R.color.ShallowHeaderBlue):sideBar.ShelfDefaultGray);
+				UIData.sideBar.setSCC(opt.getInRemoveMode()?getResources().getColor(R.color.ShallowHeaderBlue):UIData.sideBar.ShelfDefaultGray);
 			}
 			if(pendingDBClickPos!=-1){
 				onItemClick(null, pendingDBClickPos);
@@ -347,15 +320,34 @@ public class DBroswer extends Fragment implements
 			}
 		}
 		else {
-			boolean pull = mLexiDB==null || getAutoRefreshOnAttach() && mLexiDB.lastAdded
-					|| /*保证一致性*/ getFragmentId()==1 && a.favoriteCon!=mLexiDB;
+			boolean bNeedInvalidate=false;
+			if(mAdapter!=null && mAdapter.resetDataCache(type)) {
+				bNeedInvalidate = true;
+			}
+			boolean pull = mLexiDB==null || mAdapter.data.type==0
+					|| getAutoRefreshOnAttach() && (
+						type==DB_FAVORITE && mAdapter.data.fid!=a.opt.getCurrFavoriteNoteBookId()
+							|| mAdapter.data.ver!=mLexiDB.getDBVersion(mAdapter.data.fid)
+						);
 			if(pull) {
 				loadInAll(a);
+				bNeedInvalidate = false;
 			} else {
 				if (toastV!=null && toastV.getVisibility()==View.VISIBLE) {
 					maskOn = true;
 					toastTv.startAnimation(fadeAnima);
 				}
+			}
+			if(bNeedInvalidate) {
+				//lv.postDelayed(mAdapter::notifyDataSetChanged, 150);
+				mAdapter.notifyDataSetChanged();
+				String foldername;
+				if(type==DB_FAVORITE) {
+					foldername = mLexiDB.getFavoriteNoteBookNameById(mAdapter.data.fid);
+				} else {
+					foldername = "历史记录";
+				}
+				setTitle(foldername);
 			}
 		}
 	}
@@ -363,41 +355,43 @@ public class DBroswer extends Fragment implements
 	@Override
 	public void onResume() {
 		super.onResume();
-		checkColor();
+		checkColors();
 	}
 	
-	public void checkColor() {
+	public void checkColors() {
 		if(initialized && GlobalOptions.isDark!=isDarkStamp) {
-			checkColors();
-		}
-	}
-	
-	private void checkColors() {
-		CMN.Log("dbr_checkColor...");
-		ColorFilter cs_dbr_sidbr = null;
-		isDarkStamp = GlobalOptions.isDark;
-		int AppWhite = Color.WHITE;
-		if(isDarkStamp) {
-			AppWhite = Color.BLACK;
-			cs_dbr_sidbr = GlobalOptions.WHITE;
-			sideBar.setSCC(sideBar.ShelfDefaultGray=0xFF4F7FDF);
-			counter.setTextColor(Color.WHITE);
-		}
-		main_clister_layout.setBackgroundColor(AppWhite);
-		for(int i=0;i<sideBar.getChildCount();i++) {
-			View cI = sideBar.getChildAt(i);
-			Drawable bg = cI.getBackground();
-			if(bg!=null) {
-				bg.setColorFilter(cs_dbr_sidbr);
+			CMN.Log("dbr_checkColor...");
+			ColorFilter cs_dbr_sidbr = null;
+			isDarkStamp = GlobalOptions.isDark;
+			int AppWhite = Color.WHITE;
+			if(isDarkStamp) {
+				AppWhite = Color.BLACK;
+				cs_dbr_sidbr = GlobalOptions.WHITE;
+				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray=0xFF4F7FDF);
+				UIData.counter.setTextColor(Color.WHITE);
 			}
-			if(cI==toolbar_action1 && cs_dbr_sidbr==null) {
-				toolbar_action1.setColorFilter(GlobalOptions.BLACK);
-			} else if(cI instanceof ImageView) {
-				((ImageView)cI).setColorFilter(cs_dbr_sidbr);
+			UIData.getRoot().setBackgroundColor(AppWhite);
+			for(int i=0;i<UIData.sideBar.getChildCount();i++) {
+				View cI = UIData.sideBar.getChildAt(i);
+				Drawable bg = cI.getBackground();
+				if(bg!=null) {
+					bg.setColorFilter(cs_dbr_sidbr);
+				}
+				if(cI==UIData.toolbarAction1 && cs_dbr_sidbr==null) {
+					UIData.toolbarAction1.setColorFilter(GlobalOptions.BLACK);
+				} else if(cI instanceof ImageView) {
+					((ImageView)cI).setColorFilter(cs_dbr_sidbr);
+				}
+			}
+			if(initialized) {
+				notifyDataSetChanged();
 			}
 		}
-		if(initialized) {
-			notifyDataSetChanged();
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
+		if(a!=null && a.MainAppBackground!= MainAppBackground) {
+			MainAppBackground =a.MainAppBackground;
+			UIData.toolbar.setBackgroundColor(MainAppBackground);
+			UIData.bottombar.setBackgroundColor(MainAppBackground);
 		}
 	}
 	
@@ -446,7 +440,7 @@ public class DBroswer extends Fragment implements
 					toDB.getDB().endTransaction();  //事务提交
 				}
 				mAdapter.rebuildCursor(a);
-				counter.setText(0 +"/"+ getItemCount());
+				UIData.counter.setText(0 +"/"+ getItemCount());
 			}).show();
 	}
 	
@@ -482,7 +476,7 @@ public class DBroswer extends Fragment implements
 					database.endTransaction();  //事务提交
 				}
 				mAdapter.rebuildCursor(a);
-				counter.setText(0 +"/"+ getItemCount());
+				UIData.counter.setText(0 +"/"+ getItemCount());
 			}).show();
 	}
 		
@@ -493,23 +487,20 @@ public class DBroswer extends Fragment implements
 		if(this.type!=type) {
 			if(initialized) {
 				if(this.type==DB_HISTORY) {
-					fastScroller.setHandleBackground(a.mResource.getDrawable(R.drawable.ic_pen));
-					fastScroller.setBarColor(Color.parseColor("#8f8f8f"));
-					main_clister_layout.findViewById(R.id.choosed).setVisibility(View.GONE);
-					main_clister_layout.findViewById(R.id.changed).setVisibility(View.GONE);
+					UIData.fastScroller.setHandleBackground(a.mResource.getDrawable(R.drawable.ic_pen));
+					UIData.fastScroller.setBarColor(Color.parseColor("#8f8f8f"));
+					UIData.choosed.setVisibility(View.GONE);
+					UIData.changed.setVisibility(View.GONE);
 				} else {
-					fastScroller.setHandleBackground(a.mResource.getDrawable(R.drawable.ghour));
-					fastScroller.setBarColor(Color.parseColor("#2b4381"));
-					main_clister_layout.findViewById(R.id.choosed).setVisibility(View.VISIBLE);
-					main_clister_layout.findViewById(R.id.changed).setVisibility(View.VISIBLE);
+					UIData.fastScroller.setHandleBackground(a.mResource.getDrawable(R.drawable.ghour));
+					UIData.fastScroller.setBarColor(Color.parseColor("#2b4381"));
+					UIData.choosed.setVisibility(View.VISIBLE);
+					UIData.changed.setVisibility(View.VISIBLE);
 				}
 			} else {
 				pendingType=type;
 			}
 			this.type=type;
-		}
-		if(mAdapter!=null && mAdapter.resetDataCache(type)) {
-			mAdapter.notifyDataSetChanged();
 		}
 	}
 	
@@ -546,17 +537,17 @@ public class DBroswer extends Fragment implements
 
 		@Override
 		public void onPreExecute() {
-			progressBar.setVisibility(View.VISIBLE);
+			UIData.progressBar.setVisibility(View.VISIBLE);
 		}
 
 		@Override
 		public void onPostExecute(Void result) {
-			progressBar.setVisibility(View.GONE);
+			UIData.progressBar.setVisibility(View.GONE);
 			if(mSearchResTree.getRoot()!=null)
-				lm.scrollToPositionWithOffset(mSearchResTree.minimum(), toolbar.getHeight());
-			fastScroller.setTree(mSearchResTree);
-			fastScroller.timeLength = mAdapter.displaying.getCount();
-			fastScroller.invalidate();
+				lm.scrollToPositionWithOffset(mSearchResTree.minimum(), UIData.toolbar.getHeight());
+			UIData.fastScroller.setTree(mSearchResTree);
+			UIData.fastScroller.timeLength = mAdapter.displaying.getCount();
+			UIData.fastScroller.invalidate();
 			notifyDataSetChanged();
 			show(R.string.resCount,mSearchResTree.size());
 		}
@@ -585,7 +576,7 @@ public class DBroswer extends Fragment implements
 		switch(v.getId()) {
 			case R.id.tg2://.ver
 				boolean ck = ((ToggleButton)v).isChecked();
-				fastScroller.setVisibility(opt.setScrollShown(ck)?View.GONE:View.VISIBLE);
+				UIData.fastScroller.setVisibility(opt.setScrollShown(ck)?View.GONE:View.VISIBLE);
 			break;
 			case R.id.toolbar_action1:
 				v.setActivated(bIsCombinedSearch = !bIsCombinedSearch);
@@ -595,10 +586,10 @@ public class DBroswer extends Fragment implements
 				if(!opt.getSelection_Persists())
 					Selection.clear();
 				opt.setDBMode(0);
-				sideBar.setSCC(sideBar.ShelfDefaultGray);
+				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray);
 				try_exit_selection();
 				SelectionMode=SelectionMode_pan;
-				sideBar.setRbyView(v);
+				UIData.sideBar.setRbyView(v);
 				notifyDataSetChanged();
 				if(v.getTag()==null)
 					msg = "点击查词模式";
@@ -607,17 +598,17 @@ public class DBroswer extends Fragment implements
 				break;
 			case R.id.tools1://选择模式
 				opt.setDBMode(3);
-				sideBar.setSCC(opt.getInRemoveMode()?getResources().getColor(R.color.ShallowHeaderBlue):sideBar.ShelfDefaultGray);
+				UIData.sideBar.setSCC(opt.getInRemoveMode()?getResources().getColor(R.color.ShallowHeaderBlue):UIData.sideBar.ShelfDefaultGray);
 				//if(lastFallBackTarget!=SelectionMode_select)
 				//	lastFallBackTarget=SelectionMode;
 				lastFallBackTarget=-100;
 				if(SelectionMode!=SelectionMode_select) {
 					SelectionMode=SelectionMode_select;
-					sideBar.setRbyView(v);
+					UIData.sideBar.setRbyView(v);
 					notifyDataSetChanged();
-					if(counter.getVisibility()!=View.VISIBLE) {
-						counter.setText(Selection.size()+"/"+ getItemCount());
-						counter.setVisibility(View.VISIBLE);
+					if(UIData.counter.getVisibility()!=View.VISIBLE) {
+						UIData.counter.setText(Selection.size()+"/"+ getItemCount());
+						UIData.counter.setVisibility(View.VISIBLE);
 					}
 					if(v.getTag()==null)
 						msg = "选择模式";//
@@ -629,10 +620,10 @@ public class DBroswer extends Fragment implements
 				if(!opt.getSelection_Persists())
 					Selection.clear();
 				opt.setDBMode(1);
-				sideBar.setSCC(sideBar.ShelfDefaultGray);
+				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray);
 				try_exit_selection();
 				SelectionMode=SelectionMode_peruseview;
-				sideBar.setRbyView(v);
+				UIData.sideBar.setRbyView(v);
 				notifyDataSetChanged();
 				if(v.getTag()==null)
 					msg = "点击翻阅模式";
@@ -641,10 +632,10 @@ public class DBroswer extends Fragment implements
 				break;
 			case R.id.toolbar_action2://eyedropper
 				opt.setDBMode(2);
-				sideBar.setSCC(sideBar.ShelfDefaultGray);
+				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray);
 				try_exit_selection();
 				SelectionMode=SelectionMode_txtdropper;
-				sideBar.setRbyView(v);
+				UIData.sideBar.setRbyView(v);
 				notifyDataSetChanged();
 				if(v.getTag()==null)
 					msg = "取词模式";
@@ -656,19 +647,9 @@ public class DBroswer extends Fragment implements
 					show(R.string.noseletion);
 					return;
 				}
-				//no possible ways to detect keyboard hiden,when you hide it by the top-right button.
-				//hate hate hate
-				//strange strange strange
-				//dmAroid dmAroid dmAroid
-				//v.requestFocus();//dis-focus searchView
-				//boolean hasKeyBoard = imm.isActive(searchView.findViewById(R.id.search_src_text));
-				//CMN.show(""+hasKeyBoard);
-				//if(!hasKeyBoard) searchView.clearFocus();//give some respect to the keyboard shown
-				//卧槽草泥马的 AlertDialog 不要碰我的输入法 不要碰我的输入法 不要碰我的输入法
-				//算了。。
-				final boolean hasKeyBoard = imm.hideSoftInputFromWindow(searchView.getWindowToken(),0);
-				//CMN.show(""+hasKeyBoard); //111
-				if(!hasKeyBoard) searchView.clearFocus();
+//				final boolean hasKeyBoard = imm.hideSoftInputFromWindow(searchView.getWindowToken(),0);
+//				//CMN.show(""+hasKeyBoard); //111
+//				if(!hasKeyBoard) searchView.clearFocus();
 				AlertDialog d = new AlertDialog.Builder(getActivity())
 						.setMessage(getResources().getString(R.string.warn_delete, Selection.size()))
 						.setIcon(android.R.drawable.ic_dialog_alert)
@@ -695,13 +676,13 @@ public class DBroswer extends Fragment implements
 								database_mod_delete.endTransaction();  //事务提交
 								mAdapter.rebuildCursor(a);
 								notifyDataSetChanged();
-								counter.setText(Selection.size()+"/"+ getItemCount());
+								UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 							}
 							notifyDataSetChanged();
 						}).setOnDismissListener(dialog -> {
-							if(hasKeyBoard) {
-								imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-							}
+//							if(hasKeyBoard) {
+//								imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+//							}
 						}).show();
 				d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
 				break;
@@ -721,37 +702,36 @@ public class DBroswer extends Fragment implements
 				a.showChooseFavorDialog(2);
 			} break;
 			case R.id.search:
-				toolbar.setVisibility(toolbar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
-				if(toolbar.getVisibility()==View.VISIBLE) {
-					inSearch=true;
-					searchView.requestFocus();
-					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-				}else {
-					//automatically hides im ,GREAT!
-					inSearch=false;
-				}
-				notifyDataSetChanged();//TODO min DB IO
-				fastScroller.showBoolMark(inSearch);
+//				UIData.toolbar.setVisibility(UIData.toolbar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
+//				if(UIData.toolbar.getVisibility()==View.VISIBLE) {
+//					inSearch=true;
+//					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+//				}else {
+//					//automatically hides im ,GREAT!
+//					inSearch=false;
+//				}
+//				notifyDataSetChanged();//TODO min DB IO
+//				UIData.fastScroller.showBoolMark(inSearch);
 				break;
 			case R.id.browser_widget14:
 				if(mSearchResTree==null || mSearchResTree.getRoot()==null) {}
 				else {
-					lv.scrollBy(0, +toolbar.getHeight());
+					lv.scrollBy(0, +UIData.toolbar.getHeight());
 					RBTNode<Integer> searchTmp = mSearchResTree.xxing_samsara(lm.findFirstVisibleItemPosition());
 					if(searchTmp==null) {
 						show(R.string.endendr);
-						lv.scrollBy(0, -toolbar.getHeight());
+						lv.scrollBy(0, -UIData.toolbar.getHeight());
 						break;
 					}
 					pos = searchTmp.getKey();
-					lm.scrollToPositionWithOffset(pos, toolbar.getHeight());
+					lm.scrollToPositionWithOffset(pos, UIData.toolbar.getHeight());
 					break;
 				}
 			case R.id.lst_plain:
 				//show("lll");
 				offset = 0;
 				if(inSearch) {
-					lv.scrollBy(0, offset = toolbar.getHeight());
+					lv.scrollBy(0, offset = UIData.toolbar.getHeight());
 				}
 				pos = lm.findFirstVisibleItemPosition()-1;
 				if(pos<0) {
@@ -763,22 +743,22 @@ public class DBroswer extends Fragment implements
 			case R.id.browser_widget13:
 				if(mSearchResTree==null || mSearchResTree.getRoot()==null) {}
 				else {
-					lv.scrollBy(0, +toolbar.getHeight());
+					lv.scrollBy(0, +UIData.toolbar.getHeight());
 					RBTNode<Integer> searchTmp1 = mSearchResTree.sxing_samsara(lm.findFirstVisibleItemPosition());
 					if(searchTmp1==null) {
 						show(R.string.endendr);
-						lv.scrollBy(0, -toolbar.getHeight());
+						lv.scrollBy(0, -UIData.toolbar.getHeight());
 						break;
 					}
 					pos = searchTmp1.getKey();
-					lm.scrollToPositionWithOffset(pos, toolbar.getHeight());
+					lm.scrollToPositionWithOffset(pos, UIData.toolbar.getHeight());
 					break;
 				}
 			case R.id.nxt_plain:
 				//show("nnn");
 				offset = 0;
 				if(inSearch) {
-					lv.scrollBy(0, offset = toolbar.getHeight());
+					lv.scrollBy(0, offset = UIData.toolbar.getHeight());
 				}
 				pos = lm.findFirstVisibleItemPosition()+1;
 				if(pos>=getItemCount()) {
@@ -789,7 +769,7 @@ public class DBroswer extends Fragment implements
 		}
 
 		if(msg!=null) {
-			a.showTopSnack(snack_root, msg, 0.5f, -1, -1, 0);
+			a.showTopSnack(UIData.snackRoot, msg, 0.5f, -1, -1, 0);
 		}
 	}
 	
@@ -802,8 +782,8 @@ public class DBroswer extends Fragment implements
 		if(SelectionMode==SelectionMode_select)
 			if(!opt.getSelection_Persists()) {//清空选择
 				Selection.clear();
-				counter.setText(Selection.size()+"/"+ getItemCount());
-				counter.setVisibility(View.GONE);
+				UIData.counter.setText(Selection.size()+"/"+ getItemCount());
+				UIData.counter.setVisibility(View.GONE);
 			}
 	}
 	//lazy strategy. reuse as much as possible.
@@ -832,12 +812,12 @@ public class DBroswer extends Fragment implements
 					for(int i = 0; i< getItemCount(); i++) {
 						Selection.add(mAdapter.getReaderAt(i).row_id);
 					}
-					counter.setText(Selection.size()+"/"+ getItemCount());
+					UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 					notifyDataSetChanged();
 					break;
 				case 11:
 					Selection.clear();
-					counter.setText(Selection.size()+"/"+ getItemCount());
+					UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 					notifyDataSetChanged();
 					break;
 				case 12://反选
@@ -847,16 +827,16 @@ public class DBroswer extends Fragment implements
 							Selection.add(rowId);
 					}
 					
-					counter.setText(Selection.size()+"/"+ getItemCount());
+					UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 					notifyDataSetChanged();
 					break;
 				case 13://反向选择-toggle
 					if(opt.toggleInRemoveMode()) {
 						//main_clister_layout.findViewById(R.id.tools1).getBackground().setColorFilter(Color.parseColor("#FF4081"), PorterDuff.Mode.SRC_IN);
-						sideBar.setSCC(getResources().getColor(R.color.ShallowHeaderBlue));
+						UIData.sideBar.setSCC(getResources().getColor(R.color.ShallowHeaderBlue));
 					}else {
 						//main_clister_layout.findViewById(R.id.tools1).getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
-						sideBar.setSCC(sideBar.ShelfDefaultGray);
+						UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray);
 					}
 					break;
 				case 30://show all decks
@@ -899,11 +879,11 @@ public class DBroswer extends Fragment implements
 					show(R.string.bookmarkfailed, key);
 					break;
 				case 50://严格模式
-					fastScroller.setConservativeScroll(true);
+					UIData.fastScroller.setConservativeScroll(true);
 					opt.setShelfStrictScroll(true);
 					break;
 				case 51://宽松模式
-					fastScroller.setConservativeScroll(false);
+					UIData.fastScroller.setConservativeScroll(false);
 					opt.setShelfStrictScroll(false);//.putBoolean("strictscroll", false);
 					break;
 			}
@@ -983,7 +963,7 @@ public class DBroswer extends Fragment implements
 	{
 		if(getActivity()==null) return;
 		if(toastV == null) {
-			toastV = main_clister_layout.findViewById(R.id.toast_layout_rootmy);//a.getLayoutInflater().inflate(R.layout.toast,null);
+			toastV = UIData.toastLayoutRootmy;//a.getLayoutInflater().inflate(R.layout.toast,null);
 			toastV.setOnTouchListener((v, event) -> {
 				if(inputBase==-1)
 					maskOn = true;
@@ -1047,7 +1027,7 @@ public class DBroswer extends Fragment implements
 		((DragSelectRecyclerView)lv).setDragSelectActive(true, lastDragPos = position);
 		if(SelectionMode!=SelectionMode_select) {
 			int tmpVal = SelectionMode;
-			View target = main_clister_layout.findViewById(R.id.tools1);
+			View target = UIData.tools1;
 			target.setTag(false);
 			target.performClick();
 			lastFallBackTarget=tmpVal;
@@ -1083,8 +1063,8 @@ public class DBroswer extends Fragment implements
 				if (!Selection.remove(rowId)) {
 					Selection.add(rowId);
 				}
-				counter.setText(Selection.size() + "/" + getItemCount());
-				counter.setVisibility(View.VISIBLE);
+				UIData.counter.setText(Selection.size() + "/" + getItemCount());
+				UIData.counter.setVisibility(View.VISIBLE);
 				mAdapter.notifyItemChanged(position);
 			}
 			break;
@@ -1542,7 +1522,7 @@ public class DBroswer extends Fragment implements
 		return type==DB_FAVORITE?TABLE_FAVORITE_v2:TABLE_HISTORY_v2;
 	}
 	
-	public int getFragmentId() {
+	public int getFragmentType() {
 		return type;
 	}
 }

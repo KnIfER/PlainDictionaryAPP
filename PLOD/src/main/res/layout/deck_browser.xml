@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<layout>
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -18,24 +19,8 @@
 		app:contentInsetStartWithNavigation="0dp"
 		android:background="?attr/colorPrimary"
 		app:layout_scrollFlags="scroll|enterAlways|snap"
+		app:titleTextColor="#fff"
 		>
-		<FrameLayout android:id="@+id/rlSearchFrameDelete"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			>
-<!--			<com.knziha.plod.widgets.EditTextmy-->
-<!--				android:id="@+id/etSearch"-->
-<!--				android:layout_width="fill_parent"-->
-<!--				android:layout_height="match_parent"-->
-<!--				android:textColor="#ffffff"-->
-<!--				android:singleLine="true"-->
-<!--				android:paddingStart="10dp"-->
-<!--				android:paddingEnd="53dp"-->
-<!--				android:imeOptions="actionSearch|flagNoExtractUi"-->
-<!--				android:background="@drawable/abc_edit_text_material"-->
-<!--				tools:text="HAPPY SEARCHING"-->
-<!--				/>-->
-		</FrameLayout>
 	</androidx.appcompat.widget.Toolbar>
 
 	<RelativeLayout
@@ -129,6 +114,8 @@
 					android:src="@drawable/ic_search"
 					android:backgroundTint="#000000"
 					android:background="@drawable/surrtrip2"
+					android:alpha="0.2"
+					android:enabled="false"
 					/>
 
 				<FrameLayout
@@ -213,8 +200,15 @@
 		<!--		android:layout_marginStart="35dp"-->
 		<!--		/>-->
 
-
-		<include layout="@layout/anki_progress" />
+		<ProgressBar
+			android:id="@+id/progress_bar"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_vertical|center_horizontal"
+			android:layout_centerVertical="true"
+			android:layout_centerHorizontal="true"
+			android:visibility="gone"
+			/>
 
 		<View
 			android:id="@+id/browser_widget15"
@@ -223,6 +217,7 @@
 			android:layout_alignParentBottom="true"
 			android:layout_alignParentEnd="true"
 			android:clickable="true"
+			android:visibility="gone"
 			/>
 
 		<android.widget.ImageView
@@ -236,6 +231,7 @@
 			android:layout_alignParentEnd="true"
 			android:layout_marginBottom="64dp"
 			android:layout_marginEnd="10dp"
+			android:visibility="gone"
 			/>
 
 		<android.widget.ImageView
@@ -249,6 +245,7 @@
 			android:layout_alignParentEnd="true"
 			android:layout_marginBottom="20dp"
 			android:layout_marginEnd="10dp"
+			android:visibility="gone"
 			/>
 
 		<TextView
@@ -262,6 +259,17 @@
 			android:layout_alignParentEnd="true"
 			android:layout_marginBottom="0dp"
 			android:layout_marginEnd="10dp"
+			/>
+
+		<TextView
+			android:id="@+id/smallLabel"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:clickable="true"
+			android:text="历史记录"
+			android:textColor="@color/colorHeaderBlue"
+			android:layout_alignParentBottom="true"
+			android:layout_centerHorizontal="true"
 			/>
 
 		<FrameLayout
@@ -279,16 +287,50 @@
 				tools:text="favorite"
 				android:textColor="#ffffff"
 				android:layout_gravity="bottom|center"
+				android:visibility="gone"
 				/>
 		</FrameLayout>
 
 		<FrameLayout
 			android:id="@+id/snack_root"
-			android:layout_toEndOf="@+id/sideBarp"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			/>
+			android:layout_toEndOf="@+id/sideBarp" />
 
 	</RelativeLayout>
 
+	<LinearLayout
+		android:id="@+id/bottombar"
+		android:layout_width="match_parent"
+		android:layout_height="43dp"
+		android:layout_gravity="bottom"
+		android:gravity="center_vertical|fill_horizontal"
+		android:orientation="horizontal"
+		android:background="?attr/colorPrimary"
+		>
+		<ImageView
+			android:id="@+id/browser_widget1"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:background="@drawable/surrtrip1"
+			android:src="@drawable/back_ic"
+			android:clickable="true"
+			android:enabled="false"
+			android:alpha="0.2"
+			/>
+		<ImageView
+			android:id="@+id/menu"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:background="@drawable/surrtrip1"
+			android:src="@drawable/ic_menu_24dp"
+			android:clickable="true"
+			android:enabled="false"
+			android:alpha="0.2"
+			/>
+	</LinearLayout>
+
 </LinearLayout>
+</layout>

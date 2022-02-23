@@ -80,7 +80,8 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		public PagingAdapterInterface<HistoryDatabaseReader> searchedData;
 		int[] lvPos = new int[4];
 		int type;
-		int fid;
+		long fid;
+		long ver=-1;
 		DeckListData(int type) {
 			dataAdapter = new CursorAdapter<>(EmptyCursor, new HistoryDatabaseReader());
 			this.type = type;
@@ -178,7 +179,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	public int getItemViewType(int position) {
 		return 0;
 	}
-
+	
 	@Override
 	public void onBindViewHolder(@NonNull final ViewUtils.ViewDataHolder<CardListItemBinding> holder, final int position)
 	{
@@ -260,8 +261,8 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 
 		if(needUpdate) {
 			notifyItemChanged(index);
-			browser.counter.setVisibility(View.VISIBLE);
-			browser.counter.setText(browser.Selection.size()+"/"+ displaying.getCount());
+			browser.UIData.counter.setVisibility(View.VISIBLE);
+			browser.UIData.counter.setText(browser.Selection.size()+"/"+ displaying.getCount());
 		}
 	}
 
@@ -281,7 +282,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	
 	
 	void rebuildCursor(MainActivityUIBase a) {
-		boolean bSingleThreadLoading = true;
+		boolean bSingleThreadLoading = false;
 		DBroswer browser = browserHolder.get();
 		SQLiteDatabase db = browser.mLexiDB.getDB();
 		data.dataAdapter.close();
@@ -307,10 +308,10 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 			dataAdapter.bindTo(browser.lv)
 					.setAsyncLoader(a, browser.pageAsyncLoader)
 					.sortBy(browser.getTableName(), FIELD_VISIT_TIME, true, "lex, books");
-			if (browser.getFragmentId()==DB_FAVORITE) {
+			if (browser.getFragmentType()==DB_FAVORITE) {
 				dataAdapter.where("folder=?", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
 			}
-			dataAdapter.startPaging(browser.lastVisiblePositionMap.get(browser.getFragmentId(), 0L), 20, 15);
+			dataAdapter.startPaging(browser.lastVisiblePositionMap.get(browser.getFragmentType(), 0L), 20, 15);
 		}
 		CMN.Log("mAdapter.rebuildCursor!!!");
 		//todo 记忆 lastFirst
