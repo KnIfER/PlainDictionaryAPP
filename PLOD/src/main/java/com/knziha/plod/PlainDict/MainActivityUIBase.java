@@ -263,6 +263,8 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
+import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
+import static com.knziha.plod.plaindict.DeckListAdapter.DB_HISTORY;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
@@ -468,10 +470,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	WeakReference<AlertDialog> setchooser;
 	int lastCheckedPos = -1;
 	private WeakReference<BottomSheetDialog> bottomPlaylist;
-	WeakReference<DBroswer> DBrowser_holder = new WeakReference<>(null);
-	WeakReference<DBroswer> DHBrowser_holder = new WeakReference<>(null);
 	WeakReference<AlertDialog> ChooseFavorDialog;
+	WeakReference<DBroswer> DBrowserHolder;
 	DBroswer DBrowser;
+	DeckListAdapter.DeckListData[] DBrowserDatas = new DeckListAdapter.DeckListData[2];
 	public PopupGuarder popupGuarder;
 	public String currentClickDisplaying;
 	public int currentClickDictionary_currentPos;
@@ -3386,10 +3388,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(hdl!=null) {
 					hdl.clearActivity();
 				}
-				WeakReference[] holders = new WeakReference[]{popupCrdCloth, popupCmnCloth, setchooser, bottomPlaylist, DBrowser_holder, DHBrowser_holder};
+				WeakReference[] holders = new WeakReference[]{popupCrdCloth, popupCmnCloth, setchooser, bottomPlaylist};
 				for(WeakReference hI:holders){
 					if(hI!=null)
 						hI.clear();
+				}
+				for(DeckListAdapter.DeckListData dI: DBrowserDatas){
+					if(dI!=null) dI.close();
 				}
 			}
 			if(CMN.instanceCount<0) CMN.instanceCount=0;
@@ -5731,8 +5736,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	abstract void DetachContentView(boolean leaving);
 	
-	void AttachDBrowser() {
-		if(DBrowser!=null){
+	void AttachDBrowser(int type) {
+		if(DBrowser==null) {
+			if(DBrowserHolder !=null) DBrowser= DBrowserHolder.get();
+			if(DBrowser==null){
+				CMN.Log("重建收藏夹历史记录视图");
+				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
+			}
+		}
+		DBrowser.setType(this, type, true);
+		{
 			boolean fromPeruseView = PeruseViewAttached();
 			ViewGroup target = fromPeruseView? peruseView.peruseF:mainF;
 			if(!DBrowser.isAdded()) {
@@ -5827,14 +5840,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.drawable.favoriteg: {// get5:
 				dismissPopup();
 				if(mainF.getChildCount()!=0) return;
-				if(DBrowser==null) {
-					if(DBrowser_holder!=null) DBrowser=DBrowser_holder.get();
-					if(DBrowser==null){
-						CMN.Log("重建收藏夹");
-						DBrowser_holder = new WeakReference<>(DBrowser = new DBroswer());
-					}
-					AttachDBrowser();
-				}
+				AttachDBrowser(DB_FAVORITE);
 			} break;
 			case R.drawable.historyg: { // get6:
 				dismissPopup();
@@ -5842,12 +5848,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				boolean fromPeruseView = PeruseViewAttached();
 				ViewGroup target = fromPeruseView? peruseView.peruseF:mainF;
 				if(target.getChildCount()==0){ //if(DBrowser==null)
-					if(DHBrowser_holder!=null) DBrowser=DHBrowser_holder.get();
-					if(DBrowser==null){
-						//CMN.Log("重建历史纪录");
-						DHBrowser_holder = new WeakReference<>(DBrowser = new DHBroswer());
-					}
-					AttachDBrowser();
+					AttachDBrowser(DB_HISTORY);
 				}  else if(isContentViewAttachedForDB()){
 					DetachContentView(true);
 				}
@@ -6349,17 +6350,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		dbCon = favoriteCon;
 		AgentApplication app = ((AgentApplication) getApplication());
 		if(dbCon!=null && !dbCon.testDBV2) {
-			DBrowser_holder.clear();
 			favoriteCon = null;
 			dbCon.close();
 		}
 		dbCon = historyCon;
 		boolean bNeedUpdate = false;
 		if(dbCon!=null && !dbCon.testDBV2) {
-			DHBrowser_holder.clear();
 			app.historyCon = historyCon = null;
 			dbCon.close();
 			bNeedUpdate = true;
+		}
+		DBrowserHolder.clear();
+		for(DeckListAdapter.DeckListData dI: DBrowserDatas){
+			if(dI!=null) dI.close();
+			DBrowserDatas = new DeckListAdapter.DeckListData[2];
 		}
 		dbCon = prepareHistoryCon();
 		//if(bNeedUpdate)
@@ -10035,39 +10039,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			litsView.setOnItemClickListener((parent, view, position, id) -> {
 				int reason1 = (int) parent.getTag();
 				String name;
-				if(getUsingDataV2()) {
-					MyPair<String, Long> nb = AppFunAdapter.notebooksV2.get(position);
-					name = nb.key;
-					long NID = nb.value;
-					if (DBrowser!=null) {
-						if(reason1!=2 && DBrowser.getFragmentId()==1) {
-							//CMN.Log("// 加载收藏夹", NID);
-							putCurrFavoriteNoteBookId(NID);
-							DBrowser.Selection.clear();
-							DBrowser.loadInAll(this);
-						} else if(reason1==2 && DBrowser!=null) {
-							// 移动收藏夹
-							DBrowser.moveSelectedCardsToFolder(name, NID);
-						}
-					} else {
+				MyPair<String, Long> nb = AppFunAdapter.notebooksV2.get(position);
+				name = nb.key;
+				long NID = nb.value;
+				if (DBrowser!=null) {
+					if(reason1!=2 && DBrowser.type==DB_FAVORITE) {
+						//CMN.Log("// 加载收藏夹", NID);
 						putCurrFavoriteNoteBookId(NID);
-					}
-				}
-				else {
-					MyPair<String, LexicalDBHelper> item = AppFunAdapter.notebooks.get(position);
-					name = item.key;
-					LexicalDBHelper _favoriteCon = item.value;
-					if(_favoriteCon==null){
-						_favoriteCon = item.value = new LexicalDBHelper(getApplicationContext(), opt, name, false);
-					}
-					if(reason1!=2 && DBrowser!=null && DBrowser.getFragmentId()==1){
-						// 加载收藏夹
-						opt.putCurrFavoriteDBName(name);
-						favoriteCon = _favoriteCon;
+						DBrowser.Selection.clear();
 						DBrowser.loadInAll(this);
-					} else if(reason1==2 && DBrowser!=null){
-						DBrowser.moveSelectedardsToDataBase(_favoriteCon);
+					} else if(reason1==2 && DBrowser!=null) {
+						// 移动收藏夹
+						DBrowser.moveSelectedCardsToFolder(name, NID);
 					}
+				} else {
+					putCurrFavoriteNoteBookId(NID);
 				}
 				if(reason1!=2) {
 					view.post(() -> {

@@ -166,6 +166,7 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEX
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
+import static com.knziha.plod.plaindict.DeckListAdapter.SelectionMode_peruseview;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
 
@@ -1633,7 +1634,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				dbrowser = savedInstanceState.getInt("DBPos", -1);
 				if(dbrowser!=-1) {
 					DBrowser.pendingDBClickPos = dbrowser;
-					canAddPeruseView=opt.getDBMode()!=DBroswer.SelectionMode_peruseview;
+					canAddPeruseView=opt.getDBMode()!=SelectionMode_peruseview;
 				}
 			}
 			else if(contentview.getParent()!=null){
@@ -2676,10 +2677,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		@Override
 		public void onItemClick(int pos) {//lv1
-			if(true) {
-				//testRandomWord();
-				
-				
+			if(false) {
+				testRandomWord();
 				return;
 			}
 			shuntAAdjustment();
