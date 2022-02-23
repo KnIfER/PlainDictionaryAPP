@@ -95,11 +95,11 @@ public class DBroswer extends Fragment implements
 	RecyclerView lv;
 	
 	main_list_Adapter mAdapter;
-	PagingAdapterInterface<HistoryDatabaseReader> dataAdapter;
+	int[] lvPos = new int[4];
 	ImageView pageAsyncLoader;
 	Date date = new Date();
 	
-	public /*static*/ class HistoryDatabaseReader implements CursorReader {
+	public static class HistoryDatabaseReader implements CursorReader {
 		long row_id;
 		long sort_number;
 		String books;
@@ -108,7 +108,7 @@ public class DBroswer extends Fragment implements
 		@Override
 		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
 			record = cursor.getString(2);
-			if (mLexiDB.testDBV2) {
+			if (true) {//mLexiDB.testDBV2
 				books = cursor.getString(3);
 			}
 			if (rowID!=-1) {
@@ -130,7 +130,6 @@ public class DBroswer extends Fragment implements
 	
 	public DBroswer(){
 		super();
-		dataAdapter = new CursorAdapter<>(EmptyCursor, new HistoryDatabaseReader());
 		mAdapter = new main_list_Adapter();
 	}
 
@@ -195,7 +194,7 @@ public class DBroswer extends Fragment implements
 					CMN.Log(e);
 				} finally {
 					db.endTransaction();  //事务提交
-					rebuildCursor(a);
+					mAdapter.rebuildCursor(a);
 					show(R.string.maniDel,count,toDelete_size);
 				}
 			} else {
@@ -222,7 +221,7 @@ public class DBroswer extends Fragment implements
 					e.printStackTrace();
 				} finally {
 					db.endTransaction();  //事务提交
-					rebuildCursor(a);
+					mAdapter.rebuildCursor(a);
 					show(R.string.maniDel,count,toDelete_size);
 				}
 			}
@@ -239,7 +238,7 @@ public class DBroswer extends Fragment implements
 		if(Selection.size()>0) {//SelectionMode==SelectionMode_select
 			Selection.clear();
 			mAdapter.notifyDataSetChanged();
-			counter.setText(Selection.size()+"/"+dataAdapter.getCount());
+			counter.setText(Selection.size()+"/"+ mAdapter.getItemCount());
 			if(SelectionMode==SelectionMode_select) {
 				int taregtID=0;
 				switch(lastFallBackTarget) {
@@ -259,7 +258,7 @@ public class DBroswer extends Fragment implements
 					target.performClick();
 				}
 			}else {
-				counter.setText(Selection.size()+"/"+dataAdapter.getCount());
+				counter.setText(Selection.size()+"/"+ mAdapter.getItemCount());
 			}
 			return 1;
 		}
@@ -303,7 +302,7 @@ public class DBroswer extends Fragment implements
 					lastFallBackTarget=tmpVal;
 					boolean alreadyselected = Selection.contains((long) position);
 					if (mLexiDB.testDBV2) {
-						alreadyselected = Selection.contains(dataAdapter.getReaderAt(position).row_id);
+						alreadyselected = Selection.contains(mAdapter.getReaderAt(position).row_id);
 					}
 					if(!alreadyselected) {
 						view.performClick();
@@ -328,55 +327,21 @@ public class DBroswer extends Fragment implements
 		toolbar = _main_clister_layout.findViewById(R.id.toolbar);
 		//sideBarPopHolder = (Toolbar) main_clister_layout.findViewById(R.id.sideBarPopHolder);
 		toolbar.inflateMenu(R.xml.menu_search_view);
+		
+		toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
+		toolbar.setNavigationOnClickListener(v1 -> {
+		
+		});
+		
 		if (container.getContext() instanceof MainActivityUIBase) {
-			toolbar.setBackgroundColor(0xcc000000|(((MainActivityUIBase) container.getContext()).MainBackground&0xffffff));
+//			toolbar.setBackgroundColor(0xcc000000|(((MainActivityUIBase) container.getContext()).MainBackground&0xffffff));
+			toolbar.setBackgroundColor(((MainActivityUIBase) container.getContext()).MainBackground);
 		}
 		//CMN.Log("咿呀咿呀", container.getContext());
 		Menu toolbarmenu = toolbar.getMenu();
 		MenuItem searchItem = toolbarmenu.getItem(0);
-
-		searchView = (SearchView) searchItem.getActionView();
-
-		//ImageView iv_submit = searchView.findViewById(R.id.search_go_btn);
-		////这样就可以修改图片了
-		//iv_submit.setImageResource(R.drawable.ic_directions_black_24dp);//enter
-
-		searchView.setIconified(false);//设置searchView处于展开状态
-		searchView.onActionViewExpanded();// 当展开无输入内容的时候，没有关闭的图标
-		searchView.setIconifiedByDefault(false);//默认为true在框内，设置false则在框外
-		searchItem.setShowAsAction(2);
-		searchView.setSubmitButtonEnabled(true);//显示提交按钮
-		searchView.findViewById(R.id.search_src_text).setOnFocusChangeListener((v, hasFocus) -> {
-			//dont hide, nothing to be shy about.
-			v.postDelayed(() -> {
-				searchView.findViewById(R.id.search_go_btn).setVisibility(View.VISIBLE);
-				searchView.findViewById(R.id.submit_area).setVisibility(View.VISIBLE);
-			}, 50);
-		});
-
-		searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-			@Override
-			public boolean onQueryTextSubmit(String query) {
-				//Toast.makeText(getActivity(), query, Toast.LENGTH_SHORT).show();
-
-				searchView.clearFocus();
-				//InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-				imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
-
-				new SearchCardsHandler2().execute(query);
-
-				return true;
-			}
-
-			@Override
-			public boolean onQueryTextChange(String newText) {
-				//当输入框内容改变的时候回调
-				//Log.i(TAG,"内容: " + newText);
-				return true;
-			}
-		});
-		searchView.clearFocus();
-
+		//  new SearchCardsHandler2().execute(query);
+		
 		counter =  _main_clister_layout.findViewById(R.id.counter);
 		counter.setVisibility(View.GONE);
 		shelfright = _main_clister_layout.findViewById(R.id.shelfright);
@@ -408,64 +373,6 @@ public class DBroswer extends Fragment implements
 	
 	ConstructorInterface<HistoryDatabaseReader> HistoryDatabaseReaderConstructor = length -> new HistoryDatabaseReader();
 
-	private void rebuildCursor(MainActivityUIBase a) {
-		boolean bSingleThreadLoading = true;
-		SQLiteDatabase db = mLexiDB.getDB();
-		if (mLexiDB.testDBV2) {
-			if (dataAdapter!=null) {
-				dataAdapter.close();
-			}
-			if (bSingleThreadLoading) {
-				Cursor cursor;
-				if (getFragmentId()==DB_FAVORITE) {
-					cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books FROM "+mtableName+" where folder=? ORDER BY "+FIELD_VISIT_TIME+" desc", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
-				} else {
-					cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books FROM "+mtableName+" ORDER BY "+FIELD_VISIT_TIME+" desc", null);
-				}
-				CMN.Log("查询个数::"+cursor.getCount());
-				dataAdapter = new CursorAdapter<>(cursor, new HistoryDatabaseReader());
-				mAdapter.notifyDataSetChanged();
-			} else {
-				if (pageAsyncLoader==null) {
-					pageAsyncLoader = new ImageView(a);
-				}
-				PagingCursorAdapter<HistoryDatabaseReader> dataAdapter = new PagingCursorAdapter<>(db
-						//, new SimpleClassConstructor<>(HistoryDatabaseReader.class)
-						, HistoryDatabaseReaderConstructor
-						, HistoryDatabaseReader[]::new);
-				this.dataAdapter = dataAdapter;
-				dataAdapter.bindTo(lv)
-						.setAsyncLoader(a, pageAsyncLoader)
-						.sortBy(mtableName, FIELD_VISIT_TIME, true, "lex, books");
-				if (getFragmentId()==DB_FAVORITE) {
-					dataAdapter.where("folder=?", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
-				}
-				dataAdapter.startPaging(lastVisiblePositionMap.get(getFragmentId(), 0L), 20, 15);
-			}
-		}
-		else {
-			Cursor cursor = mLexiDB.getDB().rawQuery("select rowid,date,lex from t1 order by date desc", null);
-			CMN.Log("查询个数::"+cursor.getCount());
-			dataAdapter = new CursorAdapter<>(cursor, new HistoryDatabaseReader());
-			mAdapter.notifyDataSetChanged();
-		}
-		CMN.Log("rebuildCursor!!!");
-		//todo 记忆 lastFirst
-//		int offset = 0;
-//		lastFirst = 0;
-//		if(true)
-//		{
-//			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
-//			if(lcibdfn!=null)
-//			{
-//				lastFirst = Math.min(lcibdfn.key, dataAdapter.getCount());
-//				offset =  lcibdfn.value;
-//			}
-//		}
-//		mAdapter.notifyDataSetChanged();
-//		lm.scrollToPositionWithOffset(lastFirst,offset);
-//		lm.setInitialPrefetchItemCount(10);
-	}
 
 	protected void loadInAll(MainActivityUIBase a) {
 		CMN.Log("FAV load in all!!!");
@@ -474,7 +381,7 @@ public class DBroswer extends Fragment implements
 		} else if(getFragmentId()==DB_HISTORY) {
 			mLexiDB = a.prepareHistoryCon();
 		}
-		rebuildCursor(a);
+		mAdapter.rebuildCursor(a);
 		String name;
 		if (mLexiDB.testDBV2) {
 			name = mLexiDB.getFavoriteNoteBookNameById(a.opt.getCurrFavoriteNoteBookId());
@@ -482,7 +389,7 @@ public class DBroswer extends Fragment implements
 			name = CMN.unwrapDatabaseName(mLexiDB.DATABASE);
 		}
 		toolbar.setTitle(name);
-		show(R.string.maniFavor, name, dataAdapter.getCount());
+		show(R.string.maniFavor, name, mAdapter.getItemCount());
 		progressBar.setVisibility(View.GONE);
 		mLexiDB.lastAdded = false;
 	}
@@ -602,7 +509,7 @@ public class DBroswer extends Fragment implements
 				toDB.getDB().beginTransaction();  //开启事务
 				try {
 					for(Long position1 :Selection) {//移动
-						HistoryDatabaseReader reader = dataAdapter.getReaderAt((int)(long)position1);
+						HistoryDatabaseReader reader = mAdapter.getReaderAt((int)(long)position1);
 						preparedInsertExecutor.bindString(1, reader.record);
 						preparedInsertExecutor.bindLong(2, reader.sort_number);
 						if(preparedInsertExecutor.executeInsert()!=-1) {
@@ -621,8 +528,8 @@ public class DBroswer extends Fragment implements
 					mLexiDB.getDB().endTransaction();  //事务提交
 					toDB.getDB().endTransaction();  //事务提交
 				}
-				rebuildCursor(a);
-				counter.setText(0 +"/"+dataAdapter.getCount());
+				mAdapter.rebuildCursor(a);
+				counter.setText(0 +"/"+ mAdapter.getItemCount());
 			}).show();
 	}
 	
@@ -657,28 +564,34 @@ public class DBroswer extends Fragment implements
 				} finally {
 					database.endTransaction();  //事务提交
 				}
-				rebuildCursor(a);
-				counter.setText(0 +"/"+dataAdapter.getCount());
+				mAdapter.rebuildCursor(a);
+				counter.setText(0 +"/"+ mAdapter.getItemCount());
 			}).show();
 	}
 	
 	//for main list
 	//参见：live down
 	//参见：P.L.O.D -> float search view -> HomeAdapter
-	class main_list_Adapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<CardListItemBinding>> implements IDragSelectAdapter
+	static class main_list_Adapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<CardListItemBinding>> implements IDragSelectAdapter
 	{
+		final MainActivityUIBase a;
+		public @NonNull PagingAdapterInterface<HistoryDatabaseReader> displaying;
+		public @NonNull PagingAdapterInterface<HistoryDatabaseReader> dataAdapter;
+		public PagingAdapterInterface<HistoryDatabaseReader> searchedData;
 		SimpleDateFormat date;
 		Date day_;
 		//构造
-		main_list_Adapter(){
+		main_list_Adapter(MainActivityUIBase a){
 			date = new SimpleDateFormat("yyyy-MM-dd/HH:mm:ss");
 			day_ = new Date();
+			displaying = dataAdapter = new CursorAdapter<>(EmptyCursor, new HistoryDatabaseReader());
+			this.a = a;
 		}
 
 		@Override
 		public int getItemCount()
 		{
-			return dataAdapter.getCount();
+			return displaying.getCount();
 		}
 
 		private OnItemClickListener mOnItemClickListener;
@@ -706,7 +619,7 @@ public class DBroswer extends Fragment implements
 		@Override
 		public ViewUtils.ViewDataHolder<CardListItemBinding> onCreateViewHolder(ViewGroup parent, int viewType)
 		{
-			ViewUtils.ViewDataHolder<CardListItemBinding> holder = new ViewUtils.ViewDataHolder<>(CardListItemBinding.inflate(LayoutInflater.from(getActivity()), parent, false));
+			ViewUtils.ViewDataHolder<CardListItemBinding> holder = new ViewUtils.ViewDataHolder<>(CardListItemBinding.inflate(LayoutInflater.from(a), parent, false));
 			//holder.setIsRecyclable(false);
 			//if Recyclable, then setText in onBindViewHolder makes textviews unSelectable.
 			//details on this bug:
@@ -730,7 +643,6 @@ public class DBroswer extends Fragment implements
 		@Override
 		public void onBindViewHolder(@NonNull final ViewUtils.ViewDataHolder<CardListItemBinding> holder, final int position)
 		{
-			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 			holder.itemView.setTag(R.id.position, position);
 			holder.data.p.setTag(R.id.position, position);
 			//if(true) return;
@@ -738,10 +650,10 @@ public class DBroswer extends Fragment implements
 			
 			long rowId = position;
 			
-			HistoryDatabaseReader reader = dataAdapter.getReaderAt(position);
+			HistoryDatabaseReader reader = displaying.getReaderAt(position);
 			holder.tag = reader;
 			try {
-				if (mLexiDB.testDBV2) {
+				if (true) { //mLexiDB.testDBV2
 					text=reader.record;
 					time=reader.sort_number;
 					rowId = reader.row_id;
@@ -769,19 +681,21 @@ public class DBroswer extends Fragment implements
 				day_.setTime(time);
 				holder.data.subtext1.setText(date.format(day_));
 			}
+			
+			DBroswer browser = a.DHBrowser_holder.get();
 
-			if(Selection.contains(rowId))
+			if(browser.Selection.contains(rowId))
 				holder.itemView.setBackgroundColor(GlobalOptions.isDark?0xFF4F7FDF:0xa04F5F6F);//FF4081 4F7FDF
 			else
 				holder.itemView.setBackgroundColor(0x00a0f0f0);//aaa0f0f0
 
-			if(inSearch && mSearchResTree!=null && mSearchResTree.contains(position))
+			if(browser.inSearch && browser.mSearchResTree!=null && browser.mSearchResTree.contains(position))
 				holder.data.text1.setBackgroundResource(R.drawable.xuxian2);
 			else
 				holder.data.text1.setBackground(null);
 
 
-			if(SelectionMode==SelectionMode_select) {
+			if(browser.SelectionMode==SelectionMode_select) {
 				holder.data.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, position));
 				holder.data.p.setVisibility(View.VISIBLE);
 			}else{
@@ -795,32 +709,33 @@ public class DBroswer extends Fragment implements
 		public void setSelected(int index, boolean selected) {
 			long posId = index;
 			if (mLexiDB.testDBV2) {
-				posId = dataAdapter.getReaderAt(index).row_id;
+				posId = displaying.getReaderAt(index).row_id;
 			}
-			boolean alreadyselected=Selection.contains(posId);
+			DBroswer browser = a.DHBrowser_holder.get();
+			boolean alreadyselected=browser.Selection.contains(posId);
 			boolean needUpdate = false;
-			if(opt.getInRemoveMode()) {//bIsInverseSelecting
+			if(a.opt.getInRemoveMode()) {//bIsInverseSelecting
 				if(selected && alreadyselected) {
-					Selection.remove(posId);
+					browser.Selection.remove(posId);
 					needUpdate=true;
 				} else if(!selected && !alreadyselected) {
-					Selection.add(posId);
+					browser.Selection.add(posId);
 					needUpdate=true;
 				}
 			} else {
 				if(selected && !alreadyselected) {
-					Selection.add(posId);
+					browser.Selection.add(posId);
 					needUpdate=true;
 				} else if(!selected && alreadyselected) {
-					Selection.remove(posId);
+					browser.Selection.remove(posId);
 					needUpdate=true;
 				}
 			}
 
 			if(needUpdate) {
 				notifyItemChanged(index);
-				counter.setVisibility(View.VISIBLE);
-				counter.setText(Selection.size()+"/"+dataAdapter.getCount());
+				browser.counter.setVisibility(View.VISIBLE);
+				browser.counter.setText(browser.Selection.size()+"/"+ displaying.getCount());
 			}
 		}
 
@@ -828,11 +743,74 @@ public class DBroswer extends Fragment implements
 		public boolean isIndexSelectable(int index) {
 			return true;
 		}
-
+		
+		public HistoryDatabaseReader getReaderAt(int i) {
+			return displaying.getReaderAt(i);
+		}
+		
 		//@Override
 		//public boolean isIndexSelected(int index) {
 		//	return true;
 		//}
+		
+		
+		private void rebuildCursor(MainActivityUIBase a) {
+			boolean bSingleThreadLoading = true;
+			DBroswer browser = a.DHBrowser_holder.get();
+			SQLiteDatabase db = browser.mLexiDB.getDB();
+			if (true) { // mLexiDB.testDBV2
+				dataAdapter.close();
+				if (bSingleThreadLoading) {
+					Cursor cursor;
+					if (browser.getFragmentId()==DB_FAVORITE) {
+						cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books FROM "+browser.mtableName+" where folder=? ORDER BY "+FIELD_VISIT_TIME+" desc", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
+					} else {
+						cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books FROM "+browser.mtableName+" ORDER BY "+FIELD_VISIT_TIME+" desc", null);
+					}
+					CMN.Log("查询个数::"+cursor.getCount());
+					dataAdapter = new CursorAdapter<>(cursor, new HistoryDatabaseReader());
+					browser.mAdapter.notifyDataSetChanged();
+				} else {
+					if (browser.pageAsyncLoader==null) {
+						browser.pageAsyncLoader = new ImageView(a);
+					}
+					PagingCursorAdapter<HistoryDatabaseReader> dataAdapter = new PagingCursorAdapter<>(db
+							//, new SimpleClassConstructor<>(HistoryDatabaseReader.class)
+							, browser.HistoryDatabaseReaderConstructor
+							, HistoryDatabaseReader[]::new);
+					this.dataAdapter = dataAdapter;
+					dataAdapter.bindTo(browser.lv)
+							.setAsyncLoader(a, browser.pageAsyncLoader)
+							.sortBy(browser.mtableName, FIELD_VISIT_TIME, true, "lex, books");
+					if (browser.getFragmentId()==DB_FAVORITE) {
+						dataAdapter.where("folder=?", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
+					}
+					dataAdapter.startPaging(browser.lastVisiblePositionMap.get(browser.getFragmentId(), 0L), 20, 15);
+				}
+			}
+			else {
+				Cursor cursor = mLexiDB.getDB().rawQuery("select rowid,date,lex from t1 order by date desc", null);
+				CMN.Log("查询个数::"+cursor.getCount());
+				displaying = new CursorAdapter<>(cursor, new HistoryDatabaseReader());
+				mAdapter.notifyDataSetChanged();
+			}
+			CMN.Log("mAdapter.rebuildCursor!!!");
+			//todo 记忆 lastFirst
+//		int offset = 0;
+//		lastFirst = 0;
+//		if(true)
+//		{
+//			MyIntPair lcibdfn = ((AgentApplication) a.getApplication()).getLastContextualIndexByDatabaseFileName(mLexiDB.DATABASE);
+//			if(lcibdfn!=null)
+//			{
+//				lastFirst = Math.min(lcibdfn.key, dataAdapter.getCount());
+//				offset =  lcibdfn.value;
+//			}
+//		}
+//		mAdapter.notifyDataSetChanged();
+//		lm.scrollToPositionWithOffset(lastFirst,offset);
+//		lm.setInitialPrefetchItemCount(10);
+		}
 	}
 
 
@@ -886,7 +864,7 @@ public class DBroswer extends Fragment implements
 			if(mSearchResTree.getRoot()!=null)
 				lm.scrollToPositionWithOffset(mSearchResTree.minimum(), toolbar.getHeight());
 			fastScroller.setTree(mSearchResTree);
-			fastScroller.timeLength = dataAdapter.getCount();
+			fastScroller.timeLength = mAdapter.displaying.getCount();
 			fastScroller.invalidate();
 			mAdapter.notifyDataSetChanged();
 			show(R.string.resCount,mSearchResTree.size());
@@ -952,7 +930,7 @@ public class DBroswer extends Fragment implements
 					sideBar.setRbyView(v);
 					mAdapter.notifyDataSetChanged();
 					if(counter.getVisibility()!=View.VISIBLE) {
-						counter.setText(Selection.size()+"/"+dataAdapter.getCount());
+						counter.setText(Selection.size()+"/"+ mAdapter.getItemCount());
 						counter.setVisibility(View.VISIBLE);
 					}
 					if(v.getTag()==null)
@@ -1003,53 +981,53 @@ public class DBroswer extends Fragment implements
 				//卧槽草泥马的 AlertDialog 不要碰我的输入法 不要碰我的输入法 不要碰我的输入法
 				//算了。。
 				final boolean hasKeyBoard = imm.hideSoftInputFromWindow(searchView.getWindowToken(),0);
-				//CMN.show(""+hasKeyBoard);
-				if(!hasKeyBoard) searchView.clearFocus();
-				AlertDialog d = new AlertDialog.Builder(getActivity())
-						.setMessage(getResources().getString(R.string.warn_delete, Selection.size()))
-						.setIcon(android.R.drawable.ic_dialog_alert)
-						.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-							//if (mLexiDB.testDBV2)
-							{
-								String sql = "DELETE FROM "+mtableName+" WHERE id = ? ";
-								if (!mLexiDB.testDBV2) {
-									sql = "DELETE FROM t1 WHERE rowid = ? ";
-								}
-								SQLiteDatabase database_mod_delete = mLexiDB.getDB();
-								SQLiteStatement preparedDeleteExecutor = database_mod_delete.compileStatement(sql);
-								database_mod_delete.beginTransaction();  //开启事务
-								try {
-									for(Long position:Selection) {//删除记录
-										try {
-											if (mLexiDB.testDBV2) {
-												preparedDeleteExecutor.bindLong(1, position);
-											} else {
-												preparedDeleteExecutor.bindLong(1, dataAdapter.getReaderAt((int)(long)position).row_id);
-											}
-											preparedDeleteExecutor.executeUpdateDelete();
-										} catch (Exception e) {
-											CMN.Log(e);
-										}
-									}
-									Selection.clear();
-									preparedDeleteExecutor.close();
-									database_mod_delete.setTransactionSuccessful();  //控制回滚
-								} catch (Exception e) {
-									e.printStackTrace();
-								} finally {
-									database_mod_delete.endTransaction();  //事务提交
-									rebuildCursor(a);
-									mAdapter.notifyDataSetChanged();
-									counter.setText(Selection.size()+"/"+dataAdapter.getCount());
-								}
-							}
-							mAdapter.notifyDataSetChanged();
-						}).setOnDismissListener(dialog -> {
-							if(hasKeyBoard) {
-								imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-							}
-						}).show();
-				d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
+				//CMN.show(""+hasKeyBoard); //111
+//				if(!hasKeyBoard) searchView.clearFocus();
+//				AlertDialog d = new AlertDialog.Builder(getActivity())
+//						.setMessage(getResources().getString(R.string.warn_delete, Selection.size()))
+//						.setIcon(android.R.drawable.ic_dialog_alert)
+//						.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+//							//if (mLexiDB.testDBV2)
+//							{
+//								String sql = "DELETE FROM "+mtableName+" WHERE id = ? ";
+//								if (!mLexiDB.testDBV2) {
+//									sql = "DELETE FROM t1 WHERE rowid = ? ";
+//								}
+//								SQLiteDatabase database_mod_delete = mLexiDB.getDB();
+//								SQLiteStatement preparedDeleteExecutor = database_mod_delete.compileStatement(sql);
+//								database_mod_delete.beginTransaction();  //开启事务
+//								try {
+//									for(Long position:Selection) {//删除记录
+//										try {
+//											if (mLexiDB.testDBV2) {
+//												preparedDeleteExecutor.bindLong(1, position);
+//											} else {
+//												preparedDeleteExecutor.bindLong(1, displaying.getReaderAt((int)(long)position).row_id);
+//											}
+//											preparedDeleteExecutor.executeUpdateDelete();
+//										} catch (Exception e) {
+//											CMN.Log(e);
+//										}
+//									}
+//									Selection.clear();
+//									preparedDeleteExecutor.close();
+//									database_mod_delete.setTransactionSuccessful();  //控制回滚
+//								} catch (Exception e) {
+//									e.printStackTrace();
+//								} finally {
+//									database_mod_delete.endTransaction();  //事务提交
+//									mAdapter.rebuildCursor(a);
+//									mAdapter.notifyDataSetChanged();
+//									counter.setText(Selection.size()+"/"+ displaying.getCount());
+//								}
+//							}
+//							mAdapter.notifyDataSetChanged();
+//						}).setOnDismissListener(dialog -> {
+//							if(hasKeyBoard) {
+//								imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+//							}
+//						}).show();
+//				d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
 				break;
 			case R.id.choosed: {//choose deck
 				if(System.currentTimeMillis()-last_listHolder_tt<150 && revertage==1) {//too fast from last hide
@@ -1144,7 +1122,7 @@ public class DBroswer extends Fragment implements
 		if(SelectionMode==SelectionMode_select)
 			if(!opt.getSelection_Persists()) {//清空选择
 				Selection.clear();
-				counter.setText(Selection.size()+"/"+dataAdapter.getCount());
+				counter.setText(Selection.size()+"/"+ mAdapter.getItemCount());
 				counter.setVisibility(View.GONE);
 			}
 	}
@@ -1172,37 +1150,37 @@ public class DBroswer extends Fragment implements
 				case 10://全选
 					//TODO develop more efficient and elegant algorithm.
 					if (mLexiDB.testDBV2) {
-						for(int i=0;i<dataAdapter.getCount();i++) {
-							Selection.add(dataAdapter.getReaderAt(i).row_id);
+						for(int i = 0; i< mAdapter.getItemCount(); i++) {
+							Selection.add(mAdapter.getReaderAt(i).row_id);
 						}
 					} else {
-						for(int i=0;i<dataAdapter.getCount();i++) {
+						for(int i = 0; i< mAdapter.getItemCount(); i++) {
 							Selection.add((long) i);
 						}
 					}
-					counter.setText(Selection.size()+"/"+dataAdapter.getCount());
+					counter.setText(Selection.size()+"/"+ mAdapter.getItemCount());
 					mAdapter.notifyDataSetChanged();
 					break;
 				case 11:
 					Selection.clear();
-					counter.setText(Selection.size()+"/"+dataAdapter.getCount());
+					counter.setText(Selection.size()+"/"+ mAdapter.getItemCount());
 					mAdapter.notifyDataSetChanged();
 					break;
 				case 12://反选
 					if (mLexiDB.testDBV2) {
-						for(int i=0;i<dataAdapter.getCount();i++) {
-							long rowId = dataAdapter.getReaderAt(i).row_id;
+						for(int i = 0; i< mAdapter.getItemCount(); i++) {
+							long rowId = mAdapter.getReaderAt(i).row_id;
 							if(!Selection.remove(rowId))
 								Selection.add(rowId);
 						}
 					} else {
-						for(int i=0;i<dataAdapter.getCount();i++) {
+						for(int i = 0; i< mAdapter.getItemCount(); i++) {
 							if(!Selection.remove((long) i))
 								Selection.add((long) i);
 						}
 					}
 					
-					counter.setText(Selection.size()+"/"+dataAdapter.getCount());
+					counter.setText(Selection.size()+"/"+ mAdapter.getItemCount());
 					mAdapter.notifyDataSetChanged();
 					break;
 				case 13://反向选择-toggle
@@ -1407,7 +1385,7 @@ public class DBroswer extends Fragment implements
 			ScrollerRecord pagerec=null;
 			currentPos = position;
 			long rowId = 0;
-			HistoryDatabaseReader reader = dataAdapter.getReaderAt(position);
+			HistoryDatabaseReader reader = mAdapter.getReaderAt(position);
 			if (mLexiDB.testDBV2) {
 				rowId = reader.row_id;
 				currentRowId = rowId;
@@ -1425,7 +1403,7 @@ public class DBroswer extends Fragment implements
 							Selection.add((long) position);
 						}
 					}
-					counter.setText(Selection.size()+"/"+dataAdapter.getCount());
+					counter.setText(Selection.size()+"/"+ mAdapter.getItemCount());
 					counter.setVisibility(View.VISIBLE);
 					mAdapter.notifyItemChanged(position);
 				} break;
@@ -1854,7 +1832,7 @@ public class DBroswer extends Fragment implements
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
 		if(opt.getBottomNavigationMode()==0) {
-			if (currentPos + 1 > dataAdapter.getCount() - 1) {
+			if (currentPos + 1 > mAdapter.getItemCount() - 1) {
 				a.show(R.string.endendr);
 				return;
 			}
