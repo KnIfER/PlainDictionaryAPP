@@ -19,7 +19,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -90,7 +89,6 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -160,6 +158,7 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.Utils.SubStringKey;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.BookManager;
@@ -188,7 +187,6 @@ import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.ListSizeConfiner;
-import com.knziha.plod.widgets.ListViewBasicViews;
 import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.MultiplexLongClicker;
 import com.knziha.plod.widgets.OnScrollChangedListener;
@@ -320,6 +318,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	int search_count;
 	boolean focused;
 	protected MdictServer server;
+	public Map<SubStringKey, String>  serverHosts;
+	public ArrayList<PlainWeb>  serverHostsHolder=new ArrayList();
 	public FrameLayout lvHeaderView;
 	protected TextWatcher tw1 = new TextWatcher() { //tw
 		public void onTextChanged(CharSequence cs, int start, int before, int count) {
@@ -809,7 +809,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						try {
 							md.set(i, ret = new_book(phTmp, this));
 						} catch (Exception e) {
-							if(GlobalOptions.debug) CMN.Log(e);
+							if(GlobalOptions.debug) CMN.Log(phTmp, e);
 							if (bShowLoadErr && isOnMainThread()) {
 								phTmp.ErrorMsg = e.getLocalizedMessage();
 								if(!phTmp.NeedsBuildIndex())
@@ -2591,7 +2591,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	String testVerifyCode = "{android.app.ActivityThread}.sPackageManager=null;n=$.getPackageName();n=$.getPackageManager().getPackageInfo[,int](n,0x40).signatures[0].hashCode()";
 	
-	
+	@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
 	@Override
 	protected void further_loading(Bundle savedInstanceState) {
 		super.further_loading(savedInstanceState);
@@ -2933,6 +2933,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(isCombinedSearching) {
 			AllMenus.findItem(R.id.toolbar_action1).setIcon(R.drawable.ic_btn_multimode);
 		}
+		MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
 		//if(opt.isShowDirectSearch()) ((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action2)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
 	
@@ -3007,6 +3008,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	final String[] defDicts = new String[]{
 			CMN.AssetTag + "liba.mdx"
 			,"/ASSET2/谷歌翻译.web"
+			,"/ASSET2/维基词典.web"
 	};
 	
 	protected void populateDictionaryList(File def, ArrayList<PlaceHolder> CC, boolean retrieve_all) {
@@ -4066,10 +4068,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					CurrentSelected = StringUtils.EMPTY;
 				}
 				bFromTextView=true;
-			} else if(text!=null){
+			}
+			else if(!TextUtils.isEmpty(text)){
 				CurrentSelected=text;
 				bFromTextView=true;
 			} else {
+				CurrentSelected=null;
 				bFromTextView=false;
 			}
 		}
@@ -6300,7 +6304,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 上下导航 */
 			case R.id.browser_widget13:
 			case R.id.browser_widget14:{
-				weblistHandler.scrollFrame(id != R.id.browser_widget14);
+				weblistHandler.prvnxtFrame(id == R.id.browser_widget13);
 			} break;
 			/* 自动浏览 */
 			case R.drawable.ic_autoplay:{
@@ -6700,30 +6704,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	public abstract boolean onMenuItemClick(MenuItem item);
 
-	protected void toggleFoldAll() {
-		int targetVis=View.VISIBLE;
-		int cc=weblistHandler.getChildCount();
-		if(cc>0) {
-			for (int i = 0; i < cc; i++) {
-				if (weblistHandler.getChildAt(i).findViewById(R.id.webviewmy).getVisibility() != View.GONE) {
-					targetVis = View.GONE;
-					break;
-				}
-			}
-			if(targetVis==View.GONE) {
-				awaiting = false;
-			}
-			for (int i = 0; i < cc; i++) {
-				View childAt = weblistHandler.getChildAt(i);
-				WebViewmy targetView = childAt.findViewById(R.id.webviewmy);
-				if(targetVis==View.GONE) {
-					targetView.setVisibility(targetVis);
-				} else if(targetView.getVisibility()!=View.VISIBLE){
-					childAt.findViewById(R.id.toolbar_title).performClick();
-				}
-			}
-		}
-	}
 	
 	public void onSettingsChanged(SettingsActivity settingsActivity, Preference preference) {
 		if (TextUtils.equals("dbv2_up", preference.getKey())) {
@@ -7333,12 +7313,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void onDismiss(DialogInterface dialog) {
 		d=null;
 	}
-
+	
 	public static boolean layoutScrollDisabled;
 	protected WebViewmy NaugtyWeb;
 	boolean bShowCustomView;
 	public static long CustomViewHideTime;
 	private int mOldOri;
+	
 	@SuppressLint("SourceLockedOrientationActivity")
 	public void fixVideoFullScreen(){
 		if(bShowCustomView){
@@ -8088,12 +8069,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return null;
 			
-			if(invoker==weblistHandler.mMergedBook) {
+			if(invoker.isMergedBook) {
 				int schemaIdx = url.indexOf(":");
 				//CMN.debug("mMergedBook::", url);
 				if(url.regionMatches(true, schemaIdx+3, "MdbR", 0, 4)) {
 					try {
-						HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7), request);
+						HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 						Response ret = getMdictServer().handle(req);
 						if(ret!=null) {
 							CMN.Log("WebResourceResponse::", ret.getMimeType());
@@ -8103,55 +8084,80 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							return new WebResourceResponse(mime, "UTF-8", ret.getData());
 						}
 					} catch (Exception e) {
-						CMN.debug(e);
+						CMN.debug(url, e);
 					}
 				}
-				else try {
-					//HTTPSessionProxy proxy = (HTTPSessionProxy) session;
-					HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
-					
-					if(urlConnection instanceof HttpsURLConnection) {
-						((HttpsURLConnection)urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
+				else {
+					if(server!=null && server.webResHandler!=null && server.webResHandler.hasHosts()) {
+						//CMN.Log("shouldUseClientResponse::", url, webResHandler.shouldUseClientResponse(url), webResHandler.jinkeSheaths);
+						if(server.webResHandler.shouldUseClientResponse(url)) {
+							return (WebResourceResponse) server.webResHandler.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+						}
 					}
-					urlConnection.setRequestProperty("Accept-Charset", "utf-8");
-					urlConnection.setRequestProperty("connection", "Keep-Alive");
-					urlConnection.setRequestMethod(request.getMethod());
-					urlConnection.setConnectTimeout(3800);
-					urlConnection.setUseCaches(true);
-					urlConnection.setDefaultUseCaches(true);
-					Map<String, String> headers = request.getRequestHeaders();
-					headers.put("Access-Control-Allow-Origin", "*");
-					headers.put("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
-					for(String kI:headers.keySet()) {
-						urlConnection.setRequestProperty(kI, headers.get(kI));
+					try {
+						InputStream input = null;
+						for (Long id:weblistHandler.frames) { // java.util.ConcurrentModificationException
+							BookPresenter book = getBookByIdNoCreation(id);
+							if(book!=null && book.getIsWebx()) {
+								input = book.getWebx().modifyRes(MainActivityUIBase.this, url);
+								if(input!=null) {
+									CMN.Log("修改了::", url);
+									WebResourceResponse webResourceResponse;
+									webResourceResponse=new WebResourceResponse("*/*", "utf8", input);
+									//webResourceResponse.setResponseHeaders(headers);
+									return webResourceResponse;
+								}
+							}
+						}
+						
+						if(false) {
+							//HTTPSessionProxy proxy = (HTTPSessionProxy) session;
+							HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
+							
+							if(urlConnection instanceof HttpsURLConnection) {
+								((HttpsURLConnection)urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
+							}
+							urlConnection.setRequestProperty("Accept-Charset", "utf-8");
+							urlConnection.setRequestProperty("connection", "Keep-Alive");
+							urlConnection.setRequestMethod(request.getMethod());
+							urlConnection.setConnectTimeout(6800);
+							urlConnection.setUseCaches(true);
+							urlConnection.setDefaultUseCaches(true);
+							Map<String, String> headers = request.getRequestHeaders();
+							headers.put("Access-Control-Allow-Origin", "*");
+							headers.put("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
+							for(String kI:headers.keySet()) {
+								urlConnection.setRequestProperty(kI, headers.get(kI));
+							}
+							//if(host!=null) urlConnection.setRequestProperty("Host", presenter.getWebx().getHost());
+							urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
+							urlConnection.connect();
+							input = urlConnection.getInputStream();
+							String MIME = urlConnection.getHeaderField("content-type");
+							
+							String acc = headers.get("Accept");
+							if(acc==null) {
+								acc = "*/*;";
+							}
+							if(TextUtils.isEmpty(MIME)) {
+								MIME = acc;
+							}
+							int idx = MIME.indexOf(",");
+							if(idx<0) {
+								idx = MIME.indexOf(";");
+							}
+							if(idx>=0) {
+								MIME = MIME.substring(0, idx);
+							}
+							WebResourceResponse webResourceResponse;
+							webResourceResponse=new WebResourceResponse(MIME, "utf8", input);
+							webResourceResponse.setResponseHeaders(headers);
+							
+							return webResourceResponse;
+						}
+					} catch (Exception e) {
+						CMN.debug(url,"\n",e);
 					}
-					//if(host!=null) urlConnection.setRequestProperty("Host", presenter.getWebx().getHost());
-					urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
-					urlConnection.connect();
-					InputStream input = urlConnection.getInputStream();
-					String MIME = urlConnection.getHeaderField("content-type");
-					
-					String acc = headers.get("Accept");
-					if(acc==null) {
-						acc = "*/*;";
-					}
-					if(TextUtils.isEmpty(MIME)) {
-						MIME = acc;
-					}
-					int idx = MIME.indexOf(",");
-					if(idx<0) {
-						idx = MIME.indexOf(";");
-					}
-					if(idx>=0) {
-						MIME = MIME.substring(0, idx);
-					}
-					WebResourceResponse webResourceResponse;
-					webResourceResponse=new WebResourceResponse(MIME, "utf8", input);
-					webResourceResponse.setResponseHeaders(headers);
-					
-					return webResourceResponse;
-				} catch (Exception e) {
-					CMN.debug(e);
 				}
 				return null;
 			}
@@ -8209,9 +8215,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								return new WebResourceResponse("text/html","UTF-8",overridePage);
 							}
 						}
-						
-	//					if (url.contains("apis.google")) return emptyResponse;
-	
 						if(webx.canSaveResource) {
 							try {
 								shWebsite = webx.cacheExtensions;
@@ -8303,11 +8306,34 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						view.setTag(R.id.save, null);
 					}
 				}
-				if (webx.getReplaceLetToVar(url)) {
+				if (webx.getShouldReplaceLetToVar(url)) {
 					try {
 						return ViewUtils.KikLetToVar(url , accept, refer, origin, request, webx);
 					} catch (Exception e) { CMN.debug("kiklet 转化失败::", e); }
 				}
+				
+				if(webx.shouldUseClientResponse(url)) {
+					// hosts
+					return (WebResourceResponse) webx.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+				}
+				
+				if(url.toLowerCase().startsWith("http://mdbr.com")) {
+					int schemaIdx = url.indexOf(":");
+					try {
+						HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
+						Response ret = getMdictServer().handle(req);
+						if(ret!=null) {
+							CMN.Log("WebResourceResponse::", ret.getMimeType());
+							String mime = ret.getMimeType();
+							int idx=mime.indexOf(";");
+							if(idx>0) mime = mime.substring(0, idx);
+							return new WebResourceResponse(mime, "UTF-8", ret.getData());
+						}
+					} catch (Exception e) {
+						CMN.debug(url, e);
+					}
+				}
+				
 				return null;
 			}
 			if(url.startsWith("http")) {
@@ -8377,10 +8403,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			String SepWindows = "\\";
 
+			/////////////////
+			/////////////////
+			/////////////////
 			String key=url;
 			try {
 				key = URLDecoder.decode(url,"UTF-8");
 			} catch (Exception ignored) { }
+			/////////////////
+			/////////////////
+			/////////////////
 
 			int start = key.indexOf(BookPresenter.FileTag);
 			if(start==-1){
@@ -8492,12 +8524,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					mime = "text/css";
 				break;
 			}
-			key= mdict.requestPattern.matcher(key).replaceAll("");
-			
+			String parms=null;
+			int parmIdx = key.indexOf("?");
+			//key= mdict.requestPattern.matcher(key).replaceAll("");
+			if(parmIdx>0) {
+				parms = key.substring(parmIdx+1);
+				key = key.substring(0, parmIdx);
+			}
+			boolean shouldLoadFiles = PDICMainAppOptions.getAllowPlugRes()||invoker.isHasExtStyle();
 			//检查后缀，js，ini,png,css,直接路径。
-			if(PDICMainAppOptions.getAllowPlugRes() && !PDICMainAppOptions.getAllowPlugResNone()) {
+			if(shouldLoadFiles && (!PDICMainAppOptions.getAllowPlugResNone()||!invoker.bookImpl.hasMdd()||parms!=null&&parms.contains("f=a"))) {
 				WebResourceResponse ret = getPlugRes(invoker, key);
 				if(ret!=null) return ret;
+				shouldLoadFiles = false;
 			}
 
 			if(!invoker.bookImpl.hasMdd())
@@ -8511,8 +8550,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			try {
 				InputStream restmp=invoker.bookImpl.getResourceByKey(key);
+				CMN.Log("getResourceByKey::",key, restmp);
 				if(restmp==null) {
-					if(PDICMainAppOptions.getAllowPlugRes() && PDICMainAppOptions.getAllowPlugResNone()) {
+					if(shouldLoadFiles) {
 						WebResourceResponse ret = getPlugRes(invoker, key);
 						if(ret!=null) return ret;
 					}
@@ -8583,35 +8623,46 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		private WebResourceResponse getPlugRes(BookPresenter presenter, String uri) {
 			try {
+				SU.Log("getPlugRes!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
 				if(uri.length()<32 && uri.length()>3 && uri.lastIndexOf("\\")==0) {
 					int sid = uri.lastIndexOf(".");
 					if(sid>0 && sid<uri.length()-2) {
-						if(PDICMainAppOptions.getAllowPlugResSame()) {
-							String p = presenter.getPath();
-							String d = presenter.getDictionaryName();
-							int sep = p.lastIndexOf(File.separator, p.lastIndexOf(File.separator)-1)+1;
-							if(sep>0) {
-								if(p.regionMatches(true, sep, d, 0, Math.min(d.length(), 3))) {
-									//SU.Log("同名目录!");
-									p=null;
+						SU.Log("同名CSS!", presenter.isHasExtStyle() , uri, presenter.getDictionaryName());
+						if(presenter.isHasExtStyle()
+								&& uri.endsWith(".css")
+								&& uri.regionMatches(1, presenter.getDictionaryName(), 0, sid-1))
+						{
+							return new WebResourceResponse("text/css", "UTF-8"
+									, presenter.getDebuggingResource("/"+uri.substring(1)));
+						}
+						if(PDICMainAppOptions.getAllowPlugRes()) {
+							if(PDICMainAppOptions.getAllowPlugResSame()) {
+								String p = presenter.getPath();
+								int sep = p.lastIndexOf(File.separator, p.lastIndexOf(File.separator)-1)+1;
+								if(sep>0) {
+									String d = presenter.getDictionaryName();
+									if(p.regionMatches(true, sep, d, 0, Math.min(d.length(), 3))) {
+										//SU.Log("同名目录!");
+										p=null;
+									}
+								}
+								if(p!=null) {
+									return null;
 								}
 							}
-							if(p!=null) {
-								return null;
-							}
-						}
-						SU.Log("文件", uri);
-						int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
-						if(mid>=0) {
-							InputStream input = presenter.getDebuggingResource("/"+uri.substring(1));
-							if(input!=null) {
-								String MIME = mid==0?"application/x-javascript"
-										:mid==2?"text/css"
-										:mid>=5&&mid<18?"img/*"
-										:mid==18?"img/svg" //todo
-										:"*/*"
-										;
-								return new WebResourceResponse(MIME, "UTF-8", input);
+							SU.Log("文件", uri);
+							int mid="jscssjpgpngwebpicosvgini".indexOf(uri.substring(sid+1));
+							if(mid>=0) {
+								InputStream input = presenter.getDebuggingResource("/"+uri.substring(1));
+								if(input!=null) {
+									String MIME = mid==0?"application/x-javascript"
+											:mid==2?"text/css"
+											:mid>=5&&mid<18?"img/*"
+											:mid==18?"img/svg" //todo
+											:"*/*"
+											;
+									return new WebResourceResponse(MIME, "UTF-8", input);
+								}
 							}
 						}
 					}

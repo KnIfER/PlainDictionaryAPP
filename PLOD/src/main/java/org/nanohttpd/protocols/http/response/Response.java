@@ -115,8 +115,14 @@ public class Response implements Closeable {
     private List<String> cookieHeaders;
 
     private GzipUsage gzipUsage = GzipUsage.DEFAULT;
-
-    private static enum GzipUsage {
+	
+	public void putHeaders(Map<String, String> headers) {
+		if(headers!=null) {
+			this.header.putAll(headers);
+		}
+	}
+	
+	private static enum GzipUsage {
         DEFAULT,
         ALWAYS,
         NEVER;

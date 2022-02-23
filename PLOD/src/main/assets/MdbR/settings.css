@@ -87,11 +87,11 @@ font-weight: 400;
     display: block;
     padding-block-end: 0;
     padding-block-start: 0;
-    padding-inline-end:   20px;
-    padding-inline-start: 50px;
+    padding-right:   20px;
+    padding-left: 50px;
 }
 .list-frame > .list-frame {
-    padding-inline-start: 23px;
+    padding-left: 23px;
 }
 .list-item > .outerRow {
     width: 100%;
@@ -99,7 +99,7 @@ font-weight: 400;
 }
 .labelWrapper.second {
     flex: 1;
-    margin-inline-start: 20px;
+    margin-left: 20px;
 }
 .list-item {
     align-items: center;
@@ -191,8 +191,8 @@ input{
     font-size: inherit;
     outline: none;
     padding-bottom: 6px;
-    padding-inline-end: 8px;
-    padding-inline-start: 8px;
+    padding-right: 8px;
+    padding-left: 8px;
     padding-top: 6px;
     text-align: inherit;
     text-overflow: ellipsis;

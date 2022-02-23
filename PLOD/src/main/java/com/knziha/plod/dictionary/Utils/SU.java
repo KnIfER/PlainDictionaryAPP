@@ -163,6 +163,15 @@ public class  SU{
 		return val;
 	}
 	
+	public static int hashCode(String toHash, int start, int len) {
+		int h=0;
+		len = Math.min(toHash.length(), len);
+		for (int i = start; i < len; i++) {
+			h = 31 * h + Character.toLowerCase(toHash.charAt(i));
+		}
+		return h;
+	}
+	
 	public boolean CharsequenceEqual(CharSequence cs1, CharSequence cs2) {
 		if(cs1!=null&&cs2!=null) {
 			int len1=cs1.length();

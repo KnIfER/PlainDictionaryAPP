@@ -2,23 +2,24 @@
 <html>
 <head>
 <style>
-mark {background: yellow; }
-mark.current {
-	background: orange;
-	border:1px solid #FF0000
-}
-.highlight { background-color: yellow; }
+	mark {background: yellow; }
+	mark.current {
+		background: orange;
+		border:1px solid #FF0000
+	}
+	.highlight { background-color: yellow; }
 	html, body {
-	-moz-user-select:text;
-	-webkit-user-select:text;
-	-ms-user-select:text;
-	-khtml-user-select:text;
-	user-select:text;
-}
+		-moz-user-select:text;
+		-webkit-user-select:text;
+		-ms-user-select:text;
+		-khtml-user-select:text;
+		user-select:text;
+		min-height: unset!important;
+	}
 </style>
 
 <script>
-function debug(...e){console.log(e)};
+function debug(e){console.log(e)};
 debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
 if(window.addEventListener){
@@ -26,13 +27,20 @@ if(window.addEventListener){
 	window.addEventListener('click',wrappedClickFunc);
 	window.addEventListener('mousedown',wrappedDown);
 	window.addEventListener('touchstart',wrappedDown);
+	//window.addEventListener('scroll',wrappedScroll,true);
 } else {
 	window.onload=wrappedOnLoadFunction;
 	window.onclick=wrappedClickFunc;
 	window.onmousedown=wrappedDown;
 }
+// function wrappedScroll(e){
+// 	debug(e);
+// 	document.body.scrollTop=0;
+// 	e.preventDefault();
+// 	e.stopPropagation();
+// }
 function wrappedOnLoadFunc(){
-	// debug('mdpage loaded');
+	debug('mdpage loaded', frameElement.dictInfo.name);
 	// //document.body.style.fontSize=35+'px';
 	// highlight(null);
 	// //debug('frameAt !! '+frameAt);
@@ -41,11 +49,18 @@ function wrappedOnLoadFunc(){
 	// 	_onloadchecks[i]();
 	// }
 	//debug("wrappedOnLoadFunc::", frameElement.tag, frameElement.u, location.href);
-	if(frameElement && frameElement.u) {
-		if(frameElement.u.startsWith(location.href)) {
-			location.href=frameElement.u;
+	if(frameElement) {
+		if(!frameElement.scrollExpand) {
+			var inf=frameElement.dictInfo;
+			if(inf.lastX || inf.lastY)
+				document.documentElement.scrollTo(inf.lastX, inf.lastY);
 		}
-		frameElement.u=0;
+		if(frameElement.u) {
+			if(frameElement.u.startsWith(location.href)) {
+				location.href=frameElement.u;
+			}
+			frameElement.u=0;
+		}
 	}
 	//todo 处理背景色？
 }
@@ -88,7 +103,7 @@ function hiPlaySound(e){
 }
 
 function wrappedDown(e){
-	debug(e);
+	//debug(e);
 	var t;
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
@@ -154,7 +169,7 @@ function JumpUrl(t){
 function wrappedClickFunc(e){
 	//if(1)return;
 	if(url2Jump) {
-		JumpUrl(url2Jump);
+		if(!frameElement || frameElement.dictInfo.scrollExpand) JumpUrl(url2Jump);
 		url2Jump=0;
 	}
 	//parent.window.dismiss_menu();

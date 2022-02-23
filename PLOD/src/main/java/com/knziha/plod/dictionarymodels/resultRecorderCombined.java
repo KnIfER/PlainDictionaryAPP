@@ -195,8 +195,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 			else {
 				if(mergedUrl==null)
-					mergedUrl = new StringBuilder("http://MdbR/MERGE.jsp?q=")
-						.append(SU.encode(result.key)).append("&EXP=");
+					mergedUrl = new StringBuilder("http://MdbR.com/MERGE.jsp?q=")
+						.append(SU.encode(result.key)).append("&exp=");
 				else mergedUrl.append("-");
 				mergedUrl.append("d");
 				IU.NumberToText_SIXTWO_LE(presenter.getId(), mergedUrl);
@@ -211,6 +211,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			WebViewmy mWebView = a.weblistHandler.initMergedFrame();
 			CMN.debug("mergedUrl::", mergedUrl);
 			mWebView.loadUrl(mergedUrl.toString());
+//			mWebView.loadUrl("https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2016/September");
 			a.RecalibrateWebScrollbar(mWebView);
 		}
 		else {

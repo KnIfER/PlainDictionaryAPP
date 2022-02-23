@@ -33,6 +33,7 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.ActionMode;
@@ -55,6 +56,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.ValueCallback;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -1717,7 +1719,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		//tg
-		etSearch.setText("happy");
+		//etSearch.setText("happy");
+		if(false) {
+			testRandomWord();
+		}
+		
 		//showT(""+currentDictionary.QueryByKey("woodie", SearchType.Normal, false, 0));
 //		TestHelper.wakeUpAndUnlock(this);
 		
@@ -1876,6 +1882,47 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //				CMN.Log(e);
 //			}
 	}
+	WebViewmy webviewDebug;
+	private void testRandomWord() {
+		boolean init=false;
+		try {
+			if(webviewDebug==null) {
+				init=true;
+				WebViewListHandler handler = new WebViewListHandler(this);
+				webviewDebug=handler.getMergedFrame();
+				mlv.addView(handler.mMergedBook.rl);
+				handler.mMergedBook.rl.getLayoutParams().height=350;
+				webviewDebug.presenter = new_book(defDicts[2], this);
+			}
+			BookPresenter wikibook = webviewDebug.presenter;
+			PlainWeb webx = wikibook.getWebx();
+			String testUrl=webx.getSyntheticField("loadingTest");
+			if(testUrl!=null && (init || !TextUtils.equals(webviewDebug.getTag()+"", testUrl))) {
+				webviewDebug.loadUrl(testUrl); webviewDebug.setTag(testUrl); CMN.Log("加载::", testUrl);
+				init = true;
+			} else {
+				init = false;
+			}
+			root.postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						webviewDebug.evaluateJavascript(webx.getSyntheticField("wordtoday"), new ValueCallback<String>() {
+							@Override
+							public void onReceiveValue(String value) {
+								CMN.debug("wordtoday::ValueCallback", value);
+							}
+						});
+					} catch (IOException e) {
+						CMN.Log(e);
+					}
+				}
+			}, init?350:0);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
+	
 	PowerManager.WakeLock wakeLock;
 	
 	private void ResizeDictPicker() {
@@ -2629,6 +2676,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		@Override
 		public void onItemClick(int pos) {//lv1
+			if(true) {
+				//testRandomWord();
+				
+				
+				return;
+			}
 			shuntAAdjustment();
 			if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
 				String pw = pos==0?etSearch.getText().toString(): presenter.bookImpl.getEntryAt(pos);
@@ -3652,7 +3705,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			/* 折叠全部 */
 			case R.id.toolbar_action0:{
 				if(isLongClicked) break;
-				toggleFoldAll();
+				weblistHandler.toggleFoldAll();
 			} break;
 			/* 翻页前记忆位置 */
 			case R.id.toolbar_action6:{

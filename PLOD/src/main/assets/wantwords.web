@@ -84,4 +84,24 @@ js:@{schVar}(4)\r< En-Zh >
 	,"onload": ""
 	,"drawHighlightOnTop":"true"
 	,"kikLetVar":"home.js"
+	,"synthesis":"
+		<div id='exp'></div>
+		<script>
+			var text=parent.getText().toLowerCase();
+			var sch,m;
+			if (text.search(/[\\u4e00-\\u9fa5]/g)>=0) {
+				sch='GetChDefis'
+				m='CE';
+			} else if (text.search(/[a-zA-Z]/)>=0) {
+				sch='GetEnDefis'
+				m='3';
+			}
+			if(sch) {
+				parent.loadJson('https://wantwords.thunlp.org/'+sch+'/', (e)=>{
+					debug(e);
+					document.getElementById('exp').innerHTML=e[0];
+				}, 'w='+encodeURIComponent(text)+'&m='+m, 1);
+			}
+		</script>
+	"
 }

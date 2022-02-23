@@ -176,7 +176,8 @@ public class CMN{
 	public static long stst;
 	public static long ststrt;
 	public static long stst_add;
-	public static long rt() {
+	public static long rt(Object... o) {
+		CMN.Log(o);
 		return ststrt = System.currentTimeMillis();
 	}
 	public static long pt(Object...args) {

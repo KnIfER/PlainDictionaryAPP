@@ -89,7 +89,7 @@
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="plugResNone"
-			android:title="仅在资源不存在时，才检测同目录资源文件"
+			android:title="仅在资源包中不存在请求的资源时，才检测文件系统"
 			android:summary="避免所有符合条件的URL都触发文件检测"
 			android:persistent="false"
 			app:allowDividerBelow="true"

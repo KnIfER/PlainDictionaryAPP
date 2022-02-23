@@ -1,4 +1,24 @@
 
+
+if (typeof Element.prototype.remove != 'function') {  
+    Element.prototype.remove = function() {
+        this.parentElement.removeChild(this);
+    }
+    NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+        for(var i = this.length - 1; i >= 0; i--) {
+            if(this[i] && this[i].parentElement) {
+                this[i].parentElement.removeChild(this[i]);
+            }
+        }
+    }    
+} 
+
+if (typeof Element.prototype.prepend != 'function') {  
+    Element.prototype.prepend = function(e) {
+        this.insertBefore(e, this.firstChild);
+    } 
+} 
+
 if (typeof String.prototype.startsWith != 'function') {  
     String.prototype.startsWith = function (prefix){  
         return this.slice(0, prefix.length) === prefix;  

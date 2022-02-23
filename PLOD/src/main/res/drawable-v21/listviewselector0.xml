@@ -7,7 +7,7 @@
 		<shape android:shape="rectangle">
 			<corners android:radius="3dp"/>
 			<!-- This color is needed to be set - doesn't affect anything -->
-			<solid android:color="@android:color/white"/>
+			<solid android:color="#fff"/>
 		</shape>
 	</item>
 

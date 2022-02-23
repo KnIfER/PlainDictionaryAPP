@@ -16,7 +16,7 @@
             style.setAttribute('href', 'http://192.168.0.100:8080/base/3/MdbR/settings.css');
         }
     }/**/
-    function debug(...e){console.log(...e)};
+    function debug(e){console.log(e)};
     function ge(e,p){return (p||document).getElementById(e)};
     function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
     function gt(e,p){return (p||document).getElementsByTagName(e)[0]};
@@ -62,9 +62,10 @@
                     if(c.id1===t.id1) {
                         if(!defirst)
                             defirst = c;
-                        if(gc('prefix',c)/*?*/.classList.contains('enabled'))
+                        if(gc('prefix',c)/*?*/.classList.contains('enabled')) {
                             val = c.sel;
-                        break;
+                            break;
+                        }
                     }
                     c=c.nextSibling;
                 }
@@ -457,7 +458,7 @@
         if(!dlg) {
             dlg = craft(0, document.body);
             dlg.id = id;
-            dlg.style = 'width:100%;height:100%;top:0;position:fixed;transition:transform 200ms,opacity 200ms;background:#8080800d;transform:scale(0.7);-webkit-transform:scale(0.7);opacity:0;'
+            dlg.style = 'width:100%;height:100%;top:0;position:fixed;transition:transform 200ms,opacity 200ms;background:#8080800d;transform:scale(0.7);-webkit-transform:scale(0.7);opacity:0;z-index:999;'
 
             var host = craft('settings-host', dlg);
             host.style = 'width:70%;height:100%;margin:auto;right:0;left:0;overflow-y:auto;position:fixed;';

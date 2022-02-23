@@ -1,0 +1,47 @@
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+<meta charset="utf8">
+
+<div id="host"> </div>
+<!-- todo 去除外部标签，只保留script内容，编译为settings.js文件 -->
+<script src='settings.js'></script>
+<script src='http://192.168.0.100:8080/base/3/MdbR/settings.js'></script>
+<body>
+    <script>
+        // 测试
+        if(true) {
+            function debug(...e){console.log(e)};
+            var host = document.getElementById('host');
+            var settingsJson = {
+                barbecue : true
+                ,feast : true
+                ,hugeWho : 1
+                ,hugeWuWithBiyun : false
+                ,hugeHongWithBiyun : true
+                ,hugeFangWithBiyun : false
+            };
+
+            function pref(id, value, el) 
+            {
+                settingsJson[id] = value;
+
+                debug('pref_id=', id, 'newValue=', typeof value, value, 'result=');
+                
+                console.log(value);
+
+                console.log(settingsJson);
+
+                return 1;
+            }
+
+            var settings = ['首选项'
+                , [1, 'barbecue', ['烧烤'], settingsJson.barbecue]
+                , [1, 'feast', ['大餐'], settingsJson.feast]
+                , [1|1<<10, ['hugeWuWithBiyun',['hugeWho', 0],settingsJson.hugeWho==0], ['小吴', '送花花:'], settingsJson.hugeWuWithBiyun]
+                , [1|1<<10, ['hugeHongWithBiyun',['hugeWho', 1],settingsJson.hugeWho==1], ['小红', '送花花:'], settingsJson.hugeHongWithBiyun]
+                , [1|1<<10, ['hugeFangWithBiyun',['hugeWho', 2],settingsJson.hugeWho==2], ['小芳', '送花花:'], settingsJson.hugeFangWithBiyun]
+            ];
+
+            buildSettingsCard(pref, settings, host);
+        }
+    </script>
+</body>

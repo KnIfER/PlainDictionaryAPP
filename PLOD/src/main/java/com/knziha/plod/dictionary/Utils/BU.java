@@ -17,16 +17,16 @@
 
 package com.knziha.plod.dictionary.Utils;
 
+import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
+
 import androidx.appcompat.app.GlobalOptions;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.InflaterOutputStream;
-
 
 /**
  * @author KnIfER

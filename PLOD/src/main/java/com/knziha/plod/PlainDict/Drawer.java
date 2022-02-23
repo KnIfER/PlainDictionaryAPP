@@ -564,14 +564,15 @@ public class Drawer extends Fragment implements
 							markwon.setMarkdown(tv, ViewUtils.fileToString(a, new File(CMN.AssetTag, "rizhi")));
 						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					
-					if(false)
-						ssb.setSpan(new ClickableSpan() {
-							@Override
-							public void onClick(@NonNull View widget) {
-								Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
-								Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-								startActivity(intent);
-							}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+					startss = ssb.toString().indexOf("[",endss);
+					endss = ssb.toString().indexOf("]",startss);
+					ssb.setSpan(new ClickableSpan() {
+						@Override
+						public void onClick(@NonNull View widget) {
+							Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
+							Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+							startActivity(intent);
+						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					
 					
 					startss = ssb.toString().indexOf("[",endss);

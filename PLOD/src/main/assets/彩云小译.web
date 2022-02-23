@@ -1,0 +1,50 @@
+{
+	,"host": "https://fanyi.caiyunapp.com/#/"
+	,"index": ""
+	,"style": ""
+	,"keyPattern": "*"
+	,"js": "
+		window._YWPC=['mine-tabar', 'container'];
+	"
+	,"message":""
+	,"searchJs": "var succ = 0;
+function debug(e){console.log(e)};
+try {
+	debug('searchJs');
+	var ta=document.querySelector('#textarea');
+	if (ta) {
+		ta.value = '%s';
+		ta.dispatchEvent(new Event('input', {
+			bubbles: true
+		}));
+		setTimeout(function(){
+			ta.dispatchEvent(new KeyboardEvent('keydown', {
+				keyCode: 27,
+				bubbles: 1
+			}))
+		}, 200);
+		succ = 1;
+		//window._tweakedHXCL = false; setTimeout(window._tweakHXCL, 350);
+	}
+} catch (e) {
+	debug('fatal e='+e);
+}
+succ"
+	,"translator":"true"
+	,"drawHighlightOnTop":"true"
+	,"excludeRes":"fonts.gstatic.com/s/roboto"
+	,"fastFontsx":"true"
+	,"synthesis":"
+		<div id='text'></div>
+		<style>
+			.cyxy-function{
+				bottom: auto;
+			}
+		</style>
+		<script>
+			var te=document.getElementById('text');
+			te.innerText=parent.getText();
+		</script>
+		<script src='https://caiyunapp.com/dest/trs.js'></script>
+	"
+}

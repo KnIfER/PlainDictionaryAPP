@@ -5,17 +5,20 @@ import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.StrictMode;
 import android.view.inputmethod.EditorInfo;
 
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.mdictRes_asset;
 
 import org.apache.commons.imaging.BufferedImage;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.ImagingConstants;
 import org.apache.commons.imaging.ManagedImageBufferedImageFactory;
+import org.knziha.metaline.StripMethods;
 import org.nanohttpd.protocols.http.HTTPSession;
 import org.xiph.speex.ByteArrayRandomOutputStream;
 
@@ -30,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
 
@@ -40,15 +44,27 @@ import javax.net.ssl.HttpsURLConnection;
  * @author KnIfER
  * date 2020/06/01
  */
-	
+
+@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
 public class MdictServerMobile extends MdictServer {
 	private MainActivityUIBase a;
+	
 	private static HashMap<String, Object>  mTifConfig;
+	
+	public static boolean hasRemoteDebugServer = true;
 	
 	public MdictServerMobile(int port, MainActivityUIBase _a, PDICMainAppOptions _opt) throws IOException {
 		super(port, _opt);
 		a = _a;
 		MdbServerLet = _a;
+		a.serverHosts=new ConcurrentHashMap<>();
+		if(a.serverHostsHolder!=null) {
+			for (PlainWeb pw:a.serverHostsHolder) {
+				a.serverHosts.putAll(pw.jinkeSheaths);
+			}
+		}
+		webResHandler = new PlainWeb(new File(CMN.AssetTag+"plate.web"), _a);
+		webResHandler.jinkeSheaths = a.serverHosts;
 		try {
 			MdbResource = new mdictRes_asset(new File(CMN.AssetTag, "MdbR.mdd"),2, a);
 		} catch (IOException e) { SU.Log(e); }
@@ -154,15 +170,18 @@ public class MdictServerMobile extends MdictServer {
 		return mTifConfig;
 	}
 	
-	@Override
-	protected InputStream OpenMdbResourceByName(String key) throws IOException {
-		if(true)
-		{
+	public static InputStream getRemoteServerRes(String key, boolean check) {
+		InputStream ret = null;
+		if(hasRemoteDebugServer) {
 			try {
-				CMN.Log("OpenMdbResourceByName   http://192.168.0.100:8080/base/3"+key.replace("\\", "/"));
-				HttpURLConnection urlConnection = (HttpURLConnection) new URL("http://192.168.0.100:8080/base/3"+key.replace("\\", "/")).openConnection();
-				if(urlConnection instanceof HttpsURLConnection) {
-					((HttpsURLConnection)urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
+				if(check) {
+					StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+					StrictMode.setThreadPolicy(policy);
+				}
+				CMN.Log("OpenMdbResourceByName   http://192.168.0.100:8080/base/3" + key.replace("\\", "/"));
+				HttpURLConnection urlConnection = (HttpURLConnection) new URL("http://192.168.0.100:8080/base/3" + key.replace("\\", "/")).openConnection();
+				if (urlConnection instanceof HttpsURLConnection) {
+					((HttpsURLConnection) urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
 				}
 				urlConnection.setRequestProperty("Accept-Charset", "utf-8");
 				urlConnection.setRequestProperty("connection", "Keep-Alive");
@@ -177,13 +196,27 @@ public class MdictServerMobile extends MdictServer {
 //				String val = BU.StreamToString(input);
 //				//input = new AutoCloseNetStream(input, urlConnection);
 //				return new ByteArrayInputStream(val.getBytes(StandardCharsets.UTF_8));
-				CMN.Log("请求的是本机调试资源…");
+				CMN.Log("请求的是本机调试资源…", key);
 				return input;
 			} catch (Exception e) {
 				CMN.Log(e);
+				if (check) {
+					hasRemoteDebugServer = false;
+				}
 			}
 		}
-		
+		return ret;
+	}
+	
+	
+	@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
+	@Override
+	protected InputStream OpenMdbResourceByName(String key) throws IOException {
+		if(hasRemoteDebugServer)
+		{
+			InputStream ret = getRemoteServerRes(key, false);
+			if(ret!=null) return ret;
+		}
 		//if ("\\MdbR\\subpage.html".equals(key))
 		{
 			try {

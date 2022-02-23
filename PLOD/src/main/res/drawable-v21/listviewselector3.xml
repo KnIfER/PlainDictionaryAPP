@@ -6,7 +6,7 @@
 	<item android:id="@android:id/mask">
 		<shape android:shape="oval">
 			<!-- This color is needed to be set - doesn't affect anything -->
-			<solid android:color="@android:color/white"/>
+			<solid android:color="#fff"/>
 			<size
 				android:width="200dp"
 				android:height="200dp"/>

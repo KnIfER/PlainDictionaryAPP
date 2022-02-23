@@ -27,7 +27,7 @@ public class CharSequenceKey implements CharSequence {
 		public CharSequenceKey(@NonNull String val, int st, int ed) {
 			value = val;
 			start = st;
-			end = ed;
+			end = ed<0?value.length():ed;
 		}
 	
 		public CharSequenceKey setAsMdName(@NonNull String fullpath) {
@@ -113,6 +113,11 @@ public class CharSequenceKey implements CharSequence {
 	public CharSequenceKey reset(int st, int ed) {
 		this.start = st;
 		this.end = ed<st?value.length():ed;
+		return this;
+	}
+	
+	public CharSequenceKey reset(int st) {
+		this.start = st;
 		return this;
 	}
 	

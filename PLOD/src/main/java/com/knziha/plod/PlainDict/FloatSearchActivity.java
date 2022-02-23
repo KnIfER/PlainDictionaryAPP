@@ -1225,7 +1225,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			} return true;
 			case R.id.toolbar_action0:{
 				if(isLongClicked) break;
-				toggleFoldAll();
+				weblistHandler.toggleFoldAll();
 			} break;
             case R.id.toolbar_action2:{//切换词典
 				if(isLongClicked) break;

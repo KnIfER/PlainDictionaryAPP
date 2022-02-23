@@ -109,6 +109,7 @@ import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
 import static com.knziha.plod.dictionary.mdBase.fullpageString;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY;
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
 
 /*
@@ -119,6 +120,7 @@ import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
 public class BookPresenter
 		implements ValueCallback<String>, OnClickListener, mngr_agent_manageable, View.OnLongClickListener {
 	public UniversalDictionaryInterface bookImpl;
+	public final boolean isMergedBook;
 	
 	public ArrayList<SearchResultBean>[] combining_search_tree2; // 收集词条名称
 	public ArrayList<SearchResultBean>[] combining_search_tree_4; // 收集词条文本
@@ -617,7 +619,13 @@ function debug(e){console.log(e)};
     debug(111); 123
 */ @Metaline(compile = false)
 	private final static String testVal="";
+	
+	public boolean isHasExtStyle() {
+		return hasExtStyle;
+	}
+	
 	private boolean hasExtStyle;
+	
 	
 	/**几乎肯定是段落，不是单词或成语。**/
 	public static boolean testIsParagraph(String searchText, int paragraphWords) {
@@ -896,7 +904,7 @@ function debug(e){console.log(e)};
 		if (bookImpl!=null)
 		{
 			type = bookImpl.getType();
-			if (type<0 || type>3)
+			if (type<0 || type>5)
 			{
 				type = 0;
 			}
@@ -904,7 +912,7 @@ function debug(e){console.log(e)};
 			throw new RuntimeException("Failed To Create Book! "+fullPath);
 		}
 		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.values()[type];
-		
+		isMergedBook = mType==PLAIN_TYPE_EMPTY&&tag!=null;
 		bAutoRecordHistory = mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 		
 		if(THIS!=null){
@@ -1304,6 +1312,7 @@ function debug(e){console.log(e)};
 		json.put("tbg", SU.toHexRGB(getTitleBackground()));
 		json.put("tfg", SU.toHexRGB(getTitleForeground()));
 		json.put("bg", getUseInternalBG()?SU.toHexRGB(getContentBackground()):null);
+		if(getIsWebx())json.put("isWeb", 1);
 		PlainWeb webx = getWebx();
 		if(webx!=null) {
 			json.put("sch", webx.getSearchUrl());
@@ -2146,19 +2155,23 @@ function debug(e){console.log(e)};
 		StringBuilder sb = bookImpl.AcquireStringBuffer(512);
 		sb.append(htmlBase);
 		sb.append(js);
-		if(hasExtStyle && PDICMainAppOptions.getAllowPlugCss()) {
-			//CMN.Log("外挂同名 css");
+		plugCssWithSameFileName(sb);
+		return sb;
+	}
+	
+	public void plugCssWithSameFileName(StringBuilder sb) {
+		if(isHasExtStyle()) {
+			CMN.Log("外挂同名 css");
 			String fullFileName = bookImpl.getDictionaryName();
 			int end = fullFileName.length();
-			if(unwrapSuffix) {
+			if (unwrapSuffix) {
 				int idx = bookImpl.getDictionaryName().lastIndexOf(".");
-				if(idx>0) end=idx;
+				if (idx > 0) end = idx;
 			}
 			sb.append("<link rel='stylesheet' type='text/css' href='")
 					.append(fullFileName, 0, end)
-					.append(".css'/>");
+					.append(".css?f=auto'/>");
 		}
-		return sb;
 	}
 	
 	public void renderContentAt_internal(WebViewmy mWebView,float initialScale, boolean fromCombined, boolean fromPopup, boolean mIsolateImages, long...position) {
@@ -2724,7 +2737,18 @@ function debug(e){console.log(e)};
 				});
 			}
         }
-
+		
+		
+		@JavascriptInterface
+		public void showUcc(String id, String text) {
+        	MainActivityUIBase a = presenter.a;
+			a.weblistHandler.mMergedFrame.post(() -> {
+				a.getUcc().setInvoker(a.getBookById(IU.TextToNumber_SIXTWO_LE(id)), a.weblistHandler.mMergedFrame, null, text);
+				a.weblistHandler.mMergedFrame.setTag(0);
+				a.getUcc().onClick(a.weblistHandler.mMergedFrame);
+			});
+        }
+		
         float scale;
         DisplayMetrics dm;
 
@@ -2908,6 +2932,11 @@ function debug(e){console.log(e)};
 		@JavascriptInterface
 		public void snack(String val) {
 			if(presenter==null) return;
+			presenter.a.root.post(() -> presenter.a.showContentSnack(val));
+		}
+		
+		@JavascriptInterface
+		public void wordtoday(String val) {
 			presenter.a.root.post(() -> presenter.a.showContentSnack(val));
 		}
 
@@ -3211,7 +3240,7 @@ function debug(e){console.log(e)};
 	}
 	
 	public void saveStates(Context context, LexicalDBHelper historyCon) {
-		if(mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY) return;
+		if(mType== PLAIN_TYPE_EMPTY) return;
 		setIsDedicatedFilter(false);
 		try {
 			DataOutputStream data_out;

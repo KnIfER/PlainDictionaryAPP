@@ -67,11 +67,13 @@ import androidx.preference.Preference;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.BuildConfig;
@@ -113,6 +115,8 @@ import javax.net.ssl.TrustManager;
 
 import static com.knziha.filepicker.utils.FU.bKindButComplexSdcardAvailable;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
+import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
+import static com.knziha.plod.plaindict.MdictServerMobile.hasRemoteDebugServer;
 
 public class ViewUtils {
 	public static float density;
@@ -481,12 +485,18 @@ public class ViewUtils {
 		if (f.getPath().startsWith("/ASSET")) {
 			String errRinfo;
 			boolean b1=f.getPath().startsWith("/", 6);
+//			if(!b1&&hasRemoteDebugServer) {
+//				InputStream input = getRemoteServerRes(f.getPath().substring(AssetTag.length()), false);
+//				if(input!=null) {
+//					return input;
+//				}
+//			}
 			if(GlobalOptions.debug || b1)
-			try {
-				return context.getResources().getAssets().open(f.getPath().substring(AssetTag.length()+(!b1?1:0)));
-			} catch (IOException e) {
-				errRinfo = CMN.Log(e);
-			}
+				try {
+					return context.getResources().getAssets().open(f.getPath().substring(AssetTag.length()+(!b1?1:0)));
+				} catch (IOException e) {
+					errRinfo = CMN.Log(e);
+				}
 			try {
 				UniversalDictionaryInterface asset = BookPresenter.getBookImpl(context instanceof MainActivityUIBase ?(MainActivityUIBase)context:null, new File(AssetTag+"webx"), 0);
 				Objects.requireNonNull(asset);

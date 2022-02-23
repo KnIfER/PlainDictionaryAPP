@@ -5,5 +5,5 @@
             "group": "Default"
         }
     ],
-    "workbench.editor.wrapTabs": false
+    "workbench.editor.wrapTabs": true
 }

@@ -8,9 +8,12 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
+import android.net.http.HttpResponseCache;
 import android.os.Build;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.webkit.ValueCallback;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import androidx.appcompat.app.GlobalOptions;
@@ -21,40 +24,76 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.knziha.plod.ArrayList.SerializedLongArray;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
+import com.knziha.plod.dictionary.Utils.AutoCloseInputStream;
 import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.dictionary.Utils.SubStringKey;
 import com.knziha.plod.dictionary.Utils.myCpr;
+import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.widgets.WebResourceResponseCompat;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTree_additive;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knziha.metaline.Metaline;
+import org.nanohttpd.protocols.http.response.Status;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.X509TrustManager;
 
+import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
 import static com.knziha.plod.db.LexicalDBHelper.FIELD_CREATE_TIME;
 import static com.knziha.plod.db.LexicalDBHelper.FIELD_EDIT_TIME;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_DATA_v2;
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
+import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
+import static com.knziha.plod.plaindict.MdictServerMobile.hasRemoteDebugServer;
+
+import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
+
+import okhttp3.Cache;
+import okhttp3.Dns;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 
 /*
  Mdict point to online website.
@@ -114,6 +153,190 @@ public class PlainWeb extends DictionaryAdapter {
 	private final Context context;
 	private long mLastKeyId;
 	private boolean mRecordsDirty;
+	
+	public Map<SubStringKey, String> jinkeSheaths;
+	Object k3client;
+	
+	public boolean hasHosts() {
+		return jinkeSheaths!=null && jinkeSheaths.size()>0;
+	}
+	public boolean shouldUseClientResponse(String url) {
+		if(jinkeSheaths!=null) { //  && jinkeSheaths.size()>0
+			return jinkeSheaths.containsKey(SubStringKey.new_hostKey(url));
+		}
+		return false;
+	}
+	void parseJinke(Context context) {
+		String hosts = getField("hosts");
+		if(hosts!=null) {
+			if(jinkeSheaths==null) {
+				jinkeSheaths = new HashMap<>();
+			} else {
+				jinkeSheaths.clear();
+			}
+			System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
+			try (BufferedReader bufferedReader = new BufferedReader(new StringReader(hosts))){
+				String ln;
+				Pattern p = Pattern.compile("(.*)[ ]+(.*)");
+				while ((ln=bufferedReader.readLine())!=null) {
+					ln = ln.trim();
+					if(ln.startsWith("#")) continue;
+					Matcher m = p.matcher(ln);
+					if(m.find()) {
+						jinkeSheaths.put(SubStringKey.fast_hostKey(m.group(2)), m.group(1));
+						//CMN.Log("jinke...", SubStringKey.fast_hostKey(m.group(2)), m.group(1));
+					}
+				}
+			} catch (IOException e) {
+				CMN.debug(e);
+			}
+			if(context instanceof MainActivityUIBase) {
+				MainActivityUIBase a = (MainActivityUIBase) context;
+				a.serverHostsHolder.add(this);
+				if(a.serverHosts!=null) {
+					a.serverHosts.putAll(jinkeSheaths);
+				}
+			}
+		}
+	}
+	private OkHttpClient prepareKlient(File cacheDir, int cacheSize) {
+		if (k3client!=null) return (OkHttpClient) k3client;
+		if(cacheSize==-1)
+			cacheSize = 10 * 1024 * 1024;
+		Interceptor headerInterceptor = new Interceptor() {
+			@Override
+			public Response intercept(Chain chain) throws IOException {
+				Request request = chain.request();
+				Response response = chain.proceed(request);
+				Response response1 = response.newBuilder()
+						.removeHeader("Pragma")
+						.removeHeader("Cache-Control")
+						//cache for 30 days
+						.header("Cache-Control", "max-age=" + 3600 * 24 * 30)
+						.build();
+				return response1;
+			}
+		};
+		OkHttpClient klient = new OkHttpClient.Builder()
+				.connectTimeout(5, TimeUnit.SECONDS)
+				.addNetworkInterceptor(headerInterceptor)
+				//.protocols(Collections.singletonList(Protocol.HTTP_1_1))
+				.cache(cacheDir==null ? null :
+						new Cache(new File(cacheDir, "k3cache")
+								, cacheSize)) // 配置缓存
+				.dns(new Dns() {
+					@Override
+					public List<InetAddress> lookup(String hostname) throws UnknownHostException {
+						String addr = jinkeSheaths.get(SubStringKey.new_hostKey(hostname));
+						CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
+						if (addr != null) {
+							return Collections.singletonList(InetAddress.getByName(addr));
+						}
+						//else return Collections.singletonList(InetAddress.getByName(hostname));
+						return Dns.SYSTEM.lookup(hostname);
+					}
+				})
+				//.readTimeout(5, TimeUnit.SECONDS)
+				//.setCache(getCache())
+				//.certificatePinner(getPinnedCerts())
+				//.setSslSocketFactory(getSSL())
+				.hostnameVerifier(DO_NOT_VERIFY)
+				.build();
+		return klient;
+	}
+	public Object getClientResponse(Context context, String url, String host, List<Pair> moders, Map<String, String> headers, boolean forServer) {
+		//if(true) return null;
+		try {
+			for(String kI:headers.keySet()) {
+				CMN.Log("headers::", kI, headers.get(kI));
+			}
+			//CMN.Log("host::", host);
+			if(context==null) context=this.context;
+			String acc = headers.get("Accept");
+			//CMN.Log("SIR::Accept_", acc, acc.equals("*/*"));
+			if(acc==null) {
+				acc = "*/*;";
+			}
+			headers.put("Access-Control-Allow-Origin", "*");
+			headers.put("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
+			InputStream input;
+			String MIME;
+			CMN.rt("转构开始……", url);
+			if(true || moders!=null) {
+				OkHttpClient klient = (OkHttpClient) k3client;
+				if(klient==null) {
+					klient = prepareKlient(context.getExternalFilesDir(null), -1);
+				}
+				Request.Builder k3request = new Request.Builder()
+						.url(url)
+						.header("Accept-Charset", "utf-8")
+						.header("Access-Control-Allow-Origin", "*")
+						.header("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept")
+						;
+				for(String kI:headers.keySet()) {
+					k3request.header(kI, headers.get(kI));
+				}
+				//k3request.method("GET", null);
+				
+				//int maxSale = 60 * 60 * 24 * 28; // tolerate 4-weeks sale
+	//					if (!NetworkUtils.isConnected(a))
+	//					k3request.removeHeader("Pragma")
+	//							.cacheControl(new CacheControl.Builder()
+	//									.maxAge(0, TimeUnit.SECONDS)
+	//									.maxStale(365,TimeUnit.DAYS).build())
+	//							.header("Cache-Control", "public, only-if-cached, max-stale=" + maxStale);
+				if(host!=null && !host.contains("mdbr")) k3request.header("Host", host);
+				k3request.header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
+				Response k3response = klient.newCall(k3request.build()).execute();
+				MIME = k3response.header("content-type");
+				//CMN.Log("重定向啦拉拉!!!", k3response.isRedirect(), url);
+				if (moders!=null) {
+					String raw = k3response.body().string();
+					for (Pair p:moders) {
+						p = (Pair) p.second;
+						raw = raw.replace((String)p.first, (String)p.second);
+					}
+					//CMN.Log("修改了::", url);
+					input = new ByteArrayInputStream(raw.getBytes());
+					k3response.close();
+				} else {
+					input = k3response.body().byteStream();
+				}
+			}
+			input = new AutoCloseInputStream(input);
+			CMN.pt("转构完毕！！！", input.available(), MIME);
+			if(TextUtils.isEmpty(MIME)) {
+				MIME = acc;
+			}
+			int idx = MIME.indexOf(",");
+			if(idx<0) {
+				idx = MIME.indexOf(";");
+			}
+			if(idx>=0) {
+				MIME = MIME.substring(0, idx);
+			}
+			if(forServer) {
+				org.nanohttpd.protocols.http.response.Response ret = newChunkedResponse(Status.OK, MIME, input);
+				ret.putHeaders(headers);
+				return ret;
+			} else {
+				WebResourceResponse webResourceResponse;
+				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					webResourceResponse=new WebResourceResponse(MIME, "utf8", input);
+					webResourceResponse.setResponseHeaders(headers);
+				} else {
+					webResourceResponse = new WebResourceResponseCompat(MIME, "utf8", input);
+					((WebResourceResponseCompat)webResourceResponse).setResponseHeaders(headers);
+				}
+				//CMN.Log("百代春秋泽被万世");
+				return webResourceResponse;
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		return null;
+	}
+	
 	
 	/**
 	 if(!app.PLODKit) {
@@ -363,6 +586,10 @@ public class PlainWeb extends DictionaryAdapter {
 		hostName = idx>0?host.substring(idx+3):host;
 		idx = host.indexOf("/");
 		if(idx>0) hostName = host.substring(0, idx);
+		
+		parseJinke(context);
+		CMN.Log("jinkeSheaths::", jinkeSheaths);
+		
 	}
 	
 	//粗暴地排除
@@ -578,7 +805,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	// todo webview 版本
-	public boolean getReplaceLetToVar(String url) {
+	public boolean getShouldReplaceLetToVar(String url) {
 		if (bReplaceLetToVar && Build.VERSION.SDK_INT<21) {
 			for (int i = 0; i < kikUrlPatterns.length; i++) {
 				if (url.contains(kikUrlPatterns[i]))
@@ -598,6 +825,95 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	public String getSearchUrl() {
 		return host+search;
+	}
+	
+	public String getSyntheticWebPage() throws IOException {
+		String synthesis;
+		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
+			try {
+				String p = f.getPath();
+				SU.Log("getSyntheticWebPage asset path::", p, p.substring(p.indexOf("/", 5)));
+				InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
+				if(input!=null) {
+					JSONObject json = JSONObject.parseObject(BU.StreamToString(input));
+					synthesis = json.getString("synthesis");
+					if(synthesis!=null) {
+						return synthesis;
+					}
+				}
+			} catch (IOException e) {
+				CMN.Log(e);
+			}
+		}
+		synthesis = getField("synthesis");
+		if(synthesis!=null) {
+			return synthesis;
+		}
+		return "当前模式（合并的多页面视图）暂不支持查看在线内容";
+	}
+	
+	public String getSyntheticField(String field) throws IOException {
+		return getSyntheticField(field, null);
+	}
+	
+	public String getSyntheticField(String field, String def) throws IOException {
+		String ret;
+		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
+			try {
+				String p = f.getPath();
+				SU.Log("getSyntheticField asset path::", p, p.substring(p.indexOf("/", 5)));
+				InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
+				if(input!=null) {
+					JSONObject json = JSONObject.parseObject(BU.StreamToString(input));
+					ret = json.getString(field);
+					if(ret!=null) {
+						return ret;
+					}
+				}
+			} catch (IOException e) {
+				CMN.Log(e);
+			}
+		}
+		ret = getField(field);
+		if(ret!=null) {
+			return ret;
+		}
+		return def;
+	}
+	
+	public InputStream modifyRes(Context context, String url) {
+		JSONArray mods = null;
+		if(f.getPath().contains("ASSET")) {
+			String p = f.getPath();
+			SU.Log("getSyntheticWebPage asset path::", p, p.substring(p.indexOf("/", 5)));
+			InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
+			try {
+				JSONObject json = JSONObject.parseObject(BU.StreamToString(input));
+				mods = json.getJSONArray("modifiers");
+			} catch (IOException e) {
+				CMN.debug(e);
+			}
+		}
+		if(mods==null) {
+			mods = website.getJSONArray("modifiers");
+		}
+		if(mods!=null) {
+			for (int i = 0; i < mods.size(); i++) {
+				if(url.startsWith(mods.getJSONObject(i).getString("url"))) {
+					try {
+						if(url.contains("?"))  url = url.substring(0, url.indexOf("?"));
+						File file = new File(f.getParent(), new File(url).getName());
+						InputStream ret = ViewUtils.fileToStream(context, file);
+						CMN.Log("modifyRes::", file.getPath());
+						return ret;
+					} catch (Exception e) {
+						CMN.debug(url,"\n",e);
+						return null;
+					}
+				}
+			}
+		}
+		return null;
 	}
 	
 	abstract class VirtualKeyProvider {
@@ -1434,7 +1750,7 @@ public class PlainWeb extends DictionaryAdapter {
 	{
 		if(takeWord(keyword)) {
 			if(treeBuilder !=null)
-				treeBuilder.insert(keyword, SelfAtIdx, 0);
+				treeBuilder.insert(keyword, SelfAtIdx, (long) 0);
 			else
 				rangReceiver.add(new myCpr<>(keyword, (long) 0));
 			isListDirty=true;

@@ -1,0 +1,111 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        
+    </style>
+    <script>
+		function debug(...e){console.log('fatal web d::', ...e)};
+		function ge(e,p){return (p||document).getElementById(e)};
+    	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
+    	function _gn(e,p){if(!p || p.name===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
+    	function gn(e,p){return _gn(e, p.firstElementChild);};
+
+        function craft(t, c, p) {
+            var e=document.createElement(t||'DIV');
+            if(c)e.className=c;
+            if(p)p.appendChild(e);
+            return e;
+        }
+
+        // JavaScript source code
+        //点击按钮搜索
+        function search() {
+            var key = ge("inp12138").value;
+            var wd = "https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&rsv_idx=1&tn=baidu&wd=" + key;
+            window.open(wd);
+        }
+        //回车搜索
+        function hcbd() {
+            var event = window.event || arguments.callee.caller.arguments[0];
+            if (event.keyCode == 13) {
+                search();
+            }
+        }
+        //加载到div
+        function autoLoad(obj) {
+            var style = craft('style',0,document.head);
+            sheet = style.sheet;
+            sheet.addRule('.tip:hover', 'background-color:rgb(238,238,242)');
+
+            var parent = ge(obj);
+            var left = craft(0,0,parent);
+            left.setAttribute("style", "width:70%;height:100%;float:left");
+            var right = craft(0,0,parent);
+            right.setAttribute("style", "width:25%;height:100%;float:right;margin-top:1px;");
+            var bot = craft("INPUT", 0, right);
+            bot.setAttribute("type", "button");
+            bot.setAttribute("style","height:100%;width:100%;")
+            bot.value = "百度搜索";
+            bot.setAttribute("onclick","search()");
+
+            var inp = craft("INPUT",0,left);
+            var ul = craft("UL",0,left);
+            var sugurl = "";
+            var scp = craft("SCRIPT",0,left);
+            scp.src = sugurl;
+            ul.setAttribute("style", "width:100%;height:100%;margin:0 0 0 0;padding:0 2px 0 2px");
+            inp.setAttribute("value","");
+            inp.setAttribute("style", "width:100%;height:100%;border:1px solid;border-radius:3px;padding:0 0 0 1px;");
+            inp.setAttribute("id", "inp12138")
+            inp.setAttribute("onkeydown", "hcbd()");
+            //left.appendChild(scp);
+            //定义回调方法
+            window.baidu = {
+                sug: function (json) {
+                    var arr = json.s;
+                    left.removeChild(ul);
+                    ul = document.createElement("ul");
+                    ul.setAttribute("style", "width:100%;height:100%;margin:0 0 0 0;padding:0 2px 0 2px");
+                    var tip;
+                    var a;
+                    for (var i = 0; i < arr.length; i++) {
+                        tip = document.createElement("li");
+                        a = document.createElement("a");
+                        a.href = 'https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&rsv_idx=1&tn=baidu&wd=' + arr[i];
+                        a.innerHTML =arr[i];
+                        a.setAttribute("style", "text-decoration:none;color:black")
+                        a.setAttribute("target","_BLANK")
+                        tip.appendChild(a);
+                        tip.setAttribute("class","tip")
+                        ul.appendChild(tip)
+                    }
+                    left.appendChild(ul);
+                }
+            }
+            //获取输入提示
+            getTip(left, inp, scp); 
+        }
+        //获取输入提示(百度api)
+        function getTip(parent, inp, scp) {
+            parent.removeChild(scp);
+            var key = inp.value;
+            var nscp = document.createElement("script");
+            if (key != "") {
+                nscp.src = "https://suggestion.baidu.com/su?wd=" + key + "&cb=window.baidu.sug";
+            } else {
+                nscp.src = "";
+            }
+            parent.appendChild(nscp);  
+            setTimeout(getTip, 2000, parent, inp, nscp);
+        }
+
+        autoLoad("aaa");
+    </script>
+    <title></title>
+</head>
+<body>
+    <div id="aaa" style="width:300px;height:30px">
+    </div>
+</body>
+</html>

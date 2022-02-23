@@ -43,7 +43,7 @@ public class WebViewListHandler extends ViewGroup {
 	ScrollViewmy WHP;
 	FrameLayout WHP1;
 	ViewGroup webholder;
-	WebViewmy mMergedFrame;
+	public WebViewmy mMergedFrame;
 	BookPresenter mMergedBook;
 	public ArrayList<Long> frames = new ArrayList();
 	
@@ -255,22 +255,25 @@ public class WebViewListHandler extends ViewGroup {
 		mBar.setDelimiter("|||", bMergeFrames?mMergedFrame:getViewGroup());
 	}
 	
-	public WebViewmy initMergedFrame() {
+	public WebViewmy getMergedFrame() {
 		if(mMergedFrame==null) {
 			try {
-				mMergedBook = new BookPresenter(new File("empty"), null, 1, null);
+				mMergedBook = new BookPresenter(new File("empty"), null, 1, 2);
 			} catch (IOException ignored) { }
-			WHP1 = new FrameLayout(a);
 			mMergedBook.initViewsHolder(a);
 			mMergedFrame = mMergedBook.mWebView;
 			mMergedFrame.setWebViewClient(a.myWebClient);
 			mMergedFrame.setWebChromeClient(a.myWebCClient);
 			//mMergedFrame.setOnScrollChangedListener(null);
-			
 			//mMergedFrame.SetupScrollRect(true);
-			
+			mMergedFrame.getSettings().setTextZoom(BookPresenter.def_fontsize);
 		}
-		mMergedFrame.getSettings().setTextZoom(BookPresenter.def_fontsize);
+		return mMergedFrame;
+	}
+	
+	public WebViewmy initMergedFrame() {
+		WebViewmy mMergedFrame = getMergedFrame();
+		if(WHP1==null) WHP1 = new FrameLayout(a);
 		if(WHP1.getParent()==null) {
 			ViewUtils.replaceView(WHP1, WHP);
 		}
@@ -289,9 +292,34 @@ public class WebViewListHandler extends ViewGroup {
 		return mMergedFrame;
 	}
 	
-	public void scrollFrame(boolean nxt) {
+	public void toggleFoldAll() {
+		int targetVis=View.VISIBLE;
+		int cc=getChildCount();
+		if(cc>0) {
+			for (int i = 0; i < cc; i++) {
+				if (getChildAt(i).findViewById(R.id.webviewmy).getVisibility() != View.GONE) {
+					targetVis = View.GONE;
+					break;
+				}
+			}
+			if(targetVis==View.GONE) {
+				a.awaiting = false;
+			}
+			for (int i = 0; i < cc; i++) {
+				View childAt = getChildAt(i);
+				WebViewmy targetView = childAt.findViewById(R.id.webviewmy);
+				if(targetVis==View.GONE) {
+					targetView.setVisibility(targetVis);
+				} else if(targetView.getVisibility()!=View.VISIBLE){
+					childAt.findViewById(R.id.toolbar_title).performClick();
+				}
+			}
+		}
+	}
+	
+	public void prvnxtFrame(boolean nxt) {
 		if(bMergeFrames) {
-			mMergedFrame.evaluateJavascript(nxt?"scrollFrame(1)":"scrollFrame()", null);
+			mMergedFrame.evaluateJavascript(nxt?"prvnxtFrame(1)":"prvnxtFrame()", null);
 		} else {
 			final int currentHeight=WHP.getScrollY();
 			int cc=webholder.getChildCount();
@@ -301,11 +329,11 @@ public class WebViewListHandler extends ViewGroup {
 				top = webholder.getChildAt(i).getTop();
 				if(top>=currentHeight){
 					childAtIdx=i;
-					if(top!=currentHeight && !nxt) --childAtIdx;
+					if(nxt && top!=currentHeight) --childAtIdx;
 					break;
 				}
 			}
-			childAtIdx+=nxt?-1:1;
+			childAtIdx+=nxt?1:-1;
 			if(childAtIdx>=cc){
 				a.scrollToPagePosition(webholder.getChildAt(cc-1).getBottom());
 			} else {
@@ -393,7 +421,7 @@ public class WebViewListHandler extends ViewGroup {
 										BookPresenter book = a.getBookById(frames.get(pos));
 										if (book!=null) {
 											StringBuilder sb = new StringBuilder(24);
-											sb.append("scrollToFrame('d");
+											sb.append("scrollToPosId('d");
 											NumberToText_SIXTWO_LE(book.getId(), sb);
 											sb.append("',");
 											sb.append(frameAt=pos);

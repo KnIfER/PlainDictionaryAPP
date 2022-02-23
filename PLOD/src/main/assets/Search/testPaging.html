@@ -1,0 +1,208 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body{
+            overflow: hidden;
+            margin : 0;
+        }
+        #listview{
+            position: absolute;
+            overflow: auto;
+            width: 100%;
+            height: 100%;
+        }
+        .row{
+            height: 25px;
+            width: 100%;
+            border: 0px;
+            width: 100%;
+            white-space: nowrap;
+        }
+        .row.odd{
+            background: #fafafa;
+        }
+        .cell {
+            display: inline-block;
+            height: 20px;
+            border: 1px solid transparent;
+            border-right: 1px dotted silver;
+            border-bottom-color: silver;
+            overflow: hidden;
+            -o-text-overflow: ellipsis;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+            z-index: 1;
+            padding: 1px 2px 2px 1px;
+            margin: 0;
+            white-space: nowrap;
+            cursor: default;
+            
+            padding-left: 4px;
+            padding-right: 4px
+        }
+        .page{
+            border: 5px solid #ffb077;
+        }
+    </style>
+    <style id="header">
+        .c0 {
+            width: 20%;
+        }
+        .c1 {
+            width: 20%;
+        }
+        .c2 {
+            width: 20%;
+        }
+        .c3 {
+            width: 20%;
+        }
+        .c4 {
+            width: 10%;
+        }
+        .col{
+            width: 100%;
+        }
+    </style>
+    <title></title>
+</head>
+<body>
+    <div id="listview">
+    </div>
+    
+    <script>
+		function debug(...e){console.log('fatal web d::', ...e)};
+		function ge(e,p){return (p||document).getElementById(e)};
+    	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
+    	function _gn(e,p){if(!p || p.name===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
+    	function gn(e,p){return _gn(e, p.firstElementChild);};
+
+        function craft(t, c, p) {
+            var e=document.createElement(t||'DIV');
+            if(c)e.className=c;
+            if(p)p.appendChild(e);
+            return e;
+        }
+
+        var pageSz=64;
+        var totalSz=1000;
+
+        var adapter = {
+            name:"demo"
+            ,size:totalSz
+            ,pageSz:pageSz
+            ,craftPage:function(pos, p, append) {
+                var page = craft(0,'page', append?p:0);
+                var i=pos,end=Math.min(pos+this.pageSz, this.size);
+                for (;i<end;i++) {
+                    this.craftRow(i, page, true);
+                }
+                page.pageAt = pos;
+                page.pageEnd = end;
+                debug('craftPage', pos, page);
+                return page;
+            }
+            ,craftRow:function(pos, p, append) {
+                var rc='row';
+                if(pos%2!=0) rc+=' odd';
+                var rowItem = craft(0,rc, append?p:0);
+                // craft(0,'cell c0',rowItem).innerText='#'+pos;
+                // craft(0,'cell c1',rowItem).innerText='Test';
+                // craft(0,'cell c2',rowItem).innerText='Test';
+                // craft(0,'cell c3',rowItem).innerText='Test';
+                // craft(0,'cell c4',rowItem).innerText='Test';
+                //craft(0,'cell col',rowItem).innerText='#'+pos;
+                rowItem.innerText='#'+pos;
+                return rowItem;
+            }
+        };
+
+		var onmousewheelDown = function(e) {
+			//debug(["onmousewheelDown: ", e, e.wheelDelta]);
+			var d=e.detail?-e.detail /3: -e.wheelDelta /120;
+			d = Math[d >= 1 ? 'floor' : 'ceil' ](d);
+			//debug("onmousewheelDown: ", d);
+			e.preventDefault();
+            listView.scrollTop += d*25;
+		}
+
+        var listView = ge('listview');
+        listView.addEventListener('mousewheel', onmousewheelDown);
+
+        var p1=adapter.craftPage(0, listView, true);
+        var p2=adapter.craftPage(pageSz, listView, true);
+
+        var pages=[p1,p2];
+
+		var firstVisPage=p1, lastVisPage=p1;
+
+        listView.onscroll=onListScroll;
+
+        function offset1Eq(o,v) {
+            return v>=o-1 && v<=o+1;
+        }
+        function onListScroll(e) {
+			var offset=Math.ceil(listView.scrollTop);
+            //debug('onWebListScroll st', listView.scrollTop, firstVisPage, lastVisPage);
+			if(!withinPage(offset, firstVisPage) || !withinPage(offset+listView.clientHeight, lastVisPage)) {
+                var offset1=Math.floor(listView.scrollTop+listView.clientHeight);
+                debug('onWebListScroll', offset, firstVisPage.offsetTop, firstVisPage.offsetTop+firstVisPage.offsetHeight);
+                if(firstVisPage)debug('firstVisPage', lastVisPage, firstVisPage.offsetTop, offset);
+                if(firstVisPage && firstVisPage.offsetTop==offset) {
+                    if(lastVisPage.pageAt>0) {
+                        var st=Math.max(lastVisPage.pageAt-pageSz, 0);
+                        var pN = adapter.craftPage(st, listView, false);
+                        pages[st/adapter.pageSz]=pN;
+                        var lastScroll=listView.scrollTop;
+                        listView.insertBefore(pN, listView.firstChild);
+                        listView.scrollTop=pN.offsetHeight+lastScroll;
+                        return;
+                    }
+                } else {
+                    firstVisPage=0;
+                }
+                if(lastVisPage)debug('lastVisPage', lastVisPage, lastVisPage.offsetTop+lastVisPage.offsetHeight, offset1);
+                if(lastVisPage && offset1Eq(offset1, lastVisPage.offsetTop+lastVisPage.offsetHeight)) {
+                    var st=lastVisPage.pageEnd;
+                    debug('lastVisPage st', st, adapter.size);
+                    if(st<adapter.size) {
+                        var pN = adapter.craftPage(st, listView, false);
+                        pages[st/adapter.pageSz]=pN;
+                        listView.appendChild(pN);
+                        return;
+                    }
+                } else {
+                    lastVisPage=0;
+                }
+                if(!firstVisPage || !lastVisPage) {
+                    for (var i=0,pg;pg=listView.childNodes[i++];) {
+                        if(!firstVisPage) {
+                            if(withinPage(offset, pg))
+                                firstVisPage = pg;
+                            if(withinPage(offset1, pg))
+                                lastVisPage = pg;
+                        }
+                        else if(!lastVisPage) {
+                            if(withinPage(offset1, pg))
+                                lastVisPage = pg;
+                        }
+                        else break;
+                    }
+                }
+
+                debug('onWebListScroll ed', listView.scrollTop, firstVisPage.pageAt, lastVisPage.pageAt);
+            }
+        };
+
+		function withinPage(p,f) {
+			if(f) {
+				//p-=f.title.offsetTop;
+				return p>f.offsetTop && p<f.offsetTop+f.offsetHeight;
+			}
+			return false;
+		}
+
+    </script>
+</body>
+</html>
