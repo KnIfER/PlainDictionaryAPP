@@ -54,24 +54,6 @@ public class ListViewmy extends ListView {
 		dispatchDraw(canvas);
 	}
 	
-	@Override
-	public void removeView(View child) {
-		if(getAdapter() instanceof ListViewBasicViews.BasicViewsAdapter) {
-			((ListViewBasicViews.BasicViewsAdapter)getAdapter()).removeView(child);
-		} else {
-			super.removeView(child);
-		}
-	}
-	
-	@Override
-	public void removeViewAt(int index) {
-		if(getAdapter() instanceof ListViewBasicViews.BasicViewsAdapter) {
-			((ListViewBasicViews.BasicViewsAdapter)getAdapter()).removeViewAt(index);
-		} else {
-			super.removeViewAt(index);
-		}
-	}
-	
 	public void doDraw1(Canvas canvas) {
 		onDraw(canvas);
 	}

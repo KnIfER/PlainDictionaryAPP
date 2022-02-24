@@ -8,8 +8,6 @@ import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.webkit.ValueCallback;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 
@@ -23,8 +21,6 @@ import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
-import com.knziha.plod.widgets.ListViewBasicViews;
-import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
@@ -36,23 +32,13 @@ import java.util.ArrayList;
 
 public class WebViewListHandler extends ViewGroup {
 	final MainActivityUIBase a;
-	boolean bUseListView;
 	public boolean bMergeFrames = true;
-	ListViewmy mListView;
-	ListViewBasicViews.BasicViewsAdapter mAdapter;
 	ScrollViewmy WHP;
 	FrameLayout WHP1;
 	ViewGroup webholder;
 	public WebViewmy mMergedFrame;
 	BookPresenter mMergedBook;
 	public ArrayList<Long> frames = new ArrayList();
-	
-	public void setUseListView(boolean use) {
-		if(this.bUseListView = use) {
-		} else {
-		
-		}
-	}
 	
 	public WebViewListHandler(MainActivityUIBase a) {
 		super(a);
@@ -62,19 +48,16 @@ public class WebViewListHandler extends ViewGroup {
 	}
 	
 	public ViewGroup getViewGroup() {
-		return bUseListView?mListView:webholder;
+		return webholder;
 	}
 	
 	public View getChildAt(int frameAt) {
-		if(bUseListView) {
-			return (View) mAdapter.getItem(frameAt);
-		}
 		return webholder.getChildAt(frameAt);
 	}
 	
 	@Override
 	public int getChildCount() {
-		return bUseListView?mAdapter.getCount():webholder.getChildCount();
+		return webholder.getChildCount();
 	}
 	
 	public void shutUp() {
@@ -88,72 +71,36 @@ public class WebViewListHandler extends ViewGroup {
 	public void init(ViewGroup whp, ViewGroup webholder) {
 		this.WHP = (ScrollViewmy) whp;
 		this.webholder = webholder;
-		if(bUseListView) {
-			if(mListView==null && whp.getParent()!=null) {
-				mListView = new ListViewmy(WHP.getContext());
-				mAdapter = new ListViewBasicViews.BasicViewsAdapter();
-				mListView.setAdapter(mAdapter);
-				ViewUtils.replaceView(mListView, WHP);
-				CMN.Log("替换::", mListView.getParent(), WHP.getParent());
-				
-				mListView.setNestedScrollingEnabled(false);
-//				mListView.setFastScrollAlwaysVisible(true);
-//				mListView.setFastScrollEnabled(true);
-				mListView.setRecyclerListener(new AbsListView.RecyclerListener() {
-					@Override
-					public void onMovedToScrapHeap(View view) {
-					
-					}
-				});
-			}
-		}
 	}
 	
 	@Override
 	public void addView(View child, int index) {
-		if (bUseListView) {
-			CMN.Log("添加::", index, mAdapter.mViews.size());
-			if (index < 0) {
-				index = mAdapter.getCount();
-			}
-			mAdapter.mViews.add(index, child);
-			mAdapter.notifyDataSetChanged();
-		} else {
-			webholder.addView(child, index);
-		}
+		webholder.addView(child, index);
 	}
 	
 	public void removeAllViews() {
-		if (bUseListView) {
-			mAdapter.mViews.clear();
-			mAdapter.notifyDataSetChanged();
-		} else {
-			webholder.removeAllViews();
-		}
+		webholder.removeAllViews();
 	}
 	
 	@Override
 	public void setVisibility(int visibility) {
-		(bUseListView?mListView:WHP).setVisibility(visibility);
+		WHP.setVisibility(visibility);
 	}
 	
 	@Override
 	public int getVisibility() {
-		return (bUseListView?mListView:WHP).getVisibility();
+		return WHP.getVisibility();
 	}
 	
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) { }
 	
 	public void setBackgroundColor(int manFt_globalPageBackground) {
-		(bUseListView?mListView:WHP).setBackgroundColor(manFt_globalPageBackground);
+		WHP.setBackgroundColor(manFt_globalPageBackground);
 	}
 	
 	public int getFrameAt() {
 		if(!bMergeFrames) {
-			if (bUseListView) {
-				return mListView.getFirstVisiblePosition();
-			}
 			final int currentHeight=WHP.getScrollY();
 			for(int i=0;i<webholder.getChildCount();i++) {
 				View CI = webholder.getChildAt(i);
