@@ -5,6 +5,7 @@ import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnLongClickListener;
@@ -143,7 +144,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		}
 	};
 
-	//单机
+	//点击
 	public void setOnItemClickListener(RecyclerViewmy.OnItemClickListener mOnItemClickListener)
 	{
 		this.mOnItemClickListener = mOnItemClickListener;
@@ -165,13 +166,17 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		//details on this bug:
 		//https://blog.csdn.net/huawuque183/article/details/78563977
 		//issue solved.
-		CMN.Log("dbr_onCreateViewHolder", CMN.now()); // todo
+		
+//		CMN.Log("dbr_onCreateViewHolder", CMN.now()); // todo
+		
 		holder.itemView.setOnLongClickListener(longClicker);
 		holder.data.p.setOnLongClickListener(longClicker);
+
 //			webView = view.findViewById(android.R.id.text1);
 //			time = view.findViewById(R.id.subtext1);
-		holder.data.text1.setTextIsSelectable(true);
 		
+		holder.data.text1.setTextIsSelectable(false);
+		holder.colorStates=new int[3];
 		return holder;
 	}
 
@@ -184,7 +189,8 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	public void onBindViewHolder(@NonNull final ViewUtils.ViewDataHolder<CardListItemBinding> holder, final int position)
 	{
 		holder.itemView.setTag(R.id.position, position);
-		holder.data.p.setTag(R.id.position, position);
+		CardListItemBinding viewdata = holder.data;
+		viewdata.p.setTag(R.id.position, position);
 		//if(true) return;
 		String text;long time = 0;
 		
@@ -198,41 +204,47 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 			rowId = reader.row_id;
 			String books = reader.books;
 			day_.setTime(time);
-			holder.data.subtext1.setText(date.format(day_) + "  " + a.retrieveDisplayingBooks(books));
+			viewdata.subtext1.setText(date.format(day_) + "  " + a.retrieveDisplayingBooks(books));
 		} catch (Exception e) {
 			text="!!!Error: "+e.getLocalizedMessage();
 		}
 		
-		holder.data.text1.setText(text.trim());
+		viewdata.text1.setText(text.trim());
 		
-		if(GlobalOptions.isDark) {
-			if(holder.data.text1.getTextColors().getDefaultColor()!=a.AppBlack) {
-				holder.itemView.findViewById(R.id.sub_list).getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-				holder.data.text1.setTextColor(a.AppBlack);
-			}
+		int textColor=a.AppBlack, backgroundColor=0;
+		if(holder.colorStates[0]!=textColor){
+			holder.itemView.findViewById(R.id.sub_list)
+					.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE:null);
+			holder.colorStates[0]=textColor;
 		}
 		
 		DBroswer browser = browserHolder.get();
-
-		if(browser.Selection.contains(rowId))
-			holder.itemView.setBackgroundColor(GlobalOptions.isDark?0xFF4F7FDF:0xa04F5F6F);//FF4081 4F7FDF
-		else
-			holder.itemView.setBackgroundColor(0x00a0f0f0);//aaa0f0f0
+		if(browser.Selection.contains(rowId)) {
+			if(!GlobalOptions.isDark)textColor=a.AppWhite;
+			backgroundColor=0xFF4F7FDF;//GlobalOptions.isDark?0xFF4F7FDF:0xa04F5F6F;
+		}
+		if(holder.colorStates[1]!=textColor) {
+			viewdata.text1.setTextColor(holder.colorStates[1]=textColor);
+			viewdata.subtext1.setTextColor(GlobalOptions.isDark||textColor==a.AppWhite?Color.WHITE:0xff2b4391);
+		}
+		if(holder.colorStates[2]!=backgroundColor) {
+			holder.itemView.setBackgroundColor(holder.colorStates[2]=backgroundColor);//FF4081 4F7FDF
+		}
 
 		if(browser.inSearch && browser.mSearchResTree!=null && browser.mSearchResTree.contains(position))
-			holder.data.text1.setBackgroundResource(R.drawable.xuxian2);
+			viewdata.text1.setBackgroundResource(R.drawable.xuxian2);
 		else
-			holder.data.text1.setBackground(null);
+			viewdata.text1.setBackground(null);
 
 
 		if(browser.SelectionMode==SelectionMode_select) {
-			holder.data.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, position));
-			holder.data.p.setVisibility(View.VISIBLE);
-		}else{
+			viewdata.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, position));
+			viewdata.p.setVisibility(View.VISIBLE);
+		} else {
 			holder.itemView.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, position));
-			holder.data.p.setVisibility(View.GONE);
+			viewdata.p.setVisibility(View.GONE);
 		}
-		holder.data.p.setTag(position);
+		viewdata.p.setTag(position);
 	}
 
 	@Override

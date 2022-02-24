@@ -48,13 +48,13 @@
 			android:layout_height="1dp"
 			android:background="#2b4391"
 			/>
+
 		<ImageView
+			android:id="@+id/p"
 			android:layout_width="match_parent"
 			android:layout_height="100dp"
-			android:id="@+id/p"
-			android:layout_alignBottom="@+id/sub_list"
 			android:layout_alignTop="@+id/sub_list"
-			android:background="#00ff0000"
-			/>
+			android:layout_alignBottom="@+id/sub_list"
+			android:background="#00ff0000" />
 	</RelativeLayout>
 </layout>

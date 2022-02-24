@@ -31,6 +31,7 @@ import android.widget.ToggleButton;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -77,6 +78,7 @@ public class DBroswer extends Fragment implements
 	private boolean isDarkStamp;
 	private boolean bIsCombinedSearch;
 	DeckBrowserBinding UIData;
+	WebViewListHandler webViewListHandler;
 	
 	SparseArray<Long> lastVisiblePositionMap = new SparseArray<>();
 	
@@ -221,7 +223,6 @@ public class DBroswer extends Fragment implements
 	boolean newStart;
 	long last_listHolder_tt;
 
-	String mRestrictOnDeck;
 	int lastFirst = 0;
 	LexicalDBHelper mLexiDB;
 	
@@ -274,6 +275,7 @@ public class DBroswer extends Fragment implements
 		super.onActivityCreated(savedInstanceState);
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(!initialized) {
+			webViewListHandler = new WebViewListHandler(a);
 			DeckListAdapter adapter = new DeckListAdapter(a, this);
 			lv.setAdapter(adapter);
 			RecyclerView.RecycledViewPool pool = lv.getRecycledViewPool();
@@ -294,7 +296,15 @@ public class DBroswer extends Fragment implements
 			imm = a.imm;
 			initialized = true;
 			
-			//((DefaultItemAnimator) lv.getItemAnimator()).setSupportsChangeAnimations(false);//取消更新item时闪烁
+			//取消更新item时闪烁
+			RecyclerView.ItemAnimator anima = lv.getItemAnimator();
+			if(anima instanceof DefaultItemAnimator)
+				((DefaultItemAnimator)anima).setSupportsChangeAnimations(false);
+			anima.setChangeDuration(0);
+			anima.setAddDuration(0);
+			anima.setMoveDuration(0);
+			anima.setRemoveDuration(0);
+			
 			UIData.fastScroller.setConservativeScroll(opt.getShelfStrictScroll());
 			bIsCombinedSearch = opt.getIsCombinedSearching();
 			UIData.toolbarAction1.setActivated(bIsCombinedSearch);
@@ -304,8 +314,7 @@ public class DBroswer extends Fragment implements
 				UIData.fastScroller.setVisibility(View.GONE);
 			}
 			
-			mRestrictOnDeck = "";
-			WahahaTextView.mR=UIData.getRoot();
+			//WahahaTextView.mR=UIData.root;
 			loadInAll(a);
 			checkColors();
 			
@@ -367,10 +376,13 @@ public class DBroswer extends Fragment implements
 			if(isDarkStamp) {
 				AppWhite = Color.BLACK;
 				cs_dbr_sidbr = GlobalOptions.WHITE;
-				UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray=0xFF4F7FDF);
-				UIData.counter.setTextColor(Color.WHITE);
 			}
-			UIData.getRoot().setBackgroundColor(AppWhite);
+			UIData.root.setBackgroundColor(AppWhite);
+			AppWhite=isDarkStamp?0xff2b4381:Color.WHITE;
+			UIData.counter.setTextColor(AppWhite);
+			UIData.smallLabel.setTextColor(AppWhite);
+			//UIData.sideBar.setSCC(UIData.sideBar.ShelfDefaultGray=0xFF4F7FDF);
+			
 			for(int i=0;i<UIData.sideBar.getChildCount();i++) {
 				View cI = UIData.sideBar.getChildAt(i);
 				Drawable bg = cI.getBackground();
@@ -1099,7 +1111,8 @@ public class DBroswer extends Fragment implements
 							if (remcount > 0) anothorHolder.removeViews(1, remcount);
 						}
 					}
-				} else {
+				}
+				else {
 					//CMN.Log("单独搜索模式");
 					rendered = queryAndShowOneDictionary(a.currentDictionary, currentDisplaying, position, true);
 					if (!rendered) {

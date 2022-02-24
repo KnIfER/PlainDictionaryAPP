@@ -852,6 +852,8 @@ public class ViewUtils {
 		public T data;
 		public long position;
 		public Object tag;
+		public int[] colorStates;
+		
 		public ViewDataHolder(T data){
 			super(data.getRoot());
 			itemView.setTag(this);

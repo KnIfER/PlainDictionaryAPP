@@ -40,7 +40,7 @@ public class ShelfLinearLayout extends LinearLayout {
 		p.setColor(ShelfDefaultGray);	
 	}
 	
-	public int ShelfDefaultGray = 0xFF808080;
+	public int ShelfDefaultGray = 0xFF4F7FDF;//0xFF808080;
 	public void setSCC(int c) {//ShelfClipColor
 		if(p.getColor()!=c) {
 			p.setColor(c);
