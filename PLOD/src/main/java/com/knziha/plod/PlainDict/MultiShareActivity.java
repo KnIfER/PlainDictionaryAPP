@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,7 +18,6 @@ import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
-import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -78,6 +78,11 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
+	void ensureContentVis(ViewGroup webholder, ViewGroup another) {
+	
+	}
+	
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		CMN.Log("onCreate...");
 		receivable=true;
@@ -90,7 +95,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 		main = root = findViewById(R.id.root);
 		main_succinct = main;
 		mainF = main.findViewById(R.id.mainF);
-		main_progress_bar = main.findViewById(R.id.main_progress_bar);
 		
 		hdl  = new MyHandler(this);
 		mActionModeHeight = dm.heightPixels/2;
@@ -103,9 +107,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	protected void findFurtherViews() {
 		if (contentUIData==null) {
-			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
 			super.findFurtherViews();
-			adaptermy = new BasicAdapter() {
+			adaptermy = new BasicAdapter(contentUIData, weblistHandler, null, null) {
 				@Override
 				public int getId() {
 					return -1;
@@ -395,11 +398,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	protected View getIMPageCover() {
-		return null;
-	}
-	
-	@Override
 	protected void LoadLazySlots(File modulePath, boolean lazyLoad, String moduleName) throws IOException {
 		long lm = modulePath.lastModified();
 		if(lm==currMdlTime
@@ -427,14 +425,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 		lastLoadedModule=moduleName;
 		lazyLoaded=lazyLoad;
 		app.set4kCharBuff(in.cb);
-	}
-	
-	@Override
-	public void AttachContentViewForDB() {
-		CMN.Log("AttachContentViewForDB");
-		if(DBrowser!=null) {
-			ViewUtils.addViewToParent(contentview, PeruseViewAttached()? peruseView.peruseF:root);
-		}
 	}
 	
 	@Override

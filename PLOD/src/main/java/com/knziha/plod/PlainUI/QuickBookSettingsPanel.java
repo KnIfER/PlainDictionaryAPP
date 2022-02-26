@@ -46,7 +46,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	public void init(Context context, ViewGroup root) {
 		a=(MainActivityUIBase) context;
 		
-		showInPopWindow = true;
+		setShowInPop();
 		setPresetBgColorType(1);
 		
 		Resources mResource = a.mResource;

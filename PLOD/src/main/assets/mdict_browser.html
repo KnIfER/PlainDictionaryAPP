@@ -1054,7 +1054,7 @@
 			if(!inf.waiting && inf.item && !inf.fold && inf.scrollExpand)
 			try{
 				fx=inf.item;
-				nf=opt.focusMode && inf!==currentFocus;
+				nf=opt.focusOne && inf!==currentFocus;
 				if(!inf.collapsed || opt.limHeightMode==0) { // 动态匹配高度
 					if(inf.fm2)bx = inf.fbox;
 					//debug('reinitIframe...', fx);
@@ -1589,6 +1589,7 @@
 			delay : true
 
 			,focusMode : 1 // 1=折叠其他；2=限制其他视图的高度；
+			,focusOne : false
 			,fm1 : false
 			,fm2 : false
 			,fml : false
@@ -1607,6 +1608,7 @@
 			,lazyLoadMaxFrames : 1
 			,lazyLoadMaxFramesEnabled : false
 			,autoScrollFocus : false
+			,autoFocusOne : false
 			,alwaysAutoScrollFocus : false
 			,ensureOnePage : true
 			,noNestedScroll2 : true
@@ -1631,6 +1633,7 @@
 				if(_.focusMode) {
 					_.fml=_.focusMode;
 				}
+				_.focusOne=_.focusMode && _.autoFocusOne;
 			}
 			,getExpandFirstN : function() {
 				var _=this;
@@ -1815,7 +1818,7 @@
 						expanding=false; // 暂停加载
 						return;
 					}
-					if(opt.focusMode==1 && inf.fold) {
+					if(opt.fm1 && inf.fold) {
 						expanding=false; // 停止加载
 						return;
 					}
@@ -2188,11 +2191,11 @@
 					currentFocus=inf;
 				}
 			}
-			if(opt.focusMode && lx && newFoc && lx.box) {
+			if(opt.focusOne && lx && newFoc && lx.box) {
 				if(opt.fm2) {
 					opt.initHeight(lx);
 				} else {
-					lx.box.style.display='none';
+					foldFrame(lx);
 				}
 			}
 			var fold=inf.fold || inf.waiting;
@@ -2201,7 +2204,7 @@
 			var fx=inf.item,bx=inf.box;
 			if(newFoc) {
 				if(lx) {
-					if(opt.focusMode) {
+					if(opt.focusOne) {
 						if(opt.fm2) lx.collapsed = true;
 						else lx.fold = true;
 					}
@@ -2215,7 +2218,7 @@
 				inf.collapsed = false;
 			} else if(!e._foc) {
 				if((inf.collapsed||opt.fm2))
-				if(inf.collapsed=!inf.collapsed) {
+				if(inf.collapsed=!inf.collapsed) { //WHY???
 					hide=2;
 					opt.initHeight(inf);
 				}
@@ -2634,7 +2637,7 @@
 			//if(focusMode!=e)
 			{
 				opt.focusMode = e;
-				opt.fm2=opt.focusMode==2;
+				opt.init();
 				if(contents) processContents(contents);
 				//else if(content) processContent(content);
 			}
@@ -2662,8 +2665,7 @@
 		}
 
 		function unfoldAll(){
-			//if(opt.focusMode==1)
-			//	opt.focusMode=0;
+			//if(opt.focusMode==1) set...
 			for (var i=0,fx; fx=frames[i++];) {
 				unfoldFrame(fx);
 				checkFrame(fx);
@@ -3091,18 +3093,19 @@
 				}
 
 				var settingsArr = ['首选项'
-					, [1, ['focusMode', 0], ['专注模式', '折叠其他页面或限制高度'], opt.focusMode!=0
-							, [1<<10, ['focusMode', 1], '折叠其他页面', opt.fml==1
+					, [1, ['focusMode', 0], ['专注模式', '折叠页面或限制高度'], opt.focusMode!=0
+							, [1<<10, ['focusMode', 1], '折叠页面', opt.fml==1
 								, [2|2<<10, ['expandFirst1N', 'expandFirst1', opt.expandFirst1], ['默认展开前几项：'], opt.expandFirst1N]
 								]
 							, [1<<10, ['focusMode', 2], '限制最大高度', opt.fml==2
 								, [2|2<<10, ['expandFirst2N', 'expandFirst2', opt.expandFirst2], ['默认展开前几项：'], opt.expandFirst2N]
 								, [1, 'noNestedScroll2', ['禁止嵌套滚动', '但仍可点击翻页、滑动边缘'], opt.noNestedScroll2]
-								, [1<<10, ['limHeightMode', 0], '最大的高度值', opt.limHeightMode==0]
+								, [1<<10, ['limHeightMode', 0], '限制为最大值', opt.limHeightMode==0]
 								, [1<<10, ['limHeightMode', 1], '固定为高度值', opt.limHeightMode==1]
 								, [2, 'maxHeight2', '高度值：', opt.maxHeight2]
 								]
 							, [1, 'autoScrollFocus', ['自动滚动至展开项'], opt.autoScrollFocus]
+							, [1, 'autoFocusOne', ['自动折叠旧展开项'], opt.autoFocusOne]
 						]
 					, [1, 'delay', ['延迟加载', '加载压力分散到一段时间中'], opt.delay
 						, [2, 'lazyLoadMin', ['条件','页面数大于：'], opt.lazyLoadMin]

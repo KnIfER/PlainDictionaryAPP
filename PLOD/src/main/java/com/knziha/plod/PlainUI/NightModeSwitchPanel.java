@@ -25,7 +25,7 @@ public class NightModeSwitchPanel extends PlainAppPanel {
 	public void init(Context context, ViewGroup root) {
 		a=(MainActivityUIBase) context;
 		mBackgroundColor = 0;
-		showInPopWindow = true;
+		setShowInPop();
 		if (settingsLayout==null) {
 			SwipeBackLayout view = (SwipeBackLayout) LayoutInflater.from(context).inflate(R.layout.night_mode_pane, root, false);
 			dayNightArt = view.findViewById(R.id.dayNightArt);

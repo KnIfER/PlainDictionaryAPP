@@ -476,6 +476,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	
 	
 	/** insert history */
+	@Deprecated
 	public long insertUpdate(MainActivityUIBase a, String lex, ViewGroup webviewholder) {
 		if (testDBV2) {
 			return updateHistoryTerm(a, lex, webviewholder);

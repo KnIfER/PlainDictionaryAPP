@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.dictionary.Utils.Flag;
+import com.knziha.plod.plaindict.WebViewListHandler;
 
 public class resultRecorderDiscrete {
 	public String count;
@@ -21,7 +22,7 @@ public class resultRecorderDiscrete {
 
 	public CharSequence getResAt(MainActivityUIBase a, long pos) {return "";}
 
-	public void renderContentAt(long pos, MainActivityUIBase a_, BasicAdapter ADA) {}
+	public void renderContentAt(long pos, MainActivityUIBase a_, BasicAdapter ADA, WebViewListHandler weblistHandler) {}
 
 	public int size() {return 0;}
 

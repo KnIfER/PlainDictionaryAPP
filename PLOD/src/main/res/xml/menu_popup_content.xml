@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+	tools:ignore="AppCompatResource"
+	>
+
+<!--0--><item android:title="新的随机页面" android:id="@+id/refreshRandom" android:icon="@drawable/ic_refresh_black_24dp" app:showAsAction="always"/>
+
+<!--1--><item android:title="翻译" android:id="@+id/translate" android:icon="@drawable/ic_g_translate_black_24dp" app:showAsAction="always"/>
+
+<!--2--><item android:title="搜索选择" android:id="@+id/searchSel" android:icon="@drawable/ic_search_24k" app:showAsAction="always"/>
+
+<!--3--><item android:title="翻阅搜索选择" android:id="@+id/searchSelPeruse" android:icon="@drawable/ic_peruse" app:showAsAction="always"/>
+
+<!--4--><item android:title="即点即译" android:id="@+id/toolbar_action14" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
+
+</menu>

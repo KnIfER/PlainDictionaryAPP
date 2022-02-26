@@ -58,8 +58,11 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.widget.WrapperListAdapter;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.NestedScrollingChildHelper;
 import androidx.databinding.ViewDataBinding;
@@ -81,6 +84,7 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.RebootActivity;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.preference.SettingsPanel;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -329,8 +333,8 @@ public class ViewUtils {
 		}
 	}
 	
-	public static void removeView(View viewToRemove) {
-		removeIfParentBeOrNotBe(viewToRemove, null, false);
+	public static boolean removeView(View viewToRemove) {
+		return removeIfParentBeOrNotBe(viewToRemove, null, false);
 	}
 	
 	public static boolean removeIfParentBeOrNotBe(View view, ViewGroup parent, boolean tobe) {
@@ -370,7 +374,7 @@ public class ViewUtils {
 	}
 	
 	public static boolean addViewToParent(View view2Add, ViewGroup parent) {
-		if(removeIfParentBeOrNotBe(view2Add, parent, false)) {
+		if(parent!=null && removeIfParentBeOrNotBe(view2Add, parent, false)) {
 			parent.addView(view2Add);
 			return true;
 		}
@@ -569,6 +573,28 @@ public class ViewUtils {
 		}
 		urlConnection.disconnect();
 		is.close();
+	}
+	
+	public static boolean checkSetVersion(int[] versions, int i, int version) {
+		if(versions[i]!=version) {
+			versions[i]=version;
+			return true;
+		}
+		return false;
+	}
+	
+	public static <T> T getLast(@NonNull ArrayList<T> array) {
+		if(array.size()>0) return array.get(array.size()-1);
+		return null;
+	}
+	
+	
+	public static List<MenuItemImpl> MapNumberToMenu(MenuBuilder menu, int...numbers) {
+		MenuItemImpl[] items = new MenuItemImpl[numbers.length];
+		for (int i = 0; i < numbers.length; i++) {
+			items[i] = (MenuItemImpl) menu.getItem(numbers[i]);
+		}
+		return Arrays.asList(items);
 	}
 	
 	public void Destory(){

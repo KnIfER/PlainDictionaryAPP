@@ -12,6 +12,7 @@ import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
@@ -153,7 +154,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		return "!!! Error: code 3 ";
 	};
 
-	public String getCurrentKeyText(PDICMainActivity a, int pos) {
+	public String getCurrentKeyText(MainActivityUIBase a, int pos) {
 		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
 			return null;
@@ -161,7 +162,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 	}
 
 	@Override
-	public void renderContentAt(long pos, MainActivityUIBase a, BasicAdapter ADA){//ViewGroup X
+	public void renderContentAt(long pos, MainActivityUIBase a, BasicAdapter ADA, WebViewListHandler weblistHandler){//ViewGroup X
 		getResAt(a, pos);
 		if(size<=0 || pos<0 || pos>size-1)
 			return;
@@ -199,7 +200,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 				presenter.renderContentAt(desiredScale, BookPresenter.RENDERFLAG_NEW ,1 ,null , _combining_search_tree[ti].get((int) (pos-idxCount)).position);
 				presenter.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				presenter.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-				a.PageSlider.setIBC(presenter.mWebView, null);
+				a.contentUIData.PageSlider.setIBC(presenter.mWebView, null);
 				return;
 			}
 			idxCount+=max;

@@ -37,7 +37,6 @@ import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -59,13 +58,12 @@ import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
+import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.plaindict.databinding.ContentviewItemBinding;
 import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowTextView;
-import com.knziha.plod.widgets.IMPageSlider;
 import com.knziha.plod.widgets.ListViewmy;
-import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.SimpleDialog;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.SplitView.PageSliderInf;
@@ -83,7 +81,6 @@ import static android.view.View.FOCUSABLE_AUTO;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
-import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
 import static com.knziha.plod.plaindict.PDICMainActivity.ResizeNavigationIcon;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
@@ -125,10 +122,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public boolean bCallViewAOA=false;
 	
 	//bookeanMaskks
-	public ViewGroup contentview;
-	private ImageView favoriteBtn;
-
-	public ImageView widget10, widget11, widget13,widget14;
 //	int adapter_idx;
 //	int old_adapter_idx = -1;
 	long bookId;
@@ -142,6 +135,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	String PerusePageSearchetSearchStartWord;
 	private View handle1;
 	private View handle2;
+	
+	public ViewGroup contentview;
+	public ContentviewBinding contentUIData;
+	public WebViewListHandler weblistHandler;
 	public ContentviewItemBinding mPageView;
 	
 	//构造
@@ -182,16 +179,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public int CachedBBSize=-1;
 	ViewGroup webSingleholder;
 	//ViewGroup webholder;
-	ScrollView WHP;
-	SplitView webcontentlist;
-	public ViewGroup bottombar2;
-	public ImageView[] ContentbarBtns = new ImageView[20];
-	RLContainerSlider PageSlider;
 	ViewGroup rl;
 	public WebViewmy mWebView;
 	ViewGroup toolbar_web;
 	ImageView toolbar_cover;
-	DragScrollBar mBar;
 	View recess;
 	View forward;
 	ViewGroup root;
@@ -484,13 +475,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					switch (keyCode) {
 						case KeyEvent.KEYCODE_VOLUME_DOWN: {
 							if(opt.getPeruseUseVolumeBtn()) {
-								widget11.performClick();
+								contentUIData.browserWidget11.performClick();
 								return true;
 							}
 						}
 						case KeyEvent.KEYCODE_VOLUME_UP: {
 							if(opt.getPeruseUseVolumeBtn()) {
-								widget10.performClick();
+								contentUIData.browserWidget10.performClick();
 								return true;
 							}
 						}
@@ -635,6 +626,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 
 		if(ToR || ToL) {
+			SplitView webcontentlist = contentUIData.webcontentlister;
 			if(a.opt.getPeruseBottombarOnBottom() ^ (webcontentlist.getChildAt(webcontentlist.getChildCount()-1).getId()==R.id.bottombar2))
 				webcontentlist.SwitchingSides();
 			if(CachedBBSize==-1) CachedBBSize=a.opt.getPeruseBottombarSize((int) (35*density));
@@ -656,13 +648,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	void RecalibrateWebScrollbar() {
 		int vis = View.VISIBLE;
 		boolean vsi = false;
+		DragScrollBar mBar = contentUIData.dragScrollBar;
 		switch (opt.getScrollbarTypePeruse()){
 			case 0:
-				((FrameLayout.LayoutParams)mBar.getLayoutParams()).gravity=Gravity.END;
+				((FrameLayout.LayoutParams) mBar.getLayoutParams()).gravity=Gravity.END;
 				mBar.requestLayout();
 			break;
 			case 1:
-				((FrameLayout.LayoutParams)mBar.getLayoutParams()).gravity=Gravity.START;
+				((FrameLayout.LayoutParams) mBar.getLayoutParams()).gravity=Gravity.START;
 				mBar.requestLayout();
 			break;
 			case 2:
@@ -688,7 +681,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		spsubs = sp_sub.getPrimaryContentSize()*1.f/dm.widthPixels;
 		
 		a.opt.defaultReader.edit().putFloat("spsubs", spsubs)
-		.putInt("PBBS", webcontentlist.getPrimaryContentSize()).apply();
+		.putInt("PBBS", contentUIData.webcontentlister.getPrimaryContentSize()).apply();
 		
 		a.opt.putFirstFlag();
 		a.OnPeruseDetached();
@@ -708,7 +701,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		opt = a.opt;
 		if(currentDictionary==null)
 			currentDictionary = BookEmpty = a.EmptyBook;
-		if(contentview==null)
+		if(contentUIData==null)
 			inflateContentView(a);
 		
 		refreshUIColors(a.MainBackground);
@@ -798,35 +791,33 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	public void inflateContentView(MainActivityUIBase a) {
 		//CMN.Log("inflateContentView");
-		contentview = (ViewGroup) a.getLayoutInflater().inflate(R.layout.contentview, root,false);
+		contentUIData = ContentviewBinding.inflate(a.getLayoutInflater(), root,false);
+		weblistHandler = new WebViewListHandler(a, contentUIData);
+		contentview = contentUIData.webcontentlister;
+		webSingleholder = contentUIData.webSingleholder;
 		ContentviewItemBinding pageView = ContentviewItemBinding.inflate(a.getLayoutInflater(), a.weblistHandler.getViewGroup(), false);
 		mPageView = pageView;
 		rl = (ViewGroup) pageView.getRoot();
 		
-		webcontentlist = (SplitView) contentview;
+		SplitView webcontentlist = contentUIData.webcontentlister;
+		LinearLayout bottombar2 = contentUIData.bottombar2;
+		
 		webcontentlist.multiplier=-1;
 		webcontentlist.isSlik=true;
 		
-		bottombar2 = (ViewGroup) contentview.getChildAt(1);
 		
-		PageSlider = contentview.findViewById(R.id.PageSlider);
-		webSingleholder = PageSlider.findViewById(R.id.webSingleholder);
-		WHP = PageSlider.findViewById(R.id.WHP);
 		//webholder = WHP.findViewById(R.id.webholder);
-		IMPageCover = PageSlider.findViewById(R.id.cover);
-		mBar = PageSlider.findViewById(R.id.dragScrollBar);
 		
-		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
-		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
+//		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
+//		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
 		
-		WHP.setVisibility(View.GONE);
+		contentUIData.WHP.setVisibility(View.GONE);
 		
-		((MarginLayoutParams)mBar.getLayoutParams()).leftMargin+=sp_sub.getCompensationBottom()/2;
-		webcontentlist.scrollbar2guard=mBar;
+		((MarginLayoutParams)contentUIData.dragScrollBar.getLayoutParams()).leftMargin+=sp_sub.getCompensationBottom()/2;
+		webcontentlist.scrollbar2guard=contentUIData.dragScrollBar;
 		//tofo
-		mBar.setOnProgressChangedListener(_mProgress -> {
-			if(PageSlider==null) return;
-			PageSlider.TurnPageSuppressed = _mProgress==-1;
+		contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
+			contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
 		});
 		leftLexicalAdapter.webviewHolder=
 		bookMarkAdapter.webviewHolder = webSingleholder;
@@ -839,7 +830,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			a.initWebScrollChanged();//Strategy: use one webscroll listener
 	        mWebView.setOnScrollChangedListener(a.onWebScrollChanged);
 	        mWebView.setPadding(0, 0, 18, 0);
-        	mBar.setDelimiter("< >", mWebView);
+			contentUIData.dragScrollBar.setDelimiter("< >", mWebView);
     		mWebView.getSettings().setSupportZoom(true);
 			perusehandler = new BookPresenter.AppHandler(a.currentDictionary);
 			mWebView.addJavascriptInterface(perusehandler, "app");
@@ -858,8 +849,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			recess = pageView.recess;
 			forward = pageView.forward;
 			BookPresenter.setWebLongClickListener(mWebView, a);
-			
-        if(ToL||ToR) {
+		
+		if(ToL||ToR) {
 			bottombar2.setBackgroundColor(bottombar2BaseColor);
 		} else {
 			bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
@@ -869,30 +860,27 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		boolean tint = PDICMainAppOptions.getTintIconForeground();
 		for (int i = 0; i < 6; i++) {
 			ImageView iv = (ImageView) bottombar2.getChildAt(i);
-			ContentbarBtns[i]=iv;
+			weblistHandler.ContentbarBtns[i]=iv;
 			iv.setOnClickListener(this);
 			if(tint) iv.setColorFilter(a.ForegroundTint, PorterDuff.Mode.SRC_IN);
 			iv.setOnLongClickListener(this);
 		}
-		favoriteBtn=ContentbarBtns[1];
-		widget10=ContentbarBtns[3];
-		widget11=ContentbarBtns[4];
 		
-		if(a.thisActType==ActType.MultiShare) {
-			a.widget10 = widget10;
-		}
+//		if(a.thisActType==ActType.MultiShare) {
+//			a.contentUIData.browserWidget10 = contentUIData.browserWidget10; //???
+//		}
 		
 		String contentkey = "ctnp#"+1;
 		String appproject = opt.getAppContentBarProject(contentkey);
 		if(appproject!=null) {
 			AppUIProject content_project = a.peruseview_project;
 			if(content_project==null){
-				content_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, bottombar2, ContentbarBtns);
+				content_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, bottombar2, weblistHandler.ContentbarBtns);
 				content_project.type = 1;
 				a.peruseview_project = content_project;
 			} else {
 				content_project.bottombar = bottombar2;
-				content_project.btns = ContentbarBtns;
+				content_project.btns = weblistHandler.ContentbarBtns;
 			}
 			RebuildBottombarIcons(a, content_project, a.mConfiguration);
 		}
@@ -900,13 +888,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(opt.getBottomNavigationMode1()==1)
 			setBottomNavigationType(1, null);
 
-//		favoriteBtn.setOnClickListener(this);
-//		favoriteBtn.setOnLongClickListener(this);
+//		contentUIData.browserWidget8.setOnClickListener(this);
+//		contentUIData.browserWidget8.setOnLongClickListener(this);
 		
-		PageSlider.IMSlider = IMPageCover;
-		PageSlider.TurnPageEnabled=opt.getPageTurn3();
-		if(a.IMPageCover!=null)
-			IMPageCover.setPageSliderInf(a.IMPageCover.inf);
+		contentUIData.PageSlider.IMSlider = contentUIData.cover;
+		contentUIData.PageSlider.TurnPageEnabled=opt.getPageTurn3();
+//		if(a.IMPageCover!=null)//111
+//			IMPageCover.setPageSliderInf(a.IMPageCover.inf);
 		webcontentlist.setPageSliderInf(a.inf);
 		webSingleholder.addView(rl);
 		
@@ -1032,7 +1020,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 		mWebView.evaluateJavascript(isDark? MainActivityUIBase.DarkModeIncantation: MainActivityUIBase.DeDarkModeIncantation, null);
 		main_pview_layout.setBackgroundColor(filteredColor);
-		bottombar2.setBackgroundColor(bottombar2BaseColor = filteredColor);
+		contentUIData.bottombar2.setBackgroundColor(bottombar2BaseColor = filteredColor);
 		webSingleholder.setBackgroundColor(isDark?Color.BLACK:CMN.GlobalPageBackground);
 	}
 
@@ -1098,7 +1086,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 	
 	public boolean toggleTurnPageEnabled() {
-		return PageSlider.TurnPageEnabled=opt.setPageTurn3(!opt.getPageTurn3());
+		return contentUIData.PageSlider.TurnPageEnabled=opt.setPageTurn3(!opt.getPageTurn3());
 	}
 
 	public void hide() {
@@ -1122,7 +1110,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		MainActivityUIBase a = getMainActivity();
 		if(a!=null) {
 			if(a.settingsPanel!=null) {
-				a.hideSettingsPanel();
+				a.hideSettingsPanel(a.settingsPanel);
 				return;
 			}
 			if(!a.AutoBrowsePaused || a.bRequestingAutoReading){
@@ -1423,6 +1411,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     //for right view
     public class RightViewAdapter extends BasicAdapter {
     	int lastClickedDictPos=-1;
+	
+		public RightViewAdapter() {
+			super(PeruseView.this.contentUIData, PeruseView.this.weblistHandler, null, null);
+		}
+	
 		@Override
 		public int getCount() {
 			return ToD?cr.getCount():hidden.size();
@@ -1493,9 +1486,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			MainActivityUIBase a = getMainActivity();
 			ActivedAdapter=a.ActivedAdapter=this;
 			
-			PageSlider.WebContext = mWebView;
+			contentUIData.PageSlider.WebContext = mWebView;
 			mWebView.IBC = currentDictionary.IBC;
-			PageSlider.invalidateIBC();
+			contentUIData.PageSlider.invalidateIBC();
 			
         	if(ToD) {
         		//a.setContentBow(false);
@@ -1552,6 +1545,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				contentview.setVisibility(View.VISIBLE);
 				webSingleholder.setVisibility(View.VISIBLE);
 		
+				SplitView webcontentlist = contentUIData.webcontentlister;
 				if(ToL) {
 					if(a.opt.getPeruseBottombarOnBottom() ^ (webcontentlist.getChildAt(webcontentlist.getChildCount()-1).getId()==R.id.bottombar2))
                     	webcontentlist.SwitchingSides();
@@ -1657,7 +1651,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         {  
     		//lp = new AbsListView.LayoutParams(-1,-1);
     		//lp.setMargins(280, 0, 0, 0);  
-        }
+			super(PeruseView.this.contentUIData, PeruseView.this.weblistHandler, null, null);
+		}
         
         @Override
         public int getCount() {
@@ -1754,15 +1749,15 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         		a.show(R.string.endendr);
         		return;
     		}
-      
-			PageSlider.WebContext = mWebView;
+	
+			contentUIData.PageSlider.WebContext = mWebView;
 			mWebView.IBC = currentDictionary.IBC;
-			PageSlider.invalidateIBC();
+			contentUIData.PageSlider.invalidateIBC();
         	
-        	if(widget14.getVisibility()==View.VISIBLE) {
-        		widget13.setVisibility(View.GONE);
-        		widget14.setVisibility(View.GONE);
-        	}
+//        	if(widget14.getVisibility()==View.VISIBLE) {
+//        		widget13.setVisibility(View.GONE);
+//        		widget14.setVisibility(View.GONE);
+//        	}
         	
 			int f = lv1.getFirstVisiblePosition();
 			int c = lv1.getChildCount();
@@ -1804,7 +1799,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	
 			contentview.setVisibility(View.VISIBLE);
 			webSingleholder.setVisibility(View.VISIBLE);
-			
+	
+			SplitView webcontentlist = contentUIData.webcontentlister;
     		if(ToR) {
                 if(a.opt.getPeruseBottombarOnBottom() ^ (webcontentlist.getChildAt(webcontentlist.getChildCount()-1).getId()==R.id.bottombar2))
                 	webcontentlist.SwitchingSides();
@@ -1835,7 +1831,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         	currentDictionary.renderContentAt(desiredScale,RENDERFLAG_NEW,0,mWebView, lastClickedPos);
 			
 			//voyager[SelectedV*3+2]=pos;
-			a.decorateContentviewByKey(favoriteBtn, currentKeyText);
+			a.decorateContentviewByKey(contentUIData.browserWidget8, currentKeyText);
 			if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
 					PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 					&& (!ismachineClick || PDICMainAppOptions.getHistoryStrategy8() == 0)){
@@ -1937,11 +1933,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			case R.id.valve0:
 				if(ToL=!ToL) {
 					intenToLeft.setBackgroundResource(R.drawable.toleft);
-        			bottombar2.setBackgroundColor(bottombar2BaseColor);
+					contentUIData.bottombar2.setBackgroundColor(bottombar2BaseColor);
 				}else {
 					intenToLeft.setBackgroundResource(R.drawable.upward);	
 					mlp.removeView(contentview);
-	        		bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
+					contentUIData.bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
 				}
 				a.opt.setPerUseToL(ToL);
 				a.opt.putFirstFlag();
@@ -1949,11 +1945,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			case R.id.valve1:
 				if(ToR=!ToR) {
 					intenToRight.setBackgroundResource(R.drawable.toright);
-	        		bottombar2.setBackgroundColor(bottombar2BaseColor);
+					contentUIData.bottombar2.setBackgroundColor(bottombar2BaseColor);
 				}else {
 					intenToRight.setBackgroundResource(R.drawable.downward);
 					slp.removeView(contentview);
-	        		bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
+					contentUIData.bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
 				}
 				a.opt.setPerUseToR(ToR);
 				a.opt.putFirstFlag();
@@ -2053,7 +2049,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	long lastswicthtime;
 	public DisplayMetrics dm;
-	public IMPageSlider IMPageCover;
 	
 	private void pullBookMarks() {
 		//todo close only when necessary
@@ -2211,11 +2206,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	
 	void setBottomNavigationType(int type, TextView tv) {
 		if (type == 0) {
-			ContentbarBtns[3].setImageResource(R.drawable.chevron_left);
-			ContentbarBtns[4].setImageResource(R.drawable.chevron_right);
+			contentUIData.browserWidget10.setImageResource(R.drawable.chevron_left);
+			contentUIData.browserWidget11.setImageResource(R.drawable.chevron_right);
 		} else if (type == 1) {
-			ContentbarBtns[3].setImageResource(R.drawable.chevron_recess);
-			ContentbarBtns[4].setImageResource(R.drawable.chevron_forward);
+			contentUIData.browserWidget10.setImageResource(R.drawable.chevron_recess);
+			contentUIData.browserWidget11.setImageResource(R.drawable.chevron_forward);
 		}
 		if(tv!=null) tv.setText(getResources().getTextArray(R.array.btm_navmode)[type]);
 	}

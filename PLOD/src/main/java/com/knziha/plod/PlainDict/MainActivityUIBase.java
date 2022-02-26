@@ -100,7 +100,6 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
@@ -149,6 +148,7 @@ import com.knziha.plod.PlainUI.BuildIndexInterface;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.NightModeSwitchPanel;
+import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.db.LexicalDBHelper;
@@ -254,8 +254,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.bumptech.glide.util.Util.isOnMainThread;
-import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
-import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
@@ -353,14 +351,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	//public HashMap<CharSequence,byte[]> mBookProjects;
 	//public HashSet<CharSequence> dirtyMap;
 	
-	public ContentviewBinding contentUIData;
-	
 	public Drawer drawerFragment;
 	public DictPicker pickDictDialog;
-	public DragScrollBar mBar;
 	protected FrameLayout.LayoutParams mBar_layoutParmas;
 	public ViewGroup main;
 	public ViewGroup mainF;
+	
+	public ContentviewBinding contentUIData;
 	public WebViewListHandler weblistHandler;
 	public ViewGroup webSingleholder;
 	protected WindowManager wm;
@@ -373,7 +370,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BasicAdapter adaptermy;
 	public BasicAdapter adaptermy2;
 	public BasicAdapter adaptermy3;
-	public PDICMainActivity.ListViewAdapter2 adaptermy4;
+	public ListViewAdapter2 adaptermy4;
 	public BasicAdapter PrevActivedAdapter;
 	public BasicAdapter ActivedAdapter;
 	public BaseHandler hdl;
@@ -407,29 +404,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	HashMap<String,String> lostFiles;
 
 
-	SplitView webcontentlist;
-	protected IMPageSlider IMPageCover;
 	public PeruseView peruseView;
-	public ViewGroup bottombar2;
 	/** 主程有 */
 	public @Nullable ViewGroup bottombar;
-	
-	ImageView favoriteBtn;
-	public ImageView widget7;
-	public ImageView widget10;
-	public ImageView widget11;
-	public ImageView widget12;
-
 	public boolean bRequestedCleanSearch;
 	public boolean bWantsSelection;
 	public boolean 来一发;
 	public boolean bIsFirstLaunch=true;
-
-	public RLContainerSlider PageSlider;
-
-	public View widget13,widget14;
-
-	public ProgressBar main_progress_bar;
+	
 	protected int DockerMarginL,DockerMarginR,DockerMarginT,DockerMarginB;
 
 	boolean isFragInitiated = false;
@@ -570,6 +552,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private boolean read_click_search;
 	protected ActType thisActType;
 	public boolean awaiting;
+	
+	public View favoriteBtn() {
+		return contentUIData.browserWidget8;
+	}
 	
 	enum ActType{
 		PlainDict
@@ -1023,6 +1009,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return etSearch.getText().toString();
 	}
 
+	public void setSearchTerm(String text){
+		etSearch.setText(text);
+	}
+
 	@Override
 	public void onActionModeStarted(ActionMode mode) {
 		View v = getCurrentFocus();
@@ -1356,8 +1346,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	    //CMN.Log("instanceCount", CMN.instanceCount);
 		super.onCreate(savedInstanceState);
 		ViewGroup tmp =  new ScrollViewmy(this);
-		weblistHandler = new WebViewListHandler(this);
-		weblistHandler.init(tmp, tmp);
 		if(shunt) return;
 		CMN.instanceCount++;
 		snackWorker = () -> {
@@ -1466,7 +1454,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void fix_dm_color() {
 		//CMN.Log("fix_dm_color");
 		boolean isDark = GlobalOptions.isDark;
-		boolean nii=widget12.getTag(R.id.image)==null;
+		boolean nii=contentUIData.browserWidget12.getTag(R.id.image)==null;
 		ViewGroup[] holders = new ViewGroup[]{webSingleholder, weblistHandler.getViewGroup()};
 		for (ViewGroup hI : holders) {
 			for (int i = 0; i < hI.getChildCount(); i++) {
@@ -1825,7 +1813,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 									if(thisActType!=ActType.MultiShare) {
 										if(PDICMainAppOptions.getEnableSuperImmersiveScrollMode()){
-											now += webcontentlist.getTop();
+											now += contentUIData.webcontentlister.getTop();
 										} else {
 											now += ((ViewGroup.MarginLayoutParams) getContentviewSnackHolder().getLayoutParams()).topMargin;
 										}
@@ -1949,7 +1937,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void postDetachClickTranslator() {
-		root.post(() -> DetachClickTranslator());
+		root.post(this::DetachClickTranslator);
 	}
 
 	public @Nullable String ReRouteKey(String key, boolean bNullable){
@@ -2077,19 +2065,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(PhotoPagerHolder.getParent()==null)
 			root.addView(PhotoPagerHolder, 1, contentview.getLayoutParams());
-		webcontentlist.canClickThrough=true;
+		contentUIData.webcontentlister.canClickThrough=true;
 		checkW10(PDICMainAppOptions.getIsoImgClickThrough());
 	}
 
 	public void guaranteeBackground(int globalPageBackground) {
-		webcontentlist.canClickThrough=false;
+		contentUIData.webcontentlister.canClickThrough=false;
 		if(webSingleholder.getTag(R.id.image)!=null || globalPageBackground!=GlobalPageBackground){
 			webSingleholder.setTag(R.id.image,null);
 			webSingleholder.setBackgroundColor(globalPageBackground);
 		}
-		if(widget12.getTag(R.id.image)!=null){
-			widget12.setTag(R.id.image, null);
-			widget12.setImageResource(R.drawable.voice_ic);
+		if(contentUIData.browserWidget12.getTag(R.id.image)!=null){
+			contentUIData.browserWidget12.setTag(R.id.image, null);
+			contentUIData.browserWidget12.setImageResource(R.drawable.voice_ic);
 		}
 	}
 
@@ -2099,17 +2087,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	private void checkW10(boolean clickThrough) {
 		Integer target = clickThrough?R.drawable.ic_image_black_24dp:R.drawable.ic_comment_black_24dp;
-		if(widget12.getTag(R.id.image)!=target){
-			widget12.setTag(R.id.image, target);
-			widget12.setImageResource(target);
+		if(contentUIData.browserWidget12.getTag(R.id.image)!=target){
+			contentUIData.browserWidget12.setTag(R.id.image, target);
+			contentUIData.browserWidget12.setImageResource(target);
 		}
 	}
 
 	public void checkW10_full() {
 		Integer target = R.drawable.ic_fullscreen_black_96dp;
-		if(widget12.getTag(R.id.image)!=target){
-			widget12.setTag(R.id.image, target);
-			widget12.setImageResource(target);
+		if(contentUIData.browserWidget12.getTag(R.id.image)!=target){
+			contentUIData.browserWidget12.setTag(R.id.image, target);
+			contentUIData.browserWidget12.setImageResource(target);
 		}
 	}
 
@@ -2131,9 +2119,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void TransientIntoSingleExplanation() {
 		webSingleholder.setVisibility(View.VISIBLE);
 		weblistHandler.shutUp();
-		if(widget14.getVisibility()==View.VISIBLE) {
-			widget13.setVisibility(View.GONE);
-			widget14.setVisibility(View.GONE);
+		if(contentUIData.navBtns.getVisibility()==View.VISIBLE) {
+			contentUIData.navBtns.setVisibility(View.GONE);
 		}
 	}
 
@@ -2164,6 +2151,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				vsi=true;
 			break;
 		}
+		DragScrollBar mBar = contentUIData.dragScrollBar;
+		mBar.setHandleColorFiler(MainAppBackground);
 		if(mBar.getVisibility()!=vis)
 			mBar.setVisibility(vis);
 		//mBar.handleThumb.getBackground().setColorFilter(MainAppBackground, PorterDuff.Mode.SRC_IN);
@@ -2174,7 +2163,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(mWebView!=null) {
 			mWebView.setVerticalScrollBarEnabled(vsi);
 			if(vis==View.VISIBLE)
-				mBar.setDelimiter("< >", mWebView);
+				mBar.setDelimiter("", mWebView);
 		}else{
 			weblistHandler.setVerticalScrollBarEnabled(vsi);
 			if(vis==View.VISIBLE)
@@ -2774,10 +2763,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			int height;
 			@Override
 			public void onPreparePage(int val) {
-				View IMPageCover_ = getIMPageCover();
+				View IMPageCover_ = contentUIData.cover;
 				LayoutParams lpp = IMPageCover_.getLayoutParams();
 				if(PeruseViewAttached())
-					IMPageCover_ = peruseView.IMPageCover;
+					IMPageCover_ = peruseView.contentUIData.cover;
 				//showT("onPreparePage"+System.currentTimeMillis());
 				height=val;
 				lpp.height=val;
@@ -2798,11 +2787,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			@Override
 			public void onMoving(SplitView webcontentlist,float val) {
 				//showT("onMoving"+System.currentTimeMillis());
-				View IMPageCover_ = getIMPageCover();
-				View PageSlider_ = PageSlider;
+				View IMPageCover_ = contentUIData.cover;
+				View PageSlider_ = contentUIData.PageSlider;
 				if(PeruseViewAttached()) {
-					IMPageCover_= peruseView.IMPageCover;
-					PageSlider_= peruseView.PageSlider;
+					IMPageCover_= peruseView.contentUIData.cover;
+					PageSlider_= peruseView.contentUIData.PageSlider;
 				}
 				IMPageCover_.setVisibility(View.VISIBLE);
 				if(!webcontentlist.decided)
@@ -2815,10 +2804,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			@Override
 			public void onPageTurn(SplitView webcontentlist) {
 				//showT("onPageTurn"+System.currentTimeMillis());
-				View IMPageCover_ = getIMPageCover();
+				View IMPageCover_ = contentUIData.cover;
 				boolean bPeruseIncharge = PeruseViewAttached() && (peruseView.contentview.getParent()== peruseView.slp || peruseView.contentview.getParent()== peruseView.mlp);
 				if(PeruseViewAttached())
-					IMPageCover_= peruseView.IMPageCover;
+					IMPageCover_= peruseView.contentUIData.cover;
 				IMPageCover_.setVisibility(View.GONE);
 				
 				if(bPeruseIncharge)
@@ -2827,15 +2816,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					opt.setBottombarOnBottom(webcontentlist.getChildAt(0).getId()!=R.id.bottombar2);
 				
 				if(opt.getNavigationBtnType()==2)
-					locateNaviIcon(widget13,widget14);
+					locateNaviIcon();
 			}
 			
 			@Override
 			public void onHesitate() {
 				//showT("onHesitate"+System.currentTimeMillis());
-				IMPageSlider IMPageCover_ = IMPageCover;
+				IMPageSlider IMPageCover_ = contentUIData.cover;
 				if(peruseView !=null && peruseView.getView()!=null && peruseView.getView().getParent()!=null)
-					IMPageCover_= peruseView.IMPageCover;
+					IMPageCover_= peruseView.contentUIData.cover;
 				if(IMPageCover_!=null)
 					IMPageCover_.setVisibility(View.GONE);
 			}
@@ -2856,7 +2845,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					peruseView.CachedBBSize = ret;
 				}else{
 					CachedBBSize = ret;
-					webcontentlist.isDirty=true;
+					contentUIData.webcontentlister.isDirty=true;
 				}
 				return ret;
 			}
@@ -2941,58 +2930,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	@CallSuper
 	protected void findFurtherViews() {
-		if (webSingleholder==null) {
+		if(contentUIData==null) {
+			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
+		}
+		if(contentview==null) {
+			weblistHandler = new WebViewListHandler(this, contentUIData);
 			contentview = contentUIData.webcontentlister;
-			webcontentlist = contentUIData.webcontentlister;
-			PageSlider = contentUIData.PageSlider;
-			bottombar2 = contentUIData.bottombar2;
-			
 			webSingleholder = contentUIData.webSingleholder;
-			weblistHandler.init(contentUIData.WHP, contentUIData.webholder);
-			IMPageCover = contentUIData.cover;
-			mBar = contentUIData.dragScrollBar;
-			(widget13=contentUIData.browserWidget13).setOnClickListener(this);
-			(widget14=contentUIData.browserWidget14).setOnClickListener(this);
 		}
+		//CMN.Log("findFurtherViews...", contentUIData, contentview);
+		mBar_layoutParmas = (FrameLayout.LayoutParams) contentUIData.dragScrollBar.getLayoutParams();
 		
-		//CMN.Log("findFurtherViews...", webholder);
-		
-		mBar_layoutParmas = (FrameLayout.LayoutParams) mBar.getLayoutParams();
-		mBar.setOnProgressChangedListener(_mProgress -> {
-			if(PageSlider==null) return;
-			PageSlider.TurnPageSuppressed = _mProgress==-1;
-		});
-		
-		webcontentlist.multiplier=-1;
-		webcontentlist.isSlik=true;
-		
-		CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, getResources().getDimension(R.dimen._bottombarheight_)));
-		webcontentlist.setPrimaryContentSize(CachedBBSize,true);
-		
-		webcontentlist.setPageSliderInf(inf);
-		
-		bottombar2.setBackgroundColor(MainBackground);
-		
-		boolean tint = PDICMainAppOptions.getTintIconForeground();
-		for (int i = 0; i <= 5; i++) {
-			ImageView iv = (ImageView) bottombar2.getChildAt(i);
-			ContentbarBtns[i]=iv;
-			iv.setOnClickListener(this);
-			if(tint) iv.setColorFilter(ForegroundTint, PorterDuff.Mode.SRC_IN);
-			iv.setOnLongClickListener(this);
-		}
-		widget7=ContentbarBtns[0];
-		favoriteBtn=ContentbarBtns[1];
-		widget10=ContentbarBtns[3];
-		widget11=ContentbarBtns[4];
-		widget12=ContentbarBtns[5];
-		String contentkey = "ctnp#"+cbar_key;
-		String appproject = opt.getAppContentBarProject(contentkey);
-		if(appproject==null) appproject="0|1|2|3|4|5";
-		contentbar_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, bottombar2, ContentbarBtns);
-		contentbar_project.type = cbar_key;
-		RebuildBottombarIcons(this, contentbar_project, mConfiguration);
-		
+		CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, mResource.getDimension(R.dimen._bottombarheight_)));
+		weblistHandler.setUpContentView();
 		
 		TypedValue typedValue = new TypedValue();
 		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
@@ -3045,10 +2995,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} catch (Exception e) { CMN.Log(e); }
 	}
 	
-	protected View getIMPageCover() {
-		return IMPageCover;
-	}
-
 	protected File getStartupFile(File ConfigFile){
 		File def = null;
 		if (thisActType==ActType.PlainDict && opt.getCacheCurrentGroup()) {
@@ -3237,12 +3183,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				
 				boolean fromPeruseView=webview.fromCombined==3;
-				DragScrollBar _mBar=mBar;
+				DragScrollBar _mBar=contentUIData.dragScrollBar;
 				float currentScale = webview.webScale;
 				//tofo
 				if(currentScale>= BookPresenter.def_zoom) {
 					if(fromPeruseView) {
-						_mBar= peruseView.mBar;
+						_mBar= peruseView.contentUIData.dragScrollBar;
 					}
 				}
 
@@ -3464,7 +3410,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void decorateContentviewByKey(ImageView futton, String key) {
-		if(futton==null) futton=this.favoriteBtn;
+		if(futton==null) futton=this.contentUIData.browserWidget8;
 		if(futton!=null) futton.setActivated(GetIsFavoriteTerm(key));
 	}
 	
@@ -3524,16 +3470,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected String lastInsertedKey;
 	
 	protected void insertUpdate_histroy(String key, int source, ViewGroup webviewholder) {
-		if(key!=null) {
-			key = key.trim();
-		}
-		if(key.length()>0) {
-			if (getUsingDataV2()) {
-				lastInsertedKey = key;
-				lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder);
-			} else {
-				prepareHistoryCon().insertUpdate(this, key, null);
-			}
+		if(TextUtils.getTrimmedLength(key)>0) {
+			lastInsertedKey = key.trim();
+			lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder);
 		}
 	}
 	
@@ -3613,14 +3552,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			pendingLv2ClickPos=-1;
 		}
 	}
-	
-	public boolean isContentViewAttachedForDB() {
-		//CMN.Log("isContentViewAttachedForDB", contentview.getParent());
-		return ViewUtils.ViewIsId((View) contentview.getParent(), PeruseViewAttached()?R.id.peruseF:R.id.second_holder);
-	}
-	
-	
-	public abstract void AttachContentViewForDB();
 	
 	public void invalidAllPagers() {
 	
@@ -4153,7 +4084,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web);
 								ManFt_GlobalPageBackground=ColorUtils.blendARGB(ManFt_GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 							};
-							boolean apply = bFromPeruseView || widget12.getTag(R.id.image)==null;
+							boolean apply = bFromPeruseView || contentUIData.browserWidget12.getTag(R.id.image)==null;
 							if(invoker.getUseInternalBG()) {
 								invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
 								if(apply && mWebView!=null)
@@ -4171,7 +4102,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						@Override
 						public void onPreviewSelectedColor(ColorPickerDialog dialogInterface, int color) {
-							if(bFromPeruseView || widget12.getTag(R.id.image)==null) {
+							if(bFromPeruseView || contentUIData.browserWidget12.getTag(R.id.image)==null) {
 								if (GlobalOptions.isDark)
 									color = ColorUtils.blendARGB(color, Color.BLACK, ColorMultiplier_Web);
 								WebViewmy mWebView = bFromPeruseView ? peruseView.mWebView : invoker.mWebView;
@@ -4197,7 +4128,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web);
 								ManFt_GlobalPageBackground=ColorUtils.blendARGB(ManFt_GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 							}
-							boolean apply = bFromPeruseView || widget12.getTag(R.id.image)==null;
+							boolean apply = bFromPeruseView || contentUIData.browserWidget12.getTag(R.id.image)==null;
 							if(!isDirty){//fall back
 								if(invoker.getUseInternalBG()) {
 									if(apply && mWebView!=null)
@@ -4229,7 +4160,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						enabled= peruseView.toggleTurnPageEnabled();
 					}else{
 						enabled=opt.setTurnPageEnabled(!opt.getTurnPageEnabled());
-						PageSlider.TurnPageEnabled=enabled;
+						contentUIData.PageSlider.TurnPageEnabled=enabled;
 					}
 					tools_lock.setImageResource(enabled?R.drawable.un_locked:R.drawable.locked);
 					opt.putFirstFlag();
@@ -4933,7 +4864,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					return true;
 				});
 				
-				if(PageSlider!=null) {
+				if(contentUIData.PageSlider!=null) {
 					if(!opt.getTurnPageEnabled()&&!bFromPeruseView||bFromPeruseView&&opt.getPageTurn3())
 						tools_lock.setImageResource(R.drawable.locked);
 				} else {
@@ -5411,26 +5342,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			break;
 			case 4:
-				locateNaviIcon(widget13,widget14);
+				locateNaviIcon();
 			break;
 			case 5:
-				if(val==1)
-					mBar.setVisibility(View.GONE);
-				else
-					mBar.setVisibility(View.VISIBLE);
+				contentUIData.dragScrollBar.setVisibility(val==1?View.GONE:View.VISIBLE);
 			break;
 			case 6:
-				if(val==1)
-					mBar.setVisibility(View.GONE);
-				else
-					mBar.setVisibility(View.VISIBLE);
+				contentUIData.dragScrollBar.setVisibility(val==1?View.VISIBLE:View.GONE);
 			break;
 			case 7:
 				if(peruseView !=null&& peruseView.getView()!=null) {
-					if(val==1)
-						peruseView.mBar.setVisibility(View.GONE);
-					else
-						peruseView.mBar.setVisibility(View.VISIBLE);
+					peruseView.contentUIData.dragScrollBar.setVisibility(val==1?View.GONE:View.VISIBLE);
 				}
 			break;
 			case 8:
@@ -5821,7 +5743,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		switch (id){
 			default:return;
 			case R.drawable.ic_menu_24dp: {
-				showMenuGrid();
+				showMenuGrid(v);
 			} break;
 			case R.drawable.ic_exit_app:{
 				v.getBackground().jumpToCurrentState();
@@ -5849,8 +5771,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				ViewGroup target = fromPeruseView? peruseView.peruseF:mainF;
 				if(target.getChildCount()==0){ //if(DBrowser==null)
 					AttachDBrowser(DB_HISTORY);
-				}  else if(isContentViewAttachedForDB()){
-					DetachContentView(true);
 				}
 			} break;
 			case R.drawable.ic_keyboard_show_24: {
@@ -6196,14 +6116,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(thisActType!=ActType.MultiShare) {
 						etSearch_ToToolbarMode(0);
 					}
-					webcontentlist.setVisibility(View.GONE);
+					contentUIData.webcontentlister.setVisibility(View.GONE);
 				}
 			} break;
 			//左右翻页
 			case R.id.browser_widget10:
 			case R.id.browser_widget11:{//左zuo
 				int delta = (id==R.id.browser_widget10?-1:1);
-				if(ActivedAdapter==null||isContentViewAttachedForDB()) {
+				if(ActivedAdapter==null) {
 					if(DBrowser!=null) {
 						if(delta<0)DBrowser.goBack();
 						else DBrowser.goQiak();
@@ -6291,7 +6211,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					weblistHandler.showJumpListDialog();
 				}
 				else {
-					if(widget12.getTag(R.id.image)!=null){
+					if(contentUIData.browserWidget12.getTag(R.id.image)!=null){
 						float alpha = contentview.getAlpha();// 0.5 0.25 0 1
 						if(alpha==0) alpha=1;
 						else if(alpha==1) alpha=0.37f;
@@ -6639,7 +6559,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				else
 					currentDictionary.rl.findViewById(R.id.cover).performClick();
-				webcontentlist.judger = false;
+				contentUIData.webcontentlister.judger = false;
 			} return true;
 			/* 页面导航模式 */
 			case R.id.browser_widget10:
@@ -6694,12 +6614,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(getResources().getDimension(R.dimen.item_height)*(4+2)>=maxHeight)
 					dTmp.getListView().getLayoutParams().height=maxHeight;
 				dTmp.getListView().setTag(titlebar);
-				webcontentlist.judger = false;
+				contentUIData.webcontentlister.judger = false;
 			} return true;
 			/* 语音控制器 */
 			case R.id.browser_widget12:{
 				showSoundTweaker();
-				webcontentlist.judger = false;
+				contentUIData.webcontentlister.judger = false;
 			} return true;
 		}
 		return false;
@@ -6728,7 +6648,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void toggleClickSearch(boolean val) {
-		evalJsAtAllFrames(val?"window.rcsp|=0x20;(rcsp&0xF00)||loadJs(sid.get(),'tapTrans.js')":"window.rcsp&=~0x20");
+		evalJsAtAllFrames(val?"window.rcsp|=0x20;window.rcspc||loadJs(sid.get(),'tapTrans.js')":"window.rcsp&=~0x20");
 //		currentDictionary.mWebView.evaluateJavascript(currentDictionary.getWebx().jsLoader, new ValueCallback<String>() {
 //			@Override
 //			public void onReceiveValue(String value) {
@@ -7657,9 +7577,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mWebView.clearHistory();
 			}
 			
+			CMN.Log("OPF::EvaluateValidifierJs::", invoker.GetSearchKey());
 			if(invoker.GetSearchKey()!=null) {
 				String validifier1 = invoker.getOfflineMode()&&invoker.getIsWebx()?null:invoker.bookImpl.getVirtualTextValidateJs(invoker, mWebView, mWebView.currentPos);
 				if (validifier1!=null) {
+					CMN.Log("OPF::EvaluateValidifierJs::");
 					invoker.EvaluateValidifierJs(validifier1, mWebView);
 				}
 				invoker.SetSearchKey(null);
@@ -8164,6 +8086,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				return null;
+			}
+			
+			if(url.equalsIgnoreCase("http://MdbR.com/load.html")) {
+				return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(new byte[0]));
+			}
+			for (PlainWeb book:weblistHandler.moders) { // java.util.ConcurrentModificationException
+				InputStream input = book.modifyRes(MainActivityUIBase.this, url);
+				if(input!=null) {
+					CMN.Log("修改了::", url);
+					WebResourceResponse webResourceResponse;
+					webResourceResponse=new WebResourceResponse("*/*", "utf8", input);
+					//webResourceResponse.setResponseHeaders(headers);
+					return webResourceResponse;
+				}
 			}
 			
 			if(url.startsWith("mdbr://")
@@ -8902,7 +8838,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		mWebView.post(NaughtyJumpper);
 	}
 
-	public void locateNaviIcon(View widget13,View widget14){
+	public void locateNaviIcon(){
+		View widget13=contentUIData.browserWidget13,widget14=contentUIData.browserWidget14;
 		if(opt.getNavigationBtnType()==0 || (opt.getNavigationBtnType()==2 && !opt.getBottombarOnBottom())) {
 			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) widget13.getLayoutParams();
 			//if((lp.gravity&Gravity.TOP) != 0 ) return;
@@ -9761,13 +9698,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	void setBottomNavigationType(int type, TextView tv) {
 		switch(type){
 			case 0:
-				widget10.setImageResource(R.drawable.chevron_left);
-				widget11.setImageResource(R.drawable.chevron_right);
+				contentUIData.browserWidget10.setImageResource(R.drawable.chevron_left);
+				contentUIData.browserWidget11.setImageResource(R.drawable.chevron_right);
 				if(tv!=null) tv.setText(getResources().getTextArray(R.array.btm_navmode)[0]);
 			break;
 			case 1:
-				widget10.setImageResource(R.drawable.chevron_recess);
-				widget11.setImageResource(R.drawable.chevron_forward);
+				contentUIData.browserWidget10.setImageResource(R.drawable.chevron_recess);
+				contentUIData.browserWidget11.setImageResource(R.drawable.chevron_forward);
 				if(tv!=null) tv.setText(getResources().getTextArray(R.array.btm_navmode)[1]);
 			break;
 		}
@@ -10087,7 +10024,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	//定制工具条
-	public ImageView[] ContentbarBtns = new ImageView[ContentbarBtnIcons.length];
 	public AppUIProject contentbar_project;
 	public AppUIProject peruseview_project;
 	
@@ -10204,10 +10140,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						boolean proceed = true;
 						if(count>=0) {
 							if(thisActType==ActType.PlainDict) {
-								if(isContentViewAttached()&&!isContentViewAttachedForDB())
+								if(isContentViewAttached())
 									proceed = currentDictionary.lvClickPos!=normal_idx;
 							} else {
-								if(webcontentlist.getVisibility()==View.VISIBLE) {//webSingleholder.getChildCount()!=1
+								if(contentUIData.webcontentlister.getVisibility()==View.VISIBLE) {//webSingleholder.getChildCount()!=1
 									String keyTmp = mdict.processText(cs.toString());
 									proceed = (adaptermy.currentKeyText == null || !keyTmp.equals(adaptermy.currentKeyText.trim()));
 								}
@@ -10515,7 +10451,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected boolean PerFormBackPrevention(boolean bBackBtn) {
 		if(settingsPanel!=null) {
-			hideSettingsPanel();
+			CMN.Log("PerFormBackPrevention", settingsPanel);
+			hideSettingsPanel(settingsPanel);
+			CMN.Log("PerFormBackPrevention done", settingsPanel);
 			return true;
 		}
 		if(!AutoBrowsePaused || bRequestingAutoReading){
@@ -10548,35 +10486,48 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return false;
 	}
 	
-	public SettingsPanel settingsPanel;
+	public ArrayList<PlainAppPanel> settingsPanels = new ArrayList<>(10);
+	public PlainAppPanel settingsPanel;
 	public PopupWindow   settingsPopup;
 	public View.OnClickListener mInterceptorListener;
 	public boolean mInterceptorListenerHandled;
 	
-	public void hideSettingsPanel() {
-		if (settingsPanel!=null) {
-			settingsPanel.dismiss();
-			settingsPanel = null;
+	public void hideSettingsPanel(@NonNull SettingsPanel panel) {
+		if(settingsPanel==panel) {
+			//CMN.Log("hideSettingsPanel", panel, settingsPanel);
+			if (settingsPanel!=null) {
+				settingsPanel.dismiss(); // 反调
+				if(settingsPanel==panel) {
+					settingsPanels.remove(settingsPanel);
+					settingsPanel = ViewUtils.getLast(settingsPanels);
+					if(settingsPanel!=null) settingsPopup = settingsPanel.pop;
+				}
+			}
+			else if(settingsPopup!=null) settingsPopup = null;
 		}
-		if(settingsPopup!=null) settingsPopup = null;
 	}
 	
-	public void embedPopInCoordinatorLayout(PopupWindow pop) {
-		if(bottombar!=null)
-			app_panel_bottombar_height = bottombar.getHeight();
+	public void embedPopInCoordinatorLayout(PlainAppPanel panel, PopupWindow pop, int padbot, ViewGroup root) {
+		if(padbot!=0) {
+			if(panel.bottombar!=null) {
+				padbot = panel.bottombar.getHeight();
+			} else {
+				padbot = bottombar!=null?bottombar.getHeight():app_panel_bottombar_height;
+			}
+		}
 		settingsPopup = pop;
 		pop.setWidth(dm.widthPixels);
 		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
 		pop.setBackgroundDrawable(null);
 		int[] vLocation = new int[2];
-		ViewGroup root = this.root;
+		//ViewGroup root = this.root;
 		root.getLocationInWindow(vLocation);
 		int topY = vLocation[1];
 		int h = root.getHeight();
 		pop.setWidth(-1);
-		pop.setHeight(h-app_panel_bottombar_height);
+		pop.setHeight(h-padbot);
 		if (pop.isShowing()) {
-			pop.update(0, topY, -1, h-app_panel_bottombar_height);
+			pop.update(0, topY, -1, h-padbot);
 		} else {
 			if (PeruseViewAttached()) {
 				root = peruseView.root;
@@ -10599,7 +10550,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //		}
 	}
 	
-	public void showMenuGrid() {
+	public void showMenuGrid(View btn) {
 		if(bottombar!=null)
 			app_panel_bottombar_height = bottombar.getHeight();
 		int jd = WeakReferenceHelper.menu_grid;
@@ -10611,8 +10562,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			menuGrid.refresh();
 		}
+		View bb = menuGrid.bottombar = (View) btn.getParent();
+		ViewGroup root=null;
+		if(peruseView!=null && bb==peruseView.contentUIData.bottombar2)
+		{
+			root = peruseView.root;
+		}
 		if (!menuGrid.isVisible()) {
-			menuGrid.toggle(root, null);
+			menuGrid.show(root, ViewUtils.ViewIsId(bb, R.id.bottombar2), -2);
 		}
 	}
 	
@@ -10671,6 +10628,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	private ViewGroup getMenuGridRootViewForPanel(PlainAppPanel panel) {
+		ViewGroup root = null;
+		MenuGrid menuGrid = (MenuGrid) getReferencedObject(WeakReferenceHelper.menu_grid);
+		if(peruseView!=null && menuGrid!=null && menuGrid.bottombar==peruseView.contentUIData.bottombar2)
+		{
+			root = peruseView.root;
+		}
+		panel.bottombar = menuGrid.bottombar;
+		return root;
+	}
+	
 	public void showBookSettings() {
 		int jd = WeakReferenceHelper.quick_settings;
 		QuickBookSettingsPanel quickSettings
@@ -10682,8 +10650,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			quickSettings.refresh();
 		}
-		boolean vis = quickSettings.toggle(root, (SettingsPanel) getReferencedObject(WeakReferenceHelper.menu_grid));
-		settingsPanel = vis?quickSettings:null;
+		quickSettings.toggle(getMenuGridRootViewForPanel(quickSettings), (SettingsPanel) getReferencedObject(WeakReferenceHelper.menu_grid), -2);
 	}
 	
 	public void showNightModeSwitch() {
@@ -10696,8 +10663,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//CMN.Log("重建NightModeSwitchPanel...");
 		}
 		quickSettings.refresh();
-		boolean vis = quickSettings.toggle(root, (SettingsPanel) getReferencedObject(WeakReferenceHelper.menu_grid));
-		settingsPanel = vis?quickSettings:null;
+		boolean vis = quickSettings.toggle(getMenuGridRootViewForPanel(quickSettings), (SettingsPanel) getReferencedObject(WeakReferenceHelper.menu_grid), -2);
 	}
 	
 	
@@ -10760,4 +10726,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		intent.setClass(MainActivityUIBase.this, BookManager.class);
 		startActivityForResult(intent, 110);
 	}
+	
+	abstract void ensureContentVis(ViewGroup webholder, ViewGroup another);
 }

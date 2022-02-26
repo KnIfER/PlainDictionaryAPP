@@ -1,85 +1,107 @@
 package com.knziha.plod.plaindict;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
+import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.PlainUI.AlloydPanel;
+import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
+import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.ScrollViewmy;
+import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.rbtree.additiveMyCpr1;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 
 public class WebViewListHandler extends ViewGroup {
 	final MainActivityUIBase a;
-	public boolean bMergeFrames = true;
+	public boolean bMergeFrames = false;
+	public boolean bMergingFrames = false;
+	public boolean bShowingInPopup = false;
 	ScrollViewmy WHP;
 	FrameLayout WHP1;
 	ViewGroup webholder;
+	public additiveMyCpr1 jointResult;
 	public WebViewmy mMergedFrame;
 	BookPresenter mMergedBook;
 	public ArrayList<Long> frames = new ArrayList();
+	public ArrayList<PlainWeb> moders = new ArrayList();
+	@NonNull final ContentviewBinding contentUIData;
+	public ImageView[] ContentbarBtns = new ImageView[ContentbarBtnIcons.length];
+	private boolean contentViewSetup;
 	
-	public WebViewListHandler(MainActivityUIBase a) {
+	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData) {
 		super(a);
 		this.a = a;
 		setId(R.id.webholder);
 		//setUseListView(true);
+		this.contentUIData = contentUIData;
+		this.WHP = contentUIData.WHP;
+		this.webholder = contentUIData.webholder;
 	}
 	
 	public ViewGroup getViewGroup() {
-		return webholder;
+		return mViewMode==WEB_LIST_MULTI?webholder:contentUIData.webSingleholder;
+	}
+	
+	public ViewGroup getAnotherViewGroup() {
+		return mViewMode==WEB_LIST_MULTI?contentUIData.webSingleholder:webholder;
 	}
 	
 	public View getChildAt(int frameAt) {
-		return webholder.getChildAt(frameAt);
+		return contentUIData.webholder.getChildAt(frameAt);
 	}
 	
 	@Override
 	public int getChildCount() {
-		return webholder.getChildCount();
+		return contentUIData.webholder.getChildCount();
 	}
 	
 	public void shutUp() {
 		if(WHP.getVisibility()==View.VISIBLE) {
-			if(webholder.getChildCount()!=0)
-				webholder.removeAllViews();
+//			if(contentUIData.webholder.getChildCount()!=0)
+//				contentUIData.webholder.removeAllViews();
 			WHP.setVisibility(View.GONE);
 		}
 	}
 	
-	public void init(ViewGroup whp, ViewGroup webholder) {
-		this.WHP = (ScrollViewmy) whp;
-		this.webholder = webholder;
-	}
-	
 	@Override
 	public void addView(View child, int index) {
-		webholder.addView(child, index);
+		contentUIData.webholder.addView(child, index);
 	}
 	
 	public void removeAllViews() {
-		webholder.removeAllViews();
+		CMN.Log("removeAllViews!!!");
+//		contentUIData.webholder.removeAllViews();
 	}
 	
 	@Override
@@ -117,8 +139,8 @@ public class WebViewListHandler extends ViewGroup {
 	}
 	
 	public void setScrollbar() {
-		a.mBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
-		a.mBar.setProgress(WHP.getScrollY());
+		contentUIData.dragScrollBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
+		contentUIData.dragScrollBar.setProgress(WHP.getScrollY());
 		//a.mBar.onTouch(null, MotionEvent.obtain(0,0,MotionEvent.ACTION_UP,0,0,0));
 	}
 	
@@ -133,7 +155,7 @@ public class WebViewListHandler extends ViewGroup {
 					//CMN.Log("onLayoutChange", a.WHP.touchFlag.first, scrolled, bottom - top >= expectedPos + sv.getMeasuredHeight());
 					//CMN.Log("onLayoutChange", bottom - top , expectedPos + sv.getMeasuredHeight());
 					if (WHP.touchFlag.first) {
-						a.main_progress_bar.setVisibility(View.GONE);
+						contentUIData.mainProgressBar.setVisibility(View.GONE);
 						v.removeOnLayoutChangeListener(this);
 						return;
 					}
@@ -150,7 +172,7 @@ public class WebViewListHandler extends ViewGroup {
 							sv.scrollTo(0, recom.expectedPos);//smooth
 							//CMN.Log("onLayoutChange scrolled", expectedPos, sv.getMeasuredHeight());
 							if (sv.getScrollY() == recom.expectedPos) {
-								a.main_progress_bar.setVisibility(View.GONE);
+								contentUIData.mainProgressBar.setVisibility(View.GONE);
 								recom.scrolled = true;
 							}
 						}
@@ -163,11 +185,11 @@ public class WebViewListHandler extends ViewGroup {
 		webholder.removeOnLayoutChangeListener(OLCL);
 		if(!recom.toHighLight){
 			ViewUtils.addOnLayoutChangeListener(webholder, OLCL);
-			if(a.main_progress_bar!=null)
-				a.main_progress_bar.setVisibility(recom.expectedPos==0?View.GONE:View.VISIBLE);
+			if(contentUIData.mainProgressBar!=null)
+				contentUIData.mainProgressBar.setVisibility(recom.expectedPos==0?View.GONE:View.VISIBLE);
 			recom.scrolled=false;
 		}
-		a.PageSlider.setIBC(null, this);
+		contentUIData.PageSlider.setIBC(null, this);
 	}
 	
 	public void NotifyScrollingTo(resultRecorderCombined recom) {
@@ -178,7 +200,7 @@ public class WebViewListHandler extends ViewGroup {
 	}
 	
 	public void initWebHolderScrollChanged() {
-		DragScrollBar mBar = a.mBar;
+		DragScrollBar mBar = contentUIData.dragScrollBar;
 		if(mBar.getVisibility()==View.VISIBLE){
 			if(a.onWebHolderScrollChanged==null){
 				WHP.scrollbar2guard=mBar;
@@ -218,25 +240,54 @@ public class WebViewListHandler extends ViewGroup {
 		return mMergedFrame;
 	}
 	
-	public WebViewmy initMergedFrame() {
-		WebViewmy mMergedFrame = getMergedFrame();
-		if(WHP1==null) WHP1 = new FrameLayout(a);
-		if(WHP1.getParent()==null) {
-			ViewUtils.replaceView(WHP1, WHP);
+	/** 是否将共用的 mMergedFrame 以一定手段塞入webholder列表。但是列表只会显示一个（mMergedFrame 或 mWebView）。 */
+	public void initMergedFrame(boolean mergeWebHolder, boolean popup, boolean bUseMergedUrl) {
+		if(bUseMergedUrl && mMergedFrame!=null) {
+			mMergedFrame.presenter=mMergedBook;
+			mMergedBook.toolbar.setVisibility(View.GONE);
 		}
-		webholder.getLayoutParams().height = MATCH_PARENT;
-		ViewUtils.addViewToParent(webholder, WHP1);
-		ViewUtils.addViewToParent(mMergedBook.rl, webholder);
-		if(webholder.getChildCount()>1)
-			for (int i = webholder.getChildCount()-1; i>=0; i--)
-				if(webholder.getChildAt(i)!=mMergedFrame)
-					webholder.removeViewAt(i);
-		mMergedFrame.getLayoutParams().height = MATCH_PARENT;
-		mMergedBook.rl.getLayoutParams().height = MATCH_PARENT;
-		mMergedBook.toolbar.setVisibility(View.GONE);
-		a.widget13.setVisibility(View.GONE);
-		a.widget14.setVisibility(View.GONE);
-		return mMergedFrame;
+		if(!popup && bShowingInPopup) {
+			ViewUtils.removeView(alloydPanel.toolbar);
+			contentUIData.webcontentlister.setPadding(0,0,0,0);
+			bShowingInPopup = false;
+		}
+		if(bMergingFrames!=mergeWebHolder) {
+			if(mergeWebHolder) { // 替换scrollview为framelayout、webholder高度充满视图
+				if(WHP1==null) WHP1 = new FrameLayout(a);
+				if(WHP1.getParent()==null) {
+					ViewUtils.replaceView(WHP1, WHP);
+				}
+				this.webholder = WHP1;
+				ViewGroup webholder = this.WHP1;
+				webholder.getLayoutParams().height = MATCH_PARENT;
+				WebViewmy mMergedFrame = getMergedFrame();
+				//ViewUtils.addViewToParent(webholder, WHP1);
+				ViewUtils.addViewToParent(mMergedFrame.rl, webholder);
+//				if(bUseMergedUrl) {
+//					if(webholder.getChildCount()>1)
+//						for (int i = webholder.getChildCount()-1; i>=0; i--)
+//							if(webholder.getChildAt(i)!=mMergedFrame)
+//								webholder.removeViewAt(i);
+//					mMergedFrame.getLayoutParams().height = MATCH_PARENT;
+//				}
+				mMergedBook.rl.getLayoutParams().height = MATCH_PARENT;
+				mMergedBook.toolbar.setVisibility(View.GONE);
+				contentUIData.navBtns.setVisibility(View.GONE);
+			}
+			else {
+				this.webholder = contentUIData.webholder;
+				if(WHP.getParent()==null) {
+					ViewUtils.replaceView(WHP, WHP1);
+				}
+//				ViewUtils.addViewToParent(webholder, WHP);
+				contentUIData.webcontentlister.setAlpha(1);
+				if(mMergedBook!=null) {
+					mMergedBook.toolbar.setVisibility(View.VISIBLE);
+				}
+				webholder.getLayoutParams().height = WRAP_CONTENT;
+			}
+			bMergingFrames = mergeWebHolder;
+		}
 	}
 	
 	public void toggleFoldAll() {
@@ -269,11 +320,11 @@ public class WebViewListHandler extends ViewGroup {
 			mMergedFrame.evaluateJavascript(nxt?"prvnxtFrame(1)":"prvnxtFrame()", null);
 		} else {
 			final int currentHeight=WHP.getScrollY();
-			int cc=webholder.getChildCount();
+			int cc=contentUIData.webholder.getChildCount();
 			int childAtIdx=cc;
 			int top;
 			for(int i=0;i<cc;i++) {
-				top = webholder.getChildAt(i).getTop();
+				top = contentUIData.webholder.getChildAt(i).getTop();
 				if(top>=currentHeight){
 					childAtIdx=i;
 					if(nxt && top!=currentHeight) --childAtIdx;
@@ -282,9 +333,9 @@ public class WebViewListHandler extends ViewGroup {
 			}
 			childAtIdx+=nxt?1:-1;
 			if(childAtIdx>=cc){
-				a.scrollToPagePosition(webholder.getChildAt(cc-1).getBottom());
+				a.scrollToPagePosition(contentUIData.webholder.getChildAt(cc-1).getBottom());
 			} else {
-				a.scrollToWebChild(webholder.getChildAt(childAtIdx));
+				a.scrollToWebChild(contentUIData.webholder.getChildAt(childAtIdx));
 			}
 		}
 	}
@@ -429,6 +480,97 @@ public class WebViewListHandler extends ViewGroup {
 					CMN.debug(e);
 				}
 			});
+		}
+	}
+	
+	public final static int WEB_LIST_MULTI=0;
+	public final static int WEB_VIEW_SINGLE=1;
+	int mViewMode=WEB_LIST_MULTI;
+	void setViewMode(int mode, boolean bUseMergedUrl) {
+		if(mViewMode!=mode || bMergingFrames!=bUseMergedUrl) {
+			mViewMode = mode;
+			int vis = mode == WEB_VIEW_SINGLE ? View.GONE : View.VISIBLE;
+			contentUIData.WHP.setVisibility(vis);
+			contentUIData.navBtns.setVisibility(bUseMergedUrl?View.GONE:vis);
+		}
+	}
+	
+	int[] versions=new int[8];
+	
+	public void checkUI() {
+		if(a.contentbar_project!=null && ViewUtils.checkSetVersion(versions, 0, a.contentbar_project.version)) {
+			a.contentbar_project.bottombar = contentUIData.bottombar2;
+			RebuildBottombarIcons(a, a.contentbar_project, a.mConfiguration);
+		}
+		
+		if(ViewUtils.checkSetVersion(versions, 1, a.MainAppBackground)) {
+			contentUIData.bottombar2.setBackgroundColor(a.MainAppBackground);
+		}
+		if(ViewUtils.checkSetVersion(versions, 2, a.MainPageBackground)) {
+			//if(widget12.getTag(R.id.image)==null)
+			contentUIData.webSingleholder.setBackgroundColor(a.MainPageBackground);
+			contentUIData.webholder.setBackgroundColor(a.MainPageBackground);
+		}
+	}
+	
+	AlloydPanel alloydPanel;
+	public void popupContentView(ViewGroup root, String key) {
+		if(alloydPanel==null) {
+			alloydPanel = new AlloydPanel(a, contentUIData);
+		}
+		if(!alloydPanel.isVisible()) {
+			alloydPanel.toggle(root, null, -1);
+		}
+		alloydPanel.refresh();
+		alloydPanel.toolbar.setTitle(key);
+		
+		bShowingInPopup = true;
+	}
+	
+	public void dismissPopup() {
+		if(alloydPanel!=null) {
+			alloydPanel.dismiss();
+		}
+	}
+	
+	public void setUpContentView() {
+		if(!contentViewSetup) {
+			contentViewSetup = true;
+			MainActivityUIBase a = this.a;
+			contentUIData.browserWidget13.setOnClickListener(a);
+			contentUIData.browserWidget14.setOnClickListener(a);
+			
+			contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
+				contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
+			});
+			
+			SplitView webcontentlister = contentUIData.webcontentlister;
+			webcontentlister.multiplier=-1;
+			webcontentlister.isSlik=true;
+			
+	//		webcontentlister.setPrimaryContentSize(a.CachedBBSize,true);
+	//		webcontentlister.setPageSliderInf(a.inf);
+			
+			contentUIData.bottombar2.setBackgroundColor(a.MainBackground);
+			
+			boolean tint = PDICMainAppOptions.getTintIconForeground();
+			for (int i = 0; i <= 5; i++) {
+				ImageView iv = (ImageView) contentUIData.bottombar2.getChildAt(i);
+				ContentbarBtns[i]=iv;
+				iv.setOnClickListener(a);
+				if(tint) iv.setColorFilter(a.ForegroundTint, PorterDuff.Mode.SRC_IN);
+				iv.setOnLongClickListener(a);
+			}
+			String contentkey = "ctnp#"+ a.cbar_key;
+			String appproject = a.opt.getAppContentBarProject(contentkey);
+			if(appproject==null) appproject="0|1|2|3|4|5";
+			if(a.contentbar_project==null) {
+				a.contentbar_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, contentUIData.bottombar2, ContentbarBtns);
+				a.contentbar_project.type = a.cbar_key;
+			}
+			a.contentbar_project.bottombar = contentUIData.bottombar2;
+			a.contentbar_project.btns = ContentbarBtns;
+			RebuildBottombarIcons(a, a.contentbar_project, a.mConfiguration);
 		}
 	}
 }

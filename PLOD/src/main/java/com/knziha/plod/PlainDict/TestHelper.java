@@ -33,6 +33,11 @@ public class TestHelper {
 	static long now;
 	static long bid;
 	
+	public static void testLianheMoshiXuanxiang() {
+		PDICMainAppOptions opt = null;
+		//opt.get
+	}
+	
 	public static void insertMegaInAnnotDb(SQLiteDatabase db, mdict mdict) throws JSONException {
 	
 //		String entry = mWebView.word;

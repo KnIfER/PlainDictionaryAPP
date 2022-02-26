@@ -45,7 +45,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
@@ -83,8 +82,6 @@ import com.knziha.plod.widgets.XYTouchRecorder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.knziha.metaline.Metaline;
-import org.nanohttpd.protocols.http.HTTPSession;
-import org.nanohttpd.protocols.http.response.Response;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -109,7 +106,9 @@ import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
 import static com.knziha.plod.dictionary.mdBase.fullpageString;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_DSL;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY;
+import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT;
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
 
 /*
@@ -193,86 +192,92 @@ public class BookPresenter
 		}
 	}
 	
-	/** var w=window,d=document;if(!(w.rcsp&0xF00)){w.addEventListener('click',function(e){
+	/** if(!window.rcspc){console.log('popuping...addEventListener', sid.get());window.rcspc=1;window.addEventListener('click',function(e){
+			var w=window,d=document,_log=console.log;
 	 		//_log('wrappedClickFunc 2', e.srcElement.id);
 	 		var curr = e.srcElement;
 			_log('popuping...'+w.rcsp);
-			if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && w.rcsp&0x20 && !curr.noword){
-	 			if(w._NWP) {
-	 				var p=curr; while((p=p.parentElement))
-	 				if(_NWP.indexOf(p)>=0) return;
-	 			}
-	 			if(w._YWPC) {
-	 				var p=curr; while((p=p.parentElement))
-	 				if(_YWPC.indexOf(p.className)>=0) break;
-	 				if(!p) return;
-	 			}
+			if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && w.rcsp&0x20 && !curr.noword && !curr.onclick){
 				//todo d.activeElement.tagName
 				var s = w.getSelection();
 				if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
-					s.modify('extend', 'forward', 'word'); // first attempt
-					var an=s.anchorNode;
-					//_log(s.anchorNode); _log(s);
-					//if(true) return;
-
-					if(s.baseNode != d.body) {// immunize blank area
-						var text=s.toString(); // for word made up of just one character
-						var range = s.getRangeAt(0);
-	 
-						var br = range.getBoundingClientRect();
-	 					var pX = br.left;
-	 					var pY = br.top;
-	 					var pW = br.width;
-	 					var pH = br.height;
-	 					var cprY = e.clientY;
-	 					var cprX = e.clientX;
-
-						if(1||(cprY>pY-5 && cprY<pY+pH+5 && cprX>pX-5 && cprX<pX+pW+15)){
-							s.collapseToStart();
-							s.modify('extend', 'forward', 'lineboundary');
+		 			if(w._NWP) {
+						var p=curr; while(p=p.parentElement)
+						if(_NWP.indexOf(p)>=0) curr=0;
+					}
+					if(curr && w._YWPC) {
+						var p=curr; o:while(p=p.parentElement){
+							for(var i=0,pc;pc=p.classList[i++];)
+							if(_YWPC.indexOf(pc)>=0) break o;
+							if(p.id && _YWPC.id && _YWPC.indexOf('#'+p.id)>=0) break;
+						 }
+						if(!p) curr=0;
+					}
+	 				if(curr) {
+						s.modify('extend', 'forward', 'word'); // first attempt
+						var an=s.anchorNode;
+						//_log(s.anchorNode); _log(s);
+						//if(true) return;
+	
+						if(s.baseNode != d.body) {// immunize blank area
+							var text=s.toString(); // for word made up of just one character
+							var range = s.getRangeAt(0);
 		 
-							if(s.toString().length>=text.length){
-								s.empty();
-								s.addRange(range);
+							var br = range.getBoundingClientRect();
+							var pX = br.left;
+							var pY = br.top;
+							var pW = br.width;
+							var pH = br.height;
+							var cprY = e.clientY;
+							var cprX = e.clientX;
 	
-								s.modify('move', 'backward', 'word'); // now could noway be next line
-								s.modify('extend', 'forward', 'word');
-	
-								var range1 = s.getRangeAt(0);
-								if(range1.endContainer===range.endContainer&&range1.endOffset===range.endOffset){
-									// for word made up of multiple character
-									text=s.toString();
-									br = range1.getBoundingClientRect();
-									pX = br.left;
-									pY = br.top;
-									pW = br.width;
-									pH = br.height;
-								}
-	 
-								//网页内部的位置，与缩放无关
-								//_log(rrect);
-								//_log(pX+' ~~ '+pY+' ~~ '+pW+' ~~ '+pH);
-								//_log(cprX+' :: '+cprY);
-								//_log(d.documentElement.scrollLeft+' px:: '+pX);
-	 
-								//_log(text); // final output
-								if(app){
-									app.popupWord(sid.get(), text, frameAt, d.documentElement.scrollLeft+pX, d.documentElement.scrollTop+pY, pW, pH);
-									w.popup=1;
+							if(1||(cprY>pY-5 && cprY<pY+pH+5 && cprX>pX-5 && cprX<pX+pW+15)){
+								s.collapseToStart();
+								s.modify('extend', 'forward', 'lineboundary');
+			 
+								if(s.toString().length>=text.length){
 									s.empty();
-									return true;
+									s.addRange(range);
+		
+									s.modify('move', 'backward', 'word'); // now could noway be next line
+									s.modify('extend', 'forward', 'word');
+		
+									var range1 = s.getRangeAt(0);
+									if(range1.endContainer===range.endContainer&&range1.endOffset===range.endOffset){
+										// for word made up of multiple character
+										text=s.toString();
+										br = range1.getBoundingClientRect();
+										pX = br.left;
+										pY = br.top;
+										pW = br.width;
+										pH = br.height;
+									}
+		 
+									//网页内部的位置，与缩放无关
+									//_log(rrect);
+									//_log(pX+' ~~ '+pY+' ~~ '+pW+' ~~ '+pH);
+									//_log(cprX+' :: '+cprY);
+									//_log(d.documentElement.scrollLeft+' px:: '+pX);
+		 
+									//_log(text); // final output
+									if(app){
+										app.popupWord(sid.get(), text, frameAt, d.documentElement.scrollLeft+pX, d.documentElement.scrollTop+pY, pW, pH);
+										w.popup=1;
+										s.empty();
+										return true;
+									}
 								}
 							}
-	 					}
+						}
 					}
-
 					//点击空白关闭点译弹窗
-					if(w.popup){
-						app.popupClose();
-						w.popup=0;
-					}
+					//...
 					s.empty();
 				}
+			}
+			if(w.popup){
+				app.popupClose(sid.get());
+				w.popup=0;
 			}
 	 	})}
 	 */
@@ -596,6 +601,7 @@ public class BookPresenter
 	protected Cursor PageCursor;
 	protected CachedDirectory InternalResourcePath;
 	protected boolean bNeedCheckSavePathName;
+	protected boolean suppressingLongClick;
 	public boolean isDirty;
 	public boolean editingState=true;
 	public final boolean bAutoRecordHistory;
@@ -1036,8 +1042,6 @@ function debug(e){console.log(e)};
 	protected boolean viewsHolderReady =  false;
 	public FlowTextView toolbar_title;
 	public ViewGroup toolbar;
-	public View recess;
-	public View forward;
 	ImageView toolbar_cover;
 	private UniCoverClicker ucc;
 	public void initViewsHolder(final MainActivityUIBase a){
@@ -1080,8 +1084,9 @@ function debug(e){console.log(e)};
 			if(cover!=null)
 				toolbar_cover.setImageDrawable(cover);
 			//toolbar.setTitle(this.bookImpl.getFileName().split(".mdx")[0]);
-			recess = pageView.recess;
-			forward = pageView.forward;
+			mWebView.recess = pageView.recess;
+			mWebView.forward = pageView.forward;
+			mWebView.rl = rl;
 			toolbar_title.setText(bookImpl.getDictionaryName());
 			viewsHolderReady=true;
 		}
@@ -1179,7 +1184,7 @@ function debug(e){console.log(e)};
 					@Override
 					public void run() {
 						//a.mBar.isWebHeld=true;
-						if(a.mBar.timer!=null) a.mBar.timer.cancel();
+						if(a.contentUIData.dragScrollBar.timer!=null) a.contentUIData.dragScrollBar.timer.cancel();
 						//a.mBar.fadeIn();
 						a.weblistHandler.setScrollbar();
 					}
@@ -1339,6 +1344,10 @@ function debug(e){console.log(e)};
 			}
 		}
 		return null;
+	}
+	
+	public boolean getIsNonSortedEntries() {
+		return mType!=PLAIN_TYPE_MDICT && mType!=PLAIN_TYPE_DSL;
 	}
 	
 	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {
@@ -1540,6 +1549,9 @@ function debug(e){console.log(e)};
 		@Override
 		public boolean onLongClick(View v) {
 			WebViewmy _mWebView = (WebViewmy) v;
+			if(_mWebView.presenter.suppressingLongClick) {
+				return false;
+			}
 			_mWebView.lastLongSX = _mWebView.getScrollX();
 			_mWebView.lastLongSY = _mWebView.getScrollY();
 			_mWebView.lastLongScale = _mWebView.webScale;
@@ -1952,6 +1964,11 @@ function debug(e){console.log(e)};
 
     @SuppressLint("JavascriptInterface")
 	public void setCurrentDis(WebViewmy mWebView, long idx, int... flag) {
+		if(mWebView.presenter!=this) {
+			mWebView.clearHistory();
+			mWebView.clearIfNewADA(this);
+			mWebView.presenter=this;
+		}
 		if(flag==null || flag.length==0) {//书签跳转等等
 			mWebView.addHistoryAt(idx);
 		}
@@ -1968,11 +1985,11 @@ function debug(e){console.log(e)};
 			}
 		}
 		StringBuilder title_builder = bookImpl.AcquireStringBuffer(64);
-    	toolbar_title.setText(title_builder.append(currentDisplaying.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
+		mWebView.toolbar_title.setText(title_builder.append(currentDisplaying.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
 
-		if(mWebView.History.size()>2){
-			recess.setVisibility(View.VISIBLE);
-			forward.setVisibility(View.VISIBLE);
+		if(mWebView.History.size()>2 && mWebView.recess!=null){ //111
+			mWebView.recess.setVisibility(View.VISIBLE);
+			mWebView.forward.setVisibility(View.VISIBLE);
 		}
 	}
 	
@@ -2075,6 +2092,7 @@ function debug(e){console.log(e)};
 			mWebView.clearIfNewADA(resposibleForThisWeb?null:this); // todo ???
 			mWebView.currentPos=position[0];
 			mWebView.currentRendring=position;
+			mWebView.jointResult=null;
 			if(frameAt>=0) mWebView.frameAt = frameAt;
 			CMN.debug("折叠？？？", frameAt, mWebView.frameAt, getDictionaryName());
 			mWebView.awaiting = false;
@@ -2098,9 +2116,10 @@ function debug(e){console.log(e)};
 
 		if(getFontSize()!=mWebView.getSettings().getTextZoom())
 			mWebView.getSettings().setTextZoom(getFontSize());
+	
+		setCurrentDis(mWebView, position[0]);
 		
 		if(resposibleForThisWeb) {
-	    	setCurrentDis(mWebView, position[0]);
 			if(fromCombined) {
 				if(rl.getLayoutParams()!=null)
 					rl.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
@@ -2117,7 +2136,7 @@ function debug(e){console.log(e)};
 					rl.getLayoutParams().height = (int) (150*opt.dm.density);//文本限高模式
 					a.webSingleholder.setTag(R.id.image,false);
 					a.webSingleholder.setBackgroundColor(Color.TRANSPARENT);
-					a.PageSlider.TurnPageEnabled=false;
+					a.contentUIData.PageSlider.TurnPageEnabled=false;
 					mWebView.setBackgroundColor(Color.TRANSPARENT);
 					a.initPhotoViewPager();
 				} else {
@@ -2184,14 +2203,14 @@ function debug(e){console.log(e)};
 			if(bookImpl.hasVirtualIndex())
 				try {
 					String validifier = getOfflineMode()&&getIsWebx()?null:bookImpl.getVirtualTextValidateJs(this, mWebView, position[0]);
-					//CMN.Log("validifier::", validifier, GetSearchKey(), mWebView.getTag());
+//					CMN.Log("validifier::", validifier, GetSearchKey(), mWebView.getTag());
 					if (validifier == null
 							//|| true // 用于调试直接网页加载
 							|| "forceLoad".equals(mWebView.getTag())
 							|| mWebView.getUrl()==null) {
 						htmlCode = bookImpl.getVirtualRecordsAt(this, position);
 						mWebView.setTag(null);
-						CMN.Log("htmlCode::", htmlCode);
+						CMN.Log("htmlCode::", htmlCode, GetSearchKey());
 						if (htmlCode!=null && htmlCode.startsWith("http")) {
 							// 如果是加载网页
 							mWebView.loadUrl(htmlCode);
@@ -2201,12 +2220,13 @@ function debug(e){console.log(e)};
 						mWebView.evaluateJavascript(validifier, new ValueCallback<String>() {
 							@Override
 							public void onReceiveValue(String value) {
-								//CMN.Log("validifier::onReceiveValue::", value);
+//								CMN.Log("validifier::onReceiveValue::", value);
 								if ("1".equals(value) || "true".equals(value)) {
 									String effectJs = bookImpl.getVirtualTextEffectJs(position);
 									if (effectJs!=null) mWebView.evaluateJavascript(effectJs, null);
 									//a.showT("免重新加载生效！");
 									vartakelayaTowardsDarkMode(mWebView);
+									// 注意，这里会多次调用OPF中eval的脚本！
 									mWebView.bPageStarted=true;
 									mWebView.postFinishedAbility.run();
 								}  else if("2".equals(value) && getIsWebx()) { // apply js modifier first, then do search
@@ -2720,6 +2740,21 @@ function debug(e){console.log(e)};
         }
         
         @JavascriptInterface
+        public void banLongClick(long sid, boolean suppress) {
+			if (presenter!=null) {
+				presenter.suppressingLongClick = suppress;
+			}
+		}
+        
+        @JavascriptInterface
+        public String getSearchWord(long sid) {
+			if (presenter!=null) {
+				return presenter.a.getSearchTerm();
+			}
+			return "";
+		}
+        
+        @JavascriptInterface
         public void loadJs(long sid, String name) {
 			WebViewmy wv = presenter.findWebview(sid);
 			CMN.Log("loadJs::", name, wv!=null);
@@ -2870,10 +2905,17 @@ function debug(e){console.log(e)};
         }
 
         @JavascriptInterface
-        public void popupClose() {
-			if(presenter==null) return;
-        	if(this!= presenter.a.popuphandler)
-				presenter.a.postDetachClickTranslator();
+        public void popupClose(long sid) {
+			if(presenter!=null) {
+				CMN.debug("popuping...popupClose", sid);
+				if(this!=presenter.a.popuphandler)
+					presenter.a.postDetachClickTranslator();
+				WebViewmy wv = presenter.findWebview(sid);
+				if(wv!=null && wv.drawRect){
+					wv.drawRect=false;
+					wv.invalidate();
+				}
+			}
         }
 
 		@JavascriptInterface
@@ -2937,7 +2979,10 @@ function debug(e){console.log(e)};
 		
 		@JavascriptInterface
 		public void wordtoday(String val) {
-			presenter.a.root.post(() -> presenter.a.showContentSnack(val));
+			//presenter.a.root.post(() -> presenter.a.showContentSnack(val));
+			presenter.a.weblistHandler.dismissPopup();
+			presenter.a.root.post(() -> presenter.a.setSearchTerm(val));
+			
 		}
 
 		@JavascriptInterface
@@ -3218,8 +3263,6 @@ function debug(e){console.log(e)};
 			toolbar_cover = null;
 			toolbar_title = null;
 			toolbar = null;
-			recess = null;
-			forward = null;
 		}
 		a=null;
 	}

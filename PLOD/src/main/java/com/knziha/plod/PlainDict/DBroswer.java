@@ -37,13 +37,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
 import com.knziha.ankislicer.customviews.ArrayAdaptermy;
-import com.knziha.ankislicer.customviews.WahahaTextView;
+import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
+import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.plaindict.databinding.DeckBrowserBinding;
 import com.knziha.plod.widgets.RecyclerViewmy;
 import com.knziha.plod.widgets.ScrollViewmy;
@@ -66,6 +67,8 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
 import static com.knziha.plod.plaindict.DeckListAdapter.*;
+import static com.knziha.plod.plaindict.WebViewListHandler.WEB_LIST_MULTI;
+import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 
 @SuppressLint("SetTextI18n")
 public class DBroswer extends Fragment implements
@@ -73,12 +76,12 @@ public class DBroswer extends Fragment implements
 	public int pendingDBClickPos=-1;
 	public int type;
 	public int pendingType;
-	ViewGroup webviewHolder;
 	protected boolean initialized;
 	private boolean isDarkStamp;
 	private boolean bIsCombinedSearch;
 	DeckBrowserBinding UIData;
-	WebViewListHandler webViewListHandler;
+	WebViewListHandler weblistHandler;
+	ContentviewBinding contentUIData;
 	
 	SparseArray<Long> lastVisiblePositionMap = new SparseArray<>();
 	
@@ -109,41 +112,41 @@ public class DBroswer extends Fragment implements
 	public int try_goBack(){
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null || !initialized) return 0;
-		if(a.isContentViewAttachedForDB()) {
-			a.DetachContentView(true);
-			SparseArray<String> deleting = this.toDelete;
-			Long[] deletingV2 = this.toDeleteV2.toArray(new Long[this.toDeleteV2.size()]);
-			if(!isToDel || deletingV2.length==0) return 1;
-
-			//删除收藏 to impl
-			SQLiteDatabase db = mLexiDB.getDB();
-			{
-				String sql = "delete from "+TABLE_FAVORITE_v2+" where id = ? ";
-				SQLiteStatement preparedDeleteExecutor = db.compileStatement(sql);
-				db.beginTransaction();  //开启事务
-				int count = 0;
-				int toDelete_size = deletingV2.length;
-				try {
-					for(Long rowId:deletingV2) {//delete
-						preparedDeleteExecutor.bindLong(1, rowId);
-						if(preparedDeleteExecutor.executeUpdateDelete()!=-1) {
-							count++;
-						}
-						this.toDeleteV2.remove(rowId);
-					}
-					preparedDeleteExecutor.close();
-					Selection.clear();
-					db.setTransactionSuccessful();  //控制回滚
-				} catch (Exception e) {
-					CMN.Log(e);
-				} finally {
-					db.endTransaction();  //事务提交
-					mAdapter.rebuildCursor(a);
-					show(R.string.maniDel,count,toDelete_size);
-				}
-			}
-			return 1;
-		}
+//		if(a.isContentViewAttachedForDB()) { //111
+//			a.DetachContentView(true);
+//			SparseArray<String> deleting = this.toDelete;
+//			Long[] deletingV2 = this.toDeleteV2.toArray(new Long[this.toDeleteV2.size()]);
+//			if(!isToDel || deletingV2.length==0) return 1;
+//
+//			//删除收藏 to impl
+//			SQLiteDatabase db = mLexiDB.getDB();
+//			{
+//				String sql = "delete from "+TABLE_FAVORITE_v2+" where id = ? ";
+//				SQLiteStatement preparedDeleteExecutor = db.compileStatement(sql);
+//				db.beginTransaction();  //开启事务
+//				int count = 0;
+//				int toDelete_size = deletingV2.length;
+//				try {
+//					for(Long rowId:deletingV2) {//delete
+//						preparedDeleteExecutor.bindLong(1, rowId);
+//						if(preparedDeleteExecutor.executeUpdateDelete()!=-1) {
+//							count++;
+//						}
+//						this.toDeleteV2.remove(rowId);
+//					}
+//					preparedDeleteExecutor.close();
+//					Selection.clear();
+//					db.setTransactionSuccessful();  //控制回滚
+//				} catch (Exception e) {
+//					CMN.Log(e);
+//				} finally {
+//					db.endTransaction();  //事务提交
+//					mAdapter.rebuildCursor(a);
+//					show(R.string.maniDel,count,toDelete_size);
+//				}
+//			}
+//			return 1;
+//		}
 		if(sharedPopup!=null && sharedPopup.isShowing()) {
 			sharedPopup.dismiss();
 			return 1;
@@ -270,12 +273,21 @@ public class DBroswer extends Fragment implements
 		UIData.smallLabel.setText(title);
 	}
 	
+	private void setUpContentView() {
+		if(contentUIData==null) {
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
+			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
+			weblistHandler = new WebViewListHandler(a, contentUIData);
+			weblistHandler.setUpContentView();
+		}
+		weblistHandler.checkUI();
+	}
+	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(!initialized) {
-			webViewListHandler = new WebViewListHandler(a);
 			DeckListAdapter adapter = new DeckListAdapter(a, this);
 			lv.setAdapter(adapter);
 			RecyclerView.RecycledViewPool pool = lv.getRecycledViewPool();
@@ -1105,7 +1117,6 @@ public class DBroswer extends Fragment implements
 							show(R.string.searchFailed, currentDisplaying);
 						} else {
 							a.show(R.string.searchFailed, currentDisplaying);
-							webviewHolder.removeAllViews();
 							ViewGroup anothorHolder = a.webSingleholder;
 							int remcount = anothorHolder.getChildCount() - 1;
 							if (remcount > 0) anothorHolder.removeViews(1, remcount);
@@ -1120,10 +1131,8 @@ public class DBroswer extends Fragment implements
 							show(R.string.searchFailed, currentDisplaying);
 						} else {
 							a.show(R.string.searchFailed, currentDisplaying);
-							ViewGroup anothorHolder = a.weblistHandler;
+							ViewGroup anothorHolder = weblistHandler;
 							anothorHolder.removeAllViews();
-							int remcount = webviewHolder.getChildCount() - 1;
-							if (remcount > 0) webviewHolder.removeViews(1, remcount);
 						}
 					}
 				}
@@ -1214,9 +1223,9 @@ public class DBroswer extends Fragment implements
 	
 	private boolean queryAndShowMultipleDictionary(String[] texts, String currentDisplaying, int position, boolean queryAll) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		
+
 		int lastClickedPosBeforePageTurn = position - adelta;
-		
+
 		ArrayList<Long> records = new ArrayList<>();
 		additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
 		ArrayList<additiveMyCpr1> data = new ArrayList<>();
@@ -1268,55 +1277,59 @@ public class DBroswer extends Fragment implements
 		}
 		CMN.Log("联合搜索 - 同步延时 : ", CMN.elapsed(st));
 		a.bShowLoadErr=true;
-		webviewHolder = a.weblistHandler;
-		ViewGroup anothorHolder = a.webSingleholder;
+		
+		boolean bUseMergedUrl = true;
 		CMN.Log("SelectionMode_pan", records.size());
 		if(records.size()>0) {
+			setUpContentView();
+			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);
 			//yyy
 			a.recCom = rec = new resultRecorderCombined(a,data,a.md);
-			ScrollViewmy WHP = (ScrollViewmy) a.weblistHandler.getScrollView();
-			ScrollerRecord pagerec = null;
-			OUT:
-			if(adelta!=0 && System.currentTimeMillis()-a.lastClickTime>300) {//save our postion
-				pagerec = avoyager.get(lastClickedPosBeforePageTurn);
-				if (pagerec == null) {
-					if (WHP.getScrollY() != 0) {
-						pagerec = new ScrollerRecord();
-						avoyager.put(lastClickedPosBeforePageTurn, pagerec);
-					} else
-						break OUT;
-				}
-				pagerec.set(0, WHP.getScrollY(), 1);
-			}
-
-			adelta=0;
-			a.lastClickTime=System.currentTimeMillis();
-
-			pagerec = avoyager.get(position);
-			if (pagerec != null) {
-				rec.expectedPos = pagerec.y;
-				//currentDictionary.mWebView.setScrollY(currentDictionary.expectedPos);
-				//CMN.Log("取出旧值", combining_search_result.expectedPos, pos, avoyager.size());
-			} else {
-				rec.expectedPos = 0;
-				//CMN.Log("新建", combining_search_result.expectedPos, pos);
-			}
-
+			ScrollViewmy WHP = (ScrollViewmy) weblistHandler.getScrollView();
+//			ScrollerRecord pagerec = null;
+//			OUT:
+//			if(adelta!=0 && System.currentTimeMillis()-a.lastClickTime>300) {//save our postion
+//				pagerec = avoyager.get(lastClickedPosBeforePageTurn);
+//				if (pagerec == null) {
+//					if (WHP.getScrollY() != 0) {
+//						pagerec = new ScrollerRecord();
+//						avoyager.put(lastClickedPosBeforePageTurn, pagerec);
+//					} else
+//						break OUT;
+//				}
+//				pagerec.set(0, WHP.getScrollY(), 1);
+//			}
+//
+//			adelta=0;
+//			a.lastClickTime=System.currentTimeMillis();
+//
+//			pagerec = avoyager.get(position);
+//			if (pagerec != null) {
+//				rec.expectedPos = pagerec.y;
+//				//currentDictionary.mWebView.setScrollY(currentDictionary.expectedPos);
+//				//CMN.Log("取出旧值", combining_search_result.expectedPos, pos, avoyager.size());
+//			} else {
+//				rec.expectedPos = 0;
+//				//CMN.Log("新建", combining_search_result.expectedPos, pos);
+//			}
+			
+			ViewGroup anothorHolder = contentUIData.webSingleholder;
 			WHP.setVisibility(View.VISIBLE);
 			if(anothorHolder.getVisibility()==View.VISIBLE) {
-				if(anothorHolder.getChildCount()!=0)
-					anothorHolder.removeAllViews();
+				anothorHolder.removeAllViews();
 				anothorHolder.setVisibility(View.GONE);
 			}
 
-			a.widget13.setVisibility(View.VISIBLE);
-			a.widget14.setVisibility(View.VISIBLE);
+//			a.widget13.setVisibility(View.VISIBLE);//222
+//			a.widget14.setVisibility(View.VISIBLE);
 			a.contentview.setVisibility(View.VISIBLE);
 			imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
+			
+			weblistHandler.popupContentView(null, currentDisplaying__);
+			
+			weblistHandler.bMergeFrames = true;
 
-			a.AttachContentViewForDB();
-
-			rec.renderContentAt(0, a,null);
+			rec.renderContentAt(0, a,null, weblistHandler);
 
 			processFavorite(position, currentDisplaying);
 			return true;
@@ -1339,7 +1352,7 @@ public class DBroswer extends Fragment implements
 		int idx;
 		if(offset>0)
 			key = key.substring(0,key.length()-offset);
-		if (currentDictionary.getType()== DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+		if (currentDictionary.getIsWebx()) {
 			currentDictionary.SetSearchKey(key);
 			idx = 0;
 		} else {
@@ -1357,87 +1370,105 @@ public class DBroswer extends Fragment implements
 			}
 		}
 		
-		webviewHolder = a.webSingleholder;
-		ViewGroup anothorHolder = a.weblistHandler;
 		if(idx>=0) {
+			setUpContentView();
+			boolean bUseMergedUrl = false;
+			boolean bUseDictView = currentDictionary.rl!=null || currentDictionary.getIsWebx() || true || !bUseMergedUrl;
+			weblistHandler.setViewMode(bUseDictView?WEB_VIEW_SINGLE:WEB_LIST_MULTI, bUseMergedUrl);
+			if(!bUseDictView) {
+				weblistHandler.initMergedFrame(bUseDictView, true, true);
+			}
 			currentDictionary.initViewsHolder(a);
 			ScrollerRecord pagerec = null;
-			if(opt.getRemPos()) {
-				OUT:
-				if(System.currentTimeMillis()-a.lastClickTime>300)//save our postion
-					if(webviewHolder.getChildCount()!=0) {
-						View s_rl = webviewHolder.getChildAt(0);
-						int tag= IU.parsint(s_rl.getTag(), -1);
-						if(tag!=-1) {
-							BookPresenter lastDictionary = a.md_get(tag);
-							{
-								WebViewmy current_webview = lastDictionary.mWebView;
-								if (adelta != 0 && current_webview != null && !current_webview.isloading) {
-									if (current_webview.webScale == 0)
-										current_webview.webScale = a.dm.density;//sanity check
-									//CMN.Log("保存位置", lastDictionary._Dictionary_fName, tag);
-									
-									pagerec = avoyager.get(lastClickedPosBeforePageTurn);
-									if (pagerec == null) {
-										if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || current_webview.webScale != BookPresenter.def_zoom) {
-											pagerec = new ScrollerRecord();
-											avoyager.put(lastClickedPosBeforePageTurn, pagerec);
-										} else
-											break OUT;
-									}
-									
-									pagerec.set(current_webview.getScrollX(), current_webview.getScrollY(), current_webview.webScale);
-								}
-							}
-						}
-					}
-				
-				adelta=0;
-				a.lastClickTime=System.currentTimeMillis();
-				
-				pagerec = avoyager.get(position);
-				//a.showT(""+currentDictionary.expectedPos);
+//			if(opt.getRemPos()) {
+//				OUT:
+//				if(System.currentTimeMillis()-a.lastClickTime>300)//save our postion
+//					if(webviewHolder.getChildCount()!=0) {
+//						View s_rl = webviewHolder.getChildAt(0);
+//						int tag= IU.parsint(s_rl.getTag(), -1);
+//						if(tag!=-1) {
+//							BookPresenter lastDictionary = a.md_get(tag);
+//							{
+//								WebViewmy current_webview = lastDictionary.mWebView;
+//								if (adelta != 0 && current_webview != null && !current_webview.isloading) {
+//									if (current_webview.webScale == 0)
+//										current_webview.webScale = a.dm.density;//sanity check
+//									//CMN.Log("保存位置", lastDictionary._Dictionary_fName, tag);
+//
+//									pagerec = avoyager.get(lastClickedPosBeforePageTurn);
+//									if (pagerec == null) {
+//										if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || current_webview.webScale != BookPresenter.def_zoom) {
+//											pagerec = new ScrollerRecord();
+//											avoyager.put(lastClickedPosBeforePageTurn, pagerec);
+//										} else
+//											break OUT;
+//									}
+//
+//									pagerec.set(current_webview.getScrollX(), current_webview.getScrollY(), current_webview.webScale);
+//								}
+//							}
+//						}
+//					}
+//
+//				adelta=0;
+//				a.lastClickTime=System.currentTimeMillis();
+//
+//				pagerec = avoyager.get(position);
+//				//a.showT(""+currentDictionary.expectedPos);
+//			}
+			
+			WebViewmy webview = null;
+			ViewGroup someView = null;
+			if(bUseDictView) {
+				webview = currentDictionary.mWebView;
+				someView = currentDictionary.rl;
+			} else {
+				webview = weblistHandler.getMergedFrame();
+				someView = weblistHandler.mMergedBook.rl;
 			}
 			
 			if(pagerec!=null) {
-				currentDictionary.mWebView.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
-				currentDictionary.mWebView.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				webview.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				webview.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 				desiredScale=pagerec.scale;
-				CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+currentDictionary.mWebView.expectedPos+" scale:"+pagerec.scale);
+				CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+webview.expectedPos+" scale:"+pagerec.scale);
 			} else {
-				currentDictionary.mWebView.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
-				currentDictionary.mWebView.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				webview.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				webview.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 			}
 			
 			imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
-			a.AttachContentViewForDB();
 			
+			weblistHandler.popupContentView(null, key);
+			
+			UniversalDictionaryInterface book = currentDictionary.bookImpl;
 			if(offset>0)//apply tailing offset
-				if(currentDictionary.bookImpl.getEntryAt(idx+offset).equals(key))
+				if(book.getEntryAt(idx+offset).equals(key))
 					idx+=offset;
 			int tmpIdx=idx;
-			while(tmpIdx+1<currentDictionary.bookImpl.getNumberEntries() && mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx)).equals(mdict.processText(currentDictionary.bookImpl.getEntryAt(tmpIdx+1)))) {
+			while(tmpIdx+1< book.getNumberEntries() && mdict.processText(book.getEntryAt(tmpIdx)).equals(mdict.processText(book.getEntryAt(tmpIdx+1)))) {
 				tmpIdx++;
-				if(currentDictionary.bookImpl.getEntryAt(tmpIdx).trim().equals(key.trim())) {
+				if(book.getEntryAt(tmpIdx).trim().equals(key.trim())) {
 					idx=tmpIdx;
 					break;
 				}
 			}
 			
-			ViewGroup someView = currentDictionary.rl;
-			if(someView.getParent()!=webviewHolder) {
-				if(someView.getParent()!=null) ((ViewGroup)someView.getParent()).removeView(someView);
-				webviewHolder.addView(currentDictionary.rl);
-			}
+			ViewGroup webviewHolder = weblistHandler.getViewGroup();
+			ViewUtils.addViewToParent(someView, webviewHolder);
 			if(webviewHolder.getChildCount()>1) {
 				for(int i=webviewHolder.getChildCount()-1;i>=0;i--)
-					if(webviewHolder.getChildAt(i)!=currentDictionary.rl) webviewHolder.removeViewAt(i);
+					if(webviewHolder.getChildAt(i)!=someView) webviewHolder.removeViewAt(i);
 			}
 			
-			currentDictionary.renderContentAt(desiredScale,RENDERFLAG_NEW,0,null, idx);
+			if(bUseMergedUrl) {
+				//webview.loadUrl(...);
+			} else {
+				currentDictionary.renderContentAt(desiredScale,RENDERFLAG_NEW,0,webview, idx);
+				webview.getLayoutParams().height = LayoutParams.MATCH_PARENT;
+			}
 			
-			currentDictionary.mWebView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
-			currentDictionary.rl.getLayoutParams().height = LayoutParams.MATCH_PARENT;
+			someView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
 			processFavorite(position, currentDisplaying);
 			return true;
 		}
@@ -1452,10 +1483,10 @@ public class DBroswer extends Fragment implements
 		if (a == null) return;
 		if(type==DB_FAVORITE) {
 			if (toDeleteV2.remove(currentRowId)) {
-				a.favoriteBtn.setActivated(true);
+				a.favoriteBtn().setActivated(true);
 				a.show(R.string.added);
 			} else {
-				a.favoriteBtn.setActivated(false);
+				a.favoriteBtn().setActivated(false);
 				toDeleteV2.add(currentRowId);
 				isToDel = true;
 				a.show(R.string.toRemove);
@@ -1464,11 +1495,11 @@ public class DBroswer extends Fragment implements
 			String text = currentDisplaying;
 			if(a.GetIsFavoriteTerm(text)) {//删除
 				a.removeFavoriteTerm(text);
-				a.favoriteBtn.setActivated(false);
+				a.favoriteBtn().setActivated(false);
 				a.show(R.string.removed);
 			} else {//添加
-				a.favoriteCon.insert(a, text, opt.getCurrFavoriteNoteBookId(), webviewHolder);
-				a.favoriteBtn.setActivated(true);
+				a.favoriteCon.insert(a, text, opt.getCurrFavoriteNoteBookId(), weblistHandler);
+				a.favoriteBtn().setActivated(true);
 				a.show(R.string.added);
 			}
 		}
@@ -1477,11 +1508,11 @@ public class DBroswer extends Fragment implements
 
 	protected void processFavorite(int position,String key) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		if(a==null || a.favoriteBtn==null) return;
+		if(a==null || a.favoriteBtn()==null) return;
 		if(type==DB_FAVORITE) {
-			a.favoriteBtn.setActivated(!toDeleteV2.contains(currentRowId));
+			a.favoriteBtn().setActivated(!toDeleteV2.contains(currentRowId));
 		} else {
-			a.favoriteBtn.setActivated(a.GetIsFavoriteTerm(key));
+			a.favoriteBtn().setActivated(a.GetIsFavoriteTerm(key));
 		}
 	}
 
@@ -1499,7 +1530,7 @@ public class DBroswer extends Fragment implements
 			adelta = -1;
 			onItemClick(null, --currentPos);
 		} else {
-			a.GoBackOrForward(webviewHolder, -1);
+			a.GoBackOrForward(weblistHandler, -1);
 		}
 	}
 
@@ -1527,7 +1558,7 @@ public class DBroswer extends Fragment implements
 			adelta = 1;
 			onItemClick(null, currentPos);
 		} else {
-			a.GoBackOrForward(webviewHolder, 1);
+			a.GoBackOrForward(weblistHandler, 1);
 		}
 	}
 

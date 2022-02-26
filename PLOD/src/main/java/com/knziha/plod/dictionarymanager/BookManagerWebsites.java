@@ -81,7 +81,7 @@ public class BookManagerWebsites extends ListFragment {
 			data.insert(new mFile("英语词汇", true));
 			data.insert(new mFile("英语词汇/Vocabulary", new WebAssetDesc("/ASSET/vocabulary.web", "词汇", "一个词汇查询网站，支持交互式学习（Play模式）。（vocabulary.com）")));
 			data.insert(new mFile("英语词汇/Etymology online", new WebAssetDesc("/ASSET/etymonline.web", "词根", "提供英语词源查询服务（etymonline.com）")));
-			data.insert(new mFile("英语词汇/万词王", new WebAssetDesc("/ASSET/wantwords.web", "近义词", "开源的反向词典系统，通过描述想要表达的意思来进行词语查找。（wantwords.thunlp.org）")));
+			data.insert(new mFile("英语词汇/WantWords 反向词典", new WebAssetDesc("/ASSET/wantwords.web", "近义词", "开源的反向词典系统，通过描述想要表达的意思来进行词语查找。（wantwords.thunlp.org）")));
 			
 			data.insert(new mFile("wiki", true));
 			data.insert(new mFile("wiki/维基词典", new WebAssetDesc("/ASSET/维基词典.web", "", "")));

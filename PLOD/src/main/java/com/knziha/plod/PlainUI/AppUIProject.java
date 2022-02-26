@@ -57,6 +57,7 @@ public class AppUIProject {
 	public String currentValue;
 	public ViewGroup bottombar;
 	public ImageView[] btns;
+	public int version;
 	int[] icons;
 
 	ArrayList<AppIconData> iconData;
@@ -193,7 +194,7 @@ public class AppUIProject {
 								iv.setImageResource(bid);
 							}
 							iv.setBackgroundResource(R.drawable.surrtrip1);
-							iv.setLayoutParams(this_.widget10.getLayoutParams());
+							iv.setLayoutParams(this_.contentUIData.browserWidget10.getLayoutParams());
 							iv.setId(btnIcons[id]);
 							iv.setOnClickListener(this_);
 							if(tint) iv.setColorFilter(this_.ForegroundFilter);

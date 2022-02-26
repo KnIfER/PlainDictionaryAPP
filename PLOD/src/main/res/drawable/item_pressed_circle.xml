@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+	android:shape="oval">
+	<size android:width="@dimen/abc_progress_bar_height_material"
+		android:height="@dimen/abc_progress_bar_height_material"/>
+	<solid android:color="#fff"/>
+	<gradient
+		android:angle="270"
+		android:endColor="#D0D7DC"
+		android:startColor="#FFF0F5F9" />
+</shape>

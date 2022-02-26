@@ -186,12 +186,12 @@
 		android:elevation="5dp"
 		/>
 
-	<ProgressBar
-		android:id="@+id/main_progress_bar"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_gravity="center_vertical|center_horizontal"
-		android:visibility="gone"/>
+<!--	<ProgressBar-->
+<!--		android:id="@+id/main_progress_bar"-->
+<!--		android:layout_width="wrap_content"-->
+<!--		android:layout_height="wrap_content"-->
+<!--		android:layout_gravity="center_vertical|center_horizontal"-->
+<!--		 />-->
 
 	<RelativeLayout
 		android:id="@+id/dialogHolder"

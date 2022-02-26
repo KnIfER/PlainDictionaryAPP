@@ -58,6 +58,7 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.settings.ServerPreference;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
@@ -675,8 +676,8 @@ public class Drawer extends Fragment implements
 									a.bNeedReAddCon=false;
 									
 									if(adaptermy==null)
-										adaptermy = a.new ListViewAdapter(a.webSingleholder);
-									//a.bOnePageNav=mdTmp instanceof bookPresenter_pdf; nimp
+										adaptermy = new ListViewAdapter(a, null, null);
+									adaptermy.bOnePageNav=markedBook.getType()== DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_PDF;
 									adaptermy.setPresenter(markedBook);
 									int pos = (int) bnPos[2];
 									String entryName = entryNames[position1];
@@ -700,7 +701,7 @@ public class Drawer extends Fragment implements
 										}
 									}
 									adaptermy.onItemClick(pos);
-									a.bOnePageNav=false;
+									adaptermy.bOnePageNav=false;
 									a.lv.setSelection(pos);
 									d.hide();
 								}}
@@ -763,7 +764,7 @@ public class Drawer extends Fragment implements
 				BookPresenter markedBook = a.getBookById(bnPos[0]);
 				if(markedBook!=null) {
 					if(adaptermy==null)
-						adaptermy = a.new ListViewAdapter(a.webSingleholder);
+						adaptermy = new ListViewAdapter(a, null, null);
 					//a.bOnePageNav=mdTmp instanceof bookPresenter_pdf; nimp
 					int pos=(int) bnPos[2];
 					String entryName = null;

@@ -1,5 +1,6 @@
 package com.knziha.plod.plaindict;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -22,9 +23,7 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,12 +33,7 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.math.MathUtils;
-import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
-import com.knziha.plod.dictionarymodels.BookPresenter;
-import com.knziha.plod.dictionarymodels.resultRecorderCombined;
-import com.knziha.plod.widgets.AdvancedNestScrollView;
-import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedReader;
@@ -49,7 +43,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
@@ -78,10 +71,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	private String Current0SearchText;
 	private boolean fullScreen;
 	private boolean hideNavigation;
-	private SplitView sp_main;
 	protected boolean this_instanceof_FloarActivitySearch;
-	private MenuItem iItem_FolderAll;
-	private MenuItem iItem_InPageSearch;
 	
 	ViewGroup.LayoutParams mfv_lp;
 	
@@ -114,27 +104,16 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 	@Override
 	public boolean isContentViewAttached() {
-		return webcontentlist.getVisibility()==View.VISIBLE;
+		return contentUIData.webcontentlister.getVisibility()==View.VISIBLE;
 	}
 	
 	@Override
 	public void DetachContentView(boolean leaving) {
 		if(DBrowser!=null) {
-			if(ViewUtils.removeIfParentBeOrNotBe(sp_main, main, false)){
-				main.addView(sp_main, 2);
+			if(ViewUtils.removeIfParentBeOrNotBe(contentview, main, false)){
+				main.addView(contentview, 2);
 			}
 		}
-	}
-	
-	@Override
-	public boolean isContentViewAttachedForDB() {
-		return sp_main.getParent()==root;
-	}
-	
-	@Override
-	public void AttachContentViewForDB() {
-		//todo preserve context
-		ViewUtils.addViewToParent(sp_main, root);
 	}
 	
 	private int touch_id;
@@ -202,7 +181,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			getWindow().setNavigationBarColor(filteredColor);
 		}
-		bottombar2.setBackgroundColor(filteredColor);
+		contentUIData.bottombar2.setBackgroundColor(filteredColor);
 		
 		filteredColor = isHalo?GlobalPageBackground:ColorUtils.blendARGB(GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 		weblistHandler.setBackgroundColor(filteredColor);
@@ -239,7 +218,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		GlobalOptions.density = dm.density;
     }
     
-    @Override
+    @SuppressLint("ResourceType")
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
 		cbar_key=2;
 		defbarcustpos=3;
@@ -333,22 +313,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		lv = main_succinct.findViewById(R.id.main_list);
 		mlv = (ViewGroup) lv.getParent();
 		lv2 = main_succinct.findViewById(R.id.sub_list);
-		webcontentlist = main_succinct.findViewById(R.id.webcontentlister);
 		
-		//todo opt
-		PageSlider = webcontentlist.findViewById(R.id.PageSlider);
-		main_progress_bar = PageSlider.findViewById(R.id.main_progress_bar);
-	
-		IMPageCover = PageSlider.getChildAt(4);
-		bottombar2 = (ViewGroup) webcontentlist.getChildAt(1);
-	
+		
 		mainF = (ViewGroup) root.getChildAt(1);
 		
 		_50_= (FVMINHEIGHT*dm.density);
         wm = getWindowManager();
-	
-		contentview = PageSlider;
-		sp_main=webcontentlist;
 
 		FVDOCKED=opt.getFVDocked();
 		//showT("FVDOCKED"+FVDOCKED);
@@ -365,8 +335,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 		toolbar.inflateMenu(R.xml.menu_float);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
-		iItem_FolderAll = AllMenus.findItem(R.id.toolbar_action0);
-		iItem_InPageSearch = AllMenus.findItem(R.id.toolbar_action5);
+	
+		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 3, 4, 5, 6);
+		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 2, 4, 5, 6);
 		
 		hdl = new MyHandler(this);
 		checkLog(savedInstanceState);
@@ -407,9 +378,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				}
 				if (opt.getUseVolumeBtn()) {
 					boolean toHighlight=MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && MainPageSearchbar.getParent()!=null;
-					if (webcontentlist.getVisibility()==View.VISIBLE) {
+					if (contentUIData.webcontentlister.getVisibility()==View.VISIBLE) {
 						if(toHighlight) onIdClick(null, R.id.recess);
-						else bottombar2.findViewById(R.id.browser_widget11).performClick();
+						else contentUIData.bottombar2.findViewById(R.id.browser_widget11).performClick();
 						return true;
 					}
 				}
@@ -422,9 +393,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				}
 				if (opt.getUseVolumeBtn()) {
 					boolean toHighlight=MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && MainPageSearchbar.getParent()!=null;
-					if (webcontentlist.getVisibility()==View.VISIBLE) {
+					if (contentUIData.webcontentlister.getVisibility()==View.VISIBLE) {
 						if(toHighlight) onIdClick(null, R.id.forward);
-						else bottombar2.findViewById(R.id.browser_widget10).performClick();
+						else contentUIData.bottombar2.findViewById(R.id.browser_widget10).performClick();
 						return true;
 					}
 				}
@@ -443,7 +414,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		isCombinedSearching = opt.isFloatCombinedSearching();
 	}
 
-    View IMPageCover;
 	private OnGlobalLayoutListener keyObserver;
 	@Override
     protected void further_loading(final Bundle savedInstanceState) {
@@ -451,13 +421,13 @@ public class FloatSearchActivity extends MainActivityUIBase {
     	super.further_loading(savedInstanceState);
 
         main = main_succinct;
-		sp_main.scrollbar2guard = mBar;
+		contentUIData.webcontentlister.scrollbar2guard = contentUIData.dragScrollBar;
 
 		if(PDICMainAppOptions.getInFloatPageSearchVisible())
 			toggleInPageSearch(false);
     	
-        lv.setAdapter(adaptermy = new ListViewAdapter(webSingleholder));
-        lv2.setAdapter(adaptermy2 = new ListViewAdapter2(weblistHandler));
+        lv.setAdapter(adaptermy = new ListViewAdapter(this, AllMenus, SingleContentMenu));
+        lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, 2));
 
 			String keytmp = processIntent(getIntent());
 	        etSearch.addTextChangedListener(tw1);
@@ -517,7 +487,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					CachedBBSize=(int)Math.max(20*dm.density, Math.min(
 							MathUtils.lerp(10*dm.density, 50*dm.density, mfv_lp.height*1.25f/dm.heightPixels)
 							, mResource.getDimension(R.dimen._bottombarheight_)));
-					webcontentlist.setPrimaryContentSize(CachedBBSize,true);
+					contentUIData.webcontentlister.setPrimaryContentSize(CachedBBSize,true);
 				}
 			}});
 
@@ -737,20 +707,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			mainfv.requestLayout();
 		}
         if(!opt.getFloatBottombarOnBottom())
-        	webcontentlist.SwitchingSides();
+			contentUIData.webcontentlister.SwitchingSides();
 
 		refreshUIColors();
     }
 	
 	protected void findFurtherViews() {
-		webSingleholder = PageSlider.findViewById(R.id.webSingleholder);
-		View WHP = PageSlider.findViewById(R.id.WHP);
-		weblistHandler.init((ViewGroup) WHP, WHP.findViewById(R.id.webholder));
-		IMPageCover = PageSlider.findViewById(R.id.cover);
-		mBar = PageSlider.findViewById(R.id.dragScrollBar);
-		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
-		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
-		
 		super.findFurtherViews();
 		
 		findViewById(R.id.toolbar_action1).setOnClickListener(this);
@@ -762,11 +724,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 	protected void exit() {
 		finish();
-	}
-
-	@Override
-	protected View getIMPageCover() {
-		return IMPageCover;
 	}
 
 	static long currMdlTime;
@@ -844,7 +801,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	private void dumpSettings(){
 		if(systemIntialized) {
 
-			opt.setFloatBottombarOnBottom(webcontentlist.multiplier==-1);
+			opt.setFloatBottombarOnBottom(contentUIData.webcontentlister.multiplier==-1);
 			Editor putter = opt.defaultputter();
 			putter.putLong("MFF", opt.FirstFlag())//FVDOCKED
 			.putInt("FVH",mfv_lp.height)
@@ -853,7 +810,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			.putInt("FVTY",(int) mainfv.getTranslationY())
 			.putInt("UDFVW",FVW_UNDOCKED)
 			.putInt("UDFVH",FVH_UNDOCKED)
-			.putInt("FBBS",webcontentlist.getPrimaryContentSize())//FloatBottombarSize
+			.putInt("FBBS",contentUIData.webcontentlister.getPrimaryContentSize())//FloatBottombarSize
 			.commit();
 		}
 	}
@@ -904,125 +861,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				break;
 			}
 	}}
-
-    public class ListViewAdapter extends BasicAdapter {
-        public ListViewAdapter(ViewGroup webSingleholder)
-        {
-			this.webviewHolder=webSingleholder;
-        }
-        @Override
-        public int getCount() {
-			if(md.size()>0) {
-				if(PDICMainAppOptions.getSimpleMode()&&etSearch.getText().length()==0 && BookPresenter.class.equals(currentDictionary.getClass())) //todo ???
-					return 0;
-				return (int) currentDictionary.bookImpl.getNumberEntries();
-			} else {
-				return 0;
-			}
-        }
-        @Override
-        public View getItem(int position) {
-			return null;
-			}
-        @Override
-        public long getItemId(int position) {
-          return position;
-        }
-        Flag mFlag = new Flag();
-        @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
-        	PDICMainActivity.ViewHolder vh;
-        	String currentKeyText = currentDictionary.bookImpl.getEntryAt(position, mFlag);
-	        //String keyText = md.get(adapter_idx).getEntryAt(position);
-	        if(convertView!=null){
-        		vh=(PDICMainActivity.ViewHolder)convertView.getTag();
-        	} else {
-        		vh=new PDICMainActivity.ViewHolder(getApplicationContext(), R.layout.listview_item0, null);
-        	}
-			//if( vh.title.getTextColors().getDefaultColor()!=AppBlack)
-			{
-				//decorateBackground(vh.itemView);
-				vh.title.setTextColor(AppBlack);
-			}
-            vh.title.setText(currentKeyText);
-//            if(mFlag.data!=null)
-//                vh.subtitle.setText(Html.fromHtml(currentDictionary._Dictionary_fName+"<font color='#2B4391'> < "+ mFlag.data+" ></font >"));
-//            else
-			vh.subtitle.setText(currentDictionary.getDictionaryName());
-        	//convertView.setTag(R.id.position,position);
-        	return vh.itemView;
-        }
-
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-			userCLick=true;
-			lastClickedPosBeforePageTurn=-1;
-			onItemClick(pos);
-		}
-
-        @Override
-        public void onItemClick(int position) {//lv1
-        	super.onItemClick(position);
-        	ActivedAdapter=this;
-        	if(position<-1){
-				show(R.string.endendr);
-				return;
-			}
-        	if(position>=getCount()) {
-        		lastClickedPos = getCount()-1;
-        		show(R.string.endendr);
-        		return;
-    		}
 	
-			ensureContentVis(webSingleholder, weblistHandler);
-
-			iItem_InPageSearch.setVisible(true);
-	
-			etSearch_ToToolbarMode(1);
-        	//CMN.show("onItemClick"+position);
-			BookPresenter current = currentDictionary;
-			
-        	if(!bWantsSelection) {
-				imm.hideSoftInputFromWindow(mainfv.getWindowToken(),0);
-				etSearch.clearFocus();
-        	}
-        	
-			current.initViewsHolder(FloatSearchActivity.this);
-			current.mWebView.fromCombined=0;
-			ViewUtils.addViewToParentUnique(current.rl, webSingleholder);
-	
-			current.renderContentAt(-1,RENDERFLAG_NEW,0,null, getMergedClickPositions(position));
-			currentKeyText = current.currentDisplaying;
-			bWantsSelection=true;
-
-			decorateContentviewByKey(null, currentKeyText);
-			
-			if(//!(current instanceof bookPresenter_txt) &&  nimp
-					!PDICMainAppOptions.getHistoryStrategy0()
-					&& PDICMainAppOptions.getHistoryStrategy4()
-					&&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
-				prepareHistoryCon().insertUpdate(FloatSearchActivity.this, currentKeyText, webviewHolder);
-			}
-			if(userCLick) {
-				userCLick=false;
-			} else {
-				Kustice=true;
-			}
-        }
-
-		@Override
-		public int getId() {
-			return 1;
-		}
-
-		@Override
-		public String currentKeyText() {
-			return currentDictionary.currentDisplaying;
-		}
-
-	}
-	
-	public void ensureContentVis(ViewGroup webholder, ViewGroup another) {
+	void ensureContentVis(ViewGroup webholder, ViewGroup another) {
 		webholder.setVisibility(View.VISIBLE);
 		
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
@@ -1031,134 +871,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			another.setVisibility(View.GONE);
 		}
 		
-		int targetVis = webholder==weblistHandler?View.VISIBLE:View.GONE;
-		
-		if(widget14.getVisibility()!=targetVis) {
-			widget13.setVisibility(targetVis);
-			widget14.setVisibility(targetVis);
-		}
-		
-		if(webcontentlist.getVisibility()!=View.VISIBLE) {
-			webcontentlist.setVisibility(View.VISIBLE);
+		if(contentUIData.webcontentlister.getVisibility()!=View.VISIBLE) {
+			contentUIData.webcontentlister.setVisibility(View.VISIBLE);
 			if(opt.getAnimateContents()) {
-				webcontentlist.startAnimation(loadCTAnimation());
+				contentUIData.webcontentlister.startAnimation(loadCTAnimation());
 			}
-		}
-	}
-	
-	class ListViewAdapter2 extends  BasicAdapter{
-    	int itemId = R.layout.listview_item1;
-        //构造函数
-		public ListViewAdapter2(ViewGroup vg)
-		{
-			this.webviewHolder=vg;
-		}
-        @Override
-        public int getCount() {
-        	if(combining_search_result==null)
-        		return 0;
-            return combining_search_result.size();
-        }
-        @Override
-        public View getItem(int position) {
-			return null;
-		}
-        @Override
-        public long getItemId(int position) {
-          return position;
-        }
-        @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
-        	PDICMainActivity.ViewHolder vh;
-
-        	CharSequence currentKeyText = combining_search_result.getResAt(FloatSearchActivity.this, position);
-	        
-	        if(convertView!=null){
-				vh=(PDICMainActivity.ViewHolder)convertView.getTag();
-			} else {
-				vh=new PDICMainActivity.ViewHolder(getApplicationContext(), itemId, null);
-				if(itemId==R.layout.listview_item1)
-					vh.subtitle.setTag(vh.itemView.findViewById(R.id.counter));
-			}
-			if( vh.title.getTextColors().getDefaultColor()!=AppBlack) {
-				//decorateBackground(vh.itemView);
-				vh.title.setTextColor(AppBlack);
-			}
-			vh.title.setText(currentKeyText);
-            { //todo
-	//            if(presenter!=null){
-	//				if(combining_search_result.mflag.data!=null)
-	//					vh.subtitle.setText(Html.fromHtml(presenter._Dictionary_fName+"<font color='#2B4391'> < "+combining_search_result.mflag.data+" ></font >"));
-	//				else
-	//			}
-				vh.subtitle.setText(getBookById(combining_search_result.bookId).getDictionaryName());
-			}
-			if(combining_search_result.getClass()==resultRecorderCombined.class)
-				((TextView)vh.subtitle.getTag()).setText(((resultRecorderCombined)combining_search_result).count);
-			//vh.itemView.setTag(R.id.position,position);
-			return vh.itemView;
-        }
-
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-			if(checkAllWebs(combining_search_result, view, pos)) return;
-			userCLick=true;
-			lastClickedPosBeforePageTurn=-1;
-			onItemClick(pos);
-		}
-
-        @Override
-        public void onItemClick(int pos){//lv2
-        	super.onItemClick(pos);
-        	ActivedAdapter=this;
-			etSearch_ToToolbarMode(1);
-        	if(pos<0 ){
-				show(R.string.endendr);
-				return;
-			}
-        	if(pos>=getCount()) {
-        		lastClickedPos = getCount()-1;
-        		show(R.string.endendr);
-        		return;
-    		}
-
-        	ensureContentVis(weblistHandler, webSingleholder);
-        	
-			iItem_FolderAll.setVisible(true);//折叠
-			iItem_InPageSearch.setVisible(true);
-
-        	ActivedAdapter=this;
-        	
-        	lastClickedPos = pos;
-        	if(!bWantsSelection) {
-				imm.hideSoftInputFromWindow(mainfv.getWindowToken(),0);
-				etSearch.clearFocus();
-        	}
-
-			combining_search_result.renderContentAt(lastClickedPos,FloatSearchActivity.this,this);//webholder
-
-			decorateContentviewByKey(null,currentKeyText = combining_search_result.getResAt(FloatSearchActivity.this, pos).toString());
-			if(PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
-					&&combining_search_result.shouldSaveHistory()
-					&&userCLick||PDICMainAppOptions.getHistoryStrategy8()==0) {
-					prepareHistoryCon().insertUpdate(FloatSearchActivity.this, currentKeyText, webviewHolder);
-			}
-			if(userCLick) {
-				userCLick=false;
-			} else {
-				Kustice=true;
-			}
-			bWantsSelection=true;
-        }
-
-		@Override
-		public int getId() {
-			return 2;
-		}
-
-		@Override
-		public String currentKeyText() {
-			return currentKeyText;
 		}
 	}
 	
@@ -1175,7 +892,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		switch(id) {
 			case R.id.toolbar_action1:{
 				opt.setFloatCombinedSearching(isCombinedSearching = !isCombinedSearching);
-				boolean b = webcontentlist.getVisibility() == View.VISIBLE;
+				boolean b = contentUIData.webcontentlister.getVisibility() == View.VISIBLE;
 				if(isCombinedSearching){
 					if(b) adaptermy2.currentKeyText=null;
 					lv.setVisibility(View.VISIBLE);
@@ -1197,7 +914,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 						tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 					}
 				}else {//back
-					webcontentlist.setVisibility(View.GONE);
+					contentUIData.webcontentlister.setVisibility(View.GONE);
 					bWantsSelection=false;
 					if(webSingleholder.getChildCount()!=0) {
 						webSingleholder.removeAllViews();
@@ -1253,7 +970,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 
 	@Override
 	void contentviewAddView(View v, int i) {
-		webcontentlist.addView(v, i);
+		contentUIData.webcontentlister.addView(v, i);
 	}
 
 	@Override

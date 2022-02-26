@@ -55,6 +55,7 @@ import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.rbtree.additiveMyCpr1;
 
 import org.knziha.metaline.Metaline;
 
@@ -103,11 +104,15 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public final int[] ColorShade = new int[]{0xff4F7FDF, 0xff2b4381};
 	public boolean clearHistory;
 	public FlowTextView toolbar_title;
+	public View recess;
+	public View forward;
+	public View rl;
 	public int AlwaysCheckRange;
 	public boolean forbidLoading;
 	public boolean active;
 	public boolean bPageStarted;
 	public boolean bShouldOverridePageResource;
+	public additiveMyCpr1 jointResult;
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
@@ -511,7 +516,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				MainActivityUIBase a = presenter.a;
 				ScrollerRecord PageState=null;
 				if(fromCombined) {
-					a.main_progress_bar.setVisibility(View.VISIBLE);
+					a.contentUIData.mainProgressBar.setVisibility(View.VISIBLE);
 					toTag="===???";/* OPF监听器中由recCom接管 */
 				}
 				
@@ -703,7 +708,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			MyMenuinversed = false;
 			if (callmeback == null) callmeback = new callbackme();
 			ActionMode mode = super.startActionMode(callmeback.callhere(callback), type);
-			//if(true) return mode;
+			if(mode==null) return mode;
 			//Toast.makeText(getContext(), mode.getTag()+"ONSACTM"+mode.hashCode(), 0).show();
 			//if(true) return mode;
 			//mode.setTag(110);

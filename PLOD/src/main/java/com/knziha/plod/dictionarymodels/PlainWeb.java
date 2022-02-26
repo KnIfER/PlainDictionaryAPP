@@ -30,6 +30,7 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.SubStringKey;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.ebook.Utils.BU;
+import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
@@ -41,6 +42,7 @@ import com.knziha.rbtree.RBTree_additive;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knziha.metaline.Metaline;
+import org.knziha.metaline.StripMethods;
 import org.nanohttpd.protocols.http.response.Status;
 
 import java.io.BufferedReader;
@@ -290,6 +292,7 @@ public class PlainWeb extends DictionaryAdapter {
 				Response k3response = klient.newCall(k3request.build()).execute();
 				MIME = k3response.header("content-type");
 				//CMN.Log("重定向啦拉拉!!!", k3response.isRedirect(), url);
+				//CMN.Log("缓存啦拉拉!!!", k3response.cacheResponse(), k3response.cacheResponse()==k3response);
 				if (moders!=null) {
 					String raw = k3response.body().string();
 					for (Pair p:moders) {
@@ -332,7 +335,7 @@ public class PlainWeb extends DictionaryAdapter {
 				return webResourceResponse;
 			}
 		} catch (Exception e) {
-			CMN.debug(e);
+			CMN.debug(url, e);
 		}
 		return null;
 	}
@@ -340,7 +343,7 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	/**
 	 if(!app.PLODKit) {
-		 var e = document.createElement('style'), css = 'mark{background:yellow}mark.current{background:orange}';
+		 var e = document.createElement('style'), css = "mark{background:yellow}mark.current{background:orange}";
 		 e.type = 'text/css';
 		 e.class = '_PDict';
 		 e.id = '_PDSTL';
@@ -890,7 +893,7 @@ public class PlainWeb extends DictionaryAdapter {
 			try {
 				JSONObject json = JSONObject.parseObject(BU.StreamToString(input));
 				mods = json.getJSONArray("modifiers");
-			} catch (IOException e) {
+			} catch (Exception e) {
 				CMN.debug(e);
 			}
 		}
@@ -1089,10 +1092,15 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	/** WEB模型直接在此处实现快速搜索（避免重新加载），返回的JS（基于searchJs）亦检验亦效应。 */
+	@StripMethods(strip=!BuildConfig.isDebug, keys={"getSyntheticField"})
 	@Override
 	public String getVirtualTextValidateJs(Object presenter, WebViewmy mWebView, long position) {
 		//mWebView.fromNet=true;
 		BookPresenter bookPresenter = (BookPresenter) presenter;
+		if (searchJs!=null && position==0)
+		try {
+			searchJs = getSyntheticField("searchJs");
+		} catch (IOException ignored) { }
 		if (position==0)
 		{
 			String searchKey = bookPresenter.GetSearchKey();
@@ -1198,7 +1206,7 @@ public class PlainWeb extends DictionaryAdapter {
 		String key = null;
 		String url=null;
 		BookPresenter bookPresenter = (BookPresenter) presenter;  // todo check instance of
-		//CMN.Log("PlainWeb::getVirtualRecordAt::", position, bookPresenter.GetSearchKey());
+		//CMN.Log("PlainWeb::getVirtualRecordAt::", position, bookPresenter.GetSearchKey(), search);
 		if (position==0) {
 			String searchKey = bookPresenter.GetSearchKey();
 			if(searchKey!=null) {
@@ -1272,7 +1280,7 @@ public class PlainWeb extends DictionaryAdapter {
 //					toolbar_title.setText(key);
 			} else {
 				url=host+index;
-				bookPresenter.SetSearchKey(key);
+				//bookPresenter.SetSearchKey(key);  // ??WTF
 			}
 		}
 //		if(mWebView==this.mWebView) {
@@ -1291,7 +1299,8 @@ public class PlainWeb extends DictionaryAdapter {
 			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.popupWebView)
 				sb.append(MainActivityUIBase.ce_on);
 			if (style!=null || stylex!=null) {
-				int st = loadJs.indexOf("}'");
+				CMN.Log("style::", style);
+				int st = loadJs.indexOf("}\"");
 				if (st>0) {
 					sb.append(loadJs, 0, st+1);
 					if (style!=null) sb.append(style);
@@ -1687,10 +1696,11 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 
 	/** 接管进入黑暗模式、编辑模式 */
+	@StripMethods(strip=!BuildConfig.isDebug, keys={"getSyntheticField"})
 	public void onPageFinished(BookPresenter bookPresenter, WebViewmy mWebView, String url, boolean updateTitle) {
-		CMN.debug("chromium", "web  - onPageFinished", currentUrl);
+		CMN.debug("chromium", "web  - onPageFini_NWPshed", currentUrl);
 		mWebView.removePostFinished();
-		fadeOutProgressbar(bookPresenter, (WebViewmy) mWebView, updateTitle);
+		fadeOutProgressbar(bookPresenter, mWebView, updateTitle);
 		currentUrl=mWebView.getUrl();
 		if (Build.VERSION.SDK_INT<21) mWebView.evaluateJavascript(kitkatCompatJs, null);
 		mWebView.evaluateJavascript(jsLoader, new ValueCallback<String>() {
@@ -1698,7 +1708,13 @@ public class PlainWeb extends DictionaryAdapter {
 			public void onReceiveValue(String value) {
 			}
 		});
-		if (jsCode != null) mWebView.evaluateJavascript(jsCode, null);
+		if (jsCode != null)
+		try {
+			jsCode = getSyntheticField("js");
+		} catch (Exception ignored) { }
+		if (jsCode != null) {
+			mWebView.evaluateJavascript(jsCode, null);
+		}
 		if (onload != null) mWebView.evaluateJavascript(onload, null);
 		if (onstart != null) mWebView.evaluateJavascript(onstart, null);
 		//mWebView.evaluateJavascript("window.loadJsCb=function(){erdo.init()};app.loadJs(sid.get(), 'erdo.js')", null);

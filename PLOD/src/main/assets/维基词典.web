@@ -429,21 +429,22 @@
 	],yearFrom=2016;
 	var month;
 	function debug(...e){console.log('fatal wiki',e)};
+	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
 	function getRandomPage() {
 		var yearNow=new Date().getFullYear(),yd=yearNow-yearFrom;
 		yearNow = yearFrom + parseInt(Math.random()*yd);
 		month=months[parseInt(Math.random()*0)];
 		//return 'https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month;
-		return 'https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month;
+		//return 'https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month;
 		// return 'https://en.m.wiktionary.org/w/index.php?title=Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month+'&printable=false';
-		// return 'https://en.m.wiktionary.org/w/index.php?title=2020&printable=false';
+		return 'https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2017/January';
 	}
 	var url=getRandomPage();
 	function load(url,cb){
 		var x = new XMLHttpRequest();
 		x.open('POST', url, true);
 		//x.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9');
-		//x.responseType = 'document';
+		x.responseType = 'document';
 		if(cb)x.onload = function() {
 			cb(x.response);
 		};
@@ -455,38 +456,92 @@
 		x.send();
 		return x;
 	}
-	// load('https://en.m.wiktionary.org/w/index.php?title=happy&printable=false', function(e){
-	// 	debug('load 111',e);
-	// });
 	debug('word!!!',url);
+
+	document.addEventListener('click', function(e){
+		var t=e.srcElement;
+		debug('addEventListener...'+ t.tagName);
+		if(t.id==='WOTD-rss-title') {
+			debug(t.innerText);
+			//t.parentElement.href='javascript:';
+			e.preventDefault();
+			e.stopPropagation();
+			app.wordtoday(t.innerText);
+			return true;
+		}
+		if(t.tagName==='A') {
+			debug(t.innerText);
+			e.preventDefault();
+			e.stopPropagation();
+			
+			var br = t.getBoundingClientRect();
+			var pX = br.left;
+			var pY = br.top;
+			var pW = br.width;
+			var pH = br.height;
+
+			//app.popupWord(sid.get(), t.innerText, e.clientX, e.clientY, -1);
+			app.popupWord(sid.get(), t.innerText, -1, document.documentElement.scrollLeft+pX, document.documentElement.scrollTop+pY, pW, pH);
+			return true;
+		}
+	},true);
 	load(url, function(e){
-		//debug(e);
-		debug('word!!!',month+'_1', e);
-		var st1=e.indexOf(month+'_1');
-		debug('word!!!',st1,st1,e.length);
-		if(st1>0) {
-			var day=1+parseInt(Math.random()*31);
-			var st=e.indexOf(month+'_'+day);
-			while(day>28 && st<0) {
-				day--;
-				st=e.indexOf(month+'_'+day);
-			}
-			if(st>0) {
-				st=e.indexOf('WOTD-rss-title', st);
-				if(st>0) {
-					st=e.indexOf('>', st);
-					if(st>0) {
-						var ed=e.indexOf('<', st);
-						var word=e.slice(st+1,ed);
-						debug('word!!!',word);
-						app.wordtoday(word);
-						return;
-					}
+		debug('加载完成::',month+'_1', e);
+
+		// 开始构造页面
+		var df;
+		function craft(c, t, p) {
+			var e=document.createElement(t||'DIV');
+			if(c)e.className=c;
+			(p||df).appendChild(e);
+			return e;
+		}
+    	function _gn(e,p){if(!p || p.id===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
+    	function gn(e,p){return _gn(e, p.firstElementChild);};
+		document.body.innerHTML='';
+		df=craft(0,0,document.body);
+		craft(0,'STYLE',document.head).innerText='body{padding:0;margin:0}#WOTD-rss-title{font-size:150%;padding-left:10px;overflow-wrap:anywhere}table{padding:0!important;min-height:95%;border:none!important}div::-webkit-scrollbar{width:7px;}div::-webkit-scrollbar-track-piece{background-color:transparent;}div::-webkit-scrollbar-thumb:vertical{height:12px;background-color:#BDBDBD;-webkit-border-radius:2px;}div::-webkit-scrollbar-thumb:vertical:hover{background-color:#808080;}';
+		df.style='display:flex;flex-wrap:wrap;margin:0;padding:0;width:100%;height:100%;justify-content:space-evenly;padding-bottom:100px;'
+		var list=gc('mw-parser-output',e);
+		for(var d=list.firstChild;d;d=d.nextSibling) {
+			if(d.tagName==='SECTION') {
+				//debug(d.innerText);
+				var w=d.firstElementChild;
+				if(w&&w.id!=='toc'){
+					w.style='height:250px;width:80%;padding:2px 2px;margin:7px 2px;;display:inline-block;overflow-y:scroll;box-shadow:rgb(60 64 67 / 30%) 0px 1px 2px 0px,rgb(60 64 67 / 15%) 0px 2px 6px 2px;box-shadow:rgb(0 0 0 / 10%) 0px 1px 2px 0px;';
+					var tbd=w.getElementsByTagName('TBODY')[0];
+					tbd.lastElementChild.remove();
+					tbd.firstElementChild.remove();
+					df.appendChild(w);
 				}
 			}
-			app.wordtoday('');
 		}
+		debug(df);
+
+		// e=e.body.innerHTML;
+		// var st1=e.indexOf(month+'_1');
+		// debug('加载完成::',st1,st1,e.length);
+		// if(st1>0) {
+		// 	var day=1+parseInt(Math.random()*31);
+		// 	var st=e.indexOf(month+'_'+day);
+		// 	while(day>28 && st<0) {
+		// 		day--;
+		// 		st=e.indexOf(month+'_'+day);
+		// 	}
+		// 	if(st>0) {
+		// 		st=e.indexOf('WOTD-rss-title', st);
+		// 		if(st>0) {
+		// 			st=e.indexOf('>', st);
+		// 			if(st>0) {
+		// 				var ed=e.indexOf('<', st);
+		// 				var word=e.slice(st+1,ed);
+		// 				debug('word!!!',word);
+		// 				app.wordtoday(word);
+		// 				return;
+		// 			}
+		// 		}
+		// 	}
+		// 	app.wordtoday('');
+		// }
 	})"
-	,"loadingTestx":"http://MdbR.com"
-	,"loadingTest":"file:///android_asset/load.html"
 }

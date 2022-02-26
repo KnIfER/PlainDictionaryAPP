@@ -18,7 +18,6 @@
 		app:contentInsetStart="0dp"
 		app:contentInsetStartWithNavigation="0dp"
 		android:background="?attr/colorPrimary"
-		app:layout_scrollFlags="scroll|enterAlways|snap"
 		app:titleTextColor="#fff"
 		>
 	</androidx.appcompat.widget.Toolbar>

@@ -36,7 +36,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 	protected void onPreExecute() {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
-		a.main_progress_bar.setVisibility(View.VISIBLE);
+		a.contentUIData.mainProgressBar.setVisibility(View.VISIBLE);
 		verbatimCount=0;
 		if(!isStrict) {
 			for(BookPresenter bookPresenter:a.md) {
@@ -123,7 +123,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 		rec = new resultRecorderCombined(a,additive_combining_search_tree,md);
 		//CMN.show("逐字搜索 时间： "+(System.currentTimeMillis()-stst)+"ms "+rec.size());
 
-		a.main_progress_bar.setVisibility(View.GONE);
+		a.contentUIData.mainProgressBar.setVisibility(View.GONE);
 
 		if(a.lv2.getVisibility()!=View.VISIBLE)
 			a.lv2.setVisibility(View.VISIBLE);

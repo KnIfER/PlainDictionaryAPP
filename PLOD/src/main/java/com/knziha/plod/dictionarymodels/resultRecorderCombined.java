@@ -12,12 +12,15 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
 
-import java.net.URLEncoder;
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /** Recorder rendering search results as : LinearLayout {WebView, WebView, ... }  */
@@ -93,7 +96,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		if(firstItemIdx>0) pos = RemapPos((int) pos);
 		List<Long> l = ((List<Long>) data.get((int) pos).value); //todo
 		bookId = l.get(0);
-		count = String.format("%02d", l.size()/2);
+		int sz=l.size()/2;
+		count = sz>1?String.format("%02d", sz):null;
 		return data.get((int) pos).key;
 	};
 
@@ -101,38 +105,66 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	public int LHGEIGHT;
 	
 	@Override
-	public void renderContentAt(long pos, final MainActivityUIBase a, BasicAdapter ADA){
+	public void renderContentAt(long pos, final MainActivityUIBase a, BasicAdapter ADA, WebViewListHandler weblistHandler){
+		CMN.Log("renderContentAt::", pos, weblistHandler.bMergeFrames, weblistHandler.bMergingFrames, weblistHandler.getChildCount());
 		scrollTarget=null;
-		final ScrollView sv = (ScrollView) a.weblistHandler.getScrollView();
+		final ScrollView sv = (ScrollView) weblistHandler.getScrollView();
 		toHighLight=a.hasCurrentPageKey();
 		if(toHighLight || expectedPos==0)
 			sv.scrollTo(0, 0);
 		else{
 			sv.scrollTo(0, expectedPos);
 		}
+		additiveMyCpr1 jointResult;
+		if(pos==-2) {
+			if(weblistHandler.bMergingFrames) {
+				jointResult = weblistHandler.getMergedFrame().jointResult;
+			} else {
+				jointResult = weblistHandler.jointResult;
+			}
+		} else {
+			if(firstItemIdx>0) pos = RemapPos((int) pos);
+			jointResult = data.get((int) pos);
+		}
 		
-		if(firstItemIdx>0) pos = RemapPos((int) pos);
-		final additiveMyCpr1 result = data.get((int) pos);
-		final List<Long> vals = (List<Long>) result.value;
+		if(jointResult==null) {
+			a.showT("ERROR "+pos+" "+weblistHandler.bMergingFrames+" "+weblistHandler.bMergeFrames);
+			return;
+		}
+		List<Long> vals = (List<Long>) jointResult.value;
 		
-		// todo remove adaptively .
-		a.weblistHandler.removeAllViews();
+		boolean bUseMergedUrl = weblistHandler.bMergeFrames;
+		
+		if(!bUseMergedUrl) {
+			a.showT("未更新？"+CMN.Log(weblistHandler.jointResult==jointResult, weblistHandler.getChildCount()==weblistHandler.frames.size()
+			, weblistHandler.getChildCount(),weblistHandler.frames.size()));
+		}
+		if(bUseMergedUrl && weblistHandler.getMergedFrame().jointResult==jointResult
+			|| !bUseMergedUrl && weblistHandler.jointResult==jointResult && weblistHandler.getChildCount()==weblistHandler.frames.size()) {
+			weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowingInPopup, bUseMergedUrl);
+			a.showT("未更新！");
+			return;
+		}
+		
+		if(!bUseMergedUrl) {
+			// todo remove adaptively .
+			//weblistHandler.removeAllViews();
+		}
 		
 		//if(false)
 		//yyy
 		a.awaiting = true;
-		a.weblistHandler.installLayoutScrollListener(this);
+		//weblistHandler.installLayoutScrollListener(this);
 		
 		ArrayList<Long> valsTmp = new ArrayList<>();
 		int valueCount=0;
 		boolean checkReadEntry = a.opt.getAutoReadEntry();
 		boolean bNeedExpand=true;
-		ViewGroup webholder = a.weblistHandler;
+		ViewGroup webholder = weblistHandler;
 		long toFind;
 		View expTbView = null;
-		boolean bMergeFrames=a.weblistHandler.bMergeFrames;
 		StringBuilder mergedUrl = null;
-		a.weblistHandler.frames.clear();
+		weblistHandler.frames.clear();
 		for(int i=0;i<vals.size();i+=2){
 			valsTmp.clear();
 			toFind=vals.get(i);
@@ -146,9 +178,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			
 			if(presenter==a.EmptyBook) continue;
 			
-			a.weblistHandler.frames.add(toFind);
+			weblistHandler.frames.add(toFind);
 			
-			if(!bMergeFrames) {
+			if(!bUseMergedUrl) {
 				long[] p = new long[valsTmp.size()];
 				for(int i1 = 0;i1<valsTmp.size();i1++){
 					p[i1] = valsTmp.get(i1);
@@ -177,7 +209,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				mWebView.fromCombined=1;
 				if(presenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
 				{
-					presenter.SetSearchKey(result.key);
+					presenter.SetSearchKey(jointResult.key);
 				}
 				//CMN.debug("combining_search_result.renderContentAt::", frameAt);
 				presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, frameAt,null, p);
@@ -196,7 +228,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			else {
 				if(mergedUrl==null)
 					mergedUrl = new StringBuilder("http://MdbR.com/MERGE.jsp?q=")
-						.append(SU.encode(result.key)).append("&exp=");
+						.append(SU.encode(jointResult.key)).append("&exp=");
 				else mergedUrl.append("-");
 				mergedUrl.append("d");
 				IU.NumberToText_SIXTWO_LE(presenter.getId(), mergedUrl);
@@ -207,21 +239,24 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 			valueCount++;
 		}
-		if(bMergeFrames) {
-			WebViewmy mWebView = a.weblistHandler.initMergedFrame();
+		weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowingInPopup, bUseMergedUrl);
+		if(bUseMergedUrl) {
+			WebViewmy mWebView = weblistHandler.mMergedFrame;
 			CMN.debug("mergedUrl::", mergedUrl);
 			mWebView.loadUrl(mergedUrl.toString());
 //			mWebView.loadUrl("https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2016/September");
 			a.RecalibrateWebScrollbar(mWebView);
+			mWebView.jointResult=jointResult;
 		}
 		else {
 			if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
 				//expTbView = webholder.findViewById(R.id.toolbar_title); //yyy!!!
-				expTbView = a.weblistHandler.getViewGroup().findViewById(R.id.toolbar_title); //yyy!!!
+				expTbView = weblistHandler.getViewGroup().findViewById(R.id.toolbar_title); //yyy!!!
 			}
 			if (expTbView != null) {
 				expTbView.performClick();
 			}
+			weblistHandler.jointResult=jointResult;
 		}
 		a.RecalibrateWebScrollbar(null);
 	}

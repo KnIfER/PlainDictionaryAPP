@@ -3,6 +3,10 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,7 +37,8 @@ public class DragScrollBar extends RelativeLayout{
 	private TypedArray a;
 	public View scrollee;
 	SwipeRefreshLayout swipeRefreshLayout;
-
+	private int bgColor;
+	
 	public boolean isHidden(){
 		return getVisibility()!=View.VISIBLE || handleThumb.getVisibility()!=View.VISIBLE;
 	}
@@ -141,7 +146,14 @@ public class DragScrollBar extends RelativeLayout{
 		anim.setFillAfter(true);
 		//startAnimation(anim);
 	}
-
+	
+	public void setHandleColorFiler(int color) {
+		if(bgColor!=color) {
+			bgColor = color;
+			handleThumb.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+		}
+	}
+	
 	//Identifies any SwipeRefreshLayout parent so that it can be disabled and enabled during scrolling.
 	void identifySwipeRefreshParents(){
 		boolean cycle = true;

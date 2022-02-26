@@ -13,7 +13,6 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.DescriptiveImageView;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -39,7 +38,7 @@ public class MenuGrid extends PlainAppPanel {
 		a=(MainActivityUIBase) context;
 		showPopOnAppbar = true;
 		
-		showInPopWindow = true;
+		setShowInPop();
 		setPresetBgColorType(0);
 		dm = a.dm;
 		
@@ -60,9 +59,9 @@ public class MenuGrid extends PlainAppPanel {
 		menu_icon5 = settingsLayout.findViewById(R.drawable.abc_ic_menu_share_mtrl_alpha);
 	}
 	
-	@Override
-	public boolean toggle(ViewGroup root, SettingsPanel parentToDismiss) {
-		boolean ret = super.toggle(root, parentToDismiss);
+	public boolean show(ViewGroup root, boolean contentview, int forceShowType) {
+		dismissImmediate();
+		boolean ret = super.toggle(root, null, forceShowType);
 		//menu_grid.focusable=ret;
 		if (lastWidth!=a.root.getWidth() || lastHeight!=a.root.getHeight()) {
 			refreshMenuGridSize(true);
@@ -70,9 +69,9 @@ public class MenuGrid extends PlainAppPanel {
 		if(btnPaddingH==0){
 			btnPaddingH = menu_icon5.getPaddingLeft();
 		}
-		if (ret && ((btnShareBundleResId==R.drawable.abc_ic_menu_share_mtrl_alpha) ^ a.isContentViewAttached())) {
+		if (ret && ((btnShareBundleResId==R.drawable.abc_ic_menu_share_mtrl_alpha) ^ contentview)) {
 			int paddingH = btnPaddingH;
-			if(a.isContentViewAttached()) {
+			if(contentview) {
 				menu_icon5.setImageResource(btnShareBundleResId=R.drawable.abc_ic_menu_share_mtrl_alpha);
 				menu_icon5.setAlpha(.2f);
 				menu_icon5.setText("分享至…");

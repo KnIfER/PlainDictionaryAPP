@@ -3,6 +3,7 @@ package com.knziha.plod.preference;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -24,11 +25,19 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.XYLinearLayout;
 
+import java.util.Objects;
+
 public class SettingsPanel extends AnimatorListenerAdapter implements View.OnClickListener {
 	@NonNull public ViewGroup settingsLayout;
 	public LinearLayout linearLayout;
 	protected boolean bIsShowing;
-	protected int bottomPadding;
+	public final static int PANEL_SHOW_TYPE_POPUP = 1;
+	public final static int PANEL_SHOW_TYPE_DIALOG = 2;
+	protected int rootHash;
+	protected int lastShowType;
+	protected int bFadeout;
+	protected int showType;
+	public int bottomPadding;
 	protected final PDICMainAppOptions opt;
 	protected String[][] UITexts;
 	protected int[][] UITags;
@@ -38,8 +47,8 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected boolean bShouldRemoveAfterDismiss = true;
 	protected boolean bSuppressNxtAnimation = false;
 	protected boolean hasDelegatePicker;
-	protected boolean showInPopWindow;
 	public PopupWindow pop;
+	public Dialog dialog;
 	protected int mPaddingLeft=10;
 	protected int mPaddingRight=10;
 	protected int mPaddingTop=0;
@@ -122,7 +131,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	}
 	
 	public void setInnerBottomPadding(int padding) {
-		if (!showInPopWindow) {
+		if (lastShowType==0) {
 			View v = settingsLayout.getChildAt(0);
 			v.setPadding(0, 0, 0, mInnerBottomPadding = padding);
 		}
@@ -228,19 +237,21 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		this.mFlagAdapter = mFlagAdapter;
 		init(context, root);
 		ViewGroup sl = this.settingsLayout;
-		if (bottomPadding>0) {
-			sl.setAlpha(0);
-			if(isHorizontal) {
-				sl.setTranslationX(bottomPadding);
+		if(sl!=null) {
+			if (bottomPadding>0) {
+				sl.setAlpha(0);
+				if(isHorizontal) {
+					sl.setTranslationX(bottomPadding);
+				} else {
+					sl.setTranslationY(bottomPadding);
+				}
+				sl.setBackgroundColor(mBackgroundColor);
 			} else {
-				sl.setTranslationY(bottomPadding);
+				sl.setBackgroundColor(mBackgroundColor);
 			}
-			sl.setBackgroundColor(mBackgroundColor);
-		} else {
-			sl.setBackgroundColor(mBackgroundColor);
-		}
-		if(root!=null && !showInPopWindow) {
-			ViewUtils.addViewToParent(sl, root);
+			if(root!=null && showType==0) {
+				ViewUtils.addViewToParent(sl, root);
+			}
 		}
 	}
 	
@@ -325,21 +336,31 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		}
 	}
 	
-	public boolean toggle(ViewGroup root, SettingsPanel parentToDismiss) {
+	public boolean toggle(ViewGroup root, SettingsPanel parentToDismiss, int forceShowType) {
 		if (settingsLayout==null && root!=null) {
 			init(root.getContext(), root);
 		}
 		float targetAlpha = 1;
 		float targetTrans = 0;
 		if (bIsShowing=!bIsShowing) {
-			if (showInPopWindow) {
-				showPop();
+			rootChanged(root);
+			forceShowType = forceShowType>=0?forceShowType:showType;
+			if(lastShowType!=forceShowType) {
+				ViewUtils.removeView(settingsLayout);
+				lastShowType=forceShowType;
+			}
+			if (lastShowType==1) {
+				showPop(root);
+			} else if(lastShowType==2) {
+				showDialog();
 			} else {
 				ViewUtils.addViewToParent(settingsLayout, root, mViewAttachIdx);
 			}
 			settingsLayout.setVisibility(View.VISIBLE);
 		} else {
-			targetAlpha = 0;
+			if(bFadeout==0 || bFadeout==-2 && lastShowType==0) {
+				targetAlpha = 0;
+			}
 			targetTrans = bottomPadding;
 		}
 		if (bSuppressNxtAnimation) {
@@ -370,7 +391,11 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		return bIsShowing;
 	}
 	
-	protected void showPop() {
+	protected void showPop(ViewGroup root) {
+		throw new RuntimeException("Stub!");
+	}
+	
+	protected void showDialog() {
 		throw new RuntimeException("Stub!");
 	}
 	
@@ -381,10 +406,10 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		ValueAnimator va = (ValueAnimator) animation;
 		if (va==null || va.getAnimatedFraction()==1) {
 			if (!bIsShowing) {
-				//CMN.Log("dismiss!!!");
-				if (pop!=null) {
-					pop.dismiss();
-				} else {
+				CMN.Log("dismiss!!!", lastShowType);
+				if (lastShowType==1) { pop.dismiss(); }
+				if (lastShowType==2) { dialog.dismiss(); }
+				else {
 					settingsLayout.setVisibility(View.GONE);
 					if (bShouldRemoveAfterDismiss) {
 						ViewUtils.removeView(settingsLayout);
@@ -447,9 +472,25 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		return bIsShowing;
 	}
 	
+	public boolean rootChanged(View root) {
+		int hash = Objects.hashCode(root);
+		if(hash != rootHash) {
+			hash = rootHash;
+			return true;
+		}
+		return false;
+	}
+	
 	public void dismiss() {
 		if(bIsShowing) {
-			toggle(null, null);
+			toggle(null, null, 0);
+		}
+	}
+	
+	public void dismissImmediate() {
+		if(bIsShowing) {
+			bSuppressNxtAnimation = true;
+			toggle(null, null, 0);
 		}
 	}
 	
@@ -458,7 +499,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 			bIsShowing=false;
 			settingsLayout
 				.animate()
-				.alpha(0)
+				.alpha((bFadeout==0 || bFadeout==-2 && lastShowType==0)?0:1)
 				.setDuration(300)
 				.setListener(this);
 			onDismiss();
@@ -477,6 +518,14 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 			onAnimationEnd(null);
 			onDismiss();
 		}
+	}
+	
+	public void setShowInPop() {
+		showType = PANEL_SHOW_TYPE_POPUP;
+	}
+	
+	public void setShowInDialog() {
+		showType = PANEL_SHOW_TYPE_DIALOG;
 	}
 }
 	

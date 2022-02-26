@@ -57,6 +57,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
 	protected final static String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
 
+	private boolean skipCheckLog;
 	private static boolean MarginChecked;
 	private static int DockerMarginL;
 	private static int DockerMarginR;
@@ -82,6 +83,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected long layoutFlagStamp;
 	public int MainAppBackground;
 	public int MainBackground;
+	public int MainPageBackground;
 	public int AppBlack;
 	public int AppWhite;
     public float ColorMultiplier_Wiget=0.9f;
@@ -225,32 +227,26 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	protected void checkLog(Bundle savedInstanceState){
 		boolean[] launching=new boolean[]{false};
-		if(DoesActivityCheckLog()){
-			if(opt.getLogToFile()){
-				try {
-					File log=new File(CrashHandler.getInstance(this, opt).getLogFile());
-					File lock=new File(log.getParentFile(),"lock");
-					if(lock.exists())
-					{
-						launching[0]=true;
-						setStatusBarColor(getWindow(), Constants.DefaultMainBG);
-						CrashHandler.getInstance(this, opt).showErrorMessage(this, (dialog, whichButton) -> {
-							lock.delete();
-							checkLaunch(savedInstanceState);
-						}, false);
-					}
-				} catch (Exception e) { CMN.Log(e); }finally {
-					if(!launching[0])
+		skipCheckLog = true;
+		if(!skipCheckLog && opt.getLogToFile()){
+			try {
+				File log=new File(CrashHandler.getInstance(this, opt).getLogFile());
+				File lock=new File(log.getParentFile(),"lock");
+				if(lock.exists())
+				{
+					launching[0]=true;
+					setStatusBarColor(getWindow(), Constants.DefaultMainBG);
+					CrashHandler.getInstance(this, opt).showErrorMessage(this, (dialog, whichButton) -> {
+						lock.delete();
 						checkLaunch(savedInstanceState);
+					}, false);
 				}
-			}else{
-				checkLaunch(savedInstanceState);
+			} catch (Exception e) { CMN.Log(e); }finally {
+				if(!launching[0])
+					checkLaunch(savedInstanceState);
 			}
-		}else{
-			File lock;
-			File log=new File(CrashHandler.getInstance(this, opt).getLogFile());
-			if((lock=new File(log.getParentFile(),"lock")).exists())
-				lock.delete();
+		} else {
+			checkLaunch(savedInstanceState);
 		}
 	}
 	
@@ -270,10 +266,6 @@ public class Toastable_Activity extends AppCompatActivity {
 				}
 			}
 		}
-	}
-	
-	protected boolean DoesActivityCheckLog() {
-		return true;
 	}
 
 	public static void setWindowsPadding(@NonNull View decorView) {

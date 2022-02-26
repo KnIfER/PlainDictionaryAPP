@@ -11,13 +11,16 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.text.TextUtils;
 import android.view.View;
 
 @SuppressLint("ViewConstructor")
 public class SamsungLikeHandle extends View {
     Paint p;
 	Paint p2;
-    public SamsungLikeHandle(Context c, int m){
+	private int bgColor;
+	
+	public SamsungLikeHandle(Context c, int m){
         super(c);
 		p = new Paint();
         p.setFlags(Paint.ANTI_ALIAS_FLAG);
@@ -25,18 +28,20 @@ public class SamsungLikeHandle extends View {
 
     @Override
     public void setBackgroundColor(int color) {
-        super.setBackgroundColor(color);
-
-        p.setColor(Color.parseColor("#ffffff"));
-        //p.setColor(Color.parseColor("#FF4081"));
-        p.setTextSize(15*getResources().getDisplayMetrics().density);//22
-        p.setTypeface(Typeface.DEFAULT);
-        p.setStrokeWidth(2);
-        p2 = new Paint(p);
-		p2.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
-		setLayerType(View.LAYER_TYPE_SOFTWARE, null); 
-		setDelimiter("|||");
-		p2.setTextAlign(Align.CENTER);
+    	if(bgColor!=color) {
+			bgColor = color;
+			super.setBackgroundColor(color);
+			p.setColor(Color.parseColor("#ffffff"));
+			//p.setColor(Color.parseColor("#FF4081"));
+			p.setTextSize(15*getResources().getDisplayMetrics().density);//22
+			p.setTypeface(Typeface.DEFAULT);
+			p.setStrokeWidth(2);
+			p2 = new Paint(p);
+			p2.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
+			setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+			setDelimiter("|||");
+			p2.setTextAlign(Align.CENTER);
+		}
     }
     float delta;
     private String delimiter;
@@ -52,9 +57,11 @@ public class SamsungLikeHandle extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-    		super.onDraw(canvas);
+		super.onDraw(canvas);
+		if(!TextUtils.isEmpty(delimiter)) {
 			canvas.rotate(90);
-	        canvas.drawText(delimiter, getHeight()/2,  -getWidth()/2-delta, p2);
+			canvas.drawText(delimiter, getHeight()/2,  -getWidth()/2-delta, p2);
 			canvas.rotate(-90);
+		}
     }
 }

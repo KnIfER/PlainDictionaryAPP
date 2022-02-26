@@ -4,29 +4,45 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
 	tools:ignore="AppCompatResource"
 	>
-<!--0--><item android:id="@+id/toolbar_action1" android:icon="@drawable/ic_btn_siglemode" android:title="" app:showAsAction="always"/>
+<!--0--><item android:title="" android:id="@+id/toolbar_action1" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="always"/>
 
-<!--1--><item android:id="@+id/toolbar_action0" android:icon="@drawable/ic_btn_siglemode" android:title="@string/fold_all" app:showAsAction="never"/>
+<!--1--><item android:title="@string/fold_all" android:id="@+id/toolbar_action0" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 
-<!--2--><item android:id="@+id/toolbar_action12" android:icon="@drawable/ic_btn_siglemode" android:title="@string/peruse_mode" app:showAsAction="never"/>
+<!--2--><item android:title="@string/peruse_mode" android:id="@+id/toolbar_action12" android:icon="@drawable/ic_peruse" app:showAsAction="never"/>
 
-<!--3--><item android:id="@+id/toolbar_action6" android:icon="@drawable/ic_btn_siglemode" android:title="@string/rem_position" app:showAsAction="never"/>
+<!--3--><item android:title="@string/rem_position" android:id="@+id/toolbar_action6" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 
-<!--4--><item android:id="@+id/toolbar_action2" android:icon="@drawable/ic_search_24k" android:title="@string/search" app:showAsAction="always"/>
+<!--4--><item android:title="@string/search" android:id="@+id/toolbar_action2" android:icon="@drawable/ic_search_24k" app:showAsAction="always"/>
 
-<!--5--><item android:id="@+id/toolbar_action11" android:title="@string/tint_result" app:showAsAction="never"/>
+<!--5--><item android:title="@string/tint_result" android:id="@+id/toolbar_action11" app:showAsAction="never"/>
 
-<!--6--><item android:id="@+id/toolbar_action10" android:title="保存搜索…" app:showAsAction="never"/>
+<!--6--><item android:title="保存搜索…" android:id="@+id/toolbar_action10" app:showAsAction="never"/>
 
-<!--8--><item android:id="@+id/toolbar_action4" android:icon="@drawable/ic_search_24k" android:title="@string/peruseToggle" app:showAsAction="never"/>
+<!--8--><item android:title="@string/peruseToggle" android:id="@+id/toolbar_action4" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
-<!--7--><item android:id="@+id/toolbar_action3" android:icon="@drawable/ic_search_24k" android:title="@string/perWSearch" app:showAsAction="never"/>
+<!--7--><item android:title="@string/perWSearch" android:id="@+id/toolbar_action3" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
-<!--9--><item android:id="@+id/toolbar_action14" android:icon="@drawable/ic_search_24k" android:title="即点即译" app:showAsAction="never"/>
+<!--9--><item android:title="即点即译" android:id="@+id/toolbar_action14" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
-<!--10--><item android:id="@+id/toolbar_action8" android:icon="@drawable/ic_search_24k" android:title="@string/switch_set" app:showAsAction="never"/>
+<!--10--><item android:title="@string/switch_set" android:id="@+id/toolbar_action8" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
-<!--11--><item android:id="@+id/toolbar_action9" android:icon="@drawable/ic_search_24k" android:title="@string/save_bookmark" app:showAsAction="never"/>
+<!--11--><item android:title="@string/save_bookmark" android:id="@+id/toolbar_action9" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
-<!--12--><item android:id="@+id/toolbar_action13" android:icon="@drawable/ic_btn_siglemode" android:title="页内查找…" app:showAsAction="never" />
+<!--12--><item android:title="页内查找…" android:id="@+id/toolbar_action13" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never" app:enabled="false"/>
+
+<!--13--><item android:title="多页面设置" android:id="@+id/viewMode" android:icon="@drawable/ic_viewpager_carousel" app:showAsAction="always" />
+
+<!--14--><item android:title="翻译" android:id="@+id/translate" android:icon="@drawable/ic_g_translate_black_24dp" app:showAsAction="always"/>
+
+<!--15--><item android:title="切换单本搜索" android:id="@+id/setToSingleMode" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+
+<!--16--><item android:title="切换联合搜索" android:id="@+id/setToMultiMode" android:icon="@drawable/ic_btn_multimode" app:showAsAction="never"/>
+
+	<group android:id="@+id/sorting" >
+
+<!--17--><item android:title="随机单词" android:id="@+id/wordtoday" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="never"/>
+
+<!--18--><item android:title="随机单词（无界面）" android:id="@+id/wordtoday" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="never"/>
+
+	</group>
 </menu>

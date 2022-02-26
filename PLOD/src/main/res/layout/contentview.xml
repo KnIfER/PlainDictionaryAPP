@@ -59,28 +59,42 @@
 				android:layout_gravity="right"
 				/>
 
-			<android.widget.ImageView
-				android:id="@+id/browser_widget14"
-				android:layout_width="34dp"
-				android:layout_height="34dp"
-				android:background="@drawable/listviewselector2"
-				android:clickable="true"
-				android:src="@drawable/chevron_up"
+			<ProgressBar
+				android:id="@+id/main_progress_bar"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical|center_horizontal"
+				android:visibility="gone"
+				android:layout_centerVertical="true"
+				android:layout_centerHorizontal="true"/>
+
+			<LinearLayout
+				android:id="@+id/navBtns"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:orientation="vertical"
 				android:layout_gravity="bottom|right"
-				android:layout_marginBottom="64dp"
-				android:layout_marginRight="10dp"
-				/>
-			<android.widget.ImageView
-				android:id="@+id/browser_widget13"
-				android:layout_width="34dp"
-				android:layout_height="34dp"
-				android:background="@drawable/listviewselector2"
-				android:clickable="true"
-				android:src="@drawable/chevron_btm"
-				android:layout_gravity="bottom|right"
-				android:layout_marginBottom="20dp"
-				android:layout_marginRight="10dp"
-				/>
+				android:layout_marginBottom="19dp"
+				android:layout_marginRight="25dp"
+				>
+				<android.widget.ImageView
+					android:id="@+id/browser_widget14"
+					android:layout_width= "48dp"
+					android:layout_height="48dp"
+					android:background="@drawable/item_selector_circle"
+					android:src="@drawable/chevron_up1"
+					android:clickable="true"
+					android:layout_marginBottom="10dp"
+					/>
+				<android.widget.ImageView
+					android:id="@+id/browser_widget13"
+					android:layout_width= "48dp"
+					android:layout_height="48dp"
+					android:background="@drawable/item_selector_circle"
+					android:src="@drawable/chevron_btm1"
+					android:clickable="true"
+					/>
+			</LinearLayout>
 		</com.knziha.plod.widgets.RLContainerSlider>
 
 		<LinearLayout
