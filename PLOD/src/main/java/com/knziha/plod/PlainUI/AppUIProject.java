@@ -21,7 +21,17 @@ import java.util.HashSet;
 public class AppUIProject {
 	public static HashSet<Integer> LongclickableMap = new HashSet<>(); // todo optimise
 	static{
-		LongclickableMap.addAll(Arrays.asList(1, 4, 6, 9, 10 , 16, 17, 106, 107, 108, 109, 110, 111, 112, 114, 118, 119));
+		LongclickableMap.addAll(Arrays.asList(
+				R.drawable.star_ic
+				, R.drawable.ic_prv_dict_chevron
+				, R.drawable.ic_nxt_dict_chevron
+				, 4
+				, 6
+				, 9
+				, 10
+				, 16
+				, 17, 106, 107, 108, 109, 110, 111, 112, 114, 118, 119
+		));
 	}
 	/**  定制底栏一：<br/>
 	 * 返回列表7 收藏词条8 跳转词典9 上一词条10 下一词条11 发音按钮12 <br/>
@@ -198,7 +208,7 @@ public class AppUIProject {
 							iv.setId(btnIcons[id]);
 							iv.setOnClickListener(this_);
 							if(tint) iv.setColorFilter(this_.ForegroundFilter);
-							if (LongclickableMap.contains(idStart+i)){
+							if (LongclickableMap.contains(btnIcons[id])){
 								iv.setOnLongClickListener(this_);
 							} else {
 								iv.setLongClickable(false);

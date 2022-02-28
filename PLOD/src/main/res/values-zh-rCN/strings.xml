@@ -156,7 +156,6 @@
 	<string name="rem_position_yes">记忆位置 √</string>
 	<string name="direct_update">直接更新</string>
 	<string name="bring_from_background">后台唤醒</string>
-	<string name="canceld_peruse_mode">已取消 翻阅模式</string>
 	<string name="show_all_dictionaries">全部词典</string>
 	<string name="show_bookmark_add_button">书签添加按钮</string>
 	<string name="show_bookmark_delete_button">书签删除按钮</string>

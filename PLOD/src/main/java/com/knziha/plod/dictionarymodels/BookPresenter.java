@@ -2065,8 +2065,8 @@ function debug(e){console.log(e)};
     		mWebView=this.mWebView;
 			refresh_eidt_kit(mPageView, mTBtnStates, bSupressingEditing, true);
 		} else if(a.peruseView != null && mWebView==a.peruseView.mWebView) {
-			a.peruseView.mPageView.save.setOnLongClickListener(this);
-			refresh_eidt_kit(a.peruseView.mPageView, a.peruseView.mTBtnStates, a.peruseView.bSupressingEditing, false);
+//			a.peruseView.mPageView.save.setOnLongClickListener(this); //111
+//			refresh_eidt_kit(a.peruseView.mPageView, a.peruseView.mTBtnStates, a.peruseView.bSupressingEditing, false);
 		}
 		boolean resposibleForThisWeb=mWebView==this.mWebView;
     	
@@ -2155,7 +2155,9 @@ function debug(e){console.log(e)};
 
     	//mWebView.setVisibility(View.VISIBLE);
    	    //a.showT("mWebView:"+mWebView.isHardwareAccelerated());
-		if(!fromPopup) PlayWithToolbar(a.hideDictToolbar,a);
+		
+		//if(!fromPopup) PlayWithToolbar(a.hideDictToolbar,a);
+		
     	if(mWebView.wvclient!=a.myWebClient) {
 			mWebView.setWebChromeClient(a.myWebCClient);
 	   	    mWebView.setWebViewClient(a.myWebClient);

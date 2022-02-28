@@ -142,7 +142,7 @@ public class ListViewAdapter extends BasicAdapter {
 		shunt=presenter.getIsWebx() ||a.bRequestedCleanSearch;
 		
 		if(pos<0 || !bOnePageNav && pos>=getCount()){
-			a.show(R.string.endendr);
+			a.showTopSnack(R.string.endendr);
 			if(pos>=0)
 				lastClickedPos = getCount()-1;
 			return;

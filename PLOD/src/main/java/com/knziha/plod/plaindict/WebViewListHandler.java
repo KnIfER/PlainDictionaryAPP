@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -258,26 +257,7 @@ public class WebViewListHandler extends ViewGroup {
 		}
 		if(bMergingFrames!=mergeWebHolder) {
 			CMN.Log("reinitMergedFrame::", mergeWebHolder, popup, bUseMergedUrl);
-			if(mergeWebHolder) { // 替换scrollview为framelayout、webholder高度充满视图
-//				if(WHP1==null) {
-//					WHP1 = new FrameLayout(a);
-//				}
-//				this.webholder = WHP1;
-//				ViewGroup webholder = this.WHP1;
-//				WebViewmy mMergedFrame = getMergedFrame();
-//				//ViewUtils.addViewToParent(webholder, WHP1);
-//				ViewUtils.addViewToParent(mMergedFrame.rl, webholder);
-//				//mMergedBook.rl.getLayoutParams().height = MATCH_PARENT;
-//				mMergedBook.toolbar.setVisibility(View.GONE);
-//				contentUIData.navBtns.setVisibility(View.GONE);
-//				ViewUtils.addViewToParent(WHP1, contentUIData.PageSlider, 1);
-//				if(webHolderSwapHide) {
-//					WHP1.setVisibility(View.VISIBLE);
-//					WHP.setVisibility(View.GONE);
-//				} else {
-//					ViewUtils.removeView(WHP);
-//				}
-				
+			if(mergeWebHolder) {
 				WebViewmy mMergedFrame = getMergedFrame();
 				ViewUtils.addViewToParent(mMergedFrame.rl, contentUIData.webSingleholder);
 				mMergedBook.toolbar.setVisibility(View.GONE);
@@ -558,7 +538,7 @@ public class WebViewListHandler extends ViewGroup {
 		}
 	}
 	
-	public void setUpContentView() {
+	public void setUpContentView(int cbar_key) {
 		if(!contentViewSetup) {
 			contentViewSetup = true;
 			MainActivityUIBase a = this.a;
@@ -586,12 +566,12 @@ public class WebViewListHandler extends ViewGroup {
 				if(tint) iv.setColorFilter(a.ForegroundTint, PorterDuff.Mode.SRC_IN);
 				iv.setOnLongClickListener(a);
 			}
-			String contentkey = "ctnp#"+ a.cbar_key;
+			String contentkey = "ctnp#"+ cbar_key;
 			String appproject = a.opt.getAppContentBarProject(contentkey);
 			if(appproject==null) appproject="0|1|2|3|4|5";
 			if(a.contentbar_project==null) {
 				a.contentbar_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, contentUIData.bottombar2, ContentbarBtns);
-				a.contentbar_project.type = a.cbar_key;
+				a.contentbar_project.type = cbar_key;
 			}
 			a.contentbar_project.bottombar = contentUIData.bottombar2;
 			a.contentbar_project.btns = ContentbarBtns;

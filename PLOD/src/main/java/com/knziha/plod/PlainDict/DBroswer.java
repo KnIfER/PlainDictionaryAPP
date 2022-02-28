@@ -278,7 +278,7 @@ public class DBroswer extends Fragment implements
 			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
 			weblistHandler = new WebViewListHandler(a, contentUIData);
-			weblistHandler.setUpContentView();
+			weblistHandler.setUpContentView(a.cbar_key);
 		}
 		weblistHandler.checkUI();
 	}

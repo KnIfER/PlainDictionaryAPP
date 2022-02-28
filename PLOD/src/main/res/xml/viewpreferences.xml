@@ -163,7 +163,7 @@
 
 	<PreferenceCategory
 		android:key="cat_prog"
-		android:title="Toast 设置"
+		android:title="Toast 设置（悬浮文本提示）"
 		app:icon="@drawable/ic_view_carousel_black_24dp"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference

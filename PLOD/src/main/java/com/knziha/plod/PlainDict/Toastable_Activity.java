@@ -43,6 +43,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
 
+import com.knziha.filepicker.view.LinkMovementMethod;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.knziha.plod.widgets.ViewUtils;
@@ -514,7 +515,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 
 	public void showTopSnack(Object messageVal){
-		showTopSnack(DefaultTSView, messageVal, 0.8f, -1, -1, 0);
+		showTopSnack(null, messageVal, 0.8f, -1, -1, 0);
 	}
 
 	public void showContentSnack(Object messageVal){
@@ -525,11 +526,9 @@ public class Toastable_Activity extends AppCompatActivity {
 		showTopSnack(parentView, messageVal, 0.5f, -1, -1, 0);
 	}
 	
-	/** Show Top Snack
-	 * @param layoutFlags ltr : bSingleLine bWrapContentWidth bPostSnack
-	 *  */
-	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity, int layoutFlags) {
-		if(topsnack==null){
+	protected SimpleTextNotifier getTopSnackView() {
+		SimpleTextNotifier topsnack = this.topsnack;
+		if(topsnack==null) {
 			topsnack = new SimpleTextNotifier(getBaseContext());
 			Resources res = getResources();
 			topsnack.setTextColor(Color.WHITE);
@@ -540,7 +539,16 @@ public class Toastable_Activity extends AppCompatActivity {
 				topsnack.setElevation(res.getDimension(R.dimen.design_snackbar_elevation));
 			}
 			topsnack.setLayoutParams(new FrameLayout.LayoutParams(-1,-2));
+			this.topsnack = topsnack;
 		}
+		return topsnack;
+	}
+	
+	/** Show Top Snack
+	 * @param layoutFlags ltr : bSingleLine bWrapContentWidth bPostSnack
+	 *  */
+	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity, int layoutFlags) {
+		SimpleTextNotifier topsnack = getTopSnackView();
 		parentView = onShowSnack(parentView);
 		if(duration<0) {
 			duration = SHORT_DURATION_MS;
@@ -550,7 +558,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		topsnack.setAlpha(1);
 		topsnack.setSingleLine((layoutFlags&0x1)!=0);
 		if(messageVal instanceof Integer) {
-			topsnack.setText((int) messageVal);
+			topsnack.setText(topsnack.msg = (int) messageVal);
 			topsnack.setTag(messageVal);
 		} else {
 			topsnack.setText(String.valueOf(messageVal));
@@ -683,8 +691,12 @@ public class Toastable_Activity extends AppCompatActivity {
 			} else {
 				title.setText(title_id);
 			}
-		} else if(title_args.length>0 && title_args[0] instanceof String){
-			title.setText((String) title_args[0]);
+		} else if(title_args.length>0 && title_args[0] instanceof CharSequence){
+			title.setText((CharSequence) title_args[0]);
+			if(title_args[0] instanceof CharSequence) {
+				//opt.setAsLinkedTextView(title, false);
+				title.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+			}
 		}
 		title.setTextSize(GlobalOptions.isLarge?19f:18f);
 		title.setTextColor(AppBlack);

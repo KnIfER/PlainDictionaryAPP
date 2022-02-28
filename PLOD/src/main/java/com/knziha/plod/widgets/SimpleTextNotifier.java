@@ -15,20 +15,32 @@ import android.widget.TextView;
 import com.knziha.plod.plaindict.CMN;
 
 public class SimpleTextNotifier extends TextView{
-	public int offset;
+	public int msg;
+	int offset;
+	float mOffsetScale = 1;
 	boolean snacking;
+	boolean visible;
 	private int mBottomMargin;
 	private int mDuration;
 	private int mDwellation;
 	private FrameLayout mCropFrame;
 	
-	AnimatorListenerAdapter toHideListener = new AnimatorListenerAdapter() {
+	AnimatorListenerAdapter currListener;
+	
+	// [Animation]show -> dwelling -> [Animation]hide -> remove
+	
+	AnimatorListenerAdapter toDwellAndHideListener = new AnimatorListenerAdapter() {
 		@Override
 		public void onAnimationEnd(Animator animation) {
-			removeCallbacks(animateHideAbility);
-			if(snacking) {
+			if(currListener!=null) {
+				currListener.onAnimationEnd(animation);
+				return;
+			}
+			removeCallbacks(dwellAbility);
+			if(visible) {
 				snacking = false;
-				postDelayed(animateHideAbility, mDwellation);
+				// dwelling……
+				postDelayed(dwellAbility, mDwellation);
 			}
 		}
 	};
@@ -36,23 +48,29 @@ public class SimpleTextNotifier extends TextView{
 	AnimatorListenerAdapter toRemoveListener = new AnimatorListenerAdapter() {
 		@Override
 		public void onAnimationEnd(Animator animation) {
-			removeCallbacks(animateHideAbility);
-			if(!snacking) {
-				CMN.Log("snack stopped.");
-				ViewUtils.removeView(getSnackView());
-			}
+			removeCallbacks(dwellAbility);
+			CMN.Log("snack stopped.");
+			ViewUtils.removeView(getSnackView());
+			visible = false;
+			if(msg!=0) msg = 0;
+		}
+	};
+	
+	Runnable dwellAbility = () -> {
+		if(!snacking && visible) {
+			currListener = toRemoveListener;
+			// hiding……
+			animate()
+				.setListener(toDwellAndHideListener)
+				.translationY(getHeight());
 		}
 	};
 	
 	AnimatorListenerAdapter fadeListener = new AnimatorListenerAdapter() {
 		@Override public void onAnimationEnd(Animator animation) {
-			animateHideAbility.run();
-		}
-	};
-	
-	Runnable animateHideAbility = () -> {
-		if(!snacking) {
-			animate().setListener(toRemoveListener).translationY(getHeight());
+			ViewUtils.removeView(getSnackView());
+			visible = false;
+			if(msg!=0) msg = 0;
 		}
 	};
 	
@@ -81,32 +99,36 @@ public class SimpleTextNotifier extends TextView{
 	}
 	
 	public void show() {
-		removeCallbacks(postShowAbility);
+		currListener=null;
+		removeCallbacks(dwellAbility);
+		//clearAnimation();
 		int height = getHeight();
 		if(height>0){
-			if(!snacking || offset>height)
-				offset=height;
-			else
-				offset=Math.max(height/3, offset);
+			visible=true;
+			if(!snacking || offset>height) {
+				offset = (int) (height*mOffsetScale);
+			} else {
+				offset=Math.max(height/3, (int)(offset*mOffsetScale));
+			}
+			if(mOffsetScale!=1) mOffsetScale = 1;
 			setTranslationY(offset);
 			setVisibility(View.VISIBLE);
-			snacking = true;
-			removeCallbacks(animateHideAbility);
+			snacking = visible = true;
 			ViewPropertyAnimator animation = animate()
-					.setListener(toHideListener)
+					.setListener(toDwellAndHideListener)
 					.translationY(0);
 			mDwellation = (int) (mDuration-animation.getDuration()*1.35);
 			if(mDwellation<0) mDwellation=800;
 		}
-		//ObjectAnimator fadeInContents = ObjectAnimator.ofFloat(topsnack, "translationY", -height, 0);
-		//fadeInContents.start();
 	}
 	
 	public void fadeOut() {
-		if(snacking) {
-			snacking = false;
+		if(visible) {
+			visible = false;
+			if(msg!=0) msg = 0;
+			currListener=fadeListener;
 			animate()
-				.setListener(fadeListener)
+				.setListener(toDwellAndHideListener)
 				.alpha(0)
 			;
 		}
@@ -138,5 +160,17 @@ public class SimpleTextNotifier extends TextView{
 			return mCropFrame;
 		}
 		return this;
+	}
+	
+	public boolean isSnacking() {
+		return snacking;
+	}
+	
+	public void setNextOffsetScale(float scale) {
+		mOffsetScale = scale;
+	}
+	
+	public boolean isVisible() {
+		return visible;
 	}
 }

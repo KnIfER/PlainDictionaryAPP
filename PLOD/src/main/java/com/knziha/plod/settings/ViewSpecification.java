@@ -21,6 +21,8 @@ public class ViewSpecification extends SettingsFragmentBase implements Preferenc
 	public void onCreate(Bundle savedInstanceState) {
 		mPreferenceId = R.xml.viewpreferences;
 		super.onCreate(savedInstanceState);
+		
+		findPreference("cat_1").setVisible(false);
 
 		init_switch_preference(this, "ps_audio_key", PDICMainAppOptions.getInPageSearchUseAudioKey(), null, null);
 		init_switch_preference(this, "ps_hide_key", PDICMainAppOptions.getInPageSearchAutoHideKeyboard(), null, null);
@@ -32,6 +34,7 @@ public class ViewSpecification extends SettingsFragmentBase implements Preferenc
 		init_switch_preference(this, "clear_sel", PDICMainAppOptions.getUseBackKeyClearWebViewFocus(), null, null);
 		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null);
 		Preference p = init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null);
+		
 		p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 										   @Override
 										   public boolean onPreferenceClick(Preference preference) {

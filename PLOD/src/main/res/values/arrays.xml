@@ -385,9 +385,9 @@
 
 	<string-array name="conext_info">
 		<item>直接退出</item>
-		<item>顶部弹出确认</item>
-		<item>Toast确认</item>
-		<item>对话框确认</item>
+		<item>再按一次退出（动画横幅）</item>
+		<item>再按一次退出（悬浮文本）</item>
+		<item>弹出对话框确认</item>
 	</string-array>
 
 	<string-array name="record_slide_info">

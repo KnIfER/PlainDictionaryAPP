@@ -1388,21 +1388,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		//defaultReader.edit().putInt("MFF",FirstFlag).commit();
 	}
 
-	/**
-	 *  Get Back Prevention Type. Default to 2<br/>
-	 *  @return 0=exit directly; 1=show top snack; 2=toast; 3=dialog;
-	 */
-	public static int getBackPrevention() {
-		return ((int)(ThirdFlag&3)+2)%4;
-	}
-
+	/** Get Back Prevention Type. Default to 1<br/>
+	 *  @return 0=exit directly; 1=show top snack; 2=toast; 3=dialog;  */
+	@Metaline(flagPos=0, flagSize=2, shift=1) public static int getBackPrevention() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	/** Set Back Prevention Type <br/> see {@link #getBackPrevention}*/
-	public static int setBackPrevention(int val) {
-		ThirdFlag = ThirdFlag&~0x1l&~0x2l
-				|(long)((val+2)%4 & 3);
-		return val;
-	}
-
+	@Metaline(flagPos=0, flagSize=2, shift=1) public static void setBackPrevention(int val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	
 	public static boolean getBackToHomePagePreventBack() {
 		return (ThirdFlag & 0x4l) == 0x4l;
 	}
@@ -2408,6 +2399,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	/** 单本词典是否使用公共的MergedFrame。see {@code getMergeUrlForFrames()} */
 	@Metaline(flagPos=43, shift=1, debug=1) public static boolean getUseMergedFrame() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=44, shift=1, debug=1) public static boolean getFastPreviewFragile() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF

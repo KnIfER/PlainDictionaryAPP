@@ -59,8 +59,6 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
-import com.knziha.plod.plaindict.databinding.ContentviewItemBinding;
-import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.ListViewmy;
@@ -139,7 +137,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public ViewGroup contentview;
 	public ContentviewBinding contentUIData;
 	public WebViewListHandler weblistHandler;
-	public ContentviewItemBinding mPageView;
 	
 	//构造
 	public PeruseView(int mainBackground){
@@ -165,7 +162,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     int itemWidth,itemHeight;
     View vb;
 	LeftViewAdapter leftLexicalAdapter;
-	RightViewAdapter bookMarkAdapter = new RightViewAdapter();
+	RightViewAdapter bookMarkAdapter;
 	public int bookmarks_size;
 	public int[] voyager;
 	public final int VELESIZE=3;
@@ -177,14 +174,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	boolean ToL=false,ToR=false,ToD=false,LnW=false;
 	boolean addAll;
 	public int CachedBBSize=-1;
-	ViewGroup webSingleholder;
-	//ViewGroup webholder;
-	ViewGroup rl;
 	public WebViewmy mWebView;
-	ViewGroup toolbar_web;
-	ImageView toolbar_cover;
-	View recess;
-	View forward;
 	ViewGroup root;
 	BasicAdapter ActivedAdapter;
 
@@ -297,9 +287,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					ivDeleteText.setVisibility(View.VISIBLE);
 			}});
 	
-		lv1.setAdapter(ActivedAdapter = leftLexicalAdapter = new LeftViewAdapter());
-		lv2.setAdapter(bookMarkAdapter);
-		
         ivDeleteText.setOnClickListener(this);
         
         ViewUtils.setOnClickListenersOneDepth(PeruseTorso, this, 1, 2, null);
@@ -701,8 +688,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		opt = a.opt;
 		if(currentDictionary==null)
 			currentDictionary = BookEmpty = a.EmptyBook;
-		if(contentUIData==null)
+		
+		if(contentUIData==null) {
 			inflateContentView(a);
+		}
 		
 		refreshUIColors(a.MainBackground);
 		
@@ -793,17 +782,29 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		//CMN.Log("inflateContentView");
 		contentUIData = ContentviewBinding.inflate(a.getLayoutInflater(), root,false);
 		weblistHandler = new WebViewListHandler(a, contentUIData);
+		lv1.setAdapter(ActivedAdapter = leftLexicalAdapter = new LeftViewAdapter());
+		lv2.setAdapter(bookMarkAdapter = new RightViewAdapter());
+		
 		contentview = contentUIData.webcontentlister;
-		webSingleholder = contentUIData.webSingleholder;
-		ContentviewItemBinding pageView = ContentviewItemBinding.inflate(a.getLayoutInflater(), a.weblistHandler.getViewGroup(), false);
-		mPageView = pageView;
-		rl = (ViewGroup) pageView.getRoot();
 		
-		SplitView webcontentlist = contentUIData.webcontentlister;
-		LinearLayout bottombar2 = contentUIData.bottombar2;
-		
-		webcontentlist.multiplier=-1;
-		webcontentlist.isSlik=true;
+		weblistHandler.setUpContentView(1);
+//		String contentkey = "ctnp#"+1;
+//		String appproject = opt.getAppContentBarProject(contentkey);
+//		if(appproject!=null) {
+//			AppUIProject content_project = a.peruseview_project;
+//			if(content_project==null){
+//				content_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, bottombar2, weblistHandler.ContentbarBtns);
+//				content_project.type = 1;
+//				a.peruseview_project = content_project;
+//			} else {
+//				content_project.bottombar = bottombar2;
+//				content_project.btns = weblistHandler.ContentbarBtns;
+//			}
+//			RebuildBottombarIcons(a, content_project, a.mConfiguration);
+//		}
+
+//		SplitView webcontentlist = contentUIData.webcontentlister;
+//		LinearLayout bottombar2 = contentUIData.bottombar2;
 		
 		
 		//webholder = WHP.findViewById(R.id.webholder);
@@ -811,20 +812,22 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 //		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
 //		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
 		
-		contentUIData.WHP.setVisibility(View.GONE);
+//		contentUIData.WHP.setVisibility(View.GONE);
 		
 		((MarginLayoutParams)contentUIData.dragScrollBar.getLayoutParams()).leftMargin+=sp_sub.getCompensationBottom()/2;
-		webcontentlist.scrollbar2guard=contentUIData.dragScrollBar;
+//		webcontentlist.scrollbar2guard=contentUIData.dragScrollBar;
+		
 		//tofo
 		contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
 			contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
 		});
-		leftLexicalAdapter.webviewHolder=
-		bookMarkAdapter.webviewHolder = webSingleholder;
-		webSingleholder.setBackgroundColor(CMN.GlobalPageBackground);
+		leftLexicalAdapter.webviewHolder =
+		bookMarkAdapter.webviewHolder = contentUIData.webSingleholder;
+		contentUIData.webSingleholder.setBackgroundColor(CMN.GlobalPageBackground);
 		
-			mWebView = pageView.webviewmy;
-			rl.setTag(mWebView);
+		
+			mWebView = weblistHandler.getMergedFrame();
+			mWebView.weblistHandler = weblistHandler;
 			//mWebView.fromPeruseview = true;
 			mWebView.fromCombined=3;
 			a.initWebScrollChanged();//Strategy: use one webscroll listener
@@ -834,56 +837,36 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     		mWebView.getSettings().setSupportZoom(true);
 			perusehandler = new BookPresenter.AppHandler(a.currentDictionary);
 			mWebView.addJavascriptInterface(perusehandler, "app");
-			ViewUtils.setOnClickListenersOneDepth(pageView.lltoolbar, this, 999, null);
+			ViewUtils.setOnClickListenersOneDepth(weblistHandler.mMergedBook.toolbar, this, 999, null);
 
-	        toolbar_web= pageView.lltoolbar;
-			mWebView.toolbar_title = pageView.toolbarTitle;
-			toolbar_cover = pageView.cover;
-			toolbar_cover.setTag(2);
-		
-			mWebView.titleBar = (AdvancedNestScrollLinerView) toolbar_web;
-			toolbar_web.getBackground().mutate();
-			mWebView.FindBGInTitle(toolbar_web);
-			mWebView.toolbarBG.setColors(mWebView.ColorShade);
+//	        toolbar_web= pageView.lltoolbar;
+//			toolbar_cover = pageView.cover;
+//			toolbar_cover.setTag(2);
+
+//			toolbar_web.getBackground().mutate();
+//			mWebView.FindBGInTitle(toolbar_web);
+//			mWebView.toolbarBG.setColors(mWebView.ColorShade);
 			
-			recess = pageView.recess;
-			forward = pageView.forward;
-			BookPresenter.setWebLongClickListener(mWebView, a);
+//			recess = pageView.recess;
+//			forward = pageView.forward;
+//			BookPresenter.setWebLongClickListener(mWebView, a);
 		
 		if(ToL||ToR) {
-			bottombar2.setBackgroundColor(bottombar2BaseColor);
+			contentUIData.bottombar2.setBackgroundColor(bottombar2BaseColor);
 		} else {
-			bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
+			contentUIData.bottombar2.setBackgroundColor(GlobalOptions.isDark?ColorUtils.blendARGB(a.MainBackground,Color.BLACK,a.ColorMultiplier_Wiget):a.MainBackground);
 		}
 		mlp.removeView(contentview);
 		
-		boolean tint = PDICMainAppOptions.getTintIconForeground();
-		for (int i = 0; i < 6; i++) {
-			ImageView iv = (ImageView) bottombar2.getChildAt(i);
-			weblistHandler.ContentbarBtns[i]=iv;
-			iv.setOnClickListener(this);
-			if(tint) iv.setColorFilter(a.ForegroundTint, PorterDuff.Mode.SRC_IN);
-			iv.setOnLongClickListener(this);
-		}
-		
-//		if(a.thisActType==ActType.MultiShare) {
-//			a.contentUIData.browserWidget10 = contentUIData.browserWidget10; //???
+//		boolean tint = PDICMainAppOptions.getTintIconForeground();
+//		for (int i = 0; i < 6; i++) {
+//			ImageView iv = (ImageView) contentUIData.bottombar2.getChildAt(i);
+//			weblistHandler.ContentbarBtns[i]=iv;
+//			iv.setOnClickListener(this);
+//			if(tint) iv.setColorFilter(a.ForegroundTint, PorterDuff.Mode.SRC_IN);
+//			iv.setOnLongClickListener(this);
 //		}
 		
-		String contentkey = "ctnp#"+1;
-		String appproject = opt.getAppContentBarProject(contentkey);
-		if(appproject!=null) {
-			AppUIProject content_project = a.peruseview_project;
-			if(content_project==null){
-				content_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, bottombar2, weblistHandler.ContentbarBtns);
-				content_project.type = 1;
-				a.peruseview_project = content_project;
-			} else {
-				content_project.bottombar = bottombar2;
-				content_project.btns = weblistHandler.ContentbarBtns;
-			}
-			RebuildBottombarIcons(a, content_project, a.mConfiguration);
-		}
 
 		if(opt.getBottomNavigationMode1()==1)
 			setBottomNavigationType(1, null);
@@ -895,11 +878,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		contentUIData.PageSlider.TurnPageEnabled=opt.getPageTurn3();
 //		if(a.IMPageCover!=null)//111
 //			IMPageCover.setPageSliderInf(a.IMPageCover.inf);
-		webcontentlist.setPageSliderInf(a.inf);
-		webSingleholder.addView(rl);
+
+//		webcontentlist.setPageSliderInf(a.inf);
+//		webSingleholder.addView(rl);
+		ViewUtils.addViewToParent(mWebView.rl, contentUIData.webSingleholder);
 		
-		rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-		mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+//		rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+//		mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 
 		if(opt.getPeruseInPageSearchVisible()){
 			toggleInPageSearch(false);
@@ -1021,7 +1006,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		mWebView.evaluateJavascript(isDark? MainActivityUIBase.DarkModeIncantation: MainActivityUIBase.DeDarkModeIncantation, null);
 		main_pview_layout.setBackgroundColor(filteredColor);
 		contentUIData.bottombar2.setBackgroundColor(bottombar2BaseColor = filteredColor);
-		webSingleholder.setBackgroundColor(isDark?Color.BLACK:CMN.GlobalPageBackground);
+		contentUIData.webSingleholder.setBackgroundColor(isDark?Color.BLACK:CMN.GlobalPageBackground);
 	}
 
 	float spsubs;
@@ -1142,7 +1127,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
 				 PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 				&& (PDICMainAppOptions.getHistoryStrategy8() == 2)){
-			a.insertUpdate_histroy(mWebView.word, 0, webSingleholder);
+			a.insertUpdate_histroy(mWebView.word, 0, contentUIData.webSingleholder);
 		}
 		((ViewGroup)contentview.getParent()).removeView(contentview);
 	}
@@ -1486,6 +1471,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			MainActivityUIBase a = getMainActivity();
 			ActivedAdapter=a.ActivedAdapter=this;
 			
+			WebViewmy mWebView = PeruseView.this.mWebView;
 			contentUIData.PageSlider.WebContext = mWebView;
 			mWebView.IBC = currentDictionary.IBC;
 			contentUIData.PageSlider.invalidateIBC();
@@ -1543,7 +1529,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 		
 				contentview.setVisibility(View.VISIBLE);
-				webSingleholder.setVisibility(View.VISIBLE);
+				contentUIData.webSingleholder.setVisibility(View.VISIBLE);
 		
 				SplitView webcontentlist = contentUIData.webcontentlister;
 				if(ToL) {
@@ -1562,7 +1548,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 				cr.moveToPosition(cr.getCount()-lastClickedPos-1);
             	int actualPosition=cr.getInt(0);
-
+		
 				mWebView.clearIfNewADA(currentDictionary);
 
 				setCurrentDis(currentDictionary, actualPosition);
@@ -1576,8 +1562,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				
     			//voyager[SelectedV*3+2]=pos;
     			a.decorateContentviewByKey(null, mWebView.word);
-    			rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-    			mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+				mWebView.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+				mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
         	} else {
         		ViewGroup p = (ViewGroup) vb.getParent();
     			if(p!=null) {
@@ -1718,7 +1704,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 		@Override
 		public void SaveVOA() {
-			if(!mWebView.isloading && lastClickedPosBeforePageTurn>=0 && webSingleholder.getChildCount()!=0) {
+			WebViewmy mWebView = PeruseView.this.mWebView;
+			if(!mWebView.isloading && lastClickedPosBeforePageTurn>=0 && contentUIData.webSingleholder.getChildCount()!=0) {
 				if(mWebView.webScale==0) mWebView.webScale=dm.density;//sanity check
 				//avoyager.get(avoyagerIdx).set((int) (mWebView.getScrollX()), (int) (mWebView.getScrollY()), webScale);
 				ScrollerRecord pagerec = avoyager.get(lastClickedPosBeforePageTurn);
@@ -1726,7 +1713,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					pagerec=new ScrollerRecord();
 					avoyager.put(lastClickedPosBeforePageTurn, pagerec);
 				}
-				pagerec.set(mWebView.getScrollX(), mWebView.getScrollY(),mWebView.webScale);
+				pagerec.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
 			}
 		}
 
@@ -1750,6 +1737,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         		return;
     		}
 	
+			WebViewmy mWebView = PeruseView.this.mWebView;
 			contentUIData.PageSlider.WebContext = mWebView;
 			mWebView.IBC = currentDictionary.IBC;
 			contentUIData.PageSlider.invalidateIBC();
@@ -1798,7 +1786,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			}
 	
 			contentview.setVisibility(View.VISIBLE);
-			webSingleholder.setVisibility(View.VISIBLE);
+			contentUIData.webSingleholder.setVisibility(View.VISIBLE);
 	
 			SplitView webcontentlist = contentUIData.webcontentlister;
     		if(ToR) {
@@ -1814,7 +1802,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         	}
 			//a.showT(pos+":"+lastClickedPos);
         	lastClickedPos = pos;
-
+	
 			mWebView.clearIfNewADA(currentDictionary);
         	
         	setCurrentDis(currentDictionary, lastClickedPos);
@@ -1828,14 +1816,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			}
 			
 			currentKeyText = mWebView.word;
-        	currentDictionary.renderContentAt(desiredScale,RENDERFLAG_NEW,0,mWebView, lastClickedPos);
+        	currentDictionary.renderContentAt(desiredScale,RENDERFLAG_NEW,0, mWebView, lastClickedPos);
 			
 			//voyager[SelectedV*3+2]=pos;
 			a.decorateContentviewByKey(contentUIData.browserWidget8, currentKeyText);
 			if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
 					PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
 					&& (!ismachineClick || PDICMainAppOptions.getHistoryStrategy8() == 0)){
-				a.insertUpdate_histroy(currentKeyText, 0, webSingleholder);
+				a.insertUpdate_histroy(currentKeyText, 0, contentUIData.webSingleholder);
 			}
 		}
         
@@ -1917,7 +1905,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			case R.id.toolbar_title:
 			case R.id.cover:
 				a.getUcc().setInvoker(currentDictionary, mWebView, null, null);
-				a.getUcc().onClick(toolbar_cover);
+//				a.getUcc().onClick(toolbar_cover); //111
 			break;
 			case R.id.action0:
 				contentview.setVisibility(View.VISIBLE);
@@ -1993,7 +1981,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				currentDictionary.saveCurrentPage(mWebView);
 				break;
 			case R.id.tools:
-				mPageView.save.performLongClick();
+				//mPageView.save.performLongClick(); //111
 				break;
 			case R.id.recess:
 			case R.id.forward:
@@ -2199,8 +2187,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		mWebView.toolbar_title.setText(mWebView.word + " - " + invoker.bookImpl.getDictionaryName());
 
 		if(mWebView.History.size()>2){
-			recess.setVisibility(View.VISIBLE);
-			forward.setVisibility(View.VISIBLE);
+//			recess.setVisibility(View.VISIBLE);
+//			forward.setVisibility(View.VISIBLE);
+			//111
 		}
 	}
 	

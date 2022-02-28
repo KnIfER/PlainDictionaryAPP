@@ -57,6 +57,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.RelativeSizeSpan;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
@@ -179,6 +180,8 @@ import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.SettingsActivity;
+import com.knziha.plod.settings.ViewSpecification;
+import com.knziha.plod.settings.ViewSpecification_exit_dialog;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
@@ -353,6 +356,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public String CombinedSearchTask_lastKey;
 	//public HashMap<CharSequence,byte[]> mBookProjects;
 	//public HashSet<CharSequence> dirtyMap;
+	protected ImageView browser_widget1;
 	
 	public Drawer drawerFragment;
 	public DictPicker pickDictDialog;
@@ -1898,6 +1902,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			popupStar.setOnTouchListener(popupMoveToucher);
 			// 缩放逻辑
 			popupWebView = mPopupWebView;
+			mPopupWebView.weblistHandler = weblistHandler;
 		}
 		if (GlobalOptions.isDark) {
 			popupChecker.drawInnerForEmptyState = true;
@@ -2936,7 +2941,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		mBar_layoutParmas = (FrameLayout.LayoutParams) contentUIData.dragScrollBar.getLayoutParams();
 		
 		CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, mResource.getDimension(R.dimen._bottombarheight_)));
-		weblistHandler.setUpContentView();
+		weblistHandler.setUpContentView(cbar_key);
 		
 		TypedValue typedValue = new TypedValue();
 		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
@@ -4134,7 +4139,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								GlobalPageBackground= GlobalPageBackground;
 								if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 								weblistHandler.setBackgroundColor(ManFt_GlobalPageBackground);
-								if(bFromPeruseView) peruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
+								if(bFromPeruseView) peruseView.contentUIData.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 								opt.putGlobalPageBackground(GlobalPageBackground);
 								if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
 									mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
@@ -4146,7 +4151,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if (GlobalOptions.isDark)
 									color = ColorUtils.blendARGB(color, Color.BLACK, ColorMultiplier_Web);
 								WebViewmy mWebView = bFromPeruseView ? peruseView.mWebView : invoker.mWebView;
-								ViewGroup webSingleholder = bFromPeruseView ? peruseView.webSingleholder : MainActivityUIBase.this.webSingleholder;
+								ViewGroup webSingleholder = bFromPeruseView ? peruseView.contentUIData.webSingleholder : MainActivityUIBase.this.webSingleholder;
 								if (invoker.getUseInternalBG()) {
 									if (mWebView != null)
 										mWebView.setBackgroundColor(color);
@@ -4177,7 +4182,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 									weblistHandler.setBackgroundColor(ManFt_GlobalPageBackground);
 									if(bFromPeruseView) {
-										peruseView.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
+										peruseView.contentUIData.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 									}
 									if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
 										mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
@@ -5564,12 +5569,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		configurableDialog.show();
 	}
 	
-	void showAppExit(boolean restart) {
+	void showExitDialog(boolean restart) {
 		String[] DictOpt = getResources().getStringArray(R.array.app_exit);
 		final String[] Coef = DictOpt[0].split("_");
 		final SpannableStringBuilder ssb = new SpannableStringBuilder();
 		int title = restart?R.string.relaunch:R.string.warn_exit0;
-		TextView tv = buildStandardConfigDialog(this, false, title, title);
+		
+		SpannableStringBuilder titleX = new SpannableStringBuilder(mResource.getString(title));
+		titleX.append("   ");
+		int start = titleX.length();
+		titleX.append("[设置]");
+		int end=titleX.length();
+		titleX.setSpan(new RelativeSizeSpan(0.63f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		titleX.setSpan(new ClickableSpan() {
+			@Override
+			public void onClick(@NonNull View widget) {
+				launchSettings(ViewSpecification_exit_dialog.id, 0);
+			}
+		}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+		TextView tv = buildStandardConfigDialog(this, false, null, 0, titleX);
 		restart = false;
 		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 42, 1, 4, -1, true);//清除历史
 		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 40, 1, 4, R.string.shutdown_vm, true);//彻底退出
@@ -5584,6 +5602,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
 		AlertDialog dialog = ((AlertDialog) tv.getTag());
+		
 		dialog.show();
 		if(restart) {
 			dialog.setCanceledOnTouchOutside(false);
@@ -5851,6 +5870,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
+				if(browser_widget1!=null && browser_widget1.isActivated()) {
+					browser_widget1.performClick();
+				}
 				if(isCombinedSearching) {
 				
 				} else {
@@ -5863,13 +5885,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						while(!switch_To_Dict_Idx(adapter_idx+delta, true, false, PrvNxtABC));
 						if(PrvNxtABC.collide() && testVal!=adapter_idx) { // rejected
 							switch_To_Dict_Idx(testVal, true, false, null);
+						} else {
+							getTopSnackView().setNextOffsetScale(0.24f);
+							showTopSnack(currentDictionary.getDictionaryName());
 						}
 						if(testVal!=adapter_idx&&PrvNxtABC.rejectIdx>=0) { // not rejected
 							PrvNxtABC.rejectIdx=-1;
-							fadeSnack();
 						}
 						if(currentDictionary!=EmptyBook) {
-							//showTopSnack(currentDictionary._Dictionary_fName);
 							postPutName(1000);
 						}
 					}
@@ -6211,11 +6234,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				/* 正常翻页 */
 				if(bPeruseInCharge&&opt.getBottomNavigationMode1()==0 || !bPeruseInCharge&&opt.getBottomNavigationMode()==0){
 					int toPos = ActivedAdapter.lastClickedPos+delta;
-					if(CurrentViewPage==1 && !bPeruseInCharge){
-						if(lv2.getVisibility()!=View.VISIBLE){
-							weblistHandler.removeAllViews();
-						}
-					}
+//					if(CurrentViewPage==1 && !bPeruseInCharge){
+//						if(lv2.getVisibility()!=View.VISIBLE){
+//							weblistHandler.removeAllViews();
+//						}
+//					}
 					ActivedAdapter.onItemClick(toPos);
 				}
 				/* 前进后退 */
@@ -6577,7 +6600,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		switch(v.getId()) {
 			/* long-click exit */
 			case R.drawable.ic_exit_app:{
-				showAppExit(false);
+				showExitDialog(false);
 				//anyDialog();
 			} return true;
 			case R.id.browser_widget8:{
@@ -6594,7 +6617,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* long-click view outline */
 			case R.id.browser_widget9:{
 				if(PeruseViewAttached()) {
-					peruseView.toolbar_cover.performClick();
+//					peruseView.toolbar_cover.performClick(); //111
 					break;
 				}
 				if((isCombinedSearching && DBrowser!=null) ||ActivedAdapter==adaptermy2) {
@@ -6865,7 +6888,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				randomPageHandler = new WebViewListHandler(this, ContentviewBinding.inflate(getLayoutInflater()));
 			WebViewListHandler weblistHandler = randomPageHandler;
 			WebViewmy randomPage = weblistHandler.getMergedFrame();
-			weblistHandler.setUpContentView();
+			weblistHandler.setUpContentView(cbar_key);
 			weblistHandler.popupContentView(null, "随机页面");
 			
 			weblistHandler.setViewMode(WEB_VIEW_SINGLE, true);
@@ -8136,8 +8159,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//}
 						//todo delay save states
 						if (fromPeruseView) {
-							peruseView.recess.setVisibility(View.VISIBLE);
-							peruseView.forward.setVisibility(View.VISIBLE);
+//							peruseView.recess.setVisibility(View.VISIBLE);
+//							peruseView.forward.setVisibility(View.VISIBLE); //111
 							peruseView.isJumping = true;
 							if (mWebView.HistoryVagranter >= 0)
 								mWebView.History.get(peruseView.mWebView.HistoryVagranter).value.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);

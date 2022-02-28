@@ -612,7 +612,7 @@ public class Drawer extends Fragment implements
 			//退出
 			case R.string.exit:
 			case R.id.menu_item_exit:
-				a.showAppExit(false);
+				a.showExitDialog(false);
 				break;
 			case R.string.clip_board:
 			case R.id.pastebin:{//剪贴板对话框
