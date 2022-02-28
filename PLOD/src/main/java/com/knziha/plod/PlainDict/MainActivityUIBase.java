@@ -140,6 +140,7 @@ import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.GoodKeyboardDialog;
 import com.knziha.filepicker.widget.CircleCheckBox;
+import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AnnotAdapter;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.BookmarkAdapter;
@@ -265,6 +266,8 @@ import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_HISTORY;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
+import static com.knziha.plod.plaindict.WebViewListHandler.WEB_LIST_MULTI;
+import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -359,6 +362,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public ContentviewBinding contentUIData;
 	public WebViewListHandler weblistHandler;
+	public WebViewListHandler randomPageHandler;
 	public ViewGroup webSingleholder;
 	protected WindowManager wm;
 
@@ -378,6 +382,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public String fontFaces;
 	
 	MenuBuilder AllMenus;
+	MenuItem menuSearchMode;
 	List<MenuItemImpl> MainMenu;
 	List<MenuItemImpl> LEFTMenu;
 	List<MenuItemImpl> SingleContentMenu;
@@ -667,11 +672,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					if(rejected) {
 						prvNxtABC.dump();
-						ViewGroup sv = getContentviewSnackHolder();
-						if(thisActType==ActType.PlainDict && !isContentViewAttached()) {
-							sv = main_succinct;
-						}
-						showTopSnack(sv, msg, 0.75f, -1, Gravity.CENTER, 0);
+						showTopSnack(null, msg, 0.75f, -1, Gravity.CENTER, 0);
 						return true;
 					}
 				}
@@ -1348,25 +1349,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ViewGroup tmp =  new ScrollViewmy(this);
 		if(shunt) return;
 		CMN.instanceCount++;
-		snackWorker = () -> {
-			animationSnackOut=false;
-			hdl.sendEmptyMessage(6657);
-			hdl.removeMessages(6658);
-			int height = topsnack.getHeight();
-			if(height>0){
-				if(topsnack.offset>0 || topsnack.offset<-height)
-					topsnack.offset=-height;
-				else
-					topsnack.offset=Math.min(-height/3, topsnack.offset);
-				topsnack.setTranslationY(topsnack.offset);
-				topsnack.setVisibility(View.VISIBLE);
-				hdl.animator=0.1f;
-				hdl.animatorD=0.08f*height;
-				hdl.sendEmptyMessage(6657);
-			}
-			//ObjectAnimator fadeInContents = ObjectAnimator.ofFloat(topsnack, "translationY", -height, 0);
-			//fadeInContents.start();
-		};
 		MainStringBuilder = new StringBuilder(40960);
 		//WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
 		//ViewUtils.setWebDebug(this);
@@ -1812,10 +1794,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										}
 									}
 									if(thisActType!=ActType.MultiShare) {
-										if(PDICMainAppOptions.getEnableSuperImmersiveScrollMode()){
-											now += contentUIData.webcontentlister.getTop();
-										} else {
-											now += ((ViewGroup.MarginLayoutParams) getContentviewSnackHolder().getLayoutParams()).topMargin;
+										try {
+											if(PDICMainAppOptions.getEnableSuperImmersiveScrollMode()){
+												now += contentview.getTop();
+											} else {
+												now += ((ViewGroup.MarginLayoutParams) contentview.getLayoutParams()).topMargin;
+											}//333 contentSnackHolder
+										} catch (Exception e) {
+											CMN.Log(e);
 										}
 									}
 									float pad = 56 * dm.density;
@@ -2926,6 +2912,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
 		//if(opt.isShowDirectSearch()) ((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action2)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+		
+		if(opt.getLockStartOrientation()) {
+			//CMN.Log("锁定!!", opt.getUserOrientation());
+			opt.setTmpUserOrientation(opt.getUserOrientation());
+			setRequestedOrientation(ScreenOrientation[opt.getUserOrientation()]);
+		}
 	}
 	
 	@CallSuper
@@ -2935,9 +2927,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(contentview==null) {
 			weblistHandler = new WebViewListHandler(this, contentUIData);
+			AllMenus.tag = weblistHandler;
 			contentview = contentUIData.webcontentlister;
 			webSingleholder = contentUIData.webSingleholder;
 		}
+		menuSearchMode = AllMenus.findItem(R.id.toolbar_action1);
 		//CMN.Log("findFurtherViews...", contentUIData, contentview);
 		mBar_layoutParmas = (FrameLayout.LayoutParams) contentUIData.dragScrollBar.getLayoutParams();
 		
@@ -2948,6 +2942,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
 		actionBarSize = TypedValue.complexToDimensionPixelSize(typedValue.data, dm);
 		if(actionBarSize<=0) actionBarSize=(int) (56*dm.density);
+		setContentDetachType(1);
 	}
 	
 	protected void populateDictionaryList() {
@@ -3373,15 +3368,55 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	TextView MainPageSearchindicator;
 	String MainPageSearchetSearchStartWord;
 	boolean HiFiJumpRequested;
-	void RecalibrateContentSnacker(boolean bContentBow) {
-		if(snack_holder!=null){
-			CMN.Log("RecalibrateContentSnacker");
-			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) snack_holder.getLayoutParams();
-			lp.setMargins(0,((bContentBow&&!PDICMainAppOptions.getEnableSuperImmersiveScrollMode())?actionBarSize:0)+(MainPageSearchbar==null||MainPageSearchbar.getParent()==null?0:MainPageSearchbar.getHeight()), 0, 0);
-			snack_holder.requestLayout();
+	
+	@Override
+	protected ViewGroup onShowSnack(ViewGroup parentView) {
+		boolean findHolder = parentView==null;
+		int bottom = bottombar.getHeight();
+		if(isContentViewAttached()) {
+			if(findHolder) parentView = contentUIData.PageSlider;
+			bottom = 0;
+		}
+		if(settingsPanel!=null) {
+			if(settingsPanel instanceof AlloydPanel) {
+				if(findHolder) parentView = ((AlloydPanel)settingsPanel).contentUIData.PageSlider;
+				bottom = 0;//(AlloydPanel)settingsPanel).contentUIData.bottombar2.getHeight();
+			} else {
+				if(findHolder) parentView = (ViewGroup)settingsPanel.settingsLayout.getParent();
+				if(settingsPanel.getLastShowType()==0) {
+					bottom = settingsPanel.bottomPadding;
+				} else {
+					bottom = 0;
+				}
+			}
+		}
+		else if(DBrowser!=null && DBrowser.UIData!=null) {
+			if(findHolder) parentView = DBrowser.UIData.root;
+			bottom = 0;
+		}
+		if(findHolder) {
+			if(parentView!=null) {
+			} else {
+				parentView = snack_holder;
+			}
+		}
+		topsnack.setBottomMargin(bottom);
+		return parentView;
+	}
+	
+	void setContentBow(boolean bContentBow) {
+		//actionBarSize=toolbar.getHeight();
+		ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) contentview.getLayoutParams();
+		int targetTop = 0;
+		if(!PDICMainAppOptions.getEnableSuperImmersiveScrollMode()){
+			targetTop = bContentBow?toolbar.getHeight():0;
+		}
+		if(lp.topMargin!=targetTop){
+			lp.setMargins(0,targetTop, 0, 0);
+			contentview.requestLayout();
 		}
 	}
-
+	
 	void refreshContentBow(boolean bContentBow, int actionBarSize) {
 		if(bContentBow&&!PDICMainAppOptions.getEnableSuperImmersiveScrollMode()) {
 			ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) contentview.getLayoutParams();
@@ -3528,15 +3563,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void NotifyComboRes(int size) {
 		if(PDICMainAppOptions.getNotifyComboRes()) {
 			float fval = 0.5f;
-			ViewGroup sv;
-			if(bIsFirstLaunch||bWantsSelection) {
-				sv=getContentviewSnackHolder();
-				fval=.8f;
-			}else {
-				sv=main_succinct;
-			}
 			String val = recCom.allWebs?"回车以搜索网络词典！":getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size);
-			showTopSnack(sv, val, fval, -1, -1, 0);
+			showTopSnack(null, val, fval, -1, -1, 0);
 		}
 	}
 
@@ -3826,6 +3854,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ret;
 	}
 	
+	public boolean getIsWebxByIdNoCreation(long bid) {
+		boolean ret=false;
+		try {
+			UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
+			if (impl!=null) {
+				return impl.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB.ordinal();
+			}
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+		return ret;
+	}
+	
 	public BookPresenter getBookByIdNoCreation(long bid) {
 		BookPresenter ret = null;
 		try {
@@ -4059,8 +4100,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						msg=getResources().getString(R.string.BGMSG2);
 					}
 					//DialogSnack(d,msg);
-					ViewGroup target=bFromPeruseView? peruseView.contentview:getContentviewSnackHolder();
-					root.post(() -> showTopSnack(target, msg, 0.8f, -1, -1, 0x4));
+					root.post(() -> showTopSnack(null, msg, 0.8f, -1, -1, 0x4));
 					
 					d.hide();
 					ColorPickerDialog asd =
@@ -4164,7 +4204,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					tools_lock.setImageResource(enabled?R.drawable.un_locked:R.drawable.locked);
 					opt.putFirstFlag();
-					showTopSnack((ViewGroup) d.getListView().getRootView(), enabled?R.string.PT1:R.string.PT2
+					showTopSnack(null, enabled?R.string.PT1:R.string.PT2
 							, 0.8f, LONG_DURATION_MS, -1, 0);
 				} return;
 				case R.id.check1: //tofo checker
@@ -5652,11 +5692,40 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ucc;
 	}
 	
+	/** 0=hide; 1=remove */
+	int contentviewDetachType = -1;
+	
+	/** 0=hide; 1=remove */
+	public void setContentDetachType(int type) {
+		if(contentviewDetachType!=type) {
+			if(type==1 && (contentviewDetachType==-1 || contentview.getVisibility()!=View.VISIBLE)) {
+				contentview.setVisibility(View.VISIBLE);
+				ViewUtils.removeView(contentview);
+			}
+			if(type==0 && (contentviewDetachType==-1 || contentview.getParent()==null)) {
+				contentview.setVisibility(View.GONE);
+				if(thisActType==ActType.PlainDict) {
+					boolean animate = opt.getAnimateContents();
+					opt.setAnimateContents(false);
+					((PDICMainActivity)this).AttachContentView(false);
+					opt.setAnimateContents(animate);
+				} else if(thisActType==ActType.FloatSearch){
+				
+				}
+			}
+			contentviewDetachType=type;
+		}
+	}
+	
 	public boolean isContentViewAttached() {
+		if(contentviewDetachType==0)
+			return contentview.getVisibility()==View.VISIBLE; // float
 		return contentview.getParent()!=null;
 	}
 	
-	abstract void DetachContentView(boolean leaving);
+	void DetachContentView(boolean leaving) {
+		//ViewUtils.removeView(contentview);  multishare
+	}
 	
 	void AttachDBrowser(int type) {
 		if(DBrowser==null) {
@@ -5797,7 +5866,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 						if(testVal!=adapter_idx&&PrvNxtABC.rejectIdx>=0) { // not rejected
 							PrvNxtABC.rejectIdx=-1;
-							cancleSnack();
+							fadeSnack();
 						}
 						if(currentDictionary!=EmptyBook) {
 							//showTopSnack(currentDictionary._Dictionary_fName);
@@ -6626,8 +6695,209 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	@Override
-	public abstract boolean onMenuItemClick(MenuItem item);
+	public boolean onMenuItemClick(MenuItem item) {
+		int id = item.getItemId();
+		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
+		MenuBuilder menu = (MenuBuilder) mmi.tag;
+		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
+		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
+		boolean ret = !isLongClicked;
+		boolean closeMenu=ret;
+		switch(id){
+			case R.id.wordtoday:{
+				showRandomShuffles();
+			} return true;
+			case R.id.refreshRandom:{
+				showRandomShuffles();
+			} break;
+			case R.id.viewMode:{
+				CMN.Log("onClick::1::", weblistHandler.contentUIData.webholder.getChildCount());
+				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(mmi.tag);
+				if(dd==null) {
+					dd = new AlertDialog.Builder(this)
+						.setSingleChoiceLayout(R.layout.singlechoice_plain)
+						.setSingleChoiceItems(new String[]{
+								"切换旧版本多页面视图列表"
+								, "切换新版合并的多页面模式"
+								, "打开详细设置"
+						}, 0, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								CMN.Log("onClick::", weblistHandler.contentUIData.webholder.getChildCount());
+								if(which==0 || which==1) {
+									boolean bUseMergedUrl = which==1;
+									if(bUseMergedUrl!=weblistHandler.bMergingFrames) {
+										weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);
+										weblistHandler.bMergeFrames = which;
+										weblistHandler.webHolderSwapHide = true;
+										// 旧版本切换新版本出现闪黑，
+//										boolean delay = opt.getDelayContents();
+//										boolean animate = opt.getAnimateContents();
+//										if(delay||animate) {
+//											opt.setDelayContents(false);
+//											opt.setAnimateContents(false);
+//										}
+										ensureContentVis(weblistHandler, contentUIData.webSingleholder);
+//										if(delay||animate) {
+//											opt.setDelayContents(delay);
+//											opt.setAnimateContents(animate);
+//										}
+										
+										// only handle popup
+										//weblistHandler.initMergedFrame(weblistHandler.bMergingFrames, false, false);
+										recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblistHandler);
+									} else {
+										showT("已经是了");
+									}
+								}
+								dialog.dismiss();
+							}
+						})
+						//.setSingleChoiceItems(strIds, 0, null)
+						.setTitle("多页面设置").create();
+					mmi.tag = null;
+				}
+				showMenuDialog(mmi, dd);
+			}  break;
+			case R.id.setToSingleMode:{
+				if(isCombinedSearching) {
+					toggleJointSearch();
+				}
+			}  break;
+			case R.id.setToMultiMode:{
+				if(!isCombinedSearching) {
+					toggleJointSearch();
+				}
+			}  break;
+			case R.id.translate:{
+				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(mmi.tag);
+				if(dd==null) {
+					dd = new AlertDialog.Builder(this)
+						.setSingleChoiceLayout(R.layout.singlechoice_plain)
+						.setSingleChoiceItems(new String[]{
+								"使用谷歌翻译"
+								, "使用彩云小译"
+								, "关闭"
+						}, 0, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								if(which==2) {
+									currentDictionary.mWebView.translating=false;
+									dialog.dismiss();
+									return;
+								}
+								WebViewListHandler weblistHandler = (WebViewListHandler) ((MenuBuilder)((AlertDialog)dialog).tag).tag;
+								try {
+									BookPresenter gTrans = new_book(defDicts[1], MainActivityUIBase.this);
+									weblistHandler.moders.remove(gTrans.bookImpl);
+									weblistHandler.moders.add(gTrans.getWebx());
+									if(weblistHandler.bMergingFrames) {
+										weblistHandler.mMergedFrame.evaluateJavascript(gTrans.getWebx().getSyntheticField("pageTranslator"), null);
+									} else if(weblistHandler.getViewMode()==WEB_VIEW_SINGLE){
+										View rl = weblistHandler.contentUIData.webSingleholder.getChildAt(0);
+										if(rl!=null) {
+											((WebViewmy)rl.getTag()).evaluateJavascript(gTrans.getWebx().getSyntheticField("pageTranslator"), null);
+										}
+									}
+									dialog.dismiss();
+								} catch (Exception e) { CMN.Log(e); }
+							}
+						})
+						//.setSingleChoiceItems(strIds, 0, null)
+						.setTitle("翻译当前页面").create();
+					mmi.tag = null;
+				}
+				showMenuDialog(mmi, dd);
+			}  break;
+		}
+		if(closeMenu)
+			closeIfNoActionView(mmi);
+		return ret;
+	}
+	
+	public void toggleJointSearch() {
+		boolean result = isCombinedSearching = !isCombinedSearching
+				, b=isContentViewAttached();
+		if(thisActType==ActType.PlainDict) {
+			opt.setCombinedSearching(result);
+		} else if(thisActType==ActType.FloatSearch){
+			opt.setFloatCombinedSearching(result);
+		}
+		// switch cs mode will interrupt the user's reading process.
+		CombinedSearchTask_lastKey = null;
+		if(result) {
+			//xxx lv.setVisibility(View.VISIBLE);
+			if(b) adaptermy2.currentKeyText=null;
+//			if(action1!=null)
+//				action1.setIcon((getResources().getDrawable(R.drawable.ic_btn_multimode)));
+			lv2.setVisibility(View.VISIBLE);
+			menuSearchMode.setIcon(R.drawable.ic_btn_multimode);
+		} else {
+			if(b) adaptermy.currentKeyText=null;
+//			if(action1!=null)
+//				action1.setIcon((getResources().getDrawable(R.drawable.ic_btn_siglemode)));
+			lv2.setVisibility(View.GONE);
+			// nimp
+			//if(currentDictionary instanceof bookPresenter_web)
+			//	adaptermy.notifyDataSetChanged();
+			menuSearchMode.setIcon(R.drawable.ic_btn_siglemode);
+		}
+		//AllMenus.getItem(0).setIcon(isCombinedSearching?R.drawable.ic_btn_multimode:R.drawable.ic_btn_siglemode);
+		
+		if(opt.auto_seach_on_switch)
+			tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
+	}
+	
+	protected AlertDialog showMenuDialog(MenuItemImpl mmi, AlertDialog menuDialog) {
+		if(mmi.tag==null) {
+			mmi.tag=new WeakReference<>(menuDialog);
+		}
+		menuDialog.tag = mmi.menu;
+		menuDialog.show();
+		menuDialog.getWindow().setDimAmount(0);
+		return menuDialog;
+	}
+	
+	public void showRandomShuffles() {
+		try {
+			getMdictServer();
+			if(randomPageHandler==null)
+				randomPageHandler = new WebViewListHandler(this, ContentviewBinding.inflate(getLayoutInflater()));
+			WebViewListHandler weblistHandler = randomPageHandler;
+			WebViewmy randomPage = weblistHandler.getMergedFrame();
+			weblistHandler.setUpContentView();
+			weblistHandler.popupContentView(null, "随机页面");
+			
+			weblistHandler.setViewMode(WEB_VIEW_SINGLE, true);
+			weblistHandler.initMergedFrame(true, true, false);
+			
+			randomPage.isloading = true;
+			randomPage.active = true;
+			randomPage.jointResult = null;
+			randomPage.presenter = new_book(defDicts[2], this);
 
+//			if(randomPage==null) {
+//				init=true;
+//				WebViewListHandler handler = new WebViewListHandler(this, contentUIData);
+//				randomPage=handler.getMergedFrame();
+//				mlv.addView(handler.mMergedBook.rl);
+//				handler.mMergedBook.rl.getLayoutParams().height=350;
+//			}
+			
+			BookPresenter wikibook = randomPage.presenter;
+			PlainWeb webx = wikibook.getWebx();
+			//String testUrl="file:///android_asset/load.html";
+			String testUrl="http://MdbR.com/load.html";
+			CMN.Log("testUrl::", randomPage.getUrl(), testUrl);
+			if(!TextUtils.equals(randomPage.getUrl(), testUrl)) {
+				CMN.Log("加载::", testUrl);
+				randomPage.loadUrl(testUrl);
+				RecalibrateWebScrollbar(randomPage);
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
 	
 	public void onSettingsChanged(SettingsActivity settingsActivity, Preference preference) {
 		if (TextUtils.equals("dbv2_up", preference.getKey())) {
@@ -6671,7 +6941,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					toggleInPageSearch(false);
 					if (etSearch.hasFocus())
 						imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
-					cancleSnack();
+					fadeSnack();
 				});
 				etSearch.setText(MainPageSearchetSearchStartWord);
 				etSearch.addTextChangedListener(new TextWatcher() {
@@ -6745,7 +7015,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			else{
 				PDICMainAppOptions.setInFloatPageSearchVisible(b1);
 			}
-			root.post(() -> RecalibrateContentSnacker(opt.isContentBow()));
 		}
 	}
 
@@ -6797,7 +7066,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//CMN.Log("jumpHighlight... dir="+d+" framePos="+ActivedAdapter.HlightIdx);
 		webviewHolder=ActivedAdapter.webviewHolder;
 		int max = webviewHolder.getChildCount();
-		cancleSnack();
+		fadeSnack();
 		boolean b1=ActivedAdapter.HlightIdx>=max,b2=ActivedAdapter.HlightIdx<0;
 		if(b1||b2) {
 			ActivedAdapter.AcrArivAcc++;
@@ -6813,7 +7082,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//CMN.Log("do_jumpHighlight", PDICMainAppOptions.getInPageSearchShowNoNoMatch(), calcIndicator);
 				if(PDICMainAppOptions.getInPageSearchShowNoNoMatch() || calcIndicator) {
 					String msg = getResources().getString(R.string.search_end, d < 0 ? "⬆" : "", d > 0 ? "⬇" : "");
-					showTopSnack(getContentviewSnackHolder(), msg, 0.75f, -1, Gravity.CENTER, 0);
+					showTopSnack(null, msg, 0.75f, -1, Gravity.CENTER, 0);
 				}
 				return;
 			}else{
@@ -7136,7 +7405,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							dialog.dismiss();
 							invalidAllLists();
 							//show(R.string.loadsucc);
-							showTopSnack(main_succinct, R.string.loadsucc
+							showTopSnack(null, R.string.loadsucc
 									, -1, -1, Gravity.CENTER, 0);
 							if(thisActType==ActType.PlainDict
 								&& opt.getCacheCurrentGroup()) {
@@ -7394,6 +7663,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	};
 	
+	
+	void doTranslation(WebViewmy mWebView) {
+		try {
+			WebViewListHandler weblistHandler = mWebView.weblistHandler;
+			BookPresenter gTrans = new_book(defDicts[1], this);
+			weblistHandler.moders.remove(gTrans.bookImpl);
+			weblistHandler.moders.add(gTrans.getWebx());
+			currentDictionary.mWebView.evaluateJavascript(gTrans.getWebx().getSyntheticField("pageTranslator"), null);
+			currentDictionary.mWebView.translating=true;
+		} catch (IOException e) {
+			CMN.Log(e);
+		}
+	}
+	
 	protected boolean delayedAttaching;
 	
 	public WebViewClient myWebClient = new WebViewClient() {
@@ -7407,7 +7690,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if("about:blank".equals(url) || !mWebView.active&&!mWebView.fromNet) {
 				return;
 			}
-			//CMN.Log("chromium page finished ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
+			CMN.Log("chromium page finished ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
 			if(!mWebView.isloading && !mWebView.fromNet) return;
 			int from = mWebView.fromCombined;
 			mWebView.isloading = false;
@@ -7415,6 +7698,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			BookPresenter invoker = mWebView.presenter;
 			
+			if (mWebView.translating) {
+				doTranslation(mWebView);
+			}
+			if (url.equals("http://mdbr.com/load.html")) {
+				try {
+					mWebView.evaluateJavascript(new_book(defDicts[2], MainActivityUIBase.this).getWebx().getSyntheticField("wordtoday"), new ValueCallback<String>() {
+						@Override
+						public void onReceiveValue(String value) {
+							CMN.debug("wordtoday::ValueCallback", value);
+							//weblistHandler.alloydPanel.dismiss();
+							
+							//etSearch.setText("mallee");
+						}
+					});
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 			if(delayedAttaching && mWebView.presenter==currentDictionary) { // todo same replace (mWebView.SelfIdx==adapter_idx, ->)
 				((PDICMainActivity)MainActivityUIBase.this).AttachContentViewDelayed(10);
 			}
@@ -7987,13 +8288,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			//CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
+			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 			
 			WebViewmy mWebView = (WebViewmy) view;
 			BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return null;
+			
+			WebViewListHandler weblistHandler = mWebView.weblistHandler;
 			
 			if(invoker.isMergedBook) {
 				int schemaIdx = url.indexOf(":");
@@ -8022,8 +8325,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					try {
 						InputStream input = null;
-						for (Long id:weblistHandler.frames) { // java.util.ConcurrentModificationException
-							BookPresenter book = getBookByIdNoCreation(id);
+						for (BookPresenter book:weblistHandler.frames) { // java.util.ConcurrentModificationException
 							if(book!=null && book.getIsWebx()) {
 								input = book.getWebx().modifyRes(MainActivityUIBase.this, url);
 								if(input!=null) {
@@ -8088,9 +8390,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return null;
 			}
 			
-			if(url.equalsIgnoreCase("http://MdbR.com/load.html")) {
+			if(url.startsWith("http://mdbr.com/load.html")) {
 				return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(new byte[0]));
 			}
+			
 			for (PlainWeb book:weblistHandler.moders) { // java.util.ConcurrentModificationException
 				InputStream input = book.modifyRes(MainActivityUIBase.this, url);
 				if(input!=null) {
@@ -8271,6 +8574,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					} catch (Exception e) {
 						CMN.debug(url, e);
+						return emptyResponse;
 					}
 				}
 				
@@ -8338,7 +8642,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					ReadEntryPlanB(mWebView, url);
 				}
-				return null;
+				return emptyResponse;
 			}
 
 			String SepWindows = "\\";
@@ -8353,13 +8657,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/////////////////
 			/////////////////
 			/////////////////
-
-			int start = key.indexOf(BookPresenter.FileTag);
+			//BookPresenter.FileTag
+			int start = key.indexOf(":");
 			if(start==-1){
 				if(key.startsWith("./"))
 					key=key.substring(1);
 			} else {
-				key = key.substring(start+ BookPresenter.FileTag.length());
+				key = key.substring(start+2);
+			}
+			WebResourceResponse fakedDomainResponse = null;
+			if(key.toLowerCase().startsWith("/mdbr.com/")) {
+				key = key.substring("/mdbr.com/".length());
+				fakedDomainResponse = emptyResponse;
 			}
 			if(url.startsWith("/MdbR/")) {
 				try {
@@ -8434,7 +8743,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			key=key.replace("/", SepWindows);
 
-			//CMN.Log("chrochro_inter_key is",key);
+			CMN.Log("chrochro_inter_key is",key, fakedDomainResponse);
 
 			if(!key.startsWith(SepWindows)){
 				key=SepWindows+key;
@@ -8480,13 +8789,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 
 			if(!invoker.bookImpl.hasMdd())
-				return null;
+				return fakedDomainResponse;
 			if(mWebView.fromCombined==0 && !mWebView.fromNet && invoker.getIsolateImages() && RegImg.matcher(key).find()){
 				//CMN.Log("Isolating Images...");
 				new_photo = key;
 				PhotoPager.removeCallbacks(PhotoRunnable);
 				PhotoPager.post(PhotoRunnable);
-				return null;
+				return fakedDomainResponse;
 			}
 			try {
 				InputStream restmp=invoker.bookImpl.getResourceByKey(key);
@@ -8496,6 +8805,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						WebResourceResponse ret = getPlugRes(invoker, key);
 						if(ret!=null) return ret;
 					}
+					if(true) return fakedDomainResponse; //!!!
 					//CMN.Log("chrochro inter_ key is not find: ",key);
 					if(url.startsWith("http://")) {
 						URL uurrll = new URL(url);
@@ -10388,13 +10698,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
+	SaveAndRestorePagePosDelegate saveAndRestorePagePosDelegate;
+	
+	public SaveAndRestorePagePosDelegate DelegateSaveAndRestorePagePos() {
+		if(saveAndRestorePagePosDelegate==null)
+			saveAndRestorePagePosDelegate=new SaveAndRestorePagePosDelegate();
+		return saveAndRestorePagePosDelegate;
+	}
+	
 	public float prepareSingleWebviewForAda(BookPresenter current, WebViewmy current_webview, long pos, BasicAdapter Ada) {
 		if(current_webview==null) {
 			current_webview = current.mWebView;
 		}
 		float ret=-1;
 		if(opt.getRemPos() && !Ada.shunt) {
-			ret = new SaveAndRestorePagePosDelegate().SaveAndRestoreSinglePageForAdapter(current_webview, pos, Ada);
+			ret = DelegateSaveAndRestorePagePos().SaveAndRestoreSinglePageForAdapter(current_webview, pos, Ada);
 		} else {
 			current_webview.expectedPos=0;
 			current_webview.expectedPosX=0;
@@ -10420,12 +10738,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	@Override
 	public long Flag(int flagIndex) {
-		return 0;
+		return opt.Flag(flagIndex);
 	}
 	
 	@Override
 	public void Flag(int flagIndex, long val) {
-	
+		opt.Flag(flagIndex, val);
 	}
 	
 	@Override
@@ -10514,6 +10832,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} else {
 				padbot = bottombar!=null?bottombar.getHeight():app_panel_bottombar_height;
 			}
+			panel.bottomPadding = padbot;
 		}
 		settingsPopup = pop;
 		pop.setWidth(dm.widthPixels);
@@ -10604,8 +10923,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	};
 	
 	public void setScreenOrientation(int idx) {
-		//CMN.Log("setScreenOrientation::", ScreenOrientation[idx]);
+		CMN.Log("setScreenOrientation::", idx, ScreenOrientation[idx]);
 		//setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+		if(opt.getLockStartOrientation()) {
+			opt.setUserOrientation(idx);
+		}
+		opt.setTmpUserOrientation1(idx);
 		setRequestedOrientation(ScreenOrientation[idx]);
 	}
 	
@@ -10681,6 +11004,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public MdictServer getMdictServer() {
 		try {
 			if(server==null) {
+				if(Thread.currentThread().getId()!=CMN.mid) {
+					CMN.Log("在异常建立MdictServer！");
+				}
 				server = new MdictServerMobile(8080, this, opt);
 				((AgentApplication)getApplication()).mServer = server;
 			}
@@ -10727,5 +11053,5 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		startActivityForResult(intent, 110);
 	}
 	
-	abstract void ensureContentVis(ViewGroup webholder, ViewGroup another);
+	public abstract void ensureContentVis(ViewGroup webholder, ViewGroup another);
 }

@@ -319,29 +319,34 @@ succ"
 		,{url:"https://translate.google.cn/translate_a/element.js"}
 	]
 	,"pageTranslator":"
-		function loadJs(url,callback){
-			var e=document.createElement('script');
-			e.type='text/javascript';
-			e.onload=callback;
-			e.src=url;
-			document.body.appendChild(e);
+		if(!window.gTrans){
+			window.gTrans=1;
+			function loadJs(url,callback){
+				var e=document.createElement('script');
+				e.type='text/javascript';
+				e.onload=callback;
+				e.src=url;
+				document.body.appendChild(e);
+			}
+			function craft(c, t, p) {
+				var e=document.createElement(t||'DIV');
+				if(c)e.className=c;
+				p.appendChild(e);
+				return e;
+			}
+			function debug(...e){console.log(e)};
+			debug('document.body', document.head, document.body);
+			craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5;}';
+			document.body.id='body';
+			function googleTranslateElementInit () {
+						var e=new google.translate.TranslateElement(
+							{ pageLanguage: 'auto' }
+							//{pageLanguage:'auto',layout:google.translate.TranslateElement.InlineLayout.SIMPLE,multilanguagePage:true}
+							, 'body');
+						console.log('ret', e);
+					}
+			loadJs('https://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit')
 		}
-		function craft(c, t, p) {
-			var e=document.createElement(t||'DIV');
-			if(c)e.className=c;
-			p.appendChild(e);
-			return e;
-		}
-		craft(0,'STYLE',document.head).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;}';
-		document.body.id='body';
-		function googleTranslateElementInit () {
-					var e=new google.translate.TranslateElement(
-						{ pageLanguage: 'auto' }
-						//{pageLanguage:'auto',layout:google.translate.TranslateElement.InlineLayout.SIMPLE,multilanguagePage:true}
-						, 'body');
-					console.log('ret', e);
-				}
-		loadJs('https://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit')
 	"
 	,"synthesis":"
 		<div id='raw'  class='notranslate'></div>

@@ -292,7 +292,7 @@ public class PlainWeb extends DictionaryAdapter {
 				Response k3response = klient.newCall(k3request.build()).execute();
 				MIME = k3response.header("content-type");
 				//CMN.Log("重定向啦拉拉!!!", k3response.isRedirect(), url);
-				//CMN.Log("缓存啦拉拉!!!", k3response.cacheResponse(), k3response.cacheResponse()==k3response);
+				CMN.Log("缓存啦拉拉!!!", k3response.cacheResponse(), k3response.cacheResponse()==k3response);
 				if (moders!=null) {
 					String raw = k3response.body().string();
 					for (Pair p:moders) {
@@ -884,12 +884,14 @@ public class PlainWeb extends DictionaryAdapter {
 		return def;
 	}
 	
+	@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
 	public InputStream modifyRes(Context context, String url) {
 		JSONArray mods = null;
-		if(f.getPath().contains("ASSET")) {
+		if(hasRemoteDebugServer && f.getPath().contains("ASSET")) {
 			String p = f.getPath();
 			SU.Log("getSyntheticWebPage asset path::", p, p.substring(p.indexOf("/", 5)));
 			InputStream input = getRemoteServerRes(p.substring(p.indexOf("/", 5)), false);
+			if(input!=null)
 			try {
 				JSONObject json = JSONObject.parseObject(BU.StreamToString(input));
 				mods = json.getJSONArray("modifiers");

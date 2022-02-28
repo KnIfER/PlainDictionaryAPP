@@ -135,8 +135,8 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	}
 	
 	@Override
-	public void onAction(SettingsPanel settingsPanel, int flagIdxSection, int flagPos, boolean dynamic, boolean val) {
-		CMN.Log("onAction", flagIdxSection, flagPos, dynamic, val);
+	public boolean onAction(SettingsPanel settingsPanel, int flagIdxSection, int flagPos, boolean dynamic, boolean val, int storageInt) {
+		CMN.Log("onAction", flagIdxSection, flagPos, dynamic, val, makeInt(5, 35, false));
 		if (flagIdxSection!=0) {
 			if (dynamic) {
 //				if (mFlagAdapter.getDynamicFlagIndex(flagIdxSection)<6) {
@@ -159,6 +159,9 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 //						a.releaseWakeLock();
 //					}
 //				}
+				if (storageInt==makeInt(3,35,false)) {
+					opt.setUserOrientation(opt.getTmpUserOrientation());
+				}
 			}
 		}
 		if (flagIdxSection==NONE_SETTINGS_GROUP1) {
@@ -220,9 +223,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				case xitong:
 				case lock: {
 					a.setScreenOrientation(var.ordinal()-1);
+					a.root.post(this::initScreenPanel);
 				} break;
 			}
 		}
+		return true;
 	}
 	
 	@Override
@@ -268,12 +273,12 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	private SettingsPanel initScreenPanel() {
 		if (screenSettings==null) {
 			final SettingsPanel screenSettings = new SettingsPanel(a, opt
-					, new String[][]{new String[]{null, "重力感应方向", "跟随系统方向", "锁定当前方向"}}
+					, new String[][]{new String[]{null, "重力感应方向", "跟随系统方向", "锁定当前方向", "锁定启动方向"}}
 					, new int[][]{new int[]{Integer.MAX_VALUE
 					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.zhongli.ordinal(), true)
 					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.xitong.ordinal(), true)
 					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.lock.ordinal(), true)
-					//, makeInt(1, 8, false) // getLockScreenOn
+					, makeInt(5, 35, false) // getLockStartOrientation
 			}}, null);
 			screenSettings.setEmbedded(this);
 			screenSettings.init(a, root);
@@ -316,6 +321,31 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			
 			addPanelViewBelow(screenSettings.settingsLayout, UIData.scnPanel);
 			this.screenSettings = screenSettings;
+		}
+		//if(opt.getLockStartOrientation() || fromSettingsChange)
+		{
+//			,hengping1
+//			,hengping2
+//			,hengping3
+//			,shuping1
+//			,shuping2
+//			,shuping3
+//			,zhongli
+//			,xitong
+			RadioSwitchButton btn;
+			int lastIdx = opt.getLockStartOrientation()?opt.getUserOrientation():opt.getTmpUserOrientation1();
+			int id = makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.values()[ActionGp_1.hengping1.ordinal()+lastIdx].ordinal(), true);
+			int idLast = makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.values()[ActionGp_1.hengping1.ordinal()+opt.getTmpUserOrientation()].ordinal(), true);
+			//if(idLast!=id)
+			{
+				btn = screenSettings.settingsLayout.findViewById(idLast);
+				btn.setChecked(false);
+			}
+			CMN.Log(idLast, btn.getText());
+			btn = screenSettings.settingsLayout.findViewById(id);
+			btn.setChecked(true);
+			CMN.Log(id, btn.getText());
+			opt.setTmpUserOrientation(lastIdx);
 		}
 		return screenSettings;
 	}

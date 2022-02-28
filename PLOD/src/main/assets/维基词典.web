@@ -450,8 +450,6 @@
 		};
 		//x.setRequestHeader('Content-Type', 'text/html; charset=utf-8');
 		x.setRequestHeader('Content-Type', 'text/html');
-		x.setRequestHeader('Origin', 'http://MdbR.com');
-		x.setRequestHeader('Referer', 'http://MdbR.com/');
 		// x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 		x.send();
 		return x;

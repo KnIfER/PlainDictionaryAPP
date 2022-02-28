@@ -102,20 +102,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		return false;
 	}
 	
-	@Override
-	public boolean isContentViewAttached() {
-		return contentUIData.webcontentlister.getVisibility()==View.VISIBLE;
-	}
-	
-	@Override
-	public void DetachContentView(boolean leaving) {
-		if(DBrowser!=null) {
-			if(ViewUtils.removeIfParentBeOrNotBe(contentview, main, false)){
-				main.addView(contentview, 2);
-			}
-		}
-	}
-	
 	private int touch_id;
 
 	@Override
@@ -714,7 +700,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 	protected void findFurtherViews() {
 		super.findFurtherViews();
-		
 		findViewById(R.id.toolbar_action1).setOnClickListener(this);
 		ivDeleteText = toolbar.findViewById(R.id.ivDeleteText);
 		ivBack = toolbar.findViewById(R.id.ivBack);
@@ -831,38 +816,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
 		@Override
 		public void handleMessage(@NonNull Message msg) {
-			if(activity.get()==null) return;
-			FloatSearchActivity a = ((FloatSearchActivity)activity.get());
-			switch (msg.what) {
-				case 6657:
-					removeMessages(6657);
-					a.topsnack.offset+=animatorD;
-					if(a.topsnack.offset<0)
-						sendEmptyMessage(6657);
-					else {
-						a.topsnack.offset = 0;
-						a.animationSnackOut=true;
-						sendEmptyMessageDelayed(6658, a.NextSnackLength);
-					}
-					a.topsnack.setTranslationY(a.topsnack.offset);
-					break;
-				case 6658:
-					removeMessages(6658);
-					if(a.animationSnackOut){
-						a.topsnack.offset-=animatorD;
-						if(a.topsnack.offset>-(a.topsnack.getHeight()+8*a.dm.density))
-							sendEmptyMessage(6658);
-						else{
-							a.removeSnackView();
-							break;
-						}
-						a.topsnack.setTranslationY(a.topsnack.offset);
-					}
-				break;
-			}
 	}}
 	
-	void ensureContentVis(ViewGroup webholder, ViewGroup another) {
+	public void ensureContentVis(ViewGroup webholder, ViewGroup another) {
 		webholder.setVisibility(View.VISIBLE);
 		
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
@@ -891,19 +847,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	public void onIdClick(View v, int id){
 		switch(id) {
 			case R.id.toolbar_action1:{
-				opt.setFloatCombinedSearching(isCombinedSearching = !isCombinedSearching);
-				boolean b = contentUIData.webcontentlister.getVisibility() == View.VISIBLE;
-				if(isCombinedSearching){
-					if(b) adaptermy2.currentKeyText=null;
-					lv.setVisibility(View.VISIBLE);
-					if(adaptermy2.getCount()>0)lv2.setVisibility(View.VISIBLE);
-				} else {
-					if(b) adaptermy.currentKeyText=null;
-					lv2.setVisibility(View.GONE);
-				}
-				AllMenus.getItem(0).setIcon(isCombinedSearching?R.drawable.ic_btn_multimode:R.drawable.ic_btn_siglemode);
-				if(opt.auto_seach_on_switch)
-					tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
+				toggleJointSearch();
 			} break;
 			//返回
 			case R.id.ivBack:{
@@ -967,7 +911,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			closeIfNoActionView(mmi);
 		return ret;
 	}
-
+	
 	@Override
 	void contentviewAddView(View v, int i) {
 		contentUIData.webcontentlister.addView(v, i);

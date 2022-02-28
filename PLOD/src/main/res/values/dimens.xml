@@ -20,7 +20,7 @@
     <dimen name="_40_">40dp</dimen>
     <dimen name="_45_">45dp</dimen>
     <dimen name="abarmin">1dp</dimen>
-    <dimen name="abarmax">32dp</dimen>
+    <dimen name="abarmax">45dp</dimen>
     
     
     <dimen name="diagMarginHor">28dp</dimen>

@@ -108,7 +108,13 @@ public class RBTree_additive {
     public void SetInOrderDo(inOrderDo ido){
     	mInOrderDo = ido;
     }
-    //![2]接口
+	
+    long realmer=0;
+	public void resetRealmer(long realmer) {
+		this.realmer=realmer;
+	}
+	
+	//![2]接口
     public interface inOrderDo{
     	void dothis(RBTNode node);
     }
@@ -594,6 +600,10 @@ public class RBTree_additive {
             	if(keyClashHandler!=null) {
 					x.key.handleKeyClash(keyClashHandler, key);
 				}
+            	if(x.key.realm!=realmer) {
+					x.key.realm=realmer;
+					x.key.realmCount++;
+				}
         		for(Object i:val) ((ArrayList) x.key.value).add(i);
             	return;//here
             }
@@ -602,6 +612,8 @@ public class RBTree_additive {
         additiveMyCpr1 node_key = new additiveMyCpr1(key,new ArrayList());
         for(Object i:val) ((ArrayList) node_key.value).add(i);//here
         RBTNode<additiveMyCpr1> node = new RBTNode<>(node_key, BLACK, null, null, null);
+		node_key.realmCount=1;
+		node_key.realm=realmer;
 		
         node.parent = y;
         if (y!=null) {

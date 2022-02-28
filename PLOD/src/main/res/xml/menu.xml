@@ -30,7 +30,7 @@
 
 <!--12--><item android:title="页内查找…" android:id="@+id/toolbar_action13" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never" app:enabled="false"/>
 
-<!--13--><item android:title="多页面设置" android:id="@+id/viewMode" android:icon="@drawable/ic_viewpager_carousel" app:showAsAction="always" />
+<!--13--><item android:title="多页面设置" android:id="@+id/viewMode" android:icon="@drawable/ic_viewpager_carousel_vertical" app:showAsAction="always" />
 
 <!--14--><item android:title="翻译" android:id="@+id/translate" android:icon="@drawable/ic_g_translate_black_24dp" app:showAsAction="always"/>
 
@@ -38,11 +38,14 @@
 
 <!--16--><item android:title="切换联合搜索" android:id="@+id/setToMultiMode" android:icon="@drawable/ic_btn_multimode" app:showAsAction="never"/>
 
-	<group android:id="@+id/sorting" >
+<group android:id="@+id/sorting" >
 
 <!--17--><item android:title="随机单词" android:id="@+id/wordtoday" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="never"/>
 
 <!--18--><item android:title="随机单词（无界面）" android:id="@+id/wordtoday" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="never"/>
 
-	</group>
+<!--19--><item android:title="随机单词（从词典）" android:id="@+id/wordtoday" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="always"/>
+
+</group>
+
 </menu>

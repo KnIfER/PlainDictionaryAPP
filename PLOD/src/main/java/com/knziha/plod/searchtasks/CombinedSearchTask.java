@@ -140,6 +140,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 			if(bookPresenter!=null){ // to impl
 				if(isCancelled()) break;
 				bid = a.getUsingDataV2()?bookPresenter.bookImpl.getBooKID():i;
+				_treeBuilder.resetRealmer(bid);
 				combining_search_list = bookPresenter.range_query_reveiver;
 				if(combining_search_list!=null)
 				{

@@ -105,6 +105,7 @@ public class PlainAppPanel extends SettingsPanel {
 				padbot = a.bottombar!=null?a.bottombar.getHeight():a.app_panel_bottombar_height;
 			}
 			settingsLayoutHolder.setPadding(0,0,0,padbot+getNavbarHeight());
+			bottomPadding = padbot;
 		}
 		
 		Window window = dialog.getWindow();

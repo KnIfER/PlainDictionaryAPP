@@ -922,7 +922,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					toggleInPageSearch(false);
 					if (etSearch.hasFocus())
 						a.imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
-					a.cancleSnack();
+					a.fadeSnack();
 				});
 				etSearch.setText(PerusePageSearchetSearchStartWord);
 				etSearch.addTextChangedListener(new TextWatcher() {

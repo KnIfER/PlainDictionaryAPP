@@ -2,6 +2,7 @@ package com.knziha.plod.plaindict;
 
 import android.Manifest;
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -30,7 +31,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +45,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.widgets.SimpleTextNotifier;
+import com.knziha.plod.widgets.ViewUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -97,17 +101,12 @@ public class Toastable_Activity extends AppCompatActivity {
     protected ImageView ivDeleteText;
     protected ImageView ivBack;
 
-	protected ObjectAnimator objectAnimator;
-    
 	public Dialog d;
 	public View dv;
 	public Configuration mConfiguration;
 	boolean isDarkStamp;
 
-	boolean animationSnackOut;
 	SimpleTextNotifier topsnack;
-	Runnable snackWorker;
-	Runnable snackRemover;
 	private Animator.AnimatorListener topsnackListener;
 	static final int FLASH_DURATION_MS = 800;
 	static final int SHORT_DURATION_MS = 1500;
@@ -170,10 +169,6 @@ public class Toastable_Activity extends AppCompatActivity {
 	   }
 	   super.onCreate(savedInstanceState);
        if(shunt) return;
-		snackRemover = () -> {
-			if(topsnack!=null && topsnack.getParent()!=null)
-				((ViewGroup)topsnack.getParent()).removeView(topsnack);
-		};
 	   //inflater=getLayoutInflater();
        imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 		
@@ -513,13 +508,9 @@ public class Toastable_Activity extends AppCompatActivity {
 		showT(text);
 		m_currentToast.setGravity(Gravity.CENTER, 0, 0);
 	}
-	public void cancleToast(){
+	public void cancelToast(){
 		if(m_currentToast!=null)
 			m_currentToast.cancel();
-	}
-
-	ViewGroup getContentviewSnackHolder() {
-		return contentview;
 	}
 
 	public void showTopSnack(Object messageVal){
@@ -527,25 +518,17 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 
 	public void showContentSnack(Object messageVal){
-		showTopSnack(getContentviewSnackHolder(), messageVal, 0.6f, -1, -1, 0);
+		showTopSnack(null, messageVal, 0.6f, -1, -1, 0);
 	}
-
-	void modifyTopSnack(Object messageVal){
-		if(messageVal instanceof Integer) {
-			topsnack.setText((int) messageVal);
-		}else {
-			topsnack.setText(String.valueOf(messageVal));
-		}
+	
+	public void showTopSnack(ViewGroup parentView, Object messageVal) {
+		showTopSnack(parentView, messageVal, 0.5f, -1, -1, 0);
 	}
-
+	
 	/** Show Top Snack
 	 * @param layoutFlags ltr : bSingleLine bWrapContentWidth bPostSnack
 	 *  */
 	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity, int layoutFlags) {
-		if(objectAnimator!=null){
-			objectAnimator.cancel();
-			objectAnimator=null;
-		}
 		if(topsnack==null){
 			topsnack = new SimpleTextNotifier(getBaseContext());
 			Resources res = getResources();
@@ -556,13 +539,15 @@ public class Toastable_Activity extends AppCompatActivity {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 				topsnack.setElevation(res.getDimension(R.dimen.design_snackbar_elevation));
 			}
+			topsnack.setLayoutParams(new FrameLayout.LayoutParams(-1,-2));
 		}
-		else{
-			topsnack.removeCallbacks(snackRemover);
-			topsnack.setAlpha(1);
+		parentView = onShowSnack(parentView);
+		if(duration<0) {
+			duration = SHORT_DURATION_MS;
 		}
-		NextSnackLength=duration<0?SHORT_DURATION_MS:duration;
+		topsnack.setDuration(duration);
 		topsnack.getBackground().setAlpha((int) (alpha*255));
+		topsnack.setAlpha(1);
 		topsnack.setSingleLine((layoutFlags&0x1)!=0);
 		if(messageVal instanceof Integer) {
 			topsnack.setText((int) messageVal);
@@ -572,54 +557,37 @@ public class Toastable_Activity extends AppCompatActivity {
 			topsnack.setTag(null);
 		}
 		topsnack.setGravity(gravity<0?Gravity.CENTER:gravity);
-		ViewGroup sp = (ViewGroup) topsnack.getParent();
-		if(sp!=parentView || layoutFlags!=layoutFlagStamp) {
-			if(sp!=null) sp.removeView(topsnack);
+		View snackView = topsnack.getSnackView();
+		if(ViewUtils.addViewToParent(snackView, parentView) || layoutFlags!=layoutFlagStamp) {
 			topsnack.setVisibility(View.INVISIBLE);
-			parentView.addView(topsnack);
 			ViewGroup.LayoutParams lp = topsnack.getLayoutParams();
 			boolean bWrapContentWidth = ((layoutFlags&0x2)!=0);
 			lp.height=-2;
 			lp.width=bWrapContentWidth?-2:-1;
-			topsnack.post(snackWorker);
+			topsnack.postShow();
 			layoutFlagStamp = layoutFlags;
 		} else {
-			topsnack.removeCallbacks(snackWorker);
-			if((layoutFlags&0x4)!=0) topsnack.post(snackWorker);
-			else snackWorker.run();
+			if((layoutFlags&0x4)!=0) topsnack.postShow();
+			else topsnack.show();
+		}
+		ViewGroup.LayoutParams lp = snackView.getLayoutParams();
+		if(lp instanceof FrameLayout.LayoutParams) {
+			((FrameLayout.LayoutParams)lp).gravity=Gravity.BOTTOM;
+		} else if (lp instanceof RelativeLayout.LayoutParams) {
+			((RelativeLayout.LayoutParams)lp).addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 1);
+		}
+		if (lp instanceof ViewGroup.MarginLayoutParams) {
+			((ViewGroup.MarginLayoutParams) lp).setMargins(0,0,0,topsnack.getBottomMargin());
 		}
 	}
-
-	protected void cancleSnack() {
-		if(topsnack!=null && topsnack.getParent()!=null) {
-			if(objectAnimator!=null){
-				objectAnimator.removeAllListeners();
-				objectAnimator.cancel();
-			}
-			//if(R.string.warn_exit== IU.parseInteger(topsnack.getTag(),0))
-			//	exitTime=0;
-			objectAnimator = ObjectAnimator.ofFloat(topsnack,"alpha",topsnack.getAlpha(),0f);
-            objectAnimator.setDuration(240);
-            objectAnimator.start();
-            if(topsnackListener==null){
-				topsnackListener = new Animator.AnimatorListener() {
-					@Override public void onAnimationStart(Animator animation) { }
-					@Override public void onAnimationEnd(Animator animation) {
-						removeSnackView();
-					}
-					@Override public void onAnimationCancel(Animator animation) { }
-					@Override public void onAnimationRepeat(Animator animation) { }
-				};
-			}
-			objectAnimator.addListener(topsnackListener);
+	
+	protected ViewGroup onShowSnack(ViewGroup parentView) { return parentView; }
+	
+	protected void fadeSnack() {
+		if(topsnack!=null) {
+			topsnack.fadeOut();
 		}
 	}
-
-	void removeSnackView(){
-		topsnack.removeCallbacks(snackRemover);
-		topsnack.postDelayed(snackRemover, 2000);
-	}
-
 
 	public static void checkMargin(Activity a) {
 		if(!MarginChecked) {

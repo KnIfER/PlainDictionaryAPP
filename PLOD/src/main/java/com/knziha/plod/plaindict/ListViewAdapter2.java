@@ -143,25 +143,27 @@ public class ListViewAdapter2 extends BasicAdapter {
 		
 		
 		if(id==2) {
-			boolean bUseMergedUrl = true;
-			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);
-			weblistHandler.bMergeFrames = bUseMergedUrl;
+			weblistHandler.bShowInPopup = false;
+			weblistHandler.bMergeFrames = -2;
 			
-			a.ensureContentVis(weblistHandler, contentUIData.webSingleholder);
-			
-			//weblistHandler.removeAllViews();
-			weblistHandler.initMergedFrame(bUseMergedUrl, false, bUseMergedUrl);
+//			boolean bUseMergedUrl = false;
+//			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);
+//			weblistHandler.bMergeFrames = bUseMergedUrl;
+//			a.ensureContentVis(weblistHandler, contentUIData.webSingleholder);
+//			weblistHandler.initMergedFrame(bUseMergedUrl, false, bUseMergedUrl);
+
 //			if(bUseMergedUrl) {
 //				ViewUtils.addViewToParentUnique(weblistHandler.getMergedFrame().rl, weblistHandler.WHP1);
 //			}
-			a.showT("111 !");
+			//a.showT("111 !");
 			
 			//////////a.locateNaviIcon();
 //			if(opt.getRemPos2() && !a.bRequestedCleanSearch) {
 //				new a.SaveAndRestorePagePosDelegate().SaveAndRestorePagesForAdapter(this, pos);
 //			}
 			//111
-		} else {
+		}
+		else {
 			boolean bUseMergedUrl = true;
 			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl);
 			weblistHandler.initMergedFrame(false, false, bUseMergedUrl);
@@ -171,12 +173,13 @@ public class ListViewAdapter2 extends BasicAdapter {
 			
 			a.ensureContentVis(contentUIData.webSingleholder, weblistHandler);
 		}
-		
+
 		a.ActivedAdapter=this;
 		super.onItemClick(pos);
-		
-		contentUIData.webcontentlister.setVisibility(View.VISIBLE);
-		contentUIData.webcontentlister.setAlpha(1);
+
+
+//		contentUIData.webcontentlister.setVisibility(View.VISIBLE);
+//		contentUIData.webcontentlister.setAlpha(1);
 		
 		if(!a.bWantsSelection) {
 			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);

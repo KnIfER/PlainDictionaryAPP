@@ -1440,7 +1440,7 @@
 				var hasId = e.startsWith('d');
 				var pool=hasId?dictsInfo:dictsGroup;
 				frames.length=0;
-				//debug("processContents contents =", e, 'arr =', arr);
+				debug("processContents contents =", e, 'arr =', arr);
 				// [2nd pass] Rearrange array
 				for (var i = 0; i < arr.length; i++) {
 					e = arr[i];
@@ -1877,6 +1877,7 @@
 
 		function checkUrl(e) {
 			var fx=e.item,u=e.src;
+			//toast(u+' 已加载123',0,2000)
 			if(fx && (fx.innerHTML!=u || e.isWeb && e.entry!=args.q)) {
 				debug('加载...', fx.innerHTML, u, tmp.pushStates);
 				var uri="\\content\\"+u, safe=false;

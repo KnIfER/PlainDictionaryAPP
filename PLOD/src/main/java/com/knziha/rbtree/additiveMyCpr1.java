@@ -7,6 +7,8 @@ import java.util.ArrayList;
 public class additiveMyCpr1 implements Comparable<additiveMyCpr1>{
 	public String key;
 	public Object value;
+	public long realm;
+	public long realmCount;
 	public int LongestStartWithSeqLength;
 	public additiveMyCpr1(String k,Object v){
 		key=k;value=v;

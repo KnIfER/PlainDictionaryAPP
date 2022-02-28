@@ -97,6 +97,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -597,6 +598,11 @@ public class ViewUtils {
 		return Arrays.asList(items);
 	}
 	
+	/**  */
+	public static Object getWeakRefObj(Object tag) {
+		return tag==null?null:((WeakReference)tag).get();
+	}
+	
 	public void Destory(){
 		mNestedScrollingChildHelper.Destory();
 		mNestedScrollingChildHelper = null;
@@ -728,13 +734,13 @@ public class ViewUtils {
 		ViewGroup vg = (ViewGroup) viewToRemove.getParent();
 		if(vg!=null) {
 			int idx = vg.indexOfChild(viewToRemove);
-			removeView(viewToRemove);
 			removeView(viewToAdd);
 			if (layoutParams) {
 				vg.addView(viewToAdd, idx, lp);
 			} else {
 				vg.addView(viewToAdd, idx);
 			}
+			removeView(viewToRemove);
 		}
 		return viewToAdd;
 	}

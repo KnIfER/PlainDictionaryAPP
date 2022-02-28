@@ -976,7 +976,7 @@ public class DBroswer extends Fragment implements
 	public void show(int ResId,Object...args) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a!=null) {
-			a.cancleToast();
+			a.cancelToast();
 			show(getResources().getString(ResId,args));
 		}
 	}
@@ -1327,7 +1327,7 @@ public class DBroswer extends Fragment implements
 			
 			weblistHandler.popupContentView(null, currentDisplaying__);
 			
-			weblistHandler.bMergeFrames = true;
+			weblistHandler.bMergeFrames = -2;
 
 			rec.renderContentAt(0, a,null, weblistHandler);
 

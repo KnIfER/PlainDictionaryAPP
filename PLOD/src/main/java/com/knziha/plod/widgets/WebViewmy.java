@@ -55,6 +55,7 @@ import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.rbtree.additiveMyCpr1;
 
 import org.knziha.metaline.Metaline;
@@ -113,6 +114,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean bPageStarted;
 	public boolean bShouldOverridePageResource;
 	public additiveMyCpr1 jointResult;
+	public boolean translating;
+	public WebViewListHandler weblistHandler;
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	

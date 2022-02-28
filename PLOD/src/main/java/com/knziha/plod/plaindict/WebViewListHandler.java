@@ -1,6 +1,5 @@
 package com.knziha.plod.plaindict;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
@@ -40,22 +39,24 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.List;
 
 public class WebViewListHandler extends ViewGroup {
 	final MainActivityUIBase a;
-	public boolean bMergeFrames = false;
+	/** -2=auto;0=false;1=true*/
+	public int bMergeFrames = 0;
+	public boolean bShowInPopup = false;
 	public boolean bMergingFrames = false;
 	public boolean bShowingInPopup = false;
 	ScrollViewmy WHP;
-	FrameLayout WHP1;
 	ViewGroup webholder;
 	public additiveMyCpr1 jointResult;
 	public WebViewmy mMergedFrame;
 	BookPresenter mMergedBook;
-	public ArrayList<Long> frames = new ArrayList();
+	public ArrayList<BookPresenter> frames = new ArrayList();
+	public ArrayList<long[]> framesDisplaying = new ArrayList();
 	public ArrayList<PlainWeb> moders = new ArrayList();
-	@NonNull final ContentviewBinding contentUIData;
+	@NonNull
+	public final ContentviewBinding contentUIData;
 	public ImageView[] ContentbarBtns = new ImageView[ContentbarBtnIcons.length];
 	private boolean contentViewSetup;
 	
@@ -96,22 +97,22 @@ public class WebViewListHandler extends ViewGroup {
 	
 	@Override
 	public void addView(View child, int index) {
-		contentUIData.webholder.addView(child, index);
+		(mViewMode==WEB_VIEW_SINGLE?contentUIData.webSingleholder:contentUIData.webholder).addView(child, index);
 	}
 	
 	public void removeAllViews() {
 		CMN.Log("removeAllViews!!!");
-//		contentUIData.webholder.removeAllViews();
+		(mViewMode==WEB_VIEW_SINGLE?contentUIData.webSingleholder:contentUIData.webholder).removeAllViews();
 	}
 	
 	@Override
 	public void setVisibility(int visibility) {
-		WHP.setVisibility(visibility);
+		(mViewMode==WEB_VIEW_SINGLE?contentUIData.webSingleholder:WHP).setVisibility(visibility);
 	}
 	
 	@Override
 	public int getVisibility() {
-		return WHP.getVisibility();
+		return (mViewMode==WEB_VIEW_SINGLE?contentUIData.webSingleholder:WHP).getVisibility();
 	}
 	
 	@Override
@@ -122,7 +123,7 @@ public class WebViewListHandler extends ViewGroup {
 	}
 	
 	public int getFrameAt() {
-		if(!bMergeFrames) {
+		if(!bMergingFrames) {
 			final int currentHeight=WHP.getScrollY();
 			for(int i=0;i<webholder.getChildCount();i++) {
 				View CI = webholder.getChildAt(i);
@@ -221,7 +222,7 @@ public class WebViewListHandler extends ViewGroup {
 			}
 			mBar.fadeOut();
 		}
-		mBar.setDelimiter("|||", bMergeFrames?mMergedFrame:getViewGroup());
+		mBar.setDelimiter("|||", bMergingFrames?mMergedFrame:getViewGroup());
 	}
 	
 	public WebViewmy getMergedFrame() {
@@ -231,6 +232,8 @@ public class WebViewListHandler extends ViewGroup {
 			} catch (IOException ignored) { }
 			mMergedBook.initViewsHolder(a);
 			mMergedFrame = mMergedBook.mWebView;
+			mMergedFrame.weblistHandler = this;
+			mMergedBook.rl.setTag(this);
 			mMergedFrame.setWebViewClient(a.myWebClient);
 			mMergedFrame.setWebChromeClient(a.myWebCClient);
 			//mMergedFrame.setOnScrollChangedListener(null);
@@ -239,6 +242,8 @@ public class WebViewListHandler extends ViewGroup {
 		}
 		return mMergedFrame;
 	}
+	
+	boolean webHolderSwapHide = true;
 	
 	/** 是否将共用的 mMergedFrame 以一定手段塞入webholder列表。但是列表只会显示一个（mMergedFrame 或 mWebView）。 */
 	public void initMergedFrame(boolean mergeWebHolder, boolean popup, boolean bUseMergedUrl) {
@@ -252,39 +257,47 @@ public class WebViewListHandler extends ViewGroup {
 			bShowingInPopup = false;
 		}
 		if(bMergingFrames!=mergeWebHolder) {
+			CMN.Log("reinitMergedFrame::", mergeWebHolder, popup, bUseMergedUrl);
 			if(mergeWebHolder) { // 替换scrollview为framelayout、webholder高度充满视图
-				if(WHP1==null) WHP1 = new FrameLayout(a);
-				if(WHP1.getParent()==null) {
-					ViewUtils.replaceView(WHP1, WHP);
-				}
-				this.webholder = WHP1;
-				ViewGroup webholder = this.WHP1;
-				webholder.getLayoutParams().height = MATCH_PARENT;
-				WebViewmy mMergedFrame = getMergedFrame();
-				//ViewUtils.addViewToParent(webholder, WHP1);
-				ViewUtils.addViewToParent(mMergedFrame.rl, webholder);
-//				if(bUseMergedUrl) {
-//					if(webholder.getChildCount()>1)
-//						for (int i = webholder.getChildCount()-1; i>=0; i--)
-//							if(webholder.getChildAt(i)!=mMergedFrame)
-//								webholder.removeViewAt(i);
-//					mMergedFrame.getLayoutParams().height = MATCH_PARENT;
+//				if(WHP1==null) {
+//					WHP1 = new FrameLayout(a);
 //				}
-				mMergedBook.rl.getLayoutParams().height = MATCH_PARENT;
+//				this.webholder = WHP1;
+//				ViewGroup webholder = this.WHP1;
+//				WebViewmy mMergedFrame = getMergedFrame();
+//				//ViewUtils.addViewToParent(webholder, WHP1);
+//				ViewUtils.addViewToParent(mMergedFrame.rl, webholder);
+//				//mMergedBook.rl.getLayoutParams().height = MATCH_PARENT;
+//				mMergedBook.toolbar.setVisibility(View.GONE);
+//				contentUIData.navBtns.setVisibility(View.GONE);
+//				ViewUtils.addViewToParent(WHP1, contentUIData.PageSlider, 1);
+//				if(webHolderSwapHide) {
+//					WHP1.setVisibility(View.VISIBLE);
+//					WHP.setVisibility(View.GONE);
+//				} else {
+//					ViewUtils.removeView(WHP);
+//				}
+				
+				WebViewmy mMergedFrame = getMergedFrame();
+				ViewUtils.addViewToParent(mMergedFrame.rl, contentUIData.webSingleholder);
 				mMergedBook.toolbar.setVisibility(View.GONE);
 				contentUIData.navBtns.setVisibility(View.GONE);
+				if(webHolderSwapHide) {
+					WHP.setVisibility(View.GONE);
+				} else {
+					ViewUtils.removeView(WHP);
+				}
 			}
 			else {
-				this.webholder = contentUIData.webholder;
-				if(WHP.getParent()==null) {
-					ViewUtils.replaceView(WHP, WHP1);
-				}
-//				ViewUtils.addViewToParent(webholder, WHP);
 				contentUIData.webcontentlister.setAlpha(1);
 				if(mMergedBook!=null) {
 					mMergedBook.toolbar.setVisibility(View.VISIBLE);
 				}
 				webholder.getLayoutParams().height = WRAP_CONTENT;
+				ViewUtils.addViewToParent(WHP, contentUIData.PageSlider, 1);
+				if(webHolderSwapHide) {
+					WHP.setVisibility(View.VISIBLE);
+				}
 			}
 			bMergingFrames = mergeWebHolder;
 		}
@@ -316,7 +329,7 @@ public class WebViewListHandler extends ViewGroup {
 	}
 	
 	public void prvnxtFrame(boolean nxt) {
-		if(bMergeFrames) {
+		if(bMergingFrames) {
 			mMergedFrame.evaluateJavascript(nxt?"prvnxtFrame(1)":"prvnxtFrame()", null);
 		} else {
 			final int currentHeight=WHP.getScrollY();
@@ -351,7 +364,7 @@ public class WebViewListHandler extends ViewGroup {
 //	TextConfig tf;
 	
 	public void showJumpListDialog() {
-		if(!bMergeFrames) frameAt = getFrameAt();
+		if(!bMergingFrames) frameAt = getFrameAt();
 		frameCount = frames.size();
 		if(jumpListDlg==null){
 			jumpListDlg = jumpListDlgRef.get();
@@ -363,7 +376,7 @@ public class WebViewListHandler extends ViewGroup {
 					.setAdapter(new BaseAdapter() {
 									public int getCount() { return frameCount; }
 									public Object getItem(int position) { return null; }
-									public long getItemId(int pos) { return pos<frames.size()?frames.get(pos):-1;}
+									public long getItemId(int pos) { return pos<frames.size()?frames.get(pos).getId():-1;}
 									public View getView(int pos, View convertView, @NonNull ViewGroup parent) {
 										FlowCheckedTextView ret;
 										if(convertView!=null){
@@ -414,9 +427,9 @@ public class WebViewListHandler extends ViewGroup {
 									}
 								}
 							, (dlg, pos) -> {
-								if(bMergeFrames) {
+								if(bMergingFrames) {
 									if(pos<frames.size()) {
-										BookPresenter book = a.getBookById(frames.get(pos));
+										BookPresenter book = frames.get(pos);
 										if (book!=null) {
 											StringBuilder sb = new StringBuilder(24);
 											sb.append("scrollToPosId('d");
@@ -454,7 +467,7 @@ public class WebViewListHandler extends ViewGroup {
 		//d.getWindow().getDecorView().getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 		//d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
 		a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
-		if(bMergeFrames) {
+		if(bMergingFrames) {
 			mMergedFrame.evaluateJavascript("currentFrame("+frameAt+")", value -> {
 				try {
 					if(jumpListDlg!=null && jumpListDlg.isShowing()) {
@@ -463,7 +476,7 @@ public class WebViewListHandler extends ViewGroup {
 							long id = IU.TextToNumber_SIXTWO_LE(arr[0].substring(2));
 							int pos = IU.parsint(arr[1], 0);
 							//CMN.debug(value, pos, id);
-							if(pos>=frames.size() || frames.get(pos)!=id) {
+							if(pos>=frames.size() || frames.get(pos).getId()!=id) {
 								pos=-1;
 							}
 							if(pos==-1) {
@@ -486,13 +499,20 @@ public class WebViewListHandler extends ViewGroup {
 	public final static int WEB_LIST_MULTI=0;
 	public final static int WEB_VIEW_SINGLE=1;
 	int mViewMode=WEB_LIST_MULTI;
-	void setViewMode(int mode, boolean bUseMergedUrl) {
+	public void setViewMode(int mode, boolean bUseMergedUrl) {
 		if(mViewMode!=mode || bMergingFrames!=bUseMergedUrl) {
 			mViewMode = mode;
-			int vis = mode == WEB_VIEW_SINGLE ? View.GONE : View.VISIBLE;
+			int vis = mode == WEB_VIEW_SINGLE || bUseMergedUrl ? View.GONE : View.VISIBLE;
 			contentUIData.WHP.setVisibility(vis);
-			contentUIData.navBtns.setVisibility(bUseMergedUrl?View.GONE:vis);
+			contentUIData.navBtns.setVisibility(vis);
+			
+			vis = mode==WEB_VIEW_SINGLE || bUseMergedUrl ? View.VISIBLE : View.GONE;
+			contentUIData.webSingleholder.setVisibility(vis);
 		}
+	}
+	
+	int getViewMode() {
+		return mViewMode;
 	}
 	
 	int[] versions=new int[8];
@@ -521,8 +541,13 @@ public class WebViewListHandler extends ViewGroup {
 		if(!alloydPanel.isVisible()) {
 			alloydPanel.toggle(root, null, -1);
 		}
+		alloydPanel.AllMenus.tag = this;
 		alloydPanel.refresh();
 		alloydPanel.toolbar.setTitle(key);
+		alloydPanel.AllMenus.setItems(alloydPanel.RandomMenu);
+		//contentUIData.webcontentlister.setPadding(0,0,0,0);
+		ViewUtils.addViewToParent(alloydPanel.toolbar, contentUIData.webcontentlister, 0);
+		//a.setContentBow(false);
 		
 		bShowingInPopup = true;
 	}

@@ -125,7 +125,8 @@ public class BookPresenter
 	public ArrayList<SearchResultBean>[] combining_search_tree_4; // 收集词条文本
 	
 	public final static String FileTag = "file://";
-	public final static String baseUrl = "file:///";
+	//public final static String baseUrl = "file:///";
+	public final static String baseUrl = "http://MdbR.com/base.html";
 	public final static String  _404 = "<span style='color:#ff0000;'>PlainDict 404 Error:</span> ";
 	
 	/**</style><script class="_PDict" src="mdbr://SUBPAGE.js"></script>*/
@@ -2071,6 +2072,7 @@ function debug(e){console.log(e)};
     	
     	if (!resposibleForThisWeb && mWebView.presenter!=this) {
 			mWebView.presenter = this;
+			//mWebView.History = this.HistoryOOP;
 		}
 	
 		int from = mWebView.fromCombined;
@@ -2122,12 +2124,13 @@ function debug(e){console.log(e)};
 		if(resposibleForThisWeb) {
 			if(fromCombined) {
 				if(rl.getLayoutParams()!=null)
-					rl.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
+					rl.getLayoutParams().height = -1;//LayoutParams.WRAP_CONTENT;
 				if (getContentFixedHeightWhenCombined()) {
 					mWebView.getLayoutParams().height = a.root.getHeight();
 				} else {
 					mWebView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
 				}
+				mWebView.getLayoutParams().height = -1;
 			}
 			else {
 				if(mIsolateImages){
@@ -2980,7 +2983,7 @@ function debug(e){console.log(e)};
 		@JavascriptInterface
 		public void wordtoday(String val) {
 			//presenter.a.root.post(() -> presenter.a.showContentSnack(val));
-			presenter.a.weblistHandler.dismissPopup();
+			presenter.a.randomPageHandler.dismissPopup();
 			presenter.a.root.post(() -> presenter.a.setSearchTerm(val));
 			
 		}

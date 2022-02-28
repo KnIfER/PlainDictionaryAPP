@@ -188,9 +188,8 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	@Override
 	public void onBindViewHolder(@NonNull final ViewUtils.ViewDataHolder<CardListItemBinding> holder, final int position)
 	{
-		holder.itemView.setTag(R.id.position, position);
 		CardListItemBinding viewdata = holder.data;
-		viewdata.p.setTag(R.id.position, position);
+		holder.position = position;
 		//if(true) return;
 		String text;long time = 0;
 		
@@ -231,20 +230,19 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 			holder.itemView.setBackgroundColor(holder.colorStates[2]=backgroundColor);//FF4081 4F7FDF
 		}
 
-		if(browser.inSearch && browser.mSearchResTree!=null && browser.mSearchResTree.contains(position))
-			viewdata.text1.setBackgroundResource(R.drawable.xuxian2);
-		else
-			viewdata.text1.setBackground(null);
+//		if(browser.inSearch && browser.mSearchResTree!=null && browser.mSearchResTree.contains(position))
+//			viewdata.text1.setBackgroundResource(R.drawable.xuxian2);
+//		else
+//			viewdata.text1.setBackground(null);
 
 
 		if(browser.SelectionMode==SelectionMode_select) {
-			viewdata.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, position));
+			viewdata.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, (int) holder.position));
 			viewdata.p.setVisibility(View.VISIBLE);
 		} else {
-			holder.itemView.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, position));
+			holder.itemView.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, (int) holder.position));
 			viewdata.p.setVisibility(View.GONE);
 		}
-		viewdata.p.setTag(position);
 	}
 
 	@Override

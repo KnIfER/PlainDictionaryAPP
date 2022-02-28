@@ -14,6 +14,7 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
@@ -86,29 +87,27 @@ public class ListViewAdapter extends BasicAdapter {
 	
 	@Override
 	public void SaveVOA() {
-//		if(presenter != a.EmptyBook) {
-//			if (opt.getRemPos()) {
-//				new a.SaveAndRestorePagePosDelegate().SaveVOA(contentUIData.PageSlider.WebContext, this);
-//			}
-//			if (Kustice && PDICMainAppOptions.getHistoryStrategy8() == 2
-//					//&&!(currentDictionary instanceof bookPresenter_txt) // nimp
-//					&& !PDICMainAppOptions.getHistoryStrategy0()
-//					&& PDICMainAppOptions.getHistoryStrategy4()) {
-//				a.insertUpdate_histroy(presenter.currentDisplaying, 0, webviewHolder);
-//			}
-//		}
-		//111
+		if(presenter != a.EmptyBook) {
+			if (opt.getRemPos()) {
+				a.DelegateSaveAndRestorePagePos().SaveVOA(contentUIData.PageSlider.WebContext, this);
+			}
+			if (Kustice && PDICMainAppOptions.getHistoryStrategy8() == 2
+					//&&!(currentDictionary instanceof bookPresenter_txt) // nimp
+					&& !PDICMainAppOptions.getHistoryStrategy0()
+					&& PDICMainAppOptions.getHistoryStrategy4()) {
+				a.insertUpdate_histroy(presenter.currentDisplaying, 0, webviewHolder);
+			}
+		}
 	}
 	
 	@Override
 	public void ClearVOA() {
-//		super.ClearVOA();
-//		{
-//			//CMN.Log("江河湖海",currentDictionary.expectedPosX,currentDictionary.expectedPos,currentDictionary.webScale);
-//			if(opt.getRemPos())
-//				avoyager.put(presenter.lvClickPos, new ScrollerRecord(mWebView.expectedPosX, mWebView.expectedPos, mWebView.webScale));
-//		}
-		//111
+		super.ClearVOA();
+		{
+			//CMN.Log("江河湖海",currentDictionary.expectedPosX,currentDictionary.expectedPos,currentDictionary.webScale);
+			if(opt.getRemPos())
+				avoyager.put(presenter.lvClickPos, new ScrollerRecord(mWebView.expectedPosX, mWebView.expectedPos, mWebView.webScale));
+		}
 	}
 	
 	@Override
@@ -148,7 +147,7 @@ public class ListViewAdapter extends BasicAdapter {
 				lastClickedPos = getCount()-1;
 			return;
 		}
-		boolean bUseMergedUrl = !presenter.getIsWebx();
+		boolean bUseMergedUrl = false;//!presenter.getIsWebx();
 		boolean bUseDictView = !bUseMergedUrl && true;//presenter.getIsWebx();
 		
 		avoyager = presenter.avoyager;
@@ -171,7 +170,7 @@ public class ListViewAdapter extends BasicAdapter {
 		//a.showT(allMenus+""+singleContentMenu);
 		
 		ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
-		
+		mWebView.weblistHandler = weblistHandler;
 		/* ensureContentVis */
 		a.ensureContentVis(contentUIData.webSingleholder, weblistHandler);
 		

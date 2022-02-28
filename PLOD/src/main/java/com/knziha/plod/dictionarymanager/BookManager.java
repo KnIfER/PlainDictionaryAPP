@@ -259,7 +259,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	protected void onDestroy() {
 		super.onDestroy();
 		checkAll();
-		hdl.clearActivity();
 		viewPager.clearOnPageChangeListeners();
 		mTabLayout.clearOnTabSelectedListeners();
 	}
@@ -1610,111 +1609,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			mdmng.add(mmtmp);
 		}
 		in.close();
-	}
-	
-	void showTopSnack(ViewGroup parentView, Object messageVal) {
-		if(topsnack==null){
-			topsnack = new SimpleTextNotifier(getBaseContext());
-			Resources res = getResources();
-			topsnack.setTextColor(Color.WHITE);
-			topsnack.setBackgroundColor(res.getColor(R.color.colorHeaderBlueT));
-			int pad = (int) res.getDimension(R.dimen.design_snackbar_padding_horizontal);
-			topsnack.setPadding(pad,pad/2,pad,pad/2);
-			topsnack.getBackground().setAlpha((int) (0.5*255));
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-				topsnack.setElevation(res.getDimension(R.dimen.design_snackbar_elevation));
-			}
-		}
-		else{
-			topsnack.removeCallbacks(snackRemover);
-			topsnack.setAlpha(1);
-		}
-		if(messageVal instanceof Integer) {
-			topsnack.setText((int) messageVal);
-			topsnack.setTag(messageVal);
-		}else {
-			topsnack.setText(String.valueOf(messageVal));
-			topsnack.setTag(null);
-		}
-		topsnack.setGravity(Gravity.CENTER);
-		ViewGroup sp = (ViewGroup) topsnack.getParent();
-		if(sp!=parentView) {
-			if(sp!=null) sp.removeView(topsnack);
-			topsnack.setVisibility(View.INVISIBLE);
-			parentView.addView(topsnack);
-			ViewGroup.LayoutParams lp = topsnack.getLayoutParams();
-			lp.height=-2;
-			topsnack.post(snackWorker);
-		}else{
-			topsnack.removeCallbacks(snackWorker);
-			snackWorker.run();
-		}
-	}
-	
-	public BaseHandler hdl = new MyHandler(this);
-	boolean animationSnackOut;
-	SimpleTextNotifier topsnack;
-	final int NextSnackLength = 1500;
-	
-	Runnable snackWorker = () -> {
-		hdl.sendEmptyMessage(6657);
-		hdl.removeMessages(6658);
-		int height = topsnack.getHeight();
-		if(height>0){
-			if(topsnack.offset>0 || topsnack.offset<-height)
-				topsnack.offset=-height;
-			else
-				topsnack.offset=Math.min(-height/3, topsnack.offset);
-			topsnack.setTranslationY(topsnack.offset);
-			topsnack.setVisibility(View.VISIBLE);
-			hdl.animator=0.1f;
-			hdl.animatorD=0.08f*height;
-			hdl.sendEmptyMessage(6657);
-		}
-	};
-	
-	Runnable snackRemover= () -> {
-		if(topsnack!=null && topsnack.getParent()!=null)
-			((ViewGroup)topsnack.getParent()).removeView(topsnack);
-	};
-	
-	void removeSnackView(){
-		topsnack.removeCallbacks(snackRemover);
-		topsnack.postDelayed(snackRemover, 2000);
-	}
-	
-	private static class MyHandler extends BaseHandler {
-		private final WeakReference<BookManager> activity;
-		MyHandler(BookManager a) { this.activity = new WeakReference<>(a); }
-		@Override public void clearActivity() { activity.clear(); }
-		@Override public void handleMessage(@NonNull Message msg) {
-			BookManager a = activity.get();
-			if(a==null) return;
-			if (msg.what == 6657) {
-				removeMessages(6657);
-				a.topsnack.offset += animatorD;
-				if (a.topsnack.offset < 0)
-					sendEmptyMessage(6657);
-				else {
-					a.topsnack.offset = 0;
-					a.animationSnackOut = true;
-					sendEmptyMessageDelayed(6658, a.NextSnackLength);
-				}
-				a.topsnack.setTranslationY(a.topsnack.offset);
-			} else if (msg.what == 6658) {
-				removeMessages(6658);
-				if (a.animationSnackOut) {
-					a.topsnack.offset -= animatorD;
-					if (a.topsnack.offset > -(a.topsnack.getHeight() + 8 * a.opt.dm.density))
-						sendEmptyMessage(6658);
-					else {
-						a.removeSnackView();
-						return;
-					}
-					a.topsnack.setTranslationY(a.topsnack.offset);
-				}
-			}
-		}
 	}
 	
 	public void RebasePath(File oldPath, String OldFName, File newPath, String MoveOrRename, String oldName){

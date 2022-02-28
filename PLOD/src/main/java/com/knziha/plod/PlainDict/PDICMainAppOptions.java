@@ -170,6 +170,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return defaultReader.getInt("expand_top", 3);
 	}
 	
+	/** 当页面数大于返回数值时，才使用合并的url地址 */
+	public int getMergeUrlForFrames() {
+		return defaultReader.getInt("merge", 1);
+	}
+	
 	public String getLastPlanName(String key) {
 		return SU.legacySetFileName(lastMdPlanName=defaultReader.getString(key,magicStr));
 	}
@@ -558,7 +563,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	public boolean isContentBow() {
-		return (FirstFlag & 0x20000) != 0x20000;
+		return true;
 	}
 	public boolean setContentBow(boolean val) {
 		updateFFAt(0x20000,!val);
@@ -2256,6 +2261,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=57, shift=1) public boolean getPrvNxtDictSkipNoMatch(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	
 	@Metaline(flagPos=58) public boolean getDelayContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=58) public void setDelayContents(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=59, shift=1) public boolean getAnimateContents(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=59, shift=1) public static void setAnimateContents(boolean val){ FourthFlag=FourthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=61, shift=1) public boolean getLeaveContentBlank(){ FourthFlag=FourthFlag; throw new RuntimeException(); }
@@ -2384,6 +2390,24 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=34, shift=1) public static boolean getAllowPlugResSame() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=34, shift=1) public static void setAllowPlugResSame(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=35) public static boolean getLockStartOrientation() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=35) public static void getLockStartOrientation(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=36, flagSize=4, shift=7, max=8) public static int getUserOrientation() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=36, flagSize=4, shift=7, max=8) public static void setUserOrientation(int val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	/** for using the translator and save memory in the combined search mode. 联合搜索列表展示单个页面时使类似单本搜索与模糊搜索 */
+	@Metaline(flagPos=40, shift=1, debug=1) public static boolean getLv2JointOneAsSingle() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	/** 是否使用合并的多页面模式。see {@code getMergeUrlForFrames()} */
+	@Metaline(flagPos=41, shift=1, debug=1) public static boolean getUseMergedUrl() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	/** webx是否不使用合并的单页面URL。see {@code getUseMergedFrame()} */
+	@Metaline(flagPos=42, shift=1, debug=1) public static boolean getMergeExemptWebx() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	/** 单本词典是否使用公共的MergedFrame。see {@code getMergeUrlForFrames()} */
+	@Metaline(flagPos=43, shift=1, debug=1) public static boolean getUseMergedFrame() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF
@@ -2521,6 +2545,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=0, flagSize=8) public static int getPseudoInitCode(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=2, flagSize=6) public static int getPseudoInitCodeEu(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=2, flagSize=6) public static void setPseudoInitCode(int value){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12, flagSize=4, shift=7, max=8) public static int getTmpUserOrientation() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static int getTmpUserOrientation1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation1(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+
 	
 	public int getPseudoInitCode(int pseudoInit) {
 		return (getPseudoInitCode()&~3)|pseudoInit;
@@ -2636,6 +2665,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			return ThirdFlag;
 			case 4:
 			return FourthFlag;
+			case 5:
+			return FifthFlag;
 		}
 		return tmpFlag;
 	}
@@ -2656,6 +2687,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			break;
 			case 4:
 				FourthFlag=val;
+			break;
+			case 5:
+				FifthFlag=val;
 			break;
 			default:
 				tmpFlag=val;

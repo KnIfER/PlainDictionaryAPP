@@ -78,7 +78,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	void ensureContentVis(ViewGroup webholder, ViewGroup another) {
+	public void ensureContentVis(ViewGroup webholder, ViewGroup another) {
 	
 	}
 	
@@ -263,31 +263,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 					if(msg.obj instanceof String)
 						a.showT((String)msg.obj, Toast.LENGTH_LONG);
 					break;
-				case 6657:
-					removeMessages(6657);
-					a.topsnack.offset+=animatorD;
-					if(a.topsnack.offset<0)
-						sendEmptyMessage(6657);
-					else {
-						a.topsnack.offset = 0;
-						a.animationSnackOut=true;
-						sendEmptyMessageDelayed(6658, a.NextSnackLength);
-					}
-					a.topsnack.setTranslationY(a.topsnack.offset);
-					break;
-				case 6658:
-					removeMessages(6658);
-					if(a.animationSnackOut){
-						a.topsnack.offset-=animatorD;
-						if(a.topsnack.offset>-(a.topsnack.getHeight()+5*a.dm.density))
-							sendEmptyMessage(6658);
-						else{
-							a.removeSnackView();
-							break;
-						}
-						a.topsnack.setTranslationY(a.topsnack.offset);
-					}
-				break;
 				case 3322123:
 					a.performReadEntry();
 					break;
@@ -318,7 +293,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 				case 778899:
 					//a.NaugtyWeb.setLayoutParams(a.NaugtyWeb.getLayoutParams());
 					a.NaugtyWeb.requestLayout();
-					//CMN.Log("handler scroll scale recalibrating ...");
+					CMN.Log("handler scroll scale recalibrating ...");
 					break;
 				case 7658941:
 					CustomViewHideTime=0;
@@ -443,11 +418,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	void DetachContentView(boolean leaving) {
-		ViewUtils.removeView(contentview);
-	}
-	
-	@Override
 	void showChooseDictDialog(int reason) {
 	
 	}
@@ -494,7 +464,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@SuppressLint("SourceLockedOrientationActivity")
 	public void onIdClick(View v, int id){
 		layoutScrollDisabled=false;
-		cancleSnack();
+		fadeSnack();
 		OUT:
 		if(DBrowser!=null) {
 			switch(id) {

@@ -34,6 +34,11 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	public final static int PANEL_SHOW_TYPE_POPUP = 1;
 	public final static int PANEL_SHOW_TYPE_DIALOG = 2;
 	protected int rootHash;
+	
+	public int getLastShowType() {
+		return lastShowType;
+	}
+	
 	protected int lastShowType;
 	protected int bFadeout;
 	protected int showType;
@@ -138,7 +143,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	}
 	
 	public interface ActionListener{
-		void onAction(SettingsPanel settingsPanel, int flagIdxSection, int flagPos, boolean dynamic, boolean val);
+		boolean onAction(SettingsPanel settingsPanel, int flagIdxSection, int flagPos, boolean dynamic, boolean val, int storageInt);
 		void onPickingDelegate(SettingsPanel settingsPanel, int flagIdxSection, int flagPos, int lastX, int lastY);
 	}
 	protected ActionListener mActionListener;
@@ -191,13 +196,13 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected void setBooleanInFlag(int storageInt, boolean val) {
 		int flagIdx=storageInt>>FLAG_IDX_SHIFT;
 		int flagPos=storageInt&MAX_FLAG_POS_MASK;
-		CMN.Log("setBooleanInFlag", flagIdx, val);
+		CMN.Log("setBooleanInFlag", flagIdx, val, flagPos);
 		boolean reverse = (storageInt&BIT_IS_REVERSE)!=0;
 		boolean dynamic = (storageInt&BIT_IS_DYNAMIC)!=0;
 		if(flagIdx!=0) {
 			PutBooleanForFlag(dynamic?mFlagAdapter.getDynamicFlagIndex(flagIdx):flagIdx, flagPos, val, reverse);
 		}
-		onAction(flagIdx, flagPos, dynamic, val);
+		onAction(flagIdx, flagPos, dynamic, val, storageInt);
 	}
 	
 	public boolean EvalBooleanForFlag(int flagIndex, int flagPos, boolean reverse) {
@@ -216,10 +221,11 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		mFlagAdapter.Flag(flagIndex, flag);
 	}
 	
-	protected void onAction(int flagIdx, int flagPos, boolean dynamic, boolean val) {
+	protected boolean onAction(int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
 		if (mActionListener!=null) {
-			mActionListener.onAction(this, flagIdx, flagPos, dynamic, val);
+			return mActionListener.onAction(this, flagIdx, flagPos, dynamic, val, storageInt);
 		}
+		return true;
 	}
 	
 	public SettingsPanel(@NonNull FlagAdapter mFlagAdapter, @NonNull PDICMainAppOptions opt, String[][] UITexts, int[][] UITags, int[][] drawable) {
@@ -291,6 +297,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 						button.setChecked(getBooleanInFlag(storageInt));
 					}
 					button.setTag(storageInt);
+					button.setId(storageInt);
 				}
 				if ((storageInt&BIT_HAS_ICON)!=0) {
 					Drawable drawable = getIconForDynamicFlagBySection(storageInt>>FLAG_IDX_SHIFT);
@@ -442,6 +449,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 			RadioSwitchButton button = (RadioSwitchButton)v;
 			//((Toastable_Activity)v.getContext()).showT("v::"+button.isChecked());
 			int storageInt = IU.parsint(v.getTag(), 0);
+			CMN.Log("storageInt::", v.getTag(), storageInt, (storageInt>>FLAG_IDX_SHIFT), button.isChecked());
 			if(storageInt!=0) {
 				Drawable d;
 				if (linearLayout instanceof XYLinearLayout && (d=button.getCompoundDrawables()[2])!=null && (storageInt&BIT_IS_DYNAMIC)!=0) {

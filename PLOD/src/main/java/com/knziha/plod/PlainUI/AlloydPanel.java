@@ -27,8 +27,9 @@ import java.util.List;
 
 public class AlloydPanel extends PlainAppPanel {
 	protected MainActivityUIBase a;
-	private ContentviewBinding contentUIData;
+	public ContentviewBinding contentUIData;
 	public Toolbar toolbar;
+	public MenuBuilder AllMenus;
 	public List<MenuItemImpl> RandomMenu;
 	
 	public AlloydPanel(MainActivityUIBase a, @NonNull ContentviewBinding contentUIData) {
@@ -57,7 +58,8 @@ public class AlloydPanel extends PlainAppPanel {
 			toolbar.setTitleTextColor(Color.WHITE);
 			toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
 			toolbar.inflateMenu(R.xml.menu_popup_content);
-			RandomMenu = new ArrayList<>(((MenuBuilder) toolbar.getMenu()).mItems);
+			AllMenus = (MenuBuilder) toolbar.getMenu();
+			RandomMenu = new ArrayList<>(AllMenus.mItems);
 			toolbar.setNavigationOnClickListener(v -> dismiss());
 			toolbar.setOnMenuItemClickListener(a);
 			
