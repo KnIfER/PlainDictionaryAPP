@@ -17,6 +17,7 @@ import androidx.appcompat.app.GlobalOptions;
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.settings.FilePickerOptions;
 import com.knziha.filepicker.utils.CMNF;
+import com.knziha.filepicker.widget.TextViewmy;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -702,6 +703,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateFFAt(0x100000000l,val);
 		return val;
 	}
+	
 	public boolean getPicDictAutoSer() {
 		return (FirstFlag & 0x200000000l) == 0x200000000l;
 	}

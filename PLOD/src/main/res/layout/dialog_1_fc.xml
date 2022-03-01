@@ -16,5 +16,6 @@
         android:layout_height="match_parent"
         android:background="#00ff0000"
         android:scrollbars="vertical"
+		style="@style/RecyclerViewStyle"
         />
 </com.knziha.plod.widgets.Framer>

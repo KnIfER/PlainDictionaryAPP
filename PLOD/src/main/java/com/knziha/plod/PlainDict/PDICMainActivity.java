@@ -30,7 +30,11 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.Editable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.method.ScrollingMovementMethod;
+import android.text.style.ClickableSpan;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -38,6 +42,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -90,6 +95,7 @@ import com.bumptech.glide.load.engine.cache.DiskCache;
 import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
+import com.knziha.filepicker.widget.TextViewmy;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.PlainAppPanel;
@@ -957,7 +963,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		ResizeNavigationIcon(toolbar);
 		
-		ViewUtils.setOnClickListenersOneDepth(dialogHolder, this, 1, 0, null);
+		//123123
 		cb1 = UIData.cb1;
 		UIData.cb2.setChecked(opt.getPinPicDictDialog());
 		UIData.cb3.setChecked(opt.getPicDictAutoSer());
@@ -1309,25 +1315,27 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			}});
 		
-		View.OnTouchListener toucherTmp = (v, event) -> {
-			//int id = v.getId();
-			if(v.getId() == R.id.dialogHolder) {
+		dialogHolder.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				//if(etSearchDict_getWindowToken!=null && Searchbar.hasFocus())
+				if(ViewUtils.isVisible(Searchbar))
+				{
+					imm.hideSoftInputFromWindow(etSearchDict_getWindowToken, 0);
+					ViewUtils.setVisible(Searchbar, false);
+					return;
+				}
 				dismissDictPicker(R.anim.dp_dialog_exit);
-				return true;
 			}
-			fadeSnack();
-			return false;
-		};
-		
-		dialogHolder.setOnTouchListener(toucherTmp);
+		});
 		
 		final NoScrollViewPager viewPager = UIData.viewpager;
-		viewPager.setOnTouchListener(toucherTmp);
 		viewPager.addOnPageChangeListener(new OnPageChangeListener() {
 			@Override public void onPageScrollStateChanged(int arg0) { }
 			@Override public void onPageScrolled(int arg0, float arg1, int arg2) { }
 			@Override
 			public void onPageSelected(int pos) {
+				fadeSnack();
 				CurrentViewPage=pos;
 				boolean b1=pos==0;
 				if((b1||pos==2) && PDICMainAppOptions.getHintSearchMode()) {
@@ -2425,14 +2433,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(!isHalo) {
 			UIData.dialog.setBackgroundResource(R.drawable.popup_shadow_l);
 			UIData.dialog.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-			MarginLayoutParams lp = (MarginLayoutParams) cb1.getLayoutParams();
-			lp.topMargin=(int) (13*dm.density);
-			cb1.setLayoutParams(lp);
+//			MarginLayoutParams lp = (MarginLayoutParams) ((View)cb1.getParent()).getLayoutParams();
+//			lp.topMargin=(int) (13*dm.density);
+//			((View)cb1.getParent()).setLayoutParams(lp);
 		}else {
 			UIData.dialog.setBackgroundResource(R.drawable.popup_background3);
-			MarginLayoutParams lp = (MarginLayoutParams) cb1.getLayoutParams();
-			lp.topMargin=(int) (10*dm.density);
-			cb1.setLayoutParams(lp);
+//			MarginLayoutParams lp = (MarginLayoutParams) ((View)cb1.getParent()).getLayoutParams();
+//			lp.topMargin=(int) (10*dm.density);
+//			((View)cb1.getParent()).setLayoutParams(lp);
 		}
 
 		setStatusBarColor(getWindow(), filteredColor);
@@ -2626,6 +2634,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				lastFullKeyword=etSearch.getText().toString();
 			} break;
 			//搜索词典
+			case R.id.rcntSch:{
+				
+				if(ViewUtils.toggleFadeInFadeOut(UIData.rcntSchList)) {
+				
+				}
+				
+			} break;
 			case R.id.cb1:{
 				if(Searchbar ==null) {
 					Toolbar searchbar = (Toolbar)  ((ViewStub)dialogHolder.findViewById(R.id.view_stub)).inflate();
@@ -2656,14 +2671,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						imm.hideSoftInputFromWindow(etSearchDict_getWindowToken,0);
 					} else {
 						etSearch.clearFocus();
-						if(Searchbar.getVisibility()==View.VISIBLE) {
-							Searchbar.setVisibility(View.GONE);
-							imm.hideSoftInputFromWindow(etSearchDict_getWindowToken,0);
-						}else {
-							Searchbar.setVisibility(View.VISIBLE);
-							etSearchDict.requestFocus();
-							imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-						}
+						Searchbar.setVisibility(View.VISIBLE);
+						etSearchDict.requestFocus();
+						imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 					}
 				}
 			} break;
@@ -2673,7 +2683,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				opt.setPicDictAutoSer(cb.isChecked());
 				if(pickDictDialog!=null) pickDictDialog.isDirty=true;
 			} break;
-			case R.id.cb2:{
+			case R.id.cb2:{ //123
 				cb = (CheckableImageView)v;
 				cb.toggle();
 				opt.setPinPicDictDialog(cb.isChecked());
@@ -2848,7 +2858,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		}
 
-		contentHolder = bImmersive ? UIData.webcoord : main_content_succinct;
+		contentHolder = bImmersive ? UIData.webcoord : UIData.main;
 		sp = (ViewGroup) bottombar.getParent();
 		if(sp!=contentHolder) {
 			FrameLayout w0p = (FrameLayout) UIData.browserWidget0.getParent();
@@ -3054,7 +3064,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							lv2.getVisibility()==View.VISIBLE?lv2:lv;
 					View c0 = activeLv.getChildAt(0);
 					if(c0!=null) {
-						if (true) {
+						if (false) {
 							UIData.browserWidget1.setActivated(true);
 						}
 						activeLv.performItemClick(c0, activeLv.getFirstVisiblePosition(), 0);
@@ -3174,20 +3184,111 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		}
 		if(!isFragInitiated) {
+			ViewUtils.setOnClickListenersOneDepth(dialogHolder, this, 999, 0, null);
 			needRefresh=false;
 			FragmentManager fragmentManager = getSupportFragmentManager();
 			FragmentTransaction transaction = fragmentManager.beginTransaction();
 			pickDictDialog = new DictPicker(this);
-			transaction.add(R.id.dialog_, pickDictDialog);
+			transaction.replace(R.id.dialog_dict_picker, pickDictDialog);
 			findViewById(R.id.dialog_).setOnClickListener(ViewUtils.DummyOnClick);
 			transaction.commit();
 			root.postDelayed(() -> pickDictDialog.PostEnabled=false, 1000);
 			//pickDictDialog.PostEnabled=false;
+			
+			TextViewmy rcntSchList = UIData.rcntSchList;
+			rcntSchList.setMovementMethod(ScrollingMovementMethod.getInstance());
+			rcntSchList.setVerticalScrollBarEnabled(true);
+			opt.setAsLinkedTextView(rcntSchList, false);
+			rcntSchList.setTextSize(GlobalOptions.isLarge?20f:14f);
+			rcntSchList.setMaxLines(3);
+			rcntSchList.longClick=new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					if(rcntSchList.span!=null) {
+						showT(""+rcntSchList.span);
+						
+						
+						return true;
+					}
+					return false;
+				}
+			};
+			rcntSchList.setOnLongClickListener(opt.XYTouchRecorderInstance());
+			
 			isFragInitiated=true;
 			//pickDictDialog.mRecyclerView.scrollToPosition(adapter_idx);
 		}
 		else pickDictDialog.refresh(false);
 		if(needRefresh) pickDictDialog.adapter().notifyDataSetChanged();
+		
+		
+		refreshRecentDictsSpan();
+	}
+	
+	ArrayList<String> recentDictFilters = new ArrayList<>();
+	private void refreshRecentDictsSpan() {
+		SpannableStringBuilder ssbRcntSch = new SpannableStringBuilder();
+//		ssbRcntSch.append("[最近词典列表]");
+//		ssbRcntSch.setSpan(new ClickableSpan() {
+//			@Override
+//			public void onClick(@NonNull View widget) {
+//				showT("...");
+//			}
+//		}, 0, ssbRcntSch.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+		if(recentDictFilters.size()==0) {
+			recentDictFilters.add("[最近词典]");
+			recentDictFilters.add("[切换分组]");
+			recentDictFilters.add("[原列表]");
+		}
+		for (int i = 0; i < recentDictFilters.size(); i++) {
+			String sch = recentDictFilters.get(i);
+			if(ssbRcntSch.length()>0)
+				ssbRcntSch.append("   ");
+			int st = ssbRcntSch.length(),ed;
+			ssbRcntSch.append(sch);
+			ed = ssbRcntSch.length();
+			
+			ssbRcntSch.setSpan(new RecentDictClickableSpan(i, 0), st, ed, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+		}
+		ssbRcntSch.append("   ");
+		UIData.rcntSchList.setText(ssbRcntSch);
+	}
+	
+	class RecentDictClickableSpan extends ClickableSpan implements Runnable{
+		final int index;
+		final int type;
+		
+		RecentDictClickableSpan(int index, int type) {
+			this.index = index;
+			this.type = type;
+		}
+		
+		@Override
+		public void onClick(@NonNull View widget) {
+			if(type==0) {
+				//showT(recentDictFilters.get(index));
+				String dictFilter = recentDictFilters.get(index);
+				//showTopSnack(dialogHolder, dictFilter);
+				if(Searchbar!=null && Searchbar.getVisibility()==View.VISIBLE) {
+					etSearchDict.setText(dictFilter);
+				} else {
+					UIData.rcntSch.setText(dictFilter);
+					
+				}
+				
+			} else {
+				root.postDelayed(this, 200);
+			}
+		}
+		
+		@Override
+		public void run() {
+			try {
+				String removed = recentDictFilters.remove(index);
+				recentDictFilters.add(type==1?recentDictFilters.size():0, removed);
+				refreshRecentDictsSpan();
+			} catch (Exception ignored) { }
+		}
 	}
 	
 	@SuppressLint("ResourceType")

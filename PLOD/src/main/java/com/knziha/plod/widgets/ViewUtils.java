@@ -17,6 +17,7 @@
 package com.knziha.plod.widgets;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
@@ -72,6 +73,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.android.material.appbar.AppBarLayout;
+import com.knziha.filepicker.widget.TextViewmy;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -601,6 +603,37 @@ public class ViewUtils {
 	/**  */
 	public static Object getWeakRefObj(Object tag) {
 		return tag==null?null:((WeakReference)tag).get();
+	}
+	
+	public static boolean isVisible(View v) {
+		return v!=null && v.getVisibility()==View.VISIBLE;
+	}
+	
+	public static void setVisible(View v, boolean visible) {
+		v.setVisibility(visible?View.VISIBLE:View.GONE);
+	}
+	
+	public static boolean toggleFadeInFadeOut(TextViewmy view) {
+		boolean vis = isVisible(view);
+		if(vis) {
+			view.animate()
+					.alpha(0)
+					.setDuration(96)
+					.setListener(new AnimatorListenerAdapter() {
+						@Override
+						public void onAnimationEnd(Animator animation) {
+							setVisible(view, false);
+						}
+					});
+			return false;
+		} else {
+			setVisible(view, true);
+			view.animate()
+					.alpha(1)
+					.setDuration(96)
+					.setListener(null);
+			return true;
+		}
 	}
 	
 	public void Destory(){

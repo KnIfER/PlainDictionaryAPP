@@ -3377,7 +3377,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	protected ViewGroup onShowSnack(ViewGroup parentView) {
 		boolean findHolder = parentView==null;
-		int bottom = bottombar.getHeight();
+		int bottom = 0;//bottombar.getHeight();
 		if(isContentViewAttached()) {
 			if(findHolder) parentView = contentUIData.PageSlider;
 			bottom = 0;
@@ -3401,8 +3401,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(findHolder) {
 			if(parentView!=null) {
+				bottom = 0;//bottombar.getHeight();
 			} else {
 				parentView = snack_holder;
+				bottom = bottombar.getHeight();
 			}
 		}
 		topsnack.setBottomMargin(bottom);

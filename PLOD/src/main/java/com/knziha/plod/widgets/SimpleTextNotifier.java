@@ -61,16 +61,17 @@ public class SimpleTextNotifier extends TextView{
 			currListener = toRemoveListener;
 			// hiding……
 			animate()
-				.setListener(toDwellAndHideListener)
+				.setListener(toRemoveListener)
 				.translationY(getHeight());
 		}
 	};
 	
 	AnimatorListenerAdapter fadeListener = new AnimatorListenerAdapter() {
 		@Override public void onAnimationEnd(Animator animation) {
-			ViewUtils.removeView(getSnackView());
-			visible = false;
-			if(msg!=0) msg = 0;
+			if(!visible) {
+				ViewUtils.removeView(getSnackView());
+				if(msg!=0) msg = 0;
+			}
 		}
 	};
 	
@@ -101,7 +102,7 @@ public class SimpleTextNotifier extends TextView{
 	public void show() {
 		currListener=null;
 		removeCallbacks(dwellAbility);
-		//clearAnimation();
+		clearAnimation();
 		int height = getHeight();
 		if(height>0){
 			visible=true;
@@ -112,11 +113,14 @@ public class SimpleTextNotifier extends TextView{
 			}
 			if(mOffsetScale!=1) mOffsetScale = 1;
 			setTranslationY(offset);
+			//CMN.Log("setTranslationY::", offset);
 			setVisibility(View.VISIBLE);
 			snacking = visible = true;
 			ViewPropertyAnimator animation = animate()
 					.setListener(toDwellAndHideListener)
-					.translationY(0);
+					.translationY(0)
+					.alpha(1)
+					;
 			mDwellation = (int) (mDuration-animation.getDuration()*1.35);
 			if(mDwellation<0) mDwellation=800;
 		}
@@ -124,11 +128,14 @@ public class SimpleTextNotifier extends TextView{
 	
 	public void fadeOut() {
 		if(visible) {
+			removeCallbacks(dwellAbility);
+			removeCallbacks(postShowAbility);
 			visible = false;
+			snacking = false;
 			if(msg!=0) msg = 0;
 			currListener=fadeListener;
 			animate()
-				.setListener(toDwellAndHideListener)
+				.setListener(fadeListener)
 				.alpha(0)
 			;
 		}
