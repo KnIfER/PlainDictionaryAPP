@@ -47,4 +47,39 @@ succ"
 		</script>
 		<script src='https://caiyunapp.com/dest/trs.js'></script>
 	"
+	,"pageTranslator":"
+	console.log('translate!!!');
+	var btn=document.getElementsByClassName('cyxy-function cyxy-trs-source')[0];
+	function tryOpen() {
+		if(!btn.firstChild.src.endsWith('mode-t.png')) {
+			btn.click();
+			if(btn.firstChild.src.endsWith('mode-t.png')) return;
+		}
+		if(tryCnt++<3) setTimeout(tryClose, 200);
+	}
+	if(btn)tryOpen();
+	else {
+		function loadJs(url,callback){
+			var e=document.createElement('script');
+			e.type='text/javascript';
+			e.onload=callback;
+			e.src=url;
+			document.body.appendChild(e);
+		}
+		loadJs('https://caiyunapp.com/dest/trs.js')
+	}
+	"
+	,"pageTranslatorOff":"
+	console.log('translate off!!!');
+	var tryCnt=0;
+	function tryClose() {
+		var btn=document.getElementsByClassName('cyxy-function cyxy-trs-source')[0];
+		if(btn && !btn.firstChild.src.endsWith('mode-s.png')) {
+			btn.click();
+			if(btn.firstChild.src.endsWith('mode-s.png')) return;
+		}
+		if(tryCnt++<3) setTimeout(tryClose, 200);
+	}
+	tryClose()
+	"
 }

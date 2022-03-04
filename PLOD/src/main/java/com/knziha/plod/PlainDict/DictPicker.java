@@ -1,7 +1,9 @@
 package com.knziha.plod.plaindict;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,6 +14,7 @@ import android.view.WindowManager;
 import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
@@ -20,8 +23,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
+import com.knziha.filepicker.widget.TextViewmy;
+import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.Framer;
+import com.knziha.plod.widgets.LinearSplitView;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.regex.Pattern;
@@ -30,12 +36,13 @@ import java.util.regex.PatternSyntaxException;
 public class DictPicker extends DialogFragment implements View.OnClickListener
 {
 	public boolean PostEnabled=true;
+	public int bForcePin;
 	MainActivityUIBase a;
 	private AnimationSet animation;
 	private Drawable mActiveDrawable;
 	
 	public boolean isDirty=false;
-	private Framer root;
+	public Framer root;
 	
 	RecyclerView mRecyclerView;
 	LinearLayoutManager lman;
@@ -45,6 +52,9 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 	public String SearchIncantation;
 	public Pattern SearchPattern;
 	public int LastSearchScrollItem;
+	
+	LinearLayout.LayoutParams dockLayout;
+	ViewGroup.LayoutParams undockLayout;
 	
 	public DictPicker() {
 		this(null);
@@ -61,31 +71,94 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 	public void onAttach(@NonNull Context context){
 		//CMN.Log("dict picker onAttach");
 		super.onAttach(context);
-		refresh(true);
+		refresh(true, bForcePin);
 	}
 	
 	public HomeAdapter adapter(){
 		return mAdapter;
 	}
 	
-	public void refresh(boolean firstAttach) {
+	public void refresh(boolean firstAttach, int bForcePin) {
 		//if(!isDirty) return;
 		//isDirty=false;
 		int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
-		if(lman!=null)
+		if(lman!=null) {
 			if(adapter_idx>lman.findLastVisibleItemPosition() || adapter_idx<lman.findFirstVisibleItemPosition()) {
 				int target = Math.max(0, adapter_idx-5);
 				lman.scrollToPositionWithOffset(a.pickTarget==1?a.CCD_ID:target, 0);
 				CMN.Log("scrolled");
 			}
+		}
+		
 		if(a.thisActType==MainActivityUIBase.ActType.PlainDict) {
 			/*  词典选择器的动画效果(显示)  */
-			if(animation==null)
-				animation = (AnimationSet) AnimationUtils.loadAnimation(a, R.anim.dp_dialog_enter);
-			animation.getAnimations().get(0).setDuration(firstAttach ? 200 : 200);
-			a.dialogHolder.startAnimation(animation);
-			a.dialogHolder.setVisibility(View.VISIBLE);
+			boolean pinPicDictDialog = PDICMainAppOptions.getPinPicDictDialog();
+			if(bForcePin!=0) {
+				if(bForcePin==-1) pinPicDictDialog=false;
+				else if(bForcePin==1) pinPicDictDialog=true;
+				bForcePin = 0;
+			}
+			if(pinPicDictDialog) {
+				a.dialogHolder.setVisibility(View.GONE);
+			} else {
+				if(animation==null)
+					animation = (AnimationSet) AnimationUtils.loadAnimation(a, R.anim.dp_dialog_enter);
+				animation.getAnimations().get(0).setDuration(firstAttach ? 200 : 200);
+				a.dialogHolder.startAnimation(animation);
+				a.dialogHolder.setVisibility(View.VISIBLE);
+			}
+			
+			PDICMainActivity app = (PDICMainActivity) a;
+			ActivityMainBinding uiData = app.UIData;
+			LinearLayout dialog = uiData.dialog;
+			if(pinPicDictDialog ^ ViewUtils.ViewIsId((View) dialog.getParent(), R.id.viewpagerPH)) {
+				TextViewmy rcntSchList = uiData.rcntSchList;
+				ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) rcntSchList.getLayoutParams();
+				if (pinPicDictDialog) {
+					LinearSplitView viewpagerPH = uiData.viewpagerPH;
+					if(undockLayout==null) undockLayout = dialog.getLayoutParams();
+					if(ViewUtils.removeIfParentBeOrNotBe(dialog, viewpagerPH, false)) {
+						viewpagerPH.addView(dialog, 0, dockLayout==null?undockLayout:dockLayout);
+					}
+					if(dockLayout!=null) {
+						dialog.setLayoutParams(dockLayout);
+					} else {
+						dockLayout = (LinearLayout.LayoutParams) dialog.getLayoutParams();
+						dockLayout.width = 0;
+						dockLayout.weight = (float) (1 / (1-0.375) * 0.375);
+						//dockLayout.width = (int) (135 * GlobalOptions.density);
+						//CMN.Log("黄金比例？", (int) (135 * GlobalOptions.density), a.root.getWidth());
+						dockLayout.bottomMargin = dockLayout.topMargin = 0;
+					}
+					viewpagerPH.installHandle(uiData.lnrSplitHdls);
+					View handle = viewpagerPH.handle;
+					handle.getLayoutParams().width = (int) (28 * GlobalOptions.density);
+					handle.getLayoutParams().height = (int) (28 * GlobalOptions.density);
+					handle.setBackgroundResource(R.drawable.ic_split_handle);
+					handle.getBackground().setColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
+					dialog.setBackgroundResource(R.drawable.popup_background3_split);
+					rcntSchList.setPadding(0,0,0,0);
+					rcntSchList.setMaxLines(1);
+					int pad = (int) (5*GlobalOptions.density);
+					layoutParams.leftMargin=pad;
+					layoutParams.rightMargin=pad;
+				} else {
+					if(ViewUtils.removeIfParentBeOrNotBe(dialog, uiData.dialogHolder, false)) {
+						uiData.dialogHolder.addView(dialog, 0, undockLayout);
+					}
+					dialog.setBackgroundResource(R.drawable.popup_background3);
+					int pad = (int) (5*GlobalOptions.density);
+					rcntSchList.setPadding(0,pad*2,0,pad);
+					rcntSchList.setMaxLines(3);
+					pad = (int) (25*GlobalOptions.density);
+					layoutParams.leftMargin=pad;
+					layoutParams.rightMargin=pad;
+				}
+				notifyDataSetChanged();
+			}
+			ViewUtils.setVisible(uiData.lnrSplitHdls, pinPicDictDialog);
 		}
+		
 		//mAdapter.notifyDataSetChanged();
 	}
 
@@ -141,7 +214,7 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 						root.mMaxHeight=mMaxH;
 						window.setLayout(width,height);
 
-						getView().post(() -> refresh(false));
+						getView().post(() -> refresh(false, bForcePin));
 					}
 				}
 				getDialog().setCanceledOnTouchOutside(true);
@@ -196,6 +269,8 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 			tv.SetSearchPattern(SearchPattern, text);
 			
 			tv.setText(text);
+			
+			tv.setMaxLines(PDICMainAppOptions.getPinPicDictDialog()?1:-1);
 			
 			holder.cover.setImageDrawable(a.md_getCover(position));
 		}
@@ -281,4 +356,4 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 			ViewUtils.setListViewScrollbarColor(mRecyclerView, true);
 		}
 	}
-}  
+}

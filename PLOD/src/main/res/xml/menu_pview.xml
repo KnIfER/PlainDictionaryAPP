@@ -2,33 +2,33 @@
 <menu
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto">
-	<item
-		android:id="@+id/toolbar_action1"
-		android:title="@string/search"
-		android:icon="@drawable/ic_btn_multimode"
-		app:showAsAction="never"/>
+	<!--0--><item android:title="@string/search" android:id="@+id/toolbar_action1" android:icon="@drawable/ic_search_24k" app:showAsAction="always"/>
 
-	<item
-		android:id="@+id/toolbar_action7"
-		android:icon="@drawable/downward"
-		android:title="@string/show_all_dictionaries"
-		app:showAsAction="never"/>
+	<!--1--><item android:title="分享至…" android:id="@+id/share" android:icon="@drawable/abc_ic_menu_share_mtrl_alpha" app:showAsAction="always"/>
 
-	<item
-		android:id="@+id/toolbar_action3"
-		android:icon="@drawable/downward"
-		android:title="设置翻阅"
-		app:showAsAction="never"/>
+	<!--2--><item android:title="翻译" android:id="@+id/translate" android:icon="@drawable/ic_g_translate_black_24dp" app:showAsAction="always"/>
 
-	<item
-		android:id="@+id/toolbar_action2"
-		android:icon="@drawable/downward"
-		android:title="页内搜索"
-		app:showAsAction="never"/>
+	<!--0--><item android:title="多行编辑" android:id="@+id/multiline" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 
-	<item
-		android:id="@+id/toolbar_action6"
-		android:icon="@drawable/downward"
-		android:title="@string/reset_keyword"
-		app:showAsAction="never"/>
+	<!--3--><item android:title="页内搜索" android:id="@+id/toolbar_action2" android:icon="@drawable/downward" app:showAsAction="never"/>
+
+
+	<group android:id="@+id/sorting" >
+	<!--5--><item android:title="执行联合搜索" android:id="@+id/perJointSch" android:icon="@drawable/downward" app:showAsAction="never"/>
+
+	<!--6--><item android:title="显示全部词典" android:id="@+id/showAll" android:checkable="true" android:icon="@drawable/downward" app:showAsAction="never"/>
+
+	<!--7--><item android:title="切换时不自动搜索" android:id="@+id/perLazySch" android:checkable="true" android:icon="@drawable/downward" app:showAsAction="never"/>
+	</group>
+
+	<!--8--><item android:title="设置…" android:id="@+id/toolbar_action3" android:icon="@drawable/downward" app:showAsAction="never"/>
+
+	<!--9--><item android:title="合并工具底栏" android:id="@+id/mergeTools" android:checkable="true" android:icon="@drawable/downward" app:showAsAction="never"/>
+
+	<group android:id="@+id/sorting" >
+	<!--4--><item android:title="搜索词记录" android:id="@+id/history" android:icon="@drawable/historyg" app:showAsAction="never"/>
+
+	<!--10--><item android:title="恢复启动时的搜索词" android:id="@+id/resetWord" android:icon="@drawable/ic_refresh_black_24dp" app:showAsAction="never"/>
+	</group>
+
 </menu>

@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -261,23 +262,23 @@ public class WebViewListHandler extends ViewGroup {
 				WebViewmy mMergedFrame = getMergedFrame();
 				ViewUtils.addViewToParent(mMergedFrame.rl, contentUIData.webSingleholder);
 				mMergedBook.toolbar.setVisibility(View.GONE);
-				contentUIData.navBtns.setVisibility(View.GONE);
-				if(webHolderSwapHide) {
-					WHP.setVisibility(View.GONE);
-				} else {
-					ViewUtils.removeView(WHP);
-				}
+//				contentUIData.navBtns.setVisibility(View.GONE);
+//				if(webHolderSwapHide) {
+//					WHP.setVisibility(View.GONE);
+//				} else {
+//					ViewUtils.removeView(WHP);
+//				}
 			}
 			else {
 				contentUIData.webcontentlister.setAlpha(1);
 				if(mMergedBook!=null) {
 					mMergedBook.toolbar.setVisibility(View.VISIBLE);
 				}
-				webholder.getLayoutParams().height = WRAP_CONTENT;
-				ViewUtils.addViewToParent(WHP, contentUIData.PageSlider, 1);
-				if(webHolderSwapHide) {
-					WHP.setVisibility(View.VISIBLE);
-				}
+//				webholder.getLayoutParams().height = WRAP_CONTENT;
+//				ViewUtils.addViewToParent(WHP, contentUIData.PageSlider, 1);
+//				if(webHolderSwapHide) {
+//					WHP.setVisibility(View.VISIBLE);
+//				}
 			}
 			bMergingFrames = mergeWebHolder;
 		}
@@ -538,6 +539,10 @@ public class WebViewListHandler extends ViewGroup {
 		}
 	}
 	
+	public boolean isPopupShowing() {
+		return alloydPanel!=null && alloydPanel.isVisible();
+	}
+	
 	public void setUpContentView(int cbar_key) {
 		if(!contentViewSetup) {
 			contentViewSetup = true;
@@ -577,5 +582,17 @@ public class WebViewListHandler extends ViewGroup {
 			a.contentbar_project.btns = ContentbarBtns;
 			RebuildBottombarIcons(a, a.contentbar_project, a.mConfiguration);
 		}
+	}
+	
+	public boolean isWeviewInUse(ViewGroup someView) {
+		ViewParent sp = someView.getParent();
+		if(sp==null) return false;
+		if(ViewUtils.isVisibleV2(contentUIData.webSingleholder) && sp==contentUIData.webSingleholder) {
+			return true;
+		}
+		if(ViewUtils.isVisibleV2(contentUIData.WHP) && ViewUtils.isVisibleV2(contentUIData.webholder) && sp==contentUIData.webholder) {
+			return true;
+		}
+		return false;
 	}
 }

@@ -194,7 +194,7 @@ public class BookPresenter
 	}
 	
 	/** if(!window.rcspc){console.log('popuping...addEventListener', sid.get());window.rcspc=1;window.addEventListener('click',function(e){
-			var w=window,d=document,_log=console.log;
+			var w=window,d=document,_log=function(e){console.log(e)};
 	 		//_log('wrappedClickFunc 2', e.srcElement.id);
 	 		var curr = e.srcElement;
 			_log('popuping...'+w.rcsp);
@@ -2749,6 +2749,21 @@ function debug(e){console.log(e)};
 			if (presenter!=null) {
 				presenter.suppressingLongClick = suppress;
 			}
+		}
+        
+        @JavascriptInterface
+        public void putTransval(long sid, String value, int index) {
+			if (presenter!=null) {
+				presenter.a.putTransval(index, value);
+			}
+		}
+		
+        @JavascriptInterface
+        public String getTransval(long sid, int index) {
+			if (presenter!=null) {
+				return presenter.a.getTransval(index);
+			}
+			return "";
 		}
         
         @JavascriptInterface

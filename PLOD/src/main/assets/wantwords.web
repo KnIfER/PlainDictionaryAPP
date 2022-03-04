@@ -255,7 +255,10 @@ js:@{schVar}(4)\r< En-Zh >
 			}
 			if(sch) {
 				debug('loadJson ' + 'https://wantwords.net/'+sch+'/');
-				parent.loadJson('https://wantwords.net/'+sch+'/', (e)=>{
+				parent.loadJson('https://wantwords.net/'+sch+'/', function(e){
+					if(!Array.isArray(e)){
+						try{e = parent.parseJson(e)}catch(err){debug(err)}
+					}
 					debug(e);
 					window.tmp=e;
 					buildDef(e);

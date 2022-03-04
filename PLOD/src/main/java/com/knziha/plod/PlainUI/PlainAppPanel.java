@@ -5,6 +5,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.Dialog;
+import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.view.View;
 import android.view.ViewGroup;
@@ -119,8 +120,18 @@ public class PlainAppPanel extends SettingsPanel {
 		window.getDecorView().setBackground(null);
 		window.getDecorView().setPadding(0,0,0,0);
 		
+		
 		Toastable_Activity.setStatusBarColor(window, a.MainAppBackground);
 		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+		
+		View t = window.findViewById(android.R.id.title);
+		if(t!=null) t.setVisibility(View.GONE);
+		int id = Resources.getSystem().getIdentifier("titleDivider","id", "android");
+		if(id!=0){
+			t = window.findViewById(id);
+			if(t!=null) t.setVisibility(View.GONE);
+		}
+		if(t!=null) t.setVisibility(View.GONE);
 	}
 	
 	@CallSuper

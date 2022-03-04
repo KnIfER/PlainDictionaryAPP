@@ -126,7 +126,7 @@ public class ListViewAdapter extends BasicAdapter {
 //			return;
 //		}
 		a.shuntAAdjustment();
-		if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
+		if(a.PeruseListModeMenu.isChecked()) {
 			String pw = pos==0?a.etSearch.getText().toString(): presenter.bookImpl.getEntryAt(pos);
 			a.getPeruseView().ScanSearchAllByText(pw, a, true, a.updateAI);
 			a.AttachPeruseView(true);
@@ -134,7 +134,6 @@ public class ListViewAdapter extends BasicAdapter {
 			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
 			return;
 		}
-		a.etSearch_ToToolbarMode(1);
 		if(a.DBrowser!=null) return;
 		lastClickedPosBeforePageTurn = lastClickedPos;
 		super.onItemClick(pos);
@@ -236,6 +235,7 @@ public class ListViewAdapter extends BasicAdapter {
 //			if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick()){
 //				prepareInPageSearch(key, true);
 //			} //333
+		a.etSearch_ToToolbarMode(1);
 	}
 	
 	@Override

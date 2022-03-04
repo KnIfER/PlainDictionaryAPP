@@ -322,8 +322,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		toolbar.inflateMenu(R.xml.menu_float);
 		AllMenus = (MenuBuilder) toolbar.getMenu();
 	
-		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 3, 4, 5, 6);
-		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 2, 4, 5, 6);
+		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 7, 3, 4, 5, 6);
+		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 7, 3, 4, 5, 6);
+		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 2, 4, 5, 6);
+		
+		PeruseListModeMenu = ViewUtils.findInMenu(MainMenu, R.id.peruseList);
+		PeruseListModeMenu.setChecked(opt.getInFloatPeruseMode());
 		
 		hdl = new MyHandler(this);
 		checkLog(savedInstanceState);
@@ -413,7 +417,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			toggleInPageSearch(false);
     	
         lv.setAdapter(adaptermy = new ListViewAdapter(this, AllMenus, SingleContentMenu));
-        lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, 2));
+        lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, R.layout.listview_item1, 2));
 
 			String keytmp = processIntent(getIntent());
 	        etSearch.addTextChangedListener(tw1);

@@ -114,7 +114,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean bPageStarted;
 	public boolean bShouldOverridePageResource;
 	public additiveMyCpr1 jointResult;
-	public boolean translating;
+	public int translating = -1;
 	public WebViewListHandler weblistHandler;
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
@@ -157,7 +157,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	public WebViewmy(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		//setWebContentsDebuggingEnabled(true);
+		setWebContentsDebuggingEnabled(true);
 		
 		//setBackgroundColor(Color.parseColor("#C7EDCC"));
 		//setBackgroundColor(0);

@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -179,7 +180,8 @@ public class MdictServerMobile extends MdictServer {
 					StrictMode.setThreadPolicy(policy);
 				}
 				CMN.Log("OpenMdbResourceByName   http://192.168.0.100:8080/base/3" + key.replace("\\", "/"));
-				HttpURLConnection urlConnection = (HttpURLConnection) new URL("http://192.168.0.100:8080/base/3" + key.replace("\\", "/")).openConnection();
+				String uri = "http://192.168.0.100:8080/base/3" + URLEncoder.encode(key.replace("\\", "/"));
+				HttpURLConnection urlConnection = (HttpURLConnection) new URL(uri).openConnection();
 				if (urlConnection instanceof HttpsURLConnection) {
 					((HttpsURLConnection) urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
 				}

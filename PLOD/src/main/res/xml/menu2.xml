@@ -30,7 +30,7 @@
         android:title=""
         app:showAsAction="always"/>
                 <item
-        android:id="@+id/toolbar_action6"
+        android:id="@+id/remPagePos"
         android:icon="@drawable/ic_btn_siglemode"
         android:title=""
         app:showAsAction="always"/>

@@ -427,6 +427,38 @@
 		<item name="android:visibility">gone</item>
 		<item name="android:longClickable">true</item>
 	</style>
+
+
+
+	<style name="SearchbarMenuTextStyle" parent="AppTheme">
+		<item name="android:layout_height">match_parent</item>
+		<item name="android:layout_width">0dp</item>
+		<item name="android:layout_weight">1</item>
+		<item name="android:textColor">#fff</item>
+		<item name="android:textSize">14sp</item>
+		<item name="android:padding">6dp</item>
+		<item name="android:singleLine">true</item>
+		<item name="android:gravity">center</item>
+		<item name="android:background">?attr/listChoiceBackgroundIndicator</item>
+	</style>
+
+	<style name="SearchbarMenuTextStyle_dlg" parent="SearchbarMenuTextStyle">
+		<item name="android:textSize">10sp</item>
+		<item name="colorControlNormal">@color/transparent</item>
+		<item name="colorControlActivated">@color/transparent</item>
+	</style>
+	<style name="MenuTextStyleInList" parent="MenuTextStyle">
+		<item name="android:layout_width">0dp</item>
+		<item name="android:layout_weight">1</item>
+	</style>
+	<style name="MenuTextStyleInListHeader" parent="MenuTextStyle">
+		<item name="android:layout_width">wrap_content</item>
+	</style>
+	<style name="MenuTextStyle" parent="MenuTextStyleBase">
+		<item name="android:padding">15dp</item>
+		<item name="android:drawablePadding">25dp</item>
+		<item name="android:gravity">center_vertical</item>
+	</style>
 </resources>
 
 

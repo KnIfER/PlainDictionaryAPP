@@ -3,13 +3,10 @@ package com.knziha.plod.dictionarymanager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Message;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -60,14 +57,12 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.MagentTransient;
 import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.plaindict.AgentApplication;
-import com.knziha.plod.plaindict.BaseHandler;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.settings.BookOptionsDialog;
-import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.knziha.rbtree.RashSet;
 
 import java.io.BufferedReader;
@@ -77,7 +72,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -942,7 +936,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					f1.refreshSize();
 				}
 			} break;
-            case R.id.toolbar_action6:{//显示全部
+            case R.id.remPagePos:{//显示全部
 				if(isLongClicked){
 					if(opt.getDictManager1MultiSelecting()){//间选1
 						int[] positions = f1.lastClickedPos;
@@ -1002,7 +996,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
-            case R.id.toolbar_action14:{//展开
+            case R.id.tapTranslator:{//展开
 				if(isLongClicked) {ret=false; break;}
 				ArrayList<mFile> list1 = f3.data.getList();
 				for(int i=0;i<list1.size();i++) {
@@ -1194,7 +1188,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 			} break;
 			/* 删除记录 */
-            case R.id.toolbar_action11:{
+            case R.id.tintList:{
 				if(isLongClicked) {
 					ret=false;break;
 				}

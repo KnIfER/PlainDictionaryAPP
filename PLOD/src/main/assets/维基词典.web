@@ -428,7 +428,7 @@
 		,'December'
 	],yearFrom=2016;
 	var month;
-	function debug(...e){console.log('fatal wiki',e)};
+	function debug(e){console.log('fatal wiki123',e)};
 	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
 	function getRandomPage() {
 		var yearNow=new Date().getFullYear(),yd=yearNow-yearFrom;
@@ -444,7 +444,7 @@
 		var x = new XMLHttpRequest();
 		x.open('POST', url, true);
 		//x.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9');
-		x.responseType = 'document';
+		//x.responseType = 'document';
 		if(cb)x.onload = function() {
 			cb(x.response);
 		};
@@ -452,6 +452,7 @@
 		x.setRequestHeader('Content-Type', 'text/html');
 		// x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 		x.send();
+		debug(x)
 		return x;
 	}
 	debug('word!!!',url);
@@ -485,6 +486,10 @@
 	},true);
 	load(url, function(e){
 		debug('加载完成::',month+'_1', e);
+		
+		var parser = new DOMParser();
+		e = parser.parseFromString(e, 'text/html');
+
 
 		// 开始构造页面
 		var df;

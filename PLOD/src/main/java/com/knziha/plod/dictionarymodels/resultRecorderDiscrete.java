@@ -56,4 +56,8 @@ public class resultRecorderDiscrete {
 	public boolean shouldSaveHistory() {
 		return true;
 	}
+	
+	public void insertSearchKeyIfNeeded(MainActivityUIBase a) {
+	
+	}
 }

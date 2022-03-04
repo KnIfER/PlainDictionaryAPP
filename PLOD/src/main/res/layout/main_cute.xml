@@ -227,7 +227,7 @@
     >	
 		
 	<ImageView
-		android:id="@+id/cb1"
+		android:id="@+id/schBook"
 		android:clickable="true"
         android:layout_width="28dp"
         android:layout_height="28dp"
@@ -242,11 +242,11 @@
 	
 	
 	<com.knziha.plod.widgets.CheckableImageView
-		android:id="@+id/cb3"
+		android:id="@+id/autoSchSw"
 		android:clickable="true"
         android:layout_width="28dp"
         android:layout_height="28dp"
-		android:layout_below="@+id/cb1"
+		android:layout_below="@+id/schBook"
 	    android:layout_alignParentRight="true"
 		android:background="@drawable/popup_background5"
 		android:layout_marginTop="2dp"
@@ -257,11 +257,11 @@
 	    />
 	
 	<com.knziha.plod.widgets.CheckableImageView
-		android:id="@+id/cb2"
+		android:id="@+id/pinPicBook"
 		android:clickable="true"
         android:layout_width="28dp"
         android:layout_height="28dp"
-		android:layout_below="@+id/cb3"
+		android:layout_below="@+id/autoSchSw"
 	    android:layout_alignParentRight="true"
 		android:background="@drawable/popup_background6"
 		android:layout_marginTop="2dp"

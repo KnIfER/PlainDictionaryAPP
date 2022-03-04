@@ -122,6 +122,24 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		return instance;
 	}
 	
+	
+	private static boolean columnExists(SQLiteDatabase db, String tableName, String columnName) {
+		String query;
+		try (Cursor cursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null)) {
+			while (cursor.moveToNext()) {
+				query = cursor.getString(cursor.getColumnIndex("name"));
+				CMN.Log("columnExists::", query);
+				if (columnName.equals(query)) {
+					return true;
+				}
+			}
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+		return false;
+	}
+	
+	
 	@Override
     public void onCreate(SQLiteDatabase db) {//第一次
 		if (testDBV2) {
@@ -264,8 +282,14 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", visit_count INTEGER DEFAULT 0 NOT NULL" +
 					")";
 			db.execSQL(sqlBuilder);
+			if (!columnExists(db, TABLE_HISTORY_v2, "src")) {
+				//CMN.Log("创建表……");
+				db.execSQL("ALTER TABLE "+TABLE_HISTORY_v2+" ADD COLUMN src INTEGER DEFAULT 0 NOT NULL");
+				//CMN.Log("创建了表……");
+			}
 			db.execSQL("CREATE INDEX if not exists history_term_index ON history (lex)"); // query view
-			db.execSQL("CREATE INDEX if not exists history_time_index ON history (last_visit_time)"); // main view
+			db.execSQL("DROP INDEX if exists history_time_index"); // main view
+			db.execSQL("CREATE INDEX if not exists history_time_index_1 ON history (last_visit_time, visit_count, src)"); // main view
 			try {
 				db.execSQL("CREATE INDEX if not exists history_visit_index ON history (visit_count, last_visit_time) where visit_count>0"); // visit_count view
 			} catch (SQLException e) {
@@ -479,7 +503,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	@Deprecated
 	public long insertUpdate(MainActivityUIBase a, String lex, ViewGroup webviewholder) {
 		if (testDBV2) {
-			return updateHistoryTerm(a, lex, webviewholder);
+			return updateHistoryTerm(a, lex, webviewholder, 0);
 		} else {
 			CMN.Log("insertUpdate");
 			incrementDBVersion(-1L);
@@ -495,20 +519,24 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		}
 	}
 	
-	public long updateHistoryTerm (MainActivityUIBase a, String lex, ViewGroup webviewholder) {
+	/** @param source 0=default; 1=listview; 2=tap translator; 3=peruse view
+	 *    <br> 128=main search; 129=float search 130=tap translator; 131=peruse view   */
+	public long updateHistoryTerm (MainActivityUIBase a, String lex, ViewGroup webviewholder, int source) {
 		CMN.rt();
 		int count=-1;
+		int src=0;
 		long id=-1;
 		try {
 			String books = null;
 			String[] where = new String[]{lex};
 			boolean insertNew=true;
-			Cursor c = database.rawQuery("select id,visit_count,books from history where lex = ? ", where);
+			Cursor c = database.rawQuery("select id,visit_count,books,src from history where lex = ? ", where);
 			if(c.moveToFirst()) {
 				insertNew = false;
 				id = c.getLong(0);
 				count = c.getInt(1);
 				books = c.getString(2);
+				src = c.getInt(3);
 			}
 			c.close();
 			
@@ -518,6 +546,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			values.put("books", a.collectDisplayingBooks(books, webviewholder));
 			
 			values.put("visit_count", ++count);
+			if(source>0 && (src<127 || source>127)) {
+				values.put("src", source);
+			}
 			long now = CMN.now();
 			values.put("last_visit_time", now);
 			if(insertNew) {

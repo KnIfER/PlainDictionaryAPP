@@ -40,6 +40,7 @@ import android.os.Build;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
@@ -492,12 +493,12 @@ public class ViewUtils {
 		if (f.getPath().startsWith("/ASSET")) {
 			String errRinfo;
 			boolean b1=f.getPath().startsWith("/", 6);
-//			if(!b1&&hasRemoteDebugServer) {
-//				InputStream input = getRemoteServerRes(f.getPath().substring(AssetTag.length()), false);
-//				if(input!=null) {
-//					return input;
-//				}
-//			}
+			if(!b1&&hasRemoteDebugServer) {
+				InputStream input = getRemoteServerRes(f.getPath().substring(AssetTag.length()), false);
+				if(input!=null) {
+					return input;
+				}
+			}
 			if(GlobalOptions.debug || b1)
 				try {
 					return context.getResources().getAssets().open(f.getPath().substring(AssetTag.length()+(!b1?1:0)));
@@ -606,11 +607,19 @@ public class ViewUtils {
 	}
 	
 	public static boolean isVisible(View v) {
-		return v!=null && v.getVisibility()==View.VISIBLE;
+		return v.getVisibility()==View.VISIBLE;
+	}
+	
+	public static boolean isVisibleV2(View v) {
+		return v!=null && v.getVisibility()==View.VISIBLE && v.getParent()!=null;
 	}
 	
 	public static void setVisible(View v, boolean visible) {
 		v.setVisibility(visible?View.VISIBLE:View.GONE);
+	}
+	
+	public static void setVisibleV2(View v, boolean visible) {
+		if(v!=null)v.setVisibility(visible?View.VISIBLE:View.GONE);
 	}
 	
 	public static boolean toggleFadeInFadeOut(TextViewmy view) {
@@ -634,6 +643,15 @@ public class ViewUtils {
 					.setListener(null);
 			return true;
 		}
+	}
+	
+	public static MenuItem findInMenu(List<MenuItemImpl> mainMenu, int id) {
+		for (int i = 0; i < mainMenu.size(); i++) {
+			if(mainMenu.get(i).getItemId()==id) {
+				return mainMenu.get(i);
+			}
+		}
+		return null;
 	}
 	
 	public void Destory(){

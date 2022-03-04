@@ -153,7 +153,6 @@
 	<string name="switch_set">切换分组</string>
 	<string name="unfold_all">展开全部</string>
 	<string name="rem_position">记忆位置</string>
-	<string name="rem_position_yes">记忆位置 √</string>
 	<string name="direct_update">直接更新</string>
 	<string name="bring_from_background">后台唤醒</string>
 	<string name="show_all_dictionaries">全部词典</string>

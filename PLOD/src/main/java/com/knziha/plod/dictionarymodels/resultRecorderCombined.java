@@ -20,10 +20,7 @@ import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /** Recorder rendering search results as : LinearLayout {WebView, WebView, ... }  */
@@ -31,14 +28,17 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	private List<additiveMyCpr1> data;
 	int firstItemIdx;
 	public View scrollTarget;
+	final String searchKey;
+	boolean searchKeyInserted;
 
 	public List<additiveMyCpr1> list(){return data;}
 	private List<BookPresenter> md;
 	
-	public resultRecorderCombined(MainActivityUIBase a, List<additiveMyCpr1> data_, List<BookPresenter> md_){
+	public resultRecorderCombined(MainActivityUIBase a, List<additiveMyCpr1> data_, List<BookPresenter> md_, String searchKey){
 		super(a);
 		data=data_;
 		md=md_;
+		this.searchKey = searchKey;
 	}
 	
 	public boolean FindFirstIdx(String key, AsyncTask task) {
@@ -146,7 +146,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		//bUseMergedUrl = false;
 		boolean bUseDictView = !bUseMergedUrl;
 		if(bUseDictView && jointResult.realmCount==1) {
-			if(PDICMainAppOptions.getUseMergedFrame()
+			if(PDICMainAppOptions.getUseSharedFrame()
 				&& !(PDICMainAppOptions.getMergeExemptWebx() && a.getIsWebxByIdNoCreation(vals.get(0)))) {
 				bUseDictView = false;
 			}
@@ -167,7 +167,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 //			a.showT("未更新？"+CMN.Log(weblistHandler.jointResult==jointResult, weblistHandler.getChildCount()==weblistHandler.frames.size()
 //			, weblistHandler.getChildCount(),weblistHandler.frames.size()));
 		}
-		if(bUseMergedUrl && weblistHandler.getMergedFrame().jointResult==jointResult
+		if((bUseMergedUrl || !bUseDictView) && weblistHandler.getMergedFrame().jointResult==jointResult
 			|| !bUseMergedUrl && weblistHandler.jointResult==jointResult && weblistHandler.getChildCount()==weblistHandler.frames.size()) {
 			//weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowingInPopup, bUseMergedUrl);
 			a.showT("未更新！");
@@ -206,7 +206,6 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		if(!bUseMergedUrl && bUseDictView) {
 			// todo remove adaptively .
 			weblistHandler.removeAllViews();
-			//weblistHandler.setJointOneAsSingle(frames.size()==1 && a.opt.getLv2JointOneAsSingle());
 		}
 		
 		//if(false)
@@ -284,8 +283,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 		}
 		//weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowInPopup, bUseMergedUrl);
+		WebViewmy mWebView = weblistHandler.mMergedFrame;
 		if(bUseMergedUrl) {
-			WebViewmy mWebView = weblistHandler.mMergedFrame;
 			CMN.debug("mergedUrl::", mergedUrl);
 			mWebView.loadUrl(mergedUrl.toString());
 //			mWebView.loadUrl("https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2016/September");
@@ -300,7 +299,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			if (expTbView != null) {
 				expTbView.performClick();
 			}
-			weblistHandler.jointResult=jointResult;
+			if(bUseDictView)
+				weblistHandler.jointResult=jointResult;
+			else
+				mWebView.jointResult=jointResult;
 		}
 		a.RecalibrateWebScrollbar(null);
 		
@@ -333,5 +335,12 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		scrollTarget=_scrollTarget;
 		a.weblistHandler.NotifyScrollingTo(this);
 		scrolled=false;
+	}
+	
+	public void insertSearchKeyIfNeeded(MainActivityUIBase a) {
+		if(!searchKeyInserted) {
+			a.prepareHistoryCon().updateHistoryTerm(a, searchKey, null, a.thisActType==MainActivityUIBase.ActType.PlainDict?128:129);
+			searchKeyInserted=true;
+		}
 	}
 }

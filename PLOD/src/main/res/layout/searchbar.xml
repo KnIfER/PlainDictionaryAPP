@@ -66,12 +66,22 @@
 	              
 	            <ImageView
 	                android:id="@+id/recess"
-	                android:layout_alignParentRight="true"
+					android:layout_toLeftOf="@+id/enter"
 	    			android:paddingRight="6dp"
 					android:layout_width="@dimen/_35_"
 	                android:layout_height="?attr/actionBarSize"
 	                android:layout_centerInParent="true"
 	                android:src="@drawable/toxia"
+	                />
+
+	            <ImageView
+	                android:id="@+id/enter"
+	                android:layout_alignParentRight="true"
+	    			android:paddingRight="6dp"
+					android:layout_width="@dimen/_35_"
+	                android:layout_height="?attr/actionBarSize"
+	                android:layout_centerInParent="true"
+	                android:src="@drawable/ic_search_24k"
 	                />
 	        </RelativeLayout>
  </androidx.appcompat.widget.Toolbar>

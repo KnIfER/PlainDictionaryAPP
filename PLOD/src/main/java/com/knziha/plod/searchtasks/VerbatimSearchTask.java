@@ -120,7 +120,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 			}
 			additive_combining_search_tree=additive_combining_search_tree_haha.flatten();
 		}
-		rec = new resultRecorderCombined(a,additive_combining_search_tree,md);
+		rec = new resultRecorderCombined(a,additive_combining_search_tree,md, CurrentSearchText);
 		//CMN.show("逐字搜索 时间： "+(System.currentTimeMillis()-stst)+"ms "+rec.size());
 
 		a.contentUIData.mainProgressBar.setVisibility(View.GONE);

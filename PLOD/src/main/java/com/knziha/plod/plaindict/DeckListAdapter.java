@@ -112,7 +112,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		if(data==null || data.type!=type) {
 			int idx=type-1;
 			data = a.DBrowserDatas[idx];
-			if(data==null) {
+			if(data==null || a.opt.debugingDBrowser()) {
 				data = a.DBrowserDatas[idx] = new DeckListData(type);
 			}
 			displaying = data.dataAdapter;

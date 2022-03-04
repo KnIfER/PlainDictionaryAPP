@@ -118,14 +118,13 @@ public class ListViewAdapter2 extends BasicAdapter {
 	public void onItemClick(int pos){//lv2 mlv1 mlv2
 		a.shuntAAdjustment();
 		weblistHandler.WHP.touchFlag.first=true;
-		if(opt.getInPeruseModeTM() && opt.getInPeruseMode()) {
+		if(a.PeruseListModeMenu.isChecked()) {
 			PeruseView pv = a.getPeruseView();
 			pv.RestoreOldAI();
 			a.JumpToPeruseMode(combining_search_result.getResAt(a, pos).toString(), combining_search_result.getBooksAt(pv.bookIds, pos), -2, true);
 			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
 			return;
 		}
-		a.etSearch_ToToolbarMode(1);
 		if(a.DBrowser!=null) return;
 		
 		lastClickedPosBeforePageTurn = lastClickedPos;
@@ -215,6 +214,9 @@ public class ListViewAdapter2 extends BasicAdapter {
 //		} //333
 		contentUIData.webcontentlister.setTag(R.id.image, a.PhotoPagerHolder!=null&&a.PhotoPagerHolder.getParent()!=null?false:null);
 		contentUIData.PageSlider.TurnPageEnabled=(this==a.adaptermy2?opt.getPageTurn2():opt.getPageTurn1())&&opt.getTurnPageEnabled();
+		a.etSearch_ToToolbarMode(1);
+		
+		combining_search_result.insertSearchKeyIfNeeded(a);
 	}
 	
 	

@@ -612,7 +612,7 @@
 		}
 	</style> 
 	<script>
-		function debug(...e){console.log('fatal web d::', e)};
+		function debug(e){console.log('fatal web d::', e)};
 		function ge(e,p){return (p||document).getElementById(e)};
     	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
     	function _gn(e,p){if(!p || p.name===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
@@ -1066,7 +1066,12 @@
 							//toast(tbh.clientHeight+','+tbh.scrollHeight);
 							//var h = type_bold?(tbh.clientHeight+65):(tbh.scrollHeight),h0=h;
 							var h = tbh.scrollHeight+(type_bold?65:0),h0=h;
+							//toast((inf.lastHeight-h)+','+(tbh.clientHeight-tbh.scrollHeight));
 							if(type_bold && inf.lastHeight+65==h) {
+								continue;
+							}
+							if(type_bold && inf.lastHeight>200 && inf.lastHeight+130>=h) {
+								//kit
 								continue;
 							}
 							if(inf.collapsed && h>inf.maxHeight) {
@@ -2469,7 +2474,7 @@
 					d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
 				}
 			}
-			let res = (1 - d[n][m] / l)
+			var res = (1 - d[n][m] / l)
 			return res.toFixed(f)
 		}
 

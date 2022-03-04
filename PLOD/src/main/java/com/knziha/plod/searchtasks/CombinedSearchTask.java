@@ -16,8 +16,6 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.rbtree.RBTree_additive;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -156,7 +154,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 			}
 		}
 		if(isCancelled()) return null;
-		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), md);
+		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), md, CurrentSearchText);
 		if(rec.FindFirstIdx(searchText, this)) return rec;
 		return null;
 	}
@@ -167,7 +165,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		if((a=activity.get())==null) return;
 
 		//CMN.Log("联合搜索 时间： " + (System.currentTimeMillis() - stst) + "ms " + rec.size());
-		if(rec==null) rec = new resultRecorderCombined(a, new ArrayList<>(), null);
+		if(rec==null) rec = new resultRecorderCombined(a, new ArrayList<>(), null, CurrentSearchText);
 		if(a.lv2.getVisibility()!= View.VISIBLE)
 			a.lv2.setVisibility(View.VISIBLE);
 		a.adaptermy2.combining_search_result  = a.recCom = rec;

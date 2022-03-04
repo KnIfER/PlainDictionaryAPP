@@ -18,6 +18,8 @@
 			android:layout_width="match_parent"
 			android:layout_height="?attr/actionBarSize"
 			app:elevation="0dp"
+			android:clipToPadding="false"
+			android:clipChildren="false"
 			>
 			<androidx.appcompat.widget.Toolbar
 				android:id="@+id/toolbar"
@@ -30,10 +32,15 @@
 				app:contentInsetStartWithNavigation="0dp"
 				android:background="?attr/colorPrimary"
 				app:layout_scrollFlags="scroll|enterAlways|snap"
+				android:clipToPadding="false"
+				android:clipChildren="false"
 				>
 				<FrameLayout android:id="@+id/rlSearchFrameDelete"
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
+					android:clipToPadding="false"
+					android:clipChildren="false"
+					android:paddingEnd="3dp"
 					>
 					<com.knziha.plod.widgets.EditTextmy
 						android:id="@+id/etSearch"
@@ -41,42 +48,49 @@
 						android:layout_height="match_parent"
 						android:textColor="#ffffff"
 						android:singleLine="true"
-						android:paddingStart="10dp"
-						android:paddingEnd="53dp"
+						android:paddingStart="0dp"
+						android:paddingEnd="23dp"
 						android:imeOptions="actionSearch|flagNoExtractUi"
-						android:background="@drawable/abc_edit_text_material"
 						tools:text="HAPPY SEARCHING"
+						android:background="@null"
 						/>
-
-					<LinearLayout
-						android:layout_width="wrap_content"
+					<ImageView
+						android:id="@+id/multilineBG"
+						android:layout_width="25dp"
 						android:layout_height="match_parent"
+						android:paddingStart="3dp"
+						android:paddingEnd="5dp"
 						android:layout_gravity="end"
-						>
-						<View
-							android:id="@+id/pad"
-							android:layout_width="8dp"
-							android:layout_height="match_parent"
-							/>
-						<ImageView
-							android:id="@+id/ivBack"
-							android:layout_width="wrap_content"
-							android:layout_height="match_parent"
-							android:src="@drawable/search_toolbar"
-							android:paddingStart="4dp"
-							android:paddingEnd="10dp"
-							android:visibility="visible"
-							/>
-
-						<ImageView
-							android:id="@+id/ivDeleteText"
-							android:layout_width="wrap_content"
-							android:layout_height="match_parent"
-							android:src="@drawable/close_toobar"
-							android:paddingEnd="8dp"
-							android:visibility="gone"/>
-					</LinearLayout>
-
+						/>
+					<ImageView
+						android:id="@+id/multiline"
+						android:layout_width="25dp"
+						android:layout_height="match_parent"
+						android:src="@drawable/ic_menu_material"
+						android:paddingStart="3dp"
+						android:paddingEnd="5dp"
+						android:layout_gravity="end"
+						/>
+					<View
+						android:layout_width="match_parent"
+						android:layout_height="match_parent"
+						android:background="@drawable/abc_edit_text_material"
+						android:layout_marginStart="-10dp"
+						/>
+					<View
+						android:id="@+id/etPad"
+						android:layout_width="10dp"
+						android:layout_height="match_parent"
+						android:layout_marginStart="-15dp"
+						android:layout_marginBottom="12dp"
+						/>
+					<View
+						android:id="@+id/etPad1"
+						android:layout_width="8dp"
+						android:layout_height="match_parent"
+						android:layout_marginStart="-23dp"
+						android:layout_marginBottom="12dp"
+						/>
 				</FrameLayout>
 			</androidx.appcompat.widget.Toolbar>
 		</com.google.android.material.appbar.AppBarLayout>
@@ -87,42 +101,44 @@
 			android:layout_height="match_parent"
 			app:layout_behavior="@string/appbar_scrolling_view_behavior"
 			>
-			<FrameLayout
-				android:id="@+id/mainframe"
+			<LinearLayout
+				android:id="@+id/main"
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
+				android:orientation="vertical"
 				>
-				<LinearLayout
-					android:id="@+id/main"
+				<com.jess.ui.TwoWayGridView
+					android:id="@+id/schtools"
 					android:layout_width="match_parent"
-					android:layout_height="match_parent"
+					android:layout_height="@dimen/_65_"
+					android:orientation="horizontal"
+					android:layout_gravity="bottom"
+					android:background="#ff8f8f8f"
+					android:elevation="5dp"
+					android:visibility="gone"
+					/>
+				<com.knziha.plod.widgets.LinearSplitView
+					android:id="@+id/viewpagerPH"
+					android:layout_width="match_parent"
+					android:layout_height="0dp"
+					android:layout_weight="1"
 					android:orientation="horizontal"
 					>
-
 					<com.knziha.plod.widgets.NoScrollViewPager
 						android:id="@+id/viewpager"
+						android:layout_weight="1"
 						android:layout_width="0dp"
 						android:layout_height="match_parent"
-						android:layout_weight="1"
 						android:background="#ffffff"
 						/>
-				</LinearLayout>
-				<FrameLayout
-					android:layout_width="50dp"
-					android:layout_height="50dp"
-					android:layout_marginBottom="86dip"
-					android:layout_gravity="bottom|center"
-					>
-				<android.widget.ImageView
-					android:id="@+id/browser_widget0"
-					android:visibility="visible"
-					android:layout_width="50dp"
-					android:layout_height="50dp"
-					android:background="@drawable/perusetoggle3"
-					android:src="@drawable/peruse_ic"
-					/>
-				</FrameLayout>
-			</FrameLayout>
+				</com.knziha.plod.widgets.LinearSplitView>
+			</LinearLayout>
+
+			<FrameLayout
+				android:id="@+id/lnrSplitHdls"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				/>
 
 			<fragment
 				android:id="@+id/navigation_drawer"
@@ -162,6 +178,93 @@
 			layout="@layout/contentview"
 			app:layout_behavior="@string/appbar_scrolling_view_behavior"
 			/>
+
+		<LinearLayout
+			android:id="@+id/etSearchBar"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:orientation="vertical"
+			android:visibility="invisible"
+			tools:visibility="visible"
+			android:elevation="6dp"
+			android:layout_marginTop="?attr/actionBarSize"
+			>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="2px"
+				android:background="#f0afafaf"
+				/>
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/_35_"
+				android:background="#8f8f8f"
+				>
+				<TextView
+					android:id="@+id/etBack"
+					android:text="返回"
+					android:drawableLeft="@drawable/ic_baseline_arrow_back_24"
+					style="@style/SearchbarMenuTextStyle"
+					/>
+				<TextView
+					android:id="@+id/etCopy"
+					android:text="复制"
+					android:drawableLeft="@drawable/ic_baseline_copy_24"
+					style="@style/SearchbarMenuTextStyle"
+					/>
+				<TextView
+					android:id="@+id/etPaste"
+					android:text="粘贴"
+					android:drawableLeft="@drawable/ic_baseline_paste_24"
+					style="@style/SearchbarMenuTextStyle"
+					/>
+				<TextView
+					android:id="@+id/etClear"
+					android:text="清空"
+					android:drawableLeft="@drawable/ic_baseline_clear_24"
+					style="@style/SearchbarMenuTextStyle"
+					/>
+				<TextView
+					android:id="@+id/etEnter"
+					android:text="前往"
+					android:drawableLeft="@drawable/abc_ic_go_search_api_material"
+					style="@style/SearchbarMenuTextStyle"
+					android:longClickable="true"
+					/>
+			</LinearLayout>
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="2px"
+				android:background="#f0afafaf"
+				/>
+			<FrameLayout
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				>
+				<View
+					android:id="@+id/show_search_history_dropdown_bg"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:background="#3E8F8F8F"
+					android:onClick="onClick"
+					/>
+				<ImageView
+					android:id="@+id/show_search_history_dropdown"
+					android:layout_width="match_parent"
+					android:layout_height="28dp"
+					android:background="@drawable/frame_gradient_bgs"
+					android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
+					android:onClick="onClick"
+					/>
+				<com.knziha.plod.widgets.DanjiListView
+					android:id="@+id/search_hints"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					tools:listitem="@layout/search_hints_item"
+					android:onClick="onClick"
+					/>
+			</FrameLayout>
+		</LinearLayout>
+
 	</com.knziha.plod.widgets.CoordinatorLayoutSafe>
 
 	<FrameLayout
@@ -231,6 +334,7 @@
 				android:layout_marginRight="1dp"
 				android:layout_marginBottom="0dp"
 				android:maxLines="3"
+				android:visibility="gone"
 				/>
 			<HorizontalScrollView
 				android:id="@+id/pdictBtm"
@@ -250,6 +354,17 @@
 					android:orientation="horizontal"
 					android:background="@drawable/popup_background3_"
 					>
+					<com.knziha.plod.widgets.CheckableImageView
+						android:id="@+id/pinPicBook"
+						android:layout_width="@dimen/_35_"
+						android:layout_height="match_parent"
+						android:layout_below="@+id/autoSchSw"
+						android:background="@drawable/listviewselector0"
+						android:src="@drawable/sel_pin_vc"
+						android:padding="5dp"
+						android:tint="@color/SelHeaderBlue"
+						android:foreground="@drawable/popup_background3__"
+						/>
 					<TextView
 						android:layout_width="0dp"
 						android:layout_height="match_parent"
@@ -275,27 +390,16 @@
 						android:background="@drawable/listviewselector0"
 						android:foreground="@drawable/popup_background3__"
 						android:textColor="@color/SelHeaderBlue"
-						android:maxLines="2"
+						android:maxLines="1"
 						android:minWidth="@dimen/_35_"
+						android:visibility="gone"
 						/>
 					<ImageView
-						android:id="@+id/cb1"
+						android:id="@+id/schBook"
 						android:layout_width="@dimen/_35_"
 						android:layout_height="match_parent"
 						android:background="@drawable/listviewselector0"
 						android:src="@drawable/search_toolbar"
-						android:padding="5dp"
-						android:tint="@color/SelHeaderBlue"
-						android:foreground="@drawable/popup_background3__"
-						/>
-					<com.knziha.plod.widgets.CheckableImageView
-						android:id="@+id/cb3"
-						android:layout_width="@dimen/_35_"
-						android:layout_height="match_parent"
-						android:layout_below="@+id/cb1"
-						android:background="@drawable/listviewselector0"
-						android:src="@drawable/sel_auto_search"
-						CheckableImageview:CheckedTint="@color/ShallowHeaderBlue"
 						android:padding="5dp"
 						android:tint="@color/SelHeaderBlue"
 						android:foreground="@drawable/popup_background3__"
@@ -311,12 +415,13 @@
 						android:foreground="@drawable/popup_background3__"
 						/>
 					<com.knziha.plod.widgets.CheckableImageView
-						android:id="@+id/cb2"
+						android:id="@+id/autoSchSw"
 						android:layout_width="@dimen/_35_"
 						android:layout_height="match_parent"
-						android:layout_below="@+id/cb3"
+						android:layout_below="@+id/schBook"
 						android:background="@drawable/listviewselector0"
-						android:src="@drawable/sel_pin_vc"
+						android:src="@drawable/sel_auto_search"
+						CheckableImageview:CheckedTint="@color/ShallowHeaderBlue"
 						android:padding="5dp"
 						android:tint="@color/SelHeaderBlue"
 						android:foreground="@drawable/popup_background3__"
@@ -343,11 +448,13 @@
 		android:fitsSystemWindows="true"
 		android:gravity="bottom"
 		android:elevation="6dp"
+		tools:visibility="gone"
 		/>
 
 	<RelativeLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		tools:visibility="gone"
 		>
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
 			android:layout_height="match_parent"
@@ -387,7 +494,8 @@
 			android:drawSelectorOnTop="true"
 			android:fastScrollEnabled="true"
 			android:fastScrollStyle="@style/fscroll"
-			android:listSelector="@drawable/listviewselector0" />
+			android:listSelector="@drawable/listviewselector0"
+			/>
 	</RelativeLayout>
 
 </FrameLayout>

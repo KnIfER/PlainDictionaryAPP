@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
-import android.net.http.HttpResponseCache;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -21,6 +20,9 @@ import androidx.appcompat.app.GlobalOptions;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.Volley;
 import com.knziha.plod.ArrayList.SerializedLongArray;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
@@ -35,6 +37,8 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.widgets.ClientSSLSocketFactory;
+import com.knziha.plod.widgets.SSLSocketFactoryCompat;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebResourceResponseCompat;
 import com.knziha.plod.widgets.WebViewmy;
@@ -49,27 +53,24 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLDecoder;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 
-import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
 import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
@@ -79,22 +80,25 @@ import static com.knziha.plod.db.LexicalDBHelper.TABLE_DATA_v2;
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
 import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
 import static com.knziha.plod.plaindict.MdictServerMobile.hasRemoteDebugServer;
+import static com.knziha.plod.widgets.Tls12SocketFactory.enableTls12OnPreLollipop;
 
 import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
 
 import okhttp3.Cache;
+import okhttp3.CipherSuite;
+import okhttp3.ConnectionSpec;
 import okhttp3.Dns;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.TlsVersion;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 
 /*
@@ -201,6 +205,41 @@ public class PlainWeb extends DictionaryAdapter {
 			}
 		}
 	}
+	
+	public static SSLSocketFactory NoSSLv3Factory;
+	
+	/**
+	 * OkHttp在4.4及以下不支持TLS协议的解决方法
+	 *  javax.net.ssl.SSLHandshakeException: javax.net.ssl.SSLProtocolException
+	 * @param okhttpBuilder
+	 * @return
+	 */
+	private synchronized static OkHttpClient.Builder setOkHttpSsl(OkHttpClient.Builder okhttpBuilder) {
+		try {
+			// 自定义一个信任所有证书的TrustManager，添加SSLSocketFactory的时候要用到
+			final X509TrustManager trustAllCert =
+					new X509TrustManager() {
+						@Override
+						public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+						}
+						
+						@Override
+						public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+						}
+						
+						@Override
+						public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+							return new java.security.cert.X509Certificate[]{};
+						}
+					};
+			final SSLSocketFactory sslSocketFactory = new SSLSocketFactoryCompat(trustAllCert);
+			okhttpBuilder.sslSocketFactory(sslSocketFactory, trustAllCert);
+			return okhttpBuilder;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	private OkHttpClient prepareKlient(File cacheDir, int cacheSize) {
 		if (k3client!=null) return (OkHttpClient) k3client;
 		if(cacheSize==-1)
@@ -219,36 +258,67 @@ public class PlainWeb extends DictionaryAdapter {
 				return response1;
 			}
 		};
-		OkHttpClient klient = new OkHttpClient.Builder()
+		ConnectionSpec spec1 = new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
+				.tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_1, TlsVersion.TLS_1_0)
+				.cipherSuites(
+						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+						CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
+				.build();
+		
+		ConnectionSpec spec2 = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+						.allEnabledTlsVersions()
+						.allEnabledCipherSuites()
+						.build();
+		
+		ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
+				.tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_1, TlsVersion.TLS_1_0)
+				.cipherSuites(
+						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+						CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
+				.build();
+		
+		
+		OkHttpClient klient = enableTls12OnPreLollipop(
+				new OkHttpClient.Builder()
 				.connectTimeout(5, TimeUnit.SECONDS)
 				.addNetworkInterceptor(headerInterceptor)
 				//.protocols(Collections.singletonList(Protocol.HTTP_1_1))
 				.cache(cacheDir==null ? null :
 						new Cache(new File(cacheDir, "k3cache")
 								, cacheSize)) // 配置缓存
-				.dns(new Dns() {
-					@Override
-					public List<InetAddress> lookup(String hostname) throws UnknownHostException {
-						String addr = jinkeSheaths.get(SubStringKey.new_hostKey(hostname));
-						CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
-						if (addr != null) {
-							return Collections.singletonList(InetAddress.getByName(addr));
-						}
-						//else return Collections.singletonList(InetAddress.getByName(hostname));
-						return Dns.SYSTEM.lookup(hostname);
-					}
-				})
+//				.dns(new Dns() {
+//					@Override
+//					public List<InetAddress> lookup(String hostname) throws UnknownHostException {
+//						String addr = jinkeSheaths.get(SubStringKey.new_hostKey(hostname));
+//						CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
+//						if (addr != null) {
+//							return Collections.singletonList(InetAddress.getByName(addr));
+//						}
+//						//else return Collections.singletonList(InetAddress.getByName(hostname));
+//						return Dns.SYSTEM.lookup(hostname);
+//					}
+//				})
+				.sslSocketFactory(NoSSLv3Factory)
+				.connectionSpecs(Arrays.asList(ConnectionSpec.CLEARTEXT, spec2, spec1))
 				//.readTimeout(5, TimeUnit.SECONDS)
 				//.setCache(getCache())
 				//.certificatePinner(getPinnedCerts())
-				//.setSslSocketFactory(getSSL())
+				//.setSslSocketFactory(NoSSLv3Factory)
 				.hostnameVerifier(DO_NOT_VERIFY)
+		)
 				.build();
 		return klient;
 	}
 	public Object getClientResponse(Context context, String url, String host, List<Pair> moders, Map<String, String> headers, boolean forServer) {
 		//if(true) return null;
+		RequestQueue sRequestQueue = Volley.newRequestQueue(context, new HurlStack(null, ClientSSLSocketFactory.getSocketFactory(context)));
+		
 		try {
+			if(headers==null) headers=new HashMap<>();
 			for(String kI:headers.keySet()) {
 				CMN.Log("headers::", kI, headers.get(kI));
 			}
@@ -403,6 +473,7 @@ public class PlainWeb extends DictionaryAdapter {
 	private String name = "index";
 	private String message;
 	private boolean isTranslator;
+	private boolean hasModifiers;
 	private boolean bReplaceLetToVar;
 	public String[] kikUrlPatterns;
 	
@@ -493,6 +564,7 @@ public class PlainWeb extends DictionaryAdapter {
 		forceText = website.getBooleanValue("forceText");
 		computerFace = website.getBooleanValue("cpau");
 		isTranslator = website.getBooleanValue("translator");
+		hasModifiers = website.containsKey("modifiers");
 		bReplaceLetToVar = website.containsKey("kikLetVar");
 		if (bReplaceLetToVar) {
 			String str = website.getString("kikLetVar");
@@ -904,7 +976,10 @@ public class PlainWeb extends DictionaryAdapter {
 		}
 		if(mods!=null) {
 			for (int i = 0; i < mods.size(); i++) {
-				if(url.startsWith(mods.getJSONObject(i).getString("url"))) {
+				String urlPrefix = mods.getJSONObject(i).getString("url");
+				if(urlPrefix==null && Build.VERSION.SDK_INT<20)
+					urlPrefix = mods.getJSONObject(i).getString("urlv4");
+				if(urlPrefix!=null && url.startsWith(urlPrefix)) {
 					try {
 						if(url.contains("?"))  url = url.substring(0, url.indexOf("?"));
 						File file = new File(f.getParent(), new File(url).getName());
@@ -1858,6 +1933,10 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	public boolean getIsTranslator() {
 		return isTranslator;
+	}
+	
+	public boolean getHasModifiers() {
+		return hasModifiers;
 	}
 	
 	@Override

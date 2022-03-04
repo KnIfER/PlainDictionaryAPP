@@ -10,19 +10,19 @@
 
 <!--2--><item android:title="@string/peruse_mode" android:id="@+id/toolbar_action12" android:icon="@drawable/ic_peruse" app:showAsAction="never"/>
 
-<!--3--><item android:title="@string/rem_position" android:id="@+id/toolbar_action6" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+<!--3--><item android:title="@string/rem_position" android:id="@+id/remPagePos" android:checkable="true" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 
 <!--4--><item android:title="@string/search" android:id="@+id/toolbar_action2" android:icon="@drawable/ic_search_24k" app:showAsAction="always"/>
 
-<!--5--><item android:title="@string/tint_result" android:id="@+id/toolbar_action11" app:showAsAction="never"/>
+<!--5--><item android:title="@string/tint_result" android:id="@+id/tintList" android:checkable="true" app:showAsAction="never"/>
 
 <!--6--><item android:title="保存搜索…" android:id="@+id/toolbar_action10" app:showAsAction="never"/>
 
-<!--8--><item android:title="@string/peruseToggle" android:id="@+id/toolbar_action4" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
+<!--8--><item android:title="@string/peruseToggle" android:id="@+id/peruseList" android:checkable="true" android:icon="@drawable/ic_peruse" app:showAsAction="never"/>
 
-<!--7--><item android:title="@string/perWSearch" android:id="@+id/toolbar_action3" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
+<!--7--><item android:title="@string/perWSearch" android:id="@+id/perwordSch" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
-<!--9--><item android:title="即点即译" android:id="@+id/toolbar_action14" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
+<!--9--><item android:title="即点即译" android:id="@+id/tapTranslator" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
 <!--10--><item android:title="@string/switch_set" android:id="@+id/toolbar_action8" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
@@ -45,7 +45,15 @@
 <!--18--><item android:title="随机单词（无界面）" android:id="@+id/wordtoday" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="never"/>
 
 <!--19--><item android:title="随机单词（从词典）" android:id="@+id/wordtoday" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="always"/>
-
 </group>
+
+<!--20--><item android:title="搜索工具栏" android:id="@+id/schtools"  android:checkable="true" android:icon="@drawable/tools_toolbar" app:showAsAction="never"/>
+
+<!--21--><item android:title="@string/rem_position" android:id="@+id/remPagePos2" android:checkable="true" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+
+<!--22--><item android:title="多行编辑" android:id="@+id/multiline" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+
+<!--23--><item android:title="随机词条" android:id="@+id/wordshuffle" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="always"/>
+
 
 </menu>

@@ -42,7 +42,7 @@
 		app:showAsAction="never"/>
 
 	<item
-		android:id="@+id/toolbar_action6"
+		android:id="@+id/remPagePos"
 		android:icon="@drawable/ic_btn_siglemode"
 		android:title="@string/show_all_dictionaries"
 		app:showAsAction="never"/>
@@ -74,7 +74,7 @@
 		android:visible="false"/>
 
 	<item
-		android:id="@+id/toolbar_action11"
+		android:id="@+id/tintList"
 		android:icon="@drawable/ic_btn_siglemode"
 		android:title="@string/remove_records"
 		app:showAsAction="never"
@@ -95,7 +95,7 @@
 		android:visible="false"/>
 
 	<item
-		android:id="@+id/toolbar_action14"
+		android:id="@+id/tapTranslator"
 		android:icon="@drawable/ic_btn_siglemode"
 		android:title="@string/unfold_all"
 		app:showAsAction="never"

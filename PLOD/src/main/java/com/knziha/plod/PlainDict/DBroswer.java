@@ -1,6 +1,8 @@
 package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
@@ -10,6 +12,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.ActionMode;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +21,8 @@ import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -28,9 +34,11 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.fragment.app.Fragment;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -48,6 +56,7 @@ import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.plaindict.databinding.DeckBrowserBinding;
 import com.knziha.plod.widgets.RecyclerViewmy;
 import com.knziha.plod.widgets.ScrollViewmy;
+import com.knziha.plod.widgets.SimpleDialog;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.RBTNode;
@@ -71,7 +80,7 @@ import static com.knziha.plod.plaindict.WebViewListHandler.WEB_LIST_MULTI;
 import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 
 @SuppressLint("SetTextI18n")
-public class DBroswer extends Fragment implements
+public class DBroswer extends DialogFragment implements
 		View.OnClickListener, OnLongClickListener, RecyclerViewmy.OnItemClickListener, OnItemLongClickListener {
 	public int pendingDBClickPos=-1;
 	public int type;
@@ -82,6 +91,7 @@ public class DBroswer extends Fragment implements
 	DeckBrowserBinding UIData;
 	WebViewListHandler weblistHandler;
 	ContentviewBinding contentUIData;
+	PeruseView peruseView;
 	
 	SparseArray<Long> lastVisiblePositionMap = new SparseArray<>();
 	
@@ -207,12 +217,16 @@ public class DBroswer extends Fragment implements
 			
 			UIData.toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
 			UIData.toolbar.setNavigationOnClickListener(v1 -> {
-			
+				if(true && this==getMainActivity().DBrowser)  {
+					getMainActivity().DetachDBrowser();
+				} else {
+					dismiss();
+				}
 			});
 			
-			if (container.getContext() instanceof MainActivityUIBase) {
-//			toolbar.setBackgroundColor(0xcc000000|(((MainActivityUIBase) container.getContext()).MainBackground&0xffffff));
-			}
+//			if (container.getContext() instanceof MainActivityUIBase) {
+////			toolbar.setBackgroundColor(0xcc000000|(((MainActivityUIBase) container.getContext()).MainBackground&0xffffff));
+//			} //xxx
 			//CMN.Log("咿呀咿呀", container.getContext());
 			Menu toolbarmenu = UIData.toolbar.getMenu();
 			MenuItem searchItem = toolbarmenu.getItem(0);
@@ -220,6 +234,8 @@ public class DBroswer extends Fragment implements
 			
 			UIData.counter.setVisibility(View.GONE);
 			newStart = true;
+		} else {
+			ViewUtils.removeView(UIData.getRoot());
 		}
 		return UIData.getRoot();
 	}
@@ -1067,9 +1083,6 @@ public class DBroswer extends Fragment implements
 	public void onItemClick(View view, int position) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if (a == null) return;
-		if (a instanceof PDICMainActivity) {
-			((PDICMainActivity) a).setContentBow(false);
-		}
 		if (view != null) {
 			adelta = 0;
 			//TODO retrieve from sibling views
@@ -1132,7 +1145,7 @@ public class DBroswer extends Fragment implements
 						} else {
 							a.show(R.string.searchFailed, currentDisplaying);
 							ViewGroup anothorHolder = weblistHandler;
-							anothorHolder.removeAllViews();
+							//anothorHolder.removeAllViews();
 						}
 					}
 				}
@@ -1145,8 +1158,8 @@ public class DBroswer extends Fragment implements
 				data.add(datalet);
 				String currentDisplaying__ = mdict.replaceReg.matcher(currentDisplaying).replaceAll("").toLowerCase();
 				boolean reorded = false;
-				if (a.peruseView != null && a.peruseView.peruseF.getChildCount() > 0) {
-					a.DetachDBrowser();
+				if (peruseView != null) {
+					dismiss();
 				}
 				long bid;
 				{
@@ -1284,7 +1297,7 @@ public class DBroswer extends Fragment implements
 			setUpContentView();
 			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);
 			//yyy
-			a.recCom = rec = new resultRecorderCombined(a,data,a.md);
+			a.recCom = rec = new resultRecorderCombined(a,data,a.md, null);
 			ScrollViewmy WHP = (ScrollViewmy) weblistHandler.getScrollView();
 //			ScrollerRecord pagerec = null;
 //			OUT:
@@ -1316,7 +1329,7 @@ public class DBroswer extends Fragment implements
 			ViewGroup anothorHolder = contentUIData.webSingleholder;
 			WHP.setVisibility(View.VISIBLE);
 			if(anothorHolder.getVisibility()==View.VISIBLE) {
-				anothorHolder.removeAllViews();
+				//anothorHolder.removeAllViews();
 				anothorHolder.setVisibility(View.GONE);
 			}
 
@@ -1373,12 +1386,9 @@ public class DBroswer extends Fragment implements
 		if(idx>=0) {
 			setUpContentView();
 			boolean bUseMergedUrl = false;
-			boolean bUseDictView = currentDictionary.rl!=null || currentDictionary.getIsWebx() || true || !bUseMergedUrl;
-			weblistHandler.setViewMode(bUseDictView?WEB_VIEW_SINGLE:WEB_LIST_MULTI, bUseMergedUrl);
-			if(!bUseDictView) {
-				weblistHandler.initMergedFrame(bUseDictView, true, true);
-			}
-			currentDictionary.initViewsHolder(a);
+			boolean bUseDictView = /*currentDictionary.rl!=null || */!opt.getUseSharedFrame() || opt.getMergeExemptWebx()&&currentDictionary.getIsWebx();
+			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl);
+			if(!bUseDictView) weblistHandler.initMergedFrame(false, true, true);
 			ScrollerRecord pagerec = null;
 //			if(opt.getRemPos()) {
 //				OUT:
@@ -1420,12 +1430,17 @@ public class DBroswer extends Fragment implements
 			WebViewmy webview = null;
 			ViewGroup someView = null;
 			if(bUseDictView) {
+				currentDictionary.initViewsHolder(a);
 				webview = currentDictionary.mWebView;
 				someView = currentDictionary.rl;
+				if(webview.weblistHandler==a.weblistHandler && a.weblistHandler.isWeviewInUse(someView)) {
+					a.DetachContentView(false);
+				}
 			} else {
 				webview = weblistHandler.getMergedFrame();
 				someView = weblistHandler.mMergedBook.rl;
 			}
+			webview.weblistHandler = weblistHandler;
 			
 			if(pagerec!=null) {
 				webview.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
@@ -1568,5 +1583,86 @@ public class DBroswer extends Fragment implements
 	
 	public int getFragmentType() {
 		return type;
+	}
+	
+	
+	@NonNull MainActivityUIBase getMainActivity() {
+		return (MainActivityUIBase) getActivity();
+	}
+	SimpleDialog mDialog;
+	ViewGroup root;
+	@NonNull
+	@Override
+	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+		CMN.Log("PeruseView----->onCreateDialog");
+		if(mDialog==null){
+			mDialog = new SimpleDialog(requireContext(), getTheme());
+			
+			mDialog.mBCL = new SimpleDialog.BCL(){
+				@Override
+				public void onBackPressed() {
+					goBack();
+				}
+				@Override
+				public void onActionModeStarted(ActionMode mode) {
+					getMainActivity().onActionModeStarted(mode);
+				}
+				
+				@Override
+				public boolean onKeyDown(int keyCode, @NonNull KeyEvent event) {
+					switch (keyCode) {
+						case KeyEvent.KEYCODE_VOLUME_DOWN: {
+							if(opt.getPeruseUseVolumeBtn()) {
+								contentUIData.browserWidget11.performClick();
+								return true;
+							}
+						}
+						case KeyEvent.KEYCODE_VOLUME_UP: {
+							if(opt.getPeruseUseVolumeBtn()) {
+								contentUIData.browserWidget10.performClick();
+								return true;
+							}
+						}
+					}
+					return false;
+				}
+			};
+		}
+		//else CMN.Log("复用dialog");
+		Window win = mDialog.getWindow();
+		if(win!=null){
+			
+			win.setWindowAnimations(com.knziha.filepicker.R.style.fp_dialog_animation);
+			
+			
+			ViewGroup content = win.findViewById(android.R.id.content);
+			if(content!=null) {
+				root=content;
+			}
+			Toastable_Activity.setStatusBarColor(win, getMainActivity().MainAppBackground);
+			//win.setStatusBarColor(CMN.MainBackground);
+			View view = win.getDecorView();
+			view.setBackground(null);
+			
+			WindowManager.LayoutParams layoutParams = win.getAttributes();
+			layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
+			layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
+			layoutParams.horizontalMargin = 0;
+			layoutParams.verticalMargin = 0;
+			layoutParams.dimAmount = 0;
+			win.setAttributes(layoutParams);
+			
+			Toastable_Activity.setWindowsPadding(view);
+			
+			View t = win.findViewById(android.R.id.title);
+			if(t!=null) t.setVisibility(View.GONE);
+			int id = Resources.getSystem().getIdentifier("titleDivider","id", "android");
+			if(id!=0){
+				t = win.findViewById(id);
+				if(t!=null) t.setVisibility(View.GONE);
+			}
+			if(t!=null) t.setVisibility(View.GONE);
+		}
+		return mDialog;
 	}
 }

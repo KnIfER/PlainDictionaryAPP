@@ -467,10 +467,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateFFAt(8,!val);
 		return val;
 	}
-	public boolean getInPeruseModeTM() {
+	public boolean getInFloatPeruseMode() {
 		return (FirstFlag & 16) == 16;
 	}
-	public boolean setInPeruseModeTM(boolean val) {
+	public boolean setInFloatPeruseMode(boolean val) {
 		updateFFAt(16,val);
 		return val;
 	}
@@ -696,13 +696,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	/////////////////////End First 32-bit Flag////////////////////////////////////
 
 	/////////////////////Start First Flag Long field///////////////////////////////////
-	public boolean getPinPicDictDialog() {
-		return (FirstFlag & 0x100000000l) == 0x100000000l;
-	}
-	public boolean setPinPicDictDialog(boolean val) {
-		updateFFAt(0x100000000l,val);
-		return val;
-	}
+	@Metaline(flagPos=32, shift=1) public static boolean getPinPicDictDialog() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32, shift=1) public static void setPinPicDictDialog(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
+	
 	
 	public boolean getPicDictAutoSer() {
 		return (FirstFlag & 0x200000000l) == 0x200000000l;
@@ -2393,16 +2389,25 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	/** for using the translator and save memory in the combined search mode. 联合搜索列表展示单个页面时使类似单本搜索与模糊搜索 */
 	@Metaline(flagPos=40, shift=1, debug=1) public static boolean getLv2JointOneAsSingle() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	/** 是否使用合并的多页面模式。see {@code getMergeUrlForFrames()} */
+	/** 是否使用合并的多页面模式。see {@code #getMergeUrlForFrames()} */
 	@Metaline(flagPos=41, shift=1, debug=1) public static boolean getUseMergedUrl() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	/** webx是否不使用合并的单页面URL。see {@code getUseMergedFrame()} */
+	/** webx是否不使用合并的单页面URL。see {@code #getUseMergedFrame()} */
 	@Metaline(flagPos=42, shift=1, debug=1) public static boolean getMergeExemptWebx() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	/** 单本词典是否使用公共的MergedFrame。see {@code getMergeUrlForFrames()} */
-	@Metaline(flagPos=43, shift=1, debug=1) public static boolean getUseMergedFrame() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=43, shift=1, debug=1) public static boolean getUseSharedFrame() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=44, shift=1, debug=1) public static boolean getFastPreviewFragile() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=45, shift=1) public static boolean getShowPinPicBook() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=45, shift=1) public static void setShowPinPicBook(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=46) public static boolean getShowSearchTools() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46) public static void setShowSearchTools(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=47, shift=1) public static boolean getMergePeruseBottombars() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=47, shift=1) public static void setMergePeruseBottombars(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF
@@ -2544,6 +2549,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=12, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static int getTmpUserOrientation1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation1(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	
+	/** 每次都重建界面与重载数据 */
+	@Metaline(flagPos=21, debug=1) public boolean debugingDBrowser() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 
 	
 	public int getPseudoInitCode(int pseudoInit) {

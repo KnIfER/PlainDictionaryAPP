@@ -152,6 +152,7 @@ import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.NightModeSwitchPanel;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
+import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
@@ -180,7 +181,6 @@ import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.SettingsActivity;
-import com.knziha.plod.settings.ViewSpecification;
 import com.knziha.plod.settings.ViewSpecification_exit_dialog;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
@@ -252,6 +252,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -339,16 +340,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					root.postDelayed(execSearchRunnable, 150);
 				}
+//				if(searchbarTools!=null && true) searchbarTools.dismiss();
 			} else {
 				if(PDICMainAppOptions.getSimpleMode()) adaptermy.notifyDataSetChanged();
 				lv2.setVisibility(View.INVISIBLE);
+				//if(searchbarTools!=null && true) searchbarTools.toggle();
 			}
 		}
 		public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 		public void afterTextChanged(Editable s) {
-			//if (s.length() == 0) ivDeleteText.setVisibility(View.GONE);
-			//else  ivDeleteText.setVisibility(View.VISIBLE);
-			if (s.length() != 0) ivDeleteText.setVisibility(View.VISIBLE);
+			if (s.length() != 0) {
+				//ivDeleteText.setVisibility(View.VISIBLE);
+			}
 		}
 	};
 	boolean bShowLoadErr=true;
@@ -386,11 +389,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public String fontFaces;
 	
 	MenuBuilder AllMenus;
+	List<MenuItemImpl> AllMenusStamp;
 	MenuItem menuSearchMode;
 	List<MenuItemImpl> MainMenu;
 	List<MenuItemImpl> LEFTMenu;
 	List<MenuItemImpl> SingleContentMenu;
 	List<MenuItemImpl> Multi_ContentMenu;
+	
+	MenuItem PeruseListModeMenu;
 	
 	ViewGroup dialogHolder;
 	boolean dismissing_dh;
@@ -559,14 +565,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	SplitView.PageSliderInf inf;
 	private boolean read_click_search;
-	protected ActType thisActType;
+	public ActType thisActType;
 	public boolean awaiting;
 	
 	public View favoriteBtn() {
 		return contentUIData.browserWidget8;
 	}
 	
-	enum ActType{
+	public enum ActType{
 		PlainDict
 		, FloatSearch
 		, MultiShare
@@ -2916,6 +2922,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			AllMenus.findItem(R.id.toolbar_action1).setIcon(R.drawable.ic_btn_multimode);
 		}
 		MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
+		
 		//if(opt.isShowDirectSearch()) ((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action2)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		
 		if(opt.getLockStartOrientation()) {
@@ -2961,6 +2968,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CMN.AssetTag + "liba.mdx"
 			,"/ASSET2/谷歌翻译.web"
 			,"/ASSET2/维基词典.web"
+			,"/ASSET2/彩云小译.web"
 	};
 	
 	protected void populateDictionaryList(File def, ArrayList<PlaceHolder> CC, boolean retrieve_all) {
@@ -3215,6 +3223,32 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	/** 0-搜索  1-返回  2-删除  4-撤销   */
 	boolean etSearch_ToToolbarMode(int mode) {
+		CMN.Log("etSearch_ToToolbarMode::", mode);
+		if(thisActType==ActType.PlainDict) {
+//			ViewUtils.findInMenu(AllMenusStamp, R.id.toolbar_action2)
+//					.setIcon(!isContentViewAttached()?R.drawable.ic_search_24k:R.drawable.ic_back_material);
+			int id  = isContentViewAttached()?R.id.ivBack:R.id.multiline;
+			if(id!=ivBack.getId()) {
+				ivBack.setImageResource(id==R.id.multiline?R.drawable.ic_menu_material:R.drawable.back_toolbar);
+				ivBack.setId(id);
+			}
+//			ivBack.setVisibility(View.VISIBLE);
+//			int pad = etSearchPadRight, id=R.id.ivBack;
+//			if(mode==3) {
+//				id = R.id.ivDeleteText;
+//			} else if(mode==4) {
+//				pad = 0;
+//				id = R.id.back;
+//			}
+//			if(id!=ivBack.getId()) {
+//				ViewUtils.setVisible(ivBack, mode!=4);
+//				ivBack.setImageResource(mode==3?R.drawable.close_toobar:R.drawable.back_toolbar);
+//				ivBack.setId(id);
+//			}
+//			if(pad!=etSearch.getPaddingRight())
+//				etSearch.setPadding(etSearch.getPaddingLeft(), etSearch.getPaddingTop(), pad, etSearch.getPaddingBottom());
+			return true;
+		}
 		switch(mode){
 			case 0:{//图标:搜索
 				if((etSearch_toolbarMode&1)!=0) {
@@ -3405,6 +3439,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} else {
 				parentView = snack_holder;
 				bottom = bottombar.getHeight();
+				if(bottom==0) {
+					bottom = (int) mResource.getDimension(R.dimen._bottombarheight_);
+				}
 			}
 		}
 		topsnack.setBottomMargin(bottom);
@@ -3514,7 +3551,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void insertUpdate_histroy(String key, int source, ViewGroup webviewholder) {
 		if(TextUtils.getTrimmedLength(key)>0) {
 			lastInsertedKey = key.trim();
-			lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder);
+			lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder, 0);
 		}
 	}
 	
@@ -3526,7 +3563,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (TextUtils.equals(lastInsertedKey, key)) return lastInsertedId;
 			else {
 				try {
-					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, ActivedAdapter!=null?ActivedAdapter.webviewHolder:null);
+					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, ActivedAdapter!=null?ActivedAdapter.webviewHolder:null, 0);
 					lastInsertedKey = key;
 				} catch (Exception e) {
 					CMN.Log(e);
@@ -3569,7 +3606,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public void NotifyComboRes(int size) {
 		if(PDICMainAppOptions.getNotifyComboRes()) {
-			float fval = 0.5f;
+			float fval = 0.8f;
 			String val = recCom.allWebs?"回车以搜索网络词典！":getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size);
 			showTopSnack(null, val, fval, -1, -1, 0);
 		}
@@ -5589,7 +5626,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				launchSettings(ViewSpecification_exit_dialog.id, 0);
 			}
 		}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-		TextView tv = buildStandardConfigDialog(this, false, null, 0, titleX);
+		TextView tv = buildStandardConfigDialog(this, false, title, 0, titleX);
 		restart = false;
 		init_clickspan_with_bits_at(tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 42, 1, 4, -1, true);//清除历史
 		init_clickspan_with_bits_at(tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 40, 1, 4, R.string.shutdown_vm, true);//彻底退出
@@ -5749,22 +5786,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	void AttachDBrowser(int type) {
-		if(DBrowser==null) {
+		if(DBrowser==null || opt.debugingDBrowser()) {
 			if(DBrowserHolder !=null) DBrowser= DBrowserHolder.get();
-			if(DBrowser==null){
+			if(DBrowser==null || opt.debugingDBrowser()){
 				CMN.Log("重建收藏夹历史记录视图");
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
 			}
 		}
 		DBrowser.setType(this, type, true);
+		if(true)
 		{
 			boolean fromPeruseView = PeruseViewAttached();
-			ViewGroup target = fromPeruseView? peruseView.peruseF:mainF;
+			ViewGroup target = mainF;//fromPeruseView? peruseView.peruseF:mainF;
 			if(!DBrowser.isAdded()) {
 				FragmentManager fragmentManager = fromPeruseView? peruseView.getChildFragmentManager():getSupportFragmentManager();
 				fragmentManager.beginTransaction()
 				.setCustomAnimations(R.anim.history_enter, R.anim.history_enter)
-				.add(fromPeruseView?R.id.peruseF:R.id.mainF, DBrowser)
+				.add(R.id.mainF, DBrowser)
 				.commit();
 			} else {
 				View view = DBrowser.getView();
@@ -5772,6 +5810,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					target.addView(view);
 				}
 			}
+		} else {
+			DBrowser.show(getSupportFragmentManager(), "DBrowser");
 		}
 	}
 	
@@ -5789,7 +5829,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //					opt.putCurrFavoriteDBName(favorTag+name.substring(0,name.length()-4));
 //					show(R.string.currFavor, DBrowser.boli(newFavor.getName()));
 //				}
-		weblistHandler.removeAllViews();
+		//weblistHandler.removeAllViews();
 		DBrowser.getFragmentManager()
 				.beginTransaction()
 				.remove(DBrowser)
@@ -5858,7 +5898,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				dismissPopup();
 				//todo to favorite
 				boolean fromPeruseView = PeruseViewAttached();
-				ViewGroup target = fromPeruseView? peruseView.peruseF:mainF;
+				ViewGroup target = mainF;//fromPeruseView? peruseView.peruseF:mainF;
 				if(target.getChildCount()==0){ //if(DBrowser==null)
 					AttachDBrowser(DB_HISTORY);
 				}
@@ -6098,7 +6138,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							DetachContentView(false);
 						}
 					}
-				}else {//undo
+				} else {//undo
 					etSearch.setText(lastEtString);
 					//etSearch_ToToolbarMode(3);
 				}
@@ -6723,7 +6763,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean onMenuItemClick(MenuItem item) {
 		int id = item.getItemId();
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
-		MenuBuilder menu = (MenuBuilder) mmi.tag;
+		MenuBuilder menu = (MenuBuilder) mmi.mMenu;
 		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
@@ -6736,8 +6776,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				showRandomShuffles();
 			} break;
 			case R.id.viewMode:{
+				MenuItemImpl tagHolder = getMenuSTd(mmi);
 				CMN.Log("onClick::1::", weblistHandler.contentUIData.webholder.getChildCount());
-				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(mmi.tag);
+				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
 				if(dd==null) {
 					dd = new AlertDialog.Builder(this)
 						.setSingleChoiceLayout(R.layout.singlechoice_plain)
@@ -6780,9 +6821,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						})
 						//.setSingleChoiceItems(strIds, 0, null)
 						.setTitle("多页面设置").create();
-					mmi.tag = null;
+					tagHolder.tag = null;
 				}
-				showMenuDialog(mmi, dd);
+				showMenuDialog(tagHolder, mmi.mMenu, dd);
 			}  break;
 			case R.id.setToSingleMode:{
 				if(isCombinedSearching) {
@@ -6795,7 +6836,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}  break;
 			case R.id.translate:{
-				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(mmi.tag);
+				MenuItemImpl tagHolder = getMenuSTd(mmi);
+				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
 				if(dd==null) {
 					dd = new AlertDialog.Builder(this)
 						.setSingleChoiceLayout(R.layout.singlechoice_plain)
@@ -6806,33 +6848,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}, 0, new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
-								if(which==2) {
-									currentDictionary.mWebView.translating=false;
-									dialog.dismiss();
-									return;
-								}
 								WebViewListHandler weblistHandler = (WebViewListHandler) ((MenuBuilder)((AlertDialog)dialog).tag).tag;
-								try {
-									BookPresenter gTrans = new_book(defDicts[1], MainActivityUIBase.this);
-									weblistHandler.moders.remove(gTrans.bookImpl);
-									weblistHandler.moders.add(gTrans.getWebx());
-									if(weblistHandler.bMergingFrames) {
-										weblistHandler.mMergedFrame.evaluateJavascript(gTrans.getWebx().getSyntheticField("pageTranslator"), null);
-									} else if(weblistHandler.getViewMode()==WEB_VIEW_SINGLE){
-										View rl = weblistHandler.contentUIData.webSingleholder.getChildAt(0);
-										if(rl!=null) {
-											((WebViewmy)rl.getTag()).evaluateJavascript(gTrans.getWebx().getSyntheticField("pageTranslator"), null);
-										}
-									}
-									dialog.dismiss();
-								} catch (Exception e) { CMN.Log(e); }
+								doTranslation(weblistHandler, which, dialog);
 							}
 						})
 						//.setSingleChoiceItems(strIds, 0, null)
 						.setTitle("翻译当前页面").create();
-					mmi.tag = null;
+					tagHolder.tag = null;
 				}
-				showMenuDialog(mmi, dd);
+				showMenuDialog(tagHolder, mmi.mMenu, dd);
 			}  break;
 		}
 		if(closeMenu)
@@ -6873,11 +6897,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 	}
 	
-	protected AlertDialog showMenuDialog(MenuItemImpl mmi, AlertDialog menuDialog) {
-		if(mmi.tag==null) {
-			mmi.tag=new WeakReference<>(menuDialog);
+	protected MenuItemImpl getMenuSTd(MenuItemImpl m) {
+		if(m.mMenu!=AllMenus) {
+			m = (MenuItemImpl) ViewUtils.findInMenu(AllMenusStamp, m.getItemId());
 		}
-		menuDialog.tag = mmi.menu;
+		return m;
+	}
+	
+	protected AlertDialog showMenuDialog(MenuItemImpl tagHolder, MenuBuilder invokerMenu, AlertDialog menuDialog) {
+		if(tagHolder.tag==null) {
+			tagHolder.tag=new WeakReference<>(menuDialog);
+		}
+		menuDialog.tag = invokerMenu;
 		menuDialog.show();
 		menuDialog.getWindow().setDimAmount(0);
 		return menuDialog;
@@ -7688,17 +7719,38 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	};
 	
-	
-	void doTranslation(WebViewmy mWebView) {
-		try {
-			WebViewListHandler weblistHandler = mWebView.weblistHandler;
-			BookPresenter gTrans = new_book(defDicts[1], this);
-			weblistHandler.moders.remove(gTrans.bookImpl);
-			weblistHandler.moders.add(gTrans.getWebx());
-			currentDictionary.mWebView.evaluateJavascript(gTrans.getWebx().getSyntheticField("pageTranslator"), null);
-			currentDictionary.mWebView.translating=true;
-		} catch (IOException e) {
-			CMN.Log(e);
+	void doTranslation(WebViewListHandler weblistHandler, int which, DialogInterface dialog) {
+		WebViewmy mWebView = null;
+		if(weblistHandler.bMergingFrames) {
+			mWebView = weblistHandler.mMergedFrame;
+		} else {
+			View rl = weblistHandler.contentUIData.webSingleholder.getChildAt(0);
+			if(rl!=null) mWebView = (WebViewmy) rl.getTag();
+		}
+		final int szTranslators = 2;
+		if(mWebView!=null) {
+			String field;
+			if(which==szTranslators) {
+				field = "pageTranslatorOff";
+				which = mWebView.translating;
+				if(which==-1) which = new Random().nextInt(szTranslators);
+				mWebView.translating = -1;
+			} else {
+				field = "pageTranslator";
+				mWebView.translating = which;
+			}
+			if(which<=szTranslators) {
+				try {
+					BookPresenter gTrans = new_book(defDicts[which==0?1:3], this);
+					PlainWeb webx = gTrans.getWebx();
+					if(webx.getHasModifiers()) {
+						weblistHandler.moders.remove(webx);
+						weblistHandler.moders.add(webx);
+					}
+					mWebView.evaluateJavascript(webx.getSyntheticField(field), null);
+					if(dialog!=null) dialog.dismiss();
+				} catch (Exception e) { CMN.Log(e); }
+			}
 		}
 	}
 	
@@ -7717,14 +7769,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			CMN.Log("chromium page finished ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
 			if(!mWebView.isloading && !mWebView.fromNet) return;
+			
+			if(ViewUtils.littleCat)
+			try {
+				mWebView.evaluateJavascript(ViewUtils.fileToString(MainActivityUIBase.this, new File("/ASSET/MdbR/KitPatch.js")), null);
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
+			
 			int from = mWebView.fromCombined;
 			mWebView.isloading = false;
 			mWebView.AlwaysCheckRange = 0;
 			
 			BookPresenter invoker = mWebView.presenter;
 			
-			if (mWebView.translating) {
-				doTranslation(mWebView);
+			if (mWebView.translating>=0) {
+				doTranslation(mWebView.weblistHandler, mWebView.translating, null);
 			}
 			if (url.equals("http://mdbr.com/load.html")) {
 				try {
@@ -10066,7 +10126,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			peruseView.dm = dm;
 			peruseView.opt = opt;
 			peruseView.density = dm.density;
-			peruseView.addAll = opt.getPeruseAddAll();
+			peruseView.showAllDicts = opt.getPeruseAddAll();
 		}
 		return peruseView;
 	}
@@ -10835,6 +10895,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public View.OnClickListener mInterceptorListener;
 	public boolean mInterceptorListenerHandled;
 	
+	SearchbarTools searchbarTools;
+	
 	public void hideSettingsPanel(@NonNull SettingsPanel panel) {
 		if(settingsPanel==panel) {
 			//CMN.Log("hideSettingsPanel", panel, settingsPanel);
@@ -11079,4 +11141,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public abstract void ensureContentVis(ViewGroup webholder, ViewGroup another);
+	
+	String[] transVals = new String[2];
+	
+	public void putTransval(int index, String value) {
+		if(index>=0 && index<2)
+			transVals[index] =  value;//"zh-CN";
+	}
+	
+	public String getTransval(int index) {
+		String ret=null;
+		if(index>=0 && index<2)
+			ret = transVals[index];
+		return ret==null?"":ret;//"zh-CN";
+	}
 }

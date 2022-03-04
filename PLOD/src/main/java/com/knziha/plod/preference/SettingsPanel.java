@@ -51,6 +51,8 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected boolean shouldWrapInScrollView = true;
 	protected boolean bShouldRemoveAfterDismiss = true;
 	protected boolean bSuppressNxtAnimation = false;
+	protected boolean bAnimate = true;
+	protected boolean bAutoRefresh = false;
 	protected boolean hasDelegatePicker;
 	public PopupWindow pop;
 	public Dialog dialog;
@@ -364,13 +366,16 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 				ViewUtils.addViewToParent(settingsLayout, root, mViewAttachIdx);
 			}
 			settingsLayout.setVisibility(View.VISIBLE);
+			if(bAutoRefresh) {
+				refresh();
+			}
 		} else {
 			if(bFadeout==0 || bFadeout==-2 && lastShowType==0) {
 				targetAlpha = 0;
 			}
 			targetTrans = bottomPadding;
 		}
-		if (bSuppressNxtAnimation) {
+		if (bSuppressNxtAnimation || !bAnimate) {
 			if (isHorizontal) {
 				settingsLayout.setTranslationX(targetTrans);
 			} else {

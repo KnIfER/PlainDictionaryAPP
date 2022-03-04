@@ -704,4 +704,15 @@ public class FlowTextView extends View {
 		super.onSizeChanged(w, h, oldw, oldh);
 		calcTextLayout();
 	}
+	
+	public int getMaxLines() {
+		return maxLines;
+	}
+	
+	public void setMaxLines(int maxLines) {
+		if(this.maxLines != maxLines) {
+			this.maxLines = maxLines;
+			invalidate();
+		}
+	}
 }
