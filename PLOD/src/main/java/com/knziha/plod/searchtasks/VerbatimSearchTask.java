@@ -18,7 +18,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorderCombined> {
+public class VerbatimSearchTask extends AsyncTaskWrapper<String, Integer, resultRecorderCombined> {
 	public static final String RegExp_VerbatimDelimiter = "[ `~!@#$%^&*()+=—|{}\":;.,\\[\\]<>/?！￥…（）【】‘；：”“’。，、？|-·]|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
 	public static final Pattern Pattern_VerbatimDelimiter = Pattern.compile(RegExp_VerbatimDelimiter);
 	private final WeakReference<PDICMainActivity> activity;
@@ -96,7 +96,7 @@ public class VerbatimSearchTask extends AsyncTask<String, Integer, resultRecorde
 						}
 					}else {
 						if(isCancelled()) break; // to impl
-						mdTmp.bookImpl.lookUpRange(inputArray[i], mdTmp.range_query_reveiver, null,i,15);
+						mdTmp.bookImpl.lookUpRange(inputArray[i], mdTmp.range_query_reveiver, null,i,15, null);
 					}
 				}
 			}

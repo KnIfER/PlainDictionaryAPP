@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface UniversalDictionaryInterface {
 	String getEntryAt(long position, Flag mflag);
@@ -42,7 +43,7 @@ public interface UniversalDictionaryInterface {
 	
 	int lookUp(String keyword);
 	
-	int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta);
+	int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task);
 	
 	InputStream getResourceByKey(String key);
 	

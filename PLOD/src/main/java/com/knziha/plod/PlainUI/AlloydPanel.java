@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AlloydPanel extends PlainAppPanel {
-	protected MainActivityUIBase a;
 	public ContentviewBinding contentUIData;
 	public Toolbar toolbar;
 	public MenuBuilder AllMenus;

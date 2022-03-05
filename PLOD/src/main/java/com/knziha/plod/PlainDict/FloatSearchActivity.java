@@ -76,7 +76,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	ViewGroup.LayoutParams mfv_lp;
 	
 	@Override
-	ArrayList<PlaceHolder> getLazyCC() {
+	public ArrayList<PlaceHolder> getLazyCC() {
 		return mCosyChair;
 	}
 
@@ -932,7 +932,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 
 	@Override
-	protected int getVisibleHeight() {
+	public int getVisibleHeight() {
 		return root.getHeight();
 	}
 
@@ -949,7 +949,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 
 	@Override
-	void showChooseDictDialog(int reason) {
+	public void showChooseDictDialog(int reason) {
 		boolean needRefresh=pickTarget!=reason;
 		pickTarget=reason;
 		DictPicker chooseDialog;

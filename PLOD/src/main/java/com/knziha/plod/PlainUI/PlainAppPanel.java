@@ -63,10 +63,7 @@ public class PlainAppPanel extends SettingsPanel {
 			pop.setContentView(settingsLayout);
 			if(bPopIsFocusable) {
 				pop.setFocusable(true);
-				pop.setOnDismissListener(() -> {
-					bSuppressNxtAnimation=true;
-					dismiss();
-				});
+				pop.setOnDismissListener(this::dismissImmediate);
 			}
 		}
 		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
@@ -90,11 +87,15 @@ public class PlainAppPanel extends SettingsPanel {
 	protected void showDialog() {
 		if (dialog==null) {
 			dialog = new Dialog(a);
-			dialog.setOnDismissListener(dialog -> dismissImmediate());
-			settingsLayoutHolder = new FrameLayout(a);
-			settingsLayoutHolder.setOnClickListener(v -> dismiss());
+			dialogDismissListener = dialog -> dismissImmediate();
+			dialog.setOnDismissListener(dialogDismissListener);
+			if(settingsLayoutHolder==null) {
+				settingsLayoutHolder = new FrameLayout(a);
+				settingsLayoutHolder.setOnClickListener(v -> dismiss());
+			}
 		}
-		ViewUtils.addViewToParent(settingsLayout, settingsLayoutHolder);
+		if(settingsLayoutHolder!=settingsLayout)
+			ViewUtils.addViewToParent(settingsLayout, settingsLayoutHolder);
 		dialog.setContentView(settingsLayoutHolder);
 		dialog.show();
 		

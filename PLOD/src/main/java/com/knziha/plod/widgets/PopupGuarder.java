@@ -5,15 +5,18 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 
-public class PopupGuarder extends View {
+public class PopupGuarder extends FrameLayout {
 	private final float padding;
 	public ViewGroup popupToGuard;
 	public ViewGroup popupToGuardParent;
 	public OnClickListener onPopupDissmissed;
+	public boolean isPinned;
+	
 	public PopupGuarder(Context context) {
 		super(context);
 		padding = 13*context.getResources().getDisplayMetrics().density;
@@ -32,12 +35,12 @@ public class PopupGuarder extends View {
 
 		private boolean handle(MotionEvent e) {
 			if(popupToGuard!=null) {
-				popupToGuardParent = (ViewGroup) popupToGuard.getParent();
-				if(popupToGuardParent!=null)
-					popupToGuardParent.removeView(popupToGuard);
-				popupToGuardParent=
+//				popupToGuardParent = (ViewGroup) popupToGuard.getParent();
+//				if(popupToGuardParent!=null)
+//					popupToGuardParent.removeView(popupToGuard);
+//				popupToGuardParent=
 				popupToGuard=null;
-				setVisibility(View.GONE);
+//				setVisibility(View.GONE);
 				if(onPopupDissmissed!=null){
 					onPopupDissmissed.onClick(PopupGuarder.this);
 				}
@@ -55,7 +58,7 @@ public class PopupGuarder extends View {
 			if(y>=popupToGuard.getBottom() || y<=popupToGuard.getTop()){//框外
 				if(y>=popupToGuard.getTop()+popupToGuard.getHeight()+padding || y<=popupToGuard.getTop()-padding/2){//框外之外
 
-					if(PDICMainAppOptions.getClickSearchPin())
+					if(isPinned)
 						return false; // 放行
 					else
 						gesture.onTouchEvent(event);//点击消失

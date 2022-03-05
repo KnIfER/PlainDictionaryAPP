@@ -44,10 +44,11 @@ public class WebViewListHandler extends ViewGroup {
 	final MainActivityUIBase a;
 	/** -2=auto;0=false;1=true*/
 	public int bMergeFrames = 0;
+	public boolean bDataOnly = false;
 	public boolean bShowInPopup = false;
 	public boolean bMergingFrames = false;
 	public boolean bShowingInPopup = false;
-	ScrollViewmy WHP;
+	public ScrollViewmy WHP;
 	ViewGroup webholder;
 	public additiveMyCpr1 jointResult;
 	public WebViewmy mMergedFrame;
@@ -594,5 +595,9 @@ public class WebViewListHandler extends ViewGroup {
 			return true;
 		}
 		return false;
+	}
+	
+	public boolean isViewSingle() {
+		return mViewMode==WEB_VIEW_SINGLE;
 	}
 }

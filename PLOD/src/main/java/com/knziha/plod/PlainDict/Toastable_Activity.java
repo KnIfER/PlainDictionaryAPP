@@ -531,6 +531,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		SimpleTextNotifier topsnack = this.topsnack;
 		if(topsnack==null) {
 			topsnack = new SimpleTextNotifier(getBaseContext());
+			topsnack.setTextSize(18f);
 			Resources res = getResources();
 			topsnack.setTextColor(Color.WHITE);
 			topsnack.setBackgroundColor(res.getColor(R.color.colorHeaderBlueT));

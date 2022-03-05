@@ -1,7 +1,6 @@
 package com.knziha.plod.plaindict;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -81,11 +80,11 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 	public void refresh(boolean firstAttach, int bForcePin) {
 		//if(!isDirty) return;
 		//isDirty=false;
-		int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
+		int adapter_idx=a.pickTarget==1?a.wordPopup.currentClick_adapter_idx:a.adapter_idx;
 		if(lman!=null) {
 			if(adapter_idx>lman.findLastVisibleItemPosition() || adapter_idx<lman.findFirstVisibleItemPosition()) {
 				int target = Math.max(0, adapter_idx-5);
-				lman.scrollToPositionWithOffset(a.pickTarget==1?a.CCD_ID:target, 0);
+				lman.scrollToPositionWithOffset(a.pickTarget==1?a.wordPopup.CCD_ID:target, 0);
 				CMN.Log("scrolled");
 			}
 		}
@@ -182,7 +181,7 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 		mRecyclerView.setMinimumWidth(getResources().getDisplayMetrics().widthPixels*2/3);
 		mRecyclerView.setVerticalScrollBarEnabled(true);
 		int LIP = lman.findLastVisibleItemPosition();
-		int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
+		int adapter_idx=a.pickTarget==1?a.wordPopup.currentClick_adapter_idx:a.adapter_idx;
 		if(adapter_idx>LIP) {
 			int target = Math.max(0, adapter_idx-5);
 			lman.scrollToPositionWithOffset(target, 0);
@@ -248,7 +247,7 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 		public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position) {
 			holder.position = position;
 			
-			int adapter_idx=a.pickTarget==1?a.currentClick_adapter_idx:a.adapter_idx;
+			int adapter_idx=a.pickTarget==1?a.wordPopup.currentClick_adapter_idx:a.adapter_idx;
 			
 			FlowTextView tv = holder.tv;
 			
@@ -286,10 +285,10 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 			} else {
 				if(a.dismissing_dh) return;
 				if(a.pickTarget==1){//点译上游
-					int tmpPos = a.currentClick_adapter_idx;
-					a.CCD=a.md_get(position);
-					a.CCD_ID=a.currentClick_adapter_idx = position;
-					a.popupWord(ViewUtils.getTextInView(a.popupTextView), null, -1);
+					int tmpPos = a.wordPopup.currentClick_adapter_idx;
+					a.wordPopup.CCD=a.md_get(position);
+					a.wordPopup.CCD_ID=a.wordPopup.currentClick_adapter_idx = position;
+					a.popupWord(ViewUtils.getTextInView(a.wordPopup.popupTextView), null, -1, null);
 					mAdapter.notifyItemChanged(tmpPos);
 					mAdapter.notifyItemChanged(position);
 					if(a instanceof PDICMainActivity){

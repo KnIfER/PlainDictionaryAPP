@@ -15,7 +15,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 @SuppressLint("SetTextI18n")
-public class FuzzySearchTask extends AsyncTask<String, Integer, String> {
+public class FuzzySearchTask extends AsyncTaskWrapper<String, Integer, String> {
 	private final WeakReference<PDICMainActivity> activity;
 	private String CurrentSearchText;
 

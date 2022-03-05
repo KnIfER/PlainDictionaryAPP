@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 @SuppressLint("SetTextI18n")
-public class FullSearchTask extends AsyncTask<String, Integer, String > {
+public class FullSearchTask extends AsyncTaskWrapper<String, Integer, String > {
 	private final WeakReference<PDICMainActivity> activity;
 	private String CurrentSearchText;
 

@@ -101,6 +101,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
@@ -264,7 +265,7 @@ public class BookPresenter
 									if(app){
 										app.popupWord(sid.get(), text, frameAt, d.documentElement.scrollLeft+pX, d.documentElement.scrollTop+pY, pW, pH);
 										w.popup=1;
-										s.empty();
+										//s.empty();
 										return true;
 									}
 								}
@@ -1265,7 +1266,19 @@ function debug(e){console.log(e)};
 		return a.GetAddHistory(key);
 	}
 	
-	public int QueryByKey(String keyword, SearchType searchType, boolean isParagraph, int paragraphWords)
+	public boolean getAcceptParagraph(String keyword, boolean isParagraph, int paragraphWords) {
+		if (!getAcceptParagraph()) {
+			if (paragraphWords!=minParagraphWords) {
+				isParagraph = testIsParagraph(keyword, minParagraphWords);
+			}
+			if (isParagraph) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public int QueryByKey(String keyword, SearchType searchType, boolean isParagraph, int paragraphWords, AtomicBoolean task)
 	{
 		// todo 添加“纯单词”、“段落搜索”词典选项。
 		if (!getAcceptParagraph()) {
@@ -1286,7 +1299,7 @@ function debug(e){console.log(e)};
 			return bookImpl.lookUp(keyword, false);
 		}
 		else if (searchType==SearchType.Range) {
-			return bookImpl.lookUpRange(keyword, range_query_reveiver, null, bookImpl.getBooKID(),15);
+			return bookImpl.lookUpRange(keyword, range_query_reveiver, null, bookImpl.getBooKID(),15, task);
 		}
 		return -1;
 	}
@@ -2022,7 +2035,7 @@ function debug(e){console.log(e)};
 			int StarLevel =  PDICMainAppOptions.getDFFStarLevel(firstFlag);
 			toolbar_title.setStarLevel(StarLevel);
 			if(StarLevel>0) {
-				toolbar_title.setStarDrawables(a.getActiveStarDrawable(), toolbar_title==a.popupIndicator?a.getRatingDrawable():null);
+				toolbar_title.setStarDrawables(a.getActiveStarDrawable(), toolbar_title==a.wordPopup.popupIndicator?a.getRatingDrawable():null);
 			}
 		}
 		GradientDrawable toolbarBG = mWebView.toolbarBG;
@@ -2340,7 +2353,7 @@ function debug(e){console.log(e)};
 					if (!"schVar".equals(mWebView.getTag())) {
 						mWebView.setTag("schVar");
 						SetSearchKey(GetAppSearchKey());
-						renderContentAt_internal(mWebView, -1, mWebView.fromCombined==1, mWebView==a.popupWebView, false, 0);
+						renderContentAt_internal(mWebView, -1, mWebView.fromCombined==1, mWebView==a.wordPopup.popupWebView, false, 0);
 						mWebView.setTag(null);
 					}
 				}
@@ -2413,7 +2426,7 @@ function debug(e){console.log(e)};
 
 		htmlBuilder.append("<script class=\"_PDict\">");
 		int rcsp = MakeRCSP(opt);
-		if(mWebView==a.popupWebView) rcsp|=1<<5;
+		if(mWebView==a.wordPopup.popupWebView) rcsp|=1<<5;
 		htmlBuilder.append("window.rcsp=").append(rcsp).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
 		//nimp
@@ -2903,32 +2916,36 @@ function debug(e){console.log(e)};
 
         @JavascriptInterface
         public void popupWord(long sid, String key, int frameAt, float pX, float pY, float pW, float pH) {
-			if(presenter==null) return;
-        	if(WebViewmy.supressNxtClickTranslator) {
-        		return;
-			}
-        	MainActivityUIBase a = presenter.a;
-			a.popupWord(key, null, frameAt);
-			if(frameAt>=0 && pH!=0){
-				if(pW==0) pW=pH;
-				if(RLContainerSlider.lastZoomTime == 0 || System.currentTimeMillis() - RLContainerSlider.lastZoomTime > 500){
-					//Utils.setFloatTextBG(new Random().nextInt());
-					//CMN.Log("popupWord::", pX, pY, pW, pH);
-					WebViewmy wv = presenter.findWebview(sid);
-					//CMN.Log("只管去兮不管来", wv!=null);
-					if(wv!=null){
-						float density = dm.density;
-						wv.highRigkt_set(pX*density, pY*density, (pX+pW)*density, (pY+pH)*density);
+			try {
+				if(presenter==null) return;
+				if(WebViewmy.supressNxtClickTranslator) {
+					return;
+				}
+				MainActivityUIBase a = presenter.a;
+				WebViewmy wv = presenter.findWebview(sid);
+				a.popupWord(key, null, frameAt, wv);
+				if(frameAt>=0 && pH!=0){
+					if(pW==0) pW=pH;
+					if(RLContainerSlider.lastZoomTime == 0 || System.currentTimeMillis() - RLContainerSlider.lastZoomTime > 500){
+						//Utils.setFloatTextBG(new Random().nextInt());
+						//CMN.Log("popupWord::", pX, pY, pW, pH);
+						//CMN.Log("只管去兮不管来", wv!=null);
+						if(wv!=null){
+							float density = dm.density;
+							wv.highRigkt_set(pX*density, pY*density, (pX+pW)*density, (pY+pH)*density);
+						}
 					}
 				}
+			} catch (Exception e) {
+				CMN.Log(e);
 			}
-        }
+		}
 
         @JavascriptInterface
         public void popupClose(long sid) {
 			if(presenter!=null) {
 				CMN.debug("popuping...popupClose", sid);
-				if(this!=presenter.a.popuphandler)
+				if(this!=presenter.a.wordPopup.popuphandler)
 					presenter.a.postDetachClickTranslator();
 				WebViewmy wv = presenter.findWebview(sid);
 				if(wv!=null && wv.drawRect){
@@ -3141,8 +3158,8 @@ function debug(e){console.log(e)};
 		if (a.PeruseViewAttached() && a.peruseView.mWebView.getSimpleIdentifier()==sid) {
 			return a.peruseView.mWebView;
 		}
-		if (a.popupWebView!=null && a.popupWebView.getSimpleIdentifier()==sid) {
-			return a.popupWebView;
+		if (a.wordPopup.popupWebView!=null && a.wordPopup.popupWebView.getSimpleIdentifier()==sid) {
+			return a.wordPopup.popupWebView;
 		}
 		return mWebView;
 	}

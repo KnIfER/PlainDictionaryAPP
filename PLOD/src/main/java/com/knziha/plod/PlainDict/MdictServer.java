@@ -155,7 +155,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			for(int i=0;i<md_size();i++){
 				try {
 					book = md_get(i).bookImpl;
-					book.lookUpRange(uri, null, treeBuilder, book.getBooKID(), 30);
+					book.lookUpRange(uri, null, treeBuilder, book.getBooKID(), 30, null);
 				} catch (Exception e) {
 					SU.Log(md_getName(i), e);
 				}

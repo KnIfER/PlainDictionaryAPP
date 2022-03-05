@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorderCombined> {
+public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, resultRecorderCombined> {
 	private final WeakReference<MainActivityUIBase> activity;
 	private RBTree_additive _treeBuilder = new RBTree_additive();
 	String CurrentSearchText;
@@ -102,7 +102,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 						}
 						if(bookPresenter!=null) {
 							try {
-								bookPresenter.QueryByKey(CurrentSearchText, SearchType.Range, isParagraph, paragraphWords);
+								bookPresenter.QueryByKey(CurrentSearchText, SearchType.Range, isParagraph, paragraphWords, running);
 							} catch (Exception e) {
 								if(GlobalOptions.debug)
 									CMN.Log("搜索出错！！！", bookPresenter.bookImpl.getDictionaryName(), e);
@@ -155,7 +155,7 @@ public class CombinedSearchTask extends AsyncTask<String, Integer, resultRecorde
 		}
 		if(isCancelled()) return null;
 		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), md, CurrentSearchText);
-		if(rec.FindFirstIdx(searchText, this)) return rec;
+		if(rec.FindFirstIdx(searchText, running)) return rec;
 		return null;
 	}
 

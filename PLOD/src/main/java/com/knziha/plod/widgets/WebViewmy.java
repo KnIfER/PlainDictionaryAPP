@@ -50,6 +50,7 @@ import com.google.android.material.math.MathUtils;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PeruseView;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
@@ -78,6 +79,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public int fromCombined;
 	//public boolean fromPeruseview;
 	public boolean fromNet;
+	
+	public PeruseView peruseView;
+	
 	public String word;
 	public long[] currentRendring;
 	public boolean awaiting;
@@ -1257,10 +1261,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		if (hasWidgets) {
 			widgetsLayout.layoutWidgets();
 		}
-		if(drawRect/* && presenter.getDrawHighlightOnTop()*/)
-		{
-			drawHighlightRect(canvas, Build.VERSION.SDK_INT<=25 && !GlobalOptions.isDark);
-		}
+//		if(drawRect/* && presenter.getDrawHighlightOnTop()*/)
+//		{
+//			drawHighlightRect(canvas, Build.VERSION.SDK_INT<=25 && !GlobalOptions.isDark);
+//		}
 //		if (drawRect) {
 //			drawHighlightRect(canvas, false);
 //			float scale = webScale/ BookPresenter.def_zoom;

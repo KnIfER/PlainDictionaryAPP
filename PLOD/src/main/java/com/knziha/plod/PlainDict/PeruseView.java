@@ -34,6 +34,7 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.GridView;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -80,6 +81,7 @@ import static android.view.View.FOCUSABLE_AUTO;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
 import static com.knziha.plod.plaindict.PDICMainActivity.ResizeNavigationIcon;
+import static com.knziha.plod.plaindict.Toastable_Activity.LONG_DURATION_MS;
 import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
@@ -183,9 +185,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	boolean showAllDicts;
 	public int CachedBBSize=-1;
 	public WebViewmy mWebView;
-	ViewGroup root;
+	public ViewGroup root;
 	BasicAdapter ActivedAdapter;
 
+	int lastW;
 	// creat dialog -> creat view
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -208,6 +211,18 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			//CMN.Log("复用视图");
 			ViewUtils.removeIfParentBeOrNotBe(peruse_content, null, false);
 			return container;
+		} else {
+			peruse_content.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+				@Override
+				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+					if(right-left!=lastW) {
+						lastW=right-left;
+						mlp.findViewById(R.id.frameL).getLayoutParams().width=lastW;
+						if(true)lv1.getLayoutParams().width=lastW;
+					}
+					CMN.Log("onLayoutChange!!!", right-left);
+				}
+			});
 		}
         
 		//peruse_content.setOnTouchListener((v, event) -> true);//tofo
@@ -272,6 +287,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		lv2 = slp.findViewById(R.id.sub_list);
 		//zig-zaging
 		lv1.setVerticalScrollBarEnabled(false);//关闭不可控的安卓科技
+		lv1.setHorizontalScrollBarEnabled(true);//关闭不可控的安卓科技
 		if(!opt.getShowFScroll()) {
 			lv1.setFastScrollEnabled(false);
 			lv2.setFastScrollEnabled(false);
@@ -862,6 +878,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		
 		
 			mWebView = weblistHandler.getMergedFrame();
+			mWebView.setMinimumWidth((int) (100*GlobalOptions.density));
 			mWebView.weblistHandler = weblistHandler;
 			//mWebView.fromPeruseview = true;
 			mWebView.fromCombined=3;
@@ -1149,9 +1166,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				mWebView.clearFocus();
 				return;
 			}
-			if(ViewUtils.removeIfParentBeOrNotBe(a.popupContentView, root, true)){
-				a.popupContentView = null;
-				a.popupGuarder.setVisibility(View.GONE);
+			if(ViewUtils.removeIfParentBeOrNotBe(a.wordPopup.popupContentView, root, true)){
+				a.wordPopup.popupContentView = null;
+				a.wordPopup.popupGuarder.setVisibility(View.GONE);
 				return;
 			}
 			if(DBrowser!=null){
@@ -1727,21 +1744,21 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         	} else {
 				convertView.setBackgroundColor(Color.TRANSPARENT);
 			}
-
+			
+			
         	MarginLayoutParams lp = (MarginLayoutParams) vh.tv.getLayoutParams();
         	if(opt.getShowBA()) {
         		vh.dv.setVisibility(View.VISIBLE);
 				//lp.setMargins(0, (int)(5*density), 0, (int)(2*density));
 				convertView.setPadding(0, (int)(5*density), 0, (int)(2*density));
         		//vh.tv.setPadding(0, (int)(5*density), 0, (int)(2*density));
-				//vh.tv.requestLayout();
         	}else {
         		vh.dv.setVisibility(View.GONE);
-				convertView.setPadding((int)(15*density), (int)(5*density), 0, (int)(2*density));
+				convertView.setPadding((int)(8*density), (int)(5*density), 0, (int)(2*density));
 				//lp.setMargins((int)(15*density), (int)(5*density), 0, (int)(2*density));
         		//vh.tv.setPadding((int)(15*density), (int)(5*density), 0, (int)(2*density));
-				//vh.tv.requestLayout();
         	}
+			vh.tv.getLayoutParams().width=-1;
 
 	        return convertView;
         }
@@ -1873,6 +1890,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			}
 	
 			resetBottomBar();
+	
+			a.getTopSnackView().setNextOffsetScale(0.24f);
+			a.showTopSnack(PeruseTorso, currentKeyText
+					, 0.85f, LONG_DURATION_MS, -1, 0);
 		}
         
 		@Override
@@ -2267,4 +2288,5 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	@NonNull MainActivityUIBase getMainActivity() {
 		return (MainActivityUIBase) getActivity();
 	}
+	
 }

@@ -117,7 +117,6 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.text.HtmlCompat;
@@ -130,7 +129,6 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.alexvasilkov.gestures.commons.DepthPageTransformer;
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.jaredrummler.colorpicker.ColorPickerDialog;
@@ -154,6 +152,7 @@ import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.QuickBookSettingsPanel;
 import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
+import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
@@ -169,7 +168,6 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
-import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.PlainPDF;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
@@ -178,13 +176,12 @@ import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.preference.SettingsPanel;
+import com.knziha.plod.searchtasks.AsyncTaskWrapper;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.settings.ViewSpecification_exit_dialog;
 import com.knziha.plod.slideshow.PhotoViewActivity;
-import com.knziha.plod.widgets.AdvancedNestScrollWebView;
-import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CustomShareAdapter;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
@@ -194,8 +191,6 @@ import com.knziha.plod.widgets.ListSizeConfiner;
 import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.MultiplexLongClicker;
 import com.knziha.plod.widgets.OnScrollChangedListener;
-import com.knziha.plod.widgets.PopupGuarder;
-import com.knziha.plod.widgets.PopupMoveToucher;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
@@ -261,7 +256,6 @@ import java.util.regex.Pattern;
 import static com.bumptech.glide.util.Util.isOnMainThread;
 import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
-import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
@@ -436,7 +430,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	BitmapDrawable mPageDrawable;
 	ColorDrawable mPageColorDrawable;
 
-	AsyncTask lianHeTask;
+	AsyncTaskWrapper lianHeTask;
 	public int[] pendingLv2Pos;
 	public int pendingLv2ClickPos=-1;
 	public int split_dict_thread_number;
@@ -446,24 +440,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public AtomicInteger poolEUSize = new AtomicInteger(0);
 
-	Runnable mPopupRunnable;
-	String popupKey;
-	int popupFrame;
-	BookPresenter popupForceId;
-	protected TextView popupTextView;
-	protected PopupMoveToucher popupMoveToucher;
-	public FlowTextView popupIndicator;
-	public RLContainerSlider PopupPageSlider;
-	public WebViewmy popupWebView;
-	public BookPresenter.AppHandler popuphandler;
-	public ImageView popIvBack;
-	public View popCover;
-	protected ViewGroup popupContentView;
-	protected ImageView popupStar;
-	protected ViewGroup popupToolbar, popupBottombar;
-	protected CircleCheckBox popupChecker;
-	WeakReference<ViewGroup> popupCrdCloth;
-	WeakReference<ViewGroup> popupCmnCloth;
+
+	
 	WeakReference<AlertDialog> setchooser;
 	int lastCheckedPos = -1;
 	private WeakReference<BottomSheetDialog> bottomPlaylist;
@@ -471,14 +449,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	WeakReference<DBroswer> DBrowserHolder;
 	DBroswer DBrowser;
 	DeckListAdapter.DeckListData[] DBrowserDatas = new DeckListAdapter.DeckListData[2];
-	public PopupGuarder popupGuarder;
-	public String currentClickDisplaying;
-	public int currentClickDictionary_currentPos;
-	public int currentClick_adapter_idx;
-	public int CCD_ID;
-	@NonNull public BookPresenter CCD;
-	ArrayList<myCpr<String, int[]>> popupHistory = new ArrayList<>();
-	int popupHistoryVagranter=-1;
+	
 	ViewGroup PhotoPagerHolder;
 	ViewPager PhotoPager;
 	ImageView PhotoCover;
@@ -544,7 +515,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 */
 	@Metaline()
 	private static final String js_no_match="js_no_match";
-	private boolean bHasDedicatedSeachGroup;
+	public boolean bHasDedicatedSeachGroup;
 	private File fontlibs;
 	public static int PreferredToolId=-1;
 	private Runnable mOpenImgRunnable;
@@ -579,14 +550,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	protected boolean lv_matched;
 	private Animation CTANIMA;
-	private ViewGroup collectFavoriteView;
+	public ViewGroup collectFavoriteView;
 	protected boolean lastBackBtnAct;
 	
 	public boolean checkWebSelection() {
 		WebViewmy wv = null;
 		boolean doCheck = false;
-		if(popupContentView!=null && popupWebView.bIsActionMenuShown) {
-			wv = popupWebView;
+		if(wordPopup.popupContentView!=null && wordPopup.popupWebView.bIsActionMenuShown) {
+			wv = wordPopup.popupWebView;
 			doCheck = opt.getUseBackKeyClearWebViewFocus();
 		} else if(getCurrentFocus() instanceof WebViewmy) {
 			wv = ((WebViewmy)getCurrentFocus());
@@ -1439,7 +1410,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		removeAAdjustment();
 	}
 	
-	protected int getVisibleHeight() {
+	public int getVisibleHeight() {
 		return root.getChildAt(0).getHeight();
 	}
 
@@ -1469,6 +1440,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
+	public WordPopup wordPopup = new WordPopup(this);
+	
 	public void fix_pw_color() {
 		if(bottomPlaylist!=null){
 			bottomPlaylist.clear();
@@ -1478,457 +1451,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ChooseFavorDialog.clear();
 			ChooseFavorDialog=null;
 		}
-		if(popupWebView!=null)
-		if(GlobalOptions.isDark){
-			popupContentView.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-			popupBottombar.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-			popIvBack.setImageResource(R.drawable.abc_ic_ab_white_material);
-			popIvBack.setTag(false);
-		} else if(popIvBack.getTag()!=null){
-			popupContentView.getBackground().clearColorFilter();
-			popupBottombar.getBackground().clearColorFilter();
-			popIvBack.setImageResource(R.drawable.abc_ic_ab_back_material_simple_compat);
-			popIvBack.setTag(null);
-		}
+		wordPopup.refresh();
 	}
 
-	public void popupWord(final String key, BookPresenter forceStartId, int frameAt) {
-		CMN.Log("popupWord_frameAt", frameAt, key, md.size(), WebViewmy.supressNxtClickTranslator);
-		if(key==null || mdict.processText(key).length()>0) {
-			popupKey = key;
-			popupFrame = frameAt;
-			popupForceId = forceStartId;
-			if(mPopupRunnable==null) {
-				mPopupRunnable = new Runnable() {
-					@Override
-					public void run() {
-						if(RLContainerSlider.lastZoomTime > 0){
-							if (System.currentTimeMillis() - RLContainerSlider.lastZoomTime < 500){
-								return;
-							}
-							RLContainerSlider.lastZoomTime=0;
-						}
-						boolean bPeruseViewAttached = PeruseViewAttached();
-						//CMN.Log("\nmPopupRunnable run!!!");
-						ViewGroup targetRoot = bPeruseViewAttached? peruseView.root:root;
-						int size = md.size();
-						if (size <= 0) return;
-						//CMN.Log("popupWord", popupKey, x, y, frameAt);
-						boolean isNewHolder;
-						boolean isInit;
-						// 初始化核心组件
-						isInit = isNewHolder = popupWebView == null||popupWebView.fromCombined!=2;
-						init_popup_view();
-						// 给你换身衣裳
-						WeakReference<ViewGroup> holder = (PDICMainAppOptions.getImmersiveClickSearch() ? popupCrdCloth : popupCmnCloth);
-						ViewGroup mPopupContentView = popupContentView;
-						popupContentView = holder == null ? null : holder.get();
-						boolean b1 = popupContentView == null;
-						isNewHolder = isNewHolder || b1;
-						if (b1 || popupContentView instanceof LinearLayout ^ PopupPageSlider.getParent() instanceof LinearLayout) {
-							if (popupToolbar.getParent() != null)
-								((ViewGroup) popupToolbar.getParent()).removeView(popupToolbar);
-							if (PopupPageSlider.getParent() != null)
-								((ViewGroup) PopupPageSlider.getParent()).removeView(PopupPageSlider);
-							if (popupBottombar.getParent() != null)
-								((ViewGroup) popupBottombar.getParent()).removeView(popupBottombar);
-							if (mPopupContentView != null && mPopupContentView.getParent() != null)
-								((ViewGroup) mPopupContentView.getParent()).removeView(mPopupContentView);
-							if (PDICMainAppOptions.getImmersiveClickSearch()) {
-								popupContentView = (popupCrdCloth != null && popupCrdCloth.get() != null) ? popupCrdCloth.get()
-										: (popupCrdCloth = new WeakReference<>((ViewGroup) getLayoutInflater()
-										.inflate(R.layout.float_contentview_coord, root, false))).get();
-								((ViewGroup) popupContentView.getChildAt(0)).addView(popupToolbar);
-								popupContentView.addView(PopupPageSlider);
-								popupContentView.addView(popupBottombar);
-								((CoordinatorLayout.LayoutParams) popupBottombar.getLayoutParams()).gravity = Gravity.BOTTOM;
-								((CoordinatorLayout.LayoutParams) popupBottombar.getLayoutParams()).setBehavior(new BottomNavigationBehavior(popupContentView.getContext(), null));
-								((CoordinatorLayout.LayoutParams) PopupPageSlider.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(popupContentView.getContext(), null));
-								((CoordinatorLayout.LayoutParams) PopupPageSlider.getLayoutParams()).height = MATCH_PARENT;
-								((AppBarLayout.LayoutParams) popupToolbar.getLayoutParams()).setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS | AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP);
-							} else {
-								popupContentView = (popupCmnCloth != null && popupCmnCloth.get() != null) ? popupCmnCloth.get()
-										: (popupCmnCloth = new WeakReference<>((ViewGroup) getLayoutInflater()
-										.inflate(R.layout.float_contentview_basic_outer, root, false))).get();
-								popupContentView.addView(popupToolbar);
-								popupContentView.addView(PopupPageSlider);
-								popupContentView.addView(popupBottombar);
-								popupToolbar.setTranslationY(0);
-								PopupPageSlider.setTranslationY(0);
-								popupBottombar.setTranslationY(0);
-								((LinearLayout.LayoutParams) PopupPageSlider.getLayoutParams()).weight = 1;
-								((LinearLayout.LayoutParams) PopupPageSlider.getLayoutParams()).height = 0;
-							}
-						}
-
-						popupChecker.setChecked(PDICMainAppOptions.getClickSearchPin(), false);
-						popupGuarder.popupToGuard = popupContentView;
-						popupGuarder.setVisibility(View.VISIBLE);
-
-						if (isNewHolder) {
-							popupWebView.fromCombined = 2;
-							fix_pw_color();
-							popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
-							FrameLayout.LayoutParams lp = ((FrameLayout.LayoutParams) popupContentView.getLayoutParams());
-							lp.height = popupMoveToucher.FVH_UNDOCKED = (int) (dm.heightPixels * 5.0 / 12 - getResources().getDimension(R.dimen._20_));
-							if (mPopupContentView != null && !isInit) {
-								popupContentView.setTranslationY(mPopupContentView.getTranslationY());
-								lp.height = mPopupContentView.getLayoutParams().height;
-							}
-						}
-
-						int idx = -1, cc = 0;
-						if (popupKey != null) {
-							popupTextView.setText(popupKey);
-							String keykey;
-							CCD_ID = currentClick_adapter_idx = Math.min(currentClick_adapter_idx, size-1);
-							if(popupForceId!=null) {
-								CCD = popupForceId;
-								CCD_ID = md.indexOf(popupForceId);
-								if(CCD_ID<0) {
-									CCD_ID = md.size();
-									md.add(popupForceId); // todo check???
-								}
-							}
-							//轮询开始
-							//nimp
-							BookPresenter webx = null;
-							boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
-							int SearchMode = PDICMainAppOptions.getClickSearchMode();
-							CMN.Log("SearchMode", SearchMode);
-							boolean bForceJump = false;
-							if (SearchMode == 2) {/* 仅搜索当前词典 */
-								CCD = md_get(CCD_ID);
-								if (CCD != EmptyBook) {
-									if(CCD.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
-										webx = CCD;
-										if (!((PlainWeb)webx.bookImpl).takeWord(popupKey)) {
-											webx = null;
-										}
-									} else  {
-										idx = CCD.bookImpl.lookUp(popupKey, true);
-										if (idx < -1 && use_morph) {
-											keykey = ReRouteKey(popupKey, true);
-											if (keykey != null) idx = CCD.bookImpl.lookUp(keykey, true);
-										}
-									}
-								}
-							}
-							else {
-								boolean proceed = true;
-								if (SearchMode == 1) {/* 仅搜索指定点译词典 */
-									bHasDedicatedSeachGroup=false;
-									BookPresenter firstAttemp = null;
-									FindCSD:
-									while(true) {
-										BookPresenter mdTmp;
-										int CSID;
-										for (int i = 0; i < md.size(); i++) {
-											mdTmp = null;
-											CSID = (i + CCD_ID) % md.size();
-											ArrayList<PlaceHolder> CosyChair = getLazyCC();
-											if (CSID < CosyChair.size()) {
-												PlaceHolder phTmp = CosyChair.get(CSID);
-												if (phTmp != null) {
-													if (PDICMainAppOptions.getTmpIsClicker(phTmp.tmpIsFlag)) {
-														mdTmp = md.get(CSID);
-														if (mdTmp == null) {
-															try {
-																md.set(CSID, mdTmp = new_book(phTmp, MainActivityUIBase.this));
-															} catch (Exception e) { }
-														}
-													}
-												}
-											}
-											if (mdTmp != null) {
-												if (!bForceJump && firstAttemp == null)
-													firstAttemp = mdTmp;
-												bHasDedicatedSeachGroup=true;
-												proceed=false;
-												if(mdTmp.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
-													webx = mdTmp;
-													if (bForceJump || ((PlainWeb)webx.bookImpl).takeWord(popupKey)) {
-														break;
-													}
-													webx = null;
-												}
-												else
-												{
-													idx = mdTmp.bookImpl.lookUp(popupKey, true);
-													if (idx < -1 && use_morph) {
-														keykey = ReRouteKey(popupKey, true);
-														if (keykey != null)
-															idx = mdTmp.bookImpl.lookUp(keykey, true);
-													}
-													if(idx<0 && bForceJump){
-														idx = -1-idx;
-													}
-													if (idx >= 0) {
-														CCD_ID = (i + CCD_ID) % md.size();
-														CCD = mdTmp;
-														break FindCSD;
-													}
-													if(bForceJump){
-														break FindCSD;
-													}
-												}
-											}
-										}
-										if (firstAttemp != null && md.size()>0) {
-											bForceJump=true;
-											firstAttemp=null;
-										} else {
-											break;
-										}
-									}
-
-								}
-								boolean reject_morph = false;
-								if (proceed)/* 未指定点译词典 */
-									while (true) {
-										if (cc > md.size())
-											break;
-										CCD_ID = CCD_ID % md.size();
-										CCD = md.get(CCD_ID);
-										if (CCD == null) {
-											ArrayList<PlaceHolder> CosyChair = getLazyCC();
-											if (CCD_ID < CosyChair.size()) {
-												PlaceHolder phTmp = CosyChair.get(CCD_ID);
-												if (phTmp != null) {
-													try {
-														md.set(CCD_ID, CCD = new_book(phTmp, MainActivityUIBase.this));
-													} catch (Exception e) {
-														CMN.Log(e);
-													}
-												}
-											}
-										}
-										if (CCD == null) {
-											CCD = EmptyBook;
-										}
-										if(CCD.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
-											webx = CCD;
-											if (((PlainWeb)webx.bookImpl).takeWord(popupKey)) {
-												break;
-											}
-											webx = null;
-										} else
-										if (CCD != EmptyBook) {
-											idx = CCD.bookImpl.lookUp(popupKey, true);
-											if (idx < 0) {
-												if (!reject_morph && use_morph) {
-													keykey = ReRouteKey(popupKey, true);
-													if (keykey != null)
-														idx = CCD.bookImpl.lookUp(keykey, true);
-													else
-														reject_morph = true;
-												}
-											}
-											if (idx >= 0)
-												break;
-										}
-										CCD_ID++;
-										cc++;
-									}
-							}
-							popupIndicator.setText(md_getName(CCD_ID));
-
-							if (webx != null) {
-								webx.SetSearchKey(popupKey);
-								idx = 0;
-							}
-
-							//CMN.Log(CCD, "应用轮询结果", webx, idx);
-
-							if (idx >= 0 && CCD != EmptyBook) {
-								if(bForceJump && SearchMode==1)
-									popupWebView.setTag(R.id.js_no_match, false);
-								popupHistory.add(++popupHistoryVagranter, new myCpr<>(popupKey, new int[]{CCD_ID, idx}));
-								if (popupHistory.size() > popupHistoryVagranter + 1) {
-									popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
-								}
-								popuphandler.setDict(CCD);
-								if (PDICMainAppOptions.getClickSearchAutoReadEntry())
-									popupWebView.bRequestedSoundPlayback=true;
-								popupWebView.IBC = CCD.IBC;
-								PopupPageSlider.invalidateIBC();
-								CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, popupWebView, currentClickDictionary_currentPos = idx);
-							}
-
-							currentClickDisplaying = popupKey;
-							decorateContentviewByKey(popupStar, currentClickDisplaying);
-							if (!PDICMainAppOptions.getHistoryStrategy0()
-									&& PDICMainAppOptions.getHistoryStrategy7())
-								insertUpdate_histroy(popupKey, 0, PopupPageSlider);
-						}
-
-						// 初次添加请指明方位
-						ViewGroup svp = (ViewGroup) popupContentView.getParent();
-						if (svp != targetRoot) {
-							if(svp!=null){
-								svp.removeView(popupContentView);
-							}
-							if (popupMoveToucher.FVDOCKED && popupMoveToucher.Maximized && PDICMainAppOptions.getResetMaxClickSearch()) {
-								popupMoveToucher.Dedock();
-							}
-							CMN.Log("poping up ::: ", ActivedAdapter);
-							if (popupKey!=null && (PDICMainAppOptions.getResetPosClickSearch() || isInit) && !popupMoveToucher.FVDOCKED) {
-								float ty = 0;
-								float now = 0;
-								if (ActivedAdapter != null || popupFrame<0) {
-									//CMN.Log("???", y, targetRoot.getHeight()-popupGuarder.getResources().getDimension(R.dimen.halfpopheader));
-									if(popupFrame==-1){
-										now = mActionModeHeight;
-										CMN.Log(now, targetRoot.getHeight() / 2);
-									}
-									else if(bPeruseViewAttached){
-										now = peruseView.getWebTouchY();
-									}
-									else if (ActivedAdapter == adaptermy || ActivedAdapter == adaptermy3 || ActivedAdapter == adaptermy4) {
-										if (webSingleholder.getChildAt(0) instanceof LinearLayout) {
-											LinearLayout sv = (LinearLayout) webSingleholder.getChildAt(0);
-											WebViewmy mWebView = sv.findViewById(R.id.webviewmy);
-											if (mWebView != null) {
-												now = mWebView.lastY;
-											}
-											//now -= sv.getChildAt(1).getScrollY();
-											now += sv.getChildAt(0).getHeight();
-											//CMN.Log("now",sv.getChildAt(0).getHeight(), ((ViewGroup.MarginLayoutParams) getContentviewSnackHolder().getLayoutParams()).topMargin);
-										}
-									}
-									else if (ActivedAdapter == adaptermy2) {
-										if (weblistHandler.getChildAt(popupFrame) instanceof LinearLayout) {
-											LinearLayout sv = (LinearLayout) weblistHandler.getChildAt(popupFrame);
-											WebViewmy mWebView = sv.findViewById(R.id.webviewmy);
-											now = sv.getTop() + mWebView.lastY + sv.getChildAt(0).getHeight() - weblistHandler.WHP.getScrollY();
-										}
-									}
-									if(thisActType!=ActType.MultiShare) {
-										try {
-											if(PDICMainAppOptions.getEnableSuperImmersiveScrollMode()){
-												now += contentview.getTop();
-											} else {
-												now += ((ViewGroup.MarginLayoutParams) contentview.getLayoutParams()).topMargin;
-											}//333 contentSnackHolder
-										} catch (Exception e) {
-											CMN.Log(e);
-										}
-									}
-									float pad = 56 * dm.density;
-									if (MainActivityUIBase.this instanceof FloatSearchActivity)
-										now += ((FloatSearchActivity) MainActivityUIBase.this).getPadHoldingCS();
-									CMN.Log("now",now);
-									if (now < targetRoot.getHeight() / 2) {
-										ty = now + pad;
-									} else {
-										ty = now - popupMoveToucher.FVH_UNDOCKED - pad;
-									}
-								}
-								//CMN.Log("min", getVisibleHeight()-popupMoveToucher.FVH_UNDOCKED-((ViewGroup.MarginLayoutParams)popupContentView.getLayoutParams()).topMargin*2);
-								popupContentView.setTranslationY(Math.min(getVisibleHeight() - popupMoveToucher.FVH_UNDOCKED - ((ViewGroup.MarginLayoutParams) popupContentView.getLayoutParams()).topMargin * 2, Math.max(0, ty)));
-							}
-							svp = (ViewGroup) popupGuarder.getParent();
-							if(svp!=targetRoot){
-								if(svp!=null) svp.removeView(popupGuarder);
-								targetRoot.addView(popupGuarder, new FrameLayout.LayoutParams(-1, -1));
-							}
-							//if(idx>=0){
-							targetRoot.addView(popupContentView);
-							CMN.Log("111", targetRoot, popupContentView.getParent());
-							fix_full_screen(null);
-							//}
-						}
-						//else popupWebView.loadUrl("about:blank");
-						//CMN.recurseLog(popupContentView, null);
-					}
-				};
-			}
-			root.removeCallbacks(mPopupRunnable);
-			//root.post(mPopupRunnable);
-			root.postDelayed(mPopupRunnable, 75);
-		}
-	}
-	
-	protected void init_popup_view() {
-		if (popupWebView == null) {
-			popupContentView = (ViewGroup) getLayoutInflater()
-					.inflate(R.layout.float_contentview_basic, root, false);
-			popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
-			popupToolbar = (ViewGroup) popupContentView.getChildAt(0);
-			PopupPageSlider = (RLContainerSlider) popupContentView.getChildAt(1);
-			WebViewmy mPopupWebView = (WebViewmy) PopupPageSlider.getChildAt(0);
-			mPopupWebView.fromCombined = 2;
-			PopupPageSlider.WebContext = mPopupWebView;
-			popupBottombar = (ViewGroup) popupContentView.getChildAt(2);
-			popuphandler = new BookPresenter.AppHandler(currentDictionary);
-			mPopupWebView.addJavascriptInterface(popuphandler, "app");
-			mPopupWebView.setBackgroundColor(Color.TRANSPARENT);
-			((AdvancedNestScrollWebView)mPopupWebView).setNestedScrollingEnabled(true);
-			popCover = PopupPageSlider.getChildAt(1);
-			popCover.setOnClickListener(MainActivityUIBase.this);
-			popIvBack = popupToolbar.findViewById(R.id.popIvBack);
-			popIvBack.setOnClickListener(MainActivityUIBase.this);
-			popupStar = popupToolbar.findViewById(R.id.popIvStar);
-			popupStar.setOnClickListener(MainActivityUIBase.this);
-			popupBottombar.findViewById(R.id.popIvRecess).setOnClickListener(MainActivityUIBase.this);
-			popupBottombar.findViewById(R.id.popIvForward).setOnClickListener(MainActivityUIBase.this);
-			popupBottombar.findViewById(R.id.popIvSettings).setOnClickListener(MainActivityUIBase.this);
-			popupChecker = popupBottombar.findViewById(R.id.popChecker);
-			popupChecker.setOnClickListener(MainActivityUIBase.this);
-			popupTextView = popupToolbar.findViewById(R.id.popupText1);
-			mPopupWebView.IBC = new PhotoBrowsingContext();
-			mPopupWebView.toolbar_title = popupIndicator = popupBottombar.findViewById(R.id.popupText2);
-			popupTextView.setOnClickListener(MainActivityUIBase.this);
-			View popupNxtD, popupLstD;
-			(popupNxtD = popupToolbar.findViewById(R.id.popNxtDict)).setOnClickListener(MainActivityUIBase.this);
-			(popupLstD = popupToolbar.findViewById(R.id.popLstDict)).setOnClickListener(MainActivityUIBase.this);
-			popupBottombar.findViewById(R.id.popNxtE).setOnClickListener(MainActivityUIBase.this);
-			popupBottombar.findViewById(R.id.popLstE).setOnClickListener(MainActivityUIBase.this);
-			popupIndicator.setOnClickListener(MainActivityUIBase.this);
-			if(GlobalOptions.isDark) {
-				popupTextView.setTextColor(Color.WHITE);
-				popupIndicator.setTextColor(Color.WHITE);
-			}
-			
-			// 点击背景
-			popupGuarder = new PopupGuarder(getBaseContext());
-			if(thisActType==ActType.MultiShare) {
-				popupGuarder.onPopupDissmissed = this;
-			}
-			popupGuarder.setId(R.id.popupBackground);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-				popupGuarder.setElevation(5 * dm.density);
-			}
-			//popupGuarder.setBackgroundColor(Color.BLUE);
-			root.addView(popupGuarder, new FrameLayout.LayoutParams(-1, -1));
-			// 弹窗搜索移动逻辑， 类似于浮动搜索。
-			popupTextView.setOnTouchListener(popupMoveToucher = new PopupMoveToucher(MainActivityUIBase.this, popupTextView));
-			popupNxtD.setOnTouchListener(popupMoveToucher);
-			popupLstD.setOnTouchListener(popupMoveToucher);
-			popupStar.setOnTouchListener(popupMoveToucher);
-			// 缩放逻辑
-			popupWebView = mPopupWebView;
-			mPopupWebView.weblistHandler = weblistHandler;
-		}
-		if (GlobalOptions.isDark) {
-			popupChecker.drawInnerForEmptyState = true;
-			popupChecker.circle_shrinkage = 0;
-		}
-		else {
-			popupChecker.drawInnerForEmptyState = false;
-			popupChecker.circle_shrinkage = 2;
-		}
+	public void popupWord(final String key, BookPresenter forceStartId, int frameAt, WebViewmy wv) {
+		wordPopup.popupWord(wv, key, forceStartId, frameAt);
 	}
 	
 	public boolean DetachClickTranslator() {
-		if(popupContentView!=null) {
-			ViewGroup svp = (ViewGroup) popupContentView.getParent();
-			if(svp!=null) {
-				svp.removeView(popupContentView);
-				popupContentView = null;
-				popupGuarder.setVisibility(View.GONE);
-				return true;
-			}
+		if(wordPopup.isVisible()) {
+			wordPopup.dismiss();
+			return true;
 		}
 		return false;
 	}
@@ -3368,7 +2901,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(hdl!=null) {
 					hdl.clearActivity();
 				}
-				WeakReference[] holders = new WeakReference[]{popupCrdCloth, popupCmnCloth, setchooser, bottomPlaylist};
+				WeakReference[] holders = new WeakReference[]{wordPopup.popupCrdCloth, wordPopup.popupCmnCloth, setchooser, bottomPlaylist};
 				for(WeakReference hI:holders){
 					if(hI!=null)
 						hI.clear();
@@ -3548,7 +3081,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected String lastInsertedKey;
 	
-	protected void insertUpdate_histroy(String key, int source, ViewGroup webviewholder) {
+	public void insertUpdate_histroy(String key, int source, ViewGroup webviewholder) {
 		if(TextUtils.getTrimmedLength(key)>0) {
 			lastInsertedKey = key.trim();
 			lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder, 0);
@@ -4622,7 +4155,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (isLongClicked) return false;
 							if (bFromTextView) {
 								if (CurrentSelected.length() > 0) {
-									popupWord(CurrentSelected, null, -1);
+									popupWord(CurrentSelected, null, -1, mWebView);
 								}
 								bNeedClearTextSelection=true;
 							} else {
@@ -4630,7 +4163,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									mWebView.simulateScrollEffect();
 									bNeedStopScrollEffect=true;
 									if (word.length() > 2) {
-										popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), null, mWebView.frameAt);
+										popupWord(StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), null, mWebView.frameAt, mWebView);
 									}
 								});
 							}
@@ -5708,10 +5241,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(DBrowser!=null) {
 				DBrowser.checkColors();
 			}
-			if(popupIndicator!=null) {
-				popupTextView.setTextColor(dark?AppBlack:Color.GRAY);
-				popupIndicator.setTextColor(dark?AppBlack:0xff2b43c1);
-			}
+			wordPopup.refresh();
 			if(adaptermy==null) {
 				return;
 			}
@@ -6001,112 +5531,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				speakPoolEndIndex = target - 1;
 				mPullReadTextRunnable.run();
 			} break;
-			case R.id.cover: {
-				if(v==popCover){
-					getUcc().setInvoker(CCD, popupWebView, null, null);
-					getUcc().onClick(v);
-				}
-			} break;
-			case R.id.popNxtE:
-			case R.id.popLstE: {
-				if(CCD==null)
-					CCD=currentDictionary;
-				int np = currentClickDictionary_currentPos+(id==R.id.popNxtE?1:-1);
-				if(np>=0&&np<CCD.bookImpl.getNumberEntries()){
-					popupTextView.setText(currentClickDisplaying=CCD.bookImpl.getEntryAt(np));
-					popupHistory.add(++popupHistoryVagranter,new myCpr<>(currentClickDisplaying,new int[]{CCD_ID, np}));
-					if (popupHistory.size() > popupHistoryVagranter + 1) {
-						popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
-					}
-					popuphandler.setDict(CCD);
-					if(PDICMainAppOptions.getClickSearchAutoReadEntry())
-						popupWebView.bRequestedSoundPlayback=true;
-					popupWebView.fromCombined=2;
-					CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, popupWebView, currentClickDictionary_currentPos=np);
-					decorateContentviewByKey(popupStar, currentClickDisplaying);
-					if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy8()==0)
-						insertUpdate_histroy(currentClickDisplaying, 0, PopupPageSlider);
-				}
-			} break;
-			case R.id.popNxtDict:
-			case R.id.popLstDict:{
-				int idx=-1, cc=0;
-				String key= ViewUtils.getTextInView(popupTextView).trim();
-				if(key.length()>0) {
-					ArrayList<PlaceHolder> ph = getLazyCC();
-					String keykey;
-					int OldCCD=CCD_ID;
-					boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
-					int SearchMode = PDICMainAppOptions.getClickSearchMode();
-					boolean hasDedicatedSeachGroup = SearchMode==1&&bHasDedicatedSeachGroup;
-					boolean reject_morph = false;
-					//轮询开始
-					while(true){
-						if(id==R.id.popNxtDict){
-							CCD_ID++;
-						}else{
-							CCD_ID--;
-							if(CCD_ID<0)CCD_ID+=md.size();
-						}
-						CCD_ID=CCD_ID%md.size();
-
-						if(hasDedicatedSeachGroup && CCD_ID<ph.size() && !PDICMainAppOptions.getTmpIsClicker(ph.get(CCD_ID).tmpIsFlag))
-							continue;
-						CCD=md_get(CCD_ID);
-						cc++;
-						if(cc>md.size())
-							break;
-						
-						if (CCD!=EmptyBook) {
-							if(CCD.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
-								PlainWeb webx = (PlainWeb) CCD.bookImpl;
-								if(webx.takeWord(key)) {
-									CCD.SetSearchKey(key);
-									idx=0;
-								}
-							} else  {
-								idx=CCD.bookImpl.lookUp(key, true);
-								if(idx<0){
-									if(!reject_morph&&use_morph){
-										keykey=ReRouteKey(key, true);
-										if(keykey!=null)
-											idx=CCD.bookImpl.lookUp(keykey, true);
-										else
-											reject_morph=true;
-									}
-								}
-							}
-						}
-
-						if(idx>=0 || hasDedicatedSeachGroup && CCD!=EmptyBook ||  !PDICMainAppOptions.getSkipClickSearch())
-							break;
-					}
-
-					//应用轮询结果
-					if(OldCCD!=CCD_ID && CCD!=EmptyBook){
-						if(PDICMainAppOptions.getSwichClickSearchDictOnNav()){
-							currentClick_adapter_idx = CCD_ID;
-						}
-						popupIndicator.setText(CCD.getDictionaryName());
-
-						if(idx<0 && hasDedicatedSeachGroup){
-							idx = -1-idx;
-							popupWebView.setTag(R.id.js_no_match, false);
-						}
-						if (idx >= 0) {
-							popupHistory.add(++popupHistoryVagranter,new myCpr<>(currentClickDisplaying,new int[]{CCD_ID, idx}));
-							if (popupHistory.size() > popupHistoryVagranter + 1) {
-								popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
-							}
-							popuphandler.setDict(CCD);
-							if(PDICMainAppOptions.getClickSearchAutoReadEntry())
-								popupWebView.bRequestedSoundPlayback=true;
-							popupWebView.fromCombined=2;
-							CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, popupWebView, currentClickDictionary_currentPos=idx);
-						}
-					}
-				}
-			} break;
 			//in page search navigation
 			case R.id.recess:
 			case R.id.forward:{
@@ -6190,38 +5614,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 				}
 			}break;
-			//返回
-			case R.id.popIvBack:{
-				DetachClickTranslator();
-			} break;
-			//返回
-			case R.id.popIvRecess:{
-				popNav(true);
-			} break;
-			case R.id.popIvForward:{
-				popNav(false);
-			} break;
-			case R.id.popIvSettings:{
-				launchSettings(9, 999);
-			} break;
-			case R.id.popChecker:{
-				CircleCheckBox checker = (CircleCheckBox) v;
-				checker.toggle();
-				PDICMainAppOptions.setClickSearchPin(checker.isChecked());
-			} break;
-			case R.id.popIvStar:{
-				collectFavoriteView = popupContentView;
-				toggleStar(currentClickDisplaying, (ImageView) v, false, PopupPageSlider);
-				collectFavoriteView = null;
-			} break;
-			case R.id.popupText1:{
-				if(PDICMainAppOptions.getSwichClickSearchDictOnTop())
-					showChooseDictDialog(1);
-			} break;
-			case R.id.popupText2:{
-				if(PDICMainAppOptions.getSwichClickSearchDictOnBottom())
-					showChooseDictDialog(1);
-			} break;
 			//返回
 			case R.id.browser_widget7:{
 				if(PeruseViewAttached()){
@@ -6579,34 +5971,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 	}
-
-	protected boolean popNav(boolean isGoBack) {
-		long tm;
-		if((!isGoBack && !popupWebView.isloading && popupHistoryVagranter<popupHistory.size()-1 && popupWebView.canGoForward()
-				|| isGoBack && popupHistoryVagranter>0  && popupWebView.canGoBack())
-			&& (tm=System.currentTimeMillis())-lastClickTime>300) {
-			
-			if (isGoBack) {
-				popupWebView.goBack();
-			} else {
-				popupWebView.goForward();
-			}
-			
-			try {
-				myCpr<String, int[]> record = popupHistory.get(popupHistoryVagranter+=(isGoBack?-1:1));
-				popupTextView.setText(currentClickDisplaying=record.key);
-				//popupWebView.SelfIdx = CCD_ID = record.value[0];
-				currentClickDictionary_currentPos = record.value[1];
-				popupIndicator.setText((CCD=md.get(CCD_ID)).getDictionaryName());
-				popuphandler.setDict(CCD);
-			} catch (Exception e) { CMN.Log(e); }
-			
-			lastClickTime=tm;
-			return true;
-		}
-		return false;
-	}
-
+	
 	@Deprecated
 	public void showChooseTTSDialog() { }
 
@@ -6614,9 +5979,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 *  Show choose dictionary dialog
 	 * @param reason 0=pick; 1=pick click dict.
 	 * */
-	abstract void showChooseDictDialog(int reason);
+	public abstract void showChooseDictDialog(int reason);
 
-	void toggleStar(String key, ImageView futton, boolean toast, ViewGroup webviewholder) {
+	public void toggleStar(String key, ImageView futton, boolean toast, ViewGroup webviewholder) {
 		key = key.trim();
 		if(GetIsFavoriteTerm(key)) {
 			removeFavoriteTerm(key);
@@ -6961,7 +6326,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	void launchSettings(int fragmentId, int result) {
+	public void launchSettings(int fragmentId, int result) {
 		CMN.pHandler = new WeakReference<>(this);
 		Intent intent = new Intent()
 				.putExtra("realm", fragmentId)
@@ -7096,9 +6461,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			}
-			if(popupContentView!=null && popupContentView.getParent()!=null){
-				popupWebView.evaluateJavascript(val,null);
-			}
+//			if(popupContentView!=null && popupContentView.getParent()!=null){
+//				popupWebView.evaluateJavascript(val,null);
+//			}//111
 		}
 	}
 
@@ -7265,9 +6630,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(peruseView !=null && peruseView.mWebView!=null){
 			peruseView.mWebView.evaluateJavascript(exp,null);
 		}
-		if(popupWebView!=null){
-			popupWebView.evaluateJavascript(exp,null);
-		}
+//		if(popupWebView!=null){
+//			popupWebView.evaluateJavascript(exp,null);
+//		}//111
 	}
 
 	private void evalJsAtAllFrames_internal(ViewGroup webviewHolder, String exp) {
@@ -7931,7 +7296,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 自动播放声音自动播报 */
 			if(mWebView.bRequestedSoundPlayback){
 				mWebView.bRequestedSoundPlayback=false;
-				read_click_search = mWebView==popupWebView;
+				read_click_search = mWebView==wordPopup.popupWebView;
 				if(AutoBrowsePaused||(!PDICMainAppOptions.getAutoBrowsingReadSomething())){
 					postReadEntry();
 					CMN.Log("hey!!!", opt.getThenAutoReadContent());
@@ -8055,7 +7420,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CMN.debug("chromium shouldOverrideUrlLoading_???",url,view.getTag(), mWebView.fromCombined);
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
-			boolean fromPopup = view==popupWebView;
+			boolean fromPopup = view==wordPopup.popupWebView;
 			if(invoker.getIsWebx()) {
 				PlainWeb webx = (PlainWeb) invoker.bookImpl;
 				try {
@@ -8075,9 +7440,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 					if (fromPopup) {
-						popupHistory.add(++popupHistoryVagranter, new myCpr<>(currentClickDisplaying, new int[]{CCD_ID, currentClickDictionary_currentPos}));
-						if (popupHistory.size() > popupHistoryVagranter + 1) {
-							popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
+						wordPopup.popupHistory.add(++wordPopup.popupHistoryVagranter, new myCpr<>(wordPopup.currentClickDisplaying, new int[]{wordPopup.CCD_ID, wordPopup.currentClickDictionary_currentPos}));
+						if (wordPopup.popupHistory.size() > wordPopup.popupHistoryVagranter + 1) {
+							wordPopup.popupHistory.subList(wordPopup.popupHistoryVagranter + 1, wordPopup.popupHistory.size()).clear();
 						}
 					}
 				}
@@ -8251,10 +7616,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					try {
 						boolean popup = invoker.getPopEntry();
 						if(popup){
-							init_popup_view();
-							popupWebView.frameAt = mWebView.frameAt;
+							wordPopup.init_popup_view();
+							wordPopup.popupWebView.frameAt = mWebView.frameAt;
 							//popupWebView.SelfIdx = mWebView.SelfIdx;
-							mWebView = popupWebView;
+							mWebView = wordPopup.popupWebView;
 						}
 						mWebView.toTag = null;
 						int tagIdx = url.indexOf("#");
@@ -8265,7 +7630,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(url.endsWith("/")) url=url.substring(0, url.length()-1);
 						url = URLDecoder.decode(url, "UTF-8");
 						if(popup){
-							popupWord(url, popupWebView.presenter, mWebView.frameAt);
+							popupWord(url, wordPopup.popupWebView.presenter, mWebView.frameAt, mWebView);
 							return true;
 						}
 						else {
@@ -8311,12 +7676,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								mWebView.isloading = true;
 								StringBuilder htmlBuilder = invoker.AcquirePageBuilder();
 								if(fromPopup){
-									popupHistory.add(++popupHistoryVagranter, new myCpr<>(CCD.getLexicalEntryAt(idx), new int[]{CCD_ID, idx}));
-									if (popupHistory.size() > popupHistoryVagranter + 1) {
-										popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
+									wordPopup.popupHistory.add(++wordPopup.popupHistoryVagranter, new myCpr<>(wordPopup.CCD.getLexicalEntryAt(idx), new int[]{wordPopup.CCD_ID, idx}));
+									if (wordPopup.popupHistory.size() > wordPopup.popupHistoryVagranter + 1) {
+										wordPopup.popupHistory.subList(wordPopup.popupHistoryVagranter + 1, wordPopup.popupHistory.size()).clear();
 									}
 								}
-								invoker.AddPlodStructure(mWebView, htmlBuilder ,mWebView==popupWebView, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
+								invoker.AddPlodStructure(mWebView, htmlBuilder ,mWebView==wordPopup.popupWebView, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
 								invoker.LoadPagelet(mWebView, htmlBuilder, invoker.bookImpl.getRecordsAt(null, idx));
 								return true;
 							}
@@ -8335,9 +7700,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return true;
 			}
 			if(fromPopup){
-				popupHistory.add(++popupHistoryVagranter, new myCpr<>(currentClickDisplaying, new int[]{CCD_ID, currentClickDictionary_currentPos}));
-				if (popupHistory.size() > popupHistoryVagranter + 1) {
-					popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
+				wordPopup.popupHistory.add(++wordPopup.popupHistoryVagranter, new myCpr<>(wordPopup.currentClickDisplaying, new int[]{wordPopup.CCD_ID, wordPopup.currentClickDictionary_currentPos}));
+				if (wordPopup.popupHistory.size() > wordPopup.popupHistoryVagranter + 1) {
+					wordPopup.popupHistory.subList(wordPopup.popupHistoryVagranter + 1, wordPopup.popupHistory.size()).clear();
 				}
 			}
 			try {
@@ -9663,7 +9028,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 		ViewGroup svp = (ViewGroup) TTSController_.getParent();
 		if(svp!=targetRoot){
-			if(svp!=null) svp.removeView(popupGuarder);
+			if(svp!=null) svp.removeView(wordPopup.popupGuarder);
 			if(TTSController_moveToucher.FVDOCKED && TTSController_moveToucher.Maximized){
 				TTSController_moveToucher.Dedock();
 			}
@@ -9696,7 +9061,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case 999:
 				if(PDICMainAppOptions.getImmersiveClickSearch()!=PDICMainAppOptions.getImmersiveClickSearch(TFStamp))
-					popupWord(null,null, 0);
+					popupWord(null,null, 0, null);
 			break;
 		}
 	}
@@ -9878,10 +9243,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		WebViewmy wv;
 		String target;
 		
-		if(read_click_search && CCD!=EmptyBook) {
-			mCurrentDictionary = CCD;
-			target = currentClickDisplaying;
-			wv = popupWebView;
+		if(read_click_search && wordPopup.CCD!=EmptyBook) {
+			mCurrentDictionary = wordPopup.CCD;
+			target = wordPopup.currentClickDisplaying;
+			wv = wordPopup.popupWebView;
 		} else {
 			if(PeruseViewAttached()){
 				mCurrentDictionary = peruseView.currentDictionary;
@@ -9992,11 +9357,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		ViewGroup webholder = weblistHandler.webholder;
 		ViewGroup webSingleholder = this.webSingleholder;
 		int webholder_childCount = webholder.getChildCount();
-		if(popupContentView!=null) {
-			ViewGroup SVP = (ViewGroup) popupContentView.getParent();
+		if(wordPopup.popupContentView!=null) {
+			ViewGroup SVP = (ViewGroup) wordPopup.popupContentView.getParent();
 			//showT(popupContentView.getTranslationY()+" "+SVP.getHeight());
-			if (SVP!=null && popupContentView.getTranslationY()<mainF.getHeight()-popupToolbar.getHeight()) {
-				return popupWebView;
+			if (SVP!=null && wordPopup.popupContentView.getTranslationY()<mainF.getHeight()-wordPopup.popupToolbar.getHeight()) {
+				return wordPopup.popupWebView;
 			}
 		}
 		if (!isContentViewAttached()) {
@@ -10163,7 +9528,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		AttachPeruseView(refresh);
 	}
 	
-	abstract ArrayList<PlaceHolder> getLazyCC();
+	public abstract ArrayList<PlaceHolder> getLazyCC();
 	abstract ArrayList<PlaceHolder> getLazyCS();
 	abstract ArrayList<PlaceHolder> getLazyHC();
 
@@ -10567,7 +9932,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//	lv2.setVisibility(View.VISIBLE);
 		String key = cs.toString();
 		if(!key.equals(CombinedSearchTask_lastKey))
-			lianHeTask = new CombinedSearchTask(MainActivityUIBase.this).execute(key);
+			lianHeTask = (AsyncTaskWrapper) new CombinedSearchTask(MainActivityUIBase.this).execute(key);
 		else {
 			if(bIsFirstLaunch) {
 				/* 接管历史纪录 */
@@ -10868,17 +10233,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn) {
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
 			WebViewmy view = getCurrentWebContext(true);
-			if (view==popupWebView) {
-				if (popNav(true))
+			if (view==wordPopup.popupWebView) {
+				if (wordPopup.popNav(true))
 					return true;
 			} else if(view!=null && view.voyagable(true)) {
 				view.voyage(true);
 				return true;
 			}
 		}
-		if(popupContentView!=null) {
-			ViewGroup SVP = (ViewGroup) popupContentView.getParent();
-			if((!opt.getClickSearchPin() || SVP!=null && popupContentView.getTranslationY()<mainF.getHeight()-popupToolbar.getHeight()) && DetachClickTranslator()) {
+		if(wordPopup.popupContentView!=null) {
+			ViewGroup SVP = (ViewGroup) wordPopup.popupContentView.getParent();
+			if((!opt.getPinTapTranslator() || SVP!=null && wordPopup.popupContentView.getTranslationY()<mainF.getHeight()-wordPopup.popupToolbar.getHeight()) && DetachClickTranslator()) {
 				return true;
 			}
 		}
@@ -11153,6 +10518,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		String ret=null;
 		if(index>=0 && index<2)
 			ret = transVals[index];
-		return ret==null?"":ret;//"zh-CN";
+		return ret==null?"zh-CN":ret;//"zh-CN";
 	}
 }

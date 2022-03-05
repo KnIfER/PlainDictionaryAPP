@@ -114,6 +114,7 @@ import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
+import com.knziha.plod.searchtasks.AsyncTaskWrapper;
 import com.knziha.plod.searchtasks.BuildIndexTask;
 import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
@@ -146,8 +147,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -173,8 +172,6 @@ import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_S
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
 
 /**
  * 主程序 - 单实例<br/>
@@ -204,7 +201,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	public boolean bNeedReAddCon;
 	private MyHandler mHandle;
-	public AsyncTask<String, Integer, String> mAsyncTask;
+	public AsyncTaskWrapper<String, Integer, String> mAsyncTask;
 	public static ArrayList<PlaceHolder> CosyChair = new ArrayList<>();
 	public static ArrayList<PlaceHolder> CosySofa = new ArrayList<>();
 	public static ArrayList<PlaceHolder> HdnCmfrt = new ArrayList<>();
@@ -250,7 +247,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private boolean handled;
 	
 	@Override
-	ArrayList<PlaceHolder> getLazyCC() {
+	public ArrayList<PlaceHolder> getLazyCC() {
 		return CosyChair;
 	}
 
@@ -378,14 +375,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public void exitFFSearch() {
 		taskd=null;
 		if(mAsyncTask!=null)
-			mAsyncTask.cancel(true);
+			mAsyncTask.stop(true);
 		dvSeekbar = null;
 		dvProgressFrac = null;
 		dvResultN = null;
 		currentSearchLayer.IsInterrupted=true;
 	}
 
-	public void OnEnterFullSearchTask(AsyncTask task) {
+	public void OnEnterFullSearchTask(AsyncTaskWrapper task) {
 		taskCounter=md.size();
 		AdvancedSearchLogicLayer _currentSearchLayer = currentSearchLayer = fullSearchLayer;
 		_currentSearchLayer.dirtyProgressCounter=
@@ -394,9 +391,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
 			if(!_currentSearchLayer.IsInterrupted){
 				_currentSearchLayer.IsInterrupted=true;
-				task.cancel(false);
+				task.stop(false);
 			}else{
-				task.cancel(true);
+				task.stop(true);
 				((FullSearchTask)task).harvest(true);
 				mAsyncTask=null;
 				if(taskd!=null){
@@ -425,9 +422,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
 			if(!_currentSearchLayer.IsInterrupted){
 				_currentSearchLayer.IsInterrupted=true;
-				task.cancel(false);
+				task.stop(false);
 			}else{
-				task.cancel(true);
+				task.stop(true);
 				task.harvest(true);
 				mAsyncTask=null;
 				if(taskd!=null){
@@ -440,7 +437,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		CMN.stst = System.currentTimeMillis();
 	}
 
-	public void OnEnterFuzzySearchTask(AsyncTask task) {
+	public void OnEnterFuzzySearchTask(AsyncTaskWrapper task) {
 		taskCounter=md.size();
 		currentSearchLayer=fuzzySearchLayer;
 		fuzzySearchLayer.dirtyProgressCounter=
@@ -448,10 +445,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		fuzzySearchLayer.IsInterrupted=false;
 		ShowProgressDialog().findViewById(R.id.cancel).setOnClickListener(v13 -> {
 			if(!fuzzySearchLayer.IsInterrupted){
-				task.cancel(false);
+				task.stop(false);
 				fuzzySearchLayer.IsInterrupted=true;
 			}else{
-				task.cancel(true);
+				task.stop(true);
 				((FuzzySearchTask)task).harvest();
 				CMN.Log("强制关闭");
 			}
@@ -905,8 +902,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		LauncherInstanceCount=1;
 		Window win = getWindow();
 		
-		win.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
-//		setSoftInputMode(softModeResize);
+//		win.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+		setSoftInputMode(softModeResize);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		//if(Utils.littleCake) {
 		if(Build.VERSION.SDK_INT<=22) {
@@ -1544,7 +1541,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if(!checkDicts()) return true;
 					//模糊搜索 & 全文搜索
 					if(mAsyncTask!=null)
-						mAsyncTask.cancel(true);
+						mAsyncTask.stop(true);
 					imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 					(mAsyncTask=tmp==0?new FuzzySearchTask(PDICMainActivity.this)
 							:new FullSearchTask(PDICMainActivity.this)).execute(key);
@@ -2237,8 +2234,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	protected void launchVerbatimSearch(String input,final boolean isStrict) {
 		if(!checkDicts()) return;
 		if(lianHeTask!=null)
-			lianHeTask.cancel(false);
-		lianHeTask = new VerbatimSearchTask(this, isStrict).execute(input);
+			lianHeTask.stop(false);
+		lianHeTask = (AsyncTaskWrapper) new VerbatimSearchTask(this, isStrict).execute(input);
 	}
 
 	public void switchToSearchModeDelta(int i) {
@@ -2469,7 +2466,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							}
 						}
 						if(isPopupContentViewAttached(0)){
-							popupWebView.evaluateJavascript(val,null);
+							wordPopup.popupWebView.evaluateJavascript(val,null);
 						}
 					}
 				}
@@ -3086,9 +3083,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	private boolean isPopupContentViewAttached(int changeVis) {
-		boolean ret = popupContentView!=null && popupContentView.getParent()!=null;
+		boolean ret = wordPopup.popupContentView!=null && wordPopup.popupContentView.getParent()!=null;
 		if(ret && changeVis>0) {
-			popupContentView.setVisibility(changeVis==1?View.VISIBLE:View.GONE);
+			wordPopup.popupContentView.setVisibility(changeVis==1?View.VISIBLE:View.GONE);
 		}
 		return ret;
 	}
@@ -3518,7 +3515,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			/* 即点即译 */
 			case R.id.tapTranslator:{
 				if(isLongClicked){
-					popupWord(null, null, 0);
+					popupWord(null, null, 0, null);
 					closeMenu=ret=true;
 				} else {
 					boolean val=opt.toggleClickSearchEnabled();
@@ -3886,7 +3883,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(peruseView !=null){
 			peruseView.contentUIData.PageSlider.invalidateIBC();
 		}
-		if(PopupPageSlider!=null){
+		if(wordPopup.PopupPageSlider!=null){
 			contentUIData.PageSlider.invalidateIBC();
 		}
 	}

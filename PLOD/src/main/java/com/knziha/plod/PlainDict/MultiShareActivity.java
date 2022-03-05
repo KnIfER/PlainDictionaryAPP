@@ -304,7 +304,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 			}
 		}}
 	
-	protected int getVisibleHeight() {
+	public int getVisibleHeight() {
 		return root.getHeight();
 	}
 	
@@ -418,7 +418,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	void showChooseDictDialog(int reason) {
+	public void showChooseDictDialog(int reason) {
 	
 	}
 	
@@ -438,7 +438,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	ArrayList<PlaceHolder> getLazyCC() {
+	public ArrayList<PlaceHolder> getLazyCC() {
 		return CosyChair;
 	}
 	

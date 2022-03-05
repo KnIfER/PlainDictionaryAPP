@@ -65,6 +65,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DeflaterOutputStream;
@@ -87,16 +88,12 @@ import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
 import okhttp3.Cache;
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
-import okhttp3.Dns;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.TlsVersion;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -1373,7 +1370,7 @@ public class PlainWeb extends DictionaryAdapter {
 					.append(bookPresenter.MakeRCSP(opt)).append(";")
 					;
 			if(GlobalOptions.isDark) sb.append(DarkModeIncantation);
-			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.popupWebView)
+			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.wordPopup.popupWebView)
 				sb.append(MainActivityUIBase.ce_on);
 			if (style!=null || stylex!=null) {
 				CMN.Log("style::", style);
@@ -1839,7 +1836,7 @@ public class PlainWeb extends DictionaryAdapter {
 	 *
 	 * from mimicking others' results [multiple. ]
 	 * @return*/
-	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta) //多线程
+	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task) //多线程
 	{
 		if(takeWord(keyword)) {
 			if(treeBuilder !=null)

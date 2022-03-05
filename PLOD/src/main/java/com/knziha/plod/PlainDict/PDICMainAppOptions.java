@@ -1427,10 +1427,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	public static boolean getClickSearchPin() {
+	public static boolean getPinTapTranslator() {
 		return (ThirdFlag & 0x40l) == 0x40l;
 	}
-	public static boolean setClickSearchPin(boolean val) {
+	public static boolean setPinTapTranslator(boolean val) {
 		updateTFAt(0x40l,val);
 		return val;
 	}
@@ -2408,6 +2408,13 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=47, shift=1) public static boolean getMergePeruseBottombars() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=47, shift=1) public static void setMergePeruseBottombars(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	
+	@Metaline(flagPos=48, shift=1) public static boolean getTapSkipWebxUnlessIsDedicated() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=48, shift=1) public static void setTapSkipWebxUnlessIsDedicated(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=49, shift=1) public static boolean getTapTreatTranslatorAsDedicated() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=49, shift=1) public static void setTapTreatTranslatorAsDedicated(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF

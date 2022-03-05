@@ -102,19 +102,37 @@
 				<FrameLayout
 					android:id="@+id/mlp"
 					android:layout_height="match_parent"
-					android:layout_width="250dp"
+					android:layout_width="50dp"
 					>
-					<com.knziha.plod.widgets.ListViewmy
-						android:id="@+id/main_list"
-						android:layout_height="match_parent"
+					<HorizontalScrollView
 						android:layout_width="match_parent"
-						android:divider="#afafaf"
-						android:dividerHeight="1dp"
-						android:drawSelectorOnTop="true"
-						android:fastScrollEnabled="true"
-						android:paddingStart="0dp"
-						android:scrollbarSize="4dp"
-						/>
+						android:layout_height="match_parent">
+						<RelativeLayout
+							android:id="@+id/frameL"
+							android:layout_height="match_parent"
+							android:layout_width="250dp"
+							>
+<!--							<View-->
+<!--								android:id="@+id/frameR"-->
+<!--								android:layout_width="200dp"-->
+<!--								android:layout_height="1px"-->
+<!--								android:background="#00f"-->
+<!--								/>-->
+							<com.knziha.plod.widgets.ListViewmy
+								android:id="@+id/main_list"
+								android:layout_height="match_parent"
+								android:layout_width="250dp"
+								android:divider="#afafaf"
+								android:dividerHeight="1dp"
+								android:drawSelectorOnTop="true"
+								android:fastScrollEnabled="true"
+								android:paddingStart="0dp"
+								android:scrollbarSize="4dp"
+								android:fillViewport="true"
+								android:clipChildren="false"
+								/>
+						</RelativeLayout>
+					</HorizontalScrollView>
 				</FrameLayout>
 
 				<View

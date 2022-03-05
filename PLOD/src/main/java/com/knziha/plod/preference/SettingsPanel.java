@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -41,6 +42,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	
 	protected int lastShowType;
 	protected int bFadeout;
+	/**0=view;2=popup;3=dialog*/
 	protected int showType;
 	public int bottomPadding;
 	protected final PDICMainAppOptions opt;
@@ -56,6 +58,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	protected boolean hasDelegatePicker;
 	public PopupWindow pop;
 	public Dialog dialog;
+	protected DialogInterface.OnDismissListener dialogDismissListener;
 	protected int mPaddingLeft=10;
 	protected int mPaddingRight=10;
 	protected int mPaddingTop=0;
@@ -346,6 +349,12 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	}
 	
 	public boolean toggle(ViewGroup root, SettingsPanel parentToDismiss, int forceShowType) {
+		//CMN.Log("toggle!!!",!bIsShowing);
+		//try {
+		//	throw new RuntimeException();
+		//} catch (RuntimeException e) {
+		//	CMN.Log(e);
+		//}
 		if (settingsLayout==null && root!=null) {
 			init(root.getContext(), root);
 		}
@@ -358,9 +367,10 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 				ViewUtils.removeView(settingsLayout);
 				lastShowType=forceShowType;
 			}
-			if (lastShowType==1) {
+			//CMN.Log("forceShowType::", forceShowType);
+			if (forceShowType==1) {
 				showPop(root);
-			} else if(lastShowType==2) {
+			} else if(forceShowType==2) {
 				showDialog();
 			} else {
 				ViewUtils.addViewToParent(settingsLayout, root, mViewAttachIdx);
@@ -418,9 +428,13 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		ValueAnimator va = (ValueAnimator) animation;
 		if (va==null || va.getAnimatedFraction()==1) {
 			if (!bIsShowing) {
-				CMN.Log("dismiss!!!", lastShowType);
+				//CMN.Log("dismiss!!!", lastShowType);
 				if (lastShowType==1) { pop.dismiss(); }
-				if (lastShowType==2) { dialog.dismiss(); }
+				if (lastShowType==2) {
+					dialog.setOnDismissListener(null);
+					dialog.dismiss();
+					dialog.setOnDismissListener(dialogDismissListener);
+				}
 				else {
 					settingsLayout.setVisibility(View.GONE);
 					if (bShouldRemoveAfterDismiss) {
@@ -481,7 +495,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		}
 	}
 	
-	public boolean isVisible() {
+	public final boolean isVisible() {
 		return bIsShowing;
 	}
 	

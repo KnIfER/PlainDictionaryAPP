@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -1240,8 +1241,8 @@ public class PlainDSL extends DictionaryAdapter {
 	}
 	
 	@Override
-	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta) {
-		return keyIndex.lookUpRange(keyword, rangReceiver, treeBuilder, SelfAtIdx, theta);
+	public int lookUpRange(String keyword, ArrayList<myCpr<String, Long>> rangReceiver, RBTree_additive treeBuilder, long SelfAtIdx, int theta, AtomicBoolean task) {
+		return keyIndex.lookUpRange(keyword, rangReceiver, treeBuilder, SelfAtIdx, theta, task);
 		// todo std lookUpRange
 	}
 	

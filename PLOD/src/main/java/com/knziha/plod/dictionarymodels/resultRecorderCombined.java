@@ -22,6 +22,7 @@ import com.knziha.rbtree.additiveMyCpr1;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Recorder rendering search results as : LinearLayout {WebView, WebView, ... }  */
 public class resultRecorderCombined extends resultRecorderDiscrete {
@@ -41,10 +42,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		this.searchKey = searchKey;
 	}
 	
-	public boolean FindFirstIdx(String key, AsyncTask task) {
+	public boolean FindFirstIdx(String key, AtomicBoolean task) {
 		int cc=0;
 		for (int i = 0; i < data.size(); i++) {
-			if(cc++>350) { if(task.isCancelled()) return false; cc=0; }
+			if(cc++>350) { if(!task.get()) return false; cc=0; }
 			if(data.get(i).key.regionMatches(true, 0, key, 0, key.length())) {
 				firstItemIdx = i;
 				break;
@@ -152,16 +153,18 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 		}
 		
-		if(jointResult.realmCount==1 && PDICMainAppOptions.getLv2JointOneAsSingle()) {
-			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl);
-			a.ensureContentVis(weblistHandler.contentUIData.webSingleholder, weblistHandler.contentUIData.WHP);
-		} else {
-			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);
-			a.ensureContentVis(weblistHandler, weblistHandler.contentUIData.webSingleholder);
+		if (!weblistHandler.bDataOnly) {
+			if(jointResult.realmCount==1 && PDICMainAppOptions.getLv2JointOneAsSingle()) {
+				weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl);
+				a.ensureContentVis(weblistHandler.contentUIData.webSingleholder, weblistHandler.contentUIData.WHP);
+			} else {
+				weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);
+				a.ensureContentVis(weblistHandler, weblistHandler.contentUIData.webSingleholder);
+			}
+			weblistHandler.contentUIData.webSingleholder.setVisibility(View.VISIBLE);
+			weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowInPopup, bUseMergedUrl);
 		}
-		weblistHandler.contentUIData.webSingleholder.setVisibility(View.VISIBLE);
 		
-		weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowInPopup, bUseMergedUrl);
 		
 		if(!bUseMergedUrl) {
 //			a.showT("未更新？"+CMN.Log(weblistHandler.jointResult==jointResult, weblistHandler.getChildCount()==weblistHandler.frames.size()

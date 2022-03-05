@@ -37,7 +37,7 @@ public class PopupMoveToucher implements View.OnTouchListener {
 	public PopupMoveToucher(MainActivityUIBase a, View _textView){
 		this.a = a;
 		_50_ = a.getResources().getDimension(R.dimen._50_)*a.dm.density;
-		popupGuarder=a.popupGuarder;
+		popupGuarder=a.wordPopup.popupGuarder;
 		textView=_textView;
 		topgesture=new GestureDetector(a.getBaseContext(), new GestureDetector.SimpleOnGestureListener(){
 			@Override
@@ -94,7 +94,8 @@ public class PopupMoveToucher implements View.OnTouchListener {
 
 	@Override
 	public boolean onTouch(View v, MotionEvent e) {
-		if(v==textView)
+		boolean b1=v==textView && PDICMainAppOptions.getDoubleClickMaximizeClickSearch();
+		if(b1)
 			topgesture.onTouchEvent(e);
 		ViewGroup popupContentView = (ViewGroup) popupGuarder.popupToGuard;
 		if(popupContentView==null) return false;
@@ -103,7 +104,7 @@ public class PopupMoveToucher implements View.OnTouchListener {
 			DedockTheta=0;
 		}
 		ViewGroup.MarginLayoutParams lpmy = (ViewGroup.MarginLayoutParams) popupContentView.getLayoutParams();
-		switch(e.getAction()){
+		switch(e.getActionMasked()){
 			case MotionEvent.ACTION_DOWN:{
 				//CMN.Log("DOWN");
 				lastX = e.getRawX();
@@ -129,23 +130,24 @@ public class PopupMoveToucher implements View.OnTouchListener {
 					DedockAcc += dy;
 					bProceed = true;
 				}
-				if (DedockAcc > DedockTheta) {
-					if (FVDOCKED)
+				if (Math.abs(DedockAcc) > DedockTheta) {
+					if (FVDOCKED) {
 						if (FVH_UNDOCKED != -1) {
 							lpmy.height = FVH_UNDOCKED;
 							popupContentView.setLayoutParams(lpmy);
 						}
+						FVDOCKED = false;
+					}
 					if(doubleTapDetected){
 						ruinedDoubleClick=true;
 					}
 					Maximized=false;
-					FVDOCKED = false;
 					//opt.setFVDocked(FVDOCKED = false);
 				}
 				if(bProceed)
 				if (!FVDOCKED && DedockTheta>0) {//未停靠
 					bProceed = false;
-					popupContentView.setTranslationY(Math.min(popupGuarder.getHeight()-popupGuarder.getResources().getDimension(R.dimen.halfpopheader), Math.max(popupContentView.getTranslationY() + dy, 0)));
+					popupContentView.setTranslationY(Math.min(popupGuarder.getHeight()-popupGuarder.getResources().getDimension(R.dimen.halfpopheader), Math.max(popupContentView.getTranslationY() + dy, PDICMainAppOptions.getTopSnapMaximizeClickSearch()?0:-popupContentView.getHeight()*2/3)));
 					DedockAcc = 0;
 					if(PDICMainAppOptions.getTopSnapMaximizeClickSearch())
 						if (!doubleTapDetected && popupContentView.getTranslationY() <= 1.45) {
@@ -191,7 +193,9 @@ public class PopupMoveToucher implements View.OnTouchListener {
 			} break;
 			default: break;
 		}
-		return v==textView?true:lastTY!=popupContentView.getTranslationY();
+		boolean ret = b1 ? true : lastTY != popupContentView.getTranslationY();
+		//if(e.getActionMasked()==MotionEvent.ACTION_UP)lastTY=popupContentView.getTranslationY();
+		return ret;
 	}
 	
 	private void onMaximised() {

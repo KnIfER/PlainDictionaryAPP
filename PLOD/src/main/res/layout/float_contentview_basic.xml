@@ -5,19 +5,19 @@
 	android:id="@+id/popup"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:fitsSystemWindows="true"
 	android:orientation="vertical"
 	android:background="@drawable/floatcontent"
-	android:layout_margin="10dp"
+	android:layout_marginTop="10dp"
+	android:layout_marginBottom="10dp"
+	android:layout_marginLeft="4dp"
+	android:layout_marginRight="4dp"
 	android:elevation="6dp">
 
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="45dp"
 		android:orientation="horizontal"
-		app:layout_scrollFlags="scroll|enterAlways"
 		>
-
 		<ImageView
 			android:id="@+id/popIvBack"
 			android:layout_width="50dp"
@@ -41,28 +41,64 @@
 			android:autoSizeMaxTextSize="25sp"
 			android:ellipsize="end"
 			android:maxLines="1"
-			/>
-		<android.widget.ImageView
-			android:id="@+id/popLstDict"
-			android:layout_width="45dp"
-			android:layout_height="match_parent"
-			android:src="@drawable/chevron_top22"
-			android:background="@drawable/surrtrip1"
-			/>
-		<android.widget.ImageView
-			android:id="@+id/popNxtDict"
-			android:layout_width="45dp"
-			android:layout_height="match_parent"
-			android:src="@drawable/chevron_bottom22"
-			android:background="@drawable/surrtrip1"
+			android:minWidth="45dp"
+			android:background="@drawable/listviewselector0"
 			/>
 		<com.knziha.plod.widgets.ActivatableImageView
 			android:id="@+id/popIvStar"
 			android:layout_width="45dp"
 			android:layout_height="match_parent"
 			android:src="@drawable/star_ic_grey"
-			android:background="@drawable/surrtrip1"
+			android:background="?attr/actionBarItemBackground"
 			app:src0="@drawable/star_ic_solid_framed"
+			android:layout_marginEnd="1px"
+			android:visibility="gone"
+			/>
+		<ImageView
+			android:id="@+id/peruse"
+			android:layout_width="45dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/ic_peruse_pan"
+			android:background="?attr/actionBarItemBackground"
+			android:tint="#8f8f8f"
+			android:padding="5dp"
+			android:layout_marginEnd="1px"
+			android:visibility="gone"
+			/>
+		<ImageView
+			android:id="@+id/gTrans"
+			android:layout_width="45dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/ic_g_translate_black_24dp"
+			android:background="?attr/actionBarItemBackground"
+			android:tint="#8f8f8f"
+			android:layout_marginEnd="1px"
+			/>
+		<ImageView
+			android:id="@+id/max"
+			android:layout_width="45dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/ic_fullscreen_black_24dp"
+			android:background="?attr/actionBarItemBackground"
+			android:tint="#8f8f8f"
+			android:layout_marginEnd="1px"
+			/>
+		<android.widget.ImageView
+			android:id="@+id/popLstDict"
+			android:layout_width="45dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/chevron_top22"
+			android:background="?attr/actionBarItemBackground"
+			android:layout_marginEnd="1px"
+			android:visibility="gone"
+
+			/>
+		<android.widget.ImageView
+			android:id="@+id/popNxtDict"
+			android:layout_width="45dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/chevron_bottom22"
+			android:background="?attr/actionBarItemBackground"
 			/>
 	</LinearLayout>
 
@@ -83,12 +119,27 @@
 			android:theme="@style/scroll"
 			android:fadingEdge="none"
 			android:overScrollMode="never"
-		/>
+			/>
 		<View
 			android:id="@+id/cover"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:visibility="gone"/>
+
+<!--		<ImageView-->
+<!--			android:id="@+id/popupDragdot"-->
+<!--			android:layout_width="55dp"-->
+<!--			android:layout_height="49dp"-->
+<!--			android:orientation="horizontal"-->
+<!--			android:background="@drawable/floathandle"-->
+<!--			android:layout_gravity="right|bottom"-->
+<!--			android:layout_marginTop="3dp"-->
+<!--			android:layout_marginBottom="5dp"-->
+<!--			android:layout_marginRight="3dp"-->
+<!--			android:elevation="1dp"-->
+<!--			android:src="@drawable/move"-->
+<!--			android:alpha=".8"-->
+<!--			/>-->
 	</com.knziha.plod.widgets.RLContainerSlider>
 
 	<LinearLayout
@@ -98,7 +149,6 @@
 			android:layout_height="30dp"
 			android:layout_gravity="bottom"
 			android:background="@drawable/floatcontent_bottom"
-			app:layout_behavior="com.knziha.plod.widgets.BottomNavigationBehavior"
 			>
 			<com.knziha.filepicker.widget.CircleCheckBox
 				android:id="@+id/popChecker"
@@ -123,48 +173,57 @@
 				tools:text="嘿你个小可爱"
 				/>
 
-			<ImageView
-				android:id="@+id/popLstE"
-				android:layout_width="30dp"
-				android:layout_height="30dp"
-				android:src="@drawable/chevron_bottom2"
-				android:tint="#666"
-				/>
-			<ImageView
-				android:id="@+id/popNxtE"
-				android:layout_width="30dp"
-				android:layout_height="30dp"
-				android:src="@drawable/chevron_top2"
-				android:tint="#666"
-				/>
 
-			<ImageView
-				android:id="@+id/popIvSettings"
-				android:layout_width="30dp"
-				android:layout_height="30dp"
-				android:padding="4dp"
-				android:src="@drawable/drawer_menu_icon_setting"
-				android:layout_marginRight="5dp"
-				/>
+		<ImageView
+			android:id="@+id/mode"
+			android:layout_width="30dp"
+			android:layout_height="30dp"
+			android:src="@drawable/ic_btn_multimode"
+			android:tint="#666"
+			/>
 
-			<ImageView
-				android:id="@+id/popIvRecess"
-				android:layout_width="30dp"
-				android:layout_height="30dp"
-				android:padding="5dp"
-				android:src="@drawable/recess"
-				android:tint="#666"
-				/>
+		<ImageView
+			android:id="@+id/popLstE"
+			android:layout_width="30dp"
+			android:layout_height="30dp"
+			android:src="@drawable/chevron_bottom2"
+			android:tint="#666"
+			/>
+		<ImageView
+			android:id="@+id/popNxtE"
+			android:layout_width="30dp"
+			android:layout_height="30dp"
+			android:src="@drawable/chevron_top2"
+			android:tint="#666"
+			/>
+
+		<ImageView
+			android:id="@+id/popIvSettings"
+			android:layout_width="30dp"
+			android:layout_height="30dp"
+			android:padding="4dp"
+			android:src="@drawable/drawer_menu_icon_setting"
+			android:layout_marginRight="5dp"
+			/>
+
+		<ImageView
+			android:id="@+id/popIvRecess"
+			android:layout_width="30dp"
+			android:layout_height="30dp"
+			android:padding="5dp"
+			android:src="@drawable/recess"
+			android:tint="#666"
+			/>
 
 
-			<ImageView
-				android:id="@+id/popIvForward"
-				android:layout_width="30dp"
-				android:layout_height="30dp"
-				android:padding="5dp"
-				android:src="@drawable/forward"
-				android:tint="#666"
-				/>
+		<ImageView
+			android:id="@+id/popIvForward"
+			android:layout_width="30dp"
+			android:layout_height="30dp"
+			android:padding="5dp"
+			android:src="@drawable/forward"
+			android:tint="#666"
+			/>
 
 		</LinearLayout>
 </LinearLayout>
