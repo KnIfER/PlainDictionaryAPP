@@ -191,15 +191,15 @@
       value: function waitForIframes(ctx, done) {
         var _this2 = this;
 
-        var eachCalled = 0;
+        var eachCalled = ctx.querySelectorAll('iframe').length;
+
         this.forEachIframe(ctx, function () {
           return true;
         }, function (ifr) {
-          eachCalled++;
-
           _this2.waitForIframes(ifr.querySelector('html'), function () {
-            if (! --eachCalled) {
+            if (--eachCalled<=0 && done) {
               done();
+              done=0;
             }
           });
         }, function (handled) {
@@ -229,10 +229,12 @@
           checkEnd();
         }
 
+        //console.log('forEachIframe=', ifr);
         ifr.forEach(function (ifr) {
           if (DOMIterator.matches(ifr, _this3.exclude)) {
             checkEnd();
           } else {
+            //console.log('forEachIframe, ifr=', ifr);
             _this3.onIframeReady(ifr, function (con) {
               if (filter(ifr)) {
                 handled++;
@@ -252,7 +254,7 @@
     }, {
       key: "createInstanceOnIframe",
       value: function createInstanceOnIframe(contents) {
-        return new DOMIterator(contents.querySelector('html'), this.iframes);
+        return new DOMIterator(contents.querySelector('html'), this.iframes, this.exclude, this.iframesTimeout);
       }
     }, {
       key: "compareNodeIframe",
@@ -329,12 +331,10 @@
     }, {
       key: "handleOpenIframes",
       value: function handleOpenIframes(ifr, whatToShow, eCb, fCb) {
-        var _this4 = this;
-
         ifr.forEach(function (ifrDict) {
           if (!ifrDict.handled) {
-            _this4.getIframeContents(ifrDict.val, function (con) {
-              _this4.createInstanceOnIframe(con).forEachNode(whatToShow, eCb, fCb);
+            this.getIframeContents(ifrDict.val, function (con) {
+              this.createInstanceOnIframe(con).forEachNode(whatToShow, eCb, fCb);
             });
           }
         });
@@ -342,9 +342,10 @@
     }, {
       key: "iterateThroughNodes",
       value: function iterateThroughNodes(whatToShow, ctx, eachCb, filterCb, doneCb) {
+        //console.log('iterateThroughNodes, whatToShow=', whatToShow, 'ctx=', ctx);
         var _this5 = this;
 
-        var itr = this.createIterator(ctx, whatToShow, filterCb);
+        var itr = _this5.createIterator(ctx, whatToShow, filterCb);
 
         var ifr = [],
             elements = [],
@@ -359,8 +360,8 @@
         };
 
         while (retrieveNodes()) {
-          if (this.iframes) {
-            this.forEachIframe(ctx, function (currIfr) {
+          if (_this5.iframes) {
+            _this5.forEachIframe(ctx, function (currIfr) {
               return _this5.checkIframeFilter(node, prevNode, currIfr, ifr);
             }, function (con) {
               _this5.createInstanceOnIframe(con).forEachNode(whatToShow, function (ifrNode) {
@@ -376,8 +377,8 @@
           eachCb(node);
         });
 
-        if (this.iframes) {
-          this.handleOpenIframes(ifr, whatToShow, eachCb, filterCb);
+        if (_this5.iframes) {
+          _this5.handleOpenIframes(ifr, whatToShow, eachCb, filterCb);
         }
 
         doneCb();
@@ -388,7 +389,7 @@
         var _this6 = this;
 
         var done = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : function () {};
-        var contexts = this.getContexts();
+        var contexts = _this6.getContexts();
         var open = contexts.length;
 
         if (!open) {
@@ -404,9 +405,10 @@
             });
           };
 
-          if (_this6.iframes) {
+          if (_this6.iframes && _this6.iframesTimeout>0) {
             _this6.waitForIframes(ctx, ready);
           } else {
+            //console.log('nowait!!!');
             ready();
           }
         });

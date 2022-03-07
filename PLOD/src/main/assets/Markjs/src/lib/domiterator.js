@@ -312,6 +312,7 @@ class DOMIterator {
         }, checkEnd);
       }
     });
+    return ifr.length;
   }
 
   /**
@@ -566,6 +567,8 @@ class DOMIterator {
    * @see {@link http://tinyurl.com/zfqqkx2}
    * @type {number}
    */
+
+  //https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator/whatToShow
 }
 
 export default DOMIterator;
