@@ -20,6 +20,8 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
 		}};
 	private OnScrollChangedListener scrollViewListener = null;
     public boolean bScrollEnabled=true;
+	public boolean mIsFling;
+	public int oldY;
 	public BooleanSingleton touchFlag=new BooleanSingleton(true);
     
     public ScrollViewmy(Context context) {
@@ -38,16 +40,26 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
     public void setScrollViewListener(OnScrollChangedListener scrollViewListener) {
         this.scrollViewListener = scrollViewListener;
     }
-
-    @Override
+	
+	public OnScrollChangedListener getScrollViewListener() {
+		return scrollViewListener;
+	}
+	
+	@Override
     protected void onScrollChanged(int x, int y, int oldx, int oldy) {
         super.onScrollChanged(x, y, oldx, oldy);
         if (scrollViewListener != null) {
             scrollViewListener.onScrollChange(this, x, y, oldx, oldy);
         }
     }
-
-    @Override
+	
+	@Override
+	public void fling(int velocityY) {
+		super.fling(velocityY);
+		mIsFling = true;
+	}
+	
+	@Override
     public boolean onTouchEvent(MotionEvent ev) {
     	if(touchFlag!=null) touchFlag.first=true;
 		switch (ev.getAction()) {
@@ -74,6 +86,9 @@ public class ScrollViewmy extends ScrollView {// for mute it's scroll
 				if(scrollbar2guard!=null && !scrollbar2guard.isHidden()){
 					scrollbar2guard.isWebHeld=true;
 					scrollbar2guard.cancelFadeOut();
+				}
+				if(mIsFling) {
+					mIsFling = false;
 				}
 			} break;
 			case MotionEvent.ACTION_UP:{

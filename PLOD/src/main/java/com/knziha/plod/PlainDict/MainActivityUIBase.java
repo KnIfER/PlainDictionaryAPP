@@ -36,7 +36,6 @@ import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.net.Uri;
 import android.net.http.SslError;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -62,7 +61,6 @@ import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.ActionMode;
-import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -114,7 +112,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
-import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
@@ -1694,7 +1691,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			mWebView.setVerticalScrollBarEnabled(vsi);
 			if(vis==View.VISIBLE)
 				mBar.setDelimiter("", mWebView);
-		}else{
+		} else {
 			weblistHandler.setVerticalScrollBarEnabled(vsi);
 			if(vis==View.VISIBLE)
 				weblistHandler.initWebHolderScrollChanged();
@@ -1852,7 +1849,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(PeruseViewAttached()) {
 				peruseView.prepareProgressBar(mAutoReadProgressView);
 			} else {
-				contentviewAddView(mAutoReadProgressView, 0);
+				weblistHandler.contentviewAddView(mAutoReadProgressView, 0);//111
 			}
 			mAutoReadProgressAnimator.start();
 		}
@@ -2703,7 +2700,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	int etSearch_toolbarMode=0;
 	public OnScrollChangedListener onWebScrollChanged;
-	public OnScrollChangedListener onWebHolderScrollChanged;
 	public void initWebScrollChanged() {
 		if(onWebScrollChanged==null) {
 			onWebScrollChanged = (v, x, y, oldx, oldy) -> {
@@ -2934,12 +2930,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	protected int actionBarSize;
-
-	Toolbar MainPageSearchbar;
-	EditText MainPageSearchetSearch;
-	TextView MainPageSearchindicator;
-	String MainPageSearchetSearchStartWord;
-	boolean HiFiJumpRequested;
 	
 	@Override
 	protected ViewGroup onShowSnack(ViewGroup parentView) {
@@ -5531,19 +5521,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				speakPoolEndIndex = target - 1;
 				mPullReadTextRunnable.run();
 			} break;
-			//in page search navigation
-			case R.id.recess:
-			case R.id.forward:{
-				if(v.getTag()!=null){
-					return;
-				}
-				boolean next=id==R.id.recess;
-				//CMN.Log("下一个");
-				if(PDICMainAppOptions.getInPageSearchAutoHideKeyboard()){
-					imm.hideSoftInputFromWindow((PeruseSearchAttached()? peruseView.PerusePageSearchetSearch:MainPageSearchetSearch).getWindowToken(), 0);
-				}
-				jumpHighlight(next?1:-1, true);
-			} break;
 			/* 清零 */
 			case R.id.ivDeleteText:{
 				if(v.getTag()!=null){
@@ -6158,7 +6135,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if(which==0 || which==1) {
 									boolean bUseMergedUrl = which==1;
 									if(bUseMergedUrl!=weblistHandler.bMergingFrames) {
-										weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);
+										weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
 										weblistHandler.bMergeFrames = which;
 										weblistHandler.webHolderSwapHide = true;
 										// 旧版本切换新版本出现闪黑，
@@ -6279,22 +6256,28 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return menuDialog;
 	}
 	
-	public void showRandomShuffles() {
-		try {
-			getMdictServer();
-			if(randomPageHandler==null)
-				randomPageHandler = new WebViewListHandler(this, ContentviewBinding.inflate(getLayoutInflater()));
-			WebViewListHandler weblistHandler = randomPageHandler;
-			WebViewmy randomPage = weblistHandler.getMergedFrame();
+	public WebViewListHandler getRandomPageHandler(boolean initPopup) {
+		WebViewListHandler weblistHandler = randomPageHandler;
+		if(weblistHandler==null)
+			weblistHandler = randomPageHandler = new WebViewListHandler(this, ContentviewBinding.inflate(getLayoutInflater()));
+		if(initPopup) {
 			weblistHandler.setUpContentView(cbar_key);
 			weblistHandler.popupContentView(null, "随机页面");
-			
-			weblistHandler.setViewMode(WEB_VIEW_SINGLE, true);
+			weblistHandler.setViewMode(WEB_VIEW_SINGLE, true, null);
 			weblistHandler.initMergedFrame(true, true, false);
-			
+			WebViewmy randomPage = weblistHandler.getMergedFrame();
 			randomPage.isloading = true;
 			randomPage.active = true;
 			randomPage.jointResult = null;
+			randomPage.presenter = weblistHandler.mMergedBook;
+		}
+		return randomPageHandler;
+	}
+	
+	public void showRandomShuffles() {
+		try {
+			getMdictServer();
+			WebViewmy randomPage = getRandomPageHandler(true).getMergedFrame();
 			randomPage.presenter = new_book(defDicts[2], this);
 
 //			if(randomPage==null) {
@@ -6348,273 +6331,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //		});
 	}
 
-	void toggleInPageSearch(boolean isLongClicked) {
-		if(isLongClicked){
-			launchSettings(7, 0);
-		}
-		else {
-			if (MainPageSearchbar == null) {
-				Toolbar searchbar = (Toolbar) getLayoutInflater().inflate(R.layout.searchbar, null);
-				searchbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);//abc_ic_ab_back_mtrl_am_alpha
-				EditText etSearch = searchbar.findViewById(R.id.etSearch);
-				//etSearch.setBackgroundColor(Color.TRANSPARENT);
-				searchbar.setNavigationOnClickListener(v1 -> {
-					toggleInPageSearch(false);
-					if (etSearch.hasFocus())
-						imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
-					fadeSnack();
-				});
-				etSearch.setText(MainPageSearchetSearchStartWord);
-				etSearch.addTextChangedListener(new TextWatcher() {
-					@Override
-					public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-					}
-
-					@Override
-					public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-					}
-
-					@Override
-					public void afterTextChanged(Editable s) {
-						String text = etSearch.getText().toString().replace("\\", "\\\\");
-						HiFiJumpRequested=PDICMainAppOptions.getPageAutoScrollOnType();
-						SearchInPage(text);
-					}
-				});
-
-				View vTmp = searchbar.getChildAt(searchbar.getChildCount() - 1);
-				if (vTmp != null && vTmp.getClass() == AppCompatImageButton.class) {
-					AppCompatImageButton NavigationIcon = (AppCompatImageButton) vTmp;
-					ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) NavigationIcon.getLayoutParams();
-					//lp.setMargins(-10,-10,-10,-10);
-					lp.width = (int) (45 * dm.density);
-					NavigationIcon.setLayoutParams(lp);
-				}
-
-				searchbar.setContentInsetsAbsolute(0, 0);
-				searchbar.setLayoutParams(toolbar.getLayoutParams());
-				searchbar.setBackgroundColor(AppWhite==Color.WHITE?MainBackground:Color.BLACK);
-				searchbar.findViewById(R.id.ivDeleteText).setOnClickListener(v -> etSearch.setText(null));
-				View.OnDragListener searchbar_stl = (v, event) -> {
-					if(event.getAction()== DragEvent.ACTION_DROP){
-						ClipData textdata = event.getClipData();
-						if(textdata.getItemCount()>0){
-							if(textdata.getItemAt(0).getText()!=null)
-								etSearch.setText(textdata.getItemAt(0).getText());
-						}
-						return false;
-					}
-					return true;
-				};
-				this.MainPageSearchbar = searchbar;
-				this.MainPageSearchetSearch = etSearch;
-				this.MainPageSearchindicator = searchbar.findViewById(R.id.indicator);
-				View viewTmp=searchbar.findViewById(R.id.recess);
-				viewTmp.setOnDragListener(searchbar_stl);
-				viewTmp.setOnClickListener(this);
-				viewTmp=searchbar.findViewById(R.id.forward);
-				viewTmp.setOnDragListener(searchbar_stl);
-				viewTmp.setOnClickListener(this);
-			}
-			boolean b1=MainPageSearchbar.getParent()==null;
-			if (b1) {
-				contentviewAddView(MainPageSearchbar, 0);
-				MainPageSearchbar.findViewById(R.id.etSearch).requestFocus();
-				MainPageSearchbar.setTag(MainPageSearchetSearch.getText());
-				SearchInPage(null);
-			}
-			else {
-				((ViewGroup) MainPageSearchbar.getParent()).removeView(MainPageSearchbar);
-				clearLights();
-				MainPageSearchbar.setTag(null);
-			}
-
-			if(thisActType==ActType.PlainDict)
-				opt.setInPageSearchVisible(b1);
-			else{
-				PDICMainAppOptions.setInFloatPageSearchVisible(b1);
-			}
-		}
-	}
-
-	abstract void contentviewAddView(View v, int i);
-
-	void SearchInPage(String text) {
-		if(ActivedAdapter!=null){
-			if(text!=null)
-			try {
-				text=true?text:URLEncoder.encode(text,"utf8");
-			} catch (UnsupportedEncodingException ignored) { }
-			String val = text==null?"_highlight(null)":"_highlight(\""+ text.replace("\"","\\\"")+"\")";
-			webviewHolder=ActivedAdapter.webviewHolder;
-			if(webviewHolder!=null){
-				int cc = webviewHolder.getChildCount();
-				for (int i = 0; i < cc; i++) {
-					if(webviewHolder.getChildAt(i) instanceof LinearLayout){
-						ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(i);
-						if(webHolder.getChildAt(1) instanceof WebView){
-							((WebView)webHolder.getChildAt(1))
-									.evaluateJavascript(val,null);
-						}
-					}
-				}
-			}
-//			if(popupContentView!=null && popupContentView.getParent()!=null){
-//				popupWebView.evaluateJavascript(val,null);
-//			}//111
-		}
-	}
-
-	Toolbar Searchbar;
 	ViewGroup webviewHolder;
-	int cc;
-	boolean inlineJump;
-	private WebView jumper;
+	Toolbar Searchbar;
+	
 
-	public void jumpHighlight(int d, boolean calcIndicator){
-		try {
-			cc=0;
-			inlineJump=true;
-			do_jumpHighlight(d, calcIndicator);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	/** 汉星照耀，汉水长流！ */
-	private void do_jumpHighlight(int d, boolean calcIndicator) {
-		//CMN.Log("jumpHighlight... dir="+d+" framePos="+ActivedAdapter.HlightIdx);
-		webviewHolder=ActivedAdapter.webviewHolder;
-		int max = webviewHolder.getChildCount();
-		fadeSnack();
-		boolean b1=ActivedAdapter.HlightIdx>=max,b2=ActivedAdapter.HlightIdx<0;
-		if(b1||b2) {
-			ActivedAdapter.AcrArivAcc++;
-			if(b1&&d==-1) {
-				ActivedAdapter.HlightIdx=max-1;
-				b1=false;
-			}
-			else if(b2&&d==1){
-				ActivedAdapter.HlightIdx=0;
-				b2=false;
-			}
-			if(ActivedAdapter.AcrArivAcc<=2){
-				//CMN.Log("do_jumpHighlight", PDICMainAppOptions.getInPageSearchShowNoNoMatch(), calcIndicator);
-				if(PDICMainAppOptions.getInPageSearchShowNoNoMatch() || calcIndicator) {
-					String msg = getResources().getString(R.string.search_end, d < 0 ? "⬆" : "", d > 0 ? "⬇" : "");
-					showTopSnack(null, msg, 0.75f, -1, Gravity.CENTER, 0);
-				}
-				return;
-			}else{
-				ActivedAdapter.AcrArivAcc=0;
-			}
-		}else{
-			ActivedAdapter.AcrArivAcc =0;
-		}
-		if(b1){
-			resetLights(d);
-			ActivedAdapter.HlightIdx=0;
-			if(d==-1){
-				evalJsAtFrame(max,"setAsEndLight("+d+");");
-			}
-		}
-		else if(b2){
-			resetLights(d);
-			ActivedAdapter.HlightIdx=max-1;
-			if(d==1){
-				if(ActivedAdapter.HlightIdx>=0) evalJsAtFrame(0,"setAsStartLight("+d+");");
-			}
-		}
-		if(ActivedAdapter.HlightIdx<0)ActivedAdapter.HlightIdx=0;
-		if(webviewHolder.getChildAt(ActivedAdapter.HlightIdx) instanceof LinearLayout){
-			ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(ActivedAdapter.HlightIdx);
-			View wv = webHolder.getChildAt(1);
-			if(wv instanceof WebView){
-				if(jumper!=null && jumper!=wv){
-					jumper.evaluateJavascript("quenchLight()",null);
-				}
-				jumper=(WebView) wv;
-				if(cc>0) inlineJump=false;
-				//CMN.Log("jumpHighlight_evaluating...", inlineJump);
-				jumper.evaluateJavascript(new StringBuilder(28).append("jumpTo(")
-						.append(d).append(',')//direction
-						.append(-1).append(',')//desired offset
-						.append(0).append(',')//frameAt
-						.append(0).append(',')//HlightIdx
-						.append(cc>0).append(',')//need reset
-						.append(0)//topOffset_frameAt
-						.append(");").toString(), new ValueCallback<String>() {
-					@Override
-					public void onReceiveValue(String value) {
-						//CMN.Log("jumpHighlight_delta_yield : ", value);
-						if(value!=null) {
-							int d = 0; boolean b1;
-							if(!(b1=value.startsWith("\"")))
-								d = IU.parsint(value, 0);
-							if (d != 0) {
-								ActivedAdapter.HlightIdx += d;
-								if (ActivedAdapter.HlightIdx < 0 || ActivedAdapter.HlightIdx >= max) {
-									ActivedAdapter.AcrArivAcc++;
-								}
-								do_jumpHighlight(d, calcIndicator);
-							}
-							else if(calcIndicator && b1 && ActivedAdapter.webviewHolder!=null) {
-								int all=0;
-								int preAll=IU.parsint(value.substring(1,value.length()-1),0);
-								if(preAll>=0) {
-									for (int i = 0; i < ActivedAdapter.webviewHolder.getChildCount(); i++) {
-										View v = ActivedAdapter.webviewHolder.getChildAt(i);
-										if (v != null) {
-											if (i == ActivedAdapter.HlightIdx)
-												preAll += all;
-											all += IU.parseInteger(v.getTag(R.id.numberpicker), 0);
-										}
-									}
-									(PeruseSearchAttached()? peruseView.PerusePageSearchindicator:MainPageSearchindicator).setText((preAll+1)+"/"+all);
-								}
-							}
-						}
-					}
-				});
-				cc++;
-			}
-		}
-	}
 
-	void resetLights(int d) {
-		if(webviewHolder!=null) {
-			int max = webviewHolder.getChildCount();
-			String exp = "resetLight(" + d + ")";
-			for (int index = 0; index < max; index++) {
-				if (webviewHolder.getChildAt(index) instanceof LinearLayout) {
-					ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(index);
-					if (webHolder.getChildAt(1) instanceof WebView) {
-						((WebView) webHolder.getChildAt(1))
-								.evaluateJavascript(exp, null);
-					}
-				}
-			}
-		}
-	}
-
-	private void clearLights(){
-		if(webviewHolder!=null){
-			int max=webviewHolder.getChildCount();
-			String exp="clearHighlights()";
-			for (int index = 0; index < max; index++) {
-				if(webviewHolder.getChildAt(index) instanceof LinearLayout){
-					ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(index);
-					if(webHolder.getChildAt(1) instanceof WebView){
-						((WebView)webHolder.getChildAt(1))
-								.evaluateJavascript(exp,null);
-					}
-				}
-			}
-		}
-	}
-
-	private void evalJsAtFrame(int index, String exp) {
+	void evalJsAtFrame(int index, String exp) {
 		if(webviewHolder!=null && webviewHolder.getChildAt(index) instanceof LinearLayout){
 			ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(index);
 			if(webHolder.getChildAt(1) instanceof WebView){
@@ -6664,103 +6386,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 	}
 
-	public void scrollHighlight(int o, int d) {
-		//CMN.Log("scrollHighlight",o,d,inlineJump);
-		if(webviewHolder!=null && webviewHolder.getChildAt(ActivedAdapter.HlightIdx) instanceof LinearLayout){
-			ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(ActivedAdapter.HlightIdx);
-			View wv = webHolder.getChildAt(1);
-			if(wv instanceof WebView){
-				int pad=(int) (25*dm.density);
-				if(ActivedAdapter.webviewHolder==weblistHandler){
-					//CMN.Log("???");
-					weblistHandler.WHP.performLongClick();
-					weblistHandler.WHP.onTouchEvent(MotionEvent.obtain( 1000,/*小*/
-							1000,/*样，*/
-							MotionEvent.ACTION_UP,/*我还*/
-							0,/*治*/
-							0,/*不了*/
-							0));/*你？*/
-					if(o==-1){
-						if(d==-1 || inlineJump) {
-							return;
-						}
-					}
-					o=(int)(o*dm.density);
-					o+=webHolder.getTop()+wv.getTop();
-					//CMN.Log("??????", o);
-					if(o<=weblistHandler.WHP.getScrollY() || o+pad>=weblistHandler.WHP.getScrollY()+weblistHandler.WHP.getHeight()){
-						//CMN.Log("do_scrollHighlight",o,d,o-pad);
-						weblistHandler.WHP.smoothScrollTo(0, o-pad);
-					}
-				}
-				else{
-					if(o==-1){
-						if(d==-1 || inlineJump) {
-							return;
-						}
-					}
-					o=(int)(o*dm.density);
-					if(o<=wv.getScrollY() || o+pad>=wv.getScrollY()+wv.getHeight()){
-						int finalO=o-pad;
-						//CMN.Log("scrolling !!!", finalO, wv.getScrollY(), wv.getScrollY()+wv.getHeight());
-						wv.post(() -> {
-							//CMN.Log("do scrolling !!!");
-							MainActivityUIBase.layoutScrollDisabled=false;
-							wv.scrollTo(0, finalO);
-							wv.requestLayout();
-							NaugtyWeb=(WebViewmy) wv;
-							if(hdl!=null)
-								hdl.sendEmptyMessage(778899);
-						});
-					}
-				}
-			}
-		}
-	}
-
-	public String getCurrentPageKey() {
-		if (MainPageSearchbar!=null && MainPageSearchbar.getParent()!=null) {
-			return ViewUtils.getTextInView(MainPageSearchetSearch);
-		}
-		return null;
-		//URLEncoder.encode(key, "utf8");
-	}
-
 	public boolean hasCurrentPageKey() {
-		if (MainPageSearchbar!=null && MainPageSearchbar.getParent()!=null) {
-			Editable psk = MainPageSearchetSearch.getText();
-			return psk!=null && psk.toString().trim().length()>0;
-		}
+//		if (MainPageSearchbar!=null && MainPageSearchbar.getParent()!=null) {
+//			Editable psk = MainPageSearchetSearch.getText();
+//			return psk!=null && psk.toString().trim().length()>0;
+//		}
 		return false;
 	}
 
-	public void onHighlightReady(int idx, int number) {
-		ViewGroup vg = ActivedAdapter.webviewHolder;
-		View v = vg.getChildAt(idx);
-		if(v!=null){
-			v.setTag(R.id.numberpicker, number);
-		}
-		int all=0;
-		for (int i = 0; i < vg.getChildCount(); i++) {
-			all+=IU.parseInteger(vg.getChildAt(i).getTag(R.id.numberpicker),0);
-		}
-		String finalAll = all==0?"":""+all;
-		MainPageSearchindicator.post(() -> MainPageSearchindicator.setText(finalAll));
-		if (v != null && HiFiJumpRequested && idx == 0) {
-			jumpNaughtyFirstHighlight(v.findViewById(R.id.webviewmy));
-			HiFiJumpRequested = false;
-		}
-	}
-
 	public void prepareInPageSearch(String key, boolean bNeedBringUp) {
-		if(MainPageSearchetSearch==null){
-			MainPageSearchetSearchStartWord=key;
+		if(weblistHandler.MainPageSearchetSearch==null){
+			weblistHandler.MainPageSearchetSearchStartWord=key;
 		}else{
-			MainPageSearchetSearch.setText(key);
-			bNeedBringUp=bNeedBringUp&&MainPageSearchbar.getParent()==null;
+			weblistHandler.MainPageSearchetSearch.setText(key);
+			bNeedBringUp=bNeedBringUp&&weblistHandler.MainPageSearchbar.getParent()==null;
 		}
 		if(bNeedBringUp){
-			toggleInPageSearch(false);
+			weblistHandler.toggleInPageSearch(false);
 		}
 	}
 
@@ -7004,7 +6646,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			window.getDecorView().setPadding(0,0,0,0);
 			if(view!=null) d.setContentView(cv=view);
 		}
-
+		
+		@Override
+		public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
+			CMN.Log("onCreateWindow::");
+			WebViewListHandler weblistHandler = getRandomPageHandler(true);
+			WebViewmy randomPage = getRandomPageHandler(true).getMergedFrame();
+			randomPage.presenter = ((WebViewmy)view).presenter;
+			//((WebView.WebViewTransport)resultMsg.obj).setWebView(randomPage);
+			//resultMsg.sendToTarget(); New WebView for popup window must not have been  previously navigated. fuck.
+			// https://stackoverflow.com/questions/9654529/handle-url-from-oncreatewindow-webview
+			Message href = view.getHandler().obtainMessage();
+			view.requestFocusNodeHref(href);
+			String url = href.getData().getString("url");
+			try {
+				href.recycle(); // This message cannot be recycled because it is still in use. fuck.
+			} catch (Exception e) { }
+			randomPage.loadUrl(url);
+			return true;
+		}
+		
 		@Override
 		public void onHideCustomView() {
 			bShowCustomView = false;
@@ -7124,22 +6785,29 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WebViewClient myWebClient = new WebViewClient() {
 		public void onPageFinished(WebView view, String url) {
 			WebViewmy mWebView = (WebViewmy) view;
+			CMN.Log("onPageFinished::"+mWebView.bPageStarted);
 			if (mWebView.bPageStarted) {
 				mWebView.bPageStarted = false;
 			} else {
 				return;
 			}
-			if("about:blank".equals(url) || !mWebView.active&&!mWebView.fromNet) {
+			if("about:blank".equals(url)/* || !mWebView.active&&!mWebView.fromNet*/) {
 				return;
 			}
 			CMN.Log("chromium page finished ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
 			if(!mWebView.isloading && !mWebView.fromNet) return;
 			
+			
 			if(ViewUtils.littleCat)
 			try {
+				mWebView.evaluateJavascript("window.debug=function(e){console.log('fatal web d::', e)};", null);
 				mWebView.evaluateJavascript(ViewUtils.fileToString(MainActivityUIBase.this, new File("/ASSET/MdbR/KitPatch.js")), null);
 			} catch (Exception e) {
 				CMN.Log(e);
+			}
+			
+			if(!ViewUtils.littleCat && true){
+				mWebView.evaluateJavascript("window.debug=function(...e){console.log('fatal web d::', e)};", null);
 			}
 			
 			int from = mWebView.fromCombined;
@@ -7207,6 +6875,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 
 				if(toTag!=null){
+					//CMN.Log("toTag::", toTag);
 					mWebView.toTag=null;
 					if(!toTag.equals("===???")) {
 						proceed=false;
@@ -7214,7 +6883,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(fromCombined){
 							weblistHandler.WHP.touchFlag.first=true;
 								if (toTag.equals("===000")) {
-									//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + WHP.getChildAt(0).getHeight());
+									//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + weblistHandler.WHP.getChildAt(0).getHeight());
 									weblistHandler.WHP.post(() -> {
 										weblistHandler.WHP.smoothScrollTo(0, invoker.rl.getTop());
 									});
@@ -7235,9 +6904,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				
-				CMN.debug("expectedPos::", mWebView.expectedPos, mWebView.getScrollY());
 				boolean toHighLight = PDICMainAppOptions.getPageAutoScrollOnTurnPage() && view.getTag(R.id.toolbar_action5) != null;
-
+				
+				CMN.debug("expectedPos::", mWebView.expectedPos, mWebView.getScrollY(), "toHighLight="+toHighLight);
+				
 				if(proceed) {
 					if (!fromCombined) {
 						lastClickTime = System.currentTimeMillis();
@@ -7265,6 +6935,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							recCom.LHGEIGHT=0;
 							recCom.scrolled=false;
 							ViewUtils.addOnLayoutChangeListener(weblistHandler.webholder, weblistHandler.OLCL);
+							// 111  crash  weblistHandler.OLCL==null
 							weblistHandler.OLCL.onLayoutChange(weblistHandler.webholder,0, weblistHandler.webholder.getTop(),0,weblistHandler.webholder.getBottom(),0,0,0,0);
 							//});
 						}
@@ -7339,7 +7010,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			
 			if (opt.getClickSearchEnabled() && !invoker.getImageOnly()) {
-				mWebView.evaluateJavascript(BookPresenter.tapTranslateLoader, null);
+				CMN.Log("popuping...加载");
+				//mWebView.evaluateJavascript(BookPresenter.tapTranslateLoader, null);
+				try {
+					mWebView.evaluateJavascript(ViewUtils.fileToString(MainActivityUIBase.this, new File("/ASSET2/" + "tapTrans.js")), null);
+				} catch (Exception e) { CMN.Log(e);}
 			}
 			
 			/* 延迟加载 */
@@ -7372,6 +7047,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			WebViewmy mWebView = (WebViewmy) view;
+			//CMN.Log("onPageStarted::"+mWebView.wvclient);
 			if(mWebView.wvclient!=null) {
 				mWebView.bPageStarted=true;
 				final BookPresenter invoker = mWebView.presenter;
@@ -7410,7 +7086,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public void onLoadResource(WebView view, String url) {
 
 		}
-
+		
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 			WebViewmy mWebView = (WebViewmy) view;
@@ -7738,7 +7414,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
+			//CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 			
@@ -7837,7 +7513,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						CMN.debug(url,"\n",e);
 					}
 				}
-				return null;
+				//return null;
 			}
 			
 			if(url.startsWith("http://mdbr.com/load.html")) {
@@ -8586,8 +8262,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return;
 			if(!"true".equals(value)){
 				do_jumpNaughtyFirstHighlight(mWebView);
-			}else{
-				jumpHighlight(1, false);
+			} else {
+				weblistHandler.jumpHighlight(1, false);
 			}
 		});
 		do_jumpNaughtyFirstHighlight(mWebView);
@@ -8610,7 +8286,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			lp1.gravity=Gravity.TOP|Gravity.END;
 			widget13.setLayoutParams(lp);
 			widget14.setLayoutParams(lp1);
-		}else {
+		} else {
 			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) widget13.getLayoutParams();
 			//if((lp.gravity&Gravity.BOTTOM) != 0 ) return;
 			lp.gravity=Gravity.BOTTOM|Gravity.END;
@@ -9819,6 +9495,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public InputStream loadCommonAsset(String key) throws IOException {
+		if(MdictServerMobile.hasRemoteDebugServer) {
+			try {
+				InputStream input = ViewUtils.fileToStream(this, new File("/ASSET2/" + key));
+				if(input!=null) return input;
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
+		}
 		byte[] data = CommonAssets.get(key);
 		if(data==null){
 			InputStream input = getResources().getAssets().open(key);
@@ -10233,7 +9917,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn) {
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
 			WebViewmy view = getCurrentWebContext(true);
-			if (view==wordPopup.popupWebView) {
+			if (view==wordPopup.popupWebView) { //111 null
 				if (wordPopup.popNav(true))
 					return true;
 			} else if(view!=null && view.voyagable(true)) {

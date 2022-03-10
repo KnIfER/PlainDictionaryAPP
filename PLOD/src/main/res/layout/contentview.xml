@@ -1,4 +1,4 @@
-<layout>
+<layout xmlns:tools="http://schemas.android.com/tools">
 <com.knziha.plod.widgets.SplitView xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:splitview="http://schemas.android.com/apk/res-auto"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -23,14 +23,14 @@
 				android:id="@+id/webSingleholder"
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
-				android:background="#C7EDCC"
+				tools:background="#C7EDCC"
 				/>
 			<com.knziha.plod.widgets.AdvancedNestScrollView
 				android:id="@+id/WHP"
 				android:layout_height="match_parent"
 				android:layout_width="match_parent"
 				android:focusable="true"
-				android:background="#C7EDCC"
+				tools:background="#C7EDCC"
 				>
 				<LinearLayout
 					android:id="@+id/webholder"
@@ -48,17 +48,6 @@
 				android:background="@drawable/shixian2"
 				/>
 
-			<com.knziha.plod.widgets.DragScrollBar
-				android:id="@+id/dragScrollBar"
-				android:layout_width="@dimen/scrollBarWidth"
-				android:layout_height="match_parent"
-				android:layout_marginTop="35dp"
-				android:layout_marginBottom="5dp"
-				android:layout_marginRight="4dp"
-				android:layout_marginLeft="4dp"
-				android:layout_gravity="right"
-				/>
-
 			<ProgressBar
 				android:id="@+id/main_progress_bar"
 				android:layout_width="wrap_content"
@@ -74,8 +63,10 @@
 				android:layout_height="wrap_content"
 				android:orientation="vertical"
 				android:layout_gravity="bottom|right"
-				android:layout_marginBottom="19dp"
-				android:layout_marginRight="25dp"
+				android:layout_marginBottom="40dp"
+				android:layout_marginRight="39dp"
+				android:divider="@drawable/divider3"
+				android:showDividers="middle"
 				>
 				<android.widget.ImageView
 					android:id="@+id/browser_widget14"
@@ -84,7 +75,7 @@
 					android:background="@drawable/item_selector_circle"
 					android:src="@drawable/chevron_up1"
 					android:clickable="true"
-					android:layout_marginBottom="10dp"
+					android:visibility="gone"
 					/>
 				<android.widget.ImageView
 					android:id="@+id/browser_widget13"
@@ -95,6 +86,138 @@
 					android:clickable="true"
 					/>
 			</LinearLayout>
+
+			<HorizontalScrollView
+				android:layout_width="wrap_content"
+				android:layout_height="58dp"
+				android:layout_gravity="bottom|center"
+				android:layout_marginBottom="40dp"
+				android:visibility="gone"
+				>
+				<LinearLayout
+					android:id="@+id/navHorBtns"
+					android:layout_width="wrap_content"
+					android:layout_height="match_parent"
+					android:orientation="horizontal"
+					android:divider="@drawable/divider2"
+					android:showDividers="middle"
+					android:paddingStart="58dp"
+					android:paddingEnd="58dp"
+					>
+					<android.widget.ImageView
+						android:layout_width= "58dp"
+						android:layout_height="match_parent"
+						android:background="@drawable/item_selector_circle1"
+						android:src="@drawable/chevron_recess"
+						android:clickable="true"
+						android:tint="#2196f3"
+						/>
+					<android.widget.ImageView
+						android:layout_width= "58dp"
+						android:layout_height="match_parent"
+						android:background="@drawable/item_selector_circle1"
+						android:src="@drawable/chevron_forward"
+						android:clickable="true"
+						android:tint="#2196f3"
+						/>
+					<android.widget.ImageView
+						android:layout_width= "58dp"
+						android:layout_height="match_parent"
+						android:background="@drawable/item_selector_circle1"
+						android:src="@drawable/chevron_up1"
+						android:clickable="true"
+						android:tint="#2196f3"
+						/>
+					<android.widget.ImageView
+						android:layout_width= "58dp"
+						android:layout_height="match_parent"
+						android:background="@drawable/item_selector_circle1"
+						android:src="@drawable/chevron_btm1"
+						android:clickable="true"
+						android:tint="#2196f3"
+						/>
+					<android.widget.ImageView
+						android:layout_width= "58dp"
+						android:layout_height="match_parent"
+						android:background="@drawable/item_selector_circle1"
+						android:src="@drawable/chevron_up_1"
+						android:clickable="true"
+						android:tint="#2196f3"
+						/>
+					<android.widget.ImageView
+						android:layout_width= "58dp"
+						android:layout_height="match_parent"
+						android:background="@drawable/item_selector_circle1"
+						android:src="@drawable/chevron_down"
+						android:clickable="true"
+						android:tint="#2196f3"
+						/>
+					<android.widget.ImageView
+						android:layout_width= "58dp"
+						android:layout_height="match_parent"
+						android:background="@drawable/item_selector_circle1"
+						android:clickable="true"
+						android:src="@drawable/undo_toolbar"
+						android:padding="15dp"
+						android:tint="#2196f3"
+						/>
+					<android.widget.ImageView
+						android:layout_width= "58dp"
+						android:layout_height="match_parent"
+						android:background="@drawable/item_selector_circle1"
+						android:clickable="true"
+						android:src="@drawable/tools_toolbar"
+						android:padding="15dp"
+						android:tint="#2196f3"
+						/>
+					<android.widget.ImageView
+						android:layout_width= "58dp"
+						android:layout_height="match_parent"
+						android:background="@drawable/item_selector_circle1"
+						android:clickable="true"
+						android:src="@drawable/tools_toolbar"
+						android:padding="15dp"
+						android:tint="#2196f3"
+						/>
+				</LinearLayout>
+		</HorizontalScrollView>
+
+			<com.knziha.plod.widgets.DragScrollBar
+				android:id="@+id/dragScrollBar"
+				android:layout_width="@dimen/scrollBarWidth"
+				android:layout_height="match_parent"
+				android:layout_marginTop="35dp"
+				android:layout_marginBottom="5dp"
+				android:layout_marginRight="7dp"
+				android:layout_marginLeft="4dp"
+				android:layout_gravity="right"
+				/>
+
+			<com.knziha.plod.widgets.StrokeTextView
+				android:id="@+id/dictNameStroke"
+				android:layout_width="match_parent"
+				android:layout_height="25sp"
+				android:layout_gravity="bottom|center"
+				android:gravity="center_horizontal"
+				android:textColor="#fff"
+				android:text="词典名称"
+				android:textSize="18sp"
+				android:maxLines="1"
+				android:paddingBottom="2dp"
+				/>
+			<TextView
+				android:id="@+id/dictName"
+				android:layout_width="match_parent"
+				android:layout_height="25sp"
+				android:layout_gravity="bottom|center"
+				android:gravity="center_horizontal"
+				android:textColor="#000"
+				android:text="词典名称"
+				android:textSize="18sp"
+				android:maxLines="1"
+				android:paddingBottom="2dp"
+				/>
+
 		</com.knziha.plod.widgets.RLContainerSlider>
 
 		<LinearLayout

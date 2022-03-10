@@ -70,6 +70,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.plaindict.databinding.ContentviewItemBinding;
 import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
@@ -194,96 +195,8 @@ public class BookPresenter
 		}
 	}
 	
-	/** if(!window.rcspc){console.log('popuping...addEventListener', sid.get());window.rcspc=1;window.addEventListener('click',function(e){
-			var w=window,d=document,_log=function(e){console.log(e)};
-	 		//_log('wrappedClickFunc 2', e.srcElement.id);
-	 		var curr = e.srcElement;
-			_log('popuping...'+w.rcsp);
-			if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && w.rcsp&0x20 && !curr.noword && !curr.onclick){
-				//todo d.activeElement.tagName
-				var s = w.getSelection();
-				if(s.isCollapsed && s.anchorNode){ // don't bother with user selection
-		 			if(w._NWP) {
-						var p=curr; while(p=p.parentElement)
-						if(_NWP.indexOf(p)>=0) curr=0;
-					}
-					if(curr && w._YWPC) {
-						var p=curr; o:while(p=p.parentElement){
-							for(var i=0,pc;pc=p.classList[i++];)
-							if(_YWPC.indexOf(pc)>=0) break o;
-							if(p.id && _YWPC.id && _YWPC.indexOf('#'+p.id)>=0) break;
-						 }
-						if(!p) curr=0;
-					}
-	 				if(curr) {
-						s.modify('extend', 'forward', 'word'); // first attempt
-						var an=s.anchorNode;
-						//_log(s.anchorNode); _log(s);
-						//if(true) return;
-	
-						if(s.baseNode != d.body) {// immunize blank area
-							var text=s.toString(); // for word made up of just one character
-							var range = s.getRangeAt(0);
-		 
-							var br = range.getBoundingClientRect();
-							var pX = br.left;
-							var pY = br.top;
-							var pW = br.width;
-							var pH = br.height;
-							var cprY = e.clientY;
-							var cprX = e.clientX;
-	
-							if(1||(cprY>pY-5 && cprY<pY+pH+5 && cprX>pX-5 && cprX<pX+pW+15)){
-								s.collapseToStart();
-								s.modify('extend', 'forward', 'lineboundary');
-			 
-								if(s.toString().length>=text.length){
-									s.empty();
-									s.addRange(range);
-		
-									s.modify('move', 'backward', 'word'); // now could noway be next line
-									s.modify('extend', 'forward', 'word');
-		
-									var range1 = s.getRangeAt(0);
-									if(range1.endContainer===range.endContainer&&range1.endOffset===range.endOffset){
-										// for word made up of multiple character
-										text=s.toString();
-										br = range1.getBoundingClientRect();
-										pX = br.left;
-										pY = br.top;
-										pW = br.width;
-										pH = br.height;
-									}
-		 
-									//网页内部的位置，与缩放无关
-									//_log(rrect);
-									//_log(pX+' ~~ '+pY+' ~~ '+pW+' ~~ '+pH);
-									//_log(cprX+' :: '+cprY);
-									//_log(d.documentElement.scrollLeft+' px:: '+pX);
-		 
-									//_log(text); // final output
-									if(app){
-										app.popupWord(sid.get(), text, frameAt, d.documentElement.scrollLeft+pX, d.documentElement.scrollTop+pY, pW, pH);
-										w.popup=1;
-										//s.empty();
-										return true;
-									}
-								}
-							}
-						}
-					}
-					//点击空白关闭点译弹窗
-					//...
-					s.empty();
-				}
-			}
-			if(w.popup){
-				app.popupClose(sid.get());
-				w.popup=0;
-			}
-	 	})}
-	 */
-	@Metaline()
+	/** console.log('popupingxx...addEventListener', sid.get());  */
+	@Metaline(trim = false)
 	public final static String tapTranslateLoader=StringUtils.EMPTY;
 	
 	/**window.addEventListener('click',function(e) {
@@ -372,138 +285,6 @@ public class BookPresenter
 		var MarkLoad,MarkInst;
 		var results=[], current,currentIndex = 0;
 		var currentClass = "current";
-		function jumpTo(d, desiredOffset, frameAt, HlightIdx, reset, topOffset_frameAt) {
-			if (results.length) {
-	 			if(reset) resetLight(d);
-				//console.log('jumpTo received reset='+reset+' '+frameAt+'->'+HlightIdx+' '+(currentIndex+d)+'/'+(results.length)+' dir='+d);
-				var np=currentIndex+d;
-				var max=results.length - 1;
-				if (currentIndex > max) currentIndex=0;
-				if(desiredOffset>=0){
-					np=0;
-					if(frameAt<HlightIdx) return d;
-					var baseOffset=topOffset_frameAt;
-					for(;np>=0&&np<=max;np+=d){
-						if(baseOffset+pw_topOffset(results[np])>=desiredOffset)
-							break;
-					}
-					desiredOffset=-1;
-				}
-				if (np < 0) return -1;
-				if (np > max) return 1;
-				currentIndex=np;
-				if(current) removeClass(current, currentClass);
-				current = results[currentIndex];
-				if(current){
-					addClass(current, currentClass);
-					var position = topOffset(current);
-	 				app.scrollHighlight(position, d);
-	 				return ''+currentIndex;
-				}
-			}
-			return d;
-	 	}
-		function pw_topOffset(value){
-			var top=0;
-			while(value && value!=d.body){
-				top+=value.offsetTop;
-				value=value.offsetParent;
-			}
-			return top;
-		}
-		function topOffset(elem){
-			var top=0;
-			var add=1;
-			while(elem && elem!=d.body){
-				if(!w.webx)if(elem.style.display=='none' || elem.style.display=='' && d.defaultView.getComputedStyle(elem,null).display=='none'){
-					elem.style.display='block';
-				}
-				if(add){
-					top+=elem.offsetTop;
-					var tmp = elem.offsetParent;
-					if(!tmp) add=0;
-					else elem=tmp;
-				}
-				if(!add) elem=elem.parentNode;
-			}
-			return !add&&top==0?-1:top;
-		}
-		function quenchLight(){
-			if(current) removeClass(current, currentClass);
-		}
-		function resetLight(d){
-			if(d==1) currentIndex=-1;
-			else if(d==-1) currentIndex=results.length;
-			quenchLight();
-		}
-		function setAsEndLight(){
-			currentIndex=results.length-1;
-		}
-		function setAsStartLight(){
-			currentIndex=0;
-		}
-		function addClass(elem, className) {
-			if (!className) return;
-			const els = Array.isArray(elem) ? elem : [elem];
-			for(var i=0;i<els.length;i++){
-				els[i].className+=className;
-			}
-		}
-		function removeClass(elem, className) {
-			if (!className) return;
-			const els = Array.isArray(elem) ? elem : [elem];
-			for(var i=0;i<els.length;i++){
-				els[i].className=els[i].className.replace(className, '');
-			}
-		}
-		function clearHighlights(){
-			if(w.bOnceHighlighted && MarkInst && MarkLoad)
-			MarkInst.unmark({
-				done: function() {
-					results=[];
-					w.bOnceHighlighted=false;
-				}
-			});
-		}
-		function highlight(keyword){
-			var b1=keyword==null;
-			if(b1)
-				keyword=app.getCurrentPageKey();
-			if(keyword==null||b1&&keyword.trim().length==0)
-				return;
-	 		if(!MarkLoad) MarkLoad|=w.MarkLoad;
-			if(!MarkLoad){
-	 			function cb(){MarkLoad=true; do_highlight(keyword);}
-				try{loadJs('mdbr://mark.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'mark.js');}
-			} else do_highlight(keyword);
-		}
-		function do_highlight(keyword){
-			if(!MarkInst)
-				MarkInst = new Mark(d);
-	 		w.bOnceHighlighted=false;
-			MarkInst.unmark({
-				done: function() {
-	 				var rcsp=w.rcsp;
-					keyword=decodeURIComponent(keyword);
-	 				console.log('highlighting...'+keyword+((rcsp&0x1)!=0));
-	 				if(rcsp&0x1)
-					MarkInst.markRegExp(new RegExp(keyword, (rcsp&0x2)?'m':'im'), {
-						done: done_highlight
-					});
-					else
-					MarkInst.mark(keyword, {
-						separateWordSearch: (rcsp&0x4)!=0,'wildcards':(rcsp&0x10)?(rcsp&0x8)?'enabled':'withSpaces':'disabled',done: done_highlight,
-						caseSensitive:(rcsp&0x2)!=0
-					});
-				}
-			});
-		}
-		 function done_highlight(){
-			 w.bOnceHighlighted=true;
-			 results = d.getElementsByTagName("mark");
-			 currentIndex=-1;
-			 if(app) app.onHighlightReady(frameAt, results.length);
-		 }
 	 */
 	@Metaline()
 	public final static byte[] markJsLoader=SU.EmptyBytes;
@@ -1090,7 +871,22 @@ function debug(e){console.log(e)};
 			mWebView.forward = pageView.forward;
 			mWebView.rl = rl;
 			toolbar_title.setText(bookImpl.getDictionaryName());
+			toolbar_title.setMaxLines(1);
 			viewsHolderReady=true;
+			
+			ViewUtils.removeView(pageView.recess);
+			ViewUtils.removeView(pageView.forward);
+			ViewUtils.removeView(pageView.redo);
+			ViewUtils.removeView(pageView.save);
+			ViewUtils.removeView(pageView.tools);
+			toolbar_cover.setId(R.id.lltoolbar);
+			
+			if(cover==null){
+				toolbar_cover.setBackground(null);
+				toolbar_cover.setVisibility(View.GONE);
+				toolbar.setOnClickListener(this);
+				toolbar_title.setPadding((int) (15*GlobalOptions.density), 0, toolbar_title.getPaddingRight(), 0);
+			}
 		}
 		//recess.setVisibility(View.GONE);
 		//forward.setVisibility(View.GONE);
@@ -1314,7 +1110,7 @@ function debug(e){console.log(e)};
 		return null;
 	}
 	
-	public boolean getIsWebx() {
+	public final boolean getIsWebx() {
 		return mType == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 	}
 	
@@ -1331,10 +1127,14 @@ function debug(e){console.log(e)};
 		json.put("tbg", SU.toHexRGB(getTitleBackground()));
 		json.put("tfg", SU.toHexRGB(getTitleForeground()));
 		json.put("bg", getUseInternalBG()?SU.toHexRGB(getContentBackground()):null);
-		if(getIsWebx())json.put("isWeb", 1);
 		PlainWeb webx = getWebx();
 		if(webx!=null) {
-			json.put("sch", webx.getSearchUrl());
+			json.put("isWeb", 1);
+			if(webx.hasField("synthesis"))
+				json.put("synth", 1);
+			String sch = webx.getSearchUrl();
+			if(!sch.contains("%s")) sch=sch+"%s";
+			json.put("sch", sch);
 		}
 		return json;
 	}
@@ -2143,7 +1943,7 @@ function debug(e){console.log(e)};
 				} else {
 					mWebView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
 				}
-				mWebView.getLayoutParams().height = -1;
+				//mWebView.getLayoutParams().height = -1;
 			}
 			else {
 				if(mIsolateImages){
@@ -2763,6 +2563,17 @@ function debug(e){console.log(e)};
 				presenter.suppressingLongClick = suppress;
 			}
 		}
+		
+        @JavascriptInterface
+        public void updateIndicator(long sid, String did, int keyIdx, int keyz, int total) {
+			if (presenter!=null) {
+				WebViewmy wv = presenter.findWebview(sid);
+				if(wv!=null) {
+					WebViewListHandler weblistHandler = wv.weblistHandler;
+					weblistHandler.updateInPageSch(did, keyIdx, keyz, total);
+				}
+			}
+		}
         
         @JavascriptInterface
         public void putTransval(long sid, String value, int index) {
@@ -2850,17 +2661,25 @@ function debug(e){console.log(e)};
 		}
 
         @JavascriptInterface
-        public void scrollHighlight(int o, int d) {
-        	if(presenter==null) return;
-			presenter.a.scrollHighlight(o, d);
+        public void scrollHighlight(long sid, int o, int d) {
+        	if(presenter!=null) {
+				WebViewmy wv = presenter.findWebview(sid);
+				if(wv!=null) {
+					WebViewListHandler weblistHandler = wv.weblistHandler;
+					weblistHandler.scrollHighlight(o, d);
+				}
+			}
         }
 
         @JavascriptInterface
-        public String getCurrentPageKey() {
+        public String getCurrentPageKey(long sid) {
         	String ret=null;
+			if(presenter!=null)
 			try {
-				if(presenter!=null)
-					ret = presenter.a.getCurrentPageKey();
+				WebViewmy wv = presenter.findWebview(sid);
+				if(wv.weblistHandler.MainPageSearchbar!=null && wv.weblistHandler.MainPageSearchbar.getParent()!=null) {
+					return wv.weblistHandler.MainPageSearchetSearch.getText().toString();
+				}
 			} catch (Exception e) {
 				CMN.Log(e);
 			}
@@ -2905,13 +2724,14 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public void jumpHighlight(int d) {
 			if(presenter==null) return;
-			presenter.a.jumpHighlight(d, true);
+//			presenter.a.jumpHighlight(d, true);//333
         }
 
         @JavascriptInterface
-        public void onHighlightReady(int idx, int number) {
+        public void onHighlightReady(long sid, int idx, int number) {
 			if(presenter==null) return;
-			presenter.a.onHighlightReady(idx, number);
+			WebViewmy wv = presenter.findWebview(sid);
+			wv.weblistHandler.onHighlightReady(idx, number);
         }
 
         @JavascriptInterface
@@ -4074,5 +3894,13 @@ function debug(e){console.log(e)};
 	
 	public void findAllTexts(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchLogicLayer searchLayer) throws IOException {
 		bookImpl.flowerFindAllContents(searchTerm, adapter_idx, searchLayer);
+	}
+	
+	@Override
+	public String toString() {
+		return "BookPresenter{" +
+				"bookImpl=" + (bookImpl==null?"":bookImpl.getDictionaryName()) +
+				", isMergedBook=" + isMergedBook +
+				'}';
 	}
 }

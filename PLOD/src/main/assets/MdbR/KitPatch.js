@@ -1,4 +1,4 @@
-
+function debug(e){console.log('fatal web d::', e)};
 
 if (typeof Element.prototype.remove != 'function') {  
     Element.prototype.remove = function() {
@@ -23,6 +23,7 @@ if (typeof String.prototype.startsWith != 'function') {
     String.prototype.startsWith = function (prefix){  
         return this.slice(0, prefix.length) === prefix;  
     };  
+    window.kit=1;
 } 
 if (typeof String.prototype.endsWith != 'function') {  
     String.prototype.endsWith = function (suffix){  

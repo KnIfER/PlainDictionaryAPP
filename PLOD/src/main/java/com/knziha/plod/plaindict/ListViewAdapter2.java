@@ -1,7 +1,6 @@
 package com.knziha.plod.plaindict;
 
 import static com.knziha.plod.plaindict.PDICMainActivity.ViewHolder;
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_LIST_MULTI;
 import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 
 import android.view.View;
@@ -12,11 +11,9 @@ import android.widget.TextView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 
-import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.widgets.ViewUtils;
-import com.knziha.plod.widgets.WebViewmy;
 
 import java.util.List;
 
@@ -164,7 +161,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		}
 		else {
 			boolean bUseMergedUrl = true;
-			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl);
+			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, null);
 			weblistHandler.initMergedFrame(false, false, bUseMergedUrl);
 			if(bUseMergedUrl) {
 				ViewUtils.addViewToParentUnique(weblistHandler.getMergedFrame().rl, a.webSingleholder);

@@ -32,8 +32,6 @@ public abstract class BasicAdapter extends BaseAdapter
 		int lastClickedPos=-1;
 		public int lastClickedPosBeforePageTurn;
 		boolean userCLick;
-		int HlightIdx;
-		int AcrArivAcc;
 		public boolean shunt;
 		public boolean Kustice;
 		public boolean bOnePageNav;
@@ -87,8 +85,8 @@ public abstract class BasicAdapter extends BaseAdapter
 		}
 		public void onItemClick(int pos) {
         	lastClickedPos = Math.min(getCount(), Math.max(-1, pos));
-			HlightIdx=0;
-			AcrArivAcc =0;
+//			weblistHandler.highlightVagranter.HlightIdx=0;
+//			weblistHandler.highlightVagranter.AcrArivAcc =0;
 			//ActivedAdapter=this;
 		}
 		@Override

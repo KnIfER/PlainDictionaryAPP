@@ -194,6 +194,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 				
 				ViewUtils.addViewToParentUnique(presenter.rl, a.webSingleholder);
 				
+				presenter.mWebView.weblistHandler = weblistHandler;
 				//todododo jcabjsahcbshjaccheck
 				//todododo jcabjsahcbshjaccheck
 				//todododo jcabjsahcbshjaccheck

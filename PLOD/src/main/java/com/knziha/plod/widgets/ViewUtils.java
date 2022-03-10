@@ -16,6 +16,8 @@
 
 package com.knziha.plod.widgets;
 
+import static androidx.appcompat.app.GlobalOptions.realWidth;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
@@ -55,6 +57,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
@@ -65,6 +68,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.NestedScrollingChildHelper;
 import androidx.databinding.ViewDataBinding;
@@ -85,6 +89,7 @@ import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.RebootActivity;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.preference.SettingsPanel;
@@ -462,6 +467,22 @@ public class ViewUtils {
 		if (f.getPath().startsWith("/ASSET")) {
 			String errRinfo = null;
 			boolean b1=f.getPath().startsWith("/", 6);
+			if(!b1&&hasRemoteDebugServer) {
+				try {
+					InputStream input = getRemoteServerRes(f.getPath().substring(AssetTag.length()), false);
+					if(input!=null) {
+						ReusableByteOutputStream bout = new ReusableByteOutputStream(input.available());
+						byte[] buffer = new byte[4096];
+						int read;
+						while((read=input.read(buffer))>0) {
+							bout.write(buffer, 0, read);
+						}
+						return new String(bout.getBytes(), 0, bout.getCount(), StandardCharsets.UTF_8);
+					}
+				} catch (Exception e) {
+					errRinfo = CMN.Log(e);
+				}
+			}
 			if(GlobalOptions.debug || b1)
 			try {
 				InputStream fin = context.getResources().getAssets().open(f.getPath().substring(AssetTag.length()+(!b1?1:0)));
@@ -652,6 +673,24 @@ public class ViewUtils {
 			}
 		}
 		return null;
+	}
+	
+	public static View findViewById(ViewGroup vg, int id) {
+		for (int i = 0,len=vg.getChildCount(); i < len; i++) {
+			View c = vg.getChildAt(i);
+			if(c.getId()==id) return c;
+		}
+		return vg.findViewById(id);
+	}
+	
+	public static void ResizeNavigationIcon(Toolbar toolbar) {
+		if(realWidth/GlobalOptions.density<365) {
+			View vTmp = toolbar.getChildAt(toolbar.getChildCount()-1);
+			if(vTmp instanceof ImageButton && vTmp.getId()== R.id.home) {
+				vTmp.getLayoutParams().width=(int) (45*GlobalOptions.density);
+				//NavigationIcon.requestLayout();
+			}
+		}
 	}
 	
 	public void Destory(){

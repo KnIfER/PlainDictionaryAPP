@@ -158,7 +158,7 @@ public class ListViewAdapter extends BasicAdapter {
 			mWebView = weblistHandler.getMergedFrame();
 		}
 		this.mWebView = mWebView;
-		weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl);
+		weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, mWebView);
 		weblistHandler.initMergedFrame(false, false, bUseMergedUrl);
 		
 		presenter.lvClickPos=pos;

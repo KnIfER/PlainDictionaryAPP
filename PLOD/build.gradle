@@ -52,6 +52,9 @@ android {
     buildTypes {
         debug {
             buildConfigField "boolean","isDebug","true"
+            aaptOptions {
+                ignoreAssetsPattern '!Markjs:'
+            }
         }
         release {
             minifyEnabled true

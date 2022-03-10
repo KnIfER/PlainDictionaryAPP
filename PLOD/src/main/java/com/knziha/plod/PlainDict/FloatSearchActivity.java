@@ -324,7 +324,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	
 		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 7, 3, 4, 5, 6);
 		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 7, 3, 4, 5, 6);
-		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 2, 4, 5, 6);
+		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 7, 3, 2, 4, 5, 6);
 		
 		PeruseListModeMenu = ViewUtils.findInMenu(MainMenu, R.id.peruseList);
 		PeruseListModeMenu.setChecked(opt.getInFloatPeruseMode());
@@ -367,7 +367,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					break;
 				}
 				if (opt.getUseVolumeBtn()) {
-					boolean toHighlight=MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && MainPageSearchbar.getParent()!=null;
+					boolean toHighlight=weblistHandler.MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && weblistHandler.MainPageSearchbar.getParent()!=null;
 					if (contentUIData.webcontentlister.getVisibility()==View.VISIBLE) {
 						if(toHighlight) onIdClick(null, R.id.recess);
 						else contentUIData.bottombar2.findViewById(R.id.browser_widget11).performClick();
@@ -382,7 +382,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					break;
 				}
 				if (opt.getUseVolumeBtn()) {
-					boolean toHighlight=MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && MainPageSearchbar.getParent()!=null;
+					boolean toHighlight=weblistHandler.MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && weblistHandler.MainPageSearchbar.getParent()!=null;
 					if (contentUIData.webcontentlister.getVisibility()==View.VISIBLE) {
 						if(toHighlight) onIdClick(null, R.id.forward);
 						else contentUIData.bottombar2.findViewById(R.id.browser_widget10).performClick();
@@ -414,7 +414,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		contentUIData.webcontentlister.scrollbar2guard = contentUIData.dragScrollBar;
 
 		if(PDICMainAppOptions.getInFloatPageSearchVisible())
-			toggleInPageSearch(false);
+			weblistHandler.toggleInPageSearch(false);
     	
         lv.setAdapter(adaptermy = new ListViewAdapter(this, AllMenus, SingleContentMenu));
         lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, R.layout.listview_item1, 2));
@@ -908,17 +908,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
             		showT("已收藏！");
             break;
             case R.id.toolbar_action5:
-            	toggleInPageSearch(ret=isLongClicked);
+				weblistHandler.toggleInPageSearch(ret=isLongClicked);
             break;
         }
 		if(closeMenu)
 			closeIfNoActionView(mmi);
 		return ret;
-	}
-	
-	@Override
-	void contentviewAddView(View v, int i) {
-		contentUIData.webcontentlister.addView(v, i);
 	}
 
 	@Override

@@ -896,7 +896,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	public String getSearchUrl() {
-		return host+search;
+		return search!=null?host+search:host;
 	}
 	
 	public String getSyntheticWebPage() throws IOException {
@@ -1939,5 +1939,9 @@ public class PlainWeb extends DictionaryAdapter {
 	@Override
 	public String getField(String fieldName) {
 		return website.getString(fieldName);
+	}
+	
+	public boolean hasField(String fieldName) {
+		return website.containsKey(fieldName);
 	}
 }

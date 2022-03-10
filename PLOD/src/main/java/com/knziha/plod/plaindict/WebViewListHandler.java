@@ -1,23 +1,37 @@
 package com.knziha.plod.plaindict;
 
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 
+import android.content.ClipData;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.SystemClock;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.DragEvent;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.WindowManager;
+import android.webkit.ValueCallback;
+import android.webkit.WebView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.Toolbar;
 
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
@@ -37,10 +51,12 @@ import com.knziha.rbtree.additiveMyCpr1;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
-public class WebViewListHandler extends ViewGroup {
+public class WebViewListHandler extends ViewGroup implements View.OnClickListener {
 	final MainActivityUIBase a;
 	/** -2=auto;0=false;1=true*/
 	public int bMergeFrames = 0;
@@ -60,6 +76,9 @@ public class WebViewListHandler extends ViewGroup {
 	public final ContentviewBinding contentUIData;
 	public ImageView[] ContentbarBtns = new ImageView[ContentbarBtnIcons.length];
 	private boolean contentViewSetup;
+	private int lastScrollUpdateY;
+	BookPresenter lastScrollBook;
+	WebViewmy lastScrollBookView;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData) {
 		super(a);
@@ -69,6 +88,63 @@ public class WebViewListHandler extends ViewGroup {
 		this.contentUIData = contentUIData;
 		this.WHP = contentUIData.WHP;
 		this.webholder = contentUIData.webholder;
+		hDataSinglePage.webviewHolder = contentUIData.webSingleholder;
+		hDataMultiple.webviewHolder = contentUIData.webholder;
+		
+		DragScrollBar mBar = contentUIData.dragScrollBar;
+		if(WHP.getScrollViewListener()==null) {
+			WHP.scrollbar2guard=mBar;
+			WHP.setScrollViewListener((v, x, y, oldX, oldY) -> {
+				oldY = y-WHP.oldY;
+				if(mViewMode==WEB_LIST_MULTI && oldY!=0
+					&& Math.abs(oldY)>8) {
+						if(mBar.isHidden()){
+							if(Math.abs(oldY)>=10*a.dm.density)
+								mBar.fadeIn();
+						}
+						if(!mBar.isHidden()){
+							if(!mBar.isWebHeld)
+								mBar.hiJackScrollFinishedFadeOut();
+							if(!mBar.isDragging){
+								mBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
+								mBar.setProgress(y);
+							}
+						}
+						if(Math.abs(lastScrollUpdateY-y)>GlobalOptions.density*50) {
+							lastScrollUpdateY=y;
+							//CMN.pt("滚动="+Math.abs(oldY)+","+"y="+y+"::");
+							//CMN.rt();
+							int bot=WHP.getScrollY() + WHP.getHeight()/2;
+							for (int i = 0; i < webholder.getChildCount(); i++) {
+								if(webholder.getChildAt(i).getBottom()>=bot) {
+									WebViewmy wv = (WebViewmy)webholder.getChildAt(i).getTag();
+									if(lastScrollBook!=wv.presenter) {
+										setLastScrollBook(wv);
+									}
+									break;
+								}
+							}
+						}
+				}
+				WHP.oldY = y;
+				if (WHP.mIsFling && Math.abs(oldY) < 2) {
+					WHP.mIsFling = false;
+				}
+			});
+			mBar.fadeOut();
+		}
+		//WHP.setBackground(null);
+	}
+	
+	public void setLastScrollBook(WebViewmy wv) {
+		if(lastScrollBook!=wv.presenter) {
+			lastScrollBook = wv.presenter;
+			String name = wv.presenter.getDictionaryName();
+			name = name.substring(0, name.lastIndexOf("."));
+			contentUIData.dictName.setText(name);
+			contentUIData.dictNameStroke.setText(name);
+		}
+		lastScrollBookView = wv;
 	}
 	
 	public ViewGroup getViewGroup() {
@@ -202,28 +278,7 @@ public class WebViewListHandler extends ViewGroup {
 	}
 	
 	public void initWebHolderScrollChanged() {
-		DragScrollBar mBar = contentUIData.dragScrollBar;
-		if(mBar.getVisibility()==View.VISIBLE){
-			if(a.onWebHolderScrollChanged==null){
-				WHP.scrollbar2guard=mBar;
-				WHP.setScrollViewListener(a.onWebHolderScrollChanged=(v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
-					if(mBar.isHidden()){
-						if(Math.abs(oldScrollY-scrollY)>=10*a.dm.density)
-							mBar.fadeIn();
-					}
-					if(!mBar.isHidden()){
-						if(!mBar.isWebHeld)
-							mBar.hiJackScrollFinishedFadeOut();
-						if(!mBar.isDragging){
-							mBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
-							mBar.setProgress(WHP.getScrollY());
-						}
-					}
-				});
-			}
-			mBar.fadeOut();
-		}
-		mBar.setDelimiter("|||", bMergingFrames?mMergedFrame:getViewGroup());
+		//mBar.setDelimiter("|||", bMergingFrames?mMergedFrame:getViewGroup());
 	}
 	
 	public WebViewmy getMergedFrame() {
@@ -234,7 +289,7 @@ public class WebViewListHandler extends ViewGroup {
 			mMergedBook.initViewsHolder(a);
 			mMergedFrame = mMergedBook.mWebView;
 			mMergedFrame.weblistHandler = this;
-			mMergedBook.rl.setTag(this);
+			mMergedBook.rl.setTag(mMergedFrame);
 			mMergedFrame.setWebViewClient(a.myWebClient);
 			mMergedFrame.setWebChromeClient(a.myWebCClient);
 			//mMergedFrame.setOnScrollChangedListener(null);
@@ -481,7 +536,7 @@ public class WebViewListHandler extends ViewGroup {
 	public final static int WEB_LIST_MULTI=0;
 	public final static int WEB_VIEW_SINGLE=1;
 	int mViewMode=WEB_LIST_MULTI;
-	public void setViewMode(int mode, boolean bUseMergedUrl) {
+	public void setViewMode(int mode, boolean bUseMergedUrl, WebViewmy dictView) {
 		if(mViewMode!=mode || bMergingFrames!=bUseMergedUrl) {
 			mViewMode = mode;
 			int vis = mode == WEB_VIEW_SINGLE || bUseMergedUrl ? View.GONE : View.VISIBLE;
@@ -491,6 +546,7 @@ public class WebViewListHandler extends ViewGroup {
 			vis = mode==WEB_VIEW_SINGLE || bUseMergedUrl ? View.VISIBLE : View.GONE;
 			contentUIData.webSingleholder.setVisibility(vis);
 		}
+		this.dictView = dictView;
 	}
 	
 	int getViewMode() {
@@ -511,7 +567,8 @@ public class WebViewListHandler extends ViewGroup {
 		if(ViewUtils.checkSetVersion(versions, 2, a.MainPageBackground)) {
 			//if(widget12.getTag(R.id.image)==null)
 			contentUIData.webSingleholder.setBackgroundColor(a.MainPageBackground);
-			contentUIData.webholder.setBackgroundColor(a.MainPageBackground);
+			//contentUIData.webholder.setBackgroundColor(a.MainPageBackground);
+			contentUIData.WHP.setBackgroundColor(a.MainPageBackground);
 		}
 	}
 	
@@ -597,7 +654,443 @@ public class WebViewListHandler extends ViewGroup {
 		return false;
 	}
 	
-	public boolean isViewSingle() {
+	final public boolean isViewSingle() {
 		return mViewMode==WEB_VIEW_SINGLE;
+	}
+	
+	int cc;
+	boolean inlineJump;
+	private WebView jumper;
+	
+	public Toolbar MainPageSearchbar;
+	public EditText MainPageSearchetSearch;
+	TextView MainPageSearchindicator;
+	TextView MainPageSearchDictionaryIndi;
+	String MainPageSearchetSearchStartWord;
+	boolean HiFiJumpRequested;
+	
+	public void jumpHighlight(int d, boolean calcIndicator){
+		try {
+			cc=0;
+			inlineJump=true;
+			do_jumpHighlight(d, calcIndicator);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void updateInPageSch(String did, int keyIdx, int keyz, int total) {
+		String text;
+		String dictName=null;
+		if(!TextUtils.equals((String)MainPageSearchindicator.getTag(),did)) {
+			dictName = new File(a.getBookNameByIdNoCreation(IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(did, 1)))).getName();
+			MainPageSearchindicator.setTag(did);
+		}
+		if(keyIdx>=0) {
+			keyIdx+=1;
+			if(total>keyz)
+				text = keyIdx+"/"+keyz+" ("+total+")";
+			else
+				text = keyIdx+"/"+keyz;
+		} else {
+			text = ""+total;
+		}
+		String dictName1=dictName;
+		MainPageSearchindicator.post(() -> {
+			MainPageSearchindicator.setText(text);
+			if(dictName1!=null)MainPageSearchDictionaryIndi.setText(dictName1);
+		});
+	}
+	
+	public static class HighlightVagranter {
+		ViewGroup webviewHolder;
+		int HlightIdx;
+		int AcrArivAcc;
+//		public HighlightVagranter(ViewGroup webviewHolder) {
+//			this.webviewHolder = webviewHolder;
+//		}
+	}
+	
+	void resetLights(ViewGroup webviewHolder, int d) {
+		if(webviewHolder!=null) {
+			int max = webviewHolder.getChildCount();
+			String exp = "resetLight(" + d + ")";
+			for (int index = 0; index < max; index++) {
+				if (webviewHolder.getChildAt(index) instanceof LinearLayout) {
+					ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(index);
+					if (webHolder.getChildAt(1) instanceof WebView) {
+						((WebView) webHolder.getChildAt(1))
+								.evaluateJavascript(exp, null);
+					}
+				}
+			}
+		}
+	}
+	
+	void clearLights(ViewGroup webviewHolder){
+		if(webviewHolder!=null){
+			int max=webviewHolder.getChildCount();
+			String exp="clearHighlights()";
+			for (int index = 0; index < max; index++) {
+				if(webviewHolder.getChildAt(index) instanceof LinearLayout){
+					ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(index);
+					if(webHolder.getChildAt(1) instanceof WebView){
+						((WebView)webHolder.getChildAt(1))
+								.evaluateJavascript(exp,null);
+					}
+				}
+			}
+		}
+	}
+	
+	
+	public void onHighlightReady(int idx, int number) {
+		final HighlightVagranter hData = getHData();
+		ViewGroup webviewHolder = hData.webviewHolder;
+		ViewGroup vg = hData.webviewHolder;
+		View v = vg.getChildAt(idx);
+		if(v!=null){
+			v.setTag(R.id.numberpicker, number);
+		}
+		int all=0;
+		for (int i = 0; i < vg.getChildCount(); i++) {
+			all+=IU.parseInteger(vg.getChildAt(i).getTag(R.id.numberpicker),0);
+		}
+		String finalAll = all==0?"":""+all;
+		MainPageSearchindicator.post(() -> MainPageSearchindicator.setText(finalAll));
+		if (v != null && HiFiJumpRequested && idx == 0) {
+			a.jumpNaughtyFirstHighlight(v.findViewById(R.id.webviewmy));
+			HiFiJumpRequested = false;
+		}
+	}
+	
+	
+	private HighlightVagranter hDataMergedPage = new HighlightVagranter(); // use merged view
+	private HighlightVagranter hDataSinglePage = new HighlightVagranter(); // use dict view
+	private HighlightVagranter hDataMultiple = new HighlightVagranter();  // use dict view, for multiple frames
+	
+	public WebViewmy dictView;
+	
+	/** <br>single merged - hDataMergedPage
+	* <br> single dict - hDataPage in the wv
+	* <br> multiple merged - hDataMergedPage
+	* <br> multiple dict - hDataMultiple**/
+	public HighlightVagranter getHData() {
+		if(bMergingFrames) {
+			hDataMergedPage.webviewHolder = contentUIData.webSingleholder;
+			return hDataMergedPage;
+		}
+		if(isViewSingle()) {
+			if(dictView==null) CMN.Log("ERROR_getHData!");
+			HighlightVagranter data = dictView == null ? getMergedFrame().hDataPage : dictView.hDataPage;
+			data.webviewHolder = contentUIData.webSingleholder;
+			return data;
+		} else {
+			hDataMultiple.webviewHolder = contentUIData.webholder;
+			return hDataMultiple;
+		}
+	}
+	
+	/** 汉星照耀，汉水长流！ */
+	private void do_jumpHighlight(int d, boolean calcIndicator) {
+		final HighlightVagranter hData = getHData();
+		CMN.Log("jumpHighlight... dir="+d+" framePos="+hData.HlightIdx);
+		ViewGroup webviewHolder = hData.webviewHolder;
+		int max = webviewHolder.getChildCount();
+		a.fadeSnack();
+		boolean b1=hData.HlightIdx>=max,b2=hData.HlightIdx<0;
+		if(b1||b2) {
+			hData.AcrArivAcc++;
+			if(b1&&d==-1) {
+				hData.HlightIdx=max-1;
+				b1=false;
+			}
+			else if(b2&&d==1){
+				hData.HlightIdx=0;
+				b2=false;
+			}
+			if(hData.AcrArivAcc<=2){
+				//CMN.Log("do_jumpHighlight", PDICMainAppOptions.getInPageSearchShowNoNoMatch(), calcIndicator);
+				if(PDICMainAppOptions.getInPageSearchShowNoNoMatch() || calcIndicator) {
+					String msg = getResources().getString(R.string.search_end, d < 0 ? "⬆" : "", d > 0 ? "⬇" : "");
+					a.getTopSnackView().setNextOffsetScale(0.25f);
+					a.showTopSnack(null, msg, 0.75f, -1, Gravity.CENTER, 0);
+				}
+				return;
+			} else {
+				hData.AcrArivAcc=0;
+			}
+		} else {
+			hData.AcrArivAcc =0;
+		}
+		if(b1){
+			resetLights(webviewHolder, d);
+			hData.HlightIdx=0;
+			if(d==-1){
+				a.evalJsAtFrame(max,"setAsEndLight("+d+");");
+			}
+		}
+		else if(b2){
+			resetLights(webviewHolder, d);
+			hData.HlightIdx=max-1;
+			if(d==1){
+				if(hData.HlightIdx>=0) a.evalJsAtFrame(0,"setAsStartLight("+d+");");
+			}
+		}
+		if(hData.HlightIdx<0) hData.HlightIdx=0;
+		ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(hData.HlightIdx);
+		if(webHolder!=null){
+			WebView wv = (WebView) ViewUtils.findViewById(webHolder, R.id.webviewmy);
+			if(wv!=null){
+				if(jumper!=null && jumper!=wv){
+					jumper.evaluateJavascript("quenchLight()",null);
+				}
+				jumper=wv;
+				if(cc>0) inlineJump=false;
+				CMN.Log("jumpHighlight_evaluating...", inlineJump);
+				jumper.evaluateJavascript(new StringBuilder(28).append("jumpTo(")
+						.append(d).append(',')//direction
+						.append(-1).append(',')//desired offset
+						.append(0).append(',')//frameAt
+						.append(0).append(',')//HlightIdx
+						.append(cc>0).append(',')//need reset
+						.append(0)//topOffset_frameAt
+						.append(");").toString(), new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String value) {
+						CMN.Log("jumpHighlight_delta_yield : ", value);
+						if(value!=null) {
+							int d = 0; boolean b1;
+							if(!(b1=value.startsWith("\"")))
+								d = IU.parsint(value, 0);
+							if (d != 0) {
+								hData.HlightIdx += d;
+								if (hData.HlightIdx < 0 || hData.HlightIdx >= max) {
+									hData.AcrArivAcc++;
+								}
+								do_jumpHighlight(d, calcIndicator);
+							}
+							else if(calcIndicator && b1 && webviewHolder!=null) {
+								int all=0;
+								int preAll=IU.parsint(value.substring(1,value.length()-1),0);
+								if(preAll>=0) {
+									for (int i = 0; i < webviewHolder.getChildCount(); i++) {
+										View v = webviewHolder.getChildAt(i);
+										if (v != null) {
+											if (i == hData.HlightIdx)
+												preAll += all;
+											all += IU.parseInteger(v.getTag(R.id.numberpicker), 0);
+										}
+									}
+									//111 (PeruseSearchAttached()? peruseView.PerusePageSearchindicator:MainPageSearchindicator).setText((preAll+1)+"/"+all);
+								}
+							}
+						}
+					}
+				});
+				cc++;
+			}
+		}
+	}
+	
+	void toggleInPageSearch(boolean isLongClicked) {
+		final HighlightVagranter hData = getHData();
+		hData.HlightIdx =
+		hData.AcrArivAcc = 0;
+		ViewGroup webviewHolder = hData.webviewHolder;
+		if(isLongClicked){
+			a.launchSettings(7, 0);
+		}
+		else {
+			Toolbar searchbar = MainPageSearchbar;
+			if (searchbar == null) {
+				searchbar = MainPageSearchbar = (Toolbar) a.getLayoutInflater().inflate(R.layout.searchbar, null);
+				searchbar.setNavigationIcon(R.drawable.abc_ic_clear_material);//abc_ic_ab_back_mtrl_am_alpha
+				EditText etSearch = searchbar.findViewById(R.id.etSearch);
+				//etSearch.setBackgroundColor(Color.TRANSPARENT);
+				searchbar.setNavigationOnClickListener(v1 -> {
+					toggleInPageSearch(false);
+					if (etSearch.hasFocus())
+						a.imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+					a.fadeSnack();
+				});
+				etSearch.setText(MainPageSearchetSearchStartWord);
+				etSearch.addTextChangedListener(new TextWatcher() {
+					@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+					@Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
+					@Override
+					public void afterTextChanged(Editable s) {
+						String text = etSearch.getText().toString().replace("\\", "\\\\");
+						HiFiJumpRequested=PDICMainAppOptions.getPageAutoScrollOnType();
+						SearchInPage(text);
+					}
+				});
+				
+				ViewUtils.ResizeNavigationIcon(searchbar);
+				
+				searchbar.setContentInsetsAbsolute(0, 0);
+				searchbar.setLayoutParams(a.toolbar.getLayoutParams());
+				searchbar.setBackgroundColor(a.AppWhite==Color.WHITE?a.MainBackground:Color.BLACK);
+				searchbar.findViewById(R.id.ivDeleteText).setOnClickListener(this);
+				View.OnDragListener searchbar_stl = (v, event) -> {
+					if(event.getAction()== DragEvent.ACTION_DROP){
+						ClipData textdata = event.getClipData();
+						if(textdata.getItemCount()>0){
+							if(textdata.getItemAt(0).getText()!=null)
+								etSearch.setText(textdata.getItemAt(0).getText());
+						}
+						return false;
+					}
+					return true;
+				};
+				this.MainPageSearchbar = searchbar;
+				this.MainPageSearchetSearch = etSearch;
+				this.MainPageSearchindicator = searchbar.findViewById(R.id.indicator);
+				this.MainPageSearchDictionaryIndi = searchbar.findViewById(R.id.dictName);
+				searchbar.getChildAt(0).addOnLayoutChangeListener(new OnLayoutChangeListener() {
+					@Override
+					public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+						MainPageSearchDictionaryIndi.setTranslationX(etSearch.getWidth()+GlobalOptions.density*2);
+					}
+				});
+				View viewTmp=searchbar.findViewById(R.id.recess);
+				viewTmp.setOnDragListener(searchbar_stl);
+				viewTmp.setOnClickListener(this);
+				viewTmp=searchbar.findViewById(R.id.forward);
+				viewTmp.setOnDragListener(searchbar_stl);
+				viewTmp.setOnClickListener(this);
+			}
+			boolean b1=searchbar.getParent()==null;
+			if (b1) {
+				contentviewAddView(searchbar, 0);
+				searchbar.findViewById(R.id.etSearch).requestFocus();
+				searchbar.setTag(MainPageSearchetSearch.getText());
+				SearchInPage(null);
+			}
+			else {
+				ViewUtils.removeView(searchbar);
+				clearLights(webviewHolder);
+				searchbar.setTag(null);
+			}
+			
+			if(a.thisActType==MainActivityUIBase.ActType.PlainDict)
+				a.opt.setInPageSearchVisible(b1);
+			else{
+				PDICMainAppOptions.setInFloatPageSearchVisible(b1);
+			}
+		}
+	}
+	
+	@Override
+	public void onClick(View v) {
+		int id=v.getId();
+		switch (id) {
+			case R.id.ivDeleteText:
+				MainPageSearchetSearch.setText(null);
+				break;
+			//in page search navigation
+			case R.id.recess:
+			case R.id.forward:{
+				if(v.getTag()!=null){
+					return;
+				}
+				boolean next=id==R.id.recess;
+				//CMN.Log("下一个");
+				//111
+				if(PDICMainAppOptions.getInPageSearchAutoHideKeyboard()){
+					//a.imm.hideSoftInputFromWindow((a.PeruseSearchAttached()? a.peruseView.PerusePageSearchetSearch:MainPageSearchetSearch).getWindowToken(), 0);
+					a.imm.hideSoftInputFromWindow(MainPageSearchetSearch.getWindowToken(), 0);
+				}
+				jumpHighlight(next?1:-1, true);
+			} break;
+		}
+	}
+	
+	void SearchInPage(String text) {
+		final HighlightVagranter hData = getHData();
+		ViewGroup webviewHolder = hData.webviewHolder;
+		{
+			if(text!=null)
+				try {
+					text=true?text: URLEncoder.encode(text,"utf8");
+				} catch (UnsupportedEncodingException ignored) { }
+			String val = text==null?"_highlight(null)":"_highlight(\""+ text.replace("\"","\\\"")+"\")";
+			if(webviewHolder!=null){
+				int cc = webviewHolder.getChildCount();
+				for (int i = 0; i < cc; i++) {
+					if(webviewHolder.getChildAt(i) instanceof LinearLayout){
+						ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(i);
+						if(webHolder.getChildAt(1) instanceof WebView){
+							((WebView)webHolder.getChildAt(1))
+									.evaluateJavascript(val,null);
+						}
+					}
+				}
+			}
+//			if(popupContentView!=null && popupContentView.getParent()!=null){
+//				popupWebView.evaluateJavascript(val,null);
+//			}//111
+		}
+	}
+	
+	public void scrollHighlight(int o, int d) {
+		final HighlightVagranter hData = getHData();
+		ViewGroup webviewHolder = hData.webviewHolder;
+		//CMN.Log("scrollHighlight",o,d,inlineJump);
+		if(webviewHolder!=null && webviewHolder.getChildAt(hData.HlightIdx) instanceof LinearLayout){
+			ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(hData.HlightIdx);
+			WebView wv = (WebView) ViewUtils.findViewById(webHolder, R.id.webviewmy);
+			if(wv!=null){
+				int pad=(int) (25*a.dm.density);
+				if(!isViewSingle()){
+					//CMN.Log("???");
+					WHP.performLongClick();
+					WHP.onTouchEvent(MotionEvent.obtain( 1000,/*小*/
+							1000,/*样，*/
+							MotionEvent.ACTION_UP,/*我还*/
+							0,/*治*/
+							0,/*不了*/
+							0));/*你？*/
+					if(o==-1){
+						if(d==-1 || inlineJump) {
+							return;
+						}
+					}
+					o=(int)(o*a.dm.density);
+					o+=webHolder.getTop()+wv.getTop();
+					//CMN.Log("??????", o);
+					if(o<=WHP.getScrollY() || o+pad>=WHP.getScrollY()+WHP.getHeight()){
+						//CMN.Log("do_scrollHighlight",o,d,o-pad);
+						WHP.smoothScrollTo(0, o-pad);
+					}
+				}
+				else{
+					if(o==-1){
+						if(d==-1 || inlineJump) {
+							return;
+						}
+					}
+					o=(int)(o*a.dm.density);
+					if(o<=wv.getScrollY() || o+pad>=wv.getScrollY()+wv.getHeight()){
+						int finalO=o-pad;
+						//CMN.Log("scrolling !!!", finalO, wv.getScrollY(), wv.getScrollY()+wv.getHeight());
+						wv.post(() -> {
+							//CMN.Log("do scrolling !!!");
+							MainActivityUIBase.layoutScrollDisabled=false;
+							wv.scrollTo(0, finalO);
+							wv.requestLayout();
+							a.NaugtyWeb=(WebViewmy) wv;
+							if(a.hdl!=null)
+								a.hdl.sendEmptyMessage(778899);
+						});
+					}
+				}
+			}
+		}
+	}
+	
+	
+	public void contentviewAddView(View v, int i) {
+		ViewUtils.addViewToParent(v, a.contentview, i);
 	}
 }

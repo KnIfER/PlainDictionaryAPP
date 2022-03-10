@@ -109,20 +109,20 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 			
 			PDICMainActivity app = (PDICMainActivity) a;
 			ActivityMainBinding uiData = app.UIData;
-			LinearLayout dialog = uiData.dialog;
-			if(pinPicDictDialog ^ ViewUtils.ViewIsId((View) dialog.getParent(), R.id.viewpagerPH)) {
+			LinearLayout dialogLayout = uiData.dialog;
+			if(pinPicDictDialog ^ ViewUtils.ViewIsId((View) dialogLayout.getParent(), R.id.viewpagerPH)) {
 				TextViewmy rcntSchList = uiData.rcntSchList;
 				ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) rcntSchList.getLayoutParams();
 				if (pinPicDictDialog) {
 					LinearSplitView viewpagerPH = uiData.viewpagerPH;
-					if(undockLayout==null) undockLayout = dialog.getLayoutParams();
-					if(ViewUtils.removeIfParentBeOrNotBe(dialog, viewpagerPH, false)) {
-						viewpagerPH.addView(dialog, 0, dockLayout==null?undockLayout:dockLayout);
+					if(undockLayout==null) undockLayout = dialogLayout.getLayoutParams();
+					if(ViewUtils.removeIfParentBeOrNotBe(dialogLayout, viewpagerPH, false)) {
+						viewpagerPH.addView(dialogLayout, 0, dockLayout==null?undockLayout:dockLayout);
 					}
 					if(dockLayout!=null) {
-						dialog.setLayoutParams(dockLayout);
+						dialogLayout.setLayoutParams(dockLayout);
 					} else {
-						dockLayout = (LinearLayout.LayoutParams) dialog.getLayoutParams();
+						dockLayout = (LinearLayout.LayoutParams) dialogLayout.getLayoutParams();
 						dockLayout.width = 0;
 						dockLayout.weight = (float) (1 / (1-0.375) * 0.375);
 						//dockLayout.width = (int) (135 * GlobalOptions.density);
@@ -135,17 +135,17 @@ public class DictPicker extends DialogFragment implements View.OnClickListener
 					handle.getLayoutParams().height = (int) (28 * GlobalOptions.density);
 					handle.setBackgroundResource(R.drawable.ic_split_handle);
 					handle.getBackground().setColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
-					dialog.setBackgroundResource(R.drawable.popup_background3_split);
+					dialogLayout.setBackgroundResource(R.drawable.popup_background3_split);
 					rcntSchList.setPadding(0,0,0,0);
 					rcntSchList.setMaxLines(1);
 					int pad = (int) (5*GlobalOptions.density);
 					layoutParams.leftMargin=pad;
 					layoutParams.rightMargin=pad;
 				} else {
-					if(ViewUtils.removeIfParentBeOrNotBe(dialog, uiData.dialogHolder, false)) {
-						uiData.dialogHolder.addView(dialog, 0, undockLayout);
+					if(ViewUtils.removeIfParentBeOrNotBe(dialogLayout, uiData.dialogHolder, false)) {
+						uiData.dialogHolder.addView(dialogLayout, 0, undockLayout);
 					}
-					dialog.setBackgroundResource(R.drawable.popup_background3);
+					dialogLayout.setBackgroundResource(R.drawable.popup_background3);
 					int pad = (int) (5*GlobalOptions.density);
 					rcntSchList.setPadding(0,pad*2,0,pad);
 					rcntSchList.setMaxLines(3);

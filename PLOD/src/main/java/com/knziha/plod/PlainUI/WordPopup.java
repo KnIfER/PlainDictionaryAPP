@@ -35,6 +35,7 @@ import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.CrashHandler;
 import com.knziha.plod.plaindict.FloatSearchActivity;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -690,8 +691,13 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 						a.md.set(i, book = a.new_book(phTmp, a));
 					} catch (Exception e) { }
 				}
-				if(book!=null && book.getAcceptParagraph(searchText, isParagraph, paragraphWords)) {
-					book.bookImpl.lookUpRange(searchText, null, _treeBuilder, book.getId(),7, task);
+				try {
+					if(book!=null && book.getAcceptParagraph(searchText, isParagraph, paragraphWords)) {
+						CrashHandler.hotTracingObject = book;
+						book.bookImpl.lookUpRange(searchText, null, _treeBuilder, book.getId(),7, task);
+					}
+				} catch (Exception e) {
+					CMN.Log(CrashHandler.hotTracingObject, e);
 				}
 			}
 		}
@@ -915,7 +921,9 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				popupWebView.setWebViewClient(a.myWebClient);
 			}
 			
-			rec.renderContentAt(0, a, null, weblistHandler);
+			if(rec.size()>0) {
+				rec.renderContentAt(0, a, null, weblistHandler);
+			}
 			
 			return;
 		}
@@ -1013,6 +1021,19 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 //		}
 //		return false;
 //	}
-
-
+	
+	
+	@Override
+	protected void onDismiss() {
+		super.onDismiss();
+		CMN.Log("onDismiss!!!");
+		if(invoker!=null) {
+			invoker.postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					invoker.evaluateJavascript("window.getSelection().collapseToStart()", null);
+				}
+			}, 180);
+		}
+	}
 }

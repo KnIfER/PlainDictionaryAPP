@@ -2,7 +2,6 @@ package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.ClipData;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -17,7 +16,6 @@ import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
 import android.view.ActionMode;
-import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -34,7 +32,6 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.GridView;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -44,7 +41,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
-import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.graphics.ColorUtils;
@@ -80,7 +76,6 @@ import java.util.List;
 import static android.view.View.FOCUSABLE_AUTO;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
-import static com.knziha.plod.plaindict.PDICMainActivity.ResizeNavigationIcon;
 import static com.knziha.plod.plaindict.Toastable_Activity.LONG_DURATION_MS;
 import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
@@ -272,7 +267,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		
         toolbar.setOnMenuItemClickListener(this);
         toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);//abc_ic_ab_back_mtrl_am_alpha
-		ResizeNavigationIcon(toolbar);
+		ViewUtils.ResizeNavigationIcon(toolbar);
         toolbar.setNavigationOnClickListener(this);
 		ViewUtils.setOnClickListenersOneDepth(bottombar, this, 999, 0, null);
         
@@ -950,94 +945,94 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		ViewUtils.setVisible(contentUIData.bottombar2, !merge || contentview.getParent()==slp || weblistHandler.isPopupShowing());
 	}
 	
-	void toggleInPageSearch(boolean isLongClicked) {
-		MainActivityUIBase a = getMainActivity();
-		if(isLongClicked){
-			a.launchSettings(7, 0);
-		}
-		else {
-			Toolbar InPageSearchbar = PerusePageSearchbar;
-			if (InPageSearchbar == null) {
-				Toolbar searchbar = (Toolbar) getLayoutInflater().inflate(R.layout.searchbar, null);
-				searchbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);//abc_ic_ab_back_mtrl_am_alpha
-				EditText etSearch = searchbar.findViewById(R.id.etSearch);
-				//etSearch.setBackgroundColor(Color.TRANSPARENT);
-				searchbar.setNavigationOnClickListener(v1 -> {
-					toggleInPageSearch(false);
-					if (etSearch.hasFocus())
-						a.imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
-					a.fadeSnack();
-				});
-				etSearch.setText(PerusePageSearchetSearchStartWord);
-				etSearch.addTextChangedListener(new TextWatcher() {
-					@Override
-					public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-					}
-
-					@Override
-					public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-					}
-
-					@Override
-					public void afterTextChanged(Editable s) {
-						String text = etSearch.getText().toString().replace("\\", "\\\\");
-						a.HiFiJumpRequested=PDICMainAppOptions.getPageAutoScrollOnType();
-						a.SearchInPage(text);
-					}
-				});
-
-				View vTmp = searchbar.getChildAt(searchbar.getChildCount() - 1);
-				if (vTmp != null && vTmp.getClass() == AppCompatImageButton.class) {
-					AppCompatImageButton NavigationIcon = (AppCompatImageButton) vTmp;
-					ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) NavigationIcon.getLayoutParams();
-					//lp.setMargins(-10,-10,-10,-10);
-					lp.width = (int) (45 * dm.density);
-					NavigationIcon.setLayoutParams(lp);
-				}
-
-				searchbar.setContentInsetsAbsolute(0, 0);
-				searchbar.setLayoutParams(toolbar.getLayoutParams());
-				searchbar.setBackgroundColor(a.AppWhite==Color.WHITE?a.MainBackground:Color.BLACK);
-				searchbar.setBackgroundColor(a.MainBackground);
-				searchbar.findViewById(R.id.ivDeleteText).setOnClickListener(v -> etSearch.setText(null));
-				View.OnDragListener searchbar_stl = (v, event) -> {
-					if(event.getAction()== DragEvent.ACTION_DROP){
-						ClipData textdata = event.getClipData();
-						if(textdata.getItemCount()>0){
-							if(textdata.getItemAt(0).getText()!=null)
-								etSearch.setText(textdata.getItemAt(0).getText());
-						}
-						return false;
-					}
-					return true;
-				};
-				InPageSearchbar = this.PerusePageSearchbar = searchbar;
-				this.PerusePageSearchetSearch = etSearch;
-				this.PerusePageSearchindicator = searchbar.findViewById(R.id.indicator);
-				View viewTmp=searchbar.findViewById(R.id.recess);
-				viewTmp.setOnDragListener(searchbar_stl);
-				viewTmp.setOnClickListener(this);
-				viewTmp=searchbar.findViewById(R.id.forward);
-				viewTmp.setOnDragListener(searchbar_stl);
-				viewTmp.setOnClickListener(this);
-			}
-			ViewGroup parent = (ViewGroup) InPageSearchbar.getParent();
-			boolean b1= parent ==null;
-			if (b1) {
-				contentview.addView(InPageSearchbar, 0);
-				InPageSearchbar.findViewById(R.id.etSearch).requestFocus();
-				InPageSearchbar.setTag(PerusePageSearchetSearch.getText());
-				a.SearchInPage(null);
-			} else {
-				parent.removeView(InPageSearchbar);
-				mWebView.evaluateJavascript("clearHighlights()", null);
-				InPageSearchbar.setTag(null);
-			}
-			opt.setPeruseInPageSearchVisible(b1);
-			//PerusePageSearchbar.post(() -> RecalibrateContentSnacker(opt.isContentBow()));
-		}
+	void toggleInPageSearch(boolean isLongClicked) { //333
+//		MainActivityUIBase a = getMainActivity();
+//		if(isLongClicked){
+//			a.launchSettings(7, 0);
+//		}
+//		else {
+//			Toolbar InPageSearchbar = PerusePageSearchbar;
+//			if (InPageSearchbar == null) {
+//				Toolbar searchbar = (Toolbar) getLayoutInflater().inflate(R.layout.searchbar, null);
+//				searchbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);//abc_ic_ab_back_mtrl_am_alpha
+//				EditText etSearch = searchbar.findViewById(R.id.etSearch);
+//				//etSearch.setBackgroundColor(Color.TRANSPARENT);
+//				searchbar.setNavigationOnClickListener(v1 -> {
+//					toggleInPageSearch(false);
+//					if (etSearch.hasFocus())
+//						a.imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+//					a.fadeSnack();
+//				});
+//				etSearch.setText(PerusePageSearchetSearchStartWord);
+//				etSearch.addTextChangedListener(new TextWatcher() {
+//					@Override
+//					public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//					}
+//
+//					@Override
+//					public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//					}
+//
+//					@Override
+//					public void afterTextChanged(Editable s) {
+//						String text = etSearch.getText().toString().replace("\\", "\\\\");
+//						a.HiFiJumpRequested=PDICMainAppOptions.getPageAutoScrollOnType();
+//						a.SearchInPage(text);
+//					}
+//				});
+//
+//				View vTmp = searchbar.getChildAt(searchbar.getChildCount() - 1);
+//				if (vTmp != null && vTmp.getClass() == AppCompatImageButton.class) {
+//					AppCompatImageButton NavigationIcon = (AppCompatImageButton) vTmp;
+//					ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) NavigationIcon.getLayoutParams();
+//					//lp.setMargins(-10,-10,-10,-10);
+//					lp.width = (int) (45 * dm.density);
+//					NavigationIcon.setLayoutParams(lp);
+//				}
+//
+//				searchbar.setContentInsetsAbsolute(0, 0);
+//				searchbar.setLayoutParams(toolbar.getLayoutParams());
+//				searchbar.setBackgroundColor(a.AppWhite==Color.WHITE?a.MainBackground:Color.BLACK);
+//				searchbar.setBackgroundColor(a.MainBackground);
+//				searchbar.findViewById(R.id.ivDeleteText).setOnClickListener(v -> etSearch.setText(null));
+//				View.OnDragListener searchbar_stl = (v, event) -> {
+//					if(event.getAction()== DragEvent.ACTION_DROP){
+//						ClipData textdata = event.getClipData();
+//						if(textdata.getItemCount()>0){
+//							if(textdata.getItemAt(0).getText()!=null)
+//								etSearch.setText(textdata.getItemAt(0).getText());
+//						}
+//						return false;
+//					}
+//					return true;
+//				};
+//				InPageSearchbar = this.PerusePageSearchbar = searchbar;
+//				this.PerusePageSearchetSearch = etSearch;
+//				this.PerusePageSearchindicator = searchbar.findViewById(R.id.indicator);
+//				View viewTmp=searchbar.findViewById(R.id.recess);
+//				viewTmp.setOnDragListener(searchbar_stl);
+//				viewTmp.setOnClickListener(this);
+//				viewTmp=searchbar.findViewById(R.id.forward);
+//				viewTmp.setOnDragListener(searchbar_stl);
+//				viewTmp.setOnClickListener(this);
+//			}
+//			ViewGroup parent = (ViewGroup) InPageSearchbar.getParent();
+//			boolean b1= parent ==null;
+//			if (b1) {
+//				contentview.addView(InPageSearchbar, 0);
+//				InPageSearchbar.findViewById(R.id.etSearch).requestFocus();
+//				InPageSearchbar.setTag(PerusePageSearchetSearch.getText());
+//				a.SearchInPage(null);
+//			} else {
+//				parent.removeView(InPageSearchbar);
+//				mWebView.evaluateJavascript("clearHighlights()", null);
+//				InPageSearchbar.setTag(null);
+//			}
+//			opt.setPeruseInPageSearchVisible(b1);
+//			//PerusePageSearchbar.post(() -> RecalibrateContentSnacker(opt.isContentBow()));
+//		}
 	}
 	
 	public void prepareProgressBar(View progressBar) {
@@ -1802,7 +1797,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			contentUIData.PageSlider.WebContext = mWebView;
 			mWebView.IBC = currentDictionary.IBC;
 			contentUIData.PageSlider.invalidateIBC();
-			weblistHandler.setViewMode(WEB_VIEW_SINGLE, false);
+			weblistHandler.setViewMode(WEB_VIEW_SINGLE, false, null);
         	
 //        	if(widget14.getVisibility()==View.VISIBLE) {
 //        		widget13.setVisibility(View.GONE);

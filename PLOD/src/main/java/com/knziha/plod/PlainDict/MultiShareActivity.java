@@ -428,11 +428,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	void contentviewAddView(View v, int i) {
-	
-	}
-	
-	@Override
 	public void invalidAllLists() {
 	
 	}

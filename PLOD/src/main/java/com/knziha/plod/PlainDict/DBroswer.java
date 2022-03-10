@@ -1295,7 +1295,7 @@ public class DBroswer extends DialogFragment implements
 		CMN.Log("SelectionMode_pan", records.size());
 		if(records.size()>0) {
 			setUpContentView();
-			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);
+			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
 			//yyy
 			a.recCom = rec = new resultRecorderCombined(a,data,a.md, null);
 			ScrollViewmy WHP = (ScrollViewmy) weblistHandler.getScrollView();
@@ -1387,7 +1387,7 @@ public class DBroswer extends DialogFragment implements
 			setUpContentView();
 			boolean bUseMergedUrl = false;
 			boolean bUseDictView = /*currentDictionary.rl!=null || */!opt.getUseSharedFrame() || opt.getMergeExemptWebx()&&currentDictionary.getIsWebx();
-			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl);
+			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, null);
 			if(!bUseDictView) weblistHandler.initMergedFrame(false, true, true);
 			ScrollerRecord pagerec = null;
 //			if(opt.getRemPos()) {
@@ -1433,6 +1433,7 @@ public class DBroswer extends DialogFragment implements
 				currentDictionary.initViewsHolder(a);
 				webview = currentDictionary.mWebView;
 				someView = currentDictionary.rl;
+				weblistHandler.dictView = webview;
 				if(webview.weblistHandler==a.weblistHandler && a.weblistHandler.isWeviewInUse(someView)) {
 					a.DetachContentView(false);
 				}

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
 			xmlns:app="http://schemas.android.com/apk/res-auto"
+			xmlns:tools="http://schemas.android.com/tools"
 			android:id="@+id/searchbar"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
@@ -10,78 +11,90 @@
 			app:contentInsetStart="0dp"
 			app:contentInsetStartWithNavigation="0dp"
 	>
-
-	        <RelativeLayout
-	            android:layout_width="fill_parent"
+	        <LinearLayout
+	            android:layout_width="match_parent"
 	            android:layout_height="wrap_content"
 	            android:layout_centerVertical="true"
-	            android:gravity="center_vertical" 
+	            android:gravity="center_vertical"
+				android:orientation="horizontal"
+				android:clipChildren="false"
 	            >
-
-	            <com.knziha.plod.widgets.EditTextmy
-	                android:id="@+id/etSearch"
-	    			android:layout_toLeftOf="@+id/indicator"
-	                android:layout_width="fill_parent"
-	                android:layout_height="?attr/actionBarSize"
-	                android:paddingRight="32dp"
-	                android:singleLine="true"
-	                android:textColor="#ffffff"
-	                android:imeOptions="actionSearch" >
-	            </com.knziha.plod.widgets.EditTextmy>
-
-	             <ImageView
-	                android:id="@+id/ivDeleteText"
-	                android:layout_width="wrap_content"
-	                android:layout_height="wrap_content"
-	                android:layout_alignRight="@+id/etSearch"
-	                android:layout_marginRight="6dp"
-	                android:layout_centerInParent="true"
-	                android:paddingLeft="3dp"
-	                android:paddingRight="5dp"
-	                android:paddingTop="8dp"
-	                android:paddingBottom="8dp"
-	                android:src="@drawable/icon_denglu_close"
-	                />
+	            <FrameLayout
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:layout_weight="1"
+					>
+					<com.knziha.plod.widgets.EditTextmy
+						android:id="@+id/etSearch"
+						android:layout_width="match_parent"
+						android:layout_height="?attr/actionBarSize"
+						android:paddingRight="32dp"
+						android:singleLine="true"
+						android:textColor="#ffffff"
+						android:imeOptions="actionSearch" />
+					<ImageView
+						android:id="@+id/ivDeleteText"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_gravity="center|right"
+						android:layout_marginRight="6dp"
+						android:paddingLeft="3dp"
+						android:paddingRight="5dp"
+						android:paddingTop="8dp"
+						android:paddingBottom="8dp"
+						android:src="@drawable/icon_denglu_close"
+						/>
+					<TextView
+						android:id="@+id/dictName"
+						android:layout_gravity="bottom"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_centerVertical="true"
+						android:textColor="#efffffff"
+						android:textSize="12sp"
+						android:maxLines="1"
+						tools:text="dictionaryName"
+						tools:translationX="250dp"
+						/>
+				</FrameLayout>
 
 				<TextView
 					android:id="@+id/indicator"
-					android:layout_marginRight="5dp"
-					android:layout_toLeftOf="@+id/forward"
+					android:layout_marginRight="2dp"
+					android:layout_marginLeft="2dp"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:text=""
 					android:layout_centerVertical="true"
 					android:textColor="#fff"
-				/>
+					android:textSize="14sp"
+					tools:text="1/2 (3)"
+					/>
+
+				<ImageView
+					android:id="@+id/enter"
+					android:layout_width="@dimen/_35_"
+					android:layout_height="?attr/actionBarSize"
+					android:layout_marginLeft="3dp"
+					android:src="@drawable/ic_search_24k"
+					android:background="?attr/actionBarItemBackground"
+					/>
 
 				<ImageView
 	                android:id="@+id/forward"
-	    			android:layout_toLeftOf="@+id/recess"
-					android:paddingRight="6dp"
+					android:layout_marginLeft="3dp"
 					android:layout_width="@dimen/_35_"
 	                android:layout_height="?attr/actionBarSize"
-	                android:layout_centerInParent="true"
 	                android:src="@drawable/toshn"
-	                />
-	              
-	            <ImageView
-	                android:id="@+id/recess"
-					android:layout_toLeftOf="@+id/enter"
-	    			android:paddingRight="6dp"
-					android:layout_width="@dimen/_35_"
-	                android:layout_height="?attr/actionBarSize"
-	                android:layout_centerInParent="true"
-	                android:src="@drawable/toxia"
+					android:background="?attr/actionBarItemBackground"
 	                />
 
 	            <ImageView
-	                android:id="@+id/enter"
-	                android:layout_alignParentRight="true"
-	    			android:paddingRight="6dp"
+					android:layout_marginLeft="3dp"
+	                android:id="@+id/recess"
 					android:layout_width="@dimen/_35_"
 	                android:layout_height="?attr/actionBarSize"
-	                android:layout_centerInParent="true"
-	                android:src="@drawable/ic_search_24k"
+	                android:src="@drawable/toxia"
+					android:background="?attr/actionBarItemBackground"
 	                />
-	        </RelativeLayout>
+	        </LinearLayout>
  </androidx.appcompat.widget.Toolbar>

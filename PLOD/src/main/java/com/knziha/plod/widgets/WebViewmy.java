@@ -120,6 +120,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public additiveMyCpr1 jointResult;
 	public int translating = -1;
 	public WebViewListHandler weblistHandler;
+	public WebViewListHandler.HighlightVagranter hDataPage = new WebViewListHandler.HighlightVagranter();
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
@@ -198,7 +199,10 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		settings.setDomStorageEnabled(true);
 		
 		settings.setAllowFileAccess(true);
+		
+		settings.setSupportMultipleWindows(true);
 
+		
 //		settings.setUseWideViewPort(true);//设定支持viewport
 //		settings.setLoadWithOverviewMode(true);
 //		settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
@@ -1229,6 +1233,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		lastY = event.getY();
 		if(event.getActionMasked()==MotionEvent.ACTION_DOWN) {
 			supressNxtClickTranslator = bIsActionMenuShown;
+			if(fromCombined==1) {
+				weblistHandler.setLastScrollBook(this);
+			}
 		}
 		if (hasWidgets) {
 			//setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);

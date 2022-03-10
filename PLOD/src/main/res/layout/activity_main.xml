@@ -1,8 +1,7 @@
 <layout>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:tools="http://schemas.android.com/tools"
+	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:CheckableImageview="http://schemas.android.com/apk/res-auto"
-	xmlns:tools="http://schemas.android.com/tools"
 	android:id="@+id/root"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
@@ -193,6 +192,7 @@
 				android:layout_width="match_parent"
 				android:layout_height="2px"
 				android:background="#f0afafaf"
+				android:visibility="gone"
 				/>
 			<LinearLayout
 				android:layout_width="match_parent"
@@ -278,11 +278,10 @@
 		android:id="@+id/second_holder"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:fitsSystemWindows="true"
 		android:elevation="5dp"
-		/>
+		android:fitsSystemWindows="true" />
 
-<!--	<ProgressBar-->
+	<!--	<ProgressBar-->
 <!--		android:id="@+id/main_progress_bar"-->
 <!--		android:layout_width="wrap_content"-->
 <!--		android:layout_height="wrap_content"-->
@@ -297,7 +296,7 @@
 		android:layoutDirection="ltr"
 		android:elevation="6dp"
 		android:visibility="gone"
-		tools:visibility="visible"
+		tools:visibility="gone"
 		>
 		<LinearLayout
 			android:layout_centerInParent="true"
@@ -421,7 +420,7 @@
 						android:layout_below="@+id/schBook"
 						android:background="@drawable/listviewselector0"
 						android:src="@drawable/sel_auto_search"
-						CheckableImageview:CheckedTint="@color/ShallowHeaderBlue"
+						app:CheckedTint="@color/ShallowHeaderBlue"
 						android:padding="5dp"
 						android:tint="@color/SelHeaderBlue"
 						android:foreground="@drawable/popup_background3__"
@@ -474,6 +473,7 @@
 			android:listSelector="@drawable/listviewselector0"
 			android:background="@android:color/white"
 			android:visibility="invisible"
+			android:fastScrollEnabled="true"
 			/>
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
 			android:layout_height="match_parent"

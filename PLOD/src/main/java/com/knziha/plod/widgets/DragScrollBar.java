@@ -358,7 +358,7 @@ public class DragScrollBar extends RelativeLayout{
 	public Timer timer;
 
 	public void setDelimiter(String newShield, View _scrollee) {
-		handleThumb.setDelimiter(newShield);
+		//handleThumb.setDelimiter(newShield);
 		scrollee = _scrollee;
 	}
 

@@ -48,6 +48,9 @@
       -khtml-user-select:none;
       user-select:none;
     }
+	html {
+      position: fixed;
+	}
     #parentR {
       position: relative;
       height: 100%;	/*NO!!!width: 100%;!!!*/
@@ -63,10 +66,6 @@
       overflow-x: hidden;
       width: 100%;
       background-color: #B3E5EE;
-    }
-    .def {
-      position:absolute;
-      padding:4px 4px 100px 4px;
     }
     #navR{
       position: absolute;
@@ -167,6 +166,13 @@
       -khtml-user-select:none;
       user-select:none;
     }
+	#defPx {
+		counter-reset: def;
+	}
+	.dtx:before {
+		counter-increment: def;
+		content: counter(def) '. ';
+	}
     .dc
     {
       height:20px;
@@ -610,13 +616,53 @@
 			transform: scale(1);
 			-webkit-transform: scale(1);
 		}
+		.webxP {
+			display: flex;
+			flex-wrap: wrap;
+			padding: 0 16px;
+    		padding-top: 24px;
+			margin-right: -10px;
+			margin-bottom: 4px;
+			overflow: hidden;
+			justify-content: center;
+		}
+		.webx {
+			position: relative;
+			box-sizing: border-box;
+			padding: 10px 10px;
+			font-size: 80%;
+			background: #FAFFFA;
+			border-radius: 4px;
+			margin-right: 10px;
+			margin-bottom: 10px;
+			cursor: pointer;
+			user-select: none;
+			text-decoration: none;
+			color: unset;
+		}
 	</style> 
 	<script>
-		function debug(e){console.log('fatal web d::', e)};
+		if(!window.debug)
+			window.debug = function(...e){console.log('fatal web d::', e)};
+
 		function ge(e,p){return (p||document).getElementById(e)};
     	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
     	function _gn(e,p){if(!p || p.name===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
     	function gn(e,p){return _gn(e, p.firstElementChild);};
+		window.kit |= 0;
+		window.EventListenerWrap = window.addEventListener;
+		window.addEventListener = function(a,b,c) {
+					debug('000',window.rcspc, b===window.rcspc);
+			if(b===window.rcspc) {
+					debug(123)
+				for(var i=0,fx;fx=frames[i];i++) {
+					debug(456)
+					if(fx.item && fx.item.contentWindow)
+						fx.item.contentWindow.addEventListener(a,b,c);
+				}
+			}
+			EventListenerWrap(a,b,c);
+		}
 		var pengDingPos = -1;
 		var lv;
 		var defP;
@@ -632,8 +678,10 @@
 		var currentDictPos;
 		var chrome_ = 0;
 		var app;
-		var frames=[], contents, processing;
+		var frames=[], contents, processing, wbframes=[];
 		var etSearch;
+		window.pages=frames;
+		var wbf={};
 	 		
 		var menu, menuContext;//, trans;
 		var toastTimer=-1;
@@ -947,6 +995,7 @@
 			ge('body_').addEventListener('scroll',function(e){
 				if(e.srcElement.scrollTop>0)e.srcElement.scrollTop=0;
 			});
+			setTimeout(_highlight, 200)
 		}
 	
 		var postInit = function(){
@@ -1067,11 +1116,11 @@
 							//var h = type_bold?(tbh.clientHeight+65):(tbh.scrollHeight),h0=h;
 							var h = tbh.scrollHeight+(type_bold?65:0),h0=h;
 							//toast((inf.lastHeight-h)+','+(tbh.clientHeight-tbh.scrollHeight));
+							//inf.lastHeight=inf.box.offsetHeight;
 							if(type_bold && inf.lastHeight+65==h) {
 								continue;
 							}
-							if(type_bold && inf.lastHeight>200 && inf.lastHeight+130>=h) {
-								//kit
+							if(kit && inf.lastHeight>200 && inf.lastHeight+130>=h) {
 								continue;
 							}
 							if(inf.collapsed && h>inf.maxHeight) {
@@ -1093,7 +1142,7 @@
 							}
 							if(inf.fakeScroll) {
 								// 同步滚动条高度
-								if(nf) h = h0;
+								h = h0;
 								if(inf.fScroll.offsetHeight!=h) {
 									debug('111');
 									inf.fScroll.style.height=h+'px'; 
@@ -1234,6 +1283,23 @@
 			return e;
 		}
 
+		function checkFakeScroll(inf) {
+			var fakeScroll = opt.fm2 && opt.noNestedScroll2 && inf.collapsed;
+			if((fakeScroll ^ inf.fakeScroll) && inf.fScroll) 
+			{
+				// 若限制最大高度，则需打开滚动条代理，否则关闭。
+				inf.fScroll.parentNode.style.display=(inf.fakeScroll = fakeScroll)?'block':'none';
+				if(inf.fakeScroll && inf.item) try{
+					// 若打开，则需同步滚动高度和位置。
+					var win=inf.item.contentWindow;
+					inf.fScroll.style.height=win.document.body.clientHeight+'px'; 
+					//inf.fScroll.parentNode.scrollTop=win.scrollY; 
+				} catch(e){
+					debug(e);
+				}
+			}
+		}
+
 		function getFrame(inf, title, collapse) {
 			var e=inf.item;
 			if(!e && !inf.waiting) {
@@ -1250,7 +1316,6 @@
 					e.style.display="none";
 				}
 			}
-			
 			var t=inf.title;
 			if(true) {
 			//if(title) {
@@ -1281,7 +1346,7 @@
 								fbox.style.display="none";
 							}
 							fbox.dictInfo=inf;
-							var sp = craft('div', 'scroll', fbox);
+							var sp = inf.fScrollP = craft('div', 'scroll', fbox);
 							inf.fScroll = craft('div', 'fakeScroll', sp);
 							sp.dictInfo = inf;
 							sp.onscroll=onFakeScroll;
@@ -1332,20 +1397,7 @@
 				debug('box.style.height', inf.box.style.height);
 			}
 			
-			var fakeScroll = opt.fm2 && opt.noNestedScroll2;
-			if((fakeScroll ^ inf.fakeScroll) && inf.fScroll) 
-			{
-				// 若限制最大高度，则需打开滚动条代理，否则关闭。
-				inf.fScroll.parentNode.style.display=(inf.fakeScroll = fakeScroll)?'block':'none';
-				if(inf.fakeScroll && inf.item) try{
-					// 若打开，则需同步滚动高度和位置。
-					var win=inf.item.contentWindow;
-					inf.fScroll.style.height=win.document.body.clientHeight+'px'; 
-					//inf.fScroll.parentNode.scrollTop=win.scrollY; 
-				} catch(e){
-					debug(e);
-				}
-			}
+			checkFakeScroll(inf);
 
 			if(inf.viewDirty)handleViewDirty(inf);
 			return inf.item;
@@ -1442,32 +1494,61 @@
 				var sep=e.indexOf('\r');
 				if(sep) e=e.slice(sep+1);
 				var arr = e.split("-");
-				var hasId = e.startsWith('d');
+				var hasId = e.startsWith('d')||e.startsWith('w');
 				var pool=hasId?dictsInfo:dictsGroup;
 				frames.length=0;
+				wbframes.length=0;
+				wbframes.synth=0;
+				var firstWeb, webFirst=-1;
 				debug("processContents contents =", e, 'arr =', arr);
 				// [2nd pass] Rearrange array
-				for (var i = 0; i < arr.length; i++) {
+				for (var i=0,f=0; i < arr.length; i++) {
 					e = arr[i];
-					var pid=e;
-					pid = pid.slice(0, pid.indexOf('_'));
-					var inf=pool[pid];
+					var pid=e, idx=e.indexOf('_');
+					pid = pid.slice(0, idx);
+					var inf=pool[pid], isWeb=false;
+					if(pid[0]==='w') {
+						pid = 'd'+pid.slice(1);
+						e = 'd'+e.slice(1);
+						isWeb = true;
+						inf=pool[pid];
+					}
 					if(!inf) { 
-						// debug('动态添加', e)
 						inf={}; 
+						inf.keys=[];
 						pool[pid]=inf; 
 						if(hasId) inf.id=pid;
-					}
+						if(isWeb) {
+							inf.isWeb=isWeb;
+							inf.synth=idx<e.length-1;
+						}
+						//debug('动态添加', e, inf)
+					} 
 					if(!_proc && !inf.name) {
 						if(!infoReq) infoReq=pid;
 						else infoReq += ','+pid;
+					}
+					if(inf.isWeb) {
+						wbframes.push(inf);
+						if(webFirst<0) webFirst=frames.length;
+						if(!inf.synth) {
+							continue;
+						} else {
+							wbframes.synth++;
+							if(!firstWeb) firstWeb=inf;
+							wbframes.l=inf;
+						}
 					}
 					if(inf.VI){
 						e=e.substring(0, e.indexOf(":"));
 					}
 					inf.src = e;
-					inf.frameAt = i;
+					inf.frameAt = f++;
 					frames.push(inf);
+				}
+				if(webFirst>=0) {
+					wbframes.f=firstWeb||frames[webFirst];
+					insertWebx();
 				}
 				// var f=dictsP.firstChild;
 				// while(f) {
@@ -1479,6 +1560,7 @@
 				// 	}
 				// 	f=f.nextSibling;
 				// }
+
 			}
 			if(infoReq) {
 				checkDicts(infoReq, function(){processContents(contents, true)});
@@ -1518,8 +1600,9 @@
 				for (; i < len; i++) {
 					var inf=frames[i];
 					//e="\\content\\"+e;
-					/* \content\d5_abc */ 
-					unfoldFrame(inf);
+					/* \content\d5_abc */
+					if(inf!=wbf) 
+						unfoldFrame(inf);
 					inf.entry = 0; //todo
 					inf.initHeight = 100;
 					inf.collapsed = false;
@@ -1593,14 +1676,14 @@
 		var opt={
 			delay : true
 
-			,focusMode : 1 // 1=折叠其他；2=限制其他视图的高度；
+			,focusMode : 0 // 1=折叠其他；2=限制其他视图的高度；
 			,focusOne : false
 			,fm1 : false
 			,fm2 : false
 			,fml : false
 			,limHeightMode : 0 //非focus高度 :  0=限制最大值 1=强制数值
-			,maxHeight2 : 200
-			,initHeight2 : 100
+			,maxHeight2 : 250
+			,initHeight2 : 150
 			,alwaysShowExpand : true
 			,expandFirst1 : false
 			,expandFirst2 : false
@@ -1708,7 +1791,7 @@
 				if(des>0) {
 					startLazyLoadFrames(des);
 				}
-				//debug('onWebListScroll ed', des, firstVisFrame, lastVisFrame);
+				debug('onWebListScroll ed', des, firstVisFrame, lastVisFrame);
 			}
 		}
 
@@ -1749,7 +1832,7 @@
 			//debug('win.scrollBy', top, bhv);
 			if(inf.fakeScroll) {
 				 // 会触发下面的监听器，重复设置了滚动值，不影响。
-				inf.fScroll.parentNode.scrollTo({
+				inf.fScrollP.scrollTo({
 					top: win.scrollY + top
 					,behavior: bhv
 				});
@@ -1875,7 +1958,7 @@
 
 		function unloadFrame(e) {
 			if(e.safe && e.item) {
-				e.item.innerHTML='';
+				e.load='';
 				e.safe=false;
 			}
 		}
@@ -1883,8 +1966,8 @@
 		function checkUrl(e) {
 			var fx=e.item,u=e.src;
 			//toast(u+' 已加载123',0,2000)
-			if(fx && (fx.innerHTML!=u || e.isWeb && e.entry!=args.q)) {
-				debug('加载...', fx.innerHTML, u, tmp.pushStates);
+			if(fx && (e.load!=u || e.isWeb && e.entry!=args.q)) {
+				debug('加载...', e.load, u, tmp.pushStates);
 				var uri="\\content\\"+u, safe=false;
 				if(opt.safeFrame || opt.frameSafe&&tmp.pushStates){
 					debug('阻止...'); // 阻止iframe修改前后导航状态
@@ -1899,13 +1982,58 @@
 				if(e.isWeb) {
 					e.entry = args.q;
 				}
-				fx.innerHTML = u;
+				e.load = u;
 				return true;
 			}
 		}
 
+		function insertWebx() {
+			if(wbframes.length) {
+				if(!wbf.item) {
+					wbf.waiting=false;
+					wbf.scrollExpand=true;
+					var e = wbf.box = wbf.item = craft();
+					e.style='overflow: hidden;height: 100%;';
+					e.contentWindow={document:e, scrollTo:function(a,b){wbf.item.scrollTo(a,b)}};
+					e.body = wbf.p = craft(0,'webxP',e);
+					e.id=wbf.id;
+					e.dictInfo=wbf;
+					e.width="100%";
+					e.frameBorder=0;
+					e.className='contents';
+					//wbf.viewDirty=1;
+				}
+				getFrame(wbf, true, false);
+				wbf.dictTitle.innerText = '在线词典';
+				wbf.p.innerHTML='';
+				wbf.p.style.justifyContent=wbframes.length>2?'center':'flex-start';
+				if(wbframes.synth==wbframes.length) {
+					wbf.fold=true;
+					wbf.box.style.display='none';
+				} else {
+					wbf.fold=false;
+					wbf.box.style.display='block';
+				}
+				for(var i=0,fx;fx=wbframes[i];i++) {
+					var lnk=craft('A', 'webx', wbf.p);
+					lnk.dictInfo = fx;
+					if(fx.sch)lnk.href = sch.replace('%s', args.q);
+					lnk.target = '_blank';
+					if(fx.name)lnk.innerText = fx.name.slice(0,-4);
+					else lnk.innerText = fx.id;
+				}
+				var insert=frames.indexOf(wbframes.f)+1;
+				frames.splice(insert, 0, wbf);
+				wbf.name = '在线词典 ('+wbframes.length+')';
+				wbf.frameAt=insert;
+				for (var i=insert+1,fx; fx=frames[i++];) {
+					fx.frameAt++;
+				}
+			}
+		}
+
 		function isFrameLoaded(e) {
-			return e.item && e.item.innerHTML==e.src;
+			return e.load==e.src;
 		}
 		
 		function scrollToFrame(fx) {
@@ -2090,6 +2218,16 @@
 					}
 				}
 				if(cb) cb(e);
+				if(wbf.box&&wbf.box.parentNode) {
+					var webx=wbf.p.firstChild;
+					while(webx) {
+						if(webx.dictInfo) {
+							webx.innerText=(webx.dictInfo.name||'').slice(0, -4);
+							webx.href = (webx.dictInfo.sch||'').replace('%s', args.q);
+						}
+						webx=webx.nextSibling;
+					}
+				}
 			}, 'ids='+ids)
 		}
 		
@@ -2268,6 +2406,7 @@
 				e.preventDefault();
 			}
 			fixBtnText(inf);
+			checkFakeScroll(inf)
 		}
 
 		function fixBtnText(e) {
@@ -2581,6 +2720,7 @@
 					for(var i=0;i<e.length;i++){
 						var inf=e[i];
 						if(inf.id) dictsInfo[inf.id]=inf;
+						inf.keys=[];
 
 						var d = document.createElement('p');
 						var t = document.createElement('span');
@@ -3199,7 +3339,7 @@
 			toastTimer=setTimeout(function(){toastTimer=-1;toast.style.display='none'}, 300);
 		}
 		
-		function toast(msg, severity, time, parent){
+		function toast(msg, severity, time, parent, alpha){
 			if(toastTimer!=-1)clearTimeout(toastTimer);
 			if(!parent) parent=ge('parentR');
 			var toast = ge("toastview");
@@ -3215,11 +3355,12 @@
 				parent.appendChild(toast);
 			}
 			var tt=toast.firstChild;
-			tt.innerText=msg;
+			tt.innerHTML=msg;
 			tt.className=severity>=1?"warn":"info";
 			toastTimer=setTimeout(fadeToast, time||1000);
 			setTimeout(function(){toast.style.opacity=1}, 16);
 			toast.style.display='block'
+			tt.style.opacity=alpha||1;
 		}
 		
 		function h5Test(){
@@ -3290,10 +3431,26 @@
 		function clearHighlights(){
 			forEachFrame(function(e){e.clearHighlights()});
 		}
-		function highlight(keyword){
-			// todo 'async'
-			forEachFrame(function(e){e.highlight(keyword)});
+		// function highlight(keyword){
+		// 	// todo 'async'
+		// 	forEachFrame(function(e){e.highlight(keyword)});
+		// }
+		
+		var LoadMark;
+		function _highlight(keyword){
+			var b1=keyword==null;
+			if(b1)
+				keyword=app.getCurrentPageKey(sid.get());
+    		//keyword="happy";
+			debug('高亮开始, PageKey='+keyword);
+			if(keyword==null||b1&&keyword.trim().length==0)
+				return;
+			if(!LoadMark) {
+				function cb(){LoadMark=1;highlight(keyword);}
+				try{loadJs('mdbr://markloader.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'markloader.js');}
+			} else highlight(keyword);
 		}
+
 		function jumpHighlight(d){
 			// console.log('\njumpHighlight started...'+frames.length);
 			// var max=frames.length;

@@ -342,7 +342,7 @@
     }, {
       key: "iterateThroughNodes",
       value: function iterateThroughNodes(whatToShow, ctx, eachCb, filterCb, doneCb) {
-        //console.log('iterateThroughNodes, whatToShow=', whatToShow, 'ctx=', ctx);
+        console.log('iterateThroughNodes, whatToShow=', whatToShow, 'ctx=', ctx);
         var _this5 = this;
 
         var itr = _this5.createIterator(ctx, whatToShow, filterCb);

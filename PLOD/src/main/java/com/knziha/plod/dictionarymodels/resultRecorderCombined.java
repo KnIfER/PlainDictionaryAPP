@@ -3,7 +3,6 @@ package com.knziha.plod.dictionarymodels;
 import static com.knziha.plod.plaindict.WebViewListHandler.WEB_LIST_MULTI;
 import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 
-import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
@@ -114,11 +113,11 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		scrollTarget=null;
 		final ScrollView sv = (ScrollView) weblistHandler.getScrollView();
 		toHighLight=a.hasCurrentPageKey();
-		if(toHighLight || expectedPos==0)
-			sv.scrollTo(0, 0);
-		else{
-			sv.scrollTo(0, expectedPos);
-		}
+//		if(toHighLight || expectedPos==0)
+//			sv.scrollTo(0, 0);
+//		else{
+//			sv.scrollTo(0, expectedPos);
+//		}
 		additiveMyCpr1 jointResult;
 		if(pos==-2) {
 			if(weblistHandler.bMergingFrames) {
@@ -155,10 +154,12 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		
 		if (!weblistHandler.bDataOnly) {
 			if(jointResult.realmCount==1 && PDICMainAppOptions.getLv2JointOneAsSingle()) {
-				weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl);
+				BookPresenter book = a.getBookByIdNoCreation(vals.get(0));
+				book.initViewsHolder(a);
+				weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, book.mWebView);
 				a.ensureContentVis(weblistHandler.contentUIData.webSingleholder, weblistHandler.contentUIData.WHP);
 			} else {
-				weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);
+				weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
 				a.ensureContentVis(weblistHandler, weblistHandler.contentUIData.webSingleholder);
 			}
 			weblistHandler.contentUIData.webSingleholder.setVisibility(View.VISIBLE);
@@ -173,8 +174,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		if((bUseMergedUrl || !bUseDictView) && weblistHandler.getMergedFrame().jointResult==jointResult
 			|| !bUseMergedUrl && weblistHandler.jointResult==jointResult && weblistHandler.getChildCount()==weblistHandler.frames.size()) {
 			//weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowingInPopup, bUseMergedUrl);
-			a.showT("未更新！");
-			return;
+			//a.showT("未更新！");
+			//return;
 		}
 		// [1st pass] Invalidate array
 		// [2nd pass] Rearrange array
@@ -277,11 +278,19 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 					mergedUrl = new StringBuilder("http://MdbR.com/MERGE.jsp?q=")
 						.append(SU.encode(jointResult.key)).append("&exp=");
 				else mergedUrl.append("-");
-				mergedUrl.append("d");
+				PlainWeb webx = presenter.getWebx();
+				mergedUrl.append(webx!=null?
+						"w"
+						:"d");
 				IU.NumberToText_SIXTWO_LE(presenter.getId(), mergedUrl);
-				for (long val:displaying) {
-					mergedUrl.append("_");
-					IU.NumberToText_SIXTWO_LE(val, mergedUrl);
+				if(webx!=null) {
+					mergedUrl.append("_")
+						.append(webx.hasField("synthesis")?"0":"");
+				} else {
+					for (long val:displaying) {
+						mergedUrl.append("_");
+						IU.NumberToText_SIXTWO_LE(val, mergedUrl);
+					}
 				}
 			}
 		}
@@ -295,13 +304,13 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			mWebView.jointResult=jointResult;
 		}
 		else {
-			if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
-				//expTbView = webholder.findViewById(R.id.toolbar_title); //yyy!!!
-				expTbView = weblistHandler.getViewGroup().findViewById(R.id.toolbar_title); //yyy!!!
-			}
-			if (expTbView != null) {
-				expTbView.performClick();
-			}
+//			if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
+//				//expTbView = webholder.findViewById(R.id.toolbar_title); //yyy!!!
+//				expTbView = weblistHandler.getViewGroup().findViewById(R.id.toolbar_title); //yyy!!!
+//			}
+//			if (expTbView != null) {
+//				expTbView.performClick();
+//			}
 			if(bUseDictView)
 				weblistHandler.jointResult=jointResult;
 			else

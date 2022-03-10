@@ -4,10 +4,5 @@
     android:height="96dp"
     xmlns:android="http://schemas.android.com/apk/res/android">
 <!--    <path android:fillColor="#FF000000" android:pathData="M10,6  L10,6 13.17,12   L10,18l6,-6z"/>-->
-    <path android:fillColor="#FFFFFFFF" android:pathData="
-
-    M9.5,6.12  L9.5,6.12 12.25,12  l0,0 L9.5,17.88 l7.5,-5.88z
-
-
-"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M6.12,8.5  L6.12,8.5 12,11.25  l0,0 L17.88,8.5 l-5.88,7.5z"/>
 </vector>
