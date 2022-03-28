@@ -33,12 +33,12 @@ public class PlainAppPanel extends SettingsPanel {
 	protected ViewGroup settingsLayoutHolder;
 	public View bottombar;
 	
-	public PlainAppPanel(MainActivityUIBase a) {
-		super(a, a.root, a.app_panel_bottombar_height/2, a.opt, a);
+	public PlainAppPanel(MainActivityUIBase a, boolean init) {
+		super(init?a:null, a.root, a.app_panel_bottombar_height/2, a.opt, a);
 		this.a = a;
-		if (showType==0 && settingsLayout!=null) {
-			ViewUtils.embedViewInCoordinatorLayout(settingsLayout, !showPopOnAppbar);
-		}
+//		if (showType==0 && settingsLayout!=null) {
+//			ViewUtils.embedViewInCoordinatorLayout(settingsLayout, !showPopOnAppbar);
+//		}
 		MainColorStamp = a.MainAppBackground;
 	}
 	

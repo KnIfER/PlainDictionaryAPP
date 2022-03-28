@@ -1,6 +1,9 @@
 # v5.7.2
-- 支持用新窗口打开target='_blank'链接
+- 支持双列分组选择器、双列跳转列表。
+- 可用弹窗打开target='_blank'链接。
+- 点译不绘制高亮框，而是保留系统的文本选区。
 
+Got preview callback, but no handler or resolution available
 
 # v5.7.1
 - 在底部弹出文本提示的动画横幅，不再遮挡列表。

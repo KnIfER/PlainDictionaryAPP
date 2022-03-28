@@ -10,22 +10,21 @@
     android:gravity="center_vertical"
     android:minHeight="45dp"
     android:foreground="@drawable/diag1_selector"
+	android:clipChildren="false"
 	>
 
 	<FrameLayout
 		android:id="@+id/coverp"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
-		android:paddingStart="3dp"
-		android:paddingEnd=  "1dp"
-		android:visibility="gone"
+		android:paddingStart="1.5dp"
+		android:paddingEnd=  "1.5dp"
 		>
 		<ImageView
 			android:id="@+id/cover"
-			android:layout_width="35dp"
-			android:layout_height="35dp"
+			android:layout_width= "25.5dp"
+			android:layout_height="25.5dp"
 			android:layout_gravity="center_vertical"
-			android:background="@drawable/cover"
 			android:clickable="false"
 			/>
 	</FrameLayout>
@@ -33,11 +32,12 @@
     <com.knziha.plod.widgets.FlowTextView
         android:id="@+id/id_num"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/lvtextsize"
         android:layout_marginLeft="5dp"
         android:layout_gravity="center_vertical"
         android:textSize="@dimen/lvtextsize"
 		app:starWidth="35dp"
+		android:maxLines="1"
 		tools:text="简明"
 		tools:src="@drawable/star_ic_solid"
         />

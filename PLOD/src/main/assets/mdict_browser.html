@@ -234,6 +234,20 @@
 		background-color: #808080;
 	}
 
+	
+	.defS::-webkit-scrollbar {
+		width: 12px;
+    	height: 12px;
+	}
+	.defS::-webkit-scrollbar-track-piece {
+		background-color: transparent;
+	}
+	.defS::-webkit-scrollbar-thumb:vertical {
+		border-radius: 10px;
+		border: 2px solid transparent;
+		background: rgba(0,0,0,0.25);
+	}
+
     #ListView{
       position: absolute;
 	  left: 0;
@@ -640,10 +654,37 @@
 			text-decoration: none;
 			color: unset;
 		}
+		.dlab{
+			position: absolute;
+			width:fit-content;
+			bottom:0px;
+			left:0;
+			right:0;
+			margin:auto;
+			padding:2px;
+			color: transparent;
+			font-size: 80%;
+			pointer-events:none;
+		}
+		.dlab.y{
+			-webkit-text-stroke: 2.5px #fff;
+		}
+		.dlab.x{
+			color: #000;
+			font-size: 80%;
+		}
+		#sh{
+			position: absolute;
+			width:15px;
+			height:36px;
+			right:10px;
+			background-color: #03a9f4;
+			border-radius: 10px;
+		}
 	</style> 
 	<script>
 		if(!window.debug)
-			window.debug = function(...e){console.log('fatal web d::', e)};
+			window.debug = function(e){console.log('fatal web d::', e)};
 
 		function ge(e,p){return (p||document).getElementById(e)};
     	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
@@ -666,6 +707,7 @@
 		var pengDingPos = -1;
 		var lv;
 		var defP;
+		var sh, shs, shsty;
 		var dictsP;
 		var loadingEntries;
 		var capacity = 30;
@@ -728,6 +770,9 @@
 			{
 				resizer.m='touchmove';
 				resizer.u='touchend';
+			} else {
+				var t=ge('dlab');
+				if(t)t.style=t.nextElementSibling.style='font-size:99%';
 			}
 			bindResize(ge('drag_resizer'));
 			bindResize(ge('toolbar'));
@@ -863,8 +908,9 @@
 		}
 		
 		function Initialize() {
-			merge = location.pathname==='/MERGE.jsp';
+			merge = location.pathname==='/merge.jsp';
 			defP = ge("defP");
+			SH();
 			etSearch = ge("word");
 			//rePopulate();
 			/**/
@@ -984,7 +1030,8 @@
 				e=ge('ListView'); if(e) e.remove();
 				ge('parentR').style.marginLeft=0;
 				defP.style.marginTop=0;
-			}/**/
+			}
+			/**/
 			
 			var useagent=navigator.userAgent;
 			debug(useagent);
@@ -1470,6 +1517,7 @@
 			defP.style.overflowY = 'hidden';
 			defP.style.display = 'flex';
 			defP.style.flexDirection = 'column';
+			tFrame(frames[0]);
 		}
 
 		/** 排列多页面内容。
@@ -1669,6 +1717,7 @@
 						startLazyLoadFrames(des||0);
 					}
 				}
+				tFrame(frames[0]);
 			}
 			processing=false;
 		}
@@ -1758,9 +1807,9 @@
 		};
 
 		var dex, dec, des, expanding;	
-		var currentFocus;
+		var currentFocus, scrollFocus, scrollFocusFz;
 
-		var firstVisFrame, lastVisFrame;
+		var firstVisFrame, lastVisFrame, midFrame;
 		function onWebListScroll(e){//滚动
 			if(processing) return;
 			//if(expanding) return;
@@ -1768,7 +1817,7 @@
 			//debug('onWebListScroll st', firstVisFrame, lastVisFrame);
 			var reCalc;
 			if(!withinFrame(currentHeight, firstVisFrame) || (firstVisFrame!=lastVisFrame) && !withinFrame(currentHeight+defP.offsetHeight, lastVisFrame)) {
-				firstVisFrame=lastVisFrame=0;
+				firstVisFrame=lastVisFrame=midFrame=0;
 				var des=0;
 				for (var i=0,fx; fx=frames[i++];) {
 					if(!firstVisFrame) {
@@ -1776,6 +1825,10 @@
 							firstVisFrame = fx;
 					}
 					else {
+						if(!midFrame) {
+							if(withinFrame(currentHeight+defP.offsetHeight/2, fx))
+							midFrame = fx;
+						}
 						if(!lastVisFrame) {
 							if(withinFrame(currentHeight+defP.offsetHeight, fx))
 								lastVisFrame = fx;
@@ -1788,22 +1841,52 @@
 					}
 					//...
 				}
+				tFrame(midFrame||firstVisFrame||lastVisFrame,1);
 				if(des>0) {
 					startLazyLoadFrames(des);
 				}
-				debug('onWebListScroll ed', des, firstVisFrame, lastVisFrame);
+				//debug('onWebListScroll ed', des, firstVisFrame, lastVisFrame);
 			}
+			// if(app) {
+			// 	app.sc(sid.get(), defP.scrollHeight-defP.offsetHeight, defP.scrollTop);
+			// }
+			shsty.top = (defP.scrollTop/(defP.scrollHeight-defP.offsetHeight)*(defP.offsetHeight-35))+'px';
+		}
+
+		function tpFrame(){
+			var e=scrollFocus.name;
+			e=e.slice(0, e.lastIndexOf('.'));
+			var t=ge('dlab');
+			t.innerText=t.nextElementSibling.innerText=e;
+		}
+
+		function tFrame(e,sc){
+			if(e && scrollFocus!=e) {
+				if(!scrollFocusFz||!sc) {
+					scrollFocus=e;
+					requestAnimationFrame(tpFrame);
+				}
+				if(!sc) {
+					scrollFocusFz=true;
+				}
+			}
+			//else if(!sc) scrollFocusFz=false;
+			if(!sc) setTimeout(unlockFzSc,200); //todo opt
+		}
+		
+		function unlockFzSc(){
+			scrollFocusFz=false;
 		}
 
 		function onCoverClick(e){
 			var t = e.srcElement;
 			while(!t.dictInfo) t = t.parentNode;
 			var inf=t.dictInfo;
-			if(app) {
-				app.showUcc(inf.id.slice(1), '');
-			} else {
+			// if(app) {
+			// 	app.showUcc(inf.id.slice(1), '');
+			// } else {
 				onMenuCreate(e, inf.dictTitle);
-			}
+			// }
 		}
 
 		function onBoxClick(e) {
@@ -2038,6 +2121,7 @@
 		
 		function scrollToFrame(fx) {
 			var scrollingTo;
+			tFrame(fx);
 			function doScroll(fx) {
 				fx = fx||scrollingTo;
 				//debug('scrollToFrame'+fx.name);
@@ -2150,14 +2234,16 @@
 			}
 		}
 
-		function whiterRgb(c, a){
-			if(a==undefined)a=0.08;
-			function mw(ch, amountToMix){
-				return 0xff*amountToMix+parseInt(ch,16)*(1-amountToMix);
+		function whiterRgb(c, a, t){
+			if(a==null)a=0.08;
+			function mw(ch, p){
+				return 0xff*p+parseInt(ch,16)*(1-p);
 			}
 			var r = mw(c.slice(0,2),a);
 			var g = mw(c.slice(2,4),a);
 			var b = mw(c.slice(4,6),a);
+			if(t)
+				return "rgba("+r+","+g+","+b+","+t+")";
 			return "rgb("+r+","+g+","+b+")";
 		}
 
@@ -2402,6 +2488,7 @@
 				// 		//,behavior: 'smooth'
 				// 	});
 			}
+			else tFrame(inf);
 			if(e.preventDefault) {
 				e.preventDefault();
 			}
@@ -2676,6 +2763,9 @@
 					sty.type="text/css";
 					var s='.title{background:linear-gradient(to top, #'+e.bgr+' , '+whiterRgb(e.bgr)+')}';
 					sty.appendChild(document.createTextNode(s));
+					//shsty.backgroundColor = whiterRgb(e.bgr,null,.8);
+					shsty.background = 'linear-gradient(to top, #'+e.bgr+' , '+whiterRgb(e.bgr)+')}'
+					shsty.opacity = 0.8;
 				}
 				ScanInDicts();
 				//showSettings();
@@ -3566,6 +3656,64 @@
 			if(negative) sb+='~';
 			return sb;
 		}
+
+		var shin,shy,shyst;
+		function SHfin() {
+
+		}
+		function SHfout() {
+
+		}
+		function SH() {
+			sh = ge("sh");
+			sh.ontouchstart=onmousedown=SH_D;
+			shsty = sh.style;
+			if(merge)
+				SH_S(app?app.cs():0);
+		}
+		function SH_S(t){
+			var d='block';
+			var s=shsty;
+			//t = 1;
+			shs = t;
+			if(t==0) {
+				s.left='unset';
+			} else if(t==1) {
+				s.left='10px';
+			} else if(t==2) {
+				d='none';
+			}
+			if(t==3) {
+				d='none';
+				defP.classList.add('defS');
+			} else {
+				defP.classList.remove('defS');
+			}
+			s.display=d;
+		}
+		function SH_D(e) {
+			shy=parseInt(shsty.top)||0;
+			shyst=e.clientY;
+			if(shyst==undefined)
+				shyst=e.changedTouches[0].clientY;
+			document.body.classList.add('dragging'); 
+			addEventListener(resizer.m, SH_M, 1);
+			addEventListener(resizer.u, SH_U, 1);
+		}
+		function SH_U(e) {
+			document.body.classList.remove('dragging'); 
+			removeEventListener(resizer.m, SH_M, 1);
+			removeEventListener(resizer.u, SH_U, 1);
+		}
+		function SH_M(e) {
+			e.preventDefault();
+			if(e.clientY==undefined)
+				e = e.changedTouches[0].clientY;
+			else
+				e = e.clientY;
+			//shsty.top = shy + (e-shyst) + 'px';
+			defP.scrollTop = (shy + e-shyst)/(defP.offsetHeight-35)*defP.scrollHeight;
+		}
 	</script>
 	
 	
@@ -3614,6 +3762,9 @@
 	<div id='defP'></div>
 	<a class="arrwp" id="prev"  onclick="prvnxtFrame();"><p class="arrow"></p></a>
 	<a class="arrwp" id="next" onclick="prvnxtFrame(1);"><p class="arrow"></p></a> 
+	<div id="dlab" class="dlab y">当前词典</div>
+	<div class="dlab x">当前词典</div>
+	<div id="sh"></div>
 </div>
 
 <div id="jsonid" style="display:none;"></div>

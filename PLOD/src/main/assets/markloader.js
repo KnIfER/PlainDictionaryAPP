@@ -112,10 +112,11 @@ function jumpTo(d, desiredOffset, frameAt, HlightIdx, reset, topOffset_frameAt,w
                         }
                     }
                 }
-                if (pg!=pageIndex
-                        && tT+tH/2<defPTop||tT>=defPTop+defPHeight) {
+                if (pg!=pageIndex) {
                     // 切换了
-                    toast(page.name, 0, 1800, 0, 0.95);
+                    if(tT+tH/2<defPTop||tT>=defPTop+defPHeight)
+                        toast(page.name, 0, 1800, 0, 0.95);
+                    tFrame(page);
                 }
             } else {
                 var position = topOffset(current);

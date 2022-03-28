@@ -18,7 +18,7 @@ public class NightModeSwitchPanel extends PlainAppPanel {
 	private DarkToggleButton dayNightArt;
 	
 	public NightModeSwitchPanel(MainActivityUIBase a) {
-		super(a);
+		super(a, true);
 	}
 	
 	@Override

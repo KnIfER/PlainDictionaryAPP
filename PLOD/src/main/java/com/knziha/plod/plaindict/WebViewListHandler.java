@@ -6,9 +6,10 @@ import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 
 import android.content.ClipData;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.os.SystemClock;
+import android.graphics.PorterDuffColorFilter;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -18,23 +19,27 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
 
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
@@ -77,8 +82,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public ImageView[] ContentbarBtns = new ImageView[ContentbarBtnIcons.length];
 	private boolean contentViewSetup;
 	private int lastScrollUpdateY;
-	BookPresenter lastScrollBook;
-	WebViewmy lastScrollBookView;
+	Runnable UpdateBookLabelAbility;
+	BookPresenter lastScrolledBook;
+	WebViewmy lastScrolledBookView;
+	WebViewmy mWebView;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData) {
 		super(a);
@@ -90,9 +97,16 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		this.webholder = contentUIData.webholder;
 		hDataSinglePage.webviewHolder = contentUIData.webSingleholder;
 		hDataMultiple.webviewHolder = contentUIData.webholder;
-		
+		contentUIData.bottombar2.setTag(this);
 		DragScrollBar mBar = contentUIData.dragScrollBar;
 		if(WHP.getScrollViewListener()==null) {
+			UpdateBookLabelAbility = ()->{
+				String name = lastScrolledBookView.presenter.getDictionaryName();
+				int idx=name.lastIndexOf(".");
+				if(idx>=0)name = name.substring(0, idx);
+				contentUIData.dictName.setText(name);
+				contentUIData.dictNameStroke.setText(name);
+			};
 			WHP.scrollbar2guard=mBar;
 			WHP.setScrollViewListener((v, x, y, oldX, oldY) -> {
 				oldY = y-WHP.oldY;
@@ -107,19 +121,19 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 								mBar.hiJackScrollFinishedFadeOut();
 							if(!mBar.isDragging){
 								mBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
-								mBar.setProgress(y);
+								mBar.progress(y);
 							}
 						}
-						if(Math.abs(lastScrollUpdateY-y)>GlobalOptions.density*50) {
+						if(!bMergingFrames && Math.abs(lastScrollUpdateY-y)>GlobalOptions.density*50) {
 							lastScrollUpdateY=y;
-							//CMN.pt("滚动="+Math.abs(oldY)+","+"y="+y+"::");
+							CMN.pt("滚动="+Math.abs(oldY)+","+"y="+y+"::");
 							//CMN.rt();
 							int bot=WHP.getScrollY() + WHP.getHeight()/2;
 							for (int i = 0; i < webholder.getChildCount(); i++) {
 								if(webholder.getChildAt(i).getBottom()>=bot) {
 									WebViewmy wv = (WebViewmy)webholder.getChildAt(i).getTag();
-									if(lastScrollBook!=wv.presenter) {
-										setLastScrollBook(wv);
+									if(lastScrolledBook !=wv.presenter) {
+										setLastScrolledBook(wv);
 									}
 									break;
 								}
@@ -136,15 +150,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		//WHP.setBackground(null);
 	}
 	
-	public void setLastScrollBook(WebViewmy wv) {
-		if(lastScrollBook!=wv.presenter) {
-			lastScrollBook = wv.presenter;
-			String name = wv.presenter.getDictionaryName();
-			name = name.substring(0, name.lastIndexOf("."));
-			contentUIData.dictName.setText(name);
-			contentUIData.dictNameStroke.setText(name);
+	public void setLastScrolledBook(WebViewmy wv) {
+		if(lastScrolledBook != wv.presenter) {
+			lastScrolledBook = wv.presenter;
+			a.root.postOnAnimationDelayed(UpdateBookLabelAbility, 50);
 		}
-		lastScrollBookView = wv;
+		lastScrolledBookView = wv;
 	}
 	
 	public ViewGroup getViewGroup() {
@@ -218,7 +229,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void setScrollbar() {
 		contentUIData.dragScrollBar.setMax(webholder.getMeasuredHeight()-WHP.getMeasuredHeight());
-		contentUIData.dragScrollBar.setProgress(WHP.getScrollY());
+		contentUIData.dragScrollBar.progress(WHP.getScrollY());
 		//a.mBar.onTouch(null, MotionEvent.obtain(0,0,MotionEvent.ACTION_UP,0,0,0));
 	}
 	
@@ -277,8 +288,72 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		ViewUtils.addOnLayoutChangeListener(webholder, OLCL);
 	}
 	
-	public void initWebHolderScrollChanged() {
-		//mBar.setDelimiter("|||", bMergingFrames?mMergedFrame:getViewGroup());
+	int shFlag;
+	public int getScrollHandType() {
+		return a.opt.getTypeFlag_11_AtQF(shFlag);
+	}
+	
+	public void setScrollHandType(int style) {
+		a.opt.setTypeFlag_11_AtQF(style, shFlag);
+		resetScrollbar(mWebView, bMergingFrames, true);
+	}
+	
+	/**  0=在右; 1=在左; 2=无; 3=系统滚动条  */
+	public void resetScrollbar(WebViewmy mWebView, boolean merged, boolean resetMerge){
+		int vis = View.VISIBLE;
+		boolean vsi = false;
+		int gravity = 0;
+		int type = a.thisActType==MainActivityUIBase.ActType.FloatSearch?2 //浮动搜索
+				:(a.PeruseSearchAttached() && mWebView==a.peruseView.mWebView)?4 // 翻阅
+				:(mWebView!=null&& mWebView==a.wordPopup.popupWebView)?6 // 点译
+				:0 // 主程序
+				;
+		shFlag=type;
+		// 主程序 浮动搜索 点译
+		if(merged) {
+			vis=View.GONE;
+			vsi=false;
+			if (resetMerge && mWebView!=null) {
+				mWebView.evaluateJavascript("SH_S("+a.opt.getTypeFlag_11_AtQF(shFlag)+")", null);
+			}
+		} else {
+			final int sty=a.opt.getTypeFlag_11_AtQF(type);
+			switch (sty){
+				case 0:
+					gravity=Gravity.END;
+					break;
+				case 1:
+					gravity=Gravity.START;
+					break;
+				case 2:
+					vis=View.GONE;
+					break;
+				case 3:
+					vis=View.GONE;
+					vsi=true;
+					break;
+			}
+		}
+		CMN.Log("resetScrollbar", mWebView!=null, vis, vsi);
+		DragScrollBar mBar = contentUIData.dragScrollBar;
+		if(mBar.getVisibility()!=vis)
+			mBar.setVisibility(vis);
+		if(vis==View.VISIBLE) {
+			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mBar.getLayoutParams();
+			if(gravity!=0 && lp.gravity!=gravity){
+				lp.gravity=gravity;
+				mBar.requestLayout();
+			}
+			mBar.setHandleColorFiler(a.MainAppBackground);
+			if(mWebView!=null) {
+				mBar.setDelimiter("", mWebView);
+			} else {
+				mBar.setDelimiter(isViewSingle()?null:"|||", isViewSingle()?mMergedFrame:contentUIData.WHP);
+			}
+		}
+		(mWebView==null?contentUIData.WHP:mWebView).setVerticalScrollBarEnabled(vsi);
+		a.weblist = this;
+		this.mWebView = mWebView;
 	}
 	
 	public WebViewmy getMergedFrame() {
@@ -391,6 +466,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	int frameCount;
+	int frameSelection;
 	int frameAt;
 	WeakReference<AlertDialog> jumpListDlgRef = EmptyRef;
 	AlertDialog jumpListDlg;
@@ -406,100 +482,163 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if(jumpListDlg==null){
 			jumpListDlg = jumpListDlgRef.get();
 		}
-		AlertDialog dialog = jumpListDlg;
-		if(dialog==null){
-			dialog = new AlertDialog.Builder(a/*,R.style.DialogStyle*/)
-					.setTitle("跳转")
-					.setAdapter(new BaseAdapter() {
-									public int getCount() { return frameCount; }
-									public Object getItem(int position) { return null; }
-									public long getItemId(int pos) { return pos<frames.size()?frames.get(pos).getId():-1;}
-									public View getView(int pos, View convertView, @NonNull ViewGroup parent) {
-										FlowCheckedTextView ret;
-										if(convertView!=null){
-											ret = (FlowCheckedTextView) convertView;
-										}
-										else {
-											CMN.rt();
-											ret = (FlowCheckedTextView) a.getLayoutInflater().inflate(R.layout.singlechoice_w, parent, false);
-//											if(tf==null) {
-//												tf = new textConfig();
-//												tf.ids = new int[]{
-//														android.R.attr.textAppearanceListItemSmall
-//														, android.R.attr.textColorAlertDialogListItem
-//														, android.R.attr.listChoiceIndicatorSingle
-//												};
-//												TypedArray a = getTheme().obtainStyledAttributes(R.style.AppTheme, tf.ids);
-//												tf.ids[0]=a.getResourceId(0, 0);
-//												tf.ids[1]=a.getResourceId(1, 0);
-//												tf.ids[2]=a.getResourceId(2, 0);
-//												a.recycle();
-//												tf.tsz = mResource.getDimension(R.dimen.lvtextsize);
-//											}
-//											ret = new FlowCheckedTextView(MainActivityUIBase.this);
-//											ret.setTextAppearance(tf.ids[0]);
-//											ret.setTextColor(tf.ids[1]);
-//											ret.setCheckMarkDrawable(tf.ids[2]);
-//											ret.setTextSize(tf.tsz);
-//											ret.setGravity(Gravity.CENTER_VERTICAL);
-//											ret.setId(android.R.id.text1);
-//											ret.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-//											ret.setPadding((int) (16*GlobalOptions.density), 0, (int) (7*GlobalOptions.density), 0);
-											ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
-											CMN.pt("创建视图!!");
-										}
-										BookPresenter book = a.getBookById(getItemId(pos));
-										if (book!=a.EmptyBook) {
-											FlowTextView tv = ret.mFlowTextView;
-											tv.setCompoundDrawables(a.getActiveStarDrawable(), null, null, null);
-											tv.setCover(book.getCover());
-											tv.setTextColor(GlobalOptions.isDark?Color.WHITE: Color.BLACK);
-											tv.setStarLevel(PDICMainAppOptions.getDFFStarLevel(book.getFirstFlag()));
-											ret.setChecked(pos == frameAt);
-											ret.setText(book.getDictionaryName());
-										} else {
-											ret.setText("Error!!!");
-										}
-										return ret;
-									}
-								}
-							, (dlg, pos) -> {
-								if(bMergingFrames) {
-									if(pos<frames.size()) {
-										BookPresenter book = frames.get(pos);
-										if (book!=null) {
-											StringBuilder sb = new StringBuilder(24);
-											sb.append("scrollToPosId('d");
-											NumberToText_SIXTWO_LE(book.getId(), sb);
-											sb.append("',");
-											sb.append(frameAt=pos);
-											sb.append(")");
-											mMergedFrame.evaluateJavascript(sb.toString(), null);
-										}
-									}
+		AlertDialog dTmp = jumpListDlg;
+		Bag bag;
+		if(dTmp==null){
+			bag = new Bag(PDICMainAppOptions.getTwoColumnSetView());
+			DialogInterface.OnClickListener listener = (dlg, pos) -> {
+				if(pos==-1) {
+					a.opt.setTwoColumnJumpList(bag.val=!bag.val);
+					((BaseAdapter)bag.tag).notifyDataSetChanged();
+					jumpListDlg.getListView().setSelection(bag.val?frameSelection/2:frameSelection);
+				}
+				else {
+					frameSelection = pos;
+					if(bMergingFrames) {
+						if(pos<frames.size()) {
+							BookPresenter book = frames.get(pos);
+							if (book!=null) {
+								StringBuilder sb = new StringBuilder(24);
+								sb.append("scrollToPosId('d");
+								NumberToText_SIXTWO_LE(book.getId(), sb);
+								sb.append("',");
+								sb.append(frameAt=pos);
+								sb.append(")");
+								mMergedFrame.evaluateJavascript(sb.toString(), null);
+							}
+						}
+					} else {
+						View childAt = getChildAt(pos);
+						if(childAt!=null) {
+							a.scrollToWebChild(childAt);
+							a.recCom.scrollTo(childAt, a);
+						}
+					}
+					dlg.dismiss();
+				}
+			};
+			PorterDuffColorFilter cf = new PorterDuffColorFilter(0xFF2196f3, PorterDuff.Mode.SRC_IN);
+			dTmp = new AlertDialog.Builder(a/*,R.style.DialogStyle*/)
+				.setTitle("跳转")
+				.setTitleBtn(R.drawable.ic_two_column, listener)
+				.setAdapter((BaseAdapter)(bag.tag=new BaseAdapter() {
+						@Override public int getCount() { return bag.val?(int)Math.ceil(frameCount/2.f):frameCount; }
+						@Override public Object getItem(int position) { return null; }
+						@Override public long getItemId(int pos) { return pos<frames.size()?frames.get(pos).getId():-1;}
+						@Override public int getViewTypeCount() { return 2; }
+						@Override public int getItemViewType(int position) {
+							return bag.val?1:0;
+						}
+						final View.OnClickListener twoColumnLis = new OnClickListener() {
+							public void onClick(View v) {
+								ViewGroup sp=(ViewGroup)v.getParent();
+								listener.onClick(jumpListDlg, IU.parsint(sp.getTag(), 0)*2+sp.indexOfChild(v));
+							}
+						};
+						@NonNull @Override
+						public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+							if(bag.val) {
+								ViewGroup ret;
+								if(convertView!=null){
+									ret = (ViewGroup) convertView;
 								} else {
-									View childAt = getChildAt(pos);
-									if(childAt!=null) {
-										a.scrollToWebChild(childAt);
-										a.recCom.scrollTo(childAt, a);
+									ret = (ViewGroup) a.getLayoutInflater().inflate(R.layout.singlechoice_two_column, parent, false);
+								}
+								for (int i = 2; i < ret.getChildCount(); i++) {
+									FlowCheckedTextView mFlowTextView = (FlowCheckedTextView) ret.getChildAt(i);
+									FlowTextView tv = mFlowTextView.mFlowTextView;
+									if(tv.getTag()==null)
+									{
+										ret.getChildAt(i-2).setOnClickListener(twoColumnLis);
+										tv.setText("");
+									}
+									int pos = position*2+i-2;
+									BookPresenter book = a.getBookById(getItemId(pos));
+									tv.setCompoundDrawables(a.getActiveStarDrawable(), null, null, null);
+									tv.setCover(book.getCover());
+									tv.setTextColor(a.AppBlack);
+									tv.setStarLevel(PDICMainAppOptions.getDFFStarLevel(book.getFirstFlag()));
+									mFlowTextView.setChecked(pos==frameSelection);
+									mFlowTextView.setText(book==a.EmptyBook?"":book.getDictionaryName());
+									boolean b1=pos==frameAt;
+									if(b1 ^ mFlowTextView.getTag()!=null) {
+										mFlowTextView.setTag(b1?"":null);
+										if(b1) {
+											mFlowTextView.setBackgroundResource(R.drawable.text_underline);
+											mFlowTextView.getBackground().setColorFilter(cf);
+										} else {
+											mFlowTextView.setBackground(null);
+										}
 									}
 								}
-								//dlg.dismiss();
-							})
-					.show();
-			dialog.setCanceledOnTouchOutside(true);
-			jumpListDlgRef = new WeakReference<>(jumpListDlg=dialog);
+								ret.setActivated(false);
+								ret.postInvalidateOnAnimation();
+								ret.setTag(position);
+								convertView = ret;
+							}
+							else {
+								FlowCheckedTextView ret;
+								if(convertView!=null){
+									ret = (FlowCheckedTextView) convertView;
+								} else {
+									ret = (FlowCheckedTextView) a.getLayoutInflater().inflate(R.layout.singlechoice_w, parent, false);
+								}
+								BookPresenter book = a.getBookById(getItemId(position));
+								if (book!=a.EmptyBook) {
+									FlowTextView tv = ret.mFlowTextView;
+									tv.setCompoundDrawables(a.getActiveStarDrawable(), null, null, null);
+									tv.setCover(book.getCover());
+									tv.setTextColor(a.AppBlack);
+									tv.setStarLevel(PDICMainAppOptions.getDFFStarLevel(book.getFirstFlag()));
+									ret.setChecked(position==frameSelection);
+									tv.setMaxLines(1); //todo opt
+									ret.setText(book.getDictionaryName());
+								} else {
+									ret.setText("Error!!!");
+								}
+								boolean b1=position==frameAt;
+								if(b1 ^ ret.getTag()!=null) {
+									ret.setTag(b1?"":null);
+									if(b1) {
+										ret.setBackgroundResource(R.drawable.text_underline);
+										ret.getBackground().setColorFilter(cf);
+									} else {
+										ret.setBackground(null);
+									}
+								}
+								convertView = ret;
+							}
+							return convertView;
+						}
+					})
+				, listener)
+				.show();
+			dTmp.setCanceledOnTouchOutside(true);
+			//dTmp.mAlert.wikiBtn.getLayoutParams().width = ((int)GlobalOptions.density*50);
+			
+			ListView dlv = dTmp.getListView();
+			dTmp.show();
+			dlv.setChoiceMode(ListView.CHOICE_MODE_NONE);
+			
+			Window window = dTmp.getWindow();
+			window.setDimAmount(0);
+			
+			jumpListDlgRef = new WeakReference<>(jumpListDlg=dTmp);
 			if(GlobalOptions.isDark) {
-				dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+				dTmp.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 			}
+			dTmp.tag = bag;
 		}
 		else {
-			CMN.Log("resue dkg");
-			dialog.show();
+			bag = (Bag)dTmp.tag;
+			dTmp.show();
 		}
 		if(!GlobalOptions.isLarge) {
-			dialog.getWindow().setLayout((int) (a.dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor)), -2);
+			dTmp.getWindow().setLayout((int) (a.dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor)), -2);
 		}
+		ListView lv = dTmp.getListView();
+		((AlertController.RecycleListView) lv)
+				.mMaxHeight = (int) (a.root.getHeight() - a.root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_) * (a.dm.widthPixels>GlobalOptions.realWidth?1:1.45));
 		//d.getWindow().getDecorView().setBackgroundResource(R.drawable.popup_shadow_l);
 		//d.getWindow().getDecorView().getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 		//d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
@@ -521,7 +660,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 							}
 							if(frameAt!=pos) {
 								frameAt = pos;
-								((BaseAdapter)jumpListDlg.getListView().getAdapter()).notifyDataSetChanged();
+								if(frameSelection==-1 || frameSelection>=frameCount) { //首次显示自动跳转
+									frameSelection = pos;
+									jumpListDlg.getListView().setSelection(bag.val?pos/2:pos);
+									((BaseAdapter)jumpListDlg.getListView().getAdapter()).notifyDataSetChanged();
+								}
 							}
 						}
 					}
@@ -531,6 +674,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				}
 			});
 		}
+		if(frameSelection==-1 || frameSelection>=frameCount) {
+			//首次显示自动跳转
+			frameSelection = frameAt;
+			lv.setSelection(bag.val?frameAt/2:frameAt);
+		}
 	}
 	
 	public final static int WEB_LIST_MULTI=0;
@@ -539,12 +687,16 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public void setViewMode(int mode, boolean bUseMergedUrl, WebViewmy dictView) {
 		if(mViewMode!=mode || bMergingFrames!=bUseMergedUrl) {
 			mViewMode = mode;
-			int vis = mode == WEB_VIEW_SINGLE || bUseMergedUrl ? View.GONE : View.VISIBLE;
+			int vis = mode==WEB_VIEW_SINGLE || bUseMergedUrl ? View.GONE : View.VISIBLE;
 			contentUIData.WHP.setVisibility(vis);
 			contentUIData.navBtns.setVisibility(vis);
 			
 			vis = mode==WEB_VIEW_SINGLE || bUseMergedUrl ? View.VISIBLE : View.GONE;
 			contentUIData.webSingleholder.setVisibility(vis);
+			
+			vis = bUseMergedUrl ? View.GONE : View.VISIBLE;
+			contentUIData.dictNameStroke.setVisibility(vis);
+			contentUIData.dictName.setVisibility(vis);
 		}
 		this.dictView = dictView;
 	}

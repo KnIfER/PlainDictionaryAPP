@@ -18,6 +18,7 @@ import com.knziha.filepicker.widget.HorizontalNumberPicker;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.plaindict.databinding.QuickSettingsPanelBinding;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
@@ -26,6 +27,7 @@ import com.knziha.plod.widgets.ViewUtils;
 
 public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPanel.ActionListener {
 	protected MainActivityUIBase a;
+	public WebViewListHandler weblist;
 	protected QuickSettingsPanelBinding UIData;
 	protected View sysVolEq;
 	protected View webSiteInfo;
@@ -37,13 +39,15 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	protected HorizontalNumberPicker mTextZoomNumberPicker;
 	protected static int mScrollY;
 	
-	public QuickBookSettingsPanel(MainActivityUIBase a) {
-		super(a);
+	public QuickBookSettingsPanel(MainActivityUIBase a, WebViewListHandler weblist) {
+		super(a, false);
+		this.weblist = weblist;
 		mActionListener = this;
 	}
 	
 	@Override
 	public void init(Context context, ViewGroup root) {
+		if(context==null) return;
 		a=(MainActivityUIBase) context;
 		
 		setShowInPop();
@@ -71,6 +75,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		sv.addView(lv, new ViewGroup.LayoutParams(-1, -2));
 		sv.setOverScrollMode(View.OVER_SCROLL_ALWAYS);
 		settingsLayout = sv;
+		sv.setBackgroundColor(mBackgroundColor);
 		
 		this.root = UIData.root;
 		ViewUtils.setOnClickListenersOneDepth(UIData.root, this, 999, null);
@@ -79,6 +84,12 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		{
 			UIData.scnArrow.setRotation(90);
 			initScreenPanel();
+		}
+		
+		if (opt.getAdjSHShwn())
+		{
+			UIData.shArrow.setRotation(90);
+			initScrollHandle();
 		}
 		
 		if(GlobalOptions.isDark) {
@@ -97,9 +108,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		}
 	}
 	
-	public void refresh() {
+	public void refresh(WebViewListHandler weblist) {
 		CMN.Log("刷新全部数据...");
-		if (screenSettings!=null) screenSettings.refresh();
+		this.weblist = weblist;
+		if (_screen !=null) _screen.refresh();
+		if (_sHandle !=null) initScrollHandle();
 		if (webSiteInfoListener!=null) webSiteInfoListener.onClick(null);
 	}
 	
@@ -109,9 +122,14 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		boolean checked = v instanceof SwitchCompatBeautiful && ((SwitchCompatBeautiful) v).isChecked();
 		switch (v.getId()) {
 			case R.id.scn: {
-				boolean show = opt.toggleAdjustScnShown();
+				boolean show = opt.togAdjScnShwn();
 				UIData.scnArrow.animate().rotation(show?90:0);
-				setPanelVis(initScreenPanel().settingsLayout, show);
+				setPanelVis(initScreenPanel(), show);
+			}  break;
+			case R.id.sh: {
+				boolean show = opt.togAdjSHShwn();
+				UIData.shArrow.animate().rotation(show?90:0);
+				setPanelVis(initScrollHandle(), show);
 			}  break;
 			case R.id.info:{
 				//boolean show = opt.toggleAdjustWebsiteInfoShown();
@@ -130,8 +148,8 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		}
 	}
 	
-	protected void setPanelVis(View settingsLayout, boolean show) {
-		settingsLayout.setVisibility(show?View.VISIBLE:View.GONE);
+	protected void setPanelVis(SettingsPanel p, boolean show) {
+		p.settingsLayout.setVisibility(show?View.VISIBLE:View.GONE);
 	}
 	
 	@Override
@@ -225,6 +243,13 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					a.setScreenOrientation(var.ordinal()-1);
 					a.root.post(this::initScreenPanel);
 				} break;
+				case kaoyou:
+				case kaozuo:
+				case hide:
+				case system: {
+					weblist.setScrollHandType(var.ordinal()-ActionGp_1.kaoyou.ordinal());
+					a.root.post(this::initScrollHandle);
+				} break;
 			}
 		}
 		return true;
@@ -244,8 +269,10 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		return drawables[0];
 	}
 	
+	SettingsPanel _screen;
+	SettingsPanel _sHandle;
 	
-	SettingsPanel screenSettings;
+	int shType;
 	
 	public final static int NONE_SETTINGS_GROUP1=0;
 	
@@ -268,10 +295,17 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		,dakaipdf
 		,tianjiapdflnk
 		,dakaipdfwenjian
+		,pad1
+		,pad2
+		,pad3
+		,kaoyou
+		,kaozuo
+		,hide
+		,system
 	}
 	
 	private SettingsPanel initScreenPanel() {
-		if (screenSettings==null) {
+		if (_screen ==null) {
 			final SettingsPanel screenSettings = new SettingsPanel(a, opt
 					, new String[][]{new String[]{null, "重力感应方向", "跟随系统方向", "锁定当前方向", "锁定启动方向"}}
 					, new int[][]{new int[]{Integer.MAX_VALUE
@@ -289,9 +323,6 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.hengping1.ordinal(), true)
 					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.hengping2.ordinal(), true)
 					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.hengping3.ordinal(), true)
-					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.shuping1.ordinal(), true)
-					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.shuping2.ordinal(), true)
-					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.shuping3.ordinal(), true)
 			}}, null);
 			final SettingsPanel shuping = new SettingsPanel(a, opt
 					, new String[][]{new String[]{"切换竖屏：", "重力感应", "正向", "反向"}}
@@ -320,7 +351,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			ViewUtils.addViewToParent(ll, screenSettings.settingsLayout, 0);
 			
 			addPanelViewBelow(screenSettings.settingsLayout, UIData.scnPanel);
-			this.screenSettings = screenSettings;
+			this._screen = screenSettings;
 		}
 		//if(opt.getLockStartOrientation() || fromSettingsChange)
 		{
@@ -338,16 +369,42 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			int idLast = makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.values()[ActionGp_1.hengping1.ordinal()+opt.getTmpUserOrientation()].ordinal(), true);
 			//if(idLast!=id)
 			{
-				btn = screenSettings.settingsLayout.findViewById(idLast);
+				btn = _screen.settingsLayout.findViewById(idLast);
 				btn.setChecked(false);
 			}
 			CMN.Log(idLast, btn.getText());
-			btn = screenSettings.settingsLayout.findViewById(id);
+			btn = _screen.settingsLayout.findViewById(id);
 			btn.setChecked(true);
 			CMN.Log(id, btn.getText());
 			opt.setTmpUserOrientation(lastIdx);
 		}
-		return screenSettings;
+		return _screen;
+	}
+	
+	private SettingsPanel initScrollHandle() {
+		shType = weblist.getScrollHandType();
+		if (_sHandle ==null) {
+			final SettingsPanel settings = new SettingsPanel(a, opt
+					, new String[][]{new String[]{"滚动条样式", "靠右", "靠左", "隐藏滚动条", "使用系统滚动条"}}
+					, new int[][]{new int[]{Integer.MAX_VALUE
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.kaoyou.ordinal(), true)
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.kaozuo.ordinal(), true)
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.hide.ordinal(), true)
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.system.ordinal(), true)
+			}}, null);
+			settings.setEmbedded(this);
+			settings.init(a, root);
+			
+			addPanelViewBelow(settings.settingsLayout, UIData.shPanel);
+			_sHandle = settings;
+		}
+		RadioSwitchButton btn;
+		for (int i=0,id; i < 4; i++) {
+			id = makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.kaoyou.ordinal()+i, true);
+			btn = _sHandle.settingsLayout.findViewById(id);
+			btn.setChecked(shType==i);
+		}
+		return _sHandle;
 	}
 	
 	protected void addPanelViewBelow(View settingsLayout, LinearLayout panelTitle) {

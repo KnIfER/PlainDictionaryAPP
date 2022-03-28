@@ -27,7 +27,7 @@ public class FlowCheckedTextView extends CheckedTextView {
 		mFlowTextView.pad_right = (int) (GlobalOptions.density*8);
 		if(getCheckMarkDrawable()!=null) {
 			mFlowTextView.setPadding(
-					(int) context.getResources().getDimension(R.dimen._18_)*2/3
+					(int) context.getResources().getDimension(R.dimen._18_)*2/3 + getPaddingLeft()
 					,0
 					,getCheckMarkDrawable().getIntrinsicWidth()
 					,0);
@@ -59,7 +59,7 @@ public class FlowCheckedTextView extends CheckedTextView {
 //	}
 	
 	public void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
+		if(isChecked())super.onDraw(canvas); // 神奇，竟然还有博文背景
 		if(prejudice>0){
 			canvas.translate(0, prejudice);
 		}

@@ -639,6 +639,10 @@ public class ViewUtils {
 		v.setVisibility(visible?View.VISIBLE:View.GONE);
 	}
 	
+	public static void setVisibility(View v, boolean visible) {
+		v.setVisibility(visible?View.VISIBLE:View.INVISIBLE);
+	}
+	
 	public static void setVisibleV2(View v, boolean visible) {
 		if(v!=null)v.setVisibility(visible?View.VISIBLE:View.GONE);
 	}

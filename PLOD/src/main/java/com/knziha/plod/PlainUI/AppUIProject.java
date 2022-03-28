@@ -203,7 +203,8 @@ public class AppUIProject {
 								iv = new ImageView(this_);
 								iv.setImageResource(bid);
 							}
-							iv.setBackgroundResource(R.drawable.surrtrip1);
+							//iv.setBackgroundResource(R.drawable.surrtrip1);
+							iv.setBackgroundResource(R.drawable.abc_action_bar_item_background_material);
 							iv.setLayoutParams(this_.contentUIData.browserWidget10.getLayoutParams());
 							iv.setId(btnIcons[id]);
 							iv.setOnClickListener(this_);
@@ -217,6 +218,7 @@ public class AppUIProject {
 						}
 						else {
 							ViewGroup svp = (ViewGroup) iv.getParent();
+							iv.setBackgroundResource(R.drawable.abc_action_bar_item_background_material);
 							if (svp != null) svp.removeView(iv);
 						}
 						bottombar.addView(iv);

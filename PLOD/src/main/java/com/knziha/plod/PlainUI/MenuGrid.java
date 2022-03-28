@@ -13,6 +13,7 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.DescriptiveImageView;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -29,7 +30,7 @@ public class MenuGrid extends PlainAppPanel {
 	private int btnShareBundleResId = R.drawable.abc_ic_menu_share_mtrl_alpha;
 	
 	public MenuGrid(MainActivityUIBase a) {
-		super(a);
+		super(a, true);
 	}
 	
 	@SuppressLint("ResourceType")

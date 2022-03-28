@@ -153,6 +153,7 @@ import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
+import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
@@ -230,7 +231,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -305,7 +305,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	final static String soundTag = "sound://";
 	protected final static String soundsTag = "sounds://";
 	public boolean hideDictToolbar=false;
-	public int pickTarget;
 	public boolean isBrowsingImgs;
 	public OnLongClickListener mdict_web_lcl;
 	public int defbarcustpos;
@@ -354,12 +353,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public Drawer drawerFragment;
 	public DictPicker pickDictDialog;
-	protected FrameLayout.LayoutParams mBar_layoutParmas;
 	public ViewGroup main;
 	public ViewGroup mainF;
 	
 	public ContentviewBinding contentUIData;
 	public WebViewListHandler weblistHandler;
+	public WebViewListHandler weblist;
 	public WebViewListHandler randomPageHandler;
 	public ViewGroup webSingleholder;
 	protected WindowManager wm;
@@ -389,8 +388,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	MenuItem PeruseListModeMenu;
 	
-	ViewGroup dialogHolder;
-	boolean dismissing_dh;
 	ViewGroup snack_holder;
 	public BookPresenter EmptyBook;
 	@NonNull public BookPresenter currentDictionary;
@@ -440,7 +437,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	
 	WeakReference<AlertDialog> setchooser;
-	int lastCheckedPos = -1;
 	private WeakReference<BottomSheetDialog> bottomPlaylist;
 	WeakReference<AlertDialog> ChooseFavorDialog;
 	WeakReference<DBroswer> DBrowserHolder;
@@ -607,7 +603,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	private void reload_dict_at(int i) {
 		try {
-			ArrayList<PlaceHolder> CosyChair = getLazyCC();
+			ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
 			PlaceHolder phTmp = CosyChair.get(i);
 			BookPresenter mdTmp = md.get(i);
 			if(mdTmp!=null) {
@@ -769,7 +765,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		try {
 			ret = md.get(i);
 			if(ret==null) {
-				ArrayList<PlaceHolder> CosyChair = getLazyCC();
+				ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
 				if(i<CosyChair.size()) {
 					phTmp = CosyChair.get(i);
 					if (phTmp != null) {
@@ -804,7 +800,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if (name.startsWith(AssetTag)) name = CMN.getAssetName(name);
 				else name = mdTmp.getDictionaryName();
 			} else {
-				ArrayList<PlaceHolder> CosyChair = getLazyCC();
+				ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
 				if(i<CosyChair.size()){
 					PlaceHolder placeHolder = CosyChair.get(i);
 					if(placeHolder!=null) {
@@ -830,7 +826,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mdTmp.setFirstFlag(flag=PDICMainAppOptions.setDFFStarLevel(flag, val));
 				mdTmp.saveStates(this, prepareHistoryCon());
 			} else {
-				ArrayList<PlaceHolder> CosyChair = getLazyCC();
+				ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
 				if(i<CosyChair.size()) {
 					PlaceHolder placeHolder = CosyChair.get(i);
 					if(placeHolder!=null) {
@@ -853,7 +849,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mdTmp!=null) {
 				flag =  mdTmp.getFirstFlag();
 			} else {
-				ArrayList<PlaceHolder> CosyChair = getLazyCC();
+				ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
 				if(i<CosyChair.size()) {
 					PlaceHolder placeHolder = CosyChair.get(i);
 					if(placeHolder!=null) {
@@ -902,7 +898,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	@SuppressWarnings("All")
 	public CharSequence md_getAbout_Trim(int i) {
-		ArrayList<PlaceHolder> placeHolders = getLazyCC();
+		ArrayList<PlaceHolder> placeHolders = getPlaceHolders();
 		PlaceHolder phTmp = placeHolders.get(i);
 		BookPresenter presenter = md.get(i);
 		String msg = phTmp.ErrorMsg;
@@ -979,7 +975,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public Drawable md_getCover(int i) {
 		BookPresenter mdTmp = md.get(i);
 		if(mdTmp!=null) return mdTmp.cover;
-		ArrayList<PlaceHolder> CosyChair = getLazyCC();
+		ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
 		if(i<CosyChair.size()) {}
 		return null;
 	}
@@ -1474,7 +1470,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			for (int i = 0; i < size; i++) {
 				BookPresenter mdTmp = currentFilter.get(i);
 				if(mdTmp==null){
-					ArrayList<PlaceHolder> CosySofa = getLazyCS();
+					ArrayList<PlaceHolder> CosySofa = getPlaceHolders();
 					if(i<CosySofa.size()){
 						PlaceHolder phI = CosySofa.get(i);
 						try {
@@ -1648,53 +1644,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		weblistHandler.shutUp();
 		if(contentUIData.navBtns.getVisibility()==View.VISIBLE) {
 			contentUIData.navBtns.setVisibility(View.GONE);
-		}
-	}
-
-	public abstract PlaceHolder getPlaceHolderAt(int idx);
-
-	public abstract ArrayList<PlaceHolder> getPlaceHolders();
-
-	/**  0=在右; 1=在左; 2=无; 3=系统滚动条  */
-	public void RecalibrateWebScrollbar(WebViewmy mWebView){
-		int vis = View.VISIBLE;
-		boolean vsi = false;
-		int gt = 0;
-		int type = mWebView!=null?0:2;
-		if(thisActType==ActType.FloatSearch)
-			type+=4;
-		switch (opt.getTypeFlag_11_AtQF(type)){
-			case 0:
-				gt=Gravity.END;
-			break;
-			case 1:
-				gt=Gravity.START;
-			break;
-			case 2:
-				vis=View.GONE;
-			break;
-			case 3:
-				vis=View.GONE;
-				vsi=true;
-			break;
-		}
-		DragScrollBar mBar = contentUIData.dragScrollBar;
-		mBar.setHandleColorFiler(MainAppBackground);
-		if(mBar.getVisibility()!=vis)
-			mBar.setVisibility(vis);
-		//mBar.handleThumb.getBackground().setColorFilter(MainAppBackground, PorterDuff.Mode.SRC_IN);
-		if(gt!=0 && mBar_layoutParmas.gravity!=gt){
-			mBar_layoutParmas.gravity=gt;
-			mBar.requestLayout();
-		}
-		if(mWebView!=null) {
-			mWebView.setVerticalScrollBarEnabled(vsi);
-			if(vis==View.VISIBLE)
-				mBar.setDelimiter("", mWebView);
-		} else {
-			weblistHandler.setVerticalScrollBarEnabled(vsi);
-			if(vis==View.VISIBLE)
-				weblistHandler.initWebHolderScrollChanged();
 		}
 	}
 
@@ -2027,11 +1976,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				jnFanMap=_jnFanMap;
 			} catch (IOException e) { CMN.Log(e); }
 		}
-		if(jnFanMap==null) {
-			PDICMainAppOptions.setEnableFanjnConversion(false);
-		} else {
-			SearchLayer.jnFanMap = jnFanMap;
-			SearchLayer.fanJnMap = fanJnMap;
+		if (SearchLayer!=null) {
+			if(jnFanMap==null) {
+				PDICMainAppOptions.setEnableFanjnConversion(false);
+			} else {
+				SearchLayer.jnFanMap = jnFanMap;
+				SearchLayer.fanJnMap = fanJnMap;
+			}
 		}
 	}
 
@@ -2379,10 +2330,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		};
 		
 		if(thisActType==ActType.MultiShare) {
+			lazyLoadManager = lazyLoadManagerMulti;
 			return;
 		}
 		
-		ArrayList<PlaceHolder> CC = getLazyCC();
+		lazyLoadManager = thisActType==ActType.PlainDict?lazyLoadManagerMain:lazyLoadManagerFloat;
+		ArrayList<PlaceHolder> CC = lazyLoadManager.CosyChair;
 		
 		if(md.size()==0){
 			populateDictionaryList(def, CC, retrieve_all);
@@ -2475,7 +2428,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		menuSearchMode = AllMenus.findItem(R.id.toolbar_action1);
 		//CMN.Log("findFurtherViews...", contentUIData, contentview);
-		mBar_layoutParmas = (FrameLayout.LayoutParams) contentUIData.dragScrollBar.getLayoutParams();
 		
 		CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, mResource.getDimension(R.dimen._bottombarheight_)));
 		weblistHandler.setUpContentView(cbar_key);
@@ -2490,7 +2442,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void populateDictionaryList() {
 		final File def = getStartupFile(opt.fileToConfig());      //!!!原配
 		if(md.size()==0){
-			populateDictionaryList(def, getLazyCC(), !def.exists());
+			populateDictionaryList(def, lazyLoadManager.CosyChair, !def.exists());
 		}
 	}
 	
@@ -2508,11 +2460,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} catch (Exception ignored) {  }
 		if(retrieve_all) {
 			try {
-				if(CC==null) {
-					CC = new ArrayList<>();
-					if(this instanceof FloatSearchActivity) FloatSearchActivity.mCosyChair = CC;
-					if(this instanceof PDICMainActivity) PDICMainActivity.CosyChair = CC;
-				}
 				String lastName = opt.getLastMdFn("LastMdFn");
 				for (String path:defDicts) {
 					PlaceHolder placeHolder = new PlaceHolder(path, CC);
@@ -2546,10 +2493,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void buildUpDictionaryList(boolean lazyLoad, HashMap<String, BookPresenter> mdict_cache) {
-		boolean actMain = thisActType==ActType.PlainDict;;
-		ArrayList<PlaceHolder> CosyChair =  actMain?PDICMainActivity.CosyChair:getLazyCC();
-		ArrayList<PlaceHolder> CosySofa =  actMain?PDICMainActivity.CosySofa:getLazyCS();
-		ArrayList<PlaceHolder> HdnCmfrt =  actMain?PDICMainActivity.HdnCmfrt:getLazyHC();
+		ArrayList<PlaceHolder> CosyChair =  lazyLoadManager.CosyChair;
+		ArrayList<PlaceHolder> CosySofa =  lazyLoadManager.CosySofa;
+		ArrayList<PlaceHolder> HdnCmfrt =  lazyLoadManager.HdnCmfrt;
 		currentFilter.ensureCapacity(filter_count);
 		currentFilter.clear();
 		md.ensureCapacity(CosyChair.size());
@@ -2614,8 +2560,62 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return false;
 	}
 	
-	protected abstract void LoadLazySlots(File def, boolean lazyLoad, String moduleName) throws IOException;
-
+	static class LazyLoadManager {
+		public ArrayList<PlaceHolder> CosyChair = new ArrayList<>();
+		public ArrayList<PlaceHolder> CosySofa = new ArrayList<>();
+		public ArrayList<PlaceHolder> HdnCmfrt = new ArrayList<>();
+		public ArrayList<PlaceHolder>[] PlaceHolders = new ArrayList[]{CosyChair, CosySofa, HdnCmfrt};
+		public int lastCheckedPos;
+		long currMdlTime;
+		boolean lazyLoaded;
+		String lastLoadedModule;
+	}
+	
+	public PlaceHolder getPlaceHolderAt(int idx) {
+		if(idx>=0 && idx<lazyLoadManager.CosyChair.size())
+			return lazyLoadManager.CosyChair.get(idx);
+		return null;
+	}
+	
+	public ArrayList<PlaceHolder> getPlaceHolders() {
+		return lazyLoadManager.CosyChair;
+	}
+	
+	static LazyLoadManager lazyLoadManagerMain = new LazyLoadManager();
+	static LazyLoadManager lazyLoadManagerFloat = new LazyLoadManager();
+	static LazyLoadManager lazyLoadManagerMulti = new LazyLoadManager();
+	LazyLoadManager lazyLoadManager;
+	
+	protected void LoadLazySlots(File modulePath, boolean lazyLoad, String moduleName) throws IOException {
+		long lm = modulePath.lastModified();
+		if(lm==lazyLoadManager.currMdlTime
+				&& lazyLoadManager.lazyLoaded==lazyLoad
+				&& moduleName.equals(lazyLoadManager.lastLoadedModule)
+		){
+			filter_count = lazyLoadManager.CosySofa.size();
+			CMN.Log("直接返回！！！", filter_count);
+			currentFilter.ensureCapacity(filter_count);
+			for (int i = currentFilter.size(); i < filter_count; i++) {
+				currentFilter.add(null);
+				//CMN.Log(CosySofa.get(i).name);
+			}
+			return;
+		}
+		CMN.Log("LoadLazySlots…");
+		AgentApplication app = ((AgentApplication) getApplication());
+		ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(modulePath), app.get4kCharBuff(), 4096);
+		lazyLoadManager.CosySofa.clear();
+		lazyLoadManager.HdnCmfrt.clear();
+		filter_count=hidden_count=0;
+		do_LoadLazySlots(in, lazyLoadManager.CosyChair);
+		lazyLoadManager.HdnCmfrt.ensureCapacity(filter_count+hidden_count);
+		lazyLoadManager.currMdlTime=lm;
+		lazyLoadManager.lastLoadedModule=moduleName;
+		lazyLoadManager.lazyLoaded=lazyLoad;
+		app.set4kCharBuff(in.cb);
+	}
+	
+	
 	protected void do_LoadLazySlots(ReusableBufferedReader in, ArrayList<PlaceHolder> CosyChair) throws IOException {
 		String line;
 		int cc=0;
@@ -2699,8 +2699,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 
 	int etSearch_toolbarMode=0;
-	public OnScrollChangedListener onWebScrollChanged;
-	public void initWebScrollChanged() {
+	private OnScrollChangedListener onWebScrollChanged;
+	//Strategy: use one webscroll listener
+	public OnScrollChangedListener getWebScrollChanged() {
 		if(onWebScrollChanged==null) {
 			onWebScrollChanged = (v, x, y, oldx, oldy) -> {
 				WebViewmy webview = (WebViewmy) v;
@@ -2728,7 +2729,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						_mBar= peruseView.contentUIData.dragScrollBar;
 					}
 				}
-
+				
 				if(fromPeruseView
 						|| !isCombinedSearching
 						|| webview==weblistHandler.mMergedFrame
@@ -2742,12 +2743,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							_mBar.hiJackScrollFinishedFadeOut();
 						if(!_mBar.isDragging){
 							_mBar.setMax(webview.getContentHeight()-webview.getHeight());
-							_mBar.setProgress(webview.getContentOffset());
+							_mBar.progress(webview.getContentOffset());
 						}
 					}
 				}
 			};
 		}
+		return onWebScrollChanged;
 	}
 
 	/** 0-搜索  1-返回  2-删除  4-撤销   */
@@ -4951,17 +4953,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case 4:
 				locateNaviIcon();
 			break;
-			case 5:
-				contentUIData.dragScrollBar.setVisibility(val==1?View.GONE:View.VISIBLE);
-			break;
-			case 6:
-				contentUIData.dragScrollBar.setVisibility(val==1?View.VISIBLE:View.GONE);
-			break;
-			case 7:
-				if(peruseView !=null&& peruseView.getView()!=null) {
-					peruseView.contentUIData.dragScrollBar.setVisibility(val==1?View.GONE:View.VISIBLE);
-				}
-			break;
 			case 8:
 				setGlobleCE(val==1);
 			break;
@@ -4988,32 +4979,40 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} catch (Exception ignored) { }
 			break;
 			/* 天运之子，层类无穷，衍生不尽！ */
-			case 16:{//滚动条 [在右/在左/无/系统滚动条] 翻阅/主程序1.2/浮动搜索1.2
+			case 16:{
+				/** 滚动条 [在右/在左/无/系统滚动条] see {@link WebViewListHandler#resetScrollbar}
+				 *<br>  see {@link BookPresenter.AppHandler#cs}
+				 *<br>  see {@link QuickBookSettingsPanel#initScrollHandle}
+				 * */
 				String title = "设置网页滚动条 - ";
-				boolean wh = weblistHandler.getChildCount()>0;
 				int flagPos=0;
-				if(PeruseViewAttached()){
+				WebViewmy wv = weblist.mWebView;
+				if(wv!=null && wv==wordPopup.popupWebView) {
+					title += "点译模式";
+					flagPos = 6;
+				}
+				else if(PeruseViewAttached() && wv==peruseView.mWebView){
 					title += "翻阅模式";
-					flagPos = 8;
-				} else if(thisActType==ActType.PlainDict){
-					title+="主程序"+"/"+(wh?"联合搜索":"单本阅读");
-					flagPos = wh?2:0;
+					flagPos = 4;
+				} else if(thisActType==ActType.FloatSearch){
+					title+="浮动搜索";
+					flagPos = 2;
 				} else {
-					title+="浮动搜索"+"/"+(wh?"联合搜索":"单本阅读");
-					flagPos = wh?6:4;
+					title+="主程序";
+					flagPos = 0;
 				}
 				androidx.appcompat.app.AlertDialog.Builder builder2 = new androidx.appcompat.app.AlertDialog.Builder(this);
 				int finalFlagPos = flagPos;
 				builder2.setSingleChoiceItems(R.array.web_scroll_style, opt.getTypeFlag_11_AtQF(flagPos), (dialog12, which) -> {
 					if(opt.getScrollTypeApplyToAll()){
-						for (int i = 0; i < 9; i+=2)
+						for (int i = 0; i <= 6; i+=2)
 							opt.setTypeFlag_11_AtQF(which, i);
 					} else {
 						opt.setTypeFlag_11_AtQF(which, finalFlagPos);
 					}
 					if(PeruseViewAttached())
 						peruseView.RecalibrateWebScrollbar();
-					RecalibrateWebScrollbar(webSingleholder.getChildCount()>0?webSingleholder.findViewById(R.id.webviewmy):null);
+					weblist.resetScrollbar(weblist.mWebView, weblist.bMergingFrames, true);
 					dialog12.dismiss();
 				})
 					.setSingleChoiceLayout(R.layout.select_dialog_singlechoice_material_holo)
@@ -5113,10 +5112,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 0, 1, 2, -1, false);//opt.getInheritePageScale()//
 		String[] Coef2 = new String[]{Coef[0], Coef[1], Coef[2]};
 		init_clickspan_with_bits_at(tv, ssb, DictOpt, 7, Coef2, 0, 0, 0x3, 0, 2, 2, 4, false);//opt.getNavigationBtnType()//
-		ssb.append("\r\n").append("\r\n");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 3, 1, 2, 5, false);//opt.getHideScroll1()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 4, 1, 2, 6, false);//opt.getHideScroll2()//
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 5, 1, 2, 7, false);//opt.getHideScroll3()//
+//		ssb.append("\r\n").append("\r\n");
+//		init_clickspan_with_bits_at(tv, ssb, DictOpt, 8, Coef, 0, 0, 0x1, 3, 1, 2, 5, false);//opt.getHideScroll1()//
+//		init_clickspan_with_bits_at(tv, ssb, DictOpt, 9, Coef, 0, 0, 0x1, 4, 1, 2, 6, false);//opt.getHideScroll2()//
+//		init_clickspan_with_bits_at(tv, ssb, DictOpt, 10, Coef, 0, 0, 0x1, 5, 1, 2, 7, false);//opt.getHideScroll3()//
 		ssb.append("\r\n").append("\r\n");
 		init_clickspan_with_bits_at(tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 6, 1, 2, -1, false);//opt.getPageTurn1()//
 		init_clickspan_with_bits_at(tv, ssb, DictOpt, 12, Coef, 0, 0, 0x1, 7, 1, 2, -1, false);//opt.getPageTurn2()//
@@ -5710,7 +5709,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					v.performLongClick();
 					break;
 				}
-				if(weblistHandler.getChildCount()!=0) {
+				if(!weblistHandler.isViewSingle()) {
 					weblistHandler.showJumpListDialog();
 				}
 				else {
@@ -5856,7 +5855,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	private Runnable putNameRunnable = () -> {
 		BookPresenter mdTmp = currentDictionary;
-		String name = mdTmp==EmptyBook?new File(getLazyCC().get(adapter_idx).pathname).getName()
+		String name = mdTmp==EmptyBook?new File(getPlaceHolderAt(adapter_idx).pathname).getName()
 				:mdTmp.getDictionaryName();
 		opt.putLastMdFn(LastMdFn, name);
 	};
@@ -5956,8 +5955,47 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	 *  Show choose dictionary dialog
 	 * @param reason 0=pick; 1=pick click dict.
 	 * */
-	public abstract void showChooseDictDialog(int reason);
+	
+	public void showChooseDictDialog(int reason) {
+//		if(chooseDFragment==null || chooseDFragment.get()==null) {
+//			chooseDFragment = new WeakReference<>(chooseDialog = new DictPicker(this));
+//			//chooseDFragment.setStyle(R.style.DialogStyle, 0);//DialogFragment.STYLE_NO_TITLE
+//			////chooseDialog.bShouldCloseAfterChoose=true;
+//			//chooseDFragment.setCancelable(true);
+//			//chooseDFragment.setOnViewCreatedListener(new OnViewCreatedListener() {
+//			//	@Override
+//			//	public void OnViewCreated(Dialog dialog) {
+//			//		dialog.setCanceledOnTouchOutside(true);
+//			//		Window window = dialog.getWindow();
+//			//	}});
+////			chooseDialog.width=(int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor));
+////			chooseDialog.mMaxH=(int) (dm.heightPixels-2*getResources().getDimension(R.dimen.diagMarginVer));
+////			chooseDialog.height=-2;
+//		}else
+//			chooseDialog = chooseDFragment.get();
+//		chooseDialog.show(getSupportFragmentManager(), "PickDictDialog");
+		
+		pickDictDialog.toggle();
 
+		        /*DidialogHolder = (ViewGroup) findViewById(R.id.dialog_);
+            	if(dialogHolder.getVisibility()==View.VISIBLE) {
+					dialogHolder.setVisibility(View.GONE);
+					break;
+				}
+				if(!isFragInitiated) {
+					FragmentManager fragmentManager = getSupportFragmentManager();
+					FragmentTransaction transaction = fragmentManager.beginTransaction();
+					pickDictDialog = new DialogFragment1(this);
+		            transaction.add(R.id.dialog_, pickDictDialog);
+		            transaction.commit();
+		            isFragInitiated=true;
+		            //pickDictDialog.mRecyclerView.scrollToPosition(adapter_idx);
+				}
+				else//没办法..
+					pickDictDialog.refresh();*/
+	}
+	
+	
 	public void toggleStar(String key, ImageView futton, boolean toast, ViewGroup webviewholder) {
 		key = key.trim();
 		if(GetIsFavoriteTerm(key)) {
@@ -6094,6 +6132,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} return true;
 			/* 语音控制器 */
 			case R.id.browser_widget12:{
+				try {
+					weblist = (WebViewListHandler) ((View)v.getParent()).getTag();
+				} catch (Exception e) {
+					weblist = weblistHandler;
+				}
 				showSoundTweaker();
 				contentUIData.webcontentlister.judger = false;
 			} return true;
@@ -6296,7 +6339,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(!TextUtils.equals(randomPage.getUrl(), testUrl)) {
 				CMN.Log("加载::", testUrl);
 				randomPage.loadUrl(testUrl);
-				RecalibrateWebScrollbar(randomPage);
+				randomPageHandler.resetScrollbar(randomPage, false, false);
 			}
 		} catch (Exception e) {
 			CMN.debug(e);
@@ -6408,99 +6451,147 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public void showChooseSetDialog() {//切换分组
 		AlertDialog dTmp;
-		
+		Bag bag;
 		if(setchooser==null||(dTmp=setchooser.get())==null) {
 			SecordTime = SecordPime = 0;
 			CMN.Log("重建对话框……");
 			ArrayList<String> scanInList = new ArrayList<>();
-			dTmp = new AlertDialog.Builder(this, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line)
-						.setTitle(R.string.loadconfig)
-					.setSingleChoiceItems(ArrayUtils.EMPTY_STRING_ARRAY, -1, null) //new String[]{}
-					.setAdapter(new BaseAdapter() {
-						@Override public int getCount() { return scanInList.size(); }
-						
-						@Override public Object getItem(int position) { return null; }
-						
-						@Override public long getItemId(int position) { return 0; }
-						
-						@NonNull
-						@Override
-						public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-							FlowCheckedTextView ret;
-							if(convertView!=null){
-								ret = (FlowCheckedTextView) convertView;
-							} else {
-								ret = (FlowCheckedTextView) getLayoutInflater().inflate(R.layout.singlechoice_w, parent, false);
-								ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
-								ret.mFlowTextView.fixedTailTrimCount=4;
-							}
-							FlowTextView tv = ret.mFlowTextView;
-							tv.setTextColor(AppBlack);
-							tv.setText(scanInList.get(position));
-							return ret;
-						}
+			bag = new Bag(opt.getTwoColumnSetView());
+			{
+				DialogInterface.OnClickListener listener = (dialog, pos) -> {
+					if(pos==-1) {
+						opt.setTwoColumnSetView(bag.val=!bag.val);
+						((BaseAdapter)bag.tag).notifyDataSetChanged();
+						setchooser.get().getListView().setSelection(bag.val?lazyLoadManager.lastCheckedPos/2:lazyLoadManager.lastCheckedPos);
 					}
-					, (dialog, pos) -> {
-						try {
-							currentFilter.clear();
-							for (BookPresenter mdTmp : md) {
-								if(mdTmp!=null)
-									mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
+					else try {
+						lazyLoadManager.lastCheckedPos = pos;
+						currentFilter.clear();
+						for (BookPresenter mdTmp : md) {
+							if(mdTmp!=null)
+								mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
+						}
+						for (BookPresenter mdTmp : currentFilter) {
+							if(mdTmp!=null)
+								mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
+						}
+						String setName = scanInList.get(pos);
+						File newf = opt.fileToSet(null, setName);
+						boolean lazyLoad = PDICMainAppOptions.getLazyLoadDicts();
+						LoadLazySlots(newf, lazyLoad, setName);
+						buildUpDictionaryList(lazyLoad, mdict_cache);
+						//todo 延时清空 X
+						//mdict_cache.clear();
+						//分组切换
+						opt.putLastPlanName(LastPlanName, setName);
+						if (adapter_idx<0) {
+							switch_To_Dict_Idx(0, true, false, null);
+						} else if(md.get(adapter_idx)!=currentDictionary){
+							switch_To_Dict_Idx(adapter_idx, true, false, null);
+						}
+						dialog.dismiss();
+						invalidAllLists();
+						//show(R.string.loadsucc);
+						showTopSnack(null, R.string.loadsucc, -1, -1, Gravity.CENTER, 0);
+						if(thisActType==ActType.PlainDict && opt.getCacheCurrentGroup()) {
+							// todo 干掉缓冲组
+							File def1 = new File(getExternalFilesDir(null), "default.txt");
+							if(def1.length()>0) {
+								FileOutputStream fout = new FileOutputStream(def1);
+								fout.flush();
+								fout.close();
 							}
-							for (BookPresenter mdTmp : currentFilter) {
-								if(mdTmp!=null)
-									mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
-							}
-							String setName = scanInList.get(pos);
-							File newf = opt.fileToSet(null, setName);
-							boolean lazyLoad = PDICMainAppOptions.getLazyLoadDicts();
-							LoadLazySlots(newf, lazyLoad, setName);
-							buildUpDictionaryList(lazyLoad, mdict_cache);
-							//todo 延时清空 X
-							//mdict_cache.clear();
-							//分组切换
-							opt.putLastPlanName(LastPlanName, setName);
-							if (adapter_idx<0) {
-								switch_To_Dict_Idx(0, true, false, null);
-							} else if(md.get(adapter_idx)!=currentDictionary){
-								switch_To_Dict_Idx(adapter_idx, true, false, null);
-							}
-							dialog.dismiss();
-							invalidAllLists();
-							//show(R.string.loadsucc);
-							showTopSnack(null, R.string.loadsucc
-									, -1, -1, Gravity.CENTER, 0);
-							if(thisActType==ActType.PlainDict
-								&& opt.getCacheCurrentGroup()) {
-								// todo 干掉缓冲组
-								File def1 = new File(getExternalFilesDir(null), "default.txt");
-								if(def1.length()>0) {
-									FileOutputStream fout = new FileOutputStream(def1);
-									fout.flush();
-									fout.close();
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						showT(e.getLocalizedMessage());
+					}
+				};
+				dTmp = new AlertDialog.Builder(this, GlobalOptions.isDark ? R.style.DialogStyle3Line : R.style.DialogStyle4Line)
+						.setTitle(R.string.loadconfig)
+						.setTitleBtn(R.drawable.ic_two_column, listener)
+						.setSingleChoiceItems(ArrayUtils.EMPTY_STRING_ARRAY, -1, null) //new String[]{}
+						.setAdapter((BaseAdapter) (bag.tag=new BaseAdapter() {
+								@Override public int getCount() { return bag.val?(int)Math.ceil(scanInList.size()/2.f):scanInList.size(); }
+								@Override public Object getItem(int position) { return null; }
+								@Override public long getItemId(int position) { return 0; }
+								@Override public int getViewTypeCount() { return 2; }
+								@Override public int getItemViewType(int position) {
+									return bag.val?1:0;
 								}
-							}
-						}
-						catch (Exception e) {
-							e.printStackTrace();
-							showT(e.getLocalizedMessage());
-						}
-					})
-					.create();
-			
+								final View.OnClickListener twoColumnLis = new OnClickListener() {
+									public void onClick(View v) {
+										ViewGroup sp=(ViewGroup)v.getParent();
+										listener.onClick(setchooser.get(), IU.parsint(sp.getTag(), 0)*2+sp.indexOfChild(v));
+									}
+								};
+								@NonNull @Override
+								public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+									if(bag.val) {
+										ViewGroup ret;
+										if(convertView!=null){
+											ret = (ViewGroup) convertView;
+										} else {
+											ret = (ViewGroup) getLayoutInflater().inflate(R.layout.singlechoice_two_column, parent, false);
+										}
+										for (int i = 2; i < ret.getChildCount(); i++) {
+											FlowCheckedTextView mFlowTextView = (FlowCheckedTextView) ret.getChildAt(i);
+											FlowTextView tv = mFlowTextView.mFlowTextView;
+											if(tv.fixedTailTrimCount!=4)
+											{
+												tv.fixedTailTrimCount=4;
+												ret.getChildAt(i-2).setOnClickListener(twoColumnLis);
+											}
+											tv.setTextColor(AppBlack);
+											int pos = position*2+i-2;
+											String item=pos<scanInList.size()?scanInList.get(pos):"";
+											tv.setText(item);
+//											((FlowCheckedTextView)ret.getChildAt(i)).setActivated(false);
+											mFlowTextView.setChecked(TextUtils.equals(item, lazyLoadManager.lastLoadedModule));
+										}
+										ret.setActivated(false);
+										ret.postInvalidateOnAnimation();
+										ret.setTag(position);
+										convertView = ret;
+									} else {
+										FlowCheckedTextView ret;
+										if(convertView!=null){
+											ret = (FlowCheckedTextView) convertView;
+										} else {
+											ret = (FlowCheckedTextView) getLayoutInflater().inflate(R.layout.singlechoice_w, parent, false);
+											ret.setMinimumHeight((int) getResources().getDimension(R.dimen._50_));
+											ret.mFlowTextView.fixedTailTrimCount=4;
+										}
+										FlowTextView tv = ret.mFlowTextView;
+										tv.setTextColor(AppBlack);
+										String item=position<scanInList.size()?scanInList.get(position):"";
+										tv.setText(item);
+										ret.setChecked(TextUtils.equals(item, lazyLoadManager.lastLoadedModule));
+										convertView = ret;
+									}
+									return convertView;
+								}
+							})
+						, listener)
+						.show();
+				//dTmp.mAlert.wikiBtn.getDrawable().setColorFilter(0xFF5f5f5f, PorterDuff.Mode.SRC_IN);
+				//dTmp.mAlert.wikiBtn.setBackgroundResource(R.drawable.surrtrip1);
+			}
 			ListView dlv = dTmp.getListView();
-			
-			((AlertController.RecycleListView) dlv)
-					.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_));
-
 			dTmp.show();
+			dlv.setChoiceMode(ListView.CHOICE_MODE_NONE);
+			
+			Window window = dTmp.getWindow();
+			window.setDimAmount(0);
 			
 			dlv.setTag(scanInList);
-
 			setchooser = new WeakReference<>(dTmp);
 		}
-		else if(ViewUtils.DGShowing(dTmp)){
-			return;
+		else {
+			bag = (Bag)dTmp.tag;
+			if(ViewUtils.DGShowing(dTmp)){
+				return;
+			}
 		}
 		
 		File ConfigFile = opt.fileToConfig();
@@ -6508,14 +6599,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		long l1=def.lastModified();
 		long l2=def.getParentFile().lastModified();
 		boolean b1 = l1!=SecordTime;
+		ListView lv = dTmp.getListView();
+		((AlertController.RecycleListView) lv)
+				.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_) * (dm.widthPixels>GlobalOptions.realWidth?1:1.45));
 		if(b1 || l2!=SecordPime) {
-			ListView lv = dTmp.getListView();
+			int lastCheckedPos=-1;
 			ArrayList<String> scanInList = (ArrayList) lv.getTag();
 			final HashSet<String> con = new HashSet<>();
 			if(b1) {
 				CMN.Log("扫描1……");
 				scanInList.clear();
-				lastCheckedPos = -1;
 				try {
 					AgentApplication app = ((AgentApplication) getApplication());
 					ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(def), app.get4kCharBuff(), 4096);
@@ -6557,7 +6650,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			CMN.Log("扫描分组……", scanInList.size(), def.getParentFile().lastModified());
 			((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
-			dTmp.getListView().setItemChecked(lastCheckedPos, true);
+			if(lastCheckedPos>=0) {
+				dTmp.getListView().setSelection(bag.val?lastCheckedPos/2:lastCheckedPos);
+				lazyLoadManager.lastCheckedPos = lastCheckedPos;
+			}
 		}
 		
 		dTmp.show();
@@ -7424,7 +7520,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			WebViewListHandler weblistHandler = mWebView.weblistHandler;
 			
-			if(invoker.isMergedBook) {
+			/*if(invoker.isMergedBook) */{
 				int schemaIdx = url.indexOf(":");
 				//CMN.debug("mMergedBook::", url);
 				if(url.regionMatches(true, schemaIdx+3, "MdbR", 0, 4)) {
@@ -8121,7 +8217,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(mdTmp!=null)
 			return PDICMainAppOptions.getTmpIsAudior(mdTmp.tmpIsFlag)?mdTmp:null;
 		else {
-			ArrayList<PlaceHolder> CosyChair = getLazyCC();
+			ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
 			if(i<CosyChair.size()) {
 				PlaceHolder phTmp = CosyChair.get(i);
 				if (PDICMainAppOptions.getTmpIsAudior(phTmp.tmpIsFlag)) {
@@ -9203,10 +9299,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		getPeruseView().prepareJump(this, text, bookIds, bookId);
 		AttachPeruseView(refresh);
 	}
-	
-	public abstract ArrayList<PlaceHolder> getLazyCC();
-	abstract ArrayList<PlaceHolder> getLazyCS();
-	abstract ArrayList<PlaceHolder> getLazyHC();
 
 	private SoundPool mSoundPool;
 	private void createSoundPoolIfNeeded() {
@@ -9872,17 +9964,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	@Override
 	public long Flag(int flagIndex) {
+		if(flagIndex==100) return 0;
 		return opt.Flag(flagIndex);
 	}
 	
 	@Override
 	public void Flag(int flagIndex, long val) {
-		opt.Flag(flagIndex, val);
+		CMN.Log("Flag::set", flagIndex);
+		if(flagIndex!=100)
+			opt.Flag(flagIndex, val);
 	}
 	
 	@Override
 	public int getDynamicFlagIndex(int flagIdx) {
-		return 0;
+		return flagIdx==100?flagIdx:0;
 	}
 	
 	@Override
@@ -10018,6 +10113,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			menuGrid.refresh();
 		}
 		View bb = menuGrid.bottombar = (View) btn.getParent();
+		weblist = (WebViewListHandler) bb.getTag();
+		if(weblist==null)
+			weblist = weblistHandler;
 		ViewGroup root=null;
 		if(peruseView!=null && bb==peruseView.contentUIData.bottombar2)
 		{
@@ -10099,15 +10197,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void showBookSettings() {
+		WebViewListHandler weblist = this.weblist;
 		int jd = WeakReferenceHelper.quick_settings;
 		QuickBookSettingsPanel quickSettings
 				= (QuickBookSettingsPanel) getReferencedObject(jd);
 		if (quickSettings==null) {
-			quickSettings = new QuickBookSettingsPanel(this);
+			quickSettings = new QuickBookSettingsPanel(this, weblist);
 			putReferencedObject(jd, quickSettings);
 			CMN.Log("重建QuickBrowserSettingsPanel...");
 		} else {
-			quickSettings.refresh();
+			quickSettings.refresh(weblist);
 		}
 		quickSettings.toggle(getMenuGridRootViewForPanel(quickSettings), (SettingsPanel) getReferencedObject(WeakReferenceHelper.menu_grid), -2);
 	}
@@ -10152,7 +10251,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return server;
 	}
 	
-	static String lastLoadedModule;
 	public void showDictionaryManager() {
 		ReadInMdlibs(null);
 		AgentApplication app = ((AgentApplication) getApplication());
@@ -10169,9 +10267,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
 			}
 		}
-		ArrayList<PlaceHolder> CosyChair = getLazyCC();
-		ArrayList<PlaceHolder> CosySofa = getLazyCS();
-		ArrayList<PlaceHolder> HdnCmfrt = getLazyHC();
+		ArrayList<PlaceHolder> CosyChair = lazyLoadManager.CosyChair;
+		ArrayList<PlaceHolder> CosySofa = lazyLoadManager.CosySofa;
+		ArrayList<PlaceHolder> HdnCmfrt = lazyLoadManager.HdnCmfrt;
 		/* 合符而继统 */
 		for(PlaceHolder phI:HdnCmfrt) {
 			if(!CosyChair.contains(phI))//todo opt
@@ -10183,7 +10281,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		app.mdict_cache=mdict_cache;
 		CosySofa.clear();
 		HdnCmfrt.clear();
-		lastLoadedModule=null;
+		lazyLoadManager.lastLoadedModule=null;
 		Intent intent = new Intent();
 		intent.setClass(MainActivityUIBase.this, BookManager.class);
 		startActivityForResult(intent, 110);

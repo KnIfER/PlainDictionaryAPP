@@ -877,8 +877,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			mWebView.weblistHandler = weblistHandler;
 			//mWebView.fromPeruseview = true;
 			mWebView.fromCombined=3;
-			a.initWebScrollChanged();//Strategy: use one webscroll listener
-	        mWebView.setOnScrollChangedListener(a.onWebScrollChanged);
+	        mWebView.setOnScrollChangedListener(a.getWebScrollChanged());
 	        mWebView.setPadding(0, 0, 18, 0);
 			contentUIData.dragScrollBar.setDelimiter("< >", mWebView);
     		mWebView.getSettings().setSupportZoom(true);
@@ -1110,7 +1109,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	private void syncData(MainActivityUIBase a) {
 		md = a.md;
-		ph = a.getLazyCC();
+		ph = a.getPlaceHolders();
 	}
 
 	public void prepareInPageSearch(String key, boolean bNeedBringUp) {

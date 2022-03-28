@@ -20,7 +20,7 @@
 </style>
 
 <script>
-function debug(...e){console.log(e)};
+function debug(e){console.log(e)};
 debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
 if(window.addEventListener){
@@ -115,6 +115,9 @@ function wrappedDown(e){
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
 			break;
+	if(frameElement && e.button==0) {
+		parent.window.tFrame(frameElement.dictInfo);
+	}
 	if(t && t.href) { //  && (e.button==1||e.button==0)
 		debug("01! found link : "+t.href+" : "+regSound.test(t.href));
 		var getRawLink=t.href;

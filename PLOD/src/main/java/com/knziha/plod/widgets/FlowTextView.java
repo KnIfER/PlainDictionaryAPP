@@ -66,6 +66,7 @@ public class FlowTextView extends View {
 	public float margin=0;
 	public int maxLines=-1;
 	public boolean trim = true;
+	public boolean ellipsis = false;
 	ArrayListHolder lineObjects = new ArrayListHolder(3);
 	public int pad_right;
 	private Drawable mActiveDrawable;
@@ -124,6 +125,7 @@ public class FlowTextView extends View {
 			maxLines = ta.getInteger(R.styleable.FlowTextViewSty_android_maxLines, -1);
 			margin = ta.getDimension(R.styleable.FlowTextViewSty_margin, 0);
 			Rating = ta.getBoolean(R.styleable.FlowTextViewSty_rating, false);
+			ellipsis = ta.getBoolean(R.styleable.FlowTextViewSty_ellipsis, false);
 			mGravity = ta.getInteger(R.styleable.FlowTextViewSty_android_gravity, 0);
 			if(isInEditMode()){
 				mActiveDrawable = ta.getDrawable(R.styleable.FlowTextViewSty_android_src);
@@ -333,6 +335,10 @@ public class FlowTextView extends View {
 		postedCalcLayout = false;
 	}
 	
+	final public void setGravity(int mGravity) {
+		if(this.mGravity != mGravity)this.mGravity = mGravity;
+	}
+	
 	private boolean find_m(Matcher m) {
 		while(m.find()) {
 			if(m.start()>=mStart){
@@ -459,6 +465,15 @@ public class FlowTextView extends View {
 			}
 			if(start<htmlLine.end && htmlLine.end<=mText.length()){
 				canvas.drawText(mText, start, htmlLine.end, xOffset, textTop+htmlLine.yOffset, mTextPaint);
+			}
+		}
+		/* ellipsis */
+		if(maxLines==1 && ellipsis && lineObjects.size()==1) {
+			htmlLine = lineObjects.get(0);
+			if(htmlLine.end<mLength) {
+				start=htmlLine.start;
+				xOffset = htmlLine.xOffset;
+				canvas.drawText("…", 0, 1, xOffset+mTextPaint.measureText(mText, start, htmlLine.end), textTop+htmlLine.yOffset, mTextPaint);
 			}
 		}
 		

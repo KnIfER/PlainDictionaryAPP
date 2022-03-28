@@ -142,29 +142,29 @@ public class Toastable_Activity extends AppCompatActivity {
 		   if (PDICMainAppOptions.checkVersionBefore_5_0())
 		   { // 升级数据库对话框
 			   //DBUpgradeHelper.showUpgradeDlg(null, this, true);
-			   opt.setUseDatabaseV2(true);
-			   opt.setUseBackKeyGoWebViewBack(true);
-			   opt.setAnimateContents(Build.VERSION.SDK_INT>=21);
-			   PDICMainAppOptions.uncheckVersionBefore_5_0(false);
-			   PDICMainAppOptions.uncheckVersionBefore_4_0(true); // revert & recycle the flag bits
-			   PDICMainAppOptions.uncheckVersionBefore_4_9(true); // revert & recycle the flag bits
+//			   opt.setUseDatabaseV2(true);
+//			   opt.setUseBackKeyGoWebViewBack(true);
+//			   opt.setAnimateContents(Build.VERSION.SDK_INT>=21);
+//			   PDICMainAppOptions.uncheckVersionBefore_5_0(false);
+//			   PDICMainAppOptions.uncheckVersionBefore_4_0(true); // revert & recycle the flag bits
+//			   PDICMainAppOptions.uncheckVersionBefore_4_9(true); // revert & recycle the flag bits
 		   }
 		   if (PDICMainAppOptions.checkVersionBefore_5_2())
 		   {
 			   //CMN.Log("强制数据库2.0");
-			   opt.setUseDatabaseV2(true);
-			   PDICMainAppOptions.uncheckVersionBefore_5_2(false);
+//			   opt.setUseDatabaseV2(true);
+//			   PDICMainAppOptions.uncheckVersionBefore_5_2(false);
 		   }
 		   if (PDICMainAppOptions.checkVersionBefore_5_3())
 		   {
-			   opt.setPinVSDialog(true);
-			   opt.setRememberVSPanelGo(false);
-			   PDICMainAppOptions.uncheckVersionBefore_5_3(false);
+//			   opt.setPinVSDialog(true);
+//			   opt.setRememberVSPanelGo(false);
+//			   PDICMainAppOptions.uncheckVersionBefore_5_3(false);
 		   }
 		   if(PDICMainAppOptions.checkVersionBefore_5_4()) {
-			   PDICMainAppOptions.bCheckVersionBefore_5_4=true;
-			   PDICMainAppOptions.setHideFloatFromRecent(false);
-			   PDICMainAppOptions.uncheckVersionBefore_5_4(false);
+//			   PDICMainAppOptions.bCheckVersionBefore_5_4=true;
+//			   PDICMainAppOptions.setHideFloatFromRecent(false);
+//			   PDICMainAppOptions.uncheckVersionBefore_5_4(false);
 		   } else {
 			   PDICMainAppOptions.bCheckVersionBefore_5_4=false;
 		   }
@@ -551,6 +551,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	 *  */
 	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity, int layoutFlags) {
 		SimpleTextNotifier topsnack = getTopSnackView();
+		topsnack.setNextOffsetScale(0.25f);
 		parentView = onShowSnack(parentView);
 		if(duration<0) {
 			duration = SHORT_DURATION_MS;

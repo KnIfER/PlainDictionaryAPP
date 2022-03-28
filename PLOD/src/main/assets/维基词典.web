@@ -472,6 +472,8 @@
 			debug(t.innerText);
 			e.preventDefault();
 			e.stopPropagation();
+			app.wordtoday(t.innerText);
+			if(1)return true;
 			
 			var br = t.getBoundingClientRect();
 			var pX = br.left;

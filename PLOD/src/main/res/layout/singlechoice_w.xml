@@ -11,4 +11,5 @@
     android:ellipsize="marquee"
     android:checkMark="?android:attr/listChoiceIndicatorSingle"
 	android:textSize="@dimen/lvtextsize"
+	android:minHeight="@dimen/_50_"
     />

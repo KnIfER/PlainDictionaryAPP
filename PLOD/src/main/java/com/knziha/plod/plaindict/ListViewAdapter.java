@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
-
+// 词典词条列表
 public class ListViewAdapter extends BasicAdapter {
 	final MainActivityUIBase a;
 	final PDICMainAppOptions opt;
@@ -147,7 +147,7 @@ public class ListViewAdapter extends BasicAdapter {
 			return;
 		}
 		boolean bUseMergedUrl = false;//!presenter.getIsWebx();
-		boolean bUseDictView = !bUseMergedUrl && true;//presenter.getIsWebx();
+		boolean bUseDictView = !bUseMergedUrl && presenter.getIsWebx();
 		
 		avoyager = presenter.avoyager;
 		WebViewmy mWebView = null;
@@ -191,7 +191,7 @@ public class ListViewAdapter extends BasicAdapter {
 		
 		long[] POS = a.getMergedClickPositions(pos);
 		if(bUseMergedUrl) {
-			StringBuilder mergedUrl = new StringBuilder("http://MdbR.com/MERGE.jsp?q=")
+			StringBuilder mergedUrl = new StringBuilder("http://MdbR.com/merge.jsp?q=")
 					.append("&exp=");
 			mergedUrl.append("d");
 			IU.NumberToText_SIXTWO_LE(presenter.getId(), mergedUrl);

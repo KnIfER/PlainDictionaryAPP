@@ -11,7 +11,6 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -22,20 +21,15 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.LocaleList;
 import android.os.Message;
 import android.os.PowerManager;
-import android.os.SystemClock;
 import android.provider.Settings;
-import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.TextWatcher;
-import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.TypedValue;
 import android.view.ActionMode;
@@ -44,24 +38,20 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
-import android.view.ViewStub;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -78,7 +68,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
-import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.ColorUtils;
@@ -86,8 +75,6 @@ import androidx.core.view.GravityCompat;
 import androidx.core.view.MenuCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
@@ -96,7 +83,6 @@ import com.bumptech.glide.load.engine.cache.DiskCache;
 import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
-import com.knziha.filepicker.widget.TextViewmy;
 import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.PlainAppPanel;
@@ -108,7 +94,6 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
-import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
@@ -156,7 +141,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static androidx.appcompat.app.GlobalOptions.realWidth;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_PLAIN;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_REGEX;
@@ -202,10 +186,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public boolean bNeedReAddCon;
 	private MyHandler mHandle;
 	public AsyncTaskWrapper<String, Integer, String> mAsyncTask;
-	public static ArrayList<PlaceHolder> CosyChair = new ArrayList<>();
-	public static ArrayList<PlaceHolder> CosySofa = new ArrayList<>();
-	public static ArrayList<PlaceHolder> HdnCmfrt = new ArrayList<>();
-	public static ArrayList<PlaceHolder>[] PlaceHolders = new ArrayList[]{CosyChair, CosySofa, HdnCmfrt};
 	private Animation animaExit;
 	private ViewGroup main_content_succinct;
 	private LinearLayout weblist;
@@ -239,27 +219,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public final ImageView[] BottombarBtns = new ImageView[BottombarBtnIcons.length];
 	
 	public AppUIProject bottombar_project;
-	private EditText etSearchDict;
-	private boolean SearchDictPatternChanged;
-	private IBinder etSearchDict_getWindowToken;
 	private static int LauncherInstanceCount;
 	private EnchanterReceiver locationReceiver;
 	private boolean handled;
-	
-	@Override
-	public ArrayList<PlaceHolder> getLazyCC() {
-		return CosyChair;
-	}
-
-	@Override
-	ArrayList<PlaceHolder> getLazyCS() {
-		return CosySofa;
-	}
-
-	@Override
-	ArrayList<PlaceHolder> getLazyHC() {
-		return HdnCmfrt;
-	}
 
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -313,10 +275,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				RebuildBottombarIcons(this, bottombar_project, newConfig);
 			}
 			if(pickDictDialog!=null) {
-				if(dismissing_dh) {
-					dialogHolder.setTag(null);
+				if(pickDictDialog.isVisible()) {
+//					dialogHolder.setTag(null);//111
 				} else {
-					ResizeDictPicker();
+					//ResizeDictPicker();
 				}
 			}
 			if(GlobalOptions.isLarge) {
@@ -680,14 +642,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	protected boolean PerFormBackPrevention(boolean bBackBtn) {
-		if(dialogHolder.getVisibility()==View.VISIBLE) {
-			dialogHolder.setVisibility(View.GONE);
-			if(pickDictDialog!=null && pickDictDialog.isDirty)
-			{
-				opt.putFirstFlag();pickDictDialog.isDirty=false;
-			}
-			return true;
-		}
+//		if(dialogHolder.getVisibility()==View.VISIBLE) {
+//			dialogHolder.setVisibility(View.GONE);
+//			if(pickDictDialog!=null && pickDictDialog.isDirty)
+//			{
+//				opt.putFirstFlag();pickDictDialog.isDirty=false;
+//			}
+//			return true;
+//		}//111
 		if (super.PerFormBackPrevention(bBackBtn)) {
 			return true;
 		}
@@ -870,7 +832,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	BooleanSingleton TintFullResult = new BooleanSingleton(true);
 	public String Current0SearchText;
 
-	private View cb1;
 	protected boolean bNeedSaveViewStates;
 
 	@Override
@@ -915,6 +876,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(!transit) setTheme(R.style.PlainAppTheme);
 		
 		UIData = DataBindingUtil.setContentView(this, R.layout.activity_main);
+		pickDictDialog = new DictPicker(this, UIData.viewpagerPH, UIData.lnrSplitHdls, 0);
 		
 		root = UIData.root;
 		
@@ -943,8 +905,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		snack_holder = UIData.snackHolder;
 		mainF = UIData.mainF;
-		dialogHolder = UIData.dialogHolder;
-		mlv = (ViewGroup) root.getChildAt(5);
+		mlv = (ViewGroup) root.getChildAt(4);
 		lv = UIData.mainList;
 		lv2 = UIData.subList;
 		mlv1 = UIData.subList1;
@@ -976,11 +937,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		toolbar.mNavButtonView.setOnLongClickListener(this);
 		
 //		ResizeNavigationIcon(toolbar);
-		
-		//123123
-		cb1 = UIData.schBook;
-		UIData.pinPicBook.setChecked(opt.getPinPicDictDialog());
-		UIData.autoSchSw.setChecked(opt.getPicDictAutoSer());
 
 		hdl = mHandle = new MyHandler(this);
 		
@@ -1067,62 +1023,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 	}
 	
-	int etTouchScrollStart;
-	long checkNxtFocus = 0;
 	@Override
 	protected void findFurtherViews() {
 		// todo
 		ivDeleteText = ivBack = UIData.multiline;
 		ivDeleteText.setOnClickListener(this);
 		etSearch = UIData.etSearch;
-		etSearch.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
-				CMN.Log("onFocusChange::", hasFocus, systemIntialized);
-//				ViewUtils.findInMenu(AllMenusStamp, R.id.toolbar_action2)
-//						.setIcon(hasFocus?R.drawable.ic_search_24k:R.drawable.ic_back_material);
-				if(hasFocus) {
-					if(checkNxtFocus!=0) {
-						if(SystemClock.uptimeMillis()-checkNxtFocus<250) {
-							if(!searchbarTools.isVisible())
-								searchbarTools.toggle(PDICMainAppOptions.getEnableSuperImmersiveScrollMode() ? UIData.webcoord : root, null, -1);
-						}
-						checkNxtFocus=0;
-					}
-				} else {
-					searchbarTools.dismiss();
-				}
-				
-			}
-		});
 		// https://stackoverflow.com/questions/46004928/edittext-how-to-set-cliptopadding-to-false
 		if(Build.VERSION.SDK_INT<23) {
 			etSearch.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 		}
 		etSearch.setShadowLayer(etSearch.getPaddingRight(), 0f, 0f, Color.TRANSPARENT);
-		searchbarTools = new SearchbarTools(PDICMainActivity.this);
-		etSearch.setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				if(event.getActionMasked()==MotionEvent.ACTION_DOWN) {
-					etTouchScrollStart = etSearch.getScrollX();
-					checkNxtFocus = event.getEventTime();
-					CMN.Log("touch!!!"+etTouchScrollStart);
-				}
-				return false;
-			}
-		});
-		etSearch.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				CMN.Log("click!!!"+etSearch.getScrollX());
-				if(etSearch.getScrollX()==etTouchScrollStart) {
-					if(!searchbarTools.isVisible())
-						searchbarTools.toggle(PDICMainAppOptions.getEnableSuperImmersiveScrollMode() ? UIData.webcoord : root, null, -1);
-				}
-				//ViewUtils.findInMenu(AllMenusStamp, R.id.toolbar_action2).setIcon(R.drawable.abc_ic_ab_back_material);
-			}
-		});
+		searchbarTools = new SearchbarTools(PDICMainActivity.this, etSearch, null);
 		super.findFurtherViews();
 	}
 	
@@ -1146,19 +1058,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		fadeSnack();
 		isPopupContentViewAttached(2);
 	}
-
-	@Override
-	public PlaceHolder getPlaceHolderAt(int idx) {
-		if(idx>=0 && idx<CosyChair.size())
-			return CosyChair.get(idx);
-		return null;
-	}
-
-	@Override
-	public ArrayList<PlaceHolder> getPlaceHolders() {
-		return CosyChair;
-	}
-
+	
 	private void processIntent(Intent intent, boolean initialzie) {
 		int jump_source = 0;
 		if(intent !=null){
@@ -1862,7 +1762,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}, 350);
 
 		//showAppTweaker();
-		if(CMN.testFLoatSearch)
+		//if(CMN.testFLoatSearch)
 			startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 
 		//JumpToWord("crayon", 1);
@@ -1913,61 +1813,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	PowerManager.WakeLock wakeLock;
 	
-	private void ResizeDictPicker() {
-		int littleIdeal = realWidth;
-		Resources res = getResources();
-		int factor=1;
-		if(dm.widthPixels>littleIdeal) {
-			littleIdeal = Math.min(dm.widthPixels, Math.max(realWidth, (int)res.getDimension(R.dimen.idealdpdp))*55/45);
-			factor=2;
-		}
-		MarginLayoutParams mlarp = (MarginLayoutParams) UIData.dialog.getLayoutParams();
-		int[] margins;
-		if(UIData.dialog.getTag()==null) {
-			UIData.dialog.setTag(margins=new int[2]);
-			margins[0] = mlarp.topMargin;
-			margins[1] = mlarp.bottomMargin;
-		} else {
-			margins = (int[]) UIData.dialog.getTag();
-		}
-		mlarp.width = littleIdeal - (int) (2 * res.getDimension(R.dimen._28_) + GlobalOptions.density * 15);
-		mlarp.topMargin=margins[0]/factor;
-		mlarp.bottomMargin=margins[1]/factor;
-		dialogHolder.setTag(false);
-	}
-
-	static long currMdlTime;
-	static boolean lazyLoaded;
-	@Override
-	protected void LoadLazySlots(File modulePath, boolean lazyLoad, String moduleName) throws IOException {
-		long lm = modulePath.lastModified();
-		if(lm==currMdlTime
-				&& lazyLoaded==lazyLoad
-				&& moduleName.equals(lastLoadedModule)
-		){
-			filter_count = CosySofa.size();
-			CMN.Log("直接返回！！！", filter_count);
-			currentFilter.ensureCapacity(filter_count);
-			for (int i = 0; i < filter_count; i++) {
-				currentFilter.add(null);
-				//CMN.Log(CosySofa.get(i).name);
-			}
-			return;
-		}
-		CMN.Log("LoadLazySlots…");
-		AgentApplication app = ((AgentApplication) getApplication());
-		ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(modulePath), app.get4kCharBuff(), 4096);
-		CosySofa.clear();
-		HdnCmfrt.clear();
-		filter_count=hidden_count=0;
-		do_LoadLazySlots(in, CosyChair);
-		HdnCmfrt.ensureCapacity(filter_count+hidden_count);
-		currMdlTime=lm;
-		lastLoadedModule=moduleName;
-		lazyLoaded=lazyLoad;
-		app.set4kCharBuff(in.cb);
-	}
-
 	private void setLv1ScrollChanged() {
 		lv.setOnScrollChangedListener(new OnScrollChangedListener() {
 			int lastVisible=-1;
@@ -2515,23 +2360,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		UIData.schtools.setBackgroundColor(filteredColor);
 		toolbar.setBackgroundColor(filteredColor);
 
-		if(getPinPicDictDialog()) {
-			//UIData.dialog.setBackgroundResource(R.drawable.popup_background3_split);
-			if(!isHalo)UIData.dialog.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-			else UIData.dialog.setBackgroundResource(R.drawable.popup_background3_split);
-		}
-		else if(!isHalo) {
-			UIData.dialog.setBackgroundResource(R.drawable.popup_shadow_l);
-			UIData.dialog.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-//			MarginLayoutParams lp = (MarginLayoutParams) ((View)cb1.getParent()).getLayoutParams();
-//			lp.topMargin=(int) (13*dm.density);
-//			((View)cb1.getParent()).setLayoutParams(lp);
-		} else {
-			UIData.dialog.setBackgroundResource(R.drawable.popup_background3);
-//			MarginLayoutParams lp = (MarginLayoutParams) ((View)cb1.getParent()).getLayoutParams();
-//			lp.topMargin=(int) (10*dm.density);
-//			((View)cb1.getParent()).setLayoutParams(lp);
-		}
+//		if(getPinPicDictDialog()) {
+//			if(!isHalo)UIData.dialog.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+//			else UIData.dialog.setBackgroundResource(R.drawable.popup_background3_split);
+//		}
+//		else if(!isHalo) {
+//			UIData.dialog.setBackgroundResource(R.drawable.popup_shadow_l);
+//			UIData.dialog.getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+//		} else {
+//			UIData.dialog.setBackgroundResource(R.drawable.popup_background3);
+//		}
 
 		setStatusBarColor(getWindow(), filteredColor);
 //		if(MainPageSearchbar!=null)//111
@@ -2546,7 +2384,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	private boolean getPinPicDictDialog() {
-		return UIData.dialog.getParent()==UIData.viewpagerPH;
+//		return UIData.dialog.getParent()==UIData.viewpagerPH;
+		return false;
 	}
 	
 	public void animateUIColorChanges() {
@@ -2659,18 +2498,18 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					DetachContentView(true);
 					PostDCV_TweakTBIC();
 				} else {
-					if(ViewUtils.removeIfParentBeOrNotBe(UIData.dialog, UIData.viewpagerPH, true)) {
-						ViewUtils.setVisible(UIData.lnrSplitHdls, false);
-						if(PDICMainAppOptions.getPinPicDictDialog()) {
-							PDICMainAppOptions.setShowPinPicBook(false);
-						}
-					} else {
+//					if(ViewUtils.removeIfParentBeOrNotBe(UIData.dialog, UIData.viewpagerPH, true)) {
+//						ViewUtils.setVisible(UIData.lnrSplitHdls, false);
+//						if(PDICMainAppOptions.getPinPicDictDialog()) {
+//							PDICMainAppOptions.setShowPinPicBook(false);
+//						}
+//					} else { //111
 						dismissPopup();
 						showChooseDictDialog(0);
 						if(PDICMainAppOptions.getPinPicDictDialog()) {
 							PDICMainAppOptions.setShowPinPicBook(true);
 						}
-					}
+//					}
 				}
 			} break;
 			//切换搜索模式
@@ -2747,140 +2586,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			//搜索词典
 			case R.id.rcntSch:{
 				
-				if(ViewUtils.toggleFadeInFadeOut(UIData.rcntSchList)) {
+//				if(ViewUtils.toggleFadeInFadeOut(UIData.rcntSchList)) {
+//
+//				}
 				
-				}
-				
-			} break;
-			case R.id.schBook:{
-				if(Searchbar==null) {
-					Toolbar searchbar = (Toolbar)  ((ViewStub)dialogHolder.findViewById(R.id.view_stub)).inflate();
-					searchbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);//abc_ic_ab_back_mtrl_am_alpha
-					searchbar.mNavButtonView.setId(R.id.schBook);
-					searchbar.mNavButtonView.setOnClickListener(this);
-					ViewUtils.ResizeNavigationIcon(searchbar);
-					//searchbar.setContentInsetsAbsolute(0, 0);
-					searchbar.setBackgroundColor(MainBackground);
-					ViewGroup VG = (ViewGroup) searchbar.getChildAt(0);
-					SetImageClickListener(VG, true);
-					etSearchDict = (EditText) VG.findViewById(R.id.etSearch);
-					etSearchDict.requestFocus();
-					etSearchDict.addTextChangedListener(new TextWatcher() {
-						@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-						@Override public void onTextChanged(CharSequence s, int start, int before, int count) {  }
-						@Override public void afterTextChanged(Editable s) {
-							SearchDictPatternChanged = true;
-						}
-					});
-					etSearchDict.setOnEditorActionListener((v12, actionId, event) -> searchbar.findViewById(R.id.forward).performClick());
-					this.Searchbar =searchbar;
-					etSearchDict_getWindowToken = etSearchDict.getWindowToken();
-					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-					ViewUtils.setVisible(UIData.dialogHolder, true);
-				}
-				else {
-					if(v==Searchbar.getNavigationBtn()) {
-						ViewUtils.setVisible(Searchbar, false);
-						imm.hideSoftInputFromWindow(etSearchDict_getWindowToken,0);
-						if(getPinPicDictDialog()) ViewUtils.setVisible(UIData.dialogHolder, false);
-					} else {
-						etSearch.clearFocus();
-						ViewUtils.setVisible(Searchbar, true);
-						ViewUtils.setVisible(UIData.dialogHolder, true);
-						etSearchDict.requestFocus();
-						imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-					}
-				}
 			} break;
 			case R.id.autoSchSw:{
 				cb = (CheckableImageView)v;
 				cb.toggle();
 				opt.setPicDictAutoSer(cb.isChecked());
 				//if(pickDictDialog!=null) pickDictDialog.isDirty=true;
-			} break;
-			case R.id.pinPicBook:{ //123
-				cb = (CheckableImageView)v;
-				cb.toggle();
-				opt.setPinPicDictDialog(cb.isChecked());
-				//if(pickDictDialog!=null) pickDictDialog.isDirty=true;
-				pickDictDialog.refresh(false, 0);
-			} break;
-			case R.id.recess:
-			case R.id.forward:{
-				if(Searchbar!=null) {
-					RecyclerView mRecyclerView = pickDictDialog.mRecyclerView;
-					mRecyclerView.stopScroll();
-					if (mRecyclerView.getTag()==null) {
-						mRecyclerView.setOnTouchListener((v1, event) -> {
-							pickDictDialog.LastSearchScrollItem = -1;
-							return false;
-						});
-						mRecyclerView.setTag(false);
-					}
-					if(SearchDictPatternChanged) {
-						pickDictDialog.SetSearchIncantation(etSearchDict.getText().toString());
-						SearchDictPatternChanged=false;
-					}
-					//pickDictDialog.SetSearchIncantation("中");
-					int fullSize = CosyChair.size();
-					int pad = (int) (10*dm.density);
-					int delta = id==R.id.recess?1:-1;
-					int fvp;
-					if(pickDictDialog.LastSearchScrollItem>=0) {
-						fvp = pickDictDialog.LastSearchScrollItem+delta;
-					} else {
-						fvp = pickDictDialog.lman.findFirstVisibleItemPosition()+delta;
-						if(mRecyclerView.getChildAt(1).getTop()<=pad){
-							fvp++;
-						}
-					}
-					
-					int sep=fullSize-fvp;
-					int st=0;
-					if(delta<0) {
-						sep -= 1;
-						st = fullSize-1;
-					}
-					int msg = R.string.fn;
-					try {
-						for(int i=st,j;delta<0?i>=0:i<fullSize;i+=delta) {
-							if(i>=sep) {
-								j=i-sep;
-							} else {
-								j=i+fvp;
-							}
-							//CMN.Log(i, j, CosyChair.get(j).pathname);
-	//						if(delta>0&&j==fullSize-1||delta<0&&j==0) {
-	//							break;
-	//						}
-							if (j>=0 && j<CosyChair.size()) {
-								String name = CosyChair.get(j).pathname;
-								if(name!=null && name.startsWith(AssetTag)) {
-									name = CMN.getAssetName(name);
-								}
-								if(pickDictDialog.SearchPattern==null || pickDictDialog.SearchPattern.matcher(name).find()) {
-									msg = 0;
-									pickDictDialog.lman.scrollToPositionWithOffset(j, pad);
-									pickDictDialog.LastSearchScrollItem=j;
-									break;
-								}
-							}
-						}
-					} catch (Exception e) {  }
-					if(msg!=0) {
-						show(msg);
-					}
-					imm.hideSoftInputFromWindow(etSearchDict_getWindowToken, 0);
-					pickDictDialog.notifyDataSetChanged();
-				}
-			} break;
-			case R.id.ivDeleteText:{
-				if(Searchbar!=null) {
-					pickDictDialog.SearchIncantation = null;
-					etSearchDict.setText("");
-					//imm.hideSoftInputFromWindow(etSearchDict_getWindowToken, 0);
-					pickDictDialog.notifyDataSetChanged();
-				}
 			} break;
 			case R.id.settings:{
 
@@ -2910,20 +2625,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 				}
 			} break;
-		}
-	}
-	
-	private void SetImageClickListener(ViewGroup VG, boolean Tag) {
-		int cc = VG.getChildCount();
-		View view;
-		for (int i = 0; i < cc; i++) {
-			view = VG.getChildAt(i);
-			if(view instanceof ImageView) {
-				if(Tag) {
-					view.setTag(false);
-				}
-				view.setOnClickListener(this);
-			}
 		}
 	}
 	
@@ -3265,199 +2966,89 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	
-	WeakReference<DictPicker> chooseDFragment;
-	
-	@Override
-	public void showChooseDictDialog(int reason) {
-		boolean needRefresh=pickTarget!=reason;
-		pickTarget=reason;
-		DictPicker chooseDialog;
-		if(chooseDFragment==null || chooseDFragment.get()==null) {
-			chooseDFragment = new WeakReference<>(chooseDialog = new DictPicker(this));
-			//chooseDFragment.setStyle(R.style.DialogStyle, 0);//DialogFragment.STYLE_NO_TITLE
-			chooseDialog.bShouldCloseAfterChoose=true;
-			//chooseDFragment.setCancelable(true);
-			//chooseDFragment.setOnViewCreatedListener(new OnViewCreatedListener() {
-			//	@Override
-			//	public void OnViewCreated(Dialog dialog) {
-			//		dialog.setCanceledOnTouchOutside(true);
-			//		Window window = dialog.getWindow();
-			//	}});
-			chooseDialog.width=(int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor));
-			chooseDialog.mMaxH=(int) (dm.heightPixels-2*getResources().getDimension(R.dimen.diagMarginVer));
-			chooseDialog.height=-2;
-		}else
-			chooseDialog = chooseDFragment.get();
-		chooseDialog.show(getSupportFragmentManager(), "PickDictDialog");
-
-		        /*DidialogHolder = (ViewGroup) findViewById(R.id.dialog_);
-            	if(dialogHolder.getVisibility()==View.VISIBLE) {
-					dialogHolder.setVisibility(View.GONE);
-					break;
-				}
-				if(!isFragInitiated) {
-					FragmentManager fragmentManager = getSupportFragmentManager();
-					FragmentTransaction transaction = fragmentManager.beginTransaction();
-					pickDictDialog = new DialogFragment1(this);
-		            transaction.add(R.id.dialog_, pickDictDialog);
-		            transaction.commit();
-		            isFragInitiated=true;
-		            //pickDictDialog.mRecyclerView.scrollToPosition(adapter_idx);
-				}
-				else//没办法..
-					pickDictDialog.refresh();*/
-		if(needRefresh) chooseDialog.notifyDataSetChanged();
-	}
-	
-	/** 显示带搜索框的词典选择器。
-	 * @param reason 发起理由。0：选择当前词典。<br> 1：选择点译上游词典。*/
-	public void showChooseDictDialogx(int reason) {
-		dismissing_dh=false;
-		boolean needRefresh=pickTarget!=reason;
-		pickTarget=reason;
-		if(dialogHolder.getTag()==null) {
-			ResizeDictPicker();
-		}
-		if(dialogHolder.getVisibility()==View.VISIBLE) {
-			dialogHolder.setVisibility(View.GONE);
-			checkFlags();
-			return;
-		}
-		if(reason==1){
-			if(root.getChildAt(root.getChildCount()-1)!=dialogHolder){
-				root.removeView(dialogHolder);
-				root.addView(dialogHolder);
-			}
-		}
-		int bForcePin = 0;
-		if(reason==1) {
-			bForcePin = -1;
-		}
-		// ...
-		if(!isFragInitiated) {
-			ViewUtils.setOnClickListenersOneDepth(dialogHolder, this, 999, 0, null);
-			needRefresh=false;
-			FragmentManager fragmentManager = getSupportFragmentManager();
-			FragmentTransaction transaction = fragmentManager.beginTransaction();
-			pickDictDialog = new DictPicker(this);
-			pickDictDialog.bForcePin = bForcePin;
-			transaction.replace(R.id.dialog_dict_picker, pickDictDialog);
-			findViewById(R.id.dialog_).setOnClickListener(ViewUtils.DummyOnClick);
-			transaction.commit();
-			root.postDelayed(() -> pickDictDialog.PostEnabled=false, 1000);
-			//pickDictDialog.PostEnabled=false;
-			
-			dialogHolder.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					//if(etSearchDict_getWindowToken!=null && Searchbar.hasFocus())
-					boolean pinDlg = UIData.dialog.getParent()==UIData.viewpagerPH;
-					if(ViewUtils.isVisibleV2(Searchbar) || pinDlg)
-					{
-						imm.hideSoftInputFromWindow(etSearchDict_getWindowToken, 0);
-						ViewUtils.setVisibleV2(Searchbar, false);
-						if(pinDlg) ViewUtils.setVisible(dialogHolder, false);
-						return;
-					}
-					dismissDictPicker(R.anim.dp_dialog_exit);
-				}
-			});
-			
-			TextViewmy rcntSchList = UIData.rcntSchList;
-			rcntSchList.setMovementMethod(ScrollingMovementMethod.getInstance());
-			rcntSchList.setVerticalScrollBarEnabled(true);
-			opt.setAsLinkedTextView(rcntSchList, false);
-			rcntSchList.setTextSize(GlobalOptions.isLarge?20f:14f);
-			rcntSchList.setMaxLines(3);
-			rcntSchList.longClick=new OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					if(rcntSchList.span!=null) {
-						showT(""+rcntSchList.span);
-						return true;
-					}
-					return false;
-				}
-			};
-			rcntSchList.setOnLongClickListener(opt.XYTouchRecorderInstance());
-			
-			isFragInitiated=true;
-			//pickDictDialog.mRecyclerView.scrollToPosition(adapter_idx);
-		}
-		else {
-			pickDictDialog.refresh(false, bForcePin);
-		}
-		if(needRefresh) pickDictDialog.adapter().notifyDataSetChanged();
-		
-		
-		refreshRecentDictsSpan();
-	}
-	
-	ArrayList<String> recentDictFilters = new ArrayList<>();
-	private void refreshRecentDictsSpan() {
-		SpannableStringBuilder ssbRcntSch = new SpannableStringBuilder();
-//		ssbRcntSch.append("[最近词典列表]");
-//		ssbRcntSch.setSpan(new ClickableSpan() {
-//			@Override
-//			public void onClick(@NonNull View widget) {
-//				showT("...");
+//	/** 显示带搜索框的词典选择器。
+//	 * @param reason 发起理由。0：选择当前词典。<br> 1：选择点译上游词典。*/
+//	public void showChooseDictDialogx(int reason) {
+//		dismissing_dh=false;
+//		boolean needRefresh=pickTarget!=reason;
+//		pickTarget=reason;
+//		if(dialogHolder.getTag()==null) {
+//			ResizeDictPicker();
+//		}
+//		if(dialogHolder.getVisibility()==View.VISIBLE) {
+//			dialogHolder.setVisibility(View.GONE);
+//			checkFlags();
+//			return;
+//		}
+//		if(reason==1){
+//			if(root.getChildAt(root.getChildCount()-1)!=dialogHolder){
+//				root.removeView(dialogHolder);
+//				root.addView(dialogHolder);
 //			}
-//		}, 0, ssbRcntSch.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-		if(recentDictFilters.size()==0) {
-			recentDictFilters.add("[隐藏]");
-			recentDictFilters.add("[切换分组]");
-			recentDictFilters.add("[原列表]");
-		}
-		for (int i = 0; i < recentDictFilters.size(); i++) {
-			String sch = recentDictFilters.get(i);
-			if(ssbRcntSch.length()>0)
-				ssbRcntSch.append("   ");
-			int st = ssbRcntSch.length(),ed;
-			ssbRcntSch.append(sch);
-			ed = ssbRcntSch.length();
-			
-			ssbRcntSch.setSpan(new RecentDictClickableSpan(i, 0), st, ed, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-		}
-		ssbRcntSch.append("   ");
-		UIData.rcntSchList.setText(ssbRcntSch);
-	}
-	
-	class RecentDictClickableSpan extends ClickableSpan implements Runnable{
-		final int index;
-		final int type;
-		
-		RecentDictClickableSpan(int index, int type) {
-			this.index = index;
-			this.type = type;
-		}
-		
-		@Override
-		public void onClick(@NonNull View widget) {
-			if(type==0) {
-				//showT(recentDictFilters.get(index));
-				String dictFilter = recentDictFilters.get(index);
-				//showTopSnack(dialogHolder, dictFilter);
-				if(Searchbar!=null && Searchbar.getVisibility()==View.VISIBLE) {
-					etSearchDict.setText(dictFilter);
-				} else {
-					UIData.rcntSch.setText(dictFilter);
-					
-				}
-				
-			} else {
-				root.postDelayed(this, 200);
-			}
-		}
-		
-		@Override
-		public void run() {
-			try {
-				String removed = recentDictFilters.remove(index);
-				recentDictFilters.add(type==1?recentDictFilters.size():0, removed);
-				refreshRecentDictsSpan();
-			} catch (Exception ignored) { }
-		}
-	}
+//		}
+//		int bForcePin = 0;
+//		if(reason==1) {
+//			bForcePin = -1;
+//		}
+//		// ...
+//		if(!isFragInitiated) {
+//			ViewUtils.setOnClickListenersOneDepth(dialogHolder, this, 999, 0, null);
+//			needRefresh=false;
+//			FragmentManager fragmentManager = getSupportFragmentManager();
+//			FragmentTransaction transaction = fragmentManager.beginTransaction();
+//			pickDictDialog = new DictPicker(this);
+//			pickDictDialog.bForcePin = bForcePin;
+//			transaction.replace(R.id.dialog_dict_picker, pickDictDialog);
+//			findViewById(R.id.dialog_).setOnClickListener(ViewUtils.DummyOnClick);
+//			transaction.commit();
+//			root.postDelayed(() -> pickDictDialog.PostEnabled=false, 1000);
+//			//pickDictDialog.PostEnabled=false;
+//
+//			dialogHolder.setOnClickListener(new OnClickListener() {
+//				@Override
+//				public void onClick(View v) {
+//					//if(etSearchDict_getWindowToken!=null && Searchbar.hasFocus())
+//					boolean pinDlg = UIData.dialog.getParent()==UIData.viewpagerPH;
+//					if(ViewUtils.isVisibleV2(Searchbar) || pinDlg)
+//					{
+//						imm.hideSoftInputFromWindow(etSearchDict_getWindowToken, 0);
+//						ViewUtils.setVisibleV2(Searchbar, false);
+//						if(pinDlg) ViewUtils.setVisible(dialogHolder, false);
+//						return;
+//					}
+//					dismissDictPicker(R.anim.dp_dialog_exit);
+//				}
+//			});
+//
+//			TextViewmy rcntSchList = UIData.rcntSchList;
+//			rcntSchList.setMovementMethod(ScrollingMovementMethod.getInstance());
+//			rcntSchList.setVerticalScrollBarEnabled(true);
+//			opt.setAsLinkedTextView(rcntSchList, false);
+//			rcntSchList.setTextSize(GlobalOptions.isLarge?20f:14f);
+//			rcntSchList.setMaxLines(3);
+//			rcntSchList.longClick=new OnLongClickListener() {
+//				@Override
+//				public boolean onLongClick(View v) {
+//					if(rcntSchList.span!=null) {
+//						showT(""+rcntSchList.span);
+//						return true;
+//					}
+//					return false;
+//				}
+//			};
+//			rcntSchList.setOnLongClickListener(opt.XYTouchRecorderInstance());
+//
+//			isFragInitiated=true;
+//			//pickDictDialog.mRecyclerView.scrollToPosition(adapter_idx);
+//		}
+//		else {
+//			pickDictDialog.refresh(false, bForcePin);
+//		}
+//		if(needRefresh) pickDictDialog.adapter().notifyDataSetChanged();
+//
+//
+//		refreshRecentDictsSpan();
+//	}
 	
 	@SuppressLint("ResourceType")
 	@Override
@@ -3662,6 +3253,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			} break;
 			case 110:{
+				ArrayList<PlaceHolder> CosyChair = lazyLoadManager.CosyChair;
+				ArrayList<PlaceHolder> CosySofa = lazyLoadManager.CosySofa;
+				ArrayList<PlaceHolder> HdnCmfrt = lazyLoadManager.HdnCmfrt;
 				boolean changed = duco!=null && duco.getBooleanExtra("changed", false);
 				if(!changed){
 					PlaceHolder phI;
@@ -3685,7 +3279,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					}
 				}
 				if (changed){
-					buildUpDictionaryList(lazyLoaded, mdict_cache);
+					buildUpDictionaryList(lazyLoadManager.lazyLoaded, mdict_cache);
 					if (adapter_idx<0) {
 						switch_To_Dict_Idx(0, false, false, null);
 					}
@@ -3862,24 +3456,23 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	void dismissDictPicker(int animationRes) {
 		CMN.Log("dismissDictPicker");
-		if(dismissing_dh) return;
-		dismissing_dh=true;
-		if(pickDictDialog!=null) {
-			if(pickDictDialog.isDirty)  {opt.putFirstFlag();pickDictDialog.isDirty=false;}
-			dialogHolder.clearAnimation();
-			/*  词典选择器的动画效果(消失)  */
-			if(animaExit==null) {
-				animaExit = AnimationUtils.loadAnimation(this, animationRes);
-				animaExit.setAnimationListener(new ViewUtils.BaseAnimationListener(){
-					@Override public void onAnimationEnd(Animation animation) {
-						dialogHolder.setVisibility(View.GONE);
-					}
-				});
-			}
-			dialogHolder.startAnimation(animaExit);
-			if(PDICMainAppOptions.getPinPicDictDialog() && PDICMainAppOptions.getShowPinPicBook()) {
-				pickDictDialog.refresh(false, 1);
-			}
+		if(!pickDictDialog.isVisible()) return;
+		if(pickDictDialog!=null) {//111
+//			if(pickDictDialog.isDirty)  {opt.putFirstFlag();pickDictDialog.isDirty=false;}
+//			dialogHolder.clearAnimation();
+//			/*  词典选择器的动画效果(消失)  */
+//			if(animaExit==null) {
+//				animaExit = AnimationUtils.loadAnimation(this, animationRes);
+//				animaExit.setAnimationListener(new ViewUtils.BaseAnimationListener(){
+//					@Override public void onAnimationEnd(Animation animation) {
+//						dialogHolder.setVisibility(View.GONE);
+//					}
+//				});
+//			}
+//			dialogHolder.startAnimation(animaExit);
+//			if(PDICMainAppOptions.getPinPicDictDialog() && PDICMainAppOptions.getShowPinPicBook()) {
+//				pickDictDialog.refresh(false, 1);
+//			}
 		}
 	}
 
@@ -3912,7 +3505,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(peruseView !=null){
 			peruseView.contentUIData.PageSlider.invalidateIBC();
 		}
-		if(wordPopup.PopupPageSlider!=null){
+		if(wordPopup.pageSlider !=null){
 			contentUIData.PageSlider.invalidateIBC();
 		}
 	}

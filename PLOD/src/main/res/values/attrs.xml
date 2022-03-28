@@ -65,6 +65,7 @@
 		<attr name="android:gravity" format="enum"/>
 		<attr name="margin" format="dimension" />
 		<attr name="rating" format="boolean" />
+		<attr name="ellipsis" format="boolean" />
 		<attr name="stroke" format="dimension" />
 		<attr name="strokeColor" format="reference|color" />
     </declare-styleable>

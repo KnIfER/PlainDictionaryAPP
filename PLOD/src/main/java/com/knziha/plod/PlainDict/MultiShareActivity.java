@@ -27,13 +27,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-
-import static com.knziha.plod.plaindict.PDICMainActivity.CosyChair;
-import static com.knziha.plod.plaindict.PDICMainActivity.CosySofa;
-import static com.knziha.plod.plaindict.PDICMainActivity.HdnCmfrt;
-import static com.knziha.plod.plaindict.PDICMainActivity.currMdlTime;
-import static com.knziha.plod.plaindict.PDICMainActivity.lazyLoaded;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
 
 /** 主程序之影。复用词典实例。 */
@@ -361,48 +354,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	public PlaceHolder getPlaceHolderAt(int idx) {
-		if(idx>=0 && idx<CosyChair.size())
-			return CosyChair.get(idx);
-		return null;
-	}
-	
-	@Override
-	public ArrayList<PlaceHolder> getPlaceHolders() {
-		return CosyChair;
-	}
-	
-	@Override
-	protected void LoadLazySlots(File modulePath, boolean lazyLoad, String moduleName) throws IOException {
-		long lm = modulePath.lastModified();
-		if(lm==currMdlTime
-				&& lazyLoaded==lazyLoad
-				&& moduleName.equals(lastLoadedModule)
-		){
-			filter_count = CosySofa.size();
-			CMN.Log("直接返回！！！", filter_count);
-			currentFilter.ensureCapacity(filter_count);
-			for (int i = 0; i < filter_count; i++) {
-				currentFilter.add(null);
-				//CMN.Log(CosySofa.get(i).name);
-			}
-			return;
-		}
-		CMN.Log("LoadLazySlots…");
-		AgentApplication app = ((AgentApplication) getApplication());
-		ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(modulePath), app.get4kCharBuff(), 4096);
-		CosySofa.clear();
-		HdnCmfrt.clear();
-		filter_count=hidden_count=0;
-		do_LoadLazySlots(in, CosyChair);
-		HdnCmfrt.ensureCapacity(filter_count+hidden_count);
-		currMdlTime=lm;
-		lastLoadedModule=moduleName;
-		lazyLoaded=lazyLoad;
-		app.set4kCharBuff(in.cb);
-	}
-	
-	@Override
 	public void fix_full_screen(@Nullable View decorView) {
 	
 	}
@@ -418,11 +369,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	public void showChooseDictDialog(int reason) {
-	
-	}
-	
-	@Override
 	public boolean onMenuItemClick(MenuItem item) {
 		return false;
 	}
@@ -430,21 +376,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	public void invalidAllLists() {
 	
-	}
-	
-	@Override
-	public ArrayList<PlaceHolder> getLazyCC() {
-		return CosyChair;
-	}
-	
-	@Override
-	ArrayList<PlaceHolder> getLazyCS() {
-		return CosySofa;
-	}
-	
-	@Override
-	ArrayList<PlaceHolder> getLazyHC() {
-		return HdnCmfrt;
 	}
 	
 	

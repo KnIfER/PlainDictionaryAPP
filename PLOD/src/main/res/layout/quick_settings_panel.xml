@@ -29,6 +29,23 @@
 			style="@style/quick_settings_menu" />
 	</LinearLayout>
 	<View style="@style/quick_settings_sephor" />
+	<LinearLayout
+		android:id="@+id/shPanel"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="55dp"
+		>
+		<ImageView
+			android:id="@+id/sh_arrow"
+			android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+			style="@style/quick_settings_arrow"
+			/>
+		<TextView
+			android:id="@+id/sh"
+			android:text="滚动条样式"
+			style="@style/quick_settings_menu" />
+	</LinearLayout>
+	<View style="@style/quick_settings_sephor" />
 
 
 	<LinearLayout

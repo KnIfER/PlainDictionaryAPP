@@ -31,10 +31,12 @@ import java.util.Objects;
 public class SettingsPanel extends AnimatorListenerAdapter implements View.OnClickListener {
 	@NonNull public ViewGroup settingsLayout;
 	public LinearLayout linearLayout;
+	public Object tag;
 	protected boolean bIsShowing;
 	public final static int PANEL_SHOW_TYPE_POPUP = 1;
 	public final static int PANEL_SHOW_TYPE_DIALOG = 2;
 	protected int rootHash;
+	public RadioSwitchButton actView;
 	
 	public int getLastShowType() {
 		return lastShowType;
@@ -42,7 +44,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	
 	protected int lastShowType;
 	protected int bFadeout;
-	/**0=view;2=popup;3=dialog*/
+	/**0=view;1=popup;2=dialog*/
 	protected int showType;
 	public int bottomPadding;
 	protected final PDICMainAppOptions opt;
@@ -112,15 +114,16 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	final static int BIT_IS_REVERSE=1<<9;
 	final static int BIT_IS_DYNAMIC=1<<10;
 	protected final static int BIT_HAS_ICON=1<<11;
+	public final static int BIT_STORE_VIEW=1<<12;
 	
 	// Flag-Idx  BITs   Flag-Pos
 	// 索引   选项   偏移
 	
-	protected static int makeInt(int flagIdx, int flagPos, boolean reverse) {
+	public static int makeInt(int flagIdx, int flagPos, boolean reverse) {
 		return makeInt(flagIdx, flagPos, reverse, false);
 	}
 	
-	protected static int makeDynInt(int flagIdx, int flagPos, boolean reverse) {
+	public static int makeDynInt(int flagIdx, int flagPos, boolean reverse) {
 		return makeInt(flagIdx, flagPos, reverse, true);
 	}
 	
@@ -268,7 +271,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	
 	public void init(Context context, ViewGroup root) {
 		//settingsLayout = getLayoutInflater().inflate(R.layout.test_settings, UIData.webcoord, false);
-		if (settingsLayout!=null) {
+		if (settingsLayout!=null||context==null) {
 			return;
 		}
 		LinearLayout lv = linearLayout = hasDelegatePicker?new XYLinearLayout(context):new LinearLayout(context);
@@ -312,6 +315,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 					}
 				}
 				lv.addView(button, lp);
+				//button.getLayoutParams().width=-2;
 			}
 		}
 		//View v = new View(context);
@@ -407,8 +411,11 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		}
 		if (!bIsShowing) {
 			onDismiss();
-		} else if (parentToDismiss!=null) {
-			this.parentToDismiss = parentToDismiss;
+		} else {
+			onShow();
+			if (parentToDismiss!=null) {
+				this.parentToDismiss = parentToDismiss;
+			}
 		}
 		return bIsShowing;
 	}
@@ -422,6 +429,8 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	}
 	
 	protected void onDismiss() { }
+	
+	protected void onShow() { }
 	
 	@Override
 	public void onAnimationEnd(Animator animation) {
@@ -481,6 +490,9 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 						//button.jumpDrawablesToCurrentState();
 						return;
 					}
+				}
+				if((storageInt&BIT_STORE_VIEW)!=0) {
+					actView = button;
 				}
 				setBooleanInFlag(storageInt, button.isChecked());
 				if((storageInt>>FLAG_IDX_SHIFT)==0) {

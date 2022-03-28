@@ -50,5 +50,12 @@ ANDROID IS POWERFUL——LET'S DEVELOP APPS ELEGANTLY AND PROFESSIONALLY! -->
 		</clip>
 	</item>
 
+	<item android:drawable="@drawable/abc_list_selector_holo_dark"/>
+	<item android:drawable="@drawable/abc_list_selector_holo_dark"/>
+	<item android:drawable="@drawable/abc_list_selector_holo_dark"/>
+	<item android:drawable="@drawable/abc_list_selector_holo_dark"/>
+	<item android:drawable="@drawable/abc_list_selector_holo_dark"/>
+	<item android:drawable="@drawable/abc_list_selector_holo_dark"/>
+	<item android:drawable="@drawable/abc_list_selector_holo_dark"/>
 
 </layer-list>

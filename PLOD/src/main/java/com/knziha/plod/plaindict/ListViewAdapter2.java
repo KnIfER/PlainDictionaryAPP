@@ -17,6 +17,7 @@ import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.List;
 
+// 联合搜索、全文搜索词条列表
 public class ListViewAdapter2 extends BasicAdapter {
 	final MainActivityUIBase a;
 	final PDICMainAppOptions opt;

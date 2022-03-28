@@ -2,7 +2,6 @@ package com.knziha.plod.PlainUI;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -36,6 +35,7 @@ import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.CrashHandler;
+import com.knziha.plod.plaindict.DictPicker;
 import com.knziha.plod.plaindict.FloatSearchActivity;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -45,6 +45,7 @@ import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.FlowTextView;
+import com.knziha.plod.widgets.LinearSplitView;
 import com.knziha.plod.widgets.PopupGuarder;
 import com.knziha.plod.widgets.PopupMoveToucher;
 import com.knziha.plod.widgets.RLContainerSlider;
@@ -66,7 +67,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	public TextView popupTextView;
 	protected PopupMoveToucher popupMoveToucher;
 	public FlowTextView popupIndicator;
-	public RLContainerSlider PopupPageSlider;
+	public RLContainerSlider pageSlider;
 	public WebViewmy popupWebView;
 	public BookPresenter.AppHandler popuphandler;
 	public ImageView popIvBack;
@@ -93,8 +94,11 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	private Runnable harvestCallBack;
 	private resultRecorderCombined rec;
 	
+	DictPicker dictPicker;
+	ViewGroup splitter;
+	
 	public WordPopup(MainActivityUIBase a) {
-		super(a);
+		super(a, true);
 		//this.a = a;
 		bAnimate=false;
 		bAutoRefresh=false;
@@ -162,7 +166,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 					CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, popupWebView, currentClickDictionary_currentPos=np);
 					a.decorateContentviewByKey(popupStar, currentClickDisplaying);
 					if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy8()==0)
-						a.insertUpdate_histroy(currentClickDisplaying, 0, PopupPageSlider);
+						a.insertUpdate_histroy(currentClickDisplaying, 0, pageSlider);
 				}
 			} break;
 			case R.id.popNxtDict:
@@ -194,7 +198,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			} break;
 			case R.id.popIvStar:{
 				a.collectFavoriteView = popupContentView;
-				a.toggleStar(currentClickDisplaying, (ImageView) v, false, PopupPageSlider);
+				a.toggleStar(currentClickDisplaying, (ImageView) v, false, pageSlider);
 				a.collectFavoriteView = null;
 			} break;
 			case R.id.popupText1:{
@@ -240,8 +244,9 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				refillPreviewEntries(dd, true);
 			} break;
 			case R.id.popupText2:{
-				if(PDICMainAppOptions.getSwichClickSearchDictOnBottom())
-					a.showChooseDictDialog(1);
+				if(PDICMainAppOptions.getSwichClickSearchDictOnBottom()) {
+					dictPicker.toggle();
+				}
 			} break;
 		}
 	}
@@ -346,17 +351,20 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 					.inflate(R.layout.float_contentview_basic, a.root, false);
 			popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
 			popupToolbar = (ViewGroup) popupContentView.getChildAt(0);
-			PopupPageSlider = (RLContainerSlider) popupContentView.getChildAt(1);
-			WebViewmy mPopupWebView = (WebViewmy) PopupPageSlider.getChildAt(0);
+			LinearSplitView split = (LinearSplitView) popupContentView.getChildAt(1);
+			pageSlider = (RLContainerSlider) split.getChildAt(0);
+			splitter = (ViewGroup) popupContentView.getChildAt(3);
+			dictPicker = new DictPicker(a, split, splitter, 2);
+			WebViewmy mPopupWebView = (WebViewmy) pageSlider.getChildAt(0);
 			mPopupWebView.getSettings().setTextZoom(118);
 			mPopupWebView.fromCombined = 2;
-			PopupPageSlider.WebContext = mPopupWebView;
+			pageSlider.WebContext = mPopupWebView;
 			popupBottombar = (ViewGroup) popupContentView.getChildAt(2);
 			popuphandler = new BookPresenter.AppHandler(a.currentDictionary);
 			mPopupWebView.addJavascriptInterface(popuphandler, "app");
 			mPopupWebView.setBackgroundColor(Color.TRANSPARENT);
 			((AdvancedNestScrollWebView)mPopupWebView).setNestedScrollingEnabled(true);
-			popCover = PopupPageSlider.getChildAt(1);
+			popCover = pageSlider.getChildAt(1);
 			popIvBack = popupToolbar.findViewById(R.id.popIvBack);
 			popupStar = popupToolbar.findViewById(R.id.popIvStar);
 			ViewUtils.setOnClickListenersOneDepth(popupToolbar, this, 999, null);
@@ -471,44 +479,58 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		popupContentView = holder == null ? null : holder.get();
 		boolean b1 = popupContentView == null;
 		isNewHolder = isNewHolder || b1;
-		if (b1 || popupContentView instanceof LinearLayout ^ PopupPageSlider.getParent() instanceof LinearLayout) {
+		View cv = (View) this.pageSlider.getParent();
+		if (b1 || popupContentView != cv.getParent()) {
 			//ViewUtils.removeView(popupToolbar);
 			//ViewUtils.removeView(PopupPageSlider);
 			//ViewUtils.removeView(popupBottombar);
 			ViewUtils.removeView(mPopupContentView);
 			ViewUtils.removeView(popupToolbar);
-			ViewUtils.removeView(PopupPageSlider);
+			ViewUtils.removeView(cv);
 			ViewUtils.removeView(popupBottombar);
 			if (PDICMainAppOptions.getImmersiveClickSearch()) {
 				popupContentView = (popupCrdCloth != null && popupCrdCloth.get() != null) ? popupCrdCloth.get()
 						: (popupCrdCloth = new WeakReference<>((ViewGroup) a.getLayoutInflater()
 						.inflate(R.layout.float_contentview_coord, a.root, false))).get();
-				ViewUtils.addViewToParent(popupToolbar, (ViewGroup) popupContentView.findViewById(R.id.appbar));
-				ViewUtils.addViewToParent(PopupPageSlider, popupContentView);
+				ViewGroup appbar = (ViewGroup) popupContentView.findViewById(R.id.appbar);
+				ViewUtils.addViewToParent(popupToolbar, appbar);
+				ViewUtils.addViewToParent(cv, popupContentView);
 				ViewUtils.addViewToParent(popupBottombar, popupContentView);
 				((CoordinatorLayout.LayoutParams) popupBottombar.getLayoutParams()).gravity = Gravity.BOTTOM;
 				((CoordinatorLayout.LayoutParams) popupBottombar.getLayoutParams()).setBehavior(new BottomNavigationBehavior(popupContentView.getContext(), null));
-				((CoordinatorLayout.LayoutParams) PopupPageSlider.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(popupContentView.getContext(), null));
-				((CoordinatorLayout.LayoutParams) PopupPageSlider.getLayoutParams()).height = MATCH_PARENT;
+				((CoordinatorLayout.LayoutParams) cv.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(popupContentView.getContext(), null));
+				((CoordinatorLayout.LayoutParams) cv.getLayoutParams()).height = MATCH_PARENT;
+				((CoordinatorLayout.LayoutParams) cv.getLayoutParams()).topMargin = 0;
+				((CoordinatorLayout.LayoutParams) cv.getLayoutParams()).bottomMargin = 0;
 				((AppBarLayout.LayoutParams) popupToolbar.getLayoutParams()).setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS | AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP);
 			} else {
 				popupContentView = (popupCmnCloth != null && popupCmnCloth.get() != null) ? popupCmnCloth.get()
 						: (popupCmnCloth = new WeakReference<>((ViewGroup) a.getLayoutInflater()
 						.inflate(R.layout.float_contentview_basic_outer, a.root, false))).get();
 				ViewUtils.addViewToParent(popupToolbar, popupContentView);
-				ViewUtils.addViewToParent(PopupPageSlider, popupContentView);
+				ViewUtils.addViewToParent(cv, popupContentView);
 				ViewUtils.addViewToParent(popupBottombar, popupContentView);
 				popupToolbar.setTranslationY(0);
-				PopupPageSlider.setTranslationY(0);
+				cv.setTranslationY(0);
 				popupBottombar.setTranslationY(0);
-				((LinearLayout.LayoutParams) PopupPageSlider.getLayoutParams()).weight = 1;
-				((LinearLayout.LayoutParams) PopupPageSlider.getLayoutParams()).height = 0;
+				((FrameLayout.LayoutParams) cv.getLayoutParams()).topMargin = (int) (45*GlobalOptions.density);
+				((FrameLayout.LayoutParams) cv.getLayoutParams()).bottomMargin = (int) (30*GlobalOptions.density);
+				((FrameLayout.LayoutParams) popupBottombar.getLayoutParams()).gravity = Gravity.BOTTOM;
 			}
 		}
-		
 		popupGuarder.popupToGuard = popupContentView;
 		popupGuarder.isPinned = getPin();
 		ViewUtils.addViewToParent(popupContentView, popupGuarder);
+		try {
+			ViewUtils.addViewToParent(splitter, popupContentView);
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+		try {
+			ViewUtils.addViewToParent(splitter, popupContentView);
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
 		
 		if (isNewHolder) {
 			popupWebView.fromCombined = 2;
@@ -593,7 +615,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		int idx=-1, cc=0;
 		String key = true?ViewUtils.getTextInView(popupTextView).trim():popupKey;
 		if(key.length()>0) {
-			ArrayList<PlaceHolder> ph = a.getLazyCC();
+			ArrayList<PlaceHolder> ph = a.getPlaceHolders();
 			String keykey;
 			int OldCCD=CCD_ID;
 			boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
@@ -682,7 +704,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		CMN.Log("isParagraph::", isParagraph);
 		_treeBuilder.setKeyClashHandler(searchText);
 		for (int i = 0; i < size && task.get(); i++) {
-			ArrayList<PlaceHolder> CosyChair = a.getLazyCC();
+			ArrayList<PlaceHolder> CosyChair = a.getPlaceHolders();
 			PlaceHolder phTmp = i<CosyChair.size()?CosyChair.get(i):null;
 			if (phTmp != null) {
 				BookPresenter book = a.md.get(i);
@@ -769,7 +791,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 						for (int i = 0; i < a.md.size(); i++) {
 							mdTmp = null;
 							CSID = (i + CCD_ID) % a.md.size();
-							ArrayList<PlaceHolder> CosyChair = a.getLazyCC();
+							ArrayList<PlaceHolder> CosyChair = a.getPlaceHolders();
 							if (CSID < CosyChair.size()) {
 								PlaceHolder phTmp = CosyChair.get(CSID);
 								if (phTmp != null) {
@@ -840,7 +862,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 						CCD_ID = CCD_ID % a.md.size();
 						CCD = a.md.get(CCD_ID);
 						if (CCD == null) {
-							ArrayList<PlaceHolder> CosyChair = a.getLazyCC();
+							ArrayList<PlaceHolder> CosyChair = a.getPlaceHolders();
 							if (CCD_ID < CosyChair.size()) {
 								PlaceHolder phTmp = CosyChair.get(CCD_ID);
 								if (phTmp != null) {
@@ -902,7 +924,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			
 			if (!PDICMainAppOptions.getHistoryStrategy0()
 					&& PDICMainAppOptions.getHistoryStrategy7())
-				a.insertUpdate_histroy(popupKey, 0, PopupPageSlider);
+				a.insertUpdate_histroy(popupKey, 0, pageSlider);
 		}
 	}
 	
@@ -938,10 +960,10 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				if (PDICMainAppOptions.getClickSearchAutoReadEntry())
 					popupWebView.bRequestedSoundPlayback=true;
 				popupWebView.IBC = CCD.IBC;
-				PopupPageSlider.invalidateIBC();
+				pageSlider.invalidateIBC();
 				CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, popupWebView, currentClickDictionary_currentPos);
 			} else {
-//				StringBuilder mergedUrl = new StringBuilder("http://MdbR.com/MERGE.jsp?q=")
+//				StringBuilder mergedUrl = new StringBuilder("http://MdbR.com/merge.jsp?q=")
 //						.append(SU.encode(popupKey)).append("&exp=");
 //				mergedUrl.append("d");
 //				IU.NumberToText_SIXTWO_LE(CCD.getId(), mergedUrl);
@@ -992,8 +1014,8 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt) {
 		CMN.Log("popupWord_frameAt", frameAt, key, a.md.size(), WebViewmy.supressNxtClickTranslator);
 		if(key==null || mdict.processText(key).length()>0) {
-			this.invoker = invoker;
-			popupKey = key;
+			if (invoker!=null) this.invoker = invoker;
+			if (key!=null) popupKey = key;
 			popupFrame = frameAt;
 			popupForceId = forceStartId;
 			a.root.removeCallbacks(this);

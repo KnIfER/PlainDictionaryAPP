@@ -132,7 +132,7 @@ public abstract class MdictServer extends NanoHTTPD {
 //			}
 			return newFixedLengthResponse(getBaseHtml());
 		}
-		if(uri.startsWith("/MERGE.jsp")) {
+		if(uri.startsWith("/merge.jsp")) {
 //			if(om!=null) {
 //				return om.onMirror(session.getQueryParameterString(), false);
 //			}

@@ -74,6 +74,7 @@ import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.plaindict.databinding.ContentviewItemBinding;
 import com.knziha.plod.widgets.AdvancedNestScrollLinerView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
+import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ViewUtils;
@@ -831,7 +832,8 @@ function debug(e){console.log(e)};
 		this.a=a;
 		ucc = a.getUcc(); //todo
 		if(!viewsHolderReady) {
-			ContentviewItemBinding pageView = ContentviewItemBinding.inflate(a.getLayoutInflater(), a.weblistHandler.getViewGroup(), false);
+			ContentviewItemBinding pageView = ContentviewItemBinding.inflate(a.getLayoutInflater()
+					, a.weblistHandler.getViewGroup(), false);
 			mPageView = pageView;
 			rl = (ViewGroup) pageView.getRoot();
 	        {
@@ -840,9 +842,8 @@ function debug(e){console.log(e)};
 				rl.setTag(_mWebView);
 				_mWebView.presenter = this;
 				_mWebView.setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
-				a.initWebScrollChanged();//Strategy: use one webscroll listener
 				//if(!(this instanceof bookPresenter_pdf))
-					_mWebView.setOnScrollChangedListener(a.onWebScrollChanged);
+					_mWebView.setOnScrollChangedListener(a.getWebScrollChanged());
 	            _mWebView.setPadding(0, 0, 18, 0);
 				if(mWebBridge==null) {
 					mWebBridge = new AppHandler(this);
@@ -1897,7 +1898,11 @@ function debug(e){console.log(e)};
 		boolean mIsolateImages=/*resposibleForThisWeb&&*/from==0&&getIsolateImages();
 		/* 为了避免画面层叠带来的过度重绘，网页背景保持透明？。 */
 		tintBackground(mWebView);
-
+		
+		if (ViewUtils.ViewIsId((View) mWebView.rl.getParent(), R.id.webSingleholder)) {
+			mWebView.weblistHandler.setLastScrolledBook(mWebView);
+		}
+	
 		if((fRender&RENDERFLAG_NEW)!=0){
 			//mWebView.SelfIdx=SelfIdx;
 			//mWebView.setTag(mWebView.SelfIdx=SelfIdx);
@@ -1959,7 +1964,8 @@ function debug(e){console.log(e)};
 					rl.getLayoutParams().height = LayoutParams.MATCH_PARENT;
 					mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				}
-				a.RecalibrateWebScrollbar(mWebView);
+				//???
+				mWebView.weblistHandler.resetScrollbar(mWebView, false, false);
 			}
 		}
 	
@@ -2561,6 +2567,36 @@ function debug(e){console.log(e)};
         public void banLongClick(long sid, boolean suppress) {
 			if (presenter!=null) {
 				presenter.suppressingLongClick = suppress;
+			}
+		}
+		
+        @JavascriptInterface
+        public int cs() {
+			return presenter.a.weblist.getScrollHandType();
+		}
+		
+        @JavascriptInterface
+        public void sc(long sid, int max, int y) {
+			try {
+				WebViewmy wv = presenter.findWebview(sid);
+				if(wv!=null) {
+					WebViewListHandler weblistHandler = wv.weblistHandler;
+					DragScrollBar _mBar = weblistHandler.contentUIData.dragScrollBar;
+					if(_mBar.isHidden()) {
+						if(Math.abs(_mBar.progress()-y)>=10*dm.density)
+							_mBar.postfin();
+					}
+					if(!_mBar.isHidden()){
+						if(!_mBar.isWebHeld)
+							_mBar.hiJackScrollFinishedFadeOut();
+						if(!_mBar.isDragging){
+							_mBar.setMax(max);
+							_mBar.postprog(y);
+						}
+					}
+				}
+			} catch (Exception e) {
+				CMN.Log(e);
 			}
 		}
 		
@@ -3872,7 +3908,8 @@ function debug(e){console.log(e)};
 	
 	@Override
 	public String getDictionaryName() {
-		return bookImpl.getDictionaryName();
+		String ret=bookImpl.getDictionaryName();
+		return ret==null?"":ret;
 	}
 	
 	public void purgeSearch(int searchType) {

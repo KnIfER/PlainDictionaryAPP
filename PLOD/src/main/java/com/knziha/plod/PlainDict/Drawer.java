@@ -836,7 +836,8 @@ public class Drawer extends Fragment implements
 						onSelectedFilePaths(String[] files, File now) {
 							CMN.debug(files);
 							if(now!=null) {
-								for(PlaceHolder phI:a.CosyChair) {
+								MainActivityUIBase.LazyLoadManager lazyLoadManager = a.lazyLoadManager;
+								for(PlaceHolder phI:lazyLoadManager.CosyChair) {
 									mdictInternal.add(phI.getPath(a.opt).getPath());
 								}
 								for(BookPresenter mdTmp:a.currentFilter) {
@@ -900,6 +901,7 @@ public class Drawer extends Fragment implements
 								HashSet<String> renameRec = new HashSet<>();
 								HashMap<String,String> renameList = new HashMap<>();
 								
+								MainActivityUIBase.LazyLoadManager lazyLoadManager = a.lazyLoadManager;
 								try {
 									BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
 									BufferedWriter output2 = null;
@@ -931,7 +933,7 @@ public class Drawer extends Fragment implements
 												}
 												if(newAdapterIdx==-1) newAdapterIdx = a.md.size()-1;
 												PlaceHolder phI = new PlaceHolder(fnI);
-												a.CosyChair.add(phI);
+												lazyLoadManager.CosyChair.add(phI);
 												String raw=fnI;
 												fnI = mFile.tryDeScion(fI, a.opt.lastMdlibPath);
 												if(output2==null){
@@ -964,8 +966,8 @@ public class Drawer extends Fragment implements
 											}
 										}
 										else if(newAdapterIdx==-1 && bscAdapterIdx==-1) {
-											for (int j = 0; j < a.CosyChair.size(); j++) {
-												PlaceHolder phI = a.CosyChair.get(j);
+											for (int j = 0; j < lazyLoadManager.CosyChair.size(); j++) {
+												PlaceHolder phI = lazyLoadManager.CosyChair.get(j);
 												if(fI.equals(phI.getPath(a.opt))) {
 													bscAdapterIdx = j;
 													break;
@@ -985,7 +987,7 @@ public class Drawer extends Fragment implements
 									}
 									renameRec.clear();
 									
-									for (ArrayList<PlaceHolder> phII: PDICMainActivity.PlaceHolders) {
+									for (ArrayList<PlaceHolder> phII: lazyLoadManager.PlaceHolders) {
 										for (PlaceHolder phI:phII){
 											String newPath = renameList.get(phI.getPath(a.opt));
 											if(newPath!=null){

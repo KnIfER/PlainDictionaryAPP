@@ -7,8 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.TextUtils;
@@ -17,8 +15,10 @@ import android.view.View;
 @SuppressLint("ViewConstructor")
 public class SamsungLikeHandle extends View {
     Paint p;
-	Paint p2;
+	Paint deliPainter;
 	private int bgColor;
+	float delta;
+	private String delimiter;
 	
 	public SamsungLikeHandle(Context c, int m){
         super(c);
@@ -36,21 +36,25 @@ public class SamsungLikeHandle extends View {
 			p.setTextSize(15*getResources().getDisplayMetrics().density);//22
 			p.setTypeface(Typeface.DEFAULT);
 			p.setStrokeWidth(2);
-			p2 = new Paint(p);
-			p2.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
+			deliPainter = new Paint(p);
+			deliPainter.setColor(Color.WHITE);
+			//deliPainter.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
 			setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-			setDelimiter("|||");
-			p2.setTextAlign(Align.CENTER);
+			//setDelimiter("|||");
+			deliPainter.setTextAlign(Align.CENTER);
 		}
     }
-    float delta;
-    private String delimiter;
-    void setDelimiter(String newShield) {
-    	if(!newShield.equals(delimiter)) {
-	    	delimiter = newShield;
-	        Rect textBounds = new Rect();
-	        p2.getTextBounds(newShield, 0, newShield.length(), textBounds);
-	        delta = textBounds.exactCenterY();
+    
+    void setDelimiter(String newTextDelimiter) {
+    	if(!TextUtils.equals(newTextDelimiter, delimiter)) {
+	    	delimiter = newTextDelimiter;
+			if(newTextDelimiter!=null) {
+				Rect textBounds = new Rect();
+				deliPainter.getTextBounds(newTextDelimiter, 0, newTextDelimiter.length(), textBounds);
+				delta = textBounds.exactCenterY();
+			} else {
+				delta = 0;
+			}
 	        invalidate();
     	}
     }
@@ -60,7 +64,7 @@ public class SamsungLikeHandle extends View {
 		super.onDraw(canvas);
 		if(!TextUtils.isEmpty(delimiter)) {
 			canvas.rotate(90);
-			canvas.drawText(delimiter, getHeight()/2,  -getWidth()/2-delta, p2);
+			canvas.drawText(delimiter, getHeight()/2,  -getWidth()/2-delta, deliPainter);
 			canvas.rotate(-90);
 		}
     }

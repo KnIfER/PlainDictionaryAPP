@@ -66,7 +66,8 @@ public class TwoWayGridView extends TwoWayAbsListView {
 
 	public static final String TAG = "TwoWayGridView";
 	public static final boolean DEBUG = false;
-
+	public int maxHeight;
+	
 	private int mNumColumns = AUTO_FIT;
 	private int mNumRows = AUTO_FIT;
 
@@ -1663,7 +1664,8 @@ public class TwoWayGridView extends TwoWayAbsListView {
 				}
 				heightSize = ourSize;
 			}
-
+			if(maxHeight>0 && heightSize>maxHeight)
+				heightSize=maxHeight;
 			setMeasuredDimension(widthSize, heightSize);
 			mWidthMeasureSpec = widthMeasureSpec;
 			if (DEBUG) Log.i(TAG, "Vertical onMeasure widthSize: " + widthSize + " heightSize: " + heightSize);

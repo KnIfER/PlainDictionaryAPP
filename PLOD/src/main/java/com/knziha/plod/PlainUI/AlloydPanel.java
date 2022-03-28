@@ -3,7 +3,6 @@ package com.knziha.plod.PlainUI;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -13,14 +12,11 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 
-import com.bumptech.glide.annotation.GlideOption;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
-import com.knziha.plod.widgets.DarkToggleButton;
 import com.knziha.plod.widgets.SplitView;
-import com.knziha.plod.widgets.SwipeBackLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +28,7 @@ public class AlloydPanel extends PlainAppPanel {
 	public List<MenuItemImpl> RandomMenu;
 	
 	public AlloydPanel(MainActivityUIBase a, @NonNull ContentviewBinding contentUIData) {
-		super(a);
+		super(a, true);
 		this.contentUIData=contentUIData;
 		this.bottomPadding = 0;
 		this.bPopIsFocusable = true;

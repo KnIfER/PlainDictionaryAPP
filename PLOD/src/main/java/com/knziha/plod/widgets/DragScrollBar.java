@@ -39,6 +39,9 @@ public class DragScrollBar extends RelativeLayout{
 	SwipeRefreshLayout swipeRefreshLayout;
 	private int bgColor;
 	
+	public int desiredWidth;
+	int desiredHeight=36;
+	
 	public boolean isHidden(){
 		return getVisibility()!=View.VISIBLE || handleThumb.getVisibility()!=View.VISIBLE;
 	}
@@ -62,14 +65,30 @@ public class DragScrollBar extends RelativeLayout{
 	}
 
 	//xxx
-	public void setProgress(int val) {
+	public void progress(int val) {
 		mProgress=val;
 		//ViewCompat.setY(handleThumb, 1.f*val/mMax*getHeight());
 		int newTop = topByProgress(mProgress);
 		handleThumb.setTop(newTop);
 		handleThumb.setBottom(newTop+desiredHeight);
+		//handleThumb.postInvalidate();
+	}
+	
+	public void postprog(int val) {
+		mProgress=val;
+		//ViewCompat.setY(handleThumb, 1.f*val/mMax*getHeight());
+		post(ppaby);
+	}
+	
+	Runnable ppaby = ()->{
+		int newTop = topByProgress(mProgress);
+		handleThumb.setTop(newTop);
+		handleThumb.setBottom(newTop+desiredHeight);
 		handleThumb.postInvalidate();
+	};
 
+	public int progress() {
+		return mProgress;
 	}
 
 	private int topByProgress(int mProgress) {
@@ -90,8 +109,6 @@ public class DragScrollBar extends RelativeLayout{
 				0, 0);
 	}
 
-	public int desiredWidth;
-	int desiredHeight=36;
 	//设置拉杆
 	SamsungLikeHandle setUpHandle(Context context, Boolean lightOnTouch){
 		handleThumb = new SamsungLikeHandle(context, 0);
@@ -286,6 +303,12 @@ public class DragScrollBar extends RelativeLayout{
 	public void fadeIn(){
 		handleThumb.setVisibility(View.VISIBLE);
 	}
+	
+	public void postfin(){
+		post(pfaby);
+	}
+	
+	Runnable pfaby = this::fadeIn;
 
 	private boolean synced;
 	void setTouchIntercept() {
@@ -358,7 +381,7 @@ public class DragScrollBar extends RelativeLayout{
 	public Timer timer;
 
 	public void setDelimiter(String newShield, View _scrollee) {
-		//handleThumb.setDelimiter(newShield);
+		handleThumb.setDelimiter(newShield);
 		scrollee = _scrollee;
 	}
 

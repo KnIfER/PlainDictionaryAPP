@@ -62,33 +62,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	final static int FVMINHEIGHT=50;
 
 	protected float _50_;
-	public static ArrayList<PlaceHolder> CosyChair = new ArrayList<>();
-	public static ArrayList<PlaceHolder> CosySofa = new ArrayList<>();
-	public static ArrayList<PlaceHolder> HdnCmfrt = new ArrayList<>();
-	public static ArrayList<PlaceHolder> mCosyChair;
-	public static ArrayList<PlaceHolder> mCosySofa;
-	public static ArrayList<PlaceHolder> mHdnCmfrt;
 	private String Current0SearchText;
 	private boolean fullScreen;
 	private boolean hideNavigation;
 	protected boolean this_instanceof_FloarActivitySearch;
 	
 	ViewGroup.LayoutParams mfv_lp;
-	
-	@Override
-	public ArrayList<PlaceHolder> getLazyCC() {
-		return mCosyChair;
-	}
-
-	@Override
-	ArrayList<PlaceHolder> getLazyCS() {
-		return mCosySofa;
-	}
-
-	@Override
-	ArrayList<PlaceHolder> getLazyHC() {
-		return mHdnCmfrt;
-	}
 
 	@Override
 	protected boolean PerFormBackPrevention(boolean bBackBtn) {
@@ -180,10 +159,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
         // Checks the orientation of the screen
 
-        if(chooseDFragment!=null && chooseDFragment.get()!=null) {
-			chooseDFragment.clear();
-			chooseDFragment=null;
-        }
     	if(mainfv.getTranslationY()<0)
     		mainfv.setTranslationY(0);
     	if(mainfv.getTranslationX()<0)
@@ -290,6 +265,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
 		
         setContentView(R.layout.float_main);
+	
+		pickDictDialog = new DictPicker(this, null, null, 1);
 	
 		root = findViewById(R.id.root);
 		mainfv = root.findViewById(R.id.main);
@@ -715,45 +692,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		finish();
 	}
 
-	static long currMdlTime;
-	static String lastLoadedModule;
-	static boolean lazyLoaded;
-	@Override
-	protected void LoadLazySlots(File modulePath, boolean lazyLoad, String moduleName) throws IOException {
-		long lm = modulePath.lastModified();
-		if(lm==currMdlTime
-				&& lazyLoaded==lazyLoad
-				&& moduleName.equals(lastLoadedModule)
-		){
-			mCosyChair=CosyChair;
-			mCosySofa=CosySofa;
-			mHdnCmfrt=HdnCmfrt;
-			filter_count = mCosySofa.size();
-			CMN.Log("直接返回！！！", filter_count);
-			currentFilter.ensureCapacity(filter_count);
-			for (int i = 0; i < filter_count; i++) {
-				currentFilter.add(null);
-				//CMN.Log(mCosySofa.get(i).name);
-			}
-			return;
-		}
-		CMN.Log("LoadLazySlots…");
-		mCosyChair=new ArrayList<>();
-		mCosySofa=new ArrayList<>();
-		mHdnCmfrt=new ArrayList<>();
-		AgentApplication app = ((AgentApplication) getApplication());
-		ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(modulePath), app.get4kCharBuff(), 4096);
-		filter_count=hidden_count=0;
-		do_LoadLazySlots(in, mCosyChair);
-		CosyChair=mCosyChair;
-		CosySofa=mCosySofa;
-		HdnCmfrt=mHdnCmfrt;
-		currMdlTime=lm;
-		lastLoadedModule=moduleName;
-		lazyLoaded=lazyLoad;
-		app.set4kCharBuff(in.cb);
-	}
-
 	String processIntent(Intent intent) {
 		CMN.Log("processIntent", intent);
 		String keytmp =	intent.getStringExtra("EXTRA_QUERY");
@@ -823,13 +761,17 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}}
 	
 	public void ensureContentVis(ViewGroup webholder, ViewGroup another) {
-		webholder.setVisibility(View.VISIBLE);
+		
+		
+		ViewUtils.addViewToParent(contentUIData.webcontentlister, main_succinct);
 		
 		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 		if(another.getVisibility()==View.VISIBLE) {
 			ViewUtils.removeAllViews(another);
 			another.setVisibility(View.GONE);
 		}
+		
+		webholder.setVisibility(View.VISIBLE);
 		
 		if(contentUIData.webcontentlister.getVisibility()!=View.VISIBLE) {
 			contentUIData.webcontentlister.setVisibility(View.VISIBLE);
@@ -874,7 +816,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
 	}
 
-	WeakReference<DictPicker> chooseDFragment;
 	
 	@Override
 	public boolean onMenuItemClick(MenuItem item) {
@@ -931,57 +872,4 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		return root.getHeight();
 	}
 
-	@Override
-	public PlaceHolder getPlaceHolderAt(int idx) {
-		if(idx>=0 && idx<mCosyChair.size())
-			return mCosyChair.get(idx);
-		return null;
-	}
-
-	@Override
-	public ArrayList<PlaceHolder> getPlaceHolders() {
-		return mCosyChair;
-	}
-
-	@Override
-	public void showChooseDictDialog(int reason) {
-		boolean needRefresh=pickTarget!=reason;
-		pickTarget=reason;
-		DictPicker chooseDialog;
-		if(chooseDFragment==null || chooseDFragment.get()==null) {
-			chooseDFragment = new WeakReference<>(chooseDialog = new DictPicker(this));
-			//chooseDFragment.setStyle(R.style.DialogStyle, 0);//DialogFragment.STYLE_NO_TITLE
-			chooseDialog.bShouldCloseAfterChoose=true;
-			//chooseDFragment.setCancelable(true);
-			//chooseDFragment.setOnViewCreatedListener(new OnViewCreatedListener() {
-			//	@Override
-			//	public void OnViewCreated(Dialog dialog) {
-			//		dialog.setCanceledOnTouchOutside(true);
-			//		Window window = dialog.getWindow();
-			//	}});
-			chooseDialog.width=(int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor));
-			chooseDialog.mMaxH=(int) (dm.heightPixels-2*getResources().getDimension(R.dimen.diagMarginVer));
-			chooseDialog.height=-2;
-		}else
-			chooseDialog = chooseDFragment.get();
-		chooseDialog.show(getSupportFragmentManager(), "PickDictDialog");
-
-		        /*DidialogHolder = (ViewGroup) findViewById(R.id.dialog_);
-            	if(dialogHolder.getVisibility()==View.VISIBLE) {
-					dialogHolder.setVisibility(View.GONE);
-					break;
-				}
-				if(!isFragInitiated) {
-					FragmentManager fragmentManager = getSupportFragmentManager();
-					FragmentTransaction transaction = fragmentManager.beginTransaction();
-					pickDictDialog = new DialogFragment1(this);
-		            transaction.add(R.id.dialog_, pickDictDialog);
-		            transaction.commit();
-		            isFragInitiated=true;
-		            //pickDictDialog.mRecyclerView.scrollToPosition(adapter_idx);
-				}
-				else//没办法..
-					pickDictDialog.refresh();*/
-		if(needRefresh) chooseDialog.notifyDataSetChanged();
-	}
 }

@@ -57,11 +57,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URLDecoder;
+import java.net.UnknownHostException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -88,6 +91,7 @@ import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
 import okhttp3.Cache;
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
+import okhttp3.Dns;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -255,30 +259,26 @@ public class PlainWeb extends DictionaryAdapter {
 				return response1;
 			}
 		};
-		ConnectionSpec spec1 = new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
-				.tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_1, TlsVersion.TLS_1_0)
-				.cipherSuites(
-						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-						CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
-				.build();
-		
-		ConnectionSpec spec2 = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
-						.allEnabledTlsVersions()
-						.allEnabledCipherSuites()
-						.build();
-		
-		ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
-				.tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_1, TlsVersion.TLS_1_0)
-				.cipherSuites(
-						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-						CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
-				.build();
-		
-		
+//		ConnectionSpec spec1 = new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
+//				.tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_1, TlsVersion.TLS_1_0)
+//				.cipherSuites(
+//						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+//						CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+//						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+//						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
+//				.build();
+//		ConnectionSpec spec2 = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+//						.allEnabledTlsVersions()
+//						.allEnabledCipherSuites()
+//						.build();
+//		ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
+//				.tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_1, TlsVersion.TLS_1_0)
+//				.cipherSuites(
+//						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+//						CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+//						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+//						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
+//				.build();
 		OkHttpClient klient = enableTls12OnPreLollipop(
 				new OkHttpClient.Builder()
 				.connectTimeout(5, TimeUnit.SECONDS)
@@ -287,20 +287,20 @@ public class PlainWeb extends DictionaryAdapter {
 				.cache(cacheDir==null ? null :
 						new Cache(new File(cacheDir, "k3cache")
 								, cacheSize)) // 配置缓存
-//				.dns(new Dns() {
-//					@Override
-//					public List<InetAddress> lookup(String hostname) throws UnknownHostException {
-//						String addr = jinkeSheaths.get(SubStringKey.new_hostKey(hostname));
-//						CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
-//						if (addr != null) {
-//							return Collections.singletonList(InetAddress.getByName(addr));
-//						}
-//						//else return Collections.singletonList(InetAddress.getByName(hostname));
-//						return Dns.SYSTEM.lookup(hostname);
-//					}
-//				})
-				.sslSocketFactory(NoSSLv3Factory)
-				.connectionSpecs(Arrays.asList(ConnectionSpec.CLEARTEXT, spec2, spec1))
+				.dns(new Dns() {
+					@Override
+					public List<InetAddress> lookup(String hostname) throws UnknownHostException {
+						String addr = jinkeSheaths.get(SubStringKey.new_hostKey(hostname));
+						CMN.Log("lookup...", hostname, addr, InetAddress.getByName(addr));
+						if (addr != null) {
+							return Collections.singletonList(InetAddress.getByName(addr));
+						}
+						//else return Collections.singletonList(InetAddress.getByName(hostname));
+						return Dns.SYSTEM.lookup(hostname);
+					}
+				})
+//				.sslSocketFactory(NoSSLv3Factory)
+//				.connectionSpecs(Arrays.asList(ConnectionSpec.CLEARTEXT, spec2, spec1))
 				//.readTimeout(5, TimeUnit.SECONDS)
 				//.setCache(getCache())
 				//.certificatePinner(getPinnedCerts())

@@ -4,13 +4,23 @@
 			"path": "mdict_browser.html",
 			"bookmarks": [
 				{
-					"line": 1098,
+					"line": 675,
+					"column": 6,
+					"label": ""
+				},
+				{
+					"line": 1144,
 					"column": 0,
 					"label": ""
 				},
 				{
-					"line": 1990,
+					"line": 2072,
 					"column": 24,
+					"label": ""
+				},
+				{
+					"line": 3707,
+					"column": 13,
 					"label": ""
 				}
 			]

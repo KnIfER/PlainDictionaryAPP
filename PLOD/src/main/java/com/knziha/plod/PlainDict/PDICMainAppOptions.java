@@ -880,15 +880,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		SecondFlag |= (val & 3) << 1;
 		return val;
 	}
+	
+	
+	@Metaline(flagPos=3, debug=1) public static boolean getAdjSHShwn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=3) public boolean togAdjSHShwn() { SecondFlag=SecondFlag; throw new IllegalArgumentException(); }
 
-	public boolean getHideScroll1() {
-		return (SecondFlag & 0x8) == 0x8;
-	}
-
-	public boolean setHideScroll1(boolean val) {
-		updateSFAt(0x8,val);
-		return val;
-	}
+	
 	public boolean getHideScroll2() {
 		return (SecondFlag & 0x10) == 0x10;
 	}
@@ -2000,21 +1997,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-//	public boolean getDatabaseDelayPullData() {
-//		return true;
-//	}
-//	public boolean setDatabaseDelayPullData(boolean val) {
-//		updateQFAt(0x20000l,val);
-//		return val;
-//	}
-
-	public boolean getDatabaseDelayPullData1() {
-		return (FourthFlag & 0x40000l) == 0x40000l;
-	}
-	public boolean setDatabaseDelayPullData1(boolean val) {
-		updateQFAt(0x40000l,val);
-		return val;
-	}
+	// 22 23
 
 	public static boolean getFloatClickHideToBackground() {
 		return (FourthFlag & 0x80000l) != 0x80000l;
@@ -2301,7 +2284,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	
 	@Metaline(flagPos=10, shift=1) public static boolean getAdjustScnShown(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=10, shift=1) public boolean toggleAdjustScnShown() { FifthFlag=FifthFlag; throw new IllegalArgumentException(); }
+	@Metaline(flagPos=10, shift=1) public boolean togAdjScnShwn() { FifthFlag=FifthFlag; throw new IllegalArgumentException(); }
 	
 	
 	@Metaline(flagPos=11, shift=1) public static boolean checkVersionBefore_4_9() { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2390,7 +2373,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=40, shift=1, debug=1) public static boolean getLv2JointOneAsSingle() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	/** 是否使用合并的多页面模式。see {@code #getMergeUrlForFrames()} */
-	@Metaline(flagPos=41, shift=1, debug=0) public static boolean getUseMergedUrl() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=41, shift=1, debug=1) public static boolean getUseMergedUrl() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	/** webx是否不使用合并的单页面URL。see {@code #getUseMergedFrame()} */
 	@Metaline(flagPos=42, shift=1, debug=1) public static boolean getMergeExemptWebx() { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2415,6 +2398,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=49, shift=1) public static boolean getTapTreatTranslatorAsDedicated() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=49, shift=1) public static void setTapTreatTranslatorAsDedicated(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=50, shift=1) public static boolean getTwoColumnSetView() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=50, shift=1) public static void setTwoColumnSetView(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=51, shift=1) public static boolean getTwoColumnJumpList() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51, shift=1) public static void setTwoColumnJumpList(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_5_7() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_5_7(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF

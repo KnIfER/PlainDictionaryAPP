@@ -183,4 +183,8 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.12.13'
     implementation 'org.simpleframework:simple-xml:2.7.1'
 
+    implementation ('androidx.percentlayout:percentlayout:1.0.0'){
+        exclude module:"core"
+    }
+
 }

@@ -253,7 +253,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				*/
 				//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 				mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
-				mWebView.fromCombined=1;
+				mWebView.fromCombined=weblistHandler.isViewSingle()?0:1;
 				if(presenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
 				{
 					presenter.SetSearchKey(jointResult.key);
@@ -275,7 +275,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 			else {
 				if(mergedUrl==null)
-					mergedUrl = new StringBuilder("http://MdbR.com/MERGE.jsp?q=")
+					mergedUrl = new StringBuilder("http://MdbR.com/merge.jsp?q=")
 						.append(SU.encode(jointResult.key)).append("&exp=");
 				else mergedUrl.append("-");
 				PlainWeb webx = presenter.getWebx();
@@ -298,10 +298,11 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		WebViewmy mWebView = weblistHandler.mMergedFrame;
 		if(bUseMergedUrl) {
 			CMN.debug("mergedUrl::", mergedUrl);
+			mWebView.getSettings().setSupportZoom(true);
 			mWebView.loadUrl(mergedUrl.toString());
 //			mWebView.loadUrl("https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2016/September");
-			a.RecalibrateWebScrollbar(mWebView);
 			mWebView.jointResult=jointResult;
+			weblistHandler.resetScrollbar(mWebView, true, false);
 		}
 		else {
 //			if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
@@ -315,12 +316,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				weblistHandler.jointResult=jointResult;
 			else
 				mWebView.jointResult=jointResult;
+			weblistHandler.resetScrollbar(weblistHandler.isViewSingle()?mWebView:null, false, false);
 		}
-		a.RecalibrateWebScrollbar(null);
-		
-		
-		//weblistHandler.getViewGroup().getLayoutParams().height=-1;
-		
 	}
 
 	@Override
