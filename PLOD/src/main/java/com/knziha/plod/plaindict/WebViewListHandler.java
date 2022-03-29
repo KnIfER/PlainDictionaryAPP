@@ -99,9 +99,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		this.webholder = contentUIData.webholder;
 		hDataSinglePage.webviewHolder = contentUIData.webSingleholder;
 		hDataMultiple.webviewHolder = contentUIData.webholder;
-		contentUIData.bottombar2.setTag(this);
 		DragScrollBar mBar = this.mBar;
 		if(WHP.getScrollViewListener()==null) {
+			/** 这里绑定自己到底栏，以获取上下文 see{@link MainActivityUIBase#showScrollSet} */
+			contentUIData.bottombar2.setTag(this);
 			UpdateBookLabelAbility = ()->{
 				String name = lastScrolledBookView.presenter.getDictionaryName();
 				int idx=name.lastIndexOf(".");

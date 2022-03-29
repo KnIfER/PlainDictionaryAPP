@@ -177,6 +177,7 @@ import com.knziha.plod.searchtasks.AsyncTaskWrapper;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.SettingsActivity;
+import com.knziha.plod.settings.TapTranslator;
 import com.knziha.plod.settings.ViewSpecification_exit_dialog;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.CustomShareAdapter;
@@ -357,6 +358,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public ContentviewBinding contentUIData;
 	public WebViewListHandler weblistHandler;
+	/** 点击设置按钮、设置时更新这个变量。 */
 	public WebViewListHandler weblist;
 	public WebViewListHandler randomPageHandler;
 	public ViewGroup webSingleholder;
@@ -4978,79 +4980,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			break;
 			/* 天运之子，层类无穷，衍生不尽！ */
 			case 16:{
-				/** 滚动条 [在右/在左/无/系统滚动条] see {@link WebViewListHandler#resetScrollbar}
-				 *<br>  see {@link BookPresenter.AppHandler#cs}
-				 *<br>  see {@link QuickBookSettingsPanel#initScrollHandle}
-				 * */
-				String title = "设置网页滚动条 - ";
-				int flagPos=0;
-				WebViewmy wv = weblist.mWebView;
-				if(wv!=null && wv==wordPopup.mWebView) {
-					title += "点译模式";
-					flagPos = 6;
-				}
-				else if(PeruseViewAttached() && wv==peruseView.mWebView){
-					title += "翻阅模式";
-					flagPos = 4;
-				} else if(thisActType==ActType.FloatSearch){
-					title+="浮动搜索";
-					flagPos = 2;
-				} else {
-					title+="主程序";
-					flagPos = 0;
-				}
-				androidx.appcompat.app.AlertDialog.Builder builder2 = new androidx.appcompat.app.AlertDialog.Builder(this);
-				int finalFlagPos = flagPos;
-				builder2.setSingleChoiceItems(R.array.web_scroll_style, opt.getTypeFlag_11_AtQF(flagPos), (dialog12, which) -> {
-					if(opt.getScrollTypeApplyToAll()){
-						for (int i = 0; i <= 6; i+=2)
-							opt.setTypeFlag_11_AtQF(which, i);
-					} else {
-						opt.setTypeFlag_11_AtQF(which, finalFlagPos);
-					}
-					if(PeruseViewAttached())
-						peruseView.RecalibrateWebScrollbar();
-					weblist.resetScrollbar(weblist.mWebView, weblist.bMergingFrames, true);
-					dialog12.dismiss();
-				})
-					.setSingleChoiceLayout(R.layout.select_dialog_singlechoice_material_holo)
-				;
-				androidx.appcompat.app.AlertDialog dTmp = builder2.create();
-				dTmp.show();
-				Window win = dTmp.getWindow();
-				win.setBackgroundDrawable(null);
-				win.setDimAmount(0.35f);
-				win.getDecorView().setBackgroundResource(R.drawable.dm_dslitem_dragmy);
-				win.getDecorView().getBackground().setColorFilter(GlobalOptions.NEGATIVE);
-				win.getDecorView().getBackground().setAlpha(128);
-				ViewGroup pp =  win.findViewById(R.id.parentPanel);
-				pp.addView(getLayoutInflater().inflate(R.layout.circle_checker_item_menu_titilebar,null),0);
-				((ViewGroup)pp.getChildAt(0)).removeViewAt(0);
-				((ViewGroup)pp.getChildAt(0)).removeViewAt(1);
-				TextView titlebar = ((TextView) ((ViewGroup) pp.getChildAt(0)).getChildAt(0));
-				titlebar.setGravity(GravityCompat.START);
-				titlebar.setPadding((int) (10*dm.density), (int) (6*dm.density),0,0);
-
-				CheckedTextView cb0 = (CheckedTextView) getLayoutInflater().inflate(R.layout.select_dialog_multichoice_material, null);
-				//ViewGroup cb3_tweaker = (ViewGroup) getLayoutInflater().inflate(R.layout.select_dialog_multichoice_material_seek_tweaker,null);
-				cb0.setText(R.string.webscroll_apply_all);
-				cb0.setId(R.string.webscroll_apply_all);
-				cb0.setChecked(opt.getScrollTypeApplyToAll());
-				CheckableDialogClicker mVoutClicker = new CheckableDialogClicker(opt);
-				cb0.setOnClickListener(mVoutClicker);
-
-				pp.addView(cb0, 3);
-
-				titlebar.setText(title);
-
-				dTmp.setCanceledOnTouchOutside(true);
-				dTmp.getListView().setPadding(0,0,0,0);
-
-				int maxHeight = (int) (root.getHeight() - 3.5 * getResources().getDimension(R.dimen._50_));
-				if(getResources().getDimension(R.dimen.item_height)*(4+2)>=maxHeight)
-					dTmp.getListView().getLayoutParams().height=maxHeight;
-				dTmp.getListView().setTag(titlebar);
-				//webcontentlist.judger = false;
+				showScrollSet();
 			} break;
 			/* 翻阅模式 */
 			case 20:
@@ -5074,6 +5004,86 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				peruseView.bookMarkAdapter.notifyDataSetChanged();
 			break;
 		}
+	}
+	
+	/** 滚动条 [在右/在左/无/系统滚动条] see {@link WebViewListHandler#resetScrollbar}
+	 *<br>  see {@link BookPresenter.AppHandler#cs}
+	 *<br>  see {@link QuickBookSettingsPanel#initScrollHandle}
+	 * */
+	public void showScrollSet() {
+		String title = "设置网页滚动条 - ";
+		int flagPos=0;
+		WebViewmy wv = weblist.mWebView;
+		if(wv!=null && wv==wordPopup.mWebView) {
+			title += "点译模式";
+			flagPos = 6;
+		}
+		else if(PeruseViewAttached() && wv==peruseView.mWebView){
+			title += "翻阅模式";
+			flagPos = 4;
+		} else if(thisActType==ActType.FloatSearch){
+			title+="浮动搜索";
+			flagPos = 2;
+		} else {
+			title+="主程序";
+			flagPos = 0;
+		}
+		androidx.appcompat.app.AlertDialog.Builder builder2 = new androidx.appcompat.app.AlertDialog.Builder(this);
+		int finalFlagPos = flagPos;
+		builder2.setSingleChoiceItems(R.array.web_scroll_style, opt.getTypeFlag_11_AtQF(flagPos), (dialog12, which) -> {
+			if(opt.getScrollTypeApplyToAll()){
+				for (int i = 0; i <= 6; i+=2)
+					opt.setTypeFlag_11_AtQF(which, i);
+			} else {
+				opt.setTypeFlag_11_AtQF(which, finalFlagPos);
+			}
+			if(PeruseViewAttached())
+				peruseView.RecalibrateWebScrollbar();
+			if (weblist==wordPopup.weblistHandler) {
+				wordPopup.resetScrollbar();
+			} else {
+				weblist.resetScrollbar(weblist.mWebView, weblist.bMergingFrames, true);
+			}
+			dialog12.dismiss();
+		})
+			.setSingleChoiceLayout(R.layout.select_dialog_singlechoice_material_holo)
+		;
+		androidx.appcompat.app.AlertDialog dTmp = builder2.create();
+		dTmp.show();
+		Window win = dTmp.getWindow();
+		win.setBackgroundDrawable(null);
+		win.setDimAmount(0.35f);
+		win.getDecorView().setBackgroundResource(R.drawable.dm_dslitem_dragmy);
+		win.getDecorView().getBackground().setColorFilter(GlobalOptions.NEGATIVE);
+		win.getDecorView().getBackground().setAlpha(128);
+		ViewGroup pp =  win.findViewById(R.id.parentPanel);
+		pp.addView(getLayoutInflater().inflate(R.layout.circle_checker_item_menu_titilebar,null),0);
+		((ViewGroup)pp.getChildAt(0)).removeViewAt(0);
+		((ViewGroup)pp.getChildAt(0)).removeViewAt(1);
+		TextView titlebar = ((TextView) ((ViewGroup) pp.getChildAt(0)).getChildAt(0));
+		titlebar.setGravity(GravityCompat.START);
+		titlebar.setPadding((int) (10*dm.density), (int) (6*dm.density),0,0);
+
+		CheckedTextView cb0 = (CheckedTextView) getLayoutInflater().inflate(R.layout.select_dialog_multichoice_material, null);
+		//ViewGroup cb3_tweaker = (ViewGroup) getLayoutInflater().inflate(R.layout.select_dialog_multichoice_material_seek_tweaker,null);
+		cb0.setText(R.string.webscroll_apply_all);
+		cb0.setId(R.string.webscroll_apply_all);
+		cb0.setChecked(opt.getScrollTypeApplyToAll());
+		CheckableDialogClicker mVoutClicker = new CheckableDialogClicker(opt);
+		cb0.setOnClickListener(mVoutClicker);
+
+		pp.addView(cb0, 3);
+
+		titlebar.setText(title);
+
+		dTmp.setCanceledOnTouchOutside(true);
+		dTmp.getListView().setPadding(0,0,0,0);
+
+		int maxHeight = (int) (root.getHeight() - 3.5 * getResources().getDimension(R.dimen._50_));
+		if(getResources().getDimension(R.dimen.item_height)*(4+2)>=maxHeight)
+			dTmp.getListView().getLayoutParams().height=maxHeight;
+		dTmp.getListView().setTag(titlebar);
+		//webcontentlist.judger = false;
 	}
 	
 	@Deprecated
@@ -6135,6 +6145,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} catch (Exception e) {
 					weblist = weblistHandler;
 				}
+				CMN.Log("weblist::", weblist==wordPopup.weblistHandler);
 				showSoundTweaker();
 				contentUIData.webcontentlister.judger = false;
 			} return true;
@@ -8840,10 +8851,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case 0: {
 				isBrowsingImgs = false;
 			} break;
-			case 999:
-				if(PDICMainAppOptions.getImmersiveClickSearch()!=PDICMainAppOptions.getImmersiveClickSearch(TFStamp))
-					popupWord(null,null, 0, null);
-			break;
+			case TapTranslator.resultCode:{
+				wordPopup.set();
+				break;
+			}
 		}
 	}
 

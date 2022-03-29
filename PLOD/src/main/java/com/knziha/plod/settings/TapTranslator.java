@@ -9,8 +9,9 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 
-public class ClickSearch extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
+public class TapTranslator extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=9;
+	public final static int resultCode =10;
 	
 	//初始化
 	@Override
@@ -33,10 +34,17 @@ public class ClickSearch extends SettingsFragmentBase implements Preference.OnPr
 		init_switch_preference(this, "switch_nav", PDICMainAppOptions.getSwichClickSearchDictOnNav(), null, null);
 		init_switch_preference(this, "delay_diss", PDICMainAppOptions.getClickSearchDismissDelay(), null, null);
 		init_switch_preference(this, "click_tts", PDICMainAppOptions.getClickSearchAutoReadEntry(), null, null);
+		
+		findPreference("bar").setOnPreferenceClickListener(this);
 	}
 
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
+		if (preference.getKey().equals("bar")) {
+			getActivity().setResult(resultCode);
+			getActivity().finish();
+			return true;
+		}
 		return false;
 	}
 

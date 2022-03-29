@@ -42,6 +42,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
+import com.knziha.plod.settings.TapTranslator;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.FlowTextView;
@@ -210,7 +211,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				nav(false);
 			} break;
 			case R.id.popIvSettings:{
-				a.launchSettings(9, 999);
+				a.launchSettings(TapTranslator.id, TapTranslator.resultCode);
 			} break;
 			case R.id.popChecker:{
 				CircleCheckBox checker = (CircleCheckBox) v;
@@ -1131,6 +1132,33 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				}
 				else if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
 					valid(URLDecoder.decode(url.substring(schemaIdx+24, url.indexOf("&", schemaIdx+24)), "utf8"));
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+	}
+	
+	public void set() {
+		if(PDICMainAppOptions.getImmersiveClickSearch()!=PDICMainAppOptions.getImmersiveClickSearch(a.TFStamp))
+			a.popupWord(null,null, 0, null);
+		if (mWebView!=null) {
+			a.weblist = weblistHandler;
+			a.showScrollSet();
+		}
+	}
+	
+	public void resetScrollbar() {
+		String url = mWebView.getUrl();
+		int schemaIdx = url.indexOf(":");
+		if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)){
+			try {
+				if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
+					weblistHandler.resetScrollbar(mWebView, false, false);
+				}
+				else if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
+					weblistHandler.bMergingFrames = true;
+					weblistHandler.resetScrollbar(mWebView, true, true);
 				}
 			} catch (Exception e) {
 				CMN.debug(e);

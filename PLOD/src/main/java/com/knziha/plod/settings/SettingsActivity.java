@@ -112,8 +112,8 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 				fragment = new ViewSpecification_exit_dialog();
 				args.putInt("title", R.string.view_spec);
 			break;
-			case ClickSearch.id:
-				fragment = new ClickSearch();
+			case TapTranslator.id:
+				fragment = new TapTranslator();
 			break;
 			case HistoryPreference.id:
 				fragment = new HistoryPreference();

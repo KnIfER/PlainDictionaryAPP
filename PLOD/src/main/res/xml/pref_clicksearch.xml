@@ -43,8 +43,14 @@
 			app:key="mode_cs"
 			app:persistent="false"
 			app:defaultValue="0"
-			app:title="查询模式 :"
+			app:title="单本词典查询模式 :"
 			app:entries="@array/click_search_mode_info"
+			/>
+
+		<Preference
+			app:key="bar"
+			app:persistent="false"
+			app:title="| 滚动条样式 |"
 			/>
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
@@ -54,12 +60,12 @@
 			android:title="靠顶放大"
 			/>
 
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="double_resize"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="双击放大"
-			/>
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="double_resize"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="双击放大"-->
+<!--			/>-->
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="reset_pos"

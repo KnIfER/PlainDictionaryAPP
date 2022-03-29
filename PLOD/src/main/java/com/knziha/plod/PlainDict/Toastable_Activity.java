@@ -82,7 +82,7 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	protected long FFStamp;
 	protected long SFStamp;
-	protected long TFStamp;
+	public long TFStamp;
 	protected long QFStamp;
 	protected long VFStamp;
 	protected long layoutFlagStamp;
