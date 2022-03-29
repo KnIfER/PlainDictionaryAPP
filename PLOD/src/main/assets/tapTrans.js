@@ -71,7 +71,7 @@ if(!window.rcspc){
                             //_log(d.documentElement.scrollLeft+' px:: '+pX);
 
                             //_log(text); // final output
-                            if(app){
+                            if(app && text.trim().length){
                                 app.popupWord(sid.get(), text, frameAt, d.documentElement.scrollLeft+pX, d.documentElement.scrollTop+pY, pW, pH);
                                 w.popup=1;
                                 //s.empty();

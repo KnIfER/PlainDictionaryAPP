@@ -2719,12 +2719,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				
 				boolean fromPeruseView=webview.fromCombined==3;
-				DragScrollBar _mBar=contentUIData.dragScrollBar;
+				DragScrollBar mBar=webview.weblistHandler.mBar;
 				float currentScale = webview.webScale;
 				//tofo
 				if(currentScale>= BookPresenter.def_zoom) {
 					if(fromPeruseView) {
-						_mBar= peruseView.contentUIData.dragScrollBar;
+						mBar= peruseView.contentUIData.dragScrollBar;
 					}
 				}
 				
@@ -2732,16 +2732,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						|| !isCombinedSearching
 						|| webview==weblistHandler.mMergedFrame
 						|| (ActivedAdapter!=null && !(ActivedAdapter.combining_search_result instanceof resultRecorderCombined))) {
-					if(_mBar.isHidden()){
+					if(mBar.isHidden()){
 						if(Math.abs(oldy-y)>=10*dm.density)
-							_mBar.fadeIn();
+							mBar.fadeIn();
 					}
-					if(!_mBar.isHidden()){
-						if(!_mBar.isWebHeld)
-							_mBar.hiJackScrollFinishedFadeOut();
-						if(!_mBar.isDragging){
-							_mBar.setMax(webview.getContentHeight()-webview.getHeight());
-							_mBar.progress(webview.getContentOffset());
+					if(!mBar.isHidden()){
+						if(!mBar.isWebHeld)
+							mBar.hiJackScrollFinishedFadeOut();
+						if(!mBar.isDragging){
+							mBar.setMax(webview.getContentHeight()-webview.getHeight());
+							mBar.progress(webview.getContentOffset());
 						}
 					}
 				}

@@ -92,9 +92,9 @@ public class DragScrollBar extends RelativeLayout{
 	}
 
 	private int topByProgress(int mProgress) {
-		int max = getHeight()-desiredHeight;
-		int newTop = (int) (1.0*mProgress*max/mMax);
-		return Math.max(newTop, Math.min(newTop,  max));
+		final int max = getHeight()-desiredHeight;
+		final int newTop = (int) (1.0*mProgress*max/mMax);
+		return Math.max(0, Math.min(newTop,  max));
 	}
 
 	public void setMax(int contentHeight) {
@@ -329,9 +329,10 @@ public class DragScrollBar extends RelativeLayout{
 						int max = getHeight()-desiredHeight;
 						int progress = (int) Math.max(0, Math.min(mProgress + dy*mMax/max, mMax));
 						int newTop = topByProgress(progress);
+						//CMN.Log("ACTION_MOVE::", e.getRawY(), dy, progress, newTop);
 						handleThumb.setTop(newTop);
 						handleThumb.setBottom(newTop+desiredHeight);
-						handleThumb.postInvalidate();
+						//handleThumb.postInvalidate();
 						if(progress!=mProgress) {
 							mProgress = progress;
 							//if (opc != null) opc.OnProgressChanged(progress);

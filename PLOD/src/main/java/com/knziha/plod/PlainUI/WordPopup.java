@@ -440,6 +440,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				modeBtn.setImageResource(R.drawable.ic_btn_siglemode);
 			webview.toolbar_title = new FlowTextView(indicator.getContext());
 			webview.rl = popupContentView;
+			popupContentView.setTag(webview);
 			if(GlobalOptions.isDark) {
 				entryTitle.setTextColor(Color.WHITE);
 				indicator.setTextColor(Color.WHITE);
@@ -447,6 +448,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			
 			webview.setWebChromeClient(a.myWebCClient);
 			webview.setWebViewClient(a.myWebClient);
+			webview.setOnScrollChangedListener(a.getWebScrollChanged());
 			
 			// 点击背景
 			settingsLayoutHolder = settingsLayout = popupGuarder = new PopupGuarder(a.getBaseContext());
@@ -468,7 +470,10 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			// 缩放逻辑
 			webview.weblistHandler = weblistHandler;
 			weblistHandler.mMergedFrame = webview;
+			weblistHandler.mBar = pageSlider.findViewById(R.id.dragScrollBar);
 			this.mWebView = webview;
+			
+			pageSlider.bar = weblistHandler.mBar;
 			
 			popupGuarder.setOnTouchListener(moveView);
 			popupGuarder.setClickable(true);
@@ -582,6 +587,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				((FrameLayout.LayoutParams) pottombar.getLayoutParams()).gravity = Gravity.BOTTOM;
 			}
 			mWebView.rl = popupContentView;
+			popupContentView.setTag(mWebView);
 		}
 		popupGuarder.popupToGuard = popupContentView;
 		popupGuarder.isPinned = pin();
@@ -1056,6 +1062,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		IU.NumberToText_SIXTWO_LE(currentPos, mergedUrl);
 		mWebView.presenter = a.weblistHandler.getMergedFrame().presenter;
 		mWebView.loadUrl(mergedUrl.toString());
+		weblistHandler.resetScrollbar(mWebView, false, false);
 	}
 	
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt) {

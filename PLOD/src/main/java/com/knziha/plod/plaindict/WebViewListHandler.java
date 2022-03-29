@@ -79,6 +79,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public ArrayList<PlainWeb> moders = new ArrayList();
 	@NonNull
 	public final ContentviewBinding contentUIData;
+	public DragScrollBar mBar;
 	public ImageView[] ContentbarBtns = new ImageView[ContentbarBtnIcons.length];
 	private boolean contentViewSetup;
 	private int lastScrollUpdateY;
@@ -94,11 +95,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		//setUseListView(true);
 		this.contentUIData = contentUIData;
 		this.WHP = contentUIData.WHP;
+		this.mBar = contentUIData.dragScrollBar;
 		this.webholder = contentUIData.webholder;
 		hDataSinglePage.webviewHolder = contentUIData.webSingleholder;
 		hDataMultiple.webviewHolder = contentUIData.webholder;
 		contentUIData.bottombar2.setTag(this);
-		DragScrollBar mBar = contentUIData.dragScrollBar;
+		DragScrollBar mBar = this.mBar;
 		if(WHP.getScrollViewListener()==null) {
 			UpdateBookLabelAbility = ()->{
 				String name = lastScrolledBookView.presenter.getDictionaryName();
@@ -316,7 +318,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			if (resetMerge && mWebView!=null) {
 				mWebView.evaluateJavascript("SH_S("+a.opt.getTypeFlag_11_AtQF(shFlag)+")", null);
 			}
-		} else {
+		}
+		else {
 			final int sty=a.opt.getTypeFlag_11_AtQF(type);
 			switch (sty){
 				case 0:
@@ -335,7 +338,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 		}
 		CMN.Log("resetScrollbar", mWebView!=null, vis, vsi);
-		DragScrollBar mBar = contentUIData.dragScrollBar;
+		DragScrollBar mBar = this.mBar;
 		if(mBar.getVisibility()!=vis)
 			mBar.setVisibility(vis);
 		if(vis==View.VISIBLE) {

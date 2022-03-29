@@ -1965,9 +1965,12 @@ function debug(e){console.log(e)};
 					mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				}
 				//???
-				mWebView.weblistHandler.resetScrollbar(mWebView, false, false);
+				//mWebView.weblistHandler.resetScrollbar(mWebView, false, false);
 			}
 		}
+		
+		if(!fromCombined)
+			mWebView.weblistHandler.resetScrollbar(mWebView, false, false);
 	
 		//todo 处理 fromCombined && opt.getAlwaysShowScrollRect()
 		mWebView.SetupScrollRect(!getNoScrollRect() && (!fromCombined&&opt.getAlwaysShowScrollRect() || fromCombined&&getContentFixedHeightWhenCombined()));

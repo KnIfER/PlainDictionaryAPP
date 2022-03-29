@@ -257,10 +257,24 @@ public class RLContainerSlider extends FrameLayout{
 			dragged=false;
 			IMSlider.RePosition();
 		}
+		checkBar();
 	}
 	
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev){
+		if (bar !=null) {
+			int masked = ev.getActionMasked();
+			if (masked==MotionEvent.ACTION_DOWN) {
+				if(!bar.isHidden()){
+					bar.isWebHeld=true;
+					bar.cancelFadeOut();
+				}
+			}
+			if (masked==MotionEvent.ACTION_UP) {
+				checkBar();
+			}
+		}
+		
 		MainActivityUIBase.layoutScrollDisabled=false;
 		
 		bNoTurnPage = !TurnPageEnabled || TurnPageSuppressed;
@@ -283,7 +297,7 @@ public class RLContainerSlider extends FrameLayout{
 		}
 		
 		
-		int actionMasked = ev.getActionMasked();
+		int masked = ev.getActionMasked();
 		
 		int touch_id=ev.getPointerId(ev.getActionIndex());
 		
@@ -296,7 +310,7 @@ public class RLContainerSlider extends FrameLayout{
 			}
 		}
 		
-		if(actionMasked==MotionEvent.ACTION_DOWN){
+		if(masked==MotionEvent.ACTION_DOWN){
 			OrgX = lastX = ev.getX();
 		}
 		
@@ -310,7 +324,7 @@ public class RLContainerSlider extends FrameLayout{
 			return ret;
 		}
 		if(IMSlider!=null){
-			switch (actionMasked) {
+			switch (masked) {
 				case MotionEvent.ACTION_DOWN:
 					if(WebContext!=null) {
 						WebContextWidth = WebContext.getContentWidth();
@@ -351,6 +365,14 @@ public class RLContainerSlider extends FrameLayout{
 			}
 		}
 		return dragged;
+	}
+	
+	public DragScrollBar bar;
+	private void checkBar() {
+		if(bar !=null && !bar.isHidden()){
+			bar.isWebHeld=false;
+			bar.fadeOut();
+		}
 	}
 	
 	public void invalidateIBC() {
