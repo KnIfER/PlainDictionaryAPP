@@ -696,8 +696,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	/////////////////////End First 32-bit Flag////////////////////////////////////
 
 	/////////////////////Start First Flag Long field///////////////////////////////////
-	@Metaline(flagPos=32, shift=1) public static boolean getPinPicDictDialog() { FirstFlag=FirstFlag; throw new RuntimeException();}
-	@Metaline(flagPos=32, shift=1) public static void setPinPicDictDialog(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32) public static boolean getPinPDic() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32) public static void setPinPDic(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 	
 	
 	public boolean getPicDictAutoSer() {
@@ -1450,7 +1450,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public static boolean getDoubleClickMaximizeClickSearch() {
-		return (ThirdFlag & 0x200l) != 0x200l;
+		return false;//(ThirdFlag & 0x200l) != 0x200l;
 	}
 	public static boolean setDoubleClickMaximizeClickSearch(boolean val) {
 		updateTFAt(0x200l,!val);
@@ -2218,6 +2218,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_5_2() { FourthFlag=FourthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_5_2(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=52) public static boolean getPinPDicWrd() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52) public static void setPinPDicWrd(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
+	
+	
 	//@Metaline(flagPos=52, shift=1) public static boolean uncheckVersionBefore_4_0() { FourthFlag=FourthFlag; throw new IllegalArgumentException();}
 	@Metaline(flagPos=53) public static boolean getClearTasksOnExit() { FourthFlag=FourthFlag; throw new RuntimeException();}
 
@@ -2292,6 +2296,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=11, shift=1) public static boolean checkVersionBefore_5_3() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=11, shift=1) public static void uncheckVersionBefore_5_3(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=11) public static boolean getPinPDicFlt() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=11) public static void setPinPDicFlt(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	@Metaline(flagPos=12) public boolean getFavoritePerceptsRemoveAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2405,8 +2412,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=51, shift=1) public static boolean getTwoColumnJumpList() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=51, shift=1) public static void setTwoColumnJumpList(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=52, shift=1) public static boolean checkVersionBefore_5_7() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=52, shift=1) public static void uncheckVersionBefore_5_7(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52, flagSize=2, max=1) public static int tapSchMode() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52, flagSize=2, max=1) public static void tapSchMode(int val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=54, shift=1) public static boolean checkVersionBefore_5_7() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=54, shift=1) public static void uncheckVersionBefore_5_7(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF

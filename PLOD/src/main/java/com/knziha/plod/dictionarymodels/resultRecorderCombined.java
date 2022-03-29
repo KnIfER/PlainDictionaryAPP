@@ -275,7 +275,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 			else {
 				if(mergedUrl==null)
-					mergedUrl = new StringBuilder("http://MdbR.com/merge.jsp?q=")
+					mergedUrl = new StringBuilder("http://mdbr.com/merge.jsp?q=")
 						.append(SU.encode(jointResult.key)).append("&exp=");
 				else mergedUrl.append("-");
 				PlainWeb webx = presenter.getWebx();

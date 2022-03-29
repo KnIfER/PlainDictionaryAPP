@@ -671,7 +671,7 @@ public class Drawer extends Fragment implements
 								BookPresenter markedBook = a.getBookById(bnPos[0]);
 								if(markedBook!=null) {
 									//a.swicthToBook(markedBook);
-									if(a.pickDictDialog!=null) a.pickDictDialog.isDirty=true;
+									if(a.dictPicker !=null) a.dictPicker.isDirty=true;
 									a.bWantsSelection=false;
 									a.bNeedReAddCon=false;
 									
@@ -977,9 +977,9 @@ public class Drawer extends Fragment implements
 									}
 									CMN.Log(add_book_checker);
 									CMN.Log(renameRec.toString());
-									if(a.pickDictDialog!=null) {
-										a.pickDictDialog.adapter().notifyDataSetChanged();
-										a.pickDictDialog.isDirty=true;
+									if(a.dictPicker !=null) {
+										a.dictPicker.adapter().notifyDataSetChanged();
+										a.dictPicker.isDirty=true;
 									}
 									output.close();
 									if(output2!=null) {

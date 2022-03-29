@@ -33,15 +33,12 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.math.MathUtils;
-import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
@@ -266,7 +263,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		
         setContentView(R.layout.float_main);
 	
-		pickDictDialog = new DictPicker(this, null, null, 1);
+		dictPicker = new DictPicker(this, null, null, 1);
 	
 		root = findViewById(R.id.root);
 		mainfv = root.findViewById(R.id.main);

@@ -88,9 +88,9 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Integer, String > {
 		} else {
 			try {
 				if(a.checkDicts()) {
-					publishProgress(a.adapter_idx);
+					publishProgress(a.dictPicker.adapter_idx);
 					//CMN.Log("Find In All Conten??");
-					a.currentDictionary.findAllTexts(SearchTerm, a.adapter_idx, a.fullSearchLayer);
+					a.currentDictionary.findAllTexts(SearchTerm, a.dictPicker.adapter_idx, a.fullSearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -133,7 +133,7 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Integer, String > {
 		if(a.isCombinedSearching){
 			a.adaptermy4.combining_search_result.invalidate();
 		}else{//单独搜索
-			a.adaptermy4.combining_search_result.invalidate(a.adapter_idx);
+			a.adaptermy4.combining_search_result.invalidate(a.dictPicker.adapter_idx);
 		}
 		a.show(R.string.fullfill
 				,(System.currentTimeMillis()-CMN.stst)*1.f/1000,a.adaptermy4.getCount());

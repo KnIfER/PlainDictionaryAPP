@@ -159,7 +159,6 @@ import com.knziha.plod.dictionary.Utils.MyPair;
 import com.knziha.plod.dictionary.Utils.ReusableBufferedInputStream;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.Utils.SubStringKey;
-import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymanager.BookManager;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
@@ -352,7 +351,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected ImageView browser_widget1;
 	
 	public Drawer drawerFragment;
-	public DictPicker pickDictDialog;
+	public DictPicker dictPicker;
 	public ViewGroup main;
 	public ViewGroup mainF;
 	
@@ -379,7 +378,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public String fontFaces;
 	
 	MenuBuilder AllMenus;
-	List<MenuItemImpl> AllMenusStamp;
+	public List<MenuItemImpl> AllMenusStamp;
 	MenuItem menuSearchMode;
 	List<MenuItemImpl> MainMenu;
 	List<MenuItemImpl> LEFTMenu;
@@ -392,7 +391,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BookPresenter EmptyBook;
 	@NonNull public BookPresenter currentDictionary;
 	public ArrayList<BookPresenter> currentFilter = new ArrayList<>();
-	public int adapter_idx;
 	HashSet<String> mdlibsCon;
 	public ArrayList<BookPresenter> md = new ArrayList<>();//Collections.synchronizedList(new ArrayList<mdict>());
 
@@ -549,8 +547,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean checkWebSelection() {
 		WebViewmy wv = null;
 		boolean doCheck = false;
-		if(wordPopup.popupContentView!=null && wordPopup.popupWebView.bIsActionMenuShown) {
-			wv = wordPopup.popupWebView;
+		if(wordPopup.popupContentView!=null && wordPopup.mWebView.bIsActionMenuShown) {
+			wv = wordPopup.mWebView;
 			doCheck = opt.getUseBackKeyClearWebViewFocus();
 		} else if(getCurrentFocus() instanceof WebViewmy) {
 			wv = ((WebViewmy)getCurrentFocus());
@@ -657,7 +655,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			boolean bShowErr=bShowLoadErr;
 			bShowLoadErr=bShowErr&&!prvNxt;
-			currentDictionary = md_get(adapter_idx=i);
+			currentDictionary = md_get(dictPicker.adapter_idx=i);
 			bShowLoadErr=bShowErr;
 			
 			if (adaptermy!=null) {
@@ -2394,7 +2392,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		
-		switch_To_Dict_Idx(adapter_idx, false, false, null);
+		switch_To_Dict_Idx(dictPicker.adapter_idx, false, false, null);
 		
 		findFurtherViews();
 		
@@ -2460,12 +2458,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} catch (Exception ignored) {  }
 		if(retrieve_all) {
 			try {
-				String lastName = opt.getLastMdFn("LastMdFn");
+				String lastName = opt.getLastMdFn("LastMdFn"); //???!!!
 				for (String path:defDicts) {
 					PlaceHolder placeHolder = new PlaceHolder(path, CC);
 					CC.add(placeHolder);
 					if(TextUtils.equals(new File(path).getName(), lastName)) {
-						adapter_idx = md.size();
+						dictPicker.adapter_idx = md.size();
 					}
 					md.add(book=new_book(placeHolder, this));
 				}
@@ -2500,7 +2498,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		currentFilter.clear();
 		md.ensureCapacity(CosyChair.size());
 		md.clear();
-		adapter_idx=-1;
+		dictPicker.adapter_idx=-1;
 		PlaceHolder phI;
 		String lastName = opt.getLastMdFn("LastMdFn");
 		for (int i = 0; i < CosyChair.size(); i++) {
@@ -2535,7 +2533,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				CosyChair.remove(i--);
 			} else {
 				if (md_name_match(lastName, mdTmp, phI)){
-					adapter_idx = md.size();
+					dictPicker.adapter_idx = md.size();
 				}
 				md.add(mdTmp);
 			}
@@ -2821,13 +2819,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean checkDicts() {
 		if(md.size()>0) {
 			if(currentDictionary==null || currentDictionary==EmptyBook){
-				if((adapter_idx<0||adapter_idx>=md.size())) adapter_idx=0;
-				currentDictionary = md.get(adapter_idx);
+				int checkIdx = dictPicker.adapterIdx();
+				currentDictionary = md.get(checkIdx);
 				if(currentDictionary==null){
-					PlaceHolder phI = getPlaceHolderAt(adapter_idx);
+					PlaceHolder phI = getPlaceHolderAt(checkIdx);
 					if(phI!=null) {
 						try {
-							md.set(adapter_idx, currentDictionary = new_book(phI, this));
+							md.set(checkIdx, currentDictionary = new_book(phI, this));
 						} catch (Exception ignored) { }
 					}
 				}
@@ -3215,10 +3213,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						ftv = (FlowTextView) tag;
 						CheckStars(ftv.getStarLevel());
 						create=false;
-						if(pickDictDialog!=null) {
+						if(dictPicker !=null) {
 							//pickDictDialog.mRecyclerView.smoothScrollToPosition(id);
 							//pickDictDialog.lman.smoothScrollToPosition(pickDictDialog.mRecyclerView, null, id);
-							pickDictDialog.lman.scrollToPositionWithOffset(id, 0);
+							dictPicker.lman.scrollToPositionWithOffset(id, 0);
 						}
 						tag = ftv.getTag();
 						if(tag instanceof ScrollView) {
@@ -3293,8 +3291,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		int oldId = CurrentDictInfoIdx;
 		if(oldId>=0&&oldId<md.size()&&StarLevelStamp>=0&&newLevel!=StarLevelStamp) {
 			md_set_StarLevel(oldId, newLevel);
-			if(pickDictDialog!=null) {
-				pickDictDialog.adapter().notifyItemChanged(oldId);
+			if(dictPicker !=null) {
+				dictPicker.adapter().notifyItemChanged(oldId);
 				//pickDictDialog.notifyDataSetChanged();
 			}
 		}
@@ -4987,7 +4985,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				String title = "设置网页滚动条 - ";
 				int flagPos=0;
 				WebViewmy wv = weblist.mWebView;
-				if(wv!=null && wv==wordPopup.popupWebView) {
+				if(wv!=null && wv==wordPopup.mWebView) {
 					title += "点译模式";
 					flagPos = 6;
 				}
@@ -5225,7 +5223,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				drawerFragment.HeaderView.setBackgroundColor(AppWhite);
 				drawerFragment.FooterView.setBackgroundColor(AppWhite);
 				drawerFragment.myAdapter.notifyDataSetChanged();
-				if(isFragInitiated && pickDictDialog!=null)pickDictDialog.adapter().notifyDataSetChanged();
+				if(isFragInitiated && dictPicker !=null) dictPicker.adapter().notifyDataSetChanged();
 			}
 			if(DBrowser!=null) {
 				DBrowser.checkColors();
@@ -5439,18 +5437,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					if(CurrentViewPage==1) {
 						int delta = (id == R.drawable.ic_prv_dict_chevron ? -1 : 1);
-						int testVal = adapter_idx;
+						int testVal = dictPicker.adapter_idx;
 						PrvNxtABC.initiatorIdx=testVal;
 						PrvNxtABC.initiatorDir=delta;
 						PrvNxtABC.沃壳积 =0;
-						while(!switch_To_Dict_Idx(adapter_idx+delta, true, false, PrvNxtABC));
-						if(PrvNxtABC.collide() && testVal!=adapter_idx) { // rejected
+						while(!switch_To_Dict_Idx(dictPicker.adapter_idx+delta, true, false, PrvNxtABC));
+						if(PrvNxtABC.collide() && testVal!=dictPicker.adapter_idx) { // rejected
 							switch_To_Dict_Idx(testVal, true, false, null);
 						} else {
 							getTopSnackView().setNextOffsetScale(0.24f);
 							showTopSnack(currentDictionary.getDictionaryName());
 						}
-						if(testVal!=adapter_idx&&PrvNxtABC.rejectIdx>=0) { // not rejected
+						if(testVal!=dictPicker.adapter_idx&&PrvNxtABC.rejectIdx>=0) { // not rejected
 							PrvNxtABC.rejectIdx=-1;
 						}
 						if(currentDictionary!=EmptyBook) {
@@ -5855,7 +5853,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	private Runnable putNameRunnable = () -> {
 		BookPresenter mdTmp = currentDictionary;
-		String name = mdTmp==EmptyBook?new File(getPlaceHolderAt(adapter_idx).pathname).getName()
+		String name = mdTmp==EmptyBook?new File(getPlaceHolderAt(dictPicker.adapterIdx()).pathname).getName()
 				:mdTmp.getDictionaryName();
 		opt.putLastMdFn(LastMdFn, name);
 	};
@@ -5975,7 +5973,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //			chooseDialog = chooseDFragment.get();
 //		chooseDialog.show(getSupportFragmentManager(), "PickDictDialog");
 		
-		pickDictDialog.toggle();
+		dictPicker.toggle();
 
 		        /*DidialogHolder = (ViewGroup) findViewById(R.id.dialog_);
             	if(dialogHolder.getVisibility()==View.VISIBLE) {
@@ -6233,8 +6231,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}, 0, new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
-								WebViewListHandler weblistHandler = (WebViewListHandler) ((MenuBuilder)((AlertDialog)dialog).tag).tag;
-								doTranslation(weblistHandler, which, dialog);
+								Object tag = ((AlertDialog) dialog).tag;
+								WebViewListHandler weblistHandler;
+								if (tag instanceof WordPopup) {
+									weblistHandler = ((WordPopup)tag).weblistHandler;
+								}
+								else {
+									weblistHandler = (WebViewListHandler) ((MenuBuilder)tag).tag;
+								}
+								if(weblistHandler!=null)
+									doTranslation(weblistHandler, which, dialog);
 							}
 						})
 						//.setSingleChoiceItems(strIds, 0, null)
@@ -6334,7 +6340,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			BookPresenter wikibook = randomPage.presenter;
 			PlainWeb webx = wikibook.getWebx();
 			//String testUrl="file:///android_asset/load.html";
-			String testUrl="http://MdbR.com/load.html";
+			String testUrl="http://mdbr.com/load.html";
 			CMN.Log("testUrl::", randomPage.getUrl(), testUrl);
 			if(!TextUtils.equals(randomPage.getUrl(), testUrl)) {
 				CMN.Log("加载::", testUrl);
@@ -6484,10 +6490,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//mdict_cache.clear();
 						//分组切换
 						opt.putLastPlanName(LastPlanName, setName);
-						if (adapter_idx<0) {
+						if (dictPicker.adapter_idx<0) {
 							switch_To_Dict_Idx(0, true, false, null);
-						} else if(md.get(adapter_idx)!=currentDictionary){
-							switch_To_Dict_Idx(adapter_idx, true, false, null);
+						} else if(md.get(dictPicker.adapterIdx())!=currentDictionary){
+							switch_To_Dict_Idx(dictPicker.adapter_idx, true, false, null);
 						}
 						dialog.dismiss();
 						invalidAllLists();
@@ -6838,7 +6844,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			return true;
 		}
-
 	};
 	
 	void doTranslation(WebViewListHandler weblistHandler, int which, DialogInterface dialog) {
@@ -6850,6 +6855,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(rl!=null) mWebView = (WebViewmy) rl.getTag();
 		}
 		final int szTranslators = 2;
+		CMN.Log("doTranslation::", mWebView, weblistHandler.bMergingFrames);
 		if(mWebView!=null) {
 			String field;
 			if(which==szTranslators) {
@@ -7063,7 +7069,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 自动播放声音自动播报 */
 			if(mWebView.bRequestedSoundPlayback){
 				mWebView.bRequestedSoundPlayback=false;
-				read_click_search = mWebView==wordPopup.popupWebView;
+				read_click_search = mWebView==wordPopup.mWebView;
 				if(AutoBrowsePaused||(!PDICMainAppOptions.getAutoBrowsingReadSomething())){
 					postReadEntry();
 					CMN.Log("hey!!!", opt.getThenAutoReadContent());
@@ -7151,6 +7157,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					((PlainWeb)invoker.bookImpl).onPageStarted(invoker, view, url, true);
 				}
 			}
+			if(view==wordPopup.mWebView) {
+				wordPopup.onPageStart(url);
+			}
 		}
 
 		public void  onScaleChanged(WebView view, float oldScale,float newScale) {
@@ -7192,7 +7201,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CMN.debug("chromium shouldOverrideUrlLoading_???",url,view.getTag(), mWebView.fromCombined);
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
-			boolean fromPopup = view==wordPopup.popupWebView;
+			boolean fromPopup = view==wordPopup.mWebView;
 			if(invoker.getIsWebx()) {
 				PlainWeb webx = (PlainWeb) invoker.bookImpl;
 				try {
@@ -7212,10 +7221,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}
 					}
 					if (fromPopup) {
-						wordPopup.popupHistory.add(++wordPopup.popupHistoryVagranter, new myCpr<>(wordPopup.currentClickDisplaying, new int[]{wordPopup.CCD_ID, wordPopup.currentClickDictionary_currentPos}));
-						if (wordPopup.popupHistory.size() > wordPopup.popupHistoryVagranter + 1) {
-							wordPopup.popupHistory.subList(wordPopup.popupHistoryVagranter + 1, wordPopup.popupHistory.size()).clear();
-						}
+//						wordPopup.popupHistory.add(++wordPopup.popupHistoryVagranter, new myCpr<>(wordPopup.displaying, new int[]{wordPopup.CCD_ID, wordPopup.currentPos}));
+//						if (wordPopup.popupHistory.size() > wordPopup.popupHistoryVagranter + 1) {
+//							wordPopup.popupHistory.subList(wordPopup.popupHistoryVagranter + 1, wordPopup.popupHistory.size()).clear();
+//						}
 					}
 				}
 				return ret;
@@ -7388,10 +7397,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					try {
 						boolean popup = invoker.getPopEntry();
 						if(popup){
-							wordPopup.init_popup_view();
-							wordPopup.popupWebView.frameAt = mWebView.frameAt;
+							wordPopup.init();
+							wordPopup.mWebView.frameAt = mWebView.frameAt;
 							//popupWebView.SelfIdx = mWebView.SelfIdx;
-							mWebView = wordPopup.popupWebView;
+							mWebView = wordPopup.mWebView;
 						}
 						mWebView.toTag = null;
 						int tagIdx = url.indexOf("#");
@@ -7402,7 +7411,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(url.endsWith("/")) url=url.substring(0, url.length()-1);
 						url = URLDecoder.decode(url, "UTF-8");
 						if(popup){
-							popupWord(url, wordPopup.popupWebView.presenter, mWebView.frameAt, mWebView);
+							popupWord(url, wordPopup.mWebView.presenter, mWebView.frameAt, mWebView);
 							return true;
 						}
 						else {
@@ -7448,12 +7457,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								mWebView.isloading = true;
 								StringBuilder htmlBuilder = invoker.AcquirePageBuilder();
 								if(fromPopup){
-									wordPopup.popupHistory.add(++wordPopup.popupHistoryVagranter, new myCpr<>(wordPopup.CCD.getLexicalEntryAt(idx), new int[]{wordPopup.CCD_ID, idx}));
-									if (wordPopup.popupHistory.size() > wordPopup.popupHistoryVagranter + 1) {
-										wordPopup.popupHistory.subList(wordPopup.popupHistoryVagranter + 1, wordPopup.popupHistory.size()).clear();
-									}
+//									wordPopup.popupHistory.add(++wordPopup.popupHistoryVagranter, new myCpr<>(wordPopup.CCD.getLexicalEntryAt(idx), new int[]{wordPopup.CCD_ID, idx}));
+//									if (wordPopup.popupHistory.size() > wordPopup.popupHistoryVagranter + 1) {
+//										wordPopup.popupHistory.subList(wordPopup.popupHistoryVagranter + 1, wordPopup.popupHistory.size()).clear();
+//									}
 								}
-								invoker.AddPlodStructure(mWebView, htmlBuilder ,mWebView==wordPopup.popupWebView, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
+								invoker.AddPlodStructure(mWebView, htmlBuilder ,mWebView==wordPopup.mWebView, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
 								invoker.LoadPagelet(mWebView, htmlBuilder, invoker.bookImpl.getRecordsAt(null, idx));
 								return true;
 							}
@@ -7472,10 +7481,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return true;
 			}
 			if(fromPopup){
-				wordPopup.popupHistory.add(++wordPopup.popupHistoryVagranter, new myCpr<>(wordPopup.currentClickDisplaying, new int[]{wordPopup.CCD_ID, wordPopup.currentClickDictionary_currentPos}));
-				if (wordPopup.popupHistory.size() > wordPopup.popupHistoryVagranter + 1) {
-					wordPopup.popupHistory.subList(wordPopup.popupHistoryVagranter + 1, wordPopup.popupHistory.size()).clear();
-				}
+//				wordPopup.popupHistory.add(++wordPopup.popupHistoryVagranter, new myCpr<>(wordPopup.displaying, new int[]{wordPopup.CCD_ID, wordPopup.currentPos}));
+//				if (wordPopup.popupHistory.size() > wordPopup.popupHistoryVagranter + 1) {
+//					wordPopup.popupHistory.subList(wordPopup.popupHistoryVagranter + 1, wordPopup.popupHistory.size()).clear();
+//				}
 			}
 			try {
 				if (!url.startsWith("http") && !url.startsWith("https") && !url.startsWith("ftp") && !url.startsWith("file")) {
@@ -7520,7 +7529,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			WebViewListHandler weblistHandler = mWebView.weblistHandler;
 			
-			/*if(invoker.isMergedBook) */{
+			if(weblistHandler.bMergingFrames) {
 				int schemaIdx = url.indexOf(":");
 				//CMN.debug("mMergedBook::", url);
 				if(url.regionMatches(true, schemaIdx+3, "MdbR", 0, 4)) {
@@ -9017,8 +9026,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		if(read_click_search && wordPopup.CCD!=EmptyBook) {
 			mCurrentDictionary = wordPopup.CCD;
-			target = wordPopup.currentClickDisplaying;
-			wv = wordPopup.popupWebView;
+			target = wordPopup.displaying;
+			wv = wordPopup.mWebView;
 		} else {
 			if(PeruseViewAttached()){
 				mCurrentDictionary = peruseView.currentDictionary;
@@ -9132,8 +9141,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(wordPopup.popupContentView!=null) {
 			ViewGroup SVP = (ViewGroup) wordPopup.popupContentView.getParent();
 			//showT(popupContentView.getTranslationY()+" "+SVP.getHeight());
-			if (SVP!=null && wordPopup.popupContentView.getTranslationY()<mainF.getHeight()-wordPopup.popupToolbar.getHeight()) {
-				return wordPopup.popupWebView;
+			if (SVP!=null && wordPopup.popupContentView.getTranslationY()<mainF.getHeight()-wordPopup.toolbar.getHeight()) {
+				return wordPopup.mWebView;
 			}
 		}
 		if (!isContentViewAttached()) {
@@ -10012,8 +10021,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn) {
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
 			WebViewmy view = getCurrentWebContext(true);
-			if (view==wordPopup.popupWebView) { //111 null
-				if (wordPopup.popNav(true))
+			if (view==wordPopup.mWebView) { //111 null
+				if (wordPopup.nav(true))
 					return true;
 			} else if(view!=null && view.voyagable(true)) {
 				view.voyage(true);
@@ -10022,7 +10031,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(wordPopup.popupContentView!=null) {
 			ViewGroup SVP = (ViewGroup) wordPopup.popupContentView.getParent();
-			if((!opt.getPinTapTranslator() || SVP!=null && wordPopup.popupContentView.getTranslationY()<mainF.getHeight()-wordPopup.popupToolbar.getHeight()) && DetachClickTranslator()) {
+			if((!opt.getPinTapTranslator() || SVP!=null && wordPopup.popupContentView.getTranslationY()<mainF.getHeight()-wordPopup.toolbar.getHeight()) && DetachClickTranslator()) {
 				return true;
 			}
 		}

@@ -8,6 +8,7 @@
 	android:layoutDirection="ltr"
 	android:elevation="6dp"
 	android:fitsSystemWindows="true"
+	android:clickable="true"
 	>
 	<LinearLayout
 		android:layout_centerInParent="true"
@@ -79,7 +80,7 @@
 				android:background="@drawable/popup_background3_"
 				>
 				<com.knziha.plod.widgets.CheckableImageView
-					android:id="@+id/pinPicBook"
+					android:id="@+id/pinBtn"
 					android:layout_width="@dimen/_35_"
 					android:layout_height="match_parent"
 					android:layout_below="@+id/autoSchSw"

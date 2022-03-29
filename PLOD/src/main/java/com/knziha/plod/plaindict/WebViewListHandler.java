@@ -305,7 +305,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		int gravity = 0;
 		int type = a.thisActType==MainActivityUIBase.ActType.FloatSearch?2 //浮动搜索
 				:(a.PeruseSearchAttached() && mWebView==a.peruseView.mWebView)?4 // 翻阅
-				:(mWebView!=null&& mWebView==a.wordPopup.popupWebView)?6 // 点译
+				:(mWebView!=null&& mWebView==a.wordPopup.mWebView)?6 // 点译
 				:0 // 主程序
 				;
 		shFlag=type;
@@ -476,6 +476,31 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 //	}
 //	TextConfig tf;
 	
+	
+	public void JumpToFrame(int pos) {
+		frameSelection = pos;
+		if(bMergingFrames) {
+			if(pos<frames.size()) {
+				BookPresenter book = frames.get(pos);
+				if (book!=null) {
+					StringBuilder sb = new StringBuilder(24);
+					sb.append("scrollToPosId('d");
+					NumberToText_SIXTWO_LE(book.getId(), sb);
+					sb.append("',");
+					sb.append(frameAt=pos);
+					sb.append(")");
+					mMergedFrame.evaluateJavascript(sb.toString(), null);
+				}
+			}
+		} else {
+			View childAt = getChildAt(pos);
+			if(childAt!=null) {
+				a.scrollToWebChild(childAt);
+				a.recCom.scrollTo(childAt, a);
+			}
+		}
+	}
+	
 	public void showJumpListDialog() {
 		if(!bMergingFrames) frameAt = getFrameAt();
 		frameCount = frames.size();
@@ -493,27 +518,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					jumpListDlg.getListView().setSelection(bag.val?frameSelection/2:frameSelection);
 				}
 				else {
-					frameSelection = pos;
-					if(bMergingFrames) {
-						if(pos<frames.size()) {
-							BookPresenter book = frames.get(pos);
-							if (book!=null) {
-								StringBuilder sb = new StringBuilder(24);
-								sb.append("scrollToPosId('d");
-								NumberToText_SIXTWO_LE(book.getId(), sb);
-								sb.append("',");
-								sb.append(frameAt=pos);
-								sb.append(")");
-								mMergedFrame.evaluateJavascript(sb.toString(), null);
-							}
-						}
-					} else {
-						View childAt = getChildAt(pos);
-						if(childAt!=null) {
-							a.scrollToWebChild(childAt);
-							a.recCom.scrollTo(childAt, a);
-						}
-					}
+					JumpToFrame(pos);
 					dlg.dismiss();
 				}
 			};

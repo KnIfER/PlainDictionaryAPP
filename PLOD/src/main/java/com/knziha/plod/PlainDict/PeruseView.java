@@ -1216,7 +1216,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		bookIds.clear();
 		bookIds.ensureCapacity(md.size());
 		if(updateAI){
-			bookId = a.getBookIdAt(a.adapter_idx);
+			bookId = a.getBookIdAt(a.dictPicker.adapter_idx);
 			a.updateAI = false;
 		} else {
 			RestoreOldAI();
@@ -1237,7 +1237,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		bookIds.clear();
 		bakedGroup.clear();
 		for (int i = 0; i < md.size(); i++) {
-			if (addCurrent && i == a.adapter_idx) {
+			if (addCurrent && i == a.dictPicker.adapter_idx) {
 				long bid = a.getBookIdAt(i);
 				bookIds.add(bid);
 				bakedGroup.add(bid);

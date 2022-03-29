@@ -257,7 +257,7 @@
 	    />
 	
 	<com.knziha.plod.widgets.CheckableImageView
-		android:id="@+id/pinPicBook"
+		android:id="@+id/pinBtn"
 		android:clickable="true"
         android:layout_width="28dp"
         android:layout_height="28dp"

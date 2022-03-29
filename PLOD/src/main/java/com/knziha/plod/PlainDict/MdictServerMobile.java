@@ -80,7 +80,7 @@ public class MdictServerMobile extends MdictServer {
 				} catch (Exception ignored) { }
 			}
 			int pos=IU.parsint(args.get("POS"), a.adaptermy.lastClickedPos);
-			int dx=IU.parsint(args.get("DX"), a.adapter_idx);
+			int dx=IU.parsint(args.get("DX"), a.dictPicker.adapter_idx);
 			String key=a.etSearch.getText().toString();
 			try {
 				key= URLDecoder.decode(args.get("KEY"),"UTF-8");

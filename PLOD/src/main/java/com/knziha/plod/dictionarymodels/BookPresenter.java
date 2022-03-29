@@ -129,7 +129,7 @@ public class BookPresenter
 	
 	public final static String FileTag = "file://";
 	//public final static String baseUrl = "file:///";
-	public final static String baseUrl = "http://MdbR.com/base.html";
+	public final static String baseUrl = "http://mdbr.com/base.html";
 	public final static String  _404 = "<span style='color:#ff0000;'>PlainDict 404 Error:</span> ";
 	
 	/**</style><script class="_PDict" src="mdbr://SUBPAGE.js"></script>*/
@@ -1836,7 +1836,7 @@ function debug(e){console.log(e)};
 			int StarLevel =  PDICMainAppOptions.getDFFStarLevel(firstFlag);
 			toolbar_title.setStarLevel(StarLevel);
 			if(StarLevel>0) {
-				toolbar_title.setStarDrawables(a.getActiveStarDrawable(), toolbar_title==a.wordPopup.popupIndicator?a.getRatingDrawable():null);
+				toolbar_title.setStarDrawables(a.getActiveStarDrawable(), toolbar_title==a.wordPopup.indicator ?a.getRatingDrawable():null);
 			}
 		}
 		GradientDrawable toolbarBG = mWebView.toolbarBG;
@@ -2159,7 +2159,7 @@ function debug(e){console.log(e)};
 					if (!"schVar".equals(mWebView.getTag())) {
 						mWebView.setTag("schVar");
 						SetSearchKey(GetAppSearchKey());
-						renderContentAt_internal(mWebView, -1, mWebView.fromCombined==1, mWebView==a.wordPopup.popupWebView, false, 0);
+						renderContentAt_internal(mWebView, -1, mWebView.fromCombined==1, mWebView==a.wordPopup.mWebView, false, 0);
 						mWebView.setTag(null);
 					}
 				}
@@ -2232,7 +2232,7 @@ function debug(e){console.log(e)};
 
 		htmlBuilder.append("<script class=\"_PDict\">");
 		int rcsp = MakeRCSP(opt);
-		if(mWebView==a.wordPopup.popupWebView) rcsp|=1<<5;
+		if(mWebView==a.wordPopup.mWebView) rcsp|=1<<5;
 		htmlBuilder.append("window.rcsp=").append(rcsp).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
 		//nimp
@@ -3014,8 +3014,8 @@ function debug(e){console.log(e)};
 		if (a.PeruseViewAttached() && a.peruseView.mWebView.getSimpleIdentifier()==sid) {
 			return a.peruseView.mWebView;
 		}
-		if (a.wordPopup.popupWebView!=null && a.wordPopup.popupWebView.getSimpleIdentifier()==sid) {
-			return a.wordPopup.popupWebView;
+		if (a.wordPopup.mWebView !=null && a.wordPopup.mWebView.getSimpleIdentifier()==sid) {
+			return a.wordPopup.mWebView;
 		}
 		return mWebView;
 	}

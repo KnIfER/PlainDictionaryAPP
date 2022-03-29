@@ -23,14 +23,10 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.LocaleList;
 import android.os.Message;
 import android.os.PowerManager;
 import android.provider.Settings;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.style.ClickableSpan;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -51,7 +47,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.WebView;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -75,7 +70,6 @@ import androidx.core.view.GravityCompat;
 import androidx.core.view.MenuCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 
@@ -148,7 +142,6 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHENGINETYPE_WILDC
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAMES;
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEXTS;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
-import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.DeckListAdapter.SelectionMode_peruseview;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
@@ -274,8 +267,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(bottombar_project!=null&&bottombar_project.bNeedCheckOrientation){
 				RebuildBottombarIcons(this, bottombar_project, newConfig);
 			}
-			if(pickDictDialog!=null) {
-				if(pickDictDialog.isVisible()) {
+			if(dictPicker !=null) {
+				if(dictPicker.isVisible()) {
 //					dialogHolder.setTag(null);//111
 				} else {
 					//ResizeDictPicker();
@@ -876,7 +869,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(!transit) setTheme(R.style.PlainAppTheme);
 		
 		UIData = DataBindingUtil.setContentView(this, R.layout.activity_main);
-		pickDictDialog = new DictPicker(this, UIData.viewpagerPH, UIData.lnrSplitHdls, 0);
+		dictPicker = new DictPicker(this, UIData.viewpagerPH, UIData.lnrSplitHdls, 0);
 		
 		root = UIData.root;
 		
@@ -1659,7 +1652,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		new SearchToolsMenu(this, UIData.schtools);
 		
-		if(PDICMainAppOptions.getShowPinPicBook() && PDICMainAppOptions.getPinPicDictDialog()) {
+		if(PDICMainAppOptions.getShowPinPicBook() && PDICMainAppOptions.getPinPDic()) {
 			showChooseDictDialog(0);
 		}
 		
@@ -1762,7 +1755,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}, 350);
 
 		//showAppTweaker();
-		//if(CMN.testFLoatSearch)
+		if(CMN.testFLoatSearch)
 			startActivity(new Intent(this,FloatSearchActivity.class).putExtra("EXTRA_QUERY", "happy"));
 
 		//JumpToWord("crayon", 1);
@@ -2311,7 +2304,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							}
 						}
 						if(isPopupContentViewAttached(0)){
-							wordPopup.popupWebView.evaluateJavascript(val,null);
+							wordPopup.mWebView.evaluateJavascript(val,null);
 						}
 					}
 				}
@@ -2396,8 +2389,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		boolean isChecked = AppWhite==Color.BLACK;
 		fix_pw_color();
 		fix_dm_color();
-		if(pickDictDialog!=null) {
-			ViewUtils.setListViewScrollbarColor(pickDictDialog.mRecyclerView, isChecked);
+		if(dictPicker !=null) {
+			ViewUtils.setListViewScrollbarColor(dictPicker.mRecyclerView, isChecked);
 		}
 		if(isChecked) {
 			ViewUtils.setListViewFastColor(lv, mlv1, mlv2, lv2);
@@ -2506,7 +2499,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //					} else { //111
 						dismissPopup();
 						showChooseDictDialog(0);
-						if(PDICMainAppOptions.getPinPicDictDialog()) {
+						if(PDICMainAppOptions.getPinPDic()) {
 							PDICMainAppOptions.setShowPinPicBook(true);
 						}
 //					}
@@ -3280,7 +3273,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				if (changed){
 					buildUpDictionaryList(lazyLoadManager.lazyLoaded, mdict_cache);
-					if (adapter_idx<0) {
+					if (dictPicker.adapter_idx<0) {
 						switch_To_Dict_Idx(0, false, false, null);
 					}
 					invalidAllLists();
@@ -3417,7 +3410,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		adaptermy3.combining_search_result.invalidate();adaptermy3.notifyDataSetChanged();
 		adaptermy4.shutUp();adaptermy4.notifyDataSetChanged();
 		adaptermy4.combining_search_result.invalidate();adaptermy4.notifyDataSetChanged();
-		if(pickDictDialog!=null)pickDictDialog.adapter().notifyDataSetChanged();
+		if(dictPicker !=null) dictPicker.adapter().notifyDataSetChanged();
 	}
 
 	View mView;
@@ -3449,31 +3442,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		boolean ret = super.switch_To_Dict_Idx(i, invalidate, putName, prvNxtABC);
 		if(invalidate) {
 			if (!getPinPicDictDialog())
-				dismissDictPicker(R.anim.dp_dialog_exit);
+				wordPopup.dismiss();
 		}
 		return ret;
-	}
-	
-	void dismissDictPicker(int animationRes) {
-		CMN.Log("dismissDictPicker");
-		if(!pickDictDialog.isVisible()) return;
-		if(pickDictDialog!=null) {//111
-//			if(pickDictDialog.isDirty)  {opt.putFirstFlag();pickDictDialog.isDirty=false;}
-//			dialogHolder.clearAnimation();
-//			/*  词典选择器的动画效果(消失)  */
-//			if(animaExit==null) {
-//				animaExit = AnimationUtils.loadAnimation(this, animationRes);
-//				animaExit.setAnimationListener(new ViewUtils.BaseAnimationListener(){
-//					@Override public void onAnimationEnd(Animation animation) {
-//						dialogHolder.setVisibility(View.GONE);
-//					}
-//				});
-//			}
-//			dialogHolder.startAnimation(animaExit);
-//			if(PDICMainAppOptions.getPinPicDictDialog() && PDICMainAppOptions.getShowPinPicBook()) {
-//				pickDictDialog.refresh(false, 1);
-//			}
-		}
 	}
 
 	@Override

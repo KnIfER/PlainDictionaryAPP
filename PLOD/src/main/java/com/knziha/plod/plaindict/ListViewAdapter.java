@@ -191,7 +191,7 @@ public class ListViewAdapter extends BasicAdapter {
 		
 		long[] POS = a.getMergedClickPositions(pos);
 		if(bUseMergedUrl) {
-			StringBuilder mergedUrl = new StringBuilder("http://MdbR.com/merge.jsp?q=")
+			StringBuilder mergedUrl = new StringBuilder("http://mdbr.com/merge.jsp?q=")
 					.append("&exp=");
 			mergedUrl.append("d");
 			IU.NumberToText_SIXTWO_LE(presenter.getId(), mergedUrl);

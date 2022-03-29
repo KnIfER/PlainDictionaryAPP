@@ -89,14 +89,11 @@ import static com.knziha.plod.widgets.Tls12SocketFactory.enableTls12OnPreLollipo
 import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
 
 import okhttp3.Cache;
-import okhttp3.CipherSuite;
-import okhttp3.ConnectionSpec;
 import okhttp3.Dns;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.TlsVersion;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -1370,7 +1367,7 @@ public class PlainWeb extends DictionaryAdapter {
 					.append(bookPresenter.MakeRCSP(opt)).append(";")
 					;
 			if(GlobalOptions.isDark) sb.append(DarkModeIncantation);
-			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.wordPopup.popupWebView)
+			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.wordPopup.mWebView)
 				sb.append(MainActivityUIBase.ce_on);
 			if (style!=null || stylex!=null) {
 				CMN.Log("style::", style);

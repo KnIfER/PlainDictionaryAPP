@@ -83,9 +83,9 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Integer, String> {
 		} else {
 			try {
 				if(a.checkDicts()){
-					publishProgress(a.adapter_idx);
+					publishProgress(a.dictPicker.adapter_idx);
 					// to impl
-					a.currentDictionary.findAllNames(SearchTerm, a.adapter_idx, a.fuzzySearchLayer);
+					a.currentDictionary.findAllNames(SearchTerm, a.dictPicker.adapter_idx, a.fuzzySearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -114,8 +114,8 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Integer, String> {
 		a.adaptermy3.combining_search_result.SearchText=CurrentSearchText;
 		if(a.isCombinedSearching){
 			a.adaptermy3.combining_search_result.invalidate();
-		}else{//单独搜索
-			a.adaptermy3.combining_search_result.invalidate(a.adapter_idx);
+		}else{//单独搜索 todo
+			a.adaptermy3.combining_search_result.invalidate(a.dictPicker.adapter_idx);
 		}
 
 		a.show(R.string.fuzzyfill,(System.currentTimeMillis()-CMN.stst)*1.f/1000

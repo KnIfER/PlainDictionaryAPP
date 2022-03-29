@@ -188,6 +188,7 @@
 			android:layout_height="30dp"
 			android:src="@drawable/ic_btn_multimode"
 			android:tint="#666"
+			android:background="?attr/actionBarItemBackground"
 			/>
 
 		<ImageView
@@ -196,6 +197,7 @@
 			android:layout_height="30dp"
 			android:src="@drawable/chevron_bottom2"
 			android:tint="#666"
+			android:background="?attr/actionBarItemBackground"
 			/>
 		<ImageView
 			android:id="@+id/popNxtE"
@@ -203,6 +205,7 @@
 			android:layout_height="30dp"
 			android:src="@drawable/chevron_top2"
 			android:tint="#666"
+			android:background="?attr/actionBarItemBackground"
 			/>
 
 		<ImageView
@@ -212,6 +215,7 @@
 			android:padding="4dp"
 			android:src="@drawable/drawer_menu_icon_setting"
 			android:layout_marginRight="5dp"
+			android:background="?attr/actionBarItemBackground"
 			/>
 
 		<ImageView
@@ -221,6 +225,7 @@
 			android:padding="5dp"
 			android:src="@drawable/recess"
 			android:tint="#666"
+			android:background="?attr/actionBarItemBackground"
 			/>
 
 
@@ -231,6 +236,7 @@
 			android:padding="5dp"
 			android:src="@drawable/forward"
 			android:tint="#666"
+			android:background="?attr/actionBarItemBackground"
 			/>
 
 		</LinearLayout>

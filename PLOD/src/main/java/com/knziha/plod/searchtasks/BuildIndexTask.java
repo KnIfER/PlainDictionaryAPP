@@ -113,7 +113,7 @@ public class BuildIndexTask extends AsyncTaskWrapper<String, Integer, String > {
 		System.gc();
 		a.fullSearchLayer.currentThreads=null;
 		
-		a.switch_To_Dict_Idx(a.adapter_idx, true, false, null);
+		a.switch_To_Dict_Idx(a.dictPicker.adapter_idx, true, false, null);
 	}
 
 }

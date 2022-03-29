@@ -55,24 +55,9 @@ public class PopupMoveToucher implements View.OnTouchListener {
 				if(PDICMainAppOptions.getDoubleClickMaximizeClickSearch() && !ruinedDoubleClick){
 					doubleTapDetected=true;
 					if(e.getAction()!=MotionEvent.ACTION_UP) return false;
-					ViewGroup popupContentView = (ViewGroup) popupGuarder.popupToGuard;
-					if(popupContentView==null) return false;
+					if(popupGuarder.popupToGuard==null) return false;
 						//CMN.Log("onDoubleTap");
-						ViewGroup.MarginLayoutParams lpmy = (ViewGroup.MarginLayoutParams) popupContentView.getLayoutParams();
-						if(Maximized){
-							popupContentView.setTranslationY(FVTY);
-							lpmy.height=FVH_UNDOCKED;
-							popupContentView.setLayoutParams(lpmy);
-							Maximized=FVDOCKED=false;
-						}
-						else{
-							FVTY=popupContentView.getTranslationY();
-							popupContentView.setTranslationY(0);
-							onMaximised();
-							FVH_UNDOCKED=popupContentView.getHeight();
-							lpmy.height=calcMaxedH(lpmy);
-							popupContentView.setLayoutParams(lpmy);
-						}
+						togMax();
 						return true;
 				}
 				return false;
@@ -89,7 +74,26 @@ public class PopupMoveToucher implements View.OnTouchListener {
 			}
 		});
 	}
-
+	
+	public void togMax() {
+		ViewGroup popupContentView = (ViewGroup) popupGuarder.popupToGuard;
+		ViewGroup.MarginLayoutParams lpmy = (ViewGroup.MarginLayoutParams) popupContentView.getLayoutParams();
+		if(Maximized){
+			popupContentView.setTranslationY(FVTY);
+			lpmy.height=FVH_UNDOCKED;
+			popupContentView.setLayoutParams(lpmy);
+			Maximized=FVDOCKED=false;
+		}
+		else{
+			FVTY=popupContentView.getTranslationY();
+			popupContentView.setTranslationY(0);
+			onMaximised();
+			FVH_UNDOCKED=popupContentView.getHeight();
+			lpmy.height=calcMaxedH(lpmy);
+			popupContentView.setLayoutParams(lpmy);
+		}
+	}
+	
 	GestureDetector topgesture;
 
 	@Override

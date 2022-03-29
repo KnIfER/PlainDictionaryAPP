@@ -1187,10 +1187,11 @@ public class DBroswer extends DialogFragment implements
 						continue;
 					}
 					if (!bIsCombinedSearch) {
-						if (dIdx == 0) if (a.adapter_idx > 0 && a.adapter_idx < a.md.size()) {
-							dIdx = a.adapter_idx;
+						if (dIdx == 0)
+						if (a.dictPicker.adapter_idx > 0 && a.dictPicker.adapter_idx < a.md.size()) {
+							dIdx = a.dictPicker.adapter_idx;
 							reorded = true;
-						} else if (reorded) if (dIdx <= a.adapter_idx) {
+						} else if (reorded) if (dIdx <= a.dictPicker.adapter_idx) {
 							dIdx -= 1;
 						}
 					}
@@ -1371,11 +1372,11 @@ public class DBroswer extends DialogFragment implements
 		} else {
 			idx = currentDictionary.bookImpl.lookUp(key,true);
 		}
-		int adapter_idx=a.adapter_idx;
+		int adapter_idx=a.dictPicker.adapter_idx;
 		
 		if(idx<0 && queryAll) {
 			for(adapter_idx=0;adapter_idx<a.md.size();adapter_idx++) {
-				if(adapter_idx!=a.adapter_idx) {
+				if(adapter_idx!=a.dictPicker.adapter_idx) {
 					currentDictionary = a.md_get(adapter_idx);
 					idx=currentDictionary.bookImpl.lookUp(key,true);
 					if(idx>=0) break;

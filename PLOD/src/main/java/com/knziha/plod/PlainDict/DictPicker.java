@@ -8,7 +8,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.IBinder;
 import android.text.Editable;
@@ -24,7 +26,6 @@ import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -36,9 +37,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import com.knziha.plod.PlainUI.PlainAppPanel;
+import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.FlowTextView;
-import com.knziha.plod.widgets.Framer;
 import com.knziha.plod.widgets.LinearSplitView;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -69,12 +70,20 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	private LinearLayout dialogLayout;
 	private LinearSplitView splitView;
 	private ViewGroup splitter;
-	private int reason;
+	private int type;
 	
 	Toolbar Searchbar;
 	private EditText etSearchDict;
 	private boolean SearchDictPatternChanged;
-	private IBinder etSearchDict_getWindowToken;
+	private IBinder wtSearch;
+	private CheckableImageView pinBtn;
+	
+	ArrayList<Integer> filtered;
+	
+	public int adapter_idx;
+	private Runnable showImmAby;
+	
+	public boolean autoScroll;
 	
 	public DictPicker(MainActivityUIBase a_, LinearSplitView splitView, ViewGroup splitter, int reason){
 		super(a_, false);
@@ -87,7 +96,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		this.bFadeout = -2;
 		this.splitView = splitView;
 		this.splitter = splitter;
-		this.reason = reason;
+		this.type = reason;
 	}
 	
 	@SuppressLint("ResourceType")
@@ -102,7 +111,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			mRecyclerView = root.findViewById(R.id.choose_dict);
 			lman = new LinearLayoutManager(a.getApplicationContext());
 			mRecyclerView.setLayoutManager(lman);
-			mRecyclerView.setAdapter(mAdapter = new HomeAdapter());
+			mRecyclerView.setAdapter(mAdapter = new HomeAdapter(a));
 			//RecyclerView.ItemAnimator itemAnimator = mRecyclerView.getItemAnimator();
 			//if(itemAnimator instanceof SimpleItemAnimator)
 			//	((SimpleItemAnimator)itemAnimator).setSupportsChangeAnimations(false);
@@ -111,7 +120,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			mRecyclerView.setMinimumWidth(a.dm.widthPixels*2/3);
 			mRecyclerView.setVerticalScrollBarEnabled(true);
 			int LIP = lman.findLastVisibleItemPosition();
-			int adapter_idx=reason==2?a.wordPopup.currentClick_adapter_idx:a.adapter_idx;
+			int adapter_idx= type==-1?
+					filtered==null?a.wordPopup.upstrIdx :a.wordPopup.weblistHandler.frameSelection
+					:this.adapter_idx;
 			if(adapter_idx>LIP) {
 				int target = Math.max(0, adapter_idx-5);
 				lman.scrollToPositionWithOffset(target, 0);
@@ -120,11 +131,15 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			//root.setOnClickListener(this);
 			ViewUtils.setOnClickListenersOneDepth(root, this, 999, null);
 			dialogLayout = (LinearLayout) root.getChildAt(0);
+			ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) dialogLayout.getLayoutParams();
+			dialogLayout.setTag(new int[]{lp.topMargin, lp.bottomMargin});
 			View bottombar = dialogLayout.getChildAt(2);
 			settingsLayout = root;
 			this.root = root;
+			pinBtn = bottombar.findViewById(R.id.pinBtn);
+			pinBtn.setChecked(pin());
 			
-			if (reason!=0) {
+			if (type==1) {
 				ViewUtils.setVisible(bottombar, false);
 			}
 		}
@@ -145,18 +160,18 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		//
 		if(splitView!=null) {
 			/*  词典选择器的动画效果(显示)  */
-			boolean pinPicDictDialog = pin();
+			boolean pin = pinBtn.isChecked();//pin();
 			if(bForcePin!=0) {
-				if(bForcePin==-1) pinPicDictDialog=false;
-				else if(bForcePin==1) pinPicDictDialog=true;
+				if(bForcePin==-1) pin=false;
+				else if(bForcePin==1) pin=true;
 				bForcePin = 0;
 			}
 			LinearLayout dialogLayout = this.dialogLayout;
 			LinearSplitView splitView = this.splitView;
-			if(pinPicDictDialog ^ dialogLayout.getParent()==splitView) {
+			if(pin ^ dialogLayout.getParent()==splitView) {
 				//TextViewmy rcntSchList = settingsLayout.findViewById(R.id.rcntSchList);
 				//ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) rcntSchList.getLayoutParams();
-				if (pinPicDictDialog) {
+				if (pin) {
 					if(undockLayout==null) undockLayout = dialogLayout.getLayoutParams();
 					if(ViewUtils.removeIfParentBeOrNotBe(dialogLayout, splitView, false)) {
 						splitView.addView(dialogLayout, 0, dockLayout==null?undockLayout:dockLayout);
@@ -165,6 +180,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 						dialogLayout.setLayoutParams(dockLayout);
 					} else {
 						dockLayout = (LinearLayout.LayoutParams) dialogLayout.getLayoutParams();
+						dockLayout.height = -1;
 						dockLayout.width = 0;
 						dockLayout.weight = (float) (1 / (1-0.375) * 0.375);
 						//dockLayout.width = (int) (135 * GlobalOptions.density);
@@ -183,7 +199,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					int pad = (int) (5*GlobalOptions.density);
 					//layoutParams.leftMargin=pad;
 					//layoutParams.rightMargin=pad;
-				} else {
+				}
+				else {
 					if(ViewUtils.removeIfParentBeOrNotBe(dialogLayout, settingsLayout, false)) {
 						settingsLayout.addView(dialogLayout, 0, undockLayout);
 					}
@@ -195,10 +212,11 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					//layoutParams.leftMargin=pad;
 					//layoutParams.rightMargin=pad;
 				}
-				notifyDataSetChanged();
+				dataChanged();
+				pinBtn.setChecked(pin);
 			}
-			ViewUtils.setVisible(splitter, pinPicDictDialog);
-			if(pinPicDictDialog) {
+			ViewUtils.setVisible(splitter, pin);
+			if(pin) {
 //				a.dialogHolder.setVisibility(View.GONE);
 				dismiss();
 			} else {
@@ -229,7 +247,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	
 	
 	public void toggle() {
-		if (pin()){
+		if (pinBtn==null?pin():pinBtn.isChecked()){
 			if (dialogLayout==null) {
 				init(a, a.root);
 			}
@@ -238,10 +256,16 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				ViewUtils.setVisible(splitter, false);
 			} else {
 				refresh(false, 0);
+				if (autoScroll) {
+					scrollThis();
+				}
 			}
 			dismiss();
 		} else {
 			toggle(a.root, null, -1);
+			if (autoScroll) {
+				scrollThis();
+			}
 		}
 	}
 	
@@ -252,80 +276,89 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	}
 	
 	final boolean act() {
-		return isVisible() || pin();
+		return isVisible() || pinBtn.isChecked();
 	}
 	
 	boolean pin() {
 		if (splitView!=null) {
-			return PDICMainAppOptions.getPinPicDictDialog();
+			return type==0?PDICMainAppOptions.getPinPDic() // 主程序
+				:type==-1?PDICMainAppOptions.getPinPDicWrd() // 点译
+				:PDICMainAppOptions.getPinPDicFlt() // 浮动搜索
+				;
 		}
 		return false;
 	}
 	
-	public void notifyDataSetChanged() {
+	void pin(boolean v) {
+		if (type==0) PDICMainAppOptions.setPinPDic(v);
+		else if (type==-1) PDICMainAppOptions.setPinPDicWrd(v);
+		else if (type==1) PDICMainAppOptions.setPinPDicFlt(v);
+	}
+	
+	public void dataChanged() {
 		if(mAdapter!=null) {
 			mAdapter.notifyDataSetChanged();
 		}
 	}
-
-//	int  width=-1,height=-1,mMaxH=-1;
-//	public void onResume()
-//	{
-//		super.onResume();
-//		if(width!=-1 || height!=-1)//
-//			if(getDialog()!=null) {
-//				Window window = getDialog().getWindow();
-//				if(window!= null) {
-//					WindowManager.LayoutParams  attr = window.getAttributes();
-//					if(attr.width!=width || attr.height!=height) {
-//						//CMN.Log("onResume_");
-//						window.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND, WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-//						window.setDimAmount(0.1f);
-//						window.setBackgroundDrawableResource(R.drawable.popup_shadow_l);
-//						root.mMaxHeight=mMaxH;
-//						window.setLayout(width,height);
-//
-//						getView().post(() -> refresh(false, bForcePin));
-//					}
-//				}
-//				getDialog().setCanceledOnTouchOutside(true);
-//			}
-//	}
-
-//	@Override
-//	public void onCreate(Bundle savedInstanceState) {
-//		super.onCreate(savedInstanceState);
-//		setStyle(STYLE_NO_FRAME, 0);
-//	}
 	
 	private void Resize() {
-		int littleIdeal = realWidth;
-		Resources res = a.mResource;
-		int factor=1;
-		if(a.dm.widthPixels>littleIdeal) {
-			littleIdeal = Math.min(a.dm.widthPixels, Math.max(realWidth, (int)res.getDimension(R.dimen.idealdpdp))*55/45);
-			factor=2;
+		if (!pinBtn.isChecked()) {
+			int littleIdeal = realWidth;
+			Resources res = a.mResource;
+			int factor=1;
+			if(a.dm.widthPixels>littleIdeal) {
+				littleIdeal = Math.min(a.dm.widthPixels, Math.max(realWidth, (int)res.getDimension(R.dimen.idealdpdp))*55/45);
+				factor=2;
+			}
+			View dialogLayout = this.dialogLayout;
+			ViewGroup.MarginLayoutParams mlarp = (ViewGroup.MarginLayoutParams) dialogLayout.getLayoutParams();
+			int[] margins = (int[]) dialogLayout.getTag();
+			mlarp.width = littleIdeal - (int) (1 * res.getDimension(R.dimen._28_));
+			mlarp.topMargin= (int) (margins[0]/factor*1.5);
+			mlarp.bottomMargin= (int) (margins[1]/factor*1.5);
 		}
-		View dialogLayout = this.dialogLayout;
-		ViewGroup.MarginLayoutParams mlarp = (ViewGroup.MarginLayoutParams) dialogLayout.getLayoutParams();
-		int[] margins;
-		if(dialogLayout.getTag()==null) {
-			dialogLayout.setTag(margins=new int[2]);
-			margins[0] = mlarp.topMargin;
-			margins[1] = mlarp.bottomMargin;
+	}
+	
+	public void filterByRec(resultRecorderCombined rec, int pos) {
+		if (rec!=null) {
+			ArrayList<Long> ids = pos>=0&&pos<rec.size()?rec.getBooksAt(null, pos):new ArrayList<>();
+			filtered = new ArrayList<>(ids.size());
+			ArrayList<PlaceHolder> pl = a.getPlaceHolders();
+			for (int i=0,cc=0; i<pl.size() && cc<ids.size(); i++) {
+				if (a.getBookIdAt(i)==ids.get(cc)) {
+					cc++;
+					filtered.add(i);
+				}
+			}
+			if (filtered.size()!=ids.size()) {
+				a.showT("需要重新计算!");
+			}
 		} else {
-			margins = (int[]) dialogLayout.getTag();
+			filtered = null;
 		}
-		mlarp.width = littleIdeal - (int) (1 * res.getDimension(R.dimen._28_));
-		mlarp.topMargin= (int) (margins[0]/factor*1.5);
-		mlarp.bottomMargin= (int) (margins[1]/factor*1.5);
+		dataChanged();
+	}
+	
+	public int adapterIdx() {
+		if((adapter_idx<0||adapter_idx>=a.md.size()))
+			adapter_idx=0;
+		return adapter_idx;
 	}
 	
 	class HomeAdapter extends RecyclerView.Adapter<MyViewHolder>
 	{
+		final Drawable underln;
+		final ColorFilter selecf;
+		
+		HomeAdapter(Context context) {
+			this.underln = context.getResources().getDrawable(R.drawable.text_underline1);
+			selecf = new PorterDuffColorFilter(0xff4F7FDF, PorterDuff.Mode.SRC_IN);
+			underln.setColorFilter(new PorterDuffColorFilter(0xff3F5F9F, PorterDuff.Mode.SRC_IN));
+		}
+		
 		@Override
 		public int getItemCount() {
-			return a.md.size();
+			return filtered==null?a.md.size():filtered.size();
 		}
 		@NonNull
 		@Override
@@ -339,31 +372,42 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 
 		@Override
 		public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
+			if (filtered!=null) {
+				position = filtered.get(position);
+			}
 			holder.position = position;
-			int adapter_idx=reason==2?a.wordPopup.currentClick_adapter_idx:a.adapter_idx;
+			//todo 应该将adapter_idx 放到这个类中
+			int idx=type==-1?
+					filtered==null?a.wordPopup.upstrIdx :-100
+					:DictPicker.this.adapter_idx;
 			FlowTextView tv = holder.tv;
 			
-			boolean isThisSelected = adapter_idx==position;
-			
+			boolean isThisSelected = idx==position;
+			if (idx==-100) {
+				if (a.wordPopup.weblistHandler!=null
+						&& a.wordPopup.weblistHandler.frameSelection==holder.getLayoutPosition()) {
+					isThisSelected = true;
+				}
+			}
 			holder.itemView.setBackgroundColor(isThisSelected?0xff4F7FDF:Color.TRANSPARENT);
-			
 			tv.setTextColor(GlobalOptions.isDark||isThisSelected?Color.WHITE:Color.BLACK);
-			
 			tv.PostEnabled = PostEnabled;
-			
 			tv.setStarLevel(a.md_get_StarLevel(position));
-			
 			tv.setCompoundDrawables(a.getActiveStarDrawable(), null, null, null);
 			
 			String text = a.md_getName(position);
-			
 			tv.SetSearchPattern(SearchPattern, text);
 			
+			if (type==-1) {
+				tv.setBackground(a.wordPopup.CCD_ID==position?underln:null);
+			}
 			
 			Drawable cover = a.md_getCover(position);
 			ViewUtils.setVisibility((View) holder.cover.getParent(), cover!=null);
 			ViewGroup.LayoutParams lp = holder.cover.getLayoutParams();
-			lp.width = (int) (lp.height/(cover==null?1.5f:1));
+			lp.width = (int) (lp.height/(cover==null?
+					pinBtn.isChecked()?999:1.5f
+					:1));
 			holder.cover.setImageDrawable(cover);
 			
 			tv.setText(text);
@@ -379,22 +423,25 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 //				a.showAboutDictDialogAt(position);
 //			} else {
 				if(!act()) return;
-				if(reason==2){//点译上游
-					int tmpPos = a.wordPopup.currentClick_adapter_idx;
-					a.wordPopup.CCD=a.md_get(position);
-					a.wordPopup.CCD_ID=a.wordPopup.currentClick_adapter_idx = position;
-					a.popupWord(ViewUtils.getTextInView(a.wordPopup.popupTextView), null, -1, null);
+				if(type==-1){ //点译搜索
+					int tmpPos;
+					if (filtered==null) { //点译上游
+						tmpPos = a.wordPopup.upstrIdx;
+						a.wordPopup.CCD=a.md_get(position);
+						a.wordPopup.CCD_ID=a.wordPopup.upstrIdx = position;
+						a.popupWord(ViewUtils.getTextInView(a.wordPopup.entryTitle), null, -1, null);
+					} else { //跳转多页面
+						tmpPos = a.wordPopup.weblistHandler.frameSelection;
+						position = ((MyViewHolder) tag).getLayoutPosition();
+						a.wordPopup.weblistHandler.JumpToFrame(position);
+					}
 					mAdapter.notifyItemChanged(tmpPos);
 					mAdapter.notifyItemChanged(position);
-					if(a instanceof PDICMainActivity){
-						((PDICMainActivity)a).dismissDictPicker(R.anim.dp_dialog_exit);
-					}else {
-						dismiss();
-					}
+					dismiss();
 				}
 				else {//当前词典
-					int tmpPos = a.adapter_idx;
-					a.adapter_idx = position;
+					int tmpPos = adapter_idx;
+					adapter_idx = position;
 					a.switch_To_Dict_Idx(position, true, true, null);
 					mAdapter.notifyItemChanged(tmpPos);
 					if(tmpPos!=position){
@@ -408,15 +455,18 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		}
 		switch (v.getId()) {
 			case R.id.dialogHolder:
+				if(wtSearch!=null && ViewUtils.isVisibleV2(Searchbar)) {
+					a.imm.hideSoftInputFromWindow(wtSearch, 0);
+				}
 				dismiss();
 				break;
 			case R.id.dictName:
 				scrollThis();
 				break;
-			case R.id.pinPicBook:
+			case R.id.pinBtn:
 				CheckableImageView cb = (CheckableImageView) v;
 				cb.toggle();
-				opt.setPinPicDictDialog(cb.isChecked());
+				pin(cb.isChecked());
 				//if(pickDictDialog!=null) pickDictDialog.isDirty=true;
 				refresh(false, 0);
 				break;
@@ -437,11 +487,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 						@Override
 						public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 						}
-						
 						@Override
 						public void onTextChanged(CharSequence s, int start, int before, int count) {
 						}
-						
 						@Override
 						public void afterTextChanged(Editable s) {
 							SearchDictPatternChanged = true;
@@ -449,23 +497,24 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					});
 					etSearchDict.setOnEditorActionListener((v12, actionId, event) -> searchbar.findViewById(R.id.forward).performClick());
 					this.Searchbar = searchbar;
-					etSearchDict_getWindowToken = etSearchDict.getWindowToken();
-					a.imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-					if (!isVisible())
-						toggle(a.root, null, -1);
+					wtSearch = etSearchDict.getWindowToken();
+					showImmAby = ()->{
+						etSearchDict.requestFocus();
+						a.imm.showSoftInput(etSearchDict, InputMethodManager.SHOW_IMPLICIT);
+					};
+					etSearchDict.postDelayed(showImmAby, 200);
 				} else {
 					if (v == Searchbar.getNavigationBtn()) {
 						ViewUtils.setVisible(Searchbar, false);
-						a.imm.hideSoftInputFromWindow(etSearchDict_getWindowToken, 0);
-						if (pin()) dismiss();
+						a.imm.hideSoftInputFromWindow(wtSearch, 0);
+						if (pinBtn.isChecked()) dismiss();
 					} else {
-						a.etSearch.clearFocus();
 						ViewUtils.setVisible(Searchbar, true);
-						//ViewUtils.setVisible(UIData.dialogHolder, true);
-						etSearchDict.requestFocus();
-						a.imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+						etSearchDict.postDelayed(showImmAby, 200);
 					}
 				}
+				if (!isVisible())
+					toggle(a.root, null, -1);
 				break;
 			case R.id.recess:
 			case R.id.forward:{
@@ -533,8 +582,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					if(msg!=0) {
 						a.show(msg);
 					}
-					a.imm.hideSoftInputFromWindow(etSearchDict_getWindowToken, 0);
-					notifyDataSetChanged();
+					a.imm.hideSoftInputFromWindow(wtSearch, 0);
+					dataChanged();
 				}
 			} break;
 			case R.id.ivDeleteText:{
@@ -542,19 +591,26 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					SearchIncantation = null;
 					etSearchDict.setText("");
 					//imm.hideSoftInputFromWindow(etSearchDict_getWindowToken, 0);
-					notifyDataSetChanged();
+					dataChanged();
 				}
 			} break;
 		}
 	}
 	
-	private void scrollThis() {
-		int adapter_idx=reason==2?a.wordPopup.currentClick_adapter_idx:a.adapter_idx;
-		if(lman!=null) {
-			if(adapter_idx>lman.findLastVisibleItemPosition() || adapter_idx<lman.findFirstVisibleItemPosition()) {
-				int target = Math.max(0, adapter_idx-5);
-				lman.scrollToPositionWithOffset(reason==2?a.wordPopup.CCD_ID:target, 0);
-				CMN.Log("scrolled");
+	public void scrollThis() {
+		if(mAdapter!=null) {
+			int vdx=this.adapter_idx;
+			if (type==-1) {
+				vdx = a.wordPopup.CCD_ID;
+				if(vdx<0||vdx>=a.md.size())
+					vdx = a.wordPopup.upstrIdx;
+			}
+			if(lman!=null) {
+				if(vdx>lman.findLastVisibleItemPosition() || vdx<lman.findFirstVisibleItemPosition()) {
+					int target = Math.max(0, vdx-5);
+					lman.scrollToPositionWithOffset(type==-1?a.wordPopup.CCD_ID:target, 0);
+					CMN.Log("scrolled");
+				}
 			}
 		}
 	}
