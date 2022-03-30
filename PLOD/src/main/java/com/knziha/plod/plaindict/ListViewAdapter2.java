@@ -161,7 +161,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 			//111
 		}
 		else {
-			boolean bUseMergedUrl = true;
+			boolean bUseMergedUrl = false;
 			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, null);
 			weblistHandler.initMergedFrame(false, false, bUseMergedUrl);
 			if(bUseMergedUrl) {
@@ -174,7 +174,6 @@ public class ListViewAdapter2 extends BasicAdapter {
 		a.ActivedAdapter=this;
 		super.onItemClick(pos);
 
-
 //		contentUIData.webcontentlister.setVisibility(View.VISIBLE);
 //		contentUIData.webcontentlister.setAlpha(1);
 		
@@ -183,22 +182,9 @@ public class ListViewAdapter2 extends BasicAdapter {
 			a.etSearch.clearFocus();
 		}
 		
-		//CMN.debug("combining_search_result.renderContentAt::");
 		combining_search_result.renderContentAt(lastClickedPos, a,this, weblistHandler);
 		
 		a.decorateContentviewByKey(null, currentKeyText = combining_search_result.getResAt(a, pos).toString());
-//		if(PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
-//				&& combining_search_result.shouldSaveHistory()
-//				&&(userCLick||PDICMainAppOptions.getHistoryStrategy8()==0)) {
-//			a.insertUpdate_histroy(currentKeyText, 0, webviewHolder);
-//		}
-
-//		if(PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
-//				&&combining_search_result.shouldSaveHistory()
-//				&&userCLick||PDICMainAppOptions.getHistoryStrategy8()==0) {
-//			prepareHistoryCon().insertUpdate(FloatSearchActivity.this, currentKeyText, webviewHolder);
-//		}
-//		xxx
 		
 		if(userCLick) {
 			userCLick=false;
@@ -214,7 +200,13 @@ public class ListViewAdapter2 extends BasicAdapter {
 		contentUIData.PageSlider.TurnPageEnabled=(this==a.adaptermy2?opt.getPageTurn2():opt.getPageTurn1())&&opt.getTurnPageEnabled();
 		a.etSearch_ToToolbarMode(1);
 		
-		combining_search_result.insertSearchKeyIfNeeded(a);
+		if(!combining_search_result.addHistoryIfNeeded(a)
+				&& !PDICMainAppOptions.storeNothing()
+				&& PDICMainAppOptions.storeClick()
+				&& combining_search_result.shouldSaveHistory()
+				&& (userCLick||PDICMainAppOptions.storePageTurn()==0)) {
+			a.addHistroy(currentKeyText, 0, webviewHolder);
+		}
 	}
 	
 	

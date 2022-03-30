@@ -91,11 +91,11 @@ public class ListViewAdapter extends BasicAdapter {
 			if (opt.getRemPos()) {
 				a.DelegateSaveAndRestorePagePos().SaveVOA(contentUIData.PageSlider.WebContext, this);
 			}
-			if (Kustice && PDICMainAppOptions.getHistoryStrategy8() == 2
-					//&&!(currentDictionary instanceof bookPresenter_txt) // nimp
-					&& !PDICMainAppOptions.getHistoryStrategy0()
-					&& PDICMainAppOptions.getHistoryStrategy4()) {
-				a.insertUpdate_histroy(presenter.currentDisplaying, 0, webviewHolder);
+			if (Kustice && PDICMainAppOptions.storePageTurn()==2
+					&& presenter.store(presenter.lvClickPos)
+					&& !PDICMainAppOptions.storeNothing()
+					&& PDICMainAppOptions.storeClick()) {
+				a.addHistroy(presenter.currentDisplaying, 0, webviewHolder);
 			}
 		}
 	}
@@ -210,20 +210,13 @@ public class ListViewAdapter extends BasicAdapter {
 		currentKeyText = mWebView.word.trim();
 		
 		a.decorateContentviewByKey(null,currentKeyText);
-		if(//!(currentDictionary instanceof bookPresenter_txt) && // nimp
-				!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy4()
-						&& (userCLick || PDICMainAppOptions.getHistoryStrategy8()==0) && !(shunt && pos==0)) {
-			//CMN.Log("insertUpdate_histroy");
-			a.insertUpdate_histroy(currentKeyText, 0, webviewHolder);
-		}
 		
-		//xxx
-//		if(//!(current instanceof bookPresenter_txt) &&  nimp
-//				!PDICMainAppOptions.getHistoryStrategy0()
-//						&& PDICMainAppOptions.getHistoryStrategy4()
-//						&&(userCLick || PDICMainAppOptions.getHistoryStrategy8()==0)) {
-//			prepareHistoryCon().insertUpdate(FloatSearchActivity.this, currentKeyText, webviewHolder);
-//		}
+		if(!PDICMainAppOptions.storeNothing()  && PDICMainAppOptions.storeClick() && presenter.store(pos)) {
+			a.addHistroy(currentKeyText
+					, userCLick && a.storeLv1(currentKeyText)?128:
+					 (userCLick || PDICMainAppOptions.storePageTurn()==0) && !(shunt && pos==0)?0
+							:-1, webviewHolder);
+		}
 		
 		//showT("查时: "+(System.currentTimeMillis()-stst));
 		a.bWantsSelection=!presenter.getIsWebx();

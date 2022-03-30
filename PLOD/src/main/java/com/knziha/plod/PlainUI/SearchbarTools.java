@@ -66,10 +66,15 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	/** 搜索记录的Hash索引计数。 */
 	SparseIntArray hIdx = new SparseIntArray(1024);
 	
+	/** 0=始终关闭, 1=始终开启, 2=记忆 */
+	int bAutoDrpdn=2;
+	boolean drpdn;
+	View drpBtn;
+	
 	/** 添加搜索记录。 */
 	public void addHistory(String text) {
 		int rmIdx = -1;
-		if (text!=null) {
+		if (text!=null && loaded) {
 			boolean ndp = true;
 			if (ndp) {
 				int ln=text.length();
@@ -81,6 +86,10 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					rmIdx = history.lastIndexOf(text);
 					if(rmIdx<0)
 						hIdx.put(hash, cnt+1);
+					else if(rmIdx==history.size()-1) {
+						CMN.debug("一毛一样！");
+						return;
+					}
 				}
 			}
 			if (rmIdx>0)
@@ -313,11 +322,6 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	public void hideIM() {
 		a.imm.hideSoftInputFromWindow(a.UIData.etSearch.getWindowToken(),0);
 	}
-	
-	/** 0=始终关闭, 1=始终开启, 2=记忆 */
-	int bAutoDrpdn=2;
-	boolean drpdn;
-	View drpBtn;
 	
 	private boolean shouldOpenDrpDwn() {
 		return bAutoDrpdn==1 || bAutoDrpdn==2&&drpdn;

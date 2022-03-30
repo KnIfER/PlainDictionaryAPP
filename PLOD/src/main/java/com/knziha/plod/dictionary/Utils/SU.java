@@ -209,6 +209,41 @@ public class  SU{
 //				|| gc == Character.COMBINING_SPACING_MARK;
 		return gc>=Character.NON_SPACING_MARK&&gc<=Character.COMBINING_SPACING_MARK;
 	}
+	
+	public static int min(int a, int b, int c) {
+		return a < b ? (a < c ? a : c) : (b < c ? b : c);
+	}
+	
+//	public static int similar(String s, String t, int f) {
+//		int n = s.length(), m = t.length(), l = Math.max(m, n);
+//		var d = []
+//		if(f==0)
+//			f=3;
+//		int i, j, si, tj, cost;
+//		if (n == 0) return m;
+//		if (m == 0) return n;
+//		for (i = 0; i <= n; i++) {
+//			d[i] = []
+//			d[i][0] = i
+//		}
+//		for (j = 0; j <= m; j++) {
+//			d[0][j] = j
+//		}
+//		for (i = 1; i <= n; i++) {
+//			si = s.charAt(i - 1)
+//			for (j = 1; j <= m; j++) {
+//				tj = t.charAt(j - 1)
+//				if (si === tj) {
+//					cost = 0
+//				} else {
+//					cost = 1
+//				}
+//				d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
+//			}
+//		}
+//		var res = (1 - d[n][m] / l)
+//		return res.toFixed(f)
+//	}
 }
 	
 

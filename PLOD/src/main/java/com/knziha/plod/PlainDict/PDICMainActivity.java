@@ -83,7 +83,6 @@ import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
 import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
-import com.knziha.plod.PlainUI.WordPopupTask;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
@@ -947,8 +946,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 23/*随机词条*/, 14/*翻译*/, 2, 16, 3/*记忆位置*/, 9, 11, 12);
 		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 13, 14, 1, 2, 15, 21/*记忆位置*/, 9, 10, 12);
-		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7/*分字搜索*/, 8/*翻阅模式*/, 20/*搜索工具栏*/, 17, 18, 19);
-		LEFTMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7, 5, 6);
+		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7/*翻阅模式*/, 8/*分字搜索*/, 20/*搜索工具栏*/, 17, 18, 19);
+		LEFTMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7, 20, 5, 6);
 		
 		
 		boolean showVal = PDICMainAppOptions.getShowSearchTools();
@@ -1433,8 +1432,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					etTools.dismiss();
 				}
 				if(tmp==0 || tmp==2) {
-					if(!PDICMainAppOptions.getHistoryStrategy0() /*&& PDICMainAppOptions.getHistoryStrategy1()*/)
-						insertUpdate_histroy(key, 128+(tmp==0?1:2), null);
+					if(!PDICMainAppOptions.storeNothing() /*&& PDICMainAppOptions.getHistoryStrategy1()*/)
+						addHistroy(key, 128+(tmp==0?1:2), null);
 					if(!checkDicts()) return true;
 					//模糊搜索 & 全文搜索
 					if(mAsyncTask!=null)
@@ -1443,8 +1442,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					(mAsyncTask=tmp==0?new FuzzySearchTask(PDICMainActivity.this)
 							:new FullSearchTask(PDICMainActivity.this)).execute(key);
 				} else {
-					if(!PDICMainAppOptions.getHistoryStrategy0() /*&& (PDICMainAppOptions.getHistoryStrategy2()&&isCombinedSearching|| PDICMainAppOptions.getHistoryStrategy3()&&!isCombinedSearching)*/)
-						insertUpdate_histroy(key, 128, null);
+					if(!PDICMainAppOptions.storeNothing() /*&& (PDICMainAppOptions.getHistoryStrategy2()&&isCombinedSearching|| PDICMainAppOptions.getHistoryStrategy3()&&!isCombinedSearching)*/)
+						addHistroy(key, 128, null);
 					if(key.length()>0)
 					{
 						if(!isCombinedSearching && currentDictionary.getType()==PLAIN_TYPE_WEB)
@@ -1740,7 +1739,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 		//bottombar.findViewById(R.id.browser_widget2).performLongClick();
 		//bottombar.findViewById(R.id.browser_widget5).performLongClick();
-		weblistHandler.toggleInPageSearch(false);
+		if(opt.schPage())
+			weblistHandler.togSchPage(false);
 //		if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("译");
 		//if(false)
 		root.postDelayed(() -> {
@@ -3134,7 +3134,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			/* 页内查找 */
 			case R.id.toolbar_action13:{
-				weblistHandler.toggleInPageSearch(ret=isLongClicked);
+				weblistHandler.togSchPage(ret=isLongClicked);
 			} break;
 			/* 即点即译 */
 			case R.id.tapTranslator:{
@@ -3174,19 +3174,21 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					adaptermy3.notifyDataSetChanged();
 				}
 			} break;
-			case R.id.toolbar_action2:{
+			case R.id.toolbar_action2: {
 				if(isLongClicked) {
 					launchSettings(7, 0);
 					ret=true;
-				}else{
+				} else {
+					String text = etSearch.getText().toString().trim();
 					if (CurrentViewPage == 1) {//viewPager
-						tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
-						if (!PDICMainAppOptions.getHistoryStrategy0()) {
-							insertUpdate_histroy(etSearch.getText().toString().trim(), 0, null);
+						tw1.onTextChanged(text, 0, 0, 0);
+						if (!PDICMainAppOptions.storeNothing()) {
+							addHistroy(text, 0, null);
 						}
 					} else
 						etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
 					UIData.drawerLayout.closeDrawer(GravityCompat.START);
+					etTools.addHistory(text);
 				}
 			} break;
 			case R.id.perwordSch:{//切换分字搜索

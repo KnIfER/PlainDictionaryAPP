@@ -25,8 +25,8 @@ public class SearchSpecification extends SettingsFragmentBase implements Prefere
 		init_switch_preference(this, "page_case", PDICMainAppOptions.getPageCaseSensitive(), null, null);
 		init_switch_preference(this, "page_nospc", PDICMainAppOptions.getPageWildcardMatchNoSpace(), null, null);
 		init_switch_preference(this, "page_spcdl", PDICMainAppOptions.getPageWildcardSplitKeywords(), null, null);
-		init_switch_preference(this, "pj_auto", PDICMainAppOptions.getPageAutoScrollOnTurnPage(), null, null);
-		init_switch_preference(this, "pj_type", PDICMainAppOptions.getPageAutoScrollOnType(), null, null);
+		init_switch_preference(this, "pj_auto", PDICMainAppOptions.schPageAutoTurn(), null, null);
+		init_switch_preference(this, "pj_type", PDICMainAppOptions.schPageAutoType(), null, null);
 		init_switch_preference(this, "use_wildcard1", PDICMainAppOptions.getAdvSearchUseWildcard(), null, null);
 		init_switch_preference(this, "use_wildcard2", PDICMainAppOptions.getInPageSearchUseWildcard(), null, null);
 		init_switch_preference(this, "use_morph", PDICMainAppOptions.getSearchUseMorphology(), null, null);
@@ -71,10 +71,10 @@ public class SearchSpecification extends SettingsFragmentBase implements Prefere
 				PDICMainAppOptions.setPageWildcardSplitKeywords((Boolean) newValue);
 			break;
 			case "pj_auto":
-				PDICMainAppOptions.setPageAutoScrollOnTurnPage((Boolean) newValue);
+				PDICMainAppOptions.schPageAutoTurn((Boolean) newValue);
 			break;
 			case "pj_type":
-				PDICMainAppOptions.setPageAutoScrollOnType((Boolean) newValue);
+				PDICMainAppOptions.schPageAutoType((Boolean) newValue);
 			break;
 			case "use_wildcard1":
 				PDICMainAppOptions.setAdvSearchUseWildcard((Boolean) newValue);

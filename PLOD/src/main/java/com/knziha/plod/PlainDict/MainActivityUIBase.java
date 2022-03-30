@@ -318,6 +318,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public Map<SubStringKey, String>  serverHosts;
 	public ArrayList<PlainWeb>  serverHostsHolder=new ArrayList();
 	public FrameLayout lvHeaderView;
+	/** |0x1=xuyao store| |0x2=zhuanhuan le str|  */
+	public int tw1F=0;
 	protected TextWatcher tw1 = new TextWatcher() { //tw
 		public void onTextChanged(CharSequence cs, int start, int before, int count) {
 			if(SU.isNotEmpty(cs)) {
@@ -332,6 +334,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				if(etTools.isVisible())
 					etTools.dismiss();
+				if (tw1F!=1) {
+					tw1F=1;
+				}
 			} else {
 				if(PDICMainAppOptions.getSimpleMode()) adaptermy.notifyDataSetChanged();
 				lv2.setVisibility(View.INVISIBLE);
@@ -3074,8 +3079,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected String lastInsertedKey;
 	
-	public void insertUpdate_histroy(String key, int source, ViewGroup webviewholder) {
-		if(TextUtils.getTrimmedLength(key)>0) {
+	public void addHistroy(String key, int source, ViewGroup webviewholder) {
+		CMN.Log("addHistroy::", key, source);
+		if(source>=0 && TextUtils.getTrimmedLength(key)>0) {
 			lastInsertedKey = key.trim();
 			lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder, source);
 			if (source>=128 && etTools!=null) {
@@ -6450,14 +6456,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 	}
 
-	public boolean hasCurrentPageKey() {
-//		if (MainPageSearchbar!=null && MainPageSearchbar.getParent()!=null) {
-//			Editable psk = MainPageSearchetSearch.getText();
-//			return psk!=null && psk.toString().trim().length()>0;
-//		}
-		return false;
-	}
-
 	public void prepareInPageSearch(String key, boolean bNeedBringUp) {
 		if(weblistHandler.MainPageSearchetSearch==null){
 			weblistHandler.MainPageSearchetSearchStartWord=key;
@@ -6466,7 +6464,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			bNeedBringUp=bNeedBringUp&&weblistHandler.MainPageSearchbar.getParent()==null;
 		}
 		if(bNeedBringUp){
-			weblistHandler.toggleInPageSearch(false);
+			weblistHandler.togSchPage(false);
 		}
 	}
 
@@ -6913,7 +6911,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			CMN.Log("chromium page finished ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
 			if(!mWebView.isloading && !mWebView.fromNet) return;
-			
+			WebViewListHandler wlh = mWebView.weblistHandler;
 			
 			if(ViewUtils.littleCat)
 			try {
@@ -6934,7 +6932,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			BookPresenter invoker = mWebView.presenter;
 			
 			if (mWebView.translating>=0) {
-				doTranslation(mWebView.weblistHandler, mWebView.translating, null);
+				doTranslation(wlh, mWebView.translating, null);
 			}
 			if (url.equals("http://mdbr.com/load.html")) {
 				try {
@@ -6998,18 +6996,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						proceed=false;
 						mWebView.expectedPos = -100;
 						if(fromCombined){
-							weblistHandler.WHP.touchFlag.first=true;
+							wlh.WHP.touchFlag.first=true;
 								if (toTag.equals("===000")) {
 									//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + weblistHandler.WHP.getChildAt(0).getHeight());
-									weblistHandler.WHP.post(() -> {
-										weblistHandler.WHP.smoothScrollTo(0, invoker.rl.getTop());
+									wlh.WHP.post(() -> {
+										wlh.WHP.smoothScrollTo(0, invoker.rl.getTop());
 									});
 								} else
 									view.evaluateJavascript("var item=document.getElementsByName(\"" + toTag + "\")[0];item?item.getBoundingClientRect().top:-1;"
 											, v -> {
 												int to = (int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
 												if(to>=0)
-													weblistHandler.WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
+													wlh.WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
 											});
 
 						}
@@ -7021,7 +7019,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				
-				boolean toHighLight = PDICMainAppOptions.getPageAutoScrollOnTurnPage() && view.getTag(R.id.toolbar_action5) != null;
+				boolean toHighLight = PDICMainAppOptions.schPageAutoTurn() && wlh.schPage(mWebView);
 				
 				CMN.debug("expectedPos::", mWebView.expectedPos, mWebView.getScrollY(), "toHighLight="+toHighLight);
 				
@@ -7547,7 +7545,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(weblistHandler.bMergingFrames) {
 				int schemaIdx = url.indexOf(":");
 				//CMN.debug("mMergedBook::", url);
-				if(url.regionMatches(true, schemaIdx+3, "MdbR", 0, 4)) {
+				if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)) {
 					try {
 						HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 						Response ret = getMdictServer().handle(req);
@@ -8376,6 +8374,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void jumpNaughtyFirstHighlight(WebViewmy mWebView) {
+		CMN.Log("jumpNaughtyFirstHighlight...");
 		long mJumpNaughtyTimeToken = jumpNaughtyTimeToken = System.currentTimeMillis();
 		NaughtyJumpper=()-> mWebView.evaluateJavascript("window.bOnceHighlighted", value -> {
 			if(mJumpNaughtyTimeToken!=jumpNaughtyTimeToken)
@@ -9604,10 +9603,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private static final ConcurrentHashMap<String, byte[]> CommonAssets = new ConcurrentHashMap<>(10);
 	private static final ConcurrentHashMap<String, String> CommonAssetsStr = new ConcurrentHashMap<>(10);
 	static {
-		CommonAssets.put("SUBPAGE.js", BookPresenter.jsBytes);
-		CommonAssets.put("markloader.js", BookPresenter.markJsLoader);
+		//CommonAssets.put("SUBPAGE.js", BookPresenter.jsBytes);
+		//CommonAssets.put("markloader.js", BookPresenter.markJsLoader);
 		CommonAssets.put("dk.js", DarkModeIncantation.getBytes());
-		CommonAssetsStr.put("tapTrans.js", BookPresenter.tapTranslateLoader);
+		//CommonAssetsStr.put("tapTrans.js", BookPresenter.tapTranslateLoader);
 	}
 	
 	public InputStream loadCommonAsset(String key) throws IOException {
@@ -9626,6 +9625,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			input.read(data);
 			CommonAssets.put(key, data);
 		}
+		CMN.Log(new String(data), data.length);
 		return new ByteArrayInputStream(data);
 	}
 	
@@ -10325,5 +10325,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(index>=0 && index<2)
 			ret = transVals[index];
 		return ret==null?"zh-CN":ret;//"zh-CN";
+	}
+	
+	String tw1StrP;
+	public boolean storeLv1(String text) {
+		if ((tw1F&0x1)!=0) {
+			if((tw1F&0x2)==0) {
+				tw1StrP = mdict.processText(etSearch.getText());
+				tw1F|=0x2;
+			}
+			if(mdict.processText(text).equals(tw1StrP)) {
+				tw1F&=~0x1;
+				return true;
+			}
+		}
+		return false;
 	}
 }

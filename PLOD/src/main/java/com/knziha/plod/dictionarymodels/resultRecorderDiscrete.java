@@ -57,7 +57,7 @@ public class resultRecorderDiscrete {
 		return true;
 	}
 	
-	public void insertSearchKeyIfNeeded(MainActivityUIBase a) {
-	
+	public boolean addHistoryIfNeeded(MainActivityUIBase a) {
+		return false;
 	}
 }

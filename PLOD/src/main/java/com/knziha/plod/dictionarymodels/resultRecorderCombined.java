@@ -112,7 +112,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		CMN.Log("renderContentAt::", pos, weblistHandler.bMergeFrames, weblistHandler.bMergingFrames, weblistHandler.getChildCount());
 		scrollTarget=null;
 		final ScrollView sv = (ScrollView) weblistHandler.getScrollView();
-		toHighLight=a.hasCurrentPageKey();
+		toHighLight=weblistHandler.hasPageKey();
 //		if(toHighLight || expectedPos==0)
 //			sv.scrollTo(0, 0);
 //		else{
@@ -252,7 +252,6 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 					mdtmp.mWebView.setLayerType(View.LAYER_TYPE_NONE, null);
 				*/
 				//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-				mWebView.setTag(R.id.toolbar_action5, i==0&&toHighLight?false:null);
 				mWebView.fromCombined=weblistHandler.isViewSingle()?0:1;
 				if(presenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
 				{
@@ -346,10 +345,12 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		scrolled=false;
 	}
 	
-	public void insertSearchKeyIfNeeded(MainActivityUIBase a) {
+	public boolean addHistoryIfNeeded(MainActivityUIBase a) {
 		if(!searchKeyInserted) {
 			a.prepareHistoryCon().updateHistoryTerm(a, searchKey, null, a.thisActType==MainActivityUIBase.ActType.PlainDict?128:129);
 			searchKeyInserted=true;
+			return true;
 		}
+		return false;
 	}
 }

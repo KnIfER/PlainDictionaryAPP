@@ -787,7 +787,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 		init_clickspan_with_bits_at(tv, ssb, DictOpt, 11, Coef, 0, 0, 0x1, 10, 1, 1, 23, true);//opt.getShowFScroll()//始终以搜索框内容为搜索词
 		ssb.delete(ssb.length()-4,ssb.length()); ssb.append("  ");
-		init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 54, 1, 3, 24, true);//opt.getPeruseInPageSearchVisible()//
+		init_clickspan_with_bits_at(tv, ssb, DictOpt, 6, Coef, 0, 0, 0x1, 54, 1, 3, 24, true);//opt.schPageFye()//
 
 
 		ssb.delete(ssb.length()-4,ssb.length());
@@ -932,7 +932,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 //		rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 //		mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 
-		if(opt.getPeruseInPageSearchVisible()){
+		if(opt.schPageFye()){
 			toggleInPageSearch(false);
 		}
 	}
@@ -1029,7 +1029,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 //				mWebView.evaluateJavascript("clearHighlights()", null);
 //				InPageSearchbar.setTag(null);
 //			}
-//			opt.setPeruseInPageSearchVisible(b1);
+//			opt.schPageFye(b1);
 //			//PerusePageSearchbar.post(() -> RecalibrateContentSnacker(opt.isContentBow()));
 //		}
 	}
@@ -1180,9 +1180,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	//todo optimise
 	private void DetachContentView(MainActivityUIBase a) {
 		if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
-				 PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
-				&& (PDICMainAppOptions.getHistoryStrategy8() == 2)){
-			a.insertUpdate_histroy(mWebView.word, 0, contentUIData.webSingleholder);
+				 PDICMainAppOptions.storeClick() && !PDICMainAppOptions.storeNothing()
+				&& (PDICMainAppOptions.storePageTurn() == 2)){
+			a.addHistroy(mWebView.word, 0, contentUIData.webSingleholder);
 		}
 		((ViewGroup)contentview.getParent()).removeView(contentview);
 	}
@@ -1878,9 +1878,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			//voyager[SelectedV*3+2]=pos;
 			a.decorateContentviewByKey(contentUIData.browserWidget8, currentKeyText);
 			if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
-					PDICMainAppOptions.getHistoryStrategy4() && !PDICMainAppOptions.getHistoryStrategy0()
-					&& (!ismachineClick || PDICMainAppOptions.getHistoryStrategy8() == 0)){
-				a.insertUpdate_histroy(currentKeyText, 0, contentUIData.webSingleholder);
+					PDICMainAppOptions.storeClick() && !PDICMainAppOptions.storeNothing()
+					&& (!ismachineClick || PDICMainAppOptions.storePageTurn() == 0)){
+				a.addHistroy(currentKeyText, 0, contentUIData.webSingleholder);
 			}
 	
 			resetBottomBar();

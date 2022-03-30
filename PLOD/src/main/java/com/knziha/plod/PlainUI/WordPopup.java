@@ -1002,9 +1002,9 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				harvest();
 			}
 			
-			if (!PDICMainAppOptions.getHistoryStrategy0()
+			if (!PDICMainAppOptions.storeNothing()
 					&& PDICMainAppOptions.getHistoryStrategy7())
-				a.insertUpdate_histroy(popupKey, 0, pageSlider);
+				a.addHistroy(popupKey, 0, pageSlider);
 		}
 	}
 	

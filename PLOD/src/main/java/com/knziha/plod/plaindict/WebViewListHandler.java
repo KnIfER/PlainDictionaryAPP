@@ -863,6 +863,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		});
 	}
 	
+	public boolean hasPageKey() {
+		return ViewUtils.isVisibleV2(MainPageSearchbar) && TextUtils.getTrimmedLength(MainPageSearchetSearch.getText())>0;
+	}
+	
+	/** 页面加载完成后，是否自动开始执行页内搜索，并跳转至第一处高亮。 */
+	public boolean schPage(WebViewmy mWebView) {
+		return hasPageKey() && (isViewSingle() || mWebView==webholder.getChildAt(0));
+	}
+	
 	public static class HighlightVagranter {
 		ViewGroup webviewHolder;
 		int HlightIdx;
@@ -1054,7 +1063,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	void toggleInPageSearch(boolean isLongClicked) {
+	void togSchPage(boolean isLongClicked) {
 		final HighlightVagranter hData = getHData();
 		hData.HlightIdx =
 		hData.AcrArivAcc = 0;
@@ -1070,7 +1079,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				EditText etSearch = searchbar.findViewById(R.id.etSearch);
 				//etSearch.setBackgroundColor(Color.TRANSPARENT);
 				searchbar.setNavigationOnClickListener(v1 -> {
-					toggleInPageSearch(false);
+					togSchPage(false);
 					if (etSearch.hasFocus())
 						a.imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
 					a.fadeSnack();
@@ -1082,8 +1091,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					@Override
 					public void afterTextChanged(Editable s) {
 						String text = etSearch.getText().toString().replace("\\", "\\\\");
-						HiFiJumpRequested=PDICMainAppOptions.getPageAutoScrollOnType();
-						SearchInPage(text);
+						HiFiJumpRequested=PDICMainAppOptions.schPageAutoType();
+						SearchOnPage(text);
 					}
 				});
 				
@@ -1126,7 +1135,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				contentviewAddView(searchbar, 0);
 				searchbar.findViewById(R.id.etSearch).requestFocus();
 				searchbar.setTag(MainPageSearchetSearch.getText());
-				SearchInPage(null);
+				SearchOnPage(null);
 			}
 			else {
 				ViewUtils.removeView(searchbar);
@@ -1135,10 +1144,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			
 			if(a.thisActType==MainActivityUIBase.ActType.PlainDict)
-				a.opt.setInPageSearchVisible(b1);
-			else{
-				PDICMainAppOptions.setInFloatPageSearchVisible(b1);
-			}
+				a.opt.schPage(b1);
+			else
+				PDICMainAppOptions.schPageFlt(b1);
 		}
 	}
 	
@@ -1167,20 +1175,20 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	void SearchInPage(String text) {
+	void SearchOnPage(String text) {
 		final HighlightVagranter hData = getHData();
-		ViewGroup webviewHolder = hData.webviewHolder;
+		ViewGroup vg = hData.webviewHolder;
 		{
 			if(text!=null)
 				try {
 					text=true?text: URLEncoder.encode(text,"utf8");
 				} catch (UnsupportedEncodingException ignored) { }
 			String val = text==null?"_highlight(null)":"_highlight(\""+ text.replace("\"","\\\"")+"\")";
-			if(webviewHolder!=null){
-				int cc = webviewHolder.getChildCount();
+			if(vg!=null){
+				int cc = vg.getChildCount();
 				for (int i = 0; i < cc; i++) {
-					if(webviewHolder.getChildAt(i) instanceof LinearLayout){
-						ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(i);
+					if(vg.getChildAt(i) instanceof LinearLayout){
+						ViewGroup webHolder = (ViewGroup) vg.getChildAt(i);
 						if(webHolder.getChildAt(1) instanceof WebView){
 							((WebView)webHolder.getChildAt(1))
 									.evaluateJavascript(val,null);

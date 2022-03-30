@@ -14,6 +14,7 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.widgets.WebViewmy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -192,16 +193,22 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 				presenter.initViewsHolder(a);
 				float desiredScale = a.prepareSingleWebviewForAda(presenter, null, pos, ADA);
 				
-				ViewUtils.addViewToParentUnique(presenter.rl, a.webSingleholder);
+				boolean bUseDictView = presenter.bookImpl.hasVirtualIndex();
+				WebViewmy mWebView;
+				if(bUseDictView) {
+					presenter.initViewsHolder(a);
+					mWebView = presenter.mWebView;
+				} else {
+					mWebView = weblistHandler.getMergedFrame();
+				}
 				
-				presenter.mWebView.weblistHandler = weblistHandler;
-				//todododo jcabjsahcbshjaccheck
-				//todododo jcabjsahcbshjaccheck
-				//todododo jcabjsahcbshjaccheck
-				presenter.renderContentAt(desiredScale, BookPresenter.RENDERFLAG_NEW ,1 ,null , _combining_search_tree[ti].get((int) (pos-idxCount)).position);
-				presenter.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-				presenter.mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-				a.contentUIData.PageSlider.setIBC(presenter.mWebView, null);
+				ViewUtils.addViewToParentUnique(mWebView.rl, a.webSingleholder);
+				
+				mWebView.weblistHandler = weblistHandler;
+				presenter.renderContentAt(desiredScale, BookPresenter.RENDERFLAG_NEW ,1 , mWebView , _combining_search_tree[ti].get((int) (pos-idxCount)).position);
+//				presenter.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+//				mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+				a.contentUIData.PageSlider.setIBC(mWebView, null);
 				return;
 			}
 			idxCount+=max;

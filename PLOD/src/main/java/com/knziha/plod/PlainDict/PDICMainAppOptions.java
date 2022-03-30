@@ -926,14 +926,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	/* forbid all history recording */
-	public static boolean getHistoryStrategy0() {
-		return (SecondFlag & 0x200) == 0x200;
-	}
-	public static boolean setHistoryStrategy0(boolean val) {
-		updateSFAt(0x200,val);
-		return val;
-	}
-
+	@Metaline(flagPos=10) public static boolean storeNothing(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=10) public static void storeNothing(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	
+	
+	
 	/** 记录各种查询 */
 	public static boolean getHistoryStrategy1() {
 		return (SecondFlag & 0x400) != 0x400;
@@ -963,15 +960,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 //	}
 
 	/** 记录各种点击 */
-	public static boolean getHistoryStrategy4() {
-		return (SecondFlag & 0x2000) != 0x2000;
-	}
+	@Metaline(flagPos=14, shift=1) public static boolean storeClick(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=14, shift=1) public static void storeClick(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 
-	public static boolean setHistoryStrategy4(boolean val) {
-		updateSFAt(0x2000,!val);
-		return val;
-	}
-	
+
 //	public static boolean getHistoryStrategy5() {
 ////		return (SecondFlag & 0x4000) != 0x4000;
 ////	}
@@ -1001,17 +993,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	/** @return integer 0=always record; 1=don't record; 2=record on exit<br><br>default to 2*/
-	public static int getHistoryStrategy8() {
-		return (int) ((((SecondFlag >> 17) & 3)+2)%3);
-	}
-
-	public static int setHistoryStrategy8(int val) {
-		SecondFlag = SecondFlag&(~0x20000l)&(~0x40000l)|(long)((((val+1)%3)&3) << 17);
-		return val;
-	}
-
-
-
+	@Metaline(flagPos=18, flagSize=2, shift=2, max=2) public static int storePageTurn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=18, flagSize=2, shift=2, max=2) public static void storePageTurn(int val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	
+	
+	
+	
 	//start crash handler settings
 	public boolean getUseCustomCrashCatcher() {
 		return true;//(SecondFlag & 0x80000l) == 0x80000l;
@@ -1179,14 +1166,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return (SecondFlag & 0x80000000000l) != 0x80000000000l;
 	}
 
-	public boolean getInPageSearchVisible() {
-		return (SecondFlag & 0x100000000000l) == 0x100000000000l;
-	}
-	public boolean setInPageSearchVisible(boolean val) {
-		updateSFAt(0x100000000000l,val);
-		return val;
-	}
-
+//	public boolean getInPageSearchVisible() {
+//	public boolean setInPageSearchVisible(boolean val) { 0x100000000000l
+	@Metaline(flagPos=44) public boolean schPage(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=44) public void schPage(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	
+	
+	
+	
 	public static boolean getUseRegex1() {
 		return (SecondFlag & 0x200000000000l) == 0x200000000000l;
 	}
@@ -1284,23 +1271,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-
-	public static boolean getPageAutoScrollOnTurnPage() {
-		return (SecondFlag & 0x80000000000000l) != 0x80000000000000l;
-	}
-	public static boolean setPageAutoScrollOnTurnPage(boolean val) {
-		updateSFAt(0x80000000000000l,!val);
-		return val;
-	}
-
-	public static boolean getPageAutoScrollOnType() {
-		return (SecondFlag & 0x100000000000000l) == 0x100000000000000l;
-	}
-	public static boolean setPageAutoScrollOnType(boolean val) {
-		updateSFAt(0x100000000000000l,val);
-		return val;
-	}
-
+	@Metaline(flagPos=56, shift=1) public static boolean schPageAutoTurn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=56, shift=1) public static void schPageAutoTurn(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=57, shift=1) public static boolean schPageAutoType(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=57, shift=1) public static void schPageAutoType(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	
 	public static boolean getInPageSearchAutoHideKeyboard() {
 		return (SecondFlag & 0x200000000000000l) != 0x200000000000000l;
 	}
@@ -1440,14 +1415,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	public static boolean getInFloatPageSearchVisible() {
-		return (ThirdFlag & 0x100l) == 0x100l;
-	}
-
-	public static boolean setInFloatPageSearchVisible(boolean val) {
-		updateTFAt(0x100l,val);
-		return val;
-	}
+	@Metaline(flagPos=9) public static boolean schPageFlt(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=9) public static void schPageFlt(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 
 	public static boolean getDoubleClickMaximizeClickSearch() {
 		return false;//(ThirdFlag & 0x200l) != 0x200l;
@@ -1794,14 +1763,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	public boolean getPeruseInPageSearchVisible() {
-		return (ThirdFlag & 0x40000000000000l) == 0x40000000000000l;
-	}
-	public boolean setPeruseInPageSearchVisible(boolean val) {
-		updateTFAt(0x40000000000000l,val);
-		return val;
-	}
-
+	@Metaline(flagPos=55) public boolean schPageFye(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=55) public void schPageFye(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	
+	
 	public boolean getPeruseTextSelectable() {
 		return (ThirdFlag & 0x80000000000000l) == 0x80000000000000l;
 	}

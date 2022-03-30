@@ -17,9 +17,9 @@ public class HistoryPreference extends SettingsFragmentBase implements Preferenc
 	public void onCreate(Bundle savedInstanceState) {
 		mPreferenceId = R.xml.pref_history;
 		super.onCreate(savedInstanceState);
-		init_switch_preference(this, "rc_nothing", PDICMainAppOptions.getHistoryStrategy0(), null, null);
+		init_switch_preference(this, "rc_nothing", PDICMainAppOptions.storeNothing(), null, null);
 		
-		init_switch_preference(this, "rc_click", PDICMainAppOptions.getHistoryStrategy4(), null, null);
+		init_switch_preference(this, "rc_click", PDICMainAppOptions.storeClick(), null, null);
 		
 		init_switch_preference(this, "rc_query", PDICMainAppOptions.getHistoryStrategy1(), null, null);
 		
@@ -27,7 +27,7 @@ public class HistoryPreference extends SettingsFragmentBase implements Preferenc
 		
 		init_switch_preference(this, "rc_float_pop", PDICMainAppOptions.getHistoryStrategy7(), null, null);
 		
-		init_number_info_preference(this, "rc_slide", PDICMainAppOptions.getHistoryStrategy8(), R.array.record_slide_info, null);
+		init_number_info_preference(this, "rc_slide", PDICMainAppOptions.storePageTurn(), R.array.record_slide_info, null);
 	}
 	
 	@Override
@@ -40,11 +40,11 @@ public class HistoryPreference extends SettingsFragmentBase implements Preferenc
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		switch (preference.getKey()){
 			case "rc_nothing":
-				PDICMainAppOptions.setHistoryStrategy0((Boolean) newValue);
+				PDICMainAppOptions.storeNothing((Boolean) newValue);
 			break;
 			/* 记录各种点击 */
 			case "rc_click":
-				PDICMainAppOptions.setHistoryStrategy4((Boolean) newValue);
+				PDICMainAppOptions.storeClick((Boolean) newValue);
 			break;
 			/* 记录各种查询 */
 			case "rc_query":
@@ -60,7 +60,7 @@ public class HistoryPreference extends SettingsFragmentBase implements Preferenc
 			break;
 			case "rc_slide":
 				int val = IU.parsint(newValue);
-				PDICMainAppOptions.setHistoryStrategy8(val);
+				PDICMainAppOptions.storePageTurn(val);
 			break;
 		}
 		return true;

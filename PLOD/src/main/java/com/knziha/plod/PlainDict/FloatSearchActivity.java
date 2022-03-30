@@ -387,8 +387,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
         main = main_succinct;
 		contentUIData.webcontentlister.scrollbar2guard = contentUIData.dragScrollBar;
 
-		if(PDICMainAppOptions.getInFloatPageSearchVisible())
-			weblistHandler.toggleInPageSearch(false);
+		if(PDICMainAppOptions.schPageFlt())
+			weblistHandler.togSchPage(false);
     	
         lv.setAdapter(adaptermy = new ListViewAdapter(this, AllMenus, SingleContentMenu));
         lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, R.layout.listview_item1, 2));
@@ -701,7 +701,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				}
 			}
 		}
-		if(keytmp!=null && !PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy7()){
+		if(keytmp!=null && !PDICMainAppOptions.storeNothing() && PDICMainAppOptions.getHistoryStrategy7()){
 			prepareHistoryCon().insertUpdate(this, keytmp, null);
 		}
 
@@ -846,7 +846,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
             		showT("已收藏！");
             break;
             case R.id.toolbar_action5:
-				weblistHandler.toggleInPageSearch(ret=isLongClicked);
+				weblistHandler.togSchPage(ret=isLongClicked);
             break;
         }
 		if(closeMenu)
