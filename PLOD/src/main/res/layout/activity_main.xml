@@ -225,7 +225,7 @@
 					/>
 				<TextView
 					android:id="@+id/etEnter"
-					android:text="前往"
+					android:text="扫描"
 					android:drawableLeft="@drawable/abc_ic_go_search_api_material"
 					style="@style/SearchbarMenuTextStyle"
 					android:longClickable="true"
@@ -248,18 +248,11 @@
 					android:onClick="onClick"
 					/>
 				<ImageView
-					android:id="@+id/show_search_history_dropdown"
+					android:id="@+id/schDropdown"
 					android:layout_width="match_parent"
 					android:layout_height="28dp"
 					android:background="@drawable/frame_gradient_bgs"
 					android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
-					android:onClick="onClick"
-					/>
-				<com.knziha.plod.widgets.DanjiListView
-					android:id="@+id/search_hints"
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					tools:listitem="@layout/search_hints_item"
 					android:onClick="onClick"
 					/>
 			</FrameLayout>

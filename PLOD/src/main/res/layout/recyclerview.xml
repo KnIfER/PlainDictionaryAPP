@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:background="@color/colorPrimary"
+	>
+	<androidx.recyclerview.widget.RecyclerView
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		tools:listitem="@layout/listview_item0"
+		app:fastScrollEnabled="true"
+		app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"
+		app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
+		app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
+		app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
+		/>
+
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom|center"
+		android:paddingBottom="3dp"
+		android:clickable="true"
+		>
+		<com.knziha.plod.widgets.CheckableImageView
+			android:id="@+id/backBtn"
+			android:layout_width="@dimen/_35_"
+			android:layout_height="@dimen/_35_"
+			android:layout_below="@+id/autoSchSw"
+			android:background="?attr/listChoiceBackgroundIndicator"
+			android:src="@drawable/back_ic"
+			android:padding="5dp"
+			android:foreground="@drawable/popup_background3__"
+			android:foregroundTint="#fff"
+			android:layout_marginRight="3dp"
+			/>
+		<com.knziha.plod.widgets.CheckableImageView
+			android:id="@+id/foldBtn"
+			android:layout_width="@dimen/_35_"
+			android:layout_height="@dimen/_35_"
+			android:layout_below="@+id/autoSchSw"
+			android:background="?attr/listChoiceBackgroundIndicator"
+			android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
+			android:padding="5dp"
+			android:foreground="@drawable/popup_background3__"
+			android:foregroundTint="#fff"
+			android:rotation="180"
+			/>
+
+	</LinearLayout>
+</FrameLayout>

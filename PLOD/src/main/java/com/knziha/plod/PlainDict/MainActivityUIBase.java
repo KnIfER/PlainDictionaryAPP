@@ -10059,7 +10059,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public View.OnClickListener mInterceptorListener;
 	public boolean mInterceptorListenerHandled;
 	
-	SearchbarTools searchbarTools;
+	SearchbarTools etTools;
 	
 	public void hideSettingsPanel(@NonNull SettingsPanel panel) {
 		if(settingsPanel==panel) {

@@ -339,5 +339,15 @@ the valueOf method.
 		return num;
 	}
 	
+	public static int bitCnt(int i)
+	{
+		int count = 0;
+		while(i!=0)
+		{
+			i &= (i - 1);
+			count++;
+		}
+		return count;
+	}
 	
 }

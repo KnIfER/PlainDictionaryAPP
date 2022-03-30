@@ -917,8 +917,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				DetachContentView(true);
 				return false;
 			}
-			if(searchbarTools.isVisible()) {
-				searchbarTools.dismiss();
+			if(etTools.isVisible()) {
+				etTools.dismiss();
 				return true;
 			}
 			if(!UIData.drawerLayout.isDrawerVisible(GravityCompat.START)) {
@@ -1023,12 +1023,22 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		ivDeleteText.setOnClickListener(this);
 		etSearch = UIData.etSearch;
 		// https://stackoverflow.com/questions/46004928/edittext-how-to-set-cliptopadding-to-false
-		if(Build.VERSION.SDK_INT<23) {
-			etSearch.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-		}
+		//if(Build.VERSION.SDK_INT<23)
+		etSearch.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // 不开可能崩溃、滑动recyclerview会卡顿
 		etSearch.setShadowLayer(etSearch.getPaddingRight(), 0f, 0f, Color.TRANSPARENT);
-		searchbarTools = new SearchbarTools(PDICMainActivity.this, etSearch, null);
+		etTools = new SearchbarTools(PDICMainActivity.this, etSearch, null);
 		super.findFurtherViews();
+		
+		
+		for (int i = 0; i < 1000; i++) {
+			etTools.addHistory("happy");
+			etTools.addHistory("1024");
+			etTools.addHistory("joy");
+			etTools.addHistory("fun");
+			etTools.addHistory("minecraft");
+			etTools.addHistory("duty");
+			etTools.addHistory("destiny of the huawei device");
+		}
 	}
 	
 	private int softMode;
@@ -1627,8 +1637,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}, 2500);
 		}
 		
+		
 		//tg
 		opt.setInPeruseMode(false);
+		
 		try {
 //			SSLContext sslcontext = SSLContext.getInstance("TLSv1");
 //			sslcontext.init(null, new TrustManager[]{new PlainWeb.MyX509TrustManager()}, new java.security.SecureRandom());
@@ -3050,8 +3062,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
 		MenuBuilder menu = mmi.mMenu;
 		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
-		if(searchbarTools.isVisible()) {
-			searchbarTools.dismiss();
+		if(etTools.isVisible()) {
+			etTools.dismiss();
 			return true;
 		}
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
