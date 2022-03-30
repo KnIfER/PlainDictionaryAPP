@@ -330,7 +330,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					root.postDelayed(execSearchRunnable, 150);
 				}
-//				if(searchbarTools!=null && true) searchbarTools.dismiss();
+				if(etTools.isVisible())
+					etTools.dismiss();
 			} else {
 				if(PDICMainAppOptions.getSimpleMode()) adaptermy.notifyDataSetChanged();
 				lv2.setVisibility(View.INVISIBLE);
@@ -3076,7 +3077,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void insertUpdate_histroy(String key, int source, ViewGroup webviewholder) {
 		if(TextUtils.getTrimmedLength(key)>0) {
 			lastInsertedKey = key.trim();
-			lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder, 0);
+			lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder, source);
+			if (source>=128) {
+				etTools.addHistory(lastInsertedKey);
+			}
 		}
 	}
 	

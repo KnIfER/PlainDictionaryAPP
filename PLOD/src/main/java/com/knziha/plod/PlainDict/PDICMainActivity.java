@@ -913,13 +913,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		mDrawerToggle.syncState();// 添加按钮
 		
 		toolbar.addNavigationOnClickListener((v,e) -> {
+			if(etTools.isVisible()) {
+				etTools.dismiss();
+				etTools.hideIM();
+				return false;
+			}
 			if(isContentViewAttached()) {
 				DetachContentView(true);
 				return false;
-			}
-			if(etTools.isVisible()) {
-				etTools.dismiss();
-				return true;
 			}
 			if(!UIData.drawerLayout.isDrawerVisible(GravityCompat.START)) {
 				onDrawerOpened();
@@ -1438,9 +1439,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				String key = etSearch.getText().toString().trim();
 				if(key.length()>0) Current0SearchText=key;
 				int tmp = viewPager.getCurrentItem();
+				if(etTools.isVisible()) {
+					etTools.dismiss();
+				}
 				if(tmp==0 || tmp==2) {
 					if(!PDICMainAppOptions.getHistoryStrategy0() /*&& PDICMainAppOptions.getHistoryStrategy1()*/)
-						insertUpdate_histroy(key, 2, null);
+						insertUpdate_histroy(key, 128+(tmp==0?1:2), null);
 					if(!checkDicts()) return true;
 					//模糊搜索 & 全文搜索
 					if(mAsyncTask!=null)
@@ -1450,7 +1454,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							:new FullSearchTask(PDICMainActivity.this)).execute(key);
 				} else {
 					if(!PDICMainAppOptions.getHistoryStrategy0() /*&& (PDICMainAppOptions.getHistoryStrategy2()&&isCombinedSearching|| PDICMainAppOptions.getHistoryStrategy3()&&!isCombinedSearching)*/)
-						insertUpdate_histroy(key, 2, null);
+						insertUpdate_histroy(key, 128, null);
 					if(key.length()>0)
 					{
 						if(!isCombinedSearching && currentDictionary.getType()==PLAIN_TYPE_WEB)
@@ -2517,6 +2521,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //					}
 				}
 			} break;
+			case R.id.multiline:
+				etTools.show();
+			break;
 			//切换搜索模式
 			case R.id.toolbar_action1:{
 				toggleJointSearch();
@@ -3057,15 +3064,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	@SuppressLint("ResourceType")
 	@Override
+	// menu
 	public boolean onMenuItemClick(MenuItem item) {
 		int id = item.getItemId();
+		if(etTools.isVisible()) {
+			etTools.dismiss();
+			if(id!=R.id.toolbar_action2)
+				return true;
+		}
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
 		MenuBuilder menu = mmi.mMenu;
 		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
-		if(etTools.isVisible()) {
-			etTools.dismiss();
-			return true;
-		}
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;

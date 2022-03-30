@@ -14,25 +14,22 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.SystemClock;
+import android.text.Editable;
 import android.text.TextUtils;
-import android.util.SparseArray;
+import android.text.style.ClickableSpan;
 import android.util.SparseIntArray;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.view.animation.LayoutAnimationController;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.knziha.plod.dictionary.Utils.IU;
@@ -56,6 +53,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	ArrayList<String> history = new ArrayList<>(1024);
 	int historyMax=512;
 	SparseIntArray hIdx = new SparseIntArray(1024);
+	private String lastTx;
 	
 	public void addHistory(String text) {
 		boolean ndp = true;
@@ -108,8 +106,12 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	}
 	
 	public String getHistoryAt(int pos) {
-		pos = history.size()-pos-1;
-		return history.get(pos);
+		try {
+			pos = history.size()-pos-1;
+			return history.get(pos);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 	
 	public int getHistorySz() {
@@ -141,13 +143,14 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			ActivityMainBinding uiData = a.UIData;
 			ViewUtils.setOnClickListenersOneDepth(uiData.etSearchBar, this, 999, 0, null);
 			settingsLayout = uiData.etSearchBar;
-			
+			flowBtn = uiData.toolbar.findViewById(R.id.action_menu_presenter);
+			drpBtn = uiData.schDropdown;
 			if(true) {
 				((ViewGroup)uiData.etBack.getParent()).setBackgroundColor(a.MainAppBackground);
 				fc = ColorUtils.blendARGB(Color.WHITE,a.MainBackground, 0.45f) & 0xf0ffffff;
 				uiData.etSearchBar.getChildAt(0).setBackgroundColor(fc);
 				uiData.etSearchBar.getChildAt(2).setBackgroundColor(fc);
-				LayerDrawable ld = (LayerDrawable)uiData.schDropdown.getBackground();
+				LayerDrawable ld = (LayerDrawable)drpBtn.getBackground();
 				PorterDuffColorFilter cf = new PorterDuffColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
 				for (int i = 0; i < ld.getNumberOfLayers()-1; i++) {
 					ld.getDrawable(i).setColorFilter(cf);
@@ -156,98 +159,13 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		}
 	}
 	
-	/** 0=始终关闭, 1=始终开启, 2=记忆 */
-	int bAutoDrpdn=0;
-	boolean drpdn;
-	
-	private boolean shouldOpenDrpDwn() {
-		return bAutoDrpdn==1 || bAutoDrpdn==2&&drpdn;
-	}
-	
-	@Override
-	public void refresh() {
-		if(shouldOpenDrpDwn()) {
-			initList();
-		} else if(ViewUtils.isVisibleV2(lv)) {
-			ViewUtils.setVisible(lv, false);
-		}
-		if (settingsLayout!=null) {
-//			ViewGroup.LayoutParams lp = settingsLayout.getLayoutParams();
-//			if(lp instanceof ViewGroup.MarginLayoutParams) {
-//				((ViewGroup.MarginLayoutParams) lp).topMargin = a.UIData.toolbar.getHeight();
-//			}
-			if (isDirty) {
-				mRecycler.getAdapter().notifyDataSetChanged();
-			}
-		}
-	}
-	
-	
-	static class ViewHolder extends RecyclerView.ViewHolder
-	{
-		public ViewHolder(View view)
-		{
-			super(view);
-		}
-	}
-	
-	@SuppressLint({"ResourceType", "NonConstantResourceId"})
-	@Override
-	public void onClick(View v) {
-		CMN.Log("onclick::", v);
-		if (v==etSearch) {
-			CMN.Log("click!!!"+etSearch.getScrollX());
-			if(etSearch.getScrollX()==etTouchScrollStart) {
-				if(!isVisible()) {
-					show();
-				}
-			}
-		}
-		else switch (v.getId()) {
-			case R.id.show_search_history_dropdown_bg:
-			case R.id.etBack:
-				dismiss();
-			break;
-			case R.id.etClear:
-				etSearch.setText("");
-				a.imm.showSoftInput(etSearch, 0);
-			break;
-			case R.id.etPaste:{
-				ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
-				if(cm!=null){
-					ClipData pclip = cm.getPrimaryClip();
-					ClipData.Item firstItem = pclip.getItemAt(0);
-					CharSequence content = firstItem.getText();
-					etSearch.setText(content);
-					etSearch.setSelection(content.length());
-				}
-			} break;
-			case R.id.etCopy:{
-				ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
-				if(cm!=null){
-					cm.setPrimaryClip(ClipData.newPlainText(null, etSearch.getText()));
-				}
-			} break;
-			case R.id.schDropdown:{
-				initList();
-				drpdn=true;
-			} break;
-		}
-//			if (v.getId() != R.drawable.ic_menu_24dp) {
-//				a.mInterceptorListenerHandled = true;
-//			}
-	}
-	
-	private void show() {
-		toggle(rootView!=null?rootView:PDICMainAppOptions.getEnableSuperImmersiveScrollMode()?a.UIData.webcoord:a.root, null, -1);
-		refresh();
-	}
-	
 	private void initList() {
 		ActivityMainBinding uiData = a.UIData;
 		if (mRecycler==null) {
 			lv = (ViewGroup) a.getLayoutInflater().inflate(R.layout.recyclerview, a.root, false);
 			RecyclerView rv = (RecyclerView) lv.getChildAt(0);
+			View backBtn = lv.findViewById(R.id.etBack);
+			ViewUtils.setOnClickListenersOneDepth((ViewGroup) backBtn.getParent(), this, 1, 0, null);
 			int spanSz = 3;
 			GridLayoutManager lm = new GridLayoutManager(a, spanSz);
 			rv.setLayoutManager(lm);
@@ -299,6 +217,16 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				}
 			});
 			int pad = (int) (9.5*GlobalOptions.density);
+			View.OnClickListener vc = v -> {
+				RecyclerView.ViewHolder vh = (RecyclerView.ViewHolder) v.getTag(R.id.views_holder);
+				String text = getHistoryAt(vh.getLayoutPosition());
+				if (text!=null){
+					etSearch.setText(text);
+					etSearch.setSelection(text.length());
+					//hideIM();
+					dismiss();
+				}
+			};
 			rv.setAdapter(new RecyclerView.Adapter() {
 				@NonNull @Override
 				public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -314,20 +242,21 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					RecyclerView.ViewHolder ret = new ViewHolder(tv);
 					tv.setBackground(draw.getConstantState().newDrawable());
 					tv.setClickable(true);
+					tv.setTag((Runnable) () -> {
+						if (tv.getLineCount()>1)
+							tv.setTextSize(GlobalOptions.isLarge?17:15);
+						else
+							tv.setTextSize(GlobalOptions.isLarge?19:17);
+					});
+					tv.setTag(R.id.views_holder, ret);
+					tv.setOnClickListener(vc);
 					return ret;
 				}
 				@Override
 				public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 					TextView tv = ((TextView)holder.itemView);
-					tv.setTextSize(GlobalOptions.isLarge?19:17);
 					tv.setText(getHistoryAt(position));
-					tv.post(new Runnable() {
-						@Override
-						public void run() {
-							if (tv.getLineCount()>1)
-								tv.setTextSize(GlobalOptions.isLarge?17:15);
-						}
-					});
+					tv.post((Runnable) tv.getTag());
 				}
 				@Override
 				public int getItemCount() {
@@ -336,13 +265,13 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			});
 			//rv.setOverScrollMode(View.OVER_SCROLL_NEVER);
 			//rv.setPadding(0, (int) (GlobalOptions.density*8),0,0);
-			ViewUtils.addViewToParent(lv, (ViewGroup) uiData.schDropdown.getParent());
+			ViewUtils.addViewToParent(lv, (ViewGroup) drpBtn.getParent());
 			lv.setBackgroundColor(a.MainAppBackground);
 			lv.setPadding(pad/4,0,pad/4,0);
 			lv.getLayoutParams().height=-2;
 			mRecycler = rv;
 		}
-		//uiData.etSearch.setVisibility(View.INVISIBLE);
+		ViewUtils.setVisible(drpBtn, false);
 		if (!ViewUtils.isVisible(lv)) {
 			ViewUtils.setVisible(lv, true);
 		}
@@ -351,19 +280,135 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		}
 	}
 	
-	@Override
-	protected void onDismiss() {
-		CMN.Log("onDismiss::");
-		super.onDismiss();
+	public void hideIM() {
 		a.imm.hideSoftInputFromWindow(a.UIData.etSearch.getWindowToken(),0);
-		if (!shouldOpenDrpDwn() && ViewUtils.isVisibleV2(lv)) {
+	}
+	
+	/** 0=始终关闭, 1=始终开启, 2=记忆 */
+	int bAutoDrpdn=2;
+	boolean drpdn;
+	View drpBtn;
+	
+	private boolean shouldOpenDrpDwn() {
+		return bAutoDrpdn==1 || bAutoDrpdn==2&&drpdn;
+	}
+	
+	@Override
+	public void refresh() {
+		if(shouldOpenDrpDwn()) {
+			initList();
+		} else if(ViewUtils.isVisibleV2(lv)) {
 			ViewUtils.setVisible(lv, false);
+		}
+		if (settingsLayout!=null) {
+//			ViewGroup.LayoutParams lp = settingsLayout.getLayoutParams();
+//			if(lp instanceof ViewGroup.MarginLayoutParams) {
+//				((ViewGroup.MarginLayoutParams) lp).topMargin = a.UIData.toolbar.getHeight();
+//			}
+			if (isDirty) {
+				mRecycler.getAdapter().notifyDataSetChanged();
+			}
 		}
 	}
 	
-	int etTouchScrollStart;
+	
+	static class ViewHolder extends RecyclerView.ViewHolder
+	{
+		public ViewHolder(View view)
+		{
+			super(view);
+		}
+	}
+	
+	@SuppressLint({"ResourceType", "NonConstantResourceId"})
+	@Override
+	// click
+	public void onClick(View v) {
+		CMN.Log("onclick::", v);
+		if (v==etSearch) {
+			CMN.Log("click!!!"+etSearch.getScrollX());
+			if(etSearch.getScrollX()== etScrollStart) {
+				if(!isVisible()) {
+					show();
+				}
+			}
+		}
+		else switch (v.getId()) {
+			case R.id.show_search_history_dropdown_bg:
+			case R.id.etBack:
+			case R.id.action_menu_presenter:
+				hideIM();
+				dismiss();
+			break;
+			case R.id.foldBtn:
+				ViewUtils.setVisibleV2(lv, false);
+				ViewUtils.setVisible(drpBtn, true);
+				drpdn = false;
+			break;
+			case R.id.etClear:{
+				Editable tx = etSearch.getText();
+				if(TextUtils.getTrimmedLength(tx)>0) {
+					lastTx = tx.toString();
+				}
+				etSearch.setText("");
+				a.imm.showSoftInput(etSearch, 0);
+			} break;
+			case R.id.etPaste:{
+				ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
+				if(cm!=null) {
+					ClipData pclip = cm.getPrimaryClip();
+					ClipData.Item firstItem = pclip.getItemAt(0);
+					CharSequence content = firstItem.getText();
+					etSearch.setText(content);
+					etSearch.setSelection(content.length());
+				}
+			} break;
+			case R.id.etCopy:{
+				CharSequence tx = etSearch.getText();
+				if(TextUtils.getTrimmedLength(tx)>0) {
+					ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
+					if(cm!=null){
+						cm.setPrimaryClip(ClipData.newPlainText(null, tx));
+					}
+				} else {
+					etSearch.setText(lastTx);
+				}
+			} break;
+			case R.id.schDropdown:{
+				initList();
+				drpdn=true;
+			} break;
+		}
+//			if (v.getId() != R.drawable.ic_menu_24dp) {
+//				a.mInterceptorListenerHandled = true;
+//			}
+	}
+	
+	public void show() {
+		if (!isVisible()) {
+			toggle(rootView!=null?rootView:PDICMainAppOptions.getEnableSuperImmersiveScrollMode()?a.UIData.webcoord:a.root, null, -1);
+			refresh();
+		}
+	}
+	
+	@Override
+	protected void onShow() {
+		flowBtn.setOnClickListener(this);
+	}
+	
+	@Override
+	protected void onDismiss() {
+		super.onDismiss();
+		if (!shouldOpenDrpDwn() && ViewUtils.isVisibleV2(lv)) {
+			ViewUtils.setVisible(lv, false);
+		}
+		flowBtn.setOnClickListener(null);
+	}
+	
+	int etScrollStart;
 	long checkNxtFocus = 0;
 	EditText etSearch;
+	View flowBtn;
 //	public void setEt(EditText etSearch, ViewGroup rv) {
 //		this.etSearch=etSearch;
 //		this.rootView=rv;
@@ -374,9 +419,9 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		if(event.getActionMasked()==MotionEvent.ACTION_DOWN) {
-			etTouchScrollStart = etSearch.getScrollX();
+			etScrollStart = etSearch.getScrollX();
 			checkNxtFocus = event.getEventTime();
-			CMN.Log("touch!!!"+etTouchScrollStart);
+			CMN.Log("touch!!!"+ etScrollStart);
 		}
 		return false;
 	}

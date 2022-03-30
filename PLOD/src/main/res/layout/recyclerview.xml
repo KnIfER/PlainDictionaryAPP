@@ -26,7 +26,7 @@
 		android:clickable="true"
 		>
 		<com.knziha.plod.widgets.CheckableImageView
-			android:id="@+id/backBtn"
+			android:id="@+id/etBack"
 			android:layout_width="@dimen/_35_"
 			android:layout_height="@dimen/_35_"
 			android:layout_below="@+id/autoSchSw"
