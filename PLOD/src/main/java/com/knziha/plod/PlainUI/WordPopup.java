@@ -1,6 +1,6 @@
 package com.knziha.plod.PlainUI;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static com.knziha.plod.PlainUI.WordPopupTask.*;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 
 import android.annotation.SuppressLint;
@@ -188,7 +188,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)){
 					try {
 						if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
-							startSearchTask(id==R.id.popNxtDict?2:1);
+							startTask(id==R.id.popNxtDict?TASK_POP_NAV_NXT:TASK_POP_NAV);
 						}
 						else if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
 							weblistHandler.bMergingFrames = true;
@@ -295,7 +295,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 						}, 0, (dialog, which) -> {
 							opt.tapSchMode(schMode = which%2);
 							modeBtn.setImageResource(schMode==0?R.drawable.ic_btn_siglemode:R.drawable.ic_btn_multimode);
-							startSearchTask(0);
+							startTask(WordPopupTask.TASK_POP_SCH);
 							dialog.dismiss();
 						})
 						.setTitle("切换搜索模式").create();
@@ -525,10 +525,10 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		
 		//SearchOne(task, taskVer, taskVersion);
 		
-		startSearchTask(0);
+		startTask(TASK_POP_SCH);
 	}
 	
-	private void startSearchTask(int type) {
+	public void startTask(int type) {
 		if(!wordPopupTask.start(type)) {
 			wordPopupTask.stop();
 			wordPopupTask = new WordPopupTask(this);
@@ -568,10 +568,11 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				ViewUtils.addViewToParent(pottombar, popupContentView);
 				((CoordinatorLayout.LayoutParams) pottombar.getLayoutParams()).gravity = Gravity.BOTTOM;
 				((CoordinatorLayout.LayoutParams) pottombar.getLayoutParams()).setBehavior(new BottomNavigationBehavior(popupContentView.getContext(), null));
-				((CoordinatorLayout.LayoutParams) cv.getLayoutParams()).setBehavior(new AppBarLayout.ScrollingViewBehavior(popupContentView.getContext(), null));
-				((CoordinatorLayout.LayoutParams) cv.getLayoutParams()).height = MATCH_PARENT;
-				((CoordinatorLayout.LayoutParams) cv.getLayoutParams()).topMargin = 0;
-				((CoordinatorLayout.LayoutParams) cv.getLayoutParams()).bottomMargin = 0;
+				CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) cv.getLayoutParams();
+				lp.setBehavior(new AppBarLayout.ScrollingViewBehavior(popupContentView.getContext(), null));
+				lp.height = CoordinatorLayout.LayoutParams.MATCH_PARENT;
+				lp.topMargin = 0;
+				lp.bottomMargin = 0;
 				((AppBarLayout.LayoutParams) toolbar.getLayoutParams()).setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS | AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP);
 			} else {
 				popupContentView = (popupCmnCloth != null && popupCmnCloth.get() != null) ? popupCmnCloth.get()
@@ -1080,13 +1081,15 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	}
 	
 	public void PerformSearch(int mType, AtomicBoolean task, int taskVer, AtomicInteger taskVersion) {
-		if(mType==0)
+		if(mType==TASK_POP_SCH)
 			if(schMode==0) SearchOne(task, taskVer, taskVersion);
 			else SearchMultiple(task, taskVer, taskVersion);
-		else if(mType==1)
+		else if(mType==TASK_POP_NAV)
 			SearchNxt(false, task, taskVer, taskVersion);
-		else if(mType==2)
+		else if(mType==TASK_POP_NAV_NXT)
 			SearchNxt(true, task, taskVer, taskVersion);
+		else if(mType==TASK_LOAD_HISTORY && a.etTools!=null)
+			a.etTools.LoadHistory(task);
 	}
 	
 	@Override

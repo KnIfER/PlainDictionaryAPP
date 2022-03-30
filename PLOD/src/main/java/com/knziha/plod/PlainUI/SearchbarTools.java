@@ -5,6 +5,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -13,10 +14,10 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.CancellationSignal;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextUtils;
-import android.text.style.ClickableSpan;
 import android.util.SparseIntArray;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -32,6 +33,7 @@ import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -41,6 +43,8 @@ import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SearchbarTools extends PlainAppPanel implements View.OnTouchListener, View.OnFocusChangeListener {
 	protected PDICMainActivity a;
@@ -48,42 +52,56 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	private int fc;
 	ViewGroup lv;
 	private RecyclerView mRecycler;
+	private RecyclerView.Adapter mAdapter;
 	private boolean isDirty;
-
-	ArrayList<String> history = new ArrayList<>(1024);
-	int historyMax=512;
-	SparseIntArray hIdx = new SparseIntArray(1024);
+	private boolean loaded;
+	
+	/** 清空文本前记录一下。 */
 	private String lastTx;
 	
+	/** 搜索记录，是动态记载与数据库结合。数据库只在开始时加载一次。 */
+	ArrayList<String> history = new ArrayList<>(1024);
+	/** 搜索记录最大条目数。 */
+	int historyMax=512;
+	/** 搜索记录的Hash索引计数。 */
+	SparseIntArray hIdx = new SparseIntArray(1024);
+	
+	/** 添加搜索记录。 */
 	public void addHistory(String text) {
-		boolean ndp = true;
 		int rmIdx = -1;
-		if (ndp) {
-			int ln=text.length();
-			int hash = (ln<<(32-IU.bitCnt(ln)))|text.hashCode();
-			int cnt = hIdx.get(hash);
-			if (cnt<0) {
-				hIdx.put(hash, 1);
-			} else {
-				rmIdx = history.lastIndexOf(text);
-				if(rmIdx<0)
-					hIdx.put(hash, cnt+1);
+		if (text!=null) {
+			boolean ndp = true;
+			if (ndp) {
+				int ln=text.length();
+				int hash = (ln<<(32-IU.bitCnt(ln)))|text.hashCode();
+				int cnt = hIdx.get(hash);
+				if (cnt<0) {
+					hIdx.put(hash, 1);
+				} else {
+					rmIdx = history.lastIndexOf(text);
+					if(rmIdx<0)
+						hIdx.put(hash, cnt+1);
+				}
 			}
-		}
-		if (rmIdx>0)
-			history.remove(rmIdx);
-		history.add(text);
-		if (history.size()>historyMax*2) {
-			history.subList(0, history.size()-historyMax).clear();
-		} else if(ndp) {
-			untrackDp();
-		}
-		if (mRecycler != null) {
-			if (isVisible()) {
-				//mRecycler.getAdapter().notifyItemInserted(0);
-				mRecycler.getAdapter().notifyDataSetChanged();
-			} else {
-				isDirty = true;
+			if (rmIdx>0)
+				history.remove(rmIdx);
+			history.add(text);
+			if (history.size()>historyMax*2) {
+				history.subList(0, history.size()-historyMax).clear();
+			} else if(ndp) {
+				untrackDp();
+			}
+			if (mAdapter != null) {
+				if (isVisible()) {
+					if (rmIdx>=0) {
+						mAdapter.notifyItemMoved(history.size()-2-rmIdx, 0);
+					} else {
+						mAdapter.notifyItemInserted(0);
+					}
+					//mAdapter.notifyDataSetChanged();
+				} else {
+					isDirty = true;
+				}
 			}
 		}
 	}
@@ -160,7 +178,6 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	}
 	
 	private void initList() {
-		ActivityMainBinding uiData = a.UIData;
 		if (mRecycler==null) {
 			lv = (ViewGroup) a.getLayoutInflater().inflate(R.layout.recyclerview, a.root, false);
 			RecyclerView rv = (RecyclerView) lv.getChildAt(0);
@@ -223,11 +240,11 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				if (text!=null){
 					etSearch.setText(text);
 					etSearch.setSelection(text.length());
-					//hideIM();
+					hideIM();
 					dismiss();
 				}
 			};
-			rv.setAdapter(new RecyclerView.Adapter() {
+			rv.setAdapter(mAdapter=new RecyclerView.Adapter() {
 				@NonNull @Override
 				public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 					//CMN.Log("onCreateView!!!",CMN.now());
@@ -278,6 +295,19 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if(true) {
 			lv.setAnimation(AnimationUtils.loadAnimation(a, R.anim.item_animation_fall_down));
 		}
+		if(!loaded) {
+			loaded = true;
+			a.wordPopup.startTask(WordPopupTask.TASK_LOAD_HISTORY);
+		}
+		//for (int i = 0; i < 1000; i++) {
+		//	addHistory("happy");
+		//	addHistory("1024");
+		//	addHistory("joy");
+		//	addHistory("fun");
+		//	addHistory("minecraft");
+		//	addHistory("duty");
+		//	addHistory("destiny of the huawei device");
+		//}
 	}
 	
 	public void hideIM() {
@@ -300,14 +330,51 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		} else if(ViewUtils.isVisibleV2(lv)) {
 			ViewUtils.setVisible(lv, false);
 		}
-		if (settingsLayout!=null) {
-//			ViewGroup.LayoutParams lp = settingsLayout.getLayoutParams();
-//			if(lp instanceof ViewGroup.MarginLayoutParams) {
-//				((ViewGroup.MarginLayoutParams) lp).topMargin = a.UIData.toolbar.getHeight();
-//			}
-			if (isDirty) {
-				mRecycler.getAdapter().notifyDataSetChanged();
+		if (settingsLayout!=null && isDirty) {
+			mAdapter.notifyDataSetChanged();
+		}
+	}
+	
+	public void LoadHistory(AtomicBoolean task) {
+		CancellationSignal cs = new CancellationSignal();
+		a.root.postDelayed(cs::cancel, 250); // 防止过度读取
+		String[] items = null;
+		Cursor cursor = null;
+		try {
+			cursor = a.prepareHistoryCon().getDB().rawQuery(
+				"select lex from " + LexicalDBHelper.TABLE_HISTORY_v2
+				+ " where src>=128 order by " + LexicalDBHelper.FIELD_VISIT_TIME + " desc limit 512"
+				, null, cs);
+			int cc=0,len=cursor.getCount();
+			items = new String[len];
+			len--;
+			while (cursor.moveToNext()) {
+				//CMN.Log("LoadHistory::", cursor.getString(0));
+				items[len-cc++] = cursor.getString(0);
 			}
+		} catch (Exception e) {
+			CMN.debug(e);
+			if (cursor!=null)
+				cursor.close();
+			throw e;
+		}
+		if (items!=null) {
+			String[] its = items;
+			a.root.post(() -> {
+				history.clear();
+				hIdx.clear();
+				history.addAll(Arrays.asList(its));
+				for (int i = 0; i < its.length; i++) {
+					String text = its[i];
+					if (text!=null) {
+						int ln=text.length();
+						int hash = (ln<<(32-IU.bitCnt(ln)))|text.hashCode();
+						hIdx.put(hash, 1);
+					}
+				}
+				if (mAdapter!=null)
+					mAdapter.notifyDataSetChanged();
+			});
 		}
 	}
 	
@@ -379,9 +446,6 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				drpdn=true;
 			} break;
 		}
-//			if (v.getId() != R.drawable.ic_menu_24dp) {
-//				a.mInterceptorListenerHandled = true;
-//			}
 	}
 	
 	public void show() {
@@ -409,12 +473,6 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	long checkNxtFocus = 0;
 	EditText etSearch;
 	View flowBtn;
-//	public void setEt(EditText etSearch, ViewGroup rv) {
-//		this.etSearch=etSearch;
-//		this.rootView=rv;
-//		etSearch.setOnTouchListener(this);
-//		etSearch.setOnClickListener(this);
-//	}
 	
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
@@ -428,9 +486,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	
 	@Override
 	public void onFocusChange(View v, boolean hasFocus) {
-		CMN.Log("onFocusChange::", hasFocus, a.systemIntialized);
-//				ViewUtils.findInMenu(AllMenusStamp, R.id.toolbar_action2)
-//						.setIcon(hasFocus?R.drawable.ic_search_24k:R.drawable.ic_back_material);
+		//CMN.Log("onFocusChange::", hasFocus, a.systemIntialized);
 		if(hasFocus) {
 			if(checkNxtFocus!=0) {
 				if(SystemClock.uptimeMillis()-checkNxtFocus<250) {
@@ -443,4 +499,6 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			dismiss();
 		}
 	}
+	
+	
 }

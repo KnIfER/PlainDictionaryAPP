@@ -1,5 +1,15 @@
 package com.knziha.plod.dictionarymodels;
 
+import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
+import static com.knziha.plod.db.LexicalDBHelper.FIELD_CREATE_TIME;
+import static com.knziha.plod.db.LexicalDBHelper.FIELD_EDIT_TIME;
+import static com.knziha.plod.db.LexicalDBHelper.TABLE_DATA_v2;
+import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
+import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
+import static com.knziha.plod.plaindict.MdictServerMobile.hasRemoteDebugServer;
+import static com.knziha.plod.widgets.Tls12SocketFactory.enableTls12OnPreLollipop;
+import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
+
 import android.animation.ObjectAnimator;
 import android.content.ContentValues;
 import android.content.Context;
@@ -20,9 +30,6 @@ import androidx.appcompat.app.GlobalOptions;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.HurlStack;
-import com.android.volley.toolbox.Volley;
 import com.knziha.plod.ArrayList.SerializedLongArray;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
@@ -37,7 +44,6 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.widgets.ClientSSLSocketFactory;
 import com.knziha.plod.widgets.SSLSocketFactoryCompat;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebResourceResponseCompat;
@@ -67,7 +73,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,26 +85,12 @@ import java.util.zip.Inflater;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
-import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
-import static com.knziha.plod.db.LexicalDBHelper.FIELD_CREATE_TIME;
-import static com.knziha.plod.db.LexicalDBHelper.FIELD_EDIT_TIME;
-import static com.knziha.plod.db.LexicalDBHelper.TABLE_DATA_v2;
-import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
-import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
-import static com.knziha.plod.plaindict.MdictServerMobile.hasRemoteDebugServer;
-import static com.knziha.plod.widgets.Tls12SocketFactory.enableTls12OnPreLollipop;
-
-import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
-
 import okhttp3.Cache;
 import okhttp3.Dns;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 /*
@@ -309,8 +303,7 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	public Object getClientResponse(Context context, String url, String host, List<Pair> moders, Map<String, String> headers, boolean forServer) {
 		//if(true) return null;
-		RequestQueue sRequestQueue = Volley.newRequestQueue(context, new HurlStack(null, ClientSSLSocketFactory.getSocketFactory(context)));
-		
+		//RequestQueue sRequestQueue = Volley.newRequestQueue(context, new HurlStack(null, ClientSSLSocketFactory.getSocketFactory(context)));
 		try {
 			if(headers==null) headers=new HashMap<>();
 			for(String kI:headers.keySet()) {

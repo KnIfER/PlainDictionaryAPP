@@ -51,7 +51,7 @@
 
 <!--21--><item android:title="@string/rem_position" android:id="@+id/remPagePos2" android:checkable="true" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 
-<!--22--><item android:title="多行编辑" android:id="@+id/multiline" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+<!--22--><item android:title="多行编辑" android:id="@+id/multiline" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never" app:enabled="false" android:enabled="false"/>
 
 <!--23--><item android:title="随机词条" android:id="@+id/wordshuffle" android:icon="@drawable/ic_shuffle_black_24dp" app:showAsAction="always"/>
 

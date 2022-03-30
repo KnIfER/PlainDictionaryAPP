@@ -110,7 +110,7 @@ dependencies {
     api 'org.anarres.lzo:lzo-core:1.0.6'
     api project(path: ':viewpager')
     api project(path: ':GestureView')
-    implementation 'com.android.volley:volley:1.2.0'
+    //implementation 'com.android.volley:volley:1.2.0'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.jdom:jdom:2.0.2'
 

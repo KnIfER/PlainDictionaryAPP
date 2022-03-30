@@ -83,6 +83,7 @@ import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
 import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
+import com.knziha.plod.PlainUI.WordPopupTask;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
@@ -1029,17 +1030,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		etSearch.setShadowLayer(etSearch.getPaddingRight(), 0f, 0f, Color.TRANSPARENT);
 		etTools = new SearchbarTools(PDICMainActivity.this, etSearch, null);
 		super.findFurtherViews();
-		
-		
-		for (int i = 0; i < 1000; i++) {
-			etTools.addHistory("happy");
-			etTools.addHistory("1024");
-			etTools.addHistory("joy");
-			etTools.addHistory("fun");
-			etTools.addHistory("minecraft");
-			etTools.addHistory("duty");
-			etTools.addHistory("destiny of the huawei device");
-		}
 	}
 	
 	private int softMode;

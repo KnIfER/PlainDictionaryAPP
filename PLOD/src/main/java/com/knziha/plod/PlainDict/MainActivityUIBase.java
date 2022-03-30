@@ -3078,7 +3078,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(TextUtils.getTrimmedLength(key)>0) {
 			lastInsertedKey = key.trim();
 			lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder, source);
-			if (source>=128) {
+			if (source>=128 && etTools!=null) {
 				etTools.addHistory(lastInsertedKey);
 			}
 		}
@@ -10063,7 +10063,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public View.OnClickListener mInterceptorListener;
 	public boolean mInterceptorListenerHandled;
 	
-	SearchbarTools etTools;
+	public SearchbarTools etTools;
 	
 	public void hideSettingsPanel(@NonNull SettingsPanel panel) {
 		if(settingsPanel==panel) {

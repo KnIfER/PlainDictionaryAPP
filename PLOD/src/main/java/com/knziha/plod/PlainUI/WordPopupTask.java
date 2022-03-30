@@ -6,8 +6,12 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class WordPopupTask implements Runnable {
+public class WordPopupTask implements Runnable {
 	final WeakReference<WordPopup> wordPopupRef;
+	final static int TASK_POP_SCH=0;
+	final static int TASK_POP_NAV=1;
+	final static int TASK_POP_NAV_NXT=2;
+	public final static int TASK_LOAD_HISTORY=3;
 	Thread t;
 	public final AtomicInteger taskVersion = new AtomicInteger();
 	public volatile AtomicBoolean taskRunning =new AtomicBoolean();
