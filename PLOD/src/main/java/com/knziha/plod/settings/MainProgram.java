@@ -1,6 +1,5 @@
 package com.knziha.plod.settings;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -16,13 +15,12 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
 import java.io.File;
-import java.util.Objects;
 
 public class MainProgram extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		PDICMainAppOptions opt = ((Toastable_Activity) getActivity()).opt;
-		mPreferenceId = R.xml.preferences;
+		mPreferenceId = R.xml.pref_main;
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "enable_pastebin", PDICMainAppOptions.getShowPasteBin(), null, null);
 		init_switch_preference(this, "keep_screen", PDICMainAppOptions.getKeepScreen(), null, null);
@@ -41,6 +39,7 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 		findPreference("dev").setOnPreferenceClickListener(this);
 		findPreference("sspec").setOnPreferenceClickListener(this);
 		findPreference("vspec").setOnPreferenceClickListener(this);
+		findPreference("multi").setOnPreferenceClickListener(this);
 		findPreference("backup").setOnPreferenceChangeListener(this);
 	}
 	
@@ -49,13 +48,16 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 		int fragmentId=-1;
 		switch (preference.getKey()){
 			case "dev":
-				fragmentId=4;
+				fragmentId=DevOpt.id;
 			break;
 			case "sspec":
-				fragmentId=7;
+				fragmentId=SchOpt.id;
 			break;
 			case "vspec":
-				fragmentId=8;
+				fragmentId=Misc.id;
+			break;
+			case "multi":
+				fragmentId=Multiview.id;
 			break;
 		}
 		if(fragmentId!=-1){

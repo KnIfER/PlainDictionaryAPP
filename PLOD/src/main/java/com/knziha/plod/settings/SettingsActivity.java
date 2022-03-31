@@ -52,7 +52,7 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 		if(realm_id==FileChooser.id){
 			PDICMainAppOptions.SecondFlag(FilePickerOptions.SecondFlag);
 		}
-		else if(realm_id==SearchSpecification.id){
+		else if(realm_id== SchOpt.id){
 			if(opt.CetUseRegex3(SFStamp)
 					|opt.CetPageCaseSensitive(SFStamp)
 					|opt.CetPageWildcardMatchNoSpace(SFStamp)
@@ -95,21 +95,21 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 			case FileChooser.id:
 				fragment = new FileChooser();
 			break;
-			case DeveloperOptions.id:
-				fragment = new DeveloperOptions();
+			case DevOpt.id:
+				fragment = new DevOpt();
 			break;
 			case Licences.id:
 				fragment = new Licences();
 			break;
-			case SearchSpecification.id:
-				fragment = new SearchSpecification();
+			case SchOpt.id:
+				fragment = new SchOpt();
 			break;
-			case ViewSpecification.id:
-				fragment = new ViewSpecification();
+			case Misc.id:
+				fragment = new Misc();
 				args.putInt("title", R.string.view_spec);
 			break;
-			case ViewSpecification_exit_dialog.id:
-				fragment = new ViewSpecification_exit_dialog();
+			case Misc_exit_dialog.id:
+				fragment = new Misc_exit_dialog();
 				args.putInt("title", R.string.view_spec);
 			break;
 			case TapTranslator.id:
@@ -125,6 +125,10 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 			case NotificationSettings.id:
 				fragment = new NotificationSettings();
 				args.putInt("title", R.string.noti_set);
+			break;
+			case Multiview.id:
+				fragment = new Multiview();
+				//args.putString("title", "多页面设置");
 			break;
 		}
 		fragment.setArguments(args);

@@ -114,7 +114,6 @@
 			app:allowDividerBelow="true"
 			app:wiki="安卓通用的文本处理接口，一般位于文本的上下文菜单中，比如长按浏览器文本出现的菜单。谷歌翻译也实现了此接口。"
 			/>
-
 		<com.knziha.filepicker.settings.FilePickerPreference
 			android:defaultValue="@null"
 			android:key="fntlb"
@@ -184,11 +183,21 @@
 			android:icon="@drawable/ic_search"
 			/>
 
+
+		<Preference
+			android:key="multi"
+			android:persistent="false"
+			android:title="多页面设置"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
+			android:icon="@drawable/ic_viewpager_carousel_vertical"
+			android:tint="#000"
+			/>
+
 		<Preference
 			android:key="vspec"
 			android:persistent="false"
 			android:title="视图杂项"
-			app:isPreferenceVisible="true"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:icon="@drawable/ic_view_carousel_black_24dp"

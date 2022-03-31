@@ -32,7 +32,7 @@ import java.io.DataOutputStream;
 import java.util.HashMap;
 
 /** Devoloper Options */
-public class DeveloperOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
+public class DevOpt extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=4;
 	private WebView mWebview;
 	

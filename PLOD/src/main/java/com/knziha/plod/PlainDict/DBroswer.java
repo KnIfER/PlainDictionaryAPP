@@ -1341,7 +1341,7 @@ public class DBroswer extends DialogFragment implements
 			
 			weblistHandler.popupContentView(null, currentDisplaying__);
 			
-			weblistHandler.bMergeFrames = -2;
+			weblistHandler.bMergeFrames = a.mergeFrames();
 
 			rec.renderContentAt(0, a,null, weblistHandler);
 

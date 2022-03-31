@@ -141,7 +141,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		
 		if(id==2) {
 			weblistHandler.bShowInPopup = false;
-			weblistHandler.bMergeFrames = -2;
+			weblistHandler.bMergeFrames = a.mergeFrames();
 			
 //			boolean bUseMergedUrl = false;
 //			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl);

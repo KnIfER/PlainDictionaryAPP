@@ -176,9 +176,10 @@ import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.searchtasks.AsyncTaskWrapper;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.BookOptionsDialog;
+import com.knziha.plod.settings.Multiview;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.settings.TapTranslator;
-import com.knziha.plod.settings.ViewSpecification_exit_dialog;
+import com.knziha.plod.settings.Misc_exit_dialog;
 import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.CustomShareAdapter;
 import com.knziha.plod.widgets.DragScrollBar;
@@ -540,6 +541,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public View favoriteBtn() {
 		return contentUIData.browserWidget8;
+	}
+	
+	/** -2=auto;0=false;1=true see {@link WebViewListHandler#bMergeFrames}*/
+	public final int mergeFrames() {
+		return opt.getUseMergedUrl()?opt.mergeUrlMore()?-2:1:0;
 	}
 	
 	public enum ActType{
@@ -5163,7 +5169,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		titleX.setSpan(new ClickableSpan() {
 			@Override
 			public void onClick(@NonNull View widget) {
-				launchSettings(ViewSpecification_exit_dialog.id, 0);
+				launchSettings(Misc_exit_dialog.id, 0);
 			}
 		}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		TextView tv = buildStandardConfigDialog(this, false, title, 0, titleX);
@@ -6195,35 +6201,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							public void onClick(DialogInterface dialog, int which) {
 								CMN.Log("onClick::", weblistHandler.contentUIData.webholder.getChildCount());
 								if(which==0 || which==1) {
-									boolean bUseMergedUrl = which==1;
-									if(bUseMergedUrl!=weblistHandler.bMergingFrames) {
-										weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
-										weblistHandler.bMergeFrames = which;
-										weblistHandler.webHolderSwapHide = true;
-										// 旧版本切换新版本出现闪黑，
-//										boolean delay = opt.getDelayContents();
-//										boolean animate = opt.getAnimateContents();
-//										if(delay||animate) {
-//											opt.setDelayContents(false);
-//											opt.setAnimateContents(false);
-//										}
-										ensureContentVis(weblistHandler, contentUIData.webSingleholder);
-//										if(delay||animate) {
-//											opt.setDelayContents(delay);
-//											opt.setAnimateContents(animate);
-//										}
-										
-										// only handle popup
-										//weblistHandler.initMergedFrame(weblistHandler.bMergingFrames, false, false);
-										recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblistHandler);
-									} else {
-										showT("已经是了");
+									resetMerge(which, true);
+									if (PDICMainAppOptions.remMultiview()) {
+										PDICMainAppOptions.setUseMergedUrl(which==1);
 									}
+								} else {
+									launchSettings(Multiview.id, Multiview.resultCode);
 								}
 								dialog.dismiss();
 							}
 						})
-						//.setSingleChoiceItems(strIds, 0, null)
+						.setWikiText("自v5.7起联合搜索开始支持“合并的多页面模式”，可用一个网页控件显示全部结果，而不是一个词典对应一个网页控件，理论上更省资源。缺点是只能简单显示在线词典。", null)
 						.setTitle("多页面设置").create();
 					tagHolder.tag = null;
 				}
@@ -6274,6 +6262,34 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(closeMenu)
 			closeIfNoActionView(mmi);
 		return ret;
+	}
+	
+	private void resetMerge(int which, boolean t) {
+		if(which==-1) which=mergeFrames();
+		boolean bUseMergedUrl = which!=0;
+		if(bUseMergedUrl!=weblistHandler.bMergingFrames) {
+			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
+			weblistHandler.bMergeFrames = which;
+			weblistHandler.webHolderSwapHide = true;
+			// 旧版本切换新版本出现闪黑，
+//			boolean delay = opt.getDelayContents();
+//			boolean animate = opt.getAnimateContents();
+//			if(delay||animate) {
+//				opt.setDelayContents(false);
+//				opt.setAnimateContents(false);
+//			}
+			ensureContentVis(weblistHandler, contentUIData.webSingleholder);
+//			if(delay||animate) {
+//				opt.setDelayContents(delay);
+//				opt.setAnimateContents(animate);
+//			}
+			
+			// only handle popup
+			//weblistHandler.initMergedFrame(weblistHandler.bMergingFrames, false, false);
+			recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblistHandler);
+		} else if(t){
+			showT("已经是了");
+		}
 	}
 	
 	public void toggleJointSearch() {
@@ -8856,6 +8872,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case TapTranslator.resultCode:{
 				wordPopup.set();
+				break;
+			}
+			case Multiview.resultCode:{
+				resetMerge(-1, false);
 				break;
 			}
 		}

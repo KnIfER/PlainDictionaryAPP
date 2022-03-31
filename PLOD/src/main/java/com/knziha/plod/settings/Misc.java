@@ -13,13 +13,13 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
-public class ViewSpecification extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
+public class Misc extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=8;
 	
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		mPreferenceId = R.xml.viewpreferences;
+		mPreferenceId = R.xml.pref_misc;
 		super.onCreate(savedInstanceState);
 		
 		findPreference("cat_1").setVisible(false);
@@ -56,17 +56,13 @@ public class ViewSpecification extends SettingsFragmentBase implements Preferenc
 		init_switch_preference(this, "simple", PDICMainAppOptions.getSimpleMode(), null, null);
 		init_switch_preference(this, "magny", PDICMainAppOptions.getEtSearchNoMagnifier(), null, null);
 		init_switch_preference(this, "magny2", PDICMainAppOptions.getHackDisableMagnifier(), null, null);
-		init_switch_preference(this, "expand_ao", PDICMainAppOptions.getEnsureAtLeatOneExpandedPage(), null, null);
-		findPreference("expand_top").setOnPreferenceChangeListener(this);
 		
-		init_switch_preference(this, "scranima", PDICMainAppOptions.getScrollAnimation(), null, null);
-		init_switch_preference(this, "scrautex", PDICMainAppOptions.getScrollAutoExpand(), null, null);
-		init_switch_preference(this, "turbo_top", PDICMainAppOptions.getDelaySecondPageLoading(), null, null);
 		init_switch_preference(this, "1toast", PDICMainAppOptions.getRebuildToast(), null, null);
 		init_switch_preference(this, "rtoast", PDICMainAppOptions.getToastRoundedCorner(), null, null);
 
 	}
-
+	
+	
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
 		return false;
@@ -142,18 +138,6 @@ public class ViewSpecification extends SettingsFragmentBase implements Preferenc
 			break;
 			case "magny2":
 				PDICMainAppOptions.setHackDisableMagnifier((Boolean) newValue);
-			break;
-			case "expand_ao":
-				PDICMainAppOptions.setEnsureAtLeatOneExpandedPage((Boolean) newValue);
-			break;
-			case "scranima":
-				PDICMainAppOptions.setScrollAnimation((Boolean) newValue);
-			break;
-			case "scrautex":
-				PDICMainAppOptions.setScrollAutoExpand((Boolean) newValue);
-			break;
-			case "turbo_top":
-				PDICMainAppOptions.setDelaySecondPageLoading((Boolean) newValue);
 			break;
 			case "1toast":
 				PDICMainAppOptions.setRebuildToast((Boolean) newValue);

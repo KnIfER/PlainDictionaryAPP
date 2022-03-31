@@ -1165,6 +1165,10 @@ function debug(e){console.log(e)};
 		return mType!=PLAIN_TYPE_MDICT && mType!=PLAIN_TYPE_DSL;
 	}
 	
+	public boolean store(int pos) {
+		return true;
+	}
+	
 	static class OptionListHandler extends ClickableSpan implements DialogInterface.OnClickListener {
 		MainActivityUIBase a;
 		WebViewmy mWebView;
@@ -2112,9 +2116,6 @@ function debug(e){console.log(e)};
 		
 		//todo may allow ?
 		mWebView.getSettings().setSupportZoom(!fromCombined);
-		if(!fromCombined) {
-			mWebView.setTag(R.id.toolbar_action5, a.hasCurrentPageKey() ? false : null);
-		}
 		mWebView.isloading = true;
 		if(htmlCode!=null) {
 			if (!htmlCode.startsWith(fullpageString)) {

@@ -138,8 +138,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		//CMN.Log("frameCount::", jointResult.realmCount);
 		boolean bUseMergedUrl;
 		if(weblistHandler.bMergeFrames==-2) {
-			bUseMergedUrl = PDICMainAppOptions.getUseMergedUrl()
-					&& jointResult.realmCount > a.opt.getMergeUrlForFrames();
+			bUseMergedUrl = jointResult.realmCount >= a.opt.getMergeUrlForFrames();
 		} else {
 			bUseMergedUrl = weblistHandler.bMergeFrames==1;
 		}

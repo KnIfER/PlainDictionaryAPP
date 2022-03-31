@@ -173,7 +173,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	/** 当页面数大于返回数值时，才使用合并的url地址 */
 	public int getMergeUrlForFrames() {
-		return defaultReader.getInt("merge", 1);
+		return defaultReader.getInt("merge_min", 1);
 	}
 	
 	public String getLastPlanName(String key) {
@@ -2342,16 +2342,20 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=36, flagSize=4, shift=7, max=8) public static void setUserOrientation(int val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	/** for using the translator and save memory in the combined search mode. 联合搜索列表展示单个页面时使类似单本搜索与模糊搜索 */
-	@Metaline(flagPos=40, shift=1, debug=1) public static boolean getLv2JointOneAsSingle() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=40, shift=1) public static boolean getLv2JointOneAsSingle() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=40, shift=1) public static void setLv2JointOneAsSingle(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	/** 是否使用合并的多页面模式。see {@code #getMergeUrlForFrames()} */
-	@Metaline(flagPos=41, shift=1, debug=1) public static boolean getUseMergedUrl() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=41, shift=1) public static boolean getUseMergedUrl() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=41, shift=1) public static void setUseMergedUrl(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	/** webx是否不使用合并的单页面URL。see {@code #getUseMergedFrame()} */
-	@Metaline(flagPos=42, shift=1, debug=1) public static boolean getMergeExemptWebx() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=42, shift=1) public static boolean getMergeExemptWebx() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=42, shift=1) public static boolean setMergeExemptWebx(boolean v) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	/** 单本词典是否使用公共的MergedFrame。see {@code getMergeUrlForFrames()} */
-	@Metaline(flagPos=43, shift=1, debug=1) public static boolean getUseSharedFrame() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=43, shift=1) public static boolean getUseSharedFrame() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=43, shift=1) public static void setUseSharedFrame(boolean v) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=44, shift=1, debug=1) public static boolean getFastPreviewFragile() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
@@ -2382,6 +2386,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=54, shift=1) public static boolean checkVersionBefore_5_7() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=54, shift=1) public static void uncheckVersionBefore_5_7(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=55, shift=1) public static boolean remMultiview() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=55, shift=1) public static void remMultiview(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=56) public static boolean mergeUrlMore() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=56) public static void mergeUrlMore(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF

@@ -707,7 +707,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.dictNameStroke.setVisibility(vis);
 			contentUIData.dictName.setVisibility(vis);
 		}
-		this.dictView = dictView;
+		if(this.dictView!=dictView)
+			this.dictView = dictView;
 	}
 	
 	int getViewMode() {

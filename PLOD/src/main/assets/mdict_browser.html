@@ -680,7 +680,7 @@
 			right:10px;
 			background-color: #03a9f4;
 			border-radius: 10px;
-			z-index:99;
+			z-index:999999;
 		}
 	</style> 
 	<script>
@@ -1851,6 +1851,11 @@
 			// if(app) {
 			// 	app.sc(sid.get(), defP.scrollHeight-defP.offsetHeight, defP.scrollTop);
 			// }
+			shsty.top = (defP.scrollTop/(defP.scrollHeight-defP.offsetHeight)*(defP.offsetHeight-35))+'px';
+			//requestAnimationFrame(scrollSH);
+		}
+
+		function scrollSH(){
 			shsty.top = (defP.scrollTop/(defP.scrollHeight-defP.offsetHeight)*(defP.offsetHeight-35))+'px';
 		}
 
@@ -3667,7 +3672,7 @@
 		}
 		function SH() {
 			sh = ge("sh");
-			sh.ontouchstart=onmousedown=SH_D;
+			sh.ontouchstart=sh.onmousedown=SH_D;
 			shsty = sh.style;
 			if(merge)
 				SH_S(app?app.cs():0);

@@ -11,7 +11,7 @@ import com.knziha.plod.dictionary.Utils.IU;
 
 public class TapTranslator extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=9;
-	public final static int resultCode =10;
+	public final static int resultCode=10;
 	
 	//初始化
 	@Override
