@@ -39,9 +39,8 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	protected HorizontalNumberPicker mTextZoomNumberPicker;
 	protected static int mScrollY;
 	
-	public QuickBookSettingsPanel(MainActivityUIBase a, WebViewListHandler weblist) {
-		super(a, false);
-		this.weblist = weblist;
+	public QuickBookSettingsPanel(MainActivityUIBase a) {
+		super(a, true);
 		mActionListener = this;
 	}
 	
@@ -49,6 +48,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	public void init(Context context, ViewGroup root) {
 		if(context==null) return;
 		a=(MainActivityUIBase) context;
+		weblist = a.weblist;
 		
 		setShowInPop();
 		setPresetBgColorType(1);
@@ -108,9 +108,9 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		}
 	}
 	
-	public void refresh(WebViewListHandler weblist) {
+	public void refresh() {
 		CMN.Log("刷新全部数据...");
-		this.weblist = weblist;
+		this.weblist = a.weblist;
 		if (_screen !=null) _screen.refresh();
 		if (_sHandle !=null) initScrollHandle();
 		if (webSiteInfoListener!=null) webSiteInfoListener.onClick(null);

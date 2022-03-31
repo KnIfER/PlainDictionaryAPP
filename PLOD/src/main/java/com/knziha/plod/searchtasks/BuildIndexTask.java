@@ -1,15 +1,12 @@
 package com.knziha.plod.searchtasks;
 
 import android.annotation.SuppressLint;
-import android.os.AsyncTask;
 
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
-import com.knziha.plod.plaindict.R;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -113,7 +110,7 @@ public class BuildIndexTask extends AsyncTaskWrapper<String, Integer, String > {
 		System.gc();
 		a.fullSearchLayer.currentThreads=null;
 		
-		a.switch_To_Dict_Idx(a.dictPicker.adapter_idx, true, false, null);
+		a.switch_Dict(a.dictPicker.adapter_idx, true, false, null);
 	}
 
 }

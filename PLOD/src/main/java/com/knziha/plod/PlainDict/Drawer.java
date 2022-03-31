@@ -1061,7 +1061,7 @@ public class Drawer extends Fragment implements
 									}
 									if(newAdapterIdx!=-1) {
 										a.UIData.drawerLayout.closeDrawer(GravityCompat.START);
-										a.switch_To_Dict_Idx(newAdapterIdx, true, true, null);
+										a.switch_Dict(newAdapterIdx, true, true, null);
 									}
 								} catch (IOException e1) {
 									e1.printStackTrace();

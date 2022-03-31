@@ -211,7 +211,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				nav(false);
 			} break;
 			case R.id.popIvSettings:{
-				a.launchSettings(TapTranslator.id, TapTranslator.resultCode);
+				a.launchSettings(TapTranslator.id, TapTranslator.requestCode);
 			} break;
 			case R.id.popChecker:{
 				CircleCheckBox checker = (CircleCheckBox) v;

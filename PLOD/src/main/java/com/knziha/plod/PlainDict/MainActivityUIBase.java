@@ -418,6 +418,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	/** 主程有 */
 	public @Nullable ViewGroup bottombar;
 	public boolean bRequestedCleanSearch;
+	public boolean bRequestedLvHideIM;
 	public boolean bWantsSelection;
 	public boolean 来一发;
 	public boolean bIsFirstLaunch=true;
@@ -629,7 +630,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public boolean switch_To_Dict_Idx(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC) {
+	public boolean switch_Dict(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC) {
 		updateAI = true;
 		boolean prvNxt = prvNxtABC!=null;
 		int size=md.size();
@@ -678,7 +679,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					adaptermy.notifyDataSetChanged();
 					postPutName(550);
 					if (currentDictionary != EmptyBook) {
-						if (/*!isCombinedSearching && */(opt.getPicDictAutoSer()||this instanceof FloatSearchActivity)) {
+						if (/*!isCombinedSearching && */(dictPicker.autoSchPDict()||this instanceof FloatSearchActivity)) {
 							CMN.Log("auto_search!......");
 							lv_matched=false;
 							if(prvNxt && opt.getDimScrollbarForPrvNxt()) {
@@ -2406,7 +2407,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		
-		switch_To_Dict_Idx(dictPicker.adapter_idx, false, false, null);
+		switch_Dict(dictPicker.adapter_idx, false, false, null);
 		
 		findFurtherViews();
 		
@@ -5428,7 +5429,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.drawable.ic_baseline_nightmode_24: {
 				showNightModeSwitch();
 			} break;
-			case R.drawable.ic_options_toolbox: {
+			case R.drawable.ic_options_toolbox:
+			case R.drawable.ic_options_toolbox_small: {
+				if(v.getParent()==null || id==R.drawable.ic_options_toolbox_small) findWebList(v);
 				showBookSettings();
 			} break;
 			//收藏和历史纪录
@@ -5455,9 +5458,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
-				if(browser_widget1!=null && browser_widget1.isActivated()) {
-					browser_widget1.performClick();
-				}
 				if(isCombinedSearching) {
 				
 				} else {
@@ -5467,13 +5467,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						PrvNxtABC.initiatorIdx=testVal;
 						PrvNxtABC.initiatorDir=delta;
 						PrvNxtABC.沃壳积 =0;
-						while(!switch_To_Dict_Idx(dictPicker.adapter_idx+delta, true, false, PrvNxtABC));
+						boolean b1=dictPicker.autoSchPDict() && isContentViewAttached();
+						if(b1) bIsFirstLaunch=true;
+						while(!switch_Dict(dictPicker.adapter_idx+delta, true, false, PrvNxtABC));
 						if(PrvNxtABC.collide() && testVal!=dictPicker.adapter_idx) { // rejected
-							switch_To_Dict_Idx(testVal, true, false, null);
+							switch_Dict(testVal, true, false, null);
 						} else {
 							getTopSnackView().setNextOffsetScale(0.24f);
 							showTopSnack(currentDictionary.getDictionaryName());
+							if(dictPicker.pinned()) {
+								dictPicker.scrollThis();
+								dictPicker.mAdapter.notifyItemChanged(testVal);
+								dictPicker.mAdapter.notifyItemChanged(dictPicker.adapter_idx);
+							}
 						}
+						if(b1) bIsFirstLaunch=false;
 						if(testVal!=dictPicker.adapter_idx&&PrvNxtABC.rejectIdx>=0) { // not rejected
 							PrvNxtABC.rejectIdx=-1;
 						}
@@ -6156,17 +6164,30 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} return true;
 			/* 语音控制器 */
 			case R.id.browser_widget12:{
-				try {
-					weblist = (WebViewListHandler) ((View)v.getParent()).getTag();
-				} catch (Exception e) {
-					weblist = weblistHandler;
-				}
+				findWebList(v);
 				CMN.Log("weblist::", weblist==wordPopup.weblistHandler);
 				showSoundTweaker();
 				contentUIData.webcontentlister.judger = false;
 			} return true;
 		}
 		return false;
+	}
+	
+	/** see {@link #getMenuGridRootViewForPanel} */
+	private View findWebList(View v) {
+		View btm = null;
+		btm = (View) v.getParent();
+		if(btm==null)  {
+			btm = contentUIData.bottombar2;
+			if(weblist!=null)
+				return btm;
+		} else {
+			app_panel_bottombar_height = btm.getHeight();
+		}
+		weblist = (WebViewListHandler) btm.getTag();
+		if(weblist==null) weblist=weblistHandler;
+		//CMN.Log("findWebList::", btm, weblist);
+		return btm;
 	}
 	
 	@Override
@@ -6184,6 +6205,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} return true;
 			case R.id.refreshRandom:{
 				showRandomShuffles();
+			} break;
+			case R.drawable.ic_settings_black_24dp:{
+				launchSettings(0, 0);
 			} break;
 			case R.id.viewMode:{
 				MenuItemImpl tagHolder = getMenuSTd(mmi);
@@ -6206,7 +6230,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										PDICMainAppOptions.setUseMergedUrl(which==1);
 									}
 								} else {
-									launchSettings(Multiview.id, Multiview.resultCode);
+									launchSettings(Multiview.id, Multiview.requestCode);
 								}
 								dialog.dismiss();
 							}
@@ -6520,9 +6544,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//分组切换
 						opt.putLastPlanName(LastPlanName, setName);
 						if (dictPicker.adapter_idx<0) {
-							switch_To_Dict_Idx(0, true, false, null);
+							switch_Dict(0, true, false, null);
 						} else if(md.get(dictPicker.adapterIdx())!=currentDictionary){
-							switch_To_Dict_Idx(dictPicker.adapter_idx, true, false, null);
+							switch_Dict(dictPicker.adapter_idx, true, false, null);
 						}
 						dialog.dismiss();
 						invalidAllLists();
@@ -8870,11 +8894,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case 0: {
 				isBrowsingImgs = false;
 			} break;
-			case TapTranslator.resultCode:{
-				wordPopup.set();
+			case TapTranslator.requestCode:{
+				if(resultCode==requestCode)
+					wordPopup.set();
 				break;
 			}
-			case Multiview.resultCode:{
+			case Multiview.requestCode:{
 				resetMerge(-1, false);
 				break;
 			}
@@ -10145,10 +10170,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void showMenuGrid(View btn) {
-		if(bottombar!=null)
-			app_panel_bottombar_height = bottombar.getHeight();
 		int jd = WeakReferenceHelper.menu_grid;
 		MenuGrid menuGrid = (MenuGrid) getReferencedObject(jd);
+		View btm = findWebList(btn);
 		if (menuGrid==null) {
 			menuGrid = new MenuGrid(this);
 			putReferencedObject(jd, menuGrid);
@@ -10156,17 +10180,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			menuGrid.refresh();
 		}
-		View bb = menuGrid.bottombar = (View) btn.getParent();
-		weblist = (WebViewListHandler) bb.getTag();
-		if(weblist==null)
-			weblist = weblistHandler;
+		menuGrid.bottombar = btm;
 		ViewGroup root=null;
-		if(peruseView!=null && bb==peruseView.contentUIData.bottombar2)
+		if(peruseView!=null && btm==peruseView.contentUIData.bottombar2)
 		{
 			root = peruseView.root;
 		}
 		if (!menuGrid.isVisible()) {
-			menuGrid.show(root, ViewUtils.ViewIsId(bb, R.id.bottombar2), -2);
+			menuGrid.show(root, ViewUtils.ViewIsId(btm, R.id.bottombar2), -2);
 		}
 	}
 	
@@ -10231,12 +10252,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	private ViewGroup getMenuGridRootViewForPanel(PlainAppPanel panel) {
 		ViewGroup root = null;
-		MenuGrid menuGrid = (MenuGrid) getReferencedObject(WeakReferenceHelper.menu_grid);
-		if(peruseView!=null && menuGrid!=null && menuGrid.bottombar==peruseView.contentUIData.bottombar2)
+		if(peruseView!=null && weblist==peruseView.weblistHandler)
 		{
 			root = peruseView.root;
 		}
-		panel.bottombar = menuGrid.bottombar;
+		try {
+			panel.bottombar = ViewUtils.isVisibleV2(weblist.contentUIData.webcontentlister)
+					?weblist.contentUIData.bottombar2:bottombar;
+		} catch (Exception e) {
+			CMN.debug(e);
+			panel.bottombar = null;
+		}
 		return root;
 	}
 	
@@ -10246,12 +10272,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		QuickBookSettingsPanel quickSettings
 				= (QuickBookSettingsPanel) getReferencedObject(jd);
 		if (quickSettings==null) {
-			quickSettings = new QuickBookSettingsPanel(this, weblist);
+			quickSettings = new QuickBookSettingsPanel(this);
 			putReferencedObject(jd, quickSettings);
 			CMN.Log("重建QuickBrowserSettingsPanel...");
-		} else {
-			quickSettings.refresh(weblist);
 		}
+		quickSettings.refresh();
 		quickSettings.toggle(getMenuGridRootViewForPanel(quickSettings), (SettingsPanel) getReferencedObject(WeakReferenceHelper.menu_grid), -2);
 	}
 	

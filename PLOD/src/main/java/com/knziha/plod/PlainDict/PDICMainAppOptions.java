@@ -696,17 +696,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	/////////////////////End First 32-bit Flag////////////////////////////////////
 
 	/////////////////////Start First Flag Long field///////////////////////////////////
-	@Metaline(flagPos=32) public static boolean getPinPDic() { FirstFlag=FirstFlag; throw new RuntimeException();}
-	@Metaline(flagPos=32) public static void setPinPDic(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32) public static boolean pinPDic() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32) public static void pinPDic(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 	
+	//???
 	
-	public boolean getPicDictAutoSer() {
-		return (FirstFlag & 0x200000000l) == 0x200000000l;
-	}
-	public boolean setPicDictAutoSer(boolean val) {
-		updateFFAt(0x200000000l,val);
-		return val;
-	}
+	@Metaline(flagPos=34, shift=1) public boolean autoSchPDict() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=34, shift=1) public void autoSchPDict(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
+	
 	public boolean getRemPos() {
 		return (FirstFlag & 0x400000000l) != 0x400000000l;
 	}
@@ -2357,7 +2354,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=43, shift=1) public static boolean getUseSharedFrame() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=43, shift=1) public static void setUseSharedFrame(boolean v) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=44, shift=1, debug=1) public static boolean getFastPreviewFragile() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=44) public static boolean fastPreviewFragile() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=45, shift=1) public static boolean getShowPinPicBook() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=45, shift=1) public static void setShowPinPicBook(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2392,6 +2389,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=56) public static boolean mergeUrlMore() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=56) public static void mergeUrlMore(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=57, shift=1) public static boolean fastPreview() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF

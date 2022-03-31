@@ -242,7 +242,7 @@
 	
 	
 	<com.knziha.plod.widgets.CheckableImageView
-		android:id="@+id/autoSchSw"
+		android:id="@+id/autoBtn"
 		android:clickable="true"
         android:layout_width="28dp"
         android:layout_height="28dp"
@@ -251,7 +251,7 @@
 		android:background="@drawable/popup_background5"
 		android:layout_marginTop="2dp"
 		android:layout_marginRight="3dp"
-		android:src="@drawable/sel_auto_search"
+		android:src="@drawable/auto_search_toolbar"
 		CheckableImageview:CheckedTint="@color/ShallowHeaderBlue"
         android:padding="5dp"
 	    />
@@ -261,7 +261,7 @@
 		android:clickable="true"
         android:layout_width="28dp"
         android:layout_height="28dp"
-		android:layout_below="@+id/autoSchSw"
+		android:layout_below="@+id/autoBtn"
 	    android:layout_alignParentRight="true"
 		android:background="@drawable/popup_background6"
 		android:layout_marginTop="2dp"

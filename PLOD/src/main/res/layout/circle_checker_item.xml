@@ -10,6 +10,17 @@
 	android:background="@drawable/dm_dslitem_dragmy"
 	android:gravity="center">
 	<com.knziha.filepicker.widget.CircleCheckBox
+		android:id="@+id/check1"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		app:dim1="2dp"
+		app:color_background="@color/blueprintBlue"
+		app:color_border="#fff"
+		app:size="25dp"
+		app:src0="@drawable/ic_check_black_24dp"
+		android:paddingRight="5dp"
+		/>
+	<com.knziha.filepicker.widget.CircleCheckBox
 		android:id="@+id/check2"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
@@ -21,17 +32,6 @@
 		android:paddingEnd="10dp"
 		android:paddingStart="10dp"
 		/>
-	<com.knziha.filepicker.widget.CircleCheckBox
-		android:id="@+id/check1"
-		android:layout_width="wrap_content"
-		android:layout_height="match_parent"
-		app:dim1="2dp"
-		app:color_background="@color/blueprintBlue"
-		app:color_border="#fff"
-		app:size="25dp"
-		app:src0="@drawable/ic_check_black_24dp"
-		android:paddingRight="5dp"
-		/>
 	<TextView
 		android:id="@android:id/text1"
 		android:layout_width="0dp"
@@ -41,6 +41,18 @@
 		android:gravity="center"
 		tools:text="工具栏定制"
 		android:background="@drawable/listviewselector0"
+		/>
+	<ImageView
+		android:id="@id/settings"
+		android:src="@drawable/ic_settings_black_bk"
+		android:paddingEnd="10dp"
+		android:paddingStart="10dp"
+		android:layout_marginEnd="5dp"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:layout_weight="0"
+		android:tint="#7AE3F2"
+		android:alpha="0.2"
 		/>
 	<ImageView
 		android:id="@id/drag_handle"

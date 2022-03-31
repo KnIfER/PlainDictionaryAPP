@@ -430,6 +430,8 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 					ClipData pclip = cm.getPrimaryClip();
 					ClipData.Item firstItem = pclip.getItemAt(0);
 					CharSequence content = firstItem.getText();
+					a.bIsFirstLaunch=true;
+					a.bWantsSelection=false;
 					etSearch.setText(content);
 					etSearch.setSelection(content.length());
 				}

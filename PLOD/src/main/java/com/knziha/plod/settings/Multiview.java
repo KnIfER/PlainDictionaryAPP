@@ -11,7 +11,7 @@ import com.knziha.plod.plaindict.R;
 
 public class Multiview extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=14;
-	public final static int resultCode=11;
+	public final static int requestCode=11;
 	
 	//初始化
 	@Override

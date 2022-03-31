@@ -98,6 +98,7 @@ import com.knziha.plod.searchtasks.BuildIndexTask;
 import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
+import com.knziha.plod.widgets.ActivatableImageView;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
@@ -204,7 +205,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			R.drawable.ic_nxt_dict_chevron,
 			R.drawable.ic_brightness_low_black_24dp,
 			R.drawable.ic_swich_landscape_orientation,
-			R.drawable.ic_options_toolbox,
+			R.drawable.ic_options_toolbox_small,
 			R.drawable.book_bundle2,
 			R.drawable.ic_settings_black_24dp,
 			R.drawable.ic_keyboard_show_24,
@@ -1657,7 +1658,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		new SearchToolsMenu(this, UIData.schtools);
 		
-		if(PDICMainAppOptions.getShowPinPicBook() && PDICMainAppOptions.getPinPDic()) {
+		if(PDICMainAppOptions.getShowPinPicBook() && PDICMainAppOptions.pinPDic()) {
 			showChooseDictDialog(0);
 		}
 		
@@ -2505,7 +2506,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //					} else { //111
 						dismissPopup();
 						showChooseDictDialog(0);
-						if(PDICMainAppOptions.getPinPDic()) {
+						if(PDICMainAppOptions.pinPDic()) {
 							PDICMainAppOptions.setShowPinPicBook(true);
 						}
 //					}
@@ -2592,12 +2593,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //
 //				}
 				
-			} break;
-			case R.id.autoSchSw:{
-				cb = (CheckableImageView)v;
-				cb.toggle();
-				opt.setPicDictAutoSer(cb.isChecked());
-				//if(pickDictDialog!=null) pickDictDialog.isDirty=true;
 			} break;
 			case R.id.settings:{
 
@@ -2863,17 +2858,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
-				if(UIData.browserWidget1.isActivated() && opt.getFastPreviewFragile()) {
-					UIData.browserWidget1.performClick();
-				} else {
-					ListView activeLv = CurrentViewPage==0?mlv1:CurrentViewPage==2?mlv2:
-							lv2.getVisibility()==View.VISIBLE?lv2:lv;
-					View c0 = activeLv.getChildAt(0);
-					if(c0!=null) {
-						if (false) {
-							UIData.browserWidget1.setActivated(true);
+				if (isContentViewAttached()) DetachContentView(false);
+				else if(PDICMainAppOptions.fastPreview()) {
+					ActivatableImageView browserWidget1 = UIData.browserWidget1;
+					if(browserWidget1.isActivated() && opt.fastPreviewFragile()) {
+						browserWidget1.performClick();
+					} else {
+						ListView activeLv = CurrentViewPage==0?mlv1:CurrentViewPage==2?mlv2:
+								lv2.getVisibility()==View.VISIBLE?lv2:lv;
+						View c0 = activeLv.getChildAt(0);
+						if(c0!=null) {
+							browserWidget1.setActivated(true);
+							activeLv.performItemClick(c0, activeLv.getFirstVisiblePosition(), 0);
 						}
-						activeLv.performItemClick(c0, activeLv.getFirstVisiblePosition(), 0);
 					}
 				}
 			} return true;
@@ -3287,7 +3284,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if (changed){
 					buildUpDictionaryList(lazyLoadManager.lazyLoaded, mdict_cache);
 					if (dictPicker.adapter_idx<0) {
-						switch_To_Dict_Idx(0, false, false, null);
+						switch_Dict(0, false, false, null);
 					}
 					invalidAllLists();
 					//CMN.Log("变化了", md.size(), currentFilter.size());
@@ -3450,9 +3447,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	@Override
-	public boolean switch_To_Dict_Idx(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC){
+	public boolean switch_Dict(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC){
 		if(invalidate) checkDictionaryProject(false);
-		boolean ret = super.switch_To_Dict_Idx(i, invalidate, putName, prvNxtABC);
+		boolean ret = super.switch_Dict(i, invalidate, putName, prvNxtABC);
 		if(invalidate) {
 			if (!getPinPicDictDialog())
 				wordPopup.dismiss();

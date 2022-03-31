@@ -83,7 +83,6 @@
 					android:id="@+id/pinBtn"
 					android:layout_width="@dimen/_35_"
 					android:layout_height="match_parent"
-					android:layout_below="@+id/autoSchSw"
 					android:background="@drawable/listviewselector0"
 					android:src="@drawable/sel_pin_vc"
 					android:padding="5dp"
@@ -142,17 +141,16 @@
 					android:alpha="0.2"
 					/>
 				<com.knziha.plod.widgets.CheckableImageView
-					android:id="@+id/autoSchSw"
+					android:id="@+id/autoBtn"
 					android:layout_width="@dimen/_35_"
 					android:layout_height="match_parent"
 					android:layout_below="@+id/schBook"
 					android:background="@drawable/listviewselector0"
-					android:src="@drawable/sel_auto_search"
+					android:src="@drawable/auto_search_toolbar"
 					app:CheckedTint="@color/ShallowHeaderBlue"
 					android:padding="5dp"
 					android:tint="@color/SelHeaderBlue"
 					android:foreground="@drawable/popup_background3__"
-					android:alpha="0.2"
 					/>
 			</LinearLayout>
 		</HorizontalScrollView>

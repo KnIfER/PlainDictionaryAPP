@@ -59,7 +59,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	RecyclerView mRecyclerView;
 	LinearLayoutManager lman;
 	public boolean bShouldCloseAfterChoose=true;
-	private HomeAdapter mAdapter;
+	HomeAdapter mAdapter;
 	
 	public String SearchIncantation;
 	public Pattern SearchPattern;
@@ -77,6 +77,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	private boolean SearchDictPatternChanged;
 	private IBinder wtSearch;
 	private CheckableImageView pinBtn;
+	private CheckableImageView autoBtn;
 	
 	ArrayList<Integer> filtered;
 	
@@ -139,6 +140,10 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			pinBtn = bottombar.findViewById(R.id.pinBtn);
 			pinBtn.setChecked(pin());
 			
+			autoBtn = bottombar.findViewById(R.id.autoBtn);
+			autoBtn.setChecked(opt.autoSchPDict());
+			autoBtn.getDrawable().setAlpha(opt.autoSchPDict()?255:100);
+			
 			if (type==1) {
 				ViewUtils.setVisible(bottombar, false);
 			}
@@ -149,7 +154,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		//if(!isDirty) return;
 		//isDirty=false;
 		scrollThis();
-
+		
 //		//123123
 //
 //		private View cb1;
@@ -231,6 +236,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		}
 		
 		//mAdapter.notifyDataSetChanged();
+		
+		autoBtn.setAlpha(a.isCombinedSearching?0.2f:1);
 	}
 
 
@@ -281,7 +288,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	
 	boolean pin() {
 		if (splitView!=null) {
-			return type==0?PDICMainAppOptions.getPinPDic() // 主程序
+			return type==0?PDICMainAppOptions.pinPDic() // 主程序
 				:type==-1?PDICMainAppOptions.getPinPDicWrd() // 点译
 				:PDICMainAppOptions.getPinPDicFlt() // 浮动搜索
 				;
@@ -289,8 +296,16 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		return false;
 	}
 	
+	boolean pinned() {
+		return pinBtn!=null && pinBtn.isChecked();
+	}
+	
+	public final boolean autoSchPDict() {
+		return autoBtn!=null?autoBtn.isChecked():opt.autoSchPDict();
+	}
+	
 	void pin(boolean v) {
-		if (type==0) PDICMainAppOptions.setPinPDic(v);
+		if (type==0) PDICMainAppOptions.pinPDic(v);
 		else if (type==-1) PDICMainAppOptions.setPinPDicWrd(v);
 		else if (type==1) PDICMainAppOptions.setPinPDicFlt(v);
 	}
@@ -414,6 +429,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		}
 	}
 	
+	// click
 	@Override
 	public void onClick(View v) {
 		Object tag = v.getTag();
@@ -442,7 +458,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				else {//当前词典
 					int tmpPos = adapter_idx;
 					adapter_idx = position;
-					a.switch_To_Dict_Idx(position, true, true, null);
+					a.switch_Dict(position, true, true, null);
 					mAdapter.notifyItemChanged(tmpPos);
 					if(tmpPos!=position){
 						mAdapter.notifyItemChanged(position);
@@ -470,6 +486,17 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				//if(pickDictDialog!=null) pickDictDialog.isDirty=true;
 				refresh(false, 0);
 				break;
+			case R.id.autoBtn:{
+				cb = (CheckableImageView)v;
+				cb.toggle();
+				opt.autoSchPDict(cb.isChecked());
+				autoBtn.getDrawable().setAlpha(cb.isChecked()?255:100);
+				if(cb.isChecked())
+					a.showTopSnack("自动搜索√");
+				else
+					a.fadeSnack();
+				//if(pickDictDialog!=null) pickDictDialog.isDirty=true;
+			} break;
 			case R.id.schBook:
 				if (Searchbar == null) {
 					Toolbar searchbar = (Toolbar) ((ViewStub) root.getChildAt(root.getChildCount() - 1)).inflate();
@@ -607,7 +634,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			}
 			if(lman!=null) {
 				if(vdx>lman.findLastVisibleItemPosition() || vdx<lman.findFirstVisibleItemPosition()) {
-					int target = Math.max(0, vdx-5);
+					int target = Math.max(0, vdx-(Math.max(0, Math.min(pinBtn.isChecked()?3:5, mRecyclerView.getChildCount()/2))));
 					lman.scrollToPositionWithOffset(type==-1?a.wordPopup.CCD_ID:target, 0);
 					CMN.Log("scrolled");
 				}

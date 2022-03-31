@@ -26,6 +26,7 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.widgets.ViewUtils;
 import com.mobeta.android.dslv.DragSortListView;
 import com.mobeta.android.dslv.SimpleFloatViewManager;
 
@@ -43,11 +44,11 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	private final ShelfLinearLayout sideBar;
 	
 	public AppUIProject projectContext;
-	public static int StateCount=2;
 	public boolean isDirty;
 	public Drawable switch_landscape;
 	PorterDuffColorFilter darkMask = new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
 	private String[] customize_ctn;
+	private View simView;
 	
 	public BottombarTweakerAdapter(MainActivityUIBase _a, int desiredTab) {
 		opt = _a.opt;
@@ -115,11 +116,13 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 		int id = item.number;
 		Resources res = parent.getResources();
 		vh.tv.setText(projectContext.titles[id]);
-		vh.ccb_icon.setDrawable(0, res.getDrawable(projectContext.icons[id]));
+		int ID = projectContext.icons[id];
+		vh.ccb_icon.setDrawable(0, res.getDrawable(ID));
 		vh.ccb_toggle.setChecked(item.tmpIsFlag,false);
+		ViewUtils.setVisibleV3(vh.option, hasOpt(ID));
 		vh.position = position;
 		vh.itemView.getBackground().setAlpha(GlobalOptions.isDark?15:255);
-		if (没有实现的_工具栏_点击事件不完全列表.contains(projectContext.icons[id])) {
+		if (没有实现的_工具栏_点击事件不完全列表.contains(ID)) {
 			vh.itemView.setAlpha(0.2f);
 		} else {
 			vh.itemView.setAlpha(1);
@@ -195,17 +198,13 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 			} break;
 			case android.R.id.button2:{
 				/* 三态/二态切换 */
-				if(StateCount==2){
-					StateCount=1;
-				} else {
-					StateCount=2;
-				}
-				ColorPickerDialog.showTopToast(v.getContext(), "StateCount#"+StateCount);
+				//ColorPickerDialog.showTopToast(v.getContext(), "StateCount#"+StateCount);
 			} break;
 		}
 		return true;
 	}
 	
+	// click
 	@Override
 	public void onClick(View v) {
 		int id = v.getId();
@@ -304,23 +303,52 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 				isDirty=true;
 				ViewGroup vp = ((ViewGroup) v.getParent());
 				ViewHolder vh = (ViewHolder) vp.getTag();
-				CircleCheckBox ccb_toggle = (CircleCheckBox) vp.getChildAt(1);
+				CircleCheckBox ccb_toggle = (CircleCheckBox) vp.getChildAt(0);
 				ccb_toggle.setProgress(0);
-				if(StateCount==2){
-					ccb_toggle.iterate();
-				} else {
-					ccb_toggle.toggle();
-				}
+				//if(StateCount==2) ccb_toggle.iterate();
+				//if(id==R.id.check1) ccb_toggle.iterate();
+				ccb_toggle.toggle();
 				projectContext.iconData.get(vh.position).tmpIsFlag=ccb_toggle.getChecked();
 			} break;
 			case R.id.check2:{
-				CircleCheckBox ccb_icon = (CircleCheckBox) v;
-				ccb_icon.setProgress(0);
-				ccb_icon.addAnim(true);
+				ViewGroup vp = ((ViewGroup) v.getParent());
+				ViewHolder vh = (ViewHolder) vp.getTag();
+				int ID = projectContext.icons[projectContext.iconData.get(vh.position).number];
+				//if (hideAfterSim(ID))
+					dialog.hide();
+				try {
+					CircleCheckBox ccb_icon = (CircleCheckBox) v;
+					ccb_icon.setProgress(0);
+					ccb_icon.addAnim(true);
+					if(simView==null)
+						simView = new View(a);
+					simView.setId(ID);
+					a.onClick(simView);
+				} catch (Exception e) {
+					a.showT(e.getLocalizedMessage());
+					dialog.show();
+				}
 			} break;
 		}
 	}
-
+	
+	boolean hideAfterSim(int id) {
+		switch (id) {
+			default: return true;
+//			case R.drawable.:
+//				return false;
+		}
+	}
+	
+	boolean hasOpt(int id) {
+		switch (id) {
+			default: return false;
+			case R.drawable.ic_prv_dict_chevron:
+			case R.drawable.ic_nxt_dict_chevron:
+				return true;
+		}
+	}
+	
 	void checkCurrentProject(View v) {
 		String val = MakeProject();
 		if(v!=null && projectContext!=null && !val.equals(projectContext.currentValue)){
@@ -417,29 +445,33 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	}
 	
 	static class ViewHolder{
-		ViewHolder(ViewGroup v, BottombarTweakerAdapter biantai){
+		ViewHolder(ViewGroup v, BottombarTweakerAdapter ta){
 			itemView=(ViewGroup)LayoutInflater.from(v.getContext()).inflate(R.layout.circle_checker_item, v, false);
 			itemView.setTag(this);
-			ccb_icon = (CircleCheckBox) itemView.getChildAt(0);
-			ccb_icon.drawIconForEmptyState = true;
-			ccb_icon.drawInnerForEmptyState=false;
-			ccb_icon.noTint=true;
-			ccb_icon.setProgress(1);
-			ccb_icon.setOnClickListener(biantai);
+			CircleCheckBox b;
+			ccb_icon = b = (CircleCheckBox) itemView.getChildAt(1);
+			b.drawIconForEmptyState = true;
+			b.drawInnerForEmptyState=false;
+			b.noTint=true;
+			b.setProgress(1);
+			b.setOnClickListener(ta);
 
-			ccb_toggle = (CircleCheckBox) itemView.getChildAt(1);
-			ccb_toggle.drawIconForEmptyState=false;
-			ccb_toggle.circle_shrinkage=0.75f*GlobalOptions.density;
-			ccb_toggle.addStateWithDrawable(biantai.switch_landscape);
-			ccb_toggle.setOnClickListener(biantai);
-
+			ccb_toggle = b = (CircleCheckBox) itemView.getChildAt(0);
+			b.drawIconForEmptyState=false;
+			b.circle_shrinkage=0.75f*GlobalOptions.density;
+			b.addStateWithDrawable(ta.switch_landscape);
+			b.setOnClickListener(ta);
+			
 			tv = (TextView) itemView.getChildAt(2);
-			tv.setOnClickListener(biantai);
+			tv.setOnClickListener(ta);
+			
+			option = itemView.getChildAt(3);
 		}
 		private final ViewGroup itemView;
 		public int position;
 		CircleCheckBox ccb_icon;
 		CircleCheckBox ccb_toggle;
+		View option;
 		TextView tv;
 	}
 }
