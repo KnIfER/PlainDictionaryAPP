@@ -612,13 +612,17 @@
 			-webkit-transform: rotate(180deg);
 		}
 		.arrwp.back {
-    transform: rotate(90deg) scale(.7);
-    bottom: 30px;
-    right: 120px;
+			transform: rotate(90deg) scale(.7);
+			bottom: 45px;
+			right: 75px;
+			left: 0px;
+			margin: auto;
 		}
 		.arrwp.back#forward {
-    transform: rotate(270deg) scale(.7);
-    right: 70px;
+			transform: rotate(270deg) scale(.7);
+			right: 0;
+			left: 75px;
+			margin: auto;
 		}
 		.arrwp::before {
 			content: " ";
@@ -1906,7 +1910,7 @@
 
 		function initNav() {
 			bkPs.display='none';
-			bkPs.display='block';
+			//bkPs.display='block';
 			navid=0;
 			nav=1;
 		}
@@ -1914,6 +1918,7 @@
 		function showNav() {
 			bkPs.display='block';
 			nav++;
+			navid=nav-1;
 			ge('back').style.opacity=1;
 		}
 
