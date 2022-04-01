@@ -612,13 +612,13 @@
 			-webkit-transform: rotate(180deg);
 		}
 		.arrwp.back {
-			transform: rotate(90deg) scale(.7);
-			top: 8px;
-			right: 70px;
+    transform: rotate(90deg) scale(.7);
+    bottom: 30px;
+    right: 120px;
 		}
 		.arrwp.back#forward {
-			transform: rotate(270deg) scale(.7);
-    		right: 19px;
+    transform: rotate(270deg) scale(.7);
+    right: 70px;
 		}
 		.arrwp::before {
 			content: " ";
@@ -3807,7 +3807,7 @@
 	<div id='defP'></div>
 	<a class="arrwp prev" id="prev"  onclick="prvnxtFrame();"><p class="arrow"></p></a>
 	<a class="arrwp next" id="next" onclick="prvnxtFrame(1);"><p class="arrow"></p></a>
-	<div id="bkP" style="position:fixed;top:12.5px;right:25px;width:90px;height:40px;display:none" onclick="">
+	<div id="bkP" style="display:none" onclick="">
 		<a class="arrwp prev back" id="back"  onclick="goBack();"><p class="arrow"></p></a>
 		<a class="arrwp next back" id="forward" onclick="goBack(1);"><p class="arrow"></p></a> 
 	</div>

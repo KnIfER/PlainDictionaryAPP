@@ -86,7 +86,7 @@
 			android:key="neo"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="在新窗口中弹出词条跳转"
+			android:title="在新窗口中打开词条跳转"
 			app:allowDividerBelow="true"
 			/>
 	</PreferenceCategory>
