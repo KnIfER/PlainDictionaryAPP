@@ -2408,7 +2408,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return SixthFlag;
 	}
 	
-	@Metaline(flagPos=0, shift=1) public static boolean tabTranslateEach() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=0, shift=1) public static boolean popViewEntry() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=0, shift=1) public static void popViewEntry(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=1) public static boolean popViewEntryAlways() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=2, shift=1) public static boolean debug() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2, shift=1) public static void debug(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
 	
 	///////

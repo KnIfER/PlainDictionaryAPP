@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.SettingsFragmentBase;
+import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
@@ -33,7 +34,10 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		init_switch_preference(this, "1s", PDICMainAppOptions.getLv2JointOneAsSingle(), null, null);
 		init_switch_preference(this, "share", PDICMainAppOptions.getUseSharedFrame(), null, null);
 		init_switch_preference(this, "exempt", PDICMainAppOptions.getMergeExemptWebx(), null, null);
-	
+		init_switch_preference(this, "neo", PDICMainAppOptions.popViewEntry(), null, null);
+		
+		init_switch_preference(this, "debug", PDICMainAppOptions.debug(), null, null)
+				.setVisible(BuildConfig.isDebug);
 	}
 
 	@Override
@@ -92,6 +96,12 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 			break;
 			case "exempt":
 				PDICMainAppOptions.setMergeExemptWebx((Boolean) newValue);
+			break;
+			case "neo":
+				PDICMainAppOptions.popViewEntry((Boolean) newValue);
+			break;
+			case "debug":
+				PDICMainAppOptions.debug((Boolean) newValue);
 			break;
 		}
 		return true;

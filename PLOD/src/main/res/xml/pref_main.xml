@@ -192,6 +192,7 @@
 			app:allowDividerBelow="true"
 			android:icon="@drawable/ic_viewpager_carousel_vertical"
 			android:tint="#000"
+			android:clickable="true"
 			/>
 
 		<Preference
