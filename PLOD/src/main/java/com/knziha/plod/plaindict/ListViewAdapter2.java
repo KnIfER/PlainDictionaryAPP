@@ -168,7 +168,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 				ViewUtils.addViewToParentUnique(weblistHandler.getMergedFrame().rl, a.webSingleholder);
 			}
 			
-			a.ensureContentVis(contentUIData.webSingleholder, weblistHandler);
+			a.viewContent(weblistHandler);
 		}
 
 		a.ActivedAdapter=this;

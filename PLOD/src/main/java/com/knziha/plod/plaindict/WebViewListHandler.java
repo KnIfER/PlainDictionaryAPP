@@ -71,6 +71,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public boolean bMergingFrames = false;
 	public boolean bShowingInPopup = false;
 	public ScrollViewmy WHP;
+	public PDICMainAppOptions opt;
 	ViewGroup webholder;
 	public additiveMyCpr1 jointResult;
 	public WebViewmy mMergedFrame;
@@ -88,10 +89,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	BookPresenter lastScrolledBook;
 	WebViewmy lastScrolledBookView;
 	WebViewmy mWebView;
+	public boolean tapSch;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData) {
 		super(a);
 		this.a = a;
+		this.opt = a.opt;
 		setId(R.id.webholder);
 		//setUseListView(true);
 		this.contentUIData = contentUIData;
@@ -152,6 +155,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			mBar.fadeOut();
 		}
 		//WHP.setBackground(null);
+		tapSch = opt.tapSch();
+		CMN.Log("rcsp::ini::", tapSch, BookPresenter.MakeRCSP(this, opt));
 	}
 	
 	public void setLastScrolledBook(WebViewmy wv) {
@@ -294,11 +299,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	int shFlag;
 	public int getScrollHandType() {
-		return a.opt.getTypeFlag_11_AtQF(shFlag);
+		return opt.getTypeFlag_11_AtQF(shFlag);
 	}
 	
 	public void setScrollHandType(int style) {
-		a.opt.setTypeFlag_11_AtQF(style, shFlag);
+		opt.setTypeFlag_11_AtQF(style, shFlag);
 		resetScrollbar(mWebView, bMergingFrames, true);
 	}
 	
@@ -318,11 +323,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			vis=View.GONE;
 			vsi=false;
 			if (resetMerge && mWebView!=null) {
-				mWebView.evaluateJavascript("SH_S("+a.opt.getTypeFlag_11_AtQF(shFlag)+")", null);
+				mWebView.evaluateJavascript("SH_S("+opt.getTypeFlag_11_AtQF(shFlag)+")", null);
 			}
 		}
 		else {
-			final int sty=a.opt.getTypeFlag_11_AtQF(type);
+			final int sty=opt.getTypeFlag_11_AtQF(type);
 			switch (sty){
 				case 0:
 					gravity=Gravity.END;
@@ -385,7 +390,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public void initMergedFrame(boolean mergeWebHolder, boolean popup, boolean bUseMergedUrl) {
 		if(bUseMergedUrl && mMergedFrame!=null) {
 			mMergedFrame.presenter=mMergedBook;
-			mMergedBook.toolbar.setVisibility(View.GONE);
+			//mMergedBook.toolbar.setVisibility(View.GONE);
 		}
 		if(!popup && bShowingInPopup) {
 			ViewUtils.removeView(alloydPanel.toolbar);
@@ -518,7 +523,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			bag = new Bag(PDICMainAppOptions.getTwoColumnSetView());
 			DialogInterface.OnClickListener listener = (dlg, pos) -> {
 				if(pos==-1) {
-					a.opt.setTwoColumnJumpList(bag.val=!bag.val);
+					opt.setTwoColumnJumpList(bag.val=!bag.val);
 					((BaseAdapter)bag.tag).notifyDataSetChanged();
 					jumpListDlg.getListView().setSelection(bag.val?frameSelection/2:frameSelection);
 				}
@@ -693,31 +698,24 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public final static int WEB_LIST_MULTI=0;
 	public final static int WEB_VIEW_SINGLE=1;
-	int mViewMode=WEB_LIST_MULTI;
+	int mViewMode;
+	boolean isMultiRecord;
 	public void setViewMode(int mode, boolean bUseMergedUrl, WebViewmy dictView) {
+		if(isMultiRecord != (mode==WEB_LIST_MULTI))
+			isMultiRecord = mode==WEB_LIST_MULTI;
+		if(mode==WEB_LIST_MULTI && bUseMergedUrl)
+			mode = WEB_VIEW_SINGLE;
 		if(mViewMode!=mode || bMergingFrames!=bUseMergedUrl) {
 			mViewMode = mode;
-			int vis = mode==WEB_VIEW_SINGLE || bUseMergedUrl ? View.GONE : View.VISIBLE;
-			contentUIData.WHP.setVisibility(vis);
-			contentUIData.navBtns.setVisibility(vis);
-			
-			vis = mode==WEB_VIEW_SINGLE || bUseMergedUrl ? View.VISIBLE : View.GONE;
-			contentUIData.webSingleholder.setVisibility(vis);
-			
-			vis = bUseMergedUrl ? View.GONE : View.VISIBLE;
-			contentUIData.dictNameStroke.setVisibility(vis);
-			contentUIData.dictName.setVisibility(vis);
+			ViewUtils.setVisible(contentUIData.navBtns, !bUseMergedUrl);
+			ViewUtils.setVisible(contentUIData.dictNameStroke, !bUseMergedUrl);
+			ViewUtils.setVisible(contentUIData.dictName, !bUseMergedUrl);
 		}
 		if(this.dictView!=dictView)
 			this.dictView = dictView;
 	}
 	
-	int getViewMode() {
-		return mViewMode;
-	}
-	
 	int[] versions=new int[8];
-	
 	public void checkUI() {
 		if(a.contentbar_project!=null && ViewUtils.checkSetVersion(versions, 0, a.contentbar_project.version)) {
 			a.contentbar_project.bottombar = contentUIData.bottombar2;
@@ -738,7 +736,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	AlloydPanel alloydPanel;
 	public void popupContentView(ViewGroup root, String key) {
 		if(alloydPanel==null) {
-			alloydPanel = new AlloydPanel(a, contentUIData);
+			alloydPanel = new AlloydPanel(a, this);
 		}
 		if(!alloydPanel.isVisible()) {
 			alloydPanel.toggle(root, null, -1);
@@ -768,8 +766,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if(!contentViewSetup) {
 			contentViewSetup = true;
 			MainActivityUIBase a = this.a;
-			contentUIData.browserWidget13.setOnClickListener(a);
-			contentUIData.browserWidget14.setOnClickListener(a);
+			contentUIData.browserWidget13.setOnClickListener(this);
+			contentUIData.browserWidget14.setOnClickListener(this);
 			
 			contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
 				contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
@@ -793,7 +791,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				iv.setOnLongClickListener(a);
 			}
 			String contentkey = "ctnp#"+ cbar_key;
-			String appproject = a.opt.getAppContentBarProject(contentkey);
+			String appproject = opt.getAppContentBarProject(contentkey);
 			if(appproject==null) appproject="0|1|2|3|4|5";
 			if(a.contentbar_project==null) {
 				a.contentbar_project = new AppUIProject(contentkey, ContentbarBtnIcons, appproject, contentUIData.bottombar2, ContentbarBtns);
@@ -817,8 +815,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return false;
 	}
 	
+	/** false:using old list technique. displaying multiple webviews in the linearlayout */
 	final public boolean isViewSingle() {
 		return mViewMode==WEB_VIEW_SINGLE;
+	}
+	
+	/** displaying records from multiple dictionary in search-all mode */
+	final public boolean isMultiRecord() {
+		return isMultiRecord;
 	}
 	
 	int cc;
@@ -876,6 +880,49 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void textMenu(boolean vis) {
 		ViewUtils.setVisible(contentUIData.tools, vis);
+	}
+	
+	/** show this hide another */
+	public void viewContent() {
+		CMN.Log("viewContent::", mViewMode);
+		int mode = mViewMode;
+		mViewMode = (mViewMode+1)%2;
+		if(ViewUtils.isVisible(this)) {
+			setVisibility(View.GONE);
+			// removeAllViews();
+		}
+		mViewMode = mode;
+		if(!ViewUtils.isVisible(this)) {
+			setVisibility(View.VISIBLE);
+		}
+	}
+	
+	public boolean togTapSch() {
+		tapSch = !tapSch;
+		evalJsAtAllFrames(tapSch?
+				"window.rcsp|=0x20;window.rcspc||loadJs(sid.get(),'tapTrans.js')"
+				:"window.rcsp&=~0x20");
+		return tapSch;
+	}
+	
+	private void evalJsAtAllFrames(String exp) {
+		evalJsAtAllFrames_internal(contentUIData.webSingleholder, exp);
+		evalJsAtAllFrames_internal(webholder, exp);
+//		if(peruseView !=null && peruseView.mWebView!=null){
+//			peruseView.mWebView.evaluateJavascript(exp,null);
+//		}
+	}
+	
+	private void evalJsAtAllFrames_internal(ViewGroup vg, String exp) {
+		for (int index = 0; index < vg.getChildCount(); index++) {
+			if(vg.getChildAt(index) instanceof LinearLayout){
+				ViewGroup webHolder = (ViewGroup) vg.getChildAt(index);
+				if(webHolder.getChildAt(1) instanceof WebView){
+					((WebView)webHolder.getChildAt(1))
+							.evaluateJavascript(exp,null);
+				}
+			}
+		}
 	}
 	
 	public static class HighlightVagranter {
@@ -1150,12 +1197,13 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			
 			if(a.thisActType==MainActivityUIBase.ActType.PlainDict)
-				a.opt.schPage(b1);
+				opt.schPage(b1);
 			else
 				PDICMainAppOptions.schPageFlt(b1);
 		}
 	}
 	
+	// click
 	@Override
 	public void onClick(View v) {
 		int id=v.getId();
@@ -1177,6 +1225,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					a.imm.hideSoftInputFromWindow(MainPageSearchetSearch.getWindowToken(), 0);
 				}
 				jumpHighlight(next?1:-1, true);
+			} break;
+			/* 上下导航 */
+			case R.id.browser_widget13:
+			case R.id.browser_widget14:{
+				prvnxtFrame(id == R.id.browser_widget13);
 			} break;
 		}
 	}

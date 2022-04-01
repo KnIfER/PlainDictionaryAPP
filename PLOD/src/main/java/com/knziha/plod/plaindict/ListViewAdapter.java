@@ -171,7 +171,7 @@ public class ListViewAdapter extends BasicAdapter {
 		ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
 		mWebView.weblistHandler = weblistHandler;
 		/* ensureContentVis */
-		a.ensureContentVis(contentUIData.webSingleholder, weblistHandler);
+		a.viewContent(weblistHandler);
 		
 		float desiredScale=a.prepareSingleWebviewForAda(presenter, mWebView, pos, this);
 		

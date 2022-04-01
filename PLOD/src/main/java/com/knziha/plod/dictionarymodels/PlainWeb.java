@@ -1356,9 +1356,8 @@ public class PlainWeb extends DictionaryAdapter {
 //		}
 
 //		if (bookPresenter!=null) {
-			StringBuilder sb = AcquireStringBuffer(8196).append("window.rcsp=")
-					.append(bookPresenter.MakeRCSP(opt)).append(";")
-					;
+			StringBuilder sb = AcquireStringBuffer(8196)
+					.append("window.rcsp=app.rcsp(sid.get())");
 			if(GlobalOptions.isDark) sb.append(DarkModeIncantation);
 			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.wordPopup.mWebView)
 				sb.append(MainActivityUIBase.ce_on);

@@ -95,7 +95,7 @@
 		android:visible="false"/>
 
 	<item
-		android:id="@+id/tapTranslator"
+		android:id="@+id/tapSch"
 		android:icon="@drawable/ic_btn_siglemode"
 		android:title="@string/unfold_all"
 		app:showAsAction="never"

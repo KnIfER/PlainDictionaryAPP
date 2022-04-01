@@ -959,7 +959,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		if(opt.getRemPos())ViewUtils.findInMenu(SingleContentMenu, R.id.remPagePos).setChecked(true);
 		if(opt.getRemPos2())ViewUtils.findInMenu(Multi_ContentMenu, R.id.remPagePos2).setChecked(true);
-		if(opt.getClickSearchEnabled())ViewUtils.findInMenu(Multi_ContentMenu, R.id.tapTranslator).setChecked(true);
+		if(opt.tapSch())ViewUtils.findInMenu(Multi_ContentMenu, R.id.tapSch).setChecked(true);
 		if(TintWildResult.first = opt.getTintWildRes())ViewUtils.findInMenu(LEFTMenu, R.id.tintList).setChecked(true);
 		PeruseListModeMenu = ViewUtils.findInMenu(MainMenu, R.id.peruseList);
 		
@@ -2294,24 +2294,23 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(CMN.CheckSettings!=0){
 				if(CMN.checkRCSP()){
 					if(ActivedAdapter!=null){
-						String val = "window.rcsp="+ BookPresenter.MakeRCSP(opt)+"; _highlight(null);";
-						CMN.Log("checkRCSP!!",val, BookPresenter.MakeRCSP(opt)&0x10);
 						resetPatterns();
 						webviewHolder=ActivedAdapter.webviewHolder;
-						if(webviewHolder!=null){
+						if(webviewHolder!=null){ //todo opt
 							int cc = webviewHolder.getChildCount();
 							for (int i = 0; i < cc; i++) {
 								if(webviewHolder.getChildAt(i) instanceof LinearLayout){
 									ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(i);
 									if(webHolder.getChildAt(1) instanceof WebView){
-										((WebView)webHolder.getChildAt(1))
-												.evaluateJavascript(val,null);
+										WebViewmy wv = (WebViewmy) webHolder.getChildAt(1);
+										String val = "window.rcsp="+ BookPresenter.MakeRCSP(wv.weblistHandler, opt)+"; _highlight(null);";
+										wv.evaluateJavascript(val,null);
 									}
 								}
 							}
 						}
 						if(isPopupContentViewAttached(0)){
-							wordPopup.mWebView.evaluateJavascript(val,null);
+							//wordPopup.mWebView.evaluateJavascript(val,null);
 						}
 					}
 				}
@@ -2404,21 +2403,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 	}
 	
-	public void ensureContentVis(ViewGroup webholder, ViewGroup another) {
-//		if(webholder.getVisibility()!=View.VISIBLE) {
-//			webholder.setVisibility(View.VISIBLE);
-//		}
-//		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
-//		//WHP.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
-//		if(another.getVisibility()==View.VISIBLE) {
-//			//ViewUtils.removeAllViews(another);
-//			another.setVisibility(View.GONE);
-//		}
-		
-		delayedAttaching = AttachContentView(opt.getDelayContents());
-		
-		if(delayedAttaching) {
-			AttachContentViewDelayed(5000);
+	/** use animation for the main view. */
+	public void viewContent(WebViewListHandler wlh) {
+		wlh.viewContent();
+		if(wlh==weblistHandler) {
+			delayedAttaching = AttachContentView(opt.getDelayContents());
+			if(delayedAttaching) {
+				AttachContentViewDelayed(800);
+			}
 		}
 	}
 	
@@ -3061,6 +3053,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
 		MenuBuilder menu = mmi.mMenu;
+		WebViewListHandler wlh = (WebViewListHandler) menu.tag;
 		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
@@ -3077,7 +3070,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			/* 折叠全部 */
 			case R.id.toolbar_action0:{
 				if(isLongClicked) break;
-				weblistHandler.toggleFoldAll();
+				wlh.toggleFoldAll();
 			} break;
 			/* 翻页前记忆位置 */
 			case R.id.remPagePos:{
@@ -3131,18 +3124,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			/* 页内查找 */
 			case R.id.toolbar_action13:{
-				weblistHandler.togSchPage(ret=isLongClicked);
-			} break;
-			/* 即点即译 */
-			case R.id.tapTranslator:{
-				if(isLongClicked){
-					popupWord(null, null, 0, null);
-					closeMenu=ret=true;
-				} else {
-					boolean val=opt.toggleClickSearchEnabled();
-					item.setChecked(val);
-					toggleClickSearch(val);
-				}
+				wlh.togSchPage(ret=isLongClicked);
 			} break;
 			case R.id.toolbar_action7://切换词典
 				if(isLongClicked) break;

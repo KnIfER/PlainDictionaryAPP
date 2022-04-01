@@ -22,7 +22,7 @@
 
 <!--8--><item android:title="@string/perWSearch" android:id="@+id/perwordSch" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
-<!--9--><item android:title="即点即译" android:id="@+id/tapTranslator" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
+<!--9--><item android:title="即点即译" android:id="@+id/tapSch" android:checkable="true" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 
 <!--10--><item android:title="@string/switch_set" android:id="@+id/toolbar_action8" android:icon="@drawable/ic_search_24k" app:showAsAction="never"/>
 

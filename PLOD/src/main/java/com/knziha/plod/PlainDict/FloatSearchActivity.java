@@ -757,18 +757,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		public void handleMessage(@NonNull Message msg) {
 	}}
 	
-	public void ensureContentVis(ViewGroup webholder, ViewGroup another) {
-		
-		
+	public void viewContent(WebViewListHandler wlh) {
 		ViewUtils.addViewToParent(contentUIData.webcontentlister, main_succinct);
-		
-		//WHP.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
-		if(another.getVisibility()==View.VISIBLE) {
-			ViewUtils.removeAllViews(another);
-			another.setVisibility(View.GONE);
-		}
-		
-		webholder.setVisibility(View.VISIBLE);
+		wlh.viewContent();
 		
 		if(contentUIData.webcontentlister.getVisibility()!=View.VISIBLE) {
 			contentUIData.webcontentlister.setVisibility(View.VISIBLE);

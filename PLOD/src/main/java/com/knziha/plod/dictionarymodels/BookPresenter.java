@@ -2236,7 +2236,7 @@ function debug(e){console.log(e)};
 		}
 
 		htmlBuilder.append("<script class=\"_PDict\">");
-		int rcsp = MakeRCSP(opt);
+		int rcsp = MakeRCSP(mWebView.weblistHandler, opt);
 		if(mWebView==a.wordPopup.mWebView) rcsp|=1<<5;
 		htmlBuilder.append("window.rcsp=").append(rcsp).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
@@ -2265,15 +2265,17 @@ function debug(e){console.log(e)};
 		return SimplestInjection;
 	}
 
-	public static int MakeRCSP(PDICMainAppOptions opt) {
-		return opt.FetUseRegex3()|
+	public static int MakeRCSP(WebViewListHandler wlh, PDICMainAppOptions opt) {
+		final int ret = opt.FetUseRegex3()|
 				opt.FetPageCaseSensitive()|
 				opt.FetPageWildcardSplitKeywords()|
 				opt.FetPageWildcardMatchNoSpace()|
 				opt.FetInPageSearchUseWildcard()|
-				opt.FetClickSearchEnabled()|
+				(wlh.tapSch?1<<5:0)|
 				opt.FetIsDark()
 				;
+		CMN.Log("rcsp::", Integer.toBinaryString(ret), ret);
+		return ret;
 	}
 
 	public void PlayWithToolbar(boolean hideDictToolbar,Context a) {
@@ -2517,8 +2519,15 @@ function debug(e){console.log(e)};
         }
         
         @JavascriptInterface
-        public int rcsp() {
-        	return presenter==null?0:MakeRCSP(presenter.a.opt);
+        public int rcsp(int sid) {
+			try {
+				WebViewmy wv = presenter.findWebview(sid);
+				WebViewListHandler wlh = wv.weblistHandler;
+				return MakeRCSP(wlh, wlh.opt);
+			} catch (Exception e) {
+				CMN.debug(e);
+				return 0;
+			}
         }
         
         @JavascriptInterface
@@ -2574,7 +2583,7 @@ function debug(e){console.log(e)};
         }
         
         @JavascriptInterface
-        public void banLongClick(long sid, boolean suppress) {
+        public void banLongClick(int sid, boolean suppress) {
 			if (presenter!=null) {
 				presenter.suppressingLongClick = suppress;
 			}
@@ -2586,7 +2595,7 @@ function debug(e){console.log(e)};
 		}
 		
         @JavascriptInterface
-        public void sc(long sid, int max, int y) {
+        public void sc(int sid, int max, int y) {
 			try {
 				WebViewmy wv = presenter.findWebview(sid);
 				if(wv!=null) {
@@ -2611,7 +2620,7 @@ function debug(e){console.log(e)};
 		}
 		
         @JavascriptInterface
-        public void updateIndicator(long sid, String did, int keyIdx, int keyz, int total) {
+        public void updateIndicator(int sid, String did, int keyIdx, int keyz, int total) {
 			if (presenter!=null) {
 				WebViewmy wv = presenter.findWebview(sid);
 				if(wv!=null) {
@@ -2622,14 +2631,14 @@ function debug(e){console.log(e)};
 		}
         
         @JavascriptInterface
-        public void putTransval(long sid, String value, int index) {
+        public void putTransval(int sid, String value, int index) {
 			if (presenter!=null) {
 				presenter.a.putTransval(index, value);
 			}
 		}
 		
         @JavascriptInterface
-        public String getTransval(long sid, int index) {
+        public String getTransval(int sid, int index) {
 			if (presenter!=null) {
 				return presenter.a.getTransval(index);
 			}
@@ -2637,7 +2646,7 @@ function debug(e){console.log(e)};
 		}
         
         @JavascriptInterface
-        public String getSearchWord(long sid) {
+        public String getSearchWord(int sid) {
 			if (presenter!=null) {
 				return presenter.a.getSearchTerm();
 			}
@@ -2645,7 +2654,7 @@ function debug(e){console.log(e)};
 		}
         
         @JavascriptInterface
-        public void loadJs(long sid, String name) {
+        public void loadJs(int sid, String name) {
 			WebViewmy wv = presenter.findWebview(sid);
 			CMN.Log("loadJs::", name, wv!=null);
 			if (wv!=null) {
@@ -2689,7 +2698,7 @@ function debug(e){console.log(e)};
 		}
 
         @JavascriptInterface
-        public void openImage(long sid, int position, float offsetX, float offsetY, String... img) {
+        public void openImage(int sid, int position, float offsetX, float offsetY, String... img) {
 			if(presenter==null || !presenter.getImageBrowsable()) return;
         	//CMN.Log(position, img, mdx.bookImpl.getFileName()_Internal);
         	//CMN.Log("openImage::", offsetX, offsetY);
@@ -2707,7 +2716,7 @@ function debug(e){console.log(e)};
 		}
 
         @JavascriptInterface
-        public void scrollHighlight(long sid, int o, int d) {
+        public void scrollHighlight(int sid, int o, int d) {
         	if(presenter!=null) {
 				WebViewmy wv = presenter.findWebview(sid);
 				if(wv!=null) {
@@ -2718,7 +2727,7 @@ function debug(e){console.log(e)};
         }
 
         @JavascriptInterface
-        public String getCurrentPageKey(long sid) {
+        public String getCurrentPageKey(int sid) {
         	String ret=null;
 			if(presenter!=null)
 			try {
@@ -2774,14 +2783,14 @@ function debug(e){console.log(e)};
         }
 
         @JavascriptInterface
-        public void onHighlightReady(long sid, int idx, int number) {
+        public void onHighlightReady(int sid, int idx, int number) {
 			if(presenter==null) return;
 			WebViewmy wv = presenter.findWebview(sid);
 			wv.weblistHandler.onHighlightReady(idx, number);
         }
 
         @JavascriptInterface
-        public void popupWord(long sid, String key, int frameAt, float pX, float pY, float pW, float pH) {
+        public void popupWord(int sid, String key, int frameAt, float pX, float pY, float pW, float pH) {
 			try {
 				if(presenter==null) return;
 				if(WebViewmy.supressNxtClickTranslator) {
@@ -2808,7 +2817,7 @@ function debug(e){console.log(e)};
 		}
 
         @JavascriptInterface
-        public void popupClose(long sid) {
+        public void popupClose(int sid) {
 			if(presenter!=null) {
 				CMN.debug("popuping...popupClose", sid);
 				if(this!=presenter.a.wordPopup.popuphandler)
@@ -2854,7 +2863,7 @@ function debug(e){console.log(e)};
 		}
 
 		@JavascriptInterface
-		public void ReadText(long sid, String word) {
+		public void ReadText(int sid, String word) {
 			if(presenter==null) return;
 			presenter.a.ReadText(word, presenter.findWebview(sid));
 		}
@@ -2908,7 +2917,7 @@ function debug(e){console.log(e)};
 		
 		// sendup
 		@JavascriptInterface
-		public void knock(long sid) {
+		public void knock(int sid) {
 			//if(layout==a.currentViewImpl)
 			{
 				//upsended = true;
@@ -2931,7 +2940,7 @@ function debug(e){console.log(e)};
 		}
 		
 		@JavascriptInterface
-		public void knock1(long sid, int x, int y) {
+		public void knock1(int sid, int x, int y) {
 			//if(layout==a.currentViewImpl)
 			{
 				//upsended = true;
@@ -3018,13 +3027,13 @@ function debug(e){console.log(e)};
 		}
 	}
 	
-	private WebViewmy findWebview(long sid) {
-		if (mWebView!=null && mWebView.getSimpleIdentifier()==sid)
+	private WebViewmy findWebview(int sid) {
+		if (mWebView!=null && mWebView.simpleId()==sid)
 			return mWebView;
-		if (a.PeruseViewAttached() && a.peruseView.mWebView.getSimpleIdentifier()==sid) {
+		if (a.PeruseViewAttached() && a.peruseView.mWebView.simpleId()==sid) {
 			return a.peruseView.mWebView;
 		}
-		if (a.wordPopup.mWebView !=null && a.wordPopup.mWebView.getSimpleIdentifier()==sid) {
+		if (a.wordPopup.mWebView !=null && a.wordPopup.mWebView.simpleId()==sid) {
 			return a.wordPopup.mWebView;
 		}
 		return mWebView;

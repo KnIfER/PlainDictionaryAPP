@@ -85,6 +85,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	public long TFStamp;
 	protected long QFStamp;
 	protected long VFStamp;
+	protected long VIStamp;
 	protected long layoutFlagStamp;
 	public int MainAppBackground;
 	public int MainBackground;
@@ -139,6 +140,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		   TFStamp = opt.getThirdFlag();
 		   QFStamp = opt.getFourthFlag();
 		   VFStamp = opt.getFifthFlag();
+		   VIStamp = opt.getSixthFlag();
 		   if (PDICMainAppOptions.checkVersionBefore_5_0())
 		   { // 升级数据库对话框
 			   //DBUpgradeHelper.showUpgradeDlg(null, this, true);
@@ -278,13 +280,14 @@ public class Toastable_Activity extends AppCompatActivity {
 			TFStamp=opt.ThirdFlag();
 			QFStamp=opt.FourthFlag();
 			VFStamp=opt.FifthFlag();
+			VIStamp=opt.SixthFlag();
 		}
 	}
 
 	protected void notifyFlagChanged() { }
 
 	protected boolean checkFlagsChanged() {
-		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.getThirdFlag() || QFStamp!=opt.getFourthFlag() || VFStamp!=opt.getFifthFlag();
+		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.getThirdFlag() || QFStamp!=opt.getFourthFlag() || VFStamp!=opt.getFifthFlag() || VIStamp!=opt.getSixthFlag();
 	}
 
 	protected void checkLanguage() {

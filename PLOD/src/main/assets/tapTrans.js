@@ -1,11 +1,11 @@
 if(!window.rcspc){
-    console.log('popuping...addEventListener', sid.get());
+    console.log('popuping ini...rcsp='+rcsp);
     window.addEventListener('click',window.rcspc=function(e){
     var w=this,d=w.document,rcsp=w.rcsp,app=w.app,_log=function(e){console.log(e)};
     if(w.frameElement){rcsp=parent.window.rcsp;app=parent.window.app}
     //_ log('wrappedClickFunc 2', e.srcElement.id);
     var curr = e.srcElement;
-    _log('popuping...'+rcsp);
+    _log('popuping...rcsp='+rcsp);
     if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && rcsp&0x20 && !curr.noword && !curr.onclick){
         //todo d.activeElement.tagName
         var s = w.getSelection();

@@ -996,7 +996,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
-            case R.id.tapTranslator:{//展开
+            case R.id.tapSch:{//展开
 				if(isLongClicked) {ret=false; break;}
 				ArrayList<mFile> list1 = f3.data.getList();
 				for(int i=0;i<list1.size();i++) {

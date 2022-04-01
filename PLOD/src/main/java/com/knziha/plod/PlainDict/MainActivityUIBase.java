@@ -386,7 +386,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int  CurrentViewPage = 1;
 	public String fontFaces;
 	
-	MenuBuilder AllMenus;
+	public MenuBuilder AllMenus;
 	public List<MenuItemImpl> AllMenusStamp;
 	MenuItem menuSearchMode;
 	List<MenuItemImpl> MainMenu;
@@ -2000,7 +2000,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void closeIfNoActionView(MenuItemImpl mi) {
-		if(mi!=null && !mi.isActionButton()) AllMenus.close();
+		if(mi!=null && !mi.isActionButton()) mi.mMenu.close();
 	}
 
 
@@ -2956,7 +2956,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(settingsPanel!=null) {
 			if(settingsPanel instanceof AlloydPanel) {
-				if(findHolder) parentView = ((AlloydPanel)settingsPanel).contentUIData.PageSlider;
+				if(findHolder) parentView = ((AlloydPanel)settingsPanel).handler.contentUIData.PageSlider;
 				bottom = 0;//(AlloydPanel)settingsPanel).contentUIData.bottombar2.getHeight();
 			} else {
 				if(findHolder) parentView = (ViewGroup)settingsPanel.settingsLayout.getParent();
@@ -4985,7 +4985,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			} break;
 			case 12:{
-				toggleClickSearch(opt.getClickSearchEnabled());
+				toggleClickSearch(opt.tapSch());
 			} break;
 			case 15:
 				try {
@@ -5739,27 +5739,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.browser_widget9:{//view outlinexxx
 				if(ActivedAdapter instanceof com.knziha.plod.plaindict.PeruseView.LeftViewAdapter) {
 					v.performLongClick();
-					break;
+					break; //???
 				}
-				if(!weblistHandler.isViewSingle()) {
-					weblistHandler.showJumpListDialog();
+				findWebList(v);
+				if(weblist.isMultiRecord()) {
+					weblist.showJumpListDialog();
 				}
 				else {
-					if(contentUIData.browserWidget12.getTag(R.id.image)!=null){
+					if(weblist.contentUIData.browserWidget12.getTag(R.id.image)!=null){
 						float alpha = contentview.getAlpha();// 0.5 0.25 0 1
 						if(alpha==0) alpha=1;
 						else if(alpha==1) alpha=0.37f;
 						else  alpha=0;
-						contentview.setAlpha(alpha);
+						weblist.contentUIData.webcontentlister.setAlpha(alpha);
 					} else {
 						showX(R.string.try_longpress,0);
 					}
 				}
-			} break;
-			/* 上下导航 */
-			case R.id.browser_widget13:
-			case R.id.browser_widget14:{
-				weblistHandler.prvnxtFrame(id == R.id.browser_widget13);
 			} break;
 			/* 自动浏览 */
 			case R.drawable.ic_autoplay:{
@@ -6196,6 +6192,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
 		MenuBuilder menu = (MenuBuilder) mmi.mMenu;
 		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
+		WebViewListHandler wlh = (WebViewListHandler) menu.tag;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;
@@ -6217,15 +6214,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					dd = new AlertDialog.Builder(this)
 						.setSingleChoiceLayout(R.layout.singlechoice_plain)
 						.setSingleChoiceItems(new String[]{
-								"切换新版合并的多页面模式"
-								, "切换旧版本多页面视图列表"
+								"切换旧版本多页面视图列表"
+								, "切换新版合并的多页面模式"
 								, "打开详细设置"
 						}, 0, new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								CMN.Log("onClick::", weblistHandler.contentUIData.webholder.getChildCount());
 								if(which==0 || which==1) {
-									which=(which+1)%2;
+									//which=(which+1)%2;
 									resetMerge(which, true);
 									if (PDICMainAppOptions.remMultiview()) {
 										PDICMainAppOptions.setUseMergedUrl(which==1);
@@ -6236,7 +6233,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								dialog.dismiss();
 							}
 						})
-						.setWikiText("自v5.7起联合搜索开始支持“合并的多页面模式”，可用一个网页控件显示全部结果，而不是一个词典对应一个网页控件，理论上更省资源。缺点是只能简单显示在线词典。", null)
+						.setWikiText(getString(R.string.wikiMultiViewMode), null)
 						.setTitle("多页面设置").create();
 					tagHolder.tag = null;
 				}
@@ -6252,6 +6249,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					toggleJointSearch();
 				}
 			}  break;
+			/* 即点即译 */
+			case R.id.tapSch:{
+				if(isLongClicked){
+					popupWord(null, null, 0, null);
+					closeMenu=ret=true;
+				} else {
+					opt.tapSch(wlh.togTapSch());
+					item.setChecked(wlh.tapSch);
+				}
+			} break;
 			case R.id.translate:{
 				MenuItemImpl tagHolder = getMenuSTd(mmi);
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
@@ -6303,7 +6310,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //				opt.setDelayContents(false);
 //				opt.setAnimateContents(false);
 //			}
-			ensureContentVis(weblistHandler, contentUIData.webSingleholder);
+			viewContent(weblistHandler);
 //			if(delay||animate) {
 //				opt.setDelayContents(delay);
 //				opt.setAnimateContents(animate);
@@ -6433,13 +6440,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void toggleClickSearch(boolean val) {
-		evalJsAtAllFrames(val?"window.rcsp|=0x20;window.rcspc||loadJs(sid.get(),'tapTrans.js')":"window.rcsp&=~0x20");
-//		currentDictionary.mWebView.evaluateJavascript(currentDictionary.getWebx().jsLoader, new ValueCallback<String>() {
-//			@Override
-//			public void onReceiveValue(String value) {
-//				CMN.Log("onReceiveValue::rcsp::", value);
-//			}
-//		});
 	}
 
 	ViewGroup webviewHolder;
@@ -6457,28 +6457,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 
-	private void evalJsAtAllFrames(String exp) {
-		evalJsAtAllFrames_internal(webSingleholder, exp);
-		evalJsAtAllFrames_internal(weblistHandler, exp);
-		if(peruseView !=null && peruseView.mWebView!=null){
-			peruseView.mWebView.evaluateJavascript(exp,null);
-		}
-//		if(popupWebView!=null){
-//			popupWebView.evaluateJavascript(exp,null);
-//		}//111
-	}
-
-	private void evalJsAtAllFrames_internal(ViewGroup webviewHolder, String exp) {
-		for (int index = 0; index < webviewHolder.getChildCount(); index++) {
-			if(webviewHolder.getChildAt(index) instanceof LinearLayout){
-				ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(index);
-				if(webHolder.getChildAt(1) instanceof WebView){
-					((WebView)webHolder.getChildAt(1))
-							.evaluateJavascript(exp,null);
-				}
-			}
-		}
-	}
 
 	private void setGlobleCE(boolean editable) {
 		ViewGroup webviewHolder=ActivedAdapter.webviewHolder;
@@ -7165,7 +7143,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				invoker.SetSearchKey(null);
 			}
 			
-			if (opt.getClickSearchEnabled() && !invoker.getImageOnly()) {
+			if (weblistHandler.tapSch && !invoker.getImageOnly()) {
 				CMN.Log("popuping...加载");
 				//mWebView.evaluateJavascript(BookPresenter.tapTranslateLoader, null);
 				try {
@@ -10357,7 +10335,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		startActivityForResult(intent, 110);
 	}
 	
-	public abstract void ensureContentVis(ViewGroup webholder, ViewGroup another);
+	/** ensure content visibility */
+	public void viewContent(WebViewListHandler wlh) {
+		wlh.viewContent();
+	}
 	
 	String[] transVals = new String[2];
 	

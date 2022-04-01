@@ -304,9 +304,17 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public boolean UseTripleClick() {
 		return false;
 	}
-
-
-
+	
+	
+	private Long getLong(String key, int def) {
+		try {
+			return defaultReader.getLong(key, def);
+		} catch (Exception e) {
+			CMN.Log(e);
+			return (long) defaultReader.getInt(key, def);
+		}
+	}
+	
 	public int getBottombarSize(int def) {
 		return defaultReader.getInt("BBS", def);
 	}
@@ -376,7 +384,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			CommitOrApplyOrNothing=1;
 		}
 		editor.putLong("MFF", FirstFlag).putLong("MSF", SecondFlag).putLong("MTF", ThirdFlag)
-				.putLong("MQF", FourthFlag).putLong("MVF", FifthFlag);
+				.putLong("MQF", FourthFlag).putLong("MVF", FifthFlag).putLong("MVIF", SixthFlag());
 		if(CommitOrApplyOrNothing==1) editor.apply();
 		else if(CommitOrApplyOrNothing==2) editor.commit();
 		//CMN.Log("apply changes");
@@ -416,7 +424,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	public void putFlags() {
 		defaultReader.edit().putLong("MFF",FirstFlag).putLong("MSF",SecondFlag)
-				.putLong("MTF",ThirdFlag).putLong("MVF",FifthFlag).apply();
+				.putLong("MTF",ThirdFlag).putLong("MVF",FifthFlag).putLong("MVIF",SixthFlag()).apply();
 	}
 
 	public void putFirstFlag() {
@@ -701,8 +709,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	//???
 	
-	@Metaline(flagPos=34, shift=1) public boolean autoSchPDict() { FirstFlag=FirstFlag; throw new RuntimeException();}
-	@Metaline(flagPos=34, shift=1) public void autoSchPDict(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public boolean autoSchPDict() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public void autoSchPDict(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 	
 	public boolean getRemPos() {
 		return (FirstFlag & 0x400000000l) != 0x400000000l;
@@ -923,8 +931,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	/* forbid all history recording */
-	@Metaline(flagPos=10) public static boolean storeNothing(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=10) public static void storeNothing(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=9) public static boolean storeNothing(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=9) public static void storeNothing(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	
 	
 	
@@ -957,8 +965,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 //	}
 
 	/** 记录各种点击 */
-	@Metaline(flagPos=14, shift=1) public static boolean storeClick(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=14, shift=1) public static void storeClick(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=13, shift=1) public static boolean storeClick(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=13, shift=1) public static void storeClick(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 
 
 //	public static boolean getHistoryStrategy5() {
@@ -990,8 +998,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	/** @return integer 0=always record; 1=don't record; 2=record on exit<br><br>default to 2*/
-	@Metaline(flagPos=18, flagSize=2, shift=2, max=2) public static int storePageTurn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=18, flagSize=2, shift=2, max=2) public static void storePageTurn(int val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=17, flagSize=2, shift=2, max=2) public static int storePageTurn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=17, flagSize=2, shift=2, max=2) public static void storePageTurn(int val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	
 	
 	
@@ -1268,10 +1276,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	@Metaline(flagPos=56, shift=1) public static boolean schPageAutoTurn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=56, shift=1) public static void schPageAutoTurn(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=57, shift=1) public static boolean schPageAutoType(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=57, shift=1) public static void schPageAutoType(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=55, shift=1) public static boolean schPageAutoTurn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=55, shift=1) public static void schPageAutoTurn(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=56, shift=1) public static boolean schPageAutoType(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=56, shift=1) public static void schPageAutoType(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	
 	public static boolean getInPageSearchAutoHideKeyboard() {
 		return (SecondFlag & 0x200000000000000l) != 0x200000000000000l;
@@ -1412,8 +1420,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	@Metaline(flagPos=9) public static boolean schPageFlt(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=9) public static void schPageFlt(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=8) public static boolean schPageFlt(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=8) public static void schPageFlt(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 
 	public static boolean getDoubleClickMaximizeClickSearch() {
 		return false;//(ThirdFlag & 0x200l) != 0x200l;
@@ -1616,17 +1624,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	public boolean getClickSearchEnabled() {
-		return (ThirdFlag & 0x800000000l) != 0x800000000l;
-	}
-	public boolean getClickSearchEnabled(long ThirdFlag) {
-		return (ThirdFlag & 0x800000000l) != 0x800000000l;
-	}
-	public int FetClickSearchEnabled() {
-		return (ThirdFlag & 0x800000000l)==0?1<<5:0;
-	}
-	
-	@Metaline(flagPos=35, shift=1) public boolean toggleClickSearchEnabled() { ThirdFlag=ThirdFlag; throw new IllegalArgumentException(); }
+	@Metaline(flagPos=35, shift=1) public boolean tapSch() { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=35, shift=1) public void tapSch(boolean v) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=35, shift=1) public int tapSchFet() { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=35, shift=1) public boolean togTapSch() { ThirdFlag=ThirdFlag; throw new IllegalArgumentException(); }
 	
 	public int FetIsDark() {
 		return GlobalOptions.isDark?1<<6:0;
@@ -1760,8 +1761,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	@Metaline(flagPos=55) public boolean schPageFye(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=55) public void schPageFye(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=54) public boolean schPageFye(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=54) public void schPageFye(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 	
 	
 	public boolean getPeruseTextSelectable() {
@@ -2212,7 +2213,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	//EQ
 	///////////////////// End Quart Flag////////////////////////////////////
 	/////////////////////Start Fifth Flag///////////////////////////////////
-	//EQ
+	//SF
 	private static Long FifthFlag=null;
 	public long getFifthFlag() {
 		if(FifthFlag==null) {
@@ -2220,16 +2221,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		}
 		return FifthFlag;
 	}
-	
-	private Long getLong(String key, int def) {
-		try {
-			return defaultReader.getLong(key, def);
-		} catch (Exception e) {
-			CMN.Log(e);
-			return (long) defaultReader.getInt(key, def);
-		}
-	}
-	
 	public static long getFifthFlag(Context context) {
 		if(FifthFlag==null) {
 			return FifthFlag= androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getLong("MVF",0);
@@ -2395,7 +2386,30 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	//EF
 	///////////////////// End Fifth Flag////////////////////////////////////
-	//EF
+	/////////////////////Start Sixth Flag///////////////////////////////////
+	//SS
+	private static Long SixthFlag=null;
+	public long getSixthFlag() {
+		if(SixthFlag==null) {
+			return SixthFlag=getLong("MVIF",0);
+		}
+		return SixthFlag;
+	}
+	public static long getSixthFlag(Context context) {
+		if(SixthFlag==null) {
+			return SixthFlag= androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getLong("MVIF",0);
+		}
+		return SixthFlag;
+	}
+	private void putSixthFlag(long val) {
+		defaultReader.edit().putLong("MVIF",SixthFlag=val).apply();
+	}
+	public final Long SixthFlag() {
+		return SixthFlag;
+	}
+	
+	@Metaline(flagPos=0, shift=1) public static boolean tabTranslateEach() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
 	
 	///////
 	///////
@@ -2653,6 +2667,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			return FourthFlag;
 			case 5:
 			return FifthFlag;
+			case 6:
+			return SixthFlag();
 		}
 		return tmpFlag;
 	}
@@ -2676,6 +2692,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			break;
 			case 5:
 				FifthFlag=val;
+			break;
+			case 6:
+				SixthFlag=val;
 			break;
 			default:
 				tmpFlag=val;

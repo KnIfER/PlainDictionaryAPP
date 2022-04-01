@@ -12,24 +12,27 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.widgets.SplitView;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AlloydPanel extends PlainAppPanel {
-	public ContentviewBinding contentUIData;
+	public WebViewListHandler handler;
 	public Toolbar toolbar;
 	public MenuBuilder AllMenus;
 	public List<MenuItemImpl> RandomMenu;
 	
-	public AlloydPanel(MainActivityUIBase a, @NonNull ContentviewBinding contentUIData) {
+	public AlloydPanel(MainActivityUIBase a, @NonNull WebViewListHandler handler) {
 		super(a, true);
-		this.contentUIData=contentUIData;
+		this.handler=handler;
 		this.bottomPadding = 0;
 		this.bPopIsFocusable = true;
 		this.bFadeout = -2;
@@ -44,8 +47,8 @@ public class AlloydPanel extends PlainAppPanel {
 			mBackgroundColor = 0;
 			setShowInDialog();
 		}
-		if (settingsLayout==null && contentUIData!=null) {
-			SplitView linearView = contentUIData.webcontentlister;
+		if (settingsLayout==null && handler!=null) {
+			SplitView linearView = handler.contentUIData.webcontentlister;
 			Toolbar toolbar = this.toolbar = new Toolbar(context);
 			linearView.addView(toolbar, 0);
 			toolbar.getLayoutParams().height = (int) (GlobalOptions.density * 45);
@@ -54,9 +57,16 @@ public class AlloydPanel extends PlainAppPanel {
 			toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
 			toolbar.inflateMenu(R.xml.menu_popup_content);
 			AllMenus = (MenuBuilder) toolbar.getMenu();
+			AllMenus.checkedDrawable = a.AllMenus.checkedDrawable;
+			// tabTranslateEach
+			//AllMenus.getItems().set(4, (MenuItemImpl) ViewUtils.findInMenu(a.AllMenusStamp, R.id.tapTranslator));
+			if(handler.tapSch) {
+				ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch).setChecked(true);
+			}
 			RandomMenu = new ArrayList<>(AllMenus.mItems);
 			toolbar.setNavigationOnClickListener(v -> dismiss());
 			toolbar.setOnMenuItemClickListener(a);
+			
 			
 			settingsLayout = linearView;
 		}

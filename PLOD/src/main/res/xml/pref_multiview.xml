@@ -79,7 +79,7 @@
 			android:key="1s"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="只有一个页面时，启用单页面模式"
+			android:title="只有一个页面时，启用旧的单页面模式"
 			app:allowDividerBelow="true"
 			/>
 	</PreferenceCategory>

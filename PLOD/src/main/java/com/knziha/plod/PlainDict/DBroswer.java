@@ -1328,6 +1328,7 @@ public class DBroswer extends DialogFragment implements
 			
 			weblistHandler.popupContentView(null, currentDisplaying__);
 			
+			weblistHandler.bShowInPopup = true;
 			weblistHandler.bMergeFrames = a.mergeFrames();
 			rec.renderContentAt(0, a,null, weblistHandler);
 
@@ -1375,6 +1376,7 @@ public class DBroswer extends DialogFragment implements
 			boolean bUseMergedUrl = false;
 			boolean bUseDictView = /*currentDictionary.rl!=null || */!opt.getUseSharedFrame() || opt.getMergeExemptWebx()&&currentDictionary.getIsWebx();
 			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, null);
+			weblistHandler.viewContent();
 			if(!bUseDictView) weblistHandler.initMergedFrame(false, true, true);
 			ScrollerRecord pagerec = null;
 //			if(opt.getRemPos()) {

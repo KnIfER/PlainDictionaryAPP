@@ -219,5 +219,7 @@
 	<string name="share_6">分享#6</string>
 	<string name="annotL">笔记列表 ✏</string>
 	<string name="clip_board">剪贴板</string>
-	<string name="noti_set">通知栏设置</string>>
+	<string name="noti_set">通知栏设置</string>
+	<string name="wikiMultiViewMode">自v5.7起联合搜索开始支持“合并的多页面模式”，可用一个网页控件显示全部结果，而不是一个词典对应一个网页控件，理论上更省资源。缺点是只能简单显示在线词典。</string>
+	>
 </resources>

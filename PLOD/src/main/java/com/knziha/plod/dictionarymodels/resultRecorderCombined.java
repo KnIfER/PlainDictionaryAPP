@@ -13,7 +13,6 @@ import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
-import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
@@ -154,14 +153,13 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		if (!weblistHandler.bDataOnly) {
 			if(jointResult.realmCount==1 && PDICMainAppOptions.getLv2JointOneAsSingle()) {
 				BookPresenter book = a.getBookByIdNoCreation(vals.get(0));
-				book.initViewsHolder(a);
-				weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, book.mWebView);
-				a.ensureContentVis(weblistHandler.contentUIData.webSingleholder, weblistHandler.contentUIData.WHP);
+				if(true) bUseMergedUrl = false; // 只有一页，不通过合并的url加载了
+				if(bUseDictView) book.initViewsHolder(a);
+				weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, bUseDictView?book.mWebView:weblistHandler.getMergedFrame());
 			} else {
 				weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
-				a.ensureContentVis(weblistHandler, weblistHandler.contentUIData.webSingleholder);
 			}
-			weblistHandler.contentUIData.webSingleholder.setVisibility(View.VISIBLE);
+			a.viewContent(weblistHandler);
 			weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowInPopup, bUseMergedUrl);
 		}
 		

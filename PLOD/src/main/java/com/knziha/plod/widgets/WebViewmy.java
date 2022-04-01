@@ -140,7 +140,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public float highRigkt_B;
 	public static boolean supressNxtClickTranslator;
 	
-	private final SIDProvider mSimpleIdentifier = new SIDProvider();
+	private final SIDProvider mSimpleId = new SIDProvider(CMN.id(this));
 	
 	View scrollRect;
 	ScrollAbility mScrollAbility;
@@ -223,12 +223,12 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		removeJavascriptInterface("accessibility");
 		removeJavascriptInterface("accessibilityTraversal");
 		
-		addJavascriptInterface(mSimpleIdentifier, "sid");
+		addJavascriptInterface(mSimpleId, "sid");
 		
 	}
 	
-	public long getSimpleIdentifier() {
-		return mSimpleIdentifier.get();
+	public int simpleId() {
+		return mSimpleId.get();
 	}
 	
 	public int getContentHeight(){
@@ -844,16 +844,18 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		String ColorCurse = String.format("%06X", highlightColor&0xFFFFFF);
 		Spanned text = Html.fromHtml("<span style='background:#"+ColorCurse+"; color:#"+ColorCurse+";'>高亮</span>");
 
-		MenuItem MyMenu = menu.add(0, R.id.toolbar_action0, 0, text);
-
-		//Toast.makeText(getContext(),""+MyMenu.view,0).show();
-		MyMenu = null;
-		//MyMenu.get
-
-		//Toast.makeText(getContext(),"asd"+menu.findItem(android.R.id.),0).show();
-		//Toast.makeText(getContext(), MyMenu.getIntent()+""+MyMenu.getTitle()+" "+MyMenu.getItemId()+getResources().getString(android.R.string.share),0).show();
-		//Toast.makeText(getContext(), ""+getResources().getString(getReflactField("com.android.internal.R$string", "share")),0).show();
-		//Toast.makeText(getContext(),menu.getItem(3).getItemId()+"="+menu_share_id+"finding menu_share:"+menu.findItem(menu_share_id)+"="+android.R.id.shareText,0).show();
+		if(false) {
+			MenuItem MyMenu = menu.add(0, R.id.toolbar_action0, 0, text);
+			
+			//Toast.makeText(getContext(),""+MyMenu.view,0).show();
+			MyMenu = null;
+			//MyMenu.get
+			
+			//Toast.makeText(getContext(),"asd"+menu.findItem(android.R.id.),0).show();
+			//Toast.makeText(getContext(), MyMenu.getIntent()+""+MyMenu.getTitle()+" "+MyMenu.getItemId()+getResources().getString(android.R.string.share),0).show();
+			//Toast.makeText(getContext(), ""+getResources().getString(getReflactField("com.android.internal.R$string", "share")),0).show();
+			//Toast.makeText(getContext(),menu.getItem(3).getItemId()+"="+menu_share_id+"finding menu_share:"+menu.findItem(menu_share_id)+"="+android.R.id.shareText,0).show();
+		}
 		
 		String shareText=getShareText();
 		String SelectAllText=getSelectText();
@@ -1462,13 +1464,13 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 	
 	private static class SIDProvider{
-		final static Random rand = new Random(28517);
-		final long mSimpleIdentifier;
-		SIDProvider() {
-			this.mSimpleIdentifier = ((CMN.now()&0xFFFFL)<<32)|(long)rand.nextInt(Integer.MAX_VALUE/2);
+		//final static Random rand = new Random(28517);
+		final int id;
+		SIDProvider(int id) {
+			this.id = id;//((CMN.now()&0xFFFFL)<<32)|(long)rand.nextInt(Integer.MAX_VALUE/2);
 		}
 		@JavascriptInterface
-		public long get(){return mSimpleIdentifier;}
+		public int get(){return id;}
 	}
 	
 	// 显示滚动按钮框

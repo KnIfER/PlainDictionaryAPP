@@ -71,11 +71,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	public void ensureContentVis(ViewGroup webholder, ViewGroup another) {
-	
-	}
-	
-	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		CMN.Log("onCreate...");
 		receivable=true;
