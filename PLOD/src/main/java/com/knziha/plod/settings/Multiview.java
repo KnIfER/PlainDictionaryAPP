@@ -25,6 +25,7 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		init_switch_preference(this, "scranima", PDICMainAppOptions.getScrollAnimation(), null, null);
 		init_switch_preference(this, "scrautex", PDICMainAppOptions.getScrollAutoExpand(), null, null);
 		init_switch_preference(this, "turbo_top", PDICMainAppOptions.getDelaySecondPageLoading(), null, null);
+		init_switch_preference(this, "neoS", PDICMainAppOptions.popViewEntryMulti(), null, null);
 		
 		init_switch_preference(this, "merge", PDICMainAppOptions.getUseMergedUrl(), null, null);
 		findPreference("merge_min").setOnPreferenceChangeListener(this);
@@ -38,6 +39,8 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		
 		init_switch_preference(this, "debug", PDICMainAppOptions.debug(), null, null)
 				.setVisible(BuildConfig.isDebug);
+		
+		init_switch_preference(this, "neo1", PDICMainAppOptions.popViewEntryOne(), null, null);
 	}
 
 	@Override
@@ -99,6 +102,12 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 			break;
 			case "neo":
 				PDICMainAppOptions.popViewEntry((Boolean) newValue);
+			break;
+			case "neo1":
+				PDICMainAppOptions.popViewEntryOne((Boolean) newValue);
+			break;
+			case "neoS":
+				PDICMainAppOptions.popViewEntryMulti((Boolean) newValue);
 			break;
 			case "debug":
 				PDICMainAppOptions.debug((Boolean) newValue);

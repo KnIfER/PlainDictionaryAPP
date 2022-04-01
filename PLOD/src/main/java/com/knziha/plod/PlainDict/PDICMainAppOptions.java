@@ -2410,10 +2410,13 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=0, shift=1) public static boolean popViewEntry() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=0, shift=1) public static void popViewEntry(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=1) public static boolean popViewEntryAlways() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=1) public static boolean popViewEntryOne() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=1) public static void popViewEntryOne(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2) public static boolean popViewEntryMulti() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2) public static void popViewEntryMulti(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=2, shift=1) public static boolean debug() { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=2, shift=1) public static void debug(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=3, shift=1) public static boolean debug() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=3, shift=1) public static void debug(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
 	
 	///////

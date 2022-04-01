@@ -600,6 +600,16 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 	}
 	
+	public int getBackgroundColor() {
+		return mBackground;
+	}
+	int mBackground;
+	@Override
+	public void setBackgroundColor(int color) {
+		mBackground = color;
+		super.setBackgroundColor(color);
+	}
+	
 	@RequiresApi(api = Build.VERSION_CODES.M)
 	private class callbackme extends ActionMode.Callback2 implements OnLongClickListener {
 		ActionMode.Callback callback;

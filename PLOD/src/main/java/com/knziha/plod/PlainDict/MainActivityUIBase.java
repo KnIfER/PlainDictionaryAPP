@@ -7348,6 +7348,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				try {
 					url = URLDecoder.decode(url, "UTF-8");
 				} catch (Exception ignored) { }
+				WebViewListHandler wlh = mWebView.weblistHandler;
+				boolean pop = !wlh.bShowingInPopup
+						&& (fromCombined && opt.popViewEntryMulti()
+								|| !fromCombined && opt.popViewEntryOne());
 				/* 页内跳转 */
 				if (url.startsWith("entry://#")) {
 					//Log.e("chromium inter_ entry3", url);
@@ -7451,7 +7455,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							int idx = invoker.bookImpl.lookUp(url, true);
 							//CMN.Log("查询跳转目标 : ", idx, URLDecoder.decode(url,"UTF-8"), processText(URLDecoder.decode(url,"UTF-8")));
 							if (idx >= 0) {//idx != -1
-								if(!fromPopup) {
+								if(pop) {
+									wlh = getRandomPageHandler(true);
+									mWebView = wlh.getMergedFrame();
+									wlh.viewContent();
+									wlh.setViewMode(WEB_VIEW_SINGLE, false, mWebView);
+									wlh.bShowInPopup=true;
+									wlh.bMergeFrames=0;
+									wlh.initMergedFrame(false, true, false);
+									wlh.popupContentView(null, url);
+									invoker.renderContentAt(-100,BookPresenter.RENDERFLAG_NEW,0,mWebView, idx);
+									if(mWebView.getBackgroundColor()==0) mWebView.setBackgroundColor(GlobalPageBackground);
+									return true;
+								}
+								else if(!fromPopup) {
 									/* 除点译弹窗与网络词典，代管所有网页的前进/后退。 */
 									if (fromPeruseView) {
 										peruseView.isJumping = true;
@@ -7481,7 +7498,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										/* 什么都不要做 */
 										mWebView.expectedPos = -100;
 									}
-								} else {
+								}
+								else {
 									mWebView.currentPos = idx;
 								}
 								float initialScale = BookPresenter.def_zoom;
