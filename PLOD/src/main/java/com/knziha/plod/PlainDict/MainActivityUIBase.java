@@ -7230,7 +7230,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mWebView.forbidLoading) {
 				return true;
 			}
-			CMN.debug("chromium shouldOverrideUrlLoading_???",url,view.getTag(), mWebView.fromCombined);
+			CMN.debug("chromium SOUL::",url,view.getTag(), mWebView.fromCombined);
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
 			boolean fromPopup = view==wordPopup.mWebView;

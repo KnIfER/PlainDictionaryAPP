@@ -34,14 +34,14 @@
 			android:key="scranima"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="滚动切换时使用动画"
+			android:title="上下切换时使用动画"
 			app:allowDividerBelow="true"
 			/>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="scrautex"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="滚动切换时自动展开"
+			android:title="上下切换时自动展开"
 			app:allowDividerBelow="true"
 			/>
 	</PreferenceCategory>
@@ -80,6 +80,13 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="只有一个页面时，启用旧的单页面模式"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="neo"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="在新窗口中弹出词条跳转"
 			app:allowDividerBelow="true"
 			/>
 	</PreferenceCategory>

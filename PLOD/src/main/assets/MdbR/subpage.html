@@ -99,7 +99,7 @@ var regHttp=new RegExp("^https?://");
 var regEntry=new RegExp("^entry://");
 var regPdf=new RegExp("^pdf://");
 var regSound=new RegExp("^sound://");
-var url2Jump;
+var nxtEntry;
 
 function hiPlaySound(e){
 	var cur=e.ur1?e:e.srcElement;
@@ -138,10 +138,10 @@ function wrappedDown(e){
 			t.ent=ent;
 			t.href="entry/"+ent;
 			debug("regEntry", ent, t.href);
-			url2Jump=t;
+			nxtEntry=t;
 		} 
 		else if(t.ent) {
-			url2Jump=t;
+			nxtEntry=t;
 		}
 		else if(regSound.test(t.href)) {/*拦截 sound 连接*/
 			var link=/* "sound/"+ */t.href.substring(8);
@@ -167,13 +167,13 @@ function wrappedDown(e){
 	}
 }
 
-function JumpUrl(t){
-	var ent=t.ent;
-	var tid=ent.indexOf('#');
-	debug("entry::", t.href, location.href);
-	if(tid>0) {
-		parent.window.JumpUrlTag(frameElement, ent.slice(tid+1), t.href, t);
-		//ent=ent.slice(0,tid);
+function JumpUrl(nxt){
+	var ent=nxt.ent;
+	var h=ent.indexOf('#');
+	debug("entry::", nxt.href, location.href);
+	if(h>0) {
+		parent.window.JumpUrlTag(frameElement, ent.slice(h+1), nxt.href, nxt);
+		//ent=ent.slice(0,h);
 	} else {
 		parent.window.JumpUrlFrame(frameElement);
 	}
@@ -181,9 +181,9 @@ function JumpUrl(t){
 
 
 function wrappedClickFunc(e){
-	if(url2Jump) {
-		if(!frameElement || frameElement.dictInfo.scrollExpand) JumpUrl(url2Jump);
-		url2Jump=0;
+	if(nxtEntry) {
+		if(!frameElement || frameElement.dictInfo.scrollExpand) JumpUrl(nxtEntry);
+		nxtEntry=0;
 	}
 }
 

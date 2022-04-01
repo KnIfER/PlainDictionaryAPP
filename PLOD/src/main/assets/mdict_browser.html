@@ -606,10 +606,19 @@
 			width:  calc(50px);
 			height: calc(50px);
 		}
-		.arrwp#prev {
+		.arrwp.prev {
 			bottom: calc(25px + 50px);
 			transform: rotate(180deg);
 			-webkit-transform: rotate(180deg);
+		}
+		.arrwp.back {
+			transform: rotate(90deg) scale(.7);
+			top: 8px;
+			right: 70px;
+		}
+		.arrwp.back#forward {
+			transform: rotate(270deg) scale(.7);
+    		right: 19px;
 		}
 		.arrwp::before {
 			content: " ";
@@ -707,6 +716,7 @@
 		var pengDingPos = -1;
 		var lv;
 		var defP;
+		var bkPs, navid, nav;
 		var sh, shs, shsty;
 		var dictsP;
 		var loadingEntries;
@@ -910,6 +920,7 @@
 		function Initialize() {
 			merge = location.pathname==='/merge.jsp';
 			defP = ge("defP");
+			bkPs = ge("bkP").style;
 			SH();
 			etSearch = ge("word");
 			if(app) 
@@ -1225,31 +1236,33 @@
 
 		var tid=window.setInterval(reinitIframe, 200);
 
-		function JumpUrlTag(f,t,u,e) {
-			var inf=f.dictInfo;
-			if(opt.fm2 && currentFocus!==f.dictInfo) {
+		function JumpUrlTag(fx,hash,href,e) {
+			var inf=fx.dictInfo;
+			if(opt.fm2 && currentFocus!==fx.dictInfo) {
 				click(inf.dictTitle, {_foc:1});
 			}
-			f.u=u;
-			f.tag=t;
+			fx.u=href;
+			fx.tag=hash;
 			//f.height = "200%";
-			f.src=u.slice(0,u.length-t.length); // "entry/"+
-			f.tc=2;
-			e.href=f.src;
+			fx.src=href.slice(0,href.length-hash.length); // "entry/"+
+			fx.tc=2;
+			e.href=fx.src;
 			//sclearInterval(tid);
-			debug("JumpTag::", inf.frameAt, t, u, u.slice(0,u.length-t.length));
+			debug("JumpTag::", inf.frameAt, hash, href, href.slice(0,href.length-hash.length));
+			showNav();
 		}
 
-		function JumpUrlFrame(f) {
-			debug("JumpTag::Frame::", f.frameAt, f.src);
-			var inf=f.dictInfo;
-			if(opt.fm2 && currentFocus!==f.dictInfo) {
+		function JumpUrlFrame(fx) {
+			debug("JumpTag::Frame::", fx.frameAt, fx.src);
+			var inf=fx.dictInfo;
+			if(opt.fm2 && currentFocus!==fx.dictInfo) {
 				inf.dictTitle.onclick({_foc:1});
 			} else {
-				f=inf.title.offsetTop;
-				if(f<defP.scrollTop)
-					defP.scrollTo(0, f);
+				fx=inf.title.offsetTop;
+				if(fx<defP.scrollTop)
+					defP.scrollTo(0, fx);
 			}
+			showNav();
 		}
 
 		function onEntryClick(e){//列表点击
@@ -1520,6 +1533,7 @@
 			defP.style.display = 'flex';
 			defP.style.flexDirection = 'column';
 			tFrame(frames[0]);
+			initNav();
 		}
 
 		/** 排列多页面内容。
@@ -1720,6 +1734,7 @@
 					}
 				}
 				tFrame(frames[0]);
+				initNav();
 			}
 			processing=false;
 		}
@@ -1865,6 +1880,10 @@
 			e=e.slice(0, e.lastIndexOf('.'));
 			var t=ge('dlab');
 			t.innerText=t.nextElementSibling.innerText=e;
+			//debug(scrollFocus.item.contentWindow.history);
+			//var h=scrollFocus.item.contentWindow.history.length>1;
+			//bkPs.display=h?'block':'none';
+			// fk https://stackoverflow.com/questions/3254985/back-and-forward-buttons-in-an-iframe/43334137
 		}
 
 		function tFrame(e,sc){
@@ -1883,6 +1902,34 @@
 		
 		function unlockFzSc(){
 			scrollFocusFz=false;
+		}
+
+		function initNav() {
+			bkPs.display='none';
+			bkPs.display='block';
+			navid=0;
+			nav=1;
+		}
+
+		function showNav() {
+			bkPs.display='block';
+			nav++;
+			ge('back').style.opacity=1;
+		}
+
+		function goBack(nxt) {
+			debug('goBack', history.length, navid);
+			if(scrollFocus) {
+				var d=nxt?1:-1, n=navid+d;
+				if(n<0||n>=nav) {
+					d=0;
+				} else {
+					history.go(d);
+				}
+				navid+=d;
+				ge('back').style.opacity=navid>0?1:0.2;
+				ge('forward').style.opacity=navid<nav-1?1:0.2;
+			}
 		}
 
 		function onCoverClick(e){
@@ -2936,16 +2983,6 @@
 			// 	}
 			// }
 		}
-		function goBack(){
-			if(currentContext){
-				currentContext.contentWindow.history.back();
-			}
-		}
-		function goForward(){
-			if(currentContext){
-				currentContext.contentWindow.history.forward();
-			}
-		}
 		function saveCurrent(){
 			if(currentContext){
 				if(app)
@@ -3720,7 +3757,7 @@
 			else
 				e = e.clientY;
 			//shsty.top = shy + (e-shyst) + 'px';
-			defP.scrollTop = (shy + e-shyst)/(defP.offsetHeight-35)*defP.scrollHeight;
+			defP.scrollTop = (shy + e-shyst)/(defP.offsetHeight-35)*(defP.scrollHeight-defP.offsetHeight);
 		}
 	</script>
 	
@@ -3768,8 +3805,12 @@
 	</div>
 	
 	<div id='defP'></div>
-	<a class="arrwp" id="prev"  onclick="prvnxtFrame();"><p class="arrow"></p></a>
-	<a class="arrwp" id="next" onclick="prvnxtFrame(1);"><p class="arrow"></p></a> 
+	<a class="arrwp prev" id="prev"  onclick="prvnxtFrame();"><p class="arrow"></p></a>
+	<a class="arrwp next" id="next" onclick="prvnxtFrame(1);"><p class="arrow"></p></a>
+	<div id="bkP" style="position:fixed;top:12.5px;right:25px;width:90px;height:40px;display:none" onclick="">
+		<a class="arrwp prev back" id="back"  onclick="goBack();"><p class="arrow"></p></a>
+		<a class="arrwp next back" id="forward" onclick="goBack(1);"><p class="arrow"></p></a> 
+	</div>
 	<div id="dlab" class="dlab y">当前词典</div>
 	<div class="dlab x">当前词典</div>
 	<div id="sh"></div>
