@@ -23,17 +23,13 @@
 function debug(...e){console.log(e)};
 debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
-if(window.addEventListener){
-	window.addEventListener('load',wrappedOnLoadFunc,false);
-	window.addEventListener('click',wrappedClickFunc);
-	window.addEventListener('mousedown',wrappedDown);
-	window.addEventListener('touchstart',wrappedDown);
-	//window.addEventListener('scroll',wrappedScroll,true);
-} else {
-	window.onload=wrappedOnLoadFunction;
-	window.onclick=wrappedClickFunc;
-	window.onmousedown=wrappedDown;
-}
+
+window.addEventListener('load',wrappedOnLoadFunc,false);
+//window.addEventListener('click',wrappedClickFunc);
+window.addEventListener('mousedown',wrappedDown);
+window.addEventListener('touchstart',wrappedDown);
+//window.addEventListener('scroll',wrappedScroll,true);
+
 // function wrappedScroll(e){
 // 	debug(e);
 // 	document.body.scrollTop=0;
@@ -41,7 +37,7 @@ if(window.addEventListener){
 // 	e.stopPropagation();
 // }
 function wrappedOnLoadFunc(){
-	debug('mdpage loaded', frameElement.dictInfo.name, parent.rcspc);
+	debug('mdpage loaded', frameElement?.dictInfo?.name, parent.rcspc);
 	window.addEventListener('click',parent.window.rcspc);
 	// //document.body.style.fontSize=35+'px';
 	// highlight(null);
@@ -71,6 +67,8 @@ function wrappedOnLoadFunc(){
 			console.log('子页面高亮开始!!!');
 			pw.MarkFrame(frameElement);
 		}
+	} else if(app){
+		window.rcsp=app.rcsp(sid.get());
 	}
 	//todo 处理背景色？
 }

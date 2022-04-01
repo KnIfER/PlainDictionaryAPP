@@ -6,7 +6,7 @@ if(!window.rcspc){
     //_ log('wrappedClickFunc 2', e.srcElement.id);
     var curr = e.srcElement;
     _log('popuping...rcsp='+rcsp);
-    if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && rcsp&0x20 && !curr.noword && !curr.onclick){
+    if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && curr.nodeName!='A' && rcsp&0x20 && !curr.noword && !curr.onclick){
         //todo d.activeElement.tagName
         var s = w.getSelection();
         if(s.isCollapsed && s.anchorNode){ // don't bother with user selection

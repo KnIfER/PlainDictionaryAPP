@@ -7291,7 +7291,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if (url.startsWith("http://") || url.startsWith("https://")) {
 				//CMN.Log("shouldOverrideUrlLoading_http",url);
-				if(invoker==weblistHandler.mMergedBook) {
+				if(invoker==weblistHandler.mMergedBook
+					|| url.indexOf("mdbr.com")>0) {
 					//todo
 					return false;
 				}
@@ -7349,7 +7350,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					url = URLDecoder.decode(url, "UTF-8");
 				} catch (Exception ignored) { }
 				WebViewListHandler wlh = mWebView.weblistHandler;
-				boolean pop = !wlh.bShowingInPopup
+				fromCombined = !wlh.isViewSingle();
+				boolean pop = !wlh.bShowingInPopup // popup new content displayer
 						&& (fromCombined && opt.popViewEntryMulti()
 								|| !fromCombined && opt.popViewEntryOne());
 				/* 页内跳转 */
@@ -7427,12 +7429,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				/* 普通的词条跳转 */
-				else{
+				else {
 					//CMN.Log("chromium inter_ entry2", url);
 					url = url.substring(entryTag.length());
 					try {
 						boolean popup = invoker.getPopEntry();
-						if(popup){
+						if(popup) {
 							wordPopup.init();
 							wordPopup.mWebView.frameAt = mWebView.frameAt;
 							//popupWebView.SelfIdx = mWebView.SelfIdx;
@@ -7455,7 +7457,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							int idx = invoker.bookImpl.lookUp(url, true);
 							//CMN.Log("查询跳转目标 : ", idx, URLDecoder.decode(url,"UTF-8"), processText(URLDecoder.decode(url,"UTF-8")));
 							if (idx >= 0) {//idx != -1
-								if(pop) {
+								if(pop) { // 新窗口打开词条跳转
 									wlh = getRandomPageHandler(true);
 									mWebView = wlh.getMergedFrame();
 									wlh.viewContent();
@@ -7464,7 +7466,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									wlh.bMergeFrames=0;
 									wlh.initMergedFrame(false, true, false);
 									wlh.popupContentView(null, url);
-									invoker.renderContentAt(-100,BookPresenter.RENDERFLAG_NEW,0,mWebView, idx);
+									invoker.renderContentAt(-1,BookPresenter.RENDERFLAG_NEW,0,mWebView, idx);
 									if(mWebView.getBackgroundColor()==0) mWebView.setBackgroundColor(GlobalPageBackground);
 									return true;
 								}
@@ -7579,7 +7581,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			WebViewListHandler weblistHandler = mWebView.weblistHandler;
 			
-			if(weblistHandler.bMergingFrames) {
+			{
 				int schemaIdx = url.indexOf(":");
 				//CMN.debug("mMergedBook::", url);
 				if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)) {

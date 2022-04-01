@@ -2031,6 +2031,7 @@ function debug(e){console.log(e)};
 		//if(!a.AutoBrowsePaused&&a.background&&PDICMainAppOptions.getAutoBrowsingReadSomething())
 		//	mWebView.resumeTimers();
     	String htmlCode = null ,JS=null;
+    	boolean loadUrl=opt.alwaysloadUrl() || opt.popuploadUrl()&&mWebView.weblistHandler.bShowingInPopup;
 		try {
 			if(bookImpl.hasVirtualIndex())
 				try {
@@ -2085,6 +2086,16 @@ function debug(e){console.log(e)};
 				} catch (Exception e) {
 					CMN.Log(e);
 				}
+			else if(loadUrl) {
+				StringBuilder mergedUrl = new StringBuilder("http://mdbr.com/content/");
+				mergedUrl.append("d");
+				IU.NumberToText_SIXTWO_LE(getId(), mergedUrl);
+				for(long p:position) {
+					mergedUrl.append("_");
+					IU.NumberToText_SIXTWO_LE(p, mergedUrl);
+				}
+				htmlCode = mergedUrl.toString();
+			}
 			else
 			{
 				htmlCode = bookImpl.getRecordsAt(mBookRecordInteceptor, position);
@@ -2115,11 +2126,14 @@ function debug(e){console.log(e)};
 		
 		StringBuilder htmlBuilder = AcquirePageBuilder();
 		
-		//todo may allow ?
 		mWebView.getSettings().setSupportZoom(!fromCombined);
 		mWebView.isloading = true;
 		if(htmlCode!=null) {
-			if (!htmlCode.startsWith(fullpageString)) {
+			if(loadUrl) {
+				//mWebView.presenter = mWebView.weblistHandler.getMergedFrame().presenter;
+				mWebView.loadUrl(htmlCode);
+			}
+			else if (!htmlCode.startsWith(fullpageString)) {
 				AddPlodStructure(mWebView, htmlBuilder, fromPopup, mIsolateImages);
 				LoadPagelet(mWebView, htmlBuilder, htmlCode);
 			}

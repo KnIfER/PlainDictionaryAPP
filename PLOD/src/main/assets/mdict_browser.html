@@ -2012,7 +2012,7 @@
 			if(true) 
 			{
 				expanding = true;
-				debug('startLazyLoadFrames',e);
+				//debug('startLazyLoadFrames',e);
 				des=dex=e;
 				delayExpandTimed();
 			}
@@ -2038,7 +2038,7 @@
 		function delayExpand(){
 			if(!processing) {
 				var inf=frames[dex];
-				debug('lazyLoading...', dex, inf, inf&&inf.waiting);
+				//debug('lazyLoading...', dex, inf, inf&&inf.waiting);
 				if(inf) {
 					if(opt.lazyLoadMax>0 && inf.title.offsetTop>=defP.scrollTop+opt.lazyLoadMax*defP.offsetHeight) {
 						expanding=false; // 暂停加载
@@ -2226,7 +2226,7 @@
 			// 	fx.item.style.display='block';
 			// }
 			fx._scroll=0;
-			debug('prvnxt='+fx.frameAt);
+			//debug('prvnxt='+fx.frameAt);
 		}
 
 		function scrollToPosId(id,pos) {

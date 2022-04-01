@@ -2415,8 +2415,17 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=2) public static boolean popViewEntryMulti() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=2) public static void popViewEntryMulti(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
+	/** 调试网页版资源。在此模式下，直接电脑上修改服务器资源文件，手机端刷新即可看到效果。需要JavaFx桌面版本配合，打开asset/liba.mdx，ip地址填对。*/
 	@Metaline(flagPos=3, shift=1) public static boolean debug() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=3, shift=1) public static void debug(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=4, shift=1) public static boolean popuploadUrl() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=5) public static boolean alwaysloadUrl() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=4, shift=1) public static boolean loadUrlPopup() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=5) public static boolean loadUrlOne() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=6) public static boolean loadUrlMulti() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
 	
 	
 	///////
