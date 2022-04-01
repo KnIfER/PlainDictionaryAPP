@@ -2130,7 +2130,7 @@ function debug(e){console.log(e)};
 		mWebView.isloading = true;
 		if(htmlCode!=null) {
 			if(loadUrl) {
-				//mWebView.presenter = mWebView.weblistHandler.getMergedFrame().presenter;
+				mWebView.presenter = mWebView.weblistHandler.getMergedBook();
 				mWebView.loadUrl(htmlCode);
 			}
 			else if (!htmlCode.startsWith(fullpageString)) {

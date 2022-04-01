@@ -945,7 +945,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		drawable.setBounds(0,0, sz, sz);
 		AllMenus.checkedDrawable = drawable;
 		
-		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 23/*随机词条*/, 14/*翻译*/, 2, 16, 3/*记忆位置*/, 9, 11, 12);
+	// 															23/*随机词条*/
+		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 13, 14/*翻译*/, 2, 16, 3/*记忆位置*/, 9, 11, 12);
 		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 13, 14, 1, 2, 15, 21/*记忆位置*/, 9, 10, 12);
 		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7/*翻阅模式*/, 8/*分字搜索*/, 20/*搜索工具栏*/, 17, 18, 19);
 		LEFTMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7, 20, 5, 6);
@@ -1810,8 +1811,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //				CMN.Log(e);
 //			}
 	}
-	
-	PowerManager.WakeLock wakeLock;
 	
 	private void setLv1ScrollChanged() {
 		lv.setOnScrollChangedListener(new OnScrollChangedListener() {

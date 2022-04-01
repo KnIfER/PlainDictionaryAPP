@@ -95,7 +95,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	public BookPresenter sching;
 	private WebViewmy invoker;
 	private boolean isPreviewDirty;
-	private final Runnable harvestAby = this::SearchDone;
+	private final Runnable harvestRn = this::SearchDone;
 	private final Runnable setAby = () -> setTranslator(sching, currentPos);
 	private final Runnable setAby1 = () -> entryTitle.setText(displaying);
 	private resultRecorderCombined rec;
@@ -810,8 +810,8 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	
 	@AnyThread
 	private void harvest() {
-		a.root.removeCallbacks(harvestAby);
-		a.root.post(harvestAby);
+		a.root.removeCallbacks(harvestRn);
+		a.root.post(harvestRn);
 	}
 	
 	@AnyThread
@@ -1016,7 +1016,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			weblistHandler.bMergingFrames = true;
 			weblistHandler.bMergeFrames = 1;
 			weblistHandler.bDataOnly = true;
-			mWebView.presenter = a.weblistHandler.getMergedFrame().presenter; //todo opt
+			mWebView.presenter = a.weblistHandler.getMergedBook(); //todo opt
 			if(mWebView.wvclient!=a.myWebClient) {
 				mWebView.setWebChromeClient(a.myWebCClient);
 				mWebView.setWebViewClient(a.myWebClient);
@@ -1062,7 +1062,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		IU.NumberToText_SIXTWO_LE(CCD.getId(), mergedUrl);
 		mergedUrl.append("_");
 		IU.NumberToText_SIXTWO_LE(currentPos, mergedUrl);
-		mWebView.presenter = a.weblistHandler.getMergedFrame().presenter;
+		mWebView.presenter = a.weblistHandler.getMergedBook();
 		mWebView.loadUrl(mergedUrl.toString());
 		weblistHandler.resetScrollbar(mWebView, false, false);
 	}

@@ -366,12 +366,18 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		this.mWebView = mWebView;
 	}
 	
-	public WebViewmy getMergedFrame() {
-		if(mMergedFrame==null) {
+	public BookPresenter getMergedBook() {
+		if(mMergedBook==null) {
 			try {
 				mMergedBook = new BookPresenter(new File("empty"), null, 1, 2);
 			} catch (IOException ignored) { }
-			mMergedBook.initViewsHolder(a);
+		}
+		return mMergedBook;
+	}
+	
+	public WebViewmy getMergedFrame() {
+		if(mMergedFrame==null) {
+			getMergedBook().initViewsHolder(a);
 			mMergedFrame = mMergedBook.mWebView;
 			mMergedFrame.weblistHandler = this;
 			mMergedBook.rl.setTag(mMergedFrame);
@@ -900,7 +906,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public boolean togTapSch() {
 		tapSch = !tapSch;
 		evalJsAtAllFrames(tapSch?
-				"window.rcsp|=0x20;window.rcspc||loadJs(sid.get(),'tapTrans.js')"
+				"window.rcsp|=0x20;window.rcspc||loadJs(sid.get(),'tapSch.js')"
 				:"window.rcsp&=~0x20");
 		return tapSch;
 	}

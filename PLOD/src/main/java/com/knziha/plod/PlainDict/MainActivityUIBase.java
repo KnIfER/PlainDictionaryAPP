@@ -584,7 +584,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected int hidden_count;
 	@Metaline
 	private static final String PDFPage="PAGE";
-	public resultRecorderCombined recCom;
+	public resultRecorderCombined recCom/* = EmptyResult*/; //todo
 	protected boolean forbidVolumeAjustmentsForTextRead;
 	private ColoredHighLightSpan timeHLSpan;
 	private static final float[] TTS_LEVLES_SPEED = new float[]{0.25f, 0.75f, 1f, 1.25f, 1.75f, 2f, 2.5f, 2.75f, 4f};
@@ -6223,10 +6223,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								CMN.Log("onClick::", weblistHandler.contentUIData.webholder.getChildCount());
 								if(which==0 || which==1) {
 									//which=(which+1)%2;
-									resetMerge(which, true);
-									if (PDICMainAppOptions.remMultiview()) {
-										PDICMainAppOptions.setUseMergedUrl(which==1);
+									if(weblistHandler.isMultiRecord()) {
+										resetMerge(which, true);
+										if (PDICMainAppOptions.remMultiview()) {
+											PDICMainAppOptions.setUseMergedUrl(which==1);
+										}
 									}
+									else return;
 								} else {
 									launchSettings(Multiview.id, Multiview.requestCode);
 								}
@@ -6318,7 +6321,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			// only handle popup
 			//weblistHandler.initMergedFrame(weblistHandler.bMergingFrames, false, false);
-			recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblistHandler);
+			if(recCom!=null)
+				recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblistHandler);
 		} else if(t){
 			showT("已经是了");
 		}
@@ -7147,7 +7151,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				CMN.Log("popuping...加载");
 				//mWebView.evaluateJavascript(BookPresenter.tapTranslateLoader, null);
 				try {
-					mWebView.evaluateJavascript(ViewUtils.fileToString(MainActivityUIBase.this, new File("/ASSET2/" + "tapTrans.js")), null);
+					mWebView.evaluateJavascript(ViewUtils.fileToString(MainActivityUIBase.this, new File("/ASSET2/" + "tapSch.js")), null);
 				} catch (Exception e) { CMN.Log(e);}
 			}
 			
@@ -7581,10 +7585,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			WebViewListHandler weblistHandler = mWebView.weblistHandler;
 			
-			{
-				int schemaIdx = url.indexOf(":");
-				//CMN.debug("mMergedBook::", url);
-				if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)) {
+			int schemaIdx = url.indexOf(":");
+			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
+			if(invoker.isMergedBook) {
+				if(mdbr) {
+					CMN.debug("mdbr::", url);
 					try {
 						HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 						Response ret = getMdictServer().handle(req);
@@ -7606,7 +7611,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							return (WebResourceResponse) server.webResHandler.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
 						}
 					}
-					try {
+					try { //todo opt
 						InputStream input = null;
 						for (BookPresenter book:weblistHandler.frames) { // java.util.ConcurrentModificationException
 							if(book!=null && book.getIsWebx()) {
@@ -7672,8 +7677,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				//return null;
 			}
+			else CMN.debug("ivk::", invoker);
 			
-			if(url.startsWith("http://mdbr.com/load.html")) {
+			if(url.startsWith("http://mdbr.com/load.html")) { // for random page
 				return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(new byte[0]));
 			}
 			
@@ -7713,12 +7719,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						return emptyResponse;
 					}
 				}
-//				if (webx.fastGStaticFonts && Build.VERSION.SDK_INT<21) {
-//					if (url.endsWith(".woff")) {
-//						InputStream resTmp = ViewUtils.fileToStream(invoker.a, new File(AssetTag.substring(0, 6)+"2/"+url.substring(url.lastIndexOf("/") + 1)));
-//						if(resTmp!=null) return new WebResourceResponse("*/*", "UTF-8", resTmp);
-//					}
-//				}
 				if(accept==null || accept.contains("text/html")) {
 					if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
 						boolean proceed = true;
@@ -7843,8 +7843,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					return (WebResourceResponse) webx.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
 				}
 				
-				if(url.toLowerCase().startsWith("http://mdbr.com")) {
-					int schemaIdx = url.indexOf(":");
+				if(url.startsWith("http://mdbr.com")) {
 					try {
 						HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
 						Response ret = getMdictServer().handle(req);
@@ -9650,7 +9649,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//CommonAssets.put("SUBPAGE.js", BookPresenter.jsBytes);
 		//CommonAssets.put("markloader.js", BookPresenter.markJsLoader);
 		CommonAssets.put("dk.js", DarkModeIncantation.getBytes());
-		//CommonAssetsStr.put("tapTrans.js", BookPresenter.tapTranslateLoader);
+		//CommonAssetsStr.put("tapSch.js", BookPresenter.tapTranslateLoader);
 	}
 	
 	public InputStream loadCommonAsset(String key) throws IOException {
