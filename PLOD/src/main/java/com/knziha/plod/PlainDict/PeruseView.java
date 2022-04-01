@@ -864,9 +864,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 //		webcontentlist.scrollbar2guard=contentUIData.dragScrollBar;
 		
 		//tofo
-		contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
-			contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
-		});
+//		contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
+//			contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
+//		});
 		leftLexicalAdapter.webviewHolder =
 		bookMarkAdapter.webviewHolder = contentUIData.webSingleholder;
 		contentUIData.webSingleholder.setBackgroundColor(CMN.GlobalPageBackground);

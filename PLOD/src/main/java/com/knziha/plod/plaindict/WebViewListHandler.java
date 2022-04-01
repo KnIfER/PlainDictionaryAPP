@@ -769,9 +769,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.browserWidget13.setOnClickListener(this);
 			contentUIData.browserWidget14.setOnClickListener(this);
 			
-			contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
-				contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
-			});
+//			contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
+//				contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
+//			});
 			
 			SplitView webcontentlister = contentUIData.webcontentlister;
 			webcontentlister.multiplier=-1;

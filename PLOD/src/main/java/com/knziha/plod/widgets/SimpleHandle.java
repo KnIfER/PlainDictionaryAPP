@@ -13,14 +13,14 @@ import android.text.TextUtils;
 import android.view.View;
 
 @SuppressLint("ViewConstructor")
-public class SamsungLikeHandle extends View {
+public class SimpleHandle extends View {
     Paint p;
 	Paint deliPainter;
 	private int bgColor;
 	float delta;
 	private String delimiter;
 	
-	public SamsungLikeHandle(Context c, int m){
+	public SimpleHandle(Context c, int m){
         super(c);
 		p = new Paint();
         p.setFlags(Paint.ANTI_ALIAS_FLAG);

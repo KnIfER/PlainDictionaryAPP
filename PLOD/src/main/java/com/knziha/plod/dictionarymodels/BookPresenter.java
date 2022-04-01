@@ -2124,7 +2124,6 @@ function debug(e){console.log(e)};
 				LoadPagelet(mWebView, htmlBuilder, htmlCode);
 			}
 			else {
-				CMN.Log("fullpageString");
 				int headidx = htmlCode.indexOf("<head>");
 				boolean b1 = headidx == -1;
 				if (true) {

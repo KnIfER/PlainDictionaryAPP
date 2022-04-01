@@ -3,10 +3,7 @@ package com.knziha.plod.widgets;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,14 +16,13 @@ import android.widget.ScrollView;
 import androidx.core.view.ViewCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.R;
 
 import java.util.Timer;
 
 
 public class DragScrollBar extends RelativeLayout{
-	public SamsungLikeHandle handleThumb;
+	public SimpleHandle handleThumb;
 
 	int handleColour;
 	int mMax=100;
@@ -36,6 +32,7 @@ public class DragScrollBar extends RelativeLayout{
 	public boolean isDragging = false;
 	private TypedArray a;
 	public View scrollee;
+	public ScrollView scrollView;
 	SwipeRefreshLayout swipeRefreshLayout;
 	private int bgColor;
 	
@@ -110,8 +107,8 @@ public class DragScrollBar extends RelativeLayout{
 	}
 
 	//设置拉杆
-	SamsungLikeHandle setUpHandle(Context context, Boolean lightOnTouch){
-		handleThumb = new SamsungLikeHandle(context, 0);
+	SimpleHandle setUpHandle(Context context, Boolean lightOnTouch){
+		handleThumb = new SimpleHandle(context, 0);
 		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(desiredWidth,
 				desiredHeight= ViewUtils.getDP(36, this));
 		lp.addRule(ALIGN_PARENT_RIGHT);
@@ -250,18 +247,18 @@ public class DragScrollBar extends RelativeLayout{
 			});
 	}
 
-	Runnable fadeOut=() -> {
+	Runnable fadeOutRn=() -> {
 		handleThumb.setVisibility(View.GONE);
-		currentRunnable=null;
+		stupidRn=null;
 		//CMN.Log("fadeOut called !!!");
 	};
-	Runnable NautyFadeOut=new Runnable() {
+	Runnable fadeRnNty=new Runnable() {
 		@Override
 		public void run() {
-			if(scrollee!=null){
+			if(scrollee!=null && !isHeld){
 				float _lastY = scrollee.getScrollY();
 				if(lastY!=_lastY){
-					handleThumb.postDelayed(currentRunnable=this, 100);
+					handleThumb.postDelayed(stupidRn=this, 100);
 					lastY=_lastY;
 				}
 				else {
@@ -272,22 +269,23 @@ public class DragScrollBar extends RelativeLayout{
 		}
 	};
 
-	Runnable currentRunnable;
+	// 谁能改？
+	Runnable stupidRn;
 
 	public void fadeOut(){
 		//CMN.Log("fadeOut ?");
-		if(currentRunnable!=fadeOut){
+		if(stupidRn!= fadeOutRn){
 			//CMN.Log("fadeOut prepared successfully ...");
-			handleThumb.postDelayed(currentRunnable=fadeOut, 1000);
+			handleThumb.postDelayed(stupidRn= fadeOutRn, 1000);
 		}
 	}
 
 	public void cancelFadeOut(){
-		if(currentRunnable!=null){// fade out task is already assigned.
+		if(stupidRn!=null){// fade out task is already assigned.
 			//CMN.Log(" cancelFadeOut ");
-			handleThumb.removeCallbacks(fadeOut);
-			handleThumb.removeCallbacks(NautyFadeOut);
-			currentRunnable=null;
+			handleThumb.removeCallbacks(fadeOutRn);
+			handleThumb.removeCallbacks(fadeRnNty);
+			stupidRn=null;
 		}
 	}
 
@@ -296,7 +294,7 @@ public class DragScrollBar extends RelativeLayout{
 		//if(currentRunnable==fadeOut){
 			//CMN.Log("hiJacked successfully ...");
 			cancelFadeOut();
-			handleThumb.postDelayed(currentRunnable=NautyFadeOut, 200);
+			handleThumb.postDelayed(stupidRn= fadeRnNty, 200);
 		//}
 	}
 
@@ -315,17 +313,18 @@ public class DragScrollBar extends RelativeLayout{
 		OnTouchListener otl = new OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent e) {
-				switch(e.getAction()){
+				float y = e.getRawY();
+				//CMN.Log("y::", y);
+				switch(e.getActionMasked()){
 					case MotionEvent.ACTION_DOWN:
 						isHeld =true;
 						isDragging =true;
-						lastY = e.getRawY();
-						if(opc!=null) opc.OnProgressChanged(-1);
+						lastY = y;
 						synced=false;
 						//scrollee.startNestedScroll(SCROLL_AXIS_VERTICAL);
 					break;
 					case MotionEvent.ACTION_MOVE://xxx
-						float dy = e.getRawY() - lastY;
+						float dy = y - lastY;
 						int max = getHeight()-desiredHeight;
 						int progress = (int) Math.max(0, Math.min(mProgress + dy*mMax/max, mMax));
 						int newTop = topByProgress(progress);
@@ -337,27 +336,21 @@ public class DragScrollBar extends RelativeLayout{
 							mProgress = progress;
 							//if (opc != null) opc.OnProgressChanged(progress);
 							if (scrollee != null) {
-								if (scrollee instanceof ScrollView) {
-									((ScrollView) scrollee).smoothScrollTo(0, progress);
+								if (scrollView!=null) {
+									scrollView.smoothScrollTo(0, progress);
 									if(!synced){
-										//((AdvancedNestScrollView) scrollee).SyncNestedScroll(0);
 										synced=true;
 									}
-								}else
+								} else {
 									scrollee.setScrollY(progress);
+								}
 							}
 						}
-						lastY = e.getRawY();
+						lastY = y;
 					break;
 					case MotionEvent.ACTION_UP:
 						isHeld =false;
 						isDragging =false;
-						if(opc!=null) opc.OnProgressChanged(-2);
-						if(scrollee instanceof AdvancedNestScrollView){
-							//((AdvancedNestScrollView) scrollee).SyncNestedScroll(0-mProgress);
-							//scrollee.stopNestedScroll();
-							CMN.Log("scrollee.stopNestedScroll()");
-						}
 					break;
 					default:
 					break;
@@ -368,25 +361,16 @@ public class DragScrollBar extends RelativeLayout{
 		handleThumb.setOnTouchListener(otl);
 	}
 
-	public void setOnProgressChangedListener(OnProgressChangedListener onProgressChangedListener) {
-		opc = onProgressChangedListener;
-	}
-	
-	public interface OnProgressChangedListener {
-		void OnProgressChanged(int _mProgress);
-	}
-	
-	OnProgressChangedListener opc;
-
 	public boolean isWebHeld;
 	public Timer timer;
 
 	public void setDelimiter(String newShield, View _scrollee) {
 		handleThumb.setDelimiter(newShield);
 		scrollee = _scrollee;
+		scrollView = scrollee instanceof ScrollView? (ScrollView) scrollee :null;
 	}
 
-	public SamsungLikeHandle getHandle(){
+	public SimpleHandle getHandle(){
 		return handleThumb;
 	}
 }
