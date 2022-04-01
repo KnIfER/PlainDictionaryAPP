@@ -72,7 +72,7 @@ if(!window.rcspc){
 
                             //_log(text); // final output
                             if(app && text.trim().length){
-                                app.popupWord(sid.get(), text, frameAt, d.documentElement.scrollLeft+pX, d.documentElement.scrollTop+pY, pW, pH);
+                                app.popupWord(sid.get(), text, 0/*frameAt */, d.documentElement.scrollLeft+pX, d.documentElement.scrollTop+pY, pW, pH);
                                 w.popup=1;
                                 //s.empty();
                                 return true;

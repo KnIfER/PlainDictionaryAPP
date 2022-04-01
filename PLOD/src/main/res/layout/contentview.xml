@@ -75,7 +75,6 @@
 					android:background="@drawable/item_selector_circle"
 					android:src="@drawable/chevron_up1"
 					android:clickable="true"
-					android:visibility="gone"
 					/>
 				<android.widget.ImageView
 					android:id="@+id/browser_widget13"
@@ -214,6 +213,62 @@
 				android:textSize="18sp"
 				android:maxLines="1"
 				android:paddingBottom="2dp"
+				/>
+
+			<android.widget.ImageView
+				android:id="@+id/tools"
+				android:layout_width= "58dp"
+				android:layout_height="58dp"
+				android:background="@drawable/item_selector_circle1"
+				android:clickable="true"
+				android:src="@drawable/tools_toolbar"
+				android:paddingTop="15dp"
+				android:paddingBottom="15dp"
+				android:paddingLeft="12dp"
+				android:paddingRight="18dp"
+				android:tint="#2196f3"
+				android:layout_gravity="bottom|right"
+				android:layout_marginBottom="40dp"
+				android:layout_marginRight="34.5dp"
+				android:visibility="gone"
+				tools:visibility="visible"
+				tools:alpha="0.9"
+				/>
+
+
+			<ImageView
+				android:id="@+id/nxt"
+				android:layout_width="60dp"
+				android:layout_height="25sp"
+				android:layout_gravity="bottom|right"
+				android:gravity="center_horizontal"
+				android:textSize="18sp"
+				android:maxLines="1"
+				android:paddingBottom="2dp"
+				android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
+				android:background="?attr/listChoiceBackgroundIndicator"
+				android:tint="#888"
+				android:clickable="true"
+				android:layout_marginRight="5dp"
+				android:visibility="gone"
+				/>
+
+			<ImageView
+				android:id="@+id/prv"
+				android:layout_width="60dp"
+				android:layout_height="25sp"
+				android:layout_gravity="bottom|left"
+				android:gravity="center_horizontal"
+				android:textSize="18sp"
+				android:maxLines="1"
+				android:paddingBottom="2dp"
+				android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
+				android:background="?attr/listChoiceBackgroundIndicator"
+				android:tint="#888"
+				android:rotation="180"
+				android:clickable="true"
+				android:layout_marginLeft="5dp"
+				android:visibility="gone"
 				/>
 
 		</com.knziha.plod.widgets.RLContainerSlider>

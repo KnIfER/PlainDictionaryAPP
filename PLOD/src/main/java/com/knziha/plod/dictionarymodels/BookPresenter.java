@@ -832,13 +832,13 @@ function debug(e){console.log(e)};
 		this.a=a;
 		ucc = a.getUcc(); //todo
 		if(!viewsHolderReady) {
-			ContentviewItemBinding pageView = ContentviewItemBinding.inflate(a.getLayoutInflater()
+			ContentviewItemBinding pageData = ContentviewItemBinding.inflate(a.getLayoutInflater()
 					, a.weblistHandler.getViewGroup(), false);
-			mPageView = pageView;
-			rl = (ViewGroup) pageView.getRoot();
+			mPageView = pageData;
+			rl = (ViewGroup) pageData.getRoot();
 	        {
 	        	webScale = def_zoom;
-	           	AdvancedNestScrollWebView _mWebView = pageView.webviewmy;
+	           	AdvancedNestScrollWebView _mWebView = pageData.webviewmy;
 				rl.setTag(_mWebView);
 				_mWebView.presenter = this;
 				_mWebView.setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
@@ -851,10 +851,10 @@ function debug(e){console.log(e)};
 				_mWebView.addJavascriptInterface(mWebBridge, "app");
 				mWebView = mPageView.webviewmy;
 	        }
-			refresh_eidt_kit(pageView, mTBtnStates, bSupressingEditing, false);
+			refresh_eidt_kit(pageData, mTBtnStates, bSupressingEditing, false);
 			setWebLongClickListener(mWebView, a);
 
-			toolbar = pageView.lltoolbar;
+			toolbar = pageData.lltoolbar;
 			ViewUtils.setOnClickListenersOneDepth(toolbar, this, 999, null);
 			
 			mWebView.IBC = IBC;
@@ -863,28 +863,29 @@ function debug(e){console.log(e)};
 			mWebView.toolbarBG.setColors(mWebView.ColorShade);
 			
 			//toolbarBG.setColors(ColorSolid);
-			mWebView.toolbar_title = toolbar_title = pageView.toolbarTitle;
-			toolbar_cover = pageView.cover;
+			mWebView.toolbar_title = toolbar_title = pageData.toolbarTitle;
+			toolbar_cover = pageData.cover;
 			if(cover!=null)
 				toolbar_cover.setImageDrawable(cover);
 			//toolbar.setTitle(this.bookImpl.getFileName().split(".mdx")[0]);
-			mWebView.recess = pageView.recess;
-			mWebView.forward = pageView.forward;
+			mWebView.recess = pageData.recess;
+			mWebView.forward = pageData.forward;
 			mWebView.rl = rl;
 			toolbar_title.setText(bookImpl.getDictionaryName());
 			toolbar_title.setMaxLines(1);
 			viewsHolderReady=true;
 			
-			ViewUtils.removeView(pageView.recess);
-			ViewUtils.removeView(pageView.forward);
-			ViewUtils.removeView(pageView.redo);
-			ViewUtils.removeView(pageView.save);
-			ViewUtils.removeView(pageView.tools);
-			toolbar_cover.setId(R.id.lltoolbar);
+			ViewUtils.removeView(pageData.recess);
+			ViewUtils.removeView(pageData.forward);
+			ViewUtils.removeView(pageData.redo);
+			ViewUtils.removeView(pageData.save);
+			ViewUtils.removeView(pageData.tools);
+			//toolbar_cover.setId(R.id.lltoolbar);
+			toolbar_cover.setOnClickListener(this);
 			
 			if(cover==null){
 				toolbar_cover.setBackground(null);
-				toolbar_cover.setVisibility(View.GONE);
+//				toolbar_cover.setVisibility(View.GONE);
 				toolbar.setOnClickListener(this);
 				toolbar_title.setPadding((int) (15*GlobalOptions.density), 0, toolbar_title.getPaddingRight(), 0);
 			}
@@ -2513,6 +2514,11 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public void log(String val) {
         	CMN.Log(val);
+        }
+        
+        @JavascriptInterface
+        public int rcsp() {
+        	return presenter==null?0:MakeRCSP(presenter.a.opt);
         }
         
         @JavascriptInterface

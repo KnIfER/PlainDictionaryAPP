@@ -6217,14 +6217,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					dd = new AlertDialog.Builder(this)
 						.setSingleChoiceLayout(R.layout.singlechoice_plain)
 						.setSingleChoiceItems(new String[]{
-								"切换旧版本多页面视图列表"
-								, "切换新版合并的多页面模式"
+								"切换新版合并的多页面模式"
+								, "切换旧版本多页面视图列表"
 								, "打开详细设置"
 						}, 0, new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								CMN.Log("onClick::", weblistHandler.contentUIData.webholder.getChildCount());
 								if(which==0 || which==1) {
+									which=(which+1)%2;
 									resetMerge(which, true);
 									if (PDICMainAppOptions.remMultiview()) {
 										PDICMainAppOptions.setUseMergedUrl(which==1);

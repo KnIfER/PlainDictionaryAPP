@@ -692,18 +692,17 @@
     	function _gn(e,p){if(!p || p.name===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
     	function gn(e,p){return _gn(e, p.firstElementChild);};
 		window.kit |= 0;
-		window.EventListenerWrap = window.addEventListener;
+		window.rawAddEvent = window.addEventListener;
 		window.addEventListener = function(a,b,c) {
-					debug('000',window.rcspc, b===window.rcspc);
 			if(b===window.rcspc) {
-					debug(123)
 				for(var i=0,fx;fx=frames[i];i++) {
-					debug(456)
-					if(fx.item && fx.item.contentWindow)
-						fx.item.contentWindow.addEventListener(a,b,c);
+					if(fx.item && fx.item.contentWindow) {
+						fx.item.contentWindow.addEventListener(a,b);
+					}
 				}
+				return;
 			}
-			EventListenerWrap(a,b,c);
+			rawAddEvent(a,b,c);
 		}
 		var pengDingPos = -1;
 		var lv;
@@ -913,6 +912,8 @@
 			defP = ge("defP");
 			SH();
 			etSearch = ge("word");
+			if(app) 
+				window.rcsp=app.rcsp();
 			//rePopulate();
 			/**/
 			if(!merge) {
@@ -2083,7 +2084,8 @@
 					wbf.scrollExpand=true;
 					var e = wbf.box = wbf.item = craft();
 					e.style='overflow: hidden;height: 100%;';
-					e.contentWindow={document:e, scrollTo:function(a,b){wbf.item.scrollTo(a,b)}};
+					e.contentWindow={document:e, scrollTo:function(a,b){wbf.item.scrollTo(a,b)}
+						, addEventListener:function(a,b,c){e.body.addEventListener(a,b,c)}};
 					e.body = wbf.p = craft(0,'webxP',e);
 					e.id=wbf.id;
 					e.dictInfo=wbf;

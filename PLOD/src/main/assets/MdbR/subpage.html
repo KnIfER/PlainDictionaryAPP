@@ -20,7 +20,7 @@
 </style>
 
 <script>
-function debug(e){console.log(e)};
+function debug(...e){console.log(e)};
 debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
 if(window.addEventListener){
@@ -52,6 +52,10 @@ function wrappedOnLoadFunc(){
 	// }
 	//debug("wrappedOnLoadFunc::", frameElement.tag, frameElement.u, location.href);
 	if(frameElement) {
+		var pw=parent.window;
+		if(pw) {
+			window.addEventListener('click',pw.rcspc);
+		}
 		if(!frameElement.scrollExpand) {
 			var inf=frameElement.dictInfo;
 			if(inf.lastX || inf.lastY)
@@ -63,7 +67,6 @@ function wrappedOnLoadFunc(){
 			}
 			frameElement.u=0;
 		}
-		var pw=parent.window;
 		if(pw.bOnceHighlighted) {
 			console.log('子页面高亮开始!!!');
 			pw.MarkFrame(frameElement);

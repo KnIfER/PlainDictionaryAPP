@@ -610,7 +610,11 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-			return bIsActionMenuShown=callback.onCreateActionMode(mode, menu);
+			boolean craft = callback.onCreateActionMode(mode, menu);
+			if (craft) {
+				weblistHandler.textMenu(true);
+			}
+			return bIsActionMenuShown=craft;
 		}
 
 		@Override
@@ -638,6 +642,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		PopupWindow mPopup;
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
+			weblistHandler.textMenu(false);
 			bIsActionMenuShown=false;
 			//CMN.Log("onDestroyActionMode");
 		}
@@ -675,6 +680,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				 * 分享#1 | 分享…
 				 * 分享#2 | 分享#3
 				 */
+				CMN.Log("工具!!!");
 				View cover=((ViewGroup) getParent()).getChildAt(fromCombined==2?1:0).findViewById(R.id.cover);
 				if(cover!=null){
 					cover.setTag(1);
@@ -821,6 +827,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		}
 		return super.startActionMode(callback, type);
 	}
+	
+	
 
 	public void TweakWebviewContextMenu(Menu menu) {
 		int gid=0;
@@ -846,26 +854,28 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		//Toast.makeText(getContext(), MyMenu.getIntent()+""+MyMenu.getTitle()+" "+MyMenu.getItemId()+getResources().getString(android.R.string.share),0).show();
 		//Toast.makeText(getContext(), ""+getResources().getString(getReflactField("com.android.internal.R$string", "share")),0).show();
 		//Toast.makeText(getContext(),menu.getItem(3).getItemId()+"="+menu_share_id+"finding menu_share:"+menu.findItem(menu_share_id)+"="+android.R.id.shareText,0).show();
-
+		
 		String shareText=getShareText();
 		String SelectAllText=getSelectText();
 		CMN.Log("SelectAllText", SelectAllText, System.identityHashCode(SelectAllText));
 		int findCount=2;
 		int ToolsOrder=0;
-		//if(false)
 		for(int i=0;i<menu.size();i++) {
-			String title = menu.getItem(i).getTitle().toString();
+			MenuItem m = menu.getItem(i);
+			String title = m.getTitle().toString();
+			int id = m.getItemId();
+			CMN.Log("menu id::", menu, title, Integer.toHexString(id));
 			if(title.equals(shareText)) {
-				menu.removeItem(menu.getItem(i).getItemId());//移除 分享
+				menu.removeItem(id);//移除 分享
 				i--;
 				findCount--;
 			} else if(title.equals(SelectAllText)) {
-				ToolsOrder=menu.getItem(i).getOrder();
-				menu.removeItem(menu.getItem(i).getItemId());//移除 全选
+				ToolsOrder=m.getOrder();
+				menu.removeItem(id);//移除 全选
 				i--;
 				findCount--;
 			}
-			if(findCount==0) break;
+			//if(findCount==0) break;
 		}
 
 		menu.add(0,R.id.toolbar_action1,++ToolsOrder,R.string.tools);

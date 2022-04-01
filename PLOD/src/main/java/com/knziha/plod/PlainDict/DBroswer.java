@@ -76,7 +76,6 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
 import static com.knziha.plod.plaindict.DeckListAdapter.*;
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_LIST_MULTI;
 import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 
 @SuppressLint("SetTextI18n")
@@ -157,8 +156,8 @@ public class DBroswer extends DialogFragment implements
 //			}
 //			return 1;
 //		}
-		if(sharedPopup!=null && sharedPopup.isShowing()) {
-			sharedPopup.dismiss();
+		if(menuPopup !=null && menuPopup.isShowing()) {
+			menuPopup.dismiss();
 			return 1;
 		}
 		if(inSearch) {
@@ -827,17 +826,16 @@ public class DBroswer extends DialogFragment implements
 			}
 	}
 	//lazy strategy. reuse as much as possible.
-	PopupWindow sharedPopup;
+	PopupWindow menuPopup;
 	int menuResId = -1;
 	int onclickBase=0;
 	int lastPopupId=-1;
 	ArrayAdaptermy<String> shareListAda;
-	void initPopup(){
+	void initMenuPopup(){
 		View view = getActivity().getLayoutInflater().inflate(R.layout.popup_more_tools, null);
-		sharedPopup = new PopupWindow(view,
+		menuPopup = new PopupWindow(view,
 				(int)(160 * getResources().getDisplayMetrics().density), LayoutParams.WRAP_CONTENT);
-
-		sharedPopup.setOnDismissListener(() -> {
+		menuPopup.setOnDismissListener(() -> {
 		});
 		final ListView shareList = view.findViewById(R.id.share_list);
 		shareListAda = new ArrayAdaptermy<>(getActivity(),
@@ -929,7 +927,7 @@ public class DBroswer extends DialogFragment implements
 			}
 			TextView tv = (TextView) view1;
 			tv.setText(tv.getText()+"...");
-			getActivity().getWindow().getDecorView().postDelayed(() -> sharedPopup.dismiss(), 150);
+			getActivity().getWindow().getDecorView().postDelayed(() -> menuPopup.dismiss(), 150);
 		});
 	}
 	
@@ -971,18 +969,18 @@ public class DBroswer extends DialogFragment implements
 //			sharePopup.dismiss();
 //			return true;
 //		}
-		if(sharedPopup ==null)
-			initPopup();
+		if(menuPopup ==null)
+			initMenuPopup();
 
 		if(lastPopupId!=v.getId()) {//need re-populate
 			shareListAda.setArray(Arrays.asList(getResources().getStringArray(menuResId)));
 			lastPopupId=v.getId();
 		}
 
-		sharedPopup.setFocusable(false);
-		sharedPopup.setOutsideTouchable(true);
-		sharedPopup.setBackgroundDrawable(null);
-		sharedPopup.showAsDropDown(v, v.getWidth(), -v.getHeight());
+		menuPopup.setFocusable(false);
+		menuPopup.setOutsideTouchable(true);
+		menuPopup.setBackgroundDrawable(null);
+		menuPopup.showAsDropDown(v, v.getWidth(), -v.getHeight());
 		return interceptClick;
 	}
 
@@ -1296,7 +1294,7 @@ public class DBroswer extends DialogFragment implements
 		CMN.Log("SelectionMode_pan", records.size());
 		if(records.size()>0) {
 			setUpContentView();
-			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
+			//weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
 			//yyy
 			a.recCom = rec = new resultRecorderCombined(a,data,a.md, null);
 			ScrollViewmy WHP = (ScrollViewmy) weblistHandler.getScrollView();
@@ -1326,23 +1324,11 @@ public class DBroswer extends DialogFragment implements
 //				rec.expectedPos = 0;
 //				//CMN.Log("新建", combining_search_result.expectedPos, pos);
 //			}
-			
-			ViewGroup anothorHolder = contentUIData.webSingleholder;
-			WHP.setVisibility(View.VISIBLE);
-			if(anothorHolder.getVisibility()==View.VISIBLE) {
-				//anothorHolder.removeAllViews();
-				anothorHolder.setVisibility(View.GONE);
-			}
-
-//			a.widget13.setVisibility(View.VISIBLE);//222
-//			a.widget14.setVisibility(View.VISIBLE);
-			a.contentview.setVisibility(View.VISIBLE);
 			imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
 			
 			weblistHandler.popupContentView(null, currentDisplaying__);
 			
 			weblistHandler.bMergeFrames = a.mergeFrames();
-
 			rec.renderContentAt(0, a,null, weblistHandler);
 
 			processFavorite(position, currentDisplaying);

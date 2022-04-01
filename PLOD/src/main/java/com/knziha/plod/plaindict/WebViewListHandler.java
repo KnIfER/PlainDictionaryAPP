@@ -65,6 +65,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	final MainActivityUIBase a;
 	/** -2=auto;0=false;1=true*/
 	public int bMergeFrames = 0;
+	/** for word popup */
 	public boolean bDataOnly = false;
 	public boolean bShowInPopup = false;
 	public boolean bMergingFrames = false;
@@ -871,6 +872,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	/** 页面加载完成后，是否自动开始执行页内搜索，并跳转至第一处高亮。 */
 	public boolean schPage(WebViewmy mWebView) {
 		return hasPageKey() && (isViewSingle() || mWebView==webholder.getChildAt(0));
+	}
+	
+	public void textMenu(boolean vis) {
+		ViewUtils.setVisible(contentUIData.tools, vis);
 	}
 	
 	public static class HighlightVagranter {
