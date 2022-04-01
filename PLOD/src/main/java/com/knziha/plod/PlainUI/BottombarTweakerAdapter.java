@@ -17,7 +17,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 
-import com.jaredrummler.colorpicker.ColorPickerDialog;
 import com.knziha.ankislicer.customviews.ShelfLinearLayout;
 import com.knziha.filepicker.widget.CircleCheckBox;
 import com.knziha.plod.plaindict.CMN;
@@ -317,9 +316,9 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 				//if (hideAfterSim(ID))
 					dialog.hide();
 				try {
-					CircleCheckBox ccb_icon = (CircleCheckBox) v;
-					ccb_icon.setProgress(0);
-					ccb_icon.addAnim(true);
+					//CircleCheckBox ccb_icon = (CircleCheckBox) v;
+					//ccb_icon.setProgress(0);
+					//ccb_icon.addAnim(true);
 					if(simView==null)
 						simView = new View(a);
 					simView.setId(ID);
@@ -446,7 +445,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	
 	static class ViewHolder{
 		ViewHolder(ViewGroup v, BottombarTweakerAdapter ta){
-			itemView=(ViewGroup)LayoutInflater.from(v.getContext()).inflate(R.layout.circle_checker_item, v, false);
+			itemView=(ViewGroup)LayoutInflater.from(v.getContext()).inflate(R.layout.circle_checkers_btn_config, v, false);
 			itemView.setTag(this);
 			CircleCheckBox b;
 			ccb_icon = b = (CircleCheckBox) itemView.getChildAt(1);
