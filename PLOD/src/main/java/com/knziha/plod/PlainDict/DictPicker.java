@@ -633,7 +633,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					vdx = a.wordPopup.upstrIdx;
 			}
 			if(lman!=null) {
-				if(vdx>lman.findLastVisibleItemPosition() || vdx<lman.findFirstVisibleItemPosition()) {
+				//if(vdx>lman.findLastVisibleItemPosition() || vdx<lman.findFirstVisibleItemPosition())
+				{
 					int target = Math.max(0, vdx-(Math.max(0, Math.min(pinBtn.isChecked()?3:5, mRecyclerView.getChildCount()/2))));
 					lman.scrollToPositionWithOffset(type==-1?a.wordPopup.CCD_ID:target, 0);
 					CMN.Log("scrolled");
