@@ -1068,7 +1068,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	}
 	
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt) {
-		CMN.Log("popupWord_frameAt", frameAt, key, a.md.size(), WebViewmy.supressNxtClickTranslator);
+		CMN.Log("popupWord_frameAt", frameAt, key, a.md.size(), invoker==null, WebViewmy.supressNxtClickTranslator);
 		if(key==null || mdict.processText(key).length()>0) {
 			if (invoker!=null) this.invoker = invoker;
 			if (key!=null) popupKey = key;

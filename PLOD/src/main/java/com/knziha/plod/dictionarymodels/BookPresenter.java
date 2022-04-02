@@ -844,6 +844,8 @@ function debug(e){console.log(e)};
 					_mWebView.setOnScrollChangedListener(a.getWebScrollChanged());
 	            _mWebView.setPadding(0, 0, 18, 0);
 				_mWebView.addJavascriptInterface(getWebBridge(), "app");
+				if(isMergedBook)
+					getWebBridge().mergeView = _mWebView;
 				mWebView = mPageView.webviewmy;
 	        }
 			refresh_eidt_kit(pageData, mTBtnStates, bSupressingEditing, false);
@@ -2533,6 +2535,14 @@ function debug(e){console.log(e)};
 	@SuppressWarnings("unused")
     public static class AppHandler {
 		BookPresenter presenter;
+		public WebViewmy mergeView;
+		
+		private WebViewmy findWebview(int sid) {
+			if(mergeView!=null && sid==mergeView.simpleId()) {
+				return mergeView;
+			}
+			return presenter.findWebview(sid);
+		}
 
         @JavascriptInterface
         public void log(String val) {
@@ -2542,7 +2552,7 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public int rcsp(int sid) {
 			try {
-				WebViewmy wv = presenter.findWebview(sid);
+				WebViewmy wv = findWebview(sid);
 				WebViewListHandler wlh = wv.weblistHandler;
 				return MakeRCSP(wlh, wlh.opt);
 			} catch (Exception e) {
@@ -2618,7 +2628,7 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public void sc(int sid, int max, int y) {
 			try {
-				WebViewmy wv = presenter.findWebview(sid);
+				WebViewmy wv = findWebview(sid);
 				if(wv!=null) {
 					WebViewListHandler weblistHandler = wv.weblistHandler;
 					DragScrollBar _mBar = weblistHandler.contentUIData.dragScrollBar;
@@ -2643,7 +2653,7 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public void updateIndicator(int sid, String did, int keyIdx, int keyz, int total) {
 			if (presenter!=null) {
-				WebViewmy wv = presenter.findWebview(sid);
+				WebViewmy wv = findWebview(sid);
 				if(wv!=null) {
 					WebViewListHandler weblistHandler = wv.weblistHandler;
 					weblistHandler.updateInPageSch(did, keyIdx, keyz, total);
@@ -2676,7 +2686,7 @@ function debug(e){console.log(e)};
         
         @JavascriptInterface
         public void loadJs(int sid, String name) {
-			WebViewmy wv = presenter.findWebview(sid);
+			WebViewmy wv = findWebview(sid);
 			CMN.Log("loadJs::", name, wv!=null);
 			if (wv!=null) {
 				wv.post(new Runnable() {
@@ -2757,7 +2767,7 @@ function debug(e){console.log(e)};
 			app.opt = book.opt;
 			app.Imgs = img;
 			app.currentImg = position;
-			//WebViewmy mWebView = presenter.findWebview(sid);
+			//WebViewmy mWebView = findWebview(sid);
 			app.IBC.lastX = offsetX;
 			app.IBC.lastY = offsetY;
 			a.root.postDelayed(a.getOpenImgRunnable(), 100);
@@ -2766,7 +2776,7 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public void scrollHighlight(int sid, int o, int d) {
         	if(presenter!=null) {
-				WebViewmy wv = presenter.findWebview(sid);
+				WebViewmy wv = findWebview(sid);
 				if(wv!=null) {
 					WebViewListHandler weblistHandler = wv.weblistHandler;
 					weblistHandler.scrollHighlight(o, d);
@@ -2779,7 +2789,7 @@ function debug(e){console.log(e)};
         	String ret=null;
 			if(presenter!=null)
 			try {
-				WebViewmy wv = presenter.findWebview(sid);
+				WebViewmy wv = findWebview(sid);
 				if(wv.weblistHandler.MainPageSearchbar!=null && wv.weblistHandler.MainPageSearchbar.getParent()!=null) {
 					return wv.weblistHandler.MainPageSearchetSearch.getText().toString();
 				}
@@ -2833,7 +2843,7 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public void onHighlightReady(int sid, int idx, int number) {
 			if(presenter==null) return;
-			WebViewmy wv = presenter.findWebview(sid);
+			WebViewmy wv = findWebview(sid);
 			wv.weblistHandler.onHighlightReady(idx, number);
         }
 
@@ -2845,7 +2855,8 @@ function debug(e){console.log(e)};
 					return;
 				}
 				MainActivityUIBase a = presenter.a;
-				WebViewmy wv = presenter.findWebview(sid);
+				WebViewmy wv = findWebview(sid);
+				CMN.Log("popupWord::ivk::", presenter, wv);
 				a.popupWord(key, null, frameAt, wv);
 				if(frameAt>=0 && pH!=0){
 					if(pW==0) pW=pH;
@@ -2870,7 +2881,7 @@ function debug(e){console.log(e)};
 				CMN.debug("popuping...popupClose", sid);
 				if(this!=presenter.a.wordPopup.popuphandler)
 					presenter.a.postDetachClickTranslator();
-				WebViewmy wv = presenter.findWebview(sid);
+				WebViewmy wv = findWebview(sid);
 				if(wv!=null && wv.drawRect){
 					wv.drawRect=false;
 					wv.invalidate();
@@ -2913,7 +2924,7 @@ function debug(e){console.log(e)};
 		@JavascriptInterface
 		public void ReadText(int sid, String word) {
 			if(presenter==null) return;
-			presenter.a.ReadText(word, presenter.findWebview(sid));
+			presenter.a.ReadText(word, findWebview(sid));
 		}
 
 		public void setBook(BookPresenter bk) {
@@ -2969,7 +2980,7 @@ function debug(e){console.log(e)};
 			//if(layout==a.currentViewImpl)
 			{
 				//upsended = true;
-				WebViewmy view = presenter.findWebview(sid);
+				WebViewmy view = findWebview(sid);
 //				view.postDelayed(new Runnable() {
 //					@Override
 //					public void run() {
@@ -2992,7 +3003,7 @@ function debug(e){console.log(e)};
 			//if(layout==a.currentViewImpl)
 			{
 				//upsended = true;
-				WebViewmy view = presenter.findWebview(sid);
+				WebViewmy view = findWebview(sid);
 //				view.postDelayed(new Runnable() {
 //					@Override
 //					public void run() {
@@ -3223,6 +3234,8 @@ function debug(e){console.log(e)};
 			toolbar_cover = null;
 			toolbar_title = null;
 			toolbar = null;
+			if(isMergedBook && mWebBridge!=null)
+				mWebBridge.mergeView=null;
 		}
 		a=null;
 	}
