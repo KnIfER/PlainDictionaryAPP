@@ -32,7 +32,7 @@ public class VersionUtils {
 			opt.setTypeFlag_11_AtQF(0, 6);
 			opt.setTypeFlag_11_AtQF(0, 8);
 			opt.setTypeFlag_11_AtQF(0, 22);
-			PDICMainAppOptions.uncheckVersionBefore_5_7(true);
+			PDICMainAppOptions.uncheckVersionBefore_5_7(false);
 		}
 	}
 }

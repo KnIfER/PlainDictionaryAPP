@@ -289,11 +289,17 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	boolean pin() {
 		if (splitView!=null) {
 			return type==0?PDICMainAppOptions.pinPDic() // 主程序
-				:type==-1?PDICMainAppOptions.getPinPDicWrd() // 点译
-				:PDICMainAppOptions.getPinPDicFlt() // 浮动搜索
+				:type==-1?PDICMainAppOptions.pinPDicWrd() // 点译
+				:PDICMainAppOptions.pinPDicFlt() // 浮动搜索
 				;
 		}
 		return false;
+	}
+	
+	void pin(boolean v) {
+		if (type==0) PDICMainAppOptions.pinPDic(v);
+		else if (type==-1) PDICMainAppOptions.pinPDicWrd(v);
+		else if (type==1) PDICMainAppOptions.pinPDicFlt(v);
 	}
 	
 	boolean pinned() {
@@ -302,12 +308,6 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	
 	public final boolean autoSchPDict() {
 		return autoBtn!=null?autoBtn.isChecked():opt.autoSchPDict();
-	}
-	
-	void pin(boolean v) {
-		if (type==0) PDICMainAppOptions.pinPDic(v);
-		else if (type==-1) PDICMainAppOptions.setPinPDicWrd(v);
-		else if (type==1) PDICMainAppOptions.setPinPDicFlt(v);
 	}
 	
 	public void dataChanged() {
