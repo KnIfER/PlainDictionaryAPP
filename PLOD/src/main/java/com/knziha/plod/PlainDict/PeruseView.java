@@ -1585,6 +1585,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		
 				contentview.setVisibility(View.VISIBLE);
 				contentUIData.webSingleholder.setVisibility(View.VISIBLE);
+				contentUIData.WHP.setVisibility(View.GONE);
+		
 		
 				SplitView webcontentlist = contentUIData.webcontentlister;
 				if(ToL) {
@@ -1797,6 +1799,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			mWebView.IBC = currentDictionary.IBC;
 			contentUIData.PageSlider.invalidateIBC();
 			weblistHandler.setViewMode(WEB_VIEW_SINGLE, false, null);
+			weblistHandler.viewContent();
         	
 //        	if(widget14.getVisibility()==View.VISIBLE) {
 //        		widget13.setVisibility(View.GONE);
