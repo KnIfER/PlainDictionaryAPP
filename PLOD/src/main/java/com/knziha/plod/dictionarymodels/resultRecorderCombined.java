@@ -27,17 +27,16 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	private List<additiveMyCpr1> data;
 	int firstItemIdx;
 	public View scrollTarget;
-	final String searchKey;
-	boolean searchKeyInserted;
+	boolean schKeySaved;
 
 	public List<additiveMyCpr1> list(){return data;}
 	private List<BookPresenter> md;
 	
-	public resultRecorderCombined(MainActivityUIBase a, List<additiveMyCpr1> data_, List<BookPresenter> md_, String searchKey){
+	public resultRecorderCombined(MainActivityUIBase a, List<additiveMyCpr1> data_, List<BookPresenter> md_, String schKey){
 		super(a);
 		data=data_;
 		md=md_;
-		this.searchKey = searchKey;
+		this.schKey = schKey;
 	}
 	
 	public boolean FindFirstIdx(String key, AtomicBoolean task) {
@@ -343,9 +342,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	}
 	
 	public boolean addHistoryIfNeeded(MainActivityUIBase a) {
-		if(!searchKeyInserted) {
-			a.prepareHistoryCon().updateHistoryTerm(a, searchKey, null, a.thisActType==MainActivityUIBase.ActType.PlainDict?128:129);
-			searchKeyInserted=true;
+		if(!schKeySaved) {
+			a.prepareHistoryCon().updateHistoryTerm(a, schKey, null, a.thisActType==MainActivityUIBase.ActType.PlainDict?128:129);
+			schKeySaved=true;
 			return true;
 		}
 		return false;

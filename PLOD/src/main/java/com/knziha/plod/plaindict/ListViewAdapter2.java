@@ -186,11 +186,6 @@ public class ListViewAdapter2 extends BasicAdapter {
 		
 		a.decorateContentviewByKey(null, currentKeyText = combining_search_result.getResAt(a, pos).toString());
 		
-		if(userCLick) {
-			userCLick=false;
-		} else {
-			Kustice=true;
-		}
 		
 		a.bWantsSelection=true;
 //		if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick()){
@@ -200,12 +195,19 @@ public class ListViewAdapter2 extends BasicAdapter {
 		contentUIData.PageSlider.TurnPageEnabled=(this==a.adaptermy2?opt.getPageTurn2():opt.getPageTurn1())&&opt.getTurnPageEnabled();
 		a.etSearch_ToToolbarMode(1);
 		
-		if(!combining_search_result.addHistoryIfNeeded(a)
+		boolean schKey = combining_search_result.addHistoryIfNeeded(a);
+		if((!schKey || !combining_search_result.schKey.equals(currentKeyText))
 				&& !PDICMainAppOptions.storeNothing()
 				&& PDICMainAppOptions.storeClick()
 				&& combining_search_result.shouldSaveHistory()
 				&& (userCLick||PDICMainAppOptions.storePageTurn()==0)) {
 			a.addHistroy(currentKeyText, 0, webviewHolder);
+		}
+		
+		if(userCLick) {
+			userCLick=false;
+		} else {
+			Kustice=true;
 		}
 	}
 	

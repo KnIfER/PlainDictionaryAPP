@@ -10,6 +10,7 @@ import com.knziha.plod.plaindict.WebViewListHandler;
 public class resultRecorderDiscrete {
 	public String count;
 	public String SearchText;
+	public /*final*/ String schKey;
 
 	//dict_Activity_ui_base a;
 
