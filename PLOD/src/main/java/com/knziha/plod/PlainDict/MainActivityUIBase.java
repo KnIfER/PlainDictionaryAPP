@@ -422,6 +422,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean bWantsSelection;
 	public boolean 来一发;
 	public boolean bIsFirstLaunch=true;
+	/** 长按上下切换词典，进入速览模式 */
+	public boolean fastPreview=true;
 	
 	protected int DockerMarginL,DockerMarginR,DockerMarginT,DockerMarginB;
 
@@ -630,7 +632,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public boolean switch_Dict(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC) {
+	public boolean
+	switch_Dict(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC) {
 		updateAI = true;
 		boolean prvNxt = prvNxtABC!=null;
 		int size=md.size();
@@ -9761,7 +9764,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				bIsFirstLaunch=false;
 			}
-			if(normal_idx<0) {
+			if(normal_idx<0 && !fastPreview) {
 				DetachContentView(false);
 			}
 		} catch (Exception e) { CMN.Log(e); }

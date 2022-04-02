@@ -25,7 +25,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.LocaleList;
 import android.os.Message;
-import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.TypedValue;
 import android.view.ActionMode;
@@ -2483,12 +2482,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //			} break;
 			//切换词典
 			case R.drawable.book_list: { // get1:
-				if(v.isActivated()) {
-					contentUIData.bottombar2.setVisibility(View.VISIBLE);
-					v.setActivated(false);
-					DetachContentView(true);
-					PostDCV_TweakTBIC();
-				} else {
+				if(!checkFastPreview()) {
 //					if(ViewUtils.removeIfParentBeOrNotBe(UIData.dialog, UIData.viewpagerPH, true)) {
 //						ViewUtils.setVisible(UIData.lnrSplitHdls, false);
 //						if(PDICMainAppOptions.getPinPicDictDialog()) {
@@ -2536,8 +2530,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			//切换分组
 			case R.drawable.book_bundle:{ // get2:
-				if(UIData.browserWidget1.isActivated()) {
-					UIData.browserWidget1.setActivated(false);
+				if(fastPreview) {
+					fastPreview=false;
 					contentUIData.bottombar2.setVisibility(View.VISIBLE);
 					AttachContentView(false);
 				} else {
@@ -2553,9 +2547,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			//两大搜索
 			case R.drawable.fuzzy_search:{ // get3:
-				if(UIData.browserWidget1.isActivated()) {
-					UIData.browserWidget1.performClick();
-				}
+				checkFastPreview();
 				if(CurrentViewPage==0){
 					CurrentViewPage = 1;
 					UIData.viewpager.setCurrentItem(1);
@@ -2614,6 +2606,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			} break;
 		}
+	}
+	
+	private boolean checkFastPreview() {
+		if (fastPreview) {
+			fastPreview=false;
+			contentUIData.bottombar2.setVisibility(View.VISIBLE);
+			DetachContentView(true);
+			PostDCV_TweakTBIC();
+			return true;
+		}
+		return false;
 	}
 	
 	/** 切换主界面沉浸式 */
@@ -2693,6 +2696,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		boolean bImmersive = PDICMainAppOptions.getEnableSuperImmersiveScrollMode();
 		ViewGroup contentHolder = bImmersive ? UIData.webcoord : root;
 		mDrawerToggle.onDrawerOpened(UIData.drawerLayout);
+		boolean fastPreview = this.fastPreview;
 		
 		boolean b1=ViewUtils.removeIfParentBeOrNotBe(contentview, contentHolder,false);
 		if(b1 || contentviewDetachType==0 && contentview.getVisibility()!=View.VISIBLE) {
@@ -2707,7 +2711,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					public void onAnimationEnd(Animation animation) {
 						if(isContentViewAttached()) {
 							UIData.viewpagerPH.setVisibility(View.INVISIBLE);
-							if(!UIData.browserWidget1.isActivated()) {
+							if(!fastPreview) {
 								bottombar.setVisibility(View.INVISIBLE);
 							}
 						}
@@ -2715,20 +2719,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				});
 				contentview.setTranslationY(0);
 				contentview.setAnimation(animation);
-//				contentview.setAlpha(0);
-//				contentview.animate().alpha(1).setDuration(160).setListener(new Utils.BaseAnimatorListener(){
-//					@Override
-//					public void onAnimationEnd(Animator animation) {
-//						viewpagerPH.setVisibility(View.INVISIBLE);
-//						if(!browser_widget1.isActivated()) {
-//							bottombar.setVisibility(View.INVISIBLE);
-//						}
-//					}
-//				}).start();
 			}
 			else {
 				UIData.viewpagerPH.setVisibility(View.INVISIBLE);
-				if(!UIData.browserWidget1.isActivated()) {
+				if(!fastPreview) {
 					bottombar.setVisibility(View.INVISIBLE);
 				}
 			}
@@ -2749,7 +2743,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		setContentBow(opt.isContentBow());
 		
-		boolean fastPreview = UIData.browserWidget1.isActivated();
 		if(fastPreview) {
 			contentUIData.bottombar2.setVisibility(View.INVISIBLE);
 		}
@@ -2821,6 +2814,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				current_webview.clearView();
 			}
 		}
+		checkFastPreview();
 	}
 	
 	private boolean currentIsWeb() {
@@ -2851,15 +2845,14 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			case R.drawable.ic_nxt_dict_chevron: {
 				if (isContentViewAttached()) DetachContentView(false);
 				else if(PDICMainAppOptions.fastPreview()) {
-					ActivatableImageView browserWidget1 = UIData.browserWidget1;
-					if(browserWidget1.isActivated() && opt.fastPreviewFragile()) {
-						browserWidget1.performClick();
+					if(fastPreview && opt.fastPreviewFragile()) {
+						checkFastPreview();
 					} else {
 						ListView activeLv = CurrentViewPage==0?mlv1:CurrentViewPage==2?mlv2:
 								lv2.getVisibility()==View.VISIBLE?lv2:lv;
 						View c0 = activeLv.getChildAt(0);
 						if(c0!=null) {
-							browserWidget1.setActivated(true);
+							fastPreview=true;
 							activeLv.performItemClick(c0, activeLv.getFirstVisiblePosition(), 0);
 						}
 					}
