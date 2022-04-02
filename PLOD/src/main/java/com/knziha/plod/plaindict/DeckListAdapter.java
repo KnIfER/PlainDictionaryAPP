@@ -140,7 +140,8 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	private OnLongClickListener longClicker = new OnLongClickListener() {
 		@Override
 		public boolean onLongClick(View v) {
-			return mOnItemLongClickListener.onItemLongClick(v, (Integer) v.getTag(R.id.position));
+			//return mOnItemLongClickListener.onItemLongClick(v, (Integer) v.getTag(R.id.position));
+			return true;
 		}
 	};
 
