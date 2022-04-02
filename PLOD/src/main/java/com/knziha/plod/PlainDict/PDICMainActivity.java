@@ -1631,7 +1631,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		
 		//tg
-		opt.setInPeruseMode(false);
 		
 		try {
 //			SSLContext sslcontext = SSLContext.getInstance("TLSv1");
