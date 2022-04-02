@@ -15,6 +15,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.CancellationSignal;
+import android.os.Message;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -347,7 +348,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			return;
 		}
 		CancellationSignal cs = new CancellationSignal();
-		a.root.postDelayed(cs::cancel, 250); // 防止过度读取
+		a.hdl.postDelayed(cs::cancel, 250); // 防止过度读取
 		String[] items = null;
 		Cursor cursor = null;
 		try {
@@ -370,7 +371,8 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		}
 		if (items!=null) {
 			String[] its = items;
-			a.root.post(() -> { //harvest
+			a.hdl.post(() -> { //harvest
+				//CMN.Log("LoadHistory::harvest::", its);
 				history.clear();
 				hIdx.clear();
 				history.addAll(Arrays.asList(its));
