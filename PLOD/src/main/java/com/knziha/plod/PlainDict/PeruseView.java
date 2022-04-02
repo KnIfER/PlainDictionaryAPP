@@ -98,8 +98,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	BookPresenter currentDictionary;
 	ViewGroup main_pview_layout;
 	private ViewGroup PeruseTorso;
-	SplitView sp_main;
-	SplitView sp_sub;
+	SplitView vBox;
+	SplitView hBox;
 	ViewGroup mlp;
 	ViewGroup slp;
 	public Toolbar toolbar;
@@ -108,7 +108,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	private ViewGroup bottom;
 	private ViewGroup bottombar;
 	
-	TwoWayGridView LvHeadline;
+	TwoWayGridView gridView;
 	ListViewmy lv1;
 	ListViewmy lv2;
 	EditText etSearch;
@@ -155,8 +155,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 	
 	int cc;
-	float transitionTarget=-1;
-	float transitionStart;
+	float expandTarget =-1;
+	float expandFrom;
 	PDICMainAppOptions opt;
 	int PositionToSelect=0;
 	int TargetRow;
@@ -215,11 +215,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						mlp.findViewById(R.id.frameL).getLayoutParams().width=lastW;
 						if(true)lv1.getLayoutParams().width=lastW;
 					}
-					CMN.Log("onLayoutChange!!!", right-left);
+					//CMN.Log("onLayoutChange!!!", right-left);
 				}
 			});
 		}
-        
+  
 		//peruse_content.setOnTouchListener((v, event) -> true);//tofo
 
         toolbar = peruse_content.findViewById(R.id.toolbar);
@@ -232,30 +232,41 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		bottombar = (ViewGroup) bottom.getChildAt(0);
 		this.PeruseTorso = PeruseTorso;
 		PeruseTorso.findViewById(R.id.split_view);
-		LvHeadline = PeruseTorso.findViewById(R.id.main_dict_lst);
-		LvHeadline.setHorizontalSpacing(0);
-		LvHeadline.setVerticalSpacing(0);
-		LvHeadline.setHorizontalScroll(true);
-		LvHeadline.setStretchMode(GridView.NO_STRETCH);
-		LvHeadline.setAdapter(booksShelfAdapter);
-		LvHeadline.setOnItemClickListener(booksShelfAdapter);
-		LvHeadline.setScrollbarFadingEnabled(false);
-		LvHeadline.setSelector(getResources().getDrawable(R.drawable.listviewselector0));
+		
+		TwoWayGridView gv = PeruseTorso.findViewById(R.id.main_dict_lst);
+		gv.setHorizontalSpacing(0);
+		gv.setVerticalSpacing(0);
+		gv.setHorizontalScroll(true);
+		gv.setStretchMode(GridView.NO_STRETCH);
+		gv.setAdapter(booksShelfAdapter);
+		gv.setOnItemClickListener(booksShelfAdapter);
+		gv.setScrollbarFadingEnabled(false);
+		gv.setSelector(getResources().getDrawable(R.drawable.listviewselector0));
+		this.gridView = gv;
+		
+		SplitView vBox = PeruseTorso.findViewById(R.id.split_view);
+		SplitView hBox = PeruseTorso.findViewById(R.id.secondary);
+		this.vBox = vBox;
+		this.hBox = hBox;
+		
+		if(opt.fyeGridBot()) {
+			vBox.SwitchingSides();
+		}
 		
 		SplitViewGuarder svGuard = (SplitViewGuarder) PeruseTorso.getChildAt(1);
-		svGuard.SplitViewsToGuard.add(sp_main = PeruseTorso.findViewById(R.id.split_view));
-		svGuard.SplitViewsToGuard.add(sp_sub = sp_main.findViewById(R.id.secondary));
+		svGuard.SplitViewsToGuard.add(vBox);
+		svGuard.SplitViewsToGuard.add(hBox);
 		
-		handle1  = sp_main.findViewById(R.id.handle);
-		handle2  = sp_sub.findViewById(R.id.inner_handle);
+		handle1  = vBox.findViewById(R.id.handle);
+		handle2  = hBox.findViewById(R.id.inner_handle);
 		
-		sp_sub.addValve(intenToLeft = (ImageView) PeruseTorso.getChildAt(2));
-		sp_sub.addValve(intenToRight = (ImageView) PeruseTorso.getChildAt(3));
-		sp_sub.addValve(lineWrap = (ImageView) PeruseTorso.getChildAt(5));
-		sp_main.addValve(intenToLeft);
-		sp_main.addValve(intenToRight);
-		sp_main.addValve(intenToDown= (ImageView) PeruseTorso.getChildAt(4));
-		sp_main.guarded=sp_sub.guarded=true;
+		hBox.addValve(intenToLeft = (ImageView) PeruseTorso.getChildAt(2));
+		hBox.addValve(intenToRight = (ImageView) PeruseTorso.getChildAt(3));
+		hBox.addValve(lineWrap = (ImageView) PeruseTorso.getChildAt(5));
+		vBox.addValve(intenToLeft);
+		vBox.addValve(intenToRight);
+		vBox.addValve(intenToDown= (ImageView) PeruseTorso.getChildAt(4));
+		vBox.guarded= hBox.guarded=true;
 		
         toolbar.inflateMenu(R.xml.menu_pview);
 		
@@ -270,14 +281,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		ViewUtils.ResizeNavigationIcon(toolbar);
         toolbar.setNavigationOnClickListener(this);
 		ViewUtils.setOnClickListenersOneDepth(bottombar, this, 999, 0, null);
-        
+  
 		View vTmp = toolbar.findViewById(R.id.action_menu_presenter);
 		if(vTmp!=null) {
 			vTmp.setOnLongClickListener(this);
 		}
 		
-		mlp = sp_sub.findViewById(R.id.mlp);
-		slp = sp_sub.findViewById(R.id.slp);
+		mlp = hBox.findViewById(R.id.mlp);
+		slp = hBox.findViewById(R.id.slp);
 		lv1 = mlp.findViewById(R.id.main_list);
 		lv2 = slp.findViewById(R.id.sub_list);
 		//zig-zaging
@@ -290,11 +301,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		
 		//tc
 		etSearch.addTextChangedListener(tw1=new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-				
+			@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 			}
-
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
 				if(TextUtils.getTrimmedLength(s)>0) {
@@ -308,7 +316,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					}
 				}
 			}
-
 			@Override
 			public void afterTextChanged(Editable s) {
 				if(s.length()>0)
@@ -333,24 +340,26 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		//vb.getBackground().setColorFilter(CMN.MainBackground, PorterDuff.Mode.SRC_IN);
 		vb.setLayoutParams(new TwoWayGridView.LayoutParams(itemWidth, itemHeight));
 
-        sp_main.setPageSliderInf(new PageSliderInf() {
+        vBox.setPageSliderInf(new PageSliderInf() {
 			@Override
 			public void SizeChanged(int newSize,float MoveDelta) {
-				if(LvHeadline.getChildCount()<1) return;
+				View child = gv.getChildAt(0);
+				if(child==null) return;
 		        cc = dm.widthPixels/itemWidth; //一行容纳几列
 		        if(dm.widthPixels - cc*itemWidth>0.85*itemWidth)
 		        	cc++;
 				if(newSize>2*itemHeight) {
 					//a.showT(""+MoveDelta);
-					if(!bExpanded) {//perform expansion
+					if(!bExpanded) {
+						//perform expansion
 						//a.showT("expanding...");
 						bExpanded=true;
 
-						PositionToSelect = LvHeadline.getFirstVisiblePosition();
-						if(LvHeadline.getChildAt(0).getLeft()<-0.5*itemWidth)
+						PositionToSelect = gv.getFirstVisiblePosition();
+						if(child.getLeft()<-0.5*itemWidth)
 							PositionToSelect++;
 						
-						NumPreEmpter = (cc - PositionToSelect%cc)%cc;
+						NumPreEmpter = opt.fyeGridPad()?(cc - PositionToSelect%cc)%cc:0;
 						for (int i = cyclerBin.size(); i < NumPreEmpter; i++) {
 							View vt = new View(getContext());
 							int itemWidth = (int) (lvHeaderItem_length * density);
@@ -362,31 +371,32 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						}
 						TargetRow = (PositionToSelect+NumPreEmpter)/cc;
 						NumRows =  (int) Math.ceil(((float)bookIds.size()+NumPreEmpter)/cc);
-				        LvHeadline.setNumColumns(cc);
+				        gv.setNumColumns(cc);
 				        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(dm.widthPixels, -1);
-				        LvHeadline.setLayoutParams(params);
-				        LvHeadline.setHorizontalScroll(false);
-			        	LvHeadline.setSelection(PositionToSelect+NumPreEmpter);
+				        gv.setLayoutParams(params);
+				        gv.setHorizontalScroll(false);
+			        	gv.setSelection(PositionToSelect+NumPreEmpter);
 					}
 				}
 				else if(newSize>=1.2*itemHeight) {
 					/* transition */
 					//a.showT("entering transition...");
 					if(!bExpanded) {
-						int FVP = LvHeadline.getFirstVisiblePosition();//当前行起始位置
-						if(transitionTarget==-1) {
-							int delta=LvHeadline.getChildAt(0).getLeft();
-							transitionStart = (FVP * (itemWidth)-delta);
-							transitionTarget = ((FVP+(delta<=-0.5*itemWidth?1:0)) * (itemWidth));
+						int fvp = gv.getFirstVisiblePosition();//当前行起始位置
+						if(expandTarget ==-1) {
+							int delta= child.getLeft();
+							expandFrom = (fvp * itemWidth-delta);
+							expandTarget = opt.fyeGridPad()?(fvp+(delta<=-0.5*itemWidth?1:0) * itemWidth)
+									:(float) (Math.floor(fvp*1.f/cc) * cc * itemWidth);
 						}
 						float alpha = (float) ((2*itemHeight - newSize)/(0.8*itemHeight));
 						alpha=Math.max(0, Math.min(1, alpha));
-						float CurrentScrollX = (FVP*(itemWidth)-LvHeadline.getChildAt(0).getLeft());
+						float CurrentScrollX = (fvp*(itemWidth)- child.getLeft());
 						//a.showT(CurrentScrollX+" to "+ft+"-"+md.get(data.get(FVP))._Dictionary_fName);
 						//a.showT("firstVisiblePos="+LvHeadline.getFirstVisiblePosition()+" leftOffset="+LvHeadline.getChildAt(0).getLeft());
 						
-						float Target = ((1-alpha)*transitionTarget+alpha*transitionStart);
-						LvHeadline.smoothScrollBy((int) (Target-CurrentScrollX),60);
+						float Target = ((1-alpha)* expandTarget +alpha* expandFrom);
+						gv.smoothScrollBy((int) (Target-CurrentScrollX),60);
 					}
 				}
 				else if(newSize<=itemHeight+1){
@@ -394,54 +404,54 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					if(bExpanded) {
 						//a.showT("collapsing..."+PositionToSelect);
 						bExpanded=false;
-						transitionTarget=-1;
+						expandTarget =-1;
 						NumPreEmpter=0;
 						
 						
-				        LvHeadline.setNumColumns(bookIds.size());
+				        gv.setNumColumns(bookIds.size());
 				        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(getResources().getDisplayMetrics().widthPixels, -1);
-				        LvHeadline.setLayoutParams(params);
+				        gv.setLayoutParams(params);
 
-				        LvHeadline.setHorizontalScroll(true);
-				        LvHeadline.setSelection(PositionToSelect);
+				        gv.setHorizontalScroll(true);
+				        gv.setSelection(PositionToSelect);
 				        //LvHeadline.postInvalidate();
 				        //LvHeadline.invalidate();
 				        
-				        LvHeadline.postDelayed(() -> {
-							for(int i=0;i<LvHeadline.getChildCount();i++) {
-								LvHeadline.getChildAt(i).setTop(0);
-								LvHeadline.getChildAt(i).setBottom((int) (lvHeaderItem_height * density));
+				        gv.postDelayed(() -> {
+							for(int i = 0; i< gv.getChildCount(); i++) {
+								gv.getChildAt(i).setTop(0);
+								gv.getChildAt(i).setBottom((int) (lvHeaderItem_height * density));
 							}
 						},160);
 					}
 				}
 				
 				if(bExpanded && newSize>HeadlineInitialSize) {
-					if(MoveDelta<0){//shrinking
-						int FVP = LvHeadline.getFirstVisiblePosition();//当前行起始位置
-						int delta=LvHeadline.getChildAt(0).getTop();
-						int TargetRowPos = TargetRow*itemHeight;
-						int CurrentScrollYTop = (FVP/cc)*itemHeight - delta;
-						//int maxScroll = CurrentScrollYTop-TargetRowPos;
-						//a.showT(TargetRow+"@"+TargetRowPos+":"+CurrentScrollYTop);
-						int CurrentScrollYBottom = CurrentScrollYTop+LvHeadline.getHeight();
-						if(TargetRowPos<=CurrentScrollYBottom-itemHeight && TargetRowPos>CurrentScrollYTop){ //do regular move
-							if(CurrentScrollYTop-MoveDelta>TargetRowPos)
-								MoveDelta = CurrentScrollYTop-TargetRowPos;
-							LvHeadline.smoothScrollBy(-(int) MoveDelta,60);
-						} else if(TargetRowPos>CurrentScrollYBottom-itemHeight) {//bottom up
-							LvHeadline.smoothScrollBy(TargetRowPos-CurrentScrollYBottom+itemHeight+10,200);
-						} else if(TargetRowPos<CurrentScrollYTop) {//top down
-							LvHeadline.smoothScrollBy(TargetRowPos-CurrentScrollYTop-10,200);
-						}
-						//a.showT(TargetRowPos+":"+CurrentScrollYTop);
-					}
+//					if(MoveDelta<0){//shrinking
+//						int FVP = gv.getFirstVisiblePosition();//当前行起始位置
+//						int delta= child.getTop();
+//						int TargetRowPos = TargetRow*itemHeight;
+//						int CurrentScrollYTop = (FVP/cc)*itemHeight - delta;
+//						//int maxScroll = CurrentScrollYTop-TargetRowPos;
+//						//a.showT(TargetRow+"@"+TargetRowPos+":"+CurrentScrollYTop);
+//						int CurrentScrollYBottom = CurrentScrollYTop+ gv.getHeight();
+//						if(TargetRowPos<=CurrentScrollYBottom-itemHeight && TargetRowPos>CurrentScrollYTop){ //do regular move
+//							if(CurrentScrollYTop-MoveDelta>TargetRowPos)
+//								MoveDelta = CurrentScrollYTop-TargetRowPos;
+//							gv.smoothScrollBy(-(int) MoveDelta,60);
+//						} else if(TargetRowPos>CurrentScrollYBottom-itemHeight) {//bottom up
+//							gv.smoothScrollBy(TargetRowPos-CurrentScrollYBottom+itemHeight+10,200);
+//						} else if(TargetRowPos<CurrentScrollYTop) {//top down
+//							gv.smoothScrollBy(TargetRowPos-CurrentScrollYTop-10,200);
+//						}
+//						//a.showT(TargetRowPos+":"+CurrentScrollYTop);
+//					}
 				}
 			}
 
 			@Override
 			public void onDrop(int size) {
-				transitionTarget=-1;
+				expandTarget =-1;
 			}
 
 			@Override
@@ -579,7 +589,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 
 		RecalibrateWebScrollbar();
-			
+		
 		if(bRefresh) {
 			etSearch.setText(TextToSearch);
 			RefreshBookShelf(a);
@@ -622,7 +632,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		int NumToAdd = bookIds.size()-recyclerBin.size();
 
 		for(int i=0;i<NumToAdd;i++) {
-			View vt = a.getLayoutInflater().inflate(R.layout.main_peruse_dictlet, LvHeadline, false);
+			View vt = a.getLayoutInflater().inflate(R.layout.main_peruse_dictlet, gridView, false);
 			TwoWayGridView.LayoutParams lp = new TwoWayGridView.LayoutParams(itemWidth, itemHeight);
 			vt.setLayoutParams(lp);
 			new DictTitleHolder(bookIds.get(i), vt);
@@ -630,15 +640,15 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 		booksShelfAdapter.notifyDataSetChanged();
 		if(!bExpanded)
-			LvHeadline.setSelection(0);
-		LvHeadline.getLayoutParams().width = dm.widthPixels;
-		LvHeadline.requestLayout();
+			gridView.setSelection(0);
+		gridView.getLayoutParams().width = dm.widthPixels;
+		gridView.requestLayout();
 		cc = dm.widthPixels/itemWidth; //一行容纳几列
 		if(dm.widthPixels - cc*itemWidth>0.85*itemWidth) cc+=1;
 		if(bExpanded) {
 			double size = Math.ceil(1.0 * bookIds.size()/cc)*itemHeight;
-			if(sp_main.getPrimaryContentSize()>size)
-				sp_main.setPrimaryContentSize((int)size);
+			if(vBox.getPrimaryContentSize()>size)
+				vBox.setPrimaryContentSize((int)size);
 		}
 
 		if(ToR || ToL) {
@@ -694,7 +704,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		currentDictionary.bmCCI=bookMarkAdapter.lastClickedPos;
 		//currentDictionary = null;
 		a.getWindowManager().getDefaultDisplay().getMetrics(dm);
-		spsubs = sp_sub.getPrimaryContentSize()*1.f/dm.widthPixels;
+		spsubs = hBox.getPrimaryContentSize()*1.f/dm.widthPixels;
 		
 		a.opt.defaultReader.edit().putFloat("spsubs", spsubs)
 		.putInt("PBBS", contentUIData.webcontentlister.getPrimaryContentSize()).apply();
@@ -742,10 +752,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	        ViewUtils.listViewStrictScroll(true, lv1, lv2);
         }
 		
-        LvHeadline.setColumnWidth((int) (lvHeaderItem_length * density));
-        sp_main.setPrimaryContentSize(HeadlineInitialSize = (int) ((lvHeaderItem_height+5) * density));
+        gridView.setColumnWidth((int) (lvHeaderItem_length * density));
+        vBox.setPrimaryContentSize(HeadlineInitialSize = (int) ((lvHeaderItem_height+5) * density));
 
-        sp_sub.setPrimaryContentSize((int) (spsubs*dm.widthPixels));
+        hBox.setPrimaryContentSize((int) (spsubs*dm.widthPixels));
         //a.showT((int) (spsubs*dm.widthPixels)+"~"+spsubs);
         
         if(bCallViewAOA) {
@@ -857,10 +867,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		
 //		(widget13=PageSlider.findViewById(R.id.browser_widget13)).setOnClickListener(this);
 //		(widget14=PageSlider.findViewById(R.id.browser_widget14)).setOnClickListener(this);
-		
+
 //		contentUIData.WHP.setVisibility(View.GONE);
 		
-		((MarginLayoutParams)contentUIData.dragScrollBar.getLayoutParams()).leftMargin+=sp_sub.getCompensationBottom()/2;
+		((MarginLayoutParams)contentUIData.dragScrollBar.getLayoutParams()).leftMargin+= hBox.getCompensationBottom()/2;
 //		webcontentlist.scrollbar2guard=contentUIData.dragScrollBar;
 		
 		//tofo
@@ -892,7 +902,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 //			toolbar_web.getBackground().mutate();
 //			mWebView.FindBGInTitle(toolbar_web);
 //			mWebView.toolbarBG.setColors(mWebView.ColorShade);
-			
+
 //			recess = pageView.recess;
 //			forward = pageView.forward;
 //			BookPresenter.setWebLongClickListener(mWebView, a);
@@ -1197,7 +1207,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 
 	public float getWebTouchY() {
-		return mWebView.lastY+mWebView.toolbar_title.getHeight()+LvHeadline.getHeight()+etSearch.getHeight();
+		return mWebView.lastY+mWebView.toolbar_title.getHeight()+ gridView.getHeight()+etSearch.getHeight();
 	}
 
 	public void dismissDialogOnly() {
@@ -1300,24 +1310,20 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     public class BSTopAdapter extends BaseAdapter implements OnItemClickListener
     {
         public boolean flip;
-
         @Override
         public int getCount() {
         	if(bookIds.size()>0 && recyclerBin.size()>=bookIds.size())
         		return bookIds.size()+NumPreEmpter;
         	return 0;
         }
-
         @Override
         public View getItem(int position) {
 			return null;
 		}
-
         @Override
-        public long getItemId(int position) {    
-          return position;    
+        public long getItemId(int position) {
+          return position;
         }
-        
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
         	if(position<NumPreEmpter) {
@@ -1342,7 +1348,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			}
 	        return ItemView;
         }
-
 		//dict
 		@Override
 		public void onItemClick(TwoWayAdapterView<?> parent, View view, int position, long id) {
@@ -1440,7 +1445,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         			OldDictionary.bmCCI=bookMarkAdapter.lastClickedPos;
         		}
         		pullBookMarks();
-        	} 
+        	}
         	
 			//oldV=view;
 			//a.showT(NumPreEmpter+"-"+(position-NumPreEmpter)+"="+currentDictionary._Dictionary_fName);
@@ -1565,7 +1570,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     						lv2.scrollListBy((int) (judger-(lv2.getHeight()-lv2.getChildAt(o).getTop())));
 
     					//proceed=false;
-    				}	
+    				}
     			}
     			//if(proceed) {
     				if(o>=0 && o<c) {

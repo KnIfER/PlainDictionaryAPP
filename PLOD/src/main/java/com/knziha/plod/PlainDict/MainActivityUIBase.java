@@ -2289,11 +2289,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					PageSlider_= peruseView.contentUIData.PageSlider;
 				}
 				IMPageCover_.setVisibility(View.VISIBLE);
-				if(!webcontentlist.decided)
-					IMPageCover_.setTranslationY(val);
-				else {//贴底
-					IMPageCover_.setTranslationY(webcontentlist.multiplier==-1?0:PageSlider_.getHeight()-height);
-				}
+//				if(!webcontentlist.decided)
+//					IMPageCover_.setTranslationY(val);
+//				else {//贴底
+//					IMPageCover_.setTranslationY(webcontentlist.multiplier==-1?0:PageSlider_.getHeight()-height);
+//				}
 			}
 			
 			@Override

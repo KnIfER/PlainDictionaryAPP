@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 
@@ -211,17 +212,14 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     public boolean guarded=false,draged=false;
 
 	private float lastX,lastY,OrgX,OrgY;
-	boolean twoFingerMode=false;
 	int OrgSize;
 	private static final float _5o12_=0.4166f;
 	public boolean judger;
 	
-    @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
     	//if(true) return super.onInterceptTouchEvent(ev);
 		lastX=ev.getX();
 		lastY=ev.getY();
-		boolean yuexian = Math.abs(OrgY-lastY)>getHeight()*_5o12_;
     	boolean ret = super.onInterceptTouchEvent(ev);
     	if(!guarded) {
     		switch(ev.getAction()) {
@@ -245,15 +243,6 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 					//CMN.Log("!!!2");
 		    		checkBar();
 		    		if(draged) {
-						if (twoFingerMode) {
-							if (yuexian) {
-								SwitchingSides();
-								isDirty = true;
-							}
-							if (inf != null)
-								inf.onPageTurn(this);
-							twoFingerMode = false;
-						}
 						draged = false;
 					}
 		    	return ret;
@@ -269,12 +258,6 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 								onTouch(this, ev);
 								//return ret;
 			    			}
-			    			//if(!twoFingerMode && ev.getPointerCount()==2) {
-		    	    		//	if(ev.getY(1)>getHandleTop() && ev.getY(1)<getHandleBottom())
-		    	    		//		twoFingerMode=true;
-		    	    		//	else
-	    	    	    			//twoFingerMode=false;
-		    	    		//}
 			    		}
 					}
 		    	break;
@@ -282,30 +265,8 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     		if(draged) {
     			isDirty=true;
 				//CMN.Log(Math.abs(OrgY - lastY), "asd", getHeight() * _5o12_);
-    			if(ev.getPointerCount()==2) {
-    				twoFingerMode=true;
-    	    		if(draged) {
-    	    			setPrimaryContentSize(OrgSize);
-    					if(inf!=null)
-    						inf.onPreparePage(OrgSize);
-    	    		}
-        		}else if(ev.getPointerCount()==1) {
-        			if(!yuexian) {
-        				if(twoFingerMode) {
-            				twoFingerMode=false;
-        					if(inf!=null)
-        						inf.onHesitate();
-        				}
-        			}
-        		}
-				decided= yuexian;
     			if(draged) {//已经移出一定距离moved，而且判正draged
-    				if(twoFingerMode) {
-    					if(inf!=null)
-    						inf.onMoving(this,ev.getY());
-    				}else {
-        				onTouch(this, ev);
-    				}
+					onTouch(this, ev);
     				return ret;
     			}
     		}
@@ -313,7 +274,6 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 		return ret;
     }
 
-	@Override
 	public boolean dispatchTouchEvent(MotionEvent ev) {
     	//if(true) return super.dispatchTouchEvent(ev);
 		//CMN.Log("dispatchTouchEvent",clickThrough, getAlpha(),ev.getY()<mPrimaryContent.getTop());
@@ -395,7 +355,6 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 		//return false;
     }
 
-    public boolean decided;
 	public boolean isDirty=false;
     
     private boolean setPrimaryContentHeight(int newHeight,boolean ...x) {
@@ -410,9 +369,10 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 					return false;
 				}
 			params.height = newHeight;
-			// set the primary content parameter to do not stretch anymore and use the height specified in the layout params
 			params.weight = 0;
-			mPrimaryContent.setLayoutParams(params);
+			requestLayout();
+			//postOnAnimation(this::requestLayout);
+			//mPrimaryContent.setLayoutParams(params);
 			for (View VI : valves) {
 				VI.setTranslationY(newHeight - sz_valv / 2 + sz_hdl / 2);
 			}
@@ -474,10 +434,19 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 
 	public void SwitchingSides() {
 		int cc = getChildCount();
-		if(cc>=2) {
+		if(cc==2) {
 			View last = getChildAt(cc - 1);
 			removeView(last);
 			addView(last, cc - 2);
+			multiplier *= -1;
+		}
+		else if(cc==3) {
+			View first = getChildAt(0);
+			View last = getChildAt(cc - 1);
+			removeView(first);
+			removeView(last);
+			addView(last, 0);
+			addView(first);
 			multiplier *= -1;
 		}
 	}
