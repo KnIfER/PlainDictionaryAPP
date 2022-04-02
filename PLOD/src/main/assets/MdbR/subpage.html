@@ -47,25 +47,30 @@ function wrappedOnLoadFunc(){
 	// 	_onloadchecks[i]();
 	// }
 	//debug("wrappedOnLoadFunc::", frameElement.tag, frameElement.u, location.href);
-	if(frameElement) {
+	var fe=frameElement;
+	if(fe) {
+		var inf=fe.dictInfo;
 		var pw=parent.window;
 		if(pw) {
 			window.addEventListener('click',pw.rcspc);
 		}
-		if(!frameElement.scrollExpand) {
-			var inf=frameElement.dictInfo;
+		if(!fe.scrollExpand) {
 			if(inf.lastX || inf.lastY)
 				document.documentElement.scrollTo(inf.lastX, inf.lastY);
 		}
-		if(frameElement.u) {
-			if(frameElement.u.startsWith(location.href)) {
-				location.href=frameElement.u;
+		if(fe.u) {
+			if(fe.u.startsWith(location.href)) {
+				location.href=fe.u;
 			}
-			frameElement.u=0;
+			fe.u=0;
 		}
 		if(pw.bOnceHighlighted) {
 			console.log('子页面高亮开始!!!');
-			pw.MarkFrame(frameElement);
+			pw.MarkFrame(fe);
+		}
+		//debug('needs img loader', inf.img, inf.name);
+		if(app && inf.img) {
+			pw.LoadIMG(inf);
 		}
 	} else if(app){
 		window.rcsp=app.rcsp(sid.get());

@@ -394,7 +394,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			entryTitle.setText(displaying);
 			//popupWebView.SelfIdx = CCD_ID = record.value[0];
 			indicator.setText(ccd.getDictionaryName());
-			popuphandler.setDict(ccd);
+			popuphandler.setBook(ccd);
 			dictPicker.dataChanged();
 			dictPicker.scrollThis();
 		} else if(currentPos!=pos) {
@@ -1038,7 +1038,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			if(CCD.getIsWebx()) {
 				weblistHandler.bMergingFrames = false;
 				indicator.setText(a.md_getName(CCD_ID));
-				popuphandler.setDict(CCD);
+				popuphandler.setBook(CCD);
 				if (PDICMainAppOptions.getClickSearchAutoReadEntry())
 					mWebView.bRequestedSoundPlayback=true;
 				mWebView.IBC = CCD.IBC;

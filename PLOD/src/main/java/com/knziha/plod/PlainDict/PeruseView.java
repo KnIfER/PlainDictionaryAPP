@@ -1386,7 +1386,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			bookId = bookIds.get(SelectedV);
 
 			currentDictionary = a.getBookById(bookId);
-			perusehandler.setDict(currentDictionary);
+			perusehandler.setBook(currentDictionary);
 
 			leftLexicalAdapter.DumpVOA(OldDictionary, currentDictionary);
 			leftLexicalAdapter.notifyDataSetChanged();
@@ -1642,7 +1642,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				bookId = hidden.get(lastClickedDictPos=pos);
     			currentDictionary = a.getBookById(bookId);
-				perusehandler.setDict(currentDictionary);
+				perusehandler.setBook(currentDictionary);
 				leftLexicalAdapter.notifyDataSetChanged();
         	}
         }

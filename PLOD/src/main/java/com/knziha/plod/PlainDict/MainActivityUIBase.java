@@ -352,6 +352,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	};
 	boolean bShowLoadErr=true;
+	public boolean startLastSch;
 	public boolean isCombinedSearching;
 	public String CombinedSearchTask_lastKey;
 	//public HashMap<CharSequence,byte[]> mBookProjects;
@@ -3189,7 +3190,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					abort=true;
 				}
 				if(abort){
-					((AgentApplication)getApplication()).clearNonsenses();
+					((AgentApplication)getApplication()).clearTdata();
 				} else {
 					isBrowsingImgs=true;
 					startActivityForResult(new Intent()
@@ -3443,17 +3444,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ret;
 	}
 	
-	public boolean getIsWebxByIdNoCreation(long bid) {
-		boolean ret=false;
+	public boolean getHasVidxByIdNoCreation(long bid) {
 		try {
 			UniversalDictionaryInterface impl = BookPresenter.bookImplsMap.get(bid);
 			if (impl!=null) {
-				return impl.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB.ordinal();
+				return impl.hasVirtualIndex();
 			}
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
-		return ret;
+		return false;
 	}
 	
 	public BookPresenter getBookByIdNoCreation(long bid) {
@@ -5901,7 +5901,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	void scrollToWebChild(View childAt) {
-		CMN.Log("scrollToWebChild");
+		//CMN.Log("scrollToWebChild");
 		if(childAt!=null) {
 			View postTarget = null;
 			int delay = 100;
@@ -6957,7 +6957,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			mWebView.isloading = false;
 			mWebView.AlwaysCheckRange = 0;
 			
-			BookPresenter invoker = mWebView.presenter;
+			BookPresenter invoker = mWebView.presenter, book=invoker;
 			
 			if (mWebView.translating>=0) {
 				doTranslation(wlh, mWebView.translating, null);
@@ -6980,7 +6980,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(delayedAttaching && mWebView.presenter==currentDictionary) { // todo same replace (mWebView.SelfIdx==adapter_idx, ->)
 				((PDICMainActivity)MainActivityUIBase.this).AttachContentViewDelayed(10);
 			}
-			
+			int schemaIdx = url.indexOf(":");
+			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
+			boolean raw = mdbr
+					&& invoker.isMergedBook
+					&& url.regionMatches(schemaIdx+12, "content", 0, 7);
+			if(raw) {
+				int idx=schemaIdx+12+7+1;
+				invoker = getMdictServer().md_getByURLPath(url, idx, url.indexOf("_", idx));
+				//CMN.Log("ivk::raw::", invoker);
+			}
 			//if(true) return;
 			/* I、接管页面缩放及(跳转)位置(0, 1, 3)
 			*  II、进入黑暗模式([0,1,2,3],[4])、编辑模式(0,1,3,[4])。*/
@@ -6990,7 +6999,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				((PlainWeb)invoker.bookImpl).onPageFinished(invoker, mWebView, url, true);
 			} else {
 			if(invoker.getImageBrowsable() && invoker.bookImpl.hasMdd()) {
-				mWebView.evaluateJavascript(BookPresenter.imgAndEntryLoader, null);
+				mWebView.evaluateJavascript(BookPresenter.imgLoader, null);
 			}
 			if(from!=2){
 				if(invoker==null){
@@ -7017,35 +7026,35 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					view.setTag(R.id.toolbar_action3,null);
 				}
 
-				if(toTag!=null){
-					//CMN.Log("toTag::", toTag);
-					mWebView.toTag=null;
-					if(!toTag.equals("===???")) {
-						proceed=false;
-						mWebView.expectedPos = -100;
-						if(fromCombined){
-							wlh.WHP.touchFlag.first=true;
-								if (toTag.equals("===000")) {
-									//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + weblistHandler.WHP.getChildAt(0).getHeight());
-									wlh.WHP.post(() -> {
-										wlh.WHP.smoothScrollTo(0, invoker.rl.getTop());
-									});
-								} else
-									view.evaluateJavascript("var item=document.getElementsByName(\"" + toTag + "\")[0];item?item.getBoundingClientRect().top:-1;"
-											, v -> {
-												int to = (int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
-												if(to>=0)
-													wlh.WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
-											});
-
-						}
-						else {
-							CMN.Log("toTag::", toTag);
-							if(!toTag.equals("===000"))
-								view.evaluateJavascript("location.replace(\"#" + toTag + "\");", null);
-						}
-					}
-				}
+//				if(toTag!=null){
+//					//CMN.Log("toTag::", toTag);
+//					mWebView.toTag=null;
+//					if(!toTag.equals("===???")) {
+//						proceed=false;
+//						mWebView.expectedPos = -100;
+//						if(fromCombined){
+//							wlh.WHP.touchFlag.first=true;
+//								if (toTag.equals("===000")) {
+//									//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + weblistHandler.WHP.getChildAt(0).getHeight());
+//									wlh.WHP.post(() -> {
+//										wlh.WHP.smoothScrollTo(0, invoker.rl.getTop());
+//									});
+//								} else
+//									view.evaluateJavascript("var item=document.getElementsByName(\"" + toTag + "\")[0];item?item.getBoundingClientRect().top:-1;"
+//											, v -> {
+//												int to = (int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
+//												if(to>=0)
+//													wlh.WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
+//											});
+//
+//						}
+//						else {
+//							CMN.Log("toTag::", toTag);
+//							if(!toTag.equals("===000"))
+//								view.evaluateJavascript("location.replace(\"#" + toTag + "\");", null);
+//						}
+//					}
+//				}
 				
 				boolean toHighLight = PDICMainAppOptions.schPageAutoTurn() && wlh.schPage(mWebView);
 				
@@ -7580,7 +7589,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			//CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
+			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 			
@@ -7705,6 +7714,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				try {
 					if(url.startsWith("mdbr://")) url=url.substring(7);
 					else url=url.substring(13);
+					CMN.Log("[fetching internal res : ]", url);
+					String mime="*/*";
+					if(url.endsWith(".css")) mime = "text/css";
+					if(url.endsWith(".js")) mime = "text/js";
+					return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(url));
+				} catch (Exception e) {
+					CMN.Log(e);
+				}
+			}
+			
+			if(mdbr && url.regionMatches(schemaIdx+12, "mdbr", 0, 4)){
+				try {
+					url=url.substring(schemaIdx+17);
 					CMN.Log("[fetching internal res : ]", url);
 					String mime="*/*";
 					if(url.endsWith(".css")) mime = "text/css";
@@ -9654,6 +9676,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//CommonAssets.put("SUBPAGE.js", BookPresenter.jsBytes);
 		//CommonAssets.put("markloader.js", BookPresenter.markJsLoader);
 		CommonAssets.put("dk.js", DarkModeIncantation.getBytes());
+		CommonAssets.put("imgLoader.js", BookPresenter.imgLoader.getBytes());
 		//CommonAssetsStr.put("tapSch.js", BookPresenter.tapTranslateLoader);
 	}
 	
@@ -9663,7 +9686,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				InputStream input = ViewUtils.fileToStream(this, new File("/ASSET2/" + key));
 				if(input!=null) return input;
 			} catch (Exception e) {
-				CMN.Log(e);
+				//CMN.debug(e);
 			}
 		}
 		byte[] data = CommonAssets.get(key);

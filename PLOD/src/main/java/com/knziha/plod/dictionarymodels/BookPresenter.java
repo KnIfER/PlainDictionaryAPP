@@ -196,18 +196,16 @@ public class BookPresenter
 		}
 	}
 	
-	/** console.log('popupingxx...addEventListener', sid.get());  */
-	@Metaline(trim = false)
 	public final static String tapTranslateLoader=StringUtils.EMPTY;
 	
-	/**window.addEventListener('click',function(e) {
+	/**if(!window.webpc)window.addEventListener('click',window.webpc=function(e) {
 		//_log('wrappedClickFunc 1', e.srcElement.id);
 		if(e.srcElement.tagName==='IMG'){
 			var img=e.srcElement;
 			if(img.src && !img.onclick && !(img.parentNode&&img.parentNode.tagName=="A")){
 				var lst = [];
 				var current=0;
-				var all = document.getElementsByTagName("img");
+				var all = this.document.getElementsByTagName("img");
 				for(var i=0;i<all.length;i++) {
 					if(all[i].src) {
 						lst.push(all[i].src);
@@ -222,7 +220,7 @@ public class BookPresenter
 		}
 	 })*/
 	@Metaline()
-	public final static String imgAndEntryLoader=StringUtils.EMPTY;
+	public final static String imgLoader =StringUtils.EMPTY;
 	
 	/**var w=window,d=document;
 		function selectTouchtarget(e){
@@ -671,7 +669,7 @@ function debug(e){console.log(e)};
 	public final static String htmlEnd="</html>";
 
     public MainActivityUIBase a;
-	protected PDICMainAppOptions opt;
+	public PDICMainAppOptions opt;
 	
 	public static int hashCode(String toHash, int start) {
 		int h=0;
@@ -845,10 +843,7 @@ function debug(e){console.log(e)};
 				//if(!(this instanceof bookPresenter_pdf))
 					_mWebView.setOnScrollChangedListener(a.getWebScrollChanged());
 	            _mWebView.setPadding(0, 0, 18, 0);
-				if(mWebBridge==null) {
-					mWebBridge = new AppHandler(this);
-				}
-				_mWebView.addJavascriptInterface(mWebBridge, "app");
+				_mWebView.addJavascriptInterface(getWebBridge(), "app");
 				mWebView = mPageView.webviewmy;
 	        }
 			refresh_eidt_kit(pageData, mTBtnStates, bSupressingEditing, false);
@@ -892,6 +887,13 @@ function debug(e){console.log(e)};
 		}
 		//recess.setVisibility(View.GONE);
 		//forward.setVisibility(View.GONE);
+	}
+	
+	public AppHandler getWebBridge() {
+		if(mWebBridge==null) {
+			mWebBridge = new AppHandler(this);
+		}
+		return mWebBridge;
 	}
 	
 	
@@ -1116,6 +1118,10 @@ function debug(e){console.log(e)};
 		return mType == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 	}
 	
+	public final boolean getHasVidx() {
+		return bookImpl.hasVirtualIndex();
+	}
+	
 	public int getIsManagerAgent() {
 		return bIsManagerAgent;
 	}
@@ -1129,6 +1135,7 @@ function debug(e){console.log(e)};
 		json.put("tbg", SU.toHexRGB(getTitleBackground()));
 		json.put("tfg", SU.toHexRGB(getTitleForeground()));
 		json.put("bg", getUseInternalBG()?SU.toHexRGB(getContentBackground()):null);
+		json.put("img", getImageBrowsable() && bookImpl.hasMdd());
 		PlainWeb webx = getWebx();
 		if(webx!=null) {
 			json.put("isWeb", 1);
@@ -2032,6 +2039,7 @@ function debug(e){console.log(e)};
 		//	mWebView.resumeTimers();
     	String htmlCode = null ,JS=null;
     	boolean loadUrl=opt.alwaysloadUrl() || opt.popuploadUrl()&&mWebView.weblistHandler.bShowingInPopup;
+    	//CMN.Log("loadUrl::", loadUrl);
 		try {
 			if(bookImpl.hasVirtualIndex())
 				try {
@@ -2711,15 +2719,42 @@ function debug(e){console.log(e)};
 		}
 
         @JavascriptInterface
-        public void openImage(int sid, int position, float offsetX, float offsetY, String... img) {
-			if(presenter==null || !presenter.getImageBrowsable()) return;
-        	//CMN.Log(position, img, mdx.bookImpl.getFileName()_Internal);
-        	//CMN.Log("openImage::", offsetX, offsetY);
-			MainActivityUIBase a = presenter.a;
+        public void openImage(int sid, int position, float offsetX, float offsetY, String...img) {
+			BookPresenter book = this.presenter;
+			if(book==null || !book.getImageBrowsable() || img.length==0) return;
+			String src = img[0];
+			if(book.isMergedBook) {
+				int idx = src.indexOf("mdbr.com/base/");
+				if(idx>=0) {
+					idx+=14;
+					int end = src.indexOf("/", idx+1);
+					try {
+						book = book.a.getMdictServer().md_getByURLPath(src, idx, end);
+						for (int i = 0; i < img.length; i++) {
+							img[i] = img[i].substring(end+1);
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
+			} else {
+				int idx = src.indexOf("mdbr.com");
+				if(idx>=0) {
+					try {
+						for (int i = 0; i < img.length; i++) { //todo opt
+							img[i] = img[i].substring(idx+8);
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
+			}
+        	//CMN.Log("openImage::", book, offsetX, offsetY, img);
+			MainActivityUIBase a = book.a;
 			AgentApplication app = ((AgentApplication) a.getApplication());
-			app.resProvider = presenter.bookImpl;
-			app.IBC = presenter.IBC;
-			app.opt = presenter.opt;
+			app.resProvider = book.bookImpl;
+			app.IBC = book.IBC;
+			app.opt = book.opt;
 			app.Imgs = img;
 			app.currentImg = position;
 			//WebViewmy mWebView = presenter.findWebview(sid);
@@ -2881,11 +2916,11 @@ function debug(e){console.log(e)};
 			presenter.a.ReadText(word, presenter.findWebview(sid));
 		}
 
-		public void setDict(BookPresenter ccd) {
-        	if(ccd!=null) {
-				presenter =ccd;
+		public void setBook(BookPresenter bk) {
+        	if(bk!=null) {
+				presenter =bk;
 				if(dm==null) {
-					dm=ccd.a.dm;
+					dm=bk.a.dm;
 				}
 			}
 		}

@@ -142,7 +142,7 @@ public class AgentApplication extends Application {
 		System.exit(0);
 	}
 
-	public void clearNonsenses() {
+	public void clearTdata() {
 		mdict_cache=null;
 		mdlibsCon=null;
 		opt=null;

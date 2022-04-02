@@ -528,7 +528,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			}
         }
 		setResult(RESULT_OK, intent);
-        agent.clearNonsenses();
+        agent.clearTdata();
 	}
 	//onCreate结束
 	

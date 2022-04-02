@@ -147,7 +147,7 @@ public class ListViewAdapter extends BasicAdapter {
 			return;
 		}
 		boolean bUseMergedUrl = false;//!presenter.getIsWebx();
-		boolean bUseDictView = !bUseMergedUrl && presenter.getIsWebx();
+		boolean bUseDictView = !bUseMergedUrl && (!PDICMainAppOptions.getUseSharedFrame() || presenter.getHasVidx());
 		
 		avoyager = presenter.avoyager;
 		WebViewmy mWebView = null;
@@ -155,7 +155,7 @@ public class ListViewAdapter extends BasicAdapter {
 			presenter.initViewsHolder(a);  // xxx  current.mWebView.fromCombined=0;
 			mWebView = presenter.mWebView;
 		} else {
-			mWebView = weblistHandler.getMergedFrame();
+			mWebView = weblistHandler.getMergedFrame(presenter);
 		}
 		this.mWebView = mWebView;
 		weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, mWebView);

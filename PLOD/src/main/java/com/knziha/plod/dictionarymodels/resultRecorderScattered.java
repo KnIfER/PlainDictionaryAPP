@@ -199,7 +199,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 					presenter.initViewsHolder(a);
 					mWebView = presenter.mWebView;
 				} else {
-					mWebView = weblistHandler.getMergedFrame();
+					mWebView = weblistHandler.getMergedFrame(presenter);
 				}
 				
 				ViewUtils.addViewToParentUnique(mWebView.rl, a.webSingleholder);

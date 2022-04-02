@@ -512,7 +512,7 @@ public class ViewUtils {
 	
 	public static InputStream fileToStream(Context context, File f) {
 		if (f.getPath().startsWith("/ASSET")) {
-			String errRinfo;
+			//String error;
 			boolean b1=f.getPath().startsWith("/", 6);
 			if(!b1&&hasRemoteDebugServer) {
 				InputStream input = getRemoteServerRes(f.getPath().substring(AssetTag.length()), false);
@@ -524,7 +524,7 @@ public class ViewUtils {
 				try {
 					return context.getResources().getAssets().open(f.getPath().substring(AssetTag.length()+(!b1?1:0)));
 				} catch (IOException e) {
-					errRinfo = CMN.Log(e);
+					//error = CMN.debug(e);
 				}
 			try {
 				UniversalDictionaryInterface asset = BookPresenter.getBookImpl(context instanceof MainActivityUIBase ?(MainActivityUIBase)context:null, new File(AssetTag+"webx"), 0);
@@ -533,9 +533,9 @@ public class ViewUtils {
 				CMN.Log("val::", asset.getRecordAt(idx, null, true), f.getPath(), asset.getEntryAt(0), asset.getNumberEntries());
 				return new ByteArrayInputStream(asset.getRecordData(idx));
 			} catch (IOException e) {
-				errRinfo = CMN.Log(e);
+				//error = CMN.debug(e);
 			}
-			return new ByteArrayInputStream(errRinfo.getBytes());
+			return null;//new ByteArrayInputStream(errRinfo.getBytes());
 		}
 		return BU.fileToStream(f);
 	}

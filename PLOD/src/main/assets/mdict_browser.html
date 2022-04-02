@@ -707,9 +707,9 @@
 		window.kit |= 0;
 		window.rawAddEvent = window.addEventListener;
 		window.addEventListener = function(a,b,c) {
-			if(b===window.rcspc) {
+			if(b===window.rcspc||b===window.webpc) {
 				for(var i=0,fx;fx=frames[i];i++) {
-					if(fx.item && fx.item.contentWindow) {
+					if(fx.item && fx.item.contentWindow && (b!=window.webpc||fx.img)) {
 						fx.item.contentWindow.addEventListener(a,b);
 					}
 				}
@@ -3763,6 +3763,18 @@
 				e = e.clientY;
 			//shsty.top = shy + (e-shyst) + 'px';
 			defP.scrollTop = (shy + e-shyst)/(defP.offsetHeight-35)*(defP.scrollHeight-defP.offsetHeight);
+		}
+
+		var webpcW;
+		function LoadIMG(fx) {
+			if(!window.webpc) {
+				if(!webpcW) {
+					loadJs("/mdbr/imgLoader.js");
+					webpcW=1;
+				}
+			} else {
+				fx.item.contentWindow.addEventListener('click',window.webpc);
+			}
 		}
 	</script>
 	

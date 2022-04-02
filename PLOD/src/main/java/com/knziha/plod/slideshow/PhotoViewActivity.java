@@ -40,17 +40,14 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.OptionProcessor;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.dictionary.mdictRes;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 
 import static com.knziha.plod.plaindict.CMN.Visible;
 import static com.knziha.plod.plaindict.MainActivityUIBase.fix_full_screen_global;
@@ -124,7 +121,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 		resProvider=agent.resProvider;
 		IBC_=agent.IBC;
 		curPosition = agent.currentImg;
-		agent.clearNonsenses();
+		agent.clearTdata();
 		
 		if(imageUrls==null){
 			finish();

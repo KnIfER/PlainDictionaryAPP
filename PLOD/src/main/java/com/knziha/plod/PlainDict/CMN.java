@@ -253,8 +253,9 @@ public class CMN{
 		return ret==null?name:ret;
 	}
 	
-	public static void debug(Object...o) {
-		if (BuildConfig.isDebug) Log(o);
+	public static String debug(Object...o) {
+		if (BuildConfig.isDebug) return Log(o);
+		return null;
 	}
 	
 }
