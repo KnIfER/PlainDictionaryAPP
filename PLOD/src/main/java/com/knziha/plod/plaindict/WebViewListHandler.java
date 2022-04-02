@@ -457,9 +457,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void prvnxtFrame(boolean nxt) {
+		if(isMultiRecord())
 		if(bMergingFrames) {
 			mMergedFrame.evaluateJavascript(nxt?"prvnxtFrame(1)":"prvnxtFrame()", null);
-		} else {
+		} else if(!isViewSingle()){
 			final int currentHeight=WHP.getScrollY();
 			int cc=contentUIData.webholder.getChildCount();
 			int childAtIdx=cc;
@@ -474,7 +475,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			childAtIdx+=nxt?1:-1;
 			if(childAtIdx>=cc){
-				a.scrollToPagePosition(contentUIData.webholder.getChildAt(cc-1).getBottom());
+				a.scrollToPageBottom(contentUIData.webholder.getChildAt(cc-1));
 			} else {
 				a.scrollToWebChild(contentUIData.webholder.getChildAt(childAtIdx));
 			}
@@ -707,13 +708,13 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	int mViewMode;
 	boolean isMultiRecord;
 	public void setViewMode(int mode, boolean bUseMergedUrl, WebViewmy dictView) {
-		if(isMultiRecord != (mode==WEB_LIST_MULTI))
-			isMultiRecord = mode==WEB_LIST_MULTI;
+		boolean multi=mode==WEB_LIST_MULTI;
 		if(mode==WEB_LIST_MULTI && bUseMergedUrl)
 			mode = WEB_VIEW_SINGLE;
-		if(mViewMode!=mode || bMergingFrames!=bUseMergedUrl) {
+		if(mViewMode!=mode || bMergingFrames!=bUseMergedUrl || isMultiRecord!=multi) {
+			isMultiRecord = multi;
 			mViewMode = mode;
-			ViewUtils.setVisible(contentUIData.navBtns, !bUseMergedUrl);
+			ViewUtils.setVisible(contentUIData.navBtns, multi && !bUseMergedUrl);
 			ViewUtils.setVisible(contentUIData.dictNameStroke, !bUseMergedUrl);
 			ViewUtils.setVisible(contentUIData.dictName, !bUseMergedUrl);
 		}

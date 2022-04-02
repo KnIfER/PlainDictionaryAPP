@@ -5932,12 +5932,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			weblistHandler.WHP.scrollTo(0, childAt.getTop());
 	}
 
-	void scrollToPagePosition(int offset) {
-		if(PDICMainAppOptions.getScrollAnimation())
-			weblistHandler.WHP.smoothScrollTo(0, offset);
-		else
-			weblistHandler.WHP.scrollTo(0, offset);
-
+	void scrollToPageBottom(View ca) {
+		if(ca!=null) {
+			int offset = ca.getBottom();
+			if(PDICMainAppOptions.getScrollAnimation())
+				weblistHandler.WHP.smoothScrollTo(0, offset);
+			else
+				weblistHandler.WHP.scrollTo(0, offset);
+		}
 	}
 
 	void GoBackOrForward(ViewGroup webviewHolder, int delta) {
