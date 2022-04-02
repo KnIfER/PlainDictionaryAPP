@@ -11,7 +11,7 @@
 	<androidx.appcompat.widget.Toolbar
 		android:id="@+id/toolbar"
 		android:layout_width="match_parent"
-		android:layout_height="@dimen/_45_"
+		android:layout_height="@dimen/barSize"
 		android:minHeight="?attr/actionBarSize"
 		android:theme="@style/toolbarBaseTheme"
 		app:contentInsetLeft="0dp"
@@ -41,7 +41,7 @@
 
 		<ScrollView
 			android:id="@+id/sideBarp"
-			android:layout_width="35dp"
+			android:layout_width="@dimen/_35_"
 			android:layout_height="match_parent"
 			android:scrollbars="@null"
 			>
@@ -56,27 +56,27 @@
 				<View
 					android:id="@+id/tools0"
 					android:layout_width="match_parent"
-					android:layout_height="35dp"
+					android:layout_height="@dimen/_35_"
 					android:background="@drawable/ic_pan_tool_black_24dp"
 					android:padding="5dp"
 					/>
 				<View
 					android:id="@+id/tools001"
 					android:layout_width="match_parent"
-					android:layout_height="35dp"
+					android:layout_height="@dimen/_35_"
 					android:background="@drawable/ic_peruse_pan"
 					android:padding="5dp"
 					/>
 				<View
 					android:id="@+id/toolbar_action2"
 					android:layout_width="match_parent"
-					android:layout_height="35dp"
+					android:layout_height="@dimen/_35_"
 					android:background="@drawable/txtdropper"
 					/>
 				<View
 					android:id="@+id/tools1"
 					android:layout_width="match_parent"
-					android:layout_height="35dp"
+					android:layout_height="@dimen/_35_"
 					android:background="@drawable/select"
 					android:longClickable="true"
 					android:padding="5dp"
@@ -89,7 +89,7 @@
 				<com.knziha.plod.widgets.ActivatableImageView
 					android:id="@+id/toolbar_action1"
 					android:layout_width="match_parent"
-					android:layout_height="35dp"
+					android:layout_height="@dimen/_35_"
 					android:src="@drawable/ic_btn_siglemode"
 					app:src0="@drawable/ic_btn_multimode"
 					app:activedSR="false"
@@ -100,7 +100,7 @@
 				<ImageView
 					android:id="@+id/tools3"
 					android:layout_width="match_parent"
-					android:layout_height="35dp"
+					android:layout_height="@dimen/_35_"
 					android:src="@drawable/delete"
 					android:padding="5dp"
 					android:background="@drawable/surrtrip2"
@@ -110,7 +110,7 @@
 				<ImageView
 					android:id="@+id/search"
 					android:layout_width="match_parent"
-					android:layout_height="35dp"
+					android:layout_height="@dimen/_35_"
 					android:src="@drawable/ic_search"
 					android:backgroundTint="#000000"
 					android:background="@drawable/surrtrip2"
@@ -120,7 +120,7 @@
 
 				<FrameLayout
 					android:layout_width="match_parent"
-					android:layout_height="35dp"
+					android:layout_height="@dimen/_35_"
 					android:background="@drawable/bookmark"
 					>
 					<View
@@ -142,7 +142,7 @@
 				<ToggleButton
 					android:id="@+id/tg2"
 					android:layout_width="match_parent"
-					android:layout_height="35dp"
+					android:layout_height="@dimen/_35_"
 					android:textOn="Ø"
 					android:textOff=""
 					android:textColor="#ffaaaa"
@@ -180,7 +180,7 @@
 
 		<com.knziha.ankislicer.customviews.VerticalRecyclerViewFastScrollermy
 			android:id="@+id/fast_scroller"
-			android:layout_width="35dp"
+			android:layout_width="@dimen/_35_"
 			android:layout_height="match_parent"
 			android:layout_alignParentEnd="true"
 			android:layout_marginEnd="2dp"
@@ -197,7 +197,7 @@
 		<!--		android:theme="@style/ToolBarTheme"-->
 		<!--		android:background="#a0a0a0ae"-->
 		<!--		android:visibility="gone"-->
-		<!--		android:layout_marginStart="35dp"-->
+		<!--		android:layout_marginStart="@dimen/_35_"-->
 		<!--		/>-->
 
 		<ProgressBar
@@ -302,7 +302,7 @@
 	<LinearLayout
 		android:id="@+id/bottombar"
 		android:layout_width="match_parent"
-		android:layout_height="43dp"
+		android:layout_height="@dimen/_45_"
 		android:layout_gravity="bottom"
 		android:gravity="center_vertical|fill_horizontal"
 		android:orientation="horizontal"

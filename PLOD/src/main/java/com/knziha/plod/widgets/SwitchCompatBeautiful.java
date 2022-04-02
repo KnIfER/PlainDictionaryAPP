@@ -11,6 +11,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 
+import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 
@@ -49,6 +50,9 @@ public class SwitchCompatBeautiful extends SwitchCompat {
 			resizeHintDrawable();
             setDrawableTint(CMNF.ShallowHeaderBlue);
         }
+		
+		if(GlobalOptions.isLarge)
+			scale = 1.35f;
 	}
 		
 	@Override

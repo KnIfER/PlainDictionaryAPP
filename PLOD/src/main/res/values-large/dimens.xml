@@ -1,3 +1,21 @@
 <resources>
 	<dimen name="_90_">150dp</dimen>
+	<dimen name="_20_">25dp</dimen>
+	<dimen name="_25_">30dp</dimen>
+	<dimen name="_28_">35dp</dimen>
+	<dimen name="_30_">45dp</dimen>
+	<dimen name="_35_">48dp</dimen>
+	<dimen name="_43_">52dp</dimen>
+	<dimen name="_45_">58dp</dimen>
+
+	<dimen name="_65_">95dp</dimen>
+	<dimen name="barSize">80dp</dimen>
+	<dimen name="barSzBot">72dp</dimen>
+
+	<dimen name="btnMaxWidth">56dp</dimen>
+	<dimen name="etSchPadSt">20dp</dimen>
+	<dimen name="etBotPadSt">12dp</dimen>
+	<dimen name="_8_">10dp</dimen>
+	<dimen name="dragHeight">36dp</dimen>
+	<dimen name="scrollBarWidth">20dp</dimen>
 </resources>

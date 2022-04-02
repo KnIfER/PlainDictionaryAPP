@@ -381,7 +381,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	private OnGlobalLayoutListener keyObserver;
 	@Override
     protected void further_loading(final Bundle savedInstanceState) {
-        CachedBBSize=opt.getFloatBottombarSize((int) mResource.getDimension(R.dimen._bottombarheight_));
+        CachedBBSize=opt.getFloatBottombarSize((int) mResource.getDimension(R.dimen.barSzBot));
     	super.further_loading(savedInstanceState);
 
         main = main_succinct;
@@ -450,7 +450,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					lastHeight=height;
 					CachedBBSize=(int)Math.max(20*dm.density, Math.min(
 							MathUtils.lerp(10*dm.density, 50*dm.density, mfv_lp.height*1.25f/dm.heightPixels)
-							, mResource.getDimension(R.dimen._bottombarheight_)));
+							, mResource.getDimension(R.dimen.barSzBot)));
 					contentUIData.webcontentlister.setPrimaryContentSize(CachedBBSize,true);
 				}
 			}});

@@ -26,7 +26,6 @@ import android.os.Bundle;
 import android.os.LocaleList;
 import android.os.Message;
 import android.provider.Settings;
-import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.Gravity;
@@ -97,7 +96,6 @@ import com.knziha.plod.searchtasks.BuildIndexTask;
 import com.knziha.plod.searchtasks.FullSearchTask;
 import com.knziha.plod.searchtasks.FuzzySearchTask;
 import com.knziha.plod.searchtasks.VerbatimSearchTask;
-import com.knziha.plod.widgets.ActivatableImageView;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.AdvancedNestScrollView;
 import com.knziha.plod.widgets.AdvancedNestScrollWebView;
@@ -242,10 +240,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				lp.bottomMargin = DockerMarginB;
 				root.setLayoutParams(lp);
 			}
-			TypedValue typedValue = new TypedValue();
-			getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
-			actionBarSize = TypedValue.complexToDimensionPixelSize(typedValue.data, dm);
-			if(actionBarSize<=0) actionBarSize=(int) (56*dm.density);
+			actionBarSize = (int) getResources().getDimension(R.dimen.barSize);
 
 			toolbar.getLayoutParams().height=actionBarSize;
 			UIData.appbar.getLayoutParams().height=actionBarSize;
@@ -878,14 +873,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			ObjectAnimator fadeInContents = ObjectAnimator.ofFloat(root, "alpha", 0, 1);
 			fadeInContents.setInterpolator(new AccelerateDecelerateInterpolator());
 			fadeInContents.setDuration(350);
-			if (Build.VERSION.SDK_INT>=23) { // 较旧版本的安卓，设置背景会有闪烁。
-				fadeInContents.addListener(new AnimatorListenerAdapter() {
-					@Override
-					public void onAnimationEnd(Animator animation) {
-						win.setBackgroundDrawable(new ColorDrawable(0));
-					}
-				});
-			}
+			fadeInContents.addListener(new AnimatorListenerAdapter() {
+				@Override
+				public void onAnimationEnd(Animator animation) {
+					win.getDecorView().setBackground(Build.VERSION.SDK_INT>=23
+							?null:new ColorDrawable(0));
+				}
+			});
 			root.post(fadeInContents::start);
 		}
 		
@@ -1025,9 +1019,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		ivDeleteText.setOnClickListener(this);
 		etSearch = UIData.etSearch;
 		// https://stackoverflow.com/questions/46004928/edittext-how-to-set-cliptopadding-to-false
-		//if(Build.VERSION.SDK_INT<23)
-		etSearch.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // 不开可能崩溃、滑动recyclerview会卡顿
-		etSearch.setShadowLayer(etSearch.getPaddingRight(), 0f, 0f, Color.TRANSPARENT);
+		if(GlobalOptions.isLarge) {
+			UIData.etPad.setVisibility(View.GONE);
+			UIData.etPad1.setVisibility(View.GONE);
+		} else {
+			etSearch.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // 不开可能崩溃、滑动recyclerview会卡顿
+			etSearch.setShadowLayer(etSearch.getPaddingRight(), 0f, 0f, Color.TRANSPARENT);
+		}
 		etTools = new SearchbarTools(PDICMainActivity.this, etSearch, null);
 		super.findFurtherViews();
 	}
@@ -1132,7 +1130,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	@SuppressLint("ResourceType")
 	protected void further_loading(final Bundle savedInstanceState) {
 		//CMN.Log("Main Ac further_loading!!!");
-		CachedBBSize=opt.getBottombarSize((int) getResources().getDimension(R.dimen._bottombarheight_));
+		CachedBBSize=opt.getBottombarSize((int) getResources().getDimension(R.dimen.barSzBot));
 		
 		ViewUtils.removeView(mlv);
 		View[] viewList = new View[]{mlv1, mlv, mlv2};
@@ -2676,7 +2674,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} else {
 				contentHolder.addView(bottombar, contentHolder.indexOfChild(UIData.viewpagerPH)+1);
 				LayoutParams lp = bottombar.getLayoutParams();
-				lp.height = (int) getResources().getDimension(R.dimen._50_);
+				lp.height = (int) getResources().getDimension(R.dimen.barSzBot);
 //				w0plp.bottomMargin=(int) (50*GlobalOptions.density);
 //				w0plp.height=w0plp.width/5*3; //333
 			}

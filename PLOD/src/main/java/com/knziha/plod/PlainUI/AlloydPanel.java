@@ -56,6 +56,7 @@ public class AlloydPanel extends PlainAppPanel {
 			toolbar.setTitleTextColor(Color.WHITE);
 			toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
 			toolbar.inflateMenu(R.xml.menu_popup_content);
+			toolbar.getLayoutParams().height = (int) a.mResource.getDimension(R.dimen.barSize);
 			AllMenus = (MenuBuilder) toolbar.getMenu();
 			AllMenus.checkedDrawable = a.AllMenus.checkedDrawable;
 			// tabTranslateEach

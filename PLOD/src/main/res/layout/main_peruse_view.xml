@@ -206,12 +206,12 @@
 
 	<FrameLayout
 		android:layout_width="match_parent"
-		android:layout_height="@dimen/_bottombarheight_"
+		android:layout_height="@dimen/barSzBot"
 		>
 		<LinearLayout
 			android:id="@+id/bottombar2"
 			android:layout_width="match_parent"
-			android:layout_height="@dimen/_bottombarheight_"
+			android:layout_height="@dimen/barSzBot"
 			android:orientation="horizontal"
 			android:background="@color/colorPrimary"
 			android:theme="@style/AppTheme"

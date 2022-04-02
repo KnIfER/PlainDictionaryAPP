@@ -16,8 +16,8 @@
         SwitchCompat:track="@drawable/switch_ios_track_selector" 
         app:dim0="1dp"
         app:dim1="-2dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:paddingTop="@dimen/_8_"
+        android:paddingBottom="@dimen/_8_"
 		app:src0="@drawable/ic_fullscreen_black_24dp"
         />
     <com.knziha.plod.widgets.SwitchCompatBeautiful
@@ -28,8 +28,8 @@
         SwitchCompat:track="@drawable/switch_ios_track_selector"
         app:dim0="2dp"
         app:dim1="-2dp"
-		android:paddingTop="8dp"
-		android:paddingBottom="8dp"
+		android:paddingTop="@dimen/_8_"
+		android:paddingBottom="@dimen/_8_"
 		app:src0="@drawable/ic_fullscreen2_01"
         />
 
@@ -41,8 +41,8 @@
         SwitchCompat:track="@drawable/switch_ios_track_selector"
         app:dim0="2dp"
         app:dim1="1dp"
-		android:paddingTop="8dp"
-		android:paddingBottom="8dp"
+		android:paddingTop="@dimen/_8_"
+		android:paddingBottom="@dimen/_8_"
 		app:src0="@drawable/darkmode"
         />
 
@@ -54,8 +54,8 @@
         SwitchCompat:track="@drawable/switch_ios_track_selector"
         app:dim0="2dp"
         app:dim1="1dp"
-		android:paddingTop="8dp"
-		android:paddingBottom="8dp"
+		android:paddingTop="@dimen/_8_"
+		android:paddingBottom="@dimen/_8_"
 		app:src0="@drawable/ic_baseline_laptop_mac_24"
         />
 
@@ -68,8 +68,8 @@
         SwitchCompat:track="@drawable/switch_ios_track_selector"
         app:dim0="2dp"
         app:dim1="-3dp"
-		android:paddingTop="8dp"
-		android:paddingBottom="8dp"
+		android:paddingTop="@dimen/_8_"
+		android:paddingBottom="@dimen/_8_"
 		app:src0="@drawable/voice_ic"
         />
 </LinearLayout>

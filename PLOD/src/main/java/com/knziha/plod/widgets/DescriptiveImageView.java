@@ -55,7 +55,7 @@ public class DescriptiveImageView extends ImageView {
 		if (global_painter==null||upd) {
 			if (global_painter==null) global_painter = new TextPaint();
 			global_painter.setColor(Color.WHITE);
-			global_painter.setTextSize(GlobalOptions.density*(GlobalOptions.isLarge?16:12));
+			global_painter.setTextSize(GlobalOptions.density*(GlobalOptions.isLarge?19:12));
 		}
 		return global_painter;
 	}

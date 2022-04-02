@@ -15,7 +15,7 @@
 		<com.google.android.material.appbar.AppBarLayout
 			android:id="@+id/appbar"
 			android:layout_width="match_parent"
-			android:layout_height="?attr/actionBarSize"
+			android:layout_height="@dimen/barSize"
 			app:elevation="0dp"
 			android:clipToPadding="false"
 			android:clipChildren="false"
@@ -23,8 +23,7 @@
 			<androidx.appcompat.widget.Toolbar
 				android:id="@+id/toolbar"
 				android:layout_width="match_parent"
-				android:layout_height="?attr/actionBarSize"
-				android:minHeight="?attr/actionBarSize"
+				android:layout_height="@dimen/barSize"
 				android:theme="@style/toolbarBaseTheme"
 				app:contentInsetLeft="0dp"
 				app:contentInsetStart="0dp"
@@ -47,7 +46,7 @@
 						android:layout_height="match_parent"
 						android:textColor="#ffffff"
 						android:singleLine="true"
-						android:paddingStart="0dp"
+						android:paddingStart="@dimen/etSchPadSt"
 						android:paddingEnd="23dp"
 						android:imeOptions="actionSearch|flagNoExtractUi"
 						tools:text="HAPPY SEARCHING"
@@ -63,7 +62,7 @@
 						/>
 					<ImageView
 						android:id="@+id/multiline"
-						android:layout_width="25dp"
+						android:layout_width="@dimen/_25_"
 						android:layout_height="match_parent"
 						android:src="@drawable/ic_menu_material"
 						android:paddingStart="3dp"
@@ -74,7 +73,7 @@
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
 						android:background="@drawable/abc_edit_text_material"
-						android:layout_marginStart="-10dp"
+						android:layout_marginStart="@dimen/etBotPadSt"
 						/>
 					<View
 						android:id="@+id/etPad"
@@ -151,7 +150,7 @@
 		<LinearLayout
 			android:id="@+id/bottombar"
 			android:layout_width="match_parent"
-			android:layout_height="@dimen/_bottombarheight_"
+			android:layout_height="@dimen/barSzBot"
 			android:layout_gravity="bottom"
 			android:gravity="center_vertical|fill_horizontal"
 			android:orientation="horizontal"
@@ -186,7 +185,7 @@
 			android:visibility="invisible"
 			tools:visibility="visible"
 			android:elevation="6dp"
-			android:layout_marginTop="?attr/actionBarSize"
+			android:layout_marginTop="@dimen/barSize"
 			>
 			<View
 				android:layout_width="match_parent"
@@ -250,7 +249,7 @@
 				<ImageView
 					android:id="@+id/schDropdown"
 					android:layout_width="match_parent"
-					android:layout_height="28dp"
+					android:layout_height="@dimen/_28_"
 					android:background="@drawable/frame_gradient_bgs"
 					android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
 					android:onClick="onClick"

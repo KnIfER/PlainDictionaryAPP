@@ -201,7 +201,7 @@ public class MdictServerMobile extends MdictServer {
 				CMN.Log("请求的是本机调试资源…", key);
 				return input;
 			} catch (Exception e) {
-				CMN.Log(e);
+				//CMN.Log(e);
 				if (check) {
 					hasRemoteDebugServer = false;
 				}

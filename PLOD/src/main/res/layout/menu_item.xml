@@ -11,14 +11,10 @@
 		android:id="@+id/text"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:paddingBottom="@dimen/_20_"
-		android:paddingTop="2dp"
-		android:paddingLeft="12dp"
-		android:paddingRight="12dp"
 		android:background="?attr/listChoiceBackgroundIndicator"
 		android:text="夜间"
 		android:src="@drawable/ic_view_comfy_2_black_24dp"
-		/>
+		style="@style/schTools" />
 
 
 </FrameLayout>

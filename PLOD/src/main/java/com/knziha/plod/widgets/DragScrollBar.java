@@ -110,7 +110,7 @@ public class DragScrollBar extends RelativeLayout{
 	SimpleHandle setUpHandle(Context context, Boolean lightOnTouch){
 		handleThumb = new SimpleHandle(context, 0);
 		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(desiredWidth,
-				desiredHeight= ViewUtils.getDP(36, this));
+				desiredHeight= (int) context.getResources().getDimension(R.dimen._35_));
 		lp.addRule(ALIGN_PARENT_RIGHT);
 		handleThumb.setLayoutParams(lp);
 		handleThumb.setVisibility(View.GONE);

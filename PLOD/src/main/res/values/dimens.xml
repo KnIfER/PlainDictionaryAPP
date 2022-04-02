@@ -20,7 +20,7 @@
     <dimen name="_40_">40dp</dimen>
     <dimen name="_45_">45dp</dimen>
     <dimen name="abarmin">1dp</dimen>
-    <dimen name="abarmax">45dp</dimen>
+    <dimen name="btnMaxWidth">45dp</dimen>
     
     
     <dimen name="diagMarginHor">28dp</dimen>
@@ -40,9 +40,15 @@
 	<dimen name="halfpopheader">32dp</dimen>
 	<dimen name="progress_inset">32dp</dimen>
 	<dimen name="scrollBarWidth">15dp</dimen>
-	<dimen name="_bottombarheight_">48dp</dimen>
+	<dimen name="barSzBot">48dp</dimen>
 	<dimen name="idealdpdp">450dp</dimen>
+	<dimen name="barSize">54dp</dimen>
 
 	<dimen name="_65_">65dp</dimen>
 	<dimen name="_90_">90dp</dimen>
+	<dimen name="etSchPadSt">0dp</dimen>
+	<dimen name="etBotPadSt">-10dp</dimen>
+	<dimen name="_8_">8dp</dimen>
+	<dimen name="_43_">43dp</dimen>
+	<dimen name="dragHeight">36dp</dimen>
 </resources>

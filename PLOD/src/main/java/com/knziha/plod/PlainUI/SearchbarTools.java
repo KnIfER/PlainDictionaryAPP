@@ -331,8 +331,10 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		} else if(ViewUtils.isVisibleV2(lv)) {
 			ViewUtils.setVisible(lv, false);
 		}
-		if (settingsLayout!=null && isDirty) {
-			mAdapter.notifyDataSetChanged();
+		if (settingsLayout!=null) {
+			((ViewGroup.MarginLayoutParams)settingsLayout.getLayoutParams()).topMargin = a.UIData.appbar.getHeight();
+			if(isDirty)
+				mAdapter.notifyDataSetChanged();
 		}
 	}
 	

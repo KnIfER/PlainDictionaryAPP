@@ -18,7 +18,7 @@
 		app:dim1="2dp"
 		app:color_background="@color/blueprintBlue"
 		app:color_border="#fff"
-		app:size="30dp"
+		app:size="@dimen/_30_"
 		app:src0="@drawable/ic_check_black_24dp"
 		android:paddingRight="5dp"
 		/>
@@ -29,7 +29,7 @@
 		app:dim1="0dp"
 		app:color_background="@color/blueprintBlue"
 		app:color_border="@color/colorHeaderBlue"
-		app:size="35dp"
+		app:size="@dimen/_35_"
 		app:src0="@drawable/ic_check_black_24dp"
 		android:paddingEnd="5dp"
 		android:paddingStart="5dp"

@@ -110,14 +110,14 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		ViewHolder vh=convertView==null?new ViewHolder(parent, this):(ViewHolder)convertView.getTag();
+		ViewHolder vh=convertView==null?new ViewHolder(a, parent, this):(ViewHolder)convertView.getTag();
 		AppIconData item = projectContext.iconData.get(position);
 		int id = item.number;
 		Resources res = parent.getResources();
 		vh.tv.setText(projectContext.titles[id]);
 		int ID = projectContext.icons[id];
-		vh.ccb_icon.setDrawable(0, res.getDrawable(ID));
-		vh.ccb_toggle.setChecked(item.tmpIsFlag,false);
+		vh.iconBtn.setDrawable(0, res.getDrawable(ID));
+		vh.togBtn.setChecked(item.tmpIsFlag,false);
 		ViewUtils.setVisibleV3(vh.option, hasOpt(ID));
 		vh.position = position;
 		vh.itemView.getBackground().setAlpha(GlobalOptions.isDark?15:255);
@@ -444,32 +444,33 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	}
 	
 	static class ViewHolder{
-		ViewHolder(ViewGroup v, BottombarTweakerAdapter ta){
-			itemView=(ViewGroup)LayoutInflater.from(v.getContext()).inflate(R.layout.circle_checkers_btn_config, v, false);
-			itemView.setTag(this);
+		ViewHolder(MainActivityUIBase a, ViewGroup v, BottombarTweakerAdapter ta){
 			CircleCheckBox b;
-			ccb_icon = b = (CircleCheckBox) itemView.getChildAt(1);
+			itemView=(ViewGroup)a.getLayoutInflater().inflate(R.layout.circle_checkers_btn_config, v, false);
+			itemView.setTag(this);
+			iconBtn = b = (CircleCheckBox) itemView.getChildAt(1);
 			b.drawIconForEmptyState = true;
 			b.drawInnerForEmptyState=false;
 			b.noTint=true;
 			b.setProgress(1);
 			b.setOnClickListener(ta);
-
-			ccb_toggle = b = (CircleCheckBox) itemView.getChildAt(0);
+			togBtn = b = (CircleCheckBox) itemView.getChildAt(0);
 			b.drawIconForEmptyState=false;
 			b.circle_shrinkage=0.75f*GlobalOptions.density;
 			b.addStateWithDrawable(ta.switch_landscape);
 			b.setOnClickListener(ta);
-			
+			if(GlobalOptions.isLarge)
+				b.setSize((int) a.mResource.getDimension(R.dimen._35_));
 			tv = (TextView) itemView.getChildAt(2);
 			tv.setOnClickListener(ta);
-			
 			option = itemView.getChildAt(3);
 		}
 		private final ViewGroup itemView;
 		public int position;
-		CircleCheckBox ccb_icon;
-		CircleCheckBox ccb_toggle;
+		/** 点击图标 */
+		CircleCheckBox iconBtn;
+		/** 打勾 */
+		CircleCheckBox togBtn;
 		View option;
 		TextView tv;
 	}

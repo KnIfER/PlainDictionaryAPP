@@ -2334,7 +2334,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			@Override
 			public int preResizing(int size) {
 				boolean bPeruseIncahrge = PeruseViewAttached() && (peruseView.contentview.getParent()== peruseView.slp || peruseView.contentview.getParent()== peruseView.mlp);
-				int ret = (int) Math.max(((bPeruseIncahrge&&!opt.getPeruseBottombarOnBottom())?30:20)*dm.density, Math.min(getResources().getDimension(R.dimen._bottombarheight_), size));//50*dm.density
+				int ret = (int) Math.max(((bPeruseIncahrge&&!opt.getPeruseBottombarOnBottom())?30:20)*dm.density, Math.min(getResources().getDimension(R.dimen.barSzBot), size));//50*dm.density
 				CMN.Log(ret);
 				if(bPeruseIncahrge) {
 					peruseView.CachedBBSize = ret;
@@ -2446,13 +2446,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		menuSearchMode = AllMenus.findItem(R.id.toolbar_action1);
 		//CMN.Log("findFurtherViews...", contentUIData, contentview);
 		
-		CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, mResource.getDimension(R.dimen._bottombarheight_)));
+		CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, mResource.getDimension(R.dimen.barSzBot)));
 		weblistHandler.setUpContentView(cbar_key);
 		
 		TypedValue typedValue = new TypedValue();
 		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
-		actionBarSize = TypedValue.complexToDimensionPixelSize(typedValue.data, dm);
-		if(actionBarSize<=0) actionBarSize=(int) (56*dm.density);
+		actionBarSize = (int) mResource.getDimension(R.dimen.barSize);
 		setContentDetachType(1);
 	}
 	
@@ -2982,7 +2981,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				parentView = snack_holder;
 				bottom = bottombar.getHeight();
 				if(bottom==0) {
-					bottom = (int) mResource.getDimension(R.dimen._bottombarheight_);
+					bottom = (int) mResource.getDimension(R.dimen.barSzBot);
 				}
 			}
 		}

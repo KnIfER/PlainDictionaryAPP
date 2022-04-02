@@ -259,7 +259,7 @@
 
 	<style name="ActionButtonStyle" parent="@android:style/Widget.Holo.Light.ActionButton">
 		<item name="android:minWidth">@dimen/abarmin</item>
-		<item name="android:maxWidth">@dimen/abarmax</item>
+		<item name="android:maxWidth">@dimen/btnMaxWidth</item>
 		<item name="android:paddingLeft">0dip</item>
 		<item name="android:paddingRight">0dip</item>
 	</style>
@@ -458,6 +458,13 @@
 		<item name="android:padding">15dp</item>
 		<item name="android:drawablePadding">25dp</item>
 		<item name="android:gravity">center_vertical</item>
+	</style>
+
+	<style name="schTools">
+		<item name="android:paddingBottom">@dimen/_20_</item>
+		<item name="android:paddingTop">2dp</item>
+		<item name="android:paddingLeft">12dp</item>
+		<item name="android:paddingRight">12dp</item>
 	</style>
 </resources>
 
