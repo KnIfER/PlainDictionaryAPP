@@ -170,15 +170,20 @@ public class SearchToolsMenu extends BaseAdapter implements TwoWayAdapterView.On
 				
 				int h=0;
 				int[] rhs = new int[(int) Math.ceil(sz*1.f/cols)];
-				for (int i = 0; i < sz; i++) {
-					int c=text.charAt(chs.get(i));
-					String str=a.fanJnMap.get(c);
-					if(str==null)str=a.jnFanMap.get(c);
-					c = i / cols;
-					rhs[c] = Math.max(rhs[c], str==null?1:str.length());
-					if((i+1)%cols==0) {
+				int c=0;
+				for (int i = 0; i < sz+1; i++) {
+					if(i<sz) {
+						c=text.charAt(chs.get(i));
+						String str=a.fanJnMap.get(c);
+						if(str==null)str=a.jnFanMap.get(c);
+						c = i / cols;
+						rhs[c] = Math.max(rhs[c], str==null?1:str.length());
+					}
+					if((i+1)%cols==0 || i==sz/*不圆满者亦有运数*/) {
 						rhs[c] = (int) ((rhs[c]+1)*(new RadioSwitchButton(a).getTextSize()+15*GlobalOptions.density)*1.25f);
 						h += rhs[c];
+						if(i==sz-1)
+							break;
 					}
 				}
 				
