@@ -2426,6 +2426,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=5) public static boolean loadUrlOne() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=6) public static boolean loadUrlMulti() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=7, shift=1) public static boolean startLastSch() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7, shift=1) public static void startLastSch(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
 	
 	
 	///////

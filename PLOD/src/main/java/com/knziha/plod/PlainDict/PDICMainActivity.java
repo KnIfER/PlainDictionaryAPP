@@ -215,7 +215,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private static int LauncherInstanceCount;
 	private EnchanterReceiver locationReceiver;
 	private boolean handled;
-
+	
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		//CMN.Log("onConfigurationChanged",mConfiguration==newConfig, dm==getResources().getDisplayMetrics(), !isLocalesEqual(mConfiguration, newConfig));
@@ -1662,8 +1662,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			showChooseDictDialog(0);
 		}
 		
-		etSearch.setText("happy");
-//		etSearch.setText("sex");
+		startLastSch = opt.startLastSch();
+		if(startLastSch) {
+			etTools.LoadHistory(null);
+		}
+		
 		if(true) {
 //			showRandomShuffles();
 		}

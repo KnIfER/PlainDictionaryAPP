@@ -304,10 +304,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if(true) {
 			lv.setAnimation(AnimationUtils.loadAnimation(a, R.anim.item_animation_fall_down));
 		}
-		if(!loaded) {
-			loaded = true;
-			a.wordPopup.startTask(WordPopupTask.TASK_LOAD_HISTORY);
-		}
+		LoadHistory(null);
 		//for (int i = 0; i < 1000; i++) {
 		//	addHistory("happy");
 		//	addHistory("1024");
@@ -340,6 +337,13 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	}
 	
 	public void LoadHistory(AtomicBoolean task) {
+		if(task==null) {
+			if(!loaded) {
+				loaded = true;
+				a.wordPopup.startTask(WordPopupTask.TASK_LOAD_HISTORY);
+			}
+			return;
+		}
 		CancellationSignal cs = new CancellationSignal();
 		a.root.postDelayed(cs::cancel, 250); // 防止过度读取
 		String[] items = null;
@@ -364,7 +368,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		}
 		if (items!=null) {
 			String[] its = items;
-			a.root.post(() -> {
+			a.root.post(() -> { //harvest
 				history.clear();
 				hIdx.clear();
 				history.addAll(Arrays.asList(its));
@@ -378,6 +382,10 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				}
 				if (mAdapter!=null)
 					mAdapter.notifyDataSetChanged();
+				if(a.startLastSch) {
+					a.setSearchTerm(its[its.length-1]);
+					a.startLastSch=false;
+				}
 			});
 		}
 	}

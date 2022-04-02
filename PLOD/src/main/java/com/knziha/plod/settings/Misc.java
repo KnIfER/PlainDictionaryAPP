@@ -57,6 +57,8 @@ public class Misc extends SettingsFragmentBase implements Preference.OnPreferenc
 		init_switch_preference(this, "magny", PDICMainAppOptions.getEtSearchNoMagnifier(), null, null);
 		init_switch_preference(this, "magny2", PDICMainAppOptions.getHackDisableMagnifier(), null, null);
 		
+		init_switch_preference(this, "stsch", PDICMainAppOptions.startLastSch(), null, null);
+		
 		init_switch_preference(this, "1toast", PDICMainAppOptions.getRebuildToast(), null, null);
 		init_switch_preference(this, "rtoast", PDICMainAppOptions.getToastRoundedCorner(), null, null);
 
@@ -138,6 +140,9 @@ public class Misc extends SettingsFragmentBase implements Preference.OnPreferenc
 			break;
 			case "magny2":
 				PDICMainAppOptions.setHackDisableMagnifier((Boolean) newValue);
+			break;
+			case "stsch":
+				PDICMainAppOptions.startLastSch((Boolean) newValue);
 			break;
 			case "1toast":
 				PDICMainAppOptions.setRebuildToast((Boolean) newValue);

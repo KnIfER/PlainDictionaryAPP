@@ -51,7 +51,7 @@
 	<PreferenceCategory
 		android:key="cat_1"
 		android:title="其他设置"
-		app:icon="@drawable/ic_view_carousel_black_24dp"
+		app:icon="@drawable/item_pressed_circle"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="noext"
@@ -119,9 +119,22 @@
 
 
 	<PreferenceCategory
+		android:key="cat_1"
+		android:title="启动设置"
+		app:icon="@drawable/item_pressed_circle"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="stsch"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="启动时恢复上次的搜索词"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
 		android:key="cat_prog"
 		android:title="Toast 设置（悬浮文本提示）"
-		app:icon="@drawable/ic_view_carousel_black_24dp"
+		app:icon="@drawable/item_pressed_circle"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="1toast"
