@@ -776,6 +776,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.browserWidget13.setOnClickListener(this);
 			contentUIData.browserWidget14.setOnClickListener(this);
 			
+			PorterDuffColorFilter phaedrof = new PorterDuffColorFilter(0xff888888, PorterDuff.Mode.SRC_IN);
+			contentUIData.prv.setColorFilter(phaedrof);
+			contentUIData.nxt.setColorFilter(phaedrof);
+			
 //			contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
 //				contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
 //			});
