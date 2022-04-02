@@ -1656,7 +1656,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		new SearchToolsMenu(this, UIData.schtools);
 		
-		if(PDICMainAppOptions.getShowPinPicBook() && PDICMainAppOptions.pinPDic()) {
+		if(dictPicker.pinShow()) {
 			showChooseDictDialog(0);
 		}
 		
@@ -2492,9 +2492,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //					} else { //111
 						dismissPopup();
 						showChooseDictDialog(0);
-						if(PDICMainAppOptions.pinPDic()) {
-							PDICMainAppOptions.setShowPinPicBook(true);
-						}
 //					}
 				}
 			} break;

@@ -2264,6 +2264,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=15, shift=1) public static boolean checkVersionBefore_5_0() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=15, shift=1) public static void uncheckVersionBefore_5_0(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
+	@Metaline(flagPos=15) public static boolean pinPDicWrdShow() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=15) public static void pinPDicWrdShow(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
 	
 	@Metaline(flagPos=16) public boolean getAlwaysShowScrollRect() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=16) public void setAlwaysShowScrollRect(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2347,8 +2350,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=44) public static boolean fastPreviewFragile() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=45, shift=1) public static boolean getShowPinPicBook() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=45, shift=1) public static void setShowPinPicBook(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=45) public static boolean getShowPinPicBook() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=45) public static void setShowPinPicBook(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=46) public static boolean getShowSearchTools() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=46) public static void setShowSearchTools(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}

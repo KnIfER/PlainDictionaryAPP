@@ -317,6 +317,9 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			toggle(lastTargetRoot, null, type);
 			int pad = type==0?0: (int) (GlobalOptions.density * 19);
 			if(settingsLayout.getPaddingTop()!=pad)settingsLayout.setPadding(0,pad,0,0);
+			if(dictPicker.settingsLayout==null && dictPicker.pinShow()) {
+				dictPicker.toggle();
+			}
 		}
 	}
 	

@@ -258,7 +258,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			if (dialogLayout==null) {
 				init(a, a.root);
 			}
-			if(dialogLayout.getParent()==splitView) {
+			boolean show=dialogLayout.getParent()==splitView;
+			if(show) {
 				ViewUtils.removeView(dialogLayout);
 				ViewUtils.setVisible(splitter, false);
 			} else {
@@ -267,6 +268,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					scrollThis();
 				}
 			}
+			pinShow(!show);
 			dismiss();
 		} else {
 			toggle(a.root, null, -1);
@@ -284,6 +286,19 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	
 	final boolean act() {
 		return isVisible() || pinBtn.isChecked();
+	}
+	
+	public boolean pinShow() {
+		return type==0?PDICMainAppOptions.getShowPinPicBook() // 主程序
+				:type==-1?PDICMainAppOptions.pinPDicWrdShow() // 点译
+				:false
+				;
+	}
+	
+	void pinShow(boolean v) {
+		if (type==0) PDICMainAppOptions.setShowPinPicBook(v);
+		else if (type==-1) PDICMainAppOptions.pinPDicWrdShow(v);
+		//else if (type==1) PDICMainAppOptions.pinPDicFlt(v);
 	}
 	
 	boolean pin() {

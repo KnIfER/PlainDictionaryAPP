@@ -2770,7 +2770,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	/** 0-搜索  1-返回  2-删除  4-撤销   */
 	boolean etSearch_ToToolbarMode(int mode) {
-		CMN.Log("etSearch_ToToolbarMode::", mode);
+		//CMN.Log("etSearch_ToToolbarMode::", mode);
 		if(thisActType==ActType.PlainDict) {
 //			ViewUtils.findInMenu(AllMenusStamp, R.id.toolbar_action2)
 //					.setIcon(!isContentViewAttached()?R.drawable.ic_search_24k:R.drawable.ic_back_material);
@@ -2779,21 +2779,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				ivBack.setImageResource(id==R.id.multiline?R.drawable.ic_menu_material:R.drawable.back_toolbar);
 				ivBack.setId(id);
 			}
-//			ivBack.setVisibility(View.VISIBLE);
-//			int pad = etSearchPadRight, id=R.id.ivBack;
-//			if(mode==3) {
-//				id = R.id.ivDeleteText;
-//			} else if(mode==4) {
-//				pad = 0;
-//				id = R.id.back;
-//			}
-//			if(id!=ivBack.getId()) {
-//				ViewUtils.setVisible(ivBack, mode!=4);
-//				ivBack.setImageResource(mode==3?R.drawable.close_toobar:R.drawable.back_toolbar);
-//				ivBack.setId(id);
-//			}
-//			if(pad!=etSearch.getPaddingRight())
-//				etSearch.setPadding(etSearch.getPaddingLeft(), etSearch.getPaddingTop(), pad, etSearch.getPaddingBottom());
 			return true;
 		}
 		switch(mode){
@@ -5983,50 +5968,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Deprecated
 	public void showChooseTTSDialog() { }
 
-	/**
-	 *  Show choose dictionary dialog
-	 * @param reason 0=pick; 1=pick click dict.
-	 * */
-	
-	public void showChooseDictDialog(int reason) {
-//		if(chooseDFragment==null || chooseDFragment.get()==null) {
-//			chooseDFragment = new WeakReference<>(chooseDialog = new DictPicker(this));
-//			//chooseDFragment.setStyle(R.style.DialogStyle, 0);//DialogFragment.STYLE_NO_TITLE
-//			////chooseDialog.bShouldCloseAfterChoose=true;
-//			//chooseDFragment.setCancelable(true);
-//			//chooseDFragment.setOnViewCreatedListener(new OnViewCreatedListener() {
-//			//	@Override
-//			//	public void OnViewCreated(Dialog dialog) {
-//			//		dialog.setCanceledOnTouchOutside(true);
-//			//		Window window = dialog.getWindow();
-//			//	}});
-////			chooseDialog.width=(int) (dm.widthPixels-2*getResources().getDimension(R.dimen.diagMarginHor));
-////			chooseDialog.mMaxH=(int) (dm.heightPixels-2*getResources().getDimension(R.dimen.diagMarginVer));
-////			chooseDialog.height=-2;
-//		}else
-//			chooseDialog = chooseDFragment.get();
-//		chooseDialog.show(getSupportFragmentManager(), "PickDictDialog");
-		
+	public final void showChooseDictDialog(int reason) {
 		dictPicker.toggle();
-
-		        /*DidialogHolder = (ViewGroup) findViewById(R.id.dialog_);
-            	if(dialogHolder.getVisibility()==View.VISIBLE) {
-					dialogHolder.setVisibility(View.GONE);
-					break;
-				}
-				if(!isFragInitiated) {
-					FragmentManager fragmentManager = getSupportFragmentManager();
-					FragmentTransaction transaction = fragmentManager.beginTransaction();
-					pickDictDialog = new DialogFragment1(this);
-		            transaction.add(R.id.dialog_, pickDictDialog);
-		            transaction.commit();
-		            isFragInitiated=true;
-		            //pickDictDialog.mRecyclerView.scrollToPosition(adapter_idx);
-				}
-				else//没办法..
-					pickDictDialog.refresh();*/
 	}
-	
 	
 	public void toggleStar(String key, ImageView futton, boolean toast, ViewGroup webviewholder) {
 		key = key.trim();
@@ -9695,7 +9639,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			input.read(data);
 			CommonAssets.put(key, data);
 		}
-		CMN.Log(new String(data), data.length);
+		//CMN.Log(new String(data), data.length);
 		return new ByteArrayInputStream(data);
 	}
 	
