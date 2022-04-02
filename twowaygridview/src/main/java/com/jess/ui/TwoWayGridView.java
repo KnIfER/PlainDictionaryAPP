@@ -867,11 +867,14 @@ public class TwoWayGridView extends TwoWayAbsListView {
 				// Try to use an existing view for this position
 				child = mRecycler.getActiveView(position);
 				if (child != null) {
-					// Found it -- we're using an existing child
-					// This just needs to be positioned
-					setupChild(child, position, y, flow, childrenLeft, selected, true, where);
-					if (DEBUG) Log.i(TAG, "makeAndAddView() - end - position: " + position + "reused a view");
-					return child;
+					TwoWayAbsListView.LayoutParams p = (TwoWayAbsListView.LayoutParams)child.getLayoutParams();
+					if (p!=null && p.layoutPos==position) {
+						// Found it -- we're using an existing child
+						// This just needs to be positioned
+						setupChild(child, position, y, flow, childrenLeft, selected, true, where);
+						if (DEBUG) Log.i(TAG, "makeAndAddView() - end - position: " + position + "reused a view");
+						return child;
+					}
 				}
 			}
 
@@ -1911,6 +1914,7 @@ public class TwoWayGridView extends TwoWayAbsListView {
 						ViewGroup.LayoutParams.WRAP_CONTENT, 0);
 			}
 			p.viewType = mAdapter.getItemViewType(position);
+			p.layoutPos = position;
 
 			if (recycled && !p.forceAdd) {
 				attachViewToParent(child, where, p);
@@ -2172,7 +2176,6 @@ public class TwoWayGridView extends TwoWayAbsListView {
 		protected View makeAndAddView(int position, int x, boolean flow, int childrenTop,
 				boolean selected, int where) {
 			View child;
-
 			if (!mDataChanged) {
 				// Try to use an existing view for this position
 				child = mRecycler.getActiveView(position);

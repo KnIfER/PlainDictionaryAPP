@@ -1590,7 +1590,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		if (getChildCount() > 0) {
-			mDataChanged = true;
+			//mDataChanged = true;
 			rememberSyncState();
 		}
 
@@ -3055,6 +3055,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	 * TwoWayAbsListView extends LayoutParams to provide a place to hold the view type.
 	 */
 	public static class LayoutParams extends ViewGroup.LayoutParams {
+		public int layoutPos;
 		/**
 		 * View type for this view, as returned by
 		 * {@link android.widget.Adapter#getItemViewType(int) }
