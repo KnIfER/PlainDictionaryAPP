@@ -970,8 +970,9 @@ public class PlainWeb extends DictionaryAdapter {
 					try {
 						if(url.contains("?"))  url = url.substring(0, url.indexOf("?"));
 						File file = new File(f.getParent(), new File(url).getName());
+						//CMN.Log("modifyRes::???:::", file.getName());
 						InputStream ret = ViewUtils.fileToStream(context, file);
-						CMN.Log("modifyRes::", file.getPath());
+						//CMN.Log("modifyRes::", file.getPath());
 						return ret;
 					} catch (Exception e) {
 						CMN.debug(url,"\n",e);

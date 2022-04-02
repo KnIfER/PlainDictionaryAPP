@@ -7574,7 +7574,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(book!=null && book.getIsWebx()) {
 								input = book.getWebx().modifyRes(MainActivityUIBase.this, url);
 								if(input!=null) {
-									CMN.Log("修改了::", url);
+									CMN.debug("修改了::", url);
 									WebResourceResponse webResourceResponse;
 									webResourceResponse=new WebResourceResponse("*/*", "utf8", input);
 									//webResourceResponse.setResponseHeaders(headers);
@@ -7634,7 +7634,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				//return null;
 			}
-			else CMN.debug("ivk::", invoker);
+			//else CMN.debug("ivk::", invoker);
 			
 			if(url.startsWith("http://mdbr.com/load.html")) { // for random page
 				return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(new byte[0]));
@@ -7643,7 +7643,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			for (PlainWeb book:weblistHandler.moders) { // java.util.ConcurrentModificationException
 				InputStream input = book.modifyRes(MainActivityUIBase.this, url);
 				if(input!=null) {
-					CMN.Log("修改了::", url);
+					CMN.debug("修改了::", url);
 					WebResourceResponse webResourceResponse;
 					webResourceResponse=new WebResourceResponse("*/*", "utf8", input);
 					//webResourceResponse.setResponseHeaders(headers);
