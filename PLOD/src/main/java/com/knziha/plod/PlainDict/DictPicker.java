@@ -68,6 +68,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	LinearLayout.LayoutParams dockLayout;
 	ViewGroup.LayoutParams undockLayout;
 	private LinearLayout dialogLayout;
+	private ViewGroup pdictBtm;
 	private LinearSplitView splitView;
 	private ViewGroup splitter;
 	private int type;
@@ -132,10 +133,12 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			//root.setOnClickListener(this);
 			ViewUtils.setOnClickListenersOneDepth(root, this, 999, null);
 			dialogLayout = (LinearLayout) root.getChildAt(0);
+			pdictBtm = (ViewGroup) dialogLayout.getChildAt(dialogLayout.getChildCount()-1);
 			ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) dialogLayout.getLayoutParams();
 			dialogLayout.setTag(new int[]{lp.topMargin, lp.bottomMargin});
 			View bottombar = dialogLayout.getChildAt(2);
 			settingsLayout = root;
+			//bgView = dialogLayout;
 			this.root = root;
 			pinBtn = bottombar.findViewById(R.id.pinBtn);
 			pinBtn.setChecked(pin());
@@ -147,6 +150,21 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			if (type==1) {
 				ViewUtils.setVisible(bottombar, false);
 			}
+		}
+	}
+	
+	@Override
+	public void refresh() {
+		//if (MainColorStamp!=a.MainAppBackground)
+		{
+			if(GlobalOptions.isDark) {
+				dialogLayout.getBackground().setColorFilter(a.AppWhite, PorterDuff.Mode.SRC_IN);
+				pdictBtm.getBackground().setColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
+			} else {
+				dialogLayout.getBackground().setColorFilter(null);
+				pdictBtm.getBackground().setColorFilter(null);
+			}
+			MainColorStamp = a.MainAppBackground;
 		}
 	}
 	
@@ -219,6 +237,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				}
 				dataChanged();
 				pinBtn.setChecked(pin);
+				refresh();
 			}
 			ViewUtils.setVisible(splitter, pin);
 			if(pin) {
@@ -272,8 +291,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			dismiss();
 		} else {
 			toggle(a.root, null, -1);
-			if (autoScroll) {
-				scrollThis();
+			if (isVisible()) {
+				if(autoScroll)scrollThis();
+				refresh();
 			}
 		}
 	}
@@ -498,6 +518,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				CheckableImageView cb = (CheckableImageView) v;
 				cb.toggle();
 				pin(cb.isChecked());
+				pinShow(cb.isChecked());
 				//if(pickDictDialog!=null) pickDictDialog.isDirty=true;
 				refresh(false, 0);
 				break;
