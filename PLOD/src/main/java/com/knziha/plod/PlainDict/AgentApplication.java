@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 
-import com.bytedance.boost_multidex.BoostMultiDex;
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.utils.CMNF;
 import com.knziha.paging.AppIconCover.AppIconCover;
@@ -195,7 +194,7 @@ public class AgentApplication extends Application {
 		super.attachBaseContext(base);
 		if (Build.VERSION.SDK_INT<=20) {
 			//MultiDex.install(this);
-			BoostMultiDex.install(base);
+			//com.bytedance.boost_multidex.BoostMultiDex.install(base);
 		}
 	}
 }
