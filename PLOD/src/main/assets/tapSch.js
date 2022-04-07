@@ -35,14 +35,15 @@ if(!window.rcspc){
                     var br = range.getBoundingClientRect();
                     var pX = br.left;
                     var pY = br.top;
-                    var pW = br.width;
-                    var pH = br.height;
+                    var pW = parseInt(br.width);
+                    var pH = parseInt(br.height);
                     var cprY = e.clientY;
                     var cprX = e.clientX;
 
-                    debug('tap=', cprX, cprY, pX, pY, pH, pH);
+                    //debug('tap=', pW, pH, parseInt(cprX), parseInt(cprY), parseInt(pX)+'~'+parseInt(pX+pW), parseInt(pY)+'~'+parseInt(pY+pH));
                     var pad=50;
-                    if((cprY>pY-pad && cprY<pY+pH+pad && cprX>pX-pad && cprX<pX+pW+pad)){
+                    if(pW>0 && pY>0 
+                        && (cprY>pY-pad && cprY<pY+pH+pad && cprX>pX-pad && cprX<pX+pW+pad)){
                         s.collapseToStart();
                         s.modify('extend', 'forward', 'lineboundary');
     
