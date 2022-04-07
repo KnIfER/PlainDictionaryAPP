@@ -1,0 +1,31 @@
+
+
+//    if(false) {
+//        api libs_glide
+//        annotationProcessor libs_glide
+//    } else {
+//        //compileOnly "com.google.auto.service:auto-service:1.0-rc6"
+//        //compileOnly "com.squareup:javapoet:1.10.0"
+//        compileOnly project(path: ':GlideModule:annotation:compiler')
+//        annotationProcessor project(path: ':GlideModule:annotation:compiler')
+//        api project(path: ':GlideModule:glide')
+//        //implementation 'com.knziha.glidemodule:GlideModule:1.0@aar'
+//    }
+
+
+dependencies {
+    api('org.appxmod.glide:GlideModule:1.0.0')
+    api('org.appxmod.glide:GifDecoder:1.0.0')
+    api('org.appxmod.glide:DiskLruCache:1.0.0')
+
+    compileOnly ('org.appxmod.glide:Compiler:1.0.0')
+    annotationProcessor ('org.appxmod.glide:Compiler:1.0.0')
+
+    implementation('org.appxmod.glide:Annotation:1.0.0') 
+
+    //compileOnly("com.google.auto.service:auto-service:1.0-rc6")
+    annotationProcessor ("com.google.auto.service:auto-service:1.0-rc6") 
+
+
+
+}

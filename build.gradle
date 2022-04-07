@@ -1,12 +1,14 @@
 buildscript {
     repositories {
+        mavenLocal()
         google()
         jcenter()
         maven { url 'https://jitpack.io' }
     }
     dependencies {
 //       classpath 'com.android.tools.build:gradle:4.0.1'
-          classpath 'com.android.tools.build:gradle:3.4.0'
+//          classpath 'com.android.tools.build:gradle:3.4.0'
+        classpath 'com.android.tools.build:gradle:7.0.4'
     }
 }
 
@@ -18,6 +20,7 @@ ext{
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         jcenter()
         mavenCentral()

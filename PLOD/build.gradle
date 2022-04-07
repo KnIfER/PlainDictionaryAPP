@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 
+
 android.applicationVariants.all { variant ->
     variant.mergeResources.doFirst {
         def isReleaseMode = false
@@ -18,6 +19,24 @@ android.applicationVariants.all { variant ->
 }
 
 android {
+    tasks.whenTaskAdded { task ->
+        if (task.name.contains("lint")
+//如果instant run不生效，把clean这行干掉
+                ||task.name.equals("clean")
+                //如果项目中有用到aidl则不可以舍弃这个任务
+                ||task.name.contains("Aidl")
+//用不到测试的时候就可以先关闭
+                ||task.name.contains("mockableAndroidJar")
+                ||task.name.contains("UnitTest")
+                ||task.name.contains("AndroidTest")
+//用不到NDK和JNI的也关闭掉
+                || task.name.contains("Ndk")
+                || task.name.contains("Jni")
+        ) {
+            task.enabled = false
+        }
+    }
+
     lintOptions {
         tasks.lint.enabled = false
         checkReleaseBuilds false
@@ -119,10 +138,12 @@ dependencies {
 //    annotationProcessor project(':Metaline:Metaline')
 //    testImplementation project(':Metaline:Metaline')
 //    testAnnotationProcessor project(':Metaline:Metaline')
+
     compileOnly libs_metaline
     annotationProcessor libs_metaline
     testImplementation libs_metaline
     testAnnotationProcessor libs_metaline
+
     testImplementation 'com.google.javascript:closure-compiler:v20211107'
 
     api 'org.apache.commons:commons-text:1.8'
@@ -158,7 +179,6 @@ dependencies {
     } else {
         api(project(':AppPreference'))
     }
-    api project(':GlideModule:glide')
     api project(':drag_sort_lib')
     api project(':colorpicker')
     api project(':filepicker')
@@ -178,7 +198,7 @@ dependencies {
     implementation "io.noties.markwon:core:4.5.0"
     //api ('com.github.barteksc:pdfium-android:1.9.0')
 
-    implementation 'com.bytedance.boost_multidex:boost_multidex:1.0.1'
+//    implementation 'com.bytedance.boost_multidex:boost_multidex:1.0.1'
 
     implementation 'com.squareup.okhttp3:okhttp:3.12.13'
     implementation 'org.simpleframework:simple-xml:2.7.1'

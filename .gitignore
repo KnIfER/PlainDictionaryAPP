@@ -2,7 +2,6 @@
 #settings put global enable_freedom_support 1
 
 秘籍
-gradle
 .gradle
 .idea
 *.iml
