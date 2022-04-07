@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.knziha.plod.widgets.DescriptiveImageView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/app_icon_iv"
+	android:layout_width="match_parent"
+	android:layout_height="85dp"
+	android:scaleType="fitCenter"
+	android:layout_gravity="center_horizontal"
+	android:paddingTop="8dp"
+	android:paddingBottom="18dp"
+	tools:text="HAPPY TO SHARE"
+	android:layout_y="5dp"
+	android:background="?attr/listChoiceBackgroundIndicator"
+	/>

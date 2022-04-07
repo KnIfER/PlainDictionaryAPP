@@ -24,6 +24,8 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStatsManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -37,8 +39,11 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -64,6 +69,7 @@ import android.widget.TextView;
 import android.widget.WrapperListAdapter;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
@@ -140,6 +146,8 @@ public class ViewUtils {
 	public static int FloatTextBG = 0xffffff00;
 	public static int FloatTextBGAlpha = 0x7fffff00;
 	
+	public static Rect rect = new Rect();
+	
 	public final static Cursor EmptyCursor=new AbstractWindowedCursor() {
 		@Override
 		public int getCount() {
@@ -153,6 +161,8 @@ public class ViewUtils {
 	public static final boolean littleCake = Build.VERSION.SDK_INT<=21;
 	public static final boolean bigMountain = Build.VERSION.SDK_INT>22;
 	public static final boolean hugeHimalaya = Build.VERSION.SDK_INT>=Build.VERSION_CODES.P;
+	
+	public static ColorDrawable GrayBG = new ColorDrawable(0xff8f8f8f);
 	
 	static int getDP(int dp, View v){
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, v.getResources().getDisplayMetrics());
@@ -1431,5 +1441,73 @@ public class ViewUtils {
 		return extract?fMd:object;
 	}
 	
+	public static boolean isKeyboardShown(View rootView) {
+		final int softKeyboardHeight = 100;
+		rootView.getWindowVisibleDisplayFrame(rect);
+		int heightDiff = rootView.getBottom() - rect.bottom;
+		return heightDiff > softKeyboardHeight * GlobalOptions.density;
+	}
 	
+	
+	/** Retrieve the invoker application (the intent sender) package name for onNewIntent or onCreate
+	 * @param timeRange Seconds of time. Querying app usage events from now-timeRange to now.
+	 * 			maybe 1 for onNewIntent and 3 for onCreate.
+	 * @return the ThirdParty package name or null if not found*/
+	@Nullable
+	public static String topThirdParty(Context context, float timeRange) {
+		String thisPak, tmp, top = null;
+		try {
+			thisPak = context.getPackageName();
+			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+				UsageStatsManager man = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
+				long now = System.currentTimeMillis();
+				if(timeRange<0)
+					timeRange=1;
+				int range = (int) (1000*timeRange);
+				UsageEvents uEvts = man.queryEvents(now - range,now); // query in 1~3 sec
+				UsageEvents.Event e = new UsageEvents.Event();
+				now = 100;
+				while (uEvts.getNextEvent(e) && --now>0){
+					tmp = e.getPackageName();
+					//CMN.Log("topThirdParty::", tmp);
+					if (!thisPak.equals(tmp)) {
+						top = tmp;
+						break;
+					}
+				}
+			} else {
+				ActivityManager man = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+				List<ActivityManager.RecentTaskInfo> tasks = man.getRecentTasks(3, 0);
+				for(ActivityManager.RecentTaskInfo info:tasks) {
+					tmp = info.baseIntent.getComponent().getPackageName();
+					//CMN.Log("topThirdParty::", tmp);
+					if (!thisPak.equals(tmp)) {
+						top = tmp;
+						break;
+					}
+				}
+			}
+		} catch (Exception e) {
+			//CMN.Log(e);
+		}
+		return top;
+	}
+	
+	public static RecyclerView.RecycledViewPool MaxRecyclerPool(int i) {
+		RecyclerView.RecycledViewPool pool = new RecyclerView.RecycledViewPool();
+		pool.setMaxRecycledViews(0, i);
+		return pool;
+	}
+	
+	public static void TrimWindowWidth(Window win, DisplayMetrics dm) {
+		if(win!=null) {
+			int maxWidth = (int) (GlobalOptions.density*480);
+			WindowManager.LayoutParams attr = win.getAttributes();
+			int targetW=dm.widthPixels>maxWidth?maxWidth: ViewGroup.LayoutParams.MATCH_PARENT;
+			if(targetW!=attr.width){
+				attr.width = targetW;
+				win.setAttributes(attr);
+			}
+		}
+	}
 }
