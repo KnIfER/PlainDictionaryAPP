@@ -15,7 +15,6 @@ import android.util.SparseArray;
 import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnLongClickListener;
@@ -38,6 +37,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -54,6 +56,7 @@ import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.plaindict.databinding.DeckBrowserBinding;
+import com.knziha.plod.settings.History;
 import com.knziha.plod.widgets.RecyclerViewmy;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SimpleDialog;
@@ -80,7 +83,7 @@ import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 
 @SuppressLint("SetTextI18n")
 public class DBroswer extends DialogFragment implements
-		View.OnClickListener, OnLongClickListener, RecyclerViewmy.OnItemClickListener, OnItemLongClickListener {
+		View.OnClickListener, OnLongClickListener, RecyclerViewmy.OnItemClickListener, OnItemLongClickListener, Toolbar.OnMenuItemClickListener {
 	public int pendingDBClickPos=-1;
 	public int type;
 	public int pendingType;
@@ -213,6 +216,7 @@ public class DBroswer extends DialogFragment implements
 			UIData.browserWidget13.setOnClickListener(this);
 			
 			UIData.toolbar.inflateMenu(R.xml.menu_dbrowser);
+			UIData.toolbar.setOnMenuItemClickListener(this);
 			
 			UIData.toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
 			UIData.toolbar.setNavigationOnClickListener(v1 -> {
@@ -227,8 +231,6 @@ public class DBroswer extends DialogFragment implements
 ////			toolbar.setBackgroundColor(0xcc000000|(((MainActivityUIBase) container.getContext()).MainBackground&0xffffff));
 //			} //xxx
 			//CMN.Log("咿呀咿呀", container.getContext());
-			Menu toolbarmenu = UIData.toolbar.getMenu();
-			MenuItem searchItem = toolbarmenu.getItem(0);
 			//  new SearchCardsHandler2().execute(query);
 			
 			UIData.counter.setVisibility(View.GONE);
@@ -354,6 +356,13 @@ public class DBroswer extends DialogFragment implements
 				onItemClick(null, pendingDBClickPos);
 				pendingDBClickPos=-1;
 			}
+			
+			MenuBuilder menu = (MenuBuilder) UIData.toolbar.getMenu();
+			MenuItem searchItem = menu.getItem(0);
+			menu.checkDrawable = a.AllMenus.checkDrawable;
+			menu.mOverlapAnchor = false;
+			if(PDICMainAppOptions.dbShowIcon())
+				menu.findItem(R.id.icon).setChecked(true);
 		}
 		else {
 			boolean bNeedInvalidate=false;
@@ -1621,9 +1630,7 @@ public class DBroswer extends DialogFragment implements
 		//else CMN.Log("复用dialog");
 		Window win = mDialog.getWindow();
 		if(win!=null){
-			
 			win.setWindowAnimations(com.knziha.filepicker.R.style.fp_dialog_animation);
-			
 			
 			ViewGroup content = win.findViewById(android.R.id.content);
 			if(content!=null) {
@@ -1654,5 +1661,39 @@ public class DBroswer extends DialogFragment implements
 			if(t!=null) t.setVisibility(View.GONE);
 		}
 		return mDialog;
+	}
+	
+	
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		MainActivityUIBase a = (MainActivityUIBase) getActivity();
+		int id = item.getItemId();
+		MenuItemImpl mmi = item instanceof MenuItemImpl?(MenuItemImpl)item:null;
+		MenuBuilder menu = mmi.mMenu;
+		boolean isLongClicked = mmi!=null && mmi.isLongClicked;
+		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
+		boolean ret = !isLongClicked;
+		boolean closeMenu=ret;
+		switch(id) {
+			case R.id.back: {
+				if (isLongClicked) {
+					ret = true;
+					item.setEnabled(!item.isEnabled());
+				} else {
+					dismiss();
+				}
+			} break;
+			case R.id.settings: {
+				a.launchSettings(History.id, 0);
+			} break;
+			case R.id.icon: {
+				item.setChecked(!item.isChecked());
+				PDICMainAppOptions.dbShowIcon(item.isChecked());
+				mAdapter.notifyDataSetChanged();
+			} break;
+		}
+		if(closeMenu)
+			a.closeIfNoActionView(mmi);
+		return ret;
 	}
 }

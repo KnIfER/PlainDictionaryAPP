@@ -2438,6 +2438,37 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=9) public static boolean fyeGridBot() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=9) public static void fyeGridBot(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
+	/** 0=始终关闭, 1=始终开启, 2=记忆 */
+	@Metaline(flagPos=10, flagSize=2, shift=2) public static int historyAutoShow() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=10, flagSize=2, shift=2) public static void historyAutoShow(int v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12) public static boolean historyShow() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12) public static void historyShow(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=13) public static boolean historyShowFye() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=13) public static void historyShowFye(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=14, shift=1) public static boolean fyeDictAutoScroll() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=15) public static boolean delaySchLvHardSoftUI() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=16, shift=1) public static boolean etSchAlwaysHard() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=17) public static boolean etSchExitTop() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=17) public static boolean fyeTogEntry() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+	/* forbid all history recording */
+	@Metaline(flagPos=18) public static boolean storeNothingButSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=18) public static void storeNothingButSch(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=19, shift=1) public static boolean dbShowIcon(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=19, shift=1) public static void dbShowIcon(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=20, shift=1) public static boolean storeIcon(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=20, shift=1) public static void storeIcon(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=21, shift=1) public static boolean storeAppId(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=21, shift=1) public static void storeAppId(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=22) public static boolean menuOverlapAnchor(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=22) public static void menuOverlapAnchor(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
 	
 	///////
@@ -2571,7 +2602,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=0, flagSize=8) public static int getPseudoInitCode(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=2, flagSize=6) public static int getPseudoInitCodeEu(){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=2, flagSize=6) public static void setPseudoInitCode(int value){MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
-	@Metaline(flagPos=12, flagSize=4, shift=7, max=8) public static int getTmpUserOrientation() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=12, flagSize=4, shift=7, max=8, log=1) public static int getTmpUserOrientation() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=12, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static int getTmpUserOrientation1() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation1(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}

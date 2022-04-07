@@ -3,9 +3,13 @@ package com.knziha.plod.plaindict;
 import static com.knziha.plod.db.LexicalDBHelper.FIELD_VISIT_TIME;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnLongClickListener;
@@ -17,11 +21,20 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.IDragSelectAdapter;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
+import com.knziha.paging.AppIconCover.AppIconCover;
+import com.knziha.paging.AppIconCover.AppInfoBean;
 import com.knziha.paging.ConstructorInterface;
 import com.knziha.paging.CursorAdapter;
 import com.knziha.paging.CursorReader;
 import com.knziha.paging.PagingAdapterInterface;
 import com.knziha.paging.PagingCursorAdapter;
+import com.knziha.plod.PlainUI.AppInfoDBBean;
 import com.knziha.plod.plaindict.databinding.CardListItemBinding;
 import com.knziha.plod.widgets.RecyclerViewmy;
 import com.knziha.plod.widgets.ViewUtils;
@@ -29,6 +42,7 @@ import com.knziha.plod.widgets.ViewUtils;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 //for main list
 //参见：live down
@@ -43,6 +57,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	final static int SelectionMode_txtdropper=2;
 	final static int SelectionMode_select=3;
 	ConstructorInterface<HistoryDatabaseReader> HistoryDatabaseReaderConstructor = length -> new DeckListAdapter.HistoryDatabaseReader();
+	private RequestBuilder<Drawable> iconLoader;
 	
 	public interface OnItemLongClickListener{
 		boolean onItemLongClick(View view,int position);
@@ -53,10 +68,13 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		String books;
 		String record;
 		String time_text;
+		long ivk;
 		@Override
 		public void ReadCursor(Cursor cursor, long rowID, long sortNum) {
 			record = cursor.getString(2);
 			books = cursor.getString(3);
+			ivk = cursor.getLong(4);
+			//CMN.Log("ReadCursor::ivk::", record, ivk); null return zero
 			if (rowID!=-1) {
 				row_id = rowID;
 				sort_number = sortNum;
@@ -75,6 +93,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	}
 	
 	final MainActivityUIBase a;
+	private final PackageManager pm;
 	
 	static class DeckListData{
 		public @NonNull PagingAdapterInterface<HistoryDatabaseReader> dataAdapter;
@@ -106,6 +125,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		this.a = a;
 		browserHolder = new WeakReference<>(broswer);
 		resetDataCache(broswer.type);
+		pm = a.getPackageManager();
 	}
 	
 	public boolean resetDataCache(int type) {
@@ -187,12 +207,12 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	}
 	
 	@Override
-	public void onBindViewHolder(@NonNull final ViewUtils.ViewDataHolder<CardListItemBinding> holder, final int position)
+	public void onBindViewHolder(@NonNull final ViewUtils.ViewDataHolder<CardListItemBinding> holder, int position)
 	{
 		CardListItemBinding viewdata = holder.data;
 		holder.position = position;
 		//if(true) return;
-		String text;long time = 0;
+		String text;long time, ivk=-1;
 		
 		long rowId = position;
 		
@@ -202,12 +222,36 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 			text=reader.record;
 			time=reader.sort_number;
 			rowId = reader.row_id;
+			ivk = reader.ivk;
 			String books = reader.books;
 			day_.setTime(time);
 			viewdata.subtext1.setText(date.format(day_) + "  " + a.retrieveDisplayingBooks(books));
 		} catch (Exception e) {
 			text="!!!Error: "+e.getLocalizedMessage();
 		}
+
+		if(ivk!=0 && PDICMainAppOptions.dbShowIcon()) {
+			if(iconLoader==null) {
+				RequestOptions options = new RequestOptions()
+						.format(DecodeFormat.PREFER_ARGB_8888)//DecodeFormat.PREFER_ARGB_8888
+						.skipMemoryCache(false)
+						.diskCacheStrategy(DiskCacheStrategy.NONE)
+						.fitCenter()
+						.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+						;
+				iconLoader = Glide.with(a)
+						.load(new AppIconCover(new AppInfoDBBean(ivk, pm), false))
+						.apply(options);
+			}
+			iconLoader.load(new AppIconCover(new AppInfoDBBean(ivk, pm), false))
+					.into(viewdata.icon);
+		} else {
+			viewdata.icon.setImageDrawable(null);
+		}
+		
+		
+		
+		//viewdata.icon
 		
 		viewdata.text1.setText(text.trim());
 		
@@ -300,9 +344,9 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		if (bSingleThreadLoading) {
 			Cursor cursor;
 			if (browser.type==DB_FAVORITE) {
-				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books FROM "+browser.getTableName()+" where folder=? ORDER BY "+FIELD_VISIT_TIME+" desc", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
+				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books,ivk FROM "+browser.getTableName()+" where folder=? ORDER BY "+FIELD_VISIT_TIME+" desc", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
 			} else {
-				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books FROM "+browser.getTableName()+" ORDER BY "+FIELD_VISIT_TIME+" desc", null);
+				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books,ivk FROM "+browser.getTableName()+" ORDER BY "+FIELD_VISIT_TIME+" desc", null);
 			}
 			CMN.Log("查询个数::"+cursor.getCount());
 			data.dataAdapter = displaying = new CursorAdapter<>(cursor, new HistoryDatabaseReader());
@@ -318,7 +362,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 			data.dataAdapter = displaying = dataAdapter;
 			dataAdapter.bindTo(browser.lv)
 					.setAsyncLoader(a, browser.pageAsyncLoader)
-					.sortBy(browser.getTableName(), FIELD_VISIT_TIME, true, "lex, books");
+					.sortBy(browser.getTableName(), FIELD_VISIT_TIME, true, "lex, books, ivk");
 			if (browser.getFragmentType()==DB_FAVORITE) {
 				dataAdapter.where("folder=?", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
 			}

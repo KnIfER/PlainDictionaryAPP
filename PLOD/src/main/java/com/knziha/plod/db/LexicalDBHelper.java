@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
 
@@ -35,6 +34,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String TABLE_BOOK_NOTE_v2 = "booknote";
 	public static final String TABLE_BOOK_ANNOT_v2 = "bookannot";
 	public static final String TABLE_DATA_v2 = "data";
+	public static final String TABLE_APPID_v2 = "appid";
 	
 	public static final String FIELD_CREATE_TIME = "creation_time";
 	public static final String FIELD_VISIT_TIME = "last_visit_time";
@@ -277,15 +277,19 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", lex LONGVARCHAR" +
 					", books TEXT"+
 					", src INTEGER DEFAULT 0 NOT NULL"+
+					", grp INTEGER"+
+					", ivk INTEGER"+
 					", creation_time INTEGER NOT NULL"+
 					", last_visit_time INTEGER NOT NULL" +
 					", visit_count INTEGER DEFAULT 0 NOT NULL" +
 					")";
 			db.execSQL(sqlBuilder);
 			if (!columnExists(db, TABLE_HISTORY_v2, "src")) {
-				//CMN.Log("创建表……");
 				db.execSQL("ALTER TABLE "+TABLE_HISTORY_v2+" ADD COLUMN src INTEGER DEFAULT 0 NOT NULL");
-				//CMN.Log("创建了表……");
+			}
+			if (!columnExists(db, TABLE_HISTORY_v2, "grp")) {
+				db.execSQL("ALTER TABLE "+TABLE_HISTORY_v2+" ADD COLUMN grp INTEGER");
+				db.execSQL("ALTER TABLE "+TABLE_HISTORY_v2+" ADD COLUMN ivk INTEGER");
 			}
 			db.execSQL("CREATE INDEX if not exists history_term_index ON history (lex)"); // query view
 			db.execSQL("DROP INDEX if exists history_time_index"); // main view
@@ -312,6 +316,18 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					")";
 			db.execSQL(sqlBuilder);
 			db.execSQL("CREATE INDEX if not exists data_name_index ON data (name)");
+			
+			sqlBuilder = "create table if not exists " +
+					TABLE_APPID_v2 +
+					"(" +
+					"id INTEGER PRIMARY KEY AUTOINCREMENT" +
+					", name TEXT" +
+					", title TEXT" +
+					", icon blob" +
+					", creation_time INTEGER NOT NULL"+
+					")";
+			db.execSQL(sqlBuilder);
+			db.execSQL("CREATE INDEX if not exists app_name_index ON appid (name)");
 			
 			if (preparedHasBookNoteForEntry ==null) {
 				preparedHasBookNoteForEntry = db.compileStatement("select id from " + TABLE_BOOK_NOTE_v2 + " where lex=? and bid=? and notesType>0");
@@ -519,9 +535,34 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		}
 	}
 	
-	/** @param source 0=default; 1=listview; 2=tap translator; 3=peruse view
-	 *    <br> 128=main search; 129=float search 130=tap translator; 131=peruse view   */
-	public long updateHistoryTerm (MainActivityUIBase a, String lex, ViewGroup webviewholder, int source) {
+	public final static class SearchUI{
+		public final static class MainApp{
+			public final static int MAIN=128;
+			public final static int ENTRYTEXT=129;
+			public final static int FULLTEXT=130;
+			public final static int 表=1;
+			public final static int 表0=2;
+			public final static int 表1=3;
+		}
+		public final static class TapSch{
+			public final static int MAIN=158;
+			public final static int 表=31;
+		}
+		public final static class Fye{
+			public final static int MAIN=170;
+			public final static int 表=41;
+		}
+		public final static class FloatApp{
+			public final static int MAIN=190;
+			public final static int 表=51;
+		}
+	}
+	
+	
+	/**
+	 * @param source 0=default; 1=listview; 2=tap translator; 3=peruse view
+	 *   */
+	public long updateHistoryTerm(MainActivityUIBase a, String lex, ViewGroup webviewholder, int source) {
 		CMN.rt();
 		int count=-1;
 		int src=0;
@@ -544,7 +585,33 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			values.put("lex", lex);
 			
 			values.put("books", a.collectDisplayingBooks(books, webviewholder));
-			
+			long ivkAppId = -1;
+			String ivk = a.extraInvoker;
+			if(ivk!=null && lex.equals(a.extraText)) {
+				where[0] = ivk;
+				c = database.rawQuery("select id from "+TABLE_APPID_v2+" where name = ? ", where);
+				if (c.moveToNext())
+					ivkAppId = c.getLong(0);
+				c.close();
+				if(ivkAppId==-1) {
+					ContentValues value = new ContentValues();
+					value.put("name", ivk);
+					value.put(FIELD_CREATE_TIME, CMN.now());
+					ivkAppId = database.insert(TABLE_APPID_v2, null, value);
+					if(ivkAppId==0) {
+						where[0] = ""+0;
+						value.put("name", "empty");
+						database.update(TABLE_APPID_v2, value, "id = ?", where);
+						value.put("name", ivk);
+						ivkAppId = database.insert(TABLE_APPID_v2, null, value);
+					}
+				}
+				CMN.Log("updateHistoryTerm::ivk::", ivk, ivkAppId);
+				a.extraInvoker = null;
+			}
+			if (ivkAppId!=-1) {
+				values.put("ivk", ivkAppId);
+			}
 			values.put("visit_count", ++count);
 			if(source>0 && (src<127 || source>127)) {
 				values.put("src", source);

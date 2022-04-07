@@ -10,12 +10,21 @@
 		android:descendantFocusability="beforeDescendants"
 		tools:background="#fff"
 		>
+		<ImageView
+			android:id="@+id/icon"
+			android:layout_width="35dp"
+			android:layout_height="35dp"
+			android:layout_centerVertical="true"
+			android:padding="2dp"
+			tools:src="@drawable/ic_history_black_24dp"
+			/>
 		<LinearLayout
 			android:id="@+id/sub_list"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical"
 			android:background="@drawable/listviewselector0"
+			android:paddingStart="35dp"
 			>
 			<com.knziha.ankislicer.customviews.WahahaTextView
 				android:id="@android:id/text1"
@@ -23,7 +32,6 @@
 				android:layout_width="wrap_content"
 				tools:text="absolve"
 				android:padding="2dp"
-				android:layout_marginStart="10dp"
 				android:layout_marginTop="5dp"
 				android:layout_marginBottom="2dp"
 				android:textColor="#000"
@@ -35,7 +43,6 @@
 				android:layout_height="wrap_content"
 				android:layout_width="match_parent"
 				android:id="@+id/subtext1"
-				android:layout_marginLeft="10dp"
 				android:layout_marginTop="2dp"
 				android:paddingBottom ="5dp"
 				android:textSize="@dimen/lvsubtextsize"

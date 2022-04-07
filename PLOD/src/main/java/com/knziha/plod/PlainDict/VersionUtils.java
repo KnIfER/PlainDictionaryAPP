@@ -2,6 +2,10 @@ package com.knziha.plod.plaindict;
 
 import android.os.Build;
 
+import androidx.appcompat.app.GlobalOptions;
+
+import com.knziha.filepicker.model.GlideOptions;
+
 public class VersionUtils {
 	
 	public static void checkVersion(PDICMainAppOptions opt) {
@@ -33,6 +37,7 @@ public class VersionUtils {
 			opt.setTypeFlag_11_AtQF(0, 8);
 			opt.setTypeFlag_11_AtQF(0, 22);
 			opt.setInPeruseMode(false);
+			opt.menuOverlapAnchor(!GlobalOptions.isLarge||GlobalOptions.isSmall);
 			PDICMainAppOptions.uncheckVersionBefore_5_7(false);
 		}
 	}

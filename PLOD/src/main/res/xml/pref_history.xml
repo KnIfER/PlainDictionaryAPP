@@ -3,13 +3,13 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 	<PreferenceCategory
 		android:key="cat_1"
-		android:title="历史记录"
+		android:title="记录方式"
 		app:icon="@drawable/ic_history_black_24dp"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_nothing"
+			android:key="rc_no"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="不做任何记录"
@@ -20,30 +20,32 @@
 			android:defaultValue="false"
 			android:title="纪录列表点击"
 			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_query"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="纪录搜索指令"
-			android:summary="包括键盘回车键/搜索按钮"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_net"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="记录跨设备查词"
-			app:allowDividerBelow="true"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="rc_float_pop"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="记录界面弹出时获得的搜索词"
-			android:summary="包括浮动搜索/翻阅模式/点译弹窗/多维分享"
-			app:allowDividerBelow="true"
-			/>
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="rc_query"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="纪录搜索指令"-->
+<!--			android:summary="包括键盘回车键/搜索按钮"-->
+<!--			/>-->
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="rc_net"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="记录跨设备查词"-->
+<!--			app:allowDividerBelow="true"-->
+<!--			/>-->
+
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="rc_float_pop"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="记录界面弹出时获得的搜索词"-->
+<!--			android:summary="包括浮动搜索/翻阅模式/点译弹窗/多维分享"-->
+<!--			app:allowDividerBelow="true"-->
+<!--			/>-->
+
 		<androidx.preference.ListPreference
-			android:key="rc_slide"
+			android:key="rc_turn"
 			android:persistent="false"
 			android:defaultValue="1"
 			android:title="记录在解释页面翻页到达的词条"
@@ -51,5 +53,40 @@
 			android:entries="@array/record_slide_info"
 			/>
 	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat_1"
+		android:title="记录第三方调用者"
+		app:icon="@drawable/item_pressed_circle_cat"
+		android:clickable="true"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="3rd"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="启用记录"
+			android:summary="需要应用记录的读取权限"
+			/>
+		<Preference
+			android:key="permit"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="请求权限"
+			android:summary="需要在弹出的系统界面中手动赋予"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="cache"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="缓存APP图标"
+			android:summary="卸载后仍能显示"
+			/>
+
+	</PreferenceCategory>
+
+
+
 
 </PreferenceScreen>

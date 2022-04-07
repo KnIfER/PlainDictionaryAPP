@@ -2,9 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto">
 
-	<!--4--><item android:id="@+id/search" android:enabled="false" android:icon="@drawable/ic_search_24k" android:title="@string/search" app:showAsAction="always"/>
+	<!--4--><item android:id="@+id/search"  android:enabled="false" android:icon="@drawable/ic_search_24k" android:title="@string/search" app:showAsAction="always"/>
 
-	<!--8--><item android:id="@+id/back" android:enabled="false" android:icon="@drawable/ic_search_24k" android:title="返回" app:showAsAction="never"/>
+	<!--8--><item android:id="@+id/back" android:icon="@drawable/ic_search_24k" android:title="返回" app:showAsAction="never"/>
+
+	<!--8--><item android:id="@+id/settings" android:icon="@drawable/ic_search_24k" android:title="设置" app:showAsAction="never"/>
+
+	<!--8--><item android:id="@+id/icon" android:icon="@drawable/ic_search_24k" android:title="显示应用图标" app:showAsAction="never" android:checkable="true" />
 
 
 </menu>
