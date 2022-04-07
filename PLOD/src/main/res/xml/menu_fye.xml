@@ -4,7 +4,7 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 	<!--0--><item android:title="@string/search" android:id="@+id/toolbar_action1" android:icon="@drawable/ic_search_24k" app:showAsAction="always"/>
 
-	<!--1--><item android:title="分享至…" android:id="@+id/share" android:icon="@drawable/abc_ic_menu_share_mtrl_alpha" app:showAsAction="always"/>
+	<!--1--><item android:title="分享至…" android:id="@+id/share" android:icon="@drawable/abc_ic_menu_share_mtrl_alpha" app:showAsAction="always" android:visible="false"/>
 
 	<!--2--><item android:title="翻译" android:id="@+id/translate" android:icon="@drawable/ic_g_translate_black_24dp" app:showAsAction="always"/>
 

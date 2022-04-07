@@ -15,7 +15,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.CancellationSignal;
-import android.os.Message;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -26,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -37,10 +37,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
@@ -48,7 +48,6 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SearchbarTools extends PlainAppPanel implements View.OnTouchListener, View.OnFocusChangeListener {
-	protected PDICMainActivity a;
 	protected ViewGroup rootView;
 	private int fc;
 	ViewGroup lv;
@@ -56,6 +55,8 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	private RecyclerView.Adapter mAdapter;
 	private boolean isDirty;
 	private boolean loaded;
+	private View initView;
+	public View.OnClickListener initWay;
 	
 	/** 清空文本前记录一下。 */
 	private String lastTx;
@@ -67,10 +68,11 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	/** 搜索记录的Hash索引计数。 */
 	SparseIntArray hIdx = new SparseIntArray(1024);
 	
-	/** 0=始终关闭, 1=始终开启, 2=记忆 */
-	int bAutoDrpdn=2;
-	boolean drpdn;
+	public boolean drpdn;
 	View drpBtn;
+	public View topbar;
+	public String schSql = "src==128";
+	private FrameLayout.LayoutParams etSchExitLP;
 	
 	/** 添加搜索记录。 */
 	public void addHistory(String text) {
@@ -146,45 +148,65 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		return Math.min(historyMax, history.size());
 	}
 	
-	public SearchbarTools(PDICMainActivity a, EditText etSearch, ViewGroup rv) {
-		super(a, true);
+	public SearchbarTools(MainActivityUIBase a, EditText etSearch, View initView, ViewGroup rv, boolean scrollHideIM) {
+		super(a, false);
 		this.bottomPadding = 0;
 		this.bFadeout = -2;
 		this.bAnimate = false;
 		this.bAutoRefresh = true;
-		this.etSearch=etSearch;
 		this.rootView=rv;
+		this.bShouldInterceptClickListener=false;
+		this.initView=initView;
+		this.scrollHideIM=scrollHideIM;
 		//showType = 2;
-		etSearch.setOnTouchListener(this);
-		etSearch.setOnClickListener(this);
-		etSearch.setOnFocusChangeListener(this);
+		setEtSch(etSearch);
+	}
+	
+	public void setEtSch(EditText e) {
+		if (e!=null) {
+			this.etSearch=e;
+			e.setOnTouchListener(this);
+			e.setOnClickListener(this);
+			e.setOnFocusChangeListener(this);
+		}
 	}
 	
 	@SuppressLint("ResourceType")
 	@Override
 	public void init(Context context, ViewGroup root) {
+		if(context==null)
+			return;
 		if(a==null) {
-			a=(PDICMainActivity) context;
+			a=(MainActivityUIBase) context;
 			mBackgroundColor = 0;
 		}
 		if (settingsLayout==null) {
-			ActivityMainBinding uiData = a.UIData;
-			ViewUtils.setOnClickListenersOneDepth(uiData.etSearchBar, this, 999, 0, null);
-			settingsLayout = uiData.etSearchBar;
-			flowBtn = uiData.toolbar.findViewById(R.id.action_menu_presenter);
-			drpBtn = uiData.schDropdown;
-			if(true) {
-				((ViewGroup)uiData.etBack.getParent()).setBackgroundColor(a.MainAppBackground);
+			ViewGroup etBar = (ViewGroup) initView;
+			if(etBar==null) etBar = (ViewGroup) a.getLayoutInflater().inflate(R.layout.etsch_tools, root, false);
+			ViewUtils.setOnClickListenersOneDepth(etBar, this, 999, 0, null);
+			settingsLayout = etBar;
+			drpBtn = etBar.getChildAt(etBar.getChildCount()-1).findViewById(R.id.schDropdown);
+			{
 				fc = ColorUtils.blendARGB(Color.WHITE,a.MainBackground, 0.45f) & 0xf0ffffff;
-				uiData.etSearchBar.getChildAt(0).setBackgroundColor(fc);
-				uiData.etSearchBar.getChildAt(2).setBackgroundColor(fc);
+				etBar.getChildAt(0).setBackgroundColor(fc);
+				etBar.getChildAt(1).setBackgroundColor(a.MainAppBackground);
+				etBar.getChildAt(2).setBackgroundColor(fc);
 				LayerDrawable ld = (LayerDrawable)drpBtn.getBackground();
 				PorterDuffColorFilter cf = new PorterDuffColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
 				for (int i = 0; i < ld.getNumberOfLayers()-1; i++) {
 					ld.getDrawable(i).setColorFilter(cf);
 				}
 			}
+			if(initWay!=null) {
+				initWay.onClick(drpBtn);
+			}
 		}
+	}
+	
+	boolean IMHidden;
+	final boolean scrollHideIM;
+	boolean scrollHideIM() {
+		return scrollHideIM;
 	}
 	
 	private void initList() {
@@ -193,8 +215,32 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			RecyclerView rv = (RecyclerView) lv.getChildAt(0);
 			View backBtn = lv.findViewById(R.id.etBack);
 			ViewUtils.setOnClickListenersOneDepth((ViewGroup) backBtn.getParent(), this, 1, 0, null);
-			int spanSz = 3;
-			GridLayoutManager lm = new GridLayoutManager(a, spanSz);
+			int spanSz = 3; GridLayoutManager lm;
+			if(scrollHideIM) {
+				lm = new GridLayoutManager(a, spanSz) {
+					@Override
+					public int scrollVerticallyBy ( int dx, RecyclerView.Recycler recycler, RecyclerView.State state ) {
+						int scrollRange = super.scrollVerticallyBy(dx, recycler, state);
+						if(!IMHidden && dx!=scrollRange && scrollHideIM()) {
+							hideIM();
+							IMHidden=true;
+						}
+						return scrollRange;
+					}
+				};
+				rv.setOnScrollChangedListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+					//CMN.Log("scroll chaned!!!");
+					if(!IMHidden
+							&& rv.getScrollState()==RecyclerView.SCROLL_STATE_DRAGGING
+							&& scrollHideIM()
+					) {
+						hideIM();
+						IMHidden=true;
+					}
+				});
+			} else {
+				lm = new GridLayoutManager(a, spanSz);
+			}
 			rv.setLayoutManager(lm);
 			TypedArray ta = a.obtainStyledAttributes(new int[] {R.attr.listChoiceBackgroundIndicator});
 			Drawable draw = ta.getDrawable(0);
@@ -283,7 +329,8 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 					TextView tv = ((TextView)holder.itemView);
 					tv.setText(getHistoryAt(position));
-					tv.post((Runnable) tv.getTag());
+					if(spanSz>3)
+						tv.post((Runnable) tv.getTag());
 				}
 				@Override
 				public int getItemCount() {
@@ -296,6 +343,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			lv.setBackgroundColor(a.MainAppBackground);
 			lv.setPadding(pad/4,0,pad/4,0);
 			lv.getLayoutParams().height=-2;
+			etSchExitLP = (FrameLayout.LayoutParams) lv.getChildAt(1).getLayoutParams();
 			mRecycler = rv;
 		}
 		ViewUtils.setVisible(drpBtn, false);
@@ -306,43 +354,53 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			lv.setAnimation(AnimationUtils.loadAnimation(a, R.anim.item_animation_fall_down));
 		}
 		LoadHistory(null);
-		//for (int i = 0; i < 1000; i++) {
-		//	addHistory("happy");
-		//	addHistory("1024");
-		//	addHistory("joy");
-		//	addHistory("fun");
-		//	addHistory("minecraft");
-		//	addHistory("duty");
-		//	addHistory("destiny of the huawei device");
-		//}
+		resizeModeSoft(true);
+		
+		if(PDICMainAppOptions.etSchExitTop()!=((etSchExitLP.gravity&Gravity.BOTTOM)==0)) {
+			etSchExitLP.gravity &= ~(Gravity.BOTTOM|Gravity.TOP);
+			etSchExitLP.gravity |= PDICMainAppOptions.etSchExitTop()?Gravity.TOP:Gravity.BOTTOM;
+		}
+		
+		refreshSoftMode(GlobalOptions.softInputHeight);
+	}
+	
+	private void resizeModeSoft(boolean soft) {
+		if (initView!=null && !PDICMainAppOptions.etSchAlwaysHard()) {
+			((PDICMainActivity)a).setSoftInputMode(soft?PDICMainActivity.softModeResize:PDICMainActivity.softModeNothing);
+		}
 	}
 	
 	public void hideIM() {
-		a.imm.hideSoftInputFromWindow(a.UIData.etSearch.getWindowToken(),0);
+		a.imm.hideSoftInputFromWindow(etSearch.getWindowToken(),0);
 	}
 	
 	private boolean shouldOpenDrpDwn() {
+		final int bAutoDrpdn = PDICMainAppOptions.historyAutoShow();
 		return bAutoDrpdn==1 || bAutoDrpdn==2&&drpdn;
 	}
 	
 	@Override
 	public void refresh() {
 		if(shouldOpenDrpDwn()) {
-			initList();
+			if(initView!=null && PDICMainAppOptions.delaySchLvHardSoftUI()) {
+				resizeModeSoft(true);
+				lv.setVisibility(View.INVISIBLE);
+				a.hdl.postDelayed(this::initList, 230); // 自动，稍后
+			}
+			else initList(); // 自动，立即。
 		} else if(ViewUtils.isVisibleV2(lv)) {
 			ViewUtils.setVisible(lv, false);
 		}
-		if (settingsLayout!=null) {
-			((ViewGroup.MarginLayoutParams)settingsLayout.getLayoutParams()).topMargin = a.UIData.appbar.getHeight();
-			if(isDirty)
-				mAdapter.notifyDataSetChanged();
-		}
+		((ViewGroup.MarginLayoutParams)settingsLayout.getLayoutParams()).topMargin = topbar==null?0:topbar.getHeight();
+		if(isDirty && mAdapter!=null)
+			mAdapter.notifyDataSetChanged();
 	}
 	
 	public void LoadHistory(AtomicBoolean task) {
 		if(task==null) {
 			if(!loaded) {
 				loaded = true;
+				a.wordPopup.etTools = this;
 				a.wordPopup.startTask(WordPopupTask.TASK_LOAD_HISTORY);
 			}
 			return;
@@ -354,7 +412,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		try {
 			cursor = a.prepareHistoryCon().getDB().rawQuery(
 				"select lex from " + LexicalDBHelper.TABLE_HISTORY_v2
-				+ " where src>=128 order by " + LexicalDBHelper.FIELD_VISIT_TIME + " desc limit 512"
+				+ " where "+schSql+" order by " + LexicalDBHelper.FIELD_VISIT_TIME + " desc limit 512"
 				, null, cs);
 			int cc=0,len=cursor.getCount();
 			items = new String[len];
@@ -372,10 +430,10 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if (items!=null) {
 			String[] its = items;
 			a.hdl.post(() -> { //harvest
-				//CMN.Log("LoadHistory::harvest::", its);
 				history.clear();
 				hIdx.clear();
 				history.addAll(Arrays.asList(its));
+				//CMN.Log("LoadHistory::harvest::", getHistorySz(), its);
 				for (int i = 0; i < its.length; i++) {
 					String text = its[i];
 					if (text!=null) {
@@ -407,10 +465,8 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	@Override
 	// click
 	public void onClick(View v) {
-		CMN.Log("onclick::", v);
 		if (v==etSearch) {
-			CMN.Log("click!!!"+etSearch.getScrollX());
-			if(etSearch.getScrollX()== etScrollStart) {
+			if(etSearch.getScrollX()==etScrollStart) {
 				if(!isVisible()) {
 					show();
 				}
@@ -426,7 +482,8 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			case R.id.foldBtn:
 				ViewUtils.setVisibleV2(lv, false);
 				ViewUtils.setVisible(drpBtn, true);
-				drpdn = false;
+				drpdn(false);
+				resizeModeSoft(false);
 			break;
 			case R.id.etClear:{
 				Editable tx = etSearch.getText();
@@ -460,22 +517,33 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				}
 			} break;
 			case R.id.schDropdown:{
-				initList();
-				drpdn=true;
+				initList(); // 手动
+				drpdn(true);
 			} break;
+		}
+	}
+	
+	private void drpdn(boolean b) {
+		drpdn = b;
+		if(initView!=null) {
+			PDICMainAppOptions.historyShow(b);
+		} else {
+			PDICMainAppOptions.historyShowFye(b);
 		}
 	}
 	
 	public void show() {
 		if (!isVisible()) {
-			toggle(rootView!=null?rootView:PDICMainAppOptions.getEnableSuperImmersiveScrollMode()?a.UIData.webcoord:a.root, null, -1);
+			//rootView = PDICMainAppOptions.getEnableSuperImmersiveScrollMode()?a.UIData.webcoord:a.root;
+			toggle(rootView, null, -1);
 			refresh();
 		}
 	}
 	
 	@Override
 	protected void onShow() {
-		flowBtn.setOnClickListener(this);
+		if(flowBtn!=null)
+			flowBtn.setOnClickListener(this);
 	}
 	
 	@Override
@@ -484,20 +552,25 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		if (!shouldOpenDrpDwn() && ViewUtils.isVisibleV2(lv)) {
 			ViewUtils.setVisible(lv, false);
 		}
-		flowBtn.setOnClickListener(null);
+		if(flowBtn!=null)
+			flowBtn.setOnClickListener(null);
+		resizeModeSoft(false);
 	}
 	
 	int etScrollStart;
 	long checkNxtFocus = 0;
 	EditText etSearch;
-	View flowBtn;
+	public View flowBtn;
 	
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		if(event.getActionMasked()==MotionEvent.ACTION_DOWN) {
 			etScrollStart = etSearch.getScrollX();
 			checkNxtFocus = event.getEventTime();
-			CMN.Log("touch!!!"+ etScrollStart);
+			//CMN.Log("touch!!!"+ etScrollStart);
+			if(scrollHideIM && IMHidden) {
+				IMHidden = false;
+			}
 		}
 		return false;
 	}
@@ -513,10 +586,19 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				}
 				checkNxtFocus=0;
 			}
+			if(scrollHideIM && IMHidden) {
+				IMHidden = false;
+			}
 		} else {
 			dismiss();
 		}
 	}
 	
-	
+	@Override
+	public void refreshSoftMode(int height) {
+		if(etSchExitLP!=null && ViewUtils.isVisible(lv.getChildAt(1))) {
+			etSchExitLP.bottomMargin = height;
+			lv.getChildAt(1).requestLayout();
+		}
+	}
 }

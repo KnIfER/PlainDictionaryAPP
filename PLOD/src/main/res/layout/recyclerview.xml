@@ -23,6 +23,7 @@
 		android:layout_height="wrap_content"
 		android:layout_gravity="bottom|center"
 		android:paddingBottom="3dp"
+		android:paddingTop="3dp"
 		android:clickable="true"
 		>
 		<com.knziha.plod.widgets.CheckableImageView

@@ -105,6 +105,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	DictPicker dictPicker;
 	ViewGroup splitter;
 	private final Runnable clrSelAby = () -> invoker.evaluateJavascript("window.getSelection().collapseToStart()", null);
+	public SearchbarTools etTools;
 	
 	public WordPopup(MainActivityUIBase a) {
 		super(a, true);
@@ -380,10 +381,17 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	
 	public void setTranslator(resultRecorderCombined res, int pos) {
 		try {
-			displaying=res.getResAt(a, pos).toString();
-			entryTitle.setText(displaying);
-			indicator.setText(a.getBookNameByIdNoCreation(res.getOneDictAt(pos)));
-			texts[0] = 0;
+			if (res.size()>0) {
+				displaying=res.getResAt(a, pos).toString();
+				entryTitle.setText(displaying);
+				indicator.setText(a.getBookNameByIdNoCreation(res.getOneDictAt(pos)));
+				texts[0] = 0;
+			} else {
+				displaying=res.schKey;
+				entryTitle.setText(displaying);
+				indicator.setText(null);
+				//texts[0] = 0;
+			}
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
@@ -1007,7 +1015,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			
 			if (!PDICMainAppOptions.storeNothing()
 					&& PDICMainAppOptions.getHistoryStrategy7())
-				a.addHistroy(popupKey, 0, pageSlider);
+				a.addHistory(popupKey, 0, pageSlider);
 		}
 	}
 	
@@ -1091,8 +1099,13 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			SearchNxt(false, task, taskVer, taskVersion);
 		else if(mType==TASK_POP_NAV_NXT)
 			SearchNxt(true, task, taskVer, taskVersion);
-		else if(mType==TASK_LOAD_HISTORY && a.etTools!=null)
-			a.etTools.LoadHistory(task);
+		else if(mType==TASK_LOAD_HISTORY && etTools!=null) {
+			etTools.LoadHistory(task);
+			etTools=null;
+		}
+		else if(mType==TASK_FYE_SCH) {
+			a.peruseView.SearchAll(a, task);
+		}
 	}
 	
 	@Override

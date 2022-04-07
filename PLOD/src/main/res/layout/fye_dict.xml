@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="65dp"
+	android:layout_height="65dp"
+	android:orientation="vertical"
+	android:gravity="center"
+	android:id="@+id/dictlet"
+	android:background="@drawable/fye_dict_selector"
+	>
+
+	<FrameLayout
+		android:layout_width="35dp"
+		android:layout_height="38dp"
+		>
+		<ImageView
+			android:id="@+id/image"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:textColor="#fff"
+			android:gravity="center"
+			android:background="@drawable/cover"
+			/>
+		<TextView
+			android:id="@+id/word"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:textSize="22dp"
+			android:gravity="center"
+			android:text="文"
+			android:paddingStart="3.5dp"
+			android:paddingBottom="1dp"
+			android:textColor="#ffffff"
+			android:shadowColor="#9f000000"
+			android:shadowDx="3.5"
+			android:shadowDy="3.5"
+			android:shadowRadius="2"
+			/>
+	</FrameLayout>
+
+	<com.knziha.plod.widgets.FlowTextView
+		android:id="@+id/text"
+		android:layout_width="match_parent"
+		android:layout_height="15sp"
+		android:textColor="#ffffff"
+		tools:text="文字"
+		android:textSize="14sp"
+		android:maxLines="1"
+		android:paddingStart="3dp"
+		android:paddingTop="1dp"
+		android:gravity="center"
+		/>
+</LinearLayout>
+
