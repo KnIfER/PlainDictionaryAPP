@@ -1587,17 +1587,17 @@ ViewTreeObserver.OnTouchModeChangeListener {
         }*/
 	}
 
-	@Override
-	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-		if (getChildCount() > 0) {
-			//mDataChanged = true;
-			rememberSyncState();
-		}
-
-		//if (mFastScroller != null) {
-		//    mFastScroller.onSizeChanged(w, h, oldw, oldh);
-		//}
-	}
+//	@Override
+//	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+//		if (getChildCount() > 0) {
+////			mDataChanged = true;
+//			rememberSyncState();
+//		}
+//
+//		//if (mFastScroller != null) {
+//		//    mFastScroller.onSizeChanged(w, h, oldw, oldh);
+//		//}
+//	}
 
 	/**
 	 * @return True if the current touch mode requires that we draw the selector in the pressed
@@ -2154,11 +2154,11 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		}
 	}
 
-	@Override
-	public void onWindowFocusChanged(boolean hasWindowFocus) {
-		super.onWindowFocusChanged(hasWindowFocus);
-		mTouchHandler.onWindowFocusChanged(hasWindowFocus);
-	}
+//	@Override
+//	public void onWindowFocusChanged(boolean hasWindowFocus) {
+//		super.onWindowFocusChanged(hasWindowFocus);
+//		mTouchHandler.onWindowFocusChanged(hasWindowFocus);
+//	}
 
 
 	/**
@@ -2191,8 +2191,19 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	public void smoothScrollBy(int distance, int duration) {
 		mTouchHandler.smoothScrollBy(distance, duration);
 	}
-
-
+	
+//	@Override
+//	public void computeScroll() {
+//		super.computeScroll();
+//		if (mTouchHandler.mFlingRunnable!=null) {
+//			if(!mTouchHandler.mFlingRunnable.mScroller.isFinished()) {
+//				mTouchHandler.mFlingRunnable.run();
+//			}/* else if(mTouchMode == TOUCH_MODE_FLING) {
+//				mTouchHandler.mFlingRunnable.endFling();
+//			}*/
+//		}
+//	}
+	
 	/**
 	 * Returns the number of header views in the list. Header views are special views
 	 * at the top of the list that should not be recycled during a layout.
@@ -3921,7 +3932,8 @@ ViewTreeObserver.OnTouchModeChangeListener {
 							mTouchMode = TOUCH_MODE_SCROLL;
 							mMotionCorrection = 0;
 							motionPosition = findMotionRowY(y);
-							mFlingRunnable.flywheelTouch();
+							if(mFlingRunnable!=null)
+								mFlingRunnable.flywheelTouch();
 						}
 					}
 				}
@@ -4509,12 +4521,12 @@ ViewTreeObserver.OnTouchModeChangeListener {
 			public void run() {
 				switch (mTouchMode) {
 				default:
-					return;
+					break;
 
 				case TOUCH_MODE_FLING: {
 					if (mItemCount == 0 || getChildCount() == 0) {
 						endFling();
-						return;
+						break;
 					}
 
 					final Scroller scroller = mScroller;
@@ -4565,7 +4577,9 @@ ViewTreeObserver.OnTouchModeChangeListener {
 					break;
 				}
 				}
-
+				if(mScroller.isFinished() && mTouchMode != TOUCH_MODE_REST) {
+					endFling();
+				}
 			}
 			
 			private static final int FLYWHEEL_TIMEOUT = 40; // milliseconds
@@ -4894,7 +4908,8 @@ ViewTreeObserver.OnTouchModeChangeListener {
 								mTouchMode = TOUCH_MODE_SCROLL;
 								mMotionCorrection = 0;
 								motionPosition = findMotionRowX(x);
-								mFlingRunnable.flywheelTouch();
+								if(mFlingRunnable!=null)
+									mFlingRunnable.flywheelTouch();
 							}
 						}
 					}
@@ -5372,6 +5387,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 						0, Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
 				mTouchMode = TOUCH_MODE_FLING;
 				post(this);
+				//postOnAnimation(this);
 
 				if (PROFILE_FLINGING) {
 					if (!mFlingProfilingStarted) {
@@ -5394,12 +5410,12 @@ ViewTreeObserver.OnTouchModeChangeListener {
 			public void run() {
 				switch (mTouchMode) {
 				default:
-					return;
+					break;
 
 				case TOUCH_MODE_FLING: {
 					if (mItemCount == 0 || getChildCount() == 0) {
 						endFling();
-						return;
+						break;
 					}
 
 					final Scroller scroller = mScroller;
@@ -5437,6 +5453,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 						invalidate();
 						mLastFlingX = x;
 						post(this);
+						//postOnAnimation(this);
 					} else {
 						endFling();
 
@@ -5450,7 +5467,9 @@ ViewTreeObserver.OnTouchModeChangeListener {
 					break;
 				}
 				}
-
+				if(mScroller.isFinished() && mTouchMode != TOUCH_MODE_REST) {
+					endFling();
+				}
 			}
 			
 			

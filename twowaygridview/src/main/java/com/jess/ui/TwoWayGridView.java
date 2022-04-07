@@ -546,7 +546,6 @@ public class TwoWayGridView extends TwoWayAbsListView {
 
 
 
-	@Override
 	protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
 		super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
 
