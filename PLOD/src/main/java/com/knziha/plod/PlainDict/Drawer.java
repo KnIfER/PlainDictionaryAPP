@@ -144,6 +144,7 @@ public class Drawer extends Fragment implements
 			mDrawerList.ensureNewNestedScrollHelper();
 			mDrawerList.setNestedScrollingEnabled(true);
 			
+			
 			int[] basicArr;
 			if (GlobalOptions.isLarge) {
 				basicArr = new int[]{
@@ -205,8 +206,8 @@ public class Drawer extends Fragment implements
 						right = Math.min(right, Math.max(realWidth, (int)getResources().getDimension(R.dimen.idealdpdp)));
 						v.getLayoutParams().width = right;
 					}
-					
 					if(swRow!=null && (right!=oldWidth || bIsFirstLayout)) {
+						right = Math.max(swRow.getMinimumWidth(), right);
 						//if(bIsFirstLayout) SwitchCompatBeautiful.bForbidRquestLayout = true;
 						int width = (right - sw1.getWidth() * 5) / 6;
 						View vI;
@@ -366,6 +367,15 @@ public class Drawer extends Fragment implements
 		super.onActivityCreated(savedInstanceState);
 		a = ((PDICMainActivity)getActivity());
 		a.drawerFragment = this;
+		
+		if (GlobalOptions.isSmall) {
+			try {
+				// 我真的不是反射狂魔
+				ViewUtils.execSimple("$.findViewById[int]($1).mChildren[1].setVisibility[int](8)", null, mDrawerListLayout, R.id.menu_item_exit);
+				ViewUtils.execSimple("$.findViewById[int]($1).mChildren[1].setVisibility[int](8)", null, mDrawerListLayout, R.id.menu_item_setting);
+				ViewUtils.execSimple("$.mMinDrawerMargin=$1", null, a.UIData.drawerLayout, 0); // todo modify androidx.drawerLayout
+			} catch (Exception e) { CMN.Log(e); }
+		}
 		
 		if(HeaderView==null) return;
 		
@@ -834,7 +844,7 @@ public class Drawer extends Fragment implements
 						@Override
 						public void
 						onSelectedFilePaths(String[] files, File now) {
-							CMN.debug(files);
+							//CMN.debug(files);
 							if(now!=null) {
 								MainActivityUIBase.LazyLoadManager lazyLoadManager = a.lazyLoadManager;
 								for(PlaceHolder phI:lazyLoadManager.CosyChair) {
