@@ -115,19 +115,12 @@
 			android:title="文本列表无放大镜 *"
 			app:allowDividerBelow="true"
 			/>
-	</PreferenceCategory>
-
-
-	<PreferenceCategory
-		android:key="cat_1"
-		android:title="启动设置"
-		app:icon="@drawable/item_pressed_circle"
-		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="stsch"
+			android:key="menuBelow"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="启动时恢复上次的搜索词"
+			android:title="右上角菜单从按钮下方弹出 *"
+			app:allowDividerBelow="true"
 			/>
 	</PreferenceCategory>
 

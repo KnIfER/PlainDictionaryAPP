@@ -1358,12 +1358,12 @@ public class PlainWeb extends DictionaryAdapter {
 
 //		if (bookPresenter!=null) {
 			StringBuilder sb = AcquireStringBuffer(8196)
-					.append("window.rcsp=app.rcsp(sid.get())");
+					.append("window.rcsp=app.rcsp(sid.get());");
 			if(GlobalOptions.isDark) sb.append(DarkModeIncantation);
 			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.wordPopup.mWebView)
 				sb.append(MainActivityUIBase.ce_on);
 			if (style!=null || stylex!=null) {
-				CMN.Log("style::", style);
+				//CMN.Log("style::", style);
 				int st = loadJs.indexOf("}\"");
 				if (st>0) {
 					sb.append(loadJs, 0, st+1);
@@ -1393,7 +1393,7 @@ public class PlainWeb extends DictionaryAdapter {
 //		} else {
 //			jsLoader = jsLoaderInJson;
 //		}
-		if(GlobalOptions.debug)CMN.Log("加载网页::", url);
+		//if(GlobalOptions.debug)CMN.Log("加载网页::", url);
 		return currentUrl=url;
 	}
 	

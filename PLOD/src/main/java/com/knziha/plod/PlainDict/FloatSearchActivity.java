@@ -65,7 +65,8 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	protected boolean this_instanceof_FloarActivitySearch;
 	
 	ViewGroup.LayoutParams mfv_lp;
-
+	private int barSzBot;
+	
 	@Override
 	protected boolean PerFormBackPrevention(boolean bBackBtn) {
 		if (super.PerFormBackPrevention(bBackBtn)) {
@@ -381,7 +382,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	private OnGlobalLayoutListener keyObserver;
 	@Override
     protected void further_loading(final Bundle savedInstanceState) {
-        CachedBBSize=opt.getFloatBottombarSize((int) mResource.getDimension(R.dimen.barSzBot));
+		barSzBot=opt.getFloatBottombarSize((int) mResource.getDimension(R.dimen.barSzBot));
     	super.further_loading(savedInstanceState);
 
         main = main_succinct;
@@ -448,10 +449,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				int height = mainfv.getHeight();
 				if(opt.getAutoAdjustFloatBottomBar() && height!=lastHeight) {
 					lastHeight=height;
-					CachedBBSize=(int)Math.max(20*dm.density, Math.min(
+					barSzBot=(int)Math.max(20*dm.density, Math.min(
 							MathUtils.lerp(10*dm.density, 50*dm.density, mfv_lp.height*1.25f/dm.heightPixels)
 							, mResource.getDimension(R.dimen.barSzBot)));
-					contentUIData.webcontentlister.setPrimaryContentSize(CachedBBSize,true);
+					contentUIData.webcontentlister.setPrimaryContentSize(barSzBot,true);
 				}
 			}});
 

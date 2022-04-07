@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.Message;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,15 +16,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
 
-import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.widgets.CheckableImageView;
-import com.knziha.plod.widgets.ViewUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
 
@@ -122,13 +116,13 @@ public class MultiShareActivity extends MainActivityUIBase {
 		//if(intent != null)
 		text = intent.getStringExtra(Intent.EXTRA_TEXT);
 		if(text!=null) {
-			debugString = text;
+			extraText = text;
 			// new Text!
-		} else if(debugString==null) {
-			debugString = StringUtils.EMPTY;
+		} else if(extraText ==null) {
+			extraText = StringUtils.EMPTY;
 		}
 		ucc = getUcc();
-		ucc.setInvoker(null, null, null, debugString);
+		ucc.setInvoker(null, null, null, extraText);
 		int VSGO=opt.getRememberVSPanelGo()?opt.getLastVSGoNumber():-1;
 		//VSGO=-1;
 		if(VSGO>=0) {
@@ -137,12 +131,12 @@ public class MultiShareActivity extends MainActivityUIBase {
 		} else {
 			ucc.onClick(null);
 		}
-		if(debugString!=null)
+		if(extraText !=null)
 		{
 			// 动画！
 			try {
 				TextView tv = ucc.d.findViewById(R.id.alertTitle);
-				tv.setText(debugString==null?"文本操作":debugString);
+				tv.setText(extraText ==null?"文本操作": extraText);
 			} catch (Exception ignored) {  }
 		}
 	}
@@ -152,7 +146,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 			startActivity(new Intent(Intent.ACTION_MAIN)
 					.setClass(this, MainShareActivity.class)
 					.putExtra("force", PLAIN_TARGET_INPAGE_SEARCH)
-					.putExtra(Intent.EXTRA_TEXT, debugString)
+					.putExtra(Intent.EXTRA_TEXT, extraText)
 			);
 		} else {
 			super.HandleLocateTextInPage(content);
@@ -168,7 +162,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 				if(NewIntentCalled && getPinVSDialog()) {
 					finishOrHide();
 				} else {
-					getUcc().setInvoker(null, null, null, debugString);
+					getUcc().setInvoker(null, null, null, extraText);
 					getUcc().onClick(null);
 				}
 			}
@@ -201,7 +195,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	
 	private void showUcc() {
 		CMN.Log("showUcc");
-		getUcc().setInvoker(null, null, null, debugString);
+		getUcc().setInvoker(null, null, null, extraText);
 		getUcc().onClick(null);
 	}
 	

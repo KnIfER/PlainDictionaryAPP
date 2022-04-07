@@ -181,6 +181,7 @@ import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.settings.TapTranslator;
 import com.knziha.plod.settings.Misc_exit_dialog;
 import com.knziha.plod.slideshow.PhotoViewActivity;
+import com.knziha.plod.widgets.AppIconsAdapter;
 import com.knziha.plod.widgets.CustomShareAdapter;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
@@ -300,7 +301,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static final String EXTRA_MARGIN_TOP   = "EXTRA_MARGIN_TOP";
 	public static final String EXTRA_MARGIN_BOTTOM  = "EXTRA_MARGIN_BOTTOM";
 	public static final String EXTRA_MARGIN_RIGHT  = "EXTRA_MARGIN_RIGHT";
-	protected String debugString=null;//世           界     你好 happy呀happy\"人\"’。，、？
+	public String extraText =null;//世           界     你好 happy呀happy\"人\"’。，、？
+	public String extraInvoker = null;
 	public static final KeyEvent BackEvent = new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BACK);
 	final static String entryTag = "entry://";
 	final static String soundTag = "sound://";
@@ -596,7 +598,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private float TTSVolume = 1.f;
 	private ViewGroup TTSController_controlBar;
 	private WebViewmy mCurrentReadContext;
-	protected boolean updateAI=true;
 
 	public void jump(int pos, BookPresenter md) {
 
@@ -635,7 +636,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public boolean
 	switch_Dict(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC) {
-		updateAI = true;
 		boolean prvNxt = prvNxtABC!=null;
 		int size=md.size();
 		if(size>0) {
@@ -1346,13 +1346,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (BuildConfig.isDebug) {
 			CMN.debug("mid", CMN.mid, getClass());
 			CMN.debug("sdk", Build.VERSION.SDK_INT);
-			CMN.debug("dens", GlobalOptions.density);
+			CMN.debug("den="+GlobalOptions.density
+					, "size="+GlobalOptions.width+"x"+GlobalOptions.height
+					, "realSz="+GlobalOptions.realWidth+"x"+GlobalOptions.realHeight
+					, "isLarge="+GlobalOptions.isLarge
+					, "isSmall="+GlobalOptions.isSmall
+			);
 		}
 		if (bShouldCheckApplicationValid) {
 			try {
 				System.loadLibrary("PDict");
-				if (!testPakVal(getPackageName()))
-					showT("请使用正版软件！");
 			} catch (Exception e) {
 				CMN.debug(e);
 			}
@@ -2004,7 +2007,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	void closeIfNoActionView(MenuItemImpl mi) {
-		if(mi!=null && !mi.isActionButton()) mi.mMenu.close();
+		if(mi!=null && !mi.isActionButton()) {
+			mi.mMenu.close();
+		}
 	}
 
 
@@ -2333,16 +2338,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			@Override
 			public int preResizing(int size) {
-				boolean bPeruseIncahrge = PeruseViewAttached() && (peruseView.contentview.getParent()== peruseView.slp || peruseView.contentview.getParent()== peruseView.mlp);
-				int ret = (int) Math.max(((bPeruseIncahrge&&!opt.getPeruseBottombarOnBottom())?30:20)*dm.density, Math.min(getResources().getDimension(R.dimen.barSzBot), size));//50*dm.density
-				CMN.Log(ret);
-				if(bPeruseIncahrge) {
-					peruseView.CachedBBSize = ret;
-				}else{
-					CachedBBSize = ret;
-					contentUIData.webcontentlister.isDirty=true;
-				}
-				return ret;
+				return size;
 			}
 		};
 		
@@ -2444,15 +2440,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			webSingleholder = contentUIData.webSingleholder;
 		}
 		menuSearchMode = AllMenus.findItem(R.id.toolbar_action1);
-		//CMN.Log("findFurtherViews...", contentUIData, contentview);
 		
-		CachedBBSize=(int)Math.max(20*dm.density, Math.min(CachedBBSize, mResource.getDimension(R.dimen.barSzBot)));
 		weblistHandler.setUpContentView(cbar_key);
 		
 		TypedValue typedValue = new TypedValue();
 		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
 		actionBarSize = (int) mResource.getDimension(R.dimen.barSize);
 		setContentDetachType(1);
+		
+		boolean b1=thisActType==ActType.PlainDict;
+		etTools = new SearchbarTools(MainActivityUIBase.this, etSearch
+				, b1?((PDICMainActivity)this).UIData.etSchBar:null, null, true);
+		etTools.initWay = this;
 	}
 	
 	protected void populateDictionaryList() {
@@ -3074,13 +3073,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected String lastInsertedKey;
 	
-	public void addHistroy(String key, int source, ViewGroup webviewholder) {
+	public void addHistory(String key, int source, ViewGroup webviewholder) {
 		CMN.Log("addHistroy::", key, source);
-		if(source>=0 && TextUtils.getTrimmedLength(key)>0) {
-			lastInsertedKey = key.trim();
-			lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder, source);
-			if (source>=128 && etTools!=null) {
-				etTools.addHistory(lastInsertedKey);
+		if(source>=0/* && TextUtils.getTrimmedLength(key)>0*/) {
+			key = key.trim();
+			if (key.length()>0) {
+				if (!PDICMainAppOptions.storeNothing() || PDICMainAppOptions.storeNothingButSch() && source>=128) {
+					long ivkAppId = -1;
+					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder, source);
+					lastInsertedKey = key;
+				}
+				if (source==128 && etTools!=null) {
+					etTools.addHistory(key);
+				}
+				if (source==129 && peruseView!=null) {
+					peruseView.etTools.addHistory(key);
+				}
 			}
 		}
 	}
@@ -4188,7 +4196,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (isLongClicked) return false;
 							if(thisActType==ActType.MultiShare) {
 								Intent newTask = new Intent(Intent.ACTION_MAIN);
-								newTask.putExtra(Intent.EXTRA_TEXT, debugString);
+								newTask.putExtra(Intent.EXTRA_TEXT, extraText);
 								//newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
 								newTask.setClass(getBaseContext(),PDICMainActivity.class);
 								newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -4864,7 +4872,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	boolean firstCreateUcc=true;
 	public UniCoverClicker ucc;
-	public int CachedBBSize=-1;
 	
 	public abstract void fix_full_screen(@Nullable View decorView);
 	
@@ -4988,7 +4995,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			/* 翻阅模式 */
 			case 20:
-				peruseView.leftLexicalAdapter.notifyDataSetChanged();
+				peruseView.entryAdapter.notifyDataSetChanged();
 			break;
 			case 21:
 				peruseView.lv2.setFastScrollEnabled(val==1);
@@ -5004,8 +5011,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				peruseView.toggleInPageSearch(false);
 			break;
 			case 26:
-				peruseView.leftLexicalAdapter.notifyDataSetChanged();
-				peruseView.bookMarkAdapter.notifyDataSetChanged();
+				peruseView.entryAdapter.notifyDataSetChanged();
+				peruseView.bmsAdapter.notifyDataSetChanged();
 			break;
 		}
 	}
@@ -5413,6 +5420,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.drawable.customize_bars: {
 				showIconCustomizator();
 			} break;
+			case R.drawable.abc_ic_menu_share_mtrl_alpha: {
+				shareUrlOrText(null, "happy");
+			} break;
 			case R.drawable.ic_baseline_nightmode_24: {
 				showNightModeSwitch();
 			} break;
@@ -5775,6 +5785,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 		}
 		click_handled_not = false;
+	}
+	
+	public void shareUrlOrText(String url, String text) {
+		//CMN.Log("menu_icon6menu_icon6");
+		//CMN.rt("分享链接……");
+		int id = WeakReferenceHelper.share_dialog;
+		BottomSheetDialog dlg = (BottomSheetDialog) getReferencedObject(id);
+		if(dlg==null) {
+			putReferencedObject(id, dlg=new AppIconsAdapter(this).shareDialog);
+		}
+		//CMN.pt("新建耗时：");
+		if (url==null) {
+			//url = currentWebView.getUrl();
+		}
+		AppIconsAdapter shareAdapter = (AppIconsAdapter) dlg.tag;
+		shareAdapter.pullAvailableApps(this, url, text);
+		//shareAdapter.pullAvailableApps(this, null, "happy");
+		//CMN.pt("拉取耗时：");
 	}
 	
 	public boolean getUsingDataV2() {
@@ -6368,6 +6396,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				randomPage.loadUrl(testUrl);
 				randomPageHandler.resetScrollbar(randomPage, false, false);
 			}
+			randomPageHandler.setViewMode(WEB_VIEW_SINGLE, false, null);
+			randomPageHandler.viewContent();
 		} catch (Exception e) {
 			CMN.debug(e);
 		}
@@ -6780,6 +6810,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if (invoker.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
 						((PlainWeb) invoker.bookImpl).onProgressChanged(invoker, mWebView, newProgress);
 					}
+				}
+			}
+			
+			if(GlobalOptions.isDark && newProgress>5) {
+				if (Build.VERSION.SDK_INT>=21) { //todo webview版本 23 未测试
+					mWebView.evaluateJavascript("document._pdkn||app.loadJs(sid.get(), 'dk.js')", null);
+				} else {
+					mWebView.evaluateJavascript(DarkModeIncantation, null);
 				}
 			}
 		}
@@ -8451,11 +8489,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public final static String DarkModeIncantation_l = "DARK";
 
 	/**
-	 var css = 'html {-webkit-filter: invert(100%);\
+	 var css = 'body {-webkit-filter: invert(100%);\
 					 -moz-filter: invert(100%);\
 					 -o-filter: invert(100%);\
-					 -ms-filter: invert(100%);}\
-				body {background:#00000000}', d=document,
+					 -ms-filter: invert(100%);background:#00000000}\
+				html {background:#000000}', d=document,
 	 head = d.getElementsByTagName('head')[0],
 	 sty = d.createElement('style');
 	 sty.id = "_PDict_Darken";
@@ -9299,12 +9337,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			peruseView.dm = dm;
 			peruseView.opt = opt;
 			peruseView.density = dm.density;
-			peruseView.showAllDicts = opt.getPeruseAddAll();
 		}
 		return peruseView;
 	}
 
-	void AttachPeruseView(boolean bRefresh) {
+	void AttachPeruseView(boolean newSch) {
 		try {
 			if(peruseView ==null) return;
 			if(!peruseView.isAdded()) {
@@ -9315,7 +9352,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} else if(peruseView.mDialog!=null){
 				//CMN.Log("AttachPeruseView 2 ", bRefresh);
 				peruseView.mDialog.show();
-				peruseView.onViewAttached(this, bRefresh);
+				peruseView.onViewAttached(this, newSch);
 			}
 		} catch (Exception e) { e.printStackTrace(); }
 	}
@@ -10351,7 +10388,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				tw1StrP = mdict.processText(etSearch.getText());
 				tw1F|=0x2;
 			}
-			if(mdict.processText(text).equals(tw1StrP)) {
+			if(Math.abs(tw1StrP.length()-text.length())<15 && mdict.processText(text).equals(tw1StrP)) {
 				tw1F&=~0x1;
 				return true;
 			}

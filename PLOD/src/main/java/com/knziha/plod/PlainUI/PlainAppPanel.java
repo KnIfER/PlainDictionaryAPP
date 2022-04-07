@@ -27,8 +27,8 @@ public class PlainAppPanel extends SettingsPanel {
 	protected MainActivityUIBase a;
 	protected boolean bShouldInterceptClickListener = true;
 	protected boolean showPopOnAppbar = true;
-	int MainColorStamp;
-	View bgView;
+	protected int MainColorStamp;
+	protected View bgView;
 	protected boolean bPopIsFocusable;
 	protected ViewGroup settingsLayoutHolder;
 	public View bottombar;
@@ -194,4 +194,7 @@ public class PlainAppPanel extends SettingsPanel {
 		}
 	}
 	
+	public void refreshSoftMode(int height) {
+	
+	}
 }

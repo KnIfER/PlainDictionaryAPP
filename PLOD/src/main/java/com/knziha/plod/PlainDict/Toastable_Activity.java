@@ -130,6 +130,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		   if (GlobalOptions.realWidth <= 0) {
 			   display.getRealMetrics(dm);
 			   GlobalOptions.realWidth = Math.min(dm.widthPixels, dm.heightPixels);
+			   GlobalOptions.realHeight = Math.max(dm.widthPixels, dm.heightPixels);
 			   GlobalOptions.density = dm.density;
 			   //GlobalOptions.densityDpi = dm.densityDpi;
 		   }
@@ -179,7 +180,11 @@ public class Toastable_Activity extends AppCompatActivity {
        mResource = getResources();
        
 	   mConfiguration = new Configuration(mResource.getConfiguration());
-	   GlobalOptions.isLarge = (mConfiguration.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >=3 ;
+	   int szMsk = mConfiguration.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+	   GlobalOptions.isLarge = szMsk >=3 ;
+	   GlobalOptions.isSmall = szMsk == 1 ;
+	   GlobalOptions.width=(int)(dm.widthPixels/GlobalOptions.density);
+	   GlobalOptions.height=(int)(dm.heightPixels/GlobalOptions.density);
 		//CMN.show("isLarge"+isLarge);
 	   if(Build.VERSION.SDK_INT>=29 && false){
 		   GlobalOptions.isDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
@@ -718,6 +723,8 @@ public class Toastable_Activity extends AppCompatActivity {
 		final androidx.appcompat.app.AlertDialog configurableDialog =
 				new androidx.appcompat.app.AlertDialog.Builder(this,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line)
 						.setView(dv)
+//						.setPositiveButton(R.string.confirm, null)
+//						.setNegativeButton(R.string.cancel, null)
 						.create();
 		configurableDialog.setCanceledOnTouchOutside(true);
 		

@@ -115,8 +115,8 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 			case TapTranslator.id:
 				fragment = new TapTranslator();
 			break;
-			case HistoryPreference.id:
-				fragment = new HistoryPreference();
+			case History.id:
+				fragment = new History();
 			break;
 			case ServerPreference.id:
 				fragment = new ServerPreference();

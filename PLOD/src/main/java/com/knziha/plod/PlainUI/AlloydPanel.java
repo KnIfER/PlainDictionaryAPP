@@ -12,12 +12,11 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 
-import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
-import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -58,7 +57,8 @@ public class AlloydPanel extends PlainAppPanel {
 			toolbar.inflateMenu(R.xml.menu_popup_content);
 			toolbar.getLayoutParams().height = (int) a.mResource.getDimension(R.dimen.barSize);
 			AllMenus = (MenuBuilder) toolbar.getMenu();
-			AllMenus.checkedDrawable = a.AllMenus.checkedDrawable;
+			AllMenus.checkDrawable = a.AllMenus.checkDrawable;
+			AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 			// tabTranslateEach
 			//AllMenus.getItems().set(4, (MenuItemImpl) ViewUtils.findInMenu(a.AllMenusStamp, R.id.tapTranslator));
 			if(handler.tapSch) {

@@ -118,7 +118,6 @@ public class ListViewAdapter2 extends BasicAdapter {
 		weblistHandler.WHP.touchFlag.first=true;
 		if(a.PeruseListModeMenu.isChecked()) {
 			PeruseView pv = a.getPeruseView();
-			pv.RestoreOldAI();
 			a.JumpToPeruseMode(combining_search_result.getResAt(a, pos).toString(), combining_search_result.getBooksAt(pv.bookIds, pos), -2, true);
 			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
 			return;
@@ -201,7 +200,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 				&& PDICMainAppOptions.storeClick()
 				&& combining_search_result.shouldSaveHistory()
 				&& (userCLick||PDICMainAppOptions.storePageTurn()==0)) {
-			a.addHistroy(currentKeyText, 0, webviewHolder);
+			a.addHistory(currentKeyText, 0, webviewHolder);
 		}
 		
 		if(userCLick) {

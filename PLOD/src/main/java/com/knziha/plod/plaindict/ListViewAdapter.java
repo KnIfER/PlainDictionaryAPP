@@ -95,7 +95,7 @@ public class ListViewAdapter extends BasicAdapter {
 					&& presenter.store(presenter.lvClickPos)
 					&& !PDICMainAppOptions.storeNothing()
 					&& PDICMainAppOptions.storeClick()) {
-				a.addHistroy(presenter.currentDisplaying, 0, webviewHolder);
+				a.addHistory(presenter.currentDisplaying, 0, webviewHolder);
 			}
 		}
 	}
@@ -128,7 +128,7 @@ public class ListViewAdapter extends BasicAdapter {
 		a.shuntAAdjustment();
 		if(a.PeruseListModeMenu.isChecked()) {
 			String pw = pos==0?a.etSearch.getText().toString(): presenter.bookImpl.getEntryAt(pos);
-			a.getPeruseView().ScanSearchAllByText(pw, a, true, a.updateAI);
+			a.getPeruseView().searchAll(pw, a, true);
 			a.AttachPeruseView(true);
 			//CMN.Log(PeruseView.data);
 			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
@@ -212,9 +212,9 @@ public class ListViewAdapter extends BasicAdapter {
 		a.decorateContentviewByKey(null,currentKeyText);
 		
 		if(!PDICMainAppOptions.storeNothing()  && PDICMainAppOptions.storeClick() && presenter.store(pos)) {
-			a.addHistroy(currentKeyText
+			a.addHistory(currentKeyText
 					, userCLick && a.storeLv1(currentKeyText)?128:
-					 (userCLick || PDICMainAppOptions.storePageTurn()==0) && !(shunt && pos==0)?0
+					 (userCLick || PDICMainAppOptions.storePageTurn()==0) && !(shunt && pos==0)?1
 							:-1, webviewHolder);
 		}
 		

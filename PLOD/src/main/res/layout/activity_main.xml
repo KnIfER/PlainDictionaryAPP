@@ -32,6 +32,7 @@
 				app:layout_scrollFlags="scroll|enterAlways|snap"
 				android:clipToPadding="false"
 				android:clipChildren="false"
+				android:minWidth="250dp"
 				>
 				<FrameLayout android:id="@+id/rlSearchFrameDelete"
 					android:layout_width="match_parent"
@@ -54,7 +55,7 @@
 						/>
 					<ImageView
 						android:id="@+id/multilineBG"
-						android:layout_width="25dp"
+						android:layout_width="@dimen/_25_"
 						android:layout_height="match_parent"
 						android:paddingStart="3dp"
 						android:paddingEnd="5dp"
@@ -177,85 +178,12 @@
 			app:layout_behavior="@string/appbar_scrolling_view_behavior"
 			/>
 
-		<LinearLayout
-			android:id="@+id/etSearchBar"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:orientation="vertical"
-			android:visibility="invisible"
-			tools:visibility="visible"
-			android:elevation="6dp"
-			android:layout_marginTop="@dimen/barSize"
-			>
-			<View
-				android:layout_width="match_parent"
-				android:layout_height="2px"
-				android:background="#f0afafaf"
-				android:visibility="gone"
-				/>
-			<LinearLayout
-				android:layout_width="match_parent"
-				android:layout_height="@dimen/_35_"
-				android:background="#8f8f8f"
-				>
-				<TextView
-					android:id="@+id/etBack"
-					android:text="返回"
-					android:drawableLeft="@drawable/ic_baseline_arrow_back_24"
-					style="@style/SearchbarMenuTextStyle"
-					/>
-				<TextView
-					android:id="@+id/etCopy"
-					android:text="复制"
-					android:drawableLeft="@drawable/ic_baseline_copy_24"
-					style="@style/SearchbarMenuTextStyle"
-					/>
-				<TextView
-					android:id="@+id/etPaste"
-					android:text="粘贴"
-					android:drawableLeft="@drawable/ic_baseline_paste_24"
-					style="@style/SearchbarMenuTextStyle"
-					/>
-				<TextView
-					android:id="@+id/etClear"
-					android:text="清空"
-					android:drawableLeft="@drawable/ic_baseline_clear_24"
-					style="@style/SearchbarMenuTextStyle"
-					/>
-				<TextView
-					android:id="@+id/etEnter"
-					android:text="扫描"
-					android:drawableLeft="@drawable/abc_ic_go_search_api_material"
-					style="@style/SearchbarMenuTextStyle"
-					android:longClickable="true"
-					/>
-			</LinearLayout>
-			<View
-				android:layout_width="match_parent"
-				android:layout_height="2px"
-				android:background="#f0afafaf"
-				/>
-			<FrameLayout
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				>
-				<View
-					android:id="@+id/show_search_history_dropdown_bg"
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:background="#3E8F8F8F"
-					android:onClick="onClick"
-					/>
-				<ImageView
-					android:id="@+id/schDropdown"
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_28_"
-					android:background="@drawable/frame_gradient_bgs"
-					android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
-					android:onClick="onClick"
-					/>
-			</FrameLayout>
-		</LinearLayout>
+		<include
+			android:id="@+id/etSchBar"
+			layout="@layout/etsch_tools"
+			app:layout_behavior="@string/appbar_scrolling_view_behavior"
+			/>
+
 
 	</com.knziha.plod.widgets.CoordinatorLayoutSafe>
 

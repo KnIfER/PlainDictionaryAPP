@@ -68,7 +68,6 @@
 					android:text="分享至…"
 					android:src="@drawable/abc_ic_menu_share_mtrl_alpha"
 					android:alpha="0.2"
-					android:tag="明天再说"
 					/>
 			</LinearLayout>
 
