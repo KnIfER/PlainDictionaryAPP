@@ -74,6 +74,14 @@
 			android:summary="用同一个网页视图显示多个词典释义"
 			app:allowDividerBelow="true"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="debug"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="即时调试模式"
+			android:summary="JIT"
+			app:allowDividerBelow="true"
+			/>
 		<com.knziha.filepicker.settings.IntPreference
 			android:key="merge_min"
 			android:persistent="true"
@@ -95,14 +103,6 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="在新窗口中打开词条跳转"
-			app:allowDividerBelow="true"
-			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="debug"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="即时调试模式"
-			android:summary="JIT"
 			app:allowDividerBelow="true"
 			/>
 	</PreferenceCategory>

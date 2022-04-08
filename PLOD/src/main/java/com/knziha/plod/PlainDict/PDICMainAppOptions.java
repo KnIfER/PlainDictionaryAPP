@@ -2004,7 +2004,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	public static boolean getScrollAutoExpand() {
-		return (FourthFlag & 0x2000000l) != 0x2000000l;
+		return true;//(FourthFlag & 0x2000000l) != 0x2000000l;
 	}
 	public static boolean setScrollAutoExpand(boolean val) {
 		updateQFAt(0x2000000l,!val);

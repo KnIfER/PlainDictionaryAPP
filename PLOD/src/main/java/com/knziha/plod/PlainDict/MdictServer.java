@@ -18,6 +18,7 @@ package com.knziha.plod.plaindict;
 
 import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
 import static org.nanohttpd.protocols.http.response.Response.newFixedLengthResponse;
+import static org.nanohttpd.protocols.http.response.Response.newRecyclableResponse;
 
 import android.content.Context;
 import android.webkit.WebResourceRequest;
@@ -79,6 +80,8 @@ public abstract class MdictServer extends NanoHTTPD {
 	final String SepWindows = "\\";
 	final AppOptions opt;
 	
+	public static boolean hasRemoteDebugServer = true;
+	
 	String baseHtml;
 	public ArrayList<BookPresenter> currentFilter = new ArrayList<>();
 	
@@ -133,10 +136,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			return newFixedLengthResponse(getBaseHtml());
 		}
 		if(uri.startsWith("/merge.jsp")) {
-//			if(om!=null) {
-//				return om.onMirror(session.getQueryParameterString(), false);
-//			}
-			return newFixedLengthResponse(getBaseHtml());
+			return getMergedBaseResponse(session.isProxy);
 		}
 		
 		if(uri.startsWith("/MdbRSingleQuery/")) {
@@ -854,7 +854,6 @@ public abstract class MdictServer extends NanoHTTPD {
 	private String getBaseHtml() {
 		if(true || baseHtml==null) {//rrr
 			try {
-				SU.Log("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
 				InputStream fin = OpenMdbResourceByName("\\mdict_browser.html");
 				baseHtml = BU.StreamToString(fin);
 				fin.close();
@@ -863,6 +862,27 @@ public abstract class MdictServer extends NanoHTTPD {
 			}
 		}
 		return baseHtml;
+	}
+	
+	Response mBaseResponse;
+	private Response getMergedBaseResponse(boolean isProxy) {
+		if (mBaseResponse==null || hasRemoteDebugServer) {
+			mBaseResponse = newRecyclableResponse(Status.OK, NanoHTTPD.MIME_HTML, getMergedBaseHtml());
+		}
+		return mBaseResponse.newInstance(isProxy);
+	}
+	
+	private String getMergedBaseHtml() {
+		String ret;
+		try {
+			InputStream fin = OpenMdbResourceByName("\\merged_browser.html");
+			ret = BU.StreamToString(fin);
+			fin.close();
+		} catch (IOException e) {
+			ret = getBaseHtml();
+			CMN.debug(ret);
+		}
+		return ret;
 	}
 	
 	public static class HTTPSessionProxy extends HTTPSession {
@@ -884,6 +904,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			}
 			this.request = request;
 			this.headers = hdr;
+			this.isProxy = true;
 		}
 	}
 	

@@ -7,6 +7,8 @@ import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.plaindict.BuildConfig;
+import com.knziha.plod.plaindict.MdictServer;
+import com.knziha.plod.plaindict.MdictServerMobile;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
@@ -23,7 +25,7 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		init_switch_preference(this, "expand_ao", PDICMainAppOptions.getEnsureAtLeatOneExpandedPage(), null, null);
 		findPreference("expand_top").setOnPreferenceChangeListener(this);
 		init_switch_preference(this, "scranima", PDICMainAppOptions.getScrollAnimation(), null, null);
-		init_switch_preference(this, "scrautex", PDICMainAppOptions.getScrollAutoExpand(), null, null);
+		init_switch_preference(this, "scrautex", PDICMainAppOptions.getScrollAutoExpand(), null, null).setVisible(false);
 		init_switch_preference(this, "turbo_top", PDICMainAppOptions.getDelaySecondPageLoading(), null, null);
 		init_switch_preference(this, "neoS", PDICMainAppOptions.popViewEntryMulti(), null, null);
 		
@@ -111,6 +113,9 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 			break;
 			case "debug":
 				PDICMainAppOptions.debug((Boolean) newValue);
+				if (MdictServer.hasRemoteDebugServer = (Boolean) newValue) {
+					MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
+				}
 			break;
 		}
 		return true;

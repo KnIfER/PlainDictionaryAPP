@@ -52,8 +52,6 @@ public class MdictServerMobile extends MdictServer {
 	
 	private static HashMap<String, Object>  mTifConfig;
 	
-	public static boolean hasRemoteDebugServer = true;
-	
 	public MdictServerMobile(int port, MainActivityUIBase _a, PDICMainAppOptions _opt) throws IOException {
 		super(port, _opt);
 		a = _a;

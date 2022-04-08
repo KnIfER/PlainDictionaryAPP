@@ -90,8 +90,9 @@ public class HTTPSession implements IHTTPSession {
     private final OutputStream outputStream;
 
     private final BufferedInputStream inputStream;
-
-    private int splitbyte;
+	public boolean isProxy;
+	
+	private int splitbyte;
 
     private int rlen;
 

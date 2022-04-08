@@ -426,14 +426,15 @@
                         dragState.drag = false;
                     }
                 }];
-                dlg.addEventListener('touchstart',dlg.listeners[0]);
-                dlg.addEventListener('mousedown',dlg.listeners[0]);
-                dlg.addEventListener('click',dlg.listeners[3], true);
+                var ae=dlg.addEventListener;
+                ae('touchstart',dlg.listeners[0]);
+                ae('mousedown',dlg.listeners[0]);
+                ae('click',dlg.listeners[3], true);
     
-                dlg.addEventListener('touchmove',dlg.listeners[1]);
-                dlg.addEventListener('mousemove',dlg.listeners[1]);
-                dlg.addEventListener('touchend',dlg.listeners[2]);
-                dlg.addEventListener('mouseup',dlg.listeners[2]);
+                ae('touchmove',dlg.listeners[1]);
+                ae('mousemove',dlg.listeners[1]);
+                ae('touchend',dlg.listeners[2]);
+                ae('mouseup',dlg.listeners[2]);
             }
         }
         //debug('tweakSettingsDialog', host.parentNode, pw, pw<480, host.style.width);

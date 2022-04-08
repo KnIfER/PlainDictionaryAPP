@@ -47,10 +47,9 @@ function wrappedOnLoadFunc(){
 	// 	_onloadchecks[i]();
 	// }
 	//debug("wrappedOnLoadFunc::", frameElement.tag, frameElement.u, location.href);
-	var fe=frameElement;
+	var fe=frameElement, pw=parent.window;
 	if(fe) {
 		var inf=fe.dictInfo;
-		var pw=parent.window;
 		if(pw) {
 			window.addEventListener('click',pw.rcspc);
 		}
@@ -69,10 +68,10 @@ function wrappedOnLoadFunc(){
 			pw.MarkFrame(fe);
 		}
 		//debug('needs img loader', inf.img, inf.name);
-		if(app && inf.img) {
+		if(pw.app && inf.img) {
 			pw.LoadIMG(inf);
 		}
-	} else if(app){
+	} else if(pw.app){
 		window.rcsp=app.rcsp(sid.get());
 	}
 	//todo 处理背景色？
