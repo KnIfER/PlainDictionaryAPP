@@ -72,6 +72,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	View drpBtn;
 	public View topbar;
 	public String schSql = "src==128";
+	private View etSchExit;
 	private FrameLayout.LayoutParams etSchExitLP;
 	
 	/** 添加搜索记录。 */
@@ -343,7 +344,8 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			lv.setBackgroundColor(a.MainAppBackground);
 			lv.setPadding(pad/4,0,pad/4,0);
 			lv.getLayoutParams().height=-2;
-			etSchExitLP = (FrameLayout.LayoutParams) lv.getChildAt(1).getLayoutParams();
+			etSchExit = lv.getChildAt(1);
+			etSchExitLP = (FrameLayout.LayoutParams) etSchExit.getLayoutParams();
 			mRecycler = rv;
 		}
 		ViewUtils.setVisible(drpBtn, false);
@@ -356,12 +358,12 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		LoadHistory(null);
 		resizeModeSoft(true);
 		
-		if(PDICMainAppOptions.etSchExitTop()!=((etSchExitLP.gravity&Gravity.BOTTOM)==0)) {
-			etSchExitLP.gravity &= ~(Gravity.BOTTOM|Gravity.TOP);
-			etSchExitLP.gravity |= PDICMainAppOptions.etSchExitTop()?Gravity.TOP:Gravity.BOTTOM;
-		}
-		
 		refreshSoftMode(GlobalOptions.softInputHeight);
+		
+//		if(PDICMainAppOptions.etSchExitTop()!=((etSchExitLP.gravity&Gravity.BOTTOM)==0)) {
+//			etSchExitLP.gravity &= ~(Gravity.BOTTOM|Gravity.TOP);
+//			etSchExitLP.gravity |= PDICMainAppOptions.etSchExitTop()?Gravity.TOP:Gravity.BOTTOM;
+//		}
 	}
 	
 	private void resizeModeSoft(boolean soft) {
@@ -596,9 +598,17 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	
 	@Override
 	public void refreshSoftMode(int height) {
-		if(etSchExitLP!=null && ViewUtils.isVisible(lv.getChildAt(1))) {
-			etSchExitLP.bottomMargin = height;
-			lv.getChildAt(1).requestLayout();
+		if(etSchExitLP!=null && ViewUtils.isVisible(lv)) {
+			boolean hard = PDICMainAppOptions.etSchAlwaysHard();
+			if (etSchExit.getParent()==lv ^ !hard) {
+				ViewUtils.addViewToParent(etSchExit, hard? (ViewGroup) lv.getParent() :lv);
+				etSchExitLP = (FrameLayout.LayoutParams) etSchExit.getLayoutParams();
+			}
+			if(!hard) height=0;
+			if (etSchExitLP.bottomMargin != height) {
+				etSchExitLP.bottomMargin = height;
+				etSchExit.requestLayout();
+			}
 		}
 	}
 }
