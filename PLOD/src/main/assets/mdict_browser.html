@@ -9,18 +9,12 @@
 
 	<script src="MdbR/KitPatch.js"></script>
 	<script src="MdbR/jquery-1.11.3.min.js"></script>
-	<script src="MdbR/mark.js"></script>
 	<script src="MdbR/listview/jquery.mousewheel.js"></script>
 	<script src="MdbR/listview/seekbar.js"></script>
-	<!-- <script src="MdbR/trans.json" type="application/json" onload="console.log('setJson', event)"></script> -->
 	<script src="MdbR/trans.js"></script>
-	<script src="MdbR/settings.js"></script>
 	
 	<link rel="icon" href="MdbR/MdbR.png" type="image/x-icon"/>
 	<link rel="shortcut icon" href="MdbR/MdbR.png" type="image/x-icon"/>
-
-	<!-- <script type="text/javascript" src="MdbR/erdo.js"></script>
-	<script>eruda.init();</script> -->
 	
 	<link rel="stylesheet" type="text/css" href="MdbR/css/seekbar.css"/>
 	<style>
@@ -139,11 +133,17 @@
     }
     .cp2#cd
     {
-		border-bottom: 3px solid rgb(255 255 255)!important;
+		box-shadow: inset 0px -2px 0px white;
 	}
     .cp2.hide
     {
 	  	color: #87caf5;
+	}
+    .cp2 span
+    {
+		width: 100%;
+		display: block;
+		line-height: 24px;
 	}
     .cp2:hover
     {
@@ -544,10 +544,6 @@
       overflow-y: auto;
 	  filter: drop-shadow(2px 4px 6px #8f8fff9c);
 	}
-	
-	.contents {
-	  
-	}
 		
 		/*箭头*/
 		.arrow {
@@ -694,6 +690,7 @@
 			background-color: #03a9f4;
 			border-radius: 10px;
 			z-index:999999;
+			display:none;
 		}
 	</style> 
 	<script>
@@ -1059,10 +1056,11 @@
 			ge('body_').addEventListener('scroll',function(e){
 				if(e.srcElement.scrollTop>0)e.srcElement.scrollTop=0;
 			});
-			setTimeout(_highlight, 200)
+			if(app)
+				setTimeout(_highlight, 200)
 		}
 	
-		var postInit = function(){
+		var postInit = function(){/**/
 			if(app) {
 				flag=app.getFlag();
 				if(isCombinedSeaching())
@@ -3344,6 +3342,14 @@
 		}
 
 		function showSettings() {
+			if(window.SettingsBuildCard) {
+				doShowSettings();
+			} else {
+				loadJs("MdbR/settings.js", function(){doShowSettings()});
+			}
+		}
+
+		function doShowSettings() {
 			var dlg = SettingsGetDialogHolder('settings');
 			var host=dlg.host;
 			if(!host.cards || true) {
@@ -3718,8 +3724,7 @@
 			sh = ge("sh");
 			sh.ontouchstart=sh.onmousedown=SH_D;
 			shsty = sh.style;
-			if(merge)
-				SH_S(app?app.cs():0);
+			SH_S(app?app.cs():2);
 		}
 		function SH_S(t){
 			var d='block';
@@ -3782,7 +3787,6 @@
 	<title>平典搜索 · MDict Browser</title>
 
 </head>
-<!--一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一一-->
 <body id="body_" onload="Initialize()" scroll="no">
 
 
