@@ -334,12 +334,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					execSearchRunnable.run();
 				} else {
 					root.postDelayed(execSearchRunnable, 150);
+					if (tw1F!=1) {
+						tw1F=1;
+					}
 				}
 				if(etTools.isVisible())
 					etTools.dismiss();
-				if (tw1F!=1) {
-					tw1F=1;
-				}
 			} else {
 				if(PDICMainAppOptions.getSimpleMode()) adaptermy.notifyDataSetChanged();
 				lv2.setVisibility(View.INVISIBLE);
@@ -634,8 +634,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public boolean
-	switch_Dict(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC) {
+	public boolean switch_Dict(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC) {
 		boolean prvNxt = prvNxtABC!=null;
 		int size=md.size();
 		if(size>0) {
@@ -689,7 +688,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if(prvNxt && opt.getDimScrollbarForPrvNxt()) {
 								ViewUtils.dimScrollbar(lv, false);
 							}
+							boolean tmp = isCombinedSearching;
+							isCombinedSearching = false;
 							tw1.onTextChanged(etSearch.getText(), -1, -1, -100);
+							isCombinedSearching = tmp;
 							//lv.setFastScrollEnabled(true);
 							if(prvNxt && opt.getPrvNxtDictSkipNoMatch()) {
 								return lv_matched;
@@ -774,6 +776,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	@NonNull public BookPresenter md_getByName(String name) {
 		return getBookByName(name);
+	}
+	
+	@NonNull public BookPresenter md_getNoCreate(int i) {
+		BookPresenter ret = null;
+		if(i>=0 && i<md.size()){
+			ret = md.get(i);
+		}
+		if(ret==null) {
+			ret = EmptyBook;
+		}
+		return ret;
 	}
 	
 	@NonNull public BookPresenter md_get(int i) {
@@ -2072,7 +2085,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //var hashcode = signature0.hashCode();*/
 //	@Metaline(trim=false)
 //	String testVerifyCode = "";
-	
+
 //	/**{android.app.ActivityThread}.sPackageManager = null
 //var packageName = $.getPackageName()
 //var info = $.getPackageManager().getPackageInfo[, int](packageName, 0x40).signatures[0].hashCode()
@@ -5455,36 +5468,35 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case R.drawable.ic_prv_dict_chevron:
 			case R.drawable.ic_nxt_dict_chevron: {
-				if(isCombinedSearching) {
-				
-				} else {
-					if(CurrentViewPage==1) {
-						int delta = (id == R.drawable.ic_prv_dict_chevron ? -1 : 1);
-						int testVal = dictPicker.adapter_idx;
-						PrvNxtABC.initiatorIdx=testVal;
-						PrvNxtABC.initiatorDir=delta;
-						PrvNxtABC.沃壳积 =0;
-						boolean b1=dictPicker.autoSchPDict() && isContentViewAttached();
-						if(b1) bIsFirstLaunch=true;
-						while(!switch_Dict(dictPicker.adapter_idx+delta, true, false, PrvNxtABC));
-						if(PrvNxtABC.collide() && testVal!=dictPicker.adapter_idx) { // rejected
-							switch_Dict(testVal, true, false, null);
-						} else {
-							getTopSnackView().setNextOffsetScale(0.24f);
-							showTopSnack(currentDictionary.getDictionaryName());
-							if(dictPicker.pinned()) {
-								dictPicker.scrollThis();
-								dictPicker.mAdapter.notifyItemChanged(testVal);
-								dictPicker.mAdapter.notifyItemChanged(dictPicker.adapter_idx);
-							}
+				if(ViewUtils.isVisible(lv2)) {
+					ViewUtils.setVisibility(lv2, false);
+				}
+				if(CurrentViewPage==1) {
+					int delta = (id == R.drawable.ic_prv_dict_chevron ? -1 : 1);
+					int testVal = dictPicker.adapter_idx;
+					PrvNxtABC.initiatorIdx=testVal;
+					PrvNxtABC.initiatorDir=delta;
+					PrvNxtABC.沃壳积 =0;
+					boolean b1=dictPicker.autoSchPDict() && isContentViewAttached();
+					if(b1) bIsFirstLaunch=true;
+					while(!switch_Dict(dictPicker.adapter_idx+delta, true, false, PrvNxtABC));
+					if(PrvNxtABC.collide() && testVal!=dictPicker.adapter_idx) { // rejected
+						switch_Dict(testVal, true, false, null);
+					} else {
+						getTopSnackView().setNextOffsetScale(0.24f);
+						showTopSnack(currentDictionary.getDictionaryName());
+						if(dictPicker.pinned()) {
+							dictPicker.scrollThis();
+							dictPicker.mAdapter.notifyItemChanged(testVal);
+							dictPicker.mAdapter.notifyItemChanged(dictPicker.adapter_idx);
 						}
-						if(b1) bIsFirstLaunch=false;
-						if(testVal!=dictPicker.adapter_idx&&PrvNxtABC.rejectIdx>=0) { // not rejected
-							PrvNxtABC.rejectIdx=-1;
-						}
-						if(currentDictionary!=EmptyBook) {
-							postPutName(1000);
-						}
+					}
+					if(b1) bIsFirstLaunch=false;
+					if(testVal!=dictPicker.adapter_idx&&PrvNxtABC.rejectIdx>=0) { // not rejected
+						PrvNxtABC.rejectIdx=-1;
+					}
+					if(currentDictionary!=EmptyBook) {
+						postPutName(1000);
 					}
 				}
 			} break;
@@ -8724,7 +8736,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			TTSController_engine.stop();
 			speakPoolEndIndex=speakPoolIndex-1;
 		}
-	} 
+	}
 
 	/**
 	  engines  | voices  | Languages
@@ -9781,7 +9793,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		//if(lv2.getVisibility()==View.INVISIBLE)
 		//	lv2.setVisibility(View.VISIBLE);
-		String key = cs.toString();
+		String key = cs.toString().trim();
 		if(!key.equals(CombinedSearchTask_lastKey))
 			lianHeTask = (AsyncTaskWrapper) new CombinedSearchTask(MainActivityUIBase.this).execute(key);
 		else {
@@ -9794,6 +9806,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					adaptermy2.onItemClick(null, adaptermy2.getView(0, null, null), 0, 0);
 				}
 			}
+			ViewUtils.setVisibleV3(lv2, true);
 		}
 	}
 	

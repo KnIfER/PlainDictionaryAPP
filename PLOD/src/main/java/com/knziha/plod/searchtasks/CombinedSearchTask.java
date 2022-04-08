@@ -140,17 +140,20 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, result
 				bid = a.getUsingDataV2()?bookPresenter.bookImpl.getBooKID():i;
 				_treeBuilder.resetRealmer(bid);
 				combining_search_list = bookPresenter.range_query_reveiver;
+				boolean added = false; //todo
 				if(combining_search_list!=null)
 				{
 					try {
 						for (int j = 0; j < combining_search_list.size(); j++) {
 							myCpr<String, Long> dataI = combining_search_list.get(j);
 							if(dataI!=null) { // to check
+								if(!added) added=true;
 								_treeBuilder.insert(dataI.key, bid, dataI.value);
 							}
 						}
 					} catch (Exception ignored) { }
 				}
+				bookPresenter.hasBatchRet = added;
 			}
 		}
 		if(isCancelled()) return null;
@@ -194,5 +197,9 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, result
 			a.restoreLv2States();
 
 		a.CombinedSearchTask_lastKey=CurrentSearchText;
+		
+		if(a.dictPicker.pinned()) {
+			a.dictPicker.mAdapter.notifyItemRangeChanged(0, a.dictPicker.mAdapter.getItemCount(), "payload");
+		}
 	}
 }

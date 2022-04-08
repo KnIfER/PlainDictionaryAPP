@@ -218,7 +218,7 @@
 		tools:visibility="gone"
 		/>
 
-	<RelativeLayout
+	<FrameLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		tools:visibility="gone"
@@ -264,7 +264,8 @@
 			android:fastScrollStyle="@style/fscroll"
 			android:listSelector="@drawable/listviewselector0"
 			/>
-	</RelativeLayout>
+
+	</FrameLayout>
 
 </FrameLayout>
 </layout>

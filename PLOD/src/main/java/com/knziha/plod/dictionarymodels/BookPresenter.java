@@ -136,6 +136,8 @@ public class BookPresenter
 	@Metaline()
 	public final static String js="SUBPAGE";
 	
+	public boolean hasBatchRet;
+	
 	/**
 	 	var w=window, d=document;
 		var LoadMark, frameAt;

@@ -44,6 +44,7 @@ import com.knziha.plod.widgets.LinearSplitView;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -59,7 +60,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	RecyclerView mRecyclerView;
 	LinearLayoutManager lman;
 	public boolean bShouldCloseAfterChoose=true;
-	HomeAdapter mAdapter;
+	public HomeAdapter mAdapter;
 	
 	public String SearchIncantation;
 	public Pattern SearchPattern;
@@ -256,17 +257,9 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		
 		//mAdapter.notifyDataSetChanged();
 		
-		autoBtn.setAlpha(a.isCombinedSearching?0.2f:1);
+		//autoBtn.setAlpha(a.isCombinedSearching?0.2f:1);
 	}
 
-
-//	@Override
-//	public void onAttach(@NonNull Context context){
-//		//CMN.Log("dict picker onAttach");
-//		super.onAttach(context);
-//		refresh(true, bForcePin);
-//	}
-	
 	public HomeAdapter adapter(){
 		return mAdapter;
 	}
@@ -337,7 +330,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		else if (type==1) PDICMainAppOptions.pinPDicFlt(v);
 	}
 	
-	boolean pinned() {
+	public boolean pinned() {
 		return pinBtn!=null && pinBtn.isChecked();
 	}
 	
@@ -395,7 +388,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		return adapter_idx;
 	}
 	
-	class HomeAdapter extends RecyclerView.Adapter<MyViewHolder>
+	public class HomeAdapter extends RecyclerView.Adapter<MyViewHolder>
 	{
 		final Drawable underln;
 		final ColorFilter selecf;
@@ -419,48 +412,55 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			ret.tv.bNeedPostLayout = true;
 			return ret;
 		}
-
+		
 		@Override
-		public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
+		public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+		}
+		
+		@Override
+		public void onBindViewHolder(@NonNull final MyViewHolder holder, int position, @NonNull List<Object> payloads) {
 			if (filtered!=null) {
 				position = filtered.get(position);
 			}
 			holder.position = position;
-			//todo 应该将adapter_idx 放到这个类中
-			int idx=type==-1?
-					filtered==null?a.wordPopup.upstrIdx :-100
-					:DictPicker.this.adapter_idx;
 			FlowTextView tv = holder.tv;
-			
-			boolean isThisSelected = idx==position;
-			if (idx==-100) {
-				if (a.wordPopup.weblistHandler!=null
-						&& a.wordPopup.weblistHandler.frameSelection==holder.getLayoutPosition()) {
-					isThisSelected = true;
+			if(payloads.size()==0) {
+				//CMN.Log("onBindViewHolder::刷新全部!!!");
+				//todo 应该将adapter_idx 放到这个类中
+				int idx=type==-1?
+						filtered==null?a.wordPopup.upstrIdx :-100
+						:DictPicker.this.adapter_idx;
+				
+				boolean isThisSelected = idx==position;
+				if (idx==-100) {
+					if (a.wordPopup.weblistHandler!=null
+							&& a.wordPopup.weblistHandler.frameSelection==holder.getLayoutPosition()) {
+						isThisSelected = true;
+					}
 				}
+				holder.itemView.setBackgroundColor(isThisSelected?0xff4F7FDF:Color.TRANSPARENT);
+				tv.setTextColor(GlobalOptions.isDark||isThisSelected?Color.WHITE:Color.BLACK);
+				tv.PostEnabled = PostEnabled;
+				tv.setStarLevel(a.md_get_StarLevel(position));
+				tv.setCompoundDrawables(a.getActiveStarDrawable(), null, null, null);
+				
+				String text = a.md_getName(position);
+				tv.SetSearchPattern(SearchPattern, text);
+				
+				Drawable cover = a.md_getCover(position);
+				ViewUtils.setVisibility((View) holder.cover.getParent(), cover!=null);
+				ViewGroup.LayoutParams lp = holder.cover.getLayoutParams();
+				lp.width = (int) (lp.height/(cover==null?
+						pinBtn.isChecked()?999:1.5f
+						:1));
+				holder.cover.setImageDrawable(cover);
+				tv.setText(text);
 			}
-			holder.itemView.setBackgroundColor(isThisSelected?0xff4F7FDF:Color.TRANSPARENT);
-			tv.setTextColor(GlobalOptions.isDark||isThisSelected?Color.WHITE:Color.BLACK);
-			tv.PostEnabled = PostEnabled;
-			tv.setStarLevel(a.md_get_StarLevel(position));
-			tv.setCompoundDrawables(a.getActiveStarDrawable(), null, null, null);
-			
-			String text = a.md_getName(position);
-			tv.SetSearchPattern(SearchPattern, text);
-			
-			if (type==-1) {
-				tv.setBackground(a.wordPopup.CCD_ID==position?underln:null);
-			}
-			
-			Drawable cover = a.md_getCover(position);
-			ViewUtils.setVisibility((View) holder.cover.getParent(), cover!=null);
-			ViewGroup.LayoutParams lp = holder.cover.getLayoutParams();
-			lp.width = (int) (lp.height/(cover==null?
-					pinBtn.isChecked()?999:1.5f
-					:1));
-			holder.cover.setImageDrawable(cover);
-			
-			tv.setText(text);
+			//else CMN.Log("onBindViewHolder::刷新部分!!!", payloads);
+			boolean under = type==-1 && a.wordPopup.CCD_ID==position
+					||type!=-1 && a.isCombinedSearching && a.md_getNoCreate(position).hasBatchRet;
+			if(under ^ tv.getBackground()!=null)
+				tv.setBackground(under?underln:null);
 		}
 	}
 	
@@ -470,39 +470,36 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		Object tag = v.getTag();
 		if(tag instanceof MyViewHolder){
 			int position = ((MyViewHolder) tag).position;
-//			if(v.getId()==R.id.coverp) {
-//				a.showAboutDictDialogAt(position);
-//			} else {
-				if(!act()) return;
-				if(type==-1){ //点译搜索
-					int tmpPos;
-					if (filtered==null) { //点译上游
-						tmpPos = a.wordPopup.upstrIdx;
-						a.wordPopup.CCD=a.md_get(position);
-						a.wordPopup.CCD_ID=a.wordPopup.upstrIdx = position;
-						a.popupWord(ViewUtils.getTextInView(a.wordPopup.entryTitle), null, -1, null);
-					} else { //跳转多页面
-						tmpPos = a.wordPopup.weblistHandler.frameSelection;
-						position = ((MyViewHolder) tag).getLayoutPosition();
-						a.wordPopup.weblistHandler.JumpToFrame(position);
-					}
-					mAdapter.notifyItemChanged(tmpPos);
+			if(!act()) return;
+			if(type==-1){ //点译搜索
+				int tmpPos;
+				if (filtered==null) { //点译上游
+					tmpPos = a.wordPopup.upstrIdx;
+					a.wordPopup.CCD=a.md_get(position);
+					a.wordPopup.CCD_ID=a.wordPopup.upstrIdx = position;
+					a.popupWord(ViewUtils.getTextInView(a.wordPopup.entryTitle), null, -1, null);
+				} else { //跳转多页面
+					tmpPos = a.wordPopup.weblistHandler.frameSelection;
+					position = ((MyViewHolder) tag).getLayoutPosition();
+					a.wordPopup.weblistHandler.JumpToFrame(position);
+				}
+				mAdapter.notifyItemChanged(tmpPos);
+				mAdapter.notifyItemChanged(position);
+				dismiss();
+			}
+			else {//当前词典
+				int tmpPos = adapter_idx;
+				adapter_idx = position;
+				a.switch_Dict(position, true, true, null);
+				ViewUtils.setVisibleV3(a.lv2, false);
+				mAdapter.notifyItemChanged(tmpPos);
+				if(tmpPos!=position){
 					mAdapter.notifyItemChanged(position);
-					dismiss();
 				}
-				else {//当前词典
-					int tmpPos = adapter_idx;
-					adapter_idx = position;
-					a.switch_Dict(position, true, true, null);
-					mAdapter.notifyItemChanged(tmpPos);
-					if(tmpPos!=position){
-						mAdapter.notifyItemChanged(position);
-					}
-					if (bShouldCloseAfterChoose) {
-						v.post(this::dismiss);
-					}
+				if (bShouldCloseAfterChoose) {
+					v.post(this::dismiss);
 				}
-//			}
+			}
 		}
 		switch (v.getId()) {
 			case R.id.dialogHolder:
@@ -531,7 +528,6 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					a.showTopSnack("自动搜索√");
 				else
 					a.fadeSnack();
-				//if(pickDictDialog!=null) pickDictDialog.isDirty=true;
 			} break;
 			case R.id.schBook:
 				if (Searchbar == null) {
@@ -794,13 +790,4 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			coveronclick.setOnClickListener(onclick);
 		}
 	}
-	
-//	@Override
-//	public void onActivityCreated(Bundle savedInstanceState) {
-//		super.onActivityCreated(savedInstanceState);
-//		a=(MainActivityUIBase) getActivity();
-//		if(GlobalOptions.isDark) {
-//			ViewUtils.setListViewScrollbarColor(mRecyclerView, true);
-//		}
-//	}
 }
