@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -95,7 +96,7 @@ public class ListViewAdapter extends BasicAdapter {
 					&& presenter.store(presenter.lvClickPos)
 					&& !PDICMainAppOptions.storeNothing()
 					&& PDICMainAppOptions.storeClick()) {
-				a.addHistory(presenter.currentDisplaying, 0, webviewHolder);
+				a.addHistory(presenter.currentDisplaying, a.schuiList, webviewHolder, null);
 			}
 		}
 	}
@@ -127,8 +128,16 @@ public class ListViewAdapter extends BasicAdapter {
 //		}
 		a.shuntAAdjustment();
 		if(a.PeruseListModeMenu.isChecked()) {
-			String pw = pos==0?a.etSearch.getText().toString(): presenter.bookImpl.getEntryAt(pos);
-			a.getPeruseView().searchAll(pw, a, true);
+			String lstKey = this.currentKeyText = presenter.bookImpl.getEntryAt(pos).trim();
+			PeruseView pView = a.getPeruseView();
+			pView.searchAll(lstKey, a, true);
+			if(!PDICMainAppOptions.storeNothing()  && PDICMainAppOptions.storeClick() && presenter.store(pos)
+					&& userCLick && a.storeLv1(lstKey)) { // 保存输入框历史记录
+				a.addHistory(lstKey, a.schuiMainPeruse, webviewHolder, a.etTools);
+				pView.addHistory = lstKey;
+			} else {
+				pView.addHistory = null;
+			}
 			a.AttachPeruseView(true);
 			//CMN.Log(PeruseView.data);
 			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
@@ -207,15 +216,15 @@ public class ListViewAdapter extends BasicAdapter {
 		}
 		a.contentview.setTag(R.id.image, a.PhotoPagerHolder!=null&&a.PhotoPagerHolder.getParent()!=null?false:null);
 		
-		currentKeyText = mWebView.word.trim();
+		String lstKey = this.currentKeyText = mWebView.word.trim();
 		
-		a.decorateContentviewByKey(null,currentKeyText);
+		a.decorateContentviewByKey(null,lstKey);
 		
 		if(!PDICMainAppOptions.storeNothing()  && PDICMainAppOptions.storeClick() && presenter.store(pos)) {
-			a.addHistory(currentKeyText
-					, userCLick && a.storeLv1(currentKeyText)?128:
-					 (userCLick || PDICMainAppOptions.storePageTurn()==0) && !(shunt && pos==0)?1
-							:-1, webviewHolder);
+			a.addHistory(lstKey
+					, userCLick && a.storeLv1(lstKey)? a.schuiMain:  // 保存输入框历史记录
+					 (userCLick || PDICMainAppOptions.storePageTurn()==0) && !(shunt && pos==0)?a.schuiList  // 保存列表点击历史记录
+							:-1, webviewHolder, null);
 		}
 		
 		//showT("查时: "+(System.currentTimeMillis()-stst));

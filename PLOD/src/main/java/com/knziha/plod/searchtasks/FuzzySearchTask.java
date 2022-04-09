@@ -1,8 +1,9 @@
 package com.knziha.plod.searchtasks;
 
 import android.annotation.SuppressLint;
-import android.os.AsyncTask;
 
+import com.knziha.plod.db.SearchUI;
+import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -110,12 +111,16 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Integer, String> {
 		if(a.timer!=null) a.timer.cancel(); a.timer=null;
 		if(a.taskd!=null) a.taskd.dismiss();
 		a.mAsyncTask=null;
-
-		a.adaptermy3.combining_search_result.SearchText=CurrentSearchText;
+		
+		resultRecorderDiscrete results = a.adaptermy3.results;
+		results.SearchText=CurrentSearchText;
+		results.storeRealm = SearchUI.MainApp.ENTRYTEXT;
+		results.storeRealm1 = SearchUI.MainApp.表et;
+		
 		if(a.isCombinedSearching){
-			a.adaptermy3.combining_search_result.invalidate();
+			results.invalidate();
 		}else{//单独搜索 todo
-			a.adaptermy3.combining_search_result.invalidate(a.dictPicker.adapter_idx);
+			results.invalidate(a.dictPicker.adapter_idx);
 		}
 
 		a.show(R.string.fuzzyfill,(System.currentTimeMillis()-CMN.stst)*1.f/1000

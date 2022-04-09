@@ -33,6 +33,7 @@ import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.math.MathUtils;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedReader;
@@ -269,6 +270,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		root = findViewById(R.id.root);
 		mainfv = root.findViewById(R.id.main);
 		toolbar = mainfv.findViewById(R.id.toolbar);
+		appbar = toolbar;
 	
 		main_succinct = mainfv.findViewById(R.id.mainframe);
 		lv = main_succinct.findViewById(R.id.main_list);
@@ -684,6 +686,9 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		ivBack = toolbar.findViewById(R.id.ivBack);
 		findViewById(R.id.pad).setOnClickListener(ViewUtils.DummyOnClick);
 		etSearch = findViewById(R.id.etSearch);
+		schuiMain = SearchUI.FloatApp.MAIN;
+		schuiInit = schuiMainPeruse = schuiMain|SearchUI.Fye.MAIN;
+		schuiList = SearchUI.FloatApp.表;
 	}
 	
 	protected void exit() {

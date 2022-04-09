@@ -16,7 +16,9 @@ public class resultRecorderDiscrete {
 
 	public Flag mflag = new Flag();
 	public boolean allWebs;
-
+	public int storeRealm;
+	public int storeRealm1;
+	
 	public resultRecorderDiscrete(MainActivityUIBase a_){
 		//a=a_;
 	};
@@ -58,7 +60,7 @@ public class resultRecorderDiscrete {
 		return true;
 	}
 	
-	public boolean addHistoryIfNeeded(MainActivityUIBase a) {
+	public boolean shouldAddHistory(MainActivityUIBase a) {
 		return false;
 	}
 }

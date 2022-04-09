@@ -99,6 +99,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	public ViewGroup contentview;
 	protected ViewGroup dialog_;
     protected Toolbar toolbar;
+    protected ViewGroup appbar;
     protected EditText etSearch;
 	protected int etSearchPadRight;
     protected ImageView ivDeleteText;

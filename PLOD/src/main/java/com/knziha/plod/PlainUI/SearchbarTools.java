@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
@@ -398,6 +399,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			mAdapter.notifyDataSetChanged();
 	}
 	
+	@AnyThread
 	public void LoadHistory(AtomicBoolean task) {
 		if(task==null) {
 			if(!loaded) {
@@ -420,7 +422,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			items = new String[len];
 			len--;
 			while (cursor.moveToNext()) {
-				//CMN.Log("LoadHistory::", cursor.getString(0));
+				CMN.Log("LoadHistory::", cursor.getString(0));
 				items[len-cc++] = cursor.getString(0);
 			}
 		} catch (Exception e) {
@@ -435,7 +437,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				history.clear();
 				hIdx.clear();
 				history.addAll(Arrays.asList(its));
-				//CMN.Log("LoadHistory::harvest::", getHistorySz(), its);
+				CMN.Log("LoadHistory::harvest::", getHistorySz(), its);
 				for (int i = 0; i < its.length; i++) {
 					String text = its[i];
 					if (text!=null) {

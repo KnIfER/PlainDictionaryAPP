@@ -11,6 +11,8 @@ import android.widget.TextView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 
+import com.knziha.plod.db.SearchUI;
+import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.widgets.ViewUtils;
@@ -36,11 +38,11 @@ public class ListViewAdapter2 extends BasicAdapter {
 		this.a = a;
 		this.opt = a.opt;
 		this.id = id;
-		combining_search_result = new resultRecorderDiscrete(a);
+		results = new resultRecorderDiscrete(a);
 	}
 	@Override
 	public int getCount() {
-		return combining_search_result.size();
+		return results.size();
 	}
 	
 	public int expectedPos;
@@ -48,7 +50,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		//return lstItemViews.get(position);
 		ViewHolder vh;
-		CharSequence currentKeyText = combining_search_result.getResAt(a, position);
+		CharSequence currentKeyText = results.getResAt(a, position);
 		if(convertView!=null) {
 			vh=(ViewHolder) convertView.getTag();
 		} else {
@@ -68,11 +70,11 @@ public class ListViewAdapter2 extends BasicAdapter {
 //			} else {
 //
 //			}
-		vh.subtitle.setText(a.getBookById(combining_search_result.bookId).getDictionaryName());
+		vh.subtitle.setText(a.getBookById(results.bookId).getDictionaryName());
 		if(id==2) {
 			TextView v = ((TextView) vh.subtitle.getTag());
-			if(combining_search_result.count!=null) {
-				v.setText(combining_search_result.count);
+			if(results.count!=null) {
+				v.setText(results.count);
 				v.setVisibility(View.VISIBLE);
 			} else {
 				v.setVisibility(View.GONE);
@@ -84,7 +86,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 	
 	@Override
 	public void shutUp() {
-		combining_search_result.shutUp();
+		results.shutUp();
 		notifyDataSetChanged();
 	}
 	
@@ -95,15 +97,16 @@ public class ListViewAdapter2 extends BasicAdapter {
 //			new a.SaveAndRestorePagePosDelegate().SaveVOA(contentUIData.PageSlider.WebContext, this);
 //		}
 //		//lastClickTime=System.currentTimeMillis();
-//		if(Kustice && PDICMainAppOptions.getHistoryStrategy8() == 2
-//				&& combining_search_result.shouldSaveHistory()
-//				&& !PDICMainAppOptions.getHistoryStrategy0())
-//			a.insertUpdate_histroy(currentKeyText, 0, webviewHolder);
+		if (Kustice && PDICMainAppOptions.storePageTurn()==2
+				&& results.shouldSaveHistory()
+				&& !PDICMainAppOptions.storeNothing() && PDICMainAppOptions.storeClick()) {
+			a.addHistory(currentKeyText, a.schuiList, webviewHolder, null);
+		}
 	}
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-		if(a.checkAllWebs(combining_search_result, view, pos)) return;
+		if(a.checkAllWebs(results, view, pos)) return;
 		contentUIData.mainProgressBar.setVisibility(View.GONE);
 		userCLick=true;
 		lastClickedPosBeforePageTurn=-1;
@@ -116,21 +119,29 @@ public class ListViewAdapter2 extends BasicAdapter {
 	public void onItemClick(int pos){//lv2 mlv1 mlv2
 		a.shuntAAdjustment();
 		weblistHandler.WHP.touchFlag.first=true;
-		if(a.PeruseListModeMenu.isChecked()) {
-			PeruseView pv = a.getPeruseView();
-			a.JumpToPeruseMode(combining_search_result.getResAt(a, pos).toString(), combining_search_result.getBooksAt(pv.bookIds, pos), -2, true);
-			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
-			return;
-		}
+		
 		if(a.DBrowser!=null) return;
-		
 		lastClickedPosBeforePageTurn = lastClickedPos;
-		
 		if(pos<0 || pos>=getCount()) {
 			a.show(R.string.endendr);
 			return;
 		}
+		String lstKey = currentKeyText = results.getResAt(a, pos).toString();
+		int stLv = userCLick?results.storeRealm:results.storeRealm1;
 		
+		if(a.PeruseListModeMenu.isChecked()) {
+			PeruseView pView = a.getPeruseView();
+			boolean storeSch = results.shouldAddHistory(a);
+			if(storeSch) { // 保存输入框历史记录
+				a.addHistory(results.schKey, stLv, webviewHolder, a.etTools);
+				pView.addHistory = lstKey;
+			} else {
+				pView.addHistory = null;
+			}
+			a.JumpToPeruseMode(lstKey, results.getBooksAt(pView.bookIds, pos), -2, true);
+			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
+			return;
+		}
 		
 		if(allMenus!=null) {
 			allMenus.setItems(contentMenus);
@@ -181,26 +192,28 @@ public class ListViewAdapter2 extends BasicAdapter {
 			a.etSearch.clearFocus();
 		}
 		
-		combining_search_result.renderContentAt(lastClickedPos, a,this, weblistHandler);
+		results.renderContentAt(lastClickedPos, a,this, weblistHandler);
 		
-		a.decorateContentviewByKey(null, currentKeyText = combining_search_result.getResAt(a, pos).toString());
+		a.decorateContentviewByKey(null, lstKey);
 		
 		
 		a.bWantsSelection=true;
 //		if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick()){
-//			a.prepareInPageSearch(currentKeyText, true);
+//			a.prepareInPageSearch(lstKey, true);
 //		} //333
 		contentUIData.webcontentlister.setTag(R.id.image, a.PhotoPagerHolder!=null&&a.PhotoPagerHolder.getParent()!=null?false:null);
 		contentUIData.PageSlider.TurnPageEnabled=(this==a.adaptermy2?opt.getPageTurn2():opt.getPageTurn1())&&opt.getTurnPageEnabled();
 		a.etSearch_ToToolbarMode(1);
 		
-		boolean schKey = combining_search_result.addHistoryIfNeeded(a);
-		if((!schKey || !combining_search_result.schKey.equals(currentKeyText))
-				&& !PDICMainAppOptions.storeNothing()
-				&& PDICMainAppOptions.storeClick()
-				&& combining_search_result.shouldSaveHistory()
+		boolean storeSch = results.shouldAddHistory(a);
+		if(storeSch) {
+			a.addHistory(results.schKey, stLv, webviewHolder, a.etTools);
+		}
+		if((!storeSch || !results.schKey.equals(lstKey))
+				&& !PDICMainAppOptions.storeNothing() && PDICMainAppOptions.storeClick()
+				&& results.shouldSaveHistory()
 				&& (userCLick||PDICMainAppOptions.storePageTurn()==0)) {
-			a.addHistory(currentKeyText, 0, webviewHolder);
+			a.addHistory(lstKey, stLv, webviewHolder, a.etTools);
 		}
 		
 		if(userCLick) {
@@ -218,8 +231,8 @@ public class ListViewAdapter2 extends BasicAdapter {
 	
 	@Override
 	public String currentKeyText() {
-		return combining_search_result instanceof resultRecorderScattered?
-				((resultRecorderScattered)combining_search_result).getCurrentKeyText(a, lastClickedPos)
+		return results instanceof resultRecorderScattered?
+				((resultRecorderScattered) results).getCurrentKeyText(a, lastClickedPos)
 				:currentKeyText;
 	}
 }

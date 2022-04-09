@@ -152,6 +152,7 @@ import com.knziha.plod.PlainUI.WeakReferenceHelper;
 import com.knziha.plod.PlainUI.WordPopup;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -284,6 +285,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		SettingsPanel.FlagAdapter,
 		MdictServerLet {
 	
+	public int schuiMainPeruse;
+	public int schuiInit;
+	public int schuiMain;
+	public int schuiList;
 	protected WeakReference[] WeakReferencePool = new WeakReference[WeakReferenceHelper.poolSize];
 	public mdict.AbsAdvancedSearchLogicLayer taskRecv;
 	
@@ -2761,7 +2766,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(fromPeruseView
 						|| !isCombinedSearching
 						|| webview==weblistHandler.mMergedFrame
-						|| (ActivedAdapter!=null && !(ActivedAdapter.combining_search_result instanceof resultRecorderCombined))) {
+						|| (ActivedAdapter!=null && !(ActivedAdapter.results instanceof resultRecorderCombined))) {
 					if(mBar.isHidden()){
 						if(Math.abs(oldy-y)>=10*dm.density)
 							mBar.fadeIn();
@@ -3086,21 +3091,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected String lastInsertedKey;
 	
-	public void addHistory(String key, int source, ViewGroup webviewholder) {
+	public void addHistory(String key, int source, ViewGroup webviewholder, SearchbarTools etTools) {
 		CMN.Log("addHistroy::", key, source);
 		if(source>=0/* && TextUtils.getTrimmedLength(key)>0*/) {
 			key = key.trim();
 			if (key.length()>0) {
-				if (!PDICMainAppOptions.storeNothing() || PDICMainAppOptions.storeNothingButSch() && source>=128) {
+				if (!PDICMainAppOptions.storeNothing() || PDICMainAppOptions.storeNothingButSch() && source>=SearchUI.schMin) {
 					long ivkAppId = -1;
 					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder, source);
 					lastInsertedKey = key;
 				}
-				if (source==128 && etTools!=null) {
+				if (etTools!=null && source>=SearchUI.schMin) {
 					etTools.addHistory(key);
-				}
-				if (source==129 && peruseView!=null) {
-					peruseView.etTools.addHistory(key);
 				}
 			}
 		}
@@ -5795,6 +5797,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					d.dismiss();
 				}
 			} break;
+			case R.id.schDropdown:{
+				etTools.schSql = "src&"+schuiMainPeruse+"!=0";
+				etTools.drpdn = PDICMainAppOptions.historyShow();
+				etTools.flowBtn = toolbar.findViewById(R.id.action_menu_presenter);
+				etTools.topbar = appbar;
+			} break;
 		}
 		click_handled_not = false;
 	}
@@ -6065,7 +6073,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(DBrowser!=null)
 						res = DBrowser.rec;
 					else {
-						res = (resultRecorderCombined) adaptermy2.combining_search_result;
+						res = (resultRecorderCombined) adaptermy2.results;
 						idx = adaptermy2.lastClickedPos;
 						if(idx<0 || idx>=res.list().size())
 							return true;
@@ -9801,7 +9809,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				/* 接管历史纪录 */
 				bRequestedCleanSearch=bIsFirstLaunch;
 				bIsFirstLaunch=false;
-				if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.combining_search_result.getResAt(this, 0)))))
+				if(recCom.allWebs || !isContentViewAttached() && mdict.processText(key).equals(mdict.processText(String.valueOf(adaptermy2.results.getResAt(this, 0)))))
 				{
 					adaptermy2.onItemClick(null, adaptermy2.getView(0, null, null), 0, 0);
 				}
@@ -9940,7 +9948,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		public void SaveAndRestorePagesForAdapter(BasicAdapter ADA, int pos) {
-			resultRecorderDiscrete combining_search_result = ADA.combining_search_result;
+			resultRecorderDiscrete combining_search_result = ADA.results;
 			ScrollerRecord pagerec;
 			OUT:
 			if (((resultRecorderCombined) combining_search_result).scrolled

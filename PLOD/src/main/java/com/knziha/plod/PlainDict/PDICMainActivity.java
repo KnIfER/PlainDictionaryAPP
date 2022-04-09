@@ -80,6 +80,7 @@ import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
 import com.knziha.plod.PlainUI.WeakReferenceHelper;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
@@ -899,6 +900,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		toolbar = UIData.toolbar;
+		appbar = UIData.appbar;
 		
 		main_content_succinct = UIData.main;
 		bottombar = UIData.bottombar;
@@ -1043,6 +1045,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			etSearch.setShadowLayer(etSearch.getPaddingRight(), 0f, 0f, Color.TRANSPARENT);
 		}
 		super.findFurtherViews();
+		schuiMain = SearchUI.MainApp.MAIN;
+		schuiMainPeruse = schuiMain|SearchUI.Fye.MAIN;
+		schuiInit = schuiMainPeruse | SearchUI.MainApp.ENTRYTEXT | SearchUI.MainApp.FULLTEXT;
+		schuiList = SearchUI.MainApp.表;
 	}
 	
 	private int softMode;
@@ -1414,8 +1420,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		fuzzySearchLayer=new AdvancedSearchLogicLayer(opt, md, SEARCHTYPE_SEARCHINNAMES);
 		fullSearchLayer=new AdvancedSearchLogicLayer(opt, md, SEARCHTYPE_SEARCHINTEXTS);
 
-		adaptermy3.combining_search_result = new resultRecorderScattered(this,md,TintWildResult,fuzzySearchLayer);
-		adaptermy4.combining_search_result = new resultRecorderScattered(this,md,TintWildResult,fullSearchLayer);
+		adaptermy3.results = new resultRecorderScattered(this,md,TintWildResult,fuzzySearchLayer);
+		adaptermy4.results = new resultRecorderScattered(this,md,TintWildResult,fullSearchLayer);
 		//tc
 		execSearchRunnable = () -> {
 			if(CurrentViewPage==1) {
@@ -1462,8 +1468,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					etTools.dismiss();
 				}
 				if(tmp==0 || tmp==2) {
-					if(!PDICMainAppOptions.storeNothing() /*&& PDICMainAppOptions.getHistoryStrategy1()*/)
-						addHistory(key, 128+(tmp==0?1:2), null);
+					if(!PDICMainAppOptions.storeNothing() || PDICMainAppOptions.storeNothingButSch())
+						addHistory(key, tmp==0?SearchUI.MainApp.ENTRYTEXT:SearchUI.MainApp.FULLTEXT, null, null);
 					if(!checkDicts()) return true;
 					//模糊搜索 & 全文搜索
 					if(mAsyncTask!=null)
@@ -1472,8 +1478,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					(mAsyncTask=tmp==0?new FuzzySearchTask(PDICMainActivity.this)
 							:new FullSearchTask(PDICMainActivity.this)).execute(key);
 				} else {
-					if(!PDICMainAppOptions.storeNothing() /*&& (PDICMainAppOptions.getHistoryStrategy2()&&isCombinedSearching|| PDICMainAppOptions.getHistoryStrategy3()&&!isCombinedSearching)*/)
-						addHistory(key, 128, null);
+					if(!PDICMainAppOptions.storeNothing() || PDICMainAppOptions.storeNothingButSch())
+						addHistory(key, schuiMain, null, null);
 					if(key.length()>0)
 					{
 						if(!isCombinedSearching && currentDictionary.getType()==PLAIN_TYPE_WEB)
@@ -1488,6 +1494,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						}
 					}
 				}
+				etTools.addHistory(key);
 			}
 			return true;
 		});
@@ -1541,10 +1548,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			//		}
 			//	}
 			//}
-			adaptermy3.combining_search_result.invalidate();
+			adaptermy3.results.invalidate();
 			adaptermy3.notifyDataSetChanged();
 
-			adaptermy4.combining_search_result.invalidate();
+			adaptermy4.results.invalidate();
 			adaptermy4.notifyDataSetChanged();
 
 
@@ -2669,11 +2676,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 				}
 			} break;
-			case R.id.schDropdown:{
-				etTools.drpdn = PDICMainAppOptions.historyShow();
-				etTools.flowBtn = UIData.toolbar.findViewById(R.id.action_menu_presenter);
-				etTools.topbar = UIData.appbar;
-			} break;
 		}
 	}
 	
@@ -3223,11 +3225,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					String text = etSearch.getText().toString().trim();
 					if (CurrentViewPage == 1) {//viewPager
 						tw1.onTextChanged(text, 0, 0, 0);
-						addHistory(text, 0, null);
-					} else
+						addHistory(text, schuiMain, null, null);
+						etTools.addHistory(text);
+					} else {
 						etSearch.onEditorAction(EditorInfo.IME_ACTION_SEARCH);
+					}
 					UIData.drawerLayout.closeDrawer(GravityCompat.START);
-					etTools.addHistory(text);
 				}
 			} break;
 			case R.id.perwordSch:{//切换分字搜索
@@ -3452,16 +3455,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		adaptermy.notifyDataSetChanged();
 		//adaptermy2.combining_search_result.invalidate();
 		CombinedSearchTask_lastKey=null;
-		adaptermy2.combining_search_result.shutUp();
+		adaptermy2.results.shutUp();
 		adaptermy2.currentKeyText=null;
 		adaptermy2.notifyDataSetChanged();
 
 		tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 
 		adaptermy3.shutUp();adaptermy3.notifyDataSetChanged();
-		adaptermy3.combining_search_result.invalidate();adaptermy3.notifyDataSetChanged();
+		adaptermy3.results.invalidate();adaptermy3.notifyDataSetChanged();
 		adaptermy4.shutUp();adaptermy4.notifyDataSetChanged();
-		adaptermy4.combining_search_result.invalidate();adaptermy4.notifyDataSetChanged();
+		adaptermy4.results.invalidate();adaptermy4.notifyDataSetChanged();
 		if(dictPicker !=null) dictPicker.adapter().notifyDataSetChanged();
 	}
 

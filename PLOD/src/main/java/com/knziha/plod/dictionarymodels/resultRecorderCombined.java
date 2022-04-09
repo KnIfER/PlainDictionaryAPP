@@ -341,9 +341,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		scrolled=false;
 	}
 	
-	public boolean addHistoryIfNeeded(MainActivityUIBase a) {
+	public boolean shouldAddHistory(MainActivityUIBase a) {
 		if(!schKeySaved) {
-			a.prepareHistoryCon().updateHistoryTerm(a, schKey, null, a.thisActType==MainActivityUIBase.ActType.PlainDict?128:129);
 			schKeySaved=true;
 			return true;
 		}

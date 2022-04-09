@@ -1,5 +1,6 @@
 package com.knziha.plod.db;
 
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -40,6 +41,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String FIELD_VISIT_TIME = "last_visit_time";
 	public static final String FIELD_EDIT_TIME = "last_edit_time";
 	public static final String FIELD_ENTRY_NAME = "lex";
+	public static final String FIELD_NAME = "name";
 	public static final String FIELD_NOTES_STORAGE = "notesType";
 	public static final String FIELD_NOTES = "notes";
 	public static final String FIELD_FOLDER = "folder";
@@ -535,35 +537,12 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		}
 	}
 	
-	public final static class SearchUI{
-		public final static class MainApp{
-			public final static int MAIN=128;
-			public final static int ENTRYTEXT=129;
-			public final static int FULLTEXT=130;
-			public final static int 表=1;
-			public final static int 表0=2;
-			public final static int 表1=3;
-		}
-		public final static class TapSch{
-			public final static int MAIN=158;
-			public final static int 表=31;
-		}
-		public final static class Fye{
-			public final static int MAIN=170;
-			public final static int 表=41;
-		}
-		public final static class FloatApp{
-			public final static int MAIN=190;
-			public final static int 表=51;
-		}
-	}
-	
 	
 	/**
 	 * @param source 0=default; 1=listview; 2=tap translator; 3=peruse view
 	 *   */
 	public long updateHistoryTerm(MainActivityUIBase a, String lex, ViewGroup webviewholder, int source) {
-		CMN.rt();
+		//CMN.rt();
 		int count=-1;
 		int src=0;
 		long id=-1;
@@ -582,7 +561,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			c.close();
 			
 			ContentValues values = new ContentValues();
-			values.put("lex", lex);
+			values.put(FIELD_ENTRY_NAME, lex);
 			
 			values.put("books", a.collectDisplayingBooks(books, webviewholder));
 			long ivkAppId = -1;
@@ -595,31 +574,29 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				c.close();
 				if(ivkAppId==-1) {
 					ContentValues value = new ContentValues();
-					value.put("name", ivk);
+					value.put(FIELD_NAME, ivk);
 					value.put(FIELD_CREATE_TIME, CMN.now());
 					ivkAppId = database.insert(TABLE_APPID_v2, null, value);
 					if(ivkAppId==0) {
 						where[0] = ""+0;
-						value.put("name", "empty");
+						value.put(FIELD_NAME, "empty");
 						database.update(TABLE_APPID_v2, value, "id = ?", where);
-						value.put("name", ivk);
+						value.put(FIELD_NAME, ivk);
 						ivkAppId = database.insert(TABLE_APPID_v2, null, value);
 					}
 				}
-				CMN.Log("updateHistoryTerm::ivk::", ivk, ivkAppId);
+				//CMN.Log("updateHistoryTerm::ivk::", ivk, ivkAppId);
 				a.extraInvoker = null;
 			}
 			if (ivkAppId!=-1) {
 				values.put("ivk", ivkAppId);
 			}
 			values.put("visit_count", ++count);
-			if(source>0 && (src<127 || source>127)) {
-				values.put("src", source);
-			}
+			values.put("src", src|source);
 			long now = CMN.now();
-			values.put("last_visit_time", now);
+			values.put(FIELD_VISIT_TIME, now);
 			if(insertNew) {
-				values.put("creation_time", now);
+				values.put(FIELD_CREATE_TIME, now);
 				id = database.insert(TABLE_HISTORY_v2, null, values);
 			} else {
 				//values.put("id", id);
@@ -632,7 +609,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
-		CMN.pt("历史插入时间：");
+		//CMN.pt("历史插入时间：");
 		return id;
 	}
 	

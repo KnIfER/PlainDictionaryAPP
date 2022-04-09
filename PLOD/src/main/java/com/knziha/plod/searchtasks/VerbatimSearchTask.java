@@ -1,6 +1,5 @@
 package com.knziha.plod.searchtasks;
 
-import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -127,7 +126,7 @@ public class VerbatimSearchTask extends AsyncTaskWrapper<String, Integer, result
 
 		if(a.lv2.getVisibility()!=View.VISIBLE)
 			a.lv2.setVisibility(View.VISIBLE);
-		a.adaptermy2.combining_search_result = rec;
+		a.adaptermy2.results = rec;
 		a.adaptermy2.notifyDataSetChanged();
 		a.lv2.setSelection(0);
 

@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.widget.CircleCheckBox;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -1015,7 +1016,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			
 			if (!PDICMainAppOptions.storeNothing()
 					&& PDICMainAppOptions.getHistoryStrategy7())
-				a.addHistory(popupKey, 0, pageSlider);
+				a.addHistory(popupKey, SearchUI.TapSch.MAIN, pageSlider, null);
 		}
 	}
 	

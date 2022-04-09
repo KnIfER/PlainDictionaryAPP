@@ -1,10 +1,10 @@
 package com.knziha.plod.searchtasks;
 
-import android.os.AsyncTask;
 import android.view.View;
 
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.SearchType;
 import com.knziha.plod.plaindict.CMN;
@@ -169,9 +169,11 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, result
 
 		//CMN.Log("联合搜索 时间： " + (System.currentTimeMillis() - stst) + "ms " + rec.size());
 		if(rec==null) rec = new resultRecorderCombined(a, new ArrayList<>(), null, CurrentSearchText);
+		rec.storeRealm = a.schuiMain;
+		rec.storeRealm1 = a.thisActType==MainActivityUIBase.ActType.PlainDict?SearchUI.MainApp.表1:SearchUI.FloatApp.表1;
 		if(a.lv2.getVisibility()!= View.VISIBLE)
 			a.lv2.setVisibility(View.VISIBLE);
-		a.adaptermy2.combining_search_result  = a.recCom = rec;
+		a.adaptermy2.results = a.recCom = rec;
 		a.adaptermy2.notifyDataSetChanged();
 		a.lv2.setSelection(0);
 		//showT(""+bWantsSelection);

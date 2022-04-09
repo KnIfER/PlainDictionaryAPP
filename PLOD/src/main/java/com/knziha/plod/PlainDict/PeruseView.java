@@ -39,6 +39,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.GlobalOptions;
@@ -57,6 +58,7 @@ import com.jess.ui.TwoWayGridView;
 import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.WordPopupTask;
 import com.knziha.plod.db.MdxDBHelper;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
@@ -77,7 +79,6 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -125,6 +126,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     int HeadlineInitialSize;
     float density;
 	boolean fromLv1;
+	String addHistory;
+	boolean fromData;
+	int fromLv1Idx;
+	int fromLv1Idx_;
 
     int lvHeaderItem_length = 65;
     int lvHeaderItem_height = 60;
@@ -337,13 +342,15 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						tw1F=1;
 					}
 					int ret = currentDictionary.bookImpl.lookUp(s.toString(), false);
-					CMN.Log("peruseview::onTextChanged::", ret, ToR && cvpolicy, count);
+					//CMN.Log("peruseview::onTextChanged::", ret, ToR && cvpolicy, count);
 					if(ret!=-1) {
 						lv1.setSelectionFromTop(ret, (int) (20*density));
 						if(ToR && cvpolicy)
 						if(count==-1 || mdict.processText(currentDictionary.bookImpl.getEntryAt(ret)).equals(mdict.processText(s.toString())))
 							entryAdapter.click(ret,false);
 					}
+					if(etTools.isVisible())
+						etTools.dismiss();
 				}
 			}
 			@Override
@@ -594,7 +601,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(newSch) {
 			etSearch.setText(schKey);
 			etTools.addHistory(schKey);
-			//resetGrid(a);
+			if(fromData) { // showAll()
+				resetGrid(a);
+			}
 		}
 	}
 	
@@ -663,7 +672,18 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		int off=bookIds.indexOf(bookId);
 		if(off==-1) off=0;
 		mWebView.clearIfNewADA(currentDictionary); // a.md_get(off<data.size()?data.get(off):-1)
-		gridAdapter.onItemClick(null,null,NumPreEmpter+off,0);
+		if(gridAdapter.getCount()>0)
+			gridAdapter.onItemClick(null,null,NumPreEmpter+off,0);
+		
+		gridView.setSelection(fromLv1Idx);
+		//scrollGridToCenter(idx);
+		//gridView.smoothScrollToPosition(idx);
+		gridView.post(new Runnable() {
+			@Override
+			public void run() {
+				scrollGridToCenter(fromLv1Idx);
+			}
+		});
 	}
 
 	void RecalibrateWebScrollbar() {
@@ -1083,7 +1103,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	
 	/** 上边的词典封面网格适配器 */
     GridAdapter gridAdapter = new GridAdapter();
-	HashSet<Long> addAllHashSet = new HashSet<>();
 	
 	public void prepareJump(MainActivityUIBase a, String key, ArrayList<Long> _data, long _bookId) {
 		CMN.Log("fye::prepareJump::", key);
@@ -1095,30 +1114,36 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				syncData(a);
 				bookId = _bookId;
 				bookIds=_data;
-				/* 边界检查 */
+//				/* 边界检查 */
+				fromLv1Idx = 0;
 				for (int i=bookIds.size()-1; i>=0; i--) {
 					if(bookIds.get(i)<0)
 						bookIds.remove(i);
-				}
-			}
-			addAllHashSet.clear();
-			addAllHashSet.addAll(bookIds);
-			if(showAll()) {
-				for(int i=0;i<md.size();i++) {
-					long bid = a.getBookIdAt(i);
-					if(!addAllHashSet.contains(bid)) {
-						addAllHashSet.add(bid);
-						bookIds.add(bid);
+					if(bookIds.get(i)==a.currentDictionary.getId()) {
+						fromLv1Idx = i;
 					}
 				}
-			} else {
-				for(int i=0;i<md.size();i++) {
-					long bid = a.getBookIdAt(i);
-					if(!bookIds.contains(bid)) {
-						hidden.add(bid);
-					}
-				}
+				fromLv1 = true;
+				fromData = true;
 			}
+			//addAllHashSet.addAll(bookIds);
+//			if(showAll()) {
+//				HashSet<Long> addAllHashSet = new HashSet<>();
+//				for(int i=0;i<md.size();i++) {
+//					long bid = a.getBookIdAt(i);
+//					if(!addAllHashSet.contains(bid)) {
+//						addAllHashSet.add(bid);
+//						bookIds.add(bid);
+//					}
+//				}
+//			} else {
+//				for(int i=0;i<md.size();i++) {
+//					long bid = a.getBookIdAt(i);
+//					if(!bookIds.contains(bid)) {
+//						hidden.add(bid);
+//					}
+//				}
+//			}
 		}
 	}
 
@@ -1197,7 +1222,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
 				 PDICMainAppOptions.storeClick() && !PDICMainAppOptions.storeNothing()
 				&& (PDICMainAppOptions.storePageTurn() == 2)) {
-			a.addHistory(mWebView.word, 3, contentUIData.webSingleholder);
+			a.addHistory(mWebView.word, SearchUI.Fye.表, contentUIData.webSingleholder, null);
 		}
 		((ViewGroup)contentview.getParent()).removeView(contentview);
 	}
@@ -1228,22 +1253,24 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			syncData(a);
 			opt = a.opt;
 			schKey = key.trim();
-			bookIds.clear();
-			bookIds.ensureCapacity(md.size());
 			bookId = a.currentDictionary.getId();
 			lastSchKey = null;
 			fromLv1 = addCurrent;
+			fromData = showAll();
+			fromLv1Idx = 0;
+			bookIds.clear();
 			if(showAll()) {
-				bookIds.clear();
 				for (int i = 0; i < md.size(); i++)
 					bookIds.add(a.getBookIdAt(i));
-				gridAdapter.notifyDataSetChanged();
+				fromLv1Idx = a.dictPicker.adapter_idx;
 			} else {
+				bookIds.ensureCapacity(md.size());
 				doSearchAll(a); // searchAll
 			}
 		}
 	}
 	
+	@AnyThread
 	public void SearchAll(MainActivityUIBase a, AtomicBoolean task) {
 		ArrayList<Long> schResult = new ArrayList<>(a.md.size());
 		String schKey = this.schKey;
@@ -1305,24 +1332,19 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 		this.schResult = schResult;
 		lastSchKey = schKey;
-		CMN.Log("SearchAll::", schKey, schResult);
+		CMN.Log("fye::SearchAll::", schKey, schResult);
 		//harvest
-		int idx = index;
+		fromLv1Idx = fromLv1Idx_ = index;
 		a.hdl.post(new Runnable() {
 			@Override
 			public void run() {
 				bookIds.clear();
 				bookIds.addAll(schResult);
-				resetGrid(a);
-				gridView.setSelection(idx);
-				//scrollGridToCenter(idx);
-				//gridView.smoothScrollToPosition(idx);
-				gridView.post(new Runnable() {
-					@Override
-					public void run() {
-						scrollGridToCenter(idx);
-					}
-				});
+				if (gridView!=null) {
+					resetGrid(a);
+				} else {
+					a.hdl.postDelayed(this, 100);
+				}
 			}
 		});
 	}
@@ -1356,21 +1378,25 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         	}
         	position-=NumPreEmpter;
         	View ItemView = recyclerBin.get(position);
-			DictTitleHolder holder = (DictTitleHolder) ItemView.getTag();
-			MainActivityUIBase a = (MainActivityUIBase) getActivity();
-			if (a !=null) {
-				BookPresenter presenter = a.getBookByIdNoCreation(bookIds.get(position));
-				Drawable cover=null;
-				String pathname;
-				if(presenter!=a.EmptyBook) {
-					pathname=presenter.getDictionaryName();
-					cover=presenter.cover;
-				} else {
-					pathname=a.getBookNameByIdNoCreation(bookIds.get(position));
+			if (position>=0 && position<bookIds.size()) {
+				DictTitleHolder holder = (DictTitleHolder) ItemView.getTag();
+				MainActivityUIBase a = (MainActivityUIBase) getActivity();
+				if (a !=null) {
+					BookPresenter presenter = a.getBookByIdNoCreation(bookIds.get(position));
+					Drawable cover=null;
+					String pathname;
+					if(presenter!=a.EmptyBook) {
+						pathname=presenter.getDictionaryName();
+						cover=presenter.cover;
+					} else {
+						pathname=a.getBookNameByIdNoCreation(bookIds.get(position));
+					}
+					holder.tv.setText(pathname);
+					holder.cover.setImageDrawable(cover);
+					holder.word.setText(pathname.substring(0,1).toUpperCase());
 				}
-				holder.tv.setText(pathname);
-				holder.cover.setImageDrawable(cover);
-				holder.word.setText(pathname.substring(0,1).toUpperCase());
+			} else {
+				((MainActivityUIBase)getActivity()).showT("越界!"+position+"/"+bookIds.size());
 			}
 	        return ItemView;
         }
@@ -1899,11 +1925,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			//voyager[SelectedV*3+2]=pos;
 			a.decorateContentviewByKey(contentUIData.browserWidget8, currentKeyText);
 	
-			int stLv = !ismachineClick && storeLv1(currentKeyText)?129:
-					(!ismachineClick || PDICMainAppOptions.storePageTurn()==0)?3
-							:-1;
-			if((stLv==129 || PDICMainAppOptions.storeClick()) && presenter.store(pos)) {
-				a.addHistory(currentKeyText , stLv, contentUIData.webSingleholder);
+			if(!TextUtils.equals(currentKeyText, addHistory)){
+				int stLv = !ismachineClick && storeLv1(currentKeyText)? SearchUI.Fye.MAIN:
+						(!ismachineClick || PDICMainAppOptions.storePageTurn()==0)?SearchUI.Fye.表
+								:-1;
+				if((stLv==SearchUI.Fye.MAIN || PDICMainAppOptions.storeClick()) && presenter.store(pos)) {
+					CMN.Log("fye:addHistory!!!");
+					a.addHistory(currentKeyText , stLv, contentUIData.webSingleholder, stLv==SearchUI.Fye.MAIN?etTools:null);
+				}
 			}
 	
 			resetBottomBar();
@@ -2110,9 +2139,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				break;
 			case R.id.schDropdown:{
+				etTools.schSql = "src&"+SearchUI.Fye.MAIN+"!=0";
 				etTools.drpdn = PDICMainAppOptions.historyShowFye();
 				etTools.flowBtn = toolbar.findViewById(R.id.action_menu_presenter);
-				etTools.schSql = "src==129";
 				//etTools.topbar = toolbar;
 				((RelativeLayout.LayoutParams)etTools.settingsLayout.getLayoutParams()).addRule(RelativeLayout.BELOW, R.id.toolbar);
 			} break;
@@ -2269,15 +2298,20 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	private void refreshAddAll() {
 		boolean addAll = showAll();
+		this.schKey = etSearch.getText().toString();
 		bookIds.clear();
 		MainActivityUIBase a = getMainActivity();
 		if(addAll){
 			for (int i = 0; i < md.size(); i++) {
 				bookIds.add(a.getBookIdAt(i));
 			}
+			fromLv1Idx = a.dictPicker.adapter_idx;
 		} else {
 			if(TextUtils.equals(lastSchKey, schKey)){
 				bookIds.addAll(schResult);
+				gridAdapter.notifyDataSetChanged();
+				resetGrid(a);
+				fromLv1Idx = fromLv1Idx_;
 			} else if(schKey!=null) {
 				fromLv1 = true;
 				doSearchAll(a);

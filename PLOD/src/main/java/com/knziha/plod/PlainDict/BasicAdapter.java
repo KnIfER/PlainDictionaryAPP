@@ -50,10 +50,10 @@ public abstract class BasicAdapter extends BaseAdapter
 		}
     	
     	public void setResHolder(resultRecorderDiscrete r) {
-    		combining_search_result=r;
+    		results =r;
     	}
         //public ArrayList<additiveMyCpr1> combining_search_result = new ArrayList<additiveMyCpr1>();//additiveMyCpr1
-        public resultRecorderDiscrete combining_search_result;
+        public resultRecorderDiscrete results;
 		public String currentKeyText;
         
         //构造
@@ -66,7 +66,7 @@ public abstract class BasicAdapter extends BaseAdapter
 		}
         @Override
         public int getCount() {
-          return combining_search_result.size();
+          return results.size();
         }
         @Override
         public View getItem(int position) {
