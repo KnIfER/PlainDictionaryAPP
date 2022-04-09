@@ -24,3 +24,7 @@
 -assumenosideeffects class com.knziha.plod.plaindict.CMN {
     public static *** debug(...);
 }
+
+-keepclassmembers class androidx.drawerlayout.widget.DrawerLayout {
+     private int mMinDrawerMargin;
+}

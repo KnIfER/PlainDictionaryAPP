@@ -747,7 +747,7 @@
 		var displayingMultiSearch=false;
 		
 		var type_bold;
-		var mobile;
+		var ua=navigator.userAgent, mobile=(/Android|webOS|iPhone|iPod|BlackBerry/i.test(ua));
 		var line_height;
 		//346eb4
 		var AC="#397CCD";
@@ -767,34 +767,8 @@
 			seekBarmy.setValue(getListSize()-lastPos());
 			rePopulate();
 		}
-		$(function() {
-			var ua=navigator.userAgent;
-			mobile=(/Android|webOS|iPhone|iPod|BlackBerry/i.test(ua));
-			//bind mouse wheel
-			// $('#lv').bind('mousewheel', onmousewheelDown);
-			// $('#seekbar_container').bind('mousewheel', onmousewheelDown);
-			mousewheel = (/Firefox/i.test(ua))?"DOMMouseScroll": "mousewheel";
-			ge('lv').addEventListener(mousewheel, onmousewheelDown);
-			ge('seekbar_container').addEventListener(mousewheel, onmousewheelDown);
-			
-			if(mobile) 
-			{
-				resizer.m='touchmove';
-				resizer.u='touchend';
-			} else {
-				var t=ge('dlab');
-				if(t)t.style=t.nextElementSibling.style='font-size:99%';
-			}
-			bindResize(ge('drag_resizer'));
-			bindResize(ge('toolbar'));
-			bindResize(ge('seekbar_container'), 1);
-			if(mobile){
-				var styleObj= document.styleSheets[1].cssRules[0].style;
-				styleObj.removeProperty('background-color');
-				bindTouchScroll();
-			}
-		});
 		
+		/**/
 		function bindTouchScroll(){
 			var lvP = ge('ListView');
 			var x = y = 0;
@@ -820,9 +794,11 @@
 		}
 
 		var lvP,lvPs,pRs,x,y;
+		/**/
 		var resizer={
 			'm':'mousemove'
 			,'u':'mouseup'
+			/**/
 			,'down':function(e){
 				//debug("mousedown", e.srcElement);
 				if(e.clientX==undefined)
@@ -849,6 +825,7 @@
 				document.removeEventListener(resizer.m,resizer.move);
 				document.removeEventListener(resizer.u,resizer.up);
 			}
+			/**/
 		}
 
 		function bindResize(el, cap){
@@ -870,6 +847,8 @@
 			console.log(''+event);
 			console.log('page:'+page);
 		});
+
+		/**/
 		//simple listview
 		function rePopulate(){//TODO: optimise
 			//计算一屏能放下几行。
@@ -917,7 +896,8 @@
 			else{//demo items
 			}
 		}
-		
+		/**/
+
 		function Initialize() {
 			merge = location.pathname==='/merge.jsp';
 			defP = ge("defP");
@@ -1058,6 +1038,33 @@
 			});
 			if(app)
 				setTimeout(_highlight, 200)
+			
+			debug(ua, mobile);
+			//bind mouse wheel
+			mousewheel = (/Firefox/i.test(ua))?"DOMMouseScroll": "mousewheel";
+			/**/
+			ge('lv').addEventListener(mousewheel, onmousewheelDown);
+			ge('seekbar_container').addEventListener(mousewheel, onmousewheelDown);
+			/**/
+			
+			if(mobile) 
+			{
+				resizer.m='touchmove';
+				resizer.u='touchend';
+			} else {
+				var t=ge('dlab');
+				if(t)t.style=t.nextElementSibling.style='font-size:99%';
+			}
+			/**/
+			bindResize(ge('drag_resizer'));
+			bindResize(ge('toolbar'));
+			bindResize(ge('seekbar_container'), 1);
+			if(mobile){
+				var styleObj= document.styleSheets[1].cssRules[0].style;
+				styleObj.removeProperty('background-color');
+				bindTouchScroll();
+			}	
+			/**/
 		}
 	
 		var postInit = function(){/**/
@@ -1075,6 +1082,7 @@
 			postInit=null;
 		/**/};
 		
+		/**/
 		function rePopulateByData(data) {
 			//debug("rePopulateByData::", data);
 			var isCombinedView = isMultiSearchView();
@@ -1128,7 +1136,8 @@
 				item.style.display='none';
 			}
 		}
-
+		/**/
+		
 		function isMultiSearchView(){
 			return displayingMultiSearch && MultiSearchResult!=undefined;
 		}

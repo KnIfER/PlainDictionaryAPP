@@ -47,3 +47,5 @@ assets_release
 .cxx
 generated.txt
 mapping*
+
+merged_browser.html
