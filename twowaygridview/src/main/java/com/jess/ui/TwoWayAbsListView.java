@@ -1297,9 +1297,9 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		orientationChanged();
 
-		if (mSelector == null) {
-			useDefaultSelector();
-		}
+//		if (mSelector == null) {
+//			useDefaultSelector();
+//		}
 		final Rect listPadding = mListPadding;
 		listPadding.left = mSelectionLeftPadding + getPaddingLeft();
 		listPadding.top = mSelectionTopPadding + getPaddingTop();
@@ -1622,7 +1622,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	 * @return True if the selector should be shown
 	 */
 	boolean shouldShowSelector() {
-		return (hasFocus() && !isInTouchMode()) || touchModeDrawsInPressedState();
+		return mSelector!=null && (hasFocus() && !isInTouchMode() || touchModeDrawsInPressedState());
 	}
 
 	private void drawSelector(Canvas canvas) {
@@ -1664,13 +1664,15 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		}
 		mSelector = sel;
 		Rect padding = new Rect();
-		sel.getPadding(padding);
+		if (sel!=null) {
+			sel.getPadding(padding);
+			sel.setCallback(this);
+			sel.setState(getDrawableState());
+		}
 		mSelectionLeftPadding = padding.left;
 		mSelectionTopPadding = padding.top;
 		mSelectionRightPadding = padding.right;
 		mSelectionBottomPadding = padding.bottom;
-		sel.setCallback(this);
-		sel.setState(getDrawableState());
 	}
 
 	/**

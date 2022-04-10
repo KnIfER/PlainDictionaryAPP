@@ -65,6 +65,7 @@
 		android:title="合并多页面"
 		app:icon="@drawable/ic_view_comfy_2_black_24dp"
 		android:tint="@color/colorHeaderBlue"
+		android:clickable="true"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="merge"

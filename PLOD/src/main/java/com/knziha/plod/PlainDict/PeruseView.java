@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
@@ -258,7 +259,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		gv.setAdapter(gridAdapter);
 		gv.setOnItemClickListener(gridAdapter);
 		gv.setScrollbarFadingEnabled(false);
-		gv.setSelector(getResources().getDrawable(R.drawable.listviewselector0));
+		//gv.setSelector(getResources().getDrawable(R.drawable.listviewselector0));
+		gv.setSelector(null);
 		this.gridView = gv;
 		
 		SplitView vBox = PeruseTorso.findViewById(R.id.split_view);
@@ -673,15 +675,20 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(off==-1) off=0;
 		mWebView.clearIfNewADA(currentDictionary); // a.md_get(off<data.size()?data.get(off):-1)
 		if(gridAdapter.getCount()>0)
-			gridAdapter.onItemClick(null,null,NumPreEmpter+off,0);
-		
-		gridView.setSelection(fromLv1Idx);
-		//scrollGridToCenter(idx);
-		//gridView.smoothScrollToPosition(idx);
+			gridAdapter.onItemClick(null,null,NumPreEmpter+off,-1);
 		gridView.post(new Runnable() {
 			@Override
 			public void run() {
-				scrollGridToCenter(fromLv1Idx);
+				gridView.setSelection(fromLv1Idx-cc/2);
+				//CMN.Log("fromLv1Idx::", fromLv1Idx);
+				//scrollGridToCenter(idx);
+				//gridView.smoothScrollToPosition(idx);
+				gridView.postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						scrollGridToCenter(fromLv1Idx);
+					}
+				}, 100);
 			}
 		});
 	}
@@ -1487,8 +1494,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 			}
 
-			a.showTopSnack(PeruseTorso, currentDictionary.bookImpl.getDictionaryName()
-					, 0.8f, -1, -1, 1);
+			if (id!=-1) {
+				a.showTopSnack(PeruseTorso, currentDictionary.bookImpl.getDictionaryName()
+						, 0.8f, -1, -1, 1);
+			}
 
         	mlp.removeView(contentview);
         	
@@ -2014,7 +2023,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		MainActivityUIBase a = getMainActivity();
 		//a.showT(v.getId()+"asdasd"+android.R.id.home);
 		switch(v.getId()) {
-			case R.id.browser_widget7:
+			case R.id.browser_widget7: // non-final? 谷歌多作怪，安卓快淘汰!
 			case R.id.home:
 				hide();
 			break;
@@ -2283,7 +2292,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				if(isLongClicked) break;
 				m.setChecked(addAll);
 				a.opt.setPeruseAddAll(addAll);
-				refreshAddAll();
+				resetAddAll();
 			} break;
 			case R.id.translate: {
 				MenuItemImpl mSTd = (MenuItemImpl) ViewUtils.findInMenu(a.AllMenusStamp, R.id.translate);
@@ -2296,7 +2305,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		return ret;
 	}
 
-	private void refreshAddAll() {
+	private void resetAddAll() {
 		boolean addAll = showAll();
 		this.schKey = etSearch.getText().toString();
 		bookIds.clear();
@@ -2306,6 +2315,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				bookIds.add(a.getBookIdAt(i));
 			}
 			fromLv1Idx = a.dictPicker.adapter_idx;
+			fromData = true;
 		} else {
 			if(TextUtils.equals(lastSchKey, schKey)){
 				bookIds.addAll(schResult);
@@ -2315,6 +2325,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			} else if(schKey!=null) {
 				fromLv1 = true;
 				doSearchAll(a);
+				fromData = false;
 			}
 		}
 		onViewAttached(a, true);
