@@ -623,6 +623,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	static class DictTitleHolder
 	{
 		public long bid;
+		public int pos;
 		FlowTextView tv;
 		ImageView cover;
 		TextView word;
@@ -649,7 +650,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			TwoWayGridView.LayoutParams lp = new TwoWayGridView.LayoutParams(itemWidth, itemHeight);
 			v.setLayoutParams(lp);
 			((LayerDrawable) v.getBackground()).getDrawable(0).setAlpha(0);
-			new DictTitleHolder(bookIds.get(i), v).tv.setTag(recyclerBin.size());
+			new DictTitleHolder(bookIds.get(i), v).pos = recyclerBin.size();
 			recyclerBin.add(v);
 		}
 		if(!bExpanded)
@@ -1507,13 +1508,17 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         		pullBookMarks();
         	}
 			
-			gridView.postInvalidate(); // invalidate 
+			gridView.postInvalidateOnAnimation(); // invalidate
         	
 			//oldV=view;
 			//a.showT(NumPreEmpter+"-"+(position-NumPreEmpter)+"="+currentDictionary._Dictionary_fName);
 		}
 		
     }
+	
+	private void scrollListToCenter(int pos) {
+		lv1.setSelection(pos-Math.min(lv1.getChildCount()/2, 2));
+	}
 	
 	private void scrollGridToCenter(int position) {
 		TwoWayGridView gv = gridView;
@@ -1894,7 +1899,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if(childAt !=null)
 				childAt.setBackgroundColor(0xff397CCD);
 			if(ismachineClick) {
-				lv1.setSelection(pos-Math.max(0, ((c)/2-1)));
+				scrollListToCenter(pos);
 			}
 
 			float desiredScale=a.prepareSingleWebviewForAda(presenter, mWebView, pos, this);
@@ -1939,7 +1944,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						(!ismachineClick || PDICMainAppOptions.storePageTurn()==0)?SearchUI.Fye.表
 								:-1;
 				if((stLv==SearchUI.Fye.MAIN || PDICMainAppOptions.storeClick()) && presenter.store(pos)) {
-					CMN.Log("fye:addHistory!!!");
+					//CMN.Log("fye:addHistory!!!");
 					a.addHistory(currentKeyText , stLv, contentUIData.webSingleholder, stLv==SearchUI.Fye.MAIN?etTools:null);
 				}
 			}
@@ -2266,6 +2271,17 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					textFlag = -1;
 				tw1.onTextChanged(etSearch.getText(), 0, 0, textFlag);
 				
+			break;
+			/* 定位列表位置 */
+			case R.id.locate:
+				if(selection!=null) {
+					int gvPos=((DictTitleHolder)selection.getTag()).pos;
+					if (bExpanded)
+						gridView.setSelection(NumPreEmpter+gvPos);
+					else
+						scrollGridToCenter(gvPos);
+				}
+				scrollListToCenter(entryAdapter.lastClickedPos);
 			break;
 			/* 页内搜索 */
 			case R.id.toolbar_action2:
