@@ -182,10 +182,11 @@ public class Toastable_Activity extends AppCompatActivity {
        
 	   mConfiguration = new Configuration(mResource.getConfiguration());
 	   int szMsk = mConfiguration.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
-	   GlobalOptions.isLarge = szMsk >=3 ;
+	   GlobalOptions.isLarge = szMsk >= 3;
 	   GlobalOptions.isSmall = szMsk == 1 ;
 	   GlobalOptions.width=(int)(dm.widthPixels/GlobalOptions.density);
 	   GlobalOptions.height=(int)(dm.heightPixels/GlobalOptions.density);
+	   GlobalOptions.btnMaxWidth=Math.min((int)mResource.getDimension(R.dimen.btnMaxWidth), GlobalOptions.realWidth/8);
 		//CMN.show("isLarge"+isLarge);
 	   if(Build.VERSION.SDK_INT>=29 && false){
 		   GlobalOptions.isDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
