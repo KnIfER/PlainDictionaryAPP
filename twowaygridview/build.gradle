@@ -14,4 +14,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+}
+
+dependencies{
+    api project(':AppPreference')
 }

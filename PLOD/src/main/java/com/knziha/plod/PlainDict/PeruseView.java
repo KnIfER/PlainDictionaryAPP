@@ -259,8 +259,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		gv.setAdapter(gridAdapter);
 		gv.setOnItemClickListener(gridAdapter);
 		gv.setScrollbarFadingEnabled(false);
-		//gv.setSelector(getResources().getDrawable(R.drawable.listviewselector0));
-		gv.setSelector(null);
+		gv.setSelector(ViewUtils.littleCat?getResources().getDrawable(R.drawable.listviewselector0):null);
 		this.gridView = gv;
 		
 		SplitView vBox = PeruseTorso.findViewById(R.id.split_view);
@@ -650,14 +649,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			TwoWayGridView.LayoutParams lp = new TwoWayGridView.LayoutParams(itemWidth, itemHeight);
 			v.setLayoutParams(lp);
 			((LayerDrawable) v.getBackground()).getDrawable(0).setAlpha(0);
-			new DictTitleHolder(bookIds.get(i), v);
+			new DictTitleHolder(bookIds.get(i), v).tv.setTag(recyclerBin.size());
 			recyclerBin.add(v);
 		}
-		gridAdapter.notifyDataSetChanged();
 		if(!bExpanded)
 			gridView.setSelection(0);
 		gridView.getLayoutParams().width = dm.widthPixels;
-		gridView.requestLayout();
+		gridAdapter.notifyDataSetChanged();
+		//gridView.requestLayout();
 		cc = dm.widthPixels/itemWidth; //一行容纳几列
 		if(dm.widthPixels - cc*itemWidth>0.85*itemWidth) cc+=1;
 		if(bExpanded) {
@@ -1412,7 +1411,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		public void onItemClick(TwoWayAdapterView<?> parent, View view, int position, long id) {
         	MainActivityUIBase a = getMainActivity();
         	if(a==null) return;
-        	if(selection!=null) {
+			if(selection!=null) {
 				((LayerDrawable) selection.getBackground()).getDrawable(0).setAlpha(0);
 		
 				if(view!=null && lv1.getChildCount()>0 && System.currentTimeMillis()-lastswicthtime>200) {//record our position
@@ -1445,7 +1444,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				scrollGridToCenter(position);
 			}
 			//a.showT(cc+"should collapse at: "+PositionToSelect);
-//			((ViewGroup) view).addView(vb);
 
 			BookPresenter OldDictionary = currentDictionary;
 			bookId = bookIds.get(SelectedV);
@@ -1508,6 +1506,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         		}
         		pullBookMarks();
         	}
+			
+			gridView.postInvalidate(); // invalidate 
         	
 			//oldV=view;
 			//a.showT(NumPreEmpter+"-"+(position-NumPreEmpter)+"="+currentDictionary._Dictionary_fName);
