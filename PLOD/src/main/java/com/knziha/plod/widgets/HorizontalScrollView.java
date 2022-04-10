@@ -19,12 +19,8 @@ package com.knziha.plod.widgets;
 import static androidx.appcompat.widget.ViewUtils.isLayoutRtl;
 
 import android.content.Context;
-import android.content.res.Configuration;
-import android.content.res.TypedArray;
-import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -39,39 +35,32 @@ import android.view.ViewConfiguration;
 import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.AnimationUtils;
-import android.widget.EdgeEffect;
 import android.widget.FrameLayout;
 import android.widget.OverScroller;
 import android.widget.ScrollView;
 
-
-import androidx.annotation.ColorInt;
 import androidx.annotation.InspectableProperty;
 import androidx.annotation.NonNull;
-
-import com.knziha.plod.plaindict.R;
 
 import java.util.List;
 
 /**
  * Layout container for a view hierarchy that can be scrolled by the user,
  * allowing it to be larger than the physical display.  A HorizontalScrollView
- * is a {@link FrameLayout}, meaning you should place one child in it
+ * is a {FrameLayout}, meaning you should place one child in it
  * containing the entire contents to scroll; this child may itself be a layout
  * manager with a complex hierarchy of objects.  A child that is often used
- * is a {@link LinearLayout} in a horizontal orientation, presenting a horizontal
+ * is a {LinearLayout} in a horizontal orientation, presenting a horizontal
  * array of top-level items that the user can scroll through.
  *
- * <p>The {@link TextView} class also
+ * <p>The {TextView} class also
  * takes care of its own scrolling, so does not require a HorizontalScrollView, but
  * using the two together is possible to achieve the effect of a text view
  * within a larger container.
  *
  * <p>HorizontalScrollView only supports horizontal scrolling. For vertical scrolling,
- * use either {@link ScrollView} or {@link ListView}.
+ * use either {@link ScrollView} or {ListView}.
  *
  * @attr ref android.R.styleable#HorizontalScrollView_fillViewport
  */
@@ -87,30 +76,13 @@ public class HorizontalScrollView extends FrameLayout {
     private final Rect mTempRect = new Rect();
     
     private OverScroller mScroller;
-    /**
-     * Tracks the state of the left edge glow.
-     *
-     * Even though this field is practically final, we cannot make it final because there are apps
-     * setting it via reflection and they need to keep working until they target Q.
-     */
-    @NonNull
-    
-    private EdgeEffect mEdgeGlowLeft = new EdgeEffect(getContext());
-
-    /**
-     * Tracks the state of the bottom edge glow.
-     *
-     * Even though this field is practically final, we cannot make it final because there are apps
-     * setting it via reflection and they need to keep working until they target Q.
-     */
-    
-    private EdgeEffect mEdgeGlowRight = new EdgeEffect(getContext());
 
     /**
      * Position of the last motion event.
      */
     
     private int mLastMotionX;
+    private int mLastMotionY;
 
     /**
      * True when the layout has changed but the traversal has not come through yet.
@@ -198,88 +170,9 @@ public class HorizontalScrollView extends FrameLayout {
 
     @Override
     protected float getRightFadingEdgeStrength() {
-        if (getChildCount() == 0) {
-            return 0.0f;
-        }
-
-        final int length = getHorizontalFadingEdgeLength();
-        final int rightEdge = getWidth() - getPaddingRight();
-        final int span = getChildAt(0).getRight() - getScrollX() - rightEdge;
-        if (span < length) {
-            return span / (float) length;
-        }
-
-        return 1.0f;
+        return 0f;
     }
-
-    /**
-     * Sets the edge effect color for both left and right edge effects.
-     *
-     * @param color The color for the edge effects.
-     * @see #setLeftEdgeEffectColor(int)
-     * @see #setRightEdgeEffectColor(int)
-     * @see #getLeftEdgeEffectColor()
-     * @see #getRightEdgeEffectColor()
-     */
-    public void setEdgeEffectColor(@ColorInt int color) {
-        setLeftEdgeEffectColor(color);
-        setRightEdgeEffectColor(color);
-    }
-
-    /**
-     * Sets the right edge effect color.
-     *
-     * @param color The color for the right edge effect.
-     * @see #setLeftEdgeEffectColor(int)
-     * @see #setEdgeEffectColor(int)
-     * @see #getLeftEdgeEffectColor()
-     * @see #getRightEdgeEffectColor()
-     */
-    public void setRightEdgeEffectColor(@ColorInt int color) {
-        mEdgeGlowRight.setColor(color);
-    }
-
-    /**
-     * Sets the left edge effect color.
-     *
-     * @param color The color for the left edge effect.
-     * @see #setRightEdgeEffectColor(int)
-     * @see #setEdgeEffectColor(int)
-     * @see #getLeftEdgeEffectColor()
-     * @see #getRightEdgeEffectColor()
-     */
-    public void setLeftEdgeEffectColor(@ColorInt int color) {
-        mEdgeGlowLeft.setColor(color);
-    }
-
-    /**
-     * Returns the left edge effect color.
-     *
-     * @return The left edge effect color.
-     * @see #setEdgeEffectColor(int)
-     * @see #setLeftEdgeEffectColor(int)
-     * @see #setRightEdgeEffectColor(int)
-     * @see #getRightEdgeEffectColor()
-     */
-    @ColorInt
-    public int getLeftEdgeEffectColor() {
-        return mEdgeGlowLeft.getColor();
-    }
-
-    /**
-     * Returns the right edge effect color.
-     *
-     * @return The right edge effect color.
-     * @see #setEdgeEffectColor(int)
-     * @see #setLeftEdgeEffectColor(int)
-     * @see #setRightEdgeEffectColor(int)
-     * @see #getLeftEdgeEffectColor()
-     */
-    @ColorInt
-    public int getRightEdgeEffectColor() {
-        return mEdgeGlowRight.getColor();
-    }
-
+	
     /**
      * @return The maximum amount this scroll view will scroll in response to
      *   an arrow event.
@@ -300,7 +193,7 @@ public class HorizontalScrollView extends FrameLayout {
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
         mOverscrollDistance = configuration.getScaledOverscrollDistance();
         mOverflingDistance = configuration.getScaledOverflingDistance();
-        mHorizontalScrollFactor = 64;//configuration.getScaledHorizontalScrollFactor();
+        mHorizontalScrollFactor = Build.VERSION.SDK_INT<Build.VERSION_CODES.O?64:configuration.getScaledHorizontalScrollFactor();
     }
 
     @Override
@@ -577,8 +470,11 @@ public class HorizontalScrollView extends FrameLayout {
                 }
 
                 final int x = (int) ev.getX(pointerIndex);
+                final int y = (int) ev.getY(pointerIndex);
                 final int xDiff = (int) Math.abs(x - mLastMotionX);
-                if (xDiff > mTouchSlop) {
+                final int yDiff = (int) Math.abs(y - mLastMotionY);
+                if (xDiff > mTouchSlop
+					&& xDiff>1.4*yDiff) {
                     mIsBeingDragged = true;
                     mLastMotionX = x;
                     initVelocityTrackerIfNotExists();
@@ -601,17 +497,14 @@ public class HorizontalScrollView extends FrameLayout {
                  * ACTION_DOWN always refers to pointer index 0.
                  */
                 mLastMotionX = x;
+				mLastMotionY = (int) ev.getY();
                 mActivePointerId = ev.getPointerId(0);
 
                 initOrResetVelocityTracker();
                 mVelocityTracker.addMovement(ev);
-
-                /*
-                * If being flinged and user touches the screen, initiate drag;
-                * otherwise don't.  mScroller.isFinished should be false when
-                * being flinged.
-                */
-                mIsBeingDragged = !mScroller.isFinished();
+	
+				mScroller.abortAnimation();
+                mIsBeingDragged = false;//!mScroller.isFinished();
                 break;
             }
 
@@ -714,27 +607,6 @@ public class HorizontalScrollView extends FrameLayout {
                         // Break our velocity if we hit a scroll barrier.
                         mVelocityTracker.clear();
                     }
-
-                    if (canOverscroll) {
-                        final int pulledToX = oldX + deltaX;
-                        if (pulledToX < 0) {
-                            mEdgeGlowLeft.onPull((float) deltaX / getWidth(),
-                                    1.f - ev.getY(activePointerIndex) / getHeight());
-                            if (!mEdgeGlowRight.isFinished()) {
-                                mEdgeGlowRight.onRelease();
-                            }
-                        } else if (pulledToX > range) {
-                            mEdgeGlowRight.onPull((float) deltaX / getWidth(),
-                                    ev.getY(activePointerIndex) / getHeight());
-                            if (!mEdgeGlowLeft.isFinished()) {
-                                mEdgeGlowLeft.onRelease();
-                            }
-                        }
-                        if (shouldDisplayEdgeEffects()
-                                && (!mEdgeGlowLeft.isFinished() || !mEdgeGlowRight.isFinished())) {
-                            postInvalidateOnAnimation();
-                        }
-                    }
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -757,11 +629,6 @@ public class HorizontalScrollView extends FrameLayout {
                     mActivePointerId = INVALID_POINTER;
                     mIsBeingDragged = false;
                     recycleVelocityTracker();
-
-                    if (shouldDisplayEdgeEffects()) {
-                        mEdgeGlowLeft.onRelease();
-                        mEdgeGlowRight.onRelease();
-                    }
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
@@ -772,11 +639,6 @@ public class HorizontalScrollView extends FrameLayout {
                     mActivePointerId = INVALID_POINTER;
                     mIsBeingDragged = false;
                     recycleVelocityTracker();
-
-                    if (shouldDisplayEdgeEffects()) {
-                        mEdgeGlowLeft.onRelease();
-                        mEdgeGlowRight.onRelease();
-                    }
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
@@ -1329,14 +1191,6 @@ public class HorizontalScrollView extends FrameLayout {
                 overScrollBy(x - oldX, y - oldY, oldX, oldY, range, 0,
                         mOverflingDistance, 0, false);
                 onScrollChanged(getScrollX(), getScrollY(), oldX, oldY);
-
-                if (canOverscroll) {
-                    if (x < 0 && oldX >= 0) {
-                        mEdgeGlowLeft.onAbsorb((int) mScroller.getCurrVelocity());
-                    } else if (x > range && oldX <= range) {
-                        mEdgeGlowRight.onAbsorb((int) mScroller.getCurrVelocity());
-                    }
-                }
             }
 
             if (!awakenScrollBars()) {
@@ -1448,19 +1302,6 @@ public class HorizontalScrollView extends FrameLayout {
             scrollXDelta = Math.max(scrollXDelta, -getScrollX());
         }
         return scrollXDelta;
-    }
-
-    @Override
-    public void requestChildFocus(View child, View focused) {
-        if (focused != null && focused.getRevealOnFocusHint()) {
-            if (!mIsLayoutDirty) {
-                scrollToChild(focused);
-            } else {
-                // The child may not be laid out yet, we can't compute the scroll yet
-                mChildToScrollTo = focused;
-            }
-        }
-        super.requestChildFocus(child, focused);
     }
 
 
@@ -1645,46 +1486,7 @@ public class HorizontalScrollView extends FrameLayout {
             }
         }
     }
-
-    private boolean shouldDisplayEdgeEffects() {
-        return getOverScrollMode() != OVER_SCROLL_NEVER;
-    }
-
-    @SuppressWarnings({"SuspiciousNameCombination"})
-    @Override
-    public void draw(Canvas canvas) {
-        super.draw(canvas);
-        if (shouldDisplayEdgeEffects()) {
-            final int scrollX = getScrollX();
-            if (!mEdgeGlowLeft.isFinished()) {
-                final int restoreCount = canvas.save();
-                final int height = getHeight() - getPaddingTop() - getPaddingBottom();
-
-                canvas.rotate(270);
-                canvas.translate(-height + getPaddingTop(), Math.min(0, scrollX));
-                mEdgeGlowLeft.setSize(height, getWidth());
-                if (mEdgeGlowLeft.draw(canvas)) {
-                    postInvalidateOnAnimation();
-                }
-                canvas.restoreToCount(restoreCount);
-            }
-            if (!mEdgeGlowRight.isFinished()) {
-                final int restoreCount = canvas.save();
-                final int width = getWidth();
-                final int height = getHeight() - getPaddingTop() - getPaddingBottom();
-
-                canvas.rotate(90);
-                canvas.translate(-getPaddingTop(),
-                        -(Math.max(getScrollRange(), scrollX) + width));
-                mEdgeGlowRight.setSize(height, width);
-                if (mEdgeGlowRight.draw(canvas)) {
-                    postInvalidateOnAnimation();
-                }
-                canvas.restoreToCount(restoreCount);
-            }
-        }
-    }
-
+	
     private static int clamp(int n, int my, int child) {
         if (my >= child || n < 0) {
             return 0;

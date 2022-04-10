@@ -105,7 +105,7 @@
 					android:layout_height="match_parent"
 					android:layout_width="50dp"
 					>
-					<HorizontalScrollView
+					<com.knziha.plod.widgets.HorizontalScrollView
 						android:layout_width="match_parent"
 						android:layout_height="match_parent">
 						<RelativeLayout
@@ -133,7 +133,7 @@
 								android:clipChildren="false"
 								/>
 						</RelativeLayout>
-					</HorizontalScrollView>
+					</com.knziha.plod.widgets.HorizontalScrollView>
 				</FrameLayout>
 
 				<View
