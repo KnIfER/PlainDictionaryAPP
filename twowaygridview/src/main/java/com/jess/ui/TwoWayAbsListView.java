@@ -66,6 +66,8 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.Scroller;
 
+import androidx.preference.CMN;
+
 /**
  * Base class that can be used to implement virtualized lists of items. A list does
  * not have a spatial definition here. For instance, subclases of this class can
@@ -3468,6 +3470,17 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	void drawnWithCacheEnabled(boolean b) {
 		super.setChildrenDrawnWithCacheEnabled(b);
 	}
+	
+	
+//	public boolean post(Runnable action) {
+//		CMN.Log("post::", action);
+//		return super.post(action);
+//	}
+//
+//	public boolean postDelayed(Runnable action, long delayMillis) {
+//		CMN.Log("postDelayed::", action, delayMillis);
+//		return super.postDelayed(action, delayMillis);
+//	}
 }
 
 
