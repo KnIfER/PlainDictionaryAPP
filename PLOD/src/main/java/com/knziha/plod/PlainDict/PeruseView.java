@@ -820,6 +820,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			
 			etTools = new SearchbarTools(a, etSearch, null, (ViewGroup) PeruseTorso.getParent(), true);
 			etTools.initWay = this;
+			etTools.schSql = "src&"+SearchUI.Fye.MAIN+"!=0";
 		}
 		
         if(bCallViewAOA) {
@@ -2202,7 +2203,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				break;
 			case R.id.schDropdown:{
-				etTools.schSql = "src&"+SearchUI.Fye.MAIN+"!=0";
 				etTools.drpdn = PDICMainAppOptions.historyShowFye();
 				etTools.flowBtn = toolbar.findViewById(R.id.action_menu_presenter);
 				//etTools.topbar = toolbar;

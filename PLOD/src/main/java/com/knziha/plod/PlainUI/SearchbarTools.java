@@ -422,7 +422,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			items = new String[len];
 			len--;
 			while (cursor.moveToNext()) {
-				CMN.Log("LoadHistory::", cursor.getString(0));
+				//CMN.Log("LoadHistory::", cursor.getString(0));
 				items[len-cc++] = cursor.getString(0);
 			}
 		} catch (Exception e) {
@@ -437,7 +437,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				history.clear();
 				hIdx.clear();
 				history.addAll(Arrays.asList(its));
-				CMN.Log("LoadHistory::harvest::", getHistorySz(), its);
+				//CMN.Log("LoadHistory::harvest::", getHistorySz(), its);
 				for (int i = 0; i < its.length; i++) {
 					String text = its[i];
 					if (text!=null) {
@@ -449,7 +449,8 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				if (mAdapter!=null)
 					mAdapter.notifyDataSetChanged();
 				if(a.startLastSch) {
-					a.setSearchTerm(its[its.length-1]);
+					if(its.length>0)
+						a.setSearchTerm(its[its.length-1]);
 					a.startLastSch=false;
 				}
 			});

@@ -2429,6 +2429,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		findFurtherViews();
 		
+		boolean b1=thisActType==ActType.PlainDict;
+		etTools = new SearchbarTools(MainActivityUIBase.this, etSearch
+				, b1?((PDICMainActivity)this).UIData.etSchBar:null, null, true);
+		etTools.initWay = this;
+		etTools.schSql = "src&"+schuiMainPeruse+"!=0";
+		
 		toolbar.setOnMenuItemClickListener(this);
 		ivDeleteText.setOnClickListener(this);
 		ivBack.setOnClickListener(this);
@@ -2465,11 +2471,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
 		actionBarSize = (int) mResource.getDimension(R.dimen.barSize);
 		setContentDetachType(1);
-		
-		boolean b1=thisActType==ActType.PlainDict;
-		etTools = new SearchbarTools(MainActivityUIBase.this, etSearch
-				, b1?((PDICMainActivity)this).UIData.etSchBar:null, null, true);
-		etTools.initWay = this;
 	}
 	
 	protected void populateDictionaryList() {
@@ -5798,7 +5799,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			} break;
 			case R.id.schDropdown:{
-				etTools.schSql = "src&"+schuiMainPeruse+"!=0";
 				etTools.drpdn = PDICMainAppOptions.historyShow();
 				etTools.flowBtn = toolbar.findViewById(R.id.action_menu_presenter);
 				etTools.topbar = appbar;
