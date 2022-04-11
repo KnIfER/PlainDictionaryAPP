@@ -82,8 +82,8 @@ import android.widget.Scroller;
  */
 public abstract class TwoWayAbsListView extends TwoWayAdapterView<ListAdapter> implements
 ViewTreeObserver.OnTouchModeChangeListener {
-	private static final String TAG = "TwoWayAbsListView";
-	private static final boolean DEBUG = false;
+	static final String TAG = "TwoWayAbsListView";
+	static final boolean DEBUG = false;
 
 
 	/**
@@ -312,7 +312,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	/**
 	 * Determines speed during touch scrolling
 	 */
-	private VelocityTracker mVelocityTracker;
+	VelocityTracker mVelocityTracker;
 
 	/**
 	 * The offset in pixels form the top of the AdapterView to the top
@@ -340,7 +340,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	/**
 	 * Optional callback to notify client when scroll position has changed
 	 */
-	private OnScrollListener mOnScrollListener;
+	OnScrollListener mOnScrollListener;
 
 	/**
 	 * Keeps track of our accessory window
@@ -356,105 +356,105 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	 * Indicates whether to use pixels-based or position-based scrollbar
 	 * properties.
 	 */
-	private boolean mSmoothScrollbarEnabled = true;
+	boolean mSmoothScrollbarEnabled = true;
 
 	/**
 	 * Indicates that this view supports filtering
 	 */
-	//private boolean mTextFilterEnabled;
+	//boolean mTextFilterEnabled;
 
 	/**
 	 * Indicates that this view is currently displaying a filtered view of the data
 	 */
-	//private boolean mFiltered;
+	//boolean mFiltered;
 
 	/**
 	 * Rectangle used for hit testing children
 	 */
-	private Rect mTouchFrame;
+	Rect mTouchFrame;
 
 	/**
 	 * The position to resurrect the selected position to.
 	 */
 	int mResurrectToPosition = INVALID_POSITION;
 
-	private ContextMenuInfo mContextMenuInfo = null;
+	ContextMenuInfo mContextMenuInfo = null;
 
 	/**
 	 * Used to request a layout when we changed touch mode
 	 */
-	private static final int TOUCH_MODE_UNKNOWN = -1;
-	private static final int TOUCH_MODE_ON = 0;
-	private static final int TOUCH_MODE_OFF = 1;
+	static final int TOUCH_MODE_UNKNOWN = -1;
+	static final int TOUCH_MODE_ON = 0;
+	static final int TOUCH_MODE_OFF = 1;
 
-	private int mLastTouchMode = TOUCH_MODE_UNKNOWN;
+	int mLastTouchMode = TOUCH_MODE_UNKNOWN;
 
-	private static final boolean PROFILE_SCROLLING = false;
-	private boolean mScrollProfilingStarted = false;
+	 static final boolean PROFILE_SCROLLING = false;
+	boolean mScrollProfilingStarted = false;
 
-	private static final boolean PROFILE_FLINGING = false;
-	private boolean mFlingProfilingStarted = false;
+	static final boolean PROFILE_FLINGING = false;
+	boolean mFlingProfilingStarted = false;
 
 	/**
 	 * The last CheckForLongPress runnable we posted, if any
 	 */
-	private CheckForLongPress mPendingCheckForLongPress;
+	CheckForLongPress mPendingCheckForLongPress;
 
 	/**
 	 * The last CheckForTap runnable we posted, if any
 	 */
-	private Runnable mPendingCheckForTap;
+	Runnable mPendingCheckForTap = new CheckForTap();
 
 	/**
 	 * The last CheckForKeyLongPress runnable we posted, if any
 	 */
-	private CheckForKeyLongPress mPendingCheckForKeyLongPress;
+	CheckForKeyLongPress mPendingCheckForKeyLongPress;
 
 	/**
 	 * Acts upon click
 	 */
-	private TwoWayAbsListView.PerformClick mPerformClick;
+	TwoWayAbsListView.PerformClick mPerformClick = new PerformClick();
 
 	/**
 	 * This view is in transcript mode -- it shows the bottom of the list when the data
 	 * changes
 	 */
-	private int mTranscriptMode;
+	int mTranscriptMode;
 
 	/**
 	 * Indicates that this list is always drawn on top of a solid, single-color, opaque
 	 * background
 	 */
-	private int mCacheColorHint;
+	int mCacheColorHint;
 
 	/**
 	 * The select child's view (from the adapter's getView) is enabled.
 	 */
-	private boolean mIsChildViewEnabled;
+	boolean mIsChildViewEnabled;
 
 	/**
 	 * The last scroll state reported to clients through {@link OnScrollListener}.
 	 */
-	private int mLastScrollState = OnScrollListener.SCROLL_STATE_IDLE;
+	int mLastScrollState = OnScrollListener.SCROLL_STATE_IDLE;
 
 	/**
 	 * Helper object that renders and controls the fast scroll thumb.
 	 */
-	//private FastScroller mFastScroller;
+	//FastScroller mFastScroller;
 
-	//private boolean mGlobalLayoutListenerAddedFilter;
+	//boolean mGlobalLayoutListenerAddedFilter;
 
-	private int mTouchSlop;
-	private float mDensityScale;
+	int mTouchSlop;
+	float mDensityScale;
 
-	//private InputConnection mDefInputConnection;
-	//private InputConnectionWrapper mPublicInputConnection;
+	//InputConnection mDefInputConnection;
+	//InputConnectionWrapper mPublicInputConnection;
 
-	private Runnable mClearScrollingCache;
-	private int mMinimumVelocity;
-	private int mMaximumVelocity;
-	private boolean mScrollVerticallyPortrait;
-	private boolean mScrollVerticallyLandscape;
+	Runnable mClearScrollingCache;
+	int mMinimumVelocity;
+	int mMaximumVelocity;
+	boolean mScrollVerticallyPortrait;
+	boolean mScrollVerticallyLandscape;
 
 	protected boolean mScrollVertically;
 
@@ -466,20 +466,20 @@ ViewTreeObserver.OnTouchModeChangeListener {
 
 	// True when the popup should be hidden because of a call to
 	// dispatchDisplayHint()
-	//private boolean mPopupHidden;
+	//boolean mPopupHidden;
 
 	/**
 	 * ID of the active pointer. This is used to retain consistency during
 	 * drags/flings if multiple pointers are used.
 	 */
-	private int mActivePointerId = INVALID_POINTER;
+	int mActivePointerId = INVALID_POINTER;
 
 	/**
 	 * Sentinel value for no current active pointer.
 	 * Used by {@link #mActivePointerId}.
 	 */
-	private static final int INVALID_POINTER = -1;
-
+	static final int INVALID_POINTER = -1;
+	
 	/**
 	 * Interface definition for a callback to be invoked when the list or grid
 	 * has been scrolled.
@@ -589,7 +589,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		setupScrollInfo();
 	}
 
-	private void initAbsListView() {
+	void initAbsListView() {
 		// Setting focusable in touch mode will set the focusable property to true
 		setClickable(true);
 		setFocusableInTouchMode(true);
@@ -611,15 +611,15 @@ ViewTreeObserver.OnTouchModeChangeListener {
 
 
 
-	private void setupScrollInfo() {
+	void setupScrollInfo() {
 		mScrollVertically = mPortraitOrientation ? mScrollVerticallyPortrait: mScrollVerticallyLandscape;
 		if (mScrollVertically) {
-			mTouchHandler = new VerticalTouchHandler();
+			mTouchHandler = new VerticalTouchHandler(this);
 			setVerticalScrollBarEnabled(true);
 			setHorizontalScrollBarEnabled(false);
             setIsVertical(true);
 		} else {
-			mTouchHandler = new HorizontalTouchHandler();
+			mTouchHandler = new HorizontalTouchHandler(this);
 			setVerticalScrollBarEnabled(false);
 			setHorizontalScrollBarEnabled(true);
             setIsVertical(false);
@@ -627,7 +627,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 
 	}
 
-	private boolean orientationChanged() {
+	boolean orientationChanged() {
 		boolean temp = mPortraitOrientation;
 		mPortraitOrientation = (getResources().getConfiguration().orientation !=
 			Configuration.ORIENTATION_LANDSCAPE);
@@ -811,7 +811,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		}
 	}
 
-	private void useDefaultSelector() {
+	void useDefaultSelector() {
 		setSelector(getResources().getDrawable(
 				android.R.drawable.list_selector_background));
 	}
@@ -867,7 +867,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		/**
 		 * Constructor called from {@link #CREATOR}
 		 */
-		private SavedState(Parcel in) {
+		SavedState(Parcel in) {
 			super(in);
 			selectedId = in.readLong();
 			firstId = in.readLong();
@@ -999,7 +999,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		requestLayout();
 	}
 
-	//    private boolean acceptFilter() {
+	//    boolean acceptFilter() {
 	//        return mTextFilterEnabled && getAdapter() instanceof Filterable &&
 	//                ((Filterable) getAdapter()).getFilter() != null;
 	//    }
@@ -1549,7 +1549,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		}
 	}
 
-	private void positionSelector(int l, int t, int r, int b) {
+	void positionSelector(int l, int t, int r, int b) {
 		mSelectorRect.set(l - mSelectionLeftPadding, t - mSelectionTopPadding, r
 				+ mSelectionRightPadding, b + mSelectionBottomPadding);
 	}
@@ -1625,7 +1625,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		return mSelector!=null && (hasFocus() && !isInTouchMode() || touchModeDrawsInPressedState());
 	}
 
-	private void drawSelector(Canvas canvas) {
+	void drawSelector(Canvas canvas) {
 		if (shouldShowSelector() && mSelectorRect != null && !mSelectorRect.isEmpty()) {
 			final Drawable selector = mSelector;
 			selector.setBounds(mSelectorRect);
@@ -1838,8 +1838,8 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	 * the original window as when the Runnable was created.
 	 *
 	 */
-	private class WindowRunnnable {
-		private int mOriginalAttachCount;
+	class WindowRunnnable {
+		int mOriginalAttachCount;
 
 		public void rememberWindowAttachCount() {
 			mOriginalAttachCount = getWindowAttachCount();
@@ -1850,7 +1850,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		}
 	}
 
-	private class PerformClick extends WindowRunnnable implements Runnable {
+	class PerformClick extends WindowRunnnable implements Runnable {
 		View mChild;
 		int mClickMotionPosition;
 
@@ -1869,7 +1869,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		}
 	}
 
-	private class CheckForLongPress extends WindowRunnnable implements Runnable {
+	class CheckForLongPress extends WindowRunnnable implements Runnable {
 		public void run() {
 			final int motionPosition = mMotionPosition;
 			final View child = getChildAt(motionPosition - mFirstPosition);
@@ -1893,7 +1893,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		}
 	}
 
-	private class CheckForKeyLongPress extends WindowRunnnable implements Runnable {
+	class CheckForKeyLongPress extends WindowRunnnable implements Runnable {
 		public void run() {
 			if (isPressed() && mSelectedPosition >= 0) {
 				int index = mSelectedPosition - mFirstPosition;
@@ -1916,7 +1916,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		}
 	}
 
-	private boolean performLongPress(final View child,
+	boolean performLongPress(final View child,
 			final int longPressPosition, final long longPressId) {
 		boolean handled = false;
 
@@ -2477,7 +2477,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	//    /**
 	//     * Removes the filter window
 	//     */
-	//    private void dismissPopup() {
+	//    void dismissPopup() {
 	//        if (mPopup != null) {
 	//            mPopup.dismiss();
 	//        }
@@ -2486,7 +2486,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	//    /**
 	//     * Shows the filter window
 	//     */
-	//    private void showPopup() {
+	//    void showPopup() {
 	//        // Make sure we have a window before showing the popup
 	//        if (getWindowVisibility() == View.VISIBLE) {
 	//            createTextFilter(true);
@@ -2496,7 +2496,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	//        }
 	//    }
 	//
-	//    private void positionPopup() {
+	//    void positionPopup() {
 	//        int screenHeight = getResources().getDisplayMetrics().heightPixels;
 	//        final int[] xy = new int[2];
 	//        getLocationOnScreen(xy);
@@ -2711,7 +2711,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	//     * @param animateEntrance true if the window should appear with an animation
 	//     */
 	//    /*
-	//    private void createTextFilter(boolean animateEntrance) {
+	//    void createTextFilter(boolean animateEntrance) {
 	//        if (mPopup == null) {
 	//            Context c = getContext();
 	//            PopupWindow p = new PopupWindow(c);
@@ -3027,7 +3027,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		return result;
 	}
 
-	private boolean checkScrap(ArrayList<View> scrap) {
+	boolean checkScrap(ArrayList<View> scrap) {
 		if (scrap == null) return true;
 		boolean result = true;
 
@@ -3147,12 +3147,12 @@ ViewTreeObserver.OnTouchModeChangeListener {
 	 * @see com.jess.ui.TwoWayAbsListView.RecyclerListener
 	 */
 	class RecycleBin {
-		private RecyclerListener mRecyclerListener;
+		RecyclerListener mRecyclerListener;
 
 		/**
 		 * The position of the first view stored in mActiveViews.
 		 */
-		private int mFirstActivePosition;
+		int mFirstActivePosition;
 
 		/**
 		 * Views that were on screen at the start of layout. This array is populated at the start of
@@ -3160,16 +3160,16 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		 * Views in mActiveViews represent a contiguous range of Views, with position of the first
 		 * view store in mFirstActivePosition.
 		 */
-		private View[] mActiveViews = new View[0];
+		View[] mActiveViews = new View[0];
 
 		/**
 		 * Unsorted views that can be used by the adapter as a convert view.
 		 */
-		private ArrayList<View>[] mScrapViews;
+		ArrayList<View>[] mScrapViews;
 
-		private int mViewTypeCount;
+		int mViewTypeCount;
 
-		private ArrayList<View> mCurrentScrap;
+		ArrayList<View> mCurrentScrap;
 
 		public void setViewTypeCount(int viewTypeCount) {
 			if (viewTypeCount < 1) {
@@ -3384,7 +3384,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		 * Makes sure that the size of mScrapViews does not exceed the size of mActiveViews.
 		 * (This can happen if an adapter does not recycle its views).
 		 */
-		private void pruneScrapViews() {
+		void pruneScrapViews() {
 			final int maxViews = mActiveViews.length;
 			final int viewTypeCount = mViewTypeCount;
 			final ArrayList<View>[] scrapViews = mScrapViews;
@@ -3449,2207 +3449,25 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		}
 	}
 
-
-
-
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//  Touch Handler
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	abstract class TouchHandler {
-		/**
-		 * Handles scrolling between positions within the list.
-		 */
-		protected PositionScroller mPositionScroller;
-
-		/**
-		 * Handles one frame of a fling
-		 */
-		protected FlingRunnable mFlingRunnable;
-
-		/**
-		 * How far the finger moved before we started scrolling
-		 */
-		int mMotionCorrection;
-
-		public void onWindowFocusChanged(boolean hasWindowFocus) {
-
-			final int touchMode = isInTouchMode() ? TOUCH_MODE_ON : TOUCH_MODE_OFF;
-
-			if (!hasWindowFocus) {
-				setChildrenDrawingCacheEnabled(false);
-				if (mFlingRunnable != null) {
-					removeCallbacks(mFlingRunnable);
-					// let the fling runnable report it's new state which
-					// should be idle
-					mFlingRunnable.endFling();
-					//TODO: this doesn't seem the right way to do this.
-					if (getScrollY() != 0) {
-						scrollTo(getScrollX(), 0);
-						//mScrollY = 0;
-						invalidate();
-					}
-				}
-				// Always hide the type filter
-				//dismissPopup();
-
-				if (touchMode == TOUCH_MODE_OFF) {
-					// Remember the last selected element
-					mResurrectToPosition = mSelectedPosition;
-				}
-			} else {
-				//if (mFiltered && !mPopupHidden) {
-				// Show the type filter only if a filter is in effect
-				//    showPopup();
-				//}
-
-				// If we changed touch mode since the last time we had focus
-				if (touchMode != mLastTouchMode && mLastTouchMode != TOUCH_MODE_UNKNOWN) {
-					// If we come back in trackball mode, we bring the selection back
-					if (touchMode == TOUCH_MODE_OFF) {
-						// This will trigger a layout
-						resurrectSelection();
-
-						// If we come back in touch mode, then we want to hide the selector
-					} else {
-						hideSelector();
-						mLayoutMode = LAYOUT_NORMAL;
-						layoutChildren();
-					}
-				}
-			}
-
-			mLastTouchMode = touchMode;
-		}
-
-
-		public boolean startScrollIfNeeded(int delta) {
-			// Check if we have moved far enough that it looks more like a
-			// scroll than a tap
-			final int distance = Math.abs(delta);
-			if (distance > mTouchSlop) {
-				createScrollingCache();
-				mTouchMode = TOUCH_MODE_SCROLL;
-				mMotionCorrection = delta;
-				final Handler handler = getHandler();
-				// Handler should not be null unless the TwoWayAbsListView is not attached to a
-				// window, which would make it very hard to scroll it... but the monkeys
-				// say it's possible.
-				if (handler != null) {
-					handler.removeCallbacks(mPendingCheckForLongPress);
-				}
-				setPressed(false);
-				View motionView = getChildAt(mMotionPosition - mFirstPosition);
-				if (motionView != null) {
-					motionView.setPressed(false);
-				}
-				reportScrollStateChange(OnScrollListener.SCROLL_STATE_TOUCH_SCROLL);
-				// Time to start stealing events! Once we've stolen them, don't let anyone
-				// steal from us
-				requestDisallowInterceptTouchEvent(true);
-				return true;
-			}
-
-			return false;
-		}
-
-
-		public void onTouchModeChanged(boolean isInTouchMode) {
-			if (isInTouchMode) {
-				// Get rid of the selection when we enter touch mode
-				hideSelector();
-				// Layout, but only if we already have done so previously.
-				// (Otherwise may clobber a LAYOUT_SYNC layout that was requested to restore
-				// state.)
-				if (getHeight() > 0 && getChildCount() > 0) {
-					// We do not lose focus initiating a touch (since TwoWayAbsListView is focusable in
-					// touch mode). Force an initial layout to get rid of the selection.
-					layoutChildren();
-				}
-			}
-		}
-
-		/**
-		 * Fires an "on scroll state changed" event to the registered
-		 * {@link com.jess.ui.TwoWayAbsListView.OnScrollListener}, if any. The state change
-		 * is fired only if the specified state is different from the previously known state.
-		 *
-		 * @param newState The new scroll state.
-		 */
-		void reportScrollStateChange(int newState) {
-			if (newState != mLastScrollState) {
-				if (mOnScrollListener != null) {
-					mOnScrollListener.onScrollStateChanged(TwoWayAbsListView.this, newState);
-					mLastScrollState = newState;
-				}
-			}
-		}
-
-		/**
-		 * Smoothly scroll to the specified adapter position. The view will
-		 * scroll such that the indicated position is displayed.
-		 * @param position Scroll to this adapter position.
-		 */
-		public void smoothScrollToPosition(int position) {
-			if (mPositionScroller == null) {
-				mPositionScroller = getPositionScroller();
-			}
-			mPositionScroller.start(position);
-		}
-
-		/**
-		 * Smoothly scroll to the specified adapter position. The view will
-		 * scroll such that the indicated position is displayed, but it will
-		 * stop early if scrolling further would scroll boundPosition out of
-		 * view.
-		 * @param position Scroll to this adapter position.
-		 * @param boundPosition Do not scroll if it would move this adapter
-		 *          position out of view.
-		 */
-		public void smoothScrollToPosition(int position, int boundPosition) {
-			if (mPositionScroller == null) {
-				mPositionScroller = getPositionScroller();
-			}
-			mPositionScroller.start(position, boundPosition);
-		}
-
-		/**
-		 * Smoothly scroll by distance pixels over duration milliseconds.
-		 * @param distance Distance to scroll in pixels.
-		 * @param duration Duration of the scroll animation in milliseconds.
-		 */
-		public void smoothScrollBy(int distance, int duration) {
-			if (mFlingRunnable == null) {
-				mFlingRunnable = getFlingRunnable();
-			} else {
-				mFlingRunnable.endFling();
-			}
-			mFlingRunnable.startScroll(distance, duration);
-		}
-
-		protected void createScrollingCache() {
-			if (mScrollingCacheEnabled && !mCachingStarted) {
-				setChildrenDrawnWithCacheEnabled(true);
-				setChildrenDrawingCacheEnabled(true);
-				mCachingStarted = true;
-			}
-		}
-
-		protected void clearScrollingCache() {
-			if (mClearScrollingCache == null) {
-				mClearScrollingCache = new Runnable() {
-					public void run() {
-						if (mCachingStarted) {
-							mCachingStarted = false;
-							setChildrenDrawnWithCacheEnabled(false);
-							if ((TwoWayAbsListView.this.getPersistentDrawingCache() & PERSISTENT_SCROLLING_CACHE) == 0) {
-								setChildrenDrawingCacheEnabled(false);
-							}
-							if (!isAlwaysDrawnWithCacheEnabled()) {
-								invalidate();
-							}
-						}
-					}
-				};
-			}
-			post(mClearScrollingCache);
-		}
-
-		/**
-		 * Track a motion scroll
-		 *
-		 * @param delta Amount to offset mMotionView. This is the accumulated delta since the motion
-		 *        began. Positive numbers mean the user's finger is moving down or right on the screen.
-		 * @param incrementalDelta Change in delta from the previous event.
-		 * @return true if we're already at the beginning/end of the list and have nothing to do.
-		 */
-		abstract boolean trackMotionScroll(int delta, int incrementalDelta);
-
-		/**
-		 * Attempt to bring the selection back if the user is switching from touch
-		 * to trackball mode
-		 * @return Whether selection was set to something.
-		 */
-		abstract boolean resurrectSelection();
-
-
-		public abstract boolean onTouchEvent(MotionEvent ev);
-
-
-		public abstract boolean onInterceptTouchEvent(MotionEvent ev);
-
-		protected abstract PositionScroller getPositionScroller();
-
-		protected abstract FlingRunnable getFlingRunnable();
-
-		/**
-		 * Responsible for fling behavior. Use {@link #start(int)} to
-		 * initiate a fling. Each frame of the fling is handled in {@link #run()}.
-		 * A FlingRunnable will keep re-posting itself until the fling is done.
-		 *
-		 */
-		protected abstract class FlingRunnable implements Runnable {
-			/**
-			 * Tracks the decay of a fling scroll
-			 */
-			protected final Scroller mScroller;
-
-			protected Runnable mCheckFlywheel;
-			
-			public boolean isScrollingInDirection(float xvel, float yvel) {
-				final int dx = mScroller.getFinalX() - mScroller.getStartX();
-				final int dy = mScroller.getFinalY() - mScroller.getStartY();
-				return !mScroller.isFinished() && Math.signum(xvel) == Math.signum(dx) &&
-						Math.signum(yvel) == Math.signum(dy);
-			}
-
-
-			FlingRunnable() {
-				mScroller = new Scroller(getContext());
-			}
-
-			abstract void flywheelTouch();
-
-			abstract void start(int initialVelocity);
-
-			abstract void startScroll(int distance, int duration);
-
-			protected void endFling() {
-				mTouchMode = TOUCH_MODE_REST;
-
-				reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-				clearScrollingCache();
-
-				removeCallbacks(this);
-				
-				if (mCheckFlywheel != null) {
-					removeCallbacks(mCheckFlywheel);
-				}
-				if (mPositionScroller != null) {
-					removeCallbacks(mPositionScroller);
-				}
-
-				mScroller.abortAnimation();
-			}
-
-			public abstract void run();
-		}
-
-		abstract class PositionScroller implements Runnable {
-			protected static final int SCROLL_DURATION = 400;
-
-			protected static final int MOVE_DOWN_POS = 1;
-			protected static final int MOVE_UP_POS = 2;
-			protected static final int MOVE_DOWN_BOUND = 3;
-			protected static final int MOVE_UP_BOUND = 4;
-
-			protected boolean mVertical;
-			protected int mMode;
-			protected int mTargetPos;
-			protected int mBoundPos;
-			protected int mLastSeenPos;
-			protected int mScrollDuration;
-			protected final int mExtraScroll;
-
-			PositionScroller() {
-				mExtraScroll = ViewConfiguration.get(mContext).getScaledFadingEdgeLength();
-			}
-
-			void start(int position) {
-				final int firstPos = mFirstPosition;
-				final int lastPos = firstPos + getChildCount() - 1;
-
-				int viewTravelCount = 0;
-				if (position <= firstPos) {
-					viewTravelCount = firstPos - position + 1;
-					mMode = MOVE_UP_POS;
-				} else if (position >= lastPos) {
-					viewTravelCount = position - lastPos + 1;
-					mMode = MOVE_DOWN_POS;
-				} else {
-					// Already on screen, nothing to do
-					return;
-				}
-
-				if (viewTravelCount > 0) {
-					mScrollDuration = SCROLL_DURATION / viewTravelCount;
-				} else {
-					mScrollDuration = SCROLL_DURATION;
-				}
-				mTargetPos = position;
-				mBoundPos = INVALID_POSITION;
-				mLastSeenPos = INVALID_POSITION;
-
-				post(this);
-			}
-
-			void start(int position, int boundPosition) {
-				if (boundPosition == INVALID_POSITION) {
-					start(position);
-					return;
-				}
-
-				final int firstPos = mFirstPosition;
-				final int lastPos = firstPos + getChildCount() - 1;
-
-				int viewTravelCount = 0;
-				if (position <= firstPos) {
-					final int boundPosFromLast = lastPos - boundPosition;
-					if (boundPosFromLast < 1) {
-						// Moving would shift our bound position off the screen. Abort.
-						return;
-					}
-
-					final int posTravel = firstPos - position + 1;
-					final int boundTravel = boundPosFromLast - 1;
-					if (boundTravel < posTravel) {
-						viewTravelCount = boundTravel;
-						mMode = MOVE_UP_BOUND;
-					} else {
-						viewTravelCount = posTravel;
-						mMode = MOVE_UP_POS;
-					}
-				} else if (position >= lastPos) {
-					final int boundPosFromFirst = boundPosition - firstPos;
-					if (boundPosFromFirst < 1) {
-						// Moving would shift our bound position off the screen. Abort.
-						return;
-					}
-
-					final int posTravel = position - lastPos + 1;
-					final int boundTravel = boundPosFromFirst - 1;
-					if (boundTravel < posTravel) {
-						viewTravelCount = boundTravel;
-						mMode = MOVE_DOWN_BOUND;
-					} else {
-						viewTravelCount = posTravel;
-						mMode = MOVE_DOWN_POS;
-					}
-				} else {
-					// Already on screen, nothing to do
-					return;
-				}
-
-				if (viewTravelCount > 0) {
-					mScrollDuration = SCROLL_DURATION / viewTravelCount;
-				} else {
-					mScrollDuration = SCROLL_DURATION;
-				}
-				mTargetPos = position;
-				mBoundPos = boundPosition;
-				mLastSeenPos = INVALID_POSITION;
-
-				post(this);
-			}
-
-			void stop() {
-				removeCallbacks(this);
-			}
-
-			public abstract void run();
-		}
-
-
-	}
-
-
-
-
-
-
-	////////////////////////////////////////////////////////////////////////////////////////
-	//  Vertical Touch Handler
-	////////////////////////////////////////////////////////////////////////////////////////
-
-	class VerticalTouchHandler extends TouchHandler {
-		/**
-		 * The offset to the top of the mMotionPosition view when the down motion event was received
-		 */
-		int mMotionViewOriginalTop;
-
-		/**
-		 * Y value from on the previous motion event (if any)
-		 */
-		int mLastY;
-
-		/**
-		 * The desired offset to the top of the mMotionPosition view after a scroll
-		 */
-		int mMotionViewNewTop;
-
-		@Override
-		public boolean onTouchEvent(MotionEvent ev) {
-			if (!isEnabled()) {
-				// A disabled view that is clickable still consumes the touch
-				// events, it just doesn't respond to them.
-				return isClickable() || isLongClickable();
-			}
-
-			/*
-            if (mFastScroller != null) {
-                boolean intercepted = mFastScroller.onTouchEvent(ev);
-                if (intercepted) {
-                    return true;
-                }
-            }*/
-
-			final int action = ev.getAction();
-
-			View v;
-			int deltaY;
-
-			if (mVelocityTracker == null) {
-				mVelocityTracker = VelocityTracker.obtain();
-			}
-			mVelocityTracker.addMovement(ev);
-
-			switch (action) {
-			case MotionEvent.ACTION_DOWN: {
-				final int x = (int) ev.getX();
-				final int y = (int) ev.getY();
-				int motionPosition = pointToPosition(x, y);
-				if (!mDataChanged) {
-					if ((mTouchMode != TOUCH_MODE_FLING) && (motionPosition >= 0)
-							&& (getAdapter().isEnabled(motionPosition))) {
-						// User clicked on an actual view (and was not stopping a fling). It might be a
-						// click or a scroll. Assume it is a click until proven otherwise
-						mTouchMode = TOUCH_MODE_DOWN;
-						// FIXME Debounce
-						if (mPendingCheckForTap == null) {
-							mPendingCheckForTap = new CheckForTap();
-						}
-						postDelayed(mPendingCheckForTap, ViewConfiguration.getTapTimeout());
-					} else {
-						if (ev.getEdgeFlags() != 0 && motionPosition < 0) {
-							// If we couldn't find a view to click on, but the down event was touching
-							// the edge, we will bail out and try again. This allows the edge correcting
-							// code in ViewRoot to try to find a nearby view to select
-							return false;
-						}
-
-						if (mTouchMode == TOUCH_MODE_FLING) {
-							// Stopped a fling. It is a scroll.
-							createScrollingCache();
-							mTouchMode = TOUCH_MODE_SCROLL;
-							mMotionCorrection = 0;
-							motionPosition = findMotionRowY(y);
-							if(mFlingRunnable!=null)
-								mFlingRunnable.flywheelTouch();
-						}
-					}
-				}
-
-				if (motionPosition >= 0) {
-					// Remember where the motion event started
-					v = getChildAt(motionPosition - mFirstPosition);
-					mMotionViewOriginalTop = v.getTop();
-				}
-				mMotionX = x;
-				mMotionY = y;
-				mMotionPosition = motionPosition;
-				mLastY = Integer.MIN_VALUE;
-				break;
-			}
-
-			case MotionEvent.ACTION_MOVE: {
-				final int y = (int) ev.getY();
-				deltaY = y - mMotionY;
-				switch (mTouchMode) {
-				case TOUCH_MODE_DOWN:
-				case TOUCH_MODE_TAP:
-				case TOUCH_MODE_DONE_WAITING:
-					// Check if we have moved far enough that it looks more like a
-					// scroll than a tap
-					startScrollIfNeeded(deltaY);
-					break;
-				case TOUCH_MODE_SCROLL:
-					if (PROFILE_SCROLLING) {
-						if (!mScrollProfilingStarted) {
-							Debug.startMethodTracing("JessAbsListViewScroll");
-							mScrollProfilingStarted = true;
-						}
-					}
-
-					if (y != mLastY) {
-						deltaY -= mMotionCorrection;
-						int incrementalDeltaY = mLastY != Integer.MIN_VALUE ? y - mLastY : deltaY;
-
-						// No need to do all this work if we're not going to move anyway
-						boolean atEdge = false;
-						if (incrementalDeltaY != 0) {
-							atEdge = trackMotionScroll(deltaY, incrementalDeltaY);
-						}
-
-						// Check to see if we have bumped into the scroll limit
-						if (atEdge && getChildCount() > 0) {
-							// Treat this like we're starting a new scroll from the current
-							// position. This will let the user start scrolling back into
-							// content immediately rather than needing to scroll back to the
-							// point where they hit the limit first.
-							int motionPosition = findMotionRowY(y);
-							if (motionPosition >= 0) {
-								final View motionView = getChildAt(motionPosition - mFirstPosition);
-								mMotionViewOriginalTop = motionView.getTop();
-							}
-							mMotionY = y;
-							mMotionPosition = motionPosition;
-							invalidate();
-						}
-						mLastY = y;
-					}
-					break;
-				}
-
-				break;
-			}
-
-			case MotionEvent.ACTION_UP: {
-				switch (mTouchMode) {
-				case TOUCH_MODE_DOWN:
-				case TOUCH_MODE_TAP:
-				case TOUCH_MODE_DONE_WAITING:
-					final int motionPosition = mMotionPosition;
-					final View child = getChildAt(motionPosition - mFirstPosition);
-					if (child != null && !child.hasFocusable()) {
-						if (mTouchMode != TOUCH_MODE_DOWN) {
-							child.setPressed(false);
-						}
-
-						if (mPerformClick == null) {
-							mPerformClick = new PerformClick();
-						}
-
-						final TwoWayAbsListView.PerformClick performClick = mPerformClick;
-						performClick.mChild = child;
-						performClick.mClickMotionPosition = motionPosition;
-						performClick.rememberWindowAttachCount();
-
-						mResurrectToPosition = motionPosition;
-
-						if (mTouchMode == TOUCH_MODE_DOWN || mTouchMode == TOUCH_MODE_TAP) {
-							final Handler handler = getHandler();
-							if (handler != null) {
-								handler.removeCallbacks(mTouchMode == TOUCH_MODE_DOWN ?
-										mPendingCheckForTap : mPendingCheckForLongPress);
-							}
-							mLayoutMode = LAYOUT_NORMAL;
-							if (!mDataChanged && mAdapter.isEnabled(motionPosition)) {
-								mTouchMode = TOUCH_MODE_TAP;
-								setSelectedPositionInt(mMotionPosition);
-								layoutChildren();
-								child.setPressed(true);
-								positionSelector(child);
-								setPressed(true);
-								if (mSelector != null) {
-									Drawable d = mSelector.getCurrent();
-									if (d != null && d instanceof TransitionDrawable) {
-										((TransitionDrawable) d).resetTransition();
-									}
-								}
-								postDelayed(new Runnable() {
-									public void run() {
-										child.setPressed(false);
-										setPressed(false);
-										if (!mDataChanged) {
-											post(performClick);
-										}
-										mTouchMode = TOUCH_MODE_REST;
-									}
-								}, ViewConfiguration.getPressedStateDuration());
-							} else {
-								mTouchMode = TOUCH_MODE_REST;
-							}
-							return true;
-						} else if (!mDataChanged && mAdapter.isEnabled(motionPosition)) {
-							post(performClick);
-						}
-					}
-					mTouchMode = TOUCH_MODE_REST;
-					break;
-				case TOUCH_MODE_SCROLL:
-					final int childCount = getChildCount();
-					if (childCount > 0) {
-						if (mFirstPosition == 0 && getChildAt(0).getTop() >= mListPadding.top &&
-								mFirstPosition + childCount < mItemCount &&
-								getChildAt(childCount - 1).getBottom() <=
-									getHeight() - mListPadding.bottom) {
-							mTouchMode = TOUCH_MODE_REST;
-							reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-						} else {
-							final VelocityTracker velocityTracker = mVelocityTracker;
-							velocityTracker.computeCurrentVelocity(1000);
-							final int initialVelocity = (int) velocityTracker.getYVelocity();
-
-							if (Math.abs(initialVelocity) > mMinimumVelocity) {
-								if (mFlingRunnable == null) {
-									mFlingRunnable = new VerticalFlingRunnable();
-								}
-								reportScrollStateChange(OnScrollListener.SCROLL_STATE_FLING);
-
-								mFlingRunnable.start(-initialVelocity);
-							} else {
-								mTouchMode = TOUCH_MODE_REST;
-								reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-							}
-						}
-					} else {
-						mTouchMode = TOUCH_MODE_REST;
-						reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-					}
-					break;
-				}
-
-				setPressed(false);
-
-				// Need to redraw since we probably aren't drawing the selector anymore
-				invalidate();
-
-				final Handler handler = getHandler();
-				if (handler != null) {
-					handler.removeCallbacks(mPendingCheckForLongPress);
-				}
-
-				if (mVelocityTracker != null) {
-					mVelocityTracker.recycle();
-					mVelocityTracker = null;
-				}
-
-				mActivePointerId = INVALID_POINTER;
-
-				if (PROFILE_SCROLLING) {
-					if (mScrollProfilingStarted) {
-						Debug.stopMethodTracing();
-						mScrollProfilingStarted = false;
-					}
-				}
-				break;
-			}
-
-			case MotionEvent.ACTION_CANCEL: {
-				mTouchMode = TOUCH_MODE_REST;
-				setPressed(false);
-				View motionView = TwoWayAbsListView.this.getChildAt(mMotionPosition - mFirstPosition);
-				if (motionView != null) {
-					motionView.setPressed(false);
-				}
-				clearScrollingCache();
-
-				final Handler handler = getHandler();
-				if (handler != null) {
-					handler.removeCallbacks(mPendingCheckForLongPress);
-				}
-
-				if (mVelocityTracker != null) {
-					mVelocityTracker.recycle();
-					mVelocityTracker = null;
-				}
-
-				mActivePointerId = INVALID_POINTER;
-				break;
-			}
-
-			}
-
-			return true;
-		}
-
-
-
-		@Override
-		public boolean onInterceptTouchEvent(MotionEvent ev) {
-			int action = ev.getAction();
-			View v;
-
-			/*
-            if (mFastScroller != null) {
-                boolean intercepted = mFastScroller.onInterceptTouchEvent(ev);
-                if (intercepted) {
-                    return true;
-                }
-            }*/
-
-			switch (action) {
-				case MotionEvent.ACTION_DOWN: {
-					int touchMode = mTouchMode;
-	
-					final int x = (int) ev.getX();
-					final int y = (int) ev.getY();
-					
-					int motionPosition = findMotionRowY(y);
-					if (touchMode != TOUCH_MODE_FLING && motionPosition >= 0) {
-						// User clicked on an actual view (and was not stopping a fling).
-						// Remember where the motion event started
-						v = getChildAt(motionPosition - mFirstPosition);
-						mMotionViewOriginalTop = v.getTop();
-						mMotionX = x;
-						mMotionY = y;
-						mMotionPosition = motionPosition;
-						mTouchMode = TOUCH_MODE_DOWN;
-						clearScrollingCache();
-					}
-					mLastY = Integer.MIN_VALUE;
-					initOrResetVelocityTracker();
-					mVelocityTracker.addMovement(ev);
-					if (touchMode == TOUCH_MODE_FLING) {
-						return true;
-					}
-					break;
-				}
-	
-				case MotionEvent.ACTION_MOVE: {
-					switch (mTouchMode) {
-					case TOUCH_MODE_DOWN:
-						final int y = (int) ev.getY();
-						if (startScrollIfNeeded(y - mMotionY)) {
-							return true;
-						}
-						break;
-					}
-					break;
-				}
-	
-				case MotionEvent.ACTION_UP: {
-					mTouchMode = TOUCH_MODE_REST;
-					mActivePointerId = INVALID_POINTER;
-					reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-					break;
-				}
-			}
-
-			return false;
-		}
-
-		/**
-		 * Track a motion scroll
-		 *
-		 * @param deltaY Amount to offset mMotionView. This is the accumulated delta since the motion
-		 *        began. Positive numbers mean the user's finger is moving down the screen.
-		 * @param incrementalDeltaY Change in deltaY from the previous event.
-		 * @return true if we're already at the beginning/end of the list and have nothing to do.
-		 */
-		@Override
-		boolean trackMotionScroll(int deltaY, int incrementalDeltaY) {
-			if (DEBUG) Log.i(TAG, "trackMotionScroll() - deltaY: " + deltaY + " incrDeltaY: " + incrementalDeltaY);
-			final int childCount = getChildCount();
-			if (childCount == 0) {
-				return true;
-			}
-
-			final int firstTop = getChildAt(0).getTop();
-			final int lastBottom = getChildAt(childCount - 1).getBottom();
-
-			final Rect listPadding = mListPadding;
-
-			// FIXME account for grid vertical spacing too?
-			final int spaceAbove = listPadding.top - firstTop;
-			final int end = getHeight() - listPadding.bottom;
-			final int spaceBelow = lastBottom - end;
-
-			final int height = getHeight() - getPaddingBottom() - getPaddingTop();
-			if (deltaY < 0) {
-				deltaY = Math.max(-(height - 1), deltaY);
-			} else {
-				deltaY = Math.min(height - 1, deltaY);
-			}
-
-			if (incrementalDeltaY < 0) {
-				incrementalDeltaY = Math.max(-(height - 1), incrementalDeltaY);
-			} else {
-				incrementalDeltaY = Math.min(height - 1, incrementalDeltaY);
-			}
-
-			final int firstPosition = mFirstPosition;
-
-			if (firstPosition == 0 && firstTop >= listPadding.top && deltaY >= 0) {
-				// Don't need to move views down if the top of the first position
-				// is already visible
-				return true;
-			}
-
-			if (firstPosition + childCount == mItemCount && lastBottom <= end && deltaY <= 0) {
-				// Don't need to move views up if the bottom of the last position
-				// is already visible
-				return true;
-			}
-
-			final boolean down = incrementalDeltaY < 0;
-
-			final boolean inTouchMode = isInTouchMode();
-			if (inTouchMode) {
-				hideSelector();
-			}
-
-			final int headerViewsCount = getHeaderViewsCount();
-			final int footerViewsStart = mItemCount - getFooterViewsCount();
-
-			int start = 0;
-			int count = 0;
-
-			if (down) {
-				final int top = listPadding.top - incrementalDeltaY;
-				for (int i = 0; i < childCount; i++) {
-					final View child = getChildAt(i);
-					if (child.getBottom() >= top) {
-						break;
-					} else {
-						count++;
-						int position = firstPosition + i;
-						if (position >= headerViewsCount && position < footerViewsStart) {
-							mRecycler.addScrapView(child);
-
-							if (ViewDebug.TRACE_RECYCLER) {
-								ViewDebug.trace(child,
-										ViewDebug.RecyclerTraceType.MOVE_TO_SCRAP_HEAP,
-										firstPosition + i, -1);
-							}
-						}
-					}
-				}
-			} else {
-				final int bottom = getHeight() - listPadding.bottom - incrementalDeltaY;
-				for (int i = childCount - 1; i >= 0; i--) {
-					final View child = getChildAt(i);
-					if (child.getTop() <= bottom) {
-						break;
-					} else {
-						start = i;
-						count++;
-						int position = firstPosition + i;
-						if (position >= headerViewsCount && position < footerViewsStart) {
-							mRecycler.addScrapView(child);
-
-							if (ViewDebug.TRACE_RECYCLER) {
-								ViewDebug.trace(child,
-										ViewDebug.RecyclerTraceType.MOVE_TO_SCRAP_HEAP,
-										firstPosition + i, -1);
-							}
-						}
-					}
-				}
-			}
-
-			mMotionViewNewTop = mMotionViewOriginalTop + deltaY;
-
-			mBlockLayoutRequests = true;
-
-			if (count > 0) {
-				detachViewsFromParent(start, count);
-			}
-			offsetChildrenTopAndBottom(incrementalDeltaY);
-
-			if (down) {
-				mFirstPosition += count;
-			}
-
-			invalidate();
-
-			final int absIncrementalDeltaY = Math.abs(incrementalDeltaY);
-			if (spaceAbove < absIncrementalDeltaY || spaceBelow < absIncrementalDeltaY) {
-				fillGap(down);
-			}
-
-			if (!inTouchMode && mSelectedPosition != INVALID_POSITION) {
-				final int childIndex = mSelectedPosition - mFirstPosition;
-				if (childIndex >= 0 && childIndex < getChildCount()) {
-					positionSelector(getChildAt(childIndex));
-				}
-			}
-
-			mBlockLayoutRequests = false;
-
-			invokeOnItemScrollListener();
-			//awakenScrollBars();
-
-			return false;
-		}
-
-		/**
-		 * Attempt to bring the selection back if the user is switching from touch
-		 * to trackball mode
-		 * @return Whether selection was set to something.
-		 */
-		@Override
-		boolean resurrectSelection() {
-			final int childCount = getChildCount();
-
-			if (childCount <= 0) {
-				return false;
-			}
-
-			int selectedTop = 0;
-			int selectedPos;
-			int childrenTop = mListPadding.top;
-			int childrenBottom = getBottom() - getTop() - mListPadding.bottom;
-			final int firstPosition = mFirstPosition;
-			final int toPosition = mResurrectToPosition;
-			boolean down = true;
-
-			if (toPosition >= firstPosition && toPosition < firstPosition + childCount) {
-				selectedPos = toPosition;
-
-				final View selected = getChildAt(selectedPos - mFirstPosition);
-				selectedTop = selected.getTop();
-				int selectedBottom = selected.getBottom();
-
-				// We are scrolled, don't get in the fade
-				if (selectedTop < childrenTop) {
-					selectedTop = childrenTop + getVerticalFadingEdgeLength();
-				} else if (selectedBottom > childrenBottom) {
-					selectedTop = childrenBottom - selected.getMeasuredHeight()
-					- getVerticalFadingEdgeLength();
-				}
-			} else {
-				if (toPosition < firstPosition) {
-					// Default to selecting whatever is first
-					selectedPos = firstPosition;
-					for (int i = 0; i < childCount; i++) {
-						final View v = getChildAt(i);
-						final int top = v.getTop();
-
-						if (i == 0) {
-							// Remember the position of the first item
-							selectedTop = top;
-							// See if we are scrolled at all
-							if (firstPosition > 0 || top < childrenTop) {
-								// If we are scrolled, don't select anything that is
-								// in the fade region
-								childrenTop += getVerticalFadingEdgeLength();
-							}
-						}
-						if (top >= childrenTop) {
-							// Found a view whose top is fully visisble
-							selectedPos = firstPosition + i;
-							selectedTop = top;
-							break;
-						}
-					}
-				} else {
-					final int itemCount = mItemCount;
-					down = false;
-					selectedPos = firstPosition + childCount - 1;
-
-					for (int i = childCount - 1; i >= 0; i--) {
-						final View v = getChildAt(i);
-						final int top = v.getTop();
-						final int bottom = v.getBottom();
-
-						if (i == childCount - 1) {
-							selectedTop = top;
-							if (firstPosition + childCount < itemCount || bottom > childrenBottom) {
-								childrenBottom -= getVerticalFadingEdgeLength();
-							}
-						}
-
-						if (bottom <= childrenBottom) {
-							selectedPos = firstPosition + i;
-							selectedTop = top;
-							break;
-						}
-					}
-				}
-			}
-
-			mResurrectToPosition = INVALID_POSITION;
-			removeCallbacks(mFlingRunnable);
-			mTouchMode = TOUCH_MODE_REST;
-			clearScrollingCache();
-			mSpecificTop = selectedTop;
-			selectedPos = lookForSelectablePosition(selectedPos, down);
-			if (selectedPos >= firstPosition && selectedPos <= getLastVisiblePosition()) {
-				mLayoutMode = LAYOUT_SPECIFIC;
-				setSelectionInt(selectedPos);
-				invokeOnItemScrollListener();
-			} else {
-				selectedPos = INVALID_POSITION;
-			}
-			reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-
-			return selectedPos >= 0;
-		}
-
-
-
-		@Override
-		protected PositionScroller getPositionScroller() {
-			return new VerticalPositionScroller();
-		}
-
-		@Override
-		protected FlingRunnable getFlingRunnable() {
-			return new VerticalFlingRunnable();
-		}
-
-
-		/**
-		 * Responsible for fling behavior. Use {@link #start(int)} to
-		 * initiate a fling. Each frame of the fling is handled in {@link #run()}.
-		 * A FlingRunnable will keep re-posting itself until the fling is done.
-		 *
-		 */
-		private class VerticalFlingRunnable extends FlingRunnable {
-			/**
-			 * Y value reported by mScroller on the previous fling
-			 */
-			protected int mLastFlingY;
-
-			@Override
-			void start(int initialVelocity) {
-				int initialY = initialVelocity < 0 ? Integer.MAX_VALUE : 0;
-				mLastFlingY = initialY;
-				mScroller.fling(0, initialY, 0, initialVelocity,
-						0, Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
-				mTouchMode = TOUCH_MODE_FLING;
-				post(this);
-
-				if (PROFILE_FLINGING) {
-					if (!mFlingProfilingStarted) {
-						Debug.startMethodTracing("AbsListViewFling");
-						mFlingProfilingStarted = true;
-					}
-				}
-			}
-
-			@Override
-			void startScroll(int distance, int duration) {
-				int initialY = distance < 0 ? Integer.MAX_VALUE : 0;
-				mLastFlingY = initialY;
-				mScroller.startScroll(0, initialY, 0, distance, duration);
-				mTouchMode = TOUCH_MODE_FLING;
-				post(this);
-			}
-
-			@Override
-			public void run() {
-				switch (mTouchMode) {
-				default:
-					break;
-
-				case TOUCH_MODE_FLING: {
-					if (mItemCount == 0 || getChildCount() == 0) {
-						endFling();
-						break;
-					}
-
-					final Scroller scroller = mScroller;
-					boolean more = scroller.computeScrollOffset();
-					final int y = scroller.getCurrY();
-
-					// Flip sign to convert finger direction to list items direction
-					// (e.g. finger moving down means list is moving towards the top)
-					int delta = mLastFlingY - y;
-
-					// Pretend that each frame of a fling scroll is a touch scroll
-					if (delta > 0) {
-						// List is moving towards the top. Use first view as mMotionPosition
-						mMotionPosition = mFirstPosition;
-						final View firstView = getChildAt(0);
-						mMotionViewOriginalTop = firstView.getTop();
-
-						// Don't fling more than 1 screen
-						delta = Math.min(getHeight() - getPaddingBottom() - getPaddingTop() - 1, delta);
-					} else {
-						// List is moving towards the bottom. Use last view as mMotionPosition
-						int offsetToLast = getChildCount() - 1;
-						mMotionPosition = mFirstPosition + offsetToLast;
-
-						final View lastView = getChildAt(offsetToLast);
-						mMotionViewOriginalTop = lastView.getTop();
-
-						// Don't fling more than 1 screen
-						delta = Math.max(-(getHeight() - getPaddingBottom() - getPaddingTop() - 1), delta);
-					}
-
-					final boolean atEnd = trackMotionScroll(delta, delta);
-
-					if (more && !atEnd) {
-						invalidate();
-						mLastFlingY = y;
-						post(this);
-					} else {
-						endFling();
-
-						if (PROFILE_FLINGING) {
-							if (mFlingProfilingStarted) {
-								Debug.stopMethodTracing();
-								mFlingProfilingStarted = false;
-							}
-						}
-					}
-					break;
-				}
-				}
-				if(mScroller.isFinished() && mTouchMode != TOUCH_MODE_REST) {
-					endFling();
-				}
-			}
-			
-			private static final int FLYWHEEL_TIMEOUT = 40; // milliseconds
-			
-			public void flywheelTouch() {
-				if(mCheckFlywheel == null) {
-					mCheckFlywheel = new Runnable() {
-						public void run() {
-							final VelocityTracker vt = mVelocityTracker;
-							if (vt == null) {
-								return;
-							}
-
-							vt.computeCurrentVelocity(1000, mMaximumVelocity);
-							final float yvel = -vt.getYVelocity();
-
-							if (Math.abs(yvel) >= mMinimumVelocity
-									&& isScrollingInDirection(0, yvel)) {
-								// Keep the fling alive a little longer
-								postDelayed(this, FLYWHEEL_TIMEOUT);
-							} else {
-								endFling();
-								mTouchMode = TOUCH_MODE_SCROLL;
-								reportScrollStateChange(OnScrollListener.SCROLL_STATE_TOUCH_SCROLL);
-							}
-						}
-					};
-				}
-				postDelayed(mCheckFlywheel, FLYWHEEL_TIMEOUT);
-			}
-		}
-
-
-		class VerticalPositionScroller extends PositionScroller {
-			@Override
-			public void run() {
-				final int listHeight = getHeight();
-				final int firstPos = mFirstPosition;
-
-				switch (mMode) {
-				case MOVE_DOWN_POS: {
-					final int lastViewIndex = getChildCount() - 1;
-					final int lastPos = firstPos + lastViewIndex;
-
-					if (lastViewIndex < 0) {
-						return;
-					}
-
-					if (lastPos == mLastSeenPos) {
-						// No new views, let things keep going.
-						post(this);
-						return;
-					}
-
-					final View lastView = getChildAt(lastViewIndex);
-					final int lastViewHeight = lastView.getHeight();
-					final int lastViewTop = lastView.getTop();
-					final int lastViewPixelsShowing = listHeight - lastViewTop;
-					final int extraScroll = lastPos < mItemCount - 1 ? mExtraScroll : mListPadding.bottom;
-
-					smoothScrollBy(lastViewHeight - lastViewPixelsShowing + extraScroll,
-							mScrollDuration);
-
-					mLastSeenPos = lastPos;
-					if (lastPos < mTargetPos) {
-						post(this);
-					}
-					break;
-				}
-
-				case MOVE_DOWN_BOUND: {
-					final int nextViewIndex = 1;
-					final int childCount = getChildCount();
-
-					if (firstPos == mBoundPos || childCount <= nextViewIndex
-							|| firstPos + childCount >= mItemCount) {
-						return;
-					}
-					final int nextPos = firstPos + nextViewIndex;
-
-					if (nextPos == mLastSeenPos) {
-						// No new views, let things keep going.
-						post(this);
-						return;
-					}
-
-					final View nextView = getChildAt(nextViewIndex);
-					final int nextViewHeight = nextView.getHeight();
-					final int nextViewTop = nextView.getTop();
-					final int extraScroll = mExtraScroll;
-					if (nextPos < mBoundPos) {
-						smoothScrollBy(Math.max(0, nextViewHeight + nextViewTop - extraScroll),
-								mScrollDuration);
-
-						mLastSeenPos = nextPos;
-
-						post(this);
-					} else  {
-						if (nextViewTop > extraScroll) {
-							smoothScrollBy(nextViewTop - extraScroll, mScrollDuration);
-						}
-					}
-					break;
-				}
-
-				case MOVE_UP_POS: {
-					if (firstPos == mLastSeenPos) {
-						// No new views, let things keep going.
-						post(this);
-						return;
-					}
-
-					final View firstView = getChildAt(0);
-					if (firstView == null) {
-						return;
-					}
-					final int firstViewTop = firstView.getTop();
-					final int extraScroll = firstPos > 0 ? mExtraScroll : mListPadding.top;
-
-					smoothScrollBy(firstViewTop - extraScroll, mScrollDuration);
-
-					mLastSeenPos = firstPos;
-
-					if (firstPos > mTargetPos) {
-						post(this);
-					}
-					break;
-				}
-
-				case MOVE_UP_BOUND: {
-					final int lastViewIndex = getChildCount() - 2;
-					if (lastViewIndex < 0) {
-						return;
-					}
-					final int lastPos = firstPos + lastViewIndex;
-
-					if (lastPos == mLastSeenPos) {
-						// No new views, let things keep going.
-						post(this);
-						return;
-					}
-
-					final View lastView = getChildAt(lastViewIndex);
-					final int lastViewHeight = lastView.getHeight();
-					final int lastViewTop = lastView.getTop();
-					final int lastViewPixelsShowing = listHeight - lastViewTop;
-					mLastSeenPos = lastPos;
-					if (lastPos > mBoundPos) {
-						smoothScrollBy(-(lastViewPixelsShowing - mExtraScroll), mScrollDuration);
-						post(this);
-					} else {
-						final int bottom = listHeight - mExtraScroll;
-						final int lastViewBottom = lastViewTop + lastViewHeight;
-						if (bottom > lastViewBottom) {
-							smoothScrollBy(-(bottom - lastViewBottom), mScrollDuration);
-						}
-					}
-					break;
-				}
-
-				default:
-					break;
-				}
-			}
-		}
-	}
-
-
-
-
-
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//  Horizontal Touch Handler
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	class HorizontalTouchHandler extends TouchHandler {
-		/**
-		 * The offset to the top of the mMotionPosition view when the down motion event was received
-		 */
-		int mMotionViewOriginalLeft;
-
-		/**
-		 * X value from on the previous motion event (if any)
-		 */
-		int mLastX;
-
-		/**
-		 * The desired offset to the top of the mMotionPosition view after a scroll
-		 */
-		int mMotionViewNewLeft;
-
-
-
-		@Override
-		protected FlingRunnable getFlingRunnable() {
-			return new HorizontalFlingRunnable();
-		}
-
-
-		@Override
-		protected PositionScroller getPositionScroller() {
-			return new HorizontalPositionScroller();
-		}
-
-
-		@Override
-		public boolean onInterceptTouchEvent(MotionEvent ev) {
-			int action = ev.getAction();
-			View v;
-
-			/*
-            if (mFastScroller != null) {
-                boolean intercepted = mFastScroller.onInterceptTouchEvent(ev);
-                if (intercepted) {
-                    return true;
-                }
-            }*/
-
-			switch (action) {
-				case MotionEvent.ACTION_DOWN: {
-					int touchMode = mTouchMode;
-	
-					final int x = (int) ev.getX();
-					final int y = (int) ev.getY();
-					
-					int motionPosition = findMotionRowX(x);
-					if (touchMode != TOUCH_MODE_FLING && motionPosition >= 0) {
-						// User clicked on an actual view (and was not stopping a fling).
-						// Remember where the motion event started
-						v = getChildAt(motionPosition - mFirstPosition);
-						mMotionViewOriginalLeft = v.getLeft();
-						mMotionX = x;
-						mMotionY = y;
-						mMotionPosition = motionPosition;
-						mTouchMode = TOUCH_MODE_DOWN;
-						clearScrollingCache();
-					}
-					mLastX = Integer.MIN_VALUE;
-					initOrResetVelocityTracker();
-					mVelocityTracker.addMovement(ev);
-					if (touchMode == TOUCH_MODE_FLING) {
-						return true;
-					}
-					break;
-				}
-	
-				case MotionEvent.ACTION_MOVE: {
-					switch (mTouchMode) {
-					case TOUCH_MODE_DOWN:
-						final int x = (int) ev.getX();
-						if (startScrollIfNeeded(x - mMotionX)) {
-							return true;
-						}
-						break;
-					}
-					break;
-				}
-	
-				case MotionEvent.ACTION_UP: {
-					mTouchMode = TOUCH_MODE_REST;
-					mActivePointerId = INVALID_POINTER;
-					reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-					break;
-				}
-
-			}
-
-			return false;
-		}
-
-
-		@Override
-		public boolean onTouchEvent(MotionEvent ev) {
-			if (!isEnabled()) {
-				// A disabled view that is clickable still consumes the touch
-				// events, it just doesn't respond to them.
-				return isClickable() || isLongClickable();
-			}
-
-			/*
-            if (mFastScroller != null) {
-                boolean intercepted = mFastScroller.onTouchEvent(ev);
-                if (intercepted) {
-                    return true;
-                }
-            }*/
-
-			final int action = ev.getAction();
-
-			View v;
-			int deltaX;
-
-			if (mVelocityTracker == null) {
-				mVelocityTracker = VelocityTracker.obtain();
-			}
-			mVelocityTracker.addMovement(ev);
-
-			switch (action) {
-				case MotionEvent.ACTION_DOWN: {
-					final int x = (int) ev.getX();
-					final int y = (int) ev.getY();
-					int motionPosition = pointToPosition(x, y);
-					if (!mDataChanged) {
-						if ((mTouchMode != TOUCH_MODE_FLING) && (motionPosition >= 0)
-								&& (getAdapter().isEnabled(motionPosition))) {
-							// User clicked on an actual view (and was not stopping a fling). It might be a
-							// click or a scroll. Assume it is a click until proven otherwise
-							mTouchMode = TOUCH_MODE_DOWN;
-							// FIXME Debounce
-							if (mPendingCheckForTap == null) {
-								mPendingCheckForTap = new CheckForTap();
-							}
-							postDelayed(mPendingCheckForTap, ViewConfiguration.getTapTimeout());
-						} else {
-							if (ev.getEdgeFlags() != 0 && motionPosition < 0) {
-								// If we couldn't find a view to click on, but the down event was touching
-								// the edge, we will bail out and try again. This allows the edge correcting
-								// code in ViewRoot to try to find a nearby view to select
-								return false;
-							}
-	
-							if (mTouchMode == TOUCH_MODE_FLING) {
-								// Stopped a fling. It is a scroll.
-								createScrollingCache();
-								mTouchMode = TOUCH_MODE_SCROLL;
-								mMotionCorrection = 0;
-								motionPosition = findMotionRowX(x);
-								if(mFlingRunnable!=null)
-									mFlingRunnable.flywheelTouch();
-							}
-						}
-					}
-	
-					if (motionPosition >= 0) {
-						// Remember where the motion event started
-						v = getChildAt(motionPosition - mFirstPosition);
-						mMotionViewOriginalLeft = v.getLeft();
-					}
-					mMotionX = x;
-					mMotionY = y;
-					mMotionPosition = motionPosition;
-					mLastX = Integer.MIN_VALUE;
-					break;
-				}
-	
-				case MotionEvent.ACTION_MOVE: {
-					final int x = (int) ev.getX();
-					deltaX = x - mMotionX;
-					switch (mTouchMode) {
-					case TOUCH_MODE_DOWN:
-					case TOUCH_MODE_TAP:
-					case TOUCH_MODE_DONE_WAITING:
-						// Check if we have moved far enough that it looks more like a
-						// scroll than a tap
-						startScrollIfNeeded(deltaX);
-						break;
-					case TOUCH_MODE_SCROLL:
-						if (PROFILE_SCROLLING) {
-							if (!mScrollProfilingStarted) {
-								Debug.startMethodTracing("JessAbsListViewScroll");
-								mScrollProfilingStarted = true;
-							}
-						}
-	
-						if (x != mLastX) {
-							deltaX -= mMotionCorrection;
-							int incrementalDeltaX = mLastX != Integer.MIN_VALUE ? x - mLastX : deltaX;
-	
-							// No need to do all this work if we're not going to move anyway
-							boolean atEdge = false;
-							if (incrementalDeltaX != 0) {
-								atEdge = trackMotionScroll(deltaX, incrementalDeltaX);
-							}
-	
-							// Check to see if we have bumped into the scroll limit
-							if (atEdge && getChildCount() > 0) {
-								// Treat this like we're starting a new scroll from the current
-								// position. This will let the user start scrolling back into
-								// content immediately rather than needing to scroll back to the
-								// point where they hit the limit first.
-								int motionPosition = findMotionRowX(x);
-								if (motionPosition >= 0) {
-									final View motionView = getChildAt(motionPosition - mFirstPosition);
-									mMotionViewOriginalLeft = motionView.getLeft();
-								}
-								mMotionX = x;
-								mMotionPosition = motionPosition;
-								invalidate();
-							}
-							mLastX = x;
-						}
-						break;
-					}
-	
-					break;
-				}
-	
-				case MotionEvent.ACTION_UP: {
-					switch (mTouchMode) {
-					case TOUCH_MODE_DOWN:
-					case TOUCH_MODE_TAP:
-					case TOUCH_MODE_DONE_WAITING:
-						final int motionPosition = mMotionPosition;
-						final View child = getChildAt(motionPosition - mFirstPosition);
-						if (child != null && !child.hasFocusable()) {
-							if (mTouchMode != TOUCH_MODE_DOWN) {
-								child.setPressed(false);
-							}
-	
-							if (mPerformClick == null) {
-								mPerformClick = new PerformClick();
-							}
-	
-							final TwoWayAbsListView.PerformClick performClick = mPerformClick;
-							performClick.mChild = child;
-							performClick.mClickMotionPosition = motionPosition;
-							performClick.rememberWindowAttachCount();
-	
-							mResurrectToPosition = motionPosition;
-	
-							if (mTouchMode == TOUCH_MODE_DOWN || mTouchMode == TOUCH_MODE_TAP) {
-								final Handler handler = getHandler();
-								if (handler != null) {
-									handler.removeCallbacks(mTouchMode == TOUCH_MODE_DOWN ?
-											mPendingCheckForTap : mPendingCheckForLongPress);
-								}
-								mLayoutMode = LAYOUT_NORMAL;
-								if (!mDataChanged && mAdapter.isEnabled(motionPosition)) {
-									mTouchMode = TOUCH_MODE_TAP;
-									setSelectedPositionInt(mMotionPosition);
-									layoutChildren();
-									child.setPressed(true);
-									positionSelector(child);
-									setPressed(true);
-									if (mSelector != null) {
-										Drawable d = mSelector.getCurrent();
-										if (d != null && d instanceof TransitionDrawable) {
-											((TransitionDrawable) d).resetTransition();
-										}
-									}
-									postDelayed(new Runnable() {
-										public void run() {
-											child.setPressed(false);
-											setPressed(false);
-											if (!mDataChanged) {
-												post(performClick);
-											}
-											mTouchMode = TOUCH_MODE_REST;
-										}
-									}, ViewConfiguration.getPressedStateDuration());
-								} else {
-									mTouchMode = TOUCH_MODE_REST;
-								}
-								return true;
-							} else if (!mDataChanged && mAdapter.isEnabled(motionPosition)) {
-								post(performClick);
-							}
-						}
-						mTouchMode = TOUCH_MODE_REST;
-						break;
-					case TOUCH_MODE_SCROLL:
-						final int childCount = getChildCount();
-						if (childCount > 0) {
-							if (mFirstPosition == 0 && getChildAt(0).getLeft() >= mListPadding.left &&
-									mFirstPosition + childCount < mItemCount &&
-									getChildAt(childCount - 1).getRight() <=
-										getWidth() - mListPadding.right) {
-								mTouchMode = TOUCH_MODE_REST;
-								reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-							} else {
-								final VelocityTracker velocityTracker = mVelocityTracker;
-								velocityTracker.computeCurrentVelocity(1000);
-								final int initialVelocity = (int) velocityTracker.getXVelocity();
-	
-								if (Math.abs(initialVelocity) > mMinimumVelocity) {
-									if (mFlingRunnable == null) {
-										mFlingRunnable = new HorizontalFlingRunnable();
-									}
-									reportScrollStateChange(OnScrollListener.SCROLL_STATE_FLING);
-	
-									mFlingRunnable.start(-initialVelocity);
-								} else {
-									mTouchMode = TOUCH_MODE_REST;
-									reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-								}
-							}
-						} else {
-							mTouchMode = TOUCH_MODE_REST;
-							reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-						}
-						break;
-					}
-	
-					setPressed(false);
-	
-					// Need to redraw since we probably aren't drawing the selector anymore
-					invalidate();
-	
-					final Handler handler = getHandler();
-					if (handler != null) {
-						handler.removeCallbacks(mPendingCheckForLongPress);
-					}
-	
-					if (mVelocityTracker != null) {
-						mVelocityTracker.recycle();
-						mVelocityTracker = null;
-					}
-	
-					mActivePointerId = INVALID_POINTER;
-	
-					if (PROFILE_SCROLLING) {
-						if (mScrollProfilingStarted) {
-							Debug.stopMethodTracing();
-							mScrollProfilingStarted = false;
-						}
-					}
-					break;
-				}
-	
-				case MotionEvent.ACTION_CANCEL: {
-					mTouchMode = TOUCH_MODE_REST;
-					setPressed(false);
-					View motionView = TwoWayAbsListView.this.getChildAt(mMotionPosition - mFirstPosition);
-					if (motionView != null) {
-						motionView.setPressed(false);
-					}
-					clearScrollingCache();
-	
-					final Handler handler = getHandler();
-					if (handler != null) {
-						handler.removeCallbacks(mPendingCheckForLongPress);
-					}
-	
-					if (mVelocityTracker != null) {
-						mVelocityTracker.recycle();
-						mVelocityTracker = null;
-					}
-	
-					mActivePointerId = INVALID_POINTER;
-					break;
-				}
-			}
-
-			return true;
-		}
-
-
-		@Override
-		boolean resurrectSelection() {
-			final int childCount = getChildCount();
-
-			if (childCount <= 0) {
-				return false;
-			}
-
-			int selectedLeft = 0;
-			int selectedPos;
-			int childrenLeft = mListPadding.top;
-			int childrenRight = getRight() - getLeft() - mListPadding.right;
-			final int firstPosition = mFirstPosition;
-			final int toPosition = mResurrectToPosition;
-			boolean down = true;
-
-			if (toPosition >= firstPosition && toPosition < firstPosition + childCount) {
-				selectedPos = toPosition;
-
-				final View selected = getChildAt(selectedPos - mFirstPosition);
-				selectedLeft = selected.getLeft();
-				int selectedRight = selected.getRight();
-
-				// We are scrolled, don't get in the fade
-				if (selectedLeft < childrenLeft) {
-					selectedLeft = childrenLeft + getHorizontalFadingEdgeLength();
-				} else if (selectedRight > childrenRight) {
-					selectedLeft = childrenRight - selected.getMeasuredWidth()
-					- getHorizontalFadingEdgeLength();
-				}
-			} else {
-				if (toPosition < firstPosition) {
-					// Default to selecting whatever is first
-					selectedPos = firstPosition;
-					for (int i = 0; i < childCount; i++) {
-						final View v = getChildAt(i);
-						final int left = v.getLeft();
-
-						if (i == 0) {
-							// Remember the position of the first item
-							selectedLeft = left;
-							// See if we are scrolled at all
-							if (firstPosition > 0 || left < childrenLeft) {
-								// If we are scrolled, don't select anything that is
-								// in the fade region
-								childrenLeft += getHorizontalFadingEdgeLength();
-							}
-						}
-						if (left >= childrenLeft) {
-							// Found a view whose top is fully visisble
-							selectedPos = firstPosition + i;
-							selectedLeft = left;
-							break;
-						}
-					}
-				} else {
-					final int itemCount = mItemCount;
-					down = false;
-					selectedPos = firstPosition + childCount - 1;
-
-					for (int i = childCount - 1; i >= 0; i--) {
-						final View v = getChildAt(i);
-						final int left = v.getLeft();
-						final int right = v.getRight();
-
-						if (i == childCount - 1) {
-							selectedLeft = left;
-							if (firstPosition + childCount < itemCount || right > childrenRight) {
-								childrenRight -= getHorizontalFadingEdgeLength();
-							}
-						}
-
-						if (right <= childrenRight) {
-							selectedPos = firstPosition + i;
-							selectedLeft = left;
-							break;
-						}
-					}
-				}
-			}
-
-			mResurrectToPosition = INVALID_POSITION;
-			removeCallbacks(mFlingRunnable);
-			mTouchMode = TOUCH_MODE_REST;
-			clearScrollingCache();
-			mSpecificTop = selectedLeft;
-			selectedPos = lookForSelectablePosition(selectedPos, down);
-			if (selectedPos >= firstPosition && selectedPos <= getLastVisiblePosition()) {
-				mLayoutMode = LAYOUT_SPECIFIC;
-				setSelectionInt(selectedPos);
-				invokeOnItemScrollListener();
-			} else {
-				selectedPos = INVALID_POSITION;
-			}
-			reportScrollStateChange(OnScrollListener.SCROLL_STATE_IDLE);
-
-			return selectedPos >= 0;
-		}
-
-
-		@Override
-		boolean trackMotionScroll(int delta, int incrementalDelta) {
-			if (DEBUG) Log.i(TAG, "trackMotionScroll() - deltaX: " + delta + " incrDeltaX: " + incrementalDelta);
-			final int childCount = getChildCount();
-			if (childCount == 0) {
-				return true;
-			}
-
-			final int firstLeft = getChildAt(0).getLeft();
-			final int lastRight = getChildAt(childCount - 1).getRight();
-
-			final Rect listPadding = mListPadding;
-
-			// FIXME account for grid horizontal spacing too?
-			final int spaceAbove = listPadding.left - firstLeft;
-			final int end = getWidth() - listPadding.right;
-			final int spaceBelow = lastRight - end;
-
-			final int width = getWidth() - getPaddingRight() - getPaddingLeft();
-			if (delta < 0) {
-				delta = Math.max(-(width - 1), delta);
-			} else {
-				delta = Math.min(width - 1, delta);
-			}
-
-			if (incrementalDelta < 0) {
-				incrementalDelta = Math.max(-(width - 1), incrementalDelta);
-			} else {
-				incrementalDelta = Math.min(width - 1, incrementalDelta);
-			}
-
-			final int firstPosition = mFirstPosition;
-
-			if (firstPosition == 0 && firstLeft >= listPadding.left && delta >= 0) {
-				// Don't need to move views right if the top of the first position
-				// is already visible
-				if (DEBUG) Log.i(TAG, "trackScrollMotion returning true");
-				return true;
-			}
-
-			if (firstPosition + childCount == mItemCount && lastRight <= end && delta <= 0) {
-				// Don't need to move views left if the bottom of the last position
-				// is already visible
-				if (DEBUG) Log.i(TAG, "trackScrollMotion returning true");
-				return true;
-			}
-
-			final boolean down = incrementalDelta < 0;
-
-			final boolean inTouchMode = isInTouchMode();
-			if (inTouchMode) {
-				hideSelector();
-			}
-
-			final int headerViewsCount = getHeaderViewsCount();
-			final int footerViewsStart = mItemCount - getFooterViewsCount();
-
-			int start = 0;
-			int count = 0;
-
-			if (down) {
-				final int left = listPadding.left - incrementalDelta;
-				for (int i = 0; i < childCount; i++) {
-					final View child = getChildAt(i);
-					if (child.getRight() >= left) {
-						break;
-					} else {
-						count++;
-						int position = firstPosition + i;
-						if (position >= headerViewsCount && position < footerViewsStart) {
-							mRecycler.addScrapView(child);
-
-							if (ViewDebug.TRACE_RECYCLER) {
-								ViewDebug.trace(child,
-										ViewDebug.RecyclerTraceType.MOVE_TO_SCRAP_HEAP,
-										firstPosition + i, -1);
-							}
-						}
-					}
-				}
-			} else {
-				final int right = getWidth() - listPadding.right - incrementalDelta;
-				for (int i = childCount - 1; i >= 0; i--) {
-					final View child = getChildAt(i);
-					if (child.getLeft() <= right) {
-						break;
-					} else {
-						start = i;
-						count++;
-						int position = firstPosition + i;
-						if (position >= headerViewsCount && position < footerViewsStart) {
-							mRecycler.addScrapView(child);
-
-							if (ViewDebug.TRACE_RECYCLER) {
-								ViewDebug.trace(child,
-										ViewDebug.RecyclerTraceType.MOVE_TO_SCRAP_HEAP,
-										firstPosition + i, -1);
-							}
-						}
-					}
-				}
-			}
-
-			mMotionViewNewLeft = mMotionViewOriginalLeft + delta;
-
-			mBlockLayoutRequests = true;
-
-			if (count > 0) {
-				detachViewsFromParent(start, count);
-			}
-			offsetChildrenLeftAndRight(incrementalDelta);
-
-			if (down) {
-				mFirstPosition += count;
-			}
-
-			invalidate();
-
-			final int absIncrementalDelta = Math.abs(incrementalDelta);
-			if (spaceAbove < absIncrementalDelta|| spaceBelow < absIncrementalDelta) {
-				fillGap(down);
-			}
-
-			if (!inTouchMode && mSelectedPosition != INVALID_POSITION) {
-				final int childIndex = mSelectedPosition - mFirstPosition;
-				if (childIndex >= 0 && childIndex < getChildCount()) {
-					positionSelector(getChildAt(childIndex));
-				}
-			}
-
-			mBlockLayoutRequests = false;
-
-			invokeOnItemScrollListener();
-			//awakenScrollBars();
-			if (DEBUG) Log.i(TAG, "trackScrollMotion returning false - mFirstPosition: " + mFirstPosition);
-			return false;
-		}
-
-
-		/**
-		 * Responsible for fling behavior. Use {@link #start(int)} to
-		 * initiate a fling. Each frame of the fling is handled in {@link #run()}.
-		 * A FlingRunnable will keep re-posting itself until the fling is done.
-		 *
-		 */
-		private class HorizontalFlingRunnable extends FlingRunnable {
-			/**
-			 * X value reported by mScroller on the previous fling
-			 */
-			protected int mLastFlingX;
-			
-			@Override
-			void start(int initialVelocity) {
-				int initialX = initialVelocity < 0 ? Integer.MAX_VALUE : 0;
-				mLastFlingX = initialX;
-				mScroller.fling(initialX, 0, initialVelocity, 0,
-						0, Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
-				mTouchMode = TOUCH_MODE_FLING;
-				post(this);
-				//postOnAnimation(this);
-
-				if (PROFILE_FLINGING) {
-					if (!mFlingProfilingStarted) {
-						Debug.startMethodTracing("AbsListViewFling");
-						mFlingProfilingStarted = true;
-					}
-				}
-			}
-
-			@Override
-			void startScroll(int distance, int duration) {
-				int initialX = distance < 0 ? Integer.MAX_VALUE : 0;
-				mLastFlingX = initialX;
-				mScroller.startScroll(initialX, 0, distance, 0, duration);
-				mTouchMode = TOUCH_MODE_FLING;
-				post(this);
-			}
-
-			@Override
-			public void run() {
-				switch (mTouchMode) {
-				default:
-					break;
-
-				case TOUCH_MODE_FLING: {
-					if (mItemCount == 0 || getChildCount() == 0) {
-						endFling();
-						break;
-					}
-
-					final Scroller scroller = mScroller;
-					boolean more = scroller.computeScrollOffset();
-					final int x = scroller.getCurrX();
-
-					// Flip sign to convert finger direction to list items direction
-					// (e.g. finger moving down means list is moving towards the top)
-					int delta = mLastFlingX - x;
-
-					// Pretend that each frame of a fling scroll is a touch scroll
-					if (delta > 0) {
-						// List is moving towards the top. Use first view as mMotionPosition
-						mMotionPosition = mFirstPosition;
-						final View firstView = getChildAt(0);
-						mMotionViewOriginalLeft = firstView.getLeft();
-
-						// Don't fling more than 1 screen
-						delta = Math.min(getWidth() - getPaddingRight() - getPaddingLeft() - 1, delta);
-					} else {
-						// List is moving towards the bottom. Use last view as mMotionPosition
-						int offsetToLast = getChildCount() - 1;
-						mMotionPosition = mFirstPosition + offsetToLast;
-
-						final View lastView = getChildAt(offsetToLast);
-						mMotionViewOriginalLeft = lastView.getLeft();
-
-						// Don't fling more than 1 screen
-						delta = Math.max(-(getWidth() - getPaddingRight() - getPaddingLeft() - 1), delta);
-					}
-
-					final boolean atEnd = trackMotionScroll(delta, delta);
-
-					if (more && !atEnd) {
-						invalidate();
-						mLastFlingX = x;
-						post(this);
-						//postOnAnimation(this);
-					} else {
-						endFling();
-
-						if (PROFILE_FLINGING) {
-							if (mFlingProfilingStarted) {
-								Debug.stopMethodTracing();
-								mFlingProfilingStarted = false;
-							}
-						}
-					}
-					break;
-				}
-				}
-				if(mScroller.isFinished() && mTouchMode != TOUCH_MODE_REST) {
-					endFling();
-				}
-			}
-			
-			
-			private static final int FLYWHEEL_TIMEOUT = 40; // milliseconds
-	
-			public void flywheelTouch() {
-				if(mCheckFlywheel == null) {
-					mCheckFlywheel = new Runnable() {
-						public void run() {
-							final VelocityTracker vt = mVelocityTracker;
-							if (vt == null) {
-								return;
-							}
-
-							vt.computeCurrentVelocity(1000, mMaximumVelocity);
-							final float xvel = -vt.getXVelocity();
-
-							if (Math.abs(xvel) >= mMinimumVelocity
-									&& isScrollingInDirection(0, xvel)) {
-								// Keep the fling alive a little longer
-								postDelayed(this, FLYWHEEL_TIMEOUT);
-							} else {
-								endFling();
-								mTouchMode = TOUCH_MODE_SCROLL;
-								reportScrollStateChange(OnScrollListener.SCROLL_STATE_TOUCH_SCROLL);
-							}
-						}
-					};
-				}
-				postDelayed(mCheckFlywheel, FLYWHEEL_TIMEOUT);
-			}
-		}
-
-
-		class HorizontalPositionScroller extends PositionScroller {
-			@Override
-			public void run() {
-				final int listWidth = getWidth();
-				final int firstPos = mFirstPosition;
-
-				switch (mMode) {
-				case MOVE_DOWN_POS: {
-					final int lastViewIndex = getChildCount() - 1;
-					final int lastPos = firstPos + lastViewIndex;
-
-					if (lastViewIndex < 0) {
-						return;
-					}
-
-					if (lastPos == mLastSeenPos) {
-						// No new views, let things keep going.
-						post(this);
-						return;
-					}
-
-					final View lastView = getChildAt(lastViewIndex);
-					final int lastViewWidth = lastView.getWidth();
-					final int lastViewLeft = lastView.getLeft();
-					final int lastViewPixelsShowing = listWidth - lastViewLeft;
-					final int extraScroll = lastPos < mItemCount - 1 ? mExtraScroll : mListPadding.right;
-
-					smoothScrollBy(lastViewWidth - lastViewPixelsShowing + extraScroll,
-							mScrollDuration);
-
-					mLastSeenPos = lastPos;
-					if (lastPos < mTargetPos) {
-						post(this);
-					}
-					break;
-				}
-
-				case MOVE_DOWN_BOUND: {
-					final int nextViewIndex = 1;
-					final int childCount = getChildCount();
-
-					if (firstPos == mBoundPos || childCount <= nextViewIndex
-							|| firstPos + childCount >= mItemCount) {
-						return;
-					}
-					final int nextPos = firstPos + nextViewIndex;
-
-					if (nextPos == mLastSeenPos) {
-						// No new views, let things keep going.
-						post(this);
-						return;
-					}
-
-					final View nextView = getChildAt(nextViewIndex);
-					final int nextViewWidth = nextView.getWidth();
-					final int nextViewLeft = nextView.getLeft();
-					final int extraScroll = mExtraScroll;
-					if (nextPos < mBoundPos) {
-						smoothScrollBy(Math.max(0, nextViewWidth + nextViewLeft - extraScroll),
-								mScrollDuration);
-
-						mLastSeenPos = nextPos;
-
-						post(this);
-					} else  {
-						if (nextViewLeft > extraScroll) {
-							smoothScrollBy(nextViewLeft - extraScroll, mScrollDuration);
-						}
-					}
-					break;
-				}
-
-				case MOVE_UP_POS: {
-					if (firstPos == mLastSeenPos) {
-						// No new views, let things keep going.
-						post(this);
-						return;
-					}
-
-					final View firstView = getChildAt(0);
-					if (firstView == null) {
-						return;
-					}
-					final int firstViewLeft = firstView.getLeft();
-					final int extraScroll = firstPos > 0 ? mExtraScroll : mListPadding.left;
-
-					smoothScrollBy(firstViewLeft - extraScroll, mScrollDuration);
-
-					mLastSeenPos = firstPos;
-
-					if (firstPos > mTargetPos) {
-						post(this);
-					}
-					break;
-				}
-
-				case MOVE_UP_BOUND: {
-					final int lastViewIndex = getChildCount() - 2;
-					if (lastViewIndex < 0) {
-						return;
-					}
-					final int lastPos = firstPos + lastViewIndex;
-
-					if (lastPos == mLastSeenPos) {
-						// No new views, let things keep going.
-						post(this);
-						return;
-					}
-
-					final View lastView = getChildAt(lastViewIndex);
-					final int lastViewWidth = lastView.getWidth();
-					final int lastViewLeft = lastView.getLeft();
-					final int lastViewPixelsShowing = listWidth - lastViewLeft;
-					mLastSeenPos = lastPos;
-					if (lastPos > mBoundPos) {
-						smoothScrollBy(-(lastViewPixelsShowing - mExtraScroll), mScrollDuration);
-						post(this);
-					} else {
-						final int right = listWidth - mExtraScroll;
-						final int lastViewRight = lastViewLeft + lastViewWidth;
-						if (right > lastViewRight) {
-							smoothScrollBy(-(right - lastViewRight), mScrollDuration);
-						}
-					}
-					break;
-				}
-
-				default:
-					break;
-				}
-			}
-		}
-
-	}
-
-
-	private void initOrResetVelocityTracker() {
+	void initOrResetVelocityTracker() {
 		if (mVelocityTracker == null) {
 			mVelocityTracker = VelocityTracker.obtain();
 		} else {
 			mVelocityTracker.clear();
 		}
 	}
-
+	
+	void detachViews(int start, int count) {
+		super.detachViewsFromParent(start, count);
+	}
+	
+	void drawCacheEnabled(boolean b) {
+		super.setChildrenDrawingCacheEnabled(b);
+	}
+	
+	void drawnWithCacheEnabled(boolean b) {
+		super.setChildrenDrawnWithCacheEnabled(b);
+	}
 }
 
 
