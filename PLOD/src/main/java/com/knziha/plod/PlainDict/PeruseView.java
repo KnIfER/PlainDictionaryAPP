@@ -1,5 +1,7 @@
 package com.knziha.plod.plaindict;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.res.Configuration;
@@ -30,6 +32,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -53,6 +56,7 @@ import androidx.core.graphics.ColorUtils;
 import androidx.core.view.MenuCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.android.material.animation.AnimationUtils;
 import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayAdapterView.OnItemClickListener;
 import com.jess.ui.TwoWayGridView;
@@ -160,6 +164,31 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	List<MenuItemImpl> PageMenus;
 	private MenuItem firstMenu;
 	SearchbarTools etTools;
+	private Runnable tadaViewRn = new Runnable() {
+		@Override
+		public void run() {
+			View v = gridView.getChildAt(PositionToCenter-gridView.getFirstVisiblePosition());
+			if(v!=null) {
+				v.animate()
+					.scaleX(1.5f)
+					.scaleY(1.5f)
+					.setDuration(100)
+					.setInterpolator(AnimationUtils.DECELERATE_INTERPOLATOR)
+					.setListener(new AnimatorListenerAdapter() {
+						@Override
+						public void onAnimationEnd(Animator animation) {
+							v.animate()
+								.scaleX(1f)
+								.scaleY(1f)
+								.setDuration(200)
+								.setInterpolator(AnimationUtils.LINEAR_INTERPOLATOR)
+								.setListener(null);
+						}
+					})
+				;
+			}
+		}
+	};
 	
 	//构造
 	public PeruseView(int mainBackground){
@@ -177,6 +206,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	float expandFrom;
 	PDICMainAppOptions opt;
 	int PositionToSelect=0;
+	int PositionToCenter=0;
 	int TargetRow;
 	int NumRows=1;
 
@@ -388,6 +418,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						PositionToSelect = gv.getFirstVisiblePosition();
 						if(child.getLeft()<-0.5*itemWidth)
 							PositionToSelect++;
+
+						for(int i = 0; i< gv.getChildCount(); i++) {
+							View childAt = gv.getChildAt(i);
+							if(childAt.getRight()>gv.getWidth()/2) {
+								PositionToCenter = ((DictTitleHolder) childAt.getTag()).pos;
+								break;
+							}
+						}
 						
 						NumPreEmpter = opt.fyeGridPad()?(cc - PositionToSelect%cc)%cc:0;
 						for (int i = cyclerBin.size(); i < NumPreEmpter; i++) {
@@ -406,27 +444,28 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				        gv.setLayoutParams(params);
 				        gv.setHorizontalScroll(false);
 			        	gv.setSelection(PositionToSelect+NumPreEmpter);
+						gv.postOnAnimationDelayed(tadaViewRn, 100);
 					}
 				}
 				else if(newSize>=1.2*itemHeight) {
 					/* transition */
 					//a.showT("entering transition...");
 					if(!bExpanded) {
-						int fvp = gv.getFirstVisiblePosition();//当前行起始位置
-						if(expandTarget ==-1) {
-							int delta= child.getLeft();
-							expandFrom = (fvp * itemWidth-delta);
-							expandTarget = opt.fyeGridPad()?(fvp+(delta<=-0.5*itemWidth?1:0) * itemWidth)
-									:(float) (Math.floor(fvp*1.f/cc) * cc * itemWidth);
-						}
-						float alpha = (float) ((2*itemHeight - newSize)/(0.8*itemHeight));
-						alpha=Math.max(0, Math.min(1, alpha));
-						float CurrentScrollX = (fvp*(itemWidth)- child.getLeft());
-						//a.showT(CurrentScrollX+" to "+ft+"-"+md.get(data.get(FVP))._Dictionary_fName);
-						//a.showT("firstVisiblePos="+LvHeadline.getFirstVisiblePosition()+" leftOffset="+LvHeadline.getChildAt(0).getLeft());
-						
-						float Target = ((1-alpha)* expandTarget +alpha* expandFrom);
-						gv.smoothScrollBy((int) (Target-CurrentScrollX),60);
+//						int fvp = gv.getFirstVisiblePosition();//当前行起始位置
+//						if(expandTarget ==-1) {
+//							int delta= child.getLeft();
+//							expandFrom = (fvp * itemWidth-delta);
+//							expandTarget = opt.fyeGridPad()?(fvp+(delta<=-0.5*itemWidth?1:0) * itemWidth)
+//									:(float) (Math.floor(fvp*1.f/cc) * cc * itemWidth);
+//						}
+//						float alpha = (float) ((2*itemHeight - newSize)/(0.8*itemHeight));
+//						alpha=Math.max(0, Math.min(1, alpha));
+//						float CurrentScrollX = (fvp*(itemWidth)- child.getLeft());
+//						//a.showT(CurrentScrollX+" to "+ft+"-"+md.get(data.get(FVP))._Dictionary_fName);
+//						//a.showT("firstVisiblePos="+LvHeadline.getFirstVisiblePosition()+" leftOffset="+LvHeadline.getChildAt(0).getLeft());
+//
+//						float Target = ((1-alpha)* expandTarget +alpha* expandFrom);
+//						gv.smoothScrollBy((int) (Target-CurrentScrollX),60);
 					}
 				}
 				else if(newSize<=itemHeight+1){
@@ -439,8 +478,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						
 						
 				        gv.setNumColumns(bookIds.size());
-				        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(getResources().getDisplayMetrics().widthPixels, -1);
-				        gv.setLayoutParams(params);
+				        gv.getLayoutParams().width = -1;
+				        gv.getLayoutParams().height = -1;
+						gv.requestLayout();
 
 				        gv.setHorizontalScroll(true);
 				        gv.setSelection(PositionToSelect);
@@ -448,10 +488,12 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				        //LvHeadline.invalidate();
 				        
 				        gv.postDelayed(() -> {
-							for(int i = 0; i< gv.getChildCount(); i++) {
-								gv.getChildAt(i).setTop(0);
-								gv.getChildAt(i).setBottom((int) (lvHeaderItem_height * density));
-							}
+							scrollGridToCenter(PositionToCenter);
+							CMN.Log("PositionToCenter::", PositionToCenter);
+//							for(int i = 0; i< gv.getChildCount(); i++) {
+//								gv.getChildAt(i).setTop(0);
+//								gv.getChildAt(i).setBottom((int) (lvHeaderItem_height * density));
+//							}
 						},160);
 					}
 				}
@@ -1431,6 +1473,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			entryAdapter.lastClickedPos=-1;
 			
 			SelectedV=position-NumPreEmpter;
+			PositionToCenter = SelectedV;
 			if(view==null)
 				view = recyclerBin.get(SelectedV);
 			selection = view;
@@ -1518,6 +1561,12 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	
 	private void scrollListToCenter(int pos) {
 		lv1.setSelection(pos-Math.min(lv1.getChildCount()/2, 2));
+	}
+	
+	private void scrollGridToCenterNaive(int pos) {
+		// todo setSelectionWithOffset
+		gridView.setSelection(pos-cc/2);
+		gridView.postDelayed(() -> scrollGridToCenter(pos), 100);
 	}
 	
 	private void scrollGridToCenter(int position) {
@@ -2275,11 +2324,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			/* 定位列表位置 */
 			case R.id.locate:
 				if(selection!=null) {
-					int gvPos=((DictTitleHolder)selection.getTag()).pos;
+					int gvPos=SelectedV;//((DictTitleHolder)selection.getTag()).pos;
 					if (bExpanded)
 						gridView.setSelection(NumPreEmpter+gvPos);
 					else
-						scrollGridToCenter(gvPos);
+						scrollGridToCenterNaive(gvPos);
 				}
 				scrollListToCenter(entryAdapter.lastClickedPos);
 			break;
