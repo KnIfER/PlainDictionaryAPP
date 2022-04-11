@@ -19,21 +19,21 @@ import android.view.ViewConfiguration;
 import android.widget.Scroller;
 
 public abstract class TouchHandler {
-		final TwoWayAbsListView v;
-		/**
-		 * Handles scrolling between positions within the list.
-		 */
-		protected PositionScroller mPositionScroller;
+	final TwoWayAbsListView v;
+	/**
+	 * Handles scrolling between positions within the list.
+	 */
+	protected PositionScroller mPositionScroller;
 
-		/**
-		 * Handles one frame of a fling
-		 */
-		protected FlingRunnable mFlingRunnable;
+	/**
+	 * Handles one frame of a fling
+	 */
+	protected FlingRunnable mFlingRunnable;
 
-		/**
-		 * How far the finger moved before we started scrolling
-		 */
-		int mMotionCorrection;
+	/**
+	 * How far the finger moved before we started scrolling
+	 */
+	int mMotionCorrection;
 	
 	protected TouchHandler(TwoWayAbsListView v) {
 		this.v = v;
