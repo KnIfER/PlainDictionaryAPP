@@ -1983,26 +1983,26 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				mWebView.bRequestedSoundPlayback=true;
 			}
 			
-			currentKeyText = mWebView.word;
 			presenter.renderContentAt(desiredScale,RENDERFLAG_NEW,0, mWebView, lastClickedPos);
+			String key = currentKeyText = mWebView.word;
 			
 			//voyager[SelectedV*3+2]=pos;
-			a.decorateContentviewByKey(contentUIData.browserWidget8, currentKeyText);
+			a.decorateContentviewByKey(contentUIData.browserWidget8, key);
 	
-			if(!TextUtils.equals(currentKeyText, addHistory)){
-				int stLv = !ismachineClick && storeLv1(currentKeyText)? SearchUI.Fye.MAIN:
+			if(!TextUtils.equals(key, addHistory)){
+				int stLv = !ismachineClick && storeLv1(key)? SearchUI.Fye.MAIN:
 						(!ismachineClick || PDICMainAppOptions.storePageTurn()==0)?SearchUI.Fye.表
 								:-1;
 				if((stLv==SearchUI.Fye.MAIN || PDICMainAppOptions.storeClick()) && presenter.store(pos)) {
 					//CMN.Log("fye:addHistory!!!");
-					a.addHistory(currentKeyText , stLv, contentUIData.webSingleholder, stLv==SearchUI.Fye.MAIN?etTools:null);
+					a.addHistory(key , stLv, contentUIData.webSingleholder, stLv==SearchUI.Fye.MAIN?etTools:null);
 				}
 			}
 	
 			resetBottomBar();
 	
 			a.getTopSnackView().setNextOffsetScale(0.24f);
-			a.showTopSnack(PeruseTorso, currentKeyText
+			a.showTopSnack(PeruseTorso, key
 					, 0.85f, LONG_DURATION_MS, -1, 0);
 		}
         

@@ -2433,7 +2433,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		etTools = new SearchbarTools(MainActivityUIBase.this, etSearch
 				, b1?((PDICMainActivity)this).UIData.etSchBar:null, null, true);
 		etTools.initWay = this;
-		etTools.schSql = "src&"+schuiMainPeruse+"!=0";
+		etTools.schSql = "src&"+schuiMain+"!=0";
 		
 		toolbar.setOnMenuItemClickListener(this);
 		ivDeleteText.setOnClickListener(this);
