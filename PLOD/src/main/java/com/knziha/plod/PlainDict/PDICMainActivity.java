@@ -929,6 +929,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				etTools.hideIM();
 				return false;
 			}
+			if(wordPopup.isVisible()) {
+				wordPopup.dismiss();
+				return false;
+			}
 			if(isContentViewAttached()) {
 				DetachContentView(true);
 				return false;
@@ -1080,7 +1084,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
 		fadeSnack();
-		isPopupContentViewAttached(2);
 	}
 	
 	private void
@@ -2377,9 +2380,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								}
 							}
 						}
-						if(isPopupContentViewAttached(0)){
-							//wordPopup.mWebView.evaluateJavascript(val,null);
-						}
 					}
 				}
 			}
@@ -2822,17 +2822,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			PlaceContentBottombar(bImmersive);
 		}
 		
-		isPopupContentViewAttached(1);
-		
 		return delayedAttaching=false;
-	}
-	
-	private boolean isPopupContentViewAttached(int changeVis) {
-		boolean ret = wordPopup.popupContentView!=null && wordPopup.popupContentView.getParent()!=null;
-		if(ret && changeVis>0) {
-			wordPopup.popupContentView.setVisibility(changeVis==1?View.VISIBLE:View.GONE);
-		}
-		return ret;
 	}
 	
 	private void PlaceContentBottombar(boolean bImmersive) {

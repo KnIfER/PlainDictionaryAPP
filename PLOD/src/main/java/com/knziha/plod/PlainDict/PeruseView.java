@@ -489,7 +489,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				        
 				        gv.postDelayed(() -> {
 							scrollGridToCenter(PositionToCenter);
-							CMN.Log("PositionToCenter::", PositionToCenter);
 //							for(int i = 0; i< gv.getChildCount(); i++) {
 //								gv.getChildAt(i).setTop(0);
 //								gv.getChildAt(i).setBottom((int) (lvHeaderItem_height * density));
@@ -1382,7 +1381,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 		this.schResult = schResult;
 		lastSchKey = schKey;
-		CMN.Log("fye::SearchAll::", schKey, schResult);
+		//CMN.Log("fye::SearchAll::", schKey, schResult);
 		//harvest
 		fromLv1Idx = fromLv1Idx_ = index;
 		a.hdl.post(new Runnable() {
@@ -1428,7 +1427,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         	}
         	position-=NumPreEmpter;
         	View ItemView = recyclerBin.get(position);
-			if (position>=0 && position<bookIds.size()) {
+			ArrayList<Long> bookIds = PeruseView.this.bookIds;
+			if (position>=0 && position< bookIds.size()) {
 				DictTitleHolder holder = (DictTitleHolder) ItemView.getTag();
 				MainActivityUIBase a = (MainActivityUIBase) getActivity();
 				if (a !=null) {
@@ -1445,8 +1445,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					holder.cover.setImageDrawable(cover);
 					holder.word.setText(pathname.substring(0,1).toUpperCase());
 				}
-			} else {
-				((MainActivityUIBase)getActivity()).showT("越界!"+position+"/"+bookIds.size());
+			} else if(BuildConfig.DEBUG){
+				((MainActivityUIBase)getActivity()).showT("越界!"+position+"/"+ bookIds.size());
 			}
 	        return ItemView;
         }
