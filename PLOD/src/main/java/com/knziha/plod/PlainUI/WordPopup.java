@@ -402,6 +402,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		if (CCD!=ccd) {
 			CCD=ccd;
 			currentPos = pos;
+			if(pos<0) pos=-1-pos;
 			displaying=ccd.bookImpl.getEntryAt(pos);
 			entryTitle.setText(displaying);
 			//popupWebView.SelfIdx = CCD_ID = record.value[0];
@@ -411,6 +412,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			dictPicker.scrollThis();
 		} else if(currentPos!=pos) {
 			currentPos = pos;
+			if(pos<0) pos=-1-pos;
 			displaying=ccd.bookImpl.getEntryAt(pos);
 			entryTitle.setText(displaying);
 		}
