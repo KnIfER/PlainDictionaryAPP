@@ -11,8 +11,6 @@ import android.widget.TextView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 
-import com.knziha.plod.db.SearchUI;
-import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.widgets.ViewUtils;
@@ -109,7 +107,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		if(a.checkAllWebs(results, view, pos)) return;
 		contentUIData.mainProgressBar.setVisibility(View.GONE);
 		userCLick=true;
-		lastClickedPosBeforePageTurn=-1;
+		lastClickedPosBefore=-1;
 //		a.bNeedReAddCon=false;
 		super.onItemClick(parent, view, pos, id);
 	}
@@ -121,7 +119,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		weblistHandler.WHP.touchFlag.first=true;
 		
 		if(a.DBrowser!=null) return;
-		lastClickedPosBeforePageTurn = lastClickedPos;
+		lastClickedPosBefore = lastClickedPos;
 		if(pos<0 || pos>=getCount()) {
 			a.show(R.string.endendr);
 			return;
@@ -134,9 +132,9 @@ public class ListViewAdapter2 extends BasicAdapter {
 			boolean storeSch = results.shouldAddHistory(a);
 			if(storeSch) { // 保存输入框历史记录
 				a.addHistory(results.schKey, stLv, webviewHolder, a.etTools);
-				pView.addHistory = lstKey;
+				pView.lstKey = lstKey;
 			} else {
-				pView.addHistory = null;
+				pView.lstKey = null;
 			}
 			a.JumpToPeruseMode(lstKey, results.getBooksAt(pView.bookIds, pos), -2, true);
 			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);

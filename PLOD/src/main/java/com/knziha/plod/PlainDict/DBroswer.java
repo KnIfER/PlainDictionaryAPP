@@ -1096,7 +1096,7 @@ public class DBroswer extends DialogFragment implements
 			currentDisplaying = String.valueOf(((TextView) view.findViewById(android.R.id.text1)).getText());
 		}
 		
-		int lastClickedPosBeforePageTurn = position - adelta;
+		int lastClickedPosBefore = position - adelta;
 		ScrollerRecord pagerec = null;
 		DeckListAdapter.HistoryDatabaseReader reader = mAdapter.getReaderAt(currentPos = position);
 		long rowId = currentRowId = reader.row_id;
@@ -1245,7 +1245,7 @@ public class DBroswer extends DialogFragment implements
 	private boolean queryAndShowMultipleDictionary(String[] texts, String currentDisplaying, int position, boolean queryAll) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 
-		int lastClickedPosBeforePageTurn = position - adelta;
+		int lastClickedPosBefore = position - adelta;
 
 		ArrayList<Long> records = new ArrayList<>();
 		additiveMyCpr1 datalet = new additiveMyCpr1(currentDisplaying,records);
@@ -1310,11 +1310,11 @@ public class DBroswer extends DialogFragment implements
 //			ScrollerRecord pagerec = null;
 //			OUT:
 //			if(adelta!=0 && System.currentTimeMillis()-a.lastClickTime>300) {//save our postion
-//				pagerec = avoyager.get(lastClickedPosBeforePageTurn);
+//				pagerec = avoyager.get(lastClickedPosBefore);
 //				if (pagerec == null) {
 //					if (WHP.getScrollY() != 0) {
 //						pagerec = new ScrollerRecord();
-//						avoyager.put(lastClickedPosBeforePageTurn, pagerec);
+//						avoyager.put(lastClickedPosBefore, pagerec);
 //					} else
 //						break OUT;
 //				}
@@ -1352,7 +1352,7 @@ public class DBroswer extends DialogFragment implements
 	private boolean queryAndShowOneDictionary(BookPresenter currentDictionary, String currentDisplaying, int position, boolean queryAll) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		
-		int lastClickedPosBeforePageTurn = position - adelta;
+		int lastClickedPosBefore = position - adelta;
 		
 		float desiredScale=-1;
 		a.TransientIntoSingleExplanation();
@@ -1403,11 +1403,11 @@ public class DBroswer extends DialogFragment implements
 //										current_webview.webScale = a.dm.density;//sanity check
 //									//CMN.Log("保存位置", lastDictionary._Dictionary_fName, tag);
 //
-//									pagerec = avoyager.get(lastClickedPosBeforePageTurn);
+//									pagerec = avoyager.get(lastClickedPosBefore);
 //									if (pagerec == null) {
 //										if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || current_webview.webScale != BookPresenter.def_zoom) {
 //											pagerec = new ScrollerRecord();
-//											avoyager.put(lastClickedPosBeforePageTurn, pagerec);
+//											avoyager.put(lastClickedPosBefore, pagerec);
 //										} else
 //											break OUT;
 //									}

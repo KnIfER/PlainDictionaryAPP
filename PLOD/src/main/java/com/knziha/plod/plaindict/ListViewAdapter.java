@@ -11,7 +11,6 @@ import android.widget.AdapterView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 
-import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.Flag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -114,7 +113,7 @@ public class ListViewAdapter extends BasicAdapter {
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
 		userCLick=true;
-		lastClickedPosBeforePageTurn=-1;
+		lastClickedPosBefore=-1;
 //		a.bNeedReAddCon=false;
 		lastClickedPos = -1;
 		super.onItemClick(parent, view, pos, id);
@@ -134,9 +133,9 @@ public class ListViewAdapter extends BasicAdapter {
 			if(!PDICMainAppOptions.storeNothing()  && PDICMainAppOptions.storeClick() && presenter.store(pos)
 					&& userCLick && a.storeLv1(lstKey)) { // 保存输入框历史记录
 				a.addHistory(lstKey, a.schuiMainPeruse, webviewHolder, a.etTools);
-				pView.addHistory = lstKey;
+				pView.lstKey = lstKey;
 			} else {
-				pView.addHistory = null;
+				pView.lstKey = null;
 			}
 			a.AttachPeruseView(true);
 			//CMN.Log(PeruseView.data);
@@ -144,7 +143,7 @@ public class ListViewAdapter extends BasicAdapter {
 			return;
 		}
 		if(a.DBrowser!=null) return;
-		lastClickedPosBeforePageTurn = lastClickedPos;
+		lastClickedPosBefore = lastClickedPos;
 		super.onItemClick(pos);
 		a.ActivedAdapter=this;
 		shunt=presenter.getIsWebx() ||a.bRequestedCleanSearch;

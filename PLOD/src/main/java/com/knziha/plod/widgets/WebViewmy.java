@@ -536,7 +536,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 						PageState = saveHistory(fromCombined ? a.weblistHandler.getScrollView() : null, a.lastClickTime);
 					if (!isGoBack && HistoryVagranter == 0 && PageState != null) {
 						if (fromCombined) {
-							a.adaptermy2.avoyager.put(a.adaptermy2.lastClickedPosBeforePageTurn, PageState);
+							a.adaptermy2.avoyager.put(a.adaptermy2.lastClickedPosBefore, PageState);
 						} else {
 							presenter.HistoryOOP.put((int)currentPos, PageState); //todo
 						}

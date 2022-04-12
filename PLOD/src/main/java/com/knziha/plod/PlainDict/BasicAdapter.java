@@ -30,7 +30,7 @@ public abstract class BasicAdapter extends BaseAdapter
 		public ViewGroup webviewHolder;
 		public ListView lava;
 		int lastClickedPos=-1;
-		public int lastClickedPosBeforePageTurn;
+		public int lastClickedPosBefore;
 		boolean userCLick;
 		public boolean shunt;
 		public boolean Kustice;

@@ -9909,18 +9909,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ScrollerRecord pagerec;
 			OUT: //save our postion
 			if(System.currentTimeMillis()-lastClickTime>300/*400*/ && !webview.isloading
-					&& ADA.lastClickedPosBeforePageTurn>=0
+					&& ADA.lastClickedPosBefore>=0
 					&& (ADA.webviewHolder.getChildCount()!=0 /*|| false todo 开放连续的历史纪录 ?*/)) {
 				if(webview.webScale==0) {
 					webview.webScale=dm.density;//sanity check
 				}
 				//avoyager.set(avoyagerIdx,(int) (current_webview.getScrollY()/(current.webScale/dm.density)));
 				
-				pagerec = ADA.avoyager.get(ADA.lastClickedPosBeforePageTurn);
+				pagerec = ADA.avoyager.get(ADA.lastClickedPosBefore);
 				if(pagerec==null) {
 					if(webview.getScrollX()!=0 || webview.getScrollY()!=0 ||webview.webScale!= BookPresenter.def_zoom) {
 						pagerec=new ScrollerRecord();
-						ADA.avoyager.put(ADA.lastClickedPosBeforePageTurn, pagerec);
+						ADA.avoyager.put(ADA.lastClickedPosBefore, pagerec);
 					} else {
 						break OUT;
 					}
@@ -9952,19 +9952,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ScrollerRecord pagerec;
 			OUT:
 			if (((resultRecorderCombined) combining_search_result).scrolled
-					&& ADA.lastClickedPosBeforePageTurn >= 0
+					&& ADA.lastClickedPosBefore >= 0
 					&& System.currentTimeMillis() - lastClickTime > 300) {
-				//CMN.debug("save our postion", lastClickedPosBeforePageTurn, WHP.getScrollY());
-				pagerec = ADA.avoyager.get(ADA.lastClickedPosBeforePageTurn);
+				//CMN.debug("save our postion", lastClickedPosBefore, WHP.getScrollY());
+				pagerec = ADA.avoyager.get(ADA.lastClickedPosBefore);
 				if (pagerec == null) {
 					if (weblistHandler.WHP.getScrollY() != 0) {
 						pagerec = new ScrollerRecord();
-						ADA.avoyager.put(ADA.lastClickedPosBeforePageTurn, pagerec);
+						ADA.avoyager.put(ADA.lastClickedPosBefore, pagerec);
 					} else
 						break OUT;
 				}
 				pagerec.set(0, weblistHandler.WHP.getScrollY(), 1);
-				//CMN.Log("保存位置", lastClickedPosBeforePageTurn);
+				//CMN.Log("保存位置", lastClickedPosBefore);
 			}
 			
 			lastClickTime = System.currentTimeMillis();
