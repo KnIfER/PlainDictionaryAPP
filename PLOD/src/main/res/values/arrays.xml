@@ -346,10 +346,11 @@
 	</string-array>
 
 	<string-array name="d_zoom_mode_info">
-		<item>左右分栏</item>
 		<item>靠左</item>
+		<item>左右分栏</item>
 		<item>靠右</item>
 		<item>居中</item>
+		<item>拖拽放大</item>
 	</string-array>
 
 	<string-array name="pzoom_info">

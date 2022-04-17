@@ -19,16 +19,9 @@ public class SchOpt extends SettingsFragmentBase implements Preference.OnPrefere
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "enable_regex1", PDICMainAppOptions.getUseRegex1(), null, null);
 		init_switch_preference(this, "enable_regex2", PDICMainAppOptions.getUseRegex2(), null, null);
-		init_switch_preference(this, "enable_regex3", PDICMainAppOptions.getUseRegex3(), null, null);
 		//init_switch_preference(this, "joni_head", PDICMainAppOptions.getRegexAutoAddHead(), null, null);
 		init_switch_preference(this, "joni_case", PDICMainAppOptions.getJoniCaseSensitive(), null, null);
-		init_switch_preference(this, "page_case", PDICMainAppOptions.getPageCaseSensitive(), null, null);
-		init_switch_preference(this, "page_nospc", PDICMainAppOptions.getPageWildcardMatchNoSpace(), null, null);
-		init_switch_preference(this, "page_spcdl", PDICMainAppOptions.getPageWildcardSplitKeywords(), null, null);
-		init_switch_preference(this, "pj_auto", PDICMainAppOptions.schPageAutoTurn(), null, null);
-		init_switch_preference(this, "pj_type", PDICMainAppOptions.schPageAutoType(), null, null);
 		init_switch_preference(this, "use_wildcard1", PDICMainAppOptions.getAdvSearchUseWildcard(), null, null);
-		init_switch_preference(this, "use_wildcard2", PDICMainAppOptions.getInPageSearchUseWildcard(), null, null);
 		init_switch_preference(this, "use_morph", PDICMainAppOptions.getSearchUseMorphology(), null, null);
 		findPreference("vspec").setOnPreferenceClickListener(this);
 	}
@@ -52,35 +45,14 @@ public class SchOpt extends SettingsFragmentBase implements Preference.OnPrefere
 			case "enable_regex2":
 				PDICMainAppOptions.setUseRegex2((Boolean) newValue);
 			break;
-			case "enable_regex3":
-				PDICMainAppOptions.setUseRegex3((Boolean) newValue);
-			break;
 //			case "joni_head":
 //				PDICMainAppOptions.setRegexAutoAddHead((Boolean) newValue);
 //			break;
 			case "joni_case":
 				PDICMainAppOptions.setJoniCaseSensitive((Boolean) newValue);
 			break;
-			case "page_case":
-				PDICMainAppOptions.setPageCaseSensitive((Boolean) newValue);
-			break;
-			case "page_nospc":
-				PDICMainAppOptions.setPageWildcardMatchNoSpace((Boolean) newValue);
-			break;
-			case "page_spcdl":
-				PDICMainAppOptions.setPageWildcardSplitKeywords((Boolean) newValue);
-			break;
-			case "pj_auto":
-				PDICMainAppOptions.schPageAutoTurn((Boolean) newValue);
-			break;
-			case "pj_type":
-				PDICMainAppOptions.schPageAutoType((Boolean) newValue);
-			break;
 			case "use_wildcard1":
 				PDICMainAppOptions.setAdvSearchUseWildcard((Boolean) newValue);
-			break;
-			case "use_wildcard2":
-				PDICMainAppOptions.setInPageSearchUseWildcard((Boolean) newValue);
 			break;
 			case "use_morph":
 				PDICMainAppOptions.setSearchUseMorphology((Boolean) newValue);

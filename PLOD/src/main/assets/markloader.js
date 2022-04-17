@@ -215,19 +215,23 @@ function do_highlight(keyword){
     w.pageKey=decodeURIComponent(keyword);
     MarkInst.unmark({
         done: function() {
-            var rcsp=w.rcsp;
-            console.log('highlighting...'+pageKey+((rcsp&0x1)!=0));
-            if(rcsp&0x1)
-            MarkInst.markRegExp(new RegExp(pageKey, (rcsp&0x2)?'m':'im'), {
+            if(w.app && !(w.shzh&8)) {
+              w.shzh=app.rcsp(sid.get());
+            }
+            var sz=w.shzh>>4;
+            console.log('highlighting...sz=',pageKey,((sz&0x1)!=0),sz&0x4);
+            if(sz&0x1)
+            MarkInst.markRegExp(new RegExp(pageKey, (sz&0x2)?'m':'im'), {
                 done: done_highlight
                 ,iframes:true
                 ,iframesTimeout:0
             });
             else
             MarkInst.mark(pageKey, {
-                separateWordSearch: (rcsp&0x4)!=0,'wildcards':(rcsp&0x10)?(rcsp&0x8)?'enabled':'withSpaces':'disabled'
+                separateWordSearch: (sz&0x4)!=0
+                ,wildcards:(sz&0x10)?(sz&0x8)?'enabled':'withSpaces':'disabled'
                 ,done: done_highlight
-                ,caseSensitive:(rcsp&0x2)!=0
+                ,caseSensitive:(sz&0x2)!=0
                 ,iframes:true
                 ,iframesTimeout:0
             });

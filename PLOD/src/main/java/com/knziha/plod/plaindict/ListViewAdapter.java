@@ -181,7 +181,7 @@ public class ListViewAdapter extends BasicAdapter {
 		/* ensureContentVis */
 		a.viewContent(weblistHandler);
 		
-		float desiredScale=a.prepareSingleWebviewForAda(presenter, mWebView, pos, this);
+		float desiredScale=a.prepareSingleWebviewForAda(presenter, mWebView, pos, this, opt.getRemPos(), opt.getInheritePageScale());
 		
 		lastClickedPos = pos;
 		

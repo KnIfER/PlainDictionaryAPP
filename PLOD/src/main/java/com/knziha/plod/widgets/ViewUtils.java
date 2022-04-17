@@ -94,6 +94,7 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.DBroswer;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.RebootActivity;
@@ -763,6 +764,7 @@ public class ViewUtils {
 	}
 	public static View.OnClickListener DummyOnClick = new DummyOnClick();
 	
+	public static WeakReference DummyRef = new WeakReference<>(null);
 	
 	public static View getViewItemByPath(Object obj, int...path) {
 		int cc=0;

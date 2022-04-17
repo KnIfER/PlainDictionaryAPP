@@ -68,7 +68,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListener {
 	public long currentPos;
@@ -128,7 +127,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	private static BookPresenter EmptyBook;
 	static {
 		try {
-			EmptyBook = new BookPresenter(new File("empty"), null, 1, null);
+			EmptyBook = new BookPresenter(new File("empty"), null, 1);
 		} catch (IOException ignored) { }
 	}
 	public BookPresenter presenter = EmptyBook;
@@ -610,6 +609,20 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		super.setBackgroundColor(color);
 	}
 	
+	public void setPresenter(BookPresenter book) {
+		if(presenter!=book) {
+			clearHistory();
+			clearIfNewADA(book);
+			presenter=book;
+			IBC = book.IBC;
+		}
+	}
+
+//	/**  reset overshot */
+//	public void calcScroll() {
+//		scrollTo(computeHorizontalScrollOffset(), computeVerticalScrollOffset());
+//	}
+	
 	@RequiresApi(api = Build.VERSION_CODES.M)
 	private class callbackme extends ActionMode.Callback2 implements OnLongClickListener {
 		ActionMode.Callback callback;
@@ -811,7 +824,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																		if(c instanceof MainActivityUIBase){
 																			MainActivityUIBase a = (MainActivityUIBase) c;
 																			if(MainActivityUIBase.PreferredToolId !=-1){
-																				MainActivityUIBase.UniCoverClicker ucc = a.getUcc(); ucc.bFromWebView=true; ucc.bFromPeruseView=WebViewmy.this.fromCombined==3;
+																				MainActivityUIBase.UnicornKit ucc = a.getUtk(); ucc.bFromWebView=true; ucc.bFromPeruseView=WebViewmy.this.fromCombined==3;
 																				ucc.setInvoker(presenter, WebViewmy.this, null, null);
 																				ucc.onItemClick(null, null, MainActivityUIBase.PreferredToolId, -1, false, true);
 																			}
@@ -1256,7 +1269,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		if(event.getActionMasked()==MotionEvent.ACTION_DOWN) {
 			supressNxtClickTranslator = bIsActionMenuShown;
 			if(fromCombined==1) {
-				weblistHandler.setLastScrolledBook(this);
+				weblistHandler.setLastScrollFocus(this);
 			}
 		}
 		if (hasWidgets) {

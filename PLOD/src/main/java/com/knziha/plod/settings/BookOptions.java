@@ -23,6 +23,7 @@ import com.knziha.plod.plaindict.OptionProcessor;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
+/** 这个是后后来的词典设置界面，比较高大上。 */
 public class BookOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	BookPresenter[] data;
 	private boolean bNeedParseData;
@@ -87,11 +88,11 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		}
 	}
 	
-	private void init_disconjuctioner(String key, int position, int infoArr) {
+	private void init_integer(String key, int position, int infoArr, int mask) {
 		boolean multiple = false;
-		int val = getShortFlagAt(data[0], position);
+		int val = getShortFlagAt(data[0], position, mask);
 		for (int i = 1; i < data.length; i++) {
-			if(getShortFlagAt(data[i], position)!=val){
+			if(getShortFlagAt(data[i], position, mask)!=val){
 				multiple = true;
 				break;
 			}
@@ -99,6 +100,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		
 		Preference pref = init_number_info_preference(this, key, val, infoArr, null);
 		pref.getExtras().putInt("flagPos", position);
+		pref.getExtras().putInt("mask", mask);
 		
 		if(multiple) {
 			pref.setTitle(pref.getTitle()+getResources().getString(R.string.multiple_vals));
@@ -118,15 +120,14 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		return flag;
 	}
 	
-	private int getShortFlagAt(BookPresenter datum, int position) {
-		return (int) ((datum.getFirstFlag()>>position)&3);
+	private int getShortFlagAt(BookPresenter datum, int position, int mask) {
+		return (int) ((datum.getFirstFlag()>>position)&mask);
 	}
 	
-	private long setShortFlagAt(BookPresenter datum, int position, int val) {
-		long mask = 3L<<position;
+	private long setShortFlagAt(BookPresenter datum, int position, int val, long m) {
 		long flag = datum.getFirstFlag();
-		flag&=~mask;
-		flag |= (val&3)<<position;
+		flag&=~(m<<position);
+		flag |= (val&m)<<position;
 		return flag;
 	}
 	
@@ -218,9 +219,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		init_switcher("hikeys", true, 26);
 		init_switcher("offline", false, 27);
 		
-		init_disconjuctioner("pzoom", 15, R.array.pzoom_info);
-		init_disconjuctioner("pzoom_plc", 17, R.array.pzoom_mode_info);
-		init_disconjuctioner("dzoom_plc", 12, R.array.d_zoom_mode_info);
+		init_integer("pzoom", 15, R.array.pzoom_info, 3);
+		init_integer("pzoom_plc", 17, R.array.pzoom_mode_info, 3);
+		init_integer("dzoom_plc", 12, R.array.d_zoom_mode_info, 7); // getDoubleClickAlignment
 		
 		init_color("bgTitle");
 		init_color("fgTitle");
@@ -324,10 +325,11 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		else if (preference instanceof ListPreference) {
 			int flagPos = preference.getExtras().getInt("flagPos", -1);
 			if (flagPos>=0) {
+				int mask = preference.getExtras().getInt("mask", 3);
 				CharSequence[] entries = ((ListPreference) preference).getEntries();
 				int val = IU.parsint(newValue, 0) % entries.length;
 				for (BookPresenter datum:data) {
-					datum.setFirstFlag(setShortFlagAt(datum, flagPos, val));
+					datum.setFirstFlag(setShortFlagAt(datum, flagPos, val, mask));
 				}
 				preference.setSummary(entries[val]);
 			}
@@ -350,6 +352,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			
 			} break;
 			case "pzoom":{
+			
 			} break;
 			case "pzoom_plc":{
 			} break;

@@ -7,7 +7,6 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
 
-	<script src="MdbR/KitPatch.js"></script>
 	<script src="MdbR/jquery-1.11.3.min.js"></script>
 	<script src="MdbR/listview/jquery.mousewheel.js"></script>
 	<script src="MdbR/listview/seekbar.js"></script>
@@ -694,9 +693,7 @@
 		}
 	</style> 
 	<script>
-		if(!window.debug)
-			window.debug = function(e){console.log('fatal web d::', e)};
-
+		var shzh=0;
 		function ge(e,p){return (p||document).getElementById(e)};
     	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
     	function _gn(e,p){if(!p || p.name===e)return p;return _gn(e,p.nextElementSibling)||_gn(e,p.firstElementChild)};
@@ -704,7 +701,7 @@
 		window.kit |= 0;
 		window.rawAddEvent = window.addEventListener;
 		window.addEventListener = function(a,b,c) {
-			if(b===window.rcspc||b===window.webpc) {
+			if(b===window.tpshc||b===window.webpc) {
 				for(var i=0,fx;fx=frames[i];i++) {
 					if(fx.item && fx.item.contentWindow && (b!=window.webpc||fx.img)) {
 						fx.item.contentWindow.addEventListener(a,b);
@@ -899,13 +896,26 @@
 		/**/
 
 		function Initialize() {
+			window.debug=function(){var e=arguments,s='';for(var i=0;i<e.length;i++)s+=e[i]+', ';console.log('fatal web d::'+s)};
+			//window.debug=function(...e){console.log('fatal web d::', e)};
+			if(String.prototype.startsWith != 'function') {
+				loadJs("MdbR/KitPatch.js", doInitialize);
+			} else {
+				doInitialize();
+			}
+		}
+		
+		function doInitialize() {
 			merge = location.pathname==='/merge.jsp';
 			defP = ge("defP");
 			bkPs = ge("bkP").style;
 			SH();
 			etSearch = ge("word");
 			if(app) 
-				window.rcsp=app.rcsp(sid.get());
+				shzh=app.rcsp(sid.get());
+			debug(ua, mobile);
+			//bind mouse wheel
+			mousewheel = (/Firefox/i.test(ua))?"DOMMouseScroll": "mousewheel";
 			//rePopulate();
 			/**/
 			if(!merge) {
@@ -1017,11 +1027,13 @@
 					}
 				}
 				});
+				ge('lv').addEventListener(mousewheel, onmousewheelDown);
+				ge('seekbar_container').addEventListener(mousewheel, onmousewheelDown);
 			} 
 			else {
 				// 隐藏左侧栏、顶栏
-				var e=ge('navR'); if(e) e.remove();
-				e=ge('ListView'); if(e) e.remove();
+				ge('navR').style.display='none';
+				ge('ListView').style.display='none';
 				ge('parentR').style.marginLeft=0;
 				defP.style.marginTop=0;
 			}
@@ -1038,14 +1050,6 @@
 			});
 			if(app)
 				setTimeout(_highlight, 200)
-			
-			debug(ua, mobile);
-			//bind mouse wheel
-			mousewheel = (/Firefox/i.test(ua))?"DOMMouseScroll": "mousewheel";
-			/**/
-			ge('lv').addEventListener(mousewheel, onmousewheelDown);
-			ge('seekbar_container').addEventListener(mousewheel, onmousewheelDown);
-			/**/
 			
 			if(mobile) 
 			{

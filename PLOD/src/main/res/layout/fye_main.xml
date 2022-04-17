@@ -239,14 +239,14 @@
 <!--				app:src0="@drawable/star_ic_solid"-->
 <!--				/>-->
 			<android.widget.ImageView
-				android:id="@+id/peruseNxtDict"
+				android:id="@+id/fyePrvDict"
 				android:layout_width="0dp"
 				android:layout_height="match_parent"
 				android:layout_weight="1"
 				android:background="@drawable/surrtrip1"
 				android:src="@drawable/ic_prv_dict_chevron" />
 			<android.widget.ImageView
-				android:id="@+id/browser_widget11"
+				android:id="@+id/fyeNxtDict"
 				android:layout_width="0dp"
 				android:layout_weight="1"
 				android:layout_height="match_parent"
@@ -261,7 +261,7 @@
 				android:src="@drawable/voice_ic"
 				/>
 			<android.widget.ImageView
-				android:id="@+id/menu"
+				android:id="@+id/fyeMenu"
 				android:layout_width="0dp"
 				android:layout_height="match_parent"
 				android:layout_weight="1"

@@ -344,7 +344,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					break;
 				}
 				if (opt.getUseVolumeBtn()) {
-					boolean toHighlight=weblistHandler.MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && weblistHandler.MainPageSearchbar.getParent()!=null;
+					boolean toHighlight=weblistHandler.pageSchBar !=null && PDICMainAppOptions.schPageNavAudioKey() && weblistHandler.pageSchBar.getParent()!=null;
 					if (contentUIData.webcontentlister.getVisibility()==View.VISIBLE) {
 						if(toHighlight) onIdClick(null, R.id.recess);
 						else contentUIData.bottombar2.findViewById(R.id.browser_widget11).performClick();
@@ -359,7 +359,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					break;
 				}
 				if (opt.getUseVolumeBtn()) {
-					boolean toHighlight=weblistHandler.MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && weblistHandler.MainPageSearchbar.getParent()!=null;
+					boolean toHighlight=weblistHandler.pageSchBar !=null && PDICMainAppOptions.schPageNavAudioKey() && weblistHandler.pageSchBar.getParent()!=null;
 					if (contentUIData.webcontentlister.getVisibility()==View.VISIBLE) {
 						if(toHighlight) onIdClick(null, R.id.forward);
 						else contentUIData.bottombar2.findViewById(R.id.browser_widget10).performClick();
@@ -391,7 +391,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		contentUIData.webcontentlister.scrollbar2guard = contentUIData.dragScrollBar;
 
 		if(PDICMainAppOptions.schPageFlt())
-			weblistHandler.togSchPage(false);
+			weblistHandler.togSchPage();
     	
         lv.setAdapter(adaptermy = new ListViewAdapter(this, AllMenus, SingleContentMenu));
         lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, R.layout.listview_item1, 2));
@@ -680,15 +680,15 @@ public class FloatSearchActivity extends MainActivityUIBase {
     }
 	
 	protected void findFurtherViews() {
+		schuiMain = SearchUI.FloatApp.MAIN;
+		schuiMainPeruse = schuiMain|SearchUI.Fye.MAIN;
+		schuiList = SearchUI.FloatApp.表;
 		super.findFurtherViews();
 		findViewById(R.id.toolbar_action1).setOnClickListener(this);
 		ivDeleteText = toolbar.findViewById(R.id.ivDeleteText);
 		ivBack = toolbar.findViewById(R.id.ivBack);
 		findViewById(R.id.pad).setOnClickListener(ViewUtils.DummyOnClick);
 		etSearch = findViewById(R.id.etSearch);
-		schuiMain = SearchUI.FloatApp.MAIN;
-		schuiInit = schuiMainPeruse = schuiMain|SearchUI.Fye.MAIN;
-		schuiList = SearchUI.FloatApp.表;
 	}
 	
 	protected void exit() {
@@ -843,7 +843,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
             		showT("已收藏！");
             break;
             case R.id.toolbar_action5:
-				weblistHandler.togSchPage(ret=isLongClicked);
+				weblistHandler.togSchPage();
             break;
         }
 		if(closeMenu)

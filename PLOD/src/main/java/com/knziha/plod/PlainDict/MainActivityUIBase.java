@@ -286,7 +286,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		MdictServerLet {
 	
 	public int schuiMainPeruse;
-	public int schuiInit;
+	public int schuiMainSchs;
 	public int schuiMain;
 	public int schuiList;
 	protected WeakReference[] WeakReferencePool = new WeakReference[WeakReferenceHelper.poolSize];
@@ -454,10 +454,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 
 	
-	WeakReference<AlertDialog> setchooser;
-	private WeakReference<BottomSheetDialog> bottomPlaylist;
-	WeakReference<AlertDialog> ChooseFavorDialog;
-	WeakReference<DBroswer> DBrowserHolder;
+	WeakReference<AlertDialog> setchooser = ViewUtils.DummyRef;
+	private WeakReference<BottomSheetDialog> bottomPlaylist = ViewUtils.DummyRef;
+	WeakReference<AlertDialog> ChooseFavorDialog = ViewUtils.DummyRef;
+	WeakReference<DBroswer> DBrowserHolder = ViewUtils.DummyRef;
 	DBroswer DBrowser;
 	DeckListAdapter.DeckListData[] DBrowserDatas = new DeckListAdapter.DeckListData[2];
 	
@@ -1153,8 +1153,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		View v = getCurrentFocus();
 		if(v instanceof TextView){
 			TextView tv = ((TextView) v);
-			getUcc().setInvoker(null, null, tv, null);
-			getUcc().onClick(tv);
+			getUtk().setInvoker(null, null, tv, null);
+			getUtk().onClick(tv);
 		}
 	}
 
@@ -1253,9 +1253,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(bQueryChooser) intentFalgs|=1<<1;
 			if(bMatchDefault) intentFalgs|=1<<2;
 
-			if(intent.hasExtra("ClipData") && getUcc().mWebView!=null){
+			if(intent.hasExtra("ClipData") && getUtk().mWebView!=null){
 				int finalIntentFalgs = intentFalgs;
-				getUcc().mWebView.evaluateJavascript(WebViewmy.CollectHtml, word -> {
+				getUtk().mWebView.evaluateJavascript(WebViewmy.CollectHtml, word -> {
 					if (word.length() > 2) {
 						word = MakeCompatibleHtmlWord(word);
 						ClipData cd = ClipData.newHtmlText("HTML", Html.fromHtml(word).toString(), word);
@@ -1371,13 +1371,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					, "isSmall="+GlobalOptions.isSmall
 			);
 		}
-		if (bShouldCheckApplicationValid) {
-			try {
-				System.loadLibrary("PDict");
-			} catch (Exception e) {
-				CMN.debug(e);
-			}
-		}
 	}
 
 	public void onAudioPause() {
@@ -1474,14 +1467,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WordPopup wordPopup = new WordPopup(this);
 	
 	public void fix_pw_color() {
-		if(bottomPlaylist!=null){
-			bottomPlaylist.clear();
-			bottomPlaylist=null;
-		}
-		if(ChooseFavorDialog!=null){
-			ChooseFavorDialog.clear();
-			ChooseFavorDialog=null;
-		}
+		bottomPlaylist.clear();
+		ChooseFavorDialog.clear();
 		wordPopup.refresh();
 	}
 
@@ -2057,7 +2044,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static long SessionFlag;
 
 	public int mConfigSize = 0;
-	public boolean bShouldCheckApplicationValid = true;
 	
 	public static String byte2HexFormatted(byte[] arr) {
 		StringBuilder str = new StringBuilder(arr.length * 2);
@@ -2077,9 +2063,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//showT("setMagicNumberForHash！");
 	}
 	
-	public native boolean testPakVal(String pakNam);
-	
-	public native int getPseudoCode(int sigHash);
+//	public native boolean testPakVal(String pakNam);
+//
+//	public native int getPseudoCode(int sigHash);
 	
 	
 //	/**{android.app.ActivityThread}.sPackageManager = null
@@ -2104,7 +2090,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	protected void further_loading(Bundle savedInstanceState) {
 		super.further_loading(savedInstanceState);
-		VersionUtils.checkVersion(opt);
 		opt.fileToDatabases();
 		BookPresenter.def_zoom=dm.density;
 		BookPresenter.optimal100 = GlobalOptions.isLarge?150:125;
@@ -2121,7 +2106,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		setMagicNumberForHash();
 		
 		try {
-			currentDictionary = EmptyBook = new BookPresenter(new File("empty"), this, 0, null);
+			currentDictionary = EmptyBook = new BookPresenter(new File("empty"), this, 1);
 		} catch (IOException ignored) { }
 		
 		File ConfigFile = opt.fileToConfig();
@@ -2405,7 +2390,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(arr!=null) {
 					for (final File i : arr) {
 						try {
-							BookPresenter mdtmp = new BookPresenter(i, this, 0, null);
+							BookPresenter mdtmp = new BookPresenter(i, this, 0);
 							md.add(mdtmp);
 							CC.add(mdtmp.placeHolder=new PlaceHolder(i.getName(), CC));
 						} catch (Exception e) { /*CMN.Log(e);*/ }
@@ -2433,7 +2418,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		etTools = new SearchbarTools(MainActivityUIBase.this, etSearch
 				, b1?((PDICMainActivity)this).UIData.etSchBar:null, null, true);
 		etTools.initWay = this;
-		etTools.schSql = "src&"+schuiMain+"!=0";
+		etTools.schSql = "src&"+(schuiMain|schuiMainSchs)+"!=0";
 		
 		toolbar.setOnMenuItemClickListener(this);
 		ivDeleteText.setOnClickListener(this);
@@ -2458,7 +2443,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
 		}
 		if(contentview==null) {
-			weblistHandler = new WebViewListHandler(this, contentUIData);
+			weblistHandler = new WebViewListHandler(this, contentUIData, schuiMain);
 			AllMenus.tag = weblistHandler;
 			contentview = contentUIData.webcontentlister;
 			webSingleholder = contentUIData.webSingleholder;
@@ -3143,7 +3128,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (ret!=null) {
 			return ret;
 		}
-		ret = new BookPresenter(fullPath, THIS, THIS.opt.getPseudoInitCode(0), null);
+		ret = new BookPresenter(fullPath, THIS, THIS.opt.getPseudoInitCode(0));
 		THIS.mdict_cache.put(fullPath.getName(), ret);
 		return ret;
 	}
@@ -3555,7 +3540,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		opt.putter().putString("bkHVgrts", sb.toString()).putInt("bkHSize", size).apply();
 	}
 	
-	public final class UniCoverClicker implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
+	public final class UnicornKit implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
 		boolean isWeb;
 		BookPresenter invoker;
 		WebViewmy mWebView;
@@ -3572,7 +3557,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		private int last_switch_cl_id;
 		private CircleCheckBox cb;
 		
-		UniCoverClicker(){
+		UnicornKit(){
 			arrayTweakDict = new int[]{
 				R.string.bmAdd
 				,R.string.bookmarkL
@@ -3786,7 +3771,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					asd.show(getSupportFragmentManager(),"color-picker-dialog");
 				} return;
 				case R.id.settings:{
-					BookPresenter.showDictTweaker(bFromPeruseView? peruseView.mWebView:null, MainActivityUIBase.this, invoker);
+					BookPresenter.showDictTweaker(bFromPeruseView?peruseView.mWebView:weblist.dictView, MainActivityUIBase.this, invoker);
 				} return;
 				case R.id.appsettings:{
 					showAppTweaker();
@@ -3796,7 +3781,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(bFromPeruseView){
 						enabled= peruseView.toggleTurnPageEnabled();
 					}else{
-						enabled=opt.setTurnPageEnabled(!opt.getTurnPageEnabled());
+						enabled=!contentUIData.PageSlider.TurnPageEnabled;
+						opt.setTurnPageEnabled(enabled);
 						contentUIData.PageSlider.TurnPageEnabled=enabled;
 					}
 					tools_lock.setImageResource(enabled?R.drawable.un_locked:R.drawable.locked);
@@ -3862,9 +3848,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			try {
 				//if(isLongClicked) CMN.Log("长按开始……");
 				if(!hasText()) {
-					WebViewmy _mWebView = mWebView;
-					if(_mWebView==null) _mWebView=invoker.mWebView;
-					if(_mWebView==null) {
+					WebViewmy tkWebv = mWebView;
+					if(tkWebv==null) tkWebv=invoker.mWebView;
+					if(tkWebv==null) {
 						showT("错误!!! 网页找不到了");
 						return true;
 					}
@@ -3873,7 +3859,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						case R.string.bmAdd: {
 							if (isLongClicked) return false;
 							if (getUsingDataV2()) {
-								_mWebView.presenter.toggleBookMark(_mWebView, new OnClickListener(){
+								invoker.toggleBookMark(tkWebv, new OnClickListener(){
 									@Override
 									public void onClick(View v) {
 										statHasBookmark();
@@ -4011,30 +3997,31 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						} break;
 						/* 词典设置 */
 						case R.string.dict_opt:{
-							showBookPreferences(_mWebView.presenter);
+							showBookPreferences(invoker);
 						} break;
 						/* 文字缩放级别 */
 						case R.string.f_scale_up:
 						case R.string.f_scale_down: {
+							boolean inter = invoker.getUseInternalFS() && !tkWebv.weblistHandler.bMergingFrames;
 							if (isLongClicked) {
 								int targetLevel = invoker.getFontSize();
 								if (id==R.string.f_scale_up) {
 									if (targetLevel < BookPresenter.optimal100) {
-										_mWebView.getSettings().setTextZoom(targetLevel = BookPresenter.optimal100);
+										tkWebv.getSettings().setTextZoom(targetLevel = BookPresenter.optimal100);
 									} else if (targetLevel < 500) {
-										_mWebView.getSettings().setTextZoom(targetLevel = 500);
+										tkWebv.getSettings().setTextZoom(targetLevel = 500);
 									} else
 										targetLevel = -1;
 								} else {
 									if (targetLevel > BookPresenter.optimal100) {
-										_mWebView.getSettings().setTextZoom(targetLevel = BookPresenter.optimal100);
+										tkWebv.getSettings().setTextZoom(targetLevel = BookPresenter.optimal100);
 									} else if (targetLevel > 10) {
-										_mWebView.getSettings().setTextZoom(targetLevel = 10);
+										tkWebv.getSettings().setTextZoom(targetLevel = 10);
 									} else
 										targetLevel = -2;
 								}
 								if (targetLevel > 0) {
-									if (invoker.getUseInternalFS()) {
+									if (inter) {
 										showT((invoker.internalScaleLevel = targetLevel) + "%", 0);
 										invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
 									} else {
@@ -4047,13 +4034,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									showT("max level reached", 0);
 								return true;
 							} else {
-								int targetLevel = invoker.getUseInternalFS() ? _mWebView.getSettings().getTextZoom() : BookPresenter.def_fontsize;
+								int targetLevel = inter ? tkWebv.getSettings().getTextZoom() : BookPresenter.def_fontsize;
 								if (id==R.string.f_scale_up) targetLevel += 10;
 								else targetLevel -= 10;
 								targetLevel = targetLevel > 500 ? 500 : targetLevel;
 								targetLevel = targetLevel < 10 ? 10 : targetLevel;
-								_mWebView.getSettings().setTextZoom(targetLevel);
-								if (invoker.getUseInternalFS()) {
+								tkWebv.getSettings().setTextZoom(targetLevel);
+								if (inter) {
 									showT((invoker.internalScaleLevel = targetLevel) + "%", 0);
 									invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
 								} else {
@@ -4572,6 +4559,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				d.setTitle(R.string.text_operation);
 			}
 			
+			ViewUtils.setVisibility(bottomView.findViewById(R.id.appsettings), false);
+			
 			if(d.getWindow()!=null) {
 				d.getWindow().getAttributes().width = -2;
 			}
@@ -4608,7 +4597,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		private void statHasBookmark() {
 			int resId=R.string.bmAdd;
 			if(getUsingDataV2()) {
-				if(mWebView.presenter.hasBookmark(mWebView)){
+				if(invoker.hasBookmark(mWebView)){
 					resId=R.string.bmSub;
 				}
 			}
@@ -4633,6 +4622,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		public boolean detached() {
 			return d==null||!d.isShowing()|| ViewUtils.isWindowDetached(d.getWindow());
+		}
+		
+		public void showDictTweaker(BookPresenter presenter, WebViewmy wv) {
+			setInvoker(presenter, wv, null, null);
+			onClick(anyView(R.id.cover));
 		}
 	}
 	
@@ -4724,8 +4718,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		id-=2;
 		if(id>=0&&id<=5)
 		{
-			getUcc().setInvoker(null, null, null, text);
-			getUcc().execVersatileShare(false, VersatileShareSlots[id]);
+			getUtk().setInvoker(null, null, null, text);
+			getUtk().execVersatileShare(false, VersatileShareSlots[id]);
 		}
 	}
 	
@@ -4887,7 +4881,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	boolean firstCreateUcc=true;
-	public UniCoverClicker ucc;
+	public UnicornKit ucc;
 	
 	public abstract void fix_full_screen(@Nullable View decorView);
 	
@@ -5024,7 +5018,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				peruseView.lv2.setFastScrollEnabled(val==1);
 			break;
 			case 24:
-				peruseView.toggleInPageSearch(false);
+				peruseView.toggleSearchPage();
 			break;
 			case 26:
 				peruseView.entryAdapter.notifyDataSetChanged();
@@ -5064,8 +5058,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} else {
 				opt.setTypeFlag_11_AtQF(which, finalFlagPos);
 			}
-			if(PeruseViewAttached())
-				peruseView.RecalibrateWebScrollbar();
 			if (weblist==wordPopup.weblistHandler) {
 				wordPopup.resetScrollbar();
 			} else {
@@ -5275,10 +5267,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				adaptermy3.notifyDataSetChanged();
 				adaptermy4.notifyDataSetChanged();
 			}
-			if(setchooser!=null){
-				setchooser.clear();
-				setchooser=null;
-			}
+			setchooser.clear();
 			if(ActivedAdapter!=null){
 				webviewHolder = ActivedAdapter.webviewHolder;
 				if(webviewHolder!=null) {
@@ -5299,8 +5288,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public abstract void animateUIColorChanges();
 
-	public UniCoverClicker getUcc() {
-		if(ucc==null) ucc = new UniCoverClicker();
+	public UnicornKit getUtk() {
+		if(ucc==null) ucc = new UnicornKit();
 		return ucc;
 	}
 	
@@ -5341,7 +5330,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	void AttachDBrowser(int type) {
 		if(DBrowser==null || opt.debugingDBrowser()) {
-			if(DBrowserHolder !=null) DBrowser= DBrowserHolder.get();
+			DBrowser= DBrowserHolder.get();
 			if(DBrowser==null || opt.debugingDBrowser()){
 				CMN.Log("重建收藏夹历史记录视图");
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
@@ -5765,7 +5754,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						else  alpha=0;
 						weblist.contentUIData.webcontentlister.setAlpha(alpha);
 					} else {
-						showX(R.string.try_longpress,0);
+						//showT("无效操作, 请尝试长按");
+						v.performLongClick();
 					}
 				}
 			} break;
@@ -6040,6 +6030,39 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return false;
 	}
 	
+	
+	public void showDictTweaker(WebViewListHandler weblist) {
+		UnicornKit tk = getUtk();
+		if (weblist.isMultiRecord()) {
+			if (weblist.isViewSingle()) {
+				weblist.getMergedFrame().evaluateJavascript("scrollFocus.src", new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String val) {
+						CMN.Log("onReceiveValue::", val);
+						try {
+							val = val.substring(1, val.length() - 1);
+							String[] arr=val.split("_");
+							val = arr[0];
+							long id = IU.TextToNumber_SIXTWO_LE(val.substring(1));
+							val = arr[1];
+							long pos = IU.TextToNumber_SIXTWO_LE(val);
+							BookPresenter book = getMdictServer().md_getById(id);
+							weblist.getMergedFrame().currentPos = pos;
+							book.currentDisplaying = book.getLexicalEntryAt((int) pos); // 权宜之计
+							tk.showDictTweaker(book, weblist.getMergedFrame());
+						} catch (Exception e) {
+							CMN.debug(e);
+						}
+					}
+				});
+			} else {
+				tk.showDictTweaker(weblist.lastScrollFocus.presenter, weblist.lastScrollFocus);
+			}
+		} else {
+			tk.showDictTweaker(currentDictionary, weblist.dictView);
+		}
+	}
+	
 	//longclick
 	@Override @SuppressLint("ResourceType")
 	public boolean onLongClick(View v) {
@@ -6064,6 +6087,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.browser_widget9:{
 				if(PeruseViewAttached()) {
 //					peruseView.toolbar_cover.performClick(); //111
+					break;
+				}
+				if(true) {
+					findWebList(v);
+					showDictTweaker(weblist);
 					break;
 				}
 				if((isCombinedSearching && DBrowser!=null) ||ActivedAdapter==adaptermy2) {
@@ -6163,6 +6191,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} return true;
 		}
 		return false;
+	}
+	
+	private View anyView(int id) {
+		View v = new View(this);
+		v.setId(id);
+		return v;
 	}
 	
 	/** see {@link #getMenuGridRootViewForPanel} */
@@ -6377,7 +6411,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WebViewListHandler getRandomPageHandler(boolean initPopup) {
 		WebViewListHandler weblistHandler = randomPageHandler;
 		if(weblistHandler==null)
-			weblistHandler = randomPageHandler = new WebViewListHandler(this, ContentviewBinding.inflate(getLayoutInflater()));
+			weblistHandler = randomPageHandler = new WebViewListHandler(this, ContentviewBinding.inflate(getLayoutInflater()), schuiMain);
 		if(initPopup) {
 			weblistHandler.setUpContentView(cbar_key);
 			weblistHandler.popupContentView(null, "随机页面");
@@ -6478,21 +6512,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void prepareInPageSearch(String key, boolean bNeedBringUp) {
-		if(weblistHandler.MainPageSearchetSearch==null){
+		if(weblistHandler.pageSchEdit ==null){
 			weblistHandler.MainPageSearchetSearchStartWord=key;
 		}else{
-			weblistHandler.MainPageSearchetSearch.setText(key);
-			bNeedBringUp=bNeedBringUp&&weblistHandler.MainPageSearchbar.getParent()==null;
+			weblistHandler.pageSchEdit.setText(key);
+			bNeedBringUp=bNeedBringUp&&weblistHandler.pageSchBar.getParent()==null;
 		}
 		if(bNeedBringUp){
-			weblistHandler.togSchPage(false);
+			weblistHandler.togSchPage();
 		}
 	}
 
 	public void showChooseSetDialog() {//切换分组
-		AlertDialog dTmp;
+		AlertDialog dTmp = setchooser.get();
 		Bag bag;
-		if(setchooser==null||(dTmp=setchooser.get())==null) {
+		if(dTmp==null) {
 			SecordTime = SecordPime = 0;
 			CMN.Log("重建对话框……");
 			ArrayList<String> scanInList = new ArrayList<>();
@@ -6938,20 +6972,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if("about:blank".equals(url)/* || !mWebView.active&&!mWebView.fromNet*/) {
 				return;
 			}
-			CMN.Log("chromium page finished ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
+			CMN.Log("chromium: OPF ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
 			if(!mWebView.isloading && !mWebView.fromNet) return;
 			WebViewListHandler wlh = mWebView.weblistHandler;
 			
 			if(ViewUtils.littleCat)
 			try {
-				mWebView.evaluateJavascript("window.debug=function(e){console.log('fatal web d::', e)};", null);
 				mWebView.evaluateJavascript(ViewUtils.fileToString(MainActivityUIBase.this, new File("/ASSET/MdbR/KitPatch.js")), null);
 			} catch (Exception e) {
 				CMN.Log(e);
-			}
-			
-			if(!ViewUtils.littleCat && true){
-				mWebView.evaluateJavascript("window.debug=function(...e){console.log('fatal web d::', e)};", null);
 			}
 			
 			int from = mWebView.fromCombined;
@@ -6984,7 +7013,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			int schemaIdx = url.indexOf(":");
 			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
 			boolean raw = mdbr
-					&& invoker.isMergedBook
+					&& invoker.isMergedBook()
 					&& url.regionMatches(schemaIdx+12, "content", 0, 7);
 			if(raw) {
 				int idx=schemaIdx+12+7+1;
@@ -7164,7 +7193,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			if (weblistHandler.tapSch && !invoker.getImageOnly()) {
 				CMN.Log("popuping...加载");
-				//mWebView.evaluateJavascript(BookPresenter.tapTranslateLoader, null);
 				try {
 					mWebView.evaluateJavascript(ViewUtils.fileToString(MainActivityUIBase.this, new File("/ASSET2/" + "tapSch.js")), null);
 				} catch (Exception e) { CMN.Log(e);}
@@ -7602,7 +7630,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			int schemaIdx = url.indexOf(":");
 			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
-			if(invoker.isMergedBook) {
+			if(invoker.isMergedBook()) {
 				if(mdbr) {
 					CMN.debug("mdbr::", url);
 					try {
@@ -9456,7 +9484,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void showMultipleCollection(String text, ViewGroup webviewholder) {
 		//showT("功能关闭中，请等待5.0版本");
 		//showT(text);
-		BottomSheetDialog _bottomPlaylist = bottomPlaylist==null?null:bottomPlaylist.get();
+		BottomSheetDialog _bottomPlaylist = bottomPlaylist.get();
 		if(_bottomPlaylist==null) {
 			CMN.Log("重建底部弹出");
 			bottomPlaylist = new WeakReference<>(_bottomPlaylist = new BottomSheetDialog(this));
@@ -9578,7 +9606,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	/** @param reason: 0=切换收藏夹; 1=切换收藏夹(收藏夹视图); 2=移动收藏 */
 	public void showChooseFavorDialog(int reason) {
-		AlertDialog d = ChooseFavorDialog==null?null:ChooseFavorDialog.get();
+		AlertDialog d = ChooseFavorDialog.get();
 		if(d==null){
 			CMN.Log("重建选择器……");
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -10028,29 +10056,36 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return saveAndRestorePagePosDelegate;
 	}
 	
-	public float prepareSingleWebviewForAda(BookPresenter current, WebViewmy current_webview, long pos, BasicAdapter Ada) {
-		if(current_webview==null) {
-			current_webview = current.mWebView;
+	public float prepareSingleWebviewForAda(BookPresenter current, WebViewmy wv, long pos, BasicAdapter Ada, boolean remPos, boolean remScale) {
+		if(wv==null) {
+			wv = current.mWebView;
 		}
 		float ret=-1;
-		if(opt.getRemPos() && !Ada.shunt) {
-			ret = DelegateSaveAndRestorePagePos().SaveAndRestoreSinglePageForAdapter(current_webview, pos, Ada);
+		if(remPos && !Ada.shunt) {
+			ret = DelegateSaveAndRestorePagePos().SaveAndRestoreSinglePageForAdapter(wv, pos, Ada);
 		} else {
-			current_webview.expectedPos=0;
-			current_webview.expectedPosX=0;
+			wv.expectedPos=0;
+			wv.expectedPosX=0;
 			bRequestedCleanSearch=false;
 		}
 		
 		if(opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(current.tmpIsFlag)
 				||!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething())
-			current_webview.bRequestedSoundPlayback=true;
+			wv.bRequestedSoundPlayback=true;
 		
-		if(current_webview.fromCombined!=3) {
-			current_webview.fromCombined=0;
+		if(wv.fromCombined!=3) {
+			wv.fromCombined=0;
 		}
 		
-		if(opt.getInheritePageScale())
-			ret=current_webview.webScale;
+		if(remScale) {
+			float bef=ret;
+			ret=wv.webScale;
+			if (bef!=0) {
+				float scale=ret/bef;
+				if (wv.expectedPos!=0) wv.expectedPos*=scale;
+				if (wv.expectedPosX!=0) wv.expectedPosX*=scale;
+			}
+		}
 		
 		return ret;
 	}
@@ -10061,19 +10096,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	public long Flag(int flagIndex) {
 		if(flagIndex==100) return 0;
+		if(flagIndex==101) return weblist.shezhi;
 		return opt.Flag(flagIndex);
 	}
 	
 	@Override
 	public void Flag(int flagIndex, long val) {
 		CMN.Log("Flag::set", flagIndex);
-		if(flagIndex!=100)
-			opt.Flag(flagIndex, val);
+		if(flagIndex==100) {}
+		else if(flagIndex==101){
+			weblist.shezhi = (int) val;
+		}
+		else opt.Flag(flagIndex, val);
 	}
 	
 	@Override
 	public int getDynamicFlagIndex(int flagIdx) {
-		return flagIdx==100?flagIdx:0;
+		return (flagIdx==100||flagIdx==101)?flagIdx:0;
 	}
 	
 	@Override
@@ -10108,12 +10147,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn) {
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
 			WebViewmy view = getCurrentWebContext(true);
-			if (view==wordPopup.mWebView) { //111 null
-				if (wordPopup.nav(true))
+			if (view!=null) {
+				if (view==wordPopup.mWebView) { //111
+					if (false && wordPopup.nav(true))
+						return true;
+				} else if(view.voyagable(true)) {
+					view.voyage(true);
 					return true;
-			} else if(view!=null && view.voyagable(true)) {
-				view.voyage(true);
-				return true;
+				}
 			}
 		}
 		if(wordPopup.popupContentView!=null) {
@@ -10227,7 +10268,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public WeakReference getReferenceObject(int id) {
 		if(WeakReferencePool[id] == null) {
-			return CMN.DummyRef;
+			return ViewUtils.DummyRef;
 		}
 		return WeakReferencePool[id];
 	}

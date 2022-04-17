@@ -63,7 +63,7 @@ import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.plaindict.MainActivityUIBase.UniCoverClicker;
+import com.knziha.plod.plaindict.MainActivityUIBase.UnicornKit;
 import com.knziha.plod.plaindict.MdictServer;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -122,7 +122,6 @@ import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
 public class BookPresenter
 		implements ValueCallback<String>, OnClickListener, mngr_agent_manageable, View.OnLongClickListener {
 	public UniversalDictionaryInterface bookImpl;
-	public final boolean isMergedBook;
 	
 	public ArrayList<SearchResultBean>[] combining_search_tree2; // 收集词条名称
 	public ArrayList<SearchResultBean>[] combining_search_tree_4; // 收集词条文本
@@ -143,9 +142,8 @@ public class BookPresenter
 		var LoadMark, frameAt;
 		function _log(...e){console.log('fatal web::'+e)};
 	 	w.addEventListener('load',function(e){
-			//_log('wrappedOnLoadFunc...');
+			_log('wrappedOnLoadFunc...');
 			var ws = d.body.style;
-			_log('mdpage loaded dark:'+(w.rcsp&0x40));
 	 		d.body.contentEditable=!1;
 	 		_highlight(null);
 			var vi = d.getElementsByTagName('video');
@@ -518,6 +516,10 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=34, shift=1) public void uncheckVersionBefore_5_4(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 
 
+	@Metaline(flagPos=35) public boolean isMergedBook() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=35) public void isMergedBook(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
+
+
 //	public boolean getStarLevel(){
 //		0x100000~0x400000
 //	}
@@ -687,7 +689,7 @@ function debug(e){console.log(e)};
 	public static ConcurrentHashMap<String, Long> bookImplsNameMap = new ConcurrentHashMap<>();
 	
 	//构造
-	public BookPresenter(@NonNull File fullPath, MainActivityUIBase THIS, int pseudoInit, Object tag) throws IOException {
+	public BookPresenter(@NonNull File fullPath, MainActivityUIBase THIS, int pseudoInit) throws IOException {
 		bookImpl = getBookImpl(THIS, fullPath, pseudoInit);
 		
 		int type = 0;
@@ -702,7 +704,6 @@ function debug(e){console.log(e)};
 			throw new RuntimeException("Failed To Create Book! "+fullPath);
 		}
 		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.values()[type];
-		isMergedBook = mType==PLAIN_TYPE_EMPTY&&tag!=null;
 		bAutoRecordHistory = mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 		
 		if(THIS!=null){
@@ -710,34 +711,32 @@ function debug(e){console.log(e)};
 			opt = THIS.opt;
 		}
 		
-		if(pseudoInit==1) {
-			return;
-		}
-		//init(getStreamAt(0)); // MLSN
-		
-		File p = fullPath.getParentFile();
-		if(p!=null && p.exists()) {
-			StringBuilder buffer = getCleanDictionaryNameBuilder();
-			int bL = buffer.length();
-			File externalFile;
-			/* 外挂同名css */
-			if(PDICMainAppOptions.getAllowPlugCss()) {
-				externalFile = new File(p, buffer.append(".css").toString());
+		if((pseudoInit&1)==0) {
+			//init(getStreamAt(0)); // MLSN
+			File p = fullPath.getParentFile();
+			if(p!=null && p.exists()) {
+				StringBuilder buffer = getCleanDictionaryNameBuilder();
+				int bL = buffer.length();
+				File externalFile;
+				/* 外挂同名css */
+				if(PDICMainAppOptions.getAllowPlugCss()) {
+					externalFile = new File(p, buffer.append(".css").toString());
+					if(externalFile.exists()) {
+						//todo 插入 同名 css 文件？
+						hasExtStyle = true;
+					}
+				}
+				buffer.setLength(bL);
+				externalFile = new File(p, buffer.append(".png").toString());
+				/* 同名png图标 */
 				if(externalFile.exists()) {
-					//todo 插入 同名 css 文件？
-					hasExtStyle = true;
+					cover = Drawable.createFromPath(externalFile.getPath());
 				}
 			}
-			buffer.setLength(bL);
-			externalFile = new File(p, buffer.append(".png").toString());
-			/* 同名png图标 */
-			if(externalFile.exists()) {
-				cover = Drawable.createFromPath(externalFile.getPath());
+			
+			if(THIS!=null) {
+				readConfigs(THIS, THIS.prepareHistoryCon());
 			}
-		}
-		
-		if(THIS!=null) {
-			readConfigs(THIS, THIS.prepareHistoryCon());
 		}
 	}
 	
@@ -773,7 +772,7 @@ function debug(e){console.log(e)};
 			bookImpl = bookImplsMap.get(bid);
 		}
 		//CMN.Log("getBookImpl", fullPath, bookImpl);
-		if ((pseudoInit&3)==0 && bookImpl==null) {
+		if ((pseudoInit&2)==0 && bookImpl==null) {
 			int sufixp = pathFull.lastIndexOf(".");
 			if (sufixp<pathFull.length()-name.length()) sufixp=-1;
 			int hash = hashCode(sufixp<0?name:pathFull, sufixp+1);
@@ -827,10 +826,10 @@ function debug(e){console.log(e)};
 	public FlowTextView toolbar_title;
 	public ViewGroup toolbar;
 	ImageView toolbar_cover;
-	private UniCoverClicker ucc;
+	private UnicornKit ucc;
 	public void initViewsHolder(final MainActivityUIBase a){
 		this.a=a;
-		ucc = a.getUcc(); //todo
+		ucc = a.getUtk(); //todo
 		if(!viewsHolderReady) {
 			ContentviewItemBinding pageData = ContentviewItemBinding.inflate(a.getLayoutInflater()
 					, a.weblistHandler.getViewGroup(), false);
@@ -846,7 +845,7 @@ function debug(e){console.log(e)};
 					_mWebView.setOnScrollChangedListener(a.getWebScrollChanged());
 	            _mWebView.setPadding(0, 0, 18, 0);
 				_mWebView.addJavascriptInterface(getWebBridge(), "app");
-				if(isMergedBook)
+				if(isMergedBook())
 					getWebBridge().mergeView = _mWebView;
 				mWebView = mPageView.webviewmy;
 	        }
@@ -870,7 +869,9 @@ function debug(e){console.log(e)};
 			mWebView.recess = pageData.recess;
 			mWebView.forward = pageData.forward;
 			mWebView.rl = rl;
-			toolbar_title.setText(bookImpl.getDictionaryName());
+			if (bookImpl!=null) {
+				toolbar_title.setText(bookImpl.getDictionaryName());
+			}
 			toolbar_title.setMaxLines(1);
 			viewsHolderReady=true;
 			
@@ -951,10 +952,8 @@ function debug(e){console.log(e)};
 					showDictTweaker(mWebView, a, this);
 					break;
 				}
-				if(ucc!=null) {//sanity check.
-					ucc.setInvoker(this, mWebView, null, null);
-					ucc.onClick(v);
-				}
+				a.getUtk().setInvoker(this, mWebView, null, null);
+				a.getUtk().onClick(v);
 				break;
 			case R.id.undo:
 				if(v.getAlpha()==1)mWebView.evaluateJavascript("document.execCommand('Undo')", null);
@@ -1795,11 +1794,7 @@ function debug(e){console.log(e)};
 
     @SuppressLint("JavascriptInterface")
 	public void setCurrentDis(WebViewmy mWebView, long idx, int... flag) {
-		if(mWebView.presenter!=this) {
-			mWebView.clearHistory();
-			mWebView.clearIfNewADA(this);
-			mWebView.presenter=this;
-		}
+		mWebView.setPresenter(this);
 		if(flag==null || flag.length==0) {//书签跳转等等
 			mWebView.addHistoryAt(idx);
 		}
@@ -1916,7 +1911,7 @@ function debug(e){console.log(e)};
 		tintBackground(mWebView);
 		
 		if (ViewUtils.ViewIsId((View) mWebView.rl.getParent(), R.id.webSingleholder)) {
-			mWebView.weblistHandler.setLastScrolledBook(mWebView);
+			mWebView.weblistHandler.setLastScrollFocus(mWebView);
 		}
 	
 		if((fRender&RENDERFLAG_NEW)!=0){
@@ -2261,19 +2256,11 @@ function debug(e){console.log(e)};
 		}
 
 		htmlBuilder.append("<script class=\"_PDict\">");
-		int rcsp = MakeRCSP(mWebView.weblistHandler, opt);
-		if(mWebView==a.wordPopup.mWebView) rcsp|=1<<5;
-		htmlBuilder.append("window.rcsp=").append(rcsp).append(";");
+//		int rcsp = MakeRCSP(mWebView.weblistHandler, opt);
+//		if(mWebView==a.wordPopup.mWebView) rcsp|=1<<5; //todo
+		htmlBuilder.append("window.shzh=").append(mWebView.weblistHandler.tapSch?1:0).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
-		//nimp
-		//if(!(this instanceof bookPresenter_web))
-		{
-			htmlBuilder.append("webx=").append(1).append(";");
-		}
-
-		if (PDICMainAppOptions.getInPageSearchHighlightBorder()) {
-			htmlBuilder.append(hl_border);
-		}
+		//htmlBuilder.append("webx=").append(getIsWebx()?1:0).append(";");
 		htmlBuilder.append("</script>");
 	}
 
@@ -2290,17 +2277,28 @@ function debug(e){console.log(e)};
 		return SimplestInjection;
 	}
 
-	public static int MakeRCSP(WebViewListHandler wlh, PDICMainAppOptions opt) {
-		final int ret = opt.FetUseRegex3()|
-				opt.FetPageCaseSensitive()|
-				opt.FetPageWildcardSplitKeywords()|
-				opt.FetPageWildcardMatchNoSpace()|
-				opt.FetInPageSearchUseWildcard()|
-				(wlh.tapSch?1<<5:0)|
-				opt.FetIsDark()
+	public static int MakePageFlag(WebViewListHandler wlh, PDICMainAppOptions opt) {
+		final int ret =
+				(wlh.tapSch?1:0)
+				| 8
+				| ( (PDICMainAppOptions.pageSchUseRegex()?0x10:0)
+				|   (PDICMainAppOptions.pageSchCaseSensitive()?0x20:0)
+				|   (PDICMainAppOptions.pageSchSplitKeys()?0x40:0)
+				|   (PDICMainAppOptions.pageSchWildMatchNoSpace()?0x80:0)
+				|   (PDICMainAppOptions.pageSchWild()?0x100:0))
+				//opt.FetIsDark()
 				;
 		CMN.Log("rcsp::", Integer.toBinaryString(ret), ret);
 		return ret;
+	}
+	
+	public static void SavePageFlag(int sz) {
+		sz = sz>>4;
+		PDICMainAppOptions.pageSchUseRegex((sz&1)!=0);
+		PDICMainAppOptions.pageSchCaseSensitive((sz&2)!=0);
+		PDICMainAppOptions.pageSchSplitKeys((sz&4)!=0);
+		PDICMainAppOptions.pageSchWildMatchNoSpace((sz&8)!=0);
+		PDICMainAppOptions.pageSchWild((sz&0x100)!=0);
 	}
 
 	public void PlayWithToolbar(boolean hideDictToolbar,Context a) {
@@ -2522,14 +2520,6 @@ function debug(e){console.log(e)};
 		return bookImpl.getSoundResourceByName(canonicalName);
 	}
 	
-	public void setToolbarTitleAt(long pos) {
-		String entry = pos>=-1?bookImpl.getEntryAt(pos).trim():currentDisplaying;
-		StringBuilder sb = bookImpl.AcquireStringBuffer(entry.length()+bookImpl.getDictionaryName().length()+5);
-		sb.append(entry).append(" - ");
-		appendCleanDictionaryName(sb);
-		toolbar_title.setText(sb.toString());
-	}
-	
 	public String getCharsetName() {
 		return bookImpl.getCharsetName();
 	}
@@ -2556,7 +2546,7 @@ function debug(e){console.log(e)};
 			try {
 				WebViewmy wv = findWebview(sid);
 				WebViewListHandler wlh = wv.weblistHandler;
-				return MakeRCSP(wlh, wlh.opt);
+				return MakePageFlag(wlh, wlh.opt);
 			} catch (Exception e) {
 				CMN.debug(e);
 				return 0;
@@ -2710,9 +2700,9 @@ function debug(e){console.log(e)};
 		public void showUcc(String id, String text) {
         	MainActivityUIBase a = presenter.a;
 			a.weblistHandler.mMergedFrame.post(() -> {
-				a.getUcc().setInvoker(a.getBookById(IU.TextToNumber_SIXTWO_LE(id)), a.weblistHandler.mMergedFrame, null, text);
+				a.getUtk().setInvoker(a.getBookById(IU.TextToNumber_SIXTWO_LE(id)), a.weblistHandler.mMergedFrame, null, text);
 				a.weblistHandler.mMergedFrame.setTag(0);
-				a.getUcc().onClick(a.weblistHandler.mMergedFrame);
+				a.getUtk().onClick(a.weblistHandler.mMergedFrame);
 			});
         }
 		
@@ -2735,7 +2725,7 @@ function debug(e){console.log(e)};
 			BookPresenter book = this.presenter;
 			if(book==null || !book.getImageBrowsable() || img.length==0) return;
 			String src = img[0];
-			if(book.isMergedBook) {
+			if(book.isMergedBook()) {
 				int idx = src.indexOf("mdbr.com/base/");
 				if(idx>=0) {
 					idx+=14;
@@ -2792,8 +2782,8 @@ function debug(e){console.log(e)};
 			if(presenter!=null)
 			try {
 				WebViewmy wv = findWebview(sid);
-				if(wv.weblistHandler.MainPageSearchbar!=null && wv.weblistHandler.MainPageSearchbar.getParent()!=null) {
-					return wv.weblistHandler.MainPageSearchetSearch.getText().toString();
+				if(wv.weblistHandler.pageSchBar !=null && wv.weblistHandler.pageSchBar.getParent()!=null) {
+					return wv.weblistHandler.pageSchEdit.getText().toString();
 				}
 			} catch (Exception e) {
 				CMN.Log(e);
@@ -2858,7 +2848,7 @@ function debug(e){console.log(e)};
 				}
 				MainActivityUIBase a = presenter.a;
 				WebViewmy wv = findWebview(sid);
-				CMN.Log("popupWord::ivk::", presenter, wv);
+				CMN.Log("popupWord::ivk::", presenter, wv, mergeView);
 				a.popupWord(key, null, frameAt, wv);
 				if(frameAt>=0 && pH!=0){
 					if(pW==0) pW=pH;
@@ -2931,7 +2921,7 @@ function debug(e){console.log(e)};
 
 		public void setBook(BookPresenter bk) {
         	if(bk!=null) {
-				presenter =bk;
+				presenter=bk;
 				if(dm==null) {
 					dm=bk.a.dm;
 				}
@@ -3236,7 +3226,7 @@ function debug(e){console.log(e)};
 			toolbar_cover = null;
 			toolbar_title = null;
 			toolbar = null;
-			if(isMergedBook && mWebBridge!=null)
+			if(isMergedBook() && mWebBridge!=null)
 				mWebBridge.mergeView=null;
 		}
 		a=null;
@@ -3258,31 +3248,26 @@ function debug(e){console.log(e)};
 	}
 	
 	public void saveStates(Context context, LexicalDBHelper historyCon) {
-		if(mType== PLAIN_TYPE_EMPTY) return;
+		if(mType==PLAIN_TYPE_EMPTY) return;
 		setIsDedicatedFilter(false);
 		try {
 			DataOutputStream data_out;
-			byte[] data;
 			
 			String save_name = bookImpl.getDictionaryName();
 			
 			ReusableByteOutputStream bos = new ReusableByteOutputStream(bookImpl.getOptions(), MainActivityUIBase.ConfigSize + MainActivityUIBase.ConfigExtra);
-			data = bos.getBytes();
 			bos.precede(MainActivityUIBase.ConfigExtra);
 			data_out = new DataOutputStream(bos);
 			
 			data_out.writeByte(0);
 			data_out.writeByte(0);
-//			data_out.writeByte((int) (255*IBC.doubleClickXOffset));
-//			data_out.writeByte((int) (255*IBC.doubleClickPresetXOffset));
 			data_out.writeByte(0);
+			
 			data_out.writeInt(bgColor);
 			data_out.writeInt(internalScaleLevel);
-			// 调试
-			boolean d = PDICMainAppOptions.getSimpleMode()||true;
-			data_out.writeInt(d?0:lvPos);
+			data_out.writeInt(lvPos);
 			data_out.writeInt(lvClickPos);
-			data_out.writeInt(d?0:lvPosOff);
+			data_out.writeInt(lvPosOff);
 			//CMN.Log("保存列表位置",lvPos,lvClickPos,lvPosOff, bookImpl.getDictionaryName());
 			ScrollerRecord record = avoyager.get(lvClickPos);
 			if(record!=null){
@@ -3321,9 +3306,13 @@ function debug(e){console.log(e)};
 			//	a.dirtyMap.add(save_name);
 			//}
 			//UIProjects.put(save_name, data);
-			putBookOptions(context, historyCon, bookImpl.getBooKID(), bos.getBytesLegal(MainActivityUIBase.ConfigSize), bookImpl.getFile().getPath(), save_name);
+			putBookOptions(context, historyCon, bookImpl.getBooKID(), bos.getArray(MainActivityUIBase.ConfigSize), bookImpl.getFile().getPath(), save_name);
 			isDirty = false;
-		} catch (Exception e) { if(GlobalOptions.debug) CMN.Log(e); }
+			
+			readConfigs(a, a.prepareHistoryCon());
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 	}
 	
 	public float webScale=0;
@@ -3335,12 +3324,12 @@ function debug(e){console.log(e)};
 			CMN.rt();
 			byte[] data = bookImpl.getOptions();
 			if(data==null) data=getBookOptions(context, historyCon, bookImpl.getBooKID(), bookImpl.getFile().getPath(), bookImpl.getDictionaryName());
+			int extra = MainActivityUIBase.ConfigExtra;
 			if(data!=null) {
 				bookImpl.setOptions(data);
-				int extra = MainActivityUIBase.ConfigExtra;
 				data_in1 = new DataInputStream(new ByteArrayInputStream(data, extra, data.length-extra));
 			} else {
-				bookImpl.setOptions(new byte[MainActivityUIBase.ConfigSize]);
+				bookImpl.setOptions(new byte[extra+MainActivityUIBase.ConfigSize]);
 			}
 			if(data_in1!=null) {
 				//FF(len) [|||| |color |zoom ||case]  int.BG int.ZOOM
@@ -3348,11 +3337,8 @@ function debug(e){console.log(e)};
 				//IBC.doubleClickPresetXOffset = ((float)Math.round(((float)data_in1.read())/255*1000))/1000;
 				data_in1.read();
 				data_in1.read();
-				byte _firstFlag = data_in1.readByte();
-				firstFlag=0;
-				if(_firstFlag!=0){
-					firstFlag |= _firstFlag;
-				}
+				firstFlag = data_in1.readByte();
+				
 				bgColor = data_in1.readInt();
 				internalScaleLevel = data_in1.readInt();
 				lvPos = data_in1.readInt();
@@ -3380,7 +3366,7 @@ function debug(e){console.log(e)};
 				IBC.doubleClickPresetXOffset = data_in1.readFloat();
 				// 78
 			}
-			//CMN.pt(bookImpl.getDictionaryName()+" id="+bookImpl.getBooKID()+" "+data+" 单典配置加载耗时");
+			CMN.pt(bookImpl.getDictionaryName()+" id="+bookImpl.getBooKID()+" "+data+" 单典配置加载耗时");
 		} catch (Exception e) {
 			CMN.Log(e);
 			//firstFlag = 0;
@@ -3388,7 +3374,7 @@ function debug(e){console.log(e)};
 			FFStamp = firstFlag;
 			if(data_in1!=null) data_in1.close();
 		}
-		if(PDICMainAppOptions.getSimpleMode()||true) {
+		if(PDICMainAppOptions.getSimpleMode()) {
 			// 调试
 			lvPos=0;lvPosOff=0;
 		}
@@ -3448,13 +3434,13 @@ function debug(e){console.log(e)};
 					return null;
 				}
 				FileInputStream fin = new FileInputStream(fd.getFileDescriptor());
-				ReusableByteOutputStream out = new ReusableByteOutputStream(Math.max(fin.available(), MainActivityUIBase.ConfigSize));
+				ReusableByteOutputStream out = new ReusableByteOutputStream(MainActivityUIBase.ConfigSize);
 				out.write(fin, true);
 				fin.close();
 				//CMN.Log("getBytesLegal::", out.getBytesLegal()==out.getBytes(), out.getBytesLegal().length, out.getBytes().length);
-				return out.getBytesLegal(MainActivityUIBase.ConfigSize);
+				return out.getArray(MainActivityUIBase.ConfigSize);
 			} catch (Exception e) {
-				CMN.Log("THIS  IS NULL!!!", book_id, path, name);
+				CMN.Log("THIS IS NULL!!!", book_id, path, name);
 				CMN.Log(e);
 			}
 		}
@@ -3696,7 +3682,7 @@ function debug(e){console.log(e)};
 					val=(val+1)%(flagMax+1);
 					for (mngr_agent_manageable mmTmp : md) {
 						mmTmp.getFirstFlag();
-						mmTmp.validifyValueForFlag(view, val, mask, flagPosition, processId);
+						mmTmp.onValueChanged(view, val, mask, flagPosition, processId);
 					}
 					int fixedRange = indexOf(text, ':', now);
 					text.delete(fixedRange+1, indexOf(text, ']', fixedRange));
@@ -3713,7 +3699,8 @@ function debug(e){console.log(e)};
 	}
 			
 	@Override
-	public void validifyValueForFlag(WebViewmy mWebView, int val, int mask, int flagPosition, int processId) {
+	public void onValueChanged(WebViewmy mWebView, int val, int mask, int flagPosition, int processId) {
+		CMN.Log("onValueChanged::", mWebView, processId);
 		firstFlag &= ~(mask << flagPosition);
 		firstFlag |= (val << flagPosition);
 		if(mWebView==null)
@@ -3721,7 +3708,7 @@ function debug(e){console.log(e)};
 		isDirty=true;
 		if(mWebView!=null) {
 			switch(processId){
-				case 1:
+				case 1:{
 					if (getUseInternalBG()) {
 						if(PDICMainAppOptions.getInheritGlobleWebcolorBeforeSwichingToInternal())
 							bgColor = CMN.GlobalPageBackground;
@@ -3729,7 +3716,8 @@ function debug(e){console.log(e)};
 							mWebView.setBackgroundColor(bgColor);
 					} else if (!(a.isCombinedViewAvtive() && getIsolateImages()))
 						mWebView.setBackgroundColor(CMN.GlobalPageBackground);
-				break;
+					
+				} break;
 				case 2:
 					mWebView.getSettings().setTextZoom(getFontSize());
 				break;
@@ -3761,6 +3749,7 @@ function debug(e){console.log(e)};
 	public boolean hasBookmark(WebViewmy mWebView) {
 		String entryName = getSaveUrl(mWebView);
 		if (entryName==null) return false;
+		CMN.Log("hasBookmark::", entryName);
 		SQLiteStatement stat = a.prepareHistoryCon().preparedHasBookmarkForEntry;
 		stat.bindString(1, entryName);
 		stat.bindLong(2, getId());
@@ -4019,7 +4008,7 @@ function debug(e){console.log(e)};
 	public String toString() {
 		return "BookPresenter{" +
 				"bookImpl=" + (bookImpl==null?"":bookImpl.getDictionaryName()) +
-				", isMergedBook=" + isMergedBook +
+				", isMergedBook=" + isMergedBook() +
 				'}';
 	}
 }

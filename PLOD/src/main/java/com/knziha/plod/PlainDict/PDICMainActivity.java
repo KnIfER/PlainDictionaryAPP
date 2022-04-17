@@ -44,7 +44,6 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
-import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -690,7 +689,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				UIData.drawerLayout.closeDrawer(GravityCompat.START);
 				return true;
 			}
-			boolean b1=PDICMainAppOptions.getBackToHomePage();
+			boolean b1=PDICMainAppOptions.exitToBackground();
 			if(!b1||PDICMainAppOptions.getBackToHomePagePreventBack()) {
 				int BackPrevention = PDICMainAppOptions.getBackPrevention();
 				switch (BackPrevention) {
@@ -739,7 +738,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if(opt.getAutoReadEntry()){
 						forbidVolumeAjustmentsForTextRead =true;
 					}
-					boolean toHighlight=weblistHandler.MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && weblistHandler.MainPageSearchbar.getParent()!=null;
+					boolean toHighlight=weblistHandler.pageSchBar !=null && PDICMainAppOptions.schPageNavAudioKey() && weblistHandler.pageSchBar.getParent()!=null;
 					if (DBrowser != null && main.getChildCount() == 1) {//==1: 内容未加渲染
 						if (opt.getUseVolumeBtn()) {
 							if (DBrowser.inSearch)
@@ -779,7 +778,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if(opt.getAutoReadEntry()){
 						forbidVolumeAjustmentsForTextRead =true;
 					}
-					boolean toHighlight=weblistHandler.MainPageSearchbar!=null && PDICMainAppOptions.getInPageSearchUseAudioKey() && weblistHandler.MainPageSearchbar.getParent()!=null;
+					boolean toHighlight=weblistHandler.pageSchBar !=null && PDICMainAppOptions.schPageNavAudioKey() && weblistHandler.pageSchBar.getParent()!=null;
 					if (DBrowser != null && main.getChildCount() == 1) {
 						if (DBrowser.inSearch)
 							DBrowser.onClick(DBrowser.UIData.browserWidget14);
@@ -1048,11 +1047,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			etSearch.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // 不开可能崩溃、滑动recyclerview会卡顿
 			etSearch.setShadowLayer(etSearch.getPaddingRight(), 0f, 0f, Color.TRANSPARENT);
 		}
-		super.findFurtherViews();
 		schuiMain = SearchUI.MainApp.MAIN;
-		schuiMainPeruse = schuiMain|SearchUI.Fye.MAIN;
-		schuiInit = schuiMainPeruse | SearchUI.MainApp.ENTRYTEXT | SearchUI.MainApp.FULLTEXT;
+		schuiMainSchs = SearchUI.MainApp.ENTRYTEXT|SearchUI.MainApp.FULLTEXT;
+		schuiMainPeruse = SearchUI.MainApp.MAIN|SearchUI.Fye.MAIN;
 		schuiList = SearchUI.MainApp.表;
+		super.findFurtherViews();
 	}
 	
 	private int softMode;
@@ -1285,15 +1284,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 			@Override
 			public void onMoving(float val,IMPageSlider IMPageCover) {
-				if(ActivedAdapter==adaptermy && currentDictionary.isViewInitialized()) {
-					long pos = currentDictionary.mWebView.currentPos+(Math.abs(val)>20*dm.density?(val<0?1:-1):0);
-					if(pos>=-1 && pos<currentDictionary.bookImpl.getNumberEntries()) {
-						if(currentPos!=pos) {
-							currentDictionary.setToolbarTitleAt(pos);
-						}
-						currentPos=pos;
-					}
-				}
+//				if(ActivedAdapter==adaptermy && currentDictionary.isViewInitialized()) {
+//					long pos = currentDictionary.mWebView.currentPos+(Math.abs(val)>20*dm.density?(val<0?1:-1):0);
+//					if(pos>=-1 && pos<currentDictionary.bookImpl.getNumberEntries()) {
+//						if(currentPos!=pos) {
+//							currentDictionary.setToolbarTitleAt(pos);
+//						}
+//						currentPos=pos;
+//					}
+//				}
 			}
 
 			@Override
@@ -1307,11 +1306,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				boolean there = ActivedAdapter instanceof com.knziha.plod.plaindict.PeruseView.LeftViewAdapter;
 				if(Dir==1) {contentUIData.browserWidget11.performClick();}
 				else if(Dir==0) contentUIData.browserWidget10.performClick();
-				else if(ActivedAdapter==adaptermy && !there) {
-					if(currentPos!=currentDictionary.mWebView.currentPos){
-						currentDictionary.setToolbarTitleAt(-2);
-					}
-				}
+//				else if(ActivedAdapter==adaptermy && !there) {
+//					if(currentPos!=currentDictionary.mWebView.currentPos){
+//						currentDictionary.setToolbarTitleAt(-2);
+//					}
+//				}
 			}});
 		
 		final NoScrollViewPager viewPager = UIData.viewpager;
@@ -1814,7 +1813,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//bottombar.findViewById(R.id.browser_widget2).performLongClick();
 		//bottombar.findViewById(R.id.browser_widget5).performLongClick();
 		if(opt.schPage())
-			weblistHandler.togSchPage(false);
+			weblistHandler.togSchPage();
 //		if(MainPageSearchbar!=null) MainPageSearchetSearch.setText("译");
 		//if(false)
 		root.postDelayed(() -> {
@@ -2002,13 +2001,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(val==null) val="";
 				String ret=val;
 				/*0=wild card; 1=regex search; 2=plain search; */
-				int InPageSearchType = PDICMainAppOptions.getUseRegex3()?1:PDICMainAppOptions.getInPageSearchUseWildcard()?0:2;
+				int InPageSearchType = PDICMainAppOptions.pageSchUseRegex()?1:PDICMainAppOptions.pageSchWild()?0:2;
 				if(InPageSearchType==SEARCHENGINETYPE_WILDCARD){//wild card
 					if(mSearchEngineType != SEARCHENGINETYPE_WILDCARD){//直接散开呗
 						ret=VerbatimSearchTask.Pattern_VerbatimDelimiter.matcher(val).replaceAll(" ");
 					} else { //有得救
 						ret = ReplaceMWtoMMWOrRegex(ret, false);
-						if(PDICMainAppOptions.getPageWildcardSplitKeywords())
+						if(PDICMainAppOptions.pageSchSplitKeys())
 							ret = ret.replaceAll("[|&^$]", " ");
 					}
 				} else if(InPageSearchType==SEARCHENGINETYPE_REGEX){//regex
@@ -2361,27 +2360,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			if(PDICMainAppOptions.getSimpleMode()!=PDICMainAppOptions.getSimpleMode(QFStamp)){
 				adaptermy.notifyDataSetChanged();
-			}
-			if(CMN.CheckSettings!=0){
-				if(CMN.checkRCSP()){
-					if(ActivedAdapter!=null){
-						resetPatterns();
-						webviewHolder=ActivedAdapter.webviewHolder;
-						if(webviewHolder!=null){ //todo opt
-							int cc = webviewHolder.getChildCount();
-							for (int i = 0; i < cc; i++) {
-								if(webviewHolder.getChildAt(i) instanceof LinearLayout){
-									ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(i);
-									if(webHolder.getChildAt(1) instanceof WebView){
-										WebViewmy wv = (WebViewmy) webHolder.getChildAt(1);
-										String val = "window.rcsp="+ BookPresenter.MakeRCSP(wv.weblistHandler, opt)+"; _highlight(null);";
-										wv.evaluateJavascript(val,null);
-									}
-								}
-							}
-						}
-					}
-				}
 			}
 			
 			if((CMN.AppColorChangedFlag&0x1)!=0)
@@ -3178,7 +3156,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;
 			/* 页内查找 */
 			case R.id.toolbar_action13:{
-				wlh.togSchPage(ret=isLongClicked);
+				wlh.togSchPage();
 			} break;
 			case R.id.toolbar_action7://切换词典
 				if(isLongClicked) break;

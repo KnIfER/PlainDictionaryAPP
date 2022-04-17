@@ -24,16 +24,6 @@
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			/>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="enable_regex3"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="使用正则表达式3 (页内查找)"
-			android:summary="Javascript-mark.js 正则引擎"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-
 <!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
 <!--			android:key="joni_head"-->
 <!--			android:persistent="false"-->
@@ -53,64 +43,10 @@
 			/>
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="page_case"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="区分大小写2 (页内查找)"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="use_wildcard1"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="使用通配符1 (全文、词条搜索)"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="use_wildcard2"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="使用通配符2 (页内查找)"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-		
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="page_nospc"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="页内查找->通配符不匹配空格"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="page_spcdl"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="页内查找->以空格分割关键词"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="pj_auto"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="页内查找->翻页时自动跳转"
-			app:allowDividerAbove="true"
-			app:allowDividerBelow="true"
-			/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="pj_type"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="页内查找->打字时自动跳转"
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			/>

@@ -47,6 +47,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
 import com.knziha.ankislicer.customviews.ArrayAdaptermy;
+import com.knziha.paging.PagingCursorAdapter;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdict;
@@ -95,7 +96,8 @@ public class DBroswer extends DialogFragment implements
 	ContentviewBinding contentUIData;
 	PeruseView peruseView;
 	
-	SparseArray<Long> lastVisiblePositionMap = new SparseArray<>();
+	/** db type, long[]{pos, view offset} */
+	final static SparseArray<long[]> savedPositions = new SparseArray();
 	
 	RecyclerView lv;
 	int lastDragPos=-1;
@@ -250,12 +252,16 @@ public class DBroswer extends DialogFragment implements
 	public void onDetach(){
 		super.onDetach();
 		//CMN.Log("on browser detach", cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0);
-		View ca = lv.getChildAt(0);
-		if (ca!=null) {
-			ViewUtils.ViewDataHolder holder = (ViewUtils.ViewDataHolder) ca.getTag();
+		saveListPostion(); // onDetach
+	}
+	
+	private void saveListPostion() {
+		View view = lv.getChildAt(0);
+		if (view!=null) {
+			ViewUtils.ViewDataHolder holder = (ViewUtils.ViewDataHolder) view.getTag();
 			DeckListAdapter.HistoryDatabaseReader reader = (DeckListAdapter.HistoryDatabaseReader) holder.tag;
-			lastVisiblePositionMap.append(getFragmentType(), reader.sort_number);
-//			a.showT(new Date(last_visible_entry_time).toLocaleString());
+			savedPositions.put(getFragmentType(), new long[]{reader.sort_number, view.getTop()});
+			//CMN.debug("savedPositions::save::", getFragmentType()+" "+reader.record+" "+new Date(reader.sort_number).toLocaleString());
 		}
 	}
 	
@@ -294,7 +300,7 @@ public class DBroswer extends DialogFragment implements
 		if(contentUIData==null) {
 			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
-			weblistHandler = new WebViewListHandler(a, contentUIData);
+			weblistHandler = new WebViewListHandler(a, contentUIData, a.schuiMain);
 			weblistHandler.setUpContentView(a.cbar_key);
 		}
 		weblistHandler.checkUI();
@@ -459,6 +465,7 @@ public class DBroswer extends DialogFragment implements
 			.setMessage(getResources().getString(R.string.warn_move, Selection.size(),CMN.unwrapDatabaseName(a.favoriteCon.DATABASE),CMN.unwrapDatabaseName(toDB.DATABASE)))
 			.setIcon(android.R.drawable.ic_dialog_alert)
 			.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+				saveListPostion();
 				//final long[] ids = new long[l.size()];
 				String sql = "delete from t1 where lex = ? ";
 				SQLiteStatement preparedDeleteExecutor = mLexiDB.getDB().compileStatement(sql);
@@ -487,7 +494,7 @@ public class DBroswer extends DialogFragment implements
 					mLexiDB.getDB().endTransaction();  //事务提交
 					toDB.getDB().endTransaction();  //事务提交
 				}
-				mAdapter.rebuildCursor(a);
+				restartPaging();
 				UIData.counter.setText(0 +"/"+ getItemCount());
 			}).show();
 	}
@@ -505,6 +512,7 @@ public class DBroswer extends DialogFragment implements
 					, name))
 			.setIcon(android.R.drawable.ic_dialog_alert)
 			.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+				saveListPostion();
 				String sql = "UPDATE "+TABLE_FAVORITE_v2+" SET folder=? where id=?";
 				SQLiteDatabase database = mLexiDB.getDB();
 				SQLiteStatement preparedMoveExecutor = database.compileStatement(sql);
@@ -523,7 +531,7 @@ public class DBroswer extends DialogFragment implements
 				} finally {
 					database.endTransaction();  //事务提交
 				}
-				mAdapter.rebuildCursor(a);
+				restartPaging();
 				UIData.counter.setText(0 +"/"+ getItemCount());
 			}).show();
 	}
@@ -690,7 +698,7 @@ public class DBroswer extends DialogFragment implements
 				else
 					v.setTag(null);
 				break;
-			case R.id.tools3://删除
+			case R.id.tools3:
 				if(Selection.size()==0) {
 					show(R.string.noseletion);
 					return;
@@ -702,6 +710,9 @@ public class DBroswer extends DialogFragment implements
 						.setMessage(getResources().getString(R.string.warn_delete, Selection.size()))
 						.setIcon(android.R.drawable.ic_dialog_alert)
 						.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+							lv.suppressLayout(true); // important
+							//PagingCursorAdapter.simulateSlowIO = true;
+							saveListPostion(); // 删除
 							String sql = "DELETE FROM "+ getTableName()+" WHERE id = ? ";
 							SQLiteDatabase database_mod_delete = mLexiDB.getDB();
 							SQLiteStatement preparedDeleteExecutor = database_mod_delete.compileStatement(sql);
@@ -719,14 +730,13 @@ public class DBroswer extends DialogFragment implements
 								preparedDeleteExecutor.close();
 								database_mod_delete.setTransactionSuccessful();  //控制回滚
 							} catch (Exception e) {
-								e.printStackTrace();
+								CMN.Log(e);
 							} finally {
 								database_mod_delete.endTransaction();  //事务提交
-								mAdapter.rebuildCursor(a);
-								notifyDataSetChanged();
+								restartPaging(); // 删除
 								UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 							}
-							notifyDataSetChanged();
+							//notifyDataSetChanged();
 						}).setOnDismissListener(dialog -> {
 //							if(hasKeyBoard) {
 //								imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
@@ -819,6 +829,12 @@ public class DBroswer extends DialogFragment implements
 		if(msg!=null) {
 			a.showTopSnack(UIData.snackRoot, msg, 0.5f, -1, -1, 0);
 		}
+	}
+	
+	private void restartPaging() {
+		mAdapter.rebuildCursor(getMainActivity());
+		//notifyDataSetChanged();
+		//lv.scrollToPosition(0);
 	}
 	
 	void notifyDataSetChanged() {
@@ -1224,7 +1240,7 @@ public class DBroswer extends DialogFragment implements
 					if (a.peruseView != null) {
 						target = a.peruseView.etSearch;
 					} else {
-						a.getUcc().setInvoker(null, null, null, currentDisplaying);
+						a.getUtk().setInvoker(null, null, null, currentDisplaying);
 					}
 				} else {
 					a.lastEtString = String.valueOf(a.etSearch.getText());
@@ -1585,9 +1601,11 @@ public class DBroswer extends DialogFragment implements
 	}
 	
 	
-	@NonNull MainActivityUIBase getMainActivity() {
+	@NonNull
+	public final MainActivityUIBase getMainActivity() {
 		return (MainActivityUIBase) getActivity();
 	}
+	
 	SimpleDialog mDialog;
 	ViewGroup root;
 	@NonNull

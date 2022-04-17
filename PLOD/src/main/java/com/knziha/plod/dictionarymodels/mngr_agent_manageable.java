@@ -24,7 +24,7 @@ public interface mngr_agent_manageable {
 	void checkFlag(Toastable_Activity context);
 	long getFirstFlag();
 	void setFirstFlag(long val);
-	void validifyValueForFlag(WebViewmy view, int val, int mask, int flagPosition, int processId);
+	void onValueChanged(WebViewmy view, int val, int mask, int flagPosition, int processId);
 	PDICMainAppOptions getOpt();
 
 	boolean renameFileTo(Context c, File to);

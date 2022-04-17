@@ -451,30 +451,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateFFAt(1,val);
 		return val;
 	}
-	public boolean getBottombarOnBottom() {
-		return (FirstFlag & 2) != 2;
-	}
-	public boolean setBottombarOnBottom(boolean val) {
-		updateFFAt(2,!val);
-		return val;
-	}
-	public boolean getTurnPageEnabled() {
-		return (FirstFlag & 4) != 4;
-	}
-	public boolean setTurnPageEnabled(boolean val) {
-		updateFFAt(4,!val);
-		return val;
-	}
+	@Metaline(flagPos=1) public static boolean getBottombarOnBottom() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=1) public static void setBottombarOnBottom(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=2) public static boolean getTurnPageEnabled() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2) public static void setTurnPageEnabled(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 
+	@Metaline(flagPos=3) public static boolean getInPeruseMode() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=3) public static void setInPeruseMode(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 
-	//
-	public boolean getInPeruseMode() {
-		return (FirstFlag & 8) != 8;
-	}
-	public boolean setInPeruseMode(boolean val) {
-		updateFFAt(8,!val);
-		return val;
-	}
 	public boolean getInFloatPeruseMode() {
 		return (FirstFlag & 16) == 16;
 	}
@@ -703,9 +688,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	/////////////////////End First 32-bit Flag////////////////////////////////////
 
-	/////////////////////Start First Flag Long field///////////////////////////////////
-	@Metaline(flagPos=32) public static boolean pinPDic() { FirstFlag=FirstFlag; throw new RuntimeException();}
-	@Metaline(flagPos=32) public static void pinPDic(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
+		/////////////////////Start First Flag Long field///////////////////////////////////
+		@Metaline(flagPos=32) public static boolean pinPDic() { FirstFlag=FirstFlag; throw new RuntimeException();}
+		@Metaline(flagPos=32) public static void pinPDic(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 	
 	//???
 	
@@ -908,23 +893,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateSFAt(0x20,val);
 		return val;
 	}
-
-	public boolean getPageTurn1() {
-		return (SecondFlag & 0x40) != 0x40;
-	}
-
-//	public boolean setPageTurn1(boolean val) {
-//		updateSFAt(0x40,!val);
-//		return val;
-//	}
-	public boolean getPageTurn2() {
-		return (SecondFlag & 0x80) != 0x80;
-	}
-
-//	public boolean setPageTurn2(boolean val) {
-//		updateSFAt(0x80,!val);
-//		return val;
-//	}
+	
+	@Metaline(flagPos=6) public boolean getPageTurn1() { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=6) public void setPageTurn1(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=7) public boolean getPageTurn2() { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7) public void setPageTurn2(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
 
 	public boolean getUseLruDiskCache() {
 		return (SecondFlag & 0x100) != 0x100;
@@ -1194,21 +1168,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateSFAt(0x400000000000l,val);
 		return val;
 	}
-
-	public static boolean getUseRegex3() {
-		return (SecondFlag & 0x800000000000l) == 0x800000000000l;
-	}
-	public int FetUseRegex3() {
-		return (SecondFlag & 0x800000000000l)!=0?1:0;
-	}
-	public boolean CetUseRegex3(long SecondFlag) {
-		return (this.SecondFlag & 0x800000000000l)!=(SecondFlag & 0x800000000000l);
-	}
-	public static boolean setUseRegex3(boolean val) {
-		updateSFAt(0x800000000000l,val);
-		return val;
-	}
-
+	
+	@Metaline(flagPos=47) public static boolean pageSchUseRegex(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=47) public static void pageSchUseRegex(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	//xxx 废弃
 //	public static boolean getRegexAutoAddHead() {
 //		return (SecondFlag & 0x1000000000000l) != 0x1000000000000l;
@@ -1217,127 +1179,40 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 //		updateSFAt(0x1000000000000l,!val);
 //		return val;
 //	}
+	
+	@Metaline(flagPos=48, shift=1) public static boolean pageSchWild(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=48, shift=1) public static void pageSchWild(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=49) public static boolean getJoniCaseSensitive(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=49) public static void setJoniCaseSensitive(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=50) public static boolean pageSchCaseSensitive(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=50) public static void pageSchCaseSensitive(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=51) public static boolean pageSchWildMatchNoSpace(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=51) public static void pageSchWildMatchNoSpace(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=52) public static boolean pageSchSplitKeys(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=52) public static void pageSchSplitKeys(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 
-	public static boolean getJoniCaseSensitive() {
-		return (SecondFlag & 0x2000000000000l) == 0x2000000000000l;
-	}
-	public static boolean setJoniCaseSensitive(boolean val) {
-		updateSFAt(0x2000000000000l,val);
-		return val;
-	}
-
-	public static boolean getPageCaseSensitive() {
-		return (SecondFlag & 0x4000000000000l) == 0x4000000000000l;
-	}
-	public int FetPageCaseSensitive() {
-		return (SecondFlag & 0x4000000000000l)!=0?1<<1:0;
-	}
-	public boolean CetPageCaseSensitive(long SecondFlag) {
-		return (this.SecondFlag & 0x4000000000000l)!=(SecondFlag & 0x4000000000000l);
-	}
-	public static boolean setPageCaseSensitive(boolean val) {
-		updateSFAt(0x4000000000000l,val);
-		return val;
-	}
-
-	public static boolean getPageWildcardMatchNoSpace() {
-		return (SecondFlag & 0x8000000000000l) == 0x8000000000000l;
-	}
-	public int FetPageWildcardMatchNoSpace() {
-		return (SecondFlag & 0x8000000000000l)!=0?1<<3:0;
-	}
-	public boolean CetPageWildcardMatchNoSpace(long SecondFlag) {
-		return (this.SecondFlag & 0x8000000000000l)!=(SecondFlag & 0x8000000000000l);
-	}
-	public static boolean setPageWildcardMatchNoSpace(boolean val) {
-		updateSFAt(0x8000000000000l,val);
-		return val;
-	}
-
-	public static boolean getPageWildcardSplitKeywords() {
-		return (SecondFlag & 0x10000000000000l) != 0x10000000000000l;
-	}
-	public int FetPageWildcardSplitKeywords() {
-		return (SecondFlag & 0x10000000000000l)==0?1<<2:0;
-	}
-	public boolean CetPageWildcardSplitKeywords(long SecondFlag) {
-		return (this.SecondFlag & 0x10000000000000l)!=(SecondFlag & 0x10000000000000l);
-	}
-	public static boolean setPageWildcardSplitKeywords(boolean val) {
-		updateSFAt(0x10000000000000l,!val);
-		return val;
-	}
-
-	public static boolean getRebuildToast() {
-		return (SecondFlag & 0x20000000000000l) == 0x20000000000000l;
-	}
-	public static boolean setRebuildToast(boolean val) {
-		updateSFAt(0x20000000000000l,val);
-		return val;
-	}
+	@Metaline(flagPos=53) public static boolean getRebuildToast(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=53) public static void setRebuildToast(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 
 	@Metaline(flagPos=55, shift=1) public static boolean schPageAutoTurn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=55, shift=1) public static void schPageAutoTurn(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=56, shift=1) public static boolean schPageAutoType(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=56, shift=1) public static void schPageAutoType(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=57, shift=1) public static boolean schPageNavHideKeyboard(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=57, shift=1) public static void schPageNavHideKeyboard(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=58) public static boolean schPageNavAudioKey(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=58) public static void schPageNavAudioKey(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=59) public static boolean schPageShowHints(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=59) public static void schPageShowHints(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	// 60 xxx
+	@Metaline(flagPos=61) public static boolean schPageAfterFullSch(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=61) public static void schPageAfterFullSch(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=62) public static boolean schPageAfterClick(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=62) public static void schPageAfterClick(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=63) public static boolean exitToBackground(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	
-	public static boolean getInPageSearchAutoHideKeyboard() {
-		return (SecondFlag & 0x200000000000000l) != 0x200000000000000l;
-	}
-	public static boolean setInPageSearchAutoHideKeyboard(boolean val) {
-		updateSFAt(0x200000000000000l,!val);
-		return val;
-	}
-
-	public static boolean getInPageSearchUseAudioKey() {
-		return (SecondFlag & 0x400000000000000l) == 0x400000000000000l;
-	}
-	public static boolean setInPageSearchUseAudioKey(boolean val) {
-		updateSFAt(0x400000000000000l,val);
-		return val;
-	}
-
-	public static boolean getInPageSearchShowNoNoMatch() {
-		return (SecondFlag & 0x800000000000000l) == 0x800000000000000l;
-	}
-	public static boolean setInPageSearchShowNoNoMatch(boolean val) {
-		updateSFAt(0x800000000000000l,val);
-		return val;
-	}
-
-	public static boolean getInPageSearchHighlightBorder() {
-		return (SecondFlag & 0x1000000000000000l) == 0x1000000000000000l;
-	}
-	public static boolean setInPageSearchHighlightBorder(boolean val) {
-		updateSFAt(0x1000000000000000l,val);
-		return val;
-	}
-
-	public static boolean getInPageSearchAutoUpdateAfterFulltext() {
-		return (SecondFlag & 0x2000000000000000l) != 0x2000000000000000l;
-	}
-	public static boolean setInPageSearchAutoUpdateAfterFulltext(boolean val) {
-		updateSFAt(0x2000000000000000l,!val);
-		return val;
-	}
-
-	public static boolean getInPageSearchAutoUpdateAfterClick() {
-		return (SecondFlag & 0x4000000000000000l) == 0x4000000000000000l;
-	}
-	public static boolean setInPageSearchAutoUpdateAfterClick(boolean val) {
-		updateSFAt(0x4000000000000000l,val);
-		return val;
-	}
-
-	public static boolean getBackToHomePage() {
-		return (SecondFlag & 0x8000000000000000l) == 0x8000000000000000l;
-	}
-	public static boolean setBackToHomePage(boolean val) {
-		updateSFAt(0x8000000000000000l,val);
-		return val;
-	}
+	@Metaline(flagPos=63) public static void exitToBackground(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	///////////////////End second flag///////////////////////
-	/////////////// 天高任鸟飞 标志任意写 ///////////////////////
 	///////////////////Start Third Flag///////////////////////
 	private static Long ThirdFlag=null;
 	public long getThirdFlag() {
@@ -1505,21 +1380,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateTFAt(0x40000l,val);
 		return val;
 	}
-
-	public static boolean getInPageSearchUseWildcard() {
-		return (ThirdFlag & 0x80000l) != 0x80000l;
-	}
-	public int FetInPageSearchUseWildcard() {
-		return (ThirdFlag & 0x80000l)==0?1<<4:0;
-	}
-	public boolean CetInPageSearchUseWildcard(long ThirdFlag) {
-		return (this.ThirdFlag & 0x80000l)!=(ThirdFlag & 0x80000l);
-	}
-	public static boolean setInPageSearchUseWildcard(boolean val) {
-		updateTFAt(0x80000l,!val);
-		return val;
-	}
-
+	
+	// 19 废弃
+	@Metaline(flagPos=19, shift=1) public static void pageSchWildDeprecated(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	
+	
 	public static boolean getAdvSearchUseWildcard() {
 		return (ThirdFlag & 0x100000l) != 0x100000l;
 	}
@@ -1595,15 +1460,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	//xxx
+	
+	@Metaline(flagPos=33) public boolean getPageTurn3() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33) public void setPageTurn3(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 
-	public boolean getPageTurn3() {
-		return (ThirdFlag & 0x200000000l) != 0x200000000l;
-	}
-
-	public boolean setPageTurn3(boolean val) {
-		updateTFAt(0x200000000l,!val);
-		return val;
-	}
 
 
 	public static  boolean getAllowTintClickSearchBG() {
@@ -1626,7 +1486,6 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	@Metaline(flagPos=35, shift=1) public boolean tapSch() { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=35, shift=1) public void tapSch(boolean v) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=35, shift=1) public int tapSchFet() { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=35, shift=1) public boolean togTapSch() { ThirdFlag=ThirdFlag; throw new IllegalArgumentException(); }
 	
 	public int FetIsDark() {
@@ -1715,8 +1574,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	
-	@Metaline(flagPos=46, shift=1) public static boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Metaline(flagPos=46, shift=1) public static void setUseBackKeyGoWebViewBack(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46) public static boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=46) public static void setUseBackKeyGoWebViewBack(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=47, shift=1) public static boolean getLazyLoadDicts() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=47, shift=1) public static void setLazyLoadDicts(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=48) public static boolean getEnableWebDebug() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
@@ -2257,7 +2116,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=12) public boolean getFavoritePerceptsRemoveAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=13) public boolean getFavoritePerceptsAll() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=14, shift=0/*, debug=0*/) public static boolean getUseDatabaseV2() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=14, shift=0) public static boolean getUseDatabaseV2() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=14, shift=0) public static void setUseDatabaseV2(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
@@ -2469,6 +2328,25 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=22) public static boolean menuOverlapAnchor(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=22) public static void menuOverlapAnchor(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=23) public static boolean fyeKeepGroup(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=23) public static void fyeKeepGroup(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=24) public static boolean fyeKeepBook(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=24) public static void fyeKeepBook(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=25, shift=1) public static boolean fyeRemPos(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=25, shift=1) public static void fyeRemPos(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=26) public static boolean fyeRemScale(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=26) public static void fyeRemScale(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=27, shift=1) public static boolean schPageOnEdit(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=27, shift=1) public static void schPageOnEdit(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=28, shift=1) public static boolean fyeTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=28, shift=1) public static void fyeTapSch(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=29) public static boolean fyePaused(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=29) public static void fyePaused(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
 	
 	///////

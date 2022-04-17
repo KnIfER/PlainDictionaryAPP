@@ -52,15 +52,15 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 		if(realm_id==FileChooser.id){
 			PDICMainAppOptions.SecondFlag(FilePickerOptions.SecondFlag);
 		}
-		else if(realm_id== SchOpt.id){
-			if(opt.CetUseRegex3(SFStamp)
-					|opt.CetPageCaseSensitive(SFStamp)
-					|opt.CetPageWildcardMatchNoSpace(SFStamp)
-					|opt.CetPageWildcardSplitKeywords(SFStamp)
-					|opt.CetInPageSearchUseWildcard(TFStamp)
-			)
+//		else if(realm_id== SchOpt.id){
+//			if(opt.CetUseRegex3(SFStamp)
+//					|opt.CetPageCaseSensitive(SFStamp)
+//					|opt.CetPageWildcardMatchNoSpace(SFStamp)
+//					|opt.CetPageWildcardSplitKeywords(SFStamp)
+//					|opt.CetInPageSearchUseWildcard(TFStamp)
+//			)
 			CMN.setCheckRcsp();
-		}
+//		}
 	}
 
 	@Override

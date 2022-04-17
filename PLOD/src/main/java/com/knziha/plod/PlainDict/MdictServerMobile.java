@@ -222,16 +222,9 @@ public class MdictServerMobile extends MdictServer {
 			try {
 				return a.getAssets().open(key.substring(1).replace("\\", "/"));
 			} catch (IOException e) {
-				CMN.Log(e);
+				CMN.debug(e);
 			}
 		}
-//		if (key.contains("mdict_browser.html")) {
-//			try {
-//				return a.getAssets().open("mdict_browser.html");
-//			} catch (IOException e) {
-//				CMN.Log(e);
-//			}
-//		}
 		return super.OpenMdbResourceByName(key);
 	}
 }

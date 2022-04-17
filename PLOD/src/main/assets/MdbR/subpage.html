@@ -20,7 +20,8 @@
 </style>
 
 <script>
-function debug(...e){console.log(e)};
+var debug=parent.window.debug;
+if(!debug) debug=function(a,b,c){console.log(a,b,c)};
 debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
 
@@ -37,8 +38,7 @@ window.addEventListener('touchstart',wrappedDown);
 // 	e.stopPropagation();
 // }
 function wrappedOnLoadFunc(){
-	debug('mdpage loaded', frameElement?.dictInfo?.name, parent.rcspc);
-	window.addEventListener('click',parent.window.rcspc);
+	window.addEventListener('click',parent.window.tpshc);
 	// //document.body.style.fontSize=35+'px';
 	// highlight(null);
 	// //debug('frameAt !! '+frameAt);
@@ -49,9 +49,10 @@ function wrappedOnLoadFunc(){
 	//debug("wrappedOnLoadFunc::", frameElement.tag, frameElement.u, location.href);
 	var fe=frameElement, pw=parent.window;
 	if(fe) {
+		debug('mdpage loaded', fe.dictInfo.name, 'tpshc!=null:'+parent.tpshc!=null);
 		var inf=fe.dictInfo;
 		if(pw) {
-			window.addEventListener('click',pw.rcspc);
+			window.addEventListener('click',pw.tpshc);
 		}
 		if(!fe.scrollExpand) {
 			if(inf.lastX || inf.lastY)
@@ -72,7 +73,7 @@ function wrappedOnLoadFunc(){
 			pw.LoadIMG(inf);
 		}
 	} else if(pw.app){
-		window.rcsp=app.rcsp(sid.get());
+		window.shzh=app.rcsp(sid.get());
 	}
 	//todo 处理背景色？
 }

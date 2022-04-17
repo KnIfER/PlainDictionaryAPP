@@ -152,8 +152,8 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		switch (id) {
 			case R.id.cover: {
 				if(v==popCover){
-					a.getUcc().setInvoker(CCD, mWebView, null, null);
-					a.getUcc().onClick(v);
+					a.getUtk().setInvoker(CCD, mWebView, null, null);
+					a.getUtk().onClick(v);
 				}
 			} break;
 			case R.id.popupBackground: {
@@ -293,7 +293,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 						.setSingleChoiceLayout(R.layout.singlechoice_plain)
 						.setSingleChoiceItems(new String[]{
 								"词典内搜索"
-								, "分组内搜索"
+								, "联合搜索"
 						}, 0, (dialog, which) -> {
 							opt.tapSchMode(schMode = which%2);
 							modeBtn.setImageResource(schMode==0?R.drawable.ic_btn_siglemode:R.drawable.ic_btn_multimode);
@@ -420,7 +420,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	
 	public void init() {
 		if (mWebView == null) {
-			weblistHandler/*faked*/ = new WebViewListHandler(a, a.contentUIData/*faked*/);
+			weblistHandler/*faked*/ = new WebViewListHandler(a, a.contentUIData/*faked*/, SearchUI.TapSch.MAIN);
 			popupContentView = (ViewGroup) a.getLayoutInflater()
 					.inflate(R.layout.float_contentview_basic, a.root, false);
 			popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
@@ -1089,8 +1089,11 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			popupFrame = frameAt;
 			popupForceId = forceStartId;
 			a.root.removeCallbacks(this);
-			a.root.post(this);
-			//a.root.postDelayed(this, 75);
+			if (invoker!=null && invoker.IBC.getDoubleTapZoomPage()) {
+				a.root.postDelayed(this, a.opt.getInt("dtm", 100)); // 支持双击操作会拖慢点译！
+			} else {
+				a.root.post(this);
+			}
 		}
 	}
 	

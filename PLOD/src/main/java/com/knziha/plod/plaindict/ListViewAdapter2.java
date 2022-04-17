@@ -125,18 +125,20 @@ public class ListViewAdapter2 extends BasicAdapter {
 			return;
 		}
 		String lstKey = currentKeyText = results.getResAt(a, pos).toString();
-		int stLv = userCLick?results.storeRealm:results.storeRealm1;
 		
 		if(a.PeruseListModeMenu.isChecked()) {
 			PeruseView pView = a.getPeruseView();
 			boolean storeSch = results.shouldAddHistory(a);
 			if(storeSch) { // 保存输入框历史记录
-				a.addHistory(results.schKey, stLv, webviewHolder, a.etTools);
+				a.addHistory(results.schKey, results.storeRealm, webviewHolder, a.etTools);
 				pView.lstKey = lstKey;
 			} else {
 				pView.lstKey = null;
 			}
-			a.JumpToPeruseMode(lstKey, results.getBooksAt(pView.bookIds, pos), -2, true);
+			if(!pView.keepGroup() || pView.bookIds.size()==0) {
+				results.getBooksAt(pView.bookIds, pos);
+			}
+			a.JumpToPeruseMode(lstKey, pView.bookIds, -2, true);
 			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
 			return;
 		}
@@ -205,13 +207,13 @@ public class ListViewAdapter2 extends BasicAdapter {
 		
 		boolean storeSch = results.shouldAddHistory(a);
 		if(storeSch) {
-			a.addHistory(results.schKey, stLv, webviewHolder, a.etTools);
+			a.addHistory(results.schKey, results.storeRealm, webviewHolder, a.etTools);
 		}
 		if((!storeSch || !results.schKey.equals(lstKey))
 				&& !PDICMainAppOptions.storeNothing() && PDICMainAppOptions.storeClick()
 				&& results.shouldSaveHistory()
 				&& (userCLick||PDICMainAppOptions.storePageTurn()==0)) {
-			a.addHistory(lstKey, stLv, webviewHolder, a.etTools);
+			a.addHistory(lstKey, results.storeRealm1, webviewHolder, a.etTools);
 		}
 		
 		if(userCLick) {

@@ -193,8 +193,8 @@ public class AgentApplication extends Application {
 	protected void attachBaseContext(Context base) {
 		super.attachBaseContext(base);
 		if (Build.VERSION.SDK_INT<=20) {
-			//MultiDex.install(this);
-			//com.bytedance.boost_multidex.BoostMultiDex.install(base);
+//			androidx.multidex.MultiDex.install(this);
+			com.bytedance.boost_multidex.BoostMultiDex.install(base);
 		}
 	}
 }

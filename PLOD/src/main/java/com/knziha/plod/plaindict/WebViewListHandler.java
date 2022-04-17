@@ -4,6 +4,7 @@ import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
+import static com.knziha.plod.preference.SettingsPanel.makeInt;
 
 import android.content.ClipData;
 import android.content.DialogInterface;
@@ -39,12 +40,14 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
+import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
@@ -61,8 +64,12 @@ import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
-public class WebViewListHandler extends ViewGroup implements View.OnClickListener {
+public class WebViewListHandler extends ViewGroup/*Again, a bad design that I regret...*/ implements View.OnClickListener {
 	final MainActivityUIBase a;
+	public int shezhi;
+	int szStash;
+	/** see{@link com.knziha.plod.db.SearchUI }*/
+	int src;
 	/** -2=auto;0=false;1=true*/
 	public int bMergeFrames = 0;
 	/** for word popup */
@@ -87,11 +94,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	private int lastScrollUpdateY;
 	Runnable UpdateBookLabelAbility;
 	BookPresenter lastScrolledBook;
-	WebViewmy lastScrolledBookView;
+	WebViewmy lastScrollFocus;
 	WebViewmy mWebView;
 	public boolean tapSch;
 	
-	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData) {
+	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData, int src) {
 		super(a);
 		this.a = a;
 		this.opt = a.opt;
@@ -101,6 +108,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		this.WHP = contentUIData.WHP;
 		this.mBar = contentUIData.dragScrollBar;
 		this.webholder = contentUIData.webholder;
+		this.src = src;
 		hDataSinglePage.webviewHolder = contentUIData.webSingleholder;
 		hDataMultiple.webviewHolder = contentUIData.webholder;
 		DragScrollBar mBar = this.mBar;
@@ -108,7 +116,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			/** 这里绑定自己到底栏，以获取上下文 see{@link MainActivityUIBase#showScrollSet} */
 			contentUIData.bottombar2.setTag(this);
 			UpdateBookLabelAbility = ()->{
-				String name = lastScrolledBookView.presenter.getDictionaryName();
+				String name = lastScrollFocus.presenter.getDictionaryName();
 				int idx=name.lastIndexOf(".");
 				if(idx>=0)name = name.substring(0, idx);
 				contentUIData.dictName.setText(name);
@@ -140,7 +148,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 								if(webholder.getChildAt(i).getBottom()>=bot) {
 									WebViewmy wv = (WebViewmy)webholder.getChildAt(i).getTag();
 									if(lastScrolledBook !=wv.presenter) {
-										setLastScrolledBook(wv);
+										setLastScrollFocus(wv);
 									}
 									break;
 								}
@@ -155,16 +163,17 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			mBar.fadeOut();
 		}
 		//WHP.setBackground(null);
-		tapSch = opt.tapSch();
-		CMN.Log("rcsp::ini::", tapSch, BookPresenter.MakeRCSP(this, opt));
+		CMN.Log("shzh::ini::", tapSch, BookPresenter.MakePageFlag(this, opt));
+		tapSch = src==SearchUI.Fye.MAIN?PDICMainAppOptions.fyeTapSch():opt.tapSch();
+		shezhi = BookPresenter.MakePageFlag(this, opt);
 	}
 	
-	public void setLastScrolledBook(WebViewmy wv) {
+	public void setLastScrollFocus(WebViewmy wv) {
 		if(lastScrolledBook != wv.presenter) {
 			lastScrolledBook = wv.presenter;
 			a.root.postOnAnimationDelayed(UpdateBookLabelAbility, 50);
 		}
-		lastScrolledBookView = wv;
+		lastScrollFocus = wv;
 	}
 	
 	public ViewGroup getViewGroup() {
@@ -176,12 +185,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public View getChildAt(int frameAt) {
-		return contentUIData.webholder.getChildAt(frameAt);
+		return contentUIData==null?null:contentUIData.webholder.getChildAt(frameAt);
 	}
 	
 	@Override
 	public int getChildCount() {
-		return contentUIData.webholder.getChildCount();
+		return contentUIData==null?0:contentUIData.webholder.getChildCount();
 	}
 	
 	public void shutUp() {
@@ -369,7 +378,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public BookPresenter getMergedBook() {
 		if(mMergedBook==null) {
 			try {
-				mMergedBook = new BookPresenter(new File("empty"), null, 1, 2);
+				mMergedBook = new BookPresenter(new File("empty"), null, 1);
+				mMergedBook.isMergedBook(true);
 				mMergedBook.opt = a.opt;
 			} catch (IOException ignored) { }
 		}
@@ -378,7 +388,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public WebViewmy getMergedFrame(BookPresenter book) {
 		getMergedBook().getWebBridge().setBook(book);
-		return getMergedFrame();
+		getMergedFrame().setPresenter(book);
+		return mMergedFrame;
 	}
 	
 	public WebViewmy getMergedFrame() {
@@ -846,10 +857,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	boolean inlineJump;
 	private WebView jumper;
 	
-	public Toolbar MainPageSearchbar;
-	public EditText MainPageSearchetSearch;
-	TextView MainPageSearchindicator;
-	TextView MainPageSearchDictionaryIndi;
+	public Toolbar pageSchBar;
+	public EditText pageSchEdit;
+	TextWatcher pageSchWat;
+	int etFlag;
+	TextView pageSchIndicator;
+	TextView pageSchDictIndicator;
 	String MainPageSearchetSearchStartWord;
 	boolean HiFiJumpRequested;
 	
@@ -866,9 +879,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public void updateInPageSch(String did, int keyIdx, int keyz, int total) {
 		String text;
 		String dictName=null;
-		if(!TextUtils.equals((String)MainPageSearchindicator.getTag(),did)) {
+		if(!TextUtils.equals((String) pageSchIndicator.getTag(),did)) {
 			dictName = new File(a.getBookNameByIdNoCreation(IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(did, 1)))).getName();
-			MainPageSearchindicator.setTag(did);
+			pageSchIndicator.setTag(did);
 		}
 		if(keyIdx>=0) {
 			keyIdx+=1;
@@ -880,14 +893,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			text = ""+total;
 		}
 		String dictName1=dictName;
-		MainPageSearchindicator.post(() -> {
-			MainPageSearchindicator.setText(text);
-			if(dictName1!=null)MainPageSearchDictionaryIndi.setText(dictName1);
+		pageSchIndicator.post(() -> {
+			pageSchIndicator.setText(text);
+			if(dictName1!=null) pageSchDictIndicator.setText(dictName1);
 		});
 	}
 	
 	public boolean hasPageKey() {
-		return ViewUtils.isVisibleV2(MainPageSearchbar) && TextUtils.getTrimmedLength(MainPageSearchetSearch.getText())>0;
+		return ViewUtils.isVisibleV2(pageSchBar) && TextUtils.getTrimmedLength(pageSchEdit.getText())>0;
 	}
 	
 	/** 页面加载完成后，是否自动开始执行页内搜索，并跳转至第一处高亮。 */
@@ -917,8 +930,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public boolean togTapSch() {
 		tapSch = !tapSch;
 		evalJsAtAllFrames(tapSch?
-				"window.rcsp|=0x20;window.rcspc||loadJs(sid.get(),'tapSch.js')"
-				:"window.rcsp&=~0x20");
+				"window.shzh|=1;if(!window.tpshc)loadJs('/mdbr/tapSch.js')"
+				:"window.shzh&=~1");
 		return tapSch;
 	}
 	
@@ -997,7 +1010,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			all+=IU.parseInteger(vg.getChildAt(i).getTag(R.id.numberpicker),0);
 		}
 		String finalAll = all==0?"":""+all;
-		MainPageSearchindicator.post(() -> MainPageSearchindicator.setText(finalAll));
+		pageSchIndicator.post(() -> pageSchIndicator.setText(finalAll));
 		if (v != null && HiFiJumpRequested && idx == 0) {
 			a.jumpNaughtyFirstHighlight(v.findViewById(R.id.webviewmy));
 			HiFiJumpRequested = false;
@@ -1051,7 +1064,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			if(hData.AcrArivAcc<=2){
 				//CMN.Log("do_jumpHighlight", PDICMainAppOptions.getInPageSearchShowNoNoMatch(), calcIndicator);
-				if(PDICMainAppOptions.getInPageSearchShowNoNoMatch() || calcIndicator) {
+				if(PDICMainAppOptions.schPageShowHints() || calcIndicator) {
 					String msg = getResources().getString(R.string.search_end, d < 0 ? "⬆" : "", d > 0 ? "⬇" : "");
 					a.getTopSnackView().setNextOffsetScale(0.25f);
 					a.showTopSnack(null, msg, 0.75f, -1, Gravity.CENTER, 0);
@@ -1133,90 +1146,93 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	void togSchPage(boolean isLongClicked) {
+	void togSchPage() {
 		final HighlightVagranter hData = getHData();
 		hData.HlightIdx =
 		hData.AcrArivAcc = 0;
 		ViewGroup webviewHolder = hData.webviewHolder;
-		if(isLongClicked){
-			a.launchSettings(7, 0);
-		}
-		else {
-			Toolbar searchbar = MainPageSearchbar;
-			if (searchbar == null) {
-				searchbar = MainPageSearchbar = (Toolbar) a.getLayoutInflater().inflate(R.layout.searchbar, null);
-				searchbar.setNavigationIcon(R.drawable.abc_ic_clear_material);//abc_ic_ab_back_mtrl_am_alpha
-				EditText etSearch = searchbar.findViewById(R.id.etSearch);
-				//etSearch.setBackgroundColor(Color.TRANSPARENT);
-				searchbar.setNavigationOnClickListener(v1 -> {
-					togSchPage(false);
-					if (etSearch.hasFocus())
-						a.imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
-					a.fadeSnack();
-				});
-				etSearch.setText(MainPageSearchetSearchStartWord);
-				etSearch.addTextChangedListener(new TextWatcher() {
-					@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-					@Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
-					@Override
-					public void afterTextChanged(Editable s) {
+		Toolbar bar = pageSchBar;
+		if (bar == null) {
+			bar = (Toolbar) a.getLayoutInflater().inflate(R.layout.searchbar, null);
+			bar.setNavigationIcon(R.drawable.abc_ic_clear_material);//abc_ic_ab_back_mtrl_am_alpha
+			EditText etSearch = bar.findViewById(R.id.etSearch);
+			//etSearch.setBackgroundColor(Color.TRANSPARENT);
+			bar.setNavigationOnClickListener(v1 -> {
+				togSchPage();
+				a.imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+			});
+			etSearch.setText(MainPageSearchetSearchStartWord);
+			etSearch.addTextChangedListener(pageSchWat = new TextWatcher() {
+				@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+				@Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
+				@Override
+				public void afterTextChanged(Editable s) {
+					if (PDICMainAppOptions.schPageOnEdit() || s==null) {
 						String text = etSearch.getText().toString().replace("\\", "\\\\");
 						HiFiJumpRequested=PDICMainAppOptions.schPageAutoType();
 						SearchOnPage(text);
+					} else if(etFlag!=1){
+						etFlag = 1;
 					}
-				});
-				
-				ViewUtils.ResizeNavigationIcon(searchbar);
-				
-				searchbar.setContentInsetsAbsolute(0, 0);
-				searchbar.setLayoutParams(a.toolbar.getLayoutParams());
-				searchbar.setBackgroundColor(a.AppWhite==Color.WHITE?a.MainBackground:Color.BLACK);
-				searchbar.findViewById(R.id.ivDeleteText).setOnClickListener(this);
-				View.OnDragListener searchbar_stl = (v, event) -> {
-					if(event.getAction()== DragEvent.ACTION_DROP){
+				}
+			});
+			
+			ViewUtils.ResizeNavigationIcon(bar);
+			
+			bar.setContentInsetsAbsolute(0, 0);
+			bar.setLayoutParams(a.toolbar.getLayoutParams());
+			bar.setBackgroundColor(a.AppWhite==Color.WHITE?a.MainBackground:Color.BLACK);
+			bar.findViewById(R.id.ivDeleteText).setOnClickListener(this);
+			bar.findViewById(R.id.enter).setOnClickListener(this);
+			this.pageSchBar = bar;
+			this.pageSchEdit = etSearch;
+			this.pageSchIndicator = bar.findViewById(R.id.indicator);
+			this.pageSchDictIndicator = bar.findViewById(R.id.dictName);
+			bar.getChildAt(0).addOnLayoutChangeListener(new OnLayoutChangeListener() {
+				@Override
+				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+					pageSchDictIndicator.setTranslationX(etSearch.getWidth()+GlobalOptions.density*2);
+				}
+			});
+			ViewUtils.setOnClickListenersOneDepth(bar, this, 999, null);
+			bar.setOnDragListener( (v, event) -> {
+				if(event.getAction()== DragEvent.ACTION_DROP){
+					try {
 						ClipData textdata = event.getClipData();
 						if(textdata.getItemCount()>0){
-							if(textdata.getItemAt(0).getText()!=null)
-								etSearch.setText(textdata.getItemAt(0).getText());
+							CharSequence text = textdata.getItemAt(0).getText();
+							if(text!=null) {
+								etSearch.setText(text);
+								if(!PDICMainAppOptions.schPageOnEdit()) {
+									pageSchWat.afterTextChanged(null);
+								}
+							}
 						}
 						return false;
-					}
-					return true;
-				};
-				this.MainPageSearchbar = searchbar;
-				this.MainPageSearchetSearch = etSearch;
-				this.MainPageSearchindicator = searchbar.findViewById(R.id.indicator);
-				this.MainPageSearchDictionaryIndi = searchbar.findViewById(R.id.dictName);
-				searchbar.getChildAt(0).addOnLayoutChangeListener(new OnLayoutChangeListener() {
-					@Override
-					public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-						MainPageSearchDictionaryIndi.setTranslationX(etSearch.getWidth()+GlobalOptions.density*2);
-					}
-				});
-				View viewTmp=searchbar.findViewById(R.id.recess);
-				viewTmp.setOnDragListener(searchbar_stl);
-				viewTmp.setOnClickListener(this);
-				viewTmp=searchbar.findViewById(R.id.forward);
-				viewTmp.setOnDragListener(searchbar_stl);
-				viewTmp.setOnClickListener(this);
-			}
-			boolean b1=searchbar.getParent()==null;
-			if (b1) {
-				contentviewAddView(searchbar, 0);
-				searchbar.findViewById(R.id.etSearch).requestFocus();
-				searchbar.setTag(MainPageSearchetSearch.getText());
-				SearchOnPage(null);
-			}
-			else {
-				ViewUtils.removeView(searchbar);
-				clearLights(webviewHolder);
-				searchbar.setTag(null);
-			}
-			
-			if(a.thisActType==MainActivityUIBase.ActType.PlainDict)
-				opt.schPage(b1);
-			else
-				PDICMainAppOptions.schPageFlt(b1);
+					} catch (Exception e) { }
+				}
+				return true;
+			});
+		}
+		boolean b1=bar.getParent()==null;
+		if (b1) {
+			contentviewAddView(bar, 0);
+			bar.findViewById(R.id.etSearch).requestFocus();
+			bar.setTag(pageSchEdit.getText());
+			SearchOnPage(null);
+		}
+		else {
+			ViewUtils.removeView(bar);
+			clearLights(webviewHolder);
+			bar.setTag(null);
+		}
+		
+		if (src==SearchUI.MainApp.MAIN) {
+			opt.schPage(b1);
+		} else if (src==SearchUI.FloatApp.MAIN) {
+			PDICMainAppOptions.schPageFlt(b1);
+		} else if (src==SearchUI.Fye.MAIN) {
+			opt.schPageFye(b1);
 		}
 	}
 	
@@ -1226,7 +1242,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		int id=v.getId();
 		switch (id) {
 			case R.id.ivDeleteText:
-				MainPageSearchetSearch.setText(null);
+				pageSchEdit.setText(null);
+				break;
+			case R.id.enter:
+				showPageSchTweaker();
 				break;
 			//in page search navigation
 			case R.id.recess:
@@ -1234,14 +1253,19 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				if(v.getTag()!=null){
 					return;
 				}
-				boolean next=id==R.id.recess;
-				//CMN.Log("下一个");
-				//111
-				if(PDICMainAppOptions.getInPageSearchAutoHideKeyboard()){
-					//a.imm.hideSoftInputFromWindow((a.PeruseSearchAttached()? a.peruseView.PerusePageSearchetSearch:MainPageSearchetSearch).getWindowToken(), 0);
-					a.imm.hideSoftInputFromWindow(MainPageSearchetSearch.getWindowToken(), 0);
+				if((etFlag&1)!=0) {
+					pageSchWat.afterTextChanged(null);
+					etFlag = 0;
+				} else {
+					boolean nxt=id==R.id.recess;
+					//CMN.Log("下一个");
+					//111
+					if(PDICMainAppOptions.schPageNavHideKeyboard()){
+						//a.imm.hideSoftInputFromWindow((a.PeruseSearchAttached()? a.peruseView.PerusePageSearchetSearch:MainPageSearchetSearch).getWindowToken(), 0);
+						a.imm.hideSoftInputFromWindow(pageSchEdit.getWindowToken(), 0);
+					}
+					jumpHighlight(nxt?1:-1, true);
 				}
-				jumpHighlight(next?1:-1, true);
 			} break;
 			/* 上下导航 */
 			case R.id.browser_widget13:
@@ -1249,6 +1273,85 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				prvnxtFrame(id == R.id.browser_widget13);
 			} break;
 		}
+	}
+	
+	// 页内搜索设定
+	public void showPageSchTweaker() {
+		a.weblist = this;
+		szStash = shezhi;
+		final SettingsPanel settings = new SettingsPanel(a, opt
+				, new String[][]{
+						new String[]{"搜索选项", "使用正则表达式", "使用通配符", "以空格分割关键词", "通配符不匹配空格"}
+//						,new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转", "使用音量键"}
+					}
+				, new int[][]{new int[]{Integer.MAX_VALUE
+					, makeInt(101, 4, false) // pageSchUseRegex
+					, makeInt(101, 5, false) // pageSchWild
+					, makeInt(101, 6, false) // pageSchSplitKeys
+					, makeInt(101, 7, false) // pageSchWildMatchNoSpace
+				}
+//				, new int[]{Integer.MAX_VALUE
+//					, makeInt(6, 27, true) // schPageOnEdit
+//					, makeInt(2, 55, false) // schPageAutoTurn
+//					, makeInt(2, 56, false) // schPageAutoType
+//					, makeInt(2, 58, false) // schPageNavAudioKey
+//				}
+		}, null);
+		settings.init(a, a.root);
+		if (PDICMainAppOptions.pageSchUseRegex()) {
+			for (int i = 5; i <= 7; i++)
+				settings.settingsLayout.findViewById(makeInt(101, i, false)).setAlpha(0.5f);
+		}
+		settings.setActionListener(new SettingsPanel.ActionListener() {
+			@Override
+			public boolean onAction(SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
+				if (flagIdx==101) {
+					if (flagPos==4) {
+						for (int i = 5; i <= 7; i++)
+							settings.settingsLayout.findViewById(makeInt(101, i, false)).setAlpha(val?0.5f:1);
+					}
+				}
+				return true;
+			}
+			@Override
+			public void onPickingDelegate(SettingsPanel settingsPanel, int flagIdx, int flagPos, int lastX, int lastY) {
+			}
+		});
+		
+		AlertDialog dlg =
+				new AlertDialog.Builder(a,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line)
+						.setTitle("页内搜索设置")
+						.setView(settings.settingsLayout)
+						.setPositiveButton(R.string.confirm, null)
+//						.setTitleBtn(R.drawable.ic_search_large, (dialog, which) -> {
+//							pageSchWat.afterTextChanged(null);
+//							dialog.dismiss();
+//						})
+						.setOnDismissListener(new DialogInterface.OnDismissListener() {
+							@Override
+							public void onDismiss(DialogInterface dialog) {
+								if (szStash!=shezhi) {
+									ViewGroup webviewHolder = getViewGroup();
+									int cc = webviewHolder.getChildCount();
+									String val = "window.shzh="+shezhi+"; _highlight(null);";
+									BookPresenter.SavePageFlag(shezhi);
+									for (int i = 0; i < cc; i++) {
+										if(webviewHolder.getChildAt(i) instanceof LinearLayout){
+											ViewGroup webHolder = (ViewGroup) webviewHolder.getChildAt(i);
+											if(webHolder.getChildAt(1) instanceof WebView){
+												WebViewmy wv = (WebViewmy) webHolder.getChildAt(1);
+												wv.evaluateJavascript(val,null);
+											}
+										}
+									}
+								}
+							}
+						})
+						.create();
+		
+		dlg.show();
+		
+		dlg.getWindow().setDimAmount(0);
 	}
 	
 	void SearchOnPage(String text) {
@@ -1336,6 +1439,6 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	
 	public void contentviewAddView(View v, int i) {
-		ViewUtils.addViewToParent(v, a.contentview, i);
+		ViewUtils.addViewToParent(v, contentUIData.webcontentlister, i);
 	}
 }

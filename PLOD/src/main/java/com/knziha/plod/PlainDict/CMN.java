@@ -66,7 +66,6 @@ public class CMN{
 	
 	public static int HonestCredits=100;
 	public static WeakReference<MainActivityUIBase> pHandler;
-	public static WeakReference DummyRef = new WeakReference<>(null);
 	
 	public static String Log(Object... o) {
 		StringBuilder msg = new StringBuilder(1024);

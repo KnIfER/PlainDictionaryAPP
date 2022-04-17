@@ -1218,5 +1218,7 @@ public abstract class TwoWayAdapterView<T extends Adapter> extends ViewGroup {
 		return mIsVertical;
 	}
 	
-
+	public final int getItemCount() {
+		return mItemCount;
+	}
 }

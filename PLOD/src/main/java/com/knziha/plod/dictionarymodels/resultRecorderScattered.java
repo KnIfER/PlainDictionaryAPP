@@ -4,14 +4,12 @@ import android.graphics.Color;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
-import android.view.ViewGroup;
 
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
@@ -191,7 +189,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			if(pos-idxCount<max) {
 				bookId=presenter.getId();
 				presenter.initViewsHolder(a);
-				float desiredScale = a.prepareSingleWebviewForAda(presenter, null, pos, ADA);
+				float desiredScale = a.prepareSingleWebviewForAda(presenter, null, pos, ADA, a.opt.getRemPos(), a.opt.getInheritePageScale());
 				
 				boolean bUseDictView = presenter.bookImpl.hasVirtualIndex();
 				WebViewmy mWebView;

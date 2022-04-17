@@ -1,12 +1,12 @@
-if(!window.rcspc){
-    console.log('popuping ini...rcsp='+rcsp);
-    window.addEventListener('click',window.rcspc=function(e){
-    var w=this,d=w.document,rcsp=w.rcsp,app=w.app,_log=function(e){console.log(e)};
-    if(w.frameElement){rcsp=parent.window.rcsp;app=parent.window.app}
+if(!window.tpshc){
+    console.log('popuping ini...shzh='+shzh);
+    window.addEventListener('click',window.tpshc=function(e){
+    var w=this,d=w.document,sz=w.shzh,app=w.app,_log=function(e){console.log(e)};
+    if(w.frameElement){sz=parent.window.shzh;app=parent.window.app}
     //_ log('wrappedClickFunc 2', e.srcElement.id);
     var curr = e.srcElement;
-    _log('popuping...rcsp='+rcsp);
-    if(curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && curr.nodeName!='A' && rcsp&0x20 && !curr.noword && !curr.onclick){
+    _log('popuping...设置='+sz);
+    if(sz&1 && curr!=d.documentElement && curr.nodeName!='INPUT' && curr.nodeName!='BUTTON' && curr.nodeName!='A' && !curr.noword && !curr.onclick){
         //todo d.activeElement.tagName
         var s = w.getSelection();
         if(s.isCollapsed && s.anchorNode){ // don't bother with user selection

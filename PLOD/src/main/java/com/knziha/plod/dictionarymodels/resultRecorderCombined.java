@@ -150,7 +150,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		}
 		
 		if (!weblistHandler.bDataOnly) {
-			if(jointResult.realmCount==1 && PDICMainAppOptions.getLv2JointOneAsSingle()) {
+			if(!bUseMergedUrl/*算了，还是只为旧模式开此门*/  && jointResult.realmCount==1 && PDICMainAppOptions.getLv2JointOneAsSingle()) {
 				BookPresenter book = a.getBookByIdNoCreation(vals.get(0));
 				//if(true) bUseMergedUrl = false; // 只有一页，不通过合并的url加载了
 				if(bUseDictView) book.initViewsHolder(a);

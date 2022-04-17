@@ -89,6 +89,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	protected void findFurtherViews() {
 		if (contentUIData==null) {
+			// todo……
 			super.findFurtherViews();
 			adaptermy = new BasicAdapter(contentUIData, weblistHandler, null, null) {
 				@Override
@@ -121,7 +122,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		} else if(extraText ==null) {
 			extraText = StringUtils.EMPTY;
 		}
-		ucc = getUcc();
+		ucc = getUtk();
 		ucc.setInvoker(null, null, null, extraText);
 		int VSGO=opt.getRememberVSPanelGo()?opt.getLastVSGoNumber():-1;
 		//VSGO=-1;
@@ -162,8 +163,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 				if(NewIntentCalled && getPinVSDialog()) {
 					finishOrHide();
 				} else {
-					getUcc().setInvoker(null, null, null, extraText);
-					getUcc().onClick(null);
+					getUtk().setInvoker(null, null, null, extraText);
+					getUtk().onClick(null);
 				}
 			}
 		}
@@ -195,8 +196,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 	
 	private void showUcc() {
 		CMN.Log("showUcc");
-		getUcc().setInvoker(null, null, null, extraText);
-		getUcc().onClick(null);
+		getUtk().setInvoker(null, null, null, extraText);
+		getUtk().onClick(null);
 	}
 	
 	public void finishOrHide() {

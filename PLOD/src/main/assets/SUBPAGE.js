@@ -5,7 +5,6 @@ function _log(...e){console.log('fatal web::'+e)};
 w.addEventListener('load',function(e){
     //_log('wrappedOnLoadFunc...');
     var ws = d.body.style;
-    _log('mdpage loaded dark:'+(w.rcsp&0x40));
     d.body.contentEditable=!1;
     _highlight(null);
     var vi = d.getElementsByTagName('video');

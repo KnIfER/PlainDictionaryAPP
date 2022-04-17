@@ -149,7 +149,7 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Integer, String > {
 		a.adaptermy4.notifyDataSetChanged();
 		a.mlv2.setSelection(0);
 		//准备页内搜索
-		if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterFulltext()){
+		if(PDICMainAppOptions.schPageAfterFullSch()){
 			a.fullSearchLayer.getBakedPattern();
 			a.prepareInPageSearch(a.fullSearchLayer.getPagePattern(), true);
 		}

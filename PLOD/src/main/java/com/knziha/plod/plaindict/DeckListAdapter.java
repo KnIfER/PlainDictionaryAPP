@@ -3,9 +3,7 @@ package com.knziha.plod.plaindict;
 import static com.knziha.plod.db.LexicalDBHelper.FIELD_VISIT_TIME;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -28,7 +26,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.knziha.paging.AppIconCover.AppIconCover;
-import com.knziha.paging.AppIconCover.AppInfoBean;
 import com.knziha.paging.ConstructorInterface;
 import com.knziha.paging.CursorAdapter;
 import com.knziha.paging.CursorReader;
@@ -42,13 +39,11 @@ import com.knziha.plod.widgets.ViewUtils;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 //for main list
 //参见：live down
 //参见：P.L.O.D -> float search view -> HomeAdapter  main_list_Adapter
-class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<CardListItemBinding>> implements IDragSelectAdapter
-{
+class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<CardListItemBinding>> implements IDragSelectAdapter, PagingCursorAdapter.OnLoadListener {
 	@NonNull WeakReference<DBroswer> browserHolder;
 	public final static int DB_FAVORITE = 1;
 	public final static int DB_HISTORY = 2;
@@ -336,6 +331,14 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	//}
 	
 	
+	@Override
+	public void onLoaded(PagingCursorAdapter adapter) {
+		DBroswer browser = browserHolder.get();
+		if (browser!=null) {
+			browser.lv.suppressLayout(false);
+		}
+	}
+	
 	void rebuildCursor(MainActivityUIBase a) {
 		boolean bSingleThreadLoading = false;
 		DBroswer browser = browserHolder.get();
@@ -366,9 +369,16 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 			if (browser.getFragmentType()==DB_FAVORITE) {
 				dataAdapter.where("folder=?", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});
 			}
-			dataAdapter.startPaging(browser.lastVisiblePositionMap.get(browser.getFragmentType(), 0L), 20, 15);
+			long[] pos = browser.savedPositions.get(browser.getFragmentType());
+			long lastTm=0, offset=0;
+			if (pos!=null) {
+				lastTm = pos[0];
+				offset = pos[1];
+			}
+			dataAdapter.startPaging(lastTm, offset, 20, 15, this);
+			//CMN.debug("savedPositions::read::", browser.getFragmentType()+" "+new Date(lastTm).toLocaleString());
 		}
-		CMN.Log("mAdapter.rebuildCursor!!!");
+		//CMN.Log("mAdapter.rebuildCursor!!!");
 		//todo 记忆 lastFirst
 //		int offset = 0;
 //		lastFirst = 0;

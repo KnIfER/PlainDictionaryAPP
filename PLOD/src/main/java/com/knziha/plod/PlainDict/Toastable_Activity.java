@@ -143,6 +143,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		   QFStamp = opt.getFourthFlag();
 		   VFStamp = opt.getFifthFlag();
 		   VIStamp = opt.getSixthFlag();
+		   VersionUtils.checkVersion(opt);
 		   if (PDICMainAppOptions.checkVersionBefore_5_0())
 		   { // 升级数据库对话框
 			   //DBUpgradeHelper.showUpgradeDlg(null, this, true);

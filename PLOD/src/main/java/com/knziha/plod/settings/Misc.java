@@ -24,13 +24,13 @@ public class Misc extends SettingsFragmentBase implements Preference.OnPreferenc
 		
 		findPreference("cat_1").setVisible(false);
 
-		init_switch_preference(this, "ps_audio_key", PDICMainAppOptions.getInPageSearchUseAudioKey(), null, null);
-		init_switch_preference(this, "ps_hide_key", PDICMainAppOptions.getInPageSearchAutoHideKeyboard(), null, null);
-		init_switch_preference(this, "ps_yicha", !PDICMainAppOptions.getInPageSearchShowNoNoMatch(), null, null);
-		init_switch_preference(this, "ps_border", PDICMainAppOptions.getInPageSearchHighlightBorder(), null, null);
-		init_switch_preference(this, "ap_full", PDICMainAppOptions.getInPageSearchAutoUpdateAfterFulltext(), null, null);
-		init_switch_preference(this, "ap_click", PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick(), null, null);
-		init_switch_preference(this, "noext", PDICMainAppOptions.getBackToHomePage(), null, null);
+		init_switch_preference(this, "ps_audio_key", PDICMainAppOptions.schPageNavAudioKey(), null, null);
+		init_switch_preference(this, "ps_hide_key", PDICMainAppOptions.schPageNavHideKeyboard(), null, null);
+		init_switch_preference(this, "ps_yicha", !PDICMainAppOptions.schPageShowHints(), null, null);
+//		init_switch_preference(this, "ps_border", PDICMainAppOptions.getInPageSearchHighlightBorder(), null, null);
+		init_switch_preference(this, "ap_full", PDICMainAppOptions.schPageAfterFullSch(), null, null);
+		init_switch_preference(this, "ap_click", PDICMainAppOptions.schPageAfterClick(), null, null);
+		init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null);
 		init_switch_preference(this, "clear_sel", PDICMainAppOptions.getUseBackKeyClearWebViewFocus(), null, null);
 		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null);
 		Preference p = init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null);
@@ -39,7 +39,7 @@ public class Misc extends SettingsFragmentBase implements Preference.OnPreferenc
 										   @Override
 										   public boolean onPreferenceClick(Preference preference) {
 											   ListPreference lp = ((ListPreference) preference);
-											   if(PDICMainAppOptions.getBackToHomePage()){
+											   if(PDICMainAppOptions.exitToBackground()){
 												   lp.setEntries(R.array.conhom_info);
 												   lp.setEntryValues(R.array.conhom);
 												   lp.setValue((PDICMainAppOptions.getBackToHomePagePreventBack()?5:4)+"");
@@ -91,25 +91,22 @@ public class Misc extends SettingsFragmentBase implements Preference.OnPreferenc
 		}
 		switch (preference.getKey()){
 			case "ps_audio_key":
-				PDICMainAppOptions.setInPageSearchUseAudioKey((Boolean) newValue);
+				PDICMainAppOptions.schPageNavAudioKey((Boolean) newValue);
 			break;
 			case "ps_hide_key":
-				PDICMainAppOptions.setInPageSearchAutoHideKeyboard((Boolean) newValue);
+				PDICMainAppOptions.schPageNavHideKeyboard((Boolean) newValue);
 			break;
 			case "ps_yicha":
-				PDICMainAppOptions.setInPageSearchShowNoNoMatch(!(Boolean) newValue);
-			break;
-			case "ps_border":
-				PDICMainAppOptions.setInPageSearchHighlightBorder((Boolean) newValue);
+				PDICMainAppOptions.schPageShowHints(!(Boolean) newValue);
 			break;
 			case "ap_full":
-				PDICMainAppOptions.setInPageSearchAutoUpdateAfterFulltext((Boolean) newValue);
+				PDICMainAppOptions.schPageAfterFullSch((Boolean) newValue);
 			break;
 			case "ap_click":
-				PDICMainAppOptions.setInPageSearchAutoUpdateAfterClick((Boolean) newValue);
+				PDICMainAppOptions.schPageAfterClick((Boolean) newValue);
 			break;
 			case "noext":
-				PDICMainAppOptions.setBackToHomePage((Boolean) newValue);
+				PDICMainAppOptions.exitToBackground((Boolean) newValue);
 			break;
 			case "clear_sel":
 				PDICMainAppOptions.setUseBackKeyClearWebViewFocus((Boolean) newValue);

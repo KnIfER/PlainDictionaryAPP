@@ -124,12 +124,12 @@ public abstract class MdictServer extends NanoHTTPD {
 				}
 			}
 		}
-		if(uri.startsWith("/MIRROR.jsp")) {
+		if(uri.startsWith("/mirror.jsp")) {
 //			if(om!=null)
 //				return om.onMirror(session.getQueryParameterString(), true);
 			return newFixedLengthResponse(getBaseHtml());
 		}
-		if(uri.startsWith("/READ.jsp")) {
+		if(uri.startsWith("/read.jsp")) {
 //			if(om!=null) {
 //				return om.onMirror(session.getQueryParameterString(), false);
 //			}
@@ -526,7 +526,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		return MdbServerLet.md_get(pos);
 	}
 	
-	private BookPresenter md_getById(long id) {
+	BookPresenter md_getById(long id) {
 		return MdbServerLet.md_getById(id);
 	}
 	
@@ -873,15 +873,18 @@ public abstract class MdictServer extends NanoHTTPD {
 	}
 	
 	private String getMergedBaseHtml() {
-		String ret;
+		String ret=null;
 		try {
 			InputStream fin = OpenMdbResourceByName("\\merged_browser.html");
-			ret = BU.StreamToString(fin);
-			fin.close();
-		} catch (IOException e) {
-			ret = getBaseHtml();
-			CMN.debug(ret);
+			if (fin!=null) {
+				ret = BU.StreamToString(fin);
+				fin.close();
+			}
+		} catch (Exception e) {
+			//CMN.debug(ret);
 		}
+		if(ret==null)
+			ret = getBaseHtml();
 		return ret;
 	}
 	

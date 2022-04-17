@@ -37,8 +37,25 @@ public class VersionUtils {
 			opt.setTypeFlag_11_AtQF(0, 8);
 			opt.setTypeFlag_11_AtQF(0, 22);
 			opt.setInPeruseMode(false);
-			opt.menuOverlapAnchor(!GlobalOptions.isLarge||GlobalOptions.isSmall);
+			opt.menuOverlapAnchor(!GlobalOptions.isLarge||GlobalOptions.isSmall); //
+			PDICMainAppOptions.setUseDatabaseV2(true);
+			PDICMainAppOptions.setUseBackKeyGoWebViewBack(false);
+			opt.setPageTurn1(false);
+			opt.setPageTurn2(false);
+			opt.setPageTurn3(false);
+			opt.setTurnPageEnabled(false);
+			
+			PDICMainAppOptions.pageSchWild(true);
+			PDICMainAppOptions.pageSchWildDeprecated(false);
 			PDICMainAppOptions.uncheckVersionBefore_5_7(false);
 		}
+//		opt.setBottombarOnBottom(true);
+//		opt.setFloatBottombarOnBottom(true);
+//		opt.setPeruseBottombarOnBottom(true);
+
+//		opt.setPageTurn1(true);
+//		opt.setPageTurn2(true);
+//		opt.setPageTurn3(true);
+//		opt.setTurnPageEnabled(true);
 	}
 }

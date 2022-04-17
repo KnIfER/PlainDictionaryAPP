@@ -224,9 +224,8 @@ public class DevOpt extends SettingsFragmentBase implements Preference.OnPrefere
 				preference.setSummary(getNameFlag((String) newValue));
 			return true;
 			case "dbv2":
-				PDICMainAppOptions.setUseDatabaseV2((Boolean) newValue);
-				preference.setSummary("重启生效*");
-			return true;
+				PDICMainAppOptions.setUseDatabaseV2(true);
+			return false;
 		}
 		return super.onPreferenceChange(preference, newValue);
 	}

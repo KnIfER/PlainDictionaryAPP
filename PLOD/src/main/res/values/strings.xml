@@ -59,9 +59,7 @@
 
     <string name="endendr">@string/endr</string>
     <string name="toptopr">@string/endr</string>
-    <string name="coverr">Cover reached!</string>
-    <string name="try_longpress">invalid, please try long-press</string>
-    
+
     <string name="err">Load Error! %1$s @%2$s : %3$s</string>
     <string name="loadconfig">Load Group</string>
     <string name="pickfavor">Pick Favorite Collection</string>
