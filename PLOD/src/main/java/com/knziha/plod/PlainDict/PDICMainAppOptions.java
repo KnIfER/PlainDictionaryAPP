@@ -1180,6 +1180,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 //		return val;
 //	}
 	
+	// 页内搜索相关
+	
 	@Metaline(flagPos=48, shift=1) public static boolean pageSchWild(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=48, shift=1) public static void pageSchWild(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=49) public static boolean getJoniCaseSensitive(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
@@ -1205,8 +1207,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=59) public static boolean schPageShowHints(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=59) public static void schPageShowHints(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	// 60 xxx
-	@Metaline(flagPos=61) public static boolean schPageAfterFullSch(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=61) public static void schPageAfterFullSch(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=61, shift=1) public static boolean schPageAfterFullSch(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=61, shift=1) public static void schPageAfterFullSch(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=62) public static boolean schPageAfterClick(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=62) public static void schPageAfterClick(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=63) public static boolean exitToBackground(){ SecondFlag=SecondFlag; throw new RuntimeException(); }

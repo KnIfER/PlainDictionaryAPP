@@ -1400,7 +1400,7 @@ public class DBroswer extends DialogFragment implements
 			setUpContentView();
 			boolean bUseMergedUrl = false;
 			boolean bUseDictView = /*currentDictionary.rl!=null || */!opt.getUseSharedFrame() || opt.getMergeExemptWebx()&&currentDictionary.getIsWebx();
-			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, null);
+			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, bUseDictView?currentDictionary.mWebView:weblistHandler.mMergedFrame);
 			weblistHandler.viewContent();
 			if(!bUseDictView) weblistHandler.initMergedFrame(false, true, true);
 			ScrollerRecord pagerec = null;
@@ -1440,14 +1440,13 @@ public class DBroswer extends DialogFragment implements
 //				pagerec = avoyager.get(position);
 //				//a.showT(""+currentDictionary.expectedPos);
 //			}
-			
+
 			WebViewmy webview = null;
 			ViewGroup someView = null;
 			if(bUseDictView) {
 				currentDictionary.initViewsHolder(a);
 				webview = currentDictionary.mWebView;
 				someView = currentDictionary.rl;
-				weblistHandler.dictView = webview;
 				if(webview.weblistHandler==a.weblistHandler && a.weblistHandler.isWeviewInUse(someView)) {
 					a.DetachContentView(false);
 				}
@@ -1456,6 +1455,9 @@ public class DBroswer extends DialogFragment implements
 				someView = weblistHandler.mMergedBook.rl;
 			}
 			webview.weblistHandler = weblistHandler;
+			if (weblistHandler.dictView==null) {
+				weblistHandler.dictView = webview;
+			}
 			
 			if(pagerec!=null) {
 				webview.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)

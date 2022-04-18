@@ -1,7 +1,9 @@
 /**这个不是网页版*/
 var w=window, d=document;
 var LoadMark, frameAt;
-function _log(...e){console.log('fatal web::'+e)};
+window.debug=function(){var e=arguments,s='';for(var i=0;i<e.length;i++)s+=e[i]+', ';console.log('fatal web ::'+s)};
+var _log = debug;
+//function _log(...e){console.log('fatal web::'+e)};
 w.addEventListener('load',function(e){
     //_log('wrappedOnLoadFunc...');
     var ws = d.body.style;

@@ -347,6 +347,7 @@ public class BookPresenter
 	public Drawable cover;
 
 	public static float def_zoom=1;
+	public static float max_zoom=1;
 	public static int def_fontsize = 100;
 	public static int optimal100;
 	public int tmpIsFlag;

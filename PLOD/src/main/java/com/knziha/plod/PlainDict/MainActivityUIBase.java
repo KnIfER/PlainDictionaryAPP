@@ -2092,6 +2092,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		super.further_loading(savedInstanceState);
 		opt.fileToDatabases();
 		BookPresenter.def_zoom=dm.density;
+		BookPresenter.max_zoom=5*BookPresenter.def_zoom;
 		BookPresenter.optimal100 = GlobalOptions.isLarge?150:125;
 		BookPresenter.def_fontsize = opt.getDefaultFontScale(BookPresenter.optimal100);
 //		try {

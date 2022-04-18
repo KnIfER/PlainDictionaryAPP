@@ -23,6 +23,7 @@ public class VersionUtils {
 		if(PDICMainAppOptions.checkVersionBefore_5_0()) {
 		
 		}
+		PDICMainAppOptions.setUseDatabaseV2(true);
 		if(PDICMainAppOptions.checkVersionBefore_5_7()) {
 			PDICMainAppOptions.uncheckVersionBefore_4_0(true);
 			PDICMainAppOptions.uncheckVersionBefore_4_9(true);
@@ -37,8 +38,7 @@ public class VersionUtils {
 			opt.setTypeFlag_11_AtQF(0, 8);
 			opt.setTypeFlag_11_AtQF(0, 22);
 			opt.setInPeruseMode(false);
-			opt.menuOverlapAnchor(!GlobalOptions.isLarge||GlobalOptions.isSmall); //
-			PDICMainAppOptions.setUseDatabaseV2(true);
+			opt.menuOverlapAnchor(!GlobalOptions.isLarge||GlobalOptions.isSmall);
 			PDICMainAppOptions.setUseBackKeyGoWebViewBack(false);
 			opt.setPageTurn1(false);
 			opt.setPageTurn2(false);
