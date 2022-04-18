@@ -3345,9 +3345,9 @@ function debug(e){console.log(e)};
 				lvPos = data_in1.readInt();
 				lvClickPos = data_in1.readInt();
 				lvPosOff = data_in1.readInt();
-				ScrollerRecord record = new ScrollerRecord(data_in1.readInt()
-						, data_in1.readInt()
-						, webScale = data_in1.readFloat());
+				int scoll = data_in1.readInt(), csoll=data_in1.readInt();
+				float scale=data_in1.readFloat();
+				ScrollerRecord record = new ScrollerRecord(0,0,BookPresenter.def_zoom);
 				avoyager.put(lvClickPos, record);
 				firstFlag |= data_in1.readLong();
 				//CMN.Log(bookImpl.getDictionaryName(), firstFlag, "列表位置",lvPos,lvClickPos,lvPosOff);
