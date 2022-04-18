@@ -34,8 +34,9 @@ public class RLContainerSlider extends FrameLayout{
 	private float fastTapStY;
 	private boolean fastTapZoom;
 	private float fastTapZoomSt;
-	private float fastTapSrollX;
-	private float fastTapSrollY;
+	private float minZoom;
+	private float fastTapScrollX;
+	private float fastTapScrollY;
 	private boolean fastTapMoved;
 	private float quickScaleThreshold;
 	
@@ -107,12 +108,13 @@ public class RLContainerSlider extends FrameLayout{
 							WebContext.zoomOut();
 						}
 					}
-				} else {
+				}
+				else if (fastTapScrollX==WebContext.getScrollX()
+							&& fastTapScrollY==WebContext.getScrollY()) {
 					fastTapStX = e.getX();
 					fastTapStY = e.getY();
 					fastTapZoomSt = WebContext.webScale;
-					fastTapSrollX = WebContext.getScrollX();
-					fastTapSrollY = WebContext.getScrollY();
+					minZoom = Math.min(fastTapZoomSt, BookPresenter.def_zoom);
 					fastTapMoved = false;
 					fastTapZoom = true;
 				}
@@ -174,10 +176,11 @@ public class RLContainerSlider extends FrameLayout{
 
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
-		MainActivityUIBase.layoutScrollDisabled=false;
+		if(MainActivityUIBase.layoutScrollDisabled)
+			MainActivityUIBase.layoutScrollDisabled=false;
 		if(fastTapZoom) {
 			handleFastZoom(ev);
-			return true;
+			return fastTapZoom;
 		}
 		if(!TurnPageEnabled) return false;
 		if(!dragged && !aborted) return true;
@@ -299,11 +302,18 @@ public class RLContainerSlider extends FrameLayout{
 					multiplier=1/multiplier;
 				
 				float targetZoom = fastTapZoomSt*multiplier;
-				
+				if (targetZoom>BookPresenter.max_zoom) {
+					targetZoom = BookPresenter.max_zoom;
+					multiplier = targetZoom/fastTapZoomSt;
+				}
+				else if (targetZoom<minZoom) {
+					targetZoom = minZoom;
+					multiplier = targetZoom/fastTapZoomSt;
+				}
 				WebContext.zoomBy(targetZoom/WebContext.webScale);
 				//multiplier = WebContext.webScale/fastTapZoomSt;
-				WebContext.scrollTo((int) ((fastTapSrollX+fastTapStX)*multiplier - fastTapStX)
-					, (int) ((fastTapSrollY+fastTapStY)*multiplier - fastTapStY));
+				WebContext.scrollTo((int) ((fastTapScrollX +fastTapStX)*multiplier - fastTapStX)
+					, (int) ((fastTapScrollY +fastTapStY)*multiplier - fastTapStY));
 				//CMN.Log("fastZoom::", WebContext.webScale, WebContext.getScrollX(), WebContext.getScrollY());
 			}
 		}
@@ -311,8 +321,8 @@ public class RLContainerSlider extends FrameLayout{
 			fastTapZoom = false;
 			fastTapMoved = false;
 			float multiplier = WebContext.webScale/fastTapZoomSt;
-			WebContext.scrollTo((int) ((fastTapSrollX+fastTapStX)*multiplier - fastTapStX)
-					, (int) ((fastTapSrollY+fastTapStY)*multiplier - fastTapStY));
+			WebContext.scrollTo((int) ((fastTapScrollX +fastTapStX)*multiplier - fastTapStX)
+					, (int) ((fastTapScrollY +fastTapStY)*multiplier - fastTapStY));
 		}
 	}
 	
@@ -342,7 +352,9 @@ public class RLContainerSlider extends FrameLayout{
 			}
 		}
 		
-		MainActivityUIBase.layoutScrollDisabled=false;
+		if (MainActivityUIBase.layoutScrollDisabled) {
+			MainActivityUIBase.layoutScrollDisabled=false;
+		}
 		
 		bNoTurnPage = !TurnPageEnabled || TurnPageSuppressed;
 		
@@ -380,6 +392,15 @@ public class RLContainerSlider extends FrameLayout{
 				IMSlider.decided=false;
 				return true;
 			}
+		}
+		
+		if (masked==MotionEvent.ACTION_DOWN
+				&& WebContext!=null
+				&& WebContext.IBC.getDoubleTapAlignment()==4
+				&& !bNoDoubleClick
+				&& !isOnZoomingDected) {
+			fastTapScrollX = WebContext.getScrollX();
+			fastTapScrollY = WebContext.getScrollY();
 		}
 		
 		if (fastTapZoom) {
