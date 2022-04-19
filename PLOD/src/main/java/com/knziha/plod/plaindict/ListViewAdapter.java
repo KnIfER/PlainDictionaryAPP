@@ -190,9 +190,6 @@ public class ListViewAdapter extends BasicAdapter {
 			a.etSearch.clearFocus();
 		}
 		
-		contentUIData.PageSlider.TurnPageEnabled=opt.getPageTurn1()&&opt.getTurnPageEnabled();
-		contentUIData.PageSlider.setIBC(mWebView, null);
-		
 		layoutScrollDisabled=true;
 		if(bOnePageNav)
 			desiredScale=111;
@@ -214,6 +211,9 @@ public class ListViewAdapter extends BasicAdapter {
 			presenter.renderContentAt(desiredScale,BookPresenter.RENDERFLAG_NEW,0,mWebView, POS);
 		}
 		a.contentview.setTag(R.id.image, a.PhotoPagerHolder!=null&&a.PhotoPagerHolder.getParent()!=null?false:null);
+		
+		contentUIData.PageSlider.TurnPageEnabled=opt.getPageTurn1()&&opt.getTurnPageEnabled();
+		contentUIData.PageSlider.setWebview(mWebView, null);
 		
 		String lstKey = this.currentKeyText = mWebView.word.trim();
 		

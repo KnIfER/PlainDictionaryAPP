@@ -47,7 +47,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
 import com.knziha.ankislicer.customviews.ArrayAdaptermy;
-import com.knziha.paging.PagingCursorAdapter;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdict;
@@ -1397,7 +1396,7 @@ public class DBroswer extends DialogFragment implements
 		
 		if(idx>=0) {
 			setUpContentView();
-			boolean bUseMergedUrl = false;
+			final boolean bUseMergedUrl = false;
 			boolean bUseDictView = /*currentDictionary.rl!=null || */!opt.getUseSharedFrame() || opt.getMergeExemptWebx()&&currentDictionary.getIsWebx();
 			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, bUseDictView?currentDictionary.mWebView:weblistHandler.mMergedFrame);
 			weblistHandler.viewContent();
@@ -1416,7 +1415,6 @@ public class DBroswer extends DialogFragment implements
 				webview = weblistHandler.getMergedFrame();
 				someView = weblistHandler.mMergedBook.rl;
 			}
-			contentUIData.PageSlider.WebContext = webview;
 			webview.weblistHandler = weblistHandler;
 			if (weblistHandler.dictView==null) {
 				weblistHandler.dictView = webview;
@@ -1457,13 +1455,13 @@ public class DBroswer extends DialogFragment implements
 				//a.showT(""+currentDictionary.expectedPos);
 			}
 			if(pagerec!=null) {
-				webview.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
-				webview.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				webview.expectedPos = pagerec.y;
+				webview.expectedPosX = pagerec.x;
 				desiredScale=pagerec.scale;
 				//CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+webview.expectedPos+" scale:"+pagerec.scale);
 			} else {
-				webview.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
-				webview.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
+				webview.expectedPos=0;
+				webview.expectedPosX=0;
 			}
 			
 			imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
@@ -1490,15 +1488,10 @@ public class DBroswer extends DialogFragment implements
 					if(webviewHolder.getChildAt(i)!=someView) webviewHolder.removeViewAt(i);
 			}
 			
-			if(bUseMergedUrl) {
-				//webview.loadUrl(...);
-			} else {
-				currentDictionary.renderContentAt(desiredScale,RENDERFLAG_NEW,0,webview, idx);
-				webview.getLayoutParams().height = LayoutParams.MATCH_PARENT;
-			}
+			currentDictionary.renderContentAt(desiredScale,RENDERFLAG_NEW,0,webview, idx);
+			webview.getLayoutParams().height = LayoutParams.MATCH_PARENT;
 			
-			CMN.Log("weblistHandler.dictView::", webview.IBC==currentDictionary.IBC);
-			
+			contentUIData.PageSlider.setWebview(webview, null);
 			someView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
 			processFavorite(position, currentDisplaying);
 			return true;

@@ -12,14 +12,14 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
-import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 
 
 public class RLContainerSlider extends FrameLayout{
 	public boolean TurnPageSuppressed;
 	public WebViewmy WebContext;
-	public ViewGroup ScrollerView;
+	public PhotoBrowsingContext pBc;
+	public ViewGroup scrollView;
 	private float density;
 	private int move_index;
 	private boolean bZoomOut;
@@ -71,12 +71,12 @@ public class RLContainerSlider extends FrameLayout{
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
 			if(WebContext!=null && !bNoDoubleClick){
-				PhotoBrowsingContext ibc = WebContext.IBC;
+				PhotoBrowsingContext ibc = pBc;
 				float targetZoom = ibc.doubleClickZoomRatio;
 				//CMN.Log("onDoubleTap::", targetZoom, WebContext.webScale/BookPresenter.def_zoom);
-				int zoomInType = ibc.getDoubleTapAlignment();
+				int zoomInMode = ibc.getDoubleTapAlignment();
 				//zoomInType = 4;
-				if(zoomInType<3) {
+				if(zoomInMode<3) {
 					if(WebContext.webScale/ BookPresenter.def_zoom<targetZoom){
 						if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
 							int sY = WebContext.getScrollY();
@@ -86,11 +86,11 @@ public class RLContainerSlider extends FrameLayout{
 							int pad = WebContext.getWidth();
 							float ratio = ibc.doubleClickXOffset;
 							if(ratio<-1) ratio=-1;
-							if(zoomInType==0){
+							if(zoomInMode==0){
 								pad = (int) (ratio * pad);
-							} else if(zoomInType==1){
+							} else if(zoomInMode==1){
 								pad = (OrgX>pad/2?pad:0)+(int) (ratio * pad);
-							} else if(zoomInType==2){
+							} else if(zoomInMode==2){
 								pad = (int) (WebContext.getContentWidth()-pad*(1+ratio));
 							}
 							WebContext.setScrollX(pad);
@@ -250,18 +250,18 @@ public class RLContainerSlider extends FrameLayout{
 							ViewUtils.preventDefaultTouchEvent(this, (int)lastX, (int)lastY);
 //							abortedOffsetX = WebContext.lastX-nowX;
 //							abortedOffsetY = WebContext.lastY-nowY;
-							if(ScrollerView!=null) {
+							if(scrollView !=null) {
 								ev.setAction(MotionEvent.ACTION_DOWN);
-								ScrollerView.dispatchTouchEvent(ev);
+								scrollView.dispatchTouchEvent(ev);
 							}
 						}
 					}
 					else if(aborted) {
 						onInterceptTouchEvent(ev);
-						if(!dragged && ScrollerView!=null) {
+						if(!dragged && scrollView !=null) {
 							//ev.setLocation(nowX/*-WebContext.getLeft()*/+abortedOffsetX, nowY/*-WebContext.getTop()*/+abortedOffsetY);
 							ev.setLocation(nowX, nowY);
-							ScrollerView.dispatchTouchEvent(ev);
+							scrollView.dispatchTouchEvent(ev);
 						}
 					}
 					lastX = nowX;
@@ -397,7 +397,7 @@ public class RLContainerSlider extends FrameLayout{
 		
 		if (masked==MotionEvent.ACTION_DOWN
 				&& WebContext!=null
-				&& WebContext.IBC.getDoubleTapAlignment()==4
+				&& pBc.getDoubleTapAlignment()==4
 				&& !bNoDoubleClick
 				&& !isOnZoomingDected) {
 			fastTapScrollX = WebContext.getScrollX();
@@ -469,20 +469,22 @@ public class RLContainerSlider extends FrameLayout{
 		}
 	}
 	
-	public void invalidateIBC() {
-		bNoDoubleClick = WebContext==null||!WebContext.IBC.getDoubleTapZoomPage();
+	public void quoDblClk() {
+		bNoDoubleClick = WebContext==null||!pBc.getDoubleTapZoomPage();
 	}
 	
-	public void setIBC(WebViewmy IBCN, ViewGroup scrollerView) {
-		if(WebContext!=IBCN) {
-			WebContext = IBCN;
-			invalidateIBC();
-			if (WebContext!=null) {
-				this.ScrollerView = WebContext;
-			}
+	public void setWebview(WebViewmy webview, ViewGroup scrollView) {
+		if(WebContext != webview) {
+			WebContext = webview;
+		} 
+		if (pBc!=webview.pBc) {
+			pBc = webview.pBc;
+			quoDblClk();
 		}
-		if(this.ScrollerView!=scrollerView && scrollerView!=null) {
-			this.ScrollerView = scrollerView;
+		if(this.scrollView!=scrollView && scrollView!=null) {
+			this.scrollView = scrollView;
+		} else if (WebContext!=null) {
+			this.scrollView = WebContext;
 		}
 	}
 }

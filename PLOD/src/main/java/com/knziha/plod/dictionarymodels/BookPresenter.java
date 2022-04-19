@@ -856,7 +856,7 @@ function debug(e){console.log(e)};
 			toolbar = pageData.lltoolbar;
 			ViewUtils.setOnClickListenersOneDepth(toolbar, this, 999, null);
 			
-			mWebView.IBC = IBC;
+			mWebView.pBc = IBC;
 			mWebView.titleBar = (AdvancedNestScrollLinerView) toolbar;
 			mWebView.FindBGInTitle(toolbar);
 			mWebView.toolbarBG.setColors(mWebView.ColorShade);
@@ -1898,7 +1898,7 @@ function debug(e){console.log(e)};
     	
     	if (!resposibleForThisWeb && mWebView.presenter!=this) {
 			mWebView.presenter = this;
-			mWebView.IBC = this.IBC;
+			mWebView.pBc = this.IBC;
 			//mWebView.History = this.HistoryOOP;
 		}
 	

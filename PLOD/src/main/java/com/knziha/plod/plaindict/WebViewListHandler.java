@@ -296,7 +296,7 @@ public class WebViewListHandler extends ViewGroup/*Again, a bad design that I re
 				contentUIData.mainProgressBar.setVisibility(recom.expectedPos==0?View.GONE:View.VISIBLE);
 			recom.scrolled=false;
 		}
-		contentUIData.PageSlider.setIBC(null, this);
+		contentUIData.PageSlider.setWebview(null, this);
 	}
 	
 	public void NotifyScrollingTo(resultRecorderCombined recom) {

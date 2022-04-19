@@ -206,7 +206,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 				presenter.renderContentAt(desiredScale, BookPresenter.RENDERFLAG_NEW ,1 , mWebView , _combining_search_tree[ti].get((int) (pos-idxCount)).position);
 //				presenter.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 //				mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-				a.contentUIData.PageSlider.setIBC(mWebView, null);
+				a.contentUIData.PageSlider.setWebview(mWebView, null);
 				return;
 			}
 			idxCount+=max;

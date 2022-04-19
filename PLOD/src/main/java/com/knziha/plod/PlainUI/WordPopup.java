@@ -433,7 +433,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			WebViewmy webview = (WebViewmy) pageSlider.getChildAt(0);
 			webview.getSettings().setTextZoom(118);
 			webview.fromCombined = 2;
-			pageSlider.WebContext = webview;
+			pageSlider.setWebview(webview, null);
 			pottombar = (ViewGroup) popupContentView.getChildAt(2);
 			popuphandler = new BookPresenter.AppHandler(a.currentDictionary);
 			webview.addJavascriptInterface(popuphandler, "app");
@@ -447,7 +447,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			popupChecker = pottombar.findViewById(R.id.popChecker);
 			popupChecker.setChecked(PDICMainAppOptions.getPinTapTranslator());
 			entryTitle = toolbar.findViewById(R.id.popupText1);
-			webview.IBC = new PhotoBrowsingContext();
+			webview.pBc = new PhotoBrowsingContext();
 			indicator = pottombar.findViewById(R.id.popupText2);
 			modeBtn = pottombar.findViewById(R.id.mode);
 			schMode = opt.tapSchMode();
@@ -1055,9 +1055,8 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				popuphandler.setBook(CCD);
 				if (PDICMainAppOptions.getClickSearchAutoReadEntry())
 					mWebView.bRequestedSoundPlayback=true;
-				mWebView.IBC = CCD.IBC;
-				pageSlider.invalidateIBC();
 				CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, mWebView, currentPos);
+				pageSlider.setWebview(mWebView, null);
 			} else {
 				loadEntry(0);
 			}
@@ -1089,7 +1088,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			popupFrame = frameAt;
 			popupForceId = forceStartId;
 			a.root.removeCallbacks(this);
-			if (invoker!=null && invoker.IBC.getDoubleTapZoomPage()) {
+			if (invoker!=null && invoker.pBc.getDoubleTapZoomPage()) {
 				a.root.postDelayed(this, a.opt.getInt("dtm", 100)); // 支持双击操作会拖慢点译！
 			} else {
 				a.root.post(this);

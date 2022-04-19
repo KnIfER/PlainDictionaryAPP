@@ -3495,12 +3495,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	@Override
 	public void invalidAllPagers() {
-		contentUIData.PageSlider.invalidateIBC();
+		contentUIData.PageSlider.quoDblClk();
 		if(peruseView !=null){
-			peruseView.contentUIData.PageSlider.invalidateIBC();
+			peruseView.contentUIData.PageSlider.quoDblClk();
 		}
 		if(wordPopup.pageSlider !=null){
-			contentUIData.PageSlider.invalidateIBC();
+			contentUIData.PageSlider.quoDblClk();
 		}
 	}
 	

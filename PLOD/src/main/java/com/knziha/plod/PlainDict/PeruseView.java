@@ -1639,11 +1639,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		public void click(int pos,boolean ismachineClick) {//lv2
 			MainActivityUIBase a = getMainActivity();
 			ActivedAdapter=a.ActivedAdapter=this;
-			
 			WebViewmy mWebView = PeruseView.this.mWebView;
-			contentUIData.PageSlider.WebContext = mWebView;
-			mWebView.IBC = currentDictionary.IBC;
-			contentUIData.PageSlider.invalidateIBC();
 			
         	if(ToD) {
         		//a.setContentBow(false);
@@ -1734,7 +1730,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     			a.decorateContentviewByKey(null, mWebView.word);
 				mWebView.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-        	} else {
+        	}
+			else {
 //        		ViewGroup p = (ViewGroup) vb.getParent();
 //    			if(p!=null) {
 //    				currentDictionary = a.EmptyBook;
@@ -1759,6 +1756,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				perusehandler.setBook(currentDictionary);
 				entryAdapter.notifyDataSetChanged();
         	}
+			
+			mWebView.pBc = currentDictionary.IBC;
+			contentUIData.PageSlider.setWebview(mWebView, null);
         }
 
 		public void onClick(View v) {
@@ -1921,8 +1921,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				
 				contentUIData.PageSlider.WebContext = mWebView;
-				mWebView.IBC = presenter.IBC;
-				contentUIData.PageSlider.invalidateIBC();
 				weblistHandler.setViewMode(WEB_VIEW_SINGLE, false, null);
 				weblistHandler.viewContent();
 				
@@ -1962,6 +1960,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				presenter.renderContentAt(desiredScale,RENDERFLAG_NEW,0, mWebView, pos);
 				String key = currentKeyText = mWebView.word;
 				
+				contentUIData.PageSlider.setWebview(mWebView, null);
 				//voyager[SelectedV*3+2]=pos;
 				a.decorateContentviewByKey(contentUIData.browserWidget8, key);
 				

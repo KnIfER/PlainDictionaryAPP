@@ -101,7 +101,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public static Integer SelectString_Id;
 	public static Integer CopyString_Id;
 	
-	public PhotoBrowsingContext IBC;
+	public PhotoBrowsingContext pBc;
 	
 	public GradientDrawable toolbarBG;
 	public AdvancedNestScrollLinerView titleBar;
@@ -614,7 +614,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			clearHistory();
 			clearIfNewADA(book);
 			presenter=book;
-			IBC = book.IBC;
+			pBc = book.IBC;
 		}
 	}
 
