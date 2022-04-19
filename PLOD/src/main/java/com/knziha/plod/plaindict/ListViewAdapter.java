@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
-// 词典词条列表
+/** 词典词条列表，单本词典。 */
 public class ListViewAdapter extends BasicAdapter {
 	final MainActivityUIBase a;
 	final PDICMainAppOptions opt;
@@ -130,12 +130,15 @@ public class ListViewAdapter extends BasicAdapter {
 			String lstKey = this.currentKeyText = presenter.bookImpl.getEntryAt(pos).trim();
 			PeruseView pView = a.getPeruseView();
 			pView.searchAll(lstKey, a, true);
-			if(!PDICMainAppOptions.storeNothing()  && PDICMainAppOptions.storeClick() && presenter.store(pos)
-					&& userCLick && a.storeLv1(lstKey)) { // 保存输入框历史记录
+			boolean storeEt = userCLick && a.storeLv1(lstKey);
+			if(!PDICMainAppOptions.storeNothing()  && storeEt) { // 保存输入框历史记录
 				a.addHistory(lstKey, a.schuiMainPeruse, webviewHolder, a.etTools);
 				pView.lstKey = lstKey;
 			} else {
 				pView.lstKey = null;
+				if (storeEt) {
+					a.etTools.addHistory(lstKey);
+				}
 			}
 			a.AttachPeruseView(true);
 			//CMN.Log(PeruseView.data);
@@ -219,11 +222,14 @@ public class ListViewAdapter extends BasicAdapter {
 		
 		a.decorateContentviewByKey(null,lstKey);
 		
-		if(!PDICMainAppOptions.storeNothing()  && PDICMainAppOptions.storeClick() && presenter.store(pos)) {
+		boolean storeEt = userCLick && a.storeLv1(lstKey);
+		if(!PDICMainAppOptions.storeNothing()  && (storeEt || PDICMainAppOptions.storeClick() && presenter.store(pos))) {
 			a.addHistory(lstKey
-					, userCLick && a.storeLv1(lstKey)? a.schuiMain:  // 保存输入框历史记录
+					, storeEt? a.schuiMain:  // 保存输入框历史记录
 					 (userCLick || PDICMainAppOptions.storePageTurn()==0) && !(shunt && pos==0)?a.schuiList  // 保存列表点击历史记录
-							:-1, webviewHolder, null);
+							:-1, webviewHolder, a.etTools);
+		} else if (storeEt) {
+			a.etTools.addHistory(lstKey);
 		}
 		
 		//showT("查时: "+(System.currentTimeMillis()-stst));
