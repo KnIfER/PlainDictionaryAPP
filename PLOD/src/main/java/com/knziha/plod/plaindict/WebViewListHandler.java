@@ -735,8 +735,9 @@ public class WebViewListHandler extends ViewGroup/*Again, a bad design that I re
 			ViewUtils.setVisible(contentUIData.dictNameStroke, !bUseMergedUrl);
 			ViewUtils.setVisible(contentUIData.dictName, !bUseMergedUrl);
 		}
-		if(this.dictView!=dictView)
+		if(this.dictView!=dictView) {
 			this.dictView = dictView;
+		}
 	}
 	
 	int[] versions=new int[8];

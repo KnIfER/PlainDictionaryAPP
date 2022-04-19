@@ -205,7 +205,6 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	public void onBindViewHolder(@NonNull final ViewUtils.ViewDataHolder<CardListItemBinding> holder, int position)
 	{
 		CardListItemBinding viewdata = holder.data;
-		holder.position = position;
 		//if(true) return;
 		String text;long time, ivk=-1;
 		
@@ -277,10 +276,10 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 
 
 		if(browser.SelectionMode==SelectionMode_select) {
-			viewdata.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, (int) holder.position));
+			viewdata.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, 0));
 			viewdata.p.setVisibility(View.VISIBLE);
 		} else {
-			holder.itemView.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, (int) holder.position));
+			holder.itemView.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, 0));
 			viewdata.p.setVisibility(View.GONE);
 		}
 	}

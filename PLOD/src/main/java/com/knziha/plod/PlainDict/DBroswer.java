@@ -1103,6 +1103,7 @@ public class DBroswer extends DialogFragment implements
 		return true;
 	}
 	
+	// click
 	public void onItemClick(View view, int position) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if (a == null) return;
@@ -1110,8 +1111,8 @@ public class DBroswer extends DialogFragment implements
 			adelta = 0;
 			//TODO retrieve from sibling views
 			currentDisplaying = String.valueOf(((TextView) view.findViewById(android.R.id.text1)).getText());
+			position = ((ViewUtils.ViewDataHolder) view.getTag()).getLayoutPosition();
 		}
-		
 		int lastClickedPosBefore = position - adelta;
 		ScrollerRecord pagerec = null;
 		DeckListAdapter.HistoryDatabaseReader reader = mAdapter.getReaderAt(currentPos = position);
@@ -1368,8 +1369,6 @@ public class DBroswer extends DialogFragment implements
 	private boolean queryAndShowOneDictionary(BookPresenter currentDictionary, String currentDisplaying, int position, boolean queryAll) {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		
-		int lastClickedPosBefore = position - adelta;
-		
 		float desiredScale=-1;
 		a.TransientIntoSingleExplanation();
 		
@@ -1402,44 +1401,7 @@ public class DBroswer extends DialogFragment implements
 			boolean bUseDictView = /*currentDictionary.rl!=null || */!opt.getUseSharedFrame() || opt.getMergeExemptWebx()&&currentDictionary.getIsWebx();
 			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, bUseDictView?currentDictionary.mWebView:weblistHandler.mMergedFrame);
 			weblistHandler.viewContent();
-			if(!bUseDictView) weblistHandler.initMergedFrame(false, true, true);
-			ScrollerRecord pagerec = null;
-//			if(opt.getRemPos()) {
-//				OUT:
-//				if(System.currentTimeMillis()-a.lastClickTime>300)//save our postion
-//					if(webviewHolder.getChildCount()!=0) {
-//						View s_rl = webviewHolder.getChildAt(0);
-//						int tag= IU.parsint(s_rl.getTag(), -1);
-//						if(tag!=-1) {
-//							BookPresenter lastDictionary = a.md_get(tag);
-//							{
-//								WebViewmy current_webview = lastDictionary.mWebView;
-//								if (adelta != 0 && current_webview != null && !current_webview.isloading) {
-//									if (current_webview.webScale == 0)
-//										current_webview.webScale = a.dm.density;//sanity check
-//									//CMN.Log("保存位置", lastDictionary._Dictionary_fName, tag);
-//
-//									pagerec = avoyager.get(lastClickedPosBefore);
-//									if (pagerec == null) {
-//										if (current_webview.getScrollX() != 0 || current_webview.getScrollY() != 0 || current_webview.webScale != BookPresenter.def_zoom) {
-//											pagerec = new ScrollerRecord();
-//											avoyager.put(lastClickedPosBefore, pagerec);
-//										} else
-//											break OUT;
-//									}
-//
-//									pagerec.set(current_webview.getScrollX(), current_webview.getScrollY(), current_webview.webScale);
-//								}
-//							}
-//						}
-//					}
-//
-//				adelta=0;
-//				a.lastClickTime=System.currentTimeMillis();
-//
-//				pagerec = avoyager.get(position);
-//				//a.showT(""+currentDictionary.expectedPos);
-//			}
+			if(!bUseDictView) weblistHandler.initMergedFrame(false, true, false);
 
 			WebViewmy webview = null;
 			ViewGroup someView = null;
@@ -1454,16 +1416,51 @@ public class DBroswer extends DialogFragment implements
 				webview = weblistHandler.getMergedFrame();
 				someView = weblistHandler.mMergedBook.rl;
 			}
+			contentUIData.PageSlider.WebContext = webview;
 			webview.weblistHandler = weblistHandler;
 			if (weblistHandler.dictView==null) {
 				weblistHandler.dictView = webview;
 			}
 			
+			
+			ScrollerRecord pagerec = null;
+			//if(opt.getRemPos())
+			{
+				SparseArray<ScrollerRecord> avoyager = webview.presenter.avoyager;
+				ViewGroup webviewHolder = weblistHandler.getViewGroup();
+				if(System.currentTimeMillis()-a.lastClickTime>300 && webviewHolder.getChildCount()!=0) {
+					//save our postion
+					View child = webviewHolder.getChildAt(0);
+					BookPresenter book = ((WebViewmy)child.findViewById(R.id.webviewmy)).presenter;
+					{
+						if (adelta!=0 && webview != null && !webview.isloading) {
+							if (webview.webScale == 0)
+								webview.webScale = a.dm.density;//sanity check
+							CMN.Log("dbrowser::保存位置::", book.getDictionaryName(), (int) webview.currentPos);
+							pagerec = avoyager.get((int) webview.currentPos);
+							if (pagerec == null
+								&& (webview.getScrollX() != 0 || webview.getScrollY() != 0
+									|| webview.webScale != BookPresenter.def_zoom)) {
+									avoyager.put((int) webview.currentPos, pagerec = new ScrollerRecord());
+							}
+							if (pagerec!=null) {
+								pagerec.set(webview.getScrollX(), webview.getScrollY(), webview.webScale);
+							}
+						}
+					}
+				}
+
+				adelta=0;
+				a.lastClickTime=System.currentTimeMillis();
+				
+				pagerec = currentDictionary.avoyager.get(idx);
+				//a.showT(""+currentDictionary.expectedPos);
+			}
 			if(pagerec!=null) {
 				webview.expectedPos = pagerec.y;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 				webview.expectedPosX = pagerec.x;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 				desiredScale=pagerec.scale;
-				CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+webview.expectedPos+" scale:"+pagerec.scale);
+				//CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+webview.expectedPos+" scale:"+pagerec.scale);
 			} else {
 				webview.expectedPos=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
 				webview.expectedPosX=0;///dm.density/(avoyager.get(avoyagerIdx).scale/mdict.def_zoom)
@@ -1499,6 +1496,8 @@ public class DBroswer extends DialogFragment implements
 				currentDictionary.renderContentAt(desiredScale,RENDERFLAG_NEW,0,webview, idx);
 				webview.getLayoutParams().height = LayoutParams.MATCH_PARENT;
 			}
+			
+			CMN.Log("weblistHandler.dictView::", webview.IBC==currentDictionary.IBC);
 			
 			someView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
 			processFavorite(position, currentDisplaying);

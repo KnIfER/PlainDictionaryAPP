@@ -687,8 +687,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					adaptermy.notifyDataSetChanged();
 					postPutName(550);
 					if (currentDictionary != EmptyBook) {
-						if (/*!isCombinedSearching && */(dictPicker.autoSchPDict()||this instanceof FloatSearchActivity)) {
-							CMN.Log("auto_search!......");
+						if (TextUtils.getTrimmedLength(etSearch.getText())>0 && (dictPicker.autoSchPDict()||this instanceof FloatSearchActivity)) {
+							//CMN.Log("auto_search!......");
 							lv_matched=false;
 							if(prvNxt && opt.getDimScrollbarForPrvNxt()) {
 								ViewUtils.dimScrollbar(lv, false);
@@ -6060,7 +6060,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				tk.showDictTweaker(weblist.lastScrollFocus.presenter, weblist.lastScrollFocus);
 			}
 		} else {
-			tk.showDictTweaker(currentDictionary, weblist.dictView);
+			tk.showDictTweaker(weblist.dictView.presenter, weblist.dictView);
 		}
 	}
 	
@@ -7631,7 +7631,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			int schemaIdx = url.indexOf(":");
 			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
-			if(invoker.isMergedBook()) {
+			if(invoker.isMergedBook() || mdbr
+					&& (url.regionMatches(schemaIdx+12, "content", 0, 7)
+					|| url.regionMatches(schemaIdx+12, "base", 0, 4))
+			) {
 				if(mdbr) {
 					CMN.debug("mdbr::", url);
 					try {

@@ -12,6 +12,7 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 
 
@@ -320,9 +321,9 @@ public class RLContainerSlider extends FrameLayout{
 		else if (actionMasked==MotionEvent.ACTION_UP) {
 			fastTapZoom = false;
 			fastTapMoved = false;
-			float multiplier = WebContext.webScale/fastTapZoomSt;
-			WebContext.scrollTo((int) ((fastTapScrollX +fastTapStX)*multiplier - fastTapStX)
-					, (int) ((fastTapScrollY +fastTapStY)*multiplier - fastTapStY));
+//			float multiplier = WebContext.webScale/fastTapZoomSt;
+//			WebContext.scrollTo((int) ((fastTapScrollX +fastTapStX)*multiplier - fastTapStX)
+//					, (int) ((fastTapScrollY +fastTapStY)*multiplier - fastTapStY));
 		}
 	}
 	

@@ -1898,6 +1898,7 @@ function debug(e){console.log(e)};
     	
     	if (!resposibleForThisWeb && mWebView.presenter!=this) {
 			mWebView.presenter = this;
+			mWebView.IBC = this.IBC;
 			//mWebView.History = this.HistoryOOP;
 		}
 	
@@ -2138,7 +2139,7 @@ function debug(e){console.log(e)};
 		mWebView.isloading = true;
 		if(htmlCode!=null) {
 			if(loadUrl) {
-				mWebView.presenter = mWebView.weblistHandler.getMergedBook();
+				//mWebView.presenter = mWebView.weblistHandler.getMergedBook();
 				mWebView.loadUrl(htmlCode);
 			}
 			else if (!htmlCode.startsWith(fullpageString)) {
@@ -3367,7 +3368,8 @@ function debug(e){console.log(e)};
 				IBC.doubleClickPresetXOffset = data_in1.readFloat();
 				// 78
 			}
-			CMN.pt(bookImpl.getDictionaryName()+" id="+bookImpl.getBooKID()+" "+data+" 单典配置加载耗时");
+			//CMN.pt(bookImpl.getDictionaryName()+" id="+bookImpl.getBooKID()+" "+data+" 单典配置加载耗时");
+			//CMN.pt(bookImpl.getDictionaryName()+" lvClickPos="+lvPos+" lvPosOff="+lvPosOff);
 		} catch (Exception e) {
 			CMN.Log(e);
 			//firstFlag = 0;
