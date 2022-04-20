@@ -54,6 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -404,6 +405,9 @@ public abstract class MdictServer extends NanoHTTPD {
 			shouldLoadFiles = false;
 		}
 		
+		if (session.isProxy) {
+			key = URLDecoder.decode(key);
+		}
 		key = mdict.requestPattern.matcher(key).replaceAll("");
 		//BookPresenter mdTmp = md_get(adapter_idx_);
 		InputStream restmp = presenter.bookImpl.getResourceByKey(key);
@@ -445,14 +449,14 @@ public abstract class MdictServer extends NanoHTTPD {
 			return newFixedLengthResponse(Status.OK,"audio/mpeg", restmp, restmp.available());
 		}
 		
+		if(uri.endsWith(".tif")||uri.endsWith(".tiff"))
+			try {
+				restmp = convert_tiff_img(restmp);
+				//CMN.pt("再编码耗时 : ");
+			} catch (Exception e) { e.printStackTrace(); }
+		
 		if(Acc.contains("image/") ) {
 			//SU.Log("Image request : ",Acc,key,presenter.bookImpl.getDictionaryName());
-			if(uri.endsWith(".tif")||uri.endsWith(".tiff"))
-				try {
-					restmp = convert_tiff_img(restmp);
-					//CMN.pt("再编码耗时 : ");
-				} catch (Exception e) { e.printStackTrace(); }
-			
 			return newFixedLengthResponse(Status.OK,(IsCustomer&&ReceiveText)?"text/plain":"image/*", restmp, restmp.available());
 		}
 		
