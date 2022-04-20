@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Handler;
 
 import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.utils.CMNF;
@@ -42,6 +43,7 @@ public class AgentApplication extends Application {
 	/** 控制所有实例只扫描一遍收藏夹 */
 	public boolean bNeedPullFavorites =true;
 	public MdictServer mServer;
+	public Handler[] handles = new Handler[3];
 //	public ArrayList<BookPresenter> b_md = new ArrayList<>();
 //	public ArrayList<BookPresenter> b_filter = new ArrayList<>();
 	/** 退出全部实例时关闭、清理 */

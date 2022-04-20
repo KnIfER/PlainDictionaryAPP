@@ -2351,6 +2351,16 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=29) public static void fyePaused(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
 	
+	@Metaline(flagPos=0) public static boolean floatBtn(long flag){ flag=flag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=30) public static boolean floatBtn(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=30) public static void floatBtn(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=31) public static boolean floatBtnFye(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=31) public static void floatBtnFlt(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=32) public static boolean floatBtnMtd(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=32) public static void floatBtnMtd(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	
 	///////
 	///////
 	public static void setTmpIsFlag(BookPresenter mdTmp, int val) {

@@ -3,12 +3,16 @@ package com.knziha.plod.PlainUI;
 import android.animation.LayoutTransition;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
@@ -17,6 +21,7 @@ import androidx.appcompat.app.GlobalOptions;
 import com.knziha.filepicker.widget.HorizontalNumberPicker;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.plaindict.databinding.QuickSettingsPanelBinding;
@@ -92,6 +97,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			initScrollHandle();
 		}
 		
+		if (PDICMainAppOptions.floatBtn(opt.SixthFlag()>>(30+a.thisActType.ordinal())))
+		{
+			UIData.floatSwitch.setChecked(true);
+		}
+		
 		if(GlobalOptions.isDark) {
 			UIData.scn.setTextColor(Color.WHITE);
 		}
@@ -135,6 +145,29 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				//boolean show = opt.toggleAdjustWebsiteInfoShown();
 				//UIData.infoArrow.animate().rotation(show?90:0);
 				//setPanelVis(initInfoPanel(), show);
+			} break;
+			case R.id.flt:{
+			} break;
+			case R.id.float_switch:{
+				if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M
+						&& v.getTag()==null && !Settings.canDrawOverlays(a)){
+					Intent permission = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+					permission.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					a.startActivityForResult(permission,800);
+					UIData.floatSwitch.setChecked(false);
+					a.showT("需要权限“显示在其他应用上层”！");
+					v.setTag(v);
+				} else {
+					boolean isChecked = UIData.floatSwitch.isChecked();
+					if (a.thisActType==MainActivityUIBase.ActType.PlainDict) {
+						PDICMainAppOptions.floatBtn(isChecked);
+					} else if (a.thisActType==MainActivityUIBase.ActType.FloatSearch) {
+						PDICMainAppOptions.floatBtnFlt(isChecked);
+					} else {
+						PDICMainAppOptions.floatBtnMtd(isChecked);
+					}
+					a.checkFloatBtn();
+				}
 			} break;
 			default:
 				if (v instanceof RadioSwitchButton)

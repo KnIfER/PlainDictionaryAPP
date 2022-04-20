@@ -49,23 +49,27 @@
 
 
 	<LinearLayout
-		android:id="@+id/infoPanel"
+		android:id="@+id/float_panel"
 		android:orientation="horizontal"
 		android:layout_width="match_parent"
 		android:layout_height="55dp"
-		android:alpha="0.5"
 		>
 		<ImageView
-			android:id="@+id/info_arrow"
-			android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
-			style="@style/quick_settings_arrow"
-			/>
+			android:id="@+id/float_arrow"
+			android:src="@drawable/circle_drag_dot"
+			style="@style/quick_settings_arrow" />
 		<TextView
-			android:id="@+id/info"
-			android:text="更多功能来袭……"
+			android:id="@+id/flt"
+			android:text="悬浮按钮"
 			style="@style/quick_settings_menu" />
+		<View style="@style/quick_settings_sepver" />
+		<com.knziha.plod.widgets.SwitchCompatBeautiful
+			android:id="@+id/float_switch"
+			app:track="@drawable/switch_ios_track_selector"
+			app:dim0="2dp"
+			app:dim1="2dp"
+			style="@style/quick_settings_sw" />
 	</LinearLayout>
-	<View style="@style/quick_settings_sephor" />
 
 
 </com.knziha.plod.widgets.XYLinearLayout>

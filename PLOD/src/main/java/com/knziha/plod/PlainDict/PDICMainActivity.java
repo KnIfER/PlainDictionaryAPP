@@ -44,6 +44,8 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
+import android.webkit.ValueCallback;
+import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -75,6 +77,7 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
@@ -451,7 +454,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				if(!background) hdl.sendEmptyMessage(1008601);
+				if(0!=(foreground&(1<<thisActType.ordinal()))) hdl.sendEmptyMessage(1008601);
 			}
 		},0,180);
 		return a_dv;
@@ -546,6 +549,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if(msg.obj instanceof String)
 					a.showT((String)msg.obj, Toast.LENGTH_LONG);
 				break;
+				case 1024:
+					a.handleFloatMessage(msg);
+				break;
 				case 1008601:
 					//((TextView)dv.findViewById(R.id.tv)).setText("0/"+System.currentTimeMillis());
 					removeMessages(1008601);
@@ -624,7 +630,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					a.fixVideoFullScreen();
 				break;
 			}
-	}}
+		}
+	}
 
 	@Override
 	public void onBackPressed() {

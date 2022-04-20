@@ -143,6 +143,7 @@ import com.knziha.plod.PlainUI.BookmarkAdapter;
 import com.knziha.plod.PlainUI.BottombarTweakerAdapter;
 import com.knziha.plod.PlainUI.BuildIndexInterface;
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
+import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.NightModeSwitchPanel;
 import com.knziha.plod.PlainUI.PlainAppPanel;
@@ -378,6 +379,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WebViewListHandler randomPageHandler;
 	public ViewGroup webSingleholder;
 	protected WindowManager wm;
+	FloatBtn floatBtn;
 
 	protected String lastEtString;
 	public ViewGroup main_succinct;
@@ -474,7 +476,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean bThenReadContent;
 	public WebViewmy pendingWebView;
 	public int mThenReadEntryCount;
-	public boolean background;
+	public static int foreground;
 	protected boolean click_handled_not;
 
 	protected TextView TTSController_tvHandle;
@@ -1376,7 +1378,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void onAudioPause() {
 		CMN.Log("onAudioPause", !AutoBrowsePaused, opt.isAudioActuallyPlaying, mThenReadEntryCount, bThenReadContent);
 		if(!AutoBrowsePaused && PDICMainAppOptions.getAutoBrowsingReadSomething()){
-			if(true || opt.isAudioActuallyPlaying || background){
+			if(true || opt.isAudioActuallyPlaying || 0==(foreground&(1<<thisActType.ordinal()))){
 				if(mThenReadEntryCount>0){
 					//CMN.Log(root.post(this::performReadEntry), "posting...");
 					CMN.Log("posting...3322123");
@@ -2095,6 +2097,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		BookPresenter.max_zoom=5*BookPresenter.def_zoom;
 		BookPresenter.optimal100 = GlobalOptions.isLarge?150:125;
 		BookPresenter.def_fontsize = opt.getDefaultFontScale(BookPresenter.optimal100);
+		
+		if (PDICMainAppOptions.floatBtn(opt.SixthFlag()>>(30+thisActType.ordinal()))) {
+			floatBtn = new FloatBtn(this, getApplication());
+			floatBtn.reInitBtn(0);
+		}
 //		try {
 //			Integer verifyCode = (Integer) ViewUtils.execSimple(testVerifyCode, null, this);
 //			CMN.Log("testVerifyCode::", verifyCode);
@@ -2436,6 +2443,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			opt.setTmpUserOrientation(opt.getUserOrientation());
 			setRequestedOrientation(ScreenOrientation[opt.getUserOrientation()]);
 		}
+		
+		((AgentApplication)getApplication()).handles[thisActType.ordinal()]=hdl;
 	}
 	
 	@CallSuper
@@ -2849,13 +2858,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	protected void onResume() {
 		super.onResume();
-		background=false;
+		foreground|=(1<<thisActType.ordinal());
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		background=true;
+		foreground&=~(1<<thisActType.ordinal());
 		if(TTSController_engine!=null && !opt.getTTSBackgroundPlay()){
 			pauseTTS();
 			pauseTTSCtrl(true);
@@ -2873,6 +2882,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	@Override
 	protected void onDestroy(){
+		foreground&=~(1<<thisActType.ordinal());
 		if(!shunt) {
 			CMN.instanceCount--;
 			if(systemIntialized) {
@@ -2914,6 +2924,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 			}
 			if(CMN.instanceCount<0) CMN.instanceCount=0;
+			if (floatBtn!=null) {
+				floatBtn.close();
+			}
 		}
 		super.onDestroy();
 	}
@@ -10460,5 +10473,52 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		return false;
+	}
+	
+	public void checkFloatBtn() {
+		if (PDICMainAppOptions.floatBtn(opt.SixthFlag()>>(30+thisActType.ordinal()))) {
+			if(floatBtn==null)
+				floatBtn = new FloatBtn(this, getApplication());
+			floatBtn.reInitBtn(0);
+		} else if(floatBtn!=null) {
+			floatBtn.close();
+		}
+	}
+	
+	void handleFloatMessage(Message msg) {
+		View focus = getCurrentFocus();
+		FloatBtn fb = (FloatBtn) msg.obj;
+		if (focus instanceof WebView) {
+			((WebView) focus).evaluateJavascript("getSelection().toString()", new ValueCallback<String>() {
+				@Override
+				public void onReceiveValue(String value) {
+					String newKey = "";
+					if (value.length() > 2) {
+						value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+						if (value.length() > 0) {
+							newKey = value;
+						}
+					}
+					if (newKey.length()>0) {
+						fb.search(newKey, false);
+					} else {
+						fb.search(null, false);
+					}
+				}
+			});
+			return;
+		}
+		if (focus instanceof TextView) {
+			TextView tv = (TextView) focus;
+			try {
+				String newKey = tv.getText().subSequence(tv.getSelectionStart(), tv.getSelectionEnd()).toString();
+				if (newKey.length()>0) {
+					fb.search(newKey, false);
+					return;
+				}
+			} catch (Exception ignored) { }
+		}
+		fb.search(null, false);
+		//CMN.Log("focus::", focus);
 	}
 }

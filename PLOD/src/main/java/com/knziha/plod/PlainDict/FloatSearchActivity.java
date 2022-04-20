@@ -331,8 +331,13 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
 		super.onDestroy();
     }
-
-
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		((AgentApplication)getApplication()).handles[1] = hdl;
+	}
+	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		//showT("asdasd"+event);
