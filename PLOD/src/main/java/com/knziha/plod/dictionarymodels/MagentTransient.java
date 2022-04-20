@@ -46,7 +46,7 @@ public class MagentTransient extends BookPresenter {
 	
 
 	public MagentTransient(Toastable_Activity a, Object PlaceHolderString, PDICMainAppOptions opt_, Integer isF, boolean bIsPreempter) throws IOException {
-		super(new File(PlaceHolderString instanceof String?(String)PlaceHolderString:PlaceHolderString instanceof PlaceHolder?((PlaceHolder) PlaceHolderString).pathname:"/N/A"), null, 1);
+		super(new File(PlaceHolderString instanceof String?(String)PlaceHolderString:PlaceHolderString instanceof PlaceHolder?((PlaceHolder) PlaceHolderString).pathname:"/N/A"), null, 3);
 		PlaceHolder phI=PlaceHolderString instanceof String?new PlaceHolder((String) PlaceHolderString):PlaceHolderString instanceof PlaceHolder?(PlaceHolder) PlaceHolderString:null;
 		Objects.requireNonNull(phI);
 		if(bookImpl==null) {
