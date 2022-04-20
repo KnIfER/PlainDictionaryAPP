@@ -329,7 +329,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public FrameLayout lvHeaderView;
 	/** |0x1=xuyao store| |0x2=zhuanhuan le str|  */
 	public int tw1F=0;
-	protected TextWatcher tw1 = new TextWatcher() { //tw
+	final public TextWatcher tw1 = new TextWatcher() { //tw
 		public void onTextChanged(CharSequence cs, int start, int before, int count) {
 			if(SU.isNotEmpty(cs)) {
 				etSearch_ToToolbarMode(3);
@@ -360,7 +360,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	};
 	boolean bShowLoadErr=true;
-	public boolean startLastSch;
+	public boolean restLastSch;
 	public boolean isCombinedSearching;
 	public String CombinedSearchTask_lastKey;
 	//public HashMap<CharSequence,byte[]> mBookProjects;
@@ -1019,6 +1019,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public String getSearchTerm(){
 		return etSearch.getText().toString();
+	}
+
+	public final EditText getEdit(){
+		return etSearch;
 	}
 
 	public void setSearchTerm(String text){

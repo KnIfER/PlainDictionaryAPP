@@ -170,7 +170,7 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 				return;
 			}
 			ClipData pclip = clipMan.getPrimaryClip();
-			if (pclip.getItemCount()>0) {
+			if (pclip!=null && pclip.getItemCount()>0) {
 				text = pclip.getItemAt(0).getText();
 			}
 		}

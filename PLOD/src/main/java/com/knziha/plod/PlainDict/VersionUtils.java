@@ -44,6 +44,7 @@ public class VersionUtils {
 			opt.setPageTurn2(false);
 			opt.setPageTurn3(false);
 			opt.setTurnPageEnabled(false);
+			opt.schPageNavAudioKey(false);
 			
 			PDICMainAppOptions.pageSchWild(true);
 			PDICMainAppOptions.pageSchWildDeprecated(false);

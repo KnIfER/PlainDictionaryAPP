@@ -448,6 +448,8 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			popupChecker.setChecked(PDICMainAppOptions.getPinTapTranslator());
 			entryTitle = toolbar.findViewById(R.id.popupText1);
 			webview.pBc = new PhotoBrowsingContext();
+			//webview.pBc.setDoubleTapZoomPage(true);
+			//webview.pBc.setDoubleTapAlignment(4);
 			indicator = pottombar.findViewById(R.id.popupText2);
 			modeBtn = pottombar.findViewById(R.id.mode);
 			modeBtn.setColorFilter(0xff666666);
@@ -1039,6 +1041,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			if(rec.size()>0) {
 				rec.renderContentAt(0, a, null, weblistHandler);
 			}
+			pageSlider.setWebview(mWebView, null);
 			dictPicker.filterByRec(rec, 0);
 			setTranslator(rec, 0);
 			return;

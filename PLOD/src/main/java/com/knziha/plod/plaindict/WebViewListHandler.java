@@ -16,6 +16,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.DragEvent;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,10 +48,12 @@ import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
+import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
+import com.knziha.plod.widgets.Framer;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
@@ -64,15 +67,20 @@ import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
-public class WebViewListHandler extends ViewGroup/*Again, a bad design that I regret...*/ implements View.OnClickListener {
+/** 页面管理器，曾经尝试过在Listview中放置webview，太卡。现在保留的模式：<br/>
+ * 一个webview，显示一本或多本词典内容（合并的多页面模式）。 <br/>
+ * 多个webview，放在LinearLayout中，显示多本词典内容。（多页面视图列表）*/
+public class WebViewListHandler extends ViewGroup implements View.OnClickListener {
 	final MainActivityUIBase a;
+	/** 网页设置标志位 指示是否开启点击翻译、页内搜索设置 */
 	public int shezhi;
+	/** 设置备份，同于比对变化。 */
 	int szStash;
 	/** see{@link com.knziha.plod.db.SearchUI }*/
 	int src;
 	/** -2=auto;0=false;1=true*/
 	public int bMergeFrames = 0;
-	/** for word popup */
+	/** for {@link com.knziha.plod.PlainUI.WordPopup } */
 	public boolean bDataOnly = false;
 	public boolean bShowInPopup = false;
 	public boolean bMergingFrames = false;
@@ -1158,10 +1166,6 @@ public class WebViewListHandler extends ViewGroup/*Again, a bad design that I re
 			bar.setNavigationIcon(R.drawable.abc_ic_clear_material);//abc_ic_ab_back_mtrl_am_alpha
 			EditText etSearch = bar.findViewById(R.id.etSearch);
 			//etSearch.setBackgroundColor(Color.TRANSPARENT);
-			bar.setNavigationOnClickListener(v1 -> {
-				togSchPage();
-				a.imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
-			});
 			etSearch.setText(MainPageSearchetSearchStartWord);
 			etSearch.addTextChangedListener(pageSchWat = new TextWatcher() {
 				@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
@@ -1176,6 +1180,12 @@ public class WebViewListHandler extends ViewGroup/*Again, a bad design that I re
 						etFlag = 1;
 					}
 				}
+			});
+			etSearch.setOnEditorActionListener((v, actionId, event) -> {
+				if (!PDICMainAppOptions.schPageOnEdit()) {
+					pageSchWat.afterTextChanged(null);
+				}
+				return true;
 			});
 			
 			ViewUtils.ResizeNavigationIcon(bar);
@@ -1242,6 +1252,10 @@ public class WebViewListHandler extends ViewGroup/*Again, a bad design that I re
 	public void onClick(View v) {
 		int id=v.getId();
 		switch (id) {
+			case R.id.home:
+				togSchPage();
+				a.imm.hideSoftInputFromWindow(pageSchEdit.getWindowToken(), 0);
+				break;
 			case R.id.ivDeleteText:
 				pageSchEdit.setText(null);
 				break;
@@ -1283,7 +1297,7 @@ public class WebViewListHandler extends ViewGroup/*Again, a bad design that I re
 		final SettingsPanel settings = new SettingsPanel(a, opt
 				, new String[][]{
 						new String[]{"搜索选项", "使用正则表达式", "使用通配符", "以空格分割关键词", "通配符不匹配空格"}
-//						,new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转", "使用音量键"}
+						,new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转"/*, "使用音量键"*/}
 					}
 				, new int[][]{new int[]{Integer.MAX_VALUE
 					, makeInt(101, 4, false) // pageSchUseRegex
@@ -1291,12 +1305,12 @@ public class WebViewListHandler extends ViewGroup/*Again, a bad design that I re
 					, makeInt(101, 6, false) // pageSchSplitKeys
 					, makeInt(101, 7, false) // pageSchWildMatchNoSpace
 				}
-//				, new int[]{Integer.MAX_VALUE
-//					, makeInt(6, 27, true) // schPageOnEdit
-//					, makeInt(2, 55, false) // schPageAutoTurn
-//					, makeInt(2, 56, false) // schPageAutoType
-//					, makeInt(2, 58, false) // schPageNavAudioKey
-//				}
+				, new int[]{Integer.MAX_VALUE
+					, makeInt(6, 27, true) // schPageOnEdit
+					, makeInt(2, 55, false) // schPageAutoTurn
+					, makeInt(2, 56, false) // schPageAutoType
+					//, makeInt(2, 58, false) // schPageNavAudioKey
+				}
 		}, null);
 		settings.init(a, a.root);
 		if (PDICMainAppOptions.pageSchUseRegex()) {
@@ -1318,11 +1332,13 @@ public class WebViewListHandler extends ViewGroup/*Again, a bad design that I re
 			public void onPickingDelegate(SettingsPanel settingsPanel, int flagIdx, int flagPos, int lastX, int lastY) {
 			}
 		});
-		
+		Framer f = new Framer(a);
+		f.mMaxHeight = (int) (1.25f*8*((RadioSwitchButton)settings.settingsLayout.findViewById(makeInt(101, 4, false))).getLineHeight()+15*GlobalOptions.density);
+		f.addView(settings.settingsLayout);
 		AlertDialog dlg =
 				new AlertDialog.Builder(a,GlobalOptions.isDark?R.style.DialogStyle3Line:R.style.DialogStyle4Line)
 						.setTitle("页内搜索设置")
-						.setView(settings.settingsLayout)
+						.setView(f)
 						.setPositiveButton(R.string.confirm, null)
 //						.setTitleBtn(R.drawable.ic_search_large, (dialog, which) -> {
 //							pageSchWat.afterTextChanged(null);

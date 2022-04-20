@@ -44,8 +44,6 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
-import android.webkit.ValueCallback;
-import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -77,7 +75,6 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.PlainUI.AppUIProject;
-import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
@@ -1738,8 +1735,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			showChooseDictDialog(0);
 		}
 		
-		startLastSch = opt.startLastSch();
-		if(startLastSch) {
+		restLastSch = opt.restoreLastSch();
+		if(restLastSch) {
 			etTools.LoadHistory(null);
 		}
 		

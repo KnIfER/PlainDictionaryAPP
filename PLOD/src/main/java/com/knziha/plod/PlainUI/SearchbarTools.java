@@ -448,10 +448,14 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				}
 				if (mAdapter!=null)
 					mAdapter.notifyDataSetChanged();
-				if(a.startLastSch) {
-					if(its.length>0)
-						a.setSearchTerm(its[its.length-1]);
-					a.startLastSch=false;
+				if(a.restLastSch) {
+					if(its.length>0) {
+						boolean ns = !a.opt.autoSchPDict();
+						if(ns) a.getEdit().removeTextChangedListener(a.tw1);
+						a.getEdit().setText(its[its.length-1]);
+						if(ns) a.getEdit().addTextChangedListener(a.tw1);
+					}
+					a.restLastSch =false;
 				}
 			});
 		}
@@ -502,12 +506,14 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				ClipboardManager cm = (ClipboardManager) a.getSystemService(Context.CLIPBOARD_SERVICE);
 				if(cm!=null) {
 					ClipData pclip = cm.getPrimaryClip();
-					ClipData.Item firstItem = pclip.getItemAt(0);
-					CharSequence content = firstItem.getText();
-					a.bIsFirstLaunch=true;
-					a.bWantsSelection=false;
-					etSearch.setText(content);
-					etSearch.setSelection(content.length());
+					if (pclip!=null) {
+						ClipData.Item firstItem = pclip.getItemAt(0);
+						CharSequence content = firstItem.getText();
+						a.bIsFirstLaunch=true;
+						a.bWantsSelection=false;
+						etSearch.setText(content);
+						etSearch.setSelection(content.length());
+					}
 				}
 			} break;
 			case R.id.etCopy:{

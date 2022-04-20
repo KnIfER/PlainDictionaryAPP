@@ -444,6 +444,9 @@ public class Drawer extends Fragment implements
 						if (a.opt.getPasteBinEnabled())
 							try {
 								ClipData pclip = clipboardManager.getPrimaryClip();
+								if (pclip==null) {
+									return;
+								}
 								ClipData.Item firstItem = pclip.getItemAt(0);
 								CharSequence content = firstItem.getText();
 								//CMN.Log("剪贴板监听器:", content);

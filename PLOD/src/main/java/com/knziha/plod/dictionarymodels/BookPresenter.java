@@ -734,10 +734,10 @@ function debug(e){console.log(e)};
 					cover = Drawable.createFromPath(externalFile.getPath());
 				}
 			}
-			
-			if(THIS!=null) {
-				readConfigs(THIS, THIS.prepareHistoryCon());
-			}
+		}
+		
+		if(THIS!=null) {
+			readConfigs(THIS, THIS.prepareHistoryCon());
 		}
 	}
 	

@@ -10,6 +10,7 @@
 			app:contentInsetLeft="0dp"
 			app:contentInsetStart="0dp"
 			app:contentInsetStartWithNavigation="0dp"
+			tools:background="#000"
 	>
 	        <LinearLayout
 	            android:layout_width="match_parent"
@@ -75,7 +76,7 @@
 					android:layout_width="@dimen/_35_"
 					android:layout_height="?attr/actionBarSize"
 					android:layout_marginLeft="3dp"
-					android:src="@drawable/ic_search_24k"
+					android:src="@drawable/schpage_settings"
 					android:background="?attr/actionBarItemBackground"
 					/>
 

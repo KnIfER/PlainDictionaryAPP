@@ -33,7 +33,7 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 		init_switch_preference(this, "f_move_bg", PDICMainAppOptions.getFloatClickHideToBackground(), null, null);
 		init_switch_preference(this, "f_hide_recent", PDICMainAppOptions.getHideFloatFromRecent(), null, null);
 		
-		init_switch_preference(this, "stsch", PDICMainAppOptions.startLastSch(), null, null);
+		init_switch_preference(this, "stsch", PDICMainAppOptions.restoreLastSch(), null, null);
 
 
 		findPreference("f_size").setDefaultValue(GlobalOptions.isLarge?150:125);
@@ -111,7 +111,7 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 				CMN.AppColorChangedFlag|=0x2;
 			break;
 			case "stsch":
-				PDICMainAppOptions.startLastSch((Boolean) newValue);
+				PDICMainAppOptions.restoreLastSch((Boolean) newValue);
 				break;
 //			case "paste_target":
 //				preference.setSummary(getResources().getStringArray(R.array.paste_target_info)[PDICMainAppOptions.setPasteTarget(IU.parsint(newValue))]);
