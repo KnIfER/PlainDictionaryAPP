@@ -450,6 +450,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			webview.pBc = new PhotoBrowsingContext();
 			indicator = pottombar.findViewById(R.id.popupText2);
 			modeBtn = pottombar.findViewById(R.id.mode);
+			modeBtn.setColorFilter(0xff666666);
 			schMode = opt.tapSchMode();
 			if(schMode==0)
 				modeBtn.setImageResource(R.drawable.ic_btn_siglemode);
