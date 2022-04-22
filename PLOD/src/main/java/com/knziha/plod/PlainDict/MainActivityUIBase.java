@@ -10566,7 +10566,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								page.setText(rec.getResAt(MainActivityUIBase.this, rec.viewingPos+pos));
 							}
 						} else {
-							CMN.Log("page.setText", wPage.dictView.presenter);
 							page.setText(wPage.dictView.presenter.getBookEntryAt((int) (pos+wPage.dictView.currentPos)));
 						}
 					}

@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.FrameLayout;
 
 import androidx.appcompat.app.GlobalOptions;
@@ -19,6 +20,7 @@ import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.WebViewListHandler;
 
 
+/** 原本是RelativeLayout，故名。 */
 public class RLContainerSlider extends FrameLayout{
 	public boolean TurnPageSuppressed;
 	public WebViewListHandler weblist;
@@ -209,7 +211,6 @@ public class RLContainerSlider extends FrameLayout{
 		if(page !=null){
 			switch (masked) {
 				case MotionEvent.ACTION_MOVE: {
-					//CMN.Log("ACTION_MOVE", touch_id, actual_index);
 					if(first_touch_id==-1) {
 						first_touch_id=touch_id;
 						OrgX = lastX = ev.getX(actual_index);
@@ -221,9 +222,11 @@ public class RLContainerSlider extends FrameLayout{
 						for (int i = 0; i < pc; i++) {
 							if(ev.getPointerId(i)==first_touch_id){
 								move_index = i;
+								break;
 							}
 						}
 					}
+					//CMN.Log("ACTION_MOVE", touch_id, actual_index, move_index);
 					float nowX = ev.getX(move_index);
 					float nowY = ev.getY(move_index);
 //						if(!dragged) {
@@ -242,7 +245,6 @@ public class RLContainerSlider extends FrameLayout{
 						page.handleDrag(nowX-lastX,nowY-lastY);
 						if(page.listener !=null)
 							page.listener.onMoving(page.getTranslationX(), page);
-//						CMN.Log("IMSlider.getTranslationX()", dragInitDx, IMSlider.getTranslationX());
 						if (//Math.abs(IMSlider.getTranslationX())<3.5*GlobalOptions.density &&
 								dragInitDx* page.getTranslationX()<=0
 								//&& Math.abs(IMSlider.getTranslationY())<20*GlobalOptions.density
@@ -252,12 +254,10 @@ public class RLContainerSlider extends FrameLayout{
 							page.decided=false;
 							page.RePosition();
 							first_touch_id = -1;
-//							CMN.Log("abort!!!");
 							ViewUtils.preventDefaultTouchEvent(this, (int)lastX, (int)lastY);
-//							abortedOffsetX = WebContext.lastX-nowX;
-//							abortedOffsetY = WebContext.lastY-nowY;
 							if(scrollView !=null) {
 								ev.setAction(MotionEvent.ACTION_DOWN);
+								//((WebView)scrollView).getSettings().setSupportZoom(false);
 								scrollView.dispatchTouchEvent(ev);
 							}
 						}
@@ -265,8 +265,8 @@ public class RLContainerSlider extends FrameLayout{
 					else if(aborted) {
 						onInterceptTouchEvent(ev);
 						if(!dragged && scrollView !=null) {
-							//ev.setLocation(nowX/*-WebContext.getLeft()*/+abortedOffsetX, nowY/*-WebContext.getTop()*/+abortedOffsetY);
 							ev.setLocation(nowX, nowY);
+							if (ev.getPointerCount()==1) // 权宜之计
 							scrollView.dispatchTouchEvent(ev);
 						}
 					}
@@ -285,7 +285,7 @@ public class RLContainerSlider extends FrameLayout{
 				} break;
 			}
 		}
-		return dragged;
+		return dragged || aborted;
 	}
 	
 	private void handleFastZoom(MotionEvent ev) {
@@ -412,6 +412,7 @@ public class RLContainerSlider extends FrameLayout{
 		if(page!=null){
 			switch (masked) {
 				case MotionEvent.ACTION_DOWN:
+					WebContextWidth = WebContext.getContentWidth();
 					if(tapZoom) {
 						quoSlideZoom();
 					}
@@ -453,7 +454,7 @@ public class RLContainerSlider extends FrameLayout{
 				break;
 			}
 		}
-		return dragged;
+		return dragged || aborted;
 	}
 	
 	public DragScrollBar bar;
@@ -471,7 +472,6 @@ public class RLContainerSlider extends FrameLayout{
 			WebContext.CheckAlwaysCheckRange();
 		}
 		
-		WebContextWidth = WebContext.getContentWidth();
 		bZoomOutCompletely = bZoomOut && (WebContext.AlwaysCheckRange==-1
 				||WebContext.getScrollX()==0  && WebContext.getScrollX()+WebContext.getWidth()>=WebContextWidth);
 	}
