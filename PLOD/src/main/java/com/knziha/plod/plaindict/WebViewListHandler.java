@@ -761,9 +761,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if(mViewMode!=viewMode || bMergingFrames!=bUseMergedUrl || isMultiRecord!=multi) {
 			isMultiRecord = multi;
 			mViewMode = viewMode;
-			ViewUtils.setVisible(contentUIData.navBtns, multi && !bUseMergedUrl);
-			ViewUtils.setVisible(contentUIData.dictNameStroke, !bUseMergedUrl);
-			ViewUtils.setVisible(contentUIData.dictName, !bUseMergedUrl);
+			if (!bDataOnly) {
+				ViewUtils.setVisible(contentUIData.navBtns, multi && !bUseMergedUrl);
+				ViewUtils.setVisible(contentUIData.dictNameStroke, !bUseMergedUrl);
+				ViewUtils.setVisible(contentUIData.dictName, !bUseMergedUrl);
+			}
 		}
 		if(this.dictView!=dictView) {
 			this.dictView = dictView;

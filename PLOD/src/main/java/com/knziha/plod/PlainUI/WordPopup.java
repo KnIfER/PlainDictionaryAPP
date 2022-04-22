@@ -163,24 +163,17 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			case R.id.popLstE: {
 				if(CCD==a.EmptyBook||CCD==null)
 					CCD=a.currentDictionary;
-				int np = currentPos +(id==R.id.popNxtE?1:-1);
+				int delta = id==R.id.popNxtE?1:-1;
 				resetPreviewIdx();
-				loadEntry(id==R.id.popNxtE?1:-1);
-//				if(np>=0&&np<CCD.bookImpl.getNumberEntries()){
-//					popupTextView.setText(currentClickDisplaying=CCD.bookImpl.getEntryAt(np));
-//					popupHistory.add(++popupHistoryVagranter,new myCpr<>(currentClickDisplaying,new int[]{CCD_ID, np}));
-//					if (popupHistory.size() > popupHistoryVagranter + 1) {
-//						popupHistory.subList(popupHistoryVagranter + 1, popupHistory.size()).clear();
-//					}
-//					popuphandler.setDict(CCD);
-//					if(PDICMainAppOptions.getClickSearchAutoReadEntry())
-//						popupWebView.bRequestedSoundPlayback=true;
-//					popupWebView.fromCombined=2;
-//					CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, popupWebView, currentPos =np);
-//					a.decorateContentviewByKey(popupStar, currentClickDisplaying);
-//					if(!PDICMainAppOptions.getHistoryStrategy0() && PDICMainAppOptions.getHistoryStrategy8()==0)
-//						a.insertUpdate_histroy(currentClickDisplaying, 0, pageSlider);
-//				}
+				if (weblistHandler.isMultiRecord()) {
+					resultRecorderCombined rec = weblistHandler.multiRecord;
+					int np = rec.viewingPos + delta;
+					if (np>=0 && np<rec.size()) {
+						rec.renderContentAt(currentPos=np, a, null, weblistHandler);
+					}
+				} else {
+					loadEntry(id==R.id.popNxtE?1:-1);
+				}
 			} break;
 			case R.id.popNxtDict:
 			case R.id.popLstDict:{
@@ -1031,11 +1024,11 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	public void SearchDone() {
 		if(rec!=null) {
 			boolean bUseMergedUrl = true;
-			//weblistHandler.setViewMode(null, bUseMergedUrl);
+			weblistHandler.setViewMode(rec, bUseMergedUrl, mWebView);
 			//weblistHandler.initMergedFrame(false, false, bUseMergedUrl);;
 			weblistHandler.bMergingFrames = true;
 			weblistHandler.bMergeFrames = 1;
-			//mWebView.presenter = a.weblistHandler.getMergedBook(); //todo opt
+			mWebView.presenter = a.weblistHandler.getMergedBook(); //todo opt
 			if(mWebView.wvclient!=a.myWebClient) {
 				mWebView.setWebChromeClient(a.myWebCClient);
 				mWebView.setWebViewClient(a.myWebClient);
@@ -1055,6 +1048,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			sching = null;
 		}
 		if (currentPos >= 0 && CCD != a.EmptyBook) {
+			weblistHandler.setViewMode(null, false, mWebView);
 			if(CCD.getIsWebx()) {
 				weblistHandler.bMergingFrames = false;
 				indicator.setText(a.md_getName(CCD_ID));
