@@ -21,6 +21,7 @@ import com.knziha.plod.dictionarymodels.MagentTransient;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.OptionProcessor;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
@@ -161,10 +162,10 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				case "use_p_words":
 					if(get) return datum.getUseInternalParagraphWords(); else datum.setUseInternalParagraphWords((boolean)val);
 					break;
-				case "dzooml":
+				case "tzlv":
 					if(get) return datum.getDoubleClickZoomRatio(); else datum.setDoubleClickZoomRatio((float)val);
 					break;
-				case "dzoomx":
+				case "tz_x":
 					if(get) return datum.getDoubleClickOffsetX(); else datum.setDoubleClickOffsetX((float)val);
 					break;
 				case "imdz1":
@@ -202,7 +203,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		//CMN.Log("parseData::", data);
 		bNeedParseData = false;
 		init_switcher("use_bgt", false, 9);
-		init_switcher("dzoom", false, 10);
+		init_switcher("tz", false, 10);
 		init_switcher("auto_fold", false, 32);
 		
 		init_switcher("limit_chars", false, 28);
@@ -222,7 +223,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		
 		init_integer("pzoom", 15, R.array.pzoom_info, 3);
 		init_integer("pzoom_plc", 17, R.array.pzoom_mode_info, 3);
-		init_integer("dzoom_plc", 12, R.array.d_zoom_mode_info, 7); // getDoubleClickAlignment
+		init_integer("tzby", 12, R.array.d_zoom_mode_info, 7); // getDoubleClickAlignment
 		
 		init_color("bgTitle");
 		init_color("fgTitle");
@@ -232,8 +233,8 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		init_color("max_chars");
 		init_color("p_words");
 		
-		init_color("dzooml");
-		init_color("dzoomx");
+		init_color("tzlv");
+		init_color("tz_x");
 		
 		init_color("pzoomx");
 		init_color("imdz1");
@@ -337,7 +338,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			}
 		}
 		switch (key){
-			case "dzoom_plc":{
+			case "tzby":{
 			} break;
 			case "p_words":
 			case "min_chars":
@@ -349,8 +350,8 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			case "imdz1":
 			case "imdz2":
 			case "pzoomx":
-			case "dzooml":
-			case "dzoomx":{
+			case "tzlv":
+			case "tz_x":{
 			
 			} break;
 			case "pzoom":{
@@ -361,6 +362,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			case "dtm":
 				SearchUI.tapZoomWait = (int) newValue;
 			break;
+		}
+		if (key.startsWith("tz")) {
+			SearchUI.tapZoomV++;
 		}
 		return true;
 	}

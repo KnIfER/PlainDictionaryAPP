@@ -37,6 +37,7 @@ import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
@@ -53,6 +54,7 @@ import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.Framer;
+import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
@@ -125,6 +127,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.PageSlider.weblist = this;
 			contentUIData.cover.weblist = this;
 			contentUIData.cover.hdl = a.hdl;
+			
+			contentUIData.PageSlider.page = contentUIData.cover;
+			contentUIData.cover.setPager(a.getPageListener());
 			UpdateBookLabelAbility = ()->{
 				String name = lastScrollFocus.presenter.getDictionaryName();
 				int idx=name.lastIndexOf(".");
@@ -324,6 +329,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public void setScrollHandType(int style) {
 		opt.setTypeFlag_11_AtQF(style, shFlag);
 		resetScrollbar(mWebView, bMergingFrames, true);
+	}
+	
+	
+	public final void resetScrollbar(){
+		resetScrollbar(dictView, false, false);
 	}
 	
 	/**  0=在右; 1=在左; 2=无; 3=系统滚动条  */

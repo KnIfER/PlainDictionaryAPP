@@ -73,6 +73,8 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="启动时恢复上次的搜索词"
+			app:allowDividerAbove="true"
+			app:allowDividerBelow="true"
 			/>
 
 		<androidx.preference.ListPreference

@@ -259,28 +259,28 @@
 		app:allowDividerBelow="true"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="dzoom"
+			android:key="tz"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="使用双击放大"
 			/>
 		<androidx.preference.ListPreference
 			android:defaultValue="0"
-			android:key="dzoom_plc"
+			android:key="tzby"
 			android:persistent="false"
 			android:title="放大居中方式"
 			android:entries="@array/d_zoom_mode_info"
 			/>
 		<com.knziha.filepicker.settings.FloatPreference
 			android:defaultValue="2"
-			android:key="dzooml"
+			android:key="tzlv"
 			android:persistent="false"
 			android:title="双击放大倍数 :  "
 			app:inlineSummary="true"
 			/>
 		<com.knziha.filepicker.settings.FloatPreference
 			android:defaultValue="2"
-			android:key="dzoomx"
+			android:key="tz_x"
 			android:persistent="false"
 			android:title="X轴偏移系数 : "
 			min="-1"

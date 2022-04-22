@@ -1,9 +1,12 @@
 package com.knziha.plod.settings;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import androidx.core.graphics.ColorUtils;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceGroup;
 
 import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.db.SearchUI;
@@ -56,6 +59,9 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		init_switch_preference(this, "turn1", PDICMainAppOptions.getPageTurn1(), null, null);
 		init_switch_preference(this, "turn2", PDICMainAppOptions.getPageTurn2(), null, null);
 		init_switch_preference(this, "turn3", PDICMainAppOptions.getPageTurn3(), null, null);
+		
+		clrAccent = ColorUtils.blendARGB(0xff2b4381, Color.GRAY, 0.35f);
+		((PreferenceGroup) findPreference("cat_"+getActivity().getIntent().getIntExtra("where", 0))).drawSideLine = true;
 	}
 
 	@Override

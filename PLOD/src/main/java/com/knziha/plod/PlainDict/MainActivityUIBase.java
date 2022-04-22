@@ -198,6 +198,7 @@ import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
+import com.knziha.rbtree.additiveMyCpr1;
 import com.knziha.text.ColoredHighLightSpan;
 import com.knziha.text.ScrollViewHolder;
 import com.knziha.text.SelectableTextView;
@@ -2064,8 +2065,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //	public native boolean testPakVal(String pakNam);
 //
 //	public native int getPseudoCode(int sigHash);
-	
-	
+
+
 //	/**{android.app.ActivityThread}.sPackageManager = null
 //var pm = $.getPackageManager()
 //var packageName = $.getPackageName()
@@ -5665,36 +5666,38 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.browser_widget10:
 			case R.id.browser_widget11:{//左zuo
 				int delta = (id==R.id.browser_widget10?-1:1);
-				if(ActivedAdapter==null) {
-					if(DBrowser!=null) {
-						if(delta<0)DBrowser.goBack();
-						else DBrowser.goQiak();
-					}
-					break;
-				}
 				//if(((ScrollViewmy)WHP).touchFlag!=null)((ScrollViewmy)WHP).touchFlag.first=true;
 				//adaptermy2.combining_search_result.expectedPos=0;
 				//webholder.removeOnLayoutChangeListener(((resultRecorderCombined)adaptermy2.combining_search_result).OLCL);
 				layoutScrollDisabled=false;
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
-				boolean bPeruseInCharge = PeruseViewAttached();
 				if(!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething()){
 					interruptAutoReadProcess(true);
 				}
-				/* 正常翻页 */
-				if(bPeruseInCharge&&opt.getBottomNavigationMode1()==0 || !bPeruseInCharge&&opt.getBottomNavigationMode()==0){
-					int toPos = ActivedAdapter.lastClickedPos+delta;
-//					if(CurrentViewPage==1 && !bPeruseInCharge){
-//						if(lv2.getVisibility()!=View.VISIBLE){
-//							weblistHandler.removeAllViews();
-//						}
-//					}
-					ActivedAdapter.onItemClick(toPos);
-				}
-				/* 前进后退 */
-				else{
-					webviewHolder=ActivedAdapter.webviewHolder;
-					GoBackOrForward(webviewHolder, delta);
+				findWebList(v);
+				if (weblist==weblistHandler) {
+					if (ActivedAdapter!=null) {
+						int toPos = ActivedAdapter.lastClickedPos+delta;
+						ActivedAdapter.onItemClick(toPos);
+					}
+				} else if (DBrowser!=null && weblist==DBrowser.weblistHandler) {
+					if(delta<0)DBrowser.goBack();
+					else DBrowser.goQiak();
+				} else  {
+					if (!weblist.isMultiRecord()) {
+						// 就当你是弹出的 entry:// ！
+						WebViewmy wv = weblist.dictView;
+						int pos = (int) (wv.currentPos + delta);
+						if (pos < 0 || pos >= wv.presenter.bookImpl.getNumberEntries()) {
+							showTopSnack(null, R.string.endendr, -1, -1, -1, 0);
+						} else {
+							wv.presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, wv, wv.currentPos + delta);
+							if (wv.getBackgroundColor() == 0)
+								wv.setBackgroundColor(GlobalPageBackground); //todo optimize
+						}
+					} else {
+					
+					}
 				}
 			} break;
 			/* 发音 */
@@ -6472,11 +6475,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public void launchSettings(int fragmentId, int result) {
+	public void launchSettings(int id, int result) {
 		CMN.pHandler = new WeakReference<>(this);
 		Intent intent = new Intent()
-				.putExtra("realm", fragmentId)
+				.putExtra("realm", id)
 				.setClass(this, SettingsActivity.class);
+		if (id==Multiview.id) {
+			intent.putExtra("where", weblistHandler.isMultiRecord()?weblistHandler.isViewSingle()?2:1:3);
+		}
 		if (result==0) {
 			startActivity(intent);
 		} else {
@@ -7523,7 +7529,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									wlh.initMergedFrame(false, true, false);
 									wlh.popupContentView(null, url);
 									invoker.renderContentAt(-1,BookPresenter.RENDERFLAG_NEW,0,mWebView, idx);
-									if(mWebView.getBackgroundColor()==0) mWebView.setBackgroundColor(GlobalPageBackground);
+									wlh.contentUIData.PageSlider.setWebview(mWebView, null);
+									wlh.resetScrollbar();
+									if(mWebView.getBackgroundColor()==0) mWebView.setBackgroundColor(GlobalPageBackground); //todo optimize
 									return true;
 								}
 								else if(!fromPopup) {
@@ -10515,5 +10523,59 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		fb.search(null, false);
 		//CMN.Log("focus::", focus);
+	}
+	
+	PageSlide.Pager pager;
+	/** 页面滑动切换管理器 */
+	public PageSlide.Pager getPageListener() {
+		return pager==null?pager=new PageSlide.Pager() {
+			long currentPos=0;
+			@Override
+			public void onMoving(float val, PageSlide page) {
+				WebViewListHandler wPage = page.weblist;
+				if (val==Integer.MAX_VALUE) {
+					//CMN.Log("onPreparePage!!!");
+					currentPos=0;
+					//if(page.MainBackground!=MainBackground) {
+					//	page.getBackground().setColorFilter(IMPageCover.MainBackground=MainBackground, PorterDuff.Mode.SRC_IN);
+					//}
+					page.setBackgroundColor(ColorUtils.blendARGB(AppWhite, Color.GRAY, 0.2f));
+					page.setTextColor(AppBlack);
+					if (wPage.isMultiRecord()) {
+						additiveMyCpr1 viewing = wPage.isMergingFrames() ? wPage.getMergedFrame().jointResult:wPage.jointResult;
+						if (viewing!=null) {
+							page.setText(viewing.key);
+						}
+					} else {
+						page.setText(wPage.dictView.presenter.currentDisplaying);
+					}
+				} else {
+					//boolean turn = Math.abs(val)>20*dm.density;
+					int pos = val<0?1:-1;
+					if (currentPos!=pos) {
+						currentPos=pos;
+						page.setGravity(Gravity.CENTER_VERTICAL|(val>0?Gravity.LEFT:Gravity.RIGHT));
+						//if (turn) {
+						//	//page.setText();
+						//}
+						if (wPage.isMultiRecord()) {
+							resultRecorderCombined rec = wPage.multiRecord;
+							if (rec!=null) {
+								page.setText(rec.getResAt(MainActivityUIBase.this, rec.viewingPos+pos));
+							}
+						} else {
+							page.setText(wPage.dictView.presenter.getBookEntryAt((int) (pos+wPage.dictView.currentPos)));
+						}
+					}
+				}
+			}
+			@Override
+			public void slidePage(int Dir, PageSlide page) {
+				//IMPageCover.getBackground().setAlpha(0);
+				WebViewListHandler wPage = page.weblist;
+				if(Dir==1) wPage.contentUIData.browserWidget11.performClick();
+				else if(Dir==0) wPage.contentUIData.browserWidget10.performClick();
+			}
+		}:pager;
 	}
 }

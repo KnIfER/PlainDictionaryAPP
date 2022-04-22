@@ -360,7 +360,7 @@ public class RLContainerSlider extends FrameLayout{
 		}
 		
 		if (masked==MotionEvent.ACTION_DOWN) {
-			if (tapZoomV != SearchUI.tapZoomV)
+			//if (tapZoomV != SearchUI.tapZoomV)
 			{
 				quoTapZoom();
 			}
@@ -481,12 +481,14 @@ public class RLContainerSlider extends FrameLayout{
 		if (WebContext!=null) {
 			tapZoom = pBc.tapZoom();
 			if (!tapZoom) {
-				if (src==SearchUI.TapSch.MAIN?PDICMainAppOptions.tapZoomTapSch()
-						:src==SearchUI.Fye.MAIN?PDICMainAppOptions.tapZoomFye()
-						:PDICMainAppOptions.tapZoomGlobal()) {
+				if (src == SearchUI.TapSch.MAIN ? PDICMainAppOptions.tapZoomTapSch()
+						: src == SearchUI.Fye.MAIN ? PDICMainAppOptions.tapZoomFye()
+						: PDICMainAppOptions.tapZoomGlobal()) {
 					tapZoom = true;
 					tapCtx = SearchUI.pBc;
 				}
+			} else {
+				tapCtx = pBc;
 			}
 		} else if(tapZoom) {
 			tapZoom = false;

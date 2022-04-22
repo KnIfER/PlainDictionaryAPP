@@ -1197,56 +1197,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//svGuard.SplitViewsToGuard.add(webcontentlister);
 
 		//PageSlider.SCViewToMute = (ScrollViewmy) webholder.getParent();
-		contentUIData.PageSlider.page = contentUIData.cover;
-		contentUIData.cover.setPager(new Pager() {
-			long currentPos=0;
-			@Override
-			public void onMoving(float val, PageSlide page) {
-				WebViewListHandler wPage = page.weblist;
-				
-				if (val==Integer.MAX_VALUE) {
-					//CMN.Log("onPreparePage!!!");
-					currentPos=0;
-					//if(page.MainBackground!=MainBackground) {
-					//	page.getBackground().setColorFilter(IMPageCover.MainBackground=MainBackground, PorterDuff.Mode.SRC_IN);
-					//}
-					page.setBackgroundColor(ColorUtils.blendARGB(AppWhite, Color.GRAY, 0.2f));
-					page.setTextColor(AppBlack);
-					if (wPage.isMultiRecord()) {
-						additiveMyCpr1 viewing = wPage.isMergingFrames() ? wPage.getMergedFrame().jointResult:wPage.jointResult;
-						if (viewing!=null) {
-							page.setText(viewing.key);
-						}
-					} else {
-						page.setText(wPage.dictView.presenter.currentDisplaying);
-					}
-				} else {
-					//boolean turn = Math.abs(val)>20*dm.density;
-					int pos = val<0?1:-1;
-					if (currentPos!=pos) {
-						currentPos=pos;
-						page.setGravity(Gravity.CENTER_VERTICAL|(val>0?Gravity.LEFT:Gravity.RIGHT));
-						//if (turn) {
-						//	//page.setText();
-						//}
-						if (wPage.isMultiRecord()) {
-							resultRecorderCombined rec = wPage.multiRecord;
-							if (rec!=null) {
-								page.setText(rec.getResAt(PDICMainActivity.this, rec.viewingPos+pos));
-							}
-						} else {
-							page.setText(wPage.dictView.presenter.getBookEntryAt((int) (pos+wPage.dictView.currentPos)));
-						}
-					}
-				}
-			}
-			@Override
-			public void slidePage(int Dir, PageSlide page) {
-				//IMPageCover.getBackground().setAlpha(0);
-				WebViewListHandler wPage = page.weblist;
-				if(Dir==1) wPage.contentUIData.browserWidget11.performClick();
-				else if(Dir==0) wPage.contentUIData.browserWidget10.performClick();
-			}});
 		
 		final NoScrollViewPager viewPager = UIData.viewpager;
 		viewPager.addOnPageChangeListener(new OnPageChangeListener() {

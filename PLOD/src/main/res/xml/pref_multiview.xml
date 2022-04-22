@@ -125,7 +125,7 @@
 			/>
 	</PreferenceCategory>
 	<PreferenceCategory
-		android:key="cat_2"
+		android:key="cat_3"
 		android:title="单页面模式（同一词典）"
 		app:icon="@drawable/ic_view_comfy_1_black_24dp"
 		android:tint="@color/colorHeaderBlue"
