@@ -412,7 +412,9 @@ public class RLContainerSlider extends FrameLayout{
 		if(page!=null){
 			switch (masked) {
 				case MotionEvent.ACTION_DOWN:
-					WebContextWidth = WebContext.getContentWidth();
+					if (WebContext!=null) {
+						WebContextWidth = WebContext.getContentWidth();
+					}
 					if(tapZoom) {
 						quoSlideZoom();
 					}
