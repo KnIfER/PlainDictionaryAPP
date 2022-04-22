@@ -28,3 +28,11 @@
 -keepclassmembers class androidx.drawerlayout.widget.DrawerLayout {
      private int mMinDrawerMargin;
 }
+
+# 没用
+-keepnames class knziha.plod.plaindict.PDICMainAppOptions {
+
+}
+-keepclassmembernames class knziha.plod.plaindict.PDICMainAppOptions {
+  <methods>;
+}

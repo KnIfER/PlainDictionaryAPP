@@ -135,8 +135,7 @@ import javax.net.ssl.TrustManager;
 
 import static com.knziha.filepicker.utils.FU.bKindButComplexSdcardAvailable;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
-import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
-import static com.knziha.plod.plaindict.MdictServerMobile.hasRemoteDebugServer;
+import static com.knziha.plod.plaindict.MdictServerMobile.*;
 
 public class ViewUtils {
 	public static float density;

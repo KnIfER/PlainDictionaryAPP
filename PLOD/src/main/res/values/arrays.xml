@@ -118,11 +118,8 @@
 	    <item>@string/dict_specs</item>
 	    <item>@string/background_color</item>
 	    <item>@string/text_zoom</item>
-	    <item>双击放大</item>
-		<item>内容可重载</item>
-	    <item>内容可编辑</item>
-	    <item>图文分离</item>
 	    <item>⚙📕⚙更多设置……</item>
+	    <item>这个界面该退休了……</item>
 	</string-array>
 
     <string-array name="picture_spec">

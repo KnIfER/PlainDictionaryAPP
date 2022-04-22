@@ -28,7 +28,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	int firstItemIdx;
 	public View scrollTarget;
 	boolean schKeySaved;
-
+	///** current displaying position */
+	public int viewingPos;
+	
 	public List<additiveMyCpr1> list(){return data;}
 	private List<BookPresenter> md;
 	
@@ -92,8 +94,17 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 
 	@Override
 	public CharSequence getResAt(MainActivityUIBase a, long pos) {
-		if(data==null || pos<0 || pos>data.size()-1)
+		if (data == null || pos < 0 || pos > data.size() - 1) {
+			if (data!=null) {
+				if (pos == -1) {
+					return "<==";
+				}
+				if (pos == data.size() - 1) {
+					return "==>";
+				}
+			}
 			return "!!! Error: code 1";
+		}
 		if(firstItemIdx>0) pos = RemapPos((int) pos);
 		List<Long> l = ((List<Long>) data.get((int) pos).value); //todo
 		bookId = l.get(0);
@@ -133,6 +144,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			return;
 		}
 		List<Long> vals = (List<Long>) jointResult.value;
+		viewingPos = (int) pos;
 		//CMN.Log("frameCount::", jointResult.realmCount);
 		boolean bUseMergedUrl;
 		if(weblistHandler.bMergeFrames==-2) {
@@ -150,16 +162,20 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		}
 		
 		if (!weblistHandler.bDataOnly) {
-			if(!bUseMergedUrl/*算了，还是只为旧模式开此门*/  && jointResult.realmCount==1 && PDICMainAppOptions.getLv2JointOneAsSingle()) {
+			if(!bUseMergedUrl/*算了，还是只为旧模式开此门*/  && jointResult.realmCount==1
+					/*看注释。*/ && PDICMainAppOptions.getLv2JointOneAsSingle()) {
 				BookPresenter book = a.getBookByIdNoCreation(vals.get(0));
 				//if(true) bUseMergedUrl = false; // 只有一页，不通过合并的url加载了
 				if(bUseDictView) book.initViewsHolder(a);
-				weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, bUseDictView?book.mWebView:weblistHandler.getMergedFrame());
+				weblistHandler.setViewMode(null, bUseMergedUrl, bUseDictView?book.mWebView:weblistHandler.getMergedFrame());
 			} else {
-				weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
+				weblistHandler.setViewMode(this, bUseMergedUrl, null);
 			}
 			a.viewContent(weblistHandler);
 			weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowInPopup, bUseMergedUrl);
+		}
+		if (weblistHandler.multiRecord!=this) {
+			weblistHandler.multiRecord = this;
 		}
 		
 		
@@ -298,6 +314,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 //			mWebView.loadUrl("https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2016/September");
 			mWebView.jointResult=jointResult;
 			weblistHandler.resetScrollbar(mWebView, true, false);
+			weblistHandler.contentUIData.PageSlider.setWebview(mWebView, null);
 		}
 		else {
 //			if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
@@ -311,7 +328,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				weblistHandler.jointResult=jointResult;
 			else
 				mWebView.jointResult=jointResult;
-			weblistHandler.resetScrollbar(weblistHandler.isViewSingle()?mWebView:null, false, false);
+			if(!weblistHandler.isViewSingle())
+				mWebView=null;
+			weblistHandler.contentUIData.PageSlider.setWebview(mWebView, weblistHandler.isViewSingle()?null:weblistHandler);
+			weblistHandler.resetScrollbar(mWebView, false, false);
 		}
 	}
 

@@ -46,7 +46,7 @@ import javax.net.ssl.HttpsURLConnection;
  * date 2020/06/01
  */
 
-@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
+//@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
 public class MdictServerMobile extends MdictServer {
 	private MainActivityUIBase a;
 	
@@ -209,7 +209,7 @@ public class MdictServerMobile extends MdictServer {
 	}
 	
 	
-	@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
+	//@StripMethods(strip=!BuildConfig.isDebug, keys={"getRemoteServerRes"})
 	@Override
 	protected InputStream OpenMdbResourceByName(String key) throws IOException {
 		if(hasRemoteDebugServer)

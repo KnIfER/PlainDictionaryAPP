@@ -20,13 +20,11 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -188,7 +186,7 @@ import com.knziha.plod.widgets.CustomShareAdapter;
 import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
-import com.knziha.plod.widgets.IMPageSlider;
+import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.ListSizeConfiner;
 import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.MultiplexLongClicker;
@@ -438,12 +436,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected int DockerMarginL,DockerMarginR,DockerMarginT,DockerMarginB;
 
 	boolean isFragInitiated = false;
-
-	Canvas mPageCanvas = new Canvas();
-	Matrix HappyMatrix = new Matrix();
-	BitmapDrawable mPageDrawable;
-	ColorDrawable mPageColorDrawable;
-
 	AsyncTaskWrapper lianHeTask;
 	public int[] pendingLv2Pos;
 	public int pendingLv2ClickPos=-1;
@@ -2337,7 +2329,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			@Override
 			public void onHesitate() {
 				//showT("onHesitate"+System.currentTimeMillis());
-				IMPageSlider IMPageCover_ = contentUIData.cover;
+				PageSlide IMPageCover_ = contentUIData.cover;
 				if(peruseView !=null && peruseView.getView()!=null && peruseView.getView().getParent()!=null)
 					IMPageCover_= peruseView.contentUIData.cover;
 				if(IMPageCover_!=null)
@@ -3182,10 +3174,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public void invalidAllPagers() {
-	
-	}
-	
 	public Runnable getOpenImgRunnable() {
 		if(mOpenImgRunnable==null){
 			mOpenImgRunnable = () -> {
@@ -3797,16 +3785,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				case R.id.lock:{
 					boolean enabled;
 					if(bFromPeruseView){
-						enabled= peruseView.toggleTurnPageEnabled();
-					}else{
-						enabled=!contentUIData.PageSlider.TurnPageEnabled;
-						opt.setTurnPageEnabled(enabled);
-						contentUIData.PageSlider.TurnPageEnabled=enabled;
-					}
+						//enabled= peruseView.toggleTurnPageEnabled();
+					} else {
+						opt.setTurnPageEnabled(!opt.getTurnPageEnabled());
+						enabled = opt.getTurnPageEnabled();
+						SearchUI.tapZoomV++;
 					tools_lock.setImageResource(enabled?R.drawable.un_locked:R.drawable.locked);
 					opt.putFirstFlag();
 					showTopSnack(null, enabled?R.string.PT1:R.string.PT2
 							, 0.8f, LONG_DURATION_MS, -1, 0);
+						
+					}
 				} return;
 				case R.id.check1: //tofo checker
 				case R.id.check2:
@@ -6066,7 +6055,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							long pos = IU.TextToNumber_SIXTWO_LE(val);
 							BookPresenter book = getMdictServer().md_getById(id);
 							weblist.getMergedFrame().currentPos = pos;
-							book.currentDisplaying = book.getLexicalEntryAt((int) pos); // 权宜之计
+							book.currentDisplaying = book.getBookEntryAt((int) pos); // 权宜之计
 							tk.showDictTweaker(book, weblist.getMergedFrame());
 						} catch (Exception e) {
 							CMN.debug(e);
@@ -6268,7 +6257,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						}, 0, new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
-								CMN.Log("onClick::", weblistHandler.contentUIData.webholder.getChildCount());
+								//CMN.Log("onClick::", weblistHandler.contentUIData.webholder.getChildCount());
 								if(which==0 || which==1) {
 									//which=(which+1)%2;
 									if(weblistHandler.isMultiRecord()) {
@@ -6348,31 +6337,33 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	private void resetMerge(int which, boolean t) {
-		if(which==-1) which=mergeFrames();
-		boolean bUseMergedUrl = which!=0;
-		if(bUseMergedUrl!=weblistHandler.bMergingFrames) {
-			weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
-			weblistHandler.bMergeFrames = which;
-			weblistHandler.webHolderSwapHide = true;
-			// 旧版本切换新版本出现闪黑，
-//			boolean delay = opt.getDelayContents();
-//			boolean animate = opt.getAnimateContents();
-//			if(delay||animate) {
-//				opt.setDelayContents(false);
-//				opt.setAnimateContents(false);
-//			}
-			viewContent(weblistHandler);
-//			if(delay||animate) {
-//				opt.setDelayContents(delay);
-//				opt.setAnimateContents(animate);
-//			}
-			
-			// only handle popup
-			//weblistHandler.initMergedFrame(weblistHandler.bMergingFrames, false, false);
-			if(recCom!=null)
-				recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblistHandler);
-		} else if(t){
-			showT("已经是了");
+		if (weblistHandler.isMultiRecord()) {
+			if(which==-1) which=mergeFrames();
+			boolean bUseMergedUrl = which!=0;
+			if(bUseMergedUrl!=weblistHandler.bMergingFrames) {
+				weblistHandler.setViewMode(weblistHandler.multiRecord, bUseMergedUrl, null);
+				weblistHandler.bMergeFrames = which;
+				weblistHandler.webHolderSwapHide = true;
+				// 旧版本切换新版本出现闪黑，
+				//boolean delay = opt.getDelayContents();
+				//boolean animate = opt.getAnimateContents();
+				//if(delay||animate) {
+				//	opt.setDelayContents(false);
+				//	opt.setAnimateContents(false);
+				//}
+				viewContent(weblistHandler);
+				//if(delay||animate) {
+				//	opt.setDelayContents(delay);
+				//	opt.setAnimateContents(animate);
+				//}
+				
+				// only handle popup
+				//weblistHandler.initMergedFrame(weblistHandler.bMergingFrames, false, false);
+				if(recCom!=null)
+					recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblistHandler);
+			} else if(t){
+				showT("已经是了");
+			}
 		}
 	}
 	
@@ -6433,7 +6424,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(initPopup) {
 			weblistHandler.setUpContentView(cbar_key);
 			weblistHandler.popupContentView(null, "随机页面");
-			weblistHandler.setViewMode(WEB_VIEW_SINGLE, true, null);
+			weblistHandler.setViewMode(null, true, null);
 			weblistHandler.initMergedFrame(true, true, false);
 			WebViewmy randomPage = weblistHandler.getMergedFrame();
 			randomPage.isloading = true;
@@ -6468,7 +6459,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				randomPage.loadUrl(testUrl);
 				randomPageHandler.resetScrollbar(randomPage, false, false);
 			}
-			randomPageHandler.setViewMode(WEB_VIEW_SINGLE, false, null);
+			randomPageHandler.setViewMode(null, false, null);
 			randomPageHandler.viewContent();
 		} catch (Exception e) {
 			CMN.debug(e);
@@ -7526,7 +7517,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									wlh = getRandomPageHandler(true);
 									mWebView = wlh.getMergedFrame();
 									wlh.viewContent();
-									wlh.setViewMode(WEB_VIEW_SINGLE, false, mWebView);
+									wlh.setViewMode(null, false, mWebView);
 									wlh.bShowInPopup=true;
 									wlh.bMergeFrames=0;
 									wlh.initMergedFrame(false, true, false);

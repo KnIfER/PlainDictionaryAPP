@@ -1028,7 +1028,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	public void SearchDone() {
 		if(rec!=null) {
 			boolean bUseMergedUrl = true;
-			//weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl);
+			//weblistHandler.setViewMode(null, bUseMergedUrl);
 			//weblistHandler.initMergedFrame(false, false, bUseMergedUrl);
 			weblistHandler.bMergingFrames = true;
 			weblistHandler.bMergeFrames = 1;
@@ -1092,8 +1092,8 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			popupFrame = frameAt;
 			popupForceId = forceStartId;
 			a.root.removeCallbacks(this);
-			if (invoker!=null && invoker.pBc.getDoubleTapZoomPage()) {
-				a.root.postDelayed(this, a.opt.getInt("dtm", 100)); // 支持双击操作会拖慢点译！
+			if (invoker!=null && invoker.weblistHandler.contentUIData.PageSlider.tapZoom) {
+				a.root.postDelayed(this, SearchUI.tapZoomWait); // 支持双击操作会拖慢点译！
 			} else {
 				a.root.post(this);
 			}

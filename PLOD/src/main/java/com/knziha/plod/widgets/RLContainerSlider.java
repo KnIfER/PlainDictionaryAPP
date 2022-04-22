@@ -10,24 +10,29 @@ import android.widget.FrameLayout;
 
 import androidx.appcompat.app.GlobalOptions;
 
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.WebViewListHandler;
 
 
 public class RLContainerSlider extends FrameLayout{
 	public boolean TurnPageSuppressed;
+	public WebViewListHandler weblist;
 	public WebViewmy WebContext;
-	public PhotoBrowsingContext pBc;
+	private PhotoBrowsingContext pBc;
+	private PhotoBrowsingContext tapCtx = SearchUI.pBc;
 	public ViewGroup scrollView;
 	private float density;
 	private int move_index;
 	private boolean bZoomOut;
 	private boolean bZoomOutCompletely;
 	private boolean bNoDoubleClick;
-	private boolean bNoTurnPage;
 	private int WebContextWidth;
-	private boolean aborted;
+	boolean aborted;
 	private float dragInitDx;
 	private float abortedOffsetX;
 	private float abortedOffsetY;
@@ -40,6 +45,8 @@ public class RLContainerSlider extends FrameLayout{
 	private float fastTapScrollY;
 	private boolean fastTapMoved;
 	private float quickScaleThreshold;
+	private int tapZoomV;
+	private boolean nothing = true;
 	
 	public RLContainerSlider(Context context) {
 		this(context, null);
@@ -54,27 +61,28 @@ public class RLContainerSlider extends FrameLayout{
 		quickScaleThreshold = 20*density;
 	}
 
-	public IMPageSlider IMSlider;
+	public PageSlide page;
 
 	int first_touch_id=-1;
 
-	boolean bCanSlide=true;
 	private float lastX,lastY,OrgX,OrgY;
 	boolean dragged;
-	public boolean TurnPageEnabled=false;
+	public boolean slideTurn = false;
+	public boolean tapZoom;
 
-	boolean isOnFlingDected;
-	public boolean isOnZoomingDected;
+	boolean flingDeteced;
+	/** Tap Twice Deteced */
+	public boolean twiceDetected;
 	public static long lastZoomTime;
 	GestureDetector detector;
 	GestureDetector.SimpleOnGestureListener gl = new GestureDetector.SimpleOnGestureListener() {
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
-			if(WebContext!=null && !bNoDoubleClick){
-				PhotoBrowsingContext ibc = pBc;
-				float targetZoom = ibc.doubleClickZoomRatio;
+			if(tapZoom){
+				PhotoBrowsingContext ctx = tapCtx;
+				float targetZoom = ctx.tapZoomRatio;
 				//CMN.Log("onDoubleTap::", targetZoom, WebContext.webScale/BookPresenter.def_zoom);
-				int zoomInMode = ibc.getDoubleTapAlignment();
+				int zoomInMode = ctx.tapAlignment();
 				//zoomInType = 4;
 				if(zoomInMode<3) {
 					if(WebContext.webScale/ BookPresenter.def_zoom<targetZoom){
@@ -84,7 +92,7 @@ public class RLContainerSlider extends FrameLayout{
 							WebContext.zoomBy(targetZoom);
 							//((MainActivityUIBase)getContext()).showT("双击放大");
 							int pad = WebContext.getWidth();
-							float ratio = ibc.doubleClickXOffset;
+							float ratio = ctx.tapZoomXOffset;
 							if(ratio<-1) ratio=-1;
 							if(zoomInMode==0){
 								pad = (int) (ratio * pad);
@@ -110,8 +118,7 @@ public class RLContainerSlider extends FrameLayout{
 						}
 					}
 				}
-				else if (fastTapScrollX==WebContext.getScrollX()
-							&& fastTapScrollY==WebContext.getScrollY()) {
+				else if (fastTapScrollX==WebContext.getScrollX() && fastTapScrollY==WebContext.getScrollY()) {
 					fastTapStX = e.getX();
 					fastTapStY = e.getY();
 					fastTapZoomSt = WebContext.webScale;
@@ -121,16 +128,17 @@ public class RLContainerSlider extends FrameLayout{
 				}
 				WebContext.evaluateJavascript("getSelection().empty()", null);
 			}
-			isOnZoomingDected=true;
+			twiceDetected =true;
 			lastZoomTime=System.currentTimeMillis();
 			return false;
 		}
 
 		public boolean onFling(MotionEvent e1, MotionEvent e2, final float velocityX, final float velocityY) {
 			//if(System.currentTimeMillis()-lastDownTime<=200) //事件老死
-			if(bZoomOutCompletely && !bNoTurnPage)
+			if(slideTurn && bZoomOutCompletely)
 			{
-				if(!TurnPageEnabled || e2.getPointerCount()>1) { //todo slide on zoomed page
+				if(e2.getPointerCount()>1
+					|| Math.signum(velocityX)!=Math.signum(page.getTranslationX())) {
 					return false;
 				}
 
@@ -148,25 +156,23 @@ public class RLContainerSlider extends FrameLayout{
 				//CMN.Log("SimpleOnGestureListener", velocityX, vx, 3*50*density);
 				if(Math.abs(velocityX/(velocityY==0?0.000001:velocityY))>1.699) {
 					//CMN.show("onFling");
-					isOnFlingDected=true;
+					flingDeteced =true;
 					//IMSlider.startdrag(ev);
 					//xxx
 					/////if(IMSlider.inf!=null)
 					/////	IMSlider.inf.onPreparePage(IMSlider);
-					IMSlider.startdrag(e2);
-					IMSlider.setAlpha(1.f);
+					page.startDrag(e2);
+					page.setAlpha(1.f);
 					if(velocityX<0) {
-						IMSlider.decidedDir=true;
-						IMSlider.TargetX=-IMSlider.getWidth();
-						IMSlider.TargetY=IMSlider.getTranslationY();
+						page.decidedDir=true;
+						page.TargetX=-page.getWidth();
 					}else {
-						IMSlider.decidedDir=false;
-						IMSlider.TargetX=IMSlider.getWidth();
-						IMSlider.TargetY=IMSlider.getTranslationY();
+						page.decidedDir=false;
+						page.TargetX= page.getWidth();
 					}
 					dragged=false;
-					IMSlider.decided=true;
-					IMSlider.RePosition();
+					page.decided=true;
+					page.RePosition();
 				}
 			}
 			return false;
@@ -183,25 +189,25 @@ public class RLContainerSlider extends FrameLayout{
 			handleFastZoom(ev);
 			return fastTapZoom;
 		}
-		if(!TurnPageEnabled) return false;
+		if(!slideTurn) return false;
 		if(!dragged && !aborted) return true;
 		int actual_index = ev.getActionIndex();
 		int touch_id = ev.getPointerId(actual_index);
-		int actionMasked = ev.getActionMasked();
+		int masked = ev.getActionMasked();
 		if(touch_id==first_touch_id && detector!=null) {
 			detector.onTouchEvent(ev);
 		}
 		
-		if(isOnFlingDected) {
-			if(WebContext!=null && !bNoDoubleClick) {
+		if(flingDeteced) {
+			if(tapZoom) {
 				detector = new GestureDetector(getContext(), gl);
 			}
-			dragged=isOnFlingDected=false;
-			IMSlider.decided=false;
+			dragged= flingDeteced =false;
+			page.decided=false;
 			return true;
 		}
-		if(IMSlider!=null){
-			switch (actionMasked) {
+		if(page !=null){
+			switch (masked) {
 				case MotionEvent.ACTION_MOVE: {
 					//CMN.Log("ACTION_MOVE", touch_id, actual_index);
 					if(first_touch_id==-1) {
@@ -232,19 +238,19 @@ public class RLContainerSlider extends FrameLayout{
 //							}
 //						}
 					if(dragged) {
-						IMSlider.startdrag(ev);
-						IMSlider.handleDrag(nowX-lastX,nowY-lastY);
-						if(IMSlider.inf!=null)
-							IMSlider.inf.onMoving(IMSlider.getTranslationX(),IMSlider);
+						page.startDrag(ev);
+						page.handleDrag(nowX-lastX,nowY-lastY);
+						if(page.listener !=null)
+							page.listener.onMoving(page.getTranslationX(), page);
 //						CMN.Log("IMSlider.getTranslationX()", dragInitDx, IMSlider.getTranslationX());
 						if (//Math.abs(IMSlider.getTranslationX())<3.5*GlobalOptions.density &&
-								dragInitDx*IMSlider.getTranslationX()<=0
+								dragInitDx* page.getTranslationX()<=0
 								//&& Math.abs(IMSlider.getTranslationY())<20*GlobalOptions.density
 						) {
 							dragged = false;
 							aborted = true;
-							IMSlider.decided=false;
-							IMSlider.RePosition();
+							page.decided=false;
+							page.RePosition();
 							first_touch_id = -1;
 //							CMN.Log("abort!!!");
 							ViewUtils.preventDefaultTouchEvent(this, (int)lastX, (int)lastY);
@@ -283,8 +289,8 @@ public class RLContainerSlider extends FrameLayout{
 	}
 	
 	private void handleFastZoom(MotionEvent ev) {
-		int actionMasked = ev.getActionMasked();
-		if (actionMasked==MotionEvent.ACTION_MOVE) {
+		int masked = ev.getActionMasked();
+		if (masked==MotionEvent.ACTION_MOVE) {
 			float rawY = ev.getY();
 			float rawDist = fastTapStY - rawY;
 			float dist = rawDist;
@@ -318,12 +324,12 @@ public class RLContainerSlider extends FrameLayout{
 				//CMN.Log("fastZoom::", WebContext.webScale, WebContext.getScrollX(), WebContext.getScrollY());
 			}
 		}
-		else if (actionMasked==MotionEvent.ACTION_UP) {
+		else if (masked==MotionEvent.ACTION_UP) {
 			fastTapZoom = false;
 			fastTapMoved = false;
-//			float multiplier = WebContext.webScale/fastTapZoomSt;
-//			WebContext.scrollTo((int) ((fastTapScrollX +fastTapStX)*multiplier - fastTapStX)
-//					, (int) ((fastTapScrollY +fastTapStY)*multiplier - fastTapStY));
+			//float multiplier = WebContext.webScale/fastTapZoomSt;
+			//WebContext.scrollTo((int) ((fastTapScrollX +fastTapStX)*multiplier - fastTapStX)
+			//		, (int) ((fastTapScrollY +fastTapStY)*multiplier - fastTapStY));
 		}
 	}
 	
@@ -333,15 +339,15 @@ public class RLContainerSlider extends FrameLayout{
 		if(dragged) {
 			//detector = new GestureDetector(getContext(), gl);
 			dragged=false;
-			IMSlider.RePosition();
+			page.RePosition();
 		}
 		checkBar();
 	}
 	
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev){
-		if (bar !=null) {
-			int masked = ev.getActionMasked();
+		int masked = ev.getActionMasked();
+		if (bar!=null) {
 			if (masked==MotionEvent.ACTION_DOWN) {
 				if(!bar.isHidden()){
 					bar.isWebHeld=true;
@@ -353,53 +359,42 @@ public class RLContainerSlider extends FrameLayout{
 			}
 		}
 		
-		if (MainActivityUIBase.layoutScrollDisabled) {
-			MainActivityUIBase.layoutScrollDisabled=false;
+		if (masked==MotionEvent.ACTION_DOWN) {
+			if (tapZoomV != SearchUI.tapZoomV)
+			{
+				quoTapZoom();
+			}
+			if (MainActivityUIBase.layoutScrollDisabled) {
+				MainActivityUIBase.layoutScrollDisabled=false;
+			}
 		}
 		
-		bNoTurnPage = !TurnPageEnabled || TurnPageSuppressed;
-		
-		if(bNoTurnPage && bNoDoubleClick) {
+		if(nothing) {
 			return false;
 		}
 		
-		bZoomOut = bZoomOutCompletely = true;
-		
-		if(WebContext!=null) {
-			bZoomOut = WebContext.webScale <= BookPresenter.def_zoom;
-			
-			if(WebContext.AlwaysCheckRange==0) {
-				WebContext.CheckAlwaysCheckRange();
-			}
-			
-			bZoomOutCompletely = bZoomOut && (WebContext.AlwaysCheckRange==-1
-					||WebContext.getScrollX()==0  && WebContext.getScrollX()+WebContext.getWidth()>=WebContextWidth);
-		}
-		
-		
-		int masked = ev.getActionMasked();
+		//bZoomOut = bZoomOutCompletely = true;
 		
 		int touch_id=ev.getPointerId(ev.getActionIndex());
 		
 		if(masked==MotionEvent.ACTION_DOWN){
 			OrgX = lastX = ev.getX();
-			isOnZoomingDected = false;
+			twiceDetected = false;
 		}
 		
-		if(bNoTurnPage || touch_id==first_touch_id) {
+		if(!slideTurn || touch_id==first_touch_id) {
 			detector.onTouchEvent(ev);
-			if(isOnFlingDected) {
-				dragged=isOnFlingDected=false;
-				IMSlider.decided=false;
+			if(flingDeteced) {
+				dragged=flingDeteced=false;
+				page.decided=false;
 				return true;
 			}
 		}
 		
 		if (masked==MotionEvent.ACTION_DOWN
-				&& WebContext!=null
-				&& pBc.getDoubleTapAlignment()==4
-				&& !bNoDoubleClick
-				&& !isOnZoomingDected) {
+				&& tapZoom
+				&& tapCtx.tapAlignment()==4
+				&& !twiceDetected) {
 			fastTapScrollX = WebContext.getScrollX();
 			fastTapScrollY = WebContext.getScrollY();
 		}
@@ -408,22 +403,19 @@ public class RLContainerSlider extends FrameLayout{
 			return true;
 		}
 		
-		if(bNoTurnPage) {
+		if(!slideTurn) {
 			return false;
 		}
 
 		boolean ret = super.onInterceptTouchEvent(ev);
 
-		if(!bCanSlide) {
-			return ret;
-		}
-		if(IMSlider!=null){
+		if(page!=null){
 			switch (masked) {
 				case MotionEvent.ACTION_DOWN:
-					if(WebContext!=null) {
-						WebContextWidth = WebContext.getContentWidth();
+					if(tapZoom) {
+						quoSlideZoom();
 					}
-					isOnZoomingDected=false;
+					twiceDetected =false;
 					//CMN.Log("ACTION_DOWN");
 					first_touch_id=touch_id;
 					detector.onTouchEvent(ev);
@@ -453,6 +445,9 @@ public class RLContainerSlider extends FrameLayout{
 						}
 					}
 				break;
+//				case MotionEvent.ACTION_POINTER_UP:
+//					quoSlideZoom();
+//				break;
 				case MotionEvent.ACTION_UP:
 					onActionUp();
 				break;
@@ -469,17 +464,71 @@ public class RLContainerSlider extends FrameLayout{
 		}
 	}
 	
-	public void quoDblClk() {
-		bNoDoubleClick = WebContext==null||!pBc.getDoubleTapZoomPage();
+	private void quoSlideZoom() {
+		bZoomOut = WebContext.webScale <= BookPresenter.def_zoom;
+		
+		if(WebContext.AlwaysCheckRange==0) {
+			WebContext.CheckAlwaysCheckRange();
+		}
+		
+		WebContextWidth = WebContext.getContentWidth();
+		bZoomOutCompletely = bZoomOut && (WebContext.AlwaysCheckRange==-1
+				||WebContext.getScrollX()==0  && WebContext.getScrollX()+WebContext.getWidth()>=WebContextWidth);
+	}
+	
+	private void quoTapZoom() {
+		final int src = weblist.getSrc();
+		if (WebContext!=null) {
+			tapZoom = pBc.tapZoom();
+			if (!tapZoom) {
+				if (src==SearchUI.TapSch.MAIN?PDICMainAppOptions.tapZoomTapSch()
+						:src==SearchUI.Fye.MAIN?PDICMainAppOptions.tapZoomFye()
+						:PDICMainAppOptions.tapZoomGlobal()) {
+					tapZoom = true;
+					tapCtx = SearchUI.pBc;
+				}
+			}
+		} else if(tapZoom) {
+			tapZoom = false;
+		}
+		if (tapZoomV != SearchUI.tapZoomV) {
+			tapZoomV = SearchUI.tapZoomV;
+		}
+		if (PDICMainAppOptions.getTurnPageEnabled()) {
+			if (weblist.isMultiRecord()) {
+				if (weblist.bMergingFrames) {
+					slideTurn = PDICMainAppOptions.getPageTurn3();
+					//CMN.Log("slideTurn::1", slideTurn);
+				} else {
+					slideTurn = PDICMainAppOptions.getPageTurn2();
+					//CMN.Log("slideTurn::2", slideTurn);
+				}
+			} else {
+				slideTurn = PDICMainAppOptions.getPageTurn1();
+				//CMN.Log("slideTurn::3", slideTurn);
+			}
+		} else if(slideTurn) {
+			slideTurn = false;
+		}
+		nothing = !slideTurn && !tapZoom;
 	}
 	
 	public void setWebview(WebViewmy webview, ViewGroup scrollView) {
 		if(WebContext != webview) {
 			WebContext = webview;
-		} 
-		if (pBc!=webview.pBc) {
-			pBc = webview.pBc;
-			quoDblClk();
+		}
+		if (webview==null) {
+			if (pBc!=null) {
+				pBc = null;
+				tapCtx = SearchUI.pBc;
+				quoTapZoom();
+			}
+		} else {
+			if (pBc!=webview.pBc) {
+				pBc = webview.pBc;
+				tapCtx = pBc;
+				quoTapZoom();
+			}
 		}
 		if(this.scrollView!=scrollView && scrollView!=null) {
 			this.scrollView = scrollView;

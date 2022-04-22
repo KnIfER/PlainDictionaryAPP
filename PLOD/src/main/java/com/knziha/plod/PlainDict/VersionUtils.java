@@ -25,6 +25,7 @@ public class VersionUtils {
 		}
 		PDICMainAppOptions.setUseDatabaseV2(true);
 		if(PDICMainAppOptions.checkVersionBefore_5_7()) {
+			CMN.Log("初始化版本!!!");
 			PDICMainAppOptions.uncheckVersionBefore_4_0(true);
 			PDICMainAppOptions.uncheckVersionBefore_4_9(true);
 			PDICMainAppOptions.uncheckVersionBefore_5_0(true);
@@ -43,13 +44,13 @@ public class VersionUtils {
 			opt.setPageTurn1(false);
 			opt.setPageTurn2(false);
 			opt.setPageTurn3(false);
-			opt.setTurnPageEnabled(false);
 			opt.schPageNavAudioKey(false);
 			
 			PDICMainAppOptions.pageSchWild(true);
 			PDICMainAppOptions.pageSchWildDeprecated(false);
 			PDICMainAppOptions.uncheckVersionBefore_5_7(false);
 		}
+		opt.setTurnPageEnabled(true);
 //		opt.setBottombarOnBottom(true);
 //		opt.setFloatBottombarOnBottom(true);
 //		opt.setPeruseBottombarOnBottom(true);

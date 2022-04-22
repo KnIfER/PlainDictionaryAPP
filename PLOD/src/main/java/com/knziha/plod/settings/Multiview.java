@@ -6,20 +6,23 @@ import android.text.TextUtils;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.SettingsFragmentBase;
+import com.knziha.plod.db.SearchUI;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.BuildConfig;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MdictServer;
 import com.knziha.plod.plaindict.MdictServerMobile;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
 public class Multiview extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
-	public final static int id=14;
-	public final static int requestCode=11;
+	public final static int id=R.xml.pref_multiview;
+	public final static int requestCode=id>>16;
 	
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		mPreferenceId = R.xml.pref_multiview;
+		mPreferenceId = id;
 		super.onCreate(savedInstanceState);
 		
 		init_switch_preference(this, "expand_ao", PDICMainAppOptions.getEnsureAtLeatOneExpandedPage(), null, null);
@@ -43,6 +46,16 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 				.setVisible(BuildConfig.isDebug);
 		
 		init_switch_preference(this, "neo1", PDICMainAppOptions.popViewEntryOne(), null, null);
+		
+		init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomGlobal(), null, null);
+		findPreference("tzby").setOnPreferenceChangeListener(this);
+		findPreference("tzlv").setOnPreferenceChangeListener(this);
+		findPreference("tz_x").setOnPreferenceChangeListener(this);
+		findPreference("dtm").setOnPreferenceChangeListener(this);
+		
+		init_switch_preference(this, "turn1", PDICMainAppOptions.getPageTurn1(), null, null);
+		init_switch_preference(this, "turn2", PDICMainAppOptions.getPageTurn2(), null, null);
+		init_switch_preference(this, "turn3", PDICMainAppOptions.getPageTurn3(), null, null);
 	}
 
 	@Override
@@ -73,7 +86,7 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 				}
 			}
 		}
-		switch (preference.getKey()){
+		switch (key){
 			case "expand_ao":
 				PDICMainAppOptions.setEnsureAtLeatOneExpandedPage((Boolean) newValue);
 			break;
@@ -117,6 +130,34 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 					MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
 				}
 			break;
+			case "tz":
+				PDICMainAppOptions.tapZoomGlobal((Boolean) newValue);
+			break;
+			case "tzby":
+				SearchUI.pBc.tapAlignment(IU.parsint((String) newValue, 0));
+			break;
+			case "tzlv":
+				SearchUI.pBc.tapZoomRatio = IU.parseFloat(String.valueOf(newValue), 2);
+			case "tz_x":
+				SearchUI.pBc.tapZoomXOffset = IU.parseFloat(String.valueOf(newValue), 0);
+			case "dtm":
+				SearchUI.tapZoomWait = IU.parsint((String) newValue, 100);
+			break;
+			case "turn1":
+				PDICMainAppOptions.setPageTurn1((Boolean) newValue);
+			break;
+			case "turn2":
+				PDICMainAppOptions.setPageTurn2((Boolean) newValue);
+			break;
+			case "turn3":
+				PDICMainAppOptions.setPageTurn3((Boolean) newValue);
+			break;
+		}
+		if (key.startsWith("tz") || key.startsWith("turn")) {
+			SearchUI.tapZoomV++;
+			if (key.startsWith("turn") && (Boolean) newValue && !PDICMainAppOptions.getTurnPageEnabled()) {
+				// todo...
+			}
 		}
 		return true;
 	}

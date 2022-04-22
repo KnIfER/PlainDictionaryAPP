@@ -16,7 +16,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.DragEvent;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -123,6 +122,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if(WHP.getScrollViewListener()==null) {
 			/** 这里绑定自己到底栏，以获取上下文 see{@link MainActivityUIBase#showScrollSet} */
 			contentUIData.bottombar2.setTag(this);
+			contentUIData.PageSlider.weblist = this;
+			contentUIData.cover.weblist = this;
+			contentUIData.cover.hdl = a.hdl;
 			UpdateBookLabelAbility = ()->{
 				String name = lastScrollFocus.presenter.getDictionaryName();
 				int idx=name.lastIndexOf(".");
@@ -188,8 +190,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return mViewMode==WEB_LIST_MULTI?webholder:contentUIData.webSingleholder;
 	}
 	
-	public ViewGroup getAnotherViewGroup() {
-		return mViewMode==WEB_LIST_MULTI?contentUIData.webSingleholder:webholder;
+	public ViewGroup getDragView() {
+		return mViewMode==WEB_LIST_MULTI?WHP:contentUIData.webSingleholder;
 	}
 	
 	public View getChildAt(int frameAt) {
@@ -732,13 +734,16 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public final static int WEB_VIEW_SINGLE=1;
 	int mViewMode;
 	boolean isMultiRecord;
-	public void setViewMode(int mode, boolean bUseMergedUrl, WebViewmy dictView) {
-		boolean multi=mode==WEB_LIST_MULTI;
-		if(mode==WEB_LIST_MULTI && bUseMergedUrl)
-			mode = WEB_VIEW_SINGLE;
-		if(mViewMode!=mode || bMergingFrames!=bUseMergedUrl || isMultiRecord!=multi) {
+	public resultRecorderCombined multiRecord;
+	public void setViewMode(resultRecorderCombined record, boolean bUseMergedUrl, WebViewmy dictView) {
+		boolean multi=record!=null;
+		if (multiRecord!=record) {
+			multiRecord = record;
+		}
+		int viewMode = multi && !bUseMergedUrl? WEB_LIST_MULTI : WEB_VIEW_SINGLE;
+		if(mViewMode!=viewMode || bMergingFrames!=bUseMergedUrl || isMultiRecord!=multi) {
 			isMultiRecord = multi;
-			mViewMode = mode;
+			mViewMode = viewMode;
 			ViewUtils.setVisible(contentUIData.navBtns, multi && !bUseMergedUrl);
 			ViewUtils.setVisible(contentUIData.dictNameStroke, !bUseMergedUrl);
 			ViewUtils.setVisible(contentUIData.dictName, !bUseMergedUrl);
@@ -806,10 +811,6 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.prv.setColorFilter(phaedrof);
 			contentUIData.nxt.setColorFilter(phaedrof);
 			
-//			contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
-//				contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
-//			});
-			
 			SplitView webcontentlister = contentUIData.webcontentlister;
 			webcontentlister.multiplier=-1;
 			webcontentlister.isSlik=true;
@@ -853,12 +854,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	/** false:using old list technique. displaying multiple webviews in the linearlayout */
-	final public boolean isViewSingle() {
+	public final boolean isViewSingle() {
 		return mViewMode==WEB_VIEW_SINGLE;
 	}
 	
 	/** displaying records from multiple dictionary in search-all mode */
-	final public boolean isMultiRecord() {
+	public final boolean isMultiRecord() {
 		return isMultiRecord;
 	}
 	
@@ -1454,8 +1455,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
-	
 	public void contentviewAddView(View v, int i) {
 		ViewUtils.addViewToParent(v, contentUIData.webcontentlister, i);
+	}
+	
+	public final int getSrc() {
+		return src;
+	}
+	
+	public boolean isMergingFrames() {
+		return bMergingFrames;
 	}
 }

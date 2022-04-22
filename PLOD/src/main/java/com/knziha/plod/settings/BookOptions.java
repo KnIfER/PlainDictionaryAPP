@@ -14,6 +14,7 @@ import com.jaredrummler.colorpicker.ColorPickerPreference;
 import com.knziha.filepicker.settings.FloatPreference;
 import com.knziha.filepicker.settings.IntPreference;
 import com.knziha.filepicker.settings.SettingsFragmentBase;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.MagentTransient;
@@ -240,6 +241,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		init_switcher("dz12", false, 20);
 		
 		findPreference("reload").setOnPreferenceClickListener(this);
+		findPreference("dtm").setOnPreferenceChangeListener(this);
 	}
 	
 	@Override
@@ -356,6 +358,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			} break;
 			case "pzoom_plc":{
 			} break;
+			case "dtm":
+				SearchUI.tapZoomWait = (int) newValue;
+			break;
 		}
 		return true;
 	}

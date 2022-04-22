@@ -22,7 +22,7 @@ public class Misc extends SettingsFragmentBase implements Preference.OnPreferenc
 		mPreferenceId = R.xml.pref_misc;
 		super.onCreate(savedInstanceState);
 		
-		findPreference("cat_1").setVisible(false);
+		//findPreference("cat_1").setVisible(false);
 
 		init_switch_preference(this, "ps_audio_key", PDICMainAppOptions.schPageNavAudioKey(), null, null);
 		init_switch_preference(this, "ps_hide_key", PDICMainAppOptions.schPageNavHideKeyboard(), null, null);
@@ -89,7 +89,7 @@ public class Misc extends SettingsFragmentBase implements Preference.OnPreferenc
 				}
 			}
 		}
-		switch (preference.getKey()){
+		switch (key){
 			case "ps_audio_key":
 				PDICMainAppOptions.schPageNavAudioKey((Boolean) newValue);
 			break;

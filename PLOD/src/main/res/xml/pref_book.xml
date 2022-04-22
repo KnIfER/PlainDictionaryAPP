@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	tools:context="com.knziha.plod.settings.BookOptions"
+	>
 
 	<PreferenceCategory
 		android:key="cat_1"
@@ -268,7 +271,6 @@
 			android:title="放大居中方式"
 			android:entries="@array/d_zoom_mode_info"
 			/>
-
 		<com.knziha.filepicker.settings.FloatPreference
 			android:defaultValue="2"
 			android:key="dzooml"
@@ -276,7 +278,6 @@
 			android:title="双击放大倍数 :  "
 			app:inlineSummary="true"
 			/>
-
 		<com.knziha.filepicker.settings.FloatPreference
 			android:defaultValue="2"
 			android:key="dzoomx"
@@ -287,7 +288,6 @@
 			app:wiki="指放大内容页面后，视口相对于内容的横向偏移距离（-1.0~1.0倍屏幕宽度），居中时或靠左时，正值代表向右偏移；靠右时，正值代表向左偏移。"
 			app:inlineSummary="true"
 			/>
-
 		<com.knziha.filepicker.settings.IntPreference
 			android:key="dtm"
 			android:defaultValue="100"

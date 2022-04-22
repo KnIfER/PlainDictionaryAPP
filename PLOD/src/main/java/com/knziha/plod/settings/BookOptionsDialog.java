@@ -83,9 +83,7 @@ public class BookOptionsDialog extends DialogFragment {
 					a=datum.a;
 				}
 			}
-			if(a!=null){
-				a.invalidAllPagers();
-			}
+			// 翻页设置可能变化
 		}
 	}
 }

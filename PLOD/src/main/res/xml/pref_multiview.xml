@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	tools:context="com.knziha.plod.settings.Multiview"
+	>
 	<PreferenceCategory
 		android:key="cat_1"
 		android:title="多页面设置（联合搜索）"
@@ -59,6 +62,13 @@
 			android:title="在新窗口中打开词条跳转"
 			app:allowDividerBelow="true"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="turn2"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="允许滑动翻页"
+			app:allowDividerBelow="true"
+			/>
 	</PreferenceCategory>
 	<PreferenceCategory
 		android:key="cat_2"
@@ -106,6 +116,13 @@
 			android:title="在新窗口中打开词条跳转"
 			app:allowDividerBelow="true"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="turn3"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="允许滑动翻页"
+			app:allowDividerBelow="true"
+			/>
 	</PreferenceCategory>
 	<PreferenceCategory
 		android:key="cat_2"
@@ -135,6 +152,61 @@
 			android:defaultValue="false"
 			android:title="在新窗口中打开词条跳转"
 			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="turn1"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="允许滑动翻页"
+			app:allowDividerBelow="true"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="gp_dzoom"
+		android:title="双击内容页"
+		app:icon="@drawable/ic_search"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="tz"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用双击放大"
+			android:summary="全局设置，对于合并页面、单页面有效。"
+			/>
+		<androidx.preference.ListPreference
+			android:defaultValue="0"
+			android:key="tzby"
+			android:persistent="true"
+			android:title="放大居中方式"
+			android:entries="@array/d_zoom_mode_info"
+			/>
+		<com.knziha.filepicker.settings.FloatPreference
+			android:defaultValue="2"
+			android:key="tzlv"
+			android:persistent="true"
+			android:title="双击放大倍数 :  "
+			app:inlineSummary="true"
+			/>
+		<com.knziha.filepicker.settings.FloatPreference
+			android:defaultValue="0"
+			android:key="tz_x"
+			android:persistent="true"
+			android:title="X轴偏移系数 : "
+			min="-1"
+			max="1"
+			app:wiki="指放大内容页面后，视口相对于内容的横向偏移距离（-1.0~1.0倍屏幕宽度），居中时或靠左时，正值代表向右偏移；靠右时，正值代表向左偏移。"
+			app:inlineSummary="true"
+			/>
+		<com.knziha.filepicker.settings.IntPreference
+			android:key="dtm"
+			android:defaultValue="100"
+			android:persistent="true"
+			android:title="时间窗"
+			suffix="（毫秒）"
+			app:wiki="允许双击后，点译窗口的弹出会变慢！此时间指示变慢多少。若过小，可能在点击屏幕的第一下，点译窗口已经弹出来了，导致无法触发双击。"
 			/>
 	</PreferenceCategory>
 </PreferenceScreen>

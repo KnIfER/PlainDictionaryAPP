@@ -615,23 +615,23 @@ function debug(e){console.log(e)};
 	}
 	
 	public float getDoubleClickZoomRatio() {
-		return IBC.doubleClickZoomRatio;
+		return IBC.tapZoomRatio;
 	}
 	
 	public void setDoubleClickZoomRatio(float value) {
-		if (IBC.doubleClickZoomRatio!=value) {
-			IBC.doubleClickZoomRatio = value;
+		if (IBC.tapZoomRatio !=value) {
+			IBC.tapZoomRatio = value;
 			isDirty = true;
 		}
 	}
 	
 	public float getDoubleClickOffsetX() {
-		return IBC.doubleClickXOffset;
+		return IBC.tapZoomXOffset;
 	}
 	
 	public void setDoubleClickOffsetX(float value) {
-		if (IBC.doubleClickXOffset!=value) {
-			IBC.doubleClickXOffset = value;
+		if (IBC.tapZoomXOffset !=value) {
+			IBC.tapZoomXOffset = value;
 			isDirty = true;
 		}
 	}
@@ -1970,7 +1970,7 @@ function debug(e){console.log(e)};
 					rl.getLayoutParams().height = (int) (150*opt.dm.density);//文本限高模式
 					a.webSingleholder.setTag(R.id.image,false);
 					a.webSingleholder.setBackgroundColor(Color.TRANSPARENT);
-					a.contentUIData.PageSlider.TurnPageEnabled=false;
+					a.contentUIData.PageSlider.slideTurn =false;
 					mWebView.setBackgroundColor(Color.TRANSPARENT);
 					a.initPhotoViewPager();
 				} else {
@@ -2479,8 +2479,17 @@ function debug(e){console.log(e)};
 	//	return  false;
 	//}
 
-	public String getLexicalEntryAt(int position) {
-		return position>=0&&position<bookImpl.getNumberEntries()?bookImpl.getEntryAt(position):"Error!!!";
+	public String getBookEntryAt(int pos) {
+		if (pos<0 || pos>=bookImpl.getNumberEntries()) {
+			if (pos==-1) {
+				return "←";
+			}
+			if (pos==bookImpl.getNumberEntries()) {
+				return "→";
+			}
+			return "Error!!!";
+		}
+		return bookImpl.getEntryAt(pos);
 	}
 
 	public boolean hasCover() {
@@ -3285,7 +3294,7 @@ function debug(e){console.log(e)};
 			data_out.writeLong(firstFlag);
 			data_out.writeInt(tbgColor);
 			data_out.writeInt(tfgColor);
-			data_out.writeFloat(IBC.doubleClickZoomRatio);
+			data_out.writeFloat(IBC.tapZoomRatio);
 			data_out.writeFloat(IBC.doubleClickZoomLevel1);
 			data_out.writeFloat(IBC.doubleClickZoomLevel2);
 			
@@ -3297,7 +3306,7 @@ function debug(e){console.log(e)};
 			
 			//CMN.Log("saved::minMatchChars::", minMatchChars, maxMatchChars);
 			
-			data_out.writeFloat(IBC.doubleClickXOffset);
+			data_out.writeFloat(IBC.tapZoomXOffset);
 			data_out.writeFloat(IBC.doubleClickPresetXOffset);
 			
 			data_out.close();
@@ -3355,7 +3364,7 @@ function debug(e){console.log(e)};
 				//CMN.Log(bookImpl.getDictionaryName()+"页面位置",record.x,record.y,webScale);
 				tbgColor = data_in1.readInt();
 				tfgColor = data_in1.readInt();
-				IBC.doubleClickZoomRatio = data_in1.readFloat();
+				IBC.tapZoomRatio = data_in1.readFloat();
 				IBC.doubleClickZoomLevel1  = data_in1.readFloat();
 				IBC.doubleClickZoomLevel2  = data_in1.readFloat();
 				firstVersionFlag = data_in1.readByte();
@@ -3364,7 +3373,7 @@ function debug(e){console.log(e)};
 				minMatchChars = data_in1.readShort();
 				minParagraphWords = data_in1.readShort();
 				// 70
-				IBC.doubleClickXOffset = data_in1.readFloat();
+				IBC.tapZoomXOffset = data_in1.readFloat();
 				IBC.doubleClickPresetXOffset = data_in1.readFloat();
 				// 78
 			}
@@ -3383,12 +3392,12 @@ function debug(e){console.log(e)};
 		}
 		bReadConfig = true;
 		IBC.firstFlag = firstFlag;
-		boolean b1=IBC.doubleClickZoomRatio==0;
+		boolean b1=IBC.tapZoomRatio ==0;
 		// todo 变色
 		int MainBackground = context instanceof MainActivityUIBase?((MainActivityUIBase)context).MainBackground:Color.GRAY;
 		if(b1) {
 			/* initialise values */
-			IBC.doubleClickZoomRatio=2.25f;
+			IBC.tapZoomRatio =2.25f;
 			tbgColor = PDICMainAppOptions.getTitlebarUseGlobalUIColor()?MainBackground:opt.getTitlebarBackgroundColor();
 			tfgColor = opt.getTitlebarForegroundColor();
 		}
@@ -3405,7 +3414,7 @@ function debug(e){console.log(e)};
 			}
 			if(b1)IBC.setPresetZoomAlignment(3);
 			IBC.doubleClickPresetXOffset = 0.12f;
-			IBC.doubleClickXOffset = 0.12f;
+			IBC.tapZoomXOffset = 0.12f;
 			minMatchChars = 1;
 			maxMatchChars = 20;
 			minParagraphWords = 8;
@@ -3600,22 +3609,11 @@ function debug(e){console.log(e)};
 		tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
 		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 1, Coef, 0, 0, 0x1, 5, 1,1,md);//背景
-		ssb.append("  ");
+		ssb.append("\r\n\r\n");
 		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 2, Coef, 0, 0, 0x1, 4, 1,2,md);//缩放
-		
-		ssb.append("\r\n\r\n");
-		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 5, Coef, 4, 0, 0x1, 8, 1,4,md);//内容可编辑
-		ssb.append("  ");
-		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 4, Coef, 4, 0, 0x1, 7, 1,3,md);//内容可重载
-		
-		ssb.append("\r\n\r\n");
-		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 6, Coef, 4, 0, 0x1, 1, 1,0,md);//图文分离
-		ssb.append("  ");
-		init_clickspan_with_bits_at(view, tv, ssb, DictOpt, 3, Coef, 4, 0, 0x1, 10, 1,5,md);//双击放大
-		
 		ssb.append("\r\n\r\n");
 		int start = ssb.length();
-		ssb.append("[").append(DictOpt[7]).append("]");
+		ssb.append("[").append(DictOpt[3]).append("]");
 		ssb.setSpan(new ClickableSpan() {
 			@Override
 			public void onClick(@NonNull View widget) {
@@ -3641,9 +3639,7 @@ function debug(e){console.log(e)};
 					a=datum.a;
 				}
 			}
-			if(a!=null){
-				a.invalidAllPagers();
-			}
+			// 翻页设置可能变化
 		});
 		dv.findViewById(R.id.cancel).setOnClickListener(v -> d.dismiss());
 		//d.getWindow().setDimAmount(0);

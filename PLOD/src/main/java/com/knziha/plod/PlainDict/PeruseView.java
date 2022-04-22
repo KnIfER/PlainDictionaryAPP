@@ -961,10 +961,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		((MarginLayoutParams)contentUIData.dragScrollBar.getLayoutParams()).leftMargin+= hBox.getCompensationBottom()/2;
 //		webcontentlist.scrollbar2guard=contentUIData.dragScrollBar;
 		
-		//tofo
-//		contentUIData.dragScrollBar.setOnProgressChangedListener(_mProgress -> {
-//			contentUIData.PageSlider.TurnPageSuppressed = _mProgress==-1;
-//		});
 		entryAdapter.webviewHolder =
 		bmsAdapter.webviewHolder = contentUIData.webSingleholder;
 		contentUIData.webSingleholder.setBackgroundColor(CMN.GlobalPageBackground);
@@ -1019,8 +1015,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 //		contentUIData.browserWidget8.setOnClickListener(this);
 //		contentUIData.browserWidget8.setOnLongClickListener(this);
 		
-		contentUIData.PageSlider.IMSlider = contentUIData.cover;
-		contentUIData.PageSlider.TurnPageEnabled=opt.getPageTurn3();
+		contentUIData.PageSlider.page = contentUIData.cover;
+		contentUIData.PageSlider.slideTurn =opt.getPageTurn3();
 //		if(a.IMPageCover!=null)//111
 //			IMPageCover.setPageSliderInf(a.IMPageCover.inf);
 
@@ -1142,7 +1138,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	
 	public boolean toggleTurnPageEnabled() {
 		opt.setPageTurn3(!opt.getPageTurn3());
-		return contentUIData.PageSlider.TurnPageEnabled=opt.getPageTurn3();
+		return contentUIData.PageSlider.slideTurn =opt.getPageTurn3();
 	}
 
 	public void hide() {
@@ -1921,7 +1917,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				
 				contentUIData.PageSlider.WebContext = mWebView;
-				weblistHandler.setViewMode(WEB_VIEW_SINGLE, false, null);
+				weblistHandler.setViewMode(null, false, null);
 				weblistHandler.viewContent();
 				
 				if(machine) {

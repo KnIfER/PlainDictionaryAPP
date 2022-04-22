@@ -350,4 +350,11 @@ the valueOf method.
 		return count;
 	}
 	
+	public static float parseFloat(String val, float defVal) {
+		try {
+			return Float.parseFloat(val);
+		} catch (Exception e) {
+			return defVal;
+		}
+	}
 }

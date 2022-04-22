@@ -34,6 +34,7 @@ import androidx.core.graphics.ColorUtils;
 
 import com.google.android.material.math.MathUtils;
 import com.knziha.plod.db.SearchUI;
+import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.BufferedReader;
@@ -766,7 +767,11 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		}
 		@Override
 		public void handleMessage(@NonNull Message msg) {
-	}}
+			if (msg.what==3344) {
+				((PageSlide)msg.obj).handleMsg(msg);
+			}
+		}
+	}
 	
 	public void viewContent(WebViewListHandler wlh) {
 		ViewUtils.addViewToParent(contentUIData.webcontentlister, main_succinct);

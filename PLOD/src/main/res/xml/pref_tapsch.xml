@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	tools:context="com.knziha.plod.settings.TapTranslator"
+	>
 
 	<PreferenceCategory
 		android:key="cat_1"
@@ -123,4 +126,25 @@
 
 	</PreferenceCategory>
 
+
+	<PreferenceCategory
+		android:key="gp_dzoom"
+		android:title="双击内容页"
+		app:icon="@drawable/ic_search"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="tz"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用双击放大"
+			android:summary="全局设置，对于合并页面、单页面有效。"
+			/>
+		<Preference
+			android:key="tz1"
+			android:persistent="false"
+			android:title="详细设置…"
+			/>
+	</PreferenceCategory>
 </PreferenceScreen>

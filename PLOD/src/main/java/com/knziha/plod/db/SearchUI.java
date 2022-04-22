@@ -1,5 +1,7 @@
 package com.knziha.plod.db;
 
+import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
+
 public class SearchUI{
 		public final static int schMin = 1<<16;
 		public final static class MainApp{
@@ -13,14 +15,19 @@ public class SearchUI{
 		}
 		public final static class TapSch{
 			public final static int MAIN=1<<8;
+			//public final static PhotoBrowsingContext pBc = new PhotoBrowsingContext();
 		}
 		public final static class Fye{
 			public final static int MAIN=1<<19;
 			public final static int 表=1<<5;
+			//public final static PhotoBrowsingContext pBc = new PhotoBrowsingContext();
 		}
 		public final static class FloatApp{
 			public final static int MAIN=1<<20;
 			public final static int 表=1<<6;
 			public final static int 表1=1<<7;
 		}
-	}
+		public final static PhotoBrowsingContext pBc = new PhotoBrowsingContext();
+		public static int tapZoomWait;
+		public static int tapZoomV;
+}

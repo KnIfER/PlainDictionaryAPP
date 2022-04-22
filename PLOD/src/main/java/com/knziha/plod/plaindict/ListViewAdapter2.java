@@ -172,7 +172,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		}
 		else {
 			boolean bUseMergedUrl = false;
-			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, null);
+			weblistHandler.setViewMode(null, bUseMergedUrl, null);
 			weblistHandler.initMergedFrame(false, false, bUseMergedUrl);
 			if(bUseMergedUrl) {
 				ViewUtils.addViewToParentUnique(weblistHandler.getMergedFrame().rl, a.webSingleholder);
@@ -202,7 +202,6 @@ public class ListViewAdapter2 extends BasicAdapter {
 //			a.prepareInPageSearch(lstKey, true);
 //		} //333
 		contentUIData.webcontentlister.setTag(R.id.image, a.PhotoPagerHolder!=null&&a.PhotoPagerHolder.getParent()!=null?false:null);
-		contentUIData.PageSlider.TurnPageEnabled=(this==a.adaptermy2?opt.getPageTurn2():opt.getPageTurn1())&&opt.getTurnPageEnabled();
 		a.etSearch_ToToolbarMode(1);
 		
 		boolean storeSch = results.shouldAddHistory(a);

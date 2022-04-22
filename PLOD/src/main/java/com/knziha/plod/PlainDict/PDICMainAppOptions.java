@@ -19,6 +19,7 @@ import com.knziha.filepicker.settings.FilePickerOptions;
 import com.knziha.filepicker.utils.CMNF;
 import com.knziha.filepicker.widget.TextViewmy;
 import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
@@ -52,6 +53,13 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public PDICMainAppOptions(Context a_){
 		defaultReader = PreferenceManager.getDefaultSharedPreferences(a_);
 		magicStr=a_.getResources().getString(R.string.defPlan);
+		if (SearchUI.tapZoomWait==0) {
+			SearchUI.tapZoomWait = getInt("dtm", 100);
+			SearchUI.pBc.tapAlignment(IU.parsint(getString("tzby", "0"), 0));
+			SearchUI.pBc.tapZoomRatio = defaultReader.getFloat("tzlv", 2);
+			SearchUI.pBc.tapZoomXOffset = defaultReader.getFloat("tz_x", 0);
+			SearchUI.pBc.tapZoom(true);
+		}
 	}
 	String magicStr;
 	
@@ -894,11 +902,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	
-	@Metaline(flagPos=6) public boolean getPageTurn1() { SecondFlag=SecondFlag; throw new RuntimeException();}
-	@Metaline(flagPos=6) public void setPageTurn1(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=6) public static boolean getPageTurn1() { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=6) public static void setPageTurn1(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=7) public boolean getPageTurn2() { SecondFlag=SecondFlag; throw new RuntimeException();}
-	@Metaline(flagPos=7) public void setPageTurn2(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7) public static boolean getPageTurn2() { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7) public static void setPageTurn2(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
 
 	public boolean getUseLruDiskCache() {
 		return (SecondFlag & 0x100) != 0x100;
@@ -1463,8 +1471,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	//xxx
 	
-	@Metaline(flagPos=33) public boolean getPageTurn3() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Metaline(flagPos=33) public void setPageTurn3(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33) public static boolean getPageTurn3() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33) public static void setPageTurn3(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 
 
 
@@ -2193,7 +2201,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=36, flagSize=4, shift=7, max=8) public static int getUserOrientation() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=36, flagSize=4, shift=7, max=8) public static void setUserOrientation(int val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	/** for using the translator and save memory in the combined search mode. 联合搜索列表展示单个页面时使类似单本搜索与模糊搜索 */
+	/** for using the translator and save memory in the combined search mode. 联合搜索列表展示单个页面时使类似单本搜索与模糊搜索 <br>
+	 *  旧模式下，单本词典内容通过高度填充界面高度的单个webview显示，多本词典内容通过高度适应内容高度的多个webview显示。 <br>
+	 * */
 	@Metaline(flagPos=40, shift=1) public static boolean getLv2JointOneAsSingle() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=40, shift=1) public static void setLv2JointOneAsSingle(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
@@ -2359,6 +2369,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=31) public static void floatBtnFlt(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=32) public static boolean floatBtnMtd(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=32) public static void floatBtnMtd(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=33) public static boolean tapZoomGlobal(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=33) public static void tapZoomGlobal(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=34) public static boolean tapZoomTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=34) public static void tapZoomTapSch(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=35) public static boolean tapZoomFye(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=35) public static void tapZoomFye(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
 	
 	///////

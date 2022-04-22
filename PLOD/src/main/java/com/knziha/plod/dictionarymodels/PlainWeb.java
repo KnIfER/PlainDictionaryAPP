@@ -5,8 +5,7 @@ import static com.knziha.plod.db.LexicalDBHelper.FIELD_CREATE_TIME;
 import static com.knziha.plod.db.LexicalDBHelper.FIELD_EDIT_TIME;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_DATA_v2;
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
-import static com.knziha.plod.plaindict.MdictServerMobile.getRemoteServerRes;
-import static com.knziha.plod.plaindict.MdictServerMobile.hasRemoteDebugServer;
+import static com.knziha.plod.plaindict.MdictServerMobile.*;
 import static com.knziha.plod.widgets.Tls12SocketFactory.enableTls12OnPreLollipop;
 import static org.nanohttpd.protocols.http.response.Response.newChunkedResponse;
 

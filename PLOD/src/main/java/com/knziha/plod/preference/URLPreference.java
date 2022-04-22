@@ -1,4 +1,4 @@
-package com.knziha.plod.settings;
+package com.knziha.plod.preference;
 
 import android.content.Context;
 import android.content.Intent;

@@ -11,13 +11,9 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -88,6 +84,7 @@ import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
+import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
 import com.knziha.plod.searchtasks.AsyncTaskWrapper;
@@ -102,16 +99,16 @@ import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.HeightProvider;
-import com.knziha.plod.widgets.IMPageSlider;
-import com.knziha.plod.widgets.IMPageSlider.PageSliderInf;
+import com.knziha.plod.widgets.PageSlide;
+import com.knziha.plod.widgets.PageSlide.Pager;
 import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.NoSSLv3SocketFactory;
 import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
-import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScreenListener;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
+import com.knziha.rbtree.additiveMyCpr1;
 
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -590,6 +587,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				break;
 				case 3322123:
 					a.performReadEntry();
+				break;
+				case 3344:
+					((PageSlide)msg.obj).handleMsg(msg);
 				break;
 				case 3322124:
 					a.enqueueNextAutoReadProcess();
@@ -1172,7 +1172,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	@SuppressLint("ResourceType")
 	protected void further_loading(final Bundle savedInstanceState) {
-		//CMN.Log("Main Ac further_loading!!!");
 		barSzBot=(int) mResource.getDimension(R.dimen.barSzBot);//opt.getBottombarSize();
 		
 		ViewUtils.removeView(mlv);
@@ -1198,123 +1197,55 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//svGuard.SplitViewsToGuard.add(webcontentlister);
 
 		//PageSlider.SCViewToMute = (ScrollViewmy) webholder.getParent();
-		contentUIData.PageSlider.IMSlider = contentUIData.cover;
-		contentUIData.cover.setPageSliderInf(new PageSliderInf() {
-			protected Bitmap PageCache;
-			@Override
-			public void onPreparePage(final IMPageSlider IMPageCover) {
-				//CMN.Log("onPreparePage!!!");
-				//mPageCanvas.drawColor(Color.WHITE);
-				currentPos=0;
-				if(currentDictionary.mWebView!=null){
-					currentPos=currentDictionary.mWebView.currentPos;
-				}
-				if(IMPageCover.MainBackground!=MainBackground) {
-					IMPageCover.getBackground().setColorFilter(IMPageCover.MainBackground=MainBackground, PorterDuff.Mode.SRC_IN);
-				}
-				IMPageCover.getBackground().setAlpha(0);
-				IMPageCover.setTranslationY(0);
-				RLContainerSlider PageSlider_ = contentUIData.PageSlider;
-				if(peruseView !=null && ActivedAdapter== peruseView.entryAdapter)
-					PageSlider_= peruseView.contentUIData.PageSlider;
-				
-				//CMN.debug("复制网页画面::", currentDictionary, "$1.mWebView.getProgress()");
-				
-				if (PDICMainAppOptions.getPowerSavingPageSideView()
-					||GlobalOptions.isDark && Build.VERSION.SDK_INT<21) { // todo webview 版本
-					if(mPageColorDrawable==null) mPageColorDrawable=new ColorDrawable();
-					mPageColorDrawable.setColor(GlobalOptions.isDark?0x2f888888:0x38efefef);
-					IMPageCover.setImageDrawable(mPageColorDrawable);
-				} else {
-					if(PageCache==null) {
-						PageCache = Bitmap.createBitmap(dm.widthPixels,dm.heightPixels, Bitmap.Config.ARGB_8888);
-						mPageCanvas.setBitmap(PageCache);
-						mPageDrawable = new BitmapDrawable(getResources(), PageCache);
-					}
-					//IMPageCover.setImageBitmap(PageCache);
-					IMPageCover.setScaleType(ImageView.ScaleType.MATRIX);
-					HappyMatrix = new Matrix();
-					HappyMatrix.setScale(Math.round(1.f*dm.widthPixels/PageSlider_.getWidth()),Math.round(1.f*dm.heightPixels/PageSlider_.getHeight()));
-					HappyMatrix.setScale(Math.round(1.f*PageSlider_.getWidth()/dm.widthPixels),Math.round(1.f*PageSlider_.getHeight()/dm.heightPixels));
-					IMPageCover.setImageMatrix(HappyMatrix);
-					
-					IMPageCover.setImageDrawable(mPageDrawable);
-					
-					if(PageCache.getWidth()!=PageSlider_.getWidth() || PageCache.getHeight()!=contentUIData.PageSlider.getHeight()) {
-						//PageCache.setHeight(PageSlider_.getHeight());
-						//PageCache.setWidth(PageSlider_.getWidth());
-					}
-					int painter;
-					if(PeruseViewAttached()) {
-						painter=1;
-					} else if(weblistHandler.getChildCount()!=0) {
-						painter=2;
-					} else {
-						painter=3;
-					}
-					// 重绘
-					mPageCanvas.drawColor(Color.TRANSPARENT,PorterDuff.Mode.SRC_IN);
-					if(painter==1) {
-						peruseView.contentUIData.webSingleholder.post(() -> {
-							//if(PageCache.isRecycled())PageCache = Bitmap.createBitmap(PageCache.getWidth(), PageCache.getHeight(), Bitmap.Config.ARGB_8888);
-							peruseView.contentUIData.webSingleholder.draw(mPageCanvas);
-						});
-					} else if(painter==2){
-						weblistHandler.webholder.post(() -> {
-							mPageCanvas.translate(0, -weblistHandler.WHP.getScrollY());
-							weblistHandler.WHP.draw(mPageCanvas);
-							mPageCanvas.translate(0, weblistHandler.WHP.getScrollY());
-						});
-					} else {
-						webSingleholder.draw(new Canvas(PageCache));
-					}
-				}
-
-				IMPageCover.setVisibility(View.VISIBLE);
-				IMPageCover.setAlpha(1.0f);
-				if(IMPageCover.getLayoutParams().height!=-1) {
-					IMPageCover.getLayoutParams().height=-1;
-					IMPageCover.requestLayout();
-				}
-
-				//CMN.Log("drawed");
-			}
-
-			@Override
-			public void onDecided(boolean Dir,IMPageSlider IMPageCover) {
-				IMPageCover.getBackground().setAlpha(255);
-			}
+		contentUIData.PageSlider.page = contentUIData.cover;
+		contentUIData.cover.setPager(new Pager() {
 			long currentPos=0;
-
 			@Override
-			public void onMoving(float val,IMPageSlider IMPageCover) {
-//				if(ActivedAdapter==adaptermy && currentDictionary.isViewInitialized()) {
-//					long pos = currentDictionary.mWebView.currentPos+(Math.abs(val)>20*dm.density?(val<0?1:-1):0);
-//					if(pos>=-1 && pos<currentDictionary.bookImpl.getNumberEntries()) {
-//						if(currentPos!=pos) {
-//							currentDictionary.setToolbarTitleAt(pos);
-//						}
-//						currentPos=pos;
-//					}
-//				}
+			public void onMoving(float val, PageSlide page) {
+				WebViewListHandler wPage = page.weblist;
+				
+				if (val==Integer.MAX_VALUE) {
+					//CMN.Log("onPreparePage!!!");
+					currentPos=0;
+					//if(page.MainBackground!=MainBackground) {
+					//	page.getBackground().setColorFilter(IMPageCover.MainBackground=MainBackground, PorterDuff.Mode.SRC_IN);
+					//}
+					page.setBackgroundColor(ColorUtils.blendARGB(AppWhite, Color.GRAY, 0.2f));
+					page.setTextColor(AppBlack);
+					if (wPage.isMultiRecord()) {
+						additiveMyCpr1 viewing = wPage.isMergingFrames() ? wPage.getMergedFrame().jointResult:wPage.jointResult;
+						if (viewing!=null) {
+							page.setText(viewing.key);
+						}
+					} else {
+						page.setText(wPage.dictView.presenter.currentDisplaying);
+					}
+				} else {
+					//boolean turn = Math.abs(val)>20*dm.density;
+					int pos = val<0?1:-1;
+					if (currentPos!=pos) {
+						currentPos=pos;
+						page.setGravity(Gravity.CENTER_VERTICAL|(val>0?Gravity.LEFT:Gravity.RIGHT));
+						//if (turn) {
+						//	//page.setText();
+						//}
+						if (wPage.isMultiRecord()) {
+							resultRecorderCombined rec = wPage.multiRecord;
+							if (rec!=null) {
+								page.setText(rec.getResAt(PDICMainActivity.this, rec.viewingPos+pos));
+							}
+						} else {
+							page.setText(wPage.dictView.presenter.getBookEntryAt((int) (pos+wPage.dictView.currentPos)));
+						}
+					}
+				}
 			}
-
 			@Override
-			public void onHesitate(IMPageSlider IMPageCover) {
-				IMPageCover.getBackground().setAlpha(0);
-			}
-
-			@Override
-			public void onPageTurn(int Dir,IMPageSlider IMPageCover) {
-				IMPageCover.getBackground().setAlpha(0);
-				boolean there = ActivedAdapter instanceof com.knziha.plod.plaindict.PeruseView.LeftViewAdapter;
-				if(Dir==1) {contentUIData.browserWidget11.performClick();}
-				else if(Dir==0) contentUIData.browserWidget10.performClick();
-//				else if(ActivedAdapter==adaptermy && !there) {
-//					if(currentPos!=currentDictionary.mWebView.currentPos){
-//						currentDictionary.setToolbarTitleAt(-2);
-//					}
-//				}
+			public void slidePage(int Dir, PageSlide page) {
+				//IMPageCover.getBackground().setAlpha(0);
+				WebViewListHandler wPage = page.weblist;
+				if(Dir==1) wPage.contentUIData.browserWidget11.performClick();
+				else if(Dir==0) wPage.contentUIData.browserWidget10.performClick();
 			}});
 		
 		final NoScrollViewPager viewPager = UIData.viewpager;
@@ -3495,17 +3426,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //			if(val) title+=" √";
 //			AllMenus.findItem(R.id.toolbar_action14).setTitle(title);
 //		}
-	}
-	
-	@Override
-	public void invalidAllPagers() {
-		contentUIData.PageSlider.quoDblClk();
-		if(peruseView !=null){
-			peruseView.contentUIData.PageSlider.quoDblClk();
-		}
-		if(wordPopup.pageSlider !=null){
-			contentUIData.PageSlider.quoDblClk();
-		}
 	}
 	
 	public void startServer(boolean start) {

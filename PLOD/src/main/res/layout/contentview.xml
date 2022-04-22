@@ -19,11 +19,24 @@
 			android:layout_weight="1"
 			android:descendantFocusability="beforeDescendants"
 			>
+			<com.knziha.plod.widgets.PageSlide
+				android:id="@+id/cover"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:visibility="gone"
+				android:paddingLeft="15dp"
+				android:paddingRight="15dp"
+				android:textSize="20sp"
+				tools:text="ABC"
+				tools:visibility="visible"
+				android:paddingBottom="50dp"
+				/>
 			<FrameLayout
 				android:id="@+id/webSingleholder"
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
 				tools:background="#C7EDCC"
+				tools:visibility="gone"
 				/>
 			<com.knziha.plod.widgets.AdvancedNestScrollView
 				android:id="@+id/WHP"
@@ -31,6 +44,7 @@
 				android:layout_width="match_parent"
 				android:focusable="true"
 				tools:background="#C7EDCC"
+				tools:visibility="gone"
 				>
 				<LinearLayout
 					android:id="@+id/webholder"
@@ -41,13 +55,6 @@
 				</LinearLayout>
 			</com.knziha.plod.widgets.AdvancedNestScrollView>
 
-			<com.knziha.plod.widgets.IMPageSlider
-				android:id="@+id/cover"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:background="@drawable/shixian2"
-				android:visibility="gone"
-				/>
 
 			<ProgressBar
 				android:id="@+id/main_progress_bar"

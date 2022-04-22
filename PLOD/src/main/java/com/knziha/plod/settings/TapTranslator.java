@@ -5,18 +5,19 @@ import android.os.Bundle;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.SettingsFragmentBase;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.dictionary.Utils.IU;
 
 public class TapTranslator extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
-	public final static int id=9;
+	public final static int id=R.xml.pref_tapsch;
 	public final static int requestCode=10;
 	
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		mPreferenceId = R.xml.pref_clicksearch;
+		mPreferenceId = id;
 		super.onCreate(savedInstanceState);
 		init_switch_preference(this, "coord_view", PDICMainAppOptions.getImmersiveClickSearch(), null, null);
 
@@ -36,6 +37,10 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 		init_switch_preference(this, "click_tts", PDICMainAppOptions.getClickSearchAutoReadEntry(), null, null);
 		
 		findPreference("bar").setOnPreferenceClickListener(this);
+		findPreference("tz1").setOnPreferenceClickListener(this);
+		
+		init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomTapSch(), null, null);
+		findPreference("tz1").setOnPreferenceClickListener(this);
 	}
 
 	@Override
@@ -43,6 +48,10 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 		if (preference.getKey().equals("bar")) {
 			getActivity().setResult(requestCode);
 			getActivity().finish();
+			return true;
+		}
+		if (preference.getKey().equals("tz1")) {
+			CMN.Log("todo...");
 			return true;
 		}
 		return false;
@@ -98,6 +107,9 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 			break;
 			case "use_morph":
 				PDICMainAppOptions.setClickSearchUseMorphology((Boolean) newValue);
+			break;
+			case "tz":
+				PDICMainAppOptions.tapZoomTapSch((Boolean) newValue);
 			break;
 		}
 		return true;

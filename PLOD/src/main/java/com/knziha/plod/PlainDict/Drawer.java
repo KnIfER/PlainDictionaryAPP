@@ -759,7 +759,7 @@ public class Drawer extends Fragment implements
 						
 						if(markedBook!=null) {
 							if(entryName==null) {
-								entryName = entryNames[position] = markedBook.getLexicalEntryAt((int) bnPos[2]);
+								entryName = entryNames[position] = markedBook.getBookEntryAt((int) bnPos[2]);
 							}
 							tv.setSubText(markedBook.getDictionaryName());
 						} else {//获取词典失败
@@ -788,7 +788,7 @@ public class Drawer extends Fragment implements
 							entryName = cursor.getString(0);
 						}
 					} catch (Exception e) {
-						entryName = markedBook.getLexicalEntryAt((int) bnPos[2]);
+						entryName = markedBook.getBookEntryAt((int) bnPos[2]);
 					}
 					if(markedBook.getIsWebx()) {
 						PlainWeb webx = markedBook.getWebx();

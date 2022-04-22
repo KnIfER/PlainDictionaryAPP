@@ -1398,7 +1398,7 @@ public class DBroswer extends DialogFragment implements
 			setUpContentView();
 			final boolean bUseMergedUrl = false;
 			boolean bUseDictView = /*currentDictionary.rl!=null || */!opt.getUseSharedFrame() || opt.getMergeExemptWebx()&&currentDictionary.getIsWebx();
-			weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, bUseDictView?currentDictionary.mWebView:weblistHandler.mMergedFrame);
+			weblistHandler.setViewMode(null, bUseMergedUrl, bUseDictView?currentDictionary.mWebView:weblistHandler.mMergedFrame);
 			weblistHandler.viewContent();
 			if(!bUseDictView) weblistHandler.initMergedFrame(false, true, false);
 

@@ -169,7 +169,7 @@ public class ListViewAdapter extends BasicAdapter {
 			mWebView = weblistHandler.getMergedFrame(presenter);
 		}
 		this.mWebView = mWebView;
-		weblistHandler.setViewMode(WEB_VIEW_SINGLE, bUseMergedUrl, mWebView);
+		weblistHandler.setViewMode(null, bUseMergedUrl, mWebView);
 		weblistHandler.initMergedFrame(false, false, bUseMergedUrl);
 		
 		presenter.lvClickPos=pos;
@@ -215,7 +215,6 @@ public class ListViewAdapter extends BasicAdapter {
 		}
 		a.contentview.setTag(R.id.image, a.PhotoPagerHolder!=null&&a.PhotoPagerHolder.getParent()!=null?false:null);
 		
-		contentUIData.PageSlider.TurnPageEnabled=opt.getPageTurn1()&&opt.getTurnPageEnabled();
 		contentUIData.PageSlider.setWebview(mWebView, null);
 		
 		String lstKey = this.currentKeyText = mWebView.word.trim();
