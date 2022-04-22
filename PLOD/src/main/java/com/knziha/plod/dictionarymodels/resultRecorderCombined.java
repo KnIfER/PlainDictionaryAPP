@@ -97,10 +97,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		if (data == null || pos < 0 || pos > data.size() - 1) {
 			if (data!=null) {
 				if (pos == -1) {
-					return "<==";
+					return "←";
 				}
 				if (pos == data.size() - 1) {
-					return "==>";
+					return "→";
 				}
 			}
 			return "!!! Error: code 1";

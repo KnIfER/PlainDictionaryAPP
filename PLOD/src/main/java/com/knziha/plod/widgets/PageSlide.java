@@ -67,6 +67,7 @@ public class PageSlide extends TextView {
 			RLContainerSlider slide = weblist.contentUIData.PageSlider;
 			if (!decided || slide.dragged || slide.aborted) {
 				dragView.setAlpha(1);
+				setVisibility(GONE);
 			} else {
 				dragView.setAlpha(0.15f);
 				dragView.animate()

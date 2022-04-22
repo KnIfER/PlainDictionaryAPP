@@ -48,6 +48,7 @@ import com.knziha.plod.widgets.AdvancedNestScrollWebView;
 import com.knziha.plod.widgets.BottomNavigationBehavior;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.LinearSplitView;
+import com.knziha.plod.widgets.PageSlide;
 import com.knziha.plod.widgets.PopupGuarder;
 import com.knziha.plod.widgets.PopupMoveToucher;
 import com.knziha.plod.widgets.RLContainerSlider;
@@ -74,7 +75,6 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	public WebViewmy mWebView;
 	public BookPresenter.AppHandler popuphandler;
 	public ImageView popIvBack;
-	public View popCover;
 	public ViewGroup popupContentView;
 	protected ImageView popupStar;
 	public ViewGroup toolbar;
@@ -151,7 +151,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		int id = v.getId();
 		switch (id) {
 			case R.id.cover: {
-				if(v==popCover){
+				if(v==pageSlider.page){
 					a.getUtk().setInvoker(CCD, mWebView, null, null);
 					a.getUtk().onClick(v);
 				}
@@ -420,7 +420,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	
 	public void init() {
 		if (mWebView == null) {
-			weblistHandler/*faked*/ = new WebViewListHandler(a, a.contentUIData/*faked*/, SearchUI.TapSch.MAIN);
+			WebViewListHandler weblist = this.weblistHandler/*faked*/ = new WebViewListHandler(a, a.contentUIData/*faked*/, SearchUI.TapSch.MAIN);
 			popupContentView = (ViewGroup) a.getLayoutInflater()
 					.inflate(R.layout.float_contentview_basic, a.root, false);
 			popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
@@ -430,16 +430,18 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			splitter = (ViewGroup) popupContentView.getChildAt(3);
 			dictPicker = new DictPicker(a, split, splitter, -1);
 			dictPicker.autoScroll = true;
-			WebViewmy webview = (WebViewmy) pageSlider.getChildAt(0);
+			PageSlide page = pageSlider.page = (PageSlide) pageSlider.getChildAt(0);
+			WebViewmy webview = (WebViewmy) pageSlider.getChildAt(1);;
+			pageSlider.weblist = page.weblist = webview.weblistHandler = weblist;
+			page.hdl = a.hdl;
+			page.setPager(a.getPageListener());
 			webview.getSettings().setTextZoom(118);
 			webview.fromCombined = 2;
-			pageSlider.setWebview(webview, null);
 			pottombar = (ViewGroup) popupContentView.getChildAt(2);
 			popuphandler = new BookPresenter.AppHandler(a.currentDictionary);
 			webview.addJavascriptInterface(popuphandler, "app");
-			webview.setBackgroundColor(Color.TRANSPARENT);
+			webview.setBackgroundColor(a.AppWhite);
 			((AdvancedNestScrollWebView)webview).setNestedScrollingEnabled(true);
-			popCover = pageSlider.getChildAt(1);
 			popIvBack = toolbar.findViewById(R.id.popIvBack);
 			popupStar = toolbar.findViewById(R.id.popIvStar);
 			ViewUtils.setOnClickListenersOneDepth(toolbar, this, 999, null);
@@ -485,16 +487,17 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			for (int i = 0; i < pottombar.getChildCount(); i++) {
 				pottombar.getChildAt(i).setOnTouchListener(moveView);
 			}
+			weblist.browserWidget10 = pottombar.findViewById(R.id.popLstE);
+			weblist.browserWidget11 = pottombar.findViewById(R.id.popNxtE);
+			weblist.mBar = pageSlider.findViewById(R.id.dragScrollBar);
+			this.mWebView = weblist.dictView = weblist.mMergedFrame = webview;
+			pageSlider.bar = weblist.mBar;
 			// 缩放逻辑
-			webview.weblistHandler = weblistHandler;
-			weblistHandler.mMergedFrame = webview;
-			weblistHandler.mBar = pageSlider.findViewById(R.id.dragScrollBar);
-			this.mWebView = webview;
-			
-			pageSlider.bar = weblistHandler.mBar;
-			
 			popupGuarder.setOnTouchListener(moveView);
 			popupGuarder.setClickable(true);
+			pageSlider.setWebview(webview, null);
+			
+			weblist.bDataOnly = true;
 		}
 		if (GlobalOptions.isDark) {
 			popupChecker.drawInnerForEmptyState = true;
@@ -1029,11 +1032,10 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		if(rec!=null) {
 			boolean bUseMergedUrl = true;
 			//weblistHandler.setViewMode(null, bUseMergedUrl);
-			//weblistHandler.initMergedFrame(false, false, bUseMergedUrl);
+			//weblistHandler.initMergedFrame(false, false, bUseMergedUrl);;
 			weblistHandler.bMergingFrames = true;
 			weblistHandler.bMergeFrames = 1;
-			weblistHandler.bDataOnly = true;
-			mWebView.presenter = a.weblistHandler.getMergedBook(); //todo opt
+			//mWebView.presenter = a.weblistHandler.getMergedBook(); //todo opt
 			if(mWebView.wvclient!=a.myWebClient) {
 				mWebView.setWebChromeClient(a.myWebCClient);
 				mWebView.setWebViewClient(a.myWebClient);
@@ -1079,7 +1081,8 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		IU.NumberToText_SIXTWO_LE(CCD.getId(), mergedUrl);
 		mergedUrl.append("_");
 		IU.NumberToText_SIXTWO_LE(currentPos, mergedUrl);
-		mWebView.presenter = a.weblistHandler.getMergedBook();
+		mWebView.currentPos = currentPos;
+		mWebView.presenter = CCD;
 		mWebView.loadUrl(mergedUrl.toString());
 		weblistHandler.resetScrollbar(mWebView, false, false);
 	}

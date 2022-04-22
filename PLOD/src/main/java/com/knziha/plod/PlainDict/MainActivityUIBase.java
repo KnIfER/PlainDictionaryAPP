@@ -10539,15 +10539,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					//if(page.MainBackground!=MainBackground) {
 					//	page.getBackground().setColorFilter(IMPageCover.MainBackground=MainBackground, PorterDuff.Mode.SRC_IN);
 					//}
-					page.setBackgroundColor(ColorUtils.blendARGB(AppWhite, Color.GRAY, 0.2f));
 					page.setTextColor(AppBlack);
-					if (wPage.isMultiRecord()) {
-						additiveMyCpr1 viewing = wPage.isMergingFrames() ? wPage.getMergedFrame().jointResult:wPage.jointResult;
-						if (viewing!=null) {
-							page.setText(viewing.key);
+					page.setBackgroundColor(ColorUtils.blendARGB(AppWhite, Color.GRAY, 0.2f));
+					if (!wPage.bDataOnly) {
+						if (wPage.isMultiRecord()) {
+							additiveMyCpr1 viewing = wPage.isMergingFrames() ? wPage.getMergedFrame().jointResult : wPage.jointResult;
+							if (viewing != null) {
+								page.setText(viewing.key);
+							}
+						} else {
+							page.setText(wPage.dictView.presenter.currentDisplaying);
 						}
-					} else {
-						page.setText(wPage.dictView.presenter.currentDisplaying);
 					}
 				} else {
 					//boolean turn = Math.abs(val)>20*dm.density;
@@ -10564,6 +10566,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								page.setText(rec.getResAt(MainActivityUIBase.this, rec.viewingPos+pos));
 							}
 						} else {
+							CMN.Log("page.setText", wPage.dictView.presenter);
 							page.setText(wPage.dictView.presenter.getBookEntryAt((int) (pos+wPage.dictView.currentPos)));
 						}
 					}
@@ -10573,8 +10576,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			public void slidePage(int Dir, PageSlide page) {
 				//IMPageCover.getBackground().setAlpha(0);
 				WebViewListHandler wPage = page.weblist;
-				if(Dir==1) wPage.contentUIData.browserWidget11.performClick();
-				else if(Dir==0) wPage.contentUIData.browserWidget10.performClick();
+				if(Dir==1) wPage.browserWidget11.performClick();
+				else if(Dir==0) wPage.browserWidget10.performClick();
 			}
 		}:pager;
 	}

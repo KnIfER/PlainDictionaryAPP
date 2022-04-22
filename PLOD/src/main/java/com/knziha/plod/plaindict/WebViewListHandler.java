@@ -38,6 +38,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.ColorUtils;
+import androidx.preference.Preference;
 
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
@@ -107,6 +108,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	WebViewmy mWebView;
 	public boolean tapSch;
 	
+	public View browserWidget10;
+	public View browserWidget11;
+	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData, int src) {
 		super(a);
 		this.a = a;
@@ -127,6 +131,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.PageSlider.weblist = this;
 			contentUIData.cover.weblist = this;
 			contentUIData.cover.hdl = a.hdl;
+			browserWidget10 = contentUIData.browserWidget10;
+			browserWidget11 = contentUIData.browserWidget11;
 			
 			contentUIData.PageSlider.page = contentUIData.cover;
 			contentUIData.cover.setPager(a.getPageListener());
@@ -196,7 +202,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public ViewGroup getDragView() {
-		return mViewMode==WEB_LIST_MULTI?WHP:contentUIData.webSingleholder;
+		CMN.Log("getDragView", bDataOnly, dictView, dictView==mMergedFrame);
+		return bDataOnly?dictView:mViewMode==WEB_LIST_MULTI?WHP:contentUIData.webSingleholder;
 	}
 	
 	public View getChildAt(int frameAt) {

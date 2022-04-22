@@ -477,10 +477,10 @@ public class RLContainerSlider extends FrameLayout{
 	}
 	
 	private void quoTapZoom() {
-		final int src = weblist.getSrc();
 		if (WebContext!=null) {
 			tapZoom = pBc.tapZoom();
 			if (!tapZoom) {
+				final int src = weblist.getSrc();
 				if (src == SearchUI.TapSch.MAIN ? PDICMainAppOptions.tapZoomTapSch()
 						: src == SearchUI.Fye.MAIN ? PDICMainAppOptions.tapZoomFye()
 						: PDICMainAppOptions.tapZoomGlobal()) {
@@ -497,17 +497,22 @@ public class RLContainerSlider extends FrameLayout{
 			tapZoomV = SearchUI.tapZoomV;
 		}
 		if (PDICMainAppOptions.getTurnPageEnabled()) {
-			if (weblist.isMultiRecord()) {
-				if (weblist.bMergingFrames) {
-					slideTurn = PDICMainAppOptions.getPageTurn3();
-					//CMN.Log("slideTurn::1", slideTurn);
-				} else {
-					slideTurn = PDICMainAppOptions.getPageTurn2();
-					//CMN.Log("slideTurn::2", slideTurn);
-				}
+			if (weblist.bDataOnly) {
+				slideTurn = PDICMainAppOptions.turnPageTapSch();
+				CMN.Log("slideTurn::0", slideTurn, tapZoom);
 			} else {
-				slideTurn = PDICMainAppOptions.getPageTurn1();
-				//CMN.Log("slideTurn::3", slideTurn);
+				if (weblist.isMultiRecord()) {
+					if (weblist.bMergingFrames) {
+						slideTurn = PDICMainAppOptions.getPageTurn3();
+						CMN.Log("slideTurn::1", slideTurn, tapZoom);
+					} else {
+						slideTurn = PDICMainAppOptions.getPageTurn2();
+						CMN.Log("slideTurn::2", slideTurn, tapZoom);
+					}
+				} else {
+					slideTurn = PDICMainAppOptions.getPageTurn1();
+					CMN.Log("slideTurn::3", slideTurn, tapZoom);
+				}
 			}
 		} else if(slideTurn) {
 			slideTurn = false;

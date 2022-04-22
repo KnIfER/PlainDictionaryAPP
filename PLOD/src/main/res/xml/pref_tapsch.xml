@@ -139,12 +139,25 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="使用双击放大"
-			android:summary="全局设置，对于合并页面、单页面有效。"
 			/>
 		<Preference
 			android:key="tz1"
 			android:persistent="false"
 			android:title="详细设置…"
+			/>
+	</PreferenceCategory>
+	<PreferenceCategory
+		android:key="gp_dzoom"
+		android:title="翻页"
+		app:icon="@drawable/ic_search"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="turn"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="允许翻页"
 			/>
 	</PreferenceCategory>
 </PreferenceScreen>

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.preference.Preference;
 
 import com.knziha.filepicker.settings.SettingsFragmentBase;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
@@ -12,7 +13,7 @@ import com.knziha.plod.dictionary.Utils.IU;
 
 public class TapTranslator extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=R.xml.pref_tapsch;
-	public final static int requestCode=10;
+	public final static int requestCode=id&0xFFFF;
 	
 	//初始化
 	@Override
@@ -40,6 +41,7 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 		findPreference("tz1").setOnPreferenceClickListener(this);
 		
 		init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomTapSch(), null, null);
+		init_switch_preference(this, "turn", PDICMainAppOptions.turnPageTapSch(), null, null);
 		findPreference("tz1").setOnPreferenceClickListener(this);
 	}
 
@@ -110,6 +112,11 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 			break;
 			case "tz":
 				PDICMainAppOptions.tapZoomTapSch((Boolean) newValue);
+				SearchUI.tapZoomV++;
+			break;
+			case "turn":
+				PDICMainAppOptions.turnPageTapSch((Boolean) newValue);
+				SearchUI.tapZoomV++;
 			break;
 		}
 		return true;
