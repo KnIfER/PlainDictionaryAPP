@@ -1,7 +1,6 @@
 package com.knziha.plod.plaindict;
 
 import static com.knziha.plod.plaindict.PDICMainActivity.ViewHolder;
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -194,7 +193,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		
 		results.renderContentAt(lastClickedPos, a,this, weblistHandler);
 		
-		a.decorateContentviewByKey(null, lstKey);
+		weblistHandler.setStar(lstKey);
 		
 		
 		a.bWantsSelection=true;

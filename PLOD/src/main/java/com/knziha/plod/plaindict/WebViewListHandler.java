@@ -108,6 +108,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	WebViewmy mWebView;
 	public boolean tapSch;
 	
+	public View browserWidget8;
 	public View browserWidget10;
 	public View browserWidget11;
 	
@@ -131,6 +132,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.PageSlider.weblist = this;
 			contentUIData.cover.weblist = this;
 			contentUIData.cover.hdl = a.hdl;
+			browserWidget8 = contentUIData.browserWidget8;
 			browserWidget10 = contentUIData.browserWidget10;
 			browserWidget11 = contentUIData.browserWidget11;
 			
@@ -1484,5 +1486,23 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public boolean isMergingFrames() {
 		return bMergingFrames;
+	}
+	
+	public void setStar(String key) {
+		if (ViewUtils.isVisibleV2(browserWidget8)) {
+			browserWidget8.setActivated(a.GetIsFavoriteTerm(key));
+		}
+	}
+	
+	public String getMultiRecordKey() {
+		additiveMyCpr1 ret = null;
+		if (multiRecord!=null) {
+			if (isViewSingle()) {
+				ret = getMergedFrame().jointResult;
+			} else {
+				ret = jointResult;
+			}
+		}
+		return ret == null ? "Error!!!" : ret.key;
 	}
 }

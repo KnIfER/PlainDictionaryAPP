@@ -91,7 +91,6 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.dictionarymodels.BookPresenter.def_zoom;
 import static com.knziha.plod.plaindict.MainActivityUIBase.init_clickspan_with_bits_at;
 import static com.knziha.plod.plaindict.Toastable_Activity.LONG_DURATION_MS;
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
@@ -1636,13 +1635,12 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         
 		public void click(int pos,boolean ismachineClick) {//lv2
 			MainActivityUIBase a = getMainActivity();
-			ActivedAdapter=a.ActivedAdapter=this;
+			ActivedAdapter=this;
 			WebViewmy mWebView = PeruseView.this.mWebView;
 			
         	if(ToD) {
         		//a.setContentBow(false);
         		//super.onItemClick(pos);
-            	a.ActivedAdapter=this;
             	if(pos<0) {
 					a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, 0);
             		return;
@@ -1725,7 +1723,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     			currentDictionary.renderContentAt(-1, RENDERFLAG_NEW, 0, mWebView, actualPosition);//bookmarks.get(lastClickedPos)
 				
     			//voyager[SelectedV*3+2]=pos;
-    			a.decorateContentviewByKey(null, mWebView.word);
+    			weblistHandler.setStar(mWebView.word);
 				mWebView.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
         	}
@@ -1906,7 +1904,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			MainActivityUIBase a = getMainActivity();
 			if (mWebView.presenter!=currentDictionary || mWebView.currentPos!=pos)
 			{
-				ActivedAdapter=a.ActivedAdapter=this;
+				ActivedAdapter=this;
 				lastClickedPosBefore = lastClickedPos;
 				super.onItemClick(pos);
 				if(pos<-1 || presenter==null)
@@ -1960,7 +1958,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				
 				contentUIData.PageSlider.setWebview(mWebView, null);
 				//voyager[SelectedV*3+2]=pos;
-				a.decorateContentviewByKey(contentUIData.browserWidget8, key);
+				weblistHandler.setStar(key);
 				
 				if(addHistory && !TextUtils.equals(key, lstKey)) {
 					int stLv = !machine && storeLv1(key)? SearchUI.Fye.MAIN:

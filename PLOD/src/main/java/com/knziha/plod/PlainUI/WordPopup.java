@@ -76,7 +76,6 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	public BookPresenter.AppHandler popuphandler;
 	public ImageView popIvBack;
 	public ViewGroup popupContentView;
-	protected ImageView popupStar;
 	public ViewGroup toolbar;
 	protected ViewGroup pottombar;
 	protected CircleCheckBox popupChecker;
@@ -170,6 +169,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 					int np = rec.viewingPos + delta;
 					if (np>=0 && np<rec.size()) {
 						rec.renderContentAt(currentPos=np, a, null, weblistHandler);
+						setDisplaying(weblistHandler.getMultiRecordKey());
 					}
 				} else {
 					loadEntry(id==R.id.popNxtE?1:-1);
@@ -436,7 +436,6 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			webview.setBackgroundColor(a.AppWhite);
 			((AdvancedNestScrollWebView)webview).setNestedScrollingEnabled(true);
 			popIvBack = toolbar.findViewById(R.id.popIvBack);
-			popupStar = toolbar.findViewById(R.id.popIvStar);
 			ViewUtils.setOnClickListenersOneDepth(toolbar, this, 999, null);
 			ViewUtils.setOnClickListenersOneDepth(pottombar, this, 999, null);
 			popupChecker = pottombar.findViewById(R.id.popChecker);
@@ -480,8 +479,11 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			for (int i = 0; i < pottombar.getChildCount(); i++) {
 				pottombar.getChildAt(i).setOnTouchListener(moveView);
 			}
+			
+			weblist.browserWidget8 = toolbar.findViewById(R.id.popIvStar);
 			weblist.browserWidget10 = pottombar.findViewById(R.id.popLstE);
 			weblist.browserWidget11 = pottombar.findViewById(R.id.popNxtE);
+			
 			weblist.mBar = pageSlider.findViewById(R.id.dragScrollBar);
 			this.mWebView = weblist.dictView = weblist.mMergedFrame = webview;
 			pageSlider.bar = weblist.mBar;
@@ -1035,6 +1037,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			}
 			if(rec.size()>0) {
 				rec.renderContentAt(0, a, null, weblistHandler);
+				setDisplaying(weblistHandler.getMultiRecordKey());
 			}
 			pageSlider.setWebview(mWebView, null);
 			dictPicker.filterByRec(rec, 0);
@@ -1057,12 +1060,16 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 					mWebView.bRequestedSoundPlayback=true;
 				CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, mWebView, currentPos);
 				pageSlider.setWebview(mWebView, null);
+				setDisplaying(mWebView.word);
 			} else {
 				loadEntry(0);
 			}
 		}
-		displaying = popupKey;
-		a.decorateContentviewByKey(popupStar, displaying);
+	}
+	
+	private void setDisplaying(String key) {
+		displaying = key;
+		weblistHandler.setStar(key);
 	}
 	
 	private void loadEntry(int d) {
@@ -1079,6 +1086,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		mWebView.presenter = CCD;
 		mWebView.loadUrl(mergedUrl.toString());
 		weblistHandler.resetScrollbar(mWebView, false, false);
+		setDisplaying(mWebView.word=CCD.getBookEntryAt(currentPos));
 	}
 	
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt) {

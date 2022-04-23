@@ -2,7 +2,6 @@ package com.knziha.plod.plaindict;
 
 import static com.knziha.plod.plaindict.PDICMainActivity.ViewHolder;
 import static com.knziha.plod.plaindict.PDICMainActivity.layoutScrollDisabled;
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -219,7 +218,7 @@ public class ListViewAdapter extends BasicAdapter {
 		
 		String lstKey = this.currentKeyText = mWebView.word.trim();
 		
-		a.decorateContentviewByKey(null,lstKey);
+		weblistHandler.setStar(lstKey);
 		
 		boolean storeEt = userCLick && a.storeLv1(lstKey);
 		if(!PDICMainAppOptions.storeNothing()  && (storeEt || PDICMainAppOptions.storeClick() && presenter.store(pos))) {

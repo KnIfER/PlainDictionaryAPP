@@ -3028,11 +3028,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public void decorateContentviewByKey(ImageView futton, String key) {
-		if(futton==null) futton=this.contentUIData.browserWidget8;
-		if(futton!=null) futton.setActivated(GetIsFavoriteTerm(key));
-	}
-	
 	public LexicalDBHelper prepareFavoriteCon() {
 		if(favoriteCon!=null) return favoriteCon;
 		if (getUsingDataV2()) {
@@ -5753,10 +5748,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			/* 跳转 */
 			case R.id.browser_widget9:{//view outlinexxx
-				if(ActivedAdapter instanceof com.knziha.plod.plaindict.PeruseView.LeftViewAdapter) {
-					v.performLongClick();
-					break; //???
-				}
 				findWebList(v);
 				if(weblist.isMultiRecord()) {
 					weblist.showJumpListDialog();
@@ -6100,47 +6091,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} return true;
 			/* long-click view outline */
 			case R.id.browser_widget9:{
-				if(PeruseViewAttached()) {
-//					peruseView.toolbar_cover.performClick(); //111
-					break;
-				}
-				if(true) {
-					findWebList(v);
-					showDictTweaker(weblist);
-					break;
-				}
-				if((isCombinedSearching && DBrowser!=null) ||ActivedAdapter==adaptermy2) {
-					resultRecorderCombined res;
-					int idx = 0;
-
-					if(DBrowser!=null)
-						res = DBrowser.rec;
-					else {
-						res = (resultRecorderCombined) adaptermy2.results;
-						idx = adaptermy2.lastClickedPos;
-						if(idx<0 || idx>=res.list().size())
-							return true;
-					}
-
-					int totalHeight=0;
-					int selectedPos=-1;
-					final int currentHeight=weblistHandler.WHP.getScrollY();
-					View itemTo = null;
-					for(int i=0;i<weblistHandler.webholder.getChildCount();i+=1) {
-						itemTo = weblistHandler.webholder.getChildAt(i);
-						totalHeight+=itemTo.getMeasuredHeight();
-						if(totalHeight>currentHeight) {
-							selectedPos=i;
-							break;
-						}
-					}
-					if(selectedPos!=-1)
-						itemTo.findViewById(R.id.cover).performClick();
-
-				}
-				else
-					currentDictionary.rl.findViewById(R.id.cover).performClick();
-				contentUIData.webcontentlister.judger = false;
+				findWebList(v);
+				showDictTweaker(weblist);
 			} return true;
 			/* 页面导航模式 */
 			case R.id.browser_widget10:
