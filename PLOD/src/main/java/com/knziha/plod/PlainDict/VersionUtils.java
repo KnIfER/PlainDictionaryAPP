@@ -41,16 +41,16 @@ public class VersionUtils {
 			opt.setInPeruseMode(false);
 			opt.menuOverlapAnchor(!GlobalOptions.isLarge||GlobalOptions.isSmall);
 			PDICMainAppOptions.setUseBackKeyGoWebViewBack(false);
-			opt.setPageTurn1(false);
-			opt.setPageTurn2(false);
-			opt.setPageTurn3(false);
+			opt.setPageTurn1(true);
+			opt.setPageTurn2(true);
+			opt.setPageTurn3(true);
+			opt.setTurnPageEnabled(true);
 			opt.schPageNavAudioKey(false);
 			
 			PDICMainAppOptions.pageSchWild(true);
 			PDICMainAppOptions.pageSchWildDeprecated(false);
 			PDICMainAppOptions.uncheckVersionBefore_5_7(false);
 		}
-		opt.setTurnPageEnabled(true);
 //		opt.setBottombarOnBottom(true);
 //		opt.setFloatBottombarOnBottom(true);
 //		opt.setPeruseBottombarOnBottom(true);

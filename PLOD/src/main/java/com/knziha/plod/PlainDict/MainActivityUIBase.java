@@ -389,7 +389,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public BasicAdapter adaptermy2;
 	public BasicAdapter adaptermy3;
 	public ListViewAdapter2 adaptermy4;
-	public BasicAdapter PrevActivedAdapter;
 	public BasicAdapter ActivedAdapter;
 	public BaseHandler hdl;
 	public int  CurrentViewPage = 1;
@@ -5680,7 +5679,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						int toPos = ActivedAdapter.lastClickedPos+delta;
 						ActivedAdapter.onItemClick(toPos);
 					}
-				} else if (DBrowser!=null && weblist==DBrowser.weblistHandler) {
+				} else if (peruseView!=null && weblist==peruseView.weblistHandler) {
+					if (peruseView.ActivedAdapter!=null) {
+						int toPos = peruseView.ActivedAdapter.lastClickedPos+delta;
+						peruseView.ActivedAdapter.onItemClick(toPos);
+					}
+				}  else if (DBrowser!=null && weblist==DBrowser.weblistHandler) {
 					if(delta<0)DBrowser.goBack();
 					else DBrowser.goQiak();
 				} else  {

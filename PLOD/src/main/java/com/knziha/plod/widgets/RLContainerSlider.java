@@ -471,10 +471,10 @@ public class RLContainerSlider extends FrameLayout{
 	}
 	
 	private void quoTapZoom() {
+		final int src = weblist.getSrc();
 		if (WebContext!=null) {
 			tapZoom = pBc.tapZoom();
 			if (!tapZoom) {
-				final int src = weblist.getSrc();
 				if (src == SearchUI.TapSch.MAIN ? PDICMainAppOptions.tapZoomTapSch()
 						: src == SearchUI.Fye.MAIN ? PDICMainAppOptions.tapZoomFye()
 						: PDICMainAppOptions.tapZoomGlobal()) {
@@ -493,7 +493,10 @@ public class RLContainerSlider extends FrameLayout{
 		if (PDICMainAppOptions.getTurnPageEnabled()) {
 			if (weblist.bDataOnly) {
 				slideTurn = PDICMainAppOptions.turnPageTapSch();
-				CMN.Log("slideTurn::0", slideTurn, tapZoom);
+				CMN.Log("slideTurn::-1", slideTurn, tapZoom);
+			} else if(src==SearchUI.Fye.MAIN){
+				slideTurn = PDICMainAppOptions.turnPageFye();
+				CMN.Log("slideTurn::-2", slideTurn, tapZoom);
 			} else {
 				if (weblist.isMultiRecord()) {
 					if (weblist.bMergingFrames) {

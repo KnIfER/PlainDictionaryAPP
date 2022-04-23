@@ -462,8 +462,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=1) public static boolean getBottombarOnBottom() { FirstFlag=FirstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=1) public static void setBottombarOnBottom(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=2) public static boolean getTurnPageEnabled() { FirstFlag=FirstFlag; throw new RuntimeException();}
-	@Metaline(flagPos=2) public static void setTurnPageEnabled(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2, shift=1) public static boolean getTurnPageEnabled() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=2, shift=1) public static void setTurnPageEnabled(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 
 	@Metaline(flagPos=3) public static boolean getInPeruseMode() { FirstFlag=FirstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=3) public static void setInPeruseMode(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
@@ -902,11 +902,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 	
-	@Metaline(flagPos=6) public static boolean getPageTurn1() { SecondFlag=SecondFlag; throw new RuntimeException();}
-	@Metaline(flagPos=6) public static void setPageTurn1(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=6, shift=1) public static boolean getPageTurn1() { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=6, shift=1) public static void setPageTurn1(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=7) public static boolean getPageTurn2() { SecondFlag=SecondFlag; throw new RuntimeException();}
-	@Metaline(flagPos=7) public static void setPageTurn2(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7, shift=1) public static boolean getPageTurn2() { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7, shift=1) public static void setPageTurn2(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
 
 	public boolean getUseLruDiskCache() {
 		return (SecondFlag & 0x100) != 0x100;
@@ -1471,8 +1471,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	//xxx
 	
-	@Metaline(flagPos=33) public static boolean getPageTurn3() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Metaline(flagPos=33) public static void setPageTurn3(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public static boolean getPageTurn3() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public static void setPageTurn3(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 
 
 
@@ -2379,8 +2379,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=35) public static boolean tapZoomFye(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=35) public static void tapZoomFye(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
-	@Metaline(flagPos=36) public static boolean turnPageTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=36) public static void turnPageTapSch(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=36, shift=1) public static boolean turnPageTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=36, shift=1) public static void turnPageTapSch(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=37, shift=1) public static boolean turnPageFye(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=37, shift=1) public static void turnPageFye(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
 	
 	///////

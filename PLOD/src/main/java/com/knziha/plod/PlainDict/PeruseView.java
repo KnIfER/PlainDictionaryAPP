@@ -627,9 +627,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public void onViewAttached(MainActivityUIBase a, boolean newSch){
 		if(a==null || main_pview_layout==null) return;
 		//CMN.Log("onViewAttached", schKey, newSch, fromData);
-		if(a.ActivedAdapter!=null&&a.ActivedAdapter.getId()<=4)
-			a.PrevActivedAdapter = a.ActivedAdapter;
-		a.ActivedAdapter = ActivedAdapter;
 		hidden.clear();
 		
 		if(!ToD) {
@@ -738,7 +735,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	
 	public void onViewDetached() {
 		MainActivityUIBase a = getMainActivity();
-		a.ActivedAdapter = a.PrevActivedAdapter;
 		
 		currentDictionary.bmCBI=lv2.getFirstVisiblePosition();
 		currentDictionary.bmCCI= bmsAdapter.lastClickedPos;
@@ -816,19 +812,25 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public void showPeruseTweaker() {
 		MainActivityUIBase a = getMainActivity();
 		final SettingsPanel settings = new SettingsPanel(a, opt
-				, new String[][]{new String[]{null, "启用页面点击翻译", "记忆页面位置", "同一词典使用相同的页面缩放"}}
+				, new String[][]{new String[]{null, "启用页面点击翻译", "记忆页面位置", "同一词典使用相同的页面缩放", "允许滑动翻页", "使用页面双击缩放"}}
 				, new int[][]{new int[]{Integer.MAX_VALUE
 				, makeDynInt(100, 0, weblistHandler.tapSch)
 				, makeInt(6, 25, true) // fyeRemPos
 				, makeInt(6, 26, false) // fyeRemScale
+				, makeInt(6, 37, true) // turnPageFye
+				, makeInt(6, 35, false) // tapZoomFye
 		}}, null);
 		settings.init(a, root);
 		settings.setActionListener(new SettingsPanel.ActionListener() {
 			@Override
 			public boolean onAction(SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
 				if (dynamic) {
-					if(weblistHandler.tapSch!=val) {
+					if (weblistHandler.tapSch != val) {
 						PDICMainAppOptions.fyeTapSch(weblistHandler.togTapSch());
+					}
+				} else {
+					if (flagPos==37||flagPos==35) {
+						SearchUI.tapZoomV++;
 					}
 				}
 				return true;
@@ -1898,7 +1900,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			int fvp = lv1.getFirstVisiblePosition();
 			View child = lv1.getChildAt(lastClickedPos-fvp);
 			if(child!=null) child.setBackgroundColor(Color.TRANSPARENT);
-			CMN.Log("lastClickedPos::", lastClickedPos, child);
+			//CMN.Log("lastClickedPos::", lastClickedPos, child);
 			child = lv1.getChildAt(pos-fvp);
 			if(child !=null) child.setBackgroundColor(0xff397CCD);
 			MainActivityUIBase a = getMainActivity();
@@ -1917,7 +1919,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				
 				contentUIData.PageSlider.WebContext = mWebView;
-				weblistHandler.setViewMode(null, false, null);
+				weblistHandler.setViewMode(null, false, mWebView);
 				weblistHandler.viewContent();
 				
 				if(machine) {

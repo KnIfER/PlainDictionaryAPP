@@ -2013,10 +2013,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(VZero!=null)
 				savedInstanceState.putIntArray("P_L2",new int[] {lv2.getFirstVisiblePosition(),VZero.getTop()});
 
-			if(PrevActivedAdapter!=null) {
-				savedInstanceState.putInt("lv_id", PrevActivedAdapter.getId());
-				savedInstanceState.putInt("lv_pos", PrevActivedAdapter.lastClickedPos);
-			} else if(ActivedAdapter!=null) {
+			if(ActivedAdapter!=null) {
 				savedInstanceState.putInt("lv_id", ActivedAdapter.getId());
 				savedInstanceState.putInt("lv_pos", ActivedAdapter.lastClickedPos);
 			}
