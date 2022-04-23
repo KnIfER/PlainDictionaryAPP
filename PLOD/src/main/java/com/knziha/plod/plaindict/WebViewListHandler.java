@@ -202,7 +202,6 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public ViewGroup getDragView() {
-		CMN.Log("getDragView", bDataOnly, dictView, dictView==mMergedFrame);
 		return bDataOnly?dictView:mViewMode==WEB_LIST_MULTI?WHP:contentUIData.webSingleholder;
 	}
 	

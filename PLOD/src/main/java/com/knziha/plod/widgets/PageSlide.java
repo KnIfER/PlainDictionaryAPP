@@ -9,6 +9,7 @@ import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -69,26 +70,39 @@ public class PageSlide extends TextView {
 				dragView.setAlpha(1);
 				setVisibility(GONE);
 			} else {
-				dragView.setAlpha(0.15f);
-				dragView.animate()
-						.alpha(1)
-						.setInterpolator(AnimationUtils.DECELERATE_INTERPOLATOR)
-						.setListener(new AnimatorListenerAdapter() {
-							@Override
-							public void onAnimationEnd(Animator animation) {
-								if (getTranslationX()==0) {
-									setVisibility(GONE);
-								}
+				ViewGroup dv = weblist.getDragView();
+				final ViewGroup fdv;
+				if (dv != dragView) {
+					dv.setVisibility(VISIBLE);
+					dragView.setVisibility(GONE);
+					fdv = dragView;
+					dragView = dv;
+				} else {
+					fdv = null;
+				}
+				dv.setAlpha(0.15f);
+				dv.animate()
+					.alpha(1)
+					.setInterpolator(AnimationUtils.DECELERATE_INTERPOLATOR)
+					.setListener(new AnimatorListenerAdapter() {
+						@Override
+						public void onAnimationEnd(Animator animation) {
+							if (getTranslationX()==0 && !dragged) {
+								setVisibility(GONE);
 							}
-						})
-						.setDuration(115);
+							if (fdv!=null) {
+								fdv.setVisibility(GONE);
+								fdv.setTranslationX(0);
+							}
+						}
+					})
+					.setDuration(115);
 			}
 			setTranslationX(0);
 		}
 	}
 	
 	void RePosition() {
-		//CMN.show("RePosition called");
 		if (hdl !=null) {
 			dragged=false;
 			leftAcc=0;
@@ -96,14 +110,19 @@ public class PageSlide extends TextView {
 			srcX = getTranslationX();
 			animator = 0.f;
 			hdl.removeMessages(3344);
-			hdl.obtainMessage(3344,dragTm+1,0,this).sendToTarget();
-			if(listener !=null)
+			if(listener !=null) {
 				listener.slidePage(decided?(decidedDir?1:0):2,this);
+				ViewGroup dv = weblist.getDragView();
+				if (dv != dragView) {
+					dragView.setVisibility(View.VISIBLE);
+					dv.setVisibility(View.INVISIBLE);
+				}
+			}
+			hdl.obtainMessage(3344,dragTm+1,0,this).sendToTarget();
 		}
 	}
 	
 	public void startDrag(MotionEvent ev) {
-		//CMN.show("startdrag called");
 		if(!dragged && hdl !=null) {
 			dragView = weblist.getDragView();
 			OrgX = lastX = ev.getRawX();
@@ -111,6 +130,7 @@ public class PageSlide extends TextView {
 			ViewGroup svp = (ViewGroup) getParent();
 			MotionEvent evt = MotionEvent.obtain(0, 0, MotionEvent.ACTION_CANCEL,
 					lastX, lastY, 0);
+			evt.setSource(100);
 			svp.dispatchTouchEvent(evt);
 			leftAcc=0;
 			OrgTX = getTranslationX();
@@ -142,7 +162,6 @@ public class PageSlide extends TextView {
 	}
 	
 	public void handleDrag(float dx, float dy) {
-		//if(true) return;
 		dragTm = (int) SystemClock.currentThreadTimeMillis();
     	
         int left = (int) (getTranslationX() + dx);
@@ -152,16 +171,13 @@ public class PageSlide extends TextView {
 		int w = dm.widthPixels;//getWidth();
         if(leftAcc<-(2.0f*w/12)) {
         	TargetX=-getWidth();
-			//if(inf!=null) inf.onDecided(true,this);
 			decided=true;
 			decidedDir=true;
         } else if(leftAcc>(2.0f*w/12)) {
         	TargetX=getWidth();
-			//if(inf!=null) inf.onDecided(true,this);
 			decided=true;
 			decidedDir=false;
         } else {
-        	//if(decided && inf!=null) inf.onHesitate(this);
         	TargetX=0;
         	decided=false;
         }

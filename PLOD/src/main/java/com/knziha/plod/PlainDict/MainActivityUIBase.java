@@ -10554,13 +10554,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					//boolean turn = Math.abs(val)>20*dm.density;
 					int pos = val<0?1:-1;
-					if (currentPos!=pos) {
+					if (currentPos!=pos)
+					{
 						currentPos=pos;
 						page.setGravity(Gravity.CENTER_VERTICAL|(val>0?Gravity.LEFT:Gravity.RIGHT));
 						//if (turn) {
 						//	//page.setText();
 						//}
-						if (wPage.isMultiRecord()) {
+						if (wPage.multiRecord!=null) {
 							resultRecorderCombined rec = wPage.multiRecord;
 							if (rec!=null) {
 								page.setText(rec.getResAt(MainActivityUIBase.this, rec.viewingPos+pos));

@@ -22,6 +22,7 @@ import com.knziha.plod.plaindict.WebViewListHandler;
 
 /** 原本是RelativeLayout，故名。 */
 public class RLContainerSlider extends FrameLayout{
+	public PageSlide page;
 	public boolean TurnPageSuppressed;
 	public WebViewListHandler weblist;
 	public WebViewmy WebContext;
@@ -62,8 +63,6 @@ public class RLContainerSlider extends FrameLayout{
 		density = GlobalOptions.density;
 		quickScaleThreshold = 20*density;
 	}
-
-	public PageSlide page;
 
 	int first_touch_id=-1;
 
@@ -273,6 +272,10 @@ public class RLContainerSlider extends FrameLayout{
 					lastX = nowX;
 					lastY = nowY;
 				} break;
+				case MotionEvent.ACTION_CANCEL:
+					if (ev.getSource()==100) {
+						break;
+					}
 				case MotionEvent.ACTION_UP: {
 					onActionUp();
 				} break;
@@ -414,9 +417,12 @@ public class RLContainerSlider extends FrameLayout{
 				case MotionEvent.ACTION_DOWN:
 					if (WebContext!=null) {
 						WebContextWidth = WebContext.getContentWidth();
-					}
-					if(tapZoom) {
-						quoSlideZoom();
+						bZoomOut = WebContext.webScale <= BookPresenter.def_zoom;
+						if(WebContext.AlwaysCheckRange==0) {
+							WebContext.CheckAlwaysCheckRange();
+						}
+						bZoomOutCompletely = bZoomOut && (WebContext.AlwaysCheckRange==-1
+								||WebContext.getScrollX()==0  && WebContext.getScrollX()+WebContext.getWidth()>=WebContextWidth);
 					}
 					twiceDetected =false;
 					//CMN.Log("ACTION_DOWN");
@@ -448,9 +454,6 @@ public class RLContainerSlider extends FrameLayout{
 						}
 					}
 				break;
-//				case MotionEvent.ACTION_POINTER_UP:
-//					quoSlideZoom();
-//				break;
 				case MotionEvent.ACTION_UP:
 					onActionUp();
 				break;
@@ -465,17 +468,6 @@ public class RLContainerSlider extends FrameLayout{
 			bar.isWebHeld=false;
 			bar.fadeOut();
 		}
-	}
-	
-	private void quoSlideZoom() {
-		bZoomOut = WebContext.webScale <= BookPresenter.def_zoom;
-		
-		if(WebContext.AlwaysCheckRange==0) {
-			WebContext.CheckAlwaysCheckRange();
-		}
-		
-		bZoomOutCompletely = bZoomOut && (WebContext.AlwaysCheckRange==-1
-				||WebContext.getScrollX()==0  && WebContext.getScrollX()+WebContext.getWidth()>=WebContextWidth);
 	}
 	
 	private void quoTapZoom() {

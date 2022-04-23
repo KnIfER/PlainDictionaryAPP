@@ -99,7 +99,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				if (pos == -1) {
 					return "←";
 				}
-				if (pos == data.size() - 1) {
+				if (pos == data.size()) {
 					return "→";
 				}
 			}
@@ -135,6 +135,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				jointResult = weblistHandler.jointResult;
 			}
 		} else {
+			viewingPos = (int) pos;
 			if(firstItemIdx>0) pos = RemapPos((int) pos);
 			jointResult = data.get((int) pos);
 		}
@@ -144,7 +145,6 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			return;
 		}
 		List<Long> vals = (List<Long>) jointResult.value;
-		viewingPos = (int) pos;
 		//CMN.Log("frameCount::", jointResult.realmCount);
 		boolean bUseMergedUrl;
 		if(weblistHandler.bMergeFrames==-2) {

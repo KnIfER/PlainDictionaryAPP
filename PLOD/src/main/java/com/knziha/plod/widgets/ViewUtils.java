@@ -887,6 +887,7 @@ public class ViewUtils {
 	public static void preventDefaultTouchEvent(View view, int x, int y) {
 		MotionEvent evt = MotionEvent.obtain(0, 0, MotionEvent.ACTION_CANCEL, x, y, 0);
 		if (view!=null) view.dispatchTouchEvent(evt);
+		evt.setSource(100);
 		evt.recycle();
 	}
 	
