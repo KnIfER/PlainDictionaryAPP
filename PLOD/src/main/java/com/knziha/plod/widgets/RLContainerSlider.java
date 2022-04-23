@@ -86,10 +86,11 @@ public class RLContainerSlider extends FrameLayout{
 				int zoomInMode = ctx.tapAlignment();
 				//zoomInType = 4;
 				if(zoomInMode<3) {
-					if(WebContext.webScale/ BookPresenter.def_zoom<targetZoom){
+					if(WebContext.webScale/BookPresenter.def_zoom<targetZoom){
 						if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
 							int sY = WebContext.getScrollY();
-							WebContext.zoomBy(0.02f);
+							//WebContext.zoomBy(0.02f);
+							WebContext.zoomBy(1/WebContext.webScale*BookPresenter.def_zoom);
 							WebContext.zoomBy(targetZoom);
 							//((MainActivityUIBase)getContext()).showT("双击放大");
 							int pad = WebContext.getWidth();
