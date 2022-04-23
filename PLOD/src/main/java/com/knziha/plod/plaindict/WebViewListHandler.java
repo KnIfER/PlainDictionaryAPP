@@ -74,9 +74,9 @@ import java.util.ArrayList;
  * 多个webview，放在LinearLayout中，显示多本词典内容。（多页面视图列表）*/
 public class WebViewListHandler extends ViewGroup implements View.OnClickListener {
 	final MainActivityUIBase a;
-	/** 网页设置标志位 指示是否开启点击翻译、页内搜索设置 */
+	/** Search-On-Page Control Flag. 网页设置标志位 指示是否开启点击翻译、页内搜索设置 */
 	public int shezhi;
-	/** 设置备份，同于比对变化。 */
+	/** Flag Backup. 设置备份，同于比对变化。 */
 	int szStash;
 	/** see{@link com.knziha.plod.db.SearchUI }*/
 	int src;
@@ -942,7 +942,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	/** show this hide another */
 	public void viewContent() {
-		CMN.Log("viewContent::", mViewMode);
+		//CMN.Log("viewContent::", mViewMode);
 		int mode = mViewMode;
 		mViewMode = (mViewMode+1)%2;
 		if(ViewUtils.isVisible(this)) {
@@ -1366,6 +1366,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 						.setOnDismissListener(new DialogInterface.OnDismissListener() {
 							@Override
 							public void onDismiss(DialogInterface dialog) {
+								//CMN.debug("Flag::页内搜索设置::pageSchSplitKeys::", shezhi&0x40);
 								if (szStash!=shezhi) {
 									ViewGroup webviewHolder = getViewGroup();
 									int cc = webviewHolder.getChildCount();

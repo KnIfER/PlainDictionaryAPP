@@ -2557,6 +2557,10 @@ function debug(e){console.log(e)};
 			try {
 				WebViewmy wv = findWebview(sid);
 				WebViewListHandler wlh = wv.weblistHandler;
+				//CMN.debug("Flag::web::rcsp", wlh.getSrc());
+				if ((wlh.shezhi&8)!=0) {
+					return wlh.shezhi;
+				}
 				return MakePageFlag(wlh, wlh.opt);
 			} catch (Exception e) {
 				CMN.debug(e);

@@ -10120,13 +10120,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	public long Flag(int flagIndex) {
 		if(flagIndex==100) return 0;
-		if(flagIndex==101) return weblist.shezhi;
+		if(flagIndex==101) {
+			//CMN.debug("Flag::get", flagIndex, weblist.src);
+			return weblist.shezhi;
+		}
 		return opt.Flag(flagIndex);
 	}
 	
 	@Override
 	public void Flag(int flagIndex, long val) {
-		CMN.Log("Flag::set", flagIndex);
+		//CMN.debug("Flag::set", flagIndex, weblist==null?-1:weblist.src);
 		if(flagIndex==100) {}
 		else if(flagIndex==101){
 			weblist.shezhi = (int) val;
