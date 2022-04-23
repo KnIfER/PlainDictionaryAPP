@@ -123,6 +123,7 @@ public class PageSlide extends TextView {
 				}
 			}
 			TargetX = decided>0?getWidth():decided<0?-getWidth():0;
+			decided = 0;
 			hdl.obtainMessage(3344,dragTm+1,0,this).sendToTarget();
 		}
 	}

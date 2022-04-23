@@ -1536,9 +1536,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//if(opt.getInPageSearchVisible())
 		//	toggleInPageSearch(false);
 
-		if(opt.getBottomNavigationMode()==1)
-			setBottomNavigationType(1, null);
-
 		if(false) {//按
 			AdvancedNestScrollWebView wv = new AdvancedNestScrollWebView(getBaseContext());
 			snack_holder.addView(wv, 0);

@@ -5666,37 +5666,41 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//webholder.removeOnLayoutChangeListener(((resultRecorderCombined)adaptermy2.combining_search_result).OLCL);
 				layoutScrollDisabled=false;
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
-				if(!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething()){
-					interruptAutoReadProcess(true);
-				}
 				findWebList(v);
-				if (weblist==weblistHandler) {
-					if (ActivedAdapter!=null) {
-						int toPos = ActivedAdapter.lastClickedPos+delta;
-						ActivedAdapter.onItemClick(toPos);
+				if (weblist.bottomNavWeb && weblist.pageSlider.page.decided==0) {
+					weblist.NavWeb(delta);
+				} else {
+					if(!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething()){
+						interruptAutoReadProcess(true);
 					}
-				} else if (peruseView!=null && weblist==peruseView.weblistHandler) {
-					if (peruseView.ActivedAdapter!=null) {
-						int toPos = peruseView.ActivedAdapter.lastClickedPos+delta;
-						peruseView.ActivedAdapter.onItemClick(toPos);
-					}
-				}  else if (DBrowser!=null && weblist==DBrowser.weblistHandler) {
-					if(delta<0)DBrowser.goBack();
-					else DBrowser.goQiak();
-				} else  {
-					if (!weblist.isMultiRecord()) {
-						// 就当你是弹出的 entry:// ！
-						WebViewmy wv = weblist.dictView;
-						int pos = (int) (wv.currentPos + delta);
-						if (pos < 0 || pos >= wv.presenter.bookImpl.getNumberEntries()) {
-							showTopSnack(null, R.string.endendr, -1, -1, -1, 0);
-						} else {
-							wv.presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, wv, wv.currentPos + delta);
-							if (wv.getBackgroundColor() == 0)
-								wv.setBackgroundColor(GlobalPageBackground); //todo optimize
+					if (weblist==weblistHandler) {
+						if (ActivedAdapter!=null) {
+							int toPos = ActivedAdapter.lastClickedPos+delta;
+							ActivedAdapter.onItemClick(toPos);
 						}
-					} else {
-					
+					} else if (peruseView!=null && weblist==peruseView.weblistHandler) {
+						if (peruseView.ActivedAdapter!=null) {
+							int toPos = peruseView.ActivedAdapter.lastClickedPos+delta;
+							peruseView.ActivedAdapter.onItemClick(toPos);
+						}
+					}  else if (DBrowser!=null && weblist==DBrowser.weblistHandler) {
+						if(delta<0)DBrowser.goBack();
+						else DBrowser.goQiak();
+					} else  {
+						if (!weblist.isMultiRecord()) {
+							// 就当你是弹出的 entry:// ！
+							WebViewmy wv = weblist.dictView;
+							int pos = (int) (wv.currentPos + delta);
+							if (pos < 0 || pos >= wv.presenter.bookImpl.getNumberEntries()) {
+								showTopSnack(null, R.string.endendr, -1, -1, -1, 0);
+							} else {
+								wv.presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, wv, wv.currentPos + delta);
+								if (wv.getBackgroundColor() == 0)
+									wv.setBackgroundColor(GlobalPageBackground); //todo optimize
+							}
+						} else {
+						
+						}
 					}
 				}
 			} break;
@@ -5969,45 +5973,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				weblistHandler.WHP.scrollTo(0, offset);
 		}
 	}
-
-	void GoBackOrForward(ViewGroup webviewHolder, int delta) {
-		if(webviewHolder!=null){
-			View tianming=null;
-			int cc = webviewHolder.getChildCount();
-			if(cc>0){
-				if(cc==1)
-					tianming=webviewHolder.getChildAt(0);
-				else {
-					// todo 第二种模式
-					int currentHeight = weblistHandler.WHP.getScrollY();
-					int selectedPos = -1;
-					for (int i = 0; i < cc; i++) {
-						if (webviewHolder.getChildAt(i) instanceof LinearLayout) {
-							View webHolder = webviewHolder.getChildAt(i);
-							if (webHolder.getBottom() >= currentHeight) {
-								selectedPos = i;
-								break;
-							}
-						}
-					}
-					//应用中线法则
-					currentHeight = currentHeight + weblistHandler.WHP.getHeight() / 2;
-					if (selectedPos >= 0) {
-						while (selectedPos + 1 < weblistHandler.webholder.getChildCount() && weblistHandler.webholder.getChildAt(selectedPos).getBottom() < currentHeight) {
-							selectedPos++;
-						}
-						tianming = webviewHolder.getChildAt(selectedPos);
-					}
-				}
-				if(tianming!=null) {
-					tianming = tianming.findViewById(delta>0?R.id.forward:R.id.recess);
-				}
-				if(tianming!=null) {
-					tianming.performClick();
-				}
-			}
-		}
-	}
 	
 	@Deprecated
 	public void showChooseTTSDialog() { }
@@ -6062,7 +6027,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				});
 			} else {
-				tk.showDictTweaker(weblist.lastScrollFocus.presenter, weblist.lastScrollFocus);
+				tk.showDictTweaker(weblist.scrollFocus.presenter, weblist.scrollFocus);
 			}
 		} else {
 			tk.showDictTweaker(weblist.dictView.presenter, weblist.dictView);
@@ -6097,20 +6062,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 页面导航模式 */
 			case R.id.browser_widget10:
 			case R.id.browser_widget11:{
+				findWebList(v);
 				boolean bPeruseIncharge = PeruseViewAttached();
-				androidx.appcompat.app.AlertDialog.Builder builder2 = new androidx.appcompat.app.AlertDialog.Builder(this);
-				builder2.setSingleChoiceItems(R.array.btm_navmode, bPeruseIncharge?opt.getBottomNavigationMode1():opt.getBottomNavigationMode(), (dialog12, which) -> {
-					TextView tv  = (TextView) ((AlertDialog) dialog12).getListView().getTag();
-					if(bPeruseIncharge)
-						peruseView.setBottomNavigationType(opt.setBottomNavigationMode1(which), tv);
-					else
-						setBottomNavigationType(opt.setBottomNavigationMode(which), tv);
-					dialog12.dismiss();
-				})
-				.setSingleChoiceLayout(R.layout.select_dialog_singlechoice_material_holo)
-				;
-				androidx.appcompat.app.AlertDialog dTmp = builder2.create();
-				dTmp.show();
+				AlertDialog dTmp = new AlertDialog.Builder(this)
+						.setSingleChoiceItems(R.array.btm_navmode
+						, weblist.bottomNavWeb?1:0, (d, which) -> {
+							weblist.setBottomNavWeb(which==1);
+							d.dismiss();
+						})
+						.setSingleChoiceLayout(R.layout.select_dialog_singlechoice_material_holo)
+						.show();
 				Window win = dTmp.getWindow();
 				win.setBackgroundDrawable(null);
 				win.setDimAmount(0.35f);
@@ -6128,7 +6089,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				dTmp.setCanceledOnTouchOutside(true);
 				dTmp.getListView().setPadding(0,0,0,0);
 				
-
+				if(false)
 				if(!bPeruseIncharge) {
 					CheckedTextView cb0 = (CheckedTextView) getLayoutInflater().inflate(R.layout.select_dialog_multichoice_material, null);
 					//ViewGroup cb3_tweaker = (ViewGroup) getLayoutInflater().inflate(R.layout.select_dialog_multichoice_material_seek_tweaker,null);
@@ -9326,21 +9287,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			opt.supressAudioResourcePlaying=false;
 			soundKey=soundsTag+soundKey; /* CMN.Log("发音任务丢给资源拦截器", soundKey); */
 			wv.evaluateJavascript(playsoundscript + ("(\"" + soundKey + "\")") , null);
-		}
-	}
-
-	void setBottomNavigationType(int type, TextView tv) {
-		switch(type){
-			case 0:
-				contentUIData.browserWidget10.setImageResource(R.drawable.chevron_left);
-				contentUIData.browserWidget11.setImageResource(R.drawable.chevron_right);
-				if(tv!=null) tv.setText(getResources().getTextArray(R.array.btm_navmode)[0]);
-			break;
-			case 1:
-				contentUIData.browserWidget10.setImageResource(R.drawable.chevron_recess);
-				contentUIData.browserWidget11.setImageResource(R.drawable.chevron_forward);
-				if(tv!=null) tv.setText(getResources().getTextArray(R.array.btm_navmode)[1]);
-			break;
 		}
 	}
 

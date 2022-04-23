@@ -32,7 +32,7 @@ public class Misc extends SettingsFragmentBase implements Preference.OnPreferenc
 		init_switch_preference(this, "ap_click", PDICMainAppOptions.schPageAfterClick(), null, null);
 		init_switch_preference(this, "noext", PDICMainAppOptions.exitToBackground(), null, null);
 		init_switch_preference(this, "clear_sel", PDICMainAppOptions.getUseBackKeyClearWebViewFocus(), null, null);
-		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null);
+		init_switch_preference(this, "back_web", PDICMainAppOptions.getUseBackKeyGoWebViewBack(), null, null).setVisible(false);
 		Preference p = init_number_info_preference(this, "conext", PDICMainAppOptions.getBackPrevention(), R.array.conext_info, null);
 		
 		p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

@@ -37,8 +37,6 @@ import androidx.appcompat.app.AlertController;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.ColorUtils;
-import androidx.preference.Preference;
 
 import com.knziha.plod.PlainUI.AlloydPanel;
 import com.knziha.plod.PlainUI.AppUIProject;
@@ -55,7 +53,7 @@ import com.knziha.plod.widgets.DragScrollBar;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.Framer;
-import com.knziha.plod.widgets.PageSlide;
+import com.knziha.plod.widgets.RLContainerSlider;
 import com.knziha.plod.widgets.ScrollViewmy;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
@@ -104,13 +102,16 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	private int lastScrollUpdateY;
 	Runnable UpdateBookLabelAbility;
 	BookPresenter lastScrolledBook;
-	WebViewmy lastScrollFocus;
+	WebViewmy scrollFocus;
 	WebViewmy mWebView;
 	public boolean tapSch;
 	
 	public View browserWidget8;
 	public View browserWidget10;
 	public View browserWidget11;
+	public RLContainerSlider pageSlider;
+	
+	public boolean bottomNavWeb;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData, int src) {
 		super(a);
@@ -135,11 +136,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			browserWidget8 = contentUIData.browserWidget8;
 			browserWidget10 = contentUIData.browserWidget10;
 			browserWidget11 = contentUIData.browserWidget11;
+			pageSlider = contentUIData.PageSlider;
 			
 			contentUIData.PageSlider.page = contentUIData.cover;
 			contentUIData.cover.setPager(a.getPageListener());
 			UpdateBookLabelAbility = ()->{
-				String name = lastScrollFocus.presenter.getDictionaryName();
+				String name = scrollFocus.presenter.getDictionaryName();
 				int idx=name.lastIndexOf(".");
 				if(idx>=0)name = name.substring(0, idx);
 				contentUIData.dictName.setText(name);
@@ -171,7 +173,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 								if(webholder.getChildAt(i).getBottom()>=bot) {
 									WebViewmy wv = (WebViewmy)webholder.getChildAt(i).getTag();
 									if(lastScrolledBook !=wv.presenter) {
-										setLastScrollFocus(wv);
+										setScrollFocus(wv);
 									}
 									break;
 								}
@@ -191,12 +193,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		shezhi = BookPresenter.MakePageFlag(this, opt);
 	}
 	
-	public void setLastScrollFocus(WebViewmy wv) {
+	public void setScrollFocus(WebViewmy wv) {
 		if(lastScrolledBook != wv.presenter) {
 			lastScrolledBook = wv.presenter;
 			a.root.postOnAnimationDelayed(UpdateBookLabelAbility, 50);
 		}
-		lastScrollFocus = wv;
+		scrollFocus = wv;
 	}
 	
 	public ViewGroup getViewGroup() {
@@ -1504,5 +1506,26 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 		}
 		return ret == null ? "Error!!!" : ret.key;
+	}
+	
+	void setBottomNavWeb(boolean nav) {
+		if (!bDataOnly && nav!=bottomNavWeb) {
+			if (nav) {
+				contentUIData.browserWidget10.setImageResource(R.drawable.chevron_recess);
+				contentUIData.browserWidget11.setImageResource(R.drawable.chevron_forward);
+			} else {
+				contentUIData.browserWidget10.setImageResource(R.drawable.chevron_left);
+				contentUIData.browserWidget11.setImageResource(R.drawable.chevron_right);
+			}
+			bottomNavWeb = nav;
+			//if(tv!=null) tv.setText(getResources().getTextArray(R.array.btm_navmode)[type]);
+		}
+	}
+	
+	void NavWeb(int d) {
+		if (scrollFocus !=null) {
+			if (d>0) scrollFocus.goForward();
+			else scrollFocus.goBack();
+		}
 	}
 }

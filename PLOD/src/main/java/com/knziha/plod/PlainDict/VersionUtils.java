@@ -47,6 +47,9 @@ public class VersionUtils {
 			opt.setTurnPageEnabled(true);
 			opt.schPageNavAudioKey(false);
 			
+			opt.setUseBackKeyGoWebViewBack(false);
+			opt.setUseBackKeyGoWebViewBack1(false);
+			
 			PDICMainAppOptions.pageSchWild(true);
 			PDICMainAppOptions.pageSchWildDeprecated(false);
 			PDICMainAppOptions.uncheckVersionBefore_5_7(false);

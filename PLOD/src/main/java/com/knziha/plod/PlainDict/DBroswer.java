@@ -1543,7 +1543,7 @@ public class DBroswer extends DialogFragment implements
 	public void goBack() {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
-		if(opt.getBottomNavigationMode()==0) {
+		if(!weblistHandler.bottomNavWeb) {
 			if (currentPos - 1 < 0) {
 				a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, 0);
 				return;
@@ -1554,14 +1554,14 @@ public class DBroswer extends DialogFragment implements
 			adelta = -1;
 			onItemClick(null, --currentPos);
 		} else {
-			a.GoBackOrForward(weblistHandler, -1);
+			weblistHandler.NavWeb(-1);
 		}
 	}
 
 	public void goQiak() {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null) return;
-		if(opt.getBottomNavigationMode()==0) {
+		if(!weblistHandler.bottomNavWeb) {
 			if (currentPos + 1 > getItemCount() - 1) {
 				a.show(R.string.endendr);
 				return;
@@ -1582,7 +1582,7 @@ public class DBroswer extends DialogFragment implements
 			adelta = 1;
 			onItemClick(null, currentPos);
 		} else {
-			a.GoBackOrForward(weblistHandler, 1);
+			weblistHandler.NavWeb(1);
 		}
 	}
 

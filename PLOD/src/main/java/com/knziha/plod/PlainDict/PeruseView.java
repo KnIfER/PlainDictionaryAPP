@@ -1008,10 +1008,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 //			if(tint) iv.setColorFilter(a.ForegroundTint, PorterDuff.Mode.SRC_IN);
 //			iv.setOnLongClickListener(this);
 //		}
-		
-
-		if(opt.getBottomNavigationMode1()==1)
-			setBottomNavigationType(1, null);
 
 //		contentUIData.browserWidget8.setOnClickListener(this);
 //		contentUIData.browserWidget8.setOnLongClickListener(this);
@@ -2422,17 +2418,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 //			forward.setVisibility(View.VISIBLE);
 			//111
 		}
-	}
-	
-	void setBottomNavigationType(int type, TextView tv) {
-		if (type == 0) {
-			contentUIData.browserWidget10.setImageResource(R.drawable.chevron_left);
-			contentUIData.browserWidget11.setImageResource(R.drawable.chevron_right);
-		} else if (type == 1) {
-			contentUIData.browserWidget10.setImageResource(R.drawable.chevron_recess);
-			contentUIData.browserWidget11.setImageResource(R.drawable.chevron_forward);
-		}
-		if(tv!=null) tv.setText(getResources().getTextArray(R.array.btm_navmode)[type]);
 	}
 	
 	@NonNull MainActivityUIBase getMainActivity() {

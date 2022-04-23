@@ -1913,7 +1913,7 @@ function debug(e){console.log(e)};
 		tintBackground(mWebView);
 		
 		if (ViewUtils.ViewIsId((View) mWebView.rl.getParent(), R.id.webSingleholder)) {
-			mWebView.weblistHandler.setLastScrollFocus(mWebView);
+			mWebView.weblistHandler.setScrollFocus(mWebView);
 		}
 	
 		if((fRender&RENDERFLAG_NEW)!=0){

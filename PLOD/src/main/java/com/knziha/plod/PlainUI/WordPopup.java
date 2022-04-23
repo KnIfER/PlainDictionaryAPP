@@ -71,7 +71,6 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	public TextView entryTitle;
 	protected PopupMoveToucher moveView;
 	public FlowTextView indicator;
-	public RLContainerSlider pageSlider;
 	public WebViewmy mWebView;
 	public BookPresenter.AppHandler popuphandler;
 	public ImageView popIvBack;
@@ -150,7 +149,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		int id = v.getId();
 		switch (id) {
 			case R.id.cover: {
-				if(v==pageSlider.page){
+				if(v==weblistHandler.pageSlider.page){
 					a.getUtk().setInvoker(CCD, mWebView, null, null);
 					a.getUtk().onClick(v);
 				}
@@ -218,7 +217,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			} break;
 			case R.id.popIvStar:{
 				a.collectFavoriteView = popupContentView;
-				a.toggleStar(displaying, (ImageView) v, false, pageSlider);
+				a.toggleStar(displaying, (ImageView) v, false, weblistHandler.pageSlider);
 				a.collectFavoriteView = null;
 			} break;
 			case R.id.popupText1:{
@@ -419,7 +418,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			popupContentView.setOnClickListener(ViewUtils.DummyOnClick);
 			toolbar = (ViewGroup) popupContentView.getChildAt(0);
 			LinearSplitView split = (LinearSplitView) popupContentView.getChildAt(1);
-			pageSlider = (RLContainerSlider) split.getChildAt(0);
+			RLContainerSlider pageSlider = weblist.pageSlider = (RLContainerSlider) split.getChildAt(0);
 			splitter = (ViewGroup) popupContentView.getChildAt(3);
 			dictPicker = new DictPicker(a, split, splitter, -1);
 			dictPicker.autoScroll = true;
@@ -564,7 +563,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		popupContentView = holder == null ? null : holder.get();
 		boolean b1 = popupContentView == null;
 		isNewHolder = isNewHolder || b1;
-		View cv = (View) this.pageSlider.getParent();
+		View cv = (View) weblistHandler.pageSlider.getParent();
 		if (b1 || popupContentView != cv.getParent()) {
 			//ViewUtils.removeView(popupToolbar);
 			//ViewUtils.removeView(PopupPageSlider);
@@ -1019,7 +1018,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			
 			if (!PDICMainAppOptions.storeNothing()
 					&& PDICMainAppOptions.getHistoryStrategy7())
-				a.addHistory(popupKey, SearchUI.TapSch.MAIN, pageSlider, null);
+				a.addHistory(popupKey, SearchUI.TapSch.MAIN, weblistHandler.pageSlider, null);
 		}
 	}
 	
@@ -1039,7 +1038,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				rec.renderContentAt(0, a, null, weblistHandler);
 				setDisplaying(weblistHandler.getMultiRecordKey());
 			}
-			pageSlider.setWebview(mWebView, null);
+			weblistHandler.pageSlider.setWebview(mWebView, null);
 			dictPicker.filterByRec(rec, 0);
 			setTranslator(rec, 0);
 			return;
@@ -1059,7 +1058,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				if (PDICMainAppOptions.getClickSearchAutoReadEntry())
 					mWebView.bRequestedSoundPlayback=true;
 				CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, mWebView, currentPos);
-				pageSlider.setWebview(mWebView, null);
+				weblistHandler.pageSlider.setWebview(mWebView, null);
 				setDisplaying(mWebView.word);
 			} else {
 				loadEntry(0);

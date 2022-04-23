@@ -1411,21 +1411,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-
-	/** @return integer: 0=entry page forword/backward <br/>
-	 * 1=web page forword/backward <br/>
-	 */
-	public int getBottomNavigationMode() {
-		return (int) ((ThirdFlag >> 22) & 3);
-	}
-	public int setBottomNavigationMode(int val) {
-		calcPseudoCode(val);
-		setPseudoInitCode(val);
-		ThirdFlag &= (~0x400000l);
-		ThirdFlag &= (~0x800000l);
-		ThirdFlag |= ((long)(val & 3)) << 22;
-		return val;
-	}
+ 	// 22 23
 	
 	public static int calcPseudoCode(int input) {
 		//CMN.Log("calcPseudoCode::", input);
@@ -1591,19 +1577,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=48) public static boolean getEnableWebDebug() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=48) public static void setEnableWebDebug(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	
-	
-	/** @return integer: 0=entry page forword/backward <br/>
-	 * 1=web page forword/backward <br/>
-	 */
-	public int getBottomNavigationMode1() {
-		return (int) ((ThirdFlag >> 49) & 3);
-	}
-	public int setBottomNavigationMode1(int val) {
-		ThirdFlag &= (~0x2000000000000l);
-		ThirdFlag &= (~0x4000000000000l);
-		ThirdFlag |= ((long)(val & 3)) << 49;
-		return val;
-	}
+//	@Metaline(flagPos=49) public static boolean bottomNavWeb() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+//	@Metaline(flagPos=49) public static void bottomNavWeb(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 
 	//xxx 废弃？？？
 	public boolean getUseBackKeyGoWebViewBack1() {
