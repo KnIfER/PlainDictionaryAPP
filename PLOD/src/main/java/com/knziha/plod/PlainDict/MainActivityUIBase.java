@@ -10584,7 +10584,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//IMPageCover.getBackground().setAlpha(0);
 				WebViewListHandler wPage = page.weblist;
 				if(Dir==1) wPage.browserWidget11.performClick();
-				else if(Dir==0) wPage.browserWidget10.performClick();
+				else if(Dir==-1) wPage.browserWidget10.performClick();
 			}
 		}:pager;
 	}

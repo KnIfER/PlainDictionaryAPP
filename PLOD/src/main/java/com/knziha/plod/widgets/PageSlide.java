@@ -13,7 +13,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.appcompat.app.GlobalOptions;
+
 import com.google.android.material.animation.AnimationUtils;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.WebViewListHandler;
 
 
@@ -26,8 +29,7 @@ public class PageSlide extends TextView {
 	public PageSlide(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
-	boolean decided=false;
-	boolean decidedDir;
+	int decided;
 	public interface Pager {
 		void slidePage(int Dir, PageSlide v);
 		void onMoving(float val, PageSlide v);
@@ -52,8 +54,10 @@ public class PageSlide extends TextView {
 	private int dragTm;
 	
 	public void handleMsg(Message msg) {
-		if(msg.arg1<dragTm)
+		if(msg.arg1<dragTm) {
+			CMN.Log("not handling...");
 			return;
+		}
 		
 		animator+=animatorD;
 		
@@ -66,7 +70,7 @@ public class PageSlide extends TextView {
 			hdl.obtainMessage(3344,msg.arg1,0,msg.obj).sendToTarget();
 		} else {
 			RLContainerSlider slide = weblist.contentUIData.PageSlider;
-			if (!decided || slide.dragged || slide.aborted) {
+			if (decided==0 || slide.dragged || slide.aborted) {
 				dragView.setAlpha(1);
 				setVisibility(GONE);
 			} else {
@@ -108,10 +112,11 @@ public class PageSlide extends TextView {
 			leftAcc=0;
 			dragTm = (int) SystemClock.currentThreadTimeMillis();
 			srcX = getTranslationX();
+			TargetX = decided>0?getWidth():decided<0?-getWidth():0;
 			animator = 0.f;
 			hdl.removeMessages(3344);
 			if(listener !=null) {
-				listener.slidePage(decided?(decidedDir?1:0):2,this);
+				listener.slidePage(decided,this);
 				ViewGroup dv = weblist.getDragView();
 				if (dv != dragView) {
 					dragView.setVisibility(View.VISIBLE);
@@ -163,23 +168,16 @@ public class PageSlide extends TextView {
 	
 	public void handleDrag(float dx, float dy) {
 		dragTm = (int) SystemClock.currentThreadTimeMillis();
-    	
         int left = (int) (getTranslationX() + dx);
         setTranslationX(left);
 		leftAcc+=dx;
-        DisplayMetrics dm = getResources().getDisplayMetrics();
-		int w = dm.widthPixels;//getWidth();
-        if(leftAcc<-(2.0f*w/12)) {
-        	TargetX=-getWidth();
-			decided=true;
-			decidedDir=true;
-        } else if(leftAcc>(2.0f*w/12)) {
-        	TargetX=getWidth();
-			decided=true;
-			decidedDir=false;
+		float theta = 2.0f*GlobalOptions.width/12;
+        if(leftAcc<-theta) {
+			decided=-1;
+        } else if(leftAcc>theta) {
+			decided=1;
         } else {
-        	TargetX=0;
-        	decided=false;
+			decided=0;
         }
 	}
 	

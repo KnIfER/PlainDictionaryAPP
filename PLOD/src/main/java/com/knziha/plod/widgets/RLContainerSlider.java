@@ -165,14 +165,13 @@ public class RLContainerSlider extends FrameLayout{
 					page.startDrag(e2);
 					page.setAlpha(1.f);
 					if(velocityX<0) {
-						page.decidedDir=true;
+						page.decided=-1;
 						page.TargetX=-page.getWidth();
-					}else {
-						page.decidedDir=false;
+					} else {
+						page.decided=1;
 						page.TargetX= page.getWidth();
 					}
 					dragged=false;
-					page.decided=true;
 					page.RePosition();
 				}
 			}
@@ -204,7 +203,7 @@ public class RLContainerSlider extends FrameLayout{
 				detector = new GestureDetector(getContext(), gl);
 			}
 			dragged= flingDeteced =false;
-			page.decided=false;
+			page.decided=0;
 			return true;
 		}
 		if(page !=null){
@@ -250,7 +249,7 @@ public class RLContainerSlider extends FrameLayout{
 						) {
 							dragged = false;
 							aborted = true;
-							page.decided=false;
+							page.decided=0;
 							page.RePosition();
 							first_touch_id = -1;
 							ViewUtils.preventDefaultTouchEvent(this, (int)lastX, (int)lastY);
@@ -276,6 +275,7 @@ public class RLContainerSlider extends FrameLayout{
 					if (ev.getSource()==100) {
 						break;
 					}
+					page.decided=0;
 				case MotionEvent.ACTION_UP: {
 					onActionUp();
 				} break;
@@ -389,7 +389,7 @@ public class RLContainerSlider extends FrameLayout{
 			detector.onTouchEvent(ev);
 			if(flingDeteced) {
 				dragged=flingDeteced=false;
-				page.decided=false;
+				page.decided=0;
 				return true;
 			}
 		}
