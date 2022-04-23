@@ -797,7 +797,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	public void onIdClick(View v, int id){
 		switch(id) {
 			case R.id.toolbar_action1:{
-				toggleJointSearch();
+				toggleBatchSearch();
 			} break;
 			//返回
 			case R.id.ivBack:{

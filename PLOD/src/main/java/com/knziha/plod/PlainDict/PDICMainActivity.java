@@ -84,7 +84,6 @@ import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
-import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.plaindict.databinding.ActivityMainBinding;
 import com.knziha.plod.searchtasks.AsyncTaskWrapper;
@@ -100,7 +99,6 @@ import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.HeightProvider;
 import com.knziha.plod.widgets.PageSlide;
-import com.knziha.plod.widgets.PageSlide.Pager;
 import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.NoSSLv3SocketFactory;
 import com.knziha.plod.widgets.NoScrollViewPager;
@@ -108,7 +106,6 @@ import com.knziha.plod.widgets.OnScrollChangedListener;
 import com.knziha.plod.widgets.ScreenListener;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
-import com.knziha.rbtree.additiveMyCpr1;
 
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -1350,19 +1347,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				String key = etSearch.getText().toString().trim();
 				if(key.length()>0) Current0SearchText=key;
-				int tmp = viewPager.getCurrentItem();
+				int p = viewPager.getCurrentItem();
 				if(etTools.isVisible()) {
 					etTools.dismiss();
 				}
-				if(tmp==0 || tmp==2) {
+				if(p==0 || p==2) {
 					if(!PDICMainAppOptions.storeNothing() || PDICMainAppOptions.storeNothingButSch())
-						addHistory(key, tmp==0?SearchUI.MainApp.ENTRYTEXT:SearchUI.MainApp.FULLTEXT, null, null);
+						addHistory(key, p==0?SearchUI.MainApp.ENTRYTEXT:SearchUI.MainApp.FULLTEXT, null, null);
 					if(!checkDicts()) return true;
 					//模糊搜索 & 全文搜索
 					if(mAsyncTask!=null)
 						mAsyncTask.stop(true);
 					imm.hideSoftInputFromWindow(main.getWindowToken(),0);
-					(mAsyncTask=tmp==0?new FuzzySearchTask(PDICMainActivity.this)
+					(mAsyncTask=p==0?new FuzzySearchTask(PDICMainActivity.this)
 							:new FullSearchTask(PDICMainActivity.this)).execute(key);
 				} else {
 					if(!PDICMainAppOptions.storeNothing() || PDICMainAppOptions.storeNothingButSch())
@@ -2433,7 +2430,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			break;
 			//切换搜索模式
 			case R.id.toolbar_action1:{
-				toggleJointSearch();
+				toggleBatchSearch();
 			} break;
 			//返回
 			case R.id.ivBack:{

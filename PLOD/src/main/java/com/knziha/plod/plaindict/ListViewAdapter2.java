@@ -121,7 +121,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		if(a.DBrowser!=null) return;
 		lastClickedPosBefore = lastClickedPos;
 		if(pos<0 || pos>=getCount()) {
-			a.show(R.string.endendr);
+			a.showTopSnack(R.string.endendr);
 			return;
 		}
 		String lstKey = currentKeyText = results.getResAt(a, pos).toString();

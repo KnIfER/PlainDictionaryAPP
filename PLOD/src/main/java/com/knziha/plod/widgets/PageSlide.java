@@ -29,7 +29,7 @@ public class PageSlide extends TextView {
 	public PageSlide(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
-	int decided;
+	public int decided;
 	public interface Pager {
 		void slidePage(int Dir, PageSlide v);
 		void onMoving(float val, PageSlide v);
@@ -112,7 +112,6 @@ public class PageSlide extends TextView {
 			leftAcc=0;
 			dragTm = (int) SystemClock.currentThreadTimeMillis();
 			srcX = getTranslationX();
-			TargetX = decided>0?getWidth():decided<0?-getWidth():0;
 			animator = 0.f;
 			hdl.removeMessages(3344);
 			if(listener !=null) {
@@ -123,6 +122,7 @@ public class PageSlide extends TextView {
 					dv.setVisibility(View.INVISIBLE);
 				}
 			}
+			TargetX = decided>0?getWidth():decided<0?-getWidth():0;
 			hdl.obtainMessage(3344,dragTm+1,0,this).sendToTarget();
 		}
 	}

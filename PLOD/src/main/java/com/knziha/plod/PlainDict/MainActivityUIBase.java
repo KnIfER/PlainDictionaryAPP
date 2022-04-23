@@ -264,8 +264,6 @@ import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_HISTORY;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_LIST_MULTI;
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -636,6 +634,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public boolean switch_Dict(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC) {
 		boolean prvNxt = prvNxtABC!=null;
 		int size=md.size();
+		if (bIsFirstLaunch) {
+			bIsFirstLaunch = false;
+		}
 		if(size>0) {
 			if(i<0||i>=size) {
 				if(prvNxt) {
@@ -6288,12 +6289,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}  break;
 			case R.id.setToSingleMode:{
 				if(isCombinedSearching) {
-					toggleJointSearch();
+					toggleBatchSearch();
 				}
 			}  break;
 			case R.id.setToMultiMode:{
 				if(!isCombinedSearching) {
-					toggleJointSearch();
+					toggleBatchSearch();
 				}
 			}  break;
 			/* 即点即译 */
@@ -6374,9 +6375,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public void toggleJointSearch() {
+	public void toggleBatchSearch() {
 		boolean result = isCombinedSearching = !isCombinedSearching
 				, b=isContentViewAttached();
+		if (bIsFirstLaunch) {
+			bIsFirstLaunch = false;
+		}
 		if(thisActType==ActType.PlainDict) {
 			opt.setCombinedSearching(result);
 		} else if(thisActType==ActType.FloatSearch){
@@ -10583,8 +10587,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			public void slidePage(int Dir, PageSlide page) {
 				//IMPageCover.getBackground().setAlpha(0);
 				WebViewListHandler wPage = page.weblist;
-				if(Dir==1) wPage.browserWidget11.performClick();
-				else if(Dir==-1) wPage.browserWidget10.performClick();
+				CharSequence t = page.getText();
+				if (t.length()==1 && (TextUtils.equals(t, "←")||TextUtils.equals(t, "→"))) {
+					page.decided = 0;
+				}
+				if(Dir==-1) wPage.browserWidget11.performClick();
+				else if(Dir==1) wPage.browserWidget10.performClick();
 			}
 		}:pager;
 	}
