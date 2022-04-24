@@ -48,6 +48,7 @@ import androidx.core.graphics.ColorUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
@@ -2039,7 +2040,10 @@ function debug(e){console.log(e)};
 		//if(!a.AutoBrowsePaused&&a.background&&PDICMainAppOptions.getAutoBrowsingReadSomething())
 		//	mWebView.resumeTimers();
     	String htmlCode = null ,JS=null;
-    	boolean loadUrl=opt.alwaysloadUrl() || opt.popuploadUrl()&&mWebView.weblistHandler.bShowingInPopup;
+    	boolean loadUrl=opt.alwaysloadUrl()
+				|| opt.popuploadUrl()&&mWebView.weblistHandler.bShowingInPopup
+				//|| mWebView.weblistHandler.getSrc()==SearchUI.TapSch.MAIN && true
+				;
     	//CMN.Log("loadUrl::", loadUrl);
 		try {
 			if(bookImpl.hasVirtualIndex())
@@ -2102,6 +2106,10 @@ function debug(e){console.log(e)};
 				for(long p:position) {
 					mergedUrl.append("_");
 					IU.NumberToText_SIXTWO_LE(p, mergedUrl);
+				}
+				if (mWebView.toTag!=null) {
+					mergedUrl.append("#").append(mWebView.toTag);
+					mWebView.toTag=null;
 				}
 				htmlCode = mergedUrl.toString();
 			}

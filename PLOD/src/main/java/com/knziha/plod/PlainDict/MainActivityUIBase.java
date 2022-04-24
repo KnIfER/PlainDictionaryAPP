@@ -6904,7 +6904,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WebViewClient myWebClient = new WebViewClient() {
 		public void onPageFinished(WebView view, String url) {
 			WebViewmy mWebView = (WebViewmy) view;
-			CMN.Log("onPageFinished::"+mWebView.bPageStarted);
+			//CMN.debug("onPageFinished::"+mWebView.bPageStarted);
 			if (mWebView.bPageStarted) {
 				mWebView.bPageStarted = false;
 			} else {
@@ -6913,7 +6913,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if("about:blank".equals(url)/* || !mWebView.active&&!mWebView.fromNet*/) {
 				return;
 			}
-			CMN.Log("chromium: OPF ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.tapSchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
+			//CMN.debug("chromium: OPF ==> ", url, mWebView.isloading, view.getProgress(), view.getTag(R.drawable.voice_ic));
 			if(!mWebView.isloading && !mWebView.fromNet) return;
 			WebViewListHandler wlh = mWebView.weblistHandler;
 			
@@ -6964,7 +6964,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//if(true) return;
 			/* I、接管页面缩放及(跳转)位置(0, 1, 3)
 			*  II、进入黑暗模式([0,1,2,3],[4])、编辑模式(0,1,3,[4])。*/
-			String toTag = mWebView.toTag;
+			String toHash = mWebView.toTag;
 			OUT:
 			if(invoker.getIsWebx()){
 				((PlainWeb)invoker.bookImpl).onPageFinished(invoker, mWebView, url, true);
@@ -6977,8 +6977,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					//root.post(() -> showT("OPF 错误!!!"));
 					return;
 				}
-				boolean editing = invoker.getContentEditable() && invoker.getEditingContents();
-
 				if(mWebView.webScale!= BookPresenter.def_zoom) {
 					//if(Build.VERSION.SDK_INT>=21)
 					//	view.zoomBy(0.02f);//reset zoom!
@@ -6996,40 +6994,40 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					view.setTag(R.id.toolbar_action3,null);
 				}
-
-//				if(toTag!=null){
-//					//CMN.Log("toTag::", toTag);
-//					mWebView.toTag=null;
-//					if(!toTag.equals("===???")) {
-//						proceed=false;
-//						mWebView.expectedPos = -100;
-//						if(fromCombined){
-//							wlh.WHP.touchFlag.first=true;
-//								if (toTag.equals("===000")) {
-//									//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + weblistHandler.WHP.getChildAt(0).getHeight());
-//									wlh.WHP.post(() -> {
-//										wlh.WHP.smoothScrollTo(0, invoker.rl.getTop());
-//									});
-//								} else
-//									view.evaluateJavascript("var item=document.getElementsByName(\"" + toTag + "\")[0];item?item.getBoundingClientRect().top:-1;"
-//											, v -> {
-//												int to = (int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
-//												if(to>=0)
-//													wlh.WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
-//											});
-//
-//						}
-//						else {
-//							CMN.Log("toTag::", toTag);
-//							if(!toTag.equals("===000"))
-//								view.evaluateJavascript("location.replace(\"#" + toTag + "\");", null);
-//						}
-//					}
-//				}
+				
+				//if(toHash!=null) CMN.debug("toHash::", toHash);
+				
+				if(toHash!=null && !toHash.equals("===???")){
+					mWebView.toTag=null;
+					View rl = (View) mWebView.getParent();
+					proceed=false;
+					mWebView.expectedPos = -100;
+					if(fromCombined){
+						wlh.WHP.touchFlag.first=true;
+							if (toHash.equals("===000")) {
+								//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + weblistHandler.WHP.getChildAt(0).getHeight());
+								wlh.WHP.post(() -> {
+									wlh.WHP.smoothScrollTo(0, rl.getTop());
+								});
+							} else {
+								view.evaluateJavascript("var item=document.getElementsByName(\"" + toHash + "\")[0];item?item.getBoundingClientRect().top:-1;"
+									, v -> {
+										int to = (int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
+										if(to>=0)
+											wlh.WHP.smoothScrollTo(0, rl.getTop() - toolbar.getHeight() + to);
+									});
+							}
+					}
+					else {
+						//CMN.debug("toTag::", toTag);
+						if(!toHash.equals("===000"))
+							view.evaluateJavascript("location.replace(\"#" + toHash + "\");", null);
+					}
+				}
 				
 				boolean toHighLight = PDICMainAppOptions.schPageAutoTurn() && wlh.schPage(mWebView);
 				
-				CMN.debug("expectedPos::", mWebView.expectedPos, mWebView.getScrollY(), "toHighLight="+toHighLight);
+				//CMN.debug("expectedPos::", mWebView.expectedPos, mWebView.getScrollY(), "toHighLight="+toHighLight);
 				
 				if(proceed) {
 					if (!fromCombined) {
@@ -7037,7 +7035,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 						if (mWebView.expectedPos >= 0 && !toHighLight) {
 							//layoutScrollDisabled=true;
-							CMN.Log("initial_push: ", mWebView.expectedPosX, mWebView.expectedPos);
+							//CMN.debug("initial_push: ", mWebView.expectedPosX, mWebView.expectedPos);
 							mWebView.scrollTo(mWebView.expectedPosX, mWebView.expectedPos);
 
 							NaugtyWeb = mWebView;
@@ -7047,27 +7045,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							layoutScrollDisabled = true;
 						}
 					}
-					else {
-						if("===???".equals(toTag)){
-							/* 接管同一词典不同页面的网页前后跳转 */
-							weblistHandler.WHP.touchFlag.first=false;
-							//WHP.post(() -> {
-							//WHP.smoothScrollTo(0, mWebView.expectedPos);
-							//WHP.smoothScrollTo(mWebView.expectedPosX, mWebView.expectedPos);
-							recCom.expectedPos=mWebView.expectedPos;
-							recCom.LHGEIGHT=0;
-							recCom.scrolled=false;
-							ViewUtils.addOnLayoutChangeListener(weblistHandler.webholder, weblistHandler.OLCL);
-							// 111  crash  weblistHandler.OLCL==null
-							weblistHandler.OLCL.onLayoutChange(weblistHandler.webholder,0, weblistHandler.webholder.getTop(),0,weblistHandler.webholder.getBottom(),0,0,0,0);
-							//});
-						}
-					}
-				}
-
-				if (editing && mWebView.currentRendring!=null && mWebView.currentRendring.length==1) {
-					if (!(mWebView.fromCombined==3?getPeruseView().bSupressingEditing:invoker.bSupressingEditing)) {
-						mWebView.evaluateJavascript(ce_on, null);
+					else  if("===???".equals(toHash)){
+						/* 接管同一词典不同页面的网页前后跳转 */
+						weblistHandler.WHP.touchFlag.first=false;
+						//WHP.post(() -> {
+						//WHP.smoothScrollTo(0, mWebView.expectedPos);
+						//WHP.smoothScrollTo(mWebView.expectedPosX, mWebView.expectedPos);
+						recCom.expectedPos=mWebView.expectedPos;
+						recCom.LHGEIGHT=0;
+						recCom.scrolled=false;
+						ViewUtils.addOnLayoutChangeListener(weblistHandler.webholder, weblistHandler.OLCL);
+						// 111  crash  weblistHandler.OLCL==null
+						weblistHandler.OLCL.onLayoutChange(weblistHandler.webholder,0, weblistHandler.webholder.getTop(),0,weblistHandler.webholder.getBottom(),0,0,0,0);
+						//});
 					}
 				}
 
@@ -7080,9 +7070,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if (mWebView.getTag(R.id.js_no_match) != null) {
 						mWebView.evaluateJavascript(js_no_match, null);
 						mWebView.setTag(R.id.js_no_match, null);
-					} else if (toTag != null && !toTag.equals("===000")) {
+					} else if (toHash != null && !toHash.equals("===000")) {
 						mWebView.toTag = null;
-						view.evaluateJavascript("location.replace(\"#" + toTag + "\");", null);
+						view.evaluateJavascript("location.replace(\"#" + toHash + "\");", null);
 					}
 				}
 			}
@@ -7426,18 +7416,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							wordPopup.init();
 							wordPopup.mWebView.frameAt = mWebView.frameAt;
 							//popupWebView.SelfIdx = mWebView.SelfIdx;
-							mWebView = wordPopup.mWebView;
+							//mWebView = wordPopup.mWebView;
 						}
-						mWebView.toTag = null;
 						int tagIdx = url.indexOf("#");
 						if (tagIdx > 0) {
 							mWebView.toTag = url.substring(tagIdx + 1);
 							url = url.substring(0, tagIdx);
 						}
+						else if(mWebView.toTag!=null) mWebView.toTag = null;
 						if(url.endsWith("/")) url=url.substring(0, url.length()-1);
 						url = URLDecoder.decode(url, "UTF-8");
 						if(popup){
-							popupWord(url, wordPopup.mWebView.presenter, mWebView.frameAt, mWebView);
+							popupWord(url, mWebView.presenter, mWebView.frameAt, mWebView);
 							return true;
 						}
 						else {
@@ -7447,6 +7437,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							if (idx >= 0) {//idx != -1
 								if(pop) { // 新窗口打开词条跳转
 									wlh = getRandomPageHandler(true);
+									if (mWebView.toTag!=null) {
+										wlh.getMergedFrame().toTag = mWebView.toTag;
+										mWebView.toTag = null;
+									}
 									mWebView = wlh.getMergedFrame();
 									wlh.viewContent();
 									wlh.setViewMode(null, false, mWebView);

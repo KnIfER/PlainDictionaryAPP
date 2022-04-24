@@ -289,7 +289,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	@Override
 	public void loadUrl(String url) {
 		super.loadUrl(url);
-		//CMN.Log("\n\nloadUrl", url);
+		//CMN.Log("\n\nloadUrl::", url);
 		drawRect=false;
 		isloading=true;
 	}

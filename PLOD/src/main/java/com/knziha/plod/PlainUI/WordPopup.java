@@ -560,7 +560,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		//CMN.Log("popupWord", popupKey, x, y, frameAt);
 		boolean isNewHolder;
 		// 初始化核心组件
-		isInit = isNewHolder = mWebView == null|| mWebView.fromCombined!=2;
+		isInit = isNewHolder = mWebView == null || mWebView.fromCombined!=2;
 		init();
 		// 给你换身衣裳
 		WeakReference<ViewGroup> holder = (PDICMainAppOptions.getImmersiveClickSearch() ? popupCrdCloth : popupCmnCloth);
@@ -632,7 +632,8 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			lp.height = moveView.FVH_UNDOCKED = (int) (a.dm.heightPixels * 7.0 / 12 - a.getResources().getDimension(R.dimen._20_));
 			if (mPopupContentView != null && !isInit) {
 				popupContentView.setTranslationY(mPopupContentView.getTranslationY());
-				lp.height = mPopupContentView.getLayoutParams().height;
+				//int h=mPopupContentView.getLayoutParams().height;
+				//if (h>0) lp.height = h;
 			}
 		}
 	}
@@ -1087,6 +1088,10 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		IU.NumberToText_SIXTWO_LE(CCD.getId(), mergedUrl);
 		mergedUrl.append("_");
 		IU.NumberToText_SIXTWO_LE(currentPos, mergedUrl);
+		if (CCD==popupForceId && invoker!=null && invoker.toTag!=null) {
+			mergedUrl.append("#").append(invoker.toTag);
+			invoker.toTag = null;
+		}
 		mWebView.currentPos = currentPos;
 		mWebView.presenter = CCD;
 		mWebView.loadUrl(mergedUrl.toString());

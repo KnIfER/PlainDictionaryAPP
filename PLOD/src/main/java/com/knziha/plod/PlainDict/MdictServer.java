@@ -369,7 +369,9 @@ public abstract class MdictServer extends NanoHTTPD {
 		if(uri.startsWith("/content/")) {
 			//SU.Log("content_received::", uri); //  /content/d5_JPA-d5_JPA
 			//  //  /content/0_1
-			uri = uri.substring(9);
+			int ed = uri.lastIndexOf("#");
+			if (ed<=9) ed = uri.length(); // strip hash
+			uri = uri.substring(9, ed);
 			String[] list = uri.split("_");
 			String dn=list[0];
 			if(!dn.equals("")) {
