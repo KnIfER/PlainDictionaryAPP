@@ -3,6 +3,7 @@ package com.knziha.plod.plaindict;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
+import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
 
@@ -1530,6 +1531,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				contentUIData.browserWidget10.setImageResource(R.drawable.chevron_left);
 				contentUIData.browserWidget11.setImageResource(R.drawable.chevron_right);
 			}
+			if (bShowingInPopup) {
+				PDICMainAppOptions.bottomNavWeb(nav);
+			}
 			bottomNavWeb = nav;
 			//if(tv!=null) tv.setText(getResources().getTextArray(R.array.btm_navmode)[type]);
 		}
@@ -1537,8 +1541,13 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	void NavWeb(int d) {
 		if (scrollFocus !=null) {
-			if (d>0) scrollFocus.goForward();
-			else scrollFocus.goBack();
+			if(String.valueOf(scrollFocus.getUrl()).startsWith(baseUrl)
+				&& scrollFocus.forward!=null) {
+				(d>0?scrollFocus.forward:scrollFocus.recess).performClick();
+			} else {
+				if (d>0) scrollFocus.goForward();
+				else scrollFocus.goBack();
+			}
 		}
 	}
 }
