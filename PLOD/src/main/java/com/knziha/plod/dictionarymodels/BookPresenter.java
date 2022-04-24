@@ -4014,4 +4014,10 @@ function debug(e){console.log(e)};
 				", isMergedBook=" + isMergedBook() +
 				'}';
 	}
+	
+	public void invokeToolsBtn(WebViewmy mWebView) {
+		a.getUtk().setInvoker(this, mWebView, null, null);
+		a.getUtk().onClick(null);
+	}
+	
 }

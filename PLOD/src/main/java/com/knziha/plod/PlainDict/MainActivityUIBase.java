@@ -3813,11 +3813,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} return;
 			}
 			hideKeyboard();
-			Object tag = v==null?null:v.getTag();
-			if(!bFromTextView &&  tag instanceof Integer){
-				Integer ftag = (Integer) tag;
-				bFromWebView=(ftag&1)!=0;
-				bFromPeruseView=(ftag&2)!=0;
+			if(!bFromTextView){
+				bFromWebView=mWebView!=null;
+				bFromPeruseView=bFromWebView && mWebView.weblistHandler.src==SearchUI.Fye.MAIN;
 			}
 			// nimp
 			//if (!bFromWebView && mWebView!=null && invoker instanceof bookPresenter_pdf) {
@@ -6347,11 +6345,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(weblistHandler==null)
 			weblistHandler = randomPageHandler = new WebViewListHandler(this, ContentviewBinding.inflate(getLayoutInflater()), schuiMain);
 		if(initPopup) {
+			WebViewmy randomPage = weblistHandler.getMergedFrame();
 			weblistHandler.setUpContentView(cbar_key);
 			weblistHandler.popupContentView(null, "随机页面");
-			weblistHandler.setViewMode(null, true, null);
+			weblistHandler.setViewMode(null, true, randomPage);
 			weblistHandler.initMergedFrame(true, true, false);
-			WebViewmy randomPage = weblistHandler.getMergedFrame();
 			randomPage.isloading = true;
 			randomPage.active = true;
 			randomPage.jointResult = null;
@@ -6384,7 +6382,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				randomPage.loadUrl(testUrl);
 				randomPageHandler.resetScrollbar(randomPage, false, false);
 			}
-			randomPageHandler.setViewMode(null, false, null);
+			randomPageHandler.setViewMode(null, false, randomPage);
 			randomPageHandler.viewContent();
 		} catch (Exception e) {
 			CMN.debug(e);

@@ -703,12 +703,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				 * 分享#1 | 分享…
 				 * 分享#2 | 分享#3
 				 */
-				CMN.Log("工具!!!");
-				View cover=((ViewGroup) getParent()).getChildAt(fromCombined==2?1:0).findViewById(R.id.cover);
-				if(cover!=null){
-					cover.setTag(1);
-					cover.performClick();
-				}
+				//CMN.Log("工具!!!");
+				presenter.invokeToolsBtn(this);
 			} return false;
 			case R.id.toolbar_action3:{//TTS
 				evaluateJavascript("if(window.app)app.ReadText(sid.get(), ''+window.getSelection())",null);
