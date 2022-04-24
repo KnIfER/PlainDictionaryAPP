@@ -29,6 +29,7 @@ public class PageSlide extends TextView {
 	public PageSlide(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
+	public int prevd;
 	public int decided;
 	public interface Pager {
 		void slidePage(int Dir, PageSlide v);
@@ -70,7 +71,7 @@ public class PageSlide extends TextView {
 			hdl.obtainMessage(3344,msg.arg1,0,msg.obj).sendToTarget();
 		} else {
 			RLContainerSlider slide = weblist.contentUIData.PageSlider;
-			if (decided==0 || slide.dragged || slide.aborted) {
+			if (prevd==0 || slide.dragged || slide.aborted) {
 				dragView.setAlpha(1);
 				setVisibility(GONE);
 			} else {
@@ -123,6 +124,7 @@ public class PageSlide extends TextView {
 				}
 			}
 			TargetX = decided>0?getWidth():decided<0?-getWidth():0;
+			prevd = decided;
 			decided = 0;
 			hdl.obtainMessage(3344,dragTm+1,0,this).sendToTarget();
 		}
@@ -172,7 +174,7 @@ public class PageSlide extends TextView {
         int left = (int) (getTranslationX() + dx);
         setTranslationX(left);
 		leftAcc+=dx;
-		float theta = 2.0f*GlobalOptions.width/12;
+		float theta = 2.0f*getWidth()/12;
         if(leftAcc<-theta) {
 			decided=-1;
         } else if(leftAcc>theta) {
