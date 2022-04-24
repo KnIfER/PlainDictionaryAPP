@@ -686,7 +686,6 @@ public class Drawer extends Fragment implements
 									//a.swicthToBook(markedBook);
 									if(a.dictPicker !=null) a.dictPicker.isDirty=true;
 									a.bWantsSelection=false;
-									a.bNeedReAddCon=false;
 									
 									if(adaptermy==null)
 										adaptermy = new ListViewAdapter(a, null, null);

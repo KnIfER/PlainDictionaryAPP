@@ -168,7 +168,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	ActionBarDrawerToggle mDrawerToggle;
 	
-	public boolean bNeedReAddCon;
 	private MyHandler mHandle;
 	public AsyncTaskWrapper<String, Integer, String> mAsyncTask;
 	private Animation animaExit;
@@ -626,13 +625,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		}
 	}
-
-	@Override
-	public void onBackPressed() {
-		//mainF.removeAllViews();
-		PostDCV_TweakTBIC();
-		super.onBackPressed();
-	}
 	
 	protected boolean PerFormBackPrevention(boolean bBackBtn) {
 //		if(dialogHolder.getVisibility()==View.VISIBLE) {
@@ -1080,7 +1072,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	void onDrawerOpened() {
 		if(isContentViewAttached()) {
 			DetachContentView(false);
-			bNeedReAddCon=true;
 		}
 		imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
 		fadeSnack();
@@ -1278,14 +1269,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 			@Override public void onDrawerStateChanged(int newState) {
 				if(!UIData.drawerLayout.isDrawerVisible(GravityCompat.START)) {
-					if(bNeedReAddCon) {
-						AttachContentView(false);
-						if(contentview.getTag(R.id.image)!=null) initPhotoViewPager();
-						etSearch_ToToolbarMode(1);
-						bNeedReAddCon=false;
-					} else {
-						etSearch_ToToolbarMode(0);
-					}
+					etSearch_ToToolbarMode(0);
 				}
 				//if (newState==UIData.drawerLayout.STATE_DRAGGING)
 				{
@@ -2695,7 +2679,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	@Override
 	void DetachContentView(boolean leaving) {
-		CMN.Log("DetachContentView");
+		//CMN.Log("DetachContentView");
+		PostDCV_TweakTBIC();
 		delayedAttaching=false;
 		applyMainMenu();
 		mDrawerToggle.onDrawerClosed(UIData.drawerLayout);

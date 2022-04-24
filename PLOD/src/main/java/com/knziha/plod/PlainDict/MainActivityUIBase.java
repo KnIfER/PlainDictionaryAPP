@@ -9644,8 +9644,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(normal_idx==0 && currentDictionary.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
 				currentDictionary.SetSearchKey(key);
 				if(bIsFirstLaunch||bWantsSelection||来一发) {
+					//CMN.debug("自动显示内容::", bIsFirstLaunch, bWantsSelection, 来一发);
 					bRequestedCleanSearch=bIsFirstLaunch;
-					/* 接管历史纪录 */
 					adaptermy.onItemClick(null, null, normal_idx, 0);
 				}
 				bIsFirstLaunch=false;
