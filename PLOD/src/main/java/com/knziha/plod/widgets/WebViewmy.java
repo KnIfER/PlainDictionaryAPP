@@ -106,7 +106,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public GradientDrawable toolbarBG;
 	public AdvancedNestScrollLinerView titleBar;
 	public final int[] ColorShade = new int[]{0xff4F7FDF, 0xff2b4381};
-	public boolean clearHistory;
 	public FlowTextView toolbar_title;
 	public View recess;
 	public View forward;

@@ -2360,6 +2360,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=37, shift=1) public static boolean turnPageFye(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=37, shift=1) public static void turnPageFye(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
+	@Metaline(flagPos=38) public static boolean bottomNavWeb(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=38) public static void bottomNavWeb(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
 	
 	///////
 	///////

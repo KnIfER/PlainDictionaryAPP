@@ -1999,10 +1999,6 @@ function debug(e){console.log(e)};
 	   	    mWebView.setWebViewClient(a.myWebClient);
     	}
 
-		if(!fromPopup) {
-			mWebView.clearHistory = true;
-		}
-
 		renderContentAt_internal(mWebView, initialScale, fromCombined, fromPopup, mIsolateImages, position);
     }
 	

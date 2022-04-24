@@ -6350,6 +6350,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			weblistHandler.popupContentView(null, "随机页面");
 			weblistHandler.setViewMode(null, true, randomPage);
 			weblistHandler.initMergedFrame(true, true, false);
+			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
 			randomPage.isloading = true;
 			randomPage.active = true;
 			randomPage.jointResult = null;
@@ -7106,9 +7107,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					pendingWebView=mWebView;
 				}
 			}
-
-			if(mWebView.clearHistory) {
-				mWebView.clearHistory=false;
+			
+			/** see {@link baseUrl} */
+			if(mdbr && url.regionMatches(schemaIdx+12, "base.", 0, 5)) {
 				mWebView.clearHistory();
 			}
 			
