@@ -482,6 +482,8 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				pottombar.getChildAt(i).setOnTouchListener(moveView);
 			}
 			
+			weblist.toolsBtn = toolbar.findViewById(R.id.tools);
+			weblist.toolsBtn.setOnClickListener(weblist);
 			weblist.browserWidget8 = toolbar.findViewById(R.id.popIvStar);
 			weblist.browserWidget10 = pottombar.findViewById(R.id.popLstE);
 			weblist.browserWidget11 = pottombar.findViewById(R.id.popNxtE);

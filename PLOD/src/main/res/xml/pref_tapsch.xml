@@ -157,7 +157,7 @@
 	<PreferenceCategory
 		android:key="gp_dzoom"
 		android:title="翻页"
-		app:icon="@drawable/ic_search"
+		app:icon="@drawable/un_locked"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
 		>
@@ -166,6 +166,21 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="允许翻页"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat"
+		android:title="工具按钮"
+		app:icon="@drawable/tools_toolbar"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="tools"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="选择文本后显示工具按钮"
 			/>
 	</PreferenceCategory>
 </PreferenceScreen>

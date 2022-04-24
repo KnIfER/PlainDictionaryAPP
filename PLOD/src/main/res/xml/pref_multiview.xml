@@ -209,4 +209,19 @@
 			app:wiki="允许双击后，点译窗口的弹出会变慢！此时间指示变慢多少。若过小，可能在点击屏幕的第一下，点译窗口已经弹出来了，导致无法触发双击。"
 			/>
 	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat"
+		android:title="工具按钮"
+		app:icon="@drawable/tools_toolbar"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="tools"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="选择文本后显示工具按钮"
+			/>
+	</PreferenceCategory>
 </PreferenceScreen>

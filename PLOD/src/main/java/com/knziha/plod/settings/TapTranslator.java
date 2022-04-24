@@ -44,6 +44,8 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 		init_switch_preference(this, "tz", PDICMainAppOptions.tapZoomTapSch(), null, null);
 		init_switch_preference(this, "turn", PDICMainAppOptions.turnPageTapSch(), null, null);
 		findPreference("tz1").setOnPreferenceClickListener(this);
+		
+		init_switch_preference(this, "tools", PDICMainAppOptions.tapSchShowToolsBtn(), null, null);
 	}
 
 	@Override
@@ -121,6 +123,9 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 			case "turn":
 				PDICMainAppOptions.turnPageTapSch((Boolean) newValue);
 				SearchUI.tapZoomV++;
+			break;
+			case "tools":
+				PDICMainAppOptions.tapSchShowToolsBtn((Boolean) newValue);
 			break;
 		}
 		return true;

@@ -112,6 +112,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public RLContainerSlider pageSlider;
 	
 	public boolean bottomNavWeb;
+	public View toolsBtn;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData, int src) {
 		super(a);
@@ -137,6 +138,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			browserWidget10 = contentUIData.browserWidget10;
 			browserWidget11 = contentUIData.browserWidget11;
 			pageSlider = contentUIData.PageSlider;
+			toolsBtn = contentUIData.tools;
+			toolsBtn.setOnClickListener(this);
 			
 			contentUIData.PageSlider.page = contentUIData.cover;
 			contentUIData.cover.setPager(a.getPageListener());
@@ -940,8 +943,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return hasPageKey() && (isViewSingle() || mWebView==webholder.getChildAt(0));
 	}
 	
-	public void textMenu(boolean vis) {
-		ViewUtils.setVisible(contentUIData.tools, vis);
+	public void textMenu(WebViewmy mWebView) {
+		if (mWebView==null || (bDataOnly?PDICMainAppOptions.tapSchShowToolsBtn():PDICMainAppOptions.wvShowToolsBtn())) {
+			toolsBtn.setTag(mWebView);
+			ViewUtils.setVisible(toolsBtn, mWebView!=null);
+		}
 	}
 	
 	/** show this hide another */
@@ -1309,6 +1315,13 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			case R.id.browser_widget13:
 			case R.id.browser_widget14:{
 				prvnxtFrame(id == R.id.browser_widget13);
+			} break;
+			/* 工具 */
+			case R.id.tools:{
+				if (v.getTag() instanceof WebViewmy) {
+					final WebViewmy wv = ((WebViewmy) v.getTag());
+					wv.presenter.invokeToolsBtn(wv);
+				}
 			} break;
 		}
 	}

@@ -1574,6 +1574,12 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=49) public static boolean tapSchPageAutoReadEntry() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=49) public static void tapSchPageAutoReadEntry(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 
+	@Metaline(flagPos=50, shift=1) public static boolean wvShowToolsBtn() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=50, shift=1) public static void wvShowToolsBtn(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+
+	@Metaline(flagPos=51, shift=1) public static boolean tapSchShowToolsBtn() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51, shift=1) public static void tapSchShowToolsBtn(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+
 	//xxx 废弃？？？
 	public boolean getUseBackKeyGoWebViewBack1() {
 		return (ThirdFlag & 0x8000000000000l) == 0x8000000000000l;

@@ -60,6 +60,8 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		init_switch_preference(this, "turn2", PDICMainAppOptions.getPageTurn2(), null, null);
 		init_switch_preference(this, "turn3", PDICMainAppOptions.getPageTurn3(), null, null);
 		
+		init_switch_preference(this, "tools", PDICMainAppOptions.wvShowToolsBtn(), null, null);
+		
 		clrAccent = ColorUtils.blendARGB(0xff2b4381, Color.GRAY, 0.35f);
 		((PreferenceGroup) findPreference("cat_"+getActivity().getIntent().getIntExtra("where", 0))).drawSideLine = true;
 	}
@@ -157,6 +159,9 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 			break;
 			case "turn3":
 				PDICMainAppOptions.setPageTurn3((Boolean) newValue);
+			break;
+			case "tools":
+				PDICMainAppOptions.wvShowToolsBtn((Boolean) newValue);
 			break;
 		}
 		if (key.startsWith("tz") || key.startsWith("turn")) {

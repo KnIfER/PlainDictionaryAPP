@@ -44,6 +44,17 @@
 			android:minWidth="45dp"
 			android:background="@drawable/listviewselector0"
 			/>
+		<ImageView
+			android:id="@+id/tools"
+			android:layout_width="45dp"
+			android:layout_height="match_parent"
+			android:src="@drawable/tools_toolbar"
+			android:background="?attr/actionBarItemBackground"
+			android:tint="#8f8f8f"
+			android:padding="7dp"
+			android:layout_marginEnd="1px"
+			android:visibility="gone"
+			/>
 		<com.knziha.plod.widgets.ActivatableImageView
 			android:id="@+id/popIvStar"
 			android:layout_width="45dp"

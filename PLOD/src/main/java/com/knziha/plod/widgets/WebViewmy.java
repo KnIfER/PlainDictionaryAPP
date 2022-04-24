@@ -635,7 +635,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 			boolean craft = callback.onCreateActionMode(mode, menu);
 			if (craft) {
-				weblistHandler.textMenu(true);
+				weblistHandler.textMenu(WebViewmy.this);
 			}
 			return bIsActionMenuShown=craft;
 		}
@@ -665,7 +665,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		PopupWindow mPopup;
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
-			weblistHandler.textMenu(false);
+			weblistHandler.textMenu(null);
 			bIsActionMenuShown=false;
 			//CMN.Log("onDestroyActionMode");
 		}
