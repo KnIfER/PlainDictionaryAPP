@@ -1562,14 +1562,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 
-	public static boolean getClickSearchAutoReadEntry() {
-		return (ThirdFlag & 0x200000000000l) == 0x200000000000l;
-	}
-	public static boolean setClickSearchAutoReadEntry(boolean val) {
-		updateTFAt(0x200000000000l,val);
-		return val;
-	}
-	
+	@Metaline(flagPos=45) public static boolean tapSchAutoReadEntry() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=45) public static void tapSchAutoReadEntry(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=46) public static boolean getUseBackKeyGoWebViewBack() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=46) public static void setUseBackKeyGoWebViewBack(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=47, shift=1) public static boolean getLazyLoadDicts() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
@@ -1577,8 +1571,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=48) public static boolean getEnableWebDebug() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=48) public static void setEnableWebDebug(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	
-//	@Metaline(flagPos=49) public static boolean bottomNavWeb() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-//	@Metaline(flagPos=49) public static void bottomNavWeb(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=49) public static boolean tapSchPageAutoReadEntry() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=49) public static void tapSchPageAutoReadEntry(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 
 	//xxx 废弃？？？
 	public boolean getUseBackKeyGoWebViewBack1() {

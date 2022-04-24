@@ -102,7 +102,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	private int lastScrollUpdateY;
 	Runnable UpdateBookLabelAbility;
 	BookPresenter lastScrolledBook;
-	WebViewmy scrollFocus;
+	public WebViewmy scrollFocus;
 	WebViewmy mWebView;
 	public boolean tapSch;
 	

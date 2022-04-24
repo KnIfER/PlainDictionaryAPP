@@ -105,6 +105,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	ViewGroup splitter;
 	private final Runnable clrSelAby = () -> invoker.evaluateJavascript("window.getSelection().collapseToStart()", null);
 	public SearchbarTools etTools;
+	private boolean requestAudio;
 	
 	public WordPopup(MainActivityUIBase a) {
 		super(a, true);
@@ -163,6 +164,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 					CCD=a.currentDictionary;
 				int delta = id==R.id.popNxtE?1:-1;
 				resetPreviewIdx();
+				requestAudio = PDICMainAppOptions.tapSchPageAutoReadEntry();
 				if (weblistHandler.isMultiRecord()) {
 					resultRecorderCombined rec = weblistHandler.multiRecord;
 					int np = rec.viewingPos + delta;
@@ -425,6 +427,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			PageSlide page = pageSlider.page = (PageSlide) pageSlider.getChildAt(0);
 			WebViewmy webview = (WebViewmy) pageSlider.getChildAt(1);;
 			pageSlider.weblist = page.weblist = webview.weblistHandler = weblist;
+			weblist.scrollFocus = webview;
 			page.hdl = a.hdl;
 			page.setPager(a.getPageListener());
 			webview.getSettings().setTextZoom(118);
@@ -1023,6 +1026,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	}
 	
 	public void SearchDone() {
+		requestAudio = PDICMainAppOptions.tapSchAutoReadEntry();
 		if(rec!=null) {
 			boolean bUseMergedUrl = true;
 			weblistHandler.setViewMode(rec, bUseMergedUrl, mWebView);
@@ -1055,8 +1059,6 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				weblistHandler.bMergingFrames = false;
 				indicator.setText(a.md_getName(CCD_ID));
 				popuphandler.setBook(CCD);
-				if (PDICMainAppOptions.getClickSearchAutoReadEntry())
-					mWebView.bRequestedSoundPlayback=true;
 				CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, mWebView, currentPos);
 				weblistHandler.pageSlider.setWebview(mWebView, null);
 				setDisplaying(mWebView.word);
@@ -1067,6 +1069,8 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	}
 	
 	private void setDisplaying(String key) {
+		if (requestAudio)
+			mWebView.bRequestedSoundPlayback=true;
 		displaying = key;
 		weblistHandler.setStar(key);
 	}

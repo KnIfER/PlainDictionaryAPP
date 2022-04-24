@@ -49,6 +49,7 @@ public class VersionUtils {
 			
 			opt.setUseBackKeyGoWebViewBack(false);
 			opt.setUseBackKeyGoWebViewBack1(false);
+			opt.tapSchPageAutoReadEntry(false);
 			
 			PDICMainAppOptions.pageSchWild(true);
 			PDICMainAppOptions.pageSchWildDeprecated(false);

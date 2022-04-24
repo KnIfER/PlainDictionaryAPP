@@ -538,7 +538,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private String LastMd;
 	
 	SplitView.PageSliderInf inf;
-	private boolean read_click_search;
 	public ActType thisActType;
 	public boolean awaiting;
 	
@@ -5706,17 +5705,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			/* 发音 */
 			case R.id.browser_widget12:{
-				if(webSingleholder.getChildCount()==1 && v.getTag(R.id.image)!=null){
-					// todo
-					if((int)v.getTag(R.id.image)==R.drawable.ic_fullscreen_black_96dp){
-						if(thisActType==ActType.PlainDict)
-							((PDICMainActivity)this).forceFullscreen(!PDICMainAppOptions.isFullScreen());
-					} else {
-						toggleClickThrough();
-					}
-				} else {
-					performReadEntry();
-				}
+				findWebList(v);
+				performReadEntry();
+//				if(webSingleholder.getChildCount()==1 && v.getTag(R.id.image)!=null){
+//					// todo
+//					if((int)v.getTag(R.id.image)==R.drawable.ic_fullscreen_black_96dp){
+//						if(thisActType==ActType.PlainDict)
+//							((PDICMainActivity)this).forceFullscreen(!PDICMainAppOptions.isFullScreen());
+//					} else {
+//						toggleClickThrough();
+//					}
+//				} else {
+//					performReadEntry();
+//				}
 			} break;
 			/* 切换收藏 */
 			case R.drawable.star_ic:
@@ -6717,6 +6718,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//public boolean onJsTimeout() {
 		//	return false;
 		//}
+		
+//		@Override
+//		public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+//			return true;
+//		}
+		
 		@Override
 		public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
 			CMN.Log("onJsPrompt 2");
@@ -6908,7 +6915,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if("about:blank".equals(url)/* || !mWebView.active&&!mWebView.fromNet*/) {
 				return;
 			}
-			CMN.Log("chromium: OPF ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.getClickSearchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
+			CMN.Log("chromium: OPF ==> ", url, mWebView.isloading, view.getProgress(), CMN.stst_add, PDICMainAppOptions.tapSchAutoReadEntry(), view.getTag(R.drawable.voice_ic));
 			if(!mWebView.isloading && !mWebView.fromNet) return;
 			WebViewListHandler wlh = mWebView.weblistHandler;
 			
@@ -7085,7 +7092,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 自动播放声音自动播报 */
 			if(mWebView.bRequestedSoundPlayback){
 				mWebView.bRequestedSoundPlayback=false;
-				read_click_search = mWebView==wordPopup.mWebView;
+				weblist = mWebView.weblistHandler;
 				if(AutoBrowsePaused||(!PDICMainAppOptions.getAutoBrowsingReadSomething())){
 					postReadEntry();
 					CMN.Log("hey!!!", opt.getThenAutoReadContent());
@@ -7921,7 +7928,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} else {
 					ReadEntryPlanB(mWebView, url);
 				}
-				return emptyResponse;
+				//return emptyResponse;
+				return null;
 			}
 
 			String SepWindows = "\\";
@@ -9073,71 +9081,26 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public void performReadEntry() {
+		WebViewListHandler wlh = weblist;
 		mThenReadEntryCount--;
-		BookPresenter mCurrentDictionary = null;
-		WebViewmy wv;
-		String target;
 		
-		if(read_click_search && wordPopup.CCD!=EmptyBook) {
-			mCurrentDictionary = wordPopup.CCD;
-			target = wordPopup.displaying;
-			wv = wordPopup.mWebView;
-		} else {
-			if(PeruseViewAttached()){
-				mCurrentDictionary = peruseView.currentDictionary;
-				wv = peruseView.mWebView;
-			}
-			else {
-				View SV=null;
-				if (weblistHandler.webholder!=null && weblistHandler.webholder.getChildCount() != 0) {
-					int selectedPos = -1;
-					/* 当前滚动高度 */
-					int currentHeight = weblistHandler.WHP.getScrollY();
-					for (int i = 0; i < weblistHandler.webholder.getChildCount(); i++) {
-						if (weblistHandler.webholder.getChildAt(i).getBottom() > currentHeight) {
-							/* Frames累加高度 首次超出 滚动高度 */
-							selectedPos = i;
-							break;
-						}
-					}
-					//应用中线法则
-					currentHeight = currentHeight + weblistHandler.WHP.getHeight() / 2;
-					if (selectedPos >= 0) {
-						while (selectedPos + 1 < weblistHandler.webholder.getChildCount() && weblistHandler.webholder.getChildAt(selectedPos).getBottom() < currentHeight) {
-							selectedPos++;
-						}
-					}
-					SV = weblistHandler.webholder.getChildAt(selectedPos);
-				} else {//单本阅读
-					SV = webSingleholder.getChildAt(0);
-				}
-				
-				if (SV!=null && SV.getTag() instanceof WebViewmy) {
-					mCurrentDictionary = ((WebViewmy) SV.getTag()).presenter;
-				}
-				
-				if (mCurrentDictionary != null) {
-					wv = mCurrentDictionary.mWebView;
-				} else {
-					wv = null;
-				}
-			}
-			target = wv==null?null:wv.word;
-		}
-		//showT("PRE", mCurrentDictionary.getName()+"-"+wv+"-"+target);
-		if(mCurrentDictionary!=null && wv!=null && target!=null) {
-			if (mCurrentDictionary.isMddResource() && target.length() > 1) {
+		WebViewmy wv = weblist.scrollFocus;
+		BookPresenter reader = wv==null?null:wv.presenter;
+		String target = weblist==wordPopup.weblistHandler?wordPopup.displaying:wv==null?null:wv.word;
+		//showT("PRE "+mCurrentDictionary.getDictionaryName()+"-"+wv+"-"+target);
+		if(reader!=null && wv!=null && target!=null) {
+			if (reader.isMddResource() && target.length() > 1) {
 				int end = target.lastIndexOf(".");
 				if (end < target.length() - 6) end = -1;
 				target = target.substring(1, end > 0 ? end : target.length());
 			}
 			String finalTarget = target;
 			if(PDICMainAppOptions.getUseSoundsPlaybackFirst()){
-				requestSoundPlayBack(finalTarget, mCurrentDictionary, wv);
+				requestSoundPlayBack(finalTarget, reader, wv);
 			}
-			else if (AutoBrowsePaused /*自动读时绕过*/ && mCurrentDictionary.bookImpl.hasMdd()) {
+			else if (AutoBrowsePaused /*自动读时绕过*/ && reader.bookImpl.hasMdd()) {
 				/* 倾向于已经制定发音按钮 */
-				BookPresenter finalMCurrentDictionary = mCurrentDictionary;
+				BookPresenter finalMCurrentDictionary = reader;
 				wv.evaluateJavascript(WebviewSoundJS, value -> {
 					//CMN.Log("WebviewSoundJS", value);
 					if (!"10".equals(value)) {
@@ -9145,7 +9108,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				});
 			} else {
-				requestSoundPlayBack(finalTarget, mCurrentDictionary, wv);
+				requestSoundPlayBack(finalTarget, reader, wv);
 			}
 		}
 	}

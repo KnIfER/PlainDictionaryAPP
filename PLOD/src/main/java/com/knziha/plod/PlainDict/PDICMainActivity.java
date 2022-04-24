@@ -538,7 +538,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			switch (msg.what) {
 				case 2020:
 					if(msg.obj instanceof String)
-					a.showT((String)msg.obj, Toast.LENGTH_LONG);
+					a.showTopSnack((String)msg.obj);
 				break;
 				case 1024:
 					a.handleFloatMessage(msg);

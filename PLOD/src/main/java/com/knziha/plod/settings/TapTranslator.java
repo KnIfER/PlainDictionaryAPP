@@ -35,7 +35,8 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 		init_switch_preference(this, "switch_bottom", PDICMainAppOptions.getSwichClickSearchDictOnBottom(), null, null);
 		init_switch_preference(this, "switch_nav", PDICMainAppOptions.getSwichClickSearchDictOnNav(), null, null);
 		init_switch_preference(this, "delay_diss", PDICMainAppOptions.getClickSearchDismissDelay(), null, null);
-		init_switch_preference(this, "click_tts", PDICMainAppOptions.getClickSearchAutoReadEntry(), null, null);
+		init_switch_preference(this, "click_tts", PDICMainAppOptions.tapSchAutoReadEntry(), null, null);
+		init_switch_preference(this, "click_tts1", PDICMainAppOptions.tapSchPageAutoReadEntry(), null, null);
 		
 		findPreference("bar").setOnPreferenceClickListener(this);
 		findPreference("tz1").setOnPreferenceClickListener(this);
@@ -76,7 +77,10 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 				PDICMainAppOptions.setClickSearchDismissDelay((Boolean) newValue);
 			break;
 			case "click_tts":
-				PDICMainAppOptions.setClickSearchAutoReadEntry((Boolean) newValue);
+				PDICMainAppOptions.tapSchAutoReadEntry((Boolean) newValue);
+			break;
+			case "click_tts1":
+				PDICMainAppOptions.tapSchPageAutoReadEntry((Boolean) newValue);
 			break;
 			case "multi_cs":
 				PDICMainAppOptions.setMultipleClickSearch((Boolean) newValue);

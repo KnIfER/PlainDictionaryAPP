@@ -115,6 +115,7 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="延时空白区域的点击"
+			app:allowDividerBelow="true"
 			/>
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
@@ -122,6 +123,13 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="自动发音"
+			/>
+
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="click_tts1"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="翻页时自动发音"
 			/>
 
 	</PreferenceCategory>
