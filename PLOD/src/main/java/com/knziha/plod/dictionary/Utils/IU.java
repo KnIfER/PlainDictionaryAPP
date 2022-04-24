@@ -292,6 +292,10 @@ the valueOf method.
 		final char[] NumberToText_SIXTWO_ARR = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
 		final int scale = 62;
 		if(sb==null) sb = new StringBuilder(12);
+		if(number==0) {
+			sb.append("0");
+			return sb;
+		}
 		boolean negative=number<0;
 		if(negative) number=-number;
 		if(number<0) {
