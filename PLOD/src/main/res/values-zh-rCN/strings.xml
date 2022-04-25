@@ -18,7 +18,7 @@
 	<string name="BGMSG"><![CDATA[正在为词典  <%1$s> 指定背景颜色…]]></string>
 	<string name="BGMSG2">全局背景色</string>
 	<string name="PT1">√ 启用翻页</string>
-	<string name="PT2">禁用翻页</string>
+	<string name="PT2">全局禁用翻页</string>
 	<string name="fc">找到 %d 项.</string>
 	<string name="fn">什么都没有找到</string>
 

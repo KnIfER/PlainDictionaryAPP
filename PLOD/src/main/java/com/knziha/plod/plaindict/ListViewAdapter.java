@@ -124,6 +124,10 @@ public class ListViewAdapter extends BasicAdapter {
 //			a.testRandomWord();
 //			return;
 //		}
+		if(pos<0 || !bOnePageNav && pos>=getCount()){
+			a.showTopSnack(R.string.endendr);
+			return;
+		}
 		a.shuntAAdjustment();
 		if(a.PeruseListModeMenu.isChecked()) {
 			String lstKey = this.currentKeyText = presenter.bookImpl.getEntryAt(pos).trim();
@@ -150,12 +154,6 @@ public class ListViewAdapter extends BasicAdapter {
 		a.ActivedAdapter=this;
 		shunt=presenter.getIsWebx() ||a.bRequestedCleanSearch;
 		
-		if(pos<0 || !bOnePageNav && pos>=getCount()){
-			a.showTopSnack(R.string.endendr);
-			if(pos>=0)
-				lastClickedPos = getCount()-1;
-			return;
-		}
 		boolean bUseMergedUrl = false;//!presenter.getIsWebx();
 		boolean bUseDictView = !bUseMergedUrl && (!PDICMainAppOptions.getUseSharedFrame() || presenter.getHasVidx());
 		

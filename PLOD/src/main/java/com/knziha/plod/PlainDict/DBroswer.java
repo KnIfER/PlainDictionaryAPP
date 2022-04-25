@@ -300,6 +300,7 @@ public class DBroswer extends DialogFragment implements
 			MainActivityUIBase a = (MainActivityUIBase) getActivity();
 			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
 			weblistHandler = new WebViewListHandler(a, contentUIData, a.schuiMain);
+			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
 			weblistHandler.setUpContentView(a.cbar_key);
 		}
 		weblistHandler.checkUI();
@@ -557,6 +558,18 @@ public class DBroswer extends DialogFragment implements
 			}
 			this.type=type;
 		}
+	}
+	
+	public String getEntryAt(int pos) {
+		if (pos<0 || pos>=mAdapter.getItemCount()) {
+			if (pos==-1) {
+				return "←";
+			}
+			if (pos==mAdapter.getItemCount()) {
+				return "→";
+			}
+		}
+		return mAdapter.getReaderAt(pos).record;
 	}
 	
 	class SearchCardsHandler2 extends AsyncTask<String,Integer,Void>{
@@ -1354,7 +1367,7 @@ public class DBroswer extends DialogFragment implements
 			weblistHandler.popupContentView(null, currentDisplaying__);
 			
 			weblistHandler.bShowInPopup = true;
-			weblistHandler.bMergeFrames = a.mergeFrames();
+			weblistHandler.bMergeFrames = 1;//a.mergeFrames();
 			rec.renderContentAt(0, a,null, weblistHandler);
 
 			processFavorite(position, currentDisplaying);
@@ -1540,49 +1553,49 @@ public class DBroswer extends DialogFragment implements
 		}
 	}
 
-	public void goBack() {
-		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		if(a==null) return;
-		if(!weblistHandler.bottomNavWeb) {
-			if (currentPos - 1 < 0) {
-				a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, 0);
-				return;
-			}
-			//int first = lm.findFirstVisibleItemPosition();
-			if (currentPos < lm.findFirstVisibleItemPosition())
-				lm.scrollToPositionWithOffset(currentPos, 0);
-			adelta = -1;
-			onItemClick(null, --currentPos);
-		} else {
-			weblistHandler.NavWeb(-1);
-		}
-	}
-
-	public void goQiak() {
-		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		if(a==null) return;
-		if(!weblistHandler.bottomNavWeb) {
-			if (currentPos + 1 > getItemCount() - 1) {
-				a.show(R.string.endendr);
-				return;
-			}
-			currentPos += 1;
-			int last = lm.findLastVisibleItemPosition();
-			boolean hei = false;
-			if (currentPos == last) {
-				if (lv.getChildAt(last) != null) {
-					hei = lv.getHeight() - lv.getChildAt(last).getTop() < lv.getChildAt(last).getHeight() * 2 / 3;
+	public void NavList(int delta) {
+		if (delta < 0) {
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
+			if (a == null) return;
+			if (!weblistHandler.bottomNavWeb()) {
+				if (currentPos - 1 < 0) {
+					a.showTopSnack(R.string.endendr);
+					return;
 				}
-			} else
-				hei = currentPos > last;
-
-			if (hei) {
-				lm.scrollToPositionWithOffset(currentPos, 0);
+				//int first = lm.findFirstVisibleItemPosition();
+				if (currentPos < lm.findFirstVisibleItemPosition())
+					lm.scrollToPositionWithOffset(currentPos, 0);
+				adelta = -1;
+				onItemClick(null, --currentPos);
+			} else {
+				weblistHandler.NavWeb(-1);
 			}
-			adelta = 1;
-			onItemClick(null, currentPos);
 		} else {
-			weblistHandler.NavWeb(1);
+			MainActivityUIBase a = (MainActivityUIBase) getActivity();
+			if(a==null) return;
+			if(!weblistHandler.bottomNavWeb()) {
+				if (currentPos + 1 > getItemCount() - 1) {
+					a.showTopSnack(R.string.endendr);
+					return;
+				}
+				currentPos += 1;
+				int last = lm.findLastVisibleItemPosition();
+				boolean hei = false;
+				if (currentPos == last) {
+					if (lv.getChildAt(last) != null) {
+						hei = lv.getHeight() - lv.getChildAt(last).getTop() < lv.getChildAt(last).getHeight() * 2 / 3;
+					}
+				} else
+					hei = currentPos > last;
+				
+				if (hei) {
+					lm.scrollToPositionWithOffset(currentPos, 0);
+				}
+				adelta = 1;
+				onItemClick(null, currentPos);
+			} else {
+				weblistHandler.NavWeb(1);
+			}
 		}
 	}
 
@@ -1612,7 +1625,7 @@ public class DBroswer extends DialogFragment implements
 			mDialog.mBCL = new SimpleDialog.BCL(){
 				@Override
 				public void onBackPressed() {
-					goBack();
+					NavList(-1);
 				}
 				@Override
 				public void onActionModeStarted(ActionMode mode) {

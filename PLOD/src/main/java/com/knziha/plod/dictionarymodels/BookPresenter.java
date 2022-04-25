@@ -1055,7 +1055,7 @@ function debug(e){console.log(e)};
 		// nimp
 	}
 	
-	public String GetSearchKey() {
+	public final String GetSearchKey() {
 		return searchKey;
 	}
 	
@@ -1063,7 +1063,7 @@ function debug(e){console.log(e)};
 		return a.getSearchTerm();
 	}
 	
-	public void SetSearchKey(String key) {
+	public final void SetSearchKey(String key) {
 		searchKey = key;
 	}
 	
@@ -1381,9 +1381,10 @@ function debug(e){console.log(e)};
 		@Override
 		public boolean onLongClick(View v) {
 			WebViewmy _mWebView = (WebViewmy) v;
-			if(_mWebView.presenter.suppressingLongClick) {
+			if(_mWebView.presenter.suppressingLongClick)
 				return false;
-			}
+			if(_mWebView.weblistHandler.pageSlider.twiceDetected)
+				return true;
 			_mWebView.lastLongSX = _mWebView.getScrollX();
 			_mWebView.lastLongSY = _mWebView.getScrollY();
 			_mWebView.lastLongScale = _mWebView.webScale;
@@ -2130,11 +2131,7 @@ function debug(e){console.log(e)};
 			mWebView.setInitialScale((int) (100*(initialScale/ BookPresenter.def_zoom)*opt.dm.density));//opt.dm.density
 		else {
 			//尝试重置页面缩放
-			if(false && Build.VERSION.SDK_INT<=23) {
-				//mWebView.zoomBy(0.02f);
-				mWebView.setTag(R.id.toolbar_action3,true);
-			}else
-				mWebView.setInitialScale(0);//opt.dm.density
+			mWebView.setInitialScale(0);//opt.dm.density
 		}
 		
 		StringBuilder htmlBuilder = AcquirePageBuilder();
@@ -2174,6 +2171,16 @@ function debug(e){console.log(e)};
 		} else if(JS!=null) {
 			mWebView.evaluateJavascript(JS, null);
 		}
+	}
+	
+	public void ApplySearchKey() {
+		//CMN.Log("OPF::EvaluateValidifierJs::", GetSearchKey());
+		String validifier1 = getOfflineMode()&&getIsWebx()?null:bookImpl.getVirtualTextValidateJs(this, mWebView, mWebView.currentPos);
+		if (validifier1!=null) {
+			//CMN.Log("OPF::EvaluateValidifierJs::");
+			EvaluateValidifierJs(validifier1, mWebView);
+		}
+		SetSearchKey(null);
 	}
 	
 	public void EvaluateValidifierJs(String validifier1, WebViewmy mWebView) {
@@ -3432,6 +3439,7 @@ function debug(e){console.log(e)};
 			isDirty = true;
 		}
 		if (getIsWebx()) {
+			setImageBrowsable(false);
 			if (checkVersionBefore_5_4())
 			{
 				setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());

@@ -5664,7 +5664,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				layoutScrollDisabled=false;
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 				findWebList(v);
-				if (weblist.bottomNavWeb && weblist.pageSlider.page.decided==0) {
+				if (weblist.bottomNavWeb()) {
 					weblist.NavWeb(delta);
 				} else {
 					if(!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething()){
@@ -5681,8 +5681,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							peruseView.ActivedAdapter.onItemClick(toPos);
 						}
 					}  else if (DBrowser!=null && weblist==DBrowser.weblistHandler) {
-						if(delta<0)DBrowser.goBack();
-						else DBrowser.goQiak();
+						DBrowser.NavList(delta);
 					} else  {
 						if (!weblist.isMultiRecord()) {
 							// 就当你是弹出的 entry:// ！
@@ -6065,7 +6064,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				boolean bPeruseIncharge = PeruseViewAttached();
 				AlertDialog dTmp = new AlertDialog.Builder(this)
 						.setSingleChoiceItems(R.array.btm_navmode
-						, weblist.bottomNavWeb?1:0, (d, which) -> {
+						, weblist.getBottomNavWeb()?1:0, (d, which) -> {
 							weblist.setBottomNavWeb(which==1);
 							d.dismiss();
 						})
@@ -6816,6 +6815,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					mWebView.evaluateJavascript(DarkModeIncantation, null);
 				}
 			}
+			
+			if (newProgress>=90) {
+				if(ViewUtils.littleCat) {
+					ViewUtils.KitPatch(MainActivityUIBase.this, mWebView);
+				}
+			}
 		}
 
 		@Override
@@ -6904,8 +6909,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public WebViewClient myWebClient = new WebViewClient() {
 		public void onPageFinished(WebView view, String url) {
-			WebViewmy mWebView = (WebViewmy) view;
-			//CMN.debug("onPageFinished::"+mWebView.bPageStarted);
+			final WebViewmy mWebView = (WebViewmy) view;
+			CMN.debug("onPageFinished::"+mWebView.bPageStarted, url);
 			if (mWebView.bPageStarted) {
 				mWebView.bPageStarted = false;
 			} else {
@@ -6915,246 +6920,138 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return;
 			}
 			//CMN.debug("chromium: OPF ==> ", url, mWebView.isloading, view.getProgress(), view.getTag(R.drawable.voice_ic));
-			if(!mWebView.isloading && !mWebView.fromNet) return;
+			
+			//if(!mWebView.isloading && !mWebView.fromNet) return;
 			WebViewListHandler wlh = mWebView.weblistHandler;
 			
-			if(ViewUtils.littleCat)
-			try {
-				mWebView.evaluateJavascript(ViewUtils.fileToString(MainActivityUIBase.this, new File("/ASSET/MdbR/KitPatch.js")), null);
-			} catch (Exception e) {
-				CMN.Log(e);
-			}
-			
 			int from = mWebView.fromCombined;
-			mWebView.isloading = false;
-			mWebView.AlwaysCheckRange = 0;
 			
 			BookPresenter invoker = mWebView.presenter, book=invoker;
 			
 			if (mWebView.translating>=0) {
 				doTranslation(wlh, mWebView.translating, null);
 			}
-			if (url.equals("http://mdbr.com/load.html")) {
-				try {
-					mWebView.evaluateJavascript(new_book(defDicts[2], MainActivityUIBase.this).getWebx().getSyntheticField("wordtoday"), new ValueCallback<String>() {
-						@Override
-						public void onReceiveValue(String value) {
-							CMN.debug("wordtoday::ValueCallback", value);
-							//weblistHandler.alloydPanel.dismiss();
-							
-							//etSearch.setText("mallee");
-						}
-					});
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
 			if(delayedAttaching && mWebView.presenter==currentDictionary) { // todo same replace (mWebView.SelfIdx==adapter_idx, ->)
 				((PDICMainActivity)MainActivityUIBase.this).AttachContentViewDelayed(10);
 			}
 			int schemaIdx = url.indexOf(":");
-			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
-			boolean raw = mdbr
-					&& invoker.isMergedBook()
-					&& url.regionMatches(schemaIdx+12, "content", 0, 7);
-			if(raw) {
-				int idx=schemaIdx+12+7+1;
-				invoker = getMdictServer().md_getByURLPath(url, idx, url.indexOf("_", idx));
-				//CMN.Log("ivk::raw::", invoker);
+			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4), baseUrl=false;
+			if(mdbr) {
+				if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
+					int idx=schemaIdx+12+7+1;
+					invoker = getMdictServer().md_getByURLPath(url, idx, url.indexOf("_", idx));
+				}
+				else if (url.regionMatches(schemaIdx+12, "base", 0, 4)) {
+					int idx=schemaIdx+12+5;
+					if (url.charAt(idx)=='/') { // base/d0/entry/...
+						invoker = getMdictServer().md_getByURLPath(url, idx, url.indexOf("/", idx));
+					}
+					else if (url.charAt(idx)=='.') { // base.html
+						baseUrl = true; /** see {@link #baseUrl} */
+						mWebView.clearHistory();
+					}
+				}
+				else if (url.equals("http://mdbr.com/load.html")) {
+					loadWordToday(mWebView);
+				}
+				CMN.Log("ivk::raw::", invoker);
+//				else if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
+//					int st = schemaIdx+12+7+1;
+//					int ed = url.indexOf("-", st);
+//					if (ed<0) ed = url.indexOf("#", st);
+//					if (ed<0) ed = url.length();
+//					long pos = IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(url, st, ed));
+//					CMN.Log("content!!!", url.substring(st), pos, IU.NumberToText_SIXTWO_LE(pos, null));
+//					if (mWebView.currentPos!=pos) {
+//					}
+//					mWebView.toolbar_title.setText(invoker.getBookEntryAt((int) pos));
+//				}
+//				else if (url.regionMatches(schemaIdx+12, "base/", 0, 5)) {
+//					int idx=url.indexOf("/", schemaIdx+12+5)+1;
+//					if (url.regionMatches(idx, "entry", 0, 5)) {
+//						idx=idx+5+1;
+//						CMN.Log("content!!! entry", url.substring(idx));
+//						mWebView.toolbar_title.setText(url.substring(idx));
+//					}
+//				}
 			}
-			//if(true) return;
-			/* I、接管页面缩放及(跳转)位置(0, 1, 3)
-			*  II、进入黑暗模式([0,1,2,3],[4])、编辑模式(0,1,3,[4])。*/
-			String toHash = mWebView.toTag;
-			OUT:
-			if(invoker.getIsWebx()){
+			if(invoker.getIsWebx())
+			{
 				((PlainWeb)invoker.bookImpl).onPageFinished(invoker, mWebView, url, true);
-			} else {
-			if(invoker.getImageBrowsable() && invoker.bookImpl.hasMdd()) {
-				mWebView.evaluateJavascript(BookPresenter.imgLoader, null);
 			}
-			if(from!=2){
-				if(invoker==null){
-					//root.post(() -> showT("OPF 错误!!!"));
-					return;
-				}
-				if(mWebView.webScale!= BookPresenter.def_zoom) {
-					//if(Build.VERSION.SDK_INT>=21)
-					//	view.zoomBy(0.02f);//reset zoom!
-					//if(fromPeruseView)PeruseView.webScale=mdict.def_zoom;else invoker.webScale=mdict.def_zoom;
-				}
-				boolean proceed=true;
-				boolean fromCombined = from==1;
-				if(view.getTag(R.id.toolbar_action3)!=null) {
-					//CMN.Log("变小了吗？");
-					if(((WebViewmy)view).webScale!=opt.dm.density){
-						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-							//CMN.Log("变小了");
-							view.zoomBy(0.02f);
+			/* 优先级： #页面锚点， 页内搜索🔍， 记忆位置🧲 */
+			else if(mWebView.isloading){
+				//if(baseUrl)
+				{
+					String toHash = mWebView.toTag;
+					boolean fromCombined = from==1;
+					// naive reset zoom : view.zoomBy(0.02f);
+					if(toHash!=null)
+					{
+						// CMN.debug("toHash::", toHash);
+						mWebView.toTag=null;
+						View rl = (View) mWebView.getParent();
+						mWebView.expectedPos = -100;
+						if(fromCombined){
+							wlh.WHP.touchFlag.first=true;
+								if (toHash.equals("===000")) {
+									//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + weblistHandler.WHP.getChildAt(0).getHeight());
+									wlh.WHP.post(() -> {
+										wlh.WHP.smoothScrollTo(0, rl.getTop());
+									});
+								} else {
+									view.evaluateJavascript("var item=document.getElementsByName(\"" + toHash + "\")[0];item?item.getBoundingClientRect().top:-1;"
+										, v -> {
+											int to = (int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
+											if(to>=0)
+												wlh.WHP.smoothScrollTo(0, rl.getTop() - toolbar.getHeight() + to);
+										});
+								}
+						}
+						else {
+							//CMN.debug("toTag::", toTag);
+							if("===???".equals(toHash))
+								recCom.handleNavJump(MainActivityUIBase.this, mWebView);
+							else if(!toHash.equals("===000"))
+								view.evaluateJavascript("location.replace(\"#" + toHash + "\");", null);
 						}
 					}
-					view.setTag(R.id.toolbar_action3,null);
-				}
-				
-				//if(toHash!=null) CMN.debug("toHash::", toHash);
-				
-				if(toHash!=null && !toHash.equals("===???")){
-					mWebView.toTag=null;
-					View rl = (View) mWebView.getParent();
-					proceed=false;
-					mWebView.expectedPos = -100;
-					if(fromCombined){
-						wlh.WHP.touchFlag.first=true;
-							if (toHash.equals("===000")) {
-								//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + weblistHandler.WHP.getChildAt(0).getHeight());
-								wlh.WHP.post(() -> {
-									wlh.WHP.smoothScrollTo(0, rl.getTop());
-								});
-							} else {
-								view.evaluateJavascript("var item=document.getElementsByName(\"" + toHash + "\")[0];item?item.getBoundingClientRect().top:-1;"
-									, v -> {
-										int to = (int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
-										if(to>=0)
-											wlh.WHP.smoothScrollTo(0, rl.getTop() - toolbar.getHeight() + to);
-									});
-							}
+					else if(PDICMainAppOptions.schPageAutoTurn() && wlh.schPage(mWebView))
+					{ //toHighLight
+						jumpNaughtyFirstHighlight(mWebView);
 					}
-					else {
-						//CMN.debug("toTag::", toTag);
-						if(!toHash.equals("===000"))
-							view.evaluateJavascript("location.replace(\"#" + toHash + "\");", null);
-					}
-				}
-				
-				boolean toHighLight = PDICMainAppOptions.schPageAutoTurn() && wlh.schPage(mWebView);
-				
-				//CMN.debug("expectedPos::", mWebView.expectedPos, mWebView.getScrollY(), "toHighLight="+toHighLight);
-				
-				if(proceed) {
-					if (!fromCombined) {
+					else if (!fromCombined)
+					{
 						lastClickTime = System.currentTimeMillis();
-
-						if (mWebView.expectedPos >= 0 && !toHighLight) {
+						if (mWebView.expectedPos >= 0) {
 							//layoutScrollDisabled=true;
-							//CMN.debug("initial_push: ", mWebView.expectedPosX, mWebView.expectedPos);
+							CMN.debug("initial_push: ", mWebView.expectedPosX, mWebView.expectedPos);
 							mWebView.scrollTo(mWebView.expectedPosX, mWebView.expectedPos);
-
 							NaugtyWeb = mWebView;
 							if (hdl != null)
 								hdl.sendEmptyMessage(778899);
-
 							layoutScrollDisabled = true;
 						}
 					}
-					else  if("===???".equals(toHash)){
-						/* 接管同一词典不同页面的网页前后跳转 */
-						weblistHandler.WHP.touchFlag.first=false;
-						//WHP.post(() -> {
-						//WHP.smoothScrollTo(0, mWebView.expectedPos);
-						//WHP.smoothScrollTo(mWebView.expectedPosX, mWebView.expectedPos);
-						recCom.expectedPos=mWebView.expectedPos;
-						recCom.LHGEIGHT=0;
-						recCom.scrolled=false;
-						ViewUtils.addOnLayoutChangeListener(weblistHandler.webholder, weblistHandler.OLCL);
-						// 111  crash  weblistHandler.OLCL==null
-						weblistHandler.OLCL.onLayoutChange(weblistHandler.webholder,0, weblistHandler.webholder.getTop(),0,weblistHandler.webholder.getBottom(),0,0,0,0);
-						//});
-					}
+					//CMN.debug("expectedPos::", mWebView.expectedPos, mWebView.getScrollY(), "toHighLight="+toHighLight);
 				}
-
-				if(toHighLight){
-					jumpNaughtyFirstHighlight(mWebView);
-				}
-			}
-			else {
-				if(!mWebView.fromNet) {
-					if (mWebView.getTag(R.id.js_no_match) != null) {
-						mWebView.evaluateJavascript(js_no_match, null);
-						mWebView.setTag(R.id.js_no_match, null);
-					} else if (toHash != null && !toHash.equals("===000")) {
-						mWebView.toTag = null;
-						view.evaluateJavascript("location.replace(\"#" + toHash + "\");", null);
-					}
-				}
-			}
-			}
-			/* 自动播放声音自动播报 */
-			if(mWebView.bRequestedSoundPlayback){
-				mWebView.bRequestedSoundPlayback=false;
-				weblist = mWebView.weblistHandler;
-				if(AutoBrowsePaused||(!PDICMainAppOptions.getAutoBrowsingReadSomething())){
-					postReadEntry();
-					CMN.Log("hey!!!", opt.getThenAutoReadContent());
-					if(bThenReadContent=opt.getThenAutoReadContent()){
-						pendingWebView=mWebView;
-					}
-				} else {
-					//faking opf
-					mThenReadEntryCount=2;
-					if(mThenReadEntryCount==0){
-						bThenReadContent=PDICMainAppOptions.getAutoBrowsingReadContent();
-					}
-					if(TTSController_engine!=null){
-						TTSController_engine.setOnUtteranceProgressListener(null);
-						TTSController_engine.stop();
-					}
-					if(PDICMainAppOptions.getAutoBrowsingReadEntry()){
-						postReadEntry();
-					} else if(bThenReadContent){
-						bThenReadContent = false;
-						postReadContent(mWebView);
-					}
-					pendingWebView=mWebView;
-				}
+				// 非 #baseUrl 方式加载，通过 /content/ /base/ 加载的，只需处理
 			}
 			
-			/** see {@link baseUrl} */
-			if(mdbr && url.regionMatches(schemaIdx+12, "base.", 0, 5)) {
-				mWebView.clearHistory();
-			}
+			mWebView.isloading = false;
 			
-			CMN.Log("OPF::EvaluateValidifierJs::", invoker.GetSearchKey());
-			if(invoker.GetSearchKey()!=null) {
-				String validifier1 = invoker.getOfflineMode()&&invoker.getIsWebx()?null:invoker.bookImpl.getVirtualTextValidateJs(invoker, mWebView, mWebView.currentPos);
-				if (validifier1!=null) {
-					CMN.Log("OPF::EvaluateValidifierJs::");
-					invoker.EvaluateValidifierJs(validifier1, mWebView);
-				}
-				invoker.SetSearchKey(null);
-			}
+			if(invoker.getImageBrowsable() && invoker.bookImpl.hasMdd())
+				mWebView.evaluateJavascript(BookPresenter.imgLoader, null);
 			
-			if (weblistHandler.tapSch && !invoker.getImageOnly()) {
-				CMN.Log("popuping...加载");
-				try {
-					mWebView.evaluateJavascript(ViewUtils.fileToString(MainActivityUIBase.this, new File("/ASSET2/" + "tapSch.js")), null);
-				} catch (Exception e) { CMN.Log(e);}
-			}
+			if(mWebView.bRequestedSoundPlayback) readEntry(mWebView);
 			
-			/* 延迟加载 */
-			if(awaiting && from==1 && PDICMainAppOptions.getDelaySecondPageLoading()
-					&& !(PDICMainAppOptions.getOnlyExpandTopPage() && mWebView.frameAt+1>=opt.getExpandTopPageNum()) ){
-				int next = fastFrameIndexOf(weblistHandler, mWebView, mWebView.frameAt) + 1;
-				CMN.debug("/* 延迟加载 */ ?????? ", next, weblistHandler.getChildCount(), PDICMainAppOptions.getOnlyExpandTopPage(), mWebView.frameAt, opt.getExpandTopPageNum());
- 				if(next < weblistHandler.getChildCount()){
-					View childAt;
-					try {
-						while ((childAt=weblistHandler.getChildAt(next++))!=null) {
-							if (childAt.getTag() instanceof WebViewmy) {
-								mWebView = ((WebViewmy) childAt.getTag());
-								BookPresenter presenter = mWebView.presenter;
-								if(presenter.mWebView.awaiting
-										&& !PDICMainAppOptions.getTmpIsCollapsed(presenter.tmpIsFlag)
-										&& !presenter.getAutoFold()
-								){
-									CMN.debug("/* 延迟加载 */", presenter.getDictionaryName());
-									presenter.toolbar_title.performClick();
-									break;
-								}
-							}
-						}
-					} catch (Exception ignored) {  }
-				}
-			}
+			if(invoker.GetSearchKey()!=null)
+				invoker.ApplySearchKey();
+			
+			if (weblistHandler.tapSch && !invoker.getImageOnly())
+				ViewUtils.TapSch(MainActivityUIBase.this, mWebView);
+			
+			if(from==1 && awaiting) loadNext(mWebView);
 		}
 
 		@Override
@@ -10401,21 +10298,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if (val==Integer.MAX_VALUE) {
 					//CMN.Log("onPreparePage!!!");
 					currentPos=0;
-					//if(page.MainBackground!=MainBackground) {
-					//	page.getBackground().setColorFilter(IMPageCover.MainBackground=MainBackground, PorterDuff.Mode.SRC_IN);
-					//}
 					page.setTextColor(AppBlack);
 					page.setBackgroundColor(ColorUtils.blendARGB(AppWhite, Color.GRAY, 0.2f));
-					if (!wPage.bDataOnly) {
-						if (wPage.isMultiRecord()) {
-							additiveMyCpr1 viewing = wPage.isMergingFrames() ? wPage.getMergedFrame().jointResult : wPage.jointResult;
-							if (viewing != null) {
-								page.setText(viewing.key);
-							}
-						} else {
-							page.setText(wPage.dictView.presenter.currentDisplaying);
-						}
-					}
+					//if (!wPage.bDataOnly) {
+					//	if (wPage.isMultiRecord()) {
+					//		additiveMyCpr1 viewing = wPage.isMergingFrames() ? wPage.getMergedFrame().jointResult : wPage.jointResult;
+					//		if (viewing != null) {
+					//			page.setText(viewing.key);
+					//		}
+					//	} else {
+					//		page.setText(wPage.dictView.presenter.currentDisplaying);
+					//	}
+					//}
 				} else {
 					//boolean turn = Math.abs(val)>20*dm.density;
 					int pos = val<0?1:-1;
@@ -10426,13 +10320,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//if (turn) {
 						//	//page.setText();
 						//}
-						if (wPage.multiRecord!=null) {
-							resultRecorderCombined rec = wPage.multiRecord;
-							if (rec!=null) {
-								page.setText(rec.getResAt(MainActivityUIBase.this, rec.viewingPos+pos));
-							}
+						if (DBrowser!=null && wPage==DBrowser.weblistHandler) {
+							page.setText(DBrowser.getEntryAt(DBrowser.currentPos+pos));
 						} else {
-							page.setText(wPage.dictView.presenter.getBookEntryAt((int) (pos+wPage.dictView.currentPos)));
+							if (wPage.multiRecord!=null) {
+								resultRecorderCombined rec = wPage.multiRecord;
+								if (rec!=null) {
+									page.setText(rec.getResAt(MainActivityUIBase.this, rec.viewingPos+pos));
+								}
+							} else {
+								page.setText(wPage.dictView.presenter.getBookEntryAt((int) (pos+wPage.dictView.currentPos)));
+							}
 						}
 					}
 				}
@@ -10449,5 +10347,80 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				else if(Dir==1) wPage.browserWidget10.performClick();
 			}
 		}:pager;
+	}
+	
+	/* 自动播放声音自动播报 */
+	private void readEntry(WebViewmy mWebView) {
+		mWebView.bRequestedSoundPlayback=false;
+		weblist = mWebView.weblistHandler;
+		
+		if(AutoBrowsePaused||(!PDICMainAppOptions.getAutoBrowsingReadSomething())){
+			postReadEntry();
+			CMN.Log("hey!!!", opt.getThenAutoReadContent());
+			if(bThenReadContent=opt.getThenAutoReadContent()){
+				pendingWebView=mWebView;
+			}
+		} else {
+			//faking opf
+			mThenReadEntryCount=2;
+			if(mThenReadEntryCount==0){
+				bThenReadContent=PDICMainAppOptions.getAutoBrowsingReadContent();
+			}
+			if(TTSController_engine!=null){
+				TTSController_engine.setOnUtteranceProgressListener(null);
+				TTSController_engine.stop();
+			}
+			if(PDICMainAppOptions.getAutoBrowsingReadEntry()){
+				postReadEntry();
+			} else if(bThenReadContent){
+				bThenReadContent = false;
+				postReadContent(mWebView);
+			}
+			pendingWebView=mWebView;
+		}
+	}
+	
+	private void loadWordToday(WebViewmy mWebView) {
+		try {
+			mWebView.evaluateJavascript(new_book(defDicts[2], MainActivityUIBase.this).getWebx().getSyntheticField("wordtoday"), new ValueCallback<String>() {
+				@Override
+				public void onReceiveValue(String value) {
+					CMN.debug("wordtoday::ValueCallback", value);
+					//weblistHandler.alloydPanel.dismiss();
+					
+					//etSearch.setText("mallee");
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/** 延迟加载 */
+	private void loadNext(WebViewmy mWebView) {
+		if(PDICMainAppOptions.getDelaySecondPageLoading()
+				&& !(PDICMainAppOptions.getOnlyExpandTopPage() && mWebView.frameAt+1>=opt.getExpandTopPageNum()) ){
+			int next = fastFrameIndexOf(weblistHandler, mWebView, mWebView.frameAt) + 1;
+			//CMN.debug("/* 延迟加载 */ ?????? ", next, weblistHandler.getChildCount(), PDICMainAppOptions.getOnlyExpandTopPage(), mWebView.frameAt, opt.getExpandTopPageNum());
+			if(next < weblistHandler.getChildCount()){
+				View childAt;
+				try {
+					while ((childAt=weblistHandler.getChildAt(next++))!=null) {
+						if (childAt.getTag() instanceof WebViewmy) {
+							mWebView = ((WebViewmy) childAt.getTag());
+							BookPresenter presenter = mWebView.presenter;
+							if(presenter.mWebView.awaiting
+									&& !PDICMainAppOptions.getTmpIsCollapsed(presenter.tmpIsFlag)
+									&& !presenter.getAutoFold()
+							){
+								//CMN.debug("/* 延迟加载 */", presenter.getDictionaryName());
+								presenter.toolbar_title.performClick();
+								break;
+							}
+						}
+					}
+				} catch (Exception ignored) {  }
+			}
+		}
 	}
 }

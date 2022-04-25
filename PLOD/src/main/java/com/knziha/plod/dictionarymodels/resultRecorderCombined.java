@@ -368,4 +368,21 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		}
 		return false;
 	}
+	
+	public void handleNavJump(MainActivityUIBase a, WebViewmy mWebView) {
+		/* 接管同一词典不同页面的网页前后跳转 */
+		if (!a.weblistHandler.isViewSingle()) {
+			a.weblistHandler.WHP.touchFlag.first=false;
+			ViewGroup webholder = a.weblistHandler.getViewGroup();
+			//WHP.post(() -> {
+			//WHP.smoothScrollTo(0, mWebView.expectedPos);
+			//WHP.smoothScrollTo(mWebView.expectedPosX, mWebView.expectedPos);
+			expectedPos=mWebView.expectedPos;
+			LHGEIGHT=0;
+			scrolled=false;
+			ViewUtils.addOnLayoutChangeListener(webholder, a.weblistHandler.OLCL);
+			a.weblistHandler.OLCL.onLayoutChange(webholder,0, webholder.getTop(),0,webholder.getBottom(),0,0,0,0);
+			//});
+		}
+	}
 }

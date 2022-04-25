@@ -389,11 +389,11 @@ public class MultiShareActivity extends MainActivityUIBase {
 				break;
 				case R.id.browser_widget10:
 					if(ActivedAdapter instanceof PeruseView.LeftViewAdapter) break OUT;
-					DBrowser.goBack();
+					DBrowser.NavList(-1);
 				break;
 				case R.id.browser_widget11:
 					if(ActivedAdapter instanceof PeruseView.LeftViewAdapter) break OUT;
-					DBrowser.goQiak();
+					DBrowser.NavList(1);
 				break;
 			}
 			return;

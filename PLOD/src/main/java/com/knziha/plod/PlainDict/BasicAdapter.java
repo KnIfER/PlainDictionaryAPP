@@ -84,7 +84,7 @@ public abstract class BasicAdapter extends BaseAdapter
 		
 		}
 		public void onItemClick(int pos) {
-        	lastClickedPos = Math.min(getCount(), Math.max(-1, pos));
+        	lastClickedPos = Math.min(getCount(), Math.max(0, pos));
 //			weblistHandler.highlightVagranter.HlightIdx=0;
 //			weblistHandler.highlightVagranter.AcrArivAcc =0;
 			//ActivedAdapter=this;

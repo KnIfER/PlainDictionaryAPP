@@ -97,7 +97,6 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public ArrayList<PlainWeb> moders = new ArrayList();
 	@NonNull
 	public final ContentviewBinding contentUIData;
-	public DragScrollBar mBar;
 	public ImageView[] ContentbarBtns = new ImageView[ContentbarBtnIcons.length];
 	private boolean contentViewSetup;
 	private int lastScrollUpdateY;
@@ -111,8 +110,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public View browserWidget10;
 	public View browserWidget11;
 	public RLContainerSlider pageSlider;
+	public DragScrollBar mBar;
 	
-	public boolean bottomNavWeb;
+	private boolean bottomNavWeb;
 	public View toolsBtn;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData, int src) {
@@ -123,12 +123,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		//setUseListView(true);
 		this.contentUIData = contentUIData;
 		this.WHP = contentUIData.WHP;
-		this.mBar = contentUIData.dragScrollBar;
 		this.webholder = contentUIData.webholder;
 		this.src = src;
 		hDataSinglePage.webviewHolder = contentUIData.webSingleholder;
 		hDataMultiple.webviewHolder = contentUIData.webholder;
-		DragScrollBar mBar = this.mBar;
 		if(WHP.getScrollViewListener()==null) {
 			/** 这里绑定自己到底栏，以获取上下文 see{@link MainActivityUIBase#showScrollSet} */
 			contentUIData.bottombar2.setTag(this);
@@ -139,6 +137,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			browserWidget10 = contentUIData.browserWidget10;
 			browserWidget11 = contentUIData.browserWidget11;
 			pageSlider = contentUIData.PageSlider;
+			DragScrollBar mBar = this.mBar = contentUIData.dragScrollBar;
 			toolsBtn = contentUIData.tools;
 			toolsBtn.setOnClickListener(this);
 			
@@ -1539,6 +1538,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	}
 	
+	public final boolean getBottomNavWeb() {
+		return bottomNavWeb;
+	}
+	
 	void NavWeb(int d) {
 		if (scrollFocus !=null) {
 			if(String.valueOf(scrollFocus.getUrl()).startsWith(baseUrl)
@@ -1549,5 +1552,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				else scrollFocus.goBack();
 			}
 		}
+	}
+	
+	public final boolean bottomNavWeb() {
+		return bottomNavWeb && pageSlider.page.decided==0;
 	}
 }

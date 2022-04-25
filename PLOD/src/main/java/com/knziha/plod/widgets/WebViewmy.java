@@ -160,8 +160,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	public WebViewmy(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		setWebContentsDebuggingEnabled(true);
-		
 		//setBackgroundColor(Color.parseColor("#C7EDCC"));
 		//setBackgroundColor(0);
 		//setVerticalScrollBarEnabled(true);

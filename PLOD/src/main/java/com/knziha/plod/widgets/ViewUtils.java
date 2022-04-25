@@ -712,6 +712,21 @@ public class ViewUtils {
 		}
 	}
 	
+	public final static void KitPatch(MainActivityUIBase a, WebViewmy mWebView) {
+		try {
+			mWebView.evaluateJavascript(ViewUtils.fileToString(a, new File("/ASSET/MdbR/KitPatch.js")), null);
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+	}
+	
+	public final static void TapSch(MainActivityUIBase a, WebViewmy mWebView) {
+		CMN.Log("popuping...加载");
+		try {
+			mWebView.evaluateJavascript(ViewUtils.fileToString(a, new File("/ASSET2/" + "tapSch.js")), null);
+		} catch (Exception e) { CMN.Log(e);}
+	}
+	
 	public void Destory(){
 		mNestedScrollingChildHelper.Destory();
 		mNestedScrollingChildHelper = null;
