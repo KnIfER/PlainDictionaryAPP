@@ -12,6 +12,8 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 
+import com.knziha.plod.dictionarymodels.BookPresenter;
+import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -19,6 +21,7 @@ import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.widgets.WebViewmy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,5 +104,19 @@ public class AlloydPanel extends PlainAppPanel {
 //			mSettingsChanged=0;
 //		}
 //		mScrollY = settingsLayout.getScrollY();
+		//if (opt.getRemPos())
+		{
+			WebViewmy mWebView = handler.dictView;
+			if (mWebView!=null && mWebView.isViewSingle()/* && mWebView.currentRendring.length==1*/) {
+				BookPresenter book = mWebView.presenter;
+				if (!book.getIsWebx()) {
+					ScrollerRecord pPos = book.avoyager.get((int) mWebView.currentPos);
+					pPos = mWebView.storePagePos(pPos);
+					if (pPos!=null) {
+						book.avoyager.put((int) mWebView.currentPos, pPos);
+					}
+				}
+			}
+		}
 	}
 }

@@ -1434,7 +1434,7 @@ public class DBroswer extends DialogFragment implements
 			}
 			
 			
-			ScrollerRecord pagerec = null;
+			ScrollerRecord pPos = null;
 			//if(opt.getRemPos())
 			{
 				SparseArray<ScrollerRecord> avoyager = webview.presenter.avoyager;
@@ -1448,14 +1448,14 @@ public class DBroswer extends DialogFragment implements
 							if (webview.webScale == 0)
 								webview.webScale = a.dm.density;//sanity check
 							CMN.Log("dbrowser::保存位置::", book.getDictionaryName(), (int) webview.currentPos);
-							pagerec = avoyager.get((int) webview.currentPos);
-							if (pagerec == null
+							pPos = avoyager.get((int) webview.currentPos);
+							if (pPos == null
 								&& (webview.getScrollX() != 0 || webview.getScrollY() != 0
 									|| webview.webScale != BookPresenter.def_zoom)) {
-									avoyager.put((int) webview.currentPos, pagerec = new ScrollerRecord());
+									avoyager.put((int) webview.currentPos, pPos = new ScrollerRecord());
 							}
-							if (pagerec!=null) {
-								pagerec.set(webview.getScrollX(), webview.getScrollY(), webview.webScale);
+							if (pPos!=null) {
+								pPos.set(webview.getScrollX(), webview.getScrollY(), webview.webScale);
 							}
 						}
 					}
@@ -1464,14 +1464,14 @@ public class DBroswer extends DialogFragment implements
 				adelta=0;
 				a.lastClickTime=System.currentTimeMillis();
 				
-				pagerec = currentDictionary.avoyager.get(idx);
+				pPos = currentDictionary.avoyager.get(idx);
 				//a.showT(""+currentDictionary.expectedPos);
 			}
-			if(pagerec!=null) {
-				webview.expectedPos = pagerec.y;
-				webview.expectedPosX = pagerec.x;
-				desiredScale=pagerec.scale;
-				//CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+webview.expectedPos+" scale:"+pagerec.scale);
+			if(pPos!=null) {
+				webview.expectedPos = pPos.y;
+				webview.expectedPosX = pPos.x;
+				desiredScale=pPos.scale;
+				//CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+webview.expectedPos+" scale:"+pPos.scale);
 			} else {
 				webview.expectedPos=0;
 				webview.expectedPosX=0;

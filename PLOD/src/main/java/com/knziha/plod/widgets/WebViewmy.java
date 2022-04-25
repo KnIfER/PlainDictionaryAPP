@@ -617,6 +617,14 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			pBc = book.IBC;
 		}
 	}
+	
+	/** displaying entry from the same dictionary */
+	public boolean isViewSingle() {
+		String url;
+		return weblistHandler.isViewSingle()
+				&& (jointResult==null
+					|| (url = getUrl())!=null && !url.startsWith("merge", url.indexOf(":")+12));
+	}
 
 //	/**  reset overshot */
 //	public void calcScroll() {
