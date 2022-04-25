@@ -1332,12 +1332,13 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		szStash = shezhi;
 		final SettingsPanel settings = new SettingsPanel(a, opt
 				, new String[][]{
-						new String[]{"搜索选项", "使用正则表达式", "使用通配符", "以空格分割关键词", "通配符不匹配空格"}
+						new String[]{"搜索选项", "使用正则表达式", "使用通配符", "区分大小写", "以空格分割关键词", "通配符不匹配空格"}
 						,new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转"/*, "使用音量键"*/}
 					}
-				, new int[][]{new int[]{Integer.MAX_VALUE
+				, new int[][]{new int[]{Integer.MAX_VALUE /** see{@link BookPresenter#MakePageFlag} */
 					, makeInt(101, 4, false) // pageSchUseRegex
-					, makeInt(101, 5, false) // pageSchWild
+					, makeInt(101, 8, false) // pageSchWild
+					, makeInt(101, 5, false) // pageSchCaseSensitive
 					, makeInt(101, 6, false) // pageSchSplitKeys
 					, makeInt(101, 7, false) // pageSchWildMatchNoSpace
 				}
@@ -1349,16 +1350,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				}
 		}, null);
 		settings.init(a, a.root);
-		if (PDICMainAppOptions.pageSchUseRegex()) {
-			for (int i = 5; i <= 7; i++)
-				settings.settingsLayout.findViewById(makeInt(101, i, false)).setAlpha(0.5f);
-		}
 		settings.setActionListener(new SettingsPanel.ActionListener() {
 			@Override
 			public boolean onAction(SettingsPanel settingsPanel, int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
 				if (flagIdx==101) {
 					if (flagPos==4) {
-						for (int i = 5; i <= 7; i++)
+						for (int i = 6; i <= 8; i++)
 							settings.settingsLayout.findViewById(makeInt(101, i, false)).setAlpha(val?0.5f:1);
 					}
 				}
@@ -1368,6 +1365,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			public void onPickingDelegate(SettingsPanel settingsPanel, int flagIdx, int flagPos, int lastX, int lastY) {
 			}
 		});
+		if ((shezhi&0x4)!=0) {
+			settings.onAction(101, 4, false, true, 0);
+		}
 		Framer f = new Framer(a);
 		f.mMaxHeight = (int) (1.25f*8*((RadioSwitchButton)settings.settingsLayout.findViewById(makeInt(101, 4, false))).getLineHeight()+15*GlobalOptions.density);
 		f.addView(settings.settingsLayout);

@@ -174,7 +174,7 @@ public class PageSlide extends TextView {
         int left = (int) (getTranslationX() + dx);
         setTranslationX(left);
 		leftAcc+=dx;
-		float theta = 3.5f*((View)getParent()).getWidth()/12;
+		float theta = 2.5f*((View)getParent()).getWidth()/12;
         if(leftAcc<-theta) {
 			decided=-1;
         } else if(leftAcc>theta) {

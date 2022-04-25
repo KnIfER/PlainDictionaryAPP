@@ -219,7 +219,7 @@ function do_highlight(keyword){
               w.shzh=app.rcsp(sid.get());
             }
             var sz=w.shzh>>4;
-            console.log('highlighting...sz=',pageKey,((sz&0x1)!=0),sz&0x4);
+            console.log('fatal highlighting...sz=',pageKey,sz&0x1,sz&0x4,sz&0x2);
             if(sz&0x1)
             MarkInst.markRegExp(new RegExp(pageKey, (sz&0x2)?'m':'im'), {
                 done: done_highlight

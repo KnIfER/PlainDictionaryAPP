@@ -2311,7 +2311,7 @@ function debug(e){console.log(e)};
 		PDICMainAppOptions.pageSchCaseSensitive((sz&2)!=0);
 		PDICMainAppOptions.pageSchSplitKeys((sz&4)!=0);
 		PDICMainAppOptions.pageSchWildMatchNoSpace((sz&8)!=0);
-		PDICMainAppOptions.pageSchWild((sz&0x100)!=0);
+		PDICMainAppOptions.pageSchWild((sz&0x10)!=0);
 	}
 
 	public void PlayWithToolbar(boolean hideDictToolbar,Context a) {

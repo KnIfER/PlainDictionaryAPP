@@ -229,7 +229,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 		mFlagAdapter.Flag(flagIndex, flag);
 	}
 	
-	protected boolean onAction(int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
+	public boolean onAction(int flagIdx, int flagPos, boolean dynamic, boolean val, int storageInt) {
 		if (mActionListener!=null) {
 			return mActionListener.onAction(this, flagIdx, flagPos, dynamic, val, storageInt);
 		}
