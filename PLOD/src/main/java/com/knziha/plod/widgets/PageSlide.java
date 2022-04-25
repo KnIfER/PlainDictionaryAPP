@@ -42,7 +42,7 @@ public class PageSlide extends TextView {
 	}
 	int leftAcc;
 	float lastX,lastY,OrgTX,OrgX,OrgY;
-	private boolean dragged=false;
+	boolean dragged=false;
 	
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
@@ -108,13 +108,12 @@ public class PageSlide extends TextView {
 	}
 	
 	void RePosition() {
-		if (hdl !=null) {
+		if (hdl!=null) {
 			dragged=false;
 			leftAcc=0;
 			dragTm = (int) SystemClock.currentThreadTimeMillis();
-			srcX = getTranslationX();
-			animator = 0.f;
 			hdl.removeMessages(3344);
+			animator = 0.f;
 			if(listener !=null) {
 				listener.slidePage(decided,this);
 				ViewGroup dv = weblist.getDragView();
@@ -123,6 +122,7 @@ public class PageSlide extends TextView {
 					dv.setVisibility(View.INVISIBLE);
 				}
 			}
+			srcX = getTranslationX();
 			TargetX = decided>0?getWidth():decided<0?-getWidth():0;
 			prevd = decided;
 			decided = 0;
@@ -131,7 +131,7 @@ public class PageSlide extends TextView {
 	}
 	
 	public void startDrag(MotionEvent ev) {
-		if(!dragged && hdl !=null) {
+		if(!dragged && hdl!=null) {
 			dragView = weblist.getDragView();
 			OrgX = lastX = ev.getRawX();
 			OrgY = lastY = ev.getRawY();
@@ -153,7 +153,7 @@ public class PageSlide extends TextView {
 	
 	@Override
 	public void setTranslationX(float translationX) {
-		if (true) {
+		if (dragView!=null) {
 			dragView.setTranslationX(translationX);
 		} else {
 			super.setTranslationX(translationX);
@@ -162,7 +162,7 @@ public class PageSlide extends TextView {
 	
 	@Override
 	public float getTranslationX() {
-		if (true) {
+		if (dragView!=null) {
 			return dragView.getTranslationX();
 		} else {
 			return super.getTranslationX();
@@ -174,7 +174,7 @@ public class PageSlide extends TextView {
         int left = (int) (getTranslationX() + dx);
         setTranslationX(left);
 		leftAcc+=dx;
-		float theta = 2.0f*getWidth()/12;
+		float theta = 3.5f*((View)getParent()).getWidth()/12;
         if(leftAcc<-theta) {
 			decided=-1;
         } else if(leftAcc>theta) {
