@@ -2662,11 +2662,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		return delayedAttaching=false;
 	}
 	
+	//todo adjust bottombar size and place
 	private void PlaceContentBottombar(boolean bImmersive) {
 		ViewGroup contentHolder = bImmersive ? UIData.webcoord : contentview;
 		View bottombar2 = contentUIData.bottombar2;
 		if(ViewUtils.removeIfParentBeOrNotBe(bottombar2, contentHolder, false)) {
-			contentHolder.addView(bottombar2, bImmersive?3:1);
+			contentHolder.addView(bottombar2/*, bImmersive?3:1*/);
 			if(bImmersive) {
 				CoordinatorLayout.LayoutParams lp = ((CoordinatorLayout.LayoutParams) bottombar2.getLayoutParams());
 				lp.gravity = Gravity.BOTTOM;

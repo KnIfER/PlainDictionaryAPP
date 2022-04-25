@@ -55,9 +55,9 @@ public class VersionUtils {
 			PDICMainAppOptions.pageSchWildDeprecated(false);
 			PDICMainAppOptions.uncheckVersionBefore_5_7(false);
 		}
-//		opt.setBottombarOnBottom(true);
-//		opt.setFloatBottombarOnBottom(true);
-//		opt.setPeruseBottombarOnBottom(true);
+		opt.setBottombarOnBottom(true);
+		opt.setFloatBottombarOnBottom(true);
+		opt.setPeruseBottombarOnBottom(true);
 
 //		opt.setPageTurn1(true);
 //		opt.setPageTurn2(true);
