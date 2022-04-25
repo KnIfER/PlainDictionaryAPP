@@ -647,7 +647,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			
 			//iItem_InPageSearch.setVisible(!opt.getInPageSearchVisible()&&!opt.isContentBow());
 			
-			ActivedAdapter.SaveVOA();
 			adaptermy2.currentKeyText=null;
 			adaptermy.currentKeyText=null;
 
@@ -2681,6 +2680,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	void DetachContentView(boolean leaving) {
 		//CMN.Log("DetachContentView");
 		PostDCV_TweakTBIC();
+		if (ActivedAdapter!=null) {
+			ActivedAdapter.SaveVOA();
+		}
 		delayedAttaching=false;
 		applyMainMenu();
 		mDrawerToggle.onDrawerClosed(UIData.drawerLayout);
