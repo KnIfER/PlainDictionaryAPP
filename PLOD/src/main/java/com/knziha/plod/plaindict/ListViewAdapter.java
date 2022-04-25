@@ -51,6 +51,11 @@ public class ListViewAdapter extends BasicAdapter {
 	}
 	
 	@Override
+	public String getEntry(int pos) {
+		return presenter.getBookEntryAt(pos);
+	}
+	
+	@Override
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		//return lstItemViews.get(position);
 		PDICMainActivity.ViewHolder vh=convertView==null?new ViewHolder(parent.getContext(), R.layout.listview_item0, parent):(ViewHolder)convertView.getTag();

@@ -71,7 +71,10 @@ public abstract class BasicAdapter extends BaseAdapter
         @Override
         public View getItem(int position) {
 			return null;
-			}
+		}
+        public String getEntry(int pos) {
+			return null;
+		}
         @Override
         public long getItemId(int position) {
           return position;

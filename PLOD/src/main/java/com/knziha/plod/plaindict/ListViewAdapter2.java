@@ -42,6 +42,11 @@ public class ListViewAdapter2 extends BasicAdapter {
 		return results.size();
 	}
 	
+	@Override
+	public String getEntry(int pos) {
+		return results.getResAt(a, pos).toString();
+	}
+	
 	public int expectedPos;
 	@Override
 	public View getView(final int position, View convertView, ViewGroup parent) {

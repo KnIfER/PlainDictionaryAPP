@@ -1577,7 +1577,13 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		public long getItemId(int position) {
 			return 0;
 		}
-
+		
+		
+		@Override
+		public String getEntry(int pos) {
+			return "NoImpl!!!";
+		}
+		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			viewholder vh;
@@ -1808,10 +1814,15 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         	else
         		return 0;
         }
-
-        @Override
+	
+		@Override
+		public String getEntry(int pos) {
+			return currentDictionary.getBookEntryAt(pos);
+		}
+	
+		@Override
         public View getView(final int position, View convertView, ViewGroup parent) {//length=1046; index=5173
-        	String currentKeyText = currentDictionary.bookImpl.getEntryAt(position);
+        	String currentKeyText = currentDictionary.getBookEntryAt(position);
         	viewholder vh;
 	        if(convertView==null){
         		convertView =  LayoutInflater.from(parent.getContext()).inflate(R.layout.listview_item2, parent, false);

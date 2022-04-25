@@ -117,8 +117,15 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 
 	@Override
 	public CharSequence getResAt(MainActivityUIBase a, long pos) {
-		if(size<=0 || pos<0 || pos>size-1)
+		if ( pos < 0 || pos >= size) {
+			if (pos == -1) {
+				return "←";
+			}
+			if (pos == size) {
+				return "→";
+			}
 			return "!!! Error: code 1";
+		}
 		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
 			return "!!! Error: code 2 Rgn="+Rgn/2+" size="+md.size();

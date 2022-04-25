@@ -10317,18 +10317,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					{
 						currentPos=pos;
 						page.setGravity(Gravity.CENTER_VERTICAL|(val>0?Gravity.LEFT:Gravity.RIGHT));
-						//if (turn) {
-						//	//page.setText();
-						//}
 						if (DBrowser!=null && wPage==DBrowser.weblistHandler) {
 							page.setText(DBrowser.getEntryAt(DBrowser.currentPos+pos));
 						} else {
-							if (wPage.multiRecord!=null) {
+							if (wPage == weblistHandler) {
+								if (ActivedAdapter!=null) {
+									page.setText(ActivedAdapter.getEntry(pos+ActivedAdapter.lastClickedPos));
+								}
+							}
+							else if (wPage.multiRecord!=null) {
 								resultRecorderCombined rec = wPage.multiRecord;
 								if (rec!=null) {
 									page.setText(rec.getResAt(MainActivityUIBase.this, rec.viewingPos+pos));
 								}
-							} else {
+							}
+							else if(wPage.dictView!=null){
 								page.setText(wPage.dictView.presenter.getBookEntryAt((int) (pos+wPage.dictView.currentPos)));
 							}
 						}
