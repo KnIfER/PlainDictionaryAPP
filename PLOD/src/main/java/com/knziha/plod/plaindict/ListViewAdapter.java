@@ -95,11 +95,12 @@ public class ListViewAdapter extends BasicAdapter {
 			if (opt.getRemPos()) {
 				a.DelegateSaveAndRestorePagePos().SaveVOA(contentUIData.PageSlider.WebContext, this);
 			}
-			if (Kustice && PDICMainAppOptions.storePageTurn()==2
+			if (browsed && PDICMainAppOptions.storePageTurn()==2
 					&& presenter.store(presenter.lvClickPos)
 					&& !PDICMainAppOptions.storeNothing()
 					&& PDICMainAppOptions.storeClick()) {
 				a.addHistory(presenter.currentDisplaying, a.schuiList, webviewHolder, null);
+				browsed = false;
 			}
 		}
 	}
@@ -238,7 +239,7 @@ public class ListViewAdapter extends BasicAdapter {
 		if(userCLick) {
 			userCLick=false;
 		} else {
-			Kustice=true;
+			browsed =true;
 		}
 //			if(PDICMainAppOptions.getInPageSearchAutoUpdateAfterClick()){
 //				prepareInPageSearch(key, true);

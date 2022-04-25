@@ -99,7 +99,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 //			new a.SaveAndRestorePagePosDelegate().SaveVOA(contentUIData.PageSlider.WebContext, this);
 //		}
 //		//lastClickTime=System.currentTimeMillis();
-		if (Kustice && PDICMainAppOptions.storePageTurn()==2
+		if (browsed && PDICMainAppOptions.storePageTurn()==2
 				&& results.shouldSaveHistory()
 				&& !PDICMainAppOptions.storeNothing() && PDICMainAppOptions.storeClick()) {
 			a.addHistory(currentKeyText, a.schuiList, webviewHolder, null);
@@ -222,7 +222,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		if(userCLick) {
 			userCLick=false;
 		} else {
-			Kustice=true;
+			browsed =true;
 		}
 	}
 	

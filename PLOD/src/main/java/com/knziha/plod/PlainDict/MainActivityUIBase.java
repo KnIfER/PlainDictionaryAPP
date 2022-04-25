@@ -198,7 +198,6 @@ import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.plod.widgets.XYTouchRecorder;
-import com.knziha.rbtree.additiveMyCpr1;
 import com.knziha.text.ColoredHighLightSpan;
 import com.knziha.text.ScrollViewHolder;
 import com.knziha.text.SelectableTextView;
@@ -324,10 +323,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public Map<SubStringKey, String>  serverHosts;
 	public ArrayList<PlainWeb>  serverHostsHolder=new ArrayList();
 	public FrameLayout lvHeaderView;
-	/** |0x1=xuyao store| |0x2=zhuanhuan le str|  */
-	public int tw1F=0;
+	/** |0x1=xuyao store| |0x2=zhuanhuan le str| |0x4==刚刚点开搜索框|  */
+	public int textFlag =0;
 	final public TextWatcher tw1 = new TextWatcher() { //tw
 		public void onTextChanged(CharSequence cs, int start, int before, int count) {
+			if (isContentViewAttached() && ActivedAdapter!=null && (textFlag &0x4)!=0) {
+				ActivedAdapter.SaveVOA();
+				textFlag &= ~0x4;
+			}
 			if(SU.isNotEmpty(cs)) {
 				etSearch_ToToolbarMode(3);
 				root.removeCallbacks(execSearchRunnable);
@@ -337,8 +340,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					execSearchRunnable.run();
 				} else {
 					root.postDelayed(execSearchRunnable, 150);
-					if (tw1F!=1) {
-						tw1F=1;
+					if (textFlag !=1) {
+						textFlag =1;
 					}
 				}
 				if(etTools.isVisible())
@@ -9792,33 +9795,36 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				showT("BUG!!!发生空指针错误(webview)");
 				return;
 			}
-			ScrollerRecord pagerec;
-			long deltaT = System.currentTimeMillis() - lastClickTime;
-			int lastClickedPos = (int) webview.currentPos; // ADA.lastClickedPos
+			ScrollerRecord pPos;
 			if (ADA == adaptermy2) {
-				if (deltaT > 400 && lastClickedPos >= 0) {
+				int selection = (int) ADA.lastClickedPos;
+				if (System.currentTimeMillis()-lastClickTime > 400 && selection >= 0) {
 					//avoyager.set(avoyagerIdx, WHP.getScrollY());
-					pagerec = ADA.avoyager.get(lastClickedPos);
-					if (pagerec == null && weblistHandler.WHP.getScrollY() != 0) {
-						pagerec = new ScrollerRecord();
-						ADA.avoyager.put(lastClickedPos, pagerec);
+					pPos = ADA.avoyager.get(selection);
+					if (pPos == null && weblistHandler.WHP.getScrollY() != 0) {
+						pPos = new ScrollerRecord();
+						ADA.avoyager.put(selection, pPos);
 					}
-					if (pagerec != null) {
-						pagerec.set(0, weblistHandler.WHP.getScrollY(), 1);
+					if (pPos != null) {
+						pPos.set(0, weblistHandler.WHP.getScrollY(), 1);
 					}
 					//CMN.Log("保存位置(回退)", lastClickedPos, WHP.getScrollY());
 				}
 			}
 			else {
 				if (webview != null
-						&& deltaT > 300
 						&& !webview.isloading //
 						&& ADA.lastClickedPos >= 0
 						&& ADA.webviewHolder.getChildCount() != 0 ) {
+					final int selection = (int) webview.currentPos;
 					if (webview.webScale == 0) webview.webScale = dm.density;//sanity check
-					pagerec = ADA.avoyager.get(lastClickedPos);
-					if(webview.SavePagePosIfNeeded(pagerec)) {
-						ADA.avoyager.put(lastClickedPos, pagerec);
+					pPos = ADA.avoyager.get(selection);
+					if (webview.shouldStorePagePos(pPos)
+							&& System.currentTimeMillis()-lastClickTime > 300) {
+						pPos = webview.storePagePos(pPos);
+						if (pPos!=null) {
+							ADA.avoyager.put(selection, pPos);
+						}
 					}
 					//CMN.Log("回退前暂存位置 ", current_webview.getScrollX(), current_webview.getScrollY(), currentDictionary.webScale);
 				}
@@ -10227,13 +10233,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	String tw1StrP;
 	public boolean storeLv1(String text) {
-		if ((tw1F&0x1)!=0) {
-			if((tw1F&0x2)==0) {
+		if ((textFlag &0x1)!=0) {
+			if((textFlag &0x2)==0) {
 				tw1StrP = mdict.processText(etSearch.getText());
-				tw1F|=0x2;
+				textFlag |=0x2;
 			}
 			if(Math.abs(tw1StrP.length()-text.length())<15 && mdict.processText(text).equals(tw1StrP)) {
-				tw1F&=~0x1;
+				textFlag &=~0x1;
 				return true;
 			}
 		}

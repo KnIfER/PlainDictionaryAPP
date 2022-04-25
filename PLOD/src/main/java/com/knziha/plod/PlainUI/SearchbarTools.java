@@ -555,6 +555,9 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	protected void onShow() {
 		if(flowBtn!=null)
 			flowBtn.setOnClickListener(this);
+		if (this==a.etTools) {
+			a.textFlag |= 0x4;
+		}
 	}
 	
 	@Override

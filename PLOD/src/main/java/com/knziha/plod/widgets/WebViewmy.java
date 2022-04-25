@@ -465,15 +465,18 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		motion.recycle();
 	}
 	
-	public boolean SavePagePosIfNeeded(ScrollerRecord pagerec) {
-		boolean ret=false;
-		int sx=getScrollX(), sy=getScrollY();
-		if(pagerec==null && (sx != 0 || sy != 0 || webScale != BookPresenter.def_zoom)) {
-			pagerec = new ScrollerRecord();
-			ret=true;
+	public boolean shouldStorePagePos(ScrollerRecord pos) {
+		return pos==null && getScrollY() != 0 && getScrollX() != 0 && webScale != BookPresenter.def_zoom
+				|| pos!=null && (webScale != BookPresenter.def_zoom || getScrollY() != pos.y || getScrollX() != pos.x);
+	}
+	
+	public ScrollerRecord storePagePos(ScrollerRecord pos) {
+		ScrollerRecord ret=null;
+		if(pos==null && (getScrollY() != 0 || getScrollX() != 0 || webScale != BookPresenter.def_zoom)) {
+			ret = pos = new ScrollerRecord();
 		}
-		if(pagerec!=null) {
-			pagerec.set(sx, sy, webScale);
+		if(pos!=null) {
+			pos.set(getScrollX(), getScrollY(), webScale);
 		}
 		return ret;
 	}

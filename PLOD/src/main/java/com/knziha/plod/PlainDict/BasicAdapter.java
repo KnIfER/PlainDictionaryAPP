@@ -33,7 +33,7 @@ public abstract class BasicAdapter extends BaseAdapter
 		public int lastClickedPosBefore;
 		boolean userCLick;
 		public boolean shunt;
-		public boolean Kustice;
+		public boolean browsed;
 		public boolean bOnePageNav;
 
 		public SparseArray<ScrollerRecord> avoyager = new SparseArray<>();
