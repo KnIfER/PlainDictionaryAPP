@@ -3396,6 +3396,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		svp.getLocationInWindow(vLocation);
 		int topY = vLocation[1];
 		//showT(UIData.webcoord.getHeight() +" = "+ UIData.bottombar.getHeight());
+		//CMN.Log("embedPopInCoordinatorLayout::padbot::", padbot, panel.bottomPadding);
 		if(padbot!=0) {
 			if(panel.bottombar!=null) {
 				padbot = panel.bottombar.getHeight();
@@ -3403,6 +3404,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				padbot = bottombar!=null?bottombar.getHeight():app_panel_bottombar_height;
 			}
 			panel.bottomPadding = padbot;
+			//CMN.Log("padbot::", bottombar.getHeight(), app_panel_bottombar_height);
 		}
 		int h = svp.getHeight() - padbot;
 		//if (UIData.appbar.getTop()==0)

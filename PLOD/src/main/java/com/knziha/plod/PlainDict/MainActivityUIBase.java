@@ -6134,8 +6134,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		btm = (View) v.getParent();
 		if(btm==null)  {
 			btm = contentUIData.bottombar2;
-			if(weblist!=null)
-				return btm;
+			app_panel_bottombar_height = btm.getHeight();
+			if(weblist!=null) return btm;
 		} else {
 			app_panel_bottombar_height = btm.getHeight();
 		}
@@ -9989,6 +9989,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				padbot = bottombar!=null?bottombar.getHeight():app_panel_bottombar_height;
 			}
 			panel.bottomPadding = padbot;
+			panel.settingsLayout.setPadding(0,0,0,0);
 		}
 		settingsPopup = pop;
 		pop.setWidth(dm.widthPixels);
@@ -10043,7 +10044,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			root = peruseView.root;
 		}
 		if (!menuGrid.isVisible()) {
-			menuGrid.show(root, ViewUtils.ViewIsId(btm, R.id.bottombar2), -2);
+			menuGrid.show(root, ViewUtils.ViewIsId(btm, R.id.bottombar2), -1);
 		}
 	}
 	
