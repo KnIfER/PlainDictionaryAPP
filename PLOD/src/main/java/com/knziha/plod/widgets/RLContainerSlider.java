@@ -42,7 +42,9 @@ public class RLContainerSlider extends FrameLayout{
 	private float fastTapStY;
 	/** Tap twice detected and quick zoom is functioning  */
 	private boolean fastTapZoom;
-	private boolean fastTapZoomInit;
+	private float fastTapZoomInit;
+	private PointerCoords[] fastTapZoomCoords;
+	private PointerProperties[] fastTapZoomProps;
 	private float fastTapZoomSt;
 	private float minZoom;
 	private float fastTapScrollX;
@@ -130,7 +132,7 @@ public class RLContainerSlider extends FrameLayout{
 					minZoom = Math.min(fastTapZoomSt, BookPresenter.def_zoom);
 					fastTapMoved = false;
 					fastTapZoom = true;
-					fastTapZoomInit = true;
+					fastTapZoomInit = 0;
 				}
 				WebContext.evaluateJavascript("getSelection().empty()", null);
 			}
@@ -311,8 +313,7 @@ public class RLContainerSlider extends FrameLayout{
 			}
 			if (fastTapMoved) { // 双击拖动，快速放大。
 				if (false) {
-					// 基于 zoomBy + scrollTo，页面短效果还可以，
-					// 页面长时，缩放与滚动不同步，导致延迟严重。
+					// 基于 zoomBy + scrollTo，页面短效果还可以；但页面长时，缩放与滚动不同步，导致延迟严重。
 					float multiplier = 1 + dist / quickScaleThreshold;
 					
 					if(rawY < fastTapStY)
@@ -335,37 +336,39 @@ public class RLContainerSlider extends FrameLayout{
 					//CMN.Log("fastZoom::", WebContext.webScale, WebContext.getScrollX(), WebContext.getScrollY());
 				} else {
 					// 虚拟双指缩放。
-					MotionEvent evt ;
-					
-					PointerProperties pp1 = new PointerProperties();
-					pp1.id = 0; pp1.toolType = TOOL_TYPE_FINGER;
-					PointerProperties pp2 = new PointerProperties();
-					pp2.id = 1; pp2.toolType = TOOL_TYPE_FINGER;
-					PointerProperties[] props = new PointerProperties[]{pp1, pp2};
-					
-					PointerCoords pc1 = new PointerCoords();
-					pc1.x = fastTapStX; pc1.y = fastTapStY;
-					pc1.pressure = 1; pc1.size = 1;
-					PointerCoords pc2 = new PointerCoords();
-					pc2.x = fastTapStX; pc2.y = fastTapStY+getHeight();
-					pc2.pressure = 1; pc2.size = 1;
-					PointerCoords[] coords = new PointerCoords[]{pc1, pc2};
-					
-					if (fastTapZoomInit) {
-						fastTapZoomInit = false;
-						evt = obtain(0, 0, ACTION_DOWN, 2, props,
-								coords, 0,  0, 1, 1, 0, 0, 0, 0 );
+					MotionEvent evt;
+					PointerProperties[] props = fastTapZoomProps;
+					PointerCoords[] coords = fastTapZoomCoords;
+					if (fastTapZoomInit==0) {
+						fastTapZoomInit = fastTapStY+getHeight();
+						if (props==null) {
+							PointerProperties pp1 = new PointerProperties();
+							pp1.id = 0; pp1.toolType = TOOL_TYPE_FINGER;
+							PointerProperties pp2 = new PointerProperties();
+							pp2.id = 1; pp2.toolType = TOOL_TYPE_FINGER;
+							props = fastTapZoomProps = new PointerProperties[]{pp1, pp2};
+							PointerCoords pc1 = new PointerCoords();
+							
+							pc1.x = fastTapStX; pc1.y = fastTapStY;
+							pc1.pressure = 1; pc1.size = 1;
+							PointerCoords pc2 = new PointerCoords();
+							pc2.x = fastTapStX; pc2.y = fastTapZoomInit;
+							pc2.pressure = 1; pc2.size = 1;
+							coords = fastTapZoomCoords = new PointerCoords[]{pc1, pc2};
+						} else {
+							coords[0].x = fastTapStX;
+							coords[0].y = fastTapStY;
+							coords[1].x = fastTapStX;
+							coords[1].y = fastTapZoomInit;
+						}
+						evt = obtain(0, 0, ACTION_DOWN, 2, props, coords, 0,  0, 1, 1, 0, 0, 0, 0);
 						WebContext.dispatchTouchEvent(evt); evt.recycle();
-						
-						evt = obtain(0, 0,
-								ACTION_POINTER_DOWN, 2,
-								props, coords, 0, 0, 1, 1, 0, 0, 0, 0);
+						evt = obtain(0, 0, ACTION_POINTER_DOWN, 2, props, coords, 0, 0, 1, 1, 0, 0, 0, 0);
 						WebContext.dispatchTouchEvent(evt); evt.recycle();
 					}
-					pc2.y = fastTapStY+getHeight()+dist*(rawDist<0?1:-1);
-					evt = obtain(0, 0,
-							ACTION_MOVE, 2,
-							props, coords, 0, 0, 1, 1, 0, 0, 0, 0);
+					final float newPos = fastTapZoomInit + dist * (rawDist < 0 ? 1 : -1) * 3.5f;
+					coords[1].y = newPos;
+					evt = obtain(0, 0,ACTION_MOVE, 2, props, coords, 0, 0, 1, 1, 0, 0, 0, 0);
 					WebContext.dispatchTouchEvent(evt); evt.recycle();
 				}
 			}
