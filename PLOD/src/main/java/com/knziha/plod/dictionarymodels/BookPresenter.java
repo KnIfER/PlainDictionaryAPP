@@ -4028,6 +4028,7 @@ function debug(e){console.log(e)};
 	}
 	
 	public void invokeToolsBtn(WebViewmy mWebView) {
+		a.weblist = mWebView.weblistHandler;
 		a.getUtk().setInvoker(this, mWebView, null, null);
 		a.getUtk().onClick(null);
 	}

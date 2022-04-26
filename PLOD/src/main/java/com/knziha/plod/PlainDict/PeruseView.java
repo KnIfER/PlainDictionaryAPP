@@ -95,7 +95,8 @@ import static com.knziha.plod.preference.SettingsPanel.makeDynInt;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
 import static com.knziha.plod.widgets.ViewUtils.EmptyCursor;
 
-/** 翻阅模式，以词典为单位，搜索词为中心，一一览读。<br><br/>  代号：fye */
+/** 翻阅模式，以词典为单位，搜索词为中心，一一览读。<br><br/>  代号：fye
+ * This view makes it easier to read among or read against entries of various books. */
 public class PeruseView extends DialogFragment implements OnClickListener, OnMenuItemClickListener, OnLongClickListener{
 	int MainBackground;
 	public ArrayList<Long> bookIds = new ArrayList<>();
@@ -118,6 +119,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	ViewGroup slp;
 	public Toolbar toolbar;
 	DBroswer DBrowser;
+	/** The weblist who brings up this view */
+	public WebViewListHandler invoker;
 	
 	private ViewGroup bottom;
 	private ViewGroup bottombar;
@@ -627,7 +630,20 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(a==null || main_pview_layout==null) return;
 		//CMN.Log("onViewAttached", schKey, newSch, fromData);
 		hidden.clear();
-		
+		WebViewListHandler pPanel = a.weblist;
+		if (this.invoker!=pPanel && (pPanel.bShowingInPopup || pPanel.bDataOnly&&!a.wordPopup.pin())) {
+			//getMainActivity().showT("onViewAttached::"+pPanel.bDataOnly);
+			// re-attach for different dialogs so that this view is always in front of the invoker.
+			if (mDialog!=null) {
+				//dismiss();
+				//show(a.getSupportFragmentManager(), "PeruseView");
+				mDialog.setOnDismissListener(null);
+				mDialog.dismiss();
+				mDialog.show();
+				//getMainActivity().showT("onViewAttached::1::区区对话框，装什么大尾巴狼::"+pPanel.bDataOnly);
+			}
+			this.invoker = pPanel;
+		}
 		if(!ToD) {
 			bmsAdapter.notifyDataSetChanged();
 		}
@@ -1138,6 +1154,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		return contentUIData.PageSlider.slideTurn =opt.getPageTurn3();
 	}
 
+	/** Hide is not dismiss */
 	public void hide() {
 		onViewDetached();
 		mDialog.hide();

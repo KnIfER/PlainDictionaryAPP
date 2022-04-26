@@ -81,7 +81,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	int src;
 	/** -2=auto;0=false;1=true*/
 	public int bMergeFrames = 0;
-	/** for {@link com.knziha.plod.PlainUI.WordPopup } */
+	/** for {@link com.knziha.plod.PlainUI.WordPopup }. final. When set, the default view {@link #contentUIData } won't be initialized. */
 	public boolean bDataOnly = false;
 	public boolean bShowInPopup = false;
 	public boolean bMergingFrames = false;
@@ -114,6 +114,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	private boolean bottomNavWeb;
 	public View toolsBtn;
+	public String displaying;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData, int src) {
 		super(a);
@@ -967,8 +968,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public boolean togTapSch() {
 		tapSch = !tapSch;
+		if (tapSch) {
+			shezhi |= 1;
+		} else {
+			shezhi &= ~1;
+		}
 		evalJsAtAllFrames(tapSch?
-				"window.shzh|=1;if(!window.tpshc)loadJs('/mdbr/tapSch.js')"
+				// "window.shzh|=1;if(!window.tpshc)loadJs('/mdbr/tapSch.js')"
+				"window.shzh|=1;if(!window.tpshc)app.loadJs(sid.get(), 'tapSch.js')"
 				:"window.shzh&=~1");
 		return tapSch;
 	}
@@ -1504,6 +1511,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void setStar(String key) {
+		displaying = key;
 		if (ViewUtils.isVisibleV2(browserWidget8)) {
 			browserWidget8.setActivated(a.GetIsFavoriteTerm(key));
 		}

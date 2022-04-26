@@ -303,7 +303,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		}
 	}
 	
-	private boolean pin() {
+	public final boolean pin() {
 		return popupChecker==null?PDICMainAppOptions.getPinTapTranslator():popupChecker.isChecked();
 	}
 	
@@ -483,6 +483,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			}
 			
 			weblist.toolsBtn = toolbar.findViewById(R.id.tools);
+			weblist.toolsBtn.setTag(webview);
 			weblist.toolsBtn.setOnClickListener(weblist);
 			weblist.browserWidget8 = toolbar.findViewById(R.id.popIvStar);
 			weblist.browserWidget10 = pottombar.findViewById(R.id.popLstE);

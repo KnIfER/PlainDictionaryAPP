@@ -829,6 +829,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																			MainActivityUIBase a = (MainActivityUIBase) c;
 																			if(MainActivityUIBase.PreferredToolId !=-1){
 																				MainActivityUIBase.UnicornKit ucc = a.getUtk(); ucc.bFromWebView=true; ucc.bFromPeruseView=WebViewmy.this.fromCombined==3;
+																				a.weblist = weblistHandler;
 																				ucc.setInvoker(presenter, WebViewmy.this, null, null);
 																				ucc.onItemClick(null, null, MainActivityUIBase.PreferredToolId, -1, false, true);
 																			}
