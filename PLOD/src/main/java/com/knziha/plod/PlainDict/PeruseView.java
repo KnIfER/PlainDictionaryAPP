@@ -1742,7 +1742,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
     			currentDictionary.renderContentAt(-1, RENDERFLAG_NEW, 0, mWebView, actualPosition);//bookmarks.get(lastClickedPos)
 				
     			//voyager[SelectedV*3+2]=pos;
-    			weblistHandler.setStar(mWebView.word);
 				mWebView.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
         	}
@@ -1982,7 +1981,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				
 				contentUIData.PageSlider.setWebview(mWebView, null);
 				//voyager[SelectedV*3+2]=pos;
-				weblistHandler.setStar(key);
 				
 				if(addHistory && !TextUtils.equals(key, lstKey)) {
 					int stLv = !machine && storeLv1(key)? SearchUI.Fye.MAIN:

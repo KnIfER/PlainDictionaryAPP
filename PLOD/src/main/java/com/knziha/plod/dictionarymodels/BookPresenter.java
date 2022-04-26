@@ -1802,7 +1802,9 @@ function debug(e){console.log(e)};
 		}
 		/* 回溯 或 前瞻， 不改变历史 */
 		mWebView.word = currentDisplaying = StringUtils.trim(bookImpl.getEntryAt(mWebView.currentPos = idx));
-		
+		if (mWebView.weblistHandler.isViewSingle()) {
+			mWebView.weblistHandler.setStar(mWebView.word);
+		}
 		if(bookImpl.hasVirtualIndex()){
 			if (idx==0 && mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB && searchKey!=null) {
 				currentDisplaying = searchKey;

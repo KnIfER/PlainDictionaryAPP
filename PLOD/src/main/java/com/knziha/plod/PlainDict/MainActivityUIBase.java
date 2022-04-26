@@ -3517,7 +3517,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		prepareHistoryCon().setFavoriteFolderId(value);
 	}
 	
-	public boolean GetIsFavoriteTerm(String text) {
+	public boolean GetIsFavoriteTerm(@NonNull String text) {
 		return prepareFavoriteCon().GetIsFavoriteTerm(text, (!getUsingDataV2()||opt.getFavoritePerceptsAll())?-1:-2);
 	}
 	
@@ -5775,15 +5775,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(DBrowser!=null && weblist==DBrowser.weblistHandler){
 					DBrowser.toggleFavor();
 				} else {
-					if(GetIsFavoriteTerm(key)) {
-						removeFavoriteTerm(key);
-						v.setActivated(false);
-						show(R.string.removed);
-					} else {
-						prepareFavoriteCon().insert(this, key, opt.getCurrFavoriteNoteBookId(), ActivedAdapter.webviewHolder);
-						v.setActivated(true);
-						//show(R.string.added);
-						showT(key+" 收藏成功");
+					if (key!=null) {
+						if(GetIsFavoriteTerm(key)) {
+							removeFavoriteTerm(key);
+							v.setActivated(false);
+							show(R.string.removed);
+						} else {
+							prepareFavoriteCon().insert(this, key, opt.getCurrFavoriteNoteBookId(), ActivedAdapter.webviewHolder);
+							v.setActivated(true);
+							//show(R.string.added);
+							showT(key+" 收藏成功");
+						}
 					}
 				}
 			} break;

@@ -114,6 +114,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	private boolean bottomNavWeb;
 	public View toolsBtn;
+	/** 须在render、前后导航时经由{@link #setStar}更新 */
 	public String displaying;
 	
 	public WebViewListHandler(@NonNull MainActivityUIBase a, @NonNull ContentviewBinding contentUIData, int src) {
@@ -880,7 +881,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return false;
 	}
 	
-	/** false:using old list technique. displaying multiple webviews in the linearlayout */
+	/** false:using old list technique. displaying multiple webviews in the linearlayout <br/>
+	 * true : displaying merged multiple results or simply one page. */
 	public final boolean isViewSingle() {
 		return mViewMode==WEB_VIEW_SINGLE;
 	}
@@ -1529,9 +1531,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void setStar(String key) {
-		displaying = key;
-		if (ViewUtils.isVisibleV2(browserWidget8)) {
-			browserWidget8.setActivated(a.GetIsFavoriteTerm(key));
+		if (!TextUtils.equals(displaying, key)) {
+			displaying = key;
+			if (ViewUtils.isVisibleV2(browserWidget8)) {
+				browserWidget8.setActivated(a.GetIsFavoriteTerm(key));
+			}
 		}
 	}
 	

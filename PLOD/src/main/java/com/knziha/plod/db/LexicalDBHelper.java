@@ -11,6 +11,8 @@ import android.database.sqlite.SQLiteStatement;
 import android.os.ParcelFileDescriptor;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.plaindict.CMN;
@@ -386,7 +388,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 
     /////
 	/** has text term in the favorite table */
-    public boolean GetIsFavoriteTerm(String lex, long folder) {
+    public boolean GetIsFavoriteTerm(@NonNull String lex, long folder) {
     	if (folder==-2) {
 			folder = favoriteFolderId;
 		}
