@@ -71,7 +71,7 @@ import java.util.ArrayList;
 /** 页面管理器，曾经尝试过在Listview中放置webview，太卡。现在保留的模式：<br/>
  * 一个webview，显示一本或多本词典内容（合并的多页面模式）。 <br/>
  * 多个webview，放在LinearLayout中，显示多本词典内容。（多页面视图列表）*/
-public class WebViewListHandler extends ViewGroup implements View.OnClickListener {
+public class WebViewListHandler extends ViewGroup implements View.OnClickListener, View.OnLongClickListener {
 	final MainActivityUIBase a;
 	/** Search-On-Page Control Flag. 网页设置标志位 指示是否开启点击翻译、页内搜索设置 */
 	public int shezhi;
@@ -141,6 +141,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			DragScrollBar mBar = this.mBar = contentUIData.dragScrollBar;
 			toolsBtn = contentUIData.tools;
 			toolsBtn.setOnClickListener(this);
+			toolsBtn.setOnLongClickListener(this);
 			
 			contentUIData.PageSlider.page = contentUIData.cover;
 			contentUIData.cover.setPager(a.getPageListener());
@@ -1327,10 +1328,27 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			case R.id.tools:{
 				if (v.getTag() instanceof WebViewmy) {
 					final WebViewmy wv = ((WebViewmy) v.getTag());
-					wv.presenter.invokeToolsBtn(wv);
+					wv.presenter.invokeToolsBtn(wv, PDICMainAppOptions.toolsQuick()?PDICMainAppOptions.toolsQuickAction():-1);
 				}
 			} break;
 		}
+	}
+	
+	@Override
+	public boolean onLongClick(View v) {
+		if (v==toolsBtn) {
+			int act = PDICMainAppOptions.toolsQuickLong();
+			if (act==1) {
+				invokeToolsBtn(false, PDICMainAppOptions.toolsQuickAction());
+				return true;
+			} else if (act==2) {
+				invokeToolsBtn(true, 0);
+			} else if (act==3) {
+				invokeToolsBtn(false, -1);
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	// 页内搜索设定
@@ -1564,5 +1582,21 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public final boolean bottomNavWeb() {
 		return bottomNavWeb && pageSlider.page.decided==0;
+	}
+	
+	public void invokeToolsBtn(boolean pick, int quick) {
+		if (pick) {
+			a.weblist = this;
+			a.getUtk().setInvoker(a.EmptyBook, null, null, null);
+			a.getUtk().bPickAction = true;
+			a.getUtk().bFromWebView = true;
+			a.getUtk().onClick(a.anyView(R.id.tools));
+			a.showTopSnack("选择快捷功能！");
+		} else {
+			WebViewmy wv = a.weblist.dictView;
+			if (wv!=null) {
+				wv.presenter.invokeToolsBtn(wv, quick);
+			}
+		}
 	}
 }

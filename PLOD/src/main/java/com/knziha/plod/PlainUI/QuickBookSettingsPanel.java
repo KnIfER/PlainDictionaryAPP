@@ -12,7 +12,6 @@ import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
@@ -30,6 +29,7 @@ import com.knziha.plod.preference.SettingsPanel;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
 import com.knziha.plod.widgets.ViewUtils;
 
+/** 一些页面选项的快捷入口 */
 public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPanel.ActionListener {
 	protected MainActivityUIBase a;
 	public WebViewListHandler weblist;
@@ -102,6 +102,12 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			UIData.floatSwitch.setChecked(true);
 		}
 		
+		if (opt.adjTToolsShown())
+		{
+			UIData.ttArrow.setRotation(90);
+			initTextTools();
+		}
+		
 		if(GlobalOptions.isDark) {
 			UIData.scn.setTextColor(Color.WHITE);
 		}
@@ -123,6 +129,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		this.weblist = a.weblist;
 		if (_screen !=null) _screen.refresh();
 		if (_sHandle !=null) initScrollHandle();
+		if (_tTools !=null) initTextTools();
 		if (webSiteInfoListener!=null) webSiteInfoListener.onClick(null);
 	}
 	
@@ -140,6 +147,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				boolean show = opt.togAdjSHShwn();
 				UIData.shArrow.animate().rotation(show?90:0);
 				setPanelVis(initScrollHandle(), show);
+			}  break;
+			case R.id.tt: {
+				boolean show = opt.adjTToolsShownTog();
+				UIData.ttArrow.animate().rotation(show?90:0);
+				setPanelVis(initTextTools(), show);
 			}  break;
 			case R.id.info:{
 				//boolean show = opt.toggleAdjustWebsiteInfoShown();
@@ -214,6 +226,13 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					opt.setUserOrientation(opt.getTmpUserOrientation());
 				}
 			}
+			if (storageInt==makeInt(6, 40, false)) {
+				MainActivityUIBase.UnicornKit tk = a.getUtk();
+				if (PDICMainAppOptions.toolsQuick()) { // hint
+					int action =  PDICMainAppOptions.toolsQuickAction();
+					a.showTopSnack(action<tk.arraySelUtils.length?tk.arraySelUtils[action]:tk.arraySelUtils2[action-tk.arraySelUtils.length]);
+				}
+			}
 		}
 		if (flagIdxSection==NONE_SETTINGS_GROUP1) {
 			ActionGp_1 var = ActionGp_1.values()[flagPos];
@@ -283,6 +302,10 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					weblist.setScrollHandType(var.ordinal()-ActionGp_1.kaoyou.ordinal());
 					a.root.post(this::initScrollHandle);
 				} break;
+				case ttools: {
+					weblist.invokeToolsBtn(true, 0);
+					dismiss();
+				} break;
 			}
 		}
 		return true;
@@ -304,6 +327,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	
 	SettingsPanel _screen;
 	SettingsPanel _sHandle;
+	SettingsPanel _tTools;
 	
 	int shType;
 	
@@ -335,6 +359,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		,kaozuo
 		,hide
 		,system
+		,ttools
 	}
 	
 	private SettingsPanel initScreenPanel() {
@@ -439,6 +464,28 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		}
 		return _sHandle;
 	}
+	
+	private SettingsPanel initTextTools() {
+		if (_tTools ==null) {
+			final SettingsPanel settings = new SettingsPanel(a, opt
+					, new String[][]{new String[]{null, "启用", "直接使用选择的功能"/*, "长按使用选择的功能"*/, "选择功能"}}
+					, new int[][]{new int[]{Integer.MAX_VALUE
+					, makeInt(3, 50, true) // wvShowToolsBtn
+					, makeInt(6, 40, false) // toolsBtnAction
+					//, makeInt(6, 47, true) // toolsQuickLong
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.ttools.ordinal(), true)
+			}}, null);
+			settings.setEmbedded(this);
+			settings.init(a, root);
+			
+			addPanelViewBelow(settings.settingsLayout, UIData.ttPanel);
+			_tTools = settings;
+		} else {
+			_tTools.refresh();
+		}
+		return _tTools;
+	}
+	
 	
 	protected void addPanelViewBelow(View settingsLayout, LinearLayout panelTitle) {
 		ViewUtils.addViewToParent(settingsLayout, root, panelTitle);

@@ -3560,6 +3560,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public boolean bNeedClearTextSelection;
 		private int last_switch_cl_id;
 		private CircleCheckBox cb;
+		public boolean bPickAction;
 		
 		UnicornKit(){
 			arrayTweakDict = new int[]{
@@ -3616,6 +3617,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			invoker=presenter;
 			mWebView=_mWebView;
 			mTextView =_tv;
+			if (bPickAction) bPickAction=false;
 			isWeb = invoker!=null && invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 			if(_tv!=null){
 				int start = _tv.getSelectionStart();
@@ -3643,8 +3645,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//boolean bResposibleForCon=false;
 		//boolean doCloseOnDiss=true;
 		int[] arrayTweakDict;
-		int[] arraySelUtils;
-		int[] arraySelUtils2;
+		public int[] arraySelUtils;
+		public int[] arraySelUtils2;
 		int[] arrayTextUtils;
 		public boolean bFromWebView;
 		public boolean bFromPeruseView;
@@ -3656,6 +3658,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		boolean lastInDark;
 		protected ObjectAnimator objectAnimator;
 		int lastBookMarkPosition;
+		/** @param v widget view. Or null to detect webview selection; none null to trust webview selection. */
 		@Override
 		public void onClick(View v) {
 			int id;
@@ -3819,6 +3822,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(!bFromTextView){
 				bFromWebView=mWebView!=null;
 				bFromPeruseView=bFromWebView && mWebView.weblistHandler.src==SearchUI.Fye.MAIN;
+				if(bPickAction) bFromWebView=true;
 			}
 			// nimp
 			//if (!bFromWebView && mWebView!=null && invoker instanceof bookPresenter_pdf) {
@@ -3828,6 +3832,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//	});
 			//} else
 			{
+				//build_further_dialog();
+			}
+			if (mWebView!=null) {
+				if (v != null || mWebView.bIsActionMenuShown || bPickAction) {
+					//bFromWebView = true;
+					build_further_dialog();
+				} else if (v == null) {
+					mWebView.evaluateJavascript("getSelection().isCollapsed", new ValueCallback<String>() {
+						@Override
+						public void onReceiveValue(String value) {
+							bFromWebView = "false".equals(value);
+							build_further_dialog();
+						}
+					});
+				}
+			} else {
 				build_further_dialog();
 			}
 		}
@@ -4055,11 +4075,39 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				else {
-					PreferredToolId = (int) id;
-					if(isUserClick) {
-						if(!isLongClicked && thisActType==ActType.MultiShare && opt.getRememberVSPanelGo()) {
-							opt.putLastVSGoNumber(PreferredToolId);
+					if (bPickAction) {
+						if (!isLongClicked) {
+							int idx = ArrayUtils.indexOf(arraySelUtils, (int) id);
+							if(idx==-1) {
+								idx = ArrayUtils.indexOf(arraySelUtils2, (int) id);
+								if(idx==-1) idx = 0;
+								else {
+									showTopSnack(arraySelUtils2[idx]);
+									idx+=arraySelUtils.length;
+								}
+							} else {
+								showTopSnack(arraySelUtils[idx]);
+							}
+							PDICMainAppOptions.toolsQuickAction(idx);
+							d.dismiss();
 						}
+						return true;
+					}
+					if ((id&0xffff0000)==0) {
+						if (id<arraySelUtils.length) {
+							id = arraySelUtils[(int) id];
+						}
+						else {
+							id -= arraySelUtils.length;
+							if (id<arraySelUtils2.length) {
+								id = arraySelUtils2[(int) id];
+							}
+						}
+					}
+					PreferredToolId = (int) id;
+					if(thisActType==ActType.MultiShare && opt.getRememberVSPanelGo()
+							&& isUserClick && !isLongClicked) {
+						opt.putLastVSGoNumber(PreferredToolId);
 					}
 					switch (PreferredToolId) {//xx
 						/* 收藏 */
@@ -4594,7 +4642,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		private boolean hasText() {
-			return bFromWebView||bFromTextView;
+			return bFromWebView||bFromTextView||bPickAction;
 		}
 		
 		private void statHasBookmark() {
@@ -4629,7 +4677,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		public void showDictTweaker(BookPresenter presenter, WebViewmy wv) {
 			setInvoker(presenter, wv, null, null);
-			onClick(anyView(R.id.cover));
+			onClick(null);
 		}
 	}
 	
@@ -6110,7 +6158,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return false;
 	}
 	
-	private View anyView(int id) {
+	public View anyView(int id) {
 		View v = new View(this);
 		v.setId(id);
 		return v;
@@ -7042,6 +7090,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			if (wlh.tapSch && !invoker.getImageOnly())
 				ViewUtils.TapSch(MainActivityUIBase.this, mWebView);
+			
+			if(PDICMainAppOptions.toolsBoost())
+				ViewUtils.toolsBoost(mWebView);
 			
 			if(from==1 && awaiting) loadNext(mWebView);
 		}

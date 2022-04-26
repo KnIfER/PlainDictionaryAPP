@@ -103,6 +103,7 @@ import com.knziha.plod.preference.SettingsPanel;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.knziha.metaline.Metaline;
 import org.knziha.metaline.StripMethods;
 
 import java.io.ByteArrayInputStream;
@@ -724,6 +725,28 @@ public class ViewUtils {
 		CMN.Log("onPageFinished::popuping...加载");
 		try {
 			mWebView.evaluateJavascript(ViewUtils.fileToString(a, new File("/ASSET2/" + "tapSch.js")), null);
+		} catch (Exception e) { CMN.Log(e);}
+	}
+	
+	/**
+	 document.addEventListener('selectionchange', function(e){
+	 	e=getSelection().isCollapsed;
+	 	if(window.shzh&0x1000 ^ !e) {
+	 		if(e)
+				window.shzh&=~0x1000;
+			else {
+	 			window.shzh|=0x1000;
+	 		}
+	 		app.textMenu(sid.get(), !e);
+	 	}
+	 });
+	 * */
+	@Metaline()
+	public static String toolsBoost = "";
+	
+	public final static void toolsBoost(WebViewmy mWebView) {
+		try {
+			mWebView.evaluateJavascript(toolsBoost, null);
 		} catch (Exception e) { CMN.Log(e);}
 	}
 	

@@ -11,6 +11,7 @@
 	android:animateLayoutChanges="true"
 	tools:ignore="ContentDescription,HardcodedText"
 	tools:background="#fff"
+	tools:context="com.knziha.plod.PlainUI.QuickBookSettingsPanel"
 	>
 	<LinearLayout
 		android:id="@+id/scnPanel"
@@ -29,6 +30,7 @@
 			style="@style/quick_settings_menu" />
 	</LinearLayout>
 	<View style="@style/quick_settings_sephor" />
+
 	<LinearLayout
 		android:id="@+id/shPanel"
 		android:orientation="horizontal"
@@ -70,6 +72,26 @@
 			app:dim1="2dp"
 			style="@style/quick_settings_sw" />
 	</LinearLayout>
+	<View style="@style/quick_settings_sephor" />
+
+
+	<LinearLayout
+		android:id="@+id/ttPanel"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="55dp"
+		>
+		<ImageView
+			android:id="@+id/tt_arrow"
+			android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+			style="@style/quick_settings_arrow"
+			/>
+		<TextView
+			android:id="@+id/tt"
+			android:text="文本工具按钮"
+			style="@style/quick_settings_menu" />
+	</LinearLayout>
+	<View style="@style/quick_settings_sephor" />
 
 
 </com.knziha.plod.widgets.XYLinearLayout>

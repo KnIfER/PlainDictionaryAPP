@@ -48,7 +48,6 @@ import androidx.core.graphics.ColorUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
-import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.GetRecordAtInterceptor;
 import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
@@ -2562,8 +2561,17 @@ function debug(e){console.log(e)};
         public void log(String val) {
         	CMN.Log(val);
         }
-        
-        @JavascriptInterface
+		
+		@JavascriptInterface
+		public void textMenu(int sid, boolean show) {
+			if (presenter!=null && PDICMainAppOptions.toolsBoost()) {
+				WebViewmy wv = findWebview(sid);
+				wv.post(() -> wv.weblistHandler.textMenu(show?wv:null));
+				CMN.Log("textMenu!!!");
+			}
+		}
+		
+		@JavascriptInterface
         public int rcsp(int sid) {
 			try {
 				WebViewmy wv = findWebview(sid);
@@ -4027,10 +4035,15 @@ function debug(e){console.log(e)};
 				'}';
 	}
 	
-	public void invokeToolsBtn(WebViewmy mWebView) {
+	public void invokeToolsBtn(WebViewmy mWebView, int quickAction) {
 		a.weblist = mWebView.weblistHandler;
 		a.getUtk().setInvoker(this, mWebView, null, null);
-		a.getUtk().onClick(null);
+		if (quickAction!=-1) { // force quick action without show the dialog!
+			a.getUtk().bFromWebView = true;
+			a.getUtk().onItemClick(null, null, 0, PDICMainAppOptions.toolsQuickAction(), false, false);
+		} else {
+			a.getUtk().onClick(a.anyView(R.id.tools));
+		}
 	}
 	
 }

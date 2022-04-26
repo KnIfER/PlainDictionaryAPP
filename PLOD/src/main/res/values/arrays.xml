@@ -381,6 +381,13 @@
 		<item>3</item>
 	</string-array>
 
+	<string-array name="toolsBtnLong">
+		<item>无</item>
+		<item>直接使用按钮功能</item>
+		<item>选择按钮功能</item>
+		<item>显示功能面板</item>
+	</string-array>
+
 	<string-array name="conext_info">
 		<item>直接退出</item>
 		<item>再按一次退出（动画横幅）</item>

@@ -2360,8 +2360,24 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=37, shift=1) public static boolean turnPageFye(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=37, shift=1) public static void turnPageFye(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
+	/** persist 底栏前后切换按钮之功能为网页的前后导航。仅对弹出的内容视图有效。see {@link WebViewListHandler#bShowingInPopup} */
 	@Metaline(flagPos=38) public static boolean bottomNavWeb(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=38) public static void bottomNavWeb(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=39) public static boolean adjTToolsShown(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=39) public boolean adjTToolsShownTog() { SixthFlag=SixthFlag; throw new IllegalArgumentException(); }
+	
+	@Metaline(flagPos=40) public static boolean toolsQuick(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=41, flagSize=6) public static int toolsQuickAction(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=41, flagSize=6) public static void toolsQuickAction(int val) { SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	/** 按钮长按操作，0=无 1=直接 2=定制 3=面板 */
+	@Metaline(flagPos=47, flagSize=2) public static int toolsQuickLong(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=47, flagSize=2) public static void toolsQuickLong(int val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=49, shift=1) public static boolean toolsBoost(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=49, shift=1) public static void toolsBoost(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
 	
 	///////

@@ -17,6 +17,7 @@ import com.knziha.plod.plaindict.MdictServer;
 import com.knziha.plod.plaindict.MdictServerMobile;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.Toastable_Activity;
 
 public class Multiview extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=R.xml.pref_multiview;
@@ -61,6 +62,9 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		init_switch_preference(this, "turn3", PDICMainAppOptions.getPageTurn3(), null, null);
 		
 		init_switch_preference(this, "tools", PDICMainAppOptions.wvShowToolsBtn(), null, null);
+		init_switch_preference(this, "boosT", PDICMainAppOptions.toolsBoost(), null, null);
+		
+		init_number_info_preference(this, "toolsBtnLong", PDICMainAppOptions.toolsQuickLong(), 0, null);
 		
 		clrAccent = ColorUtils.blendARGB(0xff2b4381, Color.GRAY, 0.35f);
 		((PreferenceGroup) findPreference("cat_"+getActivity().getIntent().getIntExtra("where", 0))).drawSideLine = true;
@@ -94,6 +98,7 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 				}
 			}
 		}
+		//CMN.Log("onPreferenceChange::", key, newValue);
 		switch (key){
 			case "expand_ao":
 				PDICMainAppOptions.setEnsureAtLeatOneExpandedPage((Boolean) newValue);
@@ -162,6 +167,12 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 			break;
 			case "tools":
 				PDICMainAppOptions.wvShowToolsBtn((Boolean) newValue);
+			break;
+			case "boosT":
+				PDICMainAppOptions.toolsBoost((Boolean) newValue);
+			break;
+			case "toolsBtnLong":
+				PDICMainAppOptions.toolsQuickLong(IU.parsint(newValue, 0));
 			break;
 		}
 		if (key.startsWith("tz") || key.startsWith("turn")) {

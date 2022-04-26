@@ -712,7 +712,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 				 * 分享#2 | 分享#3
 				 */
 				//CMN.Log("工具!!!");
-				presenter.invokeToolsBtn(this);
+				presenter.invokeToolsBtn(this, -1);
 			} return false;
 			case R.id.toolbar_action3:{//TTS
 				evaluateJavascript("if(window.app)app.ReadText(sid.get(), ''+window.getSelection())",null);

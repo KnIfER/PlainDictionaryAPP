@@ -212,7 +212,7 @@
 
 	<PreferenceCategory
 		android:key="cat"
-		android:title="工具按钮"
+		android:title="快捷工具按钮"
 		app:icon="@drawable/tools_toolbar"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
@@ -222,6 +222,20 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="选择文本后显示工具按钮"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="boosT"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="加速显示"
+			/>
+		<androidx.preference.ListPreference
+			android:defaultValue="0"
+			android:key="toolsBtnLong"
+			android:persistent="false"
+			android:title="长按操作："
+			android:entries="@array/toolsBtnLong"
+			app:inlineSummary="true"
 			/>
 	</PreferenceCategory>
 </PreferenceScreen>
