@@ -721,7 +721,7 @@ public class ViewUtils {
 	}
 	
 	public final static void TapSch(MainActivityUIBase a, WebViewmy mWebView) {
-		CMN.Log("popuping...加载");
+		CMN.Log("onPageFinished::popuping...加载");
 		try {
 			mWebView.evaluateJavascript(ViewUtils.fileToString(a, new File("/ASSET2/" + "tapSch.js")), null);
 		} catch (Exception e) { CMN.Log(e);}

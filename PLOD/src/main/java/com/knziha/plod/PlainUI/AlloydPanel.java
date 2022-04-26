@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AlloydPanel extends PlainAppPanel {
-	public WebViewListHandler handler;
+	public final WebViewListHandler handler;
 	public Toolbar toolbar;
 	public MenuBuilder AllMenus;
 	public List<MenuItemImpl> RandomMenu;
@@ -60,6 +60,7 @@ public class AlloydPanel extends PlainAppPanel {
 			toolbar.inflateMenu(R.xml.menu_popup_content);
 			toolbar.getLayoutParams().height = (int) a.mResource.getDimension(R.dimen.barSize);
 			AllMenus = (MenuBuilder) toolbar.getMenu();
+			AllMenus.tag = handler;
 			AllMenus.checkDrawable = a.AllMenus.checkDrawable;
 			AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 			// tabTranslateEach

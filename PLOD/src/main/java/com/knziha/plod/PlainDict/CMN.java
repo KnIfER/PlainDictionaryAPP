@@ -236,6 +236,10 @@ public class CMN{
 		return System.identityHashCode(object);
 	}
 	
+	public static String idStr(Object object) {
+		return Integer.toHexString(System.identityHashCode(object));
+	}
+	
 	public static long now() {
 		return System.currentTimeMillis();
 	}

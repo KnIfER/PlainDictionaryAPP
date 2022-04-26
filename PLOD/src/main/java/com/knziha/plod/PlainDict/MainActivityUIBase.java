@@ -5722,32 +5722,20 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 切换收藏 */
 			case R.drawable.star_ic:
 			case R.id.browser_widget8: {//favorite
-				if(ActivedAdapter==null){
-					if(DBrowser!=null) {
-						DBrowser.toggleFavor();
-					}
+				findWebList(v);
+				String key = weblist.displaying;
+				if(DBrowser!=null && weblist==DBrowser.weblistHandler){
+					DBrowser.toggleFavor();
 				} else {
-					CMN.Log("ActivedAdapter", ActivedAdapter);
-					if(webSingleholder.getChildAt(0)==contentview) {
-						//todo 泛化
-						WebViewmy mWebView = webSingleholder.findViewById(R.id.webviewmy);
-						if (mWebView != null) {
-							BookPresenter presenter = mWebView.presenter;
-							if (presenter.bookImpl instanceof PlainPDF) {
-								((PlainPDF)presenter.bookImpl).toggleFavor();
-								break;
-							}
-						}
-					}
-					String key = ActivedAdapter.currentKeyText;
 					if(GetIsFavoriteTerm(key)) {
 						removeFavoriteTerm(key);
 						v.setActivated(false);
 						show(R.string.removed);
 					} else {
-						favoriteCon.insert(this, key, opt.getCurrFavoriteNoteBookId(), ActivedAdapter.webviewHolder);
+						prepareFavoriteCon().insert(this, key, opt.getCurrFavoriteNoteBookId(), ActivedAdapter.webviewHolder);
 						v.setActivated(true);
-						show(R.string.added);
+						//show(R.string.added);
+						showT(key+" 收藏成功");
 					}
 				}
 			} break;
@@ -6152,6 +6140,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		MenuBuilder menu = (MenuBuilder) mmi.mMenu;
 		boolean isLongClicked= mmi!=null && mmi.isLongClicked;
 		WebViewListHandler wlh = (WebViewListHandler) menu.tag;
+		if (weblist!=wlh) weblist = wlh;
 		/* 长按事件默认不处理，因此长按时默认返回false，且不关闭menu。 */
 		boolean ret = !isLongClicked;
 		boolean closeMenu=ret;
@@ -6913,7 +6902,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WebViewClient myWebClient = new WebViewClient() {
 		public void onPageFinished(WebView view, String url) {
 			final WebViewmy mWebView = (WebViewmy) view;
-			CMN.debug("onPageFinished::"+mWebView.bPageStarted, url);
+			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, CMN.idStr(mWebView.weblistHandler));
 			if (mWebView.bPageStarted) {
 				mWebView.bPageStarted = false;
 			} else {
@@ -6925,7 +6914,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//CMN.debug("chromium: OPF ==> ", url, mWebView.isloading, view.getProgress(), view.getTag(R.drawable.voice_ic));
 			
 			//if(!mWebView.isloading && !mWebView.fromNet) return;
-			WebViewListHandler wlh = mWebView.weblistHandler;
+			final WebViewListHandler wlh = mWebView.weblistHandler;
 			
 			int from = mWebView.fromCombined;
 			
@@ -7051,7 +7040,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(invoker.GetSearchKey()!=null)
 				invoker.ApplySearchKey();
 			
-			if (weblistHandler.tapSch && !invoker.getImageOnly())
+			if (wlh.tapSch && !invoker.getImageOnly())
 				ViewUtils.TapSch(MainActivityUIBase.this, mWebView);
 			
 			if(from==1 && awaiting) loadNext(mWebView);
