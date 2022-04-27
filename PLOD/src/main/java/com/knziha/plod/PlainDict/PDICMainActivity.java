@@ -647,8 +647,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			
 			//iItem_InPageSearch.setVisible(!opt.getInPageSearchVisible()&&!opt.isContentBow());
 			
-			adaptermy2.currentKeyText=null;
-			adaptermy.currentKeyText=null;
+//			adaptermy2.currentKeyText=null;
+//			adaptermy.currentKeyText=null;
 
 //			Utils.removeAllViews(webholder);
 //			Utils.removeAllViews(webSingleholder);
@@ -2693,6 +2693,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if (ActivedAdapter!=null) {
 			ActivedAdapter.SaveVOA();
 		}
+		weblistHandler.savePagePos();
 		delayedAttaching=false;
 		applyMainMenu();
 		mDrawerToggle.onDrawerClosed(UIData.drawerLayout);

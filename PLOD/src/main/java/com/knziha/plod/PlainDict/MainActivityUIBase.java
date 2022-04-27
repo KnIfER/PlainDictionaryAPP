@@ -7014,7 +7014,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					else if (url.charAt(idx)=='.') { // base.html
 						baseUrl = true; /** see {@link #baseUrl} */
-						mWebView.clearHistory();
+						//mWebView.clearHistory();
 					}
 				}
 				else if (url.equals("http://mdbr.com/load.html")) {

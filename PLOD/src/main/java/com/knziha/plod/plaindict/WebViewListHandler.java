@@ -15,6 +15,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.SparseArray;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -46,6 +47,7 @@ import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
+import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.preference.RadioSwitchButton;
@@ -1586,14 +1588,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	void NavWeb(int d) {
+		CMN.Log("NavWeb", scrollFocus.getUrl());
 		if (scrollFocus !=null) {
-			if(String.valueOf(scrollFocus.getUrl()).startsWith(baseUrl)
-				&& scrollFocus.forward!=null) {
-				(d>0?scrollFocus.forward:scrollFocus.recess).performClick();
-			} else {
+//			if(String.valueOf(scrollFocus.getUrl()).startsWith(baseUrl) && // deprecated
+//				 scrollFocus.forward!=null) {
+//				(d>0?scrollFocus.forward:scrollFocus.recess).performClick();
+//			} else {
 				if (d>0) scrollFocus.goForward();
 				else scrollFocus.goBack();
-			}
+//			}
 		}
 	}
 	
@@ -1633,6 +1636,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				presenter.SetSearchKey(jointResult.key);
 				shareView = false;
 			}
+			if(opt.getRemPos()) {
+				savePagePos();
+			}
 			if (shareView) {
 				mWebView = getMergedFrame(presenter);
 			} else {
@@ -1640,19 +1646,38 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				mWebView = presenter.mWebView;
 				mWebView.weblistHandler = this;
 			}
-			if (opt.getRemPos()) {
 			
-			}
 			mWebView.fromCombined = 0;
 			dictView = mWebView;
-			int fvp = (int) displaying[0];
-			presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, mWebView, displaying);
+			presenter.renderContentAt(-2, BookPresenter.RENDERFLAG_NEW, 0, mWebView, displaying);
 			ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
 			mWebView.jointResult = jointResult;
 			setScrollFocus(mWebView);
 			contentUIData.PageSlider.setWebview(mWebView, null);
 		} catch (Exception e) {
 			CMN.Log(e);
+		}
+	}
+	
+	public void savePagePos() {
+		if (isViewSingle()) {
+			View child = contentUIData.webSingleholder.getChildAt(0);
+			if (child!=null) {
+				WebViewmy mWebView = child.findViewById(R.id.webviewmy);
+				BookPresenter prev = mWebView.presenter;
+				if(!prev.isMergedBook() && !mWebView.isloading && System.currentTimeMillis()-a.lastClickTime>300) {
+					if (mWebView.webScale == 0) mWebView.webScale = a.dm.density; //sanity check
+					CMN.Log("savePagePos::保存位置::", prev.getDictionaryName(), (int) mWebView.currentPos);
+					ScrollerRecord pPos = prev.avoyager.get((int) mWebView.currentPos);
+					if (mWebView.shouldStoreNewPagePos(pPos)) {
+						prev.avoyager.put((int) mWebView.currentPos, pPos = new ScrollerRecord());
+					}
+					if (pPos!=null) {
+						pPos.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
+					}
+				}
+			}
+			a.lastClickTime=System.currentTimeMillis();
 		}
 	}
 }

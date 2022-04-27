@@ -89,6 +89,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public float webScale=1;
 	public int expectedPos=-1;
 	public int expectedPosX=-1;
+	/** @deprecated */
 	public ArrayList<myCpr<String, ScrollerRecord>> History = new ArrayList<>();
 	public float lastX;
 	public float lastY;
@@ -176,7 +177,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		
 		settings.setSupportZoom(true);
 		settings.setBuiltInZoomControls(true);
-		settings.setDisplayZoomControls(false);
+		settings.setDisplayZoomControls(true);
 		//settings.setDefaultTextEncodingName("UTF-8");
 		
 		//settings.setNeedInitialFocus(false);
@@ -286,7 +287,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	@Override
 	public void loadUrl(String url) {
 		super.loadUrl(url);
-		//CMN.Log("\n\nloadUrl::", url);
+		CMN.Log("\n\nloadUrl::", url);
 		drawRect=false;
 		isloading=true;
 	}
@@ -335,14 +336,16 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		if(wvclient!=null)
 			wvclient.onPageFinished(this, "file:///");
 	}
-
+	
+	/** @deprecated */
 	public void addHistoryAt(long idx) {
 		//CMN.Log("创造历史！！！");
 		History.add(++HistoryVagranter,new myCpr<>(String.valueOf(idx),new ScrollerRecord(expectedPosX, expectedPos, -1)));
 		for(int i=History.size()-1;i>=HistoryVagranter+1;i--)
 			History.remove(i);
 	}
-
+	
+	/** @deprecated */
 	public void clearIfNewADA(BookPresenter adapter_idx) {
 		if(presenter!=adapter_idx){
 			//CMN.Log("清空历史!!!", adapter_idx, SelfIdx);
@@ -466,8 +469,12 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	}
 	
 	public boolean shouldStorePagePos(ScrollerRecord pos) {
-		return pos==null && getScrollY() != 0 && getScrollX() != 0 && webScale != BookPresenter.def_zoom
+		return pos==null && (getScrollY() != 0 || getScrollX() != 0 || webScale != BookPresenter.def_zoom)
 				|| pos!=null && (webScale != BookPresenter.def_zoom || getScrollY() != pos.y || getScrollX() != pos.x);
+	}
+	
+	public boolean shouldStoreNewPagePos(ScrollerRecord pos) {
+		return pos==null && (getScrollY() != 0 || getScrollX() != 0 || webScale != BookPresenter.def_zoom);
 	}
 	
 	public ScrollerRecord storePagePos(ScrollerRecord pos) {
@@ -514,12 +521,13 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 //		}
 //	}
 	
+	/** @deprecated */
 	public void voyage(boolean isGoBack) {
 		if (fromNet) {
 			if (isGoBack) if (canGoBack()) goBack();
 			else if (canGoForward()) goForward(); return;
 		}
-		//CMN.Log("这是网页的前后导航" ,isGoBack, HistoryVagranter, History.size());
+		CMN.Log("这是网页的前后导航" ,presenter,isGoBack, HistoryVagranter, History.size());
 		if (isGoBack && HistoryVagranter > 0 || !isGoBack&&HistoryVagranter<=History.size() - 2) {
 			boolean fromCombined = this.fromCombined==1;
 			try {

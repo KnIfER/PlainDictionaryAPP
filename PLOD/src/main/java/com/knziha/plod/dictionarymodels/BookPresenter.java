@@ -996,13 +996,15 @@ function debug(e){console.log(e)};
 					}
 				});
 				break;
-			case R.id.recess:
-			case R.id.forward:
+			case R.id.recess: //deprecated
+			case R.id.forward: //deprecated
 				boolean isGoBack = v.getId() == R.id.recess;
 				if (mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+					CMN.Log("NavWeb", 123);
 					if (isGoBack) if (mWebView.canGoBack()) mWebView.goBack();
 					else if (mWebView.canGoForward()) mWebView.goForward(); return;
 				} else {
+					CMN.Log("NavWeb", 456);
 					mWebView.voyage(isGoBack);
 				}
 				break;
@@ -1791,7 +1793,7 @@ function debug(e){console.log(e)};
 	//public int currentPos;
 	public int internalScaleLevel=-1;
 	public int lvPos,lvClickPos,lvPosOff;
-	/** Current Page Historian */
+	/** @deprecated */
 	public SparseArray<ScrollerRecord> HistoryOOP = new SparseArray<>();
 
     @SuppressLint("JavascriptInterface")
@@ -1883,13 +1885,27 @@ function debug(e){console.log(e)};
 	public final static int RENDERFLAG_NEW=0x1;
 
 	//todo frameAt=-1
-    public void renderContentAt(float initialScale, int fRender, int frameAt, WebViewmy mWebView, long... position){
+    public void renderContentAt(float initialScale, int fRender, int frameAt, WebViewmy mWebView, long...position){
     	CMN.debug("renderContentAt!!!...", bookImpl.getDictionaryName());
     	if (a==null) {
     		// safe check
     		return;
 		}
-    	isJumping=false;
+		if (initialScale==-2) {
+			initialScale=-1;
+			ScrollerRecord pPos = opt.getRemPos()?avoyager.get((int) position[0]):null;
+			if(pPos!=null) {
+				//a.showT(""+currentDictionary.expectedPos);
+				mWebView.expectedPos = pPos.y;
+				mWebView.expectedPosX = pPos.x;
+				initialScale = pPos.scale;
+				//CMN.Log(avoyager.size()+"~"+position+"~取出旧值"+webview.expectedPos+" scale:"+pPos.scale);
+			} else {
+				mWebView.expectedPos=0;
+				mWebView.expectedPosX=0;
+			}
+		}
+		isJumping = false;
     	if(mWebView==null) {
     		mWebView=this.mWebView;
 			refresh_eidt_kit(mPageView, mTBtnStates, bSupressingEditing, true);
