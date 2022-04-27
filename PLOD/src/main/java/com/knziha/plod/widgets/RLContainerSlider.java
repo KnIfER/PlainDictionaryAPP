@@ -564,9 +564,12 @@ public class RLContainerSlider extends FrameLayout{
 				//CMN.debug("slideTurn::-2", slideTurn, tapZoom);
 			} else {
 				if (weblist.isMultiRecord()) {
-					if (weblist.bMergingFrames) {
+					if (weblist.isMergingFrames()) {
 						slideTurn = PDICMainAppOptions.getPageTurn3();
 						//CMN.debug("slideTurn::1", slideTurn, tapZoom);
+					} else if (weblist.isFoldingScreens()) {
+						slideTurn = PDICMainAppOptions.getPageTurn1();
+						//CMN.debug("slideTurn::2", slideTurn, tapZoom);
 					} else {
 						slideTurn = PDICMainAppOptions.getPageTurn2();
 						//CMN.debug("slideTurn::2", slideTurn, tapZoom);

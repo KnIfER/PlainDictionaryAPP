@@ -79,12 +79,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	int szStash;
 	/** see{@link com.knziha.plod.db.SearchUI }*/
 	int src;
-	/** -2=auto;0=false;1=true*/
+	/** -2=auto[0-1];0=false;1=true;2=foldingScreen*/
 	public int bMergeFrames = 0;
 	/** for {@link com.knziha.plod.PlainUI.WordPopup }. final. When set, the default view {@link #contentUIData } won't be initialized. */
 	public boolean bDataOnly = false;
 	public boolean bShowInPopup = false;
-	public boolean bMergingFrames = false;
+	public int bMergingFrames = 0;
 	public boolean bShowingInPopup = false;
 	public ScrollViewmy WHP;
 	public PDICMainAppOptions opt;
@@ -170,7 +170,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 								mBar.progress(y);
 							}
 						}
-						if(!bMergingFrames && Math.abs(lastScrollUpdateY-y)>GlobalOptions.density*50) {
+						if(0==bMergingFrames && Math.abs(lastScrollUpdateY-y)>GlobalOptions.density*50) {
 							lastScrollUpdateY=y;
 							CMN.pt("滚动="+Math.abs(oldY)+","+"y="+y+"::");
 							//CMN.rt();
@@ -260,7 +260,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public int getFrameAt() {
-		if(!bMergingFrames) {
+		if(!isMergingFrames() && !isFoldingScreens()) {
 			final int currentHeight=WHP.getScrollY();
 			for(int i=0;i<webholder.getChildCount();i++) {
 				View CI = webholder.getChildAt(i);
@@ -344,7 +344,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void setScrollHandType(int style) {
 		opt.setTypeFlag_11_AtQF(style, shFlag);
-		resetScrollbar(mWebView, bMergingFrames, true);
+		resetScrollbar(mWebView, isMergingFrames(), true);
 	}
 	
 	
@@ -446,7 +446,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	boolean webHolderSwapHide = true;
 	
 	/** 是否将共用的 mMergedFrame 以一定手段塞入webholder列表。但是列表只会显示一个（mMergedFrame 或 mWebView）。 */
-	public void initMergedFrame(boolean mergeWebHolder, boolean popup, boolean bUseMergedUrl) {
+	public void initMergedFrame(int mergeWebHolder, boolean popup, boolean bUseMergedUrl) {
 		if(bUseMergedUrl && mMergedFrame!=null) {
 			mMergedFrame.presenter=mMergedBook;
 			//mMergedBook.toolbar.setVisibility(View.GONE);
@@ -458,18 +458,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 		if(bMergingFrames!=mergeWebHolder) {
 			CMN.Log("reinitMergedFrame::", mergeWebHolder, popup, bUseMergedUrl);
-			if(mergeWebHolder) {
-				WebViewmy mMergedFrame = getMergedFrame();
-				ViewUtils.addViewToParent(mMergedFrame.rl, contentUIData.webSingleholder);
-				mMergedBook.toolbar.setVisibility(View.GONE);
-//				contentUIData.navBtns.setVisibility(View.GONE);
-//				if(webHolderSwapHide) {
-//					WHP.setVisibility(View.GONE);
-//				} else {
-//					ViewUtils.removeView(WHP);
-//				}
-			}
-			else {
+			if(mergeWebHolder==0) {
 				contentUIData.webcontentlister.setAlpha(1);
 				if(mMergedBook!=null) {
 					mMergedBook.toolbar.setVisibility(View.VISIBLE);
@@ -478,6 +467,17 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 //				ViewUtils.addViewToParent(WHP, contentUIData.PageSlider, 1);
 //				if(webHolderSwapHide) {
 //					WHP.setVisibility(View.VISIBLE);
+//				}
+			}
+			else {
+				WebViewmy mMergedFrame = getMergedFrame();
+				ViewUtils.addViewToParent(mMergedFrame.rl, contentUIData.webSingleholder);
+				mMergedBook.toolbar.setVisibility(mergeWebHolder==1?View.GONE:View.VISIBLE);
+//				contentUIData.navBtns.setVisibility(View.GONE);
+//				if(webHolderSwapHide) {
+//					WHP.setVisibility(View.GONE);
+//				} else {
+//					ViewUtils.removeView(WHP);
 //				}
 			}
 			bMergingFrames = mergeWebHolder;
@@ -511,7 +511,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void prvnxtFrame(boolean nxt) {
 		if(isMultiRecord())
-		if(bMergingFrames) {
+		if(isFoldingScreens()) {
+		}
+		else if(isMergingFrames()) {
 			mMergedFrame.evaluateJavascript(nxt?"prvnxtFrame(1)":"prvnxtFrame()", null);
 		} else if(!isViewSingle()){
 			final int currentHeight=WHP.getScrollY();
@@ -549,7 +551,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void JumpToFrame(int pos) {
 		frameSelection = pos;
-		if(bMergingFrames) {
+		if(isFoldingScreens()) {
+			renderFoldingScreen(pos);
+		}
+		else if(isMergingFrames()) {
 			if(pos<frames.size()) {
 				BookPresenter book = frames.get(pos);
 				if (book!=null) {
@@ -572,7 +577,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void showJumpListDialog() {
-		if(!bMergingFrames) frameAt = getFrameAt();
+		if(bMergingFrames==0) frameAt = getFrameAt();
 		frameCount = frames.size();
 		if(jumpListDlg==null){
 			jumpListDlg = jumpListDlgRef.get();
@@ -718,7 +723,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		//d.getWindow().getDecorView().getBackground().setColorFilter(GlobalOptions.NEGATIVE);
 		//d.getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
 		a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
-		if(bMergingFrames) {
+		if(isMergingFrames()) {
 			mMergedFrame.evaluateJavascript("currentFrame("+frameAt+")", value -> {
 				try {
 					if(jumpListDlg!=null && jumpListDlg.isShowing()) {
@@ -754,6 +759,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			frameSelection = frameAt;
 			lv.setSelection(bag.val?frameAt/2:frameAt);
 		}
+		else if(isFoldingScreens()) {
+			frameAt = frameSelection;
+		}
 	}
 	
 	public final static int WEB_LIST_MULTI=0;
@@ -767,7 +775,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			multiRecord = record;
 		}
 		int viewMode = multi && !bUseMergedUrl? WEB_LIST_MULTI : WEB_VIEW_SINGLE;
-		if(mViewMode!=viewMode || bMergingFrames!=bUseMergedUrl || isMultiRecord!=multi) {
+		if(mViewMode!=viewMode || (bMergingFrames!=0)!=bUseMergedUrl || isMultiRecord!=multi) {
 			isMultiRecord = multi;
 			mViewMode = viewMode;
 			if (!bDataOnly) {
@@ -1077,7 +1085,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	* <br> multiple merged - hDataMergedPage
 	* <br> multiple dict - hDataMultiple**/
 	public HighlightVagranter getHData() {
-		if(bMergingFrames) {
+		if(isMergingFrames()) {
 			hDataMergedPage.webviewHolder = contentUIData.webSingleholder;
 			return hDataMergedPage;
 		}
@@ -1527,8 +1535,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return src;
 	}
 	
-	public boolean isMergingFrames() {
-		return bMergingFrames;
+	public final boolean isMergingFrames() {
+		return bMergingFrames==1;
+	}
+	
+	public final boolean isFoldingScreens() {
+		return bMergingFrames==2;
 	}
 	
 	public void setStar(String key) {
@@ -1608,6 +1620,39 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			if (wv!=null) {
 				wv.presenter.invokeToolsBtn(wv, quick);
 			}
+		}
+	}
+	
+	public void renderFoldingScreen(int frame) {
+		try {
+			boolean shareView = PDICMainAppOptions.getUseSharedFrame();
+			BookPresenter presenter = frames.get(frame);
+			long[] displaying = framesDisplaying.get(frame);
+			WebViewmy mWebView;
+			if (presenter.getIsWebx() && (!shareView || PDICMainAppOptions.getMergeExemptWebx())) {
+				presenter.SetSearchKey(jointResult.key);
+				shareView = false;
+			}
+			if (shareView) {
+				mWebView = getMergedFrame(presenter);
+			} else {
+				presenter.initViewsHolder(a);
+				mWebView = presenter.mWebView;
+				mWebView.weblistHandler = this;
+			}
+			if (opt.getRemPos()) {
+			
+			}
+			mWebView.fromCombined = 0;
+			dictView = mWebView;
+			int fvp = (int) displaying[0];
+			presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, mWebView, displaying);
+			ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
+			mWebView.jointResult = jointResult;
+			setScrollFocus(mWebView);
+			contentUIData.PageSlider.setWebview(mWebView, null);
+		} catch (Exception e) {
+			CMN.Log(e);
 		}
 	}
 }

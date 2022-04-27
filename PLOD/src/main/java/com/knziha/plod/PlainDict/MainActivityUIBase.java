@@ -1,5 +1,6 @@
 package com.knziha.plod.plaindict;
 
+import static android.view.View.GONE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import android.animation.Animator;
@@ -548,9 +549,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return contentUIData.browserWidget8;
 	}
 	
-	/** -2=auto;0=false;1=true see {@link WebViewListHandler#bMergeFrames}*/
+	/** -2=auto;0=false;1=true;2=foldingScreen see {@link WebViewListHandler#bMergeFrames}*/
 	public final int mergeFrames() {
-		return opt.getUseMergedUrl()?opt.mergeUrlMore()?-2:1:0;
+		int ret=opt.multiViewMode();
+		return ret==1?opt.mergeUrlMore()?-2:1
+				:ret;
 	}
 	
 	public enum ActType{
@@ -4028,7 +4031,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						/* 文字缩放级别 */
 						case R.string.f_scale_up:
 						case R.string.f_scale_down: {
-							boolean inter = invoker.getUseInternalFS() && !tkWebv.weblistHandler.bMergingFrames;
+							boolean inter = invoker.getUseInternalFS() && 1!=tkWebv.weblistHandler.bMergingFrames;
 							if (isLongClicked) {
 								int targetLevel = invoker.getFontSize();
 								if (id==R.string.f_scale_up) {
@@ -5118,7 +5121,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (weblist==wordPopup.weblistHandler) {
 				wordPopup.resetScrollbar();
 			} else {
-				weblist.resetScrollbar(weblist.mWebView, weblist.bMergingFrames, true);
+				weblist.resetScrollbar(weblist.mWebView, weblist.isMergingFrames(), true);
 			}
 			dialog12.dismiss();
 		})
@@ -6223,33 +6226,40 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				CMN.Log("onClick::1::", weblistHandler.contentUIData.webholder.getChildCount());
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(tagHolder.tag);
 				if(dd==null) {
+					DialogInterface.OnClickListener	listener = new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							//CMN.Log("onClick::", weblistHandler.contentUIData.webholder.getChildCount());
+							if(which>=0 && which<=2) {
+								//which=(which+1)%2;
+								if(weblistHandler.isMultiRecord()) {
+									resetMerge(which, true);
+									if (PDICMainAppOptions.remMultiview()) {
+										PDICMainAppOptions.multiViewMode(which);
+									}
+								}
+								else return;
+							} else if(which==-1){
+								launchSettings(Multiview.id, Multiview.requestCode);
+							}
+							dialog.dismiss();
+						}
+					};
 					dd = new AlertDialog.Builder(this)
 						.setSingleChoiceLayout(R.layout.singlechoice_plain)
 						.setSingleChoiceItems(new String[]{
 								"切换旧版本多页面视图列表"
 								, "切换新版合并的多页面模式"
-								, "打开详细设置"
-						}, 0, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								//CMN.Log("onClick::", weblistHandler.contentUIData.webholder.getChildCount());
-								if(which==0 || which==1) {
-									//which=(which+1)%2;
-									if(weblistHandler.isMultiRecord()) {
-										resetMerge(which, true);
-										if (PDICMainAppOptions.remMultiview()) {
-											PDICMainAppOptions.setUseMergedUrl(which==1);
-										}
-									}
-									else return;
-								} else {
-									launchSettings(Multiview.id, Multiview.requestCode);
-								}
-								dialog.dismiss();
-							}
-						})
-						.setWikiText(getString(R.string.wikiMultiViewMode), null)
-						.setTitle("多页面设置").create();
+								, "切换新版屏风模式"
+						}, 0, listener)
+						.setTitleBtn(R.drawable.ic_settings, listener)
+						//.setWikiText(getString(R.string.wikiMultiViewMode), null)
+						.setTitle("多页面设置").show();
+					dd.mAlert.wikiBtn.getLayoutParams().width=GlobalOptions.btnMaxWidth;
+					dd.mAlert.wikiBtn.getLayoutParams().height=GlobalOptions.btnMaxWidth*2/3;
+					dd.mAlert.wikiBtn.setPadding(0,0,0,0);
+					dd.mAlert.wikiSep.getLayoutParams().width=GlobalOptions.btnMaxWidth/5;
+					((LinearLayout.LayoutParams)dd.mAlert.wikiSep.getLayoutParams()).weight=0;
 					tagHolder.tag = null;
 				}
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
@@ -6315,7 +6325,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (weblistHandler.isMultiRecord()) {
 			if(which==-1) which=mergeFrames();
 			boolean bUseMergedUrl = which!=0;
-			if(bUseMergedUrl!=weblistHandler.bMergingFrames) {
+			if(which!=weblistHandler.bMergingFrames) {
 				weblistHandler.setViewMode(weblistHandler.multiRecord, bUseMergedUrl, null);
 				weblistHandler.bMergeFrames = which;
 				weblistHandler.webHolderSwapHide = true;
@@ -6404,7 +6414,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			weblistHandler.setUpContentView(cbar_key);
 			weblistHandler.popupContentView(null, "随机页面");
 			weblistHandler.setViewMode(null, true, randomPage);
-			weblistHandler.initMergedFrame(true, true, false);
+			weblistHandler.initMergedFrame(1, true, false);
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
 			randomPage.isloading = true;
 			randomPage.active = true;
@@ -6927,11 +6937,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	void doTranslation(WebViewListHandler weblistHandler, int which, DialogInterface dialog) {
 		WebViewmy mWebView = null;
-		if(weblistHandler.bMergingFrames) {
-			mWebView = weblistHandler.mMergedFrame;
-		} else {
+		if(weblistHandler.isMultiRecord() && weblistHandler.bMergingFrames==0) {
 			View rl = weblistHandler.contentUIData.webSingleholder.getChildAt(0);
 			if(rl!=null) mWebView = (WebViewmy) rl.getTag();
+		} else {
+			mWebView = weblistHandler.dictView;
 		}
 		final int szTranslators = 2;
 		CMN.Log("doTranslation::", mWebView, weblistHandler.bMergingFrames);
@@ -7403,7 +7413,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									wlh.setViewMode(null, false, mWebView);
 									wlh.bShowInPopup=true;
 									wlh.bMergeFrames=0;
-									wlh.initMergedFrame(false, true, false);
+									wlh.initMergedFrame(0, true, false);
 									wlh.popupContentView(null, url);
 									invoker.renderContentAt(-1,BookPresenter.RENDERFLAG_NEW,0,mWebView, idx);
 									wlh.contentUIData.PageSlider.setWebview(mWebView, null);

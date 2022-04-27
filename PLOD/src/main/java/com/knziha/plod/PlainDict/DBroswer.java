@@ -1413,7 +1413,7 @@ public class DBroswer extends DialogFragment implements
 			boolean bUseDictView = /*currentDictionary.rl!=null || */!opt.getUseSharedFrame() || opt.getMergeExemptWebx()&&currentDictionary.getIsWebx();
 			weblistHandler.setViewMode(null, bUseMergedUrl, bUseDictView?currentDictionary.mWebView:weblistHandler.mMergedFrame);
 			weblistHandler.viewContent();
-			if(!bUseDictView) weblistHandler.initMergedFrame(false, true, false);
+			if(!bUseDictView) weblistHandler.initMergedFrame(0, true, false);
 
 			WebViewmy webview = null;
 			ViewGroup someView = null;

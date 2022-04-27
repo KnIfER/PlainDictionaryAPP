@@ -187,7 +187,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 							startTask(id==R.id.popNxtDict?TASK_POP_NAV_NXT:TASK_POP_NAV);
 						}
 						else if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
-							weblistHandler.bMergingFrames = true;
+							weblistHandler.bMergingFrames = 1;
 							weblistHandler.prvnxtFrame(id==R.id.popNxtDict);
 						}
 					} catch (Exception e) {
@@ -273,7 +273,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				MenuItemImpl mSTd = (MenuItemImpl) ViewUtils.findInMenu(a.AllMenusStamp, R.id.translate);
 				mSTd.isLongClicked = false;
 				a.onMenuItemClick(mSTd);
-				weblistHandler.bMergingFrames=true;
+				weblistHandler.bMergingFrames=1;
 				AlertDialog dd = (AlertDialog)ViewUtils.getWeakRefObj(mSTd.tag);
 				if(dd!=null) dd.tag = this;
 			} break;
@@ -1036,7 +1036,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			boolean bUseMergedUrl = true;
 			weblistHandler.setViewMode(rec, bUseMergedUrl, mWebView);
 			//weblistHandler.initMergedFrame(false, false, bUseMergedUrl);;
-			weblistHandler.bMergingFrames = true;
+			weblistHandler.bMergingFrames = 1;
 			weblistHandler.bMergeFrames = 1;
 			mWebView.presenter = a.weblistHandler.getMergedBook(); //todo opt
 			if(mWebView.wvclient!=a.myWebClient) {
@@ -1061,7 +1061,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		if (currentPos >= 0 && CCD != a.EmptyBook) {
 			weblistHandler.setViewMode(null, false, mWebView);
 			if(CCD.getIsWebx()) {
-				weblistHandler.bMergingFrames = false;
+				weblistHandler.bMergingFrames = 1;
 				indicator.setText(a.md_getName(CCD_ID));
 				popuphandler.setBook(CCD);
 				CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, mWebView, currentPos);
@@ -1084,7 +1084,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		if (d!=0) {
 			currentPos=Math.max(0, Math.min(currentPos+d, (int) CCD.bookImpl.getNumberEntries()));
 		}
-		weblistHandler.bMergingFrames = true;
+		weblistHandler.bMergingFrames = 1;
 		StringBuilder mergedUrl = new StringBuilder("http://mdbr.com/content/");
 		mergedUrl.append("d");
 		IU.NumberToText_SIXTWO_LE(CCD.getId(), mergedUrl);
@@ -1202,7 +1202,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 					weblistHandler.resetScrollbar(mWebView, false, false);
 				}
 				else if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
-					weblistHandler.bMergingFrames = true;
+					weblistHandler.bMergingFrames = 1;
 					weblistHandler.resetScrollbar(mWebView, true, true);
 				}
 			} catch (Exception e) {

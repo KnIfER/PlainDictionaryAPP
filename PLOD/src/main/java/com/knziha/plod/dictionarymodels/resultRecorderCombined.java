@@ -129,8 +129,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 //		}
 		additiveMyCpr1 jointResult;
 		if(pos==-2) {
-			if(weblistHandler.bMergingFrames) {
-				jointResult = weblistHandler.getMergedFrame().jointResult;
+			if(weblistHandler.bMergingFrames!=0) {
+				jointResult = (weblistHandler.dictView!=null?weblistHandler.dictView:weblistHandler.getMergedFrame()).jointResult; //dictView ??
 			} else {
 				jointResult = weblistHandler.jointResult;
 			}
@@ -146,33 +146,35 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		}
 		List<Long> vals = (List<Long>) jointResult.value;
 		//CMN.Log("frameCount::", jointResult.realmCount);
-		boolean bUseMergedUrl;
-		if(weblistHandler.bMergeFrames==-2) {
-			bUseMergedUrl = jointResult.realmCount >= a.opt.getMergeUrlForFrames();
-		} else {
-			bUseMergedUrl = weblistHandler.bMergeFrames==1;
+		int mergeFrames = weblistHandler.bMergeFrames;
+		if(mergeFrames==-2) {
+			mergeFrames = jointResult.realmCount >= a.opt.getMergeUrlForFrames() ? 1 : 0;
 		}
+		boolean bUseMergedUrl = mergeFrames==1;
+		boolean bFoldingScreen = mergeFrames==2;
 		//bUseMergedUrl = false;
-		boolean bUseDictView = !bUseMergedUrl;
+		boolean bUseDictView = mergeFrames==0;
 		if(bUseDictView && jointResult.realmCount==1) {
 			if(PDICMainAppOptions.getUseSharedFrame()
 				&& !(PDICMainAppOptions.getMergeExemptWebx() && a.getHasVidxByIdNoCreation(vals.get(0)))) {
+				// 当只有一个页面，不是在线词典的话，使用公共视图显示。
 				bUseDictView = false;
 			}
 		}
 		
 		if (!weblistHandler.bDataOnly) {
-			if(!bUseMergedUrl/*算了，还是只为旧模式开此门*/  && jointResult.realmCount==1
+			if(!bUseMergedUrl && !bFoldingScreen /*算了，还是只为旧模式开此门*/  && jointResult.realmCount==1
 					/*看注释。*/ && PDICMainAppOptions.getLv2JointOneAsSingle()) {
+				// 当只有一个页面，使用旧模式的话，使用单一页面的滚动方式。
 				BookPresenter book = a.getBookByIdNoCreation(vals.get(0));
 				//if(true) bUseMergedUrl = false; // 只有一页，不通过合并的url加载了
 				if(bUseDictView) book.initViewsHolder(a);
-				weblistHandler.setViewMode(null, bUseMergedUrl, bUseDictView?book.mWebView:weblistHandler.getMergedFrame());
+				weblistHandler.setViewMode(null, bUseMergedUrl||bFoldingScreen, bUseDictView?book.mWebView:weblistHandler.getMergedFrame());
 			} else {
-				weblistHandler.setViewMode(this, bUseMergedUrl, null);
+				weblistHandler.setViewMode(this, bUseMergedUrl||bFoldingScreen, null);
 			}
 			a.viewContent(weblistHandler);
-			weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowInPopup, bUseMergedUrl);
+			weblistHandler.initMergedFrame(mergeFrames, weblistHandler.bShowInPopup, bUseMergedUrl);
 		}
 		if (weblistHandler.multiRecord!=this) {
 			weblistHandler.multiRecord = this;
@@ -219,7 +221,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		// [4th pass] Erase rest insert-before buff
 		// [5th pass] Load frames to dom
 		
-		if(!bUseMergedUrl && bUseDictView) {
+		if(mergeFrames==0 && bUseDictView) {
 			// todo remove adaptively .
 			weblistHandler.removeAllViews();
 		}
@@ -234,80 +236,87 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		View expTbView = null;
 		StringBuilder mergedUrl = null;
 		ViewGroup webholder = weblistHandler;
-		for(int i=0,ln=frames.size();i<ln;i++){
-			BookPresenter presenter = frames.get(i);
-			long[] displaying = framesDisplaying.get(i);
-			
-			if(!bUseMergedUrl) {
-				//if(Build.VERSION.SDK_INT>=22)...// because kitkat's webview is not that adaptive for content height
-				WebViewmy mWebView;
-				if(bUseDictView) {
-					presenter.initViewsHolder(a);
-					mWebView = presenter.mWebView;
-				} else {
-					mWebView = weblistHandler.getMergedFrame(presenter);
-				}
-				View rl = mWebView.rl;
-				int frameAt=i;
-				//if(rl.getParent()!=a.weblistHandler.getViewGroup())
-				{
-					ViewUtils.removeView(rl);
-					frameAt=Math.min(frameAt, webholder.getChildCount());
-					webholder.addView(rl,frameAt);
-				}
-				//else
-				//	a.showT("yes: "+mdtmp.getPath());
-				//mdtmp.vll=vll;
-
-				/*//for debug usage
-				if(mdtmp.mWebView.getLayerType()!=View.LAYER_TYPE_NONE)
-					mdtmp.mWebView.setLayerType(View.LAYER_TYPE_NONE, null);
-				*/
-				//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-				mWebView.fromCombined=weblistHandler.isViewSingle()?0:1;
-				if(presenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
-				{
-					presenter.SetSearchKey(jointResult.key);
-				}
-				mWebView.weblistHandler = weblistHandler;
-				//CMN.debug("combining_search_result.renderContentAt::", frameAt);
-				presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, frameAt,mWebView, displaying);
-				if(!mWebView.awaiting){
-					bNeedExpand=false;
-					if(checkReadEntry){
-						mWebView.bRequestedSoundPlayback=true;
-						checkReadEntry=false;
+		if (bFoldingScreen) {
+			weblistHandler.renderFoldingScreen(0);
+		}
+		else {
+			for(int i=0,ln=frames.size();i<ln;i++){
+				BookPresenter presenter = frames.get(i);
+				long[] displaying = framesDisplaying.get(i);
+				if(bUseMergedUrl) {
+					if(mergedUrl==null)
+						mergedUrl = new StringBuilder("http://mdbr.com/merge.jsp?q=")
+							.append(SU.encode(jointResult.key)).append("&exp=");
+					else mergedUrl.append("-");
+					PlainWeb webx = presenter.getWebx();
+					mergedUrl.append(webx!=null?
+							"w"
+							:"d");
+					IU.NumberToText_SIXTWO_LE(presenter.getId(), mergedUrl);
+					if(webx!=null) {
+						mergedUrl.append("_")
+							.append(webx.hasField("synthesis")?"0":"");
+					} else {
+						for (long val:displaying) {
+							mergedUrl.append("_");
+							IU.NumberToText_SIXTWO_LE(val, mergedUrl);
+						}
 					}
-				} else if(bNeedExpand && !presenter.getNeedsAutoFolding(mWebView.frameAt)) {
-					expTbView = mWebView.toolbar_title;
-					bNeedExpand = false;
 				}
-				mWebView.fromCombined=1;
-			}
-			else {
-				if(mergedUrl==null)
-					mergedUrl = new StringBuilder("http://mdbr.com/merge.jsp?q=")
-						.append(SU.encode(jointResult.key)).append("&exp=");
-				else mergedUrl.append("-");
-				PlainWeb webx = presenter.getWebx();
-				mergedUrl.append(webx!=null?
-						"w"
-						:"d");
-				IU.NumberToText_SIXTWO_LE(presenter.getId(), mergedUrl);
-				if(webx!=null) {
-					mergedUrl.append("_")
-						.append(webx.hasField("synthesis")?"0":"");
-				} else {
-					for (long val:displaying) {
-						mergedUrl.append("_");
-						IU.NumberToText_SIXTWO_LE(val, mergedUrl);
+				else {
+					//if(Build.VERSION.SDK_INT>=22)...// because kitkat's webview is not that adaptive for content height
+					WebViewmy mWebView;
+					if(bUseDictView) {
+						presenter.initViewsHolder(a);
+						mWebView = presenter.mWebView;
+					} else {
+						mWebView = weblistHandler.getMergedFrame(presenter);
 					}
+					View rl = mWebView.rl;
+					int frameAt=i;
+					//if(rl.getParent()!=a.weblistHandler.getViewGroup())
+					{
+						ViewUtils.removeView(rl);
+						frameAt=Math.min(frameAt, webholder.getChildCount());
+						webholder.addView(rl,frameAt);
+					}
+					//else
+					//	a.showT("yes: "+mdtmp.getPath());
+					//mdtmp.vll=vll;
+	
+					/*//for debug usage
+					if(mdtmp.mWebView.getLayerType()!=View.LAYER_TYPE_NONE)
+						mdtmp.mWebView.setLayerType(View.LAYER_TYPE_NONE, null);
+					*/
+					//mdtmp.mWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+					mWebView.fromCombined=weblistHandler.isViewSingle()?0:1;
+					if(presenter.getIsWebx())
+					{
+						presenter.SetSearchKey(jointResult.key);
+					}
+					mWebView.weblistHandler = weblistHandler;
+					//CMN.debug("combining_search_result.renderContentAt::", frameAt);
+					presenter.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, frameAt,mWebView, displaying);
+					if(!mWebView.awaiting){
+						bNeedExpand=false;
+						if(checkReadEntry){
+							mWebView.bRequestedSoundPlayback=true;
+							checkReadEntry=false;
+						}
+					} else if(bNeedExpand && !presenter.getNeedsAutoFolding(mWebView.frameAt)) {
+						expTbView = mWebView.toolbar_title;
+						bNeedExpand = false;
+					}
+					mWebView.fromCombined=1;
 				}
 			}
 		}
 		//weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowInPopup, bUseMergedUrl);
 		WebViewmy mWebView = weblistHandler.mMergedFrame;
-		if(bUseMergedUrl) {
+		if(bFoldingScreen) {
+			weblistHandler.resetScrollbar(mWebView, true, false);
+		}
+		else if(bUseMergedUrl) {
 			CMN.debug("mergedUrl::", mergedUrl);
 			mWebView.getSettings().setSupportZoom(true);
 			mWebView.loadUrl(mergedUrl.toString());

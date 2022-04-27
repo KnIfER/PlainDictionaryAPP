@@ -2182,9 +2182,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=40, shift=1) public static boolean getLv2JointOneAsSingle() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=40, shift=1) public static void setLv2JointOneAsSingle(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	/** 是否使用合并的多页面模式。see {@code #getMergeUrlForFrames()} */
-	@Metaline(flagPos=41, shift=1) public static boolean getUseMergedUrl() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=41, shift=1) public static void setUseMergedUrl(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	// xxx
 	
 	/** webx是否不使用合并的单页面URL。see {@code #getUseMergedFrame()} */
 	@Metaline(flagPos=42, shift=1) public static boolean getMergeExemptWebx() { FifthFlag=FifthFlag; throw new RuntimeException();}
@@ -2231,6 +2229,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=56) public static void mergeUrlMore(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=57, shift=1) public static boolean fastPreview() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	
+	/** 多页面显示方式：<br/>
+	 * 是否使用：0=旧模式  1=合并的多页面模式  2=屏风模式。see {@code #getMergeUrlForFrames()} */
+	@Metaline(flagPos=58, flagSize=2, shift=1) public static int multiViewMode() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=58, flagSize=2, shift=1) public static void multiViewMode(int val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	
 	//EF

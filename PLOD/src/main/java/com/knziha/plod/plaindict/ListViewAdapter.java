@@ -173,7 +173,7 @@ public class ListViewAdapter extends BasicAdapter {
 		}
 		this.mWebView = mWebView;
 		weblistHandler.setViewMode(null, bUseMergedUrl, mWebView);
-		weblistHandler.initMergedFrame(false, false, bUseMergedUrl);
+		weblistHandler.initMergedFrame(0, false, bUseMergedUrl);
 		
 		presenter.lvClickPos=pos;
 		

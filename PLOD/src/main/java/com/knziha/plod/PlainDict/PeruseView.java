@@ -1957,7 +1957,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					return;
 				}
 				
-				weblistHandler.initMergedFrame(true, !ToR, false);
+				weblistHandler.initMergedFrame(1, !ToR, false);
 				
 				if(ToR) {
 					ViewUtils.addViewToParent(contentview, slp);

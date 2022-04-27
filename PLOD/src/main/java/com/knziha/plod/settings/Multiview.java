@@ -36,7 +36,7 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		init_switch_preference(this, "turbo_top", PDICMainAppOptions.getDelaySecondPageLoading(), null, null);
 		init_switch_preference(this, "neoS", PDICMainAppOptions.popViewEntryMulti(), null, null);
 		
-		init_switch_preference(this, "merge", PDICMainAppOptions.getUseMergedUrl(), null, null);
+		init_switch_preference(this, "merge", PDICMainAppOptions.multiViewMode()==1, null, null);
 		findPreference("merge_min").setOnPreferenceChangeListener(this);
 		enableCat1();
 		
@@ -113,7 +113,7 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 				PDICMainAppOptions.setDelaySecondPageLoading((Boolean) newValue);
 			break;
 			case "merge":
-				PDICMainAppOptions.setUseMergedUrl((Boolean) newValue);
+				PDICMainAppOptions.multiViewMode((Boolean) newValue?1:0);
 				enableCat1();
 			break;
 			case "tseyhu":
@@ -185,6 +185,6 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 	}
 	
 	private void enableCat1() {
-		findPreference("cat_1").setEnabled(!PDICMainAppOptions.getUseMergedUrl()||PDICMainAppOptions.mergeUrlMore());
+		findPreference("cat_1").setEnabled(0==PDICMainAppOptions.multiViewMode()||PDICMainAppOptions.mergeUrlMore());
 	}
 }
