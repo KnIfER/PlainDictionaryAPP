@@ -4040,11 +4040,12 @@ function debug(e){console.log(e)};
 	public void invokeToolsBtn(WebViewmy mWebView, int quickAction) {
 		a.weblist = mWebView.weblistHandler;
 		a.getUtk().setInvoker(this, mWebView, null, null);
-		if (quickAction!=-1) { // force quick action without show the dialog!
+		if (quickAction!=-1) {
+			// force quick action without showing the dialog!
 			a.getUtk().bFromWebView = true;
 			a.getUtk().onItemClick(null, null, 0, PDICMainAppOptions.toolsQuickAction(), false, false);
 		} else {
-			a.getUtk().onClick(a.anyView(R.id.tools));
+			a.getUtk().onClick(/*trust webview selection*/a.anyView(R.id.tools));
 		}
 	}
 	

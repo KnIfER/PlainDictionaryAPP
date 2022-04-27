@@ -1347,6 +1347,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				invokeToolsBtn(true, 0);
 			} else if (act==3) {
 				invokeToolsBtn(false, -1);
+				a.getUtk().bPicking = 2;
 			}
 			return true;
 		}
@@ -1591,10 +1592,16 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public void invokeToolsBtn(boolean pick, int quick) {
 		if (pick) {
 			a.weblist = this;
-			a.getUtk().setInvoker(a.EmptyBook, null, null, null);
-			a.getUtk().bPickAction = true;
-			a.getUtk().bFromWebView = true;
-			a.getUtk().onClick(a.anyView(R.id.tools));
+			WebViewmy wv = dictView;
+			if (wv != null) {
+				wv.presenter.invokeToolsBtn(wv, -1);
+			} else {
+				// sometime the view not initialized yet
+				a.getUtk().setInvoker(a.EmptyBook, null, null, null);
+				a.getUtk().bFromWebView = true;
+				a.getUtk().onClick(/*trust webview selection*/a.anyView(R.id.tools));
+			}
+			a.getUtk().bPicking = 1;
 			a.showTopSnack("选择快捷功能！");
 		} else {
 			WebViewmy wv = a.weblist.dictView;

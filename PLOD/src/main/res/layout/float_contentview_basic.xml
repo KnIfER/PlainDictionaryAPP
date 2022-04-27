@@ -63,7 +63,7 @@
 			android:background="?attr/actionBarItemBackground"
 			app:src0="@drawable/star_ic_solid_framed"
 			android:layout_marginEnd="1px"
-			android:visibility="gone"
+			tools:visibility="gone"
 			/>
 		<ImageView
 			android:id="@+id/peruse"

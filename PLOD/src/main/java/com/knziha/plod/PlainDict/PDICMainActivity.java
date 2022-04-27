@@ -1069,6 +1069,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	void onDrawerOpened() {
+		drawerOpen = true;
 		if(isContentViewAttached()) {
 			DetachContentView(false);
 		}
@@ -1259,10 +1260,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			public void onDrawerOpened(@NonNull View arg0) {
 				imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
 				etSearch_ToToolbarMode(1);
+				drawerOpen = true;
 			}
 
 			@Override public void onDrawerClosed(@NonNull View arg0) {
-				//CMN.Log("onDrawerClosed");
+				drawerOpen = false;
 			}
 			@Override public void onDrawerSlide(@NonNull View arg0, float arg1) {
 			}
@@ -1294,6 +1296,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(CurrentViewPage==1) {
 				String text = etSearch.getText().toString().trim();
 				if(text.length()==0) return;
+				if (drawerOpen) {
+					try {
+						UIData.drawerLayout.close();
+					} catch (Exception e) {
+						//todo modify to throw nothing.
+					}
+				}
 				if(text.startsWith("<")) {
 					String perWSTag = mResource.getString(R.string.perWSTag);
 					String firstTag = firstTag(text);

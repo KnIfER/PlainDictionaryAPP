@@ -1554,47 +1554,50 @@ public class DBroswer extends DialogFragment implements
 	}
 
 	public void NavList(int delta) {
-		if (delta < 0) {
-			MainActivityUIBase a = (MainActivityUIBase) getActivity();
-			if (a == null) return;
-			if (!weblistHandler.bottomNavWeb()) {
-				if (currentPos - 1 < 0) {
-					a.showTopSnack(R.string.endendr);
-					return;
-				}
-				//int first = lm.findFirstVisibleItemPosition();
-				if (currentPos < lm.findFirstVisibleItemPosition())
-					lm.scrollToPositionWithOffset(currentPos, 0);
-				adelta = -1;
-				onItemClick(null, --currentPos);
-			} else {
-				weblistHandler.NavWeb(-1);
-			}
-		} else {
-			MainActivityUIBase a = (MainActivityUIBase) getActivity();
-			if(a==null) return;
-			if(!weblistHandler.bottomNavWeb()) {
-				if (currentPos + 1 > getItemCount() - 1) {
-					a.showTopSnack(R.string.endendr);
-					return;
-				}
-				currentPos += 1;
-				int last = lm.findLastVisibleItemPosition();
-				boolean hei = false;
-				if (currentPos == last) {
-					if (lv.getChildAt(last) != null) {
-						hei = lv.getHeight() - lv.getChildAt(last).getTop() < lv.getChildAt(last).getHeight() * 2 / 3;
+		if (weblistHandler!=null) {
+			if (delta < 0) {
+				MainActivityUIBase a = (MainActivityUIBase) getActivity();
+				if (a == null) return;
+				if (!weblistHandler.bottomNavWeb()) {
+					if (currentPos - 1 < 0) {
+						a.showTopSnack(R.string.endendr);
+						return;
 					}
-				} else
-					hei = currentPos > last;
-				
-				if (hei) {
-					lm.scrollToPositionWithOffset(currentPos, 0);
+					//int first = lm.findFirstVisibleItemPosition();
+					if (currentPos < lm.findFirstVisibleItemPosition())
+						lm.scrollToPositionWithOffset(currentPos, 0);
+					adelta = -1;
+					onItemClick(null, --currentPos);
+				} else {
+					weblistHandler.NavWeb(-1);
 				}
-				adelta = 1;
-				onItemClick(null, currentPos);
-			} else {
-				weblistHandler.NavWeb(1);
+			}
+			else {
+				MainActivityUIBase a = (MainActivityUIBase) getActivity();
+				if(a==null) return;
+				if(!weblistHandler.bottomNavWeb()) {
+					if (currentPos + 1 > getItemCount() - 1) {
+						a.showTopSnack(R.string.endendr);
+						return;
+					}
+					currentPos += 1;
+					int last = lm.findLastVisibleItemPosition();
+					boolean hei = false;
+					if (currentPos == last) {
+						if (lv.getChildAt(last) != null) {
+							hei = lv.getHeight() - lv.getChildAt(last).getTop() < lv.getChildAt(last).getHeight() * 2 / 3;
+						}
+					} else
+						hei = currentPos > last;
+					
+					if (hei) {
+						lm.scrollToPositionWithOffset(currentPos, 0);
+					}
+					adelta = 1;
+					onItemClick(null, currentPos);
+				} else {
+					weblistHandler.NavWeb(1);
+				}
 			}
 		}
 	}
@@ -1625,13 +1628,15 @@ public class DBroswer extends DialogFragment implements
 			mDialog.mBCL = new SimpleDialog.BCL(){
 				@Override
 				public void onBackPressed() {
-					NavList(-1);
+					//NavList(-1);
+					if (getMainActivity().DBrowser==DBroswer.this) {
+						getMainActivity().DBrowser=null;
+					}
 				}
 				@Override
 				public void onActionModeStarted(ActionMode mode) {
 					getMainActivity().onActionModeStarted(mode);
 				}
-				
 				@Override
 				public boolean onKeyDown(int keyCode, @NonNull KeyEvent event) {
 					switch (keyCode) {

@@ -165,7 +165,6 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.SparseArrayMap;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
-import com.knziha.plod.dictionarymodels.PlainPDF;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -367,6 +366,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	//public HashSet<CharSequence> dirtyMap;
 	protected ImageView browser_widget1;
 	
+	public boolean drawerOpen;
 	public Drawer drawerFragment;
 	public DictPicker dictPicker;
 	public ViewGroup main;
@@ -3560,7 +3560,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public boolean bNeedClearTextSelection;
 		private int last_switch_cl_id;
 		private CircleCheckBox cb;
-		public boolean bPickAction;
+		/** 0=nothing <br/>
+		 * 1=to pick 、long-repress to use. <br/>
+		 * 2=to use 、 long-press to pick. */
+		public int bPicking;
 		
 		UnicornKit(){
 			arrayTweakDict = new int[]{
@@ -3617,7 +3620,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			invoker=presenter;
 			mWebView=_mWebView;
 			mTextView =_tv;
-			if (bPickAction) bPickAction=false;
+			if (bPicking!=0) bPicking=0;
 			isWeb = invoker!=null && invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 			if(_tv!=null){
 				int start = _tv.getSelectionStart();
@@ -3822,7 +3825,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(!bFromTextView){
 				bFromWebView=mWebView!=null;
 				bFromPeruseView=bFromWebView && mWebView.weblistHandler.src==SearchUI.Fye.MAIN;
-				if(bPickAction) bFromWebView=true;
+				if(bPicking!=0) bFromWebView=true;
 			}
 			// nimp
 			//if (!bFromWebView && mWebView!=null && invoker instanceof bookPresenter_pdf) {
@@ -3835,7 +3838,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//build_further_dialog();
 			}
 			if (mWebView!=null) {
-				if (v != null || mWebView.bIsActionMenuShown || bPickAction) {
+				if (v != null || mWebView.bIsActionMenuShown) {
 					//bFromWebView = true;
 					build_further_dialog();
 				} else if (v == null) {
@@ -4075,8 +4078,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				else {
-					if (bPickAction) {
-						if (!isLongClicked) {
+					if (bPicking!=0) {
+						if (bPicking==1 ^ isLongClicked) {
+							// to pick
 							int idx = ArrayUtils.indexOf(arraySelUtils, (int) id);
 							if(idx==-1) {
 								idx = ArrayUtils.indexOf(arraySelUtils2, (int) id);
@@ -4090,8 +4094,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							}
 							PDICMainAppOptions.toolsQuickAction(idx);
 							d.dismiss();
+							return true;
 						}
-						return true;
+						// to use ...
+						isLongClicked = false;
 					}
 					if ((id&0xffff0000)==0) {
 						if (id<arraySelUtils.length) {
@@ -4642,7 +4648,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		
 		private boolean hasText() {
-			return bFromWebView||bFromTextView||bPickAction;
+			return bFromWebView||bFromTextView;
 		}
 		
 		private void statHasBookmark() {
@@ -5388,24 +5394,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		DBrowser.setType(this, type, true);
-		if(true)
-		{
+		if(weblist.src==SearchUI.Fye.MAIN || weblist.bShowingInPopup) {
+			DBrowser.show(getSupportFragmentManager(), "DBrowser");
+		}
+		else {
 			boolean fromPeruseView = PeruseViewAttached();
-			ViewGroup target = mainF;//fromPeruseView? peruseView.peruseF:mainF;
+			ViewGroup target = mainF;
 			if(!DBrowser.isAdded()) {
-				FragmentManager fragmentManager = fromPeruseView? peruseView.getChildFragmentManager():getSupportFragmentManager();
+				FragmentManager fragmentManager = getSupportFragmentManager();
 				fragmentManager.beginTransaction()
-				.setCustomAnimations(R.anim.history_enter, R.anim.history_enter)
-				.add(R.id.mainF, DBrowser)
-				.commit();
+						.setCustomAnimations(R.anim.history_enter, R.anim.history_enter)
+						.add(R.id.mainF, DBrowser)
+						.commit();
 			} else {
 				View view = DBrowser.getView();
 				if(ViewUtils.removeIfParentBeOrNotBe(view, target, false)) {
 					target.addView(view);
 				}
 			}
-		} else {
-			DBrowser.show(getSupportFragmentManager(), "DBrowser");
 		}
 	}
 	
@@ -5424,10 +5430,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //					show(R.string.currFavor, DBrowser.boli(newFavor.getName()));
 //				}
 		//weblistHandler.removeAllViews();
-		DBrowser.getFragmentManager()
-				.beginTransaction()
-				.remove(DBrowser)
-				.commit();
+		if (DBrowser.mDialog != null && DBrowser.mDialog.isShowing()) {
+			DBrowser.mDialog.dismiss();
+		} else {
+			try {
+				DBrowser.getFragmentManager()
+						.beginTransaction()
+						.remove(DBrowser)
+						.commit();
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
+		}
 		ViewUtils.removeView(DBrowser.getView());
 		DBrowser = null;
 	}
