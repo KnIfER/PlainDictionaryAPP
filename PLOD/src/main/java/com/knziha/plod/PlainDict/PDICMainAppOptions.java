@@ -2379,6 +2379,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=50, shift=1) public static boolean showNxtBtn() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=50, shift=1) public static void showNxtBtn(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException();}
 
+	@Metaline(flagPos=51) public static boolean showZoomBtn() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=51) public static void showZoomBtn(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException();}
+
 
 //	@Metaline(flagPos=51) public static boolean entrySeekbarTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 //	@Metaline(flagPos=51) public static void entrySeekbarTapSch(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }

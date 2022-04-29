@@ -508,7 +508,9 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	private SettingsPanel initBtmBars() {
 		if (_btmBars==null) {
 			final SettingsPanel settings = new SettingsPanel(a, opt
-					, new String[][]{new String[]{null, "拖动条（联合搜索）", "词典名称", "切换上一个（联合搜索）", "切换下一个（联合搜索）", "切换上一个（小）", "切换下一个（小）"}}
+					, new String[][]{new String[]{null, "拖动条（联合搜索）", "词典名称"
+					, "切换上一个（联合搜索）", "切换下一个（联合搜索）", "切换上一个（小）", "切换下一个（小）"
+					, "缩放按钮"}}
 					, new int[][]{new int[]{Integer.MAX_VALUE
 					, makeInt(6, 41, true) // entrySeekbar
 					, makeInt(5, 27, true) // dictName
@@ -517,6 +519,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					, makeInt(6, 50, true) // showNxtBtn
 					, makeInt(2, 4, false) // showPrvBtnSmall
 					, makeInt(2, 5, false) // showNxtBtnSmall
+					, makeInt(6, 51, false) // showZoomBtn
 					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.ttools.ordinal(), true)
 			}}, null);
 			settings.setEmbedded(this);

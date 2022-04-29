@@ -148,6 +148,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			
 			contentUIData.prv.setOnClickListener(this);
 			contentUIData.nxt.setOnClickListener(this);
+			contentUIData.zoomIn.setOnClickListener(this);
+			contentUIData.zoomOut.setOnClickListener(this);
 			
 			contentUIData.PageSlider.page = contentUIData.cover;
 			contentUIData.cover.setPager(a.getPageListener());
@@ -837,6 +839,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					ViewUtils.setVisible(contentUIData.browserWidget14, PDICMainAppOptions.showPrvBtn());
 					ViewUtils.setVisible(contentUIData.browserWidget13, PDICMainAppOptions.showNxtBtn());
 				}
+				ViewUtils.setVisible(contentUIData.zoomCtrl, multiDicts && PDICMainAppOptions.showZoomBtn());
 				ViewUtils.setVisible(contentUIData.prv, multiDicts && PDICMainAppOptions.showPrvBtnSmall());
 				ViewUtils.setVisible(contentUIData.nxt, multiDicts && PDICMainAppOptions.showNxtBtnSmall());
 				ViewUtils.setVisible(contentUIData.entrySeek, multiDicts && PDICMainAppOptions.showEntrySeekbar());
@@ -1399,6 +1402,17 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				if (v.getTag() instanceof WebViewmy) {
 					final WebViewmy wv = ((WebViewmy) v.getTag());
 					wv.presenter.invokeToolsBtn(wv, PDICMainAppOptions.toolsQuick()?PDICMainAppOptions.toolsQuickAction():-1);
+				}
+			} break;
+			case R.id.zoomIn:
+			case R.id.zoomOut:{
+				if (dictView!=null) {
+					pageSlider.bSuppressNxtTapZoom = CMN.now();
+					if (id == R.id.zoomIn) {
+						dictView.zoomIn();
+					} else {
+						dictView.zoomOut();
+					}
 				}
 			} break;
 		}

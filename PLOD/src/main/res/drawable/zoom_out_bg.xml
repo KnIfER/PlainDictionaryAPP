@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+	android:shape="rectangle">
+	<size android:width="@dimen/abc_progress_bar_height_material"
+		android:height="@dimen/abc_progress_bar_height_material"/>
+	<solid android:color="#fff"/>
+	<stroke android:color="#888" android:width="1px"/>
+	<corners
+		android:bottomLeftRadius="15dp"
+		android:bottomRightRadius="0dp"
+		android:topLeftRadius="15dp"
+		android:topRightRadius="0dp"/>
+
+	<gradient
+		android:angle="270"
+		android:endColor="#D0D7DC"
+		android:startColor="#FFF0F5F9" />
+</shape>

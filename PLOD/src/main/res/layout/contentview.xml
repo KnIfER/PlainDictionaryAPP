@@ -290,6 +290,38 @@
 				android:visibility="gone"
 				/>
 
+			<LinearLayout
+				android:id="@+id/zoomCtrl"
+				android:layout_width="wrap_content"
+				android:layout_height="30dp"
+				android:orientation="horizontal"
+				android:layout_gravity="bottom|right"
+				android:layout_marginBottom="10dp"
+				android:layout_marginRight="15dp"
+				android:divider="@drawable/divider3"
+				android:showDividers="middle"
+				>
+				<android.widget.ImageView
+					android:id="@+id/zoomOut"
+					android:layout_width= "75dp"
+					android:layout_height="match_parent"
+					android:background="@drawable/item_selector_zoom_out"
+					android:src="@drawable/zoom_out"
+					android:clickable="true"
+					android:paddingRight="25dp"
+					android:tint="#777"
+					/>
+				<android.widget.ImageView
+					android:id="@+id/zoomIn"
+					android:layout_width= "75dp"
+					android:layout_height="match_parent"
+					android:background="@drawable/item_selector_zoom_in"
+					android:src="@drawable/zoom_in"
+					android:clickable="true"
+					android:paddingLeft="25dp"
+					android:tint="#777"
+					/>
+			</LinearLayout>
 		</com.knziha.plod.widgets.RLContainerSlider>
 
 		<LinearLayout

@@ -177,7 +177,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		
 		settings.setSupportZoom(true);
 		settings.setBuiltInZoomControls(true);
-		settings.setDisplayZoomControls(true);
+		settings.setDisplayZoomControls(false);
 		//settings.setDefaultTextEncodingName("UTF-8");
 		
 		//settings.setNeedInitialFocus(false);
