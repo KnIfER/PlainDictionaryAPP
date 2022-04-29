@@ -1282,7 +1282,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		if(event.getActionMasked()==MotionEvent.ACTION_DOWN) {
 			supressNxtClickTranslator = bIsActionMenuShown;
 			if(fromCombined==1) {
-				weblistHandler.setScrollFocus(this);
+				weblistHandler.setScrollFocus(this, frameAt);
 			}
 		}
 		if (hasWidgets) {

@@ -13,7 +13,7 @@
 
 <!--3--><item android:title="翻阅模式" android:id="@+id/searchSelPeruse" android:icon="@drawable/ic_peruse" app:showAsAction="never" android:enabled="false"/>
 
-<!--4--><item android:title="即点即译" android:id="@+id/tapSch" android:icon="@drawable/ic_click_search" app:showAsAction="never" android:checkable="true"/>
+<!--4--><item android:title="点击翻译" android:id="@+id/tapSch" android:icon="@drawable/ic_click_search" app:showAsAction="never" android:checkable="true"/>
 
 <!--5--><item android:title="页内搜索" android:id="@+id/schPage" android:icon="@drawable/ic_search_24k" app:showAsAction="never" android:enabled="false"/>
 

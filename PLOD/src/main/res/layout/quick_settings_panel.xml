@@ -107,7 +107,7 @@
 			/>
 		<TextView
 			android:id="@+id/btm"
-			android:text="页面底部设置"
+			android:text="页面底部按钮"
 			style="@style/quick_settings_menu" />
 	</LinearLayout>
 	<View style="@style/quick_settings_sephor" />

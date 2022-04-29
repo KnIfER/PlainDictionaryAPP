@@ -7,7 +7,7 @@
 
 	<PreferenceCategory
 		android:key="cat_1"
-		android:title="即点即译"
+		android:title="点击翻译"
 		app:icon="@drawable/drawer_menu_icon_setting"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"

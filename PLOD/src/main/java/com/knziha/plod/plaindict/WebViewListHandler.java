@@ -186,7 +186,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 								if(webholder.getChildAt(i).getBottom()>=bot) {
 									WebViewmy wv = (WebViewmy)webholder.getChildAt(i).getTag();
 									if(lastScrolledBook !=wv.presenter) {
-										setScrollFocus(wv);
+										setScrollFocus(wv, i);
 									}
 									break;
 								}
@@ -215,10 +215,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public final SeekBar.OnSeekBarChangeListener entrySeekLis = new SeekBar.OnSeekBarChangeListener() {
 		@Override
 		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-			if (fromUser && multiRecord!=null) {
-				CMN.Log("onProgressChanged!!!");
-				a.root.removeCallbacks(entrySeekRn);
-				a.root.postDelayed(entrySeekRn, 200);
+			if (multiRecord!=null) {
+				if (fromUser) {
+					//CMN.Log("onProgressChanged!!!");
+					a.root.removeCallbacks(entrySeekRn);
+					a.root.postDelayed(entrySeekRn, isFoldingScreens()?100:50);
+				}
+				if (multiRecord.jointResult!=null) {
+					multiRecord.jointResult.LongestStartWithSeqLength = -progress;
+				}
 			}
 		}
 		@Override
@@ -230,12 +235,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 	};
 	
-	public void setScrollFocus(WebViewmy wv) {
+	public void setScrollFocus(WebViewmy wv, int frame) {
 		if(lastScrolledBook != wv.presenter) {
 			lastScrolledBook = wv.presenter;
 			a.root.postOnAnimationDelayed(UpdateBookLabelAbility, 50);
 		}
 		scrollFocus = wv;
+		if (!bDataOnly && PDICMainAppOptions.showEntrySeekbar()) {
+			contentUIData.entrySeek.setProgress(frame);
+		}
 	}
 	
 	public ViewGroup getViewGroup() {
@@ -1728,11 +1736,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			presenter.renderContentAt(-2, BookPresenter.RENDERFLAG_NEW, 0, mWebView, displaying);
 			ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
 			mWebView.jointResult = jointResult;
-			setScrollFocus(mWebView);
+			setScrollFocus(mWebView, frame);
 			pageSlider.setWebview(mWebView, null);
-			if (!bDataOnly) {
-				contentUIData.entrySeek.setProgress(frame);
-			}
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
