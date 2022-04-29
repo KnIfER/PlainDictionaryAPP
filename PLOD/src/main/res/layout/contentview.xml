@@ -223,6 +223,19 @@
 				android:paddingBottom="2dp"
 				/>
 
+			<com.knziha.plod.widgets.MarkableSeekBar
+				android:id="@+id/entrySeek"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:maxHeight="@dimen/_35_"
+				android:minHeight="@dimen/_35_"
+				android:theme="@style/seekBarStyle"
+				android:splitTrack="false"
+				android:layout_gravity="bottom"
+				android:layout_marginBottom="20dp"
+				android:max="10"
+				/>
+
 			<android.widget.ImageView
 				android:id="@+id/tools"
 				android:layout_width= "58dp"

@@ -52,8 +52,12 @@ public class VersionUtils {
 			opt.tapSchPageAutoReadEntry(false);
 			
 			PDICMainAppOptions.pageSchWild(true);
-			PDICMainAppOptions.pageSchWildDeprecated(false);
 			PDICMainAppOptions.uncheckVersionBefore_5_7(false);
+			
+			PDICMainAppOptions.showPrvBtn(true);
+			PDICMainAppOptions.showNxtBtn(true);
+			PDICMainAppOptions.showNxtBtnSmall(false);
+			PDICMainAppOptions.showPrvBtnSmall(false);
 		}
 		opt.setBottombarOnBottom(true);
 		opt.setFloatBottombarOnBottom(true);

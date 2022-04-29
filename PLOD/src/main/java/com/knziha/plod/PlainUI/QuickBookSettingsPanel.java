@@ -18,6 +18,7 @@ import android.widget.ScrollView;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.filepicker.widget.HorizontalNumberPicker;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -108,6 +109,12 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			initTextTools();
 		}
 		
+		if (opt.adjTBtmShown())
+		{
+			UIData.btmArrow.setRotation(90);
+			initBtmBars();
+		}
+		
 		if(GlobalOptions.isDark) {
 			UIData.scn.setTextColor(Color.WHITE);
 		}
@@ -130,6 +137,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		if (_screen !=null) _screen.refresh();
 		if (_sHandle !=null) initScrollHandle();
 		if (_tTools !=null) initTextTools();
+		if (_btmBars !=null) initBtmBars();
 		if (webSiteInfoListener!=null) webSiteInfoListener.onClick(null);
 	}
 	
@@ -152,6 +160,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				boolean show = opt.adjTToolsShownTog();
 				UIData.ttArrow.animate().rotation(show?90:0);
 				setPanelVis(initTextTools(), show);
+			}  break;
+			case R.id.btm: {
+				boolean show = opt.adjTBtmShownTog();
+				UIData.btmArrow.animate().rotation(show?90:0);
+				setPanelVis(initBtmBars(), show);
 			}  break;
 			case R.id.info:{
 				//boolean show = opt.toggleAdjustWebsiteInfoShown();
@@ -200,6 +213,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	@Override
 	public boolean onAction(SettingsPanel settingsPanel, int flagIdxSection, int flagPos, boolean dynamic, boolean val, int storageInt) {
 		CMN.Log("onAction", flagIdxSection, flagPos, dynamic, val, makeInt(5, 35, false));
+		if (settingsPanel==_btmBars) {
+			SearchUI.btmV++;
+			weblist.setViewMode(weblist.multiRecord, weblist.isMergingFramesNum(), weblist.dictView);
+			return true;
+		}
 		if (flagIdxSection!=0) {
 			if (dynamic) {
 //				if (mFlagAdapter.getDynamicFlagIndex(flagIdxSection)<6) {
@@ -328,6 +346,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	SettingsPanel _screen;
 	SettingsPanel _sHandle;
 	SettingsPanel _tTools;
+	SettingsPanel _btmBars;
 	
 	int shType;
 	
@@ -484,6 +503,31 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			_tTools.refresh();
 		}
 		return _tTools;
+	}
+	
+	private SettingsPanel initBtmBars() {
+		if (_btmBars==null) {
+			final SettingsPanel settings = new SettingsPanel(a, opt
+					, new String[][]{new String[]{null, "拖动条（联合搜索）", "词典名称", "切换上一个（联合搜索）", "切换下一个（联合搜索）", "切换上一个（小）", "切换下一个（小）"}}
+					, new int[][]{new int[]{Integer.MAX_VALUE
+					, makeInt(6, 41, true) // entrySeekbar
+					, makeInt(5, 27, true) // dictName
+					//, makeInt(6, 47, true) // toolsQuickLong
+					, makeInt(3, 19, true) // showPrvBtn
+					, makeInt(6, 50, true) // showNxtBtn
+					, makeInt(2, 4, false) // showPrvBtnSmall
+					, makeInt(2, 5, false) // showNxtBtnSmall
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.ttools.ordinal(), true)
+			}}, null);
+			settings.setEmbedded(this);
+			settings.init(a, root);
+			
+			addPanelViewBelow(settings.settingsLayout, UIData.btmPanel);
+			_btmBars = settings;
+		} else {
+			_btmBars.refresh();
+		}
+		return _btmBars;
 	}
 	
 	

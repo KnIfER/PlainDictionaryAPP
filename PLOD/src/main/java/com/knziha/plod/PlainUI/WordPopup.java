@@ -1033,8 +1033,10 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	public void SearchDone() {
 		requestAudio = PDICMainAppOptions.tapSchAutoReadEntry();
 		if(rec!=null) {
-			boolean bUseMergedUrl = true;
-			weblistHandler.setViewMode(rec, bUseMergedUrl, mWebView);
+			if(rec.size()>0) {
+				rec.jointResult = rec.list().get(0);
+			}
+			weblistHandler.setViewMode(rec, isMergingFramesNum(), mWebView);
 			//weblistHandler.initMergedFrame(false, false, bUseMergedUrl);;
 			weblistHandler.bMergingFrames = 1;
 			weblistHandler.bMergeFrames = 1;
@@ -1059,7 +1061,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			sching = null;
 		}
 		if (currentPos >= 0 && CCD != a.EmptyBook) {
-			weblistHandler.setViewMode(null, false, mWebView);
+			weblistHandler.setViewMode(null, 0, mWebView);
 			if(CCD.getIsWebx()) {
 				weblistHandler.bMergingFrames = 1;
 				indicator.setText(a.md_getName(CCD_ID));
@@ -1071,6 +1073,10 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				loadEntry(0);
 			}
 		}
+	}
+	
+	private int isMergingFramesNum() {
+		return 1;
 	}
 	
 	private void setDisplaying(String key) {

@@ -6326,7 +6326,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(which==-1) which=mergeFrames();
 			boolean bUseMergedUrl = which!=0;
 			if(which!=weblistHandler.bMergingFrames) {
-				weblistHandler.setViewMode(weblistHandler.multiRecord, bUseMergedUrl, null);
+				weblistHandler.setViewMode(weblistHandler.multiRecord, which, null);
 				weblistHandler.bMergeFrames = which;
 				weblistHandler.webHolderSwapHide = true;
 				// 旧版本切换新版本出现闪黑，
@@ -6413,7 +6413,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			WebViewmy randomPage = weblistHandler.getMergedFrame();
 			weblistHandler.setUpContentView(cbar_key);
 			weblistHandler.popupContentView(null, "随机页面");
-			weblistHandler.setViewMode(null, true, randomPage);
+			weblistHandler.setViewMode(null, 1, randomPage);
 			weblistHandler.initMergedFrame(1, true, false);
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
 			randomPage.isloading = true;
@@ -6448,7 +6448,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				randomPage.loadUrl(testUrl);
 				randomPageHandler.resetScrollbar(randomPage, false, false);
 			}
-			randomPageHandler.setViewMode(null, false, randomPage);
+			randomPageHandler.setViewMode(null, 0, randomPage);
 			randomPageHandler.viewContent();
 		} catch (Exception e) {
 			CMN.debug(e);
@@ -7410,7 +7410,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 									mWebView = wlh.getMergedFrame();
 									wlh.viewContent();
-									wlh.setViewMode(null, false, mWebView);
+									wlh.setViewMode(null, 0, mWebView);
 									wlh.bShowInPopup=true;
 									wlh.bMergeFrames=0;
 									wlh.initMergedFrame(0, true, false);

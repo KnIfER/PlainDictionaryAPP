@@ -1940,7 +1940,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 				
 				contentUIData.PageSlider.WebContext = mWebView;
-				weblistHandler.setViewMode(null, false, mWebView);
+				weblistHandler.setViewMode(null, 0, mWebView);
 				weblistHandler.viewContent();
 				
 				if(machine) {

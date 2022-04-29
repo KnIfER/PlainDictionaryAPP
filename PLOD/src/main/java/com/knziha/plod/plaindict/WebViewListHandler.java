@@ -3,7 +3,6 @@ package com.knziha.plod.plaindict;
 import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
-import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
 
@@ -15,7 +14,6 @@ import android.graphics.PorterDuffColorFilter;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.SparseArray;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -32,6 +30,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -137,6 +136,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.PageSlider.weblist = this;
 			contentUIData.cover.weblist = this;
 			contentUIData.cover.hdl = a.hdl;
+			contentUIData.entrySeek.setOnSeekBarChangeListener(entrySeekLis);
 			browserWidget8 = contentUIData.browserWidget8;
 			browserWidget10 = contentUIData.browserWidget10;
 			browserWidget11 = contentUIData.browserWidget11;
@@ -145,6 +145,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			toolsBtn = contentUIData.tools;
 			toolsBtn.setOnClickListener(this);
 			toolsBtn.setOnLongClickListener(this);
+			
+			contentUIData.prv.setOnClickListener(this);
+			contentUIData.nxt.setOnClickListener(this);
 			
 			contentUIData.PageSlider.page = contentUIData.cover;
 			contentUIData.cover.setPager(a.getPageListener());
@@ -200,6 +203,30 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		tapSch = src==SearchUI.Fye.MAIN?PDICMainAppOptions.fyeTapSch():opt.tapSch();
 		shezhi = BookPresenter.MakePageFlag(this, opt);
 	}
+	
+	public final Runnable entrySeekRn = new Runnable() {
+		@Override
+		public void run() {
+			JumpToFrame(contentUIData.entrySeek.getProgress());
+		}
+	};
+	public final SeekBar.OnSeekBarChangeListener entrySeekLis = new SeekBar.OnSeekBarChangeListener() {
+		@Override
+		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			if (fromUser && multiRecord!=null) {
+				CMN.Log("onProgressChanged!!!");
+				a.root.removeCallbacks(entrySeekRn);
+				a.root.postDelayed(entrySeekRn, 200);
+			}
+		}
+		@Override
+		public void onStartTrackingTouch(SeekBar seekBar) {
+		}
+		@Override
+		public void onStopTrackingTouch(SeekBar seekBar) {
+		
+		}
+	};
 	
 	public void setScrollFocus(WebViewmy wv) {
 		if(lastScrolledBook != wv.presenter) {
@@ -512,29 +539,34 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void prvnxtFrame(boolean nxt) {
-		if(isMultiRecord())
-		if(isFoldingScreens()) {
-		}
-		else if(isMergingFrames()) {
-			mMergedFrame.evaluateJavascript(nxt?"prvnxtFrame(1)":"prvnxtFrame()", null);
-		} else if(!isViewSingle()){
-			final int currentHeight=WHP.getScrollY();
-			int cc=contentUIData.webholder.getChildCount();
-			int childAtIdx=cc;
-			int top;
-			for(int i=0;i<cc;i++) {
-				top = contentUIData.webholder.getChildAt(i).getTop();
-				if(top>=currentHeight){
-					childAtIdx=i;
-					if(nxt && top!=currentHeight) --childAtIdx;
-					break;
-				}
+		if (isMultiRecord() && multiDicts) {
+			if (pageSlider.tapZoom) {
+				pageSlider.bSuppressNxtTapZoom = CMN.now();
 			}
-			childAtIdx+=nxt?1:-1;
-			if(childAtIdx>=cc){
-				a.scrollToPageBottom(contentUIData.webholder.getChildAt(cc-1));
-			} else {
-				a.scrollToWebChild(contentUIData.webholder.getChildAt(childAtIdx));
+			if(isFoldingScreens()) {
+				JumpToFrame(frameSelection+(nxt?1:-1));
+			}
+			else if(isMergingFrames()) {
+				mMergedFrame.evaluateJavascript(nxt?"prvnxtFrame(1)":"prvnxtFrame()", null);
+			} else if(!isViewSingle()){
+				final int currentHeight=WHP.getScrollY();
+				int cc=contentUIData.webholder.getChildCount();
+				int childAtIdx=cc;
+				int top;
+				for(int i=0;i<cc;i++) {
+					top = contentUIData.webholder.getChildAt(i).getTop();
+					if(top>=currentHeight){
+						childAtIdx=i;
+						if(nxt && top!=currentHeight) --childAtIdx;
+						break;
+					}
+				}
+				childAtIdx+=nxt?1:-1;
+				if(childAtIdx>=cc){
+					a.scrollToPageBottom(contentUIData.webholder.getChildAt(cc-1));
+				} else {
+					a.scrollToWebChild(contentUIData.webholder.getChildAt(childAtIdx));
+				}
 			}
 		}
 	}
@@ -552,28 +584,31 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	
 	public void JumpToFrame(int pos) {
-		frameSelection = pos;
-		if(isFoldingScreens()) {
-			renderFoldingScreen(pos);
-		}
-		else if(isMergingFrames()) {
-			if(pos<frames.size()) {
-				BookPresenter book = frames.get(pos);
-				if (book!=null) {
-					StringBuilder sb = new StringBuilder(24);
-					sb.append("scrollToPosId('d");
-					NumberToText_SIXTWO_LE(book.getId(), sb);
-					sb.append("',");
-					sb.append(frameAt=pos);
-					sb.append(")");
-					mMergedFrame.evaluateJavascript(sb.toString(), null);
+		if (multiDicts && pos>=0 && pos<multiRecord.jointResult.realmCount) {
+			frameSelection = pos;
+			if(isFoldingScreens()) {
+				renderFoldingScreen(pos);
+			}
+			else if(isMergingFrames()) {
+				if(pos<frames.size()) {
+					BookPresenter book = frames.get(pos);
+					if (book!=null) {
+						StringBuilder sb = new StringBuilder(24);
+						sb.append("scrollToPosId('d");
+						NumberToText_SIXTWO_LE(book.getId(), sb);
+						sb.append("',");
+						sb.append(frameAt=pos);
+						sb.append(")");
+						mMergedFrame.evaluateJavascript(sb.toString(), null);
+					}
 				}
 			}
-		} else {
-			View childAt = getChildAt(pos);
-			if(childAt!=null) {
-				a.scrollToWebChild(childAt);
-				a.recCom.scrollTo(childAt, a);
+			else {
+				View childAt = getChildAt(pos);
+				if(childAt!=null) {
+					a.scrollToWebChild(childAt);
+					a.recCom.scrollTo(childAt, a);
+				}
 			}
 		}
 	}
@@ -769,21 +804,42 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public final static int WEB_LIST_MULTI=0;
 	public final static int WEB_VIEW_SINGLE=1;
 	int mViewMode;
+	int btmV;
 	boolean isMultiRecord;
 	public resultRecorderCombined multiRecord;
-	public void setViewMode(resultRecorderCombined record, boolean bUseMergedUrl, WebViewmy dictView) {
+	public boolean multiDicts;
+	public void setViewMode(resultRecorderCombined record, int bMerge, WebViewmy dictView) {
 		boolean multi=record!=null;
+		boolean multiDicts = multi && record.jointResult!=null && (int) record.jointResult.realmCount > 1;
+		int viewMode = multi && bMerge==0? WEB_LIST_MULTI : WEB_VIEW_SINGLE;
+		boolean changed = bMerge!=bMergingFrames;
+		if (btmV!=SearchUI.btmV) {
+			btmV = SearchUI.btmV;
+			changed = true;
+		}
 		if (multiRecord!=record) {
 			multiRecord = record;
+			changed = true;
 		}
-		int viewMode = multi && !bUseMergedUrl? WEB_LIST_MULTI : WEB_VIEW_SINGLE;
-		if(mViewMode!=viewMode || (bMergingFrames!=0)!=bUseMergedUrl || isMultiRecord!=multi) {
+		if (this.multiDicts!=multiDicts) {
+			this.multiDicts=multiDicts;
+			changed = true;
+		}
+		if(changed) {
 			isMultiRecord = multi;
 			mViewMode = viewMode;
 			if (!bDataOnly) {
-				ViewUtils.setVisible(contentUIData.navBtns, multi && !bUseMergedUrl);
-				ViewUtils.setVisible(contentUIData.dictNameStroke, !bUseMergedUrl);
-				ViewUtils.setVisible(contentUIData.dictName, !bUseMergedUrl);
+				boolean vis = bMerge!=1 && PDICMainAppOptions.showDictName();
+				ViewUtils.setVisible(contentUIData.dictNameStroke, vis);
+				ViewUtils.setVisible(contentUIData.dictName, vis);
+				ViewUtils.setVisible(contentUIData.navBtns, multiDicts);
+				if (multiDicts) {
+					ViewUtils.setVisible(contentUIData.browserWidget14, PDICMainAppOptions.showPrvBtn());
+					ViewUtils.setVisible(contentUIData.browserWidget13, PDICMainAppOptions.showNxtBtn());
+				}
+				ViewUtils.setVisible(contentUIData.prv, multiDicts && PDICMainAppOptions.showPrvBtnSmall());
+				ViewUtils.setVisible(contentUIData.nxt, multiDicts && PDICMainAppOptions.showNxtBtnSmall());
+				ViewUtils.setVisible(contentUIData.entrySeek, multiDicts && PDICMainAppOptions.showEntrySeekbar());
 			}
 		}
 		if(this.dictView!=dictView) {
@@ -1332,9 +1388,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				}
 			} break;
 			/* 上下导航 */
-			case R.id.browser_widget13:
-			case R.id.browser_widget14:{
-				prvnxtFrame(id == R.id.browser_widget13);
+			case R.id.prv:
+			case R.id.nxt:
+			case R.id.browser_widget14:
+			case R.id.browser_widget13:{
+				prvnxtFrame(id==R.id.browser_widget13||id==R.id.nxt);
 			} break;
 			/* 工具 */
 			case R.id.tools:{
@@ -1541,6 +1599,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return bMergingFrames==1;
 	}
 	
+	public final int isMergingFramesNum() {
+		return bMergingFrames;
+	}
+	
 	public final boolean isFoldingScreens() {
 		return bMergingFrames==2;
 	}
@@ -1653,7 +1715,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
 			mWebView.jointResult = jointResult;
 			setScrollFocus(mWebView);
-			contentUIData.PageSlider.setWebview(mWebView, null);
+			pageSlider.setWebview(mWebView, null);
+			if (!bDataOnly) {
+				contentUIData.entrySeek.setProgress(frame);
+			}
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
@@ -1665,6 +1730,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			if (child!=null) {
 				WebViewmy mWebView = child.findViewById(R.id.webviewmy);
 				BookPresenter prev = mWebView.presenter;
+				CMN.Log("savePagePos::保存位置::???::", !prev.isMergedBook() , !mWebView.isloading , System.currentTimeMillis()-a.lastClickTime);
 				if(!prev.isMergedBook() && !mWebView.isloading && System.currentTimeMillis()-a.lastClickTime>300) {
 					if (mWebView.webScale == 0) mWebView.webScale = a.dm.density; //sanity check
 					CMN.Log("savePagePos::保存位置::", prev.getDictionaryName(), (int) mWebView.currentPos);

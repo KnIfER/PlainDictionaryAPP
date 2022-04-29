@@ -176,7 +176,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		}
 		else {
 			boolean bUseMergedUrl = false;
-			weblistHandler.setViewMode(null, bUseMergedUrl, null);
+			weblistHandler.setViewMode(null, 0, null);
 			weblistHandler.initMergedFrame(0, false, bUseMergedUrl);
 			if(bUseMergedUrl) {
 				ViewUtils.addViewToParentUnique(weblistHandler.getMergedFrame().rl, a.webSingleholder);

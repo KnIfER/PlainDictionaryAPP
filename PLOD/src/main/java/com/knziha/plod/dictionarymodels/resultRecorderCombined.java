@@ -30,6 +30,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	boolean schKeySaved;
 	///** current displaying position */
 	public int viewingPos;
+	public additiveMyCpr1 jointResult;
 	
 	public List<additiveMyCpr1> list(){return data;}
 	private List<BookPresenter> md;
@@ -141,7 +142,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		}
 		
 		if(jointResult==null) {
-			a.showT("ERROR "+pos+" "+weblistHandler.bMergingFrames+" "+weblistHandler.bMergeFrames);
+			a.showT("ERROR "+pos+" "+weblistHandler.isMergingFramesNum()+" "+weblistHandler.bMergeFrames);
 			return;
 		}
 		List<Long> vals = (List<Long>) jointResult.value;
@@ -162,6 +163,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 		}
 		
+		this.jointResult = jointResult;
 		if (!weblistHandler.bDataOnly) {
 			if(!bUseMergedUrl && !bFoldingScreen /*算了，还是只为旧模式开此门*/  && jointResult.realmCount==1
 					/*看注释。*/ && PDICMainAppOptions.getLv2JointOneAsSingle()) {
@@ -169,9 +171,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				BookPresenter book = a.getBookByIdNoCreation(vals.get(0));
 				//if(true) bUseMergedUrl = false; // 只有一页，不通过合并的url加载了
 				if(bUseDictView) book.initViewsHolder(a);
-				weblistHandler.setViewMode(null, bUseMergedUrl||bFoldingScreen, bUseDictView?book.mWebView:weblistHandler.getMergedFrame());
+				weblistHandler.setViewMode(null, mergeFrames, bUseDictView?book.mWebView:weblistHandler.getMergedFrame());
 			} else {
-				weblistHandler.setViewMode(this, bUseMergedUrl||bFoldingScreen, null);
+				weblistHandler.setViewMode(this, mergeFrames, null);
 			}
 			a.viewContent(weblistHandler);
 			weblistHandler.initMergedFrame(mergeFrames, weblistHandler.bShowInPopup, bUseMergedUrl);

@@ -80,11 +80,18 @@ public class RLContainerSlider extends FrameLayout{
 	/** Tap Twice Deteced */
 	public boolean twiceDetected;
 	public static long lastZoomTime;
+	public long bSuppressNxtTapZoom;
 	GestureDetector detector;
 	GestureDetector.SimpleOnGestureListener gl = new GestureDetector.SimpleOnGestureListener() {
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
 			if(tapZoom){
+				if (bSuppressNxtTapZoom!=0) {
+					if (CMN.now()-bSuppressNxtTapZoom<500) {
+						return true;
+					}
+					bSuppressNxtTapZoom = 0;
+				}
 				PhotoBrowsingContext ctx = tapCtx;
 				float targetZoom = ctx.tapZoomRatio;
 				CMN.Log("onDoubleTap::", targetZoom, WebContext.webScale/BookPresenter.def_zoom);

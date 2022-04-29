@@ -172,7 +172,7 @@ public class ListViewAdapter extends BasicAdapter {
 			mWebView = weblistHandler.getMergedFrame(presenter);
 		}
 		this.mWebView = mWebView;
-		weblistHandler.setViewMode(null, bUseMergedUrl, mWebView);
+		weblistHandler.setViewMode(null, 0, mWebView);
 		weblistHandler.initMergedFrame(0, false, bUseMergedUrl);
 		
 		presenter.lvClickPos=pos;
@@ -202,6 +202,7 @@ public class ListViewAdapter extends BasicAdapter {
 		
 		long[] POS = a.getMergedClickPositions(pos);
 		if(bUseMergedUrl) {
+			// deprecate
 			StringBuilder mergedUrl = new StringBuilder("http://mdbr.com/merge.jsp?q=")
 					.append("&exp=");
 			mergedUrl.append("d");

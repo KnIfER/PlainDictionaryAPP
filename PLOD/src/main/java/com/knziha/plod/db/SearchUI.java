@@ -30,4 +30,5 @@ public class SearchUI{
 		public final static PhotoBrowsingContext pBc = new PhotoBrowsingContext();
 		public static int tapZoomWait;
 		public static int tapZoomV;
+		public static int btmV;
 }
