@@ -5732,11 +5732,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				layoutScrollDisabled=false;
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 				findWebList(v);
+				boolean slided = v.getTag()==v;
+				if (slided) v.setTag(null);
 				if (weblist.bottomNavWeb()) {
 					weblist.NavWeb(delta);
 				} else {
 					if(!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething()){
 						interruptAutoReadProcess(true);
+					}
+					if (weblist.isFoldingScreens() && weblist.multiDicts) {
+						int toPos = weblist.multiRecord.jointResult.LongestStartWithSeqLength;
+						if (toPos>0) toPos = delta;
+						else toPos = delta-toPos;
+						if (toPos>=0 && toPos<weblist.frames.size()) {
+							weblist.renderFoldingScreen(toPos);
+							break;
+						}
 					}
 					if (weblist==weblistHandler) {
 						if (ActivedAdapter!=null) {
@@ -10390,6 +10401,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					{
 						currentPos=pos;
 						page.setGravity(Gravity.CENTER_VERTICAL|(val>0?Gravity.LEFT:Gravity.RIGHT));
+						if (wPage.isFoldingScreens() && wPage.multiDicts) {
+							ArrayList<BookPresenter> fms = wPage.frames;
+							int toPos = wPage.multiRecord.jointResult.LongestStartWithSeqLength;
+							if (toPos>=0) toPos = pos;
+							else toPos = pos-toPos;
+							if (toPos>=0 && toPos<fms.size()) {
+								page.setText(fms.get(toPos).getDictionaryName());
+								return;
+							}
+						}
 						if (DBrowser!=null && wPage==DBrowser.weblistHandler) {
 							page.setText(DBrowser.getEntryAt(DBrowser.currentPos+pos));
 						} else {
@@ -10419,8 +10440,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if (t.length()==1 && (TextUtils.equals(t, "←")||TextUtils.equals(t, "→"))) {
 					page.decided = 0;
 				}
-				if(Dir==-1) wPage.browserWidget11.performClick();
-				else if(Dir==1) wPage.browserWidget10.performClick();
+				View v = Dir==-1?wPage.browserWidget11:Dir==1?wPage.browserWidget10:null;
+				if (v!=null) {
+					wPage.browserWidget10.setTag(v);
+					v.performClick();
+				}
 			}
 		}:pager;
 	}

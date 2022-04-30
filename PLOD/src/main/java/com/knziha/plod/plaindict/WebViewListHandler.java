@@ -1749,10 +1749,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			if (child!=null) {
 				WebViewmy mWebView = child.findViewById(R.id.webviewmy);
 				BookPresenter prev = mWebView.presenter;
-				CMN.Log("savePagePos::保存位置::???::", !prev.isMergedBook() , !mWebView.isloading , System.currentTimeMillis()-a.lastClickTime);
 				if(!prev.isMergedBook() && !mWebView.isloading && System.currentTimeMillis()-a.lastClickTime>300) {
 					if (mWebView.webScale == 0) mWebView.webScale = a.dm.density; //sanity check
-					CMN.Log("savePagePos::保存位置::", prev.getDictionaryName(), (int) mWebView.currentPos);
+					//CMN.Log("savePagePos::保存位置::", prev.getDictionaryName(), (int) mWebView.currentPos);
 					ScrollerRecord pPos = prev.avoyager.get((int) mWebView.currentPos);
 					if (mWebView.shouldStoreNewPagePos(pPos)) {
 						prev.avoyager.put((int) mWebView.currentPos, pPos = new ScrollerRecord());

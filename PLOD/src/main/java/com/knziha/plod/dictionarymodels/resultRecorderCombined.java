@@ -239,7 +239,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		StringBuilder mergedUrl = null;
 		ViewGroup webholder = weblistHandler;
 		if (bFoldingScreen) {
-			weblistHandler.renderFoldingScreen(0);
+			weblistHandler.renderFoldingScreen(jointResult.LongestStartWithSeqLength<0?-jointResult.LongestStartWithSeqLength:0);
 		}
 		else {
 			for(int i=0,ln=frames.size();i<ln;i++){
