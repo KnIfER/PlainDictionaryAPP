@@ -816,6 +816,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				try {
 					if(book!=null && book.getAcceptParagraph(searchText, isParagraph, paragraphWords)) {
 						CrashHandler.hotTracingObject = book;
+						_treeBuilder.resetRealmer(book.getId());
 						book.bookImpl.lookUpRange(searchText, null, _treeBuilder, book.getId(),7, task);
 					}
 				} catch (Exception e) {
@@ -1034,7 +1035,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		requestAudio = PDICMainAppOptions.tapSchAutoReadEntry();
 		if(rec!=null) {
 			if(rec.size()>0) {
-				rec.jointResult = rec.list().get(0);
+				rec.jointResult = rec.getJointResultAt(0);
 			}
 			weblistHandler.setViewMode(rec, isMergingFramesNum(), mWebView);
 			//weblistHandler.initMergedFrame(false, false, bUseMergedUrl);;

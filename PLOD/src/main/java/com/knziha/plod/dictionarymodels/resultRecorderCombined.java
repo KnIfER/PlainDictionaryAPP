@@ -54,7 +54,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		return true;
 	}
 	
-	private int RemapPos(int pos) {
+	public int RemapPos(int pos) {
 		if(firstItemIdx>0) {
 			pos = (pos+firstItemIdx)%data.size();
 		}
@@ -119,7 +119,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	
 	@Override
 	public void renderContentAt(long pos, final MainActivityUIBase a, BasicAdapter ADA, WebViewListHandler weblistHandler){
-		CMN.Log("renderContentAt::", pos, weblistHandler.bMergeFrames, weblistHandler.bMergingFrames, weblistHandler.getChildCount());
+		//CMN.Log("renderContentAt::", pos, weblistHandler.bMergeFrames, weblistHandler.bMergingFrames, weblistHandler.getChildCount());
 		scrollTarget=null;
 		final ScrollView sv = (ScrollView) weblistHandler.getScrollView();
 		toHighLight=weblistHandler.hasPageKey();
@@ -396,5 +396,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			a.weblistHandler.OLCL.onLayoutChange(webholder,0, webholder.getTop(),0,webholder.getBottom(),0,0,0,0);
 			//});
 		}
+	}
+	
+	public additiveMyCpr1 getJointResultAt(int pos) {
+		return data.get(RemapPos(pos));
 	}
 }

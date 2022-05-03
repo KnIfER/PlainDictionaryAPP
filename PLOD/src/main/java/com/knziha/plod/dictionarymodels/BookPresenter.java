@@ -2591,7 +2591,7 @@ function debug(e){console.log(e)};
 			if (presenter!=null && PDICMainAppOptions.toolsBoost()) {
 				WebViewmy wv = findWebview(sid);
 				wv.post(() -> wv.weblistHandler.textMenu(show?wv:null));
-				CMN.Log("textMenu!!!");
+				//CMN.Log("textMenu!!!");
 			}
 		}
 		
