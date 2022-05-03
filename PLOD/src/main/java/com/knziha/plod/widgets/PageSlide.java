@@ -70,7 +70,7 @@ public class PageSlide extends TextView {
 				setTranslationX(animator*TargetX+(1-animator)*srcX);
 			hdl.obtainMessage(3344,msg.arg1,0,msg.obj).sendToTarget();
 		} else {
-			RLContainerSlider slide = weblist.contentUIData.PageSlider;
+			RLContainerSlider slide = weblist.pageSlider;
 			if (prevd==0 || slide.dragged || slide.aborted) {
 				dragView.setAlpha(1);
 				setVisibility(GONE);

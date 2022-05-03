@@ -85,7 +85,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	/** for {@link com.knziha.plod.PlainUI.WordPopup }. final. When set, the default view {@link #contentUIData } won't be initialized. */
 	public boolean bDataOnly = false;
 	public boolean bShowInPopup = false;
-	public int bMergingFrames = 0;
+	public int bMergingFrames = -1;
 	public boolean bShowingInPopup = false;
 	public ScrollViewmy WHP;
 	public PDICMainAppOptions opt;
@@ -299,14 +299,21 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public int getFrameAt() {
-		if(!isMergingFrames() && !isFoldingScreens()) {
-			final int currentHeight=WHP.getScrollY();
-			for(int i=0;i<webholder.getChildCount();i++) {
-				View CI = webholder.getChildAt(i);
-				if(CI.getBottom() > currentHeight) {
-					return i;
+		if (multiDicts) {
+			if (isFoldingScreens()) {
+				int pos = batchDisplaying().LongestStartWithSeqLength;
+				if (pos<0) return -pos;
+			}
+			else if(!isMergingFrames()) {
+				final int currentHeight=WHP.getScrollY();
+				for(int i=0;i<webholder.getChildCount();i++) {
+					View CI = webholder.getChildAt(i);
+					if(CI.getBottom() > currentHeight) {
+						return i;
+					}
 				}
 			}
+			return 0;
 		}
 		return -1;
 	}
@@ -383,7 +390,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void setScrollHandType(int style) {
 		opt.setTypeFlag_11_AtQF(style, shFlag);
-		resetScrollbar(mWebView, isMergingFrames(), true);
+		resetScrollbar(mWebView, bMergingFrames==1, true);
 	}
 	
 	
@@ -624,7 +631,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void showJumpListDialog() {
-		if(bMergingFrames==0) frameAt = getFrameAt();
+		if(!isMergingFrames())
+			frameAt = getFrameAt();
 		frameCount = frames.size();
 		if(jumpListDlg==null){
 			jumpListDlg = jumpListDlgRef.get();
@@ -690,7 +698,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 									boolean b1=pos==frameAt;
 									if(b1 ^ mFlowTextView.getTag()!=null) {
 										mFlowTextView.setTag(b1?"":null);
-										if(b1) {
+										if(b1) { // 下划线
 											mFlowTextView.setBackgroundResource(R.drawable.text_underline);
 											mFlowTextView.getBackground().setColorFilter(cf);
 										} else {
@@ -805,9 +813,6 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			//首次显示自动跳转
 			frameSelection = frameAt;
 			lv.setSelection(bag.val?frameAt/2:frameAt);
-		}
-		else if(isFoldingScreens()) {
-			frameAt = frameSelection;
 		}
 	}
 	
@@ -1717,7 +1722,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			long[] displaying = framesDisplaying.get(frame);
 			WebViewmy mWebView;
 			if (presenter.getIsWebx() && (!shareView || PDICMainAppOptions.getMergeExemptWebx())) {
-				presenter.SetSearchKey(jointResult.key);
+				presenter.SetSearchKey(batchDisplaying().key);
 				shareView = false;
 			}
 			if(opt.getRemPos()) {
@@ -1735,7 +1740,6 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			dictView = mWebView;
 			presenter.renderContentAt(-2, BookPresenter.RENDERFLAG_NEW, 0, mWebView, displaying);
 			ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
-			mWebView.jointResult = jointResult;
 			setScrollFocus(mWebView, frame);
 			pageSlider.setWebview(mWebView, null);
 		} catch (Exception e) {
@@ -1763,5 +1767,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			a.lastClickTime=System.currentTimeMillis();
 		}
+	}
+	
+	public final additiveMyCpr1 batchDisplaying() {
+		additiveMyCpr1 ret = bMergingFrames == 0 ? jointResult : getMergedFrame().jointResult;
+		if (ret==null) ret = multiDisplaying();
+		return ret;
+	}
+	
+	public final additiveMyCpr1 multiDisplaying() {
+		return multiRecord==null?null:multiRecord.jointResult;
 	}
 }

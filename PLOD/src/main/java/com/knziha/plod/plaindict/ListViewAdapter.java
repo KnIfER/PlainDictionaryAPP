@@ -93,7 +93,7 @@ public class ListViewAdapter extends BasicAdapter {
 	public void SaveVOA() {
 		if(presenter != a.EmptyBook) {
 			if (opt.getRemPos()) {
-				a.DelegateSaveAndRestorePagePos().SaveVOA(contentUIData.PageSlider.WebContext, this);
+				a.DelegateSaveAndRestorePagePos().SaveVOA(contentUIData.PageSlider.getWebContext(), this);
 			}
 			if (browsed && PDICMainAppOptions.storePageTurn()==2
 					&& presenter.store(presenter.lvClickPos)

@@ -1277,7 +1277,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 			} break;
 			/* 移动文件 */
-            case R.id.toolbar_action12:{
+            case R.id.peruseMode:{
             	if (true) {
             		showT("功能关闭，请等待5.0版本");
 					ret=false;break;

@@ -8,7 +8,7 @@
 
 <!--1--><item android:title="@string/fold_all" android:id="@+id/toolbar_action0" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 
-<!--2--><item android:title="@string/peruse_mode" android:id="@+id/toolbar_action12" android:icon="@drawable/ic_peruse" app:showAsAction="never"/>
+<!--2--><item android:title="@string/peruse_mode" android:id="@+id/peruseMode" android:icon="@drawable/ic_peruse" app:showAsAction="never"/>
 
 <!--3--><item android:title="@string/rem_position" android:id="@+id/remPagePos" android:checkable="true" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
 

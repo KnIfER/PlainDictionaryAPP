@@ -2455,7 +2455,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			contentUIData = ContentviewBinding.inflate(getLayoutInflater());
 		}
 		if(contentview==null) {
-			weblistHandler = new WebViewListHandler(this, contentUIData, schuiMain);
+			weblist = weblistHandler = new WebViewListHandler(this, contentUIData, schuiMain);
 			AllMenus.tag = weblistHandler;
 			contentview = contentUIData.webcontentlister;
 			webSingleholder = contentUIData.webSingleholder;
@@ -3655,7 +3655,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public int[] arraySelUtils2;
 		int[] arrayTextUtils;
 		public boolean bFromWebView;
-		public boolean bFromPeruseView;
 		boolean bFromTextView;
 		boolean bLastFromWebView;
 		ViewGroup bottomView;
@@ -3707,46 +3706,44 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						@Override
 						public void onColorSelected(ColorPickerDialog dialogInterface, int color) {
 							//CMN.Log("onColorSelected");
-							if(invoker.getUseInternalBG())
+							if(invoker.getUseInternalBG()) {
 								invoker.setContentBackground(color);
-							else{
-								GlobalPageBackground=color;
+								invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
+							} else {
+								CMN.Log("应用全局颜色变更中…");
+								opt.putGlobalPageBackground(GlobalPageBackground=color);
 							}
-							WebViewmy mWebView=bFromPeruseView? peruseView.mWebView:invoker.mWebView;
 							int ManFt_invoker_bgColor=invoker.getContentBackground();
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
 							if(GlobalOptions.isDark) {
 								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web);
 								ManFt_GlobalPageBackground=ColorUtils.blendARGB(ManFt_GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 							};
-							boolean apply = bFromPeruseView || contentUIData.browserWidget12.getTag(R.id.image)==null;
-							if(invoker.getUseInternalBG()) {
-								invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
-								if(apply && mWebView!=null)
+							//boolean apply = true;//bFromPeruseView || contentUIData.browserWidget12.getTag(R.id.image)==null;
+							WebViewmy mWebView=UnicornKit.this.mWebView;
+							if (mWebView != null) {
+								if(invoker.getUseInternalBG()) {
+									invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
 									mWebView.setBackgroundColor(ManFt_invoker_bgColor);
-							} else {
-								CMN.Log("应用全局颜色变更中…");
-								GlobalPageBackground= GlobalPageBackground;
-								if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
-								weblistHandler.setBackgroundColor(ManFt_GlobalPageBackground);
-								if(bFromPeruseView) peruseView.contentUIData.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
-								opt.putGlobalPageBackground(GlobalPageBackground);
-								if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
-									mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
+								} else {
+									webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
+									mWebView.weblistHandler.setBackgroundColor(ManFt_GlobalPageBackground);
+									mWebView.weblistHandler.contentUIData.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
+									if(Build.VERSION.SDK_INT<21)
+										mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
+								}
 							}
 						}
 						@Override
 						public void onPreviewSelectedColor(ColorPickerDialog dialogInterface, int color) {
-							if(bFromPeruseView || contentUIData.browserWidget12.getTag(R.id.image)==null) {
-								if (GlobalOptions.isDark)
-									color = ColorUtils.blendARGB(color, Color.BLACK, ColorMultiplier_Web);
-								WebViewmy mWebView = bFromPeruseView ? peruseView.mWebView : invoker.mWebView;
-								ViewGroup webSingleholder = bFromPeruseView ? peruseView.contentUIData.webSingleholder : MainActivityUIBase.this.webSingleholder;
+							if (GlobalOptions.isDark)
+								color = ColorUtils.blendARGB(color, Color.BLACK, ColorMultiplier_Web);
+							WebViewmy mWebView=UnicornKit.this.mWebView;
+							if (mWebView != null) {
 								if (invoker.getUseInternalBG()) {
-									if (mWebView != null)
-										mWebView.setBackgroundColor(color);
+									mWebView.setBackgroundColor(color);
 								} else {
-									webSingleholder.setBackgroundColor(color);
+									mWebView.weblistHandler.contentUIData.webSingleholder.setBackgroundColor(color);
 									if (Build.VERSION.SDK_INT<21 && mWebView != null)
 										mWebView.setBackgroundColor(color);
 								}
@@ -3756,25 +3753,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						public void onDialogDismissed(ColorPickerDialog dialogInterface, int color) {
 							CMN.Log("onDialogDismissed");
 							d.show();
-							WebViewmy mWebView=bFromPeruseView? peruseView.mWebView:invoker.mWebView;
+							WebViewmy mWebView=UnicornKit.this.mWebView;
 							int ManFt_invoker_bgColor=invoker.getContentBackground();
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
 							if(GlobalOptions.isDark) {
 								ManFt_invoker_bgColor=ColorUtils.blendARGB(ManFt_invoker_bgColor, Color.BLACK, ColorMultiplier_Web);
 								ManFt_GlobalPageBackground=ColorUtils.blendARGB(ManFt_GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 							}
-							boolean apply = bFromPeruseView || contentUIData.browserWidget12.getTag(R.id.image)==null;
-							if(!isDirty){//fall back
+							if (!isDirty && mWebView!=null) { //fall back
 								if(invoker.getUseInternalBG()) {
-									if(apply && mWebView!=null)
-										mWebView.setBackgroundColor(ManFt_invoker_bgColor);
+									mWebView.setBackgroundColor(ManFt_invoker_bgColor);
 								} else {
-									if(apply) webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
+									webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
 									weblistHandler.setBackgroundColor(ManFt_GlobalPageBackground);
-									if(bFromPeruseView) {
-										peruseView.contentUIData.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
-									}
-									if(Build.VERSION.SDK_INT<21 && apply && mWebView!=null)
+									mWebView.weblistHandler.contentUIData.webSingleholder.setBackgroundColor(ManFt_GlobalPageBackground);
+									if(Build.VERSION.SDK_INT<21)
 										mWebView.setBackgroundColor(ManFt_GlobalPageBackground);
 								}
 							}
@@ -3784,25 +3777,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					asd.show(getSupportFragmentManager(),"color-picker-dialog");
 				} return;
 				case R.id.settings:{
-					BookPresenter.showDictTweaker(bFromPeruseView?peruseView.mWebView:weblist.dictView, MainActivityUIBase.this, invoker);
+					BookPresenter.showDictTweaker(weblist.dictView, MainActivityUIBase.this, invoker);
 				} return;
 				case R.id.appsettings:{
 					showAppTweaker();
 				} return;
 				case R.id.lock:{
-					boolean enabled;
-					if(bFromPeruseView){
-						//enabled= peruseView.toggleTurnPageEnabled();
-					} else {
-						opt.setTurnPageEnabled(!opt.getTurnPageEnabled());
-						enabled = opt.getTurnPageEnabled();
-						SearchUI.tapZoomV++;
+					opt.setTurnPageEnabled(!opt.getTurnPageEnabled());
+					boolean enabled = opt.getTurnPageEnabled();
+					SearchUI.tapZoomV++;
 					tools_lock.setImageResource(enabled?R.drawable.un_locked:R.drawable.locked);
 					opt.putFirstFlag();
 					showTopSnack(null, enabled?R.string.PT1:R.string.PT2
 							, 0.8f, LONG_DURATION_MS, -1, 0);
-						
-					}
 				} return;
 				case R.id.check1: //tofo checker
 				case R.id.check2:
@@ -3826,8 +3813,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			hideKeyboard();
 			if(!bFromTextView){
-				bFromWebView=mWebView!=null;
-				bFromPeruseView=bFromWebView && mWebView.weblistHandler.src==SearchUI.Fye.MAIN;
 				if(bPicking!=0) bFromWebView=true;
 			}
 			// nimp
@@ -3842,7 +3827,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if (mWebView!=null) {
 				if (v != null || mWebView.bIsActionMenuShown) {
-					//bFromWebView = true;
+					bFromWebView = true;
 					build_further_dialog();
 				} else if (v == null) {
 					mWebView.evaluateJavascript("getSelection().isCollapsed", new ValueCallback<String>() {
@@ -3854,10 +3839,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					});
 				}
 			} else {
+				bFromWebView = false;
 				build_further_dialog();
 			}
 		}
-
+		
+		private boolean hasText() {
+			return bFromWebView||bFromTextView;
+		}
+		
 		@Override
 		public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 			if(parent==d.getListView()&&(bFromWebView||bFromTextView)){
@@ -3936,8 +3926,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if (prepareHistoryCon().testDBV2) {
 									BookmarkAdapter.BookmarkDatabaseReader reader = (BookmarkAdapter.BookmarkDatabaseReader) mBookMarkAdapter.getItem(position1);
 									if (reader!=null) {
-										WebViewmy webview = (bFromPeruseView ? peruseView.mWebView : invoker.mWebView);
-										if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+										WebViewmy webview = this.mWebView;
+										if (invoker.getIsWebx()) {
 											String url = reader.entryName;
 											if (url.startsWith("/")) {
 												url = ((PlainWeb)webview.presenter.bookImpl).getHost()+url;
@@ -3993,8 +3983,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								if (prepareHistoryCon().testDBV2) {
 									AnnotAdapter.AnnotationReader reader = (AnnotAdapter.AnnotationReader) mAnnotAdapter.getItem(position1);
 									if (reader!=null) {
-										WebViewmy webview = (bFromPeruseView ? peruseView.mWebView : invoker.mWebView);
-										if (invoker.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+										WebViewmy webview = this.mWebView;
+										if (invoker.getIsWebx()) {
 											String url = reader.entryName;
 											if (url.startsWith("/")) {
 												url = ((PlainWeb)webview.presenter.bookImpl).getHost()+url;
@@ -4549,7 +4539,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				});
 				
 				if(contentUIData.PageSlider!=null) {
-					if(!opt.getTurnPageEnabled()&&!bFromPeruseView||bFromPeruseView&&opt.getPageTurn3())
+					if(!opt.getTurnPageEnabled())
 						tools_lock.setImageResource(R.drawable.locked);
 				} else {
 					tools_lock.setVisibility(View.GONE);
@@ -4610,7 +4600,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			// 设置标题
 			if(!bFromTextView) {
 				StringBuilder sb = invoker.appendCleanDictionaryName(null);
-				String text = bFromPeruseView ? peruseView.currentDisplaying() : invoker.currentDisplaying;
+				String text = mWebView==null?null:mWebView.word;
 				if(!TextUtils.isEmpty(text)) {
 					sb.append(" - ").append(text);
 				}
@@ -4648,10 +4638,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 			bLastFromWebView=bFromWebView||bFromTextView;
 			firstCreateUcc=false;
-		}
-		
-		private boolean hasText() {
-			return bFromWebView||bFromTextView;
 		}
 		
 		private void statHasBookmark() {
@@ -5397,7 +5383,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		DBrowser.setType(this, type, true);
-		if(weblist.src==SearchUI.Fye.MAIN || weblist.bShowingInPopup) {
+		if(weblist!=null && (weblist.src==SearchUI.Fye.MAIN || weblist.bShowingInPopup)) {
 			DBrowser.show(getSupportFragmentManager(), "DBrowser");
 		}
 		else {
@@ -5732,7 +5718,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				layoutScrollDisabled=false;
 				imm.hideSoftInputFromWindow(main.getWindowToken(),0);
 				findWebList(v);
-				boolean slided = v.getTag()==v;
+				boolean slided = v.getTag()==v; /** see{@link #getPageListener} */
 				if (slided) v.setTag(null);
 				if (weblist.bottomNavWeb()) {
 					weblist.NavWeb(delta);
@@ -5740,7 +5726,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething()){
 						interruptAutoReadProcess(true);
 					}
-					if (weblist.isFoldingScreens() && weblist.multiDicts) {
+					if (slided && weblist.isFoldingScreens() && weblist.multiDicts) {
 						int toPos = weblist.multiRecord.jointResult.LongestStartWithSeqLength;
 						if (toPos>0) toPos = delta;
 						else toPos = delta-toPos;
@@ -6072,7 +6058,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void showDictTweaker(WebViewListHandler weblist) {
 		UnicornKit tk = getUtk();
 		if (weblist.isMultiRecord()) {
-			if (weblist.isViewSingle()) {
+			if (weblist.isMergingFrames()) {
 				weblist.getMergedFrame().evaluateJavascript("scrollFocus.src", new ValueCallback<String>() {
 					@Override
 					public void onReceiveValue(String val) {
@@ -6326,6 +6312,37 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				showMenuDialog(tagHolder, mmi.mMenu, dd);
 			}  break;
+			/* 跳转翻阅模式 */
+			case R.id.peruseMode:{
+				ret = closeMenu = true;
+				isLongClicked &= ActivedAdapter!=null;
+				String nowKey=isLongClicked?null:(ActivedAdapter.currentKeyText());
+				boolean proceed=true;
+				if(true && !isLongClicked){
+					WebViewmy currentWebFocus;
+					if(getCurrentFocus() instanceof WebViewmy)
+						currentWebFocus = (WebViewmy) getCurrentFocus();
+					else{
+						currentWebFocus = getCurrentWebContext(false);
+					}
+					if(currentWebFocus != null && currentWebFocus.bIsActionMenuShown) {
+						proceed = false;
+						currentWebFocus.evaluateJavascript("getSelection().toString()", value -> {
+							String newKey = nowKey;
+							if (value.length() > 2) {
+								value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+								if (value.length() > 0) {
+									newKey = value;
+								}
+							}
+							JumpToPeruseModeWithWord(newKey);
+						});
+					}
+				}
+				if(proceed && ActivedAdapter!=null){
+					JumpToPeruseModeWithWord(nowKey);
+				}
+			} break;
 		}
 		if(closeMenu)
 			closeIfNoActionView(mmi);
@@ -7427,7 +7444,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									wlh.initMergedFrame(0, true, false);
 									wlh.popupContentView(null, url);
 									invoker.renderContentAt(-1,BookPresenter.RENDERFLAG_NEW,0,mWebView, idx);
-									wlh.contentUIData.PageSlider.setWebview(mWebView, null);
+									wlh.pageSlider.setWebview(mWebView, null);
 									wlh.resetScrollbar();
 									if(mWebView.getBackgroundColor()==0) mWebView.setBackgroundColor(GlobalPageBackground); //todo optimize
 									return true;
@@ -10442,7 +10459,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				}
 				View v = Dir==-1?wPage.browserWidget11:Dir==1?wPage.browserWidget10:null;
 				if (v!=null) {
-					wPage.browserWidget10.setTag(v);
+					v.setTag(v);
 					v.performClick();
 				}
 			}

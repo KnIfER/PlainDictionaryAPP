@@ -27,13 +27,13 @@ import com.knziha.plod.plaindict.WebViewListHandler;
 public class RLContainerSlider extends FrameLayout{
 	public PageSlide page;
 	public WebViewListHandler weblist;
-	public WebViewmy WebContext;
+	private WebViewmy WebContext;
 	private PhotoBrowsingContext pBc;
 	private PhotoBrowsingContext tapCtx = SearchUI.pBc;
 	public ViewGroup scrollView;
 	private float density;
 	private int move_index;
-	private boolean bZoomOut;
+	public boolean bZoomOut;
 	private boolean bZoomOutCompletely;
 	private int WebContextWidth;
 	boolean aborted;
@@ -94,7 +94,7 @@ public class RLContainerSlider extends FrameLayout{
 				}
 				PhotoBrowsingContext ctx = tapCtx;
 				float targetZoom = ctx.tapZoomRatio;
-				CMN.Log("onDoubleTap::", targetZoom, WebContext.webScale/BookPresenter.def_zoom);
+				//CMN.Log("onDoubleTap::", targetZoom, WebContext.webScale/BookPresenter.def_zoom);
 				int zoomInMode = ctx.tapAlignment();
 				//zoomInType = 4;
 				if(zoomInMode<3) {
@@ -102,6 +102,7 @@ public class RLContainerSlider extends FrameLayout{
 						if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
 							int sY = WebContext.getScrollY();
 							//WebContext.zoomBy(0.02f);
+							float before = WebContext.webScale;
 							WebContext.zoomBy(1/WebContext.webScale*BookPresenter.def_zoom);
 							WebContext.zoomBy(targetZoom);
 							//((MainActivityUIBase)getContext()).showT("双击放大");
@@ -116,7 +117,7 @@ public class RLContainerSlider extends FrameLayout{
 								pad = (int) (WebContext.getContentWidth()-pad*(1+ratio));
 							}
 							WebContext.setScrollX(pad);
-							WebContext.setScrollY(sY);
+							WebContext.setScrollY((int) (sY*targetZoom));
 						}
 						else {
 							WebContext.zoomIn();
@@ -124,8 +125,14 @@ public class RLContainerSlider extends FrameLayout{
 						}
 					}
 					else {
-						if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-							WebContext.zoomBy(0.02f);
+						if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+							int sY = WebContext.getScrollY();
+							float before = WebContext.webScale;
+							//WebContext.zoomBy(0.02f);
+							float zoom = 1/WebContext.webScale*BookPresenter.def_zoom;
+							WebContext.zoomBy(zoom);
+							WebContext.setScrollY((int) (sY*zoom));
+						}
 						else{
 							WebContext.zoomOut();
 							WebContext.zoomOut();
@@ -266,7 +273,8 @@ public class RLContainerSlider extends FrameLayout{
 							page.RePosition();
 							first_touch_id = -1;
 							ViewUtils.preventDefaultTouchEvent(this, (int)lastX, (int)lastY);
-							if(scrollView !=null) {
+							if(scrollView !=null
+								&& (WebContext==null || WebContext.AlwaysCheckRange!=0)) {
 								ev.setAction(ACTION_DOWN);
 								//((WebView)scrollView).getSettings().setSupportZoom(false);
 								scrollView.dispatchTouchEvent(ev);
@@ -275,7 +283,8 @@ public class RLContainerSlider extends FrameLayout{
 					}
 					else if(aborted) {
 						onInterceptTouchEvent(ev);
-						if(!dragged && scrollView !=null) {
+						if(!dragged && scrollView !=null
+								&& (WebContext==null || WebContext.AlwaysCheckRange!=0)) {
 							ev.setLocation(nowX, nowY);
 							if (ev.getPointerCount()==1) // 权宜之计
 							scrollView.dispatchTouchEvent(ev);
@@ -502,6 +511,7 @@ public class RLContainerSlider extends FrameLayout{
 							//}
 							//todo touch slope when WebContext==null
 							if (WebContext==null
+									|| WebContext.AlwaysCheckRange==0
 									|| (WebContext.AlwaysCheckRange==-1 && bZoomOut && (dx > 100 || dx < -100))
 									|| (WebContext.AlwaysCheckRange==1||!bZoomOut)
 										&& (dx > 100 && WebContext.getScrollX()==0
@@ -615,4 +625,9 @@ public class RLContainerSlider extends FrameLayout{
 			this.scrollView = WebContext;
 		}
 	}
+	
+	public final WebViewmy getWebContext() {
+		return WebContext;
+	}
+	
 }

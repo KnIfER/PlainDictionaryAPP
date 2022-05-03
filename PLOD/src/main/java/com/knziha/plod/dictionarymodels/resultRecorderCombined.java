@@ -198,8 +198,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		ArrayList<Long> valsTmp = new ArrayList<>();
 		ArrayList<BookPresenter> frames = weblistHandler.frames;
 		ArrayList<long[]> framesDisplaying = weblistHandler.framesDisplaying;
-		weblistHandler.frames.clear();
-		weblistHandler.framesDisplaying.clear();
+		frames.clear();
+		framesDisplaying.clear();
 		long toFind;
 		for(int i=0;i<vals.size();i+=2){
 			valsTmp.clear();
@@ -316,7 +316,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		//weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowInPopup, bUseMergedUrl);
 		WebViewmy mWebView = weblistHandler.mMergedFrame;
 		if(bFoldingScreen) {
-			weblistHandler.resetScrollbar(mWebView, true, false);
+			weblistHandler.resetScrollbar(mWebView, false, false);
+			//mWebView.jointResult=jointResult;
 		}
 		else if(bUseMergedUrl) {
 			CMN.debug("mergedUrl::", mergedUrl);
@@ -325,7 +326,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 //			mWebView.loadUrl("https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2016/September");
 			mWebView.jointResult=jointResult;
 			weblistHandler.resetScrollbar(mWebView, true, false);
-			weblistHandler.contentUIData.PageSlider.setWebview(mWebView, null);
+			weblistHandler.pageSlider.setWebview(mWebView, null);
 		}
 		else {
 //			if(bNeedExpand && PDICMainAppOptions.getEnsureAtLeatOneExpandedPage()){
@@ -341,7 +342,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 				mWebView.jointResult=jointResult;
 			if(!weblistHandler.isViewSingle())
 				mWebView=null;
-			weblistHandler.contentUIData.PageSlider.setWebview(mWebView, weblistHandler.isViewSingle()?null:weblistHandler);
+			weblistHandler.pageSlider.setWebview(mWebView, weblistHandler.isViewSingle()?null:weblistHandler);
 			weblistHandler.resetScrollbar(mWebView, false, false);
 		}
 	}

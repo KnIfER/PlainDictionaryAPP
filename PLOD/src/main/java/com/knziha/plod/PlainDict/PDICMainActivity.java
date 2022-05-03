@@ -653,7 +653,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //			Utils.removeAllViews(webholder);
 //			Utils.removeAllViews(webSingleholder);
 			
-			WebViewmy backing_webview = contentUIData.PageSlider.WebContext;
+			WebViewmy backing_webview = contentUIData.PageSlider.getWebContext();
 			if(backing_webview!=null) {
 				backing_webview.expectedPos=0;
 			}
@@ -2720,7 +2720,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			ResetIMOffset();
 		}
 		if(leaving && opt.getLeaveContentBlank() && ! currentIsWeb()) {
-			WebViewmy current_webview = contentUIData.PageSlider.WebContext;
+			WebViewmy current_webview = contentUIData.PageSlider.getWebContext();
 			if(current_webview !=null) {
 				CMN.debug("页面置空了……");
 				current_webview.active = false;
@@ -2995,37 +2995,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					ret = true;
 				} else {
 					item.setChecked(opt.setRemPos2(!opt.getRemPos2()));
-				}
-			} break;
-			/* 跳转翻阅模式 */
-			case R.id.toolbar_action12:{
-				ret = closeMenu = true;
-				isLongClicked &= ActivedAdapter!=null;
-				String nowKey=isLongClicked?null:(ActivedAdapter.currentKeyText());
-				boolean proceed=true;
-				if(true && !isLongClicked){
-					WebViewmy currentWebFocus;
-					if(getCurrentFocus() instanceof WebViewmy)
-						currentWebFocus = (WebViewmy) getCurrentFocus();
-					else{
-						currentWebFocus = getCurrentWebContext(false);
-					}
-					if(currentWebFocus != null && currentWebFocus.bIsActionMenuShown) {
-						proceed = false;
-						currentWebFocus.evaluateJavascript("getSelection().toString()", value -> {
-							String newKey = nowKey;
-							if (value.length() > 2) {
-								value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
-								if (value.length() > 0) {
-									newKey = value;
-								}
-							}
-							JumpToPeruseModeWithWord(newKey);
-						});
-					}
-				}
-				if(proceed && ActivedAdapter!=null){
-					JumpToPeruseModeWithWord(nowKey);
 				}
 			} break;
 			/* 页内查找 */

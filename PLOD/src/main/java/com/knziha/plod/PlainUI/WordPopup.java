@@ -1115,7 +1115,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			popupFrame = frameAt;
 			popupForceId = forceStartId;
 			a.root.removeCallbacks(this);
-			if (invoker!=null && invoker.weblistHandler.contentUIData.PageSlider.tapZoom) {
+			if (invoker!=null && invoker.weblistHandler.pageSlider.tapZoom) { //todo ???
 				a.root.postDelayed(this, SearchUI.tapZoomWait); // 支持双击操作会拖慢点译！
 			} else {
 				a.root.post(this);

@@ -874,6 +874,22 @@ function debug(e){console.log(e)};
 				toolbar_title.setText(bookImpl.getDictionaryName());
 			}
 			toolbar_title.setMaxLines(1);
+			toolbar_title.setOnTouchListener(new View.OnTouchListener() {
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+					if (event.getActionMasked()==MotionEvent.ACTION_DOWN) {
+						//CMN.Log("down!!!");
+						if (mWebView.AlwaysCheckRange!=0) {
+							mWebView.AlwaysCheckRange=0;
+							//mWebView.weblistHandler.pageSlider.bZoomOut=true;
+						}
+					}
+					if (event.getActionMasked()==MotionEvent.ACTION_UP) {
+						//CMN.Log("up!!!");
+					}
+					return false;
+				}
+			});
 			viewsHolderReady=true;
 			
 			ViewUtils.removeView(pageData.recess);
@@ -954,7 +970,7 @@ function debug(e){console.log(e)};
 					break;
 				}
 				a.getUtk().setInvoker(this, mWebView, null, null);
-				a.getUtk().onClick(v);
+				a.getUtk().onClick(null);
 				break;
 			case R.id.undo:
 				if(v.getAlpha()==1)mWebView.evaluateJavascript("document.execCommand('Undo')", null);
@@ -970,6 +986,7 @@ function debug(e){console.log(e)};
 				break;
 			case R.id.toolbar_title:
 				CMN.debug("toolbar_title onClick");
+				mWebView.weblistHandler.pageSlider.bSuppressNxtTapZoom = CMN.now();
 				if(mWebView.getVisibility()!=View.VISIBLE) {
 					mWebView.setAlpha(1);
 					mWebView.setVisibility(View.VISIBLE);
@@ -978,23 +995,12 @@ function debug(e){console.log(e)};
 						renderContentAt(-1, RENDERFLAG_NEW, -1, null, mWebView.currentRendring);
 					}
 				}//((View)rl.getParent()).getId()==R.id.webholder
-				else if(rl.getParent()==a.weblistHandler.getViewGroup()) {
+				else if(!mWebView.weblistHandler.isViewSingle()) {
 					mWebView.setVisibility(View.GONE);
 				}
 				else {
 					toolbar_cover.performClick();
 				}
-				
-				CMN.Log("//tofo 该做的事情");
-				mWebView.post(new Runnable() {
-					@Override
-					public void run() {
-						//a.mBar.isWebHeld=true;
-						if(a.contentUIData.dragScrollBar.timer!=null) a.contentUIData.dragScrollBar.timer.cancel();
-						//a.mBar.fadeIn();
-						a.weblistHandler.setScrollbar();
-					}
-				});
 				break;
 			case R.id.recess: //deprecated
 			case R.id.forward: //deprecated
@@ -1944,7 +1950,7 @@ function debug(e){console.log(e)};
 			mWebView.clearIfNewADA(resposibleForThisWeb?null:this); // todo ???
 			mWebView.currentPos=position[0];
 			mWebView.currentRendring=position;
-			mWebView.jointResult=null;
+			mWebView.jointResult=mWebView.weblistHandler.multiDisplaying();
 			if(frameAt>=0) mWebView.frameAt = frameAt;
 			CMN.debug("折叠？？？", frameAt, mWebView.frameAt, getDictionaryName());
 			mWebView.awaiting = false;

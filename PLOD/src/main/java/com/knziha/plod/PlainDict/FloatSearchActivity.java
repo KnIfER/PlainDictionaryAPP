@@ -353,7 +353,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					boolean toHighlight=weblistHandler.pageSchBar !=null && PDICMainAppOptions.schPageNavAudioKey() && weblistHandler.pageSchBar.getParent()!=null;
 					if (contentUIData.webcontentlister.getVisibility()==View.VISIBLE) {
 						if(toHighlight) onIdClick(null, R.id.recess);
-						else contentUIData.bottombar2.findViewById(R.id.browser_widget11).performClick();
+						else contentUIData.browserWidget11.performClick();
 						return true;
 					}
 				}
@@ -368,7 +368,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 					boolean toHighlight=weblistHandler.pageSchBar !=null && PDICMainAppOptions.schPageNavAudioKey() && weblistHandler.pageSchBar.getParent()!=null;
 					if (contentUIData.webcontentlister.getVisibility()==View.VISIBLE) {
 						if(toHighlight) onIdClick(null, R.id.forward);
-						else contentUIData.bottombar2.findViewById(R.id.browser_widget10).performClick();
+						else contentUIData.browserWidget10.performClick();
 						return true;
 					}
 				}

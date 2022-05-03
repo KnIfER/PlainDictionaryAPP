@@ -1405,9 +1405,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			}
 	        return ItemView;
         }
-		//dict
 		@Override
 		public void onItemClick(TwoWayAdapterView<?> parent, View view, int position, long id) {
+			//CMN.Log("onItemClick::dict::", position, id);
         	MainActivityUIBase a = getMainActivity();
         	if(a==null) return;
 			int pos = position-NumPreEmpter;
@@ -1917,6 +1917,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 		
         private void click(int pos,boolean machine,boolean addHistory) {
+			//CMN.Log("onItemClick::entryAdapter::", pos, machine, presenter);
 			WebViewmy mWebView = PeruseView.this.mWebView;
 			int fvp = lv1.getFirstVisiblePosition();
 			View child = lv1.getChildAt(lastClickedPos-fvp);
@@ -1939,7 +1940,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					return;
 				}
 				
-				contentUIData.PageSlider.WebContext = mWebView;
+				contentUIData.PageSlider.setWebview(mWebView, null);
 				weblistHandler.setViewMode(null, 0, mWebView);
 				weblistHandler.viewContent();
 				

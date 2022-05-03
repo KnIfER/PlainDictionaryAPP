@@ -2175,8 +2175,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=40, shift=1) public static boolean getLv2JointOneAsSingle() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=40, shift=1) public static void setLv2JointOneAsSingle(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=41, shift=1) public static boolean showEntrySeekbar(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=41, shift=1) public static void showEntrySeekbar(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=41, shift=1) public static boolean showEntrySeekbar(){ FifthFlag=FifthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=41, shift=1) public static void showEntrySeekbar(boolean val){ FifthFlag=FifthFlag; throw new RuntimeException(); }
 	
 	/** webx是否不使用合并的单页面URL。see {@code #getUseMergedFrame()} */
 	@Metaline(flagPos=42, shift=1) public static boolean getMergeExemptWebx() { FifthFlag=FifthFlag; throw new RuntimeException();}

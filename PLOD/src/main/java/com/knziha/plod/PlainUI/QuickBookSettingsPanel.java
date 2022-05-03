@@ -512,8 +512,8 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					, "切换上一个（联合搜索）", "切换下一个（联合搜索）", "切换上一个（小）", "切换下一个（小）"
 					, "缩放按钮"}}
 					, new int[][]{new int[]{Integer.MAX_VALUE
-					, makeInt(6, 41, true) // entrySeekbar
-					, makeInt(5, 27, true) // dictName
+					, makeInt(5, 41, true) // showEntrySeekbar
+					, makeInt(5, 27, true) // showDictName
 					//, makeInt(6, 47, true) // toolsQuickLong
 					, makeInt(3, 19, true) // showPrvBtn
 					, makeInt(6, 50, true) // showNxtBtn

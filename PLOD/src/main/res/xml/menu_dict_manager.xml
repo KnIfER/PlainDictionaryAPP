@@ -81,7 +81,7 @@
 		android:visible="false"/>
 
 	<item
-		android:id="@+id/toolbar_action12"
+		android:id="@+id/peruseMode"
 		android:icon="@drawable/ic_btn_siglemode"
 		android:title="@string/move_files"
 		app:showAsAction="never"
