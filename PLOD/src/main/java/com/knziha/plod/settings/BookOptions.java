@@ -21,7 +21,6 @@ import com.knziha.plod.dictionarymodels.MagentTransient;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.OptionProcessor;
-import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
@@ -141,8 +140,14 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 				case "bgTitle":
 					if(get) return datum.getTitleBackground(); else datum.setTitleBackground((int) val);
 					break;
+				case "use_bgTitle":
+					if(get) return datum.getUseTitleBackground(); else datum.setUseTitleBackground((boolean) val);
+					break;
 				case "fgTitle":
 					if(get) return datum.getInternalTitleForeground(); else datum.setTitleForeground((int) val);
+					break;
+				case "use_fgTitle":
+					if(get) return datum.getUseTitleForeground(); else datum.setUseTitleForeground((boolean) val);
 					break;
 				case "bgColor":
 					if(get) return datum.getContentBackground(); else datum.setContentBackground((int) val);
@@ -202,7 +207,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 	private void parseData() {
 		//CMN.Log("parseData::", data);
 		bNeedParseData = false;
-		init_switcher("use_bgt", false, 9);
+		//init_switcher("use_bgt", false, 9);
 		init_switcher("tz", false, 10);
 		init_switcher("auto_fold", false, 32);
 		

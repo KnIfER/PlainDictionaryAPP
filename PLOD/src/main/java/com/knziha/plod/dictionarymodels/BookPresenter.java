@@ -478,8 +478,10 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=5) public void setUseInternalBG(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
 	
 	@Metaline(flagPos=4) public boolean getUseInternalFS(){ firstFlag=firstFlag; throw new RuntimeException(); }
-	@Metaline(flagPos=9) public boolean getUseInternalTBG(){ firstFlag=firstFlag; throw new RuntimeException(); }
-	//@Metaline(flagPos=10) public boolean getDoubleClickZoomPage(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=9) public boolean getUseTitleBackground(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=9) public void setUseTitleBackground(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=10) public boolean getUseTitleForeground(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=10) public void setUseTitleForeground(boolean value){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=11) public boolean getImageOnly(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	
 	// 12~20
@@ -555,7 +557,7 @@ function debug(e){console.log(e)};
 	}
 	
 	public int getTitleBackground() {
-		return getUseInternalTBG()?tbgColor:0;
+		return getUseTitleBackground()?tbgColor:0;
 	}
 	
 	public void setTitleBackground(int value) {
@@ -570,7 +572,7 @@ function debug(e){console.log(e)};
 	}
 	
 	public int getTitleForeground() {
-		return getUseInternalTBG()?tfgColor:0;
+		return getUseTitleBackground()?tfgColor:0;
 	}
 	
 	public void setTitleForeground(int value) {
@@ -1864,7 +1866,7 @@ function debug(e){console.log(e)};
 		}
 		GradientDrawable toolbarBG = mWebView.toolbarBG;
 		if(toolbarBG!=null) {
-			useInternal = getUseInternalTBG();
+			useInternal = getUseTitleBackground();
 			myWebColor = isDark?Color.BLACK
 					:useInternal? tbgColor
 					:PDICMainAppOptions.getTitlebarUseGlobalUIColor()?a.MainBackground
@@ -1882,7 +1884,7 @@ function debug(e){console.log(e)};
 				toolbarBG.setColors(ColorShade);
 				//CMN.Log("设置了?");
 			}
-			myWebColor = isDark?Color.WHITE:useInternal? tfgColor :opt.getTitlebarForegroundColor();
+			myWebColor = isDark?Color.WHITE:getUseTitleForeground()? tfgColor :opt.getTitlebarForegroundColor();
 			mWebView.setTitlebarForegroundColor(myWebColor);
 		}
 		//CMN.pt("设置颜色：");

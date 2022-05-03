@@ -12,25 +12,20 @@
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
 		>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="use_bgt"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="应用以下标题栏颜色"
-			/>
-
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="bgTitle"
-			android:title="自定义背景色"
+			android:title="自定义标题栏背景色"
 			android:defaultValue="@integer/COLOR_GREEN"
 			android:persistent="false"
+			app:hasCheck="true"
 			/>
 
 		<com.jaredrummler.colorpicker.ColorPickerPreference
 			android:key="fgTitle"
-			android:title="自定义前景色"
+			android:title="自定义标题栏前景色"
 			android:defaultValue="@integer/COLOR_GREEN"
 			android:persistent="false"
+			app:hasCheck="true"
 			/>
 
 		<com.jaredrummler.colorpicker.ColorPickerPreference
