@@ -108,6 +108,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	private final Runnable clrSelAby = () -> invoker.evaluateJavascript("window.getSelection().collapseToStart()", null);
 	public SearchbarTools etTools;
 	private boolean requestAudio;
+	public boolean tapped;
 	
 	public WordPopup(MainActivityUIBase a) {
 		super(a, true);
@@ -1168,8 +1169,11 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	@Override
 	protected void onDismiss() {
 		super.onDismiss();
-		if(invoker!=null) {
-			invoker.postDelayed(clrSelAby, 180);
+		if (tapped) {
+			if(invoker!=null) {
+				invoker.postDelayed(clrSelAby, 180);
+			}
+			tapped = false;
 		}
 	}
 	

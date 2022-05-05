@@ -1720,9 +1720,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	public void invokeToolsBtn(boolean pick, int quick) {
+		a.weblist = this;
+		WebViewmy wv = dictView;
 		if (pick) {
-			a.weblist = this;
-			WebViewmy wv = dictView;
 			if (wv != null) {
 				wv.presenter.invokeToolsBtn(wv, -1);
 			} else {
@@ -1734,7 +1734,6 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			a.getUtk().bPicking = 1;
 			a.showTopSnack("选择快捷功能！");
 		} else {
-			WebViewmy wv = a.weblist.dictView;
 			if (wv!=null) {
 				wv.presenter.invokeToolsBtn(wv, quick);
 			}

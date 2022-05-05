@@ -2919,6 +2919,7 @@ function debug(e){console.log(e)};
 				WebViewmy wv = findWebview(sid);
 				CMN.Log("popupWord::ivk::", presenter, wv, mergeView);
 				a.popupWord(key, null, frameAt, wv);
+				a.wordPopup.tapped = true;
 				if(frameAt>=0 && pH!=0){
 					if(pW==0) pW=pH;
 					if(RLContainerSlider.lastZoomTime == 0 || System.currentTimeMillis() - RLContainerSlider.lastZoomTime > 500){
