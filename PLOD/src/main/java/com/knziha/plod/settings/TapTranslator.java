@@ -20,7 +20,7 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 	public void onCreate(Bundle savedInstanceState) {
 		mPreferenceId = id;
 		super.onCreate(savedInstanceState);
-		init_switch_preference(this, "coord_view", PDICMainAppOptions.getImmersiveClickSearch(), null, null);
+		init_switch_preference(this, "immersive", PDICMainAppOptions.getImmersiveClickSearch(), null, null);
 
 		init_switch_preference(this, "top_resize", PDICMainAppOptions.getTopSnapMaximizeClickSearch(), null, null);
 		init_switch_preference(this, "double_resize", PDICMainAppOptions.getDoubleClickMaximizeClickSearch(), null, null);
@@ -31,8 +31,8 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 		//init_switch_preference(this, "skip_nom", PDICMainAppOptions.getSkipClickSearch(), null, null);
 		init_switch_preference(this, "reset_pos", PDICMainAppOptions.getResetPosClickSearch(), null, null);
 		init_switch_preference(this, "reset_max", PDICMainAppOptions.getResetMaxClickSearch(), null, null);
-		init_switch_preference(this, "switch_top", PDICMainAppOptions.getSwichClickSearchDictOnTop(), null, null);
-		init_switch_preference(this, "switch_bottom", PDICMainAppOptions.getSwichClickSearchDictOnBottom(), null, null);
+		//init_switch_preference(this, "switch_top", PDICMainAppOptions.getSwichClickSearchDictOnTop(), null, null);
+		//init_switch_preference(this, "switch_bottom", PDICMainAppOptions.getSwichClickSearchDictOnBottom(), null, null);
 		init_switch_preference(this, "switch_nav", PDICMainAppOptions.getSwichClickSearchDictOnNav(), null, null);
 		init_switch_preference(this, "delay_diss", PDICMainAppOptions.getClickSearchDismissDelay(), null, null);
 		init_switch_preference(this, "click_tts", PDICMainAppOptions.tapSchAutoReadEntry(), null, null);
@@ -46,6 +46,11 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 		findPreference("tz1").setOnPreferenceClickListener(this);
 		
 		init_switch_preference(this, "tools", PDICMainAppOptions.tapSchShowToolsBtn(), null, null);
+		
+		init_switch_preference(this, "fold", PDICMainAppOptions.foldingScreenTapSch(), null, null);
+		init_switch_preference(this, "prvnxt", PDICMainAppOptions.showPrvNxtBtnSmallTapSch(), null, null);
+		init_switch_preference(this, "seek", PDICMainAppOptions.showEntrySeekbarTapSch(), null, null);
+		init_switch_preference(this, "seekF", PDICMainAppOptions.showEntrySeekbarTapSchFolding(), null, null);
 	}
 
 	@Override
@@ -66,7 +71,7 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		switch (preference.getKey()){
-			case "coord_view":
+			case "immersive":
 				PDICMainAppOptions.setImmersiveClickSearch((Boolean) newValue);
 			break;
 			case "top_resize":
@@ -104,12 +109,12 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 			case "reset_max":
 				PDICMainAppOptions.setResetMaxClickSearch((boolean) newValue);
 			break;
-			case "switch_top":
-				PDICMainAppOptions.setSwichClickSearchDictOnTop((boolean) newValue);
-			break;
-			case "switch_bottom":
-				PDICMainAppOptions.setSwichClickSearchDictOnBottom((boolean) newValue);
-			break;
+//			case "switch_top":
+//				PDICMainAppOptions.setSwichClickSearchDictOnTop((boolean) newValue);
+//			break;
+//			case "switch_bottom":
+//				PDICMainAppOptions.setSwichClickSearchDictOnBottom((boolean) newValue);
+//			break;
 			case "switch_nav":
 				PDICMainAppOptions.setSwichClickSearchDictOnNav((boolean) newValue);
 			break;
@@ -126,6 +131,22 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 			break;
 			case "tools":
 				PDICMainAppOptions.tapSchShowToolsBtn((Boolean) newValue);
+			break;
+			case "fold":
+				PDICMainAppOptions.foldingScreenTapSch((Boolean) newValue);
+				SearchUI.btmV++;
+			break;
+			case "prvnxt":
+				PDICMainAppOptions.showPrvNxtBtnSmallTapSch((Boolean) newValue);
+				SearchUI.btmV++;
+			break;
+			case "seek":
+				PDICMainAppOptions.showEntrySeekbarTapSch((Boolean) newValue);
+				SearchUI.btmV++;
+			break;
+			case "seekF":
+				PDICMainAppOptions.showEntrySeekbarTapSchFolding((Boolean) newValue);
+				SearchUI.btmV++;
 			break;
 		}
 		return true;

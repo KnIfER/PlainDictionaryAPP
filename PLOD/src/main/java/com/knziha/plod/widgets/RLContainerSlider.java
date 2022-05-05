@@ -1,15 +1,12 @@
 package com.knziha.plod.widgets;
 
-import android.app.Instrumentation;
 import android.content.Context;
-import android.graphics.Point;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import static android.view.MotionEvent.*;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.FrameLayout;
 
 import androidx.appcompat.app.GlobalOptions;
@@ -581,18 +578,23 @@ public class RLContainerSlider extends FrameLayout{
 				//CMN.debug("slideTurn::-2", slideTurn, tapZoom);
 			} else {
 				if (weblist.isMultiRecord()) {
-					if (weblist.isMergingFrames()) {
-						slideTurn = PDICMainAppOptions.getPageTurn3();
-						//CMN.debug("slideTurn::1", slideTurn, tapZoom);
-					} else if (weblist.isFoldingScreens()) {
-						slideTurn = PDICMainAppOptions.getPageTurn1();
-						//CMN.debug("slideTurn::2", slideTurn, tapZoom);
+					if (weblist.isViewSingle()) {
+						if (weblist.isMergingFrames()) {
+							slideTurn = PDICMainAppOptions.slidePageMd();
+							//CMN.debug("slideTurn::1", slideTurn, tapZoom);
+						} else if (weblist.isFoldingScreens()) {
+							slideTurn = PDICMainAppOptions.slidePage1D() || PDICMainAppOptions.slidePageFd();
+							//CMN.debug("slideTurn::2", slideTurn, tapZoom);
+						} else {
+							slideTurn = PDICMainAppOptions.slidePage1D();
+							//CMN.debug("slideTurn::3", slideTurn, tapZoom);
+						}
 					} else {
-						slideTurn = PDICMainAppOptions.getPageTurn2();
-						//CMN.debug("slideTurn::2", slideTurn, tapZoom);
+						slideTurn = PDICMainAppOptions.slidePageMD();
+						//CMN.debug("slideTurn::4", slideTurn, tapZoom);
 					}
 				} else {
-					slideTurn = PDICMainAppOptions.getPageTurn1();
+					slideTurn = PDICMainAppOptions.slidePage1D();
 					//CMN.debug("slideTurn::3", slideTurn, tapZoom);
 				}
 			}

@@ -1962,7 +1962,8 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		int hudieling;
 		if(true) {
 			//checkEven=0;
-			//bCheckTags=false;
+			//bSkipTags=false;
+			//bCheckInTag=false;
 		}
 //		boolean debug=false;
 //		if(new String(source, sourceOffset, sourceCount, _charset).equals("democracy")) {
@@ -2175,7 +2176,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 								//int htmlForward = indexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlCloseTag, 0, htmlCloseTag.length, from);
 								int htmlForward = safeKalyxIndexOf(source, sourceOffset, Math.min(sourceCount, from+tagCheckFrame), htmlTags, from, flag);
 								if (htmlForward>=from) {
-									//if(flag.val==1){ // x >
+									if(flag.val==1){ // x >
 										from = bInTagCheckNeeded-1;
 										//int htmlBackward = safeKalyxLastIndexOf(source, sourceOffset, sourceOffset+Math.max(0, from-tagCheckFrame), htmlTags, from, flag);
 										int htmlBackward = safeKalyxLastIndexOf(source, sourceOffset, sourceOffset+Math.max(0, from-tagCheckFrame), htmlTags, from, flag);
@@ -2187,7 +2188,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 												break; // re-seek
 											}
 										}
-									//}
+									}
 								}
 								bInTagCheckNeeded=0;
 							}

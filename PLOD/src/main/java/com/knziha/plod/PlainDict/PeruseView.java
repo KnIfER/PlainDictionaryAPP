@@ -1029,7 +1029,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 //		contentUIData.browserWidget8.setOnLongClickListener(this);
 		
 		contentUIData.PageSlider.page = contentUIData.cover;
-		contentUIData.PageSlider.slideTurn =opt.getPageTurn3();
+		contentUIData.PageSlider.slideTurn = opt.slidePage1D();
 //		if(a.IMPageCover!=null)//111
 //			IMPageCover.setPageSliderInf(a.IMPageCover.inf);
 
@@ -1150,8 +1150,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 	
 	public boolean toggleTurnPageEnabled() {
-		opt.setPageTurn3(!opt.getPageTurn3());
-		return contentUIData.PageSlider.slideTurn =opt.getPageTurn3();
+		opt.slidePageMd(!opt.slidePageMd());
+		return contentUIData.PageSlider.slideTurn =opt.slidePageMd();
 	}
 
 	/** Hide is not dismiss */

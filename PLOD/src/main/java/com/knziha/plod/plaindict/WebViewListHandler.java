@@ -71,6 +71,7 @@ import java.util.ArrayList;
 
 /** 页面管理器，曾经尝试过在Listview中放置webview，太卡。现在保留的模式：<br/>
  * 一个webview，显示一本或多本词典内容（合并的多页面模式）。 <br/>
+ * 一个webview，一次显示一本词典内容，滑动翻页可切换子词条（屏风模式）。 <br/>
  * 多个webview，放在LinearLayout中，显示多本词典内容。（多页面视图列表）*/
 public class WebViewListHandler extends ViewGroup implements View.OnClickListener, View.OnLongClickListener {
 	final MainActivityUIBase a;
@@ -112,6 +113,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public View browserWidget11;
 	public RLContainerSlider pageSlider;
 	public DragScrollBar mBar;
+	public ImageView prv,nxt;
+	public SeekBar entrySeek;
 	
 	private boolean bottomNavWeb;
 	public View toolsBtn;
@@ -136,18 +139,21 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.PageSlider.weblist = this;
 			contentUIData.cover.weblist = this;
 			contentUIData.cover.hdl = a.hdl;
-			contentUIData.entrySeek.setOnSeekBarChangeListener(entrySeekLis);
 			browserWidget8 = contentUIData.browserWidget8;
 			browserWidget10 = contentUIData.browserWidget10;
 			browserWidget11 = contentUIData.browserWidget11;
+			entrySeek = contentUIData.entrySeek;
+			entrySeek.setOnSeekBarChangeListener(entrySeekLis);
 			pageSlider = contentUIData.PageSlider;
 			DragScrollBar mBar = this.mBar = contentUIData.dragScrollBar;
 			toolsBtn = contentUIData.tools;
 			toolsBtn.setOnClickListener(this);
 			toolsBtn.setOnLongClickListener(this);
 			
-			contentUIData.prv.setOnClickListener(this);
-			contentUIData.nxt.setOnClickListener(this);
+			prv = contentUIData.prv;
+			nxt = contentUIData.nxt;
+			prv.setOnClickListener(this);
+			nxt.setOnClickListener(this);
 			contentUIData.zoomIn.setOnClickListener(this);
 			contentUIData.zoomOut.setOnClickListener(this);
 			
@@ -209,7 +215,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public final Runnable entrySeekRn = new Runnable() {
 		@Override
 		public void run() {
-			JumpToFrame(contentUIData.entrySeek.getProgress());
+			JumpToFrame(entrySeek.getProgress());
 		}
 	};
 	public final SeekBar.OnSeekBarChangeListener entrySeekLis = new SeekBar.OnSeekBarChangeListener() {
@@ -236,13 +242,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	};
 	
 	public void setScrollFocus(WebViewmy wv, int frame) {
-		if(lastScrolledBook != wv.presenter) {
-			lastScrolledBook = wv.presenter;
-			a.root.postOnAnimationDelayed(UpdateBookLabelAbility, 50);
+		if (!bDataOnly) {
+			if(lastScrolledBook != wv.presenter) {
+				lastScrolledBook = wv.presenter;
+				a.root.postOnAnimationDelayed(UpdateBookLabelAbility, 50);
+			}
+			scrollFocus = wv;
 		}
-		scrollFocus = wv;
-		if (!bDataOnly && PDICMainAppOptions.showEntrySeekbar()) {
-			contentUIData.entrySeek.setProgress(frame);
+		if (ViewUtils.isVisible(entrySeek)) {
+			entrySeek.setProgress(frame);
 		}
 	}
 	
@@ -819,7 +827,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public final static int WEB_LIST_MULTI=0;
 	public final static int WEB_VIEW_SINGLE=1;
 	int mViewMode;
-	int btmV;
+	public int btmV;
 	boolean isMultiRecord;
 	public resultRecorderCombined multiRecord;
 	public boolean multiDicts;
@@ -843,24 +851,42 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if(changed) {
 			isMultiRecord = multi;
 			mViewMode = viewMode;
+			boolean showSeek;
 			if (!bDataOnly) {
 				boolean vis = bMerge!=1 && PDICMainAppOptions.showDictName();
 				ViewUtils.setVisible(contentUIData.dictNameStroke, vis);
 				ViewUtils.setVisible(contentUIData.dictName, vis);
-				ViewUtils.setVisible(contentUIData.navBtns, multiDicts);
-				if (multiDicts) {
+				ViewUtils.setVisible(contentUIData.navBtns, multiDicts && bMerge!=1);
+				if (multiDicts && bMerge!=1) {
 					ViewUtils.setVisible(contentUIData.browserWidget14, PDICMainAppOptions.showPrvBtn());
 					ViewUtils.setVisible(contentUIData.browserWidget13, PDICMainAppOptions.showNxtBtn());
 				}
 				ViewUtils.setVisible(contentUIData.zoomCtrl, multiDicts && PDICMainAppOptions.showZoomBtn());
-				ViewUtils.setVisible(contentUIData.prv, multiDicts && PDICMainAppOptions.showPrvBtnSmall());
-				ViewUtils.setVisible(contentUIData.nxt, multiDicts && PDICMainAppOptions.showNxtBtnSmall());
-				ViewUtils.setVisible(contentUIData.entrySeek, multiDicts && PDICMainAppOptions.showEntrySeekbar());
+				ViewUtils.setVisible(prv, multiDicts && PDICMainAppOptions.showPrvBtnSmall());
+				ViewUtils.setVisible(nxt, multiDicts && PDICMainAppOptions.showNxtBtnSmall());
+				showSeek = multiDicts && (bMerge == 2 ? PDICMainAppOptions.showEntrySeekbarFolding() : PDICMainAppOptions.showEntrySeekbar());
+			} else {
+				ViewUtils.setVisible(prv, multiDicts && PDICMainAppOptions.showPrvNxtBtnSmallTapSch());
+				ViewUtils.setVisible(nxt, multiDicts && PDICMainAppOptions.showPrvNxtBtnSmallTapSch());
+				showSeek = multiDicts && (bMerge == 2 ? PDICMainAppOptions.showEntrySeekbarTapSchFolding() : PDICMainAppOptions.showEntrySeekbarTapSch());
+				bMergingFrames = bMergeFrames = bMerge;
+			}
+			if (showSeek) {
+				ViewUtils.setVisible(entrySeek, true);
+				int pad = bMerge == 1 ? (int) (70 * GlobalOptions.density) : 0;
+				((MarginLayoutParams) entrySeek.getLayoutParams()).leftMargin = pad / 5;
+				((MarginLayoutParams) entrySeek.getLayoutParams()).rightMargin = pad;
+			} else {
+				ViewUtils.setVisible(entrySeek, false);
 			}
 		}
 		if(this.dictView!=dictView) {
 			this.dictView = dictView;
 		}
+	}
+	
+	public final void setViewMode() {
+		setViewMode(multiRecord, isMergingFramesNum(), dictView);
 	}
 	
 	int[] versions=new int[8];
@@ -918,8 +944,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			contentUIData.browserWidget14.setOnClickListener(this);
 			
 			PorterDuffColorFilter phaedrof = new PorterDuffColorFilter(0xff888888, PorterDuff.Mode.SRC_IN);
-			contentUIData.prv.setColorFilter(phaedrof);
-			contentUIData.nxt.setColorFilter(phaedrof);
+			prv.setColorFilter(phaedrof);
+			nxt.setColorFilter(phaedrof);
 			
 			SplitView webcontentlister = contentUIData.webcontentlister;
 			webcontentlister.multiplier=-1;
@@ -969,7 +995,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		return mViewMode==WEB_VIEW_SINGLE;
 	}
 	
-	/** displaying records from multiple dictionary in search-all mode */
+	/** displaying one or multiple records from multiple dictionary in search-all mode */
 	public final boolean isMultiRecord() {
 		return isMultiRecord;
 	}
@@ -1717,14 +1743,19 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void renderFoldingScreen(int frame) {
 		try {
-			boolean shareView = PDICMainAppOptions.getUseSharedFrame();
 			BookPresenter presenter = frames.get(frame);
 			long[] displaying = framesDisplaying.get(frame);
-			WebViewmy mWebView;
-			if (presenter.getIsWebx() && (!shareView || PDICMainAppOptions.getMergeExemptWebx())) {
-				presenter.SetSearchKey(batchDisplaying().key);
-				shareView = false;
+			boolean shareView;
+			if (bDataOnly) {
+				shareView = true;
+			} else {
+				shareView = PDICMainAppOptions.getUseSharedFrame();
+				if (presenter.getIsWebx() && (!shareView || PDICMainAppOptions.getMergeExemptWebx())) {
+					presenter.SetSearchKey(batchDisplaying().key);
+					shareView = false;
+				}
 			}
+			WebViewmy mWebView;
 			if(opt.getRemPos()) {
 				savePagePos();
 			}
@@ -1736,12 +1767,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				mWebView.weblistHandler = this;
 			}
 			
-			mWebView.fromCombined = 0;
+			mWebView.fromCombined = bDataOnly?2:0;
 			dictView = mWebView;
 			presenter.renderContentAt(-2, BookPresenter.RENDERFLAG_NEW, 0, mWebView, displaying);
-			ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
+			if (!bDataOnly) {
+				ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
+			}
 			setScrollFocus(mWebView, frame);
 			pageSlider.setWebview(mWebView, null);
+			batchDisplaying().LongestStartWithSeqLength = -frame;
 		} catch (Exception e) {
 			CMN.Log(e);
 		}

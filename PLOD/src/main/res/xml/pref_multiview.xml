@@ -5,7 +5,7 @@
 	tools:context="com.knziha.plod.settings.Multiview"
 	>
 	<PreferenceCategory
-		android:key="cat_1"
+		android:key="cat0"
 		android:title="多页面设置（联合搜索）"
 		app:icon="@drawable/ic_viewpager_carousel_vertical"
 		android:tint="@color/colorHeaderBlue"
@@ -71,7 +71,7 @@
 			/>
 	</PreferenceCategory>
 	<PreferenceCategory
-		android:key="cat_2"
+		android:key="cat1"
 		android:title="合并多页面"
 		app:icon="@drawable/ic_view_comfy_2_black_24dp"
 		android:tint="@color/colorHeaderBlue"
@@ -123,9 +123,45 @@
 			android:title="允许滑动翻页"
 			app:allowDividerBelow="true"
 			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="seek"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="允许显示拖动条"
+			/>
 	</PreferenceCategory>
+
 	<PreferenceCategory
-		android:key="cat_3"
+		android:key="cat2"
+		android:title="屏风模式"
+		app:icon="@drawable/ic_view_carousel_black_24dp"
+		android:tint="@color/colorHeaderBlue"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="fold"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="启用屏风模式"
+			android:summary="分散显示多个词条。"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="turnF"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="允许先滑动屏风（子词条）"
+			app:allowDividerBelow="true"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="seekF"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="允许显示拖动条"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat-1"
 		android:title="单页面模式（同一词典）"
 		app:icon="@drawable/ic_view_comfy_1_black_24dp"
 		android:tint="@color/colorHeaderBlue"

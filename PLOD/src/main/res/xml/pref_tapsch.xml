@@ -13,7 +13,7 @@
 		app:allowDividerBelow="true"
 		>
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="coord_view"
+			android:key="immersive"
 			android:persistent="false"
 			android:defaultValue="true"
 			android:title="沉浸式滚动"
@@ -83,19 +83,19 @@
 			android:defaultValue="false"
 			android:title="弹出时重置放大"/>
 
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="switch_top"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="点击顶栏切换词典"
-			/>
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="switch_top"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="点击顶栏切换词典"-->
+<!--			/>-->
 
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="switch_bottom"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="点击底栏切换词典"
-			/>
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="switch_bottom"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="点击底栏切换词典"-->
+<!--			/>-->
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="pin_upstream"
@@ -136,6 +136,41 @@
 
 
 	<PreferenceCategory
+		android:key="gp_multi"
+		android:title="多页面显示方式"
+		android:clickable="true"
+		app:icon="@drawable/ic_viewpager_carousel_vertical"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		android:tint="#000"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="fold"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="使用屏风模式"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="prvnxt"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="显示小型切换按钮"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="seek"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="显示拖动条（合并模式）"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="seekF"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="显示拖动条（屏风模式）"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
 		android:key="gp_dzoom"
 		android:title="双击内容页"
 		app:icon="@drawable/ic_search"
@@ -154,6 +189,7 @@
 			android:title="详细设置…"
 			/>
 	</PreferenceCategory>
+
 	<PreferenceCategory
 		android:key="gp_dzoom"
 		android:title="翻页"

@@ -215,7 +215,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		CMN.Log("onAction", flagIdxSection, flagPos, dynamic, val, makeInt(5, 35, false));
 		if (settingsPanel==_btmBars) {
 			SearchUI.btmV++;
-			weblist.setViewMode(weblist.multiRecord, weblist.isMergingFramesNum(), weblist.dictView);
+			weblist.setViewMode();
 			return true;
 		}
 		if (flagIdxSection!=0) {

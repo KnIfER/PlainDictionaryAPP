@@ -2275,6 +2275,11 @@
 			return 0;
 		}
 
+		function prvnxt(n) {
+			prvnxtFrame(n);
+			if(app) app.banDbclk(sid.get());
+		}
+
 		function prvnxtFrame(nxt) {
 			var t=Math.ceil(defP.scrollTop);
 			var cc=frames.length,childAtIdx=cc;
@@ -2467,6 +2472,7 @@
 
 		function onTitleClick(e){//折叠内容
 			//debug(e);
+			if(app) app.banDbclk(sid.get());
 			var t = e.srcElement;
 			while(t.tagName!=='LI') t = t.parentNode;
 			var inf = t.dictInfo;
@@ -3452,6 +3458,7 @@
 			if(menu){
 				menu.p.style.display="none";
 				menu=null;
+				if(app) app.banDbclk(sid.get());	
 			}
 		}
 		
@@ -3839,8 +3846,8 @@
 	</div>
 	
 	<div id='defP'></div>
-	<a class="arrwp prev" id="prev"  onclick="prvnxtFrame();"><p class="arrow"></p></a>
-	<a class="arrwp next" id="next" onclick="prvnxtFrame(1);"><p class="arrow"></p></a>
+	<a class="arrwp prev" id="prev"  onclick="prvnxt();"><p class="arrow"></p></a>
+	<a class="arrwp next" id="next" onclick="prvnxt(1);"><p class="arrow"></p></a>
 	<div id="bkP" style="display:none" onclick="">
 		<a class="arrwp prev back" id="back"  onclick="goBack();"><p class="arrow"></p></a>
 		<a class="arrwp next back" id="forward" onclick="goBack(1);"><p class="arrow"></p></a> 

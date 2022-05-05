@@ -44,6 +44,7 @@
 			android:minWidth="45dp"
 			android:background="@drawable/listviewselector0"
 			/>
+
 		<ImageView
 			android:id="@+id/tools"
 			android:layout_width="45dp"
@@ -149,6 +150,50 @@
 				android:theme="@style/scroll"
 				android:fadingEdge="none"
 				android:overScrollMode="never"
+				/>
+
+			<com.knziha.plod.widgets.MarkableSeekBar
+				android:id="@+id/entrySeek"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:maxHeight="@dimen/_35_"
+				android:minHeight="@dimen/_35_"
+				android:theme="@style/seekBarStyle"
+				android:splitTrack="false"
+				android:layout_gravity="bottom"
+				android:layout_marginBottom="20dp"
+				android:max="10"
+				/>
+			<ImageView
+				android:id="@+id/nxt"
+				android:layout_width="60dp"
+				android:layout_height="25sp"
+				android:layout_gravity="bottom|right"
+				android:gravity="center_horizontal"
+				android:textSize="18sp"
+				android:maxLines="1"
+				android:paddingBottom="2dp"
+				android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
+				android:background="?attr/listChoiceBackgroundIndicator"
+				android:clickable="true"
+				android:layout_marginRight="5dp"
+				android:visibility="gone"
+				/>
+			<ImageView
+				android:id="@+id/prv"
+				android:layout_width="60dp"
+				android:layout_height="25sp"
+				android:layout_gravity="bottom|left"
+				android:gravity="center_horizontal"
+				android:textSize="18sp"
+				android:maxLines="1"
+				android:paddingBottom="2dp"
+				android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
+				android:background="?attr/listChoiceBackgroundIndicator"
+				android:rotation="180"
+				android:clickable="true"
+				android:layout_marginLeft="5dp"
+				android:visibility="gone"
 				/>
 
 			<com.knziha.plod.widgets.DragScrollBar

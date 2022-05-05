@@ -5726,7 +5726,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething()){
 						interruptAutoReadProcess(true);
 					}
-					if (slided && weblist.isFoldingScreens() && weblist.multiDicts) {
+					if (slided && weblist.isFoldingScreens() && weblist.multiDicts && PDICMainAppOptions.slidePageFd()) {
 						int toPos = weblist.multiRecord.jointResult.LongestStartWithSeqLength;
 						if (toPos>0) toPos = delta;
 						else toPos = delta-toPos;
@@ -6349,14 +6349,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ret;
 	}
 	
-	private void resetMerge(int which, boolean t) {
-		if (weblistHandler.isMultiRecord()) {
+	private void resetMerge(int which, boolean dlg) {
+		WebViewListHandler weblist = weblistHandler;
+		if (weblist.isMultiRecord()) {
 			if(which==-1) which=mergeFrames();
 			boolean bUseMergedUrl = which!=0;
-			if(which!=weblistHandler.bMergingFrames) {
-				weblistHandler.setViewMode(weblistHandler.multiRecord, which, null);
-				weblistHandler.bMergeFrames = which;
-				weblistHandler.webHolderSwapHide = true;
+			if(which!=weblist.bMergingFrames) {
+				weblist.setViewMode(weblist.multiRecord, which, weblist.dictView);
+				weblist.bMergeFrames = which;
+				weblist.webHolderSwapHide = true;
 				// 旧版本切换新版本出现闪黑，
 				//boolean delay = opt.getDelayContents();
 				//boolean animate = opt.getAnimateContents();
@@ -6364,18 +6365,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//	opt.setDelayContents(false);
 				//	opt.setAnimateContents(false);
 				//}
-				viewContent(weblistHandler);
+				viewContent(weblist);
 				//if(delay||animate) {
 				//	opt.setDelayContents(delay);
 				//	opt.setAnimateContents(animate);
 				//}
 				
 				// only handle popup
-				//weblistHandler.initMergedFrame(weblistHandler.bMergingFrames, false, false);
+				//weblist.initMergedFrame(weblist.bMergingFrames, false, false);
 				if(recCom!=null)
-					recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblistHandler);
-			} else if(t){
-				showT("已经是了");
+					recCom.renderContentAt(-2, MainActivityUIBase.this, null, weblist);
+			} else {
+				if (dlg) {
+					showT("已经是了");
+				} else {
+					weblist.setViewMode(weblist.multiRecord, which, weblist.dictView);
+				} 
 			}
 		}
 	}
@@ -6495,7 +6500,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				.putExtra("realm", id)
 				.setClass(this, SettingsActivity.class);
 		if (id==Multiview.id) {
-			intent.putExtra("where", weblistHandler.isMultiRecord()?weblistHandler.isViewSingle()?2:1:3);
+			intent.putExtra("where", weblistHandler.isMultiRecord()?weblistHandler.bMergingFrames:-1);
 		}
 		if (result==0) {
 			startActivity(intent);
@@ -8885,8 +8890,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				isBrowsingImgs = false;
 			} break;
 			case TapTranslator.requestCode:{
-				if(resultCode==requestCode)
-					wordPopup.set();
+				wordPopup.set(resultCode==requestCode);
 				break;
 			}
 			case Multiview.requestCode:{
@@ -10398,19 +10402,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				WebViewListHandler wPage = page.weblist;
 				if (val==Integer.MAX_VALUE) {
 					//CMN.Log("onPreparePage!!!");
+					if (page.weblist.bDataOnly) {
+						page.weblist.dictView.setBackgroundColor(AppWhite);
+					}
 					currentPos=0;
 					page.setTextColor(AppBlack);
 					page.setBackgroundColor(ColorUtils.blendARGB(AppWhite, Color.GRAY, 0.2f));
-					//if (!wPage.bDataOnly) {
-					//	if (wPage.isMultiRecord()) {
-					//		additiveMyCpr1 viewing = wPage.isMergingFrames() ? wPage.getMergedFrame().jointResult : wPage.jointResult;
-					//		if (viewing != null) {
-					//			page.setText(viewing.key);
-					//		}
-					//	} else {
-					//		page.setText(wPage.dictView.presenter.currentDisplaying);
-					//	}
-					//}
 				} else {
 					//boolean turn = Math.abs(val)>20*dm.density;
 					int pos = val<0?1:-1;
@@ -10419,13 +10416,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						currentPos=pos;
 						page.setGravity(Gravity.CENTER_VERTICAL|(val>0?Gravity.LEFT:Gravity.RIGHT));
 						if (wPage.isFoldingScreens() && wPage.multiDicts) {
-							ArrayList<BookPresenter> fms = wPage.frames;
-							int toPos = wPage.multiRecord.jointResult.LongestStartWithSeqLength;
-							if (toPos>=0) toPos = pos;
-							else toPos = pos-toPos;
-							if (toPos>=0 && toPos<fms.size()) {
-								page.setText(fms.get(toPos).getDictionaryName());
-								return;
+							if (PDICMainAppOptions.slidePageFd()) {
+								ArrayList<BookPresenter> fms = wPage.frames;
+								int toPos = wPage.batchDisplaying().LongestStartWithSeqLength;
+								if (toPos>=0) toPos = pos;
+								else toPos = pos-toPos;
+								if (toPos>=0 && toPos<fms.size()) {
+									page.setText(fms.get(toPos).getDictionaryName());
+									return;
+								} else if(!PDICMainAppOptions.slidePage1D()) {
+									page.setText(toPos<0?"←":"→");
+								}
 							}
 						}
 						if (DBrowser!=null && wPage==DBrowser.weblistHandler) {
@@ -10454,7 +10455,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//IMPageCover.getBackground().setAlpha(0);
 				WebViewListHandler wPage = page.weblist;
 				CharSequence t = page.getText();
-				if (t.length()==1 && (TextUtils.equals(t, "←")||TextUtils.equals(t, "→"))) {
+				if (t.length() == 1 && (TextUtils.equals(t, "←") || TextUtils.equals(t, "→"))) {
 					page.decided = 0;
 				}
 				View v = Dir==-1?wPage.browserWidget11:Dir==1?wPage.browserWidget10:null;

@@ -128,7 +128,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 //		else{
 //			sv.scrollTo(0, expectedPos);
 //		}
-		additiveMyCpr1 jointResult;
+		additiveMyCpr1 	jointResult;
 		if(pos==-2) {
 			if(weblistHandler.bMergingFrames!=0) {
 				jointResult = (weblistHandler.dictView!=null?weblistHandler.dictView:weblistHandler.getMergedFrame()).jointResult; //dictView ??
@@ -239,7 +239,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		StringBuilder mergedUrl = null;
 		ViewGroup webholder = weblistHandler;
 		if (bFoldingScreen) {
-			weblistHandler.renderFoldingScreen(jointResult.LongestStartWithSeqLength<0?-jointResult.LongestStartWithSeqLength:0);
+			int foldN = jointResult.LongestStartWithSeqLength<0?-jointResult.LongestStartWithSeqLength:0;
+			weblistHandler.renderFoldingScreen(foldN);
+			weblistHandler.entrySeek.setMax(frames.size()-1);
+			weblistHandler.entrySeek.setProgress(foldN);
 		}
 		else {
 			for(int i=0,ln=frames.size();i<ln;i++){
@@ -312,6 +315,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 					mWebView.fromCombined=1;
 				}
 			}
+			weblistHandler.entrySeek.setMax(frames.size()-1);
+			weblistHandler.entrySeek.setProgress(0);
 		}
 		//weblistHandler.initMergedFrame(bUseMergedUrl, weblistHandler.bShowInPopup, bUseMergedUrl);
 		WebViewmy mWebView = weblistHandler.mMergedFrame;

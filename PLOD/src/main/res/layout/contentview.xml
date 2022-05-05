@@ -65,6 +65,20 @@
 				android:layout_centerVertical="true"
 				android:layout_centerHorizontal="true"/>
 
+
+			<com.knziha.plod.widgets.MarkableSeekBar
+				android:id="@+id/entrySeek"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:maxHeight="@dimen/_35_"
+				android:minHeight="@dimen/_35_"
+				android:theme="@style/seekBarStyle"
+				android:splitTrack="false"
+				android:layout_gravity="bottom"
+				android:layout_marginBottom="20dp"
+				android:max="10"
+				/>
+
 			<LinearLayout
 				android:id="@+id/navBtns"
 				android:layout_width="wrap_content"
@@ -221,19 +235,6 @@
 				android:textSize="18sp"
 				android:maxLines="1"
 				android:paddingBottom="2dp"
-				/>
-
-			<com.knziha.plod.widgets.MarkableSeekBar
-				android:id="@+id/entrySeek"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:maxHeight="@dimen/_35_"
-				android:minHeight="@dimen/_35_"
-				android:theme="@style/seekBarStyle"
-				android:splitTrack="false"
-				android:layout_gravity="bottom"
-				android:layout_marginBottom="20dp"
-				android:max="10"
 				/>
 
 			<android.widget.ImageView

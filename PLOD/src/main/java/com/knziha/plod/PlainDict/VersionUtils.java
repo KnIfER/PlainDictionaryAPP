@@ -1,10 +1,6 @@
 package com.knziha.plod.plaindict;
 
-import android.os.Build;
-
 import androidx.appcompat.app.GlobalOptions;
-
-import com.knziha.filepicker.model.GlideOptions;
 
 public class VersionUtils {
 	
@@ -41,9 +37,9 @@ public class VersionUtils {
 			opt.setInPeruseMode(false);
 			opt.menuOverlapAnchor(!GlobalOptions.isLarge||GlobalOptions.isSmall);
 			PDICMainAppOptions.setUseBackKeyGoWebViewBack(false);
-			opt.setPageTurn1(true);
-			opt.setPageTurn2(true);
-			opt.setPageTurn3(true);
+			opt.slidePage1D(true);
+			opt.slidePageMD(true);
+			opt.slidePageMd(true);
 			opt.setTurnPageEnabled(true);
 			opt.schPageNavAudioKey(false);
 			

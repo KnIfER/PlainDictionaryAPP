@@ -6,6 +6,8 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -160,17 +162,31 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			} break;
 			case R.id.popNxtE:
 			case R.id.popLstE: {
+				int delta = id==R.id.popNxtE?1:-1;
+				boolean slided = v.getTag()==v; /** see{@link #getPageListener} */
+				if (slided) v.setTag(null);
+				WebViewListHandler weblist = weblistHandler;
+				if (slided && weblist.isFoldingScreens() && weblist.multiDicts && PDICMainAppOptions.slidePageFd()) {
+					int toPos = weblist.multiRecord.jointResult.LongestStartWithSeqLength;
+					if (toPos>0) toPos = delta;
+					else toPos = delta-toPos;
+					if (toPos>=0 && toPos<weblist.frames.size()) {
+						weblist.renderFoldingScreen(toPos);
+						break;
+					}
+				}
 				if(CCD==a.EmptyBook||CCD==null)
 					CCD=a.currentDictionary;
-				int delta = id==R.id.popNxtE?1:-1;
 				resetPreviewIdx();
 				requestAudio = PDICMainAppOptions.tapSchPageAutoReadEntry();
-				if (weblistHandler.isMultiRecord()) {
-					resultRecorderCombined rec = weblistHandler.multiRecord;
+				if (weblist.isMultiRecord()) {
+					resultRecorderCombined rec = weblist.multiRecord;
 					int np = rec.viewingPos + delta;
 					if (np>=0 && np<rec.size()) {
-						rec.renderContentAt(currentPos=np, a, null, weblistHandler);
-						setDisplaying(weblistHandler.getMultiRecordKey());
+						mWebView.presenter = a.weblistHandler.getMergedBook();
+						rec.renderContentAt(currentPos=np, a, null, weblist);
+						weblist.setViewMode(rec, isMergingFramesNum(), weblist.dictView);
+						setDisplaying(weblist.getMultiRecordKey());
 					}
 				} else {
 					loadEntry(id==R.id.popNxtE?1:-1);
@@ -207,6 +223,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				nav(false);
 			} break;
 			case R.id.popIvSettings:{
+				weblistHandler.btmV = SearchUI.btmV;
 				a.launchSettings(TapTranslator.id, TapTranslator.requestCode);
 			} break;
 			case R.id.popChecker:{
@@ -265,9 +282,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				refillPreviewEntries(dd, true);
 			} break;
 			case R.id.popupText2:{
-				if(PDICMainAppOptions.getSwichClickSearchDictOnBottom()) {
-					dictPicker.toggle();
-				}
+				dictPicker.toggle();
 			} break;
 			case R.id.gTrans:{
 				MenuItemImpl mSTd = (MenuItemImpl) ViewUtils.findInMenu(a.AllMenusStamp, R.id.translate);
@@ -493,6 +508,17 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			weblist.mBar = pageSlider.findViewById(R.id.dragScrollBar);
 			this.mWebView = weblist.dictView = weblist.mMergedFrame = webview;
 			pageSlider.bar = weblist.mBar;
+			
+			weblist.entrySeek = pageSlider.findViewById(R.id.entrySeek);
+			weblist.entrySeek.setOnSeekBarChangeListener(weblist.entrySeekLis);
+			weblist.prv = pageSlider.findViewById(R.id.prv);
+			weblist.nxt = pageSlider.findViewById(R.id.nxt);
+			PorterDuffColorFilter phaedrof = new PorterDuffColorFilter(0xff888888, PorterDuff.Mode.SRC_IN);
+			weblist.prv.setColorFilter(phaedrof);
+			weblist.nxt.setColorFilter(phaedrof);
+			weblist.prv.setOnClickListener(weblist);
+			weblist.nxt.setOnClickListener(weblist);
+			
 			// 缩放逻辑
 			popupGuarder.setOnTouchListener(moveView);
 			popupGuarder.setClickable(true);
@@ -1033,51 +1059,49 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	
 	public void SearchDone() {
 		requestAudio = PDICMainAppOptions.tapSchAutoReadEntry();
-		if(rec!=null) {
-			if(rec.size()>0) {
+		if (rec != null) {
+			if (rec.size() > 0) {
 				rec.jointResult = rec.getJointResultAt(0);
 			}
 			weblistHandler.setViewMode(rec, isMergingFramesNum(), mWebView);
-			//weblistHandler.initMergedFrame(false, false, bUseMergedUrl);;
-			weblistHandler.bMergingFrames = 1;
-			weblistHandler.bMergeFrames = 1;
 			mWebView.presenter = a.weblistHandler.getMergedBook(); //todo opt
-			if(mWebView.wvclient!=a.myWebClient) {
+			if (mWebView.wvclient != a.myWebClient) {
 				mWebView.setWebChromeClient(a.myWebCClient);
 				mWebView.setWebViewClient(a.myWebClient);
 			}
-			if(rec.size()>0) {
+			if (rec.size() > 0) {
 				rec.renderContentAt(0, a, null, weblistHandler);
 				setDisplaying(weblistHandler.getMultiRecordKey());
 			}
 			weblistHandler.pageSlider.setWebview(mWebView, null);
 			dictPicker.filterByRec(rec, 0);
 			setTranslator(rec, 0);
-			return;
 		}
-		dictPicker.filterByRec(null, 0);
-		if(sching!=null) {
-			texts[0]=CMN.id(sching);
-			setTranslator(sching, currentPos);
-			sching = null;
-		}
-		if (currentPos >= 0 && CCD != a.EmptyBook) {
-			weblistHandler.setViewMode(null, 0, mWebView);
-			if(CCD.getIsWebx()) {
-				weblistHandler.bMergingFrames = 1;
-				indicator.setText(a.md_getName(CCD_ID));
-				popuphandler.setBook(CCD);
-				CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, mWebView, currentPos);
-				weblistHandler.pageSlider.setWebview(mWebView, null);
-				setDisplaying(mWebView.word);
-			} else {
-				loadEntry(0);
+		else {
+			dictPicker.filterByRec(null, 0);
+			if(sching!=null) {
+				texts[0]=CMN.id(sching);
+				setTranslator(sching, currentPos);
+				sching = null;
+			}
+			if (currentPos >= 0 && CCD != a.EmptyBook) {
+				weblistHandler.setViewMode(null, 0, mWebView);
+				if(CCD.getIsWebx()) {
+					weblistHandler.bMergingFrames = 1;
+					indicator.setText(a.md_getName(CCD_ID));
+					popuphandler.setBook(CCD);
+					CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, mWebView, currentPos);
+					weblistHandler.pageSlider.setWebview(mWebView, null);
+					setDisplaying(mWebView.word);
+				} else {
+					loadEntry(0);
+				}
 			}
 		}
 	}
 	
 	private int isMergingFramesNum() {
-		return 1;
+		return PDICMainAppOptions.foldingScreenTapSch()?2:1;
 	}
 	
 	private void setDisplaying(String key) {
@@ -1154,6 +1178,9 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		if (texts[0]!=id) {
 			sching = ccd;
 			CCD_ID = a.md.indexOf(ccd); //todo opt
+			if (dictPicker.filtered!=null) {
+				CCD_ID = dictPicker.filtered.indexOf(CCD_ID);
+			}
 			currentPos = (int) pos;
 			texts[0]=id;
 			a.root.post(setAby);
@@ -1191,12 +1218,19 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		}
 	}
 	
-	public void set() {
+	public void set(boolean setSH) {
 		if(PDICMainAppOptions.getImmersiveClickSearch()!=PDICMainAppOptions.getImmersiveClickSearch(a.TFStamp))
 			a.popupWord(null,null, 0, null);
 		if (mWebView!=null) {
-			a.weblist = weblistHandler;
-			a.showScrollSet();
+			if(weblistHandler.btmV!=SearchUI.btmV) {
+				SearchUI.btmV = weblistHandler.btmV;
+				weblistHandler.btmV--;
+				weblistHandler.setViewMode();
+			}
+			if (setSH) {
+				a.weblist = weblistHandler;
+				a.showScrollSet();
+			}
 		}
 	}
 	

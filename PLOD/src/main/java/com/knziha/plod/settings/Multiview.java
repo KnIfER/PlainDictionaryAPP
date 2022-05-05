@@ -9,25 +9,27 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceGroup;
 
 import com.knziha.filepicker.settings.SettingsFragmentBase;
+import com.knziha.filepicker.settings.TwinkleSwitchPreference;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.BuildConfig;
-import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MdictServer;
 import com.knziha.plod.plaindict.MdictServerMobile;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.plaindict.Toastable_Activity;
 
 public class Multiview extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=R.xml.pref_multiview;
 	public final static int requestCode=id&0xFFFF;
+	private int multiMode;
 	
 	//初始化
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mPreferenceId = id;
 		super.onCreate(savedInstanceState);
+		
+		multiMode = PDICMainAppOptions.multiViewMode();
 		
 		init_switch_preference(this, "expand_ao", PDICMainAppOptions.getEnsureAtLeatOneExpandedPage(), null, null);
 		findPreference("expand_top").setOnPreferenceChangeListener(this);
@@ -36,7 +38,7 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		init_switch_preference(this, "turbo_top", PDICMainAppOptions.getDelaySecondPageLoading(), null, null);
 		init_switch_preference(this, "neoS", PDICMainAppOptions.popViewEntryMulti(), null, null);
 		
-		init_switch_preference(this, "merge", PDICMainAppOptions.multiViewMode()==1, null, null);
+		init_switch_preference(this, "merge", multiMode==1, null, null);
 		findPreference("merge_min").setOnPreferenceChangeListener(this);
 		enableCat1();
 		
@@ -57,9 +59,13 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		findPreference("tz_x").setOnPreferenceChangeListener(this);
 		findPreference("dtm").setOnPreferenceChangeListener(this);
 		
-		init_switch_preference(this, "turn1", PDICMainAppOptions.getPageTurn1(), null, null);
-		init_switch_preference(this, "turn2", PDICMainAppOptions.getPageTurn2(), null, null);
-		init_switch_preference(this, "turn3", PDICMainAppOptions.getPageTurn3(), null, null);
+		init_switch_preference(this, "turn1", PDICMainAppOptions.slidePage1D(), null, null);
+		init_switch_preference(this, "turn2", PDICMainAppOptions.slidePageMD(), null, null);
+		init_switch_preference(this, "turn3", PDICMainAppOptions.slidePageMd(), null, null);
+		init_switch_preference(this, "turnF", PDICMainAppOptions.slidePageFd(), null, null);
+		
+		init_switch_preference(this, "seek", PDICMainAppOptions.showEntrySeekbar(), null, null);
+		init_switch_preference(this, "seekF", PDICMainAppOptions.showEntrySeekbarFolding(), null, null);
 		
 		init_switch_preference(this, "tools", PDICMainAppOptions.wvShowToolsBtn(), null, null);
 		init_switch_preference(this, "boosT", PDICMainAppOptions.toolsBoost(), null, null);
@@ -67,7 +73,15 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		init_number_info_preference(this, "toolsBtnLong", PDICMainAppOptions.toolsQuickLong(), 0, null);
 		
 		clrAccent = ColorUtils.blendARGB(0xff2b4381, Color.GRAY, 0.35f);
-		((PreferenceGroup) findPreference("cat_"+getActivity().getIntent().getIntExtra("where", 0))).drawSideLine = true;
+		int where = getActivity().getIntent().getIntExtra("where", 0);
+		((PreferenceGroup) findPreference("cat"+where)).drawSideLine = true;
+		if(where==2)
+			((PreferenceGroup) findPreference("cat"+-1)).drawSideLine = true;
+		
+		
+		init_switch_preference(this, "fold", multiMode==2, null, null);
+		findPreference("merge_min").setOnPreferenceChangeListener(this);
+		
 	}
 
 	@Override
@@ -113,8 +127,17 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 				PDICMainAppOptions.setDelaySecondPageLoading((Boolean) newValue);
 			break;
 			case "merge":
-				PDICMainAppOptions.multiViewMode((Boolean) newValue?1:0);
+				PDICMainAppOptions.multiViewMode((Boolean) newValue?1:multiMode);
 				enableCat1();
+				TwinkleSwitchPreference fold = findPreference("fold");
+				fold.setChecked(PDICMainAppOptions.multiViewMode()==2);
+				if(!((Boolean) newValue) && !fold.isChecked()) PDICMainAppOptions.multiViewMode(multiMode = 0);
+			break;
+			case "fold":
+				PDICMainAppOptions.multiViewMode((Boolean) newValue?2:multiMode);
+				TwinkleSwitchPreference merge = findPreference("merge");
+				merge.setChecked(PDICMainAppOptions.multiViewMode()==1);
+				if(!((Boolean) newValue) && !merge.isChecked()) PDICMainAppOptions.multiViewMode(multiMode = 0);
 			break;
 			case "tseyhu":
 				PDICMainAppOptions.remMultiview((Boolean) newValue);
@@ -157,13 +180,24 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 				SearchUI.tapZoomWait = IU.parsint((String) newValue, 100);
 			break;
 			case "turn1":
-				PDICMainAppOptions.setPageTurn1((Boolean) newValue);
+				PDICMainAppOptions.slidePage1D((Boolean) newValue);
 			break;
 			case "turn2":
-				PDICMainAppOptions.setPageTurn2((Boolean) newValue);
+				PDICMainAppOptions.slidePageMD((Boolean) newValue);
 			break;
 			case "turn3":
-				PDICMainAppOptions.setPageTurn3((Boolean) newValue);
+				PDICMainAppOptions.slidePageMd((Boolean) newValue);
+			break;
+			case "turnF":
+				PDICMainAppOptions.slidePageFd((Boolean) newValue);
+			break;
+			case "seek":
+				PDICMainAppOptions.showEntrySeekbar((Boolean) newValue);
+				SearchUI.btmV++;
+			break;
+			case "seekF":
+				PDICMainAppOptions.showEntrySeekbarFolding((Boolean) newValue);
+				SearchUI.btmV++;
 			break;
 			case "tools":
 				PDICMainAppOptions.wvShowToolsBtn((Boolean) newValue);
@@ -185,6 +219,6 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 	}
 	
 	private void enableCat1() {
-		findPreference("cat_1").setEnabled(0==PDICMainAppOptions.multiViewMode()||PDICMainAppOptions.mergeUrlMore());
+		findPreference("cat0").setEnabled(0==PDICMainAppOptions.multiViewMode()||PDICMainAppOptions.mergeUrlMore());
 	}
 }

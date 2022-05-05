@@ -2064,6 +2064,7 @@ function debug(e){console.log(e)};
     	String htmlCode = null ,JS=null;
     	boolean loadUrl=opt.alwaysloadUrl()
 				|| opt.popuploadUrl()&&mWebView.weblistHandler.bShowingInPopup
+				|| mWebView.fromCombined==2
 				//|| mWebView.weblistHandler.getSrc()==SearchUI.TapSch.MAIN && true
 				;
     	//CMN.Log("loadUrl::", loadUrl);
@@ -2588,6 +2589,14 @@ function debug(e){console.log(e)};
         	CMN.Log(val);
         }
 		
+		@JavascriptInterface
+		public void banDbclk(int sid) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				wv.weblistHandler.pageSlider.bSuppressNxtTapZoom = CMN.now();
+				//CMN.Log("textMenu!!!");
+			}
+		}
 		@JavascriptInterface
 		public void textMenu(int sid, boolean show) {
 			if (presenter!=null && PDICMainAppOptions.toolsBoost()) {

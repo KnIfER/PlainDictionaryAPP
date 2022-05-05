@@ -81,7 +81,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	private CheckableImageView pinBtn;
 	private CheckableImageView autoBtn;
 	
-	ArrayList<Integer> filtered;
+	public ArrayList<Integer> filtered;
 	
 	public int adapter_idx;
 	private Runnable showImmAby;

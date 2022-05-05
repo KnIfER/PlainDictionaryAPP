@@ -891,11 +891,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=5) public static boolean showNxtBtnSmall() { SecondFlag=SecondFlag; throw new RuntimeException();}
 	@Metaline(flagPos=5) public static void showNxtBtnSmall(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=6, shift=1) public static boolean getPageTurn1() { SecondFlag=SecondFlag; throw new RuntimeException();}
-	@Metaline(flagPos=6, shift=1) public static void setPageTurn1(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=6, shift=1) public static boolean slidePage1D() { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=6, shift=1) public static void slidePage1D(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=7, shift=1) public static boolean getPageTurn2() { SecondFlag=SecondFlag; throw new RuntimeException();}
-	@Metaline(flagPos=7, shift=1) public static void setPageTurn2(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7, shift=1) public static boolean slidePageMD() { SecondFlag=SecondFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7, shift=1) public static void slidePageMD(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException();}
 
 	public boolean getUseLruDiskCache() {
 		return (SecondFlag & 0x100) != 0x100;
@@ -1360,21 +1360,22 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	public static boolean getSwichClickSearchDictOnTop() {
-		return (ThirdFlag & 0x10000l) == 0x10000l;
-	}
-	public static boolean setSwichClickSearchDictOnTop(boolean val) {
-		updateTFAt(0x10000l,val);
-		return val;
-	}
+	//xxx
+//	public static boolean getSwichClickSearchDictOnTop() {
+//		return (ThirdFlag & 0x10000l) == 0x10000l;
+//	}
+//	public static boolean setSwichClickSearchDictOnTop(boolean val) {
+//		updateTFAt(0x10000l,val);
+//		return val;
+//	}
 
-	public static boolean getSwichClickSearchDictOnBottom() {
-		return (ThirdFlag & 0x20000l) != 0x20000l;
-	}
-	public static boolean setSwichClickSearchDictOnBottom(boolean val) {
-		updateTFAt(0x20000l,!val);
-		return val;
-	}
+//	public static boolean getSwichClickSearchDictOnBottom() {
+//		return (ThirdFlag & 0x20000l) != 0x20000l;
+//	}
+//	public static boolean setSwichClickSearchDictOnBottom(boolean val) {
+//		updateTFAt(0x20000l,!val);
+//		return val;
+//	}
 
 	public static boolean getSwichClickSearchDictOnNav() {
 		return (ThirdFlag & 0x40000l) == 0x40000l;
@@ -1450,8 +1451,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	//xxx
 	
-	@Metaline(flagPos=33, shift=1) public static boolean getPageTurn3() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-	@Metaline(flagPos=33, shift=1) public static void setPageTurn3(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public static boolean slidePageMd() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
+	@Metaline(flagPos=33, shift=1) public static void slidePageMd(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 
 
 
@@ -2381,6 +2382,28 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	@Metaline(flagPos=51) public static boolean showZoomBtn() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=51) public static void showZoomBtn(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=52) public static boolean showPrvNxtBtnSmallTapSch() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52) public static void showPrvNxtBtnSmallTapSch(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+//	@Metaline(flagPos=53) public static boolean foldingScreenTapSch() { SixthFlag=SixthFlag; throw new RuntimeException();}
+//	@Metaline(flagPos=53) public static void foldingScreenTapSch(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=54) public static boolean showEntrySeekbarTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=54) public static void showEntrySeekbarTapSch(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+
+	@Metaline(flagPos=55) public static boolean showEntrySeekbarTapSchFolding(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=55) public static void showEntrySeekbarTapSchFolding(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+
+	@Metaline(flagPos=56) public static boolean foldingScreenTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=56) public static void foldingScreenTapSch(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	
+	/** 允许先滑动屏风 */
+	@Metaline(flagPos=57, shift=1) public static boolean slidePageFd() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=57, shift=1) public static void slidePageFd(boolean val) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=58, shift=1) public static boolean showEntrySeekbarFolding(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=58, shift=1) public static void showEntrySeekbarFolding(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 
 
 //	@Metaline(flagPos=51) public static boolean entrySeekbarTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
