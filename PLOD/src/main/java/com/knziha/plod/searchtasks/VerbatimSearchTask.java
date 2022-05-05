@@ -136,7 +136,7 @@ public class VerbatimSearchTask extends AsyncTaskWrapper<String, Integer, result
 			sv=a.contentview;
 			fval=.8f;
 		}else {
-			sv=a.main_succinct;
+			sv=a.mainframe;
 		}
 
 		if(a.opt.getNotifyComboRes()) {

@@ -91,7 +91,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				fval=1f;
 			}
 			String val = recCom.allWebs&&isContentViewAttached()?"回车以搜索网络词典！":getResources().getString(R.string.cbflowersnstr,opt.getLastPlanName(LastPlanName),md.size(),size);
-			showTopSnack(main_succinct, val, fval, -1, -1, 0);
+			showTopSnack(mainframe, val, fval, -1, -1, 0);
 		}
 	}
 	
@@ -273,10 +273,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		toolbar = mainfv.findViewById(R.id.toolbar);
 		appbar = toolbar;
 	
-		main_succinct = mainfv.findViewById(R.id.mainframe);
-		lv = main_succinct.findViewById(R.id.main_list);
+		mainframe = mainfv.findViewById(R.id.mainframe);
+		lv = mainframe.findViewById(R.id.main_list);
 		mlv = (ViewGroup) lv.getParent();
-		lv2 = main_succinct.findViewById(R.id.sub_list);
+		lv2 = mainframe.findViewById(R.id.sub_list);
 		
 		
 		mainF = (ViewGroup) root.getChildAt(1);
@@ -312,7 +312,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
     }
    
     private void setDocked(boolean docked) {
-    	LinearLayout.LayoutParams lp = (android.widget.LinearLayout.LayoutParams) main_succinct.getLayoutParams();
+    	LinearLayout.LayoutParams lp = (android.widget.LinearLayout.LayoutParams) mainframe.getLayoutParams();
 		if(docked) {
 			lp.setMargins(0, 0, 0, 0);
 		} else {
@@ -320,7 +320,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			int margin2 = (int) (1*dm.density);
 			lp.setMargins(margin2, 0, margin2, margin);
 		}
-		main_succinct.setLayoutParams(lp);
+		mainframe.setLayoutParams(lp);
 	}
 
 	@Override
@@ -393,7 +393,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		barSzBot=opt.getFloatBottombarSize((int) mResource.getDimension(R.dimen.barSzBot));
     	super.further_loading(savedInstanceState);
 
-        main = main_succinct;
+        main = mainframe;
 		contentUIData.webcontentlister.scrollbar2guard = contentUIData.dragScrollBar;
 
 		if(PDICMainAppOptions.schPageFlt())
@@ -774,7 +774,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 	
 	public void viewContent(WebViewListHandler wlh) {
-		ViewUtils.addViewToParent(contentUIData.webcontentlister, main_succinct);
+		ViewUtils.addViewToParent(contentUIData.webcontentlister, mainframe);
 		wlh.viewContent();
 		
 		if(contentUIData.webcontentlister.getVisibility()!=View.VISIBLE) {

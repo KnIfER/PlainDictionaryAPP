@@ -107,8 +107,6 @@ import com.knziha.plod.widgets.ScreenListener;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
-import org.apache.commons.text.StringEscapeUtils;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -1175,7 +1173,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		CheckGlideJournal();
 
 		//showT(root.getParent().getClass());
-		DefaultTSView = main_succinct;
+		DefaultTSView = mainframe;
 		contentUIData.webcontentlister.scrollbar2guard=contentUIData.dragScrollBar;
 		DetachContentView(true);
 

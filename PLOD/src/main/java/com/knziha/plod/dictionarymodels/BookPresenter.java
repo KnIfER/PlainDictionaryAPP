@@ -860,7 +860,7 @@ function debug(e){console.log(e)};
 			
 			mWebView.pBc = IBC;
 			mWebView.titleBar = (AdvancedNestScrollLinerView) toolbar;
-			mWebView.FindBGInTitle(toolbar);
+			mWebView.FindBGInTitle(a, toolbar);
 			mWebView.toolbarBG.setColors(mWebView.ColorShade);
 			
 			//toolbarBG.setColors(ColorSolid);
@@ -1871,18 +1871,14 @@ function debug(e){console.log(e)};
 					:useInternal? tbgColor
 					:PDICMainAppOptions.getTitlebarUseGlobalUIColor()?a.MainBackground
 					:opt.getTitlebarBackgroundColor();
-			CMN.Log("使用内置标题栏颜色：", useInternal, bookImpl.getDictionaryName(), isDark, Integer.toHexString(myWebColor));
+			CMN.debug("使用内置标题栏颜色：", useInternal, bookImpl.getDictionaryName(), isDark, Integer.toHexString(myWebColor));
 			int colorTop = PDICMainAppOptions.getTitlebarUseGradient()?ColorUtils.blendARGB(myWebColor, Color.WHITE, 0.08f):myWebColor;
 			int[] ColorShade = mWebView.ColorShade;
 			if(ColorShade[1]!=myWebColor||ColorShade[0]!=colorTop)
 			{
 				ColorShade[1] = myWebColor;
 				ColorShade[0] = colorTop;
-				if(useInternal) {
-					toolbarBG = mWebView.MutateBGInTitle();
-				}
 				toolbarBG.setColors(ColorShade);
-				//CMN.Log("设置了?");
 			}
 			myWebColor = isDark?Color.WHITE:getUseTitleForeground()? tfgColor :opt.getTitlebarForegroundColor();
 			mWebView.setTitlebarForegroundColor(myWebColor);

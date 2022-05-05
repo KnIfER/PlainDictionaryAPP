@@ -1661,7 +1661,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
         		//a.setContentBow(false);
         		//super.onItemClick(pos);
             	if(pos<0) {
-					a.showTopSnack(a.main_succinct, R.string.endendr, -1, -1, -1, 0);
+					a.showTopSnack(a.mainframe, R.string.endendr, -1, -1, -1, 0);
             		return;
             	}
             	//-1放行

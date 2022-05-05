@@ -12,7 +12,7 @@
 		android:id="@+id/lltoolbar"
 		android:layout_width="match_parent"
 		android:layout_height="@dimen/dictitle"
-		android:background="@drawable/progressbar"
+		tools:background="@drawable/progressbar"
 		android:paddingTop="0dp"
 		>
 		<com.knziha.plod.widgets.FtagImageView

@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.AnyThread;
@@ -70,7 +71,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	SparseIntArray hIdx = new SparseIntArray(1024);
 	
 	public boolean drpdn;
-	View drpBtn;
+	ImageView drpBtn;
 	public View topbar;
 	public String schSql = "src==128";
 	private View etSchExit;
@@ -193,7 +194,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				etBar.getChildAt(0).setBackgroundColor(fc);
 				etBar.getChildAt(1).setBackgroundColor(a.MainAppBackground);
 				etBar.getChildAt(2).setBackgroundColor(fc);
-				LayerDrawable ld = (LayerDrawable)drpBtn.getBackground();
+				LayerDrawable ld = (LayerDrawable)drpBtn.getBackground().mutate();
 				PorterDuffColorFilter cf = new PorterDuffColorFilter(a.MainAppBackground, PorterDuff.Mode.SRC_IN);
 				for (int i = 0; i < ld.getNumberOfLayers()-1; i++) {
 					ld.getDrawable(i).setColorFilter(cf);

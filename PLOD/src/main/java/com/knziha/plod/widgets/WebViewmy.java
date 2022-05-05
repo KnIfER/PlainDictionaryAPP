@@ -428,20 +428,19 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		postInvalidate();
 	}
 	
-	public void FindBGInTitle(ViewGroup toolbar_web) {
-		Drawable bg = toolbar_web.getBackground();
-		if(true) {
-			bg.mutate();
-		}
+	public void FindBGInTitle(MainActivityUIBase a, ViewGroup toolbar_web) {
+		//toolbar_web.setBackground(toolbar_web.getBackground().mutate()); // not work, tint chaos
+		Drawable bg = a.titleDrawable();
+		toolbar_web.setBackground(bg);
 		toolbarBG = (GradientDrawable) ((LayerDrawable)bg).getDrawable(0);
 	}
 	
-	public GradientDrawable MutateBGInTitle() {
-		LayerDrawable d;
-		d = (LayerDrawable) titleBar.getBackground().mutate();
-		toolbarBG = (GradientDrawable) d.getDrawable(0);
-		return toolbarBG;
-	}
+	//public GradientDrawable MutateBGInTitle() {
+	//	LayerDrawable d;
+	//	d = (LayerDrawable) titleBar.getBackground().mutate();
+	//	toolbarBG = (GradientDrawable) d.getDrawable(0);
+	//	return toolbarBG;
+	//}
 	
 	public void CheckAlwaysCheckRange() {
 		AlwaysCheckRange = computeHorizontalScrollRange() > getWidth()?1:-1;

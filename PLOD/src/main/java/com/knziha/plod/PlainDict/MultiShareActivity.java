@@ -75,7 +75,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		further_loading(savedInstanceState);
 		
 		main = root = findViewById(R.id.root);
-		main_succinct = main;
+		mainframe = main;
 		mainF = main.findViewById(R.id.mainF);
 		
 		hdl  = new MyHandler(this);

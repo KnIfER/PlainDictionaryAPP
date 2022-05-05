@@ -383,7 +383,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	FloatBtn floatBtn;
 
 	protected String lastEtString;
-	public ViewGroup main_succinct;
+	public ViewGroup mainframe;
 
 	public ListViewmy lv,lv2;
 	protected ViewGroup mlv;
@@ -2426,7 +2426,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		boolean b1=thisActType==ActType.PlainDict;
 		etTools = new SearchbarTools(MainActivityUIBase.this, etSearch
-				, b1?((PDICMainActivity)this).UIData.etSchBar:null, null, true);
+				, b1?((PDICMainActivity)this).UIData.etSchBar:null, mainframe, true);
 		etTools.initWay = this;
 		etTools.schSql = "src&"+(schuiMain|schuiMainSchs)+"!=0";
 		
@@ -5854,7 +5854,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.schDropdown:{
 				etTools.drpdn = PDICMainAppOptions.historyShow();
 				etTools.flowBtn = toolbar.findViewById(R.id.action_menu_presenter);
-				etTools.topbar = appbar;
+				if(thisActType==MainActivityUIBase.ActType.PlainDict)
+					etTools.topbar = appbar;
 			} break;
 		}
 		click_handled_not = false;
@@ -10540,5 +10541,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				} catch (Exception ignored) {  }
 			}
 		}
+	}
+	
+	Drawable.ConstantState titleDrawableCS;
+	public final Drawable titleDrawable() {
+		if(titleDrawableCS==null)
+			titleDrawableCS = mResource.getDrawable(R.drawable.progressbar).getConstantState();
+		return titleDrawableCS.newDrawable();
 	}
 }
