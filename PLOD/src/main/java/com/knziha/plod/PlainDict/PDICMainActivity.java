@@ -612,6 +612,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				case 778899:
 					//a.NaugtyWeb.setLayoutParams(a.NaugtyWeb.getLayoutParams());
 					a.NaugtyWeb.requestLayout();
+					//a.NaugtyWeb.zoomBy(a.NaugtyWeb.expectedZoom/a.NaugtyWeb.webScale);
+					a.NaugtyWeb.scrollTo(a.NaugtyWeb.expectedPosX, a.NaugtyWeb.expectedPos);
 					//CMN.Log("handler scroll scale recalibrating ...");
 				break;
 				case 7658941:
@@ -2720,10 +2722,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(leaving && opt.getLeaveContentBlank() && ! currentIsWeb()) {
 			WebViewmy current_webview = contentUIData.PageSlider.getWebContext();
 			if(current_webview !=null) {
-				CMN.debug("页面置空了……");
+//				CMN.debug("页面置空了……");
 				current_webview.active = false;
-				current_webview.loadUrl("about:blank");
-				current_webview.clearView();
+//				current_webview.loadUrl("about:blank");
+//				current_webview.clearView();
 			}
 		}
 		checkFastPreview();

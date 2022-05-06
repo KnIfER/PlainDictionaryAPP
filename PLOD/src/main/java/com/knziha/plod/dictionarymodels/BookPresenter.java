@@ -135,6 +135,22 @@ public class BookPresenter
 	@Metaline()
 	public final static String js="SUBPAGE";
 	
+	/**
+	 var imgs = document.getElementsByTagName('IMG');
+	 for(var i=0;i<imgs.length;i++){
+		 if(imgs[i].src.startsWith("file://"))
+		 imgs[i].src = imgs[i].src.substring(7);
+		 if(imgs[i].src.startsWith("/"))
+		 imgs[i].src = imgs[i].src.substring(1);
+	 }*/
+	@Metaline()
+	public final static String jsFileTag="";
+	
+	
+	/**app.viewChanged(sid.get(), entryKey, frameAt);*/
+	@Metaline()
+	public final static String jsChanged="";
+	
 	public boolean hasBatchRet;
 	
 	/**
@@ -485,11 +501,10 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=11) public boolean getImageOnly(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	
 	// 12~20
-	
-	@Metaline(flagPos=21) public boolean getEntryJumpList(){ firstFlag=firstFlag; throw new RuntimeException(); }
-	/** Show entry:// target in the popup window (词条跳转到点译弹窗) */
-	@Metaline(flagPos=22) public boolean getPopEntry(){ firstFlag=firstFlag; throw new RuntimeException(); }
-	
+
+//	public boolean getStarLevel(){
+//		0x100000~0x400000  20~22
+//	}
 	@Metaline(flagPos=23) public boolean getContentFixedHeightWhenCombined(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=24) public boolean getNoScrollRect(){ firstFlag=firstFlag; throw new RuntimeException(); }
 	
@@ -521,11 +536,14 @@ function debug(e){console.log(e)};
 
 	@Metaline(flagPos=35) public boolean isMergedBook() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=35) public void isMergedBook(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
+	
+	@Metaline(flagPos=36) public boolean getEntryJumpList(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	/** 词条跳转到点译弹窗 (entry://) */
+	@Metaline(flagPos=37) public boolean getPopEntry(){ firstFlag=firstFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=38) public boolean hasFilesTag() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=38) public void hasFilesTag(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 
-
-//	public boolean getStarLevel(){
-//		0x100000~0x400000
-//	}
 	
 	public boolean getSavePageToDatabase(){
 		return true;
@@ -1851,7 +1869,7 @@ function debug(e){console.log(e)};
 			myWebColor = ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
 		}
 		a.guaranteeBackground(globalPageBackground);
-		mWebView.setBackgroundColor((getIsolateImages()||useInternal||Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT)?myWebColor:Color.TRANSPARENT);
+		mWebView.setBackgroundColor((getIsolateImages()||useInternal||Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT||mWebView.fromCombined==2)?myWebColor:Color.TRANSPARENT);
 		/* check and set colors for toolbar title Background*/
 		if(mWebView==this.mWebView){
 			mWebView.titleBar.fromCombined = mWebView.fromCombined;
@@ -2139,6 +2157,11 @@ function debug(e){console.log(e)};
 					htmlCode = StringEscapeUtils.escapeHtml3(htmlCode); // 调试，查看源码
 					bViewSource = false;
 				}
+				else {
+					if(hasFilesTag()){
+						htmlCode = htmlCode.replace("file://", "");
+					}
+				}
 			}
 		}
 		catch (Exception e) {
@@ -2147,14 +2170,15 @@ function debug(e){console.log(e)};
 			htmlCode=_404+e.getLocalizedMessage()+"<br>"+s;
 			CMN.Log(s);
 		}
-
-    	CMN.Log("renderContentAt_internal::缩放是", initialScale);
-		if(initialScale!=-1)
-			mWebView.setInitialScale((int) (100*(initialScale/ BookPresenter.def_zoom)*opt.dm.density));//opt.dm.density
-		else {
-			//尝试重置页面缩放
-			mWebView.setInitialScale(0);//opt.dm.density
-		}
+		
+		mWebView.expectedZoom = initialScale;
+//    	CMN.Log("renderContentAt_internal::缩放是", initialScale);
+//		if(initialScale!=-1)
+//			mWebView.setInitialScale((int) (100*(initialScale/ BookPresenter.def_zoom)*opt.dm.density));//opt.dm.density
+//		else {
+//			//尝试重置页面缩放
+//			mWebView.setInitialScale(0);//opt.dm.density
+//		}
 		
 		StringBuilder htmlBuilder = AcquirePageBuilder();
 		
@@ -2295,6 +2319,17 @@ function debug(e){console.log(e)};
 //		if(mWebView==a.wordPopup.mWebView) rcsp|=1<<5; //todo
 		htmlBuilder.append("window.shzh=").append(mWebView.weblistHandler.tapSch?1:0).append(";");
 		htmlBuilder.append("frameAt=").append(mWebView.frameAt).append(";");
+		htmlBuilder.append("entryKey='").append(mWebView.word).append("';");
+		//htmlBuilder.append("hasFiles='").append(hasFilesTag()).append("';");
+		
+		/** see {@link AppHandler#view} */
+		// 此处加载略慢于图片资源，需要刷新
+		htmlBuilder.append("app.view(sid.get(),")
+				.append(getId())
+				.append(",").append(mWebView.currentPos)
+				.append(",").append(hasFilesTag())
+				.append(");");
+		
 		//htmlBuilder.append("webx=").append(getIsWebx()?1:0).append(";");
 		htmlBuilder.append("</script>");
 	}
@@ -2584,6 +2619,49 @@ function debug(e){console.log(e)};
         public void log(String val) {
         	CMN.Log(val);
         }
+		
+		@JavascriptInterface
+		public void view(int sid, long bid, long pos, boolean hasFiles) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv!=null) {
+					CMN.Log("view::", presenter.a.getBookByIdNoCreation(bid).getDictionaryName(), pos, presenter.hasFilesTag());
+					boolean changed = presenter.getId()!=bid;
+					if (changed) {
+						setBook(presenter.a.getBookByIdNoCreation(bid));
+						wv.setPresenter(presenter);
+						wv.changed = 1;
+					}
+					if (wv.currentPos!=pos) {
+						wv.currentPos = pos;
+						if (!changed) {
+							changed = true;
+							wv.changed = 2;
+						}
+					}
+					if (changed) {
+						CMN.Log("view::changed!!!", wv.changed, presenter.hasFilesTag(), hasFiles);
+					}
+					if (presenter.hasFilesTag() && !hasFiles) {
+						//wv.hasFilesTag = true;
+					}
+					//wv.initPos();
+					//wv.initScale();
+				}
+			}
+		}
+		
+		@JavascriptInterface
+		public void viewChanged(int sid, String entryKey, int frameAt) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					//CMN.Log("view::changed!!!", entryKey);
+					wv.word = entryKey;
+					wv.frameAt = frameAt;
+				}
+			}
+		}
 		
 		@JavascriptInterface
 		public void banDbclk(int sid) {

@@ -219,8 +219,8 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		init_switcher("notxt", false, 11);
 		init_switcher("browse_img", true, 31);
 		
-		init_switcher("entry_golst", false, 21);
-		init_switcher("entry_pop", false, 22);
+		init_switcher("entry_golst", false, 36);
+		init_switcher("entry_pop", false, 37);
 		
 		init_switcher("tools", false, 25);
 		init_switcher("hikeys", true, 26);

@@ -1361,13 +1361,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 
 	//xxx
-//	public static boolean getSwichClickSearchDictOnTop() {
-//		return (ThirdFlag & 0x10000l) == 0x10000l;
-//	}
-//	public static boolean setSwichClickSearchDictOnTop(boolean val) {
-//		updateTFAt(0x10000l,val);
-//		return val;
-//	}
+	/** persist 底栏前后切换按钮之功能为网页的前后导航。对主界面等有效。see {@link WebViewListHandler#bShowingInPopup} */
+	@Metaline(flagPos=16) public static boolean bottomNavWeb1(){ ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=16) public static void bottomNavWeb1(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException(); }
+
 
 //	public static boolean getSwichClickSearchDictOnBottom() {
 //		return (ThirdFlag & 0x20000l) != 0x20000l;
@@ -2267,7 +2264,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=3, shift=1) public static void debug(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=4, shift=1) public static boolean popuploadUrl() { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=5) public static boolean alwaysloadUrl() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=5, shift=1) public static boolean alwaysloadUrl() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=4, shift=1) public static boolean loadUrlPopup() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=5) public static boolean loadUrlOne() { SixthFlag=SixthFlag; throw new RuntimeException();}

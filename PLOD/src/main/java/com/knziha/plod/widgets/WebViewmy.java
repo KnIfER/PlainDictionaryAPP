@@ -120,6 +120,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public int translating = -1;
 	public WebViewListHandler weblistHandler;
 	public WebViewListHandler.HighlightVagranter hDataPage = new WebViewListHandler.HighlightVagranter();
+	public boolean hasFilesTag;
+	public int changed;
+	public float expectedZoom;
 	private int mForegroundColor = 0xffffffff;
 	private PorterDuffColorFilter ForegroundFilter;
 	
@@ -170,7 +173,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		
 		//网页设置初始化
 		final WebSettings settings = getSettings();
-		
 		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 		//	settings.setSafeBrowsingEnabled(false);
 		//}
@@ -618,8 +620,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	
 	public void setPresenter(BookPresenter book) {
 		if(presenter!=book) {
-			clearHistory();
-			clearIfNewADA(book);
+			//clearHistory();
+			//clearIfNewADA(book);
 			presenter=book;
 			pBc = book.IBC;
 		}
@@ -631,6 +633,30 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		return weblistHandler.isViewSingle()
 				&& (jointResult==null
 					|| (url = getUrl())!=null && !url.startsWith("merge", url.indexOf(":")+12));
+	}
+	
+	public final void initScale() {
+		CMN.Log("initScale::缩放是", expectedZoom);
+		if(expectedZoom!=-1) {
+			setInitialScale((int) (100*(expectedZoom/ BookPresenter.def_zoom)*GlobalOptions.density));//opt.dm.density
+		} else {
+			//尝试重置页面缩放
+			setInitialScale(0);//opt.dm.density
+		}
+	}
+	
+	public final void initPos() {
+		ScrollerRecord pPos = presenter.avoyager.get((int) currentPos);
+		float initialScale = BookPresenter.def_zoom;
+		if (pPos != null) {
+			expectedPos = pPos.y;
+			expectedPosX = pPos.x;
+			initialScale = pPos.scale;
+		} else {
+			expectedPos = 0;
+			expectedPosX = 0;
+		}
+		expectedZoom = initialScale;
 	}
 
 //	/**  reset overshot */

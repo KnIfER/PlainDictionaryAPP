@@ -224,8 +224,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			if (multiRecord!=null) {
 				if (fromUser) {
 					//CMN.Log("onProgressChanged!!!");
-					a.root.removeCallbacks(entrySeekRn);
-					a.root.postDelayed(entrySeekRn, isFoldingScreens()?100:50);
+//					a.root.removeCallbacks(entrySeekRn);
+//					a.root.postDelayed(entrySeekRn, isFoldingScreens()?100:50);
+					entrySeekRn.run();
 				}
 				if (multiRecord.jointResult!=null) {
 					multiRecord.jointResult.LongestStartWithSeqLength = -progress;
@@ -1692,6 +1693,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			if (bShowingInPopup) {
 				PDICMainAppOptions.bottomNavWeb(nav);
+			} else if(this==a.weblistHandler){
+				PDICMainAppOptions.bottomNavWeb1(nav);
 			}
 			bottomNavWeb = nav;
 			//if(tv!=null) tv.setText(getResources().getTextArray(R.array.btm_navmode)[type]);

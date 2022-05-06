@@ -54,6 +54,8 @@ public class VersionUtils {
 			PDICMainAppOptions.showNxtBtn(true);
 			PDICMainAppOptions.showNxtBtnSmall(false);
 			PDICMainAppOptions.showPrvBtnSmall(false);
+			
+			PDICMainAppOptions.bottomNavWeb1(false);
 		}
 		opt.setBottombarOnBottom(true);
 		opt.setFloatBottombarOnBottom(true);

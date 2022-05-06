@@ -256,6 +256,7 @@ import static com.bumptech.glide.util.Util.isOnMainThread;
 import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
+import static com.knziha.plod.dictionarymodels.BookPresenter.jsChanged;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
@@ -2456,6 +2457,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(contentview==null) {
 			weblist = weblistHandler = new WebViewListHandler(this, contentUIData, schuiMain);
+			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb1());
 			AllMenus.tag = weblistHandler;
 			contentview = contentUIData.webcontentlister;
 			webSingleholder = contentUIData.webSingleholder;
@@ -5720,7 +5722,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				findWebList(v);
 				boolean slided = v.getTag()==v; /** see{@link #getPageListener} */
 				if (slided) v.setTag(null);
-				if (weblist.bottomNavWeb()) {
+				if (!slided && weblist.bottomNavWeb()) {
 					weblist.NavWeb(delta);
 				} else {
 					if(!AutoBrowsePaused&&PDICMainAppOptions.getAutoBrowsingReadSomething()){
@@ -6895,7 +6897,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		@Override
 		public void onProgressChanged(final WebView view, int newProgress) {
-			//CMN.Log("ProgressChanged", newProgress);
+			CMN.Log("ProgressChanged", newProgress);
 			WebViewmy mWebView = (WebViewmy) view;
 			if (mWebView.bPageStarted) {
 				//todo undo changes made to webview by web dictionaries.
@@ -7010,7 +7012,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WebViewClient myWebClient = new WebViewClient() {
 		public void onPageFinished(WebView view, String url) {
 			final WebViewmy mWebView = (WebViewmy) view;
-			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, CMN.idStr(mWebView.weblistHandler));
+			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, mWebView.webScale);
+			if (mWebView.changed==1) {
+				CMN.debug("view::onPageFinished::reload");
+				view.reload();
+				mWebView.changed=2;
+				return;
+			}
+			if (false) {
+				mWebView.initPos();
+			}
 			if (mWebView.bPageStarted) {
 				mWebView.bPageStarted = false;
 			} else {
@@ -7126,6 +7137,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (mWebView.expectedPos >= 0) {
 							//layoutScrollDisabled=true;
 							CMN.debug("initial_push: ", mWebView.expectedPosX, mWebView.expectedPos);
+							//mWebView.zoomBy(mWebView.expectedZoom/mWebView.webScale);
 							mWebView.scrollTo(mWebView.expectedPosX, mWebView.expectedPos);
 							NaugtyWeb = mWebView;
 							if (hdl != null)
@@ -7142,6 +7154,25 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			if(invoker.getImageBrowsable() && invoker.bookImpl.hasMdd())
 				mWebView.evaluateJavascript(BookPresenter.imgLoader, null);
+			
+			if (mWebView.hasFilesTag) {
+				mWebView.evaluateJavascript(BookPresenter.jsFileTag, null);
+				mWebView.hasFilesTag = false;
+			}
+			
+			if (mWebView.changed!=0) {
+				BookPresenter finalInvoker = invoker;
+				mWebView.evaluateJavascript(BookPresenter.jsChanged, new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String value) {
+						finalInvoker.setCurrentDis(mWebView, mWebView.currentPos);
+						if (mWebView.weblistHandler.scrollFocus==mWebView) {
+							mWebView.weblistHandler.setScrollFocus(mWebView, mWebView.frameAt);
+						}
+					}
+				});
+				mWebView.changed = 0;
+			}
 			
 			if(mWebView.bRequestedSoundPlayback) readEntry(mWebView);
 			
@@ -7160,13 +7191,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			WebViewmy mWebView = (WebViewmy) view;
-			//CMN.Log("onPageStarted::"+mWebView.wvclient);
+			CMN.Log("onPageStarted::"+mWebView.wvclient);
 			if(mWebView.wvclient!=null) {
 				mWebView.bPageStarted=true;
 				final BookPresenter invoker = mWebView.presenter;
 				if(invoker.getIsWebx()) {
 					((PlainWeb)invoker.bookImpl).onPageStarted(invoker, view, url, true);
 				}
+				mWebView.initScale();
 			}
 			if(view==wordPopup.mWebView) {
 				wordPopup.onPageStart(url);
@@ -7500,7 +7532,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //									}
 								}
 								invoker.AddPlodStructure(mWebView, htmlBuilder ,mWebView==wordPopup.mWebView, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
-								invoker.LoadPagelet(mWebView, htmlBuilder, invoker.bookImpl.getRecordsAt(null, idx));
+								String htmlCode = invoker.bookImpl.getRecordsAt(null, idx);
+								if(invoker.hasFilesTag()){
+									htmlCode = htmlCode.replace("file://", "");
+								}
+								invoker.LoadPagelet(mWebView, htmlBuilder, htmlCode);
 								return true;
 							}
 						}
@@ -7938,31 +7974,29 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/////////////////
 			/////////////////
 			//BookPresenter.FileTag
+			WebResourceResponse fakedDomainResponse = null;
 			int start = key.indexOf(":");
 			if(start==-1){
 				if(key.startsWith("./"))
 					key=key.substring(1);
 			} else {
-				key = key.substring(start+2);
-			}
-			WebResourceResponse fakedDomainResponse = null;
-			if(key.toLowerCase().startsWith("/mdbr.com/")) {
-				key = key.substring("/mdbr.com/".length());
-				fakedDomainResponse = emptyResponse;
-			}
-			if(url.startsWith("/MdbR/")) {
-				try {
-					url=url.substring(6);
-					CMN.Log("[fetching internal res : ]", url);
-					String mime="*/*";
-					if(url.endsWith(".css")) mime = "text/css";
-					if(url.endsWith(".js")) mime = "text/js";
-					return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(url));
-				} catch (Exception e) {
-					CMN.Log(e);
+				if(key.toLowerCase().startsWith("mdbr.com", start+3)) {
+					key = key.substring(start+3+"mdbr.com".length());
+					fakedDomainResponse = emptyResponse;
 				}
-			}
-			else if(key.startsWith("/pdfimg/")) {
+				else if(url.startsWith("MdbR/", start+3)) {
+					try {
+						url=url.substring(start+3+5);
+						CMN.Log("[fetching internal res : ]", url);
+						String mime="*/*";
+						if(url.endsWith(".css")) mime = "text/css";
+						if(url.endsWith(".js")) mime = "text/js";
+						return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(url));
+					} catch (Exception e) {
+						CMN.Log(e);
+					}
+				}
+				else if (key.startsWith("pdfimg", start+3)) {
 //				String urlkey=key.substring("/pdfimg/".length());
 //				int idx = urlkey.lastIndexOf("#");
 //				int page = 0;
@@ -8019,6 +8053,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //				} catch(Exception ex) {
 //					ex.printStackTrace();
 //				}
+				}
+				else {
+					if(url.startsWith("file://")) {
+						// fix for images not loading when nav back/forward.
+						invoker.hasFilesTag(true);
+						invoker.isDirty = true;
+					}
+					key = key.substring(start+3);
+				}
 			}
 
 			key=key.replace("/", SepWindows);
