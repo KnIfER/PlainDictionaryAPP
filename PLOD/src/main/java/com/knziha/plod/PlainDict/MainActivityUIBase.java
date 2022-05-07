@@ -7554,8 +7554,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(slashIdx<0) slashIdx = url.length();
 						if (url.charAt(schemaIdx+8)=='d') {
 							// loaded with base url
-							if (!url.regionMatches(schemaIdx+9, invoker.idStr, 1, slashIdx-schemaIdx-9)) {
-								invoker = getBookById(IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(url, schemaIdx+9, slashIdx)));
+							if (!url.regionMatches(schemaIdx+9, invoker.idStr10, 1, slashIdx-schemaIdx-9)) {
+								invoker = getBookById(Long.parseLong(url.substring(schemaIdx+9, slashIdx)));
 								CMN.Log("view::changed::res::", invoker);
 							}
 						}

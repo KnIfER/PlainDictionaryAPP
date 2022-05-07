@@ -131,6 +131,7 @@ public class BookPresenter
 	public final static String baseUrl = "http://mdbr.com/base.html";
 	public final String mBaseUrl;
 	public final String idStr;
+	public final String idStr10;
 	public final static String  _404 = "<span style='color:#ff0000;'>PlainDict 404 Error:</span> ";
 	
 	/**</style><script class="_PDict" src="//mdbr/SUBPAGE.js"></script>*/
@@ -765,8 +766,9 @@ function debug(e){console.log(e)};
 		StringBuilder sb = new StringBuilder(32);
 		sb.append("d");
 		idStr = IU.NumberToText_SIXTWO_LE(getId(), sb).toString();
+		idStr10 = Long.toString(getId());
 		sb.setLength(0);
-		mBaseUrl = sb.append("http://mdbr.").append(idStr).append("/base.html").toString();
+		mBaseUrl = sb.append("http://mdbr.").append("d").append(idStr10).append("/base.html").toString();
 	}
 	
 	public static void keepBook(MainActivityUIBase THIS, UniversalDictionaryInterface bookImpl) {
@@ -1138,7 +1140,7 @@ function debug(e){console.log(e)};
 		return -1;
 	}
 	
-	public long getId() {
+	public final long getId() {
 		return bookImpl.getBooKID();
 	}
 	
@@ -4130,6 +4132,7 @@ function debug(e){console.log(e)};
 	public String toString() {
 		return "BookPresenter{" +
 				"bookImpl=" + (bookImpl==null?"":bookImpl.getDictionaryName()) +
+				", id=" + idStr +
 				", isMergedBook=" + isMergedBook() +
 				'}';
 	}
