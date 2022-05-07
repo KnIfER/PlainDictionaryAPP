@@ -3012,7 +3012,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			break;
 			case R.id.toolbar_action9:{//存书签
 				if(isLongClicked) break;
-				WebViewmy _mWebView = getCurrentWebContext(false);
+				WebViewmy _mWebView = getCurrentWebContext();
 				if (_mWebView!=null) {
 					_mWebView.presenter.toggleBookMark(_mWebView, null, false);
 				}

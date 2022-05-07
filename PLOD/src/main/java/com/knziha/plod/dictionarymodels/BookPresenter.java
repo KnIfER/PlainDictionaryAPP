@@ -129,6 +129,7 @@ public class BookPresenter
 	public final static String FileTag = "file://";
 	//public final static String baseUrl = "file:///";
 	public final static String baseUrl = "http://mdbr.com/base.html";
+	public final static String mBaseUrl = null;
 	public final static String  _404 = "<span style='color:#ff0000;'>PlainDict 404 Error:</span> ";
 	
 	/**</style><script class="_PDict" src="mdbr://SUBPAGE.js"></script>*/
@@ -1022,17 +1023,11 @@ function debug(e){console.log(e)};
 					toolbar_cover.performClick();
 				}
 				break;
-			case R.id.recess: //deprecated
-			case R.id.forward: //deprecated
+			case R.id.recess:
+			case R.id.forward:
 				boolean isGoBack = v.getId() == R.id.recess;
-				if (mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
-					CMN.Log("NavWeb", 123);
-					if (isGoBack) if (mWebView.canGoBack()) mWebView.goBack();
-					else if (mWebView.canGoForward()) mWebView.goForward(); return;
-				} else {
-					CMN.Log("NavWeb", 456);
-					mWebView.voyage(isGoBack);
-				}
+				if (isGoBack) mWebView.goBack();
+				else mWebView.goForward();
 				break;
 		}
 	}
@@ -1819,15 +1814,10 @@ function debug(e){console.log(e)};
 	//public int currentPos;
 	public int internalScaleLevel=-1;
 	public int lvPos,lvClickPos,lvPosOff;
-	/** @deprecated */
-	public SparseArray<ScrollerRecord> HistoryOOP = new SparseArray<>();
 
     @SuppressLint("JavascriptInterface")
-	public void setCurrentDis(WebViewmy mWebView, long idx, int... flag) {
+	public void setCurrentDis(WebViewmy mWebView, long idx) {
 		mWebView.setPresenter(this);
-		if(flag==null || flag.length==0) {//书签跳转等等
-			mWebView.addHistoryAt(idx);
-		}
 		/* 回溯 或 前瞻， 不改变历史 */
 		mWebView.word = currentDisplaying = StringUtils.trim(bookImpl.getEntryAt(mWebView.currentPos = idx));
 		if (mWebView.weblistHandler.isViewSingle()) {
@@ -1844,11 +1834,6 @@ function debug(e){console.log(e)};
 		}
 		StringBuilder title_builder = bookImpl.AcquireStringBuffer(64);
 		mWebView.toolbar_title.setText(title_builder.append(currentDisplaying.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
-
-		if(mWebView.History.size()>2 && mWebView.recess!=null){ //111
-			mWebView.recess.setVisibility(View.VISIBLE);
-			mWebView.forward.setVisibility(View.VISIBLE);
-		}
 	}
 	
 	
@@ -1869,10 +1854,10 @@ function debug(e){console.log(e)};
 			myWebColor = ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
 		}
 		a.guaranteeBackground(globalPageBackground);
-		mWebView.setBackgroundColor((getIsolateImages()||useInternal||Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT||mWebView.fromCombined==2)?myWebColor:Color.TRANSPARENT);
+		mWebView.setBackgroundColor((getIsolateImages()||useInternal||Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT||mWebView.weblistHandler.bDataOnly)?myWebColor:Color.TRANSPARENT);
 		/* check and set colors for toolbar title Background*/
 		if(mWebView==this.mWebView){
-			mWebView.titleBar.fromCombined = mWebView.fromCombined;
+			mWebView.titleBar.fromCombined = mWebView.fromCombined==1;
 		}
 		FlowTextView toolbar_title = mWebView.toolbar_title;
 		if(toolbar_title!=null) {
@@ -1943,13 +1928,11 @@ function debug(e){console.log(e)};
 			//mWebView.History = this.HistoryOOP;
 		}
 	
-		int from = mWebView.fromCombined;
 		mWebView.fromNet=mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 		mWebView.active=true;
-		boolean fromCombined = from==1;
-		boolean fromPopup = from==2;
+		boolean fromCombined = mWebView.fromCombined==1;
 
-		boolean mIsolateImages=/*resposibleForThisWeb&&*/from==0&&getIsolateImages();
+		boolean mIsolateImages=false;///*resposibleForThisWeb&&*/from==0&&getIsolateImages();
 		/* 为了避免画面层叠带来的过度重绘，网页背景保持透明？。 */
 		tintBackground(mWebView);
 		
@@ -1963,7 +1946,6 @@ function debug(e){console.log(e)};
 			//if(resposibleForThisWeb) rl.setTag(bookImpl);
 			//todo 是否记忆临时的折叠状态？
 			//todo 是否为常规的页面开放连续的历史纪录？
-			mWebView.clearIfNewADA(resposibleForThisWeb?null:this); // todo ???
 			mWebView.currentPos=position[0];
 			mWebView.currentRendring=position;
 			mWebView.jointResult=mWebView.weblistHandler.multiDisplaying();
@@ -2039,7 +2021,7 @@ function debug(e){console.log(e)};
 	   	    mWebView.setWebViewClient(a.myWebClient);
     	}
 
-		renderContentAt_internal(mWebView, initialScale, fromCombined, fromPopup, mIsolateImages, position);
+		renderContentAt_internal(mWebView, initialScale, fromCombined, mIsolateImages, position);
     }
 	
 	public boolean getNeedsAutoFolding(int frameAt) {
@@ -2070,7 +2052,7 @@ function debug(e){console.log(e)};
 		}
 	}
 	
-	public void renderContentAt_internal(WebViewmy mWebView,float initialScale, boolean fromCombined, boolean fromPopup, boolean mIsolateImages, long...position) {
+	public void renderContentAt_internal(WebViewmy mWebView, float initialScale, boolean fromCombined, boolean mIsolateImages, long... position) {
 		mWebView.isloading=true;
 		mWebView.currentPos = position[0];
 		//if(!a.AutoBrowsePaused&&a.background&&PDICMainAppOptions.getAutoBrowsingReadSomething())
@@ -2078,7 +2060,7 @@ function debug(e){console.log(e)};
     	String htmlCode = null ,JS=null;
     	boolean loadUrl=opt.alwaysloadUrl()
 				|| opt.popuploadUrl()&&mWebView.weblistHandler.bShowingInPopup
-				|| mWebView.fromCombined==2
+				|| mWebView.weblistHandler.bDataOnly
 				//|| mWebView.weblistHandler.getSrc()==SearchUI.TapSch.MAIN && true
 				;
     	//CMN.Log("loadUrl::", loadUrl);
@@ -2116,12 +2098,12 @@ function debug(e){console.log(e)};
 									if (!"schVar".equals(mWebView.getTag())) {
 										mWebView.setTag("schVar");
 										SetSearchKey(GetAppSearchKey());
-										renderContentAt_internal(mWebView, initialScale, fromCombined, fromPopup, mIsolateImages, 0);
+										renderContentAt_internal(mWebView, initialScale, fromCombined, mIsolateImages, 0);
 										mWebView.setTag(null);
 									}
 								} else {
 									mWebView.setTag("forceLoad");
-									renderContentAt_internal(mWebView, initialScale, fromCombined, fromPopup, mIsolateImages, position);
+									renderContentAt_internal(mWebView, initialScale, fromCombined, mIsolateImages, position);
 								}
 							}
 						});
@@ -2190,7 +2172,7 @@ function debug(e){console.log(e)};
 				mWebView.loadUrl(htmlCode);
 			}
 			else if (!htmlCode.startsWith(fullpageString)) {
-				AddPlodStructure(mWebView, htmlBuilder, fromPopup, mIsolateImages);
+				AddPlodStructure(mWebView, htmlBuilder, mIsolateImages);
 				LoadPagelet(mWebView, htmlBuilder, htmlCode);
 			}
 			else {
@@ -2202,7 +2184,7 @@ function debug(e){console.log(e)};
 					} else {
 						htmlBuilder.append(htmlCode, 0, headidx + 6);
 					}
-					AddPlodStructure(mWebView, htmlBuilder, fromPopup, mIsolateImages);
+					AddPlodStructure(mWebView, htmlBuilder, mIsolateImages);
 					htmlBuilder.append(getSimplestInjection());
 					if (b1) {
 						htmlBuilder.append("</head>");
@@ -2243,7 +2225,7 @@ function debug(e){console.log(e)};
 					if (!"schVar".equals(mWebView.getTag())) {
 						mWebView.setTag("schVar");
 						SetSearchKey(GetAppSearchKey());
-						renderContentAt_internal(mWebView, -1, mWebView.fromCombined==1, mWebView==a.wordPopup.mWebView, false, 0);
+						renderContentAt_internal(mWebView, -1, mWebView.fromCombined==1, false, 0);
 						mWebView.setTag(null);
 					}
 				}
@@ -2288,13 +2270,13 @@ function debug(e){console.log(e)};
 	final static String cssfont = "sss";
 
 	/** Let's call and call and call and call!!! */
-	public void AddPlodStructure(WebViewmy mWebView, StringBuilder htmlBuilder, boolean fromPopup, boolean mIsolateImages) {
+	public void AddPlodStructure(WebViewmy mWebView, StringBuilder htmlBuilder, boolean mIsolateImages) {
     	//CMN.Log("MakeRCSP(opt)??", MakeRCSP(opt),MakeRCSP(opt)>>5);
 		htmlBuilder.append("<div class=\"_PDict\" style='display:none;'><p class='bd_body'/>");
 		if(bookImpl.hasMdd()) htmlBuilder.append("<p class='MddExist'/>");
 		htmlBuilder.append("</div>");
 		boolean styleOpened=false;
-		if (fromPopup) {
+		if (mWebView.weblistHandler.bDataOnly) {
 			htmlBuilder.append("<style class=\"_PDict\">"); styleOpened=true;
 			htmlBuilder.append("body{ margin-top:0px; margin-bottom:").append(30).append("px }");
 		}

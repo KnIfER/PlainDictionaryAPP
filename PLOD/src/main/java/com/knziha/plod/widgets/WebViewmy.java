@@ -85,12 +85,9 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public long[] currentRendring;
 	public boolean awaiting;
 	public boolean bRequestedSoundPlayback;
-	public int HistoryVagranter=-1;
 	public float webScale=1;
 	public int expectedPos=-1;
 	public int expectedPosX=-1;
-	/** @deprecated */
-	public ArrayList<myCpr<String, ScrollerRecord>> History = new ArrayList<>();
 	public float lastX;
 	public float lastY;
 	public int lastLongSX;
@@ -338,23 +335,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		if(wvclient!=null)
 			wvclient.onPageFinished(this, "file:///");
 	}
-	
-	/** @deprecated */
-	public void addHistoryAt(long idx) {
-		//CMN.Log("创造历史！！！");
-		History.add(++HistoryVagranter,new myCpr<>(String.valueOf(idx),new ScrollerRecord(expectedPosX, expectedPos, -1)));
-		for(int i=History.size()-1;i>=HistoryVagranter+1;i--)
-			History.remove(i);
-	}
-	
-	/** @deprecated */
-	public void clearIfNewADA(BookPresenter adapter_idx) {
-		if(presenter!=adapter_idx){
-			//CMN.Log("清空历史!!!", adapter_idx, SelfIdx);
-			History.clear();
-			HistoryVagranter=-1;
-		}
-	}
 
 	public void shutDown() {
 		bPageStarted = false;
@@ -522,70 +502,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 //		}
 //	}
 	
-	/** @deprecated */
-	public void voyage(boolean isGoBack) {
-		if (fromNet) {
-			if (isGoBack) if (canGoBack()) goBack();
-			else if (canGoForward()) goForward(); return;
-		}
-		CMN.Log("这是网页的前后导航" ,presenter,isGoBack, HistoryVagranter, History.size());
-		if (isGoBack && HistoryVagranter > 0 || !isGoBack&&HistoryVagranter<=History.size() - 2) {
-			boolean fromCombined = this.fromCombined==1;
-			try {
-				MainActivityUIBase a = presenter.a;
-				ScrollerRecord PageState=null;
-				if(fromCombined) {
-					a.contentUIData.mainProgressBar.setVisibility(View.VISIBLE);
-					toTag="===???";/* OPF监听器中由recCom接管 */
-				}
-				
-				if(System.currentTimeMillis()-a.lastClickTime>300 && !isloading) {//save our postion
-					if (!fromCombined || a.recCom.scrolled)
-						PageState = saveHistory(fromCombined ? a.weblistHandler.getScrollView() : null, a.lastClickTime);
-					if (!isGoBack && HistoryVagranter == 0 && PageState != null) {
-						if (fromCombined) {
-							a.adaptermy2.avoyager.put(a.adaptermy2.lastClickedPosBefore, PageState);
-						} else {
-							presenter.HistoryOOP.put((int)currentPos, PageState); //todo
-						}
-					}
-				}
-				
-				a.lastClickTime = System.currentTimeMillis();
-				
-				int th = isGoBack ? --HistoryVagranter : ++HistoryVagranter;
-				
-				int pos = IU.parsint(History.get(th).key, -1);
-				PageState = History.get(th).value;
-				float initialScale = BookPresenter.def_zoom;
-				if (PageState != null) {
-					expectedPos = PageState.y;
-					expectedPosX = PageState.x;
-					initialScale = PageState.scale;
-				}
-				
-				//a.showT(CMN.Log(initialScale+" :: "+th+" :: "+pos+" :: expectedPos" + (isRecess ? " <- " : " -> ") + expectedPos));
-				
-				if (pos != -1) {
-					boolean render = currentPos != pos || isloading;
-					presenter.setCurrentDis(this, pos, 0);
-					if (render) {
-						//CMN.Log("/*BUG::多重结果变成成单一结果*/");
-						presenter.renderContentAt_internal(this,initialScale, fromCombined, false, false, pos); // mIso = rl.getLayoutParams().height>0
-					} else {
-						//CMN.Log("还是在这个页面");
-						isloading = true;
-						onFinishedPage();
-					}
-				} else {
-					loadUrl(History.get(HistoryVagranter).key);//
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
 	public long getBookId() {
 		return presenter.bookImpl.getBooKID();
 	}
@@ -635,16 +551,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 					|| (url = getUrl())!=null && !url.startsWith("merge", url.indexOf(":")+12));
 	}
 	
-	public final void initScale() {
-		CMN.Log("initScale::缩放是", expectedZoom);
-		if(expectedZoom!=-1) {
-			setInitialScale((int) (100*(expectedZoom/ BookPresenter.def_zoom)*GlobalOptions.density));//opt.dm.density
-		} else {
-			//尝试重置页面缩放
-			setInitialScale(0);//opt.dm.density
-		}
-	}
-	
 	public final void initPos() {
 		ScrollerRecord pPos = presenter.avoyager.get((int) currentPos);
 		float initialScale = BookPresenter.def_zoom;
@@ -657,6 +563,18 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			expectedPosX = 0;
 		}
 		expectedZoom = initialScale;
+	}
+	
+	public final void initScale() {
+		CMN.Log("initScale::缩放是", expectedZoom);
+		if(expectedZoom!=-1)
+		{
+			setInitialScale((int) (100*(expectedZoom/ BookPresenter.def_zoom)*GlobalOptions.density));//opt.dm.density
+			expectedZoom = -1;
+		} else {
+			//尝试重置页面缩放
+			setInitialScale(0);//opt.dm.density
+		}
 	}
 
 //	/**  reset overshot */

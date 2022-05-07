@@ -48,7 +48,7 @@ public class AdvancedNestScrollWebView extends WebViewmy implements NestedScroll
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if(mNestedScrollEnabled&&fromCombined!=1) {
+		if(mNestedScrollEnabled&&weblistHandler.isViewSingle()) {
 			mChildHelper.onTouchEvent(this, event);
 			//if(OrgTop-getTop()==0)
 			super.onTouchEvent(event);
@@ -70,43 +70,43 @@ public class AdvancedNestScrollWebView extends WebViewmy implements NestedScroll
 
 	@Override
 	public boolean isNestedScrollingEnabled() {
-		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.isNestedScrollingEnabled();
+		return mNestedScrollEnabled&&weblistHandler.isViewSingle()&&mChildHelper.isNestedScrollingEnabled();
 	}
 
 	@Override
 	public boolean startNestedScroll(int axes) {
-		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.startNestedScroll(axes, this);
+		return mNestedScrollEnabled&&weblistHandler.isViewSingle()&&mChildHelper.startNestedScroll(axes, this);
 	}
 
 	@Override
 	public void stopNestedScroll() {
-		if(fromCombined!=1){
+		if(weblistHandler.isViewSingle()){
 			mChildHelper.stopNestedScroll();
 		}
 	}
 
 	@Override
 	public boolean hasNestedScrollingParent() {
-		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.hasNestedScrollingParent();
+		return mNestedScrollEnabled&&weblistHandler.isViewSingle()&&mChildHelper.hasNestedScrollingParent();
 	}
 
 	@Override
 	public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int[] offsetInWindow) {
-		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+		return mNestedScrollEnabled&&weblistHandler.isViewSingle()&&mChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
 	}
 
 	@Override
 	public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
-		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+		return mNestedScrollEnabled&&weblistHandler.isViewSingle()&&mChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
 	}
 
 	@Override
 	public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
-		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+		return mNestedScrollEnabled&&weblistHandler.isViewSingle()&&mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
 	}
 
 	@Override
 	public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
-		return mNestedScrollEnabled&&fromCombined!=1&&mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
+		return mNestedScrollEnabled&&weblistHandler.isViewSingle()&&mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
 	}
 }

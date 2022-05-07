@@ -986,7 +986,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			mWebView.setMinimumWidth((int) (100*GlobalOptions.density));
 			mWebView.weblistHandler = weblistHandler;
 			//mWebView.fromPeruseview = true;
-			mWebView.fromCombined=3;
 	        mWebView.setOnScrollChangedListener(a.getWebScrollChanged());
 	        mWebView.setPadding(0, 0, 18, 0);
 			contentUIData.dragScrollBar.setDelimiter("< >", mWebView);
@@ -2199,7 +2198,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 						
 						if(pos>=0 && pos<currentDictionary.bookImpl.getNumberEntries()) {
 							setCurrentDis(currentDictionary, pos, 0);
-							currentDictionary.renderContentAt_internal(mWebView,initialScale, false, false, false, pos);
+							currentDictionary.renderContentAt_internal(mWebView,initialScale, false, false, pos);
 						} else {
 							mWebView.loadUrl(mWebView.History.get(mWebView.HistoryVagranter).key);
 						}
@@ -2431,20 +2430,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	boolean isJumping = false;
 	public int bottombar2BaseColor=Constants.DefaultMainBG;
     @SuppressLint("JavascriptInterface")
-	void setCurrentDis(BookPresenter invoker, long idx, int...flag) {
-		if(flag==null || flag.length==0) {//书签跳转等等
-			mWebView.addHistoryAt(idx);
-		}
+	void setCurrentDis(BookPresenter invoker, long idx) {
 		/*回溯 或 前瞻， 不改变历史*/
 		mWebView.currentPos = idx;
 		mWebView.word = StringUtils.trim(mWebView.currentPos<invoker.bookImpl.getNumberEntries()?invoker.bookImpl.getEntryAt(mWebView.currentPos):"Error!!!");
 		mWebView.toolbar_title.setText(mWebView.word + " - " + invoker.bookImpl.getDictionaryName());
-
-		if(mWebView.History.size()>2){
-//			recess.setVisibility(View.VISIBLE);
-//			forward.setVisibility(View.VISIBLE);
-			//111
-		}
 	}
 	
 	@NonNull MainActivityUIBase getMainActivity() {

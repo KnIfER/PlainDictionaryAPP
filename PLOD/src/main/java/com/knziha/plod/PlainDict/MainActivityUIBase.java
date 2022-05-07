@@ -2753,17 +2753,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 				
-				boolean fromPeruseView=webview.fromCombined==3;
 				DragScrollBar mBar=webview.weblistHandler.mBar;
 				float currentScale = webview.webScale;
-				//tofo
-				if(currentScale>= BookPresenter.def_zoom) {
-					if(fromPeruseView) {
-						mBar= peruseView.contentUIData.dragScrollBar;
-					}
-				}
 				
-				if(fromPeruseView
+				if(webview.weblistHandler.src==SearchUI.Fye.MAIN
 						|| !isCombinedSearching
 						|| webview==weblistHandler.mMergedFrame
 						|| (ActivedAdapter!=null && !(ActivedAdapter.results instanceof resultRecorderCombined))) {
@@ -5837,7 +5830,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			/* 全文朗读 */
 			case R.drawable.ic_fulltext_reader:{
 				showMT("  全文朗读  ");
-				performReadContent(getCurrentWebContext(false));
+				performReadContent(getCurrentWebContext());
 			} break;
 			/* 上一词典信息 */
 			case R.id.about_popLstDict:{
@@ -6326,7 +6319,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(getCurrentFocus() instanceof WebViewmy)
 						currentWebFocus = (WebViewmy) getCurrentFocus();
 					else{
-						currentWebFocus = getCurrentWebContext(false);
+						currentWebFocus = getCurrentWebContext();
 					}
 					if(currentWebFocus != null && currentWebFocus.bIsActionMenuShown) {
 						proceed = false;
@@ -7010,6 +7003,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected boolean delayedAttaching;
 	
 	public WebViewClient myWebClient = new WebViewClient() {
+		@Override
+		public void onPageStarted(WebView view, String url, Bitmap favicon) {
+			WebViewmy mWebView = (WebViewmy) view;
+			CMN.Log("onPageStarted::"+mWebView.wvclient);
+			if(mWebView.wvclient!=null) {
+				mWebView.bPageStarted=true;
+				final BookPresenter invoker = mWebView.presenter;
+				if(invoker.getIsWebx()) {
+					((PlainWeb)invoker.bookImpl).onPageStarted(invoker, view, url, true);
+				}
+				mWebView.initScale();
+			}
+			if(view==wordPopup.mWebView) {
+				wordPopup.onPageStart(url);
+			}
+		}
+		
 		public void onPageFinished(WebView view, String url) {
 			final WebViewmy mWebView = (WebViewmy) view;
 			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, mWebView.webScale);
@@ -7034,8 +7044,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			//if(!mWebView.isloading && !mWebView.fromNet) return;
 			final WebViewListHandler wlh = mWebView.weblistHandler;
-			
-			int from = mWebView.fromCombined;
 			
 			BookPresenter invoker = mWebView.presenter, book=invoker;
 			
@@ -7095,7 +7103,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//if(baseUrl)
 				{
 					String toHash = mWebView.toTag;
-					boolean fromCombined = from==1;
 					// naive reset zoom : view.zoomBy(0.02f);
 					if(toHash!=null)
 					{
@@ -7103,7 +7110,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						mWebView.toTag=null;
 						View rl = (View) mWebView.getParent();
 						mWebView.expectedPos = -100;
-						if(fromCombined){
+						if(mWebView.fromCombined==1){
 							wlh.WHP.touchFlag.first=true;
 								if (toHash.equals("===000")) {
 									//showT("正在跳往子页面顶端…" + invoker.rl.getTop() + "?" + weblistHandler.WHP.getChildAt(0).getHeight());
@@ -7185,25 +7192,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(PDICMainAppOptions.toolsBoost())
 				ViewUtils.toolsBoost(mWebView);
 			
-			if(from==1 && awaiting) loadNext(mWebView);
+			if(mWebView.fromCombined==1 && awaiting) loadNext(mWebView);
 		}
 
-		@Override
-		public void onPageStarted(WebView view, String url, Bitmap favicon) {
-			WebViewmy mWebView = (WebViewmy) view;
-			CMN.Log("onPageStarted::"+mWebView.wvclient);
-			if(mWebView.wvclient!=null) {
-				mWebView.bPageStarted=true;
-				final BookPresenter invoker = mWebView.presenter;
-				if(invoker.getIsWebx()) {
-					((PlainWeb)invoker.bookImpl).onPageStarted(invoker, view, url, true);
-				}
-				mWebView.initScale();
-			}
-			if(view==wordPopup.mWebView) {
-				wordPopup.onPageStart(url);
-			}
-		}
 
 		public void  onScaleChanged(WebView view, float oldScale,float newScale) {
 			//CMN.Log(oldScale, "-", newScale, " newScale");
@@ -7241,7 +7232,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mWebView.forbidLoading) {
 				return true;
 			}
-			CMN.debug("chromium SOUL::",url,view.getTag(), mWebView.fromCombined);
+			CMN.debug("chromium SOUL::",url,view.getTag());
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
 			boolean fromPopup = view==wordPopup.mWebView;
@@ -7274,9 +7265,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			//CMN.Log("chromium shouldOverrideUrlLoading_",url);
 			//TODO::改写历史纪录方式，统一操作。
-			int from = mWebView.fromCombined;
-			boolean fromPeruseView = from==3;
-			boolean fromCombined = from==1;
 			String msg=null;
 			if (url.startsWith("file:///#")) {
 				url = entryTag+url.substring(8);
@@ -7313,29 +7301,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					startActivity(intent);
 					return true;
 				}
-				else {
-					if (fromPeruseView) {
-						//TODO fix
-//						if (PeruseView.mWebView.HistoryVagranter >= 0)
-//							PeruseView.mWebView.History.get(PeruseView.mWebView.HistoryVagranter).value = PeruseView.mWebView.getScrollY();
-//						PeruseView.mWebView.History.add(++PeruseView.mWebView.HistoryVagranter, new myCpr<>(url, PeruseView.expectedPos = 0));
-//						for (int i = PeruseView.History.size() - 1; i >= PeruseView.HistoryVagranter + 1; i--)
-//							PeruseView.History.remove(i);
-//
-//						PeruseView.recess.setVisibility(View.VISIBLE);
-//						PeruseView.forward.setVisibility(View.VISIBLE);
-					} else {
-						//TODO fix
-//						if(mWebView.HistoryVagranter>=0) invoker.History.get(mWebView.HistoryVagranter).value=invoker.mWebView.getScrollY();
-//						invoker.History.add(++mWebView.HistoryVagranter,new myCpr<>(url,invoker.expectedPos=0));
-//						for(int i=invoker.History.size()-1;i>=mWebView.HistoryVagranter+1;i--)
-//							invoker.History.remove(i);
-//
-//						invoker.recess.setVisibility(View.VISIBLE);
-//						invoker.forward.setVisibility(View.VISIBLE);
-					}
-					return false;
-				}
 			}
 			else if (url.startsWith(soundTag)) {
 				try {
@@ -7361,7 +7326,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					url = URLDecoder.decode(url, "UTF-8");
 				} catch (Exception ignored) { }
 				WebViewListHandler wlh = mWebView.weblistHandler;
-				fromCombined = !wlh.isViewSingle();
+				boolean fromCombined = !wlh.isViewSingle();
 				boolean pop = !wlh.bShowingInPopup // popup new content displayer
 						&& (fromCombined && opt.popViewEntryMulti()
 								|| !fromCombined && opt.popViewEntryOne());
@@ -7371,20 +7336,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if (!fromCombined) {// 三种情况：normal，peruseview， popup查询。
 						/* '代管'之含义：在网页前进/后退之时，不使用系统缓存，而是手动加载、手动定位。 */
 						ScrollerRecord PageState;
-						if (mWebView.HistoryVagranter >= 0) {
-							(PageState = mWebView.History.get(mWebView.HistoryVagranter).value).set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
-							if (mWebView.HistoryVagranter == 0) {
-								invoker.HistoryOOP.put((int)mWebView.currentPos, PageState); //todo
-							}
-						}
 						mWebView.expectedPos = -100;
 						((WebViewmy) view).isloading = true;
 						view.evaluateJavascript("location.replace(\"" + url.substring(entryTag.length()) + "\");", null);
 					}
 					else {//TODO 精确之
-						if (mWebView.HistoryVagranter >= 0) {
-							mWebView.History.get(mWebView.HistoryVagranter).value.set(0, weblistHandler.WHP.getScrollY(), mWebView.webScale);
-						}
 						view.evaluateJavascript("var item=document.getElementsByName(\"" + url.substring(entryTag.length() + 1) + "\")[0]; item?item.getBoundingClientRect().top:-1;"
 								, v -> {
 									int to=(int)(Float.valueOf(v) * getResources().getDisplayMetrics().density);
@@ -7392,10 +7348,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										weblistHandler.WHP.smoothScrollTo(0, invoker.rl.getTop() - toolbar.getHeight() + to);
 								});
 					}
-					if(fromPeruseView)
-						peruseView.setCurrentDis(invoker, mWebView.currentPos);
-					else if(mWebView.fromCombined<=1)
-						invoker.setCurrentDis(mWebView, mWebView.currentPos);
+					//invoker.setCurrentDis(mWebView, mWebView.currentPos);
 					return true;
 				}
 				/* 书签跳转 */
@@ -7415,19 +7368,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						//	return true;
 						//}
 						//todo delay save states
-						if (fromPeruseView) {
-//							peruseView.recess.setVisibility(View.VISIBLE);
-//							peruseView.forward.setVisibility(View.VISIBLE); //111
-							peruseView.isJumping = true;
-							if (mWebView.HistoryVagranter >= 0)
-								mWebView.History.get(peruseView.mWebView.HistoryVagranter).value.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
-							peruseView.setCurrentDis(invoker, pos);
-						} else {
-							invoker.isJumping = true;
-							if (mWebView.HistoryVagranter >= 0)
-								mWebView.History.get(mWebView.HistoryVagranter).value.set(mWebView.getScrollX(),mWebView.getScrollY(), mWebView.webScale);
-							invoker.setCurrentDis(mWebView, pos);
-						}
+						// invoker.isJumping = true;
+						// invoker.setCurrentDis(mWebView, pos);
 						view.loadDataWithBaseURL(baseUrl,
 								invoker.AcquirePageBuilder().append((AppWhite == Color.BLACK) ? MainActivityUIBase.DarkModeIncantation_l : "")
 										.append(BookPresenter.htmlHeadEndTag)
@@ -7488,26 +7430,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									return true;
 								}
 								else if(!fromPopup) {
-									/* 除点译弹窗与网络词典，代管所有网页的前进/后退。 */
-									if (fromPeruseView) {
-										peruseView.isJumping = true;
-										if (mWebView.HistoryVagranter >= 0)
-											mWebView.History.get(mWebView.HistoryVagranter).value.set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
-										peruseView.setCurrentDis(invoker, idx);
-									}
-									else {
-										invoker.isJumping = true;
-										if (!fromCombined) {
-											ScrollerRecord PageState = null;
-											if (mWebView.HistoryVagranter >= 0)
-												(PageState = mWebView.History.get(mWebView.HistoryVagranter).value).set(mWebView.getScrollX(), mWebView.getScrollY(), mWebView.webScale);
-											if (mWebView.HistoryVagranter == 0)
-												invoker.HistoryOOP.put((int) mWebView.currentPos, PageState); // todo
-										} else if (mWebView.HistoryVagranter >= 0) {
-											mWebView.History.get(mWebView.HistoryVagranter).value.set(0, weblistHandler.WHP.getScrollY(), mWebView.webScale);
-										}
-										invoker.setCurrentDis(mWebView, idx);
-									}
+									//peruseView.isJumping = true;
+									//invoker.isJumping = true;
+									//peruseView.setCurrentDis(invoker, idx);
+									//invoker.setCurrentDis(mWebView, idx);
 									if (mWebView.toTag == null) {
 										/* 跳转至顶部 */
 										mWebView.toTag = "===000";
@@ -7525,13 +7451,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								mWebView.setInitialScale((int) (100 * (initialScale / BookPresenter.def_zoom) * opt.dm.density));
 								mWebView.isloading = true;
 								StringBuilder htmlBuilder = invoker.AcquirePageBuilder();
-								if(fromPopup){
-//									wordPopup.popupHistory.add(++wordPopup.popupHistoryVagranter, new myCpr<>(wordPopup.CCD.getLexicalEntryAt(idx), new int[]{wordPopup.CCD_ID, idx}));
-//									if (wordPopup.popupHistory.size() > wordPopup.popupHistoryVagranter + 1) {
-//										wordPopup.popupHistory.subList(wordPopup.popupHistoryVagranter + 1, wordPopup.popupHistory.size()).clear();
-//									}
-								}
-								invoker.AddPlodStructure(mWebView, htmlBuilder ,mWebView==wordPopup.mWebView, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
+								invoker.AddPlodStructure(mWebView, htmlBuilder, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
 								String htmlCode = invoker.bookImpl.getRecordsAt(null, idx);
 								if(invoker.hasFilesTag()){
 									htmlCode = htmlCode.replace("file://", "");
@@ -9176,80 +9096,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	
-	//public WebViewmy getCurrentWebContext() {
-	//	if(PeruseViewAttached())
-	//		return PeruseView.mWebView;
-	//	BookPresenter mdTmp = getCurrentReadContext();
-	//	return mdTmp==null?null:mdTmp.mWebView;
-	//}
-	
-	public WebViewmy getCurrentWebContext(boolean getVisibleBackable) {
-		View SV = null;
-		ScrollViewmy WHP = weblistHandler.WHP;
-		ViewGroup webholder = weblistHandler.webholder;
-		ViewGroup webSingleholder = this.webSingleholder;
-		int webholder_childCount = webholder.getChildCount();
-		if(wordPopup.popupContentView!=null) {
-			ViewGroup SVP = (ViewGroup) wordPopup.popupContentView.getParent();
-			//showT(popupContentView.getTranslationY()+" "+SVP.getHeight());
-			if (SVP!=null && wordPopup.popupContentView.getTranslationY()<mainF.getHeight()-wordPopup.toolbar.getHeight()) {
-				return wordPopup.mWebView;
-			}
-		}
-		if (!isContentViewAttached()) {
-			return null;
-		}
-		if(webholder_childCount !=0) {
-			int selectedPos=-1;
-			/* 当前滚动高度 */
-			int currentHeight= WHP.getScrollY();
-			for(int i = 0; i<webholder_childCount; i++) {
-				if(webholder.getChildAt(i).getBottom()>currentHeight) {
-					/* Frames累加高度 首次超出 滚动高度 */
-					selectedPos=i;
-					break;
-				}
-			}
-
-			//获得返回之抵消
-			if (getVisibleBackable) {
-				for(int i = selectedPos; i<webholder_childCount; i++) {
-					SV = webholder.getChildAt(i);
-					if (SV!=null) {
-						if (SV.getTag() instanceof WebViewmy && ((WebViewmy) SV.getTag()).voyagable(true)) {
-							return (WebViewmy) SV.getTag();
-						}
-						if(SV.getTop()>=currentHeight + WHP.getHeight()) {
-							/* Frames累加高度 首次超出 显示范围 */
-							break;
-						}
-					}
-				}
-			}
-
-			//应用中线法则
-			currentHeight = currentHeight+ WHP.getHeight()/2;
-			if(selectedPos>=0){
-				while(selectedPos+1<webholder_childCount && webholder.getChildAt(selectedPos).getBottom()<currentHeight){
-					selectedPos++;
-				}
-			}
-
-			//UniversalDictionaryInterface bookImpl = (UniversalDictionaryInterface) webholder.getChildAt(selectedPos).getTag();
-			//return mdict_cache.get(bookImpl.getDictionaryName());
-			SV = webholder.getChildAt(selectedPos);
-		}
-		else {//单本阅读
-			SV = webSingleholder.getChildAt(0);
-			//UniversalDictionaryInterface bookImpl = (UniversalDictionaryInterface) SV.getTag();
-			//return currentDictionary.bookImpl==bookImpl?currentDictionary
-			//		:mdict_cache.get(bookImpl.getDictionaryName());
-			//sv = webholder.getChildAt(selectedPos);
-		}
-		if (SV!=null && SV.getTag() instanceof WebViewmy) {
-			return (WebViewmy) SV.getTag();
-		}
+	public WebViewmy getCurrentWebContext() {
 		return null;
 	}
 
@@ -10076,16 +9923,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			return true;
 		if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn) {
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
-			WebViewmy view = getCurrentWebContext(true);
-			if (view!=null) {
-				if (view==wordPopup.mWebView) { //111
-					if (false && wordPopup.nav(true))
-						return true;
-				} else if(view.voyagable(true)) {
-					view.voyage(true);
-					return true;
-				}
-			}
 		}
 		if(wordPopup.popupContentView!=null) {
 			ViewGroup SVP = (ViewGroup) wordPopup.popupContentView.getParent();
