@@ -308,29 +308,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 	public boolean bIsActionMenuShown;
 	public callbackme callmeback;
 
-	/**
-	 *  回退/前进时记录历史 (缩放、位置)
-	 *  */
-	public ScrollerRecord saveHistory(ViewGroup WHP, long lastClickTime) {
-		if(!isloading && System.currentTimeMillis()-lastClickTime>300) {//save our postion
-			ScrollerRecord PageState = History.get(HistoryVagranter).value;
-			if (PageState == null)
-				History.set(HistoryVagranter, new myCpr<>(""+currentPos, PageState=new ScrollerRecord()));
-			if(WHP!=null){
-				PageState.x = 0;
-				PageState.y = WHP.getScrollY();
-				PageState.scale = BookPresenter.def_zoom;
-			}else{
-				PageState.x = getScrollX();
-				PageState.y = getScrollY();
-				PageState.scale = webScale;
-				//CMN.Log("记录位置", PageState.x, PageState.y, webScale);
-			}
-			return PageState;
-		}
-		return null;
-	}
-
 	public void onFinishedPage() {
 		if(wvclient!=null)
 			wvclient.onPageFinished(this, "file:///");
@@ -467,13 +444,6 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			pos.set(getScrollX(), getScrollY(), webScale);
 		}
 		return ret;
-	}
-	
-	public boolean voyagable(boolean isGoBack) {
-		if (fromNet) {
-			return isGoBack?canGoBack():canGoForward();
-		}
-		return isGoBack?HistoryVagranter > 0:HistoryVagranter<=History.size()-2;
 	}
 	
 //	@NonNull

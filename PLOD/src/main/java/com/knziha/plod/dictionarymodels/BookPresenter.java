@@ -129,10 +129,11 @@ public class BookPresenter
 	public final static String FileTag = "file://";
 	//public final static String baseUrl = "file:///";
 	public final static String baseUrl = "http://mdbr.com/base.html";
-	public final static String mBaseUrl = null;
+	public final String mBaseUrl;
+	public final String idStr;
 	public final static String  _404 = "<span style='color:#ff0000;'>PlainDict 404 Error:</span> ";
 	
-	/**</style><script class="_PDict" src="mdbr://SUBPAGE.js"></script>*/
+	/**</style><script class="_PDict" src="//mdbr/SUBPAGE.js"></script>*/
 	@Metaline()
 	public final static String js="SUBPAGE";
 	
@@ -180,7 +181,7 @@ public class BookPresenter
 				return;
 			if(!LoadMark) {
 	 			function cb(){LoadMark=1;highlight(keyword);}
-				try{loadJs('mdbr://markloader.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'markloader.js');}
+				try{loadJs('//mdbr/markloader.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'markloader.js');}
 			} else highlight(keyword);
 		}
 		w.addEventListener('touchstart',function(e){
@@ -760,6 +761,12 @@ function debug(e){console.log(e)};
 		if(THIS!=null) {
 			readConfigs(THIS, THIS.prepareHistoryCon());
 		}
+		
+		StringBuilder sb = new StringBuilder(32);
+		sb.append("d");
+		idStr = IU.NumberToText_SIXTWO_LE(getId(), sb).toString();
+		sb.setLength(0);
+		mBaseUrl = sb.append("http://mdbr.").append(idStr).append("/base.html").toString();
 	}
 	
 	public static void keepBook(MainActivityUIBase THIS, UniversalDictionaryInterface bookImpl) {
@@ -1158,7 +1165,7 @@ function debug(e){console.log(e)};
 		else json.clear();
 		json.put("name", getDictionaryName());
 		json.put("tag", true);
-		json.put("id", "d"+IU.NumberToText_SIXTWO_LE(getId(), null));
+		json.put("id", idStr);
 		json.put("tbg", SU.toHexRGB(getTitleBackground()));
 		json.put("tfg", SU.toHexRGB(getTitleForeground()));
 		json.put("bg", getUseInternalBG()?SU.toHexRGB(getContentBackground()):null);
@@ -2194,7 +2201,7 @@ function debug(e){console.log(e)};
 					}
 					htmlCode = htmlBuilder.toString();
 				}
-				mWebView.loadDataWithBaseURL(baseUrl, htmlCode, null, "UTF-8", null);
+				mWebView.loadDataWithBaseURL(mBaseUrl, htmlCode, null, "UTF-8", null);
 			}
 		} else if(JS!=null) {
 			mWebView.evaluateJavascript(JS, null);
@@ -2305,7 +2312,7 @@ function debug(e){console.log(e)};
 		//htmlBuilder.append("hasFiles='").append(hasFilesTag()).append("';");
 		
 		/** see {@link AppHandler#view} */
-		// 此处加载略慢于图片资源，需要刷新
+		// 此处代码的加载略慢于图片资源
 		htmlBuilder.append("app.view(sid.get(),")
 				.append(getId())
 				.append(",").append(mWebView.currentPos)
@@ -2317,7 +2324,7 @@ function debug(e){console.log(e)};
 	}
 
 	public void LoadPagelet(WebViewmy mWebView, StringBuilder htmlBuilder, String records) {
-		mWebView.loadDataWithBaseURL(baseUrl,
+		mWebView.loadDataWithBaseURL(mBaseUrl,
 				htmlBuilder.append(htmlHeadEndTag)
 						.append(records)
 						.append(htmlEnd).toString(), null, "UTF-8", null);
@@ -4138,5 +4145,4 @@ function debug(e){console.log(e)};
 			a.getUtk().onClick(/*trust webview selection*/a.anyView(R.id.tools));
 		}
 	}
-	
 }

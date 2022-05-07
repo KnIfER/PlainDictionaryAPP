@@ -730,7 +730,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			voyager[i*VELESIZE]=-1;
 		//entryAdapter.lastClickedPos=-1;
 		gridAdapter.flip=true;
-		mWebView.clearIfNewADA(currentDictionary); // a.md_get(off<data.size()?data.get(off):-1)
 		focusGridAuto(true);
 	}
 	
@@ -1729,8 +1728,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				cr.moveToPosition(cr.getCount()-lastClickedPos-1);
             	int actualPosition=cr.getInt(0);
 		
-				mWebView.clearIfNewADA(currentDictionary);
-
 				setCurrentDis(currentDictionary, actualPosition);
 
 				if(a.opt.getAutoReadEntry() && !PDICMainAppOptions.getTmpIsAudior(currentDictionary.tmpIsFlag)){
@@ -1964,7 +1961,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				} else {
 					weblistHandler.popupContentView(null, currentKeyText);
 				}
-				mWebView.clearIfNewADA(presenter);
 				
 				setCurrentDis(presenter, pos);
 				if (pos==0 && presenter.getType()==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
@@ -2174,38 +2170,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				break;
 			case R.id.recess:
 			case R.id.forward:
-				boolean isRecess = v.getId() == R.id.recess;
-				//CMN.Log("这是网页的前后导航" ,isRecess, mWebView.HistoryVagranter, mWebView.History.size());
-				if (isRecess && mWebView.HistoryVagranter > 0 || !isRecess&&mWebView.HistoryVagranter<=mWebView.History.size() - 2) {
-					try {
-						//CMN.Log("!!!");
-						mWebView.saveHistory(null, a.lastClickTime);
-						int th = isRecess ? --mWebView.HistoryVagranter : ++mWebView.HistoryVagranter;
-						a.lastClickTime = System.currentTimeMillis();
-						
-						int pos = -1;
-						try {
-							pos = Integer.parseInt(mWebView.History.get(th).key);
-						} catch (NumberFormatException ignored) { }
-						
-						ScrollerRecord PageState = mWebView.History.get(th).value;
-						float initialScale = BookPresenter.def_zoom;
-						if (PageState != null) {
-							mWebView.expectedPos = PageState.y;
-							mWebView.expectedPosX = PageState.x;
-							initialScale = PageState.scale;
-						}
-						
-						if(pos>=0 && pos<currentDictionary.bookImpl.getNumberEntries()) {
-							setCurrentDis(currentDictionary, pos, 0);
-							currentDictionary.renderContentAt_internal(mWebView,initialScale, false, false, pos);
-						} else {
-							mWebView.loadUrl(mWebView.History.get(mWebView.HistoryVagranter).key);
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
 				break;
 			case R.id.schDropdown:{
 				etTools.drpdn = PDICMainAppOptions.historyShowFye();

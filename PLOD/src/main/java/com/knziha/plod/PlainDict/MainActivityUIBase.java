@@ -7023,12 +7023,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public void onPageFinished(WebView view, String url) {
 			final WebViewmy mWebView = (WebViewmy) view;
 			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, mWebView.webScale);
-			if (mWebView.changed==1) {
-				CMN.debug("view::onPageFinished::reload");
-				view.reload();
-				mWebView.changed=2;
-				return;
-			}
+//			if (mWebView.changed==1) {
+//				CMN.debug("view::onPageFinished::reload");
+//				view.reload();
+//				mWebView.changed=2;
+//				return;
+//			}
 			if (false) {
 				mWebView.initPos();
 			}
@@ -7138,7 +7138,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					{ //toHighLight
 						jumpNaughtyFirstHighlight(mWebView);
 					}
-					else if (!fromCombined)
+					else if (mWebView.weblistHandler.isViewSingle())
 					{
 						lastClickTime = System.currentTimeMillis();
 						if (mWebView.expectedPos >= 0) {
@@ -7512,7 +7512,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
+			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag(), request.getRequestHeaders());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 			
@@ -7522,483 +7522,354 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			WebViewListHandler weblistHandler = mWebView.weblistHandler;
 			
+			String key=null;
 			int schemaIdx = url.indexOf(":");
-			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
-			if(invoker.isMergedBook() || mdbr
-					&& (url.regionMatches(schemaIdx+12, "content", 0, 7)
-					|| url.regionMatches(schemaIdx+12, "base", 0, 4))
-			) {
-				if(mdbr) {
-					CMN.debug("mdbr::", url);
-					try {
-						HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
-						Response ret = getMdictServer().handle(req);
-						if(ret!=null) {
-							CMN.Log("WebResourceResponse::", ret.getMimeType());
-							String mime = ret.getMimeType();
-							int idx=mime.indexOf(";");
-							if(idx>0) mime = mime.substring(0, idx);
-							return new WebResourceResponse(mime, "UTF-8", ret.getData());
-						}
-					} catch (Exception e) {
-						CMN.debug(url, e);
-					}
+			WebResourceResponse fakedDomainResponse = null;
+			if(schemaIdx==-1){
+				if(url.startsWith("./"))
+					key=url.substring(1);
+			} else {
+//				if(url.startsWith("MdbR/", start+3)) {
+//					try {
+//						url=url.substring(start+3+5);
+//						CMN.Log("[fetching internal res : ]", url);
+//						String mime="*/*";
+//						if(url.endsWith(".css")) mime = "text/css";
+//						if(url.endsWith(".js")) mime = "text/js";
+//						return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(url));
+//					} catch (Exception e) {
+//						CMN.Log(e);
+//					}
+//				}
+				if(url.startsWith("file://")) {
+					// fix for images not loading when nav back/forward.
+					invoker.hasFilesTag(true);
+					invoker.isDirty = true;
 				}
-				else {
-					if(server!=null && server.webResHandler!=null && server.webResHandler.hasHosts()) {
-						//CMN.Log("shouldUseClientResponse::", url, webResHandler.shouldUseClientResponse(url), webResHandler.jinkeSheaths);
-						if(server.webResHandler.shouldUseClientResponse(url)) {
-							return (WebResourceResponse) server.webResHandler.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+				else if (url.startsWith("http")) {
+					boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4) && url.length()>12;
+					boolean merge = invoker.isMergedBook();
+					if (mdbr) {
+						int slashIdx = url.indexOf("/", schemaIdx+7);
+						if(slashIdx<0) slashIdx = url.length();
+						if (url.charAt(schemaIdx+8)=='d') {
+							// loaded with base url
+							if (!url.regionMatches(schemaIdx+9, invoker.idStr, 1, slashIdx-schemaIdx-9)) {
+								invoker = getBookById(IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(url, schemaIdx+9, slashIdx)));
+								CMN.Log("view::changed::res::", invoker);
+							}
 						}
+						else if (slashIdx==schemaIdx+7 || url.regionMatches(schemaIdx+12, "mdbr", 0, 4)) {
+							try { // 内置资源
+								url=url.substring(schemaIdx+(slashIdx==schemaIdx+7?8:17));
+								CMN.Log("[fetching internal res : ]", url);
+								String mime="*/*";
+								if(url.endsWith(".css")) mime = "text/css";
+								if(url.endsWith(".js")) mime = "text/js";
+								return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(url));
+							} catch (Exception e) {
+								CMN.Log(e);
+							}
+						}
+						if (!merge && (url.regionMatches(schemaIdx+12, "content", 0, 7)
+								|| url.regionMatches(schemaIdx+12, "base", 0, 4))) {
+							merge = true;
+						}
+						if (url.startsWith("http://mdbr.com/load.html")) { // for random page
+							return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(new byte[0]));
+						}
+						key = url.substring(slashIdx);
 					}
-					try { //todo opt
-						InputStream input = null;
-						for (BookPresenter book:weblistHandler.frames) { // java.util.ConcurrentModificationException
-							if(book!=null && book.getIsWebx()) {
-								input = book.getWebx().modifyRes(MainActivityUIBase.this, url);
-								if(input!=null) {
-									CMN.debug("修改了::", url);
-									WebResourceResponse webResourceResponse;
-									webResourceResponse=new WebResourceResponse("*/*", "utf8", input);
-									//webResourceResponse.setResponseHeaders(headers);
-									return webResourceResponse;
+					else {
+						for (PlainWeb book : weblistHandler.moders) { // java.util.ConcurrentModificationException
+							InputStream input = book.modifyRes(MainActivityUIBase.this, url);
+							if (input != null) {
+								CMN.debug("修改了::", url);
+								WebResourceResponse webResourceResponse;
+								webResourceResponse = new WebResourceResponse("*/*", "utf8", input);
+								//webResourceResponse.setResponseHeaders(headers);
+								return webResourceResponse;
+							}
+						}
+						if (invoker.getOfflineMode())
+							return emptyResponse;
+					}
+					if(merge) {
+						if(mdbr) {
+							CMN.debug("mdbr::", url);
+							try {
+								HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
+								Response ret = getMdictServer().handle(req);
+								if(ret!=null) {
+									CMN.Log("WebResourceResponse::", ret.getMimeType());
+									String mime = ret.getMimeType();
+									int idx=mime.indexOf(";");
+									if(idx>0) mime = mime.substring(0, idx);
+									return new WebResourceResponse(mime, "UTF-8", ret.getData());
+								}
+							} catch (Exception e) {
+								CMN.debug(url, e);
+							}
+						}
+						else {
+							if(server!=null && server.webResHandler!=null && server.webResHandler.hasHosts()) {
+								//CMN.Log("shouldUseClientResponse::", url, webResHandler.shouldUseClientResponse(url), webResHandler.jinkeSheaths);
+								if(server.webResHandler.shouldUseClientResponse(url)) {
+									return (WebResourceResponse) server.webResHandler.getClientResponse(null, url, origin, null, request==null?null:request.getRequestHeaders(), false);
 								}
 							}
+							try { //todo opt
+								InputStream input = null;
+								for (BookPresenter book:weblistHandler.frames) { // java.util.ConcurrentModificationException
+									if(book!=null && book.getIsWebx()) {
+										input = book.getWebx().modifyRes(MainActivityUIBase.this, url);
+										if(input!=null) {
+											CMN.debug("修改了::", url);
+											WebResourceResponse webResourceResponse;
+											webResourceResponse=new WebResourceResponse("*/*", "utf8", input);
+											//webResourceResponse.setResponseHeaders(headers);
+											return webResourceResponse;
+										}
+									}
+								}
+								if(false) { }
+							} catch (Exception e) {
+								CMN.debug(url,"\n",e);
+							}
 						}
-						
-						if(false) {
-							//HTTPSessionProxy proxy = (HTTPSessionProxy) session;
-							HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
-							
-							if(urlConnection instanceof HttpsURLConnection) {
-								((HttpsURLConnection)urlConnection).setHostnameVerifier(DO_NOT_VERIFY);
+						//return null;
+					}
+					//CMN.Log("chromium shouldInterceptRequest invoker",invoker);
+					if(invoker.getIsWebx()) {
+						PlainWeb webx = (PlainWeb) invoker.bookImpl;
+						if (webx.hasExcludedResV4 && Build.VERSION.SDK_INT<21) {
+							if (webx.shouldExcludedResV4(url)) {
+								//CMN.Log("排除::"+url);
+								return emptyResponse;
 							}
-							urlConnection.setRequestProperty("Accept-Charset", "utf-8");
-							urlConnection.setRequestProperty("connection", "Keep-Alive");
-							urlConnection.setRequestMethod(request.getMethod());
-							urlConnection.setConnectTimeout(6800);
-							urlConnection.setUseCaches(true);
-							urlConnection.setDefaultUseCaches(true);
-							Map<String, String> headers = request.getRequestHeaders();
-							headers.put("Access-Control-Allow-Origin", "*");
-							headers.put("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
-							for(String kI:headers.keySet()) {
-								urlConnection.setRequestProperty(kI, headers.get(kI));
-							}
-							//if(host!=null) urlConnection.setRequestProperty("Host", presenter.getWebx().getHost());
-							urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
-							urlConnection.connect();
-							input = urlConnection.getInputStream();
-							String MIME = urlConnection.getHeaderField("content-type");
-							
-							String acc = headers.get("Accept");
-							if(acc==null) {
-								acc = "*/*;";
-							}
-							if(TextUtils.isEmpty(MIME)) {
-								MIME = acc;
-							}
-							int idx = MIME.indexOf(",");
-							if(idx<0) {
-								idx = MIME.indexOf(";");
-							}
-							if(idx>=0) {
-								MIME = MIME.substring(0, idx);
-							}
-							WebResourceResponse webResourceResponse;
-							webResourceResponse=new WebResourceResponse(MIME, "utf8", input);
-							webResourceResponse.setResponseHeaders(headers);
-							
-							return webResourceResponse;
 						}
-					} catch (Exception e) {
-						CMN.debug(url,"\n",e);
+						if(accept==null || accept.contains("text/html")) {
+							if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
+								boolean proceed = true;
+								String[] shWebsite = webx.cleanExtensions;
+								if(shWebsite!=null){
+									for (int i = 0; i < shWebsite.length; i++) {
+										if(url_contains(url, shWebsite[i])){
+											proceed=false;
+											break;
+										}
+									}
+								}
+			
+								if(proceed && mWebView.bShouldOverridePageResource) {
+									//CMN.debug("accept", accept, url);
+									InputStream overridePage = invoker.getWebPage(url);
+									if(overridePage!=null){
+										//CMN.tp(0, "webx getPage :: ", invoker.getWebPageString(url), url);
+										//BU.recordString(invoker.getWebPageString(url), "/sdcard/test.html");
+										return new WebResourceResponse("text/html","UTF-8",overridePage);
+									}
+								}
+								if(webx.canSaveResource) {
+									try {
+										shWebsite = webx.cacheExtensions;
+										for (int i = 0; i < shWebsite.length; i++) {
+											//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
+											if(url.contains(shWebsite[i])){
+												File pathDownload = invoker.getInternalResourcePath(true);
+												if(!pathDownload.exists()) pathDownload.mkdirs();
+												if(pathDownload.isDirectory()) {
+													boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
+													File path;
+													int start = url.indexOf("://");
+													if(start<0) start=0; else start+=3;
+													start = Math.max(url.indexOf("/", start)+1, start);
+													int end = needTrim?url.indexOf("?"):-1;
+													if(end<0) end=url.length();
+													String name=url.substring(start, end);
+													try {
+														name=URLDecoder.decode(name, "utf8");
+													} catch (Exception e) { }
+													if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
+													if(name.length()==0){
+														name = "plod-index";
+													}
+													path=new File(pathDownload, name);
+													CMN.Log("pathDownload", path);
+													pathDownload = path.getParentFile();
+													boolean saveit = !webx.butReadonly;
+													if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
+													if(pathDownload.isDirectory())
+													{
+														name=path.getName();
+														if(name.length()>64){
+															name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
+															path=new File(pathDownload, name);
+														}
+														/* 下载 */
+														if(saveit && !path.exists()) {
+															CMN.Log("shouldInterceptRequest 下载中...！", url);
+															CMN.Log("shouldInterceptRequest 下载目标: ", name);
+															try {
+																ViewUtils.downloadToStream(url, new OutputStream[]{null}, path.getPath()
+																		, accept, refer, origin, request, webx);
+																CMN.Log("shouldInterceptRequest 已下载！", url);
+															} catch (Exception e) {
+																CMN.Log(e);
+																path.delete();
+																return emptyResponse;
+															}
+															// 预处理
+														}
+														/* 再构 */
+														if(path.isFile()){
+															String mime=accept;
+															if(mime!=null){
+																int idx = mime.indexOf(",");
+																if(idx>0) mime=mime.substring(0, idx);
+															}else{
+																mime="*/*";
+															}
+															if(mime.startsWith("image") && webx.svgKeywords!=null){
+																for (int j = 0; j < webx.svgKeywords.length; j++) {
+																	if(url.contains(webx.svgKeywords[i])){
+																		mime="image/svg+xml";
+																		break;
+																	}
+																}
+															}
+			
+															WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
+															if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+																ret.setResponseHeaders(CrossFireHeaders);
+															}
+															return ret;
+														}
+													}
+												}
+			
+												break;
+											}
+										}
+									}
+									catch (Exception e) {
+										CMN.Log(e);
+									}
+								}
+							}
+							else{
+								view.setTag(R.id.save, null);
+							}
+						}
+						if (webx.getShouldReplaceLetToVar(url)) {
+							try {
+								return ViewUtils.KikLetToVar(url , accept, refer, origin, request, webx);
+							} catch (Exception e) { CMN.debug("kiklet 转化失败::", e); }
+						}
+						if(webx.shouldUseClientResponse(url)) {
+							// hosts
+							return (WebResourceResponse) webx.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
+						}
+						if(url.startsWith("http://mdbr.com")) {
+							try {
+								HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
+								Response ret = getMdictServer().handle(req);
+								if(ret!=null) {
+									CMN.Log("WebResourceResponse::", ret.getMimeType());
+									String mime = ret.getMimeType();
+									int idx=mime.indexOf(";");
+									if(idx>0) mime = mime.substring(0, idx);
+									return new WebResourceResponse(mime, "UTF-8", ret.getData());
+								}
+							} catch (Exception e) {
+								CMN.debug(url, e);
+								return emptyResponse;
+							}
+						}
+						return null;
 					}
+					if(url.endsWith(".mp3"))
+						return null;
+					//CMN.Log("漏网之鱼::", url);
 				}
-				//return null;
-			}
-			//else CMN.debug("ivk::", invoker);
-			
-			if(url.startsWith("http://mdbr.com/load.html")) { // for random page
-				return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(new byte[0]));
-			}
-			
-			for (PlainWeb book:weblistHandler.moders) { // java.util.ConcurrentModificationException
-				InputStream input = book.modifyRes(MainActivityUIBase.this, url);
-				if(input!=null) {
-					CMN.debug("修改了::", url);
-					WebResourceResponse webResourceResponse;
-					webResourceResponse=new WebResourceResponse("*/*", "utf8", input);
-					//webResourceResponse.setResponseHeaders(headers);
-					return webResourceResponse;
-				}
-			}
-			
-			if(url.startsWith("mdbr://")
-					|| url.startsWith("https://mdbr/")
-			){
-				try {
-					if(url.startsWith("mdbr://")) url=url.substring(7);
-					else url=url.substring(13);
-					CMN.Log("[fetching internal res : ]", url);
-					String mime="*/*";
-					if(url.endsWith(".css")) mime = "text/css";
-					if(url.endsWith(".js")) mime = "text/js";
-					return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(url));
-				} catch (Exception e) {
-					CMN.Log(e);
-				}
-			}
-			
-			if(mdbr && url.regionMatches(schemaIdx+12, "mdbr", 0, 4)){
-				try {
-					url=url.substring(schemaIdx+17);
-					CMN.Log("[fetching internal res : ]", url);
-					String mime="*/*";
-					if(url.endsWith(".css")) mime = "text/css";
-					if(url.endsWith(".js")) mime = "text/js";
-					return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(url));
-				} catch (Exception e) {
-					CMN.Log(e);
-				}
-			}
-			
-			//CMN.Log("chromium shouldInterceptRequest invoker",invoker);
-			if(invoker.getIsWebx()) {
-				PlainWeb webx = (PlainWeb) invoker.bookImpl;
-				if (webx.hasExcludedResV4 && Build.VERSION.SDK_INT<21) {
-					if (webx.shouldExcludedResV4(url)) {
-						//CMN.Log("排除::"+url);
-						return emptyResponse;
+				else {
+					// custom schemas
+					if(url.startsWith(soundTag)) {
+						opt.supressAudioResourcePlaying=false;
+						key = url.substring(soundTag.length());
 					}
-				}
-				if(accept==null || accept.contains("text/html")) {
-					if(view.getTag(R.id.save)==null && (url.startsWith("http")||url.startsWith("file"))){
-						boolean proceed = true;
-						String[] shWebsite = webx.cleanExtensions;
-						if(shWebsite!=null){
-							for (int i = 0; i < shWebsite.length; i++) {
-								if(url_contains(url, shWebsite[i])){
-									proceed=false;
+					else if(url.startsWith(soundsTag)) {
+						url = url.substring(soundsTag.length());
+						try {
+							url = URLDecoder.decode(url,"UTF-8");
+						} catch (Exception ignored) { }
+						String soundKey="\\"+url+".";
+						CMN.Log("接收到发音任务！", soundKey, "::", invoker.getDictionaryName());
+						InputStream restmp=null;
+						WebResourceResponse ret=null;
+						BookPresenter mdTmp;
+						for (int i = 0; i < md.size(); i++) {
+							mdTmp = findPronouncer(i, invoker);
+							if(mdTmp!=null){
+								Boolean spx=false;
+								try {
+									Object[] result=mdTmp.getSoundResourceByName(soundKey);
+									if(result!=null) {
+										spx = (Boolean) result[0];
+										restmp = (InputStream) result[1];
+									}
+								} catch (IOException ignored) { }
+								if(restmp!=null && spx!=null) {
+									if (spx) {
+										try {
+											ret = decodeSpxStream(restmp);
+											if (ret != null) break;
+										} catch (Exception e) {
+											CMN.Log(e);
+										}
+									}
+									ret = new WebResourceResponse("audio/mpeg", "UTF-8", restmp);
 									break;
 								}
 							}
 						}
-	
-						if(proceed && mWebView.bShouldOverridePageResource) {
-							//CMN.debug("accept", accept, url);
-							InputStream overridePage = invoker.getWebPage(url);
-							if(overridePage!=null){
-								//CMN.tp(0, "webx getPage :: ", invoker.getWebPageString(url), url);
-								//BU.recordString(invoker.getWebPageString(url), "/sdcard/test.html");
-								return new WebResourceResponse("text/html","UTF-8",overridePage);
-							}
+						if(ret!=null){
+							CMN.Log("返回音频");
+							return ret;
+						} else {
+							ReadEntryPlanB(mWebView, url);
 						}
-						if(webx.canSaveResource) {
+						//return emptyResponse;
+						return null;
+					}
+					else if(url.startsWith("font:")){
+						if (fontlibs!=null) {
+							url=url.substring(7);
 							try {
-								shWebsite = webx.cacheExtensions;
-								for (int i = 0; i < shWebsite.length; i++) {
-									//CMN.Log(url, webx.cacheExtensions[i], url.contains(webx.cacheExtensions[i]));
-									if(url.contains(shWebsite[i])){
-										File pathDownload = invoker.getInternalResourcePath(true);
-										if(!pathDownload.exists()) pathDownload.mkdirs();
-										if(pathDownload.isDirectory()) {
-											boolean needTrim=!((webx.andEagerForParms&&!url.contains(".js"))||url.contains(".php"));//动态资源需要保留参数
-											File path;
-											int start = url.indexOf("://");
-											if(start<0) start=0; else start+=3;
-											start = Math.max(url.indexOf("/", start)+1, start);
-											int end = needTrim?url.indexOf("?"):-1;
-											if(end<0) end=url.length();
-											String name=url.substring(start, end);
-											try {
-												name=URLDecoder.decode(name, "utf8");
-											} catch (Exception e) { }
-											if(!needTrim) name=name.replaceAll("[=?&|:*<>]", "_");
-											if(name.length()==0){
-												name = "plod-index";
-											}
-											path=new File(pathDownload, name);
-											CMN.Log("pathDownload", path);
-											pathDownload = path.getParentFile();
-											boolean saveit = !webx.butReadonly;
-											if(saveit && !pathDownload.exists()) pathDownload.mkdirs();
-											if(pathDownload.isDirectory())
-											{
-												name=path.getName();
-												if(name.length()>64){
-													name=name.substring(0, 56)+"_"+name.length()+"_"+name.hashCode();
-													path=new File(pathDownload, name);
-												}
-												/* 下载 */
-												if(saveit && !path.exists()) {
-													CMN.Log("shouldInterceptRequest 下载中...！", url);
-													CMN.Log("shouldInterceptRequest 下载目标: ", name);
-													try {
-														ViewUtils.downloadToStream(url, new OutputStream[]{null}, path.getPath()
-																, accept, refer, origin, request, webx);
-														CMN.Log("shouldInterceptRequest 已下载！", url);
-													} catch (Exception e) {
-														CMN.Log(e);
-														path.delete();
-														return emptyResponse;
-													}
-													// 预处理
-												}
-												/* 再构 */
-												if(path.isFile()){
-													String mime=accept;
-													if(mime!=null){
-														int idx = mime.indexOf(",");
-														if(idx>0) mime=mime.substring(0, idx);
-													}else{
-														mime="*/*";
-													}
-													if(mime.startsWith("image") && webx.svgKeywords!=null){
-														for (int j = 0; j < webx.svgKeywords.length; j++) {
-															if(url.contains(webx.svgKeywords[i])){
-																mime="image/svg+xml";
-																break;
-															}
-														}
-													}
-	
-													WebResourceResponse ret = new WebResourceResponse(mime, "UTF-8", new FileInputStream(path));//BU.fileToBytes(path)
-													if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-														ret.setResponseHeaders(CrossFireHeaders);
-													}
-													return ret;
-												}
-											}
-										}
-	
-										break;
-									}
-								}
-							}
-							catch (Exception e) {
-								CMN.Log(e);
-							}
+								return new WebResourceResponse("font/*", "UTF-8", new FileInputStream(new File(fontlibs, url)));
+							} catch (Exception ignored) {  }
 						}
-					}
-					else{
-						view.setTag(R.id.save, null);
+						return null;
 					}
 				}
-				if (webx.getShouldReplaceLetToVar(url)) {
-					try {
-						return ViewUtils.KikLetToVar(url , accept, refer, origin, request, webx);
-					} catch (Exception e) { CMN.debug("kiklet 转化失败::", e); }
+				if (key==null) {
+					key = url.substring(schemaIdx+3);
 				}
-				
-				if(webx.shouldUseClientResponse(url)) {
-					// hosts
-					return (WebResourceResponse) webx.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
-				}
-				
-				if(url.startsWith("http://mdbr.com")) {
-					try {
-						HTTPSession req = new MdictServerMobile.HTTPSessionProxy(url.substring(schemaIdx+7+4), request);
-						Response ret = getMdictServer().handle(req);
-						if(ret!=null) {
-							CMN.Log("WebResourceResponse::", ret.getMimeType());
-							String mime = ret.getMimeType();
-							int idx=mime.indexOf(";");
-							if(idx>0) mime = mime.substring(0, idx);
-							return new WebResourceResponse(mime, "UTF-8", ret.getData());
-						}
-					} catch (Exception e) {
-						CMN.debug(url, e);
-						return emptyResponse;
-					}
-				}
-				
-				return null;
-			}
-			if(url.startsWith("http")) {
-				if(url.endsWith(".mp3"))
-					return null;
-				if (invoker.getOfflineMode())
-					return emptyResponse;
-			}
-			//CMN.Log("漏网之鱼::", url);
-
-			if(url.startsWith("font://") && fontlibs!=null){
-				url=url.substring(7);
-				try {
-					return new WebResourceResponse("font/*", "UTF-8", new FileInputStream(new File(fontlibs, url)));
-				} catch (Exception ignored) {  }
-				return null;
 			}
 			//CMN.Log("chrochro_inter_0",url);
-
-			if(url.startsWith(soundTag)) {
-				opt.supressAudioResourcePlaying=false;
-				url = url.substring(soundTag.length());
-			}
-			else if(url.startsWith(soundsTag)) {
-				url = url.substring(soundsTag.length());
-				try {
-					url = URLDecoder.decode(url,"UTF-8");
-				} catch (Exception ignored) { }
-				String soundKey="\\"+url+".";
-				CMN.Log("接收到发音任务！", soundKey, "::", invoker.getDictionaryName());
-				InputStream restmp=null;
-				WebResourceResponse ret=null;
-				BookPresenter mdTmp;
-				for (int i = 0; i < md.size(); i++) {
-					mdTmp = findPronouncer(i, invoker);
-					if(mdTmp!=null){
-						Boolean spx=false;
-						try {
-							Object[] result=mdTmp.getSoundResourceByName(soundKey);
-							if(result!=null) {
-								spx = (Boolean) result[0];
-								restmp = (InputStream) result[1];
-							}
-						} catch (IOException ignored) { }
-						if(restmp!=null && spx!=null) {
-							if (spx) {
-								try {
-									ret = decodeSpxStream(restmp);
-									if (ret != null) break;
-								} catch (Exception e) {
-									CMN.Log(e);
-								}
-							}
-							ret = new WebResourceResponse("audio/mpeg", "UTF-8", restmp);
-							break;
-						}
-					}
-				}
-				if(ret!=null){
-					CMN.Log("返回音频");
-					return ret;
-				} else {
-					ReadEntryPlanB(mWebView, url);
-				}
-				//return emptyResponse;
-				return null;
-			}
-
-			String SepWindows = "\\";
-
-			/////////////////
-			/////////////////
-			/////////////////
-			String key=url;
+			final String SepWindows = "\\";
 			try {
-				key = URLDecoder.decode(url,"UTF-8");
+				key = URLDecoder.decode(key,"UTF-8");
 			} catch (Exception ignored) { }
-			/////////////////
-			/////////////////
-			/////////////////
-			//BookPresenter.FileTag
-			WebResourceResponse fakedDomainResponse = null;
-			int start = key.indexOf(":");
-			if(start==-1){
-				if(key.startsWith("./"))
-					key=key.substring(1);
-			} else {
-				if(key.toLowerCase().startsWith("mdbr.com", start+3)) {
-					key = key.substring(start+3+"mdbr.com".length());
-					fakedDomainResponse = emptyResponse;
-				}
-				else if(url.startsWith("MdbR/", start+3)) {
-					try {
-						url=url.substring(start+3+5);
-						CMN.Log("[fetching internal res : ]", url);
-						String mime="*/*";
-						if(url.endsWith(".css")) mime = "text/css";
-						if(url.endsWith(".js")) mime = "text/js";
-						return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(url));
-					} catch (Exception e) {
-						CMN.Log(e);
-					}
-				}
-				else if (key.startsWith("pdfimg", start+3)) {
-//				String urlkey=key.substring("/pdfimg/".length());
-//				int idx = urlkey.lastIndexOf("#");
-//				int page = 0;
-//				if(idx>0){
-//					page=IU.parsint(urlkey.substring(idx+1));
-//					urlkey=urlkey.substring(0, idx);
-//				}
-//				OUTPDF:
-//				try{
-//					if(pdfiumCore==null){
-//						pdfiumCore = new PdfiumCore(getBaseContext());
-//						cached_pdf_docs=new HashMap<>();
-//					}
-//					PdfDocument pdf = cached_pdf_docs.get(urlkey);
-//					if(pdf==null){
-//						File path = new File(urlkey);
-//						if(!path.exists()) break OUTPDF;
-//						pdf = pdfiumCore.newDocument(ParcelFileDescriptor.open(path, ParcelFileDescriptor.MODE_READ_ONLY));
-//						cached_pdf_docs.put(urlkey, pdf);
-//					}
-//					if(mWebView.fromCombined==0  && !mWebView.fromNet && invoker.getIsolateImages()){
-//						//CMN.Log("Pdf Isolating Images...");
-//						new_photo = key;
-//						PhotoPager.removeCallbacks(PhotoRunnable);
-//						PhotoPager.post(PhotoRunnable);
-//						return super.shouldInterceptRequest(view, url);
-//					}
-//					CMN.rt();
-//
-//					pdfiumCore.openPage(pdf, page);
-//
-//					CMN.pt("文档打开耗时 : "); CMN.rt();
-//
-//
-//					float shrinkage=1f;
-//					int width = pdfiumCore.getPageWidth(pdf, page);
-//					int height = pdfiumCore.getPageHeight(pdf, page);
-//					float mBitmapRam = (width * height * 2);
-//					if(mBitmapRam>MaxBitmapRam){
-//						shrinkage = MaxBitmapRam/mBitmapRam;
-//					}
-//					width*=shrinkage;
-//					height*=shrinkage;
-//					Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-//					CMN.pt("分配内存耗时 : "); CMN.rt();
-//					pdfiumCore.renderPageBitmap(pdf, bitmap, page, 0, 0, width, height);
-//
-//					CMN.pt("解码耗时 : "); CMN.rt();
-//
-//					ByteArrayOutputStream bos = new ByteArrayOutputStream(bitmap.getByteCount());
-//					bitmap.compress(Bitmap.CompressFormat.JPEG, 10, bos);
-//					CMN.pt("再编码耗时 : "); CMN.rt();
-//					return new WebResourceResponse("image/jpeg","UTF-8",new ByteArrayInputStream(bos.toByteArray()));
-//				} catch(Exception ex) {
-//					ex.printStackTrace();
-//				}
-				}
-				else {
-					if(url.startsWith("file://")) {
-						// fix for images not loading when nav back/forward.
-						invoker.hasFilesTag(true);
-						invoker.isDirty = true;
-					}
-					key = key.substring(start+3);
-				}
-			}
-
 			key=key.replace("/", SepWindows);
-
 			CMN.Log("chrochro_inter_key is",key, fakedDomainResponse);
-
-			if(!key.startsWith(SepWindows)){
-				key=SepWindows+key;
-			}
-			if(key.endsWith(SepWindows)){
-				key=key.substring(0, key.length()-1);
-			}
-
+			if(!key.startsWith(SepWindows)) key=SepWindows+key;
+			if(key.endsWith(SepWindows)) key=key.substring(0, key.length()-1);
+			
 			int suffixIdx = key.lastIndexOf(".");
 			String suffix = null;
 			String mime = null;
-			if(suffixIdx!=-1){
+			if(suffixIdx>=0){
 				suffix = key.substring(suffixIdx).toLowerCase();
 				suffixIdx = key.indexOf("?");
 				if(suffixIdx!=-1)suffix = key.substring(0, suffixIdx);

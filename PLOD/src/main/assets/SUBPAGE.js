@@ -26,7 +26,7 @@ function _highlight(keyword){
         return;
     if(!LoadMark) {
         function cb(){LoadMark=1;highlight(keyword);}
-        try{loadJs('mdbr://markloader.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'markloader.js');}
+        try{loadJs('//mdbr/markloader.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'markloader.js');}
     } else highlight(keyword);
 }
 w.addEventListener('touchstart',function(e){
