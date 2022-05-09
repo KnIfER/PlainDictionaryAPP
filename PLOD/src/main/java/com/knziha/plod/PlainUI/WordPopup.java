@@ -197,18 +197,20 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			case R.id.popLstDict:{
 				//SearchNxt(id==R.id.popNxtDict, task, taskVer, taskVersion);
 				String url = mWebView.getUrl();
-				int schemaIdx = url.indexOf(":");
-				if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)){
-					try {
-						if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
-							startTask(id==R.id.popNxtDict?TASK_POP_NAV_NXT:TASK_POP_NAV);
+				if (url!=null) {
+					int schemaIdx = url.indexOf(":");
+					if(url.regionMatches(schemaIdx+3, "mdbr", 0, 4)){
+						try {
+							if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
+								startTask(id==R.id.popNxtDict?TASK_POP_NAV_NXT:TASK_POP_NAV);
+							}
+							else if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
+								weblistHandler.bMergingFrames = 1;
+								weblistHandler.prvnxtFrame(id==R.id.popNxtDict);
+							}
+						} catch (Exception e) {
+							CMN.debug(e);
 						}
-						else if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
-							weblistHandler.bMergingFrames = 1;
-							weblistHandler.prvnxtFrame(id==R.id.popNxtDict);
-						}
-					} catch (Exception e) {
-						CMN.debug(e);
 					}
 				}
 			} break;

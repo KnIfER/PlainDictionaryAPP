@@ -1,6 +1,5 @@
 package com.knziha.plod.plaindict;
 
-import static android.view.View.GONE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import android.animation.Animator;
@@ -253,10 +252,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.bumptech.glide.util.Util.isOnMainThread;
-import static com.knziha.plod.PlainUI.HttpRequestUtil.DO_NOT_VERIFY;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
-import static com.knziha.plod.dictionarymodels.BookPresenter.jsChanged;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
@@ -265,8 +262,6 @@ import static com.knziha.plod.plaindict.DeckListAdapter.DB_HISTORY;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 import static com.knziha.plod.plaindict.MdictServerMobile.getTifConfig;
 import static com.knziha.plod.widgets.WebViewmy.getWindowManagerViews;
-
-import javax.net.ssl.HttpsURLConnection;
 
 /** 程序基础类<br/>
  *  Class for all dictionary activities. <br/>
@@ -7023,12 +7018,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		public void onPageFinished(WebView view, String url) {
 			final WebViewmy mWebView = (WebViewmy) view;
 			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, mWebView.webScale);
-//			if (mWebView.changed==1) {
-//				CMN.debug("view::onPageFinished::reload");
-//				view.reload();
-//				mWebView.changed=2;
-//				return;
-//			}
 			if (false) {
 				mWebView.initPos();
 			}
@@ -7173,8 +7162,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					@Override
 					public void onReceiveValue(String value) {
 						finalInvoker.setCurrentDis(mWebView, mWebView.currentPos);
-						if (mWebView.weblistHandler.scrollFocus==mWebView) {
-							mWebView.weblistHandler.setScrollFocus(mWebView, mWebView.frameAt);
+						final WebViewListHandler wlh = mWebView.weblistHandler;
+						if (mWebView.isViewSingle() && wlh.scrollFocus==mWebView) {
+							int frame = mWebView.frameAt;
+							if (wlh.getFrameAt(frame)!=mWebView.presenter) {
+								frame = wlh.entrySeek.getProgress();
+							}
+							wlh.setScrollFocus(mWebView, frame);
 						}
 					}
 				});
@@ -7556,24 +7550,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							// loaded with base url
 							if (!url.regionMatches(schemaIdx+9, invoker.idStr10, 1, slashIdx-schemaIdx-9)) {
 								invoker = getBookById(Long.parseLong(url.substring(schemaIdx+9, slashIdx)));
-								CMN.Log("view::changed::res::", invoker);
+								//CMN.Log("view::changed::res::", invoker);
 							}
 						}
-						else if (slashIdx==schemaIdx+7 || url.regionMatches(schemaIdx+12, "mdbr", 0, 4)) {
+						else if (slashIdx==schemaIdx+7 || url.regionMatches(schemaIdx+12, "MdbR", 0, 4)) {
 							try { // 内置资源
-								url=url.substring(schemaIdx+(slashIdx==schemaIdx+7?8:17));
-								CMN.Log("[fetching internal res : ]", url);
+								key=url.substring(schemaIdx+(slashIdx==schemaIdx+7?8:12));
+								CMN.Log("[fetching internal res : ]", key);
 								String mime="*/*";
-								if(url.endsWith(".css")) mime = "text/css";
-								if(url.endsWith(".js")) mime = "text/js";
-								return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(url));
+								if(key.endsWith(".css")) mime = "text/css";
+								if(key.endsWith(".js")) mime = "text/js";
+								return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(key));
 							} catch (Exception e) {
 								CMN.Log(e);
 							}
 						}
 						if (!merge && (url.regionMatches(schemaIdx+12, "content", 0, 7)
-								|| url.regionMatches(schemaIdx+12, "base", 0, 4))) {
+								|| url.regionMatches(schemaIdx+12, "base", 0, 4)
+								|| url.regionMatches(schemaIdx+12, "merge", 0, 5)
+						)) {
 							merge = true;
+							/*mWebView.presenter = */invoker = mWebView.weblistHandler.getMergedBook();
 						}
 						if (url.startsWith("http://mdbr.com/load.html")) { // for random page
 							return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(new byte[0]));

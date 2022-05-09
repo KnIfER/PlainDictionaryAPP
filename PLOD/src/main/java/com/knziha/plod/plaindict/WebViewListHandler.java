@@ -307,7 +307,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		WHP.setBackgroundColor(manFt_globalPageBackground);
 	}
 	
-	public int getFrameAt() {
+	public BookPresenter getFrameAt(int pos) {
+		if (multiDicts && pos>=0 && pos<frames.size()) {
+			return frames.get(pos);
+		}
+		return null;
+	}
+	
+	public int calcFrameAt() {
 		if (multiDicts) {
 			if (isFoldingScreens()) {
 				int pos = batchDisplaying().LongestStartWithSeqLength;
@@ -641,7 +648,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void showJumpListDialog() {
 		if(!isMergingFrames())
-			frameAt = getFrameAt();
+			frameAt = calcFrameAt();
 		frameCount = frames.size();
 		if(jumpListDlg==null){
 			jumpListDlg = jumpListDlgRef.get();
@@ -865,7 +872,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				ViewUtils.setVisible(contentUIData.zoomCtrl, multiDicts && PDICMainAppOptions.showZoomBtn());
 				ViewUtils.setVisible(prv, multiDicts && PDICMainAppOptions.showPrvBtnSmall());
 				ViewUtils.setVisible(nxt, multiDicts && PDICMainAppOptions.showNxtBtnSmall());
-				showSeek = multiDicts && (bMerge == 2 ? PDICMainAppOptions.showEntrySeekbarFolding() : PDICMainAppOptions.showEntrySeekbar());
+				showSeek = multiDicts && PDICMainAppOptions.showEntrySeek() && (bMerge == 2 ? PDICMainAppOptions.showEntrySeekbarFolding() : PDICMainAppOptions.showEntrySeekbar());
 			} else {
 				ViewUtils.setVisible(prv, multiDicts && PDICMainAppOptions.showPrvNxtBtnSmallTapSch());
 				ViewUtils.setVisible(nxt, multiDicts && PDICMainAppOptions.showPrvNxtBtnSmallTapSch());
@@ -874,8 +881,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			if (showSeek) {
 				ViewUtils.setVisible(entrySeek, true);
-				int pad = bMerge == 1 ? (int) (70 * GlobalOptions.density) : 0;
-				((MarginLayoutParams) entrySeek.getLayoutParams()).leftMargin = pad / 5;
+				int pad = (int) (35 * GlobalOptions.density);
+				((MarginLayoutParams) entrySeek.getLayoutParams()).leftMargin = bDataOnly?(int)(pad/2.5f):pad;
+				if(bMerge==1) pad = (int) (65 * GlobalOptions.density);
 				((MarginLayoutParams) entrySeek.getLayoutParams()).rightMargin = pad;
 			} else {
 				ViewUtils.setVisible(entrySeek, false);
@@ -1771,7 +1779,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			
 			mWebView.fromCombined = bDataOnly?2:0;
 			dictView = mWebView;
-			presenter.renderContentAt(-2, BookPresenter.RENDERFLAG_NEW, 0, mWebView, displaying);
+			presenter.renderContentAt(-2, BookPresenter.RENDERFLAG_NEW, frame, mWebView, displaying);
 			if (!bDataOnly) {
 				ViewUtils.addViewToParentUnique(mWebView.rl, contentUIData.webSingleholder);
 			}

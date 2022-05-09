@@ -325,6 +325,9 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			//mWebView.jointResult=jointResult;
 		}
 		else if(bUseMergedUrl) {
+			if (weblistHandler.bDataOnly) {
+				mergedUrl.append("&popup=true");
+			}
 			CMN.debug("mergedUrl::", mergedUrl);
 			mWebView.getSettings().setSupportZoom(true);
 			mWebView.loadUrl(mergedUrl.toString());

@@ -2402,6 +2402,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=58, shift=1) public static boolean showEntrySeekbarFolding(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=58, shift=1) public static void showEntrySeekbarFolding(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 
+	@Metaline(flagPos=59, shift=1) public static boolean showEntrySeek(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=59, shift=1) public static void showEntrySeek(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
+
 
 //	@Metaline(flagPos=51) public static boolean entrySeekbarTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 //	@Metaline(flagPos=51) public static void entrySeekbarTapSch(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }

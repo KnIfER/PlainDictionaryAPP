@@ -2860,6 +2860,7 @@
 			args=parseArgs();
 			/**/if(merge) {/**/
 				restorePages();
+				if(args.popup) ge('prev').style.display='none';
 			/**/return;
 			} 
 			if(args.mode=='all') {

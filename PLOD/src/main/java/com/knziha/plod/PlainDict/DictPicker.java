@@ -414,8 +414,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		}
 		
 		@Override
-		public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-		}
+		public void onBindViewHolder(@NonNull MyViewHolder holder, int position) { }
 		
 		@Override
 		public void onBindViewHolder(@NonNull final MyViewHolder holder, int position, @NonNull List<Object> payloads) {
@@ -459,7 +458,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			//else CMN.Log("onBindViewHolder::刷新部分!!!", payloads);
 			boolean under = type==-1 && a.wordPopup.CCD_ID==position
 					||type!=-1 && a.isCombinedSearching && a.md_getNoCreate(position).hasBatchRet;
-			if(under ^ tv.getBackground()!=null)
+			if(under ^ tv.getBackground()!=null) // 下划线
 				tv.setBackground(under?underln:null);
 		}
 	}
