@@ -163,8 +163,8 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 			break;
 			case "debug":
 				PDICMainAppOptions.debug((Boolean) newValue);
-				WebView.setWebContentsDebuggingEnabled((Boolean) newValue);
 				if (MdictServer.hasRemoteDebugServer = (Boolean) newValue) {
+					WebView.setWebContentsDebuggingEnabled(true);
 					MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
 				}
 			break;

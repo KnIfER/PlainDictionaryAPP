@@ -144,7 +144,7 @@
 
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="enable_web_debug"
-			android:title="允许网页调试"
+			android:title="开启网页调试"
 			android:persistent="false"
 			/>
 

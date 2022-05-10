@@ -1,7 +1,7 @@
 /**这个不是网页版*/
 var w=window, d=document;
 var LoadMark, frameAt;
-window.debug=function(){var e=arguments,s='';for(var i=0;i<e.length;i++)s+=e[i]+', ';console.log('fatal web ::'+s)};
+window.debug=function(){var e=arguments,s=['fatal web ::'];for(var i=0;i<e.length;i++)s.push(e[i]);console.log(s)};
 var _log = debug;
 //function _log(...e){console.log('fatal web::'+e)};
 w.addEventListener('load',function(e){

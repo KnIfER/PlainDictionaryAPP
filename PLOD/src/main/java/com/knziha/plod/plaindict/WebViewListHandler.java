@@ -1820,4 +1820,31 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public final additiveMyCpr1 multiDisplaying() {
 		return multiRecord==null?null:multiRecord.jointResult;
 	}
+	
+	
+	String[] transVals = new String[2];
+	boolean[] translating = new boolean[2];
+	
+	public void putTransval(int index, String value) {
+		if(index>=0 && index<2 && !TextUtils.isEmpty(value))
+			transVals[index] =  value;//"zh-CN";
+	}
+	
+	public String getTransval(int index) {
+		String ret=null;
+		if(index>=0 && index<2)
+			ret = transVals[index];
+		return ret==null?"zh-CN":ret;//"zh-CN";
+	}
+	
+	public void putTranslate(int index, boolean value) {
+		if(index>=0 && index<2)
+			translating[index] =  value;
+	}
+	
+	public boolean getTranslate(int index) {
+		if(index>=0 && index<2)
+			return translating[index];
+		return false;
+	}
 }

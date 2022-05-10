@@ -1119,7 +1119,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(shunt) return;
 		CMN.instanceCount++;
 		MainStringBuilder = new StringBuilder(40960);
-		//WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
+		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
+		if (PDICMainAppOptions.getEnableWebDebug()) {
+			showT("开启网页调试");
+		}
 		//ViewUtils.setWebDebug(this);
 		if (BuildConfig.isDebug) {
 			CMN.debug("mid", CMN.mid, getClass());
@@ -10101,20 +10104,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	/** ensure content visibility */
 	public void viewContent(WebViewListHandler wlh) {
 		wlh.viewContent();
-	}
-	
-	String[] transVals = new String[2];
-	
-	public void putTransval(int index, String value) {
-		if(index>=0 && index<2)
-			transVals[index] =  value;//"zh-CN";
-	}
-	
-	public String getTransval(int index) {
-		String ret=null;
-		if(index>=0 && index<2)
-			ret = transVals[index];
-		return ret==null?"zh-CN":ret;//"zh-CN";
 	}
 	
 	String tw1StrP;

@@ -320,7 +320,7 @@ succ"
 		,{urlv4:"https://translate.googleapis.com/_/translate_http/_/js/k=translate_http.tr.zh_CN.tbokbaq6GcI.O/am=AQ/d=1/exm=el_conf/ed=1/rs=AN8SPfpDwbSVWpQ6RLn8qBOWrZ8KB0pUCg/m=el_main"}
 	]
 	,"pageTranslator":"
-		function debug(e){console.log(e)};
+		var debug = window.debug||function(e){console.log(e)};
 		if(!window.gTrans){
 			(function(){
 				var cc=0;
@@ -328,29 +328,48 @@ succ"
 				function tryInit(off) {
 					var combo = document.getElementsByClassName('goog-te-combo')[0];
 					if(combo) {
-						var opts=combo.options;
 						if(!window.gTransInit) {
-							combo.addEventListener('change',function(){
-								var s=opts[combo.selectedIndex];
-								debug('select',s);
-								app.putTransval(sid.get(), s.value, 0);
+							//combo.addEventListener('change',function(){
+							//	var s=opts[combo.selectedIndex];
+							//	debug('select',s);
+							//	app.putTransval(sid.get(), s.value, 0);
+							//});
+							combo.addEventListener('click',function(e){
+								if(combo.waiting) {
+									combo.waiting = false;
+									combo.dispatchEvent(new Event('change'));
+									combo.disabled = true;
+									setTimeout(function() {
+										combo.disabled = false;
+									}, 200);
+									return true;
+								}
 							});
 							window.gTransInit=1;
 						}
 						if(off) {
 							document.getElementsByClassName('goog-te-banner-frame')[0].contentWindow.document.body.getElementsByClassName('goog-close-link')[0].click()
 						} else {
-							var v=app.getTransval(sid.get(), 0);
+							var v=app.getTransval(sid.get(), 0), t=app.getTranslate(sid.get(), 0);
 							if(v) {
-								for(var i=0,s;s=opts[i++];) {
+								for(var i=0,s;s=combo.options[i++];) {
 									if(s.value==v) {
 										s.selected=1;
-										combo.dispatchEvent(new Event('change'));
+										if(t)combo.dispatchEvent(new Event('change'));
+										else combo.waiting=1;
 										break;
 									}
 								}
 							}
 						}
+						const observer=new MutationObserver(function(mutationsList, observer) {
+							//var mutation = mutationsList[0]; debug(mutation.type, mutation);
+							var s=combo.options[combo.selectedIndex];
+							debug('select',s);
+							app.putTransval(sid.get(), s.value, 0);
+							app.putTranslate(sid.get(), !s.value, 0);
+						});
+						observer.observe(combo , { attributes: true,childList: true });
 					}
 					else if(!off && cc++<5) window.gTransTime=setTimeout(tryInit, 200);
 				}
@@ -371,7 +390,7 @@ succ"
 				return e;
 			}
 			debug('document.body', document.head, document.body);
-			craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5;}';
+			craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5;}.goog-te-menu-frame{position:absolute}';
 			document.body.id='body';
 			function googleTranslateElementInit () {
 						var e=new google.translate.TranslateElement(

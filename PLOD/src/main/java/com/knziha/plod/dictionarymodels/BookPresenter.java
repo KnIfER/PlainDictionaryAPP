@@ -2610,7 +2610,7 @@ function debug(e){console.log(e)};
 			if(mergeView!=null && sid==mergeView.simpleId()) {
 				return mergeView;
 			}
-			return presenter.findWebview(sid);
+			return presenter==null?null:presenter.findWebview(sid);
 		}
 
         @JavascriptInterface
@@ -2785,30 +2785,51 @@ function debug(e){console.log(e)};
 		
         @JavascriptInterface
         public void updateIndicator(int sid, String did, int keyIdx, int keyz, int total) {
-			if (presenter!=null) {
-				WebViewmy wv = findWebview(sid);
-				if(wv!=null) {
-					WebViewListHandler weblistHandler = wv.weblistHandler;
-					weblistHandler.updateInPageSch(did, keyIdx, keyz, total);
-				}
-			}
-		}
-        
-        @JavascriptInterface
-        public void putTransval(int sid, String value, int index) {
-			if (presenter!=null) {
-				presenter.a.putTransval(index, value);
+			WebViewmy wv = findWebview(sid);
+			if(wv!=null) {
+				WebViewListHandler wlh = wv.weblistHandler;
+				wlh.updateInPageSch(did, keyIdx, keyz, total);
 			}
 		}
 		
-        @JavascriptInterface
-        public String getTransval(int sid, int index) {
-			if (presenter!=null) {
-				return presenter.a.getTransval(index);
+		@JavascriptInterface
+		public void putTransval(int sid, String value, int index) {
+			WebViewmy wv = findWebview(sid);
+			if(wv!=null) {
+				WebViewListHandler wlh = wv.weblistHandler;
+				wlh.putTransval(index, value);
+			}
+		}
+		
+		@JavascriptInterface
+		public String getTransval(int sid, int index) {
+			WebViewmy wv = findWebview(sid);
+			if(wv!=null) {
+				WebViewListHandler wlh = wv.weblistHandler;
+				return wlh.getTransval(index);
 			}
 			return "";
 		}
-        
+		
+        @JavascriptInterface
+        public void putTranslate(int sid, boolean val, int index) {
+			WebViewmy wv = findWebview(sid);
+			if(wv!=null) {
+				WebViewListHandler wlh = wv.weblistHandler;
+				wlh.putTranslate(index, val);
+			}
+		}
+		
+		@JavascriptInterface
+		public boolean getTranslate(int sid, int index) {
+			WebViewmy wv = findWebview(sid);
+			if(wv!=null) {
+				WebViewListHandler wlh = wv.weblistHandler;
+				return !wlh.getTranslate(index);
+			}
+			return true;
+		}
+		
         @JavascriptInterface
         public String getSearchWord(int sid) {
 			if (presenter!=null) {
