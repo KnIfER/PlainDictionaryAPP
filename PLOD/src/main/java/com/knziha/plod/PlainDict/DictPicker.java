@@ -81,12 +81,14 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	private CheckableImageView pinBtn;
 	private CheckableImageView autoBtn;
 	
-	public ArrayList<Integer> filtered;
+	public ArrayList<Long> filtered;
 	
 	public int adapter_idx;
 	private Runnable showImmAby;
 	
 	public boolean autoScroll;
+	
+	public MainActivityUIBase.LoadManager loadManager;
 	
 	public DictPicker(MainActivityUIBase a_, LinearSplitView splitView, ViewGroup splitter, int reason){
 		super(a_, false);
@@ -100,6 +102,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		this.splitView = splitView;
 		this.splitter = splitter;
 		this.type = reason;
+		this.loadManager = a.loadManager;
 	}
 	
 	@SuppressLint("ResourceType")
@@ -365,17 +368,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	public void filterByRec(resultRecorderCombined rec, int pos) {
 		if (rec!=null) {
 			ArrayList<Long> ids = pos>=0&&pos<rec.size()?rec.getBooksAt(null, pos):new ArrayList<>();
-			filtered = new ArrayList<>(ids.size());
-			ArrayList<PlaceHolder> pl = a.getPlaceHolders();
-			for (int i=0,cc=0; i<pl.size() && cc<ids.size(); i++) {
-				if (a.getBookIdAt(i)==ids.get(cc)) {
-					cc++;
-					filtered.add(i);
-				}
-			}
-			if (filtered.size()!=ids.size()) {
-				a.showT("需要重新计算!");
-			}
+			filtered = new ArrayList<>(ids);
 		} else {
 			filtered = null;
 		}
@@ -383,7 +376,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	}
 	
 	public int adapterIdx() {
-		if((adapter_idx<0||adapter_idx>=a.md.size()))
+		if((adapter_idx<0||adapter_idx>=loadManager.lazyMan.chairCount))
 			adapter_idx=0;
 		return adapter_idx;
 	}
@@ -401,7 +394,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		
 		@Override
 		public int getItemCount() {
-			return filtered==null?a.md.size():filtered.size();
+			return filtered==null?loadManager.lazyMan.chairCount:filtered.size();
 		}
 		@NonNull
 		@Override
@@ -418,35 +411,31 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		
 		@Override
 		public void onBindViewHolder(@NonNull final MyViewHolder holder, int position, @NonNull List<Object> payloads) {
+			long bid=-1;
 			if (filtered!=null) {
-				position = filtered.get(position);
+				bid = filtered.get(position);
 			}
-			holder.position = position;
 			FlowTextView tv = holder.tv;
 			if(payloads.size()==0) {
 				//CMN.Log("onBindViewHolder::刷新全部!!!");
 				//todo 应该将adapter_idx 放到这个类中
-				int idx=type==-1?
-						filtered==null?a.wordPopup.upstrIdx :-100
-						:DictPicker.this.adapter_idx;
-				
-				boolean isThisSelected = idx==position;
-				if (idx==-100) {
-					if (a.wordPopup.weblistHandler!=null
-							&& a.wordPopup.weblistHandler.frameSelection==holder.getLayoutPosition()) {
-						isThisSelected = true;
-					}
+				boolean rowSelected;
+				if (bid==-1) {
+					rowSelected = position == (type==-1?a.wordPopup.upstrIdx:DictPicker.this.adapter_idx);
+				} else {
+					rowSelected = a.wordPopup.weblistHandler!=null
+							&& a.wordPopup.weblistHandler.getFrameAt(a.wordPopup.weblistHandler.frameSelection).getId()==bid;
 				}
-				holder.itemView.setBackgroundColor(isThisSelected?0xff4F7FDF:Color.TRANSPARENT);
-				tv.setTextColor(GlobalOptions.isDark||isThisSelected?Color.WHITE:Color.BLACK);
+				holder.itemView.setBackgroundColor(rowSelected?0xff4F7FDF:Color.TRANSPARENT);
+				tv.setTextColor(GlobalOptions.isDark||rowSelected?Color.WHITE:Color.BLACK);
 				tv.PostEnabled = PostEnabled;
-				tv.setStarLevel(a.md_get_StarLevel(position));
+				tv.setStarLevel(loadManager.md_get_StarLevel(position, bid));
 				tv.setCompoundDrawables(a.getActiveStarDrawable(), null, null, null);
 				
-				String text = a.md_getName(position);
+				String text = loadManager.md_getName(position, bid);
 				tv.SetSearchPattern(SearchPattern, text);
 				
-				Drawable cover = a.md_getCover(position);
+				Drawable cover = loadManager.md_getCover(position, bid);
 				ViewUtils.setVisibility((View) holder.cover.getParent(), cover!=null);
 				ViewGroup.LayoutParams lp = holder.cover.getLayoutParams();
 				lp.width = (int) (lp.height/(cover==null?
@@ -457,7 +446,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			}
 			//else CMN.Log("onBindViewHolder::刷新部分!!!", payloads);
 			boolean under = type==-1 && a.wordPopup.CCD_ID==position
-					||type!=-1 && a.isCombinedSearching && a.md_getNoCreate(position).hasBatchRet;
+					||type!=-1 && a.isCombinedSearching && loadManager.md_getNoCreate(position, bid).hasBatchRet;
 			if(under ^ tv.getBackground()!=null) // 下划线
 				tv.setBackground(under?underln:null);
 		}
@@ -468,13 +457,13 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	public void onClick(View v) {
 		Object tag = v.getTag();
 		if(tag instanceof MyViewHolder){
-			int position = ((MyViewHolder) tag).position;
+			int position = ((MyViewHolder) tag).getLayoutPosition();
 			if(!act()) return;
 			if(type==-1){ //点译搜索
 				int tmpPos;
 				if (filtered==null) { //点译上游
 					tmpPos = a.wordPopup.upstrIdx;
-					a.wordPopup.CCD=a.md_get(position);
+					a.wordPopup.CCD=loadManager.md_get(position);
 					a.wordPopup.CCD_ID=a.wordPopup.upstrIdx = position;
 					a.popupWord(ViewUtils.getTextInView(a.wordPopup.entryTitle), null, -1, null);
 				} else { //跳转多页面
@@ -591,8 +580,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 						SearchDictPatternChanged=false;
 					}
 					//pickDictDialog.SetSearchIncantation("中");
-					ArrayList<PlaceHolder> CosyChair = a.lazyLoadManager.CosyChair;
-					int fullSize = CosyChair.size();
+					int[] chairs = loadManager.lazyMan.CosyChair;
+					int fullSize = loadManager.md_size;
 					int pad = (int) (10*a.dm.density);
 					int delta = v.getId()==R.id.recess?1:-1;
 					int fvp;
@@ -604,7 +593,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 							fvp++;
 						}
 					}
-					
+
 					int sep=fullSize-fvp;
 					int st=0;
 					if(delta<0) {
@@ -623,8 +612,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 							//						if(delta>0&&j==fullSize-1||delta<0&&j==0) {
 							//							break;
 							//						}
-							if (j>=0 && j<CosyChair.size()) {
-								String name = CosyChair.get(j).pathname;
+							if (j>=0 && j<fullSize) {
+								String name = loadManager.getPlaceHolderAt(j).pathname;
 								if(name!=null && name.startsWith(AssetTag)) {
 									name = CMN.getAssetName(name);
 								}
@@ -660,7 +649,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			int vdx=this.adapter_idx;
 			if (type==-1) {
 				vdx = a.wordPopup.CCD_ID;
-				if(vdx<0||vdx>=a.md.size())
+				if(vdx<0||vdx>=loadManager.lazyMan.chairCount)
 					vdx = a.wordPopup.upstrIdx;
 			}
 			if(lman!=null) {
@@ -774,7 +763,6 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	
 	static class MyViewHolder extends ViewHolder
 	{
-		public int position;
 		FlowTextView tv;
 		ImageView cover;
 		public MyViewHolder(View view, View.OnClickListener onclick)

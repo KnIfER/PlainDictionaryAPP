@@ -1,6 +1,10 @@
 package com.knziha.plod.PlainUI;
 
-import static com.knziha.plod.PlainUI.WordPopupTask.*;
+import static com.knziha.plod.PlainUI.WordPopupTask.TASK_FYE_SCH;
+import static com.knziha.plod.PlainUI.WordPopupTask.TASK_LOAD_HISTORY;
+import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_NAV;
+import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_NAV_NXT;
+import static com.knziha.plod.PlainUI.WordPopupTask.TASK_POP_SCH;
 import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 
 import android.annotation.SuppressLint;
@@ -61,7 +65,6 @@ import com.knziha.rbtree.RBTree_additive;
 
 import java.lang.ref.WeakReference;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -104,6 +107,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	private ImageView modeBtn;
 	
 	DictPicker dictPicker;
+	public MainActivityUIBase.LoadManager loadManager;
 	ViewGroup splitter;
 	private final Runnable clrSelAby = () -> invoker.evaluateJavascript("window.getSelection().collapseToStart()", null);
 	public SearchbarTools etTools;
@@ -441,6 +445,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			RLContainerSlider pageSlider = weblist.pageSlider = (RLContainerSlider) split.getChildAt(0);
 			splitter = (ViewGroup) popupContentView.getChildAt(3);
 			dictPicker = new DictPicker(a, split, splitter, -1);
+			dictPicker.loadManager = this.loadManager;
 			dictPicker.autoScroll = true;
 			PageSlide page = pageSlider.page = (PageSlide) pageSlider.getChildAt(0);
 			WebViewmy webview = (WebViewmy) pageSlider.getChildAt(1);;
@@ -556,7 +561,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			RLContainerSlider.lastZoomTime=0;
 		}
 		//CMN.Log("\nmPopupRunnable run!!!");
-		int size = a.md.size();
+		int size = loadManager.md_size;
 		if (size <= 0) return;
 		reInit();
 		
@@ -740,7 +745,6 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		String key = false?ViewUtils.getTextInView(entryTitle).trim():popupKey;
 		CMN.Log("SearchNxt::", key);
 		if(key.length()>0) {
-			ArrayList<PlaceHolder> ph = a.getPlaceHolders();
 			String keykey;
 			boolean use_morph = PDICMainAppOptions.getClickSearchUseMorphology();
 			int SearchMode = PDICMainAppOptions.getClickSearchMode();
@@ -754,15 +758,15 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 					CCD_ID++;
 				} else {
 					CCD_ID--;
-					if(CCD_ID<0)CCD_ID+=a.md.size();
+					if(CCD_ID<0)CCD_ID+=loadManager.md_size;
 				}
-				CCD_ID=CCD_ID%a.md.size();
+				CCD_ID=CCD_ID%loadManager.md_size;
 				
-				if(hasDedicatedSeachGroup && CCD_ID<ph.size() && !PDICMainAppOptions.getTmpIsClicker(ph.get(CCD_ID).tmpIsFlag))
+				if(hasDedicatedSeachGroup && CCD_ID<loadManager.md_size && !PDICMainAppOptions.getTmpIsClicker(loadManager.getPlaceHolderAt(CCD_ID).tmpIsFlag))
 					continue;
-				CCD=a.md_get(CCD_ID);
+				CCD=loadManager.md_get(CCD_ID);
 				cc++;
-				if(cc>a.md.size())
+				if(cc>loadManager.md_size)
 					break;
 				
 				if (CCD!=a.EmptyBook) {
@@ -825,25 +829,18 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	
 	@AnyThread
 	private void SearchMultiple(AtomicBoolean task, int taskVer, AtomicInteger taskVersion) {
-		int size = a.md.size();
 		_treeBuilder.clear();
 		int paragraphWords = 9;
 		String searchText = popupKey;
 		boolean isParagraph = BookPresenter.testIsParagraph(searchText, paragraphWords);
 		CMN.Log("isParagraph::", isParagraph);
 		_treeBuilder.setKeyClashHandler(searchText);
-		for (int i = 0; i < size && task.get(); i++) {
-			ArrayList<PlaceHolder> CosyChair = a.getPlaceHolders();
-			PlaceHolder phTmp = i<CosyChair.size()?CosyChair.get(i):null;
+		for (int i = 0; i < loadManager.md_size && task.get(); i++) {
+			PlaceHolder phTmp = loadManager.getPlaceHolderAt(i);
 			if (phTmp != null) {
-				BookPresenter book = a.md.get(i);
-				if (book == null) {
-					try {
-						a.md.set(i, book = a.new_book(phTmp, a));
-					} catch (Exception e) { }
-				}
+				BookPresenter book = loadManager.md_get(i);
 				try {
-					if(book!=null && book.getAcceptParagraph(searchText, isParagraph, paragraphWords)) {
+					if(book.getAcceptParagraph(searchText, isParagraph, paragraphWords)) {
 						CrashHandler.hotTracingObject = book;
 						_treeBuilder.resetRealmer(book.getId());
 						book.bookImpl.lookUpRange(searchText, null, _treeBuilder, book.getId(),7, task);
@@ -853,7 +850,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				}
 			}
 		}
-		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), a.md, searchText);
+		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), searchText);
 		if (rec.FindFirstIdx(searchText, task) && taskVer==taskVersion.get()) {
 			this.rec = rec;
 			harvest();
@@ -868,18 +865,18 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	
 	@AnyThread
 	private void SearchOne(AtomicBoolean task, int taskVer, AtomicInteger taskVersion) {
-		int size = a.md.size();
 		int idx = -1, cc = 0;
 		resetPreviewIdx();
 		if (popupKey != null) {
 			String keykey;
-			CCD_ID = upstrIdx = Math.min(upstrIdx, size-1);
+			int size = loadManager.md_size;
+			CCD_ID = upstrIdx = Math.min(upstrIdx, size -1);
 			if(popupForceId!=null) {
 				CCD = popupForceId;
-				CCD_ID = a.md.indexOf(popupForceId);
+				CCD_ID = loadManager.md_find(popupForceId);
 				if(CCD_ID<0) {
-					CCD_ID = a.md.size();
-					a.md.add(popupForceId); // todo check???
+					CCD_ID = size;
+					loadManager.md.add(popupForceId); // todo check???
 				}
 			}
 			//轮询开始
@@ -890,9 +887,9 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			boolean bForceJump = false;
 			BookPresenter CCD = this.CCD;
 			if (SearchMode == 2) {/* 仅搜索当前词典 */
-				CCD = a.md_get(CCD_ID);
+				CCD = loadManager.md_get(CCD_ID);
 				if (CCD != a.EmptyBook) {
-					if(CCD.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+					if(CCD.getIsWebx()){
 						webx = CCD;
 						if (PDICMainAppOptions.getTapSkipWebxUnlessIsDedicated()
 								&& (!PDICMainAppOptions.getTmpIsClicker(CCD.tmpIsFlag)
@@ -918,22 +915,11 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 					while(task.get()) {
 						BookPresenter mdTmp;
 						int CSID;
-						for (int i = 0; i < a.md.size(); i++) {
+						for (int i = 0; i < size; i++) {
 							mdTmp = null;
-							CSID = (i + CCD_ID) % a.md.size();
-							ArrayList<PlaceHolder> CosyChair = a.getPlaceHolders();
-							if (CSID < CosyChair.size()) {
-								PlaceHolder phTmp = CosyChair.get(CSID);
-								if (phTmp != null) {
-									if (PDICMainAppOptions.getTmpIsClicker(phTmp.tmpIsFlag)) {
-										mdTmp = a.md.get(CSID);
-										if (mdTmp == null) {
-											try {
-												a.md.set(CSID, mdTmp = a.new_book(phTmp, a));
-											} catch (Exception e) { }
-										}
-									}
-								}
+							CSID = (i + CCD_ID) % size;
+							if (PDICMainAppOptions.getTmpIsClicker(loadManager.getPlaceFlagAt(CSID))) {
+								mdTmp = loadManager.md_get(CSID);
 							}
 							if (mdTmp != null) {
 								if (!bForceJump && firstAttemp == null)
@@ -965,7 +951,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 										idx = -1-idx;
 									}
 									if (idx >= 0) {
-										CCD_ID = (i + CCD_ID) % a.md.size();
+										CCD_ID = (i + CCD_ID) % size;
 										CCD = mdTmp;
 										break FindCSD;
 									}
@@ -975,7 +961,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 								}
 							}
 						}
-						if (firstAttemp != null && a.md.size()>0) {
+						if (firstAttemp != null && size >0) {
 							bForceJump=true;
 							firstAttemp=null;
 						} else {
@@ -987,27 +973,11 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				boolean reject_morph = false;
 				if (proceed)/* 未指定点译词典 */
 					while (task.get()) {
-						if (cc > a.md.size())
+						if (cc > size)
 							break;
-						CCD_ID = CCD_ID % a.md.size();
-						CCD = a.md.get(CCD_ID);
-						if (CCD == null) {
-							ArrayList<PlaceHolder> CosyChair = a.getPlaceHolders();
-							if (CCD_ID < CosyChair.size()) {
-								PlaceHolder phTmp = CosyChair.get(CCD_ID);
-								if (phTmp != null) {
-									try {
-										a.md.set(CCD_ID, CCD = a.new_book(phTmp, a));
-									} catch (Exception e) {
-										CMN.Log(e);
-									}
-								}
-							}
-						}
-						if (CCD == null) {
-							CCD = a.EmptyBook;
-						}
-						if(CCD.getType() == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB){
+						CCD_ID = CCD_ID % size;
+						CCD = loadManager.md_get(CCD_ID);
+						if(CCD.getIsWebx()){
 							webx = CCD;
 							if (PDICMainAppOptions.getTapSkipWebxUnlessIsDedicated()
 									&& (!PDICMainAppOptions.getTmpIsClicker(CCD.tmpIsFlag)
@@ -1091,7 +1061,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				weblistHandler.setViewMode(null, 0, mWebView);
 				if(CCD.getIsWebx()) {
 					weblistHandler.bMergingFrames = 1;
-					indicator.setText(a.md_getName(CCD_ID));
+					indicator.setText(loadManager.md_getName(CCD_ID, -1));
 					popuphandler.setBook(CCD);
 					CCD.renderContentAt(-1, RENDERFLAG_NEW, -1, mWebView, currentPos);
 					weblistHandler.pageSlider.setWebview(mWebView, null);
@@ -1136,7 +1106,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	}
 	
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt) {
-		CMN.Log("popupWord_frameAt", frameAt, key, a.md.size(), invoker==null, WebViewmy.supressNxtClickTranslator);
+		CMN.Log("popupWord_frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator);
 		if(key==null || mdict.processText(key).length()>0) {
 			if (invoker!=null) this.invoker = invoker;
 			if (key!=null) popupKey = key;
@@ -1183,9 +1153,10 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		int id=CMN.id(ccd);
 		if (texts[0]!=id) {
 			sching = ccd;
-			CCD_ID = a.md.indexOf(ccd); //todo opt
-			if (dictPicker.filtered!=null) {
-				CCD_ID = dictPicker.filtered.indexOf(CCD_ID);
+			if (dictPicker.filtered != null) {
+				CCD_ID = dictPicker.filtered.indexOf(ccd.getId());
+			} else {
+				CCD_ID = loadManager.md_find(ccd); //todo opt
 			}
 			currentPos = (int) pos;
 			texts[0]=id;

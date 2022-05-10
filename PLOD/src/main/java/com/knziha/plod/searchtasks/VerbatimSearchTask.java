@@ -17,7 +17,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-public class VerbatimSearchTask extends AsyncTaskWrapper<String, Integer, resultRecorderCombined> {
+public class VerbatimSearchTask extends AsyncTaskWrapper<String, Object, resultRecorderCombined> {
 	public static final String RegExp_VerbatimDelimiter = "[ `~!@#$%^&*()+=—|{}\":;.,\\[\\]<>/?！￥…（）【】‘；：”“’。，、？|-·]|((?<=[\\u4e00-\\u9fa5])|(?=[\\u4e00-\\u9fa5]))";
 	public static final Pattern Pattern_VerbatimDelimiter = Pattern.compile(RegExp_VerbatimDelimiter);
 	private final WeakReference<PDICMainActivity> activity;
@@ -53,33 +53,17 @@ public class VerbatimSearchTask extends AsyncTaskWrapper<String, Integer, result
 		CMN.stst=System.currentTimeMillis();
 		CurrentSearchText=params[0];
 		String[] inputArray = CurrentSearchText.split(RegExp_VerbatimDelimiter);
-
-		ArrayList<BookPresenter> md = a.md;
+		
+		MainActivityUIBase.LoadManager loadManager = a.loadManager;
 
 		for(int i=0; i<inputArray.length; i++) {
 			if("".equals(inputArray[i])) continue;
 			verbatimCount++;
 			boolean created = false;
-			int start=0;
-			int end = md.size();
-			if(!a.isCombinedSearching) {
-				if(a.checkDicts()){
-					start = md.indexOf(a.currentDictionary);
-					end = start+1;
-				}
-			}
-			for(int j=start; j<end; j++) {
-				BookPresenter mdTmp = md.get(j);
-				if(mdTmp==null){
-					PlaceHolder phI = a.getPlaceHolderAt(j);
-					if(phI!=null) {
-						try {
-							md.set(j, mdTmp= MainActivityUIBase.new_book(phI, a));
-							mdTmp.range_query_reveiver = new ArrayList<>();
-						} catch (Exception ignored) { }
-					}
-				}
-				if(mdTmp!=null){
+			boolean batchSch = a.isCombinedSearching;
+			for(int j=0; j<loadManager.md_size; j++) {
+				BookPresenter mdTmp = batchSch?loadManager.md_get(j):a.currentDictionary;
+				if(mdTmp!=a.EmptyBook){
 					if(isStrict) {
 						int result = mdTmp.bookImpl.lookUp(inputArray[i], true);
 						if(result>=0) {
@@ -93,10 +77,13 @@ public class VerbatimSearchTask extends AsyncTaskWrapper<String, Integer, result
 								arr.add(j);arr.add(result);
 							}
 						}
-					}else {
+					} else {
 						if(isCancelled()) break; // to impl
 						mdTmp.bookImpl.lookUpRange(inputArray[i], mdTmp.range_query_reveiver, null,i,15, null);
 					}
+				}
+				if (!batchSch) {
+					break;
 				}
 			}
 		}
@@ -108,18 +95,20 @@ public class VerbatimSearchTask extends AsyncTaskWrapper<String, Integer, result
 	protected void onPostExecute(resultRecorderCombined rec) {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
-		ArrayList<BookPresenter> md = a.md;
+		MainActivityUIBase.LoadManager loadManager = a.loadManager;
 		if(!isStrict) {
 			RBTree_additive additive_combining_search_tree_haha = new RBTree_additive();
-			for(int i=0; i<md.size(); i++) {
-				if(md.get(i)!=null)
-				for(myCpr<String, Long> dataI:md.get(i).range_query_reveiver) {
-					additive_combining_search_tree_haha.insert(dataI.key, i, dataI.value);
+			for(int i=0; i<loadManager.md_size; i++) {
+				BookPresenter book = loadManager.md_getAt(i);
+				if (book!=null) {
+					for(myCpr<String, Long> dataI:book.range_query_reveiver) {
+						additive_combining_search_tree_haha.insert(dataI.key, i, dataI.value);
+					}
 				}
 			}
 			additive_combining_search_tree=additive_combining_search_tree_haha.flatten();
 		}
-		rec = new resultRecorderCombined(a,additive_combining_search_tree,md, CurrentSearchText);
+		rec = new resultRecorderCombined(a,additive_combining_search_tree, CurrentSearchText);
 		//CMN.show("逐字搜索 时间： "+(System.currentTimeMillis()-stst)+"ms "+rec.size());
 
 		a.contentUIData.mainProgressBar.setVisibility(View.GONE);

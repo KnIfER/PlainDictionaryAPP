@@ -10,7 +10,6 @@ import com.knziha.plod.dictionarymodels.SearchType;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
-import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
@@ -22,12 +21,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, resultRecorderCombined> {
+/** Batch Binary Search Task */
+public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultRecorderCombined> {
 	private final WeakReference<MainActivityUIBase> activity;
 	private RBTree_additive _treeBuilder = new RBTree_additive();
 	String CurrentSearchText;
 	String CurrentSearchText2;
-	private long stst;
 
 	public CombinedSearchTask(MainActivityUIBase a) {
 		activity = new WeakReference<>(a);
@@ -48,7 +47,6 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, result
 	protected resultRecorderCombined doInBackground(String... params) {
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return null;
-		stst=System.currentTimeMillis();
 		String searchText = params[0].trim();
 		int paragraphWords = 9;
 		boolean isParagraph = BookPresenter.testIsParagraph(searchText, paragraphWords);
@@ -56,18 +54,19 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, result
 		CurrentSearchText=searchText;
 		CurrentSearchText2=PDICMainAppOptions.getSearchUseMorphology()?
 				a.ReRouteKey(searchText, true):null;
-
-		ArrayList<BookPresenter> md = a.md;
-
-		a.split_dict_thread_number = md.size()<6?1: (md.size()/6);
+		
+		MainActivityUIBase.LoadManager loadManager = a.loadManager;
+		int size = loadManager.md_size;
+		
+		a.split_dict_thread_number = size<6?1: (size/6);
 		a.split_dict_thread_number = a.split_dict_thread_number>16?6:a.split_dict_thread_number;
 		a.split_dict_thread_number = 2;
 
 		final int thread_number = Runtime.getRuntime().availableProcessors()/2*2-1;Math.min(Runtime.getRuntime().availableProcessors()/2*2+0, a.split_dict_thread_number);
 
 		ExecutorService fixedThreadPool = Executors.newFixedThreadPool(thread_number);
-		final int step = md.size()/a.split_dict_thread_number;
-		final int yuShu= md.size()%a.split_dict_thread_number;
+		final int step = size/a.split_dict_thread_number;
+		final int yuShu= size%a.split_dict_thread_number;
 
 		a.poolEUSize.set(0);
 
@@ -90,17 +89,8 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, result
 					if(it==a.split_dict_thread_number-1) jiaX=yuShu;
 					for(int i1 = it*step; i1 <it*step+step+jiaX; i1++) {
 						if(isCancelled()) break;
-						BookPresenter bookPresenter = md.get(i1);
-						if(bookPresenter==null){
-							PlaceHolder phI = a.getPlaceHolderAt(i1);
-							if(phI!=null) {
-								try {
-									md.set(i1, bookPresenter=MainActivityUIBase.new_book(phI, a));
-									bookPresenter.range_query_reveiver = new ArrayList<>();
-								} catch (Exception ignored) { }
-							}
-						}
-						if(bookPresenter!=null) {
+						BookPresenter bookPresenter = loadManager.md_get(i1);
+						if(bookPresenter!=a.EmptyBook) {
 							try {
 								bookPresenter.QueryByKey(CurrentSearchText, SearchType.Range, isParagraph, paragraphWords, running);
 							} catch (Exception e) {
@@ -117,8 +107,6 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, result
 			});
 
 			if(isCancelled()) break;
-			//long sl = System.currentTimeMillis();
-			//Log.e("sadasd",md.get(i)._Dictionary_fName+"time: "+(System.currentTimeMillis()-sl));
 		}
 		fixedThreadPool.shutdown();
 		try {
@@ -133,8 +121,8 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, result
 		ArrayList<myCpr<String, Long>> combining_search_list;
 		BookPresenter bookPresenter;
 		long bid;
-		for(int i=0; i<md.size(); i++) {
-			bookPresenter = md.get(i);
+		for(int i=0; i<size; i++) {
+			bookPresenter = loadManager.md_getAt(i);
 			if(bookPresenter!=null){ // to impl
 				if(isCancelled()) break;
 				bid = a.getUsingDataV2()?bookPresenter.bookImpl.getBooKID():i;
@@ -157,7 +145,7 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, result
 			}
 		}
 		if(isCancelled()) return null;
-		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), md, CurrentSearchText);
+		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), CurrentSearchText);
 		if(rec.FindFirstIdx(searchText, running)) return rec;
 		return null;
 	}
@@ -168,7 +156,7 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Integer, result
 		if((a=activity.get())==null) return;
 
 		//CMN.Log("联合搜索 时间： " + (System.currentTimeMillis() - stst) + "ms " + rec.size());
-		if(rec==null) rec = new resultRecorderCombined(a, new ArrayList<>(), null, CurrentSearchText);
+		if(rec==null) rec = new resultRecorderCombined(a, new ArrayList<>(), CurrentSearchText);
 		rec.storeRealm = a.schuiMain;
 		rec.storeRealm1 = a.thisActType==MainActivityUIBase.ActType.PlainDict?SearchUI.MainApp.表1:SearchUI.FloatApp.表1;
 		if(a.lv2.getVisibility()!= View.VISIBLE)

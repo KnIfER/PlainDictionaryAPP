@@ -908,7 +908,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 
 	protected int split_recs_thread_number;
-	public void flowerFindAllContents(String key, int selfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException{
+	public void flowerFindAllContents(String key, Object book, AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException{
 		//SU.Log("Find In All Contents Started");
 		if(isResourceFile||getOnlyContainsImg()) return;
 		byte[][][][][] matcher=null;
@@ -941,7 +941,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		final int yuShu=(int) (_num_record_blocks%split_recs_thread_number);
 
 
-		ArrayList<SearchResultBean>[] _combining_search_tree=SearchLauncher.getTreeBuilding(selfAtIdx, split_keys_thread_number);
+		ArrayList<SearchResultBean>[] _combining_search_tree=SearchLauncher.getTreeBuilding(book, split_keys_thread_number);
 
 		SearchLauncher.poolEUSize.set(SearchLauncher.dirtyProgressCounter=0);
 
@@ -1692,11 +1692,11 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 		public ArrayList<ArrayList<Integer>[]> combining_search_tree;
 
-		public abstract ArrayList<SearchResultBean>[] getTreeBuilding(int DX, int splitNumber);
+		public abstract ArrayList<SearchResultBean>[] getTreeBuilding(Object book, int splitNumber);
 
-		//public abstract void setCombinedTree(int DX, ArrayList<Integer>[] val, int searchType);
+		//public abstract void setCombinedTree(Object book, ArrayList<Integer>[] val, int searchType);
 
-		public abstract ArrayList<SearchResultBean>[] getTreeBuilt(int DX);
+		public abstract ArrayList<SearchResultBean>[] getTreeBuilt(Object book);
 
 		public abstract boolean getEnableFanjnConversion();
 

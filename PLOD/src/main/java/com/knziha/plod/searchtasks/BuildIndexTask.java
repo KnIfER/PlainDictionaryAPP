@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 @SuppressLint("SetTextI18n")
-public class BuildIndexTask extends AsyncTaskWrapper<String, Integer, String > {
+public class BuildIndexTask extends AsyncTaskWrapper<String, Object, String > {
 	private final WeakReference<PDICMainActivity> activity;
 	private final ArrayList<Long> IndexingBooks;
 
@@ -33,10 +33,10 @@ public class BuildIndexTask extends AsyncTaskWrapper<String, Integer, String > {
 	}
 
 	@Override
-	protected void onProgressUpdate(Integer... values) {
+	protected void onProgressUpdate(Object... values) {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
-		a.updateIndexBuilding(values[0], values[1]);
+		a.updateIndexBuilding((int)values[0], (int)values[1]);
 	}
 
 	@Override

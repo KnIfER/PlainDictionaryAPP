@@ -61,7 +61,7 @@ public interface UniversalDictionaryInterface {
 	
 	void setBooKID(long id);
 	
-	void flowerFindAllContents(String key, int selfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException;
+	void flowerFindAllContents(String key, Object book, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException;
 	void flowerFindAllKeys(String key, int SelfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException;
 	
 	String getResourcePaths();

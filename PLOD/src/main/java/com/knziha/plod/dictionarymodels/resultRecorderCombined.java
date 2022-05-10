@@ -33,12 +33,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	public additiveMyCpr1 jointResult;
 	
 	public List<additiveMyCpr1> list(){return data;}
-	private List<BookPresenter> md;
 	
-	public resultRecorderCombined(MainActivityUIBase a, List<additiveMyCpr1> data_, List<BookPresenter> md_, String schKey){
+	public resultRecorderCombined(MainActivityUIBase a, List<additiveMyCpr1> data_, String schKey){
 		super(a);
 		data=data_;
-		md=md_;
 		this.schKey = schKey;
 	}
 	

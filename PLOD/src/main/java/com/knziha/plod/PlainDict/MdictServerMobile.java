@@ -52,10 +52,9 @@ public class MdictServerMobile extends MdictServer {
 	
 	private static HashMap<String, Object>  mTifConfig;
 	
-	public MdictServerMobile(int port, MainActivityUIBase _a, PDICMainAppOptions _opt) throws IOException {
-		super(port, _opt);
+	public MdictServerMobile(int port, MainActivityUIBase _a, PDICMainAppOptions _opt, MainActivityUIBase.LoadManager loadManager) throws IOException {
+		super(port, _opt, loadManager);
 		a = _a;
-		MdbServerLet = _a;
 		a.serverHosts=new ConcurrentHashMap<>();
 		if(a.serverHostsHolder!=null) {
 			for (PlainWeb pw:a.serverHostsHolder) {

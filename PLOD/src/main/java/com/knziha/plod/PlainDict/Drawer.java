@@ -849,16 +849,9 @@ public class Drawer extends Fragment implements
 							//CMN.debug(files);
 							if(now!=null) {
 								MainActivityUIBase.LazyLoadManager lazyLoadManager = a.lazyLoadManager;
-								for(PlaceHolder phI:lazyLoadManager.CosyChair) {
+								for(PlaceHolder phI:lazyLoadManager.placeHolders) {
 									mdictInternal.add(phI.getPath(a.opt).getPath());
 								}
-								for(BookPresenter mdTmp:a.currentFilter) {
-									if(mdTmp!=null) mdictInternal.add(mdTmp.getPath());
-								}
-//								for(BookPresenter mdTmp:Drawer.this.mdictInternal.values()) {
-//									if(mdTmp!=null)
-//										mdictInternal.add(mdTmp.getPath());
-//								}
 								filepickernow = now;
 								if(files.length>1) {
 									File ConfigFile = a.opt.fileToConfig();
@@ -936,16 +929,17 @@ public class Drawer extends Fragment implements
 										/* 追加不存于当前分组的全部词典至全部记录与缓冲组。 */
 										else if(!mdictInternal.contains(fI.getPath())) {
 											try {
+												BookPresenter newBook;
 												if (bNextPlaceHolder) {
-													a.AddIndexingBookIdx(-1, a.md.size());
-													a.md.add(null);
+													a.AddIndexingBookIdx(-1, a.loadManager.md_size);
+													newBook = null;
 													bNextPlaceHolder=false;
 												} else {
-													a.md.add(MainActivityUIBase.new_book(fnI, a));
+													newBook=MainActivityUIBase.new_book(fnI, a);
 												}
-												if(newAdapterIdx==-1) newAdapterIdx = a.md.size()-1;
 												PlaceHolder phI = new PlaceHolder(fnI);
-												lazyLoadManager.CosyChair.add(phI);
+												a.loadManager.addBook(newBook, phI);
+												if(newAdapterIdx==-1) newAdapterIdx = a.loadManager.md_size-1;
 												String raw=fnI;
 												fnI = mFile.tryDeScion(fI, a.opt.lastMdlibPath);
 												if(output2==null){
@@ -978,8 +972,8 @@ public class Drawer extends Fragment implements
 											}
 										}
 										else if(newAdapterIdx==-1 && bscAdapterIdx==-1) {
-											for (int j = 0; j < lazyLoadManager.CosyChair.size(); j++) {
-												PlaceHolder phI = lazyLoadManager.CosyChair.get(j);
+											for (int j = 0; j < a.loadManager.md_size; j++) {
+												PlaceHolder phI = a.loadManager.getPlaceHolderAt(j);
 												if(fI.equals(phI.getPath(a.opt))) {
 													bscAdapterIdx = j;
 													break;
@@ -999,13 +993,11 @@ public class Drawer extends Fragment implements
 									}
 									renameRec.clear();
 									
-									for (ArrayList<PlaceHolder> phII: lazyLoadManager.PlaceHolders) {
-										for (PlaceHolder phI:phII){
-											String newPath = renameList.get(phI.getPath(a.opt));
-											if(newPath!=null){
-												PlaceHolder phTmp = new PlaceHolder(newPath);
-												phI.pathname = phTmp.pathname;
-											}
+									for (PlaceHolder phI:lazyLoadManager.placeHolders){
+										String newPath = renameList.get(phI.getPath(a.opt));
+										if(newPath!=null){
+											PlaceHolder phTmp = new PlaceHolder(newPath);
+											phI.pathname = phTmp.pathname;
 										}
 									}
 									

@@ -3,20 +3,19 @@ package com.knziha.plod.searchtasks;
 import android.annotation.SuppressLint;
 
 import com.knziha.plod.db.SearchUI;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
-import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.dictionarymodels.BookPresenter;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
+/** Full-scan Search Among Entry Texts */
 @SuppressLint("SetTextI18n")
-public class FuzzySearchTask extends AsyncTaskWrapper<String, Integer, String> {
+public class FuzzySearchTask extends AsyncTaskWrapper<String, Object, String> {
 	private final WeakReference<PDICMainActivity> activity;
 	private String CurrentSearchText;
 
@@ -31,10 +30,10 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Integer, String> {
 	}
 	
 	@Override
-	protected void onProgressUpdate(Integer... values) {
+	protected void onProgressUpdate(Object... values) {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
-		a.updateFFSearch(values[0]);
+		a.updateFFSearch((BookPresenter) values[0], (int)values[1]);
 	}
 
 
@@ -46,8 +45,8 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Integer, String> {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return null;
 		a.fuzzySearchLayer.setCurrentPhrase(CurrentSearchText);
-
-		ArrayList<BookPresenter> md = a.md;
+		
+		MainActivityUIBase.LoadManager loadManager = a.loadManager;
 
 		String SearchTerm = CurrentSearchText;
 
@@ -60,19 +59,11 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Integer, String> {
 		a.fuzzySearchLayer.flowerSanLieZhi(SearchTerm);
 
 		if(a.isCombinedSearching){
-			for(int i=0;i<md.size();i++){
+			for(int i=0;i<loadManager.md_size;i++){
 				try {
-					BookPresenter mdTmp = md.get(i);
-					if(mdTmp==null){
-						PlaceHolder phI = a.getPlaceHolderAt(i);
-						if(phI!=null) {
-							try {
-								md.set(i, mdTmp= MainActivityUIBase.new_book(phI, a));
-							} catch (Exception ignored) { }
-						}
-					}
-					publishProgress(i);
-					if(mdTmp!=null) // to impl
+					BookPresenter mdTmp = loadManager.md_get(i);
+					publishProgress(mdTmp, i);
+					if(mdTmp!=a.EmptyBook) // to impl
 						mdTmp.findAllNames(SearchTerm, i, a.fuzzySearchLayer);
 					//publisResults();
 					if(isCancelled()) break;

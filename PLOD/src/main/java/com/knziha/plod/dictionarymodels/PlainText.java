@@ -319,7 +319,7 @@ public class PlainText extends DictionaryAdapter {
 	}
 
 	@Override
-	public void flowerFindAllContents(String key, int selfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
+	public void flowerFindAllContents(String key, Object book, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
 		//SU.Log("Find In All Contents Stated");
 		byte[][][][][] matcher=null;
 		Regex Joniregex = null;
@@ -343,7 +343,7 @@ public class PlainText extends DictionaryAdapter {
 		final int step = (int) (_num_record_blocks/split_recs_thread_number);
 		final int yuShu=(int) (_num_record_blocks%split_recs_thread_number);
 		
-		ArrayList<SearchResultBean>[] _combining_search_tree = SearchLauncher.getTreeBuilding(selfAtIdx, split_recs_thread_number);
+		ArrayList<SearchResultBean>[] _combining_search_tree = SearchLauncher.getTreeBuilding(book, split_recs_thread_number);
 
 		SearchLauncher.poolEUSize.set(SearchLauncher.dirtyProgressCounter=0);
 

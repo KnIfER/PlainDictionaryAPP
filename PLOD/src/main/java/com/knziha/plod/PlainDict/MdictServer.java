@@ -89,14 +89,15 @@ public abstract class MdictServer extends NanoHTTPD {
 	public ArrayList<BookPresenter> currentFilter = new ArrayList<>();
 	
 	protected mdBase MdbResource;
-	protected MdictServerLet MdbServerLet;
-	private int md_size;
 	
 	PlainWeb webResHandler;
 	
-	public MdictServer(int port, AppOptions _opt) {
+	MainActivityUIBase.LoadManager loadManager;
+	
+	public MdictServer(int port, AppOptions _opt, MainActivityUIBase.LoadManager _loadManager) {
 		super(port);
 		opt=_opt;
+		loadManager = _loadManager;
 	}
 	
 	@Override
@@ -155,12 +156,12 @@ public abstract class MdictServer extends NanoHTTPD {
 			RBTree_additive treeBuilder = new RBTree_additive();
 			StringBuilder sb_ = new StringBuilder();
 			UniversalDictionaryInterface book;
-			for(int i=0;i<md_size();i++){
+			for(int i=0;i<loadManager.md_size;i++){
 				try {
-					book = md_get(i).bookImpl;
+					book = loadManager.md_get(i).bookImpl;
 					book.lookUpRange(uri, null, treeBuilder, book.getBooKID(), 30, null);
 				} catch (Exception e) {
-					SU.Log(md_getName(i), e);
+					SU.Log(loadManager.md_getName(i, -1), e);
 				}
 			}
 			ArrayList<additiveMyCpr1> resultList = treeBuilder.flatten();
@@ -275,15 +276,15 @@ public abstract class MdictServer extends NanoHTTPD {
 					return emptyResponse;
 				}
 			}
-			if(md_size()>0) {
+			if(loadManager.md_size>0) {
 				JSONArray dictsInfo = new JSONArray();
-				for (int i = 0; i < md_size; i++) {
+				for (int i = 0; i < loadManager.md_size; i++) {
 					JSONObject json = new JSONObject();
-					BookPresenter book = md_get(i);
+					BookPresenter book = loadManager.md_get(i);
 					if(book!=null) {
 						book.getDictInfo(json);
 					} else {
-						json.put("name", md_getName(i));
+						json.put("name", loadManager.md_getName(i));
 					}
 					dictsInfo.add(json);
 					//sb.append(md_getName(i));
@@ -295,7 +296,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			return emptyResponse;
 		}
 		else if(key.startsWith("\\MdbRSize\\")) {
-			if(md_size()>0) {
+			if(loadManager.md_size>0) {
 				key = key.substring(10);
 				try {
 					//key = URLDecoder.decode(key, "UTF-8");
@@ -303,8 +304,8 @@ public abstract class MdictServer extends NanoHTTPD {
 					e.printStackTrace();
 				}
 				long ret=0;
-				for (int i = 0; i < md_size; i++) {
-					BookPresenter mdx = md_get(i);
+				for (int i = 0; i < loadManager.md_size; i++) {
+					BookPresenter mdx = loadManager.md_get(i);
 					if(mdx!=null && mdx.getDictionaryName().equals(key))
 						ret=mdx.bookImpl.getNumberEntries();
 				}
@@ -314,7 +315,7 @@ public abstract class MdictServer extends NanoHTTPD {
 			return emptyResponse;
 		}
 		else if(key.startsWith("\\MdbRGetEntries\\")) {
-			if(md_size()>0) {
+			if(loadManager.md_size>0) {
 				key = key.substring(16);
 				//SU.Log(key);
 				String[] l = key.split("\\\\");
@@ -518,7 +519,7 @@ public abstract class MdictServer extends NanoHTTPD {
 	public JSONObject getSettings() {
 		JSONObject json = new JSONObject();
 		json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
-		json.put("bgr", SU.toHexRGB(MdbServerLet.getMainBackground()));
+		json.put("bgr", SU.toHexRGB(CMN.AppBackground));
 		return json;
 	}
 	
@@ -526,27 +527,11 @@ public abstract class MdictServer extends NanoHTTPD {
 	
 	protected abstract void handle_search_event(Map<String, List<String>> text, InputStream inputStream);
 	
-	private String md_getName(int pos) {
-		return MdbServerLet.md_getName(pos);
-	}
-	
-	private BookPresenter md_get(int pos) {
-		return MdbServerLet.md_get(pos);
-	}
-	
-	BookPresenter md_getById(long id) {
-		return MdbServerLet.md_getById(id);
-	}
-	
-	private BookPresenter md_getByName(String name) {
-		return MdbServerLet.md_getByName(name);
-	}
-	
 	public BookPresenter md_getByURLPath(String url, int st, int ed) {
 		CharSequenceKey key = new CharSequenceKey(url, st, ed);
 		if(key.charAt(0)=='d') {
 			key.reset(st+1);
-			return MdbServerLet.md_getById(IU.TextToNumber_SIXTWO_LE(key));
+			return loadManager.getBookById(IU.TextToNumber_SIXTWO_LE(key));
 		}
 		url = key.toString();
 		int pos=-1;
@@ -554,27 +539,23 @@ public abstract class MdictServer extends NanoHTTPD {
 			pos = Integer.parseInt(url);
 		} catch (Exception ignored) { }
 		if(pos>=0) {
-			return md_get(pos);
+			return loadManager.md_get(pos);
 		}
-		return md_getByName(url);
+		return loadManager.md_getByName(url);
 	}
 	
 	public BookPresenter md_getByURL(String url) {
 		if(url.charAt(0)=='d') {
-			return MdbServerLet.md_getById(IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(url, 1)));
+			return loadManager.getBookById(IU.TextToNumber_SIXTWO_LE(new CharSequenceKey(url, 1)));
 		}
 		int pos=-1;
 		try {
 			pos = Integer.parseInt(url);
 		} catch (Exception ignored) { }
 		if(pos>=0) {
-			return md_get(pos);
+			return loadManager.md_get(pos);
 		}
-		return md_getByName(url);
-	}
-	
-	private int md_size() {
-		return md_size=MdbServerLet.md_getSize();
+		return loadManager.md_getByName(url);
 	}
 	
 	protected InputStream OpenMdbResourceByName(String key) throws IOException {

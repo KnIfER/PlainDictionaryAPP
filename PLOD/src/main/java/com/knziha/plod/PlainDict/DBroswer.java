@@ -79,7 +79,6 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.RENDERFLAG_NEW;
 import static com.knziha.plod.plaindict.MainActivityUIBase.ActType;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_FAVORITE_v2;
 import static com.knziha.plod.plaindict.DeckListAdapter.*;
-import static com.knziha.plod.plaindict.WebViewListHandler.WEB_VIEW_SINGLE;
 
 @SuppressLint("SetTextI18n")
 public class DBroswer extends DialogFragment implements
@@ -1210,11 +1209,15 @@ public class DBroswer extends DialogFragment implements
 				}
 				CMN.Log(records);
 				Collection<Long> avoidLet = null;
+				
+				MainActivityUIBase.LoadManager loadManager = a.loadManager;
+				int size = loadManager.md_size;
+				
 				if (records.size() > 0)
-					avoidLet = a.md.size() >= 32 ? new HashSet<>(records) : records;
-				for (int i = 0; i < a.md.size(); i++) {//联合搜索
+					avoidLet = size >= 32 ? new HashSet<>(records) : records;
+				for (int i = 0; i < size; i++) {//联合搜索
 					int dIdx = i;
-					bid = a.getBookIdAt(i);
+					bid = a.loadManager.getBookIdAt(i);
 					if (avoidLet != null && avoidLet.contains(bid)) {
 						continue;
 					}
@@ -1224,14 +1227,14 @@ public class DBroswer extends DialogFragment implements
 					}
 					if (!bIsCombinedSearch) {
 						if (dIdx == 0)
-						if (a.dictPicker.adapter_idx > 0 && a.dictPicker.adapter_idx < a.md.size()) {
+						if (a.dictPicker.adapter_idx > 0 && a.dictPicker.adapter_idx < size) {
 							dIdx = a.dictPicker.adapter_idx;
 							reorded = true;
 						} else if (reorded) if (dIdx <= a.dictPicker.adapter_idx) {
 							dIdx -= 1;
 						}
 					}
-					BookPresenter presenter = a.md_get(dIdx);
+					BookPresenter presenter = a.loadManager.md_get(dIdx);
 					{
 						int idx = presenter.bookImpl.lookUp(currentDisplaying__);
 						if (idx >= 0)
@@ -1309,14 +1312,14 @@ public class DBroswer extends DialogFragment implements
 			}
 		}
 		else {
-			for(int dIdx=0;dIdx<a.md.size();dIdx++) {//联合搜索
-				BookPresenter mdTmp = a.md_get(dIdx);
+			for(int dIdx=0;dIdx<a.loadManager.md_size;dIdx++) {//联合搜索
+				BookPresenter mdTmp = a.loadManager.md_get(dIdx);
 				{
 					long idx = mdTmp.bookImpl.lookUp(currentDisplaying__);
 					if (idx >= 0)
 						while (idx < mdTmp.bookImpl.getNumberEntries()) {
 							if (mdict.replaceReg.matcher(mdTmp.bookImpl.getEntryAt(idx)).replaceAll("").toLowerCase().equals(currentDisplaying__)) {
-								records.add(a.getBookIdAt(dIdx));
+								records.add(a.loadManager.getBookIdAt(dIdx));
 								records.add(idx);
 							} else
 								break;
@@ -1334,7 +1337,7 @@ public class DBroswer extends DialogFragment implements
 			setUpContentView();
 			//weblistHandler.setViewMode(WEB_LIST_MULTI, bUseMergedUrl, null);
 			//yyy
-			a.recCom = rec = new resultRecorderCombined(a,data,a.md, null);
+			a.recCom = rec = new resultRecorderCombined(a,data, null);
 			ScrollViewmy WHP = (ScrollViewmy) weblistHandler.getScrollView();
 //			ScrollerRecord pagerec = null;
 //			OUT:
@@ -1398,9 +1401,9 @@ public class DBroswer extends DialogFragment implements
 		int adapter_idx=a.dictPicker.adapter_idx;
 		
 		if(idx<0 && queryAll) {
-			for(adapter_idx=0;adapter_idx<a.md.size();adapter_idx++) {
+			for(adapter_idx=0;adapter_idx<a.loadManager.md_size;adapter_idx++) {
 				if(adapter_idx!=a.dictPicker.adapter_idx) {
-					currentDictionary = a.md_get(adapter_idx);
+					currentDictionary = a.loadManager.md_get(adapter_idx);
 					idx=currentDictionary.bookImpl.lookUp(key,true);
 					if(idx>=0) break;
 				}

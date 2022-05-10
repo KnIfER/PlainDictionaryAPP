@@ -3,21 +3,21 @@ package com.knziha.plod.searchtasks;
 import android.annotation.SuppressLint;
 
 import com.knziha.plod.db.SearchUI;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
-import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.dictionarymodels.BookPresenter;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
+/** Full-scan Search Among Explanations */
 @SuppressLint("SetTextI18n")
-public class FullSearchTask extends AsyncTaskWrapper<String, Integer, String > {
+public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 	private final WeakReference<PDICMainActivity> activity;
 	private String CurrentSearchText;
 
@@ -36,10 +36,10 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Integer, String > {
 	}
 
 	@Override
-	protected void onProgressUpdate(Integer... values) {
+	protected void onProgressUpdate(Object... values) {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
-		a.updateFFSearch(values[0]);
+		a.updateFFSearch((BookPresenter) values[0], (int)values[1]);
 	}
 
 	@Override
@@ -52,8 +52,6 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Integer, String > {
 			return null;
 		a.fullSearchLayer.setCurrentPhrase(CurrentSearchText);
 
-		ArrayList<BookPresenter> md = a.md;
-
 		String SearchTerm = CurrentSearchText;
 
 		if(!PDICMainAppOptions.getJoniCaseSensitive())
@@ -63,21 +61,16 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Integer, String > {
 			a.ensureTSHanziSheet(a.fullSearchLayer);
 
 		a.fullSearchLayer.flowerSanLieZhi(SearchTerm);
-
+		
+		MainActivityUIBase.LoadManager loadManager = a.loadManager;
+		int size = loadManager.md_size;
+		
 		if(a.isCombinedSearching){
-			for(int i=0;i<md.size();i++){
+			for(int i=0;i<size;i++){
 				try {
-					BookPresenter mdTmp = md.get(i);
-					if(mdTmp==null){
-						PlaceHolder phI = a.getPlaceHolderAt(i);
-						if(phI!=null) {
-							try {
-								md.set(i, mdTmp=MainActivityUIBase.new_book(phI, a));
-							} catch (Exception ignored) { }
-						}
-					}
-					publishProgress(i);//_mega
-					if(mdTmp!=null)
+					BookPresenter mdTmp = loadManager.md_get(i);
+					publishProgress(mdTmp, i);//_mega
+					if(mdTmp!=a.EmptyBook)
 						mdTmp.findAllTexts(SearchTerm,i,a.fullSearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
@@ -136,7 +129,7 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Integer, String > {
 		results.storeRealm1 = SearchUI.MainApp.表ft;
 		if(a.isCombinedSearching){
 			results.invalidate();
-		}else{//单独搜索
+		} else {//单独搜索
 			results.invalidate(a.dictPicker.adapter_idx);
 		}
 		a.show(R.string.fullfill

@@ -90,7 +90,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 			if(bIsFirstLaunch||bWantsSelection) {
 				fval=1f;
 			}
-			String val = recCom.allWebs&&isContentViewAttached()?"回车以搜索网络词典！":getResources().getString(R.string.cbflowersnstr,opt.getLastPlanName(LastPlanName),md.size(),size);
+			String val = recCom.allWebs&&isContentViewAttached()?"回车以搜索网络词典！":getResources().getString(R.string.cbflowersnstr,opt.getLastPlanName(LastPlanName),loadManager.md_size,size);
 			showTopSnack(mainframe, val, fval, -1, -1, 0);
 		}
 	}

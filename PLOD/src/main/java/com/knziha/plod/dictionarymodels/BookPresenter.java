@@ -1135,6 +1135,9 @@ function debug(e){console.log(e)};
 			return bookImpl.lookUp(keyword, false);
 		}
 		else if (searchType==SearchType.Range) {
+			if (range_query_reveiver==null) {
+				range_query_reveiver = new ArrayList<>();
+			}
 			return bookImpl.lookUpRange(keyword, range_query_reveiver, null, bookImpl.getBooKID(),15, task);
 		}
 		return -1;
@@ -1844,8 +1847,9 @@ function debug(e){console.log(e)};
 		if (mWebView.weblistHandler.isViewSingle()) {
 			mWebView.weblistHandler.setStar(mWebView.word);
 		}
-		StringBuilder title_builder = bookImpl.AcquireStringBuffer(64);
-		//mWebView.toolbar_title.setText(title_builder.append(currentDisplaying.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
+		if (mWebView.toolbar_title!=null) {
+			mWebView.toolbar_title.setText(bookImpl.AcquireStringBuffer(64).append(mWebView.word.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
+		}
 	}
 	
 	
@@ -2721,14 +2725,14 @@ function debug(e){console.log(e)};
 						CMN.Log("dicts::", url, sb.toString());
 						return sb.toString();
 					} else {
-						for (int i = 0; i < a.md_getSize(); i++) {
-							BookPresenter book = a.md_get(i);
+						for (int i = 0; i < a.loadManager.md_size; i++) {
+							BookPresenter book = a.loadManager.md_get(i);
 							if(sb.length()>1)sb.append(",");
 							if(book!=a.EmptyBook) {
 								sb.append(book.getDictInfo(json));
 							} else {
 								json.clear();
-								json.put("name", a.md_getName(i));
+								json.put("name", a.loadManager.md_getName(i, -1));
 								sb.append(book.getDictInfo(json));
 							}
 						}
@@ -4123,11 +4127,11 @@ function debug(e){console.log(e)};
 		}
 	}
 	
-	public void findAllNames(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchLogicLayer searchLayer) throws IOException {
+	public void findAllNames(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchInterface searchLayer) throws IOException {
 		bookImpl.flowerFindAllKeys(searchTerm, adapter_idx, searchLayer);
 	}
 	
-	public void findAllTexts(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchLogicLayer searchLayer) throws IOException {
+	public void findAllTexts(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchInterface searchLayer) throws IOException {
 		bookImpl.flowerFindAllContents(searchTerm, adapter_idx, searchLayer);
 	}
 	

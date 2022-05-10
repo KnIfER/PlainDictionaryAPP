@@ -311,7 +311,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if (multiDicts && pos>=0 && pos<frames.size()) {
 			return frames.get(pos);
 		}
-		return null;
+		return a.EmptyBook;
 	}
 	
 	public int calcFrameAt() {

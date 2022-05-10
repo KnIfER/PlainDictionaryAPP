@@ -107,8 +107,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public boolean bSupressingEditing;
 	public ArrayList<View> cyclerBin = new ArrayList<>();
 	public ArrayList<View> recyclerBin = new ArrayList<>();
-	private ArrayList<BookPresenter> md = new ArrayList<>();
-	public ArrayList<PlaceHolder> ph = new ArrayList<>();
 	BookPresenter BookEmpty;
 	BookPresenter currentDictionary;
 	ViewGroup main_pview_layout;
@@ -139,6 +137,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	boolean fromData;
 	int fromLv1Idx;
 	int fromLv1Idx_;
+	
+	MainActivityUIBase.LoadManager loadManager;
 
     int lvHeaderItem_length = 65;
     int lvHeaderItem_height = 60;
@@ -1041,6 +1041,14 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(opt.schPageFye()){
 			toggleSearchPage();
 		}
+		
+		initLoadManager(a);
+	}
+	
+	private void initLoadManager(MainActivityUIBase a) {
+		if (loadManager==null) {
+			this.loadManager = a.loadManager;
+		}
 	}
 	
 	private void resetBottomBar() {
@@ -1127,8 +1135,6 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 
 	private void syncData(MainActivityUIBase a) {
-		md = a.md;
-		ph = a.getPlaceHolders();
 		if(opt==null)
 			opt = a.opt;
 		if(currentDictionary==null)
@@ -1235,6 +1241,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	/** 来自lv1列表点击(一次使用)。来自不带数据的 prepareJump。 */
 	public void searchAll(String key, MainActivityUIBase a, boolean addCurrent) {
 		if(key!=null) {
+			initLoadManager(a);
 			if (addCurrent) {
 				syncData(a);
 				bookId = (keepBook()&&currentDictionary!=BookEmpty?currentDictionary:a.currentDictionary).getId();
@@ -1247,8 +1254,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				fromLv1Idx = 0;
 				if(showAll()) {
 					clearBeforeSch();
-					for (int i = 0; i < md.size(); i++)
-						bookIds.add(a.getBookIdAt(i));
+					for (int i = 0; i < loadManager.md_size; i++)
+						bookIds.add(loadManager.getBookIdAt(i));
 					if(keepBook()) {
 						fromLv1Idx = bookIds.indexOf(currentDictionary.getId());
 						if(fromLv1Idx==-1) {
@@ -1260,7 +1267,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					}
 				}
 				else {
-					bookIds.ensureCapacity(md.size());
+					bookIds.ensureCapacity(loadManager.md_size);
 					startSearch(a);
 				}
 			}
@@ -1277,23 +1284,24 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	
 	@AnyThread
 	public void SearchAll(MainActivityUIBase a, AtomicBoolean task) {
-		ArrayList<Long> schResult = new ArrayList<>(a.md.size());
+		initLoadManager(a);
+		ArrayList<Long> schResult = new ArrayList<>(loadManager.md_size);
 		String schKey = this.schKey;
 		String key = mdict.replaceReg.matcher(schKey).replaceAll("").toLowerCase();
 		int index=0;
 		long bookId = keepBook()?currentDictionary.getId():this.fromLv1?this.bookId:-1;
 		try {
-			for (int i = 0; i < md.size(); i++) {
+			for (int i = 0; i < loadManager.md_size; i++) {
 				if(!task.get()) {
 					break;
 				}
-				long bid = a.getBookIdAt(i);
+				long bid = loadManager.getBookIdAt(i);
 				if (bid==bookId) {
 					index=schResult.size();
 					schResult.add(bid);
 					continue;
 				}
-				BookPresenter book = a.md_get(i);
+				BookPresenter book = loadManager.md_get(i);
 				if(book==BookEmpty)
 					continue;
 				int idx = book.bookImpl.lookUp(key);
@@ -2353,10 +2361,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		boolean addAll = showAll();
 		this.schKey = etSearch.getText().toString();
 		MainActivityUIBase a = getMainActivity();
+		initLoadManager(a);
 		if(addAll) {
 			clearBeforeSch();
-			for (int i = 0; i < md.size(); i++) {
-				bookIds.add(a.getBookIdAt(i));
+			for (int i = 0; i < loadManager.md_size; i++) {
+				bookIds.add(loadManager.getBookIdAt(i));
 			}
 			fromLv1Idx = a.dictPicker.adapter_idx;
 			fromData = true;

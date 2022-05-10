@@ -167,9 +167,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	ActionBarDrawerToggle mDrawerToggle;
 	
 	private MyHandler mHandle;
-	public AsyncTaskWrapper<String, Integer, String> mAsyncTask;
-	private Animation animaExit;
-	private ViewGroup main_content_succinct;
+	public AsyncTaskWrapper<String, Object, String> mAsyncTask;
 	private LinearLayout weblist;
 	
 	public ActivityMainBinding UIData;
@@ -203,7 +201,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public AppUIProject bottombar_project;
 	private static int LauncherInstanceCount;
 	private EnchanterReceiver locationReceiver;
-	private boolean handled;
 	private int barSzBot;
 	private float barSzRatio;
 	
@@ -328,8 +325,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	public void OnEnterFullSearchTask(AsyncTaskWrapper task) {
-		taskCounter=md.size();
-		AdvancedSearchLogicLayer _currentSearchLayer = currentSearchLayer = fullSearchLayer;
+		taskCounter=loadManager.md_size;
+		AdvancedSearchInterface _currentSearchLayer = currentSearchLayer = fullSearchLayer;
 		_currentSearchLayer.dirtyProgressCounter=
 		_currentSearchLayer.dirtyResultCounter=0;
 		_currentSearchLayer.IsInterrupted=false;
@@ -348,8 +345,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				showT("强制关闭");
 			}
 		});
-		for(int i=0;i<md.size();i++) {//遍历所有词典
-			BookPresenter presenter = md.get(i);
+		for(int i=0;i<loadManager.md_size;i++) {//遍历所有词典
+			BookPresenter presenter = loadManager.md_getAt(i);
 			if(presenter!=null) {
 				presenter.purgeSearch(SEARCHTYPE_SEARCHINTEXTS);
 			}
@@ -359,7 +356,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	public void OnEnterBuildIndexTask(BuildIndexTask task) {
 		taskCounter=IndexingBooks.size();
-		AdvancedSearchLogicLayer _currentSearchLayer = currentSearchLayer = fullSearchLayer;
+		AdvancedSearchInterface _currentSearchLayer = currentSearchLayer = fullSearchLayer;
 		taskRecv = _currentSearchLayer;
 		_currentSearchLayer.dirtyProgressCounter=
 		_currentSearchLayer.dirtyResultCounter=0;
@@ -383,7 +380,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	public void OnEnterFuzzySearchTask(AsyncTaskWrapper task) {
-		taskCounter=md.size();
+		taskCounter=loadManager.md_size;
 		currentSearchLayer=fuzzySearchLayer;
 		fuzzySearchLayer.dirtyProgressCounter=
 		fuzzySearchLayer.dirtyResultCounter=0;
@@ -398,8 +395,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				CMN.Log("强制关闭");
 			}
 		});
-		for(int i=0;i<md.size();i++) {//遍历所有词典
-			BookPresenter presenter = md.get(i);
+		for(int i=0;i<loadManager.md_size;i++) {//遍历所有词典
+			BookPresenter presenter = loadManager.md_getAt(i);
 			if(presenter!=null) {
 				presenter.purgeSearch(SEARCHTYPE_SEARCHINNAMES);
 			}
@@ -429,11 +426,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		dvTitle.setText(currentDictionary.bookImpl.getDictionaryName());
 		/* 跳过 */
 		a_dv.findViewById(R.id.skip).setOnClickListener(v14 -> {
-			if(currentSearchingDictIdx<md.size()){
-				BookPresenter presenter = md.get(currentSearchingDictIdx);
+			if(currentSearchingDictIdx<loadManager.md_size){
+				BookPresenter presenter = loadManager.md_getAt(currentSearchingDictIdx);
 				if(presenter!=null && presenter.bookImpl instanceof mdict) {
 					mdict mdTmp = (mdict) presenter.bookImpl;
-					mdTmp.searchCancled=true;
+					mdTmp.searchCancled=true; //todo
 				}
 			}
 		});
@@ -448,12 +445,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		return a_dv;
 	}
 
-	public void updateFFSearch(Integer index) {
+	public void updateFFSearch(BookPresenter book, int index) {
 		try {
-			BookPresenter m = md.get(index);
-			currentSearchingDictIdx =index;
-			dvSeekbar.setMax((int) m.bookImpl.getNumberEntries());
-			dvTitle.setText(m.bookImpl.getDictionaryName());
+			currentSearchingDictIdx = index;
+			dvSeekbar.setMax((int) book.bookImpl.getNumberEntries());
+			dvTitle.setText(book.bookImpl.getDictionaryName());
 			dvDictFrac.setText(currentSearchingDictIdx+"/"+PDICMainActivity.taskCounter);
 		} catch (Exception ignored) { }
 	}
@@ -544,7 +540,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					//((TextView)dv.findViewById(R.id.tv)).setText("0/"+System.currentTimeMillis());
 					removeMessages(1008601);
 					int handlerIdx = a.currentSearchingDictIdx;
-					AdvancedSearchLogicLayer handlerRecv = a.currentSearchLayer;
+					AdvancedSearchInterface handlerRecv = a.currentSearchLayer;
 					//SU.Log("handlerIdx", handlerIdx, handlerRecv.dirtyProgressCounter);
 					if(a.dvSeekbar!=null) {
 						try {
@@ -893,7 +889,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		toolbar = UIData.toolbar;
 		appbar = UIData.appbar;
 		
-		main_content_succinct = UIData.main;
 		bottombar = UIData.bottombar;
 		
 		contentUIData = UIData.contentview;
@@ -1286,8 +1281,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2(this, webSingleholder, AllMenus, LEFTMenu, 3));
 		mlv2.setAdapter(adaptermy4 = new ListViewAdapter2(this, webSingleholder, AllMenus, LEFTMenu, 4));
 
-		fuzzySearchLayer=new AdvancedSearchLogicLayer(opt, md, SEARCHTYPE_SEARCHINNAMES);
-		fullSearchLayer=new AdvancedSearchLogicLayer(opt, md, SEARCHTYPE_SEARCHINTEXTS);
+		fuzzySearchLayer=new AdvancedSearchInterface(opt, md, SEARCHTYPE_SEARCHINNAMES);
+		fullSearchLayer=new AdvancedSearchInterface(opt, md, SEARCHTYPE_SEARCHINTEXTS);
 
 		adaptermy3.results = new resultRecorderScattered(this,md,TintWildResult,fuzzySearchLayer);
 		adaptermy4.results = new resultRecorderScattered(this,md,TintWildResult,fullSearchLayer);
@@ -1542,7 +1537,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		
 		//tg
-		
 		LayoutParams barBotLP = UIData.bottombar.getLayoutParams();
 		//if(false)
 //		root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
@@ -1779,10 +1773,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}});
 	}
 
-	public AdvancedSearchLogicLayer fuzzySearchLayer;
-	public AdvancedSearchLogicLayer fullSearchLayer;
-	public AdvancedSearchLogicLayer currentSearchLayer;
-	public static class AdvancedSearchLogicLayer extends com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer {
+	public AdvancedSearchInterface fuzzySearchLayer;
+	public AdvancedSearchInterface fullSearchLayer;
+	public AdvancedSearchInterface currentSearchLayer;
+	public static class AdvancedSearchInterface extends com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer {
 		public final ArrayList<BookPresenter> md;
 		final PDICMainAppOptions opt;
 		String currentSearchPhrase;
@@ -1792,7 +1786,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		/** 0=wild card match; 1=regular expression search; 2=plain search. */
 		int mSearchEngineType;
 
-		public AdvancedSearchLogicLayer(PDICMainAppOptions opt, ArrayList<BookPresenter> md, int type) {
+		public AdvancedSearchInterface(PDICMainAppOptions opt, ArrayList<BookPresenter> md, int type) {
 			this.opt = opt;
 			this.md = md;
 			this.type = type;
@@ -1800,33 +1794,29 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 
 		@Override
-		public ArrayList<SearchResultBean>[] getTreeBuilding(int DX, int splitNumber) {
-			if(DX>=0 && DX<md.size()) {
-				BookPresenter presenter = md.get(DX);
-				if (presenter!=null) {
-					if (type==SEARCHTYPE_SEARCHINNAMES) {
-						if (presenter.combining_search_tree2==null || presenter.combining_search_tree2.length!=splitNumber) {
-							presenter.combining_search_tree2=new ArrayList[splitNumber];
-						}
-						return presenter.combining_search_tree2;
-					} else {
-						if (presenter.combining_search_tree_4==null || presenter.combining_search_tree_4.length!=splitNumber) {
-							presenter.combining_search_tree_4=new ArrayList[splitNumber];
-						}
-						return presenter.combining_search_tree_4;
+		public ArrayList<SearchResultBean>[] getTreeBuilding(Object book, int splitNumber) {
+			BookPresenter presenter = (BookPresenter) book;
+			if (presenter!=null) {
+				if (type==SEARCHTYPE_SEARCHINNAMES) {
+					if (presenter.combining_search_tree2==null || presenter.combining_search_tree2.length!=splitNumber) {
+						presenter.combining_search_tree2=new ArrayList[splitNumber];
 					}
+					return presenter.combining_search_tree2;
+				} else {
+					if (presenter.combining_search_tree_4==null || presenter.combining_search_tree_4.length!=splitNumber) {
+						presenter.combining_search_tree_4=new ArrayList[splitNumber];
+					}
+					return presenter.combining_search_tree_4;
 				}
 			}
 			return null;
 		}
 
 		@Override
-		public ArrayList<SearchResultBean>[] getTreeBuilt(int DX){
-			if(DX>=0 && DX<md.size()) {
-				BookPresenter presenter = md.get(DX);
-				if (presenter!=null) {
-					return type==SEARCHTYPE_SEARCHINNAMES?presenter.combining_search_tree2:presenter.combining_search_tree_4;
-				}
+		public ArrayList<SearchResultBean>[] getTreeBuilt(Object book){
+			BookPresenter presenter = (BookPresenter) book;
+			if (presenter!=null) {
+				return type==SEARCHTYPE_SEARCHINNAMES?presenter.combining_search_tree2:presenter.combining_search_tree_4;
 			}
 			return null;
 		}
@@ -2263,6 +2253,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		boolean isHalo=!GlobalOptions.isDark;
 		MainAppBackground = isHalo?MainBackground:ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
 		int filteredColor = MainAppBackground;//CU.MColor(MainBackground,ColorMultiplier);
+		CMN.AppBackground = MainAppBackground;
 		UIData.viewpager.setBackgroundColor(AppWhite);
 		lv2.setBackgroundColor(AppWhite);
 		bottombar.setBackgroundColor(filteredColor);
@@ -3112,33 +3103,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 			} break;
 			case 110:{
-				ArrayList<PlaceHolder> CosyChair = lazyLoadManager.CosyChair;
-				ArrayList<PlaceHolder> CosySofa = lazyLoadManager.CosySofa;
-				ArrayList<PlaceHolder> HdnCmfrt = lazyLoadManager.HdnCmfrt;
 				boolean changed = duco!=null && duco.getBooleanExtra("changed", false);
-				if(!changed){
-					PlaceHolder phI;
-					for (int i = 0; i < CosyChair.size(); i++) {
-						phI = CosyChair.get(i);
-						int tif = phI.tmpIsFlag;
-						boolean b1;
-						if((b1=PDICMainAppOptions.getTmpIsFiler(tif)) || PDICMainAppOptions.getTmpIsHidden(tif)){
-							CosyChair.remove(i--);
-							HdnCmfrt.add(phI);
-							if(b1) CosySofa.add(phI);
-						}
-					}
-					if(CosyChair.size()!=md.size() || CosySofa.size()!=currentFilter.size()){
-						CMN.Log("重建后大小不匹配", CosyChair.size(), md.size()," or ", CosySofa.size(),currentFilter.size());
-						changed = true;
-						for (int i = 0; i < HdnCmfrt.size(); i++) {
-							phI = HdnCmfrt.get(i);
-							CosyChair.add(Math.min(phI.lineNumber, CosyChair.size()), phI);
-						}
-					}
-				}
 				if (changed){
-					buildUpDictionaryList(lazyLoadManager.lazyLoaded, mdict_cache);
+					loadManager.buildUpDictionaryList(lazyLoadManager.lazyLoaded, mdict_cache);
 					if (dictPicker.adapter_idx<0) {
 						switch_Dict(0, false, false, null);
 					}

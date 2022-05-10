@@ -49,10 +49,8 @@ import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
 import android.util.DisplayMetrics;
@@ -98,7 +96,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -114,7 +111,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
-import androidx.core.text.HtmlCompat;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
@@ -196,7 +192,6 @@ import com.knziha.plod.widgets.SplitView;
 import com.knziha.plod.widgets.TwoColumnAdapter;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
-import com.knziha.plod.widgets.XYTouchRecorder;
 import com.knziha.text.ColoredHighLightSpan;
 import com.knziha.text.ScrollViewHolder;
 import com.knziha.text.SelectableTextView;
@@ -251,7 +246,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.bumptech.glide.util.Util.isOnMainThread;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
@@ -275,8 +269,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		OnMenuItemClickListener, OnDismissListener,
 		MenuItem.OnMenuItemClickListener,
 		OptionProcessor,
-		SettingsPanel.FlagAdapter,
-		MdictServerLet {
+		SettingsPanel.FlagAdapter {
 	
 	public int schuiMainPeruse;
 	public int schuiMainSchs;
@@ -405,7 +398,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	ViewGroup snack_holder;
 	public BookPresenter EmptyBook;
 	@NonNull public BookPresenter currentDictionary;
-	public ArrayList<BookPresenter> currentFilter = new ArrayList<>();
 	HashSet<String> mdlibsCon;
 	public ArrayList<BookPresenter> md = new ArrayList<>();//Collections.synchronizedList(new ArrayList<mdict>());
 
@@ -583,8 +575,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public HashMap<String, BookPresenter> mdict_cache = new HashMap<>();
-	protected int filter_count;
-	protected int hidden_count;
 	@Metaline
 	private static final String PDFPage="PAGE";
 	public resultRecorderCombined recCom/* = EmptyResult*/; //todo
@@ -615,26 +605,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return Math.round(pxValue * scale * 0.5f);
 	}
 	
-	
-	private void reload_dict_at(int i) {
-		try {
-			ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
-			PlaceHolder phTmp = CosyChair.get(i);
-			BookPresenter mdTmp = md.get(i);
-			if(mdTmp!=null) {
-				mdTmp.Reload(this);
-			} else {
-				md.set(i, new_book(phTmp, this));
-			}
-			showT("重新加载!");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	public boolean switch_Dict(int i, boolean invalidate, boolean putName, AcrossBoundaryContext prvNxtABC) {
 		boolean prvNxt = prvNxtABC!=null;
-		int size=md.size();
+		int size=loadManager.md_size;
 		if (bIsFirstLaunch) {
 			bIsFirstLaunch = false;
 		}
@@ -643,7 +616,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(prvNxt) {
 					boolean rejected=false;
 					String msg = "没有更多了";
-					if(++prvNxtABC.沃壳积>=md.size()) {
+					if(++prvNxtABC.沃壳积>=loadManager.md_size) {
 						msg = "真的"+msg;
 						rejected=true;
 					} else {
@@ -674,7 +647,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			boolean bShowErr=bShowLoadErr;
 			bShowLoadErr=bShowErr&&!prvNxt;
-			currentDictionary = md_get(dictPicker.adapter_idx=i);
+			currentDictionary = loadManager.md_get(dictPicker.adapter_idx=i);
 			bShowLoadErr=bShowErr;
 			
 			if (adaptermy!=null) {
@@ -762,136 +735,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	}
 	
-	public int md_getSize(){
-		return md.size();
-	}
-	
-	@Override
-	public int getMainBackground() {
-		return MainBackground;
-	}
-	
-	@NonNull public BookPresenter md_getById(long id) {
-		return getBookById(id);
-	}
-	
-	@NonNull public BookPresenter md_getByName(String name) {
-		return getBookByName(name);
-	}
-	
-	@NonNull public BookPresenter md_getNoCreate(int i) {
-		BookPresenter ret = null;
-		if(i>=0 && i<md.size()){
-			ret = md.get(i);
-		}
-		if(ret==null) {
-			ret = EmptyBook;
-		}
-		return ret;
-	}
-	
-	@NonNull public BookPresenter md_get(int i) {
-		BookPresenter ret = null;
-		PlaceHolder phTmp = null;
-		try {
-			ret = md.get(i);
-			if(ret==null) {
-				ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
-				if(i<CosyChair.size()) {
-					phTmp = CosyChair.get(i);
-					if (phTmp != null) {
-						try {
-							md.set(i, ret = new_book(phTmp, this));
-						} catch (Exception e) {
-							if(GlobalOptions.debug) CMN.Log(phTmp, e);
-							if (bShowLoadErr && isOnMainThread()) {
-								phTmp.ErrorMsg = e.getLocalizedMessage();
-								if(!phTmp.NeedsBuildIndex())
-									show(R.string.err);
-								//else showT("需要建立索引！");
-							}
-						}
-					}
-				}
-			}
-		} catch (Exception e) { CMN.Log(e); }
-		if(ret==null) {
-			ret = EmptyBook;
-			EmptyBook.placeHolder = phTmp;
-		}
-		return ret;
-	}
-
-	public String md_getName(int i) {
-		if(i>=0 && i<md.size()) {
-			String name = null;
-			BookPresenter mdTmp = md.get(i);
-			if(mdTmp!=null) {
-				name = mdTmp.getPath();
-				if (name.startsWith(AssetTag)) name = CMN.getAssetName(name);
-				else name = mdTmp.getDictionaryName();
-			} else {
-				ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
-				if(i<CosyChair.size()){
-					PlaceHolder placeHolder = CosyChair.get(i);
-					if(placeHolder!=null) {
-						name = placeHolder.pathname;
-						if (name.startsWith(AssetTag)) name = CMN.getAssetName(name);
-						else name = placeHolder.getName().toString();
-					}
-				}
-			}
-			if(name!=null) {
-				return name;
-			}
-		}
-		return "Error!!!";
-	}
-	
-	public void md_set_StarLevel(int i, int val) {
-		long flag=0;
-		if(i>=0 && i<md.size()){
-			BookPresenter mdTmp = md.get(i);
-			if(mdTmp!=null) {
-				flag = mdTmp.getFirstFlag();
-				mdTmp.setFirstFlag(flag=PDICMainAppOptions.setDFFStarLevel(flag, val));
-				mdTmp.saveStates(this, prepareHistoryCon());
-			} else {
-				ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
-				if(i<CosyChair.size()) {
-					PlaceHolder placeHolder = CosyChair.get(i);
-					if(placeHolder!=null) {
-						CharSequence name = placeHolder.getName();
-						flag =  md_get_firstFlag_internal(name);
-						flag = PDICMainAppOptions.setDFFStarLevel(flag, val);
-						md_set_firstFlag_internal(name, flag);
-					}
-				}
-			}
-			CMN.Log("新的星级", md_getName(i), PDICMainAppOptions.getDFFStarLevel(flag), val);
-		}
-	}
-	
-	
-	public int md_get_StarLevel(int i) {
-		long flag = 0;
-		if(i>=0 && i<md.size()){
-			BookPresenter mdTmp = md.get(i);
-			if(mdTmp!=null) {
-				flag =  mdTmp.getFirstFlag();
-			} else {
-				ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
-				if(i<CosyChair.size()) {
-					PlaceHolder placeHolder = CosyChair.get(i);
-					if(placeHolder!=null) {
-						flag =  md_get_firstFlag_internal(placeHolder.getSoftName());
-					}
-				}
-			}
-		}
-		return PDICMainAppOptions.getDFFStarLevel(flag);
-	}
-	
 	private void md_set_firstFlag_internal(CharSequence name, long val) {
 		byte[] data = BookProjects_getNonNull(name);
 		int pad = 8*4+3+ConfigExtra;
@@ -927,89 +770,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return data;
 	}
 	
-	@SuppressWarnings("All")
-	public CharSequence md_getAbout_Trim(int i) {
-		ArrayList<PlaceHolder> placeHolders = getPlaceHolders();
-		PlaceHolder phTmp = placeHolders.get(i);
-		BookPresenter presenter = md.get(i);
-		String msg = phTmp.ErrorMsg;
-		boolean show_info_extra = true||msg!=null;
-		boolean show_info_codec = true;
-		boolean show_info_reload = true;
-		boolean show_info_path = true;
-		SpannableStringBuilder sb=null;
-		if(show_info_extra) {
-			sb = new SpannableStringBuilder();
-			if(show_info_reload) {
-				sb.append("[重新加载");
-			}
-			if(show_info_codec && presenter!=null) {
-				if(!show_info_reload) {
-					sb.append("编码");
-				}
-				sb.append("：");
-				sb.append(String.valueOf(presenter.getCharsetName()));
-			}
-			if(show_info_reload) {
-				sb.append("]");
-			}
-			sb.append("\n");
-			if(show_info_reload) {
-				sb.setSpan(new ClickableSpan() {
-					@Override public void onClick(@NonNull View widget) {
-						reload_dict_at(i);
-						showAboutDictDialogAt(i);
-					}
-				}, 0, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-			}
-		}
-		
-		CharSequence ret=presenter==null? "未加载"
-				:HtmlCompat.fromHtml(presenter.getAboutString(), HtmlCompat.FROM_HTML_MODE_COMPACT);
-		int len = ret.length();
-		int st = 0;
-		while((st < len) && ret.charAt(st) <= ' '){
-			st++;
-		}
-		while ((st < len) && (ret.charAt(len - 1) <= ' ')) {
-			len--;
-		}
-		
-		if(show_info_extra) {
-			sb.append(ret, st, len);
-			ret=sb;
-			if(msg!=null) {
-				sb.append("\n\n").append("错误信息：");
-				sb.append(msg);
-			}
-			if(presenter!=null && presenter.bookImpl.hasMdd()) {
-				sb.append("\n\n").append("资源文件：");
-				sb.append(presenter.bookImpl.getResourcePaths());
-			}
-			if(show_info_path) {
-				sb.append("\n");
-				sb.append("路径").append("：");
-				st = sb.length();
-				sb.append(phTmp.pathname);
-				sb.setSpan(new ClickableSpan() {
-					@Override public void onClick(@NonNull View widget) {
-						showT("路径!");
-					}
-				}, st, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-			}
-		} else {
-			ret=ret.subSequence(st, len);
-		}
-		return ret;
-	}
-	
-	public Drawable md_getCover(int i) {
-		BookPresenter mdTmp = md.get(i);
-		if(mdTmp!=null) return mdTmp.cover;
-		ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
-		if(i<CosyChair.size()) {}
-		return null;
-	}
 
 	public String getSearchTerm(){
 		return etSearch.getText().toString();
@@ -1448,12 +1208,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				Object tag = hI.getChildAt(i).getTag();
 				if(tag instanceof Integer){
 					int selfAtIdx = (int) tag;
-					if(selfAtIdx>=0&&selfAtIdx<md.size()) {
-						BookPresenter mdTmp = md.get(selfAtIdx);
-						WebViewmy wv = mdTmp.mWebView;
-						if(wv!=null) {
-							wv.evaluateJavascript(isDark ? DarkModeIncantation : DeDarkModeIncantation, null);
-							mdTmp.tintBackground(wv);
+					if(selfAtIdx>=0&&selfAtIdx<loadManager.md_size) {
+						BookPresenter mdTmp = loadManager.md_getAt(selfAtIdx);
+						if (mdTmp!=null) {
+							WebViewmy wv = mdTmp.mWebView;
+							if(wv!=null) {
+								wv.evaluateJavascript(isDark ? DarkModeIncantation : DeDarkModeIncantation, null);
+								mdTmp.tintBackground(wv);
+							}
 						}
 					}
 				}
@@ -1489,22 +1251,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	public @Nullable String ReRouteKey(String key, boolean bNullable){
-		int size = currentFilter.size();
+		int size = loadManager.lazyMan.filterCount;
 		if (size>0) {
 			//CMN.Log("ReRouteKey ??" , key);
 			for (int i = 0; i < size; i++) {
-				BookPresenter mdTmp = currentFilter.get(i);
-				if(mdTmp==null){
-					ArrayList<PlaceHolder> CosySofa = getPlaceHolders();
-					if(i<CosySofa.size()){
-						PlaceHolder phI = CosySofa.get(i);
-						try {
-							currentFilter.set(i, mdTmp= new_book(phI, this));
-							mdTmp.tmpIsFlag=phI.tmpIsFlag;
-						} catch (Exception e) { CMN.Log(e); }
-					}
-				}
-				if(mdTmp!=null)
+				BookPresenter mdTmp = loadManager.getFilterAt(i);
+				if(mdTmp!=EmptyBook)
 				try {
 					Object rerouteTarget = mdTmp.bookImpl.ReRoute(key);
 					//CMN.Log(key, " >> " , rerouteTarget, mdTmp.getName(), mdTmp.getIsDedicatedFilter());
@@ -1974,7 +1726,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public SparseArrayMap jnFanMap;
 	public SparseArrayMap fanJnMap;
-	public void ensureTSHanziSheet(PDICMainActivity.AdvancedSearchLogicLayer SearchLayer) {
+	public void ensureTSHanziSheet(PDICMainActivity.AdvancedSearchInterface SearchLayer) {
 		if(jnFanMap==null) {
 			try {
 				SparseArrayMap _jnFanMap = new SparseArrayMap(2670);
@@ -2031,6 +1783,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		opt.getLastPlanName(LastPlanName);
 		new File(opt.pathToDatabases().toString()).mkdirs();
 		opt.CheckFileToDefaultMdlibs();
+		loadManager = new LoadManager(dictPicker);
 	}
 
 	public static byte[] target = "/".getBytes(StandardCharsets.UTF_8);
@@ -2352,13 +2105,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		};
 		
 		if(thisActType==ActType.MultiShare) {
-			lazyLoadManager = lazyLoadManagerMulti;
+			//lazyLoadManager = lazyLoadManagerMulti;
 			return;
 		}
 		
-		lazyLoadManager = thisActType==ActType.PlainDict?lazyLoadManagerMain:lazyLoadManagerFloat;
-		ArrayList<PlaceHolder> CC = lazyLoadManager.CosyChair;
-		
+		lazyLoadManager = new LazyLoadManager();//thisActType==ActType.PlainDict?lazyLoadManagerMain:lazyLoadManagerFloat;
+		ArrayList<PlaceHolder> CC = lazyLoadManager.placeHolders;
 		if(md.size()==0){
 			populateDictionaryList(def, CC, retrieve_all);
 		}
@@ -2396,9 +2148,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(arr!=null) {
 					for (final File i : arr) {
 						try {
-							BookPresenter mdtmp = new BookPresenter(i, this, 0);
-							md.add(mdtmp);
-							CC.add(mdtmp.placeHolder=new PlaceHolder(i.getName(), CC));
+							loadManager.addBook(new BookPresenter(i, this, 0), new PlaceHolder(i.getName(), CC));
 						} catch (Exception e) { /*CMN.Log(e);*/ }
 					}
 				}
@@ -2470,7 +2220,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void populateDictionaryList() {
 		final File def = getStartupFile(opt.fileToConfig());      //!!!原配
 		if(md.size()==0){
-			populateDictionaryList(def, lazyLoadManager.CosyChair, !def.exists());
+			populateDictionaryList(def, lazyLoadManager.placeHolders, !def.exists());
 		}
 	}
 	
@@ -2491,11 +2241,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				String lastName = opt.getLastMdFn("LastMdFn"); //???!!!
 				for (String path:defDicts) {
 					PlaceHolder placeHolder = new PlaceHolder(path, CC);
-					CC.add(placeHolder);
+					loadManager.addBook(new_book(placeHolder, this), placeHolder);
 					if(TextUtils.equals(new File(path).getName(), lastName)) {
-						dictPicker.adapter_idx = md.size();
+						dictPicker.adapter_idx = loadManager.md_size-1;
 					}
-					md.add(book=new_book(placeHolder, this));
 				}
 			} catch (Exception e) {
 				CMN.Log(e);
@@ -2503,8 +2252,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		else try {
 			boolean lazyLoad = opt.getLazyLoadDicts();
-			LoadLazySlots(def, lazyLoad, opt.getLastPlanName(LastPlanName));
-			buildUpDictionaryList(lazyLoad, null);
+			loadManager.LoadLazySlots(def, lazyLoad, opt.getLastPlanName(LastPlanName));
+			loadManager.buildUpDictionaryList(lazyLoad, null);
 		} catch (Exception e) { CMN.Log(e); }
 	}
 	
@@ -2519,176 +2268,510 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		return def;
 	}
-
-	void buildUpDictionaryList(boolean lazyLoad, HashMap<String, BookPresenter> mdict_cache) {
-		ArrayList<PlaceHolder> CosyChair =  lazyLoadManager.CosyChair;
-		ArrayList<PlaceHolder> CosySofa =  lazyLoadManager.CosySofa;
-		ArrayList<PlaceHolder> HdnCmfrt =  lazyLoadManager.HdnCmfrt;
-		currentFilter.ensureCapacity(filter_count);
-		currentFilter.clear();
-		md.ensureCapacity(CosyChair.size());
-		md.clear();
-		dictPicker.adapter_idx=-1;
-		PlaceHolder phI;
-		String lastName = opt.getLastMdFn("LastMdFn");
-		for (int i = 0; i < CosyChair.size(); i++) {
-			phI = CosyChair.get(i);
-			//get path put
-			BookPresenter mdTmp = mdict_cache==null?null:mdict_cache.get(phI.getPath(opt).getName());
-			if ((phI.tmpIsFlag&0x8)!=0){
-				HdnCmfrt.add(phI); /* 隐·1 */
-				CosyChair.remove(i--);
-				continue;
-			}
-			if(mdTmp==null && !lazyLoad) { // 大家看 这里有个老实人
-				try {
-					mdTmp = new_book(phI, this);
-				} catch (Exception e) {
-					phI.tmpIsFlag|=0x8;
-					HdnCmfrt.add(phI); /* 兵解轮回 */
-					CosyChair.remove(i--);
-					CMN.Log(e);
-					if (trialCount == -1) if (bShowLoadErr)
-						show(R.string.err, phI.getName(), phI.pathname, e.getLocalizedMessage());
-					continue;
-				}
-			}
-			if(mdTmp!=null)
-				mdTmp.tmpIsFlag = phI.tmpIsFlag;
-			if ((phI.tmpIsFlag&0x1)!=0) {
-				//CMN.Log("发现构词库！！！", phI.name, phI.tmpIsFlag);
-				currentFilter.add(mdTmp);
-				HdnCmfrt.add(phI); /* 隐·2 */
-				CosySofa.add(phI);
-				CosyChair.remove(i--);
-			} else {
-				if (md_name_match(lastName, mdTmp, phI)){
-					dictPicker.adapter_idx = md.size();
-				}
-				md.add(mdTmp);
-			}
-		}
-		//CMN.Log("buildUpDictionaryList", lastName, adapter_idx);
-	}
-	
-	private boolean md_name_match(String lastName, BookPresenter mdTmp, PlaceHolder phI) {
-		if(lastName!=null){
-			if(mdTmp!=null){
-				return mdTmp.getDictionaryName().equals(lastName);
-			}
-			if(phI!=null){
-				String pN = phI.pathname;
-				if(pN.endsWith(lastName)) {
-					int len = lastName.length();
-					int lenN = pN.length();
-					return lenN==len||pN.charAt(lenN-len-1)==File.separatorChar;
-				}
-			}
-		}
-		return false;
-	}
 	
 	static class LazyLoadManager {
-		public ArrayList<PlaceHolder> CosyChair = new ArrayList<>();
-		public ArrayList<PlaceHolder> CosySofa = new ArrayList<>();
-		public ArrayList<PlaceHolder> HdnCmfrt = new ArrayList<>();
-		public ArrayList<PlaceHolder>[] PlaceHolders = new ArrayList[]{CosyChair, CosySofa, HdnCmfrt};
+		public ArrayList<PlaceHolder> placeHolders = new ArrayList<>();
+		public int[] CosyChair;
+		public int[] CosySofa;
+		int chairCount;
+		int filterCount;
+		//public ArrayList<PlaceHolder>[] PlaceHolders = new ArrayList[]{CosyChair, CosySofa, HiddenDicts};
 		public int lastCheckedPos;
 		long currMdlTime;
 		boolean lazyLoaded;
 		String lastLoadedModule;
-	}
-	
-	public PlaceHolder getPlaceHolderAt(int idx) {
-		if(idx>=0 && idx<lazyLoadManager.CosyChair.size())
-			return lazyLoadManager.CosyChair.get(idx);
-		return null;
-	}
-	
-	public ArrayList<PlaceHolder> getPlaceHolders() {
-		return lazyLoadManager.CosyChair;
-	}
-	
-	static LazyLoadManager lazyLoadManagerMain = new LazyLoadManager();
-	static LazyLoadManager lazyLoadManagerFloat = new LazyLoadManager();
-	static LazyLoadManager lazyLoadManagerMulti = new LazyLoadManager();
-	LazyLoadManager lazyLoadManager;
-	
-	protected void LoadLazySlots(File modulePath, boolean lazyLoad, String moduleName) throws IOException {
-		long lm = modulePath.lastModified();
-		if(lm==lazyLoadManager.currMdlTime
-				&& lazyLoadManager.lazyLoaded==lazyLoad
-				&& moduleName.equals(lazyLoadManager.lastLoadedModule)
-		){
-			filter_count = lazyLoadManager.CosySofa.size();
-			CMN.Log("直接返回！！！", filter_count);
-			currentFilter.ensureCapacity(filter_count);
-			for (int i = currentFilter.size(); i < filter_count; i++) {
-				currentFilter.add(null);
-				//CMN.Log(CosySofa.get(i).name);
+		
+		public void newChair() {
+			if (CosyChair.length<=chairCount) {
+				int[] newChairs = new int[(int) Math.max(chairCount*1.5f, chairCount+1)];
+				System.arraycopy(CosyChair, 0, newChairs, 0, chairCount);
+				CosyChair = newChairs;
 			}
-			return;
+			CosyChair[chairCount++] = placeHolders.size()-1;
 		}
-		CMN.Log("LoadLazySlots…");
-		AgentApplication app = ((AgentApplication) getApplication());
-		ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(modulePath), app.get4kCharBuff(), 4096);
-		lazyLoadManager.CosySofa.clear();
-		lazyLoadManager.HdnCmfrt.clear();
-		filter_count=hidden_count=0;
-		do_LoadLazySlots(in, lazyLoadManager.CosyChair);
-		lazyLoadManager.HdnCmfrt.ensureCapacity(filter_count+hidden_count);
-		lazyLoadManager.currMdlTime=lm;
-		lazyLoadManager.lastLoadedModule=moduleName;
-		lazyLoadManager.lazyLoaded=lazyLoad;
-		app.set4kCharBuff(in.cb);
 	}
 	
-	
-	protected void do_LoadLazySlots(ReusableBufferedReader in, ArrayList<PlaceHolder> CosyChair) throws IOException {
-		String line;
-		int cc=0;
-		CosyChair.clear();
-		ReadLines:
-		while((line = in.readLine())!=null){
-			int flag = 0;
-			if(line.startsWith("[:")){
-				int idx = line.indexOf("]",2);
-				if(idx>=2){
-					String[] arr = line.substring(2, idx).split(":");
-					line = line.substring(idx+1);
-					for (String pI:arr) {
-						switch (pI){
-							case "F":
-								flag|=0x1;
-								filter_count++;
-							break;
-							case "C":
-								flag|=0x2;
-							break;
-							case "A":
-								flag|=0x4;
-							break;
-							case "H":
-								flag|=0x8;
-								hidden_count++;
-							break;
-							case "Z":
-								flag|=0x10;
-							break;
-							case "S":
-								int size = IU.parsint(line);
-								if(size>0) CosyChair.ensureCapacity(size);
-							continue ReadLines;
-						}
+	/** 分离词典加载逻辑以使不同界面可加载不同分组。 */
+	public /*static*/ class LoadManager {  // todo make static and separate file
+		public int md_size;
+		LazyLoadManager lazyMan;
+		public final ArrayList<BookPresenter> md = new ArrayList<>();
+		public final DictPicker dictPicker;
+		
+		final String LastMdFn;// = "LastMdFn";
+		final PDICMainAppOptions opt;
+		
+		LoadManager(DictPicker dictPicker) {
+			this.dictPicker = dictPicker;
+			this.LastMdFn = MainActivityUIBase.this.LastMdFn;
+			this.opt = MainActivityUIBase.this.opt;
+			this.lazyMan = new LazyLoadManager();
+			dictPicker.loadManager = this;
+			wordPopup.loadManager = this;
+		}
+		
+		public PlaceHolder getPlaceHolderAt(int idx) {
+			if(idx>=0 && idx<lazyMan.chairCount)
+				return lazyMan.placeHolders.get(lazyMan.CosyChair[idx]);
+			return null;
+		}
+		
+		public int getPlaceFlagAt(int idx) {
+			PlaceHolder tmp = getPlaceHolderAt(idx);
+			if(tmp!=null)
+				return tmp.tmpIsFlag;
+			return 0;
+		}
+		
+		//parseList
+		void buildUpDictionaryList(boolean lazyLoad, HashMap<String, BookPresenter> mdict_cache) {
+			ArrayList<PlaceHolder> all =  lazyMan.placeHolders;
+			md.ensureCapacity(all.size());
+			md.clear();
+			int pickerIdx = -1;
+			PlaceHolder phI;
+			String lastName = opt.getLastMdFn(LastMdFn);
+			int filterCount=0,chairCount=0;
+			lazyMan.CosyChair=new int[lazyMan.chairCount];
+			lazyMan.CosySofa=new int[lazyMan.filterCount];
+			for (int i = 0; i < all.size(); i++) {
+				phI = all.get(i);
+				//get path put
+				BookPresenter mdTmp = mdict_cache==null?null:mdict_cache.get(phI.getPath(opt).getName());
+				if ((phI.tmpIsFlag&0x8)!=0){
+					//lazyMan.HiddenDicts[lazyMan.hiddenCount++]=i;  /* 隐·1 */
+					md.add(null);
+					continue;
+				}
+				if(mdTmp==null && !lazyLoad) { // 大家看 这里有个老实人
+					try {
+						mdTmp = new_book(phI, MainActivityUIBase.this);
+					} catch (Exception e) {
+						phI.tmpIsFlag|=0x8;
+						//lazyMan.HiddenDicts[lazyMan.hiddenCount++]=i;  /* 兵解轮回 */
+						CMN.Log(e);
+						if (trialCount == -1) if (bShowLoadErr)
+							show(R.string.err, phI.getName(), phI.pathname, e.getLocalizedMessage());
+						md.add(null);
+						continue;
+					}
+				}
+				if(mdTmp!=null)
+					mdTmp.tmpIsFlag = phI.tmpIsFlag;
+				if ((phI.tmpIsFlag&0x1)!=0) {
+					//CMN.Log("发现构词库！！！", phI.name, phI.tmpIsFlag);
+					//currentFilter.add(mdTmp);
+					lazyMan.CosySofa[filterCount++]=i;
+					//lazyMan.HiddenDicts[lazyMan.hiddenCount++]=i; /* 隐·2 */
+				} else {
+					if (pickerIdx==-1 && md_name_match(lastName, mdTmp, phI)){
+						pickerIdx = chairCount;
+					}
+					lazyMan.CosyChair[chairCount++]=i;
+				}
+				md.add(mdTmp);
+			}
+			dictPicker.adapter_idx = pickerIdx;
+			md_size = lazyMan.chairCount;
+			//CMN.Log("buildUpDictionaryList", lastName, adapter_idx);
+		}
+		
+		private boolean md_name_match(String lastName, BookPresenter mdTmp, PlaceHolder phI) {
+			if(lastName!=null){
+				if(mdTmp!=null){
+					return mdTmp.getDictionaryName().equals(lastName);
+				}
+				if(phI!=null){
+					String pN = phI.pathname;
+					if(pN.endsWith(lastName)) {
+						int len = lastName.length();
+						int lenN = pN.length();
+						return lenN==len||pN.charAt(lenN-len-1)==File.separatorChar;
 					}
 				}
 			}
-			PlaceHolder phI = new PlaceHolder(line);
-			phI.lineNumber = cc++;
-			phI.tmpIsFlag = flag;
-			CosyChair.add(phI);
+			return false;
 		}
-		in.close();
+		
+		public void LoadLazySlots(File modulePath, boolean lazyLoad, String moduleName) throws IOException {
+			long lm = modulePath.lastModified();
+			if(lm==lazyMan.currMdlTime
+					&& lazyMan.lazyLoaded==lazyLoad
+					&& moduleName.equals(lazyMan.lastLoadedModule)
+			){
+				md.clear();
+				md.addAll(Arrays.asList(new BookPresenter[lazyMan.chairCount]));
+				return;
+			}
+			CMN.Log("LoadLazySlots…");
+			AgentApplication app = ((AgentApplication) getApplication());
+			ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(modulePath), app.get4kCharBuff(), 4096);
+			do_LoadLazySlots(in, lazyMan);
+			lazyMan.currMdlTime=lm;
+			lazyMan.lastLoadedModule=moduleName;
+			lazyMan.lazyLoaded=lazyLoad;
+			app.set4kCharBuff(in.cb);
+		}
+		
+		private void do_LoadLazySlots(ReusableBufferedReader in, LazyLoadManager lazyMan) throws IOException {
+			String line;
+			int cc=0;
+			lazyMan.placeHolders.clear();
+			lazyMan.chairCount=0;
+			lazyMan.filterCount=0;
+			ReadLines:
+			while((line = in.readLine())!=null){
+				int flag = 0;
+				boolean chair = true;
+				if(line.startsWith("[:")){
+					int idx = line.indexOf("]",2);
+					if(idx>=2){
+						String[] arr = line.substring(2, idx).split(":");
+						line = line.substring(idx+1);
+						for (String pI:arr) {
+							switch (pI){
+								case "F":
+									flag|=0x1;
+									lazyMan.filterCount++;
+									chair = false;
+								break;
+								case "C":
+									flag|=0x2;
+								break;
+								case "A":
+									flag|=0x4;
+								break;
+								case "H":
+									flag|=0x8;
+									//lazyMan.hiddenCount++;
+									chair = false;
+								break;
+								case "Z":
+									flag|=0x10;
+								break;
+								case "S":
+									int size = IU.parsint(line);
+									if(size>0) lazyMan.placeHolders.ensureCapacity(size);
+								continue ReadLines;
+							}
+						}
+					}
+				}
+				PlaceHolder phI = new PlaceHolder(line);
+				phI.lineNumber = cc++;
+				phI.tmpIsFlag = flag;
+				lazyMan.placeHolders.add(phI);
+				if (chair) {
+					lazyMan.chairCount++;
+				}
+			}
+			in.close();
+		}
+		
+		public long getBookIdAt(int i) {
+			if (getUsingDataV2()) {
+				try {
+					if (i>=0 && i<lazyMan.chairCount) {
+						i = lazyMan.CosyChair[i];
+						BookPresenter presenter = md.get(i);
+						if (presenter != null) return presenter.getId();
+						String name = new File(getPlaceHolderAt(i).pathname).getName();
+						return prepareHistoryCon().getBookID(null, name);
+					}
+				} catch (Exception e) {
+					CMN.Log(e);
+				}
+			}
+			return -1;
+		}
+		
+		@NonNull public BookPresenter md_getNoCreate(int i, long bid) {
+			BookPresenter ret = null;
+			if (bid!=-1) {
+				ret = getBookByIdNoCreation(bid);
+			} else {
+				if (i>=0 && i<lazyMan.chairCount) {
+					i = lazyMan.CosyChair[i];
+					ret = md.get(i);
+				}
+			}
+			if(ret==null) {
+				ret = EmptyBook;
+			}
+			return ret;
+		}
+		
+		private void reload_dict_at(int i) {
+			try {
+				if (i>=0 && i<lazyMan.chairCount) {
+					i = lazyMan.CosyChair[i];
+					BookPresenter mdTmp = md.get(i);
+					if(mdTmp!=null) {
+						mdTmp.Reload(this);
+					} else {
+						PlaceHolder phTmp = lazyMan.placeHolders.get(i);
+						md.set(i, new_book(phTmp, MainActivityUIBase.this));
+					}
+					showT("重新加载!");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		@Nullable public BookPresenter md_getAt(int i) {
+			if (i>=0 && i<lazyMan.chairCount) {
+				return md.get(lazyMan.CosyChair[i]);
+			}
+			return null;
+		}
+		
+		public int md_find(BookPresenter book) {
+			// todo opt with binary search  ( book.placeHolder.lineNumer -> CosyChair -> index )
+			return Arrays.asList(lazyMan.CosyChair).indexOf(md.indexOf(book));
+		}
+		
+		@NonNull public final BookPresenter getBookById(long bid) {
+			return MainActivityUIBase.this.getBookById(bid);
+		}
+		
+		@NonNull public BookPresenter md_get(int i) {
+			BookPresenter ret = null;
+			PlaceHolder phTmp = null;
+			if (i>=0 && i<lazyMan.chairCount) {
+				i = lazyMan.CosyChair[i];
+				ret = md.get(i);
+				if (ret==null) {
+					phTmp = lazyMan.placeHolders.get(i);
+					try {
+						md.set(i, ret = new_book(phTmp, MainActivityUIBase.this));
+					} catch (Exception e) {
+						if(GlobalOptions.debug) CMN.Log(phTmp, e);
+						phTmp.ErrorMsg = e.getLocalizedMessage();
+//						if (bShowLoadErr && isOnMainThread()) {
+//							if(!phTmp.NeedsBuildIndex())
+//								show(R.string.err);
+//							//else showT("需要建立索引！");
+//						}
+						//todo 123
+					}
+				}
+			}
+			if(ret==null) {
+				ret = EmptyBook;
+				EmptyBook.placeHolder = phTmp;
+			}
+			return ret;
+		}
+		
+		@NonNull public BookPresenter md_getByName(String name) {
+			return getBookByName(name);
+		}
+		
+		public String md_getName(long bid) {
+			BookPresenter book = getBookById(bid);
+			return book.getDictionaryName();
+		}
+		
+		public String md_getName(int i, long bid) {
+			if (bid!=-1) {
+				BookPresenter book = getBookById(bid);
+				return book.getDictionaryName();
+			}
+			if (i>=0 && i<lazyMan.chairCount) {
+				i = lazyMan.CosyChair[i];
+				String name = null;
+				BookPresenter mdTmp = md.get(i);
+				if(mdTmp!=null) {
+					name = mdTmp.getPath();
+					if (name.startsWith(AssetTag)) name = CMN.getAssetName(name);
+					else name = mdTmp.getDictionaryName();
+				} else {
+					PlaceHolder placeHolder = lazyMan.placeHolders.get(i);
+					name = placeHolder.pathname;
+					if (name.startsWith(AssetTag)) name = CMN.getAssetName(name);
+					else name = placeHolder.getName().toString();
+				}
+				if(name!=null) {
+					return name;
+				}
+			}
+			return "Error!!!";
+		}
+		
+		public void md_set_StarLevel(int i, int val) {
+			long flag=0;
+			if (i>=0 && i<lazyMan.chairCount) {
+				i = lazyMan.CosyChair[i];
+				BookPresenter mdTmp = md.get(i);
+				if(mdTmp!=null) {
+					flag = mdTmp.getFirstFlag();
+					mdTmp.setFirstFlag(flag=PDICMainAppOptions.setDFFStarLevel(flag, val));
+					mdTmp.saveStates(MainActivityUIBase.this, prepareHistoryCon());
+				} else {
+					PlaceHolder placeHolder = lazyMan.placeHolders.get(i);
+					CharSequence name = placeHolder.getName();
+					flag =  md_get_firstFlag_internal(name);
+					flag = PDICMainAppOptions.setDFFStarLevel(flag, val);
+					md_set_firstFlag_internal(name, flag);
+				}
+				CMN.Log("新的星级", md_getName(i, -1), PDICMainAppOptions.getDFFStarLevel(flag), val);
+			}
+		}
+		
+		public int md_get_StarLevel(int i, long bid) {
+			long flag = 0;
+			if (bid!=-1) {
+				BookPresenter book = getBookById(bid);
+				flag = book.getFirstFlag();
+			}
+			else if (i>=0 && i<lazyMan.chairCount) {
+				i = lazyMan.CosyChair[i];
+				BookPresenter mdTmp = md.get(i);
+				if(mdTmp!=null) {
+					flag =  mdTmp.getFirstFlag();
+				} else {
+					PlaceHolder placeHolder = lazyMan.placeHolders.get(i);
+					flag =  md_get_firstFlag_internal(placeHolder.getSoftName());
+				}
+			}
+			return PDICMainAppOptions.getDFFStarLevel(flag);
+		}
+		
+		@SuppressWarnings("All")
+		public CharSequence md_getAbout_Trim(int i) {
+//			if (i>=0 && i<lazyMan.chairCount) {
+//				i = lazyMan.CosyChair[i];
+//				PlaceHolder placeHolder = lazyMan.placeHolders.get(i);
+//
+//			}
+//			ArrayList<PlaceHolder> placeHolders = getPlaceHolders();
+//			PlaceHolder phTmp = placeHolders.get(i);
+//			BookPresenter presenter = md.get(i);
+//			String msg = phTmp.ErrorMsg;
+//			boolean show_info_extra = true||msg!=null;
+//			boolean show_info_codec = true;
+//			boolean show_info_reload = true;
+//			boolean show_info_path = true;
+//			SpannableStringBuilder sb=null;
+//			if(show_info_extra) {
+//				sb = new SpannableStringBuilder();
+//				if(show_info_reload) {
+//					sb.append("[重新加载");
+//				}
+//				if(show_info_codec && presenter!=null) {
+//					if(!show_info_reload) {
+//						sb.append("编码");
+//					}
+//					sb.append("：");
+//					sb.append(String.valueOf(presenter.getCharsetName()));
+//				}
+//				if(show_info_reload) {
+//					sb.append("]");
+//				}
+//				sb.append("\n");
+//				if(show_info_reload) {
+//					sb.setSpan(new ClickableSpan() {
+//						@Override public void onClick(@NonNull View widget) {
+//							reload_dict_at(i);
+//							//showAboutDictDialogAt(i);
+//						}
+//					}, 0, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+//				}
+//			}
+//
+//			CharSequence ret=presenter==null? "未加载"
+//					:HtmlCompat.fromHtml(presenter.getAboutString(), HtmlCompat.FROM_HTML_MODE_COMPACT);
+//			int len = ret.length();
+//			int st = 0;
+//			while((st < len) && ret.charAt(st) <= ' '){
+//				st++;
+//			}
+//			while ((st < len) && (ret.charAt(len - 1) <= ' ')) {
+//				len--;
+//			}
+//
+//			if(show_info_extra) {
+//				sb.append(ret, st, len);
+//				ret=sb;
+//				if(msg!=null) {
+//					sb.append("\n\n").append("错误信息：");
+//					sb.append(msg);
+//				}
+//				if(presenter!=null && presenter.bookImpl.hasMdd()) {
+//					sb.append("\n\n").append("资源文件：");
+//					sb.append(presenter.bookImpl.getResourcePaths());
+//				}
+//				if(show_info_path) {
+//					sb.append("\n");
+//					sb.append("路径").append("：");
+//					st = sb.length();
+//					sb.append(phTmp.pathname);
+//					sb.setSpan(new ClickableSpan() {
+//						@Override public void onClick(@NonNull View widget) {
+//							showT("路径!");
+//						}
+//					}, st, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+//				}
+//			} else {
+//				ret=ret.subSequence(st, len);
+//			}
+//			return ret;
+			return null;
+		}
+		
+		public Drawable md_getCover(int i, long bid) {
+			if (bid!=-1) {
+				BookPresenter book = getBookById(bid);
+				return book.getCover();
+			}
+			if (i>=0 && i<lazyMan.chairCount) {
+				i = lazyMan.CosyChair[i];
+				BookPresenter mdTmp = md.get(i);
+				if(mdTmp!=null) return mdTmp.cover;
+				// todo
+			}
+			return null;
+		}
+		
+		public BookPresenter getFilterAt(int i) {
+			if (i>=0 && i<lazyMan.filterCount) {
+				i = lazyMan.CosySofa[i];
+				BookPresenter mdTmp = md.get(i);
+				if(mdTmp==null){
+					PlaceHolder placeHolder = lazyMan.placeHolders.get(i);
+					try {
+						md.set(i, mdTmp= new_book(placeHolder, MainActivityUIBase.this));
+						mdTmp.tmpIsFlag=placeHolder.tmpIsFlag;
+					} catch (Exception e) { CMN.Log(e); }
+				}
+				if(mdTmp!=null){
+					return mdTmp;
+				}
+			}
+			return EmptyBook;
+		}
+		
+		public void addBook(BookPresenter book, PlaceHolder placeHolder) {
+			lazyMan.placeHolders.add(placeHolder);
+			if (book!=null) {
+				book.placeHolder=placeHolder;
+			}
+			md.add(book);
+			lazyMan.newChair();
+			md_size=lazyMan.chairCount;
+		}
+	}
+	
+//	static LazyLoadManager lazyLoadManagerMain = new LazyLoadManager();
+//	static LazyLoadManager lazyLoadManagerFloat = new LazyLoadManager();
+//	static LazyLoadManager lazyLoadManagerMulti = new LazyLoadManager();
+	public LoadManager loadManager;
+	LazyLoadManager lazyLoadManager;
+	
+	
+	public final PlaceHolder getPlaceHolderAt(int idx) {
+		return loadManager.getPlaceHolderAt(idx);
 	}
 	
 	void ReadInMdlibs(File rec) {
@@ -2696,7 +2779,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			rec = opt.fileToDecords(null);
 		}
 		if(mdlibsCon==null){
-			mdlibsCon = new HashSet<>(md.size()*3);
+			mdlibsCon = new HashSet<>(loadManager.md_size*3);
 			lostFiles = new HashMap<>();
 			if(rec.exists())
 				try {
@@ -2825,21 +2908,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public boolean checkDicts() {
-		if(md.size()>0) {
+		if(loadManager.md_size>0) {
 			if(currentDictionary==null || currentDictionary==EmptyBook){
 				int checkIdx = dictPicker.adapterIdx();
-				currentDictionary = md.get(checkIdx);
-				if(currentDictionary==null){
-					PlaceHolder phI = getPlaceHolderAt(checkIdx);
-					if(phI!=null) {
-						try {
-							md.set(checkIdx, currentDictionary = new_book(phI, this));
-						} catch (Exception ignored) { }
-					}
-				}
-				if(currentDictionary==null){
-					currentDictionary = EmptyBook;
-				}
+				currentDictionary = loadManager.md_get(checkIdx);
 				adaptermy.setPresenter(currentDictionary);
 			}
 			return true;
@@ -3147,7 +3219,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void NotifyComboRes(int size) {
 		if(PDICMainAppOptions.getNotifyComboRes()) {
 			float fval = 0.8f;
-			String val = recCom.allWebs?"回车以搜索网络词典！":getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,md.size(),size);
+			String val = recCom.allWebs?"回车以搜索网络词典！":getResources().getString(R.string.cbflowersnstr,opt.lastMdPlanName,loadManager.md_size,size);
 			showTopSnack(null, val, fval, -1, -1, 0);
 		}
 	}
@@ -3206,104 +3278,105 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	public void showAboutDictDialogAt(int id) {
-		if(id<0||id>=md.size()){
-			show(R.string.endendr);
-			return;
-		}
-		boolean create=true;
-		Window window;
-		TextView tv=null;
-		FlowTextView ftv=null;
-		Dialog d = this.d;
-		if(d!=null) {
-			window = d.getWindow();
-			if(window!=null) {
-				Object tag = window.getDecorView().getTag();
-				if(tag instanceof TextView){
-					tv = (TextView) tag;
-					tag = tv.getTag();
-					if(tag instanceof FlowTextView){
-						ftv = (FlowTextView) tag;
-						CheckStars(ftv.getStarLevel());
-						create=false;
-						if(dictPicker !=null) {
-							//pickDictDialog.mRecyclerView.smoothScrollToPosition(id);
-							//pickDictDialog.lman.smoothScrollToPosition(pickDictDialog.mRecyclerView, null, id);
-							dictPicker.lman.scrollToPositionWithOffset(id, 0);
-						}
-						tag = ftv.getTag();
-						if(tag instanceof ScrollView) {
-							ScrollView sv = (ScrollView) tag;
-							sv.scrollTo(0,  0);
-						}
-						d.show();
-					}
-				}
-			}
-			if(create){
-				d.dismiss();
-			}
-		}
-		if(create){
-			ViewGroup dv = (ViewGroup) getLayoutInflater().inflate(R.layout.dialog_about_star,null);
-			
-			dv.findViewById(R.id.about_popIvBack).setOnClickListener(this);
-			dv.findViewById(R.id.about_popLstDict).setOnClickListener(this);
-			dv.findViewById(R.id.about_popNxtDict).setOnClickListener(this);
-			
-			ftv = dv.findViewById(R.id.subtext);
-			ftv.mRatingDrawable = getRatingDrawable();
-			ftv.setCompoundDrawables(mActiveDrawable, null, null, null);
-			
-			XYTouchRecorder xyt = opt.XYTouchRecorderInstance();
-			ftv.setOnTouchListener(xyt);
-			ftv.setOnClickListener(xyt);
-			
-			TextView title = dv.findViewById(R.id.title);
-			title.setText("词典信息");
-			tv = dv.findViewById(R.id.resultN);
-			if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
-			tv.setTextIsSelectable(true);
-			
-			tv.setMovementMethod(LinkMovementMethod.getInstance());
-			FlowTextView finalFtv = ftv;
-			d = new android.app.AlertDialog.Builder(this)
-					.setView(dv)
-					.setOnDismissListener(dialog -> {
-						CheckStars(finalFtv.getStarLevel());
-						StarLevelStamp = -1;
-						this.d=null;
-					})
-					.create();
-			dv.findViewById(R.id.cancel).setOnClickListener(this);
-			window = d.getWindow();
-			window.setDimAmount(0);
-			tv.setTag(ftv);
-			ftv.setTag(dv.getChildAt(1));
-			d.setCanceledOnTouchOutside(true);
-			d.show();
-			window.getDecorView().setTag(tv);
-			if(GlobalOptions.isDark) {
-				window.getDecorView().setBackgroundColor(0xff333333);
-				ftv.setTextColor(Color.WHITE);
-				tv.setTextColor(Color.WHITE);
-			}
-			this.d = d;
-		}
-		
-		CurrentDictInfoIdx = id;
-		
-		ftv.setStarLevel(StarLevelStamp = md_get_StarLevel(id));
-		
-		ftv.setText(md_getName(id));
-		
-		tv.setText(md_getAbout_Trim(id));
+		//todo 123
+//		if(id<0||id>=md.size()){
+//			show(R.string.endendr);
+//			return;
+//		}
+//		boolean create=true;
+//		Window window;
+//		TextView tv=null;
+//		FlowTextView ftv=null;
+//		Dialog d = this.d;
+//		if(d!=null) {
+//			window = d.getWindow();
+//			if(window!=null) {
+//				Object tag = window.getDecorView().getTag();
+//				if(tag instanceof TextView){
+//					tv = (TextView) tag;
+//					tag = tv.getTag();
+//					if(tag instanceof FlowTextView){
+//						ftv = (FlowTextView) tag;
+//						CheckStars(ftv.getStarLevel());
+//						create=false;
+//						if(dictPicker !=null) {
+//							//pickDictDialog.mRecyclerView.smoothScrollToPosition(id);
+//							//pickDictDialog.lman.smoothScrollToPosition(pickDictDialog.mRecyclerView, null, id);
+//							dictPicker.lman.scrollToPositionWithOffset(id, 0);
+//						}
+//						tag = ftv.getTag();
+//						if(tag instanceof ScrollView) {
+//							ScrollView sv = (ScrollView) tag;
+//							sv.scrollTo(0,  0);
+//						}
+//						d.show();
+//					}
+//				}
+//			}
+//			if(create){
+//				d.dismiss();
+//			}
+//		}
+//		if(create){
+//			ViewGroup dv = (ViewGroup) getLayoutInflater().inflate(R.layout.dialog_about_star,null);
+//
+//			dv.findViewById(R.id.about_popIvBack).setOnClickListener(this);
+//			dv.findViewById(R.id.about_popLstDict).setOnClickListener(this);
+//			dv.findViewById(R.id.about_popNxtDict).setOnClickListener(this);
+//
+//			ftv = dv.findViewById(R.id.subtext);
+//			ftv.mRatingDrawable = getRatingDrawable();
+//			ftv.setCompoundDrawables(mActiveDrawable, null, null, null);
+//
+//			XYTouchRecorder xyt = opt.XYTouchRecorderInstance();
+//			ftv.setOnTouchListener(xyt);
+//			ftv.setOnClickListener(xyt);
+//
+//			TextView title = dv.findViewById(R.id.title);
+//			title.setText("词典信息");
+//			tv = dv.findViewById(R.id.resultN);
+//			if(GlobalOptions.isLarge) tv.setTextSize(tv.getTextSize());
+//			tv.setTextIsSelectable(true);
+//
+//			tv.setMovementMethod(LinkMovementMethod.getInstance());
+//			FlowTextView finalFtv = ftv;
+//			d = new android.app.AlertDialog.Builder(this)
+//					.setView(dv)
+//					.setOnDismissListener(dialog -> {
+//						CheckStars(finalFtv.getStarLevel());
+//						StarLevelStamp = -1;
+//						this.d=null;
+//					})
+//					.create();
+//			dv.findViewById(R.id.cancel).setOnClickListener(this);
+//			window = d.getWindow();
+//			window.setDimAmount(0);
+//			tv.setTag(ftv);
+//			ftv.setTag(dv.getChildAt(1));
+//			d.setCanceledOnTouchOutside(true);
+//			d.show();
+//			window.getDecorView().setTag(tv);
+//			if(GlobalOptions.isDark) {
+//				window.getDecorView().setBackgroundColor(0xff333333);
+//				ftv.setTextColor(Color.WHITE);
+//				tv.setTextColor(Color.WHITE);
+//			}
+//			this.d = d;
+//		}
+//
+//		CurrentDictInfoIdx = id;
+//
+//		ftv.setStarLevel(StarLevelStamp = md_get_StarLevel(id));
+//
+//		ftv.setText(md_getName(id, -1));
+//
+//		tv.setText(md_getAbout_Trim(id));
 	}
 	
 	private void CheckStars(int newLevel) {
 		int oldId = CurrentDictInfoIdx;
-		if(oldId>=0&&oldId<md.size()&&StarLevelStamp>=0&&newLevel!=StarLevelStamp) {
-			md_set_StarLevel(oldId, newLevel);
+		if(oldId>=0&&oldId<loadManager.md_size&&StarLevelStamp>=0&&newLevel!=StarLevelStamp) {
+			loadManager.md_set_StarLevel(oldId, newLevel);
 			if(dictPicker !=null) {
 				dictPicker.adapter().notifyItemChanged(oldId);
 				//pickDictDialog.notifyDataSetChanged();
@@ -3375,22 +3448,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ret;
 	}
 	
-	public long getBookIdAt(int i) {
-		if (getUsingDataV2()) {
-			try {
-				BookPresenter presenter = md.get(i);
-				if (presenter!=null) return presenter.getId();
-				String name = new File(getPlaceHolders().get(i).pathname).getName();
-				return prepareHistoryCon().getBookID(null, name);
-			} catch (Exception e) {
-				CMN.Log(e);
-			}
-		} else {
-			return i;
-		}
-		return -1;
-	}
-	
 	public BookPresenter getBookByName(String name) {
 		Long bid = BookPresenter.bookImplsNameMap.get(name);
 		if(bid==null) {
@@ -3422,9 +3479,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if (fileName!=null) {
 					ret = new_book(fileName, this);
 				}
-			} else {
-				if (bid>=0&&bid<md.size())
-					ret = md.get((int) bid);
 			}
 		} catch (Exception e) {
 			CMN.Log(e);
@@ -3465,9 +3519,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						ret = new_book(fileName, this);
 					}
 				}
-			} else {
-				if (bid>=0&&bid<md.size())
-					ret = md.get((int) bid);
 			}
 		} catch (Exception e) {
 			CMN.Log(e);
@@ -3493,17 +3544,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					return impl.getFile().getPath();
 				}
 				return prepareHistoryCon().getBookName(bid);
-			} else {
-				if (bid>=0&&bid<md.size()&&md.get((int) bid)!=null)
-					return md.get((int) bid).getDictionaryName();
-				return getPlaceHolderAt((int) bid).pathname;
 			}
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
 		return null;
 	}
-	
 	
 	private void putCurrFavoriteNoteBookId(long value) {
 		opt.putCurrFavoriteNoteBookId(value);
@@ -6061,7 +6107,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							long id = IU.TextToNumber_SIXTWO_LE(val.substring(1));
 							val = arr[1];
 							long pos = IU.TextToNumber_SIXTWO_LE(val);
-							BookPresenter book = getMdictServer().md_getById(id);
+							BookPresenter book = getBookById(id);
 							weblist.getMergedFrame().currentPos = pos;
 							book.currentDisplaying = book.getBookEntryAt((int) pos); // 权宜之计
 							tk.showDictTweaker(book, weblist.getMergedFrame());
@@ -6565,27 +6611,28 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 					else try {
 						lazyLoadManager.lastCheckedPos = pos;
-						currentFilter.clear();
-						for (BookPresenter mdTmp : md) {
-							if(mdTmp!=null)
-								mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
-						}
-						for (BookPresenter mdTmp : currentFilter) {
-							if(mdTmp!=null)
-								mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
-						}
+//						loadManager.currentFilter.clear();
+//						for (BookPresenter mdTmp : md) {
+//							if(mdTmp!=null)
+//								mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
+//						}
+//						for (BookPresenter mdTmp : loadManager.currentFilter) {
+//							if(mdTmp!=null)
+//								mdict_cache.put(mdTmp.getDictionaryName(), mdTmp);
+//						}
+						//todo 123
 						String setName = scanInList.get(pos);
 						File newf = opt.fileToSet(null, setName);
 						boolean lazyLoad = PDICMainAppOptions.getLazyLoadDicts();
-						LoadLazySlots(newf, lazyLoad, setName);
-						buildUpDictionaryList(lazyLoad, mdict_cache);
+						loadManager.LoadLazySlots(newf, lazyLoad, setName);
+						loadManager.buildUpDictionaryList(lazyLoad, mdict_cache);
 						//todo 延时清空 X
 						//mdict_cache.clear();
 						//分组切换
 						opt.putLastPlanName(LastPlanName, setName);
 						if (dictPicker.adapter_idx<0) {
 							switch_Dict(0, true, false, null);
-						} else if(md.get(dictPicker.adapterIdx())!=currentDictionary){
+						} else if(loadManager.md_getAt(dictPicker.adapterIdx())!=currentDictionary){
 							switch_Dict(dictPicker.adapter_idx, true, false, null);
 						}
 						dialog.dismiss();
@@ -7805,9 +7852,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						InputStream restmp=null;
 						WebResourceResponse ret=null;
 						BookPresenter mdTmp;
-						for (int i = 0; i < md.size(); i++) {
+						for (int i = 0; i < loadManager.md_size; i++) {
 							mdTmp = findPronouncer(i, invoker);
-							if(mdTmp!=null){
+							if(mdTmp!=EmptyBook){
 								Boolean spx=false;
 								try {
 									Object[] result=mdTmp.getSoundResourceByName(soundKey);
@@ -8100,23 +8147,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	private BookPresenter findPronouncer(int i, BookPresenter invoker) {
-		BookPresenter mdTmp = md.get(i);
-		if(mdTmp==invoker)
-			return mdTmp;
-		if(mdTmp!=null)
-			return PDICMainAppOptions.getTmpIsAudior(mdTmp.tmpIsFlag)?mdTmp:null;
-		else {
-			ArrayList<PlaceHolder> CosyChair = getPlaceHolders();
-			if(i<CosyChair.size()) {
-				PlaceHolder phTmp = CosyChair.get(i);
-				if (PDICMainAppOptions.getTmpIsAudior(phTmp.tmpIsFlag)) {
-					try {
-						md.set(i, mdTmp = new_book(phTmp, MainActivityUIBase.this));
-					} catch (Exception ignored) { }
-				}
-			}
-			return mdTmp;
+		BookPresenter mdTmp = loadManager.md_getAt(i);
+		if(mdTmp!=null) {;
+			if(mdTmp==invoker)
+				return mdTmp;
+			return PDICMainAppOptions.getTmpIsAudior(mdTmp.tmpIsFlag)?mdTmp:EmptyBook;
 		}
+		else {
+			PlaceHolder phTmp = loadManager.getPlaceHolderAt(i);
+			if (phTmp!=null && PDICMainAppOptions.getTmpIsAudior(phTmp.tmpIsFlag)) {
+				return loadManager.md_get(i);
+			}
+		}
+		return EmptyBook;
 	}
 
 	private void playCachedSoundFile(WebViewmy mWebView, String soundUrl, BookPresenter invoker, boolean findInAudioLibs) throws IOException {
@@ -8133,9 +8176,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(!tmpPath.exists()) {
 			if(findInAudioLibs){
 				BookPresenter mdTmp;
-				for (int i = 0; i < md.size(); i++) {
+				for (int i = 0; i < loadManager.md_size; i++) {
 					mdTmp = findPronouncer(i, invoker);
-					if(mdTmp!=null){
+					if(mdTmp!=EmptyBook){
 						Boolean spx=false;
 						InputStream restmp=null;
 						try {
@@ -10015,7 +10058,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(Thread.currentThread().getId()!=CMN.mid) {
 					CMN.Log("在异常建立MdictServer！");
 				}
-				server = new MdictServerMobile(8080, this, opt);
+				server = new MdictServerMobile(8080, this, opt, this.loadManager);
 				((AgentApplication)getApplication()).mServer = server;
 			}
 		} catch (IOException e) {
@@ -10029,31 +10072,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		AgentApplication app = ((AgentApplication) getApplication());
 		app.mdict_cache = mdict_cache;
 		//todo remove???
-		for(BookPresenter mdTmp:md) {
-			if(mdTmp!=null){
-				//get path put
-				mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
-			}
-		}
-		for(BookPresenter mdTmp:currentFilter) {
-			if(mdTmp!=null){
-				mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
-			}
-		}
-		ArrayList<PlaceHolder> CosyChair = lazyLoadManager.CosyChair;
-		ArrayList<PlaceHolder> CosySofa = lazyLoadManager.CosySofa;
-		ArrayList<PlaceHolder> HdnCmfrt = lazyLoadManager.HdnCmfrt;
-		/* 合符而继统 */
-		for(PlaceHolder phI:HdnCmfrt) {
-			if(!CosyChair.contains(phI))//todo opt
-				CosyChair.add(Math.min(phI.lineNumber, CosyChair.size()), phI);
-		}
-		app.slots=CosyChair;
-		app.opt=opt;
-		app.mdlibsCon=mdlibsCon;
-		app.mdict_cache=mdict_cache;
-		CosySofa.clear();
-		HdnCmfrt.clear();
+//		for(BookPresenter mdTmp:md) {
+//			if(mdTmp!=null){
+//				//get path put
+//				mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
+//			}
+//		}
+//		for(BookPresenter mdTmp:loadManager.currentFilter) {
+//			if(mdTmp!=null){
+//				mdict_cache.put(mdTmp.getDictionaryName(),mdTmp);
+//			}
+//		}
+//		app.slots=CosyChair;
+//		app.opt=opt;
+//		app.mdlibsCon=mdlibsCon;
+//		app.mdict_cache=mdict_cache;
+//		CosySofa.clear();
+//		HdnCmfrt.clear();
+		//todo 123
 		lazyLoadManager.lastLoadedModule=null;
 		Intent intent = new Intent();
 		intent.setClass(MainActivityUIBase.this, BookManager.class);

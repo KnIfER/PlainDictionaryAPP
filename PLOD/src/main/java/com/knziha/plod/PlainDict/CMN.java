@@ -33,6 +33,7 @@ public class CMN{
 	
 	public static long mid;
 	
+	public static int AppBackground = Color.GRAY;
 	public static int GlobalPageBackground = Color.WHITE;
 	/** 0x1=main; 0x2=float */
 	public static int AppColorChangedFlag;
