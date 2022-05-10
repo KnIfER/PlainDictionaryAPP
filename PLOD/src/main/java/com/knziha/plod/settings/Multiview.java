@@ -3,6 +3,7 @@ package com.knziha.plod.settings;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.webkit.WebView;
 
 import androidx.core.graphics.ColorUtils;
 import androidx.preference.Preference;
@@ -162,6 +163,7 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 			break;
 			case "debug":
 				PDICMainAppOptions.debug((Boolean) newValue);
+				WebView.setWebContentsDebuggingEnabled((Boolean) newValue);
 				if (MdictServer.hasRemoteDebugServer = (Boolean) newValue) {
 					MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
 				}

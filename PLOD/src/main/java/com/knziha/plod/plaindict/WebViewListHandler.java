@@ -881,10 +881,12 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			}
 			if (showSeek) {
 				ViewUtils.setVisible(entrySeek, true);
-				int pad = (int) (35 * GlobalOptions.density);
-				((MarginLayoutParams) entrySeek.getLayoutParams()).leftMargin = bDataOnly?(int)(pad/2.5f):pad;
-				if(bMerge==1) pad = (int) (65 * GlobalOptions.density);
-				((MarginLayoutParams) entrySeek.getLayoutParams()).rightMargin = pad;
+				if (!bDataOnly) {
+					int pad = (int) (35 * GlobalOptions.density);
+					((MarginLayoutParams) entrySeek.getLayoutParams()).leftMargin = bDataOnly?(int)(pad/2.5f):pad;
+					if(bMerge==1) pad = (int) (65 * GlobalOptions.density);
+					((MarginLayoutParams) entrySeek.getLayoutParams()).rightMargin = pad;
+				}
 			} else {
 				ViewUtils.setVisible(entrySeek, false);
 			}

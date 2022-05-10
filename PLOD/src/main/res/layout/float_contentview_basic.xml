@@ -155,13 +155,12 @@
 			<com.knziha.plod.widgets.MarkableSeekBar
 				android:id="@+id/entrySeek"
 				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:maxHeight="@dimen/_35_"
-				android:minHeight="@dimen/_35_"
+				android:layout_height="25sp"
 				android:theme="@style/seekBarStyle"
 				android:splitTrack="false"
 				android:layout_gravity="bottom"
-				android:layout_marginBottom="20dp"
+				android:layout_marginRight="58dp"
+				android:layout_marginLeft="58dp"
 				android:max="10"
 				/>
 			<ImageView
