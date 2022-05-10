@@ -1633,15 +1633,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					o=(int)(o*a.dm.density);
 					if(o<=wv.getScrollY() || o+pad>=wv.getScrollY()+wv.getHeight()){
 						int finalO=o-pad;
-						//CMN.Log("scrolling !!!", finalO, wv.getScrollY(), wv.getScrollY()+wv.getHeight());
+						//CMN.debug("scrolling !!!", finalO, wv.getScrollY(), wv.getScrollY()+wv.getHeight());
 						wv.post(() -> {
-							//CMN.Log("do scrolling !!!");
+							//CMN.debug("do scrolling !!!");
 							MainActivityUIBase.layoutScrollDisabled=false;
 							wv.scrollTo(0, finalO);
 							wv.requestLayout();
 							a.NaugtyWeb=(WebViewmy) wv;
 							if(a.hdl!=null)
-								a.hdl.sendEmptyMessage(778899);
+								a.hdl.sendEmptyMessage(778898);
 						});
 					}
 				}

@@ -605,6 +605,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						a.hdl.sendEmptyMessage(331122);
 					}
 				break;
+				case 778898:
+					a.NaugtyWeb.requestLayout();
+				break;
 				case 778899:
 					//a.NaugtyWeb.setLayoutParams(a.NaugtyWeb.getLayoutParams());
 					a.NaugtyWeb.requestLayout();
