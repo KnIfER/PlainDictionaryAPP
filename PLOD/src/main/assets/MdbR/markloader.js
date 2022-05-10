@@ -43,7 +43,7 @@ function jumpTo(d, desiredOffset, frameAt, HlightIdx, reset, topOffset_frameAt,w
     if (true) { // results.length
         var pg=pageIndex,results=pages[pg].keys;
         if(reset) resetLight(d);
-        debug('jumpTo received reset='+reset+' '+frameAt+'->'+HlightIdx+' '+(currentIndex+d)+'/'+(results.length)+' dir='+d);
+        //debug('jumpTo received reset='+reset+' '+frameAt+'->'+HlightIdx+' '+(currentIndex+d)+'/'+(results.length)+' dir='+d);
         var np=currentIndex+d;
         var max=results.length - 1;
         if (currentIndex > max) currentIndex=0;
@@ -61,7 +61,7 @@ function jumpTo(d, desiredOffset, frameAt, HlightIdx, reset, topOffset_frameAt,w
         else results=pages[pageIndex].keys;
         if(current) removeClass();
         current = results[currentIndex];
-        console.log("current=", current, );
+        //console.log("current="+current);
         if(current){
             if(w.defP) {
                 var page=pages[pageIndex], top=pw_topOffset(current), height=current.offsetHeight
@@ -205,7 +205,7 @@ function highlight(keyword){
     if(!MarkLoad) MarkLoad|=w.MarkLoad;
     if(!MarkLoad){
         function cb(){MarkLoad=true; do_highlight(keyword);}
-        try{loadJs('mdbr://mark.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'mark.js');}
+        try{loadJs('/MdbR/mark.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'mark.js');}
     } else do_highlight(keyword);
 }
 function do_highlight(keyword){

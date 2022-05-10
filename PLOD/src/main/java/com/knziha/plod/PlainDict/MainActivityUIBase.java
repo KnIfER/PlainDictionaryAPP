@@ -7485,12 +7485,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										mWebView.expectedPos = -100;
 									}
 								}
-								else {
-									mWebView.currentPos = idx;
-								}
 								float initialScale = BookPresenter.def_zoom;
 								mWebView.setInitialScale((int) (100 * (initialScale / BookPresenter.def_zoom) * opt.dm.density));
 								mWebView.isloading = true;
+								invoker.setCurrentDis(mWebView, idx);
 								StringBuilder htmlBuilder = invoker.AcquirePageBuilder();
 								invoker.AddPlodStructure(mWebView, htmlBuilder, invoker.rl==mWebView.getParent()&&invoker.rl.getLayoutParams().height>0);
 								String htmlCode = invoker.bookImpl.getRecordsAt(null, idx);
@@ -7600,9 +7598,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								//CMN.Log("view::changed::res::", invoker);
 							}
 						}
-						else if (slashIdx==schemaIdx+7 || url.regionMatches(schemaIdx+12, "MdbR", 0, 4)) {
+						if (slashIdx==schemaIdx+7 || url.regionMatches(slashIdx+1, "MdbR", 0, 4)) {
 							try { // 内置资源
-								key=url.substring(schemaIdx+(slashIdx==schemaIdx+7?8:12));
+								if (slashIdx == schemaIdx + 7) {
+									key = "MdbR" + url.substring(schemaIdx + 7);
+								} else {
+									key=url.substring(slashIdx+1);
+								}
 								CMN.Log("[fetching internal res : ]", key);
 								String mime="*/*";
 								if(key.endsWith(".css")) mime = "text/css";

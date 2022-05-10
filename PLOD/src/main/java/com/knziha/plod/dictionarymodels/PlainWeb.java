@@ -416,7 +416,7 @@ public class PlainWeb extends DictionaryAdapter {
 			script.src=url;
 			document.body.appendChild(script);
 		}
-		try{fun('https://mdbr/SUBPAGE.js')}catch(e){app.loadJs(sid.get(),'SUBPAGE.js');}
+		try{fun('//mdbr/SUBPAGE.js')}catch(e){app.loadJs(sid.get(),'SUBPAGE.js');}
 	 }
 	 */
 	@Metaline()

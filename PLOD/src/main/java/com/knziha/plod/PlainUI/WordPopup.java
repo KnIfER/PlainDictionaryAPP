@@ -190,6 +190,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 					if (np>=0 && np<rec.size()) {
 						mWebView.presenter = a.weblistHandler.getMergedBook();
 						rec.renderContentAt(currentPos=np, a, null, weblist);
+						dictPicker.filterByRec(rec, np);
 						weblist.setViewMode(rec, isMergingFramesNum(), weblist.dictView);
 						setDisplaying(weblist.getMultiRecordKey());
 					}

@@ -1714,15 +1714,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	void NavWeb(int d) {
-		CMN.Log("NavWeb", scrollFocus.getUrl());
-		if (scrollFocus !=null) {
-//			if(String.valueOf(scrollFocus.getUrl()).startsWith(baseUrl) && // deprecated
-//				 scrollFocus.forward!=null) {
-//				(d>0?scrollFocus.forward:scrollFocus.recess).performClick();
-//			} else {
-				if (d>0) scrollFocus.goForward();
-				else scrollFocus.goBack();
-//			}
+		WebViewmy wv = isViewSingle() ? dictView : scrollFocus;
+		if (wv !=null) {
+			CMN.debug("NavWeb", wv.getUrl());
+			if (d>0) wv.goForward();
+			else wv.goBack();
 		}
 	}
 	
