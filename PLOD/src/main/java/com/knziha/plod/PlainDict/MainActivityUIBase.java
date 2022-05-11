@@ -7571,18 +7571,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				if(url.startsWith("./"))
 					key=url.substring(1);
 			} else {
-//				if(url.startsWith("MdbR/", start+3)) {
-//					try {
-//						url=url.substring(start+3+5);
-//						CMN.Log("[fetching internal res : ]", url);
-//						String mime="*/*";
-//						if(url.endsWith(".css")) mime = "text/css";
-//						if(url.endsWith(".js")) mime = "text/js";
-//						return new WebResourceResponse(mime, "UTF-8", loadCommonAsset(url));
-//					} catch (Exception e) {
-//						CMN.Log(e);
-//					}
-//				}
 				if(url.startsWith("file://")) {
 					// fix for images not loading when nav back/forward.
 					invoker.hasFilesTag(true);
@@ -7596,7 +7584,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if(slashIdx<0) slashIdx = url.length();
 						if (url.charAt(schemaIdx+8)=='d') {
 							// loaded with base url
-							if (!url.regionMatches(schemaIdx+9, invoker.idStr10, 1, slashIdx-schemaIdx-9)) {
+							if (!url.regionMatches(schemaIdx+9, invoker.idStr10, 0, slashIdx-schemaIdx-9)) {
 								invoker = getBookById(IU.parseLong(url.substring(schemaIdx+9, slashIdx)));
 								//CMN.Log("view::changed::res::", invoker);
 							}
@@ -7640,8 +7628,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								return webResourceResponse;
 							}
 						}
-						if (invoker.getOfflineMode())
-							return emptyResponse;
 					}
 					if(merge) {
 						if(mdbr) {
@@ -7835,10 +7821,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								return emptyResponse;
 							}
 						}
-						return null;
 					}
-					if(url.endsWith(".mp3"))
-						return null;
+					if(!mdbr) {
+						return invoker.getOfflineMode()?emptyResponse:null;
+					}
 					//CMN.Log("漏网之鱼::", url);
 				}
 				else {
