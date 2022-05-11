@@ -766,7 +766,8 @@ function debug(e){console.log(e)};
 		StringBuilder sb = new StringBuilder(32);
 		sb.append("d");
 		idStr = IU.NumberToText_SIXTWO_LE(getId(), sb).toString();
-		idStr10 = Long.toString(getId());
+		sb.setLength(0);
+		idStr10 = sb.append(getId()).append(".com").toString();
 		sb.setLength(0);
 		mBaseUrl = sb.append("http://mdbr.").append("d").append(idStr10).append("/base.html").toString();
 	}

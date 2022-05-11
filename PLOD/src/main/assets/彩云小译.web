@@ -48,38 +48,76 @@ succ"
 		<script src='https://caiyunapp.com/dest/trs.js'></script>
 	"
 	,"pageTranslator":"
-	console.log('translate!!!');
-	var btn=document.getElementsByClassName('cyxy-function cyxy-trs-source')[0];
-	function tryOpen() {
-		if(!btn.firstChild.src.endsWith('mode-t.png')) {
-			btn.click();
-			if(btn.firstChild.src.endsWith('mode-t.png')) return;
-		}
-		if(tryCnt++<3) setTimeout(tryClose, 200);
+	console.log('translate!!!', app.getTransval(sid.get(), 1));
+	if(!window.cyTrans){
+		(function(){
+			var btn, btnClk;
+			function tVal() {
+				var e=btn.firstChild.src;
+				return e.slice(1+e.lastIndexOf('-'), e.lastIndexOf('.'));
+			}
+			function btnFun() {
+				btnClk=true;
+				btn.click();
+				btnClk=false;
+			}
+			function isAttached(e) {
+				while(e&&(e=e.parentElement)) {
+					if(e===document.body)return true;
+				}
+				return false;
+			}
+			function tryInit(off, cnt) {
+				cnt=cnt||0;
+				if(off) {
+					if(btn) {
+						if(tVal()!='s') {
+							btnFun();
+							if(tVal()!='s' && cnt++<5) {
+								tryInit(off, cnt);
+							}
+						}
+					}
+				} else {
+					if(!isAttached(btn)) {
+						btn=document.getElementsByClassName('cyxy-function cyxy-trs-source')[0];
+						if(btn) {
+							if(!btn.obz) btn.addEventListener('click', btn.obz=function(e){
+								console.log('click!!!', tVal(), btnClk);
+								if(!btnClk)
+									app.putTransval(sid.get(), tVal(), 1);
+							});
+						} else {
+							function loadJs(url,callback){
+								var e=document.createElement('script');
+								e.type='text/javascript';
+								e.onload=callback;
+								e.src=url;
+								document.body.appendChild(e);
+							}
+							loadJs('https://caiyunapp.com/dest/trs.js', function(){
+								tryInit(false);
+							})
+						}
+					}
+					if(btn) {
+						var v=app.getTransval(sid.get(), 1);
+						if(tVal()!=v) {
+							btnFun();
+							if(tVal()!=v && cnt++<5) {
+								tryInit(off, cnt);
+							}
+						}
+					}
+				}
+			}
+			window.cyTrans = tryInit;
+		})();
 	}
-	if(btn)tryOpen();
-	else {
-		function loadJs(url,callback){
-			var e=document.createElement('script');
-			e.type='text/javascript';
-			e.onload=callback;
-			e.src=url;
-			document.body.appendChild(e);
-		}
-		loadJs('https://caiyunapp.com/dest/trs.js')
-	}
+	cyTrans(false);
 	"
 	,"pageTranslatorOff":"
 	console.log('translate off!!!');
-	var tryCnt=0;
-	function tryClose() {
-		var btn=document.getElementsByClassName('cyxy-function cyxy-trs-source')[0];
-		if(btn && !btn.firstChild.src.endsWith('mode-s.png')) {
-			btn.click();
-			if(btn.firstChild.src.endsWith('mode-s.png')) return;
-		}
-		if(tryCnt++<3) setTimeout(tryClose, 200);
-	}
-	tryClose()
+	cyTrans(true);
 	"
 }

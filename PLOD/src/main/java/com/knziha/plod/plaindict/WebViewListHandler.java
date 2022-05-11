@@ -1827,14 +1827,18 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	
 	public void putTransval(int index, String value) {
 		if(index>=0 && index<2 && !TextUtils.isEmpty(value))
-			transVals[index] =  value;//"zh-CN";
+			transVals[index] =  value;
 	}
 	
 	public String getTransval(int index) {
 		String ret=null;
 		if(index>=0 && index<2)
 			ret = transVals[index];
-		return ret==null?"zh-CN":ret;//"zh-CN";
+		if (ret==null) {
+			ret = index==1?"t"
+					:"zh-CN";
+		}
+		return ret;
 	}
 	
 	public void putTranslate(int index, boolean value) {
