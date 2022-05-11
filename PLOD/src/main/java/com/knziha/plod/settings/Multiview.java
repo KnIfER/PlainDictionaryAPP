@@ -14,10 +14,12 @@ import com.knziha.filepicker.settings.TwinkleSwitchPreference;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.BuildConfig;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MdictServer;
 import com.knziha.plod.plaindict.MdictServerMobile;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.plaindict.Toastable_Activity;
 
 public class Multiview extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
 	public final static int id=R.xml.pref_multiview;
@@ -83,6 +85,8 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 		init_switch_preference(this, "fold", multiMode==2, null, null);
 		findPreference("merge_min").setOnPreferenceChangeListener(this);
 		
+		findPreference("GPP").setOnPreferenceChangeListener(this);
+		
 	}
 
 	@Override
@@ -109,6 +113,11 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 					if(b1) return PDICMainAppOptions.mergeUrlMore();
 					PDICMainAppOptions.mergeUrlMore(str.length()==3);
 					enableCat1();
+					return true;
+				}
+				else if(TextUtils.equals(key, "GPP")) {
+					if(b1) return PDICMainAppOptions.padBottom();
+					PDICMainAppOptions.padBottom(str.length()==3);
 					return true;
 				}
 			}
@@ -210,6 +219,25 @@ public class Multiview extends SettingsFragmentBase implements Preference.OnPref
 			case "toolsBtnLong":
 				PDICMainAppOptions.toolsQuickLong(IU.parsint(newValue, 0));
 			break;
+			case "GPP": {
+				try {
+					String text = ((String) newValue).trim();
+					int ed = text.length();
+					if (text.endsWith("%")) {
+						ed--;
+					} else if (text.endsWith("px")) {
+						ed -= 2;
+					} else {
+						throw new RuntimeException();
+					}
+					Float.parseFloat(text.substring(0, ed));
+					CMN.GlobalPagePadding = text;
+					return true;
+				} catch (RuntimeException e) {
+					((Toastable_Activity) getActivity()).showT("数值不正确！");
+					return false;
+				}
+			}
 		}
 		if (key.startsWith("tz") || key.startsWith("turn")) {
 			SearchUI.tapZoomV++;

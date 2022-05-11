@@ -35,6 +35,7 @@ public class CMN{
 	
 	public static int AppBackground = Color.GRAY;
 	public static int GlobalPageBackground = Color.WHITE;
+	public static String GlobalPagePadding;
 	/** 0x1=main; 0x2=float */
 	public static int AppColorChangedFlag;
 	public static boolean touchThenSearch=true;

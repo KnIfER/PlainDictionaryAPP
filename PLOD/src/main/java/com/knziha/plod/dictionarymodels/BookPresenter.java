@@ -4191,4 +4191,14 @@ function debug(e){console.log(e)};
 			a.getUtk().onClick(/*trust webview selection*/a.anyView(R.id.tools));
 		}
 	}
+	
+	public void ApplyPadding(WebViewmy mWebView) {
+		if (PDICMainAppOptions.padBottom())
+		{
+			if (CMN.GlobalPagePadding==null) {
+				CMN.GlobalPagePadding = opt.getString("GPP", "50px");
+			}
+			mWebView.evaluateJavascript("document.body.style.paddingBottom='"+CMN.GlobalPagePadding+"'", null);
+		}
+	}
 }

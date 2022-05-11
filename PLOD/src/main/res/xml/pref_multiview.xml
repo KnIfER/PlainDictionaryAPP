@@ -196,6 +196,15 @@
 			android:title="允许滑动翻页"
 			app:allowDividerBelow="true"
 			/>
+
+		<androidx.preference.EditTextPreference
+			android:key="GPP"
+			android:defaultValue="50px"
+			android:persistent="true"
+			android:title="在页面底部添加空白区域"
+			app:wiki="空白区域高度值。单位为像素或百分比，如：50px 或 50%。"
+			app:hasCheck="true"
+			/>
 	</PreferenceCategory>
 
 	<PreferenceCategory

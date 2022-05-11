@@ -7086,6 +7086,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			BookPresenter invoker = mWebView.presenter, book=invoker;
 			
+			if(wlh.isViewSingle())
+				invoker.ApplyPadding(mWebView);
 			if (mWebView.translating>=0) {
 				doTranslation(wlh, mWebView.translating, null);
 			}
