@@ -2792,6 +2792,17 @@ function debug(e){console.log(e)};
 			}
 		}
 		
+		/** 页面滚动Y值 */
+		@JavascriptInterface
+		public int getScrollY(int sid) {
+			WebViewmy wv = findWebview(sid);
+			if(wv!=null) {
+				return (int) (wv.getScrollY() / def_zoom);
+			}
+			return 0;
+		}
+		
+		/** 保存在线翻译器语种 */
 		@JavascriptInterface
 		public void putTransval(int sid, String value, int index) {
 			WebViewmy wv = findWebview(sid);
@@ -2801,6 +2812,7 @@ function debug(e){console.log(e)};
 			}
 		}
 		
+		/** 获取保存的在线翻译器语种 */
 		@JavascriptInterface
 		public String getTransval(int sid, int index) {
 			WebViewmy wv = findWebview(sid);
@@ -2811,6 +2823,7 @@ function debug(e){console.log(e)};
 			return "";
 		}
 		
+		/** 保存在线翻译器状态 false翻译 true不翻译 */
         @JavascriptInterface
         public void putTranslate(int sid, boolean val, int index) {
 			WebViewmy wv = findWebview(sid);
@@ -2820,6 +2833,7 @@ function debug(e){console.log(e)};
 			}
 		}
 		
+		/** 获取保存的在线翻译器状态 false不翻译 true翻译 */
 		@JavascriptInterface
 		public boolean getTranslate(int sid, int index) {
 			WebViewmy wv = findWebview(sid);

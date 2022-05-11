@@ -325,15 +325,16 @@ succ"
 			(function(){
 				var cc=0;
 				clearTimeout(window.gTransTime);
+				var combo;
 				function tryInit(off) {
-					var combo = document.getElementsByClassName('goog-te-combo')[0];
+					combo = document.getElementsByClassName('goog-te-combo')[0];
 					if(combo) {
 						if(!window.gTransInit) {
-							//combo.addEventListener('change',function(){
-							//	var s=opts[combo.selectedIndex];
-							//	debug('select',s);
-							//	app.putTransval(sid.get(), s.value, 0);
-							//});
+							combo.addEventListener('change',function(){
+								if(!combo.yw) {
+									cc=0; tryInitYW();
+								}
+							});
 							combo.addEventListener('click',function(e){
 								if(combo.waiting) {
 									combo.waiting = false;
@@ -355,23 +356,50 @@ succ"
 								for(var i=0,s;s=combo.options[i++];) {
 									if(s.value==v) {
 										s.selected=1;
-										if(t)combo.dispatchEvent(new Event('change'));
+										if(t) {
+											combo.dispatchEvent(new Event('change'));
+											cc=0; tryInitYW();
+										}
 										else combo.waiting=1;
 										break;
 									}
 								}
 							}
+							if(!combo.obz){ // 从菜单选语言也会影响select，故以此监听其变化。
+								new MutationObserver(function(mutationsList, observer) {
+									//var muta = mutationsList[0]; debug(muta.type, muta);
+									var s=combo.options[combo.selectedIndex];
+									debug('select',s);
+									app.putTransval(sid.get(), s.value, 0);
+									app.putTranslate(sid.get(), !s.value, 0);
+								}).observe(combo , { attributes: true,childList: true });
+								combo.obz=1;
+							}
 						}
-						const observer=new MutationObserver(function(mutationsList, observer) {
-							//var mutation = mutationsList[0]; debug(mutation.type, mutation);
-							var s=combo.options[combo.selectedIndex];
-							debug('select',s);
-							app.putTransval(sid.get(), s.value, 0);
-							app.putTranslate(sid.get(), !s.value, 0);
-						});
-						observer.observe(combo , { attributes: true,childList: true });
 					}
 					else if(!off && cc++<5) window.gTransTime=setTimeout(tryInit, 200);
+				}
+				function tryInitYW(){
+					var yw = document.getElementsByClassName('goog-te-menu-frame')[0];
+					//debug('yw::', yw);
+					if(yw && !yw.obz) {
+						combo.yw = yw;
+						yw.obz=1;
+						var ywdis = yw.style.display;
+						new MutationObserver(function(mutationsList, observer) {
+							var dis = mutationsList[0].target.style.display;
+							if(ywdis!=dis) {
+								ywdis=dis;
+								// window.scrollY is unreliable in this case, so...
+								var sY=app.getScrollY(sid.get());
+								if(dis!='none') {
+									yw.style.marginTop = Math.round(sY)+'px';
+								} else {
+									document.documentElement.scrollTop=sY;
+								}
+							}
+						}).observe(yw , { attributes: true, attributeFilter: ['style']});
+					} else if(cc++<5) window.gTransTime=setTimeout(tryInitYW, 200);
 				}
 				window.gTrans=tryInit;
 			})();
@@ -389,7 +417,6 @@ succ"
 				p.appendChild(e);
 				return e;
 			}
-			debug('document.body', document.head, document.body);
 			craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5;}.goog-te-menu-frame{position:absolute}';
 			document.body.id='body';
 			function googleTranslateElementInit () {
