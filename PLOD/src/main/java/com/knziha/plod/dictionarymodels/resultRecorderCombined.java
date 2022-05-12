@@ -20,6 +20,7 @@ import com.knziha.rbtree.additiveMyCpr1;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Recorder rendering search results as : LinearLayout {WebView, WebView, ... }  */
@@ -138,6 +139,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			if(firstItemIdx>0) pos = RemapPos((int) pos);
 			jointResult = data.get((int) pos);
 		}
+		
+		long did = pos<<32|Objects.hashCode(this);
 		
 		if(jointResult==null) {
 			a.showT("ERROR "+pos+" "+weblistHandler.isMergingFramesNum()+" "+weblistHandler.bMergeFrames);
@@ -328,9 +331,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			}
 			CMN.debug("mergedUrl::", mergedUrl);
 			mWebView.getSettings().setSupportZoom(true);
-			mWebView.loadUrl(mergedUrl.toString());
+			mWebView.loadUrl(mergedUrl.append("&did=").append(did).toString());
 //			mWebView.loadUrl("https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2016/September");
 			mWebView.jointResult=jointResult;
+			mWebView.currentPos = did;
 			weblistHandler.resetScrollbar(mWebView, true, false);
 			weblistHandler.pageSlider.setWebview(mWebView, null);
 		}
@@ -342,15 +346,18 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 //			if (expTbView != null) {
 //				expTbView.performClick();
 //			}
-			if(bUseDictView)
+			if(bUseDictView) {
 				weblistHandler.jointResult=jointResult;
-			else
+			}
+			else {
 				mWebView.jointResult=jointResult;
+			}
 			if(!weblistHandler.isViewSingle())
 				mWebView=null;
 			weblistHandler.pageSlider.setWebview(mWebView, weblistHandler.isViewSingle()?null:weblistHandler);
 			weblistHandler.resetScrollbar(mWebView, false, false);
 		}
+		weblistHandler.did = did;
 	}
 
 	@Override

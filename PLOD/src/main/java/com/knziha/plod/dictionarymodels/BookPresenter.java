@@ -35,6 +35,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
+import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -1871,7 +1872,9 @@ function debug(e){console.log(e)};
 			myWebColor = ColorUtils.blendARGB(myWebColor, Color.BLACK, a.ColorMultiplier_Web2);
 		}
 		a.guaranteeBackground(globalPageBackground);
-		mWebView.setBackgroundColor((getIsolateImages()||useInternal||Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT||mWebView.weblistHandler.bDataOnly)?myWebColor:Color.TRANSPARENT);
+		int bg = (getIsolateImages()||useInternal||Build.VERSION.SDK_INT<=Build.VERSION_CODES.KITKAT||mWebView.weblistHandler.bDataOnly)?myWebColor:Color.TRANSPARENT;
+		if(bg==0&&mWebView.weblistHandler.bShowingInPopup) bg = a.AppWhite;
+		mWebView.setBackgroundColor(bg);
 		/* check and set colors for toolbar title Background*/
 		if(mWebView==this.mWebView){
 			mWebView.titleBar.fromCombined = mWebView.fromCombined==1;
@@ -2624,8 +2627,8 @@ function debug(e){console.log(e)};
 			if (presenter!=null) {
 				WebViewmy wv = findWebview(sid);
 				if (wv!=null) {
-					CMN.Log("view::", presenter.a.getBookByIdNoCreation(bid).getDictionaryName(), pos, presenter.hasFilesTag());
-					boolean changed = presenter.getId()!=bid;
+					CMN.debug("view::", presenter, presenter.a.getBookByIdNoCreation(bid).getDictionaryName(), pos, presenter.hasFilesTag());
+					boolean changed = presenter.getId()!=bid || wv.presenter!=presenter;
 					if (changed) {
 						setBook(presenter.a.getBookByIdNoCreation(bid));
 						wv.setPresenter(presenter);
@@ -2639,7 +2642,7 @@ function debug(e){console.log(e)};
 						}
 					}
 					if (changed) {
-						CMN.Log("view::changed!!!", wv.changed, presenter.hasFilesTag(), hasFiles);
+						CMN.debug("view::changed!!!", wv.changed, presenter.hasFilesTag(), hasFiles);
 					}
 					if (presenter.hasFilesTag() && !hasFiles) {
 						//wv.hasFilesTag = true;
@@ -2655,7 +2658,7 @@ function debug(e){console.log(e)};
 			if (presenter!=null) {
 				WebViewmy wv = findWebview(sid);
 				if (wv != null) {
-					//CMN.Log("view::changed!!!", entryKey);
+					CMN.debug("view::changed!!!", entryKey);
 					wv.word = entryKey;
 					wv.frameAt = frameAt;
 				}
@@ -3058,7 +3061,45 @@ function debug(e){console.log(e)};
 				}
 			}
         }
-
+		
+		
+		@JavascriptInterface
+		public boolean entryPopup(int sid, String bid) {
+			CMN.Log("entryPopup", sid, bid);
+			if(presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if(wv!=null){
+					return bid.length()==0?PDICMainAppOptions.popViewEntryOne():PDICMainAppOptions.popViewEntry();
+					//return true;
+				}
+			}
+			return false;
+		}
+		
+        @JavascriptInterface
+        public void popupEntry(int sid, String url) {
+			if(presenter!=null) {
+				CMN.debug("popupEntry", sid, url);
+				WebViewmy wv = findWebview(sid);
+				if(wv!=null){
+					wv.post(() -> {
+						WebViewListHandler wlh = presenter.a.getRandomPageHandler(true);
+						WebViewmy mWebView = wlh.getMergedFrame();
+						wlh.setViewMode(null, 0, mWebView);
+						wlh.viewContent();
+						wlh.bShowInPopup=true;
+						wlh.bMergeFrames=0;
+						wlh.initMergedFrame(0, true, false);
+						wlh.popupContentView(null, url);
+						mWebView.loadUrl(url);
+						wlh.pageSlider.setWebview(mWebView, null);
+						wlh.resetScrollbar();
+					});
+				}
+			}
+        }
+		
+		
 		@JavascriptInterface
 		public void parseContent(int processed, int total, String contents) {
 			if(presenter==null) return;

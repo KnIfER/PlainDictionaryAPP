@@ -7091,7 +7091,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			int schemaIdx = url.indexOf(":");
 			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4), baseUrl=false;
 			if(mdbr) {
-				if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
+				if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
+					invoker = wlh.getMergedBook();
+					int idx = url.lastIndexOf("&did=");
+					long did = IU.parseLong(url.substring(idx+5), -1);
+					if (did!=mWebView.currentPos || mWebView.presenter!=invoker) {
+						mWebView.presenter=invoker;
+						idx = url.indexOf("q=", schemaIdx+12+5+1)+2;
+						int ed = url.indexOf("&", idx); if(ed<0) ed=url.length();
+						wlh.setStar(/*mWebView.word = */URLDecoder.decode(url.substring(idx, ed)));
+						mWebView.currentPos = did;
+						CMN.debug("view::merged::changed!!!", wlh.displaying);
+						wlh.changeViewMode(mWebView, url);
+					}
+				}
+				else if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
 					int idx=schemaIdx+12+7+1;
 					invoker = getMdictServer().md_getByURLPath(url, idx, url.indexOf("_", idx));
 				}
@@ -7204,12 +7218,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			
 			if (mWebView.changed!=0) {
 				BookPresenter finalInvoker = invoker;
+				if (mWebView.changed==1) {
+					finalInvoker.tintBackground(mWebView);
+				}
+				wlh.changeViewMode(mWebView, url);
 				mWebView.evaluateJavascript(BookPresenter.jsChanged, new ValueCallback<String>() {
 					@Override
 					public void onReceiveValue(String value) {
 						finalInvoker.setCurrentDis(mWebView, mWebView.currentPos);
 						final WebViewListHandler wlh = mWebView.weblistHandler;
-						if (mWebView.isViewSingle() && wlh.scrollFocus==mWebView) {
+						if (finalInvoker.isMergedBook() || mWebView.isViewSingle() && wlh.scrollFocus==mWebView) {
 							int frame = mWebView.frameAt;
 							if (wlh.getFrameAt(frame)!=mWebView.presenter) {
 								frame = wlh.entrySeek.getProgress();
@@ -7269,12 +7287,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 			WebViewmy mWebView = (WebViewmy) view;
+			CMN.debug("chromium SOUL::",url,view.getTag());
 			if(mWebView.forbidLoading) {
 				return true;
 			}
-			CMN.debug("chromium SOUL::",url,view.getTag());
 			final BookPresenter invoker = mWebView.presenter;
 			if(invoker==null) return false;
+			WebViewListHandler wlh = mWebView.weblistHandler;
 			boolean fromPopup = view==wordPopup.mWebView;
 			if(invoker.getIsWebx()) {
 				PlainWeb webx = (PlainWeb) invoker.bookImpl;
@@ -7330,8 +7349,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			if (url.startsWith("http://") || url.startsWith("https://")) {
 				//CMN.Log("shouldOverrideUrlLoading_http",url);
-				if(invoker==weblistHandler.mMergedBook
-					|| url.indexOf("mdbr.com")>0) {
+				int schemaIdx = url.indexOf(":");
+				CMN.Log("invoker.isMergedBook()::", invoker.isMergedBook(), url.regionMatches(schemaIdx+12, "base", 0, 4), !wlh.bShowingInPopup && opt.popViewEntry(), url.regionMatches(url.indexOf("/", schemaIdx+12+1+4+2)+1, "entry", 0, 5));
+				if(invoker.isMergedBook() || url.indexOf("mdbr.com")>0) {
 					//todo
 					return false;
 				}
@@ -7365,7 +7385,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				try {
 					url = URLDecoder.decode(url, "UTF-8");
 				} catch (Exception ignored) { }
-				WebViewListHandler wlh = mWebView.weblistHandler;
 				boolean fromCombined = !wlh.isViewSingle();
 				boolean pop = !wlh.bShowingInPopup // popup new content displayer
 						&& (fromCombined && opt.popViewEntryMulti()

@@ -241,8 +241,9 @@ public abstract class MdictServer extends NanoHTTPD {
 				if(key.endsWith("\\"))
 					key=key.substring(0, key.length()-1);
 				SU.Log("jumping...", key);
-				String res = presenter.bookImpl.getRecordsAt(null, presenter.bookImpl.lookUp(key));
-				return newFixedLengthResponse(constructMdPage(presenter, res, b1));
+				int pos = presenter.bookImpl.lookUp(key);
+				String res = presenter.bookImpl.getRecordsAt(null, pos);
+				return newFixedLengthResponse(constructMdPage(presenter, res, b1, pos));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -386,18 +387,18 @@ public abstract class MdictServer extends NanoHTTPD {
 					boolean encoded=dn.charAt(0)=='d';
 					presenter = md_getByURL(list[0]);
 					if(presenter.getIsWebx()) {
-						return newFixedLengthResponse(constructMdPage(presenter,presenter.getWebx().getSyntheticWebPage(), true));
+						return newFixedLengthResponse(constructMdPage(presenter,presenter.getWebx().getSyntheticWebPage(), true, 0));
 					}
 					//SU.Log("content_received::presenter::", list[0], presenter, presenter.getId()); //  /content/d5_JPA
 					long[] list2 = new long[list.length-1];
 					for(int i=0;i<list.length-1;i++)
 						list2[i]=encoded?IU.TextToNumber_SIXTWO_LE(list[i+1]):IU.parsint(list[i+1]);
-					return newFixedLengthResponse(constructMdPage(presenter,lid!=-1?presenter.bookImpl.getVirtualRecordsAt(this, list2):presenter.bookImpl.getRecordsAt(null, list2), true));
+					return newFixedLengthResponse(constructMdPage(presenter,lid!=-1?presenter.bookImpl.getVirtualRecordsAt(this, list2):presenter.bookImpl.getRecordsAt(null, list2), true, (int)list2[0]));
 				} catch (Exception e) {
 					SU.Log(e);
 				}
 			}
-			return newFixedLengthResponse(constructMdPage(presenter,"<div>ERROR FETCHING CONTENT:"+uri+"</div>", true));
+			return newFixedLengthResponse(constructMdPage(presenter,"<div>ERROR FETCHING CONTENT:"+uri+"</div>", true, 0));
 		}
 		
 		boolean shouldLoadFiles = PDICMainAppOptions.getAllowPlugRes()||presenter.isHasExtStyle();
@@ -721,7 +722,7 @@ public abstract class MdictServer extends NanoHTTPD {
 	int MdPageBaseLen=-1;
 	String MdPage_fragment1,MdPage_fragment2, MdPage_fragment3="</html>";
 	int MdPageLength=0;
-	private String constructMdPage(BookPresenter presenter, String record, boolean b1) {
+	private String constructMdPage(BookPresenter presenter, String record, boolean b1, int pos) {
 		if(b1 && mdict.fullpagePattern.matcher(record).find())
 			b1=false;
 		b1=true;
@@ -763,6 +764,11 @@ public abstract class MdictServer extends NanoHTTPD {
 					.append("d").append(IU.NumberToText_SIXTWO_LE(presenter.getId(), null))// "/base/d0"
 					.append(MdPage_fragment2);
 			presenter.plugCssWithSameFileName(MdPageBuilder);
+			MdPageBuilder.append("<script>if(app&&!frameElement)app.view(sid.get(),")
+					.append(presenter.getId())
+					.append(",").append(pos)
+					.append(",").append(0)
+					.append(")</script>");
 			MdPageBuilder.append("</head>")
 					.append(record)
 					.append(MdPage_fragment3)
@@ -786,6 +792,11 @@ public abstract class MdictServer extends NanoHTTPD {
 						//.append(dictIdx)// "/base/0"
 						.append("d").append(IU.NumberToText_SIXTWO_LE(presenter.getId(), null))// "/base/d0"
 						.append(SimplestInjectionEnd)
+							.append("<script>if(app&&!frameElement)app.view(sid.get(),")
+							.append(presenter.getId())
+							.append(",").append(pos)
+							.append(",").append(0)
+							.append(")</script>")
 						.append(idx==-1?"</head>":"")
 						.append(end);
 				return MdPageBuilder.toString();

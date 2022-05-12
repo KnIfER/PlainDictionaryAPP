@@ -91,6 +91,8 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public ScrollViewmy WHP;
 	public PDICMainAppOptions opt;
 	ViewGroup webholder;
+	/** displaying id of batchSearch */
+	public long did;
 	public additiveMyCpr1 jointResult;
 	public WebViewmy mMergedFrame;
 	BookPresenter mMergedBook;
@@ -501,6 +503,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			//mMergedFrame.setOnScrollChangedListener(null);
 			//mMergedFrame.SetupScrollRect(true);
 			mMergedFrame.getSettings().setTextZoom(BookPresenter.def_fontsize);
+			scrollFocus = mMergedFrame;
 		}
 		return mMergedFrame;
 	}
@@ -869,7 +872,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					ViewUtils.setVisible(contentUIData.browserWidget14, PDICMainAppOptions.showPrvBtn());
 					ViewUtils.setVisible(contentUIData.browserWidget13, PDICMainAppOptions.showNxtBtn());
 				}
-				ViewUtils.setVisible(contentUIData.zoomCtrl, multiDicts && PDICMainAppOptions.showZoomBtn());
+				ViewUtils.setVisible(contentUIData.zoomCtrl, PDICMainAppOptions.showZoomBtn());
 				ViewUtils.setVisible(prv, multiDicts && PDICMainAppOptions.showPrvBtnSmall());
 				ViewUtils.setVisible(nxt, multiDicts && PDICMainAppOptions.showNxtBtnSmall());
 				showSeek = multiDicts && PDICMainAppOptions.showEntrySeek() && (bMerge == 2 ? PDICMainAppOptions.showEntrySeekbarFolding() : PDICMainAppOptions.showEntrySeekbar());
@@ -893,6 +896,27 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		}
 		if(this.dictView!=dictView) {
 			this.dictView = dictView;
+		}
+	}
+	
+	public void changeViewMode(WebViewmy view, String url) {
+		if (isViewSingle()) {
+			boolean vis;
+			if (url.contains("merge")) {
+				ViewUtils.setVisible(entrySeek, url.indexOf("-d", 15)>0);
+				vis = false;
+				if (view.titleBar!=null) {
+					ViewUtils.setVisible(view.titleBar, false);
+				}
+			} else {
+				ViewUtils.setVisible(entrySeek, false);
+				vis = PDICMainAppOptions.showDictName();
+				if (view.titleBar!=null) {
+					ViewUtils.setVisible(view.titleBar, true);
+				}
+			}
+			ViewUtils.setVisible(contentUIData.dictNameStroke, vis);
+			ViewUtils.setVisible(contentUIData.dictName, vis);
 		}
 	}
 	
@@ -1676,6 +1700,9 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			displaying = key;
 			if (ViewUtils.isVisibleV2(browserWidget8)) {
 				browserWidget8.setActivated(a.GetIsFavoriteTerm(key));
+			}
+			if (bShowingInPopup) {
+				alloydPanel.toolbar.setTitle(key);
 			}
 		}
 	}
