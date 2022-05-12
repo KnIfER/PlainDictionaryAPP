@@ -117,6 +117,15 @@ function hiPlaySound(e){
 	audio.play();
 }
 
+function popupEntry(e){
+	var t;
+	for(var i=0;i<10 && (t=e.path[i]);i++)
+		if(t.href!==undefined)
+			break;
+	app.popupEntry(sid.get(), t.href);
+	return false;
+}
+
 function wrappedDown(e){
 	//debug(e);
 	var t;
@@ -144,9 +153,27 @@ function wrappedDown(e){
 			t.href="entry/"+ent;
 			debug("regEntry", ent, t.href);
 			nxtEntry=t;
+			if(app && app.entryPopup(sid.get(), frameElement?frameElement.dictInfo.id:'')) {
+				if(t.onclick!==popupEntry) {
+					t.rawClick=t.onclick;
+					t.onclick=popupEntry;
+				}
+				return false;
+			} else if(t.onclick==popupEntry) {
+				t.onclick=t.rawClick;
+			}
 		} 
 		else if(t.ent) {
 			nxtEntry=t;
+			if(app && app.entryPopup(sid.get(), frameElement?frameElement.dictInfo.id:'')) {
+				if(t.onclick!==popupEntry) {
+					t.rawClick=t.onclick;
+					t.onclick=popupEntry;
+				}
+				return false;
+			} else if(t.onclick==popupEntry) {
+				t.onclick=t.rawClick;
+			}
 		}
 		else if(regSound.test(t.href)) {/*拦截 sound 连接*/
 			var link=/* "sound/"+ */t.href.substring(8);
