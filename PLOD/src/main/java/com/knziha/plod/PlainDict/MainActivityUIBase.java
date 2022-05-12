@@ -6394,8 +6394,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (weblist.isMultiRecord()) {
 			if(which==-1) which=mergeFrames();
 			boolean bUseMergedUrl = which!=0;
-			if(which!=weblist.bMergingFrames) {
-				weblist.setViewMode(weblist.multiRecord, which, weblist.dictView);
+			if(which!=weblist.bMergeFrames) {
+				weblist.setViewMode(weblist.multiRecord, opt.multiViewMode(), weblist.dictView);
 				weblist.bMergeFrames = which;
 				weblist.webHolderSwapHide = true;
 				// 旧版本切换新版本出现闪黑，
@@ -7010,13 +7010,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	};
 	
 	void doTranslation(WebViewListHandler weblistHandler, int which, DialogInterface dialog) {
-		WebViewmy mWebView = null;
-		if(weblistHandler.isMultiRecord() && weblistHandler.bMergingFrames==0) {
-			View rl = weblistHandler.contentUIData.webSingleholder.getChildAt(0);
-			if(rl!=null) mWebView = (WebViewmy) rl.getTag();
-		} else {
-			mWebView = weblistHandler.dictView;
-		}
+		WebViewmy mWebView = weblistHandler.getWebContext();
 		final int szTranslators = 2;
 		CMN.Log("doTranslation::", mWebView, weblistHandler.bMergingFrames);
 		if(mWebView!=null) {

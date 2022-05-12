@@ -1716,12 +1716,19 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	}
 	
 	void NavWeb(int d) {
-		WebViewmy wv = isViewSingle() ? dictView : scrollFocus;
+		WebViewmy wv = getWebContext();
 		if (wv !=null) {
 			CMN.debug("NavWeb", wv.getUrl());
 			if (d>0) wv.goForward();
 			else wv.goBack();
 		}
+	}
+	
+	public final WebViewmy getWebContext() {
+		//CMN.Log("getWebContext::", isViewSingle(), dictView==null);
+		return isViewSingle() ?
+				/*isMultiRecord()*/dictView==null ? getMergedFrame() : dictView
+				: scrollFocus;
 	}
 	
 	public final boolean bottomNavWeb() {

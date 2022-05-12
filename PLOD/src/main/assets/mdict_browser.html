@@ -896,7 +896,7 @@
 		/**/
 
 		function Initialize() {
-			window.debug=function(){var e=arguments,s='';for(var i=0;i<e.length;i++)s+=e[i]+', ';console.log('fatal web d::'+s)};
+			window.debug=function(){var e=arguments,s=['fatal web ::'];for(var i=0;i<e.length;i++)s.push(e[i]);console.log(s)};
 			//window.debug=function(...e){console.log('fatal web d::', e)};
 			if(String.prototype.startsWith != 'function') {
 				loadJs("MdbR/KitPatch.js", doInitialize);
@@ -1750,6 +1750,10 @@
 				}
 				tFrame(frames[0]);
 				initNav();
+				if(document.body.style.paddingBottom) {
+					var pad = craft(0,0,defP);
+					pad.style.paddingBottom = document.body.style.paddingBottom;
+				}
 			}
 			processing=false;
 		}

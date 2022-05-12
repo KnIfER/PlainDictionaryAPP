@@ -453,32 +453,32 @@ succ"
 					} else if(cc++<5) window.gTransTime=setTimeout(tryInitYW, 200);
 				}
 				window.gTrans=tryInit;
+				// document.body.id='body';
+				function loadJs(url,callback){
+					var e=document.createElement('script');
+					e.type='text/javascript';
+					e.onload=callback;
+					e.src=url;
+					document.body.appendChild(e);
+				}
+				function craft(c, t, p) {
+					var e=document.createElement(t||'DIV');
+					if(c)e.className=c;
+					p.appendChild(e);
+					return e;
+				}
+				craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5}.goog-te-menu-frame{position:absolute}#goog-gt-tt>:first-child{padding:0!important}#goog-gt-tt .logo{padding:5px}';
+				document.body.id='body';
+				loadJs('https://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit')
 			})();
-			// document.body.id='body';
-			function loadJs(url,callback){
-				var e=document.createElement('script');
-				e.type='text/javascript';
-				e.onload=callback;
-				e.src=url;
-				document.body.appendChild(e);
-			}
-			function craft(c, t, p) {
-				var e=document.createElement(t||'DIV');
-				if(c)e.className=c;
-				p.appendChild(e);
-				return e;
-			}
-			craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5}.goog-te-menu-frame{position:absolute}#goog-gt-tt>:first-child{padding:0!important}#goog-gt-tt .logo{padding:5px}';
-			document.body.id='body';
 			function googleTranslateElementInit () {
-						var e=new google.translate.TranslateElement(
-							{ pageLanguage: 'auto' }
-							//{pageLanguage:'auto',layout:google.translate.TranslateElement.InlineLayout.SIMPLE,multilanguagePage:true}
-							, 'body');
-						console.log('ret', e);
-						window.gTransTime=setTimeout(window.gTrans, 200);
-					}
-			loadJs('https://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit')
+				var e=new google.translate.TranslateElement(
+					{ pageLanguage: 'auto' }
+					//{pageLanguage:'auto',layout:google.translate.TranslateElement.InlineLayout.SIMPLE,multilanguagePage:true}
+					, 'body');
+				console.log('ret', e);
+				window.gTransTime=setTimeout(window.gTrans, 200);
+			}
 		} else {
 			window.gTransTime=setTimeout(window.gTrans, 200);
 		}
