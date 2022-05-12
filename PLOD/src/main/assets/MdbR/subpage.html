@@ -126,6 +126,17 @@ function popupEntry(e){
 	return false;
 }
 
+function entryPop(t){
+	if(app && app.entryPopup(sid.get(), frameElement?frameElement.dictInfo.id:'')) {
+		if(t.onclick!==popupEntry) {
+			t.rawClick=t.onclick;
+			t.onclick=popupEntry;
+		}
+	} else if(t.onclick==popupEntry) {
+		t.onclick=t.rawClick;
+	}
+}
+
 function wrappedDown(e){
 	//debug(e);
 	var t;
@@ -153,27 +164,11 @@ function wrappedDown(e){
 			t.href="entry/"+ent;
 			debug("regEntry", ent, t.href);
 			nxtEntry=t;
-			if(app && app.entryPopup(sid.get(), frameElement?frameElement.dictInfo.id:'')) {
-				if(t.onclick!==popupEntry) {
-					t.rawClick=t.onclick;
-					t.onclick=popupEntry;
-				}
-				return false;
-			} else if(t.onclick==popupEntry) {
-				t.onclick=t.rawClick;
-			}
+			entryPop(t);
 		} 
 		else if(t.ent) {
 			nxtEntry=t;
-			if(app && app.entryPopup(sid.get(), frameElement?frameElement.dictInfo.id:'')) {
-				if(t.onclick!==popupEntry) {
-					t.rawClick=t.onclick;
-					t.onclick=popupEntry;
-				}
-				return false;
-			} else if(t.onclick==popupEntry) {
-				t.onclick=t.rawClick;
-			}
+			entryPop(t);
 		}
 		else if(regSound.test(t.href)) {/*拦截 sound 连接*/
 			var link=/* "sound/"+ */t.href.substring(8);

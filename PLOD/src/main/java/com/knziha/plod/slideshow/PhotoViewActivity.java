@@ -1,5 +1,10 @@
 package com.knziha.plod.slideshow;
 
+import static com.knziha.plod.plaindict.CMN.Visible;
+import static com.knziha.plod.plaindict.MainActivityUIBase.fix_full_screen_global;
+import static com.knziha.plod.plaindict.Toastable_Activity.checkMargin;
+import static com.knziha.plod.plaindict.Toastable_Activity.setStatusBarColor;
+
 import android.animation.ObjectAnimator;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -16,7 +21,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,46 +37,43 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.knziha.plod.dictionary.UniversalDictionaryInterface;
-import com.knziha.plod.ebook.Utils.BU;
+import com.knziha.plod.dictionary.Utils.Bag;
+import com.knziha.plod.dictionary.Utils.F1ag;
+import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.OptionProcessor;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.io.File;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.HashSet;
 import java.util.LinkedList;
 
-import static com.knziha.plod.plaindict.CMN.Visible;
-import static com.knziha.plod.plaindict.MainActivityUIBase.fix_full_screen_global;
-import static com.knziha.plod.plaindict.Toastable_Activity.checkMargin;
-import static com.knziha.plod.plaindict.Toastable_Activity.setStatusBarColor;
-
-/** Photo View Activity based on Subsampling-Scale-Image-View */
+/** 精致小巧的图片浏览器 */
 public class PhotoViewActivity extends AppCompatActivity implements View.OnClickListener,
 		View.OnLongClickListener,
 		OptionProcessor {
 	public View background;
 	public View float_menu;
 	public View float_exit;
-	public UniversalDictionaryInterface resProvider;
-	public PhotoBrowsingContext IBC_;
-	public static final int OffScreenViewPagerSize=5;
+	private BookPresenter book;
 	private String[] imageUrls;
+	private String[] imageUrlKeys;
+	private String[] imageUrl = new String[1];
 	private int curPosition = -1;
+	private int startPosition = -1;
+	private long startBid = -1;
 	private DisplayMetrics dm;
 	PDICMainAppOptions opt;
+	
+	public final Bag lockX = new Bag(false);
 
 	LinkedList<PhotoHolder> mViewCache = new LinkedList<>();
 	private ViewPager viewPager;
 
-	private HashSet<Integer> processedRec = new HashSet<>();
 	private TextView indicator;
 	private View forward;
 	private View backward;
@@ -116,12 +117,15 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		
 		AgentApplication agent = ((AgentApplication)getApplication());
+		book = agent.book;
 		imageUrls = agent.Imgs;
+		imageUrlKeys = new String[imageUrls.length];
 		opt=agent.opt;
-		resProvider=agent.resProvider;
-		IBC_=agent.IBC;
 		curPosition = agent.currentImg;
 		agent.clearTdata();
+		
+		startBid = book.getId();
+		startPosition = curPosition;
 		
 		if(imageUrls==null){
 			finish();
@@ -174,7 +178,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 					vh.subview.view_pager_toguard = viewPager;
 					vh.subview.setOnClickListener(PhotoViewActivity.this);
 					vh.subview.setOnLongClickListener(PhotoViewActivity.this);
-					vh.subview.IBC = IBC_;
+					vh.subview.lockX = lockX;
 				}
 				if (vh.itemView.getParent() != null)
 					((ViewGroup) vh.itemView.getParent()).removeView(vh.itemView);
@@ -186,26 +190,40 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 				imageView.setScaleX(1);
 				imageView.setScaleY(1);
 				imageView.setRotation(0);
-				if(!processedRec.contains(position)){
-					imageUrls[position] = ProcessUrl(imageUrls[position]);
-					processedRec.add(position);
-				}
-				String key=imageUrls[position];
-				vh.path = key;
+				String url=imageUrls[position];
+				vh.path = url;
 				try {
 					vh.subview.recycle();
 					vh.subview.dm = dm;
-					if(CMCF!=null){
+					PhotoBrowserContext IBC = vh.subview.IBC;
+					IBC.setIBC(book.IBC);
+					IBC.pza = IBC.presetAlignment;
+					if (IBC.presetAlignment==3) {
+						if (book.getId() == startBid && position == startPosition) {
+							IBC.lastX = book.a.weblist.scrollFocus.lastX;
+							IBC.lastY = book.a.weblist.scrollFocus.lastY;
+						} else {
+							IBC.pza=0;
+						}
+					}
+					if(CMCF!=null) {
 						imageView.setColorFilter(CMCF);
+					}
+					String key = imageUrlKeys[position];
+					imageUrl[0] = url;
+					book = ViewUtils.getBookFromImageUrl(book, imageUrl, key==null);
+					if (key==null) {
+						imageUrlKeys[position]=key=ProcessUrl(imageUrl[0]);
 					}
 					Glide.with(PhotoViewActivity.this)
 							.asBitmap()
-							.load(key.startsWith("/pdfimg/")?new PdfPic(key, getBaseContext()):new MddPic(resProvider, key))
+							//.load(key.startsWith("/pdfimg/")?new PdfPic(key, getBaseContext()):new MddPic(resProvider, key))
+							.load(new MddPic(book.bookImpl, key))
 							.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
 							.fitCenter()
 							.diskCacheStrategy(DiskCacheStrategy.NONE)
 							.listener(mGListener).into(imageView);//mGlideListener
-				}catch (Exception e){ CMN.Log(e); }
+				} catch (Exception e){ CMN.Log(e); }
 				return vh.itemView;
 			}
 
@@ -291,7 +309,6 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 		ViewGroup itemView;
 		int position;
 		ImageView pv;
-		TilesGridLayout pg;
 		SubsamplingScaleImageView subview;
 		PhotoHolder(View v){
 			//super(v);
@@ -419,7 +436,7 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 		boolean bool;
 		switch (processId){
 			case 0://锁定X
-				IBC_.lockX = opt.getPhotoViewLockXMovement();
+				lockX.val = opt.getPhotoViewLockXMovement();
 				break;
 			case 1://菜单按钮
 				bool = opt.getPhotoViewShowFloatMenu();
@@ -481,16 +498,17 @@ public class PhotoViewActivity extends AppCompatActivity implements View.OnClick
 	}
 	
 	private void SaveCurrentImg() {
-		String PicPath = imageUrls[viewPager.getCurrentItem()];
-		try {
-			InputStream resTmp = resProvider.getResourceByKey(PicPath);
-			if (resTmp != null) {
-				File f = new File("/sdcard/download", PicPath);
-				if(!f.exists()){
-					BU.SaveToFile(resTmp, f);
-					Toast.makeText(this, f.getName()+" 写入成功！", Toast.LENGTH_LONG).show();
-				}
-			}
-		} catch (Exception ignored) {  }
+//		String PicPath = imageUrls[viewPager.getCurrentItem()];
+//		try {
+//			InputStream resTmp = resProvider.getResourceByKey(PicPath);
+//			if (resTmp != null) {
+//				File f = new File("/sdcard/download", PicPath);
+//				if(!f.exists()){
+//					BU.SaveToFile(resTmp, f);
+//					Toast.makeText(this, f.getName()+" 写入成功！", Toast.LENGTH_LONG).show();
+//				}
+//			}
+//		} catch (Exception ignored) {  }
+		//todo 123
 	}
 }

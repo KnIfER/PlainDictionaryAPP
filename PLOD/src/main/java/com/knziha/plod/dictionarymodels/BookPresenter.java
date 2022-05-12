@@ -98,6 +98,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2902,47 +2903,26 @@ function debug(e){console.log(e)};
 
         @JavascriptInterface
         public void openImage(int sid, int position, float offsetX, float offsetY, String...img) {
-			BookPresenter book = this.presenter;
-			if(book==null || !book.getImageBrowsable() || img.length==0) return;
-			String src = img[0];
-			if(book.isMergedBook()) {
-				int idx = src.indexOf("mdbr.com/base/");
-				if(idx>=0) {
-					idx+=14;
-					int end = src.indexOf("/", idx+1);
-					try {
-						book = book.a.getMdictServer().md_getByURLPath(src, idx, end);
-						for (int i = 0; i < img.length; i++) {
-							img[i] = img[i].substring(end+1);
-						}
-					} catch (Exception e) {
-						CMN.debug(e);
-					}
-				}
-			} else {
-				int idx = src.indexOf("mdbr.com");
-				if(idx>=0) {
-					try {
-						for (int i = 0; i < img.length; i++) { //todo opt
-							img[i] = img[i].substring(idx+8);
-						}
-					} catch (Exception e) {
-						CMN.debug(e);
-					}
+			BookPresenter book = ViewUtils.getBookFromImageUrl(presenter, img, false);
+			if(book==null) return;
+			String url = img[0];
+			CMN.debug("openImage::", url);
+			if (book.getImageBrowsable()) {
+				MainActivityUIBase a = book.a;
+				AgentApplication app = ((AgentApplication) a.getApplication());
+				app.book = book;
+				app.opt = book.opt;
+				app.Imgs = img;
+				app.currentImg = position;
+				a.root.postDelayed(a.getOpenImgRunnable(), 100);
+				WebViewmy wv = findWebview(sid);
+				if (wv!=null) {
+					wv.lastX = offsetX;
+					wv.lastY = offsetY;
+					a.weblist = wv.weblistHandler;
+					wv.weblistHandler.scrollFocus = wv;
 				}
 			}
-        	//CMN.Log("openImage::", book, offsetX, offsetY, img);
-			MainActivityUIBase a = book.a;
-			AgentApplication app = ((AgentApplication) a.getApplication());
-			app.resProvider = book.bookImpl;
-			app.IBC = book.IBC;
-			app.opt = book.opt;
-			app.Imgs = img;
-			app.currentImg = position;
-			//WebViewmy mWebView = findWebview(sid);
-			app.IBC.lastX = offsetX;
-			app.IBC.lastY = offsetY;
-			a.root.postDelayed(a.getOpenImgRunnable(), 100);
 		}
 
         @JavascriptInterface

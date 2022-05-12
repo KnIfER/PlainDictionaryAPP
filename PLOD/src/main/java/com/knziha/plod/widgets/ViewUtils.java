@@ -750,6 +750,47 @@ public class ViewUtils {
 		} catch (Exception e) { CMN.Log(e);}
 	}
 	
+	public static BookPresenter getBookFromImageUrl(BookPresenter book, String[] imgs, boolean modUrl) {
+		if (book!=null && imgs.length>0) {
+			String url = imgs[0];
+			CMN.debug("getBookFromImageUrl::", url);
+			int schemaIdx = url.indexOf(":");
+			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4);
+			try {
+				if(mdbr) {
+					int slashIdx = url.indexOf("/", schemaIdx+7);
+					if(slashIdx<0) slashIdx = url.length();
+					if (url.charAt(schemaIdx+8)=='d') {
+						// loaded with base url
+						if (!url.regionMatches(schemaIdx+9, book.idStr10, 0, slashIdx-schemaIdx-9)) {
+							book = book.a.getBookById(IU.parseLong(url.substring(schemaIdx+9, slashIdx)));
+						}
+						if(modUrl) {
+							imgs[0] = url.substring(slashIdx);
+							//CMN.debug("mod::", imgs[0]);
+						}
+						return book;
+					} else if(url.regionMatches(schemaIdx+12, "base", 0, 4)) {
+						// mdbr.com/base/
+						int idx=slashIdx+5+1;
+						slashIdx = url.indexOf("/", idx);
+						if (slashIdx>idx && !url.regionMatches(idx+1, book.idStr, 0, slashIdx)) {
+							book = book.a.getMdictServer().md_getByURLPath(url, idx, url.indexOf("/", idx));
+						}
+						if(modUrl) {
+							imgs[0] = url.substring(slashIdx);
+							//CMN.debug("mod::", imgs[0]);
+						}
+						return book;
+					}
+				}
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
+		}
+		return null;
+	}
+	
 	public void Destory(){
 		mNestedScrollingChildHelper.Destory();
 		mNestedScrollingChildHelper = null;

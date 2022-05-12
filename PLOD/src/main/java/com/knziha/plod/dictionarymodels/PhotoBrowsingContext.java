@@ -3,15 +3,12 @@ package com.knziha.plod.dictionarymodels;
 import org.knziha.metaline.Metaline;
 
 public class PhotoBrowsingContext {
-	public boolean lockX;
 	public long firstFlag;
 	public float tapZoomRatio = 2.25f;
 	public float tapZoomXOffset = 0f;
 	public float doubleClickZoomLevel1 = 0f;
 	public float doubleClickZoomLevel2 = 0f;
 	public float doubleClickPresetXOffset = 0f;
-	public float lastX;
-	public float lastY;
 	
 	/** page. 是否双击放大网页 */
 	@Metaline(flagPos=10) public boolean tapZoom(){ firstFlag=firstFlag; throw new RuntimeException(); }

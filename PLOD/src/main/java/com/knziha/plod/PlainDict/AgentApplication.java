@@ -54,8 +54,7 @@ public class AgentApplication extends Application {
 	/** 退出全部实例时关闭、清理 */
 	LexicalDBHelper historyCon;
 	
-	public UniversalDictionaryInterface resProvider;
-	public PhotoBrowsingContext IBC;
+	public BookPresenter book;
 	public String[] Imgs;
 	public int currentImg;
 	
@@ -147,8 +146,7 @@ public class AgentApplication extends Application {
 		mdict_cache=null;
 		mdlibsCon=null;
 		opt=null;
-		resProvider =null;
-		IBC=null;
+		book=null;
 		Imgs=null;
 	}
 

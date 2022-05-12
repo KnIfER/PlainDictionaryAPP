@@ -59,6 +59,7 @@ import androidx.core.view.GestureDetectorCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import com.knziha.plod.ArrayList.ArrayListGood;
+import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.slideshow.decoder.CompatDecoderFactory;
@@ -119,7 +120,8 @@ public class SubsamplingScaleImageView extends View {
 	/** State change originated from a double tap zoom anim. */
 	public static final int ORIGIN_DOUBLE_TAP_ZOOM = 4;
 	
-	public PhotoBrowsingContext IBC;
+	public final PhotoBrowserContext IBC = new PhotoBrowserContext();
+	public Bag lockX;
 	
 	// Uri of full size image
 	private Uri uri;
@@ -294,7 +296,7 @@ public class SubsamplingScaleImageView extends View {
 				
 				int flag;
 				
-				if(!IBC.lockX){
+				if(!lockX.val){
 					vTranslate.x = vTranslate.x+(flingVx>0?x:-x);// fingStartX + cfx-flingScroller.getStartX();
 				}
 				vTranslate.y = vTranslate.y+(flingVy>0?y:-y);// fingStartY + cfy-flingScroller.getStartY();
@@ -1159,7 +1161,7 @@ public class SubsamplingScaleImageView extends View {
 							float dxR = (float) (dxRaw * cos - dyRaw * -sin);
 							float dyR = (float) (dxRaw * -sin + dyRaw * cos);
 							
-							if(!IBC.lockX) {
+							if(!lockX.val) {
 								vTranslate.x = vTranslate.x + dxR;
 							}
 							vTranslate.y = vTranslate.y + dyR;
@@ -1676,7 +1678,7 @@ public class SubsamplingScaleImageView extends View {
 			} else if(currentScale <= quickZoomLevels[2]-padding){
 				targetScale = quickZoomLevels[2];
 			} else {
-				if(IBC.getDoubleClick12()){
+				if(IBC.doubleClk12){
 					targetScale = quickZoomLevels[1];
 				} else {
 					targetScale = quickZoomLevels[0];
@@ -2288,8 +2290,8 @@ public class SubsamplingScaleImageView extends View {
 			vTranslate.x = (getScreenWidth()*1.0f/2) - (scale * _sPendingCenter.x);
 			vTranslate.y = (getScreenHeight()*1.0f/2) - (scale * _sPendingCenter.y);
 			
-			int pzl = IBC.getPresetZoomLevel();
-			int pza = IBC.getPresetZoomAlignment();
+			int pzl = IBC.presetZoom;
+			int pza = IBC.pza;
 			if(pzl!=0) {
 				vTranslate.y = 0;
 				if(pzl==1&&IBC.doubleClickZoomLevel1>1) {
