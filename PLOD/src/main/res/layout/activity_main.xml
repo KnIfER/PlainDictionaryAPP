@@ -251,14 +251,12 @@
 			android:listSelector="@drawable/listviewselector0"
 			android:fastScrollEnabled="true"
 			android:fastScrollStyle="@style/fscroll"
-			android:layout_marginBottom="45dip"
 			/>
 
 		<com.knziha.plod.widgets.AdvancedNestScrollListview
 			android:id="@+id/sub_list2"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			android:layout_marginBottom="45dip"
 			android:drawSelectorOnTop="true"
 			android:fastScrollEnabled="true"
 			android:fastScrollStyle="@style/fscroll"
