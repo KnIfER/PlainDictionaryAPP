@@ -484,7 +484,7 @@ public class PlainText extends DictionaryAdapter {
 	}
 
 	@Override
-	public void flowerFindAllKeys(String key, int SelfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) {
+	public void flowerFindAllKeys(String key, Object book, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) {
 	}
 
 	public String getAboutString() {

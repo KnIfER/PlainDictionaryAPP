@@ -4184,12 +4184,12 @@ function debug(e){console.log(e)};
 		}
 	}
 	
-	public void findAllNames(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchInterface searchLayer) throws IOException {
-		bookImpl.flowerFindAllKeys(searchTerm, adapter_idx, searchLayer);
+	public void findAllNames(String searchTerm, BookPresenter book, PDICMainActivity.AdvancedSearchInterface searchLayer) throws IOException {
+		bookImpl.flowerFindAllKeys(searchTerm, book, searchLayer);
 	}
 	
-	public void findAllTexts(String searchTerm, int adapter_idx, PDICMainActivity.AdvancedSearchInterface searchLayer) throws IOException {
-		bookImpl.flowerFindAllContents(searchTerm, adapter_idx, searchLayer);
+	public void findAllTexts(String searchTerm, BookPresenter book, PDICMainActivity.AdvancedSearchInterface searchLayer) throws IOException {
+		bookImpl.flowerFindAllContents(searchTerm, book, searchLayer);
 	}
 	
 	@Override

@@ -1287,8 +1287,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		fuzzySearchLayer=new AdvancedSearchInterface(opt, md, SEARCHTYPE_SEARCHINNAMES);
 		fullSearchLayer=new AdvancedSearchInterface(opt, md, SEARCHTYPE_SEARCHINTEXTS);
 
-		adaptermy3.results = new resultRecorderScattered(this,md,TintWildResult,fuzzySearchLayer);
-		adaptermy4.results = new resultRecorderScattered(this,md,TintWildResult,fullSearchLayer);
+		adaptermy3.results = new resultRecorderScattered(this,loadManager,TintWildResult,fuzzySearchLayer);
+		adaptermy4.results = new resultRecorderScattered(this,loadManager,TintWildResult,fullSearchLayer);
 		//tc
 		execSearchRunnable = () -> {
 			if(CurrentViewPage==1) {

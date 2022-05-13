@@ -525,9 +525,10 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			CMN.Log("reinitMergedFrame::", mergeWebHolder, popup, bUseMergedUrl);
 			if(mergeWebHolder==0) {
 				contentUIData.webcontentlister.setAlpha(1);
-				if(mMergedBook!=null) {
-					mMergedBook.toolbar.setVisibility(View.VISIBLE);
-				}
+				//if(mMergedBook!=null) {
+				//	mMergedBook.toolbar.setVisibility(View.VISIBLE);
+				//}
+				
 //				webholder.getLayoutParams().height = WRAP_CONTENT;
 //				ViewUtils.addViewToParent(WHP, contentUIData.PageSlider, 1);
 //				if(webHolderSwapHide) {

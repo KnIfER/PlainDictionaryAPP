@@ -31,7 +31,7 @@ public class resultRecorderDiscrete {
 
 	public void invalidate() {}
 
-	public void invalidate(int adapter_idx) {}
+	public void invalidate(BookPresenter book) {}
 
 	public void shutUp() {}
 

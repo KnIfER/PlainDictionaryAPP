@@ -1739,10 +1739,10 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 	}
 
 	//XXX2
-	public void flowerFindAllKeys(String key, int SelfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher)
+	public void flowerFindAllKeys(String key, Object book, AbsAdvancedSearchLogicLayer SearchLauncher)
 	{
 		if(virtualIndex!=null){
-			virtualIndex.flowerFindAllKeys(key, SelfAtIdx, SearchLauncher);
+			virtualIndex.flowerFindAllKeys(key, book, SearchLauncher);
 			return;
 		}
 		Pattern keyPattern=null;//用于 复核 ，并不直接参与搜索
@@ -1787,7 +1787,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 
 		//show("~"+step+"~"+split_keys_thread_number+"~"+_num_key_blocks);
 		
-		ArrayList<SearchResultBean>[] final_combining_search_tree=SearchLauncher.getTreeBuilding(SelfAtIdx, split_keys_thread_number);
+		ArrayList<SearchResultBean>[] final_combining_search_tree=SearchLauncher.getTreeBuilding(book, split_keys_thread_number);
 
 
 		for(int ti=0; ti<split_keys_thread_number; ti++){//分  thread_number 股线程运行
@@ -1886,7 +1886,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 										SU.Lz4_decompress(_key_block_compressed_many, startI+8, key_block, 0, (int)(infoI.key_block_decompressed_size));
 									break;
 								}
-								find_in_keyBlock(finalJoniregex, finalKeyPattern, key_block,infoI, finalMatcher,SelfAtIdx,item, SearchLauncher);
+								find_in_keyBlock(finalJoniregex, finalKeyPattern, key_block,infoI, finalMatcher,book,item, SearchLauncher);
 							}
 							_key_block_compressed_many=null;
 						}
@@ -2253,7 +2253,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		return res;
 	}
 
-	protected void find_in_keyBlock(Regex JoniRegx, Pattern keyPattern, byte[] key_block, key_info_struct infoI, byte[][][][][] matcher, int SelfAtIdx, ArrayList<SearchResultBean> it, AbsAdvancedSearchLogicLayer SearchLauncher) {
+	protected void find_in_keyBlock(Regex JoniRegx, Pattern keyPattern, byte[] key_block, key_info_struct infoI, byte[][][][][] matcher, Object book, ArrayList<SearchResultBean> it, AbsAdvancedSearchLogicLayer SearchLauncher) {
 		//org.joni.Matcher Jonimatcher = null;
 		//if(JoniRegx!=null)
 		//	Jonimatcher = JoniRegx.matcher(key_block);

@@ -64,7 +64,7 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Object, String> {
 					BookPresenter mdTmp = loadManager.md_get(i);
 					publishProgress(mdTmp, i);
 					if(mdTmp!=a.EmptyBook) // to impl
-						mdTmp.findAllNames(SearchTerm, i, a.fuzzySearchLayer);
+						mdTmp.findAllNames(SearchTerm, mdTmp, a.fuzzySearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {
@@ -75,9 +75,9 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Object, String> {
 		} else {
 			try {
 				if(a.checkDicts()){
-					publishProgress(a.dictPicker.adapter_idx);
+					publishProgress(a.currentDictionary, a.dictPicker.adapter_idx);
 					// to impl
-					a.currentDictionary.findAllNames(SearchTerm, a.dictPicker.adapter_idx, a.fuzzySearchLayer);
+					a.currentDictionary.findAllNames(SearchTerm, a.currentDictionary, a.fuzzySearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -111,7 +111,7 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Object, String> {
 		if(a.isCombinedSearching){
 			results.invalidate();
 		}else{//单独搜索 todo
-			results.invalidate(a.dictPicker.adapter_idx);
+			results.invalidate(a.currentDictionary);
 		}
 
 		a.show(R.string.fuzzyfill,(System.currentTimeMillis()-CMN.stst)*1.f/1000

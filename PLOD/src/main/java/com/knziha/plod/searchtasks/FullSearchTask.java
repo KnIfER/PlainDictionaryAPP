@@ -71,7 +71,7 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 					BookPresenter mdTmp = loadManager.md_get(i);
 					publishProgress(mdTmp, i);//_mega
 					if(mdTmp!=a.EmptyBook)
-						mdTmp.findAllTexts(SearchTerm,i,a.fullSearchLayer);
+						mdTmp.findAllTexts(SearchTerm,mdTmp,a.fullSearchLayer);
 					//publisResults();
 					if(isCancelled()) break;
 				} catch (Exception e) {
@@ -82,9 +82,9 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 		} else {
 			try {
 				if(a.checkDicts()) {
-					publishProgress(a.dictPicker.adapter_idx);
+					publishProgress(a.currentDictionary, a.dictPicker.adapter_idx);
 					//CMN.Log("Find In All Conten??");
-					a.currentDictionary.findAllTexts(SearchTerm, a.dictPicker.adapter_idx, a.fullSearchLayer);
+					a.currentDictionary.findAllTexts(SearchTerm, a.currentDictionary, a.fullSearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -130,7 +130,7 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 		if(a.isCombinedSearching){
 			results.invalidate();
 		} else {//单独搜索
-			results.invalidate(a.dictPicker.adapter_idx);
+			results.invalidate(a.currentDictionary);
 		}
 		a.show(R.string.fullfill
 				,(System.currentTimeMillis()-CMN.stst)*1.f/1000,a.adaptermy4.getCount());

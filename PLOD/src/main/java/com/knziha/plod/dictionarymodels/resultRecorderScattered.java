@@ -14,6 +14,8 @@ import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -22,24 +24,24 @@ import java.util.regex.Pattern;
 public class resultRecorderScattered extends resultRecorderDiscrete {
 	private final BooleanSingleton TintResult;
 	private final com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer layer;
-	private List<BookPresenter> md;
-	private long[] firstLookUpTable;
+	private MainActivityUIBase.LoadManager loadManager;
+	private long[] firstLookUpTable = ArrayUtils.EMPTY_LONG_ARRAY;
+	private int md_size=0;
 	private long size=0;
 	private boolean mShouldSaveHistory;
 
 	@Override
 	public void invalidate() {
-		if(md.size()==0)
+		ensureTableSz();
+		if(md_size==0)
 			return;
-		if(firstLookUpTable.length<md.size()*2)
-			firstLookUpTable = new long[md.size()*2];
 		
 		long resCount=0;
 		long bookId=0;
-		for(int i=0;i<md.size();i++){//遍历所有词典
-			BookPresenter presenter = md.get(i);
+		for(int i=0;i<md_size;i++){//遍历所有词典
+			BookPresenter presenter = loadManager.md_getAt(i);
 			if (presenter!=null) {
-				ArrayList<SearchResultBean>[] treeBuilder = layer.getTreeBuilt(i);
+				ArrayList<SearchResultBean>[] treeBuilder = layer.getTreeBuilt(presenter);
 				bookId=presenter.getId();
 				if (treeBuilder != null)
 					for (int ti = 0; ti < treeBuilder.length; ti++) {//遍历搜索结果
@@ -55,15 +57,20 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		size=resCount;
 	}
 	
+	private void ensureTableSz() {
+		md_size = loadManager.md_size;
+		if(firstLookUpTable.length<md_size*2)
+			firstLookUpTable = new long[md_size*2];
+	}
+	
 	@Override
-	public void invalidate(int idx) {
-		if(md.size()==0)
+	public void invalidate(BookPresenter book) {
+		ensureTableSz();
+		if(md_size==0)
 			return;
-		if(firstLookUpTable.length<md.size()*2)
-			firstLookUpTable = new long[md.size()*2];
 
 		int resCount=0;
-		ArrayList<SearchResultBean>[] treeBuilt = layer.getTreeBuilt(idx);
+		ArrayList<SearchResultBean>[] treeBuilt = layer.getTreeBuilt(book);
 		if (treeBuilt != null)
 			for (int ti = 0; ti < treeBuilt.length; ti++) {//遍历搜索结果
 				if (treeBuilt[ti] == null) {
@@ -73,24 +80,22 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			}
 		
 		//firstLookUpTable[idx]=resCount;
+		boolean found = false;
 		for(int i=0;i<firstLookUpTable.length/2;i++) {
-			if(i<idx)
-				firstLookUpTable[i*2] = 0;
-			else {
-				if (i==idx) {
-					firstLookUpTable[i*2+1] = md.get(i).getId();
-				}
-				firstLookUpTable[i*2] = resCount;
+			BookPresenter mdTmp = loadManager.md_getAt(i);
+			if (mdTmp==book) {
+				firstLookUpTable[i*2+1] = mdTmp.getId();
+				found = true;
 			}
+			firstLookUpTable[i*2] = found?resCount:0;
 		}
 		size=resCount;
 	}
 	
-	public resultRecorderScattered(MainActivityUIBase a, List<BookPresenter> md_, BooleanSingleton _TintResult, com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer _layer){
+	public resultRecorderScattered(MainActivityUIBase a, MainActivityUIBase.LoadManager loadManager_, BooleanSingleton _TintResult, com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer _layer){
 		super(a);
 		TintResult =_TintResult;
-		md=md_;
-		firstLookUpTable = new long[md_.size()];
+		loadManager=loadManager_;
 		layer=_layer;
 	}
 	
@@ -100,7 +105,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		else {books.clear();}
 		if(size<=0 || pos<0 || pos>size-1)
 			return books;
-		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
+		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md_size);
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
 			return books;
 		books.add(firstLookUpTable[Rgn+1]);
@@ -109,7 +114,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 
 	@Override
 	public long getOneDictAt(int pos) {
-		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
+		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md_size);
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
 			return 0;
 		return firstLookUpTable[Rgn+1];
@@ -126,25 +131,26 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			}
 			return "!!! Error: code 1";
 		}
-		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
+		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md_size);
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
-			return "!!! Error: code 2 Rgn="+Rgn/2+" size="+md.size();
+			return "!!! Error: code 2 Rgn="+Rgn/2+" size="+md_size;
 		BookPresenter presenter = a.getBookById(firstLookUpTable[Rgn+1]);
 		if(presenter==a.EmptyBook) return "!!! Error: lazy load error failed.";
 		bookId=presenter.getId();
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-2];
 		int idxCount = 0;
-		ArrayList<SearchResultBean>[] _combining_search_tree = layer.getTreeBuilt(Rgn/2);
-		for(int ti=0;ti<_combining_search_tree.length;ti++){
-			if(_combining_search_tree[ti]==null)
+		BookPresenter mdTmp = getBookByTable(a, firstLookUpTable, Rgn);
+		ArrayList<SearchResultBean>[] treeBuilt = layer.getTreeBuilt(mdTmp);
+		for(int ti=0;ti<treeBuilt.length;ti++){
+			if(treeBuilt[ti]==null)
 				continue;
-			int max = _combining_search_tree[ti].size();
+			int max = treeBuilt[ti].size();
 			if(max==0)
 				continue;
 			if(pos-idxCount<max) {
 				// ???
-				String text = presenter.bookImpl.getEntryAt(_combining_search_tree[ti].get((int)(pos-idxCount)).position, mflag);
+				String text = presenter.bookImpl.getEntryAt(treeBuilt[ti].get((int)(pos-idxCount)).position, mflag);
 				if(!TintResult.first) return text;
 				SpannableStringBuilder result = new SpannableStringBuilder(text);
 				Pattern reg=layer.getBakedPattern();
@@ -161,21 +167,30 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 	};
 
 	public String getCurrentKeyText(MainActivityUIBase a, int pos) {
-		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
+		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md_size);
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
 			return null;
 		return a.getBookById(firstLookUpTable[Rgn+1]).currentDisplaying;
 	}
-
+	
+	private BookPresenter getBookByTable(MainActivityUIBase a, long[] firstLookUpTable, int Rgn) {
+		BookPresenter mdTmp = loadManager.md_getAt(Rgn/2);
+		long bid = firstLookUpTable[Rgn+1];
+		if (mdTmp!=null && mdTmp.getId()==bid) {
+			return mdTmp;
+		}
+		return a.getBookById(bid);
+	}
+	
 	@Override
 	public void renderContentAt(long pos, MainActivityUIBase a, BasicAdapter ADA, WebViewListHandler weblistHandler){//ViewGroup X
 		getResAt(a, pos);
 		if(size<=0 || pos<0 || pos>size-1)
 			return;
-		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md.size());
+		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md_size);
 		if(Rgn<0 || Rgn>firstLookUpTable.length-2)
 			return;
-		BookPresenter presenter = a.getBookById(firstLookUpTable[Rgn+1]);
+		BookPresenter presenter = getBookByTable(a, firstLookUpTable, Rgn);
 		if(presenter==a.EmptyBook){
 			CMN.Log("!!! Error: lazy load error failed.");
 			return;
@@ -186,18 +201,15 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		if(Rgn!=0)
 			pos-=firstLookUpTable[Rgn-2];
 		int idxCount = 0;
-		ArrayList<SearchResultBean>[] _combining_search_tree = layer.getTreeBuilt(Rgn/2);
-		for(int ti=0;ti<_combining_search_tree.length;ti++) {
-			if(_combining_search_tree[ti]==null)
+		ArrayList<SearchResultBean>[] treeBuilt = layer.getTreeBuilt(presenter);
+		for(int ti=0;ti<treeBuilt.length;ti++) {
+			if(treeBuilt[ti]==null)
 				continue;
-			int max = _combining_search_tree[ti].size();
+			int max = treeBuilt[ti].size();
 			if(max==0)
 				continue;
 			if(pos-idxCount<max) {
 				bookId=presenter.getId();
-				presenter.initViewsHolder(a);
-				float desiredScale = a.prepareSingleWebviewForAda(presenter, null, pos, ADA, a.opt.getRemPos(), a.opt.getInheritePageScale());
-				
 				boolean bUseDictView = presenter.bookImpl.hasVirtualIndex();
 				WebViewmy mWebView;
 				if(bUseDictView) {
@@ -206,11 +218,12 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 				} else {
 					mWebView = weblistHandler.getMergedFrame(presenter);
 				}
+				float desiredScale = a.prepareSingleWebviewForAda(presenter, mWebView, pos, ADA, a.opt.getRemPos(), a.opt.getInheritePageScale());
 				
 				ViewUtils.addViewToParentUnique(mWebView.rl, a.webSingleholder);
 				
 				mWebView.weblistHandler = weblistHandler;
-				presenter.renderContentAt(desiredScale, BookPresenter.RENDERFLAG_NEW ,1 , mWebView , _combining_search_tree[ti].get((int) (pos-idxCount)).position);
+				presenter.renderContentAt(desiredScale, BookPresenter.RENDERFLAG_NEW ,1 , mWebView , treeBuilt[ti].get((int) (pos-idxCount)).position);
 //				presenter.rl.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 //				mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 				a.contentUIData.PageSlider.setWebview(mWebView, null);
@@ -218,7 +231,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 			}
 			idxCount+=max;
 		}
-	};
+	}
 
 	@Override
 	public boolean shouldSaveHistory() {

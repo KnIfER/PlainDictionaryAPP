@@ -1285,8 +1285,8 @@ public class PlainDSL extends DictionaryAdapter {
 	
 	
 	@Override
-	public void flowerFindAllKeys(String key, int SelfAtIdx, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
-		keyIndex.flowerFindAllKeys(key, SelfAtIdx, SearchLauncher);
+	public void flowerFindAllKeys(String key, Object book, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {
+		keyIndex.flowerFindAllKeys(key, book, SearchLauncher);
 	}
 	
 	public void flowerFindAllContents(String key, Object book, mdict.AbsAdvancedSearchLogicLayer SearchLauncher) throws IOException {

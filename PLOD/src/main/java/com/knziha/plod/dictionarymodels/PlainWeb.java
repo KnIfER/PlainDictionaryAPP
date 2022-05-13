@@ -1871,7 +1871,7 @@ public class PlainWeb extends DictionaryAdapter {
 //	}
 //
 //	@Override
-//	public void flowerFindAllKeys(String key, int SelfAtIdx, AbsAdvancedSearchLogicLayer SearchLauncher) {
+//	public void flowerFindAllKeys(String key, Object book, AbsAdvancedSearchLogicLayer SearchLauncher) {
 //	}
 
 //	@Override
