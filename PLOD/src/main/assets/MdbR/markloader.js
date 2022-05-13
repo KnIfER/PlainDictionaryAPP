@@ -205,7 +205,7 @@ function highlight(keyword){
     if(!MarkLoad) MarkLoad|=w.MarkLoad;
     if(!MarkLoad){
         function cb(){MarkLoad=true; do_highlight(keyword);}
-        try{loadJs('/MdbR/mark.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'mark.js');}
+        try{loadJs('//mdbr/mark.js', cb)}catch(e){w.loadJsCb=cb;app.loadJs(sid.get(),'mark.js');}
     } else do_highlight(keyword);
 }
 function do_highlight(keyword){

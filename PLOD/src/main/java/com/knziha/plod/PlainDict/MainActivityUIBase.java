@@ -8061,7 +8061,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									}
 								}
 								if(p!=null) {
-									return null;
+									return emptyResponse;
 								}
 							}
 							SU.Log("文件", uri);
@@ -8084,7 +8084,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} catch (Exception e) {
 				CMN.debug(e);
 			}
-			return null;
+			return emptyResponse;
 		}
 		
 		@Override
