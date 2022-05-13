@@ -953,7 +953,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		SingleContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 13, 14/*翻译*/, 2, 16, 3/*记忆位置*/, 9, 11, 12);
 		Multi_ContentMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 13, 14, 1, 2, 15, 21/*记忆位置*/, 9, 10, 12);
 		MainMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7/*翻阅模式*/, 8/*分字搜索*/, 20/*搜索工具栏*/, 17, 18, 19);
-		LEFTMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 7, 20, 5, 6);
+		LEFTMenu = ViewUtils.MapNumberToMenu(AllMenus, 4, 0, 22, 19, 7, 20, 5, 6);
 		
 		
 		boolean showVal = PDICMainAppOptions.getShowSearchTools();
@@ -1281,8 +1281,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		adaptermy.setPresenter(currentDictionary);
 		lv.setAdapter(adaptermy);
 		lv2.setAdapter(adaptermy2 = new ListViewAdapter2(this, weblistHandler, AllMenus, Multi_ContentMenu, R.layout.listview_item1, 2));
-		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2(this, webSingleholder, AllMenus, LEFTMenu, 3));
-		mlv2.setAdapter(adaptermy4 = new ListViewAdapter2(this, webSingleholder, AllMenus, LEFTMenu, 4));
+		mlv1.setAdapter(adaptermy3 = new ListViewAdapter2(this, webSingleholder, AllMenus, SingleContentMenu, 3));
+		mlv2.setAdapter(adaptermy4 = new ListViewAdapter2(this, webSingleholder, AllMenus, SingleContentMenu, 4));
 
 		fuzzySearchLayer=new AdvancedSearchInterface(opt, md, SEARCHTYPE_SEARCHINNAMES);
 		fullSearchLayer=new AdvancedSearchInterface(opt, md, SEARCHTYPE_SEARCHINTEXTS);
