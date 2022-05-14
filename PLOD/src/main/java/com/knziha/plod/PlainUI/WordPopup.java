@@ -244,7 +244,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			} break;
 			case R.id.popIvStar:{
 				a.collectFavoriteView = popupContentView;
-				a.toggleStar(displaying, (ImageView) v, false, weblistHandler.pageSlider);
+				a.toggleStar(displaying, (ImageView) v, false, weblistHandler);
 				a.collectFavoriteView = null;
 			} break;
 			case R.id.popupText1:{
@@ -1029,7 +1029,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			
 			if (!PDICMainAppOptions.storeNothing()
 					&& PDICMainAppOptions.getHistoryStrategy7())
-				a.addHistory(popupKey, SearchUI.TapSch.MAIN, weblistHandler.pageSlider, null);
+				a.addHistory(popupKey, SearchUI.TapSch.MAIN, weblistHandler, null);
 		}
 	}
 	

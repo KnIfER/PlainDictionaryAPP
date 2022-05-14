@@ -849,7 +849,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 				if(isLongClicked) break;
             	String keyword = etSearch.getText().toString().trim();
             	//todo impl
-            	if(prepareHistoryCon().insertUpdate(this, keyword, ActivedAdapter==null?null:ActivedAdapter.webviewHolder)>0)
+            	if(prepareHistoryCon().insertUpdate(this, keyword, null)>0)
             		showT("已收藏！");
             break;
             case R.id.toolbar_action5:

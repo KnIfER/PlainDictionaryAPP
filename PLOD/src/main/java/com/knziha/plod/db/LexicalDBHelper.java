@@ -18,6 +18,7 @@ import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
+import com.knziha.plod.plaindict.WebViewListHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -438,7 +439,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	 * @param lex the text term
 	 * @param folder the favorite folder id.
 	 * */
-	public long insert(MainActivityUIBase a, String lex, long folder, ViewGroup webviewholder) {
+	public long insert(MainActivityUIBase a, String lex, long folder, WebViewListHandler weblist) {
     	CMN.Log("insert");
 		isDirty=true;
 		incrementFavVersion(folder);
@@ -466,7 +467,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				ContentValues values = new ContentValues();
 				values.put("lex", lex);
 				
-				values.put("books", a.collectDisplayingBooks(books, webviewholder));
+				values.put("books", a.collectDisplayingBooks(books, weblist));
 				
 				values.put("visit_count", ++count);
 				
@@ -530,15 +531,15 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	
 	/** insert history */
 	@Deprecated
-	public long insertUpdate(MainActivityUIBase a, String lex, ViewGroup webviewholder) {
+	public long insertUpdate(MainActivityUIBase a, String lex, WebViewListHandler weblist) {
 		if (testDBV2) {
-			return updateHistoryTerm(a, lex, webviewholder, 0);
+			return updateHistoryTerm(a, lex, 0, weblist);
 		} else {
 			CMN.Log("insertUpdate");
 			incrementDBVersion(-1L);
 			long ret=-1;
 			if(!GetIsFavoriteTerm(lex, -1)) {
-				ret = insert(a, lex, 0, null);
+				ret = insert(a, lex, 0, weblist);
 			} else {
 				ContentValues values = new ContentValues();
 				values.put(Date, System.currentTimeMillis());
@@ -552,7 +553,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	/**
 	 * @param source 0=default; 1=listview; 2=tap translator; 3=peruse view
 	 *   */
-	public long updateHistoryTerm(MainActivityUIBase a, String lex, ViewGroup webviewholder, int source) {
+	public long updateHistoryTerm(MainActivityUIBase a, String lex, int source, WebViewListHandler weblist) {
 		//CMN.rt();
 		int count=-1;
 		int src=0;
@@ -574,7 +575,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			ContentValues values = new ContentValues();
 			values.put(FIELD_ENTRY_NAME, lex);
 			
-			values.put("books", a.collectDisplayingBooks(books, webviewholder));
+			values.put("books", a.collectDisplayingBooks(books, weblist));
 			long ivkAppId = -1;
 			String ivk = a.extraInvoker;
 			if(ivk!=null && lex.equals(a.extraText)) {

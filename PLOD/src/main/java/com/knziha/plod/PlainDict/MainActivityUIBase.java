@@ -242,6 +242,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -1790,6 +1791,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		new File(opt.pathToDatabases().toString()).mkdirs();
 		opt.CheckFileToDefaultMdlibs();
 		loadManager = new LoadManager(dictPicker);
+		lazyLoadManager = loadManager.lazyMan;
 	}
 
 	public static byte[] target = "/".getBytes(StandardCharsets.UTF_8);
@@ -2117,7 +2119,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		lazyLoadManager = new LazyLoadManager();//thisActType==ActType.PlainDict?lazyLoadManagerMain:lazyLoadManagerFloat;
 		ArrayList<PlaceHolder> CC = lazyLoadManager.placeHolders;
-		if(md.size()==0){
+		if(loadManager.md_size==0){
 			populateDictionaryList(def, CC, retrieve_all);
 		}
 		
@@ -2228,7 +2230,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected void populateDictionaryList() {
 		final File def = getStartupFile(opt.fileToConfig());      //!!!原配
-		if(md.size()==0){
+		if(loadManager.md_size==0){
 			populateDictionaryList(def, lazyLoadManager.placeHolders, !def.exists());
 		}
 	}
@@ -3161,14 +3163,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	protected String lastInsertedKey;
 	
-	public void addHistory(String key, int source, ViewGroup webviewholder, SearchbarTools etTools) {
+	public void addHistory(String key, int source, WebViewListHandler weblist, SearchbarTools etTools) {
 		CMN.Log("addHistroy::", key, source);
 		if(source>=0/* && TextUtils.getTrimmedLength(key)>0*/) {
 			key = key.trim();
 			if (key.length()>0) {
 				if (!PDICMainAppOptions.storeNothing() || PDICMainAppOptions.storeNothingButSch() && source>=SearchUI.schMin) {
 					long ivkAppId = -1;
-					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, webviewholder, source);
+					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, source, weblist);
 					lastInsertedKey = key;
 				}
 				if (etTools!=null && source>=SearchUI.schMin) {
@@ -3186,7 +3188,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if (TextUtils.equals(lastInsertedKey, key)) return lastInsertedId;
 			else {
 				try {
-					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, ActivedAdapter!=null?ActivedAdapter.webviewHolder:null, 0);
+					lastInsertedId = prepareHistoryCon().updateHistoryTerm(this, key, 0, weblist);
 					lastInsertedKey = key;
 				} catch (Exception e) {
 					CMN.Log(e);
@@ -3435,22 +3437,95 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return prepareHistoryCon().getBookName(bid);
 	}
 	
-	public String collectDisplayingBooks(String books, ViewGroup webviewholder) {
+	public String collectDisplayingBooks(String books, WebViewListHandler weblist) {
 		String ret=books==null?"":books;
-		ViewGroup webholder = webviewholder;
-		if (webholder!=null) {
-			for (int i = 0, len=webholder.getChildCount(); i < len; i++) {
-				View child = webholder.getChildAt(i);
-				if (child!=null) {
-					WebViewmy wv = child.findViewById(R.id.webviewmy);
-					if (wv!=null) {
-						if (books!=null) {
-							String thisIs = wv.presenter.bookImpl.getBooKID() + ";";
-							if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
-								ret += thisIs;
+		WebViewListHandler wlh = weblist;
+		if (wlh.isViewSingle()) {
+			WebViewmy wv = wlh.getWebContext();
+			String url = wv.getUrl();
+			long bid = wv.presenter.getId();
+			if (url!=null) {
+				int schemaIdx = url.indexOf(":");
+				CMN.debug("bid::url::", url);
+				boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4), baseUrl=false;
+				if(mdbr) {
+					if (url.regionMatches(schemaIdx + 12, "merge", 0, 5)) {
+						StringTokenizer tokens = new StringTokenizer(url, "-");
+						boolean first = true;
+						while (tokens.hasMoreTokens()) {
+							String tk = tokens.nextToken();
+							if (first) {
+								int idx = tk.indexOf("&exp=");
+								if (idx > 0) {
+									tk = tk.substring(idx + 5);
+									first = false;
+								} else {
+									continue;
+								}
 							}
-						} else {
-							ret += wv.presenter.bookImpl.getBooKID() + ";";
+							if (tk.startsWith("d")) {
+								int ed1 = tk.indexOf("_"); if(ed1<0) ed1=Integer.MAX_VALUE;
+								int ed2 = tk.indexOf("&"); if(ed2<0) ed2=Integer.MAX_VALUE;
+								int ed = Math.min(ed1, ed2);
+								if(ed<0) ed=tk.length();
+								tk = tk.substring(1, ed);
+								bid = IU.TextToNumber_SIXTWO_LE(tk);
+								CMN.debug("bid::", tk, bid, loadManager.getBookById(bid).getDictionaryName());
+								String thisIs = bid + ";";
+								if (books!=null) {
+									if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
+										ret += thisIs;
+									}
+								} else {
+									ret += thisIs;
+								}
+							}
+						}
+						bid = -1;
+					}
+					else {
+						if (url.regionMatches(schemaIdx + 12, "content", 0, 7)) {
+							int idx = schemaIdx + 12 + 7 + 1, ed=url.indexOf("_", idx);
+							//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
+							bid = getMdictServer().getBookIdByURLPath(url, idx, ed);
+						}
+						else if (url.regionMatches(schemaIdx + 12, "base", 0, 4)) {
+							int idx = schemaIdx + 12 + 5, ed=url.indexOf("/", idx+1);
+							if (url.charAt(idx) == '/') { // base/d0/entry/...
+								//if(!wv.presenter.idStr.regionMatches(0, url, idx, ed-idx))
+								bid = getMdictServer().getBookIdByURLPath(url, idx+1, ed);
+							}
+						}
+					}
+				}
+				if (bid!=-1) {
+					CMN.debug("bid::", bid, loadManager.getBookById(bid).getDictionaryName());
+					String thisIs = bid + ";";
+					if (books!=null) {
+						if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
+							ret += thisIs;
+						}
+					} else {
+						ret += thisIs;
+					}
+				}
+			}
+		} else {
+			ViewGroup webholder = wlh.getViewGroup();
+			if (webholder!=null) {
+				for (int i = 0, len=webholder.getChildCount(); i < len; i++) {
+					View child = webholder.getChildAt(i);
+					if (child!=null) {
+						WebViewmy wv = child.findViewById(R.id.webviewmy);
+						if (wv!=null) {
+							if (books!=null) {
+								String thisIs = wv.presenter.bookImpl.getBooKID() + ";";
+								if (!ret.startsWith(thisIs) && !ret.contains(";"+thisIs)) {
+									ret += thisIs;
+								}
+							} else {
+								ret += wv.presenter.bookImpl.getBooKID() + ";";
+							}
 						}
 					}
 				}
@@ -4165,7 +4240,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							} else {
 								mWebView.evaluateJavascript(WebViewmy.CollectWord, word -> {
 									if (word.length() > 2) {
-										if (prepareFavoriteCon().insert(MainActivityUIBase.this, StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), -1, (ViewGroup) mWebView.getParent()) > 0)
+										if (prepareFavoriteCon().insert(MainActivityUIBase.this, StringEscapeUtils.unescapeJava(word.substring(1, word.length() - 1)), -1, mWebView.weblistHandler) > 0)
 											showT(word + " 已收藏");
 									}
 								});
@@ -4585,7 +4660,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					return true;
 				});
 				
-				if(contentUIData.PageSlider!=null) {
+				if(contentUIData!=null && contentUIData.PageSlider!=null) {
 					if(!opt.getTurnPageEnabled())
 						tools_lock.setImageResource(R.drawable.locked);
 				} else {
@@ -5832,7 +5907,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							v.setActivated(false);
 							show(R.string.removed);
 						} else {
-							prepareFavoriteCon().insert(this, key, opt.getCurrFavoriteNoteBookId(), ActivedAdapter.webviewHolder);
+							prepareFavoriteCon().insert(this, key, opt.getCurrFavoriteNoteBookId(), weblist);
 							v.setActivated(true);
 							//show(R.string.added);
 							showT(key+" 收藏成功");
@@ -6072,14 +6147,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		dictPicker.toggle();
 	}
 	
-	public void toggleStar(String key, ImageView futton, boolean toast, ViewGroup webviewholder) {
+	public void toggleStar(String key, ImageView futton, boolean toast, WebViewListHandler webviewholder) {
 		key = key.trim();
 		if(GetIsFavoriteTerm(key)) {
 			removeFavoriteTerm(key);
 			futton.setActivated(false);
 			if(toast)show(R.string.removed);
 		} else {
-			favoriteCon.insert(this, key, opt.getCurrFavoriteNoteBookId(), webviewholder);
+			favoriteCon.insert(this, key, opt.getCurrFavoriteNoteBookId(), weblist);
 			futton.setActivated(true);
 			if(toast)show(R.string.added);
 		}
@@ -7115,6 +7190,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				else if (url.regionMatches(schemaIdx+12, "base", 0, 4)) {
 					int idx=schemaIdx+12+5;
 					if (url.charAt(idx)=='/') { // base/d0/entry/...
+						idx++;
 						invoker = getMdictServer().md_getByURLPath(url, idx, url.indexOf("/", idx));
 					}
 					else if (url.charAt(idx)=='.') { // base.html
@@ -9216,7 +9292,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								selectionArr = selection.toArray(new Long[addNum]);
 								for(Long newFav:selectionArr) {
 									try {
-										if(prepareHistoryCon().insert(this, text, newFav, webviewholder)>=0){
+										if(prepareHistoryCon().insert(this, text, newFav, weblist)>=0){
 											addCnt++;
 										}
 									} catch (Exception ignored) { CMN.Log(ignored); }
@@ -9250,7 +9326,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											if (db == null) {
 												db = iI.value = new LexicalDBHelper(getApplicationContext(), opt, iI.key, false);
 											}
-											if(db.insertUpdate(this, text, null)>0){
+											if(db.insertUpdate(this, text, weblist)>0){
 												cc++;
 											}
 										} catch (Exception ignored) { }
@@ -10338,5 +10414,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 		}
 		return false;
+	}
+	
+	public final boolean isMultiShare() {
+		return thisActType == ActType.MultiShare;
 	}
 }

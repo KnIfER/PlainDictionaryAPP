@@ -528,9 +528,19 @@ public abstract class MdictServer extends NanoHTTPD {
 	
 	protected abstract void handle_search_event(Map<String, List<String>> text, InputStream inputStream);
 	
+	
+	public long getBookIdByURLPath(String url, int st, int ed) {
+		CharSequenceKey key = new CharSequenceKey(url, st, ed);
+		if (key.length()>1 && key.charAt(0) == 'd') {
+			key.reset(st + 1);
+			return IU.TextToNumber_SIXTWO_LE(key);
+		}
+		return -1;
+	}
+	
 	public BookPresenter md_getByURLPath(String url, int st, int ed) {
 		CharSequenceKey key = new CharSequenceKey(url, st, ed);
-		if(key.charAt(0)=='d') {
+		if(key.length()>1 && key.charAt(0)=='d') {
 			key.reset(st+1);
 			return loadManager.getBookById(IU.TextToNumber_SIXTWO_LE(key));
 		}

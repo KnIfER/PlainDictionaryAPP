@@ -99,7 +99,7 @@ public class ListViewAdapter extends BasicAdapter {
 					&& presenter.store(presenter.lvClickPos)
 					&& !PDICMainAppOptions.storeNothing()
 					&& PDICMainAppOptions.storeClick()) {
-				a.addHistory(presenter.currentDisplaying, a.schuiList, webviewHolder, null);
+				a.addHistory(presenter.currentDisplaying, a.schuiList, weblistHandler, null);
 				browsed = false;
 			}
 		}
@@ -141,7 +141,7 @@ public class ListViewAdapter extends BasicAdapter {
 			pView.searchAll(lstKey, a, true);
 			boolean storeEt = userCLick && a.storeLv1(lstKey);
 			if(!PDICMainAppOptions.storeNothing()  && storeEt) { // 保存输入框历史记录
-				a.addHistory(lstKey, a.schuiMainPeruse, webviewHolder, a.etTools);
+				a.addHistory(lstKey, a.schuiMainPeruse, weblistHandler, a.etTools);
 				pView.lstKey = lstKey;
 			} else {
 				pView.lstKey = null;
@@ -229,7 +229,7 @@ public class ListViewAdapter extends BasicAdapter {
 			a.addHistory(lstKey
 					, storeEt? a.schuiMain:  // 保存输入框历史记录
 					 (userCLick || PDICMainAppOptions.storePageTurn()==0) && !(shunt && pos==0)?a.schuiList  // 保存列表点击历史记录
-							:-1, webviewHolder, a.etTools);
+							:-1, weblistHandler, a.etTools);
 		} else if (storeEt) {
 			a.etTools.addHistory(lstKey);
 		}

@@ -1382,7 +1382,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			ViewUtils.ResizeNavigationIcon(bar);
 			
 			bar.setContentInsetsAbsolute(0, 0);
-			bar.setLayoutParams(a.toolbar.getLayoutParams());
+			if(!a.isMultiShare())bar.setLayoutParams(a.toolbar.getLayoutParams());
 			bar.setBackgroundColor(a.AppWhite==Color.WHITE?a.MainBackground:Color.BLACK);
 			bar.findViewById(R.id.ivDeleteText).setOnClickListener(this);
 			bar.findViewById(R.id.enter).setOnClickListener(this);

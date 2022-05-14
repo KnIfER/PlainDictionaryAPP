@@ -1201,7 +1201,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(//!(currentDictionary instanceof bookPresenter_txt)&& nimp
 				 PDICMainAppOptions.storeClick() && !PDICMainAppOptions.storeNothing()
 				&& (PDICMainAppOptions.storePageTurn() == 2)) {
-			a.addHistory(mWebView.word, SearchUI.Fye.表, contentUIData.webSingleholder, null);
+			a.addHistory(mWebView.word, SearchUI.Fye.表, weblistHandler, null);
 		}
 		((ViewGroup)contentview.getParent()).removeView(contentview);
 	}
@@ -1980,7 +1980,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 									:-1;
 					if((stLv==SearchUI.Fye.MAIN || PDICMainAppOptions.storeClick()) && presenter.store(pos)) {
 						//CMN.Log("fye:addHistory!!!");
-						a.addHistory(key , stLv, contentUIData.webSingleholder, stLv==SearchUI.Fye.MAIN?etTools:null);
+						a.addHistory(key , stLv, weblistHandler, stLv==SearchUI.Fye.MAIN?etTools:null);
 					}
 				}
 				
