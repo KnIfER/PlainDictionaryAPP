@@ -1747,6 +1747,9 @@ public class DBroswer extends DialogFragment implements
 			if (visible) {
 				detach();
 			}
+			if (!dialog && UIData!=null) {
+				UIData.getRoot().setPadding(0,0,0,0);
+			}
 		} else if (visible) {
 			if (dialog) {
 				ViewUtils.ensureTopmost(mDialog, getMainActivity(), this);

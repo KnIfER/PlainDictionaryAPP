@@ -71,6 +71,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewStub;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -2207,6 +2208,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		if(contentview==null) {
 			weblist = weblistHandler = new WebViewListHandler(this, contentUIData, schuiMain);
+			if (bottombar!=null) {
+				bottombar.setTag(weblist);
+			}
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb1());
 			AllMenus.tag = weblistHandler;
 			contentview = contentUIData.webcontentlister;
@@ -3050,7 +3054,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				bottom = 0;//bottombar.getHeight();
 			} else {
 				parentView = snack_holder;
-				bottom = bottombar.getHeight();
+				if (bottombar!=null) {
+					bottom = bottombar.getHeight();
+				}
 				if(bottom==0) {
 					bottom = (int) mResource.getDimension(R.dimen.barSzBot);
 				}
@@ -6216,6 +6222,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private View findWebList(View v) {
 		View btm = null;
 		btm = (View) v.getParent();
+		//CMN.Log("findWebList::", v.getParent(), ((View) v.getParent()).getTag());
 		if(btm==null)  {
 			btm = contentUIData.bottombar2;
 			app_panel_bottombar_height = btm.getHeight();
@@ -9889,11 +9896,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		pop.setBackgroundDrawable(null);
 		int[] vLocation = new int[2];
 		//ViewGroup root = this.root;
-		root.getLocationInWindow(vLocation);
+		this.root.getLocationInWindow(vLocation);
 		int topY = vLocation[1];
-		int h = root.getHeight();
+		int h = this.root.getHeight();
 		pop.setWidth(-1);
 		pop.setHeight(h-padbot);
+		//CMN.debug("embedPopInCoordinatorLayout::", h-padbot, h, padbot, panel.bottombar);
 		if (pop.isShowing()) {
 			pop.update(0, topY, -1, h-padbot);
 		} else {

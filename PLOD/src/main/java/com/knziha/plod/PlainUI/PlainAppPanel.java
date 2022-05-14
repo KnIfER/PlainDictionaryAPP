@@ -74,7 +74,7 @@ public class PlainAppPanel extends SettingsPanel {
 		int result = 0;
 		try {
 			int sid = a.mResource.getIdentifier("config_showNavigationBar", "bool", "android");
-			if (a.mResource.getBoolean(sid)){
+			if (a.mResource.getBoolean(sid)){ // wrong
 				int resourceId = a.mResource.getIdentifier("navigation_bar_height", "dimen", "android");
 				result = a.mResource.getDimensionPixelSize(resourceId);
 			}
@@ -106,7 +106,7 @@ public class PlainAppPanel extends SettingsPanel {
 			} else {
 				padbot = a.bottombar!=null?a.bottombar.getHeight():a.app_panel_bottombar_height;
 			}
-			settingsLayoutHolder.setPadding(0,0,0,padbot+getNavbarHeight());
+			settingsLayoutHolder.setPadding(0,a.root.getPaddingTop(),0,padbot);
 			bottomPadding = padbot;
 		}
 		
@@ -132,7 +132,6 @@ public class PlainAppPanel extends SettingsPanel {
 			t = window.findViewById(id);
 			if(t!=null) t.setVisibility(View.GONE);
 		}
-		if(t!=null) t.setVisibility(View.GONE);
 	}
 	
 	@CallSuper

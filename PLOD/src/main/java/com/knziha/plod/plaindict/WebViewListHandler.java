@@ -69,6 +69,7 @@ import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /** 页面管理器，曾经尝试过在Listview中放置webview，太卡。现在保留的模式：<br/>
  * 一个webview，显示一本或多本词典内容（合并的多页面模式）。 <br/>
@@ -1892,5 +1893,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if(index>=0 && index<2)
 			return translating[index];
 		return false;
+	}
+	
+	@Override
+	public String toString() {
+		return "WebViewListHandler{" +
+				"src=" + Integer.toHexString(src) +
+				", id=" + CMN.idStr(this) +
+				", isMain=" + (this==a.weblistHandler) +
+				'}';
 	}
 }
