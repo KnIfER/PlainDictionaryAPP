@@ -628,22 +628,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	public void onViewAttached(MainActivityUIBase a, boolean newSch){
 		if(a==null || main_pview_layout==null) return;
-		//CMN.Log("onViewAttached", schKey, newSch, fromData);
+		CMN.debug("onViewAttached", schKey, newSch, fromData, ViewUtils.isTopmost(mDialog, a));
 		hidden.clear();
-		WebViewListHandler pPanel = a.weblist;
-		if (this.invoker!=pPanel && (pPanel.bShowingInPopup || pPanel.bDataOnly&&!a.wordPopup.pin())) {
-			//getMainActivity().showT("onViewAttached::"+pPanel.bDataOnly);
-			// re-attach for different dialogs so that this view is always in front of the invoker.
-			if (mDialog!=null) {
-				//dismiss();
-				//show(a.getSupportFragmentManager(), "PeruseView");
-				mDialog.setOnDismissListener(null);
-				mDialog.dismiss();
-				mDialog.show();
-				//getMainActivity().showT("onViewAttached::1::区区对话框，装什么大尾巴狼::"+pPanel.bDataOnly);
-			}
-			this.invoker = pPanel;
-		}
+		this.invoker=a.weblist;
+		ViewUtils.ensureTopmost(mDialog, a, null);
 		if(!ToD) {
 			bmsAdapter.notifyDataSetChanged();
 		}

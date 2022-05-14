@@ -75,7 +75,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.NestedScrollingChildHelper;
@@ -84,24 +83,20 @@ import androidx.preference.Preference;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.widget.TextViewmy;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
-import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
-import com.knziha.plod.plaindict.DBroswer;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.RebootActivity;
 import com.knziha.plod.plaindict.Toastable_Activity;
-import com.knziha.plod.preference.SettingsPanel;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -279,7 +274,26 @@ public class ViewUtils {
 	public static boolean isTopmost(Dialog dialog, MainActivityUIBase a) {
 		if (dialog!=null) {
 			List<View> views = getWindowManagerViews(a);
-			return views.size()>1 && views.get(views.size() - 1)==dialog.getWindow().getDecorView();
+			final int size = views.size();
+			//CMN.debug("isTopmost::", views.indexOf(dialog.getWindow().getDecorView()), size -1);
+			//CMN.debug(views);
+			Window win = dialog.getWindow();
+			if (win!=null && size >1) {
+				View dv = win.getDecorView();
+				if (views.get(size - 1)==dv) {
+					return true;
+				}
+				Class<? extends View> clazz = dv.getClass();
+				for (int i = size - 1; i >= 0; i--) {
+					View view = views.get(i);
+					if (view.getClass()==clazz) {
+						return view==dv;
+					}
+					if (a.isPanelDecorView(view)) {
+						return false;
+					}
+				}
+			}
 		}
 		return false;
 	}
@@ -287,18 +301,14 @@ public class ViewUtils {
 	/* 将对话框置顶 */
 	public static void ensureTopmost(Dialog dialog, MainActivityUIBase a, Dialog.OnDismissListener disLis) {
 		if (dialog!=null) {
-			List<View> views = getWindowManagerViews(a);
-			if (dialog.isShowing()
-					&& (views.size() == 0
-					|| views.get(views.size() - 1) != dialog.getWindow().getDecorView())) {
+			if (!isTopmost(dialog, a)) {
 				dialog.setOnDismissListener(null);
 				dialog.dismiss();
 				dialog.show();
 				dialog.setOnDismissListener(disLis);
 				CMN.debug("ensureTopmost::reshow!!!");
-			} else {
-				CMN.debug("ensureTopmost::same!!!");
 			}
+			else CMN.debug("ensureTopmost::same!!!");
 		}
 	}
 	
@@ -499,6 +509,16 @@ public class ViewUtils {
 	
 	public static boolean ViewIsId(View view, int id) {
 		return view!=null && view.getId()==id;
+	}
+	
+	public static boolean ViewIsChildOf(View view, Object parent) {
+		ViewParent vp = view.getParent();
+		while (vp!=null) {
+			if (vp==parent)
+				return true;
+			vp = vp.getParent();
+		}
+		return false;
 	}
 	
 	public static CharSequence decorateSuffixTick(CharSequence title, boolean hasTick) {

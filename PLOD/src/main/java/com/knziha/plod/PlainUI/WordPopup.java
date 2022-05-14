@@ -332,13 +332,15 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	
 	public void show() {
 		if (!isVisible()) {
-			int type= pin()?0:2;
+			int type = pin()?0:2;
 			toggle(lastTargetRoot, null, type);
 			int pad = type==0?0: (int) (GlobalOptions.density * 19);
 			if(settingsLayout.getPaddingTop()!=pad)settingsLayout.setPadding(0,pad,0,0);
 			if(dictPicker.settingsLayout==null && dictPicker.pinShow()) {
 				dictPicker.toggle();
 			}
+		} else if (getLastShowType()==2) {
+			ViewUtils.ensureTopmost(dialog, a, dialogDismissListener);
 		}
 	}
 	

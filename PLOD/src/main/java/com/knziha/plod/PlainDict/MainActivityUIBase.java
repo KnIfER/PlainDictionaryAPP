@@ -10321,4 +10321,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			titleDrawableCS = mResource.getDrawable(R.drawable.progressbar).getConstantState();
 		return titleDrawableCS.newDrawable();
 	}
+	
+	public boolean isPanelDecorView(View view) {
+		for (int i = settingsPanels.size()-1; i >= 0; i--) {
+			PlainAppPanel panel = settingsPanels.get(i);
+			if (panel.getLastShowType()!=0 && ViewUtils.ViewIsChildOf(panel.settingsLayout, view)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

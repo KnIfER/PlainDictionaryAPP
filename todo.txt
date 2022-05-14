@@ -2,4 +2,4 @@
 待修复 : 全文搜索的进度条
 追踪收藏来源  ：WordPopup、merged
 fix artifacts in settings panel popup
-fix WordPopup & PeruseView dialog chaos
+fix WordPopup 在PeruseView等的弹出位置
