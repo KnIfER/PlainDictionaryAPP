@@ -68,6 +68,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 
 /** 页面管理器，曾经尝试过在Listview中放置webview，太卡。现在保留的模式：<br/>
  * 一个webview，显示一本或多本词典内容（合并的多页面模式）。 <br/>
@@ -948,8 +949,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if(alloydPanel==null) {
 			alloydPanel = new AlloydPanel(a, this);
 		}
-		if(!alloydPanel.isVisible()) {
+		if (!alloydPanel.isVisible()) {
 			alloydPanel.toggle(root, null, -1);
+		} else {
+			if (!ViewUtils.isTopmost(alloydPanel.dialog, a)) {
+				alloydPanel.dismissImmediate();
+				alloydPanel.toggle(root, null, -1);
+				CMN.debug("reshow!!!");
+			}
 		}
 		alloydPanel.AllMenus.tag = this;
 		alloydPanel.refresh();

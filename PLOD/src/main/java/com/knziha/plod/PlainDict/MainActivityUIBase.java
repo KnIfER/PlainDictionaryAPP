@@ -251,6 +251,7 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
+import static com.knziha.plod.plaindict.CMN.idStr;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_HISTORY;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
@@ -275,6 +276,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public int schuiMainSchs;
 	public int schuiMain;
 	public int schuiList;
+	public List<View> wViews;
 	protected WeakReference[] WeakReferencePool = new WeakReference[WeakReferenceHelper.poolSize];
 	public mdict.AbsAdvancedSearchLogicLayer taskRecv;
 	
@@ -5415,18 +5417,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	void AttachDBrowser(int type) {
 		if(DBrowser==null || opt.debugingDBrowser()) {
-			DBrowser= DBrowserHolder.get();
+			DBrowser = DBrowserHolder.get();
 			if(DBrowser==null || opt.debugingDBrowser()){
 				CMN.Log("重建收藏夹历史记录视图");
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
 			}
 		}
+		//CMN.debug("AttachDBrowser::", Integer.toHexString(weblist.src), CMN.idStr(weblist));
 		DBrowser.setType(this, type, true);
-		if(weblist!=null && (weblist.src==SearchUI.Fye.MAIN || weblist.bShowingInPopup)) {
+		int showType = DBrowser.preShow(weblist);
+		if(showType==1) {
 			DBrowser.show(getSupportFragmentManager(), "DBrowser");
 		}
-		else {
-			boolean fromPeruseView = PeruseViewAttached();
+		else if(showType==2) {
 			ViewGroup target = mainF;
 			if(!DBrowser.isAdded()) {
 				FragmentManager fragmentManager = getSupportFragmentManager();
@@ -5458,19 +5461,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //					show(R.string.currFavor, DBrowser.boli(newFavor.getName()));
 //				}
 		//weblistHandler.removeAllViews();
-		if (DBrowser.mDialog != null && DBrowser.mDialog.isShowing()) {
-			DBrowser.mDialog.dismiss();
-		} else {
-			try {
-				DBrowser.getFragmentManager()
-						.beginTransaction()
-						.remove(DBrowser)
-						.commit();
-			} catch (Exception e) {
-				CMN.Log(e);
-			}
-		}
-		ViewUtils.removeView(DBrowser.getView());
+		DBrowser.detach();
 		DBrowser = null;
 	}
 	
@@ -5531,18 +5522,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			//收藏和历史纪录
 			case R.drawable.favoriteg: {// get5:
+				findWebList(v);
 				dismissPopup();
-				if(mainF.getChildCount()!=0) return;
+				//if(mainF.getChildCount()==0)
 				AttachDBrowser(DB_FAVORITE);
 			} break;
 			case R.drawable.historyg: { // get6:
+				findWebList(v);
 				dismissPopup();
 				//todo to favorite
-				boolean fromPeruseView = PeruseViewAttached();
-				ViewGroup target = mainF;//fromPeruseView? peruseView.peruseF:mainF;
-				if(target.getChildCount()==0){ //if(DBrowser==null)
-					AttachDBrowser(DB_HISTORY);
-				}
+				//boolean fromPeruseView = PeruseViewAttached();
+				//ViewGroup target = mainF;//fromPeruseView? peruseView.peruseF:mainF;
+				//if(target.getChildCount()==0)
+				AttachDBrowser(DB_HISTORY);
 			} break;
 			case R.drawable.ic_keyboard_show_24: {
 				etSearch.setSelectAllOnFocus(true);
@@ -6231,8 +6223,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		} else {
 			app_panel_bottombar_height = btm.getHeight();
 		}
-		weblist = (WebViewListHandler) btm.getTag();
-		if(weblist==null) weblist=weblistHandler;
+		WebViewListHandler weblist = (WebViewListHandler) btm.getTag();
+		if(weblist!=null) {
+			this.weblist=weblist;
+		} else if(this.weblist==null) {
+			this.weblist=weblistHandler;
+		}
 		//CMN.Log("findWebList::", btm, weblist);
 		return btm;
 	}

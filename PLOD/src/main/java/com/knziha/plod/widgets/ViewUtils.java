@@ -23,6 +23,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
@@ -74,6 +75,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.NestedScrollingChildHelper;
@@ -228,6 +230,7 @@ public class ViewUtils {
 			CMN.recurseLog(vI);
 		}
 	}
+	
 	/* get the list from WindowManagerGlobal.mViews */
 	public static List<View> getWindowManagerViews() {
 		try {
@@ -235,7 +238,7 @@ public class ViewUtils {
 			//  ------>mViews
 			//  ------>getInstance
 			Object views = execSimple("{android.view.WindowManagerGlobal}.getInstance().mViews", reflectionPool);
-			//CMN.debug("logAllViews::views::", views);
+			CMN.debug("logAllViews::views::", views);
 			if (views instanceof List) {
 				return (List<View>) views;
 			} else if (views instanceof View[]) {
@@ -246,6 +249,57 @@ public class ViewUtils {
 			//instance_WindowManagerGlobal = new Exception();
 		}
 		return new ArrayList<>();
+	}
+	
+	/* get the list from WindowManagerGlobal. the result array list is cached */
+	public static List<View> getWindowManagerViews(MainActivityUIBase a) {
+		if (a.wViews!=null) {
+			return a.wViews;
+		}
+		try {
+			//  Class.forName("android.view.WindowManagerGlobal")
+			//  ------>mViews
+			//  ------>getInstance
+			Object views = execSimple("{android.view.WindowManagerGlobal}.getInstance().mViews", reflectionPool);
+			//CMN.debug("logAllViews::views::", views);
+			if (views instanceof List) {
+				return a.wViews = (List<View>) views;
+			} else if (views instanceof View[]) {
+				return Arrays.asList((View[])views);
+			}
+		} catch (Exception e) {
+			CMN.debug("logAllViews::", e);
+			//instance_WindowManagerGlobal = new Exception();
+		}
+		return new ArrayList<>();
+	}
+	
+	
+	/* 对话框是否置顶 */
+	public static boolean isTopmost(Dialog dialog, MainActivityUIBase a) {
+		if (dialog!=null) {
+			List<View> views = getWindowManagerViews(a);
+			return views.size()>1 && views.get(views.size() - 1)==dialog.getWindow().getDecorView();
+		}
+		return false;
+	}
+	
+	/* 将对话框置顶 */
+	public static void ensureTopmost(Dialog dialog, MainActivityUIBase a, Dialog.OnDismissListener disLis) {
+		if (dialog!=null) {
+			List<View> views = getWindowManagerViews(a);
+			if (dialog.isShowing()
+					&& (views.size() == 0
+					|| views.get(views.size() - 1) != dialog.getWindow().getDecorView())) {
+				dialog.setOnDismissListener(null);
+				dialog.dismiss();
+				dialog.show();
+				dialog.setOnDismissListener(disLis);
+				CMN.debug("ensureTopmost::reshow!!!");
+			} else {
+				CMN.debug("ensureTopmost::same!!!");
+			}
+		}
 	}
 	
 	public static int indexOf(CharSequence text, char cc, int now) {

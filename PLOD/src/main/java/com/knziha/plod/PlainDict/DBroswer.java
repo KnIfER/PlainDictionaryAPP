@@ -47,6 +47,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
 import com.knziha.ankislicer.customviews.ArrayAdaptermy;
+import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.mdict;
@@ -71,6 +72,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 
 import com.knziha.plod.db.LexicalDBHelper;
 
@@ -1624,7 +1626,7 @@ public class DBroswer extends DialogFragment implements
 	@NonNull
 	@Override
 	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-		CMN.Log("PeruseView----->onCreateDialog");
+		CMN.Log("DBrowser----->onCreateDialog");
 		if(mDialog==null){
 			mDialog = new SimpleDialog(requireContext(), getTheme());
 			
@@ -1728,5 +1730,45 @@ public class DBroswer extends DialogFragment implements
 		if(closeMenu)
 			a.closeIfNoActionView(mmi);
 		return ret;
+	}
+	
+	WebViewListHandler weblist;
+	private boolean lastShowType;
+	/** @return 0=nothing  1=dialog 2=view  */
+	public int preShow(WebViewListHandler wlh) {
+		if (weblist != wlh) {
+			weblist = wlh;
+		}
+		boolean dialog = wlh.src== SearchUI.Fye.MAIN || wlh.bShowingInPopup;
+		final boolean visible = UIData != null && UIData.getRoot().getParent() == wlh.a.mainF
+				|| (mDialog != null && mDialog.isShowing());
+		if (lastShowType != dialog) {
+			lastShowType = dialog;
+			if (visible) {
+				detach();
+			}
+		} else if (visible) {
+			if (dialog) {
+				ViewUtils.ensureTopmost(mDialog, getMainActivity(), this);
+			}
+			return 0;
+		}
+		return dialog?1:2;
+	}
+	
+	public void detach() {
+		if (mDialog != null && mDialog.isShowing()) {
+			mDialog.dismiss();
+		} else {
+			try {
+				getFragmentManager()
+						.beginTransaction()
+						.remove(this)
+						.commit();
+			} catch (Exception e) {
+				CMN.Log(e);
+			}
+		}
+		ViewUtils.removeView(getView());
 	}
 }
