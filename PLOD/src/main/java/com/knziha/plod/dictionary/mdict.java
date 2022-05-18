@@ -934,16 +934,21 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 		split_recs_thread_number = split_keys_thread_number>16?6:split_keys_thread_number;
 		//split_recs_thread_number = Runtime.getRuntime().availableProcessors();
 		final int thread_number = Math.min(Runtime.getRuntime().availableProcessors()/2*2+2, split_keys_thread_number);
-		SU.Log("fatal_","split_recs_thread_number"+split_recs_thread_number);
-		SU.Log("fatal_","thread_number"+thread_number);
+		//split_recs_thread_number = (int) (_num_record_blocks/16);
 
 		final int step = (int) (_num_record_blocks/split_recs_thread_number);
 		final int yuShu=(int) (_num_record_blocks%split_recs_thread_number);
+		
+		SU.Log("fatal_","split_recs_thread_number"+split_recs_thread_number);
+		SU.Log("fatal_","thread_number"+thread_number);
+		SU.Log("fatal_","step/yuShu", step, yuShu);
 
 
-		ArrayList<SearchResultBean>[] _combining_search_tree=SearchLauncher.getTreeBuilding(book, split_keys_thread_number);
+		ArrayList<SearchResultBean>[] _combining_search_tree=SearchLauncher.getTreeBuilding(book, split_recs_thread_number);
 
 		SearchLauncher.poolEUSize.set(SearchLauncher.dirtyProgressCounter=0);
+		
+		//if (preparedStream==null) prepareFileStream();
 
 		//ArrayList<Thread> fixedThreadPool = new ArrayList<>(thread_number);
 		ExecutorService fixedThreadPool = OpenThreadPool(thread_number);
@@ -963,7 +968,7 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 				_combining_search_tree[it] = new ArrayList<>();
 
 			if(split_recs_thread_number>thread_number) SearchLauncher.poolEUSize.addAndGet(1);
-
+			
 			Regex finalJoniregex = Joniregex;
 			byte[][][][][] finalMatcher = matcher;
 			fixedThreadPool.execute(
@@ -977,9 +982,10 @@ public class mdict extends mdBase implements UniversalDictionaryInterface{
 					InputStream data_in = null;
 					try
 					{
-						data_in = mOpenInputStream();
 						long seekTarget=_record_info_struct_list[it*step].compressed_size_accumulator+_record_block_offset+_number_width*4+_num_record_blocks*2*_number_width;
-						long seek = data_in.skip(seekTarget);
+						//data_in = mOpenInputStream();
+						//long seek = data_in.skip(seekTarget);
+						data_in = getStreamAt(seekTarget, false);
 						//if(seek!=seekTarget)
 						//	throw new RuntimeException("seek!=seekTarget !!!");
 						int jiaX=0;
