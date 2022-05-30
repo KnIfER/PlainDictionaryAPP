@@ -268,6 +268,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", level INTEGER DEFAULT 0 NOT NULL" +
 					", notes LONGVARCHAR" +
 					")";
+			db.execSQL(sqlBuilder);
 			if (!columnExists(db, TABLE_FAVORITE_v2, "src")) {
 				db.execSQL("ALTER TABLE "+TABLE_FAVORITE_v2+" ADD COLUMN src INTEGER DEFAULT 0 NOT NULL");
 			}
@@ -275,7 +276,6 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				db.execSQL("ALTER TABLE "+TABLE_FAVORITE_v2+" ADD COLUMN grp INTEGER");
 				db.execSQL("ALTER TABLE "+TABLE_FAVORITE_v2+" ADD COLUMN ivk INTEGER");
 			}
-			db.execSQL(sqlBuilder);
 			db.execSQL("CREATE INDEX if not exists favorite_term_index ON favorite (lex, folder)"); // query view
 			//db.execSQL("CREATE INDEX if not exists favorite_level_index ON favorite (folder, level)");  // level view
 			db.execSQL("CREATE INDEX if not exists favorite_folder_index ON favorite (folder, last_visit_time)"); // folder view

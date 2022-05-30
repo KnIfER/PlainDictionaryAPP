@@ -1084,16 +1084,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		return val;
 	}
 
-	public static boolean getKeepScreen() {
-		return (SecondFlag & 0x10000000l) != 0x10000000l;
-	}
-	public static boolean getKeepScreen(long SecondFlag) {
-		return (SecondFlag & 0x10000000l) != 0x10000000l;
-	}
-	public static boolean setKeepScreen(boolean val) {
-		updateSFAt(0x10000000l,!val);
-		return val;
-	}
+	@Metaline(flagPos=28) public static boolean getKeepScreen() { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=28) public static boolean getKeepScreen(long SecondFlag) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=28) public static void setKeepScreen(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	
 	
 	@Metaline(flagPos=36) public static boolean getHideFloatFromRecent() { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=36) public static void setHideFloatFromRecent(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
@@ -2270,8 +2264,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=5) public static boolean loadUrlOne() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=6) public static boolean loadUrlMulti() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=7) public static boolean restoreLastSch() { SixthFlag=SixthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=7) public static void restoreLastSch(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7, shift=1) public static boolean restoreLastSch() { SixthFlag=SixthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=7, shift=1) public static void restoreLastSch(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=8) public static boolean fyeGridPad() { SixthFlag=SixthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=8) public static void fyeGridPad(boolean v) { SixthFlag=SixthFlag; throw new RuntimeException();}

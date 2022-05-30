@@ -43,8 +43,16 @@
             }
         }
     }
-    // [prefix type]  无。单选框。复选框。 树形可展开标志。
-    // [presernter type] none/toggle/input/select/slider
+	
+	// json side : 
+	// settings array : [(presenter type)|(prefix type)<<10, id, title, value]
+	// 	id array [id, id1, val1 if selected, is selected]  id1, val1 与prefix有关（复选框/单选框）
+	// 	title array [title, subtitle]
+	
+	// dom side : 
+	// settings row : [Prefix] Title[SubTitle] [Presenter]
+    // [prefix type]  0无。1单选框。2复选框。 3树形可展开标志。
+    // [presenter type] 0 none/1 toggle/2 input/3 select/4 slider
     function clickToggle(e) {
         //debug(e, e.composedPath());
         var t=getObj(e, 'outerRow');
@@ -55,7 +63,7 @@
         if(t.sel!=undefined) {
             var val=null;
             if(v) {
-                var p=t.childList,c=p.firstChild,defirst;
+                var p=t.childList,c=t.firstChild,defirst;
                 while(c) {
                     //debug('same group?', p, c, c.id1, t.id1, c.id1===t.id1);
                     //if(c.id1===t.id1)debug('prefix?', c, c.id1, t.id1, gc('prefix',c));

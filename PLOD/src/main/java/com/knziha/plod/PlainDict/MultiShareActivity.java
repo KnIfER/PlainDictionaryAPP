@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.widgets.CheckableImageView;
@@ -69,6 +70,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		CMN.Log("onCreate...");
 		receivable=true;
 		thisActType = ActType.MultiShare;
+		dictPicker = new DictPicker(this, null, null, 1);
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main_share);
@@ -89,6 +91,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	protected void findFurtherViews() {
 		if (contentUIData==null) {
+			AllMenus = new MenuBuilder(this);
 			// todo……
 			super.findFurtherViews();
 			adaptermy = new BasicAdapter(contentUIData, weblistHandler, null, null) {

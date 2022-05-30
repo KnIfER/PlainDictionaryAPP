@@ -23,7 +23,7 @@
 
 <script>
 var debug=parent.window.debug;
-if(!debug) debug=function(a,b,c){console.log(a,b,c)};
+if(!debug) debug=function(a,b,c,d,e,f){console.log('fatal web d::',a||'',b||'',c||'',d||'',e||'',f||'')};
 debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
 

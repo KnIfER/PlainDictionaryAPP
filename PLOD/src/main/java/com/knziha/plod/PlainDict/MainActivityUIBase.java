@@ -2293,9 +2293,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		String lastLoadedModule;
 		
 		public void newChair() {
-			if (CosyChair.length<=chairCount) {
+			if (CosyChair==null || CosyChair.length<=chairCount) {
 				int[] newChairs = new int[(int) Math.max(chairCount*1.5f, chairCount+1)];
-				System.arraycopy(CosyChair, 0, newChairs, 0, chairCount);
+				if(CosyChair!=null)
+					System.arraycopy(CosyChair, 0, newChairs, 0, chairCount);
 				CosyChair = newChairs;
 			}
 			CosyChair[chairCount++] = placeHolders.size()-1;
@@ -7321,7 +7322,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(mWebView.bRequestedSoundPlayback) readEntry(mWebView);
 			
 			if(invoker.GetSearchKey()!=null)
-				invoker.ApplySearchKey();
+				invoker.ApplySearchKey(mWebView);
 			
 			if (wlh.tapSch && !invoker.getImageOnly())
 				ViewUtils.TapSch(MainActivityUIBase.this, mWebView);
@@ -7686,6 +7687,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (slashIdx==schemaIdx+7 || url.regionMatches(slashIdx+1, "MdbR", 0, 4)) {
 							try { // 内置资源
 								if (slashIdx == schemaIdx + 7) {
+									/** see{@link PlainWeb#loadJs} */
 									key = "MdbR" + url.substring(schemaIdx + 7);
 								} else {
 									key=url.substring(slashIdx+1);
@@ -7756,7 +7758,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											CMN.debug("修改了::", url);
 											WebResourceResponse webResourceResponse;
 											webResourceResponse=new WebResourceResponse("*/*", "utf8", input);
-											//webResourceResponse.setResponseHeaders(headers);
 											return webResourceResponse;
 										}
 									}
@@ -9505,11 +9506,16 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					data = new byte[input.available()];
 					input.read(data);
 				} catch (IOException e) { }
-				CommonAssets.put(key, data);
+				if (data!=null) {
+					CommonAssets.put(key, data);
+				}
 			}
 			if (data!=null) {
 				CommonAssetsStr.put(key, ret = new String(data));
 			}
+		}
+		if (ret==null) {
+			CMN.Log("空的::", key);
 		}
 		return ret==null?"":ret;
 	}

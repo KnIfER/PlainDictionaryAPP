@@ -518,6 +518,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			
 			weblist.mBar = pageSlider.findViewById(R.id.dragScrollBar);
 			this.mWebView = weblist.dictView = weblist.mMergedFrame = webview;
+			BookPresenter.setWebLongClickListener(mWebView, a);
 			pageSlider.bar = weblist.mBar;
 			
 			weblist.entrySeek = pageSlider.findViewById(R.id.entrySeek);
@@ -1014,6 +1015,10 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 			
 			if (webx != null) {
 				webx.SetSearchKey(popupKey);
+				if (webx.getWebx().getHasModifiers()) {
+					weblistHandler.moders.remove(webx.getWebx());
+					weblistHandler.moders.add(webx.getWebx());
+				}
 				idx = 0;
 			}
 			

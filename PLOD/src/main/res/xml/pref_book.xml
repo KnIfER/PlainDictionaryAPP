@@ -6,6 +6,19 @@
 	>
 
 	<PreferenceCategory
+		android:key="online"
+		android:title="在线词典设置"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="dopt"
+			android:persistent="false"
+			app:layout="@layout/empty"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
 		android:key="cat_1"
 		android:title="标题栏等"
 		app:icon="@drawable/color_sheet"

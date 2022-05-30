@@ -11,12 +11,17 @@
 	function init(){
 		var win=window,doc=document,e=doc.getElementById('gtyexp'),sel=win.getSelection()
 		,ta=doc.getElementsByTagName('textarea')[0], listPane,textPara,tryCnt=0;
-		function debug(e){console.log(e)};
-		//debug('translator ini...'+location.href); // 开始
-		debug('translator ini...'+doc.body); // 开始
+		function debug(...e){console.log('fatal web', e)};
+		debug('translator ini...'+location.href, dopt.fonts); // 开始
+		//debug('translator ini...'+doc.body); // 开始
 		if(!doc.body) {
 			setTimeout(init, 200);
 			return;
+		}
+		if(dopt.fonts) {
+			var sty = document.getElementsByTagName('STYLE')[1];
+			if(sty) sty.innerText=sty.innerText.replaceAll('gstatic.com', 'gstatic.cn');
+			debug('已修复字体！');
 		}
 		//debug('translator ...123');
 		win._YWPC=['Sp3AF'];
@@ -319,6 +324,14 @@ succ"
 		,{url:"https://translate.google.cn/translate_a/element.js"}
 		,{urlv4:"https://translate.googleapis.com/_/translate_http/_/js/k=translate_http.tr.zh_CN.tbokbaq6GcI.O/am=AQ/d=1/exm=el_conf/ed=1/rs=AN8SPfpDwbSVWpQ6RLn8qBOWrZ8KB0pUCg/m=el_main"}
 	]
+	,"settings":{
+		fonts:false
+	}
+	,"settingsArray":"
+		['首选项'
+			, [1, 'fonts', ['强制更换国内服务器字体', '请在图标不显示时开启(替换fonts.gstatic.com为fonts.gstatic.cn)'], dopt.fonts]
+		]
+	"
 	,"pageTranslator":"
 		var debug = window.debug||function(e){console.log(e)};
 		if(!window.gTrans){
@@ -393,9 +406,14 @@ succ"
 								// window.scrollY is unreliable in this case, so...
 								var sY=app.getScrollY(sid.get());
 								if(dis!='none') {
-									yw.style.marginTop = Math.round(sY)+'px';
+									yw.style.position = 'absolute';//
+									yw.style.marginTop = Math.round(sY)+'px'; 
+									document.body.style.paddingBottom='1024px'//
 								} else {
+									yw.style.position = 'fixed';//
 									document.documentElement.scrollTop=sY;
+									document.body.style.paddingBottom='0px'//blacksmith, 
+									// fix scroll reset bug. after showing 'absolute' when scroll at page bottom
 								}
 							}
 						}).observe(yw , { attributes: true, attributeFilter: ['style']});
@@ -467,7 +485,8 @@ succ"
 					p.appendChild(e);
 					return e;
 				}
-				craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5}.goog-te-menu-frame{position:absolute}#goog-gt-tt>:first-child{padding:0!important}#goog-gt-tt .logo{padding:5px}';
+				//.goog-te-menu-frame{position:absolute}
+				craft(0,'STYLE',document.body).innerText='.goog-te-gadget{position:fixed;bottom:0;z-index:9999999999999;opacity:0.5}#goog-gt-tt>:first-child{padding:0!important}#goog-gt-tt .logo{padding:5px}';
 				document.body.id='body';
 				loadJs('https://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit')
 			})();

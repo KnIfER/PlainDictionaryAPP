@@ -874,8 +874,11 @@ function debug(e){console.log(e)};
 	           	AdvancedNestScrollWebView _mWebView = pageData.webviewmy;
 				rl.setTag(_mWebView);
 				_mWebView.presenter = this;
+				_mWebView.weblistHandler = a.weblistHandler;
 				_mWebView.setNestedScrollingEnabled(PDICMainAppOptions.getEnableSuperImmersiveScrollMode());
 				//if(!(this instanceof bookPresenter_pdf))
+				_mWebView.setWebChromeClient(a.myWebCClient);
+				_mWebView.setWebViewClient(a.myWebClient);
 					_mWebView.setOnScrollChangedListener(a.getWebScrollChanged());
 	            _mWebView.setPadding(0, 0, 18, 0);
 				_mWebView.addJavascriptInterface(getWebBridge(), "app");
@@ -2011,12 +2014,12 @@ function debug(e){console.log(e)};
 				if(mIsolateImages){
 					/* 只有在单本阅读的时候才可以进入图文分离模式。包括三种情况。 */
 					//PDICMainAppOptions.getIsoImgLimitTextHight()  强定高度
-					rl.getLayoutParams().height = (int) (150*opt.dm.density);//文本限高模式
-					a.webSingleholder.setTag(R.id.image,false);
-					a.webSingleholder.setBackgroundColor(Color.TRANSPARENT);
-					a.contentUIData.PageSlider.slideTurn =false;
-					mWebView.setBackgroundColor(Color.TRANSPARENT);
-					a.initPhotoViewPager();
+//					rl.getLayoutParams().height = (int) (150*opt.dm.density);//文本限高模式
+//					a.webSingleholder.setTag(R.id.image,false);
+//					a.webSingleholder.setBackgroundColor(Color.TRANSPARENT);
+//					a.contentUIData.PageSlider.slideTurn =false;
+//					mWebView.setBackgroundColor(Color.TRANSPARENT);
+//					a.initPhotoViewPager(); todo 123
 				} else {
 					rl.getLayoutParams().height = LayoutParams.MATCH_PARENT;
 					mWebView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -2222,7 +2225,7 @@ function debug(e){console.log(e)};
 		}
 	}
 	
-	public void ApplySearchKey() {
+	public void ApplySearchKey(WebViewmy mWebView) {
 		//CMN.Log("OPF::EvaluateValidifierJs::", GetSearchKey());
 		String validifier1 = getOfflineMode()&&getIsWebx()?null:bookImpl.getVirtualTextValidateJs(this, mWebView, mWebView.currentPos);
 		if (validifier1!=null) {
@@ -2621,6 +2624,16 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public void log(String val) {
         	CMN.Log(val);
+        }
+		
+        @JavascriptInterface
+        public void SaveDopt(int sid, String val) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					presenter.getWebx().saveDopt(presenter.a, val);
+				}
+			}
         }
 		
 		@JavascriptInterface
@@ -3172,6 +3185,7 @@ function debug(e){console.log(e)};
 			{
 				//upsended = true;
 				WebViewmy view = findWebview(sid);
+				CMN.Log("knock", view.weblistHandler);
 //				view.postDelayed(new Runnable() {
 //					@Override
 //					public void run() {

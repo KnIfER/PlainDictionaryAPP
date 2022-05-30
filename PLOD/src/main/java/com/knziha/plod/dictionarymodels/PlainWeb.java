@@ -62,9 +62,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -153,6 +155,7 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	public Map<SubStringKey, String> jinkeSheaths;
 	Object k3client;
+	private JSONObject dopt;
 	
 	public boolean hasHosts() {
 		return jinkeSheaths!=null && jinkeSheaths.size()>0;
@@ -416,10 +419,10 @@ public class PlainWeb extends DictionaryAdapter {
 			script.src=url;
 			document.body.appendChild(script);
 		}
-		try{fun('//mdbr/SUBPAGE.js')}catch(e){app.loadJs(sid.get(),'SUBPAGE.js');}
+		try{fun('//mdbr/SUBPAGE.js')}catch(e){app.loadJs(sid.get(),'MdbR/SUBPAGE.js');}
 	 }
 	 */
-	@Metaline()
+	@Metaline(trim = false)
 	public static final String loadJs = StringUtils.EMPTY;
 	
 	/**
@@ -488,6 +491,23 @@ public class PlainWeb extends DictionaryAdapter {
 			String kDumpName = "ws_"+getBooKID();
 			try {
 				LexicalDBHelper database = LexicalDBHelper.getInstance();
+				if (dopt!=null) {
+					String[] where = new String[]{"dopt_"+getBooKID()};
+					Cursor cursor = database.getDB().rawQuery("select type,len,data from data where name=? limit 1", where);
+					//CMN.Log("setBooKID::ReadData::", kDumpName, cursor.getCount());
+					if (cursor.moveToNext()) {
+						int type = cursor.getInt(0);
+						int length = cursor.getInt(1);
+						byte[] data = cursor.getBlob(2);
+						if (type==2) { // zlib
+						
+						}
+						dopt = JSONObject.parseObject(new String(data));
+						CMN.debug("dopt::读取了::", dopt);
+						//todo merge
+					}
+					cursor.close();
+				}
 				if (database!=null && database.testDBV2) {
 					String[] where = new String[]{kDumpName};
 					Cursor cursor = database.getDB().rawQuery("select type,len,data from data where name=? limit 1", where);
@@ -651,6 +671,7 @@ public class PlainWeb extends DictionaryAdapter {
 		parseJinke(context);
 		CMN.Log("jinkeSheaths::", jinkeSheaths);
 		
+		getDopt();
 	}
 	
 	//粗暴地排除
@@ -1210,6 +1231,44 @@ public class PlainWeb extends DictionaryAdapter {
 		return null;
 	}
 	
+	
+	public void saveDopt(MainActivityUIBase a, String val) {
+		LexicalDBHelper database = a.prepareHistoryCon();
+		try {
+			String kDumpName = "dopt_"+getBooKID();
+			long now = CMN.now();
+			ContentValues value = new ContentValues();
+			dopt = JSONObject.parseObject(val);
+			byte[] data = dopt.toString().getBytes();
+			value.put("type", 0);
+			value.put("data", data);
+			value.put("len", data.length);
+			
+			String[] where = new String[]{kDumpName};
+			Cursor cursor = database.getDB().rawQuery("select id,edit_count from data where name=? limit 1", where);
+			long id = -1;
+			int edit_count = 0;
+			if (cursor.moveToNext()) {
+				id = cursor.getLong(0);
+				edit_count = cursor.getInt(1);
+			}
+			value.put(FIELD_EDIT_TIME, now);
+			value.put("edit_count", ++edit_count);
+			cursor.close();
+			if (id>=0) {
+				where[0] = ""+id;
+				database.getDB().update(TABLE_DATA_v2, value, "id=?", where);
+			} else {
+				value.put("name", kDumpName);
+				value.put(FIELD_CREATE_TIME, now);
+				id = database.getDB().insert(TABLE_DATA_v2, null, value);
+			}
+			CMN.debug("dopt::保存了::", dopt);
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+	}
+	
 	public void saveWebSearches(Toastable_Activity context, LexicalDBHelper database) {
 		if (mRecordsDirty && database!=null && database.testDBV2)
 		{
@@ -1250,7 +1309,7 @@ public class PlainWeb extends DictionaryAdapter {
 					id = database.getDB().insert(TABLE_DATA_v2, null, value);
 				}
 				//CMN.Log("dumpRecords::", kDumpName, id);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				CMN.Log(e);
 			}
 			mRecordsDirty = false;
@@ -1360,7 +1419,10 @@ public class PlainWeb extends DictionaryAdapter {
 					.append("window.shzh=app.rcsp(sid.get());");
 			if(GlobalOptions.isDark) sb.append(DarkModeIncantation);
 			if(bookPresenter.getContentEditable() && bookPresenter.getEditingContents() && bookPresenter.mWebView!=bookPresenter.a.wordPopup.mWebView)
-				sb.append(MainActivityUIBase.ce_on);
+				sb.append(MainActivityUIBase.ce_on).append(";");
+			if(dopt!=null){
+				sb.append("window.dopt=").append(dopt.toJSONString()).append(";");
+			}
 			if (style!=null || stylex!=null) {
 				//CMN.Log("style::", style);
 				int st = loadJs.indexOf("}\"");
@@ -1392,7 +1454,7 @@ public class PlainWeb extends DictionaryAdapter {
 //		} else {
 //			jsLoader = jsLoaderInJson;
 //		}
-		//if(GlobalOptions.debug)CMN.Log("加载网页::", url);
+		if(GlobalOptions.debug)CMN.Log("加载网页::", url, jsLoader);
 		return currentUrl=url;
 	}
 	
@@ -1928,6 +1990,14 @@ public class PlainWeb extends DictionaryAdapter {
 	@Override
 	public String getField(String fieldName) {
 		return website.getString(fieldName);
+	}
+	
+	
+	public JSONObject getDopt() {
+		if (dopt==null) {
+			dopt = website.getJSONObject("settings");
+		}
+		return dopt;
 	}
 	
 	public boolean hasField(String fieldName) {

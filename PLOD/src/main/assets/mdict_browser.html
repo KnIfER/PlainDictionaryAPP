@@ -896,8 +896,9 @@
 		/**/
 
 		function Initialize() {
-			window.debug=function(){var e=arguments,s=['fatal web ::'];for(var i=0;i<e.length;i++)s.push(e[i]);console.log(s)};
+			//window.debug=function(){var e=arguments,s=['fatal web ::'];for(var i=0;i<e.length;i++)s.push(e[i]);console.log(s)};
 			//window.debug=function(...e){console.log('fatal web d::', e)};
+			window.debug=function(a,b,c,d,e,f){console.log('fatal web d::',a||'',b||'',c||'',d||'',e||'',f||'')};
 			if(String.prototype.startsWith != 'function') {
 				loadJs("MdbR/KitPatch.js", doInitialize);
 			} else {
@@ -1338,7 +1339,7 @@
 		function pushState() {
 			if(true) {
 				args.s = etSearch.value;
-				var read = 'READ.jsp?q='+args.q;
+				var read = 'read.jsp?q='+args.q;
 				if(args.q!=args.s) {
 					read += '&s='+args.s;
 				}
@@ -1792,8 +1793,8 @@
 			,hideTitleForOnePage : false    //  从单本词典点击进来，是否隐藏标题？
 
 			,pushStates : true // 自动更新地址栏历史 切换词条时更新，会有很多历史记录
-			,pushStatesOn : 2 // 0=始终; 1=仅在联合查询、或切换显示不同词典的内容时启用; 2=仅在使用搜索框时启用
-			,pushUIStates : false // 切换界面状态时也自动更新
+			,pushStatesOn : 0 // 0=始终; 1=仅在联合查询、或切换显示不同词典的内容时启用; 2=仅在使用搜索框时启用
+			,pushUIStates : true // 切换界面状态时也自动更新
 			,frameSafe : true // 若自动更新了，禁止加载子页面时再次影响浏览器的前后导航历史
 
 			,safeFrame : false // 加载子页面时，禁止影响浏览器前后导航历史
@@ -2175,7 +2176,7 @@
 				for(var i=0,fx;fx=wbframes[i];i++) {
 					var lnk=craft('A', 'webx', wbf.p);
 					lnk.dictInfo = fx;
-					if(fx.sch)lnk.href = sch.replace('%s', args.q);
+					if(fx.sch)lnk.href = fx.sch.replace('%s', args.q);
 					lnk.target = '_blank';
 					if(fx.name)lnk.innerText = fx.name.slice(0,-4);
 					else lnk.innerText = fx.id;

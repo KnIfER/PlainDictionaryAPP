@@ -2,6 +2,8 @@ package com.knziha.plod.settings;
 
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
+import android.view.View;
+import android.webkit.WebView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -9,6 +11,7 @@ import androidx.appcompat.app.GlobalOptions;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.SwitchPreference;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.jaredrummler.colorpicker.ColorPickerPreference;
 import com.knziha.filepicker.settings.FloatPreference;
@@ -18,14 +21,18 @@ import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.MagentTransient;
+import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.OptionProcessor;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.widgets.WebViewmy;
+
+import org.knziha.metaline.Metaline;
 
 /** 这个是后后来的词典设置界面，比较高大上。 */
-public class BookOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener {
+public class BookOptions extends SettingsFragmentBase implements Preference.OnPreferenceClickListener, Preference.OnGetViewListener {
 	BookPresenter[] data;
 	private boolean bNeedParseData;
 	private static int mScrollPos;
@@ -248,6 +255,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		
 		findPreference("reload").setOnPreferenceClickListener(this);
 		findPreference("dtm").setOnPreferenceChangeListener(this);
+		findPreference("dopt").setmOnGetViewListener(this);
 	}
 	
 	@Override
@@ -372,5 +380,57 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			SearchUI.tapZoomV++;
 		}
 		return true;
+	}
+	
+	
+	
+	/**
+	 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+	<meta charset="utf8">
+	<div id="host"> </div>
+	<script src='MdbR/settings.js'></script>
+	<body>
+		<script>
+			// 测试
+			if(true) {
+				function debug(...e){console.log(e)};
+				var host = document.getElementById('host');
+				var dopt = %0;
+				function change(id, value, el)
+				{
+	 				dopt[id] = value;
+					debug('pref_id=', id, 'newValue=', typeof value, value, 'result=');
+	 				debug(value, dopt);
+					app.SaveDopt(sid.get(), JSON.stringify(dopt));
+					return 1;
+				}
+				var settings = %1;
+				SettingsBuildCard(change, settings, host);
+			}
+		</script>
+	</body>
+	 */
+	@Metaline
+	String webxSettings = "";
+	
+	WebViewmy mWebView;
+	@Override
+	public View getView(Preference preference) {
+		PlainWeb webx = data[0].getWebx();
+		if (mWebView==null) {
+			mWebView = new WebViewmy(data[0].a);
+			mWebView.setWebChromeClient(data[0].a.myWebCClient);
+			mWebView.setWebViewClient(data[0].a.myWebClient);
+			mWebView.setLayoutParams(new RecyclerView.LayoutParams(-1, -2));
+			mWebView.addJavascriptInterface(data[0].getWebBridge(), "app");
+			mWebView.presenter = data[0];
+			mWebView.weblistHandler = data[0].a.weblistHandler;
+			String settings = webxSettings;
+			settings = settings.replace("%0", webx.getDopt().toString());
+			settings = settings.replace("%1", webx.getField("settingsArray"));
+			mWebView.loadDataWithBaseURL(data[0].mBaseUrl,settings, null, "UTF-8", null);
+			data[0].getWebBridge().mergeView = mWebView;
+		}
+		return mWebView;
 	}
 }

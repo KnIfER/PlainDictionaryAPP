@@ -262,7 +262,9 @@ js:@{schVar}(4)\r< En-Zh >
 					debug(e);
 					window.tmp=e;
 					buildDef(e);
-					parent.window.MarkFrame(frameElement);
+					if(window.bOnceHighlighted) {
+						parent.window.MarkFrame(frameElement);
+					}
 				}, 'w='+encodeURIComponent(text)+'&m='+m, 1);
 			}
 		</script>

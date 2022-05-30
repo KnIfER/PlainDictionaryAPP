@@ -984,7 +984,7 @@ public class Drawer extends Fragment implements
 									CMN.Log(add_book_checker);
 									CMN.Log(renameRec.toString());
 									if(a.dictPicker !=null) {
-										a.dictPicker.adapter().notifyDataSetChanged();
+										a.dictPicker.dataChanged();
 										a.dictPicker.isDirty=true;
 									}
 									output.close();

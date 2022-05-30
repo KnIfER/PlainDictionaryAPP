@@ -341,7 +341,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 		return autoBtn!=null?autoBtn.isChecked():opt.autoSchPDict();
 	}
 	
-	public void dataChanged() {
+	public final void dataChanged() {
 		if(mAdapter!=null) {
 			mAdapter.notifyDataSetChanged();
 		}
