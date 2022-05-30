@@ -824,7 +824,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				this.CCD_ID=CCD_ID;
 				sching=CCD;
 				currentPos = idx;
-				harvest();
+				harvest(); //下一个！
 			}
 		}
 	}
@@ -857,7 +857,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), searchText);
 		if (rec.FindFirstIdx(searchText, task) && taskVer==taskVersion.get()) {
 			this.rec = rec;
-			harvest();
+			harvest(); // multiple!
 		}
 	}
 	
@@ -895,10 +895,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 				if (CCD != a.EmptyBook) {
 					if(CCD.getIsWebx()){
 						webx = CCD;
-						if (PDICMainAppOptions.getTapSkipWebxUnlessIsDedicated()
-								&& (!PDICMainAppOptions.getTmpIsClicker(CCD.tmpIsFlag)
-									&& (!PDICMainAppOptions.getTapTreatTranslatorAsDedicated() || !webx.getWebx().getIsTranslator()))
-							|| !((PlainWeb)webx.bookImpl).takeWord(popupKey)) {
+						if (!webx.getWebx().takeWord(popupKey)) {
 							webx = null;
 						}
 					} else  {
@@ -1020,16 +1017,17 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 					weblistHandler.moders.add(webx.getWebx());
 				}
 				idx = 0;
+				//CCD = webx;
 			}
 			
+			//CMN.Log(CCD, "应用轮询结果", webx, idx);
 			if(idx>=0 && CCD != a.EmptyBook  && task.get() && taskVer == taskVersion.get()) {
-				CMN.Log(CCD, "应用轮询结果", webx, idx);
 				if(bForceJump && SearchMode==1)
 					mWebView.setTag(R.id.js_no_match, false);
 				currentPos = idx;
 				this.rec = null;
 				sching = CCD;
-				harvest();
+				harvest(); //single!
 			}
 			
 			if (!PDICMainAppOptions.storeNothing()
@@ -1040,6 +1038,7 @@ public class WordPopup extends PlainAppPanel implements Runnable{
 	
 	public void SearchDone() {
 		requestAudio = PDICMainAppOptions.tapSchAutoReadEntry();
+		//CMN.Log("SearchDone::", rec, currentPos, CCD);
 		if (rec != null) {
 			if (rec.size() > 0) {
 				rec.jointResult = rec.getJointResultAt(0);
