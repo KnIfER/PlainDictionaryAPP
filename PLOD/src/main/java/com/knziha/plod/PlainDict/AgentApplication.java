@@ -39,6 +39,7 @@ public class AgentApplication extends Application {
 	public HashSet<CharSequence> dirtyMap = new HashSet<>();
 	public HashMap<String,String> fontNames = new HashMap<>();
 	public PDICMainAppOptions opt;
+	public MainActivityUIBase.LoadManager loadManager;
 	public HashSet<String> mdlibsCon;
 	/** 控制所有实例只扫描一遍收藏夹 */
 	public boolean bNeedPullFavorites =true;
@@ -133,7 +134,6 @@ public class AgentApplication extends Application {
 		CMN.AssetMap.put("", "【内置】");
 	}
 	public SoftReference<char[]> _4kCharBuff;
-	public ArrayList<PlaceHolder> slots;
 
 	@Override
 	public void onTerminate() {

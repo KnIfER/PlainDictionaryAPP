@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,6 +29,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.ActionMenuView.LayoutParams;
 import androidx.appcompat.widget.SearchView;
@@ -47,7 +47,6 @@ import com.knziha.filepicker.model.DialogProperties;
 import com.knziha.filepicker.model.DialogSelectionListener;
 import com.knziha.filepicker.utils.FU;
 import com.knziha.filepicker.view.FilePickerDialog;
-import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedReader;
 import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
@@ -58,11 +57,13 @@ import com.knziha.plod.dictionarymodels.MagentTransient;
 import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 import com.knziha.plod.settings.BookOptionsDialog;
+import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.rbtree.RashSet;
 
 import java.io.BufferedReader;
@@ -78,12 +79,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+
 public class BookManager extends Toastable_Activity implements OnMenuItemClickListener
 {
-	HashMap<String, MagentTransient> mdict_cache = new HashMap<>();
+	public final static int id = 110;
+	HashMap<String, BookPresenter> mdict_cache = new HashMap<>();
 	Intent intent = new Intent();
 	private PopupWindow mPopup;
-	public ArrayList<PlaceHolder> slots;
+	//public ArrayList<PlaceHolder> slots;
+	public ArrayList<PlaceHolder> placeArray;
+	public MainActivityUIBase.LoadManager loadMan;
 	private ArrayList<Fragment> fragments;
 	public HashMap<String, BookPresenter> app_mdict_cache;
 	//public HashMap<CharSequence,byte[]> UIProjects;
@@ -91,13 +96,20 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	
 	public File ConfigFile;
 	
-	public File DecordFile;
+	public File fRecord;
 	
 	public File DefordFile;
 	
 	public File SecordFile;
 	
 	private boolean deleting;
+	
+	public MenuBuilder AllMenus;
+	public List<MenuItemImpl> Menu1;
+	public List<MenuItemImpl> Menu2;
+	public List<MenuItemImpl> Menu3;
+	public List<MenuItemImpl> Menu3Sel;
+	public List<MenuItemImpl> Menu4;
 	
 	public BookManager() { }
 	
@@ -127,7 +139,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
     private Toolbar toolbar;
     static String dictQueryWord;
     private SearchView searchView;
-    protected Menu toolbarmenu;
     BookManagerMain f1;
     BookManagerModules f2;
     BookManagerFolderlike f3;
@@ -136,7 +147,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
     TabLayout mTabLayout;
 	LayoutInflater inflater;
 
-	public ArrayList<MagentTransient> mdmng;
     public HashSet<String> mdlibsCon;
 	protected int CurrentPage;
 
@@ -171,35 +181,49 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		CMN.Log("肮脏的一群！", f1.isDirty, f2.isDirty, f3.isDirty);
 		if(f1.isDirty) {
 			intent.putExtra("result", true);
-			int size = mdmng.size();
-			boolean identical = size==slots.size();
+			int size = f1.manager_group().size();
+			boolean identical = size==placeArray.size();
+			boolean rolesChanged = false;
 			int i;
+			loadMan.lazyMan.chairCount=0;
+			loadMan.lazyMan.filterCount=0;
 			for (i = 0; i < size; i++) {
-				MagentTransient mmTmp = mdmng.get(i);
-				mmTmp.mPhI.lineNumber=i;
-				if(identical){
-					if(!mmTmp.equalsToPlaceHolder(slots.get(i)))
+				PlaceHolder ph = loadMan.lazyMan.placeHolders.get(i);
+				ph.lineNumber = i | (ph.lineNumber & 0x80000000);
+				final int flag = ph.tmpIsFlag;
+				if (!PDICMainAppOptions.getTmpIsHidden(flag)) {
+					loadMan.lazyMan.chairCount++;
+					if (PDICMainAppOptions.getTmpIsClicker(flag)) {
+						loadMan.lazyMan.filterCount++;
+					}
+				}
+				if(identical) {
+					BookPresenter mdTmp = getMagentAt(i, false);
+					if(mdTmp!=loadMan.EmptyBook && !mdTmp.equalsToPlaceHolder(ph)
+						|| !ph.getPath(opt).equals(placeArray.get(i).getPath(opt)))
 						identical=false;
+					else if(!rolesChanged) {
+						rolesChanged = placeArray.get(i).tmpIsFlag != f1.getPlaceFlagAt(i);
+					}
 				}
 			}
 			if(identical){
 				CMN.Log("一成不变");
+				if(rolesChanged) {
+				
+				}
 			} else {
 				intent.putExtra("changed", true);
-				slots.clear();
-				for (mngr_agent_manageable mmTmp:mdmng) {
-					slots.add(((MagentTransient)mmTmp).mPhI);
-				}
 				try {
 					final File def = opt.getCacheCurrentGroup()?new File(getExternalFilesDir(null),"default.txt")
 							:opt.fileToSet(ConfigFile, opt.getLastPlanName("LastPlanName"));      //!!!原配
 					ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(def), app.get4kCharBuff(), 4096);
 					String parent = opt.lastMdlibPath.getPath();
 					output.write("[:S]");
-					output.write(Integer.toString(mdmng.size()));
+					output.write(Integer.toString(f1.manager_group().size()));
 					output.write("\n");
-					for (mngr_agent_manageable mmTmp : mdmng) {
-						writeForOneLine(output, mmTmp, parent);
+					for(i=0;i<f1.manager_group().size();i++) {
+						writeForOneLine(output, getMagentAt(i), parent);
 					}
 					output.flush();
 					output.close();
@@ -212,7 +236,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 
 		if(f3.isDirty) {
 			try {
-				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(DecordFile), app.get4kCharBuff(), 4096);
+				ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(fRecord), app.get4kCharBuff(), 4096);
 				String parent = opt.lastMdlibPath.getPath()+File.separator;
 				for(mFile mdTmp:f3.data.getList()) {
 					if(mdTmp.getClass()==mAssetFile.class) continue;
@@ -290,12 +314,13 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		//UIProjects=agent.BookProjects;
 		dirtyMap=agent.dirtyMap;
 		opt=agent.opt;
-		slots = agent.slots;
+		loadMan = agent.loadManager;
 		mdlibsCon=agent.mdlibsCon;
+		placeArray = new ArrayList<>(loadMan.lazyMan.placeHolders);
 		
 		ConfigFile = opt.fileToConfig();
 		
-		DecordFile = opt.fileToDecords(ConfigFile);
+		fRecord = opt.fileToDecords(ConfigFile);
 		
 		SecordFile = opt.fileToSecords(ConfigFile);
 		
@@ -310,11 +335,16 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
         mTabLayout = findViewById(R.id.mTabLayout);
 		inflater=LayoutInflater.from(getApplicationContext());
         toolbar = findViewById(R.id.toolbar);
-        toolbar.inflateMenu(R.xml.menu_dict_manager);
-
-        
- 		toolbarmenu = toolbar.getMenu();
- 		
+		final long resId = R.xml.menu_dict_manager;
+        toolbar.inflateMenu((int)resId);
+		AllMenus = (MenuBuilder) toolbar.getMenu();
+		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 2, 3, 4, 5, 6, 16);
+		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 0, 3, 15, 16);
+		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 13, 14, 16);
+		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 7, 8, 9, 10, 11, 12, 13, 14, 16);
+		Menu4 = ViewUtils.MapNumberToMenu(AllMenus);
+		AllMenus.setItems(Menu1);
+  
 		fragments= new ArrayList<>();
 		
 	    String[] tabTitle = {getResources().getString(R.string.currentPlan,0),getResources().getString(R.string.allPlans), "网络词典", "全部词典"};
@@ -323,16 +353,16 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		f1.a=f2.a=f4.a=f3.a=this;
 
 		f3.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
-			public void onEnterSelection(){
-				for (int i = 7; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i<=12);
+			public void onEnterSelection(boolean enter){
+				AllMenus.setItems(enter?Menu3Sel:Menu3);
 			}
 			public int addIt(final mFile fn) {
 				boolean found=false;
-				for(int i=0;i<f1.adapter.getCount();i++) {
-					if(f1.adapter.getItem(i).getPath().equals(fn.getAbsolutePath())) {
-						if(f1.rejector.contains(fn.getAbsolutePath())) {
-							f1.rejector.remove(fn.getAbsolutePath());
-							f1.adapter.notifyDataSetChanged();
+				for(int i=0;i<f1.manager_group().size();i++) {
+					if(f1.getPathAt(i).equals(fn.getAbsolutePath())) {
+						if(f1.getPlaceRejected(i)) {
+							f1.setPlaceRejected(i, false);
+							f1.dataSetChanged();
 							return 1;
 						}
 						found=true;
@@ -341,21 +371,15 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				if(!found) {
 					//show("adding new!"+fn.getAbsolutePath());
-					f3.mDslv.post(() -> {
-						MagentTransient mmTmp = new_MagentTransient(fn.getPath(), opt, 0, false);
-						f1.adapter.add(mmTmp);
-						f1.refreshSize();
-						f1.adapter.notifyDataSetChanged();
-						f1.isDirty=true;
-					});
+					f3.mDslv.post(() -> f1.add(fn.getPath()));
 					return 1;
-				}else
+				} else {
 					return 0;
+				}
 			};
 		};
 		f4.oes = new BookManagerFolderlike.OnEnterSelectionListener() {
-			public void onEnterSelection(){
-				for (int i = 7; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i<=12);
+			public void onEnterSelection(boolean enter){
 			}
 			public int addIt(final mFile fn) {
 				boolean found=false;
@@ -363,11 +387,11 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				if (fn.getTag() instanceof BookManagerWebsites.WebAssetDesc) {
 					path = ((BookManagerWebsites.WebAssetDesc) fn.getTag()).realPath;
 				}
-				for(int i=0;i<f1.adapter.getCount();i++) {
-					if(f1.adapter.getItem(i).getPath().equals(path)) {
-						if(f1.rejector.contains(path)) {
-							f1.rejector.remove(path);
-							f1.adapter.notifyDataSetChanged();
+				for(int i=0;i<f1.manager_group().size();i++) {
+					if(f1.getPathAt(i).equals(path)) {
+						if(f1.getPlaceRejected(i)) {
+							f1.setPlaceRejected(i, false);
+							f1.dataSetChanged();
 							return 1;
 						}
 						found=true;
@@ -378,10 +402,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					//show("adding new!"+path);
 					String finalPath = path;
 					f4.mDslv.post(() -> {
-						MagentTransient mmTmp = new_MagentTransient(finalPath, opt, 0, false);
-						f1.adapter.add(mmTmp);
-						f1.refreshSize();
-						f1.adapter.notifyDataSetChanged();
+						f1.add(finalPath);
 						f1.isDirty=true;
 					});
 					return 1;
@@ -395,18 +416,17 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	    	@Override public void onPageSelected(int page) {
 				Fragment fI = fragments.get(page);
 				viewPager.setOffscreenPageLimit(Math.max(viewPager.getOffscreenPageLimit(), Math.max(1+page, 1)));
-	    		if(fI==f1) {
-					for (int i = 0; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i<=6);
-	    		}
-	    		else if(fI==f2) {
-					for (int i = 0; i <= 15; i++) toolbarmenu.getItem(i).setVisible(i==0||i==3||i==15);
-	    		}
-	    		else if(fI==f3){
-					for (int i = 0; i <= 6; i++) toolbarmenu.getItem(i).setVisible(false);
-	    			boolean setter=f3.SelectionMode;
-					for (int i = 7; i <= 14; i++) toolbarmenu.getItem(i).setVisible((i <= 12) == setter);
-					toolbarmenu.getItem(15).setVisible(false);
-	    		}
+				List<MenuItemImpl> menu;
+				if(fI==f1) {
+					menu = Menu1;
+	    		} else if(fI==f2) {
+					menu = Menu2;
+				} else if (fI == f3) {
+					menu = f3.SelectionMode ? Menu3Sel : Menu3;
+				} else {
+					menu = Menu4;
+				}
+				AllMenus.setItems(menu);
 				super.onPageSelected(CurrentPage = page);
 				opt.setDictManagerTap(CurrentPage);
 	    	}
@@ -445,7 +465,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
         
         toolbar.setTitle(R.string.manager);
         
- 		MenuItem searchItem = toolbarmenu.getItem(16);
+ 		MenuItem searchItem = ViewUtils.findInMenu(Menu3, R.id.action_search);
  		searchItem.setShowAsAction(2);
  		searchView = (SearchView) searchItem.getActionView();
  		searchView.setSubmitButtonEnabled(false);
@@ -462,15 +482,15 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	            if(query.equals("")) query=null;
 				dictQueryWord=query;
 	            if(f1.adapter!=null)
-	            	f1.adapter.notifyDataSetChanged();
+	            	f1.dataSetChanged();
 	            if(f3.adapter!=null)
 	            	f3.adapter.notifyDataSetChanged();
 				if(dictQueryWord!=null){
 					int cc=0;
 					Fragment fI = fragments.get(viewPager.getCurrentItem());
 					if (fI==f1) {
-						for (int i = 0; i < f1.adapter.getCount(); i++) {
-							if (f1.adapter.getItem(i).getDictionaryName().toLowerCase().contains(query))
+						for (int i = 0; i < f1.manager_group().size(); i++) {
+							if (f1.getNameAt(i).toString().toLowerCase().indexOf(query)>0)
 								cc++;
 						}
 					} else if (fI==f3) {
@@ -494,7 +514,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			dictQueryWord=null;
 			searchView.getLayoutParams().width=-2;
 			searchView.requestLayout();
-			if(f1.adapter!=null) f1.adapter.notifyDataSetChanged();
+			if(f1.adapter!=null) f1.dataSetChanged();
 			if(f3.adapter!=null) f3.adapter.notifyDataSetChanged();
 			return false;
 		});
@@ -550,7 +570,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		final ArrayList<File> setsArr = new ArrayList<>(names.length);
 		for (int i = 0; i < names.length; i++) {
 			String name = names[i];
-			if(!SU.isNoneSetFileName(name)) {
+			if(!SU.isNotGroupSuffix(name)) {
 				if(!found && fSearch.equals(name)) {
 					found=true;
 				}
@@ -763,11 +783,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			AgentApplication app = ((AgentApplication) getApplication());
 			ReusableBufferedWriter output = new ReusableBufferedWriter(new FileWriter(newf,false), app.get4kCharBuff(), 4096);
 			output.write("[:S]");
-			output.write(Integer.toString(mdmng.size()));
+			int sz = f1.manager_group().size();
+			output.write(Integer.toString(sz));
 			output.write("\n");
 			String parent = opt.lastMdlibPath.getPath();
-			for(mngr_agent_manageable mmTmp:mdmng) {
-				writeForOneLine(output, mmTmp, parent);
+			for (int i = 0; i < sz; i++) {
+				writeForOneLine(output, getMagentAt(i), parent);
 			}
 			output.flush();
 			output.close();
@@ -812,7 +833,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		boolean closeMenu=!isLongClicked;
 		AlertDialog d;
 		switch (item.getItemId()) {
-			case R.id.toolbar_action0:{//提交
+			/* 保存 | 词典选项 */
+			case R.id.toolbar_action0:{
 				if(isLongClicked) {
 					f1.performLastItemLongClick();
 					ret=true; break;
@@ -826,12 +848,16 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					BufferedWriter output = new BufferedWriter(new FileWriter(to,false));
 					
 					String parent = opt.lastMdlibPath.getPath();
-					for(mngr_agent_manageable mmTmp:mdmng) {
-						if(!f1.rejector.contains(mmTmp.getPath())){
-							//String pathname = mFile.tryDeScion(new File(md.getPath()), opt.lastMdlibPath);
-							writeForOneLine(output, mmTmp, parent);
-						}
+					
+					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+						writeForOneLine(output, getMagentAt(i), parent);
 					}
+//					for(mngr_agent_manageable mmTmp:mdmng) {
+//						if(!f1.rejector.contains(mmTmp.getPath())){
+//							//String pathname = mFile.tryDeScion(new File(md.getPath()), opt.lastMdlibPath);
+//							writeForOneLine(output, mmTmp, parent);
+//						}
+//					} //todo
 
 					output.flush();
 					output.close();
@@ -841,35 +867,40 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					e.printStackTrace();
 				}
 			} break;
-            case R.id.toolbar_action1:{//刷新
+			/* 刷新 | 全选 */
+            case R.id.toolbar_action1:{
 				if(isLongClicked){
-					for(mngr_agent_manageable mmTmp:mdmng) {
-						f1.selector.add(mmTmp.getPath());
+					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+						f1.setPlaceSelected(i, true);
 					}
-					f1.adapter.notifyDataSetChanged();
-				}else {
+					f1.dataSetChanged();
+				} else {
 					f1.refreshDicts(true);
 					f1.refreshSize();
 				}
 			} break;
-            case R.id.toolbar_action2:{//重置
+			/* 重置 | 全不选 */
+            case R.id.toolbar_action2:{
 				if(isLongClicked){
-					f1.selector.clear();
-					f1.adapter.notifyDataSetChanged();
-				}else {
+					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+						f1.setPlaceSelected(i, false);
+					}
+					f1.dataSetChanged();
+				}
+				else {
 					ThisIsDirty = true;
 					try {
 						String name = opt.getLastPlanName("LastPlanName");
-						File from = new File(ConfigFile, name);
+						File from = new File(ConfigFile, SU.legacySetFileName(name));
 						if (from.exists()) {
-							AgentApplication app = ((AgentApplication) getApplication());
-							ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(from), app.get4kCharBuff(), 4096);
-							f1.rejector.clear();
-							f1.adapter.clear();
-							do_Load_managee(in);
+							for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+								f1.setPlaceSelected(i, false);
+							}
+							loadMan.lazyMan.chairCount = -1;
+							loadMan.LoadLazySlots(from, true, name);
 							f1.isDirty=true;
 							f1.refreshSize();
-							f1.adapter.notifyDataSetChanged();
+							f1.dataSetChanged();
 							show(R.string.loadsucc2, name);
 						} else {
 							show(R.string.loadfail2, name);
@@ -879,7 +910,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 				}
 			} break;
-            case R.id.toolbar_action3:{//另存为
+			/*另存为*/
+            case R.id.toolbar_action3:{
 				if(isLongClicked) {ret=false; break;}
 				final String oldFn = opt.getLastPlanName("LastPlanName");
 				showRenameDialog(oldFn,new transferRunnable() {
@@ -904,39 +936,50 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 				});
 			} break;
-            case R.id.toolbar_action4:{//禁用全部
+			/* 禁用全部 | 禁用选中部分 */
+            case R.id.toolbar_action4:{
 				f1.isDirty=true;
             	if(isLongClicked){
 					if(opt.getDictManager1MultiSelecting()){
-						f1.rejector.addAll(f1.selector);
+						for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+							if(f1.getPlaceSelected(i))
+								f1.setPlaceRejected(i, true);
+						}
 						f1.refreshSize();
-						f1.adapter.notifyDataSetChanged();
+						f1.dataSetChanged();
 					}
-				}else{
-					for(mngr_agent_manageable mmTmp:mdmng) {
-						f1.rejector.add(mmTmp.getPath());
+				} else {
+					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+						f1.setPlaceRejected(i, true);
 					}
 					ThisIsDirty=true;
-					f1.adapter.notifyDataSetChanged();
+					f1.dataSetChanged();
 					f1.refreshSize();
 				}
 			} break;
-            case R.id.toolbar_action5:{//启用全部
+			/* 启用全部 | 启用选中部分 */
+            case R.id.toolbar_action5:{
 				if(isLongClicked){
 					if(opt.getDictManager1MultiSelecting()){
-						f1.rejector.removeAll(f1.selector);
+						for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+							if(f1.getPlaceSelected(i))
+								f1.setPlaceRejected(i, false);
+						}
 						f1.refreshSize();
-						f1.adapter.notifyDataSetChanged();
+						f1.dataSetChanged();
 					}
 				}else {
-					f1.rejector.clear();
-					f1.adapter.notifyDataSetChanged();
+					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+						f1.setPlaceRejected(i, false);
+					}
+					f1.dataSetChanged();
 					f1.isDirty = true;
 					ThisIsDirty = true;
 					f1.refreshSize();
 				}
 			} break;
-            case R.id.remPagePos:{//显示全部
+			/*显示全部 | 间选*/
+			case R.id.remPagePos:{
 				if(isLongClicked){
 					if(opt.getDictManager1MultiSelecting()){//间选1
 						int[] positions = f1.lastClickedPos;
@@ -949,25 +992,25 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 								start=tmp;
 							}
 							for (int i = start; i <= end; i++) {
-								f1.selector.add(mdmng.get(i).getPath());
+								f1.setPlaceSelected(i, true);
 							}
 						}
 					}
-				}else {
+				} else {
 					try {
-						BufferedReader in = new BufferedReader(new FileReader(DecordFile));
+						BufferedReader in = new BufferedReader(new FileReader(fRecord));
 						String line;
+						HashMap<String, mngr_agent_manageable> mdict_cache = new HashMap<>(f1.manager_group().size());
+						for(int i=0;i<f1.manager_group().size();i++) {
+							mdict_cache.put(f1.getPathAt(i), null);
+						}
 						while ((line = in.readLine()) != null) {
 							if (!line.startsWith("/"))
 								line = opt.lastMdlibPath + "/" + line;
 							line = new File(line).getAbsolutePath();
 							if (!mdict_cache.containsKey(line)) {
-								MagentTransient m = mdict_cache.get(line);
-								if (m == null)
-									m = new_MagentTransient(line, opt, null, false);
-								f1.add(m);
-								f1.rejector.add(line);
-								mdict_cache.put(line, m);
+								f1.add(line);
+								f1.setPlaceRejected(f1.manager_group().size()-1, true);
 							}
 						}
 						//mTabLayout.getTabAt(0).setText(getResources().getString(R.string.currentPlan,md.size()-f1.rejector.size()));
@@ -976,7 +1019,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						e2.printStackTrace();
 					}
 				}
-				f1.adapter.notifyDataSetChanged();
+				f1.dataSetChanged();
 			} break;
             case R.id.toolbar_action13:{//折叠
 				if(isLongClicked) {ret=false; break;}
@@ -1037,7 +1080,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
-			/* 全选失效项 */
+			/* 全选失效项 | 全不选*/
             case R.id.toolbar_action8:{
 				f3.Selection.clear();
 				ArrayList<mFile> data = f3.data.getList();
@@ -1048,67 +1091,87 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						if(!fI.exists())
 							f3.Selection.put(fI.getAbsolutePath());
 					}
+				} else {
+					f3.Selection.clear();
 				}
 				f3.adapter.notifyDataSetChanged();
 			} break;
 			/* 添加 */
             case R.id.toolbar_action9:{
-				ArrayList<MagentTransient> data = f1.manager_group;
 				if(isLongClicked) {/* 添加到第几行 */
 					AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
 					View dv = getLayoutInflater().inflate(R.layout.dialog_move_to_line, null);
 					NumberPicker np = dv.findViewById(R.id.numberpicker);
 					CheckBox checker1 = dv.findViewById(R.id.check1);
 					CheckBox checker2 = dv.findViewById(R.id.check2);
-					np.setMaxValue(mdmng.size());
+					np.setMaxValue(f1.manager_group().size());
 					AlertDialog dTmp = builder2.setView(dv).create();
 					dv.findViewById(R.id.confirm).setOnClickListener(v -> {
-						int toPos = Math.min(data.size(), np.getValue());
+						int toPos = Math.min(f1.manager_group().size(), np.getValue());
 						int cc = 0;
 						ArrayList<String> arr = f3.Selection.flatten();
-						int count=arr.size();
-						boolean insert = checker1.isChecked();
+						final boolean insert = checker1.isChecked();
+						final boolean select = checker2.isChecked();
+						HashSet<String> map = new HashSet<>(arr.size());
+						ArrayList<File> files = new ArrayList<>(arr.size());
+						for (int i = 0; i < arr.size(); i++) {
+							File fn = new File(arr.get(i));
+							if (!fn.isDirectory()) {
+								files.add(fn);
+								if(insert||select) map.add(fn.getPath());
+							}
+						}
 						if(insert) {
-							for (int i = 0; i < arr.size(); i++) {
-								File fn = new File(arr.get(i));
-								if (fn.isDirectory()) {
-									count--;
-									continue;
+							for (int i = 0; i < f1.manager_group().size(); i++) {
+								if (map.contains(f1.getPathAt(i))) {
+									f1.setPlaceRejected(i, false);
+									f1.replace(i, -1); // remove first
+									i--;
+								}
+							}
+							for (int i = 0; i < files.size(); i++) {
+								File fn = files.get(i);
+								if (fn.exists()) {
+									cc++;
 								}
 								String key = fn.getPath();
-								MagentTransient m = null;
-								if (f1.rejector.contains(key)) {
-									f1.rejector.remove(key);
+								//loadMan.lazyMan.newChair();
+								BookPresenter mdTmp = mdict_cache.get(key);
+								PlaceHolder placeHolder;
+								if (mdTmp!=null && mdTmp.getClass()!=BookPresenter.class) {
+									mdTmp = null;
 								}
-								for (int j = 0; j < data.size(); j++) {
-									if (data.get(j).getPath().equals(key)) {
-										m = data.remove(j);
-										break;
-									}
+								if (mdTmp==null) {
+									//m = new_MagentTransient(key, opt, 0, false);
+									placeHolder = new PlaceHolder(key);
+								} else {
+									placeHolder = mdTmp.placeHolder;
 								}
-								if (m == null)
-									m = mdict_cache.get(key);
-								if (m == null) {
-									m = new_MagentTransient(key, opt, 0, false);
-									mdict_cache.put(key, m);
+								loadMan.md.add(toPos+i, mdTmp);
+								loadMan.lazyMan.placeHolders.add(toPos+i, placeHolder);
+								loadMan.lazyMan.chairCount++;
+								if(select){
+									f1.setPlaceSelected(toPos+i, true);
 								}
-								data.add(Math.min(data.size(), toPos++), m);
-								cc++;
 								f1.isDirty = true;
 							}
 							f1.refreshSize();
 							ThisIsDirty = true;
 						}
-						if(checker2.isChecked()){//选中
-							//f1.selector.clear();
-							f1.selector.addAll(arr);
+						else if (select) {
+							for (int i = 0; i < f1.manager_group().size(); i++) {
+								if (map.contains(f1.getPathAt(i))){
+									f1.setPlaceSelected(i, true);
+									cc++;
+								}
+							}
 						}
-						f1.adapter.notifyDataSetChanged();
+						f1.dataSetChanged();
 						if(insert) {
-							f1.getListView().setSelectionFromTop(toPos - cc, 0);
+							f1.getListView().setSelectionFromTop(toPos, 0);
 						}
 						viewPager.setCurrentItem(0);
-						showT("添加完毕!("+cc+"/"+count+")");
+						showT((insert?"添加完毕!(":"已选中!(")+cc+"/"+files.size()+")");
 						toolbar.getMenu().close();
 						dTmp.dismiss();
 					});
@@ -1121,45 +1184,50 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					dv.setPadding((int) (15*opt.dm.density), 0,0,(int) (10*opt.dm.density));
 					closeMenu=false;
 				}
-				else {
+				else { // 添加到末尾
 					int cc = 0;
 					ArrayList<String> arr = f3.Selection.flatten();
 					int count=arr.size();
+					
+					HashMap<String, Integer> map = new HashMap<>(arr.size());
+					for (int i = 0; i < f1.manager_group().size(); i++) {
+						map.put(f1.getPathAt(i), i);
+					}
 					for(int i=0;i<arr.size();i++) {
 						File fn=new File(arr.get(i));
 						if(fn.isDirectory()) {
 							count--;
 							continue;
 						}
-						String key = fn.getPath();
-						if(f1.rejector.contains(fn.getAbsolutePath())) {
-							f1.rejector.remove(fn.getAbsolutePath());
+						String key = fn.getAbsolutePath();
+						Integer idx = map.get(key);
+						if(idx!=null) { // 已经有了
+							f1.setPlaceRejected(idx, false);
 							cc++;
 						}
 						else {
-							MagentTransient m=null;
-							for (int j = 0; j < data.size(); j++) {
-								if(data.get(j).getPath().equals(key)){
-									m=data.get(j);
-									break;
-								}
+							//loadMan.lazyMan.newChair();
+							BookPresenter mdTmp = mdict_cache.get(key);
+							PlaceHolder placeHolder;
+							if (mdTmp!=null && mdTmp.getClass()!=BookPresenter.class) {
+								mdTmp = null;
 							}
-							if(m==null){
-								m = mdict_cache.get(key);
-								if(m==null){
-									m = new_MagentTransient(key, opt, null, false);
-									mdict_cache.put(key, m);
-								}
-								data.add(m);
-								cc++;
-								f1.isDirty=true;
+							if (mdTmp==null) {
+								placeHolder = new PlaceHolder(key);
+							} else {
+								placeHolder = mdTmp.placeHolder;
 							}
+							loadMan.md.add(mdTmp);
+							loadMan.lazyMan.placeHolders.add(placeHolder);
+							loadMan.lazyMan.chairCount++;
+							f1.isDirty = true;
+							cc++;
 						}
 					}
 					showT("添加完毕!("+cc+"/"+count+")");
 					f1.refreshSize();
 					ThisIsDirty=true;
-					f1.adapter.notifyDataSetChanged();
+					f1.dataSetChanged();
 				}
 			} break;
 			/* 移除 */
@@ -1174,9 +1242,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					.create().show();
 				} else {
 					int cc1 = 0;
-					for(int i=0;i<mdmng.size();i++) {
-						if(f3.Selection.contains(f1.adapter.getItem(i).getPath())) {
-							f1.rejector.add(f1.adapter.getItem(i).getPath());
+					for(int i=0;i<f1.manager_group().size();i++) {
+						if(f3.Selection.contains(f1.getPathAt(i))) {
+							f1.setPlaceRejected(i, true);
 							cc1++;
 							f1.isDirty=true;
 						}
@@ -1184,7 +1252,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					ThisIsDirty=true;
 					f1.refreshSize();
 					showT("移除完毕!("+cc1+"/"+f3.Selection.size()+")");
-					f1.adapter.notifyDataSetChanged();
+					f1.dataSetChanged();
 				}
 			} break;
 			/* 删除记录 */
@@ -1305,11 +1373,16 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 								ArrayList<String> arr = f3.Selection.flatten();
 								RashSet<String> renameList = new RashSet<>();
 								ArrayList<String> renameListe;
-								HashMap<String, mngr_agent_manageable> mdict_cache = new HashMap<>(mdmng.size());
-								for (mngr_agent_manageable mmTmp : mdmng) {
-									//if (mmTmp instanceof mdict)
-										mdict_cache.put(mmTmp.getPath(), mmTmp);
+								HashMap<String, mngr_agent_manageable> mdict_cache = new HashMap<>(f1.manager_group().size());
+								for(int i=0;i<f1.manager_group().size();i++) {
+									if (loadMan.md.get(i)!=null) {
+										mdict_cache.put(f1.getPathAt(i), loadMan.md.get(i));
+									}
 								}
+//								for (mngr_agent_manageable mmTmp : mdmng) {
+//									//if (mmTmp instanceof mdict)
+//
+//								}
 								//todo 保证mdict移动文件的同时性。
 								int cc = 0;
 								for (String sI : arr) {//do actual rename. rename a lot of files..
@@ -1516,25 +1589,25 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				ret.ensureCapacity(names.length);
 				for (int i = 0; i < names.length; i++) {
 					String name = names[i];
-					if(!SU.isNoneSetFileName(name)) {
+					if(!SU.isNotGroupSuffix(name)) {
 						ret.add(new File(ConfigFile, name));
 					}
 				}
 			}
 		}
 		if (addAllLibs) {
-			ret.add(DecordFile);
+			ret.add(fRecord);
 		}
 		return ret;
 	}
 	
 	private void deleteRecordsHard() {
 		int cc1 = 0;
-		int size = mdmng.size();
+		int size = f1.manager_group().size();
 		int total = f3.Selection.size();
 		for(int i=0;i<size;i++) {
-			if(f3.Selection.remove(mdmng.get(i).getPath())) {
-				mdmng.remove(i--);
+			if(f3.Selection.remove(f1.getPathAt(i))) {
+				f1.replace(i--, -1);
 				size--;
 				cc1++;
 				f1.isDirty=true;
@@ -1551,58 +1624,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		ThisIsDirty=true;
 		f1.refreshSize();
 		showT("移除完毕!("+cc1+"/"+total+")");
-		f1.adapter.notifyDataSetChanged();
+		f1.dataSetChanged();
 		f3.adapter.notifyDataSetChanged();
-	}
-	
-	
-	protected void do_Load_managee(ReusableBufferedReader in) throws IOException {
-		String line;
-		int cc=0;
-		mdmng.clear();
-		ReadLines:
-		while((line = in.readLine())!=null){
-			int flag = 0;
-			if(line.startsWith("[:")){
-				int idx = line.indexOf("]",2);
-				if(idx>=2){
-					String[] arr = line.substring(2, idx).split(":");
-					line = line.substring(idx+1);
-					for (String pI:arr) {
-						switch (pI){
-							case "F":
-								flag|=0x1;
-							break;
-							case "C":
-								flag|=0x2;
-							break;
-							case "A":
-								flag|=0x4;
-							break;
-							case "H":
-								flag|=0x8;
-							break;
-							case "Z":
-								flag|=0x10;
-							break;
-							case "S":
-								int size = IU.parsint(line);
-								if(size>0) mdmng.ensureCapacity(size);
-							continue ReadLines;
-						}
-					}
-				}
-			}
-			if (!line.startsWith("/"))
-				line = opt.lastMdlibPath + "/" + line;
-			MagentTransient mmtmp = mdict_cache.get(line);
-			if (mmtmp == null)
-				mmtmp = new_MagentTransient(line, opt, 0, false);
-			if(!mmtmp.isMddResource()) flag&=~0x4;
-			mmtmp.setTmpIsFlag(flag);
-			mdmng.add(mmtmp);
-		}
-		in.close();
 	}
 	
 	public void RebasePath(File oldPath, String OldFName, File newPath, String MoveOrRename, String oldName){
@@ -1651,6 +1674,27 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			//	dirtyMap.add(name);
 			//}
 		}
+	}
+	
+	@NonNull
+	public BookPresenter getMagentAt(int position, boolean create) {
+		BookPresenter ret = loadMan.md.get(position);
+		if (ret==null) {
+			PlaceHolder ph = loadMan.lazyMan.placeHolders.get(position);
+			String key = ph.getPath(opt).toString();
+			ret = mdict_cache.get(key);
+			if (ret==null) {
+				ret = create?new_MagentTransient(key, opt, null, true):loadMan.EmptyBook;
+				if (ret!=null) {
+					ret.tmpIsFlag = ph.tmpIsFlag;
+				}
+			}
+		}
+		return ret;
+	}
+	
+	public BookPresenter getMagentAt(int position) {
+		return getMagentAt(position, true);
 	}
 }
 

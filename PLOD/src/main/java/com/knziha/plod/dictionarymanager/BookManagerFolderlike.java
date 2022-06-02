@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -54,10 +53,7 @@ public class BookManagerFolderlike extends ListFragment implements BookManagerFr
 				lastClickedPos[0] = -1;
 				lastClickedPos[1] = -1;
 				alreadySelectedAll = false;
-				Menu toolbarmenu = a.toolbarmenu;
-				for (int i = 7; i <= 15; i++) {
-					toolbarmenu.getItem(15).setVisible(i==13||i==14);
-				}
+				if(oes!=null) oes.onEnterSelection(false);
 			}
 			adapter.notifyDataSetChanged();
 			return true;
@@ -66,7 +62,7 @@ public class BookManagerFolderlike extends ListFragment implements BookManagerFr
 	}
 
 	public interface OnEnterSelectionListener{
-		void onEnterSelection();
+		void onEnterSelection(boolean enter);
 		int addIt(mFile fn);
 	} OnEnterSelectionListener oes;
 
@@ -94,7 +90,7 @@ public class BookManagerFolderlike extends ListFragment implements BookManagerFr
 	private void pullData() {
 		if(!dataPrepared) {
 			//CMN.Log("拉取数据！");
-			File rec = a.DecordFile;
+			File rec = a.fRecord;
 			try {
 				BufferedReader in = new BufferedReader(new FileReader(rec));
 				String line;
@@ -403,7 +399,7 @@ public class BookManagerFolderlike extends ListFragment implements BookManagerFr
 				if(position>=mDslv.getHeaderViewsCount()) {
 					position = position - mDslv.getHeaderViewsCount();
 					SelectionMode=true;
-					if(oes!=null) oes.onEnterSelection();
+					if(oes!=null) oes.onEnterSelection(true);
 					//Selection.put(adapter.getItem(position).getAbsolutePath());
 					mDslv.getOnItemClickListener().onItemClick(parent, view, position+mDslv.getHeaderViewsCount(), id);
 					adapter.notifyDataSetChanged();

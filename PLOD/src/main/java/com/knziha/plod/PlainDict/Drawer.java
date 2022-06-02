@@ -1003,7 +1003,7 @@ public class Drawer extends Fragment implements
 									
 									if(AutoFixLostRecords && renameList.size()>0){
 										ArrayList<File> moduleFullScannerArr;
-										File[] moduleFullScanner = ConfigFile.listFiles(pathname -> !SU.isNoneSetFileName(pathname.getPath()));
+										File[] moduleFullScanner = ConfigFile.listFiles(pathname -> !SU.isNotGroupSuffix(pathname.getPath()));
 										moduleFullScannerArr = new ArrayList<>(Arrays.asList(moduleFullScanner));
 										moduleFullScannerArr.add(rec);
 										moduleFullScannerArr.add(def);

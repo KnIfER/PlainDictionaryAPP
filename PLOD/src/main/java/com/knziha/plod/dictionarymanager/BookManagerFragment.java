@@ -123,6 +123,12 @@ public abstract class BookManagerFragment<T> extends ListFragment {
     }
 
     abstract DragSortListView.DropListener getDropListener();
-
-
+	
+	public void dataSetChanged() {
+		adapter.notifyDataSetChanged();
+	}
+	
+	public final BookManager getBookManager() {
+		return ((BookManager) getActivity());
+	}
 }

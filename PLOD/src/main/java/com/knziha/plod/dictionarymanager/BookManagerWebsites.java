@@ -340,7 +340,7 @@ public class BookManagerWebsites extends ListFragment {
 				if(position>=mDslv.getHeaderViewsCount()) {
 					position = position - mDslv.getHeaderViewsCount();
 					SelectionMode=true;
-					if(oes!=null) oes.onEnterSelection();
+					if(oes!=null) oes.onEnterSelection(true);
 					//Selection.put(adapter.getItem(position).getAbsolutePath());
 					mDslv.getOnItemClickListener().onItemClick(parent, view, position+mDslv.getHeaderViewsCount(), id);
 					adapter.notifyDataSetChanged();

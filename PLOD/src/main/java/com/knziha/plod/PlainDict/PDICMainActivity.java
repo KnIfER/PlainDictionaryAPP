@@ -80,6 +80,7 @@ import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionary.mdict;
+import com.knziha.plod.dictionarymanager.BookManager;
 import com.knziha.plod.dictionarymanager.files.BooleanSingleton;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
@@ -3105,7 +3106,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					CMN.Log("已获取目录权限", duco.getData());
 				}
 			} break;
-			case 110:{
+			case BookManager.id:{
 				boolean changed = duco!=null && duco.getBooleanExtra("changed", false);
 				if (changed){
 					loadManager.buildUpDictionaryList(lazyLoadManager.lazyLoaded, mdict_cache);

@@ -88,7 +88,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 		if(names!=null) {
 			for (int i = 0; i < names.length; i++) {
 				String name = names[i];
-				if(!SU.isNoneSetFileName(name)) {
+				if(!SU.isNotGroupSuffix(name)) {
 					if(con.add(name)) {
 						scanInList.add(name);
 						isDirty=true;
@@ -211,17 +211,19 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				try {
 					BookManagerMain f1 = ((BookManager)getActivity()).f1;
 					f1.isDirty=true;
-					ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(newf), get4kCharBuff(), 4096);
 					a.ThisIsDirty=true;
-					f1.rejector.clear();
-					a.do_Load_managee(in);
+					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
+						f1.setPlaceSelected(i, false);
+					}
+					a.loadMan.lazyMan.chairCount = -1;
+					a.loadMan.LoadLazySlots(newf, true, name);
 					f1.refreshSize();
 					((BookManager)getActivity()).scrollTo(0);
 					a.opt.putLastPlanName("LastPlanName", LastSelectedPlan = name);
 					f1.isDirty=true;
-					adapter.notifyDataSetChanged();
-					f1.adapter.notifyDataSetChanged();
-					a.show(R.string.pLoadDone,name,cc,a.mdmng.size());
+					dataSetChanged();
+					f1.dataSetChanged();
+					a.show(R.string.pLoadDone,name,cc,f1.manager_group().size());
 				} catch (Exception e2) {
 					e2.printStackTrace();
 					a.showT("加载异常!LOAD ERRO: "+e2.getLocalizedMessage());

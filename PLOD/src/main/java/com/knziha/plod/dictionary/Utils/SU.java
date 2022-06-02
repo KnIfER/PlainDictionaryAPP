@@ -96,13 +96,12 @@ public class  SU{
 		SU.Log(CMN.listToStr(args)+" "+(System.currentTimeMillis()-ststrt));
 	}
 	
-	public static boolean isNoneSetFileName(String fname) {
-		int suffix_index = fname.lastIndexOf(".");
-		return suffix_index<0||!fname.regionMatches(true,suffix_index+1, "set", 0, 3);
+	public static boolean isNotGroupSuffix(String fname) {
+		return !fname.regionMatches(true,fname.length()-4, ".set", 0, 4);
 	}
 	
 	public static String legacySetFileName(String line) {
-		if(isNoneSetFileName(line)) { //legacy
+		if(isNotGroupSuffix(line)) { //legacy
 			return line+".set";
 		}
 		return line;

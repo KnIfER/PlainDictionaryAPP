@@ -26,7 +26,6 @@ public class MagentTransient extends BookPresenter {
 	protected File f;
 	public String _Dictionary_fName_Internal;
 	int TIFStamp;
-	List<mngr_mdictRes_prempter> mdd;
 	boolean keepOrgHolder=true;
 	
 	private boolean changeMap=true;
@@ -69,17 +68,6 @@ public class MagentTransient extends BookPresenter {
 			mPhI.tmpIsFlag=TIFStamp=isF;
 		}
 		TIFStamp=mPhI.tmpIsFlag;
-		
-		if (bIsPreempter) {
-			String fnTMP = f.getName();
-			
-			File f2 = new File(f.getParentFile().getAbsolutePath()+"/"+fnTMP.substring(0,fnTMP.lastIndexOf("."))+".mdd");
-			if(f2.exists()){
-				mdd = Collections.singletonList(new mngr_mdictRes_prempter(f2));
-			}
-			bIsManagerAgent = 2;
-		}
-		
 		context = a;
 	}
 	
@@ -147,13 +135,6 @@ public class MagentTransient extends BookPresenter {
 	public void setTmpIsFlag(int val) {
 		mPhI.tmpIsFlag = val;
 	}
-	
-	public boolean isMdictFile() {
-		String line = mPhI.pathname;
-		int tmpIdx = line.length()-4;
-		return tmpIdx>0
-				&& line.charAt(tmpIdx)=='.' && line.regionMatches(true, tmpIdx+1, "mdx" ,0, 3);
-	}
 
 	@Override
 	public boolean isMddResource() {
@@ -210,5 +191,9 @@ public class MagentTransient extends BookPresenter {
 	@Override
 	public String getPath() {
 		return f.getPath();
+	}
+	
+	public PlaceHolder getPlaceHolder() {
+		return mPhI;
 	}
 }

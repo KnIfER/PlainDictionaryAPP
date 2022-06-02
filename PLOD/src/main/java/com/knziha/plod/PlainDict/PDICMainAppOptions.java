@@ -2495,25 +2495,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public static boolean getTmpIsHidden(int tmpIsFlag) {
 		return (tmpIsFlag&0x8)!=0;
 	}
-	public static boolean setTmpIsHidden(BookPresenter mdTmp, PlaceHolder placeHolder, boolean val) {
-		if(mdTmp!=null){
-			mdTmp.tmpIsFlag &= (~0x8);
-			if(val) mdTmp.tmpIsFlag |= 0x8;
-		} else if(placeHolder!=null){
-			placeHolder.tmpIsFlag &= (~0x8);
-			if(val) placeHolder.tmpIsFlag |= 0x8;
-		}
-		return val;
-	}
-	public static boolean setTmpIsHidden(mngr_agent_manageable mmTmp, boolean val) {
-		int tmpIsFlag = mmTmp.getTmpIsFlag();
-		tmpIsFlag &= (~0x8);
-		if(val) tmpIsFlag |= 0x8;
-		mmTmp.setTmpIsFlag(tmpIsFlag);
-		return val;
-	}
-	public static boolean toggleTmpIsHidden(mngr_agent_manageable mdTmp) {
-		return setTmpIsHidden(mdTmp,  !getTmpIsHidden(mdTmp.getTmpIsFlag()));
+	public static int setTmpIsHidden(int flag, boolean val) {
+		flag &= (~0x8);
+		if(val) flag |= 0x8;
+		return flag;
 	}
 
 	public static boolean getTmpIsCollapsed(int tmpIsFlag) {

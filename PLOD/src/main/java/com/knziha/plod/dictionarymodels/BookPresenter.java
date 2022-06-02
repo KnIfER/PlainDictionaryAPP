@@ -767,9 +767,10 @@ function debug(e){console.log(e)};
 		
 		StringBuilder sb = new StringBuilder(32);
 		sb.append("d");
-		idStr = IU.NumberToText_SIXTWO_LE(getId(), sb).toString();
+		long id = bookImpl==null?0:getId();
+		idStr = IU.NumberToText_SIXTWO_LE(id, sb).toString();
 		sb.setLength(0);
-		idStr10 = sb.append(getId()).append(".com").toString();
+		idStr10 = sb.append(id).append(".com").toString();
 		sb.setLength(0);
 		mBaseUrl = sb.append("http://mdbr.").append("d").append(idStr10).append("/base.html").toString();
 	}
@@ -1161,6 +1162,10 @@ function debug(e){console.log(e)};
 	
 	public final boolean getIsWebx() {
 		return mType == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
+	}
+	
+	public boolean isMdict() {
+		return mType == PLAIN_TYPE_MDICT;
 	}
 	
 	public final boolean getHasVidx() {
@@ -4235,5 +4240,9 @@ function debug(e){console.log(e)};
 			}
 			mWebView.evaluateJavascript("document.body.style.paddingBottom='"+CMN.GlobalPagePadding+"'", null);
 		}
+	}
+	
+	public PlaceHolder getPlaceHolder() {
+		return placeHolder;
 	}
 }

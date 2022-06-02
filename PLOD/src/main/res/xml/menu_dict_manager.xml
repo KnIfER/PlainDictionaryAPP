@@ -1,117 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:tools="http://schemas.android.com/tools"
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	tools:ignore="AppCompatResource"
-	>
-
-	<item
-		android:id="@+id/toolbar_action0"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/Commit"
-		app:showAsAction="never"/>
-
-	<item
-		android:id="@+id/toolbar_action1"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/refresh"
-		app:showAsAction="never"/>
-
-	<item
-		android:id="@+id/toolbar_action2"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/reset"
-		app:showAsAction="never"/>
-
-	<item
-		android:id="@+id/toolbar_action3"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/save_as"
-		app:showAsAction="never"/>
-
-	<item
-		android:id="@+id/toolbar_action4"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/disable_all"
-		app:showAsAction="never"/>
-
-	<item
-		android:id="@+id/toolbar_action5"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/enable_all"
-		app:showAsAction="never"/>
-
-	<item
-		android:id="@+id/remPagePos"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/show_all_dictionaries"
-		app:showAsAction="never"/>
-
-	<item
-		android:id="@+id/toolbar_action7"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/select_all1"
-		app:showAsAction="never"
-		android:visible="false"/>
-	<item
-		android:id="@+id/toolbar_action8"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/select_all_invalid"
-		app:showAsAction="never"
-		android:visible="false"/>
-	<item
-		android:id="@+id/toolbar_action9"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/add_selection_to_set"
-		app:showAsAction="never"
-		android:visible="false"/>
-
-	<item
-		android:id="@+id/toolbar_action10"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/remove_selection_from_set"
-		app:showAsAction="never"
-		android:visible="false"/>
-
-	<item
-		android:id="@+id/tintList"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/remove_records"
-		app:showAsAction="never"
-		android:visible="false"/>
-
-	<item
-		android:id="@+id/peruseMode"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/move_files"
-		app:showAsAction="never"
-		android:visible="false"/>
-
-	<item
-		android:id="@+id/toolbar_action13"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/fold_all"
-		app:showAsAction="never"
-		android:visible="false"/>
-
-	<item
-		android:id="@+id/tapSch"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/unfold_all"
-		app:showAsAction="never"
-		android:visible="false"/>
-
-	<item
-		android:id="@+id/toolbar_action15"
-		android:icon="@drawable/ic_btn_siglemode"
-		android:title="@string/new___"
-		app:showAsAction="never"
-		android:visible="false"/>
-
-	<item
-		android:id="@+id/action_search"
-		android:title="menu_search"
-		app:actionViewClass="androidx.appcompat.widget.SearchView"
-		android:showAsAction="always"
-		/>
+<menu xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" tools:ignore="AppCompatResource" >
+	<!--0 --><item android:title="@string/Commit" android:id="@+id/toolbar_action0" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--1 --><item android:title="@string/refresd" android:id="@+id/toolbar_action1" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--2 --><item android:title="@string/reset" android:id="@+id/toolbar_action2" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--3 --><item android:title="@string/save_as" android:id="@+id/toolbar_action3" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--4 --><item android:title="@string/disable_all" android:id="@+id/toolbar_action4" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--5 --><item android:title="@string/enable_all" android:id="@+id/toolbar_action5" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--6 --><item android:title="@string/show_all_dictionaries" android:id="@+id/remPagePos" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--7 --><item android:title="选择全部 | 间选" android:id="@+id/toolbar_action7" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--8 --><item android:title="@string/select_all_invalid" android:id="@+id/toolbar_action8" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--9 --><item android:title="@string/add_selection_to_set" android:id="@+id/toolbar_action9" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--10--><item android:title="@string/remove_selection_from_set" android:id="@+id/toolbar_action10" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--11--><item android:title="@string/remove_records" android:id="@+id/tintList" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--12--><item android:title="@string/move_files" android:id="@+id/peruseMode" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--13--><item android:title="@string/fold_all" android:id="@+id/toolbar_action13" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--14--><item android:title="@string/unfold_all" android:id="@+id/tapSch" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--15--><item android:title="@string/new___" android:id="@+id/toolbar_action15" android:icon="@drawable/ic_btn_siglemode" app:showAsAction="never"/>
+	<!--16--><item android:title="menu_search" android:id="@+id/action_search" app:actionViewClass="androidx.appcompat.widget.SearchView" android:showAsAction="always" />
 </menu>

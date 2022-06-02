@@ -28,7 +28,7 @@
 				<com.google.android.material.tabs.TabLayout
 					android:id="@+id/mTabLayout"
 					android:layout_width="wrap_content"
-					android:layout_height="30dp"
+					android:layout_height="@dimen/_45_"
 					app:tabTextColor="@android:color/white"
 					app:tabSelectedTextColor="@android:color/white"
 					app:tabMode="scrollable"

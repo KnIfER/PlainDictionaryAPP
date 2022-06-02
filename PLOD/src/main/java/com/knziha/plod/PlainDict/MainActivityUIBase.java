@@ -71,7 +71,6 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewStub;
 import android.view.Window;
-import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -253,7 +252,6 @@ import static com.knziha.plod.dictionarymodels.BookPresenter.baseUrl;
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
-import static com.knziha.plod.plaindict.CMN.idStr;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
 import static com.knziha.plod.plaindict.DeckListAdapter.DB_HISTORY;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
@@ -2122,6 +2120,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(loadManager.md_size==0){
 			populateDictionaryList(def, CC, retrieve_all);
 		}
+		loadManager.EmptyBook = EmptyBook;
 		
 		if(opt.getCheckMdlibs()){
 			File rec = opt.fileToDecords(ConfigFile);
@@ -2280,12 +2279,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return def;
 	}
 	
-	static class LazyLoadManager {
+	public static class LazyLoadManager {
 		public ArrayList<PlaceHolder> placeHolders = new ArrayList<>();
-		public int[] CosyChair;
-		public int[] CosySofa;
-		int chairCount;
-		int filterCount;
+		public int[] CosyChair = ArrayUtils.EMPTY_INT_ARRAY;
+		public int[] CosySofa = ArrayUtils.EMPTY_INT_ARRAY;
+		public int chairCount;
+		public int filterCount;
 		//public ArrayList<PlaceHolder>[] PlaceHolders = new ArrayList[]{CosyChair, CosySofa, HiddenDicts};
 		public int lastCheckedPos;
 		long currMdlTime;
@@ -2293,7 +2292,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		String lastLoadedModule;
 		
 		public void newChair() {
-			if (CosyChair==null || CosyChair.length<=chairCount) {
+			if (CosyChair.length<=chairCount) {
 				int[] newChairs = new int[(int) Math.max(chairCount*1.5f, chairCount+1)];
 				if(CosyChair!=null)
 					System.arraycopy(CosyChair, 0, newChairs, 0, chairCount);
@@ -2301,17 +2300,89 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			CosyChair[chairCount++] = placeHolders.size()-1;
 		}
+		
+		public void refreshSlots() {
+			chairCount=0;
+			filterCount=0;
+			for (int i = 0; i < placeHolders.size(); i++) {
+				PlaceHolder ph = placeHolders.get(i);
+				ph.lineNumber = i;
+				final int flag = ph.tmpIsFlag;
+				if (!PDICMainAppOptions.getTmpIsHidden(flag)) {
+					chairCount++;
+					if (PDICMainAppOptions.getTmpIsClicker(flag)) {
+						filterCount++;
+					}
+				}
+			}
+		}
+		
+		public void do_LoadLazySlots(ReusableBufferedReader in) throws IOException {
+			String line;
+			int cc=0;
+			placeHolders.clear();
+			chairCount=0;
+			filterCount=0;
+			ReadLines:
+			while((line = in.readLine())!=null){
+				int flag = 0;
+				boolean chair = true;
+				if(line.startsWith("[:")){
+					int idx = line.indexOf("]",2);
+					if(idx>=2){
+						String[] arr = line.substring(2, idx).split(":");
+						line = line.substring(idx+1);
+						for (String pI:arr) {
+							switch (pI){
+								case "F":
+									flag|=0x1;
+									filterCount++;
+									chair = false;
+									break;
+								case "C":
+									flag|=0x2;
+									break;
+								case "A":
+									flag|=0x4;
+									break;
+								case "H":
+									flag|=0x8;
+									//lazyMan.hiddenCount++;
+									chair = false;
+									break;
+								case "Z":
+									flag|=0x10;
+									break;
+								case "S":
+									int size = IU.parsint(line);
+									if(size>0) placeHolders.ensureCapacity(size);
+									continue ReadLines;
+							}
+						}
+					}
+				}
+				PlaceHolder phI = new PlaceHolder(line);
+				phI.lineNumber = cc++;
+				phI.tmpIsFlag = flag;
+				placeHolders.add(phI);
+				if (chair) {
+					chairCount++;
+				}
+			}
+			in.close();
+		}
 	}
 	
 	/** 分离词典加载逻辑以使不同界面可加载不同分组。 */
 	public /*static*/ class LoadManager {  // todo make static and separate file
 		public int md_size;
-		LazyLoadManager lazyMan;
+		public LazyLoadManager lazyMan;
 		public final ArrayList<BookPresenter> md = new ArrayList<>();
 		public final DictPicker dictPicker;
 		
 		final String LastMdFn;// = "LastMdFn";
 		final PDICMainAppOptions opt;
+		public BookPresenter EmptyBook;
 		
 		LoadManager(DictPicker dictPicker) {
 			this.dictPicker = dictPicker;
@@ -2344,8 +2415,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			PlaceHolder phI;
 			String lastName = opt.getLastMdFn(LastMdFn);
 			int filterCount=0,chairCount=0;
-			lazyMan.CosyChair=new int[lazyMan.chairCount];
-			lazyMan.CosySofa=new int[lazyMan.filterCount];
+			if(lazyMan.CosyChair.length<lazyMan.chairCount)lazyMan.CosyChair=new int[lazyMan.chairCount];
+			if(lazyMan.CosySofa.length<lazyMan.filterCount)lazyMan.CosySofa=new int[lazyMan.filterCount];
 			for (int i = 0; i < all.size(); i++) {
 				phI = all.get(i);
 				//get path put
@@ -2407,7 +2478,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		public void LoadLazySlots(File modulePath, boolean lazyLoad, String moduleName) throws IOException {
 			long lm = modulePath.lastModified();
-			if(lm==lazyMan.currMdlTime
+			boolean fromManager = lazyMan.chairCount==-1;
+			if(!fromManager
+					&& lm==lazyMan.currMdlTime
 					&& lazyMan.lazyLoaded==lazyLoad
 					&& moduleName.equals(lazyMan.lastLoadedModule)
 			){
@@ -2418,66 +2491,18 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CMN.Log("LoadLazySlots…");
 			AgentApplication app = ((AgentApplication) getApplication());
 			ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(modulePath), app.get4kCharBuff(), 4096);
-			do_LoadLazySlots(in, lazyMan);
+			lazyMan.do_LoadLazySlots(in);
 			lazyMan.currMdlTime=lm;
 			lazyMan.lastLoadedModule=moduleName;
 			lazyMan.lazyLoaded=lazyLoad;
 			app.set4kCharBuff(in.cb);
-		}
-		
-		private void do_LoadLazySlots(ReusableBufferedReader in, LazyLoadManager lazyMan) throws IOException {
-			String line;
-			int cc=0;
-			lazyMan.placeHolders.clear();
-			lazyMan.chairCount=0;
-			lazyMan.filterCount=0;
-			ReadLines:
-			while((line = in.readLine())!=null){
-				int flag = 0;
-				boolean chair = true;
-				if(line.startsWith("[:")){
-					int idx = line.indexOf("]",2);
-					if(idx>=2){
-						String[] arr = line.substring(2, idx).split(":");
-						line = line.substring(idx+1);
-						for (String pI:arr) {
-							switch (pI){
-								case "F":
-									flag|=0x1;
-									lazyMan.filterCount++;
-									chair = false;
-								break;
-								case "C":
-									flag|=0x2;
-								break;
-								case "A":
-									flag|=0x4;
-								break;
-								case "H":
-									flag|=0x8;
-									//lazyMan.hiddenCount++;
-									chair = false;
-								break;
-								case "Z":
-									flag|=0x10;
-								break;
-								case "S":
-									int size = IU.parsint(line);
-									if(size>0) lazyMan.placeHolders.ensureCapacity(size);
-								continue ReadLines;
-							}
-						}
-					}
-				}
-				PlaceHolder phI = new PlaceHolder(line);
-				phI.lineNumber = cc++;
-				phI.tmpIsFlag = flag;
-				lazyMan.placeHolders.add(phI);
-				if (chair) {
-					lazyMan.chairCount++;
+			if (fromManager) {
+				md.clear();
+				for (int i = 0; i < lazyMan.placeHolders.size(); i++) {
+					PlaceHolder ph = lazyMan.placeHolders.get(i);
+					md.add(mdict_cache.get(ph.getPath(opt).getName()));
 				}
 			}
-			in.close();
 		}
 		
 		public long getBookIdAt(int i) {
@@ -6864,7 +6889,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				int start = scanInList.size();
 				if(names!=null) {
 					for (String name:names) {
-						if(!SU.isNoneSetFileName(name) && con.add(name)) {
+						if(!SU.isNotGroupSuffix(name) && con.add(name)) {
 							scanInList.add(name);
 						}
 					}
@@ -10176,7 +10201,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //			}
 //		}
 //		app.slots=CosyChair;
-//		app.opt=opt;
+		app.opt=opt;
+		app.loadManager=loadManager;
 //		app.mdlibsCon=mdlibsCon;
 //		app.mdict_cache=mdict_cache;
 //		CosySofa.clear();
@@ -10185,7 +10211,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		lazyLoadManager.lastLoadedModule=null;
 		Intent intent = new Intent();
 		intent.setClass(MainActivityUIBase.this, BookManager.class);
-		startActivityForResult(intent, 110);
+		startActivityForResult(intent, BookManager.id);
 	}
 	
 	/** ensure content visibility */
