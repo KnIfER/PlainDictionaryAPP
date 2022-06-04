@@ -113,6 +113,7 @@ public class MenuGrid extends PlainAppPanel {
 				
 				} else {
 					a.showDictionaryManager();
+					a.mInterceptorListenerHandled = true;
 					break;
 				}
 			}

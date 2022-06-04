@@ -87,7 +87,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	Intent intent = new Intent();
 	private PopupWindow mPopup;
 	//public ArrayList<PlaceHolder> slots;
-	public ArrayList<PlaceHolder> placeArray;
 	public MainActivityUIBase.LoadManager loadMan;
 	private ArrayList<Fragment> fragments;
 	public HashMap<String, BookPresenter> app_mdict_cache;
@@ -182,8 +181,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		if(f1.isDirty) {
 			intent.putExtra("result", true);
 			int size = f1.manager_group().size();
-			boolean identical = size==placeArray.size();
-			boolean rolesChanged = false;
+			boolean identical = size==f1.placeArray.size();
 			int i;
 			loadMan.lazyMan.chairCount=0;
 			loadMan.lazyMan.filterCount=0;
@@ -200,20 +198,15 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				if(identical) {
 					BookPresenter mdTmp = getMagentAt(i, false);
 					if(mdTmp!=loadMan.EmptyBook && !mdTmp.equalsToPlaceHolder(ph)
-						|| !ph.getPath(opt).equals(placeArray.get(i).getPath(opt)))
+						|| !ph.getPath(opt).equals(f1.placeArray.get(i).getPath(opt)))
 						identical=false;
-					else if(!rolesChanged) {
-						rolesChanged = placeArray.get(i).tmpIsFlag != f1.getPlaceFlagAt(i);
-					}
 				}
 			}
-			if(identical){
+			if(identical && !f1.rolesChanged){
 				CMN.Log("一成不变");
-				if(rolesChanged) {
-				
-				}
 			} else {
 				intent.putExtra("changed", true);
+				intent.putExtra("identical", identical);
 				try {
 					final File def = opt.getCacheCurrentGroup()?new File(getExternalFilesDir(null),"default.txt")
 							:opt.fileToSet(ConfigFile, opt.getLastPlanName("LastPlanName"));      //!!!原配
@@ -223,7 +216,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					output.write(Integer.toString(f1.manager_group().size()));
 					output.write("\n");
 					for(i=0;i<f1.manager_group().size();i++) {
-						writeForOneLine(output, getMagentAt(i), parent);
+						writeForOneLine(output, i, parent);
 					}
 					output.flush();
 					output.close();
@@ -281,26 +274,25 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		mTabLayout.clearOnTabSelectedListeners();
 	}
 
-	private void writeForOneLine(Writer out, mngr_agent_manageable mmTmp, String parent) throws IOException {
-		String name = mmTmp.getPath();
+	private void writeForOneLine(Writer out, int position, String parent) throws IOException {
+		String name = f1.getPathAt(position);
 		if(name.startsWith(parent) && name.length()>parent.length())
 			name = name.substring(parent.length()+1);
-		int tmpIsFlag = mmTmp.getTmpIsFlag();
-		if(tmpIsFlag!=0)
+		int flag = f1.getPlaceFlagAt(position);
+		if(flag!=0) {
 			out.write("[:");
-		int tif = mmTmp.getTmpIsFlag();
-		if(PDICMainAppOptions.getTmpIsFiler(tif))
-			out.write("F");
-		else if(PDICMainAppOptions.getTmpIsAudior(tif))
-			out.write("A");
-		if(PDICMainAppOptions.getTmpIsClicker(tif))
-			out.write(":C");
-		if(PDICMainAppOptions.getTmpIsCollapsed(tif))
-			out.write(":Z");
-		if(PDICMainAppOptions.getTmpIsHidden(tif))
-			out.write(":H");
-		if(tmpIsFlag!=0)
+			if(PDICMainAppOptions.getTmpIsFiler(flag))
+				out.write("F");
+			else if(PDICMainAppOptions.getTmpIsAudior(flag))
+				out.write("A");
+			if(PDICMainAppOptions.getTmpIsClicker(flag))
+				out.write(":C");
+			if(PDICMainAppOptions.getTmpIsCollapsed(flag))
+				out.write(":Z");
+			if(PDICMainAppOptions.getTmpIsHidden(flag))
+				out.write(":H");
 			out.write("]");
+		}
 		out.write(name);
 		out.write("\n");
 	}
@@ -316,7 +308,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		opt=agent.opt;
 		loadMan = agent.loadManager;
 		mdlibsCon=agent.mdlibsCon;
-		placeArray = new ArrayList<>(loadMan.lazyMan.placeHolders);
 		
 		ConfigFile = opt.fileToConfig();
 		
@@ -403,7 +394,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					String finalPath = path;
 					f4.mDslv.post(() -> {
 						f1.add(finalPath);
-						f1.isDirty=true;
+						f1.markDirty();
 					});
 					return 1;
 				}
@@ -789,7 +780,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			output.write("\n");
 			String parent = opt.lastMdlibPath.getPath();
 			for (int i = 0; i < sz; i++) {
-				writeForOneLine(output, getMagentAt(i), parent);
+				writeForOneLine(output, i, parent);
 			}
 			output.flush();
 			output.close();
@@ -851,7 +842,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					String parent = opt.lastMdlibPath.getPath();
 					
 					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
-						writeForOneLine(output, getMagentAt(i), parent);
+						writeForOneLine(output, i, parent);
 					}
 //					for(mngr_agent_manageable mmTmp:mdmng) {
 //						if(!f1.rejector.contains(mmTmp.getPath())){
@@ -899,7 +890,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							}
 							loadMan.lazyMan.chairCount = -1;
 							loadMan.LoadLazySlots(from, true, name);
-							f1.isDirty=true;
+							f1.markDirty();
 							f1.refreshSize();
 							f1.dataSetChanged();
 							show(R.string.loadsucc2, name);
@@ -939,7 +930,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			} break;
 			/* 禁用全部 | 禁用选中部分 */
             case R.id.toolbar_action4:{
-				f1.isDirty=true;
+				f1.markDirty();
             	if(isLongClicked){
 					if(opt.getDictManager1MultiSelecting()){
 						for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
@@ -974,7 +965,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						f1.setPlaceRejected(i, false);
 					}
 					f1.dataSetChanged();
-					f1.isDirty = true;
+					f1.markDirty();
 					ThisIsDirty = true;
 					f1.refreshSize();
 				}
@@ -1154,7 +1145,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 								if(select){
 									f1.setPlaceSelected(toPos+i, true);
 								}
-								f1.isDirty = true;
+								f1.markDirty();
 							}
 							f1.refreshSize();
 							ThisIsDirty = true;
@@ -1221,7 +1212,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 							loadMan.md.add(mdTmp);
 							loadMan.lazyMan.placeHolders.add(placeHolder);
 							loadMan.lazyMan.chairCount++;
-							f1.isDirty = true;
+							f1.markDirty();
 							cc++;
 						}
 					}
@@ -1247,7 +1238,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						if(f3.Selection.contains(f1.getPathAt(i))) {
 							f1.setPlaceRejected(i, true);
 							cc1++;
-							f1.isDirty=true;
+							f1.markDirty();
 						}
 					}
 					ThisIsDirty=true;
@@ -1411,7 +1402,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 									}
 								}
 								mdict_cache.clear();
-								f1.isDirty = true;
+								f1.markDirty();
 								renameListe = renameList.flatten();
 								for (String fnI : renameListe) {
 									mFile fOld = new mFile(fnI).init(opt);
@@ -1611,7 +1602,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				f1.replace(i--, -1);
 				size--;
 				cc1++;
-				f1.isDirty=true;
+				f1.markDirty();
 			}
 		}
 		if(f3.Selection.size()>0){

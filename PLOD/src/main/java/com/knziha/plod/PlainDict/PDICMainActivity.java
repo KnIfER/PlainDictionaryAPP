@@ -16,6 +16,8 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -204,6 +206,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private EnchanterReceiver locationReceiver;
 	private int barSzBot;
 	private float barSzRatio;
+	private VirtualDisplay mDisplay;
 	
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -1542,6 +1545,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		//tg
 		LayoutParams barBotLP = UIData.bottombar.getLayoutParams();
+		
+		//mDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).createVirtualDisplay("vdisplay",3840, 2160, 480, null,DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC);
+		
 		//if(false)
 //		root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
 //			int lastW, lastH;
@@ -3109,7 +3115,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			case BookManager.id:{
 				boolean changed = duco!=null && duco.getBooleanExtra("changed", false);
 				if (changed){
-					loadManager.buildUpDictionaryList(lazyLoadManager.lazyLoaded, mdict_cache);
+					if (duco.getBooleanExtra("identical", false)) {
+						dictPicker.adapter_idx = loadManager.refreshSlots();
+					} else {
+						loadManager.buildUpDictionaryList(lazyLoadManager.lazyLoaded, mdict_cache);
+					}
 					if (dictPicker.adapter_idx<0) {
 						switch_Dict(0, false, false, null);
 					}

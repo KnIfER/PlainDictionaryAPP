@@ -2443,6 +2443,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		mmTmp.setTmpIsFlag(tmpIsFlag);
 		return val;
 	}
+	public static int setTmpIsFiler(int tmpIsFlag, boolean val) {
+		tmpIsFlag &= (~0x1);
+		if(val) tmpIsFlag |= 0x1;
+		return tmpIsFlag;
+	}
 	public static boolean toggleTmpIsFiler(mngr_agent_manageable mdTmp) {
 		return setTmpIsFiler(mdTmp, !getTmpIsFiler(mdTmp.getTmpIsFlag()));
 	}
@@ -2465,6 +2470,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		if(val) tmpIsFlag |= 0x2;
 		mmTmp.setTmpIsFlag(tmpIsFlag);
 		return val;
+	}
+	public static int setTmpIsClicker(int tmpIsFlag, boolean val) {
+		tmpIsFlag &= (~0x2);
+		if(val) tmpIsFlag |= 0x2;
+		return tmpIsFlag;
 	}
 	public static boolean toggleTmpIsClicker(mngr_agent_manageable mdTmp) {
 		return setTmpIsClicker(mdTmp, !getTmpIsClicker(mdTmp.getTmpIsFlag()));
@@ -2489,6 +2499,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		mmTmp.setTmpIsFlag(tmpIsFlag);
 		return val;
 	}
+	public static int setTmpIsAudior(int tmpIsFlag, boolean val) {
+		tmpIsFlag &= (~0x4);
+		if(val) tmpIsFlag |= 0x4;
+		return tmpIsFlag;
+	}
 	public static boolean toggleTmpIsAudior(mngr_agent_manageable mdTmp) {
 		return setTmpIsAudior(mdTmp,  !getTmpIsAudior(mdTmp.getTmpIsFlag()));
 	}
@@ -2510,6 +2525,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		if(val) tmpIsFlag |= 0x10;
 		mmTmp.setTmpIsFlag(tmpIsFlag);
 		return val;
+	}
+	public static int setTmpIsCollapsed(int tmpIsFlag, boolean val) {
+		tmpIsFlag &= (~0x10);
+		if(val) tmpIsFlag |= 0x10;
+		return tmpIsFlag;
 	}
 	public static boolean toggleTmpIsCollapsed(mngr_agent_manageable mdTmp) {
 		return setTmpIsCollapsed(mdTmp, !getTmpIsCollapsed(mdTmp.getTmpIsFlag()));

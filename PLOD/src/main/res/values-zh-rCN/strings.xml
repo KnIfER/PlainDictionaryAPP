@@ -164,7 +164,7 @@
 	<string name="fold_all">折叠全部</string>
 	<string name="Commit">提交 | 词典选项</string>
 	<string name="reset">重置 | 全不选</string>
-	<string name="refresd">刷新 | 全不选</string>
+	<string name="refresd">刷新 | 全选</string>
 	<string name="save_as">另存为</string>
 	<string name="disable_all">禁用全部 | 禁用选择</string>
 	<string name="enable_all">启用全部 | 启用选择</string>

@@ -38,7 +38,6 @@ import com.knziha.plod.dictionarymanager.files.ReusableBufferedWriter;
 import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.MagentTransient;
-import com.knziha.plod.dictionarymodels.mngr_agent_manageable;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.CharSequenceKey;
@@ -60,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 
 public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		implements BookManagerFragment.SelectableFragment, OnItemLongClickListener {
@@ -112,7 +110,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		loadMan.lazyMan.chairCount++;
 		dataSetChanged();
 		refreshSize();
-		isDirty=true;
+		markDirty();
 	}
 
 	@Override
@@ -244,7 +242,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 								final ListView lv = dialog1.findViewById(R.id.lv);
 								final EditText et = dialog1.findViewById(R.id.et);
 								ImageView iv = dialog1.findViewById(R.id.confirm);
-								et.setText(getMagentAt(actualPosition).getDictionaryName());
+								et.setText(getNameAt(actualPosition));
 
 								AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 								builder.setView(dialog1);
@@ -290,7 +288,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 											if (suc) {
 												a.RebasePath(oldf, OldFName, to, newName, oldFn);
 												adapter.notifyDataSetChanged();
-												isDirty = true;
+												markDirty();
 												d.dismiss();
 												dd.dismiss();
 												a.show(R.string.renD);
@@ -357,7 +355,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							}
 							break;
 							case 2: {//移至顶部
-								isDirty = true;
+								markDirty();
 								replace(actualPosition, 0);
 								d.dismiss();
 								adapter.notifyDataSetChanged();
@@ -365,7 +363,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 							}
 							break;
 							case 3: {//移至底部
-								isDirty = true;
+								markDirty();
 								int last = manager_group().size() - 1;
 								replace(actualPosition, last);
 								d.dismiss();
@@ -383,12 +381,13 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 											switch (pos3) {
 												/* 设为滤器 */
 												case 0: {
-													isDirty = true;
-													boolean isF = PDICMainAppOptions.toggleTmpIsFiler(magent);
+													markDirty();
+													boolean isF = !PDICMainAppOptions.getTmpIsFiler(getPlaceFlagAt(actualPosition));
+													setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), isF));
 													if (isOnSelected) {
 														for (int i = 0; i < manager_group().size(); i++) {
 															if (getPlaceSelected(i) && !manager_group().get(i).isMddResource())
-																PDICMainAppOptions.setTmpIsFiler(manager_group().get(i), isF);
+																setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(i), isF));
 														}
 													}
 													adapter.notifyDataSetChanged();
@@ -397,12 +396,13 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 												break;
 												/* 设为点译词库 */
 												case 1: {
-													isDirty = true;
-													boolean isCS = PDICMainAppOptions.toggleTmpIsClicker(magent);
+													markDirty();
+													boolean isCS = !PDICMainAppOptions.getTmpIsClicker(getPlaceFlagAt(actualPosition));
+													setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsClicker(getPlaceFlagAt(actualPosition), isCS));
 													if (isOnSelected) {
 														for (int i = 0; i < manager_group().size(); i++) {
 															if (getPlaceSelected(i))
-																PDICMainAppOptions.setTmpIsClicker(getMagentAt(i), isCS);
+																setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsClicker(getPlaceFlagAt(i), isCS));
 														}
 													}
 													adapter.notifyDataSetChanged();
@@ -411,12 +411,13 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 												break;
 												/* 设为默认折叠 */
 												case 2: {
-													isDirty = true;
-													boolean isCL = PDICMainAppOptions.toggleTmpIsCollapsed(magent);
+													markDirty();
+													boolean isCL = !PDICMainAppOptions.getTmpIsCollapsed(getPlaceFlagAt(actualPosition));
+													setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsCollapsed(getPlaceFlagAt(actualPosition), isCL));
 													if (isOnSelected) {
 														for (int i = 0; i < manager_group().size(); i++) {
 															if (getPlaceSelected(i))
-																PDICMainAppOptions.setTmpIsCollapsed(getMagentAt(i), isCL);
+																setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsCollapsed(getPlaceFlagAt(i), isCL));
 														}
 													}
 													adapter.notifyDataSetChanged();
@@ -425,19 +426,18 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 												break;
 												/* 设为发音库( mdd 专有 ) */
 												case 3: {
-													if (magent.isMddResource()) {
-														isDirty = true;
+													if (isMddResourceAt(actualPosition)) {
+														markDirty();
 														boolean isCS = PDICMainAppOptions.toggleTmpIsAudior(magent);
 														if (isCS)
-															PDICMainAppOptions.setTmpIsFiler(magent, false);
+															setPlaceFlagAt(actualPosition, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(actualPosition), false));
 														if (isOnSelected) {
 															for (int i = 0; i < manager_group().size(); i++) {
 																if (getPlaceSelected(i)) {
-																	BookPresenter mdTmp = getMagentAt(i);
-																	if (mdTmp.isMddResource()) {
-																		PDICMainAppOptions.setTmpIsAudior(mdTmp, isCS);
+																	if (isMddResourceAt(i)) {
+																		setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsAudior(getPlaceFlagAt(i), isCS));
 																		if (isCS)
-																			PDICMainAppOptions.setTmpIsFiler(mdTmp, false);
+																			setPlaceFlagAt(i, PDICMainAppOptions.setTmpIsFiler(getPlaceFlagAt(i), false));
 																	}
 																}
 															}
@@ -471,7 +471,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		}
 		return true;
 	}
-
+	
 	public void performLastItemLongClick() {
 		if(adapter.getCount()>0){
 			int idx = lastClickedPos[(lastClickedPosIndex+1)%2];
@@ -583,14 +583,14 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			aaa = (BookManager) getActivity();
 			mDslv.setOnItemClickListener((parent, view, position, id) -> {
 				//CMN.show(""+(adapter==null)+" "+(((dict_manager_activity)getActivity()).f1.adapter==null));
-				isDirty = true;
+				markDirty();
 				//adapter.getItem(position).value = !adapter.getItem(position).value;//TODO optimize
 				if (position >= mDslv.getHeaderViewsCount()) {
 					position = position - mDslv.getHeaderViewsCount();
 					setPlaceFlagAt(position
 							, PDICMainAppOptions.setTmpIsHidden(getPlaceFlagAt(position), !getPlaceRejected(position)));
 					adapter.notifyDataSetChanged();
-					isDirty = true;
+					markDirty();
 					refreshSize();
 				}
 			});
@@ -644,7 +644,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			//v.getBackground().setLevel(500);
 			mDslv.setFloatAlpha(1.0f);
 			v.setBackgroundColor(Color.parseColor("#ffff00"));//TODO: get primary color
-			isDirty=true;
+			markDirty();
 			return v;
 		}
 
@@ -744,6 +744,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 			mdTmp.tmpIsFlag = flag;
 		}
 		loadMan.lazyMan.placeHolders.get(position).tmpIsFlag = flag;
+		rolesChanged = true;
 	}
 	
 	public CharSequence getNameAt(int position) {
@@ -752,5 +753,19 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 		if(idx>0)
 			return new CharSequenceKey(path, idx+1);
 		return path;
+	}
+	
+	private boolean isMddResourceAt(int actualPosition) {
+		String path = getPathAt(actualPosition);
+		return path.length()>4 && path.substring(path.length()-4).equalsIgnoreCase(".mdd");
+	}
+	
+	public ArrayList<PlaceHolder> placeArray;
+	public boolean rolesChanged;
+	public void markDirty() {
+		isDirty = true;
+		if (placeArray==null) {
+			placeArray = new ArrayList<>(loadMan.lazyMan.placeHolders);
+		}
 	}
 }

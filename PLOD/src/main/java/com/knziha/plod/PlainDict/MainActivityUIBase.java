@@ -2301,22 +2301,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			CosyChair[chairCount++] = placeHolders.size()-1;
 		}
 		
-		public void refreshSlots() {
-			chairCount=0;
-			filterCount=0;
-			for (int i = 0; i < placeHolders.size(); i++) {
-				PlaceHolder ph = placeHolders.get(i);
-				ph.lineNumber = i;
-				final int flag = ph.tmpIsFlag;
-				if (!PDICMainAppOptions.getTmpIsHidden(flag)) {
-					chairCount++;
-					if (PDICMainAppOptions.getTmpIsClicker(flag)) {
-						filterCount++;
-					}
-				}
-			}
-		}
-		
 		public void do_LoadLazySlots(ReusableBufferedReader in) throws IOException {
 			String line;
 			int cc=0;
@@ -2404,6 +2388,48 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(tmp!=null)
 				return tmp.tmpIsFlag;
 			return 0;
+		}
+		
+		public int refreshSlots() {
+			CMN.Log("refreshSlots:::");
+			int pickerIdx=-1;
+			int filterCount=0;
+			int chairCount=0;
+			PlaceHolder ph;
+			String lastName = opt.getLastMdFn(LastMdFn);
+			for (int i = 0; i < lazyMan.placeHolders.size(); i++) {
+				ph = lazyMan.placeHolders.get(i);
+				ph.lineNumber = i | (ph.lineNumber & 0x80000000);
+				final int flag = ph.tmpIsFlag;
+				if (!PDICMainAppOptions.getTmpIsHidden(flag)) {
+					if (PDICMainAppOptions.getTmpIsFiler(flag)) {
+						filterCount++;
+					} else {
+						if (pickerIdx==-1 && md_name_match(lastName, md.get(i), ph)){
+							pickerIdx = chairCount;
+						}
+						chairCount++;
+					}
+				}
+			}
+			lazyMan.chairCount=chairCount;
+			lazyMan.filterCount=filterCount;
+			if(lazyMan.CosyChair.length<chairCount)lazyMan.CosyChair=new int[chairCount];
+			if(lazyMan.CosySofa.length<filterCount)lazyMan.CosySofa=new int[filterCount];
+			filterCount=0;
+			chairCount=0;
+			for (int i = 0; i < lazyMan.placeHolders.size(); i++) {
+				ph = lazyMan.placeHolders.get(i);
+				final int flag = ph.tmpIsFlag;
+				if (!PDICMainAppOptions.getTmpIsHidden(flag)) {
+					if (PDICMainAppOptions.getTmpIsFiler(flag)) {
+						lazyMan.CosySofa[filterCount++]=i;
+					} else {
+						lazyMan.CosyChair[chairCount++]=i;
+					}
+				}
+			}
+			return pickerIdx;
 		}
 		
 		//parseList
@@ -7674,7 +7700,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag(), request.getRequestHeaders());
+			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 			
