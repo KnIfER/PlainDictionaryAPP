@@ -175,13 +175,12 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			} break;
 			case R.id.float_switch:{
 				if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M
-						&& v.getTag()==null && !Settings.canDrawOverlays(a)){
+						&& !Settings.canDrawOverlays(a)){
 					Intent permission = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
 					permission.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					a.startActivityForResult(permission,800);
 					UIData.floatSwitch.setChecked(false);
 					a.showT("需要权限“显示在其他应用上层”！");
-					v.setTag(v);
 				} else {
 					boolean isChecked = UIData.floatSwitch.isChecked();
 					if (a.thisActType==MainActivityUIBase.ActType.PlainDict) {

@@ -393,14 +393,13 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		<script>
 			// 测试
 			if(true) {
-				function debug(...e){console.log(e)};
 				var host = document.getElementById('host');
 				var dopt = %0;
 				function change(id, value, el)
 				{
 	 				dopt[id] = value;
-					debug('pref_id=', id, 'newValue=', typeof value, value, 'result=');
-	 				debug(value, dopt);
+					console.log('pref_id=', id, 'newValue=', typeof value, value, 'result=');
+	 				console.log(value, dopt);
 					app.SaveDopt(sid.get(), JSON.stringify(dopt));
 					return 1;
 				}

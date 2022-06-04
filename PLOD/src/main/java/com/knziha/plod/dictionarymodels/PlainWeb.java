@@ -1454,7 +1454,7 @@ public class PlainWeb extends DictionaryAdapter {
 //		} else {
 //			jsLoader = jsLoaderInJson;
 //		}
-		if(GlobalOptions.debug)CMN.Log("加载网页::", url, jsLoader);
+		if(GlobalOptions.debug)CMN.Log("加载网页::", url, dopt, jsLoader);
 		return currentUrl=url;
 	}
 	
@@ -1828,6 +1828,8 @@ public class PlainWeb extends DictionaryAdapter {
 		fadeOutProgressbar(bookPresenter, mWebView, updateTitle);
 		currentUrl=mWebView.getUrl();
 		if (Build.VERSION.SDK_INT<21) mWebView.evaluateJavascript(kitkatCompatJs, null);
+		//CMN.Log("jsLoader::", jsLoader);
+		//CMN.Log("jsCode::", jsCode);
 		mWebView.evaluateJavascript(jsLoader, new ValueCallback<String>() {
 			@Override
 			public void onReceiveValue(String value) {

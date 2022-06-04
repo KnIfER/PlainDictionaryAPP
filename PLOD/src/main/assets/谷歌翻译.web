@@ -11,7 +11,7 @@
 	function init(){
 		var win=window,doc=document,e=doc.getElementById('gtyexp'),sel=win.getSelection()
 		,ta=doc.getElementsByTagName('textarea')[0], listPane,textPara,tryCnt=0;
-		function debug(...e){console.log('fatal web', e)};
+		function debug(e){console.log('fatal web'+e)};
 		debug('translator ini...'+location.href, dopt.fonts); // 开始
 		//debug('translator ini...'+doc.body); // 开始
 		if(!doc.body) {
@@ -20,7 +20,7 @@
 		}
 		if(dopt.fonts) {
 			var sty = document.getElementsByTagName('STYLE')[1];
-			if(sty) sty.innerText=sty.innerText.replaceAll('gstatic.com', 'gstatic.cn');
+			if(sty) sty.innerText=sty.innerText.replaceAll('fonts.gstatic.com', 'fonts.gstatic.cn');
 			debug('已修复字体！');
 		}
 		//debug('translator ...123');
@@ -200,7 +200,7 @@
 					if(!win._modin) {
 						//var e=Qa('rhPddf').cloneNode(true); // 拷贝编辑按钮 2021翻译门事件后取消编辑按钮
 						var m=Qa('kImuFf');
-						if(!m && tryCnt<5) {setTimeout(tweakInputMod, 200); tryCnt++;return}
+						if(!m) { if(tryCnt++<5) setTimeout(tweakInputMod, 200); return}
 						m=m.cloneNode(true); // 拷贝复制按钮
 						var n=m.getElementsByTagName('I')[0];
 						if(n){
