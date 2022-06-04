@@ -391,6 +391,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 		//toolbar_web.setBackground(toolbar_web.getBackground().mutate()); // not work, tint chaos
 		Drawable bg = a.titleDrawable();
 		toolbar_web.setBackground(bg);
+		toolbar_web.setPadding(0,0,0,0);
 		toolbarBG = (GradientDrawable) ((LayerDrawable)bg).getDrawable(0);
 	}
 	
