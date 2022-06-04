@@ -77,6 +77,7 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.graphics.ColorUtils;
 import androidx.core.view.NestedScrollingChildHelper;
 import androidx.databinding.ViewDataBinding;
 import androidx.preference.Preference;
@@ -863,6 +864,156 @@ public class ViewUtils {
 			}
 		}
 		return null;
+	}
+	
+	public static int getComplementaryColor(int color) {
+//		int alpha = color&0xff000000;
+//		int buse = buse1(rgb2ryb(color));
+//		return ryb2rgb(buse)|alpha;
+		//return ryb2rgb(rgb2ryb(Color.RED))|alpha;
+		return splitComplementary(color);
+	}
+	
+	public static int splitComplementary(int color) {
+		float[] hsl = new float[3];
+		ColorUtils.colorToHSL(color, hsl);
+		//hsl[0] = (hsl[0]+180-25)%360;
+		hsl[0] = ((float) (Math.ceil(hsl[0]/80)*80)+180-25)%360;
+		//if (hsl[1]<.9f) hsl[1]=.9f;
+		if (hsl[2]<.5f) hsl[2]=.5f;
+		hsl[1]=1;
+		return ColorUtils.HSLToColor(hsl);
+	}
+	
+	public static int splitComplementary1(int color) {
+		float[] hsl = new float[3];
+		ColorUtils.colorToHSL(color, hsl);
+		//hsl[0] = (hsl[0]+180-25)%360;
+		//hsl[0] = ((float) (Math.ceil(hsl[0]/60)*60)+180-25)%360;
+		hsl[0] = ((float) (Math.ceil((hsl[0]+180)/60)*60)+180-25)%360;
+		//if (hsl[2]<.5f) hsl[2]=.5f;
+		return ColorUtils.HSLToColor(hsl);
+	}
+	
+	public static int buse(int color) {
+		int r = 255 - (color>>16)&0xff;
+		int g = 255 - (color>>8)&0xff;
+		int b = 255 - color&0xff;
+		return color&0xff000000 | r<<16 | g<<8 | b;
+	}
+	
+	
+	//https://stackoverflow.com/questions/1664140/js-function-to-calculate-complementary-colour
+	//http://design.geckotribe.com/colorwheel/
+	// https://codepen.io/yehao/pen/bpgxaK?editors=0110
+	// https://stackoverflow.com/questions/14095849/calculating-the-analogous-color-with-python/14116553#14116553
+	
+	/** Red-green-blue system to Red-yellow-blue system.
+	 * https://github.com/bahamas10/node-rgb2ryb/blob/master/rgb2ryb.js  */
+	public static int rgb2ryb(int color) {
+		int r = (color>>16)&0xff;
+		int g = (color>>8)&0xff;
+		int b = color&0xff;
+		// Remove the whiteness from the color.
+		int w = min(r, g, b);
+		r -= w;
+		g -= w;
+		b -= w;
+		
+		int mg = max(r, g, b);
+		
+		// Get the yellow out of the red+green.
+		int y = Math.min(r, g);
+		r -= y;
+		g -= y;
+		
+		// If this unfortunate conversion combines blue and green, then cut each in
+		// half to preserve the value's maximum range.
+		if (b!=0 && g!=0) {
+			b /= 2.0;
+			g /= 2.0;
+		}
+		
+		// Redistribute the remaining green.
+		y += g;
+		b += g;
+		
+		// Normalize to values.
+		int my = max(r, y, b);
+		if (my!=0) {
+			int n = mg / my;
+			r *= n;
+			y *= n;
+			b *= n;
+		}
+		
+		// Add the white back in.
+		r += w;
+		y += w;
+		b += w;
+		
+		// And return back the ryb typed accordingly.
+		return (r << 16) | (y << 8) | b;
+	}
+	
+	public static int ryb2rgb(int color) {
+		int r = (color>>16)&0xff;
+		int y = (color>>8)&0xff;
+		int b = color&0xff;
+		// Remove the whiteness from the color.
+		int w = min(r, y, b);
+		r -= w;
+		y -= w;
+		b -= w;
+		
+		int my = max(r, y, b);
+		
+		// Get the green out of the yellow and blue
+		int g = Math.min(y, b);
+		y -= g;
+		b -= g;
+		
+		if (b!=0 && g!=0) {
+			b *= 2.0;
+			g *= 2.0;
+		}
+		
+		// Redistribute the remaining yellow.
+		r += y;
+		g += y;
+		
+		// Normalize to values.
+		int mg = max(r, g, b);
+		if (mg!=0) {
+			int n = my / mg;
+			r *= n;
+			g *= n;
+			b *= n;
+		}
+		
+		// Add the white back in.
+		r += w;
+		g += w;
+		b += w;
+		
+		// And return back the ryb typed accordingly.
+		return (r << 16) | (g << 8) | b;
+	}
+	
+	public static int complimentary(int color, int limit) {
+		int r = (color>>16)&0xff;
+		int g = (color>>8)&0xff;
+		int b = color&0xff;
+		if(limit==0)limit = 255;
+		return ((limit - r) << 16) | ((limit - g) << 8) | (limit - b);
+	}
+	
+	private static int max(int r, int y, int b) {
+		return Math.max(r, Math.max(y, b));
+	}
+	
+	private static int min(int r, int y, int b) {
+		return Math.min(r, Math.min(y, b));
 	}
 	
 	public void Destory(){

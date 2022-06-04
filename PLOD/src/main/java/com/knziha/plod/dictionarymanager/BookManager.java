@@ -444,9 +444,10 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			@Override public void onTabReselected(TabLayout.Tab tab) {}
         });
 		
-	    mTabLayout.setSelectedTabIndicatorColor(ColorUtils.blendARGB(opt.getMainBackground(), Color.BLACK, 0.28f));
-	    
-	    mTabLayout.setSelectedTabIndicatorHeight((int) (3.8*opt.dm.density));
+	    mTabLayout.setSelectedTabIndicatorColor(0xe0000000|ViewUtils.getComplementaryColor(opt.getMainBackground())&0x00ffffff);
+//	    mTabLayout.setSelectedTabIndicatorColor(ViewUtils.getComplementaryColor(Color.BLUE));
+	    //mTabLayout.setSelectedTabIndicatorColor(ColorUtils.blendARGB(bg, Color.BLACK, 0.28f));
+	    mTabLayout.setSelectedTabIndicatorHeight((int) (0.7*mResource.getDimension(R.dimen._14_)));
 	    
 	    //tofo
 	    //viewPager.setCurrentItem(CurrentPage = opt.getDictManagerTap());
