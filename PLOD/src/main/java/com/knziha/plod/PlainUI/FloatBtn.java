@@ -3,13 +3,14 @@ package com.knziha.plod.PlainUI;
 import static com.knziha.plod.plaindict.MainActivityUIBase.foreground;
 import static com.knziha.plod.plaindict.MainShareActivity.SingleTaskFlags;
 
-import android.app.ActivityManager;
+import android.app.Activity;
 import android.app.Application;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -24,15 +25,17 @@ import android.view.WindowManager;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.AgentApplication;
+import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.R;
-
-import java.util.List;
+import com.knziha.plod.plaindict.ServiceEnhancer;
+import com.knziha.plod.widgets.ViewUtils;
 
 public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 	public final WindowManager wMan;
-	public final ClipboardManager clipMan;
 	public final Context context;
+	public final ClipboardManager clipMan;
 	public final AgentApplication app;
 	WindowManager.LayoutParams lp;
 	View view;
@@ -40,54 +43,65 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 	final int[] savedXY = new int[4];
 	
 	public FloatBtn(Context context, Application application) {
-		this.context = context;
+		this.context = context = context.getApplicationContext();
 		this.app = (AgentApplication) application;
 		this.wMan = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 		this.clipMan = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
 	}
 	
-	public void reInitBtn(int btnType) {
-		if (view!=null) {
-			wMan.removeView(view);
-		}
-		view = btnType==0?(ViewGroup) LayoutInflater.from(context).inflate(R.layout.btn, null):new View(context);
-		
-		int sz = (int) (GlobalOptions.density*38);
-		WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-				sz , sz
-				, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-				, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-				| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-				, PixelFormat.RGBA_8888);
-		
-		lp.gravity = Gravity.START | Gravity.TOP;
-		
-		if (btnType==0) {
-			lp.x = savedXY[0];
-			lp.y = savedXY[1];
-		}
-		else {
-			view.setBackgroundResource(R.drawable.progressbar2);
-			int szLong = (int) (sz*2.5), szShort = (int) (GlobalOptions.density*15);
-			if (btnType == 2 || btnType == 4) {
-				lp.x = savedXY[2];
-				lp.width = szLong;
-				lp.height = szShort;
-				lp.gravity = Gravity.CENTER_HORIZONTAL | (btnType==2?Gravity.TOP:Gravity.BOTTOM);
-			} else {
-				lp.y = savedXY[3];
-				lp.width = szShort;
-				lp.height = szLong;
-				lp.gravity = Gravity.CENTER_VERTICAL | (btnType==1?Gravity.RIGHT:Gravity.LEFT);
+	public void reInitBtn(Context context, int btnType) {
+		if (false && ViewUtils.littleCat && context instanceof Activity) {
+			//((AgentApplication)((Activity) context).getApplication()).floatBtn = this;
+			//ServiceEnhancer.SendSetUpDaemon(context);
+		} else {
+			if (view!=null) {
+				wMan.removeView(view);
+			}
+			view = btnType==0?(ViewGroup) LayoutInflater.from(context).inflate(R.layout.btn, null):new View(context);
+			
+			int sz = (int) (GlobalOptions.density*38);
+			WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+					sz , sz
+					, Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+					? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+					: WindowManager.LayoutParams.TYPE_PHONE
+					, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+					| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+					, PixelFormat.RGBA_8888);
+			
+			lp.gravity = Gravity.START | Gravity.TOP;
+			
+			if (btnType==0) {
+				lp.x = savedXY[0];
+				lp.y = savedXY[1];
+			}
+			else {
+				view.setBackgroundResource(R.drawable.progressbar2);
+				int szLong = (int) (sz*2.5), szShort = (int) (GlobalOptions.density*15);
+				if (btnType == 2 || btnType == 4) {
+					lp.x = savedXY[2];
+					lp.width = szLong;
+					lp.height = szShort;
+					lp.gravity = Gravity.CENTER_HORIZONTAL | (btnType==2?Gravity.TOP:Gravity.BOTTOM);
+				} else {
+					lp.y = savedXY[3];
+					lp.width = szShort;
+					lp.height = szLong;
+					lp.gravity = Gravity.CENTER_VERTICAL | (btnType==1?Gravity.RIGHT:Gravity.LEFT);
+				}
+			}
+			View handle = btnType==0?((ViewGroup)view).getChildAt(0):view;
+			handle.setOnTouchListener(this);
+			//handle.setOnClickListener(this);
+			view.setOnDragListener(this);
+			this.btnType = btnType;
+			this.lp = lp;
+			try {
+				wMan.addView(view, lp);
+			} catch (Exception e) {
+				CMN.Log(e);
 			}
 		}
-		View handle = btnType==0?((ViewGroup)view).getChildAt(0):view;
-		handle.setOnTouchListener(this);
-		//handle.setOnClickListener(this);
-		view.setOnDragListener(this);
-		this.btnType = btnType;
-		this.lp = lp;
-		wMan.addView(view, lp);
 	}
 	
 	float orgX;

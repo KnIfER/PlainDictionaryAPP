@@ -3,6 +3,7 @@ package com.knziha.plod.plaindict;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 import static com.knziha.plod.plaindict.MdictServer.isServerRunning;
+import static com.knziha.plod.widgets.ViewUtils._HX;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -23,13 +24,12 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.provider.Settings;
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.settings.NotificationSettings;
 import com.knziha.plod.settings.SettingsActivity;
 
@@ -151,6 +151,9 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 		} else {
 			releaseWifiLock();
 		}
+		//if (((AgentApplication)getApplication()).floatBtn!=null) {
+		//	((AgentApplication)getApplication()).floatBtn.reInitBtn(this, 0);
+		//}
 	}
 	
 	public static void SendSetUpDaemon(Context context) {
@@ -344,10 +347,6 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 		releaseWifiLock();
 	}
 	
-	final int _HX =  Build.MANUFACTURER.equalsIgnoreCase("Xiaomi")?2
-			:Build.MANUFACTURER.equalsIgnoreCase("Huawei")?1
-			:0;
-	// “No Kotlin”
 	private boolean isPowerSaveModeCompat() {
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
 				&& powerManager.isPowerSaveMode()) { // hopefully...

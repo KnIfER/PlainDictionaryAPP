@@ -974,7 +974,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		checkLog(savedInstanceState);
 		
-		if (PDICMainAppOptions.getNotificationEnabled()) {
+		if (PDICMainAppOptions.getNotificationEnabled())
+		{
 			startService(new Intent(this, ServiceEnhancer.class));
 //			locationReceiver = new EnchanterReceiver();
 //			IntentFilter filter = new IntentFilter();

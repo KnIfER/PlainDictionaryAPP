@@ -1857,7 +1857,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		if (PDICMainAppOptions.floatBtn(opt.SixthFlag()>>(30+thisActType.ordinal()))) {
 			floatBtn = new FloatBtn(this, getApplication());
-			floatBtn.reInitBtn(0);
+			floatBtn.reInitBtn(this, 0);
 		}
 //		try {
 //			Integer verifyCode = (Integer) ViewUtils.execSimple(testVerifyCode, null, this);
@@ -10264,7 +10264,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (PDICMainAppOptions.floatBtn(opt.SixthFlag()>>(30+thisActType.ordinal()))) {
 			if(floatBtn==null)
 				floatBtn = new FloatBtn(this, getApplication());
-			floatBtn.reInitBtn(0);
+			floatBtn.reInitBtn(this, 0);
 		} else if(floatBtn!=null) {
 			floatBtn.close();
 		}
