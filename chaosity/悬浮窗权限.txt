@@ -1,0 +1,6 @@
+参[Android 悬浮窗，绝对是目前相关悬浮窗开源库最完美的适配方案_Wei_Leng的博客-CSDN博客_android 全局 悬浮窗](https://blog.csdn.net/u014608640/article/details/124737008)
+
+适配安卓 4.4，华为等rom需要特定悬浮窗权限。显示类型 type_phone 。取得windowmanager时需要全局context或者service context, 否则存在不能在应用外显示、dialog不能显示等bug。
+
+其他easy。
+
