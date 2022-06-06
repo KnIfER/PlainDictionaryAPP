@@ -51,4 +51,5 @@
 	<dimen name="_8_">8dp</dimen>
 	<dimen name="_43_">43dp</dimen>
 	<dimen name="dragHeight">36dp</dimen>
+	<dimen name="popBtnWid">34dp</dimen>
 </resources>

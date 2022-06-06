@@ -7,7 +7,70 @@
 
 	<PreferenceCategory
 		android:key="cat_1"
-		android:title="点击翻译"
+		android:title="搜索设置"
+		app:icon="@drawable/drawer_menu_icon_setting"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="multi_cs"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="多重点译"-->
+<!--			/>-->
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="skip_nom"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="跳过无匹配的词典"/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="use_morph"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="使用构词库"/>
+		<androidx.preference.ListPreference
+			app:key="mode_cs"
+			app:persistent="false"
+			app:defaultValue="0"
+			app:title="单本词典查询模式 :"
+			app:entries="@array/click_search_mode_info"
+			/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="pin_upstream"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="固定轮询上游"/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="switch_nav"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="上下切换词典时更改询上游"
+			/>
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		android:key="cat_webx"
+		android:title="跳过在线词典"
+		app:icon="@drawable/drawer_menu_icon_setting"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="skip_webx"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="一律跳过未指定为点译词库的在线词典"/>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="exempt_translator"
+			android:persistent="false"
+			android:defaultValue="true"
+			android:title="不跳过在线翻译词典"/>
+	</PreferenceCategory>
+
+
+	<PreferenceCategory
+		android:key="cat_ui"
+		android:title="界面设置"
 		app:icon="@drawable/drawer_menu_icon_setting"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
@@ -18,38 +81,6 @@
 			android:defaultValue="true"
 			android:title="沉浸式滚动"
 			/>
-
-
-
-<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
-<!--			android:key="multi_cs"-->
-<!--			android:persistent="false"-->
-<!--			android:defaultValue="false"-->
-<!--			android:title="多重点译"-->
-<!--			/>-->
-
-
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="skip_nom"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="跳过无匹配的词典"/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="use_morph"
-			android:persistent="false"
-			android:defaultValue="true"
-			android:title="使用构词库"/>
-
-		<androidx.preference.ListPreference
-			app:key="mode_cs"
-			app:persistent="false"
-			app:defaultValue="0"
-			app:title="单本词典查询模式 :"
-			app:entries="@array/click_search_mode_info"
-			/>
-
 		<Preference
 			app:key="bar"
 			app:persistent="false"
@@ -62,14 +93,12 @@
 			android:defaultValue="false"
 			android:title="靠顶放大"
 			/>
-
 <!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
 <!--			android:key="double_resize"-->
 <!--			android:persistent="false"-->
 <!--			android:defaultValue="false"-->
 <!--			android:title="双击放大"-->
 <!--			/>-->
-
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="reset_pos"
 			android:persistent="false"
@@ -81,35 +110,19 @@
 			android:key="reset_max"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="弹出时重置放大"/>
-
+			android:title="弹出时重置放大状态"/>
 <!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
 <!--			android:key="switch_top"-->
 <!--			android:persistent="false"-->
 <!--			android:defaultValue="false"-->
 <!--			android:title="点击顶栏切换词典"-->
 <!--			/>-->
-
 <!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
 <!--			android:key="switch_bottom"-->
 <!--			android:persistent="false"-->
 <!--			android:defaultValue="false"-->
 <!--			android:title="点击底栏切换词典"-->
 <!--			/>-->
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="pin_upstream"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="固定轮询上游"/>
-
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="switch_nav"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="上下切换词典时更改询上游"
-			/>
-
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="delay_diss"
 			android:persistent="false"
@@ -117,39 +130,36 @@
 			android:title="延时空白区域的点击"
 			app:allowDividerBelow="true"
 			/>
-
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="click_tts"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="自动发音"
 			/>
-
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="click_tts1"
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="翻页时自动发音"
 			/>
-
 	</PreferenceCategory>
 
 
 	<PreferenceCategory
 		android:key="gp_multi"
-		android:title="多页面显示方式"
+		android:title="多页面微件"
 		android:clickable="true"
 		app:icon="@drawable/ic_viewpager_carousel_vertical"
 		app:allowDividerAbove="true"
 		app:allowDividerBelow="true"
 		android:tint="#000"
 		>
-		<com.knziha.filepicker.settings.TwinkleSwitchPreference
-			android:key="fold"
-			android:persistent="false"
-			android:defaultValue="false"
-			android:title="使用屏风模式"
-			/>
+<!--		<com.knziha.filepicker.settings.TwinkleSwitchPreference-->
+<!--			android:key="fold"-->
+<!--			android:persistent="false"-->
+<!--			android:defaultValue="false"-->
+<!--			android:title="使用屏风模式"-->
+<!--			/>-->
 		<com.knziha.filepicker.settings.TwinkleSwitchPreference
 			android:key="prvnxt"
 			android:persistent="false"
@@ -201,7 +211,7 @@
 			android:key="turn"
 			android:persistent="false"
 			android:defaultValue="false"
-			android:title="允许翻页"
+			android:title="允许滑动翻页"
 			/>
 	</PreferenceCategory>
 

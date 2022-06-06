@@ -371,7 +371,7 @@
 	<string-array name="click_search_mode_info">
 		<item>在当前分组中轮番查询</item>
 		<item>在当前指定的点译词库中轮番查询</item>
-		<item>只查当前选中词典</item>
+		<item>只查询当前选中的词典</item>
 	</string-array>
 
 	<string-array name="conext">

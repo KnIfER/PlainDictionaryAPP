@@ -11,7 +11,7 @@ import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 
-public class PopupMoveToucher implements View.OnTouchListener {
+public class PopupTouchMover implements View.OnTouchListener {
 	public float lastX;
 	public float lastY;
 	public float OrgY;
@@ -34,7 +34,7 @@ public class PopupMoveToucher implements View.OnTouchListener {
 	private boolean ruinedDoubleClick;
 	MainActivityUIBase a;
 
-	public PopupMoveToucher(MainActivityUIBase a, View _textView){
+	public PopupTouchMover(MainActivityUIBase a, View _textView){
 		this.a = a;
 		_50_ = a.getResources().getDimension(R.dimen._50_)*a.dm.density;
 		popupGuarder=a.wordPopup.popupGuarder;

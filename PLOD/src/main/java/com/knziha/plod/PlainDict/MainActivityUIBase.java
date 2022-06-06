@@ -1119,6 +1119,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		super.onCreate(savedInstanceState);
 		ViewGroup tmp =  new ScrollViewmy(this);
 		if(shunt) return;
+		wordPopup.opt = opt;
 		CMN.instanceCount++;
 		MainStringBuilder = new StringBuilder(40960);
 		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());

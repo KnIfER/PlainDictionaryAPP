@@ -22,6 +22,7 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		if(event.getAction()==MotionEvent.ACTION_DOWN){
+			CMN.Log("down!!!");
 			x0=event.getX();
 			y0=event.getY();
 			scrollX = v.getScrollX();
@@ -43,8 +44,8 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 		}
 		else {
 			ClickableSpan touching = getTouchingSpan(v);
-			Spannable span = (Spannable) ((TextView) v).getText();
 			if (touching!=null) {
+				Spannable span = (Spannable) ((TextView) v).getText();
 				touching.onClick(v);
 				Selection.setSelection(span,
 						span.getSpanStart(touching),
@@ -53,7 +54,7 @@ public class XYTouchRecorder implements View.OnTouchListener, View.OnClickListen
 		}
 	}
 	
-	private ClickableSpan getTouchingSpan(View v) {
+	public ClickableSpan getTouchingSpan(View v) {
 		if(distance()<35*v.getResources().getDisplayMetrics().density
 				&& scrollX == v.getScrollX() && scrollY == v.getScrollY()) {
 			TextView widget = (TextView) v;

@@ -226,14 +226,14 @@
 			android:id="@+id/checkerr"
 			android:orientation="horizontal"
 			android:layout_width="match_parent"
-			android:layout_height="30dp"
+			android:layout_height="@dimen/_35_"
 			android:layout_gravity="bottom"
 			android:background="@drawable/floatcontent_bottom"
 			>
 			<com.knziha.filepicker.widget.CircleCheckBox
 				android:id="@+id/popChecker"
-				android:layout_width="30dp"
-				android:layout_height="30dp"
+				android:layout_width="@dimen/popBtnWid"
+				android:layout_height="match_parent"
 				app:dim1="6dp"
 				app:color_background="#FF3F51B5"
 				app:color_border="#FFF"
@@ -256,24 +256,24 @@
 
 		<ImageView
 			android:id="@+id/mode"
-			android:layout_width="30dp"
-			android:layout_height="30dp"
+			android:layout_width="@dimen/popBtnWid"
+			android:layout_height="match_parent"
 			android:src="@drawable/ic_btn_multimode"
 			android:background="?attr/actionBarItemBackground"
 			/>
 
 		<ImageView
 			android:id="@+id/popLstE"
-			android:layout_width="30dp"
-			android:layout_height="30dp"
+			android:layout_width="@dimen/popBtnWid"
+			android:layout_height="match_parent"
 			android:src="@drawable/chevron_bottom2"
 			android:tint="#666"
 			android:background="?attr/actionBarItemBackground"
 			/>
 		<ImageView
 			android:id="@+id/popNxtE"
-			android:layout_width="30dp"
-			android:layout_height="30dp"
+			android:layout_width="@dimen/popBtnWid"
+			android:layout_height="match_parent"
 			android:src="@drawable/chevron_top2"
 			android:tint="#666"
 			android:background="?attr/actionBarItemBackground"
@@ -281,8 +281,8 @@
 
 		<ImageView
 			android:id="@+id/popIvSettings"
-			android:layout_width="30dp"
-			android:layout_height="30dp"
+			android:layout_width="@dimen/popBtnWid"
+			android:layout_height="match_parent"
 			android:padding="4dp"
 			android:src="@drawable/drawer_menu_icon_setting"
 			android:layout_marginRight="5dp"
@@ -291,8 +291,8 @@
 
 		<ImageView
 			android:id="@+id/popIvRecess"
-			android:layout_width="30dp"
-			android:layout_height="30dp"
+			android:layout_width="@dimen/popBtnWid"
+			android:layout_height="match_parent"
 			android:padding="5dp"
 			android:src="@drawable/recess"
 			android:tint="#666"
@@ -302,8 +302,8 @@
 
 		<ImageView
 			android:id="@+id/popIvForward"
-			android:layout_width="30dp"
-			android:layout_height="30dp"
+			android:layout_width="@dimen/popBtnWid"
+			android:layout_height="match_parent"
 			android:padding="5dp"
 			android:src="@drawable/forward"
 			android:tint="#666"

@@ -38,6 +38,9 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 		init_switch_preference(this, "click_tts", PDICMainAppOptions.tapSchAutoReadEntry(), null, null);
 		init_switch_preference(this, "click_tts1", PDICMainAppOptions.tapSchPageAutoReadEntry(), null, null);
 		
+		init_switch_preference(this, "skip_webx", PDICMainAppOptions.getTapSkipWebxUnlessIsDedicated(), null, null);
+		init_switch_preference(this, "exempt_translator", PDICMainAppOptions.getTapTreatTranslatorAsDedicated(), null, null);
+		
 		findPreference("bar").setOnPreferenceClickListener(this);
 		findPreference("tz1").setOnPreferenceClickListener(this);
 		
@@ -47,7 +50,7 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 		
 		init_switch_preference(this, "tools", PDICMainAppOptions.tapSchShowToolsBtn(), null, null);
 		
-		init_switch_preference(this, "fold", PDICMainAppOptions.foldingScreenTapSch(), null, null);
+		//init_switch_preference(this, "fold", PDICMainAppOptions.foldingScreenTapSch(), null, null);
 		init_switch_preference(this, "prvnxt", PDICMainAppOptions.showPrvNxtBtnSmallTapSch(), null, null);
 		init_switch_preference(this, "seek", PDICMainAppOptions.showEntrySeekbarTapSch(), null, null);
 		init_switch_preference(this, "seekF", PDICMainAppOptions.showEntrySeekbarTapSchFolding(), null, null);
@@ -88,6 +91,12 @@ public class TapTranslator extends SettingsFragmentBase implements Preference.On
 			break;
 			case "click_tts1":
 				PDICMainAppOptions.tapSchPageAutoReadEntry((Boolean) newValue);
+			break;
+			case "skip_webx":
+				PDICMainAppOptions.setTapSkipWebxUnlessIsDedicated((Boolean) newValue);
+			break;
+			case "exempt_translator":
+				PDICMainAppOptions.setTapTreatTranslatorAsDedicated((Boolean) newValue);
 			break;
 			case "multi_cs":
 				PDICMainAppOptions.setMultipleClickSearch((Boolean) newValue);

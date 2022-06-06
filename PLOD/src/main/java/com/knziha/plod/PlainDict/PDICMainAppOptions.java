@@ -2202,8 +2202,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=51, shift=1) public static boolean getTwoColumnJumpList() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=51, shift=1) public static void setTwoColumnJumpList(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=52, flagSize=2, max=1) public static int tapSchMode() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=52, flagSize=2, max=1) public static void tapSchMode(int val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	/** 0=单本搜索； 1=联合屏风； 2=联合合并 */
+	@Metaline(flagPos=52, flagSize=2, max=2) public static int tapSchMode() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=52, flagSize=2, max=2) public static void tapSchMode(int val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=54, shift=1) public static boolean checkVersionBefore_5_7() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=54, shift=1) public static void uncheckVersionBefore_5_7(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}

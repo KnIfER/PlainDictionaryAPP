@@ -47,7 +47,7 @@ public class SettingsPanel extends AnimatorListenerAdapter implements View.OnCli
 	/**0=view;1=popup;2=dialog*/
 	protected int showType;
 	public int bottomPadding;
-	protected final PDICMainAppOptions opt;
+	public /*final*/ PDICMainAppOptions opt;
 	protected String[][] UITexts;
 	protected int[][] UITags;
 	protected int[][] UIDrawable;
