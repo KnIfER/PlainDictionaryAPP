@@ -3,7 +3,7 @@ package com.knziha.plod.plaindict;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 import static com.knziha.plod.plaindict.MdictServer.isServerRunning;
-import static com.knziha.plod.widgets.ViewUtils._HX;
+import static com.knziha.plod.widgets.RomUtils._HX;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -34,6 +34,7 @@ import com.knziha.plod.settings.NotificationSettings;
 import com.knziha.plod.settings.SettingsActivity;
 
 import java.lang.ref.WeakReference;
+import java.util.Properties;
 
 public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletionListener {
 	public static boolean isRunning;

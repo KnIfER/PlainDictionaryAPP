@@ -27,6 +27,7 @@ import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.plaindict.databinding.QuickSettingsPanelBinding;
 import com.knziha.plod.preference.RadioSwitchButton;
 import com.knziha.plod.preference.SettingsPanel;
+import com.knziha.plod.widgets.DrawOverlayCompat;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
 import com.knziha.plod.widgets.ViewUtils;
 
@@ -109,6 +110,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			initTextTools();
 		}
 		
+		if (opt.adjFltBtnShown())
+		{
+			initFloatBtn();
+		}
+		
 		if (opt.adjTBtmShown())
 		{
 			UIData.btmArrow.setRotation(90);
@@ -138,6 +144,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		if (_sHandle !=null) initScrollHandle();
 		if (_tTools !=null) initTextTools();
 		if (_btmBars !=null) initBtmBars();
+		if (_fltBtn !=null) initFloatBtn();
 		if (webSiteInfoListener!=null) webSiteInfoListener.onClick(null);
 	}
 	
@@ -172,15 +179,17 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				//setPanelVis(initInfoPanel(), show);
 			} break;
 			case R.id.flt:{
+				boolean show = opt.adjFltBtnTog();
+				setPanelVis(initFloatBtn(), show);
 			} break;
 			case R.id.float_switch:{
-				if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M
-						&& !Settings.canDrawOverlays(a)){
-					Intent permission = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-					permission.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					a.startActivityForResult(permission,800);
+				boolean check = v.getTag()==null;
+				if (check) v.setTag(v);
+				if(check && !ViewUtils.canDrawOverlays(a)) {
+					DrawOverlayCompat.manage(a);
 					UIData.floatSwitch.setChecked(false);
 					a.showT("需要权限“显示在其他应用上层”！");
+					v.setTag(v);
 				} else {
 					boolean isChecked = UIData.floatSwitch.isChecked();
 					if (a.thisActType==MainActivityUIBase.ActType.PlainDict) {
@@ -323,6 +332,9 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 					weblist.invokeToolsBtn(true, 0);
 					dismiss();
 				} break;
+				case floatBtn: {
+					DrawOverlayCompat.manage(a);
+				} break;
 			}
 		}
 		return true;
@@ -345,6 +357,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	SettingsPanel _screen;
 	SettingsPanel _sHandle;
 	SettingsPanel _tTools;
+	SettingsPanel _fltBtn;
 	SettingsPanel _btmBars;
 	
 	int shType;
@@ -378,6 +391,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		,hide
 		,system
 		,ttools
+		,floatBtn
 	}
 	
 	private SettingsPanel initScreenPanel() {
@@ -502,6 +516,24 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			_tTools.refresh();
 		}
 		return _tTools;
+	}
+	
+	private SettingsPanel initFloatBtn() {
+		if (_fltBtn ==null) {
+			final SettingsPanel settings = new SettingsPanel(a, opt
+					, new String[][]{new String[]{null, "管理悬浮窗权限"}}
+					, new int[][]{new int[]{Integer.MAX_VALUE
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.floatBtn.ordinal(), false)
+			}}, null);
+			settings.setEmbedded(this);
+			settings.init(a, root);
+			
+			addPanelViewBelow(settings.settingsLayout, UIData.floatPanel);
+			_fltBtn = settings;
+		} else {
+			_fltBtn.refresh();
+		}
+		return _fltBtn;
 	}
 	
 	private SettingsPanel initBtmBars() {

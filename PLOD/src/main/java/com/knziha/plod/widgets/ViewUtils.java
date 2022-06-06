@@ -23,6 +23,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.AppOpsManager;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.usage.UsageEvents;
@@ -43,7 +44,9 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Binder;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
 import android.util.TypedValue;
@@ -146,6 +149,9 @@ public class ViewUtils {
 	public static int FloatTextBGAlpha = 0x7fffff00;
 	
 	public static Rect rect = new Rect();
+	
+	/** 刷机后检测rom而不是检测生厂商。 set manually。  */
+	public static boolean checkRom;
 	
 	public final static Cursor EmptyCursor=new AbstractWindowedCursor() {
 		@Override
@@ -1816,4 +1822,28 @@ public class ViewUtils {
 			}
 		}
 	}
+	
+	public static boolean canDrawOverlays(Context context) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			return Settings.canDrawOverlays(context);
+		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+			final int OP_SYSTEM_ALERT_WINDOW = 24;
+			return checkOp(context, OP_SYSTEM_ALERT_WINDOW);
+		} else {
+			return true;
+		}
+	}
+	
+	
+	private static boolean checkOp(Context context, int op) {
+		AppOpsManager manager = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+		try {
+			Method method = AppOpsManager.class.getDeclaredMethod("checkOp", int.class, int.class, String.class);
+			return AppOpsManager.MODE_ALLOWED == (int) method.invoke(manager, op, Binder.getCallingUid(), context.getPackageName());
+		} catch (Exception e) {
+			CMN.Log(e);
+		}
+		return false;
+	}
+	
 }
