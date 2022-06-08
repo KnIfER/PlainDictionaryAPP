@@ -512,16 +512,23 @@
 		df.style='display:flex;flex-wrap:wrap;margin:0;padding:0;width:100%;height:100%;justify-content:space-evenly;padding-bottom:100px;'
 		var list=gc('mw-parser-output',e);
 		for(var d=list.firstChild;d;d=d.nextSibling) {
+			var w;
 			if(d.tagName==='SECTION') {
+				w=d.firstElementChild;
+			}
+			else if(d.tagName==='DIV') {
+				if(d.id!=='toc') w=d.cloneNode(1);
+			}
+			else w=0;
+			if(w&&w.id!=='toc'){
 				//debug(d.innerText);
-				var w=d.firstElementChild;
-				if(w&&w.id!=='toc'){
-					w.style='height:250px;width:80%;padding:2px 2px;margin:7px 2px;;display:inline-block;overflow-y:scroll;box-shadow:rgb(60 64 67 / 30%) 0px 1px 2px 0px,rgb(60 64 67 / 15%) 0px 2px 6px 2px;box-shadow:rgb(0 0 0 / 10%) 0px 1px 2px 0px;';
-					var tbd=w.getElementsByTagName('TBODY')[0];
-					tbd.lastElementChild.remove();
-					tbd.firstElementChild.remove();
-					df.appendChild(w);
-				}
+				w.style='height:250px;width:80%;padding:2px 2px;margin:7px 2px;;display:inline-block;overflow-y:scroll;box-shadow:rgb(60 64 67 / 30%) 0px 1px 2px 0px,rgb(60 64 67 / 15%) 0px 2px 6px 2px;box-shadow:rgb(0 0 0 / 10%) 0px 1px 2px 0px;';
+				var tbd=w.getElementsByTagName('TBODY')[0];
+				tbd.lastElementChild.remove();
+				tbd.firstElementChild.remove();
+				tbd=w.getElementsByTagName('IMG')[0];
+				if(tbd) tbd.style.opacity=0;
+				df.appendChild(w);
 			}
 		}
 		debug(df);

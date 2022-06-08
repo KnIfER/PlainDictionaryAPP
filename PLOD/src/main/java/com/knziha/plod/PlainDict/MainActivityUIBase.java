@@ -6647,6 +6647,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//String testUrl="file:///android_asset/load.html";
 			randomPageHandler.getMergedFrame(wikibook);
 			String testUrl="http://mdbr.com/load.html";
+			testUrl="https://en.wiktionary.wikimirror.org/randx";
 			CMN.Log("testUrl::", randomPage.getUrl(), testUrl);
 			if(!TextUtils.equals(randomPage.getUrl(), testUrl)) {
 				CMN.Log("加载::", testUrl);
@@ -7222,6 +7223,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			int schemaIdx = url.indexOf(":");
 			boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4), baseUrl=false;
+			//else if (url.equals("http://mdbr.com/load.html")) {
+			if (url.endsWith("randx")) { // for random page
+				loadWordToday(mWebView);
+			}
 			if(mdbr) {
 				if (url.regionMatches(schemaIdx+12, "merge", 0, 5)) {
 					invoker = wlh.getMergedBook();
@@ -7251,9 +7256,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						baseUrl = true; /** see {@link #baseUrl} */
 						//mWebView.clearHistory();
 					}
-				}
-				else if (url.equals("http://mdbr.com/load.html")) {
-					loadWordToday(mWebView);
 				}
 				CMN.Log("ivk::raw::", invoker);
 //				else if (url.regionMatches(schemaIdx+12, "content", 0, 7)) {
@@ -7725,6 +7727,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					invoker.isDirty = true;
 				}
 				else if (url.startsWith("http")) {
+					//if (url.startsWith("http://mdbr.com/load.html")) { // for random page
+					if (url.endsWith("randx")) { // for random page
+						return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(new byte[0]));
+					}
 					boolean mdbr = url.regionMatches(schemaIdx+3, "mdbr", 0, 4) && url.length()>12;
 					boolean merge = invoker.isMergedBook();
 					if (mdbr) {
@@ -7760,9 +7766,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						)) {
 							merge = true;
 							/*mWebView.presenter = */invoker = mWebView.weblistHandler.getMergedBook();
-						}
-						if (url.startsWith("http://mdbr.com/load.html")) { // for random page
-							return new WebResourceResponse("text/html", "utf8", new ByteArrayInputStream(new byte[0]));
 						}
 						key = url.substring(slashIdx);
 					}
