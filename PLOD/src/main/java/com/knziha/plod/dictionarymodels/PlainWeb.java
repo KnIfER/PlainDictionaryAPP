@@ -272,7 +272,7 @@ public class PlainWeb extends DictionaryAdapter {
 //						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
 //						CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA)
 //				.build();
-		OkHttpClient klient = enableTls12OnPreLollipop(
+		OkHttpClient klient = enableTls12OnPreLollipop(context,
 				new OkHttpClient.Builder()
 				.connectTimeout(5, TimeUnit.SECONDS)
 				.addNetworkInterceptor(headerInterceptor)
@@ -869,7 +869,7 @@ public class PlainWeb extends DictionaryAdapter {
 		return size;
 	}
 	
-	public String getHost() {
+	public final String getHost() {
 		return host;
 	}
 	
@@ -1994,6 +1994,17 @@ public class PlainWeb extends DictionaryAdapter {
 		return website.getString(fieldName);
 	}
 	
+	public JSONObject getJson() {
+		return website;
+	}
+	
+	public JSONArray getJSONArray(String key) {
+		try {
+			return website.getJSONArray(key);
+		} catch (Exception e) {
+			return null;
+		}
+	}
 	
 	public JSONObject getDopt() {
 		if (dopt==null) {
@@ -2004,5 +2015,12 @@ public class PlainWeb extends DictionaryAdapter {
 	
 	public boolean hasField(String fieldName) {
 		return website.containsKey(fieldName);
+	}
+	
+	public void setMirroredHost(int idx) {
+		JSONArray sites = getJSONArray("mirrors");
+		if (sites!=null && sites.size()>0) {
+			host = sites.getString(Math.max(0, Math.min(idx, sites.size())));
+		}
 	}
 }

@@ -1,11 +1,13 @@
 {
-	,"host": "https://en.m.wiktionary.org"
+	"host": "https://en.m.wiktionary.org"
 	,"index": ""
 	,"style": ""
 	,"keyPattern": "*"
 	,"js": ""
+	,"mirrors": ["https://en.wiktionary.wikimirror.org"]
+	,"defUseMirror":-1
 	,"search": "/w/index.php?search=%s&title=Special%3ASearch&go=Go&ns0=1"
-	,"drawHighlightOnTop":"true"
+	,"drawHighlightOnTopx":"true"
 	,"hosts": "208.80.154.224 www.wikipedia.org
 198.35.26.112 upload.wikimedia.org
 208.80.154.224 bits.wikimedia.org
@@ -431,13 +433,14 @@
 	function debug(e){console.log('fatal wiki123',e)};
 	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
 	function getRandomPage() {
+		var host = app.getHost()||'https://en.m.wiktionary.org';
 		var yearNow=new Date().getFullYear(),yd=yearNow-yearFrom;
 		yearNow = yearFrom + parseInt(Math.random()*yd);
 		month=months[parseInt(Math.random()*0)];
-		//return 'https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month;
-		//return 'https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month;
-		// return 'https://en.m.wiktionary.org/w/index.php?title=Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month+'&printable=false';
-		return 'https://en.m.wiktionary.org/wiki/Wiktionary:Word_of_the_day/Archive/2017/January';
+		//return host+'/wiki/Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month;
+		//return host+'/wiki/Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month;
+		// return host+'/w/index.php?title=Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month+'&printable=false';
+		return host+'/wiki/Wiktionary:Word_of_the_day/Archive/2017/January';
 	}
 	var url=getRandomPage();
 	function load(url,cb){

@@ -6645,6 +6645,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			BookPresenter wikibook = randomPage.presenter;
 			PlainWeb webx = wikibook.getWebx();
 			//String testUrl="file:///android_asset/load.html";
+			randomPageHandler.getMergedFrame(wikibook);
 			String testUrl="http://mdbr.com/load.html";
 			CMN.Log("testUrl::", randomPage.getUrl(), testUrl);
 			if(!TextUtils.equals(randomPage.getUrl(), testUrl)) {
@@ -7948,7 +7949,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								return ViewUtils.KikLetToVar(url , accept, refer, origin, request, webx);
 							} catch (Exception e) { CMN.debug("kiklet 转化失败::", e); }
 						}
-						if(webx.shouldUseClientResponse(url)) {
+						if(invoker.getUseHosts() && webx.shouldUseClientResponse(url)) {
 							// hosts
 							return (WebResourceResponse) webx.getClientResponse(MainActivityUIBase.this, url, origin, null, request==null?null:request.getRequestHeaders(), false);
 						}

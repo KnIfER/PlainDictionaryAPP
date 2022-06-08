@@ -35,7 +35,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
-import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -98,7 +97,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -549,6 +547,14 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=38) public boolean hasFilesTag() { firstFlag=firstFlag; throw new RuntimeException();}
 	@Metaline(flagPos=38) public void hasFilesTag(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 
+	@Metaline(flagPos=39, shift=1) public boolean getUseHosts() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=39, shift=1) public void setUseHosts(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
+
+	@Metaline(flagPos=40) public boolean getUseMirrors() { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=40) public void setUseMirrors(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
+
+	@Metaline(flagPos=41, flagSize=5) public int getMirrorIdx() { firstFlag=firstFlag; throw new RuntimeException();}
+
 	
 	public boolean getSavePageToDatabase(){
 		return true;
@@ -773,6 +779,10 @@ function debug(e){console.log(e)};
 		idStr10 = sb.append(id).append(".com").toString();
 		sb.setLength(0);
 		mBaseUrl = sb.append("http://mdbr.").append("d").append(idStr10).append("/base.html").toString();
+		
+		if (getIsWebx() && getUseMirrors()) {
+			getWebx().setMirroredHost(getMirrorIdx());
+		}
 	}
 	
 	public static void keepBook(MainActivityUIBase THIS, UniversalDictionaryInterface bookImpl) {
@@ -2989,7 +2999,16 @@ function debug(e){console.log(e)};
         public void showTo(int val) {
         	if(true) return;
         }
-
+		
+		@JavascriptInterface
+		public String getHost() {
+			CMN.Log("getHost::", presenter);
+			if (presenter!=null && presenter.getIsWebx()) {
+				return presenter.getWebx().getHost();
+			}
+			return "";
+		}
+		
         @JavascriptInterface
         public void onAudioPause() {
 			if(presenter==null) return;
@@ -3029,15 +3048,17 @@ function debug(e){console.log(e)};
 				CMN.Log("popupWord::ivk::", presenter, wv, mergeView);
 				a.popupWord(key, null, frameAt, wv);
 				a.wordPopup.tapped = true;
-				if(frameAt>=0 && pH!=0){
-					if(pW==0) pW=pH;
-					if(RLContainerSlider.lastZoomTime == 0 || System.currentTimeMillis() - RLContainerSlider.lastZoomTime > 500){
-						//Utils.setFloatTextBG(new Random().nextInt());
-						//CMN.Log("popupWord::", pX, pY, pW, pH);
-						//CMN.Log("只管去兮不管来", wv!=null);
-						if(wv!=null){
-							float density = dm.density;
-							wv.highRigkt_set(pX*density, pY*density, (pX+pW)*density, (pY+pH)*density);
+				if (false) {
+					if(frameAt>=0 && pH!=0){
+						if(pW==0) pW=pH;
+						if(RLContainerSlider.lastZoomTime == 0 || System.currentTimeMillis() - RLContainerSlider.lastZoomTime > 500){
+							//Utils.setFloatTextBG(new Random().nextInt());
+							//CMN.Log("popupWord::", pX, pY, pW, pH);
+							//CMN.Log("只管去兮不管来", wv!=null);
+							if(wv!=null){
+								float density = dm.density;
+								wv.highRigkt_set(pX*density, pY*density, (pX+pW)*density, (pY+pH)*density);
+							}
 						}
 					}
 				}
@@ -3052,10 +3073,12 @@ function debug(e){console.log(e)};
 				CMN.debug("popuping...popupClose", sid);
 				if(this!=presenter.a.wordPopup.popuphandler)
 					presenter.a.postDetachClickTranslator();
-				WebViewmy wv = findWebview(sid);
-				if(wv!=null && wv.drawRect){
-					wv.drawRect=false;
-					wv.invalidate();
+				if (false) {
+					WebViewmy wv = findWebview(sid);
+					if(wv!=null && wv.drawRect){
+						wv.drawRect=false;
+						wv.postInvalidate();
+					}
 				}
 			}
         }
@@ -3618,6 +3641,8 @@ function debug(e){console.log(e)};
 				setImageBrowsable(false);
 				setAcceptParagraph(getWebx().getIsTranslator());
 				setDrawHighlightOnTop(getWebx().getDrawHighlightOnTop());
+				int mirror = getWebx().getJson().getIntValue("defUseMirror");
+				setUseMirrors(mirror>1 || mirror==-1 && ViewUtils.littleCat);
 			}
 			if(b1)IBC.setPresetZoomAlignment(3);
 			IBC.doubleClickPresetXOffset = 0.12f;

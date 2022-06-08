@@ -2,8 +2,8 @@ package com.knziha.plod.settings;
 
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -13,6 +13,8 @@ import androidx.preference.Preference;
 import androidx.preference.SwitchPreference;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.jaredrummler.colorpicker.ColorPickerPreference;
 import com.knziha.filepicker.settings.FloatPreference;
 import com.knziha.filepicker.settings.IntPreference;
@@ -144,6 +146,9 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		if (datum instanceof MagentTransient) datum.getFirstFlag();
 		if(datum!=null) {
 			switch (key){
+				case "use_mirrors":
+					if(get) return datum.getUseMirrors(); else datum.setUseMirrors((boolean) val);
+					break;
 				case "bgTitle":
 					if(get) return datum.getTitleBackground(); else datum.setTitleBackground((int) val);
 					break;
@@ -233,6 +238,8 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		init_switcher("hikeys", true, 26);
 		init_switcher("offline", false, 27);
 		
+		init_switcher("hosts", true, 39);
+		
 		init_integer("pzoom", 15, R.array.pzoom_info, 3);
 		init_integer("pzoom_plc", 17, R.array.pzoom_mode_info, 3);
 		init_integer("tzby", 12, R.array.d_zoom_mode_info, 7); // getDoubleClickAlignment
@@ -256,6 +263,25 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		findPreference("reload").setOnPreferenceClickListener(this);
 		findPreference("dtm").setOnPreferenceChangeListener(this);
 		findPreference("dopt").setmOnGetViewListener(this);
+		
+		PlainWeb webx = data[0].getWebx();
+		findPreference("online").setVisible(webx != null);
+		if (webx != null) {
+			JSONObject dopt = webx.getDopt();
+			findPreference("dopt").setVisible(dopt!=null);
+			JSONArray sites = webx.getJSONArray("mirrors");
+			ListPreference mirrors = findPreference("mirrors");
+			mirrors.setVisible(sites!=null);
+			if (sites!=null) {
+				//mirrors.setOnPreferenceChangeListener(this);
+				init_integer("mirrors", 41, 0, 31);
+				CharSequence[] mirrorsArr = new CharSequence[sites.size()];
+				for (int i = 0; i < mirrorsArr.length; i++) {
+					mirrorsArr[i] = sites.getString(i);
+				}
+				mirrors.setEntries(mirrorsArr);
+			}
+		}
 	}
 	
 	@Override
@@ -351,6 +377,12 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 			}
 		}
 		switch (key){
+			case "mirrors":{
+				PlainWeb webx = data[0].getWebx();
+				if (webx!=null) {
+					webx.setMirroredHost(IU.parsint(newValue, 0));
+				}
+			} break;
 			case "tzby":{
 			} break;
 			case "p_words":
@@ -415,21 +447,28 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 	WebViewmy mWebView;
 	@Override
 	public View getView(Preference preference) {
-		PlainWeb webx = data[0].getWebx();
-		if (mWebView==null) {
-			mWebView = new WebViewmy(data[0].a);
-			mWebView.setWebChromeClient(data[0].a.myWebCClient);
-			mWebView.setWebViewClient(data[0].a.myWebClient);
-			mWebView.setLayoutParams(new RecyclerView.LayoutParams(-1, -2));
-			mWebView.addJavascriptInterface(data[0].getWebBridge(), "app");
-			mWebView.presenter = data[0];
-			mWebView.weblistHandler = data[0].a.weblistHandler;
-			String settings = webxSettings;
-			settings = settings.replace("%0", webx.getDopt().toString());
-			settings = settings.replace("%1", webx.getField("settingsArray"));
-			mWebView.loadDataWithBaseURL(data[0].mBaseUrl,settings, null, "UTF-8", null);
-			data[0].getWebBridge().mergeView = mWebView;
+		if (preference.getKey().equals("dopt")) {
+			PlainWeb webx = data[0].getWebx();
+			if (mWebView==null || !TextUtils.equals(mWebView.toTag, CMN.idStr(data[0]))) {
+				mWebView = new WebViewmy(data[0].a);
+				mWebView.toTag = CMN.idStr(data[0]);
+				JSONObject dopt = webx.getDopt();
+				if (dopt!=null) {
+					mWebView.setWebChromeClient(data[0].a.myWebCClient);
+					mWebView.setWebViewClient(data[0].a.myWebClient);
+					mWebView.setLayoutParams(new RecyclerView.LayoutParams(-1, -2));
+					mWebView.addJavascriptInterface(data[0].getWebBridge(), "app");
+					mWebView.presenter = data[0];
+					mWebView.weblistHandler = data[0].a.weblistHandler;
+					String settings = webxSettings;
+					settings = settings.replace("%0", dopt.toString());
+					settings = settings.replace("%1", webx.getField("settingsArray"));
+					mWebView.loadDataWithBaseURL(data[0].mBaseUrl,settings, null, "UTF-8", null);
+					data[0].getWebBridge().mergeView = mWebView;
+				}
+			}
+			return mWebView;
 		}
-		return mWebView;
+		return null;
 	}
 }
