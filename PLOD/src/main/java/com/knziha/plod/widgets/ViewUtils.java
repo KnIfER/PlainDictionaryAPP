@@ -319,6 +319,18 @@ public class ViewUtils {
 		}
 	}
 	
+	
+	public static void ensureWindowType(Dialog dialog, int type) {
+		try {
+			if (dialog.getWindow().getAttributes().type!=type) {
+				dialog.dismiss();
+				dialog.getWindow().setType(type);
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+	}
+	
 	public static int indexOf(CharSequence text, char cc, int now) {
 		for (int i = now; i < text.length(); i++) {
 			if(text.charAt(i)==cc){

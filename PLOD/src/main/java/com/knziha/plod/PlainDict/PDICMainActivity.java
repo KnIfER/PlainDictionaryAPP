@@ -73,6 +73,8 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.view.FilePickerDialog;
 import com.knziha.filepicker.view.WindowChangeHandler;
 import com.knziha.plod.PlainUI.AppUIProject;
+import com.knziha.plod.PlainUI.FloatApp;
+import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.PlainUI.MenuGrid;
 import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.SearchToolsMenu;
@@ -1546,7 +1548,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		//tg
 		LayoutParams barBotLP = UIData.bottombar.getLayoutParams();
-		
+		toggleMultiwindow();
 		//mDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).createVirtualDisplay("vdisplay",3840, 2160, 480, null,DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC);
 		
 		//if(false)
@@ -3382,5 +3384,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			// PeruseViewAttached()? peruseView.root: this.root
 			pop.showAtLocation(root, Gravity.TOP, 0, topY);
 		}
+	}
+	
+	
+	public void toggleMultiwindow() {
+		if (floatApp==null) {
+			floatApp = new FloatApp(this);
+		}
+		floatApp.toggle(false);
 	}
 }

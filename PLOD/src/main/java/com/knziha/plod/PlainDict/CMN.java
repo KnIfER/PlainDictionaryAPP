@@ -201,6 +201,7 @@ public class CMN{
 	}
 
 	static Integer resourceId;
+	public static float statusBarHeight;
 	public static int getStatusBarHeight(Context a) {
 		if(resourceId==null)
 			try {

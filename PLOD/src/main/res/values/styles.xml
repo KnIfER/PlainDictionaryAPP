@@ -466,6 +466,15 @@
 		<item name="android:paddingLeft">12dp</item>
 		<item name="android:paddingRight">12dp</item>
 	</style>
+
+	<style name="multiwindow_titlebtn">
+		<item name="android:layout_width">38dp</item>
+		<item name="android:layout_height">match_parent</item>
+		<item name="android:tint">#888</item>
+		<item name="android:tintMode">src_in</item>
+		<item name="android:background">?attr/listChoiceBackgroundIndicator</item>
+		<item name="android:clickable">true</item>
+	</style>
 </resources>
 
 

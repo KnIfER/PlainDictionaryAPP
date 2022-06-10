@@ -78,6 +78,8 @@ public class Toastable_Activity extends AppCompatActivity {
 	public InputMethodManager imm;
 	protected int trialCount=-1;
 	
+	public int mDialogType = WindowManager.LayoutParams.TYPE_APPLICATION;
+	
 	public long lastClickTime=0;
 
 	protected long FFStamp;
@@ -730,6 +732,7 @@ public class Toastable_Activity extends AppCompatActivity {
 //						.setNegativeButton(R.string.cancel, null)
 						.create();
 		configurableDialog.setCanceledOnTouchOutside(true);
+		ViewUtils.ensureWindowType(configurableDialog, mDialogType);
 		
 		dv.findViewById(R.id.cancel).setOnClickListener(v -> {
 			if(btnIdListener instanceof Integer) optprs.processOptionChanged(null, null, (Integer) btnIdListener, 0);

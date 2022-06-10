@@ -21,6 +21,7 @@ import android.text.style.ClickableSpan;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -427,7 +428,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public final boolean pin() {
-		return popupChecker==null?PDICMainAppOptions.getPinTapTranslator():popupChecker.isChecked();
+		return a.mDialogType==WindowManager.LayoutParams.TYPE_APPLICATION && popupChecker==null?PDICMainAppOptions.getPinTapTranslator():popupChecker.isChecked();
 	}
 	
 	public void show() {

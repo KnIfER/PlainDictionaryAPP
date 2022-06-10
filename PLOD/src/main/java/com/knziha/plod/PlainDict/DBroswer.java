@@ -1695,6 +1695,7 @@ public class DBroswer extends DialogFragment implements
 			}
 			if(t!=null) t.setVisibility(View.GONE);
 		}
+		ViewUtils.ensureWindowType(mDialog, getMainActivity().mDialogType);
 		return mDialog;
 	}
 	
@@ -1739,7 +1740,7 @@ public class DBroswer extends DialogFragment implements
 		if (weblist != wlh) {
 			weblist = wlh;
 		}
-		boolean dialog = wlh.src== SearchUI.Fye.MAIN || wlh.bShowingInPopup;
+		boolean dialog = wlh.src==SearchUI.Fye.MAIN || wlh.bShowingInPopup || wlh.a.mDialogType!=WindowManager.LayoutParams.TYPE_APPLICATION;
 		final boolean visible = UIData != null && UIData.getRoot().getParent() == wlh.a.mainF
 				|| (mDialog != null && mDialog.isShowing());
 		if (lastShowType != dialog) {

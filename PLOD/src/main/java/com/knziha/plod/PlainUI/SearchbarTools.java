@@ -480,6 +480,9 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				if(!isVisible()) {
 					show();
 				}
+				if (a.floatApp!=null) {
+					a.floatApp.enableKeyBoard(true);
+				}
 			}
 		}
 		else switch (v.getId()) {
@@ -558,6 +561,9 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			flowBtn.setOnClickListener(this);
 		if (this==a.etTools) {
 			a.textFlag |= 0x4;
+		}
+		if (a.floatApp!=null) {
+			a.floatApp.enableKeyBoard(true);
 		}
 	}
 	

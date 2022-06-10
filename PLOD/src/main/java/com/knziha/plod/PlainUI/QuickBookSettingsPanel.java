@@ -21,6 +21,7 @@ import com.knziha.filepicker.widget.HorizontalNumberPicker;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.WebViewListHandler;
@@ -335,6 +336,11 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				case floatBtn: {
 					DrawOverlayCompat.manage(a);
 				} break;
+				case floatApp: {
+					if (a instanceof PDICMainActivity) {
+						((PDICMainActivity)a).toggleMultiwindow();
+					}
+				} break;
 			}
 		}
 		return true;
@@ -392,6 +398,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 		,system
 		,ttools
 		,floatBtn
+		,floatApp
 	}
 	
 	private SettingsPanel initScreenPanel() {
@@ -521,9 +528,10 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	private SettingsPanel initFloatBtn() {
 		if (_fltBtn ==null) {
 			final SettingsPanel settings = new SettingsPanel(a, opt
-					, new String[][]{new String[]{null, "管理悬浮窗权限"}}
+					, new String[][]{new String[]{null, "管理悬浮窗权限", "切换小窗模式"}}
 					, new int[][]{new int[]{Integer.MAX_VALUE
 					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.floatBtn.ordinal(), false)
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.floatApp.ordinal(), false)
 			}}, null);
 			settings.setEmbedded(this);
 			settings.init(a, root);
