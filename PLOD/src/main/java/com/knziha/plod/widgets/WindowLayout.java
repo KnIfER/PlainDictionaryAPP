@@ -51,7 +51,7 @@ public class WindowLayout extends FrameLayout {
 		if (ev.getActionMasked()==MotionEvent.ACTION_DOWN) {
 			float x = ev.getX();
 			float y = ev.getY();
-			float pad = theta*2;
+			float pad = theta*3;
 			if (x<pad || y<pad || getWidth()-x<pad || getHeight()-y<pad)
 			{
 				int[] loc = new int[2];
@@ -178,7 +178,7 @@ public class WindowLayout extends FrameLayout {
 	 */
 	private int getActivePntBdr(float x, float y) {
 		// 角
-		float theta = this.theta * 1.7f;
+		float theta = this.theta * 1.8f;
 		//if(theta >= dist(x- frameOffsets.left, y- frameOffsets.top)) {
 		if(x - frameOffsets.left <= theta && y - frameOffsets.top <= theta) {
 			return 0;
@@ -195,7 +195,7 @@ public class WindowLayout extends FrameLayout {
 		if(frameOffsets.right - x <= theta && frameOffsets.bottom - y <= theta) {
 			return 3;
 		}
-		theta = this.theta;
+		theta = this.theta * 1.5f;
 		// 边
 		{
 			if(theta  >= (y-frameOffsets.top))

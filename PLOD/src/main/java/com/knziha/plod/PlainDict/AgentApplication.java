@@ -11,6 +11,7 @@ import com.knziha.filepicker.model.GlideCacheModule;
 import com.knziha.filepicker.utils.CMNF;
 import com.knziha.paging.AppIconCover.AppIconCover;
 import com.knziha.paging.AppIconCover.AppIconCoverLoaderFactory;
+import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
@@ -46,6 +47,7 @@ public class AgentApplication extends Application {
 	public boolean bNeedPullFavorites =true;
 	public MdictServer mServer;
 	public Handler[] handles = new Handler[3];
+	public FloatApp floatApp;
 //	public FloatBtn floatBtn;
 	/** 退出全部实例时关闭、清理 */
 	ArrayList<MyPair<String, LexicalDBHelper>> AppDatabases = new ArrayList<>();

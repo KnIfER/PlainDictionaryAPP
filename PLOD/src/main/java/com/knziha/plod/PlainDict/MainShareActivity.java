@@ -41,7 +41,7 @@ public class MainShareActivity extends Activity {
 					//CMN.Log("主程转发");
 					thisIntent.setClass(getBaseContext(),PDICMainActivity.class);
 					thisIntent.setFlags(SingleTaskFlags);
-					startActivity(thisIntent);
+					startMainActivity(thisIntent);
 					return;
 				}
 				if(action!=null && action.equals(Intent.ACTION_VIEW)) {
@@ -54,7 +54,7 @@ public class MainShareActivity extends Activity {
 						newTask.setClass(getBaseContext(),PDICMainActivity.class);
 						newTask.setFlags(SingleTaskFlags);
 						newTask.setData(url);
-						startActivity(newTask);
+						startMainActivity(newTask);
 						return;
 					}
 				}
@@ -92,9 +92,20 @@ public class MainShareActivity extends Activity {
 				newTask.setClass(getBaseContext(),PDICMainActivity.class);
 //				//|Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
 				newTask.setFlags(SingleTaskFlags);
-				startActivity(newTask);
+				startMainActivity(newTask);
 			}
 		}
 	}
-
+	
+	private void startMainActivity(Intent intent) {
+		CMN.debug("startMainActivity::", intent);
+		AgentApplication app = (AgentApplication) getApplication();
+		if (app.floatApp!=null && app.floatApp.isFloating()) {
+			app.floatApp.a.processIntent(intent, false);
+			app.floatApp.expand(false);
+		} else {
+			startActivity(intent);
+		}
+	}
+	
 }

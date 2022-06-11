@@ -1082,9 +1082,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		fadeSnack();
 	}
 	
-	private void
-	
-	processIntent(Intent intent, boolean initialzie) {
+	public void processIntent(Intent intent, boolean initialzie) {
 		int jump_source = 0;
 		if(intent != null){
 			String action = intent.getAction();
@@ -1548,7 +1546,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		//tg
 		LayoutParams barBotLP = UIData.bottombar.getLayoutParams();
-		toggleMultiwindow();
+		//toggleMultiwindow();
 		//mDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).createVirtualDisplay("vdisplay",3840, 2160, 480, null,DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC);
 		
 		//if(false)
@@ -2073,7 +2071,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		if(systemIntialized){
 			dumpSettiings();
-			if(true){
+			if(false){
 				new File(opt.pathToMainFolder().toString()).setLastModified(System.currentTimeMillis());
 			}
 			FilePickerDialog.clearMemory(getBaseContext());
@@ -2081,7 +2079,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(server!=null) {
 				server.stop(this);
 			}
-			cancelToast();
+			if (floatApp!=null) {
+				floatApp.close();
+			}
 		}
 		if(ServiceEnhancer.isRunning) {
 			if(PDICMainAppOptions.getAutoClearNotificationOnExit() || !PDICMainAppOptions.getNotificationEnabled()) {

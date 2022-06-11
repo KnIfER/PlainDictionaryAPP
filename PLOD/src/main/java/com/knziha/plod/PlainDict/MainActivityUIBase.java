@@ -1,6 +1,7 @@
 package com.knziha.plod.plaindict;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
@@ -373,7 +374,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public WebViewListHandler randomPageHandler;
 	public ViewGroup webSingleholder;
 	protected WindowManager wm;
-	FloatBtn floatBtn;
+	public FloatBtn floatBtn;
 
 	protected String lastEtString;
 	public ViewGroup mainframe;
@@ -5381,7 +5382,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		configurableDialog.show();
 	}
 	
-	void showExitDialog(boolean restart) {
+	public void showExitDialog(boolean restart) {
 		String[] DictOpt = getResources().getStringArray(R.array.app_exit);
 		final String[] Coef = DictOpt[0].split("_");
 		final SpannableStringBuilder ssb = new SpannableStringBuilder();
@@ -5418,6 +5419,37 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		dialog.show();
 		if(restart) {
 			dialog.setCanceledOnTouchOutside(false);
+		}
+		if (floatApp!=null && floatApp.isFloating()) {
+			Button btn = dialog.findViewById(R.id.cancel);
+			LinearLayout btm = new LinearLayout(this);
+			ViewUtils.replaceView(btm, btn);
+			Button btn1 = new Button(this, null, android.R.attr.buttonBarButtonStyle);
+			btn1.setText("退出小窗模式");
+			btn1.setId(R.id.max);
+			View pad = new View(this);
+			btm.addView(btn1);
+			btm.addView(pad);
+			btm.addView(btn);
+			btn1.getLayoutParams().height = WRAP_CONTENT;
+			btn1.getLayoutParams().width = WRAP_CONTENT;
+			btm.getLayoutParams().height = WRAP_CONTENT;
+			btm.getLayoutParams().width = MATCH_PARENT;
+			((ViewGroup.MarginLayoutParams)btm.getLayoutParams()).leftMargin = 0;
+			((ViewGroup.MarginLayoutParams)btm.getLayoutParams()).bottomMargin /= 2;
+			pad.getLayoutParams().height = MATCH_PARENT;
+			pad.getLayoutParams().width = 0;
+			((LinearLayout.LayoutParams)pad.getLayoutParams()).weight = 1;
+			btn.getLayoutParams().height = WRAP_CONTENT;
+			btn.getLayoutParams().width = WRAP_CONTENT;
+			btn1.setTextColor(MainAppBackground);
+			btn1.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					floatApp.toggle(true);
+					dialog.dismiss();
+				}
+			});
 		}
 		tv.setTag(null);
 	}
