@@ -6922,8 +6922,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		long l2=def.getParentFile().lastModified();
 		boolean b1 = l1!=SecordTime;
 		ListView lv = dTmp.getListView();
-		((AlertController.RecycleListView) lv)
-				.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 2.8 * getResources().getDimension(R.dimen._50_) * (dm.widthPixels>GlobalOptions.realWidth?1:1.45));
+		float pad = 2.8f * getResources().getDimension(R.dimen._50_) * (dm.widthPixels>GlobalOptions.realWidth?1:1.45f);
+		//CMN.debug("pad::", pad, root.getHeight());
+		((AlertController.RecycleListView) lv).mMaxHeight = root.getHeight()>=2*pad?(int) (root.getHeight() - root.getPaddingTop() - pad):0;
 		if(b1 || l2!=SecordPime) {
 			int lastCheckedPos=-1;
 			ArrayList<String> scanInList = (ArrayList) lv.getTag();
@@ -9557,7 +9558,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ada.show();
 			ada.onClick(pos);
 		}
-		ada.main_list.mMaxHeight = (int) (root.getHeight() - root.getPaddingTop() - 4 * getResources().getDimension(R.dimen._50_));
+		float pad = 4 * getResources().getDimension(R.dimen._50_);
+		ada.main_list.mMaxHeight = root.getHeight()>=2*pad?(int) (root.getHeight() - root.getPaddingTop() - pad):0;
 	}
 	
 	private static final ConcurrentHashMap<String, byte[]> CommonAssets = new ConcurrentHashMap<>(10);

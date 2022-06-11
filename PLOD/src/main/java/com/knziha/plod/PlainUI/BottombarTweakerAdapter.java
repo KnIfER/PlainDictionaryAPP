@@ -288,7 +288,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 						v.performClick();
 					};
 					new AlertDialog.Builder(a)
-							.setTitle("配置已更改，是否应用？")
+							.setTitle("是否应用已更改的配置？")
 							.setPositiveButton(R.string.confirm, ocl)
 							.setNegativeButton(R.string.no, ocl)
 							.setNeutralButton(R.string.cancel, ocl)
@@ -361,7 +361,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 				v.performClick();
 			};
 			new AlertDialog.Builder(a)
-				.setTitle("配置已更改，是否应用？")
+				.setTitle("是否应用已更改的配置？")
 				.setPositiveButton(R.string.confirm, ocl)
 				.setNegativeButton(R.string.no, ocl)
 				.setNeutralButton(R.string.cancel, ocl)

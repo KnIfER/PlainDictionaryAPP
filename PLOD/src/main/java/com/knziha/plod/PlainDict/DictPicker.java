@@ -349,19 +349,18 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	
 	private void Resize() {
 		if (!pinBtn.isChecked()) {
-			int littleIdeal = realWidth;
 			Resources res = a.mResource;
+			int littleIdeal  = Math.min(a.dm.widthPixels, (int)res.getDimension(R.dimen.idealdpdp)*55/45);
 			int factor=1;
-			if(a.dm.widthPixels>littleIdeal) {
-				littleIdeal = Math.min(a.dm.widthPixels, Math.max(realWidth, (int)res.getDimension(R.dimen.idealdpdp))*55/45);
-				factor=2;
-			}
 			View dialogLayout = this.dialogLayout;
 			ViewGroup.MarginLayoutParams mlarp = (ViewGroup.MarginLayoutParams) dialogLayout.getLayoutParams();
 			int[] margins = (int[]) dialogLayout.getTag();
 			mlarp.width = littleIdeal - (int) (1 * res.getDimension(R.dimen._28_));
 			mlarp.topMargin= (int) (margins[0]/factor*1.5);
 			mlarp.bottomMargin= (int) (margins[1]/factor*1.5);
+			if (GlobalOptions.isSmall) {
+				mlarp.bottomMargin= mlarp.topMargin;
+			}
 		}
 	}
 	

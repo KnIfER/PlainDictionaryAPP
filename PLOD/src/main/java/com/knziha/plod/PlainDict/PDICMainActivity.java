@@ -56,8 +56,13 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.view.menu.ActionMenuItem;
+import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.appcompat.widget.ActionMenuPresenter;
+import androidx.appcompat.widget.ActionMenuView;
+import androidx.appcompat.widget.ListPopupWindow;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.ColorUtils;
@@ -221,6 +226,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		super.onConfigurationChanged(newConfig);
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
+		CMN.Log("mConfiguration::", newConfig.screenWidthDp*GlobalOptions.density, newConfig.screenHeightDp*GlobalOptions.density);
+		if(mConfiguration.screenWidthDp!=newConfig.screenWidthDp || mConfiguration.screenHeightDp!=newConfig.screenHeightDp) {
+			onSizeChanged();
+		}
 		if(mConfiguration.orientation!=newConfig.orientation) {
 			if(root.getTag()!=null) {
 				MarginLayoutParams lp = (MarginLayoutParams) root.getLayoutParams();
@@ -3392,5 +3401,31 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			floatApp = new FloatApp(this);
 		}
 		floatApp.toggle(false);
+	}
+	
+	public void onSizeChanged() {
+		CMN.Log("onSizeChanged::", dm.widthPixels, dm.heightPixels);
+		int oldMax = GlobalOptions.btnMaxWidth;
+		readSizeConfigs();
+		int newMax = GlobalOptions.btnMaxWidth;
+		if (oldMax!=newMax) {
+			boolean small = GlobalOptions.isSmall;
+			View child = UIData.toolbar.getChildAt(UIData.toolbar.getChildCount() - 1);
+			if (child instanceof ActionMenuView) {
+				ActionMenuView menuView = (ActionMenuView) child;
+				for (int i = 0; i < menuView.getChildCount(); i++) {
+					child = menuView.getChildAt(i);
+					if (child instanceof TextView)
+						((ActionMenuItemView) child).setMaxWidth(newMax);
+					else if (child instanceof ActionMenuPresenter.OverflowMenuButton){
+						child.getLayoutParams().width=small?newMax:ViewGroup.LayoutParams.WRAP_CONTENT;
+					}
+				}
+			}
+			child = UIData.toolbar.mNavButtonView;
+			if (child!=null) {
+				child.getLayoutParams().width=small?newMax:ViewGroup.LayoutParams.WRAP_CONTENT;
+			}
+		}
 	}
 }

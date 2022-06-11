@@ -42,6 +42,8 @@
 		android:layout_weight="1"
 		android:textAppearance="?android:attr/textAppearanceMedium"
 		android:gravity="center"
+		android:singleLine="true"
+		android:ellipsize="none"
 		tools:text="工具栏定制"
 		android:background="@drawable/listviewselector0"
 		/>
