@@ -1443,51 +1443,50 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			adaptermy4.notifyDataSetChanged();
 
 
-			CurrentViewPage = savedInstanceState.getInt("CVP", 1);
-			if(CurrentViewPage==0 || CurrentViewPage==2){//亮A
-				viewPager.setCurrentItem(CurrentViewPage,true);
-			}
+//			CurrentViewPage = savedInstanceState.getInt("CVP", 1);
+//			if(CurrentViewPage==0 || CurrentViewPage==2){//亮A
+//				viewPager.setCurrentItem(CurrentViewPage,true);
+//			}
 
+//			int[] arr2 = savedInstanceState.getIntArray("P_L2");
+//			if(arr2!=null)
+//				pendingLv2Pos=arr2;
+//
+//			int[] arr3 = savedInstanceState.getIntArray("P_M1");
+//			mlv1.post(() -> {
+//				if(arr3!=null) mlv1.setSelectionFromTop(arr3[0], arr3[1]);
+//			});
+//			int[] arr4 = savedInstanceState.getIntArray("P_M2");
+//			mlv2.post(() -> {
+//				if(arr4!=null) mlv2.setSelectionFromTop(arr4[0], arr4[1]);
+//			});
 
-			int[] arr2 = savedInstanceState.getIntArray("P_L2");
-			if(arr2!=null)
-				pendingLv2Pos=arr2;
-
-			int[] arr3 = savedInstanceState.getIntArray("P_M1");
-			mlv1.post(() -> {
-				if(arr3!=null) mlv1.setSelectionFromTop(arr3[0], arr3[1]);
-			});
-			int[] arr4 = savedInstanceState.getIntArray("P_M2");
-			mlv2.post(() -> {
-				if(arr4!=null) mlv2.setSelectionFromTop(arr4[0], arr4[1]);
-			});
-
-			boolean canAddPeruseView=true;
-			int dbrowser = savedInstanceState.getInt("DB", -1);
-			if(dbrowser!=-1){
-				(dbrowser==1?findViewById(R.drawable.favoriteg) // get5 get6
-						:findViewById(R.drawable.historyg)).performClick();
-				dbrowser = savedInstanceState.getInt("DBPos", -1);
-				if(dbrowser!=-1) {
-					DBrowser.pendingDBClickPos = dbrowser;
-					canAddPeruseView=opt.getDBMode()!=SelectionMode_peruseview;
-				}
-			}
-			else if(contentview.getParent()!=null){
-				int val = savedInstanceState.getInt("lv_pos",-1);
-				if(val>=0) {
-					switch (savedInstanceState.getInt("lv_id",-1)){
-						case 1:
-							ActivedAdapter=adaptermy;
-						break;
-						case 2:
-							pendingLv2ClickPos=val;
-						break;
-					}
-					if(ActivedAdapter!=null)
-						ActivedAdapter.onItemClick(val);
-				}
-			}
+//			boolean canAddPeruseView=true;
+//			int dbrowser = savedInstanceState.getInt("DB", -1);
+//			if(dbrowser!=-1){
+//				(dbrowser==1?findViewById(R.drawable.favoriteg) // get5 get6
+//						:findViewById(R.drawable.historyg)).performClick();
+//				dbrowser = savedInstanceState.getInt("DBPos", -1);
+//				if(dbrowser!=-1) {
+//					DBrowser.pendingDBClickPos = dbrowser;
+//					canAddPeruseView=opt.getDBMode()!=SelectionMode_peruseview;
+//				}
+//			}
+//			else if(contentview.getParent()!=null){
+//				int val = savedInstanceState.getInt("lv_pos",-1);
+//				if(val>=0) {
+//					switch (savedInstanceState.getInt("lv_id",-1)){
+//						case 1:
+//							ActivedAdapter=adaptermy;
+//						break;
+//						case 2:
+//							pendingLv2ClickPos=val;
+//						break;
+//					}
+//					if(ActivedAdapter!=null)
+//						ActivedAdapter.onItemClick(val);
+//				}
+//			} //todo xxx
 
 //			if(canAddPeruseView){
 //				ArrayList<Integer> data = savedInstanceState.getIntegerArrayList("p_data");
