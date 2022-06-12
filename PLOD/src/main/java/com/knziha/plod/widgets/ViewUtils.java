@@ -89,15 +89,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.widget.TextViewmy;
+import com.knziha.plod.PlainUI.FloatApp;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
+import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.RebootActivity;
 import com.knziha.plod.plaindict.Toastable_Activity;
@@ -320,11 +323,22 @@ public class ViewUtils {
 	}
 	
 	
-	public static void ensureWindowType(Dialog dialog, int type) {
+	public static void ensureWindowType(Dialog dialog, Toastable_Activity a, Dialog.OnDismissListener disLis) {
+		int type = a.mDialogType;
 		try {
 			if (dialog.getWindow().getAttributes().type!=type) {
+				if (disLis!=null) {
+					dialog.setOnDismissListener(null);
+				}
 				dialog.dismiss();
 				dialog.getWindow().setType(type);
+				if (disLis!=null) {
+					dialog.setOnDismissListener(disLis);
+				}
+			}
+			if (ViewUtils.littleCat && type==WindowManager.LayoutParams.TYPE_PHONE) {
+				a.moveTaskToFront();
+				((AgentApplication)a.getApplication()).floatApp.expand(true);
 			}
 		} catch (Exception e) {
 			CMN.debug(e);

@@ -31,6 +31,7 @@ public class CMN{
 	public static final Boolean OccupyTag = true;
 	public static final WeakReference EmptyRef = new WeakReference(null);
 	
+	public static int mainTask;
 	public static long mid;
 	
 	public static int AppBackground = Color.GRAY;

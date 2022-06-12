@@ -5,6 +5,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ClipData;
@@ -739,7 +740,7 @@ public class Toastable_Activity extends AppCompatActivity {
 //						.setNegativeButton(R.string.cancel, null)
 						.create();
 		configurableDialog.setCanceledOnTouchOutside(true);
-		ViewUtils.ensureWindowType(configurableDialog, mDialogType);
+		ViewUtils.ensureWindowType(configurableDialog, this, null);
 		
 		dv.findViewById(R.id.cancel).setOnClickListener(v -> {
 			if(btnIdListener instanceof Integer) optprs.processOptionChanged(null, null, (Integer) btnIdListener, 0);
@@ -803,6 +804,12 @@ public class Toastable_Activity extends AppCompatActivity {
 		((androidx.appcompat.app.AlertDialog) tv.getTag()).show();
 		((androidx.appcompat.app.AlertDialog) tv.getTag()).tag=null;
 		tv.setTag(null);
+	}
+	
+	public void moveTaskToFront() {
+		ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+		if (manager != null)
+			manager.moveTaskToFront(getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
 	}
 }
 

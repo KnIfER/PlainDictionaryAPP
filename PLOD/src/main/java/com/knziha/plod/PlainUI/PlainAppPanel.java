@@ -97,7 +97,7 @@ public class PlainAppPanel extends SettingsPanel {
 		if(settingsLayoutHolder!=settingsLayout)
 			ViewUtils.addViewToParent(settingsLayout, settingsLayoutHolder);
 		dialog.setContentView(settingsLayoutHolder);
-		ViewUtils.ensureWindowType(dialog, a.mDialogType);
+		ViewUtils.ensureWindowType(dialog, a, dialogDismissListener);
 		dialog.show();
 		
 		int padbot = bottomPadding;

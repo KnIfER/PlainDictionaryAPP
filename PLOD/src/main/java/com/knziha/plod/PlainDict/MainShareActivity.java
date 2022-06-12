@@ -47,7 +47,7 @@ public class MainShareActivity extends Activity {
 				if(action!=null && action.equals(Intent.ACTION_VIEW)) {
 					Uri url = thisIntent.getData();
 					if(url!=null) {
-						CMN.Log("ProcessIntent_url", url);
+						CMN.debug("ProcessIntent_url", url);
 						Intent newTask = new Intent(Intent.ACTION_MAIN);
 						newTask.setType(Intent.CATEGORY_DEFAULT);
 						newTask.putExtra(Intent.EXTRA_TEXT,debugString);

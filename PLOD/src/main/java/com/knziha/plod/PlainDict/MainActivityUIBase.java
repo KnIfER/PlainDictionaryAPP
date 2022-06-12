@@ -537,6 +537,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	SplitView.PageSliderInf inf;
 	public ActType thisActType;
 	public boolean awaiting;
+	Runnable postTask;
 	
 	public View favoriteBtn() {
 		return contentUIData.browserWidget8;
@@ -4727,7 +4728,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 				if(twoColumnAda!=null)  twoColumnAda.notifyDataSetChanged();
 			}
-			ViewUtils.ensureWindowType(d, mDialogType);
+			ViewUtils.ensureWindowType(d, MainActivityUIBase.this, MainActivityUIBase.this);
 			
 			int switch_cl_id=bFromWebView?(opt.getToTextShare()?R.color.DeapDanger:R.color.ThinHeaderBlue)
 					:opt.getToTextShare2()?R.color.colorAccent:R.color.ThinAccent;
@@ -5592,11 +5593,32 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
 			}
 		}
+		boolean retry = type<0;
+		if (retry) type = -type;
 		//CMN.debug("AttachDBrowser::", Integer.toHexString(weblist.src), CMN.idStr(weblist));
 		DBrowser.setType(this, type, true);
 		int showType = DBrowser.preShow(weblist);
 		if(showType==1) {
-			DBrowser.show(getSupportFragmentManager(), "DBrowser");
+			try {
+				DBrowser.show(getSupportFragmentManager(), "DBrowser");
+			} catch (Exception e) {
+				CMN.debug(e);
+				if (isFloating() && e instanceof IllegalStateException) {
+					if (!retry) {
+						// fix android Can not perform this action after onSaveInstanceState
+						int finalType = type;
+						postTask = new Runnable(){
+							@Override
+							public void run() {
+								AttachDBrowser(-finalType);
+								floatApp.expand(true);
+								postTask = null;
+							}
+						};
+						moveTaskToFront();
+					}
+				}
+			}
 		}
 		else if(showType==2) {
 			ViewGroup target = mainF;
@@ -6892,7 +6914,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//dTmp.mAlert.wikiBtn.getDrawable().setColorFilter(0xFF5f5f5f, PorterDuff.Mode.SRC_IN);
 				//dTmp.mAlert.wikiBtn.setBackgroundResource(R.drawable.surrtrip1);
 			}
-			ViewUtils.ensureWindowType(dTmp, mDialogType);
 			
 			ListView dlv = dTmp.getListView();
 			dTmp.show();
@@ -6915,6 +6936,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return;
 			}
 		}
+		ViewUtils.ensureWindowType(dTmp, MainActivityUIBase.this, null);
 		
 		File ConfigFile = opt.fileToConfig();
 		File def = opt.fileToSecords(ConfigFile);
@@ -8940,6 +8962,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		CMN.debug("onActivityResult::", requestCode, resultCode,);
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode) {
 			case 0: {
@@ -9265,7 +9288,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				peruseView.mDialog.show();
 				peruseView.onViewAttached(this, newSch);
 			}
-		} catch (Exception e) { e.printStackTrace(); }
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		if (isFloating()) {
+			if ((foreground & (1 << thisActType.ordinal())) == 0) {
+				postTask = new Runnable(){
+					@Override
+					public void run() {
+						AttachPeruseView(newSch);
+						floatApp.expand(true);
+						postTask = null;
+					}
+				};
+				moveTaskToFront();
+			} else {
+				floatApp.expand(true);
+			}
+		}
 	}
 
 	/** 接管跳转翻阅。来自包括分享中枢、get12菜单。*/

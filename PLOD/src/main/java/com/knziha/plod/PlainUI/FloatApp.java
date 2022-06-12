@@ -1,5 +1,6 @@
 package com.knziha.plod.PlainUI;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -68,7 +69,6 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 		}
 		ViewUtils.removeView(v);
 		contentView.addView(v);
-		a.moveTaskToBack(true);
 		
 		if (lp==null) {
 			int sz = (int) (GlobalOptions.density*500);
@@ -89,7 +89,9 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 		
 		try {
 			wMan.addView(view, lp);
-			a.mDialogType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+			a.mDialogType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+					? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+					: WindowManager.LayoutParams.TYPE_PHONE;
 			app.floatApp = this;
 		} catch (Exception e) {
 			CMN.Log(e);
@@ -104,12 +106,14 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			a.UIData.root.setFitsSystemWindows(true);
 			a.UIData.root.setPadding(0,CMN.getStatusBarHeight(a),0,0);
 			a.mDialogType = WindowManager.LayoutParams.TYPE_APPLICATION;
-			a.startActivity(new Intent(a, a.getClass()));
+			a.moveTaskToFront();
 			app.floatApp = null;
+			floatingView = null;
 			a.onSizeChanged();
 		} else if (!close) {
 			floatWindow();
 			a.onSizeChanged();
+			a.moveTaskToBack(true);
 		}
 	}
 	
@@ -134,13 +138,15 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			return false;
 		}
 		else if (e==MotionEvent.ACTION_DOWN) {
-			orgX = ev.getRawX();
-			orgY = ev.getRawY();
-			x = lp.x;
-			y = lp.y;
-			moved = false;
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-				view.suppressLayout(true);
+			if (!view.resizing) {
+				orgX = ev.getRawX();
+				orgY = ev.getRawY();
+				x = lp.x;
+				y = lp.y;
+				moved = false;
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+					view.suppressLayout(true);
+				}
 			}
 		}
 		else if (e==MotionEvent.ACTION_MOVE) {

@@ -702,7 +702,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	}
 
 	String processIntent(Intent intent) {
-		CMN.Log("processIntent", intent);
+		CMN.debug("processIntent", intent);
 		String keytmp =	intent.getStringExtra("EXTRA_QUERY");
 		if(keytmp==null) {
 			String type = intent.getType();

@@ -287,12 +287,14 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 						dialog.dismiss();
 						v.performClick();
 					};
-					new AlertDialog.Builder(a)
+					AlertDialog dd = new AlertDialog.Builder(a)
 							.setTitle("是否应用已更改的配置？")
 							.setPositiveButton(R.string.confirm, ocl)
 							.setNegativeButton(R.string.no, ocl)
 							.setNeutralButton(R.string.cancel, ocl)
-							.create().show();
+							.create();
+					ViewUtils.ensureWindowType(dd, a, null);
+					dd.show();
 				} else {
 					dialog.dismiss();
 				}
@@ -360,12 +362,14 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 				dialog.dismiss();
 				v.performClick();
 			};
-			new AlertDialog.Builder(a)
+			AlertDialog dd = new AlertDialog.Builder(a)
 				.setTitle("是否应用已更改的配置？")
 				.setPositiveButton(R.string.confirm, ocl)
 				.setNegativeButton(R.string.no, ocl)
 				.setNeutralButton(R.string.cancel, ocl)
-				.create().show();
+				.create();
+			ViewUtils.ensureWindowType(dd, a, null);
+			dd.show();
 		} else {
 			checkCurrentProjectInternal(val);
 		}
@@ -439,7 +443,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	}
 	
 	public void show() {
-		ViewUtils.ensureWindowType(dialog, a.mDialogType);
+		ViewUtils.ensureWindowType(dialog, a, null);
 		dialog.show();
 		dialog.setCanceledOnTouchOutside(true);
 	}

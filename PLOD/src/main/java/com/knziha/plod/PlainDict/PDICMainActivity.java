@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -214,6 +215,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private int barSzBot;
 	private float barSzRatio;
 	private VirtualDisplay mDisplay;
+	private long lastResumeTime;
 	
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -844,6 +846,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		bIsFirstLaunch=false;
 		focused=true;
 		thisActType = ActType.PlainDict;
+		//CMN.mainTask = getTaskId();
 		CMN.Log("LauncherInstanceCount", LauncherInstanceCount);
 		if(LauncherInstanceCount>=1) {
 			Intent thisIntent = getIntent();
@@ -1554,7 +1557,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		//tg
 		LayoutParams barBotLP = UIData.bottombar.getLayoutParams();
-		//toggleMultiwindow();
+		toggleMultiwindow();
 		//mDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).createVirtualDisplay("vdisplay",3840, 2160, 480, null,DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC);
 		
 		//if(false)
@@ -2147,6 +2150,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	@Override
 	protected void onResume() {
+		CMN.debug("onResume");
 		super.onResume();
 		if (bNeedSaveViewStates && systemIntialized &&!PDICMainAppOptions.getSimpleMode()){
 			bNeedSaveViewStates = false;
@@ -2154,6 +2158,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		if(PDICMainAppOptions.getEnableResumeDebug()){
 			//currentDictionary.Reload();
+		}
+		if (isFloating()) {
+			lastResumeTime = CMN.now();
+			if (postTask!=null) {
+				postTask.run();
+				postTask=null;
+			}
 		}
 	}
 
@@ -2204,8 +2215,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public void onWindowFocusChanged(boolean hasFocus) {
 		focused=hasFocus;
 		super.onWindowFocusChanged(hasFocus);
-		//CMN.Log("onWindowFocusChanged", hasFocus);
-		if(systemIntialized && hasFocus){
+		CMN.debug("onWindowFocusChanged", hasFocus);
+		if(systemIntialized && hasFocus) {
+			if (isFloating() && CMN.now()-lastResumeTime>300) {
+				moveTaskToBack(true);
+				floatApp.expand(false);
+				return;
+			}
 			fix_full_screen(getWindow().getDecorView());
 			if(textToSetOnFocus!=null){
 				etSearch.setText(textToSetOnFocus);

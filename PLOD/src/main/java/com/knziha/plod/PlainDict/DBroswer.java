@@ -2,6 +2,7 @@ package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -41,6 +42,8 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -1695,7 +1698,7 @@ public class DBroswer extends DialogFragment implements
 			}
 			if(t!=null) t.setVisibility(View.GONE);
 		}
-		ViewUtils.ensureWindowType(mDialog, getMainActivity().mDialogType);
+		ViewUtils.ensureWindowType(mDialog, getMainActivity(), this);
 		return mDialog;
 	}
 	
@@ -1740,7 +1743,7 @@ public class DBroswer extends DialogFragment implements
 		if (weblist != wlh) {
 			weblist = wlh;
 		}
-		boolean dialog = wlh.src==SearchUI.Fye.MAIN || wlh.bShowingInPopup || wlh.a.mDialogType!=WindowManager.LayoutParams.TYPE_APPLICATION;
+		boolean dialog = wlh.a.isFloating() || wlh.src==SearchUI.Fye.MAIN || wlh.bShowingInPopup;
 		final boolean visible = UIData != null && UIData.getRoot().getParent() == wlh.a.mainF
 				|| (mDialog != null && mDialog.isShowing());
 		if (lastShowType != dialog) {
@@ -1774,5 +1777,11 @@ public class DBroswer extends DialogFragment implements
 			}
 		}
 		ViewUtils.removeView(getView());
+	}
+	
+	@Override
+	public void onDismiss(@NonNull DialogInterface dialog) {
+		super.onDismiss(dialog);
+		
 	}
 }
