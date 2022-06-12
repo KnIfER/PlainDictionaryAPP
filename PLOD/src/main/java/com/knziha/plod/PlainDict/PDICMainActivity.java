@@ -3406,12 +3406,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		CMN.debug("onSizeChanged::", dm.widthPixels, dm.heightPixels);
 		readSizeConfigs();
 		int newMax = GlobalOptions.btnMaxWidth;
-		if (floatApp!=null && floatApp.isFloating()) {
+		if (isFloating()) {
 			newMax = Math.min(newMax, floatApp.lp.width/8);
 		}
 		if (btnMaxWidth!=newMax) {
 			boolean small = GlobalOptions.isSmall;
-			if (floatApp!=null && floatApp.isFloating()) {
+			if (isFloating()) {
 				small = floatApp.lp.width/dm.density <= 320;
 			}
 			View child = UIData.toolbar.getChildAt(UIData.toolbar.getChildCount() - 1);

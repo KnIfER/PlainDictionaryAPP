@@ -5420,7 +5420,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(restart) {
 			dialog.setCanceledOnTouchOutside(false);
 		}
-		if (floatApp!=null && floatApp.isFloating()) {
+		if (isFloating()) {
 			Button btn = dialog.findViewById(R.id.cancel);
 			LinearLayout btm = new LinearLayout(this);
 			ViewUtils.replaceView(btm, btn);
@@ -9555,11 +9555,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			ada = new BottombarTweakerAdapter(this, pos);
 			putReferencedObject(jd, ada);
 		} else {
-			ada.show();
 			ada.onClick(pos);
 		}
+		ada.show();
 		float pad = 4 * getResources().getDimension(R.dimen._50_);
-		ada.main_list.mMaxHeight = root.getHeight()>=2*pad?(int) (root.getHeight() - root.getPaddingTop() - pad):0;
+		int rH = isFloating() ? dm.heightPixels : root.getHeight();
+		ada.main_list.mMaxHeight = (rH>=2*pad)?(int) (rH - root.getPaddingTop() - pad):0;
 	}
 	
 	private static final ConcurrentHashMap<String, byte[]> CommonAssets = new ConcurrentHashMap<>(10);
@@ -10521,5 +10522,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public final boolean isMultiShare() {
 		return thisActType == ActType.MultiShare;
+	}
+	
+	public final boolean isFloating() {
+		return floatApp!=null && floatApp.isFloating();
 	}
 }

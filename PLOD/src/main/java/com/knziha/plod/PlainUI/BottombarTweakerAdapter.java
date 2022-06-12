@@ -439,6 +439,7 @@ public class BottombarTweakerAdapter extends BaseAdapter implements View.OnClick
 	}
 	
 	public void show() {
+		ViewUtils.ensureWindowType(dialog, a.mDialogType);
 		dialog.show();
 		dialog.setCanceledOnTouchOutside(true);
 	}
