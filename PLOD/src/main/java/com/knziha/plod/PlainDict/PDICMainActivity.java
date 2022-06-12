@@ -2133,7 +2133,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	@Override
 	protected void onPause() {
-		//CMN.Log("onPause");
+		CMN.debug("onPause");
 		try {
 			super.onPause();
 		} catch (Exception ignored) { }
@@ -2213,24 +2213,26 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
-		focused=hasFocus;
 		super.onWindowFocusChanged(hasFocus);
 		CMN.debug("onWindowFocusChanged", hasFocus);
-		if(systemIntialized && hasFocus) {
-			if (isFloating() && CMN.now()-lastResumeTime>300) {
-				moveTaskToBack(true);
-				floatApp.expand(false);
-				return;
+		if (0!=(foreground&(1<<thisActType.ordinal()))) {
+			focused=hasFocus;
+			if(systemIntialized && hasFocus) {
+				if (isFloating() && CMN.now()-lastResumeTime>300) {
+					moveTaskToBack(true);
+					floatApp.expand(false);
+					return;
+				}
+				fix_full_screen(getWindow().getDecorView());
+				if(textToSetOnFocus!=null){
+					etSearch.setText(textToSetOnFocus);
+					textToSetOnFocus=null;
+				}
+				if(PDICMainAppOptions.locale==null)
+					recreate();
+				checkColors();
+				//file-based UI-less command tool
 			}
-			fix_full_screen(getWindow().getDecorView());
-			if(textToSetOnFocus!=null){
-				etSearch.setText(textToSetOnFocus);
-				textToSetOnFocus=null;
-			}
-			if(PDICMainAppOptions.locale==null)
-				recreate();
-			checkColors();
-			//file-based UI-less command tool
 		}
 	}
 

@@ -8962,7 +8962,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		CMN.debug("onActivityResult::", requestCode, resultCode,);
+		CMN.debug("onActivityResult::", requestCode, resultCode);
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode) {
 			case 0: {
