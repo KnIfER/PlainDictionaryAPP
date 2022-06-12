@@ -1220,9 +1220,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		return mWebView.lastY+mWebView.toolbar_title.getHeight()+ gridView.getHeight()+etSearch.getHeight();
 	}
 
+	//todo
 	public void dismissDialogOnly() {
 		if(mDialog!=null && !isAttached()){
-			mDialog.dismiss();
+			dismiss();
 			mDialog.decorBright();
 		}
 	}
