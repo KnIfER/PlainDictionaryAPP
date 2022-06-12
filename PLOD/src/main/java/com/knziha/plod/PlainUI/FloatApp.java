@@ -106,8 +106,10 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			a.mDialogType = WindowManager.LayoutParams.TYPE_APPLICATION;
 			a.startActivity(new Intent(a, a.getClass()));
 			app.floatApp = null;
+			a.onSizeChanged();
 		} else if (!close) {
 			floatWindow();
+			a.onSizeChanged();
 		}
 	}
 	

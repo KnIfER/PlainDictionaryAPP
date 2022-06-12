@@ -121,6 +121,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected ViewGroup DefaultTSView;
 	long exitTime = 0;
 	public Resources mResource;
+	protected int btnMaxWidth;
 	
 	LexicalDBHelper historyCon;
 	
@@ -185,6 +186,7 @@ public class Toastable_Activity extends AppCompatActivity {
        
 	   mConfiguration = new Configuration(mResource.getConfiguration());
 	   readSizeConfigs();
+	   //btnMaxWidth=GlobalOptions.btnMaxWidth;
 		//CMN.show("isLarge"+isLarge);
 	   if(Build.VERSION.SDK_INT>=29 && false){
 		   GlobalOptions.isDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
@@ -215,6 +217,7 @@ public class Toastable_Activity extends AppCompatActivity {
 		GlobalOptions.width=(int)(dm.widthPixels/GlobalOptions.density);
 		GlobalOptions.height=(int)(dm.heightPixels/GlobalOptions.density);
 		GlobalOptions.btnMaxWidth=Math.min((int)mResource.getDimension(R.dimen.btnMaxWidth), dm.widthPixels/8);
+		CMN.Log("MaxWidth::", (int)mResource.getDimension(R.dimen.btnMaxWidth), GlobalOptions.btnMaxWidth);
 	}
 	
 	@Override

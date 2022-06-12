@@ -38,7 +38,7 @@ public class WindowLayout extends FrameLayout {
 	
 	
 	private boolean checkOffset(float tmpValue, float deviation, float maxValue) {
-		return deviation > GlobalOptions.density*3 *2 && tmpValue>0 && tmpValue < maxValue && deviation<maxValue;
+		return deviation > GlobalOptions.density*250 && tmpValue>0 && tmpValue < maxValue && deviation<maxValue;
 	}
 	
 	@Override
@@ -149,6 +149,7 @@ public class WindowLayout extends FrameLayout {
 			if (ev.getActionMasked() == MotionEvent.ACTION_UP || ev.getActionMasked() == MotionEvent.ACTION_CANCEL) {
 				resizing = false;
 				getChildAt(1).setVisibility(View.INVISIBLE);
+				floatApp.a.onSizeChanged();
 			}
 			return true;
 		}

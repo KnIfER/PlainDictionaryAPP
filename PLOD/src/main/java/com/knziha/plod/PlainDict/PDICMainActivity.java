@@ -3403,12 +3403,17 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	public void onSizeChanged() {
-		CMN.Log("onSizeChanged::", dm.widthPixels, dm.heightPixels);
-		int oldMax = GlobalOptions.btnMaxWidth;
+		CMN.debug("onSizeChanged::", dm.widthPixels, dm.heightPixels);
 		readSizeConfigs();
 		int newMax = GlobalOptions.btnMaxWidth;
-		if (oldMax!=newMax) {
+		if (floatApp!=null && floatApp.isFloating()) {
+			newMax = Math.min(newMax, floatApp.lp.width/8);
+		}
+		if (btnMaxWidth!=newMax) {
 			boolean small = GlobalOptions.isSmall;
+			if (floatApp!=null && floatApp.isFloating()) {
+				small = floatApp.lp.width/dm.density <= 320;
+			}
 			View child = UIData.toolbar.getChildAt(UIData.toolbar.getChildCount() - 1);
 			if (child instanceof ActionMenuView) {
 				ActionMenuView menuView = (ActionMenuView) child;
@@ -3425,6 +3430,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if (child!=null) {
 				child.getLayoutParams().width=small?newMax:ViewGroup.LayoutParams.WRAP_CONTENT;
 			}
+			btnMaxWidth = newMax;
 		}
 	}
 }
