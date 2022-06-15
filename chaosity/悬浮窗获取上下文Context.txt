@@ -1,0 +1,14 @@
+悬浮窗状态下，由于主程序退入后台，不会接收onConfigurationChanged事件，需用全局的Context获取屏幕的尺寸信息。
+
+getContext().getApplicationContext()
+
+比如对话框布局AlertFrameLayout的最小尺度，是相对于屏幕宽度的百分比，横竖屏数值不同。AppCompatTheme_windowMinWidthMajor
+
+
+final DisplayMetrics metrics = getContext().getApplicationContext().getResources().getDisplayMetrics();
+final boolean isPortrait = metrics.widthPixels < metrics.heightPixels;
+final TypedValue tv = isPortrait ? mMinWidthMinor : mMinWidthMajor;
+
+如果直接用getContext().getResources()，则横屏状态下启动APP，再切换竖屏，对话框宽度会超出屏幕显示区域。
+
+
