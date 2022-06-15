@@ -150,10 +150,6 @@ public class PlainAppPanel extends SettingsPanel {
 	
 	@Override
 	public boolean toggle(ViewGroup root, SettingsPanel parentToDismiss, int forceShowType) {
-		if(!bIsShowing && bShouldInterceptClickListener) {
-			a.mInterceptorListener = this;
-			decorateInterceptorListener(true);
-		}
 		if(forceShowType==-2 && !bIsShowing && a.settingsPanel!=null) {
 			forceShowType = a.settingsPanel.lastShowType;
 		}
@@ -167,6 +163,10 @@ public class PlainAppPanel extends SettingsPanel {
 		}
 		boolean ret = super.toggle(root, parentToDismiss, forceShowType);
 		if (ret) {
+			if(bShouldInterceptClickListener) {
+				a.mInterceptorListener = this;
+				decorateInterceptorListener(true);
+			}
 			a.HideSelectionWidgets(true);
 			a.settingsPanel = this;
 			a.settingsPanels.add(this);

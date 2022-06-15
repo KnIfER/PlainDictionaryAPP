@@ -201,6 +201,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				}
 			}
 			if(initWay!=null) {
+				a.mInterceptorListener = null;
 				initWay.onClick(drpBtn);
 			}
 		}

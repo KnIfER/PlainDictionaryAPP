@@ -76,7 +76,7 @@ import java.util.Objects;
  * 一个webview，一次显示一本词典内容，滑动翻页可切换子词条（屏风模式）。 <br/>
  * 多个webview，放在LinearLayout中，显示多本词典内容。（多页面视图列表）*/
 public class WebViewListHandler extends ViewGroup implements View.OnClickListener, View.OnLongClickListener {
-	final MainActivityUIBase a;
+	public final MainActivityUIBase a;
 	/** Search-On-Page Control Flag. 网页设置标志位 指示是否开启点击翻译、页内搜索设置 */
 	public int shezhi;
 	/** Flag Backup. 设置备份，同于比对变化。 */

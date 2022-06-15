@@ -343,6 +343,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				case floatApp: {
 					if (a instanceof PDICMainActivity) {
 						((PDICMainActivity)a).toggleMultiwindow();
+						dismiss();
 					}
 				} break;
 			}

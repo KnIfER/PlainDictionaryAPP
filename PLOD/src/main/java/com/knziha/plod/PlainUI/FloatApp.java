@@ -222,7 +222,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 		lp.y = (int) (frameOffsets.top - CMN.statusBarHeight);
 		lp.width = (int) frameOffsets.width();
 		lp.height = (int) frameOffsets.height();
-		wMan.updateViewLayout(view, lp);
+		updateLayout();
 	}
 	
 	public void expand(boolean collapse) {
@@ -310,7 +310,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	}
 	
 	private void updateLayout() {
-		if (lp.x+padding<0) lp.x=-padding;
+		if (lp.x+padding<0) lp.x=-padding; //todo optimize
 		else if(lp.x+titleBar.getHeight()*1.5f+padding>dm.widthPixels) lp.x=(int) (dm.widthPixels-titleBar.getHeight()*1.5f-padding);
 		if (lp.y+4*padding<statusBarHeight) lp.y=statusBarHeight-4*padding;
 		else if(lp.y+titleBar.getHeight()+4*padding>dm.heightPixels) lp.y=(int) (dm.heightPixels-titleBar.getHeight()-4*padding);
