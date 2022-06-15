@@ -61,17 +61,19 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
 				@Override
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-					CMN.Log("onLayoutChange::");
-					Display display = ((WindowManager) a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-					int angle = display.getRotation();
-					boolean land = angle==Surface.ROTATION_90||angle==Surface.ROTATION_270;
-					if (land!=landScape) {
-						display.getMetrics(dm);
-						statusBarHeight = CMN.getStatusBarHeight(a.getApplicationContext());
-						landScape = land;
-						calcLayout();
-						wMan.removeView(view);
-						wMan.addView(view, lp);
+					if (!view.resizing && !moved) {
+						CMN.debug("onLayoutChange::");
+						Display display = ((WindowManager) a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+						int angle = display.getRotation();
+						boolean land = angle==Surface.ROTATION_90||angle==Surface.ROTATION_270;
+						if (land!=landScape) {
+							display.getMetrics(dm);
+							statusBarHeight = CMN.getStatusBarHeight(a.getApplicationContext());
+							landScape = land;
+							calcLayout();
+							wMan.removeView(view);
+							wMan.addView(view, lp);
+						}
 					}
 				}
 			});
@@ -178,7 +180,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 				updateLayout();
 			}
 		}
-		else if (e==MotionEvent.ACTION_UP) {
+		else if (e==MotionEvent.ACTION_UP||e==MotionEvent.ACTION_CANCEL) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 				view.suppressLayout(false);
 			}
@@ -229,7 +231,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 				if (collapse) {
 					if (isAppFloating()) { // 最小化
 						wMan.removeView(floatingView);
-						getFloatBtn().reInitBtn(a, 0);
+						getFloatBtn().reInitBtn(0);
 						floatingView = floatBtn.view;
 					}
 				} else if (!isAppFloating()) { // 复原
@@ -244,7 +246,10 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	
 	public FloatBtn getFloatBtn() {
 		if (floatBtn==null) {
-			floatBtn = a.floatBtn = new FloatBtn(a, app);
+			if (a.floatBtn==null) {
+				a.floatBtn = new FloatBtn(a, app);
+			}
+			floatBtn = a.floatBtn;
 		}
 		return floatBtn;
 	}
@@ -268,7 +273,6 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	private void calcLayout() {
 		lp = landScape?lpLand:lpPort;
 		if (lp==null) {
-			DisplayMetrics dm = a.dm;
 			((WindowManager)a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
 			//CMN.debug("calcLayout::", dm.widthPixels, dm.heightPixels);
 			int width = dm.widthPixels;
