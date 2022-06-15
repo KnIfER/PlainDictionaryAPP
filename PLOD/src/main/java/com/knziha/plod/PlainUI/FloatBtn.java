@@ -68,9 +68,7 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 						CMN.debug("onLayoutChange::");
 						((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
 						if (!screenConfig.sameScreen(dm)) {
-							calcLayout();
-							wMan.removeView(view);
-							wMan.addView(view, lp);
+							wMan.updateViewLayout(view, calcLayout());
 						}
 					}
 				}
@@ -90,9 +88,12 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 			handle.setOnTouchListener(this);
 		}
 		this.btnType = btnType;
-		calcLayout();
 		try {
-			wMan.addView(view, lp);
+			if (view.getParent() != null) {
+				wMan.addView(view, calcLayout());
+			} else {
+				wMan.updateViewLayout(view, calcLayout());
+			}
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
@@ -212,7 +213,7 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 	}
 	
 	/** 初始化坐标布局 */
-	private void calcLayout() {
+	private WindowManager.LayoutParams calcLayout() {
 		WindowManager.LayoutParams lp;
 		((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
 		ScreenConfig screenConfig = screenConfigs[btnType];
@@ -268,5 +269,6 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 		}
 		this.lp = lp;
 		this.screenConfig = screenConfig;
+		return lp;
 	}
 }

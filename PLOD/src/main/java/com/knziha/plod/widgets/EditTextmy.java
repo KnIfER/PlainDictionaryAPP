@@ -9,15 +9,16 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.EditText;
 
+import com.knziha.plod.dictionary.Utils.Bag;
+import com.knziha.plod.dictionary.Utils.F1ag;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 
 /**
  * Created by KnIfER on 2018/4/20.
- * SOLVE: ET  is keeping intercepting touch events,even it is disabled.
- * when a ET is disabled,it is expected to behave the same way as a TV
- * com.knizha.wangYiLP.ui
  */
 public class EditTextmy extends EditText {
+	public Bag bNeverBlink;
     public EditTextmy(Context context) {
         super(context);
     }
@@ -57,5 +58,17 @@ public class EditTextmy extends EditText {
 			ret = new SpannableStringBuilder("");
 		}
 		return ret;
+	}
+	
+	@Override
+	public boolean postDelayed(Runnable action, long delayMillis) {
+		//CMN.debug("postDelayed", action);
+		if (bNeverBlink!=null && bNeverBlink.val) {
+			String name = action.getClass().getName();
+			if (name.contains("Blink") || name.contains("Float")) {
+				return false;
+			}
+		}
+		return super.postDelayed(action, delayMillis);
 	}
 }

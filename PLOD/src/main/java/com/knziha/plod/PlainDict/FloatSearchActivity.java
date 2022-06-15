@@ -689,12 +689,12 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		schuiMain = SearchUI.FloatApp.MAIN;
 		schuiMainPeruse = schuiMain|SearchUI.Fye.MAIN;
 		schuiList = SearchUI.FloatApp.表;
+		etSearch = findViewById(R.id.etSearch);
 		super.findFurtherViews();
 		findViewById(R.id.toolbar_action1).setOnClickListener(this);
 		ivDeleteText = toolbar.findViewById(R.id.ivDeleteText);
 		ivBack = toolbar.findViewById(R.id.ivBack);
 		findViewById(R.id.pad).setOnClickListener(ViewUtils.DummyOnClick);
-		etSearch = findViewById(R.id.etSearch);
 	}
 	
 	protected void exit() {

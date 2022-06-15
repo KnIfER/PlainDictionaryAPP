@@ -3,3 +3,5 @@
 onLayoutChanged、treeViewObserver会被无限循环调用，增加电池消耗。
 
 关闭后重新添加悬浮窗，问题暂时解决。
+
++是由edittext取得焦点后，光标闪烁引起的，属于系统缺陷。

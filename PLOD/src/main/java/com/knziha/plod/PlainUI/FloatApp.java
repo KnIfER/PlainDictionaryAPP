@@ -71,8 +71,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 							statusBarHeight = CMN.getStatusBarHeight(a.getApplicationContext());
 							landScape = land;
 							calcLayout();
-							wMan.removeView(view);
-							wMan.addView(view, lp);
+							wMan.updateViewLayout(view, lp);
 						}
 					}
 				}
@@ -131,10 +130,12 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			app.floatApp = null;
 			floatingView = null;
 			a.onSizeChanged();
+			a.bNeverBlink.val = false;
 		} else if (!close) {
 			floatWindow();
 			a.onSizeChanged();
 			a.moveTaskToBack(true);
+			a.bNeverBlink.val = true;
 		}
 	}
 	

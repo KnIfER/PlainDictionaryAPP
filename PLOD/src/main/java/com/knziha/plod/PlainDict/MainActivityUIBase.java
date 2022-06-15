@@ -181,6 +181,7 @@ import com.knziha.plod.slideshow.PhotoViewActivity;
 import com.knziha.plod.widgets.AppIconsAdapter;
 import com.knziha.plod.widgets.CustomShareAdapter;
 import com.knziha.plod.widgets.DragScrollBar;
+import com.knziha.plod.widgets.EditTextmy;
 import com.knziha.plod.widgets.FlowCheckedTextView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.PageSlide;
@@ -317,6 +318,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public ArrayList<PlainWeb>  serverHostsHolder=new ArrayList();
 	public FrameLayout lvHeaderView;
 	public FloatApp floatApp;
+	public final Bag bNeverBlink = new Bag(false);
 	/** |0x1=xuyao store| |0x2=zhuanhuan le str| |0x4==刚刚点开搜索框|  */
 	public int textFlag =0;
 	final public TextWatcher tw1 = new TextWatcher() { //tw
@@ -792,7 +794,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@Override
 	public void onActionModeStarted(ActionMode mode) {
 		View v = getCurrentFocus();
-		CMN.Log("-->onActionModeStarted", v);
+		CMN.debug("-->onActionModeStarted", v);
 		Menu menu;
 		if(v instanceof WebViewmy && Build.VERSION.SDK_INT<=Build.VERSION_CODES.M) {
 			mode.setTitle(null);
@@ -2231,6 +2233,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		getTheme().resolveAttribute(android.R.attr.actionBarSize, typedValue, true);
 		actionBarSize = (int) mResource.getDimension(R.dimen.barSize);
 		setContentDetachType(1);
+		
+		if (etSearch!=null) {
+			((EditTextmy)etSearch).bNeverBlink = bNeverBlink;
+		}
 	}
 	
 	protected void populateDictionaryList() {
@@ -5689,6 +5695,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 		click_handled_not = true;
 		int id=v.getId();
+		
 		switch (id){
 			default:return;
 			case R.drawable.ic_menu_24dp: {
@@ -6079,6 +6086,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				etTools.flowBtn = toolbar.findViewById(R.id.action_menu_presenter);
 				if(thisActType==MainActivityUIBase.ActType.PlainDict)
 					etTools.topbar = appbar;
+
 			} break;
 		}
 		click_handled_not = false;
