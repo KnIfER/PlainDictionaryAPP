@@ -8,6 +8,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -38,6 +39,10 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	public ViewGroup appContentView;
 	public PDICMainActivity a;
 	public boolean landScape;
+	public DisplayMetrics dm = new DisplayMetrics();
+	private int statusBarHeight;
+	private int padding;
+	private ViewGroup titleBar;
 	
 	public FloatApp(PDICMainActivity a) {
 		this.a = a;
@@ -54,13 +59,15 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 		} else {
 			view = (WindowLayout) a.getLayoutInflater().inflate(R.layout.multiwindow_root, null);
 			view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-				
 				@Override
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
 					CMN.Log("onLayoutChange::");
-					int angle = ((WindowManager)a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+					Display display = ((WindowManager) a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+					int angle = display.getRotation();
 					boolean land = angle==Surface.ROTATION_90||angle==Surface.ROTATION_270;
 					if (land!=landScape) {
+						display.getMetrics(dm);
+						statusBarHeight = CMN.getStatusBarHeight(a.getApplicationContext());
 						landScape = land;
 						calcLayout();
 						wMan.removeView(view);
@@ -70,8 +77,9 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			});
 			view.floatApp = this;
 			ViewGroup views = (ViewGroup) view.getChildAt(0);
+			padding = (int) (GlobalOptions.density*8);
 			//views.getChildAt(0).setOnTouchListener(this);
-			ViewGroup titleBar = (ViewGroup) views.getChildAt(0);
+			titleBar = (ViewGroup) views.getChildAt(0);
 			for (int i = 0; i < titleBar.getChildCount(); i++) {
 				View child = titleBar.getChildAt(i);
 				if(child.getId()!=0) child.setOnClickListener(this);
@@ -91,7 +99,10 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 		ViewUtils.removeView(v);
 		contentView.addView(v);
 		
-		int angle = ((WindowManager)a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+		Display display = ((WindowManager) a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+		int angle = display.getRotation();
+		display.getMetrics(dm);
+		statusBarHeight = CMN.getStatusBarHeight(a.getApplicationContext());
 		landScape = angle==Surface.ROTATION_90||angle==Surface.ROTATION_270;
 		calcLayout();
 		
@@ -164,7 +175,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			if (moved) {
 				lp.x = (int) (x + ev.getRawX() - orgX);
 				lp.y = (int) (y + ev.getRawY() - orgY);
-				wMan.updateViewLayout(view, lp);
+				updateLayout();
 			}
 		}
 		else if (e==MotionEvent.ACTION_UP) {
@@ -259,10 +270,15 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 		if (lp==null) {
 			DisplayMetrics dm = a.dm;
 			((WindowManager)a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
-			CMN.Log("calcLayout::", dm.widthPixels, dm.heightPixels);
+			//CMN.debug("calcLayout::", dm.widthPixels, dm.heightPixels);
 			int width = dm.widthPixels;
-			if (landScape && width/2>dm.heightPixels-dm.density*100) {
-				width/=2;
+			if (landScape) {
+				if (width/2>dm.heightPixels-dm.density*100) {
+					width/=2;
+				}
+				else if (width>dm.heightPixels) {
+					width=dm.heightPixels;
+				}
 			}
 			width = (int) (width*5/6.f);
 			int height = Math.min((int) (width*5/3.f), dm.heightPixels-CMN.getStatusBarHeight(a));
@@ -287,5 +303,13 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 				lpPort = lp;
 			}
 		}
+	}
+	
+	private void updateLayout() {
+		if (lp.x+padding<0) lp.x=-padding;
+		else if(lp.x+titleBar.getHeight()*1.5f+padding>dm.widthPixels) lp.x=(int) (dm.widthPixels-titleBar.getHeight()*1.5f-padding);
+		if (lp.y+4*padding<statusBarHeight) lp.y=statusBarHeight-4*padding;
+		else if(lp.y+titleBar.getHeight()+4*padding>dm.heightPixels) lp.y=(int) (dm.heightPixels-titleBar.getHeight()-4*padding);
+		wMan.updateViewLayout(view, lp);
 	}
 }

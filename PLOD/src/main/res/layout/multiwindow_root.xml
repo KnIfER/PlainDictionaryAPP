@@ -14,7 +14,7 @@
 		<LinearLayout
 			android:id="@+id/handle"
 			android:layout_width="match_parent"
-			android:layout_height="35dp"
+			android:layout_height="@dimen/_35_"
 			android:src="@drawable/ic_btn_search"
 			android:orientation="horizontal"
 			android:background="@drawable/framewint"

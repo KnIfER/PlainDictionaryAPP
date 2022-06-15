@@ -36,6 +36,7 @@
 	<dimen name="_28_">28dp</dimen>
 	<dimen name="_30_">30dp</dimen>
 	<dimen name="_35_">35dp</dimen>
+	<dimen name="_38_">38dp</dimen>
 	<dimen name="_110_">110dp</dimen>
 	<dimen name="halfpopheader">32dp</dimen>
 	<dimen name="progress_inset">32dp</dimen>

@@ -89,57 +89,57 @@ public class WindowLayout extends FrameLayout {
 					case 0:
 						tmpX = frameOffsets.left + offsetX;
 						tmpY = frameOffsets.top + offsetY;
-						if (checkOffset(tmpX, frameOffsets.right - tmpX, floatApp.a.dm.widthPixels))
+						if (checkOffset(tmpX, frameOffsets.right - tmpX, floatApp.dm.widthPixels))
 							frameOffsets.left = tmpX;
-						if (checkOffset(tmpY, frameOffsets.bottom - tmpY, floatApp.a.dm.heightPixels))
+						if (checkOffset(tmpY, frameOffsets.bottom - tmpY, floatApp.dm.heightPixels))
 							frameOffsets.top = tmpY;
 						break;
 					case 1:
 						tmpX = frameOffsets.right + offsetX;
 						tmpY = frameOffsets.top + offsetY;
-						if (checkOffset(tmpX, tmpX - frameOffsets.left, floatApp.a.dm.widthPixels))
+						if (checkOffset(tmpX, tmpX - frameOffsets.left, floatApp.dm.widthPixels))
 							frameOffsets.right = tmpX;
-						if (checkOffset(tmpY, frameOffsets.bottom - tmpY, floatApp.a.dm.heightPixels))
+						if (checkOffset(tmpY, frameOffsets.bottom - tmpY, floatApp.dm.heightPixels))
 							frameOffsets.top = tmpY;
 						break;
 					case 2:
 						tmpX = frameOffsets.left + offsetX;
 						tmpY = frameOffsets.bottom + offsetY;
-						if (checkOffset(tmpX, frameOffsets.right - tmpX, floatApp.a.dm.widthPixels))
+						if (checkOffset(tmpX, frameOffsets.right - tmpX, floatApp.dm.widthPixels))
 							frameOffsets.left = tmpX;
-						if (checkOffset(tmpY, tmpY - frameOffsets.top, floatApp.a.dm.heightPixels))
+						if (checkOffset(tmpY, tmpY - frameOffsets.top, floatApp.dm.heightPixels))
 							frameOffsets.bottom = tmpY;
 						break;
 					case 3:
 						tmpX = frameOffsets.right + offsetX;
 						tmpY = frameOffsets.bottom + offsetY;
-						if (checkOffset(tmpX, tmpX - frameOffsets.left, floatApp.a.dm.widthPixels))
+						if (checkOffset(tmpX, tmpX - frameOffsets.left, floatApp.dm.widthPixels))
 							frameOffsets.right = tmpX;
-						if (checkOffset(tmpY, tmpY - frameOffsets.top, floatApp.a.dm.heightPixels))
+						if (checkOffset(tmpY, tmpY - frameOffsets.top, floatApp.dm.heightPixels))
 							frameOffsets.bottom = tmpY;
 						break;
 					// 4-7 拖动哪一条边
 					case 4: {
 						tmpX = frameOffsets.left + offsetX;
-						if (checkOffset(tmpX, frameOffsets.right - tmpX, floatApp.a.dm.widthPixels))
+						if (checkOffset(tmpX, frameOffsets.right - tmpX, floatApp.dm.widthPixels))
 							frameOffsets.left = tmpX;
 					}
 					break;
 					case 5: {
 						tmpY = frameOffsets.top + offsetY;
-						if (checkOffset(tmpY, frameOffsets.bottom - tmpY, floatApp.a.dm.heightPixels))
+						if (checkOffset(tmpY, frameOffsets.bottom - tmpY, floatApp.dm.heightPixels))
 							frameOffsets.top = tmpY;
 					}
 					break;
 					case 6: {
 						tmpX = frameOffsets.right + offsetX;
-						if (checkOffset(tmpX, tmpX - frameOffsets.left, floatApp.a.dm.widthPixels))
+						if (checkOffset(tmpX, tmpX - frameOffsets.left, floatApp.dm.widthPixels))
 							frameOffsets.right = tmpX;
 					}
 					break;
 					case 7: {
 						tmpY = frameOffsets.bottom + offsetY;
-						if (checkOffset(tmpY, tmpY - frameOffsets.top, floatApp.a.dm.heightPixels))
+						if (checkOffset(tmpY, tmpY - frameOffsets.top, floatApp.dm.heightPixels))
 							frameOffsets.bottom = tmpY;
 					}
 					break;
