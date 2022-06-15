@@ -211,9 +211,8 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 	}
 	
 	public void close() {
-		if (view!=null) {
+		if (view!=null && view.getParent()!=null) {
 			wMan.removeView(view);
-			view = null;
 		}
 	}
 }

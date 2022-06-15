@@ -7,10 +7,13 @@ import android.graphics.PixelFormat;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.GlobalOptions;
@@ -25,6 +28,8 @@ import com.knziha.plod.widgets.WindowLayout;
 public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	public final WindowManager wMan;
 	public final AgentApplication app;
+	public WindowManager.LayoutParams lpLand;
+	public WindowManager.LayoutParams lpPort;
 	public WindowManager.LayoutParams lp;
 	public View floatingView;
 	public FloatBtn floatBtn;
@@ -32,6 +37,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	public ViewGroup contentView;
 	public ViewGroup appContentView;
 	public PDICMainActivity a;
+	public boolean landScape;
 	
 	public FloatApp(PDICMainActivity a) {
 		this.a = a;
@@ -47,6 +53,21 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			}
 		} else {
 			view = (WindowLayout) a.getLayoutInflater().inflate(R.layout.multiwindow_root, null);
+			view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+				
+				@Override
+				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+					CMN.Log("onLayoutChange::");
+					int angle = ((WindowManager)a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+					boolean land = angle==Surface.ROTATION_90||angle==Surface.ROTATION_270;
+					if (land!=landScape) {
+						landScape = land;
+						calcLayout();
+						wMan.removeView(view);
+						wMan.addView(view, lp);
+					}
+				}
+			});
 			view.floatApp = this;
 			ViewGroup views = (ViewGroup) view.getChildAt(0);
 			//views.getChildAt(0).setOnTouchListener(this);
@@ -70,22 +91,9 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 		ViewUtils.removeView(v);
 		contentView.addView(v);
 		
-		if (lp==null) {
-			int sz = (int) (GlobalOptions.density*500);
-			WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-					(int) (GlobalOptions.density*300) , sz
-					, Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-					? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-					: WindowManager.LayoutParams.TYPE_PHONE
-					, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-					| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-					| WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-					| WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-					| WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-					, PixelFormat.RGBA_8888);
-			lp.gravity = Gravity.START | Gravity.TOP;
-			this.lp = lp;
-		}
+		int angle = ((WindowManager)a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+		landScape = angle==Surface.ROTATION_90||angle==Surface.ROTATION_270;
+		calcLayout();
 		
 		try {
 			wMan.addView(view, lp);
@@ -242,6 +250,42 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			case R.id.close:
 				a.showExitDialog(false);
 			break;
+		}
+	}
+	
+	/** 初始化坐标布局 */
+	private void calcLayout() {
+		lp = landScape?lpLand:lpPort;
+		if (lp==null) {
+			DisplayMetrics dm = a.dm;
+			((WindowManager)a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
+			CMN.Log("calcLayout::", dm.widthPixels, dm.heightPixels);
+			int width = dm.widthPixels;
+			if (landScape && width/2>dm.heightPixels-dm.density*100) {
+				width/=2;
+			}
+			width = (int) (width*5/6.f);
+			int height = Math.min((int) (width*5/3.f), dm.heightPixels-CMN.getStatusBarHeight(a));
+			WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+					width, height
+					, Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+					? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+					: WindowManager.LayoutParams.TYPE_PHONE
+					, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+					| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+					| WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+					| WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+					| WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+					, PixelFormat.RGBA_8888);
+			lp.gravity = Gravity.START | Gravity.TOP;
+			lp.x = (dm.widthPixels-width)/2;
+			lp.y = (dm.heightPixels-height)/2;
+			this.lp = lp;
+			if (landScape) {
+				lpLand = lp;
+			} else {
+				lpPort = lp;
+			}
 		}
 	}
 }
