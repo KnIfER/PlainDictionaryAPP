@@ -1557,7 +1557,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		//tg
 		LayoutParams barBotLP = UIData.bottombar.getLayoutParams();
-		toggleMultiwindow();
+		//toggleMultiwindow();
 		//mDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).createVirtualDisplay("vdisplay",3840, 2160, 480, null,DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC);
 		
 		//if(false)
@@ -3332,18 +3332,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 	protected void switch_dark_mode(boolean val) {
 		drawerFragment.sw4.setChecked(val);
-	}
-
-	@Override
-	protected void notifyFlagChanged() {
-		boolean val;
-		super.notifyFlagChanged();
-		//000!!!
-//		if((val=opt.getClickSearchEnabled())!=opt.getClickSearchEnabled(TFStamp)){
-//			String title = "即点即译";
-//			if(val) title+=" √";
-//			AllMenus.findItem(R.id.toolbar_action14).setTitle(title);
-//		}
 	}
 	
 	public void startServer(boolean start) {

@@ -419,9 +419,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	//////////   ET   //////////
 	
 	//////////   First Boolean Flag   //////////
-	private static Long FirstFlag=null;
+	private static long FirstFlag=0;
 	public long getFirstFlag() {
-		if(FirstFlag==null) {
+		if(FirstFlag==0) {
 			return CMNF.FirstFlag=FirstFlag=getLong("MFF",0);
 		}
 		return FirstFlag;
@@ -438,7 +438,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public void putFirstFlag() {
 		putFirstFlag(FirstFlag);
 	}
-	public Long FirstFlag() {
+	public long FirstFlag() {
 		return FirstFlag;
 	}
 	private static void updateFFAt(int o, boolean val) {
@@ -829,9 +829,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	/////////////////////End First Flag////////////////////////////////////
 	/////////////////////Start Second Flag////////////////////////////////////
-	public static Long SecondFlag=null;
+	public static long SecondFlag=0;
 	public long getSecondFlag() {
-		if(SecondFlag==null) {
+		if(SecondFlag==0) {
 			return FilePickerOptions.SecondFlag=SecondFlag=getLong("MSF",0);
 		}
 		return SecondFlag;
@@ -842,7 +842,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	public void putSecondFlag() {
 		putFirstFlag(SecondFlag);
 	}
-	public Long SecondFlag() {
+	public long SecondFlag() {
 		return SecondFlag;
 	}
 	public static void SecondFlag(long _SecondFlag) {
@@ -1211,9 +1211,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=63) public static void exitToBackground(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 	///////////////////End second flag///////////////////////
 	///////////////////Start Third Flag///////////////////////
-	private static Long ThirdFlag=null;
+	private static long ThirdFlag=0;
 	public long getThirdFlag() {
-		if(ThirdFlag==null) {
+		if(ThirdFlag==0) {
 			return ThirdFlag=getLong("MTF",0);
 		}
 		return ThirdFlag;
@@ -1221,7 +1221,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	private void putThirdFlag(long val) {
 		defaultReader.edit().putLong("MTF",ThirdFlag=val).apply();
 	}
-	public Long ThirdFlag() {
+	public long ThirdFlag() {
 		return ThirdFlag;
 	}
 	private void updateTFAt(int o, boolean val) {
@@ -1668,15 +1668,15 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	/////////////////////End Third Flag////////////////////////////////////
 	/////////////////////Start Fourth Flag///////////////////////////////////
-	private static Long FourthFlag=null;
+	private static long FourthFlag=0;
 	public long getFourthFlag() {
-		if(FourthFlag==null) {
+		if(FourthFlag==0) {
 			return FourthFlag=getLong("MQF",0);
 		}
 		return FourthFlag;
 	}
 	public static long getFourthFlag(Context context) {
-		if(FourthFlag==null) {
+		if(FourthFlag==0) {
 			return FourthFlag= androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getLong("MQF",0);
 		}
 		return FourthFlag;
@@ -1684,7 +1684,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	private void putFourthFlag(long val) {
 		defaultReader.edit().putLong("MQF",FourthFlag=val).apply();
 	}
-	public Long FourthFlag() {
+	public long FourthFlag() {
 		return FourthFlag;
 	}
 	private void updateQFAt(int o, boolean val) {
@@ -2043,23 +2043,14 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	///////////////////// End Quart Flag////////////////////////////////////
 	/////////////////////Start Fifth Flag///////////////////////////////////
 	//SF
-	private static Long FifthFlag=null;
+	private static long FifthFlag=0;
 	public long getFifthFlag() {
-		if(FifthFlag==null) {
+		if(FifthFlag==0) {
 			return FifthFlag=getLong("MVF",0);
 		}
 		return FifthFlag;
 	}
-	public static long getFifthFlag(Context context) {
-		if(FifthFlag==null) {
-			return FifthFlag= androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getLong("MVF",0);
-		}
-		return FifthFlag;
-	}
-	private void putFifthFlag(long val) {
-		defaultReader.edit().putLong("MVF",FifthFlag=val).apply();
-	}
-	public Long FifthFlag() {
+	public long FifthFlag() {
 		return FifthFlag;
 	}
 	
@@ -2227,23 +2218,17 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	///////////////////// End Fifth Flag////////////////////////////////////
 	/////////////////////Start Sixth Flag///////////////////////////////////
 	//SS
-	private static Long SixthFlag=null;
+	private static long SixthFlag=0;
 	public long getSixthFlag() {
-		if(SixthFlag==null) {
+		if(SixthFlag==0) {
 			return SixthFlag=getLong("MVIF",0);
-		}
-		return SixthFlag;
-	}
-	public static long getSixthFlag(Context context) {
-		if(SixthFlag==null) {
-			return SixthFlag= androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getLong("MVIF",0);
 		}
 		return SixthFlag;
 	}
 	private void putSixthFlag(long val) {
 		defaultReader.edit().putLong("MVIF",SixthFlag=val).apply();
 	}
-	public final Long SixthFlag() {
+	public final long SixthFlag() {
 		return SixthFlag;
 	}
 	

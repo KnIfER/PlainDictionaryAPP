@@ -111,9 +111,13 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			initTextTools();
 		}
 		
-		if (opt.adjFltBtnShown())
-		{
-			initFloatBtn();
+		if (a.thisActType==MainActivityUIBase.ActType.PlainDict) {
+			if (opt.adjFltBtnShown())
+			{
+				initFloatBtn();
+			}
+		} else {
+			ViewUtils.setVisible(UIData.floatPanel, false);
 		}
 		
 		if (opt.adjTBtmShown())

@@ -291,7 +291,6 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	protected void checkFlags() {
 		if(checkFlagsChanged()){
-			notifyFlagChanged();
 			opt.setFlags(null, 1);
 			FFStamp=opt.FirstFlag();
 			SFStamp=opt.SecondFlag();
@@ -302,10 +301,8 @@ public class Toastable_Activity extends AppCompatActivity {
 		}
 	}
 
-	protected void notifyFlagChanged() { }
-
 	protected boolean checkFlagsChanged() {
-		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.getThirdFlag() || QFStamp!=opt.getFourthFlag() || VFStamp!=opt.getFifthFlag() || VIStamp!=opt.getSixthFlag();
+		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.ThirdFlag() || QFStamp!=opt.FourthFlag() || VFStamp!=opt.FifthFlag() || VIStamp!=opt.SixthFlag();
 	}
 
 	protected void checkLanguage() {
