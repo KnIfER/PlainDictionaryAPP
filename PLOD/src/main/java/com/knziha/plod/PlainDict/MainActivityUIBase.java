@@ -58,6 +58,7 @@ import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.ActionMode;
+import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -2235,6 +2236,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		if (etSearch!=null) {
 			((EditTextmy)etSearch).bNeverBlink = bNeverBlink;
+			if (toolbar!=null) {
+				toolbar.setOnDragListener(new View.OnDragListener() {
+					@Override
+					public boolean onDrag(View v, DragEvent event) {
+						if(event.getAction()== DragEvent.ACTION_DROP){
+							try {
+								ClipData textdata = event.getClipData();
+								if(textdata.getItemCount()>0){
+									etSearch.setText(textdata.getItemAt(0).getText());
+								}
+								return true;
+							} catch (Exception e) { }
+						}
+						return true;
+					}
+				});
+			}
 		}
 	}
 	
