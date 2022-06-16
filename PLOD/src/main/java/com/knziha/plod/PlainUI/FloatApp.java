@@ -1,11 +1,8 @@
 package com.knziha.plod.PlainUI;
 
-import android.app.ActivityManager;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -14,7 +11,6 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.GlobalOptions;
@@ -33,10 +29,10 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	public WindowManager.LayoutParams lpPort;
 	public WindowManager.LayoutParams lp;
 	public View floatingView;
-	public FloatBtn floatBtn;
+	private FloatBtn floatBtn;
 	public WindowLayout view;
-	public ViewGroup contentView;
-	public ViewGroup appContentView;
+	private ViewGroup contentView;
+	private ViewGroup appContentView;
 	public PDICMainActivity a;
 	public boolean landScape;
 	public DisplayMetrics dm = new DisplayMetrics();
@@ -49,6 +45,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 		Context context = a.getApplicationContext();
 		this.app = (AgentApplication) a.getApplication();
 		this.wMan = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		app.floatApp = this;
 	}
 	
 	public void floatWindow() {
@@ -112,7 +109,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			a.mDialogType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
 					? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
 					: WindowManager.LayoutParams.TYPE_PHONE;
-			app.floatApp = this;
+			//app.floatApp = this;
 		} catch (Exception e) {
 			CMN.Log(e);
 			toggle(true);
@@ -247,10 +244,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	
 	public FloatBtn getFloatBtn() {
 		if (floatBtn==null) {
-			if (a.floatBtn==null) {
-				a.floatBtn = new FloatBtn(a, app);
-			}
-			floatBtn = a.floatBtn;
+			floatBtn = a.getFloatBtn();
 		}
 		return floatBtn;
 	}

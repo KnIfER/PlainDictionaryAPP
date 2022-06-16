@@ -27,11 +27,15 @@ import androidx.appcompat.app.GlobalOptions;
 
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.FloatActivitySearch;
+import com.knziha.plod.plaindict.MainShareActivity;
 import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PasteActivity;
 import com.knziha.plod.plaindict.R;
 
 public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 	public final WindowManager wMan;
+	public final static String EXTRA_GETTEXT = "ext_clip";
 	public final Context context;
 	public final ClipboardManager clipMan;
 	public final AgentApplication app;
@@ -89,7 +93,7 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 		}
 		this.btnType = btnType;
 		try {
-			if (view.getParent() != null) {
+			if (view.getParent() == null) {
 				wMan.addView(view, calcLayout());
 			} else {
 				wMan.updateViewLayout(view, calcLayout());
@@ -129,14 +133,6 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 		else if (e==MotionEvent.ACTION_UP || e==MotionEvent.ACTION_CANCEL) {
 			if (moved) {
 				moved = false;
-//				if (btnType==0) {
-//					savedXY[0] = lp.x;
-//					savedXY[1] = lp.y;
-//				} else if (moveX) {
-//					savedXY[2] = lp.x;
-//				} else if (moveY) {
-//					savedXY[3] = lp.y;
-//				}
 			} else {
 				search(null, true);
 			}
@@ -159,7 +155,8 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 	}
 	
 	public void search(CharSequence text, boolean checkAct) {
-		if (app.floatApp != null && app.floatApp.isFloating()) {
+		boolean floating = app.floatApp != null && app.floatApp.isFloating();
+		if (floating) {
 			app.floatApp.expand(false);
 		}
 		if (text==null) {
@@ -169,7 +166,7 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 //				String packageName = rti.get(0).topActivity.getPackageName();
 //				if (packageName.equals(context.getPackageName())) {
 //
-//				}
+//				} //todo
 				int actId = 0, fore=foreground;
 				while((fore>>1)!=0) {
 					actId++;
@@ -182,28 +179,46 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 				}
 				return;
 			}
-			ClipData pclip = clipMan.getPrimaryClip();
-			if (pclip!=null && pclip.getItemCount()>0) {
-				text = pclip.getItemAt(0).getText();
-			}
+			text = getPrimaryClip();
 		}
 		if (text!=null) {
 			text = text.toString().trim();
 		}
 		//((MainActivityUIBase)context).showT(text);
-		if (TextUtils.isEmpty(text)){
-			return;
-		}
+		CMN.debug("floatBtn::text::", text);
 		Intent newTask = new Intent(Intent.ACTION_MAIN);
 		newTask.setType(Intent.CATEGORY_DEFAULT);
-		newTask.putExtra(Intent.EXTRA_TEXT,text);
-		newTask.setClass(context, PDICMainActivity.class);
-		newTask.setFlags(SingleTaskFlags);
-		if (app.floatApp != null && app.floatApp.isFloating()) {
-			app.floatApp.a.processIntent(newTask, false);
+		if (TextUtils.isEmpty(text)) {
+			newTask.putExtra(EXTRA_GETTEXT, true);
 		} else {
-			context.startActivity(newTask);
+			newTask.putExtra(Intent.EXTRA_TEXT,text);
 		}
+		newTask.setClass(context, PDICMainActivity.class);
+		newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		if (floating) {
+			if (TextUtils.isEmpty(text)) {
+				newTask.setClass(context, PasteActivity.class);
+				context.startActivity(newTask);
+			} else {
+				app.floatApp.a.processIntent(newTask, false);
+			}
+		} else {
+//			if (app.floatApp!=null) {
+//				CMN.debug("floatBtn::moveTaskToFront::");
+//				app.floatApp.a.moveTaskToFront();
+//				app.floatApp.a.processIntent(newTask, false);
+//			} else {
+				context.startActivity(newTask);
+//			}
+		}
+	}
+	
+	public CharSequence getPrimaryClip() {
+		ClipData pclip = clipMan.getPrimaryClip();
+		if (pclip!=null && pclip.getItemCount()>0) {
+			return pclip.getItemAt(0).getText();
+		}
+		return null;
 	}
 	
 	public void close() {
@@ -236,7 +251,7 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 			if (screenConfig == null) {
 				screenConfigs[btnType] = screenConfig = new ScreenConfig(dm);
 				if (btnType == 0) {
-					lp.x = (int) (dm.widthPixels - btnWidth * 2.5);
+					lp.x = (int) (dm.widthPixels - btnWidth * (GlobalOptions.isLarge?2:1.5f));
 					lp.y = (dm.heightPixels - lp.height) / 2;
 				} else {
 					int szLong = (int) (btnWidth * 2.5), szShort = (int) (GlobalOptions.density * 15);

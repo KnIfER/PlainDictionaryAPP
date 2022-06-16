@@ -202,8 +202,8 @@ public class Drawer extends Fragment implements
 										   int oldRight, int oldBottom) {
 					right=right-left;
 					//todo opt
-					if(GlobalOptions.isLarge) {
-						right = Math.min(right, Math.max(realWidth, (int)getResources().getDimension(R.dimen.idealdpdp)));
+					if(GlobalOptions.isLarge && a!=null) {
+						right = Math.min(right, Math.max(realWidth, (int)a.mResource.getDimension(R.dimen.idealdpdp)));
 						v.getLayoutParams().width = right;
 					}
 					if(swRow!=null && (right!=oldWidth || bIsFirstLayout)) {

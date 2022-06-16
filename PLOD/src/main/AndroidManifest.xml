@@ -138,6 +138,17 @@
 			android:theme="@style/FloatAppTheme"
 			>
 		</activity>
+		<activity android:name=".PasteActivity"
+			android:configChanges="keyboardHidden|orientation|screenSize"
+			android:hardwareAccelerated="true"
+			android:windowSoftInputMode="adjustPan"
+			android:launchMode="singleInstance"
+			android:exported="false"
+			android:label="@string/fapp_name"
+			android:taskAffinity=""
+			android:theme="@style/FloatAppTheme"
+			>
+		</activity>
 		<activity android:name=".MultiShareActivity"
 			android:configChanges="layoutDirection|locale|keyboardHidden|orientation|screenSize"
 			android:hardwareAccelerated="true"

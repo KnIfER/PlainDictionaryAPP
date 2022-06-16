@@ -2,13 +2,20 @@ package com.knziha.plod.plaindict;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.Application;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Window;
 
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
+
+import com.knziha.plod.PlainUI.FloatBtn;
 
 /**
  * Created by KnIfER on 2019
@@ -60,9 +67,6 @@ public class MainShareActivity extends Activity {
 				}
 			}
 			debugString = thisIntent.getStringExtra(Intent.EXTRA_TEXT);
-			if (debugString==null) {
-				debugString = thisIntent.getStringExtra("EXTRA_QUERY");
-			}
 			if (debugString==null) {
 				debugString = thisIntent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
 			}

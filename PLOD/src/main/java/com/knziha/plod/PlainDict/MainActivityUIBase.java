@@ -1864,8 +1864,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		CMN.Log("floatBtn::", PDICMainAppOptions.floatBtn(opt.SixthFlag() >> (30 + thisActType.ordinal())), PDICMainAppOptions.floatBtn(), thisActType);
 		if (PDICMainAppOptions.floatBtn(opt.SixthFlag()>>(30+thisActType.ordinal()))) {
-			floatBtn = new FloatBtn(this, getApplication());
-			floatBtn.reInitBtn(0);
+			getFloatBtn().reInitBtn(0);
 		}
 //		try {
 //			Integer verifyCode = (Integer) ViewUtils.execSimple(testVerifyCode, null, this);
@@ -6670,6 +6669,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			tagHolder.tag=new WeakReference<>(menuDialog);
 		}
 		menuDialog.tag = invokerMenu;
+		ViewUtils.ensureWindowType(menuDialog, this, null);
 		menuDialog.show();
 		menuDialog.getWindow().setDimAmount(0);
 		return menuDialog;
@@ -10357,9 +10357,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public void checkFloatBtn() {
 		if (PDICMainAppOptions.floatBtn(opt.SixthFlag()>>(30+thisActType.ordinal()))) {
-			if(floatBtn==null)
-				floatBtn = new FloatBtn(this, getApplication());
-			floatBtn.reInitBtn(0);
+			getFloatBtn().reInitBtn(0);
 		} else if(floatBtn!=null) {
 			floatBtn.close();
 		}
@@ -10575,5 +10573,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public final boolean isFloating() {
 		return floatApp!=null && floatApp.isFloating();
+	}
+	
+	public FloatBtn getFloatBtn() {
+		if (floatBtn==null) {
+			floatBtn = new FloatBtn(this, getApplication());
+			if (floatApp==null && thisActType==ActType.PlainDict) {
+				floatApp = new FloatApp((PDICMainActivity) this);
+			}
+		}
+		return floatBtn;
 	}
 }

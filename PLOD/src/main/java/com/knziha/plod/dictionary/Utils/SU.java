@@ -171,6 +171,10 @@ public class  SU{
 		return h;
 	}
 	
+	public static String valueOf(CharSequence text) {
+		return text == null ? null : text.toString();
+	}
+	
 	public boolean CharsequenceEqual(CharSequence cs1, CharSequence cs2) {
 		if(cs1!=null&&cs2!=null) {
 			int len1=cs1.length();

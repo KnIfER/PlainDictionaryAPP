@@ -352,6 +352,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 						}).create();
 				if (dd!=null) dd.tag = dlg;
 			}
+			ViewUtils.ensureWindowType(dlg, a, null);
 			dlg.show();
 			dlg.getWindow().setDimAmount(0);
 		} else {
@@ -422,6 +423,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 					}
 				});
 			}
+			ViewUtils.ensureWindowType(dd, a, null);
 			dd.show();
 			dd.getWindow().setDimAmount(0);
 		}

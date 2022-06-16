@@ -1110,8 +1110,19 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				
 				String extraText = null;
 				
-				if(intent.hasExtra(Intent.EXTRA_TEXT))
+				if(intent.hasExtra(Intent.EXTRA_TEXT)) {
 					extraText = intent.getStringExtra(Intent.EXTRA_TEXT);
+				} else if (floatBtn!=null && intent.hasExtra(FloatBtn.EXTRA_GETTEXT)) {
+					hdl.postDelayed(() -> {
+						CharSequence text = floatBtn.getPrimaryClip();
+						if (text != null) {
+							intent.putExtra(Intent.EXTRA_TEXT, text);
+							processIntent(intent, false);
+						}
+						postTask = null;
+					}, 100);
+					return;
+				}
 				
 				if(extraText ==null && intent.hasExtra(Intent.EXTRA_PROCESS_TEXT))
 					extraText = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
@@ -1189,7 +1200,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		
 		CheckGlideJournal();
 
-		//showT(root.getParent().getClass());
+ 		//showT(root.getParent().getClass());
 		DefaultTSView = mainframe;
 		contentUIData.webcontentlister.scrollbar2guard=contentUIData.dragScrollBar;
 		DetachContentView(true);

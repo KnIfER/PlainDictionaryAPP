@@ -804,9 +804,9 @@ public class Toastable_Activity extends AppCompatActivity {
 	}
 	
 	public void moveTaskToFront() {
-		ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+		ActivityManager manager = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
 		if (manager != null)
-			manager.moveTaskToFront(getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
+			manager.moveTaskToFront(getTaskId(), 0);
 	}
 }
 
