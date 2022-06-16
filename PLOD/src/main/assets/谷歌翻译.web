@@ -146,7 +146,7 @@
 						e.opacity = 0.75;
 					}
 				});
-				if(ta!=doc.activeElement)ta.readOnly=true;
+				//if(ta!=doc.activeElement)ta.readOnly=true;
 				ta.setAttribute('_PDSC', '');
 			}
 		}
