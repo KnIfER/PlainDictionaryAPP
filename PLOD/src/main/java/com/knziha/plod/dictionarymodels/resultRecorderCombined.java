@@ -84,7 +84,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		allWebs=true;
 		for(int i=0;i<data.size();i+=2) {
 			long toFind=data.get(i);
-			if (a.getBookById(toFind).getType()!=DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB) {
+			if (a.getBookById(toFind).getIsWebx()) {
 				allWebs=false;
 				break;
 			}
@@ -118,7 +118,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	
 	@Override
 	public void renderContentAt(long pos, final MainActivityUIBase a, BasicAdapter ADA, WebViewListHandler weblistHandler){
-		//CMN.Log("renderContentAt::", pos, weblistHandler.bMergeFrames, weblistHandler.bMergingFrames, weblistHandler.getChildCount());
+		//CMN.debug("renderContentAt::", pos, getResAt(a, pos), weblistHandler.bMergeFrames, weblistHandler.bMergingFrames, weblistHandler.getChildCount());
 		scrollTarget=null;
 		final ScrollView sv = (ScrollView) weblistHandler.getScrollView();
 		toHighLight=weblistHandler.hasPageKey();
@@ -241,6 +241,7 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 		ViewGroup webholder = weblistHandler;
 		if (bFoldingScreen) {
 			int foldN = jointResult.LongestStartWithSeqLength<0?-jointResult.LongestStartWithSeqLength:0;
+			weblistHandler.getMergedFrame().jointResult = jointResult;
 			weblistHandler.renderFoldingScreen(foldN);
 			weblistHandler.entrySeek.setMax(frames.size()-1);
 			weblistHandler.entrySeek.setProgress(foldN);

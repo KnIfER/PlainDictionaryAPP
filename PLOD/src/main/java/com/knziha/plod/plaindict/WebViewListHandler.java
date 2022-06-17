@@ -1797,12 +1797,14 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 			BookPresenter presenter = frames.get(frame);
 			long[] displaying = framesDisplaying.get(frame);
 			boolean shareView;
+			if (presenter.getIsWebx()) {
+				presenter.SetSearchKey(batchDisplaying().key);
+			}
 			if (bDataOnly) {
-				shareView = true;
+				shareView = true;// 点击翻译始终只有一个webview视图
 			} else {
 				shareView = PDICMainAppOptions.getUseSharedFrame();
 				if (presenter.getIsWebx() && (!shareView || PDICMainAppOptions.getMergeExemptWebx())) {
-					presenter.SetSearchKey(batchDisplaying().key);
 					shareView = false;
 				}
 			}
