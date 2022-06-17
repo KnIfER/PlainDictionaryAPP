@@ -7,6 +7,7 @@ import androidx.appcompat.app.GlobalOptions;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.mdict;
 import com.knziha.plod.dictionarymodels.SearchType;
+import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -37,10 +38,17 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultR
 		//CMN.Log("开始联合搜索！");
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
-		for(BookPresenter bookPresenter:a.md) {
-			if(bookPresenter!=null) bookPresenter.range_query_reveiver = new ArrayList<>();
+		BookPresenter bookPresenter;
+		for(int i=0; i<a.loadManager.md_size; i++) {
+			bookPresenter = a.loadManager.md_getAt(i);
+			if (bookPresenter != null) {
+				bookPresenter.range_query_reveiver = new ArrayList<>();
+			}
 		}
 		_treeBuilder.clear();
+		if (BuildConfig.isDebug) {
+			CMN.stst = CMN.now();
+		}
 	}
 	
 	@Override
@@ -155,7 +163,7 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultR
 		MainActivityUIBase a;
 		if((a=activity.get())==null) return;
 
-		//CMN.Log("联合搜索 时间： " + (System.currentTimeMillis() - stst) + "ms " + rec.size());
+		CMN.debug("联合搜索 时间： " + (System.currentTimeMillis() - CMN.stst) + " ms " + rec.size());
 		if(rec==null) rec = new resultRecorderCombined(a, new ArrayList<>(), CurrentSearchText);
 		rec.storeRealm = a.schuiMain;
 		rec.storeRealm1 = a.thisActType==MainActivityUIBase.ActType.PlainDict?SearchUI.MainApp.表1:SearchUI.FloatApp.表1;

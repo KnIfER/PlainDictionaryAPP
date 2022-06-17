@@ -179,7 +179,7 @@ public class CMN{
 	public static long ststrt;
 	public static long stst_add;
 	public static long rt(Object... o) {
-		CMN.Log(o);
+		if(o.length>0)CMN.Log(o);
 		return ststrt = System.currentTimeMillis();
 	}
 	public static long pt(Object...args) {
