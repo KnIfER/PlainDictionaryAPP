@@ -1,5 +1,4 @@
 图片浏览器 file://
-待修复 : 全文搜索的进度条
 fix WordPopup 在PeruseView、Alloyd等的弹出位置
 fix PeruseView 词典加载异常
 fix random page
@@ -12,4 +11,6 @@ fix menuGrid font anti-alias
 fix default titlebar color
 fix MultiShare crashes
 fix DBrowser 待移除
+
+fix flowTextView 小宽度导致崩溃
 

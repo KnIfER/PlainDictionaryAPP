@@ -566,13 +566,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 									a.dvSeekbar.setMax(handlerRecv.dirtyTotalProgress);
 								a.dvResultN.setText("");
 							} else {
-								if(handlerIdx<0 || handlerIdx>=a.md.size())
+								if(handlerIdx<0 || handlerIdx>=a.loadManager.md_size)
 									return;
 								a.dvResultN.setText("已搜索到: "+handlerRecv.dirtyResultCounter+" 项条目!");
 							}
 							a.dvSeekbar.setProgress(handlerRecv.dirtyProgressCounter);
 							a.dvProgressFrac.setText(handlerRecv.dirtyProgressCounter+"/"+a.dvSeekbar.getMax());
-						} catch (Exception ignored) { }
+						} catch (Exception e) {
+							CMN.debug(e);
+						}
 					}
 					break;
 				case 10086:
