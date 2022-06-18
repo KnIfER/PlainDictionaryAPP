@@ -4,7 +4,10 @@
 	,"style": ""
 	,"keyPattern": "*"
 	,"js": ""
-	,"mirrors": ["https://en.wiktionary.wikimirror.org"]
+	,"mirrors": [
+		["https://en.wiktionary.wikimirror.org", "Wikimirror"]
+		,["https://en.wiktionary.ahau.cf", "Iefnuy"]
+]
 	,"defUseMirror":-1
 	,"search": "/w/index.php?search=%s&title=Special%3ASearch&go=Go&ns0=1"
 	,"drawHighlightOnTopx":"true"

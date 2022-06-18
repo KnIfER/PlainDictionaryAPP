@@ -267,19 +267,24 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 		PlainWeb webx = data[0].getWebx();
 		findPreference("online").setVisible(webx != null);
 		if (webx != null) {
-			JSONObject dopt = webx.getDopt();
-			findPreference("dopt").setVisible(dopt!=null);
-			JSONArray sites = webx.getJSONArray("mirrors");
-			ListPreference mirrors = findPreference("mirrors");
-			mirrors.setVisible(sites!=null);
-			if (sites!=null) {
-				//mirrors.setOnPreferenceChangeListener(this);
-				init_integer("mirrors", 41, 0, 31);
-				CharSequence[] mirrorsArr = new CharSequence[sites.size()];
-				for (int i = 0; i < mirrorsArr.length; i++) {
-					mirrorsArr[i] = sites.getString(i);
+			findPreference("hosts").setVisible(webx.hasField("hosts"));
+			try {
+				JSONObject dopt = webx.getDopt();
+				findPreference("dopt").setVisible(dopt!=null);
+				JSONArray sites = webx.getJSONArray("mirrors");
+				ListPreference mirrors = findPreference("mirrors");
+				mirrors.setVisible(sites!=null);
+				if (sites!=null) {
+					//mirrors.setOnPreferenceChangeListener(this);
+					init_integer("mirrors", 41, 0, 31);
+					CharSequence[] mirrorsArr = new CharSequence[sites.size()];
+					for (int i = 0; i < mirrorsArr.length; i++) {
+						mirrorsArr[i] = sites.getJSONArray(i).getString(1);
+					}
+					mirrors.setEntries(mirrorsArr);
 				}
-				mirrors.setEntries(mirrorsArr);
+			} catch (Exception e) {
+				data[0].placeHolder.ErrorMsg = e.getLocalizedMessage();
 			}
 		}
 	}

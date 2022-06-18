@@ -551,7 +551,7 @@ function debug(e){console.log(e)};
 	@Metaline(flagPos=39, shift=1) public void setUseHosts(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 
 	@Metaline(flagPos=40) public boolean getUseMirrors() { firstFlag=firstFlag; throw new RuntimeException();}
-	@Metaline(flagPos=40) public void setUseMirrors(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=40) private void setUseMirrorsInternal(boolean val) { firstFlag=firstFlag; throw new RuntimeException();}
 
 	@Metaline(flagPos=41, flagSize=5) public int getMirrorIdx() { firstFlag=firstFlag; throw new RuntimeException();}
 
@@ -4269,5 +4269,12 @@ function debug(e){console.log(e)};
 	
 	public PlaceHolder getPlaceHolder() {
 		return placeHolder;
+	}
+	
+	public void setUseMirrors(boolean val) {
+		setUseMirrorsInternal(val);
+		if (getIsWebx()) {
+			getWebx().setMirroredHost(val?-2:-1);
+		}
 	}
 }

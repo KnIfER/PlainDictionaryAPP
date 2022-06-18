@@ -156,6 +156,7 @@ public class PlainWeb extends DictionaryAdapter {
 	public Map<SubStringKey, String> jinkeSheaths;
 	Object k3client;
 	private JSONObject dopt;
+	private int lastMirror;
 	
 	public boolean hasHosts() {
 		return jinkeSheaths!=null && jinkeSheaths.size()>0;
@@ -2018,9 +2019,17 @@ public class PlainWeb extends DictionaryAdapter {
 	}
 	
 	public void setMirroredHost(int idx) {
-		JSONArray sites = getJSONArray("mirrors");
-		if (sites!=null && sites.size()>0) {
-			host = sites.getString(Math.max(0, Math.min(idx, sites.size())));
+		if (idx == -1) {
+			host = website.getString("host");
+		} else {
+			if (idx==-2) {
+				idx = lastMirror;
+			}
+			JSONArray sites = getJSONArray("mirrors");
+			if (idx>=0 && sites!=null && sites.size()>idx) {
+				lastMirror = idx;
+				host = sites.getJSONArray(idx).getString(0);
+			}
 		}
 	}
 }

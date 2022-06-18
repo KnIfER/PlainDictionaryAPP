@@ -21,7 +21,7 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="启用hosts"
-			android:summary="定义在.web json文件中，手动指定域名-IP地址对，类似于电脑hosts文件"
+			android:summary="可在.web（json）文件中，手动指定域名/IP地址对，类似于电脑hosts文件"
 			/>
 		<androidx.preference.ListPreference
 			android:key="mirrors"
@@ -30,7 +30,7 @@
 			app:hasCheck="true"
 			android:title="启用镜像站点"
 			app:autoSummary="false"
-			android:summary="用以代替原站点，加速网络访问"
+			android:summary="用以代替原网址，加速访问速度"
 			/>
 	</PreferenceCategory>
 
