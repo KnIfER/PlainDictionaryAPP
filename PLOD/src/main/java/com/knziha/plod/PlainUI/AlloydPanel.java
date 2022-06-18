@@ -64,7 +64,7 @@ public class AlloydPanel extends PlainAppPanel {
 			AllMenus.checkDrawable = a.AllMenus.checkDrawable;
 			AllMenus.mOverlapAnchor = PDICMainAppOptions.menuOverlapAnchor();
 			// tabTranslateEach
-			//AllMenus.getItems().set(4, (MenuItemImpl) ViewUtils.findInMenu(a.AllMenusStamp, R.id.tapTranslator));
+			//AllMenus.getItems().set(4, a.getMenuSTd(R.id.translator));
 			if(handler.tapSch) {
 				ViewUtils.findInMenu(AllMenus.getItems(), R.id.tapSch).setChecked(true);
 			}

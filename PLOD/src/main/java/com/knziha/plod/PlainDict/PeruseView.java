@@ -2322,7 +2322,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					closeMenu = false;
 				} break;
 				case R.id.translate: {
-					MenuItemImpl mSTd = (MenuItemImpl) ViewUtils.findInMenu(a.AllMenusStamp, R.id.translate);
+					MenuItemImpl mSTd = a.getMenuSTd(R.id.translate);
 					mSTd.isLongClicked = isLongClicked;
 					a.onMenuItemClick(mSTd);
 				} break;

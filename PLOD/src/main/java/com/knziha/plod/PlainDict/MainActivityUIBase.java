@@ -1130,9 +1130,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		CMN.instanceCount++;
 		MainStringBuilder = new StringBuilder(40960);
 		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
-		if (PDICMainAppOptions.getEnableWebDebug()) {
-			showT("开启网页调试");
-		}
 		//ViewUtils.setWebDebug(this);
 		if (BuildConfig.isDebug) {
 			CMN.debug("mid", CMN.mid, getClass());
@@ -4802,7 +4799,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			twoColumnAda.setItems(items);
 			
 			// 设置标题
-			if(!bFromTextView) {
+			if(!bFromTextView && invoker!=null) {
 				StringBuilder sb = invoker.appendCleanDictionaryName(null);
 				String text = mWebView==null?null:mWebView.word;
 				if(!TextUtils.isEmpty(text)) {
@@ -6675,11 +6672,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 	}
 	
-	protected MenuItemImpl getMenuSTd(MenuItemImpl m) {
-		if(m.mMenu!=AllMenus) {
-			m = (MenuItemImpl) ViewUtils.findInMenu(AllMenusStamp, m.getItemId());
+	@NonNull
+	public final MenuItemImpl getMenuSTd(MenuItemImpl m) {
+		return m.mMenu==AllMenus?m:getMenuSTd(m.getItemId());
+	}
+	
+	@NonNull
+	public final MenuItemImpl getMenuSTd(int id) {
+		MenuItemImpl ret = (MenuItemImpl) ViewUtils.findInMenu(AllMenusStamp, id);
+		if (ret==null) {
+			if (AllMenus==null) {
+				AllMenus = new MenuBuilder(this);
+				AllMenus.tag = weblistHandler;
+			}
+			AllMenusStamp.add(ret=new MenuItemImpl(AllMenus, 0, id, 0, 0, null, 0));
 		}
-		return m;
+		return ret;
 	}
 	
 	protected AlertDialog showMenuDialog(MenuItemImpl tagHolder, MenuBuilder invokerMenu, AlertDialog menuDialog) {

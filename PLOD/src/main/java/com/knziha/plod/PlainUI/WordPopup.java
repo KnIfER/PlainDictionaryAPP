@@ -54,6 +54,7 @@ import com.knziha.plod.plaindict.CrashHandler;
 import com.knziha.plod.plaindict.DictPicker;
 import com.knziha.plod.plaindict.FloatSearchActivity;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.MultiShareActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PlaceHolder;
 import com.knziha.plod.plaindict.R;
@@ -302,7 +303,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				dictPicker.toggle();
 			} break;
 			case R.id.gTrans:{
-				MenuItemImpl mSTd = (MenuItemImpl) ViewUtils.findInMenu(a.AllMenusStamp, R.id.translate);
+				CMN.Log("R.id.gTrans::!!!)");
+				MenuItemImpl mSTd = a.getMenuSTd(R.id.translate);
 				mSTd.isLongClicked = false;
 				a.onMenuItemClick(mSTd);
 				weblistHandler.bMergingFrames=1;
@@ -1257,6 +1259,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 				invoker.postDelayed(clrSelAby, 180);
 			}
 			tapped = false;
+		}
+		if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
+			a.OnPeruseDetached();
 		}
 	}
 	

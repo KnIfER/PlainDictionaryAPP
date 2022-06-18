@@ -1,5 +1,7 @@
 package com.knziha.plod.plaindict;
 
+import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
+
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,7 +24,7 @@ import com.knziha.plod.widgets.CheckableImageView;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.ref.WeakReference;
-import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
+import java.util.ArrayList;
 
 /** 主程序之影。复用词典实例。 */
 public class MultiShareActivity extends MainActivityUIBase {
@@ -83,6 +85,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		hdl  = new MyHandler(this);
 		mActionModeHeight = dm.heightPixels/2;
 		MainBackground = MainAppBackground = opt.getMainBackground();
+		AllMenusStamp = new ArrayList<>();
 		processIntent(getIntent());
 		systemIntialized=true;
 	}
@@ -122,8 +125,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 		if(text!=null) {
 			extraText = text;
 			// new Text!
-		} else if(extraText ==null) {
-			extraText = StringUtils.EMPTY;
+		} else if(extraText==null) {
+			extraText = "happy";
 		}
 		ucc = getUtk();
 		ucc.setInvoker(null, null, null, extraText);
@@ -159,11 +162,13 @@ public class MultiShareActivity extends MainActivityUIBase {
 	
 	@Override
 	public void OnPeruseDetached() {
-		if(NewIntentCalled && getPinVSDialog()) {
+		//CMN.debug("OnPeruseDetached::", allHidden(), (ucc==null||ucc.detached()));
+		//CMN.debug("OnPeruseDetached::", NewIntentCalled, getPinVSDialog());
+		if(NewIntentCalled && !getPinVSDialog()) {
 			hide();
 		} else {
 			if(allHidden() && (ucc==null||ucc.detached())) {
-				if(NewIntentCalled && getPinVSDialog()) {
+				if(NewIntentCalled && !getPinVSDialog()) {
 					finishOrHide();
 				} else {
 					getUtk().setInvoker(null, null, null, extraText);
@@ -215,6 +220,10 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	public boolean allHidden() {
+		if (PeruseSearchAttached()/* && PeruseView.mDialog.isShowing()*/
+			|| wordPopup.isVisible() || settingsPanel!=null) {
+			return false;
+		}
 		int cc = root.getChildCount();
 		View cI;
 		for (int i = 0; i < cc; i++) {
@@ -359,11 +368,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	public void animateUIColorChanges() {
 	
-	}
-	
-	@Override
-	public boolean onMenuItemClick(MenuItem item) {
-		return false;
 	}
 	
 	@Override

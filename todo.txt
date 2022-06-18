@@ -8,7 +8,7 @@ fix url share and text share
 fix menuGrid font color
 fix menuGrid font anti-alias
 fix default titlebar color
-fix MultiShare crashes
+fix MultiShare crashes + 
 fix DBrowser 待移除
 
 fix flowTextView 小宽度导致崩溃
