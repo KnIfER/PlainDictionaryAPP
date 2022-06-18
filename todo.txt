@@ -5,7 +5,6 @@ fix random page
 fix merged webx boxes
 fix float btn
 fix url share and text share
-fix custom bottombar height
 fix menuGrid font color
 fix menuGrid font anti-alias
 fix default titlebar color
