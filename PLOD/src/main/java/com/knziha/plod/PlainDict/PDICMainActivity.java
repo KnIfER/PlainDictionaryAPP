@@ -517,7 +517,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			//来一发=false;
 			//todo opt
 			if(peruseView !=null)
-				peruseView.dismiss();
+				peruseView.hide(this);
 		}
 	}
 
@@ -1574,7 +1574,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		LayoutParams barBotLP = UIData.bottombar.getLayoutParams();
-		//toggleMultiwindow();
+		toggleMultiwindow();
 		//mDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).createVirtualDisplay("vdisplay",3840, 2160, 480, null,DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC);
 		
 		//if(false)

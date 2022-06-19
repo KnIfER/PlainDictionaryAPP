@@ -737,7 +737,7 @@ public class Toastable_Activity extends AppCompatActivity {
 //						.setNegativeButton(R.string.cancel, null)
 						.create();
 		configurableDialog.setCanceledOnTouchOutside(true);
-		ViewUtils.ensureWindowType(configurableDialog, this, null);
+		ViewUtils.ensureWindowType(configurableDialog, (MainActivityUIBase) this, null);
 		
 		dv.findViewById(R.id.cancel).setOnClickListener(v -> {
 			if(btnIdListener instanceof Integer) optprs.processOptionChanged(null, null, (Integer) btnIdListener, 0);

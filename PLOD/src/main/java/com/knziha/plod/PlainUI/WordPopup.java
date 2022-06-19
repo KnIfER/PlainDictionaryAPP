@@ -968,8 +968,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	
 	@AnyThread
 	private void harvest() {
-		a.root.removeCallbacks(harvestRn);
-		a.root.post(harvestRn);
+		a.hdl.removeCallbacks(harvestRn);
+		a.hdl.post(harvestRn);
 	}
 	
 	@AnyThread
@@ -1232,11 +1232,11 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			if (key!=null) popupKey = key;
 			popupFrame = frameAt;
 			popupForceId = forceStartId;
-			a.root.removeCallbacks(this);
+			a.hdl.removeCallbacks(this);
 			if (invoker!=null && invoker.weblistHandler.pageSlider.tapZoom) { //todo ???
-				a.root.postDelayed(this, SearchUI.tapZoomWait); // 支持双击操作会拖慢点译！
+				a.hdl.postDelayed(this, SearchUI.tapZoomWait); // 支持双击操作会拖慢点译！
 			} else {
-				a.root.post(this);
+				a.hdl.post(this);
 			}
 		}
 	}
@@ -1284,7 +1284,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 			currentPos = (int) pos;
 			texts[0]=id;
-			a.root.post(setAby);
+			a.hdl.post(setAby);
 		} else {
 			currentPos = (int) pos;
 		}
@@ -1295,7 +1295,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			displaying = text;
 			indicator.setText(null);
 			texts[0] = 0;
-			a.root.post(setAby1);
+			a.hdl.post(setAby1);
 		}
 	}
 	

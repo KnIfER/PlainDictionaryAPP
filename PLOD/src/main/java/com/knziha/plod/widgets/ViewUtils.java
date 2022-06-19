@@ -323,8 +323,9 @@ public class ViewUtils {
 	}
 	
 	
-	public static void ensureWindowType(Dialog dialog, Toastable_Activity a, Dialog.OnDismissListener disLis) {
-		int type = a.mDialogType;
+	public static void ensureWindowType(Dialog dialog, MainActivityUIBase a, Dialog.OnDismissListener disLis) {
+		int type = (a.foreground&(1<<a.thisActType.ordinal()))==0?a.mDialogType:WindowManager.LayoutParams.TYPE_APPLICATION;
+		//CMN.debug("ensureWindowType::", type, WindowManager.LayoutParams.TYPE_APPLICATION);
 		try {
 			if (dialog.getWindow().getAttributes().type!=type) {
 				if (disLis!=null) {

@@ -227,6 +227,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 		boolean shunt = main_pview_layout!=null;
 		ViewGroup peruse_content = shunt?main_pview_layout:(ViewGroup) inflater.inflate(R.layout.fye_main, root,false);
+		dummyPanel.settingsLayout = peruse_content;
 		if(root==null){
 			FrameLayout view = new FrameLayout(inflater.getContext());
 			view.setId(R.id.root);
@@ -748,25 +749,25 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		scrollGridToCenterNaive(off);
 	}
 	
-	public void onViewDetached() {
-		MainActivityUIBase a = getMainActivity();
-		
-		currentDictionary.bmCBI=lv2.getFirstVisiblePosition();
-		currentDictionary.bmCCI= bmsAdapter.lastClickedPos;
-		//currentDictionary = null;
-		a.getWindowManager().getDefaultDisplay().getMetrics(dm);
-		spsubs = hBox.getPrimaryContentSize()*1.f/dm.widthPixels;
-		
-		a.opt.defaultReader.edit().putFloat("spsubs", spsubs)
-		.putInt("PBBS", contentUIData.webcontentlister.getPrimaryContentSize()).apply();
-		
-		a.opt.putFirstFlag();
-		if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
-			((MultiShareActivity)a).OnPeruseDetached();
-		}
-		
-		if (dummyPanel.isVisible()) {
-			dummyPanel.toggleDummy(a);
+	public void onViewDetached(MainActivityUIBase a) {
+		if (a!=null) {
+			currentDictionary.bmCBI=lv2.getFirstVisiblePosition();
+			currentDictionary.bmCCI= bmsAdapter.lastClickedPos;
+			//currentDictionary = null;
+			a.getWindowManager().getDefaultDisplay().getMetrics(dm);
+			spsubs = hBox.getPrimaryContentSize()*1.f/dm.widthPixels;
+			
+			a.opt.defaultReader.edit().putFloat("spsubs", spsubs)
+					.putInt("PBBS", contentUIData.webcontentlister.getPrimaryContentSize()).apply();
+			
+			a.opt.putFirstFlag();
+			if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
+				((MultiShareActivity)a).OnPeruseDetached();
+			}
+			
+			if (dummyPanel.isVisible()) {
+				dummyPanel.toggleDummy(a);
+			}
 		}
 	}
 	
@@ -1166,9 +1167,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	}
 
 	/** Hide is not dismiss */
-	public void hide() {
-		mDialog.hide();
-		onViewDetached();
+	public void hide(MainActivityUIBase a) {
+		if (mDialog!=null) {
+			mDialog.hide();
+		}
+		onViewDetached(a);
 		//mDialog.dismiss();
 		//dismiss();
 		//CMN.Log("peruse showing...", mDialog.isShowing());
@@ -1212,7 +1215,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if(ViewUtils.removeIfParentBeOrNotBe(contentview, main_pview_layout, true)){
 			return;
 		}
-		hide();
+		hide(a);
 	}
 
 	//todo optimise
@@ -1224,7 +1227,21 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 		((ViewGroup)contentview.getParent()).removeView(contentview);
 	}
-
+	
+	
+	@Override
+	public void dismiss() {
+		try {
+			super.dismiss();
+		} catch (Exception e) {
+			try {
+				hide(getMainActivity());
+			} catch (Exception ex) {
+				CMN.debug(ex);
+			}
+		}
+	}
+	
 	public boolean isAttached() {
 		if(mDialog!=null && mDialog.isShowing()){
 			Window win = mDialog.getWindow();
@@ -1409,6 +1426,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					} else {
 						pathname=a.getBookNameByIdNoCreation(bookIds.get(position));
 					}
+					if(pathname==null) pathname = "空";
 					holder.tv.setText(pathname);
 					holder.cover.setImageDrawable(cover);
 					holder.word.setText(pathname.substring(0,1).toUpperCase());
@@ -2097,7 +2115,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		switch(v.getId()) {
 			case R.id.browser_widget7:
 			case R.id.home:
-				hide();
+				hide(getMainActivity());
 			break;
 			case R.id.fyeMenu:
 				showPeruseTweaker();
