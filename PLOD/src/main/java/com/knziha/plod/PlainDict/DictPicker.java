@@ -464,7 +464,8 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 					tmpPos = a.wordPopup.upstrIdx;
 					a.wordPopup.CCD=loadManager.md_get(position);
 					a.wordPopup.CCD_ID=a.wordPopup.upstrIdx = position;
-					a.popupWord(ViewUtils.getTextInView(a.wordPopup.entryTitle), null, -1, null);
+					//a.popupWord(ViewUtils.getTextInView(a.wordPopup.entryTitle), null, -1, null); todo
+					a.popupWord(a.wordPopup.popupKey, null, -1, null);
 				} else { //跳转多页面
 					tmpPos = a.wordPopup.weblistHandler.frameSelection;
 					position = ((MyViewHolder) tag).getLayoutPosition();

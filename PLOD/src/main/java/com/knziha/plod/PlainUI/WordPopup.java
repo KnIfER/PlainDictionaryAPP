@@ -80,7 +80,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongClickListener {
 	public WebViewListHandler weblistHandler;
-	String popupKey;
+	public String popupKey;
 	int popupFrame;
 	BookPresenter popupForceId;
 	public TextView entryTitle;
@@ -976,6 +976,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	private void SearchOne(AtomicBoolean task, int taskVer, AtomicInteger taskVersion) {
 		int idx = -1, cc = 0;
 		resetPreviewIdx();
+		CMN.debug("SearchOne::", popupKey);
 		if (popupKey != null) {
 			String keykey;
 			int size = loadManager.md_size;
@@ -1171,7 +1172,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			}
 			if (currentPos >= 0 && CCD != a.EmptyBook) {
 				weblistHandler.setViewMode(null, 0, mWebView);
-				if(CCD.getIsWebx()) {
+				if(CCD.getIsWebx()) { //todo 合并逻辑
 					weblistHandler.bMergingFrames = 1;
 					indicator.setText(loadManager.md_getName(CCD_ID, -1));
 					popuphandler.setBook(CCD);
@@ -1200,25 +1201,32 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		if (d!=0) {
 			currentPos=Math.max(0, Math.min(currentPos+d, (int) CCD.bookImpl.getNumberEntries()));
 		}
-		weblistHandler.bMergingFrames = 1;
-		StringBuilder mergedUrl = new StringBuilder("http://mdbr.com/content/");
-		mergedUrl.append("d");
-		IU.NumberToText_SIXTWO_LE(CCD.getId(), mergedUrl);
-		mergedUrl.append("_");
-		IU.NumberToText_SIXTWO_LE(currentPos, mergedUrl);
-		if (CCD==popupForceId && invoker!=null && invoker.toTag!=null) {
-			mergedUrl.append("#").append(invoker.toTag);
-			invoker.toTag = null;
-		}
 		mWebView.currentPos = currentPos;
 		mWebView.presenter = CCD;
-		mWebView.loadUrl(mergedUrl.toString());
+		if (CCD.getIsWebx()) { //todo 合并逻辑
+			if (currentPos==0) {
+				CCD.SetSearchKey(popupKey);
+			}
+			CCD.renderContentAt(-1, RENDERFLAG_NEW, 0, mWebView, currentPos);
+		} else {
+			weblistHandler.bMergingFrames = 1;
+			StringBuilder mergedUrl = new StringBuilder("http://mdbr.com/content/");
+			mergedUrl.append("d");
+			IU.NumberToText_SIXTWO_LE(CCD.getId(), mergedUrl);
+			mergedUrl.append("_");
+			IU.NumberToText_SIXTWO_LE(currentPos, mergedUrl);
+			if (CCD==popupForceId && invoker!=null && invoker.toTag!=null) {
+				mergedUrl.append("#").append(invoker.toTag);
+				invoker.toTag = null;
+			}
+			mWebView.loadUrl(mergedUrl.toString());
+		}
 		weblistHandler.resetScrollbar(mWebView, false, false);
 		setDisplaying(mWebView.word=CCD.getBookEntryAt(currentPos));
 	}
 	
 	public void popupWord(WebViewmy invoker, String key, BookPresenter forceStartId, int frameAt) {
-		CMN.Log("popupWord_frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator);
+		CMN.debug("popupWord_frameAt", frameAt, key, loadManager.md_size, invoker==null, WebViewmy.supressNxtClickTranslator);
 		if(key==null || mdict.processText(key).length()>0) {
 			if (invoker!=null) this.invoker = invoker;
 			if (key!=null) popupKey = key;

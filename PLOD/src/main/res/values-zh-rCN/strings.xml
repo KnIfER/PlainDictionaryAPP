@@ -169,7 +169,7 @@
 	<string name="disable_all">禁用全部 | 禁用选择</string>
 	<string name="enable_all">启用全部 | 启用选择</string>
 	<string name="select_all_invalid">选择失效项 | 全不选</string>
-	<string name="add_selection_to_set">添加选中词典 | 插入或选择</string>
+	<string name="add_selection_to_set">添加选中词典 | 选择性插入…</string>
 	<string name="remove_selection_from_set">禁用选择选中词典 | 删除</string>
 	<string name="remove_records">删除记录</string>
 	<string name="move_files">移动文件</string>
