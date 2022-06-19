@@ -143,7 +143,7 @@ public class SplitView extends LinearLayout implements OnTouchListener {
     
     @Override
 	public boolean onTouch(View view, MotionEvent ev) {
-        if (view != mHandle) return false;
+        if (mHandle==null) return false;
     	//Toast.makeText(view.getContext(), "onTouch", Toast.LENGTH_SHORT).show();
 
 		//if(true) return false;
@@ -216,7 +216,6 @@ public class SplitView extends LinearLayout implements OnTouchListener {
 	public boolean judger;
 	
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-    	//if(true) return super.onInterceptTouchEvent(ev);
 		lastX=ev.getX();
 		lastY=ev.getY();
     	boolean ret = super.onInterceptTouchEvent(ev);
