@@ -20,6 +20,7 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.widgets.CheckableImageView;
+import com.knziha.plod.widgets.PageSlide;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -295,6 +296,9 @@ public class MultiShareActivity extends MainActivityUIBase {
 					break;
 				case 7658942:
 					a.fixVideoFullScreen();
+					break;
+				case 3344:
+					((PageSlide)msg.obj).handleMsg(msg);
 					break;
 			}
 		}}
