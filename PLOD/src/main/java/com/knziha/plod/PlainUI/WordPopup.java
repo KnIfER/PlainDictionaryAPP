@@ -1269,7 +1269,7 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			tapped = false;
 		}
 		if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
-			a.OnPeruseDetached();
+			((MultiShareActivity)a).OnPeruseDetached();
 		}
 	}
 	

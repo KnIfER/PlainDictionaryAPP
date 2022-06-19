@@ -161,9 +161,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 		}
 	}
 	
-	@Override
 	public void OnPeruseDetached() {
-		//CMN.debug("OnPeruseDetached::", allHidden(), (ucc==null||ucc.detached()));
+		//CMN.debug("OnPeruseDetached::", allHidden(), (ucc==null||ucc.detached()), PeruseViewAttached());
 		//CMN.debug("OnPeruseDetached::", NewIntentCalled, getPinVSDialog());
 		if(NewIntentCalled && !getPinVSDialog()) {
 			hide();

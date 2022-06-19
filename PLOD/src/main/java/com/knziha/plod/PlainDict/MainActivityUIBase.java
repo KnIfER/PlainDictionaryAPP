@@ -3475,10 +3475,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public void OnPeruseDetached() {
-	
-	}
-	
 	public String retrieveDisplayingBooks(String books) {
 		String ret = "";
 		if (!TextUtils.isEmpty(books)) {

@@ -337,7 +337,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				return false;
 			}
 			MainActivityUIBase a = (MainActivityUIBase) getActivity();
-			if(a.wordPopup.isVisible()) {
+			if(a.wordPopup.isVisible() && a.wordPopup.settingsLayout.getParent()==root) {
 				a.wordPopup.dismiss();
 				return false;
 			}
@@ -749,7 +749,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		.putInt("PBBS", contentUIData.webcontentlister.getPrimaryContentSize()).apply();
 		
 		a.opt.putFirstFlag();
-		a.OnPeruseDetached();
+		if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
+			((MultiShareActivity)a).OnPeruseDetached();
+		}
 	}
 	
 	@Override
@@ -1149,8 +1151,8 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 
 	/** Hide is not dismiss */
 	public void hide() {
-		onViewDetached();
 		mDialog.hide();
+		onViewDetached();
 		//mDialog.dismiss();
 		//dismiss();
 		//CMN.Log("peruse showing...", mDialog.isShowing());
@@ -2077,7 +2079,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		MainActivityUIBase a = getMainActivity();
 		//a.showT(v.getId()+"asdasd"+android.R.id.home);
 		switch(v.getId()) {
-			case R.id.browser_widget7: // non-final? 谷歌多作怪，安卓快淘汰!
+			case R.id.browser_widget7:
 			case R.id.home:
 				hide();
 			break;
