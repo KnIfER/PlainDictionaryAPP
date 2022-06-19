@@ -305,7 +305,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if(settingsPopup!=null) {
 				//settingsPopup.dismiss();
 				embedPopInCoordinatorLayout(settingsPanel, settingsPopup, settingsPanel==null?0:settingsPanel.bottomPadding, root);
-			} else if(settingsPanel!=null ){
+			} else if(settingsPanel!=null){
 				int pad = UIData.bottombar.getHeight();
 				if (UIData.appbar.getTop()>=0) {
 					pad+=UIData.appbar.getHeight();

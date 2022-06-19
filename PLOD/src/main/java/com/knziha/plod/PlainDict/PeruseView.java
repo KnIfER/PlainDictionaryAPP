@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -58,6 +59,7 @@ import com.google.android.material.animation.AnimationUtils;
 import com.jess.ui.TwoWayAdapterView;
 import com.jess.ui.TwoWayAdapterView.OnItemClickListener;
 import com.jess.ui.TwoWayGridView;
+import com.knziha.plod.PlainUI.PlainAppPanel;
 import com.knziha.plod.PlainUI.SearchbarTools;
 import com.knziha.plod.PlainUI.WordPopupTask;
 import com.knziha.plod.db.MdxDBHelper;
@@ -119,6 +121,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	DBroswer DBrowser;
 	/** The weblist who brings up this view */
 	public WebViewListHandler invoker;
+	public final PlainAppPanel dummyPanel = new PlainAppPanel();
 	
 	private ViewGroup bottom;
 	private ViewGroup bottombar;
@@ -591,9 +594,15 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 				}
 			};
 		}
-		//else CMN.Log("复用dialog");
+		else CMN.debug("复用dialog");
+		resetDlg();
+		return mDialog;
+	}
+	
+	public void resetDlg(){
 		Window win = mDialog.getWindow();
-		if(win!=null){
+		CMN.debug("resetDlg!!!", win);
+		if(win!=null) {
 			ViewGroup content = win.findViewById(android.R.id.content);
 			if(content!=null) {
 				root=content;
@@ -602,7 +611,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			//win.setStatusBarColor(CMN.MainBackground);
 			View view = win.getDecorView();
 			view.setBackground(null);
-
+			
 			WindowManager.LayoutParams layoutParams = win.getAttributes();
 			layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
 			layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
@@ -610,9 +619,9 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			layoutParams.verticalMargin = 0;
 			layoutParams.dimAmount = 0;
 			win.setAttributes(layoutParams);
-
+			
 			Toastable_Activity.setWindowsPadding(view);
-
+			
 			View t = win.findViewById(android.R.id.title);
 			if(t!=null) t.setVisibility(View.GONE);
 			int id = Resources.getSystem().getIdentifier("titleDivider","id", "android");
@@ -624,15 +633,18 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			win.setSoftInputMode(PDICMainActivity.softModeResize);
 		}
 		ViewUtils.ensureWindowType(mDialog, getMainActivity(), this);
-		return mDialog;
 	}
-
+	
 	public void onViewAttached(MainActivityUIBase a, boolean newSch){
 		if(a==null || main_pview_layout==null) return;
 		CMN.debug("onViewAttached", schKey, newSch, fromData, ViewUtils.isTopmost(mDialog, a));
+		if (!dummyPanel.isVisible()) {
+			dummyPanel.toggleDummy(a);
+		}
 		hidden.clear();
 		this.invoker=a.weblist;
-		ViewUtils.ensureTopmost(mDialog, a, null);
+		ViewUtils.
+				ensureTopmost(mDialog, a, null);
 		if(!ToD) {
 			bmsAdapter.notifyDataSetChanged();
 		}
@@ -752,6 +764,10 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
 			((MultiShareActivity)a).OnPeruseDetached();
 		}
+		
+		if (dummyPanel.isVisible()) {
+			dummyPanel.toggleDummy(a);
+		}
 	}
 	
 	@Override
@@ -809,7 +825,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-		
+		resetDlg();
 	}
 	
 	
@@ -1170,7 +1186,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	public void goBack() {
 		MainActivityUIBase a = getMainActivity();
 		if(a != null) {
-			if(a.settingsPanel!=null) {
+			if(a.settingsPanel!=null && a.settingsPanel!=dummyPanel) {
 				a.hideSettingsPanel(a.settingsPanel);
 				return;
 			}

@@ -33,6 +33,12 @@ public class PlainAppPanel extends SettingsPanel {
 	protected ViewGroup settingsLayoutHolder;
 	public View bottombar;
 	
+	
+	public PlainAppPanel() {
+		super(null, null, null, null, null);
+		lastShowType = -1;
+	}
+	
 	public PlainAppPanel(MainActivityUIBase a, boolean init) {
 		super(init?a:null, a.root, a.app_panel_bottombar_height/2, a.opt, a);
 		this.a = a;
@@ -147,6 +153,19 @@ public class PlainAppPanel extends SettingsPanel {
 	}
 	
 	protected void decorateInterceptorListener(boolean install) { }
+	
+	
+	public void toggleDummy(MainActivityUIBase a) {
+		if (a!=null) {
+			if (bIsShowing=!bIsShowing) {
+				a.settingsPanel = this;
+				a.settingsPanels.add(this);
+			}
+			else {
+				a.hideSettingsPanel(this);
+			}
+		}
+	}
 	
 	@Override
 	public boolean toggle(ViewGroup root, SettingsPanel parentToDismiss, int forceShowType) {

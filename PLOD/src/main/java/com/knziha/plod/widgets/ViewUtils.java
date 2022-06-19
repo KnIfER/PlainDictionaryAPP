@@ -545,11 +545,13 @@ public class ViewUtils {
 	}
 	
 	public static boolean ViewIsChildOf(View view, Object parent) {
-		ViewParent vp = view.getParent();
-		while (vp!=null) {
-			if (vp==parent)
-				return true;
-			vp = vp.getParent();
+		if (view!=null) {
+			ViewParent vp = view.getParent();
+			while (vp!=null) {
+				if (vp==parent)
+					return true;
+				vp = vp.getParent();
+			}
 		}
 		return false;
 	}

@@ -9316,7 +9316,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				peruseView.show(getSupportFragmentManager(), "PeruseView");
 			} else if(peruseView.mDialog!=null){
 				//CMN.Log("AttachPeruseView 2 ", bRefresh);
+				boolean resetDlg = !peruseView.mDialog.isShowing();
 				peruseView.mDialog.show();
+				if (resetDlg) peruseView.resetDlg();
 				peruseView.onViewAttached(this, newSch);
 			}
 		} catch (Exception e) {
@@ -10079,22 +10081,22 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	
 	protected boolean PerFormBackPrevention(boolean bBackBtn) {
-		if(settingsPanel!=null) {
-			CMN.Log("PerFormBackPrevention", settingsPanel);
-			hideSettingsPanel(settingsPanel);
-			CMN.Log("PerFormBackPrevention done", settingsPanel);
+		if(!bBackBtn && checkWebSelection())
 			return true;
-		}
 		if(!AutoBrowsePaused || bRequestingAutoReading){
 			stopAutoReadProcess();
 			return true;
 		}
-		if(!bBackBtn && checkWebSelection())
+		if(settingsPanel!=null && settingsPanel!=wordPopup) {
+			CMN.debug("PerFormBackPrevention", settingsPanel);
+			hideSettingsPanel(settingsPanel);
+			CMN.debug("PerFormBackPrevention done", settingsPanel);
 			return true;
+		}
 		if(opt.getUseBackKeyGoWebViewBack() && !bBackBtn) {
 			//CMN.Log("/* 检查返回键倒退网页 */", view, view==null?false:view.canGoBack());
 		}
-		if(wordPopup.popupContentView!=null) {
+		if(wordPopup.popupContentView!=null) { //todo
 			ViewGroup SVP = (ViewGroup) wordPopup.popupContentView.getParent();
 			if((!opt.getPinTapTranslator() || SVP!=null && wordPopup.popupContentView.getTranslationY()<mainF.getHeight()-wordPopup.toolbar.getHeight()) && DetachClickTranslator()) {
 				return true;
