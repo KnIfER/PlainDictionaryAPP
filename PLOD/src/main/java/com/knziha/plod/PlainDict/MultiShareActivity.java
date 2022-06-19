@@ -221,7 +221,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	public boolean allHidden() {
-		if (PeruseSearchAttached()/* && PeruseView.mDialog.isShowing()*/
+		if (PeruseViewAttached()/* && PeruseView.mDialog.isShowing()*/
 			|| wordPopup.isVisible() || settingsPanel!=null) {
 			return false;
 		}
