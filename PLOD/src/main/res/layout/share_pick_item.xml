@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="85dp"
+	android:scaleType="fitCenter"
+	android:layout_gravity="center_horizontal"
+	android:background="?attr/listChoiceBackgroundIndicator">
+	<com.knziha.plod.widgets.DescriptiveImageView
+		android:id="@+id/app_icon_iv"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:scaleType="fitCenter"
+		android:layout_gravity="center_horizontal"
+		android:src="@drawable/ic_squircle"
+		android:paddingTop="8dp"
+		android:paddingBottom="18dp"
+		android:layout_y="5dp"
+		android:text="选择分享内容"
+		/>
+	<TextView
+		android:id="@+id/tv"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:gravity="center"
+		android:layout_gravity="center_horizontal"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:textStyle="bold"
+		tools:text="文本"
+		android:textColor="#fff"
+		android:paddingBottom="8dp"
+		/>
+</FrameLayout>

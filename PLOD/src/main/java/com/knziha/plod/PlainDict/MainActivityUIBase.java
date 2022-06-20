@@ -5719,7 +5719,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				showIconCustomizator();
 			} break;
 			case R.drawable.abc_ic_menu_share_mtrl_alpha: {
-				shareUrlOrText(null, "happy");
+				shareUrlOrText();
 			} break;
 			case R.drawable.ic_baseline_nightmode_24: {
 				showNightModeSwitch();
@@ -6102,22 +6102,59 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		click_handled_not = false;
 	}
 	
+	public void shareUrlOrText() {
+		if (weblist!=null) {
+			int shareWhat = PDICMainAppOptions.shareTextOrUrl();
+			if (shareWhat>1) {
+				shareUrlOrText(weblist.getShareUrl(shareWhat>3), null);
+			} else {
+				WebViewmy wv = null;
+				if(wordPopup.popupContentView!=null && wordPopup.mWebView.bIsActionMenuShown) {
+					wv = wordPopup.mWebView;
+				} else if(getCurrentFocus() instanceof WebViewmy) {
+					wv = ((WebViewmy)getCurrentFocus());
+				}
+				if (wv==null) {
+					wv = weblist.getWebContext();
+				}
+				if (wv!=null) {
+					if (shareWhat == 1 && wv != null && wv.bIsActionMenuShown) {
+						wv.evaluateJavascript("getSelection().toString()", value -> {
+							String newKey = "";
+							if (value.length() > 2) {
+								value = StringEscapeUtils.unescapeJava(value.substring(1, value.length() - 1));
+								if (value.length() > 0) {
+									newKey = value;
+								}
+							}
+							shareUrlOrText(null, newKey);
+						});
+					} else {
+						shareUrlOrText(null, wv.word);
+					}
+				}
+			}
+		}
+	}
+	
 	public void shareUrlOrText(String url, String text) {
 		//CMN.Log("menu_icon6menu_icon6");
 		//CMN.rt("分享链接……");
-		int id = WeakReferenceHelper.share_dialog;
-		BottomSheetDialog dlg = (BottomSheetDialog) getReferencedObject(id);
-		if(dlg==null) {
-			putReferencedObject(id, dlg=new AppIconsAdapter(this).shareDialog);
+		if (url!=null || text!=null) {
+			int id = WeakReferenceHelper.share_dialog;
+			BottomSheetDialog dlg = (BottomSheetDialog) getReferencedObject(id);
+			if(dlg==null) {
+				putReferencedObject(id, dlg=new AppIconsAdapter(this).shareDialog);
+			}
+			//CMN.pt("新建耗时：");
+			if (url==null) {
+				//url = currentWebView.getUrl();
+			}
+			AppIconsAdapter shareAdapter = (AppIconsAdapter) dlg.tag;
+			shareAdapter.pullAvailableApps(this, url, text);
+			//shareAdapter.pullAvailableApps(this, null, "happy");
+			//CMN.pt("拉取耗时：");
 		}
-		//CMN.pt("新建耗时：");
-		if (url==null) {
-			//url = currentWebView.getUrl();
-		}
-		AppIconsAdapter shareAdapter = (AppIconsAdapter) dlg.tag;
-		shareAdapter.pullAvailableApps(this, url, text);
-		//shareAdapter.pullAvailableApps(this, null, "happy");
-		//CMN.pt("拉取耗时：");
 	}
 	
 	public boolean getUsingDataV2() {

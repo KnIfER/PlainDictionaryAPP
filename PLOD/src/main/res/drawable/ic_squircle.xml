@@ -1,0 +1,11 @@
+<vector
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:height="24dp"
+	android:width="24dp"
+	android:viewportHeight="200"
+	android:viewportWidth="200"
+	>
+    <path android:fillColor="#0187e0" android:pathData="
+    M7.75,100C7.75,30.81 30.81,7.75 100,7.75S192.25,30.81 192.25,100 169.19,192.25 100,192.25 7.75,169.19 7.75,100z
+"/> <!--squircley.app-->
+</vector>

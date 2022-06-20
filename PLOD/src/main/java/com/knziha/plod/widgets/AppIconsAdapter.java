@@ -3,7 +3,9 @@ package com.knziha.plod.widgets;
 
 import static com.knziha.plod.widgets.ViewUtils.GrayBG;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -16,8 +18,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -35,6 +39,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.knziha.paging.AppIconCover.AppIconCover;
 import com.knziha.paging.AppIconCover.AppInfoBean;
+import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
@@ -51,6 +57,8 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
     private View.OnClickListener itemClicker;
     private PackageManager pm;
 	private int landScapeMode;
+	/** true:sharing url */
+	private boolean shareLink;
 	
 	public AppIconsAdapter(Toastable_Activity a) {
         textPainter = DescriptiveImageView.createTextPainter(false);
@@ -70,15 +78,38 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 		shareDialog.tag = this;
         itemClicker = v1 -> {
 			ViewHolder vh = (ViewHolder) v1.getTag();
-			AppInfoBean appBean = list.get(vh.position);
-			Intent shareIntent = new Intent(appBean.intent);
-			shareIntent.setComponent(new ComponentName(appBean.pkgName, appBean.appLauncherClassName));
-			shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			try {
-				a.startActivity(shareIntent);
-				shareDialog.dismiss();
-			} catch (Exception e) {
-				a.showT(e);
+			int pos = vh.getLayoutPosition()-1;
+			if (pos <= -1) {
+				AlertDialog dlg = new AlertDialog.Builder(shareDialog.getContext())
+						.setTitle("选择要分享的内容：")
+						.setSingleChoiceItems(shareTargetsInfo, PDICMainAppOptions.shareTextOrUrl(), new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								PDICMainAppOptions.shareTextOrUrl(which);
+								dialog.dismiss();
+								if (shareLink ^ (which >= 3)) {
+									((MainActivityUIBase) a).shareUrlOrText();
+								} else {
+									notifyItemChanged(0);
+								}
+							}
+						})
+						//.setWikiText("", null)
+						.create();
+				ViewUtils.ensureWindowType(dlg, (MainActivityUIBase) a, null);
+				dlg.getWindow().setDimAmount(0.2f);
+				dlg.show();
+			} else {
+				AppInfoBean appBean = list.get(pos);
+				Intent shareIntent = new Intent(appBean.intent);
+				shareIntent.setComponent(new ComponentName(appBean.pkgName, appBean.appLauncherClassName));
+				shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				try {
+					a.startActivity(shareIntent);
+					shareDialog.dismiss();
+				} catch (Exception e) {
+					a.showT(e);
+				}
 			}
 		};
         bottomSheet = View.inflate(a, R.layout.share_bottom_dialog, null);
@@ -94,6 +125,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 
     public void show(Toastable_Activity a) {
         shareDialog.show();
+		ViewUtils.ensureWindowType(shareDialog, (MainActivityUIBase) a, null);
 		ViewUtils.TrimWindowWidth(shareDialog.getWindow(), a.dm);
 		landScapeMode=a.mConfiguration.orientation;
         boolean landScape = landScapeMode==Configuration.ORIENTATION_LANDSCAPE;
@@ -107,10 +139,10 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
         bottomSheet.setBackground(GlobalOptions.isDark?GrayBG:null);
     }
 
-    /** 获取单身图标 */
+    /** 获取应用列表 */
     public void pullAvailableApps(Toastable_Activity a, String url, String text) {
 		list.clear();
-		boolean shareLink=text==null;
+		shareLink=text==null;
 		Intent intent;
         if(shareLink) {
             intent=new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -152,55 +184,83 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         //CMN.Log("AppIconsAdapter::onCreateViewHolder");
         ViewHolder ret = new ViewHolder(LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.share_recycler_item, parent, false));
+                .inflate(viewType==0?R.layout.share_recycler_item:R.layout.share_pick_item, parent, false));
         ret.itemView.setOnClickListener(itemClicker);
         ret.textImageView.textPainter=textPainter;
         ret.textImageView.bNeedShadow=true;
+		if(viewType==1) {
+			ret.textImageView.setTag(ret.itemView.findViewById(R.id.tv));
+		}
         return ret;
     }
-
-    @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
-        holder.position = position;
-        AppInfoBean app = list.get(position);
-        DescriptiveImageView iv = holder.textImageView;
 	
-		RequestOptions options = new RequestOptions()
-				.format(DecodeFormat.PREFER_ARGB_8888)//DecodeFormat.PREFER_ARGB_8888
-				.skipMemoryCache(false)
-				.diskCacheStrategy(DiskCacheStrategy.NONE)
-				//.onlyRetrieveFromCache(true)
-				.fitCenter()
-				.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-				;
-		
-		Glide.with(iv.getContext())
-				.load(new AppIconCover(app, true))
-				.apply(options)
-				.listener(new RequestListener<Drawable>() {
-					@Override
-					public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-						return false;
-					}
-					@Override
-					public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-						DescriptiveImageView medium_thumbnail = (DescriptiveImageView) ((ImageViewTarget<?>) target).getView();
-						//todo check glide
-						medium_thumbnail.setText(((AppInfoBean)((AppIconCover)model).getBeanInMemory()).appName);
-						return false;
-					}
-				})
-				.into(iv);
-		
-        iv.setText(app.appName);
+	@Override
+	public int getItemViewType(int position) {
+		return position<=0?1:0;
+	}
+	
+	String[] shareTargets = new String[]{
+			"文本"
+			,"“文本”"
+			,"网页"
+			,"网页+"
+	};
+	
+	CharSequence[] shareTargetsInfo = new String[]{
+			"当前单词内容"
+			,"选中内容优先"
+			,"打开局域网页版"
+			,"合并的局域网页版"
+	};
+	
+	@Override
+    public void onBindViewHolder(ViewHolder holder, @SuppressLint("RecyclerView") int position) {
+		DescriptiveImageView iv = holder.textImageView;
+		if (position == 0) { // 选择分享内容
+			((TextView)iv.getTag()).setText(shareTargets[PDICMainAppOptions.shareTextOrUrl()]);
+		}
+		else {
+			position--;
+			holder.position = position;
+			AppInfoBean app = list.get(position);
+	
+			RequestOptions options = new RequestOptions()
+					.format(DecodeFormat.PREFER_ARGB_8888)//DecodeFormat.PREFER_ARGB_8888
+					.skipMemoryCache(false)
+					.diskCacheStrategy(DiskCacheStrategy.NONE)
+					//.onlyRetrieveFromCache(true)
+					.fitCenter()
+					.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+					;
+			
+			Glide.with(iv.getContext())
+					.load(new AppIconCover(app, true))
+					.apply(options)
+					.listener(new RequestListener<Drawable>() {
+						@Override
+						public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+							return false;
+						}
+						@Override
+						public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+							DescriptiveImageView medium_thumbnail = (DescriptiveImageView) ((ImageViewTarget<?>) target).getView();
+							//todo check glide
+							medium_thumbnail.setText(((AppInfoBean)((AppIconCover)model).getBeanInMemory()).appName);
+							return false;
+						}
+					})
+					.into(iv);
+			
+			iv.setText(app.appName);
+		}
     }
 
     @Override
     public int getItemCount() {
-        return list.size();
+        return list.size()+1;
     }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+	
+	public static class ViewHolder extends RecyclerView.ViewHolder {
         public int position;
         public DescriptiveImageView textImageView;
         public ViewHolder(View itemView) {

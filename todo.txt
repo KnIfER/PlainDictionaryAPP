@@ -11,3 +11,6 @@ fix default titlebar color
 fix DBrowser 待移除
 
 fix flowTextView 小宽度导致崩溃
+
+fix 分享
+fix weblist getShareUrl

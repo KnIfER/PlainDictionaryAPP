@@ -1905,4 +1905,15 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				", isMain=" + (this==a.weblistHandler) +
 				'}';
 	}
+	
+	public String getShareUrl(boolean forceMerge) {
+		if (isViewSingle()) {
+			if (dictView != null) {
+				return dictView.getUrl();
+			}
+			return getMergedFrame().getUrl();
+		} else {
+			return scrollFocus.getUrl();
+		}
+	}
 }
