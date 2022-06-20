@@ -218,7 +218,9 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				if (v instanceof RadioSwitchButton)
 					super.onClick(v);
 				else {
-					dismiss();
+					if (v!=root) {
+						dismiss();
+					}
 					if (v.getId()!=R.drawable.ic_menu_24dp) {
 						a.mInterceptorListenerHandled = true;
 					}
