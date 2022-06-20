@@ -10147,10 +10147,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
 		pop.setBackgroundDrawable(null);
 		int[] vLocation = new int[2];
-		//ViewGroup root = this.root;
-		this.root.getLocationInWindow(vLocation);
+		if (root==null) {
+			root = this.root;
+		}
+		root.getLocationInWindow(vLocation);
 		int topY = vLocation[1];
-		int h = this.root.getHeight();
+		int h = root.getHeight();
 		pop.setWidth(-1);
 		pop.setHeight(h-padbot);
 		//CMN.debug("embedPopInCoordinatorLayout::", h-padbot, h, padbot, panel.bottombar);

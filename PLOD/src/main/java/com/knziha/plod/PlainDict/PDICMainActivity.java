@@ -3394,8 +3394,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//pop.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
 		pop.setBackgroundDrawable(null);
 		int[] vLocation = new int[2];
-		
-		ViewGroup svp = (ViewGroup) UIData.drawerLayout.getParent();
+		if (root==null) root = this.root;
+		ViewGroup svp = root==this.root?(ViewGroup) UIData.drawerLayout.getParent():root;
 		svp.getLocationInWindow(vLocation);
 		int topY = vLocation[1];
 		//showT(UIData.webcoord.getHeight() +" = "+ UIData.bottombar.getHeight());
