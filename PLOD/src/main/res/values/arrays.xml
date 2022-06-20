@@ -408,7 +408,7 @@
 
 	<string-array name="conhom_info">
 		<item>直接退出</item>
-		<item>沿用返回退出程序时的设置</item>
+		<item>与“用返回键退出程序”的设置相同</item>
 	</string-array>
 
 	<string-array name="customize_btm">

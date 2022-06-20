@@ -699,8 +699,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				UIData.drawerLayout.closeDrawer(GravityCompat.START);
 				return true;
 			}
-			boolean b1=PDICMainAppOptions.exitToBackground();
+			boolean b1=PDICMainAppOptions.exitToBackground() || isFloating();
 			if(!b1||PDICMainAppOptions.getBackToHomePagePreventBack()) {
+				//if (isFloating()) {
+				//	showExitDialog(false);
+				//	return true;
+				//}
 				int BackPrevention = PDICMainAppOptions.getBackPrevention();
 				switch (BackPrevention) {
 					default: break;
