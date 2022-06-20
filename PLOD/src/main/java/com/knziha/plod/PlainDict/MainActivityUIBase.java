@@ -4021,7 +4021,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			{
 				//build_further_dialog();
 			}
-			if (mWebView!=null) {
+			if (v != null || mWebView!=null) {
 				if (v != null || mWebView.bIsActionMenuShown) {
 					bFromWebView = true;
 					build_further_dialog();

@@ -520,10 +520,10 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	private SettingsPanel initTextTools() {
 		if (_tTools ==null) {
 			final SettingsPanel settings = new SettingsPanel(a, opt
-					, new String[][]{new String[]{null, "启用", "直接使用选择的功能"/*, "长按使用选择的功能"*/, "选择功能"}}
+					, new String[][]{new String[]{null, "启用", "直接使用选中的功能"/*, "长按使用选择的功能"*/, "选择功能…"}}
 					, new int[][]{new int[]{Integer.MAX_VALUE
 					, makeInt(3, 50, true) // wvShowToolsBtn
-					, makeInt(6, 40, false) // toolsBtnAction
+					, makeInt(6, 40, false) // toolsQuickAction
 					//, makeInt(6, 47, true) // toolsQuickLong
 					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.ttools.ordinal(), true)
 			}}, null);

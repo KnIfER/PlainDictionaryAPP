@@ -16,4 +16,3 @@ fix flowTextView 小宽度导致崩溃
 
 
 peruseView 词典数组
-选择功能
