@@ -66,7 +66,11 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 	//private String text;
 	
 	public AppIconsAdapter(Toastable_Activity a) {
-        textPainter = DescriptiveImageView.createTextPainter(false);
+		textPainter = new TextPaint();
+		textPainter.setColor(a.AppBlack);
+		textPainter.setTextSize(GlobalOptions.density*(GlobalOptions.isLarge?19:12));
+		textPainter.setAntiAlias(true);
+		
         shareDialog = new BottomSheetDialog(a);
 		shareDialog.getWindow().setDimAmount(0.2f);
 		Window win = shareDialog.getWindow();
@@ -143,7 +147,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
         int target = GlobalOptions.isDark?Color.WHITE:Color.BLACK;
         textPainter.setColor(target);
         indicator.setTextColor(target);
-//        indicator.setText(a.getResources().getString(R.string.share_link));
+        indicator.setText(shareTargetsInfo1[shareWhat]);
         bottomSheet.setBackground(GlobalOptions.isDark?GrayBG:null);
     }
 
@@ -227,6 +231,13 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 			,"网页搜索"
 			,"打开局域网页版"
 			,"合并的局域网页版"
+	};
+	
+	String[] shareTargetsInfo1 = new String[]{
+			"分享单词："
+			,"搜索单词："
+			,"分享网址："
+			,"分享网址："
 	};
 	
 	@Override

@@ -6177,14 +6177,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (url!=null || text!=null) {
 			int id = WeakReferenceHelper.share_dialog;
 			BottomSheetDialog dlg = (BottomSheetDialog) getReferencedObject(id);
+			AppIconsAdapter shareAdapter;
 			if(dlg==null) {
-				putReferencedObject(id, dlg=new AppIconsAdapter(this).shareDialog);
+				shareAdapter=new AppIconsAdapter(this);
+				putReferencedObject(id, dlg=shareAdapter.shareDialog);
+			} else {
+				shareAdapter = (AppIconsAdapter) dlg.tag;
 			}
 			//CMN.pt("新建耗时：");
 			if (url==null) {
 				//url = currentWebView.getUrl();
 			}
-			AppIconsAdapter shareAdapter = (AppIconsAdapter) dlg.tag;
 			shareAdapter.pullAvailableApps(this, url, text, shareWhat);
 			//shareAdapter.pullAvailableApps(this, null, "happy");
 			//CMN.pt("拉取耗时：");
