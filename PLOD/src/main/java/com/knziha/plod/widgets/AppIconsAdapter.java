@@ -39,7 +39,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.knziha.paging.AppIconCover.AppIconCover;
 import com.knziha.paging.AppIconCover.AppInfoBean;
+import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
@@ -59,6 +61,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 	private int landScapeMode;
 	/** true:sharing url */
 	private boolean shareLink;
+	//private String text;
 	
 	public AppIconsAdapter(Toastable_Activity a) {
         textPainter = DescriptiveImageView.createTextPainter(false);
@@ -87,7 +90,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 							public void onClick(DialogInterface dialog, int which) {
 								PDICMainAppOptions.shareTextOrUrl(which);
 								dialog.dismiss();
-								if (shareLink ^ (which >= 3)) {
+								if (shareLink ^ (which > 1)) {
 									((MainActivityUIBase) a).shareUrlOrText();
 								} else {
 									notifyItemChanged(0);
@@ -104,6 +107,12 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 				Intent shareIntent = new Intent(appBean.intent);
 				shareIntent.setComponent(new ComponentName(appBean.pkgName, appBean.appLauncherClassName));
 				shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				if (shareLink) {
+					MainActivityUIBase act = (MainActivityUIBase) a;
+					if (act.thisActType==MainActivityUIBase.ActType.PlainDict) {
+						((PDICMainActivity)act).startServer(true);
+					}
+				}
 				try {
 					a.startActivity(shareIntent);
 					shareDialog.dismiss();
@@ -146,10 +155,12 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 		Intent intent;
         if(shareLink) {
             intent=new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+			//this.text = url;
         } else {
             intent=new Intent(Intent.ACTION_SEND);
             intent.putExtra(Intent.EXTRA_TEXT, text);
             intent.setType("text/plain");
+			//this.text = text;
         }
         pm = a.getPackageManager();
         ResolveResolvedQuery(intent);

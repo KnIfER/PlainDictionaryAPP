@@ -3362,7 +3362,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	public void startServer(boolean start) {
 		if(start) {
-			if(getMdictServer()!=null) {
+			if(getMdictServer()!=null && !getMdictServer().isAlive()) {
 				try {
 					getMdictServer().start(this);
 					showDrawerSnack("服务器启动成功");

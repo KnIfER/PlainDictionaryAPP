@@ -44,6 +44,7 @@ import com.knziha.plod.PlainUI.AppUIProject;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionary.Utils.Bag;
 import com.knziha.plod.dictionary.Utils.IU;
+import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
@@ -1906,14 +1907,75 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				'}';
 	}
 	
+	/** 用浏览器打开当前页面 */
 	public String getShareUrl(boolean forceMerge) {
+		String url = "";
+		additiveMyCpr1 records = null;
 		if (isViewSingle()) {
-			if (dictView != null) {
-				return dictView.getUrl();
+			WebViewmy wv = dictView;
+			if (wv != null) {
+				url = wv.getUrl();
+				if (forceMerge && isFoldingScreens()) {
+					records = batchDisplaying();
+				} else {
+					BookPresenter presenter = wv.presenter;
+					if (presenter!=null) {
+						if (presenter.getIsWebx()) {
+							url = wv.getUrl();
+						}
+						else if (!url.startsWith("http")) { //loadWithBaseUrl 结果是 about:blank
+							StringBuilder mergedUrl = new StringBuilder("http://localhost:8080/content/d");
+							IU.NumberToText_SIXTWO_LE(presenter.getId(), mergedUrl);
+							for (int i = 0; i < wv.currentRendring.length; i++) {
+								mergedUrl.append("_");
+								IU.NumberToText_SIXTWO_LE(wv.currentRendring[i], mergedUrl);
+							}
+							url = mergedUrl.toString();
+						}
+					}
+				}
+			} else {
+				url = getMergedFrame().getUrl();
+				if (url!=null) {
+					url = url.replace("http://mdbr.com", "http://localhost:8080");
+				}
 			}
-			return getMergedFrame().getUrl();
 		} else {
-			return scrollFocus.getUrl();
+			url = scrollFocus.getUrl();
+			if (forceMerge) {
+				records = batchDisplaying();
+			}
 		}
+		if (records!=null) {
+			List<Long> vals = (List<Long>) records.value;
+			StringBuilder mergedUrl = new StringBuilder("http://localhost:8080/merge.jsp?q=")
+					.append(SU.encode(records.key)).append("&exp=");
+			BookPresenter presenter;
+			long toFind;
+			for(int i=0;i<vals.size();i+=2){
+				toFind=vals.get(i);
+				presenter = a.getBookByIdNoCreation(toFind);;
+				boolean isWebx = presenter.getIsWebx();
+				if(i>0)
+					mergedUrl.append("-");
+				mergedUrl.append(isWebx?"w":"d");
+				IU.NumberToText_SIXTWO_LE(toFind, mergedUrl);
+				if(isWebx) {
+					mergedUrl.append("_")
+						.append(presenter.getWebx().hasField("synthesis")?"0":"");
+				}
+				while(i<vals.size() && toFind==vals.get(i)) {
+					if(!isWebx) {
+						mergedUrl.append("_");
+						IU.NumberToText_SIXTWO_LE(vals.get(i+1), mergedUrl);
+					}
+					i+=2;
+				}
+				i-=2;
+			}
+			url = vals.toString();
+		}
+		CMN.debug("getShareUrl::", url);
+		return url;
 	}
 }
