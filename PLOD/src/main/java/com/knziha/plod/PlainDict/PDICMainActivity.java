@@ -504,7 +504,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		// todo 分享目标优化
 		int PasteTarget=opt.getPasteTarget();
 		int ShareTarget=opt.getShareToTarget();
-		boolean isPeruseView=PeruseViewAttached();
+		boolean isPeruseView=!isFloating() && PeruseViewAttached();
 		boolean toPeruseView =  (source>=1)&&(PasteTarget==2||PasteTarget==0&&isPeruseView) ||
 				source == 1 && PDICMainAppOptions.getPasteToPeruseModeWhenFocued() ||
 				source == 0 &&(ShareTarget==2||ShareTarget==0&&isPeruseView)
@@ -516,7 +516,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			etSearch.setText(content);
 			//来一发=false;
 			//todo opt
-			if(peruseView !=null)
+			if(peruseView!=null && !isFloating()/*可共存*/)
 				peruseView.hide(this);
 		}
 	}
@@ -892,7 +892,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		UIData = DataBindingUtil.setContentView(this, R.layout.activity_main);
 		dictPicker = new DictPicker(this, UIData.viewpagerPH, UIData.lnrSplitHdls, 0);
 		
-		root = UIData.root;
+		root = mainframe = UIData.root;
 		
 		if(transit) {
 			root.setAlpha(0);
@@ -1121,7 +1121,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							intent.putExtra(Intent.EXTRA_TEXT, text);
 							processIntent(intent, false);
 						}
-						postTask = null;
 					}, 100);
 					return;
 				}
@@ -1153,6 +1152,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				this.extraText = extraText;
 				if(extraText!=null) {
+					if (intent.hasExtra(FloatBtn.EXTRA_FROMPASTE)) {
+						if (extraText.equals(lastPastedText)) {
+							return;
+						}
+						lastPastedText = extraText;
+					}
 					extraInvoker = PDICMainAppOptions.storeAppId()?ViewUtils.topThirdParty(this, initialzie?3:1):null;
 					JumpToWord(extraText, jump_source);
 				}

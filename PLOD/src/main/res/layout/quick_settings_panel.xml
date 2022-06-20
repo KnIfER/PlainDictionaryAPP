@@ -62,11 +62,35 @@
 			style="@style/quick_settings_arrow" />
 		<TextView
 			android:id="@+id/flt"
-			android:text="悬浮按钮"
+			android:text="悬浮按钮/小窗"
 			style="@style/quick_settings_menu" />
 		<View style="@style/quick_settings_sepver" />
 		<com.knziha.plod.widgets.SwitchCompatBeautiful
 			android:id="@+id/float_switch"
+			app:track="@drawable/switch_ios_track_selector"
+			app:dim0="2dp"
+			app:dim1="2dp"
+			style="@style/quick_settings_sw" />
+	</LinearLayout>
+	<View style="@style/quick_settings_sephor" />
+
+	<LinearLayout
+		android:id="@+id/paste_panel"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="55dp"
+		>
+		<ImageView
+			android:id="@+id/paste_arrow"
+			android:src="@drawable/circle_drag_dot"
+			style="@style/quick_settings_arrow" />
+		<TextView
+			android:id="@+id/paste"
+			android:text="剪贴板"
+			style="@style/quick_settings_menu" />
+		<View style="@style/quick_settings_sepver" />
+		<com.knziha.plod.widgets.SwitchCompatBeautiful
+			android:id="@+id/paste_switch"
 			app:track="@drawable/switch_ios_track_selector"
 			app:dim0="2dp"
 			app:dim1="2dp"

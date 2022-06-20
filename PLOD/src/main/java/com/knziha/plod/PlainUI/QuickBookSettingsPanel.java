@@ -120,6 +120,13 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			ViewUtils.setVisible(UIData.floatPanel, false);
 		}
 		
+		if (opt.adjPstBtnShown())
+		{
+			UIData.pasteArrow.setRotation(90);
+			initPaste();
+		}
+		ViewUtils.setVisible(UIData.pastePanel, false);
+		
 		if (opt.adjTBtmShown())
 		{
 			UIData.btmArrow.setRotation(90);
@@ -369,6 +376,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 	SettingsPanel _sHandle;
 	SettingsPanel _tTools;
 	SettingsPanel _fltBtn;
+	SettingsPanel _paste;
 	SettingsPanel _btmBars;
 	
 	int shType;
@@ -547,6 +555,25 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 			_fltBtn.refresh();
 		}
 		return _fltBtn;
+	}
+	
+	private SettingsPanel initPaste() {
+		if (_paste ==null) {
+			final SettingsPanel settings = new SettingsPanel(a, opt
+					, new String[][]{new String[]{null, "", "切换小窗模式"}}
+					, new int[][]{new int[]{Integer.MAX_VALUE
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.floatBtn.ordinal(), false)
+					, makeDynInt(NONE_SETTINGS_GROUP1, ActionGp_1.floatApp.ordinal(), false)
+			}}, null);
+			settings.setEmbedded(this);
+			settings.init(a, root);
+			
+			addPanelViewBelow(settings.settingsLayout, UIData.pastePanel);
+			_paste = settings;
+		} else {
+			_paste.refresh();
+		}
+		return _paste;
 	}
 	
 	private SettingsPanel initBtmBars() {

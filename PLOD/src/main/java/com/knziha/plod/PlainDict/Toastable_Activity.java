@@ -107,6 +107,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected int etSearchPadRight;
     protected ImageView ivDeleteText;
     protected ImageView ivBack;
+	protected String lastPastedText;
 
 	public Dialog d;
 	public View dv;

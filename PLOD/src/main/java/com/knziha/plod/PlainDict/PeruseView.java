@@ -633,7 +633,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			if(t!=null) t.setVisibility(View.GONE);
 			win.setSoftInputMode(PDICMainActivity.softModeResize);
 		}
-		ViewUtils.ensureWindowType(mDialog, getMainActivity(), this);
+		//ViewUtils.ensureWindowType(mDialog, getMainActivity(), this);
 	}
 	
 	public void onViewAttached(MainActivityUIBase a, boolean newSch){

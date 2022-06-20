@@ -7415,10 +7415,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					{ //toHighLight
 						jumpNaughtyFirstHighlight(mWebView);
 					}
-					else if (mWebView.weblistHandler.isViewSingle())
+					else if (mWebView.weblistHandler.isViewSingle() && !mWebView.weblistHandler.bDataOnly)
 					{
-						lastClickTime = System.currentTimeMillis();
 						if (mWebView.expectedPos >= 0) {
+							lastClickTime = System.currentTimeMillis();
 							//layoutScrollDisabled=true;
 							CMN.debug("initial_push: ", mWebView.expectedPosX, mWebView.expectedPos);
 							//mWebView.zoomBy(mWebView.expectedZoom/mWebView.webScale);
@@ -10597,6 +10597,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public final boolean isFloating() {
 		return floatApp!=null && floatApp.isFloating();
+	}
+	
+	public final boolean isFloatingApp() {
+		return floatApp!=null && floatApp.isAppFloating();
 	}
 	
 	public FloatBtn getFloatBtn() {

@@ -30,12 +30,14 @@ import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.FloatActivitySearch;
 import com.knziha.plod.plaindict.MainShareActivity;
 import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PasteActivity;
 import com.knziha.plod.plaindict.R;
 
 public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 	public final WindowManager wMan;
 	public final static String EXTRA_GETTEXT = "ext_clip";
+	public final static String EXTRA_FROMPASTE = "ext_paste";
 	public final Context context;
 	public final ClipboardManager clipMan;
 	public final AgentApplication app;
@@ -158,6 +160,9 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 		boolean floating = app.floatApp != null && app.floatApp.isFloating();
 		if (floating) {
 			app.floatApp.expand(false);
+			if (text==null && !PDICMainAppOptions.floatBtn()) {
+				return;
+			}
 		}
 		if (text==null) {
 			if (checkAct && foreground!=0) {
@@ -188,6 +193,7 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 		CMN.debug("floatBtn::text::", text);
 		Intent newTask = new Intent(Intent.ACTION_MAIN);
 		newTask.setType(Intent.CATEGORY_DEFAULT);
+		newTask.putExtra(EXTRA_FROMPASTE, true);
 		if (TextUtils.isEmpty(text)) {
 			newTask.putExtra(EXTRA_GETTEXT, true);
 		} else {

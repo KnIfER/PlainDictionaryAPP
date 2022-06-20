@@ -1698,7 +1698,7 @@ public class DBroswer extends DialogFragment implements
 			}
 			if(t!=null) t.setVisibility(View.GONE);
 		}
-		ViewUtils.ensureWindowType(mDialog, getMainActivity(), this);
+		//ViewUtils.ensureWindowType(mDialog, getMainActivity(), this);
 		return mDialog;
 	}
 	

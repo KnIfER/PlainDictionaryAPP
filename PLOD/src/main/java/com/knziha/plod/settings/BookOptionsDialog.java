@@ -1,5 +1,6 @@
 package com.knziha.plod.settings;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -18,6 +19,7 @@ import androidx.fragment.app.DialogFragment;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.Toastable_Activity;
+import com.knziha.plod.widgets.ViewUtils;
 
 public class BookOptionsDialog extends DialogFragment {
 	public BookOptions bookOptions = new BookOptions();
@@ -85,5 +87,14 @@ public class BookOptionsDialog extends DialogFragment {
 			}
 			// 翻页设置可能变化
 		}
+	}
+	
+	@NonNull
+	@Override
+	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+		Dialog ret = super.onCreateDialog(savedInstanceState);
+		if (getActivity() instanceof MainActivityUIBase)
+			ViewUtils.ensureWindowType(ret, (MainActivityUIBase) getActivity(), this);
+		return ret;
 	}
 }
