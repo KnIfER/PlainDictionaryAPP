@@ -4,6 +4,7 @@ package com.knziha.plod.widgets;
 import static com.knziha.plod.widgets.ViewUtils.GrayBG;
 
 import android.annotation.SuppressLint;
+import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -61,6 +62,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 	private int landScapeMode;
 	/** true:sharing url */
 	private boolean shareLink;
+	private int shareWhat;
 	//private String text;
 	
 	public AppIconsAdapter(Toastable_Activity a) {
@@ -82,19 +84,15 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
         itemClicker = v1 -> {
 			ViewHolder vh = (ViewHolder) v1.getTag();
 			int pos = vh.getLayoutPosition()-1;
-			if (pos <= -1) {
+			if (pos <= -1) { // 选择分享方式
 				AlertDialog dlg = new AlertDialog.Builder(shareDialog.getContext())
 						.setTitle("选择要分享的内容：")
-						.setSingleChoiceItems(shareTargetsInfo, PDICMainAppOptions.shareTextOrUrl(), new DialogInterface.OnClickListener() {
+						.setSingleChoiceItems(shareTargetsInfo, shareWhat, new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								PDICMainAppOptions.shareTextOrUrl(which);
 								dialog.dismiss();
-								if (shareLink ^ (which > 1)) {
-									((MainActivityUIBase) a).shareUrlOrText();
-								} else {
-									notifyItemChanged(0);
-								}
+								((MainActivityUIBase) a).shareUrlOrText();
 							}
 						})
 						//.setWikiText("", null)
@@ -102,12 +100,13 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 				ViewUtils.ensureWindowType(dlg, (MainActivityUIBase) a, null);
 				dlg.getWindow().setDimAmount(0.2f);
 				dlg.show();
-			} else {
+			}
+			else { // 分享…
 				AppInfoBean appBean = list.get(pos);
 				Intent shareIntent = new Intent(appBean.intent);
 				shareIntent.setComponent(new ComponentName(appBean.pkgName, appBean.appLauncherClassName));
 				shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				if (shareLink) {
+				if (shareLink) { // 开启服务器
 					MainActivityUIBase act = (MainActivityUIBase) a;
 					if (act.thisActType==MainActivityUIBase.ActType.PlainDict) {
 						((PDICMainActivity)act).startServer(true);
@@ -149,17 +148,23 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
     }
 
     /** 获取应用列表 */
-    public void pullAvailableApps(Toastable_Activity a, String url, String text) {
+    public void pullAvailableApps(Toastable_Activity a, String url, String text, int shareWhat) {
 		list.clear();
 		shareLink=text==null;
+		this.shareWhat=shareWhat;
 		Intent intent;
         if(shareLink) {
             intent=new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 			//this.text = url;
         } else {
-            intent=new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_TEXT, text);
-            intent.setType("text/plain");
+			if(shareWhat==1) {
+				intent=new Intent(Intent.ACTION_WEB_SEARCH);
+				intent.putExtra(SearchManager.QUERY, text);
+			} else {
+				intent=new Intent(Intent.ACTION_WEB_SEARCH);
+				intent.putExtra(Intent.EXTRA_TEXT, text);
+				intent.setType("text/plain");
+			}
 			//this.text = text;
         }
         pm = a.getPackageManager();
@@ -212,14 +217,14 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 	
 	String[] shareTargets = new String[]{
 			"文本"
-			,"“文本”"
+			,"搜索"
 			,"网页"
 			,"网页+"
 	};
 	
 	CharSequence[] shareTargetsInfo = new String[]{
-			"当前单词内容"
-			,"选中内容优先"
+			"当前单词文本"
+			,"网页搜索"
 			,"打开局域网页版"
 			,"合并的局域网页版"
 	};
@@ -228,7 +233,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, @SuppressLint("RecyclerView") int position) {
 		DescriptiveImageView iv = holder.textImageView;
 		if (position == 0) { // 选择分享内容
-			((TextView)iv.getTag()).setText(shareTargets[PDICMainAppOptions.shareTextOrUrl()]);
+			((TextView)iv.getTag()).setText(shareTargets[shareWhat]);
 		}
 		else {
 			position--;

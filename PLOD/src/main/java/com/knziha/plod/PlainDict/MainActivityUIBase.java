@@ -6105,20 +6105,42 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void shareUrlOrText() {
 		if (weblist!=null) {
 			int shareWhat = PDICMainAppOptions.shareTextOrUrl();
+			MenuGrid menuGrid = (MenuGrid) getReferencedObject(WeakReferenceHelper.menu_grid);
+			if (shareWhat>1 && menuGrid!=null && !ViewUtils.ViewIsId(menuGrid.bottombar, R.id.bottombar2)) {
+				shareWhat = 1;
+			}
 			if (shareWhat>1) {
-				shareUrlOrText(weblist.getShareUrl(shareWhat>3), null);
+				shareUrlOrText(weblist.getShareUrl(shareWhat>3), null, shareWhat);
 			} else {
 				WebViewmy wv = null;
-				if(wordPopup.popupContentView!=null && wordPopup.mWebView.bIsActionMenuShown) {
-					wv = wordPopup.mWebView;
-				} else if(getCurrentFocus() instanceof WebViewmy) {
-					wv = ((WebViewmy)getCurrentFocus());
+				View view = getCurrentFocus();
+				if (view!=null) {
+					if (view.getId()==R.id.webviewmy) {
+						wv = ((WebViewmy)view);
+					}
+					else if (view instanceof TextView) {
+						TextView tv = ((TextView) getCurrentFocus());
+						if (tv.hasSelection()) {
+							String text = tv.getText().toString();
+							int st = tv.getSelectionStart(), ed=tv.getSelectionEnd();
+							try {
+								shareUrlOrText(null, text.substring(Math.min(st, ed), Math.max(st, ed)), shareWhat);
+								return;
+							} catch (Exception e) { }
+						}
+					}
+				}
+				if (wv==null) {
+					if(wordPopup.popupContentView!=null && wordPopup.mWebView.bIsActionMenuShown) {
+						wv = wordPopup.mWebView;
+					}
 				}
 				if (wv==null) {
 					wv = weblist.getWebContext();
 				}
 				if (wv!=null) {
-					if (shareWhat == 1 && wv != null && wv.bIsActionMenuShown) {
+					if (wv != null && wv.bIsActionMenuShown) {
+						int fineShare = shareWhat;
 						wv.evaluateJavascript("getSelection().toString()", value -> {
 							String newKey = "";
 							if (value.length() > 2) {
@@ -6127,17 +6149,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									newKey = value;
 								}
 							}
-							shareUrlOrText(null, newKey);
+							shareUrlOrText(null, newKey, fineShare);
 						});
 					} else {
-						shareUrlOrText(null, wv.word);
+						shareUrlOrText(null, wv.word, shareWhat);
 					}
 				}
 			}
 		}
 	}
 	
-	public void shareUrlOrText(String url, String text) {
+	public void shareUrlOrText(String url, String text, int shareWhat) {
 		//CMN.Log("menu_icon6menu_icon6");
 		//CMN.rt("分享链接……");
 		if (url!=null || text!=null) {
@@ -6151,7 +6173,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				//url = currentWebView.getUrl();
 			}
 			AppIconsAdapter shareAdapter = (AppIconsAdapter) dlg.tag;
-			shareAdapter.pullAvailableApps(this, url, text);
+			shareAdapter.pullAvailableApps(this, url, text, shareWhat);
 			//shareAdapter.pullAvailableApps(this, null, "happy");
 			//CMN.pt("拉取耗时：");
 		}
@@ -10235,7 +10257,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			root = peruseView.root;
 		}
 		if (!menuGrid.isVisible()) {
-			menuGrid.show(root, ViewUtils.ViewIsId(btm, R.id.bottombar2), -1);
+			boolean hasContent = ViewUtils.ViewIsId(btm, R.id.bottombar2);
+			if (!hasContent) {
+				if (getCurrentFocus() instanceof TextView && ((TextView) getCurrentFocus()).hasSelection()) {
+					hasContent = true;
+				}
+			}
+			menuGrid.show(root, hasContent, -1);
 		}
 	}
 	

@@ -67,22 +67,21 @@ public class MenuGrid extends PlainAppPanel {
 		if (lastWidth!=a.root.getWidth() || lastHeight!=a.root.getHeight()) {
 			refreshMenuGridSize(true);
 		}
+		DescriptiveImageView shareBtn = this.menu_icon5;
 		if(btnPaddingH==0){
-			btnPaddingH = menu_icon5.getPaddingLeft();
+			btnPaddingH = shareBtn.getPaddingLeft();
 		}
 		if (ret && ((btnShareBundleResId==R.drawable.abc_ic_menu_share_mtrl_alpha) ^ contentview)) {
 			int paddingH = btnPaddingH;
 			if(contentview) {
-				menu_icon5.setImageResource(btnShareBundleResId=R.drawable.abc_ic_menu_share_mtrl_alpha);
-				menu_icon5.setAlpha(.2f);
-				menu_icon5.setText("分享至…");
+				shareBtn.setImageResource(btnShareBundleResId=R.drawable.abc_ic_menu_share_mtrl_alpha);
+				shareBtn.setText("分享至…");
 			} else {
-				menu_icon5.setImageResource(btnShareBundleResId=R.drawable.book_bundle2);
-				menu_icon5.setAlpha(1.f);
-				menu_icon5.setText("管理词典");
+				shareBtn.setImageResource(btnShareBundleResId=R.drawable.book_bundle2);
+				shareBtn.setText("管理词典");
 				paddingH -= GlobalOptions.density*1.5;
 			}
-			menu_icon5.setPadding(paddingH, menu_icon5.getPaddingTop(), paddingH, menu_icon5.getPaddingBottom());
+			shareBtn.setPadding(paddingH, shareBtn.getPaddingTop(), paddingH, shareBtn.getPaddingBottom());
 		}
 		return ret;
 	}
