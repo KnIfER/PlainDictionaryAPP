@@ -1281,6 +1281,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					clearBeforeSch();
 					for (int i = 0; i < loadManager.md_size; i++)
 						bookIds.add(loadManager.getBookIdAt(i));
+					//CMN.debug("fye::addAll::searchAll", bookIds);
 					if(keepBook()) {
 						fromLv1Idx = bookIds.indexOf(currentDictionary.getId());
 						if(fromLv1Idx==-1) {
@@ -1370,7 +1371,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 		this.schResult = schResult;
 		lastSchKey = schKey;
-		//CMN.Log("fye::SearchAll::", schKey, schResult);
+		//CMN.debug("fye::SearchAll::", schKey, schResult.size());
 		//harvest
 		fromLv1Idx = fromLv1Idx_ = index;
 		a.hdl.post(new Runnable() {
@@ -2393,6 +2394,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			for (int i = 0; i < loadManager.md_size; i++) {
 				bookIds.add(loadManager.getBookIdAt(i));
 			}
+			//CMN.debug("fye::addAll::resetAddAll");
 			fromLv1Idx = a.dictPicker.adapter_idx;
 			fromData = true;
 		} else {

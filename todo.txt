@@ -12,7 +12,3 @@ fix MultiShare crashes ++
 fix DBrowser 待移除
 
 fix flowTextView 小宽度导致崩溃
-
-
-
-peruseView 词典数组

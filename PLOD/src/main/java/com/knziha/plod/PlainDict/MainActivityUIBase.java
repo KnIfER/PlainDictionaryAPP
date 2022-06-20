@@ -2564,7 +2564,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						i = lazyMan.CosyChair[i];
 						BookPresenter presenter = md.get(i);
 						if (presenter != null) return presenter.getId();
-						String name = new File(getPlaceHolderAt(i).pathname).getName();
+						String name = new File(lazyMan.placeHolders.get(i).pathname).getName();
 						return prepareHistoryCon().getBookID(null, name);
 					}
 				} catch (Exception e) {
