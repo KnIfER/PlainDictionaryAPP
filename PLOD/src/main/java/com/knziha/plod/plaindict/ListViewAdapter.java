@@ -154,7 +154,7 @@ public class ListViewAdapter extends BasicAdapter {
 			a.imm.hideSoftInputFromWindow(a.main.getWindowToken(),0);
 			return;
 		}
-		if(a.DBrowser!=null) return;
+		if(a.DBrowser!=null && !a.isFloatingApp()) return;
 		lastClickedPosBefore = lastClickedPos;
 		super.onItemClick(pos);
 		a.ActivedAdapter=this;
