@@ -569,9 +569,21 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(wordPopup.popupContentView!=null && wordPopup.mWebView.bIsActionMenuShown) {
 			wv = wordPopup.mWebView;
 			doCheck = opt.getUseBackKeyClearWebViewFocus();
-		} else if(getCurrentFocus() instanceof WebViewmy) {
-			wv = ((WebViewmy)getCurrentFocus());
-			if (wv!=null && wv.bIsActionMenuShown) doCheck = opt.getUseBackKeyClearWebViewFocus();
+		} else {
+			View view = getCurrentFocus();
+			if(view != null) {
+				if (view.getId()==R.id.webviewmy) {
+					wv = ((WebViewmy)getCurrentFocus());
+					if (wv!=null && wv.bIsActionMenuShown) doCheck = opt.getUseBackKeyClearWebViewFocus();
+				}
+				else if (view instanceof TextView) {
+					TextView tv = ((TextView) view);
+					if (tv.hasSelection()) {
+						tv.clearFocus();
+						return true;
+					}
+				}
+			}
 		}
 		if(doCheck) {
 			wv.clearFocus();
