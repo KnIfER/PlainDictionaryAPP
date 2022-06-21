@@ -63,19 +63,22 @@
         if(t.sel!=undefined) {
             var val=null;
             if(v) {
-                var p=t.childList,c=t.firstChild,defirst;
-                while(c) {
-                    //debug('same group?', p, c, c.id1, t.id1, c.id1===t.id1);
-                    //if(c.id1===t.id1)debug('prefix?', c, c.id1, t.id1, gc('prefix',c));
-                    if(c.id1===t.id1) {
-                        if(!defirst)
-                            defirst = c;
-                        if(gc('prefix',c)/*?*/.classList.contains('enabled')) {
-                            val = c.sel;
-                            break;
+                var p=t.childList,c=t.childList,defirst;
+                if(c) {
+                    c = c.firstChild;
+                    while(c) {
+                        //debug('same group?', p, c, c.id1, t.id1, c.id1===t.id1);
+                        //if(c.id1===t.id1)debug('prefix?', c, c.id1, t.id1, gc('prefix',c));
+                        if(c.id1===t.id1) {
+                            if(!defirst)
+                                defirst = c;
+                            if(gc('prefix',c)/*?*/.classList.contains('enabled')) {
+                                val = c.sel;
+                                break;
+                            }
                         }
+                        c=c.nextSibling;
                     }
-                    c=c.nextSibling;
                 }
                 if(val==null && defirst) {
                     val = defirst.sel;

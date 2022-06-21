@@ -713,7 +713,7 @@
 		}
 		var pengDingPos = -1;
 		var lv;
-		var defP;
+		var defP, bPad;
 		var bkPs, navid, nav;
 		var sh, shs, shsty;
 		var dictsP;
@@ -1646,6 +1646,9 @@
 				checkDicts(infoReq, function(){processContents(contents, true)});
 			} else {
 				tmp.lastMode = 1;
+				if(bPad && bPad.parentNode) {
+					bPad.remove();
+				}
 				// [3rd pass] Preserve valid frames
 				var la=0,f;
 				for (var i=0,fa;f=defP.children[i]; i++) {
@@ -1752,21 +1755,23 @@
 				tFrame(frames[0]);
 				initNav();
 				if(document.body.style.paddingBottom) {
-					var pad = craft(0,0,defP);
-					pad.style.paddingBottom = document.body.style.paddingBottom;
+					if(!bPad) bPad = craft(0,0,defP);
+					else defP.appendChild(bPad);
+					bPad.style.paddingBottom = document.body.style.paddingBottom;
 				}
 			}
 			processing=false;
 		}
 
+		var defOpt;
 		var opt={
 			delay : true
 
-			,focusMode : 0 // 1=折叠其他；2=限制其他视图的高度；
+			,focusMode : 2 // 1=折叠其他；2=限制其他视图的高度；
 			,focusOne : false
 			,fm1 : false
 			,fm2 : false
-			,fml : false
+			,fml : 1
 			,limHeightMode : 0 //非focus高度 :  0=限制最大值 1=强制数值
 			,maxHeight2 : 250
 			,initHeight2 : 150
@@ -2830,6 +2835,14 @@
 		}
 
 		function setup() {
+			if(!defOpt) {
+				defOpt={};
+				Object.assign(defOpt, opt);
+				delete defOpt.fm1;
+				delete defOpt.fm2;
+				delete defOpt.initHeight2;
+				delete defOpt.focusOne;
+			}
 			loadJson("/settings.json", function(e) {
 				Object.assign(opt, e);
 				opt.init();
@@ -3404,7 +3417,16 @@
 
 						opt.init();
 						if(contents) processContents(contents);
-
+						
+						var newOpt={};
+						Object.assign(newOpt, opt);
+						for (var key in newOpt) {
+							var defVal = defOpt[key];
+							if(defVal==undefined||typeof defVal=='function'||defVal==newOpt[key]) {
+								delete newOpt[key];
+							}
+						}
+						debug('newOpt=', newOpt);
 					}
 					return 1;
 				}
