@@ -1763,7 +1763,7 @@
 			processing=false;
 		}
 
-		var defOpt;
+		var defOpt, newOpt, saveTm;
 		var opt={
 			delay : true
 
@@ -3418,15 +3418,24 @@
 						opt.init();
 						if(contents) processContents(contents);
 						
-						var newOpt={};
-						Object.assign(newOpt, opt);
-						for (var key in newOpt) {
+						newOpt={};
+						for (var key in opt) {
 							var defVal = defOpt[key];
-							if(defVal==undefined||typeof defVal=='function'||defVal==newOpt[key]) {
-								delete newOpt[key];
+							if(defVal!=undefined && typeof defVal!='function') {
+								var val = opt[key];
+								if(defVal!=val) {
+									newOpt[key] = val;
+								}
 							}
 						}
 						debug('newOpt=', newOpt);
+						if(app) {
+							if(saveTm)clearTimeout(saveTm);
+							saveTm = setTimeout(function() {
+								app.saveOpt(sid.get(), JSON.stringify(newOpt).replaceAll('"',''));
+								saveTm = 0;
+							}, 1000)
+						}
 					}
 					return 1;
 				}

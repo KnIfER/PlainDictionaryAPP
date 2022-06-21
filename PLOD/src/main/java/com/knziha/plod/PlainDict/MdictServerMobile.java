@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.os.StrictMode;
 import android.view.inputmethod.EditorInfo;
 
+import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
@@ -225,5 +226,13 @@ public class MdictServerMobile extends MdictServer {
 			}
 		}
 		return super.OpenMdbResourceByName(key);
+	}
+	
+	@Override
+	public JSONObject getSettings() {
+		JSONObject json = JSONObject.parseObject(a.opt.getString("opt", "{}"));
+		json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
+		json.put("bgr", SU.toHexRGB(CMN.AppBackground));
+		return json;
 	}
 }

@@ -12,7 +12,7 @@ fix server port
 单本搜索直接切换合并或分散的联合搜索
 fix ListView Strict Scroll
 
-fix 网页版配置保存
+fix 网页版配置保存+
 
 recheck 词典id生成
 recheck 词典管理

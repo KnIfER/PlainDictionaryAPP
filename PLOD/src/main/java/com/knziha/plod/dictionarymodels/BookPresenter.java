@@ -45,6 +45,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
@@ -2647,6 +2648,18 @@ function debug(e){console.log(e)};
 				WebViewmy wv = findWebview(sid);
 				if (wv != null) {
 					presenter.getWebx().saveDopt(presenter.a, val);
+				}
+			}
+        }
+		
+        @JavascriptInterface
+        public void saveOpt(int sid, String val) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if (wv != null) {
+					//CMN.Log("saveOpt::", val);
+					//CMN.Log("saveOpt::", JSON.parse(val));
+					presenter.a.opt.putString("opt", val); // todo is safe?
 				}
 			}
         }
