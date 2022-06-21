@@ -4,6 +4,7 @@ import static com.knziha.plod.PlainUI.AppUIProject.ContentbarBtnIcons;
 import static com.knziha.plod.PlainUI.AppUIProject.RebuildBottombarIcons;
 import static com.knziha.plod.dictionary.Utils.IU.NumberToText_SIXTWO_LE;
 import static com.knziha.plod.plaindict.CMN.EmptyRef;
+import static com.knziha.plod.plaindict.DeckListAdapter.DB_FAVORITE;
 import static com.knziha.plod.preference.SettingsPanel.makeInt;
 
 import android.content.ClipData;
@@ -1709,7 +1710,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		if (!TextUtils.equals(displaying, key)) {
 			displaying = key;
 			if (ViewUtils.isVisibleV2(browserWidget8)) {
-				browserWidget8.setActivated(a.GetIsFavoriteTerm(key));
+				if (a.DBrowser!=null && this==a.DBrowser.weblistHandler && a.DBrowser.getFragmentType()==DB_FAVORITE) {
+					browserWidget8.setActivated(!a.DBrowser.toDeleteV2.contains(a.DBrowser.currentRowId));
+				} else {
+					browserWidget8.setActivated(a.GetIsFavoriteTerm(key));
+				}
 			}
 			if (bShowingInPopup) {
 				alloydPanel.toolbar.setTitle(key);

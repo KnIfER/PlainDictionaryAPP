@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
@@ -75,6 +76,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 import com.knziha.plod.db.LexicalDBHelper;
@@ -115,7 +117,6 @@ public class DBroswer extends DialogFragment implements
 	public int currentPos=-1;
 	public long currentRowId=-1;
 	
-	SparseArray<String> toDelete = new SparseArray<>();
 	HashSet<Long> toDeleteV2 = new HashSet<>();
 	HashSet<Long> Selection = new HashSet<>();
 
@@ -198,6 +199,34 @@ public class DBroswer extends DialogFragment implements
 				UIData.counter.setText(Selection.size()+"/"+ getItemCount());
 			}
 			return 1;
+		}
+		if (type==DB_FAVORITE && toDeleteV2.size()>0) {
+			int size = toDeleteV2.size();
+			Iterator<Long> iter = toDeleteV2.iterator();
+			SQLiteDatabase database = mLexiDB.getDB();
+			database.beginTransaction();
+			SQLiteStatement state = null;
+			int cc=0;
+			try {
+				state = database.compileStatement("DELETE FROM " + TABLE_FAVORITE_v2 + " where id=?");
+				while (iter.hasNext()) {
+					state.bindLong(1, iter.next());
+					if (state.executeUpdateDelete()>0) {
+						cc++;
+					}
+				}
+				database.setTransactionSuccessful();
+				toDeleteV2.clear();
+			} finally {
+				database.endTransaction();
+				try {
+					if (state!=null) {
+						state.close();
+					}
+				} catch (Exception ignored) { }
+				a.showT("已删除 "+cc+"/"+size+" 项收藏！");
+				mAdapter.data.ver = 0;
+			}
 		}
 		return 0;
 	}
@@ -1377,8 +1406,6 @@ public class DBroswer extends DialogFragment implements
 			weblistHandler.bShowInPopup = true;
 			weblistHandler.bMergeFrames = 1;//a.mergeFrames();
 			rec.renderContentAt(0, a,null, weblistHandler);
-
-			processFavorite(position, currentDisplaying);
 			return true;
 		}
 		else {
@@ -1514,7 +1541,6 @@ public class DBroswer extends DialogFragment implements
 			
 			contentUIData.PageSlider.setWebview(webview, null);
 			someView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
-			processFavorite(position, currentDisplaying);
 			return true;
 		}
 		else {
@@ -1522,42 +1548,35 @@ public class DBroswer extends DialogFragment implements
 		}
 	}
 	
+	public View favoriteBtn() {
+		return contentUIData.browserWidget8;
+	}
 	
 	public void toggleFavor() {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if (a == null) return;
 		if(type==DB_FAVORITE) {
 			if (toDeleteV2.remove(currentRowId)) {
-				a.favoriteBtn().setActivated(true);
-				a.show(R.string.added);
+				favoriteBtn().setActivated(true);
+				a.showTopSnack(R.string.added);
 			} else {
-				a.favoriteBtn().setActivated(false);
+				favoriteBtn().setActivated(false);
 				toDeleteV2.add(currentRowId);
 				isToDel = true;
-				a.show(R.string.toRemove);
+				// 提示待移除
+				a.showTopSnack(R.string.toRemove);
 			}
 		} else {
 			String text = currentDisplaying;
 			if(a.GetIsFavoriteTerm(text)) {//删除
 				a.removeFavoriteTerm(text);
-				a.favoriteBtn().setActivated(false);
+				favoriteBtn().setActivated(false);
 				a.show(R.string.removed);
 			} else {//添加
 				a.favoriteCon.insert(a, text, opt.getCurrFavoriteNoteBookId(), weblistHandler);
-				a.favoriteBtn().setActivated(true);
+				favoriteBtn().setActivated(true);
 				a.show(R.string.added);
 			}
-		}
-	}
-
-
-	protected void processFavorite(int position,String key) {
-		MainActivityUIBase a = (MainActivityUIBase) getActivity();
-		if(a==null || a.favoriteBtn()==null) return;
-		if(type==DB_FAVORITE) {
-			a.favoriteBtn().setActivated(!toDeleteV2.contains(currentRowId));
-		} else {
-			a.favoriteBtn().setActivated(a.GetIsFavoriteTerm(key));
 		}
 	}
 
@@ -1777,11 +1796,5 @@ public class DBroswer extends DialogFragment implements
 			}
 		}
 		ViewUtils.removeView(getView());
-	}
-	
-	@Override
-	public void onDismiss(@NonNull DialogInterface dialog) {
-		super.onDismiss(dialog);
-		
 	}
 }

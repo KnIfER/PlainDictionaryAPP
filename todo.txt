@@ -4,9 +4,7 @@ fix PeruseView 词典加载异常
 fix random page
 fix merged webx boxes
 fix float btn
-fix url share and text share
 fix default titlebar color
-fix DBrowser 待移除
 
 fix flowTextView 小宽度导致崩溃
 
