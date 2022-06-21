@@ -1767,7 +1767,7 @@
 		var opt={
 			delay : true
 
-			,focusMode : 2 // 1=折叠其他；2=限制其他视图的高度；
+			,focusMode : 0 // 1=折叠其他；2=限制其他视图的高度；
 			,focusOne : false
 			,fm1 : false
 			,fm2 : false
@@ -2836,7 +2836,7 @@
 
 		function setup() {
 			if(!defOpt) {
-				defOpt={};
+				defOpt = {};
 				Object.assign(defOpt, opt);
 				delete defOpt.fm1;
 				delete defOpt.fm2;
@@ -3418,7 +3418,7 @@
 						opt.init();
 						if(contents) processContents(contents);
 						
-						newOpt={};
+						newOpt = {};
 						for (var key in opt) {
 							var defVal = defOpt[key];
 							if(defVal!=undefined && typeof defVal!='function') {
@@ -3428,7 +3428,7 @@
 								}
 							}
 						}
-						debug('newOpt=', newOpt);
+						debug('newOpt = ', newOpt);
 						if(app) {
 							if(saveTm)clearTimeout(saveTm);
 							saveTm = setTimeout(function() {
