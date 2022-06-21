@@ -165,7 +165,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 				intent=new Intent(Intent.ACTION_WEB_SEARCH);
 				intent.putExtra(SearchManager.QUERY, text);
 			} else {
-				intent=new Intent(Intent.ACTION_WEB_SEARCH);
+				intent=new Intent(Intent.ACTION_SEND);
 				intent.putExtra(Intent.EXTRA_TEXT, text);
 				intent.setType("text/plain");
 			}
