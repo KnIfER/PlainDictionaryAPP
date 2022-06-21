@@ -3,89 +3,89 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 	<PreferenceCategory
 		>
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			android:key="https://github.com/KnIfER/PlainDictionaryAPP"
 			android:summary="GPL3.0"
 			android:title="KnIfER/PlainDict | 开源的旧版本"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/KnIfER/mdict-java"
 			android:summary="GPL3.0"
 			android:title="KnIfER/Mdict-Java | 开源的Java库"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://bitbucket.org/xwang/"
 			android:summary="Public domain"
 			android:title="xwang/python-mdict-analysis | Mdict 格式解析"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/fengdh/mdict-js"
 			android:summary="Public domain"
 			android:title="fengdh/mdict-js | 用 JavaScript 打开 Mdict"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/tobiasrohloff/NestedScrollWebView"
 			android:summary="Apache License 2.0"
 			android:title="tobiasrohloff/NestedScrollWebView"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://gitee.com/knziha/Metaline"
 			android:summary="Public domain"
 			android:title="KnIfER/Metaline | 元线注解模块"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/jess-anders/two-way-gridview"
 			android:summary="Public domain"
 			android:title="jess-anders/two-way-gridview"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/IDFDeveloper/android-resize-view"
 			android:summary="Public domain"
 			android:title="IDFDeveloper/android-resize-view"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/Angads25/android-filepicker"
 			android:summary="Apache 2.0"
 			android:title="Angads25/android-filepicker"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/bauerca/drag-sort-listview"
 			android:summary="Public domain"
 			android:title="bauerca/drag-sort-listview | 可排序列表"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/danoz73/RecyclerViewFastScroller"
 			android:summary="Apache 2.0"
 			android:title="danoz73/RecyclerViewFastScroller"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			app:allowDividerBelow="true"
 			android:key="https://github.com/danoz73/RecyclerViewFastScroller"
 			android:summary="Apache 2.0"
 			android:title="org.apache.commons.lang"/>
 
-		<com.knziha.plod.settings.URLPreference
+		<com.knziha.plod.preference.URLPreference
 			app:allowDividerAbove="true"
 			android:key="https://source.android.com/?"
 			android:summary="Apache 2.0"
