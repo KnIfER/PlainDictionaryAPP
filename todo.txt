@@ -12,7 +12,5 @@ fix server port
 单本搜索直接切换合并或分散的联合搜索
 fix ListView Strict Scroll
 
-网页版增加自动滚动功能
-
 recheck 词典id生成
 recheck 词典管理

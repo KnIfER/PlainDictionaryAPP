@@ -3226,10 +3226,30 @@
 			}
 		}
 		
+		var autoScrollTm=0;
 		function onMenuClick(e) {
-			var btn=e.button, t=e.srcElement;
-			debug('onMenuClick', e.name);
-			switch(t.name) {
+			var btn=e.button, t=e.srcElement.name;
+			debug('onMenuClick', t);
+			if(t.startsWith('autoScroll')) {
+				var v=t[t.length-1];
+				if(autoScrollTm) clearInterval(autoScrollTm);
+				var speed = 1;
+				var interval = 15;
+				if(v=='1') { // 快
+					speed = 9;
+					interval = 2;
+				} 
+				else if(v=='2') { // 慢
+					speed = 1;
+					interval = 35;
+				}
+				if(v!='3') {
+					autoScrollTm=setInterval(function(){
+							defP.scrollTop += speed;
+						}, interval);
+				} else autoScrollTm=0;
+			}
+			switch(t) {
 				case 'foldAll':
 					foldAll();
 				break
@@ -3270,6 +3290,10 @@
 					} else {
 						menuContext.click();
 					}
+				break
+				case 'toTop':
+					if(autoScrollTm) clearInterval(autoScrollTm);
+					defP.scrollTop = 0;
 				break
 			}
 			if(e.delay)
