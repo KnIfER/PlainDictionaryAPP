@@ -48,7 +48,7 @@ public class RLContainerSlider extends FrameLayout{
 	private float fastTapScrollY;
 	private boolean fastTapMoved;
 	private float quickScaleThreshold;
-	private int tapZoomV;
+	public int tapZoomV;
 	private boolean nothing = true;
 	
 	public RLContainerSlider(Context context) {
@@ -549,7 +549,7 @@ public class RLContainerSlider extends FrameLayout{
 				||WebContext.getScrollX()==0  && WebContext.getScrollX()+WebContext.getWidth()>=WebContextWidth);
 	}
 	
-	private void quoTapZoom() {
+	public void quoTapZoom() {
 		final int src = weblist.getSrc();
 		if (WebContext!=null) {
 			tapZoom = pBc.tapZoom();

@@ -228,11 +228,17 @@ public class MdictServerMobile extends MdictServer {
 		return super.OpenMdbResourceByName(key);
 	}
 	
+	public String strOpt;
+	
 	@Override
-	public JSONObject getSettings() {
-		JSONObject json = JSONObject.parseObject(a.opt.getString("opt", "{}"));
-		json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
-		json.put("bgr", SU.toHexRGB(CMN.AppBackground));
-		return json;
+	public String getSettings() {
+		String ret = strOpt;
+		if (ret==null) {
+			JSONObject json = JSONObject.parseObject(a.opt.getString("opt", "{}"));
+			json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
+			json.put("bgr", SU.toHexRGB(CMN.AppBackground));
+			ret = strOpt = json.toString();
+		}
+		return ret;
 	}
 }

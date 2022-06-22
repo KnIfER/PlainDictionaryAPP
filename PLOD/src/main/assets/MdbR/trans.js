@@ -29,10 +29,11 @@ var trans={
 
     ,"focusMode1" : "专注模式1（折叠）"
     ,"focusMode2" : "专注模式2（限高）"
-    ,"autoScroll1" : "滚动快"
-    ,"autoScroll2" : "滚动慢"
-    ,"autoScroll3" : "滚动停"
-    ,"toTop" : "回到顶部"
+    ,"autoScroll1" : "快⇊"
+    ,"autoScroll2" : "慢⇊"
+    ,"autoScroll3" : "停"
+    ,"autoScroll" : "中⇊"
+    ,"toTop" : "顶⇈"
 
     ,"pageUpIcon" : "▲"
     ,"pageDownIcon" : "▼"

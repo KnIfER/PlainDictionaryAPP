@@ -37,6 +37,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -2656,10 +2657,35 @@ function debug(e){console.log(e)};
         public void saveOpt(int sid, String val) {
 			if (presenter!=null) {
 				WebViewmy wv = findWebview(sid);
+				if (wv != null && wv.weblistHandler.isMergingFrames()) {
+					//CMN.Log("saveOpt::", val, JSON.parse(val));
+					presenter.a.opt.putString("opt", val);
+					presenter.a.getMdictServer().strOpt = null;
+				}
+			}
+        }
+		
+        @JavascriptInterface
+        public void suppressTurnPage(int sid, boolean val, boolean hideUI) {
+			if (presenter!=null) {
+				WebViewmy wv = findWebview(sid);
 				if (wv != null) {
-					//CMN.Log("saveOpt::", val);
-					//CMN.Log("saveOpt::", JSON.parse(val));
-					presenter.a.opt.putString("opt", val); // todo is safe?
+					final WebViewListHandler weblist = wv.weblistHandler;
+					if (weblist!=null) {
+						if (val) {
+							weblist.pageSlider.slideTurn = false;
+							weblist.slideDirty = true;
+						} else {
+							weblist.pageSlider.quoTapZoom();
+						}
+						final SeekBar entrySeek = weblist.entrySeek;
+						if (weblist.isMergingFrames() && hideUI && entrySeek.getVisibility()!=View.GONE) {
+							presenter.a.hdl.post(() -> {
+								entrySeek.setVisibility(val?View.INVISIBLE:View.VISIBLE);
+								entrySeek.setEnabled(!val);
+							});
+						}
+					}
 				}
 			}
         }
@@ -2742,7 +2768,7 @@ function debug(e){console.log(e)};
         
         @JavascriptInterface
         public String loadJson(String url) {
-			CMN.Log("loadJson::", url);
+			CMN.debug("loadJson::", url);
 			MainActivityUIBase a = presenter.a;
 			MdictServer server = a.getMdictServer();
 			try {
@@ -2784,7 +2810,7 @@ function debug(e){console.log(e)};
 						}
 					}
 				} else if(url.startsWith("/settings.json")) {
-					return server.getSettings().toJSONString();
+					return server.getSettings();
 				}
 			} catch (Exception e) {
 				CMN.debug(e);
@@ -3058,7 +3084,7 @@ function debug(e){console.log(e)};
 				}
 				MainActivityUIBase a = presenter.a;
 				WebViewmy wv = findWebview(sid);
-				CMN.Log("popupWord::ivk::", presenter, wv, mergeView);
+				CMN.debug("popupWord::ivk::", presenter, wv, mergeView);
 				a.popupWord(key, null, frameAt, wv);
 				a.wordPopup.tapped = true;
 				if (false) {
@@ -3099,7 +3125,7 @@ function debug(e){console.log(e)};
 		
 		@JavascriptInterface
 		public boolean entryPopup(int sid, String bid) {
-			CMN.Log("entryPopup", sid, bid);
+			CMN.debug("entryPopup", sid, bid);
 			if(presenter!=null) {
 				WebViewmy wv = findWebview(sid);
 				if(wv!=null){
@@ -3472,6 +3498,9 @@ function debug(e){console.log(e)};
 		if(mWebView!=null) {
 			mWebView.shutDown();
     		mWebView=null;
+		}
+		if (mWebBridge!=null) {
+			mWebBridge.presenter = null;
 		}
 		if(viewsHolderReady) {
 			viewsHolderReady =  false;

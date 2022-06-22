@@ -118,6 +118,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 	public View browserWidget10;
 	public View browserWidget11;
 	public RLContainerSlider pageSlider;
+	public boolean slideDirty;
 	public DragScrollBar mBar;
 	public ImageView prv,nxt;
 	public SeekBar entrySeek;
@@ -852,6 +853,13 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		boolean multiDicts = multi && record.jointResult!=null && (int) record.jointResult.realmCount > 1;
 		int viewMode = multi && bMerge==0? WEB_LIST_MULTI : WEB_VIEW_SINGLE;
 		boolean changed = bMerge!=bMergingFrames;
+		CMN.debug("setViewMode:: ", slideDirty);
+		if (slideDirty) {
+			pageSlider.tapZoomV--;
+			entrySeek.setEnabled(true);
+			changed = true;
+			slideDirty = false;
+		}
 		if (btmV!=SearchUI.btmV) {
 			btmV = SearchUI.btmV;
 			changed = true;

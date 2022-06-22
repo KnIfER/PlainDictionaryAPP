@@ -100,10 +100,10 @@
 					android:text="浏览选项"
  					/>
 				<com.knziha.plod.widgets.DescriptiveImageView
-					android:id="@+id/menu_icon10"
+					android:id="@drawable/ic_view_options"
 					style="@style/MenuIconIVStyle"
-					android:text="设置"
-					android:visibility="invisible"
+					android:src="@drawable/ic_view_options"
+					android:text="页面设置"
 					/>
 
 			</LinearLayout>

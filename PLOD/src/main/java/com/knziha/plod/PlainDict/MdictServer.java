@@ -252,7 +252,7 @@ public abstract class MdictServer extends NanoHTTPD {
 		
 		if(key.equals("\\settings.json")) {
 			try {
-				return newFixedLengthResponse(getSettings().toJSONString()) ;
+				return newFixedLengthResponse(getSettings()) ;
 			} catch (Exception e) {
 				return emptyResponse;
 			}
@@ -517,11 +517,11 @@ public abstract class MdictServer extends NanoHTTPD {
 		return null;
 	}
 	
-	public JSONObject getSettings() {
+	public String getSettings() {
 		JSONObject json = new JSONObject();
 		json.put("bg", SU.toHexRGB(CMN.GlobalPageBackground));
 		json.put("bgr", SU.toHexRGB(CMN.AppBackground));
-		return json;
+		return json.toString();
 	}
 	
 	protected abstract InputStream convert_tiff_img(InputStream restmp) throws Exception;

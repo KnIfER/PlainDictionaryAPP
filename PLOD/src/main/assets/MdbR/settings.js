@@ -196,6 +196,7 @@
         if(!host.cards) {
             host.cards = [];
         }
+        host.pref = pref;
         if(!card) {
             card = craft('card', host.shadow);
             host.cards.push(card);
@@ -483,14 +484,15 @@
         return dlg;
     }
     function hideShow(dlg, show) {
+        dlg = dlg.style; 
         if(show) {
-            dlg.style.transform = 'scale(1)';
-            dlg.style.webkitTransform = 'scale(1)';
-            dlg.style.opacity = '1';
+            dlg.transform = 'scale(1)';
+            dlg.webkitTransform = 'scale(1)';
+            dlg.opacity = '1';
         } else {
-            dlg.style.transform = 'scale(0.7)';
-            dlg.style.webkitTransform = 'scale(0.7)';
-            dlg.style.opacity = '0';
+            dlg.transform = 'scale(0.7)';
+            dlg.webkitTransform = 'scale(0.7)';
+            dlg.opacity = '0';
         }
     }
     function showDialog(dlg) {
@@ -501,6 +503,9 @@
     function hideDialog(dlg) {
         hideShow(dlg, false);
         setTimeout(function(){dlg.style.display='none'}, 200);
+        if(dlg.host.pref) {
+            dlg.host.pref('close');
+        }
     }
     window.SettingsBuildCard = buildCard;
     window.SettingsTweakDialog = tweakDialog;

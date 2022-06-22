@@ -314,7 +314,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	CharSequence search_cs;
 	int search_count;
 	boolean focused;
-	protected MdictServer server;
+	protected MdictServerMobile server;
 	public Map<SubStringKey, String>  serverHosts;
 	public ArrayList<PlainWeb>  serverHostsHolder=new ArrayList();
 	public FrameLayout lvHeaderView;
@@ -6164,7 +6164,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							shareUrlOrText(null, newKey, fineShare);
 						});
 					} else {
-						shareUrlOrText(null, wv.word, shareWhat);
+						shareUrlOrText(null, wv.weblistHandler.displaying, shareWhat);
 					}
 				}
 			}
@@ -10396,7 +10396,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 	}
 	
-	public MdictServer getMdictServer() {
+	public MdictServerMobile getMdictServer() {
 		try {
 			if(server==null) {
 				if(Thread.currentThread().getId()!=CMN.mid) {

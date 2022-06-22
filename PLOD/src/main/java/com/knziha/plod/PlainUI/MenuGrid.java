@@ -26,6 +26,7 @@ public class MenuGrid extends PlainAppPanel {
 	private int lastWidth;
 	private int lastHeight;
 	private DescriptiveImageView menu_icon5;
+	private DescriptiveImageView menu_icon10;
 	private int btnPaddingH;
 	private int btnShareBundleResId = R.drawable.abc_ic_menu_share_mtrl_alpha;
 	
@@ -58,6 +59,7 @@ public class MenuGrid extends PlainAppPanel {
 		//refreshMenuGridSize(true);
 		
 		menu_icon5 = settingsLayout.findViewById(R.drawable.abc_ic_menu_share_mtrl_alpha);
+		menu_icon10 = settingsLayout.findViewById(R.drawable.ic_view_options);
 	}
 	
 	public boolean show(ViewGroup root, boolean contentview, int forceShowType) {
@@ -68,6 +70,8 @@ public class MenuGrid extends PlainAppPanel {
 			refreshMenuGridSize(true);
 		}
 		DescriptiveImageView shareBtn = this.menu_icon5;
+		DescriptiveImageView optBtn = this.menu_icon10;
+		ViewUtils.setVisibility(optBtn, a.weblist.bMergingFrames==1);
 		if(btnPaddingH==0){
 			btnPaddingH = shareBtn.getPaddingLeft();
 		}
@@ -106,6 +110,9 @@ public class MenuGrid extends PlainAppPanel {
 			/* 历史 */
 			case R.id.root: {
 				dismiss();
+			} break;
+			case R.drawable.ic_view_options: {
+				a.weblist.getMergedFrame().evaluateJavascript("showSettings()", null);
 			} break;
 			case R.drawable.abc_ic_menu_share_mtrl_alpha: {
 				if (btnShareBundleResId==R.drawable.abc_ic_menu_share_mtrl_alpha) {

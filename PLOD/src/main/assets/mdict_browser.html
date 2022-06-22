@@ -688,7 +688,7 @@
 			right:10px;
 			background-color: #03a9f4;
 			border-radius: 10px;
-			z-index:999999;
+			z-index:999;
 			display:none;
 		}
 	</style> 
@@ -2591,11 +2591,8 @@
 				}
 			}
 		}
-
-		function setJson(e) {
-			debug('setJson',e);
-		}
-
+		
+/**/
 		var flag=0;
 		function updateFFAt(o, val) {
 			flag &= (~o);
@@ -2604,6 +2601,7 @@
 				app.setFlag(flag);
 			}
 		}
+		
 		function isCombinedSeaching(){
 			return (flag&0x1)!=0;
 		}
@@ -2790,7 +2788,7 @@
 			var res = (1 - d[n][m] / l)
 			return res.toFixed(f)
 		}
-
+/**/
 		function loadJs(url,callback){
 			var e=document.createElement('script');
 			e.type="text/javascript";
@@ -3178,7 +3176,7 @@
 			}
 			else if(className.startsWith('arr')){
 				//menu=makeMenu(name, ['专注模式1（折叠）', '专注模式2（限高）', ['滚动快', '滚动慢', '滚动停'], '回到顶部', null]);
-				menu=makeMenu('arr', ['toTop', ['autoScroll1', 'autoScroll2', 'autoScroll3'], 'settings', 'focusMode1', 'focusMode2', null]);
+				menu=makeMenu('arr', [[[30,70],'toTop','autoScroll'], ['autoScroll1', 'autoScroll2', 'autoScroll3'], 'settings', 'focusMode1', 'focusMode2', null]);
 				menu.revert=true;
 			}
 			else if(target.id==="fileName"){
@@ -3334,11 +3332,19 @@
 			for (var i=0,t,m;(t=l[i++])!=null;) {
 				if (t) {
 					m=craft(0, 0, menu);
-					if(Array.isArray(t)) {
-						for (var j=0,t1,m1;j<t.length;j++) {
+					if(Array.isArray(t)) { // 横向子集
+						var wid=0, wids, j=0,t1,m1;
+						if(Array.isArray(t[0])) { // 宽度占比
+							wids = t[0];
+							j=1;
+						} else {
+							wid = parseInt(100/t.length)+'%';
+						}
+						for (;j<t.length;j++) {
 							m1=craft(0, 0, m);
 							m1.name=t1=t[j];
 							m1.innerText=trans[t1];
+							m1.style.width = wid?wid:(wids[j-1]+'%');
 							//m1.onclick=onMenuClick;
 						}
 					} else {
@@ -3388,6 +3394,7 @@
 		}
 
 		function doShowSettings() {
+			if(app)app.suppressTurnPage(sid.get(), true, true);
 			var dlg = SettingsGetDialogHolder('settings');
 			var host=dlg.host;
 			if(!host.cards || true) {
@@ -3397,6 +3404,10 @@
 				}
 				function pref(id, value, el) 
 				{
+					if(id==='close') {
+						if(app)app.suppressTurnPage(sid.get(), false, true);
+						return;
+					}
 					if(tmp[id]!=null) {
 						tmp[id]=value;
 					} else {
@@ -3448,8 +3459,8 @@
 							, [1<<10, ['focusMode', 2], '限制最大高度', opt.fml==2
 								, [2|2<<10, ['expandFirst2N', 'expandFirst2', opt.expandFirst2], ['默认展开前几项：'], opt.expandFirst2N]
 								, [1, 'noNestedScroll2', ['禁止嵌套滚动', '但仍可点击翻页、滑动边缘'], opt.noNestedScroll2]
-								, [1<<10, ['limHeightMode', 0], '限制为最大值', opt.limHeightMode==0]
-								, [1<<10, ['limHeightMode', 1], '固定为高度值', opt.limHeightMode==1]
+								, [1<<10, ['limHeightMode', 0], '限制最大值', opt.limHeightMode==0]
+								, [1<<10, ['limHeightMode', 1], '固定高度值', opt.limHeightMode==1]
 								, [2, 'maxHeight2', '高度值：', opt.maxHeight2]
 								]
 							, [1, 'autoScrollFocus', ['自动滚动至展开项'], opt.autoScrollFocus]
@@ -3466,7 +3477,7 @@
 					, [1, 'alwaysAutoScrollFocus', ['自动滚动至展开项'], opt.alwaysAutoScrollFocus]
 					, [1, 'alwaysShowExpand', ['始终显示展开/收起全文'], opt.alwaysShowExpand]
 					, [1, 'ensureOnePage', ['只有一项时自动展开'], opt.ensureOnePage]
-					, [3<<10, 'scrollNestedScroll2', ['限制最大高度时，上下翻页按钮的设置：'], tmp.scrollNestedScroll2
+					, [3<<10, 'scrollNestedScroll2', ['高度不完全展开时，▲▼翻页按钮的设置：'], tmp.scrollNestedScroll2
 						, [1, 'smoothNestedScroll2', '平滑滚动', opt.smoothNestedScroll2]
 						, [2|1<<10, ['nestedScrollPart2', 'nestedScrollByPart2', true, opt.nestedScrollByPart2], '按倍数滚动：', opt.nestedScrollPart2]
 						, [2|1<<10, ['nestedScrollPixel2', 'nestedScrollByPart2', false, !opt.nestedScrollByPart2], '按像素值滚动：', opt.nestedScrollPixel2]
