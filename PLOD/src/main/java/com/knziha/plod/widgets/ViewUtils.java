@@ -1477,7 +1477,12 @@ public class ViewUtils {
 				}
 			}
 		}
-		Objects.requireNonNull(ret);
+		try {
+			Objects.requireNonNull(ret);
+		} catch (Exception e) {
+			CMN.debug("getField::notFount::"+aClass+"->"+name);
+			throw e;
+		}
 		ret.setAccessible(true);
 		try {
 			Field modifiersField = Field.class.getDeclaredField("modifiers");

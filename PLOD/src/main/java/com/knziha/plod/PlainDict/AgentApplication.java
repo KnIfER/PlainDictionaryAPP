@@ -1,5 +1,7 @@
 package com.knziha.plod.plaindict;
 
+import static android.os.Build.VERSION.SDK_INT;
+
 import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -24,11 +26,13 @@ import com.knziha.plod.slideshow.MddPic;
 import com.knziha.plod.slideshow.MddPicLoaderFactory;
 import com.knziha.plod.slideshow.PdfPic;
 import com.knziha.plod.slideshow.PdfPicLoaderFactory;
+import com.knziha.plod.widgets.ViewUtils;
 
 import org.nanohttpd.protocols.http.ServerRunnable;
 
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -194,9 +198,28 @@ public class AgentApplication extends Application {
 	@Override
 	protected void attachBaseContext(Context base) {
 		super.attachBaseContext(base);
-		if (Build.VERSION.SDK_INT<=20) {
+		if (SDK_INT<=20) {
 //			androidx.multidex.MultiDex.install(this);
 			com.bytedance.boost_multidex.BoostMultiDex.install(base);
+		}
+	}
+	
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		if (SDK_INT >= Build.VERSION_CODES.P) {
+			try {
+				Method forName = Class.class.getDeclaredMethod("forName", String.class);
+				Method getDeclaredMethod = Class.class.getDeclaredMethod("getDeclaredMethod", String.class, Class[].class);
+				Class<?> vmRuntimeClass = (Class<?>) forName.invoke(null, "dalvik.system.VMRuntime");
+				Method getRuntime = (Method) getDeclaredMethod.invoke(vmRuntimeClass, "getRuntime", null);
+				Method setHiddenApiExemptions = (Method) getDeclaredMethod.invoke(vmRuntimeClass, "setHiddenApiExemptions", new Class[]{String[].class});
+				Object sVmRuntime = getRuntime.invoke(null);
+				setHiddenApiExemptions.invoke(sVmRuntime, new Object[]{new String[]{"L"}});
+				//CMN.Log("reflect bootstrap :");
+			} catch (Throwable e) {
+				//CMN.Log("reflect bootstrap failed:", e);
+			}
 		}
 	}
 }
