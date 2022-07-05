@@ -6803,14 +6803,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //				mlv.addView(handler.mMergedBook.rl);
 //				handler.mMergedBook.rl.getLayoutParams().height=350;
 //			}
-			
 			BookPresenter wikibook = randomPage.presenter;
 			PlainWeb webx = wikibook.getWebx();
 			randomPageHandler.getMergedFrame(wikibook);
-			String testUrl="https://en.wiktionary.wikimirror.org/randx";
+			//String testUrl="https://en.m.wiktionary.org/randx";
+			String testUrl=webx.getHost()+"/randx";
 			CMN.Log("testUrl::", randomPage.getUrl(), testUrl);
 			if(!TextUtils.equals(randomPage.getUrl(), testUrl)) {
-				CMN.Log("加载::", testUrl);
+				CMN.debug("加载::", testUrl);
 				randomPage.loadUrl(testUrl);
 				randomPageHandler.resetScrollbar(randomPage, false, false);
 			}

@@ -3159,6 +3159,30 @@ function debug(e){console.log(e)};
 			}
         }
 		
+        @JavascriptInterface
+        public String getRandomPage(int sid) {
+			if(presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if(wv!=null){
+					return presenter.a.prepareHistoryCon().getPageString(presenter.getId(), "randx");
+				}
+			}
+			return null;
+        }
+		
+        @JavascriptInterface
+        public void saveRandomPage(int sid, String content) {
+			if(presenter!=null) {
+				WebViewmy wv = findWebview(sid);
+				if(wv!=null){
+					try {
+						presenter.a.prepareHistoryCon().putPage(presenter.getId(), "randx", -100, null, content);
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
+			}
+        }
 		
 		@JavascriptInterface
 		public void parseContent(int processed, int total, String contents) {

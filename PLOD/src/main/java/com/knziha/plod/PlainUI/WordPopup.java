@@ -79,7 +79,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongClickListener {
-	public WebViewListHandler weblistHandler;
+	public /*final*/ WebViewListHandler weblistHandler;
 	public String popupKey;
 	int popupFrame;
 	BookPresenter popupForceId;
@@ -432,7 +432,9 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 	}
 	
 	public final boolean pin() {
-		return a.mDialogType==WindowManager.LayoutParams.TYPE_APPLICATION && popupChecker==null?PDICMainAppOptions.getPinTapTranslator():popupChecker.isChecked();
+		return a.mDialogType==WindowManager.LayoutParams.TYPE_APPLICATION
+				&& (invoker==null||invoker.weblistHandler!=a.randomPageHandler)
+				&& (popupChecker==null?PDICMainAppOptions.getPinTapTranslator():popupChecker.isChecked());
 	}
 	
 	public void show() {

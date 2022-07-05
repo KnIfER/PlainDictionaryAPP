@@ -202,12 +202,7 @@ public class AgentApplication extends Application {
 //			androidx.multidex.MultiDex.install(this);
 			com.bytedance.boost_multidex.BoostMultiDex.install(base);
 		}
-	}
-	
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		if (SDK_INT >= Build.VERSION_CODES.P) {
+		else if (SDK_INT >= Build.VERSION_CODES.P) {
 			try {
 				Method forName = Class.class.getDeclaredMethod("forName", String.class);
 				Method getDeclaredMethod = Class.class.getDeclaredMethod("getDeclaredMethod", String.class, Class[].class);

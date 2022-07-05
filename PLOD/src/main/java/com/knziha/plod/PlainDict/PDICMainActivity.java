@@ -43,6 +43,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -1621,7 +1622,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 //			SSLContext sslcontext = SSLContext.getInstance("TLSv1");
 //			sslcontext.init(null, new TrustManager[]{new PlainWeb.MyX509TrustManager()}, new java.security.SecureRandom());
 //			HttpsURLConnection.setDefaultSSLSocketFactory(PlainWeb.NoSSLv3Factory = sslcontext.getSocketFactory());
-//
+
 			
 			SSLContext sslcontext = SSLContext.getInstance("TLSv1");
 			sslcontext.init(null, null, null);
@@ -1631,9 +1632,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 
 //			l_connection = (HttpsURLConnection) l_url.openConnection();
 //			l_connection.connect();
-		
-		
-		
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
