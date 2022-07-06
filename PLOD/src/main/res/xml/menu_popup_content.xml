@@ -5,7 +5,7 @@
 	tools:ignore="AppCompatResource"
 	>
 
-<!--0--><item android:title="刷新" android:id="@+id/refreshRandom" android:icon="@drawable/ic_refresh_black_24dp" app:showAsAction="always" android:visible="false"/>
+<!--0--><item android:title="刷新" android:id="@+id/refreshRandom" android:icon="@drawable/ic_refresh_shuffle" app:showAsAction="always" />
 
 <!--1--><item android:title="翻译" android:id="@+id/translate" android:icon="@drawable/ic_g_translate_black_24dp" app:showAsAction="always"/>
 

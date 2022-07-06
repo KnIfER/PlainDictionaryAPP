@@ -375,6 +375,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	/** 点击设置按钮、设置时更新这个变量。 */
 	public WebViewListHandler weblist;
 	public WebViewListHandler randomPageHandler;
+	public boolean refreshingRandom;
 	public ViewGroup webSingleholder;
 	protected WindowManager wm;
 	public FloatBtn floatBtn;
@@ -6531,10 +6532,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		boolean closeMenu=ret;
 		switch(id){
 			case R.id.wordtoday:{
-				showRandomShuffles();
+				showRandomShuffles(false);
 			} return true;
 			case R.id.refreshRandom:{
-				showRandomShuffles();
+				showRandomShuffles(true);
 			} break;
 			case R.drawable.ic_settings_black_24dp:{
 				launchSettings(0, 0);
@@ -6790,12 +6791,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return randomPageHandler;
 	}
 	
-	public void showRandomShuffles() {
+	public void showRandomShuffles(boolean refresh) {
 		try {
 			getMdictServer();
 			WebViewmy randomPage = getRandomPageHandler(true).getMergedFrame();
 			randomPage.presenter = new_book(defDicts[2], this);
-
 //			if(randomPage==null) {
 //				init=true;
 //				WebViewListHandler handler = new WebViewListHandler(this, contentUIData);
@@ -6809,7 +6809,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			//String testUrl="https://en.m.wiktionary.org/randx";
 			String testUrl=webx.getHost()+"/randx";
 			CMN.Log("testUrl::", randomPage.getUrl(), testUrl);
-			if(!TextUtils.equals(randomPage.getUrl(), testUrl)) {
+			refreshingRandom = refresh;
+			if(refresh || !TextUtils.equals(randomPage.getUrl(), testUrl)) {
 				CMN.debug("加载::", testUrl);
 				randomPage.loadUrl(testUrl);
 				randomPageHandler.resetScrollbar(randomPage, false, false);

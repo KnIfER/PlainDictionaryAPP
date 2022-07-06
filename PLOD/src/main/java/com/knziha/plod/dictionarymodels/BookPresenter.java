@@ -3162,6 +3162,10 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public String getRandomPage(int sid) {
 			if(presenter!=null) {
+				if (presenter.a.refreshingRandom) {
+					presenter.a.refreshingRandom = false;
+					return null;
+				}
 				WebViewmy wv = findWebview(sid);
 				if(wv!=null){
 					return presenter.a.prepareHistoryCon().getPageString(presenter.getId(), "randx");
@@ -3172,15 +3176,11 @@ function debug(e){console.log(e)};
 		
         @JavascriptInterface
         public void saveRandomPage(int sid, String content) {
-			if(presenter!=null) {
+			try {
 				WebViewmy wv = findWebview(sid);
-				if(wv!=null){
-					try {
-						presenter.a.prepareHistoryCon().putPage(presenter.getId(), "randx", -100, null, content);
-					} catch (Exception e) {
-						CMN.debug(e);
-					}
-				}
+				long ret = presenter.a.prepareHistoryCon().putPage(presenter.getId(), "randx", -100, null, content);
+			} catch (Exception e) {
+				CMN.debug(e);
 			}
         }
 		

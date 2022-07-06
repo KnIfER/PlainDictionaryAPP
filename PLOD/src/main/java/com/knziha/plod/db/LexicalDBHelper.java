@@ -860,7 +860,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		
 		values.put(FIELD_NOTES, data);
 		
-		Cursor cursor = database.rawQuery("SELECT id,edit_count from "+TABLE_BOOK_NOTE_v2+" where bid=? and lex=?"
+		Cursor cursor = database.rawQuery("SELECT id,edit_count from "+TABLE_BOOK_NOTE_v2+" where lex=? and bid=?"
 				, new String[]{url, ""+bid});
 		long ret;
 		if (cursor.moveToNext()) {

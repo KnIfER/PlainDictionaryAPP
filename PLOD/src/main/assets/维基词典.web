@@ -418,7 +418,7 @@
 		</script>
 		<body></>
 	"
-	,"wordtoday":"var months=[
+	,"wordtoday":"var date=new Date, months=[
 		'January'
 		,'February'
 		,'March'
@@ -432,10 +432,9 @@
 		,'November'
 		,'December'
 	],yearFrom=2016;
-	var month;
+	var month, yearNow;
 	function debug(...e){console.log('fatal wiki123',e)};
 	function gc(e,p){return (p||document).getElementsByClassName(e)[0]};
-	debug('word!!!',url);
 	document.addEventListener('click', function(e){
 		var t=e.srcElement;
 		debug('addEventListener...'+ t.tagName);
@@ -501,6 +500,8 @@
 				tbd=w.getElementsByTagName('IMG')[0];
 				if(tbd) tbd.style.opacity=0;
 				df.appendChild(w);
+				var title = w.getElementsByTagName('SPAN')[1];
+				if(title && title.id=='WOTD-rss-title') title.classList.add('notranslate');
 			}
 		}
 		debug(df);
@@ -537,14 +538,19 @@
 	} else {
 		function getRandomPage() {
 			var host = app.getHost()||'https://en.m.wiktionary.org';
-			var yearNow=new Date().getFullYear(),yd=yearNow-yearFrom;
-			yearNow = yearFrom + parseInt(Math.random()*yd);
-			month=months[parseInt(Math.random()*0)];
+			yearNow=date.getFullYear();
+			var yd=yearNow-yearFrom+2;
+			yearNow = yearFrom + Math.min(parseInt(date%100/100*yd), yd-3);
+			var m=Math.min(parseInt((new Date*Math.random()) % 175/175*13), 11);
+			month=months[m];
+			//debug('加载完成::',yearNow, m);
 			return host+'/wiki/Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month;
 			// return host+'/w/index.php?title=Wiktionary:Word_of_the_day/Archive/'+yearNow+'/'+month+'&printable=false';
 			// return host+'/wiki/Wiktionary:Word_of_the_day/Archive/2017/January';
 		}
+		getRandomPage();
 		var url=getRandomPage();
+		debug('word!!!',url);
 		function load(url,cb){
 			var x = new XMLHttpRequest();
 			x.open('POST', url, true);
@@ -561,7 +567,7 @@
 			return x;
 		}
 		load(url, function(e){
-			debug('加载完成::',month+'_1', e);
+			debug('加载完成::',yearNow+'_'+month);
 			app.saveRandomPage(sid.get(), e);
 			generate(e);
 		})
