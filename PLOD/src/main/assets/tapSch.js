@@ -1,5 +1,8 @@
 if(!window.tpshc){
-    console.log('popuping ini...shzh='+shzh);
+    if(window.shzh==undefined) {
+        window.shzh=app.rcsp(sid.get());
+    }
+    console.log('popuping ini...shzh='+window.shzh);
     window.addEventListener('click',window.tpshc=function(e){
     var w=this,d=w.document,sz=w.shzh,app=w.app;
     if(w.frameElement){sz=parent.window.shzh;app=parent.window.app}
