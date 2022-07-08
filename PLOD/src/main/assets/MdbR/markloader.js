@@ -193,6 +193,7 @@ function clearHighlights(){
             w.bOnceHighlighted=false;
         }
         ,iframes:true
+        ,iframesTimeout:0
     });
 }
 function highlight(keyword){
@@ -219,7 +220,7 @@ function do_highlight(keyword){
               w.shzh=app.rcsp(sid.get());
             }
             var sz=w.shzh>>4;
-            console.log('fatal highlighting...sz=',pageKey,sz&0x1,sz&0x4,sz&0x2);
+            console.log('tinting...sz=',pageKey,sz&0x1,sz&0x4,sz&0x2);
             if(sz&0x1)
             MarkInst.markRegExp(new RegExp(pageKey, (sz&0x2)?'m':'im'), {
                 done: done_highlight
@@ -236,6 +237,8 @@ function do_highlight(keyword){
                 ,iframesTimeout:0
             });
         }
+        ,iframes:true
+        ,iframesTimeout:0
     });
 }
 function done_highlight(){
