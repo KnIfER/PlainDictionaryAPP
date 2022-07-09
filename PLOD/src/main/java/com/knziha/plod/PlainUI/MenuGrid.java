@@ -71,7 +71,7 @@ public class MenuGrid extends PlainAppPanel {
 		}
 		DescriptiveImageView shareBtn = this.menu_icon5;
 		DescriptiveImageView optBtn = this.menu_icon10;
-		ViewUtils.setVisibility(optBtn, a.weblist.bMergingFrames==1);
+		ViewUtils.setVisibility(optBtn, a.weblist.bMergingFrames==1 && ViewUtils.ViewIsId(bottombar, R.id.bottombar2));
 		if(btnPaddingH==0){
 			btnPaddingH = shareBtn.getPaddingLeft();
 		}
