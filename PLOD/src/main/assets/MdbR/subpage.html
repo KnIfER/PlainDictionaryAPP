@@ -143,6 +143,10 @@ function wrappedDown(e){
 	for(var i=0;i<10 && (t=e.path[i]);i++)
 		if(t.href!==undefined)
 			break;
+	if(!parent.window._touchtarget_lck && e.touches.length==1){
+		parent.window._touchtarget = e.touches[0].target;
+		parent.window.subw = window;
+	}
 	if(frameElement && ((e.button||0)==0)) {
 		parent.window.tFrame(frameElement.dictInfo);
 	}

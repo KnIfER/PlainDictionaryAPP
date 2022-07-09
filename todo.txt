@@ -14,3 +14,5 @@ fix ListView Strict Scroll
 
 recheck 词典id生成
 recheck 词典管理
+
+fix randomPage 选择文本

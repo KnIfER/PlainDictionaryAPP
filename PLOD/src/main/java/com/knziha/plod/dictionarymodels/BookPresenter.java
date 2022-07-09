@@ -161,7 +161,7 @@ public class BookPresenter
 	/**
 	 	var w=window, d=document;
 		var LoadMark, frameAt;
-		function _log(...e){console.log('fatal web::'+e)};
+		function _log(a,b,c){console.log('fatal web::',a,b,c)};
 	 	w.addEventListener('load',function(e){
 			_log('wrappedOnLoadFunc...');
 			var ws = d.body.style;
@@ -208,14 +208,6 @@ public class BookPresenter
 	 */
 	@Metaline()
 	public static byte[] jsBytes=SU.EmptyBytes;
-	
-	static {
-		if (Build.VERSION.SDK_INT<=20) {
-			String tmp = new String(jsBytes);
-			tmp = tmp.replaceFirst("_log\\(...e\\)", "_log(e)");
-			jsBytes = tmp.getBytes();
-		}
-	}
 	
 	public final static String tapTranslateLoader=StringUtils.EMPTY;
 	
@@ -279,6 +271,7 @@ public class BookPresenter
 					w._touchtarget=tt;
 				}
 	 			if(e==0)w._touchtarget_href = tt.getAttribute("href");
+	 			if(w.subw) w=w.subw;
 				var sel = w.getSelection();
 				var range = d.createRange();
 				range.selectNodeContents(t0);
