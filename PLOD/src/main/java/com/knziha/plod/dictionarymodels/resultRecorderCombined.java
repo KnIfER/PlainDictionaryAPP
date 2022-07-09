@@ -81,12 +81,14 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 	@Override
 	public boolean checkAllWebs(MainActivityUIBase a, ArrayList<BookPresenter> md) {
 		ArrayList<Long> data = getRecordAt(0);
-		allWebs=true;
-		for(int i=0;i<data.size();i+=2) {
-			long toFind=data.get(i);
-			if (a.getBookById(toFind).getIsWebx()) {
-				allWebs=false;
-				break;
+		int i=0,len=data.size();
+		if (allWebs=len>0) {
+			for(;i<len;i+=2) {
+				long toFind=data.get(i);
+				if (!a.getBookById(toFind).getIsWebx()) {
+					allWebs=false;
+					break;
+				}
 			}
 		}
 		return allWebs;
