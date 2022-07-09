@@ -52,10 +52,6 @@ public class resultRecorderDiscrete {
 		return new ArrayList<>();
 	}
 
-	public boolean checkAllWebs(MainActivityUIBase mainActivityUIBase, ArrayList<BookPresenter> md) {
-		return false;
-	}
-
 	public boolean shouldSaveHistory() {
 		return true;
 	}

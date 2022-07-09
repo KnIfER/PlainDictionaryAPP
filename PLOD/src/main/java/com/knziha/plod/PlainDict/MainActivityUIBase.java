@@ -2468,6 +2468,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			}
+			md_size = chairCount;
 			return pickerIdx;
 		}
 		
@@ -2480,6 +2481,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			PlaceHolder phI;
 			String lastName = opt.getLastMdFn(LastMdFn);
 			int filterCount=0,chairCount=0;
+			CMN.debug("buildUpDictionaryList::size::", lazyMan.chairCount);
 			if(lazyMan.CosyChair.length<lazyMan.chairCount)lazyMan.CosyChair=new int[lazyMan.chairCount];
 			if(lazyMan.CosySofa.length<lazyMan.filterCount)lazyMan.CosySofa=new int[lazyMan.filterCount];
 			for (int i = 0; i < all.size(); i++) {
@@ -3310,16 +3312,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return ret;
 	}
 	
-	boolean checkAllWebs(resultRecorderDiscrete combining_search_result, View view, int pos) {
-		if(combining_search_result instanceof resultRecorderCombined && pos==0 && view==null){
-			if(combining_search_result.checkAllWebs(this, md)){
-				CMN.Log("驳回！！！");
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public void NotifyComboRes(int size) {
 		if(PDICMainAppOptions.getNotifyComboRes()) {
 			float fval = 0.8f;

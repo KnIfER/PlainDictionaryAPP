@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 
+import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
 import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.widgets.ViewUtils;
@@ -108,7 +109,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-		if(a.checkAllWebs(results, view, pos)) return;
+		if(checkAllWebs(results, view, pos)) return;
 		contentUIData.mainProgressBar.setVisibility(View.GONE);
 		userCLick=true;
 		lastClickedPosBefore=-1;
@@ -116,6 +117,15 @@ public class ListViewAdapter2 extends BasicAdapter {
 		super.onItemClick(parent, view, pos, id);
 	}
 	
+	boolean checkAllWebs(resultRecorderDiscrete result, View view, int pos) {
+		if(result instanceof resultRecorderCombined && pos==0 && view==null){
+			if(a.mergeFrames()!=2 && ((resultRecorderCombined)result).checkAllWebs(a)){
+				CMN.Log("驳回！！！");
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	@Override
 	public void onItemClick(int pos){//lv2 mlv1 mlv2

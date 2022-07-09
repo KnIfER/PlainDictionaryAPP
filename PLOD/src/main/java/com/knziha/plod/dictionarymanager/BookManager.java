@@ -203,8 +203,9 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				}
 			}
 			if(identical && !f1.rolesChanged){
-				CMN.Log("一成不变");
+				CMN.debug("一成不变");
 			} else {
+				CMN.debug("变化了", identical);
 				intent.putExtra("changed", true);
 				intent.putExtra("identical", identical);
 				try {
