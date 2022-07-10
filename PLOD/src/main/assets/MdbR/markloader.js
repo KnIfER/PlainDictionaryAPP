@@ -232,6 +232,7 @@ function do_highlight(keyword){
                 ,iframes:true
                 ,iframesTimeout:0
                 ,exclude : ["a"]
+                ,diacritics : sz&0x20
             });
             else
             MarkInst.mark(pageKey, {
@@ -242,6 +243,7 @@ function do_highlight(keyword){
                 ,iframes:true
                 ,iframesTimeout:0
                 ,exclude : ["a"]
+                ,diacritics : sz&0x20
             });
         }
         ,iframes:true

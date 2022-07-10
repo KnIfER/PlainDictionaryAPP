@@ -1535,7 +1535,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		szStash = shezhi;
 		final SettingsPanel settings = new SettingsPanel(a, opt
 				, new String[][]{
-						new String[]{"搜索选项", "使用正则表达式", "使用通配符", "区分大小写", "以空格分割关键词", "通配符不匹配空格"}
+						new String[]{"搜索选项", "使用正则表达式", "使用通配符", "区分大小写", "以空格分割关键词", "通配符不匹配空格", "额外搜索变音符号"}
 						,new String[]{"视图设置", "打字时自动搜索", "翻页时自动跳转", "打字时自动跳转"/*, "使用音量键"*/}
 					}
 				, new int[][]{new int[]{Integer.MAX_VALUE /** see{@link BookPresenter#MakePageFlag} */
@@ -1544,6 +1544,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 					, makeInt(101, 5, false) // pageSchCaseSensitive
 					, makeInt(101, 6, false) // pageSchSplitKeys
 					, makeInt(101, 7, false) // pageSchWildMatchNoSpace
+					, makeInt(101, 9, false) // pageSchDiacritic
 				}
 				, new int[]{Integer.MAX_VALUE
 					, makeInt(6, 27, true) // schPageOnEdit

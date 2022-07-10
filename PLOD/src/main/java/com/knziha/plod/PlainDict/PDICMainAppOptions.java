@@ -1190,6 +1190,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	@Metaline(flagPos=53) public static boolean getRebuildToast(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=53) public static void setRebuildToast(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
+	
+	@Metaline(flagPos=54) public static boolean pageSchDiacritic(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
+	@Metaline(flagPos=54) public static void pageSchDiacritic(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }
 
 	@Metaline(flagPos=55, shift=1) public static boolean schPageAutoTurn(){ SecondFlag=SecondFlag; throw new RuntimeException(); }
 	@Metaline(flagPos=55, shift=1) public static void schPageAutoTurn(boolean val) { SecondFlag=SecondFlag; throw new RuntimeException(); }

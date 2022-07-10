@@ -2371,7 +2371,9 @@ function debug(e){console.log(e)};
 				|   (PDICMainAppOptions.pageSchCaseSensitive()?0x20:0)
 				|   (PDICMainAppOptions.pageSchSplitKeys()?0x40:0)
 				|   (PDICMainAppOptions.pageSchWildMatchNoSpace()?0x80:0)
-				|   (PDICMainAppOptions.pageSchWild()?0x100:0))
+				|   (PDICMainAppOptions.pageSchWild()?0x100:0)
+				|   (PDICMainAppOptions.pageSchDiacritic()?0x200:0)
+				)
 				//opt.FetIsDark()
 				;
 		CMN.Log("rcsp::", Integer.toBinaryString(ret), ret);
@@ -2385,6 +2387,7 @@ function debug(e){console.log(e)};
 		PDICMainAppOptions.pageSchSplitKeys((sz&4)!=0);
 		PDICMainAppOptions.pageSchWildMatchNoSpace((sz&8)!=0);
 		PDICMainAppOptions.pageSchWild((sz&0x10)!=0);
+		PDICMainAppOptions.pageSchDiacritic((sz&0x20)!=0);
 	}
 
 	public void PlayWithToolbar(boolean hideDictToolbar,Context a) {
