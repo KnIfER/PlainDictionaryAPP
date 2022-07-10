@@ -414,6 +414,14 @@
 				//debug(e);
 				e=e.replaceAll(/=\"\\/([a-z])/ig, '=\"https://en.m.wiktionary.org/$1');
 				document.documentElement.innerHTML=e;
+				function craft(c, t, p) {
+					var e=document.createElement(t);
+					if(c)e.className=c;
+					p.appendChild(e);
+					debug('craft', e);
+					return e;
+				}
+				craft(0,'STYLE',document.head).innerText='mark{background: yellow} mark.current{background:orange;box-shadow:inset 0px 0px 0px .5px #ff0000}';
 			})
 		</script>
 		<body></>

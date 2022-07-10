@@ -1090,7 +1090,7 @@
           var regex = new RegExpCreator(_this9.opt).create(kw);
           var matches = 0;
 
-          _this9.log("Searching with expression \"".concat(regex, "\""));
+          debug("Searching with expression \"".concat(regex, "\""));
 
           _this9[fn](regex, 1, function (term, node) {
             return _this9.opt.filter(node, kw, totalMatches, matches);

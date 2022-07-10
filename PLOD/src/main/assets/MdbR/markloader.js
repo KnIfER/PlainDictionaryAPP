@@ -28,8 +28,12 @@ function findNxtPage() {
             currentIndex=0;
             //toast(inf.name);
             return true;
-        } else if(inf.waiting) {
-            //debug("waiting!!!", inf.name);
+        } 
+        if(inf.webs) {
+            continue;
+        }
+        if(inf.waiting) {
+            //debug("waiting!!!", inf);
             toast("&nbsp;···&nbsp;");
             checkFrame(inf);
             waiting=true;
@@ -177,6 +181,7 @@ function setAsStartLight(){
     currentIndex=0;
 }
 function addClass() {
+   //debug('addClass', current);
     current.classList.add(currentClass);
 }
 function removeClass() {
@@ -226,6 +231,7 @@ function do_highlight(keyword){
                 done: done_highlight
                 ,iframes:true
                 ,iframesTimeout:0
+                ,exclude : ["a"]
             });
             else
             MarkInst.mark(pageKey, {
@@ -235,6 +241,7 @@ function do_highlight(keyword){
                 ,caseSensitive:(sz&0x2)!=0
                 ,iframes:true
                 ,iframesTimeout:0
+                ,exclude : ["a"]
             });
         }
         ,iframes:true
