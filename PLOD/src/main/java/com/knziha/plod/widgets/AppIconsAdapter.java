@@ -110,7 +110,7 @@ public class AppIconsAdapter extends RecyclerView.Adapter<AppIconsAdapter.ViewHo
 				Intent shareIntent = new Intent(appBean.intent);
 				shareIntent.setComponent(new ComponentName(appBean.pkgName, appBean.appLauncherClassName));
 				shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				if (shareLink) { // 开启服务器
+				if (shareLink && shareIntent.getDataString().contains("localhost")) { // 开启服务器
 					MainActivityUIBase act = (MainActivityUIBase) a;
 					if (act.thisActType==MainActivityUIBase.ActType.PlainDict) {
 						((PDICMainActivity)act).startServer(true);
