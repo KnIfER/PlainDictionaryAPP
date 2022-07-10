@@ -14,3 +14,6 @@ fix ListView Strict Scroll
 
 recheck 词典id生成
 recheck 词典管理
+
+fix wiki 边缘滑动
+fix pageSch hidden elements opt

@@ -141,6 +141,15 @@ function updateIndicator(){
 }
 function pw_topOffset(node){
     var top=0;
+    if(node.offsetHeight==0){
+        var n=node;
+        while(n){
+            if(n.style.display=='none' || n.style.display=='' && document.defaultView.getComputedStyle(n,null).display=='none'){
+                n.style.display='block';
+            }
+            n=n.parentNode;
+        }
+    }
     while(node){
         top+=node.offsetTop;
         node=node.offsetParent;
@@ -181,7 +190,7 @@ function setAsStartLight(){
     currentIndex=0;
 }
 function addClass() {
-   //debug('addClass', current);
+    debug('addClass', current);
     current.classList.add(currentClass);
 }
 function removeClass() {
@@ -231,7 +240,7 @@ function do_highlight(keyword){
                 done: done_highlight
                 ,iframes:true
                 ,iframesTimeout:0
-                ,exclude : ["a"]
+                //,exclude : ["A"]
                 ,diacritics : sz&0x20
             });
             else
@@ -242,7 +251,7 @@ function do_highlight(keyword){
                 ,caseSensitive:(sz&0x2)!=0
                 ,iframes:true
                 ,iframesTimeout:0
-                ,exclude : ["a"]
+                //,exclude : ["A"]
                 ,diacritics : sz&0x20
             });
         }
