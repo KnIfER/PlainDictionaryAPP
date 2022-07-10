@@ -28,7 +28,7 @@ debug("frameElement::", frameElement);
 function ge(e){return document.getElementById(e)};
 
 window.addEventListener('load',wrappedOnLoadFunc,false);
-//window.addEventListener('click',wrappedClickFunc);
+window.addEventListener('click',wrappedClickFunc);
 window.addEventListener('mousedown',wrappedDown);
 window.addEventListener('touchstart',wrappedDown);
 //window.addEventListener('scroll',wrappedScroll,true);
@@ -105,6 +105,7 @@ var regEntry=new RegExp("^entry://");
 var regPdf=new RegExp("^pdf://");
 var regSound=new RegExp("^sound://");
 var nxtEntry;
+var stopLnk;
 
 function hiPlaySound(e){
 	var cur=e.ur1?e:e.srcElement;
@@ -126,8 +127,11 @@ function popupEntry(e){
 	return false;
 }
 
+function getId(){
+	return frameElement?frameElement.dictInfo.id:''
+}
 function entryPop(t){
-	if(app && app.entryPopup(sid.get(), frameElement?frameElement.dictInfo.id:'')) {
+	if(app && app.entryPopup(sid.get(), getId())) {
 		if(t.onclick!==popupEntry) {
 			t.rawClick=t.onclick;
 			t.onclick=popupEntry;
@@ -151,6 +155,7 @@ function wrappedDown(e){
 		parent.window.tFrame(frameElement.dictInfo);
 	}
 	if(t && t.href) { //  && (e.button==1||e.button==0)
+		stopLnk = 1;
 		debug("01! found link : "+t.href+" : "+regSound.test(t.href));
 		var getRawLink=t.href;
 		var patt1 = /\/base\/[0-9]*\/(#.*)/;
@@ -186,15 +191,18 @@ function wrappedDown(e){
 				return false;
 			}
 		}
-		else if(parent.app && regHttp.test(t.href)){/*拦截 http*/
-			parent.app.handleWebLink(t.href);
-			return false;
+		else if(parent.app && regHttp.test(t.href)){
+			//debug('拦截 http');
+			stopLnk = t.href;
+			return true;
 		}
 		else if(parent.app && regPdf.test(t.href)){/*拦截 pdf*/
 			parent.app.handlePdfLink(t.href);
 			return false;
 		}
-		return true;/*连接通行！*/
+		stopLnk = 0;
+		//debug('连接通行！');
+		return true;
 	}
 }
 
@@ -212,9 +220,15 @@ function JumpUrl(nxt){
 
 
 function wrappedClickFunc(e){
-	if(nxtEntry) {
-		if(!frameElement || frameElement.dictInfo.scrollExpand) JumpUrl(nxtEntry);
-		nxtEntry=0;
+	// if(nxtEntry) {
+	// 	if(!frameElement || frameElement.dictInfo.scrollExpand) JumpUrl(nxtEntry);
+	// 	nxtEntry=0;
+	// }
+	if(stopLnk) {
+		if(typeof stopLnk==='string')
+			parent.app.handleWebLink(getId(), stopLnk);
+		e.preventDefault();
+		stopLnk = 0;
 	}
 }
 

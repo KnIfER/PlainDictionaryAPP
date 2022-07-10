@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -3362,7 +3363,21 @@ function debug(e){console.log(e)};
 			return false;
 		}
 		@JavascriptInterface
-		public void handleWebLink(String url){
+		public void handleWebLink(String bid, String url){
+			if (presenter!=null) {
+				BookPresenter book = presenter;//presenter.a.getBookByIdNoCreation(IU.TextToNumber_SIXTWO_LE(bid));
+				book.a.hdl.post(new Runnable() {
+					@Override
+					public void run() {
+						WebViewListHandler weblist = book.a.getRandomPageHandler(true);
+						WebViewmy randomPage = weblist.getMergedFrame(book);
+						randomPage.loadUrl(url);
+						weblist.resetScrollbar(randomPage, false, false);
+						weblist.setViewMode(null, 0, randomPage);
+						weblist.viewContent();
+					}
+				});
+			}
 		}
 		@JavascriptInterface
 		public void handleWebSearch(String url, int slot){
