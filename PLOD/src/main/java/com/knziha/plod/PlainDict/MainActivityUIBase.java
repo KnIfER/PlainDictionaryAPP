@@ -9254,7 +9254,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		WebViewmy wv = weblist.scrollFocus;
 		BookPresenter reader = wv==null?null:wv.presenter;
-		String target = weblist==wordPopup.weblistHandler?wordPopup.displaying:wv==null?null:wv.word;
+		String target = wlh.displaying;
 		//showT("PRE "+mCurrentDictionary.getDictionaryName()+"-"+wv+"-"+target);
 		if(reader!=null && wv!=null && target!=null) {
 			if (reader.isMddResource() && target.length() > 1) {
