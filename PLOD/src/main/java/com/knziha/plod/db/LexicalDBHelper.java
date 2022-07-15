@@ -3,26 +3,33 @@ package com.knziha.plod.db;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.os.ParcelFileDescriptor;
+import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
+import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
+import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.WebViewListHandler;
 
+import org.knziha.metaline.Metaline;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -53,7 +60,8 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public static final String FIELD_PARAMETERS = "param";
 	
     public final String DATABASE;
-    HashMap<Long, Long> versions = new HashMap<>();
+	private final AssetManager assets;
+	HashMap<Long, Long> versions = new HashMap<>();
 	public boolean lastAdded;
 	void incrementDBVersion(Long fid) {
 		Long ver = versions.get(fid);
@@ -94,12 +102,14 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	
 	static LexicalDBHelper instance;
 	boolean closed = false;
+	byte[] Hzh;
 	
 	/** 创建收藏夹数据库（从名称） */
     public LexicalDBHelper(Context context, PDICMainAppOptions opt, String name, boolean testDBV2) {
         super(context, opt.pathToFavoriteDatabase(name, testDBV2), null, CMN.dbVersionCode);
         DATABASE=name;
         this.testDBV2 = testDBV2;
+		this.assets = context.getAssets();
 		onConfigure();
     }
 
@@ -108,6 +118,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		super(context, opt.pathToFavoriteDatabase(null, testDBV2), null, CMN.dbVersionCode);
 		DATABASE="history.sql";
 		this.testDBV2 = testDBV2;
+		this.assets = context.getAssets();
 		onConfigure();
 	}
 	
@@ -348,6 +359,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				preparedGetBookNoteForEntry = db.compileStatement("select notes from "+TABLE_BOOK_NOTE_v2+" where lex=? and bid=? and notesType>0");
 				preparedHasBookmarkForEntry = db.compileStatement("select id from "+TABLE_BOOK_NOTE_v2+" where lex=? and bid=?");
 				preparedGetBookOptions = db.compileStatement("select options from "+TABLE_BOOK_v2+" where id=?");
+				preparedBookIdChecker = db.compileStatement("select id from "+TABLE_BOOK_v2+" where id=?");
 				
 				String sql = "select id from " + TABLE_FAVORITE_v2 + " where lex=?";
 				preparedGetIsFavoriteWordInFolder = db.compileStatement(sql+" and folder=?");
@@ -672,10 +684,15 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			}
 			c.close();
 			
+			
 			if(insertNew) {
 				ContentValues values = new ContentValues();
 				values.put("name", bookName);
 				values.put("path", fullPath);
+				id = GenIdStr(bookName);
+				if (id>0) {
+					values.put("id", id);
+				}
 				values.put(FIELD_CREATE_TIME, CMN.now());
 				id = database.insert(TABLE_BOOK_v2, null, values);
 			} else if(path==null && fullPath!=null) {
@@ -688,7 +705,87 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		}
 		return id;
 	}
+	
+	
+	/** 生成具有一定确定性的ID */
+	private long GenIdStr(String nameKey) {
+		long ret=0;
+		try {
+			int idx = nameKey.lastIndexOf(".");
+			if(idx>0) nameKey = nameKey.substring(0, idx);
+			nameKey = nameKey.replaceAll("\\(.*?\\)", "");
+			nameKey = nameKey.replaceAll("\\[.*?\\]", "");
+			nameKey = nameKey.replaceAll("\\{.*?\\}", "");
+			StringBuilder keyName = new StringBuilder();
+			int i = 0, len=nameKey.length();
+			for (; i < len; i++) {
+				char ch = nameKey.charAt(i);
+				if (ch>=0x4e00&&ch<=0x9fa5) {
+					keyName.append((char)getHzh()[ch-0x4e00]);
+					if(keyName.length()>=4) {i++;break;}
+				}
+				else if (ch>='A'&&ch<='Z') {
+					keyName.append(ch);
+					if(keyName.length()>=4) {i++;break;}
+				}
+			}
+			boolean b1=TextUtils.regionMatches(nameKey, 0, keyName, 0, Math.min(3, keyName.length())) || len<9;
+			if (b1) {
+				for (; i < len; i++) {
+					char ch = nameKey.charAt(i);
+					if (ch >= 0x4e00 && ch <= 0x9fa5) {
+						keyName.append((char) getHzh()[ch - 0x4e00]);
+						if (keyName.length() >= 4) break;
+					} else if (ch >= 'A' && ch <= 'Z'||ch >= 'a' && ch <= 'z'||ch >= '0' && ch <= '9') {
+						keyName.append(ch);
+						if (keyName.length() >= 4) break;
+					}
+				}
+			}
+			if(!b1 || keyName.length() < len/2){
+				keyName.append(Integer.toHexString(len%256).toLowerCase());
+				String hash = Integer.toHexString(nameKey.hashCode()).toLowerCase();
+				keyName.append(hash.substring(Math.max(0, hash.length()-3)));
+			}
+			// 防止重复
+			int cc=0;
+			len=keyName.length();
+			ret = -1;
+			while (true) {
+				ret = IU.TextToNumber_SIXTWO_LE(keyName);
+				preparedBookIdChecker.bindLong(1, ret);
+				try {
+					preparedBookIdChecker.simpleQueryForLong();
+				} catch (Exception e) {
+					break;
+				}
+				keyName.setLength(len);
+				keyName.append(Integer.toHexString(++cc).toUpperCase());
+			}
+			CMN.debug("keyName::", keyName);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
+		return ret;
+	}
+	
+	@Metaline(file = "src\\main\\assets\\Hzh.dat")
+	final static int Hzh_filesize = 0;
 
+	/** 获取常规汉字的拼音首字母 */
+	public byte[] getHzh(){
+		if (Hzh==null) {
+			try {
+				InputStream input = assets.open("Hzh.dat");
+				Hzh = new byte[Hzh_filesize];
+				input.read(Hzh);
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+		}
+		return Hzh;
+	}
+	
 	public long updateBookMark(String key){
 		StringBuilder sqlBuilder = new StringBuilder("create table if not exists ")
     			.append("b")
@@ -783,6 +880,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	SQLiteStatement preparedGetBookNoteForEntry;
 	public SQLiteStatement preparedHasBookmarkForEntry;
 	public SQLiteStatement preparedGetBookOptions;
+	public SQLiteStatement preparedBookIdChecker;
 	
 	SQLiteStatement preparedGetIsFavoriteWord;
 	SQLiteStatement preparedGetIsFavoriteWordInFolder;
