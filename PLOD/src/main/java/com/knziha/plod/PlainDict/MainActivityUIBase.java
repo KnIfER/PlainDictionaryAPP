@@ -678,7 +678,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					adaptermy.notifyDataSetChanged();
 					postPutName(550);
 					if (currentDictionary != EmptyBook) {
-						if (TextUtils.getTrimmedLength(etSearch.getText())>0 && (dictPicker.autoSchPDict()||this instanceof FloatSearchActivity)) {
+						if (TextUtils.getTrimmedLength(etSearch.getText())>0
+								&& (dictPicker.autoSchPDict()
+								|| this instanceof FloatSearchActivity
+								|| isCombinedSearching && currentDictionary.hasBatchRet)
+						) {
 							//CMN.Log("auto_search!......");
 							lv_matched=false;
 							if(prvNxt && opt.getDimScrollbarForPrvNxt()) {
