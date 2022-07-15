@@ -1552,7 +1552,7 @@ public class SubsamplingScaleImageView extends View {
 	}
 	
 	private void handle_proxy_simul(float scaleStamp, PointF translationStamp, float rotationStamp) {
-		if (view_to_guard != null) {
+		if (view_to_guard != null && !Float.isNaN(scale)) {
 			if(false) {
 				view_to_guard.setScaleType(ImageView.ScaleType.MATRIX);
 				Matrix mat = new Matrix();
@@ -3438,7 +3438,7 @@ public class SubsamplingScaleImageView extends View {
 		int vPadding = getPaddingBottom() + getPaddingTop();
 		int hPadding = getPaddingLeft() + getPaddingRight();
 		float ret = Math.min((getScreenWidth() - hPadding) / (float) exifWidth(), (getScreenHeight() - vPadding) / (float) exifHeight());
-		if(ret<=0 || ret==Float.NaN) ret = 0.05f;
+		if(ret<=0 || Float.isNaN(ret)) ret = 0.05f;
 		return ret;
 	}
 	
