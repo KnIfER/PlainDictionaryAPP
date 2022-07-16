@@ -709,7 +709,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	
 	/** 生成具有一定确定性的ID */
 	private long GenIdStr(String nameKey) {
-		long ret=0;
+		long ret=-1;
 		try {
 			int idx = nameKey.lastIndexOf(".");
 			if(idx>0) nameKey = nameKey.substring(0, idx);
@@ -729,38 +729,53 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					if(keyName.length()>=4) {i++;break;}
 				}
 			}
-			boolean b1=TextUtils.regionMatches(nameKey, 0, keyName, 0, Math.min(3, keyName.length())) || len<9;
+			boolean b1=TextUtils.regionMatches(nameKey, 0, keyName, 0, Math.min(3, keyName.length()))
+					|| len<17;
 			if (b1) {
+				final int max = 9/*至多九位，争取最大特征*/;
 				for (; i < len; i++) {
 					char ch = nameKey.charAt(i);
 					if (ch >= 0x4e00 && ch <= 0x9fa5) {
 						keyName.append((char) getHzh()[ch - 0x4e00]);
-						if (keyName.length() >= 4) break;
+						if (keyName.length() >= max) break;
 					} else if (ch >= 'A' && ch <= 'Z'||ch >= 'a' && ch <= 'z'||ch >= '0' && ch <= '9') {
 						keyName.append(ch);
-						if (keyName.length() >= 4) break;
+						if (keyName.length() >= max) break;
 					}
 				}
 			}
-			if(!b1 || keyName.length() < len/2){
-				keyName.append(Integer.toHexString(len%256).toLowerCase());
-				String hash = Integer.toHexString(nameKey.hashCode()).toLowerCase();
-				keyName.append(hash.substring(Math.max(0, hash.length()-3)));
+			b1 = !b1 || keyName.length() < len/2/*给你机会你…*/;
+			if(b1){ // 至多八位
+				keyName.append(len%10);
+				IU.NumberToText_SIXTWO_LE(Math.abs(nameKey.hashCode())% 0x800, keyName);
+				if(keyName.length()>8) keyName.setLength(8);
 			}
-			// 防止重复
+			/*防止重复*/
 			int cc=0;
 			len=keyName.length();
-			ret = -1;
+			int max = (int) (Math.pow(62,10-len)-1);
 			while (true) {
 				ret = IU.TextToNumber_SIXTWO_LE(keyName);
 				preparedBookIdChecker.bindLong(1, ret);
 				try {
 					preparedBookIdChecker.simpleQueryForLong();
 				} catch (Exception e) {
+					// 不存在，生成的ID可用
 					break;
 				}
+				// 计数累加，重新生成新的ID
+				if (++cc>max) {
+					// 超出最大计数
+					if (len == 9) {
+						len = 8;
+						cc = 0;
+					} else {
+						ret = -1;
+						break;
+					}
+				}
 				keyName.setLength(len);
-				keyName.append(Integer.toHexString(++cc).toUpperCase());
+				IU.NumberToText_SIXTWO_LE(cc, keyName);
 			}
 			CMN.debug("keyName::", keyName);
 		} catch (Exception e) {
