@@ -2957,7 +2957,28 @@
 			}
 			if(params.q)params.q=decodeURIComponent(params.q);
 			if(params.s)params.s=decodeURIComponent(params.s);
+			if(params.xp) decodeExp(params);
 			return params;
+		}
+
+		function decodeExp(p,v) {
+			if(v) {
+				p.exp = v;
+				p.xp = 0;
+				//debug('decodeExp', p.exp);
+			}
+			else if(app) {
+				decodeExp(p,app.decodeExp(p.xp));
+			} else {
+				var x = new XMLHttpRequest();
+				x.open('POST', "/decodeExp.txt", false);
+				x.onload = function() {
+					if(x.response)
+						decodeExp(p,x.response);
+				};
+				x.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+				x.send('xp='+p.xp);
+			}
 		}
 
 		function getText() {

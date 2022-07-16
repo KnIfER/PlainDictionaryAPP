@@ -361,4 +361,8 @@ the valueOf method.
 			return defVal;
 		}
 	}
+	
+	public static int NonNegative(int one, int two) {
+		return one>=0?one:two;
+	}
 }

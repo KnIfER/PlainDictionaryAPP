@@ -56,6 +56,7 @@ import com.knziha.plod.dictionary.SearchResultBean;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.AutoCloseInputStream;
 import com.knziha.plod.dictionary.Utils.BU;
+import com.knziha.plod.dictionary.Utils.Base64;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
 import com.knziha.plod.dictionary.Utils.SU;
@@ -107,6 +108,9 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterOutputStream;
 
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_v2;
@@ -2638,6 +2642,25 @@ function debug(e){console.log(e)};
         @JavascriptInterface
         public void log(String val) {
         	CMN.Log(val);
+        }
+		
+        @JavascriptInterface
+        public String decodeExp(String val) {
+			String ret = "";
+			if (presenter!=null) {
+				try {
+					byte[] data = Base64.decode(val, Base64.NO_WRAP);
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					InflaterOutputStream def = new InflaterOutputStream(out);
+					def.write(data, 0, data.length);
+					def.close();
+					data = out.toByteArray();
+					ret = new String(data, StandardCharsets.UTF_8);
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			}
+			return ret;
         }
 		
         @JavascriptInterface

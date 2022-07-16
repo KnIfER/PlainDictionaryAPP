@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -258,6 +259,34 @@ public abstract class MdictServer extends NanoHTTPD {
 			}
 		}
 		
+		if(key.equals("\\decodeExp.txt")) {
+			//SU.Log("decodeExp.txt::", session.getParameters(), session.getMethod());
+			try {
+				String xp = null;
+				if (session.isProxy) { // maybe https://stackoverflow.com/questions/13954049/intercept-post-requests-in-a-webview/45655940#45655940
+					session.parseBody(null);
+					String ref = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP?((HTTPSessionProxy) session).request.getRequestHeaders().get("Referer"):null;
+					if (ref!=null) {
+						int idx = ref.indexOf("&xp=");
+						if (idx>=0) {
+							xp = ref.substring(idx+4, IU.NonNegative(ref.indexOf("&", Math.max(idx, ref.length()-100)), ref.length()));
+						}
+					}
+				} else {
+					session.parseBody(null);
+					xp = session.getParameters().get("xp").get(0);
+					xp = xp.replace(" ", "+");
+				}
+				if (xp!=null) {
+					xp = loadManager.EmptyBook.getWebBridge().decodeExp(xp);
+					return newFixedLengthResponse(xp) ;
+				}
+			} catch (Exception e) {
+				CMN.debug(e);
+			}
+			return emptyResponse;
+		}
+		
 		if(key.equals("\\dicts.json")) {
 			SU.Log("dicts.json::", session.getParameters(), session.getMethod());
 			if (Method.POST.equals(session.getMethod())) {
@@ -273,7 +302,7 @@ public abstract class MdictServer extends NanoHTTPD {
 						}
 					}
 					return newFixedLengthResponse(dictsInfo.toString()) ;
-				} catch (Exception ioe) {
+				} catch (Exception e) {
 					return emptyResponse;
 				}
 			}

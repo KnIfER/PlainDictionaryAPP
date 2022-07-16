@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 
+import com.knziha.plod.dictionary.Utils.Base64;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.plaindict.BasicAdapter;
@@ -18,10 +19,14 @@ import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WebViewmy;
 import com.knziha.rbtree.additiveMyCpr1;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.zip.DeflaterOutputStream;
 
 /** Recorder rendering search results as : LinearLayout {WebView, WebView, ... }  */
 public class resultRecorderCombined extends resultRecorderDiscrete {
@@ -328,6 +333,25 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			//mWebView.jointResult=jointResult;
 		}
 		else if(bUseMergedUrl) {
+			CMN.debug("mergedUrl::", mergedUrl);
+			if (mergedUrl.length()>8000) {
+				int idx = mergedUrl.indexOf("&exp=");
+				CharSequence exp = mergedUrl.subSequence(idx+5, mergedUrl.length());
+				byte[] data = exp.toString().getBytes(StandardCharsets.UTF_8);
+				try {
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					DeflaterOutputStream def = new DeflaterOutputStream(out);
+					def.write(data, 0, data.length);
+					def.close();
+					data = out.toByteArray();
+					String aso = new String(Base64.encode(data, Base64.NO_WRAP));
+					mergedUrl.setLength(idx);
+					mergedUrl.append("&xp=").append(aso);
+					CMN.debug("mergedUrl::compress::", aso.length(), exp.length());
+				} catch (Exception e) {
+					CMN.debug(e);
+				}
+			}
 			if (weblistHandler.bDataOnly) {
 				mergedUrl.append("&popup=true");
 			}
