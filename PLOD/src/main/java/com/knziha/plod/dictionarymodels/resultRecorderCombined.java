@@ -13,6 +13,7 @@ import com.knziha.plod.dictionary.Utils.SU;
 import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
+import com.knziha.plod.plaindict.MdictServer;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.WebViewListHandler;
 import com.knziha.plod.widgets.ViewUtils;
@@ -336,8 +337,8 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 			CMN.debug("mergedUrl::", mergedUrl);
 			if (mergedUrl.length()>8000) {
 				int idx = mergedUrl.indexOf("&exp=");
-				CharSequence exp = mergedUrl.subSequence(idx+5, mergedUrl.length());
-				byte[] data = exp.toString().getBytes(StandardCharsets.UTF_8);
+				String exp = mergedUrl.subSequence(idx+5, mergedUrl.length()).toString();
+				byte[] data = exp.getBytes(StandardCharsets.UTF_8);
 				try {
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 					DeflaterOutputStream def = new DeflaterOutputStream(out);
@@ -345,6 +346,10 @@ public class resultRecorderCombined extends resultRecorderDiscrete {
 					def.close();
 					data = out.toByteArray();
 					String aso = new String(Base64.encode(data, Base64.NO_WRAP));
+					if(aso.length()>=8000) {
+						aso = "fake";
+						a.fakedExp = exp;
+					}
 					mergedUrl.setLength(idx);
 					mergedUrl.append("&xp=").append(aso);
 					CMN.debug("mergedUrl::compress::", aso.length(), exp.length());

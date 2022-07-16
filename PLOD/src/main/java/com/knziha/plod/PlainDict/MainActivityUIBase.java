@@ -608,6 +608,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	private float TTSVolume = 1.f;
 	private ViewGroup TTSController_controlBar;
 	private WebViewmy mCurrentReadContext;
+	public String fakedExp;
 
 	public void jump(int pos, BookPresenter md) {
 

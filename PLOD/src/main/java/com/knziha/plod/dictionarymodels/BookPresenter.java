@@ -2649,13 +2649,17 @@ function debug(e){console.log(e)};
 			String ret = "";
 			if (presenter!=null) {
 				try {
-					byte[] data = Base64.decode(val, Base64.NO_WRAP);
-					ByteArrayOutputStream out = new ByteArrayOutputStream();
-					InflaterOutputStream def = new InflaterOutputStream(out);
-					def.write(data, 0, data.length);
-					def.close();
-					data = out.toByteArray();
-					ret = new String(data, StandardCharsets.UTF_8);
+					if ("fake".equals(val)) {
+						ret = presenter.a.fakedExp;
+					} else {
+						byte[] data = Base64.decode(val, Base64.NO_WRAP);
+						ByteArrayOutputStream out = new ByteArrayOutputStream();
+						InflaterOutputStream def = new InflaterOutputStream(out);
+						def.write(data, 0, data.length);
+						def.close();
+						data = out.toByteArray();
+						ret = new String(data, StandardCharsets.UTF_8);
+					}
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
