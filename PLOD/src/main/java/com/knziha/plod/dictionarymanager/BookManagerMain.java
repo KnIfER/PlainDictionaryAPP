@@ -587,8 +587,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				//adapter.getItem(position).value = !adapter.getItem(position).value;//TODO optimize
 				if (position >= mDslv.getHeaderViewsCount()) {
 					position = position - mDslv.getHeaderViewsCount();
-					setPlaceFlagAt(position
-							, PDICMainAppOptions.setTmpIsHidden(getPlaceFlagAt(position), !getPlaceRejected(position)));
+					setPlaceRejected(position, !getPlaceRejected(position));
 					adapter.notifyDataSetChanged();
 					markDirty();
 					refreshSize();
@@ -690,8 +689,11 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	}
 	
 	void setPlaceRejected(int position, boolean val) {
-		setPlaceFlagAt(position, PDICMainAppOptions.setTmpIsHidden(getPlaceFlagAt(position),val));
-		loadMan.lazyMan.chairCount += val?-1:1;
+		int flag = getPlaceFlagAt(position);
+		if (PDICMainAppOptions.getTmpIsHidden(flag)!=val) {
+			setPlaceFlagAt(position, PDICMainAppOptions.setTmpIsHidden(flag,val));
+			loadMan.lazyMan.chairCount += val?-1:1;
+		}
 	}
 	
 	final ArrayList<BookPresenter> manager_group() {

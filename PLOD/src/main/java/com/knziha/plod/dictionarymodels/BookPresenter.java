@@ -3779,9 +3779,10 @@ function debug(e){console.log(e)};
 			try {
 				ParcelFileDescriptor fd = db.preparedGetBookOptions.simpleQueryForBlobFileDescriptor();
 				if(fd==null) {
-					CMN.Log("THIS FILE DESCRIPTOR IS NULL!!!", book_id, path, name);
+					//CMN.debug("THIS FILE DESCRIPTOR IS NULL!!!", book_id, path, name);
 					return null;
 				}
+				//CMN.debug("HAS OPTIONS::", book_id, path, name);
 				FileInputStream fin = new FileInputStream(fd.getFileDescriptor());
 				ReusableByteOutputStream out = new ReusableByteOutputStream(MainActivityUIBase.ConfigSize);
 				out.write(fin, true);
@@ -3789,8 +3790,8 @@ function debug(e){console.log(e)};
 				//CMN.Log("getBytesLegal::", out.getBytesLegal()==out.getBytes(), out.getBytesLegal().length, out.getBytes().length);
 				return out.getArray(MainActivityUIBase.ConfigSize);
 			} catch (Exception e) {
-				CMN.Log("THIS IS NULL!!!", book_id, path, name);
-				CMN.Log(e);
+				//CMN.debug("THIS IS NULL!!!", book_id, path, name);
+				CMN.debug(e);
 			}
 		}
 		return ((AgentApplication)context.getApplicationContext()).BookProjects.get(name);

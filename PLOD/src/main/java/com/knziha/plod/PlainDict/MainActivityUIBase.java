@@ -1812,7 +1812,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		new File(opt.pathToDatabases().toString()).mkdirs();
 		opt.CheckFileToDefaultMdlibs();
 		loadManager = new LoadManager(dictPicker);
-		lazyLoadManager = loadManager.lazyMan;
 	}
 
 	public static byte[] target = "/".getBytes(StandardCharsets.UTF_8);
@@ -2134,12 +2133,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		};
 		
 		if(thisActType==ActType.MultiShare) {
-			//lazyLoadManager = lazyLoadManagerMulti;
 			return;
 		}
 		
-		lazyLoadManager = new LazyLoadManager();//thisActType==ActType.PlainDict?lazyLoadManagerMain:lazyLoadManagerFloat;
-		ArrayList<PlaceHolder> CC = lazyLoadManager.placeHolders;
+		ArrayList<PlaceHolder> CC = lazyLoadManager().placeHolders;
 		if(loadManager.md_size==0){
 			populateDictionaryList(def, CC, retrieve_all);
 		}
@@ -2274,7 +2271,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected void populateDictionaryList() {
 		final File def = getStartupFile(opt.fileToConfig());      //!!!原配
 		if(loadManager.md_size==0){
-			populateDictionaryList(def, lazyLoadManager.placeHolders, !def.exists());
+			populateDictionaryList(def, lazyLoadManager().placeHolders, !def.exists());
 		}
 	}
 	
@@ -2486,7 +2483,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			PlaceHolder phI;
 			String lastName = opt.getLastMdFn(LastMdFn);
 			int filterCount=0,chairCount=0;
-			CMN.debug("buildUpDictionaryList::size::", lazyMan.chairCount);
+			CMN.debug("buildUpDictionaryList::", lazyLoad, lazyMan.chairCount);
 			if(lazyMan.CosyChair.length<lazyMan.chairCount)lazyMan.CosyChair=new int[lazyMan.chairCount];
 			if(lazyMan.CosySofa.length<lazyMan.filterCount)lazyMan.CosySofa=new int[lazyMan.filterCount];
 			for (int i = 0; i < all.size(); i++) {
@@ -2507,8 +2504,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						CMN.Log(e);
 						if (trialCount == -1) if (bShowLoadErr)
 							show(R.string.err, phI.getName(), phI.pathname, e.getLocalizedMessage());
-						md.add(null);
-						continue;
+						mdTmp = null;
 					}
 				}
 				if(mdTmp!=null)
@@ -2528,6 +2524,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			dictPicker.adapter_idx = pickerIdx;
 			md_size = lazyMan.chairCount;
+			//lazyMan.lazyLoaded = lazyLoad;
 			//CMN.Log("buildUpDictionaryList", lastName, adapter_idx);
 		}
 		
@@ -2560,7 +2557,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				md.addAll(Arrays.asList(new BookPresenter[lazyMan.chairCount]));
 				return;
 			}
-			CMN.Log("LoadLazySlots…");
+			CMN.debug("LoadLazySlots…");
 			AgentApplication app = ((AgentApplication) getApplication());
 			ReusableBufferedReader in = new ReusableBufferedReader(new FileReader(modulePath), app.get4kCharBuff(), 4096);
 			lazyMan.do_LoadLazySlots(in);
@@ -2876,7 +2873,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //	static LazyLoadManager lazyLoadManagerFloat = new LazyLoadManager();
 //	static LazyLoadManager lazyLoadManagerMulti = new LazyLoadManager();
 	public LoadManager loadManager;
-	LazyLoadManager lazyLoadManager;
+	public final LazyLoadManager lazyLoadManager(){ return loadManager.lazyMan; };
 	
 	
 	public final PlaceHolder getPlaceHolderAt(int idx) {
@@ -6901,10 +6898,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					if(pos==-1) {
 						opt.setTwoColumnSetView(bag.val=!bag.val);
 						((BaseAdapter)bag.tag).notifyDataSetChanged();
-						setchooser.get().getListView().setSelection(bag.val?lazyLoadManager.lastCheckedPos/2:lazyLoadManager.lastCheckedPos);
+						setchooser.get().getListView().setSelection(bag.val?lazyLoadManager().lastCheckedPos/2:lazyLoadManager().lastCheckedPos);
 					}
 					else try {
-						lazyLoadManager.lastCheckedPos = pos;
+						lazyLoadManager().lastCheckedPos = pos;
 //						loadManager.currentFilter.clear();
 //						for (BookPresenter mdTmp : md) {
 //							if(mdTmp!=null)
@@ -6987,7 +6984,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 											String item=pos<scanInList.size()?scanInList.get(pos):"";
 											tv.setText(item);
 //											((FlowCheckedTextView)ret.getChildAt(i)).setActivated(false);
-											mFlowTextView.setChecked(TextUtils.equals(item, lazyLoadManager.lastLoadedModule));
+											mFlowTextView.setChecked(TextUtils.equals(item, lazyLoadManager().lastLoadedModule));
 										}
 										ret.setActivated(false);
 										ret.postInvalidateOnAnimation();
@@ -7006,7 +7003,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 										tv.setTextColor(AppBlack);
 										String item=position<scanInList.size()?scanInList.get(position):"";
 										tv.setText(item);
-										ret.setChecked(TextUtils.equals(item, lazyLoadManager.lastLoadedModule));
+										ret.setChecked(TextUtils.equals(item, lazyLoadManager().lastLoadedModule));
 										convertView = ret;
 									}
 									return convertView;
@@ -7100,7 +7097,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
 			if(lastCheckedPos>=0) {
 				dTmp.getListView().setSelection(bag.val?lastCheckedPos/2:lastCheckedPos);
-				lazyLoadManager.lastCheckedPos = lastCheckedPos;
+				lazyLoadManager().lastCheckedPos = lastCheckedPos;
 			}
 		}
 		
@@ -10433,7 +10430,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //		CosySofa.clear();
 //		HdnCmfrt.clear();
 		//todo 123
-		lazyLoadManager.lastLoadedModule=null;
+		lazyLoadManager().lastLoadedModule=null;
 		Intent intent = new Intent();
 		intent.setClass(MainActivityUIBase.this, BookManager.class);
 		startActivityForResult(intent, BookManager.id);

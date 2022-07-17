@@ -333,7 +333,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		Menu1 = ViewUtils.MapNumberToMenu(AllMenus, 0, 1, 2, 3, 4, 5, 6, 16);
 		Menu2 = ViewUtils.MapNumberToMenu(AllMenus, 0, 3, 15, 16);
 		Menu3 = ViewUtils.MapNumberToMenu(AllMenus, 13, 14, 16);
-		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 7, 8, 9, 10, 11, 12, 13, 14, 16);
+		Menu3Sel = ViewUtils.MapNumberToMenu(AllMenus, 9, 7, 8, 10, 11, 12, 13, 14, 16);
 		Menu4 = ViewUtils.MapNumberToMenu(AllMenus);
 		AllMenus.setItems(Menu1);
   
@@ -1090,7 +1090,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 				f3.adapter.notifyDataSetChanged();
 			} break;
 			/* 添加 */
-            case R.id.toolbar_action9:{
+            case R.id.toolbar_action9:{ // add_selection_to_set
 				if(isLongClicked) {/* 添加到第几行 */
 					AlertDialog.Builder builder2 = new AlertDialog.Builder(BookManager.this);
 					View dv = getLayoutInflater().inflate(R.layout.dialog_move_to_line, null);
@@ -1182,7 +1182,7 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					ArrayList<String> arr = f3.Selection.flatten();
 					int count=arr.size();
 					
-					HashMap<String, Integer> map = new HashMap<>(arr.size());
+					HashMap<String, Integer> map = new HashMap<>(f1.manager_group().size());
 					for (int i = 0; i < f1.manager_group().size(); i++) {
 						map.put(f1.getPathAt(i), i);
 					}
@@ -1196,7 +1196,6 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						Integer idx = map.get(key);
 						if(idx!=null) { // 已经有了
 							f1.setPlaceRejected(idx, false);
-							cc++;
 						}
 						else {
 							//loadMan.lazyMan.newChair();

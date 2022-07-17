@@ -848,8 +848,7 @@ public class Drawer extends Fragment implements
 						onSelectedFilePaths(String[] files, File now) {
 							//CMN.debug(files);
 							if(now!=null) {
-								MainActivityUIBase.LazyLoadManager lazyLoadManager = a.lazyLoadManager;
-								for(PlaceHolder phI:lazyLoadManager.placeHolders) {
+								for(PlaceHolder phI:a.lazyLoadManager().placeHolders) {
 									mdictInternal.add(phI.getPath(a.opt).getPath());
 								}
 								filepickernow = now;
@@ -906,7 +905,6 @@ public class Drawer extends Fragment implements
 								HashSet<String> renameRec = new HashSet<>();
 								HashMap<String,String> renameList = new HashMap<>();
 								
-								MainActivityUIBase.LazyLoadManager lazyLoadManager = a.lazyLoadManager;
 								try {
 									BufferedWriter output = new BufferedWriter(new FileWriter(rec,true));
 									BufferedWriter output2 = null;
@@ -993,7 +991,7 @@ public class Drawer extends Fragment implements
 									}
 									renameRec.clear();
 									
-									for (PlaceHolder phI:lazyLoadManager.placeHolders){
+									for (PlaceHolder phI:a.lazyLoadManager().placeHolders){
 										String newPath = renameList.get(phI.getPath(a.opt));
 										if(newPath!=null){
 											PlaceHolder phTmp = new PlaceHolder(newPath);

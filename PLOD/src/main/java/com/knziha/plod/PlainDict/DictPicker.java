@@ -431,7 +431,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				tv.setStarLevel(loadManager.md_get_StarLevel(position, bid));
 				tv.setCompoundDrawables(a.getActiveStarDrawable(), null, null, null);
 				
-				String text = loadManager.md_getName(position, bid);
+				String text = /*position+":"+*/loadManager.md_getName(position, bid);
 				tv.SetSearchPattern(SearchPattern, text);
 				
 				Drawable cover = loadManager.md_getCover(position, bid);

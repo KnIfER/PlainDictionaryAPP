@@ -3171,13 +3171,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					if (duco.getBooleanExtra("identical", false)) {
 						dictPicker.adapter_idx = loadManager.refreshSlots();
 					} else {
-						loadManager.buildUpDictionaryList(lazyLoadManager.lazyLoaded, mdict_cache);
+						loadManager.buildUpDictionaryList(lazyLoadManager().lazyLoaded, mdict_cache);
 					}
 					if (dictPicker.adapter_idx<0) {
 						switch_Dict(0, false, false, null);
 					}
 					invalidAllLists();
-					//CMN.Log("变化了", md.size(), currentFilter.size());
+					CMN.debug("变化了", loadManager.md.size(), loadManager.md_size);
 				}
 				if(PDICMainAppOptions.ChangedMap !=null && PDICMainAppOptions.ChangedMap.size()>0){
 					for(String path: PDICMainAppOptions.ChangedMap) {
@@ -3297,20 +3297,21 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public void invalidAllLists() {
 		//tofo
 		if(ActivedAdapter!=null) ActivedAdapter.ClearVOA();
-		adaptermy.notifyDataSetChanged();
-		//adaptermy2.combining_search_result.invalidate();
-		CombinedSearchTask_lastKey=null;
-		adaptermy2.results.shutUp();
-		adaptermy2.currentKeyText=null;
-		adaptermy2.notifyDataSetChanged();
-
-		tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
+		//adaptermy.notifyDataSetChanged();
+		
+		if (dictPicker.autoSchPDict()) {
+			CombinedSearchTask_lastKey=null;
+			adaptermy2.results.shutUp();
+			adaptermy2.currentKeyText=null;
+			adaptermy2.notifyDataSetChanged();
+			tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
+		}
 
 		adaptermy3.shutUp();adaptermy3.notifyDataSetChanged();
 		adaptermy3.results.invalidate();adaptermy3.notifyDataSetChanged();
 		adaptermy4.shutUp();adaptermy4.notifyDataSetChanged();
 		adaptermy4.results.invalidate();adaptermy4.notifyDataSetChanged();
-		if(dictPicker !=null) dictPicker.adapter().notifyDataSetChanged();
+		dictPicker.dataChanged();
 	}
 
 	View mView;

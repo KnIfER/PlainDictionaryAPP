@@ -210,7 +210,7 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 				int cc=0;
 				try {
 					BookManagerMain f1 = ((BookManager)getActivity()).f1;
-					f1.isDirty=true;
+					f1.markDirty();
 					a.ThisIsDirty=true;
 					for (int i = 0, sz=f1.manager_group().size(); i < sz; i++) {
 						f1.setPlaceSelected(i, false);
@@ -220,7 +220,6 @@ public class BookManagerModules extends BookManagerFragment<String> implements B
 					f1.refreshSize();
 					((BookManager)getActivity()).scrollTo(0);
 					a.opt.putLastPlanName("LastPlanName", LastSelectedPlan = name);
-					f1.isDirty=true;
 					dataSetChanged();
 					f1.dataSetChanged();
 					a.show(R.string.pLoadDone,name,cc,f1.manager_group().size());
