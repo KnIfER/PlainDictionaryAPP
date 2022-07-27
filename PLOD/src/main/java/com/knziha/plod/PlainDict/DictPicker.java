@@ -1,7 +1,5 @@
 package com.knziha.plod.plaindict;
 
-import static androidx.appcompat.app.GlobalOptions.realWidth;
-
 import static com.knziha.plod.plaindict.CMN.AssetTag;
 
 import android.annotation.SuppressLint;
@@ -44,6 +42,7 @@ import com.knziha.plod.widgets.LinearSplitView;
 import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -82,6 +81,7 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 	private CheckableImageView autoBtn;
 	
 	public ArrayList<Long> filtered;
+	public HashSet<Long> underlined;
 	
 	public int adapter_idx;
 	private Runnable showImmAby;
@@ -444,8 +444,11 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 				tv.setText(text);
 			}
 			//else CMN.Log("onBindViewHolder::刷新部分!!!", payloads);
+			if (bid==-1) {
+				bid = loadManager.md_getNoCreate(position, bid).getId();
+			}
 			boolean under = type==-1 && a.wordPopup.CCD_ID==position
-					||type!=-1 && a.isCombinedSearching && loadManager.md_getNoCreate(position, bid).hasBatchRet;
+					||type!=-1 && underlined!=null && underlined.contains(bid);
 			if(under ^ tv.getBackground()!=null) // 下划线
 				tv.setBackground(under?underln:null);
 		}

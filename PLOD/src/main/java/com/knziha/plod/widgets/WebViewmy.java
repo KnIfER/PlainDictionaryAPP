@@ -22,6 +22,7 @@ import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -285,8 +286,8 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 
 	@Override
 	public void loadUrl(String url) {
-		super.loadUrl(url);
 		CMN.Log("\n\nloadUrl::", url);
+		super.loadUrl(url);
 		drawRect=false;
 		isloading=true;
 	}
@@ -667,9 +668,36 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 //		return super.post(action);
 //	}
 	
+	public ActionMode dummyActionMode() {
+		return new ActionMode() {
+			@Override public void setTitle(CharSequence title) {}
+			@Override public void setTitle(int resId) {}
+			@Override public void setSubtitle(CharSequence subtitle) {}
+			@Override public void setSubtitle(int resId) {}
+			@Override public void setCustomView(View view) {}
+			@Override public void invalidate() {}
+			@Override public void finish() {}
+			@Override public Menu getMenu() { return null; }
+			@Override public CharSequence getTitle() { return null; }
+			@Override public CharSequence getSubtitle() { return null; }
+			@Override public View getCustomView() { return null; }
+			@Override public MenuInflater getMenuInflater() { return null; }
+		};
+	}
+	
+	@Override
+	public void clearFocus() {
+		CMN.Log("wv::clearFocus");
+		super.clearFocus();
+	}
+	
 	//Viva Marshmallow!
 	@Override
 	public ActionMode startActionMode(ActionMode.Callback callback, int type) {
+		CMN.debug("wv::startActionMode");
+		if(weblistHandler!=null && weblistHandler.a.isFloating()) {
+			return this.dummyActionMode();
+		}
 		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M) {
 			MyMenuinversed = false;
 			if (callmeback == null) callmeback = new callbackme();

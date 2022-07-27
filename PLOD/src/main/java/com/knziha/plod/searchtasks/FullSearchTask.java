@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
+import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -20,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 	private final WeakReference<PDICMainActivity> activity;
 	private String CurrentSearchText;
+	private BookPresenter TargetBook;
 
 	public FullSearchTask(PDICMainActivity a) {
 		activity = new WeakReference<>(a);
@@ -30,6 +32,7 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 			PDICMainActivity a;
 			if((a=activity.get())==null) return;
 			a.OnEnterFullSearchTask(this);
+			TargetBook = a.isCombinedSearching?null:a.currentDictionary;
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
@@ -65,7 +68,7 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 		MainActivityUIBase.LoadManager loadManager = a.loadManager;
 		int size = loadManager.md_size;
 		
-		if(a.isCombinedSearching){
+		if(TargetBook==null){
 			for(int i=0;i<size;i++){
 				try {
 					BookPresenter mdTmp = loadManager.md_get(i);
@@ -82,9 +85,9 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 		} else {
 			try {
 				if(a.checkDicts()) {
-					publishProgress(a.currentDictionary, a.dictPicker.adapter_idx);
+					publishProgress(TargetBook, a.dictPicker.adapter_idx);
 					//CMN.Log("Find In All Conten??");
-					a.currentDictionary.findAllTexts(SearchTerm, a.currentDictionary, a.fullSearchLayer);
+					TargetBook.findAllTexts(SearchTerm, TargetBook, a.fullSearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -127,11 +130,7 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 		resultRecorderDiscrete results = a.adaptermy4.results;
 		results.storeRealm = SearchUI.MainApp.FULLTEXT;
 		results.storeRealm1 = SearchUI.MainApp.表ft;
-		if(a.isCombinedSearching){
-			results.invalidate();
-		} else {//单独搜索
-			results.invalidate(a.currentDictionary);
-		}
+		((resultRecorderScattered)results).invalidate(a, TargetBook);
 		a.show(R.string.fullfill
 				,(System.currentTimeMillis()-CMN.stst)*1.f/1000,a.adaptermy4.getCount());
 

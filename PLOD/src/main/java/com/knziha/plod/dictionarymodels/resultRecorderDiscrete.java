@@ -1,6 +1,7 @@
 package com.knziha.plod.dictionarymodels;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import com.knziha.plod.plaindict.BasicAdapter;
 import com.knziha.plod.plaindict.MainActivityUIBase;
@@ -19,6 +20,9 @@ public class resultRecorderDiscrete {
 	public int storeRealm;
 	public int storeRealm1;
 	
+	public ArrayList<Long> booksFilter;
+	public HashSet<Long> booksSet;
+	
 	public resultRecorderDiscrete(MainActivityUIBase a_){
 		//a=a_;
 	};
@@ -28,10 +32,6 @@ public class resultRecorderDiscrete {
 	public void renderContentAt(long pos, MainActivityUIBase a_, BasicAdapter ADA, WebViewListHandler weblistHandler) {}
 
 	public int size() {return 0;}
-
-	public void invalidate() {}
-
-	public void invalidate(BookPresenter book) {}
 
 	public void shutUp() {}
 

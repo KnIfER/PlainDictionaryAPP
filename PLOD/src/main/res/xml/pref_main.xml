@@ -10,6 +10,7 @@
 			android:defaultValue="false"
 			android:key="enable_pastebin"
 			android:title="@string/clipboard"
+			android:summary="已失效"
 			app:allowDividerAbove="false"
 			app:allowDividerBelow="true"
 			/>

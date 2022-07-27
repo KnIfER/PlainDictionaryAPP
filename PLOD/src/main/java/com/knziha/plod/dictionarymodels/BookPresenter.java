@@ -161,8 +161,6 @@ public class BookPresenter
 	@Metaline()
 	public final static String jsChanged="";
 	
-	public boolean hasBatchRet;
-	
 	/**
 	 	var w=window, d=document;
 		var LoadMark, frameAt;

@@ -18,6 +18,7 @@ import com.knziha.rbtree.RBTree_additive;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -129,6 +130,7 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultR
 		ArrayList<myCpr<String, Long>> combining_search_list;
 		BookPresenter bookPresenter;
 		long bid;
+		HashSet<Long> booksSet = new HashSet<>(size);
 		for(int i=0; i<size; i++) {
 			bookPresenter = loadManager.md_getAt(i);
 			if(bookPresenter!=null){ // to impl
@@ -136,24 +138,27 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultR
 				bid = a.getUsingDataV2()?bookPresenter.bookImpl.getBooKID():i;
 				_treeBuilder.resetRealmer(bid);
 				combining_search_list = bookPresenter.range_query_reveiver;
-				boolean added = false; //todo
+				boolean adding = true; //todo
 				if(combining_search_list!=null)
 				{
 					try {
 						for (int j = 0; j < combining_search_list.size(); j++) {
 							myCpr<String, Long> dataI = combining_search_list.get(j);
 							if(dataI!=null) { // to check
-								if(!added) added=true;
+								if(adding){
+									booksSet.add(bid);
+									adding=false;
+								}
 								_treeBuilder.insert(dataI.key, bid, dataI.value);
 							}
 						}
 					} catch (Exception ignored) { }
 				}
-				bookPresenter.hasBatchRet = added;
 			}
 		}
 		if(isCancelled()) return null;
 		resultRecorderCombined rec = new resultRecorderCombined(a, _treeBuilder.flatten(), CurrentSearchText);
+		rec.booksSet = booksSet;
 		if(rec.FindFirstIdx(searchText, running)) return rec;
 		return null;
 	}

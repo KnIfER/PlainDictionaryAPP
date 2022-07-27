@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
+import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
@@ -18,6 +19,7 @@ import java.lang.ref.WeakReference;
 public class FuzzySearchTask extends AsyncTaskWrapper<String, Object, String> {
 	private final WeakReference<PDICMainActivity> activity;
 	private String CurrentSearchText;
+	private BookPresenter TargetBook;
 
 	public FuzzySearchTask(PDICMainActivity a) {
 		activity = new WeakReference<>(a);
@@ -27,6 +29,7 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Object, String> {
 		PDICMainActivity a;
 		if((a=activity.get())==null) return;
 		a.OnEnterFuzzySearchTask(this);
+		TargetBook = a.isCombinedSearching?null:a.currentDictionary;
 	}
 	
 	@Override
@@ -58,7 +61,7 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Object, String> {
 
 		a.fuzzySearchLayer.flowerSanLieZhi(SearchTerm);
 
-		if(a.isCombinedSearching){
+		if(TargetBook==null){
 			for(int i=0;i<loadManager.md_size;i++){
 				try {
 					BookPresenter mdTmp = loadManager.md_get(i);
@@ -75,9 +78,9 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Object, String> {
 		} else {
 			try {
 				if(a.checkDicts()){
-					publishProgress(a.currentDictionary, a.dictPicker.adapter_idx);
+					publishProgress(TargetBook, a.dictPicker.adapter_idx);
 					// to impl
-					a.currentDictionary.findAllNames(SearchTerm, a.currentDictionary, a.fuzzySearchLayer);
+					TargetBook.findAllNames(SearchTerm, TargetBook, a.fuzzySearchLayer);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -108,11 +111,7 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Object, String> {
 		results.storeRealm = SearchUI.MainApp.ENTRYTEXT;
 		results.storeRealm1 = SearchUI.MainApp.表et;
 		
-		if(a.isCombinedSearching){
-			results.invalidate();
-		}else{//单独搜索 todo
-			results.invalidate(a.currentDictionary);
-		}
+		((resultRecorderScattered)results).invalidate(a, TargetBook);
 
 		a.show(R.string.fuzzyfill,(System.currentTimeMillis()-CMN.stst)*1.f/1000
 				,a.adaptermy3.getCount());

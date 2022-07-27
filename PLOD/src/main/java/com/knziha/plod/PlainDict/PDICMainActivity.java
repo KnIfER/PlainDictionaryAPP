@@ -1462,11 +1462,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			//		}
 			//	}
 			//}
-			adaptermy3.results.invalidate();
-			adaptermy3.notifyDataSetChanged();
-
-			adaptermy4.results.invalidate();
-			adaptermy4.notifyDataSetChanged();
+			
+//			adaptermy3.results.invalidate();
+//			adaptermy3.notifyDataSetChanged();
+//
+//			adaptermy4.results.invalidate();
+//			adaptermy4.notifyDataSetChanged();
 
 
 //			CurrentViewPage = savedInstanceState.getInt("CVP", 1);
@@ -3307,10 +3308,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			tw1.onTextChanged(etSearch.getText(), 0, 0, 0);
 		}
 
-		adaptermy3.shutUp();adaptermy3.notifyDataSetChanged();
-		adaptermy3.results.invalidate();adaptermy3.notifyDataSetChanged();
-		adaptermy4.shutUp();adaptermy4.notifyDataSetChanged();
-		adaptermy4.results.invalidate();adaptermy4.notifyDataSetChanged();
+//		adaptermy3.shutUp();adaptermy3.notifyDataSetChanged();
+//		((resultRecorderScattered)adaptermy3.results).invalidate(this, EmptyBook);adaptermy3.notifyDataSetChanged();
+//		adaptermy4.shutUp();adaptermy4.notifyDataSetChanged();
+//		((resultRecorderScattered)adaptermy4.results).invalidate(this, EmptyBook);adaptermy4.notifyDataSetChanged();
 		dictPicker.dataChanged();
 	}
 

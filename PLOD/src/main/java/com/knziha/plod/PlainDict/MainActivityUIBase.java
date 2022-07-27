@@ -682,7 +682,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (TextUtils.getTrimmedLength(etSearch.getText())>0
 								&& (dictPicker.autoSchPDict()
 								|| this instanceof FloatSearchActivity
-								|| isCombinedSearching && currentDictionary.hasBatchRet)
+								|| dictPicker.underlined!=null && dictPicker.underlined.contains(currentDictionary.getId()))
 						) {
 							//CMN.Log("auto_search!......");
 							lv_matched=false;
@@ -1811,7 +1811,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		opt.getLastPlanName(LastPlanName);
 		new File(opt.pathToDatabases().toString()).mkdirs();
 		opt.CheckFileToDefaultMdlibs();
-		loadManager = new LoadManager(dictPicker);
+		wordPopup.loadManager = loadManager = new LoadManager(dictPicker);
 	}
 
 	public static byte[] target = "/".getBytes(StandardCharsets.UTF_8);
@@ -2396,13 +2396,28 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			in.close();
 		}
+		
+		public LazyLoadManager clone() {
+			LazyLoadManager other = this;
+			LazyLoadManager ret = new LazyLoadManager();
+			ret.placeHolders.addAll(other.placeHolders);
+			ret.CosyChair = ArrayUtils.clone(other.CosyChair);
+			ret.CosySofa = ArrayUtils.clone(other.CosySofa);
+			ret.chairCount = other.chairCount;
+			ret.filterCount = other.filterCount;
+			ret.lastCheckedPos = other.lastCheckedPos;
+			ret.currMdlTime = other.currMdlTime;
+			ret.lazyLoaded = other.lazyLoaded;
+			ret.lastLoadedModule = other.lastLoadedModule;
+			return ret;
+		}
 	}
 	
 	/** 分离词典加载逻辑以使不同界面可加载不同分组。 */
 	public /*static*/ class LoadManager {  // todo make static and separate file
 		public int md_size;
-		public LazyLoadManager lazyMan;
 		public final ArrayList<BookPresenter> md = new ArrayList<>();
+		public LazyLoadManager lazyMan;
 		public final DictPicker dictPicker;
 		
 		final String LastMdFn;// = "LastMdFn";
@@ -2414,8 +2429,23 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			this.LastMdFn = MainActivityUIBase.this.LastMdFn;
 			this.opt = MainActivityUIBase.this.opt;
 			this.lazyMan = new LazyLoadManager();
-			dictPicker.loadManager = this;
-			wordPopup.loadManager = this;
+			if (dictPicker.loadManager==null) {
+				dictPicker.loadManager = this;
+			}
+		}
+		
+		private LoadManager(LoadManager other) {
+			this.dictPicker = other.dictPicker;
+			this.LastMdFn = other.LastMdFn;
+			this.opt = other.opt;
+			this.lazyMan = other.lazyMan.clone();
+			this.EmptyBook = other.EmptyBook;
+			this.md_size = other.md_size;
+			this.md.addAll(other.md);
+		}
+		
+		public LoadManager clone() {
+			return new LoadManager(this);
 		}
 		
 		public PlaceHolder getPlaceHolderAt(int idx) {

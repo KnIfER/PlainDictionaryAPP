@@ -17,79 +17,89 @@ import com.knziha.plod.widgets.WebViewmy;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/** 保存全文搜索的结果。todo 暂存结果至内存 */
 public class resultRecorderScattered extends resultRecorderDiscrete {
 	private final BooleanSingleton TintResult;
 	private final com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer layer;
+	/** not a copy of the main loadManager */
 	private MainActivityUIBase.LoadManager loadManager;
 	private long[] firstLookUpTable = ArrayUtils.EMPTY_LONG_ARRAY;
 	private int md_size=0;
 	private long size=0;
 	private boolean mShouldSaveHistory;
+	BookPresenter TargetBook;
 
-	@Override
-	public void invalidate() {
+	public void invalidate(MainActivityUIBase a, BookPresenter targetBook) {
 		ensureTableSz();
+		if (targetBook==a.EmptyBook && TargetBook!=null) {
+			targetBook = TargetBook;
+		}
+		TargetBook = targetBook;
 		if(md_size==0)
 			return;
 		
-		long resCount=0;
-		long bookId=0;
-		for(int i=0;i<md_size;i++){//遍历所有词典
-			BookPresenter presenter = loadManager.md_getAt(i);
-			if (presenter!=null) {
-				ArrayList<SearchResultBean>[] treeBuilder = layer.getTreeBuilt(presenter);
-				bookId=presenter.getId();
-				if (treeBuilder != null)
-					for (int ti = 0; ti < treeBuilder.length; ti++) {//遍历搜索结果
-						if (treeBuilder[ti] == null) {
-							continue;
+		// loadManager = a.loadManager.clone(); // todo copy onChange
+		booksSet = new HashSet<>(a.loadManager.md_size);
+		if (targetBook == null) { // 联合
+			long resCount=0;
+			long bookId=0;
+			//todo respect TargetBook
+			for(int i=0;i<md_size;i++){//遍历所有词典
+				BookPresenter presenter = loadManager.md_getAt(i);
+				if (presenter!=null) {
+					ArrayList<SearchResultBean>[] treeBuilder = layer.getTreeBuilt(presenter);
+					bookId=presenter.getId();
+					if (treeBuilder != null) {
+						for (int ti = 0; ti < treeBuilder.length; ti++) {//遍历搜索结果
+							if (treeBuilder[ti] == null) {
+								continue;
+							}
+							resCount += treeBuilder[ti].size();
 						}
-						resCount += treeBuilder[ti].size();
+						booksSet.add(bookId);
 					}
+				}
+				firstLookUpTable[i*2]=resCount;
+				firstLookUpTable[i*2+1]=bookId;
 			}
-			firstLookUpTable[i*2]=resCount;
-			firstLookUpTable[i*2+1]=bookId;
+			size=resCount;
+		} else { // 单本
+			int resCount=0;
+			booksSet.add(targetBook.getId());
+			ArrayList<SearchResultBean>[] treeBuilt = layer.getTreeBuilt(targetBook);
+			if (treeBuilt != null)
+				for (int ti = 0; ti < treeBuilt.length; ti++) {//遍历搜索结果
+					if (treeBuilt[ti] == null) {
+						continue;
+					}
+					resCount += treeBuilt[ti].size();
+				}
+			
+			//firstLookUpTable[idx]=resCount;
+			boolean found = false;
+			for(int i=0;i<firstLookUpTable.length/2;i++) {
+				BookPresenter mdTmp = loadManager.md_getAt(i);
+				if (mdTmp==targetBook) {
+					firstLookUpTable[i*2+1] = mdTmp.getId();
+					found = true;
+				}
+				firstLookUpTable[i*2] = found?resCount:0;
+			}
+			size=resCount;
 		}
-		size=resCount;
+		loadManager.dictPicker.underlined = booksSet;
+		loadManager.dictPicker.dataChanged();
 	}
 	
 	private void ensureTableSz() {
 		md_size = loadManager.md_size;
 		if(firstLookUpTable.length<md_size*2)
 			firstLookUpTable = new long[md_size*2];
-	}
-	
-	@Override
-	public void invalidate(BookPresenter book) {
-		ensureTableSz();
-		if(md_size==0)
-			return;
-
-		int resCount=0;
-		ArrayList<SearchResultBean>[] treeBuilt = layer.getTreeBuilt(book);
-		if (treeBuilt != null)
-			for (int ti = 0; ti < treeBuilt.length; ti++) {//遍历搜索结果
-				if (treeBuilt[ti] == null) {
-					continue;
-				}
-				resCount += treeBuilt[ti].size();
-			}
-		
-		//firstLookUpTable[idx]=resCount;
-		boolean found = false;
-		for(int i=0;i<firstLookUpTable.length/2;i++) {
-			BookPresenter mdTmp = loadManager.md_getAt(i);
-			if (mdTmp==book) {
-				firstLookUpTable[i*2+1] = mdTmp.getId();
-				found = true;
-			}
-			firstLookUpTable[i*2] = found?resCount:0;
-		}
-		size=resCount;
 	}
 	
 	public resultRecorderScattered(MainActivityUIBase a, MainActivityUIBase.LoadManager loadManager_, BooleanSingleton _TintResult, com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer _layer){
