@@ -52,6 +52,8 @@
 			android:drawableLeft="@drawable/abc_ic_go_search_api_material"
 			style="@style/SearchbarMenuTextStyle"
 			android:longClickable="true"
+			android:alpha="0.1"
+			android:enabled="false"
 			/>
 	</LinearLayout>
 	<View

@@ -60,7 +60,7 @@
 			android:padding="0dp"
 			android:tint="@color/SelHeaderBlue"
 			android:foreground="@drawable/popup_background3__"
-			android:alpha=".1f"
+			android:alpha=".1"
 			/>
 	</LinearLayout>
 </android.widget.HorizontalScrollView>
