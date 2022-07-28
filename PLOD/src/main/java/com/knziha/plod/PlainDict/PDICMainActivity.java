@@ -165,8 +165,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public TextView dvResultN;
 	
 	public ViewGroup[] viewList;
-	public ListViewmy mlv1;
-	public ListViewmy mlv2;
 
 	public String lastFuzzyKeyword;
 	public String lastFullKeyword;

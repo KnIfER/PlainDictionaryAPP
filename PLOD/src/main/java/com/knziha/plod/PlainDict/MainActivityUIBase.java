@@ -168,6 +168,7 @@ import com.knziha.plod.dictionarymodels.PlainWeb;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.resultRecorderCombined;
 import com.knziha.plod.dictionarymodels.resultRecorderDiscrete;
+import com.knziha.plod.dictionarymodels.resultRecorderScattered;
 import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.databinding.ContentviewBinding;
 import com.knziha.plod.preference.SettingsPanel;
@@ -383,7 +384,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected String lastEtString;
 	public ViewGroup mainframe;
 
-	public ListViewmy lv,lv2;
+	public ListViewmy lv,lv2, mlv1, mlv2;
 	protected ViewGroup mlv;
 	public BasicAdapter adaptermy;
 	public BasicAdapter adaptermy2;
@@ -636,6 +637,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (bIsFirstLaunch) {
 			bIsFirstLaunch = false;
 		}
+		BookPresenter result = EmptyBook;
 		if(size>0) {
 			if(i<0||i>=size) {
 				if(prvNxt) {
@@ -672,45 +674,56 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			}
 			boolean bShowErr=bShowLoadErr;
 			bShowLoadErr=bShowErr&&!prvNxt;
-			currentDictionary = loadManager.md_get(dictPicker.adapter_idx=i);
+			result = loadManager.md_get(dictPicker.adapter_idx=i);
 			bShowLoadErr=bShowErr;
 			
-			if (adaptermy!=null) {
-				adaptermy.setPresenter(currentDictionary);
-				if (invalidate) {
-					adaptermy.notifyDataSetChanged();
-					postPutName(550);
-					if (currentDictionary != EmptyBook) {
-						if (TextUtils.getTrimmedLength(etSearch.getText())>0
-								&& (dictPicker.autoSchPDict()
-								|| this instanceof FloatSearchActivity
-								|| dictPicker.underlined!=null && dictPicker.underlined.contains(currentDictionary.getId()))
-						) {
-							//CMN.Log("auto_search!......");
-							lv_matched=false;
-							if(prvNxt && opt.getDimScrollbarForPrvNxt()) {
-								ViewUtils.dimScrollbar(lv, false);
+			if (CurrentViewPage == 1) {
+				currentDictionary = result;
+				if (adaptermy != null) {
+					adaptermy.setPresenter(result);
+					if (invalidate) {
+						adaptermy.notifyDataSetChanged();
+						postPutName(550);
+						if (result != EmptyBook) {
+							if (TextUtils.getTrimmedLength(etSearch.getText()) > 0
+									&& (dictPicker.autoSchPDict()
+									|| this instanceof FloatSearchActivity
+									|| dictPicker.underlined != null && dictPicker.underlined.contains(currentDictionary.getId()))
+							) {
+								//CMN.Log("auto_search!......");
+								lv_matched = false;
+								if (prvNxt && opt.getDimScrollbarForPrvNxt()) {
+									ViewUtils.dimScrollbar(lv, false);
+								}
+								boolean tmp = isCombinedSearching;
+								isCombinedSearching = false;
+								tw1.onTextChanged(etSearch.getText(), -1, -1, -100);
+								isCombinedSearching = tmp;
+								//lv.setFastScrollEnabled(true);
+								if (prvNxt && opt.getPrvNxtDictSkipNoMatch()) {
+									return lv_matched;
+								}
+							} else {
+								//lv.setSelection(currentDictionary.lvPos);
+								lv.setSelectionFromTop(result.lvPos, result.lvPosOff);
 							}
-							boolean tmp = isCombinedSearching;
-							isCombinedSearching = false;
-							tw1.onTextChanged(etSearch.getText(), -1, -1, -100);
-							isCombinedSearching = tmp;
-							//lv.setFastScrollEnabled(true);
-							if(prvNxt && opt.getPrvNxtDictSkipNoMatch()) {
-								return lv_matched;
-							}
-						} else {
-							//lv.setSelection(currentDictionary.lvPos);
-							lv.setSelectionFromTop(currentDictionary.lvPos, currentDictionary.lvPosOff);
+						} else if (prvNxt) {
+							return false;
 						}
-					} else if(prvNxt) {
-						return false;
 					}
+				}
+			}
+			else {
+				resultRecorderScattered results = (resultRecorderScattered) (CurrentViewPage == 0 ? adaptermy3 : adaptermy4).results;
+				HashSet<Long> booksSet = results.booksSet;
+				if (booksSet.contains(result.getId())) {
+					lv = CurrentViewPage == 0 ? mlv1 : mlv2;
+					lv.setSelectionFromTop(results.findFirstBookPos(result.getId()), 0);
 				}
 			}
 			
 			boolean showBuildIndex=false;
-			if(currentDictionary==EmptyBook && EmptyBook.placeHolder instanceof PlaceHolder) {
+			if(result==EmptyBook && EmptyBook.placeHolder instanceof PlaceHolder) {
 				if(((PlaceHolder) EmptyBook.placeHolder).NeedsBuildIndex()) {
 					AddIndexingBookIdx(0, i);
 					showBuildIndex=true;

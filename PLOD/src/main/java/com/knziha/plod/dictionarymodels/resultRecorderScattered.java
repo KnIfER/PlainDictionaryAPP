@@ -17,6 +17,7 @@ import com.knziha.plod.widgets.WebViewmy;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -28,7 +29,10 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 	private final com.knziha.plod.dictionary.mdict.AbsAdvancedSearchLogicLayer layer;
 	/** not a copy of the main loadManager */
 	private MainActivityUIBase.LoadManager loadManager;
+	/** [resCount, bookId, ...] array */
 	private long[] firstLookUpTable = ArrayUtils.EMPTY_LONG_ARRAY;
+	/** bookId-acc map */
+	private HashMap<Long, Integer> bookResAccMap = new HashMap<>();
 	private int md_size=0;
 	private long size=0;
 	private boolean mShouldSaveHistory;
@@ -45,6 +49,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		
 		// loadManager = a.loadManager.clone(); // todo copy onChange
 		booksSet = new HashSet<>(a.loadManager.md_size);
+		bookResAccMap.clear();
 		if (targetBook == null) { // 联合
 			long resCount=0;
 			long bookId=0;
@@ -55,6 +60,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 					ArrayList<SearchResultBean>[] treeBuilder = layer.getTreeBuilt(presenter);
 					bookId=presenter.getId();
 					if (treeBuilder != null) {
+						bookResAccMap.put(bookId, (int) resCount);
 						for (int ti = 0; ti < treeBuilder.length; ti++) {//遍历搜索结果
 							if (treeBuilder[ti] == null) {
 								continue;
@@ -90,6 +96,7 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 				}
 				firstLookUpTable[i*2] = found?resCount:0;
 			}
+			bookResAccMap.put(targetBook.getId(), 0);
 			size=resCount;
 		}
 		loadManager.dictPicker.underlined = booksSet;
@@ -121,7 +128,12 @@ public class resultRecorderScattered extends resultRecorderDiscrete {
 		books.add(firstLookUpTable[Rgn+1]);
 		return books;
 	}
-
+	
+	public int findFirstBookPos(long id) {
+		Integer ret = bookResAccMap.get(id);
+		return ret==null? (int) size :ret;
+	}
+	
 	@Override
 	public long getOneDictAt(int pos) {
 		int Rgn = binary_find_closest(firstLookUpTable,pos+1,md_size);
