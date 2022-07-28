@@ -780,4 +780,11 @@ public class DictPicker extends PlainAppPanel implements View.OnClickListener
 			coveronclick.setOnClickListener(onclick);
 		}
 	}
+	
+	public void setUnderLined(HashSet<Long> booksSet) {
+		underlined = booksSet;
+		if(pinned()) {
+			mAdapter.notifyItemRangeChanged(0, mAdapter.getItemCount(), "payload");
+		}
+	}
 }

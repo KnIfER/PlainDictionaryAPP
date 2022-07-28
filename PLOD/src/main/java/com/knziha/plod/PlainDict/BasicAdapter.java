@@ -50,7 +50,7 @@ public abstract class BasicAdapter extends BaseAdapter
 		}
     	
     	public void setResHolder(resultRecorderDiscrete r) {
-    		results =r;
+    		results=r;
     	}
         //public ArrayList<additiveMyCpr1> combining_search_result = new ArrayList<additiveMyCpr1>();//additiveMyCpr1
         public resultRecorderDiscrete results;

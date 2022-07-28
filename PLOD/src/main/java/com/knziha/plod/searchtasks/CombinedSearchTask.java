@@ -201,8 +201,6 @@ public class CombinedSearchTask extends AsyncTaskWrapper<String, Object, resultR
 
 		a.CombinedSearchTask_lastKey=CurrentSearchText;
 		
-		if(a.dictPicker.pinned()) {
-			a.dictPicker.mAdapter.notifyItemRangeChanged(0, a.dictPicker.mAdapter.getItemCount(), "payload");
-		}
+		a.dictPicker.setUnderLined(rec.booksSet);
 	}
 }

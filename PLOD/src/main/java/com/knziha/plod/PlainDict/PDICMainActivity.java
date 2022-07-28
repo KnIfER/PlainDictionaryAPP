@@ -126,6 +126,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -1220,32 +1221,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//PageSlider.SCViewToMute = (ScrollViewmy) webholder.getParent();
 		
 		final NoScrollViewPager viewPager = UIData.viewpager;
-		viewPager.addOnPageChangeListener(new OnPageChangeListener() {
-			@Override public void onPageScrollStateChanged(int arg0) { }
-			@Override public void onPageScrolled(int arg0, float arg1, int arg2) { }
-			@Override
-			public void onPageSelected(int pos) {
-				fadeSnack();
-				CurrentViewPage=pos;
-				boolean b1=pos==0;
-				if((b1||pos==2) && PDICMainAppOptions.getHintSearchMode()) {
-					boolean bUseRegex = b1?PDICMainAppOptions.getUseRegex1():PDICMainAppOptions.getUseRegex2();
-					int msg=bUseRegex?R.string.regret:(b1?R.string.fuzzyret:R.string.fullret);
-					viewPager.post(() -> showTopSnack(null, msg, 0.5f, -1, Gravity.CENTER, 0));
-				}
-				decorateBottombarFFSearchIcons(pos);
-				applyMainMenu();
-				if (pos!=1 && viewList[pos].getChildCount()==1) {
-					ViewGroup lv = viewList[pos];
-					View btm = getLayoutInflater().inflate(R.layout.adv_sch_bottom, lv, false);
-					lv.addView(btm);
-					TextView tv = btm.findViewById(R.id.schName);
-					lv.setTag(tv);
-					tv.setText(pos==0?R.string.fuzzyret:R.string.fullret);
-					((LinearLayout.LayoutParams)viewList[pos].getChildAt(0).getLayoutParams()).weight = 1;
-				}
-			}});
-		
 		//tofo
 		if(Build.VERSION.SDK_INT >= 24) {
 			ViewUtils.listViewStrictScroll(true, mlv1, mlv2, lv);
@@ -1417,7 +1392,41 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			return true;
 		});
 		
-
+		viewPager.addOnPageChangeListener(new OnPageChangeListener() {
+			@Override public void onPageScrollStateChanged(int arg0) { }
+			@Override public void onPageScrolled(int arg0, float arg1, int arg2) { }
+			@Override
+			public void onPageSelected(int pos) {
+				fadeSnack();
+				CurrentViewPage=pos;
+				boolean b1=pos==0;
+				if((b1||pos==2) && PDICMainAppOptions.getHintSearchMode()) {
+					boolean bUseRegex = b1?PDICMainAppOptions.getUseRegex1():PDICMainAppOptions.getUseRegex2();
+					int msg=bUseRegex?R.string.regret:(b1?R.string.fuzzyret:R.string.fullret);
+					viewPager.post(() -> showTopSnack(null, msg, 0.5f, -1, Gravity.CENTER, 0));
+				}
+				decorateBottombarFFSearchIcons(pos);
+				applyMainMenu();
+				HashSet<Long> booksSet = null;
+				if (pos != 1) {
+					if (viewList[pos].getChildCount() == 1) {
+						ViewGroup lv = viewList[pos];
+						View btm = getLayoutInflater().inflate(R.layout.adv_sch_bottom, lv, false);
+						lv.addView(btm);
+						TextView tv = btm.findViewById(R.id.schName);
+						lv.setTag(tv);
+						tv.setText(pos == 0 ? R.string.fuzzyret : R.string.fullret);
+						((LinearLayout.LayoutParams) viewList[pos].getChildAt(0).getLayoutParams()).weight = 1;
+					} else {
+						booksSet = (pos == 0 ? adaptermy3 : adaptermy4).results.booksSet;
+					}
+				} else/* if(ViewUtils.isVisible(lv2))*/{
+					booksSet = adaptermy2.results.booksSet;
+				}
+				dictPicker.setUnderLined(booksSet);
+			}});
+		
+		
 		//switch_To_Dict_Idx(adapter_idx);
 		if(currentDictionary!=EmptyBook) {
 			lv.post(() -> {

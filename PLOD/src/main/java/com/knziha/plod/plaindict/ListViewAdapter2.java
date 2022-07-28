@@ -36,7 +36,7 @@ public class ListViewAdapter2 extends BasicAdapter {
 		this.a = a;
 		this.opt = a.opt;
 		this.id = id;
-		results = new resultRecorderDiscrete(a);
+		results =  a.EmptySchResults;
 	}
 	@Override
 	public int getCount() {

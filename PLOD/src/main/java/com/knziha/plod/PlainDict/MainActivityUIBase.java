@@ -409,7 +409,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	@NonNull public BookPresenter currentDictionary;
 	HashSet<String> mdlibsCon;
 	public ArrayList<BookPresenter> md = new ArrayList<>();//Collections.synchronizedList(new ArrayList<mdict>());
-
+	
+	public resultRecorderDiscrete EmptySchResults;
+	
 	public Dialog taskd;
 	DArrayAdapter AppFunAdapter;
 	BufferedWriter output;
@@ -1895,6 +1897,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		try {
 			currentDictionary = EmptyBook = new BookPresenter(new File("empty"), this, 1);
 		} catch (IOException ignored) { }
+		EmptySchResults = new resultRecorderDiscrete(this);
 		
 		File ConfigFile = opt.fileToConfig();
 		
