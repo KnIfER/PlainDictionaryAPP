@@ -1403,6 +1403,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if((b1||pos==2) && PDICMainAppOptions.getHintSearchMode()) {
 					boolean bUseRegex = b1?PDICMainAppOptions.getUseRegex1():PDICMainAppOptions.getUseRegex2();
 					int msg=bUseRegex?R.string.regret:(b1?R.string.fuzzyret:R.string.fullret);
+					if(bUseRegex)
 					viewPager.post(() -> showTopSnack(null, msg, 0.5f, -1, Gravity.CENTER, 0));
 				}
 				decorateBottombarFFSearchIcons(pos);
