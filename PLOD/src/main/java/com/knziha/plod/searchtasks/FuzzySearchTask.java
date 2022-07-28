@@ -1,6 +1,7 @@
 package com.knziha.plod.searchtasks;
 
 import android.annotation.SuppressLint;
+import android.widget.TextView;
 
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -115,6 +116,8 @@ public class FuzzySearchTask extends AsyncTaskWrapper<String, Object, String> {
 
 		a.show(R.string.fuzzyfill,(System.currentTimeMillis()-CMN.stst)*1.f/1000
 				,a.adaptermy3.getCount());
+		
+		((TextView)a.viewList[0].getTag()).setText(a.mResource.getString(R.string.fuzzyret2)+" ("+a.adaptermy3.getCount()+")");
 
 		CMN.Log((System.currentTimeMillis()-CMN.stst)*1.f/1000, "此即搜索时间。", a.adaptermy3.getCount());
 

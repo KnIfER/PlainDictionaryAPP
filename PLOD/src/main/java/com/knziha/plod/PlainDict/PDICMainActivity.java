@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +16,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.net.Uri;
 import android.os.Build;
@@ -43,7 +41,6 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -58,13 +55,11 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
-import androidx.appcompat.view.menu.ActionMenuItem;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.ActionMenuPresenter;
 import androidx.appcompat.widget.ActionMenuView;
-import androidx.appcompat.widget.ListPopupWindow;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.ColorUtils;
@@ -145,7 +140,6 @@ import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINNAM
 import static com.knziha.plod.dictionary.SearchResultBean.SEARCHTYPE_SEARCHINTEXTS;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
-import static com.knziha.plod.plaindict.DeckListAdapter.SelectionMode_peruseview;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
 
@@ -168,7 +162,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	public TextView dvProgressFrac;
 	public TextView dvDictFrac;
 	public TextView dvResultN;
-
+	
+	public ViewGroup[] viewList;
 	public ListViewmy mlv1;
 	public ListViewmy mlv2;
 
@@ -1201,7 +1196,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		barSzBot=(int) mResource.getDimension(R.dimen.barSzBot);//opt.getBottombarSize();
 		
 		ViewUtils.removeView(mlv);
-		View[] viewList = new View[]{mlv1, mlv, mlv2};
+		viewList = new ViewGroup[]{mlv1, mlv, mlv2};
 		for (int i = 0; i < 3; i++) {
 			LinearLayout view = new LinearLayout(this);
 			view.setOrientation(LinearLayout.VERTICAL);
@@ -1240,6 +1235,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				}
 				decorateBottombarFFSearchIcons(pos);
 				applyMainMenu();
+				if (pos!=1 && viewList[pos].getChildCount()==1) {
+					ViewGroup lv = viewList[pos];
+					View btm = getLayoutInflater().inflate(R.layout.adv_sch_bottom, lv, false);
+					lv.addView(btm);
+					TextView tv = btm.findViewById(R.id.schName);
+					lv.setTag(tv);
+					tv.setText(pos==0?R.string.fuzzyret:R.string.fullret);
+					((LinearLayout.LayoutParams)viewList[pos].getChildAt(0).getLayoutParams()).weight = 1;
+				}
 			}});
 		
 		//tofo

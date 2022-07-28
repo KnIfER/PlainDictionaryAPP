@@ -45,6 +45,7 @@
     <string name="fuzzyret">Entry Wildcard Match</string>
 	<string name="fullret1">@string/fullret</string>
 	<string name="fuzzyret1">@string/fuzzyret</string>
+	<string name="fuzzyret2">词条搜索</string>
 
     <string name="warn_exit">Click again to exit!</string>
     

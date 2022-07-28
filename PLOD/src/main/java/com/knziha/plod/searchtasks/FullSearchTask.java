@@ -1,6 +1,7 @@
 package com.knziha.plod.searchtasks;
 
 import android.annotation.SuppressLint;
+import android.widget.TextView;
 
 import com.knziha.plod.db.SearchUI;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -133,6 +134,8 @@ public class FullSearchTask extends AsyncTaskWrapper<String, Object, String > {
 		((resultRecorderScattered)results).invalidate(a, TargetBook);
 		a.show(R.string.fullfill
 				,(System.currentTimeMillis()-CMN.stst)*1.f/1000,a.adaptermy4.getCount());
+		
+		((TextView)a.viewList[2].getTag()).setText(a.mResource.getString(R.string.fullret)+" ("+a.adaptermy4.getCount()+")");
 
 		CMN.Log((System.currentTimeMillis()-CMN.stst)*1.f/1000, "此即搜索时间。", a.adaptermy4.getCount());
 		
