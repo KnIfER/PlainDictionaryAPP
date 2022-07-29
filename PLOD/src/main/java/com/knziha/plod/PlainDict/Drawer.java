@@ -1215,7 +1215,8 @@ public class Drawer extends Fragment implements
 				a.opt.setFullScreen(isChecked);
 			} break;
 			case R.id.sw2:{
-				a.setNestedScrollingEnabled(PDICMainAppOptions.setEnableSuperImmersiveScrollMode(isChecked));
+				PDICMainAppOptions.setEnableSuperImmersiveScrollMode(isChecked);
+				a.setNestedScrollingEnabled(isChecked);
 				adjustBottomPadding();
 			} break;
 			case R.id.sw3:{

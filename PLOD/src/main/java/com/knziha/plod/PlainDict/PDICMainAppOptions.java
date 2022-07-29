@@ -696,9 +696,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	}
 	/////////////////////End First 32-bit Flag////////////////////////////////////
 
-		/////////////////////Start First Flag Long field///////////////////////////////////
-		@Metaline(flagPos=32) public static boolean pinPDic() { FirstFlag=FirstFlag; throw new RuntimeException();}
-		@Metaline(flagPos=32) public static void pinPDic(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
+	/////////////////////Start First Flag Long field///////////////////////////////////
+	@Metaline(flagPos=32, shift=1) public static boolean pinPDic() { FirstFlag=FirstFlag; throw new RuntimeException();}
+	@Metaline(flagPos=32, shift=1) public static void pinPDic(boolean val) { FirstFlag=FirstFlag; throw new RuntimeException();}
 	
 	//???
 	
@@ -1852,14 +1852,9 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateQFAt(0x4000000l,val);
 		return val;
 	}
-
-	public static boolean getEnableSuperImmersiveScrollMode() {
-		return (FourthFlag & 0x8000000l) != 0x8000000l;
-	}
-	public static boolean setEnableSuperImmersiveScrollMode(boolean val) {
-		updateQFAt(0x8000000l,!val);
-		return val;
-	}
+	
+	@Metaline(flagPos=27) public static boolean getEnableSuperImmersiveScrollMode() { FourthFlag=FourthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=27) public static void setEnableSuperImmersiveScrollMode(boolean val) { FourthFlag=FourthFlag; throw new RuntimeException();}
 
 	public static boolean getInheritGlobleWebcolorBeforeSwichingToInternal() {
 		return (FourthFlag & 0x10000000l) == 0x10000000l;
@@ -2174,8 +2169,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=44) public static boolean fastPreviewFragile() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
-	@Metaline(flagPos=45) public static boolean getShowPinPicBook() { FifthFlag=FifthFlag; throw new RuntimeException();}
-	@Metaline(flagPos=45) public static void setShowPinPicBook(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=45, shift=1) public static boolean getShowPinPicBook() { FifthFlag=FifthFlag; throw new RuntimeException();}
+	@Metaline(flagPos=45, shift=1) public static void setShowPinPicBook(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
 	
 	@Metaline(flagPos=46) public static boolean getShowSearchTools() { FifthFlag=FifthFlag; throw new RuntimeException();}
 	@Metaline(flagPos=46) public static void setShowSearchTools(boolean val) { FifthFlag=FifthFlag; throw new RuntimeException();}
