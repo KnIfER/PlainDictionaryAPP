@@ -339,11 +339,11 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	}
 	
 	void rebuildCursor(MainActivityUIBase a) {
-		boolean bSingleThreadLoading = false;
+		boolean bSingleThreadLoadAll = false;
 		DBroswer browser = browserHolder.get();
 		SQLiteDatabase db = browser.mLexiDB.getDB();
 		data.dataAdapter.close();
-		if (bSingleThreadLoading) {
+		if (bSingleThreadLoadAll) {
 			Cursor cursor;
 			if (browser.type==DB_FAVORITE) {
 				cursor = db.rawQuery("SELECT id,"+FIELD_VISIT_TIME+",lex,books,ivk FROM "+browser.getTableName()+" where folder=? ORDER BY "+FIELD_VISIT_TIME+" desc", new String[]{a.opt.getCurrFavoriteNoteBookId()+""});

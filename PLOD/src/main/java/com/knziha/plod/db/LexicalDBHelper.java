@@ -566,7 +566,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	 * @param source 0=default; 1=listview; 2=tap translator; 3=peruse view
 	 *   */
 	public long updateHistoryTerm(MainActivityUIBase a, String lex, int source, WebViewListHandler weblist) {
-		//CMN.rt();
+		CMN.rt();
 		int count=-1;
 		int src=0;
 		long id=-1;
@@ -622,18 +622,20 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			if(insertNew) {
 				values.put(FIELD_CREATE_TIME, now);
 				id = database.insert(TABLE_HISTORY_v2, null, values);
+//				CMN.debug("database.insert："+id);
 			} else {
 				//values.put("id", id);
 				//database.update(TABLE_URLS, values, "url=?", where);
 				//database.insertWithOnConflict(TABLE_URLS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
 				where[0]=""+id;
-				database.update(TABLE_HISTORY_v2, values, "id=?", where);
+				int cnt = database.update(TABLE_HISTORY_v2, values, "id=?", where);
+//				CMN.debug("database.update："+cnt);
 			}
 			incrementDBVersion(-1L);
 		} catch (Exception e) {
 			CMN.Log(e);
 		}
-		//CMN.pt("历史插入时间：");
+		CMN.pt("历史插入时间：");
 		return id;
 	}
 	

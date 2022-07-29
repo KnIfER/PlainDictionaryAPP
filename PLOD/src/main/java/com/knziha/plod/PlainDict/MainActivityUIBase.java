@@ -3305,7 +3305,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	protected String lastInsertedKey;
 	
 	public void addHistory(String key, int source, WebViewListHandler weblist, SearchbarTools etTools) {
-		CMN.Log("addHistroy::", key, source);
+		CMN.debug("addHistroy::", key, source);
 		if(source>=0/* && TextUtils.getTrimmedLength(key)>0*/) {
 			key = key.trim();
 			if (key.length()>0) {
