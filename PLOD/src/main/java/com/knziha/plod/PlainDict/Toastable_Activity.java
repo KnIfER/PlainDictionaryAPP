@@ -6,7 +6,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -40,6 +39,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
@@ -58,6 +58,8 @@ import java.io.IOException;
 import java.util.Locale;
 
 import static com.knziha.plod.dictionarymodels.BookPresenter.indexOf;
+
+import io.noties.markwon.Markwon;
 
 public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
@@ -378,11 +380,18 @@ public class Toastable_Activity extends AppCompatActivity {
 		new AlertDialog.Builder(this)
 				.setTitle(R.string.stg_require)
 				.setMessage(R.string.stg_statement)
-				.setPositiveButton(R.string.stg_grantnow, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						requestPermissions(permissions, 321);
-					}
+				.setPositiveButton(R.string.stg_grantnow, (dialog, which) -> requestPermissions(permissions, 321))
+				.setWikiText("", (dialog, which) -> {
+					AlertDialog d = new AlertDialog.Builder(this)
+							.setTitle("权限列表")
+							.setMessage("")
+							.setPositiveButton(R.string.confirm, null)
+							.show();
+					Markwon markwon = Markwon.create(this);
+					TextView tv = d.findViewById(android.R.id.message);
+					opt.setAsLinkedTextView(tv, false);
+					tv.setTextSize(GlobalOptions.isLarge?20:15);
+					markwon.setMarkdown(tv, ViewUtils.fileToString(this, new File(CMN.AssetTag, "quanxian")));
 				})
 				.setNegativeButton(R.string.cancel, (dialog, which) -> EnterTrialMode()).setCancelable(false).show().getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
 	}
