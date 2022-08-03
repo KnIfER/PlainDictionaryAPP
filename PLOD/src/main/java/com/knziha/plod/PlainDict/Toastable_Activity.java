@@ -2,15 +2,12 @@ package com.knziha.plod.plaindict;
 
 import android.Manifest;
 import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -44,7 +41,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.appcompat.widget.Toolbar;
 
-import com.knziha.filepicker.view.LinkMovementMethod;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.widgets.SimpleTextNotifier;
 import com.knziha.plod.widgets.ViewUtils;
@@ -367,7 +363,7 @@ public class Toastable_Activity extends AppCompatActivity {
 						return;
 					}
 				}
-				showDialogTipUserRequestPermission();
+				dialogRequestPermissionTips();
 			}else {pre_further_loading(savedInstanceState);}
 		}else {pre_further_loading(savedInstanceState);}
 	}
@@ -376,24 +372,26 @@ public class Toastable_Activity extends AppCompatActivity {
 
 	// 动态获取权限
 	@RequiresApi(api = Build.VERSION_CODES.M)
-	protected void showDialogTipUserRequestPermission() {
+	protected void dialogRequestPermissionTips() {
 		new AlertDialog.Builder(this)
 				.setTitle(R.string.stg_require)
 				.setMessage(R.string.stg_statement)
 				.setPositiveButton(R.string.stg_grantnow, (dialog, which) -> requestPermissions(permissions, 321))
-				.setWikiText("", (dialog, which) -> {
-					AlertDialog d = new AlertDialog.Builder(this)
-							.setTitle("权限列表")
-							.setMessage("")
-							.setPositiveButton(R.string.confirm, null)
-							.show();
-					Markwon markwon = Markwon.create(this);
-					TextView tv = d.findViewById(android.R.id.message);
-					opt.setAsLinkedTextView(tv, false);
-					tv.setTextSize(GlobalOptions.isLarge?20:15);
-					markwon.setMarkdown(tv, ViewUtils.fileToString(this, new File(CMN.AssetTag, "quanxian")));
-				})
+				.setWikiText("", (dialog, which) -> dialogPermissionDetails(this))
 				.setNegativeButton(R.string.cancel, (dialog, which) -> EnterTrialMode()).setCancelable(false).show().getWindow().setBackgroundDrawableResource(R.drawable.popup_shadow_l);
+	}
+	
+	public void dialogPermissionDetails(Activity context) {
+		AlertDialog d = new AlertDialog.Builder(context)
+				.setTitle("权限列表")
+				.setMessage("")
+				.setPositiveButton(R.string.confirm, null)
+				.show();
+		Markwon markwon = Markwon.create(context);
+		TextView tv = d.findViewById(android.R.id.message);
+		opt.setAsLinkedTextView(tv, false);
+		tv.setTextSize(GlobalOptions.isLarge?20:15);
+		markwon.setMarkdown(tv, ViewUtils.fileToString(context, new File(CMN.AssetTag, "quanxian")));
 	}
 	
 	protected void EnterTrialMode() {

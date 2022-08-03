@@ -9,7 +9,7 @@
 		>
 		<Preference
 			android:key="app_settings"
-			android:title="App设置"
+			android:title="系统App设置"
 			android:persistent="false"
 			/>
 		<Preference
@@ -179,7 +179,6 @@
 			android:key="log2"
 			android:persistent="false"
 			android:title="模拟错误信息"
-			app:isPreferenceVisible="true"
 			app:allowDividerBelow="true"
 			/>
 
@@ -187,7 +186,6 @@
 			android:key="dbv2"
 			android:persistent="false"
 			android:title="使用数据库V2"
-			app:isPreferenceVisible="true"
 			app:allowDividerAbove="true"
 			/>
 
@@ -195,9 +193,19 @@
 			android:key="dbv2_up"
 			android:persistent="false"
 			android:title="升级数据库V2"
-			app:isPreferenceVisible="true"
 			/>
+
+
+		<Preference
+			android:key="pm"
+			android:persistent="false"
+			android:title="免责声明与权限明细"
+			app:allowDividerAbove="true"
+			/>
+
 	</PreferenceCategory>
+
+
 
 
 </PreferenceScreen>

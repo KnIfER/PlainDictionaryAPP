@@ -90,6 +90,7 @@ public class DevOpt extends SettingsFragmentBase implements Preference.OnPrefere
 		
 		init_switch_preference(this, "dbv2", PDICMainAppOptions.getUseDatabaseV2(), null, null);
 		findPreference("dbv2_up").setOnPreferenceClickListener(this);
+		findPreference("pm").setOnPreferenceClickListener(this);
 	}
 	
 	private String getNameFlag(String andoid_country_code) {
@@ -311,6 +312,9 @@ public class DevOpt extends SettingsFragmentBase implements Preference.OnPrefere
 			} break;
 			case "dbv2_up": {
 				ViewUtils.notifyAPPSettingsChanged(context, preference);
+			} break;
+			case "pm": {
+				((Toastable_Activity)context).dialogPermissionDetails(context);
 			} break;
 			case "log":
 			case "log2": {
