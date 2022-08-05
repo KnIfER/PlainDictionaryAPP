@@ -1849,26 +1849,26 @@ function debug(e){console.log(e)};
     @SuppressLint("JavascriptInterface")
 	public void setCurrentDis(WebViewmy mWebView, long idx) {
 		mWebView.setPresenter(this);
-		/* 回溯 或 前瞻， 不改变历史 */
-		mWebView.word = StringUtils.trim(bookImpl.getEntryAt(mWebView.currentPos = idx));
-		if (mWebView.weblistHandler==a.weblistHandler) {
-			currentDisplaying = mWebView.word;
-			if(bookImpl.hasVirtualIndex()){
-				if (idx==0 && mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB && searchKey!=null) {
-					currentDisplaying = searchKey;
-				} else {
-					int tailIdx=currentDisplaying.lastIndexOf(":");
-					if(tailIdx>0)
-						currentDisplaying=currentDisplaying.substring(0, tailIdx);
-				}
+		String word = StringUtils.trim(bookImpl.getEntryAt(mWebView.currentPos = idx));
+		if(bookImpl.hasVirtualIndex()){
+			if (idx==0 && mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB && searchKey!=null) {
+				word = searchKey;
+			} else {
+				int tailIdx=word.lastIndexOf(":");
+				if(tailIdx>0)
+					word=word.substring(0, tailIdx);
 			}
 		}
+		if (mWebView.weblistHandler==a.weblistHandler) {
+			currentDisplaying = word;
+		}
 		if (mWebView.weblistHandler.isViewSingle()) {
-			mWebView.weblistHandler.setStar(mWebView.word);
+			mWebView.weblistHandler.setStar(word);
 		}
 		if (mWebView.toolbar_title!=null) {
-			mWebView.toolbar_title.setText(bookImpl.AcquireStringBuffer(64).append(mWebView.word.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
+			mWebView.toolbar_title.setText(bookImpl.AcquireStringBuffer(64).append(word.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
 		}
+		mWebView.word = word;
 	}
 	
 	
