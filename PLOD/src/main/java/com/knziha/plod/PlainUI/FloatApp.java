@@ -124,7 +124,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			a.UIData.root.setPadding(0,CMN.getStatusBarHeight(a),0,0);
 			a.mDialogType = WindowManager.LayoutParams.TYPE_APPLICATION;
 			a.moveTaskToFront();
-			app.floatApp = null;
+			//app.floatApp = null;
 			floatingView = null;
 			a.onSizeChanged();
 			a.bNeverBlink.val = false;
@@ -133,6 +133,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			a.onSizeChanged();
 			a.moveTaskToBack(true);
 			a.bNeverBlink.val = true;
+			//app.floatApp = this;
 		}
 	}
 	
