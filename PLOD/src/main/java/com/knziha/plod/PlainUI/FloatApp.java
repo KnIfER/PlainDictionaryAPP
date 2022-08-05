@@ -1,6 +1,7 @@
 package com.knziha.plod.PlainUI;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
 import android.os.Build;
@@ -14,6 +15,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.GlobalOptions;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
@@ -39,6 +42,9 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	private int statusBarHeight;
 	private int padding;
 	private ViewGroup titleBar;
+	private View appStub, appStubTb, appStubBg;
+	private int appStubBgr;
+	
 	
 	public FloatApp(PDICMainActivity a) {
 		this.a = a;
@@ -119,7 +125,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	public void toggle(boolean close) {
 		if (isFloating()) {
 			wMan.removeView(floatingView);
-			ViewUtils.addViewToParent(a.UIData.root, appContentView);
+			ViewUtils.addViewToParentUnique(a.UIData.root, appContentView);
 			a.UIData.root.setFitsSystemWindows(true);
 			a.UIData.root.setPadding(0,CMN.getStatusBarHeight(a),0,0);
 			a.mDialogType = WindowManager.LayoutParams.TYPE_APPLICATION;
@@ -130,6 +136,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			a.bNeverBlink.val = false;
 		} else if (!close) {
 			floatWindow();
+			ViewUtils.addViewToParent(getAppStub(), appContentView);
 			a.onSizeChanged();
 			a.moveTaskToBack(true);
 			a.bNeverBlink.val = true;
@@ -311,5 +318,22 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 		if (lp.y+4*padding<statusBarHeight) lp.y=statusBarHeight-4*padding;
 		else if(lp.y+titleBar.getHeight()+4*padding>dm.heightPixels) lp.y=(int) (dm.heightPixels-titleBar.getHeight()-4*padding);
 		wMan.updateViewLayout(view, lp);
+	}
+	
+	private View getAppStub() {
+		if (appStub==null) {
+			appStub = a.getLayoutInflater().inflate(R.layout.float_app_stub, appContentView, false);
+			appStub.setPadding(0,CMN.getStatusBarHeight(a),0,0);
+			Toolbar toolbar = appStub.findViewById(R.id.toolbar);
+			toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
+			toolbar.setNavigationOnClickListener(v -> a.moveTaskToBack(true));
+			appStubTb = toolbar;
+			appStubBg = appStub.findViewById(R.id.bg);
+		}
+		if (appStubBgr!=a.MainAppBackground) {
+			appStubTb.setBackgroundColor(appStubBgr=a.MainAppBackground);
+			appStubBg.setBackgroundColor(GlobalOptions.isDark?0:ColorUtils.blendARGB(a.MainAppBackground, Color.BLACK, 0.45f));
+		}
+		return appStub;
 	}
 }
