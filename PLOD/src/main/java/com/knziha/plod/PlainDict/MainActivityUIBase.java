@@ -10705,7 +10705,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	Drawable.ConstantState titleDrawableCS;
 	public final Drawable titleDrawable() {
 		if(titleDrawableCS==null)
-			titleDrawableCS = mResource.getDrawable(R.drawable.progressbar).getConstantState();
+			titleDrawableCS = mResource.getDrawable(R.drawable.progressbar).mutate().getConstantState();
 		return titleDrawableCS.newDrawable();
 	}
 	
