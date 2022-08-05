@@ -1121,6 +1121,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 								intent.putExtra(Intent.EXTRA_TEXT, text.toString());
 								intent.removeExtra(FloatBtn.EXTRA_GETTEXT);
 								processIntent(intent, false);
+								if(isFloatingApp()) {
+									moveTaskToBack(true);
+								}
 							}
 						}, 100);
 						return;
