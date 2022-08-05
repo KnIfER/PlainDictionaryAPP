@@ -149,7 +149,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 	{
 		return displaying.getCount();
 	}
-
+	
 	private RecyclerViewmy.OnItemClickListener mOnItemClickListener;
 	private OnItemLongClickListener mOnItemLongClickListener;
 	private OnLongClickListener longClicker = new OnLongClickListener() {
@@ -239,18 +239,18 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 			}
 			iconLoader.load(new AppIconCover(new AppInfoDBBean(ivk, pm), false))
 					.into(viewdata.icon);
+			viewdata.icon.setVisibility(View.VISIBLE); //todo optimize
 		} else {
 			viewdata.icon.setImageDrawable(null);
+			viewdata.icon.setVisibility(View.INVISIBLE);
 		}
-		
-		
 		
 		//viewdata.icon
 		
 		viewdata.text1.setText(text.trim());
 		if(a.opt.debuggingDBrowser()) {
 			viewdata.text1.setText(position+" ::"+text.trim());
-			CMN.debug("onBindViewHolder::", position, text.trim());
+			CMN.debug("onBindViewHolder::", position, text.trim(), ivk);
 		}
 		
 		int textColor=a.AppBlack, backgroundColor=0;
@@ -277,7 +277,6 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 //			viewdata.text1.setBackgroundResource(R.drawable.xuxian2);
 //		else
 //			viewdata.text1.setBackground(null);
-
 
 		if(browser.SelectionMode==SelectionMode_select) {
 			viewdata.p.setOnClickListener(v -> mOnItemClickListener.onItemClick(holder.itemView, 0));
