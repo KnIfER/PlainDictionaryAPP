@@ -4497,12 +4497,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						case R.string.send_etsch: {
 							if (isLongClicked) return false;
 							if(thisActType==ActType.MultiShare) {
-								Intent newTask = new Intent(Intent.ACTION_MAIN);
-								newTask.putExtra(Intent.EXTRA_TEXT, extraText);
-								//newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
-								newTask.setClass(getBaseContext(),PDICMainActivity.class);
-								newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-								startActivity(newTask);
+								AgentApplication app = (AgentApplication) getApplication();
+								if (app.floatApp != null && app.floatApp.isFloating()) {
+									app.floatApp.getFloatBtn().search(extraText, false);
+								} else {
+									Intent newTask = new Intent(Intent.ACTION_MAIN);
+									newTask.putExtra(Intent.EXTRA_TEXT, extraText);
+									//newTask.putExtra(Intent.EXTRA_SHORTCUT_ID,ShareTarget);
+									newTask.setClass(getBaseContext(),PDICMainActivity.class);
+									newTask.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+									startActivity(newTask);
+								}
 								dissmisstype=0;
 								checkMultiVSTGO();
 							} else {
