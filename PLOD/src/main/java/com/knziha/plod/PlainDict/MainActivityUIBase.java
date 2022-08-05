@@ -5656,9 +5656,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	void AttachDBrowser(int type) {
-		if(DBrowser==null || opt.debugingDBrowser()) {
+		if(DBrowser==null || opt.debuggingDBrowser()) {
 			DBrowser = DBrowserHolder.get();
-			if(DBrowser==null || opt.debugingDBrowser()){
+			if(DBrowser==null || opt.debuggingDBrowser()){
 				CMN.Log("重建收藏夹历史记录视图");
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
 			}

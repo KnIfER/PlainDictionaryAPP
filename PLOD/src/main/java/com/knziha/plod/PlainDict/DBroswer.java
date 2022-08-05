@@ -2,9 +2,7 @@ package com.knziha.plod.plaindict;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.res.Resources;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
@@ -43,8 +41,6 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -77,7 +73,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 
 import com.knziha.plod.db.LexicalDBHelper;
 
@@ -284,16 +279,25 @@ public class DBroswer extends DialogFragment implements
 	public void onDetach(){
 		super.onDetach();
 		//CMN.Log("on browser detach", cr!=null && lm.findFirstVisibleItemPosition()>=1 && mCards_size>=0);
-		saveListPostion(); // onDetach
+		saveListPosition(); // onDetach
 	}
 	
-	private void saveListPostion() {
-		View view = lv.getChildAt(0);
-		if (view!=null) {
-			ViewUtils.ViewDataHolder holder = (ViewUtils.ViewDataHolder) view.getTag();
-			DeckListAdapter.HistoryDatabaseReader reader = (DeckListAdapter.HistoryDatabaseReader) holder.tag;
-			savedPositions.put(getFragmentType(), new long[]{reader.sort_number, view.getTop()});
-			//CMN.debug("savedPositions::save::", getFragmentType()+" "+reader.record+" "+new Date(reader.sort_number).toLocaleString());
+	private void saveListPosition() {
+		try {
+			View view = lv.getChildAt(0);
+			if (view!=null) {
+				ViewUtils.ViewDataHolder holder = (ViewUtils.ViewDataHolder) view.getTag();
+				HistoryDatabaseReader reader = (HistoryDatabaseReader) holder.tag;
+				CMN.debug("saveListPosition::", holder.getLayoutPosition());
+				if (holder.getLayoutPosition() > 0) {
+					savedPositions.put(getFragmentType(), new long[]{reader.sort_number, view.getTop()});
+				} else {
+					savedPositions.remove(getFragmentType());
+				}
+				//CMN.debug("savedPositions::save::", getFragmentType()+" "+reader.record+" "+new Date(reader.sort_number).toLocaleString());
+			}
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 	
@@ -498,7 +502,7 @@ public class DBroswer extends DialogFragment implements
 			.setMessage(getResources().getString(R.string.warn_move, Selection.size(),CMN.unwrapDatabaseName(a.favoriteCon.DATABASE),CMN.unwrapDatabaseName(toDB.DATABASE)))
 			.setIcon(android.R.drawable.ic_dialog_alert)
 			.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-				saveListPostion();
+				saveListPosition();
 				//final long[] ids = new long[l.size()];
 				String sql = "delete from t1 where lex = ? ";
 				SQLiteStatement preparedDeleteExecutor = mLexiDB.getDB().compileStatement(sql);
@@ -545,7 +549,7 @@ public class DBroswer extends DialogFragment implements
 					, name))
 			.setIcon(android.R.drawable.ic_dialog_alert)
 			.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-				saveListPostion();
+				saveListPosition();
 				String sql = "UPDATE "+TABLE_FAVORITE_v2+" SET folder=? where id=?";
 				SQLiteDatabase database = mLexiDB.getDB();
 				SQLiteStatement preparedMoveExecutor = database.compileStatement(sql);
@@ -757,7 +761,7 @@ public class DBroswer extends DialogFragment implements
 						.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
 							lv.suppressLayout(true); // important
 							//PagingCursorAdapter.simulateSlowIO = true;
-							saveListPostion(); // 删除
+							saveListPosition(); // 删除
 							String sql = "DELETE FROM "+ getTableName()+" WHERE id = ? ";
 							SQLiteDatabase database_mod_delete = mLexiDB.getDB();
 							SQLiteStatement preparedDeleteExecutor = database_mod_delete.compileStatement(sql);

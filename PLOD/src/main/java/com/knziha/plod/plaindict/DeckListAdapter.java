@@ -127,7 +127,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		if(data==null || data.type!=type) {
 			int idx=type-1;
 			data = a.DBrowserDatas[idx];
-			if(data==null || a.opt.debugingDBrowser()) {
+			if(data==null || a.opt.debuggingDBrowser()) {
 				data = a.DBrowserDatas[idx] = new DeckListData(type);
 			}
 			displaying = data.dataAdapter;
@@ -248,6 +248,10 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		//viewdata.icon
 		
 		viewdata.text1.setText(text.trim());
+		if(a.opt.debuggingDBrowser()) {
+			viewdata.text1.setText(position+" ::"+text.trim());
+			CMN.debug("onBindViewHolder::", position, text.trim());
+		}
 		
 		int textColor=a.AppBlack, backgroundColor=0;
 		if(holder.colorStates[0]!=textColor){
