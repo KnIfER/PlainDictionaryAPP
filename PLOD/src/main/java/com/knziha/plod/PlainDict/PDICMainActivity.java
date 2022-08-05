@@ -1164,10 +1164,15 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						lastPastedText = extraText;
 					}
 					if (PDICMainAppOptions.storeAppId()) {
-						long initializeTm = intent.getLongExtra(FloatBtn.EXTRA_Initialize, initialize ? this.initializeTm : -1);
+						long initializeTm = intent.getLongExtra(FloatBtn.EXTRA_Initialize, -1);
+						// CMN.debug("initializeTm::", initializeTm);
+						if (initializeTm==-1 && initialize) {
+							initializeTm = this.initializeTm;
+						}
 						String ivk = ViewUtils.topThirdParty(this, 1.5f, initializeTm);
 						int cc = 0;
-						while ("android".equals(ivk) && cc < 15) { //  安卓分享界面
+						while ("android".equals(ivk) && cc < 15) { //  跳过安卓分享界面
+							CMN.debug("topThirdParty::");
 							ivk = ViewUtils.topThirdParty(this, 45 * (++cc), initializeTm);
 						}
 						extraInvoker = ivk;

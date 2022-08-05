@@ -1822,7 +1822,11 @@ public class ViewUtils {
 				}
 				for (int i = packages.size()-1; i >= 0; i--) {
 					tmp = packages.get(i);
-					if (!thisPak.equals(tmp)) {
+					if (!thisPak.equals(tmp) && !(
+							tmp.endsWith(".updater")
+							|| tmp.endsWith(".notification")
+							|| tmp.contains("webview")
+							)) {
 						if (tmp.endsWith(".launcher")||tmp.endsWith(".home")) {
 							if ("android".equals(top)) {
 								top = null;
@@ -1831,6 +1835,9 @@ public class ViewUtils {
 						}
 						if (!"android".equals(tmp) || top==null) {
 							top = tmp;
+							if (!"android".equals(tmp)) {
+								break;
+							}
 						}
 					}
 				}
@@ -1842,6 +1849,7 @@ public class ViewUtils {
 					//CMN.Log("topThirdParty::", tmp);
 					if (!thisPak.equals(tmp) && !"android".equals(tmp)) {
 						top = tmp;
+						break;
 					}
 				}
 			}
