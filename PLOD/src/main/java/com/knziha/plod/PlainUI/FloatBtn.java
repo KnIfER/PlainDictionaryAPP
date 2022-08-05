@@ -38,6 +38,7 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 	public final WindowManager wMan;
 	public final static String EXTRA_GETTEXT = "ext_clip";
 	public final static String EXTRA_FROMPASTE = "ext_paste";
+	public final static String EXTRA_Initialize = "ext_init";
 	public final Context context;
 	public final ClipboardManager clipMan;
 	public final AgentApplication app;

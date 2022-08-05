@@ -59,6 +59,7 @@ import io.noties.markwon.Markwon;
 
 public class Toastable_Activity extends AppCompatActivity {
 	public boolean systemIntialized;
+	protected long initializeTm;
 	protected final static String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
 
 	private boolean skipCheckLog;

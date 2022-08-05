@@ -106,7 +106,6 @@ import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.HeightProvider;
 import com.knziha.plod.widgets.PageSlide;
-import com.knziha.plod.widgets.ListViewmy;
 import com.knziha.plod.widgets.NoSSLv3SocketFactory;
 import com.knziha.plod.widgets.NoScrollViewPager;
 import com.knziha.plod.widgets.OnScrollChangedListener;
@@ -223,7 +222,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		super.onConfigurationChanged(newConfig);
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
-		CMN.Log("mConfiguration::", newConfig.screenWidthDp*GlobalOptions.density, newConfig.screenHeightDp*GlobalOptions.density);
+		CMN.debug("mConfiguration::", newConfig.screenWidthDp*GlobalOptions.density, newConfig.screenHeightDp*GlobalOptions.density);
 		if(mConfiguration.screenWidthDp!=newConfig.screenWidthDp || mConfiguration.screenHeightDp!=newConfig.screenHeightDp) {
 			onSizeChanged();
 		}
@@ -404,7 +403,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}else{
 				task.stop(true);
 				((FuzzySearchTask)task).harvest();
-				CMN.Log("强制关闭");
+				CMN.debug("强制关闭");
 			}
 		});
 		for(int i=0;i<loadManager.md_size;i++) {//遍历所有词典
@@ -482,7 +481,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	 * 0=intent share; 1=focused paste; 2=unfocused paste; -1=redirected from float search(text proessing)
 	 * */
 	public void JumpToWord(String content, int source) {
-		CMN.Log("JumpToWord", focused, source, opt.getPasteTarget(), opt.getPasteToPeruseModeWhenFocued(), PeruseViewAttached());
+		CMN.debug("JumpToWord", focused, source, opt.getPasteTarget(), opt.getPasteToPeruseModeWhenFocued(), PeruseViewAttached());
 		if((source>=1)&&opt.getPasteTarget()==PLAIN_TARGET_FLOAT_SEARCH && !(source==1&&PDICMainAppOptions.getPasteToPeruseModeWhenFocued())){
 			Intent popup = new Intent().setClassName("com.knziha.plod.plaindict", "com.knziha.plod.plaindict.FloatActivitySearch").putExtra("EXTRA_QUERY", content);
 			//this, FloatActivitySearch.class
@@ -847,8 +846,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		bIsFirstLaunch=false;
 		focused=true;
 		thisActType = ActType.PlainDict;
+		initializeTm = CMN.now();
 		//CMN.mainTask = getTaskId();
-		CMN.Log("LauncherInstanceCount", LauncherInstanceCount);
+		//CMN.debug("LauncherInstanceCount", LauncherInstanceCount);
 		if(LauncherInstanceCount>=1) {
 			Intent thisIntent = getIntent();
 			startActivity((thisIntent==null?new Intent():new Intent(getIntent()))
@@ -1038,7 +1038,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		public void onReceive(Context context, Intent intent) {
 			String intentAction = intent.getAction();
 			if ("plodlock".equals(intentAction)) {
-				CMN.Log("plodlock!!!");
+				CMN.debug("plodlock!!!");
 			}
 		}
 	}
@@ -1095,7 +1095,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		fadeSnack();
 	}
 	
-	public void processIntent(Intent intent, boolean initialzie) {
+	public void processIntent(Intent intent, boolean initialize) {
 		CMN.debug("processIntent::main");
 		int jump_source = 0;
 		if(intent != null){
@@ -1135,7 +1135,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(extraText ==null && intent.hasExtra("EXTRA_QUERY"))
 					extraText = intent.getStringExtra("EXTRA_QUERY");
 				
-				CMN.Log("主程序-1", extraText, CMN.id(extraText), Intent.ACTION_MAIN.equals(action));
+				CMN.debug("主程序-1", extraText, CMN.id(extraText), Intent.ACTION_MAIN.equals(action));
 				
 				//if(!bWantsSelection) bWantsSelection = intent.hasExtra(Intent.EXTRA_SHORTCUT_ID);
 				if (intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)) {
@@ -1163,13 +1163,16 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						}
 						lastPastedText = extraText;
 					}
-					String ivk = PDICMainAppOptions.storeAppId() ? ViewUtils.topThirdParty(this, initialzie ? 3 : 1.5f, -1) : null;
-					int cc=0;
-					while ("android".equals(ivk) && cc<15) { //  安卓分享界面
-						ivk = ViewUtils.topThirdParty(this, 45*(++cc), -1);
+					if (PDICMainAppOptions.storeAppId()) {
+						long initializeTm = intent.getLongExtra(FloatBtn.EXTRA_Initialize, initialize ? this.initializeTm : -1);
+						String ivk = ViewUtils.topThirdParty(this, 1.5f, initializeTm);
+						int cc = 0;
+						while ("android".equals(ivk) && cc < 15) { //  安卓分享界面
+							ivk = ViewUtils.topThirdParty(this, 45 * (++cc), initializeTm);
+						}
+						extraInvoker = ivk;
+						CMN.debug("extraInvoker::", extraInvoker);
 					}
-					extraInvoker = ivk;
-					CMN.debug("extraInvoker::", extraInvoker);
 					JumpToWord(extraText, jump_source);
 				}
 			}
@@ -1180,7 +1183,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(url==null) {
 			return;
 		}
-		CMN.Log("接收到!!!", url, url.getPath());
+		CMN.debug("接收到!!!", url, url.getPath());
 		if(false)
 		root.postDelayed(new Runnable() {
 			@Override
@@ -3187,7 +3190,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			} break;  // MLSN
 			case Constants.OpenBooksRequset:{
 				if(duco!=null) {
-					CMN.Log("已获取目录权限", duco.getData());
+					CMN.debug("已获取目录权限", duco.getData());
 				}
 			} break;
 			case BookManager.id:{
@@ -3207,12 +3210,12 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if(PDICMainAppOptions.ChangedMap !=null && PDICMainAppOptions.ChangedMap.size()>0){
 					for(String path: PDICMainAppOptions.ChangedMap) {
 						BookPresenter mdTmp = mdict_cache.get(new File(path).getName());
-						CMN.Log("重新读取配置！！！", path);
+						CMN.debug("重新读取配置！！！", path);
 						if(mdTmp!=null)
 						try {
 							mdTmp.readConfigs(this, prepareHistoryCon());
 							//dirtyMap.add(mdTmp.f().getName());
-						} catch (IOException e) { if(GlobalOptions.debug) CMN.Log(e); }
+						} catch (IOException e) { CMN.debug(e); }
 						//else dirtyMap.add(new File(path).getName());
 					}
 					PDICMainAppOptions.ChangedMap = null;
@@ -3391,7 +3394,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					getMdictServer().start(this);
 					showDrawerSnack("服务器启动成功");
 				} catch (IOException e) {
-					CMN.Log(e);
+					CMN.debug(e);
 				}
 			}
 		} else {

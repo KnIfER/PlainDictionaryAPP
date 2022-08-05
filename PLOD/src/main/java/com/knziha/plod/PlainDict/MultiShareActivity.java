@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.graphics.ColorUtils;
 
+import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.PageSlide;
 
@@ -70,8 +71,9 @@ public class MultiShareActivity extends MainActivityUIBase {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		CMN.Log("onCreate...");
+		CMN.debug("MultiShare::onCreate");
 		receivable=true;
+		initializeTm=CMN.now();
 		thisActType = ActType.MultiShare;
 		dictPicker = new DictPicker(this, null, null, 1);
 		super.onCreate(savedInstanceState);
@@ -114,6 +116,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
+		initializeTm=CMN.now();
 		processIntent(intent);
 	}
 	
@@ -194,7 +197,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 			if(NewIntentCalled && !getPinVSDialog()) {
 				if(force==0) {
 					finishOrHide();
-					CMN.Log("hide!!!");
+					CMN.debug("hide!!!");
 				}
 			} else {
 				showUcc();
@@ -203,7 +206,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	private void showUcc() {
-		CMN.Log("showUcc");
+		//CMN.Log("showUcc");
 		getUtk().setInvoker(null, null, null, extraText);
 		getUtk().onClick(null);
 	}
@@ -288,7 +291,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 				case 778899:
 					//a.NaugtyWeb.setLayoutParams(a.NaugtyWeb.getLayoutParams());
 					a.NaugtyWeb.requestLayout();
-					CMN.Log("handler scroll scale recalibrating ...");
+					CMN.debug("handler scroll scale recalibrating ...");
 					break;
 				case 7658941:
 					CustomViewHideTime=0;
@@ -310,7 +313,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 	protected void onPause() {
 		super.onPause();
 		startLis = true;
-		CMN.Log("MultiShare::onPause");
+		CMN.debug("MultiShare::onPause");
 		NewIntentCalled = false;
 		checkFlags();
 	}
@@ -318,8 +321,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		CMN.Log("onResume", "NewIntentCalled="+NewIntentCalled, systemIntialized&&startLis);
-		CMN.Log("onResume", "allHidden="+allHidden() , (ucc==null||ucc.detached()),  (peruseView ==null|| peruseView.isWindowDetached()));
+		CMN.debug("onResume", "NewIntentCalled="+NewIntentCalled, systemIntialized&&startLis);
+		CMN.debug("onResume", "allHidden="+allHidden() , (ucc==null||ucc.detached()),  (peruseView ==null|| peruseView.isWindowDetached()));
 		if(!NewIntentCalled && systemIntialized && startLis) {
 			//RestoreUccOrExit(1);
 			if(allHidden() && (ucc==null||ucc.detached()) && (peruseView ==null|| peruseView.isWindowDetached())) {
@@ -342,18 +345,18 @@ public class MultiShareActivity extends MainActivityUIBase {
 	protected void onStop() {
 		super.onStop();
 		NewIntentCalled = false;
-		CMN.Log("MultiShare::onStop");
+		CMN.debug("MultiShare::onStop");
 	}
 	
 	@Override
 	protected void onRestart() {
 		super.onRestart();
-		CMN.Log("MultiShare::onRestart");
+		CMN.debug("MultiShare::onRestart");
 	}
 	
 	@Override
 	protected void onDestroy() {
-		CMN.Log("MultiShare::onDestroy");
+		CMN.debug("MultiShare::onDestroy");
 		receivable=false;
 		super.onDestroy();
 	}
@@ -415,5 +418,11 @@ public class MultiShareActivity extends MainActivityUIBase {
 				RestoreUccOrExit(0);
 			break;
 		}
+	}
+	
+	@Override
+	public void startActivity(Intent intent) {
+		intent.putExtra(FloatBtn.EXTRA_Initialize, initializeTm);
+		super.startActivity(intent);
 	}
 }
