@@ -1800,25 +1800,38 @@ public class ViewUtils {
 	 * 			maybe 1 for onNewIntent and 3 for onCreate.
 	 * @return the ThirdParty package name or null if not found*/
 	@Nullable
-	public static String topThirdParty(Context context, float timeRange) {
+	public static String topThirdParty(Context context, float timeRange, long timeUntil) {
 		String thisPak, tmp, top = null;
 		try {
 			thisPak = context.getPackageName();
 			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
 				UsageStatsManager man = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
-				long now = System.currentTimeMillis();
 				if(timeRange<0)
 					timeRange=1;
 				int range = (int) (1000*timeRange);
-				UsageEvents uEvts = man.queryEvents(now - range,now); // query in 1~3 sec
+				if (timeUntil<range) {
+					timeUntil = System.currentTimeMillis();
+				}
+				UsageEvents uEvts = man.queryEvents(timeUntil - range,timeUntil); // query in 1~3 sec
 				UsageEvents.Event e = new UsageEvents.Event();
-				now = 100;
-				while (uEvts.getNextEvent(e) && --now>0){
-					tmp = e.getPackageName();
-					//CMN.Log("topThirdParty::", tmp);
+				ArrayList<String> packages = new ArrayList<>(64);
+				int cc = 64;
+				while (uEvts.getNextEvent(e) && --cc>0){
+					packages.add(e.getPackageName());
+					 CMN.debug("topThirdParty::", e.getPackageName()/*, e.getTimeStamp()*/);
+				}
+				for (int i = packages.size()-1; i >= 0; i--) {
+					tmp = packages.get(i);
 					if (!thisPak.equals(tmp)) {
-						top = tmp;
-						break;
+						if (tmp.endsWith(".launcher")||tmp.endsWith(".home")) {
+							if ("android".equals(top)) {
+								top = null;
+							}
+							break;
+						}
+						if (!"android".equals(tmp) || top==null) {
+							top = tmp;
+						}
 					}
 				}
 			} else {
@@ -1827,9 +1840,8 @@ public class ViewUtils {
 				for(ActivityManager.RecentTaskInfo info:tasks) {
 					tmp = info.baseIntent.getComponent().getPackageName();
 					//CMN.Log("topThirdParty::", tmp);
-					if (!thisPak.equals(tmp)) {
+					if (!thisPak.equals(tmp) && !"android".equals(tmp)) {
 						top = tmp;
-						break;
 					}
 				}
 			}

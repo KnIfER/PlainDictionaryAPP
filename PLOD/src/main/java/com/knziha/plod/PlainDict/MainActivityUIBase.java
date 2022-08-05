@@ -10734,9 +10734,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public FloatBtn getFloatBtn() {
 		if (floatBtn==null) {
 			floatBtn = new FloatBtn(this, getApplication());
-			if (floatApp==null && thisActType==ActType.PlainDict) {
-				floatApp = new FloatApp((PDICMainActivity) this);
-			}
+//			if (floatApp==null && thisActType==ActType.PlainDict) {
+//				floatApp = new FloatApp((PDICMainActivity) this);
+//			} ???
 		}
 		return floatBtn;
 	}

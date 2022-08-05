@@ -67,7 +67,7 @@
 			android:persistent="false"
 			android:defaultValue="false"
 			android:title="启用记录"
-			android:summary="需要应用记录的读取权限"
+			android:summary="需要“应用记读取”的权限。由于安全限制，对于安卓11及以上的未解锁设备，可能无效。"
 			/>
 		<Preference
 			android:key="permit"
