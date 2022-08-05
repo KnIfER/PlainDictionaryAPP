@@ -313,7 +313,8 @@ public class ServiceEnhancer extends Service implements MediaPlayer.OnCompletion
 		
 		
 		Intent shareIntent = new Intent(this, MainShareActivity.class);
-		PendingIntent pendingShareIntent = PendingIntent.getActivity(this, 0, shareIntent, 0);
+		shareIntent.putExtra(FloatBtn.EXTRA_GETTEXT, true);
+		PendingIntent pendingShareIntent = PendingIntent.getActivity(this, 0, shareIntent, FLAG_UPDATE_CURRENT);
 		
 		builder.setContentIntent(pendingShareIntent);
 		

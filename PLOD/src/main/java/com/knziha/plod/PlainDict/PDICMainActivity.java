@@ -1096,6 +1096,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	public void processIntent(Intent intent, boolean initialzie) {
+		CMN.debug("processIntent::main");
 		int jump_source = 0;
 		if(intent != null){
 			String action = intent.getAction();
@@ -1109,25 +1110,27 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					HandleOpenUrl(url);
 				}
 				
-				String extraText = null;
+				String extraText = intent.getStringExtra(Intent.EXTRA_TEXT);
 				
-				if(intent.hasExtra(Intent.EXTRA_TEXT)) {
-					extraText = intent.getStringExtra(Intent.EXTRA_TEXT);
-				} else if (floatBtn!=null && intent.hasExtra(FloatBtn.EXTRA_GETTEXT)) {
-					hdl.postDelayed(() -> {
-						CharSequence text = floatBtn.getPrimaryClip();
-						if (text != null) {
-							intent.putExtra(Intent.EXTRA_TEXT, text);
-							processIntent(intent, false);
-						}
-					}, 100);
-					return;
+				if(extraText==null) {
+					if (intent.hasExtra(FloatBtn.EXTRA_GETTEXT)) {
+						hdl.postDelayed(() -> {
+							CharSequence text = getFloatBtn().getPrimaryClip();
+							CMN.debug(FloatBtn.EXTRA_GETTEXT+"::", text);
+							if (text != null) {
+								intent.putExtra(Intent.EXTRA_TEXT, text.toString());
+								intent.removeExtra(FloatBtn.EXTRA_GETTEXT);
+								processIntent(intent, false);
+							}
+						}, 100);
+						return;
+					} else {
+						extraText = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
+					}
 				}
 				
-				if(extraText ==null && intent.hasExtra(Intent.EXTRA_PROCESS_TEXT))
-					extraText = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
-				
-				if(extraText ==null && intent.hasExtra("EXTRA_QUERY")) extraText = intent.getStringExtra("EXTRA_QUERY");
+				if(extraText ==null && intent.hasExtra("EXTRA_QUERY"))
+					extraText = intent.getStringExtra("EXTRA_QUERY");
 				
 				CMN.Log("主程序-1", extraText, CMN.id(extraText), Intent.ACTION_MAIN.equals(action));
 				
@@ -1157,7 +1160,13 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						}
 						lastPastedText = extraText;
 					}
-					extraInvoker = PDICMainAppOptions.storeAppId()?ViewUtils.topThirdParty(this, initialzie?3:1):null;
+					String ivk = PDICMainAppOptions.storeAppId() ? ViewUtils.topThirdParty(this, initialzie ? 3 : 1.5f, -1) : null;
+					int cc=0;
+					while ("android".equals(ivk) && cc<15) { //  安卓分享界面
+						ivk = ViewUtils.topThirdParty(this, 45*(++cc), -1);
+					}
+					extraInvoker = ivk;
+					CMN.debug("extraInvoker::", extraInvoker);
 					JumpToWord(extraText, jump_source);
 				}
 			}

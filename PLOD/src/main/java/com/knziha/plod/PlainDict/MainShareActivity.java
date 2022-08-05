@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Window;
 
+import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_APP_AUTO;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 
 import com.knziha.plod.PlainUI.FloatBtn;
@@ -37,21 +38,22 @@ public class MainShareActivity extends Activity {
 	}
 
 	public void ProcessIntent(Intent thisIntent) {
+		CMN.debug("processIntent::MainShare");
 		debugString=null;
 		int forceTarget = -1;
 		if(thisIntent!=null) {
 			String action = thisIntent.getAction();
 			forceTarget = thisIntent.getIntExtra("force", -1);
-			CMN.Log("forceTarget", forceTarget);
+			CMN.debug("forceTarget", forceTarget, thisIntent.hasExtra(FloatBtn.EXTRA_GETTEXT));
 			if (forceTarget==-1) {
-				if(action!=null && action.equals(Intent.ACTION_MAIN)) {
-					//CMN.Log("主程转发");
+				if(Intent.ACTION_MAIN.equals(action)) {
+					CMN.debug("主程转发");
 					thisIntent.setClass(getBaseContext(),PDICMainActivity.class);
 					thisIntent.setFlags(SingleTaskFlags);
 					startMainActivity(thisIntent);
 					return;
 				}
-				if(action!=null && action.equals(Intent.ACTION_VIEW)) {
+				if(Intent.ACTION_VIEW.equals(action)) {
 					Uri url = thisIntent.getData();
 					if(url!=null) {
 						CMN.debug("ProcessIntent_url", url);
@@ -68,7 +70,12 @@ public class MainShareActivity extends Activity {
 			}
 			debugString = thisIntent.getStringExtra(Intent.EXTRA_TEXT);
 			if (debugString==null) {
-				debugString = thisIntent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
+				if (thisIntent.hasExtra(FloatBtn.EXTRA_GETTEXT)) {
+					debugString = FloatBtn.EXTRA_GETTEXT;
+					forceTarget = PLAIN_TARGET_APP_AUTO;
+				} else {
+					debugString = thisIntent.getStringExtra(Intent.EXTRA_PROCESS_TEXT);
+				}
 			}
 		}
 		CMN.Log("force", forceTarget, debugString);
@@ -90,8 +97,12 @@ public class MainShareActivity extends Activity {
 			} else {//主程序
 				Intent newTask = new Intent(Intent.ACTION_MAIN);
 				newTask.setType(thisIntent.getType());
-				newTask.putExtra(Intent.EXTRA_TEXT,debugString);
-				CMN.Log("主程序", CMN.id(debugString));
+				if (debugString.equals(FloatBtn.EXTRA_GETTEXT)) {
+					newTask.putExtra(FloatBtn.EXTRA_GETTEXT,true);
+				} else {
+					newTask.putExtra(Intent.EXTRA_TEXT,debugString);
+				}
+				CMN.debug("主程序", CMN.id(debugString));
 				newTask.putExtra(Intent.EXTRA_SHORTCUT_ID, ShareTarget);
 				newTask.setClass(getBaseContext(),PDICMainActivity.class);
 //				//|Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
@@ -108,6 +119,7 @@ public class MainShareActivity extends Activity {
 			app.floatApp.a.processIntent(intent, false);
 			app.floatApp.expand(false);
 		} else {
+			intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 		}
 	}
