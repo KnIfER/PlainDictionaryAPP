@@ -72,7 +72,7 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
 					if(!moved)
 					{
-						CMN.debug("onLayoutChange::");
+						//CMN.debug("floatBtn::onLayoutChange::");
 						((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
 						if (!screenConfig.sameScreen(dm)) {
 							wMan.updateViewLayout(view, calcLayout());

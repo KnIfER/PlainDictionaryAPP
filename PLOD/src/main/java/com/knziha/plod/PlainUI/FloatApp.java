@@ -65,7 +65,7 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 				@Override
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
 					if (!view.resizing && !moved) {
-						CMN.debug("onLayoutChange::");
+						//CMN.debug("floatApp::onLayoutChange::");
 						Display display = ((WindowManager) a.getApplicationContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 						int angle = display.getRotation();
 						boolean land = angle==Surface.ROTATION_90||angle==Surface.ROTATION_270;

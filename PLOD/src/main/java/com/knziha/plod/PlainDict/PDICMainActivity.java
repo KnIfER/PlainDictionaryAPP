@@ -1384,8 +1384,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 					(mAsyncTask=p==0?new FuzzySearchTask(PDICMainActivity.this)
 							:new FullSearchTask(PDICMainActivity.this)).execute(key);
 				} else {
-					if(!PDICMainAppOptions.storeNothing() || PDICMainAppOptions.storeNothingButSch())
-						addHistory(key, schuiMain, null, null);
 					if(key.length()>0)
 					{
 						if(!isCombinedSearching && currentDictionary.getType()==PLAIN_TYPE_WEB)
@@ -1399,6 +1397,8 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 							tw1.onTextChanged(key, -1, -1, 0);
 						}
 					}
+					if(!PDICMainAppOptions.storeNothing() || PDICMainAppOptions.storeNothingButSch())
+						addHistory(key, schuiMain, weblistHandler, null);
 				}
 				etTools.addHistory(key);
 			}

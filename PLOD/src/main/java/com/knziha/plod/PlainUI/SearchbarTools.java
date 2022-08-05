@@ -91,15 +91,15 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 				} else {
 					rmIdx = history.lastIndexOf(text);
 					if(rmIdx<0)
-						hIdx.put(hash, cnt+1);
+						hIdx.put(hash, 1);
 					else if(rmIdx==history.size()-1) {
 						CMN.debug("一毛一样！");
 						return;
 					}
 				}
 			}
-			if (rmIdx>0)
-				history.remove(rmIdx);
+			// 先移除，再添加
+			if (rmIdx>0) history.remove(rmIdx);
 			history.add(text);
 			if (history.size()>historyMax*2) {
 				history.subList(0, history.size()-historyMax).clear();
@@ -415,6 +415,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 		a.hdl.postDelayed(cs::cancel, 250); // 防止过度读取
 		String[] items = null;
 		Cursor cursor = null;
+		//CMN.debug("LoadHistory::"+schSql);
 		try {
 			cursor = a.prepareHistoryCon().getDB().rawQuery(
 				"select lex from " + LexicalDBHelper.TABLE_HISTORY_v2
@@ -424,7 +425,7 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 			items = new String[len];
 			len--;
 			while (cursor.moveToNext()) {
-				//CMN.Log("LoadHistory::", cursor.getString(0));
+				//CMN.debug("LoadHistory::", cursor.getString(0));
 				items[len-cc++] = cursor.getString(0);
 			}
 		} catch (Exception e) {
