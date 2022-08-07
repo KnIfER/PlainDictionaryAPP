@@ -45,15 +45,18 @@ public class AppInfoDBBean extends AppInfoBean {
 				appName = c.getString(1);
 				byte[] tmp = c.getBlob(2);
 				try {
-					if (tmp!=null)
-						ret = new BitmapDrawable(BitmapFactory.decodeByteArray(tmp, 0, tmp.length));
+					if (tmp != null) {
+						Bitmap bm = BitmapFactory.decodeByteArray(tmp, 0, tmp.length);
+						if(bm!=null)
+							ret = new BitmapDrawable(null, bm);
+					}
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
 				//CMN.pt("获取成功 package::"+ret);
 			}
 			c.close();
-			//CMN.Log("package::"+pkgName);
+			//CMN.debug("package::"+pkgName);
 		}
 		if (data==null && (appName==null || ret==null)) {
 			intent = new Intent();
@@ -76,14 +79,18 @@ public class AppInfoDBBean extends AppInfoBean {
 					Bitmap bm = ret instanceof BitmapDrawable?((BitmapDrawable) ret).getBitmap():null;
 					if (bm==null) {
 						bm = Bitmap.createBitmap(ret.getIntrinsicWidth(), ret.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+						ret.setBounds(0, 0, bm.getWidth(), bm.getHeight());
 						ret.draw(new Canvas(bm));
+						// ret = new BitmapDrawable(bm);
 					}
 					ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
-					bm.compress(Bitmap.CompressFormat.PNG, 100, bos);
-					cv.put("icon",  bos.toByteArray());
-					cv.put("title", appName);
-					LexicalDBHelper.getInstance().getDB().update(TABLE_APPID_v2, cv, "id=?", new String[]{"" + appid});
-					//CMN.Log("保存成功 package::"+pkgName, bos.toByteArray().length);
+					boolean b1 = bm.compress(Bitmap.CompressFormat.PNG, 100, bos);
+					if (b1) {
+						cv.put("icon",  bos.toByteArray());
+						cv.put("title", appName);
+						LexicalDBHelper.getInstance().getDB().update(TABLE_APPID_v2, cv, "id=?", new String[]{"" + appid});
+						// CMN.debug("保存成功 package::"+pkgName, bos.toByteArray().length, b1, ret.getIntrinsicWidth()+"x"+ret.getIntrinsicHeight());
+					}
 				} catch (Exception e) {
 					CMN.debug(e);
 				}
