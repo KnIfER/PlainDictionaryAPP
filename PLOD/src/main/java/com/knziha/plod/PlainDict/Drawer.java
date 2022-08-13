@@ -1147,7 +1147,7 @@ public class Drawer extends Fragment implements
 			case R.string.manager:  {
 				a.showDictionaryManager();
 			} break;
-			//切换生词本
+			//切换单词本
 			case R.string.switch_favor:  {
 				a.showPickFavorFolder();
 			} break;

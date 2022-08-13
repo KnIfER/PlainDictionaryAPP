@@ -301,6 +301,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static final String EXTRA_MARGIN_RIGHT  = "EXTRA_MARGIN_RIGHT";
 	public String extraText =null;//世           界     你好 happy呀happy\"人\"’。，、？
 	public String extraInvoker = null;
+	public static boolean bSkipNxtExtApp;
 	public static final KeyEvent BackEvent = new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BACK);
 	final static String entryTag = "entry://";
 	final static String soundTag = "sound://";
@@ -1165,6 +1166,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		WebView.setWebContentsDebuggingEnabled(PDICMainAppOptions.getEnableWebDebug());
 		//ViewUtils.setWebDebug(this);
 		if (BuildConfig.isDebug) {
+			CMN.debug("android.os.Build.MODEL", android.os.Build.MODEL);
 			CMN.debug("mid", CMN.mid, getClass());
 			CMN.debug("sdk", Build.VERSION.SDK_INT);
 			CMN.debug("den="+GlobalOptions.density
@@ -3545,6 +3547,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						if (bookName.endsWith(".mdx")) {
 							bookName = bookName.substring(0, bookName.length()-4);
 						}
+						if (bookName.equals("liba")) {
+							bookName = "李白全集";
+						}
 						bookName = bookName.replaceAll("\\(.*\\)", "");
 					}
 					ret += bookName;
@@ -5661,17 +5666,17 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 	
 	void AttachDBrowser(int type) {
-		if(DBrowser==null || opt.debuggingDBrowser()) {
+		if(DBrowser==null || opt.debuggingDBrowser()>0) {
 			DBrowser = DBrowserHolder.get();
-			if(DBrowser==null || opt.debuggingDBrowser()){
+			if(DBrowser==null || opt.debuggingDBrowser()>0){
 				CMN.Log("重建收藏夹历史记录视图");
 				DBrowserHolder = new WeakReference<>(DBrowser = new DBroswer());
 			}
 		}
 		boolean retry = type<0;
 		if (retry) type = -type;
-		//CMN.debug("AttachDBrowser::", Integer.toHexString(weblist.src), CMN.idStr(weblist));
-		DBrowser.setType(this, type, true);
+		CMN.debug("AttachDBrowser::", type==DB_HISTORY, Integer.toHexString(weblist.src), CMN.idStr(weblist));
+		DBrowser.setType(this, type, false);
 		int showType = DBrowser.preShow(weblist);
 		if(showType==1) {
 			try {
@@ -6093,10 +6098,13 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							v.setActivated(false);
 							show(R.string.removed);
 						} else {
-							prepareFavoriteCon().insert(this, key, opt.getCurrFavoriteNoteBookId(), weblist);
-							v.setActivated(true);
-							//show(R.string.added);
-							showT(key+" 收藏成功");
+							if (prepareFavoriteCon().insert(this, key, opt.getCurrFavoriteNoteBookId(), weblist) >= 0) {
+								v.setActivated(true);
+								//show(R.string.added);
+								showT(key + " 收藏成功");
+							} else {
+								showT("收藏失败！");
+							}
 						}
 					}
 				}
@@ -6403,9 +6411,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			futton.setActivated(false);
 			if(toast)show(R.string.removed);
 		} else {
-			favoriteCon.insert(this, key, opt.getCurrFavoriteNoteBookId(), weblist);
-			futton.setActivated(true);
-			if(toast)show(R.string.added);
+			if (favoriteCon.insert(this, key, opt.getCurrFavoriteNoteBookId(), weblist) >= 0) {
+				futton.setActivated(true);
+				if (toast) show(R.string.added);
+			} else {
+				if(toast)showT("收藏失败");
+			}
 		}
 	}
 	
@@ -10739,5 +10750,11 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 //			} ???
 		}
 		return floatBtn;
+	}
+	
+	@Override
+	public void startActivity(Intent intent) {
+		intent.putExtra(FloatBtn.EXTRA_INVOKER, BuildConfig.APPLICATION_ID);
+		super.startActivity(intent);
 	}
 }

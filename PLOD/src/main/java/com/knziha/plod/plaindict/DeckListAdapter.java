@@ -16,6 +16,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.GlobalOptions;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.dragselectrecyclerview.IDragSelectAdapter;
@@ -127,7 +128,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		if(data==null || data.type!=type) {
 			int idx=type-1;
 			data = a.DBrowserDatas[idx];
-			if(data==null || a.opt.debuggingDBrowser()) {
+			if(data==null || a.opt.debuggingDBrowser()>0) {
 				data = a.DBrowserDatas[idx] = new DeckListData(type);
 			}
 			displaying = data.dataAdapter;
@@ -234,11 +235,15 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 						.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
 						;
 				iconLoader = Glide.with(a)
-						.load(new AppIconCover(new AppInfoDBBean(ivk, pm), false))
+						.load(new AppIconCover(new AppInfoDBBean(-1, pm), false))
 						.apply(options);
 			}
-			iconLoader.load(new AppIconCover(new AppInfoDBBean(ivk, pm), false))
-					.into(viewdata.icon);
+			try {
+				iconLoader.load(new AppIconCover(new AppInfoDBBean(ivk, pm), false))
+						.into(viewdata.icon);
+			} catch (Exception e) {
+				CMN.debug(ivk, text, e); //
+			}
 			viewdata.icon.setVisibility(View.VISIBLE); //todo optimize
 		} else {
 			viewdata.icon.setImageDrawable(null);
@@ -248,7 +253,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		//viewdata.icon
 		
 		viewdata.text1.setText(text.trim());
-		if(a.opt.debuggingDBrowser()) {
+		if(a.opt.debuggingDBrowser()>1) {
 			viewdata.text1.setText(position+" ::"+text.trim());
 			CMN.debug("onBindViewHolder::", position, text.trim(), ivk);
 		}
@@ -264,6 +269,12 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 		if(browser.Selection.contains(rowId)) {
 			if(!GlobalOptions.isDark)textColor=a.AppWhite;
 			backgroundColor=0xFF4F7FDF;//GlobalOptions.isDark?0xFF4F7FDF:0xa04F5F6F;
+		}
+		if (browser.type==DB_FAVORITE && browser.toDeleteV2.contains(rowId)) {
+			viewdata.subList.setAlpha(0.5f);
+			textColor = Color.GRAY;
+		} else {
+			viewdata.subList.setAlpha(1);
 		}
 		if(holder.colorStates[1]!=textColor) {
 			viewdata.text1.setTextColor(holder.colorStates[1]=textColor);

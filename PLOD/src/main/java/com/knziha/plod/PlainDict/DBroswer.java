@@ -122,6 +122,7 @@ public class DBroswer extends DialogFragment implements
 	InputMethodManager imm;
 	private int MainAppBackground;
 	
+	/** see {@link #toggleFavor} */
 	public int try_goBack(){
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if(a==null || !initialized) return 0;
@@ -204,6 +205,7 @@ public class DBroswer extends DialogFragment implements
 			int cc=0;
 			try {
 				state = database.compileStatement("DELETE FROM " + TABLE_FAVORITE_v2 + " where id=?");
+				// see
 				while (iter.hasNext()) {
 					state.bindLong(1, iter.next());
 					if (state.executeUpdateDelete()>0) {
@@ -243,6 +245,7 @@ public class DBroswer extends DialogFragment implements
 			UIData.browserWidget15.setOnClickListener(ViewUtils.DummyOnClick);
 			UIData.browserWidget14.setOnClickListener(this);
 			UIData.browserWidget13.setOnClickListener(this);
+			UIData.browserWidget1.setOnClickListener(this);
 			
 			UIData.toolbar.inflateMenu(R.xml.menu_dbrowser);
 			UIData.toolbar.setOnMenuItemClickListener(this);
@@ -358,15 +361,16 @@ public class DBroswer extends DialogFragment implements
 			adapter.setOnItemClickListener(this);
 			adapter.setOnItemLongClickListener(this);
 			mAdapter = adapter;
-			if(pendingType!=0) {
-				setType(a, pendingType, false);
-				pendingType=0;
-			}
 			
 			mLexiDB = a.prepareHistoryCon();
 			opt = a.opt;
 			imm = a.imm;
 			initialized = true;
+			
+			if(pendingType!=0) {
+				setType(a, pendingType, true);
+				pendingType=0;
+			}
 			
 			//取消更新item时闪烁
 			RecyclerView.ItemAnimator anima = lv.getItemAnimator();
@@ -576,17 +580,17 @@ public class DBroswer extends DialogFragment implements
 
 	RashSet<Integer> mSearchResTree = new RashSet<>();
 	
-	public void setType(MainActivityUIBase a, int type, boolean checkCache) {
-		if(this.type!=type) {
+	public void setType(MainActivityUIBase a, int type, boolean force) {
+		if(this.type!=type || force) {
 			if(initialized) {
-				if(this.type==DB_HISTORY) {
-					UIData.fastScroller.setHandleBackground(a.mResource.getDrawable(R.drawable.ic_pen));
-					UIData.fastScroller.setBarColor(Color.parseColor("#8f8f8f"));
+				if(type==DB_HISTORY) {
+					UIData.fastScroller.setHandleBackground(a.mResource.getDrawable(R.drawable.ghour));
+					UIData.fastScroller.setBarColor(Color.parseColor("#2b4381"));
 					UIData.choosed.setVisibility(View.GONE);
 					UIData.changed.setVisibility(View.GONE);
 				} else {
-					UIData.fastScroller.setHandleBackground(a.mResource.getDrawable(R.drawable.ghour));
-					UIData.fastScroller.setBarColor(Color.parseColor("#2b4381"));
+					UIData.fastScroller.setHandleBackground(a.mResource.getDrawable(R.drawable.ic_pen));
+					UIData.fastScroller.setBarColor(Color.parseColor("#8f8f8f"));
 					UIData.choosed.setVisibility(View.VISIBLE);
 					UIData.changed.setVisibility(View.VISIBLE);
 				}
@@ -872,6 +876,9 @@ public class DBroswer extends DialogFragment implements
 					show(R.string.endendr);
 				}else
 					lm.scrollToPositionWithOffset(pos,offset);
+				break;
+			case R.id.browser_widget1:
+				UIData.toolbar.getNavigationBtn().performClick();
 				break;
 		}
 
@@ -1556,6 +1563,7 @@ public class DBroswer extends DialogFragment implements
 		return contentUIData.browserWidget8;
 	}
 	
+	/** see {@link #try_goBack} */
 	public void toggleFavor() {
 		MainActivityUIBase a = (MainActivityUIBase) getActivity();
 		if (a == null) return;
@@ -1570,16 +1578,20 @@ public class DBroswer extends DialogFragment implements
 				// 提示待移除
 				a.showTopSnack(R.string.toRemove);
 			}
+			mAdapter.notifyItemChanged(currentPos);
 		} else {
 			String text = currentDisplaying;
 			if(a.GetIsFavoriteTerm(text)) {//删除
 				a.removeFavoriteTerm(text);
 				favoriteBtn().setActivated(false);
-				a.show(R.string.removed);
+				a.showT(text+" "+a.mResource.getString(R.string.removed));
 			} else {//添加
-				a.favoriteCon.insert(a, text, opt.getCurrFavoriteNoteBookId(), weblistHandler);
-				favoriteBtn().setActivated(true);
-				a.show(R.string.added);
+				if (a.favoriteCon.insert(a, text, opt.getCurrFavoriteNoteBookId(), weblistHandler) >= 0) {
+					favoriteBtn().setActivated(true);
+					a.showT(text + " " + a.mResource.getString(R.string.added));
+				} else {
+					a.showT("收藏失败！");
+				}
 			}
 		}
 	}

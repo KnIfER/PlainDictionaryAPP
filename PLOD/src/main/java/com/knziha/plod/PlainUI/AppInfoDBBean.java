@@ -63,7 +63,7 @@ public class AppInfoDBBean extends AppInfoBean {
 			intent.setPackage(pkgName);
 			List<ResolveInfo> rinfo = pm.queryIntentActivities(intent, PackageManager.MATCH_ALL);
 			if(rinfo.size()==0) {
-				CMN.debug("app not found!");
+				CMN.debug("app not found!", pkgName);
 				return null;
 			}
 			data = rinfo.get(0);
@@ -104,7 +104,7 @@ public class AppInfoDBBean extends AppInfoBean {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		AppInfoDBBean that = (AppInfoDBBean) o;
-		return Objects.equals(appid, that.appid);
+		return appid==that.appid;
 	}
 	
 	@Override

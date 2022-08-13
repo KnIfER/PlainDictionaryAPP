@@ -105,12 +105,12 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 	}
 
 	public void add(String mmTmp) {
+		markDirty();
 		loadMan.md.add(null);
 		loadMan.lazyMan.placeHolders.add(new PlaceHolder(mmTmp));
 		loadMan.lazyMan.chairCount++;
 		dataSetChanged();
 		refreshSize();
-		markDirty();
 	}
 
 	@Override
@@ -523,7 +523,7 @@ public class BookManagerMain extends BookManagerFragment<BookPresenter>
 				rgb.append("aaaaaa");//一样的亮兰色aafafa
 			else
 				rgb.append(GlobalOptions.isDark?"EEEEEE":"000000");
-			if(!new File(key).exists())
+			if(!key.startsWith("/ASSET") && !new File(key).exists())
 				rgb.insert(1, "ff");
 			rgb.setLength(7);
 			vh.title.setTextColor(Color.parseColor(rgb.toString()));

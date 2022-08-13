@@ -1,7 +1,7 @@
 {
 	"host": "https://www.vocabulary.com"
 	,"index": "/dictionary/"
-	,"name": "在线学习、积累英语词汇"
+	,"name": "在线英语词汇"
 	,"stylex": [
 		{urlx:"//.+", value:"header{height:0px!important;display:none}"}
 	]

@@ -28,17 +28,22 @@ import androidx.appcompat.app.GlobalOptions;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.FloatActivitySearch;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.MainShareActivity;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.PasteActivity;
 import com.knziha.plod.plaindict.R;
+import com.knziha.plod.widgets.ViewUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 	public final WindowManager wMan;
 	public final static String EXTRA_GETTEXT = "ext_clip";
 	public final static String EXTRA_FROMPASTE = "ext_paste";
 	public final static String EXTRA_Initialize = "ext_init";
+	public final static String EXTRA_INVOKER = "ext_invoker";
 	public final Context context;
 	public final ClipboardManager clipMan;
 	public final AgentApplication app;
@@ -137,6 +142,10 @@ public class FloatBtn implements View.OnTouchListener, View.OnDragListener {
 			if (moved) {
 				moved = false;
 			} else {
+				if (PDICMainAppOptions.storeAppId() && foreground!=0) {
+					MainActivityUIBase.bSkipNxtExtApp = true;
+					// CMN.debug("看什么，就等你了！");
+				}
 				search(null, true);
 			}
 		}

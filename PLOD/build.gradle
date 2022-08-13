@@ -19,29 +19,29 @@ android.applicationVariants.all { variant ->
 }
 
 android {
-    tasks.whenTaskAdded { task ->
-        if (task.name.contains("lint")
-//如果instant run不生效，把clean这行干掉
-                ||task.name.equals("clean")
-                //如果项目中有用到aidl则不可以舍弃这个任务
-                ||task.name.contains("Aidl")
-//用不到测试的时候就可以先关闭
-                ||task.name.contains("mockableAndroidJar")
-                ||task.name.contains("UnitTest")
-                ||task.name.contains("AndroidTest")
-//用不到NDK和JNI的也关闭掉
-                || task.name.contains("Ndk")
-                || task.name.contains("Jni")
-        ) {
-            task.enabled = false
-        }
-    }
+//    tasks.whenTaskAdded { task ->
+//        if (task.name.contains("lint")
+////如果instant run不生效，把clean这行干掉
+//                ||task.name.equals("clean")
+//                //如果项目中有用到aidl则不可以舍弃这个任务
+//                ||task.name.contains("Aidl")
+////用不到测试的时候就可以先关闭
+//                ||task.name.contains("mockableAndroidJar")
+//               // ||task.name.contains("UnitTest")
+//                ||task.name.contains("AndroidTest")
+////用不到NDK和JNI的也关闭掉
+//                || task.name.contains("Ndk")
+//                || task.name.contains("Jni")
+//        ) {
+//            task.enabled = false
+//        }
+//    }
 
-    lintOptions {
-        tasks.lint.enabled = false
-        checkReleaseBuilds false
-        abortOnError false
-    }
+//    lintOptions {
+//        tasks.lint.enabled = false
+//        checkReleaseBuilds false
+//        abortOnError false
+//    }
     compileSdkVersion ver_compileSdkVersion
 
     defaultConfig {
@@ -52,6 +52,8 @@ android {
         versionName "5.6.1"
         vectorDrawables.generatedDensities = ['hdpi']
         multiDexEnabled true
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 //    externalNativeBuild {
 //        cmake {
@@ -131,7 +133,7 @@ dependencies {
     api project(path: ':viewpager')
     api project(path: ':GestureView')
     //implementation 'com.android.volley:volley:1.2.0'
-    testImplementation 'junit:junit:4.12'
+
     testImplementation 'org.jdom:jdom:2.0.2'
 
 
@@ -189,7 +191,7 @@ dependencies {
 
     api fileTree(include: ['*.jar'], dir: 'libs')
     api(libs_anno)
-    //testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
     //implementation 'me.weishu:free_reflection:2.1.0'
     api ('androidx.palette:palette:1.0.0'){
         exclude module:"core"

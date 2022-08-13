@@ -1,6 +1,7 @@
 package com.knziha.plod.PlainUI;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
@@ -20,10 +21,14 @@ import androidx.core.graphics.ColorUtils;
 
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.ViewUtils;
 import com.knziha.plod.widgets.WindowLayout;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 	public final WindowManager wMan;
@@ -134,6 +139,9 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			floatingView = null;
 			a.onSizeChanged();
 			a.bNeverBlink.val = false;
+			if (PDICMainAppOptions.floatBtn(a.opt.SixthFlag()>>(30+a.thisActType.ordinal()))) {
+				getFloatBtn().reInitBtn(-1);
+			}
 		} else if (!close) {
 			floatWindow();
 			ViewUtils.addViewToParent(getAppStub(), appContentView);
@@ -269,6 +277,9 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			case R.id.close:
 				a.showExitDialog(false);
 			break;
+			case R.id.btn1:
+				getFloatBtn().search(null, false);
+			break;
 		}
 	}
 	
@@ -335,5 +346,42 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			appStubBg.setBackgroundColor(GlobalOptions.isDark?0:ColorUtils.blendARGB(a.MainAppBackground, Color.BLACK, 0.45f));
 		}
 		return appStub;
+	}
+	
+	
+	private String getInvokerPackage_internal(long timeRange, long initializeTm) {
+		String ivk = ViewUtils.topThirdParty(a, timeRange, initializeTm);
+		if ("android".equals(ivk)) { //  跳过安卓分享界面
+			ivk = null;
+		}
+		return ivk;
+	}
+	
+	public String getInvokerPackage(Intent intent, boolean initialize, long appWakeTm) {
+		if (intent.hasExtra(FloatBtn.EXTRA_INVOKER)) {
+			CMN.Log("invoker_package::", intent.getStringExtra(FloatBtn.EXTRA_INVOKER));
+			return intent.getStringExtra(FloatBtn.EXTRA_INVOKER);
+		}
+		long initializeTm = intent.getLongExtra(FloatBtn.EXTRA_Initialize, -1);
+		// CMN.debug("initializeTm::", initializeTm);
+		if (initializeTm==-1 && initialize) {
+			initializeTm = appWakeTm;
+		}
+		String ivk = null;
+		int cc=1; int timeRange = 2; int maxSkip = (int) (24*60*8*1000);
+		while (ivk==null && cc<10 && timeRange<maxSkip) {
+			CMN.Log("topThirdParty::");
+			ivk = getInvokerPackage_internal(timeRange, initializeTm);
+			if (StringUtils.EMPTY.equals(ivk)) {
+				ivk = null;
+				intent.putExtra(FloatBtn.EXTRA_INVOKER, ivk);
+				return null;
+			}
+			initializeTm -= timeRange;
+			timeRange *= ++cc;
+			timeRange *= cc;
+		}
+		intent.putExtra(FloatBtn.EXTRA_INVOKER, ivk);
+		return ivk;
 	}
 }

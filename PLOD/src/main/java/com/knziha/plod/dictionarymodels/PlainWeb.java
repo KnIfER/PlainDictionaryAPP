@@ -1199,9 +1199,10 @@ public class PlainWeb extends DictionaryAdapter {
 					searchKeyIds.add(0, id);
 					int maxKeyStore = 100;
 					if (searchKeyIds.size()>maxKeyStore) {
-						for (int del=searchKeyIds.size()-1,i = del+1-maxKeyStore; i >= 0; i--) {
+						for (int del=searchKeyIds.size()-1; del >= maxKeyStore; del--) {
 							searchKeyIds.remove(del, null);
 						}
+						CMN.debug("删除多余！！！", getDictionaryName(), searchKeyIds.size());
 					}
 					mLastKeyId=id;
 					mRecordsDirty=true;

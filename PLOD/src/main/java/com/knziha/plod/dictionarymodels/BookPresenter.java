@@ -410,6 +410,8 @@ public class BookPresenter
 	private CachedDirectory DataBasePath;
 	
 	final DictionaryAdapter.PLAIN_BOOK_TYPE mType;
+	public final PlainWeb mWebx;
+	public final boolean isWebx;
 	private ContentviewItemBinding mPageView;
 	public boolean bSupressingEditing;
 	public boolean bViewSource;
@@ -734,7 +736,8 @@ function debug(e){console.log(e)};
 			throw new RuntimeException("Failed To Create Book! "+fullPath);
 		}
 		mType = DictionaryAdapter.PLAIN_BOOK_TYPE.values()[type];
-		bAutoRecordHistory = mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
+		bAutoRecordHistory = isWebx = mType==DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
+		mWebx = isWebx? (PlainWeb) bookImpl :null;
 		
 		if(THIS!=null){
 			a = THIS;
@@ -1163,13 +1166,11 @@ function debug(e){console.log(e)};
 	}
 	
 	public PlainWeb getWebx() {
-		if (mType == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB)
-			return (PlainWeb) bookImpl;
-		return null;
+		return mWebx;
 	}
 	
 	public final boolean getIsWebx() {
-		return mType == DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_WEB;
+		return isWebx;
 	}
 	
 	public boolean isMdict() {

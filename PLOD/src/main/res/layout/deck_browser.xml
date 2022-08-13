@@ -317,8 +317,6 @@
 			android:background="@drawable/surrtrip1"
 			android:src="@drawable/back_ic"
 			android:clickable="true"
-			android:enabled="false"
-			android:alpha="0.2"
 			/>
 		<ImageView
 			android:id="@+id/menu"

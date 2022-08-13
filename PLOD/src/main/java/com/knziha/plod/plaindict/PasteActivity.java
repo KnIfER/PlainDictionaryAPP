@@ -20,6 +20,7 @@ import androidx.annotation.RequiresApi;
 
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.dictionary.Utils.SU;
+import com.knziha.plod.widgets.ViewUtils;
 
 import java.util.List;
 
@@ -106,10 +107,14 @@ public class PasteActivity extends Activity {
 				}
 			}
 			CMN.debug("getPrimaryClip::", debugString);
+			if (debugString==null && PDICMainAppOptions.storeAppId() && true) {
+				debugString = FloatBtn.EXTRA_GETTEXT;
+			}
 			if (debugString!=null) {
 				Intent newTask = new Intent(Intent.ACTION_MAIN);
 				newTask.setType(Intent.CATEGORY_DEFAULT);
 				newTask.putExtra(Intent.EXTRA_TEXT,debugString);
+				newTask.putExtra(FloatBtn.EXTRA_FROMPASTE,true);
 				newTask.setClass(this, PDICMainActivity.class);
 				newTask.setFlags(SingleTaskFlags);
 				if (floating) {

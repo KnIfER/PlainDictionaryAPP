@@ -59,7 +59,7 @@
 
 	<string name="err">加载失败</string>
 	<string name="loadconfig">切换词典分组</string>
-	<string name="pickfavor">选择生词本</string>
+	<string name="pickfavor">选择单词本</string>
 	<string name="newfc">新建</string>
 	<string name="loadsucc">加载成功！</string>
 	<string name="loadsucc2">已载入 <![CDATA[<<]]> %1$s</string>

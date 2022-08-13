@@ -11,14 +11,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
 import com.knziha.plod.PlainUI.DBUpgradeHelper;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionary.Utils.ReusableByteOutputStream;
-import com.knziha.plod.ebook.Utils.BU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -29,7 +27,6 @@ import org.knziha.metaline.Metaline;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -67,7 +64,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 		Long ver = versions.get(fid);
 		versions.put(fid, (ver==null?1L:(ver+1)));
 	}
-	void incrementFavVersion(Long fid) {
+	void increaseFavVersion(Long fid) {
 		if(fid==-1) {
 			Long ver = versions.get(fid);
 			versions.clear();
@@ -270,8 +267,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", lex LONGVARCHAR" +
 					", books TEXT"+
 					", src INTEGER DEFAULT 0 NOT NULL"+
-					", grp INTEGER"+
-					", ivk INTEGER"+
+					", grp INTEGER DEFAULT 0 NOT NULL"+
+					", ivk INTEGER DEFAULT 0 NOT NULL"+
+					", hid INTEGER DEFAULT 0 NOT NULL"+
 					", creation_time INTEGER NOT NULL"+
 					", last_visit_time INTEGER NOT NULL" +
 					", visit_count INTEGER DEFAULT 0 NOT NULL" +
@@ -284,8 +282,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				db.execSQL("ALTER TABLE "+TABLE_FAVORITE_v2+" ADD COLUMN src INTEGER DEFAULT 0 NOT NULL");
 			}
 			if (!columnExists(db, TABLE_FAVORITE_v2, "grp")) {
-				db.execSQL("ALTER TABLE "+TABLE_FAVORITE_v2+" ADD COLUMN grp INTEGER");
-				db.execSQL("ALTER TABLE "+TABLE_FAVORITE_v2+" ADD COLUMN ivk INTEGER");
+				db.execSQL("ALTER TABLE "+TABLE_FAVORITE_v2+" ADD COLUMN grp INTEGER DEFAULT 0 NOT NULL");
+				db.execSQL("ALTER TABLE "+TABLE_FAVORITE_v2+" ADD COLUMN ivk INTEGER DEFAULT 0 NOT NULL");
+			}
+			if (!columnExists(db, TABLE_FAVORITE_v2, "hid")) {
+				db.execSQL("ALTER TABLE "+TABLE_FAVORITE_v2+" ADD COLUMN hid INTEGER DEFAULT 0 NOT NULL");
 			}
 			db.execSQL("CREATE INDEX if not exists favorite_term_index ON favorite (lex, folder)"); // query view
 			//db.execSQL("CREATE INDEX if not exists favorite_level_index ON favorite (folder, level)");  // level view
@@ -302,8 +303,8 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 					", lex LONGVARCHAR" +
 					", books TEXT"+
 					", src INTEGER DEFAULT 0 NOT NULL"+
-					", grp INTEGER"+
-					", ivk INTEGER"+
+					", grp INTEGER DEFAULT 0 NOT NULL"+
+					", ivk INTEGER DEFAULT 0 NOT NULL"+
 					", creation_time INTEGER NOT NULL"+
 					", last_visit_time INTEGER NOT NULL" +
 					", visit_count INTEGER DEFAULT 0 NOT NULL" +
@@ -313,10 +314,10 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				db.execSQL("ALTER TABLE "+TABLE_HISTORY_v2+" ADD COLUMN src INTEGER DEFAULT 0 NOT NULL");
 			}
 			if (!columnExists(db, TABLE_HISTORY_v2, "grp")) {
-				db.execSQL("ALTER TABLE "+TABLE_HISTORY_v2+" ADD COLUMN grp INTEGER");
-				db.execSQL("ALTER TABLE "+TABLE_HISTORY_v2+" ADD COLUMN ivk INTEGER");
+				db.execSQL("ALTER TABLE "+TABLE_HISTORY_v2+" ADD COLUMN grp INTEGER DEFAULT 0 NOT NULL");
+				db.execSQL("ALTER TABLE "+TABLE_HISTORY_v2+" ADD COLUMN ivk INTEGER DEFAULT 0 NOT NULL");
 			}
-			db.execSQL("CREATE INDEX if not exists history_term_index ON history (lex)"); // query view
+			db.execSQL("CREATE INDEX if not exists history_term_index ON history (lex, ivk)"); // query view
 			db.execSQL("DROP INDEX if exists history_time_index"); // main view
 			db.execSQL("CREATE INDEX if not exists history_time_index_1 ON history (last_visit_time, visit_count, src)"); // main view
 			try {
@@ -454,7 +455,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	public long insert(MainActivityUIBase a, String lex, long folder, WebViewListHandler weblist) {
     	CMN.Log("insert");
 		isDirty=true;
-		incrementFavVersion(folder);
+		increaseFavVersion(folder);
 		if (folder==-1) {
 			folder = a.opt.getCurrFavoriteNoteBookId();
 		}
@@ -462,16 +463,30 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			int count=-1;
 			try {
 				long id=-1;
+				long hid=-1, ivkAppId = -1;
 				String books = null;
 				String[] where = new String[]{lex, ""+folder};
 				boolean insertNew=true;
-				Cursor c = database.rawQuery("select id,visit_count,books from "+TABLE_FAVORITE_v2+" where lex=? and folder=? ", where);
-
+				Cursor c = database.rawQuery("select id,ivk from "+TABLE_HISTORY_v2+" where lex=?", new String[]{lex});
+				if(c.moveToFirst()) {
+					try {
+						hid = c.getLong(0);
+						ivkAppId = c.getLong(1);
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
+				c.close();
+				c = database.rawQuery("select id,visit_count,books from "+TABLE_FAVORITE_v2+" where lex=? and folder=? ", where);
 				if(c.moveToFirst()) {
 					id = c.getLong(0);
 					insertNew = false;
 					count = c.getInt(1);
-					books = c.getString(2);
+					try {
+						books = c.getString(2);
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
 				}
 				
 				c.close();
@@ -485,6 +500,10 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				
 				long now = CMN.now();
 				values.put("last_visit_time", now);
+				
+				if (hid>=0) values.put("hid", hid);
+				
+				if (ivkAppId>=0) values.put("ivk", ivkAppId);
 				
 				if(insertNew) {
 					values.put("folder", folder);
@@ -518,7 +537,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	 * @param folder the favorite folder id. if -1 then remove all
 	 **/
 	public int remove(String lex, long folder) {
-		incrementFavVersion(folder);
+		increaseFavVersion(folder);
 		if(folder==-2) {
 			folder = favoriteFolderId;
 		}
@@ -875,7 +894,7 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			cursor.moveToNext();
 			return cursor.getString(0);
 		} catch (Exception e) {
-			CMN.Log(e);
+			CMN.debug(e);
 			ret = "默认收藏夹";
 		}
 		return ret;

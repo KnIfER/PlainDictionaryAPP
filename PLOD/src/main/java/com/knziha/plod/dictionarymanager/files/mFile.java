@@ -1,5 +1,6 @@
 package com.knziha.plod.dictionarymanager.files;
 
+import com.knziha.plod.dictionarymanager.BookManagerWebsites;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 
 import java.io.File;
@@ -11,7 +12,7 @@ public class mFile extends File{
 	public String CSTR;//子系文件标识符
 	public boolean bInIntrestedDir=false;
 	protected boolean isDirectory=false;
-	private Object tag;
+	public BookManagerWebsites.WebAssetDesc webAsset;
 	public mFile(File parent, String child) {
 		super(parent, child);
 	}
@@ -20,9 +21,9 @@ public class mFile extends File{
 		super(pathname);
 	}
 
-	public mFile(String pathname, Object tag) {
+	public mFile(String pathname, BookManagerWebsites.WebAssetDesc webAsset) {
 		super(pathname);
-		this.tag = tag;
+		this.webAsset = webAsset;
 	}
 	
 	public mFile(File to) {
@@ -41,10 +42,6 @@ public class mFile extends File{
 	
 	public mFile(URI uri) {
 		super(uri);
-	}
-	
-	public Object getTag() {
-		return tag;
 	}
 	
 	boolean cpr1,cpr2;

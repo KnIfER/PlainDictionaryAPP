@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.LocaleList;
 import android.os.Message;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.Gravity;
@@ -142,6 +143,8 @@ import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE
 import static com.knziha.plod.plaindict.CMN.GlobalPageBackground;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_FLOAT_SEARCH;
 import static com.knziha.plod.plaindict.PDICMainAppOptions.PLAIN_TARGET_INPAGE_SEARCH;
+
+import org.apache.commons.lang3.StringUtils;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -1117,6 +1120,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 						hdl.postDelayed(() -> {
 							CharSequence text = getFloatBtn().getPrimaryClip();
 							CMN.debug(FloatBtn.EXTRA_GETTEXT+"::", text);
+							if (text==null && PDICMainAppOptions.storeAppId()
+									&& true
+									&& intent.hasExtra(FloatBtn.EXTRA_FROMPASTE)) {
+								text = FloatBtn.EXTRA_GETTEXT;
+							}
 							if (text != null) {
 								intent.putExtra(Intent.EXTRA_TEXT, text.toString());
 								intent.removeExtra(FloatBtn.EXTRA_GETTEXT);
@@ -1158,27 +1166,41 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				this.extraText = extraText;
 				if(extraText!=null) {
 					if (intent.hasExtra(FloatBtn.EXTRA_FROMPASTE)) {
-						if (extraText.equals(lastPastedText)) {
-							return;
+						if (extraText.equals(FloatBtn.EXTRA_GETTEXT)) {
+							extraText = null;
 						}
-						lastPastedText = extraText;
+						else if (extraText.equals(lastPastedText)) {
+							// return;
+						}
+						else lastPastedText = extraText;
 					}
 					if (PDICMainAppOptions.storeAppId()) {
-						long initializeTm = intent.getLongExtra(FloatBtn.EXTRA_Initialize, -1);
-						// CMN.debug("initializeTm::", initializeTm);
-						if (initializeTm==-1 && initialize) {
-							initializeTm = this.initializeTm;
+						if (bSkipNxtExtApp) {
+							bSkipNxtExtApp = false;
+						} else {
+							if (isFloatingApp()) {
+								extraInvoker = floatApp.getInvokerPackage(intent, initialize, initializeTm);
+							} else {
+								extraInvoker = ViewUtils.getInvokerPackage(this, intent, initialize, initializeTm);
+							}
+							if (extraInvoker == StringUtils.EMPTY) {
+								extraInvoker = null;
+							}
+							CMN.Log("extraInvoker::", extraInvoker);
+							if (intent.hasExtra(FloatBtn.EXTRA_FROMPASTE) && extraInvoker!=null
+									&& !BuildConfig.APPLICATION_ID.equals(extraInvoker)
+									&& extraInvoker.equals("com.diodict.decompiled")) {
+								Intent text = new Intent();
+								text.setClassName(extraInvoker, "com.diotek.diodict.MultiShareActivity");
+								startActivityForResult(text, 800);
+								CMN.Log("extraInvoker startActivityForResult");
+								return;
+							}
 						}
-						String ivk = ViewUtils.topThirdParty(this, 1.5f, initializeTm);
-						int cc = 0;
-						while ("android".equals(ivk) && cc < 15) { //  跳过安卓分享界面
-							CMN.debug("topThirdParty::");
-							ivk = ViewUtils.topThirdParty(this, 45 * (++cc), initializeTm);
-						}
-						extraInvoker = ivk;
-						CMN.debug("extraInvoker::", extraInvoker);
 					}
-					JumpToWord(extraText, jump_source);
+					if (extraText!=null) {
+						JumpToWord(extraText, jump_source);
+					}
 				}
 			}
 		}
@@ -3263,6 +3285,23 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				if (duco != null) {
 					if (duco.getBooleanExtra("DC", false))
 						drawerFragment.myAdapter.notifyDataSetChangedX();
+				}
+			break;
+			case 800:
+				if (duco != null && extraInvoker!=null) {
+					String text = duco.getStringExtra(Intent.EXTRA_TEXT);
+					if (text==null) {
+						text = lastPastedText;
+					}
+					if (!TextUtils.isEmpty(text)) {
+						if (!duco.hasExtra(FloatBtn.EXTRA_INVOKER)) {
+							duco.putExtra(FloatBtn.EXTRA_INVOKER, extraInvoker);
+						}
+						processIntent(duco, false);
+					}
+				}
+				if(isFloatingApp()) {
+					moveTaskToBack(true);
 				}
 			break;
 			case 1297:

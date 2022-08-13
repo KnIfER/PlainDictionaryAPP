@@ -90,6 +90,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.AppBarLayout;
 import com.knziha.filepicker.widget.TextViewmy;
 import com.knziha.plod.PlainUI.FloatApp;
+import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.dictionary.UniversalDictionaryInterface;
 import com.knziha.plod.dictionary.Utils.BU;
 import com.knziha.plod.dictionary.Utils.IU;
@@ -101,12 +102,14 @@ import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainActivity;
+import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.RebootActivity;
 import com.knziha.plod.plaindict.Toastable_Activity;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.knziha.metaline.Metaline;
 import org.knziha.metaline.StripMethods;
 
@@ -1795,6 +1798,31 @@ public class ViewUtils {
 	}
 	
 	
+	public static String getInvokerPackage(Context context, Intent intent, boolean initialize, long appWakeTm) {
+		if (intent.hasExtra(FloatBtn.EXTRA_INVOKER)) {
+			CMN.Log("invoker_package::", intent.getStringExtra(FloatBtn.EXTRA_INVOKER));
+			return intent.getStringExtra(FloatBtn.EXTRA_INVOKER);
+		}
+		long initializeTm = intent.getLongExtra(FloatBtn.EXTRA_Initialize, -1);
+		// CMN.debug("initializeTm::", initializeTm);
+		if (initializeTm==-1 && initialize) {
+			initializeTm = appWakeTm;
+		}
+		String ivk = ViewUtils.topThirdParty(context, 1.5f, initializeTm);
+		int cc = 0;
+		while ("android".equals(ivk)) { //  跳过安卓分享界面
+			if (cc++ >= 15) {
+				ivk = null;
+				break;
+			}
+			CMN.debug("topThirdParty::");
+			ivk = ViewUtils.topThirdParty(context, 45 * cc, initializeTm);
+		}
+		// CMN.debug("extraInvoker::", ivk);
+		intent.putExtra(FloatBtn.EXTRA_INVOKER, ivk);
+		return ivk;
+	}
+	
 	/** Retrieve the invoker application (the intent sender) package name for onNewIntent or onCreate
 	 * @param timeRange Seconds of time. Querying app usage events from now-timeRange to now.
 	 * 			maybe 1 for onNewIntent and 3 for onCreate.
@@ -1818,7 +1846,7 @@ public class ViewUtils {
 				int cc = 64;
 				while (uEvts.getNextEvent(e) && --cc>0){
 					packages.add(e.getPackageName());
-					 CMN.debug("topThirdParty::", e.getPackageName()/*, e.getTimeStamp()*/);
+					 CMN.debug("topThirdParty::", e.getPackageName(), e.getTimeStamp(), e.getEventType());
 				}
 				for (int i = packages.size()-1; i >= 0; i--) {
 					tmp = packages.get(i);
@@ -1826,10 +1854,12 @@ public class ViewUtils {
 							tmp.endsWith(".updater")
 							|| tmp.endsWith(".notification")
 							|| tmp.contains("webview")
+							|| tmp.contains("inputmethod")
+							|| tmp.startsWith("android.")
 							)) {
 						if (tmp.endsWith(".launcher")||tmp.endsWith(".home")) {
-							if ("android".equals(top)) {
-								top = null;
+							if (top==null || "android".equals(top)) {
+								top = StringUtils.EMPTY;
 							}
 							break;
 						}

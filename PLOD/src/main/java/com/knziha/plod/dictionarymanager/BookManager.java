@@ -24,7 +24,6 @@ import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -35,7 +34,6 @@ import androidx.appcompat.widget.ActionMenuView.LayoutParams;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
-import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -201,6 +199,12 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 						|| !ph.getPath(opt).equals(f1.placeArray.get(i).getPath(opt)))
 						identical=false;
 				}
+			}
+			if (identical) {
+				if (loadMan.lazyMan.chairCount>loadMan.lazyMan.CosyChair.length
+					|| loadMan.lazyMan.filterCount>loadMan.lazyMan.CosySofa.length) {
+				}
+				identical = false;
 			}
 			if(identical && !f1.rolesChanged){
 				CMN.debug("一成不变");
@@ -376,8 +380,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 			public int addIt(final mFile fn) {
 				boolean found=false;
 				String path = fn.getAbsolutePath();
-				if (fn.getTag() instanceof BookManagerWebsites.WebAssetDesc) {
-					path = ((BookManagerWebsites.WebAssetDesc) fn.getTag()).realPath;
+				if (fn.webAsset !=null) {
+					path = fn.webAsset.realPath;
 				}
 				for(int i=0;i<f1.manager_group().size();i++) {
 					if(f1.getPathAt(i).equals(path)) {
@@ -391,16 +395,14 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 					}
 				}
 				if(!found) {
-					//show("adding new!"+path);
+					// showT("adding new!"+path);
+					CMN.debug("adding new!"+path);
 					String finalPath = path;
-					f4.mDslv.post(() -> {
-						f1.add(finalPath);
-						f1.markDirty();
-					});
+					f4.mDslv.post(() -> f1.add(finalPath));
 					return 1;
 				}
 				else return 0;
-			};
+			}
 		};
 		FragAdapter adapterf = new FragAdapter(getSupportFragmentManager(), fragments);
 		viewPager.setAdapter(adapterf);
@@ -740,13 +742,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 		});
         d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> d.dismiss());
 	}
-		
-    public void showT(String text){
-        if(m_currentToast != null)
-        m_currentToast.cancel();
-        m_currentToast = Toast.makeText(this, text, Toast.LENGTH_SHORT);
-        m_currentToast.show();
-    }Toast m_currentToast;
+	
+	
 	public boolean isDebug=false;
 	boolean ThisIsDirty;
 

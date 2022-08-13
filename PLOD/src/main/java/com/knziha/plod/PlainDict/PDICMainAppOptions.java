@@ -2552,7 +2552,7 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	@Metaline(flagPos=16, flagSize=4, shift=7, max=8) public static void setTmpUserOrientation1(int val) { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 	
 	/** 每次都重建界面与重载数据 */
-	@Metaline(flagPos=21/*, debug=1*/) public boolean debuggingDBrowser() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
+	@Metaline(flagPos=21, flagSize=2, debug=2) public int debuggingDBrowser() { MainActivityUIBase.SessionFlag=MainActivityUIBase.SessionFlag; throw new RuntimeException();}
 
 	
 	public int getPseudoInitCode(int pseudoInit) {

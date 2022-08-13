@@ -136,7 +136,11 @@ public class ListViewAdapter extends BasicAdapter {
 		}
 		a.shuntAAdjustment();
 		if(a.PeruseListModeMenu.isChecked()) {
-			String lstKey = this.currentKeyText = presenter.bookImpl.getEntryAt(pos).trim();
+			String lstKey;
+			if (pos==0 && presenter.isWebx)
+				lstKey = a.etSearch.getText().toString();
+			else
+				lstKey = presenter.bookImpl.getEntryAt(pos).trim();
 			PeruseView pView = a.getPeruseView();
 			pView.searchAll(lstKey, a, true);
 			boolean storeEt = userCLick && a.storeLv1(lstKey);
