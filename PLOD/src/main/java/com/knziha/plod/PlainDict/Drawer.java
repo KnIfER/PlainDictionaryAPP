@@ -201,6 +201,7 @@ public class Drawer extends Fragment implements
 				public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
 										   int oldRight, int oldBottom) {
 					right=right-left;
+					//CMN.debug("onLayoutChange::", right);
 					//todo opt
 					if(GlobalOptions.isLarge && a!=null) {
 						right = Math.min(right, Math.max(realWidth, (int)a.mResource.getDimension(R.dimen.idealdpdp)));
@@ -211,12 +212,17 @@ public class Drawer extends Fragment implements
 						//if(bIsFirstLayout) SwitchCompatBeautiful.bForbidRquestLayout = true;
 						int width = (right - sw1.getWidth() * 5) / 6;
 						View vI;
+						boolean req = false;
 						for (int i = 0; i < swRow.getChildCount(); i++) {
 							vI=swRow.getChildAt(i);
 							MarginLayoutParams lp = (MarginLayoutParams) vI.getLayoutParams();
-							lp.leftMargin = width;
-							vI.setLayoutParams(lp);
+							if (lp.leftMargin != width) {
+								lp.leftMargin = width;
+								//vI.requestLayout();
+								req = true;
+							}
 						}
+						if (req) swRow.requestLayout();
 						oldWidth = right;
 						if(bIsFirstLayout) {
 							SwitchCompatBeautiful.bForbidRquestLayout = false;
