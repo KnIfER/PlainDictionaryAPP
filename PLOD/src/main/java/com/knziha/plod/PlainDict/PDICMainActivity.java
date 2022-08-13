@@ -179,6 +179,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	private LinearLayout weblist;
 	
 	public ActivityMainBinding UIData;
+	HeightProvider heightProvider;
 	
 	/** 定制底栏一：<br/>
 	 * 选择词典1 选择分组2 词条搜索3 全文搜索4 进入收藏5 进入历史6 <br/>
@@ -877,16 +878,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		}
 		
 		setSoftInputMode(softModeNothing);
-		new HeightProvider(this).init().setHeightListener(new HeightProvider.HeightListener() {
-			@Override
-			public void onHeightChanged(int height) {
-				//showT(""+height+settingsPanel);
-				if(settingsPanel!=null) {
-					GlobalOptions.softInputHeight = height;
-					settingsPanel.refreshSoftMode(height);
-				}
-			}
-		});
 		
 		boolean transit = PDICMainAppOptions.getTransitSplashScreen();
 		if(!transit) setTheme(R.style.PlainAppTheme);
@@ -1488,8 +1479,20 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		if(PDICMainAppOptions.getSimpleMode() && PDICMainAppOptions.getHintSearchMode())
 			showTopSnack(null, "极简模式"
 					, 0.5f, -1, Gravity.CENTER, 0);
-
-
+		
+		
+		heightProvider = new HeightProvider(this);
+		heightProvider.init().setHeightListener(new HeightProvider.HeightListener() {
+			@Override
+			public void onHeightChanged(int height) {
+				//showT(""+height+settingsPanel);
+				if(settingsPanel!=null) {
+					GlobalOptions.softInputHeight = height;
+					settingsPanel.refreshSoftMode(height);
+				}
+			}
+		});
+		
 		if(savedInstanceState!=null) {
 			// 状态恢复
 			//for(int i=0;i<md.size();i++){//遍历所有词典
@@ -2172,6 +2175,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			if (floatApp!=null) {
 				floatApp.close();
 			}
+			heightProvider.dismiss();
 		}
 		if(ServiceEnhancer.isRunning) {
 			if(PDICMainAppOptions.getAutoClearNotificationOnExit() || !PDICMainAppOptions.getNotificationEnabled()) {

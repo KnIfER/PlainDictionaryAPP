@@ -5,7 +5,7 @@
 	tools:ignore="AppCompatResource"
 	>
 
-<!--0--><item android:title="刷新" android:id="@+id/refreshRandom" android:icon="@drawable/ic_refresh_shuffle" app:showAsAction="always" />
+<!--0--><item android:title="随机" android:id="@+id/refreshRandom" android:icon="@drawable/ic_refresh_shuffle1" app:showAsAction="always" />
 
 <!--1--><item android:title="翻译" android:id="@+id/translate" android:icon="@drawable/ic_g_translate_black_24dp" app:showAsAction="always"/>
 
@@ -16,5 +16,7 @@
 <!--4--><item android:title="点击翻译" android:id="@+id/tapSch" android:icon="@drawable/ic_click_search" app:showAsAction="never" android:checkable="true"/>
 
 <!--5--><item android:title="页内搜索" android:id="@+id/schPage" android:icon="@drawable/ic_search_24k" app:showAsAction="never" android:enabled="false"/>
+
+<!--6--><item android:title="刷新" android:id="@+id/refresh" android:icon="@drawable/ic_refresh" app:showAsAction="always" />
 
 </menu>

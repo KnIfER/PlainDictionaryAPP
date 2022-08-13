@@ -6593,6 +6593,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			case R.id.refreshRandom:{
 				showRandomShuffles(true);
 			} break;
+			case R.id.refresh:{
+				wlh.getMergedFrame().reload();
+			} break;
 			case R.drawable.ic_settings_black_24dp:{
 				launchSettings(0, 0);
 			} break;

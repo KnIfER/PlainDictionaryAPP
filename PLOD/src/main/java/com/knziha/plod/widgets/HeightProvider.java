@@ -73,8 +73,8 @@ public class HeightProvider extends PopupWindow implements ViewTreeObserver.OnGl
             listener.onHeightChanged(keyboardHeight);
         }
     }
-
-    public interface HeightListener {
+	
+	public interface HeightListener {
         void onHeightChanged(int height);
     }
 }
