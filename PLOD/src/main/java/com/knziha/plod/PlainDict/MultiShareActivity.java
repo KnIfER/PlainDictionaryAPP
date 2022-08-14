@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Message;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
@@ -22,8 +21,6 @@ import androidx.core.graphics.ColorUtils;
 import com.knziha.plod.PlainUI.FloatBtn;
 import com.knziha.plod.widgets.CheckableImageView;
 import com.knziha.plod.widgets.PageSlide;
-
-import org.apache.commons.lang3.StringUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -132,7 +129,7 @@ public class MultiShareActivity extends MainActivityUIBase {
 		} else if(extraText==null) {
 			extraText = "happy";
 		}
-		ucc = getUtk();
+		ucc = getVtk();
 		ucc.setInvoker(null, null, null, extraText);
 		int VSGO=opt.getRememberVSPanelGo()?opt.getLastVSGoNumber():-1;
 		//VSGO=-1;
@@ -174,8 +171,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 				if(NewIntentCalled && !getPinVSDialog()) {
 					finishOrHide();
 				} else {
-					getUtk().setInvoker(null, null, null, extraText);
-					getUtk().onClick(null);
+					getVtk().setInvoker(null, null, null, extraText);
+					getVtk().onClick(null);
 				}
 			}
 		}
@@ -207,8 +204,8 @@ public class MultiShareActivity extends MainActivityUIBase {
 	
 	private void showUcc() {
 		//CMN.Log("showUcc");
-		getUtk().setInvoker(null, null, null, extraText);
-		getUtk().onClick(null);
+		getVtk().setInvoker(null, null, null, extraText);
+		getVtk().onClick(null);
 	}
 	
 	public void finishOrHide() {

@@ -301,6 +301,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public static final String EXTRA_MARGIN_RIGHT  = "EXTRA_MARGIN_RIGHT";
 	public String extraText =null;//世           界     你好 happy呀happy\"人\"’。，、？
 	public String extraInvoker = null;
+	public String hardSearchKey;
 	public static boolean bSkipNxtExtApp;
 	public static final KeyEvent BackEvent = new KeyEvent(KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BACK);
 	final static String entryTag = "entry://";
@@ -717,7 +718,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			else {
 				resultRecorderScattered results = (resultRecorderScattered) (CurrentViewPage == 0 ? adaptermy3 : adaptermy4).results;
 				HashSet<Long> booksSet = results.booksSet;
-				if (booksSet.contains(result.getId())) {
+				if (booksSet!=null && booksSet.contains(result.getId())) {
 					lv = CurrentViewPage == 0 ? mlv1 : mlv2;
 					lv.setSelectionFromTop(results.findFirstBookPos(result.getId()), 0);
 				}
@@ -956,8 +957,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		View v = getCurrentFocus();
 		if(v instanceof TextView){
 			TextView tv = ((TextView) v);
-			getUtk().setInvoker(null, null, tv, null);
-			getUtk().onClick(tv);
+			getVtk().setInvoker(null, null, tv, null);
+			getVtk().onClick(tv);
 		}
 	}
 
@@ -1056,9 +1057,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			if(bQueryChooser) intentFalgs|=1<<1;
 			if(bMatchDefault) intentFalgs|=1<<2;
 
-			if(intent.hasExtra("ClipData") && getUtk().mWebView!=null){
+			if(intent.hasExtra("ClipData") && getVtk().mWebView!=null){
 				int finalIntentFalgs = intentFalgs;
-				getUtk().mWebView.evaluateJavascript(WebViewmy.CollectHtml, word -> {
+				getVtk().mWebView.evaluateJavascript(WebViewmy.CollectHtml, word -> {
 					if (word.length() > 2) {
 						word = MakeCompatibleHtmlWord(word);
 						ClipData cd = ClipData.newHtmlText("HTML", Html.fromHtml(word).toString(), word);
@@ -3801,7 +3802,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		opt.putter().putString("bkHVgrts", sb.toString()).putInt("bkHSize", size).apply();
 	}
 	
-	public final class UnicornKit implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
+	public final class VerseKit implements OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
 		boolean isWeb;
 		BookPresenter invoker;
 		WebViewmy mWebView;
@@ -3822,7 +3823,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		 * 2=to use 、 long-press to pick. */
 		public int bPicking;
 		
-		UnicornKit(){
+		VerseKit(){
 			arrayTweakDict = new int[]{
 				R.string.bmAdd
 				,R.string.bookmarkL
@@ -3901,6 +3902,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				CurrentSelected=null;
 				bFromTextView=false;
 			}
+			hardSearchKey = CurrentSelected;
 		}
 		//boolean bResposibleForCon=false;
 		//boolean doCloseOnDiss=true;
@@ -3974,7 +3976,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								ManFt_GlobalPageBackground=ColorUtils.blendARGB(ManFt_GlobalPageBackground, Color.BLACK, ColorMultiplier_Web);
 							};
 							//boolean apply = true;//bFromPeruseView || contentUIData.browserWidget12.getTag(R.id.image)==null;
-							WebViewmy mWebView=UnicornKit.this.mWebView;
+							WebViewmy mWebView= VerseKit.this.mWebView;
 							if (mWebView != null) {
 								if(invoker.getUseInternalBG()) {
 									invoker.saveStates(MainActivityUIBase.this, prepareHistoryCon());
@@ -3992,7 +3994,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						public void onPreviewSelectedColor(ColorPickerDialog dialogInterface, int color) {
 							if (GlobalOptions.isDark)
 								color = ColorUtils.blendARGB(color, Color.BLACK, ColorMultiplier_Web);
-							WebViewmy mWebView=UnicornKit.this.mWebView;
+							WebViewmy mWebView= VerseKit.this.mWebView;
 							if (mWebView != null) {
 								if (invoker.getUseInternalBG()) {
 									mWebView.setBackgroundColor(color);
@@ -4007,7 +4009,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 						public void onDialogDismissed(ColorPickerDialog dialogInterface, int color) {
 							CMN.Log("onDialogDismissed");
 							d.show();
-							WebViewmy mWebView=UnicornKit.this.mWebView;
+							WebViewmy mWebView= VerseKit.this.mWebView;
 							int ManFt_invoker_bgColor=invoker.getContentBackground();
 							int ManFt_GlobalPageBackground=GlobalPageBackground;
 							if(GlobalOptions.isDark) {
@@ -5024,8 +5026,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		id-=2;
 		if(id>=0&&id<=5)
 		{
-			getUtk().setInvoker(null, null, null, text);
-			getUtk().execVersatileShare(false, VersatileShareSlots[id]);
+			getVtk().setInvoker(null, null, null, text);
+			getVtk().execVersatileShare(false, VersatileShareSlots[id]);
 		}
 	}
 	
@@ -5187,7 +5189,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	}
 
 	boolean firstCreateUcc=true;
-	public UnicornKit ucc;
+	public VerseKit ucc;
 	
 	public abstract void fix_full_screen(@Nullable View decorView);
 	
@@ -5625,8 +5627,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 
 	public abstract void animateUIColorChanges();
 
-	public UnicornKit getUtk() {
-		if(ucc==null) ucc = new UnicornKit();
+	public VerseKit getVtk() {
+		if(ucc==null) ucc = new VerseKit();
 		return ucc;
 	}
 	
@@ -6429,7 +6431,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	
 	public void showDictTweaker(WebViewListHandler weblist) {
-		UnicornKit tk = getUtk();
+		VerseKit tk = getVtk();
 		if (weblist.isMultiRecord()) {
 			if (weblist.isMergingFrames()) {
 				weblist.getMergedFrame().evaluateJavascript("scrollFocus.src", new ValueCallback<String>() {

@@ -585,6 +585,11 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 	 * @param source 0=default; 1=listview; 2=tap translator; 3=peruse view
 	 *   */
 	public long updateHistoryTerm(MainActivityUIBase a, String lex, int source, WebViewListHandler weblist) {
+//		try {
+//			throw new RuntimeException();
+//		} catch (RuntimeException e) {
+//			CMN.debug(e);
+//		}
 		CMN.rt();
 		int count=-1;
 		int src=0;

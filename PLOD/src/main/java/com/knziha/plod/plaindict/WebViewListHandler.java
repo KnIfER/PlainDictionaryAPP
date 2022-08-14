@@ -71,7 +71,6 @@ import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /** 页面管理器，曾经尝试过在Listview中放置webview，太卡。现在保留的模式：<br/>
  * 一个webview，显示一本或多本词典内容（合并的多页面模式）。 <br/>
@@ -1522,7 +1521,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				invokeToolsBtn(true, 0);
 			} else if (act==3) {
 				invokeToolsBtn(false, -1);
-				a.getUtk().bPicking = 2;
+				a.getVtk().bPicking = 2;
 			}
 			return true;
 		}
@@ -1794,11 +1793,11 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 				wv.presenter.invokeToolsBtn(wv, -1);
 			} else {
 				// sometime the view not initialized yet
-				a.getUtk().setInvoker(a.EmptyBook, null, null, null);
-				a.getUtk().bFromWebView = true;
-				a.getUtk().onClick(/*trust webview selection*/a.anyView(R.id.tools));
+				a.getVtk().setInvoker(a.EmptyBook, null, null, null);
+				a.getVtk().bFromWebView = true;
+				a.getVtk().onClick(/*trust webview selection*/a.anyView(R.id.tools));
 			}
-			a.getUtk().bPicking = 1;
+			a.getVtk().bPicking = 1;
 			a.showTopSnack("选择快捷功能！");
 		} else {
 			if (wv!=null) {

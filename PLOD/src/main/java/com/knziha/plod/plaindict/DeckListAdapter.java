@@ -193,6 +193,7 @@ class DeckListAdapter extends RecyclerView.Adapter<ViewUtils.ViewDataHolder<Card
 //			time = view.findViewById(R.id.subtext1);
 		
 		holder.data.text1.setTextIsSelectable(false);
+		holder.data.text1.setTextIsSelectable(true);
 		holder.colorStates=new int[3];
 		return holder;
 	}

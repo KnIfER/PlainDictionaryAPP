@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -2123,7 +2122,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 			break;
 			case R.id.toolbar_title:
 			case R.id.cover:
-				a.getUtk().setInvoker(currentDictionary, mWebView, null, null);
+				a.getVtk().setInvoker(currentDictionary, mWebView, null, null);
 //				a.getUcc().onClick(toolbar_cover); //111
 			break;
 			case R.id.action0:

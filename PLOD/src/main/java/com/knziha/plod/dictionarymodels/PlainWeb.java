@@ -1192,23 +1192,29 @@ public class PlainWeb extends DictionaryAdapter {
 			String searchKey = bookPresenter.GetSearchKey();
 			if (searchKey!=null)
 			{
-				// 记录一部分搜索历史
-				long id = bookPresenter.GetSearchKeyId(searchKey);
-				if (id>=0 && mLastKeyId!=id) {
-					searchKeyIds.remove(id);
-					searchKeyIds.add(0, id);
-					int maxKeyStore = 100;
-					if (searchKeyIds.size()>maxKeyStore) {
-						for (int del=searchKeyIds.size()-1; del >= maxKeyStore; del--) {
-							searchKeyIds.remove(del, null);
+				if (!mWebView.weblistHandler.bShowInPopup) { // 避 DBrowser
+					// 记录一部分搜索历史
+					long id = bookPresenter.GetSearchKeyId(searchKey);
+					if (id>=0 && mLastKeyId!=id) {
+						if (mWebView.weblistHandler==bookPresenter.a.weblistHandler
+								|| bookPresenter.a.hardSearchKey==searchKey) {
+							searchKeyIds.remove(id);
+							searchKeyIds.add(0, id);
+							int maxKeyStore = 100;
+							if (searchKeyIds.size()>maxKeyStore) {
+								for (int del=searchKeyIds.size()-1; del >= maxKeyStore; del--) {
+									searchKeyIds.remove(del, null);
+								}
+								CMN.debug("删除多余！！！", getDictionaryName(), searchKeyIds.size());
+							}
+							mLastKeyId=id;
+							mRecordsDirty=true;
 						}
-						CMN.debug("删除多余！！！", getDictionaryName(), searchKeyIds.size());
 					}
-					mLastKeyId=id;
-					mRecordsDirty=true;
+					// 更新列表
+					bookPresenter.a.adaptermy.notifyDataSetChanged(); //todo
 				}
-				// 更新列表
-				bookPresenter.a.adaptermy.notifyDataSetChanged(); //todo
+				
 				//takeHistoryRecord();
 				// 检验、应用搜索搜索词
 				if (searchJs!=null)

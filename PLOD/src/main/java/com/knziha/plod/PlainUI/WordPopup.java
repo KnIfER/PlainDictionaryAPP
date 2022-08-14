@@ -168,8 +168,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 		switch (id) {
 			case R.id.cover: {
 				if(v==weblistHandler.pageSlider.page){
-					a.getUtk().setInvoker(CCD, mWebView, null, null);
-					a.getUtk().onClick(v);
+					a.getVtk().setInvoker(CCD, mWebView, null, null);
+					a.getVtk().onClick(v);
 				}
 			} break;
 			case R.id.popupBackground: {

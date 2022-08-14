@@ -79,6 +79,11 @@ public class SearchbarTools extends PlainAppPanel implements View.OnTouchListene
 	
 	/** 添加搜索记录。 */
 	public void addHistory(String text) {
+//		try {
+//			throw new RuntimeException();
+//		} catch (RuntimeException e) {
+//			CMN.debug(e);
+//		}
 		int rmIdx = -1;
 		if (text!=null && loaded) {
 			boolean ndp = true;

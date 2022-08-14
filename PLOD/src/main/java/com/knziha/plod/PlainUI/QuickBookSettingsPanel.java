@@ -3,12 +3,9 @@ package com.knziha.plod.PlainUI;
 import android.animation.LayoutTransition;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -267,7 +264,7 @@ public class QuickBookSettingsPanel extends PlainAppPanel implements SettingsPan
 				}
 			}
 			if (storageInt==makeInt(6, 40, false)) {
-				MainActivityUIBase.UnicornKit tk = a.getUtk();
+				MainActivityUIBase.VerseKit tk = a.getVtk();
 				if (PDICMainAppOptions.toolsQuick()) { // hint
 					int action =  PDICMainAppOptions.toolsQuickAction();
 					a.showTopSnack(action<tk.arraySelUtils.length?tk.arraySelUtils[action]:tk.arraySelUtils2[action-tk.arraySelUtils.length]);

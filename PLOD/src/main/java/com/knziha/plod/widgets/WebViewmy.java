@@ -48,12 +48,10 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.GlobalOptions;
 
 import com.google.android.material.math.MathUtils;
-import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PeruseView;
 import com.knziha.plod.plaindict.R;
-import com.knziha.plod.dictionary.Utils.myCpr;
 import com.knziha.plod.dictionarymodels.PhotoBrowsingContext;
 import com.knziha.plod.dictionarymodels.ScrollerRecord;
 import com.knziha.plod.dictionarymodels.BookPresenter;
@@ -778,7 +776,7 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 																		if(c instanceof MainActivityUIBase){
 																			MainActivityUIBase a = (MainActivityUIBase) c;
 																			if(MainActivityUIBase.PreferredToolId !=-1){
-																				MainActivityUIBase.UnicornKit ucc = a.getUtk();
+																				MainActivityUIBase.VerseKit ucc = a.getVtk();
 																				ucc.bFromWebView=true;
 																				a.weblist = weblistHandler;
 																				ucc.setInvoker(presenter, WebViewmy.this, null, null);

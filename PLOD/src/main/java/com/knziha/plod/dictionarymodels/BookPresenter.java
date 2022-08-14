@@ -17,7 +17,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -47,7 +46,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.GlobalOptions;
 import androidx.core.graphics.ColorUtils;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.knziha.plod.db.LexicalDBHelper;
 import com.knziha.plod.db.MdxDBHelper;
@@ -67,7 +65,7 @@ import com.knziha.plod.dictionarymanager.files.CachedDirectory;
 import com.knziha.plod.plaindict.AgentApplication;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
-import com.knziha.plod.plaindict.MainActivityUIBase.UnicornKit;
+import com.knziha.plod.plaindict.MainActivityUIBase.VerseKit;
 import com.knziha.plod.plaindict.MdictServer;
 import com.knziha.plod.plaindict.PDICMainActivity;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
@@ -108,8 +106,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.Inflater;
 import java.util.zip.InflaterOutputStream;
 
 import static com.knziha.plod.db.LexicalDBHelper.TABLE_BOOK_NOTE_v2;
@@ -872,10 +868,10 @@ function debug(e){console.log(e)};
 	public FlowTextView toolbar_title;
 	public ViewGroup toolbar;
 	ImageView toolbar_cover;
-	private UnicornKit ucc;
+	private VerseKit ucc;
 	public void initViewsHolder(final MainActivityUIBase a){
 		this.a=a;
-		ucc = a.getUtk(); //todo
+		ucc = a.getVtk(); //todo
 		if(!viewsHolderReady) {
 			ContentviewItemBinding pageData = ContentviewItemBinding.inflate(a.getLayoutInflater()
 					, a.weblistHandler.getViewGroup(), false);
@@ -1017,8 +1013,8 @@ function debug(e){console.log(e)};
 					showDictTweaker(mWebView, a, this);
 					break;
 				}
-				a.getUtk().setInvoker(this, mWebView, null, null);
-				a.getUtk().onClick(null);
+				a.getVtk().setInvoker(this, mWebView, null, null);
+				a.getVtk().onClick(null);
 				break;
 			case R.id.undo:
 				if(v.getAlpha()==1)mWebView.evaluateJavascript("document.execCommand('Undo')", null);
@@ -2971,9 +2967,9 @@ function debug(e){console.log(e)};
 		public void showUcc(String id, String text) {
         	MainActivityUIBase a = presenter.a;
 			a.weblistHandler.mMergedFrame.post(() -> {
-				a.getUtk().setInvoker(a.getBookById(IU.TextToNumber_SIXTWO_LE(id)), a.weblistHandler.mMergedFrame, null, text);
+				a.getVtk().setInvoker(a.getBookById(IU.TextToNumber_SIXTWO_LE(id)), a.weblistHandler.mMergedFrame, null, text);
 				a.weblistHandler.mMergedFrame.setTag(0);
-				a.getUtk().onClick(a.weblistHandler.mMergedFrame);
+				a.getVtk().onClick(a.weblistHandler.mMergedFrame);
 			});
         }
 		
@@ -4351,13 +4347,13 @@ function debug(e){console.log(e)};
 	
 	public void invokeToolsBtn(WebViewmy mWebView, int quickAction) {
 		a.weblist = mWebView.weblistHandler;
-		a.getUtk().setInvoker(this, mWebView, null, null);
+		a.getVtk().setInvoker(this, mWebView, null, null);
 		if (quickAction!=-1) {
 			// force quick action without showing the dialog!
-			a.getUtk().bFromWebView = true;
-			a.getUtk().onItemClick(null, null, 0, PDICMainAppOptions.toolsQuickAction(), false, false);
+			a.getVtk().bFromWebView = true;
+			a.getVtk().onItemClick(null, null, 0, PDICMainAppOptions.toolsQuickAction(), false, false);
 		} else {
-			a.getUtk().onClick(/*trust webview selection*/a.anyView(R.id.tools));
+			a.getVtk().onClick(/*trust webview selection*/a.anyView(R.id.tools));
 		}
 	}
 	

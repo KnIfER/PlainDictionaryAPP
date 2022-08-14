@@ -1301,7 +1301,7 @@ public class DBroswer extends DialogFragment implements
 					if (a.peruseView != null) {
 						target = a.peruseView.etSearch;
 					} else {
-						a.getUtk().setInvoker(null, null, null, currentDisplaying);
+						a.getVtk().setInvoker(null, null, null, currentDisplaying);
 					}
 				} else {
 					a.lastEtString = String.valueOf(a.etSearch.getText());
