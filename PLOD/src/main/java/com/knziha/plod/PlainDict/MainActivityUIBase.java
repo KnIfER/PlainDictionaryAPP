@@ -3643,7 +3643,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 					}
 				}
 			}
-		} else {
+		}
+		else {
 			ViewGroup webholder = wlh.getViewGroup();
 			if (webholder!=null) {
 				for (int i = 0, len=webholder.getChildCount(); i < len; i++) {
@@ -5579,7 +5580,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	abstract void switch_dark_mode(boolean val);
 
 	void changeToDarkMode() {
-		//CMN.Log("changeToDarkMode");
+		CMN.Log("changeToDarkMode");
 		try {
 			getReferenceObject(WeakReferenceHelper.quick_settings).clear();
 			boolean dark=GlobalOptions.isDark||opt.getInDarkMode();
@@ -8723,26 +8724,27 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public final static String DarkModeIncantation_l = "DARK";
 
 	/**
-	 var css = 'body {-webkit-filter: invert(100%);\
+	 var css = 'html {-webkit-filter: invert(100%);\
 					 -moz-filter: invert(100%);\
 					 -o-filter: invert(100%);\
-					 -ms-filter: invert(100%);background:#00000000}\
-				html {background:#000000}', d=document,
+					 -ms-filter: invert(100%);background:#ffffff}\
+				 ', d=document,
 	 head = d.getElementsByTagName('head')[0],
 	 sty = d.createElement('style');
 	 sty.id = "_PDict_Darken";
-	 if(!d.getElementById(sty.id)) {
+	 if(!d.getElementById(sty.id))
+	 {
 		 sty.class = "_PDict";
 		 sty.type = 'text/css';
-		 if (sty.styleSheet){
-		 	style.styleSheet.cssText = css;
-		 } else {
-		 	sty.appendChild(d.createTextNode(css));
-		 }
-		 //injecting the css to the head
+	 	 sty.innerText = css;
+//		 if (sty.styleSheet){
+//		 	style.styleSheet.cssText = css;
+//		 } else {
+//		 	sty.appendChild(d.createTextNode(css));
+//		 }
 		 head.appendChild(sty);
-		 if(d.body){d.body.style.background='#00000000';d._pdkn=1}
 	 }
+	 if(d.body){d.body.style.background='#00000000';d._pdkn=1}
 	 */
 	@Metaline
 	public final static String DarkModeIncantation ="DARK";
