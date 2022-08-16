@@ -643,8 +643,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 		}
 		hidden.clear();
 		this.invoker=a.weblist;
-		ViewUtils.
-				ensureTopmost(mDialog, a, null);
+		ViewUtils.ensureTopmost(mDialog, a, null);
 		if(!ToD) {
 			bmsAdapter.notifyDataSetChanged();
 		}
@@ -750,6 +749,7 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 	
 	public void onViewDetached(MainActivityUIBase a) {
 		if (a!=null) {
+			// CMN.debug("onViewDetached");
 			currentDictionary.bmCBI=lv2.getFirstVisiblePosition();
 			currentDictionary.bmCCI= bmsAdapter.lastClickedPos;
 			//currentDictionary = null;
@@ -760,12 +760,11 @@ public class PeruseView extends DialogFragment implements OnClickListener, OnMen
 					.putInt("PBBS", contentUIData.webcontentlister.getPrimaryContentSize()).apply();
 			
 			a.opt.putFirstFlag();
-			if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
-				((MultiShareActivity)a).OnPeruseDetached();
-			}
-			
 			if (dummyPanel.isVisible()) {
 				dummyPanel.toggleDummy(a);
+			}
+			if (a.thisActType==MainActivityUIBase.ActType.MultiShare) {
+				((MultiShareActivity)a).OnPeruseDetached();
 			}
 		}
 	}
