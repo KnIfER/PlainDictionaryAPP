@@ -1911,8 +1911,10 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		setMagicNumberForHash();
 		
 		try {
-			currentDictionary = EmptyBook = new BookPresenter(new File("empty"), this, 1);
-		} catch (IOException ignored) { }
+			loadManager.EmptyBook = currentDictionary = EmptyBook = new BookPresenter(new File("empty"), this, 1);
+		} catch (Exception e) {
+			CMN.debug(e);
+		}
 		EmptySchResults = new resultRecorderDiscrete(this);
 		
 		File ConfigFile = opt.fileToConfig();
@@ -2159,7 +2161,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(loadManager.md_size==0){
 			populateDictionaryList(def, CC, retrieve_all);
 		}
-		loadManager.EmptyBook = EmptyBook;
 		
 		if(opt.getCheckMdlibs()){
 			File rec = opt.fileToDecords(ConfigFile);
@@ -3570,9 +3571,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return prepareHistoryCon().getBookName(bid);
 	}
 	
-	public String collectDisplayingBooks(String books, WebViewListHandler weblist) {
+	public String collectDisplayingBooks(String books, WebViewListHandler wlh) {
 		String ret=books==null?"":books;
-		WebViewListHandler wlh = weblist;
 		if (wlh.isViewSingle()) {
 			WebViewmy wv = wlh.getWebContext();
 			String url = wv.getUrl();
@@ -7438,6 +7438,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return;
 			}
 			//CMN.debug("chromium: OPF ==> ", url, mWebView.isloading, view.getProgress(), view.getTag(R.drawable.voice_ic));
+			
+			mWebView.evaluateJavascript(ce_on,null);
 			
 			//if(!mWebView.isloading && !mWebView.fromNet) return;
 			final WebViewListHandler wlh = mWebView.weblistHandler;

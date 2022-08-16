@@ -494,7 +494,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 				ContentValues values = new ContentValues();
 				values.put("lex", lex);
 				
-				values.put("books", a.collectDisplayingBooks(books, weblist));
+				if (weblist!=null) {
+					values.put("books", a.collectDisplayingBooks(books, weblist));
+				}
 				
 				values.put("visit_count", ++count);
 				
@@ -611,7 +613,9 @@ public class LexicalDBHelper extends SQLiteOpenHelper {
 			ContentValues values = new ContentValues();
 			values.put(FIELD_ENTRY_NAME, lex);
 			
-			values.put("books", a.collectDisplayingBooks(books, weblist));
+			if (weblist!=null) {
+				values.put("books", a.collectDisplayingBooks(books, weblist));
+			}
 			long ivkAppId = -1;
 			String ivk = a.extraInvoker;
 			if(ivk!=null && lex.equals(a.extraText)) {
