@@ -596,6 +596,8 @@ public class WordPopup extends PlainAppPanel implements Runnable, View.OnLongCli
 			webview.setWebChromeClient(a.myWebCClient);
 			webview.setWebViewClient(a.myWebClient);
 			webview.setOnScrollChangedListener(a.getWebScrollChanged());
+			webview.setFocusable(true);
+			webview.setFocusableInTouchMode(true);
 			
 			// 点击背景
 			settingsLayoutHolder = settingsLayout = popupGuarder = new PopupGuarder(a.getBaseContext());
