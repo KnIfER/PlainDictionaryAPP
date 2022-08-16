@@ -450,6 +450,8 @@ public class BookManager extends Toastable_Activity implements OnMenuItemClickLi
 	    viewPager.setOffscreenPageLimit(Math.max(viewPager.getOffscreenPageLimit(), 1+CurrentPage));
 
 	    toastmaker =  findViewById(R.id.toastmaker);
+		
+		if(GlobalOptions.isDark) toastmaker.setBackgroundColor(0xff303030);
 	    
         toolbar.setOnMenuItemClickListener(this);
         toolbar.setTitleTextColor(Color.WHITE);
