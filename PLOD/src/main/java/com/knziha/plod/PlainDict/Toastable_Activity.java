@@ -88,6 +88,7 @@ public class Toastable_Activity extends AppCompatActivity {
 	protected long QFStamp;
 	protected long VFStamp;
 	protected long VIStamp;
+	protected long V7Stamp;
 	protected long layoutFlagStamp;
 	public int MainAppBackground;
 	public int MainBackground;
@@ -128,73 +129,70 @@ public class Toastable_Activity extends AppCompatActivity {
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
-       if(!shunt) {
-		   if (opt==null) opt = new PDICMainAppOptions(this);
-		   opt.dm = dm = new DisplayMetrics();
-		   Display display = getWindowManager().getDefaultDisplay();
-		   if (GlobalOptions.realWidth <= 0) {
-			   display.getRealMetrics(dm);
-			   GlobalOptions.realWidth = Math.min(dm.widthPixels, dm.heightPixels);
-			   GlobalOptions.realHeight = Math.max(dm.widthPixels, dm.heightPixels);
-			   GlobalOptions.density = dm.density;
-			   //GlobalOptions.densityDpi = dm.densityDpi;
-		   }
-		   display.getMetrics(dm);
+		super.onCreate(savedInstanceState);
+		if(shunt)
+			return;
+	   if (opt==null) opt = new PDICMainAppOptions(this);
+	   opt.dm = dm = new DisplayMetrics();
+	   mResource = getResources();
+	   mConfiguration = new Configuration(mResource.getConfiguration());
+	   Display display = getWindowManager().getDefaultDisplay();
+	   FFStamp = opt.getFirstFlag();
+	   SFStamp = opt.getSecondFlag();
+	   TFStamp = opt.getThirdFlag();
+	   QFStamp = opt.getFourthFlag();
+	   VFStamp = opt.getFifthFlag();
+	   VIStamp = opt.getSixthFlag();
+	   V7Stamp = opt.getSevenFlag();
+	   VersionUtils.checkVersion(opt);
+	   display.getRealMetrics(dm);
+	   if (GlobalOptions.realWidth <= 0) {
+		   readSizeConfigs();
+		   GlobalOptions.realWidth = Math.min(dm.widthPixels, dm.heightPixels);
+		   GlobalOptions.realHeight = Math.max(dm.widthPixels, dm.heightPixels);
 		   GlobalOptions.density = dm.density;
-		   FFStamp = opt.getFirstFlag();
-		   SFStamp = opt.getSecondFlag();
-		   TFStamp = opt.getThirdFlag();
-		   QFStamp = opt.getFourthFlag();
-		   VFStamp = opt.getFifthFlag();
-		   VIStamp = opt.getSixthFlag();
-		   VersionUtils.checkVersion(opt);
-		   if (PDICMainAppOptions.checkVersionBefore_5_0())
-		   { // 升级数据库对话框
-			   //DBUpgradeHelper.showUpgradeDlg(null, this, true);
+		   //GlobalOptions.densityDpi = dm.densityDpi;
+		   opt.getInDarkMode();
+		   if(Build.VERSION.SDK_INT>=29){
+			   GlobalOptions.isSystemDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
+		   }
+	   }
+	   if (opt.darkSystem() && Build.VERSION.SDK_INT>=29) {
+			GlobalOptions.isDark = GlobalOptions.isSystemDark;
+	   }
+	   if (PDICMainAppOptions.checkVersionBefore_5_0())
+	   { // 升级数据库对话框
+		   //DBUpgradeHelper.showUpgradeDlg(null, this, true);
 //			   opt.setUseDatabaseV2(true);
 //			   opt.setUseBackKeyGoWebViewBack(true);
 //			   opt.setAnimateContents(Build.VERSION.SDK_INT>=21);
 //			   PDICMainAppOptions.uncheckVersionBefore_5_0(false);
 //			   PDICMainAppOptions.uncheckVersionBefore_4_0(true); // revert & recycle the flag bits
 //			   PDICMainAppOptions.uncheckVersionBefore_4_9(true); // revert & recycle the flag bits
-		   }
-		   if (PDICMainAppOptions.checkVersionBefore_5_2())
-		   {
-			   //CMN.Log("强制数据库2.0");
+	   }
+	   if (PDICMainAppOptions.checkVersionBefore_5_2())
+	   {
+		   //CMN.Log("强制数据库2.0");
 //			   opt.setUseDatabaseV2(true);
 //			   PDICMainAppOptions.uncheckVersionBefore_5_2(false);
-		   }
-		   if (PDICMainAppOptions.checkVersionBefore_5_3())
-		   {
+	   }
+	   if (PDICMainAppOptions.checkVersionBefore_5_3())
+	   {
 //			   opt.setPinVSDialog(true);
 //			   opt.setRememberVSPanelGo(false);
 //			   PDICMainAppOptions.uncheckVersionBefore_5_3(false);
-		   }
-		   if(PDICMainAppOptions.checkVersionBefore_5_4()) {
+	   }
+	   if(PDICMainAppOptions.checkVersionBefore_5_4()) {
 //			   PDICMainAppOptions.bCheckVersionBefore_5_4=true;
 //			   PDICMainAppOptions.setHideFloatFromRecent(false);
 //			   PDICMainAppOptions.uncheckVersionBefore_5_4(false);
-		   } else {
-			   PDICMainAppOptions.bCheckVersionBefore_5_4=false;
-		   }
+	   } else {
+		   PDICMainAppOptions.bCheckVersionBefore_5_4=false;
 	   }
-	   super.onCreate(savedInstanceState);
-       if(shunt) return;
 	   //inflater=getLayoutInflater();
        imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		
-       mResource = getResources();
-       
-	   mConfiguration = new Configuration(mResource.getConfiguration());
-	   readSizeConfigs();
 	   //btnMaxWidth=GlobalOptions.btnMaxWidth;
 		//CMN.show("isLarge"+isLarge);
-	   if(Build.VERSION.SDK_INT>=29 && false){
-		   GlobalOptions.isDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
-	   } else {
-		   GlobalOptions.isDark = false;
-	   }
-	   opt.getInDarkMode();
 	   isDarkStamp = GlobalOptions.isDark;
 	   AppBlack=GlobalOptions.isDark?Color.WHITE:Color.BLACK;
 	   AppWhite=GlobalOptions.isDark?Color.BLACK:Color.WHITE;
@@ -298,11 +296,14 @@ public class Toastable_Activity extends AppCompatActivity {
 			QFStamp=opt.FourthFlag();
 			VFStamp=opt.FifthFlag();
 			VIStamp=opt.SixthFlag();
+			V7Stamp=opt.SevenFlag();
 		}
 	}
 
 	protected boolean checkFlagsChanged() {
-		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.ThirdFlag() || QFStamp!=opt.FourthFlag() || VFStamp!=opt.FifthFlag() || VIStamp!=opt.SixthFlag();
+		return FFStamp!=opt.FirstFlag() || SFStamp!=opt.SecondFlag() || TFStamp!=opt.ThirdFlag() || QFStamp!=opt.FourthFlag() || VFStamp!=opt.FifthFlag()
+				|| VIStamp!=opt.SixthFlag() || V7Stamp!=opt.SevenFlag()
+				;
 	}
 
 	protected void checkLanguage() {

@@ -217,7 +217,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
-		//CMN.Log("onConfigurationChanged",mConfiguration==newConfig, dm==getResources().getDisplayMetrics(), !isLocalesEqual(mConfiguration, newConfig));
+		CMN.debug("onConfigurationChanged",mConfiguration==newConfig, dm==getResources().getDisplayMetrics(), !isLocalesEqual(mConfiguration, newConfig));
 		if(!systemIntialized) return;
 		if(!isLocalesEqual(mConfiguration, newConfig) && "".equals(opt.getLocale())){
 			recreate();
@@ -281,16 +281,20 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}
 		}
 		mConfiguration.setTo(newConfig);
-		if(Build.VERSION.SDK_INT>=29 && false){
-			GlobalOptions.isDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
-		} else {
-			GlobalOptions.isDark = false;
+		if(Build.VERSION.SDK_INT>=29){
+			boolean systemDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+			if (systemDark!=GlobalOptions.isSystemDark) {
+				GlobalOptions.isSystemDark = systemDark;
+				if (PDICMainAppOptions.darkSystem()) {
+					GlobalOptions.isDark = systemDark;
+				}
+				if(GlobalOptions.isDark!=isDarkStamp) {
+					changeToDarkMode();
+					isDarkStamp = GlobalOptions.isDark;
+				}
+			}
 		}
-		opt.getInDarkMode();
 		//CMN.Log("GlobalOptionsGlobalOptions", GlobalOptions.isDark, isDarkStamp);
-		if(GlobalOptions.isDark!=isDarkStamp)
-			changeToDarkMode();
-		isDarkStamp=GlobalOptions.isDark;
 		GlobalOptions.density = dm.density;
 		if(settingsPanel!=null) {
 			root.postDelayed(postOnConfigurationChanged, 200);
@@ -3432,7 +3436,10 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 
 	protected void switch_dark_mode(boolean val) {
+		CMN.debug("switch_dark_mode::", val);
+		drawerFragment.sw4.setOnCheckedChangeListener(null);
 		drawerFragment.sw4.setChecked(val);
+		drawerFragment.sw4.setOnCheckedChangeListener(drawerFragment);
 	}
 	
 	public void startServer(boolean start) {

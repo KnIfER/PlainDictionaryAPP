@@ -1,6 +1,10 @@
 package com.knziha.plod.plaindict;
 
+import android.os.Build;
+
 import androidx.appcompat.app.GlobalOptions;
+
+import com.knziha.plod.widgets.RomUtils;
 
 public class VersionUtils {
 	
@@ -59,6 +63,7 @@ public class VersionUtils {
 			
 			PDICMainAppOptions.pinPDic(true);
 			PDICMainAppOptions.setShowPinPicBook(true);
+			PDICMainAppOptions.darkSystem(Build.VERSION.SDK_INT>=29 && !RomUtils.isMIUI());
 		}
 		opt.setBottombarOnBottom(true);
 		opt.setFloatBottombarOnBottom(true);

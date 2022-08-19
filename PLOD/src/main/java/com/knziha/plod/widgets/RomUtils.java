@@ -75,4 +75,8 @@ public class RomUtils {
 		}
 		return line!=null && line.trim().length()>0;
 	}
+	
+	public static boolean isMIUI() {
+		return _HX==2;
+	}
 }

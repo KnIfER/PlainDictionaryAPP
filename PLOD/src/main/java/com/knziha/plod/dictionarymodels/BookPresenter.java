@@ -2269,6 +2269,7 @@ function debug(e){console.log(e)};
 	
 	public void vartakelayaTowardsDarkMode(WebViewmy mWebView) {
 		if(mWebView==null) mWebView=this.mWebView;
+		if(mWebView==null) return;
 		boolean dark = GlobalOptions.isDark||opt.getInDarkMode();
 		String GetById = "document.getElementById('_PDict_Darken')";
 		WebViewmy webview = mWebView;

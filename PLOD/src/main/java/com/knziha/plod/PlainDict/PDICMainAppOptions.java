@@ -392,7 +392,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			CommitOrApplyOrNothing=1;
 		}
 		editor.putLong("MFF", FirstFlag).putLong("MSF", SecondFlag).putLong("MTF", ThirdFlag)
-				.putLong("MQF", FourthFlag).putLong("MVF", FifthFlag).putLong("MVIF", SixthFlag());
+				.putLong("MQF", FourthFlag).putLong("MVF", FifthFlag)
+				.putLong("MVIF", SixthFlag())
+				.putLong("M7F", SevenFlag())
+		;
 		if(CommitOrApplyOrNothing==1) editor.apply();
 		else if(CommitOrApplyOrNothing==2) editor.commit();
 		//CMN.Log("apply changes");
@@ -432,7 +435,10 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	public void putFlags() {
 		defaultReader.edit().putLong("MFF",FirstFlag).putLong("MSF",SecondFlag)
-				.putLong("MTF",ThirdFlag).putLong("MVF",FifthFlag).putLong("MVIF",SixthFlag()).apply();
+				.putLong("MTF",ThirdFlag).putLong("MVF",FifthFlag)
+				.putLong("MVIF",SixthFlag())
+				.putLong("M7F",SevenFlag())
+				.apply();
 	}
 
 	public void putFirstFlag() {
@@ -581,11 +587,11 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 
 	public boolean getInDarkMode() {
 		boolean ret = (FirstFlag & 0x80000) == 0x80000;
-		GlobalOptions.isDark |= ret;
+		GlobalOptions.isDark = ret;
 		return ret;
 	}
 	public boolean setInDarkMode(boolean val) {
-		GlobalOptions.isDark |= val;
+		GlobalOptions.isDark = val;
 		if(ViewUtils.mRectPaint!=null) {
 			ViewUtils.mRectPaint.setColor(GlobalOptions.isDark?0x3fffffff: ViewUtils.FloatTextBG);
 		}
@@ -1447,9 +1453,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 	
 	@Metaline(flagPos=33, shift=1) public static boolean slidePageMd() { ThirdFlag=ThirdFlag; throw new RuntimeException();}
 	@Metaline(flagPos=33, shift=1) public static void slidePageMd(boolean val) { ThirdFlag=ThirdFlag; throw new RuntimeException();}
-
-
-
+	
+	
 	public static  boolean getAllowTintClickSearchBG() {
 		return (ThirdFlag & 0x400000000l) == 0x400000000l;
 	}
@@ -2409,6 +2414,29 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 //	@Metaline(flagPos=52) public static boolean dictNameTapSch(){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 //	@Metaline(flagPos=52) public static void dictNameTapSch(boolean val){ SixthFlag=SixthFlag; throw new RuntimeException(); }
 	
+	//EF
+	///////////////////// End Sixth Flag////////////////////////////////////
+	/////////////////////Start Seven Flag///////////////////////////////////
+	//SS
+	private static long SevenFlag=0;
+	public long getSevenFlag() {
+		if(SevenFlag==0) {
+			return SevenFlag=getLong("M7F",0);
+		}
+		return SevenFlag;
+	}
+	private void putSevenFlag(long val) {
+		defaultReader.edit().putLong("M7F",SevenFlag=val).apply();
+	}
+	public final long SevenFlag() {
+		return SevenFlag;
+	}
+	
+	@Metaline(flagPos=0, debug=1) public static boolean darkSystem() { SevenFlag=SevenFlag; throw new RuntimeException();}
+	@Metaline(flagPos=0) public static void darkSystem(boolean v) { SevenFlag=SevenFlag; throw new RuntimeException();}
+	
+	
+	/////////////////////End Seven Flag///////////////////////////////////
 	
 	///////
 	///////
@@ -2673,6 +2701,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 			return FifthFlag;
 			case 6:
 			return SixthFlag();
+			case 7:
+			return SevenFlag();
 		}
 		return tmpFlag;
 	}

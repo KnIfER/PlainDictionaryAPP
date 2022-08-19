@@ -410,11 +410,13 @@ public class Drawer extends Fragment implements
 		sw3.setChecked(a.opt.getServerStarted());
 
 		sw4 = HeaderView.findViewById(R.id.sw4);
-		val = a.opt.getInDarkMode();
-		sw4.setChecked(!val);
-		sw4.setTag(false);
-		sw4.setOnCheckedChangeListener(this);
-		sw4.setChecked(val);
+		val = GlobalOptions.isDark;
+		if (val) {
+			sw4.setChecked(!val);
+			sw4.setTag(false);
+			sw4.setOnCheckedChangeListener(this);
+			sw4.setChecked(val);
+		}
 		dayNightSwitch = sw4;
 
 		sw5 = HeaderView.findViewById(R.id.sw5);
@@ -1254,22 +1256,13 @@ public class Drawer extends Fragment implements
 			} break;
 			/* 切换黑暗模式 */
 			case R.id.sw4:{
-				//if(Build.VERSION.SDK_INT<29){
-					GlobalOptions.isDark = false;
-//				}else{
-//					GlobalOptions.isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
-//				}
-
 				a.opt.setInDarkMode(isChecked);
-				
 				if(buttonView.getTag()==null || GlobalOptions.isDark)
 					a.changeToDarkMode();
-				
 				if(HeaderView2!=null) {
 					HeaderView2.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE:null);
 					((TextView)HeaderView2.findViewById(R.id.text)).setTextColor(a.AppBlack);
 				}
-				
 				buttonView.setTag(null);
 			} break;
 			case R.id.sw5:{
