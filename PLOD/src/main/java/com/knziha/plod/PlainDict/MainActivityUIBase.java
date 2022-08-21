@@ -2178,6 +2178,15 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 									if(output2==null) {
 										output2 = new BufferedWriter(new FileWriter(def,true));
 										output = new BufferedWriter(new FileWriter(rec,true));
+										if (retrieve_all) {
+											for (int i = 0; i < loadManager.md_size; i++) {
+												BookPresenter book = loadManager.md_get(i);
+												if (book!=EmptyBook) {
+													output2.write(book.getPath());
+													output2.write("\n");
+												}
+											}
+										}
 									}
 									mdlibsCon.add(fn);//记录的时相对路径
 									output.write(fn);
@@ -2229,8 +2238,19 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if(isCombinedSearching) {
 			AllMenus.findItem(R.id.toolbar_action1).setIcon(R.drawable.ic_btn_multimode);
 		}
-		MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
-		
+		String debugMsg = "";
+		if (PDICMainAppOptions.debug()) {
+			MdictServerMobile.getRemoteServerRes("/liba.0.txt", true);
+			if (MdictServerMobile.hasRemoteDebugServer) {
+				debugMsg += "已连接调试服务器！";
+			}
+		}
+		if (PDICMainAppOptions.getEnableWebDebug()) {
+			debugMsg += "已开启网页调试！";
+		}
+		if (debugMsg.length()>0) {
+			showT(debugMsg);
+		}
 		//if(opt.isShowDirectSearch()) ((MenuItem)toolbar.getMenu().findItem(R.id.toolbar_action2)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		
 		if(opt.getLockStartOrientation()) {
@@ -2300,6 +2320,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			,"/ASSET2/谷歌翻译.web"
 			,"/ASSET2/维基词典.web"
 			,"/ASSET2/彩云小译.web"
+			,"/ASSET2/应用社区.web"
 	};
 	
 	protected void populateDictionaryList(File def, ArrayList<PlaceHolder> CC, boolean retrieve_all) {
@@ -5583,7 +5604,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		CMN.Log("changeToDarkMode");
 		try {
 			getReferenceObject(WeakReferenceHelper.quick_settings).clear();
-			boolean dark=GlobalOptions.isDark||opt.getInDarkMode();
+			boolean dark=GlobalOptions.isDark;
 			AppBlack = dark?Color.WHITE:Color.BLACK;
 			AppWhite = dark?Color.BLACK:Color.WHITE;
 			MainAppBackground = dark?ColorUtils.blendARGB(MainBackground, Color.BLACK, 0.9f):MainBackground;
@@ -6834,14 +6855,14 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		return menuDialog;
 	}
 	
-	public WebViewListHandler getRandomPageHandler(boolean initPopup) {
+	public WebViewListHandler getRandomPageHandler(boolean initPopup, boolean random) {
 		WebViewListHandler weblistHandler = randomPageHandler;
 		if(weblistHandler==null)
 			weblistHandler = randomPageHandler = new WebViewListHandler(this, ContentviewBinding.inflate(getLayoutInflater()), schuiMain);
 		if(initPopup) {
 			WebViewmy randomPage = weblistHandler.getMergedFrame();
 			weblistHandler.setUpContentView(cbar_key);
-			weblistHandler.popupContentView(null, "随机页面");
+			weblistHandler.popupContentView(null, random?"随机页面":null);
 			weblistHandler.setViewMode(null, 1, randomPage);
 			weblistHandler.initMergedFrame(1, true, false);
 			weblistHandler.setBottomNavWeb(PDICMainAppOptions.bottomNavWeb());
@@ -6856,7 +6877,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	public void showRandomShuffles(boolean refresh) {
 		try {
 			getMdictServer();
-			WebViewmy randomPage = getRandomPageHandler(true).getMergedFrame();
+			WebViewmy randomPage = getRandomPageHandler(true, true).getMergedFrame();
 			randomPage.presenter = new_book(defDicts[2], this);
 //			if(randomPage==null) {
 //				init=true;
@@ -7265,8 +7286,8 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		@Override
 		public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
 			CMN.Log("onCreateWindow::");
-			WebViewListHandler weblistHandler = getRandomPageHandler(true);
-			WebViewmy randomPage = getRandomPageHandler(true).getMergedFrame();
+			WebViewListHandler weblistHandler = getRandomPageHandler(true, true);
+			WebViewmy randomPage = getRandomPageHandler(true, true).getMergedFrame();
 			randomPage.presenter = ((WebViewmy)view).presenter;
 			//((WebView.WebViewTransport)resultMsg.obj).setWebView(randomPage);
 			//resultMsg.sendToTarget(); New WebView for popup window must not have been  previously navigated. fuck.
@@ -7425,7 +7446,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		
 		public void onPageFinished(WebView view, String url) {
 			final WebViewmy mWebView = (WebViewmy) view;
-			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, mWebView.webScale);
+			CMN.debug("onPageFinished::", mWebView.bPageStarted, url, mWebView.isloading, mWebView.webScale, mWebView.presenter.isWebx);
 			if (false) {
 				mWebView.initPos();
 			}
@@ -7438,8 +7459,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 				return;
 			}
 			//CMN.debug("chromium: OPF ==> ", url, mWebView.isloading, view.getProgress(), view.getTag(R.drawable.voice_ic));
-			
-			mWebView.evaluateJavascript(ce_on,null);
 			
 			//if(!mWebView.isloading && !mWebView.fromNet) return;
 			final WebViewListHandler wlh = mWebView.weblistHandler;
@@ -7837,7 +7856,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 							//CMN.Log("查询跳转目标 : ", idx, URLDecoder.decode(url,"UTF-8"), processText(URLDecoder.decode(url,"UTF-8")));
 							if (idx >= 0) {//idx != -1
 								if(pop) { // 新窗口打开词条跳转
-									wlh = getRandomPageHandler(true);
+									wlh = getRandomPageHandler(true, true);
 									if (mWebView.toTag!=null) {
 										wlh.getMergedFrame().toTag = mWebView.toTag;
 										mWebView.toTag = null;
@@ -7936,7 +7955,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		}
 
 		private WebResourceResponse shouldInterceptRequestCompat(WebView view, String url, String accept, String refer, String origin, WebResourceRequest request) {
-			CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
+			// CMN.debug("chromium shouldInterceptRequest???",url,view.getTag());
 			//if(true) return null;
 			if(url.startsWith("data:")) return null;
 			
@@ -8178,10 +8197,12 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 								view.setTag(R.id.save, null);
 							}
 						}
-						if (webx.getShouldReplaceLetToVar(url)) {
-							try {
-								return ViewUtils.KikLetToVar(url , accept, refer, origin, request, webx);
-							} catch (Exception e) { CMN.debug("kiklet 转化失败::", e); }
+						if (url.endsWith(".js")) {
+							if (webx.getShouldReplaceLetToVar(url)) {
+								try {
+									return ViewUtils.KikLetToVar(url , accept, refer, origin, request, webx);
+								} catch (Exception e) { CMN.debug("kiklet 转化失败::", e); }
+							}
 						}
 						if(invoker.getUseHosts() && webx.shouldUseClientResponse(url)) {
 							// hosts
@@ -10455,9 +10476,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		if (thisActType==ActType.PlainDict) {
 			((PDICMainActivity) this).drawerFragment.dayNightSwitch.toggle();
 		} else {
-			boolean isDark = opt.getInDarkMode();
-			GlobalOptions.isDark = false;
-			opt.setInDarkMode(!isDark);
+			opt.setInDarkMode(!GlobalOptions.isDark);
 			changeToDarkMode();
 		}
 	}

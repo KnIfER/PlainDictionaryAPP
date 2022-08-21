@@ -1639,12 +1639,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 			}, 2500);
 		}
 		
-		
-		//tg
-		if (PDICMainAppOptions.getEnableWebDebug()) {
-			showT("开启网页调试");
-		}
-		
 		LayoutParams barBotLP = UIData.bottombar.getLayoutParams();
 		//toggleMultiwindow();
 		//mDisplay = ((DisplayManager) getSystemService(Context.DISPLAY_SERVICE)).createVirtualDisplay("vdisplay",3840, 2160, 480, null,DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC);

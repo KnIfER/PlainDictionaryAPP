@@ -380,6 +380,9 @@ public class FloatApp implements View.OnTouchListener, View.OnClickListener {
 			initializeTm -= timeRange;
 			timeRange *= ++cc;
 			timeRange *= cc;
+			if (!ViewUtils.topThirdPartyNewAPI) {
+				break;
+			}
 		}
 		intent.putExtra(FloatBtn.EXTRA_INVOKER, ivk);
 		return ivk;

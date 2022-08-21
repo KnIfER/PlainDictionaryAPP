@@ -120,6 +120,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -135,6 +136,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -588,12 +590,13 @@ public class ViewUtils {
 	}
 	
 	public static String fileToString(Context context, File f) {
-		if (f.getPath().startsWith("/ASSET")) {
+		String path = f.getPath();
+		if (path.startsWith("/ASSET")) {
 			String errRinfo = null;
-			boolean b1=f.getPath().startsWith("/", 6);
-			if(!b1&&hasRemoteDebugServer) {
+			boolean b1= path.startsWith("/", 6);
+			if(/*!b1&&*/hasRemoteDebugServer) {
 				try {
-					InputStream input = getRemoteServerRes(f.getPath().substring(AssetTag.length()), false);
+					InputStream input = getRemoteServerRes(path.substring(AssetTag.length()+(b1?-1:0)), false);
 					if(input!=null) {
 						ReusableByteOutputStream bout = new ReusableByteOutputStream(input.available());
 						byte[] buffer = new byte[4096];
@@ -604,12 +607,13 @@ public class ViewUtils {
 						return new String(bout.getBytes(), 0, bout.getCount(), StandardCharsets.UTF_8);
 					}
 				} catch (Exception e) {
+					CMN.debug(e);
 					errRinfo = CMN.Log(e);
 				}
 			}
 			if(GlobalOptions.debug || b1)
 			try {
-				InputStream fin = context.getResources().getAssets().open(f.getPath().substring(AssetTag.length()+(!b1?1:0)));
+				InputStream fin = context.getResources().getAssets().open(path.substring(AssetTag.length()+(!b1?1:0)));
 				ReusableByteOutputStream bout = new ReusableByteOutputStream(fin.available());
 				byte[] buffer = new byte[4096];
 				int read;
@@ -623,8 +627,8 @@ public class ViewUtils {
 			try {
 				UniversalDictionaryInterface asset = BookPresenter.getBookImpl(context instanceof MainActivityUIBase ?(MainActivityUIBase)context:null, new File(AssetTag+"webx"), 0);
 				Objects.requireNonNull(asset);
-				int idx = asset.lookUp(""+BookPresenter.hashCode(f.getPath().substring(8), 0));
-				CMN.Log("val::", asset.getRecordAt(idx, null, true), f.getPath(), asset.getEntryAt(0), asset.getNumberEntries());
+				int idx = asset.lookUp(""+BookPresenter.hashCode(path.substring(8), 0));
+				CMN.Log("val::", asset.getRecordAt(idx, null, true), path, asset.getEntryAt(0), asset.getNumberEntries());
 				return asset.getRecordAt(idx, null, true);
 			} catch (IOException e) {
 				errRinfo = CMN.Log(e);
@@ -1460,7 +1464,7 @@ public class ViewUtils {
 	}
 	
 	public static Field getField(Class<?> aClass, String name) throws Exception {
-//		CMN.debug("getField::"+aClass+"->"+name);
+		//CMN.debug("getField::"+aClass+"->"+name);
 		if (aClass==ObjectUtils.NULL.getClass()) {
 			return null;
 		}
@@ -1510,7 +1514,7 @@ public class ViewUtils {
 	}
 	
 	public static Object execSimple(String simplet, HashMap<String, Object> reflectionPool, Object...vars) throws Exception {
-		StringTokenizer array = new StringTokenizer(simplet, ";\r\n");
+		String[] array = simplet.split(";[\r\n]");
 		HashMap<String, Object> variables = new HashMap<>();
 		int st=0;
 		for (int i = st; i < vars.length-0; i++) {
@@ -1521,8 +1525,10 @@ public class ViewUtils {
 			variables.put("$"+(i==st?"":i), vars[i+0]);
 		}
 		Object ret = null;
-		while(array.hasMoreTokens()){
-			String ln = array.nextToken();
+		
+		for (int i = 0; i < array.length; i++) {
+		//while(array.hasMoreTokens()){
+			String ln = array[i];
 //			CMN.debug("ln::"+ln);
 			int eqIdx = ln.indexOf('=');
 			if (eqIdx>0) {
@@ -1572,9 +1578,31 @@ public class ViewUtils {
 					} else {
 						expsRight = valName.substring(idx).split("\\.(?![0-9])");
 					}
-				} else if (valName.startsWith("'")) {
+				} else if (valName.startsWith("'")||valName.startsWith("\"")) {
 					newObj = valName.substring(1, valName.length()-1);
-				}  else {
+				}  else if (valName.startsWith("[")) {
+					try {
+						int idx = valName.indexOf("]");
+						String typeName = valName.substring(1, idx);
+						// CMN.debug("valType::", typeName);
+						Class type = typeHash.get(typeName);
+						valName = valName.substring(idx+1);
+						int val = Integer.parseInt(valName.substring(0, 1));
+						if (type!=null) {
+							char c =  type.getSimpleName().toUpperCase().charAt(0);
+							if(c=='B') newObj = val==1;//Boolean.valueOf(paramName);
+							else if(c=='D') newObj = Double.valueOf(valName);
+							else if(c=='F') newObj = Float.valueOf(valName);
+							else if(c=='L') newObj = Long.valueOf(valName);
+							else if(c=='I') newObj = IU.parsint(valName);
+							else if(c=='S') newObj = Short.parseShort(valName);
+						} else {
+							newObj = IU.parsint(valName);
+						}
+					} catch (NumberFormatException e) {
+					
+					}
+				} else {
 					expsRight = valName.split("\\.(?![0-9])");
 					valName = expsRight[0];
 					newObj = variables.get(valName);
@@ -1586,7 +1614,7 @@ public class ViewUtils {
 				// 右值
 				// 赋值
 				if (fieldToSet!=null) {
-//					CMN.debug("field赋值::", object, fieldToSet, newObj);
+					CMN.debug("field赋值::", object, fieldToSet, newObj);
 					fieldToSet.set(object, newObj);
 				}
 				if (varName!=null) {
@@ -1631,8 +1659,9 @@ public class ViewUtils {
 			//typeHash.put("float", float.class);  typeHash.put("Float", Float.class);
 			//typeHash.put("long", long.class); typeHash.put("Long", Long.class);
 			typeHash.put("int", int.class); typeHash.put("Int", Integer.class);
+			typeHash.put("b", boolean.class); typeHash.put("B", Boolean.class);
 			//typeHash.put("short", short.class);  typeHash.put("Short", Short.class);
-			typeHash.put("String", String.class);
+			typeHash.put("String", String.class); typeHash.put("s", String.class);
 		}
 		if (zClazz==null && object!=null) {
 			zClazz = object instanceof Class?(Class) object :object.getClass();
@@ -1697,10 +1726,11 @@ public class ViewUtils {
 					}
 				} //else CMN.Log("复用反射::"+storeKey);
 				//if (methodTypes.length>0) {
-				String params = fdMd.substring(xi+1, fdMd.indexOf(")", xi));
+				//CMN.debug(fdMd, xi + 1, fdMd.lastIndexOf(")"));
+				String params = fdMd.substring(xi+1, fdMd.lastIndexOf(")"));
 				arr=null;
-				if (params.contains(",")) {
-					arr = params.split(",");
+				if (params.contains(",") && methodTypes.length>1) {
+					arr = params.split("(?<!\\\\),");
 				} else if(params.length()>0) {
 					arr = new String[]{params};
 				}
@@ -1716,11 +1746,15 @@ public class ViewUtils {
 								parameters[j] = paramName.substring(1, paramName.length()-1);
 							} else if (paramName.startsWith("0x")) {
 								parameters[j] = IU.parsint(paramName);
+							} else if (paramName.startsWith("'")||paramName.startsWith("\"")) {
+								parameters[j] = paramName.substring(1, paramName.length()-1);
+							}  else if (methodTypes[j]==String.class) {
+								parameters[j] = paramName;
 							} else {
-								Integer.parseInt(paramName.substring(0, 1));
+								int val = Integer.parseInt(paramName.substring(0, 1));
 								if (methodTypes[j]!=null) {
 									char c =  methodTypes[j].getSimpleName().toUpperCase().charAt(0);
-									if(c=='B') parameters[j] = Boolean.valueOf(paramName);
+									if(c=='B') parameters[j] = val==1;//Boolean.valueOf(paramName);
 									else if(c=='D') parameters[j] = Double.valueOf(paramName);
 									else if(c=='F') parameters[j] = Float.valueOf(paramName);
 									else if(c=='L') parameters[j] = Long.valueOf(paramName);
@@ -1804,13 +1838,13 @@ public class ViewUtils {
 			return intent.getStringExtra(FloatBtn.EXTRA_INVOKER);
 		}
 		long initializeTm = intent.getLongExtra(FloatBtn.EXTRA_Initialize, -1);
-		// CMN.debug("initializeTm::", initializeTm);
+		 CMN.debug("initializeTm::", initializeTm);
 		if (initializeTm==-1 && initialize) {
 			initializeTm = appWakeTm;
 		}
 		String ivk = ViewUtils.topThirdParty(context, 1.5f, initializeTm);
 		int cc = 0;
-		while ("android".equals(ivk)) { //  跳过安卓分享界面
+		while ("android".equals(ivk) && ViewUtils.topThirdPartyNewAPI) { //  跳过安卓分享界面
 			if (cc++ >= 15) {
 				ivk = null;
 				break;
@@ -1823,6 +1857,8 @@ public class ViewUtils {
 		return ivk;
 	}
 	
+	public static final boolean topThirdPartyNewAPI = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1;
+	
 	/** Retrieve the invoker application (the intent sender) package name for onNewIntent or onCreate
 	 * @param timeRange Seconds of time. Querying app usage events from now-timeRange to now.
 	 * 			maybe 1 for onNewIntent and 3 for onCreate.
@@ -1832,7 +1868,7 @@ public class ViewUtils {
 		String thisPak, tmp, top = null;
 		try {
 			thisPak = context.getPackageName();
-			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+			if(topThirdPartyNewAPI) {
 				UsageStatsManager man = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
 				if(timeRange<0)
 					timeRange=1;
@@ -1857,7 +1893,7 @@ public class ViewUtils {
 							|| tmp.contains("inputmethod")
 							|| tmp.startsWith("android.")
 							)) {
-						if (tmp.endsWith(".launcher")||tmp.endsWith(".home")) {
+						if (tmp.endsWith("launcher")||tmp.endsWith(".home")) {
 							if (top==null || "android".equals(top)) {
 								top = StringUtils.EMPTY;
 							}
@@ -1871,20 +1907,25 @@ public class ViewUtils {
 						}
 					}
 				}
-			} else {
+			}
+			else {
 				ActivityManager man = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-				List<ActivityManager.RecentTaskInfo> tasks = man.getRecentTasks(3, 0);
+				List<ActivityManager.RecentTaskInfo> tasks = man.getRecentTasks(6, 0);
+				// CMN.debug("topThirdParty::tasks::", tasks);
 				for(ActivityManager.RecentTaskInfo info:tasks) {
 					tmp = info.baseIntent.getComponent().getPackageName();
-					//CMN.Log("topThirdParty::", tmp);
-					if (!thisPak.equals(tmp) && !"android".equals(tmp)) {
+					// CMN.debug("topThirdParty::", tmp);
+					if (!thisPak.equals(tmp)
+							&& !"android".equals(tmp)
+							&& !tmp.endsWith("launcher")
+					) {
 						top = tmp;
 						break;
 					}
 				}
 			}
 		} catch (Exception e) {
-			//CMN.Log(e);
+			CMN.debug(e);
 		}
 		return top;
 	}

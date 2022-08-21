@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
@@ -116,6 +117,8 @@ import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_EMPTY;
 import static com.knziha.plod.dictionarymodels.DictionaryAdapter.PLAIN_BOOK_TYPE.PLAIN_TYPE_MDICT;
 import static com.knziha.plod.plaindict.MainActivityUIBase.DarkModeIncantation;
+
+import io.noties.markwon.Markwon;
 
 /*
  UI side of books / dictionaries
@@ -950,9 +953,24 @@ function debug(e){console.log(e)};
 				toolbar.setOnClickListener(this);
 				toolbar_title.setPadding((int) (15*GlobalOptions.density), 0, toolbar_title.getPaddingRight(), 0);
 			}
+			//recess.setVisibility(View.GONE);
+			//forward.setVisibility(View.GONE);
+			if (isWebx) {
+//				mWebView.getSettings().setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36");
+//				mWebView.getSettings().setUseWideViewPort(true);
+//				mWebView.getSettings().setLoadWithOverviewMode(true);
+//				mWebView.getSettings().setMediaPlaybackRequiresUserGesture(true);
+//				mWebView.getSettings().setSupportMultipleWindows(false);
+				String webSetttings = getWebx().getField("webSetttings");
+				if (webSetttings!=null) {
+					try {
+						ViewUtils.execSimple(webSetttings, null, mWebView.getSettings());
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
+			}
 		}
-		//recess.setVisibility(View.GONE);
-		//forward.setVisibility(View.GONE);
 	}
 	
 	public AppHandler getWebBridge() {
@@ -1864,6 +1882,7 @@ function debug(e){console.log(e)};
 		}
 		if (mWebView.toolbar_title!=null) {
 			mWebView.toolbar_title.setText(bookImpl.AcquireStringBuffer(64).append(word.trim()).append(" - ").append(bookImpl.getDictionaryName()).toString());
+			mWebView.toolbar_title.setVisibility(View.VISIBLE);
 		}
 		mWebView.word = word;
 	}
@@ -2110,7 +2129,10 @@ function debug(e){console.log(e)};
 						htmlCode = bookImpl.getVirtualRecordsAt(this, position);
 						mWebView.setTag(null);
 						CMN.Log("htmlCode::", htmlCode, GetSearchKey());
-						if (htmlCode!=null && htmlCode.startsWith("http")) {
+						if (htmlCode!=null && (
+								htmlCode.startsWith("http")
+								|| htmlCode.startsWith("file")
+								)) {
 							// 如果是加载网页
 							mWebView.loadUrl(htmlCode);
 							htmlCode = null;
@@ -2270,7 +2292,7 @@ function debug(e){console.log(e)};
 	public void vartakelayaTowardsDarkMode(WebViewmy mWebView) {
 		if(mWebView==null) mWebView=this.mWebView;
 		if(mWebView==null) return;
-		boolean dark = GlobalOptions.isDark||opt.getInDarkMode();
+		boolean dark = GlobalOptions.isDark;
 		String GetById = "document.getElementById('_PDict_Darken')";
 		WebViewmy webview = mWebView;
 		mWebView.evaluateJavascript(GetById + "?1:0", new ValueCallback<String>() {
@@ -2684,6 +2706,23 @@ function debug(e){console.log(e)};
 				}
 			}
         }
+		
+        @JavascriptInterface
+		public String markdown(String value) {
+			if (presenter!=null) {
+				Markwon markwon = Markwon.create(presenter.a);
+				return Html.toHtml(markwon.toMarkdown(value));
+			}
+			return "";
+		}
+		
+        @JavascriptInterface
+		public String showT(String value) {
+			if (presenter!=null) {
+				presenter.a.hdl.post(() -> presenter.a.showT(value));
+			}
+			return "";
+		}
 		
         @JavascriptInterface
         public void suppressTurnPage(int sid, boolean val, boolean hideUI) {
@@ -3163,7 +3202,7 @@ function debug(e){console.log(e)};
 				WebViewmy wv = findWebview(sid);
 				if(wv!=null){
 					wv.post(() -> {
-						WebViewListHandler wlh = presenter.a.getRandomPageHandler(true);
+						WebViewListHandler wlh = presenter.a.getRandomPageHandler(true, true);
 						WebViewmy mWebView = wlh.getMergedFrame();
 						wlh.setViewMode(null, 0, mWebView);
 						wlh.viewContent();
@@ -3392,7 +3431,7 @@ function debug(e){console.log(e)};
 				book.a.hdl.post(new Runnable() {
 					@Override
 					public void run() {
-						WebViewListHandler weblist = book.a.getRandomPageHandler(true);
+						WebViewListHandler weblist = book.a.getRandomPageHandler(true, true);
 						WebViewmy randomPage = weblist.getMergedFrame(book);
 						randomPage.loadUrl(url);
 						weblist.resetScrollbar(randomPage, false, false);

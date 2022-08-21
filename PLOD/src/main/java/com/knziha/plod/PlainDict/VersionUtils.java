@@ -64,6 +64,7 @@ public class VersionUtils {
 			PDICMainAppOptions.pinPDic(true);
 			PDICMainAppOptions.setShowPinPicBook(true);
 			PDICMainAppOptions.darkSystem(Build.VERSION.SDK_INT>=29 && !RomUtils.isMIUI());
+			PDICMainAppOptions.setEnableSuperImmersiveScrollMode(GlobalOptions.isSmall);
 		}
 		opt.setBottombarOnBottom(true);
 		opt.setFloatBottombarOnBottom(true);

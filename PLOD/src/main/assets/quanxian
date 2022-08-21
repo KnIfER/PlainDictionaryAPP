@@ -36,7 +36,7 @@
 （可选）用于申请后台免杀
 --- 
 
-### 8. SYSTEM_ALERT_WINDOW、SYSTEM_OVERLAY_WINDOW
+### 8. SYSTEM_ALERT_WINDOW、SYSTEM_OVERLAY_WINDOW、REORDER_TASKS
 （可选）用于特色小窗模式，可在「主窗口-右下宫格菜单-右下浏览选项-悬浮按钮与小窗」中开启
 ，届时用户需手动申请“显示在其他应用上层”或“悬浮窗”权限。
 --- 

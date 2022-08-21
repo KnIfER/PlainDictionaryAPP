@@ -584,7 +584,8 @@ public class PDICMainAppOptions implements MdictServer.AppOptions
 		updateFFAt(0x40000,!val);
 		return val;
 	}
-
+	
+	
 	public boolean getInDarkMode() {
 		boolean ret = (FirstFlag & 0x80000) == 0x80000;
 		GlobalOptions.isDark = ret;

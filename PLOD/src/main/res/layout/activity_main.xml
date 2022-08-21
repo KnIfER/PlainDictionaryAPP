@@ -82,6 +82,7 @@
 						android:layout_height="match_parent"
 						android:layout_marginStart="-15dp"
 						android:layout_marginBottom="12dp"
+						android:visibility="gone"
 						/>
 					<View
 						android:id="@+id/etPad1"
@@ -89,6 +90,7 @@
 						android:layout_height="match_parent"
 						android:layout_marginStart="-23dp"
 						android:layout_marginBottom="12dp"
+						android:visibility="gone"
 						/>
 				</FrameLayout>
 			</androidx.appcompat.widget.Toolbar>

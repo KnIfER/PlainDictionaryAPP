@@ -510,6 +510,29 @@ public class WebViewmy extends WebView implements MenuItem.OnMenuItemClickListen
 			//clearIfNewADA(book);
 			presenter=book;
 			pBc = book.IBC;
+			if (weblistHandler.bShowingInPopup) {
+				if (presenter.isWebx) {
+					try {
+						String reset = presenter.getWebx().getField("webSetttingsReset");
+						if (reset!=null) {
+							ViewUtils.execSimple(reset, null, getSettings());
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
+				if (book.isWebx) {
+					try {
+						String reset = book.getWebx().getField("webSetttingsReset");
+						String set = book.getWebx().getField("webSetttings");
+						if (reset!=null && set!=null) {
+							ViewUtils.execSimple(set, null, getSettings());
+						}
+					} catch (Exception e) {
+						CMN.debug(e);
+					}
+				}
+			}
 		}
 	}
 	

@@ -66,6 +66,7 @@ import com.knziha.plod.widgets.CheckedTextViewmy;
 import com.knziha.plod.widgets.FlowTextView;
 import com.knziha.plod.widgets.SwitchCompatBeautiful;
 import com.knziha.plod.widgets.ViewUtils;
+import com.knziha.plod.widgets.WebViewmy;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -552,9 +553,6 @@ public class Drawer extends Fragment implements
 				if (mdict.error_input!=null) {
 					ssb.append("\n出错信息：").append(mdict.error_input);
 				}
-				
-				final String languageName = Locale.getDefault().getLanguage();
-				
 				final TextView tv = dv.findViewById(R.id.resultN);
 				tv.setPadding(0, 0, 0, 50);
 				
@@ -591,24 +589,20 @@ public class Drawer extends Fragment implements
 					ssb.setSpan(new ClickableSpan() {
 						@Override
 						public void onClick(@NonNull View widget) {
-							Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
-							Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-							startActivity(intent);
+							try {
+								WebViewListHandler weblist = a.getRandomPageHandler(true, false);
+								WebViewmy randomPage = weblist.getMergedFrame();
+								BookPresenter socialbook = a.new_book(a.defDicts[4], a);
+								weblist.getMergedFrame(socialbook);
+								socialbook.renderContentAt(-1, BookPresenter.RENDERFLAG_NEW, 0, randomPage, 0);
+								weblist.setViewMode(null, 0, randomPage);
+								weblist.viewContent();
+							} catch (Exception e) {
+								CMN.debug(e);
+							}
 						}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					
 					
-					startss = ssb.toString().indexOf("[",endss);
-					endss = ssb.toString().indexOf("]",startss);
-					if(endss>startss && startss>0)
-						
-						if(false)
-							ssb.setSpan(new ClickableSpan() {
-								@Override
-								public void onClick(@NonNull View widget) {
-									Uri uri = Uri.parse("https://tieba.baidu.com/f?kw=%E5%B9%B3%E5%85%B8app");
-									Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-									startActivity(intent);
-								}},startss,endss+1,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -952,10 +946,14 @@ public class Drawer extends Fragment implements
 													boolean def_exists = def.exists();
 													//tofo check
 													output2 = new BufferedWriter(new FileWriter(def,true));
-													if(!def_exists) {
-														String path = CMN.AssetTag + "liba.mdx";
-														output2.write(path);
-														output2.write("\n");
+													if(!def_exists) { // 莫忘添加默认
+														for (int j = 0; j < a.loadManager.md_size-1; j++) {
+															BookPresenter book = a.loadManager.md_get(j);
+															if (book!=a.EmptyBook) {
+																output2.write(book.getPath());
+																output2.write("\n");
+															}
+														}
 													}
 												}
 												output2.write(fnI);

@@ -87,6 +87,10 @@ public class BookManagerWebsites extends ListFragment {
 			data.insert(new mFile("wiki/维基词典", new WebAssetDesc("/ASSET/维基词典.web", "", "")));
 			
 			
+			data.insert(new mFile("其他", true));
+			data.insert(new mFile("其他/应用社区", new WebAssetDesc("/ASSET2/应用社区.web", "", "")));
+			
+			
 			if(adapter!=null)//strange here.
 				adapter.notifyDataSetChanged();
 		}

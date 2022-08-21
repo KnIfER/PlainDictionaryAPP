@@ -24,6 +24,7 @@ import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.MagentTransient;
 import com.knziha.plod.dictionarymodels.PlainWeb;
+import com.knziha.plod.plaindict.BuildConfig;
 import com.knziha.plod.plaindict.CMN;
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.OptionProcessor;
@@ -308,7 +309,7 @@ public class BookOptions extends SettingsFragmentBase implements Preference.OnPr
 						a.showT("已重新加载"+cc+"本词典");
 					}
 				};
-				if (a.opt.getIgnoreReloadWarning()) {
+				if (a.opt.getIgnoreReloadWarning() || BuildConfig.isDebug) {
 					optprc.processOptionChanged(null, null, 1, 0);
 				} else {
 					final String[] DictOpt = new String[]{"重启前不再确认", "重新加载视图"};

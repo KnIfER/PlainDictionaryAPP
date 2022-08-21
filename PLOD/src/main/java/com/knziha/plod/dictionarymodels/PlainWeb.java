@@ -1462,7 +1462,7 @@ public class PlainWeb extends DictionaryAdapter {
 //		} else {
 //			jsLoader = jsLoaderInJson;
 //		}
-		if(GlobalOptions.debug)CMN.Log("加载网页::", url, dopt, jsLoader);
+		if(GlobalOptions.debug)CMN.Log("加载网页::", url, dopt/*, jsLoader*/);
 		return currentUrl=url;
 	}
 	
@@ -1754,8 +1754,9 @@ public class PlainWeb extends DictionaryAdapter {
 	public void Reload(Object context) {
 		try {
 			parseJsonFile(context instanceof Context?(Context)context:this.context);
-		} catch (IOException e) {
-			CMN.Log(e);
+			CMN.debug("Reload::entrance::", entrance);
+		} catch (Exception e) {
+			CMN.debug(e);
 		}
 	}
 	
@@ -1787,6 +1788,7 @@ public class PlainWeb extends DictionaryAdapter {
 //		}
 		//CMN.Log("onPageStarted\n\nonPageStarted -- ", url);CMN.rt();CMN.stst_add=0;
 		if(GlobalOptions.isDark) mWebView.evaluateJavascript(DarkModeIncantation, null);
+		if (onstart != null) mWebView.evaluateJavascript(onstart, null);
 	}
 
 	public void onProgressChanged(BookPresenter bookPresenter, WebViewmy  mWebView, int newProgress) {

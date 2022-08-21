@@ -144,7 +144,6 @@ public class Toastable_Activity extends AppCompatActivity {
 	   VFStamp = opt.getFifthFlag();
 	   VIStamp = opt.getSixthFlag();
 	   V7Stamp = opt.getSevenFlag();
-	   VersionUtils.checkVersion(opt);
 	   display.getRealMetrics(dm);
 	   if (GlobalOptions.realWidth <= 0) {
 		   readSizeConfigs();
@@ -157,6 +156,7 @@ public class Toastable_Activity extends AppCompatActivity {
 			   GlobalOptions.isSystemDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
 		   }
 	   }
+	   VersionUtils.checkVersion(opt);
 	   if (opt.darkSystem() && Build.VERSION.SDK_INT>=29) {
 			GlobalOptions.isDark = GlobalOptions.isSystemDark;
 	   }
@@ -580,7 +580,11 @@ public class Toastable_Activity extends AppCompatActivity {
 	void showTopSnack(ViewGroup parentView, Object messageVal, float alpha, int duration, int gravity, int layoutFlags) {
 		SimpleTextNotifier topsnack = getTopSnackView();
 		topsnack.setNextOffsetScale(0.25f);
-		parentView = onShowSnack(parentView);
+		try {
+			parentView = onShowSnack(parentView);
+		} catch (Exception e) {
+			CMN.debug(e); // ViewRootImpl cannot be cast to android.view.ViewGroup
+		}
 		if(duration<0) {
 			duration = SHORT_DURATION_MS;
 		}

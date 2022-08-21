@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.appcompat.app.GlobalOptions;
+
 import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.widgets.DarkToggleButton;
@@ -47,7 +49,7 @@ public class NightModeSwitchPanel extends PlainAppPanel {
 	
 	@Override
 	public void refresh() {
-		if (dayNightArt.stateIsNightMode()!=opt.getInDarkMode()) {
+		if (dayNightArt.stateIsNightMode()!=GlobalOptions.isDark) {
 			dayNightArt.toggle(false);
 		} else {
 			dayNightArt.abortAnimation();

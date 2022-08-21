@@ -971,7 +971,7 @@ public class WebViewListHandler extends ViewGroup implements View.OnClickListene
 		alloydPanel.AllMenus.tag = this;
 		alloydPanel.refresh();
 		alloydPanel.toolbar.setTitle(key);
-		alloydPanel.AllMenus.setItems("随机页面".equals(key)?alloydPanel.RandomMenu:alloydPanel.PopupMenu);
+		alloydPanel.AllMenus.setItems("随机页面".equals(key) ? alloydPanel.RandomMenu : alloydPanel.PopupMenu);
 		//contentUIData.webcontentlister.setPadding(0,0,0,0);
 		ViewUtils.addViewToParent(alloydPanel.toolbar, contentUIData.webcontentlister, 0);
 		//a.setContentBow(false);
