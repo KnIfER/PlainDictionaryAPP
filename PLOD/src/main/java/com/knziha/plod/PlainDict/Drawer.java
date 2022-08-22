@@ -60,6 +60,7 @@ import com.knziha.plod.dictionarymanager.files.mFile;
 import com.knziha.plod.dictionarymodels.BookPresenter;
 import com.knziha.plod.dictionarymodels.DictionaryAdapter;
 import com.knziha.plod.dictionarymodels.PlainWeb;
+import com.knziha.plod.settings.NightMode;
 import com.knziha.plod.settings.ServerPreference;
 import com.knziha.plod.widgets.AdvancedNestScrollListview;
 import com.knziha.plod.widgets.CheckedTextViewmy;
@@ -108,7 +109,6 @@ public class Drawer extends Fragment implements
 	public EditText etAdditional;
 
 	SwitchCompat sw1,sw2,sw3,sw4,sw5;
-	SwitchCompat dayNightSwitch;
 
 	View HeaderView;
 	View HeaderView2;
@@ -411,14 +411,13 @@ public class Drawer extends Fragment implements
 		sw3.setChecked(a.opt.getServerStarted());
 
 		sw4 = HeaderView.findViewById(R.id.sw4);
+		sw4.setOnLongClickListener(this);
 		val = GlobalOptions.isDark;
+		sw4.setChecked(val);
+		sw4.setOnCheckedChangeListener(this);
 		if (val) {
-			sw4.setChecked(!val);
-			sw4.setTag(false);
-			sw4.setOnCheckedChangeListener(this);
-			sw4.setChecked(val);
+			a.changeToDarkMode();
 		}
-		dayNightSwitch = sw4;
 
 		sw5 = HeaderView.findViewById(R.id.sw5);
 		sw5.setChecked(a.opt.getUseVolumeBtn());
@@ -1254,21 +1253,29 @@ public class Drawer extends Fragment implements
 			} break;
 			/* 切换黑暗模式 */
 			case R.id.sw4:{
-				a.opt.setInDarkMode(isChecked);
-				if(buttonView.getTag()==null || GlobalOptions.isDark)
-					a.changeToDarkMode();
-				if(HeaderView2!=null) {
-					HeaderView2.getBackground().setColorFilter(GlobalOptions.isDark?GlobalOptions.NEGATIVE:null);
-					((TextView)HeaderView2.findViewById(R.id.text)).setTextColor(a.AppBlack);
-				}
-				buttonView.setTag(null);
+				setInDarkMode(isChecked, true);
 			} break;
 			case R.id.sw5:{
 				a.opt.setUseVolumeBtn(isChecked);
 			} break;
 		}
 	}
-
+	
+	public void setInDarkMode(boolean dark, boolean set) {
+		if(set) {
+			a.opt.setInDarkMode(dark);
+			a.changeToDarkMode();
+		} else {
+			sw4.setOnCheckedChangeListener(null);
+			sw4.setChecked(dark);
+			sw4.setOnCheckedChangeListener(this);
+		}
+		if(HeaderView2!=null) {
+			HeaderView2.getBackground().setColorFilter(dark?GlobalOptions.NEGATIVE:null);
+			((TextView)HeaderView2.findViewById(R.id.text)).setTextColor(a.AppBlack);
+		}
+	}
+	
 	@Override
 	public boolean onLongClick(View v) {
 		int id = v.getId();
@@ -1284,6 +1291,9 @@ public class Drawer extends Fragment implements
 			} catch (Exception e) {
 				a.showT(e.getMessage());
 			}
+			return true;
+		} else if(id==R.id.sw4) {
+			a.launchSettings(NightMode.id, NightMode.requestCode);
 			return true;
 		}
 		Intent i = new Intent(getActivity(), CuteFileManager.class);

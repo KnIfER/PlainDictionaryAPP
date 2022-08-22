@@ -2191,7 +2191,7 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	protected void scanSettings(){
 		super.scanSettings();
 		MainBackground = MainAppBackground = opt.getMainBackground();
-		CMN.AppColorChangedFlag &= ~0x1;
+		CMN.AppColorChangedFlag &= ~thisActMask;
 		//getWindow().setNavigationBarColor(MainBackground);
 		//文件网络
 		//SharedPreferences read = getSharedPreferences("lock", MODE_PRIVATE);
@@ -2340,14 +2340,11 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 				adaptermy.notifyDataSetChanged();
 			}
 			
-			if((CMN.AppColorChangedFlag&0x1)!=0)
+			if((CMN.AppColorChangedFlag&thisActMask)!=0)
 			{
 				MainBackground = MainAppBackground = opt.getMainBackground();
-				CMN.AppColorChangedFlag &= ~0x1;
+				CMN.AppColorChangedFlag &= ~thisActMask;
 				refreshUIColors();
-			}
-			if(drawerFragment.sw4!=null && drawerFragment.sw4.isChecked()!=GlobalOptions.isDark){
-				switch_dark_mode(GlobalOptions.isDark);
 			}
 			if(DBrowser!=null) {
 				DBrowser.checkColors();
@@ -2370,6 +2367,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 	}
 	
 	void refreshUIColors() {
+		if(drawerFragment!=null && drawerFragment.sw4.isChecked()!=GlobalOptions.isDark){
+			drawerFragment.setInDarkMode(GlobalOptions.isDark, false);
+		}
 		boolean isHalo=!GlobalOptions.isDark;
 		MainAppBackground = isHalo?MainBackground:ColorUtils.blendARGB(MainBackground, Color.BLACK, ColorMultiplier_Wiget);
 		int filteredColor = MainAppBackground;//CU.MColor(MainBackground,ColorMultiplier);
@@ -2379,8 +2379,9 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		bottombar.setBackgroundColor(filteredColor);
 		UIData.multilineBG.setBackgroundColor(filteredColor & 0x99ffffff);
 		//UIData.multiline.setBackgroundColor(filteredColor & 0x99ffffff);
-		UIData.etPad.setBackgroundColor(filteredColor);
-		UIData.etPad1.setBackgroundColor(filteredColor);
+		//UIData.etPad.setBackgroundColor(filteredColor);
+		//UIData.etPad1.setBackgroundColor(filteredColor);
+		
 		UIData.schtools.setBackgroundColor(filteredColor);
 		toolbar.setBackgroundColor(filteredColor);
 
@@ -3427,13 +3428,6 @@ public class PDICMainActivity extends MainActivityUIBase implements OnClickListe
 		//Context menu
 		//tofo
 		//CMN.Log("onCreateContextMenu", getCurrentFocus());
-	}
-
-	protected void switch_dark_mode(boolean val) {
-		CMN.debug("switch_dark_mode::", val);
-		drawerFragment.sw4.setOnCheckedChangeListener(null);
-		drawerFragment.sw4.setChecked(val);
-		drawerFragment.sw4.setOnCheckedChangeListener(drawerFragment);
 	}
 	
 	public void startServer(boolean start) {

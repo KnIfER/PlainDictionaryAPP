@@ -100,10 +100,10 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		super.onWindowFocusChanged(hasFocus);
 		if(systemIntialized && hasFocus){
 			fix_full_screen(getWindow().getDecorView());
-			if((CMN.AppColorChangedFlag&0x2)!=0)
+			if((CMN.AppColorChangedFlag&thisActMask)!=0)
 			{
 				MainBackground = MainAppBackground = opt.getFloatBackground();
-				CMN.AppColorChangedFlag &= ~0x2;
+				CMN.AppColorChangedFlag &= ~thisActMask;
 				refreshUIColors();
 			}
 			checkFlags();
@@ -115,17 +115,6 @@ public class FloatSearchActivity extends MainActivityUIBase {
 	public void fix_full_screen(@Nullable View decorView) {
 		if(decorView==null) decorView=getWindow().getDecorView();
 		fix_full_screen_global(decorView, fullScreen, hideNavigation);
-	}
-
-	@Override
-	void switch_dark_mode(boolean val) {
-		//if(Build.VERSION.SDK_INT<29){
-			GlobalOptions.isDark = false;
-//		}else{
-//			GlobalOptions.isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
-//		}
-		opt.setInDarkMode(val);
-		changeToDarkMode();
 	}
 
 	@Override
@@ -383,7 +372,7 @@ public class FloatSearchActivity extends MainActivityUIBase {
 		LastMdFn = "FltMdFn";
 		super.scanSettings();
 		MainBackground = MainAppBackground = opt.getFloatBackground();
-		CMN.AppColorChangedFlag &= ~0x2;
+		CMN.AppColorChangedFlag &= ~thisActMask;
 		isCombinedSearching = opt.isFloatCombinedSearching();
 	}
 

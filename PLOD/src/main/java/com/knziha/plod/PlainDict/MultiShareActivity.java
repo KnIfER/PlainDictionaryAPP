@@ -364,11 +364,6 @@ public class MultiShareActivity extends MainActivityUIBase {
 	}
 	
 	@Override
-	void switch_dark_mode(boolean val) {
-	
-	}
-	
-	@Override
 	public void animateUIColorChanges() {
 	
 	}

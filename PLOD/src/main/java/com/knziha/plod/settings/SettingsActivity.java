@@ -130,6 +130,9 @@ public class SettingsActivity extends Toastable_Activity implements APPSettingsA
 				fragment = new Multiview();
 				//args.putString("title", "多页面设置");
 			break;
+			case NightMode.id:
+				fragment = new NightMode();
+			break;
 		}
 		fragment.setArguments(args);
 		this.getSupportFragmentManager().beginTransaction()

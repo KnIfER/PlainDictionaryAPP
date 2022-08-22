@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	tools:context="com.knziha.plod.settings.TapTranslator"
+	>
+	<PreferenceCategory
+		android:key="cat_1"
+		android:title="夜间模式设置"
+		app:icon="@drawable/drawer_menu_icon_setting"
+		app:allowDividerAbove="true"
+		app:allowDividerBelow="true"
+		>
+		<com.knziha.filepicker.settings.TwinkleSwitchPreference
+			android:key="sys"
+			android:persistent="false"
+			android:defaultValue="false"
+			android:title="跟随系统"/>
+	</PreferenceCategory>
+</PreferenceScreen>

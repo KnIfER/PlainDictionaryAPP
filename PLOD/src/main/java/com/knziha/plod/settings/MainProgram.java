@@ -10,6 +10,7 @@ import com.knziha.filepicker.settings.FilePickerPreference;
 import com.knziha.filepicker.settings.SettingsFragmentBase;
 import com.knziha.plod.dictionary.Utils.IU;
 import com.knziha.plod.plaindict.CMN;
+import com.knziha.plod.plaindict.MainActivityUIBase;
 import com.knziha.plod.plaindict.PDICMainAppOptions;
 import com.knziha.plod.plaindict.R;
 import com.knziha.plod.plaindict.Toastable_Activity;
@@ -104,11 +105,11 @@ public class MainProgram extends SettingsFragmentBase implements Preference.OnPr
 			break;
 			case "BCM":
 				setColorPreferenceTitle(preference, newValue);
-				CMN.AppColorChangedFlag|=0x1;
+				CMN.AppColorChangedFlag|=1<<MainActivityUIBase.ActType.PlainDict.ordinal();
 			break;
 			case "BCF":
 				setColorPreferenceTitle(preference, newValue);
-				CMN.AppColorChangedFlag|=0x2;
+				CMN.AppColorChangedFlag|=1<<MainActivityUIBase.ActType.FloatSearch.ordinal();
 			break;
 			case "stsch":
 				PDICMainAppOptions.restoreLastSch((Boolean) newValue);

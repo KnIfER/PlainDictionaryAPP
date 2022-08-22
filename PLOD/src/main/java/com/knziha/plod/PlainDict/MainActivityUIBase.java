@@ -1,5 +1,6 @@
 package com.knziha.plod.plaindict;
 
+import static android.view.View.GONE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -176,6 +177,7 @@ import com.knziha.plod.searchtasks.AsyncTaskWrapper;
 import com.knziha.plod.searchtasks.CombinedSearchTask;
 import com.knziha.plod.settings.BookOptionsDialog;
 import com.knziha.plod.settings.Multiview;
+import com.knziha.plod.settings.NightMode;
 import com.knziha.plod.settings.SettingsActivity;
 import com.knziha.plod.settings.TapTranslator;
 import com.knziha.plod.settings.Misc_exit_dialog;
@@ -545,6 +547,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	SplitView.PageSliderInf inf;
 	public ActType thisActType;
+	public int thisActMask;
 	public boolean awaiting;
 	Runnable postTask;
 	
@@ -1158,6 +1161,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
        	  */
 		CMN.mid = Thread.currentThread().getId();
 	    //CMN.Log("instanceCount", CMN.instanceCount);
+		thisActMask = 1 << thisActType.ordinal();
 		super.onCreate(savedInstanceState);
 		ViewGroup tmp =  new ScrollViewmy(this);
 		if(shunt) return;
@@ -5293,7 +5297,9 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			break;
 			case 2:
 			case 25:
-				switch_dark_mode(val==1);
+				if (val==1!=GlobalOptions.isDark) {
+					toggleDarkMode();
+				}
 				//CMN.Log("黑暗？", val==1, opt.getInDarkMode(), GlobalOptions.isDark);
 			break;
 			case 3:
@@ -5597,8 +5603,6 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 		tv.setText(ssb, TextView.BufferType.SPANNABLE);
 		configurableDialog.show();
 	}
-
-	abstract void switch_dark_mode(boolean val);
 
 	void changeToDarkMode() {
 		CMN.Log("changeToDarkMode");
@@ -9162,12 +9166,24 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 			} break;
 			case TapTranslator.requestCode:{
 				wordPopup.set(resultCode==requestCode);
-				break;
-			}
+				
+			} break;
 			case Multiview.requestCode:{
 				resetMerge(-1, false);
-				break;
-			}
+			} break;
+			case NightMode.requestCode:{
+				boolean dark = GlobalOptions.isDark;
+				opt.getInDarkMode();
+				if(Build.VERSION.SDK_INT>=29){
+					GlobalOptions.isSystemDark = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES;
+					if (opt.darkSystem()) {
+						GlobalOptions.isDark = GlobalOptions.isSystemDark;
+					}
+				}
+				if (dark!=GlobalOptions.isDark) {
+					changeToDarkMode();
+				}
+			} break;
 		}
 	}
 
@@ -10474,7 +10490,7 @@ public abstract class MainActivityUIBase extends Toastable_Activity implements O
 	
 	public void toggleDarkMode() {
 		if (thisActType==ActType.PlainDict) {
-			((PDICMainActivity) this).drawerFragment.dayNightSwitch.toggle();
+			((PDICMainActivity) this).drawerFragment.sw4.toggle();
 		} else {
 			opt.setInDarkMode(!GlobalOptions.isDark);
 			changeToDarkMode();
